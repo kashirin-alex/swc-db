@@ -1,2 +1,3 @@
-# swc-db
-SWC-DB (Super Wide Column Database)
+# SWC-DB (Super Wide Column Database)
+
+#### Work in-progress
