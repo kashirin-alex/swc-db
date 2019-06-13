@@ -3,12 +3,15 @@
  */
 
 
+#include "swcdb/lib/common/Compat.h"
 #include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
+
 
 using namespace SWC;
 using namespace ScanSpecs;
 
 
+void test_encode_decode(ColumnIntervals* ci, uint8_t** buf, uint8_t** buf2);
 int main() {
 
     ScanSpec ss = ScanSpec();
@@ -256,4 +259,63 @@ int main() {
         std::cout << "ts_comp(changed) ERROR";
         exit(1);
     }
+
+
+
+    uint8_t* buf = new uint8_t[256]; //!! (6-ensure)
+    uint8_t* base = buf;
+    uint8_t* buf2 = new uint8_t[256]; //!! (6-ensure)
+    uint8_t* base2 = buf;
+    for(size_t i=1000;--i;){
+        std::cout << "try:" << i << "\n\n";
+        for(auto it=ss.columns.begin();it<ss.columns.end();++it){
+            buf = base;
+            buf2 = base2;
+            test_encode_decode(&(*it), &buf, &buf2);
+
+        }
+    }
+
+}
+void test_encode_decode(ColumnIntervals* ci, uint8_t** buf, uint8_t** buf2){
+        size_t len = ci->encoded_length();
+        
+        const uint8_t* base = *buf;
+        const uint8_t* mark1 = base;
+        
+        std::cout << "Encoding: \n" << *ci << "\n"
+                  << "Encoded, cid:" << ci->cid 
+                  << ", encoded-len: "<< len << " base:" << (size_t)base << "\n";
+
+        ci->encode(buf);
+        std::cout << "data:\"" << std::string((const char*)base, len) << "\"\n"
+                  << "calc-len: "<< *buf-base << "\n";
+        if(*buf-base != len) {
+            std::cout << "ERROR, encode wrote less than expected";
+            exit(1);
+        }
+
+        ColumnIntervals ci_decoded = ColumnIntervals(&base, &len);
+        std::cout << "Decoded, cid:" << ci_decoded.cid << ", remain-len: "<< len 
+                   << "\n" << ci_decoded << "\n";
+        if(len > 0) {
+            std::cout << "ERROR, remain-len\n";
+            exit(1);
+        }
+        
+        //ci_decoded.cid = 444;
+        
+        len = ci_decoded.encoded_length();
+        const uint8_t* mark2 = *buf2;
+        ci_decoded.encode(buf2);
+        
+        if(memcmp(mark1, mark2, len) != 0){
+            std::cout << "ERROR, encoding mismatch (memcmp) \n";
+            std::cout << ColumnIntervals(&mark2, &len) << "\n\n";
+            std::cout << "data:\"" << std::string((const char*)mark1, len) << "\"\n";
+            std::cout << "!==\n";
+            std::cout << "data:\"" << std::string((const char*)mark2, len) << "\"\n";
+            exit(1);
+        }
+        
 }

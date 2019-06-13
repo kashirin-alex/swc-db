@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_include_Cell_h
-#define swcdb_include_Cell_h
+#ifndef swcdb_db_Cell_h
+#define swcdb_db_Cell_h
 
 
 #include <iostream>
@@ -20,8 +20,6 @@
 
 
 namespace SWC {
-
-namespace HT = Hypertable;
 
 namespace Cells {
   
@@ -208,12 +206,12 @@ namespace Cells {
     void read(uint8_t **ptr, bool load=true) {
       const uint8_t *tmp_ptr = *ptr;
 
-      klen = HT::Serialization::decode_vi32(&tmp_ptr);
+      klen = Serialization::decode_vi32(&tmp_ptr);
       skey = new uint8_t[klen];
       memcpy(skey, tmp_ptr, klen);
       tmp_ptr += klen;
 
-      vlen = HT::Serialization::decode_vi32(&tmp_ptr);
+      vlen = Serialization::decode_vi32(&tmp_ptr);
       if(vlen > 0){
         value = new uint8_t[vlen];
         memcpy(value, tmp_ptr, vlen);
@@ -308,10 +306,10 @@ namespace Cells {
 
       dst_buf.ensure(klen+vlen+12); // 12(2x encode_vi32)
 
-      HT::Serialization::encode_vi32(&dst_buf.ptr, klen);
+      Serialization::encode_vi32(&dst_buf.ptr, klen);
       dst_buf.add_unchecked(skey, klen);
       
-      HT::Serialization::encode_vi32(&dst_buf.ptr, vlen);
+      Serialization::encode_vi32(&dst_buf.ptr, vlen);
       if(vlen>0)
         dst_buf.add_unchecked(value, vlen);
 

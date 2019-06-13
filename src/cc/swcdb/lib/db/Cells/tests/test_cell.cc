@@ -89,7 +89,6 @@ int main() {
       i++;
    }
    std::cout << "\n-------------------------------\n";
-/**/
 
 
    std::cout << "\n---Write Serialized Buffer-----\n";
@@ -140,4 +139,23 @@ int main() {
 
    std::cout << "\n-------------------------------\n";
 
+
+   std::cout << "\n----Destruction Cells----------\n";
+
+   size_t k_len = cells_copied.back().klen;
+   uint8_t* last_skey = new uint8_t[k_len];
+   uint8_t* last_skey_ptr = cells_copied.back().skey;
+   memcpy(last_skey, last_skey_ptr, k_len);
+   
+   cells_copied.clear();
+   //cells_copied.clear();
+   if (*last_skey_ptr != 0 && memcmp(last_skey, last_skey_ptr, k_len) == 0){
+         std::cout << "DESTRUCTION DID NOT HAPPEN:\n";
+         std::cout << (size_t)last_skey_ptr << ":" << std::string((const char *)last_skey_ptr, k_len) 
+            << "==" << std::string((const char *)last_skey, k_len)<< "\n\n";
+         exit(1);
+   }
+   delete []last_skey;
+   
+   std::cout << "\n-------------------------------\n";
 }

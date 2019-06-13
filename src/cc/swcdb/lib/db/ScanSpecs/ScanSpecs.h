@@ -6,6 +6,7 @@
 #ifndef swcdb_include_ScanSpecs_h
 #define swcdb_include_ScanSpecs_h
 
+#include "swcdb/lib/common/Serializable.h"
 #include "swcdb/lib/db/Comparators/Comparators.h"
 
 #include <cstring>
@@ -41,6 +42,9 @@ namespace ScanSpecs {
     Key():key(0), len(0), comp(Comparator::NONE){}
     Key(const char* k, Comparator c): key(k), len(strlen(k)), comp(c){}
     Key(const char* k, const uint32_t len, Comparator c):  key(k), len(len), comp(c){}
+    Key(const uint8_t **bufp, size_t *remainp) {
+       decode(bufp, remainp); 
+    }
     Key operator=(Key &other){
       key = other.key;
       len = other.len;
@@ -48,6 +52,10 @@ namespace ScanSpecs {
       return *this; 
     }
     virtual ~Key(){}
+
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
 
     const char*  key;
     uint32_t     len;    
@@ -67,7 +75,7 @@ namespace ScanSpecs {
 
   class Keys {
     public:
-    Keys() {}
+    Keys(): keys(0) {}
     Keys(ListKeys ks) : keys(ks) {}
     Keys operator=(Keys &other){
       keys.assign(other.keys.begin(), other.keys.end());
@@ -75,17 +83,12 @@ namespace ScanSpecs {
     }
     virtual ~Keys(){}
 
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
+
     ListKeys   keys;
   };
-  std::ostream &operator<<(std::ostream &os, const Keys &keys){
-    if(keys.keys.size()>0){
-      os << "Keys:[";
-      for(auto it=keys.keys.begin(); it < keys.keys.end();++it)
-        os << "{key:\"" << (*it).key << "\",comp:\"" <<  (*it).comp << "\"}";
-      os << "]";
-    }
-    return os;
-  }
   
      
 
@@ -101,6 +104,10 @@ namespace ScanSpecs {
       return *this; 
     }
     virtual ~Value(){}
+
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
 
     const char*  value;
     uint32_t     len;    
@@ -133,6 +140,10 @@ namespace ScanSpecs {
     }
     virtual ~Timestamp(){}
 
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
+
     int64_t     ts; 
     Comparator  comp;
 
@@ -146,10 +157,6 @@ namespace ScanSpecs {
     private:
     ComparatorBase* matcher = {};
   };
-  std::ostream &operator<<(std::ostream &os, const Timestamp &ts){
-    os << "Timestamp:{ts:" << ts.ts << ",comp:\"" << ts.comp << "\"}";
-    return os;
-  }
 
 
 
@@ -170,28 +177,15 @@ namespace ScanSpecs {
       return *this; 
     }
     virtual ~Flags(){}
+
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
     
     uint32_t 	limit, offset, max_versions;
     LimitType limit_by, offset_by;
     bool 	 	  return_deletes, keys_only;
   };
-  std::ostream &operator<<(std::ostream &os, const Flags &flags){
-    os << "Flags:{";
-    if(flags.limit)
-      os << "limit:" << flags.limit << "," 
-            "limit_by:" << flags.limit_by << ",";
-    if(flags.offset)
-      os << "offset:" << flags.offset << "," 
-            "offset_by:" << flags.offset_by << ",";
-    if(flags.offset)
-    if(flags.max_versions)
-      os << "max_versions:" << flags.max_versions << ",";
-     
-    os << "return_deletes:" << flags.return_deletes << ",";
-    os << "keys_only:" << flags.keys_only << ",";
-    os << "}";
-    return os;
-  }
 
 
 
@@ -206,6 +200,9 @@ namespace ScanSpecs {
                   Timestamp ts_s, Timestamp ts_f, Flags f):
                   keys_start(k_s), keys_finish(k_f), value(v),
                   ts_start(ts_s), ts_finish(ts_f), flags(f) {}
+    CellsInterval(const uint8_t **bufp, size_t *remainp) {
+       decode(bufp, remainp); 
+    }
     CellsInterval operator=(CellsInterval &other){
       keys_start = other.keys_start; 
       keys_finish = other.keys_finish;
@@ -217,66 +214,51 @@ namespace ScanSpecs {
     }
     virtual ~CellsInterval(){}
 
+    size_t encoded_length() const;
+    void encode(uint8_t **bufp) const;
+    void decode(const uint8_t **bufp, size_t *remainp);
+
     Keys       keys_start, keys_finish;
     Value      value;
     Timestamp  ts_start, ts_finish;
     Flags      flags;
   };
-  std::ostream &operator<<(std::ostream &os, const CellsInterval &cs_i){
-    os << "{CellsInterval:{";
-    if(cs_i.keys_start.keys.size()>0)
-      os << "start_" << cs_i.keys_start << ",";
-    
-    if(cs_i.keys_finish.keys.size()>0)
-      os << "finish_" << cs_i.keys_finish << ",";
-  
-    if(cs_i.value.comp != Comparator::NONE)
-      os << "Value:{data:\"" << cs_i.value.value << "\",comp:\"" <<  cs_i.value.comp << "\"}";
-  
-    if(cs_i.ts_start.comp != Comparator::NONE)
-      os << "start_"  << cs_i.ts_start << ",";
-    if(cs_i.ts_finish.comp != Comparator::NONE)
-      os << "finish_"  << cs_i.ts_finish << ",";
-    
-    os << cs_i.flags;
-    os << "}}";
-    return os;
-  }
   typedef std::vector<CellsInterval> ListCellsInterval;
 
 
 
-  class ColumnIntervals {
+  class ColumnIntervals : public Serializable {
     public:
-    ColumnIntervals(int64_t col_id): cid(col_id) {}
-    virtual ~ColumnIntervals(){}
-
+    ColumnIntervals(): cid(0), cells_interval(0) {}
+    ColumnIntervals(int64_t col_id): cid(col_id), cells_interval(0) {}
+    ColumnIntervals(const uint8_t **bufp, size_t *remainp): cells_interval(0) {
+       decode(bufp, remainp); 
+    }
     ColumnIntervals operator=(ColumnIntervals &other){
       cells_interval.assign(
         other.cells_interval.begin(), other.cells_interval.end()); 
       cid = other.cid;
       return *this; 
     }
+    virtual ~ColumnIntervals(){}
 
     int64_t cid;
     ListCellsInterval cells_interval;
-  };
-  std::ostream &operator<<(std::ostream &os, const ColumnIntervals &cs_is){
-    os << "{CID:" << cs_is.cid << ",";
-    os << "ColumnIntervals:[";
-    for(auto it=cs_is.cells_interval.begin(); 
-        it < cs_is.cells_interval.end();++it)
-      os << (*it) << ",";
-    os << "]}";
-    return os;
-  }
-  typedef std::vector<ColumnIntervals> ListColumns;
 
+    private:
+    size_t encoded_length_internal() const override;
+    uint8_t encoding_version() const override;
+    void encode_internal(uint8_t **bufp) const override;
+    void decode_internal(uint8_t version, const uint8_t **bufp,
+			 size_t *remainp) override;
+  };
+  typedef std::vector<ColumnIntervals> ListColumns;
+  
 
 
   class ScanSpec {
     public:
-    ScanSpec() {}
+    ScanSpec(): columns(0) {}
        
     ScanSpec operator=(ScanSpec &other){
       columns.assign(other.columns.begin(), other.columns.end());
@@ -284,27 +266,24 @@ namespace ScanSpecs {
       return *this; 
     }
     virtual ~ScanSpec(){}
-  
+
     ListColumns columns;
     Flags      	flags;
   };
-  std::ostream &operator<<(std::ostream &os, const ScanSpec &ss){
-    os << "{ScanSpec:{";
-
-    os << "Columns:[";
-    for(auto it=ss.columns.begin();it<ss.columns.end();++it)
-      os << (*it) << ",";
-    os << "],";
-
-    os << ss.flags;
-    os << "}}";
-    return os;
-  }
 
 
 
-}
-}
+} // END namespace ScanSpecs
+
+
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Keys &keys);
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Timestamp &ts);
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Flags &flags);
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::CellsInterval &cs_i);
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::ColumnIntervals &cs_is);
+  std::ostream &operator<<(std::ostream &os, const ScanSpecs::ScanSpec &ss);
+
+} // namespace SWC
 
 
 #endif

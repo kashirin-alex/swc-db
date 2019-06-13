@@ -4,6 +4,7 @@
 
 set(swcdb_db_sources
 	Comparators/Comparators.cc
+	ScanSpecs/ScanSpecs.cc
 )
 
 
