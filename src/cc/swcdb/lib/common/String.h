@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -21,14 +22,14 @@
  * A String class based on std::string.
  */
 
-#ifndef HYPERTABLE_STRING_H
-#define HYPERTABLE_STRING_H
+#ifndef swc_common_STRING_H
+#define swc_common_STRING_H
 
 #include <string>
 #include <sstream>
 #include <limits>
 
-namespace Hypertable {
+namespace SWC {
 
   /** @addtogroup Common
    *  @{
@@ -250,6 +251,6 @@ namespace Hypertable {
 
   /** @} */
 
-} // namespace Hypertable
+}
 
-#endif // HYPERTABLE_STRING_H
+#endif 

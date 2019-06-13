@@ -1,4 +1,5 @@
 /* -*- c++ -*-
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -24,10 +25,10 @@
 /// This file contains declarations for Serializable, a mixin class that
 /// provides a serialization interface.
 
-#ifndef Hypertable_Common_Serializable_h
-#define Hypertable_Common_Serializable_h
+#ifndef swc_common_Serializable_h
+#define swc_common_Serializable_h
 
-namespace Hypertable {
+namespace SWC {
 
   /// @addtogroup Common
   /// @{
@@ -122,4 +123,4 @@ namespace Hypertable {
 
 }
 
-#endif // Hypertable_Common_Serializable_h
+#endif

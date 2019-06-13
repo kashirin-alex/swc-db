@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -26,14 +27,14 @@
  * base class and macros for logging and error handling.
  */
 
-#ifndef HYPERTABLE_ERROR_H
-#define HYPERTABLE_ERROR_H
+#ifndef swc_common_ERROR_H
+#define swc_common_ERROR_H
 
 #include "String.h"
 #include <ostream>
 #include <stdexcept>
 
-namespace Hypertable {
+namespace SWC {
 
   /** @addtogroup Common
    *  @{
@@ -488,11 +489,11 @@ namespace Hypertable {
 
 /* Convenience macro to throw an exception with a printf-like message */
 #define HT_THROWF(_code_, _fmt_, ...) \
-  throw HT_EXCEPTION(_code_, Hypertable::format(_fmt_, __VA_ARGS__))
+  throw HT_EXCEPTION(_code_, SWC::format(_fmt_, __VA_ARGS__))
 
 /* Convenience macro to throw a chained exception with a printf-like message */
 #define HT_THROW2F(_code_, _ex_, _fmt_, ...) \
-  throw HT_EXCEPTION2(_code_, _ex_, Hypertable::format(_fmt_, __VA_ARGS__))
+  throw HT_EXCEPTION2(_code_, _ex_, SWC::format(_fmt_, __VA_ARGS__))
 
 /* Convenience macro to catch and rethrow exceptions with a printf-like
  * message */
@@ -537,6 +538,6 @@ namespace Hypertable {
 
 /** @} */
 
-} // namespace Hypertable
+}
 
-#endif // HYPERTABLE_ERROR_H
+#endif

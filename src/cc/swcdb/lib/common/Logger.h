@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -26,8 +27,8 @@
  * and printf-like macros and convenience functions.
  */
 
-#ifndef Common_Logger_h
-#define Common_Logger_h
+#ifndef swc_common_LOGGER_H
+#define swc_common_LOGGER_H
 
 #include "Error.h"
 #include "String.h"
@@ -40,7 +41,7 @@
 #include <atomic>
 
 
-namespace Hypertable { 
+namespace SWC { 
 
 /** Logging framework. */
 namespace Logger {
@@ -175,7 +176,7 @@ namespace Logger {
 
   /** @} */
 
-}} // namespace Hypertable::Logger
+}} // namespace SWC::Logger
 
 
 #define HT_LOG_BUFSZ 1024
@@ -191,7 +192,7 @@ namespace Logger {
 #define HT_LOG(priority, msg) do { \
   if (Logger::get()->is_enabled(priority)) { \
     if (Logger::get()->show_line_numbers()) \
-      Logger::get()->log(priority, Hypertable::format( \
+      Logger::get()->log(priority, SWC::format( \
           "(%s:%d) %s", __FILE__, __LINE__, msg)); \
     else \
       Logger::get()->log(priority, msg); \
@@ -201,10 +202,10 @@ namespace Logger {
 #define HT_LOGF(priority, fmt, ...) do { \
   if (Logger::get()->is_enabled(priority)) { \
     if (Logger::get()->show_line_numbers()) \
-      Logger::get()->log(priority, Hypertable::format( \
+      Logger::get()->log(priority, SWC::format( \
           "(%s:%d) " fmt, __FILE__, __LINE__, __VA_ARGS__)); \
     else \
-      Logger::get()->log(priority, Hypertable::format( \
+      Logger::get()->log(priority, SWC::format( \
           fmt, __VA_ARGS__));  \
   } \
 } while (0)
@@ -407,4 +408,4 @@ namespace Logger {
 // unlike assert, it cannot be turned off
 #define HT_ASSERT(_e_) HT_EXPECT(_e_, Error::FAILED_EXPECTATION)
 
-#endif // Common_Logger_h
+#endif // 

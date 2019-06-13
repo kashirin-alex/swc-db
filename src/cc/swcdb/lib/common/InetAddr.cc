@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -43,7 +44,7 @@ extern "C" {
 #include "InetAddr.h"
 #include "StringExt.h"
 
-namespace Hypertable {
+namespace SWC {
 
 InetAddr::InetAddr() {
   HT_EXPECT(sizeof(sockaddr_in) == sizeof(InetAddr), Error::UNPOSSIBLE);
@@ -208,19 +209,19 @@ bool InetAddr::initialize(sockaddr_in *addr, uint32_t haddr, uint16_t port) {
 String InetAddr::format(const sockaddr_in &addr, int sep) {
   // inet_ntoa is not thread safe on many platforms and deprecated
   const uint8_t *ip = (uint8_t *)&addr.sin_addr.s_addr;
-  return Hypertable::format("%d.%d.%d.%d%c%d", (int)ip[0], (int)ip[1],
+  return SWC::format("%d.%d.%d.%d%c%d", (int)ip[0], (int)ip[1],
       (int)ip[2],(int)ip[3], sep, (int)ntohs(addr.sin_port));
 }
 
 String InetAddr::format_ipaddress(const sockaddr_in &addr) {
   // inet_ntoa is not thread safe on many platforms and deprecated
   const uint8_t *ip = (uint8_t *)&addr.sin_addr.s_addr;
-  return Hypertable::format("%d.%d.%d.%d", (int)ip[0], (int)ip[1],
+  return SWC::format("%d.%d.%d.%d", (int)ip[0], (int)ip[1],
 			    (int)ip[2], (int)ip[3]);
 }
 
 String InetAddr::hex(const sockaddr_in &addr, int sep) {
-  return Hypertable::format("%x%c%x", ntohl(addr.sin_addr.s_addr), sep,
+  return SWC::format("%x%c%x", ntohl(addr.sin_addr.s_addr), sep,
                             ntohs(addr.sin_port));
 }
 
@@ -327,4 +328,4 @@ std::ostream &operator<<(std::ostream &out, const sockaddr_in &a) {
   return out;
 }
 
-} // namespace Hypertable
+}

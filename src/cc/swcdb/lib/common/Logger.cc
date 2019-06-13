@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -35,7 +36,7 @@
 #include <stdarg.h>
 #include <mutex>
 
-namespace Hypertable { namespace Logger {
+namespace SWC { namespace Logger {
 
 static String logger_name;
 static LogWriter *logger_obj = 0;
@@ -144,4 +145,4 @@ String cfg::repr(int value) {
     }
 }
 
-}} // namespace Hypertable::
+}}

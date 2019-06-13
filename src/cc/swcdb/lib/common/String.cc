@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -30,9 +31,8 @@
 
 
 using namespace std;
-using namespace Hypertable;
 
-namespace Hypertable {
+namespace SWC {
 
 String format(const char *fmt, ...) {
   char buf[1024];       // should be enough for most cases
@@ -119,4 +119,4 @@ const char NumericFormatterDigits::DIGITS[] =
   "6061626364656667686970717273747576777879"
   "8081828384858687888990919293949596979899";
 
-} // namespace Hypertable
+}

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -24,8 +25,8 @@
  * <code>.cc</code> files.
  */
 
-#ifndef HYPERTABLE_COMPAT_C_H
-#define HYPERTABLE_COMPAT_C_H
+#ifndef swc_common_COMPAT_C_H
+#define swc_common_COMPAT_C_H
 
 /** @defgroup Common Common
  * General purpose utility library.
@@ -88,4 +89,4 @@
 
 /** @}*/
 
-#endif /* HYPERTABLE_COMPAT_C_H */
+#endif

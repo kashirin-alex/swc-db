@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -31,7 +32,7 @@
 #include "Logger.h"
 #include "Serialization.h"
 
-using namespace Hypertable;
+using namespace SWC;
 
 size_t Serializable::encoded_length() const {
   size_t length = encoded_length_internal();

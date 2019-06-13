@@ -24,8 +24,8 @@
  * A dynamic, resizable memory buffer.
  */
 
-#ifndef Common_DynamicBuffer_h
-#define Common_DynamicBuffer_h
+#ifndef swc_common_DynamicBuffer_h
+#define swc_common_DynamicBuffer_h
 
 #include <cstdint>
 #include <cstring>

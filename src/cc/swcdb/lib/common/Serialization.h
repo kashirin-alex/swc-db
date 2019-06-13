@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -25,8 +26,8 @@
  * These functions are used to implement Hypertable's network protocol.
  */
 
-#ifndef HYPERTABLE_SERIALIZATION_H
-#define HYPERTABLE_SERIALIZATION_H
+#ifndef swc_common_Serialization_h
+#define swc_common_Serialization_h
 
 #include "Compat.h"
 
@@ -35,7 +36,7 @@
 #include "serialization-c.h"
 
 
-namespace Hypertable { namespace Serialization {
+namespace SWC { namespace Serialization {
 
   /** @addtogroup Common
    *  @{
@@ -613,6 +614,6 @@ namespace Hypertable { namespace Serialization {
 
   /** @} */
 
-}} // namespace Hypertable::Serialization
+}} 
 
-#endif // HYPERTABLE_SERIALIZATION_H
+#endif

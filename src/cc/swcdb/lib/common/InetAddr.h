@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -25,8 +26,8 @@
  * InetAddr class wraps the sockaddr_in structure.
  */
 
-#ifndef Hypertable_Common_InetAddr_h
-#define Hypertable_Common_InetAddr_h
+#ifndef swc_common_InetAddr_h
+#define swc_common_InetAddr_h
 
 #include "String.h"
 
@@ -36,7 +37,7 @@ extern "C" {
 #include <netinet/in.h>
 }
 
-namespace Hypertable {
+namespace SWC {
 
   /**
    * High-level entry point to a service; wraps a host:port pair.
@@ -293,4 +294,4 @@ namespace Hypertable {
 
 }
 
-#endif // Hypertable_Common_InetAddr_h
+#endif

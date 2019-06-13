@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -33,7 +34,7 @@
 #include <iomanip>
 #include <unordered_map>
 
-using namespace Hypertable;
+using namespace SWC;
 
 namespace {
   struct ErrorInfo {
@@ -350,7 +351,7 @@ void Error::generate_html_error_code_documentation(std::ostream &out) {
   out << "</tbody></table>\n" << std::flush;
 }
 
-namespace Hypertable {
+namespace SWC {
 
   const char *relative_fname(const Exception &e) {
     if (e.file()) {
@@ -361,7 +362,7 @@ namespace Hypertable {
   }
 
 std::ostream &operator<<(std::ostream &out, const Exception &e) {
-  out <<"Hypertable::Exception: "<< e.message() <<" - "
+  out <<"SWC::Exception: "<< e.message() <<" - "
       << Error::get_text(e.code());
 
   if (e.line()) {
@@ -401,4 +402,4 @@ Exception::render_messages(std::ostream &out, const char *sep) const {
   return out;
 }
 
-} // namespace Hypertable
+} 

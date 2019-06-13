@@ -1,4 +1,5 @@
 /* -*- c++ -*-
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -23,8 +24,8 @@
  * String extensions and helpers: sets, maps, append operators etc.
  */
 
-#ifndef Common_StringExt_h
-#define Common_StringExt_h
+#ifndef swc_common_StringExt_h
+#define swc_common_StringExt_h
 
 #include "String.h"
 
@@ -36,7 +37,7 @@
  *  @{
  */
 
-using namespace Hypertable;
+using namespace SWC;
 
 /** STL Set managing Strings */
 typedef std::set<String> StringSet;

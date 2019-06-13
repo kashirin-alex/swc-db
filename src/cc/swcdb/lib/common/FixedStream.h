@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
@@ -23,15 +24,15 @@
  * string buffer.
  */
 
-#ifndef HYPERTABLE_FIXED_STREAM_H
-#define HYPERTABLE_FIXED_STREAM_H
+#ifndef swc_common_FIXED_STREAM_H
+#define swc_common_FIXED_STREAM_H
 
 #include "String.h"
 #include <streambuf>
 #include <istream>
 #include <ostream>
 
-namespace Hypertable {
+namespace SWC {
 
 /** @addtogroup Common
  *  @{
@@ -128,6 +129,6 @@ public:
 
 /** @} */
 
-} // namespace Hypertable
+}
 
-#endif // HYPERTABLE_FIXED_STREAM_H
+#endif
