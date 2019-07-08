@@ -1,0 +1,84 @@
+/*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ */
+
+#ifndef swc_lib_manager_AppContextMngrClient_h
+#define swc_lib_manager_AppContextMngrClient_h
+
+
+namespace SWC { namespace client { namespace Mngr {
+class AppContext;
+}}}
+
+
+
+
+namespace SWC { namespace client { namespace Mngr {
+
+class AppContext : public SWC::AppContext {
+  public:
+
+  AppContext(){}
+  virtual ~AppContext(){}
+
+
+
+  void handle(ConnHandlerPtr conn, EventPtr ev) override {
+    HT_INFOF("handle: %s", ev->to_str().c_str());
+    
+    switch (ev->type) {
+
+      case Event::Type::CONNECTION_ESTABLISHED: {
+        break;
+      }
+      
+      case Event::Type::DISCONNECT:{
+        return;
+      }
+
+      case Event::Type::ERROR:{
+        switch (ev->header.command) {
+
+          case Protocol::Command::MNGR_REQ_MNGRS_STATE:{
+            if(ev->error == Error::Code::REQUEST_TIMEOUT)
+            break;
+          }
+      
+          default: {
+            break;
+          }
+        }
+        break;
+      }
+
+
+      case Event::Type::MESSAGE: {
+      
+        switch (ev->header.command) {
+
+          case Protocol::Command::MNGR_REQ_MNGRS_STATE:
+            break;
+      
+          default: {
+            break;
+          }
+          break;
+        }
+
+      }
+
+      default: {
+        break;
+      }
+
+    }
+   
+
+  }
+  
+};
+typedef std::shared_ptr<AppContext> AppContextPtr;
+
+}}}
+
+#endif // swc_lib_client_AppContextMngrClient_h

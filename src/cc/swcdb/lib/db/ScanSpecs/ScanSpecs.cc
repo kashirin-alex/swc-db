@@ -3,8 +3,8 @@
  */
 
 
-#include "swcdb/lib/common/Serialization.h"
 #include "ScanSpecs.h"
+#include "swcdb/lib/core/Serialization.h"
 
 
 namespace SWC {

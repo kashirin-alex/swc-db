@@ -3,7 +3,7 @@
  */
 
 
-#include "swcdb/lib/common/Compat.h"
+#include "swcdb/lib/core/Compat.h"
 #include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
 
 

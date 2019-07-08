@@ -11,3 +11,10 @@ ADD_TEST_TARGET(
 	SRCS      columns/tests/test_columns.cc
 	TARGETS 	swcdb_db
 )
+
+# lib RangeServer
+#ADD_LIB_TARGET(
+#	NAME RangeServer 
+#	SRCS ${swcdb_librs_sources}
+#	TARGETS swcdb_db
+#)

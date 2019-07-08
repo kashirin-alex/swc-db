@@ -11,7 +11,7 @@ set(swcdb_db_sources
 ADD_LIB_TARGET(
 	NAME 		swcdb_db
 	SRCS 		${swcdb_db_sources}
-	TARGETS swcdb_common
+	TARGETS swcdb_core
 )
 
 ADD_TEST_TARGET(

@@ -11,6 +11,7 @@ include_directories(
 
 # add_subdirectory(cc/hypertable)
 add_subdirectory(cc/swcdb/lib)
+add_subdirectory(cc/swcdb/app)
 
 
 

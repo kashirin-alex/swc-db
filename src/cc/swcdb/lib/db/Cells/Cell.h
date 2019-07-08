@@ -13,8 +13,8 @@
 #include <memory>
 #include <cassert>
 
-#include "swcdb/lib/common/DynamicBuffer.h"
-#include "swcdb/lib/common/Serialization.h"
+#include "swcdb/lib/core/DynamicBuffer.h"
+#include "swcdb/lib/core/Serialization.h"
 
 #include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
 

@@ -6,7 +6,7 @@
 #ifndef swcdb_include_ScanSpecs_h
 #define swcdb_include_ScanSpecs_h
 
-#include "swcdb/lib/common/Serializable.h"
+#include "swcdb/lib/core/Serializable.h"
 #include "swcdb/lib/db/Comparators/Comparators.h"
 
 #include <cstring>

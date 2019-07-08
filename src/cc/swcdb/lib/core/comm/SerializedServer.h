@@ -1,0 +1,188 @@
+/*
+ * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ */
+
+
+#ifndef swc_core_comm_SerializedServer_h
+#define swc_core_comm_SerializedServer_h
+
+#include <string>
+#include <vector>
+#include <memory>
+#include <iostream>
+
+#include <asio.hpp>
+
+#include "swcdb/lib/core/comm/Resolver.h"
+#include "AppContext.h"
+#include "ConnHandlerServer.h"
+
+
+namespace SWC { namespace server {
+
+
+
+class Acceptor{
+public:
+  Acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor, 
+           AppContextPtr app_ctx, IOCtxPtr io_ctx)
+          : m_acceptor(acceptor), m_app_ctx(app_ctx), 
+            m_io_ctx(io_ctx), m_run(true)
+  {
+    do_accept();
+  }
+  void stop(){
+    m_run.store(false);
+  }
+  virtual ~Acceptor(){}
+
+private:
+  void do_accept() {
+    m_acceptor->async_accept(
+      [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
+        if (!ec){
+          (new ConnHandlerServer(
+            m_app_ctx, 
+            std::make_shared<asio::ip::tcp::socket>(std::move(new_sock)),
+            m_io_ctx)
+          )->new_connection();
+        }
+        if(m_run.load())
+          do_accept();
+      }
+    );
+  }
+
+  private:
+  std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
+  AppContextPtr     m_app_ctx;
+  std::atomic<bool> m_run;
+  IOCtxPtr          m_io_ctx;
+};
+typedef std::shared_ptr<Acceptor> AcceptorPtr;
+
+
+
+class SerializedServer{
+  public:
+
+  SerializedServer(
+    std::string name, 
+    uint32_t reactors, uint32_t workers,
+    std::string port_cfg_name,
+    AppContextPtr app_ctx,
+    bool detached=false
+  ): m_appname(name), m_run(true){
+    
+    HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
+              m_appname.c_str(), reactors, workers);
+
+    SWC::PropertiesPtr props = SWC::Config::settings->properties;
+
+    Strings addrs = props->has("addr") ? props->get<Strings>("addr") : Strings();
+    String host = props->has("host") ? props->get<String>("host") : "";
+    EndPoints endpoints = Resolver::get_endpoints(
+      props->get<int32_t>(port_cfg_name),
+      addrs,
+      host,
+      true
+    );
+
+    std::vector<std::shared_ptr<asio::ip::tcp::acceptor>> main_acceptors;
+    std::vector<std::thread*> threads;
+    EndPoints endpoints_final;
+
+    for(uint32_t reactor=0;reactor<reactors;reactor++){
+
+      std::shared_ptr<asio::io_context> io_ctx = 
+        std::make_shared<asio::io_context>(workers);
+      m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
+
+      // asio::signal_set signals(*io_ctx.get(), SIGINT, SIGTERM);
+      // signals.async_wait([&](auto, auto){ stop(); });
+
+      for (std::size_t i = 0; i < endpoints.size(); ++i){
+        auto endpoint = endpoints[i];
+
+        std::shared_ptr<asio::ip::tcp::acceptor> acceptor;
+        if(reactor == 0){ 
+          acceptor = std::make_shared<asio::ip::tcp::acceptor>(
+            *io_ctx.get(), 
+            endpoint
+          );
+          main_acceptors.push_back(acceptor);
+
+        } else {
+          acceptor = std::make_shared<asio::ip::tcp::acceptor>(
+            *io_ctx.get(), 
+            endpoint.protocol(),  
+            dup(main_acceptors[i]->native_handle())
+          );
+        }
+        
+    HT_INFOF("Listening On: [%s]:%d fd=%d", 
+             acceptor->local_endpoint().address().to_string().c_str(), 
+             acceptor->local_endpoint().port(), 
+             (size_t)acceptor->native_handle());
+
+        m_acceptors.push_back(
+          std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+
+        if(!acceptor->local_endpoint().address().to_string().compare("::"))
+          endpoints_final.push_back(acceptor->local_endpoint());
+        else {
+          // + localhost public ips
+          endpoints_final.push_back(acceptor->local_endpoint());
+        }
+      }
+
+      std::thread* t =  new std::thread(
+        [this, d=io_ctx]{ 
+          do{
+            d->run();
+            HT_DEBUG("IO stopped, restarting");
+            d->restart();
+          }while(m_run.load());
+            HT_DEBUG("IO exited");
+        });
+      detached ? t->detach(): threads.push_back(t);
+    }
+
+    app_ctx->init(endpoints_final);
+
+    if(!detached)
+      for (std::size_t i = 0; i < threads.size(); i++)
+        threads[i]->join();
+
+  }
+  
+
+  void stop() {
+    m_run.store(false);
+    for (std::size_t i = 0; i < m_acceptors.size(); ++i){
+      m_acceptors[i]->stop();
+    }
+
+    for (std::size_t i = 0; i < m_wrk.size(); ++i){
+      m_wrk[i].reset();
+      //m_wrk[i].get_executor().context().stop();
+    }
+  }
+
+  
+  virtual ~SerializedServer(){
+    stop();
+    HT_INFOF("Stop Server: %s", m_appname.c_str());
+  }
+
+  private:
+  std::atomic<bool> m_run;
+  std::string       m_appname;
+  std::vector<AcceptorPtr> m_acceptors;
+  std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
+};
+
+
+}}
+
+#endif // swc_core_comm_SerializedServer_h
