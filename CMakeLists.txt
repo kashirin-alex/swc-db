@@ -13,8 +13,8 @@ endif ()
 
 project(SWCDB)
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "9")
-set(VERSION_MICRO "9")
+set(VERSION_MINOR "0")
+set(VERSION_MICRO "1")
 set(VERSION_PATCH "0")
 #set(VERSION_MISC_SUFFIX  "0")
 
