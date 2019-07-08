@@ -32,12 +32,11 @@ endif()
 	#SET_DEPS(NAME "MATH" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC libm.a SHARED m INCLUDE math.h)
 	#SET_DEPS(NAME "THREAD" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC lib${thread_LIB_NAME}.a SHARED ${thread_LIB_NAME} INCLUDE ${thread_LIB_NAME}.h)
 
-SET(CORE_LIBS ${CORE_LIBS} dl pthread)
+SET(CORE_LIBS ${CORE_LIBS} dl pthread stdc++fs)
 
 
 
 find_package(Mallocs)
-
-# find_package(Boost REQUIRED)
+find_package(Boost REQUIRED)
 
 
