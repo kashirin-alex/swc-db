@@ -62,15 +62,17 @@ class AppContext : public SWC::AppContext {
 
       case Event::Type::CONNECTION_ESTABLISHED:
         return;
-        //rangeservers->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
+        //rangeservers->decommision(event->addr); 
         break;
       case Event::Type::DISCONNECT:
-        return;
-        //m_mngr_rs->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
+        if(m_role_state->disconnection(
+                          conn->endpoint_remote, conn->endpoint_local, true))
+          return;
+        //m_mngr_rs->decommision(event->addr); 
         break;
 
       case Event::Type::ERROR:
-        //rangeservers->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
+        //rangeservers->decommision(event->addr);
         break;
 
       case Event::Type::MESSAGE: {
@@ -96,7 +98,8 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::RS_RSP_ASSIGN_RS_ID_ACK:
-            //rangeservers->load_ranges(event->addr); // load_ranges(rid-barrier), if exists, else OK
+            //rangeservers->load_ranges(event->addr); 
+            // load_ranges(rid-barrier), if exists, else OK
             break;
 
           case Protocol::Command::RS_RSP_RANGE_LOADED:

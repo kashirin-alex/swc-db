@@ -17,11 +17,13 @@ namespace Params {
 
     MngrsState() {}
 
-    MngrsState(server::Mngr::HostStatuses states, uint64_t token) 
-              : states(states), token(token){}
+    MngrsState(server::Mngr::HostStatuses states, 
+              uint64_t token, EndPoint mngr_host) 
+              : states(states), token(token), mngr_host(mngr_host){}
 
     server::Mngr::HostStatuses states;
     uint64_t token;
+    EndPoint mngr_host;
 
   private:
 
@@ -30,7 +32,7 @@ namespace Params {
     }
     
     size_t encoded_length_internal() const {
-      size_t len = 12;
+      size_t len = 12 + Serialization::encoded_length(mngr_host);
       for(auto h : states )
         len += h->encoded_length();
       return len;
@@ -39,6 +41,7 @@ namespace Params {
     void encode_internal(uint8_t **bufp) const {
       Serialization::encode_i32(bufp, states.size());
       Serialization::encode_i64(bufp, token);
+      Serialization::encode(mngr_host, bufp);
       for(auto h : states )
         h->encode(bufp);
     }
@@ -47,6 +50,7 @@ namespace Params {
                         size_t *remainp) {
       size_t len = Serialization::decode_i32(bufp, remainp);
       token = Serialization::decode_i64(bufp, remainp);
+      mngr_host = Serialization::decode(bufp, remainp);
       for(size_t i =0; i<len; i++){
         server::Mngr::HostStatusPtr host = 
           std::make_shared<server::Mngr::HostStatus>();

@@ -26,15 +26,9 @@ struct HostStatus {
              EndPoints points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                endpoints(points), conn(c), priority(pr),
-               state(State::NOTSET) {
-
-    std::cout << "HostStatus\n"; 
-  }
+               state(State::NOTSET) { }
   
-  virtual ~HostStatus(){ 
-    if(conn != nullptr)
-      std::cout << "~HostStatus\n"; 
-  }
+  virtual ~HostStatus(){ }
 
   size_t encoded_length(){
     size_t len = 5 

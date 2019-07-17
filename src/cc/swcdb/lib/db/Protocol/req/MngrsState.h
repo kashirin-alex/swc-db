@@ -16,11 +16,12 @@ class MngrsState : public DispatchHandler {
   public:
 
   MngrsState(client::ClientConPtr conn, 
-             server::Mngr::HostStatuses states, uint64_t token,
+             server::Mngr::HostStatuses states, 
+             uint64_t token, EndPoint mngr_host,
              ResponseCallbackPtr cb, 
              server::Mngr::RoleStatePtr role_state)
-            : conn(conn), states(states), token(token), cb(cb), 
-              role_state(role_state) { }
+            : conn(conn), states(states), token(token), mngr_host(mngr_host), 
+              cb(cb), role_state(role_state) { }
   
   virtual ~MngrsState(){
 
@@ -31,7 +32,7 @@ class MngrsState : public DispatchHandler {
   bool run(uint32_t timeout=60000) override {
     std::cout << " token=" << token << " cb=" << (size_t)cb.get() << " req\n";
 
-    Protocol::Params::MngrsState params(states, token);
+    Protocol::Params::MngrsState params(states, token, mngr_host);
     CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
@@ -43,7 +44,7 @@ class MngrsState : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
-    std::cout << " token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->error << "\n";
+    std::cout << " token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
 
     //HT_INFOF("handle: %s", ev->to_str().c_str());
     if(ev->type == Event::Type::DISCONNECT){
@@ -59,13 +60,11 @@ class MngrsState : public DispatchHandler {
 
     if(ev->error != Error::OK){
       if(ev->error == Error::Code::REQUEST_TIMEOUT){
-        //if(--probes > 1 && run())
-        //  return;
         conn->do_close();
         return;
       }
       HT_INFOF("unhandled error: %s", ev->to_str().c_str());
-    } 
+    }
 
   }
 
@@ -75,7 +74,7 @@ class MngrsState : public DispatchHandler {
   client::ClientConPtr conn;
   server::Mngr::HostStatuses states;
   uint64_t token;
-  int probes = 3;
+  EndPoint mngr_host;
 };
 
 typedef std::shared_ptr<MngrsState> MngrsStatePtr;

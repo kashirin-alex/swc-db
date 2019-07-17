@@ -11,21 +11,18 @@ class AppContext;
 }}}
 
 
-
-
 namespace SWC { namespace client { namespace Mngr {
 
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext(){}
+  AppContext(server::Mngr::RoleStatePtr role_state): role_state(role_state){}
   virtual ~AppContext(){}
 
-
+  void disconnected(ConnHandlerPtr conn);
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
-    HT_INFOF("handle: %s", ev->to_str().c_str());
-    
+
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED: {
@@ -33,6 +30,7 @@ class AppContext : public SWC::AppContext {
       }
       
       case Event::Type::DISCONNECT:{
+        disconnected(conn);
         return;
       }
 
@@ -50,7 +48,6 @@ class AppContext : public SWC::AppContext {
         }
         break;
       }
-
 
       case Event::Type::MESSAGE: {
       
@@ -72,10 +69,12 @@ class AppContext : public SWC::AppContext {
       }
 
     }
-   
-
+    
+    HT_WARNF("unhandled: %s", ev->to_str().c_str());
+  
   }
   
+  server::Mngr::RoleStatePtr role_state;
 };
 typedef std::shared_ptr<AppContext> AppContextPtr;
 

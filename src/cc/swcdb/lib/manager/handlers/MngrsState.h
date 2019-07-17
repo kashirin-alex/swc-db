@@ -32,12 +32,13 @@ class MngrsState : public AppHandler {
 
       ResponseCallbackPtr cb = std::make_shared<ResponseCallback>(m_conn, m_ev);
       
-      std::cout << " token=" << req_params.token << " cb=" << (size_t)cb.get() << " fill_states\n";
+      std::cout << " token=" << req_params.token 
+                << " cb=" << (size_t)cb.get() << " fill_states\n";
 
-      m_role_state->fill_states(
-        req_params.states, req_params.token,
-        cb 
-      );
+      m_role_state->fill_states(req_params.states, req_params.token, cb);
+      m_role_state->update_manager_addr(
+        m_conn->endpoint_remote_hash(), req_params.mngr_host);
+
       m_conn->response_ok(m_ev);
 
     }

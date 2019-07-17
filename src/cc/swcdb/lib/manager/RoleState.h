@@ -6,7 +6,7 @@
 #define swc_app_manager_RoleState_h
 
 #include "swcdb/lib/client/Clients.h"
-#include "AppContextMngrClient.h"
+
 #include "HostStatus.h"
 #include "swcdb/lib/db/Protocol/params/MngrsState.h"
 
@@ -14,6 +14,7 @@ namespace SWC { namespace server { namespace Mngr {
 class RoleState;
 typedef std::shared_ptr<RoleState> RoleStatePtr;
 }}}
+#include "AppContextMngrClient.h"
 
 #include "swcdb/lib/db/Protocol/req/MngrsState.h"
 
@@ -23,14 +24,28 @@ namespace SWC { namespace server { namespace Mngr {
 
 class RoleState : public std::enable_shared_from_this<RoleState> {
   public:
-  RoleState(IOCtxPtr ioctx) : m_ioctx(ioctx){}
+  RoleState(IOCtxPtr ioctx) : m_ioctx(ioctx){
+    cfg_conn_probes = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.connection.probes");
+    cfg_conn_timeout = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.connection.timeout");
+    cfg_req_timeout = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.request.timeout");
+    cfg_check_interval = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.check.interval");
+    cfg_delay_updated = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.check.delay.updated");
+    cfg_delay_fallback = Config::settings->get_ptr<gInt32t>(
+      "swc.mngr.RoleState.check.delay.fallback");
+  }
+
   virtual ~RoleState() { }
 
   void init(EndPoints endpoints) {
     m_local_endpoints = endpoints;
     m_clients = std::make_shared<client::Clients>(
       m_ioctx, 
-      std::make_shared<client::Mngr::AppContext>()
+      std::make_shared<client::Mngr::AppContext>(shared_from_this())
     );
     
     m_local_token = endpoints_hash(m_local_endpoints);
@@ -107,7 +122,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
     size_t total = m_states.size();
     if(total == 0) {
-      timer_managers_checkin();
+      timer_managers_checkin(cfg_check_interval->get());
       return;
     }
 
@@ -127,7 +142,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
       if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
         if(flw) {
-          timer_managers_checkin(10000);
+          timer_managers_checkin(cfg_check_interval->get());
           return;
         }
         flw = true;
@@ -139,7 +154,9 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       if(host_chk->conn == nullptr || !host_chk->conn->is_open()){
         m_mngr_inchain = nullptr;
         host_chk->conn = m_clients->mngr_service->get_connection(
-          host_chk->endpoints, std::chrono::milliseconds(conn_timeout), conn_probes);
+          host_chk->endpoints, 
+          std::chrono::milliseconds(cfg_conn_timeout->get()), 
+          cfg_conn_probes->get());
         
         if(host_chk->conn == nullptr){
           total--;
@@ -228,7 +245,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
                    uint64_t token=0, ResponseCallbackPtr cb=nullptr){
 
     bool turn_around = token == m_local_token;
-    bool local_updated = false;
+    bool new_recs = false;
 
     std::cout << "BEFORE:\n";
     {
@@ -240,41 +257,54 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
       bool local = has_endpoint(host->endpoints, m_local_endpoints);
 
-      if(local && token == 0 && host->state < State::STANDBY){
+      if(local && token == 0 && (int)host->state < (int)State::STANDBY){
         update_state(host->endpoints, State::STANDBY);
-
-      } else if(host->state >= State::STANDBY){
-        HostStatusPtr high_set = 
-          get_highest_state_host(host->col_begin, host->col_end);
-
-        if(host->priority == high_set->priority 
-          && high_set->state == State::ACTIVE)
-          continue;
-
-        else if(high_set->state == State::ACTIVE)
-          update_state(host->endpoints, State::STANDBY);
-
-        else if(host->priority > high_set->priority){
-          if(high_set->state == State::STANDBY)
-            continue;
-          update_state(host->endpoints, (State)(high_set->state-1));
-
-        } else
-          update_state(host->endpoints, (State)(high_set->state+1));
-
-      } else {
-        HostStatusPtr host_set = get_host(host->endpoints);
-        if(host->state == host_set->state) 
-          continue;
-
-        if(host->state == State::OFF)
-          update_state(host->endpoints, State::OFF);
-        else
+        continue;
+      }
+      
+      HostStatusPtr host_set = get_host(host->endpoints);
+      
+      if((int)host->state < (int)State::STANDBY){
+        if(host->state != host_set->state) {
           update_state(host->endpoints, 
-            host->state> host_set->state? host->state: host_set->state);
+            host->state > host_set->state ? host->state : host_set->state);  
+          // pass, states: NOTSET | OFF
+          new_recs = true;
+        }
+        continue;
       }
 
-      if(local) local_updated = true;
+      HostStatusPtr high_set = 
+        get_highest_state_host(host->col_begin, host->col_end);
+       
+      if(high_set->state == State::ACTIVE) {
+        if(host->state != host_set->state
+           && host_set->priority != high_set->priority) {
+          update_state(host->endpoints, State::STANDBY);
+          new_recs = true;
+          continue;
+        }
+        continue;
+      }
+      if(host->state == State::ACTIVE){
+        update_state(host->endpoints, host->state);
+        new_recs = true;
+        continue;
+      }
+      
+        
+      if(host->priority > high_set->priority){
+        if((int)host->state > (int)State::STANDBY){
+          update_state(host->endpoints, (State)(host->state-1));
+          new_recs = true;
+        }
+      } else {
+        if((int)host->state < (int)State::ACTIVE){
+          update_state(host->endpoints, (State)(host->state+1));
+          new_recs = true;
+        }
+      }
+
     }
     
     for(auto host : states){
@@ -289,10 +319,11 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
           continue;
             
         HostStatusPtr l_host = get_host(m_local_endpoints);
-        HostStatusPtr l_hight = get_highest_state_host(l_host->col_begin, l_host->col_end);
+        HostStatusPtr l_hight = get_highest_state_host(
+          l_host->col_begin, l_host->col_end);
         if(l_hight->state < State::WANT) {
           update_state(m_local_endpoints, State::WANT);
-          local_updated = true;
+          new_recs = true;
         }
         break;
       }
@@ -317,25 +348,59 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       
       Protocol::Req::MngrsStatePtr req = 
         std::make_shared<Protocol::Req::MngrsState>(
-          m_mngr_inchain, updated_states, token, cb, shared_from_this());
+          m_mngr_inchain, updated_states, token, m_local_endpoints[0], 
+          cb, shared_from_this());
 
-      if(!req->run((conn_probes*conn_timeout+req_timeout)*updated_states.size()))
+      if(!req->run(
+              (cfg_conn_probes->get() * cfg_conn_timeout->get()
+               + cfg_req_timeout->get()) * updated_states.size()))
         timer_managers_checkin(3000);
       return;
     }
     
-    
     std::cout << " token=" << token << " turn_around="<<turn_around<< "\n";
-    if(turn_around){
+    if(cb != nullptr)
+      cb->response_ok();
 
-      if(cb != nullptr)
-        cb->response_ok();
+    timer_managers_checkin(
+      new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
+    
+  }
 
-      if(local_updated)
-        timer_managers_checkin(50);
-      else
-        timer_managers_checkin(30000);
+  void update_manager_addr(uint64_t hash, EndPoint mngr_host){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    //std::cout << "update_manager_addr,  hash=" << hash 
+    //    << " mngr_host="<<mngr_host.address().to_string() << ":" <<mngr_host.port() << "\n";
+    m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host));
+  }
+  
+  bool disconnection(EndPoint endpoint_server, EndPoint endpoint_client, 
+                     bool srv=false){
+    if(srv) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
+      if(it == m_mngrs_client_srv.end())
+        return false;
+      endpoint_server = (*it).second;
+      m_mngrs_client_srv.erase(it);
     }
+    
+    HT_INFOF("disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
+              (int)srv,
+              endpoint_server.address().to_string().c_str(), 
+              endpoint_server.port(), 
+              endpoint_client.address().to_string().c_str(), 
+              endpoint_client.port());
+
+    HostStatusPtr host_set = get_host((EndPoints){endpoint_server});
+    if(host_set == nullptr)
+      return false;
+    timer_managers_checkin(
+      host_set->state == State::ACTIVE ? 
+      cfg_delay_fallback->get() : cfg_check_interval->get());
+
+    update_state(endpoint_server, State::OFF);
+    return true;
   }
 
   bool is_active(size_t cid){
@@ -383,24 +448,30 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   uint64_t                     m_local_token;
   client::Mngr::SelectedGroups m_local_groups;
 
-  int       conn_probes = 3;
-  uint32_t  conn_timeout = 1000;
-  uint32_t  req_timeout = 30000;
+  std::unordered_map<uint64_t, EndPoint> m_mngrs_client_srv;
+
+
+  gInt32tPtr  cfg_conn_probes;
+  gInt32tPtr  cfg_conn_timeout;
+  gInt32tPtr  cfg_req_timeout;
+  gInt32tPtr  cfg_delay_updated;
+  gInt32tPtr  cfg_check_interval;
+  gInt32tPtr  cfg_delay_fallback;
 };
 
 }}}
 
 
-namespace SWC {
-namespace Protocol {
-namespace Req {
-  
+namespace SWC {namespace Protocol { namespace Req {
 void MngrsState::disconnected() {
-  //role_state->update_state(
-  //  conn->endpoint_remote, server::Mngr::State::NOTSET);
-  role_state->timer_managers_checkin(10000);
+  role_state->disconnection(conn->endpoint_remote, conn->endpoint_local);
 }
+}}}
 
+namespace SWC { namespace client { namespace Mngr {
+  void AppContext::disconnected(ConnHandlerPtr conn){
+    role_state->disconnection(conn->endpoint_remote, conn->endpoint_local);
+  }
 }}}
 
 #endif // swc_app_manager_RoleState_h
