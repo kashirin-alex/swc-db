@@ -14,11 +14,11 @@
 
 #include "RoleState.h"
 
-#include "swcdb/lib/manager/handlers/AssignRsId.h"
-#include "swcdb/lib/manager/handlers/IsMngrActive.h"
 #include "swcdb/lib/manager/handlers/MngrsState.h"
+#include "swcdb/lib/manager/handlers/ActiveMngr.h"
+#include "swcdb/lib/manager/handlers/AssignRsId.h"
 
-#include "swcdb/lib/manager/MngrRangeServers.h"
+#include "swcdb/lib/manager/RangeServers.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -29,10 +29,10 @@ class AppContext : public SWC::AppContext {
 
   AppContext() :
     m_ioctx(std::make_shared<asio::io_context>(
-      Config::settings->get<int32_t>("swc.mngr.handlers", 8))),
+      Config::settings->get<int32_t>("swc.mngr.handlers"))),
     m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
     m_role_state(std::make_shared<RoleState>(m_ioctx)),
-    m_mngr_rs(std::make_shared<Mngr::MngrRangeServers>())
+    m_rangeservers(std::make_shared<Mngr::RangeServers>())
   {
     (new std::thread(
       [io_ptr=m_ioctx, run=&m_run]{ 
@@ -53,8 +53,6 @@ class AppContext : public SWC::AppContext {
   virtual ~AppContext(){}
 
 
-  std::atomic<uint32_t> num  = 0;
-
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
     HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
@@ -68,7 +66,7 @@ class AppContext : public SWC::AppContext {
         if(m_role_state->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
-        //m_mngr_rs->decommision(event->addr); 
+        //m_rangeservers->decommision(event->addr); 
         break;
 
       case Event::Type::ERROR:
@@ -83,23 +81,12 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::MngrsState(conn, ev, m_role_state);
             break;
 
-          case Protocol::Command::MNGR_REQ_IS_MNGR_ACTIVE:
-            handler = new Handler::IsMngrActive(conn, ev, m_role_state);
+          case Protocol::Command::MNGR_REQ_ACTIVE_MNGR:
+            handler = new Handler::ActiveMngr(conn, ev, m_role_state);
             break;
 
           case Protocol::Command::RS_REQ_ASSIGN_RS_ID:
-            /*
-            if(!m_role_state->is_active(2))
-              Protocol::Command::MNGR_RSP_CID_NOT_MANAGED
-            */
-
-            handler = new Handler::AssignRsId(conn, ev, m_mngr_rs);
-            //rangeservers->add(event->addr);  // add addr and assign RS-N 
-            break;
-
-          case Protocol::Command::RS_RSP_ASSIGN_RS_ID_ACK:
-            //rangeservers->load_ranges(event->addr); 
-            // load_ranges(rid-barrier), if exists, else OK
+            handler = new Handler::AssignRsId(conn, ev, m_rangeservers, m_role_state);
             break;
 
           case Protocol::Command::RS_RSP_RANGE_LOADED:
@@ -158,13 +145,14 @@ class AppContext : public SWC::AppContext {
   IO_DoWorkPtr      m_wrk = nullptr;
 
   RoleStatePtr      m_role_state;
+  RangeServersPtr   m_rangeservers;
+  //ColmNameToIDMap columns;       // column-name > CID
+
   /* 
   m_wrk->reset();
   //m_wrk->get_executor().context().stop();
   */
 
-  MngrRangeServersPtr         m_mngr_rs;  // RS-N > addr/s
-  //ColmNameToIDMap columns;       // column-name > CID
 };
 
 }}}

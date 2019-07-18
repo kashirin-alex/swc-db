@@ -190,7 +190,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
     int c = cfg_mngr_hosts->size();
     for(int n=0; n<c;n++){
       std::string cfg = cfg_mngr_hosts->get_item(n);
-      HT_DEBUGF("cfg=%d swc.mngr.host=%d", n, cfg.c_str());
+      HT_DEBUGF("cfg=%d swc.mngr.host=%s", n, cfg.c_str());
       
       auto at = cfg.find_first_of("|");
       if(at == std::string::npos) {

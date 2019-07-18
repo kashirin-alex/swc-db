@@ -73,6 +73,18 @@ typedef ConnHandler* ConnHandlerPtr;
       return false;
     }
 
+  
+    void run_within(IOCtxPtr io_ctx, uint32_t t_ms = 1000) {
+      (new asio::high_resolution_timer(
+        *io_ctx.get(), std::chrono::milliseconds(t_ms)))
+      ->async_wait(
+          [ptr=shared_from_this()](const asio::error_code ec) {
+            if (ec != asio::error::operation_aborted){
+              ptr->run();
+            }
+          });
+    }
+
   };
 
   /// Smart pointer to DispatchHandler

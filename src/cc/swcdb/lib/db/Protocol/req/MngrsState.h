@@ -6,7 +6,7 @@
 #ifndef swc_lib_db_protocol_req_MngrsState_h
 #define swc_lib_db_protocol_req_MngrsState_h
 
-
+#include "swcdb/lib/db/Protocol/params/MngrsState.h"
 
 namespace SWC {
 namespace Protocol {

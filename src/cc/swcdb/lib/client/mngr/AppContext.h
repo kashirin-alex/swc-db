@@ -63,10 +63,6 @@ class AppContext : public SWC::AppContext {
             //rangeservers->add(event->addr);  // add addr and assign RS-N 
             break;
 
-          case Protocol::Command::RS_RSP_ASSIGN_RS_ID_ACK:
-            //rangeservers->load_ranges(event->addr); // load_ranges(rid-barrier), if exists, else OK
-            break;
-
           case Protocol::Command::RS_RSP_RANGE_LOADED:
             //(rid-barrier-release)
             //rangeservers->load_ranges(event->addr);

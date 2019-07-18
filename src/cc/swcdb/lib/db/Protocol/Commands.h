@@ -12,17 +12,17 @@ namespace SWC { namespace Protocol {
   enum Command {
 
     MNGR_REQ_MNGRS_STATE,
+    MNGR_REQ_ACTIVE_MNGR,
+    
+    RS_REQ_ASSIGN_RS_ID,
     
     //
 
-    RS_REQ_ASSIGN_RS_ID,     // input RS addresses
     RS_REQ_SHUTTING_DOWN,
     RS_REQ_NOTIFY_COLUMN_ADDED,
     RS_RSP_SCAN,
-    RS_RSP_ASSIGN_RS_ID_ACK, 
     RS_RSP_RANGE_LOADED,
 
-    MNGR_REQ_ASSIGN_RS_ID,
     MNGR_REQ_LOAD_RANGE,
     MNGR_REQ_IS_RANGE_LOADED,
 

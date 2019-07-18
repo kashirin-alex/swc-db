@@ -8,7 +8,6 @@
 #include "swcdb/lib/client/Clients.h"
 
 #include "HostStatus.h"
-#include "swcdb/lib/db/Protocol/params/MngrsState.h"
 
 namespace SWC { namespace server { namespace Mngr {
 class RoleState;
@@ -404,35 +403,25 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   bool is_active(size_t cid){
-    return false;
+    auto host = active_mngr(cid, cid);
+    return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
   }
 
-  bool is_active(size_t begin, size_t end, EndPoint endpoint){
+  HostStatusPtr active_mngr(size_t begin, size_t end){
     
-    return false;
-    /*
     std::lock_guard<std::mutex> lock(m_mutex);
+
     for(auto host : m_states){
-      if(std::find_if(host->endpoints.begin(), host->endpoints.end(), 
-            [endpoint](const EndPoint & e2){
-            return endpoint.address() == e2.address() 
-                    && endpoint.port() == e2.port();}) 
-        != host->endpoints.end()
-        && (host->active == true 
-        && host->conn != nullptr 
-        && host->conn->is_open())
-        && host->col_begin <= begin 
+      if(host->state == State::ACTIVE && host->col_begin <= begin 
         && (host->col_end == 0 || host->col_end >= end)){
-          std::cout << "RoleState is_active, " 
-                    << endpoint.address() <<":" <<  endpoint.port() << "\n";
-          return true;
+        std::cout << "active, " << host->to_string() << "\n";
+        return host;
       }
     }
 
-    std::cout << "RoleState not-is_active, " 
-              << endpoint.address() <<":" <<  endpoint.port() << "\n";
-    return false;
-     */
+    std::cout << "active-none begin=" << begin 
+                           << " end=" << end << "\n";
+    return nullptr;
   }
 
   private:

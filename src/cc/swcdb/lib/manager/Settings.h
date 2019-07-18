@@ -17,6 +17,7 @@ void Settings::init_app_options(){
     ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")
     ("swc.mngr.port", i32(15000), "RS-Manager port")
+    ("swc.mngr.handlers", i32(8), "Number of Communication Reactors")
 
     ("swc.mngr.RoleState.connection.probes", g_i32(3), 
      "Number of tries Mngr tries to connect to other manager")
@@ -32,7 +33,9 @@ void Settings::init_app_options(){
     ("swc.mngr.RoleState.check.delay.fallback", g_i32(30000), 
      "Delay of a Check in milliseconds on Mngr-Host disconnected")
     ("swc.mngr.RoleState.check.delay.updated", g_i32(200), 
-     "Delay in milliseconds on Mngr-Hosts-Status changes");
+     "Delay in milliseconds on Mngr-Hosts-Status changes")
+  
+  ;
     
 }
 

@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_ReqIsMngrActive_h
-#define swc_db_protocol_params_ReqIsMngrActive_h
+#ifndef swc_db_protocol_params_ActiveMngrReq_h
+#define swc_db_protocol_params_ActiveMngrReq_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,12 +12,12 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class ReqIsMngrActive : public Serializable {
+  class ActiveMngrReq : public Serializable {
   public:
 
-    ReqIsMngrActive() {}
+    ActiveMngrReq() {}
 
-    ReqIsMngrActive(size_t begin, size_t end) : begin(begin), end(end){}
+    ActiveMngrReq(size_t begin, size_t end) : begin(begin), end(end){}
 
     size_t begin; 
     size_t end;
@@ -49,4 +49,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_ReqIsMngrActive_h
+#endif // swc_db_protocol_params_ActiveMngrReq_h

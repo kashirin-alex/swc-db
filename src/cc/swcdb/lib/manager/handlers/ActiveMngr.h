@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_manager_handlers_IsMngrActive_h
-#define swc_app_manager_handlers_IsMngrActive_h
+#ifndef swc_app_manager_handlers_ActiveMngr_h
+#define swc_app_manager_handlers_ActiveMngr_h
 
 #include "swcdb/lib/core/comm/AppHandler.h"
 
-#include "swcdb/lib/db/Protocol/params/ReqIsMngrActive.h"
-#include "swcdb/lib/db/Protocol/params/RspIsMngrActive.h"
+#include "swcdb/lib/db/Protocol/params/ActiveMngrReq.h"
+#include "swcdb/lib/db/Protocol/params/ActiveMngrRsp.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -17,10 +17,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class IsMngrActive : public AppHandler {
+class ActiveMngr : public AppHandler {
   public:
 
-  IsMngrActive(ConnHandlerPtr conn, EventPtr ev, RoleStatePtr role_state)
+  ActiveMngr(ConnHandlerPtr conn, EventPtr ev, RoleStatePtr role_state)
               : AppHandler(conn, ev), m_role_state(role_state) { }
 
   void run() override {
@@ -30,14 +30,14 @@ class IsMngrActive : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::ReqIsMngrActive req_params;
+      Protocol::Params::ActiveMngrReq req_params;
       const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
-      bool active = m_role_state->is_active(
-        req_params.begin, req_params.end, m_conn->m_sock->local_endpoint());
-
-      Protocol::Params::RspIsMngrActive rsp_params(active);
+      Protocol::Params::ActiveMngrRsp rsp_params(
+        (Protocol::Params::HostEndPoints*)m_role_state->active_mngr(
+              req_params.begin, req_params.end).get()
+      );
 
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
@@ -61,4 +61,4 @@ class IsMngrActive : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_IsMngrActive_h
+#endif // swc_app_manager_handlers_ActiveMngr_h

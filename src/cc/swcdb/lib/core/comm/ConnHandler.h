@@ -6,6 +6,13 @@
 #ifndef swc_core_comm_ConnHandler_h
 #define swc_core_comm_ConnHandler_h
 
+namespace SWC { 
+
+typedef std::shared_ptr<asio::io_context> IOCtxPtr;
+typedef std::shared_ptr<asio::ip::tcp::socket> SocketPtr;
+typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
+}
+
 #include <memory>
 #include "DispatchHandler.h"
 
@@ -16,9 +23,6 @@
 
 namespace SWC { 
 
-typedef std::shared_ptr<asio::io_context> IOCtxPtr;
-typedef std::shared_ptr<asio::ip::tcp::socket> SocketPtr;
-typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
 
 size_t endpoints_hash(EndPoints endpoints){
   std::string s;
@@ -50,8 +54,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-            : m_app_ctx(app_ctx), m_sock(socket)
-            //, m_io_ctx(io_ctx), m_strand_out(*io_ctx.get()), m_strand_in(*io_ctx.get())
+            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx)
+            //, m_strand_out(*io_ctx.get()), m_strand_in(*io_ctx.get())
   {
     //new_connection();
     //m_app_ctx->stats->connected();
@@ -66,6 +70,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint      endpoint_local;
   AppContextPtr m_app_ctx;
   SocketPtr     m_sock;
+  IOCtxPtr      m_io_ctx;
 
   const std::string endpoint_local_str(){
     std::string s(endpoint_local.address().to_string());
@@ -470,7 +475,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   std::atomic<Error::Code>  m_err = Error::OK;
   
   std::atomic<uint32_t>     m_next_req_id;
-  //IOCtxPtr      m_io_ctx;
+  //
   //asio::io_context::strand  m_strand_in;
   //asio::io_context::strand  m_strand_out;
 

@@ -8,10 +8,13 @@
 #include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/core/comm/AppHandler.h"
 
-#include "swcdb/lib/db/Protocol/Commands.h"
-
 #include "swcdb/lib/client/Clients.h"
-#include "swcdb/lib/client/mngr/AppContext.h"
+#include "AppContextMngrClient.h"
+
+#include "swcdb/lib/db/Protocol/Commands.h"
+#include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
+
+#include "callbacks/HandleRsAssign.h"
 
 #include "columns/Columns.h"
 
@@ -26,7 +29,7 @@ class AppContext : public SWC::AppContext {
 
   AppContext() 
     : m_ioctx(std::make_shared<asio::io_context>(
-      Config::settings->get<int32_t>("swc.rs.handlers", 8))),
+      Config::settings->get<int32_t>("swc.rs.handlers"))),
       m_wrk(asio::make_work_guard(*m_ioctx.get()))
   {
     (new std::thread(
@@ -38,80 +41,48 @@ class AppContext : public SWC::AppContext {
         }while(m_run.load());
         std::cout << "IO exited\n";
       }))->detach();
-  
+  }
+
+  void init(EndPoints endpoints) override {
+    m_endpoints = endpoints;
+
     m_clients = std::make_shared<client::Clients>(
       m_ioctx,
       std::make_shared<client::Mngr::AppContext>()
     );
     
-    SWC::EndPoints endpoints = m_clients->mngrs_groups->get_endpoints(0, 2);
+
+    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(
+      m_clients, 1, 3);
+    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
+      std::make_shared<HandleRsAssign>(m_endpoints, m_clients, mngr_root, rs_id);
+    mngr_root->set_cb(cb_hdlr);
     
-    client::ClientConPtr con_h = m_clients->mngr_service->get_connection(endpoints);
-    con_h->accept_requests();
+    mngr_root->run();
   }
 
   virtual ~AppContext(){}
 
-  std::atomic<uint32_t> num  = 0;
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
-    //if(ev->type != Event::Type::DISCONNECT){
-    std::cout << "AppContext-RS, handle:" << ev->to_str() << "\n";
 
-    //}
-    return;
-    // HT_INFOF("Received event-type (%llu)", (Llu)ev->type);
-
+    std::cout << "handle:" << ev->to_str() << "\n";
     
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED:
         return;
-        //rangeservers->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
-        break;
+        
       case Event::Type::DISCONNECT:
         return;
-        //m_mngr_rs->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
-        break;
 
       case Event::Type::ERROR:
-      /* 
-        ev->error(Error::PROTOCOL_ERROR,
-          format("Received Error(%s)", ev_ctx->get_peer_addr().to_string()));
-          */
-        //rangeservers->decommision(event->addr);  // remove RS-N of addr & load-ranges to other
-        break;
+        return;
 
       case Event::Type::MESSAGE: {
-        CommHeader header;
-        header.initialize_from_request_header(ev->header);
-        num++;      
-        std::string s(format(" with=(%d)", num.load()));
-        SWC::CommBufPtr cbp = std::make_shared<SWC::CommBuf>(header, s.length()+ev->payload_len);
-      
-        cbp->append_bytes(ev->payload, ev->payload_len);
-        cbp->append_bytes((const uint8_t*)s.c_str(), s.length());
-        conn->send_response(cbp);
-
-        // conn->response_ok(ev);
-        // ev_ctx->send_message("AppContext-Mngr", 14);
-        /* 
-        ev_ctx->error(Error::PROTOCOL_ERROR,
-          format("Unimplemented command (%llu)", 
-            (Llu)ev_ctx->event->header.command));
-        */
+        
         AppHandler *handler = 0;
         switch (ev->header.command) {
-
-          case Protocol::Command::RS_REQ_ASSIGN_RS_ID:
-
-            //handler = new Handler::AssignRsId(conn, ev, m_mngr_rs);
-            //rangeservers->add(event->addr);  // add addr and assign RS-N 
-            break;
-
-          case Protocol::Command::RS_RSP_ASSIGN_RS_ID_ACK:
-            //rangeservers->load_ranges(event->addr); // load_ranges(rid-barrier), if exists, else OK
-            break;
 
           case Protocol::Command::RS_RSP_RANGE_LOADED:
             //(rid-barrier-release)
@@ -142,24 +113,16 @@ class AppContext : public SWC::AppContext {
           }
         }
 
-        if(handler)
-          handler->run();
-        // asio::post(*m_io_ctx.get(), [handler](){ handler->run();  });
+        if(handler) //handler->run();
+          asio::post(*m_ioctx.get(), [handler](){ handler->run();  });
 
         break;
       }
 
       default:
-            HT_THROWF(Error::PROTOCOL_ERROR, "Unimplemented event-type (%llu)",
-                      (Llu)ev->type);
+        HT_WARNF("Unhandled, %s", ev->to_str().c_str());
 
     }
-
-    //if(conn->is_open())
-    //  conn->read_header();
-
-
-
     
   }
 
@@ -170,6 +133,9 @@ class AppContext : public SWC::AppContext {
 
   ColumnsPtr columns ();
   client::ClientsPtr m_clients;
+  Protocol::Req::ActiveMngrPtr mngr_root;
+  
+  uint64_t rs_id = 0;
 };
 
 }}}

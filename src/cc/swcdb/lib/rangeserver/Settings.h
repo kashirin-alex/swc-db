@@ -16,7 +16,11 @@ void Settings::init_app_options(){
   file_desc().add_options()
     ("swc.rs.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rs.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.rs.port", i32(15001), "RangeServer port");
+    ("swc.rs.port", i32(16000), "RangeServer port")
+    ("swc.rs.handlers", i32(8), "Number of Communication Reactors")
+    ("swc.rs.id.validation.interval", g_i32(120000), 
+    "Validation of RS-ID against RS-MNGR(root)")
+  ;
 
 }
 
