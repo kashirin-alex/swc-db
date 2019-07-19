@@ -17,7 +17,7 @@ void Settings::init_app_options(){
     ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")
     ("swc.mngr.port", i32(15000), "RS-Manager port")
-    ("swc.mngr.handlers", i32(8), "Number of Communication Reactors")
+    ("swc.mngr.handlers", i32(8), "Number of App Handlers")
 
     ("swc.mngr.RoleState.connection.probes", g_i32(3), 
      "Number of tries Mngr tries to connect to other manager")

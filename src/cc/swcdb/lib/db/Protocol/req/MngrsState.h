@@ -1,7 +1,7 @@
 
 /*
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
- */
+ */ 
 
 #ifndef swc_lib_db_protocol_req_MngrsState_h
 #define swc_lib_db_protocol_req_MngrsState_h
@@ -23,14 +23,10 @@ class MngrsState : public DispatchHandler {
             : conn(conn), states(states), token(token), mngr_host(mngr_host), 
               cb(cb), role_state(role_state) { }
   
-  virtual ~MngrsState(){
-
-    HT_INFOF("destruct: cb=%d, token=%d", 
-              (size_t)cb.get(), token);
-  }
+  virtual ~MngrsState() { }
   
   bool run(uint32_t timeout=60000) override {
-    std::cout << " token=" << token << " cb=" << (size_t)cb.get() << " req\n";
+    // std::cout << "req, token=" << token << " cb=" << (size_t)cb.get() << "\n";
 
     Protocol::Params::MngrsState params(states, token, mngr_host);
     CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
@@ -44,27 +40,23 @@ class MngrsState : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
-    std::cout << " token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
-
-    //HT_INFOF("handle: %s", ev->to_str().c_str());
+    // HT_INFOF("%s", ev->to_str().c_str());
+    
     if(ev->type == Event::Type::DISCONNECT){
       disconnected();
       return;
     }
 
-    if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE) {
-      if(cb != nullptr)
-        cb->response_ok();
+    if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE 
+       && Protocol::response_code(ev) == Error::OK){
+      if(cb != nullptr){
+        //std::cout << "response_ok, token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
+        //cb->response_ok();
+      }
       return;
     }
 
-    if(ev->error != Error::OK){
-      if(ev->error == Error::Code::REQUEST_TIMEOUT){
-        conn->do_close();
-        return;
-      }
-      HT_INFOF("unhandled error: %s", ev->to_str().c_str());
-    }
+    conn->do_close();
 
   }
 

@@ -95,6 +95,9 @@ class AssignRsId : public AppHandler {
             rsp_params.encode(cbp->get_data_ptr_address());
 
             m_conn->send_response(cbp);
+          } else {
+  
+            m_conn->response_ok(m_ev);
           }
 
           break;

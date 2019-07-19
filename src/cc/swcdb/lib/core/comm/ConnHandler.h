@@ -261,7 +261,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     tm->async_wait([this, id, hr](const asio::error_code ec) {
       if (ec != asio::error::operation_aborted){
-        EventPtr ev = std::make_shared<Event>(Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
+        EventPtr ev = std::make_shared<Event>(
+          Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
         ev->header = hr;
         run_pending(id, ev, true);
       }
@@ -273,8 +274,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     asio::async_write(*m_sock.get(), cbuf->get_buffers(),
       //asio::bind_executor(m_strand_out,
-      [this, tm, hdlr, id=cbuf->header.id](const asio::error_code ec, uint32_t len) {
-        ec ? do_close() : read_pending({.id=id, .hdlr=hdlr, .tm=tm});
+      [this, tm, hdlr, header=cbuf->header](
+        const asio::error_code ec, uint32_t len) {
+        if(ec)
+         do_close();
+        else if(header.flags & CommHeader::FLAGS_BIT_REQUEST)
+          read_pending({.id=header.id, .hdlr=hdlr, .tm=tm});
+        else {    
+          m_pendings++;
+          read_pending();
+        }
+        
       }
       //)
     );
@@ -324,7 +334,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         //std::cout << "handler, m_pendings=" << m_pendings << ", e=" << e << "\n";
         e ? do_close() : ({
           m_reading = false;
-          if(m_pendings > 0){
+          if(m_pendings > 0) {
             m_pendings--;
             read_pending();
           }
@@ -382,8 +392,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void disconnected(){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
+      /*
+      std::cout << "disconnected: m_cancelled=" << m_cancelled.size() 
+                << " m_pending=" << m_pending.size() << "\n";
+      */
       m_cancelled.clear();
     }
+    
     for(;;) {
       PendingRsp q;
       {
@@ -414,7 +429,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       skip = false;
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-
+        /* 
+        std::cout << "run_pending: m_cancelled=" << m_cancelled.size() 
+                  << " m_pending=" << m_pending.size() << "\n";
+        for(auto q :m_pending )
+          std::cout << " id=" << q.id << "\n";
+        std::cout << "looking for id=" << id << " fd="<<m_sock->native_handle()<<" ptr="<<this
+        << " " << endpoint_local_str() <<"\n";
+        */
         if(cancelling)
           m_cancelled.push_back(id);
 
@@ -465,6 +487,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
           run_pending(q_next.id, q_next.ev);
       }
     } while(found_next);
+
   }
 
   std::vector<PendingRsp>   m_pending;
