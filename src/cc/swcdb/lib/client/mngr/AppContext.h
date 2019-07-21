@@ -68,10 +68,6 @@ class AppContext : public SWC::AppContext {
             //rangeservers->load_ranges(event->addr);
             break;
 
-          case Protocol::Command::RS_REQ_SHUTTING_DOWN:
-            //rangeservers->decommision(event->addr);
-            break;
-
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
             //rangeservers->get_addr(event);
             break;

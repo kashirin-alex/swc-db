@@ -56,7 +56,23 @@ namespace Serialization {
 
 }
 
+
+bool has_endpoint(EndPoint& e1, EndPoints& endpoints){
+  return std::find_if(endpoints.begin(), endpoints.end(),  
+          [e1](const EndPoint& e2){
+            return e1.address() == e2.address() && e1.port() == e2.port();}) 
+        != endpoints.end();
+}
+bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
+  for(auto & e1 : endpoints){
+    if(has_endpoint(e1, endpoints_in)) return true;
+  }
+  return false;
+}
+
 namespace Resolver {
+
+  
 
 
 bool is_ipv4_address(const std::string& str)

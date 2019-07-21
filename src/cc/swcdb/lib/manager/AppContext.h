@@ -94,10 +94,6 @@ class AppContext : public SWC::AppContext {
             //rangeservers->load_ranges(event->addr);
             break;
 
-          case Protocol::Command::RS_REQ_SHUTTING_DOWN:
-            //rangeservers->decommision(event->addr);
-            break;
-
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
             //rangeservers->get_addr(event);
             break;
@@ -138,14 +134,18 @@ class AppContext : public SWC::AppContext {
     
   }
 
-  private:
-  
-  std::atomic<bool> m_run = true;
-  IOCtxPtr          m_ioctx;
-  IO_DoWorkPtr      m_wrk = nullptr;
+  void set_srv(SerializedServerPtr srv){
+    m_srv = srv;
+  }
 
-  RoleStatePtr      m_role_state;
-  RangeServersPtr   m_rangeservers;
+  private:
+  SerializedServerPtr m_srv = nullptr;
+  std::atomic<bool>   m_run = true;
+  IOCtxPtr            m_ioctx;
+  IO_DoWorkPtr        m_wrk = nullptr;
+
+  RoleStatePtr        m_role_state;
+  RangeServersPtr     m_rangeservers;
   //ColmNameToIDMap columns;       // column-name > CID
 
   /* 

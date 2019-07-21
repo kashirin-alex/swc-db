@@ -37,7 +37,8 @@ class AssignRsId : public AppHandler {
       const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
-      // ResponseCallbackPtr cb = std::make_shared<ResponseCallback>(m_conn, m_ev);
+      // ResponseCallbackPtr cb = 
+      //  std::make_shared<ResponseCallback>(m_conn, m_ev);
       
       std::cout << "AssignRsId-run: " << req_params.host->to_string() << "\n";
       
@@ -61,10 +62,11 @@ class AssignRsId : public AppHandler {
       switch(req_params.flag){
 
         case Protocol::Params::AssignRsID::Flag::RS_REQ: {
-          uint64_t rs_id = 2222222; // m_rangeservers->set_id(req_params.host->endpoints);
+          uint64_t rs_id = m_rangeservers->rs_set_id(
+            req_params.host->endpoints);
+
           Protocol::Params::AssignRsID rsp_params(
             rs_id, Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED, {});
-      
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
           CommBufPtr cbp = std::make_shared<CommBuf>(
@@ -76,15 +78,30 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_ACK: {
-          // m_rangeservers->ack_id(req_params.rs_id, req_params.host->endpoints);
-          m_conn->response_ok(m_ev);
+          if(m_rangeservers->rs_ack_id(
+              req_params.rs_id, req_params.host->endpoints)){
+
+            m_conn->response_ok(m_ev);
+          } else {
+
+            Protocol::Params::AssignRsID rsp_params(
+              0, Protocol::Params::AssignRsID::Flag::MNGR_REREQ, {});
+            CommHeader header;
+            header.initialize_from_request_header(m_ev->header);
+            CommBufPtr cbp = std::make_shared<CommBuf>(
+              header, rsp_params.encoded_length());
+            rsp_params.encode(cbp->get_data_ptr_address());
+
+            m_conn->send_response(cbp);
+          }
           break;
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_DISAGREE: {
-          uint64_t rs_id = 111; //m_rangeservers->rs_had_id(req_params.rs_id, req_params.host->endpoints);
+          uint64_t rs_id = m_rangeservers->rs_had_id(
+            req_params.rs_id, req_params.host->endpoints);
+
           if (rs_id != 0){
-            
             Protocol::Params::AssignRsID rsp_params(
               rs_id, Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN, {});
       
@@ -96,12 +113,19 @@ class AssignRsId : public AppHandler {
 
             m_conn->send_response(cbp);
           } else {
-  
             m_conn->response_ok(m_ev);
           }
 
           break;
         }
+
+        case Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN: {
+          m_rangeservers->rs_shutdown(
+            req_params.rs_id, req_params.host->endpoints);
+          m_conn->response_ok(m_ev);
+          break;
+        }
+        
         default:
           break;
       }
@@ -109,6 +133,9 @@ class AssignRsId : public AppHandler {
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }
+
+    std::cout << m_rangeservers->to_string() << "\n";
+
   
   }
 

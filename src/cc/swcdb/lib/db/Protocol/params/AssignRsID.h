@@ -20,10 +20,12 @@ namespace Params {
     enum Flag {
       MNGR_ASSIGNED = 1,
       MNGR_NOT_ACTIVE = 2,
-      RS_REQ = 3,
-      RS_ACK = 4,
-      RS_DISAGREE = 5,
-      MNGR_REASSIGN = 6,
+      MNGR_REASSIGN = 3,
+      MNGR_REREQ = 4,
+      RS_REQ = 5, // >= params with host endpoints
+      RS_ACK = 6,
+      RS_DISAGREE = 7,
+      RS_SHUTTINGDOWN = 8
     };
 
     AssignRsID() {}

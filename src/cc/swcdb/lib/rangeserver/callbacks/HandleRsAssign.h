@@ -77,12 +77,17 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
         std::cout << "HandleRsAssign: rs_id=" << rsp_params.rs_id
                                   << " flag=" << rsp_params.flag << "\n";
         
-        if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED
+        if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REREQ){
+          mngr_active->run_within(conn->m_io_ctx, 50);
+
+        } 
+        else if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED
           || rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN){
           
           Protocol::Params::AssignRsID params;
           if(rs_id == 0 || rs_id == rsp_params.rs_id
-            || rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN){
+            || (rs_id != rsp_params.rs_id 
+                && rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN)){
             rs_id = rsp_params.rs_id;
           
             params = Protocol::Params::AssignRsID(

@@ -77,20 +77,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     m_local_groups = m_clients->mngrs_groups->get_groups(m_local_endpoints);
   }
   
-  bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
-    for(auto & e1 : endpoints){
-      if(has_endpoint(e1, endpoints_in)) return true;
-    }
-    return false;
-  }
-
-  bool has_endpoint(EndPoint& e1, EndPoints& endpoints){
-    return std::find_if(endpoints.begin(), endpoints.end(),  
-            [e1](const EndPoint& e2){
-              return e1.address() == e2.address() && e1.port() == e2.port();}) 
-          != endpoints.end();
-  }
-
   void timer_managers_checkin(uint32_t t_ms = 10000) {
     if(m_check_timer != nullptr) // adjust timer
       m_check_timer->cancel();

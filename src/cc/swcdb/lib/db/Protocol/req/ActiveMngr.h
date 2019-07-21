@@ -23,7 +23,7 @@ class ActiveMngr : public DispatchHandler {
 
   ActiveMngr(client::ClientsPtr clients, size_t begin, size_t end)
             : clients(clients), begin(begin), end(end){}
-
+  virtual ~ActiveMngr(){ }
   bool run(uint32_t timeout_ms=60000) override {
     
     do_request:
@@ -37,12 +37,12 @@ class ActiveMngr : public DispatchHandler {
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
-    clients->mngr_service->preserve(conn);
     
     bool ok = conn->send_request(cbp, shared_from_this()) == Error::OK;
     if(!ok)
       goto do_request;
 
+    clients->mngr_service->preserve(conn);
     return ok;
   }
 

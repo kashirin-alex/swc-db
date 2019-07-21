@@ -30,11 +30,24 @@ public:
             m_io_ctx(io_ctx), m_run(true)
   {
     do_accept();
+    
+    HT_INFOF("Listening On: [%s]:%d fd=%d", 
+             m_acceptor->local_endpoint().address().to_string().c_str(), 
+             m_acceptor->local_endpoint().port(), 
+             (size_t)m_acceptor->native_handle());
+
   }
   void stop(){
+    HT_INFOF("Stopped Listening On: [%s]:%d fd=%d", 
+             m_acceptor->local_endpoint().address().to_string().c_str(), 
+             m_acceptor->local_endpoint().port(), 
+             (size_t)m_acceptor->native_handle());
+
     m_run.store(false);
   }
-  virtual ~Acceptor(){}
+  virtual ~Acceptor(){
+    stop();
+  }
 
 private:
   void do_accept() {
@@ -89,7 +102,6 @@ class SerializedServer{
     );
 
     std::vector<std::shared_ptr<asio::ip::tcp::acceptor>> main_acceptors;
-    std::vector<std::thread*> threads;
     EndPoints endpoints_final;
 
     for(uint32_t reactor=0;reactor<reactors;reactor++){
@@ -97,9 +109,6 @@ class SerializedServer{
       std::shared_ptr<asio::io_context> io_ctx = 
         std::make_shared<asio::io_context>(workers);
       m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
-
-      // asio::signal_set signals(*io_ctx.get(), SIGINT, SIGTERM);
-      // signals.async_wait([&](auto, auto){ stop(); });
 
       for (std::size_t i = 0; i < endpoints.size(); ++i){
         auto endpoint = endpoints[i];
@@ -120,19 +129,16 @@ class SerializedServer{
           );
         }
         
-    HT_INFOF("Listening On: [%s]:%d fd=%d", 
-             acceptor->local_endpoint().address().to_string().c_str(), 
-             acceptor->local_endpoint().port(), 
-             (size_t)acceptor->native_handle());
-
         m_acceptors.push_back(
           std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
 
-        if(!acceptor->local_endpoint().address().to_string().compare("::"))
-          endpoints_final.push_back(acceptor->local_endpoint());
-        else {
+        if(reactor == 0){ 
+          if(!acceptor->local_endpoint().address().to_string().compare("::"))
+            endpoints_final.push_back(acceptor->local_endpoint());
+          else {
           // + localhost public ips
-          endpoints_final.push_back(acceptor->local_endpoint());
+            endpoints_final.push_back(acceptor->local_endpoint());
+          }
         }
       }
 
@@ -140,22 +146,22 @@ class SerializedServer{
         [this, d=io_ctx]{ 
           do{
             d->run();
-            HT_DEBUG("IO stopped, restarting");
+            HT_DEBUG("SRV IO stopped, restarting");
             d->restart();
           }while(m_run.load());
-            HT_DEBUG("IO exited");
+          HT_DEBUG("SRV IO exited");
         });
       detached ? t->detach(): threads.push_back(t);
     }
 
     app_ctx->init(endpoints_final);
 
-    if(!detached)
-      for (std::size_t i = 0; i < threads.size(); i++)
-        threads[i]->join();
-
   }
-  
+
+  void run(){
+    for (std::size_t i = 0; i < threads.size(); i++)
+      threads[i]->join();
+  }
 
   void stop() {
     m_run.store(false);
@@ -165,24 +171,29 @@ class SerializedServer{
 
     for (std::size_t i = 0; i < m_wrk.size(); ++i){
       m_wrk[i].reset();
-      //m_wrk[i].get_executor().context().stop();
     }
+    for (std::size_t i = 0; i < m_wrk.size(); ++i){
+      m_wrk[i].get_executor().context().stop();
+    }
+
+    HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
   }
 
   
   virtual ~SerializedServer(){
     stop();
-    HT_INFOF("Stop Server: %s", m_appname.c_str());
   }
 
   private:
+  
+  std::vector<std::thread*> threads;
   std::atomic<bool> m_run;
   std::string       m_appname;
   std::vector<AcceptorPtr> m_acceptors;
   std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
 };
 
-
+typedef std::shared_ptr<SerializedServer> SerializedServerPtr;
 }}
 
 #endif // swc_core_comm_SerializedServer_h

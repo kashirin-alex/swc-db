@@ -18,7 +18,6 @@ namespace SWC { namespace Protocol {
     
     //
 
-    RS_REQ_SHUTTING_DOWN,
     RS_REQ_NOTIFY_COLUMN_ADDED,
     RS_RSP_SCAN,
     RS_RSP_RANGE_LOADED,

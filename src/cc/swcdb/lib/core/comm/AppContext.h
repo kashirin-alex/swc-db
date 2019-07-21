@@ -38,7 +38,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
   virtual void init(EndPoints endpoints) {
     m_endpoints = endpoints;
   }
-
+  
   EndPoints m_endpoints;
 };
 

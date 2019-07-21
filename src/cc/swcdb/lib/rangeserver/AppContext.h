@@ -15,6 +15,7 @@
 #include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
 
 #include "callbacks/HandleRsAssign.h"
+#include "callbacks/HandleRsShutdown.h"
 
 #include "columns/Columns.h"
 
@@ -32,18 +33,23 @@ class AppContext : public SWC::AppContext {
       Config::settings->get<int32_t>("swc.rs.handlers"))),
       m_wrk(asio::make_work_guard(*m_ioctx.get()))
   {
+
     (new std::thread(
       [this]{ 
         do{
           m_ioctx->run();
-          std::cout << "IO stopped, restarting\n";
+          std::cout << "app-ctx IO stopped, restarting\n";
           m_ioctx->restart();
         }while(m_run.load());
-        std::cout << "IO exited\n";
+        std::cout << "app-ctx IO exited\n";
       }))->detach();
   }
-
   void init(EndPoints endpoints) override {
+    
+    int sig = 0;
+    m_signals = std::make_shared<asio::signal_set>(*m_ioctx.get(), SIGINT, SIGTERM);
+    shutting_down(std::error_code(), sig);
+
     m_endpoints = endpoints;
 
     m_clients = std::make_shared<client::Clients>(
@@ -51,15 +57,14 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::Mngr::AppContext>()
     );
     
-
     mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(
       m_clients, 1, 3);
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
       std::make_shared<HandleRsAssign>(m_endpoints, m_clients, mngr_root, rs_id);
     mngr_root->set_cb(cb_hdlr);
-    
     mngr_root->run();
   }
+  std::shared_ptr<asio::signal_set> m_signals;
 
   virtual ~AppContext(){}
 
@@ -88,11 +93,7 @@ class AppContext : public SWC::AppContext {
             //(rid-barrier-release)
             //rangeservers->load_ranges(event->addr);
             break;
-
-          case Protocol::Command::RS_REQ_SHUTTING_DOWN:
-            //rangeservers->decommision(event->addr);
-            break;
-
+            
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
             //rangeservers->get_addr(event);
             break;
@@ -126,9 +127,46 @@ class AppContext : public SWC::AppContext {
     
   }
 
+  void set_srv(SerializedServerPtr srv){
+    m_srv = srv;
+  }
+
+  void shutting_down(const std::error_code &ec, const int &sig) {
+    
+    if(sig==0){ // set signals listener
+      m_signals->async_wait(
+        [ptr=this](const std::error_code &ec, const int &sig){
+          ptr->shutting_down(ec, sig); 
+        }
+      ); 
+      return;
+    }
+
+    HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
+
+    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
+      std::make_shared<HandleRsShutdown>(
+        m_endpoints, m_clients, mngr_root, rs_id, [this](){stop();});
+    mngr_root->set_cb(cb_hdlr);
+    
+    mngr_root->run();
+  }
+
+  void stop(){
+    m_run.store(false);
+    m_srv->stop();
+    
+    m_wrk.get_executor().context().stop();
+  }
+
+  IOCtxPtr get_ctx(){
+    return m_ioctx;
+  }
   private:
-  std::atomic<bool> m_run = true;
-  IOCtxPtr          m_ioctx;
+
+  SerializedServerPtr m_srv = nullptr;
+  std::atomic<bool>   m_run = true;
+  IOCtxPtr            m_ioctx;
   asio::executor_work_guard<asio::io_context::executor_type> m_wrk; 
 
   ColumnsPtr columns ();
