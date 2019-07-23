@@ -40,7 +40,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
     Protocol::Params::AssignRsID params(
       0, Protocol::Params::AssignRsID::Flag::RS_REQ, rs_endpoints);
 
-    CommHeader header(Protocol::Command::RS_REQ_ASSIGN_RS_ID, 60000);
+    CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
@@ -57,7 +57,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
     bool ok = false;
 
     if(ev->error == Error::OK 
-       && ev->header.command == Protocol::Command::RS_REQ_ASSIGN_RS_ID){
+       && ev->header.command == Protocol::Command::RS_REQ_MNG_RS_ID){
 
       if(Protocol::response_code(ev) == Error::OK){
         std::cout << "HandleRsAssign: RSP-OK, chk-interval=" << cfg_check_interval->get() << " \n";
@@ -100,7 +100,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
             std::cout << "HandleRsAssign: RS_DISAGREE, rs_id=" << rs_id << "\n";
           }
 
-          CommHeader header(Protocol::Command::RS_REQ_ASSIGN_RS_ID, 60000);
+          CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
           CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
           params.encode(cbp->get_data_ptr_address());
 

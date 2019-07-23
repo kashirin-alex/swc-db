@@ -6,6 +6,9 @@
 #ifndef swc_core_comm_ConnHandler_h
 #define swc_core_comm_ConnHandler_h
 
+#include <asio.hpp>
+#include "swcdb/lib/core/comm/Resolver.h"
+
 namespace SWC { 
 
 typedef std::shared_ptr<asio::io_context> IOCtxPtr;

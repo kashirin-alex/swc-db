@@ -11,9 +11,7 @@
 #include <memory>
 #include <iostream>
 
-#include <asio.hpp>
 
-#include "swcdb/lib/core/comm/Resolver.h"
 #include "AppContext.h"
 #include "ConnHandlerServer.h"
 

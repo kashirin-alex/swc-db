@@ -4,12 +4,15 @@
 
 #ifndef swc_app_rangeserver_AppContext_h
 #define swc_app_rangeserver_AppContext_h
+#include <memory>
 
 #include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/core/comm/AppHandler.h"
+#include "swcdb/lib/core/comm/ResponseCallback.h"
+#include "swcdb/lib/core/comm/DispatchHandler.h"
 
 #include "swcdb/lib/client/Clients.h"
-#include "AppContextMngrClient.h"
+#include "AppContextClient.h"
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
@@ -19,7 +22,7 @@
 
 #include "columns/Columns.h"
 
-#include <memory>
+#include "handlers/LoadRange.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -31,7 +34,8 @@ class AppContext : public SWC::AppContext {
   AppContext() 
     : m_ioctx(std::make_shared<asio::io_context>(
       Config::settings->get<int32_t>("swc.rs.handlers"))),
-      m_wrk(asio::make_work_guard(*m_ioctx.get()))
+      m_wrk(asio::make_work_guard(*m_ioctx.get())),
+      m_columns(std::make_shared<Columns>())
   {
 
     (new std::thread(
@@ -54,7 +58,7 @@ class AppContext : public SWC::AppContext {
 
     m_clients = std::make_shared<client::Clients>(
       m_ioctx,
-      std::make_shared<client::Mngr::AppContext>()
+      std::make_shared<client::RS::AppContext>()
     );
     
     mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(
@@ -89,9 +93,9 @@ class AppContext : public SWC::AppContext {
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
-          case Protocol::Command::RS_RSP_RANGE_LOADED:
+          case Protocol::Command::MNGR_REQ_LOAD_RANGE: 
+            handler = new Handler::LoadRange(conn, ev, m_columns);
             //(rid-barrier-release)
-            //rangeservers->load_ranges(event->addr);
             break;
             
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
@@ -153,15 +157,15 @@ class AppContext : public SWC::AppContext {
   }
 
   void stop(){
-    m_run.store(false);
-    m_srv->stop();
+    m_srv->stop(); // no further requests accepted
+    // fs(commit)
     
+    m_clients->stop();
+
+    m_run.store(false);
     m_wrk.get_executor().context().stop();
   }
 
-  IOCtxPtr get_ctx(){
-    return m_ioctx;
-  }
   private:
 
   SerializedServerPtr m_srv = nullptr;
@@ -169,9 +173,9 @@ class AppContext : public SWC::AppContext {
   IOCtxPtr            m_ioctx;
   asio::executor_work_guard<asio::io_context::executor_type> m_wrk; 
 
-  ColumnsPtr columns ();
-  client::ClientsPtr m_clients;
-  Protocol::Req::ActiveMngrPtr mngr_root;
+  ColumnsPtr                    m_columns;
+  client::ClientsPtr            m_clients;
+  Protocol::Req::ActiveMngrPtr  mngr_root;
   
   uint64_t rs_id = 0;
 };

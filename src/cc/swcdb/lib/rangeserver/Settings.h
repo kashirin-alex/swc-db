@@ -7,12 +7,14 @@
 
 #include "swcdb/lib/core/config/Settings.h"
 #include "swcdb/lib/core/comm/Settings.h"
+#include "swcdb/lib/core/fs/Settings.h"
 
 namespace SWC{ namespace Config {
 
 
 void Settings::init_app_options(){
   init_comm_options();
+  init_fs_options();
   file_desc().add_options()
     ("swc.rs.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rs.workers", i32(32), "Number of Workers a Reactor")

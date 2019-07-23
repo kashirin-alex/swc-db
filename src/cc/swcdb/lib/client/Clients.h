@@ -5,11 +5,9 @@
 #ifndef swc_lib_client_Clients_h
 #define swc_lib_client_Clients_h
 
-
-#include "swcdb/lib/core/comm/AppContext.h"
+#include "swcdb/lib/client/AppContext.h"
 #include "swcdb/lib/client/mngr/Groups.h"
 #include "swcdb/lib/core/comm/SerializedClient.h"
-#include "swcdb/lib/client/rs/AppContext.h"
 
 #include <memory>
 
@@ -26,11 +24,10 @@ typedef std::shared_ptr<Clients> ClientsPtr;
 class Clients : public std::enable_shared_from_this<Clients> {
   public:
 
-  Clients(IOCtxPtr ioctx, AppContextPtr mngr_client_ctx)
-          : mngr_ctx(mngr_client_ctx), m_run(true), 
-            m_ioctx(
+  Clients(IOCtxPtr ioctx, AppContextPtr app_ctx)
+          : m_ioctx(
               ioctx == nullptr?std::make_shared<asio::io_context>(8):ioctx
-            )
+            ), m_app_ctx(app_ctx), m_run(true)
   {
     
     if(ioctx == nullptr){
@@ -50,11 +47,11 @@ class Clients : public std::enable_shared_from_this<Clients> {
     mngrs_groups = std::make_shared<Mngr::Groups>()->init();
 
     mngr_service = std::make_shared<SerializedClient>(
-      "RS-MANAGER", m_ioctx, mngr_ctx
+      "RS-MANAGER", m_ioctx, m_app_ctx
     );
 
     rs_service = std::make_shared<SerializedClient>(
-      "RANGESERVER", m_ioctx, std::make_shared<RS::AppContext>()
+      "RANGESERVER", m_ioctx, m_app_ctx
     );
 
   }
@@ -70,17 +67,17 @@ class Clients : public std::enable_shared_from_this<Clients> {
       m_wrk->reset();
   }
   
+
   Mngr::GroupsPtr mngrs_groups;
   ClientPtr       mngr_service = nullptr;
-  AppContextPtr   mngr_ctx = nullptr;
-
   ClientPtr       rs_service   = nullptr;
 
-  IO_DoWorkPtr    m_wrk = nullptr;
-
   private:
-  std::atomic<bool> m_run;
   IOCtxPtr          m_ioctx;
+  AppContextPtr     m_app_ctx = nullptr;
+  std::atomic<bool> m_run;
+  
+  IO_DoWorkPtr      m_wrk = nullptr;
 };
 
 }}

@@ -33,7 +33,7 @@ class ActiveMngr : public DispatchHandler {
     client::ClientConPtr conn = clients->mngr_service->get_connection(endpoints);
   
     Params::ActiveMngrReq params(begin, end);
-    CommHeader header(Command::MNGR_REQ_ACTIVE_MNGR, timeout_ms);
+    CommHeader header(Command::CLIENT_REQ_ACTIVE_MNGR, timeout_ms);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
@@ -54,7 +54,7 @@ class ActiveMngr : public DispatchHandler {
     
     bool ok = false;
     if(ev->error == Error::OK 
-       && ev->header.command == Command::MNGR_REQ_ACTIVE_MNGR){
+       && ev->header.command == Command::CLIENT_REQ_ACTIVE_MNGR){
 
       try {
         const uint8_t *ptr = ev->payload;

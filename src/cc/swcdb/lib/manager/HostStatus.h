@@ -5,18 +5,10 @@
 #ifndef swc_app_manager_HostStatus_h
 #define swc_app_manager_HostStatus_h
 
+#include "swcdb/lib/db/Types/MngrState.h"
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
 
 namespace SWC { namespace server { namespace Mngr {
-  
-enum State {
-  NOTSET = 0,
-  OFF = 1,
-  STANDBY = 2,
-  WANT = 3,
-  NOMINATED = 4,
-  ACTIVE = 5
-};
 
 
 struct HostStatus : public Protocol::Params::HostEndPoints {
@@ -28,7 +20,7 @@ struct HostStatus : public Protocol::Params::HostEndPoints {
              EndPoints points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Params::HostEndPoints(points), conn(c), priority(pr),
-               state(State::NOTSET) { }
+               state(Types::MngrState::NOTSET) { }
   
   virtual ~HostStatus(){ }
 
@@ -50,7 +42,7 @@ struct HostStatus : public Protocol::Params::HostEndPoints {
 
   void decode(const uint8_t **bufp, size_t *remainp) {
     priority = Serialization::decode_i32(bufp, remainp);
-    state = (State)Serialization::decode_i8(bufp, remainp);
+    state = (Types::MngrState)Serialization::decode_i8(bufp, remainp);
     col_begin = Serialization::decode_vi64(bufp, remainp);
     col_end = Serialization::decode_vi64(bufp, remainp);
 
@@ -77,7 +69,7 @@ struct HostStatus : public Protocol::Params::HostEndPoints {
   }
 
   uint32_t     priority;
-  State        state;
+  Types::MngrState  state;
   uint64_t     col_begin;
   uint64_t     col_end;
 

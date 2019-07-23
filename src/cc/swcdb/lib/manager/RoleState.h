@@ -13,7 +13,7 @@ namespace SWC { namespace server { namespace Mngr {
 class RoleState;
 typedef std::shared_ptr<RoleState> RoleStatePtr;
 }}}
-#include "AppContextMngrClient.h"
+#include "AppContextClient.h"
 
 #include "swcdb/lib/db/Protocol/req/MngrsState.h"
 
@@ -40,15 +40,13 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
   virtual ~RoleState() { }
 
-  void init(EndPoints endpoints) {
+  void init(EndPoints endpoints, client::ClientsPtr clients) {
+    m_clients = clients;
     m_local_endpoints = endpoints;
-    m_clients = std::make_shared<client::Clients>(
-      m_ioctx, 
-      std::make_shared<client::Mngr::AppContext>(shared_from_this())
-    );
     
     m_local_token = endpoints_hash(m_local_endpoints);
-    asio::post(*m_ioctx.get(), [ptr=shared_from_this()]{ptr->managers_checkin();});
+    asio::post(
+      *m_ioctx.get(), [ptr=shared_from_this()]{ptr->managers_checkin();});
   }
 
   void apply_cfg(){
@@ -145,7 +143,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         
         if(host_chk->conn == nullptr){
           total--;
-          host_chk->state = State::OFF;
+          host_chk->state = Types::MngrState::OFF;
           continue;
         } else 
           total = m_states.size();
@@ -163,7 +161,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     fill_states(new_states);
   }
   
-  void update_state(EndPoint endpoint, State state){
+  void update_state(EndPoint endpoint, Types::MngrState state){
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto host : m_states){
       if(has_endpoint(endpoint, host->endpoints)){
@@ -172,7 +170,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     }
   }
 
-  void update_state(EndPoints endpoints, State state){
+  void update_state(EndPoints endpoints, Types::MngrState state){
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto host : m_states){
       if(has_endpoint(endpoints, host->endpoints)){
@@ -190,7 +188,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     return nullptr;
   }
 
-  bool has_state(uint64_t begin, uint64_t end, State state){
+  bool has_state(uint64_t begin, uint64_t end, Types::MngrState state){
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for(auto host : m_states){
@@ -220,7 +218,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     bool offline = true;
     for(auto host : m_states){
       if(host->col_begin == begin 
-        && host->col_end == end && host->state != State::OFF)
+        && host->col_end == end && host->state != Types::MngrState::OFF)
         offline = false;
     }
     return offline;
@@ -245,14 +243,15 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
       bool local = has_endpoint(host->endpoints, m_local_endpoints);
 
-      if(local && token == 0 && (int)host->state < (int)State::STANDBY){
-        update_state(host->endpoints, State::STANDBY);
+      if(local && token == 0 
+         && (int)host->state < (int)Types::MngrState::STANDBY){
+        update_state(host->endpoints, Types::MngrState::STANDBY);
         continue;
       }
       
       HostStatusPtr host_set = get_host(host->endpoints);
       
-      if((int)host->state < (int)State::STANDBY){
+      if((int)host->state < (int)Types::MngrState::STANDBY){
         if(host->state != host_set->state) {
           update_state(host->endpoints, 
             host->state > host_set->state ? host->state : host_set->state);  
@@ -265,16 +264,16 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       HostStatusPtr high_set = 
         get_highest_state_host(host->col_begin, host->col_end);
        
-      if(high_set->state == State::ACTIVE) {
+      if(high_set->state == Types::MngrState::ACTIVE) {
         if(host->state != host_set->state
            && host_set->priority != high_set->priority) {
-          update_state(host->endpoints, State::STANDBY);
+          update_state(host->endpoints, Types::MngrState::STANDBY);
           new_recs = true;
           continue;
         }
         continue;
       }
-      if(host->state == State::ACTIVE){
+      if(host->state == Types::MngrState::ACTIVE){
         update_state(host->endpoints, host->state);
         new_recs = true;
         continue;
@@ -282,13 +281,13 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       
         
       if(host->priority > high_set->priority){
-        if((int)host->state > (int)State::STANDBY){
-          update_state(host->endpoints, (State)(host->state-1));
+        if((int)host->state > (int)Types::MngrState::STANDBY){
+          update_state(host->endpoints, (Types::MngrState)(host->state-1));
           new_recs = true;
         }
       } else {
-        if((int)host->state < (int)State::ACTIVE){
-          update_state(host->endpoints, (State)(host->state+1));
+        if((int)host->state < (int)Types::MngrState::ACTIVE){
+          update_state(host->endpoints, (Types::MngrState)(host->state+1));
           new_recs = true;
         }
       }
@@ -309,8 +308,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         HostStatusPtr l_host = get_host(m_local_endpoints);
         HostStatusPtr l_hight = get_highest_state_host(
           l_host->col_begin, l_host->col_end);
-        if(l_hight->state < State::WANT) {
-          update_state(m_local_endpoints, State::WANT);
+        if(l_hight->state < Types::MngrState::WANT) {
+          update_state(m_local_endpoints, Types::MngrState::WANT);
           new_recs = true;
         }
         break;
@@ -386,10 +385,10 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     if(host_set == nullptr)
       return false;
     timer_managers_checkin(
-      host_set->state == State::ACTIVE ? 
+      host_set->state == Types::MngrState::ACTIVE ? 
       cfg_delay_fallback->get() : cfg_check_interval->get());
 
-    update_state(endpoint_server, State::OFF);
+    update_state(endpoint_server, Types::MngrState::OFF);
     return true;
   }
 
@@ -403,7 +402,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto host : m_states){
-      if(host->state == State::ACTIVE && host->col_begin <= begin 
+      if(host->state == Types::MngrState::ACTIVE && host->col_begin <= begin 
         && (host->col_end == 0 || host->col_end >= end)){
         std::cout << "active, " << host->to_string() << "\n";
         return host;
@@ -414,7 +413,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
                            << " end=" << end << "\n";
     return nullptr;
   }
-
+  
   private:
   
   IOCtxPtr                     m_ioctx;

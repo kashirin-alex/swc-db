@@ -59,16 +59,6 @@ set(swcdb_core_comm_sources
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_comm
 	SRCS 		${swcdb_core_comm_sources}
-	TARGETS swcdb_core
+	TARGETS swcdb_core swcdb_core_config
 )
 
-
-# lib-swcdb_core_fs, #ifndef swc_core_fs_FileName_h
-set(swcdb_core_fs_sources
-	fs/Filesystem.cc
-)
-# ADD_LIB_TARGET(
-#	NAME 		swcdb_core_fs
-#	SRCS 		${swcdb_core_fs_sources}
-#	TARGETS swcdb_core_comm
-#)

@@ -3,6 +3,8 @@
  */
 
 
+#include "swcdb/lib/rangeserver/Settings.h"
+#include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/rangeserver/columns/Columns.h"
 
 #include <iostream>
@@ -10,8 +12,9 @@
 using namespace SWC;
 
 
-int main() {
+int main(int argc, char** argv) {
 
+    SWC::Config::settings->init(argc, argv);
     ColumnsPtr cols = std::make_shared<Columns>();
 
     for(int64_t c=1; c<=1000; c++){

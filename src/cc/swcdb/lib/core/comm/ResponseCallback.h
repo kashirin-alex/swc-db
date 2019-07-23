@@ -4,11 +4,11 @@
 
 #ifndef swc_core_comm_ResponseCallback_h
 #define swc_core_comm_ResponseCallback_h
+#include <memory>
 
 #include "Event.h"
+#include "AppHandler.h"
 
-
-#include <memory>
 
 namespace SWC {
 
@@ -31,7 +31,6 @@ class ResponseCallback : public AppHandler {
 
   virtual void response_ok() {
     //HT_DEBUGF("response_ok, %s", m_ev->to_str().c_str());
-
     m_conn->response_ok(m_ev);
   }
 

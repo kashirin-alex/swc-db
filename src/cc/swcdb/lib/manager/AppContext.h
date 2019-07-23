@@ -32,7 +32,7 @@ class AppContext : public SWC::AppContext {
       Config::settings->get<int32_t>("swc.mngr.handlers"))),
     m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
     m_role_state(std::make_shared<RoleState>(m_ioctx)),
-    m_rangeservers(std::make_shared<Mngr::RangeServers>())
+    m_rangeservers(std::make_shared<Mngr::RangeServers>(m_ioctx))
   {
     (new std::thread(
       [io_ptr=m_ioctx, run=&m_run]{ 
@@ -47,7 +47,13 @@ class AppContext : public SWC::AppContext {
   
   void init(EndPoints endpoints) override {
     m_endpoints = endpoints;
-    m_role_state->init(m_endpoints);
+    
+    m_clients = std::make_shared<client::Clients>(
+      m_ioctx, 
+      std::make_shared<client::Mngr::AppContext>(m_role_state)
+    );
+    m_role_state->init(m_endpoints, m_clients);
+    m_rangeservers->init(m_clients);
   }
 
   virtual ~AppContext(){}
@@ -81,11 +87,11 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::MngrsState(conn, ev, m_role_state);
             break;
 
-          case Protocol::Command::MNGR_REQ_ACTIVE_MNGR:
+          case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
             handler = new Handler::ActiveMngr(conn, ev, m_role_state);
             break;
 
-          case Protocol::Command::RS_REQ_ASSIGN_RS_ID:
+          case Protocol::Command::RS_REQ_MNG_RS_ID:
             handler = new Handler::AssignRsId(conn, ev, m_rangeservers, m_role_state);
             break;
 
@@ -146,6 +152,7 @@ class AppContext : public SWC::AppContext {
 
   RoleStatePtr        m_role_state;
   RangeServersPtr     m_rangeservers;
+  client::ClientsPtr  m_clients;
   //ColmNameToIDMap columns;       // column-name > CID
 
   /* 

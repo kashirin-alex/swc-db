@@ -37,9 +37,9 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <strings.h>
 
 using namespace SWC;
+using namespace FS;
 using namespace Serialization;
 
 uint8_t Filesystem::Dirent::encoding_version() const {
@@ -176,7 +176,7 @@ String Filesystem::basename(String name, char separator) {
 }
 
 
-Filesystem::Flags SWC::convert(std::string str) {
+Filesystem::Flags SWC::FS::convert(std::string str) {
   boost::trim_if(str, boost::is_any_of("\"'"));
   if (!strcasecmp(str.c_str(), "FLUSH"))
     return Filesystem::Flags::FLUSH;

@@ -5,9 +5,7 @@
 
 #ifndef swc_core_comm_AppContext_h
 #define swc_core_comm_AppContext_h
- 
-#include <asio.hpp>
-#include "Resolver.h"
+
 
 #include <memory>
 #include <iostream>

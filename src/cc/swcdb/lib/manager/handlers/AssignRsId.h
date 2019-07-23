@@ -24,7 +24,8 @@ class AssignRsId : public AppHandler {
     AssignRsId(ConnHandlerPtr conn, EventPtr ev,
                RangeServersPtr rangeservers, RoleStatePtr role_state)
               : AppHandler(conn, ev), 
-                m_rangeservers(rangeservers), m_role_state(role_state) {}
+                m_rangeservers(rangeservers), 
+                m_role_state(role_state) {}
 
   void run() override {
 

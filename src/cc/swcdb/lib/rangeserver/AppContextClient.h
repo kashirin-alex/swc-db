@@ -2,31 +2,28 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_AppContextMngrClient_h
-#define swc_lib_manager_AppContextMngrClient_h
+#ifndef swc_lib_rangeserver_AppContextClient_h
+#define swc_lib_rangeserver_AppContextClient_h
 
 
-namespace SWC { namespace client { namespace Mngr {
-class AppContext;
-}}}
-
-
-namespace SWC { namespace client { namespace Mngr {
+namespace SWC { namespace client { namespace RS {
 
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext(server::Mngr::RoleStatePtr role_state): role_state(role_state){}
+  AppContext() {}
   virtual ~AppContext(){}
 
-  void disconnected(ConnHandlerPtr conn);
+  void disconnected(ConnHandlerPtr conn) {};
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
 
+    HT_INFOF("handle: %s", ev->to_str().c_str());
+    
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED: {
-        break;
+        return;
       }
       
       case Event::Type::DISCONNECT:{
@@ -74,10 +71,9 @@ class AppContext : public SWC::AppContext {
   
   }
   
-  server::Mngr::RoleStatePtr role_state;
 };
 typedef std::shared_ptr<AppContext> AppContextPtr;
 
 }}}
 
-#endif // swc_lib_client_AppContextMngrClient_h
+#endif // swc_lib_rangeserver_AppContextClient_h

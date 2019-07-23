@@ -12,9 +12,6 @@
 #include <iostream>
 #include <unordered_map>
 
-#include <asio.hpp>
-
-#include "swcdb/lib/core/comm/Resolver.h"
 #include "AppContext.h"
 #include "ConnHandlerClient.h"
 

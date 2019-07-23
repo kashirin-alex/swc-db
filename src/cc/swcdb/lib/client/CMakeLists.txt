@@ -8,5 +8,5 @@
 ADD_EXEC_TARGET(
 	NAME      test_mngr_client
 	SRCS      test/test_mngr_client.cc
-	TARGETS   swcdb_db swcdb_core_comm swcdb_core_config
+	TARGETS   swcdb_core swcdb_db swcdb_core_comm
 )

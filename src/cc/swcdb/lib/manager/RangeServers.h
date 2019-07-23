@@ -5,47 +5,25 @@
 
 #ifndef swc_lib_manager_RangeServers_h
 #define swc_lib_manager_RangeServers_h
-
-#include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
 #include <memory>
+
+#include "swcdb/lib/db/Protocol/req/LoadRange.h"
+#include "RangeServerStatus.h"
+
 
 namespace SWC { namespace server { namespace Mngr {
 
-class RangeServerStatus : public Protocol::Params::HostEndPoints {
+
+class RangeServers : public std::enable_shared_from_this<RangeServers> {
 
   public:
-  RangeServerStatus(uint64_t rs_id, EndPoints endpoints)
-                    : ack(false), rs_id(rs_id), 
-                    Protocol::Params::HostEndPoints(endpoints) {}
+  RangeServers(IOCtxPtr ioctx) : m_ioctx(ioctx) { }
 
-  virtual ~RangeServerStatus(){}
-
-  std::string to_string(){
-    std::string s(" RS-status(");
-
-    s.append("ID=");
-    s.append(std::to_string(rs_id));
-    s.append(" ACK=");
-    s.append(ack?"true":"false");
-    s.append(" ");
-    s.append(Protocol::Params::HostEndPoints::to_string());
-    
-    s.append(")\n");
-    return s;
-  }
-
-  bool      ack;
-  uint64_t  rs_id;
-
-};
-typedef std::shared_ptr<RangeServerStatus> RangeServerStatusPtr;
-
-class RangeServers {
-
-  public:
-  RangeServers() {}
   virtual ~RangeServers(){}
 
+  void init(client::ClientsPtr clients) {
+    m_clients = clients;
+  }
   
   uint64_t rs_set_id(EndPoints endpoints, uint64_t opt_id=0){
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -89,13 +67,46 @@ class RangeServers {
   bool rs_ack_id(uint64_t rs_id , EndPoints endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
     
+    RangeServerStatusPtr host;
+    bool ack = false;
     for(auto h : m_rs_status){
       if(has_endpoint(h->endpoints, endpoints) && rs_id == h->rs_id){
+        host = h;
         h->ack = true;
-        return true;
+        ack = true;
+        break;
       }
     }
-    return false;
+
+    if(ack){
+      bool rs_master = false;
+      for(auto h : m_rs_status){
+        rs_master = h->ack && h->role == Types::RsRole::MASTER;
+        if(rs_master)
+          break;
+      }
+      if(!rs_master){
+        host->role = Types::RsRole::MASTER;
+        asio::post(
+          *m_ioctx.get(), 
+          [ptr=shared_from_this(), endpoints=host->endpoints, role=host->role](){ 
+            ptr->load_master_ranges(endpoints, role);  
+          });
+      }
+    }
+
+    return ack;
+  }
+
+  void load_master_ranges(EndPoints endpoints, Types::RsRole role){
+    
+    client::ClientConPtr conn = m_clients->rs_service->get_connection(endpoints);
+
+    Protocol::Req::LoadRangePtr req = 
+      std::make_shared<Protocol::Req::LoadRange>(
+        conn, role
+      );
+    req->run();
   }
 
   uint64_t rs_had_id(uint64_t rs_id , EndPoints endpoints){
@@ -117,15 +128,26 @@ class RangeServers {
 
   void rs_shutdown(uint64_t rs_id , EndPoints endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
-    
+
+    bool was_master=false;
     for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
       auto h = *it;
       if(has_endpoint(h->endpoints, endpoints)){
-          m_rs_status.erase(it);
-        // cols.. (h->rs_id);
-        return;
+        m_rs_status.erase(it);
+        was_master = h->role == Types::RsRole::MASTER;
+        break;
       }
     }
+    if(was_master && m_rs_status.size() > 0){
+      auto host  = *m_rs_status.begin();
+      host->role = Types::RsRole::MASTER;
+      asio::post(
+        *m_ioctx.get(), 
+        [ptr=shared_from_this(), endpoints=host->endpoints, role=host->role](){ 
+          ptr->load_master_ranges(endpoints, role);  
+      });
+    }
+
   }
 
   std::string to_string(){
@@ -138,9 +160,12 @@ class RangeServers {
     return s;
   }
 
+
   private:
-  std::mutex  m_mutex;
+  std::mutex    m_mutex;
+  IOCtxPtr      m_ioctx;
   std::vector<RangeServerStatusPtr> m_rs_status;
+  client::ClientsPtr  m_clients;
 
 };
 typedef std::shared_ptr<RangeServers> RangeServersPtr;

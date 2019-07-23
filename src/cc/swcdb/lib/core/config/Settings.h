@@ -63,6 +63,8 @@ class Settings {
   void init_app_options();
 
   void init_comm_options();
+  
+  void init_fs_options();
 
   /** Check existence of a configuration value
    *
@@ -195,7 +197,7 @@ class Settings {
 };
   /** @}*/
 
-std::shared_ptr<Settings> settings = std::make_shared<Settings>();
+static std::shared_ptr<Settings> settings = std::make_shared<Settings>();
 }}
 
 #endif // swc_core_config_Config_h

@@ -6,7 +6,7 @@
 #include "swcdb/lib/manager/Settings.h"
 
 #include "swcdb/lib/client/Clients.h"
-#include "swcdb/lib/client/mngr/AppContext.h"
+#include "swcdb/lib/client/AppContext.h"
 
 #include <string>
 #include <vector>
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
   
   SWC::client::ClientsPtr clients = std::make_shared<SWC::client::Clients>(
     nullptr,
-    std::make_shared<SWC::client::Mngr::AppContext>()
+    std::make_shared<SWC::client::AppContext>()
   );
 
   SWC::EndPoints endpoints = clients->mngrs_groups->get_endpoints(101);

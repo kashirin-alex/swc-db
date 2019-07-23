@@ -6,12 +6,16 @@
 #ifndef swcdb_lib_rs_Columns_h
 #define swcdb_lib_rs_Columns_h
 
+#include "swcdb/lib/core/fs/Interface.h"
+#include "swcdb/lib/db/Types/RsRole.h"
+
+#include "swcdb/lib/core/comm/ResponseCallback.h"
 #include "Column.h"
 
 #include <mutex>
 #include <memory>
 #include <unordered_map>
-
+#include <iostream>
 
 namespace SWC {
 
@@ -25,12 +29,20 @@ class Columns : public std::enable_shared_from_this<Columns> {
   public:
 
   Columns(){
+    m_fs = std::make_shared<FS::Interface>();
     columns = std::make_shared<ColumnsMap>();
   }
   virtual ~Columns(){}
   
-  bool load_range(int64_t cid, int64_t rid){
-    return get_range(cid, rid, true) != nullptr;
+  void load_master_ranges(ResponseCallbackPtr cb){
+    cb->response_ok();
+    std::cout << "  load_master_ranges \n";
+  }
+
+  void load_range(Types::RsRole role, int64_t cid, int64_t rid,
+                  ResponseCallbackPtr cb){
+    bool loaded = get_range(cid, rid, true) != nullptr;
+    cb->response_ok();
   }
 
   RangePtr get_range(int64_t cid, int64_t rid, bool load=false){
@@ -59,7 +71,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   std::mutex m_mutex;
   std::shared_ptr<ColumnsMap> columns;
-
+  FS::InterfacePtr m_fs;
 };
 
 typedef std::shared_ptr<Columns> ColumnsPtr;
