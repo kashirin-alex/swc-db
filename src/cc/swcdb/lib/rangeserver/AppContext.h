@@ -35,9 +35,9 @@ class AppContext : public SWC::AppContext {
     : m_ioctx(std::make_shared<asio::io_context>(
       Config::settings->get<int32_t>("swc.rs.handlers"))),
       m_wrk(asio::make_work_guard(*m_ioctx.get())),
-      m_columns(std::make_shared<Columns>())
+      m_fs(std::make_shared<FS::Interface>()),
+      m_columns(std::make_shared<Columns>(m_fs))
   {
-
     (new std::thread(
       [this]{ 
         do{
@@ -48,6 +48,7 @@ class AppContext : public SWC::AppContext {
         std::cout << "app-ctx IO exited\n";
       }))->detach();
   }
+
   void init(EndPoints endpoints) override {
     
     int sig = 0;
@@ -161,7 +162,8 @@ class AppContext : public SWC::AppContext {
     // fs(commit)
     
     m_clients->stop();
-
+    m_fs->stop();
+    
     m_run.store(false);
     m_wrk.get_executor().context().stop();
   }
@@ -173,6 +175,7 @@ class AppContext : public SWC::AppContext {
   IOCtxPtr            m_ioctx;
   asio::executor_work_guard<asio::io_context::executor_type> m_wrk; 
 
+  FS::InterfacePtr              m_fs;
   ColumnsPtr                    m_columns;
   client::ClientsPtr            m_clients;
   Protocol::Req::ActiveMngrPtr  mngr_root;

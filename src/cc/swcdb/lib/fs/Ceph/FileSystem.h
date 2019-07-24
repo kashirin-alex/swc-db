@@ -6,26 +6,42 @@
 #define swc_lib_fs_Ceph_FileSystem_h
 
 #include <iostream>
-#include "swcdb/lib/core/fs/FileSystem.h"
+#include "swcdb/lib/fs/FileSystem.h"
 
 namespace SWC{ namespace FS {
+
+void apply_ceph(Config::SettingsPtr settings);
 
 
 class FileSystemCeph: public FileSystem {
   public:
 
-  FileSystemCeph(){}
-  
+  FileSystemCeph(
+    Config::SettingsPtr settings) 
+    : FileSystem(settings),
+      path_root(
+        normalize_pathname(settings->get<String>("swc.fs.ceph.path.root")))
+  { }
+
   virtual ~FileSystemCeph(){}
+
+
+
+
+
+
 
   Types::Fs get_type() override;
 
-  
   const std::string to_string() override {
-    return "FileSystemCeph";
+    return format(
+      "(type=CEPH, path_root=%s, path_data=%s)", 
+      path_root.c_str(),
+      path_data.c_str()
+    );
   }
 
-  
+  const std::string path_root;
 };
 
 

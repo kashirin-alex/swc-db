@@ -6,7 +6,7 @@
 #ifndef swcdb_lib_rs_Columns_h
 #define swcdb_lib_rs_Columns_h
 
-#include "swcdb/lib/core/fs/Interface.h"
+#include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/db/Types/RsRole.h"
 
 #include "swcdb/lib/core/comm/ResponseCallback.h"
@@ -28,13 +28,19 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
-  Columns(){
-    m_fs = std::make_shared<FS::Interface>();
-    columns = std::make_shared<ColumnsMap>();
+  Columns(FS::InterfacePtr fs) 
+          : m_fs(fs),
+            columns(std::make_shared<ColumnsMap>()) {
   }
+
+
   virtual ~Columns(){}
   
   void load_master_ranges(ResponseCallbackPtr cb){
+    
+    // list master columns >> ranges
+
+
     cb->response_ok();
     std::cout << "  load_master_ranges \n";
   }

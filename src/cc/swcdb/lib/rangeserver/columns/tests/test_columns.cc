@@ -15,7 +15,8 @@ using namespace SWC;
 int main(int argc, char** argv) {
 
     SWC::Config::settings->init(argc, argv);
-    ColumnsPtr cols = std::make_shared<Columns>();
+    ColumnsPtr cols = std::make_shared<Columns>(
+        std::make_shared<FS::Interface>());
 
     for(int64_t c=1; c<=1000; c++){
         std::cout << "Loading cid:" << c << "\n";

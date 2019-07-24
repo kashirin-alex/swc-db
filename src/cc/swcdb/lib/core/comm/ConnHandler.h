@@ -27,7 +27,7 @@ typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
 namespace SWC { 
 
 
-size_t endpoints_hash(EndPoints endpoints){
+inline size_t endpoints_hash(EndPoints endpoints){
   std::string s;
   for(auto e : endpoints){
     s.append(e.address().to_string());
@@ -38,13 +38,14 @@ size_t endpoints_hash(EndPoints endpoints){
   return hasher(s);
 }
 
-size_t endpoint_hash(asio::ip::tcp::endpoint endpoint){
+inline size_t endpoint_hash(asio::ip::tcp::endpoint endpoint){
   std::hash<std::string> hasher;
   return hasher(
     (std::string)endpoint.address().to_string()
     +":"
     +std::to_string(endpoint.port()));
 }
+
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 

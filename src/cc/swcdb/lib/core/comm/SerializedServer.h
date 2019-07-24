@@ -91,7 +91,15 @@ class SerializedServer{
     SWC::PropertiesPtr props = SWC::Config::settings->properties;
 
     Strings addrs = props->has("addr") ? props->get<Strings>("addr") : Strings();
-    String host = props->has("host") ? props->get<String>("host") : "";
+    String host;
+    if(props->has("host"))
+      host = host.append(props->get<String>("host"));
+    else {
+      char hostname[256];
+      gethostname(hostname, sizeof(hostname));
+      host.append(hostname);
+    }
+    
     EndPoints endpoints = Resolver::get_endpoints(
       props->get<int32_t>(port_cfg_name),
       addrs,

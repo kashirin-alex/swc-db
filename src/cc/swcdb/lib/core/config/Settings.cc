@@ -122,7 +122,7 @@ void Settings::parse_args(int argc, char *argv[]) {
 
   // Only try to parse config file if it exists or not default
   if (FileUtils::exists(filename)) {
-    parse_file(filename, file_desc());
+    parse_file(filename, "swc.cfg.OnFileChange.file");
     // Inforce cmdline properties
     properties->load_from(
         Parser(argc, argv, cmdline_desc(), file_desc(), 
@@ -132,19 +132,15 @@ void Settings::parse_args(int argc, char *argv[]) {
 
 }
 
-void Settings::parse_file(const String &fname, PropertiesDesc &desc) {
-    properties->load(fname, desc, false);
-    properties->load_files_by(
-        "Hypertable.Config.OnFileChange.file", desc, false);
-}
+void Settings::parse_file(const String &fname, const String &onchg) {
+    if(fname.empty()) return;
+    
+    if(!FileUtils::exists(fname))
+      HT_THROW(Error::FILE_NOT_FOUND, fname);
 
-String Settings::reparse_file(const String &fname) {
-	std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-    String filename = fname;
-    boost::trim(filename);
-    if(filename.empty())
-	    filename = properties->get_str("config");
-	return properties->reload(filename, file_desc());
+    properties->load(fname, file_desc(), false);
+    if(!onchg.empty())
+      properties->load_files_by(onchg, file_desc(), false);
 }
 
 void Settings::alias(const String &cmdline_opt, const String &file_opt) {

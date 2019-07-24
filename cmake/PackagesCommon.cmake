@@ -38,6 +38,18 @@ SET_DEPS(
 #INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
 
 
+find_package(FileSystems REQUIRED)
+
+
+
+
+
+
+
+
+
+
+
 if(FALSE)
 SET_DEPS(NAME "EXPAT" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libexpat.a SHARED expat INCLUDE expat.h)
 # INSTALL_LIBS(lib ${EXPAT_LIBRARIES_SHARED})

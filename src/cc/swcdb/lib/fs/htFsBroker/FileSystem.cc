@@ -42,28 +42,6 @@ using namespace SWC;
 using namespace FS;
 using namespace Serialization;
 
-uint8_t Filesystem::Dirent::encoding_version() const {
-  return 1;
-}
-
-size_t Filesystem::Dirent::encoded_length_internal() const {
-  return 13 + encoded_length_vstr(name);
-}
-
-void Filesystem::Dirent::encode_internal(uint8_t **bufp) const {
-  encode_vstr(bufp, name);
-  encode_i64(bufp, length);
-  encode_i32(bufp, last_modification_time);
-  encode_bool(bufp, is_dir);
-}
-
-void Filesystem::Dirent::decode_internal(uint8_t version, const uint8_t **bufp,
-					 size_t *remainp) {
-  name = decode_vstr(bufp, remainp);
-  length = decode_i64(bufp, remainp);
-  last_modification_time = decode_i32(bufp, remainp);
-  is_dir = decode_bool(bufp, remainp);
-}
 
 
 void

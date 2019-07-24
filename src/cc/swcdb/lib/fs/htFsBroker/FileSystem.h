@@ -94,31 +94,6 @@ namespace SWC { namespace FS {
       OPEN_FLAG_VERIFY_CHECKSUM = 0x00000004
     };
 
-    /// Directory entry
-    class Dirent : public Serializable {
-
-    public:
-      /// File or directory name
-      String name;
-      /// Length of file
-      uint64_t length {};
-      /// Last modification time
-      time_t last_modification_time {};
-      /// Flag indicating if entry id a directory
-      bool is_dir {};
-
-    private:
-
-      uint8_t encoding_version() const override;
-
-      size_t encoded_length_internal() const override;
-
-      void encode_internal(uint8_t **bufp) const override;
-
-      void decode_internal(uint8_t version, const uint8_t **bufp,
-         size_t *remainp) override;
-      
-    };
 
     virtual ~Filesystem() { }
 

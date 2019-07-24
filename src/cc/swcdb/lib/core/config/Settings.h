@@ -165,12 +165,10 @@ class Settings {
    * the option descriptor
    *
    * @param fname The filename of the configuration file
-   * @param desc Reference to the Description object
+   * @param onchg The cfg-name eg. swc.cfg.OnFileChange.file
    * @throws Error::CONFIG_BAD_CFG_FILE on error
    */
-  void parse_file(const String &fname, PropertiesDesc &desc);
-
-  String reparse_file(const String &fname);
+  void parse_file(const String &fname, const String &onchg);
 
   /**
    * Setup command line option alias for config file option.
@@ -196,8 +194,8 @@ class Settings {
   }
 };
   /** @}*/
-
-static std::shared_ptr<Settings> settings = std::make_shared<Settings>();
+typedef std::shared_ptr<Settings> SettingsPtr;
+static SettingsPtr settings = std::make_shared<Settings>();
 }}
 
 #endif // swc_core_config_Config_h

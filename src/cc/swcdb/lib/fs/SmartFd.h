@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_core_fs_SmartFd_h
-#define swc_core_fs_SmartFd_h
+#ifndef swc_lib_fs_SmartFd_h
+#define swc_lib_fs_SmartFd_h
 
 #include <memory>
 #include "swcdb/lib/core/String.h"
@@ -67,4 +67,4 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 }}
 
 
-#endif  // swc_core_fs_SmartFd_h
+#endif  // swc_lib_fs_SmartFd_h

@@ -17,77 +17,76 @@ typedef std::vector<EndPoint> EndPoints;
 
 namespace Serialization {
   
-  size_t encoded_length(EndPoint endpoint){
-    return 3 + (endpoint.address().is_v4() ? 4 : 16);
-  }
+inline size_t encoded_length(EndPoint endpoint){
+  return 3 + (endpoint.address().is_v4() ? 4 : 16);
+}
 
-  void encode(EndPoint endpoint, uint8_t **bufp){
-    Serialization::encode_i16(bufp, endpoint.port());
-    Serialization::encode_bool(bufp, endpoint.address().is_v4());
-    if(endpoint.address().is_v4()) {
-      Serialization::encode_i32(bufp, endpoint.address().to_v4().to_ulong());
-      return;
-    }
-    
-    auto v6_bytes = endpoint.address().to_v6().to_bytes().data();
-    std::uint64_t part;
-    std::memcpy(&part, v6_bytes, 8);
-    Serialization::encode_i64(bufp, part);
-    std::memcpy(&part, v6_bytes+8, 8);
-    Serialization::encode_i64(bufp, part);
+inline void encode(EndPoint endpoint, uint8_t **bufp){
+  Serialization::encode_i16(bufp, endpoint.port());
+  Serialization::encode_bool(bufp, endpoint.address().is_v4());
+  if(endpoint.address().is_v4()) {
+    Serialization::encode_i32(bufp, endpoint.address().to_v4().to_ulong());
+    return;
   }
+    
+  auto v6_bytes = endpoint.address().to_v6().to_bytes().data();
+  std::uint64_t part;
+  std::memcpy(&part, v6_bytes, 8);
+  Serialization::encode_i64(bufp, part);
+  std::memcpy(&part, v6_bytes+8, 8);
+  Serialization::encode_i64(bufp, part);
+}
   
-  EndPoint decode(const uint8_t **bufp, size_t *remainp){
-    uint32_t port = Serialization::decode_i16(bufp, remainp);
-    bool is_v4 = Serialization::decode_bool(bufp, remainp);
-    if(is_v4) 
-      return EndPoint(
-        asio::ip::make_address_v4(
-          Serialization::decode_i32(bufp, remainp)), 
-          port);
+inline EndPoint decode(const uint8_t **bufp, size_t *remainp){
+  uint32_t port = Serialization::decode_i16(bufp, remainp);
+  bool is_v4 = Serialization::decode_bool(bufp, remainp);
+  if(is_v4) 
+    return EndPoint(
+      asio::ip::make_address_v4(
+        Serialization::decode_i32(bufp, remainp)), 
+        port);
     
-    asio::ip::address_v6::bytes_type v6_bytes;
-    size_t part = Serialization::decode_i64(bufp, remainp);
-    std::memcpy(v6_bytes.data(), &part, 8);
-    part = Serialization::decode_i64(bufp, remainp);
-    std::memcpy(v6_bytes.data()+8, &part, 8);
-    return EndPoint(asio::ip::address_v6(v6_bytes), port);
-  }
+  asio::ip::address_v6::bytes_type v6_bytes;
+  size_t part = Serialization::decode_i64(bufp, remainp);
+  std::memcpy(v6_bytes.data(), &part, 8);
+  part = Serialization::decode_i64(bufp, remainp);
+  std::memcpy(v6_bytes.data()+8, &part, 8);
+  return EndPoint(asio::ip::address_v6(v6_bytes), port);
+}
 
 }
 
 
-bool has_endpoint(EndPoint& e1, EndPoints& endpoints){
+inline bool has_endpoint(EndPoint& e1, EndPoints& endpoints){
   return std::find_if(endpoints.begin(), endpoints.end(),  
           [e1](const EndPoint& e2){
             return e1.address() == e2.address() && e1.port() == e2.port();}) 
         != endpoints.end();
 }
-bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
+inline bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
   for(auto & e1 : endpoints){
     if(has_endpoint(e1, endpoints_in)) return true;
   }
   return false;
 }
 
+
+
 namespace Resolver {
 
-  
-
-
-bool is_ipv4_address(const std::string& str)
+inline bool is_ipv4_address(const std::string& str)
 {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr))!=0;
 }
 
-bool is_ipv6_address(const std::string& str)
+inline bool is_ipv6_address(const std::string& str)
 {
   struct sockaddr_in6 sa;
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr))!=0;
 }
 
-EndPoints get_endpoints(int32_t defaul_port, 
+inline EndPoints get_endpoints(int32_t defaul_port, 
                         Strings &addrs, 
                         std::string &host, 
                         bool srv=false){

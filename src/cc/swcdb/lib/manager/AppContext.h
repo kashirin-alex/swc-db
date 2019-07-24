@@ -12,6 +12,8 @@
 #include "swcdb/lib/core/comm/ResponseCallback.h"
 #include "swcdb/lib/core/comm/DispatchHandler.h"
 
+#include "swcdb/lib/fs/Interface.h"
+
 #include "RoleState.h"
 
 #include "swcdb/lib/manager/handlers/MngrsState.h"
@@ -31,6 +33,7 @@ class AppContext : public SWC::AppContext {
     m_ioctx(std::make_shared<asio::io_context>(
       Config::settings->get<int32_t>("swc.mngr.handlers"))),
     m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
+    m_fs(std::make_shared<FS::Interface>()),
     m_role_state(std::make_shared<RoleState>(m_ioctx)),
     m_rangeservers(std::make_shared<Mngr::RangeServers>(m_ioctx))
   {
@@ -150,6 +153,7 @@ class AppContext : public SWC::AppContext {
   IOCtxPtr            m_ioctx;
   IO_DoWorkPtr        m_wrk = nullptr;
 
+  FS::InterfacePtr    m_fs;
   RoleStatePtr        m_role_state;
   RangeServersPtr     m_rangeservers;
   client::ClientsPtr  m_clients;

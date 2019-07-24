@@ -6,26 +6,42 @@
 #define swc_lib_fs_Local_FileSystem_h
 
 #include <iostream>
-#include "swcdb/lib/core/fs/FileSystem.h"
+#include "swcdb/lib/fs/FileSystem.h"
 
 namespace SWC{ namespace FS {
+
+void apply_local(Config::SettingsPtr settings);
 
 
 class FileSystemLocal: public FileSystem {
   public:
 
-  FileSystemLocal(){}
-  
+  FileSystemLocal(
+    Config::SettingsPtr settings) 
+    : FileSystem(settings),
+      path_root(
+        normalize_pathname(settings->get<String>("swc.fs.local.path.root")))
+  { }
+
   virtual ~FileSystemLocal(){}
+
+
+
+
+
+
 
   Types::Fs get_type() override;
 
-  
   const std::string to_string() override {
-    return "FileSystemLocal";
+    return format(
+      "(type=LOCAL, path_root=%s, path_data=%s)", 
+      path_root.c_str(),
+      path_data.c_str()
+    );
   }
 
-  
+  const std::string path_root;
 };
 
 
