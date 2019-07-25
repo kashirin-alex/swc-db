@@ -12,12 +12,18 @@ void apply_hadoop(Config::SettingsPtr settings) {
   settings->file_desc().add_options()
     ("swc.fs.hadoop.path.root", str(""), "Hadoop FileSystem's base root path")
     ("swc.fs.hadoop.OnFileChange.file", str(), "Dyn-config file")
+
+    ("swc.fs.hadoop.namenode", strs(), "Namenode Host + optional(:Port), muliple")
+    ("swc.fs.hadoop.namenode.port", i32(), "Namenode Port")
+    ("swc.fs.hadoop.user", str(), "Hadoop user")
   ;
   settings->parse_file(
     settings->get<String>("swc.fs.cfg.hadoop", ""),
     settings->get<String>("swc.fs.hadoop.OnFileChange.file", "")
   );
 }
+
+
 
 
 Types::Fs FileSystemHadoop::get_type() {

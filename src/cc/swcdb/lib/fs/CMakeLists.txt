@@ -19,14 +19,14 @@ ADD_LIB_TARGET(
 
 ########### CEPH FILESYSTEM ###########
 
-set(swcdb_fsCeph_sources
-Ceph/FileSystem.cc
-)
-ADD_LIB_TARGET(
-	NAME 		swcdb_fs_ceph
-	SRCS 		${swcdb_fsCeph_sources}
-	TARGETS swcdb_core_comm
-)
+#set(swcdb_fsCeph_sources
+# Ceph/FileSystem.cc
+#)
+#ADD_LIB_TARGET(
+#	NAME 		swcdb_fs_ceph
+#	SRCS 		${swcdb_fsCeph_sources}
+#	TARGETS swcdb_core_comm
+#)
 
 
 ########### HADOOP FILESYSTEM ###########

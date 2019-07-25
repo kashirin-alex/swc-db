@@ -62,6 +62,8 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
   uint32_t      m_flags;
   int32_t       m_fd;
   uint64_t      m_pos;
+
+  // hdfsFile file;
 };
 
 }}

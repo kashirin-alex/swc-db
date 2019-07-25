@@ -412,7 +412,8 @@ bool FileUtils::mkdirs(const String &dirname) {
       return false;
     }
   }
-
+  
+  errno = 0;
   return true;
 }
 

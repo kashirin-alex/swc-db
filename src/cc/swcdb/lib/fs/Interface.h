@@ -27,8 +27,8 @@
 #endif
 
 /* 
-#if defined (BUILTIN_FS_HTFSBROKER) || defined (BUILTIN_FS_ALL)
-#include "htFsBroker/FileSystem.h"
+#if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
+#include "Broker/FileSystem.h"
 #endif
 */
 
@@ -58,8 +58,8 @@ class Interface : std::enable_shared_from_this<Interface>{
         m_type = Types::Fs::HADOOP;
       else if(fs_name.compare("ceph") == 0)
         m_type = Types::Fs::CEPH;
-      else if(fs_name.compare("htfsbroker") == 0)
-        m_type = Types::Fs::HTFSBROKER;
+      else if(fs_name.compare("broker") == 0)
+        m_type = Types::Fs::BROKER;
       else if(fs_name.compare("custom") == 0)
         m_type = Types::Fs::CUSTOM;
       else
@@ -168,7 +168,11 @@ class Interface : std::enable_shared_from_this<Interface>{
                   (int)m_type, m_fs==nullptr?"NULL":m_fs->to_string().c_str());
   }
 
-  void stop() { }
+  void stop() { 
+    m_fs->stop();
+  }
+
+
 
   private:
   Types::Fs     m_type;

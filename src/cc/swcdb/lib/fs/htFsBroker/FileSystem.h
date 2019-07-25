@@ -61,19 +61,6 @@ using namespace std;
 
 namespace SWC { namespace FS {
   
-  /// @addtogroup Common
-  /// @{
-
-  /**
-   * Abstract base class for a filesystem.  All commands have synchronous and
-   * asynchronous versions.  Commands that operate on the same file descriptor
-   * are serialized by the underlying filesystem. In other words, if you issue
-   * three asynchronous commands, they will get carried out and their responses
-   * will come back in the same order in which they were issued. Unless other-
-   * wise mentioned, the methods could throw Exception.
-   *
-   * This abstract base class is overwritten by the various FsBrokers.
-   */
   class Filesystem {
   public:
 
@@ -635,7 +622,6 @@ namespace SWC { namespace FS {
   /// mnemonic is not recognized
   extern Filesystem::Flags convert(std::string str);
 
-  /// @}
 
 }} // namespace SWC
 

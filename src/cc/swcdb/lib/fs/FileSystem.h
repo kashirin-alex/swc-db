@@ -8,6 +8,7 @@
 #include "Settings.h"
 #include "SmartFd.h"
 #include "Dirent.h"
+#include "Callbacks.h"
 
 #include "swcdb/lib/core/comm/AppContext.h"
 
@@ -18,7 +19,7 @@ enum Fs {
   LOCAL,
   HADOOP,
   CEPH,
-  HTFSBROKER
+  BROKER
 };
 }}
 
@@ -37,34 +38,69 @@ inline std::string normalize_pathname(std::string s){
 class FileSystem {
   public:
 
-  FileSystem(Config::SettingsPtr settings)
-    : path_data(normalize_pathname(settings->get<String>("swc.fs.path.data")))
+  FileSystem(Config::SettingsPtr settings, std::string root)
+    : settings(settings),
+      path_root(normalize_pathname(root)),
+      path_data(normalize_pathname(settings->get<String>("swc.fs.path.data")))
   { }
 
-  virtual ~FileSystem() {}
-  
-  const std::string path_data;
+  virtual ~FileSystem() { std::cout << " ~FileSystem() \n"; }
+
+  virtual void stop() {}
+
   Config::SettingsPtr settings;
+  const std::string path_root;
+  const std::string path_data;
 
   virtual Types::Fs get_type() {
     return Types::Fs::NONE;
-  };
-  
-  virtual const std::string to_string(){
-    return format("(type=NONE, path_data=%s)", path_data.c_str());
   }
+  
+  virtual const std::string to_string() {
+    return format(
+      "(type=NONE, path_root=%s, path_data=%s)", 
+      path_root.c_str(),
+      path_data.c_str()
+    );
+  }
+
+  virtual const std::string get_abspath(const std::string &name) {
+    std::string abspath;
+    abspath.append(path_root);
+    abspath.append(path_data);
+    abspath.append(name);
+    return abspath;
+  }
+
+  
+  virtual bool exists(int &err, const String &name) = 0;
+  virtual 
+  void exists(int &err, Callback::ExistsCb_t cb, const String &name) {
+    bool state = exists(err, name);
+    cb(err, state);
+  }
+
+  virtual void mkdirs(int &err, const std::string &name) = 0;
+  virtual 
+  void mkdirs(int &err, Callback::MkdirsCb_t cb, const String &name) {
+    mkdirs(err, name);
+    cb(err);
+  }
+
+  virtual DirentList readdir(int &err, const std::string &name) = 0;
+  virtual 
+  void readdir(int &err, Callback::ReaddirCb_t cb, const String &name) {
+    DirentList listing = readdir(err, name);
+    cb(err, listing);
+  }
+
   /* 
-  virtual void mkdirs(const std::string &name) = 0;
-  virtual void mkdirs(const String &name, DispatchHandler *handler) = 0;
+  virtual void readdir(const String &name, std::vector<Dirent> &listing) = 0;
+  virtual void readdir(const String &name, DispatchHandler *handler) = 0;
+
 
   virtual void rmdir(const String &name, bool force = true) = 0;
   virtual void rmdir(const String &name, DispatchHandler *handler) = 0;
-    
-  virtual void readdir(const String &name, std::vector<Dirent> &listing) = 0;
-  virtual void readdir(const String &name, DispatchHandler *handler) = 0;
-    
-  virtual bool exists(const String &name) = 0;
-  virtual void exists(const String &name, DispatchHandler *handler) = 0;
 
   virtual void rename(const String &src, const String &dst) = 0;
   virtual void rename(const String &src, const String &dst,

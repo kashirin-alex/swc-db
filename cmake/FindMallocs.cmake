@@ -56,7 +56,7 @@ else()  # TCMALLOC default if found
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTCMALLOC")
     endif ()
 
-    # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+    # CORE_CXX_FLAGS, SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
     set(MALLOC_LIBRARIES_SHARED ${TCMALLOC_LIBRARIES_SHARED})
     set(MALLOC_LIBRARIES_STATIC ${TCMALLOC_LIBRARIES_STATIC})
     set(MALLOC_INCLUDE_PATHS    ${TCMALLOC_INCLUDE_PATHS})

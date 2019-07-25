@@ -128,7 +128,7 @@ void Settings::parse_args(int argc, char *argv[]) {
         Parser(argc, argv, cmdline_desc(), file_desc(), 
                         false).get_options());
   } else if (!defaulted("config"))
-    HT_THROW(Error::FILE_NOT_FOUND, filename);
+    HT_THROW(Error::FS_FILE_NOT_FOUND, filename);
 
 }
 
@@ -136,7 +136,7 @@ void Settings::parse_file(const String &fname, const String &onchg) {
     if(fname.empty()) return;
     
     if(!FileUtils::exists(fname))
-      HT_THROW(Error::FILE_NOT_FOUND, fname);
+      HT_THROW(Error::FS_FILE_NOT_FOUND, fname);
 
     properties->load(fname, file_desc(), false);
     if(!onchg.empty())

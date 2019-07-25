@@ -25,6 +25,20 @@ class Dirent : public Serializable {
   /// Flag indicating if entry id a directory
   bool is_dir {};
 
+  std::string to_string(){
+    std::string s("Dirent(");
+    s.append("name=");
+    s.append(name);
+    s.append(" length=");
+    s.append(std::to_string(length));
+    s.append(" is_dir=");
+    s.append(std::to_string(is_dir));
+    s.append(" modified=");
+    s.append(std::to_string((int64_t)last_modification_time));
+    
+    s.append(")\n");
+    return s;
+  }
   private:
 
   uint8_t encoding_version() const {
@@ -52,6 +66,7 @@ class Dirent : public Serializable {
       
 };
 
+typedef std::vector<Dirent> DirentList;
 }}
 
 

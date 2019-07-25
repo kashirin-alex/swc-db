@@ -38,11 +38,19 @@ class Columns : public std::enable_shared_from_this<Columns> {
   
   void load_master_ranges(ResponseCallbackPtr cb){
     
-    // list master columns >> ranges
-
+    for(int c=1; c<=3; c++){
+      ColumnPtr col = get_column(c, true);
+      if(col->has_err() != 0){
+        cb->response_ok(); // rsp_err
+        return;
+      }
+      if(!col->load_master_ranges()){
+        cb->response_ok(); // rsp_err
+        return;
+      }
+    }
 
     cb->response_ok();
-    std::cout << "  load_master_ranges \n";
   }
 
   void load_range(Types::RsRole role, int64_t cid, int64_t rid,
@@ -68,8 +76,9 @@ class Columns : public std::enable_shared_from_this<Columns> {
       return it->second;
 
     if(load) {
-      ColumnPtr col = std::make_shared<Column>(cid);
-      columns->insert(ColumnsMapPair(cid, col));
+      ColumnPtr col = std::make_shared<Column>(m_fs, cid);
+      if(col->has_err() == 0)
+        columns->insert(ColumnsMapPair(cid, col));
       return col;
     }
     return nullptr;

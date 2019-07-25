@@ -18,19 +18,11 @@ class FileSystemCeph: public FileSystem {
 
   FileSystemCeph(
     Config::SettingsPtr settings) 
-    : FileSystem(settings),
-      path_root(
-        normalize_pathname(settings->get<String>("swc.fs.ceph.path.root")))
+    : FileSystem(settings, settings->get<String>("swc.fs.ceph.path.root"))
   { }
 
   virtual ~FileSystemCeph(){}
-
-
-
-
-
-
-
+  
   Types::Fs get_type() override;
 
   const std::string to_string() override {
@@ -41,7 +33,27 @@ class FileSystemCeph: public FileSystem {
     );
   }
 
-  const std::string path_root;
+
+  
+  bool exists(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    HT_DEBUGF("exists file='%s'", abspath);
+
+    errno = 0;
+    bool state = false; // ceph-exists(m_filesystem, abspath.c_str()) == -1);
+    err = errno;
+    return state;
+  }
+
+  void mkdirs(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    HT_DEBUGF("mkdirs path='%s'", abspath);
+    
+    errno = 0;
+    //ceph-mkdirs(m_filesystem, abspath.c_str());
+    err = errno;
+  }
+
 };
 
 

@@ -162,10 +162,11 @@ class AppContext : public SWC::AppContext {
     // fs(commit)
     
     m_clients->stop();
-    m_fs->stop();
-    
+  
     m_run.store(false);
     m_wrk.get_executor().context().stop();
+
+    // m_fs->stop();
   }
 
   private:
