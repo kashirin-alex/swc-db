@@ -29,12 +29,9 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
   virtual ~HandleRsShutdown(){}
 
   client::ClientConPtr m_conn;
-  void run(Protocol::Params::HostEndPoints* host) override {
+  void run(EndPoints endpoints) override {
 
-    std::cout << "HandleRsShutdown-RUN \n";
-    std::cout << host->to_string() << "\n";
-
-    m_conn = clients->mngr_service->get_connection(host->endpoints);
+    m_conn = clients->mngr_service->get_connection(endpoints);
   
     Protocol::Params::AssignRsID params(
       rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, rs_endpoints);
@@ -48,7 +45,7 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
   
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
     
-    std::cout << ev->to_str() << "\n";
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
     conn->do_close();
     if(ev->error == Error::OK 

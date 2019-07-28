@@ -7,6 +7,7 @@
 #define swc_lib_manager_RangeServerStatus_h
 
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
+#include "swcdb/lib/db/Types/RsRole.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -38,8 +39,8 @@ class RangeServerStatus : public Protocol::Params::HostEndPoints {
     return s;
   }
 
-  bool      ack;
-  uint64_t  rs_id;
+  bool           ack;
+  uint64_t       rs_id;
   Types::RsRole  role;
 
 };

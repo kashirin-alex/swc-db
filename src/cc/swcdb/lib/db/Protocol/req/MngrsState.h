@@ -40,7 +40,7 @@ class MngrsState : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
-    // HT_INFOF("%s", ev->to_str().c_str());
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
     if(ev->type == Event::Type::DISCONNECT){
       disconnected();

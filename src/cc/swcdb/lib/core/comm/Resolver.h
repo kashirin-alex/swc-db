@@ -29,12 +29,21 @@ inline void encode(EndPoint endpoint, uint8_t **bufp){
     return;
   }
     
-  auto v6_bytes = endpoint.address().to_v6().to_bytes().data();
+  auto v6_bytes = endpoint.address().to_v6().to_bytes();
+  Serialization::encode_bytes(bufp, v6_bytes.data(), 16);
+  //Serialization::encode_bytes32(bufp, v6_bytes.data(), v6_bytes.size());
+  
+  /* 
   std::uint64_t part;
   std::memcpy(&part, v6_bytes, 8);
+
+  std::cout << " part 1=" << part;
   Serialization::encode_i64(bufp, part);
   std::memcpy(&part, v6_bytes+8, 8);
   Serialization::encode_i64(bufp, part);
+  std::cout << " part 2=" << part;
+  */
+  // std::cout << "encode, address_v6=" << endpoint.address().to_string() << "\n";
 }
   
 inline EndPoint decode(const uint8_t **bufp, size_t *remainp){
@@ -45,24 +54,37 @@ inline EndPoint decode(const uint8_t **bufp, size_t *remainp){
       asio::ip::make_address_v4(
         Serialization::decode_i32(bufp, remainp)), 
         port);
-    
+  
+  // uint32_t len;
+  // uint8_t* bytes = Serialization::decode_bytes32(bufp, remainp, &len);
+  uint8_t* bytes = Serialization::decode_bytes(bufp, remainp, 16);
   asio::ip::address_v6::bytes_type v6_bytes;
+  std::memcpy(v6_bytes.data(), bytes, 16);
+
+  /* 
   size_t part = Serialization::decode_i64(bufp, remainp);
+  std::cout << " part 1=" << part;
   std::memcpy(v6_bytes.data(), &part, 8);
   part = Serialization::decode_i64(bufp, remainp);
+  std::cout << " part 2=" << part;
   std::memcpy(v6_bytes.data()+8, &part, 8);
+  */
+  // std::cout << "decode, address_v6=" << asio::ip::address_v6(v6_bytes).to_string() << "\n";
   return EndPoint(asio::ip::address_v6(v6_bytes), port);
 }
 
 }
 
 
-inline bool has_endpoint(EndPoint& e1, EndPoints& endpoints){
-  return std::find_if(endpoints.begin(), endpoints.end(),  
+inline bool has_endpoint(EndPoint& e1, EndPoints& endpoints_in){
+  if(endpoints_in.size()==0) 
+    return false;
+  return std::find_if(endpoints_in.begin(), endpoints_in.end(),  
           [e1](const EndPoint& e2){
             return e1.address() == e2.address() && e1.port() == e2.port();}) 
-        != endpoints.end();
+        != endpoints_in.end();
 }
+
 inline bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
   for(auto & e1 : endpoints){
     if(has_endpoint(e1, endpoints_in)) return true;

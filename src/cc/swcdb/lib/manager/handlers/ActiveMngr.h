@@ -30,15 +30,16 @@ class ActiveMngr : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::ActiveMngrReq req_params;
+      Protocol::Params::ActiveMngrReq params;
       const uint8_t *base = ptr;
-      req_params.decode(&ptr, &remain);
+      params.decode(&ptr, &remain);
 
-      Protocol::Params::ActiveMngrRsp rsp_params(
-        (Protocol::Params::HostEndPoints*)m_role_state->active_mngr(
-              req_params.begin, req_params.end).get()
-      );
-
+      HostStatusPtr h = m_role_state->active_mngr(params.begin, params.end);
+      EndPoints endpoints;
+      if(h!=nullptr) 
+        endpoints = h->endpoints;
+      Protocol::Params::ActiveMngrRsp rsp_params(endpoints);
+      
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(

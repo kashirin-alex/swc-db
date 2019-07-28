@@ -130,22 +130,22 @@ class FileSystemHadoop: public FileSystem {
     err = errno;
   }
 
-  DirentList readdir(int &err, const String &name) override {
+  void readdir(int &err, const String &name, DirentList &results) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("Readdir dir='%s'", abspath.c_str());
 
-    DirentList listing;
     Dirent entry;
     hdfsFileInfo *fileInfo;
     int numEntries;
 
+    errno = 0;
     if ((fileInfo = hdfsListDirectory(
                       m_filesystem, abspath.c_str(), &numEntries)) == 0) {
       if(errno != 0) {
         err = errno;
         HT_ERRORF("readdir('%s') failed - %s", abspath.c_str(), strerror(errno)); 
       }
-      return listing;
+      return;
     }
 
     for (int i=0; i<numEntries; i++) {
@@ -160,15 +160,18 @@ class FileSystemHadoop: public FileSystem {
       entry.length = fileInfo[i].mSize;
       entry.last_modification_time = fileInfo[i].mLastMod;
       entry.is_dir = fileInfo[i].mKind == kObjectKindDirectory;
-      listing.push_back(entry);      
+      results.push_back(entry);      
     }
 
     hdfsFreeFileInfo(fileInfo, numEntries);
-    return listing;
   }
 
 
 
+  void create(int &err, SmartFdPtr &smartfd, int32_t bufsz,
+              int32_t replication, int64_t blksz) override {
+
+  };
 
 	hdfsFS            m_filesystem;
   std::atomic<bool> m_run;

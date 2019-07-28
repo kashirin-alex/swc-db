@@ -295,6 +295,34 @@ namespace SWC { namespace Serialization {
   }
 
   /**
+   * Encodes a fixed-known sized byte array into the given buffer.  Encoded as a
+   * only with the data.  Assumes there is enough space
+   * available.  Increments buffer pointer.
+   *
+   * @param bufp Address of the destination buffer
+   * @param data Pointer to array of bytes
+   * @param len The length of the byte array
+   */
+  inline void encode_bytes(uint8_t **bufp, const void *data, int32_t len) {
+    HT_ENCODE_BYTES(*bufp, data, len);
+  }
+
+  /**
+   * Decodes a fixed-known sized byte array from the given buffer.  Byte array
+   * only the data.  Increments buffer
+   * pointer and decrements remainp on success.
+   *
+   * @param bufp Address of buffer containing encoded byte array
+   * @param remainp Address of variable containing number of bytes remaining
+   * @param len The length of the byte array
+   */
+  inline uint8_t *decode_bytes(const uint8_t **bufp, size_t *remainp,
+          uint32_t len) {
+    uint8_t *out;
+    HT_DECODE_BYTES(*bufp, *remainp, out, len);
+    return out;
+  }
+  /**
    * Computes the encoded length of a string16 encoding
    *
    * @param str Pointer to the c-style string

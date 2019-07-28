@@ -28,19 +28,13 @@ class LoadRange : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::LoadRange req_params;
+      Protocol::Params::LoadRange params;
       const uint8_t *base = ptr;
-      req_params.decode(&ptr, &remain);
+      params.decode(&ptr, &remain);
 
-      ResponseCallbackPtr cb = std::make_shared<Callback::RangeLoaded>(m_conn, m_ev);
-      if(req_params.role != Types::RsRole::MASTER){
-        m_columns->load_range(
-          req_params.role, req_params.cid, req_params.rid, cb);
-        return;
-      }
-      
-      m_columns->load_master_ranges(cb);
-
+      m_columns->load_range(
+        params.cid, params.rid, 
+         std::make_shared<Callback::RangeLoaded>(m_conn, m_ev));
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

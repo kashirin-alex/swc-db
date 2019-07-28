@@ -50,7 +50,8 @@ namespace SWC {
       REQUEST_TRUNCATED                            = 2,
       RESPONSE_TRUNCATED                           = 3,
       REQUEST_TIMEOUT                              = 4,
-      
+
+
       LOCAL_IO_ERROR                               = 5,
       BAD_SCHEMA                                   = 7,
       BAD_KEY                                      = 9,      
@@ -64,6 +65,8 @@ namespace SWC {
       BLOCK_COMPRESSOR_DEFLATE_ERROR               = 19,
       BLOCK_COMPRESSOR_INFLATE_ERROR               = 20,
       BLOCK_COMPRESSOR_INIT_ERROR                  = 21,
+      
+      NOT_LOADED_RANGE                             = 22,
 
       MALFORMED_REQUEST                            = 23,
       TOO_MANY_COLUMNS                             = 24,

@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_LoadRange_h
-#define swc_db_protocol_params_LoadRange_h
+#ifndef swc_db_protocol_params_IsRangeLoaded_h
+#define swc_db_protocol_params_IsRangeLoaded_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,17 +12,18 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class LoadRange : public Serializable {
+class IsRangeLoaded : public Serializable {
   public:
 
-    LoadRange() {}
-    LoadRange(size_t cid, size_t rid) 
-             : cid(cid), rid(rid){}
+    IsRangeLoaded() {}
+    IsRangeLoaded(size_t cid, size_t rid) 
+                  : cid(cid), rid(rid){}
              
-    virtual ~LoadRange() {}
+    virtual ~IsRangeLoaded() {}
 
     size_t  cid; 
     size_t  rid;
+    
     
   private:
 
@@ -51,4 +52,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_LoadRange_h
+#endif // swc_db_protocol_params_IsRangeLoaded_h

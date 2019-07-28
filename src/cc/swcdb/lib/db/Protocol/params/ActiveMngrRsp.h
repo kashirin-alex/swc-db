@@ -13,39 +13,36 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class ActiveMngrRsp : public Serializable {
+  class ActiveMngrRsp : public HostEndPoints {
   public:
 
     ActiveMngrRsp() {}
 
-    ActiveMngrRsp(HostEndPoints* host) 
-                 : host(host), available(host!=nullptr) { }
-
-    HostEndPoints* host; 
+    ActiveMngrRsp(EndPoints endpoints) 
+                 : HostEndPoints(endpoints), available(endpoints.size()>0) { }
     bool available;
   
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
-
     size_t encoded_length_internal() const {
-      return available ? host->encoded_length()+1 : 1;
+      size_t len = 1;
+      if(available)
+        len += HostEndPoints::encoded_length_internal();
+      return len;
     }
 
     void encode_internal(uint8_t **bufp) const {
       Serialization::encode_bool(bufp, available);
-      if(available)
-        host->encode(bufp);
+      if(available) {
+        HostEndPoints::encode_internal(bufp);
+      }
     }
 
     void decode_internal(uint8_t version, const uint8_t **bufp, 
                         size_t *remainp) {
       available = Serialization::decode_bool(bufp, remainp);
       if(available) {
-        host = new HostEndPoints();
-        host->decode(bufp, remainp);
+        HostEndPoints::decode_internal(version, bufp, remainp);
       }
     }
 

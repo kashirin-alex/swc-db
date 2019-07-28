@@ -26,7 +26,7 @@ enum Fs {
 
 
 namespace SWC { namespace FS {
-
+  
 
 inline std::string normalize_pathname(std::string s){
   if(*(--s.end()) != '/') 
@@ -75,29 +75,44 @@ class FileSystem {
   
   virtual bool exists(int &err, const String &name) = 0;
   virtual 
-  void exists(int &err, Callback::ExistsCb_t cb, const String &name) {
+  void exists(Callback::ExistsCb_t cb, const String &name) {
+    int err = 0;
     bool state = exists(err, name);
     cb(err, state);
   }
 
+  // Directory Actions
   virtual void mkdirs(int &err, const std::string &name) = 0;
   virtual 
-  void mkdirs(int &err, Callback::MkdirsCb_t cb, const String &name) {
+  void mkdirs(Callback::MkdirsCb_t cb, const String &name) {
+    int err = 0;
     mkdirs(err, name);
     cb(err);
   }
 
-  virtual DirentList readdir(int &err, const std::string &name) = 0;
+  virtual void readdir(int &err, const std::string &name, 
+                       DirentList &results) = 0;
   virtual 
-  void readdir(int &err, Callback::ReaddirCb_t cb, const String &name) {
-    DirentList listing = readdir(err, name);
+  void readdir(Callback::ReaddirCb_t cb, const String &name) {
+    int err = 0;
+    DirentList listing;
+    readdir(err, name, listing);
     cb(err, listing);
   }
 
-  /* 
-  virtual void readdir(const String &name, std::vector<Dirent> &listing) = 0;
-  virtual void readdir(const String &name, DispatchHandler *handler) = 0;
 
+  // File Actions
+  virtual void create(int &err, SmartFdPtr &smartfd, int32_t bufsz,
+                      int32_t replication, int64_t blksz) = 0;
+  virtual 
+  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd, int32_t bufsz,
+              int32_t replication, int64_t blksz) {
+    int err = 0;
+    create(err, smartfd, bufsz, replication, blksz);
+    cb(err, smartfd);
+  }
+
+  /* 
 
   virtual void rmdir(const String &name, bool force = true) = 0;
   virtual void rmdir(const String &name, DispatchHandler *handler) = 0;

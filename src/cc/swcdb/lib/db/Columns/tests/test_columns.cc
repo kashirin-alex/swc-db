@@ -3,18 +3,22 @@
  */
 
 
-#include "swcdb/lib/rangeserver/Settings.h"
+#include "swcdb/lib/fs/Settings.h"
 #include "swcdb/lib/core/comm/AppContext.h"
-#include "swcdb/lib/rangeserver/columns/Columns.h"
+#include "swcdb/lib/db/Columns/Columns.h"
 
 #include <iostream>
 
-using namespace SWC;
 
+void SWC::Config::Settings::init_app_options(){
+  init_fs_options();
+}
+using namespace SWC;
 
 int main(int argc, char** argv) {
 
     SWC::Config::settings->init(argc, argv);
+
     ColumnsPtr cols = std::make_shared<Columns>(
         std::make_shared<FS::Interface>());
 
@@ -40,7 +44,7 @@ int main(int argc, char** argv) {
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
             }
-            if(range->range_id() != r){
+            if(range->rid != r){
                 std::cerr << "ERROR, range-id does not match! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
             }

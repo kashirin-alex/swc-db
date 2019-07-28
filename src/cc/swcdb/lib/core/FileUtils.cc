@@ -526,9 +526,12 @@ void FileUtils::readdir(const String &dirname, const String &fname_regex,
   int ret;
   struct dirent de, *dep;
   do {
-    if ((ret = ::readdir_r(dirp, &de, &dep)) != 0)
-      HT_FATALF("Problem reading directory '%s' - %s", dirname.c_str(),
-              strerror(errno));
+    if ((ret = ::readdir_r(dirp, &de, &dep)) != 0){
+      HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+                strerror(errno));
+      (void)closedir(dirp);
+      return;
+    }
 
     if (dep != 0 && (!regex || re2::RE2::FullMatch(de.d_name, *regex)))
       listing.push_back(de);
@@ -540,10 +543,12 @@ void FileUtils::readdir(const String &dirname, const String &fname_regex,
     errno = 0;
     de = ::readdir(dirp);
     if (de == NULL){
-      if(errno > 0)
-        HT_FATALF("Problem reading directory '%s' - %s", dirname.c_str(),
-                strerror(errno));
-      break;
+      if(errno > 0){
+        HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+                  strerror(errno));
+        (void)closedir(dirp);
+        return;
+      }
     }
     if (!regex || re2::RE2::FullMatch(de->d_name, *regex))
       listing.push_back(*de);

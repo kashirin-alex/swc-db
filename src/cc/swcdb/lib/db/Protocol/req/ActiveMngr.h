@@ -37,7 +37,6 @@ class ActiveMngr : public DispatchHandler {
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
-    
     bool ok = conn->send_request(cbp, shared_from_this()) == Error::OK;
     if(!ok)
       goto do_request;
@@ -52,6 +51,8 @@ class ActiveMngr : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
+
     bool ok = false;
     if(ev->error == Error::OK 
        && ev->header.command == Command::CLIENT_REQ_ACTIVE_MNGR){
@@ -60,12 +61,12 @@ class ActiveMngr : public DispatchHandler {
         const uint8_t *ptr = ev->payload;
         size_t remain = ev->payload_len;
 
-        Params::ActiveMngrRsp rsp_params;
+        Params::ActiveMngrRsp params;
         const uint8_t *base = ptr;
-        rsp_params.decode(&ptr, &remain);
-
-        if(rsp_params.available){
-          cb->run(rsp_params.host);
+        params.decode(&ptr, &remain);
+        
+        if(params.available){
+          cb->run(params.endpoints);
           return;
         }
         ok = true;

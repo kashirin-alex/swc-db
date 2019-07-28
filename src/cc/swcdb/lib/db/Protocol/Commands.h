@@ -14,11 +14,12 @@ namespace SWC { namespace Protocol {
     MNGR_REQ_MNGRS_STATE,
     CLIENT_REQ_ACTIVE_MNGR,
     RS_REQ_MNG_RS_ID,
-    
+
+    CLIENT_REQ_IS_RANGE_LOADED,
     MNGR_REQ_LOAD_RANGE,
+    
     //
 
-    MNGR_REQ_IS_RANGE_LOADED,
 
     RS_REQ_NOTIFY_COLUMN_ADDED,
     RS_RSP_SCAN,

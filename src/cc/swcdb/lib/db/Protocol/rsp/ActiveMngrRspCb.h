@@ -21,9 +21,8 @@ class ActiveMngrRspCb : public DispatchHandler {
 
   virtual ~ActiveMngrRspCb(){}
 
-  virtual void run(Params::HostEndPoints* host){
-    std::cout << "ActiveMngrRspCb-RUN \n";
-    std::cout << host->to_string() << "\n";
+  virtual void run(EndPoints endpoints){
+    std::cout << "ActiveMngrRspCb-RUN (virtual)\n";
   }
 
   

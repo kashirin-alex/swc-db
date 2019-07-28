@@ -30,12 +30,17 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() :
-    m_ioctx(std::make_shared<asio::io_context>(
-      Config::settings->get<int32_t>("swc.mngr.handlers"))),
-    m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
-    m_fs(std::make_shared<FS::Interface>()),
-    m_role_state(std::make_shared<RoleState>(m_ioctx)),
-    m_rangeservers(std::make_shared<Mngr::RangeServers>(m_ioctx))
+    m_ioctx(
+      std::make_shared<asio::io_context>( 
+        Config::settings->get<int32_t>("swc.mngr.handlers"))),
+    m_wrk(
+      std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
+    m_fs(
+      std::make_shared<FS::Interface>()),
+    m_role_state(
+      std::make_shared<RoleState>(m_ioctx)),
+    m_rangeservers(
+      std::make_shared<Mngr::RangeServers>(m_ioctx, m_role_state, m_fs))
   {
     (new std::thread(
       [io_ptr=m_ioctx, run=&m_run]{ 

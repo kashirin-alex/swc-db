@@ -14,7 +14,7 @@ namespace Protocol {
 namespace Params {
 
 
-  class AssignRsID : public Serializable {
+  class AssignRsID  : public HostEndPoints {
   public:
 
     enum Flag {
@@ -30,14 +30,12 @@ namespace Params {
 
     AssignRsID() {}
 
-    AssignRsID(uint64_t rs_id, Flag flag, 
-                  EndPoints endpoints) 
-                : rs_id(rs_id), flag(flag),
-                  host(endpoints.size()==0?nullptr:new HostEndPoints(endpoints)){}
+    AssignRsID(uint64_t rs_id, Flag flag, EndPoints endpoints) 
+              : rs_id(rs_id), flag(flag), HostEndPoints(endpoints){     
+    }
 
-    HostEndPoints* host; 
-    uint64_t rs_id; 
-    Flag flag;
+    uint64_t        rs_id; 
+    Flag            flag;
 
   private:
 
@@ -46,11 +44,12 @@ namespace Params {
     }
     
     size_t encoded_length_internal() const {
-      return 1
-        +(flag != Flag::MNGR_NOT_ACTIVE 
-          ? Serialization::encoded_length_vi64(rs_id) : 0)
-        +(flag >= Flag::RS_REQ 
-          ? host->encoded_length() : 0);
+      size_t len = 1;
+      if(flag != Flag::MNGR_NOT_ACTIVE)
+        len += Serialization::encoded_length_vi64(rs_id);
+      if(flag >= Flag::RS_REQ)
+        len +=  HostEndPoints::encoded_length_internal();
+      return len;
     }
     
     void encode_internal(uint8_t **bufp) const {
@@ -58,8 +57,9 @@ namespace Params {
       if(flag != Flag::MNGR_NOT_ACTIVE)
         Serialization::encode_vi64(bufp, rs_id);
       
-      if(flag >= Flag::RS_REQ)
-        host->encode(bufp);
+      if(flag >= Flag::RS_REQ){
+        HostEndPoints::encode_internal(bufp);
+      }
     }
     
     void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -69,8 +69,7 @@ namespace Params {
         rs_id = Serialization::decode_vi64(bufp, remainp);
       
       if(flag >= Flag::RS_REQ){
-        host = new HostEndPoints();
-        host->decode(bufp, remainp);
+        HostEndPoints::decode_internal(version, bufp, remainp);
       }
     }
 

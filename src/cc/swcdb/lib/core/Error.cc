@@ -88,6 +88,8 @@ namespace {
     { Error::FS_INVALID_CONFIG,    "FS invalid config value" },
     { Error::FS_EOF,               "FS end of file" },
 
+    { Error::NOT_LOADED_RANGE,     "RS range id not loaded"},
+
     { Error::LOCAL_IO_ERROR,       "local i/o error" },
     { Error::BAD_SCHEMA,           "bad schema" },
     { Error::BAD_KEY,              "bad key" },

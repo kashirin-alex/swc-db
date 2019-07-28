@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_rs_Columns_h
-#define swcdb_lib_rs_Columns_h
+#ifndef swcdb_lib_db_Columns_Columns_h
+#define swcdb_lib_db_Columns_Columns_h
 
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/db/Types/RsRole.h"
@@ -35,38 +35,6 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
 
   virtual ~Columns(){}
-  
-  void load_master_ranges(ResponseCallbackPtr cb){
-    
-    for(int c=1; c<=3; c++){
-      ColumnPtr col = get_column(c, true);
-      if(col->has_err() != 0){
-        cb->response_ok(); // rsp_err
-        return;
-      }
-      if(!col->load_master_ranges()){
-        cb->response_ok(); // rsp_err
-        return;
-      }
-    }
-
-    cb->response_ok();
-  }
-
-  void load_range(Types::RsRole role, int64_t cid, int64_t rid,
-                  ResponseCallbackPtr cb){
-    bool loaded = get_range(cid, rid, true) != nullptr;
-    cb->response_ok();
-  }
-
-  RangePtr get_range(int64_t cid, int64_t rid, bool load=false){
-    ColumnPtr col = get_column(cid, load);
-    if(col == nullptr) 
-      return nullptr;
-    return col->get_range(rid, load);
-  }
-
-  private:
 
   ColumnPtr get_column(int64_t cid, bool load){
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -84,9 +52,27 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return nullptr;
   }
 
-  std::mutex m_mutex;
+  RangePtr get_range(int64_t cid, int64_t rid, bool initialize=false, bool load=false){
+    ColumnPtr col = get_column(cid, load);
+    if(col == nullptr) 
+      return nullptr;
+    return col->get_range(rid, initialize, load);
+  }
+
+  void load_range(int64_t cid, int64_t rid, ResponseCallbackPtr cb){
+    RangePtr range = get_range(cid, rid, true, true);
+    if(range != nullptr && range->is_loaded()) {
+      cb->response_ok();
+      return;
+    }
+    cb->response_ok();
+  }
+
+  private:
+  std::mutex                  m_mutex;
   std::shared_ptr<ColumnsMap> columns;
-  FS::InterfacePtr m_fs;
+  FS::InterfacePtr            m_fs;
+
 };
 
 typedef std::shared_ptr<Columns> ColumnsPtr;

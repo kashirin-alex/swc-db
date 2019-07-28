@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_rs_Column_h
-#define swcdb_lib_rs_Column_h
+#ifndef swcdb_lib_db_Columns_Column_h
+#define swcdb_lib_db_Columns_Column_h
 
 #include "Schema.h"
 #include "Range.h"
@@ -43,30 +43,22 @@ class Column : public std::enable_shared_from_this<Column> {
     return m_err;
   }
 
-  bool load_master_ranges(){
-    
-    FS::DirentList entries;
-
-    int err = 0;
-    for(auto r : entries) {
-      std::cout << r.to_string();
-    }
-
-    RangePtr r = get_range(1, true);
-    return r->has_err() == 0;
+  void ranges_by_fs(int &err, FS::IdEntries_t &entries){
+    m_fs->get_structured_ids(err, Range::get_path(cid), entries);
   }
 
-  RangePtr get_range(int64_t rid, bool load=false){
+  RangePtr get_range(int64_t rid, bool initialize=false, bool load=false){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = ranges->find(rid);
     if (it != ranges->end())
       return it->second;
 
-    if(load) {
+    if(initialize) {
       RangePtr range = std::make_shared<Range>(m_fs, cid, rid, schema);
-      if(range->has_err() == 0)
+      if(!load || range->load()){
         ranges->insert(RangesMapPair(rid, range));
+      }
       return range;
     }
     return nullptr;

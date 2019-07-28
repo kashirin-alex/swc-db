@@ -41,9 +41,9 @@ class AssignRsId : public AppHandler {
       // ResponseCallbackPtr cb = 
       //  std::make_shared<ResponseCallback>(m_conn, m_ev);
       
-      std::cout << "AssignRsId-run: " << req_params.host->to_string() << "\n";
+      // std::cout << "AssignRsId-run rs " << req_params.to_string() << "\n";
       
-      if(!m_role_state->is_active(2)){
+      if(!m_role_state->is_active(1)){
         std::cout << "MNGR NOT ACTIVE: \n";
       
         Protocol::Params::AssignRsID rsp_params(
@@ -63,8 +63,7 @@ class AssignRsId : public AppHandler {
       switch(req_params.flag){
 
         case Protocol::Params::AssignRsID::Flag::RS_REQ: {
-          uint64_t rs_id = m_rangeservers->rs_set_id(
-            req_params.host->endpoints);
+          uint64_t rs_id = m_rangeservers->rs_set_id(req_params.endpoints);
 
           Protocol::Params::AssignRsID rsp_params(
             rs_id, Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED, {});
@@ -79,10 +78,9 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_ACK: {
-          if(m_rangeservers->rs_ack_id(
-              req_params.rs_id, req_params.host->endpoints)){
-
+          if(m_rangeservers->rs_ack_id(req_params.rs_id, req_params.endpoints)){
             m_conn->response_ok(m_ev);
+
           } else {
 
             Protocol::Params::AssignRsID rsp_params(
@@ -100,7 +98,7 @@ class AssignRsId : public AppHandler {
 
         case Protocol::Params::AssignRsID::Flag::RS_DISAGREE: {
           uint64_t rs_id = m_rangeservers->rs_had_id(
-            req_params.rs_id, req_params.host->endpoints);
+            req_params.rs_id, req_params.endpoints);
 
           if (rs_id != 0){
             Protocol::Params::AssignRsID rsp_params(
@@ -121,8 +119,7 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN: {
-          m_rangeservers->rs_shutdown(
-            req_params.rs_id, req_params.host->endpoints);
+          m_rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
           m_conn->response_ok(m_ev);
           break;
         }

@@ -15,15 +15,14 @@ namespace Req {
 class LoadRange : public DispatchHandler {
   public:
 
-  LoadRange(client::ClientConPtr conn, 
-            Types::RsRole role, uint64_t cid=0, uint64_t rid=0)
-            : conn(conn), role(role), cid(cid), rid(rid) { }
+  LoadRange(client::ClientConPtr conn, RangePtr range)
+            : conn(conn), range(range) { }
   
   virtual ~LoadRange() { }
   
   bool run(uint32_t timeout=60000) override {
     Protocol::Params::LoadRange params = 
-      Protocol::Params::LoadRange(role, cid, rid);
+      Protocol::Params::LoadRange(range->cid, range->rid);
     
     CommHeader header(Protocol::Command::MNGR_REQ_LOAD_RANGE, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -36,7 +35,7 @@ class LoadRange : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
-    // HT_INFOF("%s", ev->to_str().c_str());
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
     if(ev->type == Event::Type::DISCONNECT){
       disconnected();
@@ -45,6 +44,8 @@ class LoadRange : public DispatchHandler {
 
     if(ev->header.command == Protocol::Command::MNGR_REQ_LOAD_RANGE 
        && Protocol::response_code(ev) == Error::OK){
+      range->set_loaded(true);
+      std::cout << "RANGE-LOADED, cid=" << range->cid << " rid=" << range->rid << "\n";
       return;
     }
 
@@ -53,11 +54,8 @@ class LoadRange : public DispatchHandler {
   }
 
   private:
-  Types::RsRole role;
-  uint64_t  cid;
-  uint64_t  rid;
-  
-  client::ClientConPtr conn;
+  client::ClientConPtr  conn;
+  RangePtr              range;
   ;
 };
 

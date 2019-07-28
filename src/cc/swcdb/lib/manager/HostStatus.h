@@ -11,7 +11,7 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-struct HostStatus : public Protocol::Params::HostEndPoints {
+class HostStatus : public Protocol::Params::HostEndPoints {
   public:
 
   HostStatus() {}
@@ -24,29 +24,29 @@ struct HostStatus : public Protocol::Params::HostEndPoints {
   
   virtual ~HostStatus(){ }
 
-  size_t encoded_length(){
+  size_t encoded_length_internal() const {
     size_t len = 5 
                + Serialization::encoded_length_vi64(col_begin)
                + Serialization::encoded_length_vi64(col_end)
-               + Protocol::Params::HostEndPoints::encoded_length();
+               + Protocol::Params::HostEndPoints::encoded_length_internal();
     return len;
   }
 
-  void encode(uint8_t **bufp){
+  void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i32(bufp, priority);
     Serialization::encode_i8(bufp, (uint8_t)state);
     Serialization::encode_vi64(bufp, col_begin);
     Serialization::encode_vi64(bufp, col_end);
-    Protocol::Params::HostEndPoints::encode(bufp);
+    Protocol::Params::HostEndPoints::encode_internal(bufp);
   }
 
-  void decode(const uint8_t **bufp, size_t *remainp) {
+  void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
     priority = Serialization::decode_i32(bufp, remainp);
     state = (Types::MngrState)Serialization::decode_i8(bufp, remainp);
     col_begin = Serialization::decode_vi64(bufp, remainp);
     col_end = Serialization::decode_vi64(bufp, remainp);
 
-    Protocol::Params::HostEndPoints::decode(bufp, remainp);
+    Protocol::Params::HostEndPoints::decode_internal(version, bufp, remainp);
   }
 
   std::string to_string(){

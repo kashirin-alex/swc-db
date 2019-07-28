@@ -35,6 +35,10 @@
 
 
 namespace SWC{ namespace FS {
+  
+typedef std::vector<uint64_t> IdEntries_t;
+const int id_split_len = 3;
+const char id_split_last = 'g';
 
 /// Interface to FileSystems
 
@@ -172,13 +176,63 @@ class Interface : std::enable_shared_from_this<Interface>{
     m_fs->stop();
   }
 
+  void get_structured_ids(int &err, std::string base_path, 
+                          IdEntries_t &entries, std::string base_id=""){
+    //path(base_path) .../111/222/333/444f >> IdEntries_t{(int64_t)111222333444}
+    
+    DirentList dirs;
+    m_fs->readdir(err, base_path, dirs);
 
+    if(err > 0)
+      return;
+
+    for(auto entry : dirs) {
+      // std::cout << entry.to_string();
+      if(!entry.is_dir) continue;
+
+      std::string id_name = base_id;
+      if(entry.name.back() == id_split_last){
+        id_name.append(entry.name.substr(0, entry.name.length()-1));
+        try {
+          entries.push_back((int64_t)strtoll(id_name.c_str(), NULL, 0));
+        } catch(...){
+          HT_ERRORF("Error converting id_name=%s to int64", id_name.c_str());
+        }
+        continue;
+      }
+      
+      std::string new_base_path = base_path;
+      new_base_path.append("/");
+      new_base_path.append(entry.name);
+      id_name.append(entry.name);
+      get_structured_ids(err, new_base_path, entries, id_name);
+      if(err > 0)
+        return;
+    }
+  }
 
   private:
   Types::Fs     m_type;
   FileSystemPtr m_fs;
 };
 
+
+
+void set_structured_id(std::string number, std::string &s){
+  if(number.length() <= id_split_len) {
+    s.append(number);
+    s.append({id_split_last});
+  } else {
+    int len = number.length()-id_split_len;
+    for(int n=0; n<len;){
+      s.append(std::string(number, n, id_split_len));
+      s.append("/");
+      n += id_split_len;
+    }
+    s.append(std::string(number, len, id_split_len));
+    s.append({id_split_last});
+  }
+};
 
 }}
 

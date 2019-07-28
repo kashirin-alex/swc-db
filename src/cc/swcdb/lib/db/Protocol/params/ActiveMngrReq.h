@@ -30,7 +30,7 @@ namespace Params {
     
     size_t encoded_length_internal() const {
       return Serialization::encoded_length_vi64(begin)
-          + Serialization::encoded_length_vi64(end);
+           + Serialization::encoded_length_vi64(end);
     }
     
     void encode_internal(uint8_t **bufp) const {
@@ -39,7 +39,7 @@ namespace Params {
     }
     
     void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
+                         size_t *remainp) {
       begin = (size_t)Serialization::decode_vi64(bufp, remainp);
       end = (size_t)Serialization::decode_vi64(bufp, remainp);
     }

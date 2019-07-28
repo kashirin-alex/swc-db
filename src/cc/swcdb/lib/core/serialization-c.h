@@ -372,6 +372,33 @@
 
 
 /*
+ * Encode a known-fixed bytes buffer format ( data)
+ *
+ * @param _op_ - output buffer pointer
+ * @param _ip_ - input buffer pointer
+ * @param _len_ - input buffer length
+ */
+#define HT_ENCODE_BYTES(_op_, _ip_, _len_) do { \
+  memcpy(_op_, _ip_, _len_); \
+  _op_ += _len_; \
+} while (0)
+
+/*
+ * Decode a known-fixed bytes (data)
+ *
+ * @param _ip_ - input buffer pointer
+ * @param _r_ - varable with remaining bytes
+ * @param _out_ - variable for output
+ * @param _len_ - input buffer length
+ */
+#define HT_DECODE_BYTES(_ip_, _r_, _out_, _len_) do { \
+  HT_DECODE_NEED(_r_, _len_); \
+  _out_ = (uint8_t *)(_ip_); \
+  _ip_ += _len_; \
+} while (0)
+
+
+/*
  * Encode a buffer in bytes32 format (i32, data)
  *
  * @param _op_ - output buffer pointer

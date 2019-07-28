@@ -20,9 +20,10 @@
 #include "callbacks/HandleRsAssign.h"
 #include "callbacks/HandleRsShutdown.h"
 
-#include "columns/Columns.h"
+#include "swcdb/lib/db/Columns/Columns.h"
 
 #include "handlers/LoadRange.h"
+#include "handlers/IsRangeLoaded.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -36,7 +37,7 @@ class AppContext : public SWC::AppContext {
       Config::settings->get<int32_t>("swc.rs.handlers"))),
       m_wrk(asio::make_work_guard(*m_ioctx.get())),
       m_fs(std::make_shared<FS::Interface>()),
-      m_columns(std::make_shared<Columns>(m_fs))
+      m_columns(std::make_shared<Columns>(m_fs)) 
   {
     (new std::thread(
       [this]{ 
@@ -76,7 +77,7 @@ class AppContext : public SWC::AppContext {
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
 
-    std::cout << "handle:" << ev->to_str() << "\n";
+    HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
     switch (ev->type) {
 
@@ -96,6 +97,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::MNGR_REQ_LOAD_RANGE: 
             handler = new Handler::LoadRange(conn, ev, m_columns);
+            //(rid-barrier-release)
+            break;
+          case Protocol::Command::CLIENT_REQ_IS_RANGE_LOADED: 
+            handler = new Handler::IsRangeLoaded(conn, ev, m_columns);
             //(rid-barrier-release)
             break;
             

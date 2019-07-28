@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_rs_Schema_h
-#define swcdb_lib_rs_Schema_h
+#ifndef swcdb_lib_db_Columns_Schema_h
+#define swcdb_lib_db_Columns_Schema_h
 
 #include "Schema.h"
 

@@ -18,7 +18,7 @@ class AppContext : public SWC::AppContext {
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
 
-    HT_INFOF("handle: %s", ev->to_str().c_str());
+    HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
     switch (ev->type) {
 
