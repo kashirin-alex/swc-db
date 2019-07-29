@@ -47,7 +47,8 @@ class Column : public std::enable_shared_from_this<Column> {
     m_fs->get_structured_ids(err, Range::get_path(cid), entries);
   }
 
-  RangePtr get_range(int64_t rid, bool initialize=false, bool load=false){
+  RangePtr get_range(int64_t rid, bool initialize=false, 
+                     Files::RsDataPtr rs_data=nullptr){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = ranges->find(rid);
@@ -56,7 +57,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
     if(initialize) {
       RangePtr range = std::make_shared<Range>(m_fs, cid, rid, schema);
-      if(!load || range->load()){
+      if(rs_data == nullptr || range->load(rs_data)){
         ranges->insert(RangesMapPair(rid, range));
       }
       return range;

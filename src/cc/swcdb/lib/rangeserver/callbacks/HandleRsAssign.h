@@ -16,13 +16,11 @@ namespace RS {
 class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
   public:
 
-  HandleRsAssign(EndPoints endpoints, 
-                  client::ClientsPtr clients, 
-                  Protocol::Req::ActiveMngrPtr mngr_active,
-                  uint64_t &rs_id)
-                : rs_endpoints(endpoints), 
-                  Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
-                  rs_id(rs_id) {
+  HandleRsAssign(client::ClientsPtr clients, 
+                 Protocol::Req::ActiveMngrPtr mngr_active,
+                 Files::RsDataPtr rs_data)
+                : Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
+                  rs_data(rs_data) {
 
     cfg_check_interval = Config::settings->get_ptr<gInt32t>(
       "swc.rs.id.validation.interval");
@@ -36,7 +34,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
     m_conn = clients->mngr_service->get_connection(endpoints);
   
     Protocol::Params::AssignRsID params(
-      0, Protocol::Params::AssignRsID::Flag::RS_REQ, rs_endpoints);
+      0, Protocol::Params::AssignRsID::Flag::RS_REQ, rs_data->endpoints);
 
     CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -83,19 +81,21 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
           || rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN){
           
           Protocol::Params::AssignRsID params;
-          if(rs_id == 0 || rs_id == rsp_params.rs_id
-            || (rs_id != rsp_params.rs_id 
+          if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
+            || (rs_data->rs_id != rsp_params.rs_id 
                 && rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN)){
-            rs_id = rsp_params.rs_id;
+            rs_data->rs_id = rsp_params.rs_id;
           
             params = Protocol::Params::AssignRsID(
-              rs_id, Protocol::Params::AssignRsID::Flag::RS_ACK, rs_endpoints);
-            std::cout << "HandleRsAssign: RS_ACK, rs_id=" << rs_id << "\n";
+              rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_ACK, 
+              rs_data->endpoints);
+            std::cout << "HandleRsAssign: RS_ACK, rs_data=" << rs_data->to_string() << "\n";
          
           } else {
             params = Protocol::Params::AssignRsID(
-              rs_id, Protocol::Params::AssignRsID::Flag::RS_DISAGREE, rs_endpoints);
-            std::cout << "HandleRsAssign: RS_DISAGREE, rs_id=" << rs_id << "\n";
+              rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_DISAGREE, 
+              rs_data->endpoints);
+            std::cout << "HandleRsAssign: RS_DISAGREE, rs_data=" << rs_data->to_string() << "\n";
           }
 
           CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
@@ -119,9 +119,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
     mngr_active->run_within(conn->m_io_ctx, 1000);
   }
 
-  EndPoints rs_endpoints;
-  uint64_t &rs_id;
-  
+  Files::RsDataPtr rs_data;
   gInt32tPtr  cfg_check_interval;
 };
 

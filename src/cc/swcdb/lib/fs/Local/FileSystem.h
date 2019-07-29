@@ -20,7 +20,9 @@ class FileSystemLocal: public FileSystem {
   FileSystemLocal(
     Config::SettingsPtr settings) 
     : FileSystem(settings, settings->get<String>("swc.fs.local.path.root"))
-  { }
+  { 
+    m_directio = settings->get<bool>("swc.fs.local.DirectIO", false);
+  }
 
   virtual ~FileSystemLocal(){}
 
@@ -39,11 +41,10 @@ class FileSystemLocal: public FileSystem {
 
   bool exists(int &err, const String &name) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("exists path='%s'", abspath.c_str());
-    
     errno = 0;
     bool state = FileUtils::exists(abspath);
     err = errno;
+    HT_DEBUGF("exists state='%d' path='%s'", (int)state, abspath.c_str());
     return state;
   }
 
@@ -97,12 +98,162 @@ class FileSystemLocal: public FileSystem {
     }
   }
 
-  void create(int &err, SmartFdPtr &smartfd, int32_t bufsz,
-              int32_t replication, int64_t blksz) override {
+  void create(int &err, SmartFdPtr &smartfd, 
+              int32_t bufsz, int32_t replication, int64_t blksz) override {
 
-  };
+    std::string abspath = get_abspath(smartfd->filepath());
+    HT_DEBUGF("create %s bufsz=%d replication=%d blksz=%lld",
+              smartfd->to_string().c_str(), 
+              bufsz, (int)replication, (Lld)blksz);
 
+    int oflags = O_WRONLY | O_CREAT
+        | (smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE 
+           ? O_TRUNC : O_APPEND);
+               
+#ifdef O_DIRECT
+    if (m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
+      oflags |= O_DIRECT;
+#endif
+
+    /* Open the file */
+    errno = 0;
+    smartfd->fd(::open(abspath.c_str(), oflags, 0644));
+    if (!smartfd->valid()) {
+      err = errno;
+      HT_ERRORF("create failed: %d(%s),  %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+      return;
+    }
+    
+    HT_DEBUGF("created %s bufsz=%d replication=%d blksz=%lld",
+              smartfd->to_string().c_str(), 
+              bufsz, (int)replication, (Lld)blksz);
+
+#if defined(__APPLE__)
+#ifdef F_NOCACHE
+    fcntl(smartfd->fd(), F_NOCACHE, 1);
+#endif  
+#elif defined(__sun__)
+    if (m_directio)
+      directio(smartfd->fd(), DIRECTIO_ON);
+#endif
+
+  }
+
+  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) override {
+
+    std::string abspath = get_abspath(smartfd->filepath());
+    HT_DEBUGF("open %s, bufsz=%d", smartfd->to_string().c_str(), bufsz);
+
+    int oflags = O_RDONLY;
+               
+#ifdef O_DIRECT
+    if(m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
+      oflags |= O_DIRECT;
+#endif
+
+    /* Open the file */
+    errno = 0;
+    smartfd->fd(::open(abspath.c_str(), oflags));
+    if (!smartfd->valid()) {
+      err = errno;
+      HT_ERRORF("open failed: %d(%s),  %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+      return;
+    }
+    
+    HT_DEBUGF("opened %s", smartfd->to_string().c_str());
+
+#if defined(__sun__)
+    if(m_directio)
+      directio(smartfd->fd(), DIRECTIO_ON);
+#endif
+
+  }
   
+  size_t read(int &err, SmartFdPtr &smartfd, 
+              void *dst, size_t amount) override {
+    
+    HT_DEBUGF("read %s amount=%d", smartfd->to_string().c_str(), amount);
+    ssize_t nread = 0;
+    errno = 0;
+    
+    /*
+    uint64_t offset;
+    if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
+      err = errno;
+      HT_ERRORF("read, lseek failed: %d(%s), %s offset=%d", 
+                errno, strerror(errno), smartfd->to_string().c_str(), offset);
+      return nread;
+    }
+    */
+    
+    nread = FileUtils::read(smartfd->fd(), dst, amount);
+    if (nread == -1) {
+      err = errno;
+      HT_ERRORF("read failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+    } else {
+
+      smartfd->pos(nread);
+      HT_DEBUGF("read(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+    }
+    return nread;
+  }
+
+  size_t append(int &err, SmartFdPtr &smartfd, 
+                StaticBuffer &buffer, Flags flags) override {
+    
+    HT_DEBUGF("append %s amount=%d flags=%d", 
+              smartfd->to_string().c_str(), buffer.size, flags);
+    
+    ssize_t nwritten = 0;
+    errno = 0;
+
+    /* 
+    if (smartfd->pos() != 0 
+      && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
+      err = errno;
+      HT_ERRORF("append, lseek failed: %d(%s),  %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+      return nwritten;
+    }
+    */
+
+    if ((nwritten = FileUtils::write(
+                    smartfd->fd(), buffer.base, buffer.size)) == -1) {
+      err = errno;
+      HT_ERRORF("write failed: %d(%s),  %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+      return nwritten;
+    }
+    smartfd->pos(nwritten);
+    
+    if (flags == Flags::FLUSH || flags == Flags::SYNC) {
+      if (fsync(smartfd->fd()) != 0) {     
+        err = errno;
+        HT_ERRORF("write, fsync failed: %d(%s),  %s", 
+                  errno, strerror(errno), smartfd->to_string().c_str());
+      }
+    }
+    
+    HT_DEBUGF("appended %s written=%d", 
+              smartfd->to_string().c_str(), nwritten);
+    return nwritten;
+  }
+
+
+
+
+  void close(int &err, SmartFdPtr &smartfd) {
+    HT_DEBUGF("close %s", smartfd->to_string().c_str());
+    ::close(smartfd->fd());
+  }
+
+
+
+  private:
+  bool m_directio;
 };
 
 

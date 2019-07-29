@@ -30,23 +30,18 @@
 
 #include <iosfwd>
 
-namespace SWC {
-
-  /// @addtogroup Common
-  /// @{
+namespace SWC {namespace Time {
 
   /// Returns the current time in nanoseconds as a 64bit number
-  int64_t get_ts64();
+  int64_t now_ns();
 
   /// Prints the current time as seconds and nanoseconds, delimited by '.'
-  std::ostream &hires_ts(std::ostream &);
+  std::ostream &hires_now_ns(std::ostream &);
 
 #if defined(__sun__)
   time_t timegm(struct tm *t);
 #endif
 
-  /// @}
-
-}
+}}
 
 #endif // swc_core_Time_h

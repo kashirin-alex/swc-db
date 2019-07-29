@@ -7,17 +7,13 @@
 #define swcdb_lib_db_Columns_Range_h
 
 #include "Schema.h"
-
+#include "swcdb/lib/db/Files/RsData.h"
 #include <mutex>
 #include <memory>
 #include <unordered_map>
 
 
 namespace SWC {
-
-struct RsData {
-  EndPoints endpoints;
-};
 
 class Range : public std::enable_shared_from_this<Range> {
   public:
@@ -48,7 +44,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   virtual ~Range(){}
 
-  bool load(){    
+  bool load(Files::RsDataPtr rs_data){    
     std::cout << "LOAD RANGE cid=" << cid << " rid=" << rid << "\n";
     m_err = 0;
     if(!m_fs->get_fs()->exists(m_err, m_path)){
@@ -57,34 +53,34 @@ class Range : public std::enable_shared_from_this<Range> {
       m_fs->get_fs()->mkdirs(m_err, get_path("log"));
       m_fs->get_fs()->mkdirs(m_err, get_path("cs"));
     } 
-    
-    if(m_err == 0) {
-      if(m_fs->get_fs()->exists(m_err, get_path("rs/last.data"))) {
+    if(m_err > 0) 
+      return false;
 
-        // read last fs, 
-        // if not this rs(endpoints)  
-        //  if online,
-              // req. unload (sync)
-      } 
-      m_err = 0;
-      // create rs/last.data
-    }
+
+    Files::RsDataPtr rs_last = get_last_rs();
+    std::cout << " RS-LAST=" << rs_last->to_string() << "\n"
+              << " RS-NEW =" << rs_data->to_string() << "\n";
+    if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
+      // if online, (means rs-mngr had comm issues with the RS-LAST )
+      //   req. unload (sync)  
+    } 
+
+    if(!rs_data->set_rs(m_fs, get_path("rs/last.data")))
+      return false;
+
     set_loaded(m_err == 0);
-    return m_err == 0;
+    return is_loaded();
   }
 
-  RsData get_last_rs(){
-    RsData rs_data;
-    if(!m_fs->get_fs()->exists(m_err, get_path("rs/last.data")))
-      return rs_data;
-    
-    return rs_data;
+  Files::RsDataPtr get_last_rs(){
+    return Files::RsData::get_rs(m_fs, get_path("rs/last.data"));
   }
 
   void set_loaded(bool state){
     std::lock_guard<std::mutex> lock(m_mutex);
     loaded = state;
   }
+
   bool is_loaded(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return loaded;

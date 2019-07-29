@@ -13,6 +13,7 @@
 #include "swcdb/lib/core/comm/AppContext.h"
 
 namespace SWC{ namespace Types {
+
 enum Fs {
   NONE,
   CUSTOM,
@@ -21,12 +22,25 @@ enum Fs {
   CEPH,
   BROKER
 };
+    
 }}
 
 
 
 namespace SWC { namespace FS {
-  
+
+
+enum OpenFlags {
+  OPEN_FLAG_DIRECTIO = 0x00000001,
+  OPEN_FLAG_OVERWRITE = 0x00000002,
+  OPEN_FLAG_VERIFY_CHECKSUM = 0x00000004
+};
+
+enum Flags : uint8_t {
+  NONE=0,
+  FLUSH=1,
+  SYNC=2
+};
 
 inline std::string normalize_pathname(std::string s){
   if(*(--s.end()) != '/') 
@@ -102,15 +116,55 @@ class FileSystem {
 
 
   // File Actions
-  virtual void create(int &err, SmartFdPtr &smartfd, int32_t bufsz,
-                      int32_t replication, int64_t blksz) = 0;
+  virtual void create(int &err, SmartFdPtr &smartfd,
+                      int32_t bufsz, int32_t replication, int64_t blksz) = 0;
   virtual 
-  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd, int32_t bufsz,
-              int32_t replication, int64_t blksz) {
+  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd,
+              int32_t bufsz, int32_t replication, int64_t blksz) {
     int err = 0;
     create(err, smartfd, bufsz, replication, blksz);
     cb(err, smartfd);
   }
+
+  virtual void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) = 0;
+  virtual 
+  void open(Callback::OpenCb_t cb, SmartFdPtr &smartfd, int32_t bufsz=0) {
+    int err = 0;
+    open(err, smartfd, bufsz);
+    cb(err, smartfd);
+  }
+  
+
+  virtual size_t read(int &err, SmartFdPtr &smartfd, 
+                      void *dst, size_t amount) = 0;
+  virtual 
+  void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
+    int err = 0;
+    StaticBuffer dst(amount);
+    size_t nread = read(err, smartfd, dst.base, amount);
+    
+    dst.size = nread;
+    cb(err, smartfd, dst);
+  }
+
+  virtual size_t append(int &err, SmartFdPtr &smartfd, 
+                        StaticBuffer &buffer, Flags flags) = 0;
+  virtual 
+  void append(Callback::AppendCb_t cb, SmartFdPtr &smartfd, 
+              StaticBuffer &buffer, Flags flags) {
+    int err = 0;
+    size_t len = append(err, smartfd, buffer, flags);
+    cb(err, smartfd, len);
+  }
+
+  virtual void close(int &err, SmartFdPtr &smartfd) = 0;
+  virtual 
+  void close(Callback::CloseCb_t cb, SmartFdPtr &smartfd) {
+    int err = 0;
+    close(err, smartfd);
+    cb(err, smartfd);
+  }
+
 
   /* 
 

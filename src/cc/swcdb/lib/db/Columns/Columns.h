@@ -28,8 +28,9 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
-  Columns(FS::InterfacePtr fs) 
+  Columns(FS::InterfacePtr fs, Files::RsDataPtr rs_data=nullptr) 
           : m_fs(fs),
+            m_rs_data(rs_data),
             columns(std::make_shared<ColumnsMap>()) {
   }
 
@@ -56,7 +57,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     ColumnPtr col = get_column(cid, load);
     if(col == nullptr) 
       return nullptr;
-    return col->get_range(rid, initialize, load);
+    return col->get_range(rid, initialize, load ? m_rs_data : nullptr);
   }
 
   void load_range(int64_t cid, int64_t rid, ResponseCallbackPtr cb){
@@ -72,6 +73,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   std::mutex                  m_mutex;
   std::shared_ptr<ColumnsMap> columns;
   FS::InterfacePtr            m_fs;
+  Files::RsDataPtr            m_rs_data;
 
 };
 

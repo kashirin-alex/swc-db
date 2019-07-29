@@ -33,18 +33,20 @@
 #include <iostream>
 #include <ratio>
 
-using namespace std;
-
 namespace SWC {
+namespace Time {
 
-int64_t get_ts64() {
-  assert((ratio_less_equal<chrono::system_clock::duration::period, chrono::nanoseconds::period>::value));
-  return (int64_t)chrono::duration_cast<chrono::nanoseconds>(chrono::system_clock::now().time_since_epoch()).count();
+int64_t now_ns() {
+  assert((std::ratio_less_equal<std::chrono::system_clock::duration::period, std::chrono::nanoseconds::period>::value));
+  return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-ostream &hires_ts(ostream &out) {
-  auto now = chrono::system_clock::now();
-  return out << chrono::duration_cast<chrono::seconds>(now.time_since_epoch()).count() <<'.'<< setw(9) << setfill('0') << (chrono::duration_cast<chrono::nanoseconds>(now.time_since_epoch()).count() % 1000000000LL);
+std::ostream &hires_now_ns(std::ostream &out) {
+  auto now = std::chrono::system_clock::now();
+  return out << std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() 
+             <<'.'<< std::setw(9) << std::setfill('0') 
+             << (std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count() % 1000000000LL);
 }
 
 #if defined(__sun__)
@@ -76,4 +78,5 @@ time_t timegm(struct tm *t) {
 }
 #endif
 
-} // namespace Hypertable
+}
+} 

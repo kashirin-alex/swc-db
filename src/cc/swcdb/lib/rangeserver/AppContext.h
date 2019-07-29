@@ -17,10 +17,10 @@
 #include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
 
+#include "swcdb/lib/db/Columns/Columns.h"
+
 #include "callbacks/HandleRsAssign.h"
 #include "callbacks/HandleRsShutdown.h"
-
-#include "swcdb/lib/db/Columns/Columns.h"
 
 #include "handlers/LoadRange.h"
 #include "handlers/IsRangeLoaded.h"
@@ -37,7 +37,8 @@ class AppContext : public SWC::AppContext {
       Config::settings->get<int32_t>("swc.rs.handlers"))),
       m_wrk(asio::make_work_guard(*m_ioctx.get())),
       m_fs(std::make_shared<FS::Interface>()),
-      m_columns(std::make_shared<Columns>(m_fs)) 
+      m_rs_data(std::make_shared<Files::RsData>()),
+      m_columns(std::make_shared<Columns>(m_fs, m_rs_data)) 
   {
     (new std::thread(
       [this]{ 
@@ -56,7 +57,7 @@ class AppContext : public SWC::AppContext {
     m_signals = std::make_shared<asio::signal_set>(*m_ioctx.get(), SIGINT, SIGTERM);
     shutting_down(std::error_code(), sig);
 
-    m_endpoints = endpoints;
+    m_rs_data->endpoints = endpoints;
 
     m_clients = std::make_shared<client::Clients>(
       m_ioctx,
@@ -66,11 +67,10 @@ class AppContext : public SWC::AppContext {
     mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(
       m_clients, 1, 3);
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
-      std::make_shared<HandleRsAssign>(m_endpoints, m_clients, mngr_root, rs_id);
+      std::make_shared<HandleRsAssign>(m_clients, mngr_root, m_rs_data);
     mngr_root->set_cb(cb_hdlr);
     mngr_root->run();
   }
-  std::shared_ptr<asio::signal_set> m_signals;
 
   virtual ~AppContext(){}
 
@@ -156,7 +156,7 @@ class AppContext : public SWC::AppContext {
 
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
       std::make_shared<HandleRsShutdown>(
-        m_endpoints, m_clients, mngr_root, rs_id, [this](){stop();});
+        m_clients, mngr_root, m_rs_data, [this](){stop();});
     mngr_root->set_cb(cb_hdlr);
     
     mngr_root->run();
@@ -179,14 +179,15 @@ class AppContext : public SWC::AppContext {
   SerializedServerPtr m_srv = nullptr;
   std::atomic<bool>   m_run = true;
   IOCtxPtr            m_ioctx;
+  std::shared_ptr<asio::signal_set> m_signals;
   asio::executor_work_guard<asio::io_context::executor_type> m_wrk; 
 
   FS::InterfacePtr              m_fs;
+  Files::RsDataPtr              m_rs_data;
   ColumnsPtr                    m_columns;
   client::ClientsPtr            m_clients;
   Protocol::Req::ActiveMngrPtr  mngr_root;
   
-  uint64_t rs_id = 0;
 };
 
 }}}

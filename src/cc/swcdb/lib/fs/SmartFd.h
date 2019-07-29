@@ -19,20 +19,13 @@ typedef std::shared_ptr<SmartFd> SmartFdPtr;
 struct SmartFd : std::enable_shared_from_this<SmartFd>{
   public:
   
-  static SmartFdPtr make_ptr(const String &filepath, uint32_t flags){
-    return std::make_shared<SmartFd>(filepath, flags);
-  }
   static SmartFdPtr make_ptr(const String &filepath, uint32_t flags, 
-                            int32_t fd, uint64_t pos){
+                            int32_t fd=-1, uint64_t pos=0){
     return std::make_shared<SmartFd>(filepath, flags, fd, pos);
   }
 
-  SmartFd(const String &filepath, uint32_t flags):
-    m_filepath(filepath), m_flags(flags), m_fd(-1), m_pos(0) {
-  }
-
-  SmartFd(const String &filepath, uint32_t flags, int32_t fd, uint64_t pos): 
-           m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
+  SmartFd(const String &filepath, uint32_t flags, int32_t fd=-1, uint64_t pos=0): 
+          m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
   }
 
   operator SmartFdPtr(){ return shared_from_this(); }
@@ -54,7 +47,7 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 
   const String to_string(){
     return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
-                        m_filepath.c_str(), m_flags, m_fd, m_pos);
+                           m_filepath.c_str(), m_flags, m_fd, m_pos);
   }
 
   private:
@@ -62,8 +55,6 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
   uint32_t      m_flags;
   int32_t       m_fd;
   uint64_t      m_pos;
-
-  // hdfsFile file;
 };
 
 }}

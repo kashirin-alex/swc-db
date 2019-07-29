@@ -10,6 +10,7 @@
 #include "swcdb/lib/db/Columns/Columns.h"
 #include "swcdb/lib/db/Protocol/req/LoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
+#include "swcdb/lib/db/Files/RsData.h"
 #include "RangeServerStatus.h"
 
 
@@ -128,11 +129,11 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
 
       RangePtr range = col->get_range(rid, true);
   
-      RsData rs = range->get_last_rs();
-      if(rs.endpoints.size() > 0 && !has_endpoint(endpoints, rs.endpoints)){
+      Files::RsDataPtr rs = range->get_last_rs();
+      if(rs->endpoints.size() > 0 && !has_endpoint(endpoints, rs->endpoints)){
 
         client::ClientConPtr old_conn = m_clients->rs_service->get_connection(
-          rs.endpoints, std::chrono::milliseconds(5000), 1);
+          rs->endpoints, std::chrono::milliseconds(5000), 1);
 
         if(old_conn != nullptr 
           && (std::make_shared<Protocol::Req::IsRangeLoaded>(

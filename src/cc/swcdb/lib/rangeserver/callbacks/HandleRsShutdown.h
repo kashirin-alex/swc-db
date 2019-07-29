@@ -17,13 +17,11 @@ namespace RS {
 class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
   public:
 
-  HandleRsShutdown(EndPoints endpoints, 
-                  client::ClientsPtr clients, 
-                  Protocol::Req::ActiveMngrPtr mngr_active,
-                  uint64_t &rs_id, std::function<void()> cb)
-                : rs_endpoints(endpoints), 
-                  Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
-                  rs_id(rs_id), cb(cb) {
+  HandleRsShutdown(client::ClientsPtr clients, 
+                   Protocol::Req::ActiveMngrPtr mngr_active,
+                   Files::RsDataPtr rs_data, std::function<void()> cb)
+                : Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
+                  rs_data(rs_data), cb(cb) {
   }
 
   virtual ~HandleRsShutdown(){}
@@ -34,7 +32,8 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
     m_conn = clients->mngr_service->get_connection(endpoints);
   
     Protocol::Params::AssignRsID params(
-      rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, rs_endpoints);
+      rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, 
+      rs_data->endpoints);
 
     CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -58,11 +57,12 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
       }
     }
 
+    // return if timeout?
+
     mngr_active->run_within(conn->m_io_ctx, 1000);
   }
 
-  EndPoints rs_endpoints;
-  uint64_t &rs_id;
+  Files::RsDataPtr rs_data;
   std::function<void()> cb;
 };
 
