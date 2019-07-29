@@ -205,7 +205,7 @@ class FileSystemHadoop: public FileSystem {
               bufsz, (int)replication, (Lld)blksz);
 
     int oflags = O_WRONLY;
-    if ((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) != 0)
+    if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
       oflags |= O_APPEND;
 
     if (bufsz == -1)
