@@ -6,7 +6,7 @@
 #ifndef swc_app_rangeserver_handlers_LoadRange_h
 #define swc_app_rangeserver_handlers_LoadRange_h
 
-#include "swcdb/lib/db/Protocol/params/LoadRange.h"
+#include "swcdb/lib/db/Protocol/params/ColRangeId.h"
 #include "swcdb/lib/rangeserver/callbacks/RangeLoaded.h"
 
 
@@ -18,8 +18,8 @@ namespace Handler {
 class LoadRange : public AppHandler {
   public:
 
-  LoadRange(ConnHandlerPtr conn, EventPtr ev, ColumnsPtr columns)
-              : AppHandler(conn, ev), m_columns(columns) { }
+  LoadRange(ConnHandlerPtr conn, EventPtr ev)
+            : AppHandler(conn, ev) { }
 
   void run() override {
 
@@ -28,11 +28,11 @@ class LoadRange : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::LoadRange params;
+      Protocol::Params::ColRangeId params;
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      m_columns->load_range(
+      EnvColumns::get()->load_range(
         params.cid, params.rid, 
          std::make_shared<Callback::RangeLoaded>(m_conn, m_ev));
     }
@@ -42,8 +42,6 @@ class LoadRange : public AppHandler {
   
   }
 
-  private:
-  ColumnsPtr  m_columns;
 };
   
 

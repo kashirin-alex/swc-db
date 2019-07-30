@@ -7,7 +7,6 @@
 #define swcdb_lib_db_Columns_Range_h
 
 #include "Schema.h"
-#include "swcdb/lib/db/Files/RsData.h"
 #include <mutex>
 #include <memory>
 #include <unordered_map>
@@ -35,45 +34,39 @@ class Range : public std::enable_shared_from_this<Range> {
   const int64_t     cid;
   const int64_t     rid;
 
-  Range(FS::InterfacePtr fs, 
-        int64_t cid, int64_t rid, SchemaPtr schema): 
-        m_fs(fs), cid(cid), rid(rid),
+  Range(int64_t cid, int64_t rid, SchemaPtr schema): 
+        cid(cid), rid(rid),
         m_path(get_path(cid, rid)),
         m_schema(schema), loaded(false){
   }
 
   virtual ~Range(){}
 
-  bool load(Files::RsDataPtr rs_data){    
-    std::cout << "LOAD RANGE cid=" << cid << " rid=" << rid << "\n";
-    m_err = 0;
-    if(!m_fs->get_fs()->exists(m_err, m_path)){
-      // init - 1st range
-      m_fs->get_fs()->mkdirs(m_err, get_path("rs"));
-      m_fs->get_fs()->mkdirs(m_err, get_path("log"));
-      m_fs->get_fs()->mkdirs(m_err, get_path("cs"));
-    } 
-    if(m_err > 0) 
-      return false;
-
-
-    Files::RsDataPtr rs_last = get_last_rs();
-    std::cout << " RS-LAST=" << rs_last->to_string() << "\n"
-              << " RS-NEW =" << rs_data->to_string() << "\n";
-    if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
-      // if online, (means rs-mngr had comm issues with the RS-LAST )
-      //   req. unload (sync)  
-    } 
-
-    if(!rs_data->set_rs(m_fs, get_path("rs/last.data")))
-      return false;
+  bool load(){    
+    HT_DEBUGF("LOAD RANGE cid=%d rid=%d", cid, rid);
+    
 
     set_loaded(m_err == 0);
     return is_loaded();
   }
 
+  bool set_dirs(){
+    m_err = 0;
+    if(!EnvFsInterface::fs()->exists(m_err, m_path)){
+      // init - range's work directories
+      EnvFsInterface::fs()->mkdirs(m_err, get_path("rs"));
+      EnvFsInterface::fs()->mkdirs(m_err, get_path("log"));
+      EnvFsInterface::fs()->mkdirs(m_err, get_path("cs"));
+    } 
+    return m_err == 0;
+  }
+
   Files::RsDataPtr get_last_rs(){
-    return Files::RsData::get_rs(m_fs, get_path("rs/last.data"));
+    return Files::RsData::get_rs(get_path("rs/last.data"));
+  }
+
+  bool set_last_rs(){
+    return EnvRsData::get()->set_rs(get_path("rs/last.data"));
   }
 
   void set_loaded(bool state){
@@ -101,13 +94,12 @@ class Range : public std::enable_shared_from_this<Range> {
 
   std::mutex        m_mutex;
   int               m_err;
-  FS::InterfacePtr  m_fs;
   const std::string m_path;
   SchemaPtr         m_schema;
   bool              loaded;
 };
-typedef std::shared_ptr<Range> RangePtr;
 
+typedef std::shared_ptr<Range> RangePtr;
 
 
 

@@ -19,6 +19,7 @@ typedef std::shared_ptr<AppContext> AppContextPtr;
 #include "Event.h"
 #include "ConnHandler.h"
 
+#include "IoContext.h"
 
 namespace SWC {
 

@@ -60,4 +60,4 @@ typedef std::shared_ptr<IsRangeLoaded> IsRangeLoadedPtr;
 
 }}}
 
-#endif // swc_lib_db_protocol_req_LoadRange_h
+#endif // swc_lib_db_protocol_req_IsRangeLoaded_h

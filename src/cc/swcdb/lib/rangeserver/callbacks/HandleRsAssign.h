@@ -16,13 +16,10 @@ namespace RS {
 class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
   public:
 
-  HandleRsAssign(client::ClientsPtr clients, 
-                 Protocol::Req::ActiveMngrPtr mngr_active,
-                 Files::RsDataPtr rs_data)
-                : Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
-                  rs_data(rs_data) {
+  HandleRsAssign(Protocol::Req::ActiveMngrPtr mngr_active)
+                : Protocol::Rsp::ActiveMngrRspCb(mngr_active) {
 
-    cfg_check_interval = Config::settings->get_ptr<gInt32t>(
+    cfg_check_interval = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.rs.id.validation.interval");
   }
 
@@ -31,10 +28,10 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
   client::ClientConPtr m_conn;
   void run(EndPoints endpoints) override {
 
-    m_conn = clients->mngr_service->get_connection(endpoints);
+    m_conn = EnvClients::get()->mngr_service->get_connection(endpoints);
   
     Protocol::Params::AssignRsID params(
-      0, Protocol::Params::AssignRsID::Flag::RS_REQ, rs_data->endpoints);
+      0, Protocol::Params::AssignRsID::Flag::RS_REQ, EnvRsData::get()->endpoints);
 
     CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -42,7 +39,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
 
     m_conn->send_request(cbp, shared_from_this());
 
-    //clients->mngr_service->preserve(conn);
+    //EnvClients::get()->mngr_service->preserve(conn);
     
   }
   
@@ -80,6 +77,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
         else if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED
           || rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN){
           
+          Files::RsDataPtr rs_data = EnvRsData::get();
           Protocol::Params::AssignRsID params;
           if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
             || (rs_data->rs_id != rsp_params.rs_id 
@@ -119,7 +117,6 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
     mngr_active->run_within(conn->m_io_ctx, 1000);
   }
 
-  Files::RsDataPtr rs_data;
   gInt32tPtr  cfg_check_interval;
 };
 

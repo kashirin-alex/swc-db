@@ -5,6 +5,7 @@
 
 #include "swcdb/lib/fs/Settings.h"
 #include "swcdb/lib/core/comm/AppContext.h"
+#include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/Columns.h"
 
 #include <iostream>
@@ -16,11 +17,11 @@ void SWC::Config::Settings::init_app_options(){
 using namespace SWC;
 
 int main(int argc, char** argv) {
+    EnvConfig::init(argc, argv);
 
-    SWC::Config::settings->init(argc, argv);
-
-    ColumnsPtr cols = std::make_shared<Columns>(
-        std::make_shared<FS::Interface>());
+    EnvFsInterface::init();
+    EnvColumns::init();
+    ColumnsPtr cols = EnvColumns::get();
 
     for(int64_t c=1; c<=1000; c++){
         std::cout << "Loading cid:" << c << "\n";

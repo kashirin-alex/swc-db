@@ -28,12 +28,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
-  Columns(FS::InterfacePtr fs, Files::RsDataPtr rs_data=nullptr) 
-          : m_fs(fs),
-            m_rs_data(rs_data),
-            columns(std::make_shared<ColumnsMap>()) {
-  }
-
+  Columns() : columns(std::make_shared<ColumnsMap>()) {}
 
   virtual ~Columns(){}
 
@@ -45,7 +40,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       return it->second;
 
     if(load) {
-      ColumnPtr col = std::make_shared<Column>(m_fs, cid);
+      ColumnPtr col = std::make_shared<Column>(cid);
       if(col->has_err() == 0)
         columns->insert(ColumnsMapPair(cid, col));
       return col;
@@ -53,31 +48,52 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return nullptr;
   }
 
-  RangePtr get_range(int64_t cid, int64_t rid, bool initialize=false, bool load=false){
+  RangePtr get_range(int64_t cid, int64_t rid, 
+                     bool initialize=false, bool load=false, bool is_rs=false){
     ColumnPtr col = get_column(cid, load);
     if(col == nullptr) 
       return nullptr;
-    return col->get_range(rid, initialize, load ? m_rs_data : nullptr);
+    return col->get_range(rid, initialize, is_rs);
   }
 
   void load_range(int64_t cid, int64_t rid, ResponseCallbackPtr cb){
-    RangePtr range = get_range(cid, rid, true, true);
+    RangePtr range = get_range(cid, rid, true, true, true); // only RS
     if(range != nullptr && range->is_loaded()) {
       cb->response_ok();
       return;
     }
-    cb->response_ok();
+    
+    cb->send_error(Error::NOT_LOADED_RANGE , "");
   }
 
   private:
   std::mutex                  m_mutex;
   std::shared_ptr<ColumnsMap> columns;
-  FS::InterfacePtr            m_fs;
-  Files::RsDataPtr            m_rs_data;
 
 };
-
 typedef std::shared_ptr<Columns> ColumnsPtr;
+
+
+
+class EnvColumns {
+  public:
+
+  static void init() {
+    m_env = std::make_shared<EnvColumns>();
+  }
+
+  static ColumnsPtr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_columns;
+  }
+
+  EnvColumns() : m_columns(std::make_shared<Columns>()) {}
+  virtual ~EnvColumns(){}
+
+  private:
+  ColumnsPtr                  m_columns = nullptr;
+  inline static std::shared_ptr<EnvColumns> m_env = nullptr;
+};
 
 
 }

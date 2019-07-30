@@ -31,14 +31,14 @@ class RsData {
   */
 
   public:
-  static RsDataPtr get_rs(FS::InterfacePtr fs_if, std::string filepath){
+  static RsDataPtr get_rs(std::string filepath){
     RsDataPtr rs_data = std::make_shared<RsData>();
     
     int err=0;
-    if(fs_if->get_fs()->exists(err, filepath)){
+    if(EnvFsInterface::fs()->exists(err, filepath)){
       FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
-      rs_data->read(fs_if, smartfd);
-      fs_if->get_fs()->close(err, smartfd);
+      rs_data->read(smartfd);
+      EnvFsInterface::fs()->close(err, smartfd);
     }
     return rs_data;
   }
@@ -48,16 +48,16 @@ class RsData {
   virtual ~RsData(){ }
 
   // GET 
-  void read(FS::InterfacePtr fs_if, FS::SmartFdPtr smartfd){
+  void read(FS::SmartFdPtr smartfd){
     int err=0;
 
-    fs_if->get_fs()->open(err, smartfd);
+    EnvFsInterface::fs()->open(err, smartfd);
     if(!smartfd->valid())
       return;
 
     uint8_t buf[HEADER_SIZE];
     const uint8_t *ptr = buf;
-    if (fs_if->get_fs()->read(err, smartfd,buf, 
+    if (EnvFsInterface::fs()->read(err, smartfd,buf, 
                               HEADER_SIZE) != HEADER_SIZE)
       return;
 
@@ -67,7 +67,7 @@ class RsData {
 
     StaticBuffer read_buf(sz);
     ptr = read_buf.base;
-    if (fs_if->get_fs()->read(err, smartfd, read_buf.base, sz) != sz)
+    if (EnvFsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz)
       return;
 
     read(&ptr, &sz);
@@ -84,20 +84,20 @@ class RsData {
   }
   
   // SET 
-  bool set_rs(FS::InterfacePtr fs_if, std::string filepath, int64_t ts = 0){
+  bool set_rs(std::string filepath, int64_t ts = 0){
     int err=0;
     FS::SmartFdPtr smartfd = 
       FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
-    fs_if->get_fs()->create(err, smartfd, -1, -1, -1);
+    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
     if(err > 0) 
       return false;
 
     DynamicBuffer input;
     write(input, ts==0 ? Time::now_ns() : ts);
     StaticBuffer send_buf(input);
-    fs_if->get_fs()->append(err, smartfd, send_buf, FS::Flags::FLUSH);
-    fs_if->get_fs()->close(err, smartfd);
+    EnvFsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::FLUSH);
+    EnvFsInterface::fs()->close(err, smartfd);
     return err == 0;
   }
 
@@ -150,5 +150,29 @@ class RsData {
   EndPoints endpoints;
 };
 
-}}
+} // Files namespace
+
+
+class EnvRsData {
+  
+  public:
+
+  static void init() {
+    m_env = std::make_shared<EnvRsData>();
+  }
+
+  static Files::RsDataPtr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_rs_data;
+  }
+
+  EnvRsData() : m_rs_data(std::make_shared<Files::RsData>()) {}
+  virtual ~EnvRsData(){}
+
+  private:
+  Files::RsDataPtr           m_rs_data = nullptr;
+  inline static std::shared_ptr<EnvRsData> m_env = nullptr;
+};
+
+}
 #endif

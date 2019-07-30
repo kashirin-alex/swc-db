@@ -8,15 +8,16 @@
 namespace SWC{ namespace FS {
 
 
-void apply_local(Config::SettingsPtr settings) {
-  settings->file_desc().add_options()
+bool apply_local() {
+  EnvConfig::settings()->file_desc().add_options()
     ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
     ("swc.fs.local.OnFileChange.file", str(), "Dyn-config file")
   ;
-  settings->parse_file(
-    settings->get<String>("swc.fs.cfg.local", ""),
-    settings->get<String>("swc.fs.local.OnFileChange.file", "")
+  EnvConfig::settings()->parse_file(
+    EnvConfig::settings()->get<String>("swc.fs.cfg.local", ""),
+    EnvConfig::settings()->get<String>("swc.fs.local.OnFileChange.file", "")
   );
+  return true;
 }
 
 
@@ -30,10 +31,10 @@ Types::Fs FileSystemLocal::get_type() {
 
 
 
-extern "C" SWC::FS::FileSystem* fs_make_new(SWC::Config::SettingsPtr settings){
-  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemLocal(settings));
+extern "C" SWC::FS::FileSystem* fs_make_new(){
+  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemLocal());
 };
 
-extern "C" void fs_apply_cfg(SWC::Config::SettingsPtr settings){
-  SWC::FS::apply_local(settings);
+extern "C" bool fs_apply_cfg(){
+  return SWC::FS::apply_local();
 };

@@ -25,43 +25,36 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
+
 class AppContext : public SWC::AppContext {
   
   public:
 
-  AppContext() :
-    m_ioctx(
-      std::make_shared<asio::io_context>( 
-        Config::settings->get<int32_t>("swc.mngr.handlers"))),
-    m_wrk(
-      std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()))),
-    m_fs(
-      std::make_shared<FS::Interface>()),
-    m_role_state(
-      std::make_shared<RoleState>(m_ioctx)),
-    m_rangeservers(
-      std::make_shared<Mngr::RangeServers>(m_ioctx, m_role_state, m_fs))
-  {
-    (new std::thread(
-      [io_ptr=m_ioctx, run=&m_run]{ 
-        do{
-          io_ptr->run();
-          HT_DEBUG("IO stopped, restarting");
-          io_ptr->restart();
-        }while(run->load());
-        HT_DEBUG("IO exited");
-      }))->detach();
+  AppContext() {
+
+    EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.mngr.handlers"));
+    EnvMngrRoleState::init();
+    EnvFsInterface::init();
+    EnvColumns::init();
+    EnvClients::init(std::make_shared<client::Clients>(
+      EnvIoCtx::io()->shared(),
+      std::make_shared<client::Mngr::AppContext>()
+    ));
+
+    m_rangeservers = std::make_shared<Mngr::RangeServers>();
+
   }
   
   void init(EndPoints endpoints) override {
-    m_endpoints = endpoints;
+    EnvMngrRoleState::get()->init(endpoints);
     
-    m_clients = std::make_shared<client::Clients>(
-      m_ioctx, 
-      std::make_shared<client::Mngr::AppContext>(m_role_state)
-    );
-    m_role_state->init(m_endpoints, m_clients);
-    m_rangeservers->init(m_clients);
+    int sig = 0;
+    EnvIoCtx::io()->set_signals();
+    shutting_down(std::error_code(), sig);
+  }
+
+  void set_srv(SerializedServerPtr srv){
+    m_srv = srv;
   }
 
   virtual ~AppContext(){}
@@ -77,7 +70,7 @@ class AppContext : public SWC::AppContext {
         //rangeservers->decommision(event->addr); 
         break;
       case Event::Type::DISCONNECT:
-        if(m_role_state->disconnection(
+        if(EnvMngrRoleState::get()->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
         //m_rangeservers->decommision(event->addr); 
@@ -92,15 +85,15 @@ class AppContext : public SWC::AppContext {
         switch (ev->header.command) {
 
           case Protocol::Command::MNGR_REQ_MNGRS_STATE:
-            handler = new Handler::MngrsState(conn, ev, m_role_state);
+            handler = new Handler::MngrsState(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
-            handler = new Handler::ActiveMngr(conn, ev, m_role_state);
+            handler = new Handler::ActiveMngr(conn, ev);
             break;
 
           case Protocol::Command::RS_REQ_MNG_RS_ID:
-            handler = new Handler::AssignRsId(conn, ev, m_rangeservers, m_role_state);
+            handler = new Handler::AssignRsId(conn, ev, m_rangeservers);
             break;
 
           case Protocol::Command::RS_RSP_RANGE_LOADED:
@@ -129,7 +122,7 @@ class AppContext : public SWC::AppContext {
         }
 
         if(handler) //handler->run();
-          asio::post(*m_ioctx.get(), [handler](){ handler->run();  });
+          asio::post(*EnvIoCtx::io()->ptr(), [handler](){ handler->run();  });
 
         break;
       }
@@ -139,35 +132,43 @@ class AppContext : public SWC::AppContext {
                       (Llu)ev->type);
 
     }
+  }
+  
+  void shutting_down(const std::error_code &ec, const int &sig) {
 
-    //if(conn->is_open())
-    //  conn->read_header();
+    if(sig==0){ // set signals listener
+      EnvIoCtx::io()->signals()->async_wait(
+        [ptr=this](const std::error_code &ec, const int &sig){
+          HT_INFOF("Received signal, sig=%d ec=%s", sig, ec.message().c_str());
+          ptr->shutting_down(ec, sig); 
+        }
+      ); 
+      HT_INFOF("Listening for Shutdown signal, set at sig=%d ec=%s", 
+              sig, ec.message().c_str());
+      return;
+    }
 
-
-
-    
+    HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
+    stop();
   }
 
-  void set_srv(SerializedServerPtr srv){
-    m_srv = srv;
+  void stop(){
+    HT_INFO("Stopping APP-MNGR");
+    
+    m_srv->stop_accepting(); // no further requests accepted
+  
+    EnvIoCtx::io()->stop();
+    EnvFsInterface::fs()->stop();
+    
+    m_srv->shutdown();
   }
 
   private:
   SerializedServerPtr m_srv = nullptr;
-  std::atomic<bool>   m_run = true;
-  IOCtxPtr            m_ioctx;
-  IO_DoWorkPtr        m_wrk = nullptr;
 
-  FS::InterfacePtr    m_fs;
-  RoleStatePtr        m_role_state;
   RangeServersPtr     m_rangeservers;
-  client::ClientsPtr  m_clients;
   //ColmNameToIDMap columns;       // column-name > CID
 
-  /* 
-  m_wrk->reset();
-  //m_wrk->get_executor().context().stop();
-  */
 
 };
 

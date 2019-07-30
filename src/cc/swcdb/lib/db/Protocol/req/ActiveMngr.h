@@ -21,10 +21,11 @@ namespace Req {
 class ActiveMngr : public DispatchHandler {
   public:
 
-  ActiveMngr(client::ClientsPtr clients, size_t begin, size_t end)
-            : clients(clients), begin(begin), end(end){}
+  ActiveMngr(size_t begin, size_t end)
+            : begin(begin), end(end){}
   virtual ~ActiveMngr(){ }
   bool run(uint32_t timeout_ms=60000) override {
+    client::ClientsPtr clients = EnvClients::get();
     
     do_request:
 
@@ -83,7 +84,6 @@ class ActiveMngr : public DispatchHandler {
 
   }
 
-  client::ClientsPtr clients;
   size_t begin; 
   size_t end;
   

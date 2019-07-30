@@ -34,6 +34,15 @@ class ResponseCallback : public AppHandler {
     m_conn->response_ok(m_ev);
   }
 
+  virtual void send_error(int code, std::string msg) {
+    //HT_DEBUGF("send_error, %s", m_ev->to_str().c_str());
+    m_conn->send_error(code , msg, m_ev);
+  }
+
+  
+
+  
+
 };
 
 typedef std::shared_ptr<ResponseCallback> ResponseCallbackPtr;

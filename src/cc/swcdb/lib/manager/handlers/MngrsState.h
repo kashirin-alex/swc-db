@@ -16,8 +16,8 @@ namespace Handler {
 class MngrsState : public AppHandler {
   public:
 
-  MngrsState(ConnHandlerPtr conn, EventPtr ev, RoleStatePtr role_state)
-              : AppHandler(conn, ev), m_role_state(role_state) { }
+  MngrsState(ConnHandlerPtr conn, EventPtr ev)
+             : AppHandler(conn, ev) { }
 
   void run() override {
 
@@ -30,12 +30,12 @@ class MngrsState : public AppHandler {
       const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
-      m_role_state->fill_states(
+      EnvMngrRoleState::get()->fill_states(
         req_params.states, 
         req_params.token, 
         std::make_shared<ResponseCallback>(m_conn, m_ev));
 
-      m_role_state->update_manager_addr(
+      EnvMngrRoleState::get()->update_manager_addr(
         m_conn->endpoint_remote_hash(), req_params.mngr_host);
 
       m_conn->response_ok(m_ev);
@@ -47,8 +47,6 @@ class MngrsState : public AppHandler {
   
   }
 
-  private:
-  RoleStatePtr      m_role_state;
 };
   
 

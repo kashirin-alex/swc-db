@@ -88,7 +88,7 @@ class SerializedServer{
     HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
               m_appname.c_str(), reactors, workers);
 
-    SWC::PropertiesPtr props = SWC::Config::settings->properties;
+    SWC::PropertiesPtr props = SWC::EnvConfig::settings()->properties;
 
     Strings addrs = props->has("addr") ? props->get<Strings>("addr") : Strings();
     String host;
@@ -148,6 +148,9 @@ class SerializedServer{
         }
       }
 
+      if(reactor == 0)
+        app_ctx->init(endpoints_final);
+
       std::thread* t =  new std::thread(
         [this, d=io_ctx]{ 
           do{
@@ -160,7 +163,6 @@ class SerializedServer{
       detached ? t->detach(): threads.push_back(t);
     }
 
-    app_ctx->init(endpoints_final);
 
   }
 
@@ -169,25 +171,28 @@ class SerializedServer{
       threads[i]->join();
   }
 
-  void stop() {
-    m_run.store(false);
+  void stop_accepting() {
     for (std::size_t i = 0; i < m_acceptors.size(); ++i){
       m_acceptors[i]->stop();
     }
+    HT_INFOF("STOPPED ACCEPTING: %s", m_appname.c_str());
+  }
 
-    for (std::size_t i = 0; i < m_wrk.size(); ++i){
-      m_wrk[i].reset();
-    }
-    for (std::size_t i = 0; i < m_wrk.size(); ++i){
+  void shutdown() {
+    m_run.store(false);
+    for (std::size_t i = 0; i < m_wrk.size(); ++i)
       m_wrk[i].get_executor().context().stop();
-    }
-
+    
+    //for (std::size_t i = 0; i < m_wrk.size(); ++i)
+    //  m_wrk[i].reset();
+  
     HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
   }
 
   
   virtual ~SerializedServer(){
-    stop();
+    stop_accepting();
+    shutdown();
   }
 
   private:

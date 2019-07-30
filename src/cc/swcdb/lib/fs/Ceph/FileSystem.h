@@ -10,15 +10,17 @@
 
 namespace SWC{ namespace FS {
 
-void apply_ceph(Config::SettingsPtr settings);
+bool apply_ceph();
 
 
 class FileSystemCeph: public FileSystem {
   public:
 
-  FileSystemCeph(
-    Config::SettingsPtr settings) 
-    : FileSystem(settings, settings->get<String>("swc.fs.ceph.path.root"))
+  FileSystemCeph(s) 
+    : FileSystem(
+        settings->get<String>("swc.fs.ceph.path.root"),
+        apply_ceph()
+      )
   { }
 
   virtual ~FileSystemCeph(){}

@@ -15,9 +15,8 @@ namespace Rsp {
 class ActiveMngrRspCb : public DispatchHandler {
   public:
 
-  ActiveMngrRspCb(client::ClientsPtr clients, 
-                  DispatchHandlerPtr mngr_active)
-                  : clients(clients), mngr_active(mngr_active) {}
+  ActiveMngrRspCb(DispatchHandlerPtr mngr_active)
+                  : mngr_active(mngr_active) {}
 
   virtual ~ActiveMngrRspCb(){}
 
@@ -27,7 +26,6 @@ class ActiveMngrRspCb : public DispatchHandler {
 
   
   DispatchHandlerPtr mngr_active;
-  client::ClientsPtr clients;
 
 };
 typedef std::shared_ptr<ActiveMngrRspCb> ActiveMngrRspCbPtr;

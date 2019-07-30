@@ -11,17 +11,19 @@
 
 namespace SWC{ namespace FS {
 
-void apply_local(Config::SettingsPtr settings);
+bool apply_local();
 
 
 class FileSystemLocal: public FileSystem {
   public:
 
-  FileSystemLocal(
-    Config::SettingsPtr settings) 
-    : FileSystem(settings, settings->get<String>("swc.fs.local.path.root"))
+  FileSystemLocal()
+    : FileSystem(
+        EnvConfig::settings()->get<String>("swc.fs.local.path.root"),
+        apply_local()
+      )
   { 
-    m_directio = settings->get<bool>("swc.fs.local.DirectIO", false);
+    m_directio = EnvConfig::settings()->get<bool>("swc.fs.local.DirectIO", false);
   }
 
   virtual ~FileSystemLocal(){}

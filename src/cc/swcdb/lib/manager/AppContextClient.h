@@ -10,7 +10,7 @@ namespace SWC { namespace client { namespace Mngr {
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext(server::Mngr::RoleStatePtr role_state): role_state(role_state){}
+  AppContext() {}
   virtual ~AppContext(){}
 
   void disconnected(ConnHandlerPtr conn);
@@ -65,10 +65,8 @@ class AppContext : public SWC::AppContext {
     }
     
     HT_WARNF("unhandled: %s", ev->to_str().c_str());
-  
   }
   
-  server::Mngr::RoleStatePtr role_state;
 };
 
 typedef std::shared_ptr<AppContext> AppContextPtr;

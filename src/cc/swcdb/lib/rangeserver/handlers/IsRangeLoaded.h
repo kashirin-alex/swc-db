@@ -17,8 +17,8 @@ namespace Handler {
 class IsRangeLoaded : public AppHandler {
   public:
 
-  IsRangeLoaded(ConnHandlerPtr conn, EventPtr ev, ColumnsPtr columns)
-              : AppHandler(conn, ev), m_columns(columns) { }
+  IsRangeLoaded(ConnHandlerPtr conn, EventPtr ev)
+               : AppHandler(conn, ev){ }
 
   void run() override {
 
@@ -31,7 +31,7 @@ class IsRangeLoaded : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      RangePtr range =  m_columns->get_range(params.cid, params.rid);
+      RangePtr range =  EnvColumns::get()->get_range(params.cid, params.rid);
       
       if(range != nullptr && range->is_loaded()){
         m_conn->response_ok(m_ev);
@@ -45,8 +45,6 @@ class IsRangeLoaded : public AppHandler {
   
   }
 
-  private:
-  ColumnsPtr  m_columns;
 };
   
 

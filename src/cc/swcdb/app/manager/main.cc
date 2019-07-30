@@ -9,16 +9,15 @@
 
 
 int main(int argc, char** argv) {
-
-  SWC::Config::settings->init(argc, argv);
+  SWC::EnvConfig::init(argc, argv);
 
   std::shared_ptr<SWC::AppContext> app_ctx 
     = std::make_shared<SWC::server::Mngr::AppContext>();
 
   SWC::server::SerializedServerPtr srv = std::make_shared<SWC::server::SerializedServer>(
     "RS-MANAGER", 
-    SWC::Config::settings->get<int32_t>("swc.mngr.reactors"), 
-    SWC::Config::settings->get<int32_t>("swc.mngr.workers"), 
+    SWC::EnvConfig::settings()->get<int32_t>("swc.mngr.reactors"), 
+    SWC::EnvConfig::settings()->get<int32_t>("swc.mngr.workers"), 
     "swc.mngr.port",
     app_ctx
   );

@@ -17,11 +17,10 @@ namespace RS {
 class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
   public:
 
-  HandleRsShutdown(client::ClientsPtr clients, 
-                   Protocol::Req::ActiveMngrPtr mngr_active,
-                   Files::RsDataPtr rs_data, std::function<void()> cb)
-                : Protocol::Rsp::ActiveMngrRspCb(clients, mngr_active),
-                  rs_data(rs_data), cb(cb) {
+  HandleRsShutdown(Protocol::Req::ActiveMngrPtr mngr_active,
+                   std::function<void()> cb)
+                  : Protocol::Rsp::ActiveMngrRspCb(mngr_active), 
+                    cb(cb) {
   }
 
   virtual ~HandleRsShutdown(){}
@@ -29,8 +28,9 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
   client::ClientConPtr m_conn;
   void run(EndPoints endpoints) override {
 
-    m_conn = clients->mngr_service->get_connection(endpoints);
-  
+    m_conn = EnvClients::get()->mngr_service->get_connection(endpoints);
+
+    Files::RsDataPtr rs_data = EnvRsData::get();
     Protocol::Params::AssignRsID params(
       rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, 
       rs_data->endpoints);
@@ -61,8 +61,7 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
 
     mngr_active->run_within(conn->m_io_ctx, 1000);
   }
-
-  Files::RsDataPtr rs_data;
+  
   std::function<void()> cb;
 };
 

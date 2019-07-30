@@ -52,7 +52,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 
     if(m_type == Types::Fs::NONE){
       std::string fs_name;
-      fs_name.append(Config::settings->get<String>("swc.fs"));
+      fs_name.append(EnvConfig::settings()->get<String>("swc.fs"));
       std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
                      [](unsigned char c){ return std::tolower(c); });
                    
@@ -83,8 +83,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 
       case Types::Fs::LOCAL:{
 #if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
-        apply_local(Config::settings);
-        return std::make_shared<FileSystemLocal>(Config::settings);
+        return std::make_shared<FileSystemLocal>();
 #endif
         fs_name.append("local");
         break;
@@ -92,8 +91,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 
       case Types::Fs::HADOOP:{
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
-        apply_hadoop(Config::settings);
-        return std::make_shared<FileSystemHadoop>(Config::settings);
+        return std::make_shared<FileSystemHadoop>();
 #endif
         fs_name.append("hadoop");
         break;
@@ -101,8 +99,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 
       case Types::Fs::CEPH:{
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
-        apply_ceph(Config::settings);
-        return std::make_shared<FileSystemCeph>(Config::settings);
+        return std::make_shared<FileSystemCeph>();
 #endif
         fs_name.append("ceph");
         break;
@@ -120,10 +117,10 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
     
     std::string fs_lib;
-    if(Config::settings->has("swc.fs.lib."+fs_name)) {
-      fs_lib.append(Config::settings->get<String>("swc.fs.lib."+fs_name));
+    if(EnvConfig::settings()->has("swc.fs.lib."+fs_name)) {
+      fs_lib.append(EnvConfig::settings()->get<String>("swc.fs.lib."+fs_name));
     } else {
-      fs_lib.append(Config::settings->install_path);
+      fs_lib.append(EnvConfig::settings()->install_path);
       fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
       fs_lib.append(fs_name);
       fs_lib.append(".so");
@@ -135,15 +132,15 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
                 "Shared Lib %s, open fail: %s\n", 
                 fs_lib.c_str(), err);
-
+    /* 
     err = dlerror();
     void* f_cfg_ptr = dlsym(handle, "fs_apply_cfg");
     if (err != NULL || f_cfg_ptr == nullptr)
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
                 "Shared Lib %s, link(fs_apply_cfg) fail: %s handle=%d\n", 
                 fs_lib.c_str(), err, (size_t)handle);
-    ((fs_apply_cfg_t*)f_cfg_ptr)(Config::settings);
-
+    ((fs_apply_cfg_t*)f_cfg_ptr)();
+    */
     err = dlerror();
     void* f_new_ptr = dlsym(handle, "fs_make_new");
     if (err != NULL || f_new_ptr == nullptr)
@@ -151,7 +148,7 @@ class Interface : std::enable_shared_from_this<Interface>{
                 "Shared Lib %s, link(fs_make_new) fail: %s handle=%d\n", 
                 fs_lib.c_str(), err, (size_t)handle);
 
-    return FileSystemPtr(((fs_make_new_t*)f_new_ptr)(Config::settings));
+    return FileSystemPtr(((fs_make_new_t*)f_new_ptr)());
   }
 
   operator InterfacePtr(){ return shared_from_this(); }
@@ -234,7 +231,43 @@ void set_structured_id(std::string number, std::string &s){
   }
 };
 
-}}
+} // namespace FS
+
+
+class EnvFsInterface;
+typedef std::shared_ptr<EnvFsInterface> EnvFsInterfacePtr;
+
+class EnvFsInterface {
+  
+  public:
+
+  static void init() {
+    m_env = std::make_shared<EnvFsInterface>();
+  }
+
+  static EnvFsInterfacePtr get(){
+    return m_env;
+  }
+
+  static FS::InterfacePtr interface(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_interface;
+  }
+
+  static FS::FileSystemPtr fs(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_interface->get_fs();
+  }
+
+  EnvFsInterface() : m_interface(std::make_shared<FS::Interface>()) {}
+  virtual ~EnvFsInterface(){}
+
+  private:
+  FS::InterfacePtr                m_interface = nullptr;
+  inline static EnvFsInterfacePtr m_env = nullptr;
+};
+
+}
 
 
 #endif  // swc_lib_fs_Interface_h

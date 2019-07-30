@@ -46,8 +46,7 @@ class ReqHandler : public SWC::DispatchHandler{
 };
 
 int main(int argc, char** argv) {
-
-  SWC::Config::settings->init(argc, argv);
+  SWC::EnvConfig::init(argc, argv);
   
   SWC::client::ClientsPtr clients = std::make_shared<SWC::client::Clients>(
     nullptr,

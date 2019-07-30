@@ -37,6 +37,6 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME      columns
 	SRCS      Columns/tests/test_columns.cc
-	TARGETS 	swcdb_core_config swcdb_db  ${BUILTIN_FS_TARGETS}
+	TARGETS 	swcdb_core_comm swcdb_core_config swcdb_db  ${BUILTIN_FS_TARGETS}
 )
 		

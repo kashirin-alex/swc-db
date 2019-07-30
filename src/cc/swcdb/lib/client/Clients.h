@@ -13,10 +13,8 @@
 
 namespace SWC { 
   
-  typedef asio::executor_work_guard<asio::io_context::executor_type> IO_DoWork;
-  typedef std::shared_ptr<IO_DoWork> IO_DoWorkPtr;
 
-  namespace client { 
+namespace client {
 
 class Clients;
 typedef std::shared_ptr<Clients> ClientsPtr;
@@ -25,33 +23,21 @@ class Clients : public std::enable_shared_from_this<Clients> {
   public:
 
   Clients(IOCtxPtr ioctx, AppContextPtr app_ctx)
-          : m_ioctx(
-              ioctx == nullptr?std::make_shared<asio::io_context>(8):ioctx
-            ), m_app_ctx(app_ctx), m_run(true)
-  {
-    
+          : m_app_ctx(app_ctx) {
+
     if(ioctx == nullptr){
-      m_wrk = std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get()));
-      (new std::thread(
-        [io_ptr=m_ioctx, run=&m_run]{ 
-          do{
-            io_ptr->run();
-            HT_DEBUG("IO stopped, restarting");
-            io_ptr->restart();
-          }while(run->load());
-          HT_DEBUG("IO exited");
-        }
-      ))->detach();
+      if(!EnvIoCtx::ok())
+        EnvIoCtx::init(8);
+      ioctx = EnvIoCtx::io()->shared();
     }
 
     mngrs_groups = std::make_shared<Mngr::Groups>()->init();
 
     mngr_service = std::make_shared<SerializedClient>(
-      "RS-MANAGER", m_ioctx, m_app_ctx
+      "RS-MANAGER", ioctx, m_app_ctx
     );
-
     rs_service = std::make_shared<SerializedClient>(
-      "RANGESERVER", m_ioctx, m_app_ctx
+      "RANGESERVER", ioctx, m_app_ctx
     );
 
   }
@@ -60,12 +46,6 @@ class Clients : public std::enable_shared_from_this<Clients> {
   }
 
   virtual ~Clients(){}
-
-  void stop(){
-    m_run.store(false);
-    if(m_wrk != nullptr)
-      m_wrk->reset();
-  }
   
 
   Mngr::GroupsPtr mngrs_groups;
@@ -73,13 +53,36 @@ class Clients : public std::enable_shared_from_this<Clients> {
   ClientPtr       rs_service   = nullptr;
 
   private:
-  IOCtxPtr          m_ioctx;
   AppContextPtr     m_app_ctx = nullptr;
-  std::atomic<bool> m_run;
-  
-  IO_DoWorkPtr      m_wrk = nullptr;
 };
 
-}}
+} // namespace client 
+
+
+class EnvClients;
+typedef std::shared_ptr<EnvClients> EnvClientsPtr;
+
+class EnvClients {
+  
+  public:
+
+  static void init(client::ClientsPtr clients) {
+    m_env = std::make_shared<EnvClients>(clients);
+  }
+
+  static client::ClientsPtr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_clients;
+  }
+
+  EnvClients(client::ClientsPtr clients) : m_clients(clients) {}
+  virtual ~EnvClients(){}
+
+  private:
+  client::ClientsPtr m_clients = nullptr;
+  inline static EnvClientsPtr m_env = nullptr;
+};
+
+}
 
 #endif // swc_lib_client_Clients_h

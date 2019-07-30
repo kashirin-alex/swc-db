@@ -22,10 +22,8 @@ class AssignRsId : public AppHandler {
   public:
 
     AssignRsId(ConnHandlerPtr conn, EventPtr ev,
-               RangeServersPtr rangeservers, RoleStatePtr role_state)
-              : AppHandler(conn, ev), 
-                m_rangeservers(rangeservers), 
-                m_role_state(role_state) {}
+               RangeServersPtr rangeservers)
+              : AppHandler(conn, ev), m_rangeservers(rangeservers) {}
 
   void run() override {
 
@@ -43,7 +41,7 @@ class AssignRsId : public AppHandler {
       
       // std::cout << "AssignRsId-run rs " << req_params.to_string() << "\n";
       
-      if(!m_role_state->is_active(1)){
+      if(!EnvMngrRoleState::get()->is_active(1)){
         std::cout << "MNGR NOT ACTIVE: \n";
       
         Protocol::Params::AssignRsID rsp_params(
@@ -139,7 +137,6 @@ class AssignRsId : public AppHandler {
 
   private:
     RangeServersPtr  m_rangeservers;
-    RoleStatePtr     m_role_state;
 };
   
 

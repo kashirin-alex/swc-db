@@ -12,7 +12,7 @@
 
 namespace SWC{ namespace FS {
 
-void apply_hadoop(Config::SettingsPtr settings);
+bool apply_hadoop();
 
 struct SmartFdHadoop;
 typedef std::shared_ptr<SmartFdHadoop> SmartFdHadoopPtr;
@@ -37,12 +37,16 @@ struct SmartFdHadoop : public SmartFd {
   hdfsFile file;
 };
 
+
+
 class FileSystemHadoop: public FileSystem {
   public:
 
-  FileSystemHadoop(
-    Config::SettingsPtr settings) 
-    : FileSystem(settings, settings->get<String>("swc.fs.hadoop.path.root")),
+  FileSystemHadoop() 
+    : FileSystem(
+        EnvConfig::settings()->get<String>("swc.fs.hadoop.path.root"),
+        apply_hadoop()
+      ),
       m_run(true), m_nxt_fd(0)
   { 
     setup_connection();
@@ -78,18 +82,18 @@ class FileSystemHadoop: public FileSystem {
 
   bool initialize(){
     
-    if (settings->has("swc.fs.hadoop.namenode")) {
-      for(auto h : settings->get<Strings>("swc.fs.hadoop.namenode")){
+    if (EnvConfig::settings()->has("swc.fs.hadoop.namenode")) {
+      for(auto h : EnvConfig::settings()->get<Strings>("swc.fs.hadoop.namenode")){
 	      hdfsBuilder* bld = hdfsNewBuilder();
         hdfsBuilderSetNameNode(bld, h.c_str());
 
-        if (settings->has("swc.fs.hadoop.namenode.port")) 
+        if (EnvConfig::settings()->has("swc.fs.hadoop.namenode.port")) 
           hdfsBuilderSetNameNodePort(
-            bld, settings->get<int32_t>("swc.fs.hadoop.namenode.port"));
+            bld, EnvConfig::settings()->get<int32_t>("swc.fs.hadoop.namenode.port"));
 
-        if (settings->has("swc.fs.hadoop.user")) 
+        if (EnvConfig::settings()->has("swc.fs.hadoop.user")) 
           hdfsBuilderSetUserName(
-            bld, settings->get<String>("swc.fs.hadoop.user").c_str());
+            bld, EnvConfig::settings()->get<String>("swc.fs.hadoop.user").c_str());
         
         m_filesystem = hdfsBuilderConnect(bld);
         HT_DEBUGF("Connecting to namenode=%s", h.c_str());

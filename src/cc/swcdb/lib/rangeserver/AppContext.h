@@ -29,47 +29,40 @@
 namespace SWC { namespace server { namespace RS {
 
 
+
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext() 
-    : m_ioctx(std::make_shared<asio::io_context>(
-      Config::settings->get<int32_t>("swc.rs.handlers"))),
-      m_wrk(asio::make_work_guard(*m_ioctx.get())),
-      m_fs(std::make_shared<FS::Interface>()),
-      m_rs_data(std::make_shared<Files::RsData>()),
-      m_columns(std::make_shared<Columns>(m_fs, m_rs_data)) 
-  {
-    (new std::thread(
-      [this]{ 
-        do{
-          m_ioctx->run();
-          std::cout << "app-ctx IO stopped, restarting\n";
-          m_ioctx->restart();
-        }while(m_run.load());
-        std::cout << "app-ctx IO exited\n";
-      }))->detach();
+  AppContext() {
+    
+    EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.rs.handlers"));
+    EnvFsInterface::init();
+    EnvRsData::init();
+    EnvColumns::init();
+
   }
 
   void init(EndPoints endpoints) override {
+    EnvRsData::get()->endpoints = endpoints;
     
     int sig = 0;
-    m_signals = std::make_shared<asio::signal_set>(*m_ioctx.get(), SIGINT, SIGTERM);
+    EnvIoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
 
-    m_rs_data->endpoints = endpoints;
-
-    m_clients = std::make_shared<client::Clients>(
-      m_ioctx,
+    EnvClients::init(std::make_shared<client::Clients>(
+      EnvIoCtx::io()->shared(),
       std::make_shared<client::RS::AppContext>()
-    );
-    
-    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(
-      m_clients, 1, 3);
-    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
-      std::make_shared<HandleRsAssign>(m_clients, mngr_root, m_rs_data);
+    ));
+  
+    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(1, 3);
+    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
+      = std::make_shared<HandleRsAssign>(mngr_root);
     mngr_root->set_cb(cb_hdlr);
     mngr_root->run();
+  }
+
+  void set_srv(SerializedServerPtr srv){
+    m_srv = srv;
   }
 
   virtual ~AppContext(){}
@@ -96,11 +89,11 @@ class AppContext : public SWC::AppContext {
         switch (ev->header.command) {
 
           case Protocol::Command::MNGR_REQ_LOAD_RANGE: 
-            handler = new Handler::LoadRange(conn, ev, m_columns);
+            handler = new Handler::LoadRange(conn, ev);
             //(rid-barrier-release)
             break;
           case Protocol::Command::CLIENT_REQ_IS_RANGE_LOADED: 
-            handler = new Handler::IsRangeLoaded(conn, ev, m_columns);
+            handler = new Handler::IsRangeLoaded(conn, ev);
             //(rid-barrier-release)
             break;
             
@@ -125,7 +118,7 @@ class AppContext : public SWC::AppContext {
         }
 
         if(handler) //handler->run();
-          asio::post(*m_ioctx.get(), [handler](){ handler->run();  });
+          asio::post(*EnvIoCtx::io()->ptr(), [handler](){ handler->run();  });
 
         break;
       }
@@ -137,55 +130,42 @@ class AppContext : public SWC::AppContext {
     
   }
 
-  void set_srv(SerializedServerPtr srv){
-    m_srv = srv;
-  }
-
   void shutting_down(const std::error_code &ec, const int &sig) {
-    
+
     if(sig==0){ // set signals listener
-      m_signals->async_wait(
+      EnvIoCtx::io()->signals()->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
+          HT_INFOF("Received signal, sig=%d ec=%s", sig, ec.message().c_str());
           ptr->shutting_down(ec, sig); 
         }
       ); 
+      HT_INFOF("Listening for Shutdown signal, set at sig=%d ec=%s", 
+              sig, ec.message().c_str());
       return;
     }
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
-      std::make_shared<HandleRsShutdown>(
-        m_clients, mngr_root, m_rs_data, [this](){stop();});
+      std::make_shared<HandleRsShutdown>(mngr_root, [this](){stop();});
     mngr_root->set_cb(cb_hdlr);
     
     mngr_root->run();
   }
 
   void stop(){
-    m_srv->stop(); // no further requests accepted
-    // fs(commit)
+    HT_INFO("Stopping APP-RS");
     
-    m_clients->stop();
+    m_srv->stop_accepting(); // no further requests accepted
   
-    m_run.store(false);
-    m_wrk.get_executor().context().stop();
+    EnvIoCtx::io()->stop();
+    EnvFsInterface::fs()->stop();
 
-    // m_fs->stop();
+    m_srv->shutdown();
   }
 
   private:
-
   SerializedServerPtr m_srv = nullptr;
-  std::atomic<bool>   m_run = true;
-  IOCtxPtr            m_ioctx;
-  std::shared_ptr<asio::signal_set> m_signals;
-  asio::executor_work_guard<asio::io_context::executor_type> m_wrk; 
 
-  FS::InterfacePtr              m_fs;
-  Files::RsDataPtr              m_rs_data;
-  ColumnsPtr                    m_columns;
-  client::ClientsPtr            m_clients;
   Protocol::Req::ActiveMngrPtr  mngr_root;
   
 };

@@ -23,37 +23,36 @@ namespace SWC { namespace server { namespace Mngr {
 
 class RoleState : public std::enable_shared_from_this<RoleState> {
   public:
-  RoleState(IOCtxPtr ioctx) : m_ioctx(ioctx){
-    cfg_conn_probes = Config::settings->get_ptr<gInt32t>(
+  RoleState() {
+    cfg_conn_probes = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.connection.probes");
-    cfg_conn_timeout = Config::settings->get_ptr<gInt32t>(
+    cfg_conn_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.connection.timeout");
-    cfg_req_timeout = Config::settings->get_ptr<gInt32t>(
+    cfg_req_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.request.timeout");
-    cfg_check_interval = Config::settings->get_ptr<gInt32t>(
+    cfg_check_interval = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.check.interval");
-    cfg_delay_updated = Config::settings->get_ptr<gInt32t>(
+    cfg_delay_updated = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.check.delay.updated");
-    cfg_delay_fallback = Config::settings->get_ptr<gInt32t>(
+    cfg_delay_fallback = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.RoleState.check.delay.fallback");
   }
 
   virtual ~RoleState() { }
 
-  void init(EndPoints endpoints, client::ClientsPtr clients) {
-    m_clients = clients;
+  void init(EndPoints endpoints) {
     m_local_endpoints = endpoints;
     
     m_local_token = endpoints_hash(m_local_endpoints);
     asio::post(
-      *m_ioctx.get(), [ptr=shared_from_this()]{ptr->managers_checkin();});
+      *EnvIoCtx::io()->ptr(), [ptr=shared_from_this()]{ptr->managers_checkin();});
   }
 
   void apply_cfg(){
     HT_DEBUG("apply_cfg");
 
     client::Mngr::SelectedGroups groups = 
-      m_clients->mngrs_groups->get_groups();
+      EnvClients::get()->mngrs_groups->get_groups();
     
     for(auto g : groups) {
       HT_DEBUG( g->to_string().c_str());
@@ -72,7 +71,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
           g->col_begin, g->col_end, endpoints, nullptr, ++pr)); 
       }
     }
-    m_local_groups = m_clients->mngrs_groups->get_groups(m_local_endpoints);
+    m_local_groups = EnvClients::get()->mngrs_groups->get_groups(m_local_endpoints);
   }
   
   void timer_managers_checkin(uint32_t t_ms = 10000) {
@@ -80,7 +79,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       m_check_timer->cancel();
 
     m_check_timer = std::make_shared<asio::high_resolution_timer>(
-      *m_ioctx.get(), std::chrono::milliseconds(t_ms)); 
+      *EnvIoCtx::io()->ptr(), std::chrono::milliseconds(t_ms)); 
 
     m_check_timer->async_wait(
       [ptr=shared_from_this()](const asio::error_code ec) {
@@ -136,7 +135,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         
       if(host_chk->conn == nullptr || !host_chk->conn->is_open()){
         m_mngr_inchain = nullptr;
-        host_chk->conn = m_clients->mngr_service->get_connection(
+        host_chk->conn = EnvClients::get()->mngr_service->get_connection(
           host_chk->endpoints, 
           std::chrono::milliseconds(cfg_conn_timeout->get()), 
           cfg_conn_probes->get());
@@ -298,7 +297,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       if(!is_off(host->col_begin, host->col_end))
         continue;
       auto hosts_pr_group = 
-        m_clients->mngrs_groups->get_endpoints(
+        EnvClients::get()->mngrs_groups->get_endpoints(
           host->col_begin, host->col_end);
       for(auto h : hosts_pr_group){
         if(has_endpoint(h, host->endpoints) 
@@ -416,12 +415,10 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   
   private:
   
-  IOCtxPtr                     m_ioctx;
   HostStatuses                 m_states;
   std::mutex                   m_mutex;
   TimerPtr                     m_check_timer; 
   
-  client::ClientsPtr           m_clients;
   client::ClientConPtr         m_mngr_inchain = nullptr;
   EndPoints                    m_local_endpoints;
   uint64_t                     m_local_token;
@@ -438,19 +435,46 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   gInt32tPtr  cfg_delay_fallback;
 };
 
-}}}
+}} // server namespace
 
 
-namespace SWC {namespace Protocol { namespace Req {
-void MngrsState::disconnected() {
-  role_state->disconnection(conn->endpoint_remote, conn->endpoint_local);
-}
-}}}
+class EnvMngrRoleState {
+  
+  public:
 
-namespace SWC { namespace client { namespace Mngr {
-  void AppContext::disconnected(ConnHandlerPtr conn){
-    role_state->disconnection(conn->endpoint_remote, conn->endpoint_local);
+  static void init() {
+    m_env = std::make_shared<EnvMngrRoleState>();
   }
-}}}
 
+  static server::Mngr::RoleStatePtr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_role_state;
+  }
+
+  EnvMngrRoleState() 
+    : m_role_state(std::make_shared<server::Mngr::RoleState>()) {}
+
+  virtual ~EnvMngrRoleState(){}
+
+  private:
+  server::Mngr::RoleStatePtr               m_role_state = nullptr;
+  inline static std::shared_ptr<EnvMngrRoleState> m_env = nullptr;
+};
+
+
+
+
+namespace Protocol { namespace Req {
+void MngrsState::disconnected() {
+  EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
+}
+}}
+
+namespace client { namespace Mngr {
+  void AppContext::disconnected(ConnHandlerPtr conn){
+    EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
+  }
+}}
+
+}
 #endif // swc_app_manager_RoleState_h

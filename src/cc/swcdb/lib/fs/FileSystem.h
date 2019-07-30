@@ -52,17 +52,15 @@ inline std::string normalize_pathname(std::string s){
 class FileSystem {
   public:
 
-  FileSystem(Config::SettingsPtr settings, std::string root)
-    : settings(settings),
-      path_root(normalize_pathname(root)),
-      path_data(normalize_pathname(settings->get<String>("swc.fs.path.data")))
+  FileSystem(std::string root, bool setting_applied)
+    : path_root(normalize_pathname(root)),
+      path_data(normalize_pathname(EnvConfig::settings()->get<String>("swc.fs.path.data")))
   { }
 
   virtual ~FileSystem() { std::cout << " ~FileSystem() \n"; }
 
   virtual void stop() {}
 
-  Config::SettingsPtr settings;
   const std::string path_root;
   const std::string path_data;
 
@@ -195,11 +193,11 @@ typedef std::shared_ptr<FileSystem> FileSystemPtr;
 }}
 
 extern "C"{
-typedef SWC::FS::FileSystem* fs_make_new_t(SWC::Config::SettingsPtr);
-SWC::FS::FileSystem* fs_make_new(SWC::Config::SettingsPtr settings);
+typedef SWC::FS::FileSystem* fs_make_new_t();
+SWC::FS::FileSystem* fs_make_new();
 
-typedef void fs_apply_cfg_t(SWC::Config::SettingsPtr);
-void fs_apply_cfg(SWC::Config::SettingsPtr settings);
+typedef bool fs_apply_cfg_t();
+bool fs_apply_cfg();
 }
 
 #endif  // swc_lib_fs_FileSystem_h

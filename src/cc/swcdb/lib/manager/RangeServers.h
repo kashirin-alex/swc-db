@@ -20,15 +20,12 @@ namespace SWC { namespace server { namespace Mngr {
 class RangeServers : public std::enable_shared_from_this<RangeServers> {
 
   public:
-  RangeServers(IOCtxPtr ioctx, RoleStatePtr role_state, FS::InterfacePtr fs) 
-              : m_ioctx(ioctx), m_role_state(role_state),
-                m_fs(fs), m_columns(std::make_shared<Columns>(fs)) { }
+  RangeServers() {  }
+
+  void init() {}
 
   virtual ~RangeServers(){}
 
-  void init(client::ClientsPtr clients) {
-    m_clients = clients;
-  }
   
   uint64_t rs_set_id(EndPoints endpoints, uint64_t opt_id=0){
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -93,7 +90,7 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
       if(!rs_master){
         host->role = Types::RsRole::MASTER;
         asio::post(
-          *m_ioctx.get(), 
+          *EnvIoCtx::io()->ptr(), 
           [ptr=shared_from_this(), endpoints=host->endpoints](){ 
             ptr->load_master_ranges(endpoints);  
           });
@@ -105,13 +102,13 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
 
   void load_master_ranges(EndPoints endpoints){
     
-    client::ClientConPtr conn = m_clients->rs_service->get_connection(endpoints);
+    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(endpoints);
     if(conn == nullptr) {
       HT_ERROR("Unable to connect to nominated RS-master");
       return;
     }
 
-    ColumnPtr col = m_columns->get_column(1, true);
+    ColumnPtr col = EnvColumns::get()->get_column(1, true);
     if(col->has_err() != 0) {
       HT_ERRORF("Unable to load column=1 errno=%d", col->has_err());
     }
@@ -132,13 +129,13 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
       Files::RsDataPtr rs = range->get_last_rs();
       if(rs->endpoints.size() > 0 && !has_endpoint(endpoints, rs->endpoints)){
 
-        client::ClientConPtr old_conn = m_clients->rs_service->get_connection(
+        client::ClientConPtr old_conn = EnvClients::get()->rs_service->get_connection(
           rs->endpoints, std::chrono::milliseconds(5000), 1);
 
         if(old_conn != nullptr 
           && (std::make_shared<Protocol::Req::IsRangeLoaded>(
             old_conn, range, [conn, range] (bool loaded) {
-              std::cout << "IS-RANGE-LOADED " << (loaded?"TRUE":"FALSE") 
+              std::cout << "Req, IS-RANGE-LOADED " << (loaded?"TRUE":"FALSE") 
                         << ", cid=" << range->cid << " rid=" << range->rid << "\n";
               if(loaded) {
                 range->set_loaded(true);
@@ -188,7 +185,7 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
       auto host  = *m_rs_status.begin();
       host->role = Types::RsRole::MASTER;
       asio::post(
-        *m_ioctx.get(), 
+        *EnvIoCtx::io()->ptr(), 
         [ptr=shared_from_this(), endpoints=host->endpoints](){ 
           ptr->load_master_ranges(endpoints);  
       });
@@ -209,11 +206,6 @@ class RangeServers : public std::enable_shared_from_this<RangeServers> {
 
   private:
   std::mutex          m_mutex;
-  IOCtxPtr            m_ioctx;
-  RoleStatePtr        m_role_state;
-  FS::InterfacePtr    m_fs;
-  ColumnsPtr          m_columns;
-  client::ClientsPtr  m_clients;
 
   std::vector<RangeServerStatusPtr> m_rs_status;
   // std::unordered_map<uint64_t, std::vector<RangeServerStatusPtr>> m_column_rs;

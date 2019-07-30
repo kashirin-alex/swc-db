@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_LoadRange_h
-#define swc_db_protocol_params_LoadRange_h
+#ifndef swc_db_protocol_params_ColRangeId_h
+#define swc_db_protocol_params_ColRangeId_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,14 +12,14 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class LoadRange : public Serializable {
+  class ColRangeId : public Serializable {
   public:
 
-    LoadRange() {}
-    LoadRange(size_t cid, size_t rid) 
-             : cid(cid), rid(rid){}
+    ColRangeId() {}
+    ColRangeId(size_t cid, size_t rid) 
+              : cid(cid), rid(rid){}
              
-    virtual ~LoadRange() {}
+    virtual ~ColRangeId() {}
 
     size_t  cid; 
     size_t  rid;
@@ -51,4 +51,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_LoadRange_h
+#endif // swc_db_protocol_params_ColRangeId_h

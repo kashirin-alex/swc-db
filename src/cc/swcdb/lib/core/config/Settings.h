@@ -49,6 +49,7 @@ class Settings {
   void init_options();
 
   public:
+
   String install_path;
   String executable;
   /** This singleton map stores all options */
@@ -192,10 +193,44 @@ class Settings {
 
     return usage;
   }
+
 };
-  /** @}*/
 typedef std::shared_ptr<Settings> SettingsPtr;
-static SettingsPtr settings = std::make_shared<Settings>();
-}}
+
+  /** @}*/
+}
+
+class EnvConfig;
+typedef std::shared_ptr<EnvConfig> EnvConfigPtr;
+
+class EnvConfig {
+  
+  public:
+
+  static void init(int argc, char** argv) {
+    get()->m_settings->init(argc, argv);
+  }
+
+  static EnvConfigPtr get(){
+    if(m_env == nullptr)
+      m_env = std::make_shared<EnvConfig>();
+    return m_env;
+  }
+
+  static Config::SettingsPtr settings(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_settings;
+  }
+
+  EnvConfig() : m_settings(std::make_shared<Config::Settings>()){}
+  virtual ~EnvConfig(){}
+
+  private:
+  Config::SettingsPtr m_settings = nullptr;
+  inline static EnvConfigPtr m_env = nullptr;
+};
+
+
+}
 
 #endif // swc_core_config_Config_h

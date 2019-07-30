@@ -9,16 +9,15 @@
 
 
 int main(int argc, char** argv) {
-
-  SWC::Config::settings->init(argc, argv);
+  SWC::EnvConfig::init(argc, argv);
 
   std::shared_ptr<SWC::AppContext> app_ctx 
     = std::make_shared<SWC::server::RS::AppContext>();
 
   SWC::server::SerializedServerPtr srv = std::make_shared<SWC::server::SerializedServer>(
     "RANGE-SERVER", 
-    SWC::Config::settings->get<int32_t>("swc.rs.reactors"), 
-    SWC::Config::settings->get<int32_t>("swc.rs.workers"), 
+    SWC::EnvConfig::settings()->get<int32_t>("swc.rs.reactors"), 
+    SWC::EnvConfig::settings()->get<int32_t>("swc.rs.workers"), 
     "swc.rs.port",
     app_ctx
   );

@@ -8,7 +8,7 @@
 namespace SWC{ namespace FS {
 
 
-void apply_ceph(Config::SettingsPtr settings) {
+bool apply_ceph() {
   settings->file_desc().add_options()
     ("swc.fs.ceph.path.root", str(""), "Ceph FileSystem's base root path")
     ("swc.fs.ceph.OnFileChange.file", str(), "Dyn-config file")
@@ -17,6 +17,7 @@ void apply_ceph(Config::SettingsPtr settings) {
     settings->get<String>("swc.fs.cfg.ceph", ""),
     settings->get<String>("swc.fs.ceph.OnFileChange.file", "")
   );
+  return;
 }
 
 
@@ -30,10 +31,10 @@ Types::Fs FileSystemCeph::get_type() {
 
 
 
-extern "C" SWC::FS::FileSystem* fs_make_new(SWC::Config::SettingsPtr settings){
-  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph(settings));
+extern "C" SWC::FS::FileSystem* fs_make_new(){
+  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph());
 };
 
-extern "C" void fs_apply_cfg(SWC::Config::SettingsPtr settings){
-  SWC::FS::apply_ceph(settings);
+extern "C" bool fs_apply_cfg(){
+  return SWC::FS::apply_ceph();
 };

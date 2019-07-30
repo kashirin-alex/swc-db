@@ -20,8 +20,8 @@ namespace Handler {
 class ActiveMngr : public AppHandler {
   public:
 
-  ActiveMngr(ConnHandlerPtr conn, EventPtr ev, RoleStatePtr role_state)
-              : AppHandler(conn, ev), m_role_state(role_state) { }
+  ActiveMngr(ConnHandlerPtr conn, EventPtr ev)
+            : AppHandler(conn, ev){ }
 
   void run() override {
 
@@ -34,7 +34,9 @@ class ActiveMngr : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      HostStatusPtr h = m_role_state->active_mngr(params.begin, params.end);
+      HostStatusPtr h = EnvMngrRoleState::get()->active_mngr(
+        params.begin, params.end);
+
       EndPoints endpoints;
       if(h!=nullptr) 
         endpoints = h->endpoints;
@@ -55,8 +57,6 @@ class ActiveMngr : public AppHandler {
   
   }
 
-  private:
-  RoleStatePtr      m_role_state;
 };
   
 

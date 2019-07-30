@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_LoadRange_h
-#define swc_lib_db_protocol_req_LoadRange_h
+#ifndef swc_lib_db_protocol_req_UnloadRange_h
+#define swc_lib_db_protocol_req_UnloadRange_h
 
 #include "swcdb/lib/db/Protocol/params/ColRangeId.h"
 
@@ -12,13 +12,17 @@ namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class LoadRange : public DispatchHandler {
+class UnloadRange : public DispatchHandler {
   public:
 
-  LoadRange(client::ClientConPtr conn, RangePtr range)
-            : conn(conn), range(range) { }
+  UnloadRange(client::ClientConPtr conn, RangePtr range, bool sync=true)
+            : conn(conn), range(range) { 
+    if(sync){
+
+    }
+  }
   
-  virtual ~LoadRange() { }
+  virtual ~UnloadRange() { }
   
   bool run(uint32_t timeout=60000) override {
     Protocol::Params::ColRangeId params = 
@@ -42,16 +46,11 @@ class LoadRange : public DispatchHandler {
       return;
     }
 
-    if(ev->header.command == Protocol::Command::MNGR_REQ_LOAD_RANGE){
-      int err = Protocol::response_code(ev);
-      if(err == Error::OK){
-        range->set_loaded(true);
-        HT_DEBUGF("Req, RANGE-LOADED, cid=%d rid=%d", 
-                  range->cid, range->rid);
-        return;
-      }
-      HT_DEBUGF("Req, RANGE-LOAD FAILDED, cid=%d rid=%d err=%d(%s)", 
-                range->cid, range->rid, err, Error::get_text(err));
+    if(ev->header.command == Protocol::Command::MNGR_REQ_LOAD_RANGE 
+       && Protocol::response_code(ev) == Error::OK){
+      range->set_loaded(true);
+      std::cout << "Req, RANGE-LOADED, cid=" << range->cid << " rid=" << range->rid << "\n";
+      return;
     }
 
     conn->do_close();
@@ -64,8 +63,8 @@ class LoadRange : public DispatchHandler {
   ;
 };
 
-typedef std::shared_ptr<LoadRange> LoadRangePtr;
+typedef std::shared_ptr<UnloadRange> UnloadRangePtr;
 
 }}}
 
-#endif // swc_lib_db_protocol_req_LoadRange_h
+#endif // swc_lib_db_protocol_req_UnloadRange_h
