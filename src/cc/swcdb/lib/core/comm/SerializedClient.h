@@ -70,14 +70,14 @@ class ServerConnections {
     }
     if (con != nullptr){
       if(con->is_open())
-        HT_DEBUGF("Reusing connection to Service: %s, %s", 
+        HT_DEBUGF("Reusing connection: %s, %s", 
                   m_srv_name.c_str(), to_string(con).c_str());
       else 
         con = nullptr;
     }
 
     if (con == nullptr){
-        HT_DEBUGF("Connecting to Service: %s, addr=[%s]:%d", 
+        HT_DEBUGF("Connecting: %s, addr=[%s]:%d", 
                   m_srv_name.c_str(), 
                   m_endpoints[0].address().to_string().c_str(), 
                   m_endpoints[0].port());
@@ -87,7 +87,7 @@ class ServerConnections {
         con = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
         con->new_connection();
        
-        HT_DEBUGF("New connection to Service: %s, %s", 
+        HT_DEBUGF("New connection: %s, %s", 
                   m_srv_name.c_str(), to_string(con).c_str());
       } catch(...){}
     }
@@ -129,7 +129,7 @@ class SerializedClient{
      m_srv_conns(std::make_shared<ServerConnectionsMap>()),
      m_ioctx(ioctx)
   {
-    HT_INFOF("Init to Service: %s", m_srv_name.c_str());
+    HT_INFOF("Init: %s", m_srv_name.c_str());
   }
 
   ClientConPtr get_connection(
@@ -140,7 +140,7 @@ class SerializedClient{
     
     ClientConPtr con = nullptr;
     if(endpoints.empty()){
-      HT_WARNF("get_connection to Service: %s, Empty-Endpoints", m_srv_name.c_str());
+      HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
       return con;
     }
 
@@ -149,7 +149,7 @@ class SerializedClient{
     ServerConnectionsPtr srv;
 
     do {
-      HT_DEBUGF("get_connection to Service: %s, tries=%d", m_srv_name.c_str(), tries);
+      HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
 
       for(auto endpoint : endpoints){
         size_t hash = endpoint_hash(endpoint);
@@ -196,8 +196,7 @@ class SerializedClient{
   }
 
   std::string to_str(ClientConPtr con){
-    std::string s("Service ");
-    s.append(m_srv_name);
+    std::string s(m_srv_name);
     s.append(" ");
     s.append(to_string(con));
     return s;
@@ -210,7 +209,7 @@ class SerializedClient{
   virtual ~SerializedClient(){
     stop();
     
-    HT_INFOF("Stop Service: %s", m_srv_name.c_str());
+    HT_INFOF("Stop: %s", m_srv_name.c_str());
   }
 
   private:

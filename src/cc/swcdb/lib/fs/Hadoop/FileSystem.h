@@ -191,6 +191,17 @@ class FileSystemHadoop: public FileSystem {
     hdfsFreeFileInfo(fileInfo, numEntries);
   }
 
+  void remove(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
+      err = errno;
+      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("remove('%s')", abspath.c_str());
+  }
+
   SmartFdHadoopPtr get_fd(SmartFdPtr &smartfd){
     SmartFdHadoopPtr hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
     if(!hd_fd){

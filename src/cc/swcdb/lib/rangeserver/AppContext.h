@@ -22,8 +22,9 @@
 #include "callbacks/HandleRsAssign.h"
 #include "callbacks/HandleRsShutdown.h"
 
-#include "handlers/LoadRange.h"
 #include "handlers/IsRangeLoaded.h"
+#include "handlers/LoadRange.h"
+#include "handlers/UnloadRange.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -88,13 +89,14 @@ class AppContext : public SWC::AppContext {
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
-          case Protocol::Command::MNGR_REQ_LOAD_RANGE: 
-            handler = new Handler::LoadRange(conn, ev);
-            //(rid-barrier-release)
-            break;
-          case Protocol::Command::CLIENT_REQ_IS_RANGE_LOADED: 
+          case Protocol::Command::REQ_RS_IS_RANGE_LOADED: 
             handler = new Handler::IsRangeLoaded(conn, ev);
-            //(rid-barrier-release)
+            break;
+          case Protocol::Command::REQ_RS_LOAD_RANGE: 
+            handler = new Handler::LoadRange(conn, ev);
+            break;
+          case Protocol::Command::REQ_RS_UNLOAD_RANGE: 
+            handler = new Handler::UnloadRange(conn, ev);
             break;
             
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
@@ -145,6 +147,9 @@ class AppContext : public SWC::AppContext {
     }
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
+
+    EnvColumns::get()->unload_all();
+
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
       std::make_shared<HandleRsShutdown>(mngr_root, [this](){stop();});
     mngr_root->set_cb(cb_hdlr);
@@ -156,7 +161,7 @@ class AppContext : public SWC::AppContext {
     HT_INFO("Stopping APP-RS");
     
     m_srv->stop_accepting(); // no further requests accepted
-  
+
     EnvIoCtx::io()->stop();
     EnvFsInterface::fs()->stop();
 

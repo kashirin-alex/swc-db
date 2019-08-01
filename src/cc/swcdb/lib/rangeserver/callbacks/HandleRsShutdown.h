@@ -35,7 +35,7 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
       rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, 
       rs_data->endpoints);
 
-    CommHeader header(Protocol::Command::RS_REQ_MNG_RS_ID, 60000);
+    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
@@ -48,7 +48,7 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
 
     conn->do_close();
     if(ev->error == Error::OK 
-       && ev->header.command == Protocol::Command::RS_REQ_MNG_RS_ID){
+       && ev->header.command == Protocol::Command::REQ_MNGR_MNG_RS_ID){
 
       if(Protocol::response_code(ev) == Error::OK){
         std::cout << "HandleRsShutdown: RSP-OK \n";

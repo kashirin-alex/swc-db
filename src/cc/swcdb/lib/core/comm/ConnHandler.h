@@ -15,7 +15,7 @@ typedef std::shared_ptr<asio::io_context> IOCtxPtr;
 typedef std::shared_ptr<asio::ip::tcp::socket> SocketPtr;
 typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
 }
-
+ 
 #include <memory>
 #include "DispatchHandler.h"
 
@@ -53,6 +53,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     uint32_t           id;
     DispatchHandlerPtr hdlr;
     TimerPtr           tm;
+    bool               no_wait;
     EventPtr           ev;
   };
 
@@ -166,7 +167,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     
     write(cbuf, 
       get_timer(cbuf->header.timeout_ms, hdlr, cbuf->header.id, cbuf->header), 
-      hdlr
+      hdlr,
+      false
     ); 
     return m_err;
   }
@@ -216,7 +218,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_request(cbuf, hdlr);
   }
 
-  inline int send_request(CommBufPtr &cbuf, DispatchHandlerPtr hdlr) {
+  inline int send_request(CommBufPtr &cbuf, DispatchHandlerPtr hdlr, 
+                          bool no_wait=true) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -229,7 +232,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     
     write(cbuf, 
       get_timer(cbuf->header.timeout_ms, hdlr, cbuf->header.id, cbuf->header), 
-      hdlr
+      hdlr,
+      no_wait
     );
     return m_err;
   }
@@ -274,16 +278,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return tm;
   }
     
-  void write(CommBufPtr &cbuf, TimerPtr tm, DispatchHandlerPtr hdlr){
+  void write(CommBufPtr &cbuf, TimerPtr tm, DispatchHandlerPtr hdlr, 
+             bool no_wait){
 
     asio::async_write(*m_sock.get(), cbuf->get_buffers(),
       //asio::bind_executor(m_strand_out,
-      [this, tm, hdlr, header=cbuf->header](
+      [this, tm, hdlr, no_wait, header=cbuf->header](
         const asio::error_code ec, uint32_t len) {
         if(ec)
          do_close();
         else if(header.flags & CommHeader::FLAGS_BIT_REQUEST)
-          read_pending({.id=header.id, .hdlr=hdlr, .tm=tm});
+          read_pending({.id=header.id, .hdlr=hdlr, .tm=tm, .no_wait=no_wait});
         else {    
           m_pendings++;
           read_pending();
@@ -459,14 +464,21 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
             if(q_now.tm != nullptr) 
               q_now.tm->cancel();
             if(++it_found != it_end){
-              found_next = (*it_found).ev != nullptr;
+              found_next = it_found->ev != nullptr;
               if(found_next)
                 q_next = *it_found;
             }
             m_pending.erase(--it_found);
 
+          } else if (it_found->no_wait){
+            found_current = true;
+            q_now = *it_found;
+            if(q_now.tm != nullptr) 
+              q_now.tm->cancel();
+            m_pending.erase(it_found);
+
           } else {
-            (*it_found).ev=ev;
+            it_found->ev=ev;
           }
         } else if(!cancelling) {
             auto it = std::find_if(m_cancelled.begin(), m_cancelled.end(), 

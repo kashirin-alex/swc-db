@@ -6,102 +6,104 @@
 #ifndef swcdb_lib_db_Columns_Range_h
 #define swcdb_lib_db_Columns_Range_h
 
-#include "Schema.h"
-#include <mutex>
-#include <memory>
-#include <unordered_map>
+#include <random>
+
+#include "RangeBase.h"
+#include "swcdb/lib/db/Protocol/req/UnloadRange.h"
 
 
-namespace SWC {
 
-class Range : public std::enable_shared_from_this<Range> {
+namespace SWC { namespace DB {
+
+class Range : public RangeBase {
   public:
   
-  inline static const std::string range_dir = "/range"; // .../a-cid/range/a-rid/(types)
-
-  inline static std::string get_path(int64_t cid, int64_t rid=0){
-    std::string s;
-    FS::set_structured_id(std::to_string(cid), s);
-    s.append(range_dir);
-    if(rid > 0) {
-      s.append("/");
-      FS::set_structured_id(std::to_string(rid), s);
-      s.append("/");
-    }
-    return s;
-  }
-
-  const int64_t     cid;
-  const int64_t     rid;
+  inline static const std::string range_data_file = "range.data";
 
   Range(int64_t cid, int64_t rid, SchemaPtr schema): 
-        cid(cid), rid(rid),
-        m_path(get_path(cid, rid)),
-        m_schema(schema), loaded(false){
-  }
+        RangeBase(cid, rid),
+        m_schema(schema) { }
 
   virtual ~Range(){}
-
-  bool load(){    
-    HT_DEBUGF("LOAD RANGE cid=%d rid=%d", cid, rid);
-    
-
-    set_loaded(m_err == 0);
-    return is_loaded();
-  }
-
-  bool set_dirs(){
-    m_err = 0;
-    if(!EnvFsInterface::fs()->exists(m_err, m_path)){
-      // init - range's work directories
-      EnvFsInterface::fs()->mkdirs(m_err, get_path("rs"));
-      EnvFsInterface::fs()->mkdirs(m_err, get_path("log"));
-      EnvFsInterface::fs()->mkdirs(m_err, get_path("cs"));
-    } 
-    return m_err == 0;
-  }
-
-  Files::RsDataPtr get_last_rs(){
-    return Files::RsData::get_rs(get_path("rs/last.data"));
-  }
-
-  bool set_last_rs(){
-    return EnvRsData::get()->set_rs(get_path("rs/last.data"));
-  }
-
-  void set_loaded(bool state){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    loaded = state;
-  }
-
-  bool is_loaded(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return loaded;
-  }
   
-  int has_err(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_err;
+  bool load(){
+    HT_DEBUGF("LOADING RANGE cid=%d rid=%d", cid, rid);
+    
+    if(!set_dirs())
+      return false;
+
+    Files::RsDataPtr rs_data = EnvRsData::get();
+    Files::RsDataPtr rs_last = get_last_rs();
+
+    if(rs_last->endpoints.size() > 0) {
+      // if online, (means rs-mngr had comm issues with the RS-LAST )
+      //   req. unload (sync) 
+      std::cout << " RS-LAST=" << rs_last->to_string() << "\n"
+                << " RS-NEW =" << rs_data->to_string() << "\n";
+      if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
+        client::ClientConPtr old_conn = EnvClients::get()->rs_service->get_connection(
+          rs_last->endpoints, std::chrono::milliseconds(10000), 1);
+        if(old_conn != nullptr)
+          Protocol::Req::UnloadRange(old_conn, RangeBase::shared());
+      }
+    }
+
+    if(!EnvRsData::get()->set_rs(get_path(rs_data_file)))
+      return false;
+    
+    // range.data (range_data_file: cells-interval > CS#)
+    // CellStores
+    // CommitLogs
+    
+    std::mt19937_64 eng{std::random_device{}()};  // or seed however you want
+    std::uniform_int_distribution<> dist{1000, 5000};
+    std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
+
+    set_loaded(true);
+
+
+    if(is_loaded()) {
+      HT_DEBUGF("LOADED RANGE cid=%d rid=%d", cid, rid);
+      return true;
+    }
+    
+    HT_WARNF("LOAD RANGE FAILED cid=%d rid=%d", cid, rid);
+    return false;
   }
 
-  std::string get_path(std::string suff){
-    std::string s(m_path);
-    s.append(suff);
-    return s;
+  void unload(){
+
+    // CommitLogs  
+    // CellStores
+    // range.data
+
+
+    int err = Error::OK;
+    EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
+    set_loaded(false);
+
+    HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }
 
   private:
 
-  std::mutex        m_mutex;
-  int               m_err;
-  const std::string m_path;
+  bool set_dirs(){
+    int err = Error::OK;
+    if(!EnvFsInterface::fs()->exists(err, get_path(""))){
+      // init - range's work directories
+      // EnvFsInterface::fs()->mkdirs(err, get_path("rs"));
+      EnvFsInterface::fs()->mkdirs(err, get_path("log"));
+      EnvFsInterface::fs()->mkdirs(err, get_path("cs"));
+    } 
+    return err == Error::OK;
+  }
+  
+  private:
   SchemaPtr         m_schema;
-  bool              loaded;
 };
 
 typedef std::shared_ptr<Range> RangePtr;
 
 
-
-}
+}}
 #endif

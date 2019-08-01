@@ -13,10 +13,12 @@ namespace SWC { namespace Protocol {
 
     MNGR_REQ_MNGRS_STATE,
     CLIENT_REQ_ACTIVE_MNGR,
-    RS_REQ_MNG_RS_ID,
+    
+    REQ_MNGR_MNG_RS_ID,
 
-    CLIENT_REQ_IS_RANGE_LOADED,
-    MNGR_REQ_LOAD_RANGE,
+    REQ_RS_IS_RANGE_LOADED,
+    REQ_RS_LOAD_RANGE,
+    REQ_RS_UNLOAD_RANGE,
     
     //
 

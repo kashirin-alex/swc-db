@@ -15,11 +15,10 @@ namespace Req {
 class UnloadRange : public DispatchHandler {
   public:
 
-  UnloadRange(client::ClientConPtr conn, RangePtr range, bool sync=true)
-            : conn(conn), range(range) { 
-    if(sync){
-
-    }
+  UnloadRange(client::ClientConPtr conn, DB::RangeBasePtr range, bool sync=true)
+            : conn(conn), range(range), sync(sync) { 
+    if(sync)
+      result_future = result_promise.get_future();
   }
   
   virtual ~UnloadRange() { }
@@ -28,11 +27,14 @@ class UnloadRange : public DispatchHandler {
     Protocol::Params::ColRangeId params = 
       Protocol::Params::ColRangeId(range->cid, range->rid);
     
-    CommHeader header(Protocol::Command::MNGR_REQ_LOAD_RANGE, timeout);
+    CommHeader header(Protocol::Command::REQ_RS_UNLOAD_RANGE, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
-
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
+    
+    bool ok = conn->send_request(cbp, shared_from_this()) == Error::OK;
+    if(sync)
+      result_future.get();
+    return ok;
   }
 
   void disconnected() {};
@@ -41,29 +43,29 @@ class UnloadRange : public DispatchHandler {
     
     // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
-    if(ev->type == Event::Type::DISCONNECT){
-      disconnected();
+    if(ev->type == Event::Type::DISCONNECT)
       return;
-    }
-
-    if(ev->header.command == Protocol::Command::MNGR_REQ_LOAD_RANGE 
-       && Protocol::response_code(ev) == Error::OK){
-      range->set_loaded(true);
-      std::cout << "Req, RANGE-LOADED, cid=" << range->cid << " rid=" << range->rid << "\n";
-      return;
-    }
-
+    
     conn->do_close();
+
+    result_promise.set_value(true);
+
+    if(ev->header.command == Protocol::Command::REQ_RS_UNLOAD_RANGE 
+       && Protocol::response_code(ev) == Error::OK){
+      std::cout << "Req, RANGE-UNLOADED, cid=" << range->cid << " rid=" << range->rid << "\n";
+      return;
+    }
 
   }
 
   private:
   client::ClientConPtr  conn;
-  RangePtr              range;
-  ;
-};
+  DB::RangeBasePtr      range;
 
-typedef std::shared_ptr<UnloadRange> UnloadRangePtr;
+  bool sync;
+  std::promise<bool>  result_promise;
+  std::future<bool>   result_future;
+};
 
 }}}
 

@@ -465,9 +465,9 @@ class EnvMngrRoleState {
 
 
 namespace Protocol { namespace Req {
-void MngrsState::disconnected() {
-  EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
-}
+  void MngrsState::disconnected() {
+    EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
+  }
 }}
 
 namespace client { namespace Mngr {

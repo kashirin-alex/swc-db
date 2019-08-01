@@ -91,13 +91,25 @@ class FileSystemLocal: public FileSystem {
       full_entry_path.append(entry.name);
       if (stat(full_entry_path.c_str(), &statbuf) == -1) {
         err = errno;
-        HT_ERRORF("readdir('%s') stat failed - %s", abspath.c_str(), strerror(errno));
+        HT_ERRORF("readdir('%s') stat failed - %s", 
+                   abspath.c_str(), strerror(errno));
         return;
       }
       entry.length = (uint64_t)statbuf.st_size;
       entry.last_modification_time = statbuf.st_mtime;
       results.push_back(entry);
     }
+  }
+
+  void remove(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    if (FileUtils::unlink(abspath) == -1) {
+      err = errno;
+      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("remove('%s')", abspath.c_str());
   }
 
   void create(int &err, SmartFdPtr &smartfd, 

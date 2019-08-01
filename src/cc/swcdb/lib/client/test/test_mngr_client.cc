@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         header.timeout_ms = 10000;
         SWC::CommBufPtr cbp = SWC::Protocol::create_error_message(
           header, SWC::Error::OK, SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str());
-        con_h->send_request(cbp, req);
+        con_h->send_request(cbp, req, false); // sequential readings
         //std::this_thread::sleep_for(std::chrono::microseconds(500));
       }
 

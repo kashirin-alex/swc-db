@@ -40,9 +40,7 @@ class AppContext : public SWC::AppContext {
       EnvIoCtx::io()->shared(),
       std::make_shared<client::Mngr::AppContext>()
     ));
-
-    m_rangeservers = std::make_shared<Mngr::RangeServers>();
-
+    EnvRangeServers::init();
   }
   
   void init(EndPoints endpoints) override {
@@ -61,19 +59,17 @@ class AppContext : public SWC::AppContext {
 
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
-    HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED:
         return;
-        //rangeservers->decommision(event->addr); 
-        break;
+
       case Event::Type::DISCONNECT:
         if(EnvMngrRoleState::get()->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
-        //m_rangeservers->decommision(event->addr); 
         break;
 
       case Event::Type::ERROR:
@@ -92,13 +88,8 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::ActiveMngr(conn, ev);
             break;
 
-          case Protocol::Command::RS_REQ_MNG_RS_ID:
-            handler = new Handler::AssignRsId(conn, ev, m_rangeservers);
-            break;
-
-          case Protocol::Command::RS_RSP_RANGE_LOADED:
-            //(rid-barrier-release)
-            //rangeservers->load_ranges(event->addr);
+          case Protocol::Command::REQ_MNGR_MNG_RS_ID:
+            handler = new Handler::AssignRsId(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
@@ -128,8 +119,8 @@ class AppContext : public SWC::AppContext {
       }
 
       default:
-            HT_THROWF(Error::PROTOCOL_ERROR, "Unimplemented event-type (%llu)",
-                      (Llu)ev->type);
+        HT_THROWF(Error::PROTOCOL_ERROR, "Unimplemented event-type (%llu)",
+                  (Llu)ev->type);
 
     }
   }
@@ -165,8 +156,6 @@ class AppContext : public SWC::AppContext {
 
   private:
   SerializedServerPtr m_srv = nullptr;
-
-  RangeServersPtr     m_rangeservers;
   //ColmNameToIDMap columns;       // column-name > CID
 
 

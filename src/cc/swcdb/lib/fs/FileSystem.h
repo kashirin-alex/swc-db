@@ -88,7 +88,7 @@ class FileSystem {
   virtual bool exists(int &err, const String &name) = 0;
   virtual 
   void exists(Callback::ExistsCb_t cb, const String &name) {
-    int err = 0;
+    int err = Error::OK;
     bool state = exists(err, name);
     cb(err, state);
   }
@@ -97,7 +97,7 @@ class FileSystem {
   virtual void mkdirs(int &err, const std::string &name) = 0;
   virtual 
   void mkdirs(Callback::MkdirsCb_t cb, const String &name) {
-    int err = 0;
+    int err = Error::OK;
     mkdirs(err, name);
     cb(err);
   }
@@ -106,20 +106,27 @@ class FileSystem {
                        DirentList &results) = 0;
   virtual 
   void readdir(Callback::ReaddirCb_t cb, const String &name) {
-    int err = 0;
+    int err = Error::OK;
     DirentList listing;
     readdir(err, name, listing);
     cb(err, listing);
   }
 
+  virtual void remove(int &err, const String &name) = 0;
+  virtual 
+  void remove(Callback::RemoveCb_t cb, const String &name) {
+    int err = Error::OK;
+    remove(err, name);
+    cb(err);
+  }
 
-  // File Actions
+  // File(fd) Actions
   virtual void create(int &err, SmartFdPtr &smartfd,
                       int32_t bufsz, int32_t replication, int64_t blksz) = 0;
   virtual 
   void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) {
-    int err = 0;
+    int err = Error::OK;
     create(err, smartfd, bufsz, replication, blksz);
     cb(err, smartfd);
   }
@@ -127,7 +134,7 @@ class FileSystem {
   virtual void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) = 0;
   virtual 
   void open(Callback::OpenCb_t cb, SmartFdPtr &smartfd, int32_t bufsz=0) {
-    int err = 0;
+    int err = Error::OK;
     open(err, smartfd, bufsz);
     cb(err, smartfd);
   }
@@ -137,7 +144,7 @@ class FileSystem {
                       void *dst, size_t amount) = 0;
   virtual 
   void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
-    int err = 0;
+    int err = Error::OK;
     StaticBuffer dst(amount);
     size_t nread = read(err, smartfd, dst.base, amount);
     
@@ -150,7 +157,7 @@ class FileSystem {
   virtual 
   void append(Callback::AppendCb_t cb, SmartFdPtr &smartfd, 
               StaticBuffer &buffer, Flags flags) {
-    int err = 0;
+    int err = Error::OK;
     size_t len = append(err, smartfd, buffer, flags);
     cb(err, smartfd, len);
   }
@@ -158,7 +165,7 @@ class FileSystem {
   virtual void close(int &err, SmartFdPtr &smartfd) = 0;
   virtual 
   void close(Callback::CloseCb_t cb, SmartFdPtr &smartfd) {
-    int err = 0;
+    int err = Error::OK;
     close(err, smartfd);
     cb(err, smartfd);
   }
@@ -177,8 +184,6 @@ class FileSystem {
   virtual void length(const String &name, bool accurate,
       DispatchHandler *handler) = 0;
       
-  virtual void remove(const String &name, bool force = true) = 0;
-  virtual void remove(const String &name, DispatchHandler *handler) = 0;
   */
 
 

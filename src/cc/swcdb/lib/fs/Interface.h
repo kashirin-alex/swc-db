@@ -36,7 +36,7 @@
 
 namespace SWC{ namespace FS {
   
-typedef std::vector<uint64_t> IdEntries_t;
+typedef std::vector<int64_t> IdEntries_t;
 const int id_split_len = 3;
 const char id_split_last = 'g';
 
@@ -180,7 +180,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     DirentList dirs;
     m_fs->readdir(err, base_path, dirs);
 
-    if(err > 0)
+    if(err != Error::OK)
       return;
 
     for(auto entry : dirs) {
@@ -203,7 +203,7 @@ class Interface : std::enable_shared_from_this<Interface>{
       new_base_path.append(entry.name);
       id_name.append(entry.name);
       get_structured_ids(err, new_base_path, entries, id_name);
-      if(err > 0)
+      if(err != Error::OK)
         return;
     }
   }

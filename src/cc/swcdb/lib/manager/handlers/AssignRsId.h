@@ -21,9 +21,8 @@ namespace Handler {
 class AssignRsId : public AppHandler {
   public:
 
-    AssignRsId(ConnHandlerPtr conn, EventPtr ev,
-               RangeServersPtr rangeservers)
-              : AppHandler(conn, ev), m_rangeservers(rangeservers) {}
+    AssignRsId(ConnHandlerPtr conn, EventPtr ev)
+              : AppHandler(conn, ev){}
 
   void run() override {
 
@@ -57,11 +56,12 @@ class AssignRsId : public AppHandler {
         return;
       }
 
+      RangeServersPtr  rangeservers = EnvRangeServers::get();
       std::cout << "MNGR ACTIVE: flag="<<req_params.flag<<"\n";
       switch(req_params.flag){
 
         case Protocol::Params::AssignRsID::Flag::RS_REQ: {
-          uint64_t rs_id = m_rangeservers->rs_set_id(req_params.endpoints);
+          uint64_t rs_id = rangeservers->rs_set_id(req_params.endpoints);
 
           Protocol::Params::AssignRsID rsp_params(
             rs_id, Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED, {});
@@ -76,7 +76,7 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_ACK: {
-          if(m_rangeservers->rs_ack_id(req_params.rs_id, req_params.endpoints)){
+          if(rangeservers->rs_ack_id(req_params.rs_id, req_params.endpoints)){
             m_conn->response_ok(m_ev);
 
           } else {
@@ -95,7 +95,7 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_DISAGREE: {
-          uint64_t rs_id = m_rangeservers->rs_had_id(
+          uint64_t rs_id = rangeservers->rs_had_id(
             req_params.rs_id, req_params.endpoints);
 
           if (rs_id != 0){
@@ -117,7 +117,7 @@ class AssignRsId : public AppHandler {
         }
 
         case Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN: {
-          m_rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
+          rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
           m_conn->response_ok(m_ev);
           break;
         }
@@ -129,14 +129,11 @@ class AssignRsId : public AppHandler {
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }
-
-    std::cout << m_rangeservers->to_string() << "\n";
-
-  
+    
+    std::cout << EnvRangeServers::get()->to_string() << "\n";
+    
   }
 
-  private:
-    RangeServersPtr  m_rangeservers;
 };
   
 

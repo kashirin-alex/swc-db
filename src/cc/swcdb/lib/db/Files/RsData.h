@@ -34,7 +34,7 @@ class RsData {
   static RsDataPtr get_rs(std::string filepath){
     RsDataPtr rs_data = std::make_shared<RsData>();
     
-    int err=0;
+    int err = Error::OK;
     if(EnvFsInterface::fs()->exists(err, filepath)){
       FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
       rs_data->read(smartfd);
@@ -49,7 +49,7 @@ class RsData {
 
   // GET 
   void read(FS::SmartFdPtr smartfd){
-    int err=0;
+    int err = Error::OK;
 
     EnvFsInterface::fs()->open(err, smartfd);
     if(!smartfd->valid())
@@ -85,12 +85,12 @@ class RsData {
   
   // SET 
   bool set_rs(std::string filepath, int64_t ts = 0){
-    int err=0;
+    int err=Error::OK;
     FS::SmartFdPtr smartfd = 
       FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
     EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
-    if(err > 0) 
+    if(err != Error::OK) 
       return false;
 
     DynamicBuffer input;
@@ -98,7 +98,7 @@ class RsData {
     StaticBuffer send_buf(input);
     EnvFsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::FLUSH);
     EnvFsInterface::fs()->close(err, smartfd);
-    return err == 0;
+    return err == Error::OK;
   }
 
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){

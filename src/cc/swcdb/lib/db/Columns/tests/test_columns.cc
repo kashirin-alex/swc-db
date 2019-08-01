@@ -21,14 +21,14 @@ int main(int argc, char** argv) {
 
     EnvFsInterface::init();
     EnvColumns::init();
-    ColumnsPtr cols = EnvColumns::get();
+    DB::ColumnsPtr cols = EnvColumns::get();
 
     for(int64_t c=1; c<=1000; c++){
         std::cout << "Loading cid:" << c << "\n";
 
         for(int64_t r=1; r<=1000; r++){
 
-            RangePtr range = cols->get_range(c, r, true);
+            DB::RangePtr range = cols->get_range(c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
         for(int64_t r=1; r<=1000; r++){
 
-            RangePtr range = cols->get_range(c, r);
+            DB::RangePtr range = cols->get_range(c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
