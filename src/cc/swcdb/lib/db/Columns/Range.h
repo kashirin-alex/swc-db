@@ -59,7 +59,7 @@ class Range : public RangeBase {
     std::uniform_int_distribution<> dist{1000, 5000};
     std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
 
-    set_loaded(true);
+    set_loaded(RangeState::LOADED);
 
 
     if(is_loaded()) {
@@ -80,7 +80,7 @@ class Range : public RangeBase {
 
     int err = Error::OK;
     EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
-    set_loaded(false);
+    set_loaded(RangeState::NOTLOADED);
 
     HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }

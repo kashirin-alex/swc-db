@@ -31,9 +31,8 @@ class MngrsState : public AppHandler {
       req_params.decode(&ptr, &remain);
 
       EnvMngrRoleState::get()->fill_states(
-        req_params.states, 
-        req_params.token, 
-        std::make_shared<ResponseCallback>(m_conn, m_ev));
+        req_params.states, req_params.token, 
+        nullptr); // std::make_shared<ResponseCallback>(m_conn, m_ev)
 
       EnvMngrRoleState::get()->update_manager_addr(
         m_conn->endpoint_remote_hash(), req_params.mngr_host);

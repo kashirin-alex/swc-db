@@ -55,7 +55,7 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::RS::AppContext>()
     ));
   
-    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(1, 3);
+    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(1, 1);
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
       = std::make_shared<HandleRsAssign>(mngr_root);
     mngr_root->set_cb(cb_hdlr);

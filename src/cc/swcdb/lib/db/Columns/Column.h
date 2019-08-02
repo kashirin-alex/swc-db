@@ -23,7 +23,14 @@ class Column : public std::enable_shared_from_this<Column> {
   
   public:
 
-  Column(int64_t id) : cid(id), ranges(std::make_shared<RangesMap>()) { }
+  static bool exists(int64_t id) {
+    std::string col_range_path(Range::get_path(id));
+    int err = Error::OK;
+    return EnvFsInterface::fs()->exists(err, col_range_path) && err == Error::OK;
+  }
+
+  Column(int64_t id) : cid(id), ranges(std::make_shared<RangesMap>()), 
+                       last_rid(-1) { }
 
   bool load() {
     std::string col_range_path(Range::get_path(cid));
@@ -81,12 +88,16 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
 
+  int64_t get_last_rid(){
+    return last_rid;
+  }
   private:
 
   std::mutex        m_mutex;
   
   int64_t           cid;
   SchemaPtr         m_schema;
+  int64_t           last_rid;
   std::shared_ptr<RangesMap> ranges;
 
 };

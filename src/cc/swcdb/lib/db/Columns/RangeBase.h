@@ -17,6 +17,11 @@ namespace SWC { namespace DB {
 class RangeBase;
 typedef std::shared_ptr<RangeBase> RangeBasePtr;
 
+enum RangeState{
+  NOTLOADED,
+  LOADED,
+  DELETED
+};
 
 class RangeBase : public std::enable_shared_from_this<RangeBase> {
   public:
@@ -42,7 +47,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   RangeBase(int64_t cid, int64_t rid): 
             cid(cid), rid(rid),
-            m_path(get_path(cid, rid)), loaded(false) { }
+            m_path(get_path(cid, rid)), 
+            state(RangeState::NOTLOADED) { }
 
   virtual ~RangeBase(){}
   
@@ -62,18 +68,23 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   bool is_loaded(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return loaded;
+    return state == RangeState::LOADED;
   }
 
-  void set_loaded(bool state){
+  bool deleted(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    loaded = state;
+    return state == RangeState::DELETED;
+  }
+
+  void set_loaded(RangeState new_state){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    state = new_state;
   }
 
   private:
   const std::string m_path;
 
-  bool              loaded;
+  RangeState state;
   
 };
 

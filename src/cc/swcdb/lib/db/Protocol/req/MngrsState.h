@@ -18,10 +18,11 @@ class MngrsState : public DispatchHandler {
   MngrsState(client::ClientConPtr conn, 
              server::Mngr::HostStatuses states, 
              uint64_t token, EndPoint mngr_host,
-             ResponseCallbackPtr cb, 
-             server::Mngr::RoleStatePtr role_state)
+             ResponseCallbackPtr cb)
             : conn(conn), states(states), token(token), mngr_host(mngr_host), 
-              cb(cb), role_state(role_state) { }
+              cb(cb) {
+
+  }
   
   virtual ~MngrsState() { }
   
@@ -50,8 +51,8 @@ class MngrsState : public DispatchHandler {
     if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE 
        && Protocol::response_code(ev) == Error::OK){
       if(cb != nullptr){
-        //std::cout << "response_ok, token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
-        //cb->response_ok();
+        std::cout << "response_ok, token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
+        cb->response_ok();
       }
       return;
     }
@@ -61,7 +62,6 @@ class MngrsState : public DispatchHandler {
   }
 
   private:
-  server::Mngr::RoleStatePtr role_state;
   ResponseCallbackPtr cb;
   client::ClientConPtr conn;
   server::Mngr::HostStatuses states;

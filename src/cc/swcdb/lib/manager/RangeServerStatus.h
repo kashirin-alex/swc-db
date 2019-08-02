@@ -33,6 +33,14 @@ struct IdsColumnRanges {
     s.append(")]");
     return s;
   }
+  
+  bool has_range(int64_t chk_rid){
+    for(auto rid : ranges) {
+      if(rid == chk_rid)
+        return true;
+    }
+    return false;
+  }
 
 };
 typedef std::shared_ptr<IdsColumnRanges> IdsColumnRangesPtr;
@@ -81,6 +89,22 @@ class RangeServerStatus : public Protocol::Params::HostEndPoints {
     for(auto col : queued)
       num += col->ranges.size();
     return num;
+  }
+
+  bool has_range(int64_t cid, int64_t rid){
+    for(auto col : columns) {
+      if(col->cid != cid)
+        continue;
+      if(col->has_range(rid))
+        return true;
+    }
+    for(auto col : queued) {
+      if(col->cid != cid)
+        continue;
+      if(col->has_range(rid))
+        return true;
+    }
+    return false;
   }
 
   bool           ack;
