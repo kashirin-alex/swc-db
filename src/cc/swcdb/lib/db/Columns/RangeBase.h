@@ -17,21 +17,22 @@ namespace SWC { namespace DB {
 class RangeBase;
 typedef std::shared_ptr<RangeBase> RangeBasePtr;
 
-enum RangeState{
-  NOTLOADED,
-  LOADED,
-  DELETED
-};
+
 
 class RangeBase : public std::enable_shared_from_this<RangeBase> {
   public:
   
   inline static const std::string range_dir = "/range"; // .../a-cid/range/a-rid/(types)
   inline static const std::string rs_data_file = "last_rs.data";
+  inline static const std::string deleted_file = "deleted.mark";
 
-  inline static std::string get_path(int64_t cid, int64_t rid=0){
+  inline static std::string get_column_path(int64_t cid){
     std::string s;
     FS::set_structured_id(std::to_string(cid), s);
+    return s;
+  }
+  inline static std::string get_path(int64_t cid, int64_t rid=0){
+    std::string s(get_column_path(cid));
     s.append(range_dir);
     if(rid > 0) {
       s.append("/");
@@ -47,8 +48,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   RangeBase(int64_t cid, int64_t rid): 
             cid(cid), rid(rid),
-            m_path(get_path(cid, rid)), 
-            state(RangeState::NOTLOADED) { }
+            m_path(get_path(cid, rid))  { }
 
   virtual ~RangeBase(){}
   
@@ -66,25 +66,15 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return Files::RsData::get_rs(get_path(rs_data_file));
   }
 
-  bool is_loaded(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return state == RangeState::LOADED;
-  }
-
-  bool deleted(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return state == RangeState::DELETED;
-  }
-
-  void set_loaded(RangeState new_state){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    state = new_state;
+  std::string to_string(){
+    std::string s("rid=");
+    s.append(std::to_string(rid));
+    return s;
   }
 
   private:
   const std::string m_path;
 
-  RangeState state;
   
 };
 

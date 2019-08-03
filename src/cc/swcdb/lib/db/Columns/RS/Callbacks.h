@@ -8,7 +8,7 @@
 
 #include <functional>
 
-namespace SWC { namespace DB {
+namespace SWC { namespace server { namespace RS {
   
 namespace Callback {
 
@@ -16,6 +16,6 @@ typedef std::function<void(bool)> RangeUnloaded_t;
 
 }
 
-}}
+}}}
 
 #endif // swc_lib_db_Columns_Callbacks_h

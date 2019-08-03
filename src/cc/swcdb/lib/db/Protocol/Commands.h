@@ -16,6 +16,7 @@ namespace SWC { namespace Protocol {
     
     REQ_MNGR_MNG_RS_ID,
 
+    REQ_RS_ASSIGN_ID_NEEDED,
     REQ_RS_IS_RANGE_LOADED,
     REQ_RS_LOAD_RANGE,
     REQ_RS_UNLOAD_RANGE,

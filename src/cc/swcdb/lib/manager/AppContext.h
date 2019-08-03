@@ -15,12 +15,12 @@
 #include "swcdb/lib/fs/Interface.h"
 
 #include "RoleState.h"
+#include "RangeServers.h"
 
-#include "swcdb/lib/manager/handlers/MngrsState.h"
-#include "swcdb/lib/manager/handlers/ActiveMngr.h"
-#include "swcdb/lib/manager/handlers/AssignRsId.h"
+#include "handlers/MngrsState.h"
+#include "handlers/ActiveMngr.h"
+#include "handlers/AssignRsId.h"
 
-#include "swcdb/lib/manager/RangeServers.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -35,7 +35,7 @@ class AppContext : public SWC::AppContext {
     EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.mngr.handlers"));
     EnvMngrRoleState::init();
     EnvFsInterface::init();
-    EnvColumns::init();
+    EnvMngrColumns::init();
     EnvClients::init(std::make_shared<client::Clients>(
       EnvIoCtx::io()->shared(),
       std::make_shared<client::Mngr::AppContext>()

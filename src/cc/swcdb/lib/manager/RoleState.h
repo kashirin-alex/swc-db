@@ -107,19 +107,19 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     }
   }
   
-  std::vector<int64_t> get_active_columns(){
+  void get_active_columns(std::vector<int64_t> &cols){
     client::Mngr::SelectedGroups groups;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       groups = m_local_groups;
     }
 
-    std::vector<int64_t> cols;
     for(auto group : groups){
       
       int64_t cid =   group->col_begin == 0 ?  1  : group->col_begin;
       int64_t cid_end = group->col_end == 0 ? cid : group->col_end;
-      if(group->col_end == 0)
+      
+      if(group->col_end == 0 && is_active(group->col_end))
           cols.push_back(group->col_end);
 
       for(;cid <= cid_end; cid++) {
@@ -130,7 +130,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         }
       }
     }
-    return cols;
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
@@ -164,7 +163,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     HostStatusPtr host_chk = nullptr;
 
     size_t total = m_states.size();
-    auto it = m_states.begin();
+    auto it = m_states.end();
     for(;;){
 
       if(total == 0) {
@@ -172,14 +171,13 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         return;
       }
 
-      host_chk = *it;
-      
-      if(it+1 == m_states.end())
+      if(it == m_states.end())
         it = m_states.begin();
-      else
-        it++;
 
-      if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1){
+      host_chk = *it;
+      it++;
+
+      if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
         if(flw) {
           timer_managers_checkin(cfg_check_interval->get());
           return;
@@ -280,7 +278,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     return offline;
   }
 
-  void fill_states(HostStatuses states, 
+  bool fill_states(HostStatuses states, 
                    uint64_t token=0, ResponseCallbackPtr cb=nullptr){
 
     bool turn_around = token == m_local_token;
@@ -405,7 +403,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         std::lock_guard<std::mutex> lock(m_mutex);
         timer_managers_checkin(3000);
       }
-      return;
+      return false;
     }
     
     if(cb != nullptr)
@@ -416,6 +414,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       timer_managers_checkin(
         new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
     }
+    
+    return new_recs;
   }
 
   void update_manager_addr(uint64_t hash, EndPoint mngr_host){

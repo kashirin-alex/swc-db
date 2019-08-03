@@ -17,7 +17,7 @@
 #include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
 
-#include "swcdb/lib/db/Columns/Columns.h"
+#include "swcdb/lib/db/Columns/RS/Columns.h"
 
 #include "callbacks/HandleRsAssign.h"
 #include "callbacks/HandleRsShutdown.h"
@@ -39,7 +39,7 @@ class AppContext : public SWC::AppContext {
     EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.rs.handlers"));
     EnvFsInterface::init();
     EnvRsData::init();
-    EnvColumns::init();
+    EnvRsColumns::init();
 
   }
 
@@ -54,8 +54,12 @@ class AppContext : public SWC::AppContext {
       EnvIoCtx::io()->shared(),
       std::make_shared<client::RS::AppContext>()
     ));
-  
+    
     mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(1, 1);
+    assign_rs_id();
+  }
+
+  void assign_rs_id(){
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
       = std::make_shared<HandleRsAssign>(mngr_root);
     mngr_root->set_cb(cb_hdlr);
@@ -97,6 +101,10 @@ class AppContext : public SWC::AppContext {
             break;
           case Protocol::Command::REQ_RS_UNLOAD_RANGE: 
             handler = new Handler::UnloadRange(conn, ev);
+            break;
+          case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED: 
+            assign_rs_id();
+            conn->response_ok(ev);
             break;
             
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
@@ -148,7 +156,7 @@ class AppContext : public SWC::AppContext {
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
 
-    EnvColumns::get()->unload_all();
+    EnvRsColumns::get()->unload_all();
 
     Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
       std::make_shared<HandleRsShutdown>(mngr_root, [this](){stop();});

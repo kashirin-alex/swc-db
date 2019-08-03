@@ -30,7 +30,7 @@ class UnloadRange : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      EnvColumns::get()->unload_range(params.cid, params.rid, 
+      EnvRsColumns::get()->unload_range(params.cid, params.rid, 
         [this](bool state){
           m_conn->response_ok(m_ev);
         }

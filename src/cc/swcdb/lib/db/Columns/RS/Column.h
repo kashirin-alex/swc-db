@@ -3,17 +3,17 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Column_h
-#define swcdb_lib_db_Columns_Column_h
+#ifndef swcdb_lib_db_Columns_RS_Column_h
+#define swcdb_lib_db_Columns_RS_Column_h
 
-#include "Schema.h"
+#include "swcdb/lib/db/Columns/Schema.h"
 #include "Range.h"
 
 #include <mutex>
 #include <memory>
 #include <unordered_map>
 
-namespace SWC { namespace DB {
+namespace SWC { namespace server { namespace RS {
 
 typedef std::unordered_map<int64_t, RangePtr> RangesMap;
 typedef std::pair<int64_t, RangePtr> RangesMapPair;
@@ -23,14 +23,8 @@ class Column : public std::enable_shared_from_this<Column> {
   
   public:
 
-  static bool exists(int64_t id) {
-    std::string col_range_path(Range::get_path(id));
-    int err = Error::OK;
-    return EnvFsInterface::fs()->exists(err, col_range_path) && err == Error::OK;
-  }
-
-  Column(int64_t id) : cid(id), ranges(std::make_shared<RangesMap>()), 
-                       last_rid(-1) { }
+  Column(int64_t id) 
+        : cid(id), m_ranges(std::make_shared<RangesMap>()) { }
 
   bool load() {
     std::string col_range_path(Range::get_path(cid));
@@ -45,22 +39,17 @@ class Column : public std::enable_shared_from_this<Column> {
 
   virtual ~Column(){}
 
-  void ranges_by_fs(int &err, FS::IdEntries_t &entries){
-    EnvFsInterface::interface()->get_structured_ids(err, Range::get_path(cid), entries);
-  }
-
-  RangePtr get_range(int64_t rid, bool initialize=false, bool is_rs=false){
+  RangePtr get_range(int64_t rid, bool initialize=false){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = ranges->find(rid);
-    if (it != ranges->end())
+    auto it = m_ranges->find(rid);
+    if (it != m_ranges->end())
       return it->second;
 
     if(initialize) {
       RangePtr range = std::make_shared<Range>(cid, rid, m_schema);
-      if(!is_rs || range->load()) {
-        ranges->insert(RangesMapPair(rid, range));
-      }
+      if(range->load()) 
+        m_ranges->insert(RangesMapPair(rid, range));
       return range;
     }
     return nullptr;
@@ -69,10 +58,10 @@ class Column : public std::enable_shared_from_this<Column> {
   void unload(int64_t rid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = ranges->find(rid);
-    if (it != ranges->end()){
+    auto it = m_ranges->find(rid);
+    if (it != m_ranges->end()){
       it->second->unload();
-      ranges->erase(it);
+      m_ranges->erase(it);
     }
   }
 
@@ -80,29 +69,39 @@ class Column : public std::enable_shared_from_this<Column> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;;){
-      auto it = ranges->begin();
-      if(it == ranges->end())
+      auto it = m_ranges->begin();
+      if(it == m_ranges->end())
         break;
       it->second->unload();
-      ranges->erase(it);
+      m_ranges->erase(it);
     }
   }
+  
+  std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-  int64_t get_last_rid(){
-    return last_rid;
+    std::string s("[cid=");
+    s.append(std::to_string(cid));
+    s.append(", ranges=(");
+    
+    for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it){
+      s.append(it->second->to_string());
+      s.append(",");
+    }
+    s.append(")]");
+    return s;
   }
+
   private:
 
-  std::mutex        m_mutex;
-  
-  int64_t           cid;
-  SchemaPtr         m_schema;
-  int64_t           last_rid;
-  std::shared_ptr<RangesMap> ranges;
+  std::mutex                 m_mutex;
+  int64_t                    cid;
+  SchemaPtr                  m_schema;
+  std::shared_ptr<RangesMap> m_ranges;
 
 };
 typedef std::shared_ptr<Column> ColumnPtr;
 
-}}
+}}}
 
 #endif

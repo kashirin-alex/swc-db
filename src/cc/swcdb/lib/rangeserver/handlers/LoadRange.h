@@ -32,7 +32,7 @@ class LoadRange : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      EnvColumns::get()->load_range(
+      EnvRsColumns::get()->load_range(
         params.cid, params.rid, 
          std::make_shared<Callback::RangeLoaded>(m_conn, m_ev));
     }

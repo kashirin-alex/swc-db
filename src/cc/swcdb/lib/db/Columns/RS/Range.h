@@ -3,29 +3,45 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Range_h
-#define swcdb_lib_db_Columns_Range_h
+#ifndef swcdb_lib_db_Columns_RS_Range_h
+#define swcdb_lib_db_Columns_RS_Range_h
 
 #include <random>
 
-#include "RangeBase.h"
+#include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Protocol/req/UnloadRange.h"
 
 
 
-namespace SWC { namespace DB {
+namespace SWC { namespace server { namespace RS {
 
-class Range : public RangeBase {
+class Range : public DB::RangeBase {
   public:
   
+  enum State{
+    NOTLOADED,
+    LOADED,
+    DELETED
+  };
+
   inline static const std::string range_data_file = "range.data";
 
   Range(int64_t cid, int64_t rid, SchemaPtr schema): 
-        RangeBase(cid, rid),
+        RangeBase(cid, rid), m_state(State::NOTLOADED), 
         m_schema(schema) { }
 
   virtual ~Range(){}
   
+  void set_state(State new_state){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_state = new_state;
+  }
+
+  bool is_loaded(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::LOADED;
+  }
+
   bool load(){
     HT_DEBUGF("LOADING RANGE cid=%d rid=%d", cid, rid);
     
@@ -59,7 +75,7 @@ class Range : public RangeBase {
     std::uniform_int_distribution<> dist{1000, 5000};
     std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
 
-    set_loaded(RangeState::LOADED);
+    set_state(State::LOADED);
 
 
     if(is_loaded()) {
@@ -80,9 +96,19 @@ class Range : public RangeBase {
 
     int err = Error::OK;
     EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
-    set_loaded(RangeState::NOTLOADED);
+    set_state(State::NOTLOADED);
 
     HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
+  }
+
+  std::string to_string(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("[");
+    s.append(DB::RangeBase::to_string());
+    s.append(", state=");
+    s.append(std::to_string(m_state));
+    s.append("]");
+    return s;
   }
 
   private:
@@ -99,11 +125,12 @@ class Range : public RangeBase {
   }
   
   private:
-  SchemaPtr         m_schema;
+  SchemaPtr   m_schema;
+  State       m_state;
 };
 
 typedef std::shared_ptr<Range> RangePtr;
 
 
-}}
+}}}
 #endif

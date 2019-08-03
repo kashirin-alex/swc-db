@@ -7,9 +7,10 @@
 #define swc_lib_manager_RangeServers_h
 #include <memory>
 
-#include "swcdb/lib/db/Columns/Columns.h"
+#include "swcdb/lib/db/Columns/MNGR/Columns.h"
 #include "swcdb/lib/db/Protocol/req/LoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
+#include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Files/RsData.h"
 #include "RangeServerStatus.h"
 
@@ -55,7 +56,9 @@ class RangeServers {
       ) {    
   }
 
-  void init() {}
+  void init() {
+    check_assignment();
+  }
 
   virtual ~RangeServers(){}
 
@@ -64,7 +67,7 @@ class RangeServers {
     return rs_set(endpoints, opt_id)->rs_id;
   }
 
-  bool rs_ack_id(uint64_t rs_id , EndPoints endpoints){
+  bool rs_ack_id(uint64_t rs_id, EndPoints endpoints){
     bool ack = false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
@@ -83,7 +86,7 @@ class RangeServers {
     return ack;
   }
 
-  uint64_t rs_had_id(uint64_t rs_id , EndPoints endpoints){
+  uint64_t rs_had_id(uint64_t rs_id, EndPoints endpoints){
     bool new_id_required = false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
@@ -100,7 +103,7 @@ class RangeServers {
     return rs_set_id(endpoints, new_id_required ? 0 : rs_id);
   }
 
-  void rs_shutdown(uint64_t rs_id , EndPoints endpoints){
+  void rs_shutdown(uint64_t rs_id, EndPoints endpoints){
     bool was_removed=false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
@@ -108,11 +111,8 @@ class RangeServers {
         auto h = *it;
         if(has_endpoint(h->endpoints, endpoints)){
           m_rs_status.erase(it);
-          {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            set_unassigned(h);
-          }
           was_removed = true;
+          EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
           break;
         }
       }
@@ -123,72 +123,60 @@ class RangeServers {
   }
 
   std::string to_string(){
-    std::string s("RangeServers:\n");
+    std::string s("RangeServers:");
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      for(auto h : m_rs_status)
+      for(auto h : m_rs_status) {
+        s.append("\n ");
         s.append(h->to_string());
-    }
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      s.append(" Not-Assigned=(");
-      for(auto col : m_not_assigned){
-        s.append(col->to_string());
-        s.append(", ");
-      }
-      s.append(")");
-
-      if(m_root_mngr) {
-        s.append("\n Last-CID=");
-        s.append(std::to_string(m_last_cid));
       }
     }
-
+    s.append("\n");
+    s.append(EnvMngrColumns::get()->to_string());
     return s;
   }
 
-  void range_loaded(RangeServerStatusPtr rs, client::ClientConPtr conn, 
-                    DB::RangeBasePtr range, bool loaded, bool other_rs=false) {
+  void assign_range(RangeServerStatusPtr rs, RangePtr range){
+    
+    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
+                            rs->endpoints, std::chrono::milliseconds(5000), 1);      
+    if(conn == nullptr){
+        {
+          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+          rs->failures++;
+        }
+        EnvRangeServers::get()->range_loaded(rs, range, false);
+      return;
+    }
+    EnvClients::get()->rs_service->preserve(conn);
+    
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      cid_range_remove(rs->queued, range->cid, range->rid);
+      rs->failures = 0;
     }
+    
+    Protocol::Req::Callback::LoadRange_t cb = [rs, range](bool loaded){
+      EnvRangeServers::get()->range_loaded(rs, range, loaded); 
+    };
+    if(!(std::make_shared<Protocol::Req::LoadRange>(conn, range, cb))->run())
+      cb(false);
+  }
+
+  void range_loaded(RangeServerStatusPtr rs, RangePtr range, bool loaded) {
 
     if(!loaded){
-      std::lock_guard<std::mutex> lock(m_mutex);
-      cid_ranges_add(m_not_assigned, range->cid, {range->rid});    
-
-    } else if(!other_rs){
-      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      cid_ranges_add(rs->columns, range->cid, {range->rid});
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        rs->total_ranges--;
+      }
+      range->set_state(Range::State::NOTSET, 0); 
 
     } else {
-      bool found = false;
-      if(conn != nullptr) {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        for(auto host : m_rs_status){
-          if(!has_endpoint(conn->endpoint_remote, host->endpoints))
-            continue;
-          cid_ranges_add(host->columns, range->cid, {range->rid});
-          cid_range_remove(host->queued, range->cid, range->rid);
-          found = true;
-          break;
-        }
-      }
-     if(!found) {
-        // Req. this(conn) RS->unload
-        RangeServerStatusPtr rs = rs_set({conn->endpoint_remote});
-        cid_ranges_add(rs->columns, range->cid, {range->rid});
-        cid_range_remove(rs->queued, range->cid, range->rid);
-        
-        HT_WARNF("RANGE-LOADED (cid=%d, rid=%d), for a nonexistent RANGESERVER (%s), new-rs_id=(%d) !", 
-                  range->cid, range->rid, conn->endpoint_remote_str().c_str(), rs->rs_id);
-     }
+      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
     }
 
-    HT_DEBUGF("RANGE-LOADED state=%s other=%s rs_id=%d cid=%d rid=%d\n%s", 
-              loaded?"TRUE":"FALSE", other_rs?"TRUE":"FALSE", 
-              rs->rs_id, range->cid, range->rid, to_string().c_str());
+    HT_DEBUGF("RANGE-LOADED, cid=%d %s\n%s", 
+              range->cid, range->to_string().c_str(), to_string().c_str());
   }
 
   private:
@@ -201,8 +189,8 @@ class RangeServers {
       auto h = *it;
       if(has_endpoint(h->endpoints, endpoints)) {
         if(h->ack) {
-          // if h->endpoints != endpoints
-          //    h->endpoints = endpoints;
+          if(endpoints.size() > h->endpoints.size())
+            h->endpoints = endpoints;
           return h;
         } else {
           m_rs_status.erase(it);
@@ -282,7 +270,8 @@ class RangeServers {
   bool initialized = false;
 
   void initialize_cols(){
-    std::vector<int64_t> cols = EnvMngrRoleState::get()->get_active_columns();
+    std::vector<int64_t> cols;
+    EnvMngrRoleState::get()->get_active_columns(cols);
     if(cols.size() == 0){
       initialized = false;
       return; 
@@ -318,14 +307,15 @@ class RangeServers {
 
   bool initialize_col(int64_t cid, bool only_exists_chk=false) {
 
-    if(cid != 1 && !DB::Column::exists(cid))
+    bool exists = Column::exists(cid);
+    if(cid != 1 && !exists)
       return false;
     if(only_exists_chk)
       return true;
 
-    DB::ColumnPtr col = EnvColumns::get()->get_column(cid, true);
-    if(!col->load()) {
-      HT_ERRORF("Unable to load column=%d", cid);
+    ColumnPtr col = EnvMngrColumns::get()->get_column(cid, true);
+    if(!exists && !col->create()) {
+      HT_ERRORF("Unable to create column=%d", cid);
     }
 
     // File::ColumnAssignments assignments.data (rs(endpoints)[rid])
@@ -335,7 +325,7 @@ class RangeServers {
     //   for(auto rid : assignment.ranges) {
     //     if(rs->has_range(cid, rid))
     //       continue;
-    //     DB::RangeBasePtr range = col->get_range(rid, true);
+    //     RangePtr range = col->get_range(rid, true);
     //     asio::post(*EnvIoCtx::io()->ptr(), [rs, range](){ 
     //       EnvRangeServers::get()->assign_range(rs, range); 
     //     });
@@ -345,7 +335,7 @@ class RangeServers {
     // col->load_last_rid() // column.data (last_range)
 
 
-    int64_t last_rid = col->get_last_rid();
+    int64_t last_rid = -1; //col->get_last_rid();
     if(last_rid == -1){
       int err = Error::OK;
       FS::IdEntries_t entries;
@@ -353,177 +343,90 @@ class RangeServers {
 
       if(entries.size() == 0) 
         entries.push_back(1); // initialize 1st range
-    
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        for(auto rid : entries)
-          if(!rs_has_range(cid, rid))
-            cid_ranges_add(m_not_assigned, cid, {rid});
-      }
-
+ 
+      for(auto rid : entries)
+        col->get_range(rid, true);
+      
     } else {
-
-      std::lock_guard<std::mutex> lock(m_mutex);
       for(int64_t rid=1; rid<=last_rid; rid++)
-        if(!rs_has_range(cid, rid))
-          cid_ranges_add(m_not_assigned, cid, {rid});
+        col->get_range(rid, true);
     }
     
     return true;
-  }
-
-  bool rs_has_range(int64_t cid, int64_t rid){
-    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-
-    for(auto rs : m_rs_status){
-      if(rs->has_range(cid, rid))
-        return true;
-    }
-    return false;
-  }
-
-  static void cid_ranges_add(IdsColumnsRanges &cols, 
-                             int64_t cid,  std::vector<int64_t> ranges){
-    auto c_it = std::find_if(cols.begin(), cols.end(),  
-                [cid](const IdsColumnRangesPtr& col){return col->cid == cid;});
-    if(c_it != cols.end()){
-      auto col = *c_it;
-      for(auto rid : ranges) {
-        auto r_it = std::find_if(col->ranges.begin(), col->ranges.end(),  
-            [rid](const int64_t& rid_set){return rid_set == rid;});
-        if(r_it != col->ranges.end())
-          col->ranges.push_back(rid);
-      }
-    } else
-      cols.push_back(std::make_shared<IdsColumnRanges>(cid, ranges));
-  }
-  
-  static void cid_range_remove(IdsColumnsRanges &cols, 
-                               int64_t cid, int64_t rid){
-    for(auto it_c = cols.begin(); it_c < cols.end();){
-      auto col = *it_c;
-      if(col->cid == cid){
-        for(auto it_r = col->ranges.begin(); it_r < col->ranges.end();){
-          if((*it_r) == rid) {
-            col->ranges.erase(it_r);
-            break;
-          }
-          it_r++;
-        }
-
-        if(col->ranges.begin() == col->ranges.end())
-          cols.erase(it_c);
-        break;
-      }
-      it_c++;
-    }
   }
   
   bool assign_ranges(){
-    std::lock_guard<std::mutex> lock(m_mutex);
 
-    DB::ColumnPtr  col;
-    IdsColumnsRanges::iterator     col_it;
-    std::vector<int64_t>::iterator r_it;
-    
-    while ((col_it = m_not_assigned.begin()) != m_not_assigned.end()) {
-      auto nxt_col = *col_it;
-      col = EnvColumns::get()->get_column(nxt_col->cid, true);
+    RangePtr range;
+    for(;;){
+      if((range = EnvMngrColumns::get()->get_next_unassigned()) == nullptr)
+        break;
 
-      while ((r_it = nxt_col->ranges.begin()) != nxt_col->ranges.end()) {
-
-        DB::RangeBasePtr range = col->get_range(*r_it, true);
-        if(range->deleted()) {
-          nxt_col->ranges.erase(r_it);
-          continue;
-        }
-        RangeServerStatusPtr rs = next_rs(range);
-        if(rs == nullptr)
-          return false;
-
-        asio::post(*EnvIoCtx::io()->ptr(), [rs, range](){ 
-          EnvRangeServers::get()->assign_range(rs, range); 
-        });
-
-        nxt_col->ranges.erase(r_it);
-      };
+      RangeServerStatusPtr rs;
       
-      m_not_assigned.erase(col_it);
-    };
+      Files::RsDataPtr last_rs = range->get_last_rs();
+      next_rs(last_rs, rs);
+      if(rs == nullptr)
+        return false;
 
+      range->set_state(Range::State::QUEUED, rs->rs_id);
+
+      asio::post(*EnvIoCtx::io()->ptr(), [rs, range, last_rs](){ 
+        EnvRangeServers::get()->assign_range(rs, range, last_rs); 
+      });
+    }
     return true;
   }
 
-  void assign_range(RangeServerStatusPtr rs, DB::RangeBasePtr range){
-    
-    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
-                            rs->endpoints, std::chrono::milliseconds(5000), 1);      
-    if(conn == nullptr){
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-          rs->failures++;
-        }
-        EnvRangeServers::get()->range_loaded(rs, conn, range, false);
+  void assign_range(RangeServerStatusPtr rs, RangePtr range, 
+                    Files::RsDataPtr last_rs){
+    if(last_rs == nullptr){
+      assign_range(rs, range);
       return;
     }
-    EnvClients::get()->rs_service->preserve(conn);
-    
-    Protocol::Req::Callback::LoadRange_t cb = [rs, conn, range](bool loaded){
-      EnvRangeServers::get()->range_loaded(rs, conn, range, loaded); 
-    };
 
-    Files::RsDataPtr last_rs = range->get_last_rs();
-
-    if(last_rs->endpoints.size() > 0 
-       && !has_endpoint(rs->endpoints, last_rs->endpoints)){
-
-      client::ClientConPtr old = EnvClients::get()->rs_service->get_connection(
+    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
         last_rs->endpoints, std::chrono::milliseconds(30000), 1);
 
-      if(old != nullptr 
-        && (std::make_shared<Protocol::Req::IsRangeLoaded>(
-          old, range, [rs, old, conn, range, cb] (bool is_loaded) {
-                       
-            if(is_loaded) {
-              EnvRangeServers::get()->range_loaded(rs, old, range, is_loaded, true);
-
-            } else if(!(std::make_shared<Protocol::Req::LoadRange>(
-                        conn, range, cb))->run()){
-              cb(false);
-            }
-          }))->run()){
-
-        EnvClients::get()->rs_service->preserve(old);
-        return;
-      }
-    }
-
-    if(!(std::make_shared<Protocol::Req::LoadRange>(conn, range, cb))->run())
-      cb(false);
+    if(conn != nullptr 
+      && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
+          conn, [rs, range] (bool err) {          
+            err ? EnvRangeServers::get()->assign_range(rs, range)
+                : EnvRangeServers::get()->range_loaded(rs, range, false);
+        }))->run())
+      EnvClients::get()->rs_service->preserve(conn);
+    else 
+      assign_range(rs, range);
   }
 
-  void set_unassigned(RangeServerStatusPtr host){
-    for(auto col : host->columns) 
-      cid_ranges_add(m_not_assigned, col->cid, col->ranges);
-    
-    for(auto col : host->queued) 
-      cid_ranges_add(m_not_assigned, col->cid, col->ranges);
-  }
-
-  RangeServerStatusPtr next_rs(DB::RangeBasePtr range){
-              
-    RangeServerStatusPtr rs = nullptr;
+  void next_rs(Files::RsDataPtr &last_rs, RangeServerStatusPtr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-   
+    
+    if(m_rs_status.size() == 0)
+      return;
+
+    if(last_rs->endpoints.size() > 0) {
+       for(auto rs : m_rs_status) {
+          if(rs->failures < 255 && has_endpoint(rs->endpoints, last_rs->endpoints)){
+            rs_set = rs;
+            last_rs = nullptr;
+            break;
+          }
+       }
+    } else 
+      last_rs = nullptr;
+    
     size_t num_rs;
     size_t avg_ranges;
-    while(rs == nullptr && m_rs_status.size() > 0){
+    RangeServerStatusPtr rs;
+
+    while(rs_set == nullptr && m_rs_status.size() > 0){
     
       avg_ranges = 0;
       num_rs = 0;
       // avg_resource_ratio = 0;
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++) {
-        avg_ranges = avg_ranges*num_rs + (*it)->total_ranges();
+        avg_ranges = avg_ranges*num_rs + (*it)->total_ranges;
         // resource_ratio = avg_resource_ratio*num_rs + (*it)->resource();
         avg_ranges /= ++num_rs;
         // avg_resource_ratio /= num_rs;
@@ -531,22 +434,22 @@ class RangeServers {
 
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
         rs = *it;
-        if(avg_ranges < rs->total_ranges()) // *avg_resource_ratio
+        if(avg_ranges < rs->total_ranges) // *avg_resource_ratio
           continue;
 
         if(rs->failures == 255){
-          set_unassigned(rs);
           m_rs_status.erase(it);
-          rs = nullptr;
+          EnvMngrColumns::get()->set_rs_unassigned(rs->rs_id);
           continue;
         }
+        rs_set = rs;
         break;
       }
     }
 
-    if(rs != nullptr)
-      cid_ranges_add(rs->queued, range->cid, {range->rid});
-    return rs;
+    if(rs_set != nullptr)
+      rs_set->total_ranges++;
+    return;
   }
 
   std::mutex          m_mutex;
@@ -554,8 +457,7 @@ class RangeServers {
   
   TimerPtr            m_assign_timer; 
 
-  IdsColumnsRanges    m_not_assigned;
-  std::vector<RangeServerStatusPtr> m_rs_status;
+  RangeServerStatusList m_rs_status;
 
   int64_t             m_last_cid = 0;
   bool                m_root_mngr = false;
