@@ -45,6 +45,7 @@ class Settings {
   PropertiesDesc *cmdline_descp = NULL;
   PropertiesDesc *cmdline_hidden_descp = NULL;
   PropertiesDesc *file_descp = NULL;
+  Parser::Options m_cmd_args;
 
   void init_options();
 
@@ -166,7 +167,7 @@ class Settings {
    * the option descriptor
    *
    * @param fname The filename of the configuration file
-   * @param onchg The cfg-name eg. swc.cfg.OnFileChange.file
+   * @param onchg The cfg-name eg. swc.OnFileChange.cfg
    * @throws Error::CONFIG_BAD_CFG_FILE on error
    */
   void parse_file(const String &fname, const String &onchg);

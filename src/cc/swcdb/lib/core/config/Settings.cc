@@ -94,9 +94,9 @@ void Settings::file_desc( PropertiesDesc &desc) {
 void Settings::parse_args(int argc, char *argv[]) {
   std::lock_guard<std::recursive_mutex> lock(rec_mutex);
 
-  properties->load_from(
-      Parser(argc, argv, cmdline_desc(), file_desc(), 
-                    false).get_options());
+  m_cmd_args = Parser(argc, argv, cmdline_desc(), file_desc(), false)
+                    .get_options();
+  properties->load_from(m_cmd_args);
     
   // some built-in behavior
   if (has("help")) {
@@ -122,25 +122,23 @@ void Settings::parse_args(int argc, char *argv[]) {
 
   // Only try to parse config file if it exists or not default
   if (FileUtils::exists(filename)) {
-    parse_file(filename, "swc.cfg.OnFileChange.file");
-    // Inforce cmdline properties
-    properties->load_from(
-        Parser(argc, argv, cmdline_desc(), file_desc(), 
-                        false).get_options());
+    parse_file(filename, "swc.OnFileChange.cfg");
+    
   } else if (!defaulted("config"))
     HT_THROW(Error::FS_FILE_NOT_FOUND, filename);
 
 }
 
 void Settings::parse_file(const String &fname, const String &onchg) {
-    if(fname.empty()) return;
-    
+  if(!fname.empty()){
     if(!FileUtils::exists(fname))
       HT_THROW(Error::FS_FILE_NOT_FOUND, fname);
 
     properties->load(fname, file_desc(), false);
     if(!onchg.empty())
       properties->load_files_by(onchg, file_desc(), false);
+  }
+  properties->load_from(m_cmd_args);  // Inforce cmdline properties 
 }
 
 void Settings::alias(const String &cmdline_opt, const String &file_opt) {

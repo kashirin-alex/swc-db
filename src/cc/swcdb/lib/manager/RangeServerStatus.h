@@ -35,11 +35,11 @@ class RangeServerStatus : public Protocol::Params::HostEndPoints {
     return s;
   }
 
-  uint64_t       rs_id;
-  bool           ack;
+  uint64_t   rs_id;
+  bool       ack;
 
-  int            failures;
-  size_t         total_ranges;
+  int32_t    failures;
+  size_t     total_ranges;
 };
 typedef std::shared_ptr<RangeServerStatus> RangeServerStatusPtr;
 typedef  std::vector<RangeServerStatusPtr> RangeServerStatusList;

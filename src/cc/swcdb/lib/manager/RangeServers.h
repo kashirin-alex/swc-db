@@ -54,6 +54,19 @@ class RangeServers {
     : m_assign_timer(
         std::make_shared<asio::high_resolution_timer>(*EnvIoCtx::io()->ptr())
       ) {    
+    cfg_rs_failures = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.RS.remove.failures");
+    cfg_delay_rs_chg = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.delay.onRangeServerChange");
+    cfg_delay_cols_init = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.delay.afterColumnsInit");
+    cfg_chk_assign = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.interval.check");
+
+    cfg_rs_conn_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.RS.connection.timeout");
+    cfg_rs_conn_probes = EnvConfig::settings()->get_ptr<gInt32t>(
+      "swc.mngr.ranges.assign.RS.connection.probes");
   }
 
   void init() {
@@ -82,7 +95,7 @@ class RangeServers {
     }
 
     if(ack)
-      check_assignment(30000);
+      check_assignment(cfg_delay_rs_chg->get());
     return ack;
   }
 
@@ -119,7 +132,7 @@ class RangeServers {
     }
 
     if(was_removed)
-      check_assignment(30000);
+      check_assignment(cfg_delay_rs_chg->get());
   }
 
   std::string to_string(){
@@ -139,7 +152,11 @@ class RangeServers {
   void assign_range(RangeServerStatusPtr rs, RangePtr range){
     
     client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
-                            rs->endpoints, std::chrono::milliseconds(5000), 1);      
+      rs->endpoints, 
+      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
+      cfg_rs_conn_probes->get()
+    );
+        
     if(conn == nullptr){
         {
           std::lock_guard<std::mutex> lock(m_mutex_rs_status);
@@ -228,7 +245,7 @@ class RangeServers {
     if(!initialized){
       initialized = true;
       initialize_cols();
-      timer_assignment_checkin(30000);
+      timer_assignment_checkin(cfg_delay_cols_init->get());
       return;
 
     } else if(t_ms) {
@@ -244,7 +261,7 @@ class RangeServers {
 
     // for rangeserver cid-rid state
 
-    timer_assignment_checkin(60000);
+    timer_assignment_checkin(cfg_chk_assign->get());
 
   }
 
@@ -386,7 +403,10 @@ class RangeServers {
     }
 
     client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
-        last_rs->endpoints, std::chrono::milliseconds(30000), 1);
+      last_rs->endpoints, 
+      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
+      cfg_rs_conn_probes->get()
+    );
 
     if(conn != nullptr 
       && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
@@ -407,7 +427,8 @@ class RangeServers {
 
     if(last_rs->endpoints.size() > 0) {
        for(auto rs : m_rs_status) {
-          if(rs->failures < 255 && has_endpoint(rs->endpoints, last_rs->endpoints)){
+          if(rs->failures < cfg_rs_failures->get() 
+            && has_endpoint(rs->endpoints, last_rs->endpoints)){
             rs_set = rs;
             last_rs = nullptr;
             break;
@@ -437,7 +458,7 @@ class RangeServers {
         if(avg_ranges < rs->total_ranges) // *avg_resource_ratio
           continue;
 
-        if(rs->failures == 255){
+        if(rs->failures == cfg_rs_failures->get()){
           m_rs_status.erase(it);
           EnvMngrColumns::get()->set_rs_unassigned(rs->rs_id);
           continue;
@@ -461,6 +482,14 @@ class RangeServers {
 
   int64_t             m_last_cid = 0;
   bool                m_root_mngr = false;
+
+  gInt32tPtr          cfg_rs_failures;
+  gInt32tPtr          cfg_delay_rs_chg;
+  gInt32tPtr          cfg_delay_cols_init;
+  gInt32tPtr          cfg_chk_assign;
+  gInt32tPtr          cfg_rs_conn_timeout;
+  gInt32tPtr          cfg_rs_conn_probes;
+  
 };
 
 

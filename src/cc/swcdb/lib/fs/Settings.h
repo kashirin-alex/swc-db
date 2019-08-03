@@ -17,19 +17,19 @@ inline void Settings::init_fs_options(){
 
     ("swc.fs", str(), "main FileSystem: local|hadoop|ceph|broker|custom")
 
-    ("swc.fs.cfg.local", str(), "Specific cfg-file for FS-local")
+    ("swc.fs.local.cfg", str(), "Specific cfg-file for FS-local")
     ("swc.fs.lib.local", str(), "FS-local Lib-path based on fs/FileSystem.h")
 
-    ("swc.fs.cfg.hadoop", str(), "Specific cfg-file for FS-hadoop")
+    ("swc.fs.hadoop.cfg", str(), "Specific cfg-file for FS-hadoop")
     ("swc.fs.lib.hadoop", str(), "FS-hadoop Lib-path based on fs/FileSystem.h")
 
-    ("swc.fs.cfg.ceph", str(), "Specific cfg-file for FS-ceph")
+    ("swc.fs.ceph.cfg", str(), "Specific cfg-file for FS-ceph")
     ("swc.fs.lib.ceph", str(), "FS-ceph Lib-path based on fs/FileSystem.h")
 
-    ("swc.fs.cfg.broker", str(), "Specific cfg-file for FS-broker")
+    ("swc.fs.broker.cfg", str(), "Specific cfg-file for FS-broker")
     ("swc.fs.lib.broker", str(), "FS-broker Lib-path based on fs/FileSystem.h")
 
-    ("swc.fs.cfg.custom", str(), "Specific cfg-file for FS-custom")
+    ("swc.fs.custom.cfg", str(), "Specific cfg-file for FS-custom")
     ("swc.fs.lib.custom", str(), "FS-custom Lib-path based on fs/FileSystem.h")
 
 

@@ -31,6 +31,10 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() {
+    EnvConfig::settings()->parse_file(
+      EnvConfig::settings()->get<String>("swc.mngr.cfg", ""),
+      EnvConfig::settings()->get<String>("swc.mngr.OnFileChange.cfg", "")
+    );
 
     EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.mngr.handlers"));
     EnvMngrRoleState::init();

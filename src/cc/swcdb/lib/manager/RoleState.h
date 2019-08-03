@@ -53,17 +53,17 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         std::make_shared<asio::high_resolution_timer>(*EnvIoCtx::io()->ptr())
       ) {
     cfg_conn_probes = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.connection.probes");
+      "swc.mngr.role.connection.probes");
     cfg_conn_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.connection.timeout");
+      "swc.mngr.role.connection.timeout");
     cfg_req_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.request.timeout");
+      "swc.mngr.role.request.timeout");
     cfg_check_interval = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.check.interval");
+      "swc.mngr.role.check.interval");
     cfg_delay_updated = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.check.delay.updated");
+      "swc.mngr.role.check.delay.updated");
     cfg_delay_fallback = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.mngr.RoleState.check.delay.fallback");
+      "swc.mngr.role.check.delay.fallback");
   }
 
   virtual ~RoleState() { }

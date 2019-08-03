@@ -35,7 +35,11 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() {
-    
+    EnvConfig::settings()->parse_file(
+      EnvConfig::settings()->get<String>("swc.rs.cfg", ""),
+      EnvConfig::settings()->get<String>("swc.rs.OnFileChange.cfg", "")
+    );
+
     EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.rs.handlers"));
     EnvFsInterface::init();
     EnvRsData::init();

@@ -11,11 +11,11 @@ namespace SWC{ namespace FS {
 bool apply_local() {
   EnvConfig::settings()->file_desc().add_options()
     ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
-    ("swc.fs.local.OnFileChange.file", str(), "Dyn-config file")
+    ("swc.fs.local.OnFileChange.cfg", str(), "Dyn-config file")
   ;
   EnvConfig::settings()->parse_file(
-    EnvConfig::settings()->get<String>("swc.fs.cfg.local", ""),
-    EnvConfig::settings()->get<String>("swc.fs.local.OnFileChange.file", "")
+    EnvConfig::settings()->get<String>("swc.fs.local.cfg", ""),
+    EnvConfig::settings()->get<String>("swc.fs.local.OnFileChange.cfg", "")
   );
   return true;
 }
