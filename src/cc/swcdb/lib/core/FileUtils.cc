@@ -517,45 +517,43 @@ bool FileUtils::expand_tilde(String &fname) {
 void FileUtils::readdir(const String &dirname, const String &fname_regex,
 			std::vector<struct dirent> &listing) {
 
+  errno = 0;
   DIR *dirp = opendir(dirname.c_str());
+  if(dirp == nullptr || errno != 0){
+    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+              strerror(errno));
+    return;
+  }
   boost::shared_ptr<re2::RE2> regex(fname_regex.length()
-                                ? new re2::RE2(fname_regex)
-                                : 0);
+                                    ? new re2::RE2(fname_regex)
+                                    : 0);
+  struct dirent *dep;
 
 #if defined(USE_READDIR_R) && USE_READDIR_R
-  int ret;
-  struct dirent de, *dep;
-  do {
-    if ((ret = ::readdir_r(dirp, &de, &dep)) != 0){
-      HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
-                strerror(errno));
-      (void)closedir(dirp);
-      return;
-    }
 
-    if (dep != 0 && (!regex || re2::RE2::FullMatch(de.d_name, *regex)))
+  int ret;
+  struct dirent de;
+  for(;;) {
+    if((ret = ::readdir_r(dirp, &de, &dep)) != 0 || dep == nullptr)
+      break;
+    if(!regex || re2::RE2::FullMatch(de.d_name, *regex))
       listing.push_back(de);
-  } while (dep != 0);
+  };
 
 #else
-  struct dirent *de;
-  do {
-    errno = 0;
-    de = ::readdir(dirp);
-    if (de == NULL){
-      if(errno > 0){
-        HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
-                  strerror(errno));
-        (void)closedir(dirp);
-        return;
-      }
-    }
-    if (!regex || re2::RE2::FullMatch(de->d_name, *regex))
-      listing.push_back(*de);
 
-  } while (de != NULL);
+  for(;;) {
+    if((dep = ::readdir(dirp)) == nullptr)
+      break;
+    if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
+      listing.push_back(*dep);
+  }
+  
 #endif
 
+  if(errno > 0)
+    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+              strerror(errno));
   (void)closedir(dirp);
 }
 

@@ -7,7 +7,7 @@
 #define swc_lib_rangeserver_callbacks_HandleRsAssign_h
 
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
-#include "swcdb/lib/db/Protocol/params/AssignRsID.h"
+#include "swcdb/lib/db/Protocol/params/MngRsId.h"
 
 namespace SWC {
 namespace server {
@@ -30,8 +30,8 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
 
     m_conn = EnvClients::get()->mngr_service->get_connection(endpoints);
   
-    Protocol::Params::AssignRsID params(
-      0, Protocol::Params::AssignRsID::Flag::RS_REQ, EnvRsData::get()->endpoints);
+    Protocol::Params::MngRsId params(
+      0, Protocol::Params::MngRsId::Flag::RS_REQ, EnvRsData::get()->endpoints);
 
     CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -63,37 +63,55 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
         const uint8_t *ptr = ev->payload;
         size_t remain = ev->payload_len;
 
-        Protocol::Params::AssignRsID rsp_params;
+        Protocol::Params::MngRsId rsp_params;
         const uint8_t *base = ptr;
         rsp_params.decode(&ptr, &remain);
 
         std::cout << "HandleRsAssign: rs_id=" << rsp_params.rs_id
                                   << " flag=" << rsp_params.flag << "\n";
         
-        if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REREQ){
+        if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
           mngr_active->run_within(conn->m_io_ctx, 50);
 
         } 
-        else if(rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_ASSIGNED
-          || rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN){
-          
+        else if(
+          rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+          || 
+          rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN){
+
           Files::RsDataPtr rs_data = EnvRsData::get();
-          Protocol::Params::AssignRsID params;
-          if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
+          Protocol::Params::MngRsId params;
+
+          if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+             && rsp_params.fs != EnvFsInterface::interface()->get_type()){
+            HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
+                      " RS(shutting-down)",
+                      EnvFsInterface::interface()->to_string().c_str(), 
+                      (int)rsp_params.fs);
+            params = Protocol::Params::MngRsId(
+              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
+              rs_data->endpoints);
+            std::cout << "HandleRsAssign: RS_SHUTTINGDOWN, rs_data=" 
+                          << rs_data->to_string() << "\n";
+            std::raise(SIGTERM);
+
+          } else if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
             || (rs_data->rs_id != rsp_params.rs_id 
-                && rsp_params.flag == Protocol::Params::AssignRsID::Flag::MNGR_REASSIGN)){
+                && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
             rs_data->rs_id = rsp_params.rs_id;
           
-            params = Protocol::Params::AssignRsID(
-              rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_ACK, 
+            params = Protocol::Params::MngRsId(
+              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_ACK, 
               rs_data->endpoints);
-            std::cout << "HandleRsAssign: RS_ACK, rs_data=" << rs_data->to_string() << "\n";
-         
+            std::cout << "HandleRsAssign: RS_ACK, rs_data=" 
+                      << rs_data->to_string() << "\n";
           } else {
-            params = Protocol::Params::AssignRsID(
-              rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_DISAGREE, 
+
+            params = Protocol::Params::MngRsId(
+              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_DISAGREE, 
               rs_data->endpoints);
-            std::cout << "HandleRsAssign: RS_DISAGREE, rs_data=" << rs_data->to_string() << "\n";
+            std::cout << "HandleRsAssign: RS_DISAGREE, rs_data="
+                      << rs_data->to_string() << "\n";
           }
 
           CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);

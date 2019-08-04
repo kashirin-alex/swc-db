@@ -7,7 +7,7 @@
 #define swc_lib_rangeserver_callbacks_HandleRsShutdown_h
 
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
-#include "swcdb/lib/db/Protocol/params/AssignRsID.h"
+#include "swcdb/lib/db/Protocol/params/MngRsId.h"
 #include <functional>
 
 namespace SWC {
@@ -31,8 +31,8 @@ class HandleRsShutdown: public Protocol::Rsp::ActiveMngrRspCb {
     m_conn = EnvClients::get()->mngr_service->get_connection(endpoints);
 
     Files::RsDataPtr rs_data = EnvRsData::get();
-    Protocol::Params::AssignRsID params(
-      rs_data->rs_id, Protocol::Params::AssignRsID::Flag::RS_SHUTTINGDOWN, 
+    Protocol::Params::MngRsId params(
+      rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
       rs_data->endpoints);
 
     CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);

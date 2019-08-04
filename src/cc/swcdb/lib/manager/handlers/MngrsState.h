@@ -30,7 +30,7 @@ class MngrsState : public AppHandler {
       const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
-      bool local_changed = EnvMngrRoleState::get()->fill_states(
+      bool new_active_columns = EnvMngrRoleState::get()->fill_states(
         req_params.states, req_params.token, 
         nullptr); // std::make_shared<ResponseCallback>(m_conn, m_ev)
 
@@ -39,12 +39,8 @@ class MngrsState : public AppHandler {
 
       m_conn->response_ok(m_ev);
 
-      if(local_changed) {
-        std::vector<int64_t> cols;
-        EnvMngrRoleState::get()->get_active_columns(cols);
-        if(cols.size() > 0)
-          EnvRangeServers::get()->init();
-      }
+      if(new_active_columns)
+        EnvRangeServers::get()->new_columns();
 
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

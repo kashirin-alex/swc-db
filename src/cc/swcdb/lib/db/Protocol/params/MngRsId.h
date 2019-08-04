@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_AssignRsID_h
-#define swc_db_protocol_params_AssignRsID_h
+#ifndef swc_db_protocol_params_MngRsId_h
+#define swc_db_protocol_params_MngRsId_h
 
 #include "swcdb/lib/core/Serializable.h"
 #include "HostEndPoints.h"
@@ -14,7 +14,7 @@ namespace Protocol {
 namespace Params {
 
 
-  class AssignRsID  : public HostEndPoints {
+  class MngRsId  : public HostEndPoints {
   public:
 
     enum Flag {
@@ -28,14 +28,15 @@ namespace Params {
       RS_SHUTTINGDOWN = 8
     };
 
-    AssignRsID() {}
+    MngRsId() {}
 
-    AssignRsID(uint64_t rs_id, Flag flag, EndPoints endpoints) 
+    MngRsId(uint64_t rs_id, Flag flag, EndPoints endpoints) 
               : rs_id(rs_id), flag(flag), HostEndPoints(endpoints){     
     }
 
     uint64_t        rs_id; 
     Flag            flag;
+    Types::Fs       fs;
 
   private:
 
@@ -47,8 +48,12 @@ namespace Params {
       size_t len = 1;
       if(flag != Flag::MNGR_NOT_ACTIVE)
         len += Serialization::encoded_length_vi64(rs_id);
-      if(flag >= Flag::RS_REQ)
+
+      if(flag >= Flag::RS_REQ) 
         len +=  HostEndPoints::encoded_length_internal();
+      
+      if(flag == Flag::MNGR_ASSIGNED)
+        len++; // fs-type
       return len;
     }
     
@@ -57,9 +62,12 @@ namespace Params {
       if(flag != Flag::MNGR_NOT_ACTIVE)
         Serialization::encode_vi64(bufp, rs_id);
       
-      if(flag >= Flag::RS_REQ){
+      if(flag >= Flag::RS_REQ)
         HostEndPoints::encode_internal(bufp);
-      }
+
+      if(flag == Flag::MNGR_ASSIGNED)
+        Serialization::encode_i8(
+          bufp, (int8_t)EnvFsInterface::interface()->get_type());
     }
     
     void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -68,9 +76,11 @@ namespace Params {
       if(flag != Flag::MNGR_NOT_ACTIVE)
         rs_id = Serialization::decode_vi64(bufp, remainp);
       
-      if(flag >= Flag::RS_REQ){
+      if(flag >= Flag::RS_REQ)
         HostEndPoints::decode_internal(version, bufp, remainp);
-      }
+      
+      if(flag == Flag::MNGR_ASSIGNED)
+        fs = (Types::Fs)Serialization::decode_i8(bufp, remainp);
     }
 
   };
@@ -78,4 +88,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_AssignRsID_h
+#endif // swc_db_protocol_params_MngRsId_h

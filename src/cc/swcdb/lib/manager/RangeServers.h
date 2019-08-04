@@ -69,7 +69,11 @@ class RangeServers {
       "swc.mngr.ranges.assign.RS.connection.probes");
   }
 
-  void init() {
+  void new_columns() {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_columns_set = false;
+    }
     check_assignment();
   }
 
@@ -82,20 +86,22 @@ class RangeServers {
 
   bool rs_ack_id(uint64_t rs_id, EndPoints endpoints){
     bool ack = false;
+    bool new_ack = false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
       for(auto h : m_rs_status){
         if(has_endpoint(h->endpoints, endpoints) && rs_id == h->rs_id){
-          h->ack = true;
+          new_ack = !h->ack;
           ack = true;
+          h->ack = true;
           break;
         }
       }
     }
 
-    if(ack)
-      check_assignment(cfg_delay_rs_chg->get());
+    if(new_ack) 
+      rs_change();
     return ack;
   }
 
@@ -113,6 +119,7 @@ class RangeServers {
         }
       }
     }
+    
     return rs_set_id(endpoints, new_id_required ? 0 : rs_id);
   }
 
@@ -132,7 +139,7 @@ class RangeServers {
     }
 
     if(was_removed)
-      check_assignment(cfg_delay_rs_chg->get());
+      rs_change();
   }
 
   std::string to_string(){
@@ -240,10 +247,22 @@ class RangeServers {
     m_rs_status.push_back(h);
     return h;
   }
+  
+  void rs_change(){
+    EnvMngrRoleState::get()->req_mngr_inchain(
+      []
+      (client::ClientConPtr mngr){ 
+        std::cout << "[RS-status] update req_mngr_inchain \n";
+      }
+    );
+    
+    check_assignment(cfg_delay_rs_chg->get());
+  }
 
   void check_assignment(uint32_t t_ms = 0){
-    if(!initialized){
-      initialized = true;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(!m_columns_set){
       initialize_cols();
       timer_assignment_checkin(cfg_delay_cols_init->get());
       return;
@@ -267,8 +286,6 @@ class RangeServers {
 
   void timer_assignment_checkin(uint32_t t_ms = 10000) {
     auto set_in = std::chrono::milliseconds(t_ms);
-    
-    std::lock_guard<std::mutex> lock(m_mutex);
     auto set_on = m_assign_timer->expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
       return;
@@ -284,13 +301,11 @@ class RangeServers {
     HT_DEBUGF("RS ranges check_assignment scheduled in ms=%d", t_ms);
   }
 
-  bool initialized = false;
-
   void initialize_cols(){
     std::vector<int64_t> cols;
     EnvMngrRoleState::get()->get_active_columns(cols);
     if(cols.size() == 0){
-      initialized = false;
+      m_columns_set = false;
       return; 
     }
 
@@ -320,6 +335,7 @@ class RangeServers {
     if(till_end)
       while(initialize_col(++last_id));
 
+    m_columns_set = true;
   }
 
   bool initialize_col(int64_t cid, bool only_exists_chk=false) {
@@ -379,7 +395,7 @@ class RangeServers {
       if((range = EnvMngrColumns::get()->get_next_unassigned()) == nullptr)
         break;
 
-      RangeServerStatusPtr rs;
+      RangeServerStatusPtr rs = nullptr;
       
       Files::RsDataPtr last_rs = range->get_last_rs();
       next_rs(last_rs, rs);
@@ -410,7 +426,7 @@ class RangeServers {
 
     if(conn != nullptr 
       && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
-          conn, [rs, range] (bool err) {          
+          conn, [rs, range] (bool err) {     
             err ? EnvRangeServers::get()->assign_range(rs, range)
                 : EnvRangeServers::get()->range_loaded(rs, range, false);
         }))->run())
@@ -427,7 +443,8 @@ class RangeServers {
 
     if(last_rs->endpoints.size() > 0) {
        for(auto rs : m_rs_status) {
-          if(rs->failures < cfg_rs_failures->get() 
+          if(rs->ack 
+            && rs->failures < cfg_rs_failures->get() 
             && has_endpoint(rs->endpoints, last_rs->endpoints)){
             rs_set = rs;
             last_rs = nullptr;
@@ -442,20 +459,22 @@ class RangeServers {
     RangeServerStatusPtr rs;
 
     while(rs_set == nullptr && m_rs_status.size() > 0){
-    
       avg_ranges = 0;
       num_rs = 0;
       // avg_resource_ratio = 0;
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++) {
-        avg_ranges = avg_ranges*num_rs + (*it)->total_ranges;
-        // resource_ratio = avg_resource_ratio*num_rs + (*it)->resource();
+        rs = *it;
+        if(!rs->ack)
+          continue;
+        avg_ranges = avg_ranges*num_rs + rs->total_ranges;
+        // resource_ratio = avg_resource_ratio*num_rs + rs->resource();
         avg_ranges /= ++num_rs;
         // avg_resource_ratio /= num_rs;
       }
 
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
         rs = *it;
-        if(avg_ranges < rs->total_ranges) // *avg_resource_ratio
+        if(!rs->ack || avg_ranges < rs->total_ranges) // *avg_resource_ratio
           continue;
 
         if(rs->failures == cfg_rs_failures->get()){
@@ -476,6 +495,7 @@ class RangeServers {
   std::mutex          m_mutex;
   std::mutex          m_mutex_rs_status;
   
+  bool                m_columns_set = false;
   TimerPtr            m_assign_timer; 
 
   RangeServerStatusList m_rs_status;

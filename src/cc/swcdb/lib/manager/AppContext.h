@@ -19,7 +19,7 @@
 
 #include "handlers/MngrsState.h"
 #include "handlers/ActiveMngr.h"
-#include "handlers/AssignRsId.h"
+#include "handlers/MngRsId.h"
 
 
 
@@ -93,7 +93,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_MNGR_MNG_RS_ID:
-            handler = new Handler::AssignRsId(conn, ev);
+            handler = new Handler::MngRsId(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
