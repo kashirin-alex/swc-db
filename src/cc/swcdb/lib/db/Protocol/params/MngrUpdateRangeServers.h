@@ -17,7 +17,7 @@ namespace Params {
 
     MngrUpdateRangeServers() {}
 
-    MngrUpdateRangeServers(server::Mngr::RangeServerStatusList hosts, 
+    MngrUpdateRangeServers(server::Mngr::RsStatusList hosts, 
                            bool sync_all) : hosts(hosts), sync_all(sync_all) {}
 
     const std::string to_string() {
@@ -29,7 +29,7 @@ namespace Params {
       return s;
     }
 
-    server::Mngr::RangeServerStatusList hosts;
+    server::Mngr::RsStatusList hosts;
     bool sync_all;
 
   private:
@@ -56,9 +56,9 @@ namespace Params {
                         size_t *remainp) {
       sync_all = Serialization::decode_bool(bufp, remainp);
       size_t len = Serialization::decode_i32(bufp, remainp);
-      server::Mngr::RangeServerStatusPtr h;
+      server::Mngr::RsStatusPtr h;
       for(size_t i =0; i<len; i++){
-        h = std::make_shared<server::Mngr::RangeServerStatus>();
+        h = std::make_shared<server::Mngr::RsStatus>();
         h->decode(bufp, remainp);
         hosts.push_back(h);
       }

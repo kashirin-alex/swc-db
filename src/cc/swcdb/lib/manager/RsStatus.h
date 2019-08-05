@@ -3,15 +3,15 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_RangeServerStatus_h
-#define swc_lib_manager_RangeServerStatus_h
+#ifndef swc_lib_manager_RsStatus_h
+#define swc_lib_manager_RsStatus_h
 
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
 
-class RangeServerStatus : public Protocol::Params::HostEndPoints {
+class RsStatus : public Protocol::Params::HostEndPoints {
 
   public:
 
@@ -21,15 +21,15 @@ class RangeServerStatus : public Protocol::Params::HostEndPoints {
     REMOVED
   };
   
-  RangeServerStatus(): rs_id(0), state(State::NONE), 
-                       failures(0), total_ranges(0) {}
+  RsStatus(): rs_id(0), state(State::NONE), 
+              failures(0), total_ranges(0) {}
                        
-  RangeServerStatus(uint64_t rs_id, EndPoints endpoints)
-                    : rs_id(rs_id), state(State::NONE), 
-                      failures(0), total_ranges(0),
-                      Protocol::Params::HostEndPoints(endpoints) {}
+  RsStatus(uint64_t rs_id, EndPoints endpoints)
+           : rs_id(rs_id), state(State::NONE), 
+             failures(0), total_ranges(0),
+              Protocol::Params::HostEndPoints(endpoints) {}
 
-  virtual ~RangeServerStatus(){}
+  virtual ~RsStatus(){}
 
   std::string to_string(){
     std::string s("[rs_id=");
@@ -72,9 +72,9 @@ class RangeServerStatus : public Protocol::Params::HostEndPoints {
   int32_t    failures;
   size_t     total_ranges;
 };
-typedef std::shared_ptr<RangeServerStatus> RangeServerStatusPtr;
-typedef std::vector<RangeServerStatusPtr>  RangeServerStatusList;
+typedef std::shared_ptr<RsStatus> RsStatusPtr;
+typedef std::vector<RsStatusPtr>  RsStatusList;
 
 }}}
 
-#endif // swc_lib_manager_RangeServerStatus_h
+#endif // swc_lib_manager_RsStatus_h

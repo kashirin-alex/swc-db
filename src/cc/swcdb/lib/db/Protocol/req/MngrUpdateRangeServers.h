@@ -15,7 +15,7 @@ namespace Req {
 class MngrUpdateRangeServers : public DispatchHandler {
   public:
 
-  static CommBufPtr get_buf(server::Mngr::RangeServerStatusList &hosts, 
+  static CommBufPtr get_buf(server::Mngr::RsStatusList &hosts, 
                             bool sync_all) {
     Params::MngrUpdateRangeServers params(hosts, sync_all);
     CommHeader header(Command::MNGR_UPDATE_RANGESERVERS, 60000);
@@ -23,7 +23,7 @@ class MngrUpdateRangeServers : public DispatchHandler {
     params.encode(cbp->get_data_ptr_address());
     return cbp;
   }
-  static void put(server::Mngr::RangeServerStatusList &hosts, bool sync_all){
+  static void put(server::Mngr::RsStatusList &hosts, bool sync_all){
     put(get_buf(hosts, sync_all));
   }
   static void put(CommBufPtr cbp){

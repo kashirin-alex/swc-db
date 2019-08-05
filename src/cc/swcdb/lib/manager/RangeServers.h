@@ -10,7 +10,7 @@
 #include "swcdb/lib/db/Columns/MNGR/Columns.h"
 
 #include "swcdb/lib/db/Files/RsData.h"
-#include "RangeServerStatus.h"
+#include "RsStatus.h"
 
 #include "swcdb/lib/db/Protocol/req/LoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
@@ -86,8 +86,8 @@ class RangeServers {
 
   virtual ~RangeServers(){}
 
-  void update_status(RangeServerStatusList new_rs_status, bool sync_all){
-    RangeServerStatusList changed;
+  void update_status(RsStatusList new_rs_status, bool sync_all){
+    RsStatusList changed;
 
     {
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
@@ -98,7 +98,7 @@ class RangeServers {
       sync_all = false;
     }
 
-    RangeServerStatusPtr h;
+    RsStatusPtr h;
     bool found;
     bool chg;
 
@@ -124,9 +124,9 @@ class RangeServers {
           h->endpoints = rs_new->endpoints;
           chg = true;
         }
-        if(rs_new->state == RangeServerStatus::State::ACK) {
+        if(rs_new->state == RsStatus::State::ACK) {
           if(rs_new->state != h->state) {
-            h->state = RangeServerStatus::State::ACK;
+            h->state = RsStatus::State::ACK;
             chg = true;
           }
         } else {
@@ -142,7 +142,7 @@ class RangeServers {
       }
 
       if(!found){
-        if(rs_new->state == RangeServerStatus::State::ACK)
+        if(rs_new->state == RsStatus::State::ACK)
           m_rs_status.push_back(rs_new);
         if(!sync_all)
           changed.push_back(rs_new);
@@ -162,15 +162,15 @@ class RangeServers {
 
   bool rs_ack_id(uint64_t rs_id, EndPoints endpoints){
     bool ack = false;
-    RangeServerStatusPtr new_ack = nullptr;
+    RsStatusPtr new_ack = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
       for(auto h : m_rs_status){
         if(has_endpoint(h->endpoints, endpoints) && rs_id == h->rs_id){
-          if(h->state != RangeServerStatus::State::ACK)
+          if(h->state != RsStatus::State::ACK)
             new_ack = h;
-          h->state = RangeServerStatus::State::ACK;
+          h->state = RsStatus::State::ACK;
           ack = true;
           break;
         }
@@ -201,7 +201,7 @@ class RangeServers {
   }
 
   void rs_shutdown(uint64_t rs_id, EndPoints endpoints){
-    RangeServerStatusPtr removed = nullptr;
+    RsStatusPtr removed = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
@@ -209,7 +209,7 @@ class RangeServers {
         if(has_endpoint(h->endpoints, endpoints)){
           m_rs_status.erase(it);
           EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
-          h->state = RangeServerStatus::State::REMOVED;
+          h->state = RsStatus::State::REMOVED;
           removed = h;
           break;
         }
@@ -233,7 +233,7 @@ class RangeServers {
     return s;
   }
 
-  void assign_range(RangeServerStatusPtr rs, RangePtr range){
+  void assign_range(RsStatusPtr rs, RangePtr range){
     
     client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
       rs->endpoints, 
@@ -263,7 +263,7 @@ class RangeServers {
       cb(false);
   }
 
-  void range_loaded(RangeServerStatusPtr rs, RangePtr range, bool loaded) {
+  void range_loaded(RsStatusPtr rs, RangePtr range, bool loaded) {
 
     if(!loaded){
       {
@@ -282,7 +282,7 @@ class RangeServers {
 
   private:
   
-  void rs_changes(RangeServerStatusList hosts, bool sync_all=false){
+  void rs_changes(RsStatusList hosts, bool sync_all=false){
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       if(hosts.size() > 0)
@@ -386,7 +386,7 @@ class RangeServers {
     // File::ColumnAssignments assignments.data (rs(endpoints)[rid])
 
     // for(auto assignment : assignments) {
-    //   RangeServerStatusPtr rs = rs_set(assignment.endpoints)
+    //   RsStatusPtr rs = rs_set(assignment.endpoints)
     //   for(auto rid : assignment.ranges) {
     //     if(rs->has_range(cid, rid))
     //       continue;
@@ -427,7 +427,7 @@ class RangeServers {
       if((range = EnvMngrColumns::get()->get_next_unassigned()) == nullptr)
         break;
 
-      RangeServerStatusPtr rs = nullptr;
+      RsStatusPtr rs = nullptr;
       
       Files::RsDataPtr last_rs = range->get_last_rs();
       next_rs(last_rs, rs);
@@ -443,7 +443,7 @@ class RangeServers {
     return true;
   }
 
-  void assign_range(RangeServerStatusPtr rs, RangePtr range, 
+  void assign_range(RsStatusPtr rs, RangePtr range, 
                     Files::RsDataPtr last_rs){
     if(last_rs == nullptr){
       assign_range(rs, range);
@@ -467,7 +467,7 @@ class RangeServers {
       assign_range(rs, range);
   }
 
-  void next_rs(Files::RsDataPtr &last_rs, RangeServerStatusPtr &rs_set){
+  void next_rs(Files::RsDataPtr &last_rs, RsStatusPtr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
     if(m_rs_status.size() == 0)
@@ -475,7 +475,7 @@ class RangeServers {
 
     if(last_rs->endpoints.size() > 0) {
        for(auto rs : m_rs_status) {
-          if(rs->state == RangeServerStatus::State::ACK
+          if(rs->state == RsStatus::State::ACK
             && rs->failures < cfg_rs_failures->get() 
             && has_endpoint(rs->endpoints, last_rs->endpoints)){
             rs_set = rs;
@@ -488,7 +488,7 @@ class RangeServers {
     
     size_t num_rs;
     size_t avg_ranges;
-    RangeServerStatusPtr rs;
+    RsStatusPtr rs;
 
     while(rs_set == nullptr && m_rs_status.size() > 0){
       avg_ranges = 0;
@@ -496,7 +496,7 @@ class RangeServers {
       // avg_resource_ratio = 0;
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++) {
         rs = *it;
-        if(rs->state != RangeServerStatus::State::ACK)
+        if(rs->state != RsStatus::State::ACK)
           continue;
         avg_ranges = avg_ranges*num_rs + rs->total_ranges;
         // resource_ratio = avg_resource_ratio*num_rs + rs->resource();
@@ -506,7 +506,7 @@ class RangeServers {
 
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
         rs = *it;
-        if(rs->state != RangeServerStatus::State::ACK || avg_ranges < rs->total_ranges)
+        if(rs->state != RsStatus::State::ACK || avg_ranges < rs->total_ranges)
           continue;
 
         if(rs->failures == cfg_rs_failures->get()){
@@ -524,12 +524,12 @@ class RangeServers {
     return;
   }
 
-  RangeServerStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
+  RsStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
 
     for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
       auto h = *it;
       if(has_endpoint(h->endpoints, endpoints)) {
-        if(h->state == RangeServerStatus::State::ACK) {
+        if(h->state == RsStatus::State::ACK) {
           if(endpoints.size() > h->endpoints.size())
             h->endpoints = endpoints;
           return h;
@@ -561,7 +561,7 @@ class RangeServers {
       }
     } while(!ok);
 
-    RangeServerStatusPtr h = std::make_shared<RangeServerStatus>(nxt, endpoints);
+    RsStatusPtr h = std::make_shared<RsStatus>(nxt, endpoints);
     m_rs_status.push_back(h);
     return h;
   }
@@ -572,7 +572,7 @@ class RangeServers {
   bool                m_columns_set = false;
   TimerPtr            m_assign_timer; 
 
-  RangeServerStatusList m_rs_status;
+  RsStatusList m_rs_status;
 
   int64_t             m_last_cid = 0;
   bool                m_root_mngr = false;
