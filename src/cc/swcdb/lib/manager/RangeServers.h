@@ -233,53 +233,6 @@ class RangeServers {
     return s;
   }
 
-  void assign_range(RsStatusPtr rs, RangePtr range){
-    
-    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
-      rs->endpoints, 
-      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
-      cfg_rs_conn_probes->get()
-    );
-        
-    if(conn == nullptr){
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-          rs->failures++;
-        }
-        EnvRangeServers::get()->range_loaded(rs, range, false);
-      return;
-    }
-    EnvClients::get()->rs_service->preserve(conn);
-    
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      rs->failures = 0;
-    }
-    
-    Protocol::Req::Callback::LoadRange_t cb = [rs, range](bool loaded){
-      EnvRangeServers::get()->range_loaded(rs, range, loaded); 
-    };
-    if(!(std::make_shared<Protocol::Req::LoadRange>(conn, range, cb))->run())
-      cb(false);
-  }
-
-  void range_loaded(RsStatusPtr rs, RangePtr range, bool loaded) {
-
-    if(!loaded){
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        rs->total_ranges--;
-      }
-      range->set_state(Range::State::NOTSET, 0); 
-
-    } else {
-      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
-    }
-
-    HT_DEBUGF("RANGE-LOADED, cid=%d %s\n%s", 
-              range->cid, range->to_string().c_str(), to_string().c_str());
-  }
-
   private:
   
   void rs_changes(RsStatusList hosts, bool sync_all=false){
@@ -288,7 +241,9 @@ class RangeServers {
       if(hosts.size() > 0)
         Protocol::Req::MngrUpdateRangeServers::put(hosts, sync_all);
     }
-    check_assignment(cfg_delay_rs_chg->get());
+    
+    if(EnvMngrRoleState::get()->has_active_columns())
+      check_assignment(cfg_delay_rs_chg->get());
   }
 
   void check_assignment(uint32_t t_ms = 0){
@@ -359,11 +314,9 @@ class RangeServers {
       last_id = *cols.end();
     }
 
-    while(cols.size() > 0){
-      initialize_col(*cols.begin());
+    while(cols.size() > 0 && initialize_col(*cols.begin()))
       cols.erase(cols.begin());
-    }
-
+    
     if(till_end)
       while(initialize_col(++last_id));
 
@@ -443,30 +396,6 @@ class RangeServers {
     return true;
   }
 
-  void assign_range(RsStatusPtr rs, RangePtr range, 
-                    Files::RsDataPtr last_rs){
-    if(last_rs == nullptr){
-      assign_range(rs, range);
-      return;
-    }
-
-    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
-      last_rs->endpoints, 
-      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
-      cfg_rs_conn_probes->get()
-    );
-
-    if(conn != nullptr 
-      && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
-          conn, [rs, range] (bool err) {     
-            err ? EnvRangeServers::get()->assign_range(rs, range)
-                : EnvRangeServers::get()->range_loaded(rs, range, false);
-        }))->run())
-      EnvClients::get()->rs_service->preserve(conn);
-    else 
-      assign_range(rs, range);
-  }
-
   void next_rs(Files::RsDataPtr &last_rs, RsStatusPtr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
@@ -522,6 +451,77 @@ class RangeServers {
     if(rs_set != nullptr)
       rs_set->total_ranges++;
     return;
+  }
+
+  void assign_range(RsStatusPtr rs, RangePtr range, 
+                    Files::RsDataPtr last_rs){
+    if(last_rs == nullptr){
+      assign_range(rs, range);
+      return;
+    }
+
+    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
+      last_rs->endpoints, 
+      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
+      cfg_rs_conn_probes->get()
+    );
+
+    if(conn != nullptr 
+      && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
+          conn, [rs, range] (bool err) {     
+            err ? EnvRangeServers::get()->assign_range(rs, range)
+                : EnvRangeServers::get()->range_loaded(rs, range, false);
+        }))->run())
+      EnvClients::get()->rs_service->preserve(conn);
+    else 
+      assign_range(rs, range);
+  }
+
+  void assign_range(RsStatusPtr rs, RangePtr range){
+    
+    client::ClientConPtr conn = EnvClients::get()->rs_service->get_connection(
+      rs->endpoints, 
+      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
+      cfg_rs_conn_probes->get()
+    );
+        
+    if(conn == nullptr){
+        {
+          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+          rs->failures++;
+        }
+        EnvRangeServers::get()->range_loaded(rs, range, false);
+      return;
+    }
+    EnvClients::get()->rs_service->preserve(conn);
+    
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      rs->failures = 0;
+    }
+    
+    Protocol::Req::Callback::LoadRange_t cb = [rs, range](bool loaded){
+      EnvRangeServers::get()->range_loaded(rs, range, loaded); 
+    };
+    if(!(std::make_shared<Protocol::Req::LoadRange>(conn, range, cb))->run())
+      cb(false);
+  }
+
+  void range_loaded(RsStatusPtr rs, RangePtr range, bool loaded) {
+
+    if(!loaded){
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        rs->total_ranges--;
+      }
+      range->set_state(Range::State::NOTSET, 0); 
+
+    } else {
+      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
+    }
+
+    HT_DEBUGF("RANGE-LOADED, cid=%d %s\n%s", 
+              range->cid, range->to_string().c_str(), to_string().c_str());
   }
 
   RsStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){

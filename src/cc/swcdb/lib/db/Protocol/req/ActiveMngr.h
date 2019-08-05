@@ -24,6 +24,7 @@ class ActiveMngr : public DispatchHandler {
   ActiveMngr(size_t begin, size_t end)
             : begin(begin), end(end){}
   virtual ~ActiveMngr(){ }
+
   bool run(uint32_t timeout_ms=60000) override {
     client::ClientsPtr clients = EnvClients::get();
     
@@ -42,6 +43,7 @@ class ActiveMngr : public DispatchHandler {
     if(!ok)
       goto do_request;
 
+    // if ( ?ttl)
     clients->mngr_service->preserve(conn);
     return ok;
   }

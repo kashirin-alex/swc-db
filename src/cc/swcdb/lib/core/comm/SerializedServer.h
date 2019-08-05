@@ -139,12 +139,13 @@ class SerializedServer{
           std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
 
         if(reactor == 0){ 
-          if(!acceptor->local_endpoint().address().to_string().compare("::"))
-            endpoints_final.push_back(acceptor->local_endpoint());
-          else {
+          endpoints_final.push_back(acceptor->local_endpoint());
+          // if(!acceptor->local_endpoint().address().to_string().compare("::"))
+          //  endpoints_final.push_back(acceptor->local_endpoint());
+          // else {
           // + localhost public ips
-            endpoints_final.push_back(acceptor->local_endpoint());
-          }
+          // endpoints_final.push_back(acceptor->local_endpoint());
+          // }
         }
       }
 

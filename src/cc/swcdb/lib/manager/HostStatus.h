@@ -68,10 +68,10 @@ class HostStatus : public Protocol::Params::HostEndPoints {
     return s;
   }
 
-  uint32_t     priority;
+  uint32_t          priority;
   Types::MngrState  state;
-  uint64_t     col_begin;
-  uint64_t     col_end;
+  uint64_t          col_begin;
+  uint64_t          col_end;
 
   client::ClientConPtr  conn; // mngr-inchain
 };
