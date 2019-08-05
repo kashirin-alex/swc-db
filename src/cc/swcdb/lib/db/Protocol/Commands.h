@@ -21,6 +21,7 @@ namespace SWC { namespace Protocol {
     REQ_RS_LOAD_RANGE,
     REQ_RS_UNLOAD_RANGE,
     
+    MNGR_UPDATE_RANGESERVERS,
     //
 
 

@@ -72,40 +72,11 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
   void init(EndPoints endpoints) {
     m_local_endpoints = endpoints;
-    
     m_local_token = endpoints_hash(m_local_endpoints);
+
     asio::post(*EnvIoCtx::io()->ptr(), []{
       EnvMngrRoleState::get()->timer_managers_checkin(500);
     });
-  }
-  
-  void get_active_columns(std::vector<int64_t> &cols){
-    bool chk;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      chk = m_cols_active.size() == 0;
-    }
-
-    if(chk)
-      set_active_columns();
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      cols.assign(m_cols_active.begin(), m_cols_active.end());
-    }
-  }
-
-  void req_mngr_inchain(ReqMngrInchain_t func){
-    std::lock_guard<std::mutex> lock(m_mutex_mngr_inchain);
-
-    if(m_mngr_inchain == nullptr){
-      m_mngr_inchain_queue.push(func);
-      std::cout << " req_mngr_inchain, queue=" 
-                << m_mngr_inchain_queue.size() << "\n";
-      return;
-    }
-    run_mngr_inchain_queue();
-    func(m_mngr_inchain);
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
@@ -126,9 +97,54 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     }); 
     HT_DEBUGF("RoleState managers_checkin scheduled in ms=%d", t_ms);
   }
+  
+  void get_active_columns(std::vector<int64_t> &cols){
+    bool chk;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      chk = m_cols_active.size() == 0;
+    }
 
-  bool fill_states(HostStatuses states, 
-                   uint64_t token=0, ResponseCallbackPtr cb=nullptr){
+    if(chk)
+      set_active_columns();
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      cols.assign(m_cols_active.begin(), m_cols_active.end());
+    }
+  }
+
+  bool is_active(size_t cid){
+    auto host = active_mngr(cid, cid);
+    return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
+  }
+
+  HostStatusPtr active_mngr(size_t begin, size_t end){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(auto host : m_states){
+      if(host->state == Types::MngrState::ACTIVE && host->col_begin <= begin 
+        && (host->col_end == 0 || host->col_end >= end)){
+        return host;
+      }
+    }
+    return nullptr;
+  }
+
+  void req_mngr_inchain(ReqMngrInchain_t func){
+    std::lock_guard<std::mutex> lock(m_mutex_mngr_inchain);
+
+    if(m_mngr_inchain == nullptr){
+      m_mngr_inchain_queue.push(func);
+      // std::cout << " req_mngr_inchain, queue=" 
+      //          << m_mngr_inchain_queue.size() << "\n";
+      return;
+    }
+    run_mngr_inchain_queue();
+    func(m_mngr_inchain);
+  }
+
+  bool fill_states(HostStatuses states, uint64_t token, ResponseCallbackPtr cb){
 
     bool turn_around = token == m_local_token;
     bool new_recs = false;
@@ -160,8 +176,10 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
             host->state > host_set->state ? host->state : host_set->state);  
           // pass, states: NOTSET | OFF
           new_recs = true;
-          if(host_set->state == Types::MngrState::OFF) 
+          if(host_set->state == Types::MngrState::OFF) {
+            set_major_update();
             timer_managers_checkin(500);
+          }
         }
         continue;
       }
@@ -174,13 +192,13 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
            && host_set->priority != high_set->priority) {
           update_state(host->endpoints, Types::MngrState::STANDBY);
           new_recs = true;
-          continue;
         }
         continue;
       }
       if(host->state == Types::MngrState::ACTIVE){
         update_state(host->endpoints, host->state);
         new_recs = true;
+        set_major_update();
         continue;
       }
       
@@ -262,12 +280,16 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   void update_manager_addr(uint64_t hash, EndPoint mngr_host){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    bool new_srv;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
+    }
 
-    bool new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
-    if(new_srv)
+    if(new_srv) {
+      set_major_update();
       timer_managers_checkin(500);
-
+    }
     //std::cout << "update_manager_addr,  new_srv=" << new_srv << " hash=" << hash 
     //          << " mngr_host="<<mngr_host.address().to_string() << ":" <<mngr_host.port() << "\n";
   }
@@ -293,6 +315,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     HostStatusPtr host_set = get_host((EndPoints){endpoint_server});
     if(host_set == nullptr)
       return false;
+    // set_major_update();
 
     timer_managers_checkin(
       host_set->state == Types::MngrState::ACTIVE ? 
@@ -301,31 +324,18 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     update_state(endpoint_server, Types::MngrState::OFF);
     return true;
   }
-
-  bool is_active(size_t cid){
-    auto host = active_mngr(cid, cid);
-    return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
-  }
-
-  HostStatusPtr active_mngr(size_t begin, size_t end){
-    
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    for(auto host : m_states){
-      if(host->state == Types::MngrState::ACTIVE && host->col_begin <= begin 
-        && (host->col_end == 0 || host->col_end >= end)){
-        //std::cout << "active, " << host->to_string() << "\n";
-        return host;
-      }
-    }
-
-    //std::cout << "active-none begin=" << begin << " end=" << end << "\n";
-    return nullptr;
-  }
   
+  bool require_sync(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    bool current = m_major_updates;
+    m_major_updates = false;
+    return current;
+  }
+
   private:
   
   void apply_cfg(){
+    std::lock_guard<std::mutex> lock(m_mutex);
 
     client::Mngr::SelectedGroups groups = 
       EnvClients::get()->mngrs_groups->get_groups();
@@ -336,7 +346,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       for(auto endpoints : g->get_hosts()) {
 
         bool found = false;
-        std::lock_guard<std::mutex> lock(m_mutex);
         for(auto host : m_states){
           found = has_endpoint(endpoints, host->endpoints);
           if(found)break;
@@ -348,28 +357,44 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       }
     }
     
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_local_groups = EnvClients::get()->mngrs_groups->get_groups(
-        m_local_endpoints);
-    }
+    m_local_groups = EnvClients::get()->mngrs_groups->get_groups(
+      m_local_endpoints);
   }
 
   void managers_checkin(){
-    HT_DEBUG("managers_checkin");
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_checkin)
+        return;
+      m_checkin = true;
+    }
+
+    managers_checker();
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_checkin = false;
+    }
+  
+  }
+
+  void managers_checker(){
+    HT_DEBUG("managers_checker");
 
     apply_cfg();
     
-    HostStatuses new_states;
+    HostStatuses states;
     {
-    std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
+      states.assign(m_states.begin(), m_states.end());
+    }
 
     // request to a one manager followed local manager, incl. last's is first
     bool flw = false;
     HostStatusPtr host_chk = nullptr;
 
-    size_t total = m_states.size();
-    auto it = m_states.end();
+    size_t total = states.size();
+    auto it = states.end();
     for(;;){
 
       if(total == 0) {
@@ -377,8 +402,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
         return;
       }
 
-      if(it == m_states.end())
-        it = m_states.begin();
+      if(it == states.end())
+        it = states.begin();
 
       host_chk = *it;
       it++;
@@ -406,18 +431,22 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
           host_chk->state = Types::MngrState::OFF;
           continue;
         } else 
-          total = m_states.size();
+          total = states.size();
 
         host_chk->conn->accept_requests();
+        m_major_updates = true;
       }
       set_mngr_inchain(host_chk->conn);
       break;
     }
 
-    new_states.assign(m_states.begin(), m_states.end());
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_states.assign(states.begin(), states.end());
+      m_checkin = false;
     }
 
-    fill_states(new_states);
+    fill_states(states, 0, nullptr);
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
@@ -483,6 +512,11 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     return offline;
   }
 
+  void set_major_update(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_major_updates = true;
+  }
+
   bool set_active_columns(){
     client::Mngr::SelectedGroups groups;
     {
@@ -535,9 +569,11 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
   std::mutex                   m_mutex;
   HostStatuses                 m_states;
+  bool                         m_checkin = false;
   client::Mngr::SelectedGroups m_local_groups;
   std::vector<int64_t>         m_cols_active;
   std::unordered_map<uint64_t, EndPoint> m_mngrs_client_srv;
+  bool                         m_major_updates = false;
   
   std::mutex                   m_mutex_timer;
   TimerPtr                     m_check_timer; 

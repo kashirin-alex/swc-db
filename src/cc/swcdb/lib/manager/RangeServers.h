@@ -8,11 +8,14 @@
 #include <memory>
 
 #include "swcdb/lib/db/Columns/MNGR/Columns.h"
+
+#include "swcdb/lib/db/Files/RsData.h"
+#include "RangeServerStatus.h"
+
 #include "swcdb/lib/db/Protocol/req/LoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
-#include "swcdb/lib/db/Files/RsData.h"
-#include "RangeServerStatus.h"
+#include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
 
 namespace SWC { namespace server { namespace Mngr {
 
@@ -76,32 +79,106 @@ class RangeServers {
     }
     check_assignment();
   }
+  
+  void require_sync() {
+    rs_changes(m_rs_status, true);
+  }
 
   virtual ~RangeServers(){}
 
-  
+  void update_status(RangeServerStatusList new_rs_status, bool sync_all){
+    RangeServerStatusList changed;
+
+    {
+    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+
+    if(m_root_mngr){
+      if(!sync_all)
+        return;
+      sync_all = false;
+    }
+
+    RangeServerStatusPtr h;
+    bool found;
+    bool chg;
+
+    for(auto rs_new : new_rs_status){
+      found = false;
+      for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
+        h = *it;
+        if(!has_endpoint(h->endpoints, rs_new->endpoints))
+          continue;
+
+        chg = false;
+        if(rs_new->rs_id != h->rs_id){ 
+          if(m_root_mngr)
+            rs_new->rs_id = rs_set(rs_new->endpoints, rs_new->rs_id)->rs_id;
+          
+          if(m_root_mngr && rs_new->rs_id != h->rs_id)
+            EnvMngrColumns::get()->change_rs(h->rs_id, rs_new->rs_id);
+
+          h->rs_id = rs_new->rs_id;
+          chg = true;
+        }
+       if(rs_new->endpoints != h->endpoints){
+          h->endpoints = rs_new->endpoints;
+          chg = true;
+        }
+        if(rs_new->state == RangeServerStatus::State::ACK) {
+          if(rs_new->state != h->state) {
+            h->state = RangeServerStatus::State::ACK;
+            chg = true;
+          }
+        } else {
+          EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
+          m_rs_status.erase(it);
+          chg = true;
+        }
+
+        if(chg && !sync_all)
+          changed.push_back(rs_new);
+        found = true;
+        break;
+      }
+
+      if(!found){
+        if(rs_new->state == RangeServerStatus::State::ACK)
+          m_rs_status.push_back(rs_new);
+        if(!sync_all)
+          changed.push_back(rs_new);
+      }
+    }
+    }
+    
+    rs_changes(sync_all ? m_rs_status : changed, sync_all);
+    std::cout << EnvRangeServers::get()->to_string() << "\n";
+    
+  }
+
   uint64_t rs_set_id(EndPoints endpoints, uint64_t opt_id=0){
+    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     return rs_set(endpoints, opt_id)->rs_id;
   }
 
   bool rs_ack_id(uint64_t rs_id, EndPoints endpoints){
     bool ack = false;
-    bool new_ack = false;
+    RangeServerStatusPtr new_ack = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
       for(auto h : m_rs_status){
         if(has_endpoint(h->endpoints, endpoints) && rs_id == h->rs_id){
-          new_ack = !h->ack;
+          if(h->state != RangeServerStatus::State::ACK)
+            new_ack = h;
+          h->state = RangeServerStatus::State::ACK;
           ack = true;
-          h->ack = true;
           break;
         }
       }
     }
 
-    if(new_ack) 
-      rs_change();
+    if(new_ack != nullptr) 
+      rs_changes({new_ack});
     return ack;
   }
 
@@ -124,22 +201,22 @@ class RangeServers {
   }
 
   void rs_shutdown(uint64_t rs_id, EndPoints endpoints){
-    bool was_removed=false;
+    RangeServerStatusPtr removed = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
         auto h = *it;
         if(has_endpoint(h->endpoints, endpoints)){
           m_rs_status.erase(it);
-          was_removed = true;
           EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
+          h->state = RangeServerStatus::State::REMOVED;
+          removed = h;
           break;
         }
       }
     }
-
-    if(was_removed)
-      rs_change();
+    if(removed != nullptr)
+      rs_changes({removed});   
   }
 
   std::string to_string(){
@@ -204,58 +281,13 @@ class RangeServers {
   }
 
   private:
-
-
-  RangeServerStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
-    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-
-    for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
-      auto h = *it;
-      if(has_endpoint(h->endpoints, endpoints)) {
-        if(h->ack) {
-          if(endpoints.size() > h->endpoints.size())
-            h->endpoints = endpoints;
-          return h;
-        } else {
-          m_rs_status.erase(it);
-          break;
-        }
-      }
-    }
-
-    uint64_t next_id=0;
-    uint64_t nxt;
-    bool ok;
-    do {
-      if(opt_id == 0) {
-        nxt = ++next_id;
-      } else {
-        nxt = opt_id;
-        opt_id = 0;
-      }
-      
-      ok = true;
-      for(auto h : m_rs_status){
-        if(nxt == h->rs_id) {
-          ok = false;
-          break;
-        };
-      }
-    } while(!ok);
-
-    RangeServerStatusPtr h = std::make_shared<RangeServerStatus>(nxt, endpoints);
-    m_rs_status.push_back(h);
-    return h;
-  }
   
-  void rs_change(){
-    EnvMngrRoleState::get()->req_mngr_inchain(
-      []
-      (client::ClientConPtr mngr){ 
-        std::cout << "[RS-status] update req_mngr_inchain \n";
-      }
-    );
-    
+  void rs_changes(RangeServerStatusList hosts, bool sync_all=false){
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      if(hosts.size() > 0)
+        Protocol::Req::MngrUpdateRangeServers::put(hosts, sync_all);
+    }
     check_assignment(cfg_delay_rs_chg->get());
   }
 
@@ -443,7 +475,7 @@ class RangeServers {
 
     if(last_rs->endpoints.size() > 0) {
        for(auto rs : m_rs_status) {
-          if(rs->ack 
+          if(rs->state == RangeServerStatus::State::ACK
             && rs->failures < cfg_rs_failures->get() 
             && has_endpoint(rs->endpoints, last_rs->endpoints)){
             rs_set = rs;
@@ -464,7 +496,7 @@ class RangeServers {
       // avg_resource_ratio = 0;
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++) {
         rs = *it;
-        if(!rs->ack)
+        if(rs->state != RangeServerStatus::State::ACK)
           continue;
         avg_ranges = avg_ranges*num_rs + rs->total_ranges;
         // resource_ratio = avg_resource_ratio*num_rs + rs->resource();
@@ -474,7 +506,7 @@ class RangeServers {
 
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
         rs = *it;
-        if(!rs->ack || avg_ranges < rs->total_ranges) // *avg_resource_ratio
+        if(rs->state != RangeServerStatus::State::ACK || avg_ranges < rs->total_ranges)
           continue;
 
         if(rs->failures == cfg_rs_failures->get()){
@@ -490,6 +522,48 @@ class RangeServers {
     if(rs_set != nullptr)
       rs_set->total_ranges++;
     return;
+  }
+
+  RangeServerStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
+
+    for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
+      auto h = *it;
+      if(has_endpoint(h->endpoints, endpoints)) {
+        if(h->state == RangeServerStatus::State::ACK) {
+          if(endpoints.size() > h->endpoints.size())
+            h->endpoints = endpoints;
+          return h;
+        } else {
+          EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
+          m_rs_status.erase(it);
+          break;
+        }
+      }
+    }
+
+    uint64_t next_id=0;
+    uint64_t nxt;
+    bool ok;
+    do {
+      if(opt_id == 0) {
+        nxt = ++next_id;
+      } else {
+        nxt = opt_id;
+        opt_id = 0;
+      }
+      
+      ok = true;
+      for(auto h : m_rs_status){
+        if(nxt == h->rs_id) {
+          ok = false;
+          break;
+        };
+      }
+    } while(!ok);
+
+    RangeServerStatusPtr h = std::make_shared<RangeServerStatus>(nxt, endpoints);
+    m_rs_status.push_back(h);
+    return h;
   }
 
   std::mutex          m_mutex;

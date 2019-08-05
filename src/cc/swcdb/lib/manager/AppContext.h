@@ -20,6 +20,7 @@
 #include "handlers/MngrsState.h"
 #include "handlers/ActiveMngr.h"
 #include "handlers/MngRsId.h"
+#include "handlers/UpdateRangeServers.h"
 
 
 
@@ -86,6 +87,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::MNGR_REQ_MNGRS_STATE:
             handler = new Handler::MngrsState(conn, ev);
+            break;
+
+          case Protocol::Command::MNGR_UPDATE_RANGESERVERS:
+            handler = new Handler::UpdateRangeServers(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:

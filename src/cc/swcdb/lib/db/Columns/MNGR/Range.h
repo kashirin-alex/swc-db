@@ -71,6 +71,11 @@ class Range : public DB::RangeBase {
     return rs_id;
   }
 
+  void set_rs_id(uint64_t new_rs_id){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    rs_id = new_rs_id;
+  }
+
   std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("[");

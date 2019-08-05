@@ -70,6 +70,13 @@ class Columns : public std::enable_shared_from_this<Columns> {
       it->second->set_rs_unassigned(rs_id);
   }
 
+  void change_rs(uint64_t rs_id_old, uint64_t rs_id){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
+      it->second->change_rs(rs_id_old, rs_id);
+  }
+  
   int64_t get_next_cid(){
     std::lock_guard<std::mutex> lock(m_mutex);
 

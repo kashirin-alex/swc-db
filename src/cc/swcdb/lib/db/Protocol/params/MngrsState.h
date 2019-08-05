@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_ReqMngrsState_h
-#define swc_db_protocol_params_ReqMngrsState_h
+#ifndef swc_db_protocol_params_MngrsState_h
+#define swc_db_protocol_params_MngrsState_h
 
 #include "swcdb/lib/core/Serializable.h"
 

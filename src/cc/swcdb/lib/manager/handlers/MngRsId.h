@@ -130,8 +130,6 @@ class MngRsId : public AppHandler {
       HT_ERROR_OUT << e << HT_END;
     }
     
-    std::cout << EnvRangeServers::get()->to_string() << "\n";
-    
   }
 
 };
