@@ -53,7 +53,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     uint32_t           id;
     DispatchHandlerPtr hdlr;
     TimerPtr           tm;
-    bool               no_wait;
+    bool               sequential;
     EventPtr           ev;
   };
 
@@ -102,7 +102,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void new_connection(){
     endpoint_remote = m_sock->remote_endpoint();
     endpoint_local = m_sock->local_endpoint();
-    HT_INFOF("new_connection local=%s, remote=%s, executor=%d",
+    HT_DEBUGF("new_connection local=%s, remote=%s, executor=%d",
               endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
               (size_t)&m_sock->get_executor().context());
   }
@@ -213,13 +213,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   */
 
   inline int send_request(uint32_t timeout_ms, CommBufPtr &cbuf, 
-                    DispatchHandlerPtr hdlr) {
+                    DispatchHandlerPtr hdlr, bool sequential=false) {
     cbuf->header.timeout_ms = timeout_ms;
-    return send_request(cbuf, hdlr);
+    return send_request(cbuf, hdlr, sequential);
   }
 
   inline int send_request(CommBufPtr &cbuf, DispatchHandlerPtr hdlr, 
-                          bool no_wait=true) {
+                          bool sequential=false) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -233,7 +233,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     write(cbuf, 
       get_timer(cbuf->header.timeout_ms, hdlr, cbuf->header.id, cbuf->header), 
       hdlr,
-      no_wait
+      sequential
     );
     return m_err;
   }
@@ -279,16 +279,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
     
   void write(CommBufPtr &cbuf, TimerPtr tm, DispatchHandlerPtr hdlr, 
-             bool no_wait){
+             bool sequential){
 
     asio::async_write(*m_sock.get(), cbuf->get_buffers(),
       //asio::bind_executor(m_strand_out,
-      [this, tm, hdlr, no_wait, header=cbuf->header](
+      [this, tm, hdlr, sequential, header=cbuf->header](
         const asio::error_code ec, uint32_t len) {
         if(ec)
          do_close();
         else if(header.flags & CommHeader::FLAGS_BIT_REQUEST)
-          read_pending({.id=header.id, .hdlr=hdlr, .tm=tm, .no_wait=no_wait});
+          read_pending({.id=header.id, .hdlr=hdlr, 
+                        .tm=tm, .sequential=sequential});
         else {    
           m_pendings++;
           read_pending();
@@ -458,6 +459,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         }
         if(!found_not){
           found_current = it_found == m_pending.begin();
+          if(!it_found->sequential)
+            found_current = true;
 
           if(found_current){
             q_now = *it_found;
@@ -469,13 +472,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
                 q_next = *it_found;
             }
             m_pending.erase(--it_found);
-
-          } else if (it_found->no_wait){
-            found_current = true;
-            q_now = *it_found;
-            if(q_now.tm != nullptr) 
-              q_now.tm->cancel();
-            m_pending.erase(it_found);
 
           } else {
             it_found->ev=ev;
