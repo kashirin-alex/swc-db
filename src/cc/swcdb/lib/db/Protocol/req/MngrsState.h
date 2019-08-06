@@ -15,25 +15,24 @@ namespace Req {
 class MngrsState : public DispatchHandler {
   public:
 
-  MngrsState(client::ClientConPtr conn, 
-             server::Mngr::HostStatuses states, 
-             uint64_t token, EndPoint mngr_host,
-             ResponseCallbackPtr cb)
-            : conn(conn), states(states), token(token), mngr_host(mngr_host), 
-              cb(cb) {
+  static CommBufPtr get_buf(server::Mngr::HostStatuses states, 
+                            uint64_t token, EndPoint mngr_host, 
+                            uint32_t timeout) {
+    Protocol::Params::MngrsState params(states, token, mngr_host);
+    CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
+    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+    params.encode(cbp->get_data_ptr_address());
+    return cbp;
+  }
 
+  MngrsState(client::ClientConPtr conn, CommBufPtr cbp,
+             ResponseCallbackPtr cb)
+            : conn(conn), cbp(cbp), cb(cb) {
   }
   
   virtual ~MngrsState() { }
   
   bool run(uint32_t timeout=60000) override {
-    // std::cout << "req, token=" << token << " cb=" << (size_t)cb.get() << "\n";
-
-    Protocol::Params::MngrsState params(states, token, mngr_host);
-    CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
-
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
 
@@ -51,7 +50,7 @@ class MngrsState : public DispatchHandler {
     if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE 
        && Protocol::response_code(ev) == Error::OK){
       if(cb != nullptr){
-        std::cout << "response_ok, token=" << token << " cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
+        std::cout << "response_ok, cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
         cb->response_ok();
       }
       return;
@@ -62,11 +61,9 @@ class MngrsState : public DispatchHandler {
   }
 
   private:
-  ResponseCallbackPtr cb;
-  client::ClientConPtr conn;
-  server::Mngr::HostStatuses states;
-  uint64_t token;
-  EndPoint mngr_host;
+  client::ClientConPtr  conn;
+  CommBufPtr            cbp;
+  ResponseCallbackPtr   cb;
 };
 
 typedef std::shared_ptr<MngrsState> MngrsStatePtr;

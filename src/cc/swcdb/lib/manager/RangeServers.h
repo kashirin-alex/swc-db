@@ -92,11 +92,8 @@ class RangeServers {
     {
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
 
-    if(m_root_mngr){
-      if(!sync_all)
-        return;
-      sync_all = false;
-    }
+    if(m_root_mngr && !sync_all)
+      return;
 
     RsStatusPtr h;
     bool found;
@@ -150,8 +147,13 @@ class RangeServers {
     }
     }
     
-    rs_changes(sync_all ? m_rs_status : changed, sync_all);
-    std::cout << EnvRangeServers::get()->to_string() << "\n";
+    rs_changes(sync_all ? m_rs_status : changed, sync_all && !m_root_mngr);
+    if(sync_all || changed.size() > 0){
+      std::cout << "Updated RS-hosts: sync_all=" << sync_all << "\n";
+      for(auto rs : sync_all ? m_rs_status : changed){
+        std::cout << " " << rs->to_string() << "\n";
+      }
+    }
     
   }
 

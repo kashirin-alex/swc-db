@@ -57,7 +57,6 @@ class MngRsId : public AppHandler {
       }
 
       RangeServersPtr  rangeservers = EnvRangeServers::get();
-      std::cout << "MNGR ACTIVE: flag="<<req_params.flag<<"\n";
       switch(req_params.flag){
 
         case Protocol::Params::MngRsId::Flag::RS_REQ: {
@@ -95,8 +94,9 @@ class MngRsId : public AppHandler {
         }
 
         case Protocol::Params::MngRsId::Flag::RS_DISAGREE: {
-          uint64_t rs_id = rangeservers->rs_had_id(
-            req_params.rs_id, req_params.endpoints);
+          uint64_t rs_id = rangeservers->rs_had_id(req_params.rs_id, 
+                                                   req_params.endpoints);
+          HT_DEBUGF("RS_DISAGREE, rs_had_id=%d > rs_id=%s", req_params.rs_id, rs_id);
 
           if (rs_id != 0){
             Protocol::Params::MngRsId rsp_params(

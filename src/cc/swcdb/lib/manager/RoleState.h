@@ -244,18 +244,14 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       if(token == 0)
         token = m_local_token;
 
-      HostStatuses updated_states;
-      updated_states.assign(m_states.begin(), m_states.end());
-
       req_mngr_inchain(
-        [updated_states, token, cb, local=m_local_endpoints[0], 
-         timeout=(cfg_conn_probes->get() * cfg_conn_timeout->get()
-                  + cfg_req_timeout->get()) * updated_states.size()
-        ] (client::ClientConPtr mngr) {
-          Protocol::Req::MngrsStatePtr req = 
-            std::make_shared<Protocol::Req::MngrsState>(
-              mngr, updated_states, token, local, cb);
-          if(!req->run(timeout))
+        [cb, cbp=Protocol::Req::MngrsState::get_buf(
+              m_states, token, m_local_endpoints[0], 
+              (cfg_conn_probes->get() * cfg_conn_timeout->get()
+               + cfg_req_timeout->get()) * m_states.size()
+        )] (client::ClientConPtr mngr) {
+          if(!(std::make_shared<Protocol::Req::MngrsState>(mngr, cbp, cb)
+              )->run())
             EnvMngrRoleState::get()->timer_managers_checkin(3000);
         }
       );
