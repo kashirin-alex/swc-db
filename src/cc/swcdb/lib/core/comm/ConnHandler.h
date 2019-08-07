@@ -14,6 +14,11 @@ namespace SWC {
 typedef std::shared_ptr<asio::io_context> IOCtxPtr;
 typedef std::shared_ptr<asio::ip::tcp::socket> SocketPtr;
 typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
+
+// forward declarations
+class ConnHandler;
+typedef ConnHandler* ConnHandlerPtr;
+
 }
  
 #include <memory>
@@ -22,7 +27,7 @@ typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
 #include "Event.h"
 #include "CommBuf.h"
 #include "Protocol.h"
-
+#include <queue>
 
 namespace SWC { 
 
@@ -57,6 +62,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     EventPtr           ev;
   };
 
+  struct Outgoing {
+    CommBufPtr cbuf;
+    TimerPtr tm;
+    DispatchHandlerPtr hdlr; 
+    bool sequential;
+  };
+
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
             : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx)
@@ -64,6 +76,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   {
     //new_connection();
     //m_app_ctx->stats->connected();
+  }
+  ConnHandlerPtr ptr(){
+    return this;
   }
 
   virtual ~ConnHandler(){ 
@@ -114,7 +129,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
     if(hdlr != nullptr)
-      hdlr->handle(this, ev);
+      hdlr->handle(ptr(), ev);
   }
 
   void do_close(DispatchHandlerPtr hdlr=nullptr){
@@ -165,11 +180,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
     cbuf->write_header_and_reset();
     
-    write(cbuf, 
-      get_timer(cbuf->header.timeout_ms, hdlr, cbuf->header.id, cbuf->header), 
-      hdlr,
-      false
-    ); 
+    write_or_queue({
+     .cbuf=cbuf, 
+     .tm=get_timer(cbuf->header.timeout_ms, cbuf->header), 
+     .hdlr=hdlr, 
+     .sequential=false
+    });
     return m_err;
   }
 
@@ -229,12 +245,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       cbuf->header.id = next_req_id();
 
     cbuf->write_header_and_reset();
-    
-    write(cbuf, 
-      get_timer(cbuf->header.timeout_ms, hdlr, cbuf->header.id, cbuf->header), 
-      hdlr,
-      sequential
-    );
+
+    write_or_queue({
+     .cbuf=cbuf, 
+     .tm=get_timer(cbuf->header.timeout_ms, cbuf->header), 
+     .hdlr=hdlr, 
+     .sequential=sequential
+    });
     return m_err;
   }
 
@@ -248,51 +265,90 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     read_pending({
       .id=0,  // initial req.acceptor
       .hdlr=hdlr,
-      .tm=get_timer(timeout_ms, hdlr, 0)
+      .tm=get_timer(timeout_ms)
     });
   }
 
   private:
 
   inline uint32_t next_req_id(){
-    uint32_t id = ++m_next_req_id;
-    if(id == 0)// if uint32_t turns-back
-      id = ++m_next_req_id;
-    return id;
+    if(++m_next_req_id == 0)// if uint32_t turns-back
+      ++m_next_req_id;
+    return m_next_req_id;
   }
 
-  TimerPtr get_timer(uint32_t t_ms,  DispatchHandlerPtr hdlr, 
-                     uint32_t id, CommHeader hr=0){
-    if(t_ms == 0) return nullptr;
+  TimerPtr get_timer(uint32_t t_ms, CommHeader header=0){
+    if(t_ms == 0) 
+      return nullptr;
+
     TimerPtr tm = std::make_shared<asio::high_resolution_timer>(
       m_sock->get_executor(), std::chrono::milliseconds(t_ms)); 
 
-    tm->async_wait([this, id, hr](const asio::error_code ec) {
-      if (ec != asio::error::operation_aborted){
-        EventPtr ev = std::make_shared<Event>(
-          Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
-        ev->header = hr;
-        run_pending(id, ev, true);
+    tm->async_wait(
+      [header, ptr=ptr()]
+      (const asio::error_code ec) {
+        if (ec != asio::error::operation_aborted){
+          EventPtr ev = std::make_shared<Event>(
+            Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
+          ev->header = header;
+          ptr->run_pending(header.id, ev, true);
+        } 
       }
-    });  
+    );
     return tm;
   }
     
-  void write(CommBufPtr &cbuf, TimerPtr tm, DispatchHandlerPtr hdlr, 
-             bool sequential){
+  void write_or_queue(Outgoing data){   
+    std::lock_guard<std::mutex> lock(m_mutex_outgoing);
+    if(m_outgoing.size() > 0) {
+      m_outgoing.push(data);
+      return;
+    }
+    write(data);
+  }
+  
+  void next_outgoing() {
+    std::lock_guard<std::mutex> lock(m_mutex_outgoing);
+    if(m_outgoing.size() > 0) {
+      write(m_outgoing.front()); 
+      m_outgoing.pop();
+    }
+  }
+  
+  void write(Outgoing data){
 
-    asio::async_write(*m_sock.get(), cbuf->get_buffers(),
-      //asio::bind_executor(m_strand_out,
-      [this, tm, hdlr, sequential, header=cbuf->header](
-        const asio::error_code ec, uint32_t len) {
+    std::cout << "write id=" << data.cbuf->header.id 
+              << " len=" << data.cbuf->header.total_len 
+              << " data.size=" << data.cbuf->data.size 
+              << " ext.size=" << data.cbuf->ext.size 
+              << " " << endpoint_remote_str() << "\n";
+
+    asio::async_write(*m_sock.get(), data.cbuf->get_buffers(),
+
+      [header=data.cbuf->header](const asio::error_code ec, size_t bytes_) {
+        size_t len = header.total_len;
+        std::cout << "async_write cond, id=" << header.id 
+                  << " len=" << len << " bytes=" << bytes_ 
+                  << " ec=" << ec << "\n";
+        return !ec && len>bytes_ ? len-bytes_ : 0;
+      },
+
+      [data, ptr=ptr()](const asio::error_code ec, uint32_t len) {
+        
+        std::cout << "async_write cb,   id=" << data.cbuf->header.id 
+                  << " len=" << len 
+                  << " ec=" << ec << " " << ptr->endpoint_remote_str() << "\n";
+        
+        ptr->next_outgoing();
+
         if(ec)
-         do_close();
-        else if(header.flags & CommHeader::FLAGS_BIT_REQUEST)
-          read_pending({.id=header.id, .hdlr=hdlr, 
-                        .tm=tm, .sequential=sequential});
+         ptr->do_close();
+        else if(data.cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+          ptr->read_pending({.id=data.cbuf->header.id, .hdlr=data.hdlr, 
+                             .tm=data.tm, .sequential=data.sequential});
         else {    
-          m_pendings++;
-          read_pending();
+          ptr->m_pendings++;
+          ptr->read_pending();
         }
         
       }
@@ -304,12 +360,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_pending.push_back(q);
-      /*
-        std::cout << "read_pending: pending(sz=" << m_pending.size() 
-                                << " cap=" << m_pending.capacity() 
-                                << "), cancelled(sz=" << m_cancelled.size() 
-                                << " cap=" << m_cancelled.capacity() << ") \n";
-      */
     }
     m_pendings++;
     read_pending();
@@ -320,35 +370,34 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       return;
     m_reading=true;
 
-    uint8_t* data = new uint8_t[CommHeader::FIXED_LENGTH+1];
     EventPtr ev = std::make_shared<Event>(Event::Type::MESSAGE, Error::OK);
+    uint8_t* data = new uint8_t[CommHeader::FIXED_LENGTH+1];
 
     asio::async_read(
       *m_sock.get(), 
       asio::mutable_buffer(data, CommHeader::FIXED_LENGTH+1),
-      [this, ev, data](const asio::error_code ec, size_t filled) {
+
+      [ev, data, ptr=ptr()](const asio::error_code ec, size_t filled) {
         asio::error_code e = ec;
-        size_t remain = read_condition(ev, data, e, filled);
-        //std::cout << "condition, remain=" << remain << ", e=" << e << "\n";
+        size_t remain = ptr->read_condition(ev, data, e, filled);
         if(e) {
           remain = 0;
-          do_close();
+          ptr->do_close();
         }
         if(remain == 0) 
           delete [] data;
         return remain;
       },
-      //asio::bind_executor(m_strand_in,
-      [this, ev](const asio::error_code e, uint32_t filled) { 
+
+      [ev, ptr=ptr()](const asio::error_code e, uint32_t filled) { 
         ev->arrival_time = ClockT::now();
-        //std::cout << "handler, m_pendings=" << m_pendings << ", e=" << e << "\n";
-        e ? do_close() : ({
-          m_reading = false;
-          if(m_pendings > 0) {
-            m_pendings--;
-            read_pending();
+        e ? ptr->do_close() : ({
+          ptr->m_reading = false;
+          if(ptr->m_pendings > 0) {
+            ptr->m_pendings--;
+            ptr->read_pending();
           }
-          run_pending(ev->header.id, ev);
+          ptr->run_pending(ev->header.id, ev);
         });
       }
       //)
@@ -392,6 +441,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       ev->payload_len=0;
       e = ec;
     }
+    /*
+    std::cout << "read id=" << ev->header.id << " len=" << ev->header.total_len  
+              << " filled=" << filled 
+              << " ec=" << ec << " " << endpoint_remote_str() << "\n";
+    */
     if(e){ 
       HT_WARNF("read, REQUEST PAYLOAD_TRUNCATED: filled=%d error=%s ", 
               filled, ec, ev->to_str().c_str());
@@ -402,10 +456,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void disconnected(){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      /*
-      std::cout << "disconnected: m_cancelled=" << m_cancelled.size() 
-                << " m_pending=" << m_pending.size() << "\n";
-      */
       m_cancelled.clear();
     }
     
@@ -506,14 +556,18 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   }
 
+  std::queue<Outgoing>      m_outgoing;
+  std::mutex                m_mutex_outgoing;
+
   std::vector<PendingRsp>   m_pending;
   std::vector<uint32_t>     m_cancelled;
   std::mutex                m_mutex;
   std::atomic<uint32_t>     m_pendings = 0;
   std::atomic<bool>         m_reading = 0;
+
   std::atomic<Error::Code>  m_err = Error::OK;
-  
   std::atomic<uint32_t>     m_next_req_id;
+
   //
   //asio::io_context::strand  m_strand_in;
   //asio::io_context::strand  m_strand_out;

@@ -37,10 +37,6 @@
 
 namespace SWC {
 
-// forward declarations
-class ConnHandler;
-typedef ConnHandler* ConnHandlerPtr;
-
   /** @addtogroup AsyncComm
    *  @{
    */
@@ -62,7 +58,8 @@ typedef ConnHandler* ConnHandlerPtr;
      *
      * @param event_ptr smart pointer to Event object
      */
-    virtual void handle(ConnHandlerPtr conn, EventPtr &event_ptr) { 
+    virtual void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+      HT_DEBUGF("handle(virtual): %s", ev->to_str().c_str());
       // Not a pure method,
       // instead of wait and keep a handler method for outstanding events in parent
       // do a discard

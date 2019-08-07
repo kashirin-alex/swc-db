@@ -143,6 +143,10 @@ namespace SWC {
      * what is remaining to be sent.
      */
     void write_header_and_reset() {
+      if(ready)
+        return;
+      ready = true;
+      
       uint8_t *buf = data.base;
       HT_ASSERT((data_ptr-data.base) == (int)data.size || data_ptr == data.base);
       header.encode(&buf);
@@ -289,8 +293,9 @@ namespace SWC {
     }
 
     StaticBuffer data; //!< Primary data buffer
-    StaticBuffer ext;  //!< Extended buffer
+    StaticBuffer  ext; //!< Extended buffer
     CommHeader header; //!< Comm header
+    bool        ready = false;
 
   protected:
 

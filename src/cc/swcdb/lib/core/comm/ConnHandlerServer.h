@@ -30,9 +30,9 @@ class ConnHandlerServer : public ConnHandler {
 
   void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) override {
     if(hdlr != nullptr)
-      hdlr->handle(this, ev);
+      hdlr->handle(ptr(), ev);
     else if(m_app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      m_app_ctx->handle(this, ev); 
+      m_app_ctx->handle(ptr(), ev); 
   }
 
 };

@@ -12,11 +12,6 @@
 
 namespace SWC {
 
-// forward declarations
-class ConnHandler;
-typedef ConnHandler* ConnHandlerPtr;
-
-
 class ResponseCallback : public AppHandler {
   public:
 
