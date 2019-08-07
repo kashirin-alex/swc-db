@@ -458,24 +458,28 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
           found_not = it_found == it_end;
         }
         if(!found_not){
-          found_current = it_found == m_pending.begin();
-          if(!it_found->sequential)
-            found_current = true;
+          found_current = !it_found->sequential || it_found == m_pending.begin();
 
           if(found_current){
             q_now = *it_found;
+
             if(q_now.tm != nullptr) 
               q_now.tm->cancel();
-            if(++it_found != it_end){
-              found_next = it_found->ev != nullptr;
-              if(found_next)
-                q_next = *it_found;
-            }
-            m_pending.erase(--it_found);
+
+            if(q_now.sequential){
+              if(++it_found != it_end){
+                found_next = it_found->ev != nullptr;
+                if(found_next)
+                  q_next = *it_found;
+              }
+              m_pending.erase(--it_found);
+            } else
+              m_pending.erase(it_found);
 
           } else {
             it_found->ev=ev;
           }
+          
         } else if(!cancelling) {
             auto it = std::find_if(m_cancelled.begin(), m_cancelled.end(), 
                                   [id](uint32_t i){return i == id;});
