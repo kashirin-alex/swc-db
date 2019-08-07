@@ -640,12 +640,13 @@ endfunction()
 	#	TARGETS  	targets
   #	STATIC 		static linking
   # SHARED		shared linking
+  # FLAGS		  Flags for compile options
   # ONLY_DYN  link only shared
 	# )
 # -------------------------------
 
 function(ADD_EXEC_TARGET)
-  cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED;ONLY_DYN" ${ARGN})
+  cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS;ONLY_DYN" ${ARGN})
 
 
   set(STATIC_LINKING ${OPT_STATIC})
@@ -664,7 +665,10 @@ function(ADD_EXEC_TARGET)
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
   target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
-  
+  if(OPT_FLAGS)
+    target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS})
+  endif()
+
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
   endif()

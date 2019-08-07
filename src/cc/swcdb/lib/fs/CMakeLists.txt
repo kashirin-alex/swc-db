@@ -41,3 +41,15 @@ ADD_LIB_TARGET(
 	SHARED 	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
 	STATIC 	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
 )
+
+
+########### FSBROKER FILESYSTEM ###########
+
+set(swcdb_fsBroker_sources
+Broker/FileSystem.cc
+)
+ADD_LIB_TARGET(
+	NAME 		swcdb_fs_broker
+	SRCS 		${swcdb_fsBroker_sources}
+	TARGETS swcdb_core_comm
+)

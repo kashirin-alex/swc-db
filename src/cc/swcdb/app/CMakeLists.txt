@@ -22,3 +22,12 @@ ADD_EXEC_TARGET(
 	TARGETS swcdb_core_config swcdb_db swcdb_core_comm ${BUILTIN_FS_TARGETS}
 )
 
+
+
+# dbFsBroker
+ADD_EXEC_TARGET(
+	NAME dbFsBroker
+	SRCS  fsbroker/main.cc
+	TARGETS swcdb_core_config swcdb_db swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	FLAGS "-DFS_BROKER_APP"
+)

@@ -48,10 +48,50 @@ inline std::string normalize_pathname(std::string s){
   return s;
 }
 
+inline Types::Fs parse_fs_type(std::string fs_name){
+  std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
+                 [](unsigned char c){ return std::tolower(c); });
+    
+#if !defined (FS_BROKER_APP)
+  if(fs_name.compare("broker") == 0)
+    return Types::Fs::BROKER;
+#endif
+
+  if(fs_name.compare("local") == 0)
+    return Types::Fs::LOCAL;
+  if(fs_name.compare("hadoop") == 0)
+    return Types::Fs::HADOOP;
+  if(fs_name.compare("ceph") == 0)
+    return Types::Fs::CEPH;
+  if(fs_name.compare("custom") == 0)
+    return Types::Fs::CUSTOM;
+  else
+    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+              "Unknown FileSystem name=%s", fs_name.c_str());
+  return Types::Fs::NONE;
+}
+
+inline std::string type_to_string(Types::Fs typ){
+  if(typ == Types::Fs::BROKER)
+    return "Broker";
+  if(typ == Types::Fs::LOCAL)
+    return "Local";
+  if(typ == Types::Fs::HADOOP)
+    return "Hadoop";
+  if(typ == Types::Fs::CEPH)
+    return "Ceph";
+  if(typ == Types::Fs::CUSTOM)
+    return "Custom";
+  HT_THROWF(Error::CONFIG_BAD_VALUE, 
+            "Unknown FileSystem type=%d", (int)typ);
+}
+
 
 class FileSystem {
   public:
 
+  FileSystem() { }
+  
   FileSystem(std::string root, bool setting_applied)
     : path_root(normalize_pathname(root)),
       path_data(normalize_pathname(EnvConfig::settings()->get<String>("swc.fs.path.data")))

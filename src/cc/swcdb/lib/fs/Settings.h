@@ -26,18 +26,13 @@ inline void Settings::init_fs_options(){
     ("swc.fs.ceph.cfg", str(), "Specific cfg-file for FS-ceph")
     ("swc.fs.lib.ceph", str(), "FS-ceph Lib-path based on fs/FileSystem.h")
 
-    ("swc.fs.broker.cfg", str(), "Specific cfg-file for FS-broker")
-    ("swc.fs.lib.broker", str(), "FS-broker Lib-path based on fs/FileSystem.h")
-
     ("swc.fs.custom.cfg", str(), "Specific cfg-file for FS-custom")
     ("swc.fs.lib.custom", str(), "FS-custom Lib-path based on fs/FileSystem.h")
 
-
-    /* 
-    ("swc.fs.broker.port", i16(15863), "Port of Broker")
-    ("swc.fs.hdfs.ConfDir", str(), "Hadoop configuration directory "
-     "(e.g. /etc/hadoop/conf or /usr/lib/hadoop/conf)")
-     */
+    ("swc.fs.broker.cfg", str(), "Specific cfg-file for FS-broker")
+    ("swc.fs.broker.underlying", str(), 
+      "as main FileSystem, without 'broker': local|hadoop|ceph|custom")
+    ("swc.fs.lib.broker", str(), "FS-broker Lib-path based on fs/FileSystem.h")
   
   ;
 }

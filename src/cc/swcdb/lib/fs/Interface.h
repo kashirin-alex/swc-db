@@ -26,11 +26,9 @@
 #include "Hadoop/FileSystem.h"
 #endif
 
-/* 
 #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
 #include "Broker/FileSystem.h"
 #endif
-*/
 
 
 
@@ -51,26 +49,14 @@ class Interface : std::enable_shared_from_this<Interface>{
   Interface(Types::Fs typ=Types::Fs::NONE): m_type(typ) {
 
     if(m_type == Types::Fs::NONE){
-      std::string fs_name;
-      fs_name.append(EnvConfig::settings()->get<String>("swc.fs"));
-      std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
-                     [](unsigned char c){ return std::tolower(c); });
-                   
-      if(fs_name.compare("local") == 0)
-        m_type = Types::Fs::LOCAL;
-      else if(fs_name.compare("hadoop") == 0)
-        m_type = Types::Fs::HADOOP;
-      else if(fs_name.compare("ceph") == 0)
-        m_type = Types::Fs::CEPH;
-      else if(fs_name.compare("broker") == 0)
-        m_type = Types::Fs::BROKER;
-      else if(fs_name.compare("custom") == 0)
-        m_type = Types::Fs::CUSTOM;
-      else
-        HT_THROWF(Error::CONFIG_BAD_VALUE, 
-          "Unknown FileSystem name=%s", fs_name.c_str());
+      std::string fs_cfg("swc.fs");
+#if defined (FS_BROKER_APP)
+      fs_cfg.append(".broker.underlying");
+#endif 
+      m_type = parse_fs_type(EnvConfig::settings()->get<String>(fs_cfg));
     }
     
+
     m_fs = use_filesystem();
 
     HT_INFOF("INIT-%s", to_string().c_str());
@@ -88,6 +74,16 @@ class Interface : std::enable_shared_from_this<Interface>{
         fs_name.append("local");
         break;
       }
+
+#if !defined (FS_BROKER_APP) // broker shouldn't be running the Fs-Broker
+      case Types::Fs::BROKER:{
+#if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemBroker>();
+#endif
+        fs_name.append("broker");
+        break;
+      }
+#endif
 
       case Types::Fs::HADOOP:{
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
