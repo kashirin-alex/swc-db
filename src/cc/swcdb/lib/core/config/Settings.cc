@@ -207,6 +207,8 @@ void Settings::init(int argc, char *argv[]) {
   init_app_options();
 
   parse_args(argc, argv);
+
+  init_post_cmd_args();
   
   gEnumExtPtr loglevel = properties->get_ptr<gEnumExt>("logging-level");
   bool verbose = properties->get<gBool>("verbose");

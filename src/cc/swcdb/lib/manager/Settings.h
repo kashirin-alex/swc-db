@@ -55,11 +55,12 @@ void Settings::init_app_options(){
      "Delay of Ranges Assignment Check in milliseconds follow columns init")
     ("swc.mngr.ranges.assign.interval.check", g_i32(60000), 
      "Ranges assignment interval in milliseconds between checks")
-  
 
   ;
-    
+  
 }
+
+void Settings::init_post_cmd_args(){ }
 
 }}
 

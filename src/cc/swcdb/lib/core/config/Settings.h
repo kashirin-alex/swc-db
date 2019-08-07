@@ -67,6 +67,8 @@ class Settings {
   void init_comm_options();
   
   void init_fs_options();
+  
+  void init_post_cmd_args();
 
   /** Check existence of a configuration value
    *
