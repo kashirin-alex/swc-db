@@ -141,8 +141,9 @@ class FileSystemHadoop: public FileSystem {
     std::string abspath = get_abspath(name);
     errno = 0;
     bool state = hdfsExists(m_filesystem, abspath.c_str()) == 0;
-    err = errno;
-    HT_DEBUGF("exists state='%d' path='%s'", (int)state, abspath.c_str());
+    err = errno==2?0:errno;
+    HT_DEBUGF("exists state='%d' err='%d' path='%s'", 
+              (int)state, err, abspath.c_str());
     return state;
   }
 
