@@ -27,9 +27,59 @@ void run(size_t thread_id){
      std::cerr << "ERROR(nonexisting file) exists=" << exists << " err=" << err << "\n";
      exit(1);
     }
-    exists = EnvFsInterface::fs()->exists(err, "");
+    
+    EnvFsInterface::fs()->mkdirs(err, std::to_string(thread_id));
+    if(err != Error::OK){ 
+     std::cerr << "ERROR mkdirs err=" << err << "\n";
+     exit(1);
+    }
+    EnvFsInterface::fs()->mkdirs(err, std::to_string(thread_id));
+    if(err != Error::OK){ 
+     std::cerr << "ERROR mkdirs err=" << err << "\n";
+     exit(1);
+    }
+
+    FS::DirentList listing;
+    EnvFsInterface::fs()->readdir(err, "", listing);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR readir err=" << err << "\n";
+     exit(1);
+    }
+    bool found = false;
+    std::cout << "Dir List, sz=" << listing.size() <<  ":\n";
+    for(auto dirent : listing){
+      std::cout << " " << dirent.to_string();
+      if(dirent.name.compare(std::to_string(thread_id)) == 0){
+        found = true;
+        break;
+      }
+    }
+    if(!found){ 
+     std::cerr << "ERROR readir missing expected dir=" << std::to_string(thread_id) << "\n";
+     exit(1);
+    }
+
+
+    exists = EnvFsInterface::fs()->exists(err, std::to_string(thread_id));
     if(!exists || err != Error::OK){ 
      std::cerr << "ERROR(existing file) exists=" << exists << " err=" << err << "\n";
+     exit(1);
+    }
+
+    EnvFsInterface::fs()->rmdir(err, std::to_string(thread_id));
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(rmdir) err=" << err << "\n";
+     exit(1);
+    }
+    exists = EnvFsInterface::fs()->exists(err, std::to_string(thread_id));
+    if(exists || err != Error::OK){ 
+     std::cerr << "ERROR(rmdir failed) exists=" << exists << " err=" << err << "\n";
+     exit(1);
+    }
+  
+    EnvFsInterface::fs()->remove(err, std::to_string(thread_id));
+    if(err != 2){ 
+     std::cerr << "ERROR(remove) non-existing err=" << err << "\n";
      exit(1);
     }
     
@@ -42,10 +92,10 @@ int main(int argc, char** argv) {
 
   EnvFsInterface::init();
     
-  for(size_t chk=1;chk<=3;chk++) {
+  for(size_t chk=1;chk<=1;chk++) {
     std::cout << "--1--\n";
     std::vector<std::thread*> threads;
-    for(size_t t=1;t<=64;t++)
+    for(size_t t=1;t<=1;t++)
       threads.push_back(new std::thread([t](){run(t);}));
     
     std::cout << "--2--\n";
@@ -56,5 +106,6 @@ int main(int argc, char** argv) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     std::cout << "--######################-- chk=" <<chk<< "\n";
   }
+  
   exit(0);
 }

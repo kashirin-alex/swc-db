@@ -196,11 +196,22 @@ class FileSystemHadoop: public FileSystem {
     std::string abspath = get_abspath(name);
     errno = 0;
     if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
-      err = errno;
-      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(errno));
+      err = errno == 5? 2: errno;
+      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
       return;
     }
     HT_DEBUGF("remove('%s')", abspath.c_str());
+  }
+
+  void rmdir(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
+      err = errno;
+      HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
 
   SmartFdHadoopPtr get_fd(SmartFdPtr &smartfd){

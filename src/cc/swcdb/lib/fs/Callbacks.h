@@ -17,6 +17,7 @@ namespace Callback {
   typedef std::function<void(int, DirentList)>   ReaddirCb_t;
   
   typedef std::function<void(int)>               RemoveCb_t;
+  typedef std::function<void(int)>               RmdirCb_t;
 
   typedef std::function<void(int, SmartFdPtr)>                 CreateCb_t;
   typedef std::function<void(int, SmartFdPtr)>                 OpenCb_t;

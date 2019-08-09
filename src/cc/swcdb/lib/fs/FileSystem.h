@@ -162,6 +162,14 @@ class FileSystem {
     cb(err);
   }
 
+  virtual void rmdir(int &err, const String &name) = 0;
+  virtual 
+  void rmdir(Callback::RmdirCb_t cb, const String &name) {
+    int err = Error::OK;
+    rmdir(err, name);
+    cb(err);
+  }
+
   // File(fd) Actions
   virtual void create(int &err, SmartFdPtr &smartfd,
                       int32_t bufsz, int32_t replication, int64_t blksz) = 0;

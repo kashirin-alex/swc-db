@@ -6,6 +6,7 @@
 #define swc_lib_fs_Local_FileSystem_h
 
 #include <iostream>
+#include <filesystem>
 #include "swcdb/lib/fs/FileSystem.h"
 #include "swcdb/lib/core/FileUtils.h"
 
@@ -110,6 +111,18 @@ class FileSystemLocal: public FileSystem {
       return;
     }
     HT_DEBUGF("remove('%s')", abspath.c_str());
+  }
+
+  void rmdir(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    std::error_code ec;
+    std::filesystem::remove_all(abspath, ec);
+    if (ec) {
+      err = ec.value();
+      HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
 
   void create(int &err, SmartFdPtr &smartfd, 
