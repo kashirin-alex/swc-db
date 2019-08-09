@@ -19,19 +19,8 @@ bool apply_broker();
 
 class FileSystemBroker: public FileSystem {
   public:
-
-  FileSystemBroker()
-    : m_service(std::make_shared<client::SerializedClient>(
-        "FS-BROKER", 
-        EnvIoCtx::io()->shared(), 
-        std::make_shared<client::AppContext>()
-      )),
-      m_type_underlying(parse_fs_type(
-        EnvConfig::settings()->get<String>("swc.fs.broker.underlying")))
-    {
-
-    apply_broker();
-
+  
+  static const EndPoints get_endpoints(){
     std::string host = EnvConfig::settings()->get<String>("swc.fs.broker.host", "");
     if(host.empty()){
       char hostname[256];
@@ -39,13 +28,28 @@ class FileSystemBroker: public FileSystem {
       host.append(hostname);
     }
     Strings addr;
-    m_endpoints = Resolver::get_endpoints(
-      EnvConfig::settings()->get<int32_t>("swc.fs.broker.port", false),
+    return Resolver::get_endpoints(
+      EnvConfig::settings()->get<int32_t>("swc.fs.broker.port"),
       addr, host, true
     );
   }
 
+  FileSystemBroker()
+    : FileSystem(apply_broker()),
+      m_io(std::make_shared<IoContext>(
+        EnvConfig::settings()->get<int32_t>("swc.fs.broker.handlers"))),
+      m_service(std::make_shared<client::SerializedClient>(
+        "FS-BROKER", m_io->shared(), std::make_shared<client::AppContext>())),
+      m_type_underlying(parse_fs_type(
+        EnvConfig::settings()->get<String>("swc.fs.broker.underlying"))),
+      m_endpoints(get_endpoints())
+  { }
+
   virtual ~FileSystemBroker(){}
+
+  void stop() override {
+    m_io->stop();
+  }
 
   Types::Fs get_type() override {
     return m_type_underlying;
@@ -57,11 +61,11 @@ class FileSystemBroker: public FileSystem {
   }
 
 
-  bool send_request(CommBufPtr cbp, DispatchHandlerPtr hdlr){
+  bool send_request(Protocol::Req::ReqBasePtr hdlr){
     client::ClientConPtr c = m_service->get_connection(
       m_endpoints, std::chrono::milliseconds(20000), 0);
       
-    if(c->send_request(cbp, hdlr) != Error::OK) 
+    if(c->send_request(hdlr->cbp, hdlr) != Error::OK) 
       return false;
     m_service->preserve(c);
     return true;
@@ -72,16 +76,20 @@ class FileSystemBroker: public FileSystem {
   bool exists(int &err, const String &name) override {
     Protocol::Req::ExistsPtr hdlr 
       = std::make_shared<Protocol::Req::Exists>(name);
-    while(!send_request(hdlr->cbp, hdlr));
 
-    bool state = hdlr->get_result(err);
-    return state;
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+    return hdlr->state;
   }
 
   void exists(Callback::ExistsCb_t cb, const String &name) override {
     Protocol::Req::ExistsPtr hdlr 
       = std::make_shared<Protocol::Req::Exists>(name, cb);
-    while(!send_request(hdlr->cbp, hdlr));
+      
+    while(!send_request(hdlr));
   }
 
   /// 
@@ -142,9 +150,10 @@ class FileSystemBroker: public FileSystem {
 
   private:
 
+  IoContextPtr      m_io;
   client::ClientPtr m_service = nullptr;
   Types::Fs         m_type_underlying;
-  EndPoints         m_endpoints;
+  const EndPoints   m_endpoints;
 
 };
 

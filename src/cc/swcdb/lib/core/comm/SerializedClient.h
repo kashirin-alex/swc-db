@@ -9,6 +9,7 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <queue>
 #include <iostream>
 #include <unordered_map>
 
@@ -53,49 +54,50 @@ static std::string to_string(ClientConPtr con){
 class ServerConnections {
   public:
 
-  ServerConnections(std::string srv_name, asio::ip::tcp::endpoint endpoint,
+  ServerConnections(std::string srv_name, const EndPoint endpoint,
                     IOCtxPtr ioctx, AppContextPtr ctx)
-                  : m_srv_name(srv_name), m_endpoints({endpoint}), 
+                  : m_srv_name(srv_name), m_endpoint(endpoint), 
                     m_ioctx(ioctx), m_ctx(ctx){}
+
   virtual ~ServerConnections(){}
 
-  void connection(ClientConPtr &con,
-      std::chrono::milliseconds timeout = std::chrono::milliseconds(0)){
+  void connection(ClientConPtr &con, std::chrono::milliseconds timeout){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(!m_conns.empty()){
-        con = m_conns.back();
-        m_conns.pop_back();
+        con = m_conns.front();
+        m_conns.pop();
+        if(con->is_open()){
+          HT_DEBUGF("Reusing connection: %s, %s", 
+                    m_srv_name.c_str(), to_string(con).c_str());
+          return;
+        }
+        con = nullptr;
       }
     }
-    if (con != nullptr){
-      if(con->is_open())
-        HT_DEBUGF("Reusing connection: %s, %s", 
-                  m_srv_name.c_str(), to_string(con).c_str());
-      else 
-        con = nullptr;
-    }
 
-    if (con == nullptr){
-        HT_DEBUGF("Connecting: %s, addr=[%s]:%d", 
-                  m_srv_name.c_str(), 
-                  m_endpoints[0].address().to_string().c_str(), 
-                  m_endpoints[0].port());
-      try{
-        SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
-        asio::connect(*s.get(), m_endpoints);
-        con = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
-        con->new_connection();
-       
-        HT_DEBUGF("New connection: %s, %s", 
-                  m_srv_name.c_str(), to_string(con).c_str());
-      } catch(...){}
-    }
+    HT_DEBUGF("Connecting: %s, addr=[%s]:%d", m_srv_name.c_str(), 
+              m_endpoint.address().to_string().c_str(), m_endpoint.port());
+    
+    SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
+    asio::error_code ec;
+    s->open(m_endpoint.protocol(), ec);
+    if(ec || !s->is_open())
+      return;
+
+    s->connect(m_endpoint, ec);
+    if(ec || !s->is_open())
+      return;
+
+    con = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
+    con->new_connection();
+    HT_DEBUGF("New connection: %s, %s", 
+              m_srv_name.c_str(), to_string(con).c_str());
   }
 
   void put_back(ClientConPtr con){
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_conns.push_back(con);
+    m_conns.push(con);
   }
   
   bool empty(){
@@ -105,12 +107,13 @@ class ServerConnections {
 
   private:
 
-  AppContextPtr   m_ctx;
-  IOCtxPtr        m_ioctx;
-  std::mutex      m_mutex;
-  EndPoints       m_endpoints;
-  std::string     m_srv_name;
-  std::vector<ClientConPtr> m_conns;
+  const std::string m_srv_name;
+  const EndPoint    m_endpoint;
+  IOCtxPtr          m_ioctx;
+  AppContextPtr     m_ctx;
+  std::mutex        m_mutex;
+  std::queue<ClientConPtr> m_conns;
+
 };
 
 typedef std::shared_ptr<ServerConnections> ServerConnectionsPtr;
@@ -120,20 +123,14 @@ class SerializedClient{
 
   public:
 
-  SerializedClient(
-    std::string srv_name, 
-    IOCtxPtr ioctx,
-    AppContextPtr ctx
-  ): m_srv_name(srv_name), m_ctx(ctx),
-     m_run(true), 
-     m_srv_conns(std::make_shared<ServerConnectionsMap>()),
-     m_ioctx(ioctx)
-  {
+  SerializedClient(std::string srv_name, IOCtxPtr ioctx, AppContextPtr ctx)
+                  : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx), 
+                    m_run(true) {
     HT_INFOF("Init: %s", m_srv_name.c_str());
   }
 
   ClientConPtr get_connection(
-        EndPoints endpoints, 
+        const EndPoints endpoints, 
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
         uint32_t probes=0
         ){
@@ -155,16 +152,16 @@ class SerializedClient{
         size_t hash = endpoint_hash(endpoint);
         {
           std::lock_guard<std::mutex> lock(m_mutex);
-          auto it = m_srv_conns->find(hash);
-          if(it != m_srv_conns->end()){
+          auto it = m_srv_conns.find(hash);
+          if(it != m_srv_conns.end()){
             srv = (*it).second;
           } else {
             srv = std::make_shared<ServerConnections>(
               m_srv_name, endpoint, m_ioctx, m_ctx);
-            m_srv_conns->insert(std::make_pair(hash, srv));
+            m_srv_conns.insert(std::make_pair(hash, srv));
           }
         }
-        
+
         srv->connection(con, timeout);
         if(con != nullptr)
           return con;
@@ -180,8 +177,8 @@ class SerializedClient{
     size_t hash = con->endpoint_remote_hash();
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    auto it = m_srv_conns->find(hash);
-    if(it != m_srv_conns->end())
+    auto it = m_srv_conns.find(hash);
+    if(it != m_srv_conns.end())
       (*it).second->put_back(con);
   }
 
@@ -190,9 +187,9 @@ class SerializedClient{
     con->do_close();
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    auto it = m_srv_conns->find(hash);
-    if(it != m_srv_conns->end() && (*it).second->empty())
-      m_srv_conns->erase(it);
+    auto it = m_srv_conns.find(hash);
+    if(it != m_srv_conns.end() && (*it).second->empty())
+      m_srv_conns.erase(it);
   }
 
   std::string to_str(ClientConPtr con){
@@ -213,14 +210,14 @@ class SerializedClient{
   }
 
   private:
-  std::mutex        m_mutex;
-  std::atomic<bool> m_run;
-  std::shared_ptr<ServerConnectionsMap> m_srv_conns = {};
+  const std::string     m_srv_name;
+  IOCtxPtr              m_ioctx;
+  AppContextPtr         m_ctx;
 
-  std::string   m_srv_name;
-  uint32_t      m_port;
-  AppContextPtr m_ctx;
-  IOCtxPtr      m_ioctx;
+  std::mutex            m_mutex;
+  ServerConnectionsMap  m_srv_conns;
+  std::atomic<bool>     m_run;
+
 };
 
 

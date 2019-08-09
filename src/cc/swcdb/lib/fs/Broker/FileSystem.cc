@@ -13,6 +13,7 @@ bool apply_broker() {
     ("swc.fs.broker.OnFileChange.cfg", str(), "Dyn-config file")
     ("swc.fs.broker.host", str(), "FsBroker host (default resolve by hostname)") 
     ("swc.fs.broker.port", i32(17000), "FsBroker port")
+    ("swc.fs.broker.handlers", i32(48), "Handlers for broker tasks")
   ;
   EnvConfig::settings()->parse_file(
     EnvConfig::settings()->get<String>("swc.fs.broker.cfg", ""),

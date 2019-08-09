@@ -53,3 +53,12 @@ ADD_LIB_TARGET(
 	SRCS 		${swcdb_fsBroker_sources}
 	TARGETS swcdb_core_comm
 )
+
+
+
+ADD_TEST_TARGET(
+	NAME      fs_client
+	SRCS      tests/test_fs_client.cc
+  TARGETS 	swcdb_core_comm swcdb_core_config swcdb_db  ${BUILTIN_FS_TARGETS}
+  ARGS      "--config=/root/swc-db/conf/swc.cfg"
+)
