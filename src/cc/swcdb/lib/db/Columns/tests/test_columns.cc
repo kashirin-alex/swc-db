@@ -21,12 +21,15 @@ using namespace SWC;
 
 void rs(){
     EnvRsColumns::init();
+
+    EnvRsData::init();
+
     server::RS::ColumnsPtr cols = EnvRsColumns::get();
 
-    for(int64_t c=1; c<=1000; c++){
+    for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
 
-        for(int64_t r=1; r<=1000; r++){
+        for(int64_t r=1; r<=3; r++){
 
             server::RS::RangePtr range = cols->get_range(c, r, true);
             if(range == nullptr){
@@ -35,10 +38,10 @@ void rs(){
             }
         }
     }
-    for(int64_t c=1; c<=1000; c++){
+    for(int64_t c=10; c<=11; c++){
         std::cout << "Getting cid:" << c << "\n";
 
-        for(int64_t r=1; r<=1000; r++){
+        for(int64_t r=1; r<=3; r++){
 
             server::RS::RangePtr range = cols->get_range(c, r);
             if(range == nullptr){
@@ -57,10 +60,10 @@ void mngr(){
     EnvMngrColumns::init();
     server::Mngr::ColumnsPtr cols = EnvMngrColumns::get();
 
-    for(int64_t c=1; c<=1000; c++){
+    for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
 
-        for(int64_t r=1; r<=1000; r++){
+        for(int64_t r=1; r<=3; r++){
 
             server::Mngr::RangePtr range = cols->get_range(c, r, true);
             if(range == nullptr){
@@ -69,10 +72,10 @@ void mngr(){
             }
         }
     }
-    for(int64_t c=1; c<=1000; c++){
+    for(int64_t c=10; c<=11; c++){
         std::cout << "Getting cid:" << c << "\n";
 
-        for(int64_t r=1; r<=1000; r++){
+        for(int64_t r=1; r<=3; r++){
 
             server::Mngr::RangePtr range = cols->get_range(c, r);
             if(range == nullptr){
@@ -94,4 +97,5 @@ int main(int argc, char** argv) {
     EnvFsInterface::init();
     rs();
     mngr();
+    exit(0);
 }
