@@ -77,7 +77,7 @@ class RangeServers {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_columns_set = false;
     }
-    check_assignment();
+    timer_assignment_checkin(500);
   }
   
   void require_sync() {
@@ -245,7 +245,7 @@ class RangeServers {
     }
     
     if(EnvMngrRoleState::get()->has_active_columns())
-      check_assignment(cfg_delay_rs_chg->get());
+      timer_assignment_checkin(cfg_delay_rs_chg->get());
   }
 
   void check_assignment(uint32_t t_ms = 0){
