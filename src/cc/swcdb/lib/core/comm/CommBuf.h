@@ -154,12 +154,25 @@ namespace SWC {
       ext_ptr = ext.base;
     }
 
-    std::vector<asio::const_buffer> get_buffers(){
-      std::vector<asio::const_buffer> buffers = {asio::buffer(data.base, data.size)};
-      if(ext.size > 0)
-        buffers.push_back(asio::buffer(ext.base, ext.size));
+    std::vector<asio::const_buffer> get_buffers(size_t offset=0){
+      std::vector<asio::const_buffer> buffers;
+      size_t left = data.size-offset;
+      if(left > 0){
+        buffers.push_back(asio::buffer(data.base+offset, left));
+        left = 0;
+      }
+      left += ext.size;
+      if(left > 0)
+        buffers.push_back(asio::buffer(ext.base+(ext.size-left), left));
       return buffers;
     }
+    /*
+          at-most-buff, size_t sz
+          for(size_t s=offset; s<left; s+=sz) {
+            buffers.push_back(asio::buffer(data.base+s, left-s<sz?left-s:sz));
+            return buffers;
+          }
+   */
 
     /** Returns the primary buffer internal data pointer
      */
