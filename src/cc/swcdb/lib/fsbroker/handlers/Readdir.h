@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Exists_h
-#define swc_app_fsbroker_handlers_Exists_h
+#ifndef swc_app_fsbroker_handlers_Readdir_h
+#define swc_app_fsbroker_handlers_Readdir_h
 
-#include "swcdb/lib/fs/Broker/Protocol/params/Exists.h"
+#include "swcdb/lib/fs/Broker/Protocol/params/Readdir.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -14,36 +14,35 @@ namespace SWC { namespace server { namespace FsBroker {
 namespace Handler {
 
 
-class Exists : public AppHandler {
+class Readdir : public AppHandler {
   public:
 
-  Exists(ConnHandlerPtr conn, EventPtr ev)
+  Readdir(ConnHandlerPtr conn, EventPtr ev)
          : AppHandler(conn, ev){ }
 
   void run() override {
 
     int err = Error::OK;
-    bool exists = false;
+    FS::DirentList results;
 
     try {
 
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      FS::Protocol::Params::ExistsReq params;
+      FS::Protocol::Params::ReaddirReq params;
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      exists = EnvFsInterface::fs()->exists(err, params.get_fname());
-      
+      EnvFsInterface::fs()->readdir(err, params.get_dirname(), results);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
       err = e.code();
     }
-  
+    
     try {
-      FS::Protocol::Params::ExistsRsp rsp_params(exists);
+      FS::Protocol::Params::ReaddirRsp rsp_params(results);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, 
@@ -56,6 +55,7 @@ class Exists : public AppHandler {
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }
+  
   }
 
 };
@@ -63,4 +63,4 @@ class Exists : public AppHandler {
 
 }}}}
 
-#endif // swc_app_fsbroker_handlers_Exists_h
+#endif // swc_app_fsbroker_handlers_Readdir_h

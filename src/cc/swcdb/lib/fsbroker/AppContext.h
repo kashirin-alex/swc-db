@@ -12,6 +12,10 @@
 #include "swcdb/lib/fs/Broker/Protocol/Commands.h"
 
 #include "handlers/Exists.h"
+#include "handlers/Mkdirs.h"
+#include "handlers/Readdir.h"
+#include "handlers/Remove.h"
+#include "handlers/Rmdir.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -56,6 +60,22 @@ class AppContext : public SWC::AppContext {
 
           case FS::Protocol::Cmd::FUNCTION_EXISTS:
             handler = new Handler::Exists(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_MKDIRS:
+            handler = new Handler::Mkdirs(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_READDIR:
+            handler = new Handler::Readdir(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_REMOVE:
+            handler = new Handler::Remove(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_RMDIR:
+            handler = new Handler::Rmdir(conn, ev);
             break;
 
           default: {

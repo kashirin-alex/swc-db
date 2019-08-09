@@ -40,15 +40,12 @@ class Exists : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_EXISTS, &ptr, &remain))
       return;
 
-    if(error != Error::OK) {
-      state = false;
-      HT_ERRORF("error=%d(%s)", error, 
-                SWC::Protocol::string_format_message(ev).c_str());
-
-    } else {
+    if(error == Error::OK) {
       Params::ExistsRsp params;
       params.decode(&ptr, &remain);
       state = params.get_exists();
+    } else {
+      state = false;
     }
 
     HT_DEBUGF("exists path='%s' error='%d' state='%d'",

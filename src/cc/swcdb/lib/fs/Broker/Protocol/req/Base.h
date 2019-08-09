@@ -47,7 +47,10 @@ class Base : public DispatchHandler {
         && (error = SWC::Protocol::response_code(ev)) == Error::OK) {
       *ptr = ev->payload + 4;
       *remain = ev->payload_len - 4;
-    }
+    } 
+    
+    if(error != Error::OK)
+      HT_ERRORF("error=%d(%s)", error, Error::get_text(error));
     
     was_called = true;
     return true;

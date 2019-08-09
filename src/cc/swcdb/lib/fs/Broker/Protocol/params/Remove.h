@@ -21,12 +21,10 @@
  */
 
 /// @file
-/// Declarations for Exists parameters.
-/// This file contains declarations for Exists, a class for encoding and
-/// decoding paramters to the <i>exists</i> file system broker function.
+/// Declarations for Remove parameters.
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Exists_h
-#define swc_lib_fs_Broker_Protocol_params_Exists_h
+#ifndef swc_lib_fs_Broker_Protocol_params_Remove_h
+#define swc_lib_fs_Broker_Protocol_params_Remove_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -34,12 +32,12 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-class ExistsReq : public Serializable {
+class RemoveReq : public Serializable {
   public:
 
-  ExistsReq() {}
+  RemoveReq() {}
 
-  ExistsReq(const std::string &fname) : m_fname(fname) {}
+  RemoveReq(const std::string &fname) : m_fname(fname) {}
 
   const std::string get_fname() { return m_fname; }
 
@@ -50,7 +48,7 @@ class ExistsReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return Serialization::encoded_length_vstr(m_fname);
+  return Serialization::encoded_length_vstr(m_fname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
@@ -67,37 +65,6 @@ class ExistsReq : public Serializable {
   std::string m_fname;
 };
 
-class ExistsRsp : public Serializable {
-  public:
-  
-  ExistsRsp() {}
-
-  ExistsRsp(bool exists) : m_exists(exists) {}
-
-  bool get_exists() { return m_exists; }
-
-  private:
-
-  uint8_t encoding_version() const override {
-    return 1;
-  }
-
-  size_t encoded_length_internal() const override {
-    return 1;
-  }
-
-  void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_bool(bufp, m_exists);
-  }
-
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-	                     size_t *remainp) override {
-    m_exists = Serialization::decode_bool(bufp, remainp);
-  }
-  
-  bool m_exists;
-};
-
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Exists_h
+#endif // swc_lib_fs_Broker_Protocol_params_Remove_h

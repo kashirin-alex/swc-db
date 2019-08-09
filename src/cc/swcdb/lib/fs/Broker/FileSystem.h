@@ -11,6 +11,10 @@
 
 #include "Protocol/Commands.h"
 #include "Protocol/req/Exists.h"
+#include "Protocol/req/Mkdirs.h"
+#include "Protocol/req/Readdir.h"
+#include "Protocol/req/Remove.h"
+#include "Protocol/req/Rmdir.h"
 
 namespace SWC{ namespace FS {
 
@@ -92,20 +96,81 @@ class FileSystemBroker: public FileSystem {
     while(!send_request(hdlr));
   }
 
-  /// 
-  
   void mkdirs(int &err, const String &name) override {
-    HT_DEBUGF("mkdirs path='%s'", name.c_str());
-    
+    Protocol::Req::MkdirsPtr hdlr 
+      = std::make_shared<Protocol::Req::Mkdirs>(name);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+
+  void mkdirs(Callback::MkdirsCb_t cb, const String &name) override {
+    Protocol::Req::MkdirsPtr hdlr 
+      = std::make_shared<Protocol::Req::Mkdirs>(name, cb);
+      
+    while(!send_request(hdlr));
   }
 
   void readdir(int &err, const String &name, DirentList &results) override {
-    HT_DEBUGF("Readdir dir='%s'", name.c_str());
+    Protocol::Req::ReaddirPtr hdlr 
+      = std::make_shared<Protocol::Req::Readdir>(name);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+    results = hdlr->listing;
+  }
+
+  void readdir(Callback::ReaddirCb_t cb, const String &name) override {
+    Protocol::Req::ReaddirPtr hdlr 
+      = std::make_shared<Protocol::Req::Readdir>(name, cb);
+      
+    while(!send_request(hdlr));
   }
 
   void remove(int &err, const String &name) override {
-    HT_DEBUGF("remove('%s')", name.c_str());
+    Protocol::Req::RemovePtr hdlr 
+      = std::make_shared<Protocol::Req::Remove>(name);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
   }
+
+  void remove(Callback::RemoveCb_t cb, const String &name) override {
+    Protocol::Req::RemovePtr hdlr 
+      = std::make_shared<Protocol::Req::Remove>(name, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  void rmdir(int &err, const String &name) override {
+    Protocol::Req::RmdirPtr hdlr 
+      = std::make_shared<Protocol::Req::Rmdir>(name);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+
+  void rmdir(Callback::RmdirCb_t cb, const String &name) override {
+    Protocol::Req::RmdirPtr hdlr 
+      = std::make_shared<Protocol::Req::Rmdir>(name, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  /// 
+
 
   void create(int &err, SmartFdPtr &smartfd, 
               int32_t bufsz, int32_t replication, int64_t blksz) override {

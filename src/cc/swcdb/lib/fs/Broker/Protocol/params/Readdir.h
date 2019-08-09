@@ -21,12 +21,12 @@
  */
 
 /// @file
-/// Declarations for Exists parameters.
-/// This file contains declarations for Exists, a class for encoding and
+/// Declarations for Readdir parameters.
+/// This file contains declarations for Readdir, a class for encoding and
 /// decoding paramters to the <i>exists</i> file system broker function.
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Exists_h
-#define swc_lib_fs_Broker_Protocol_params_Exists_h
+#ifndef swc_lib_fs_Broker_Protocol_params_Readdir_h
+#define swc_lib_fs_Broker_Protocol_params_Readdir_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -34,14 +34,14 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-class ExistsReq : public Serializable {
+class ReaddirReq : public Serializable {
   public:
 
-  ExistsReq() {}
+  ReaddirReq() {}
 
-  ExistsReq(const std::string &fname) : m_fname(fname) {}
+  ReaddirReq(const std::string &dirname) : m_dirname(dirname) {}
 
-  const std::string get_fname() { return m_fname; }
+  const std::string get_dirname() { return m_dirname; }
 
   private:
 
@@ -50,31 +50,33 @@ class ExistsReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return Serialization::encoded_length_vstr(m_fname);
+    return Serialization::encoded_length_vstr(m_dirname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_vstr(bufp, m_fname);
+    Serialization::encode_vstr(bufp, m_dirname);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 			     size_t *remainp) override {
     (void)version;
-    m_fname.clear();
-    m_fname.append(Serialization::decode_vstr(bufp, remainp));
+    m_dirname.clear();
+    m_dirname.append(Serialization::decode_vstr(bufp, remainp));
   }
 
-  std::string m_fname;
+  std::string m_dirname;
 };
 
-class ExistsRsp : public Serializable {
+class ReaddirRsp : public Serializable {
   public:
   
-  ExistsRsp() {}
+  ReaddirRsp() {}
 
-  ExistsRsp(bool exists) : m_exists(exists) {}
+  ReaddirRsp(DirentList &listing) : m_listing(listing) {}
 
-  bool get_exists() { return m_exists; }
+  void get_listing(DirentList &listing) {
+    listing = m_listing;
+  }
 
   private:
 
@@ -83,21 +85,33 @@ class ExistsRsp : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return 1;
+    size_t length = 4;
+    for (const Dirent &entry : m_listing)
+      length += entry.encoded_length();
+    return length;
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_bool(bufp, m_exists);
+    Serialization::encode_i32(bufp, m_listing.size());
+    for (const Dirent &entry : m_listing)
+      entry.encode(bufp);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 	                     size_t *remainp) override {
-    m_exists = Serialization::decode_bool(bufp, remainp);
+    (void)version;
+    int32_t count = (int32_t)Serialization::decode_i32(bufp, remainp);
+    m_listing.reserve(count);
+    Dirent entry;
+    for (int32_t i=0; i<count; i++) {
+      entry.decode(bufp, remainp);
+      m_listing.push_back(entry);
+    }
   }
   
-  bool m_exists;
+  DirentList m_listing;
 };
 
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Exists_h
+#endif // swc_lib_fs_Broker_Protocol_params_Readdir_h
