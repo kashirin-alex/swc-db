@@ -21,10 +21,10 @@
  */
 
 /// @file
-/// Declarations for Readdir parameters.
+/// Declarations for Open parameters.
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Readdir_h
-#define swc_lib_fs_Broker_Protocol_params_Readdir_h
+#ifndef swc_lib_fs_Broker_Protocol_params_Open_h
+#define swc_lib_fs_Broker_Protocol_params_Open_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -32,14 +32,19 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-class ReaddirReq : public Serializable {
+class OpenReq : public Serializable {
   public:
 
-  ReaddirReq() {}
+  OpenReq() {}
 
-  ReaddirReq(const std::string &dirname) : m_dirname(dirname) {}
+  OpenReq(const std::string &fname, uint32_t flags, int32_t bufsz)
+          : m_fname(fname), m_flags(flags), m_bufsz(bufsz) {}
 
-  const std::string get_dirname() { return m_dirname; }
+  const std::string get_name() { return m_fname; }
+
+  uint32_t get_flags() { return m_flags; }
+
+  int32_t get_buffer_size() { return m_bufsz; }
 
   private:
 
@@ -48,33 +53,42 @@ class ReaddirReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return Serialization::encoded_length_vstr(m_dirname);
+    return 8 + Serialization::encoded_length_vstr(m_fname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_vstr(bufp, m_dirname);
+    Serialization::encode_i32(bufp, m_flags);
+    Serialization::encode_i32(bufp, m_bufsz);
+    Serialization::encode_vstr(bufp, m_fname);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 			     size_t *remainp) override {
     (void)version;
-    m_dirname.clear();
-    m_dirname.append(Serialization::decode_vstr(bufp, remainp));
+    m_flags = Serialization::decode_i32(bufp, remainp);
+    m_bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);
+    m_fname.clear();
+    m_fname.append(Serialization::decode_vstr(bufp, remainp));
   }
 
-  std::string m_dirname;
+  /// File name
+  std::string m_fname;
+
+  /// Open flags
+  uint32_t m_flags;
+
+  /// Buffer size
+  int32_t m_bufsz;
 };
 
-class ReaddirRsp : public Serializable {
+class OpenRsp : public Serializable {
   public:
   
-  ReaddirRsp() {}
+  OpenRsp() {}
 
-  ReaddirRsp(DirentList &listing) : m_listing(listing) {}
+  OpenRsp(int32_t fd) : m_fd(fd) {}
 
-  void get_listing(DirentList &listing) {
-    listing = m_listing;
-  }
+  int32_t get_fd() { return m_fd; }
 
   private:
 
@@ -83,33 +97,22 @@ class ReaddirRsp : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    size_t length = 4;
-    for (const Dirent &entry : m_listing)
-      length += entry.encoded_length();
-    return length;
+    return 4;
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_i32(bufp, m_listing.size());
-    for (const Dirent &entry : m_listing)
-      entry.encode(bufp);
+    Serialization::encode_i32(bufp, m_fd);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 	                     size_t *remainp) override {
-    (void)version;
-    int32_t count = (int32_t)Serialization::decode_i32(bufp, remainp);
-    m_listing.reserve(count);
-    Dirent entry;
-    for (int32_t i=0; i<count; i++) {
-      entry.decode(bufp, remainp);
-      m_listing.push_back(entry);
-    }
+    m_fd = (int32_t)Serialization::decode_i32(bufp, remainp);
   }
   
-  DirentList m_listing;
+  /// File descriptor
+  int32_t m_fd;
 };
 
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Readdir_h
+#endif // swc_lib_fs_Broker_Protocol_params_Open_h

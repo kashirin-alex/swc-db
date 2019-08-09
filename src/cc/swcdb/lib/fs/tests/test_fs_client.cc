@@ -27,18 +27,20 @@ void run(size_t thread_id){
      std::cerr << "ERROR(nonexisting file) exists=" << exists << " err=" << err << "\n";
      exit(1);
     }
-    
+    err = Error::OK;
     EnvFsInterface::fs()->mkdirs(err, std::to_string(thread_id));
     if(err != Error::OK){ 
      std::cerr << "ERROR mkdirs err=" << err << "\n";
      exit(1);
     }
+    err = Error::OK;
     EnvFsInterface::fs()->mkdirs(err, std::to_string(thread_id));
     if(err != Error::OK){ 
      std::cerr << "ERROR mkdirs err=" << err << "\n";
      exit(1);
     }
 
+    err = Error::OK;
     FS::DirentList listing;
     EnvFsInterface::fs()->readdir(err, "", listing);
     if(err != Error::OK){ 
@@ -60,28 +62,102 @@ void run(size_t thread_id){
     }
 
 
+    err = Error::OK;
     exists = EnvFsInterface::fs()->exists(err, std::to_string(thread_id));
     if(!exists || err != Error::OK){ 
      std::cerr << "ERROR(existing file) exists=" << exists << " err=" << err << "\n";
      exit(1);
     }
 
+    err = Error::OK;
     EnvFsInterface::fs()->rmdir(err, std::to_string(thread_id));
     if(err != Error::OK){ 
      std::cerr << "ERROR(rmdir) err=" << err << "\n";
      exit(1);
     }
+    err = Error::OK;
     exists = EnvFsInterface::fs()->exists(err, std::to_string(thread_id));
     if(exists || err != Error::OK){ 
      std::cerr << "ERROR(rmdir failed) exists=" << exists << " err=" << err << "\n";
      exit(1);
     }
-  
+    err = Error::OK;
     EnvFsInterface::fs()->remove(err, std::to_string(thread_id));
-    if(err != 2){ 
+    if(err != Error::OK && err != 2){ 
      std::cerr << "ERROR(remove) non-existing err=" << err << "\n";
      exit(1);
     }
+  
+    err = Error::OK;
+    FS::SmartFdPtr smartfd 
+      = FS::SmartFd::make_ptr(
+        "testfile_"+std::to_string(thread_id), FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
+    if(err != Error::OK || !smartfd->valid()) { 
+     std::cerr << "ERROR(create) err=" << err << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    err = Error::OK;
+    EnvFsInterface::fs()->close(err, smartfd);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(close) err=" << err << "\n";
+     exit(1);
+    }
+    err = Error::OK;
+    exists = EnvFsInterface::fs()->exists(err, smartfd->filepath());
+    if(!exists || err != Error::OK){ 
+     std::cerr << "ERROR(create failed) exists=" << exists << " err=" << err << "\n";
+     exit(1);
+    }
+
+    err = Error::OK;
+    EnvFsInterface::fs()->remove(err, smartfd->filepath());
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(remove) created-file err=" << err << "\n";
+     exit(1);
+    }
+    err = Error::OK;
+    exists = EnvFsInterface::fs()->exists(err, smartfd->filepath());
+    if(exists || err != Error::OK){ 
+     std::cerr << "ERROR(remove failed) created-file  exists=" << exists << " err=" << err << "\n";
+     exit(1);
+    }
+
+
+    // create >> append >> close >> exists >> open >> read >> close >> remove
+
+    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
+    if(err != Error::OK || !smartfd->valid()) { 
+     std::cerr << "ERROR(create) err=" << err << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    err = Error::OK;
+    EnvFsInterface::fs()->close(err, smartfd);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(close,create) err=" << err << "\n";
+     exit(1);
+    }
+    err = Error::OK;
+    exists = EnvFsInterface::fs()->exists(err, smartfd->filepath());
+    if(!exists || err != Error::OK){ 
+     std::cerr << "ERROR(create failed) exists=" << exists << " err=" << err << "\n";
+     exit(1);
+    }
+
+    err = Error::OK;
+    smartfd->flags(0);
+    EnvFsInterface::fs()->open(err, smartfd, -1);
+    if(err != Error::OK || !smartfd->valid()) { 
+     std::cerr << "ERROR(open) err=" << err << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    err = Error::OK;
+    EnvFsInterface::fs()->close(err, smartfd);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(close,open) err=" << err << "\n";
+     exit(1);
+    }
+
     
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

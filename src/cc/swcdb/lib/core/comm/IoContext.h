@@ -53,8 +53,8 @@ class IoContext {
     std::cout << "Holding-on for IO-ctx to finish \n";
 
     m_run.store(false);
-    //m_wrk->reset();
-    m_wrk->get_executor().context().stop();
+    m_wrk->reset();
+    // m_wrk->get_executor().context().stop();
   }
 
   virtual ~IoContext(){

@@ -21,10 +21,10 @@
  */
 
 /// @file
-/// Declarations for Exists parameters.
+/// Declarations for Create parameters.
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Exists_h
-#define swc_lib_fs_Broker_Protocol_params_Exists_h
+#ifndef swc_lib_fs_Broker_Protocol_params_Create_h
+#define swc_lib_fs_Broker_Protocol_params_Create_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -32,14 +32,25 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-class ExistsReq : public Serializable {
+class CreateReq : public Serializable {
   public:
 
-  ExistsReq() {}
+  CreateReq() {}
 
-  ExistsReq(const std::string &fname) : m_fname(fname) {}
+  CreateReq(const std::string &fname, uint32_t flags, int32_t bufsz,
+	          int32_t replication, int64_t blksz)
+            : m_fname(fname), m_flags(flags), m_bufsz(bufsz),
+	            m_replication(replication), m_blksz(blksz) {}
 
-  const std::string get_fname() { return m_fname; }
+  const std::string get_name() { return m_fname; }
+
+  uint32_t get_flags() { return m_flags; }
+
+  int32_t get_buffer_size() { return m_bufsz; }
+
+  int32_t get_replication() { return m_replication; }
+
+  int64_t get_block_size() { return m_blksz; }
 
   private:
 
@@ -48,54 +59,44 @@ class ExistsReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return Serialization::encoded_length_vstr(m_fname);
+    return 20 + Serialization::encoded_length_vstr(m_fname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
+    Serialization::encode_i32(bufp, m_flags);
+    Serialization::encode_i32(bufp, m_bufsz);
+    Serialization::encode_i32(bufp, m_replication);
+    Serialization::encode_i64(bufp, m_blksz);
     Serialization::encode_vstr(bufp, m_fname);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 			     size_t *remainp) override {
     (void)version;
+    m_flags = Serialization::decode_i32(bufp, remainp);
+    m_bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);
+    m_replication = (int32_t)Serialization::decode_i32(bufp, remainp);
+    m_blksz = (int64_t)Serialization::decode_i64(bufp, remainp);
     m_fname.clear();
     m_fname.append(Serialization::decode_vstr(bufp, remainp));
   }
 
+  /// File name
   std::string m_fname;
-};
 
-class ExistsRsp : public Serializable {
-  public:
-  
-  ExistsRsp() {}
+  /// Create flags
+  uint32_t m_flags;
 
-  ExistsRsp(bool exists) : m_exists(exists) {}
+  /// Buffer size
+  int32_t m_bufsz;
 
-  bool get_exists() { return m_exists; }
+  /// Replication
+  int32_t m_replication;
 
-  private:
-
-  uint8_t encoding_version() const override {
-    return 1;
-  }
-
-  size_t encoded_length_internal() const override {
-    return 1;
-  }
-
-  void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_bool(bufp, m_exists);
-  }
-
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-	                     size_t *remainp) override {
-    m_exists = Serialization::decode_bool(bufp, remainp);
-  }
-  
-  bool m_exists;
+  /// Block size
+  int64_t m_blksz;
 };
 
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Exists_h
+#endif // swc_lib_fs_Broker_Protocol_params_Create_h

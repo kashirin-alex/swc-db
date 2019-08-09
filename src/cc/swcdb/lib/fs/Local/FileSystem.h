@@ -105,9 +105,10 @@ class FileSystemLocal: public FileSystem {
   void remove(int &err, const String &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
-    if (FileUtils::unlink(abspath) == -1) {
+    if(!FileUtils::unlink(abspath)) {
       err = errno;
-      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(errno));
+      HT_ERRORF("remove('%s') failed - %d(%s)", 
+                abspath.c_str(), errno, strerror(errno));
       return;
     }
     HT_DEBUGF("remove('%s')", abspath.c_str());
@@ -275,6 +276,8 @@ class FileSystemLocal: public FileSystem {
   void close(int &err, SmartFdPtr &smartfd) {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
     ::close(smartfd->fd());
+    smartfd->fd(-1);
+    smartfd->pos(0);
   }
 
 

@@ -16,6 +16,9 @@
 #include "handlers/Readdir.h"
 #include "handlers/Remove.h"
 #include "handlers/Rmdir.h"
+#include "handlers/Create.h"
+#include "handlers/Open.h"
+#include "handlers/Close.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -76,6 +79,18 @@ class AppContext : public SWC::AppContext {
 
           case FS::Protocol::Cmd::FUNCTION_RMDIR:
             handler = new Handler::Rmdir(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_CREATE:
+            handler = new Handler::Create(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_OPEN:
+            handler = new Handler::Open(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_CLOSE:
+            handler = new Handler::Close(conn, ev);
             break;
 
           default: {

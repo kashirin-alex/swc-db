@@ -15,6 +15,9 @@
 #include "Protocol/req/Readdir.h"
 #include "Protocol/req/Remove.h"
 #include "Protocol/req/Rmdir.h"
+#include "Protocol/req/Create.h"
+#include "Protocol/req/Open.h"
+#include "Protocol/req/Close.h"
 
 namespace SWC{ namespace FS {
 
@@ -75,7 +78,7 @@ class FileSystemBroker: public FileSystem {
     return true;
   }
 
-  ///
+  /// File/Dir name actions
 
   bool exists(int &err, const String &name) override {
     Protocol::Req::ExistsPtr hdlr 
@@ -169,25 +172,70 @@ class FileSystemBroker: public FileSystem {
     while(!send_request(hdlr));
   }
 
-  /// 
+  /// SmartFd actions
 
-
-  void create(int &err, SmartFdPtr &smartfd, 
+  void create(int &err, SmartFdPtr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) override {
+    Protocol::Req::CreatePtr hdlr 
+      = std::make_shared<Protocol::Req::Create>(
+                                    smartfd, bufsz, replication, blksz);
 
-    std::string abspath = smartfd->filepath();
-    HT_DEBUGF("create %s bufsz=%d replication=%d blksz=%lld",
-              smartfd->to_string().c_str(), 
-              bufsz, (int)replication, (Lld)blksz);
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
   }
 
-  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) override {
-
-    std::string abspath = smartfd->filepath();
-    HT_DEBUGF("open %s, bufsz=%d", smartfd->to_string().c_str(), bufsz);
+  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd,
+              int32_t bufsz, int32_t replication, int64_t blksz) override {
+    Protocol::Req::CreatePtr hdlr 
+      = std::make_shared<Protocol::Req::Create>(
+                                    smartfd, bufsz, replication, blksz, cb);
+      
+    while(!send_request(hdlr));
   }
+
+  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz) override {
+    Protocol::Req::OpenPtr hdlr 
+      = std::make_shared<Protocol::Req::Open>(smartfd, bufsz);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+
+  void open(Callback::OpenCb_t cb, SmartFdPtr &smartfd, int32_t bufsz) override {
+    Protocol::Req::OpenPtr hdlr 
+      = std::make_shared<Protocol::Req::Open>(smartfd, bufsz, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  void close(int &err, SmartFdPtr &smartfd) override {
+    Protocol::Req::ClosePtr hdlr 
+      = std::make_shared<Protocol::Req::Close>(smartfd);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+
+  void close(Callback::CreateCb_t cb, SmartFdPtr &smartfd) override {
+    Protocol::Req::ClosePtr hdlr 
+      = std::make_shared<Protocol::Req::Close>(smartfd, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  //
+
   
-  size_t read(int &err, SmartFdPtr &smartfd, 
+  ssize_t read(int &err, SmartFdPtr &smartfd, 
               void *dst, size_t amount) override {
     
     HT_DEBUGF("read %s amount=%d", smartfd->to_string().c_str(), amount);
@@ -195,7 +243,7 @@ class FileSystemBroker: public FileSystem {
     return nread;
   }
 
-  size_t append(int &err, SmartFdPtr &smartfd, 
+  ssize_t append(int &err, SmartFdPtr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
     HT_DEBUGF("append %s amount=%d flags=%d", 
@@ -207,9 +255,6 @@ class FileSystemBroker: public FileSystem {
 
 
 
-  void close(int &err, SmartFdPtr &smartfd) {
-    HT_DEBUGF("close %s", smartfd->to_string().c_str());
-  }
 
 
 

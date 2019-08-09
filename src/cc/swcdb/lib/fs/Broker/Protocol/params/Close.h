@@ -21,50 +21,48 @@
  */
 
 /// @file
-/// Declarations for Mkdirs parameters.
+/// Declarations for Close parameters.
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Mkdirs_h
-#define swc_lib_fs_Broker_Protocol_params_Mkdirs_h
+#ifndef swc_lib_fs_Broker_Protocol_params_Close_h
+#define swc_lib_fs_Broker_Protocol_params_Close_h
 
 #include "swcdb/lib/core/Serializable.h"
 
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
-
-class MkdirsReq : public Serializable {
+class CloseReq : public Serializable {
   public:
+  
+  CloseReq() {}
 
-  MkdirsReq() {}
+  CloseReq(int32_t fd) : m_fd(fd) {}
 
-  MkdirsReq(const std::string &dirname) : m_dirname(dirname) {}
-
-  const std::string get_dirname() { return m_dirname; }
+  int32_t get_fd() { return m_fd; }
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
+  uint8_t encoding_version() const override {
+    return 1;
   }
 
   size_t encoded_length_internal() const override {
-  return Serialization::encoded_length_vstr(m_dirname);
+    return 4;
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_vstr(bufp, m_dirname);
+    Serialization::encode_i32(bufp, m_fd);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
-    (void)version;
-    m_dirname.clear();
-    m_dirname.append(Serialization::decode_vstr(bufp, remainp));
+	                     size_t *remainp) override {
+    m_fd = (int32_t)Serialization::decode_i32(bufp, remainp);
   }
-
-  std::string m_dirname;
+  
+  /// File descriptor
+  int32_t m_fd;
 };
 
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Mkdirs_h
+#endif // swc_lib_fs_Broker_Protocol_params_Close_h

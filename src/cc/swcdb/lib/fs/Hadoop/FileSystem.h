@@ -26,7 +26,9 @@ struct SmartFdHadoop : public SmartFd {
 
   static SmartFdHadoopPtr make_ptr(SmartFdPtr &smart_fd){
     return std::make_shared<SmartFdHadoop>(
-      smart_fd->filepath(), smart_fd->flags());
+      smart_fd->filepath(), smart_fd->flags(), 
+      smart_fd->fd(), smart_fd->pos()
+    );
   }
 
   SmartFdHadoop(const String &filepath, uint32_t flags,
@@ -34,7 +36,7 @@ struct SmartFdHadoop : public SmartFd {
                : SmartFd(filepath, flags, fd, pos) { }
   virtual ~SmartFdHadoop() { }
 
-  hdfsFile file;
+  hdfsFile file = 0;
 };
 
 
@@ -361,10 +363,13 @@ class FileSystemHadoop: public FileSystem {
     SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("close %s", hadoop_fd->to_string().c_str());
 
-    if (hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
+    if(hadoop_fd->file != 0 
+       && hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
       HT_ERRORF("close, failed: %d(%s),  %s", 
                  errno, strerror(errno), smartfd->to_string().c_str());
     }
+    smartfd->fd(-1);
+    smartfd->pos(0);
   }
 
   private:
