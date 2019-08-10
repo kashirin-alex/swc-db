@@ -14,7 +14,6 @@ class Open : public Base {
 
   public:
 
-  bool  state;
   Open(SmartFdPtr &smartfd, int32_t bufsz, Callback::OpenCb_t cb=0) 
        : smartfd(smartfd), cb(cb) {
 

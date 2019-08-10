@@ -14,8 +14,7 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 class Create : public Base {
 
   public:
-
-  bool  state;
+  
   Create(SmartFdPtr &smartfd, int32_t bufsz, int32_t replication, 
          int64_t blksz, Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {

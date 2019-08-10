@@ -14,7 +14,6 @@ class Close : public Base {
 
   public:
 
-  bool  state;
   Close(SmartFdPtr &smartfd, Callback::CloseCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
 
