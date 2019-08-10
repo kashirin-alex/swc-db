@@ -156,7 +156,7 @@ class SerializedServer{
         [this, d=io_ctx]{ 
           do{
             d->run();
-            HT_DEBUG("SRV IO stopped, restarting");
+            // HT_DEBUG("SRV IO stopped, restarting");
             d->restart();
           }while(m_run.load());
           HT_DEBUG("SRV IO exited");

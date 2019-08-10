@@ -24,7 +24,7 @@ class IoContext {
       [io_ptr=m_ioctx, run=&m_run]{ 
         do{
           io_ptr->run();
-          HT_DEBUG("IO stopped, restarting");
+          // HT_DEBUG("IO stopped, restarting");
           io_ptr->restart();
         }while(run->load());
         HT_DEBUG("IO exited");
