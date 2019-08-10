@@ -228,6 +228,22 @@ class FileSystem {
     cb(err, smartfd);
   }
 
+  virtual void flush(int &err, SmartFdPtr &smartfd) = 0;
+  virtual 
+  void flush(Callback::FlushCb_t cb, SmartFdPtr &smartfd) {
+    int err = Error::OK;
+    flush(err, smartfd);
+    cb(err, smartfd);
+  }
+
+  virtual void sync(int &err, SmartFdPtr &smartfd) = 0;
+  virtual 
+  void sync(Callback::SyncCb_t cb, SmartFdPtr &smartfd) {
+    int err = Error::OK;
+    sync(err, smartfd);
+    cb(err, smartfd);
+  }
+
   virtual void close(int &err, SmartFdPtr &smartfd) = 0;
   virtual 
   void close(Callback::CloseCb_t cb, SmartFdPtr &smartfd) {

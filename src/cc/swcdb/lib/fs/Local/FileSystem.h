@@ -304,6 +304,21 @@ class FileSystemLocal: public FileSystem {
     smartfd->pos(offset);
   }
 
+
+  void flush(int &err, SmartFdPtr &smartfd) override {
+    sync(err, smartfd);
+  }
+  void sync(int &err, SmartFdPtr &smartfd) override {
+    HT_DEBUGF("sync %s", smartfd->to_string().c_str());
+    
+    errno = 0;
+    if(fsync(smartfd->fd()) != Error::OK) {
+      err = errno;
+      HT_ERRORF("sync failed - %d(%s) %s", 
+                err, strerror(errno), smartfd->to_string().c_str());
+    }
+  }
+
   void close(int &err, SmartFdPtr &smartfd) override {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
     ::close(smartfd->fd());

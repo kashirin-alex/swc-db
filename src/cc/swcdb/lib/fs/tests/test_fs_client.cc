@@ -124,7 +124,7 @@ void run(size_t thread_id){
     }
 
 
-    // create >> append >> close >> exists >> length 
+    // create >> append >> flush >> sync >> close >> exists >> length 
     // >> open >> read >> seek >> read(suff) >> close >> remove
 
     // create >> 
@@ -150,6 +150,21 @@ void run(size_t thread_id){
      exit(1);
     }
 
+    // flush >>
+    err = Error::OK;
+    EnvFsInterface::fs()->flush(err, smartfd);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(flush,create) err=" << err << "\n";
+     exit(1);
+    }
+    // sync >>
+    err = Error::OK;
+    EnvFsInterface::fs()->sync(err, smartfd);
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(sync,create) err=" << err << "\n";
+     exit(1);
+    }
+    
     // close >>
     err = Error::OK;
     EnvFsInterface::fs()->close(err, smartfd);

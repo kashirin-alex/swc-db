@@ -26,8 +26,10 @@ namespace Callback {
   typedef std::function<void(int, SmartFdPtr, StaticBufferPtr)> ReadCb_t;
   typedef std::function<void(int, SmartFdPtr, size_t)>          AppendCb_t;
   typedef std::function<void(int, SmartFdPtr)>                  SeekCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                  FlushCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                  SyncCb_t;
   typedef std::function<void(int, SmartFdPtr)>                  CloseCb_t;
-
+ 
 }
 
 }}

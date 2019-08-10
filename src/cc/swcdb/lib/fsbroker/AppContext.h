@@ -22,6 +22,8 @@
 #include "handlers/Open.h"
 #include "handlers/Read.h"
 #include "handlers/Seek.h"
+#include "handlers/Flush.h"
+#include "handlers/Sync.h"
 #include "handlers/Close.h"
 
 
@@ -114,6 +116,14 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::Seek(conn, ev);
             break;
 
+          case FS::Protocol::Cmd::FUNCTION_FLUSH:
+            handler = new Handler::Flush(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_SYNC:
+            handler = new Handler::Sync(conn, ev);
+            break;
+
           case FS::Protocol::Cmd::FUNCTION_CLOSE:
             handler = new Handler::Close(conn, ev);
             break;
@@ -159,10 +169,10 @@ class AppContext : public SWC::AppContext {
 
     FS::SmartFdPtr fd;
     int err;
-    while((fd = EnvFds::get()->pop_next())!=nullptr){
-      try{ 
-        EnvFsInterface::fs()->close(err, fd);
-      }catch(...) {}
+    while((fd = EnvFds::get()->pop_next()) != nullptr){
+      if(fd->flags() & O_WRONLY)
+        EnvFsInterface::fs()->sync(err, fd);
+      EnvFsInterface::fs()->close(err, fd);
     }
     
     EnvIoCtx::io()->stop();

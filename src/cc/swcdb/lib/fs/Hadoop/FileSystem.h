@@ -367,7 +367,7 @@ class FileSystemHadoop: public FileSystem {
     hadoop_fd->pos(nwritten);
 
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
-      if (hdfsFlush(m_filesystem, hadoop_fd->file)) {
+      if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
         err = errno;
         HT_ERRORF("write, fsync failed: %d(%s),  %s", 
                   errno, strerror(errno), smartfd->to_string().c_str());
@@ -393,6 +393,28 @@ class FileSystemHadoop: public FileSystem {
       return;
     }
     hadoop_fd->pos(offset);
+  }
+
+  void flush(int &err, SmartFdPtr &smartfd) override {
+    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    HT_DEBUGF("flush %s", hadoop_fd->to_string().c_str());
+
+    if (hdfsHFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
+      err = errno;
+      HT_ERRORF("flush failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+    }
+  }
+
+  void sync(int &err, SmartFdPtr &smartfd) override {
+    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    HT_DEBUGF("sync %s", hadoop_fd->to_string().c_str());
+
+    if (hdfsHSync(m_filesystem, hadoop_fd->file) != Error::OK) {
+      err = errno;
+      HT_ERRORF("flush failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+    }
   }
 
   void close(int &err, SmartFdPtr &smartfd) {

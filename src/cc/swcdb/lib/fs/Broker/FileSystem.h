@@ -21,6 +21,8 @@
 #include "Protocol/req/Open.h"
 #include "Protocol/req/Read.h"
 #include "Protocol/req/Seek.h"
+#include "Protocol/req/Sync.h"
+#include "Protocol/req/Flush.h"
 #include "Protocol/req/Close.h"
 
 namespace SWC{ namespace FS {
@@ -281,17 +283,6 @@ class FileSystemBroker: public FileSystem {
   }
 
 
-  void close(int &err, SmartFdPtr &smartfd) override {
-    Protocol::Req::ClosePtr hdlr 
-      = std::make_shared<Protocol::Req::Close>(smartfd);
-
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
-    err = hdlr->error;
-  }
-
   void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
     Protocol::Req::SeekPtr hdlr 
       = std::make_shared<Protocol::Req::Seek>(smartfd, offset);
@@ -309,6 +300,53 @@ class FileSystemBroker: public FileSystem {
       = std::make_shared<Protocol::Req::Seek>(smartfd, offset, cb);
       
     while(!send_request(hdlr));
+  }
+
+  void flush(int &err, SmartFdPtr &smartfd) override {
+    Protocol::Req::FlushPtr hdlr 
+      = std::make_shared<Protocol::Req::Flush>(smartfd);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+  
+  void flush(Callback::FlushCb_t cb, SmartFdPtr &smartfd) override {
+    Protocol::Req::FlushPtr hdlr 
+      = std::make_shared<Protocol::Req::Flush>(smartfd, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  void sync(int &err, SmartFdPtr &smartfd) override {
+    Protocol::Req::SyncPtr hdlr 
+      = std::make_shared<Protocol::Req::Sync>(smartfd);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+  
+  void sync(Callback::SyncCb_t cb, SmartFdPtr &smartfd) override {
+    Protocol::Req::SyncPtr hdlr 
+      = std::make_shared<Protocol::Req::Sync>(smartfd, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  void close(int &err, SmartFdPtr &smartfd) override {
+    Protocol::Req::ClosePtr hdlr 
+      = std::make_shared<Protocol::Req::Close>(smartfd);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
   }
 
   void close(Callback::CreateCb_t cb, SmartFdPtr &smartfd) override {
