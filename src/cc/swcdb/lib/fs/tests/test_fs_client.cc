@@ -124,7 +124,8 @@ void run(size_t thread_id){
     }
 
 
-    // create >> append >> close >> exists >> lemgth >>  open >> read >> close >> remove
+    // create >> append >> close >> exists >> length 
+    // >> open >> read >> seek >> read(suff) >> close >> remove
 
     // create >> 
     EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
@@ -184,8 +185,8 @@ void run(size_t thread_id){
     }
 
     // read >>
+    err = Error::OK;
     uint8_t buf[data_str.length()];
-    const uint8_t *ptr = buf;
     if (EnvFsInterface::fs()->read(err, smartfd, buf,  data_str.length()) != data_str.length() 
         || err != Error::OK 
         || strcmp((char*)buf, data_str.c_str()) != 0) { 
@@ -193,6 +194,27 @@ void run(size_t thread_id){
      exit(1);
     }
     std::cout << "read-data='" << std::string((char*)buf, 7) << "'\n";
+
+    // seek >>
+    err = Error::OK;
+    size_t offset = len-data_end.length();
+    EnvFsInterface::fs()->seek(err, smartfd, offset);
+    if (err != Error::OK || smartfd->pos() != offset) { 
+     std::cerr << "ERROR(seek) err=" << err << " to=" << offset << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+
+    // read(suff) >>
+    err = Error::OK;
+    uint8_t bufsuf[data_end.length()];
+    if (EnvFsInterface::fs()->read(err, smartfd, bufsuf,  data_end.length()) != data_end.length() 
+        || err != Error::OK 
+        || strcmp((char*)bufsuf, data_end.c_str()) != 0) { 
+     std::cerr << "ERROR(read(suff)) err=" << err << " buf=" << bufsuf << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    std::cout << "read(suff)-data='" << std::string((char*)bufsuf, 7) << "'\n";
+    
 
     // close >>
     err = Error::OK;

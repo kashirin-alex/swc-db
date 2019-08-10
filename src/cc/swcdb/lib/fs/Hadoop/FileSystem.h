@@ -379,6 +379,22 @@ class FileSystemHadoop: public FileSystem {
     return nwritten;
   }
 
+  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
+
+    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    HT_DEBUGF("seek %s offset=%d", hadoop_fd->to_string().c_str(), offset);
+    
+    errno = 0;
+    uint64_t at = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
+    if (at == (uint64_t)-1 || at != Error::OK || errno != Error::OK) {
+      err = errno;
+      HT_ERRORF("seek failed - at=%d %d(%s) %s", 
+                at, err, strerror(errno), smartfd->to_string().c_str());
+      return;
+    }
+    hadoop_fd->pos(offset);
+  }
+
   void close(int &err, SmartFdPtr &smartfd) {
     
     SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);

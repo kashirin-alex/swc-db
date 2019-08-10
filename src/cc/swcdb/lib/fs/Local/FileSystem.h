@@ -288,10 +288,23 @@ class FileSystemLocal: public FileSystem {
     return nwritten;
   }
 
+  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
+    HT_DEBUGF("seek %s offset=%d", smartfd->to_string().c_str(), offset);
+    
+    errno = 0;
+    uint64_t at = lseek(smartfd->fd(), offset, SEEK_SET); 
+    if (at == (uint64_t)-1 || at != offset || errno != Error::OK) {
+      err = errno;
+      HT_ERRORF("seek failed - %d(%s) %s", 
+                err, strerror(errno), smartfd->to_string().c_str());
+      if(at > 0)
+        smartfd->pos(at);
+      return;
+    }
+    smartfd->pos(offset);
+  }
 
-
-
-  void close(int &err, SmartFdPtr &smartfd) {
+  void close(int &err, SmartFdPtr &smartfd) override {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
     ::close(smartfd->fd());
     smartfd->fd(-1);

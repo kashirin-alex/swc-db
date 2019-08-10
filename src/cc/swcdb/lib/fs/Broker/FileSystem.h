@@ -20,6 +20,7 @@
 #include "Protocol/req/Append.h"
 #include "Protocol/req/Open.h"
 #include "Protocol/req/Read.h"
+#include "Protocol/req/Seek.h"
 #include "Protocol/req/Close.h"
 
 namespace SWC{ namespace FS {
@@ -289,6 +290,25 @@ class FileSystemBroker: public FileSystem {
 
     res.get_future().wait();
     err = hdlr->error;
+  }
+
+  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
+    Protocol::Req::SeekPtr hdlr 
+      = std::make_shared<Protocol::Req::Seek>(smartfd, offset);
+
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+  }
+   
+  void seek(Callback::SeekCb_t cb, SmartFdPtr &smartfd, 
+            size_t offset) override {
+    Protocol::Req::SeekPtr hdlr 
+      = std::make_shared<Protocol::Req::Seek>(smartfd, offset, cb);
+      
+    while(!send_request(hdlr));
   }
 
   void close(Callback::CreateCb_t cb, SmartFdPtr &smartfd) override {

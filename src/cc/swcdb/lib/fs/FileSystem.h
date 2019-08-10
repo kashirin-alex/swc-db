@@ -220,6 +220,14 @@ class FileSystem {
     cb(err, smartfd, len);
   }
 
+  virtual void seek(int &err, SmartFdPtr &smartfd, size_t offset) = 0;
+  virtual 
+  void seek(Callback::CloseCb_t cb, SmartFdPtr &smartfd, size_t offset) {
+    int err = Error::OK;
+    seek(err, smartfd, offset);
+    cb(err, smartfd);
+  }
+
   virtual void close(int &err, SmartFdPtr &smartfd) = 0;
   virtual 
   void close(Callback::CloseCb_t cb, SmartFdPtr &smartfd) {
@@ -230,7 +238,7 @@ class FileSystem {
 
 
   /* 
-  flush, sync, pread, seek
+  flush, sync, pread, 
   virtual void rename(const String &src, const String &dst) = 0;
   virtual void rename(const String &src, const String &dst,
       DispatchHandler *handler) = 0;
