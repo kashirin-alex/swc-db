@@ -291,7 +291,7 @@ class FileSystemHadoop: public FileSystem {
     
     HT_DEBUGF("read %s amount=%d file-%lld", hadoop_fd->to_string().c_str(), 
               amount, (size_t) hadoop_fd->file);
-    size_t nread = 0;
+    ssize_t nread = 0;
     errno = 0;
 
     /* 
@@ -304,8 +304,9 @@ class FileSystemHadoop: public FileSystem {
     }
     */
     
-    nread = (size_t)hdfsRead(m_filesystem, hadoop_fd->file, dst, (tSize)amount);
+    nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file, dst, (tSize)amount);
     if (nread == -1) {
+      nread = 0;
       err = errno;
       HT_ERRORF("read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
@@ -338,6 +339,7 @@ class FileSystemHadoop: public FileSystem {
 
     if ((nwritten = (ssize_t)hdfsWrite(m_filesystem, hadoop_fd->file, 
                              buffer.base, (tSize)buffer.size)) == -1) {
+      nwritten = 0;
       err = errno;
       HT_ERRORF("write failed: %d(%s),  %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());

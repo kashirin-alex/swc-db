@@ -32,14 +32,14 @@ public:
     HT_INFOF("Listening On: [%s]:%d fd=%d", 
              m_acceptor->local_endpoint().address().to_string().c_str(), 
              m_acceptor->local_endpoint().port(), 
-             (size_t)m_acceptor->native_handle());
+             (ssize_t)m_acceptor->native_handle());
 
   }
   void stop(){
     HT_INFOF("Stopped Listening On: [%s]:%d fd=%d", 
              m_acceptor->local_endpoint().address().to_string().c_str(), 
              m_acceptor->local_endpoint().port(), 
-             (size_t)m_acceptor->native_handle());
+             (ssize_t)m_acceptor->native_handle());
 
     m_run.store(false);
   }

@@ -196,9 +196,8 @@ class FileSystem {
   void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
     int err = Error::OK;
     StaticBuffer dst(amount);
-    size_t nread = read(err, smartfd, dst.base, amount);
-    
-    dst.size = nread;
+    dst.size = read(err, smartfd, dst.base, amount);
+  
     cb(err, smartfd, dst);
   }
 

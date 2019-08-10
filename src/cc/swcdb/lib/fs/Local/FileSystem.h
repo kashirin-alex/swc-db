@@ -218,6 +218,7 @@ class FileSystemLocal: public FileSystem {
     
     nread = FileUtils::read(smartfd->fd(), dst, amount);
     if (nread == -1) {
+      nread = 0;
       err = errno;
       HT_ERRORF("read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
@@ -250,6 +251,7 @@ class FileSystemLocal: public FileSystem {
 
     if ((nwritten = FileUtils::write(
                     smartfd->fd(), buffer.base, buffer.size)) == -1) {
+      nwritten = 0;
       err = errno;
       HT_ERRORF("write failed: %d(%s),  %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());

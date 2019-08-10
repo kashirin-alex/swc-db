@@ -235,21 +235,21 @@ class FileSystemBroker: public FileSystem {
   //
 
   
-  ssize_t read(int &err, SmartFdPtr &smartfd, 
+  size_t read(int &err, SmartFdPtr &smartfd, 
               void *dst, size_t amount) override {
     
     HT_DEBUGF("read %s amount=%d", smartfd->to_string().c_str(), amount);
-    ssize_t nread = 0;
+    size_t nread = 0;
     return nread;
   }
 
-  ssize_t append(int &err, SmartFdPtr &smartfd, 
+  size_t append(int &err, SmartFdPtr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
     HT_DEBUGF("append %s amount=%d flags=%d", 
               smartfd->to_string().c_str(), buffer.size, flags);
     
-    ssize_t nwritten = 0;
+    size_t nwritten = 0;
     return nwritten;
   }
 
