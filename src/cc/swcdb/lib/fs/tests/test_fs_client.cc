@@ -164,7 +164,7 @@ void run(size_t thread_id){
      std::cerr << "ERROR(sync,create) err=" << err << "\n";
      exit(1);
     }
-    
+
     // close >>
     err = Error::OK;
     EnvFsInterface::fs()->close(err, smartfd);
@@ -239,6 +239,12 @@ void run(size_t thread_id){
      exit(1);
     }
 
+    err = Error::OK;
+    EnvFsInterface::fs()->remove(err, smartfd->filepath());
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(remove) written-file err=" << err << "\n";
+     exit(1);
+    }
     
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
@@ -252,7 +258,7 @@ int main(int argc, char** argv) {
   for(size_t chk=1;chk<=1;chk++) {
     std::cout << "--1--\n";
     std::vector<std::thread*> threads;
-    for(size_t t=1;t<=1;t++)
+    for(size_t t=1;t<=8;t++)
       threads.push_back(new std::thread([t](){run(t);}));
     
     std::cout << "--2--\n";

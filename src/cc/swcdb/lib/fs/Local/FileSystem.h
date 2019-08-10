@@ -121,7 +121,7 @@ class FileSystemLocal: public FileSystem {
       if (stat(full_entry_path.c_str(), &statbuf) == -1) {
         err = errno;
         HT_ERRORF("readdir('%s') stat failed - %s", 
-                   abspath.c_str(), strerror(errno));
+                   full_entry_path.c_str(), strerror(errno));
         return;
       }
       entry.length = (uint64_t)statbuf.st_size;

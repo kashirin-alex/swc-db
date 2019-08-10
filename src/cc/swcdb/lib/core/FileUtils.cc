@@ -375,18 +375,18 @@ bool FileUtils::mkdirs(const String &dirname) {
     *ptr = 0;
     if (stat(tmpdir, &statbuf) != 0) {
       if (errno == ENOENT) {
-        if (mkdir(tmpdir, 0755) != 0) {
+        if (mkdir(tmpdir, 0755) != 0 && errno != 17) {
           int saved_errno = errno;
-          HT_ERRORF("Problem creating directory '%s' - %s", tmpdir,
-                  strerror(saved_errno));
+          HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,
+                    saved_errno, strerror(saved_errno));
           errno = saved_errno;
           return false;
         }
       }
       else {
         int saved_errno = errno;
-        HT_ERRORF("Problem stat'ing directory '%s' - %s", tmpdir,
-                strerror(saved_errno));
+        HT_ERRORF("Problem stat'ing directory '%s' - %d(%s)", tmpdir,
+                  saved_errno, strerror(saved_errno));
         errno = saved_errno;
         return false;
       }
@@ -396,10 +396,10 @@ bool FileUtils::mkdirs(const String &dirname) {
 
   if (stat(tmpdir, &statbuf) != 0) {
     if (errno == ENOENT) {
-      if (mkdir(tmpdir, 0755) != 0) {
+      if (mkdir(tmpdir, 0755) != 0 && errno != 17) {
         int saved_errno = errno;
-        HT_ERRORF("Problem creating directory '%s' - %s", tmpdir,
-                strerror(saved_errno));
+        HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,
+                  saved_errno, strerror(saved_errno));
         errno = saved_errno;
         return false;
       }
