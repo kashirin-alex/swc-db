@@ -33,11 +33,11 @@ class Close : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      // get smartfd from map by params.get_fd()
-      FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr("", 0);
-      smartfd->fd(params.get_fd());
-      
-      EnvFsInterface::fs()->close(err, smartfd);
+      FS::SmartFdPtr smartfd = EnvFds::get()->remove(params.get_fd());
+      if(smartfd == nullptr)
+        err = EBADR;
+      else
+        EnvFsInterface::fs()->close(err, smartfd);
     }
     catch (Exception &e) {
       err = e.code();

@@ -3,11 +3,10 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Create_h
-#define swc_app_fsbroker_handlers_Create_h
+#ifndef swc_app_fsbroker_handlers_Length_h
+#define swc_app_fsbroker_handlers_Length_h
 
-#include "swcdb/lib/fs/Broker/Protocol/params/Create.h"
-#include "swcdb/lib/fs/Broker/Protocol/params/Open.h"
+#include "swcdb/lib/fs/Broker/Protocol/params/Length.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -15,36 +14,28 @@ namespace SWC { namespace server { namespace FsBroker {
 namespace Handler {
 
 
-class Create : public AppHandler {
+class Length : public AppHandler {
   public:
 
-  Create(ConnHandlerPtr conn, EventPtr ev)
+  Length(ConnHandlerPtr conn, EventPtr ev)
          : AppHandler(conn, ev){ }
 
   void run() override {
 
     int err = Error::OK;
-    int32_t fd = -1;
+    size_t length = 0;
 
     try {
 
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      FS::Protocol::Params::CreateReq params;
+      FS::Protocol::Params::LengthReq params;
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd 
-        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
- 
-      EnvFsInterface::fs()->create(
-        err, smartfd, params.get_buffer_size(), 
-        params.get_replication(), params.get_block_size()
-      );
-
-      if(smartfd->valid() && err==Error::OK)
-        fd = EnvFds::get()->add(smartfd);
+      length = EnvFsInterface::fs()->length(err, params.get_fname());
+      
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
@@ -52,7 +43,7 @@ class Create : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::OpenRsp rsp_params(fd);
+      FS::Protocol::Params::LengthRsp rsp_params(length);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, 
@@ -65,7 +56,6 @@ class Create : public AppHandler {
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }
-
   }
 
 };
@@ -73,4 +63,4 @@ class Create : public AppHandler {
 
 }}}}
 
-#endif // swc_app_fsbroker_handlers_Create_h
+#endif // swc_app_fsbroker_handlers_Length_h

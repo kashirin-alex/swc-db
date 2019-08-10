@@ -51,6 +51,34 @@ class FileSystemLocal: public FileSystem {
     return state;
   }
 
+  void remove(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    if(!FileUtils::unlink(abspath)) {
+      err = errno;
+      HT_ERRORF("remove('%s') failed - %d(%s)", 
+                abspath.c_str(), errno, strerror(errno));
+      return;
+    }
+    HT_DEBUGF("remove('%s')", abspath.c_str());
+  }
+  
+  size_t length(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    
+    size_t len = 0; 
+    if ((len = FileUtils::length(abspath)) == (size_t)-1) {
+      err = errno;
+      HT_ERRORF("length('%s') failed - %d(%s)", 
+                abspath.c_str(), errno, strerror(errno));
+      len = 0;
+      return len;
+    }
+    HT_DEBUGF("length len='%d' path='%s'", len, abspath.c_str());
+    return len;
+  }
+
   void mkdirs(int &err, const String &name) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("mkdirs path='%s'", abspath.c_str());
@@ -100,18 +128,6 @@ class FileSystemLocal: public FileSystem {
       entry.last_modification_time = statbuf.st_mtime;
       results.push_back(entry);
     }
-  }
-
-  void remove(int &err, const String &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    if(!FileUtils::unlink(abspath)) {
-      err = errno;
-      HT_ERRORF("remove('%s') failed - %d(%s)", 
-                abspath.c_str(), errno, strerror(errno));
-      return;
-    }
-    HT_DEBUGF("remove('%s')", abspath.c_str());
   }
 
   void rmdir(int &err, const String &name) override {

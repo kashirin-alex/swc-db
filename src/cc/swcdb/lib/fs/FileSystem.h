@@ -135,6 +135,23 @@ class FileSystem {
     cb(err, state);
   }
 
+  virtual void remove(int &err, const String &name) = 0;
+  virtual 
+  void remove(Callback::RemoveCb_t cb, const String &name) {
+    int err = Error::OK;
+    remove(err, name);
+    cb(err);
+  }
+
+  virtual size_t length(int &err, const String &name) = 0;
+  virtual 
+  void length(Callback::LengthCb_t cb, const String &name) {
+    int err = Error::OK;
+    size_t len = length(err, name);
+    cb(err, len);
+  }
+
+
   // Directory Actions
   virtual void mkdirs(int &err, const std::string &name) = 0;
   virtual 
@@ -152,14 +169,6 @@ class FileSystem {
     DirentList listing;
     readdir(err, name, listing);
     cb(err, listing);
-  }
-
-  virtual void remove(int &err, const String &name) = 0;
-  virtual 
-  void remove(Callback::RemoveCb_t cb, const String &name) {
-    int err = Error::OK;
-    remove(err, name);
-    cb(err);
   }
 
   virtual void rmdir(int &err, const String &name) = 0;
@@ -195,8 +204,8 @@ class FileSystem {
   virtual 
   void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
     int err = Error::OK;
-    StaticBuffer dst(amount);
-    dst.size = read(err, smartfd, dst.base, amount);
+    StaticBufferPtr dst = std::make_shared<StaticBuffer>(amount);
+    dst->size = read(err, smartfd, dst->base, amount);
   
     cb(err, smartfd, dst);
   }
@@ -221,16 +230,9 @@ class FileSystem {
 
 
   /* 
-
-  virtual void rmdir(const String &name, bool force = true) = 0;
-  virtual void rmdir(const String &name, DispatchHandler *handler) = 0;
-
+  flush, sync, pread, seek
   virtual void rename(const String &src, const String &dst) = 0;
   virtual void rename(const String &src, const String &dst,
-      DispatchHandler *handler) = 0;
-      
-  virtual int64_t length(const String &name, bool accurate = true) = 0;
-  virtual void length(const String &name, bool accurate,
       DispatchHandler *handler) = 0;
       
   */

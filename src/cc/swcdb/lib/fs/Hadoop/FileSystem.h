@@ -148,6 +148,36 @@ class FileSystemHadoop: public FileSystem {
               (int)state, err, abspath.c_str());
     return state;
   }
+  
+  void remove(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
+      err = errno == 5? 2: errno;
+      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
+      return;
+    }
+    HT_DEBUGF("remove('%s')", abspath.c_str());
+  }
+
+  size_t length(int &err, const String &name) override {
+    std::string abspath = get_abspath(name);
+    errno = 0;
+    
+    size_t len = 0; 
+    hdfsFileInfo *fileInfo;
+
+    if((fileInfo = hdfsGetPathInfo(m_filesystem, abspath.c_str())) == 0) {
+      err = errno;
+      HT_ERRORF("length('%s') failed - %s", abspath.c_str(), strerror(err));
+      return len;
+    }
+    len = fileInfo->mSize;
+    hdfsFreeFileInfo(fileInfo, 1);
+
+    HT_DEBUGF("length len='%d' path='%s'", len, abspath.c_str());
+    return len;
+  }
 
   void mkdirs(int &err, const String &name) override {
     std::string abspath = get_abspath(name);
@@ -192,17 +222,6 @@ class FileSystemHadoop: public FileSystem {
     }
 
     hdfsFreeFileInfo(fileInfo, numEntries);
-  }
-
-  void remove(int &err, const String &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
-      err = errno == 5? 2: errno;
-      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
-      return;
-    }
-    HT_DEBUGF("remove('%s')", abspath.c_str());
   }
 
   void rmdir(int &err, const String &name) override {

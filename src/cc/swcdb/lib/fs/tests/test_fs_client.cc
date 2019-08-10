@@ -124,19 +124,40 @@ void run(size_t thread_id){
     }
 
 
-    // create >> append >> close >> exists >> open >> read >> close >> remove
+    // create >> append >> close >> exists >> lemgth >>  open >> read >> close >> remove
 
+    // create >> 
     EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
     if(err != Error::OK || !smartfd->valid()) { 
      std::cerr << "ERROR(create) err=" << err << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
+    
+    // append >> 
+    std::string data("Abc1234");
+    std::string data_end("567890");
+    std::string data_str = data;
+    int sz = 536870912-data_str.length()-data_end.length();
+    for(int i=0;i<sz;i++)
+      data.append("+");
+    data.append(data_end);
+
+    StaticBuffer buffer(data.data(), data.length(), false);
+    size_t amount = EnvFsInterface::fs()->append(err, smartfd, buffer, FS::Flags::FLUSH);
+    if(err != Error::OK || amount!=data.length() || smartfd->pos() != data.length()) { 
+     std::cerr << "ERROR(append) err=" << err << " amount=" << amount << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+
+    // close >>
     err = Error::OK;
     EnvFsInterface::fs()->close(err, smartfd);
     if(err != Error::OK){ 
      std::cerr << "ERROR(close,create) err=" << err << "\n";
      exit(1);
     }
+
+    // exists >>
     err = Error::OK;
     exists = EnvFsInterface::fs()->exists(err, smartfd->filepath());
     if(!exists || err != Error::OK){ 
@@ -144,6 +165,16 @@ void run(size_t thread_id){
      exit(1);
     }
 
+    // length >>
+    err = Error::OK;
+    size_t len = EnvFsInterface::fs()->length(err, smartfd->filepath());
+    if(err != Error::OK || len != data.length()) { 
+     std::cerr << "ERROR(length) len=" << len << " expected-len=" << data.length() 
+               << " err=" << err << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    
+    // open >>
     err = Error::OK;
     smartfd->flags(0);
     EnvFsInterface::fs()->open(err, smartfd, -1);
@@ -151,6 +182,19 @@ void run(size_t thread_id){
      std::cerr << "ERROR(open) err=" << err << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
+
+    // read >>
+    uint8_t buf[data_str.length()];
+    const uint8_t *ptr = buf;
+    if (EnvFsInterface::fs()->read(err, smartfd, buf,  data_str.length()) != data_str.length() 
+        || err != Error::OK 
+        || strcmp((char*)buf, data_str.c_str()) != 0) { 
+     std::cerr << "ERROR(read) err=" << err << " buf=" << buf << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    std::cout << "read-data='" << std::string((char*)buf, 7) << "'\n";
+
+    // close >>
     err = Error::OK;
     EnvFsInterface::fs()->close(err, smartfd);
     if(err != Error::OK){ 

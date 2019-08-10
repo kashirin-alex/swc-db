@@ -3,11 +3,10 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Create_h
-#define swc_app_fsbroker_handlers_Create_h
+#ifndef swc_app_fsbroker_handlers_Append_h
+#define swc_app_fsbroker_handlers_Append_h
 
-#include "swcdb/lib/fs/Broker/Protocol/params/Create.h"
-#include "swcdb/lib/fs/Broker/Protocol/params/Open.h"
+#include "swcdb/lib/fs/Broker/Protocol/params/Append.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -15,36 +14,41 @@ namespace SWC { namespace server { namespace FsBroker {
 namespace Handler {
 
 
-class Create : public AppHandler {
+class Append : public AppHandler {
   public:
 
-  Create(ConnHandlerPtr conn, EventPtr ev)
+  Append(ConnHandlerPtr conn, EventPtr ev)
          : AppHandler(conn, ev){ }
 
   void run() override {
 
     int err = Error::OK;
-    int32_t fd = -1;
+    size_t amount = 0;
+    size_t offset = 0;
 
     try {
 
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      FS::Protocol::Params::CreateReq params;
+      FS::Protocol::Params::AppendReq params;
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd 
-        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
- 
-      EnvFsInterface::fs()->create(
-        err, smartfd, params.get_buffer_size(), 
-        params.get_replication(), params.get_block_size()
-      );
+      if (remain != params.get_size()) {
+        err = Error::SERIALIZATION_INPUT_OVERRUN;
 
-      if(smartfd->valid() && err==Error::OK)
-        fd = EnvFds::get()->add(smartfd);
+      } else { 
+        FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
+        if(smartfd == nullptr)
+          err = EBADR;
+        else {
+          offset = smartfd->pos();
+          StaticBuffer buffer((uint8_t*)ptr, params.get_size(), false);
+          amount = EnvFsInterface::fs()->append(
+            err, smartfd, buffer, (FS::Flags)params.get_flags());
+        }
+      }
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
@@ -52,7 +56,7 @@ class Create : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::OpenRsp rsp_params(fd);
+      FS::Protocol::Params::AppendRsp rsp_params(offset, amount);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, 
@@ -66,6 +70,7 @@ class Create : public AppHandler {
       HT_ERROR_OUT << e << HT_END;
     }
 
+    // add to fds-map
   }
 
 };
@@ -73,4 +78,4 @@ class Create : public AppHandler {
 
 }}}}
 
-#endif // swc_app_fsbroker_handlers_Create_h
+#endif // swc_app_fsbroker_handlers_Append_h

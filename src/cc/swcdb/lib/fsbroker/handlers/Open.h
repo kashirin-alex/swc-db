@@ -23,7 +23,7 @@ class Open : public AppHandler {
   void run() override {
 
     int err = Error::OK;
-    FS::SmartFdPtr smartfd;
+    int32_t fd = -1;
 
     try {
 
@@ -34,10 +34,13 @@ class Open : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      smartfd = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
+      FS::SmartFdPtr smartfd 
+        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
  
       EnvFsInterface::fs()->open(err, smartfd, params.get_buffer_size());
       
+      if(smartfd->valid() && err==Error::OK)
+        fd = EnvFds::get()->add(smartfd);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
@@ -45,7 +48,7 @@ class Open : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::OpenRsp rsp_params(smartfd->fd());
+      FS::Protocol::Params::OpenRsp rsp_params(fd);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, 
@@ -59,7 +62,6 @@ class Open : public AppHandler {
       HT_ERROR_OUT << e << HT_END;
     }
 
-    // add to fds-map
   }
 
 };

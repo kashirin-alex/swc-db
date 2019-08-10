@@ -10,14 +10,17 @@
 
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/fs/Broker/Protocol/Commands.h"
-
+#include "FdsMap.h"
 #include "handlers/Exists.h"
+#include "handlers/Remove.h"
+#include "handlers/Length.h"
 #include "handlers/Mkdirs.h"
 #include "handlers/Readdir.h"
-#include "handlers/Remove.h"
 #include "handlers/Rmdir.h"
 #include "handlers/Create.h"
+#include "handlers/Append.h"
 #include "handlers/Open.h"
+#include "handlers/Read.h"
 #include "handlers/Close.h"
 
 
@@ -32,6 +35,7 @@ class AppContext : public SWC::AppContext {
     EnvIoCtx::init(
       EnvConfig::settings()->get<int32_t>("swc.FsBroker.handlers"));
     EnvFsInterface::init();
+    EnvFds::init();
   }
   
   void init(EndPoints endpoints) override {}
@@ -65,16 +69,20 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::Exists(conn, ev);
             break;
 
+          case FS::Protocol::Cmd::FUNCTION_REMOVE:
+            handler = new Handler::Remove(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_LENGTH:
+            handler = new Handler::Length(conn, ev);
+            break;
+
           case FS::Protocol::Cmd::FUNCTION_MKDIRS:
             handler = new Handler::Mkdirs(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_READDIR:
             handler = new Handler::Readdir(conn, ev);
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_REMOVE:
-            handler = new Handler::Remove(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_RMDIR:
@@ -85,8 +93,16 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::Create(conn, ev);
             break;
 
+          case FS::Protocol::Cmd::FUNCTION_APPEND:
+            handler = new Handler::Append(conn, ev);
+            break;
+
           case FS::Protocol::Cmd::FUNCTION_OPEN:
             handler = new Handler::Open(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_READ:
+            handler = new Handler::Read(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_CLOSE:
