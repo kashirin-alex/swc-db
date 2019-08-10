@@ -39,7 +39,11 @@ class AppContext : public SWC::AppContext {
     EnvFds::init();
   }
   
-  void init(EndPoints endpoints) override {}
+  void init(EndPoints endpoints) override {
+    int sig = 0;
+    EnvIoCtx::io()->set_signals();
+    shutting_down(std::error_code(), sig);
+  }
 
   void set_srv(SerializedServerPtr srv){
     m_srv = srv;
@@ -114,10 +118,8 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::Close(conn, ev);
             break;
 
-          default: {
-            conn->send_error(Error::NOT_IMPLEMENTED, 
-              format("event command (%llu)",(Llu)ev->header.command), ev);
-          }
+          default:
+            break;
         }
 
         if(handler)
@@ -127,8 +129,7 @@ class AppContext : public SWC::AppContext {
       }
 
       default:
-        conn->send_error(Error::NOT_IMPLEMENTED, 
-          format("event-type (%llu)",(Llu)ev->type), ev);
+        break;
 
     }
   }
@@ -155,8 +156,14 @@ class AppContext : public SWC::AppContext {
     HT_INFO("Stopping APP-FSBROKER");
     
     m_srv->stop_accepting(); // no further requests accepted
-    
-    // + close all fds
+
+    FS::SmartFdPtr fd;
+    int err;
+    while((fd = EnvFds::get()->pop_next())!=nullptr){
+      try{ 
+        EnvFsInterface::fs()->close(err, fd);
+      }catch(...) {}
+    }
     
     EnvIoCtx::io()->stop();
     EnvFsInterface::fs()->stop();
