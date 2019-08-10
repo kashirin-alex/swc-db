@@ -259,7 +259,8 @@ namespace {
 } // local namespace
 
 const char *Error::get_text(int error) {
-  const char *text = text_map[error];
+
+  const char *text = error < 2000? strerror(error) :text_map[error];
   if (text == 0)
     return "ERROR NOT REGISTERED";
   return text;
