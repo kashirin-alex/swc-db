@@ -94,8 +94,8 @@ ssize_t FileUtils::read(int fd, void *vptr, size_t n) {
 }
 
 
-ssize_t FileUtils::pread(int fd, void *vptr, size_t n, off_t offset) {
-  size_t nleft;
+ssize_t FileUtils::pread(int fd, off_t offset, void *vptr, size_t n) {
+  ssize_t nleft;
   ssize_t nread;
   char *ptr;
 

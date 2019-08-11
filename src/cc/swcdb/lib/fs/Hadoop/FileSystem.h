@@ -339,6 +339,31 @@ class FileSystemHadoop: public FileSystem {
     return nread;
   }
 
+  
+  size_t pread(int &err, SmartFdPtr &smartfd, 
+               uint64_t offset, void *dst, size_t amount) override {
+
+    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    HT_DEBUGF("pread %s offset=%d amount=%d file-%lld", 
+              hadoop_fd->to_string().c_str(),
+              offset, amount, (size_t) hadoop_fd->file);
+
+    errno = 0;
+    ssize_t nread = (ssize_t)hdfsPread(
+      m_filesystem, hadoop_fd->file, (tOffset)offset, dst, (tSize)amount);
+    if (nread == -1) {
+      nread = 0;
+      err = errno;
+      HT_ERRORF("pread failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+    } else {
+
+      hadoop_fd->pos(offset+nread);
+      HT_DEBUGF("pread(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+    }
+    return nread;
+  }
+
   size_t append(int &err, SmartFdPtr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     

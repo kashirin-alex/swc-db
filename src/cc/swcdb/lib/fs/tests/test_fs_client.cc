@@ -135,14 +135,16 @@ void run(size_t thread_id){
     }
     
     // append >> 
+    int r=1;
+    size_t num_blocks = 16/r;
+    size_t block_sz = 67108864*r;
     size_t file_sz = 0;
     std::string data_start("Abc1234");
     std::string data_end("567890");
-    int r=1;
-    size_t file_blk = 67108864*r-data_start.length()-data_end.length();
+    size_t file_blk = block_sz-data_start.length()-data_end.length();
     size_t written = 0;
-    for(int i=0;i<16/r;i++){
-      file_sz += 67108864*r;
+    for(int i=0;i<num_blocks;i++){
+      file_sz += block_sz;
       std::string data = data_start;
       for(int i=0;i<file_blk;i++)
         data.append("+");
@@ -224,14 +226,14 @@ void run(size_t thread_id){
      std::cerr << "ERROR(read) err=" << err << " buf=" << buf << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "read-data='" << std::string((char*)buf, 7) << "'\n";
+    std::cout << "read-data='" << std::string((char*)buf, data_start.length()) << "'\n";
 
     // seek >>
     err = Error::OK;
-    size_t offset = len-data_end.length();
-    EnvFsInterface::fs()->seek(err, smartfd, offset);
-    if (err != Error::OK || smartfd->pos() != offset) { 
-     std::cerr << "ERROR(seek) err=" << err << " to=" << offset << " " << smartfd->to_string() <<"\n";
+    size_t seek_offset = len-data_end.length();
+    EnvFsInterface::fs()->seek(err, smartfd, seek_offset);
+    if (err != Error::OK || smartfd->pos() != seek_offset) { 
+     std::cerr << "ERROR(seek) err=" << err << " to=" << seek_offset << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
 
@@ -244,8 +246,26 @@ void run(size_t thread_id){
      std::cerr << "ERROR(read(suff)) err=" << err << " buf=" << bufsuf << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "read(suff)-data='" << std::string((char*)bufsuf, 7) << "'\n";
+    std::cout << "read(suff)-data='" << std::string((char*)bufsuf, data_start.length()) << "'\n";
     
+    // pread >>
+    size_t pread_offset = 0;
+    for(int i=0;i<num_blocks;i++){
+      err = Error::OK;
+      uint8_t buf_start[data_start.length()];
+      if (EnvFsInterface::fs()->pread(err, smartfd, pread_offset, buf_start, data_start.length())
+          != data_start.length() 
+          || err != Error::OK 
+          || smartfd->pos() != pread_offset+data_start.length() 
+          || strcmp((char*)buf_start, data_start.c_str()) != 0) { 
+        std::cerr << "ERROR(pread) err=" << err << " buf=" << buf_start << " " << smartfd->to_string() <<"\n";
+        exit(1);
+      }
+      pread_offset+=block_sz;
+      std::cout << "pread thread=" << thread_id << " blk=" << i 
+                << " start_data='" << std::string((char*)buf_start, data_start.length()) << "'\n";
+    }
+
 
     // close >>
     err = Error::OK;

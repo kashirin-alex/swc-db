@@ -20,6 +20,7 @@
 #include "Protocol/req/Append.h"
 #include "Protocol/req/Open.h"
 #include "Protocol/req/Read.h"
+#include "Protocol/req/Pread.h"
 #include "Protocol/req/Seek.h"
 #include "Protocol/req/Sync.h"
 #include "Protocol/req/Flush.h"
@@ -289,7 +290,29 @@ class FileSystemBroker: public FileSystem {
       
     while(!send_request(hdlr));
   }
+  
+  size_t pread(int &err, SmartFdPtr &smartfd, 
+              uint64_t offset, void *dst, size_t amount) override {
+    Protocol::Req::PreadPtr hdlr = std::make_shared<Protocol::Req::Pread>(
+      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+      smartfd, offset, dst, amount);
 
+    std::promise<void> res = hdlr->promise();
+    while(!send_request(hdlr));
+
+    res.get_future().wait();
+    err = hdlr->error;
+    return hdlr->amount;
+  }
+   
+  void pread(Callback::ReadCb_t cb, SmartFdPtr &smartfd, 
+            uint64_t offset, size_t amount) override {
+    Protocol::Req::PreadPtr hdlr = std::make_shared<Protocol::Req::Pread>(
+      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+      smartfd, offset, nullptr, amount, cb);
+      
+    while(!send_request(hdlr));
+  }
 
   void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
     Protocol::Req::SeekPtr hdlr = std::make_shared<Protocol::Req::Seek>(

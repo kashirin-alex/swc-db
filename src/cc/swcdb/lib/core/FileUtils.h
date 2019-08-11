@@ -72,12 +72,12 @@ namespace SWC {
     /** Reads positional data from a file descriptor into a buffer
      *
      * @param fd The open file descriptor
+     * @param offset The start offset in the file
      * @param vptr Pointer to the memory buffer
      * @param n Maximum size to read, in bytes
-     * @param offset The start offset in the file
      * @return The number of bytes read, or -1 on error
      */
-    static ssize_t pread(int fd, void *vptr, size_t n, off_t offset);
+    static ssize_t pread(int fd, off_t offset, void *vptr, size_t n);
 
     /** Writes a String buffer to a file; the file is overwritten if it
      * already exists

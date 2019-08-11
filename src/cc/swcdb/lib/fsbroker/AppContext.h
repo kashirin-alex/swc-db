@@ -21,6 +21,7 @@
 #include "handlers/Append.h"
 #include "handlers/Open.h"
 #include "handlers/Read.h"
+#include "handlers/Pread.h"
 #include "handlers/Seek.h"
 #include "handlers/Flush.h"
 #include "handlers/Sync.h"
@@ -110,6 +111,10 @@ class AppContext : public SWC::AppContext {
 
           case FS::Protocol::Cmd::FUNCTION_READ:
             handler = new Handler::Read(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_PREAD:
+            handler = new Handler::Pread(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_SEEK:

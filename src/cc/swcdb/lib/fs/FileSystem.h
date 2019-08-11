@@ -213,6 +213,18 @@ class FileSystem {
   
     cb(err, smartfd, dst);
   }
+  
+  virtual size_t pread(int &err, SmartFdPtr &smartfd, 
+                       uint64_t offset, void *dst, size_t amount) = 0;
+  virtual 
+  void pread(Callback::PreadCb_t cb, SmartFdPtr &smartfd, 
+            uint64_t offset, size_t amount) {
+    int err = Error::OK;
+    StaticBufferPtr dst = std::make_shared<StaticBuffer>(amount);
+    dst->size = pread(err, smartfd, offset, dst->base, amount);
+  
+    cb(err, smartfd, dst);
+  }
 
   virtual size_t append(int &err, SmartFdPtr &smartfd, 
                         StaticBuffer &buffer, Flags flags) = 0;
@@ -258,7 +270,6 @@ class FileSystem {
 
 
   /* 
-  flush, sync, pread, 
   virtual void rename(const String &src, const String &dst) = 0;
   virtual void rename(const String &src, const String &dst,
       DispatchHandler *handler) = 0;

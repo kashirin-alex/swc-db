@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Read_h
-#define swc_app_fsbroker_handlers_Read_h
+#ifndef swc_app_fsbroker_handlers_Pread_h
+#define swc_app_fsbroker_handlers_Pread_h
 
-#include "swcdb/lib/fs/Broker/Protocol/params/Read.h"
+#include "swcdb/lib/fs/Broker/Protocol/params/Pread.h"
 
 
 namespace SWC { namespace server { namespace FsBroker {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace FsBroker {
 namespace Handler {
 
 
-class Read : public AppHandler {
+class Pread : public AppHandler {
   public:
 
-  Read(ConnHandlerPtr conn, EventPtr ev)
+  Pread(ConnHandlerPtr conn, EventPtr ev)
        : AppHandler(conn, ev){ }
 
   void run() override {
@@ -32,7 +32,7 @@ class Read : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      FS::Protocol::Params::ReadReq params;
+      FS::Protocol::Params::PreadReq params;
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
@@ -40,11 +40,11 @@ class Read : public AppHandler {
       if(smartfd == nullptr)
         err = EBADR;
       else {
-        offset = smartfd->pos();
         StaticBuffer buf = StaticBuffer(params.get_amount());
         rbuf = buf;
-        amount = EnvFsInterface::fs()->read(
-          err, smartfd, rbuf.base, params.get_amount());
+        amount = EnvFsInterface::fs()->pread(
+          err, smartfd, params.get_offset(), rbuf.base, params.get_amount());
+        offset = smartfd->pos()-amount;
       }
     }
     catch (Exception &e) {
@@ -74,4 +74,4 @@ class Read : public AppHandler {
 
 }}}}
 
-#endif // swc_app_fsbroker_handlers_Read_h
+#endif // swc_app_fsbroker_handlers_Pread_h

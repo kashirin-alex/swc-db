@@ -254,6 +254,27 @@ class FileSystemLocal: public FileSystem {
     return nread;
   }
 
+  size_t pread(int &err, SmartFdPtr &smartfd, 
+               uint64_t offset, void *dst, size_t amount) override {
+    
+    HT_DEBUGF("pread %s offset=%d amount=%d", 
+               smartfd->to_string().c_str(), offset, amount);
+
+    errno = 0;
+    ssize_t nread = FileUtils::pread(smartfd->fd(), (off_t)offset, dst, amount);
+    if (nread == -1) {
+      nread = 0;
+      err = errno;
+      HT_ERRORF("pread failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+    } else {
+
+      smartfd->pos(offset+nread);
+      HT_DEBUGF("pread(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+    }
+    return nread;
+  }
+
   size_t append(int &err, SmartFdPtr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
