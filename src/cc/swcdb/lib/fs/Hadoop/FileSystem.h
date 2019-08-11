@@ -154,8 +154,10 @@ class FileSystemHadoop: public FileSystem {
     errno = 0;
     if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
       err = errno == 5? 2: errno;
-      HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
-      return;
+      if(err != 2) {
+        HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
+        return;
+      }
     }
     HT_DEBUGF("remove('%s')", abspath.c_str());
   }
@@ -331,7 +333,7 @@ class FileSystemHadoop: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
 
-      hadoop_fd->pos(nread);
+      hadoop_fd->pos(hadoop_fd->pos()+nread);
       HT_DEBUGF("read(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
     }
     return nread;
@@ -364,7 +366,7 @@ class FileSystemHadoop: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
-    hadoop_fd->pos(nwritten);
+    hadoop_fd->pos(smartfd->pos()+nwritten);
 
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {

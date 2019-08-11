@@ -56,9 +56,11 @@ class FileSystemLocal: public FileSystem {
     errno = 0;
     if(!FileUtils::unlink(abspath)) {
       err = errno;
-      HT_ERRORF("remove('%s') failed - %d(%s)", 
-                abspath.c_str(), errno, strerror(errno));
-      return;
+      if(err != 2) {
+        HT_ERRORF("remove('%s') failed - %d(%s)", 
+                  abspath.c_str(), errno, strerror(errno));
+        return;
+      }
     }
     HT_DEBUGF("remove('%s')", abspath.c_str());
   }
@@ -119,9 +121,15 @@ class FileSystemLocal: public FileSystem {
       full_entry_path.append("/");
       full_entry_path.append(entry.name);
       if (stat(full_entry_path.c_str(), &statbuf) == -1) {
+        if(errno == 2) { 
+          // and do all again directory changed
+          results.clear();
+          readdir(err, name, results);
+          return;
+        }
         err = errno;
-        HT_ERRORF("readdir('%s') stat failed - %s", 
-                   full_entry_path.c_str(), strerror(errno));
+        HT_ERRORF("readdir('%s') stat failed - %d(%s)", 
+                   full_entry_path.c_str(), errno, strerror(errno));
         return;
       }
       entry.length = (uint64_t)statbuf.st_size;
@@ -240,7 +248,7 @@ class FileSystemLocal: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
 
-      smartfd->pos(nread);
+      smartfd->pos(smartfd->pos()+nread);
       HT_DEBUGF("read(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
     }
     return nread;
@@ -273,7 +281,7 @@ class FileSystemLocal: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
-    smartfd->pos(nwritten);
+    smartfd->pos(smartfd->pos()+nwritten);
     
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (fsync(smartfd->fd()) != 0) {     

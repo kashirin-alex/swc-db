@@ -426,10 +426,10 @@ bool FileUtils::exists(const String &fname) {
 }
 
 bool FileUtils::unlink(const String &fname) {
-  if (::unlink(fname.c_str()) == -1) {
+  if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
     HT_ERRORF("unlink(\"%s\") failed - %s", fname.c_str(),
-            strerror(saved_errno));
+              strerror(saved_errno));
     errno = saved_errno;
     return false;
   }
