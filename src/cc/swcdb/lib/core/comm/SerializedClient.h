@@ -105,6 +105,12 @@ class ServerConnections {
     return m_conns.empty();
   }
 
+  void close_all(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    while(!m_conns.empty())
+      m_conns.pop();
+  }
+
   private:
 
   const std::string m_srv_name;
@@ -201,6 +207,13 @@ class SerializedClient{
   
   void stop(){
     m_run.store(false);
+    
+    std::lock_guard<std::mutex> lock(m_mutex);
+    ServerConnectionsMap::iterator it;
+    while((it = m_srv_conns.begin()) != m_srv_conns.end()){
+      it->second->close_all();
+      m_srv_conns.erase(it);
+    }
   }
 
   virtual ~SerializedClient(){

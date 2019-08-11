@@ -176,6 +176,10 @@ class AppContext : public SWC::AppContext {
     m_srv->stop_accepting(); // no further requests accepted
 
     EnvIoCtx::io()->stop();
+    
+    EnvClients::get()->rs_service->stop();
+    EnvClients::get()->mngr_service->stop();
+    
     EnvFsInterface::fs()->stop();
 
     m_srv->shutdown();

@@ -62,6 +62,7 @@ class FileSystemBroker: public FileSystem {
 
   void stop() override {
     m_io->stop();
+    m_service->stop();
   }
 
   Types::Fs get_type() override {
