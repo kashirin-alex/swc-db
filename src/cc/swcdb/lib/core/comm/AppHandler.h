@@ -11,20 +11,21 @@
 
 namespace SWC {
 
-  class AppHandler {
+class AppHandler {
 
   public:
-    AppHandler(ConnHandlerPtr conn, EventPtr ev): m_conn(conn), m_ev(ev){}
+  AppHandler(ConnHandlerPtr conn, EventPtr ev): m_conn(conn), m_ev(ev){}
     
-    virtual ~AppHandler() { }
+  virtual ~AppHandler() { }
 
-    virtual void run() = 0;
+  virtual void run() = 0;
 
   protected:
-    ConnHandlerPtr m_conn;
-    EventPtr m_ev;
-  };
+  ConnHandlerPtr m_conn;
+  EventPtr m_ev;
+};
   
+typedef std::unique_ptr<AppHandler> AppHandlerPtr;
 
 } // namespace SWC
 

@@ -133,7 +133,8 @@ class AppContext : public SWC::AppContext {
         }
 
         if(handler)
-          asio::post(*EnvIoCtx::io()->ptr(), [handler](){ handler->run();  });
+          asio::post(*EnvIoCtx::io()->ptr(), 
+                    [hdlr=AppHandlerPtr(handler)](){ hdlr->run();  });
 
         break;
       }

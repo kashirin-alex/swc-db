@@ -50,11 +50,6 @@
 
 #define HT_UNUSED(x) static_cast<void>(x)
 
-template<typename T, typename... Ts>
-std::unique_ptr<T> make_unique(Ts&&... params) {
-  return std::unique_ptr<T>(new T(std::forward<Ts>(params)...));
-}
-
 #if defined(__APPLE__) || !defined(_GLIBCXX_HAVE_QUICK_EXIT)
 namespace std {
   inline void quick_exit(int status) { _exit(status); }
