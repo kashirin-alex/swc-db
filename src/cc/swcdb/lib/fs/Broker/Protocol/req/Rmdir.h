@@ -14,11 +14,11 @@ class Rmdir : public Base {
 
   public:
 
-  Rmdir(const String &name, Callback::RmdirCb_t cb=0) 
+  Rmdir(uint32_t timeout, const String &name, Callback::RmdirCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("rmdir path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_RMDIR, 20000);
+    CommHeader header(Cmd::FUNCTION_RMDIR, timeout);
     Params::RmdirReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

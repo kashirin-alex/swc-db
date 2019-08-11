@@ -16,11 +16,11 @@ class Readdir : public Base {
 
   DirentList listing;
 
-  Readdir(const String &name, Callback::ReaddirCb_t cb=0) 
+  Readdir(uint32_t timeout, const String &name, Callback::ReaddirCb_t cb=0) 
          : name(name), cb(cb) {
     HT_DEBUGF("readdir path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_READDIR, 20000);
+    CommHeader header(Cmd::FUNCTION_READDIR, timeout);
     Params::ReaddirReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

@@ -17,12 +17,14 @@ class Read : public Base {
   size_t amount;
   void* buffer;
   
-  Read(SmartFdPtr &smartfd, void* dst, size_t len, Callback::ReadCb_t cb=0)
+  Read(uint32_t timeout, SmartFdPtr &smartfd, void* dst, size_t len, 
+      Callback::ReadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
 
-    HT_DEBUGF("read len=%d %s", len, smartfd->to_string().c_str());
-    uint32_t timeout = len/1000;
-    CommHeader header(Cmd::FUNCTION_READ, timeout<20000?20000:timeout);
+    HT_DEBUGF("read len=%d timeout=%d %s", 
+              len, timeout, smartfd->to_string().c_str());
+
+    CommHeader header(Cmd::FUNCTION_READ, timeout);
     Params::ReadReq params(smartfd->fd(), len);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

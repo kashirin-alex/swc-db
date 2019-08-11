@@ -14,11 +14,11 @@ class Remove : public Base {
 
   public:
 
-  Remove(const String &name, Callback::RemoveCb_t cb=0) 
+  Remove(uint32_t timeout, const String &name, Callback::RemoveCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("remove path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_REMOVE, 20000);
+    CommHeader header(Cmd::FUNCTION_REMOVE, timeout);
     Params::RemoveReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

@@ -16,11 +16,11 @@ class Length : public Base {
 
   size_t length;
 
-  Length(const String &name, Callback::LengthCb_t cb=0) 
+  Length(uint32_t timeout, const String &name, Callback::LengthCb_t cb=0) 
         : name(name), cb(cb), length(0) {
     HT_DEBUGF("length path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_LENGTH, 20000);
+    CommHeader header(Cmd::FUNCTION_LENGTH, timeout);
     Params::LengthReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

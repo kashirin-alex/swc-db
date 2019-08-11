@@ -16,14 +16,14 @@ class Append : public Base {
   
   size_t amount;
   
-  Append(SmartFdPtr &smartfd, StaticBuffer &buffer, Flags flags, 
-         Callback::AppendCb_t cb=0) 
+  Append(uint32_t timeout, SmartFdPtr &smartfd, 
+        StaticBuffer &buffer, Flags flags, Callback::AppendCb_t cb=0) 
         : smartfd(smartfd), cb(cb), amount(0) {
 
-    HT_DEBUGF("append flags=%d %s", flags, smartfd->to_string().c_str());
+    HT_DEBUGF("append flags=%d timeout=%d %s", 
+              flags, timeout, smartfd->to_string().c_str());
 
-    uint32_t timeout = buffer.size/1000;
-    CommHeader header(Cmd::FUNCTION_APPEND, timeout<20000?20000:timeout);
+    CommHeader header(Cmd::FUNCTION_APPEND, timeout);
     Params::AppendReq params(smartfd->fd(), buffer.size, (uint8_t)flags);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length(), buffer));
     params.encode(cbp->get_data_ptr_address());

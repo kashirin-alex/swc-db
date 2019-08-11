@@ -14,12 +14,12 @@ class Close : public Base {
 
   public:
 
-  Close(SmartFdPtr &smartfd, Callback::CloseCb_t cb=0) 
+  Close(uint32_t timeout, SmartFdPtr &smartfd, Callback::CloseCb_t cb=0)
         : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_CLOSE, 20000);
+    CommHeader header(Cmd::FUNCTION_CLOSE, timeout);
     Params::CloseReq params(smartfd->fd());
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

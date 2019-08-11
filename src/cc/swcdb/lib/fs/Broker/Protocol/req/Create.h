@@ -15,13 +15,14 @@ class Create : public Base {
 
   public:
   
-  Create(SmartFdPtr &smartfd, int32_t bufsz, int32_t replication, 
-         int64_t blksz, Callback::CreateCb_t cb=0) 
+  Create(uint32_t timeout, SmartFdPtr &smartfd, 
+        int32_t bufsz, int32_t replication, int64_t blksz, 
+        Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("create %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_CREATE, 20000);
+    CommHeader header(Cmd::FUNCTION_CREATE, timeout);
     Params::CreateReq params(smartfd->filepath(), smartfd->flags(), 
                              bufsz, replication, blksz);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));

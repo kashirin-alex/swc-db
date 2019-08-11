@@ -14,12 +14,12 @@ class Sync : public Base {
 
   public:
   
-  Sync(SmartFdPtr &smartfd, Callback::SyncCb_t cb=0) 
-        : smartfd(smartfd), cb(cb) {
+  Sync(uint32_t timeout, SmartFdPtr &smartfd, Callback::SyncCb_t cb=0) 
+      : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("sync %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_SYNC, 20000);
+    CommHeader header(Cmd::FUNCTION_SYNC, timeout);
     Params::SyncReq params(smartfd->fd());
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

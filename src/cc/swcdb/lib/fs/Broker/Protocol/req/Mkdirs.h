@@ -14,11 +14,11 @@ class Mkdirs : public Base {
 
   public:
 
-  Mkdirs(const String &name, Callback::MkdirsCb_t cb=0) 
+  Mkdirs(uint32_t timeout, const String &name, Callback::MkdirsCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("mkdirs path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_MKDIRS, 20000);
+    CommHeader header(Cmd::FUNCTION_MKDIRS, timeout);
     Params::MkdirsReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

@@ -14,6 +14,9 @@ bool apply_broker() {
     ("swc.fs.broker.host", str(), "FsBroker host (default resolve by hostname)") 
     ("swc.fs.broker.port", i32(17000), "FsBroker port")
     ("swc.fs.broker.handlers", i32(48), "Handlers for broker tasks")
+    ("swc.fs.broker.timeout", g_i32(30000), "Default request timeout in ms")
+    ("swc.fs.broker.timeout.bytes.ratio", g_i32(1000), 
+     "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
   ;
   EnvConfig::settings()->parse_file(
     EnvConfig::settings()->get<String>("swc.fs.broker.cfg", ""),

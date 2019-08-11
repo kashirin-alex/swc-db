@@ -14,12 +14,12 @@ class Flush : public Base {
 
   public:
 
-  Flush(SmartFdPtr &smartfd, Callback::FlushCb_t cb=0) 
+  Flush(uint32_t timeout, SmartFdPtr &smartfd, Callback::FlushCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("flush %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_FLUSH, 20000);
+    CommHeader header(Cmd::FUNCTION_FLUSH, timeout);
     Params::FlushReq params(smartfd->fd());
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

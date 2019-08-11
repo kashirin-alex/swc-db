@@ -14,12 +14,13 @@ class Seek : public Base {
 
   public:
   
-  Seek(SmartFdPtr &smartfd, size_t offset, Callback::SeekCb_t cb=0) 
+  Seek(uint32_t timeout, SmartFdPtr &smartfd, size_t offset,
+      Callback::SeekCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("seek offset=%d %s", offset, smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_SEEK, 20000);
+    CommHeader header(Cmd::FUNCTION_SEEK, timeout);
     Params::SeekReq params(smartfd->fd(), offset);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

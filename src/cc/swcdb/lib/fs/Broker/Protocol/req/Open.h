@@ -14,12 +14,12 @@ class Open : public Base {
 
   public:
 
-  Open(SmartFdPtr &smartfd, int32_t bufsz, Callback::OpenCb_t cb=0) 
+  Open(uint32_t timeout, SmartFdPtr &smartfd, int32_t bufsz, Callback::OpenCb_t cb=0) 
        : smartfd(smartfd), cb(cb) {
 
     HT_DEBUGF("open %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_OPEN, 20000);
+    CommHeader header(Cmd::FUNCTION_OPEN, timeout);
     Params::OpenReq params(smartfd->filepath(), smartfd->flags(), bufsz);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());

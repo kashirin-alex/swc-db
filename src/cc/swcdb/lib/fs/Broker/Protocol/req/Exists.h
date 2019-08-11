@@ -16,11 +16,11 @@ class Exists : public Base {
 
   bool  state;
 
-  Exists(const String &name, Callback::ExistsCb_t cb=0) 
+  Exists(uint32_t timeout, const String &name, Callback::ExistsCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("exists path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_EXISTS, 20000);
+    CommHeader header(Cmd::FUNCTION_EXISTS, timeout);
     Params::ExistsReq params(name);
     cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
     params.encode(cbp->get_data_ptr_address());
