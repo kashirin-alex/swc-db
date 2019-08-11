@@ -121,8 +121,12 @@ class FileSystem {
   virtual const std::string get_abspath(const std::string &name) {
     std::string abspath;
     abspath.append(path_root);
-    abspath.append(path_data);
-    abspath.append(name);
+    if(!name.empty()){
+      abspath.append(path_data);
+      abspath.append(name);
+    } else {
+      abspath.append(path_data.substr(0, path_data.length()-1));
+    }
     return abspath;
   }
 
