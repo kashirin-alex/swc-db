@@ -28,7 +28,7 @@ bool apply_hadoop() {
 
 
 Types::Fs FileSystemHadoop::get_type() {
-  return Types::Fs::CEPH;
+  return Types::Fs::HADOOP;
 };
 
 
