@@ -148,7 +148,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     bool turn_around = token == m_local_token;
 
     for(auto host : states){
-      std::lock_guard<std::mutex> lock(m_mutex);
 
       bool local = has_endpoint(host->endpoints, m_local_endpoints);
 
@@ -210,8 +209,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     }
     
     for(auto host : states){
-      std::lock_guard<std::mutex> lock(m_mutex);
-
       if(!is_off(host->col_begin, host->col_end))
         continue;
       auto hosts_pr_group = 
@@ -282,18 +279,19 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   
   bool disconnection(EndPoint endpoint_server, EndPoint endpoint_client, 
                      bool srv=false){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
     
-    auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
-    if(it != m_mngrs_client_srv.end()) {
-      endpoint_server = (*it).second;
-      m_mngrs_client_srv.erase(it);
+      auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
+      if(it != m_mngrs_client_srv.end()) {
+        endpoint_server = (*it).second;
+        m_mngrs_client_srv.erase(it);
+      }
     }
 
     HostStatusPtr host_set = get_host((EndPoints){endpoint_server});
     if(host_set == nullptr)
       return false;
-    update_state(endpoint_server, Types::MngrState::OFF);
 
     timer_managers_checkin(
       host_set->state == Types::MngrState::ACTIVE ? 
@@ -306,6 +304,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
               endpoint_client.address().to_string().c_str(), 
               endpoint_client.port());
               
+    update_state(endpoint_server, Types::MngrState::OFF);
     // m_major_updates = true;
     return true;
   }
@@ -399,8 +398,6 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
           host_chk->endpoints, 
           std::chrono::milliseconds(cfg_conn_timeout->get()), 
           cfg_conn_probes->get());
-        
-        std::lock_guard<std::mutex> lock(m_mutex);
 
         if(host_chk->conn == nullptr){
           total--;
@@ -415,14 +412,12 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       break;
     }
 
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_states.assign(states.begin(), states.end());
-    }
     fill_states(states, 0, nullptr);
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     for(auto host : m_states){
       if(has_endpoint(endpoint, host->endpoints)){
         host->state = state;
@@ -431,6 +426,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   void update_state(EndPoints endpoints, Types::MngrState state){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     for(auto host : m_states){
       if(has_endpoint(endpoints, host->endpoints)){
         host->state = state;
@@ -439,6 +436,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
   
   HostStatusPtr get_host(EndPoints endpoints){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     for(auto host : m_states){
       if(has_endpoint(endpoints, host->endpoints))
         return host;
@@ -447,6 +446,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   HostStatusPtr get_highest_state_host(uint64_t begin, uint64_t end){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     HostStatusPtr h = nullptr;
     for(auto host : m_states){
       if(host->col_begin == begin && host->col_end == end 
@@ -458,6 +459,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
   
   bool is_off(uint64_t begin, uint64_t end){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     bool offline = true;
     for(auto host : m_states){
       if(host->col_begin == begin 

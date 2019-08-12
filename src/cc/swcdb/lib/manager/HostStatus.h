@@ -34,7 +34,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
 
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i32(bufp, priority);
-    Serialization::encode_i8(bufp, (uint8_t)state);
+    Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_vi64(bufp, col_begin);
     Serialization::encode_vi64(bufp, col_end);
     Protocol::Params::HostEndPoints::encode_internal(bufp);
@@ -42,7 +42,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
     priority = Serialization::decode_i32(bufp, remainp);
-    state = (Types::MngrState)Serialization::decode_i8(bufp, remainp);
+    state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
     col_begin = Serialization::decode_vi64(bufp, remainp);
     col_end = Serialization::decode_vi64(bufp, remainp);
 
@@ -56,7 +56,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
     s.append(std::to_string(priority));
 
     s.append(" state=");
-    s.append(std::to_string((uint8_t)state));
+    s.append(std::to_string((uint8_t)state.load()));
 
     s.append(" col(begin=");
     s.append(std::to_string(col_begin));
@@ -69,7 +69,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
   }
 
   uint32_t          priority;
-  Types::MngrState  state;
+  std::atomic<Types::MngrState>  state;
   uint64_t          col_begin;
   uint64_t          col_end;
 
