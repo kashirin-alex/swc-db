@@ -29,7 +29,6 @@
 
 #include "System.h"
 
-#include "swcdb/lib/core/InetAddr.h"
 #include "swcdb/lib/core/Stopwatch.h"
 
 #include <iosfwd>

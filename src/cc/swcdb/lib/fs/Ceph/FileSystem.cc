@@ -25,16 +25,15 @@ Types::Fs FileSystemCeph::get_type() {
   return Types::Fs::CEPH;
 };
 
-
-}}
-
+}} // namespace SWC
 
 
 
-extern "C" SWC::FS::FileSystem* fs_make_new(){
+extern "C" {
+SWC::FS::FileSystem* fs_make_new_ceph(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph());
 };
-
-extern "C" bool fs_apply_cfg(){
-  return SWC::FS::apply_ceph();
+void fs_apply_cfg_ceph(SWC::EnvConfigPtr env){
+  SWC::EnvConfig::set(env);
 };
+}

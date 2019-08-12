@@ -12,7 +12,6 @@ set(swcdb_core_sources
 	String.cc
 	Error.cc
 	Logger.cc
-	InetAddr.cc
 	Serializable.cc
 	Version.cc
 	FileUtils.cc
@@ -41,8 +40,8 @@ set(swcdb_core_config_sources
 	config/PropertiesParser.cc
 	config/Property.cc
 	config/PropertyValueEnumExt.cc
-	#config/System.cc
-	#config/SystemInfo.cc
+	# config/System.cc
+	# config/SystemInfo.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_config

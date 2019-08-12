@@ -31,16 +31,15 @@ Types::Fs FileSystemHadoop::get_type() {
   return Types::Fs::HADOOP;
 };
 
-
-}}
-
+}} // namespace SWC
 
 
 
-extern "C" SWC::FS::FileSystem* fs_make_new(){
+extern "C" { 
+SWC::FS::FileSystem* fs_make_new_hadoop(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoop());
 };
-
-extern "C" bool fs_apply_cfg(){
-  return SWC::FS::apply_hadoop();
+void fs_apply_cfg_hadoop(SWC::EnvConfigPtr env){
+  SWC::EnvConfig::set(env);
 };
+}

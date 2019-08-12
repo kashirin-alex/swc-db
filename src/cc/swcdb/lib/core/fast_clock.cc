@@ -32,18 +32,20 @@ extern "C" {
 #include <sys/time.h>
 }
 
-using namespace std;
-
-chrono::fast_clock::time_point chrono::fast_clock::now() noexcept {
+std::chrono::fast_clock::time_point std::chrono::fast_clock::now() noexcept {
   struct timeval tv;
   gettimeofday(&tv, nullptr);
-  return chrono::fast_clock::time_point(chrono::microseconds((tv.tv_sec * 1000000LL) + tv.tv_usec));
+  return std::chrono::fast_clock::time_point(
+    std::chrono::microseconds((tv.tv_sec * 1000000LL) + tv.tv_usec));
 }
 
-time_t chrono::fast_clock::to_time_t (const chrono::fast_clock::time_point& __t) noexcept {
+time_t std::chrono::fast_clock::to_time_t (
+        const std::chrono::fast_clock::time_point& __t) noexcept {
   return (time_t)(__t.time_since_epoch().count() / 1000000LL);
 }
 
-chrono::fast_clock::time_point chrono::fast_clock::from_time_t(time_t __t) noexcept {
-  return chrono::fast_clock::time_point(chrono::microseconds(__t * 1000000LL));
+std::chrono::fast_clock::time_point std::chrono::fast_clock::from_time_t(
+      time_t __t) noexcept {
+  return std::chrono::fast_clock::time_point(
+    std::chrono::microseconds(__t * 1000000LL));
 }

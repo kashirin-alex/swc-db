@@ -289,10 +289,10 @@ typedef std::shared_ptr<FileSystem> FileSystemPtr;
 
 extern "C"{
 typedef SWC::FS::FileSystem* fs_make_new_t();
-SWC::FS::FileSystem* fs_make_new();
+// SWC::FS::FileSystem* fs_make_new_Named();
 
-typedef bool fs_apply_cfg_t();
-bool fs_apply_cfg();
+typedef void fs_apply_cfg_t(SWC::EnvConfigPtr env);
+// void fs_apply_cfg_Named();
 }
 
 #endif  // swc_lib_fs_FileSystem_h

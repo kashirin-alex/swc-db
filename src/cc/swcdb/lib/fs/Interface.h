@@ -18,9 +18,11 @@
 #include "Local/FileSystem.h"
 #endif
 
+/*
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
 #include "Ceph/FileSystem.h"
 #endif
+*/
 
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
 #include "Hadoop/FileSystem.h"
@@ -92,7 +94,7 @@ class Interface : std::enable_shared_from_this<Interface>{
         fs_name.append("hadoop");
         break;
       }
-
+/* 
       case Types::Fs::CEPH:{
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
         return std::make_shared<FileSystemCeph>();
@@ -100,7 +102,7 @@ class Interface : std::enable_shared_from_this<Interface>{
         fs_name.append("ceph");
         break;
       }
-
+*/
       case Types::Fs::CUSTOM: {
         fs_name.append("custom");
         break;
@@ -128,21 +130,23 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
                 "Shared Lib %s, open fail: %s\n", 
                 fs_lib.c_str(), err);
-    /* 
+
     err = dlerror();
-    void* f_cfg_ptr = dlsym(handle, "fs_apply_cfg");
+    std::string handler_cfg_name =  "fs_apply_cfg_"+fs_name;
+    void* f_cfg_ptr = dlsym(handle, handler_cfg_name.c_str());
     if (err != NULL || f_cfg_ptr == nullptr)
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
-                "Shared Lib %s, link(fs_apply_cfg) fail: %s handle=%d\n", 
-                fs_lib.c_str(), err, (size_t)handle);
-    ((fs_apply_cfg_t*)f_cfg_ptr)();
-    */
+                "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
+                fs_lib.c_str(), handler_cfg_name.c_str(), err, (size_t)handle);
+    ((fs_apply_cfg_t*)f_cfg_ptr)(EnvConfig::get());
+    
     err = dlerror();
-    void* f_new_ptr = dlsym(handle, "fs_make_new");
+    std::string handler_name =  "fs_make_new_"+fs_name;
+    void* f_new_ptr = dlsym(handle, handler_name.c_str());
     if (err != NULL || f_new_ptr == nullptr)
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
-                "Shared Lib %s, link(fs_make_new) fail: %s handle=%d\n", 
-                fs_lib.c_str(), err, (size_t)handle);
+                "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
+                fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
 
     return FileSystemPtr(((fs_make_new_t*)f_new_ptr)());
   }

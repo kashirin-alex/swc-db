@@ -398,9 +398,7 @@ function(GET_TARGET_LINKS)
                       SHARED_TARGETS ${SHARED_TARGETS} SHARED_LINKING ${SHARED_LINKING})
   endforeach()
   if(BUILD_LINKING_CORE STREQUAL "STATIC") # AND OPT_FOR STREQUAL "EXEC")
-    if(NOT OPT_FOR STREQUAL "NO_CORE")
-      set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS_STATIC})
-    endif ()
+    set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS_STATIC})
   endif ()
 
   if(STATIC_LINKING)
@@ -409,14 +407,10 @@ function(GET_TARGET_LINKS)
   endif()
   
   if(BUILD_LINKING_CORE STREQUAL "STATIC")
-    if(NOT OPT_FOR STREQUAL "NO_CORE")
-      set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS_STATIC_FLAGS})
-    endif ()
+    set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS_STATIC_FLAGS})
   endif ()
   
-  if(NOT OPT_FOR STREQUAL "NO_CORE")
-    set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS})
-  endif ()
+  set(STATIC_LINKING ${STATIC_LINKING} ${CORE_LIBS})
   set("STATIC_LINKING" ${STATIC_LINKING} PARENT_SCOPE)
   
   if(STATIC_TARGETS)
@@ -430,9 +424,7 @@ function(GET_TARGET_LINKS)
   endif()
   set("SHARED_TARGETS" ${SHARED_TARGETS} PARENT_SCOPE)
 
-  if(NOT OPT_FOR STREQUAL "NO_CORE")
-    set(SHARED_LINKING ${SHARED_LINKING} ${CORE_LIBS_SHARED} ${CORE_LIBS})
-  endif()
+  set(SHARED_LINKING ${SHARED_LINKING} ${CORE_LIBS_SHARED} ${CORE_LIBS})
   if(SHARED_LINKING)
     list(REMOVE_DUPLICATES SHARED_LINKING)
   endif()
@@ -594,11 +586,12 @@ endfunction()
 	#	TARGETS  	targets
   #	STATIC 		static linking
   # SHARED		shared linking
+  # FLAGS		  compiler flags
 	# )
 # -------------------------------
 
 function(ADD_UTIL_TARGET)
-  cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED" ${ARGN})
+  cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS" ${ARGN})
 
 
   set(STATIC_LINKING ${OPT_STATIC})
@@ -618,7 +611,8 @@ function(ADD_UTIL_TARGET)
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
   target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
-  
+  target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
   endif()
@@ -665,9 +659,7 @@ function(ADD_EXEC_TARGET)
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
   target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
-  if(OPT_FLAGS)
-    target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS})
-  endif()
+  target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
@@ -687,7 +679,7 @@ endfunction()
 	#	TARGETS  	    targets
   #	STATIC 		    static linking
   # SHARED		    shared linking
-  # EXEC_OPTS     execution options
+  # FLAGS		      compiler flags
   # ENV           environ
   # EXEC_DEPS     test's dependency on files/targets
   # PRE_CMD_TYPE  Pre-command for each built-type
@@ -698,7 +690,7 @@ endfunction()
 # -------------------------------
 
 function(ADD_TEST_TARGET)
-  cmake_parse_arguments(OPT "" "NAME;" "SRCS;TARGETS;STATIC;SHARED;EXEC_OPTS;ENV;EXEC_DEPS;PRE_CMD_TYPE;PRE_CMD;POST_CMD;ARGS" ${ARGN})
+  cmake_parse_arguments(OPT "" "NAME;" "SRCS;TARGETS;STATIC;SHARED;FLAGS;EXEC_OPTS;ENV;EXEC_DEPS;PRE_CMD_TYPE;PRE_CMD;POST_CMD;ARGS" ${ARGN})
 
 
 	if(OPT_PRE_CMD)
@@ -721,7 +713,8 @@ function(ADD_TEST_TARGET)
 
     add_executable(test-${OPT_NAME}-static ${OPT_SRCS} ${OPT_EXEC_DEPS})
     target_link_libraries(test-${OPT_NAME}-static ${STATIC_LINKING} ${STATIC_TARGETS})
-    
+    target_compile_options(test-${OPT_NAME}-static PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
         if(OPT_ENV)				
@@ -747,6 +740,7 @@ function(ADD_TEST_TARGET)
 
     add_executable(test-${OPT_NAME}-shared ${OPT_SRCS} ${OPT_EXEC_DEPS})
     target_link_libraries(test-${OPT_NAME}-shared ${SHARED_LINKING} ${SHARED_TARGETS})
+    target_compile_options(test-${OPT_NAME}-shared PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
     
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
@@ -786,11 +780,12 @@ endfunction()
 	#	TARGETS  	targets
   #	STATIC 		static linking
   # SHARED		shared linking
+  # FLAGS		  compiler flags
 	# )
 # -------------------------------
 
 function(ADD_TEST_EXEC)
-cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED" ${ARGN})
+cmake_parse_arguments(OPT "" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS" ${ARGN})
 
 
 set(STATIC_LINKING ${OPT_STATIC})
@@ -812,6 +807,7 @@ endif()
 
 add_executable(${OPT_NAME} ${OPT_SRCS})
 target_link_libraries(${OPT_NAME} ${TARGETS_LINKED} ${LINKED_LIBS} )
+target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
 
 endfunction()
 # END ADD_TEST_EXEC

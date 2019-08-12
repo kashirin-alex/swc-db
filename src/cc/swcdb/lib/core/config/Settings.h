@@ -214,6 +214,10 @@ class EnvConfig {
     get()->m_settings->init(argc, argv);
   }
 
+  static void set(EnvConfigPtr env){
+    m_env = env;
+  }
+
   static EnvConfigPtr get(){
     if(m_env == nullptr)
       m_env = std::make_shared<EnvConfig>();

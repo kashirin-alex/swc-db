@@ -469,4 +469,9 @@ class FileSystemHadoop: public FileSystem {
 
 
 
+extern "C" { 
+SWC::FS::FileSystem* fs_make_new_hadoop();
+void fs_apply_cfg_hadoop(SWC::EnvConfigPtr env);
+}
+
 #endif  // swc_lib_fs_Hadoop_FileSystem_h

@@ -3,11 +3,11 @@
 #
 
 set(BOOST_LIBNAMES 
- system 
- filesystem 
- iostreams
- thread 
- chrono
+ # system 
+ # filesystem 
+ # iostreams
+ # thread 
+ # chrono 
 )
 
 SET(BOOST_STATIC_NAMES "")
@@ -27,6 +27,7 @@ SET_DEPS(
 	INCLUDE boost/config.hpp
 )
 
+## commented
 if(FALSE)
 set(BOOST_LIBNAMES 
 	system 

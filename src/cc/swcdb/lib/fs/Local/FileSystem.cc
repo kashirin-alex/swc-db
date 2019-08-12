@@ -26,15 +26,15 @@ Types::Fs FileSystemLocal::get_type() {
 };
 
 
-}}
+}} // namespace SWC
 
 
 
-
-extern "C" SWC::FS::FileSystem* fs_make_new(){
+extern "C" {
+SWC::FS::FileSystem* fs_make_new_local(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemLocal());
 };
-
-extern "C" bool fs_apply_cfg(){
-  return SWC::FS::apply_local();
+void fs_apply_cfg_local(SWC::EnvConfigPtr env){
+  SWC::EnvConfig::set(env);
 };
+}

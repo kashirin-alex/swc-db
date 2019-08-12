@@ -31,7 +31,6 @@
 #include "CommHeader.h"
 
 #include "swcdb/lib/core/ByteString.h"
-#include "swcdb/lib/core/InetAddr.h"
 #include "swcdb/lib/core/Logger.h"
 #include "swcdb/lib/core/Serialization.h"
 #include "swcdb/lib/core/StaticBuffer.h"
@@ -294,15 +293,6 @@ namespace SWC {
      */
     void append_vstr(const void *str, uint32_t len) {
       Serialization::encode_vstr(&data_ptr, str, len);
-    }
-
-    /** Appends an InetAddr structure to the primary buffer.
-     *
-     * @param addr address structure
-     * @see Serialization::encode_inet_addr
-     */
-    void append_inet_addr(const InetAddr &addr) {
-      Serialization::encode_inet_addr(&data_ptr, addr);
     }
 
     StaticBuffer data; //!< Primary data buffer

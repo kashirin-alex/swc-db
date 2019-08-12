@@ -25,15 +25,15 @@ bool apply_broker() {
   return true;
 }
 
-}}
+}} // namespace SWC
 
 
 
-
-extern "C" SWC::FS::FileSystem* fs_make_new(){
+extern "C" {
+SWC::FS::FileSystem* fs_make_new_broker(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemBroker());
 };
-
-extern "C" bool fs_apply_cfg(){
-  return SWC::FS::apply_broker();
+void fs_apply_cfg_broker(SWC::EnvConfigPtr env){
+  SWC::EnvConfig::set(env);
 };
+}

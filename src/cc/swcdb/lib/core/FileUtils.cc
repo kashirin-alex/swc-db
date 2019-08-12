@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdio>
+#include <memory>
 
 extern "C" {
 #include <unistd.h>
@@ -45,14 +46,10 @@ extern "C" {
 #include <sys/uio.h>
 }
 
-#include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include <re2/re2.h>
 
 
 using namespace SWC;
-using namespace std;
 
 std::mutex FileUtils::ms_mutex;
 
@@ -364,41 +361,13 @@ void *FileUtils::mmap(const String &fname, off_t *lenp) {
 
 
 bool FileUtils::mkdirs(const String &dirname) {
+  
   struct stat statbuf;
-  boost::shared_array<char> tmp_dir(new char [dirname.length() + 1]);
-  char *tmpdir = tmp_dir.get();
-  char *ptr = tmpdir + 1;
-
-  strcpy(tmpdir, dirname.c_str());
-
-  while ((ptr = strchr(ptr, '/')) != 0) {
-    *ptr = 0;
-    if (stat(tmpdir, &statbuf) != 0) {
-      if (errno == ENOENT) {
-        if (mkdir(tmpdir, 0755) != 0 && errno != 17) {
-          int saved_errno = errno;
-          HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,
-                    saved_errno, strerror(saved_errno));
-          errno = saved_errno;
-          return false;
-        }
-      }
-      else {
-        int saved_errno = errno;
-        HT_ERRORF("Problem stat'ing directory '%s' - %d(%s)", tmpdir,
-                  saved_errno, strerror(saved_errno));
-        errno = saved_errno;
-        return false;
-      }
-    }
-    *ptr++ = '/';
-  }
-
-  if (stat(tmpdir, &statbuf) != 0) {
+  if (stat(dirname.c_str(), &statbuf) != 0) {
     if (errno == ENOENT) {
-      if (mkdir(tmpdir, 0755) != 0 && errno != 17) {
+      if (mkdir(dirname.c_str(), 0755) != 0 && errno != 17) {
         int saved_errno = errno;
-        HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,
+        HT_ERRORF("Problem creating directory '%s' - %d(%s)", dirname.c_str(),
                   saved_errno, strerror(saved_errno));
         errno = saved_errno;
         return false;
@@ -406,7 +375,7 @@ bool FileUtils::mkdirs(const String &dirname) {
     }
     else {
       int saved_errno = errno;
-      HT_ERRORF("Problem stat'ing directory '%s' - %s", tmpdir,
+      HT_ERRORF("Problem stat'ing directory '%s' - %s", dirname.c_str(),
               strerror(saved_errno));
       errno = saved_errno;
       return false;
@@ -472,7 +441,7 @@ time_t FileUtils::modification(const String &fname) {
 
 
 void FileUtils::add_trailing_slash(String &path) {
-  if (path.find('/', path.length() - 1) == string::npos)
+  if (path.find('/', path.length() - 1) == std::string::npos)
     path += "/";
 }
 
@@ -482,7 +451,7 @@ bool FileUtils::expand_tilde(String &fname) {
   if (fname[0] != '~')
     return false;
 
-  lock_guard<mutex> lock(ms_mutex);
+  std::lock_guard<std::mutex> lock(ms_mutex);
 
   struct passwd pbuf;
   struct passwd *prbuf;
@@ -497,7 +466,7 @@ bool FileUtils::expand_tilde(String &fname) {
     String name;
     size_t first_slash = fname.find_first_of('/');
 
-    if (first_slash == string::npos)
+    if (first_slash == std::string::npos)
       name = fname.substr(1);
     else
       name = fname.substr(1, first_slash-1);
@@ -505,7 +474,7 @@ bool FileUtils::expand_tilde(String &fname) {
     if (getpwnam_r(name.c_str() , &pbuf, buf, 256, &prbuf) != 0 || prbuf == 0)
       return false;
 
-    if (first_slash == string::npos)
+    if (first_slash == std::string::npos)
       fname = pbuf.pw_dir;
     else
       fname = (String)pbuf.pw_dir + fname.substr(first_slash);
@@ -524,9 +493,9 @@ void FileUtils::readdir(const String &dirname, const String &fname_regex,
               strerror(errno));
     return;
   }
-  boost::shared_ptr<re2::RE2> regex(fname_regex.length()
-                                    ? new re2::RE2(fname_regex)
-                                    : 0);
+  std::shared_ptr<re2::RE2> regex(fname_regex.length()
+                                  ? new re2::RE2(fname_regex)
+                                  : 0);
   struct dirent *dep;
 
 #if defined(USE_READDIR_R) && USE_READDIR_R

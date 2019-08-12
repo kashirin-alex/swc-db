@@ -406,5 +406,9 @@ class FileSystemBroker: public FileSystem {
 }}
 
 
+extern "C" {
+SWC::FS::FileSystem* fs_make_new_broker();
+void fs_apply_cfg_broker(SWC::EnvConfigPtr env);
+}
 
 #endif  // swc_lib_fs_Broker_FileSystem_h

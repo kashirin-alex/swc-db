@@ -38,8 +38,6 @@
 
 #include <errno.h>
 
-#include <boost/algorithm/string.hpp>
-
 namespace SWC { namespace Config {
 
 

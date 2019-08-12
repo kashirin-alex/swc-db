@@ -30,8 +30,6 @@
 #include <algorithm>
 
 
-using namespace std;
-
 namespace SWC {
 
 String format(const char *fmt, ...) {
@@ -56,13 +54,13 @@ String format(const char *fmt, ...) {
     p = (char *)(p == buf ? malloc(size) : realloc(p, size));
 
     if (!p)
-      throw bad_alloc();
+      throw std::bad_alloc();
   } while (true);
 
   if (buf == p)
-    return string(p, n);
+    return std::string(p, n);
 
-  string ret(p, n);
+  std::string ret(p, n);
   free(p);
 
   return ret;

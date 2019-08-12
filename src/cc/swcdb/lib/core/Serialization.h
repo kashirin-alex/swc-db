@@ -31,8 +31,6 @@
 
 #include "Compat.h"
 
-#include "InetAddr.h"
-
 #include "serialization-c.h"
 
 
@@ -552,35 +550,6 @@ namespace SWC { namespace Serialization {
     HT_DECODE_VSTR(*bufp, *remainp, buf, *lenp);
     return buf;
   }
-
-
-  /**
-   * Encode an InetAddr structure
-   *
-   * @param bufp Pointer to pointer of the destination buffer
-   * @param addr Reference to the InetAddr object to encode
-   */
-  inline void encode_inet_addr(uint8_t **bufp, const InetAddr &addr) {
-    HT_ENCODE_I16(*bufp, addr.sin_family);
-    HT_ENCODE_I32(*bufp, addr.sin_addr.s_addr);
-    HT_ENCODE_I16(*bufp, addr.sin_port);
-  }
-
-  /**
-   * Decode an InetAddr structure
-   *
-   * @param bufp Pointer to pointer of the source buffer
-   * @param remainp Pointer to remaining size variable
-   * @return The decoded InetAddr object
-   */
-  inline InetAddr decode_inet_addr(const uint8_t **bufp, size_t *remainp) {
-    InetAddr addr;
-    HT_DECODE_I16(*bufp, *remainp, addr.sin_family);
-    HT_DECODE_I32(*bufp, *remainp, addr.sin_addr.s_addr);
-    HT_DECODE_I16(*bufp, *remainp, addr.sin_port);
-    return addr;
-  }
-
 
   /**
    * Encodes a double with 18 decimal digits of precision as 64-bit

@@ -2,6 +2,7 @@
 # Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
 #
 
+set(MALLOC_FLAGS )
 if (USE_GLIBC_MALLOC OR (
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i386" OR
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i586" OR
@@ -49,14 +50,12 @@ else()  # TCMALLOC default if found
   SET_DEPS(NAME "TCMALLOC" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC ${Tcmalloc_static_NAMES} SHARED ${Tcmalloc_NAMES} INCLUDE ${Tcmalloc_header_NAMES})
   if (TCMALLOC_FOUND)
     if (TCMALLOC_LIBRARIES_SHARED MATCHES "tcmalloc_minimal")
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTCMALLOC_MINIMAL")
-	    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTCMALLOC_MINIMAL")
+      SET (MALLOC_FLAGS ${MALLOC_FLAGS} -DTCMALLOC_MINIMAL)
     else ()
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTCMALLOC")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTCMALLOC")
+      SET (MALLOC_FLAGS ${MALLOC_FLAGS} -DTCMALLOC)
     endif ()
 
-    # CORE_CXX_FLAGS, SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+    set(MALLOC_FLAGS ${MALLOC_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
     set(MALLOC_LIBRARIES_SHARED ${TCMALLOC_LIBRARIES_SHARED})
     set(MALLOC_LIBRARIES_STATIC ${TCMALLOC_LIBRARIES_STATIC})
     set(MALLOC_INCLUDE_PATHS    ${TCMALLOC_INCLUDE_PATHS})

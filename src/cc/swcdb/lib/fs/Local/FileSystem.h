@@ -366,4 +366,9 @@ class FileSystemLocal: public FileSystem {
 
 
 
+extern "C" {
+SWC::FS::FileSystem* fs_make_new_local();
+void fs_apply_cfg_local(SWC::EnvConfigPtr env);
+}
+
 #endif  // swc_lib_fs_Local_FileSystem_h

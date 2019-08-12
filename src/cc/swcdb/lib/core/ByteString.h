@@ -28,11 +28,6 @@
 #ifndef swc_core_ByteString_h
 #define swc_core_ByteString_h
 
-#include <iostream>
-
-#include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include "DynamicBuffer.h"
 #include "Serialization.h"
 

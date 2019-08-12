@@ -29,7 +29,6 @@
 #define swc_core_FileUtils_h
 
 #include "String.h"
-#include "FileUtilsPath.h"
 
 #include <mutex>
 #include <vector>
