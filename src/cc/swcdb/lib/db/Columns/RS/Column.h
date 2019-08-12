@@ -60,7 +60,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
     auto it = m_ranges->find(rid);
     if (it != m_ranges->end()){
-      it->second->unload();
+      it->second->unload(true);
       m_ranges->erase(it);
     }
   }
@@ -72,7 +72,7 @@ class Column : public std::enable_shared_from_this<Column> {
       auto it = m_ranges->begin();
       if(it == m_ranges->end())
         break;
-      it->second->unload();
+      it->second->unload(false);
       m_ranges->erase(it);
     }
   }

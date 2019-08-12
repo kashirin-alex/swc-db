@@ -88,7 +88,7 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void unload(){
+  void unload(bool completely){
 
     // CommitLogs  
     // CellStores
@@ -96,7 +96,8 @@ class Range : public DB::RangeBase {
 
 
     int err = Error::OK;
-    EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
+    if(completely)
+      EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
     set_state(State::NOTLOADED);
 
     HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
