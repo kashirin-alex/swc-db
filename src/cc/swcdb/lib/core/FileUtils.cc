@@ -361,29 +361,40 @@ void *FileUtils::mmap(const String &fname, off_t *lenp) {
 
 
 bool FileUtils::mkdirs(const String &dirname) {
-  
   struct stat statbuf;
-  if (stat(dirname.c_str(), &statbuf) != 0) {
-    if (errno == ENOENT) {
-      if (mkdir(dirname.c_str(), 0755) != 0 && errno != 17) {
-        int saved_errno = errno;
-        HT_ERRORF("Problem creating directory '%s' - %d(%s)", dirname.c_str(),
-                  saved_errno, strerror(saved_errno));
-        errno = saved_errno;
-        return false;
+
+  char *tmpdir = new char [dirname.length() + 1];	
+  strcpy(tmpdir, dirname.c_str());	
+  *(tmpdir+dirname.length()) = '/';
+
+  int saved_errno = 0;
+  for(int n=1; n < dirname.length()+1; n++){
+    if(*(tmpdir+n) != '/')
+      continue;
+    *(tmpdir+n) = 0;
+
+    errno = 0;
+    if (stat(tmpdir, &statbuf) != 0) {
+      if (errno != ENOENT) {	
+        saved_errno = errno;	
+        HT_ERRORF("Problem stat'ing directory '%s' - %d(%s)", tmpdir,	
+                  saved_errno, strerror(saved_errno));	
+        break;	
       }
+      errno = 0;
+      if (mkdir(tmpdir, 0755) != 0 && errno != 17) {	
+        saved_errno = errno;	
+        HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,	
+                   saved_errno, strerror(saved_errno));	
+        break;	
+      }	
     }
-    else {
-      int saved_errno = errno;
-      HT_ERRORF("Problem stat'ing directory '%s' - %s", dirname.c_str(),
-              strerror(saved_errno));
-      errno = saved_errno;
-      return false;
-    }
+    *(tmpdir+n) = '/';
   }
-  
-  errno = 0;
-  return true;
+
+  delete [] tmpdir;
+  errno = saved_errno;
+  return saved_errno == 0;
 }
 
 

@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
   for(size_t chk=1;chk<=2;chk++) {
     int err = Error::OK;
     // make data-root
-    EnvFsInterface::fs()->mkdirs(err, "");
+    EnvFsInterface::fs()->mkdirs(err, "a/child/folder");
     if(err != Error::OK){ 
       std::cerr << "ERROR(make data-root) mkdirs err=" << err << "\n";
       exit(1);
