@@ -362,64 +362,78 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   void managers_checker(){
     HT_DEBUG("managers_checker");
 
-    HostStatuses states;
+    size_t sz;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       apply_cfg();
+      sz = m_states.size();
+    }
+    managers_checker(0, sz, false);
+  }
+
+  void fill_states(){
+    HostStatuses states;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       states.assign(m_states.begin(), m_states.end());
     }
+    fill_states(states, 0, nullptr);
+  }
 
-    // request to a one manager followed local manager, incl. last's is first
-    bool flw = false;
+  void managers_checker(int next, size_t total, bool flw){
+    // set manager followed(in-chain) local manager, incl. last's is first
+
+    if(total == 0) {
+      timer_managers_checkin(cfg_check_interval->get());
+      return;
+    }
+
     HostStatusPtr host_chk;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(next == m_states.size())
+        next = 0;
+      host_chk = m_states.at(next++);
+    }
 
-    size_t total = states.size();
-    auto it = states.end();
-    for(;;){
-
-      if(total == 0) {
+    if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
+      if(flw) {
         timer_managers_checkin(cfg_check_interval->get());
         return;
       }
-
-      if(it == states.end())
-        it = states.begin();
-
-      host_chk = *it;
-      it++;
-
-      if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
-        if(flw) {
-          timer_managers_checkin(cfg_check_interval->get());
-          return;
-        }
-        flw = true;
-        continue;
-      }
-      if(!flw)
-        continue;
+      flw = true;
+      managers_checker(next, total, flw);
+      return;
+    }
+    if(!flw) {
+      managers_checker(next, total, flw);
+      return;
+    }
         
-      if(host_chk->conn == nullptr || !host_chk->conn->is_open()){
-        //set_mngr_inchain(nullptr);
-        host_chk->conn = EnvClients::get()->mngr_service->get_connection(
-          host_chk->endpoints, 
-          std::chrono::milliseconds(cfg_conn_timeout->get()), 
-          cfg_conn_probes->get());
-
-        if(host_chk->conn == nullptr){
-          total--;
-          host_chk->state = Types::MngrState::OFF;
-          continue;
-        } else 
-          total = states.size();
-        host_chk->conn->accept_requests();
-        m_major_updates = true;
-      }
+    if(host_chk->conn != nullptr && host_chk->conn->is_open()){
       set_mngr_inchain(host_chk->conn);
-      break;
+      fill_states();
+      return;
     }
 
-    fill_states(states, 0, nullptr);
+    EnvClients::get()->mngr_service->get_connection(
+      host_chk->endpoints, 
+      [host_chk, next, flw, total, ptr=shared_from_this()]
+      (client::ClientConPtr conn){
+        if(conn == nullptr || !conn->is_open()){
+          host_chk->state = Types::MngrState::OFF;
+          ptr->managers_checker(next, total-1, flw);
+          return;
+        }
+        conn->accept_requests();
+        host_chk->conn = conn;
+        ptr->m_major_updates = true;
+        ptr->set_mngr_inchain(host_chk->conn);
+        ptr->fill_states();
+      },
+      std::chrono::milliseconds(cfg_conn_timeout->get()), 
+      cfg_conn_probes->get()
+    );
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
