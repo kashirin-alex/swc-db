@@ -13,21 +13,24 @@ typedef asio::executor_work_guard<asio::io_context::executor_type> IO_DoWork;
 typedef std::shared_ptr<IO_DoWork> IO_DoWorkPtr;
 typedef std::shared_ptr<asio::signal_set> IO_SignalsPtr;
 
+class IoContext;
+typedef std::shared_ptr<IoContext> IoContextPtr;
+
 class IoContext {
   public:
-  IoContext(int32_t size) 
-    : m_run(true),
+  IoContext(const std::string name, int32_t size) 
+    : m_name(name), m_run(true),
       m_ioctx(std::make_shared<asio::io_context>(size)),
       m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get())))
   {
+    HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
+
     (new std::thread(
-      [io_ptr=m_ioctx, run=&m_run]{ 
+      [ioctx=m_ioctx, run=&m_run]{ 
         do{
-          io_ptr->run();
-          // HT_DEBUG("IO stopped, restarting");
-          io_ptr->restart();
+          ioctx->run();
+          ioctx->restart();
         }while(run->load());
-        HT_DEBUG("IO exited");
       })
     )->detach();
   }
@@ -50,25 +53,34 @@ class IoContext {
   }
 
   void stop(){
-    std::cout << "Holding-on for IO-ctx to finish \n";
-
+    HT_DEBUGF("Stopping IO-ctx(%s)", m_name.c_str());
     m_run.store(false);
     m_wrk->reset();
-    // m_wrk->get_executor().context().stop();
+    
+    // hold on for IO to finish
+    for(int i=0;i<10;i++){
+      if(m_ioctx->stopped())
+        break;
+      HT_DEBUGF("Waiting for IO-ctx(%s)", m_name.c_str());
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+    HT_DEBUGF("Wait for IO-ctx(%s) finished %sgracefully", 
+              m_name.c_str(), m_ioctx->stopped()?"":"not ");
+
+    if(!m_ioctx->stopped())
+      m_ioctx->stop();
   }
 
-  virtual ~IoContext(){
-    std::cout << " ~IoContext\n";
-  }
+  virtual ~IoContext(){}
 
   private:
+  const std::string   m_name;
   std::atomic<bool>   m_run;
   IOCtxPtr            m_ioctx;
   IO_DoWorkPtr        m_wrk = nullptr;
   IO_SignalsPtr       m_signals;
 
 };
-typedef std::shared_ptr<IoContext> IoContextPtr;
 
 
 class EnvIoCtx {
@@ -89,7 +101,7 @@ class EnvIoCtx {
   }
   
 
-  EnvIoCtx(int32_t size) : m_io(std::make_shared<IoContext>(size)) { }
+  EnvIoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { }
 
   virtual ~EnvIoCtx(){
     std::cout << " ~EnvIoCtx\n";

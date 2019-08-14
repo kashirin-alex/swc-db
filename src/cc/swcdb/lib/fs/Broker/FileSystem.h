@@ -50,13 +50,14 @@ class FileSystemBroker: public FileSystem {
 
   FileSystemBroker()
     : FileSystem(apply_broker()),
-      m_io(std::make_shared<IoContext>(
+      m_io(std::make_shared<IoContext>("FsBroker",
         EnvConfig::settings()->get<int32_t>("swc.fs.broker.handlers"))),
       m_service(std::make_shared<client::SerializedClient>(
         "FS-BROKER", m_io->shared(), std::make_shared<client::AppContext>())),
       m_type_underlying(parse_fs_type(
         EnvConfig::settings()->get<String>("swc.fs.broker.underlying"))),
-      m_endpoints(get_endpoints())
+      m_endpoints(get_endpoints()),
+      m_run(true)
   { 
     cfg_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.fs.broker.timeout");
@@ -67,8 +68,9 @@ class FileSystemBroker: public FileSystem {
   virtual ~FileSystemBroker(){}
 
   void stop() override {
-    m_io->stop();
+    m_run = false;
     m_service->stop();
+    m_io->stop();
   }
 
   Types::Fs get_type() override {
@@ -82,13 +84,29 @@ class FileSystemBroker: public FileSystem {
 
 
   bool send_request(Protocol::Req::ReqBasePtr hdlr){
-    client::ClientConPtr c = m_service->get_connection(
-      m_endpoints, std::chrono::milliseconds(20000), 0);
-      
-    if(c->send_request(hdlr->cbp, hdlr) != Error::OK) 
+
+    client::ClientConPtr conn = nullptr;
+    do {
+      conn = m_service->get_connection(
+        m_endpoints, std::chrono::milliseconds(20000), 3);
+    
+      if(!m_run) {
+        hdlr->error = Error::SERVER_SHUTTING_DOWN;
+        return true;
+      }
+    } while(conn == nullptr);
+
+    if(conn->send_request(hdlr->cbp, hdlr) != Error::OK) 
       return false;
-    m_service->preserve(c);
+
+    m_service->preserve(conn);
     return true;
+  }
+
+  void send_request_sync(Protocol::Req::ReqBasePtr hdlr, std::promise<void> res){
+    while(!send_request(hdlr));
+    if(m_run)
+      res.get_future().wait();
   }
 
   /// File/Dir name actions
@@ -96,11 +114,8 @@ class FileSystemBroker: public FileSystem {
   bool exists(int &err, const String &name) override {
     Protocol::Req::ExistsPtr hdlr = std::make_shared<Protocol::Req::Exists>(
       cfg_timeout->get(), name);
-
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     return hdlr->state;
   }
@@ -116,10 +131,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::RemovePtr hdlr = std::make_shared<Protocol::Req::Remove>(
       cfg_timeout->get(), name);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -134,10 +146,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::LengthPtr hdlr = std::make_shared<Protocol::Req::Length>(
       cfg_timeout->get(), name);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     return hdlr->length;
   }
@@ -153,10 +162,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::MkdirsPtr hdlr = std::make_shared<Protocol::Req::Mkdirs>(
       cfg_timeout->get(), name);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -171,10 +177,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::ReaddirPtr hdlr = std::make_shared<Protocol::Req::Readdir>(
       cfg_timeout->get(), name);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     results = hdlr->listing;
   }
@@ -190,10 +193,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::RmdirPtr hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -211,10 +211,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::CreatePtr hdlr = std::make_shared<Protocol::Req::Create>(
       cfg_timeout->get(), smartfd, bufsz, replication, blksz);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -232,10 +229,7 @@ class FileSystemBroker: public FileSystem {
       cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
       smartfd, buffer, flags);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     return hdlr->amount;
   }
@@ -253,10 +247,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::OpenPtr hdlr = std::make_shared<Protocol::Req::Open>(
       cfg_timeout->get(), smartfd, bufsz);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -274,10 +265,7 @@ class FileSystemBroker: public FileSystem {
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, dst, amount);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     return hdlr->amount;
   }
@@ -297,10 +285,7 @@ class FileSystemBroker: public FileSystem {
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, offset, dst, amount);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
     return hdlr->amount;
   }
@@ -318,10 +303,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::SeekPtr hdlr = std::make_shared<Protocol::Req::Seek>(
       cfg_timeout->get(), smartfd, offset);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
    
@@ -337,10 +319,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::FlushPtr hdlr = std::make_shared<Protocol::Req::Flush>(
       cfg_timeout->get(), smartfd);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
   
@@ -355,10 +334,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::SyncPtr hdlr = std::make_shared<Protocol::Req::Sync>(
       cfg_timeout->get(), smartfd);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
   
@@ -373,10 +349,7 @@ class FileSystemBroker: public FileSystem {
     Protocol::Req::ClosePtr hdlr = std::make_shared<Protocol::Req::Close>(
       cfg_timeout->get(), smartfd);
 
-    std::promise<void> res = hdlr->promise();
-    while(!send_request(hdlr));
-
-    res.get_future().wait();
+    send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
@@ -397,6 +370,7 @@ class FileSystemBroker: public FileSystem {
   client::ClientPtr m_service = nullptr;
   Types::Fs         m_type_underlying;
   const EndPoints   m_endpoints;
+  std::atomic<bool> m_run;
 
   gInt32tPtr  cfg_timeout;
   gInt32tPtr  cfg_timeout_ratio;

@@ -235,6 +235,12 @@ class RangeServers {
     return s;
   }
 
+  void stop() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_assign_timer->cancel();
+    m_run = false;
+  }
+
   private:
   
   void rs_changes(RsStatusList hosts, bool sync_all=false){
@@ -274,6 +280,8 @@ class RangeServers {
   }
 
   void timer_assignment_checkin(uint32_t t_ms = 10000) {
+    if(!m_run)
+      return;
     auto set_in = std::chrono::milliseconds(t_ms);
     auto set_on = m_assign_timer->expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
@@ -573,6 +581,7 @@ class RangeServers {
   
   bool                m_columns_set = false;
   TimerPtr            m_assign_timer; 
+  bool                m_run=true; 
 
   RsStatusList m_rs_status;
 

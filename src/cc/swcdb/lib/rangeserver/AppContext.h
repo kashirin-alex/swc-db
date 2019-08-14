@@ -84,9 +84,11 @@ class AppContext : public SWC::AppContext {
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED:
-        return;
+        m_srv->connection_add(conn);
+        return; 
         
       case Event::Type::DISCONNECT:
+        m_srv->connection_del(conn);
         return;
 
       case Event::Type::ERROR:
@@ -163,26 +165,32 @@ class AppContext : public SWC::AppContext {
 
     EnvRsColumns::get()->unload_all();
 
-    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr = 
-      std::make_shared<HandleRsShutdown>(mngr_root, [this](){stop();});
+    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
+     = std::make_shared<HandleRsShutdown>(mngr_root, 
+        [ptr=shared_from_this()](){
+          (new std::thread([ptr]{ ptr->stop(); }))->detach();
+        }
+      );
     mngr_root->set_cb(cb_hdlr);
     
     mngr_root->run();
   }
 
-  void stop(){
-    HT_INFO("Stopping APP-RS");
+  void stop() override {
     
     m_srv->stop_accepting(); // no further requests accepted
 
-    EnvIoCtx::io()->stop();
-    
     EnvClients::get()->rs_service->stop();
     EnvClients::get()->mngr_service->stop();
     
-    EnvFsInterface::fs()->stop();
-
+    EnvFsInterface::interface()->stop();
+    
+    EnvIoCtx::io()->stop();
+    
     m_srv->shutdown();
+
+    HT_INFO("Exit");
+    std::quick_exit(0);
   }
 
   private:

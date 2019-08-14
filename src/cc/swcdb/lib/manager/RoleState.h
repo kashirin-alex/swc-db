@@ -76,13 +76,14 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     m_local_token = endpoints_hash(m_local_endpoints);
 
     asio::post(*EnvIoCtx::io()->ptr(), []{
-      EnvMngrRoleState::get()->timer_managers_checkin(500);
+      EnvMngrRoleState::get()->timer_managers_checkin(3000);
     });
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
     std::lock_guard<std::mutex> lock(m_mutex_timer);
-
+    if(!m_run)
+      return;
     auto set_in = std::chrono::milliseconds(t_ms);
     auto set_on = m_check_timer->expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
@@ -316,6 +317,12 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     return current;
   }
 
+  void stop() {
+    std::lock_guard<std::mutex> lock(m_mutex_timer);
+    m_check_timer->cancel();
+    m_run = false;
+  }
+
   private:
   
   void apply_cfg(){
@@ -513,7 +520,8 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   void set_mngr_inchain(client::ClientConPtr mngr){
     std::lock_guard<std::mutex> lock(m_mutex_mngr_inchain);
     m_mngr_inchain = mngr;
-    if(m_mngr_inchain != nullptr && m_mngr_inchain->is_open())
+    if(m_mngr_inchain != nullptr && m_mngr_inchain->is_open() 
+      && !has_endpoint(m_mngr_inchain->endpoint_remote, m_local_endpoints))
       run_mngr_inchain_queue();
   }
 
@@ -530,6 +538,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   
   std::mutex                   m_mutex_timer;
   TimerPtr                     m_check_timer; 
+  bool                         m_run=true; 
   
   std::mutex                   m_mutex_mngr_inchain;
   std::queue<ReqMngrInchain_t> m_mngr_inchain_queue;

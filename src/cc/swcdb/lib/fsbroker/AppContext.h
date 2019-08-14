@@ -60,10 +60,12 @@ class AppContext : public SWC::AppContext {
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED:
-        return;
-
+        m_srv->connection_add(conn);
+        return; 
+        
       case Event::Type::DISCONNECT:
-        break;
+        m_srv->connection_del(conn);
+        return;
 
       case Event::Type::ERROR:
         break;
@@ -165,12 +167,11 @@ class AppContext : public SWC::AppContext {
     }
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-    stop();
+    (new std::thread([ptr=shared_from_this()]{ ptr->stop(); }))->detach();
   }
 
-  void stop(){
-    HT_INFO("Stopping APP-FSBROKER");
-    
+  void stop() override {
+     
     m_srv->stop_accepting(); // no further requests accepted
 
     FS::SmartFdPtr fd;
@@ -181,10 +182,14 @@ class AppContext : public SWC::AppContext {
       EnvFsInterface::fs()->close(err, fd);
     }
     
+    EnvFsInterface::interface()->stop();
+    
     EnvIoCtx::io()->stop();
-    EnvFsInterface::fs()->stop();
     
     m_srv->shutdown();
+
+    HT_INFO("Exit");
+    std::quick_exit(0);
   }
 
   private:

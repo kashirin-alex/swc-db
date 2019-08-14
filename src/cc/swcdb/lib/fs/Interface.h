@@ -147,14 +147,21 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
                 "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
                 fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
-
+    
+    loaded_dl = {.lib=handle, .cfg=f_cfg_ptr, .make=f_new_ptr};
     return FileSystemPtr(((fs_make_new_t*)f_new_ptr)());
   }
 
   operator InterfacePtr(){ return shared_from_this(); }
 
-  virtual ~Interface(){}
-
+  virtual ~Interface(){
+    stop();
+    m_fs = nullptr;
+    if(loaded_dl.lib != nullptr) {
+      ((fs_apply_cfg_t*)loaded_dl.cfg)(nullptr);
+      dlclose(loaded_dl.lib);
+    }
+  }
 
   const Types::Fs get_type(){
     return m_fs->get_type();
@@ -211,6 +218,13 @@ class Interface : std::enable_shared_from_this<Interface>{
   private:
   Types::Fs     m_type;
   FileSystemPtr m_fs;
+
+  struct LoadedDL{
+    void* lib = nullptr;
+    void* cfg = nullptr;
+    void* make = nullptr;
+  };
+  LoadedDL loaded_dl;
 };
 
 

@@ -107,8 +107,10 @@ class ServerConnections {
 
   void close_all(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    while(!m_conns.empty())
+    while(!m_conns.empty()){
+      m_conns.front()->close();
       m_conns.pop();
+    }
   }
 
   private:
@@ -214,13 +216,10 @@ class SerializedClient{
       it->second->close_all();
       m_srv_conns.erase(it);
     }
-  }
-
-  virtual ~SerializedClient(){
-    stop();
-    
     HT_INFOF("Stop: %s", m_srv_name.c_str());
   }
+
+  virtual ~SerializedClient(){}
 
   private:
   const std::string     m_srv_name;

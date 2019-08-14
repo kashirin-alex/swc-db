@@ -25,7 +25,7 @@ public:
   Acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor, 
            AppContextPtr app_ctx, IOCtxPtr io_ctx)
           : m_acceptor(acceptor), m_app_ctx(app_ctx), 
-            m_io_ctx(io_ctx), m_run(true)
+            m_io_ctx(io_ctx)
   {
     do_accept();
     
@@ -33,33 +33,35 @@ public:
              m_acceptor->local_endpoint().address().to_string().c_str(), 
              m_acceptor->local_endpoint().port(), 
              (ssize_t)m_acceptor->native_handle());
-
   }
   void stop(){
-    HT_INFOF("Stopped Listening On: [%s]:%d fd=%d", 
+    HT_INFOF("Stopping to Listen On: [%s]:%d fd=%d", 
              m_acceptor->local_endpoint().address().to_string().c_str(), 
              m_acceptor->local_endpoint().port(), 
              (ssize_t)m_acceptor->native_handle());
 
-    m_run.store(false);
+    if(m_acceptor->is_open())
+      m_acceptor->close();
   }
-  virtual ~Acceptor(){
-    stop();
-  }
+  virtual ~Acceptor(){}
 
 private:
   void do_accept() {
     m_acceptor->async_accept(
       [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
-        if (!ec){
-          (new ConnHandlerServer(
-            m_app_ctx, 
-            std::make_shared<asio::ip::tcp::socket>(std::move(new_sock)),
-            m_io_ctx)
-          )->new_connection();
+        if (ec) {
+          if (ec.value() != 125) 
+            HT_DEBUGF("SRV-accept error=%d(%s)", 
+                      ec.value(), ec.message().c_str());
+          return;
         }
-        if(m_run.load())
-          do_accept();
+        std::make_shared<ConnHandlerServer>(
+          m_app_ctx, 
+          std::make_shared<asio::ip::tcp::socket>(std::move(new_sock)),
+          m_io_ctx
+        )->new_connection();
+
+        do_accept();
       }
     );
   }
@@ -67,7 +69,6 @@ private:
   private:
   std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
   AppContextPtr     m_app_ctx;
-  std::atomic<bool> m_run;
   IOCtxPtr          m_io_ctx;
 };
 typedef std::shared_ptr<Acceptor> AcceptorPtr;
@@ -153,13 +154,16 @@ class SerializedServer{
         app_ctx->init(endpoints_final);
 
       std::thread* t =  new std::thread(
-        [this, d=io_ctx]{ 
+        [d=io_ctx, run=&m_run]{ 
+          // HT_INFOF("START DELAY: %s 3secs",  m_appname.c_str());
+          std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+          
           do{
             d->run();
             // HT_DEBUG("SRV IO stopped, restarting");
             d->restart();
-          }while(m_run.load());
-          HT_DEBUG("SRV IO exited");
+          }while(run->load());
+          // HT_DEBUG("SRV IO exited");
         });
       detached ? t->detach(): threads.push_back(t);
     }
@@ -168,33 +172,62 @@ class SerializedServer{
   }
 
   void run(){
-    for (std::size_t i = 0; i < threads.size(); i++)
-      threads[i]->join();
+    for(;;) {
+      auto it = threads.begin();
+      if(it == threads.end())
+        break;
+      (*it)->join();
+      threads.erase(it);
+    }
+      
+    HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
   }
 
   void stop_accepting() {
-    for (std::size_t i = 0; i < m_acceptors.size(); ++i){
-      m_acceptors[i]->stop();
+    for(;;) {
+      auto it = m_acceptors.begin();
+      if(it == m_acceptors.end())
+        break;
+      (*it)->stop();
+      m_acceptors.erase(it);
     }
+
     HT_INFOF("STOPPED ACCEPTING: %s", m_appname.c_str());
   }
 
   void shutdown() {
+    HT_INFOF("STOPPING SERVER: %s", m_appname.c_str());
     m_run.store(false);
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      for(auto conn : m_conns)
+        conn->close();
+    }
     for (std::size_t i = 0; i < m_wrk.size(); ++i)
-      m_wrk[i].get_executor().context().stop();
-    
-    //for (std::size_t i = 0; i < m_wrk.size(); ++i)
-    //  m_wrk[i].reset();
-  
-    HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
+      m_wrk[i].reset();
+      //m_wrk[i].get_executor().context().stop();
   }
 
-  
-  virtual ~SerializedServer(){
-    stop_accepting();
-    shutdown();
+  void connection_add(ConnHandlerPtr conn) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_conns.push_back(conn);
+
+    HT_DEBUGF("%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
   }
+
+  void connection_del(ConnHandlerPtr conn) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto it=m_conns.begin(); it<m_conns.end(); it++) {
+      if(conn->endpoint_remote == (*it)->endpoint_remote){
+        m_conns.erase(it);
+        break;
+      }
+    }
+    HT_DEBUGF("%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
+  }
+
+  virtual ~SerializedServer(){}
 
   private:
   
@@ -203,6 +236,10 @@ class SerializedServer{
   std::string       m_appname;
   std::vector<AcceptorPtr> m_acceptors;
   std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
+
+  
+  std::mutex                  m_mutex;
+  std::vector<ConnHandlerPtr> m_conns;
 };
 
 typedef std::shared_ptr<SerializedServer> SerializedServerPtr;

@@ -69,13 +69,15 @@ class AppContext : public SWC::AppContext {
     switch (ev->type) {
 
       case Event::Type::CONNECTION_ESTABLISHED:
-        return;
-
+        m_srv->connection_add(conn);
+        return; 
+        
       case Event::Type::DISCONNECT:
+        m_srv->connection_del(conn);
         if(EnvMngrRoleState::get()->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
-        break;
+        return;
 
       case Event::Type::ERROR:
         //rangeservers->decommision(event->addr);
@@ -150,22 +152,28 @@ class AppContext : public SWC::AppContext {
     }
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-    stop();
+    
+    (new std::thread([ptr=shared_from_this()]{ ptr->stop(); }))->detach();
   }
 
-  void stop(){
-    HT_INFO("Stopping APP-MNGR");
+  void stop() override {
     
     m_srv->stop_accepting(); // no further requests accepted
-  
-    EnvIoCtx::io()->stop();
+    
+    EnvRangeServers::get()->stop();
+    EnvMngrRoleState::get()->stop();
 
     EnvClients::get()->rs_service->stop();
     EnvClients::get()->mngr_service->stop();
 
-    EnvFsInterface::fs()->stop();
+    EnvFsInterface::interface()->stop();
+    
+    EnvIoCtx::io()->stop();
     
     m_srv->shutdown();
+    
+    HT_INFO("Exit");
+    std::quick_exit(0);
   }
 
   private:

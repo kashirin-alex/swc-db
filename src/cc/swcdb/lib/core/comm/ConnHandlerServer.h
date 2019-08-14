@@ -18,9 +18,7 @@ class ConnHandlerServer : public ConnHandler {
   ConnHandlerServer(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
                     : ConnHandler(app_ctx, socket, io_ctx){}
 
-  virtual ~ConnHandlerServer(){
-    do_close();
-  }
+  virtual ~ConnHandlerServer(){}
 
   void new_connection() override {
     ConnHandler::new_connection();

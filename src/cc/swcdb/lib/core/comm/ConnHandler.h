@@ -17,7 +17,7 @@ typedef std::shared_ptr<asio::high_resolution_timer> TimerPtr;
 
 // forward declarations
 class ConnHandler;
-typedef ConnHandler* ConnHandlerPtr;
+typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 }
  
@@ -71,19 +71,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx)
-            //, m_strand_out(*io_ctx.get()), m_strand_in(*io_ctx.get())
-  {
-    //new_connection();
-    //m_app_ctx->stats->connected();
-  }
+            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx) { }
+
   ConnHandlerPtr ptr(){
-    return this;
+    return shared_from_this();
   }
 
   virtual ~ConnHandler(){ 
-    try{m_sock->close();}catch(...){}
-    //m_app_ctx->stats->disconnected();
+    do_close();
   }
   
   EndPoint      endpoint_remote;
@@ -126,6 +121,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_err == Error::OK && m_sock->is_open();
   }
 
+  void close(){
+    if(is_open())
+      try{m_sock->close();}catch(...){}
+    m_err = Error::COMM_NOT_CONNECTED;
+    m_pendings = 0;
+    disconnected();
+  }
+
   virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
     if(hdlr != nullptr)
@@ -134,11 +137,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void do_close(DispatchHandlerPtr hdlr=nullptr){
     if(m_err == Error::OK) {
-      m_err = Error::COMM_NOT_CONNECTED;
-      m_pendings = 0;
-    
-      try{m_sock->close();}catch(...){}
-      disconnected();
+      close();
       run(std::make_shared<Event>(Event::Type::DISCONNECT, m_err), hdlr);
     }
   }

@@ -31,13 +31,17 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual void handle(ConnHandlerPtr conn, EventPtr ev){
     ev->display();
-    std::cerr << "AppContext handle is Virtual!\n";
+    std::cerr << "AppContext(handle is Virtual!)\n";
   }
 
   virtual void init(EndPoints endpoints) {
     m_endpoints = endpoints;
   }
   
+  virtual void stop() {
+    std::cerr << "AppContext(stop is Virtual)!\n";
+  }
+
   EndPoints m_endpoints;
 };
 
