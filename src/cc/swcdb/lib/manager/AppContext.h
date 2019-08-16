@@ -103,6 +103,9 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::MngRsId(conn, ev);
             break;
 
+          // + MngrRsResource
+          
+
           case Protocol::Command::CLIENT_REQ_RS_ADDR:
             //rangeservers->get_addr(event);
             break;

@@ -18,19 +18,17 @@ namespace SWC { namespace Files {
 class RsData;
 typedef std::shared_ptr<RsData> RsDataPtr;
 
-namespace {
-  const int HEADER_SIZE=5;
-  const int8_t VERSION=1;
-}
-
 class RsData {
-
   /* file-format: 
       header: i8(version), i32(data-len)
       data:   i64(ts), vi64(rs_id), i32(num-points), [endpoint]
   */
 
   public:
+
+  static const int HEADER_SIZE=5;
+  static const int8_t VERSION=1;
+
   static RsDataPtr get_rs(std::string filepath){
     RsDataPtr rs_data = std::make_shared<RsData>();
     
@@ -148,6 +146,7 @@ class RsData {
   std::atomic<int64_t>   rs_id;
   int64_t   timestamp;
   EndPoints endpoints;
+
 };
 
 } // Files namespace

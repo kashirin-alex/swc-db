@@ -213,7 +213,7 @@ class SerializedServer{
     std::lock_guard<std::mutex> lock(m_mutex);
     m_conns.push_back(conn);
 
-    HT_DEBUGF("%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
+    //HT_DEBUGF("%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
   }
 
   void connection_del(ConnHandlerPtr conn) {
@@ -224,7 +224,7 @@ class SerializedServer{
         break;
       }
     }
-    HT_DEBUGF("%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
+    //HT_DEBUGF("%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
   }
 
   virtual ~SerializedServer(){}

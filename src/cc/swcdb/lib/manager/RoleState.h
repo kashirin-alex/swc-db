@@ -492,6 +492,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   bool set_active_columns(){
+    
     client::Mngr::SelectedGroups groups;
     {
       std::lock_guard<std::mutex> lock(m_mutex);

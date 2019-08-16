@@ -19,10 +19,10 @@ class RangeLoaded : public ResponseCallback {
   RangeLoaded(ConnHandlerPtr conn, EventPtr ev)
               : ResponseCallback(conn, ev) { }
 
-  virtual ~RangeLoaded() { return; }
+  virtual ~RangeLoaded() { }
 
   void run() override {
-
+      // ++ RS-resources
   }
 
 };

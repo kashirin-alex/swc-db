@@ -76,10 +76,6 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   }
 
   void connection(ClientConPtr &conn, std::chrono::milliseconds timeout){
-    
-    reusable(conn);
-    if(conn != nullptr)
-      return;
 
     HT_DEBUGF("Connecting: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
@@ -190,16 +186,22 @@ class SerializedClient{
       HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
       return conn;
     }
-
+    
+    ServerConnectionsPtr srv;
     uint32_t tries = probes;
     do {
-      HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
 
       for(auto endpoint : endpoints){
-        get_srv(endpoint)->connection(conn, timeout);
+        srv = get_srv(endpoint);
+        srv->reusable(conn);
+        if(conn != nullptr)
+          return conn;
+          
+        srv->connection(conn, timeout);
         if(conn != nullptr)
           return conn;
       }
+      HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
       
       std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     } while (m_run.load() && (probes == 0 || --tries > 0));
@@ -229,7 +231,6 @@ class SerializedClient{
         uint32_t probes, uint32_t tries, 
         int next){
           
-    HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
     if(next == endpoints.size())
       next = 0;
 
@@ -241,6 +242,7 @@ class SerializedClient{
       return;
     }
     
+    HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
     srv->connection(timeout, 
       [this, endpoints, cb, timeout, probes, tries, next]
       (ClientConPtr conn){

@@ -47,6 +47,7 @@ class LoadRange : public DispatchHandler {
       was_called = true;
       cb(Protocol::response_code(ev) == Error::OK);
     }
+    // + rs-resources
     
   }
 

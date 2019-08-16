@@ -49,6 +49,12 @@ ADD_LIB_TARGET(
 	TARGETS swcdb_core
 )
 
+ADD_TEST_TARGET(
+	NAME core-serialization
+	SRCS tests/sertest.cc
+	TARGETS swcdb_core 
+)
+
 
 
 # lib-swcdb_core_comm, #ifndef swcdb_core_comm_FileName_h
@@ -60,4 +66,3 @@ ADD_LIB_TARGET(
 	SRCS 		${swcdb_core_comm_sources}
 	TARGETS swcdb_core swcdb_core_config
 )
-

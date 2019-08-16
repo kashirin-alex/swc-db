@@ -517,7 +517,7 @@ class RangeServers {
       cb(false);
   }
 
-  void range_loaded(RsStatusPtr rs, RangePtr range, bool loaded) {
+  void range_loaded(RsStatusPtr rs, RangePtr range, bool loaded) { // + resource_chg
 
     if(!loaded){
       {
@@ -528,6 +528,8 @@ class RangeServers {
 
     } else {
       range->set_state(Range::State::ASSIGNED, rs->rs_id); 
+      // adjust rs->resource
+      // ++ mng_inchain - req. MngrRsResource
     }
 
     HT_DEBUGF("RANGE-LOADED, cid=%d %s\n%s", 

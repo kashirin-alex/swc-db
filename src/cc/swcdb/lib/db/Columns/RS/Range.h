@@ -11,6 +11,7 @@
 #include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Protocol/req/UnloadRange.h"
 
+#include "swcdb/lib/db/Files/RangeData.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -68,7 +69,11 @@ class Range : public DB::RangeBase {
       return false;
     
     // range.data (range_data_file: cells-interval > CS#)
-    // CellStores
+    m_rdata = Files::RangeData::get_data(get_path(range_data_file));
+
+    std::cout << m_rdata->to_string() << "\n";
+
+    // m_rdata->cellstores
     // CommitLogs
     
     /* 
@@ -93,7 +98,67 @@ class Range : public DB::RangeBase {
     // CommitLogs  
     // CellStores
     // range.data
+    
+    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(1));
+    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(2));
+    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(3));
+    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(4));
+    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(5));
+    uint8_t* d = new uint8_t[Serialization::encoded_length_vi32(28)+28+Serialization::encoded_length_vi32(6)+6];
+    const uint8_t * base = d;
+    Serialization::encode_vi32(&d, 28);
+    *d++ = 'a';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    uint8_t* ptr_muta = d;
+    *d++ = '5'; // chk changed
+    *d++ = 0;
+    *d++ = 'b';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0;
+    *d++ = 'c';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0;
+    *d++ = 'd';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0; 
+    Serialization::encode_vi32(&d, 6);
+    *d++ = 'a';
+    *d++ = '6';
+    *d++ = 0;
+    *d++ = 'b';
+    *d++ = '6';
+    *d++ = 0; 
+    
+    size_t remain = d-base;
+    for(auto cs : m_rdata->cellstores){
+      size_t remain2 = remain;
+      const uint8_t * base2 = base;
+      *ptr_muta = (uint8_t)cs->cs_id;
+      std::cout << "decoding remain=" << remain2 << " bufp=" << std::string((char*)base2, remain2) << "\n";
+      cs->interval->decode(&base2, &remain2);
+    }
+    delete [] d;
+    std::cout << "decoded \n";
 
+    std::cout << m_rdata->to_string() << "\n";
+    std::cout << "to_string \n";
+
+    m_rdata->save();
 
     int err = Error::OK;
     if(completely)
@@ -129,6 +194,8 @@ class Range : public DB::RangeBase {
   private:
   SchemaPtr   m_schema;
   State       m_state;
+
+  Files::RangeDataPtr m_rdata;
 };
 
 typedef std::shared_ptr<Range> RangePtr;

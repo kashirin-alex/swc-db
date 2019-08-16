@@ -77,9 +77,17 @@ namespace Cells {
     const char*  key;
     uint32_t     len;    
   
+    static const std::string to_string(const Key &k){
+      std::string s("{key:\"");
+      s.append(k.key);
+      s.append("\",len:\"");
+      s.append(std::to_string(k.len));
+      s.append("\"}");
+      return s;
+    }
   };
   std::ostream &operator<<(std::ostream &os, const Key &k){
-    os << "{key:\"" << k.key << "\",len:\"" <<  k.len << "\"}";
+    os << Key::to_string(k);
     return os;
   }
   typedef std::vector<Key> ListKeys;
@@ -96,9 +104,64 @@ namespace Cells {
     }
     return true;
   }
+}
 
+namespace Serialization {
   
+  inline size_t encoded_length(Cells::ListKeys &keys){
+   size_t len = 0;
+    for(auto k : keys)
+      len += k.len+1;
+    return Serialization::encoded_length_vi32(len)+len;
+  }
 
+  inline void encode(Cells::ListKeys &keys, uint8_t **ptr){
+    size_t len = 0;
+    for(auto k : keys)
+      len += k.len+1;
+    Serialization::encode_vi32(ptr, len);
+
+    for(auto k : keys){
+      memcpy(*ptr, k.key, k.len);
+      *ptr += k.len;
+      **ptr = 0;
+      *ptr += 1;
+    }
+  }
+
+  inline void decode(Cells::ListKeys &keys, uint8_t* &bufp, 
+                     const uint8_t **ptr, size_t *remain){
+    uint32_t len = Serialization::decode_vi32(ptr, remain);
+    bufp = new uint8_t[len];
+    memcpy(bufp, *ptr, len);
+    *remain -= len;
+    *ptr += len;
+
+    uint8_t* tmpptr = bufp;
+    const uint8_t* ptr_end = tmpptr+len;
+    uint32_t num_keys = 0;
+    for(uint8_t* i=tmpptr;i<ptr_end;i++) {
+      if(*i == 0)
+        num_keys++;
+    }
+    keys.reserve(num_keys);
+
+    while (tmpptr < ptr_end){
+      Cells::Key k;
+      k.key = (const char *)tmpptr;
+      while (*tmpptr != 0)
+        *tmpptr++;
+      k.len = tmpptr - (uint8_t *)k.key;
+      *tmpptr++;
+      keys.push_back(k);
+    }
+  }
+
+}
+
+
+namespace Cells {
+  
   class Cell {
 
     static const uint8_t HAVE_REVISION      =  0x80;

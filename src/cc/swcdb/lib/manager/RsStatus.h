@@ -71,6 +71,8 @@ class RsStatus : public Protocol::Params::HostEndPoints {
 
   int32_t    failures;
   size_t     total_ranges;
+  // int32_t resource;
+
 };
 typedef std::shared_ptr<RsStatus> RsStatusPtr;
 typedef std::vector<RsStatusPtr>  RsStatusList;
