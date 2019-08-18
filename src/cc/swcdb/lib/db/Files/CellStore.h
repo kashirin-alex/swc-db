@@ -9,8 +9,6 @@
 
 namespace SWC { namespace Files {
 
-class CellStore;
-typedef std::shared_ptr<CellStore> CellStorePtr;
 
 class CellStore {
   /* file-format: 
@@ -56,6 +54,9 @@ class CellStore {
   FS::SmartFdPtr          m_smartfd = nullptr;
 
 };
+typedef std::shared_ptr<CellStore> CellStorePtr;
+typedef std::vector<Files::CellStorePtr> CellStores;
+
 
 } // Files namespace
 

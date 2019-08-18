@@ -10,11 +10,15 @@
 #include "swcdb/lib/db/Protocol/req/UnloadRange.h"
 
 #include "swcdb/lib/db/Files/RangeData.h"
+#include "swcdb/lib/db/Types/Range.h"
 
 
 namespace SWC { namespace server { namespace RS {
 
 class Range : public DB::RangeBase {
+
+  inline static const std::string range_data_file = "range.data";
+
   public:
   
   enum State{
@@ -24,8 +28,18 @@ class Range : public DB::RangeBase {
   };
 
   Range(int64_t cid, int64_t rid)
-        : RangeBase(cid, rid), m_state(State::NOTLOADED)
-        { }
+        : RangeBase(cid, rid), 
+          m_state(State::NOTLOADED),
+          intervals(std::make_shared<Cells::Intervals>()) { 
+            
+    if(cid == 1)
+      m_type = Types::Range::MASTER;
+    else if(cid == 2)
+      m_type = Types::Range::META;
+    else
+      m_type = Types::Range::DATA;
+
+  }
 
   virtual ~Range(){}
   
@@ -45,6 +59,7 @@ class Range : public DB::RangeBase {
     if(!set_dirs())
       return false;
 
+    // last_rs.data
     Files::RsDataPtr rs_data = EnvRsData::get();
     Files::RsDataPtr rs_last = get_last_rs();
 
@@ -61,12 +76,41 @@ class Range : public DB::RangeBase {
       }
     }
 
-    if(!EnvRsData::get()->set_rs(get_path(rs_data_file)))
+    if(!rs_data->set_rs(get_path(rs_data_file)))
       return false;
     
-    m_rdata = Files::RangeData::get_data(cid, get_path(""));
+    // range.data
+    if(!Files::RangeData::load(get_path(range_data_file), cellstores)) {
+      Files::RangeData::load_by_path(get_path("cs"), cellstores);
+      Files::RangeData::save(get_path(range_data_file), cellstores);
+    }
 
-    // m_rdata->cellstores
+    int64_t ts;
+    int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
+    int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
+    for(auto cs : cellstores){
+      // cs->intervals->apply_if_wider(intervals);
+
+      if(intervals->is_any_keys_begin() 
+        || !intervals->is_in_begin(cs->intervals->get_keys_begin()))
+        intervals->set_keys_begin(cs->intervals);
+
+      if(intervals->is_any_keys_end() 
+        || !intervals->is_in_end(cs->intervals->get_keys_end()))
+        intervals->set_keys_end(cs->intervals);
+
+      ts = cs->intervals->get_ts_earliest();
+      if(ts_earliest == ScanSpecs::TIMESTAMP_NULL || ts_earliest > ts)
+        ts_earliest = ts;
+      ts = cs->intervals->get_ts_latest();
+      if(ts_latest == ScanSpecs::TIMESTAMP_NULL || ts_latest < ts)
+        ts_latest = ts;
+      }
+    
+    intervals->set_ts_earliest(ts_earliest);
+    intervals->set_ts_latest(ts_latest);
+    
+    // cellstores
     // CommitLogs
     
     set_state(State::LOADED);
@@ -84,19 +128,36 @@ class Range : public DB::RangeBase {
     return false;
   }
 
+  void on_change(){ // range-interval || cellstores
+    
+    switch(m_type){
+      case Types::Range::DATA:
+        // + INSERT meta-range(col-2), cid,rid,intervals(keys)
+        break;
+      case Types::Range::META:
+        // + INSERT master-range(col-1), cid(2),rid,intervals(keys)
+        break;
+      default: // Types::Range::MASTER:
+        break;
+    }
+
+    Files::RangeData::save(get_path(range_data_file), cellstores);
+
+  }
+
   void unload(bool completely){
 
     // CommitLogs  
     // CellStores
     // range.data
     
-    m_rdata->cellstores.clear();
+    cellstores.clear();
     // TEST-DATA
-    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(1));
-    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(2));
-    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(3));
-    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(4));
-    m_rdata->cellstores.push_back(std::make_shared<Files::CellStore>(5));
+    cellstores.push_back(std::make_shared<Files::CellStore>(1));
+    cellstores.push_back(std::make_shared<Files::CellStore>(2));
+    cellstores.push_back(std::make_shared<Files::CellStore>(3));
+    cellstores.push_back(std::make_shared<Files::CellStore>(4));
+    cellstores.push_back(std::make_shared<Files::CellStore>(5));
     uint8_t* d = new uint8_t[
       Serialization::encoded_length_vi32(28)
       +28
@@ -147,7 +208,7 @@ class Range : public DB::RangeBase {
     Serialization::encode_vi64(&d, 123);
     Serialization::encode_vi64(&d, 987);
     size_t remain = d-base;
-    for(auto cs : m_rdata->cellstores){
+    for(auto cs : cellstores){
       size_t remain2 = remain;
       const uint8_t * base2 = base;
       *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
@@ -158,11 +219,12 @@ class Range : public DB::RangeBase {
 
     std::cout << to_string() << "\n";;
 
-    m_rdata->save();
+    Files::RangeData::save(get_path(range_data_file), cellstores);
 
     int err = Error::OK;
     if(completely)
       EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
+
     set_state(State::NOTLOADED);
 
     HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
@@ -170,14 +232,25 @@ class Range : public DB::RangeBase {
 
   std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
+    
     std::string s("[");
     s.append(DB::RangeBase::to_string());
     s.append(", state=");
     s.append(std::to_string(m_state));
-    if(m_rdata != nullptr) {
+    
+    s.append(", type=");
+    s.append(std::to_string((int)m_type));
+
+    s.append(", ");
+    s.append(intervals->to_string());
+
+    s.append(", cellstores=[");
+    for(auto cs : cellstores) {
+      s.append(cs->to_string());
       s.append(", ");
-      s.append(m_rdata->to_string());
     }
+    s.append("], ");
+    
     s.append("]");
     return s;
   }
@@ -196,7 +269,10 @@ class Range : public DB::RangeBase {
   private:
 
   State               m_state;
-  Files::RangeDataPtr m_rdata = nullptr;
+  
+  Types::Range        m_type;
+  Cells::IntervalsPtr intervals;
+  Files::CellStores   cellstores;
 
 };
 
