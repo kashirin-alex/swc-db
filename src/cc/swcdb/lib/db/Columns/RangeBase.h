@@ -66,7 +66,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   std::string to_string(){
-    std::string s("rid=");
+    std::string s("cid=");
+    s.append(std::to_string(cid));
+    s.append(", rid=");
     s.append(std::to_string(rid));
     return s;
   }

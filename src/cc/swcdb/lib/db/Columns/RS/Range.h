@@ -64,15 +64,16 @@ class Range : public DB::RangeBase {
     if(!EnvRsData::get()->set_rs(get_path(rs_data_file)))
       return false;
     
-    m_rdata = Files::RangeData::get_data(get_path(""));
-
-    std::cout << m_rdata->to_string() << "\n";
+    m_rdata = Files::RangeData::get_data(cid, get_path(""));
 
     // m_rdata->cellstores
     // CommitLogs
     
     set_state(State::LOADED);
 
+
+
+    std::cout << to_string() << "\n";;
 
     if(is_loaded()) {
       HT_DEBUGF("LOADED RANGE cid=%d rid=%d", cid, rid);
@@ -154,10 +155,8 @@ class Range : public DB::RangeBase {
       cs->intervals->decode(&base2, &remain2);
     }
     delete [] d;
-    std::cout << "decoded \n";
 
-    std::cout << m_rdata->to_string() << "\n";
-    std::cout << "to_string \n";
+    std::cout << to_string() << "\n";;
 
     m_rdata->save();
 
@@ -175,6 +174,10 @@ class Range : public DB::RangeBase {
     s.append(DB::RangeBase::to_string());
     s.append(", state=");
     s.append(std::to_string(m_state));
+    if(m_rdata != nullptr) {
+      s.append(", ");
+      s.append(m_rdata->to_string());
+    }
     s.append("]");
     return s;
   }
@@ -191,9 +194,10 @@ class Range : public DB::RangeBase {
   }
   
   private:
-  State       m_state;
 
-  Files::RangeDataPtr m_rdata;
+  State               m_state;
+  Files::RangeDataPtr m_rdata = nullptr;
+
 };
 
 typedef std::shared_ptr<Range> RangePtr;

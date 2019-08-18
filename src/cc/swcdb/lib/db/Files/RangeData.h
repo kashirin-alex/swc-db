@@ -13,6 +13,7 @@
 
 #include "swcdb/lib/db/Cells/Intervals.h"
 #include "swcdb/lib/db/Files/CellStore.h"
+#include "swcdb/lib/db/Types/Range.h"
 
 
 namespace SWC { namespace Files {
@@ -32,17 +33,27 @@ class RangeData {
   static const int HEADER_SIZE=5;
   static const int8_t VERSION=1;
 
-  static RangeDataPtr get_data(const std::string path){
-    return std::make_shared<RangeData>(path);
+  static RangeDataPtr get_data(int64_t cid, const std::string path){
+    Types::Range typ;
+    if(cid == 1)
+      typ = Types::Range::MASTER;
+    else if(cid == 2)
+      typ = Types::Range::META;
+    else
+      typ = Types::Range::DATA;
+    std::cout << "new RangeData, cid=" << cid << " typ=" << typ << " path=" << path << "\n";
+    return std::make_shared<RangeData>(typ, path);
   }
 
   Cells::IntervalsPtr               intervals;
   std::vector<Files::CellStorePtr>  cellstores;
 
-  RangeData(const std::string range_path)
-          : m_path(range_path),
+  RangeData(Types::Range typ, const std::string range_path)
+          : m_type(typ), m_path(range_path),
             m_smartfd(FS::SmartFd::make_ptr(get_path(range_data_file), 0)), 
-            version(VERSION), intervals(std::make_shared<Cells::Intervals>()) {
+            version(VERSION), 
+            intervals(std::make_shared<Cells::Intervals>()),
+            m_require_update(false) {
     load();   
   }
 
@@ -51,6 +62,10 @@ class RangeData {
   const std::string to_string(){
     std::string s("RangeData(version=");
     s.append(std::to_string(version));
+
+    s.append(", type=");
+    s.append(std::to_string((int)m_type));
+
     s.append(", ");
     s.append(intervals->to_string());
 
@@ -71,8 +86,23 @@ class RangeData {
     s.append(suff);
     return s;
   }
+
   // SET 
   bool save(){
+    //if(!m_require_update)
+    //  return;
+
+    switch(m_type){
+      case Types::Range::DATA:
+        // + INSERT meta-range(col-2), cid,rid,intervals(keys)
+        break;
+      case Types::Range::META:
+        // + INSERT master-range(col-1), cid(2),rid,intervals(keys)
+        break;
+      default: // Types::Range::MASTER:
+        break;
+    }
+    
     m_smartfd->flags(FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
     int err=Error::OK;
@@ -206,9 +236,12 @@ class RangeData {
     assert(dst_buf.fill() <= dst_buf.size);
   }
 
+  Types::Range          m_type;
   const std::string     m_path;
   FS::SmartFdPtr        m_smartfd;
   int8_t                version;
+
+  bool                  m_require_update;
 };
 
 
