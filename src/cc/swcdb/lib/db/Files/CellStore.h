@@ -14,10 +14,8 @@ typedef std::shared_ptr<CellStore> CellStorePtr;
 
 class CellStore {
   /* file-format: 
-      header: i8(version), vi64(data-len)
-      data:   i32(num-intervals), [interval vi32(kslen), begin({chars\0}) 
-                                   interval vi32(kslen), end({chars\0}) 
-                                   : vi32(cellstore)]
+      header: 
+      data:   
   */
 
   public:
@@ -25,12 +23,12 @@ class CellStore {
   static const int HEADER_SIZE=12;
   static const int8_t VERSION=1;
 
-  Cells::KeysIntervalPtr  interval;
+  Cells::IntervalsPtr  intervals;
   uint32_t                cs_id;
 
   CellStore(uint32_t cs_id)
             : cs_id(cs_id), version(VERSION),
-              interval(std::make_shared<Cells::KeysInterval>()) { }
+              intervals(std::make_shared<Cells::Intervals>()) { }
 
   virtual ~CellStore(){}
 
@@ -42,7 +40,7 @@ class CellStore {
     s.append(", cs_id=");
     s.append(std::to_string(cs_id));
     s.append(", ");
-    s.append(interval->to_string());
+    s.append(intervals->to_string());
     if(m_smartfd != nullptr){
       s.append(", ");
       s.append(m_smartfd->to_string());

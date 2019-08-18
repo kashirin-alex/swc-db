@@ -9,13 +9,18 @@
 
 namespace SWC {
 
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::ListKeys &keys){
+  os << "keys:[";
+  for(auto it=keys.begin(); it < keys.end();++it)
+    os << "{key:\"" << (*it).key 
+       << "\", len:"<< (*it).len 
+       << ", comp:\"" <<  (*it).comp << "\"},";
+  os << "]";
+  return os;  
+}
+
 std::ostream &operator<<(std::ostream &os, const ScanSpecs::Keys &keys){
-  if(keys.keys.size()>0){
-    os << "keys:[";
-    for(auto it=keys.keys.begin(); it < keys.keys.end();++it)
-      os << "{key:\"" << (*it).key << "\",comp:\"" <<  (*it).comp << "\"},";
-    os << "]";
-  }
+  os << keys.keys;
   return os;  
 }
 

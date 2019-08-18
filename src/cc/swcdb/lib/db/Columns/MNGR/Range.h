@@ -26,10 +26,9 @@ class Range : public DB::RangeBase {
     QUEUED
   };
 
-  Range(int64_t cid, int64_t rid, SchemaPtr schema): 
-        RangeBase(cid, rid), 
-        m_state(State::NOTSET), rs_id(0),
-        m_schema(schema) { 
+  Range(int64_t cid, int64_t rid)
+        : RangeBase(cid, rid), 
+          m_state(State::NOTSET), rs_id(0) { 
 
     int err = Error::OK;
     if(EnvFsInterface::fs()->exists(err, get_path(deleted_file))){
@@ -91,7 +90,6 @@ class Range : public DB::RangeBase {
   private:
   State     m_state;
   uint64_t  rs_id;
-  SchemaPtr m_schema;
 };
 
 typedef std::shared_ptr<Range> RangePtr;

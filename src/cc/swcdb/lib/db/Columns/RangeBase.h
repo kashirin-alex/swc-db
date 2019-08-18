@@ -6,7 +6,6 @@
 #ifndef swcdb_lib_db_Columns_RangeBase_h
 #define swcdb_lib_db_Columns_RangeBase_h
 
-#include "Schema.h"
 #include <mutex>
 
 #include "swcdb/lib/db/Files/RsData.h"

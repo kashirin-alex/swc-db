@@ -6,7 +6,6 @@
 #ifndef swcdb_lib_db_Columns_RS_Column_h
 #define swcdb_lib_db_Columns_RS_Column_h
 
-#include "swcdb/lib/db/Columns/Schema.h"
 #include "Range.h"
 
 #include <mutex>
@@ -47,7 +46,7 @@ class Column : public std::enable_shared_from_this<Column> {
       return it->second;
 
     if(initialize) {
-      RangePtr range = std::make_shared<Range>(cid, rid, m_schema);
+      RangePtr range = std::make_shared<Range>(cid, rid);
       if(range->load()) 
         m_ranges->insert(RangesMapPair(rid, range));
       return range;
@@ -96,7 +95,6 @@ class Column : public std::enable_shared_from_this<Column> {
 
   std::mutex                 m_mutex;
   int64_t                    cid;
-  SchemaPtr                  m_schema;
   std::shared_ptr<RangesMap> m_ranges;
 
 };

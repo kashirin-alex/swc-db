@@ -276,12 +276,13 @@ namespace ScanSpecs {
 } // END namespace ScanSpecs
 
 
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Keys &keys);
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Timestamp &ts);
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::Flags &flags);
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::CellsInterval &cs_i);
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::ColumnIntervals &cs_is);
-  std::ostream &operator<<(std::ostream &os, const ScanSpecs::ScanSpec &ss);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::ListKeys &keys);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::Keys &keys);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::Timestamp &ts);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::Flags &flags);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::CellsInterval &cs_i);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::ColumnIntervals &cs_is);
+std::ostream &operator<<(std::ostream &os, const ScanSpecs::ScanSpec &ss);
 
 } // namespace SWC
 
