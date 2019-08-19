@@ -74,6 +74,8 @@ namespace {
     { Error::CONFIG_GET_ERROR,            "CONFIG failed to get config value"},
     { Error::CONFIG_BAD_VALUE,            "CONFIG bad config value"},
 
+    { Error::SCHEMA_COL_NAME_EXISTS,          "Schema column name already exists!"},
+
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
     { Error::SERIALIZATION_VERSION_MISMATCH, "SERIALIZATION version mismatch" },

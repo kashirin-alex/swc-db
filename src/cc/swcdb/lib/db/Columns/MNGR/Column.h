@@ -35,17 +35,26 @@ class Column : public std::enable_shared_from_this<Column> {
     return EnvFsInterface::fs()->exists(err, col_range_path) && err == Error::OK;
   }
 
-  Column(int64_t id) : cid(id), m_ranges(std::make_shared<RangesMap>()) {
-
+  static bool is_marked_deleted(int64_t cid) {
     int err = Error::OK;
-    std::string chk_file(Range::get_column_path(id));
+    std::string chk_file(Range::get_column_path(cid));
     chk_file.append("/");
     chk_file.append(deleted_file);
-    if(EnvFsInterface::fs()->exists(err, chk_file)){
-      m_state = State::DELETED;
-    } else {
-      m_state = State::OK;
-    }
+    return EnvFsInterface::fs()->exists(err, chk_file);
+  }
+
+  static void clear_marked_deleted(int64_t cid) {
+    int err = Error::OK;
+    std::string chk_file(Range::get_column_path(cid));
+    chk_file.append("/");
+    chk_file.append(deleted_file);
+    EnvFsInterface::fs()->remove(err, chk_file);
+  }
+
+
+  Column(int64_t id) 
+        : cid(id), m_ranges(std::make_shared<RangesMap>()),
+          m_state(is_marked_deleted(id)?State::DELETED:State::OK) {
   }
 
   bool create() {

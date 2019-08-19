@@ -17,6 +17,8 @@
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
 
+#include "swcdb/lib/db/Files/Schema.h"
+
 namespace SWC { namespace server { namespace Mngr {
 
 class RangeServers;
@@ -85,6 +87,27 @@ class RangeServers {
   }
 
   virtual ~RangeServers(){}
+
+  void add_column(DB::SchemaPtr schema, int &err){
+    if(EnvSchemas::get()->get(schema->col_name)){
+      err = Error::SCHEMA_COL_NAME_EXISTS;
+      return;
+    }
+    // needed, call is after mngr initialized (wait?)
+    // err = Error::MNGR_NOT_INITIALIZED;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    bool reused;
+    int64_t cid = get_next_cid(reused);
+    if(reused)
+      Column::clear_marked_deleted(cid);
+
+    initialize_col(cid, false, true);
+
+    schema = DB::Schema::make(cid, schema);
+    EnvSchemas::get()->add(schema);  
+    Files::Schema::save(schema);
+  }
 
   void update_status(RsStatusList new_rs_status, bool sync_all){
     RsStatusList changed;
@@ -306,16 +329,15 @@ class RangeServers {
       return; 
     }
 
-    int64_t last_id=1;
+    int64_t last_id = 1;
     auto c_it = std::find_if(cols.begin(), cols.end(),  
                 [](const int64_t& cid_set){return cid_set == 1;});
     m_root_mngr = c_it != cols.end();
-    if(m_root_mngr) {
-      //  m_last_cid =  columns.data (last_cid)
-      if(m_last_cid == 0){
-        while(initialize_col(++last_id, true));
-        m_last_cid = last_id-1;
-      }
+
+    if(m_root_mngr && m_last_cid == 0) { // done once
+      while(initialize_col(last_id, true))
+        initialize_schema(last_id++);
+      m_last_cid = last_id-1;
     }
 
     bool till_end = *cols.begin() == 0;
@@ -333,47 +355,43 @@ class RangeServers {
     m_columns_set = true;
   }
 
-  bool initialize_col(int64_t cid, bool only_exists_chk=false) {
+  void initialize_schema(int64_t cid){
+    if(Column::is_marked_deleted(cid)){
+      m_cols_reuse.push(cid);
+      return;
+    }
+    EnvSchemas::get()->add(Files::Schema::load(cid));
+  }
+
+  bool initialize_col(int64_t cid, 
+                      bool only_exists_chk=false, bool new_col=false) {
 
     bool exists = Column::exists(cid);
-    if(cid != 1 && !exists)
-      return false;
-    if(only_exists_chk)
-      return true;
+    if(cid > 3){
+      if(only_exists_chk || !exists)
+        return exists;
+    }
 
     ColumnPtr col = EnvMngrColumns::get()->get_column(cid, true);
     if(!exists && !col->create()) {
       HT_ERRORF("Unable to create column=%d", cid);
     }
 
-    // File::ColumnAssignments assignments.data (rs(endpoints)[rid])
+    if(new_col || !exists){
+      // initialize 1st range
+      col->get_range(1, true);
+      return true;
+    }
 
-    // for(auto assignment : assignments) {
-    //   RsStatusPtr rs = rs_set(assignment.endpoints)
-    //   for(auto rid : assignment.ranges) {
-    //     if(rs->has_range(cid, rid))
-    //       continue;
-    //     RangePtr range = col->get_range(rid, true);
-    //     asio::post(*EnvIoCtx::io()->ptr(), [rs, range](){ 
-    //       EnvRangeServers::get()->assign_range(rs, range); 
-    //     });
-    //   }
-    // }
-
-    // col->load_last_rid() // column.data (last_range)
-
-
+    //col->load_last_rid() // column.data (last_range)
     int64_t last_rid = -1; //col->get_last_rid();
     if(last_rid == -1){
       int err = Error::OK;
       FS::IdEntries_t entries;
       col->ranges_by_fs(err, entries);
-
-      if(entries.size() == 0) 
-        entries.push_back(1); // initialize 1st range
  
       for(auto rid : entries)
-        col->get_range(rid, true);
+        col->get_range(rid, true); 
       
     } else {
       for(int64_t rid=1; rid<=last_rid; rid++)
@@ -381,6 +399,16 @@ class RangeServers {
     }
     
     return true;
+  }
+
+  int64_t get_next_cid(bool &reused) {
+    reused = m_cols_reuse.size() > 0;
+    if(reused){
+      int64_t cid = m_cols_reuse.front();
+      m_cols_reuse.pop();
+      return cid;
+    }
+    return ++m_last_cid;
   }
   
   bool assign_ranges(){
@@ -588,6 +616,7 @@ class RangeServers {
   RsStatusList m_rs_status;
 
   int64_t             m_last_cid = 0;
+  std::queue<int64_t> m_cols_reuse;
   bool                m_root_mngr = false;
 
   gInt32tPtr          cfg_rs_failures;
