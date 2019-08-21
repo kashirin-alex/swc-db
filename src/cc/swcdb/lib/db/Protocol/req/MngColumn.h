@@ -11,8 +11,8 @@
 #include "swcdb/lib/db/Columns/Schema.h"
 
 #include "ActiveMngrBase.h"
+#include "CodeHandler.h"
 #include "../params/MngColumn.h"
-#include "../rsp/CodeHandler.h"
 
 
 namespace SWC {
@@ -25,10 +25,10 @@ class MngColumn: public ActiveMngrBase {
 
   using Function = Params::MngColumn::Function;
 
-  struct Req : public Rsp::CodeHandler::Req {
+  struct Req : public CodeHandler::Req {
     public:
 
-    using BasePtr = Rsp::CodeHandler::Req::Ptr;
+    using BasePtr = CodeHandler::Req::Ptr;
     typedef std::shared_ptr<Req> Ptr;
 
     static Ptr add(DB::SchemaPtr schema){
@@ -39,8 +39,8 @@ class MngColumn: public ActiveMngrBase {
        : function(function), schema(schema) {}
 
     Req(Function function, DB::SchemaPtr schema, 
-        Rsp::CodeHandler::Req::Cb_t cb)
-       : function(function), schema(schema), Rsp::CodeHandler::Req(cb) {}
+        CodeHandler::Req::Cb_t cb)
+       : function(function), schema(schema), CodeHandler::Req(cb) {}
 
     virtual ~Req(){}
 
@@ -49,14 +49,13 @@ class MngColumn: public ActiveMngrBase {
   };
 
 
-  MngColumn(std::atomic<int> &progress)
-            : ActiveMngrBase(1, 1), 
-              m_running(false), m_conn(nullptr), progress(progress) { }
+  MngColumn(): ActiveMngrBase(1, 1), 
+               m_running(false), m_conn(nullptr) { }
 
   virtual ~MngColumn(){}
 
 
-  void create(DB::SchemaPtr schema, Rsp::CodeHandler::Req::Cb_t cb){
+  void create(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
     return make(std::make_shared<Req>(Function::ADD, schema, cb));
   }
 
@@ -106,7 +105,19 @@ class MngColumn: public ActiveMngrBase {
     
     Req::Ptr req;
     uint32_t sz;
+    uint32_t len = 0;
     for(;;) {
+      
+      std::cout << " make_requests queue sz=" << sz 
+                << " pending_writes=" << pending_write()
+                << " pending_read=" << pending_read() << "\n";
+
+      if(pending_write() > 10000) {
+        run_within(EnvClients::get()->mngr_service->io(), 200);
+        return;
+      }
+        
+
       {
         std::lock_guard<std::mutex> lock(m_mutex_queue);
         sz = m_queue.size();
@@ -116,7 +127,7 @@ class MngColumn: public ActiveMngrBase {
         req = m_queue.front();
         m_queue.pop();
       }
-      std::cout << " make_requests queue sz=" << sz << " progress= " << progress << ")\n";
+      
 
       Protocol::Params::MngColumn params(req->function, req->schema);
 
@@ -124,10 +135,11 @@ class MngColumn: public ActiveMngrBase {
       CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
       params.encode(cbp->get_data_ptr_address());
       
-      if(m_conn->send_request(cbp, std::make_shared<Rsp::CodeHandler>(req))
-         == Error::OK)
-        continue;
-
+      if(m_conn->send_request(cbp, 
+              std::make_shared<CodeHandler>(req)) == Error::OK){
+        continue;  
+      }
+      
       {
         std::lock_guard<std::mutex> lock(m_mutex_queue);
         m_queue.push(req);
@@ -137,9 +149,18 @@ class MngColumn: public ActiveMngrBase {
       return;
     }
 
-    // m_conn->close(); pending-rsps?
-    //EnvClients::get()->mngr_service->preserve(conn);
-    
+    if(!pending_write() && !pending_read()) 
+      m_conn->close();
+  }
+
+  size_t pending_write(){
+    if(m_conn == nullptr) return 0;
+    return m_conn->pending_write();
+  }
+
+  size_t pending_read(){
+    if(m_conn == nullptr) return 0;
+    return m_conn->pending_read();
   }
 
   private:
@@ -149,8 +170,6 @@ class MngColumn: public ActiveMngrBase {
   
   std::mutex            m_mutex_queue;
   std::queue<Req::Ptr>  m_queue;
-
-  std::atomic<int> &progress;
 
 };
 typedef std::shared_ptr<MngColumn> MngColumnPtr;

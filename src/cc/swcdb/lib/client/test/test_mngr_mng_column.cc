@@ -34,33 +34,32 @@ int main(int argc, char** argv) {
   
   std::vector<std::thread*> threads;
 
-  std::atomic<int> progress = 0;
-  Protocol::Req::MngColumnPtr hdlr = std::make_shared<Protocol::Req::MngColumn>(progress);
+  Protocol::Req::MngColumnPtr hdlr = std::make_shared<Protocol::Req::MngColumn>();
 
-  for(int t=1;t<=1;t++) {
-    threads.push_back(new std::thread([hdlr, t, &progress](){
-      for(int i=1; i<= 101000; i++){
-        progress++;
+  for(int t=1;t<=16;t++) {
+    threads.push_back(new std::thread([hdlr, t](){
+      for(int i=1; i<= 100000; i++){
         std::string name("column-");
         name.append(std::to_string(i*t));
 
         hdlr->create(
           DB::Schema::make(0, name),
-          [hdlr, &progress]
+          [hdlr]
           (Protocol::Req::MngColumn::Req::BasePtr req, int err){
           Protocol::Req::MngColumn::Req::Ptr ptr = std::dynamic_pointer_cast<Protocol::Req::MngColumn::Req>(req);
           if(err == Error::OK || err ==  Error::SCHEMA_COL_NAME_EXISTS) {
             // std::cout << " ColumnReq. name="<< req->schema->col_name 
             //          << " cb, err=" << err << "(" << Error::get_text(err) << ")\n";
-            progress--; 
           } else {
             // std::cout << " RE-ColumnReq. "<< req->schema->to_string() 
             //          << " cb, err=" << err << "(" << Error::get_text(err) << ")\n"; 
             hdlr->make(ptr);
           }
-          std::cout << " progress=" << progress 
+
+          std::cout << " pending_writes=" << hdlr->pending_write()
+                    << " pending_read=" << hdlr->pending_read()
                     << " name="<< ptr->schema->col_name  
-                    << " " << err << "(" << Error::get_text(err) << "\n"; 
+                    << " " << err << "(" << Error::get_text(err) << ")\n"; 
           }
         );
       }
@@ -68,15 +67,20 @@ int main(int argc, char** argv) {
   }
 
   for(auto t : threads)t->join();
+
   
-  std::cout << " ### threads EXIT ###, progress=" << progress << "\n"; 
+  std::cout << " ### threads EXIT ###, "
+                << " pending_writes=" << hdlr->pending_write()
+                << " pending_read=" << hdlr->pending_read() << "\n";
   std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
-  while(progress > 0) {
+  while(hdlr->pending_write() > 0 || hdlr->pending_read() > 0) {
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    std::cout << " progress=" << progress << "\n"; 
+    std::cout << " pending_writes=" << hdlr->pending_write()
+              << " pending_read=" << hdlr->pending_read() << "\n";
   }
 
-  std::cout << " ### EXIT ###, progress=" << progress << "\n"; 
+  std::cout << " ### EXIT ###, pending_writes=" << hdlr->pending_write()
+            << " pending_read=" << hdlr->pending_read() << "\n";
   return 0;
 }

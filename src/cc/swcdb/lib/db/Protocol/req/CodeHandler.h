@@ -8,7 +8,7 @@
 
 namespace SWC {
 namespace Protocol {
-namespace Rsp {
+namespace Req {
 
 
 class CodeHandler : public DispatchHandler {
@@ -29,6 +29,7 @@ class CodeHandler : public DispatchHandler {
   };
 
   CodeHandler(Req::Ptr req) : req(req), was_called(false) {}
+  
   virtual ~CodeHandler(){}
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
@@ -39,8 +40,8 @@ class CodeHandler : public DispatchHandler {
     req->cb(req, ev->error != Error::OK? ev->error: Protocol::response_code(ev));
   }
 
-  Req::Ptr            req;
-  std::atomic<bool>   was_called;
+  Req::Ptr              req;
+  std::atomic<bool>     was_called;
 };
 
 }}}
