@@ -66,10 +66,9 @@ namespace SWC {
       return;
     }
     
-    virtual bool run(uint32_t timeout=0)  {
-      return false;
-    }
-
+    virtual bool run(uint32_t timeout=0) { return false; }
+    
+    virtual void run(ConnHandlerPtr conn) {}
   
     void run_within(IOCtxPtr io_ctx, uint32_t t_ms = 1000) {
       (new asio::high_resolution_timer(

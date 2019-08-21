@@ -35,6 +35,8 @@ class LoadRange : public AppHandler {
       EnvRsColumns::get()->load_range(
         params.cid, params.rid, 
          std::make_shared<Callback::RangeLoaded>(m_conn, m_ev));
+
+      // params.create?
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

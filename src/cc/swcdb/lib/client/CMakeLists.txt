@@ -10,3 +10,9 @@ ADD_EXEC_TARGET(
 	SRCS      test/test_mngr_client.cc
 	TARGETS   swcdb_core swcdb_db swcdb_core_comm
 )
+
+ADD_EXEC_TARGET(
+	NAME      test_mngr_mng_column
+	SRCS      test/test_mngr_mng_column.cc
+	TARGETS   swcdb_core swcdb_db swcdb_core_comm
+)

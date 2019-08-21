@@ -6,10 +6,7 @@
 #ifndef swc_app_manager_handlers_ActiveMngr_h
 #define swc_app_manager_handlers_ActiveMngr_h
 
-#include "swcdb/lib/core/comm/AppHandler.h"
-
-#include "swcdb/lib/db/Protocol/params/ActiveMngrReq.h"
-#include "swcdb/lib/db/Protocol/params/ActiveMngrRsp.h"
+#include "swcdb/lib/db/Protocol/params/ActiveMngr.h"
 
 
 namespace SWC { namespace server { namespace Mngr {

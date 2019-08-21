@@ -3,49 +3,92 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_rangeserver_callbacks_HandleRsAssign_h
-#define swc_lib_rangeserver_callbacks_HandleRsAssign_h
+#ifndef swc_lib_db_protocol_req_MngRsId_h
+#define swc_lib_db_protocol_req_MngRsId_h
 
-#include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
+#include "ActiveMngrBase.h"
 #include "swcdb/lib/db/Protocol/params/MngRsId.h"
 
 namespace SWC {
-namespace server {
-namespace RS {
+namespace Protocol {
+namespace Req {
 
-class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
+
+class MngRsId: public ActiveMngrBase {
+
   public:
 
-  HandleRsAssign(Protocol::Req::ActiveMngrPtr mngr_active)
-                : Protocol::Rsp::ActiveMngrRspCb(mngr_active) {
+  MngRsId() 
+          : ActiveMngrBase(1, 1), m_conn(nullptr), m_shutting_down(false),
+            cfg_check_interval(
+              EnvConfig::settings()->get_ptr<gInt32t>(
+                "swc.rs.id.validation.interval")
+            ) { }
 
-    cfg_check_interval = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.rs.id.validation.interval");
+  virtual ~MngRsId(){}
+
+  void assign() {
+    ActiveMngrBase::run();
   }
 
-  virtual ~HandleRsAssign(){}
+  void shutting_down(std::function<void()> cb) {
+    m_cb = cb;
+    m_shutting_down = true;
+    ActiveMngrBase::run();
+  }
 
-  client::ClientConPtr m_conn;
   void run(EndPoints endpoints) override {
 
-    m_conn = EnvClients::get()->mngr_service->get_connection(endpoints);
-  
+    if(m_conn != nullptr && m_conn->is_open()){
+      make_request(nullptr, false);
+      return;
+    }
+    EnvClients::get()->mngr_service->get_connection(
+      endpoints, 
+      [ptr=shared_from_this()]
+      (client::ClientConPtr conn){
+        std::dynamic_pointer_cast<MngRsId>(ptr)->make_request(conn, true);
+      },
+      std::chrono::milliseconds(20000), 
+      1
+    );
+  }
+
+  void make_request(client::ClientConPtr conn, bool new_conn) {
+    if(new_conn)
+      m_conn = conn;
+
+    if(m_conn == nullptr || !m_conn->is_open()){
+      m_conn = nullptr;
+      if(!new_conn)
+        ActiveMngrBase::run();
+      else
+        run_within(EnvClients::get()->mngr_service->io(), 200);
+      return;
+    }
+    
+    Files::RsDataPtr rs_data = EnvRsData::get();
     Protocol::Params::MngRsId params(
-      0, Protocol::Params::MngRsId::Flag::RS_REQ, EnvRsData::get()->endpoints);
+      m_shutting_down ? rs_data->rs_id.load() : 0, 
+      m_shutting_down ? Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN 
+                      : Protocol::Params::MngRsId::Flag::RS_REQ, 
+      rs_data->endpoints
+    );
 
     CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
 
-    m_conn->send_request(cbp, shared_from_this());
-
-    //EnvClients::get()->mngr_service->preserve(conn);
-    
+    if(m_conn->send_request(cbp,shared_from_this()) != Error::OK)
+      run_within(EnvClients::get()->mngr_service->io(), 500);
   }
-  
+
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
     
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    if(ev->header.command == Protocol::Command::CLIENT_REQ_ACTIVE_MNGR){
+      ActiveMngrBase::handle(conn, ev);
+      return;
+    }
 
     bool ok = false;
 
@@ -53,9 +96,9 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
        && ev->header.command == Protocol::Command::REQ_MNGR_MNG_RS_ID){
 
       if(Protocol::response_code(ev) == Error::OK){
-        std::cout << "HandleRsAssign: RSP-OK, chk-interval=" << cfg_check_interval->get() << " \n";
+        std::cout << "MngRsId: RSP-OK, chk-interval=" << cfg_check_interval->get() << " \n";
         conn->do_close();
-        mngr_active->run_within(conn->m_io_ctx, cfg_check_interval->get());
+        run_within(conn->m_io_ctx, cfg_check_interval->get());
         return;
       }
 
@@ -67,11 +110,11 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
         const uint8_t *base = ptr;
         rsp_params.decode(&ptr, &remain);
 
-        std::cout << "HandleRsAssign: rs_id=" << rsp_params.rs_id
-                                  << " flag=" << rsp_params.flag << "\n";
+        std::cout << "MngRsId: rs_id=" << rsp_params.rs_id
+                  << " flag=" << rsp_params.flag << "\n";
         
         if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
-          mngr_active->run_within(conn->m_io_ctx, 50);
+          run_within(conn->m_io_ctx, 50);
 
         } 
         else if(
@@ -91,7 +134,7 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
               rs_data->endpoints);
-            std::cout << "HandleRsAssign: RS_SHUTTINGDOWN, rs_data=" 
+            std::cout << "MngRsId: RS_SHUTTINGDOWN, rs_data=" 
                           << rs_data->to_string() << "\n";
             std::raise(SIGTERM);
 
@@ -103,14 +146,14 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_ACK, 
               rs_data->endpoints);
-            std::cout << "HandleRsAssign: RS_ACK, rs_data=" 
+            std::cout << "MngRsId: RS_ACK, rs_data=" 
                       << rs_data->to_string() << "\n";
           } else {
 
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_DISAGREE, 
               rs_data->endpoints);
-            std::cout << "HandleRsAssign: RS_DISAGREE, rs_data="
+            std::cout << "MngRsId: RS_DISAGREE, rs_data="
                       << rs_data->to_string() << "\n";
           }
 
@@ -121,7 +164,17 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
           conn->send_request(cbp, shared_from_this());
           return;
        
-        } // else Flag can be only MNGR_NOT_ACTIVE
+        }
+        else if(rsp_params.flag == Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN) {
+          std::cout << "HandleRsShutdown: RSP-OK \n";
+          if(m_cb != 0)
+             m_cb();
+          else
+            HT_WARN("Shutdown flag without Callback!");
+          return;
+
+        } 
+          // else Flag can be only MNGR_NOT_ACTIVE
         
         ok = true;
 
@@ -132,12 +185,16 @@ class HandleRsAssign: public Protocol::Rsp::ActiveMngrRspCb {
 
     if(!ok)
       conn->do_close();
-    mngr_active->run_within(conn->m_io_ctx, 1000);
+    run_within(conn->m_io_ctx, 1000);
   }
 
-  gInt32tPtr  cfg_check_interval;
+  client::ClientConPtr  m_conn;
+  gInt32tPtr            cfg_check_interval;
+  bool                  m_shutting_down;
+  std::function<void()> m_cb = 0;
 };
+typedef std::shared_ptr<MngRsId> MngRsIdPtr;
 
 }}}
 
-#endif // swc_lib_rangeserver_callbacks_HandleRsAssign_h
+#endif // swc_lib_db_protocol_req_MngRsId_h

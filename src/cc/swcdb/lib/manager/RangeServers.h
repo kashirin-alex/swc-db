@@ -89,24 +89,40 @@ class RangeServers {
   virtual ~RangeServers(){}
 
   void add_column(DB::SchemaPtr schema, int &err){
-    if(EnvSchemas::get()->get(schema->col_name)){
-      err = Error::SCHEMA_COL_NAME_EXISTS;
+    int64_t cid;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(!m_columns_set) {
+        err = Error::MNGR_NOT_INITIALIZED;
+        return;
+      }
+
+      if(EnvSchemas::get()->get(schema->col_name)){
+        err = Error::SCHEMA_COL_NAME_EXISTS;
+        return;
+      }
+
+      bool reused;
+      cid = get_next_cid(reused);
+      if(reused)
+        Column::clear_marked_deleted(cid);
+      else
+        Column::create(cid);
+      
+      schema = DB::Schema::make(cid, schema);
+      EnvSchemas::get()->add(schema);  
+    }
+
+    Files::Schema::save(schema);
+
+    
+    if(manage(cid)) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      initialize_col(cid);
       return;
     }
-    // needed, call is after mngr initialized (wait?)
-    // err = Error::MNGR_NOT_INITIALIZED;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    bool reused;
-    int64_t cid = get_next_cid(reused);
-    if(reused)
-      Column::clear_marked_deleted(cid);
-
-    initialize_col(cid, false, true);
-
-    schema = DB::Schema::make(cid, schema);
-    EnvSchemas::get()->add(schema);  
-    Files::Schema::save(schema);
+    
+    //notify active-mngrs of cid;
   }
 
   void update_status(RsStatusList new_rs_status, bool sync_all){
@@ -321,6 +337,13 @@ class RangeServers {
     HT_DEBUGF("RS ranges check_assignment scheduled in ms=%d", t_ms);
   }
 
+  bool manage(int64_t cid){
+    std::vector<int64_t> cols;
+    EnvMngrRoleState::get()->get_active_columns(cols);
+    return std::find_if(cols.begin(), cols.end(),  
+          [cid](const int64_t& cid_set){return cid_set == cid;}) != cols.end();
+  }
+
   void initialize_cols(){
     std::vector<int64_t> cols;
     EnvMngrRoleState::get()->get_active_columns(cols);
@@ -364,7 +387,7 @@ class RangeServers {
   }
 
   bool initialize_col(int64_t cid, 
-                      bool only_exists_chk=false, bool new_col=false) {
+                      bool only_exists_chk=false) {
 
     bool exists = Column::exists(cid);
     if(cid > 3){
@@ -373,12 +396,9 @@ class RangeServers {
     }
 
     ColumnPtr col = EnvMngrColumns::get()->get_column(cid, true);
-    if(!exists && !col->create()) {
-      HT_ERRORF("Unable to create column=%d", cid);
-    }
-
-    if(new_col || !exists){
+    if(!exists || !col->exists_range_path()){
       // initialize 1st range
+      col->create();
       col->get_range(1, true);
       return true;
     }

@@ -20,9 +20,9 @@ class Schema {
   public:
 
   inline static SchemaPtr make(
-        int64_t cid, std::string col_name, 
+         int64_t cid, std::string col_name, 
          Types::Column col_type=Types::Column::PLAIN,
-	       int32_t cell_versions=1, uint32_t cell_ttl=0,
+         int32_t cell_versions=1, uint32_t cell_ttl=0,
          uint8_t blk_replication=0, 
          Types::Encoding blk_encoding=Types::Encoding::SNAPPY,
          uint32_t blk_size=0){
@@ -40,7 +40,7 @@ class Schema {
   }
 
   Schema(int64_t cid, std::string col_name, Types::Column col_type,
-	       int32_t cell_versions, uint32_t cell_ttl,
+         int32_t cell_versions, uint32_t cell_ttl,
          uint8_t blk_replication, Types::Encoding blk_encoding, 
          uint32_t blk_size)
         : cid(cid), col_name(col_name), col_type(col_type),

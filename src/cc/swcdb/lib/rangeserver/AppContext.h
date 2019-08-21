@@ -19,8 +19,7 @@
 
 #include "swcdb/lib/db/Columns/RS/Columns.h"
 
-#include "callbacks/HandleRsAssign.h"
-#include "callbacks/HandleRsShutdown.h"
+#include "swcdb/lib/db/Protocol/req/MngRsId.h"
 
 #include "handlers/IsRangeLoaded.h"
 #include "handlers/LoadRange.h"
@@ -59,15 +58,13 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::RS::AppContext>()
     ));
     
-    mngr_root = std::make_shared<Protocol::Req::ActiveMngr>(1, 1);
     assign_rs_id();
   }
 
   void assign_rs_id(){
-    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
-      = std::make_shared<HandleRsAssign>(mngr_root);
-    mngr_root->set_cb(cb_hdlr);
-    mngr_root->run();
+    if(mngr_root == nullptr)
+      mngr_root = std::make_shared<Protocol::Req::MngRsId>();
+    mngr_root->assign();
   }
 
   void set_srv(SerializedServerPtr srv){
@@ -165,15 +162,11 @@ class AppContext : public SWC::AppContext {
 
     EnvRsColumns::get()->unload_all();
 
-    Protocol::Rsp::ActiveMngrRspCbPtr cb_hdlr 
-     = std::make_shared<HandleRsShutdown>(mngr_root, 
-        [ptr=shared_from_this()](){
-          (new std::thread([ptr]{ ptr->stop(); }))->detach();
-        }
-      );
-    mngr_root->set_cb(cb_hdlr);
-    
-    mngr_root->run();
+    mngr_root->shutting_down(
+      [ptr=shared_from_this()](){
+        (new std::thread([ptr]{ ptr->stop(); }))->detach();
+      }
+    );
   }
 
   void stop() override {
@@ -193,10 +186,11 @@ class AppContext : public SWC::AppContext {
     std::quick_exit(0);
   }
 
-  private:
-  SerializedServerPtr m_srv = nullptr;
 
-  Protocol::Req::ActiveMngrPtr  mngr_root;
+  private:
+
+  SerializedServerPtr        m_srv = nullptr;
+  Protocol::Req::MngRsIdPtr  mngr_root = nullptr;
   
 };
 

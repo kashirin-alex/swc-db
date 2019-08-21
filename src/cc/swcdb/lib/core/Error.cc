@@ -74,7 +74,10 @@ namespace {
     { Error::CONFIG_GET_ERROR,            "CONFIG failed to get config value"},
     { Error::CONFIG_BAD_VALUE,            "CONFIG bad config value"},
 
-    { Error::SCHEMA_COL_NAME_EXISTS,          "Schema column name already exists!"},
+    { Error::MNGR_NOT_ACTIVE,             "Manager not active for the duty" },
+    { Error::MNGR_NOT_INITIALIZED,        "Manager is initializing" },
+    
+    { Error::SCHEMA_COL_NAME_EXISTS,      "Schema column name already exists!"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },

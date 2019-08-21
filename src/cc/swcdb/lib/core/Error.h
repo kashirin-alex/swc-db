@@ -61,6 +61,9 @@ namespace SWC {
       BAD_SCHEMA                                   = CODE_START+7,
       BAD_KEY                                      = CODE_START+9,      
 
+      MNGR_NOT_ACTIVE                              = CODE_START+10,
+      MNGR_NOT_INITIALIZED                         = CODE_START+11,
+
       BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+13,
       BLOCK_COMPRESSOR_INVALID_ARG                 = CODE_START+14,
       BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+15,

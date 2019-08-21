@@ -22,11 +22,8 @@ class Fds {
 
   int32_t add(FS::SmartFdPtr fd) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(;;) {
-      if(!m_fds.insert(FdpPair(++m_next_fd, fd)).second)
-        continue;
-      break;
-    }
+    
+    while(!m_fds.insert(FdpPair(++m_next_fd, fd)).second);
     return m_next_fd;
   }
 

@@ -6,10 +6,6 @@
 #ifndef swc_app_manager_handlers_MngRsId_h
 #define swc_app_manager_handlers_MngRsId_h
 
-#include "swcdb/lib/core/comm/AppHandler.h"
-#include "swcdb/lib/manager/RangeServers.h"
-
-#include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/params/MngRsId.h"
 
 
@@ -118,7 +114,17 @@ class MngRsId : public AppHandler {
 
         case Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN: {
           rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
-          m_conn->response_ok(m_ev);
+          
+          Protocol::Params::MngRsId rsp_params(
+            req_params.rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, {});
+      
+          CommHeader header;
+          header.initialize_from_request_header(m_ev->header);
+          CommBufPtr cbp = std::make_shared<CommBuf>(
+            header, rsp_params.encoded_length());
+          rsp_params.encode(cbp->get_data_ptr_address());
+
+          m_conn->send_response(cbp);
           break;
         }
         

@@ -22,7 +22,7 @@ class Base : public DispatchHandler {
 
   bool is_rsp(ConnHandlerPtr conn, EventPtr &ev, int cmd, 
               const uint8_t **ptr, size_t *remain) { 
-    HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
     if(was_called)
       return false;

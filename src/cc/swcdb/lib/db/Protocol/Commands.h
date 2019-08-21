@@ -22,10 +22,10 @@ namespace SWC { namespace Protocol {
     REQ_RS_UNLOAD_RANGE,
     
     MNGR_UPDATE_RANGESERVERS,
+
+    CLIENT_REQ_MNG_COLUMN,
     //
 
-
-    RS_REQ_NOTIFY_COLUMN_ADDED,
     RS_RSP_SCAN,
     RS_RSP_RANGE_LOADED,
 

@@ -120,9 +120,9 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
   HostStatusPtr active_mngr(size_t begin, size_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
-
     for(auto host : m_states){
-      if(host->state == Types::MngrState::ACTIVE && host->col_begin <= begin 
+      if(host->state == Types::MngrState::ACTIVE 
+        && host->col_begin <= begin 
         && (host->col_end == 0 || host->col_end >= end)){
         return host;
       }
@@ -503,9 +503,10 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     for(auto group : groups){
       int64_t cid =   group->col_begin == 0 ?  1  : group->col_begin;
       int64_t cid_end = group->col_end == 0 ? cid : group->col_end;
-      
-      if(group->col_end == 0 && is_active(group->col_end))
+
+      if(group->col_end == 0 && is_active(cid)){
         cols_active.push_back(group->col_end);
+      }
       
       for(;cid <= cid_end; cid++) { 
         auto c_it = std::find_if(cols_active.begin(), cols_active.end(),  

@@ -77,7 +77,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 
   void connection(ClientConPtr &conn, std::chrono::milliseconds timeout){
 
-    HT_DEBUGF("Connecting: %s, addr=[%s]:%d", m_srv_name.c_str(), 
+    HT_DEBUGF("Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
     SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
@@ -98,7 +98,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   
   void connection(std::chrono::milliseconds timeout, NewClientConnCb_t cb){
 
-    HT_DEBUGF("Connecting: %s, addr=[%s]:%d", m_srv_name.c_str(), 
+    HT_DEBUGF("Connecting Async: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
     SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
@@ -110,10 +110,10 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
         } else {
           ClientConPtr conn 
             = std::make_shared<ConnHandlerClient>(ptr->m_ctx, s, ptr->m_ioctx);
-          HT_DEBUGF("New connection: %s, %s", 
-                    ptr->m_srv_name.c_str(), to_string(conn).c_str());
-
           conn->new_connection();
+          //HT_DEBUGF("New connection: %s, %s", 
+          //          ptr->m_srv_name.c_str(), to_string(conn).c_str());
+
           cb(conn);
         }
       }
@@ -278,6 +278,10 @@ class SerializedClient{
       m_srv_conns.erase(it);
   }
 
+  IOCtxPtr io(){
+    return m_ioctx; 
+  }             
+  
   std::string to_str(ClientConPtr conn){
     std::string s(m_srv_name);
     s.append(" ");

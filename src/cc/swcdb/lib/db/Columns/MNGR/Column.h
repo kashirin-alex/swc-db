@@ -32,7 +32,17 @@ class Column : public std::enable_shared_from_this<Column> {
   static bool exists(int64_t id) {
     std::string col_range_path(Range::get_column_path(id));
     int err = Error::OK;
-    return EnvFsInterface::fs()->exists(err, col_range_path) && err == Error::OK;
+    return EnvFsInterface::fs()->exists(err, col_range_path) 
+           && err == Error::OK;
+  }
+  
+  static bool create(int64_t id) {
+    std::string col_range_path(Range::get_column_path(id));
+    int err = Error::OK;
+    EnvFsInterface::fs()->mkdirs(err, col_range_path);
+    if(err == 17)
+      err = Error::OK;
+    return err == Error::OK;
   }
 
   static bool is_marked_deleted(int64_t cid) {
@@ -52,23 +62,28 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
 
+
   Column(int64_t id) 
         : cid(id), m_ranges(std::make_shared<RangesMap>()),
           m_state(is_marked_deleted(id)?State::DELETED:State::OK) {
   }
 
+  virtual ~Column(){}
+
+  bool exists_range_path() {
+    std::string range_path(Range::get_path(cid));
+    int err = Error::OK;
+    return EnvFsInterface::fs()->exists(err, range_path) && err == Error::OK;
+  }
+
   bool create() {
     std::string col_range_path(Range::get_path(cid));
     int err = Error::OK;
-    if(!EnvFsInterface::fs()->exists(err, col_range_path)) {
-      EnvFsInterface::fs()->mkdirs(err, col_range_path);
-      if(err == 17)
-        err = Error::OK;
-    }
+    EnvFsInterface::fs()->mkdirs(err, col_range_path);
+    if(err == 17)
+      err = Error::OK;
     return err == Error::OK;
   }
-
-  virtual ~Column(){}
 
   bool deleted(){
     std::lock_guard<std::mutex> lock(m_mutex);

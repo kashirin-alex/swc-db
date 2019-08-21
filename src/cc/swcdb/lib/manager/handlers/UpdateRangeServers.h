@@ -6,9 +6,6 @@
 #ifndef swc_app_manager_handlers_UpdateRangeServers_h
 #define swc_app_manager_handlers_UpdateRangeServers_h
 
-#include "swcdb/lib/core/comm/AppHandler.h"
-
-#include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/params/MngrUpdateRangeServers.h"
 
 

@@ -235,12 +235,13 @@ void set_structured_id(std::string number, std::string &s){
     s.append({id_split_last});
   } else {
     int len = number.length()-id_split_len;
-    for(int n=0; n<len;){
+    int n=0;
+    for(; n<len;){
       s.append(std::string(number, n, id_split_len));
       s.append("/");
       n += id_split_len;
     }
-    s.append(std::string(number, len, id_split_len));
+    s.append(std::string(number, n, id_split_len));
     s.append({id_split_last});
   }
 };
