@@ -15,7 +15,7 @@
 #include "AppContextClient.h"
 
 #include "swcdb/lib/db/Protocol/Commands.h"
-#include "swcdb/lib/db/Protocol/req/ActiveMngr.h"
+#include "swcdb/lib/db/Protocol/req/ActiveMngrBase.h"
 
 #include "swcdb/lib/db/Columns/RS/Columns.h"
 
