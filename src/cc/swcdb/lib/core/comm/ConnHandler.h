@@ -129,6 +129,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     disconnected();
   }
 
+  size_t pending_read(){
+    std::lock_guard<std::mutex> lock(m_mutex_reading);
+    return m_pending.size();
+  }
+
+  size_t pending_write(){
+    std::lock_guard<std::mutex> lock(m_mutex_outgoing);
+    return m_outgoing.size();
+  }
+
+
   virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
     if(hdlr != nullptr)
@@ -298,23 +309,25 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
     
   void write_or_queue(Outgoing data){   
-    std::lock_guard<std::mutex> lock(m_mutex_outgoing);
-    if(m_outgoing.size() > 0) {
+    if(m_writing) {
+      std::lock_guard<std::mutex> lock(m_mutex_outgoing);
       m_outgoing.push(data);
-      return;
+    } else {
+      write(data);
     }
-    write(data);
   }
   
   void next_outgoing() {
     std::lock_guard<std::mutex> lock(m_mutex_outgoing);
-    if(m_outgoing.size() > 0) {
+    m_writing = m_outgoing.size() > 0;
+    if(m_writing) {
       write(m_outgoing.front()); 
       m_outgoing.pop();
     }
   }
   
   void write(Outgoing data){
+    m_writing = true;
 
     asio::async_write(*m_sock.get(), data.cbuf->get_buffers(),
       [data, ptr=ptr()](const asio::error_code ec, uint32_t len) {
@@ -593,6 +606,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   std::queue<Outgoing>      m_outgoing;
   std::mutex                m_mutex_outgoing;
+  std::atomic<bool>         m_writing = 0;
 
   std::vector<PendingRsp>   m_pending;
   std::vector<uint32_t>     m_cancelled;
