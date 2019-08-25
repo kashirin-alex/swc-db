@@ -274,6 +274,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   inline void accept_requests() {
+    m_accepting = true;
     read_pending();
   }
 
@@ -348,73 +349,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       *m_sock.get(), 
       data.cbuf->get_buffers(),
       [ptr=ptr()](const asio::error_code ec, uint32_t len){
-        if(ec)
+        if(ec) {
           ptr->do_close();
-        else {
+        } else {
           ptr->read_pending();
           ptr->next_outgoing();
         }
       }
     );
-    
-    
   }
-
-  /*  do-an async_write
-  void write(Outgoing data){
-
-    //std::cout << "write id=" << data.cbuf->header.id 
-    //          << " len=" << data.cbuf->header.total_len 
-    //          << " data.size=" << data.cbuf->data.size 
-    //          << " ext.size=" << data.cbuf->ext.size 
-    //          << " " << endpoint_remote_str() << "\n";
-
-    write_buffers(data, data.cbuf->get_buffers(0), 0);
-  }
-
-  void write_buffers(Outgoing data, std::vector<asio::const_buffer> buffers, 
-                     size_t nwritten){
-
-    m_sock->async_write_some(
-      buffers,
-      [data, nwritten, ptr=ptr()](const asio::error_code ec, size_t bytes_) {
-
-        size_t written = nwritten+bytes_;
-
-
-
-
-
-
-        //std::cout << "async_write_some, id=" <<  data.cbuf->header.id 
-        //          << " total=" << data.cbuf->header.total_len 
-        //          << " wrote=" << written
-        //          << " bytes=" << bytes_ 
-        //          << " ec=" << ec << "\n";
-                  
-        if(!ec && written < data.cbuf->header.total_len){
-            std::vector<asio::const_buffer> buffs 
-              = data.cbuf->get_buffers(written);
-            if(buffs.size() > 0)
-              ptr->write_buffers(data, buffs, written);
-          return;
-        }
-
-        ptr->next_outgoing();
-
-        if(ec)
-         ptr->do_close();
-        else if(data.cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-          ptr->read_pending({.id=data.cbuf->header.id, .hdlr=data.hdlr, 
-                             .tm=data.tm, .sequential=data.sequential});
-        else {    
-          ptr->read_pending();
-        }
-      }
-      //)
-    );
-  }
-  */
 
   inline void add_pending(PendingRsp q){        
     std::lock_guard<std::mutex> lock(m_mutex_reading);
@@ -424,10 +367,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   inline void read_pending(){
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
-      m_pendings++;
-      if(m_reading || m_err != Error::OK)
+      if(m_err != Error::OK || m_reading)
         return;
-      m_reading=true;
+      m_reading = true;
     }
 
     EventPtr ev = std::make_shared<Event>(Event::Type::MESSAGE, Error::OK);
@@ -520,9 +462,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
       m_reading = false;
-      more = m_pendings > 0;
-      if(more)
-        m_pendings--;
+      more = m_accepting || m_pending.size() > 0;
     }
     if(more)
       read_pending();
@@ -534,7 +474,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
       m_cancelled.clear();
-      m_pendings = 0;
     }
     
     for(;;) {
@@ -641,7 +580,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   std::mutex                m_mutex_reading;
   std::vector<PendingRsp>   m_pending;
   std::vector<uint32_t>     m_cancelled;
-  uint32_t                  m_pendings = 0;
+  bool                      m_accepting = 0;
   bool                      m_reading = 0;
 
   std::atomic<Error::Code>  m_err = Error::OK;

@@ -376,7 +376,7 @@ class RangeServers {
       }
     }
     s.append("\n");
-    s.append(EnvMngrColumns::get()->to_string());
+    //s.append(EnvMngrColumns::get()->to_string());
     return s;
   }
 
@@ -389,6 +389,9 @@ class RangeServers {
   private:
 
   void check_assignment(uint32_t t_ms = 0){
+    
+    std::cout << to_string();
+    
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(!m_columns_set){

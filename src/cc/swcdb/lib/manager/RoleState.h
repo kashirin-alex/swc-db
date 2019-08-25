@@ -231,12 +231,7 @@ class RoleState {
 
     {
     std::lock_guard<std::mutex> lock(m_mutex);
-    /* 
-    std::cout << "AFTER: local=" << m_local_token
-              << " token=" << token << " turn_around=" << turn_around << "\n";
-    for(auto h : m_states)
-      std::cout << h->to_string() << "\n";
-    */
+
     if(token == 0 || !turn_around) {
       if(token == 0)
         token = m_local_token;
@@ -254,6 +249,11 @@ class RoleState {
       );
       return false;
     }
+    
+    std::cout << "RoleStates:\n";
+    for(auto h : m_states)
+      std::cout << h->to_string() << "\n";
+
     } // mutex-end
     
     if(cb != nullptr)
@@ -424,7 +424,7 @@ class RoleState {
           ptr->managers_checker(next, total-1, flw);
           return;
         }
-        conn->accept_requests();
+        //conn->accept_requests();
         host_chk->conn = conn;
         ptr->m_major_updates = true;
         ptr->set_mngr_inchain(host_chk->conn);
