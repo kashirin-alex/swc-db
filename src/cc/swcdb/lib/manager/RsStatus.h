@@ -11,6 +11,93 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
+class RsQueue : public std::enable_shared_from_this<RsQueue> {
+
+  public:
+
+  typedef std::function<void(client::ClientConPtr conn)> ConnCb_t;
+
+  RsQueue(EndPoints endpoints)
+          : m_endpoints(endpoints), m_conn(nullptr),
+            cfg_rs_conn_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
+              "swc.mngr.ranges.assign.RS.connection.timeout")),
+            cfg_rs_conn_probes(EnvConfig::settings()->get_ptr<gInt32t>(
+              "swc.mngr.ranges.assign.RS.connection.probes")) {}
+
+  virtual ~RsQueue(){
+    ConnCb_t req;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    while(m_requests.size() > 0){
+      req = m_requests.front();
+      m_requests.pop();
+      req(nullptr);
+    }
+  }
+  
+  void connect() {
+    EnvClients::get()->rs_service->get_connection(
+      m_endpoints, 
+      [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
+      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
+      cfg_rs_conn_probes->get()
+    );
+  }
+
+  void set(client::ClientConPtr  conn) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_conn = conn;
+    }
+    run();
+  }
+
+  void put(ConnCb_t req) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_requests.push(req);
+
+      if(m_running)
+        return;
+      m_running = true;
+      if(m_conn == nullptr || !m_conn->is_open()) {
+        connect();
+        return;
+      }
+    }
+
+    run();
+  }
+
+  void run() {
+    ConnCb_t req;
+    for(;;){
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        std::cout << "RsQueue sz=" << m_requests.size() << "\n";
+        m_running = m_requests.size() > 0;
+        if(!m_running)
+          break;
+        req = m_requests.front();
+        m_requests.pop();
+      }
+      req(m_conn);
+    }
+  }
+
+  private:
+  
+  std::mutex            m_mutex;
+  const EndPoints       m_endpoints;
+  client::ClientConPtr  m_conn;
+  std::queue<ConnCb_t>  m_requests;
+  bool                  m_running;
+
+  gInt32tPtr          cfg_rs_conn_timeout;
+  gInt32tPtr          cfg_rs_conn_probes;
+};
+
+
 class RsStatus : public Protocol::Params::HostEndPoints {
 
   public:
@@ -25,9 +112,10 @@ class RsStatus : public Protocol::Params::HostEndPoints {
               failures(0), total_ranges(0) {}
                        
   RsStatus(uint64_t rs_id, EndPoints endpoints)
-           : rs_id(rs_id), state(State::NONE), 
-             failures(0), total_ranges(0),
-              Protocol::Params::HostEndPoints(endpoints) {}
+          : rs_id(rs_id), state(State::NONE), 
+            failures(0), total_ranges(0),
+            Protocol::Params::HostEndPoints(endpoints),
+            m_queue(std::make_shared<RsQueue>(endpoints)) {}
 
   virtual ~RsStatus(){}
 
@@ -62,8 +150,15 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp){
     state = (State)Serialization::decode_i8(bufp, remainp);
     rs_id = Serialization::decode_vi64(bufp, remainp);
-
     Protocol::Params::HostEndPoints::decode_internal(version, bufp, remainp);
+  }
+
+  void init_queue(){
+    m_queue = std::make_shared<RsQueue>(endpoints);
+  }
+
+  void put(RsQueue::ConnCb_t req){
+    m_queue->put(req);
   }
 
   uint64_t   rs_id;
@@ -72,6 +167,9 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   int32_t    failures;
   size_t     total_ranges;
   // int32_t resource;
+  
+  private:
+  std::shared_ptr<RsQueue> m_queue = nullptr;
 
 };
 typedef std::shared_ptr<RsStatus> RsStatusPtr;

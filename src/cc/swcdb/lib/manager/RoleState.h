@@ -75,9 +75,7 @@ class RoleState {
     m_local_endpoints = endpoints;
     m_local_token = endpoints_hash(m_local_endpoints);
 
-    asio::post(*EnvIoCtx::io()->ptr(), []{
-      EnvMngrRoleState::get()->timer_managers_checkin(3000);
-    });
+    timer_managers_checkin(3000);
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
