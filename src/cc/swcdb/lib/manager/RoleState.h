@@ -48,7 +48,7 @@ namespace SWC { namespace server { namespace Mngr {
 typedef std::function<void(client::ClientConPtr)> ReqMngrInchain_t;
 
 
-class RoleState : public std::enable_shared_from_this<RoleState> {
+class RoleState {
   public:
   RoleState()
     : m_check_timer(
@@ -99,7 +99,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
     }); 
     HT_DEBUGF("RoleState managers_checkin scheduled in ms=%d", t_ms);
   }
-  
+
   bool has_active_columns(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_cols_active.size() > 0;
@@ -233,11 +233,12 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
     {
     std::lock_guard<std::mutex> lock(m_mutex);
+    /* 
     std::cout << "AFTER: local=" << m_local_token
               << " token=" << token << " turn_around=" << turn_around << "\n";
     for(auto h : m_states)
       std::cout << h->to_string() << "\n";
-    
+    */
     if(token == 0 || !turn_around) {
       if(token == 0)
         token = m_local_token;
@@ -247,7 +248,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
               m_states, token, m_local_endpoints[0], 
               (cfg_conn_probes->get() * cfg_conn_timeout->get()
                + cfg_req_timeout->get()) * m_states.size()
-        )] (client::ClientConPtr mngr) {
+        )](client::ClientConPtr mngr) {
           if(!(std::make_shared<Protocol::Req::MngrsState>(mngr, cbp, cb)
               )->run())
             EnvMngrRoleState::get()->timer_managers_checkin(3000);
@@ -298,7 +299,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       host_set->state == Types::MngrState::ACTIVE ? 
       cfg_delay_fallback->get() : cfg_check_interval->get());
 
-    HT_INFOF("disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
+    HT_DEBUGF("disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
               (int)srv,
               endpoint_server.address().to_string().c_str(), 
               endpoint_server.port(), 
@@ -331,7 +332,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
       EnvClients::get()->mngrs_groups->get_groups();
     
     for(auto g : groups) {
-      HT_DEBUG( g->to_string().c_str());
+      // HT_DEBUG( g->to_string().c_str());
       uint32_t pr = 0;
       for(auto endpoints : g->get_hosts()) {
 
@@ -360,7 +361,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
   }
 
   void managers_checker(){
-    HT_DEBUG("managers_checker");
+    //HT_DEBUG("managers_checker");
 
     size_t sz;
     {
@@ -418,7 +419,7 @@ class RoleState : public std::enable_shared_from_this<RoleState> {
 
     EnvClients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
-      [host_chk, next, flw, total, ptr=shared_from_this()]
+      [host_chk, next, flw, total, ptr=EnvMngrRoleState::get()]
       (client::ClientConPtr conn){
         if(conn == nullptr || !conn->is_open()){
           host_chk->state = Types::MngrState::OFF;

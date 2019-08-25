@@ -7,6 +7,7 @@
 #define swc_db_protocol_params_MngColumn_h
 
 #include "swcdb/lib/core/Serializable.h"
+#include "swcdb/lib/db/Columns/Schema.h"
 
 namespace SWC {
 namespace Protocol {
@@ -53,7 +54,7 @@ namespace Params {
     }
 
   };
-  
+
 
 }}}
 

@@ -19,20 +19,23 @@ typedef std::shared_ptr<IoContext> IoContextPtr;
 class IoContext {
   public:
   IoContext(const std::string name, int32_t size) 
-    : m_name(name), m_run(true),
+    : m_name(name), m_run(true), m_size(size),
+      m_pool(std::make_shared<asio::thread_pool>(size)),
       m_ioctx(std::make_shared<asio::io_context>(size)),
       m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get())))
-  {
-    HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
+  { }
 
-    (new std::thread(
-      [ioctx=m_ioctx, run=&m_run]{ 
-        do{
-          ioctx->run();
-          ioctx->restart();
-        }while(run->load());
-      })
-    )->detach();
+  void run(IoContextPtr p){
+    HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
+    for(int n=0;n<m_size;n++)
+      asio::post(*m_pool.get(), std::bind(&IoContext::do_run, p));
+  }
+
+  void do_run(){
+    do{
+      m_ioctx->run();
+      m_ioctx->restart();
+    }while(m_run);
   }
   
   IOCtxPtr shared(){
@@ -79,7 +82,8 @@ class IoContext {
   IOCtxPtr            m_ioctx;
   IO_DoWorkPtr        m_wrk = nullptr;
   IO_SignalsPtr       m_signals;
-
+  std::shared_ptr<asio::thread_pool>   m_pool;
+  int32_t             m_size;
 };
 
 
@@ -101,7 +105,9 @@ class EnvIoCtx {
   }
   
 
-  EnvIoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { }
+  EnvIoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { 
+    m_io->run(m_io);
+  }
 
   virtual ~EnvIoCtx(){
     std::cout << " ~EnvIoCtx\n";

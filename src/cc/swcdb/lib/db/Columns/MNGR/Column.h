@@ -45,6 +45,18 @@ class Column : public std::enable_shared_from_this<Column> {
     return err == Error::OK;
   }
 
+  static void mark_deleted(int &err, int64_t cid) {
+    std::string filepath(Range::get_column_path(cid));
+    filepath.append("/");
+    filepath.append(deleted_file);
+
+    FS::SmartFdPtr smartfd = 
+      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+
+    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
+    EnvFsInterface::fs()->close(err, smartfd);
+  }
+
   static bool is_marked_deleted(int64_t cid) {
     int err = Error::OK;
     std::string chk_file(Range::get_column_path(cid));

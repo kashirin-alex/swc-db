@@ -17,8 +17,8 @@ namespace Handler {
 class MngColumn : public AppHandler {
   public:
 
-    MngColumn(ConnHandlerPtr conn, EventPtr ev)
-              : AppHandler(conn, ev){}
+  MngColumn(ConnHandlerPtr conn, EventPtr ev)
+            : AppHandler(conn, ev){}
 
   void run() override {
 
@@ -40,38 +40,26 @@ class MngColumn : public AppHandler {
       }
 
       if(err == Error::OK) {
-        switch(req_params.function){
-
-          case Protocol::Params::MngColumn::Function::ADD: {
-            EnvRangeServers::get()->add_column(req_params.schema, err);
-            break;
-          }
-
-          default:
-            break;
-        }
+        EnvRangeServers::get()->column_action({
+          .params=req_params, 
+          .cb=[conn=m_conn, ev=m_ev](int err){
+            if(err == Error::OK)
+              conn->response_ok(ev);
+            else
+              conn->send_error(err , "", ev);
+            }
+        });
       }
+
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
       err = e.code();
     }
 
     try{
-      if(err == Error::OK)
-        m_conn->response_ok(m_ev);
-      else
+      if(err != Error::OK)
         m_conn->send_error(err , "", m_ev);
 
-      /* 
-      Protocol::Params::MngColumnRsp rsp_params(err);
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, rsp_params.encoded_length());
-      rsp_params.encode(cbp->get_data_ptr_address());
-
-      m_conn->send_response(cbp);
-      */
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }

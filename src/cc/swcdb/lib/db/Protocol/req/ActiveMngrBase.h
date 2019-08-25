@@ -33,7 +33,7 @@ class ActiveMngrBase : public DispatchHandler {
       [ptr=shared_from_this()]
       (client::ClientConPtr conn){
         if(conn == nullptr || !conn->is_open()){
-          ptr->run_within(conn->m_io_ctx, 200);
+          ptr->run_within(EnvClients::get()->mngr_service->io(), 200);
           return;
         }
         ptr->run(conn);

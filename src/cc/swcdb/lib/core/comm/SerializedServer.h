@@ -82,8 +82,7 @@ class SerializedServer{
     std::string name, 
     uint32_t reactors, uint32_t workers,
     std::string port_cfg_name,
-    AppContextPtr app_ctx,
-    bool detached=false
+    AppContextPtr app_ctx
   ): m_appname(name), m_run(true){
     
     HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
@@ -153,31 +152,31 @@ class SerializedServer{
       if(reactor == 0)
         app_ctx->init(endpoints_final);
 
-      std::thread* t =  new std::thread(
-        [d=io_ctx, run=&m_run]{ 
+        
+      asio::thread_pool* pool = new asio::thread_pool(workers);
+
+      for(int n=0;n<workers;n++)
+        asio::post(*pool, [d=io_ctx, run=&m_run]{
           // HT_INFOF("START DELAY: %s 3secs",  m_appname.c_str());
           std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-          
           do{
             d->run();
-            // HT_DEBUG("SRV IO stopped, restarting");
             d->restart();
           }while(run->load());
-          // HT_DEBUG("SRV IO exited");
         });
-      detached ? t->detach(): threads.push_back(t);
-    }
+      m_thread_pools.push_back(pool);
 
+    }
 
   }
 
   void run(){
     for(;;) {
-      auto it = threads.begin();
-      if(it == threads.end())
+      auto it = m_thread_pools.begin();
+      if(it == m_thread_pools.end())
         break;
       (*it)->join();
-      threads.erase(it);
+      m_thread_pools.erase(it);
     }
       
     HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
@@ -231,7 +230,7 @@ class SerializedServer{
 
   private:
   
-  std::vector<std::thread*> threads;
+  std::vector<asio::thread_pool*> m_thread_pools;
   std::atomic<bool> m_run;
   std::string       m_appname;
   std::vector<AcceptorPtr> m_acceptors;

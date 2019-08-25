@@ -4,7 +4,6 @@
 
 #ifndef swc_app_rangeserver_AppContext_h
 #define swc_app_rangeserver_AppContext_h
-#include <memory>
 
 #include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/core/comm/AppHandler.h"
@@ -76,7 +75,7 @@ class AppContext : public SWC::AppContext {
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
 
-    HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     
     switch (ev->type) {
 

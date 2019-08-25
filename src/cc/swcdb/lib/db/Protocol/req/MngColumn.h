@@ -8,7 +8,6 @@
 
 
 #include "swcdb/lib/db/Protocol/Commands.h"
-#include "swcdb/lib/db/Columns/Schema.h"
 
 #include "ActiveMngrBase.h"
 #include "CodeHandler.h"
@@ -54,9 +53,17 @@ class MngColumn: public ActiveMngrBase {
 
   virtual ~MngColumn(){}
 
+  
+  void request(Function func, DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
+    return make(std::make_shared<Req>(func, schema, cb));
+  }
 
   void create(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
-    return make(std::make_shared<Req>(Function::ADD, schema, cb));
+    return request(Function::ADD, schema, cb);
+  }
+
+  void remove(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
+    return request(Function::DELETE, schema, cb);
   }
 
 
@@ -104,7 +111,7 @@ class MngColumn: public ActiveMngrBase {
     }
     
     Req::Ptr req;
-    uint32_t sz;
+    uint32_t sz = 0;
     uint32_t len = 0;
     for(;;) {
       
@@ -112,8 +119,17 @@ class MngColumn: public ActiveMngrBase {
                 << " pending_writes=" << pending_write()
                 << " pending_read=" << pending_read() << "\n";
 
-      if(pending_write() > 10000) {
-        run_within(EnvClients::get()->mngr_service->io(), 200);
+      if(pending_write() > 1000 || pending_read() > 1000) {
+        (new asio::high_resolution_timer(
+          *EnvClients::get()->mngr_service->io().get(), std::chrono::milliseconds(200)))
+        ->async_wait(
+          [ptr=shared_from_this()](const asio::error_code ec) {
+            if (ec != asio::error::operation_aborted){
+              std::dynamic_pointer_cast<MngColumn>(ptr)
+                ->make_requests(nullptr, false);
+            }
+          });
+        //run_within(EnvClients::get()->mngr_service->io(), 200);
         return;
       }
         
@@ -149,7 +165,7 @@ class MngColumn: public ActiveMngrBase {
       return;
     }
 
-    if(!pending_write() && !pending_read()) 
+    if(!due()) 
       m_conn->close();
   }
 
@@ -161,6 +177,20 @@ class MngColumn: public ActiveMngrBase {
   size_t pending_read(){
     if(m_conn == nullptr) return 0;
     return m_conn->pending_read();
+  }
+
+  size_t queue(){
+    std::lock_guard<std::mutex> lock(m_mutex_queue);
+    return m_queue.size();
+  }
+
+  bool due(){
+    return  queue() > 0 || pending_read() > 0 || pending_write() > 0;
+  }
+
+  void close(){
+    if(m_conn != nullptr)
+      m_conn->close();
   }
 
   private:

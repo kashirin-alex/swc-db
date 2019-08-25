@@ -56,13 +56,14 @@ class FileSystemBroker: public FileSystem {
         "FS-BROKER", m_io->shared(), std::make_shared<client::AppContext>())),
       m_type_underlying(parse_fs_type(
         EnvConfig::settings()->get<String>("swc.fs.broker.underlying"))),
+      cfg_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
+        "swc.fs.broker.timeout")),
+      cfg_timeout_ratio(EnvConfig::settings()->get_ptr<gInt32t>(
+        "swc.fs.broker.timeout.bytes.ratio")),
       m_endpoints(get_endpoints()),
-      m_run(true)
-  { 
-    cfg_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.fs.broker.timeout");
-    cfg_timeout_ratio = EnvConfig::settings()->get_ptr<gInt32t>(
-      "swc.fs.broker.timeout.bytes.ratio");
+      m_run(true) { 
+        
+    m_io->run(m_io);
   }
 
   virtual ~FileSystemBroker(){}

@@ -24,6 +24,7 @@
 #include "handlers/MngRsId.h"
 #include "handlers/UpdateRangeServers.h"
 #include "handlers/MngColumn.h"
+#include "handlers/UpdateColumn.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -108,6 +109,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::CLIENT_REQ_MNG_COLUMN:
             handler = new Handler::MngColumn(conn, ev);
+            break;
+
+          case Protocol::Command::MNGR_UPDATE_COLUMN:
+            handler = new Handler::UpdateColumn(conn, ev);
             break;
 
           // + MngrRsResource

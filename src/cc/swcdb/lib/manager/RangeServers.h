@@ -12,12 +12,15 @@
 #include "swcdb/lib/db/Files/RsData.h"
 #include "RsStatus.h"
 
+#include "swcdb/lib/db/Files/Schema.h"
+#include "swcdb/lib/db/Protocol/params/MngColumn.h"
+
 #include "swcdb/lib/db/Protocol/req/LoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
+#include "swcdb/lib/db/Protocol/req/MngrUpdateColumn.h"
 
-#include "swcdb/lib/db/Files/Schema.h"
 
 namespace SWC { namespace server { namespace Mngr {
 
@@ -54,11 +57,17 @@ namespace server { namespace Mngr {
 
 class RangeServers {
 
+  struct ColumnActionReq {
+    Protocol::Params::MngColumn params;
+    std::function<void(int)>    cb;
+  };
+
   public:
   RangeServers()
     : m_assign_timer(
         std::make_shared<asio::high_resolution_timer>(*EnvIoCtx::io()->ptr())
-      ) {    
+      ),
+      m_actions_run(false) {    
     cfg_rs_failures = EnvConfig::settings()->get_ptr<gInt32t>(
       "swc.mngr.ranges.assign.RS.remove.failures");
     cfg_delay_rs_chg = EnvConfig::settings()->get_ptr<gInt32t>(
@@ -88,7 +97,59 @@ class RangeServers {
 
   virtual ~RangeServers(){}
 
-  void add_column(DB::SchemaPtr schema, int &err){
+
+  // Columns Actions
+  void column_action(ColumnActionReq req){
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_actions.push(req);
+    }
+    if(m_actions_run)
+      return;
+    m_actions_run = true;
+
+    int err;
+    for(;;){
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_actions.size() == 0)
+          break;
+        req = m_actions.front();
+        m_actions.pop();
+      }
+      err = Error::OK;
+      switch(req.params.function){
+        case Protocol::Params::MngColumn::Function::ADD: {
+          add_column(req.params.schema, err);  
+          if(err == Error::OK)        
+            Protocol::Req::MngrUpdateColumn::put(
+              req.params.function, req.params.schema->cid);
+          break;
+        }
+        case Protocol::Params::MngColumn::Function::DELETE: {
+          del_column(req.params.schema, err);
+          if(err == Error::OK)
+            Protocol::Req::MngrUpdateColumn::put(
+              req.params.function, req.params.schema->cid);
+          break;
+        }
+        default:
+          err = Error::NOT_IMPLEMENTED;
+          break;
+      }
+      
+      try{
+        req.cb(err);
+      } catch (Exception &e) {
+        HT_ERROR_OUT << " column_action: " << e << HT_END;
+      }
+    }
+
+    m_actions_run = false;
+    check_assignment(3000);
+  }
+  
+  void add_column(DB::SchemaPtr &schema, int &err){
     int64_t cid;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -125,75 +186,123 @@ class RangeServers {
     //notify active-mngrs of cid;
   }
 
-  void update_status(RsStatusList new_rs_status, bool sync_all){
-    RsStatusList changed;
-
+  void del_column(DB::SchemaPtr &schema, int &err){
+    int64_t cid;
     {
-    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(!m_columns_set) {
+        err = Error::MNGR_NOT_INITIALIZED;
+        return;
+      }
+      schema = EnvSchemas::get()->get(schema->col_name);
+      if(!schema){
+        err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
+        return;
+      }
+      cid = schema->cid;
 
+      Column::mark_deleted(err, cid);
+      m_cols_reuse.push(cid);
+
+      EnvFsInterface::fs()->remove(err, Files::Schema::filepath(cid));
+      EnvSchemas::get()->remove(cid);  
+    }
+
+    if(manage(cid)) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      // remove, initialize_col(cid);
+      return;
+    }
+    
+    //notify active-mngrs of cid;
+  }
+
+  void update_status(Protocol::Params::MngColumn::Function func, int64_t cid){
+    
+    if(manage(cid)){
+      switch(func){
+        case Protocol::Params::MngColumn::Function::ADD: {
+          {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            initialize_col(cid);
+          }
+          check_assignment(3000);
+          break;
+        }
+        case Protocol::Params::MngColumn::Function::DELETE: {
+          // initialize_col(cid);
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    
+    Protocol::Req::MngrUpdateColumn::put(func, cid);
+  }
+
+  // RangeServer Actions
+  void update_status(RsStatusList new_rs_status, bool sync_all){
     if(m_root_mngr && !sync_all)
       return;
 
-    RsStatusPtr h;
-    bool found;
-    bool chg;
+    RsStatusList changed;
 
-    for(auto rs_new : new_rs_status){
-      found = false;
-      for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
-        h = *it;
-        if(!has_endpoint(h->endpoints, rs_new->endpoints))
-          continue;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      RsStatusPtr h;
+      bool found;
+      bool chg;
 
-        chg = false;
-        if(rs_new->rs_id != h->rs_id){ 
-          if(m_root_mngr)
-            rs_new->rs_id = rs_set(rs_new->endpoints, rs_new->rs_id)->rs_id;
+      for(auto rs_new : new_rs_status){
+        found = false;
+        for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
+          h = *it;
+          if(!has_endpoint(h->endpoints, rs_new->endpoints))
+            continue;
+
+          chg = false;
+          if(rs_new->rs_id != h->rs_id){ 
+            if(m_root_mngr)
+              rs_new->rs_id = rs_set(rs_new->endpoints, rs_new->rs_id)->rs_id;
           
-          if(m_root_mngr && rs_new->rs_id != h->rs_id)
-            EnvMngrColumns::get()->change_rs(h->rs_id, rs_new->rs_id);
+            if(m_root_mngr && rs_new->rs_id != h->rs_id)
+              EnvMngrColumns::get()->change_rs(h->rs_id, rs_new->rs_id);
 
-          h->rs_id = rs_new->rs_id;
-          chg = true;
-        }
-       if(rs_new->endpoints != h->endpoints){
-          h->endpoints = rs_new->endpoints;
-          chg = true;
-        }
-        if(rs_new->state == RsStatus::State::ACK) {
-          if(rs_new->state != h->state) {
-            h->state = RsStatus::State::ACK;
+            h->rs_id = rs_new->rs_id;
             chg = true;
           }
-        } else {
-          EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
-          m_rs_status.erase(it);
-          chg = true;
+          if(rs_new->endpoints != h->endpoints){
+            h->endpoints = rs_new->endpoints;
+            chg = true;
+          }
+          if(rs_new->state == RsStatus::State::ACK) {
+            if(rs_new->state != h->state) {
+              h->state = RsStatus::State::ACK;
+              chg = true;
+            }
+          } else {
+            EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
+            m_rs_status.erase(it);
+            chg = true;
+          }
+
+          if(chg && !sync_all)
+            changed.push_back(rs_new);
+          found = true;
+          break;
         }
 
-        if(chg && !sync_all)
-          changed.push_back(rs_new);
-        found = true;
-        break;
+        if(!found){
+          if(rs_new->state == RsStatus::State::ACK)
+            m_rs_status.push_back(rs_new);
+          if(!sync_all)
+            changed.push_back(rs_new);
+        }
       }
-
-      if(!found){
-        if(rs_new->state == RsStatus::State::ACK)
-          m_rs_status.push_back(rs_new);
-        if(!sync_all)
-          changed.push_back(rs_new);
-      }
-    }
     }
     
     rs_changes(sync_all ? m_rs_status : changed, sync_all && !m_root_mngr);
-    if(sync_all || changed.size() > 0){
-      std::cout << "Updated RS-hosts: sync_all=" << sync_all << "\n";
-      for(auto rs : sync_all ? m_rs_status : changed){
-        std::cout << " " << rs->to_string() << "\n";
-      }
-    }
-    
   }
 
   uint64_t rs_set_id(EndPoints endpoints, uint64_t opt_id=0){
@@ -281,17 +390,6 @@ class RangeServers {
   }
 
   private:
-  
-  void rs_changes(RsStatusList hosts, bool sync_all=false){
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      if(hosts.size() > 0)
-        Protocol::Req::MngrUpdateRangeServers::put(hosts, sync_all);
-    }
-    
-    if(EnvMngrRoleState::get()->has_active_columns())
-      timer_assignment_checkin(cfg_delay_rs_chg->get());
-  }
 
   void check_assignment(uint32_t t_ms = 0){
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -340,6 +438,12 @@ class RangeServers {
   bool manage(int64_t cid){
     std::vector<int64_t> cols;
     EnvMngrRoleState::get()->get_active_columns(cols);
+    if(cols.size() == 0)
+      return false; 
+
+    if(*cols.begin() == 0 && *(cols.end()-1) < cid) // from till-end
+      return true;
+
     return std::find_if(cols.begin(), cols.end(),  
           [cid](const int64_t& cid_set){return cid_set == cid;}) != cols.end();
   }
@@ -353,9 +457,7 @@ class RangeServers {
     }
 
     int64_t last_id = 1;
-    auto c_it = std::find_if(cols.begin(), cols.end(),  
-                [](const int64_t& cid_set){return cid_set == 1;});
-    m_root_mngr = c_it != cols.end();
+    m_root_mngr = manage(1);
 
     if(m_root_mngr && m_last_cid == 0) { // done once
       while(initialize_col(last_id, true))
@@ -388,7 +490,6 @@ class RangeServers {
 
   bool initialize_col(int64_t cid, 
                       bool only_exists_chk=false) {
-
     bool exists = Column::exists(cid);
     if(cid > 3){
       if(only_exists_chk || !exists)
@@ -526,7 +627,7 @@ class RangeServers {
 
     if(conn != nullptr 
       && (std::make_shared<Protocol::Req::RsIdReqNeeded>(
-          conn, [rs, range] (bool err) {     
+          conn, [rs, range](bool err) {     
             err ? EnvRangeServers::get()->assign_range(rs, range)
                 : EnvRangeServers::get()->range_loaded(rs, range, false);
         }))->run())
@@ -573,6 +674,7 @@ class RangeServers {
         rs->total_ranges--;
       }
       range->set_state(Range::State::NOTSET, 0); 
+      check_assignment(2000);
 
     } else {
       range->set_state(Range::State::ASSIGNED, rs->rs_id); 
@@ -580,8 +682,8 @@ class RangeServers {
       // ++ mng_inchain - req. MngrRsResource
     }
 
-    HT_DEBUGF("RANGE-LOADED, cid=%d %s\n%s", 
-              range->cid, range->to_string().c_str(), to_string().c_str());
+    HT_DEBUGF("RANGE-LOADED, cid=%d %s", 
+              range->cid, range->to_string().c_str());//, to_string().c_str());
   }
 
   RsStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
@@ -625,19 +727,33 @@ class RangeServers {
     m_rs_status.push_back(h);
     return h;
   }
+  
+  void rs_changes(RsStatusList hosts, bool sync_all=false){
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      if(hosts.size() > 0)
+        Protocol::Req::MngrUpdateRangeServers::put(hosts, sync_all);
+    }
+    
+    if(EnvMngrRoleState::get()->has_active_columns())
+      timer_assignment_checkin(cfg_delay_rs_chg->get());
+  }
 
   std::mutex          m_mutex;
-  std::mutex          m_mutex_rs_status;
-  
-  bool                m_columns_set = false;
-  TimerPtr            m_assign_timer; 
   bool                m_run=true; 
+  TimerPtr            m_assign_timer; 
 
-  RsStatusList m_rs_status;
-
+  bool                m_columns_set = false;
+  std::atomic<bool>   m_root_mngr = false;
   int64_t             m_last_cid = 0;
   std::queue<int64_t> m_cols_reuse;
-  bool                m_root_mngr = false;
+
+  std::mutex          m_mutex_rs_status;
+  RsStatusList        m_rs_status;
+  
+  std::queue<ColumnActionReq> m_actions;
+  std::atomic<bool>           m_actions_run;
+
 
   gInt32tPtr          cfg_rs_failures;
   gInt32tPtr          cfg_delay_rs_chg;
