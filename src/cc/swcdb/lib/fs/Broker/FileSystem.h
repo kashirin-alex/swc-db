@@ -6,8 +6,6 @@
 #define swc_lib_fs_Broker_FileSystem_h
 
 #include "swcdb/lib/fs/FileSystem.h"
-#include "swcdb/lib/client/AppContext.h"
-#include "swcdb/lib/core/comm/SerializedClient.h"
 
 #include "Protocol/Commands.h"
 #include "Protocol/req/Exists.h"
@@ -26,6 +24,9 @@
 #include "Protocol/req/Flush.h"
 #include "Protocol/req/Close.h"
 
+#include "swcdb/lib/core/comm/SerializedClient.h"
+#include "AppContext.h"
+
 namespace SWC{ namespace FS {
 
 bool apply_broker();
@@ -33,7 +34,7 @@ bool apply_broker();
 
 class FileSystemBroker: public FileSystem {
   public:
-  
+
   static const EndPoints get_endpoints(){
     std::string host = EnvConfig::settings()->get<String>("swc.fs.broker.host", "");
     if(host.empty()){
@@ -53,7 +54,7 @@ class FileSystemBroker: public FileSystem {
       m_io(std::make_shared<IoContext>("FsBroker",
         EnvConfig::settings()->get<int32_t>("swc.fs.broker.handlers"))),
       m_service(std::make_shared<client::SerializedClient>(
-        "FS-BROKER", m_io->shared(), std::make_shared<client::AppContext>())),
+        "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
       m_type_underlying(parse_fs_type(
         EnvConfig::settings()->get<String>("swc.fs.broker.underlying"))),
       cfg_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
