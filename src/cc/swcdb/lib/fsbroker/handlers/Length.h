@@ -31,7 +31,6 @@ class Length : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::LengthReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       length = EnvFsInterface::fs()->length(err, params.get_fname());

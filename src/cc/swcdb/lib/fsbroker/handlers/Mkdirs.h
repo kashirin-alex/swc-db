@@ -30,7 +30,6 @@ class Mkdirs : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::MkdirsReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       EnvFsInterface::fs()->mkdirs(err, params.get_dirname());

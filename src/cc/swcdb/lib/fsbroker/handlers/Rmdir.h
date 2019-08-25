@@ -30,7 +30,6 @@ class Rmdir : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::RmdirReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       EnvFsInterface::fs()->rmdir(err, params.get_dname());

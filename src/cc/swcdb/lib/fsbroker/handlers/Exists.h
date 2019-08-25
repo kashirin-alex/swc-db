@@ -31,7 +31,6 @@ class Exists : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::ExistsReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       exists = EnvFsInterface::fs()->exists(err, params.get_fname());

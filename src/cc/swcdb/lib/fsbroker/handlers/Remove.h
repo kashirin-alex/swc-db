@@ -30,7 +30,6 @@ class Remove : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::RemoveReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       EnvFsInterface::fs()->remove(err, params.get_fname());

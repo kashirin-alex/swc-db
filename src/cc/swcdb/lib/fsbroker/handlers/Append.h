@@ -32,7 +32,6 @@ class Append : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::AppendReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       if (remain != params.get_size()) {

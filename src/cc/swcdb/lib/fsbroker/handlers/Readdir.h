@@ -31,7 +31,6 @@ class Readdir : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::ReaddirReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       EnvFsInterface::fs()->readdir(err, params.get_dirname(), results);

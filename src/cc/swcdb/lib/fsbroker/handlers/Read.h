@@ -33,7 +33,6 @@ class Read : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::ReadReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());

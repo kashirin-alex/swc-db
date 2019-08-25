@@ -32,7 +32,6 @@ class Create : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::CreateReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       FS::SmartFdPtr smartfd 

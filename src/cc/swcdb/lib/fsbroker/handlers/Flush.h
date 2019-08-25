@@ -30,7 +30,6 @@ class Flush : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       FS::Protocol::Params::FlushReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
