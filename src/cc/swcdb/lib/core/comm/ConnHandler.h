@@ -120,7 +120,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   inline bool is_open() {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_err == Error::OK && m_sock->is_open();
   }
 
@@ -211,12 +210,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
     cbuf->write_header_and_reset();
 
-    std::future<size_t> f;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      f = asio::async_write(
-        *m_sock.get(), cbuf->get_buffers(), asio::use_future);
-    }
+    std::future<size_t> f = asio::async_write(
+      *m_sock.get(), cbuf->get_buffers(), asio::use_future);
+
     std::future_status status = f.wait_for(
       std::chrono::milliseconds(timeout_ms));
 
@@ -298,7 +294,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(t_ms == 0) 
       return nullptr;
 
-    std::lock_guard<std::mutex> lock(m_mutex);
     TimerPtr tm = std::make_shared<asio::high_resolution_timer>(
       m_sock->get_executor(), std::chrono::milliseconds(t_ms)); 
 
@@ -317,23 +312,28 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
     
   inline void write_or_queue(Outgoing data){ 
-    std::lock_guard<std::mutex> lock(m_mutex);  
-    if(m_writing) {
-      m_outgoing.push(data);
-    } else {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);  
+      if(m_writing) {
+        m_outgoing.push(data);
+        return;
+      }
       m_writing = true;
-      write(data);
     }
+    write(data);
   }
   
   inline void next_outgoing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_writing = m_outgoing.size() > 0;
-    if(m_writing) {
-      Outgoing data = m_outgoing.front();
+    Outgoing data;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_writing = m_outgoing.size() > 0;
+      if(!m_writing) 
+        return;
+      data = m_outgoing.front();
       m_outgoing.pop();
-      write(data); 
     }
+    write(data); 
   }
   
   inline void write(Outgoing data){
@@ -375,7 +375,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     EventPtr ev = std::make_shared<Event>(Event::Type::MESSAGE, Error::OK);
     uint8_t* data = new uint8_t[CommHeader::FIXED_LENGTH+1];
 
-    std::lock_guard<std::mutex> lock(m_mutex);
     asio::async_read(
       *m_sock.get(), 
       asio::mutable_buffer(data, CommHeader::FIXED_LENGTH+1),
@@ -429,7 +428,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     asio::error_code ec;
     filled = 0;
     do{
-      std::lock_guard<std::mutex> lock(m_mutex);
       filled += m_sock->read_some(
         asio::mutable_buffer(payload+filled, ev->payload_len-filled),
         ec);
