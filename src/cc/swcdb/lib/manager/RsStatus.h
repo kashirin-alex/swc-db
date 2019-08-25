@@ -74,7 +74,6 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
     for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        std::cout << "RsQueue sz=" << m_requests.size() << "\n";
         m_running = m_requests.size() > 0;
         if(!m_running)
           break;

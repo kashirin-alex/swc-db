@@ -620,9 +620,9 @@ class RangeServers {
     RsStatusPtr rs_last = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      for(auto rs : m_rs_status) {
-        if(has_endpoint(rs->endpoints, last_rs->endpoints)){
-          rs_last = rs;
+      for(auto rs_chk : m_rs_status) {
+        if(has_endpoint(rs_chk->endpoints, last_rs->endpoints)){
+          rs_last = rs_chk;
           break;
         }
       }
