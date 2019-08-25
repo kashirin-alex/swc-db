@@ -71,7 +71,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx) { }
+            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx), m_next_req_id(0) { }
 
   ConnHandlerPtr ptr(){
     return shared_from_this();
@@ -279,19 +279,18 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   inline void accept_requests(DispatchHandlerPtr hdlr, 
                               uint32_t timeout_ms=0) {
-    read_pending({
+    add_pending({
       .id=0,  // initial req.acceptor
       .hdlr=hdlr,
       .tm=get_timer(timeout_ms)
     });
+    read_pending();
   }
 
   private:
 
   inline uint32_t next_req_id(){
-    if(++m_next_req_id == 0)// any but zero
-      ++m_next_req_id;
-    return m_next_req_id;
+    return ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id.load();
   }
 
   TimerPtr get_timer(uint32_t t_ms, CommHeader header=0){
@@ -338,29 +337,27 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
   inline void write(Outgoing data){
 
+    if(data.cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      add_pending({
+        .id=data.cbuf->header.id, 
+        .hdlr=data.hdlr, 
+        .tm=data.tm, 
+        .sequential=data.sequential});
+
     asio::async_write(
       *m_sock.get(), 
       data.cbuf->get_buffers(),
-      [data, ptr=ptr()](const asio::error_code ec, uint32_t len){
-        ptr->write_hdlr(data, ec, len);
+      [ptr=ptr()](const asio::error_code ec, uint32_t len){
+        if(ec)
+          ptr->do_close();
+        else {
+          ptr->read_pending();
+          ptr->next_outgoing();
+        }
       }
     );
-  }
-
-  void write_hdlr(Outgoing data, const asio::error_code ec, uint32_t len){
     
-    if(ec){
-      do_close();
-      return;
-    }
-
-    next_outgoing();
-
-    if(data.cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      read_pending({.id=data.cbuf->header.id, .hdlr=data.hdlr, 
-                        .tm=data.tm, .sequential=data.sequential});
-    else
-      read_pending();
+    
   }
 
   /*  do-an async_write
@@ -419,22 +416,18 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
   */
 
-  inline void read_pending(PendingRsp q){        
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
-      m_pending.push_back(q);
-    }
-    read_pending();
+  inline void add_pending(PendingRsp q){        
+    std::lock_guard<std::mutex> lock(m_mutex_reading);
+    m_pending.push_back(q);
   }
 
   inline void read_pending(){
     {
-    std::lock_guard<std::mutex> lock(m_mutex_reading);
-
-    if(m_reading || m_err != Error::OK)
-      return;
-    m_reading=true;
-    m_pendings++;
+      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      m_pendings++;
+      if(m_reading || m_err != Error::OK)
+        return;
+      m_reading=true;
     }
 
     EventPtr ev = std::make_shared<Event>(Event::Type::MESSAGE, Error::OK);
@@ -452,6 +445,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       }
     );
   }
+  
   size_t read_condition_hdlr(EventPtr ev, uint8_t* data,
                              const asio::error_code e, size_t filled){
     asio::error_code ec = e;
@@ -652,10 +646,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   std::atomic<Error::Code>  m_err = Error::OK;
   std::atomic<uint32_t>     m_next_req_id;
-
-  //
-  //asio::io_context::strand  m_strand_in;
-  //asio::io_context::strand  m_strand_out;
 
 };
 
