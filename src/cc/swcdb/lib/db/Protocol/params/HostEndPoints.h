@@ -17,7 +17,7 @@ class HostEndPoints: public Serializable {
 
   HostEndPoints() {}
 
-  HostEndPoints(EndPoints points) : endpoints(points) { }
+  HostEndPoints(const EndPoints& points) : endpoints(points) { }
   
   virtual ~HostEndPoints(){ }
 
@@ -27,14 +27,14 @@ class HostEndPoints: public Serializable {
 
   size_t encoded_length_internal() const {
     size_t len = 4;
-    for(auto endpoint : endpoints)
+    for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
     return len;
   }
 
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i32(bufp, endpoints.size());
-    for(auto endpoint : endpoints)
+    for(auto& endpoint : endpoints)
       Serialization::encode(endpoint, bufp);
   }
 
@@ -46,11 +46,11 @@ class HostEndPoints: public Serializable {
 
   std::string to_string() const {
     std::string s("endpoints=(");
-    for(auto e : endpoints){
+    for(auto& endpoint : endpoints){
       s.append("[");
-      s.append(e.address().to_string());
+      s.append(endpoint.address().to_string());
       s.append("]:");
-      s.append(std::to_string(e.port()));
+      s.append(std::to_string(endpoint.port()));
       s.append(",");
     }
     s.append(")");

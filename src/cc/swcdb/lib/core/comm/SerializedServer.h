@@ -117,7 +117,7 @@ class SerializedServer{
       m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
 
       for (std::size_t i = 0; i < endpoints.size(); ++i){
-        auto endpoint = endpoints[i];
+        auto& endpoint = endpoints[i];
 
         std::shared_ptr<asio::ip::tcp::acceptor> acceptor;
         if(reactor == 0){ 
@@ -200,7 +200,7 @@ class SerializedServer{
 
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      for(auto conn : m_conns)
+      for(auto& conn : m_conns)
         conn->close();
     }
     for (std::size_t i = 0; i < m_wrk.size(); ++i)

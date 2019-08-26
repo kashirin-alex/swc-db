@@ -52,7 +52,7 @@ class AppContext : public SWC::AppContext {
     EnvRangeServers::init();
   }
   
-  void init(EndPoints endpoints) override {
+  void init(const EndPoints& endpoints) override {
     EnvMngrRoleState::get()->init(endpoints);
     
     int sig = 0;

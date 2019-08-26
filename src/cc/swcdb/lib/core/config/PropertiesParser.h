@@ -88,7 +88,7 @@ class ParserConfig {
   public:
 
     ParserConfig();
-    ParserConfig(String usage, int line_len=0);
+    ParserConfig(const String& usage, int line_len=0);
 
     /* populate from other Parser Config */
     ParserConfig &add(ParserConfig other_cfg);
@@ -96,11 +96,11 @@ class ParserConfig {
     virtual ~ParserConfig(){}
 
     /* Method to add option */
-    ParserConfig &add(const String &names, Property::ValuePtr vptr, 
-                                                      String description);
+    ParserConfig &add(const String& names, Property::ValuePtr vptr, 
+                      const String& description);
 
-    ParserConfig &operator()(const String &name, Property::ValuePtr vptr, 
-                                                      String description) {
+    ParserConfig &operator()(const String& name, Property::ValuePtr vptr, 
+                            const String& description) {
       return add(name, vptr, description);
     }
 
@@ -109,15 +109,15 @@ class ParserConfig {
     }
 
     ParserConfig &add_options(const String &name, Property::ValuePtr vptr, 
-                                                      String description){
+                              const String& description){
       return add(name, vptr, description);
     }
 
-    ParserConfig &add(const String &names, String description){
+    ParserConfig &add(const String &names, const String& description){
       return add(names, cfg(true, true)->zero_token(), description);
     }
 
-    ParserConfig &operator()(const String &name, String description) {
+    ParserConfig &operator()(const String &name, const String&  description) {
       return add(name, description);
     }
     
@@ -136,7 +136,7 @@ class ParserConfig {
       return m_cfg;
     }
 
-    String get_usage(){
+    const String get_usage(){
       return m_usage;
     }
 
@@ -144,9 +144,9 @@ class ParserConfig {
       return m_poss;
     }
 
-    bool has(String &name);
+    bool has(const String& name);
 
-    Property::ValuePtr get_default(const String name);
+    Property::ValuePtr get_default(const String& name);
 
     void print(std::ostream& os);
 
@@ -181,21 +181,21 @@ class Parser{
       : Parser(arsg_to_strings(argc, argv), main, hidden, unregistered){      
     }
 
-    Parser(Strings raw_strings, ParserConfig *main, 
+    Parser(const Strings& raw_strings, ParserConfig *main, 
            ParserConfig *hidden=nullptr, bool unregistered=false);
 
-    void parse_line(String line);
+    void parse_line(const String& line);
 
-    void set_pos_parse(const String name, String value);
+    void set_pos_parse(const String& name, const String& value);
 
-    bool parse_opt(String s);
+    bool parse_opt(const String& s);
     
     void print(std::ostream& os);
 
     void make_options();
 
     // convert, validate and add property to options
-    void add_opt(const String name, Property::ValuePtr p, Strings raw_opt);
+    void add_opt(const String& name, Property::ValuePtr p, const Strings& raw_opt);
     
     void print_options(std::ostream& os);
     

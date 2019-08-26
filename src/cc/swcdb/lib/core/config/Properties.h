@@ -284,8 +284,8 @@ public:
    * @throw Error::CONFIG_GET_ERROR if the requested property is not defined
    */
   template <typename T>
-  T get_pref(Strings names){
-    for(String name : names)
+  T get_pref(const Strings& names){
+    for(const String& name : names)
       if (has(name))
         return get<T>(name);
     HT_THROWF(Error::CONFIG_GET_ERROR, "getting pref value by '%s'",

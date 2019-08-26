@@ -30,7 +30,7 @@ const int8_t VERSION=1;
 void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
     
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
-  for(auto cs : cellstores) {
+  for(auto& cs : cellstores) {
     sz += Serialization::encoded_length_vi32(cs->cs_id)
         + cs->intervals->encoded_length();
   }
@@ -40,7 +40,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   Serialization::encode_i32(&dst_buf.ptr, sz);
 
   Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
-  for(auto cs : cellstores){
+  for(auto& cs : cellstores){
     Serialization::encode_vi32(&dst_buf.ptr, cs->cs_id);
     cs->intervals->encode(&dst_buf.ptr);
   }

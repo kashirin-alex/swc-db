@@ -54,7 +54,7 @@ class ActiveMngrRsp : public HostEndPoints {
 
     ActiveMngrRsp() {}
 
-    ActiveMngrRsp(EndPoints endpoints) 
+    ActiveMngrRsp(const EndPoints& endpoints) 
                  : HostEndPoints(endpoints), available(endpoints.size()>0) { }
     bool available;
   

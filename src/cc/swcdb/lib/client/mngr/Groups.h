@@ -22,7 +22,7 @@ class Group {
   size_t col_begin;
   size_t col_end;
 
-  Group(size_t cbegin, size_t cend, EndPoints endpoints)
+  Group(size_t cbegin, size_t cend, const EndPoints& endpoints)
        : col_begin(cbegin), col_end(cend){
     m_hosts.push_back(endpoints);
   }
@@ -39,12 +39,12 @@ class Group {
     return std::make_shared<Group>(col_begin, col_end, get_hosts());
   }
 
-  void add_host(EndPoints new_endpoints){
+  void add_host(EndPoints& new_endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     EndPoints* found_host;
-    for(auto new_e : new_endpoints){
-      get_host(new_e, found_host);
+    for(auto& endpoint : new_endpoints){
+      get_host(endpoint, found_host);
       if(found_host != nullptr){
         std::lock_guard<std::mutex> lock(m_mutex);
         (*found_host).swap(new_endpoints);
@@ -57,9 +57,9 @@ class Group {
   std::vector<EndPoints> get_hosts(){
     std::vector<EndPoints> hosts;
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto endpoints : m_hosts){
+    for(auto& endpoints : m_hosts){
       EndPoints host;
-      for(auto endpoint : endpoints){
+      for(auto& endpoint : endpoints){
         host.push_back(endpoint);
       }
       hosts.push_back(host);
@@ -67,7 +67,7 @@ class Group {
     return hosts;
   }
 
-  bool is_in_group(EndPoint endpoint){
+  bool is_in_group(const EndPoint& endpoint){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     EndPoints* found_host;
@@ -86,9 +86,9 @@ class Group {
     s.append(std::to_string(col_end));
     s.append("\n");
     
-    for(auto endpoints : m_hosts){
+    for(auto& endpoints : m_hosts){
       s.append(" host=\n");
-      for(auto endpoint : endpoints){
+      for(auto& endpoint : endpoints){
         s.append("  [");
         s.append(endpoint.address().to_string());
         s.append("]");
@@ -103,12 +103,12 @@ class Group {
   void apply_endpoints(EndPoints& to_endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    for(auto endpoints : m_hosts){
-      for(auto endpoint : endpoints){
+    for(auto& endpoints : m_hosts){
+      for(auto& endpoint : endpoints){
         
         auto it = std::find_if(
           to_endpoints.begin(), to_endpoints.end(), 
-          [endpoint](const EndPoint & e2){
+          [endpoint](const EndPoint& e2){
             return endpoint.address() == e2.address() 
                    && endpoint.port() == e2.port();});
 
@@ -120,11 +120,11 @@ class Group {
 
   private:
 
-  void get_host(EndPoint &point, EndPoints*& found_host){
-    for(auto endpoints : m_hosts){
+  void get_host(const EndPoint& point, EndPoints*& found_host){
+    for(auto& endpoints : m_hosts){
         auto it = std::find_if(
           endpoints.begin(), endpoints.end(), 
-          [point](const EndPoint & e2){
+          [point](const EndPoint& e2){
             return point.address() == e2.address() 
                    && point.port() == e2.port();});
 
@@ -173,7 +173,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
   GroupsPtr copy(){
     std::vector<GroupPtr> groups;
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto group : m_groups)
+    for(auto& group : m_groups)
       groups.push_back(group->copy());
     return std::make_shared<Groups>(groups);
   }
@@ -271,7 +271,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
       return;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      for(auto group : m_groups){
+      for(auto& group : m_groups){
         if(group->col_begin == col_begin && group->col_end == col_end){
           group->add_host(endpoints);
           return;
@@ -285,17 +285,17 @@ class Groups : public std::enable_shared_from_this<Groups>{
   SelectedGroups get_groups(){
     SelectedGroups groups;
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto group : m_groups)
+    for(auto& group : m_groups)
       groups.push_back(group);
     return groups;
   }
 
-  SelectedGroups get_groups(EndPoints endpoints){
+  SelectedGroups get_groups(const EndPoints& endpoints){
     SelectedGroups host_groups;
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    for(auto group : m_groups){
-      for(auto &endpoint : endpoints){
+    for(auto& group : m_groups){
+      for(auto& endpoint : endpoints){
         if(group->is_in_group(endpoint) 
           && std::find_if(host_groups.begin(), host_groups.end(), 
              [group](const GroupPtr & g){return g == group;})
@@ -313,7 +313,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
       col_end = col_begin;
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    for(auto group : m_groups){
+    for(auto& group : m_groups){
       if(group->col_begin <= col_begin
         && (group->col_end == 0 || (col_end > 0 && group->col_end >= col_end))) {
         group->apply_endpoints(endpoints);
@@ -326,7 +326,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
     std::string s("manager-groups:\n");
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto group : m_groups)
+    for(auto& group : m_groups)
       s.append(group->to_string());
     return s;
   }

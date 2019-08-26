@@ -17,7 +17,7 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
 
   typedef std::function<void(client::ClientConPtr conn)> ConnCb_t;
 
-  RsQueue(EndPoints endpoints)
+  RsQueue(const EndPoints& endpoints)
           : m_endpoints(endpoints), m_conn(nullptr),
             cfg_rs_conn_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.timeout")),
@@ -110,7 +110,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   RsStatus(): rs_id(0), state(State::NONE), 
               failures(0), total_ranges(0) {}
                        
-  RsStatus(uint64_t rs_id, EndPoints endpoints)
+  RsStatus(uint64_t rs_id, const EndPoints& endpoints)
           : rs_id(rs_id), state(State::NONE), 
             failures(0), total_ranges(0),
             Protocol::Params::HostEndPoints(endpoints),

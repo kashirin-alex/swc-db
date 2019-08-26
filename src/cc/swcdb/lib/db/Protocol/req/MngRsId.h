@@ -37,7 +37,7 @@ class MngRsId: public ActiveMngrBase {
     ActiveMngrBase::run();
   }
 
-  void run(EndPoints endpoints) override {
+  void run(const EndPoints& endpoints) override {
 
     if(m_conn != nullptr && m_conn->is_open()){
       make_request(nullptr, false);

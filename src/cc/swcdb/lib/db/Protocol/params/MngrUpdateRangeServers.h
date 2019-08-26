@@ -22,7 +22,7 @@ namespace Params {
 
     const std::string to_string() {
       std::string s("RangeServers-params:");
-      for(auto h : hosts) {
+      for(auto& h : hosts) {
         s.append("\n ");
         s.append(h->to_string());
       }
@@ -40,7 +40,7 @@ namespace Params {
     
     size_t encoded_length_internal() const {
       size_t len = 5; // (sync_all+num_hosts)
-      for(auto h : hosts)
+      for(auto& h : hosts)
         len += h->encoded_length();
       return len;
     }
@@ -48,7 +48,7 @@ namespace Params {
     void encode_internal(uint8_t **bufp) const {
       Serialization::encode_bool(bufp, sync_all);
       Serialization::encode_i32(bufp, hosts.size());
-      for(auto h : hosts)
+      for(auto& h : hosts)
         h->encode(bufp);
     }
     

@@ -45,7 +45,7 @@ class AppContext : public SWC::AppContext {
     
   }
 
-  void init(EndPoints endpoints) override {
+  void init(const EndPoints& endpoints) override {
     EnvRsData::get()->endpoints = endpoints;
     
     int sig = 0;

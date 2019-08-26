@@ -16,18 +16,18 @@ namespace Serialization {
   
 inline size_t encoded_length(ScanSpecs::ListKeys &keys){
   size_t len = 0;
-  for(auto k : keys)
+  for(auto& k : keys)
     len += k.len+1;
   return Serialization::encoded_length_vi32(len)+len;
 }
 
 inline void encode(ScanSpecs::ListKeys &keys, uint8_t **ptr){
   size_t len = 0;
-  for(auto k : keys)
+  for(auto& k : keys)
     len += k.len+1;
   Serialization::encode_vi32(ptr, len);
 
-  for(auto k : keys){
+  for(auto& k : keys){
     memcpy(*ptr, k.key, k.len);
     *ptr += k.len;
     **ptr = 0;
@@ -124,7 +124,7 @@ class Intervals {
     Serialization::decode(
       keys_begin, m_serial_begin, ptr, m_serial_begin_len, remain);
 
-    for(auto &k : keys_begin)
+    for(auto& k : keys_begin)
       k.comp = Comparator::LT;
   }
 
@@ -138,7 +138,7 @@ class Intervals {
     Serialization::decode(
       keys_end, m_serial_end, ptr, m_serial_end_len, remain);
 
-    for(auto &k : keys_end)
+    for(auto& k : keys_end)
       k.comp = Comparator::LT;
   }
 

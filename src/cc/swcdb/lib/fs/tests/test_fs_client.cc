@@ -49,7 +49,7 @@ void run(size_t thread_id){
     }
     bool found = false;
     std::cout << "Dir List, sz=" << listing.size() <<  ":\n";
-    for(auto dirent : listing){
+    for(auto& dirent : listing){
       std::cout << " " << dirent.to_string();
       if(dirent.name.compare(std::to_string(thread_id)) == 0){
         found = true;
@@ -306,7 +306,7 @@ int main(int argc, char** argv) {
       threads.push_back(new std::thread([t](){run(t);}));
     
     std::cout << "--2--\n";
-    for(auto t : threads) t->join();
+    for(auto& t : threads) t->join();
     std::cout << "--3--\n";
 
   

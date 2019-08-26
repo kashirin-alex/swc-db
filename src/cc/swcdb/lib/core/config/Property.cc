@@ -55,7 +55,7 @@ const ValueType get_value_type(const std::type_info &v_type){
  * Convertors & Validators from String
 */
 
-double double_from_string(String s){
+double double_from_string(const String& s){
   char *last;
   double res = strtod(s.c_str(), &last);
 
@@ -77,7 +77,7 @@ double double_from_string(String s){
   return res;
 }
 
-int64_t int64_t_from_string(String s){
+int64_t int64_t_from_string(const String& s){
   char *last;
   int64_t res = strtoll(s.c_str(), &last, 0);
 
@@ -103,7 +103,7 @@ int64_t int64_t_from_string(String s){
   return res;
 }
 
-uint16_t uint16_t_from_string(String s){
+uint16_t uint16_t_from_string(const String& s){
   int64_t res = int64_t_from_string(s);
 
   if (res > UINT16_MAX || res < -UINT16_MAX) 
@@ -112,7 +112,7 @@ uint16_t uint16_t_from_string(String s){
   return (uint16_t)res;
 }
 
-int32_t int32_t_from_string(String s){
+int32_t int32_t_from_string(const String& s){
   int64_t res = int64_t_from_string(s);
 
   if (res > INT32_MAX || res < INT32_MIN) 
@@ -123,14 +123,16 @@ int32_t int32_t_from_string(String s){
 
 
 template <>
-ValueDef<EnumExt>::ValueDef(ValueType typ, Strings values, EnumExt defaulted) {
+ValueDef<EnumExt>::ValueDef(ValueType typ, const Strings& values, 
+                            EnumExt defaulted) {
   set_type(typ);
   get_ptr()->set_from(defaulted);  // assign call functions if set
   if(!values.empty())
     from_strings(values);
 }
 template <>
-ValueDef<gEnumExt>::ValueDef(ValueType typ, Strings values, gEnumExt defaulted) {
+ValueDef<gEnumExt>::ValueDef(ValueType typ, const Strings& values, 
+                              gEnumExt defaulted) {
   set_type(typ);
   get_ptr()->set_from(defaulted);  // assign call functions if set
   if(!values.empty())
@@ -138,7 +140,7 @@ ValueDef<gEnumExt>::ValueDef(ValueType typ, Strings values, gEnumExt defaulted) 
 }
 
 template <>
-void ValueDef<bool>::from_strings(Strings values) {
+void ValueDef<bool>::from_strings(const Strings& values) {
   bool res;
   String str = values.back();
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -146,7 +148,7 @@ void ValueDef<bool>::from_strings(Strings values) {
   set_value(res);
 }
 template <>
-void ValueDef<gBool>::from_strings(Strings values) {
+void ValueDef<gBool>::from_strings(const Strings& values) {
   bool res;
   String str = values.back();
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -154,115 +156,115 @@ void ValueDef<gBool>::from_strings(Strings values) {
   set_value(res);
 }
 template <>
-void ValueDef<String>::from_strings(Strings values){
+void ValueDef<String>::from_strings(const Strings& values){
   set_value(values.back());
 }
 template <>
-void ValueDef<double>::from_strings(Strings values) {
+void ValueDef<double>::from_strings(const Strings& values) {
   set_value(double_from_string(values.back()));
 }
 template <>
-void ValueDef<uint16_t>::from_strings(Strings values) {
+void ValueDef<uint16_t>::from_strings(const Strings& values) {
   set_value(uint16_t_from_string(values.back()));
 }
 template <>
-void ValueDef<int32_t>::from_strings(Strings values) {
+void ValueDef<int32_t>::from_strings(const Strings& values) {
   set_value(int32_t_from_string(values.back()));
 }
 template <>
-void ValueDef<gInt32t>::from_strings(Strings values) {
+void ValueDef<gInt32t>::from_strings(const Strings& values) {
   set_value(int32_t_from_string(values.back()));
 }
 template <>
-void ValueDef<int64_t>::from_strings(Strings values) {
+void ValueDef<int64_t>::from_strings(const Strings& values) {
   set_value(int64_t_from_string(values.back()));
 }
 template <>
-void ValueDef<Doubles>::from_strings(Strings values){
+void ValueDef<Doubles>::from_strings(const Strings& values){
   Doubles value;
-  for(String s: values)
+  for(const String& s: values)
     value.push_back(double_from_string(s));
   set_value(value);
 }
 template <>
-void ValueDef<Int64s>::from_strings(Strings values){
+void ValueDef<Int64s>::from_strings(const Strings& values){
   Int64s value;
-  for(String s: values)
+  for(const String& s: values)
     value.push_back(int64_t_from_string(s));
   set_value(value);
 }
 template <>
-void ValueDef<Strings>::from_strings(Strings values){
+void ValueDef<Strings>::from_strings(const Strings& values){
   set_value(values);
 }
 template <>
-void ValueDef<gStrings>::from_strings(Strings values){
+void ValueDef<gStrings>::from_strings(const Strings& values){
   set_value(values);
 }
 template <>
-void ValueDef<EnumExt>::from_strings(Strings values){
+void ValueDef<EnumExt>::from_strings(const Strings& values){
   get_ptr()->from_string(values.back());
 }
 template <>
-void ValueDef<gEnumExt>::from_strings(Strings values){
+void ValueDef<gEnumExt>::from_strings(const Strings& values){
   get_ptr()->from_string(values.back());
 }
 
 
 template <>
-String ValueDef<bool>::str(){
+const String ValueDef<bool>::str(){
   return get_value() ? "true" : "false";;
 }
 template <>
-String ValueDef<gBool>::str(){
+const String ValueDef<gBool>::str(){
   return (bool)get_value() ? "true" : "false";;
 }
 template <>
-String ValueDef<String>::str(){
+const String ValueDef<String>::str(){
   return get_value();
 }
 template <>
-String ValueDef<double>::str(){
+const String ValueDef<double>::str(){
   return format("%g", get_value());
 }
 template <>
-String ValueDef<uint16_t>::str(){
+const String ValueDef<uint16_t>::str(){
   return format("%u", (unsigned)get_value());
 }
 template <>
-String ValueDef<int32_t>::str(){
+const String ValueDef<int32_t>::str(){
   return format("%d", get_value());
 }
 template <>
-String ValueDef<gInt32t>::str(){
+const String ValueDef<gInt32t>::str(){
   return format("%d", (int32_t)get_value());
 }
 template <>
-String ValueDef<int64_t>::str(){
+const String ValueDef<int64_t>::str(){
   return format("%ld", get_value());
 }
 template <>
-String ValueDef<Doubles>::str(){
+const String ValueDef<Doubles>::str(){
   return format_list(get_value());
 }
 template <>
-String ValueDef<Int64s>::str(){
+const String ValueDef<Int64s>::str(){
   return format_list(get_value());
 }
 template <>
-String ValueDef<Strings>::str(){
+const String ValueDef<Strings>::str(){
   return format_list(get_value());
 }
 template <>
-String ValueDef<gStrings>::str(){
+const String ValueDef<gStrings>::str(){
   return format_list((Strings)get_value());
 }
 template <>
-String ValueDef<EnumExt>::str(){
+const String ValueDef<EnumExt>::str(){
   return v.to_str();
 }
 template <>
-String ValueDef<gEnumExt>::str(){
+const String ValueDef<gEnumExt>::str(){
   return v.to_str();
 }
 
@@ -312,7 +314,7 @@ void Value::set_value_from(ValuePtr from){
   }
 }
 
-String Value::str(){
+const String Value::str(){
   if (type_ptr == nullptr)
     return "nullptr";
       

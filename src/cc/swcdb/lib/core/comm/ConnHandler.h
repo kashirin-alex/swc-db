@@ -32,18 +32,18 @@ typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 namespace SWC { 
 
 
-inline size_t endpoints_hash(EndPoints endpoints){
+inline size_t endpoints_hash(const EndPoints& endpoints){
   std::string s;
-  for(auto e : endpoints){
-    s.append(e.address().to_string());
+  for(auto& endpoint : endpoints){
+    s.append(endpoint.address().to_string());
     s.append(":");
-    s.append(std::to_string(e.port()));
+    s.append(std::to_string(endpoint.port()));
   }
   std::hash<std::string> hasher;
   return hasher(s);
 }
 
-inline size_t endpoint_hash(asio::ip::tcp::endpoint endpoint){
+inline size_t endpoint_hash(const EndPoint& endpoint){
   std::hash<std::string> hasher;
   return hasher(
     (std::string)endpoint.address().to_string()

@@ -103,7 +103,7 @@ class RsData {
     
     size_t len = 12 // (ts+endpoints.size)
                + Serialization::encoded_length_vi64(rs_id.load());
-    for(auto endpoint : endpoints)
+    for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
     dst_buf.ensure(HEADER_SIZE+len);
 
@@ -114,7 +114,7 @@ class RsData {
     Serialization::encode_vi64(&dst_buf.ptr, rs_id.load());
     
     Serialization::encode_i32(&dst_buf.ptr, endpoints.size());
-    for(auto endpoint : endpoints)
+    for(auto& endpoint : endpoints)
       Serialization::encode(endpoint, &dst_buf.ptr);
   
     assert(dst_buf.fill() <= dst_buf.size);
@@ -123,11 +123,11 @@ class RsData {
   std::string to_string(){
     std::string s("RsData(");
     s.append("endpoints=(");
-    for(auto e : endpoints){
+    for(auto& endpoint : endpoints){
       s.append("[");
-      s.append(e.address().to_string());
+      s.append(endpoint.address().to_string());
       s.append("]:");
-      s.append(std::to_string(e.port()));
+      s.append(std::to_string(endpoint.port()));
       s.append(",");
     }
     s.append(")");

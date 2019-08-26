@@ -61,10 +61,10 @@ const ValueType get_value_type(const std::type_info &v_type);
 /**
  * Convertors & Validators from String
 */
-double double_from_string(String s);
-int64_t int64_t_from_string(String s);
-uint16_t uint16_t_from_string(String s);
-int32_t int32_t_from_string(String s);
+double double_from_string(const String& s);
+int64_t int64_t_from_string(const String& s);
+uint16_t uint16_t_from_string(const String& s);
+int32_t int32_t_from_string(const String& s);
 
 /**
 * Property::TypeDef
@@ -95,7 +95,7 @@ class  ValueDef : public TypeDef {
       return std::is_enum<T>::value; 
     }
 
-    ValueDef(ValueType typ, Strings values, T defaulted) {
+    ValueDef(ValueType typ, const Strings& values, T defaulted) {
       set_type(typ);
       if(!values.empty())
         from_strings(values);
@@ -115,7 +115,7 @@ class  ValueDef : public TypeDef {
       v = nv; 
     }
 
-    void from_strings(Strings values) {};
+    void from_strings(const Strings& values) {};
 
     T get_value() {
       return v;       
@@ -125,7 +125,7 @@ class  ValueDef : public TypeDef {
       return &v;      
     }
 
-    String str(){
+    const String str(){
       return "invalid option type";
     }
 
@@ -145,70 +145,72 @@ class  ValueDef : public TypeDef {
 };
 
 template <>
-ValueDef<EnumExt>::ValueDef(ValueType typ, Strings values, EnumExt defaulted);
+ValueDef<EnumExt>::ValueDef(ValueType typ, const Strings& values, 
+                            EnumExt defaulted);
 template <>
-ValueDef<gEnumExt>::ValueDef(ValueType typ, Strings values, gEnumExt defaulted);
+ValueDef<gEnumExt>::ValueDef(ValueType typ, const Strings& values, 
+                              gEnumExt defaulted);
 
 
 /* set_value from_strings */
 template <>
-void ValueDef<bool>::from_strings(Strings values);
+void ValueDef<bool>::from_strings(const Strings& values);
 template <>
-void ValueDef<gBool>::from_strings(Strings values);
+void ValueDef<gBool>::from_strings(const Strings& values);
 template <>
-void ValueDef<String>::from_strings(Strings values);
+void ValueDef<String>::from_strings(const Strings& values);
 template <>
-void ValueDef<double>::from_strings(Strings values);
+void ValueDef<double>::from_strings(const Strings& values);
 template <>
-void ValueDef<uint16_t>::from_strings(Strings values);
+void ValueDef<uint16_t>::from_strings(const Strings& values);
 template <>
-void ValueDef<int32_t>::from_strings(Strings values);
+void ValueDef<int32_t>::from_strings(const Strings& values);
 template <>
-void ValueDef<gInt32t>::from_strings(Strings values);
+void ValueDef<gInt32t>::from_strings(const Strings& values);
 template <>
-void ValueDef<int64_t>::from_strings(Strings values);
+void ValueDef<int64_t>::from_strings(const Strings& values);
 template <>
-void ValueDef<Doubles>::from_strings(Strings values);
+void ValueDef<Doubles>::from_strings(const Strings& values);
 template <>
-void ValueDef<Int64s>::from_strings(Strings values);
+void ValueDef<Int64s>::from_strings(const Strings& values);
 template <>
-void ValueDef<Strings>::from_strings(Strings values);
+void ValueDef<Strings>::from_strings(const Strings& values);
 template <>
-void ValueDef<gStrings>::from_strings(Strings values);
+void ValueDef<gStrings>::from_strings(const Strings& values);
 template <>
-void ValueDef<EnumExt>::from_strings(Strings values);
+void ValueDef<EnumExt>::from_strings(const Strings& values);
 template <>
-void ValueDef<gEnumExt>::from_strings(Strings values);
+void ValueDef<gEnumExt>::from_strings(const Strings& values);
 
 /* return string representation */
 template <>
-String ValueDef<bool>::str();
+const String ValueDef<bool>::str();
 template <>
-String ValueDef<gBool>::str();
+const String ValueDef<gBool>::str();
 template <>
-String ValueDef<String>::str();
+const String ValueDef<String>::str();
 template <>
-String ValueDef<double>::str();
+const String ValueDef<double>::str();
 template <>
-String ValueDef<uint16_t>::str();
+const String ValueDef<uint16_t>::str();
 template <>
-String ValueDef<int32_t>::str();
+const String ValueDef<int32_t>::str();
 template <>
-String ValueDef<gInt32t>::str();
+const String ValueDef<gInt32t>::str();
 template <>
-String ValueDef<int64_t>::str();
+const String ValueDef<int64_t>::str();
 template <>
-String ValueDef<Doubles>::str();
+const String ValueDef<Doubles>::str();
 template <>
-String ValueDef<Int64s>::str();
+const String ValueDef<Int64s>::str();
 template <>
-String ValueDef<Strings>::str();
+const String ValueDef<Strings>::str();
 template <>
-String ValueDef<gStrings>::str();
+const String ValueDef<gStrings>::str();
 template <>
-String ValueDef<EnumExt>::str();
+const String ValueDef<EnumExt>::str();
 template <>
-String ValueDef<gEnumExt>::str();
+const String ValueDef<gEnumExt>::str();
 
 
     
@@ -273,7 +275,7 @@ class Value {
     }
     
     /* represent value in string */
-    String str();
+    const String str();
     
     /* a Default Value */
     ValuePtr default_value(bool defaulted=true){

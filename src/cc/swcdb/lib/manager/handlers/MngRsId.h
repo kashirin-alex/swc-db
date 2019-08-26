@@ -40,7 +40,7 @@ class MngRsId : public AppHandler {
         std::cout << "MNGR NOT ACTIVE: \n";
       
         Protocol::Params::MngRsId rsp_params(
-          0, Protocol::Params::MngRsId::Flag::MNGR_NOT_ACTIVE, {});
+          0, Protocol::Params::MngRsId::Flag::MNGR_NOT_ACTIVE);
         
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
@@ -59,7 +59,7 @@ class MngRsId : public AppHandler {
           uint64_t rs_id = rangeservers->rs_set_id(req_params.endpoints);
 
           Protocol::Params::MngRsId rsp_params(
-            rs_id, Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED, {});
+            rs_id, Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED);
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
           CommBufPtr cbp = std::make_shared<CommBuf>(
@@ -77,7 +77,7 @@ class MngRsId : public AppHandler {
           } else {
 
             Protocol::Params::MngRsId rsp_params(
-              0, Protocol::Params::MngRsId::Flag::MNGR_REREQ, {});
+              0, Protocol::Params::MngRsId::Flag::MNGR_REREQ);
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
             CommBufPtr cbp = std::make_shared<CommBuf>(
@@ -96,7 +96,7 @@ class MngRsId : public AppHandler {
 
           if (rs_id != 0){
             Protocol::Params::MngRsId rsp_params(
-              rs_id, Protocol::Params::MngRsId::Flag::MNGR_REASSIGN, {});
+              rs_id, Protocol::Params::MngRsId::Flag::MNGR_REASSIGN);
       
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
@@ -116,7 +116,7 @@ class MngRsId : public AppHandler {
           rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
           
           Protocol::Params::MngRsId rsp_params(
-            req_params.rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, {});
+            req_params.rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN);
       
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);

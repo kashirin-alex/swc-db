@@ -30,7 +30,10 @@ namespace Params {
 
     MngRsId() {}
 
-    MngRsId(uint64_t rs_id, Flag flag, EndPoints endpoints) 
+    MngRsId(uint64_t rs_id, Flag flag) 
+            : rs_id(rs_id), flag(flag){
+    }
+    MngRsId(uint64_t rs_id, Flag flag, const EndPoints& endpoints) 
               : rs_id(rs_id), flag(flag), HostEndPoints(endpoints){     
     }
 

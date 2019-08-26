@@ -93,9 +93,9 @@ Property::ValuePtr g_strs() {
 namespace Config {
 
 ParserConfig::ParserConfig(){            
-  m_usage = "";   
+  ;   
 }
-ParserConfig::ParserConfig(String usage, int line_len){ 
+ParserConfig::ParserConfig(const String& usage, int line_len){ 
   m_usage = usage;
   m_line_length = line_len;
 }
@@ -117,7 +117,7 @@ ParserConfig& ParserConfig::add(ParserConfig other_cfg){
 }
 
 ParserConfig& ParserConfig::add(const String &names, Property::ValuePtr vptr, 
-                                                          String description){
+                                const String& description){
   Strings aliases;
   std::istringstream f(names);
   String s;    
@@ -144,19 +144,19 @@ ParserConfig& ParserConfig::add_pos(const String s, int pos){
   return *this;
 }
 
-bool ParserConfig::has(String &name){
+bool ParserConfig::has(const String& name){
   for(MapPair info : get_map()){
     if(name.compare(info.first)==0)return true;
-    for(String alias : info.second.aliases)
+    for(const String& alias : info.second.aliases)
       if(name.compare(alias)==0){
-        name = String(info.first);
+        // name = String(info.first);
         return true;
       }
   }
   return false;
 }
 
-Property::ValuePtr ParserConfig::get_default(const String name){
+Property::ValuePtr ParserConfig::get_default(const String& name){
   return get_map().at(name).value;
 }
 
@@ -240,7 +240,7 @@ Parser::Parser(std::ifstream &in, ParserConfig cfg, bool unregistered){
   make_options();
 }
 
-Parser::Parser(Strings raw_strings, ParserConfig *main, 
+Parser::Parser(const Strings& raw_strings, ParserConfig *main, 
                ParserConfig *hidden, bool unregistered){
   m_unregistered = unregistered;
 
@@ -260,7 +260,7 @@ Parser::Parser(Strings raw_strings, ParserConfig *main,
   int n=0;
   int len_o = raw_strings.size();
 
-  for(String raw_opt: raw_strings){
+  for(const String& raw_opt: raw_strings){
     n++;
 
     // position based name with position's value
@@ -309,7 +309,7 @@ Parser::Parser(Strings raw_strings, ParserConfig *main,
   make_options();
 }
 
-void Parser::parse_line(String line){
+void Parser::parse_line(const String& line){
   String name, value;
   size_t at, cmt;
   at = line.find_first_of("="); // is a cfg type
@@ -346,15 +346,15 @@ void Parser::parse_line(String line){
   //cfg_name = parse_opt(line);
   // if(!cfg_name)
   //  HT_WARNF("unknown cfg: %s", line.c_str());
-  line.clear();
+  // line.clear();
 }
 
-void Parser::set_pos_parse(const String name, String value){
+void Parser::set_pos_parse(const String& name, const String& value){
   InsRet r = raw_opts.insert(Pair(name, Strings()));
   (*r.first).second.push_back(value);
 }
 
-bool Parser::parse_opt(String s){
+bool Parser::parse_opt(const String& s){
   size_t at = s.find_first_of("=");
   if(at==std::string::npos) return false;
 
@@ -395,7 +395,7 @@ void Parser::make_options(){
   }
 }
 
-void Parser::add_opt(const String name, Property::ValuePtr p, Strings raw_opt){
+void Parser::add_opt(const String& name, Property::ValuePtr p, const Strings& raw_opt){
   Property::ValuePtr p_set = Property::make_new(p, raw_opt);
   if(raw_opt.empty())
     p_set->default_value();

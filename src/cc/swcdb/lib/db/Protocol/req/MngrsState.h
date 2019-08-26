@@ -16,7 +16,7 @@ class MngrsState : public DispatchHandler {
   public:
 
   static CommBufPtr get_buf(server::Mngr::HostStatuses states, 
-                            uint64_t token, EndPoint mngr_host, 
+                            uint64_t token, const EndPoint& mngr_host, 
                             uint32_t timeout) {
     Protocol::Params::MngrsState params(states, token, mngr_host);
     CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);

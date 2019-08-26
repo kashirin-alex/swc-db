@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   );
 
   SWC::EndPoints endpoints = clients->mngrs_groups->get_endpoints(101);
-  for(auto endpoint : endpoints){
+  for(auto& endpoint : endpoints){
     std::cout << "[" << endpoint.address().to_string() << "]:" << endpoint.port() << "\n";
   }
   
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     //std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
 
-  for(auto t : threads)t->join();
+  for(auto& t : threads)t->join();
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   std::cout << "--######################--\n";

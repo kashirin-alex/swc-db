@@ -92,7 +92,7 @@ class ActiveMngrBase : public DispatchHandler {
 
   }
 
-  virtual void run(EndPoints endpoints) = 0;
+  virtual void run(const EndPoints& endpoints) = 0;
 
 
   size_t    begin; 

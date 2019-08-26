@@ -34,7 +34,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
     std::cerr << "AppContext(handle is Virtual!)\n";
   }
 
-  virtual void init(EndPoints endpoints) {
+  virtual void init(const EndPoints& endpoints) {
     m_endpoints = endpoints;
   }
   

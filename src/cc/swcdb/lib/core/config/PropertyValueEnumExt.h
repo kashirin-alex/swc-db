@@ -72,7 +72,7 @@ class ValueEnumExtBase {
       return *this;
     }
 
-    int from_string(String opt);
+    int from_string(const String& opt);
     
     void set_default_calls();
 
@@ -86,11 +86,11 @@ class ValueEnumExtBase {
       return call_repr;
     }
 
-    String str() {
+    const String str() {
       return get_call_repr()(get());
     }
 
-    String to_str();
+    const String to_str();
 
     virtual ~ValueEnumExtBase() {};
 

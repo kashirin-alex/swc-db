@@ -249,7 +249,7 @@ class RangeServers {
       bool found;
       bool chg;
 
-      for(auto rs_new : new_rs_status){
+      for(auto& rs_new : new_rs_status){
         found = false;
         for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
           h = *it;
@@ -302,18 +302,18 @@ class RangeServers {
     rs_changes(sync_all ? m_rs_status : changed, sync_all && !m_root_mngr);
   }
 
-  uint64_t rs_set_id(EndPoints endpoints, uint64_t opt_id=0){
+  uint64_t rs_set_id(const EndPoints& endpoints, uint64_t opt_id=0){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     return rs_set(endpoints, opt_id)->rs_id;
   }
 
-  bool rs_ack_id(uint64_t rs_id, EndPoints endpoints){
+  bool rs_ack_id(uint64_t rs_id, const EndPoints& endpoints){
     bool ack = false;
     RsStatusPtr new_ack = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     
-      for(auto h : m_rs_status){
+      for(auto& h : m_rs_status){
         if(has_endpoint(h->endpoints, endpoints) && rs_id == h->rs_id){
           if(h->state != RsStatus::State::ACK)
             new_ack = h;
@@ -329,12 +329,12 @@ class RangeServers {
     return ack;
   }
 
-  uint64_t rs_had_id(uint64_t rs_id, EndPoints endpoints){
+  uint64_t rs_had_id(uint64_t rs_id, const EndPoints& endpoints){
     bool new_id_required = false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
 
-      for(auto h : m_rs_status){
+      for(auto& h : m_rs_status){
         if(rs_id == h->rs_id){
           if(has_endpoint(h->endpoints, endpoints))
             return 0; // zero=OK
@@ -347,12 +347,12 @@ class RangeServers {
     return rs_set_id(endpoints, new_id_required ? 0 : rs_id);
   }
 
-  void rs_shutdown(uint64_t rs_id, EndPoints endpoints){
+  void rs_shutdown(uint64_t rs_id, const EndPoints& endpoints){
     RsStatusPtr removed = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
-        auto h = *it;
+        auto& h = *it;
         if(has_endpoint(h->endpoints, endpoints)){
           m_rs_status.erase(it);
           EnvMngrColumns::get()->set_rs_unassigned(h->rs_id);
@@ -370,7 +370,7 @@ class RangeServers {
     std::string s("RangeServers:");
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      for(auto h : m_rs_status) {
+      for(auto& h : m_rs_status) {
         s.append("\n ");
         s.append(h->to_string());
       }
@@ -560,7 +560,7 @@ class RangeServers {
       return;
 
     if(last_rs->endpoints.size() > 0) {
-       for(auto rs : m_rs_status) {
+       for(auto& rs : m_rs_status) {
           if(rs->state == RsStatus::State::ACK
             && rs->failures < cfg_rs_failures->get() 
             && has_endpoint(rs->endpoints, last_rs->endpoints)){
@@ -620,7 +620,7 @@ class RangeServers {
     RsStatusPtr rs_last = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-      for(auto rs_chk : m_rs_status) {
+      for(auto& rs_chk : m_rs_status) {
         if(has_endpoint(rs_chk->endpoints, last_rs->endpoints)){
           rs_last = rs_chk;
           break;
@@ -690,10 +690,10 @@ class RangeServers {
               range->cid, range->to_string().c_str());//, to_string().c_str());
   }
 
-  RsStatusPtr rs_set(EndPoints endpoints, uint64_t opt_id=0){
+  RsStatusPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
 
     for(auto it=m_rs_status.begin();it<m_rs_status.end(); it++){
-      auto h = *it;
+      auto& h = *it;
       if(has_endpoint(h->endpoints, endpoints)) {
         if(h->state == RsStatus::State::ACK) {
           if(endpoints.size() > h->endpoints.size())
@@ -719,7 +719,7 @@ class RangeServers {
       }
       
       ok = true;
-      for(auto h : m_rs_status){
+      for(auto& h : m_rs_status){
         if(nxt == h->rs_id) {
           ok = false;
           break;

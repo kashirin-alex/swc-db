@@ -88,7 +88,7 @@ class Range : public DB::RangeBase {
     int64_t ts;
     int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
     int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
-    for(auto cs : cellstores){
+    for(auto& cs : cellstores){
       // cs->intervals->apply_if_wider(intervals);
 
       if(intervals->is_any_keys_begin() 
@@ -208,7 +208,7 @@ class Range : public DB::RangeBase {
     Serialization::encode_vi64(&d, 123);
     Serialization::encode_vi64(&d, 987);
     size_t remain = d-base;
-    for(auto cs : cellstores){
+    for(auto& cs : cellstores){
       size_t remain2 = remain;
       const uint8_t * base2 = base;
       *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
@@ -245,7 +245,7 @@ class Range : public DB::RangeBase {
     s.append(intervals->to_string());
 
     s.append(", cellstores=[");
-    for(auto cs : cellstores) {
+    for(auto& cs : cellstores) {
       s.append(cs->to_string());
       s.append(", ");
     }

@@ -108,7 +108,7 @@ class FileSystemLocal: public FileSystem {
     String full_entry_path;
     struct stat statbuf;
 
-    for(auto result : listing){
+    for(auto& result : listing){
       if (result.d_name[0] == '.' || result.d_name[0] == 0)
         continue;
 

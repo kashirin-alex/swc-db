@@ -85,7 +85,7 @@ class FileSystemHadoop: public FileSystem {
   bool initialize(){
     
     if (EnvConfig::settings()->has("swc.fs.hadoop.namenode")) {
-      for(auto h : EnvConfig::settings()->get<Strings>("swc.fs.hadoop.namenode")){
+      for(auto& h : EnvConfig::settings()->get<Strings>("swc.fs.hadoop.namenode")){
 	      hdfsBuilder* bld = hdfsNewBuilder();
         hdfsBuilderSetNameNode(bld, h.c_str());
 

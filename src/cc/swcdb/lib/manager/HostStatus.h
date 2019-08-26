@@ -17,7 +17,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
   HostStatus() {}
 
   HostStatus(uint64_t  begin, uint64_t  end,
-             EndPoints points, client::ClientConPtr c, uint32_t pr)
+             const EndPoints& points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Params::HostEndPoints(points), conn(c), priority(pr),
                state(Types::MngrState::NOTSET) { }

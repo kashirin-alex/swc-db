@@ -71,7 +71,7 @@ class RoleState {
 
   virtual ~RoleState() { }
 
-  void init(EndPoints endpoints) {
+  void init(const EndPoints& endpoints) {
     m_local_endpoints = endpoints;
     m_local_token = endpoints_hash(m_local_endpoints);
 
@@ -118,7 +118,7 @@ class RoleState {
 
   HostStatusPtr active_mngr(size_t begin, size_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(host->state == Types::MngrState::ACTIVE 
         && host->col_begin <= begin 
         && (host->col_end == 0 || host->col_end >= end)){
@@ -146,7 +146,7 @@ class RoleState {
     bool new_recs = false;
     bool turn_around = token == m_local_token;
 
-    for(auto host : states){
+    for(auto& host : states){
 
       bool local = has_endpoint(host->endpoints, m_local_endpoints);
 
@@ -207,13 +207,13 @@ class RoleState {
 
     }
     
-    for(auto host : states){
+    for(auto& host : states){
       if(!is_off(host->col_begin, host->col_end))
         continue;
       auto hosts_pr_group = 
         EnvClients::get()->mngrs_groups->get_endpoints(
           host->col_begin, host->col_end);
-      for(auto h : hosts_pr_group){
+      for(auto& h : hosts_pr_group){
         if(has_endpoint(h, host->endpoints) 
           || !has_endpoint(h, m_local_endpoints))
           continue;
@@ -251,7 +251,7 @@ class RoleState {
     }
     
     std::cout << "RoleStates:\n";
-    for(auto h : m_states)
+    for(auto& h : m_states)
       std::cout << h->to_string() << "\n";
 
     } // mutex-end
@@ -265,7 +265,7 @@ class RoleState {
     return set_active_columns();
   }
 
-  void update_manager_addr(uint64_t hash, EndPoint mngr_host){
+  void update_manager_addr(uint64_t hash, const EndPoint& mngr_host){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     bool new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
@@ -277,19 +277,20 @@ class RoleState {
     //          << " mngr_host="<<mngr_host.address().to_string() << ":" <<mngr_host.port() << "\n";
   }
   
-  bool disconnection(EndPoint endpoint_server, EndPoint endpoint_client, 
+  bool disconnection(const EndPoint& endpoint_server, const EndPoint& endpoint_client, 
                      bool srv=false){
+    EndPoints endpoints;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
     
       auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
       if(it != m_mngrs_client_srv.end()) {
-        endpoint_server = (*it).second;
+        endpoints.push_back((*it).second);
         m_mngrs_client_srv.erase(it);
-      }
+      } else 
+        endpoints.push_back(endpoint_server);
     }
-
-    HostStatusPtr host_set = get_host((EndPoints){endpoint_server});
+    HostStatusPtr host_set = get_host(endpoints);
     if(host_set == nullptr)
       return false;
 
@@ -329,13 +330,13 @@ class RoleState {
     client::Mngr::SelectedGroups groups = 
       EnvClients::get()->mngrs_groups->get_groups();
     
-    for(auto g : groups) {
+    for(auto& g : groups) {
       // HT_DEBUG( g->to_string().c_str());
       uint32_t pr = 0;
-      for(auto endpoints : g->get_hosts()) {
+      for(auto& endpoints : g->get_hosts()) {
 
         bool found = false;
-        for(auto host : m_states){
+        for(auto& host : m_states){
           found = has_endpoint(endpoints, host->endpoints);
           if(found)break;
         }
@@ -438,27 +439,27 @@ class RoleState {
   void update_state(EndPoint endpoint, Types::MngrState state){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(has_endpoint(endpoint, host->endpoints)){
         host->state = state;
       }
     }
   }
 
-  void update_state(EndPoints endpoints, Types::MngrState state){
+  void update_state(const EndPoints& endpoints, Types::MngrState state){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(has_endpoint(endpoints, host->endpoints)){
         host->state = state;
       }
     }
   }
   
-  HostStatusPtr get_host(EndPoints endpoints){
+  HostStatusPtr get_host(const EndPoints& endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(has_endpoint(endpoints, host->endpoints))
         return host;
     }
@@ -469,7 +470,7 @@ class RoleState {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     HostStatusPtr h = nullptr;
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(host->col_begin == begin && host->col_end == end 
         && (h == nullptr || h->state < host->state)){
         h = host;
@@ -482,7 +483,7 @@ class RoleState {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     bool offline = true;
-    for(auto host : m_states){
+    for(auto& host : m_states){
       if(host->col_begin == begin 
         && host->col_end == end && host->state != Types::MngrState::OFF)
         offline = false;
@@ -499,7 +500,7 @@ class RoleState {
     }
 
     std::vector<int64_t> cols_active;
-    for(auto group : groups){
+    for(auto& group : groups){
       int64_t cid =   group->col_begin == 0 ?  1  : group->col_begin;
       int64_t cid_end = group->col_end == 0 ? cid : group->col_end;
 

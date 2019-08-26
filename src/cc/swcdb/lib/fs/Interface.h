@@ -190,7 +190,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     if(err != Error::OK)
       return;
 
-    for(auto entry : dirs) {
+    for(auto& entry : dirs) {
       // std::cout << entry.to_string();
       if(!entry.is_dir) continue;
 

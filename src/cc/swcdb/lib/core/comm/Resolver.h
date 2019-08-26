@@ -17,11 +17,11 @@ typedef std::vector<EndPoint> EndPoints;
 
 namespace Serialization {
   
-inline size_t encoded_length(EndPoint endpoint){
+inline size_t encoded_length(const EndPoint& endpoint){
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
-inline void encode(EndPoint endpoint, uint8_t **bufp){
+inline void encode(const EndPoint& endpoint, uint8_t **bufp){
   Serialization::encode_i16(bufp, endpoint.port());
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
   if(endpoint.address().is_v4()) {
@@ -76,7 +76,7 @@ inline EndPoint decode(const uint8_t **bufp, size_t *remainp){
 }
 
 
-inline bool has_endpoint(EndPoint& e1, EndPoints& endpoints_in){
+inline bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in){
   if(endpoints_in.size()==0) 
     return false;
   return std::find_if(endpoints_in.begin(), endpoints_in.end(),  
@@ -85,9 +85,9 @@ inline bool has_endpoint(EndPoint& e1, EndPoints& endpoints_in){
         != endpoints_in.end();
 }
 
-inline bool has_endpoint(EndPoints& endpoints, EndPoints& endpoints_in){
-  for(auto & e1 : endpoints){
-    if(has_endpoint(e1, endpoints_in)) return true;
+inline bool has_endpoint(const EndPoints& endpoints, const EndPoints& endpoints_in){
+  for(auto& endpoint : endpoints){
+    if(has_endpoint(endpoint, endpoints_in)) return true;
   }
   return false;
 }
@@ -117,7 +117,7 @@ inline EndPoints get_endpoints(int32_t defaul_port,
   if(!addrs.empty()) {
     std::string ip;
     uint32_t port;
-    for(auto addr : addrs) {
+    for(auto& addr : addrs) {
       auto at = addr.find_first_of("-");
       if(at != std::string::npos) {
         ip = addr.substr(0, at);  

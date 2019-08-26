@@ -42,7 +42,7 @@ class AppContext : public SWC::AppContext {
     EnvFds::init();
   }
   
-  void init(EndPoints endpoints) override {
+  void init(const EndPoints& endpoints) override {
     int sig = 0;
     EnvIoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);

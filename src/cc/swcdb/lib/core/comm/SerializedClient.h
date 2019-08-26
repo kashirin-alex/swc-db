@@ -55,7 +55,7 @@ static std::string to_string(ClientConPtr conn){
 class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
   public:
 
-  ServerConnections(std::string srv_name, const EndPoint endpoint,
+  ServerConnections(std::string srv_name, const EndPoint& endpoint,
                     IOCtxPtr ioctx, AppContextPtr ctx)
                   : m_srv_name(srv_name), m_endpoint(endpoint), 
                     m_ioctx(ioctx), m_ctx(ctx){}
@@ -176,7 +176,7 @@ class SerializedClient{
   }
 
   ClientConPtr get_connection(
-        const EndPoints endpoints, 
+        const EndPoints& endpoints, 
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
         uint32_t probes=0
         ){
@@ -191,7 +191,7 @@ class SerializedClient{
     uint32_t tries = probes;
     do {
 
-      for(auto endpoint : endpoints){
+      for(auto& endpoint : endpoints){
         srv = get_srv(endpoint);
         srv->reusable(conn);
         if(conn != nullptr)
@@ -210,7 +210,7 @@ class SerializedClient{
   }
 
   void get_connection(
-        const EndPoints endpoints, 
+        const EndPoints& endpoints, 
         NewClientConnCb_t cb,
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
         uint32_t probes=0){
@@ -225,7 +225,7 @@ class SerializedClient{
   }
   
   void get_connection(
-        const EndPoints endpoints, 
+        const EndPoints& endpoints, 
         NewClientConnCb_t cb,
         std::chrono::milliseconds timeout,
         uint32_t probes, uint32_t tries, 

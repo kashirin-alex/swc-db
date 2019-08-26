@@ -19,7 +19,7 @@ namespace SWC {
 namespace Property {
 
 
-int ValueEnumExtBase::from_string(String opt) {
+int ValueEnumExtBase::from_string(const String& opt) {
   int nv = get_call_from_string()(opt);
   if(nv > -1)
     set_value(nv);
@@ -33,12 +33,12 @@ int ValueEnumExtBase::from_string(String opt) {
   return get();
 }
 
-String ValueEnumExtBase::to_str() {
+const String ValueEnumExtBase::to_str() {
   return format("%s  # (%d)", get_call_repr()(get()).c_str(), get());
 }
 
 void ValueEnumExtBase::set_default_calls() {
-  call_from_string = [](String opt){
+  call_from_string = [](const String& opt){
       HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s, no from_string cb set", opt.c_str());
       return -1;
   };
