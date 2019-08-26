@@ -84,7 +84,7 @@ class MngColumn: public ActiveMngrBase {
     );
   }
 
-  void make(Req::Ptr req) {
+  inline void make(Req::Ptr req) {
     {
       std::lock_guard<std::mutex> lock(m_mutex_queue);
       m_queue.push(req);
@@ -114,11 +114,11 @@ class MngColumn: public ActiveMngrBase {
     uint32_t sz = 0;
     uint32_t len = 0;
     for(;;) {
-      
+
+      /* 
       std::cout << " make_requests queue sz=" << sz 
                 << " pending_writes=" << pending_write()
                 << " pending_read=" << pending_read() << "\n";
-
       if(pending_write() > 1000 || pending_read() > 1000) {
         (new asio::high_resolution_timer(
           *EnvClients::get()->mngr_service->io().get(), std::chrono::milliseconds(200)))
@@ -132,12 +132,13 @@ class MngColumn: public ActiveMngrBase {
         //run_within(EnvClients::get()->mngr_service->io(), 200);
         return;
       }
+      */
         
 
       {
         std::lock_guard<std::mutex> lock(m_mutex_queue);
         sz = m_queue.size();
-        m_running = m_queue.size() > 0;
+        m_running = sz > 0;
         if(!m_running)
           break;
         req = m_queue.front();
@@ -151,8 +152,8 @@ class MngColumn: public ActiveMngrBase {
       CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
       params.encode(cbp->get_data_ptr_address());
       
-      if(m_conn->send_request(cbp, 
-              std::make_shared<CodeHandler>(req)) == Error::OK){
+      if(m_conn->send_request(
+        cbp, std::make_shared<CodeHandler>(req)) == Error::OK){
         continue;  
       }
       

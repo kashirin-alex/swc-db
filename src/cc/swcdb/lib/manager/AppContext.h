@@ -19,6 +19,7 @@
 #include "RoleState.h"
 #include "RangeServers.h"
 
+#include "swcdb/lib/db/Protocol/handlers/Echo.h"
 #include "handlers/MngrsState.h"
 #include "handlers/ActiveMngr.h"
 #include "handlers/MngRsId.h"
@@ -113,6 +114,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::MNGR_UPDATE_COLUMN:
             handler = new Handler::UpdateColumn(conn, ev);
+            break;
+
+          case Protocol::Command::REQ_ECHO:
+            handler = new common::Handler::Echo(conn, ev);
             break;
 
           // + MngrRsResource

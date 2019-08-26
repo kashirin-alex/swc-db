@@ -24,7 +24,7 @@ class AppContext : public SWC::AppContext {
 
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
     //if(ev->type != Event::Type::DISCONNECT){
-    std::cout << "ClientAppContext, handle: " << ev->to_str() << "\n";
+    // std::cout << "ClientAppContext, handle: " << ev->to_str() << "\n";
     //}
     return;
   }

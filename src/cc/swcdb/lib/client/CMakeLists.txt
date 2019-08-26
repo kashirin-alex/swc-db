@@ -6,6 +6,12 @@
 
 
 ADD_EXEC_TARGET(
+	NAME      test_echo
+	SRCS      test/test_echo.cc
+	TARGETS   swcdb_core swcdb_db swcdb_core_comm
+)
+
+ADD_EXEC_TARGET(
 	NAME      test_mngr_client
 	SRCS      test/test_mngr_client.cc
 	TARGETS   swcdb_core swcdb_db swcdb_core_comm

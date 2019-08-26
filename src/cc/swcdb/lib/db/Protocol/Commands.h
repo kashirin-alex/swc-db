@@ -10,7 +10,6 @@
 namespace SWC { namespace Protocol {
 
   enum Command {
-
     MNGR_REQ_MNGRS_STATE,
     CLIENT_REQ_ACTIVE_MNGR,
     
@@ -25,6 +24,8 @@ namespace SWC { namespace Protocol {
     MNGR_UPDATE_COLUMN,
 
     CLIENT_REQ_MNG_COLUMN,
+
+    REQ_ECHO,
     //
 
     RS_RSP_SCAN,

@@ -109,9 +109,7 @@ class EnvIoCtx {
     m_io->run(m_io);
   }
 
-  virtual ~EnvIoCtx(){
-    std::cout << " ~EnvIoCtx\n";
-  }
+  virtual ~EnvIoCtx(){ }
 
   private:
   IoContextPtr  m_io;

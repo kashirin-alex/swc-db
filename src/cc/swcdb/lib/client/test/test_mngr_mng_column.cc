@@ -24,52 +24,61 @@ using namespace SWC;
 
 class Stat {
   public:
-  Stat(): count(0), avg(0) {}
+  Stat(): m_count(0), m_avg(0), m_max(0),m_min(-1) {}
   virtual ~Stat(){}
 
   void add(uint64_t v){
     std::lock_guard<std::mutex> lock(m_mutex);
-    avg *= count;
-    avg += v;
-    avg /= ++count;
-    if(v > max)
-      max = v;
-    if(v < min)
-      min = v;
+    m_avg *= m_count;
+    m_avg += v;
+    m_avg /= ++m_count;
+    if(v > m_max)
+      m_max = v;
+    if(v < m_min)
+      m_min = v;
   }
 
   uint64_t avg(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return avg;
+    return m_avg;
   }
   uint64_t max(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return max;
+    return m_max;
   }
   uint64_t min(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return min;
+    return m_min;
+  }
+
+  uint64_t count(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_count;
   }
 
   private:
   std::mutex m_mutex;
-  uint64_t count;
-  uint64_t avg;
-  uint64_t min;
-  uint64_t max;
+  uint64_t m_count;
+  uint64_t m_avg;
+  uint64_t m_min;
+  uint64_t m_max;
 };
 
 void chk(Protocol::Req::MngColumnPtr hdlr, 
-         Protocol::Req::MngColumn::Function func){
-  
+         Protocol::Req::MngColumn::Function func, int threads_num=1, int checks=1){
+  std::atomic<int> chks = checks+1;
   std::shared_ptr<Stat> stat = std::make_shared<Stat>();
 
   std::vector<std::thread*> threads;
-  for(int t=1;t<=1;t++) {
-    threads.push_back(new std::thread([hdlr, func, t, stat](){
-      for(int i=1; i<= 100000; i++){
+  for(int t=1;t<=threads_num;t++) {
+    threads.push_back(new std::thread([hdlr, func, t, stat, &chks](){
+      int n;
+      for(;;) {
+        n = --chks;
+        if(n <= 0)
+          break;
         std::string name("column-");
-        name.append(std::to_string(i*t));
+        name.append(std::to_string(n));
 
         hdlr->request(
           func,
@@ -91,8 +100,9 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
               )){
               hdlr->make(ptr);
 
-            }
-            stat->add(took);
+            } else
+              stat->add(took);
+            /* 
             std::cout << " func="<< ptr->function 
                       << " pending_writes=" << hdlr->pending_write()
                       << " pending_read=" << hdlr->pending_read()
@@ -100,6 +110,7 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
                       << " name="<< ptr->schema->col_name  
                       << " " << err << "(" << Error::get_text(err) 
                       << " took=" << took << ")\n"; 
+            */
           }
         );
       }
@@ -107,28 +118,23 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
   }
 
   for(auto& t : threads)t->join();
-
-  
-  std::cout << " func="<< func 
-            << " ### threads EXIT ###, "
-            << " pending_writes=" << hdlr->pending_write()
-            << " pending_read=" << hdlr->pending_read()
-            << " queue=" << hdlr->queue()
-            << " took=" << stat->get()
-            << "\n";
-  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   
   while(hdlr->due()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    std::cout << " func="<< func 
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+  }
+
+    
+    std::cout << " threads_num="<< threads_num
+              << " checks="<< checks
+              << " func="<< func 
               << " pending_writes=" << hdlr->pending_write()
               << " pending_read=" << hdlr->pending_read()
               << " queue=" << hdlr->queue()
               << " avg=" << stat->avg()
               << " min=" << stat->min()
               << " max=" << stat->max()
+              << " count=" << stat->count()
               << "\n";
-  }
   hdlr->close();
 }
 
@@ -144,8 +150,27 @@ int main(int argc, char** argv) {
 
   Protocol::Req::MngColumnPtr hdlr = std::make_shared<Protocol::Req::MngColumn>();
   
-  chk(hdlr, Protocol::Req::MngColumn::Function::ADD);
+  for(int i=1;i<=10;){
+    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 1, 1);
+    i+=1;
+  }
+  std::cout << "####\n";
+  for(int i=1;i<=10;){
+    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 1, 10);
+    i+=1;
+  }
+  std::cout << "####\n";
+  for(int i=1;i<=10;){
+    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 4, 100);
+    i+=1;
+  }
+  std::cout << "####\n";
 
+  for(int i=1;i<=10;){
+    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 128, 10000);
+    i+=1;
+  }
+  std::cout << "####\n";
   //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE);
 
   //chk(hdlr, Protocol::Req::MngColumn::Function::ADD);
