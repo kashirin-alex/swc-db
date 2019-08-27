@@ -14,12 +14,12 @@ class RoleState;
 typedef std::shared_ptr<RoleState> RoleStatePtr;
 }}
 
-class EnvMngrRoleState {
-  
+namespace Env {
+class MngrRoleState {
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvMngrRoleState>();
+    m_env = std::make_shared<MngrRoleState>();
   }
 
   static server::Mngr::RoleStatePtr get(){
@@ -27,15 +27,16 @@ class EnvMngrRoleState {
     return m_env->m_role_state;
   }
 
-  EnvMngrRoleState() 
+  MngrRoleState() 
     : m_role_state(std::make_shared<server::Mngr::RoleState>()) {}
 
-  virtual ~EnvMngrRoleState(){}
+  virtual ~MngrRoleState(){}
 
   private:
-  server::Mngr::RoleStatePtr               m_role_state = nullptr;
-  inline static std::shared_ptr<EnvMngrRoleState> m_env = nullptr;
+  server::Mngr::RoleStatePtr                    m_role_state = nullptr;
+  inline static std::shared_ptr<MngrRoleState>  m_env = nullptr;
 };
+}
 
 }
 #include "AppContextClient.h"
@@ -52,20 +53,20 @@ class RoleState {
   public:
   RoleState()
     : m_check_timer(
-        std::make_shared<asio::high_resolution_timer>(*EnvIoCtx::io()->ptr())
+        std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
       ),
       m_checkin(false) {
-    cfg_conn_probes = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_conn_probes = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.connection.probes");
-    cfg_conn_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_conn_timeout = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.connection.timeout");
-    cfg_req_timeout = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_req_timeout = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.request.timeout");
-    cfg_check_interval = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_check_interval = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.check.interval");
-    cfg_delay_updated = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_delay_updated = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.check.delay.updated");
-    cfg_delay_fallback = EnvConfig::settings()->get_ptr<gInt32t>(
+    cfg_delay_fallback = Env::Config::settings()->get_ptr<gInt32t>(
       "swc.mngr.role.check.delay.fallback");
   }
 
@@ -92,7 +93,7 @@ class RoleState {
     m_check_timer->async_wait(
       [](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
-          EnvMngrRoleState::get()->managers_checkin();
+          Env::MngrRoleState::get()->managers_checkin();
         }
     }); 
     HT_DEBUGF("RoleState managers_checkin scheduled in ms=%d", t_ms);
@@ -129,16 +130,11 @@ class RoleState {
   }
 
   void req_mngr_inchain(ReqMngrInchain_t func){
-    std::lock_guard<std::mutex> lock(m_mutex_mngr_inchain);
-
-    if(m_mngr_inchain == nullptr || !m_mngr_inchain->is_open()){
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
       m_mngr_inchain_queue.push(func);
-      // std::cout << " req_mngr_inchain, queue=" 
-      //          << m_mngr_inchain_queue.size() << "\n";
-      return;
     }
     run_mngr_inchain_queue();
-    func(m_mngr_inchain);
   }
 
   bool fill_states(HostStatuses states, uint64_t token, ResponseCallbackPtr cb){
@@ -211,7 +207,7 @@ class RoleState {
       if(!is_off(host->col_begin, host->col_end))
         continue;
       auto hosts_pr_group = 
-        EnvClients::get()->mngrs_groups->get_endpoints(
+        Env::Clients::get()->mngrs_groups->get_endpoints(
           host->col_begin, host->col_end);
       for(auto& h : hosts_pr_group){
         if(has_endpoint(h, host->endpoints) 
@@ -244,7 +240,7 @@ class RoleState {
         )](client::ClientConPtr mngr) {
           if(!(std::make_shared<Protocol::Req::MngrsState>(mngr, cbp, cb)
               )->run())
-            EnvMngrRoleState::get()->timer_managers_checkin(3000);
+            Env::MngrRoleState::get()->timer_managers_checkin(3000);
         }
       );
       return false;
@@ -328,7 +324,7 @@ class RoleState {
   void apply_cfg(){
 
     client::Mngr::SelectedGroups groups = 
-      EnvClients::get()->mngrs_groups->get_groups();
+      Env::Clients::get()->mngrs_groups->get_groups();
     
     for(auto& g : groups) {
       // HT_DEBUG( g->to_string().c_str());
@@ -347,7 +343,7 @@ class RoleState {
       }
     }
     
-    m_local_groups = EnvClients::get()->mngrs_groups->get_groups(
+    m_local_groups = Env::Clients::get()->mngrs_groups->get_groups(
       m_local_endpoints);
   }
 
@@ -412,24 +408,22 @@ class RoleState {
         
     if(host_chk->conn != nullptr && host_chk->conn->is_open()){
       set_mngr_inchain(host_chk->conn);
-      fill_states();
       return;
     }
 
-    EnvClients::get()->mngr_service->get_connection(
+    Env::Clients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
-      [host_chk, next, flw, total, ptr=EnvMngrRoleState::get()]
+      [host_chk, next, flw, total]
       (client::ClientConPtr conn){
         if(conn == nullptr || !conn->is_open()){
           host_chk->state = Types::MngrState::OFF;
-          ptr->managers_checker(next, total-1, flw);
+          Env::MngrRoleState::get()->managers_checker(next, total-1, flw);
           return;
         }
         //conn->accept_requests();
         host_chk->conn = conn;
-        ptr->m_major_updates = true;
-        ptr->set_mngr_inchain(host_chk->conn);
-        ptr->fill_states();
+        Env::MngrRoleState::get()->m_major_updates = true;
+        Env::MngrRoleState::get()->set_mngr_inchain(host_chk->conn);
       },
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
       cfg_conn_probes->get()
@@ -527,18 +521,40 @@ class RoleState {
   }
   
   void run_mngr_inchain_queue(){
-    while(m_mngr_inchain_queue.size() > 0){
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
+      if(m_mngr_inchain_running)
+        return;
+      m_mngr_inchain_running = true;
+    }
+
+    for(;;) {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
+      if(m_mngr_inchain_queue.size() == 0 
+        || m_mngr_inchain == nullptr 
+        || !m_mngr_inchain->is_open())
+        break;
+
+      std::cout << " run_mngr_inchain_queue=" << m_mngr_inchain_queue.size() << "\n";
       m_mngr_inchain_queue.front()(m_mngr_inchain);
       m_mngr_inchain_queue.pop();
+    }
+
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
+      m_mngr_inchain_running = false;
     }
   }
 
   void set_mngr_inchain(client::ClientConPtr mngr){
-    std::lock_guard<std::mutex> lock(m_mutex_mngr_inchain);
-    m_mngr_inchain = mngr;
-    if(m_mngr_inchain != nullptr && m_mngr_inchain->is_open() 
-      && !has_endpoint(m_mngr_inchain->endpoint_remote, m_local_endpoints))
-      run_mngr_inchain_queue();
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
+      m_mngr_inchain = mngr;
+      // has_endpoint(m_mngr_inchain->endpoint_remote, m_local_endpoints);
+    }
+    
+    run_mngr_inchain_queue();
+    fill_states();
   }
 
   EndPoints                    m_local_endpoints;
@@ -556,9 +572,10 @@ class RoleState {
   TimerPtr                     m_check_timer; 
   bool                         m_run=true; 
   
-  std::mutex                   m_mutex_mngr_inchain;
+  std::recursive_mutex         m_mutex_mngr_inchain;
   std::queue<ReqMngrInchain_t> m_mngr_inchain_queue;
   client::ClientConPtr         m_mngr_inchain = nullptr;
+  bool                         m_mngr_inchain_running = 0;
 
 
   gInt32tPtr  cfg_conn_probes;
@@ -575,13 +592,15 @@ class RoleState {
 
 namespace Protocol { namespace Req {
   void MngrsState::disconnected() {
-    EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
+    Env::MngrRoleState::get()->disconnection(
+      conn->endpoint_remote, conn->endpoint_local);
   }
 }}
 
 namespace client { namespace Mngr {
   void AppContext::disconnected(ConnHandlerPtr conn){
-    EnvMngrRoleState::get()->disconnection(conn->endpoint_remote, conn->endpoint_local);
+    Env::MngrRoleState::get()->disconnection(
+      conn->endpoint_remote, conn->endpoint_local);
   }
 }}
 
