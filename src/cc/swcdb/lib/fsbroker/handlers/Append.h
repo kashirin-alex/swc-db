@@ -38,13 +38,13 @@ class Append : public AppHandler {
         err = Error::SERIALIZATION_INPUT_OVERRUN;
 
       } else { 
-        FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
+        FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
         if(smartfd == nullptr)
           err = EBADR;
         else {
           offset = smartfd->pos();
           StaticBuffer buffer((uint8_t*)ptr, params.get_size(), false);
-          amount = EnvFsInterface::fs()->append(
+          amount = Env::FsInterface::fs()->append(
             err, smartfd, buffer, (FS::Flags)params.get_flags());
         }
       }

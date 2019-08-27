@@ -46,7 +46,7 @@ class FileSystemHadoop: public FileSystem {
 
   FileSystemHadoop() 
     : FileSystem(
-        EnvConfig::settings()->get<String>("swc.fs.hadoop.path.root"),
+        Env::Config::settings()->get<String>("swc.fs.hadoop.path.root"),
         apply_hadoop()
       ),
       m_run(true), m_nxt_fd(0)
@@ -58,7 +58,8 @@ class FileSystemHadoop: public FileSystem {
 
     uint32_t tries=0; 
     while(m_run.load() && !initialize()) {
-      HT_ERRORF("FS-Hadoop, unable to initialize connection to hadoop, try=%d", ++tries);
+      HT_ERRORF("FS-Hadoop, unable to initialize connection to hadoop, try=%d",
+               ++tries);
     }
     hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
     
@@ -84,18 +85,22 @@ class FileSystemHadoop: public FileSystem {
 
   bool initialize(){
     
-    if (EnvConfig::settings()->has("swc.fs.hadoop.namenode")) {
-      for(auto& h : EnvConfig::settings()->get<Strings>("swc.fs.hadoop.namenode")){
+    if (Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
+      for(auto& h : Env::Config::settings()->get<Strings>(
+                                    "swc.fs.hadoop.namenode")){
 	      hdfsBuilder* bld = hdfsNewBuilder();
         hdfsBuilderSetNameNode(bld, h.c_str());
 
-        if (EnvConfig::settings()->has("swc.fs.hadoop.namenode.port")) 
+        if (Env::Config::settings()->has("swc.fs.hadoop.namenode.port")) 
           hdfsBuilderSetNameNodePort(
-            bld, EnvConfig::settings()->get<int32_t>("swc.fs.hadoop.namenode.port"));
+            bld, Env::Config::settings()->get<int32_t>(
+              "swc.fs.hadoop.namenode.port"));
 
-        if (EnvConfig::settings()->has("swc.fs.hadoop.user")) 
+        if (Env::Config::settings()->has("swc.fs.hadoop.user")) 
           hdfsBuilderSetUserName(
-            bld, EnvConfig::settings()->get<String>("swc.fs.hadoop.user").c_str());
+            bld, 
+            Env::Config::settings()->get<String>("swc.fs.hadoop.user").c_str()
+          );
         
         m_filesystem = hdfsBuilderConnect(bld);
         HT_DEBUGF("Connecting to namenode=%s", h.c_str());
@@ -203,7 +208,8 @@ class FileSystemHadoop: public FileSystem {
                       m_filesystem, abspath.c_str(), &numEntries)) == 0) {
       if(errno != 0) {
         err = errno;
-        HT_ERRORF("readdir('%s') failed - %s", abspath.c_str(), strerror(errno)); 
+        HT_ERRORF("readdir('%s') failed - %s", 
+                  abspath.c_str(), strerror(errno)); 
       }
       return;
     }
@@ -317,7 +323,8 @@ class FileSystemHadoop: public FileSystem {
 
     /* 
     uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file)) == (uint64_t)-1) {
+    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
+                 == (uint64_t)-1) {
       err = errno;
       HT_ERRORF("read, tell failed: %d(%s), %s offset=%d", 
                 errno, strerror(errno), smartfd->to_string().c_str(), offset);
@@ -325,7 +332,8 @@ class FileSystemHadoop: public FileSystem {
     }
     */
     
-    nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file, dst, (tSize)amount);
+    nread = (ssize_t)hdfsRead(
+      m_filesystem, hadoop_fd->file, dst, (tSize)amount);
     if (nread == -1) {
       nread = 0;
       err = errno;
@@ -375,7 +383,8 @@ class FileSystemHadoop: public FileSystem {
     errno = 0;
     /* 
     uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file)) == (uint64_t)-1) {
+    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
+           == (uint64_t)-1) {
       err = errno;
       HT_ERRORF("write, tell failed: %d(%s), %s offset=%d", 
                 errno, strerror(errno), smartfd->to_string().c_str(), offset);
@@ -471,7 +480,7 @@ class FileSystemHadoop: public FileSystem {
 
 extern "C" { 
 SWC::FS::FileSystem* fs_make_new_hadoop();
-void fs_apply_cfg_hadoop(SWC::EnvConfigPtr env);
+void fs_apply_cfg_hadoop(SWC::Env::ConfigPtr env);
 }
 
 #endif  // swc_lib_fs_Hadoop_FileSystem_h

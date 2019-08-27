@@ -21,7 +21,7 @@ class MngRsId: public ActiveMngrBase {
   MngRsId() 
           : ActiveMngrBase(1, 1), m_conn(nullptr), m_shutting_down(false),
             cfg_check_interval(
-              EnvConfig::settings()->get_ptr<gInt32t>(
+              Env::Config::settings()->get_ptr<gInt32t>(
                 "swc.rs.id.validation.interval")
             ) { }
 
@@ -43,7 +43,7 @@ class MngRsId: public ActiveMngrBase {
       make_request(nullptr, false);
       return;
     }
-    EnvClients::get()->mngr_service->get_connection(
+    Env::Clients::get()->mngr_service->get_connection(
       endpoints, 
       [ptr=shared_from_this()]
       (client::ClientConPtr conn){
@@ -63,11 +63,11 @@ class MngRsId: public ActiveMngrBase {
       if(!new_conn)
         ActiveMngrBase::run();
       else
-        run_within(EnvClients::get()->mngr_service->io(), 200);
+        run_within(Env::Clients::get()->mngr_service->io(), 200);
       return;
     }
     
-    Files::RsDataPtr rs_data = EnvRsData::get();
+    Files::RsDataPtr rs_data = Env::RsData::get();
     Protocol::Params::MngRsId params(
       m_shutting_down ? rs_data->rs_id.load() : 0, 
       m_shutting_down ? Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN 
@@ -80,7 +80,7 @@ class MngRsId: public ActiveMngrBase {
     params.encode(cbp->get_data_ptr_address());
 
     if(m_conn->send_request(cbp,shared_from_this()) != Error::OK)
-      run_within(EnvClients::get()->mngr_service->io(), 500);
+      run_within(Env::Clients::get()->mngr_service->io(), 500);
   }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
@@ -122,14 +122,14 @@ class MngRsId: public ActiveMngrBase {
           || 
           rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN){
 
-          Files::RsDataPtr rs_data = EnvRsData::get();
+          Files::RsDataPtr rs_data = Env::RsData::get();
           Protocol::Params::MngRsId params;
 
           if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
-             && rsp_params.fs != EnvFsInterface::interface()->get_type()){
+             && rsp_params.fs != Env::FsInterface::interface()->get_type()){
             HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
                       " RS(shutting-down)",
-                      EnvFsInterface::interface()->to_string().c_str(), 
+                      Env::FsInterface::interface()->to_string().c_str(), 
                       (int)rsp_params.fs);
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 

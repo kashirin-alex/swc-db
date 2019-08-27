@@ -18,7 +18,7 @@ namespace Params {
   public:
 
     enum Function {
-      ADD     = 1,
+      CREATE     = 1,
       MODIFY  = 2,
       DELETE  = 3
     };

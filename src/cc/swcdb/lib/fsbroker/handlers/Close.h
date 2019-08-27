@@ -32,11 +32,11 @@ class Close : public AppHandler {
       FS::Protocol::Params::CloseReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd = EnvFds::get()->remove(params.get_fd());
+      FS::SmartFdPtr smartfd = Env::Fds::get()->remove(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else
-        EnvFsInterface::fs()->close(err, smartfd);
+        Env::FsInterface::fs()->close(err, smartfd);
     }
     catch (Exception &e) {
       err = e.code();

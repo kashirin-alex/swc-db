@@ -31,7 +31,7 @@ class Range : public DB::RangeBase {
           m_state(State::NOTSET), rs_id(0) { 
 
     int err = Error::OK;
-    if(EnvFsInterface::fs()->exists(err, get_path(deleted_file))){
+    if(Env::FsInterface::fs()->exists(err, get_path(deleted_file))){
       set_state(Range::State::DELETED, 0);
     }
   }

@@ -32,7 +32,7 @@ class Rmdir : public AppHandler {
       FS::Protocol::Params::RmdirReq params;
       params.decode(&ptr, &remain);
 
-      EnvFsInterface::fs()->rmdir(err, params.get_dname());
+      Env::FsInterface::fs()->rmdir(err, params.get_dname());
     }
     catch (Exception &e) {
       err = e.code();

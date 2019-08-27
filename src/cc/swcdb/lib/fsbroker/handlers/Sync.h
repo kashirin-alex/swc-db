@@ -32,11 +32,11 @@ class Sync : public AppHandler {
       FS::Protocol::Params::SyncReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
+      FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else
-        EnvFsInterface::fs()->sync(err, smartfd);
+        Env::FsInterface::fs()->sync(err, smartfd);
     }
     catch (Exception &e) {
       err = e.code();

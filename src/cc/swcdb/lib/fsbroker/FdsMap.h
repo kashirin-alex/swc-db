@@ -70,13 +70,12 @@ typedef std::shared_ptr<Fds> FdsPtr;
 }}
 
 
-
-class EnvFds {
-  
+namespace Env {
+class Fds {
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvFds>();
+    m_env = std::make_shared<Fds>();
   }
 
   static server::FsBroker::FdsPtr get(){
@@ -84,14 +83,15 @@ class EnvFds {
     return m_env->m_fds;
   }
 
-  EnvFds() : m_fds(std::make_shared<server::FsBroker::Fds>()) {}
+  Fds() : m_fds(std::make_shared<server::FsBroker::Fds>()) {}
 
-  virtual ~EnvFds(){}
+  virtual ~Fds(){}
 
   private:
-  server::FsBroker::FdsPtr              m_fds = nullptr;
-  inline static std::shared_ptr<EnvFds> m_env = nullptr;
+  server::FsBroker::FdsPtr           m_fds = nullptr;
+  inline static std::shared_ptr<Fds> m_env = nullptr;
 };
+}
 
 }
 

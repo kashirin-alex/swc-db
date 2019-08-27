@@ -179,11 +179,12 @@ typedef std::shared_ptr<Schemas> SchemasPtr;
 
 } // DB namespace
 
-class EnvSchemas {
+namespace Env {
+class Schemas {
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvSchemas>();
+    m_env = std::make_shared<Schemas>();
   }
 
   static DB::SchemasPtr get(){
@@ -191,11 +192,14 @@ class EnvSchemas {
     return m_env->m_schemas;
   }
 
-  EnvSchemas() : m_schemas(std::make_shared<DB::Schemas>()) {}
-  virtual ~EnvSchemas(){}
+  Schemas() : m_schemas(std::make_shared<DB::Schemas>()) {}
+  virtual ~Schemas(){}
 
   private:
-  DB::SchemasPtr                            m_schemas = nullptr;
-  inline static std::shared_ptr<EnvSchemas> m_env = nullptr;
-};}
+  DB::SchemasPtr                         m_schemas = nullptr;
+  inline static std::shared_ptr<Schemas> m_env = nullptr;
+};
+}
+
+}
 #endif

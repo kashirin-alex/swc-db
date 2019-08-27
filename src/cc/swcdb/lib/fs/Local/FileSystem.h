@@ -20,12 +20,11 @@ class FileSystemLocal: public FileSystem {
 
   FileSystemLocal()
     : FileSystem(
-        EnvConfig::settings()->get<String>("swc.fs.local.path.root"),
+        Env::Config::settings()->get<String>("swc.fs.local.path.root"),
         apply_local()
-      )
-  { 
-    m_directio = EnvConfig::settings()->get<bool>("swc.fs.local.DirectIO", false);
-  }
+      ),
+      m_directio(Env::Config::settings()->get<bool>(
+        "swc.fs.local.DirectIO", false)) { }
 
   virtual ~FileSystemLocal(){}
 
@@ -368,7 +367,7 @@ class FileSystemLocal: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_local();
-void fs_apply_cfg_local(SWC::EnvConfigPtr env);
+void fs_apply_cfg_local(SWC::Env::ConfigPtr env);
 }
 
 #endif  // swc_lib_fs_Local_FileSystem_h

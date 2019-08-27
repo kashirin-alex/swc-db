@@ -18,7 +18,7 @@ class FileSystemCeph: public FileSystem {
 
   FileSystemCeph() 
     : FileSystem(
-        EnvConfig::settings()->get<String>("swc.fs.ceph.path.root"),
+        Env::Config::settings()->get<String>("swc.fs.ceph.path.root"),
         apply_ceph()
       )
   { }
@@ -65,7 +65,7 @@ class FileSystemCeph: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph();
-void fs_apply_cfg_ceph(SWC::EnvConfigPtr env);
+void fs_apply_cfg_ceph(SWC::Env::ConfigPtr env);
 }
 
 #endif  // swc_lib_fs_Ceph_FileSystem_h

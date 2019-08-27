@@ -36,7 +36,8 @@ class FileSystemBroker: public FileSystem {
   public:
 
   static const EndPoints get_endpoints(){
-    std::string host = EnvConfig::settings()->get<String>("swc.fs.broker.host", "");
+    std::string host = Env::Config::settings()->get<String>(
+      "swc.fs.broker.host", "");
     if(host.empty()){
       char hostname[256];
       gethostname(hostname, sizeof(hostname));
@@ -44,7 +45,7 @@ class FileSystemBroker: public FileSystem {
     }
     Strings addr;
     return Resolver::get_endpoints(
-      EnvConfig::settings()->get<int32_t>("swc.fs.broker.port"),
+      Env::Config::settings()->get<int32_t>("swc.fs.broker.port"),
       addr, host, true
     );
   }
@@ -52,14 +53,14 @@ class FileSystemBroker: public FileSystem {
   FileSystemBroker()
     : FileSystem(apply_broker()),
       m_io(std::make_shared<IoContext>("FsBroker",
-        EnvConfig::settings()->get<int32_t>("swc.fs.broker.handlers"))),
+        Env::Config::settings()->get<int32_t>("swc.fs.broker.handlers"))),
       m_service(std::make_shared<client::SerializedClient>(
         "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
       m_type_underlying(parse_fs_type(
-        EnvConfig::settings()->get<String>("swc.fs.broker.underlying"))),
-      cfg_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
+        Env::Config::settings()->get<String>("swc.fs.broker.underlying"))),
+      cfg_timeout(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.fs.broker.timeout")),
-      cfg_timeout_ratio(EnvConfig::settings()->get_ptr<gInt32t>(
+      cfg_timeout_ratio(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.fs.broker.timeout.bytes.ratio")),
       m_endpoints(get_endpoints()),
       m_run(true) { 
@@ -105,7 +106,8 @@ class FileSystemBroker: public FileSystem {
     return true;
   }
 
-  void send_request_sync(Protocol::Req::ReqBasePtr hdlr, std::promise<void> res){
+  void send_request_sync(Protocol::Req::ReqBasePtr hdlr, 
+                         std::promise<void> res){
     while(!send_request(hdlr));
     if(m_run)
       res.get_future().wait();
@@ -384,7 +386,7 @@ class FileSystemBroker: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_broker();
-void fs_apply_cfg_broker(SWC::EnvConfigPtr env);
+void fs_apply_cfg_broker(SWC::Env::ConfigPtr env);
 }
 
 #endif  // swc_lib_fs_Broker_FileSystem_h

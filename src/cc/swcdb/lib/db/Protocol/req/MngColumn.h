@@ -31,7 +31,7 @@ class MngColumn: public ActiveMngrBase {
     typedef std::shared_ptr<Req> Ptr;
 
     static Ptr add(DB::SchemaPtr schema){
-      return std::make_shared<Req>(Function::ADD, schema);
+      return std::make_shared<Req>(Function::CREATE, schema);
     }
 
     Req(Function function, DB::SchemaPtr schema)
@@ -59,7 +59,7 @@ class MngColumn: public ActiveMngrBase {
   }
 
   void create(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
-    return request(Function::ADD, schema, cb);
+    return request(Function::CREATE, schema, cb);
   }
 
   void remove(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
@@ -73,7 +73,7 @@ class MngColumn: public ActiveMngrBase {
       make_requests(nullptr, false);
       return;
     }
-    EnvClients::get()->mngr_service->get_connection(
+    Env::Clients::get()->mngr_service->get_connection(
       endpoints, 
       [ptr=shared_from_this()]
       (client::ClientConPtr conn){
@@ -106,7 +106,7 @@ class MngColumn: public ActiveMngrBase {
       if(!new_conn)
         ActiveMngrBase::run();
       else
-        run_within(EnvClients::get()->mngr_service->io(), 200);
+        run_within(Env::Clients::get()->mngr_service->io(), 200);
       return;
     }
     
@@ -121,7 +121,7 @@ class MngColumn: public ActiveMngrBase {
                 << " pending_read=" << pending_read() << "\n";
       if(pending_write() > 1000 || pending_read() > 1000) {
         (new asio::high_resolution_timer(
-          *EnvClients::get()->mngr_service->io().get(), std::chrono::milliseconds(200)))
+          *Env::Clients::get()->mngr_service->io().get(), std::chrono::milliseconds(200)))
         ->async_wait(
           [ptr=shared_from_this()](const asio::error_code ec) {
             if (ec != asio::error::operation_aborted){
@@ -129,7 +129,7 @@ class MngColumn: public ActiveMngrBase {
                 ->make_requests(nullptr, false);
             }
           });
-        //run_within(EnvClients::get()->mngr_service->io(), 200);
+        //run_within(Env::Clients::get()->mngr_service->io(), 200);
         return;
       }
       */
@@ -162,7 +162,7 @@ class MngColumn: public ActiveMngrBase {
         m_queue.push(req);
       }
 
-      run_within(EnvClients::get()->mngr_service->io(), 500);
+      run_within(Env::Clients::get()->mngr_service->io(), 500);
       return;
     }
 

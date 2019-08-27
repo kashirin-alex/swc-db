@@ -88,7 +88,7 @@ class SerializedServer{
     HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
               m_appname.c_str(), reactors, workers);
 
-    SWC::PropertiesPtr props = SWC::EnvConfig::settings()->properties;
+    SWC::PropertiesPtr props = Env::Config::settings()->properties;
 
     Strings addrs = props->has("addr") ? props->get<Strings>("addr") : Strings();
     String host;

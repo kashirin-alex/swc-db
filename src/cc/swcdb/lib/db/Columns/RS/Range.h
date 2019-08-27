@@ -60,7 +60,7 @@ class Range : public DB::RangeBase {
       return false;
 
     // last_rs.data
-    Files::RsDataPtr rs_data = EnvRsData::get();
+    Files::RsDataPtr rs_data = Env::RsData::get();
     Files::RsDataPtr rs_last = get_last_rs();
 
     if(rs_last->endpoints.size() > 0) {
@@ -69,7 +69,7 @@ class Range : public DB::RangeBase {
       std::cout << " RS-LAST=" << rs_last->to_string() << "\n"
                 << " RS-NEW =" << rs_data->to_string() << "\n";
       if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
-        client::ClientConPtr old_conn = EnvClients::get()->rs_service->get_connection(
+        client::ClientConPtr old_conn = Env::Clients::get()->rs_service->get_connection(
           rs_last->endpoints, std::chrono::milliseconds(10000), 1);
         if(old_conn != nullptr)
           Protocol::Req::UnloadRange(old_conn, RangeBase::shared());
@@ -223,7 +223,7 @@ class Range : public DB::RangeBase {
 
     int err = Error::OK;
     if(completely)
-      EnvFsInterface::fs()->remove(err, get_path(rs_data_file));
+      Env::FsInterface::fs()->remove(err, get_path(rs_data_file));
 
     set_state(State::NOTLOADED);
 
@@ -259,9 +259,9 @@ class Range : public DB::RangeBase {
 
   bool set_dirs(){
     int err = Error::OK;
-    if(!EnvFsInterface::fs()->exists(err, get_path(""))){
-      EnvFsInterface::fs()->mkdirs(err, get_path("log"));
-      EnvFsInterface::fs()->mkdirs(err, get_path("cs"));
+    if(!Env::FsInterface::fs()->exists(err, get_path(""))){
+      Env::FsInterface::fs()->mkdirs(err, get_path("log"));
+      Env::FsInterface::fs()->mkdirs(err, get_path("cs"));
     } 
     return err == Error::OK;
   }

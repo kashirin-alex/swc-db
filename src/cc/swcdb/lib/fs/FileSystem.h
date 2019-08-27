@@ -96,7 +96,9 @@ class FileSystem {
   
   FileSystem(std::string root, bool setting_applied)
     : path_root(normalize_pathname(root)),
-      path_data(normalize_pathname(EnvConfig::settings()->get<String>("swc.fs.path.data")))
+      path_data(
+        normalize_pathname(
+          Env::Config::settings()->get<String>("swc.fs.path.data")))
   { }
 
   virtual ~FileSystem() { std::cout << " ~FileSystem() \n"; }
@@ -291,7 +293,7 @@ extern "C"{
 typedef SWC::FS::FileSystem* fs_make_new_t();
 // SWC::FS::FileSystem* fs_make_new_Named();
 
-typedef void fs_apply_cfg_t(SWC::EnvConfigPtr env);
+typedef void fs_apply_cfg_t(SWC::Env::ConfigPtr env);
 // void fs_apply_cfg_Named();
 }
 

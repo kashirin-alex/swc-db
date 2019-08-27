@@ -33,10 +33,10 @@ class RsData {
     RsDataPtr rs_data = std::make_shared<RsData>();
     
     int err = Error::OK;
-    if(EnvFsInterface::fs()->exists(err, filepath)){
+    if(Env::FsInterface::fs()->exists(err, filepath)){
       FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
       rs_data->read(smartfd);
-      EnvFsInterface::fs()->close(err, smartfd);
+      Env::FsInterface::fs()->close(err, smartfd);
     }
     return rs_data;
   }
@@ -49,13 +49,13 @@ class RsData {
   void read(FS::SmartFdPtr smartfd){
     int err = Error::OK;
 
-    EnvFsInterface::fs()->open(err, smartfd);
+    Env::FsInterface::fs()->open(err, smartfd);
     if(!smartfd->valid())
       return;
 
     uint8_t buf[HEADER_SIZE];
     const uint8_t *ptr = buf;
-    if (EnvFsInterface::fs()->read(err, smartfd,buf, 
+    if (Env::FsInterface::fs()->read(err, smartfd,buf, 
                               HEADER_SIZE) != HEADER_SIZE)
       return;
 
@@ -65,7 +65,7 @@ class RsData {
 
     StaticBuffer read_buf(sz);
     ptr = read_buf.base;
-    if (EnvFsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz)
+    if (Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz)
       return;
 
     read(&ptr, &sz);
@@ -87,15 +87,15 @@ class RsData {
     FS::SmartFdPtr smartfd = 
       FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
-    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
+    Env::FsInterface::fs()->create(err, smartfd, -1, -1, -1);
     if(err != Error::OK) 
       return false;
 
     DynamicBuffer input;
     write(input, ts==0 ? Time::now_ns() : ts);
     StaticBuffer send_buf(input);
-    EnvFsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::FLUSH);
-    EnvFsInterface::fs()->close(err, smartfd);
+    Env::FsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::FLUSH);
+    Env::FsInterface::fs()->close(err, smartfd);
     return err == Error::OK;
   }
 
@@ -152,12 +152,12 @@ class RsData {
 } // Files namespace
 
 
-class EnvRsData {
-  
+namespace Env {
+class RsData {  
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvRsData>();
+    m_env = std::make_shared<RsData>();
   }
 
   static Files::RsDataPtr get(){
@@ -165,13 +165,14 @@ class EnvRsData {
     return m_env->m_rs_data;
   }
 
-  EnvRsData() : m_rs_data(std::make_shared<Files::RsData>()) {}
-  virtual ~EnvRsData(){}
+  RsData() : m_rs_data(std::make_shared<Files::RsData>()) {}
+  virtual ~RsData(){}
 
   private:
-  Files::RsDataPtr           m_rs_data = nullptr;
-  inline static std::shared_ptr<EnvRsData> m_env = nullptr;
+  Files::RsDataPtr                      m_rs_data = nullptr;
+  inline static std::shared_ptr<RsData> m_env = nullptr;
 };
+}
 
 }
 #endif

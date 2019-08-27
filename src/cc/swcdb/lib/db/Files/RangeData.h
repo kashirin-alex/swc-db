@@ -54,15 +54,15 @@ bool save(const std::string filepath, CellStores &cellstores){
     filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
   int err=Error::OK;
-  EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
+  Env::FsInterface::fs()->create(err, smartfd, -1, -1, -1);
   if(err != Error::OK) 
     return false;
 
   DynamicBuffer input;
   write(input, cellstores);
   StaticBuffer send_buf(input);
-  EnvFsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::SYNC);
-  EnvFsInterface::fs()->close(err, smartfd);
+  Env::FsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::SYNC);
+  Env::FsInterface::fs()->close(err, smartfd);
   return err == Error::OK;
 }
 
@@ -89,19 +89,19 @@ bool load(const std::string filepath, CellStores &cellstores){
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
 
   int err = Error::OK;
-  if(!EnvFsInterface::fs()->exists(err, smartfd->filepath()) 
+  if(!Env::FsInterface::fs()->exists(err, smartfd->filepath()) 
     || err != Error::OK) 
     return false;
 
-  EnvFsInterface::fs()->open(err, smartfd);
+  Env::FsInterface::fs()->open(err, smartfd);
   if(!smartfd->valid())
     return false;
 
   uint8_t buf[HEADER_SIZE];
   const uint8_t *ptr = buf;
-  if (EnvFsInterface::fs()->read(err, smartfd, buf, 
+  if (Env::FsInterface::fs()->read(err, smartfd, buf, 
                                 HEADER_SIZE) != HEADER_SIZE){
-    EnvFsInterface::fs()->close(err, smartfd);
+    Env::FsInterface::fs()->close(err, smartfd);
     return false;
   }
 
@@ -111,10 +111,10 @@ bool load(const std::string filepath, CellStores &cellstores){
 
   StaticBuffer read_buf(sz);
   ptr = read_buf.base;
-  if (EnvFsInterface::fs()->read(err, smartfd, read_buf.base, sz) == sz)
+  if (Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) == sz)
     read(&ptr, &sz, cellstores);
     
-  EnvFsInterface::fs()->close(err, smartfd);
+  Env::FsInterface::fs()->close(err, smartfd);
 
   return cellstores.size() > 0;
 }
@@ -123,7 +123,7 @@ void load_by_path(const std::string cs_path, CellStores &cellstores){
   std::cout << "Files::RangeData::load_by_path:\n";
   FS::IdEntries_t entries;
   int err = Error::OK;
-  EnvFsInterface::interface()->get_structured_ids(err, cs_path, entries);
+  Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
   for(auto cs_id : entries){
     CellStorePtr cs = std::make_shared<CellStore>(cs_id); 
     // cs->load_trailer(); // sets cs->intervals

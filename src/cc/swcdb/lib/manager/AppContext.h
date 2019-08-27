@@ -36,28 +36,29 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() {
-    EnvConfig::settings()->parse_file(
-      EnvConfig::settings()->get<String>("swc.mngr.cfg", ""),
-      EnvConfig::settings()->get<String>("swc.mngr.OnFileChange.cfg", "")
+    Env::Config::settings()->parse_file(
+      Env::Config::settings()->get<String>("swc.mngr.cfg", ""),
+      Env::Config::settings()->get<String>("swc.mngr.OnFileChange.cfg", "")
     );
 
-    EnvIoCtx::init(EnvConfig::settings()->get<int32_t>("swc.mngr.handlers"));
-    EnvMngrRoleState::init();
-    EnvFsInterface::init();
-    EnvSchemas::init();
-    EnvMngrColumns::init();
-    EnvClients::init(std::make_shared<client::Clients>(
-      EnvIoCtx::io()->shared(),
+    Env::IoCtx::init(
+      Env::Config::settings()->get<int32_t>("swc.mngr.handlers"));
+    Env::MngrRoleState::init();
+    Env::FsInterface::init();
+    Env::Schemas::init();
+    Env::MngrColumns::init();
+    Env::Clients::init(std::make_shared<client::Clients>(
+      Env::IoCtx::io()->shared(),
       std::make_shared<client::Mngr::AppContext>()
     ));
-    EnvRangeServers::init();
+    Env::RangeServers::init();
   }
   
   void init(const EndPoints& endpoints) override {
-    EnvMngrRoleState::get()->init(endpoints);
+    Env::MngrRoleState::get()->init(endpoints);
     
     int sig = 0;
-    EnvIoCtx::io()->set_signals();
+    Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
   }
 
@@ -79,7 +80,7 @@ class AppContext : public SWC::AppContext {
         
       case Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        if(EnvMngrRoleState::get()->disconnection(
+        if(Env::MngrRoleState::get()->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
         return;
@@ -144,7 +145,7 @@ class AppContext : public SWC::AppContext {
         }
 
         if(handler)
-          asio::post(*EnvIoCtx::io()->ptr(), 
+          asio::post(*Env::IoCtx::io()->ptr(), 
                     [hdlr=AppHandlerPtr(handler)](){ hdlr->run();  });
 
         break;
@@ -160,7 +161,7 @@ class AppContext : public SWC::AppContext {
   void shutting_down(const std::error_code &ec, const int &sig) {
 
     if(sig==0){ // set signals listener
-      EnvIoCtx::io()->signals()->async_wait(
+      Env::IoCtx::io()->signals()->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
           HT_INFOF("Received signal, sig=%d ec=%s", sig, ec.message().c_str());
           ptr->shutting_down(ec, sig); 
@@ -180,15 +181,15 @@ class AppContext : public SWC::AppContext {
     
     m_srv->stop_accepting(); // no further requests accepted
     
-    EnvRangeServers::get()->stop();
-    EnvMngrRoleState::get()->stop();
+    Env::RangeServers::get()->stop();
+    Env::MngrRoleState::get()->stop();
 
-    EnvClients::get()->rs_service->stop();
-    EnvClients::get()->mngr_service->stop();
+    Env::Clients::get()->rs_service->stop();
+    Env::Clients::get()->mngr_service->stop();
 
-    EnvFsInterface::interface()->stop();
+    Env::FsInterface::interface()->stop();
     
-    EnvIoCtx::io()->stop();
+    Env::IoCtx::io()->stop();
     
     m_srv->shutdown();
     

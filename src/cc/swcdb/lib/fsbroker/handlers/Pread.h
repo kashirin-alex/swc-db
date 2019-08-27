@@ -35,13 +35,13 @@ class Pread : public AppHandler {
       FS::Protocol::Params::PreadReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
+      FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else {
         StaticBuffer buf = StaticBuffer(params.get_amount());
         rbuf = buf;
-        amount = EnvFsInterface::fs()->pread(
+        amount = Env::FsInterface::fs()->pread(
           err, smartfd, params.get_offset(), rbuf.base, params.get_amount());
         offset = smartfd->pos()-amount;
       }

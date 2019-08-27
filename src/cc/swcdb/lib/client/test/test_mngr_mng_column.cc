@@ -92,7 +92,7 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
 
             if(err != Error::OK 
               && (
-                (ptr->function == Protocol::Req::MngColumn::Function::ADD 
+                (ptr->function == Protocol::Req::MngColumn::Function::CREATE 
                   && err !=  Error::SCHEMA_COL_NAME_EXISTS ) 
               || 
                 (ptr->function == Protocol::Req::MngColumn::Function::DELETE 
@@ -140,9 +140,9 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
 
 
 int main(int argc, char** argv) {
-  EnvConfig::init(argc, argv);
+  Env::Config::init(argc, argv);
   
-  EnvClients::init(std::make_shared<client::Clients>(
+  Env::Clients::init(std::make_shared<client::Clients>(
     nullptr,
     std::make_shared<client::AppContext>()
   ));
@@ -151,32 +151,32 @@ int main(int argc, char** argv) {
   Protocol::Req::MngColumnPtr hdlr = std::make_shared<Protocol::Req::MngColumn>();
   
   for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 1, 1);
+    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 1);
     i+=1;
   }
   std::cout << "####\n";
   for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 1, 10);
+    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10);
     i+=1;
   }
   std::cout << "####\n";
   for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 4, 100);
+    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 4, 100);
     i+=1;
   }
   std::cout << "####\n";
 
   for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::ADD, 128, 10000);
+    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 128, 10000);
     i+=1;
   }
   std::cout << "####\n";
   //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE);
 
-  //chk(hdlr, Protocol::Req::MngColumn::Function::ADD);
+  //chk(hdlr, Protocol::Req::MngColumn::Function::CREATE);
 
 
-  EnvIoCtx::io()->stop();
+  Env::IoCtx::io()->stop();
   std::cout << " ### EXIT ###, pending_writes=" << hdlr->pending_write()
             << " pending_read=" << hdlr->pending_read()
             << " queue=" << hdlr->queue()

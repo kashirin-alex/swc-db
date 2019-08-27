@@ -36,7 +36,7 @@ class MngRsId : public AppHandler {
       
       // std::cout << "MngRsId-run rs " << req_params.to_string() << "\n";
       
-      if(!EnvMngrRoleState::get()->is_active(1)){
+      if(!Env::MngrRoleState::get()->is_active(1)){
         std::cout << "MNGR NOT ACTIVE: \n";
       
         Protocol::Params::MngRsId rsp_params(
@@ -52,7 +52,7 @@ class MngRsId : public AppHandler {
         return;
       }
 
-      RangeServersPtr  rangeservers = EnvRangeServers::get();
+      RangeServersPtr  rangeservers = Env::RangeServers::get();
       switch(req_params.flag){
 
         case Protocol::Params::MngRsId::Flag::RS_REQ: {

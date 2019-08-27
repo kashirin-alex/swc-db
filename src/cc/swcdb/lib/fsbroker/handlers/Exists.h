@@ -33,7 +33,7 @@ class Exists : public AppHandler {
       FS::Protocol::Params::ExistsReq params;
       params.decode(&ptr, &remain);
 
-      exists = EnvFsInterface::fs()->exists(err, params.get_fname());
+      exists = Env::FsInterface::fs()->exists(err, params.get_fname());
       
     }
     catch (Exception &e) {

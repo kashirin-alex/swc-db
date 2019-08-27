@@ -36,10 +36,10 @@ class Open : public AppHandler {
       FS::SmartFdPtr smartfd 
         = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
  
-      EnvFsInterface::fs()->open(err, smartfd, params.get_buffer_size());
+      Env::FsInterface::fs()->open(err, smartfd, params.get_buffer_size());
       
       if(smartfd->valid() && err==Error::OK)
-        fd = EnvFds::get()->add(smartfd);
+        fd = Env::Fds::get()->add(smartfd);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

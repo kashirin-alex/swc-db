@@ -203,10 +203,11 @@ typedef std::shared_ptr<Settings> SettingsPtr;
   /** @}*/
 }
 
-class EnvConfig;
-typedef std::shared_ptr<EnvConfig> EnvConfigPtr;
+namespace Env {
+class Config;
+typedef std::shared_ptr<Config> ConfigPtr;
 
-class EnvConfig {
+class Config {
   
   public:
 
@@ -214,29 +215,29 @@ class EnvConfig {
     get()->m_settings->init(argc, argv);
   }
 
-  static void set(EnvConfigPtr env){
+  static void set(ConfigPtr env){
     m_env = env;
   }
 
-  static EnvConfigPtr get(){
+  static ConfigPtr get(){
     if(m_env == nullptr)
-      m_env = std::make_shared<EnvConfig>();
+      m_env = std::make_shared<Config>();
     return m_env;
   }
 
-  static Config::SettingsPtr settings(){
+  static SWC::Config::SettingsPtr settings(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_settings;
   }
 
-  EnvConfig() : m_settings(std::make_shared<Config::Settings>()){}
-  virtual ~EnvConfig(){}
+  Config() : m_settings(std::make_shared<SWC::Config::Settings>()){}
+  virtual ~Config(){}
 
   private:
-  Config::SettingsPtr m_settings = nullptr;
-  inline static EnvConfigPtr m_env = nullptr;
+  SWC::Config::SettingsPtr  m_settings = nullptr;
+  inline static ConfigPtr   m_env = nullptr;
 };
-
+}
 
 }
 

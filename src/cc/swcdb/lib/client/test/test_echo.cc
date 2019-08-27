@@ -112,8 +112,8 @@ class Checker: public std::enable_shared_from_this<Checker>{
   }
 
   void get_conn(){
-    EnvClients::get()->mngr_service->get_connection(
-      EnvClients::get()->mngrs_groups->get_endpoints(1, 1), 
+    Env::Clients::get()->mngr_service->get_connection(
+      Env::Clients::get()->mngrs_groups->get_endpoints(1, 1), 
       [ptr=shared_from_this()](client::ClientConPtr conn){
         if(conn == nullptr || !conn->is_open()){
           std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -186,23 +186,23 @@ class Checker: public std::enable_shared_from_this<Checker>{
 
 
 int main(int argc, char** argv) {
-  EnvConfig::init(argc, argv);
+  Env::Config::init(argc, argv);
   
-  EnvClients::init(std::make_shared<client::Clients>(
+  Env::Clients::init(std::make_shared<client::Clients>(
     nullptr,
     std::make_shared<client::AppContext>()
   ));
 
 
   std::make_shared<Checker>(
-    EnvConfig::settings()->get<int32_t>("requests"), 
-    EnvConfig::settings()->get<int32_t>("batch"),
-    EnvConfig::settings()->get<int32_t>("threads_conn")
+    Env::Config::settings()->get<int32_t>("requests"), 
+    Env::Config::settings()->get<int32_t>("batch"),
+    Env::Config::settings()->get<int32_t>("threads_conn")
   )->run(
-    EnvConfig::settings()->get<int32_t>("threads")
+    Env::Config::settings()->get<int32_t>("threads")
   );
 
-  EnvIoCtx::io()->stop();
+  Env::IoCtx::io()->stop();
 
   return 0;
 }

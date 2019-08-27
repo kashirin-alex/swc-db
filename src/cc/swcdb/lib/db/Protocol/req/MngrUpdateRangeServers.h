@@ -27,7 +27,7 @@ class MngrUpdateRangeServers : public DispatchHandler {
     put(get_buf(hosts, sync_all));
   }
   static void put(CommBufPtr cbp){
-    EnvMngrRoleState::get()->req_mngr_inchain(
+    Env::MngrRoleState::get()->req_mngr_inchain(
       [cbp] (client::ClientConPtr mngr) {        
         // std::cout << "[RS-status] update req_mngr_inchain \n";
         (std::make_shared<MngrUpdateRangeServers>(mngr, cbp))->run();

@@ -33,7 +33,7 @@ class Length : public AppHandler {
       FS::Protocol::Params::LengthReq params;
       params.decode(&ptr, &remain);
 
-      length = EnvFsInterface::fs()->length(err, params.get_fname());
+      length = Env::FsInterface::fs()->length(err, params.get_fname());
       
     }
     catch (Exception &e) {

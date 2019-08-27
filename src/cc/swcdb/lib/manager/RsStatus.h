@@ -19,9 +19,9 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
 
   RsQueue(const EndPoints& endpoints)
           : m_endpoints(endpoints), m_conn(nullptr),
-            cfg_rs_conn_timeout(EnvConfig::settings()->get_ptr<gInt32t>(
+            cfg_rs_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.timeout")),
-            cfg_rs_conn_probes(EnvConfig::settings()->get_ptr<gInt32t>(
+            cfg_rs_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.probes")) {}
 
   virtual ~RsQueue(){
@@ -36,7 +36,7 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   }
   
   void connect() {
-    EnvClients::get()->rs_service->get_connection(
+    Env::Clients::get()->rs_service->get_connection(
       m_endpoints, 
       [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
       std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 

@@ -20,11 +20,11 @@ void SWC::Config::Settings::init_post_cmd_args(){}
 using namespace SWC;
 
 void rs(){
-    EnvRsColumns::init();
+    Env::RsColumns::init();
 
-    EnvRsData::init();
+    Env::RsData::init();
 
-    server::RS::ColumnsPtr cols = EnvRsColumns::get();
+    server::RS::ColumnsPtr cols = Env::RsColumns::get();
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
@@ -57,8 +57,8 @@ void rs(){
     }
 }
 void mngr(){
-    EnvMngrColumns::init();
-    server::Mngr::ColumnsPtr cols = EnvMngrColumns::get();
+    Env::MngrColumns::init();
+    server::Mngr::ColumnsPtr cols = Env::MngrColumns::get();
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
@@ -92,9 +92,9 @@ void mngr(){
 }
 
 int main(int argc, char** argv) {
-    EnvConfig::init(argc, argv);
+    Env::Config::init(argc, argv);
 
-    EnvFsInterface::init();
+    Env::FsInterface::init();
     rs();
     mngr();
     exit(0);

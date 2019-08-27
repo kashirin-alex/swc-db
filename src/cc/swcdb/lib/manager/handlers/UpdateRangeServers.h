@@ -32,7 +32,7 @@ class UpdateRangeServers : public AppHandler {
       
       // std::cout << params.to_string() << "\n";
       m_conn->response_ok(m_ev);
-      EnvRangeServers::get()->update_status(params.hosts, params.sync_all);
+      Env::RangeServers::get()->update_status(params.hosts, params.sync_all);
 
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

@@ -70,7 +70,7 @@ namespace Params {
 
       if(flag == Flag::MNGR_ASSIGNED)
         Serialization::encode_i8(
-          bufp, (int8_t)EnvFsInterface::interface()->get_type());
+          bufp, (int8_t)Env::FsInterface::interface()->get_type());
     }
     
     void decode_internal(uint8_t version, const uint8_t **bufp, 

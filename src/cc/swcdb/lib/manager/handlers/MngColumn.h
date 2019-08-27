@@ -34,13 +34,13 @@ class MngColumn : public AppHandler {
       req_params.decode(&ptr, &remain);
 
       
-      if(!EnvMngrRoleState::get()->is_active(1)){
+      if(!Env::MngrRoleState::get()->is_active(1)){
         std::cout << "MNGR NOT ACTIVE: \n";
         err = Error::MNGR_NOT_ACTIVE;
       }
 
       if(err == Error::OK) {
-        EnvRangeServers::get()->column_action({
+        Env::RangeServers::get()->column_action({
           .params=req_params, 
           .cb=[conn=m_conn, ev=m_ev](int err){
             if(err == Error::OK)

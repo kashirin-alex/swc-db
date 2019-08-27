@@ -26,14 +26,14 @@ class ActiveMngrBase : public DispatchHandler {
 
   bool run(uint32_t timeout_ms=60000) override {
     SWC::EndPoints endpoints 
-      = EnvClients::get()->mngrs_groups->get_endpoints(begin, end);
+      = Env::Clients::get()->mngrs_groups->get_endpoints(begin, end);
     
-    EnvClients::get()->mngr_service->get_connection(
+    Env::Clients::get()->mngr_service->get_connection(
       endpoints, 
       [ptr=shared_from_this()]
       (client::ClientConPtr conn){
         if(conn == nullptr || !conn->is_open()){
-          ptr->run_within(EnvClients::get()->mngr_service->io(), 200);
+          ptr->run_within(Env::Clients::get()->mngr_service->io(), 200);
           return;
         }
         ptr->run(conn);
@@ -54,7 +54,7 @@ class ActiveMngrBase : public DispatchHandler {
     if(conn->send_request(cbp, shared_from_this()) != Error::OK)
       run_within(conn->m_io_ctx, 200);
     else
-      EnvClients::get()->mngr_service->preserve(
+      Env::Clients::get()->mngr_service->preserve(
         std::dynamic_pointer_cast<client::ConnHandlerClient>(conn));  // if ( ?ttl)
   }
 

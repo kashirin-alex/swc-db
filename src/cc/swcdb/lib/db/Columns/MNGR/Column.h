@@ -32,14 +32,14 @@ class Column : public std::enable_shared_from_this<Column> {
   static bool exists(int64_t id) {
     std::string col_range_path(Range::get_column_path(id));
     int err = Error::OK;
-    return EnvFsInterface::fs()->exists(err, col_range_path) 
+    return Env::FsInterface::fs()->exists(err, col_range_path) 
            && err == Error::OK;
   }
   
   static bool create(int64_t id) {
     std::string col_range_path(Range::get_column_path(id));
     int err = Error::OK;
-    EnvFsInterface::fs()->mkdirs(err, col_range_path);
+    Env::FsInterface::fs()->mkdirs(err, col_range_path);
     if(err == 17)
       err = Error::OK;
     return err == Error::OK;
@@ -53,8 +53,8 @@ class Column : public std::enable_shared_from_this<Column> {
     FS::SmartFdPtr smartfd = 
       FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
-    EnvFsInterface::fs()->create(err, smartfd, -1, -1, -1);
-    EnvFsInterface::fs()->close(err, smartfd);
+    Env::FsInterface::fs()->create(err, smartfd, -1, -1, -1);
+    Env::FsInterface::fs()->close(err, smartfd);
   }
 
   static bool is_marked_deleted(int64_t cid) {
@@ -62,7 +62,7 @@ class Column : public std::enable_shared_from_this<Column> {
     std::string chk_file(Range::get_column_path(cid));
     chk_file.append("/");
     chk_file.append(deleted_file);
-    return EnvFsInterface::fs()->exists(err, chk_file);
+    return Env::FsInterface::fs()->exists(err, chk_file);
   }
 
   static void clear_marked_deleted(int64_t cid) {
@@ -70,7 +70,7 @@ class Column : public std::enable_shared_from_this<Column> {
     std::string chk_file(Range::get_column_path(cid));
     chk_file.append("/");
     chk_file.append(deleted_file);
-    EnvFsInterface::fs()->remove(err, chk_file);
+    Env::FsInterface::fs()->remove(err, chk_file);
   }
 
 
@@ -85,13 +85,13 @@ class Column : public std::enable_shared_from_this<Column> {
   bool exists_range_path() {
     std::string range_path(Range::get_path(cid));
     int err = Error::OK;
-    return EnvFsInterface::fs()->exists(err, range_path) && err == Error::OK;
+    return Env::FsInterface::fs()->exists(err, range_path) && err == Error::OK;
   }
 
   bool create() {
     std::string col_range_path(Range::get_path(cid));
     int err = Error::OK;
-    EnvFsInterface::fs()->mkdirs(err, col_range_path);
+    Env::FsInterface::fs()->mkdirs(err, col_range_path);
     if(err == 17)
       err = Error::OK;
     return err == Error::OK;
@@ -103,7 +103,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void ranges_by_fs(int &err, FS::IdEntries_t &entries){
-    EnvFsInterface::interface()->get_structured_ids(err, Range::get_path(cid), entries);
+    Env::FsInterface::interface()->get_structured_ids(err, Range::get_path(cid), entries);
   }
 
   RangePtr get_range(int64_t rid, bool initialize=false){

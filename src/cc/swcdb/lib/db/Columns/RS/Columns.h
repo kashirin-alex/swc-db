@@ -108,11 +108,12 @@ typedef std::shared_ptr<Columns> ColumnsPtr;
 
 
 
-class EnvRsColumns {
+namespace Env {
+class RsColumns {
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvRsColumns>();
+    m_env = std::make_shared<RsColumns>();
   }
 
   static server::RS::ColumnsPtr get(){
@@ -120,14 +121,14 @@ class EnvRsColumns {
     return m_env->m_columns;
   }
 
-  EnvRsColumns() : m_columns(std::make_shared<server::RS::Columns>()) {}
-  virtual ~EnvRsColumns(){}
+  RsColumns() : m_columns(std::make_shared<server::RS::Columns>()) {}
+  virtual ~RsColumns(){}
 
   private:
-  server::RS::ColumnsPtr                      m_columns = nullptr;
-  inline static std::shared_ptr<EnvRsColumns> m_env = nullptr;
+  server::RS::ColumnsPtr                   m_columns = nullptr;
+  inline static std::shared_ptr<RsColumns> m_env = nullptr;
 };
-
+}
 
 }
 #endif

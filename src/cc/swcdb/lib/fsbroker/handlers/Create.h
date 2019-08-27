@@ -37,13 +37,13 @@ class Create : public AppHandler {
       FS::SmartFdPtr smartfd 
         = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
  
-      EnvFsInterface::fs()->create(
+      Env::FsInterface::fs()->create(
         err, smartfd, params.get_buffer_size(), 
         params.get_replication(), params.get_block_size()
       );
 
       if(smartfd->valid() && err==Error::OK)
-        fd = EnvFds::get()->add(smartfd);
+        fd = Env::Fds::get()->add(smartfd);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

@@ -55,7 +55,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 #if defined (FS_BROKER_APP)
       fs_cfg.append(".broker.underlying");
 #endif 
-      m_type = parse_fs_type(EnvConfig::settings()->get<String>(fs_cfg));
+      m_type = parse_fs_type(Env::Config::settings()->get<String>(fs_cfg));
     }
     
 
@@ -115,10 +115,10 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
     
     std::string fs_lib;
-    if(EnvConfig::settings()->has("swc.fs.lib."+fs_name)) {
-      fs_lib.append(EnvConfig::settings()->get<String>("swc.fs.lib."+fs_name));
+    if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
+      fs_lib.append(Env::Config::settings()->get<String>("swc.fs.lib."+fs_name));
     } else {
-      fs_lib.append(EnvConfig::settings()->install_path);
+      fs_lib.append(Env::Config::settings()->install_path);
       fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
       fs_lib.append(fs_name);
       fs_lib.append(".so");
@@ -138,7 +138,7 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_THROWF(Error::CONFIG_BAD_VALUE, 
                 "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
                 fs_lib.c_str(), handler_cfg_name.c_str(), err, (size_t)handle);
-    ((fs_apply_cfg_t*)f_cfg_ptr)(EnvConfig::get());
+    ((fs_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
     
     err = dlerror();
     std::string handler_name =  "fs_make_new_"+fs_name;
@@ -249,18 +249,20 @@ void set_structured_id(std::string number, std::string &s){
 } // namespace FS
 
 
-class EnvFsInterface;
-typedef std::shared_ptr<EnvFsInterface> EnvFsInterfacePtr;
+namespace Env {
 
-class EnvFsInterface {
+class FsInterface;
+typedef std::shared_ptr<FsInterface> FsInterfacePtr;
+
+class FsInterface {
   
   public:
 
   static void init() {
-    m_env = std::make_shared<EnvFsInterface>();
+    m_env = std::make_shared<FsInterface>();
   }
 
-  static EnvFsInterfacePtr get(){
+  static FsInterfacePtr get(){
     return m_env;
   }
 
@@ -274,13 +276,14 @@ class EnvFsInterface {
     return m_env->m_interface->get_fs();
   }
 
-  EnvFsInterface() : m_interface(std::make_shared<FS::Interface>()) {}
-  virtual ~EnvFsInterface(){}
+  FsInterface() : m_interface(std::make_shared<FS::Interface>()) {}
+  virtual ~FsInterface(){}
 
   private:
-  FS::InterfacePtr                m_interface = nullptr;
-  inline static EnvFsInterfacePtr m_env = nullptr;
+  FS::InterfacePtr             m_interface = nullptr;
+  inline static FsInterfacePtr m_env = nullptr;
 };
+}
 
 }
 

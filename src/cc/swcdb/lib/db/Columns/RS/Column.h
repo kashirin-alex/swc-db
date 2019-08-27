@@ -28,8 +28,8 @@ class Column : public std::enable_shared_from_this<Column> {
   bool load() {
     std::string col_range_path(Range::get_path(cid));
     int err = Error::OK;
-    if(!EnvFsInterface::fs()->exists(err, col_range_path)) {
-      EnvFsInterface::fs()->mkdirs(err, col_range_path);
+    if(!Env::FsInterface::fs()->exists(err, col_range_path)) {
+      Env::FsInterface::fs()->mkdirs(err, col_range_path);
       if(err == 17)
         err = Error::OK;
     }

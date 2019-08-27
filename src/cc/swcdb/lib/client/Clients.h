@@ -26,9 +26,9 @@ class Clients : public std::enable_shared_from_this<Clients> {
           : m_app_ctx(app_ctx) {
 
     if(ioctx == nullptr){
-      if(!EnvIoCtx::ok())
-        EnvIoCtx::init(8);
-      ioctx = EnvIoCtx::io()->shared();
+      if(!Env::IoCtx::ok())
+        Env::IoCtx::init(8);
+      ioctx = Env::IoCtx::io()->shared();
     }
 
     mngrs_groups = std::make_shared<Mngr::Groups>()->init();
@@ -59,15 +59,12 @@ class Clients : public std::enable_shared_from_this<Clients> {
 } // namespace client 
 
 
-class EnvClients;
-typedef std::shared_ptr<EnvClients> EnvClientsPtr;
-
-class EnvClients {
-  
+namespace Env {
+class Clients {
   public:
 
   static void init(client::ClientsPtr clients) {
-    m_env = std::make_shared<EnvClients>(clients);
+    m_env = std::make_shared<Clients>(clients);
   }
 
   static client::ClientsPtr get(){
@@ -75,13 +72,14 @@ class EnvClients {
     return m_env->m_clients;
   }
 
-  EnvClients(client::ClientsPtr clients) : m_clients(clients) {}
-  virtual ~EnvClients(){}
+  Clients(client::ClientsPtr clients) : m_clients(clients) {}
+  virtual ~Clients(){}
 
   private:
   client::ClientsPtr m_clients = nullptr;
-  inline static EnvClientsPtr m_env = nullptr;
+  inline static std::shared_ptr<Clients> m_env = nullptr;
 };
+}
 
 }
 

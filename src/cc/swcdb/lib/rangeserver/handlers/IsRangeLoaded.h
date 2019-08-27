@@ -31,7 +31,7 @@ class IsRangeLoaded : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      RangePtr range =  EnvRsColumns::get()->get_range(params.cid, params.rid);
+      RangePtr range =  Env::RsColumns::get()->get_range(params.cid, params.rid);
       
       if(range != nullptr && range->is_loaded()){
         m_conn->response_ok(m_ev);

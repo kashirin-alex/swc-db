@@ -35,14 +35,14 @@ class Read : public AppHandler {
       FS::Protocol::Params::ReadReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd = EnvFds::get()->select(params.get_fd());
+      FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else {
         offset = smartfd->pos();
         StaticBuffer buf = StaticBuffer(params.get_amount());
         rbuf = buf;
-        amount = EnvFsInterface::fs()->read(
+        amount = Env::FsInterface::fs()->read(
           err, smartfd, rbuf.base, params.get_amount());
       }
     }

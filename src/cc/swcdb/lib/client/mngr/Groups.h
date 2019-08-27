@@ -159,7 +159,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
   }
 
   GroupsPtr init(){
-    EnvConfig::settings()->get_ptr<gStrings>("swc.mngr.host")
+    Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host")
       ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
     
     on_cfg_update();
@@ -182,9 +182,9 @@ class Groups : public std::enable_shared_from_this<Groups>{
     HT_DEBUG("update_cfg()");
 
     gStringsPtr cfg_mngr_hosts
-     = EnvConfig::settings()->get_ptr<gStrings>("swc.mngr.host");
+     = Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host");
     uint32_t default_port
-     = EnvConfig::settings()->get<int32_t>("swc.mngr.port");
+     = Env::Config::settings()->get<int32_t>("swc.mngr.port");
 
 
     int c = cfg_mngr_hosts->size();
@@ -315,7 +315,8 @@ class Groups : public std::enable_shared_from_this<Groups>{
     
     for(auto& group : m_groups){
       if(group->col_begin <= col_begin
-        && (group->col_end == 0 || (col_end > 0 && group->col_end >= col_end))) {
+        && (group->col_end == 0 
+            || (col_end > 0 && group->col_end >= col_end))) {
         group->apply_endpoints(endpoints);
       }
     }

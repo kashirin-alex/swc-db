@@ -33,7 +33,7 @@ extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph());
 };
-void fs_apply_cfg_ceph(SWC::EnvConfigPtr env){
-  SWC::EnvConfig::set(env);
+void fs_apply_cfg_ceph(SWC::Env::ConfigPtr env){
+  SWC::Env::Config::set(env);
 };
 }

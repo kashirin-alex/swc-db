@@ -87,11 +87,12 @@ class IoContext {
 };
 
 
-class EnvIoCtx {
+namespace Env {
+class IoCtx {
   public:
 
   static void init(int32_t size) {
-    m_env = std::make_shared<EnvIoCtx>(size);
+    m_env = std::make_shared<IoCtx>(size);
   }
 
   static bool ok(){
@@ -105,16 +106,18 @@ class EnvIoCtx {
   }
   
 
-  EnvIoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { 
+  IoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { 
     m_io->run(m_io);
   }
 
-  virtual ~EnvIoCtx(){ }
+  virtual ~IoCtx(){ }
 
   private:
-  IoContextPtr  m_io;
-  inline static std::shared_ptr<EnvIoCtx> m_env = nullptr;
+  IoContextPtr                         m_io;
+  inline static std::shared_ptr<IoCtx> m_env = nullptr;
 };
+}
+
 }
 
 #endif // swc_core_comm_IoContext_h
