@@ -143,52 +143,6 @@ class RangeServers {
     m_actions_run = false;
     check_assignment(3000);
   }
-  
-  void column_create(DB::SchemaPtr &schema, int &err){
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(!m_columns_set) {
-      err = Error::MNGR_NOT_INITIALIZED;
-      return;
-    }
-    if(Env::Schemas::get()->get(schema->col_name)){
-      err = Error::SCHEMA_COL_NAME_EXISTS;
-      return;
-    }
-
-    bool reused;
-    int64_t cid = get_next_cid(reused);
-    if(reused)
-      Column::clear_marked_deleted(cid);
-    else
-      Column::create(cid);
-      
-    schema = DB::Schema::make(cid, schema);
-    Env::Schemas::get()->add(schema);
-
-    Files::Schema::save(schema);
-  }
-
-  void column_delete(DB::SchemaPtr &schema, int &err){
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(!m_columns_set) {
-      err = Error::MNGR_NOT_INITIALIZED;
-      return;
-    }
-    schema = Env::Schemas::get()->get(schema->col_name);
-    if(!schema){
-      err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
-      return;
-    }
-    int64_t cid = schema->cid;
-
-    Column::mark_deleted(err, cid);
-    m_cols_reuse.push(cid);
-
-    Env::FsInterface::fs()->remove(err, Files::Schema::filepath(cid));
-    Env::Schemas::get()->remove(cid);  
-  }
 
   void update_status(Protocol::Params::MngColumn::Function func, int64_t cid){
     
@@ -719,6 +673,54 @@ class RangeServers {
     
     if(Env::MngrRoleState::get()->has_active_columns())
       timer_assignment_checkin(cfg_delay_rs_chg->get());
+  }
+  
+  void column_create(DB::SchemaPtr &schema, int &err){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(!m_columns_set) {
+      err = Error::MNGR_NOT_INITIALIZED;
+      return;
+    }
+    if(Env::Schemas::get()->get(schema->col_name)){
+      err = Error::SCHEMA_COL_NAME_EXISTS;
+      return;
+    }
+
+    bool reused;
+    int64_t cid = get_next_cid(reused);
+    if(reused)
+      Column::clear_marked_deleted(cid);
+    else
+      Column::create(cid);
+      
+    schema = DB::Schema::make(cid, schema);
+    Env::Schemas::get()->add(schema);
+
+    Files::Schema::save(schema);
+  }
+
+  void column_delete(DB::SchemaPtr &schema, int &err){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(!m_columns_set) {
+      err = Error::MNGR_NOT_INITIALIZED;
+      return;
+    }
+    schema = Env::Schemas::get()->get(schema->col_name);
+    if(!schema){
+      err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
+      return;
+    }
+    int64_t cid = schema->cid;
+
+    Column::mark_deleted(err, cid);
+    m_cols_reuse.push(cid);
+
+    do {
+      Env::FsInterface::fs()->remove(err, Files::Schema::filepath(cid));
+    } while(err != Error::OK);
+    Env::Schemas::get()->remove(cid);  
   }
 
   std::mutex          m_mutex;
