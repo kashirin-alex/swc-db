@@ -189,8 +189,10 @@ class MngRsId: public ActiveMngrBase {
   }
 
   client::ClientConPtr  m_conn;
-  gInt32tPtr            cfg_check_interval;
   bool                  m_shutting_down;
+  
+  const gInt32tPtr cfg_check_interval;
+
   std::function<void()> m_cb = 0;
 };
 typedef std::shared_ptr<MngRsId> MngRsIdPtr;

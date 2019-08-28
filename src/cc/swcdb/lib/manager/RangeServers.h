@@ -68,15 +68,15 @@ class RangeServers {
     : m_assign_timer(
         std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
       ),
+      cfg_rs_failures(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.RS.remove.failures")),
+      cfg_delay_rs_chg(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.delay.onRangeServerChange")),
+      cfg_delay_cols_init(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.delay.afterColumnsInit")),
+      cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.interval.check")),
       m_actions_run(false) {    
-    cfg_rs_failures = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.ranges.assign.RS.remove.failures");
-    cfg_delay_rs_chg = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.ranges.assign.delay.onRangeServerChange");
-    cfg_delay_cols_init = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.ranges.assign.delay.afterColumnsInit");
-    cfg_chk_assign = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.ranges.assign.interval.check");
   }
 
   void new_columns() {
@@ -758,10 +758,10 @@ class RangeServers {
   std::atomic<bool>           m_actions_run;
 
 
-  gInt32tPtr          cfg_rs_failures;
-  gInt32tPtr          cfg_delay_rs_chg;
-  gInt32tPtr          cfg_delay_cols_init;
-  gInt32tPtr          cfg_chk_assign;
+  const gInt32tPtr cfg_rs_failures;
+  const gInt32tPtr cfg_delay_rs_chg;
+  const gInt32tPtr cfg_delay_cols_init;
+  const gInt32tPtr cfg_chk_assign;
   
 };
 

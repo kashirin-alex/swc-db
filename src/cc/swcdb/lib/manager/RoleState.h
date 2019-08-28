@@ -608,14 +608,14 @@ class RoleState {
   bool                         m_mngr_inchain_running = 0;
 
 
-  gInt32tPtr  cfg_conn_probes;
-  gInt32tPtr  cfg_conn_timeout;
-  gInt32tPtr  cfg_conn_fb_failures;
+  const gInt32tPtr cfg_conn_probes;
+  const gInt32tPtr cfg_conn_timeout;
+  const gInt32tPtr cfg_conn_fb_failures;
   
-  gInt32tPtr  cfg_req_timeout;
-  gInt32tPtr  cfg_delay_updated;
-  gInt32tPtr  cfg_check_interval;
-  gInt32tPtr  cfg_delay_fallback;
+  const gInt32tPtr cfg_req_timeout;
+  const gInt32tPtr cfg_delay_updated;
+  const gInt32tPtr cfg_check_interval;
+  const gInt32tPtr cfg_delay_fallback;
 };
 
 }} // server namespace

@@ -100,8 +100,8 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   std::queue<ConnCb_t>  m_requests;
   bool                  m_running;
 
-  gInt32tPtr          cfg_rs_conn_timeout;
-  gInt32tPtr          cfg_rs_conn_probes;
+  const gInt32tPtr cfg_rs_conn_timeout;
+  const gInt32tPtr cfg_rs_conn_probes;
 };
 
 
