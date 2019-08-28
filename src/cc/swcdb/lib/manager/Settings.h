@@ -29,6 +29,9 @@ void Settings::init_app_options(){
      "Number of tries Mngr tries to connect to other manager")
     ("swc.mngr.role.connection.timeout", g_i32(1000), 
      "Timeout in milliseconds for each connection probe")
+    ("swc.mngr.role.connection.fallback.failures", g_i32(10), 
+     "Fallback only after this number of retries to connect")
+     
     ("swc.mngr.role.request.timeout", g_i32(20000), 
      "Timeout in milliseconds for Mngr-Hosts state request, "
      "total=(connection.probes x connection.timeout + request.timeout) x hosts")

@@ -56,14 +56,9 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_requests.push(req);
-
       if(m_running)
         return;
       m_running = true;
-      if(m_conn == nullptr || !m_conn->is_open()) {
-        connect();
-        return;
-      }
     }
 
     run();
@@ -74,6 +69,11 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
     for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_conn == nullptr || !m_conn->is_open()) {
+          connect();
+          return;
+        }
+
         m_running = m_requests.size() > 0;
         if(!m_running)
           break;
@@ -82,6 +82,14 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
       }
       req(m_conn);
     }
+  }
+
+  void stop(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    while(!m_requests.empty())
+      m_requests.pop();
+    if(m_conn != nullptr && m_conn->is_open())
+      m_conn->do_close();
   }
 
   private:
@@ -158,6 +166,10 @@ class RsStatus : public Protocol::Params::HostEndPoints {
 
   void put(RsQueue::ConnCb_t req){
     m_queue->put(req);
+  }
+
+  void stop(){
+    m_queue->stop();
   }
 
   uint64_t   rs_id;

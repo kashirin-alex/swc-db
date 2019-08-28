@@ -313,9 +313,16 @@ class RangeServers {
   }
 
   void stop() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_assign_timer->cancel();
-    m_run = false;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_assign_timer->cancel();
+      m_run = false;
+    }
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      for(auto& h : m_rs_status)
+        asio::post(*Env::IoCtx::io()->ptr(), [h](){ h->stop(); });
+    }
   }
 
   private:
@@ -370,8 +377,20 @@ class RangeServers {
   bool manage(int64_t cid){
     std::vector<int64_t> cols;
     Env::MngrRoleState::get()->get_active_columns(cols);
-    if(cols.size() == 0)
+    if(cols.size() == 0){
+      // if decommissioned
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_columns_set){
+        HT_INFO("Manager has been decommissioned");
+        m_columns_set = false;
+        m_root_mngr = false;
+        m_last_cid = 0;
+        Env::MngrColumns::get()->reset();
+        while(!m_cols_reuse.empty())
+          m_cols_reuse.pop();
+      }
       return false; 
+    }
 
     if(*cols.begin() == 0 && *(cols.end()-1) < cid) // from till-end
       return true;

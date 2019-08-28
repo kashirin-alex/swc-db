@@ -20,7 +20,8 @@ class HostStatus : public Protocol::Params::HostEndPoints {
              const EndPoints& points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Params::HostEndPoints(points), conn(c), priority(pr),
-               state(Types::MngrState::NOTSET) { }
+               state(Types::MngrState::NOTSET),
+               failures(0) { }
   
   virtual ~HostStatus(){ }
 
@@ -74,6 +75,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
   uint64_t          col_end;
 
   client::ClientConPtr  conn; // mngr-inchain
+  int                   failures;
 };
 
 typedef std::shared_ptr<HostStatus> HostStatusPtr;

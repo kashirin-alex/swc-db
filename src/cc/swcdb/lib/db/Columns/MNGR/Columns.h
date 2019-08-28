@@ -27,6 +27,11 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   Columns() : m_columns(std::make_shared<ColumnsMap>()) {}
 
+  void reset(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_columns = std::make_shared<ColumnsMap>();
+  }
+
   virtual ~Columns(){}
 
   ColumnPtr get_column(int64_t cid, bool initialize){

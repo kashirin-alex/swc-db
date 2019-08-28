@@ -55,19 +55,22 @@ class RoleState {
     : m_check_timer(
         std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
       ),
+      cfg_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.connection.probes")),
+      cfg_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.connection.timeout")),
+      cfg_conn_fb_failures(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.connection.fallback.failures")),
+      cfg_req_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.request.timeout")),
+      cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.check.interval")),
+      cfg_delay_updated(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.check.delay.updated")),
+      cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.role.check.delay.fallback")),
       m_checkin(false) {
-    cfg_conn_probes = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.connection.probes");
-    cfg_conn_timeout = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.connection.timeout");
-    cfg_req_timeout = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.request.timeout");
-    cfg_check_interval = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.check.interval");
-    cfg_delay_updated = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.check.delay.updated");
-    cfg_delay_fallback = Env::Config::settings()->get_ptr<gInt32t>(
-      "swc.mngr.role.check.delay.fallback");
+    
   }
 
   virtual ~RoleState() { }
@@ -300,8 +303,8 @@ class RoleState {
               endpoint_server.port(), 
               endpoint_client.address().to_string().c_str(), 
               endpoint_client.port());
-              
-    update_state(endpoint_server, Types::MngrState::OFF);
+    if(host_set->state != Types::MngrState::ACTIVE)
+      update_state(endpoint_server, Types::MngrState::OFF);
     // m_major_updates = true;
     return true;
   }
@@ -314,9 +317,24 @@ class RoleState {
   }
 
   void stop() {
-    std::lock_guard<std::mutex> lock(m_mutex_timer);
-    m_check_timer->cancel();
-    m_run = false;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_timer);
+      m_check_timer->cancel();
+      m_run = false;
+    }
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
+      while(!m_mngr_inchain_queue.empty())
+        m_mngr_inchain_queue.pop();
+    }
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      for(auto& host : m_states) {
+        if(host->conn != nullptr && host->conn->is_open())
+          asio::post(
+            *Env::IoCtx::io()->ptr(), [conn=host->conn](){conn->do_close();});
+      }
+    }
   }
 
   private:
@@ -348,23 +366,17 @@ class RoleState {
   }
 
   void managers_checkin(){
-    if(m_checkin)
+    if(m_checkin++)
       return;
-    m_checkin = true;
-    managers_checker();
-    m_checkin = false;
-  }
 
-  void managers_checker(){
-    //HT_DEBUG("managers_checker");
-
+    //HT_DEBUG("managers_checkin");
     size_t sz;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       apply_cfg();
       sz = m_states.size();
     }
-    managers_checker(0, sz, false);
+   managers_checker(0, sz, false);
   }
 
   void fill_states(){
@@ -380,6 +392,7 @@ class RoleState {
     // set manager followed(in-chain) local manager, incl. last's is first
 
     if(total == 0) {
+      m_checkin=0;
       timer_managers_checkin(cfg_check_interval->get());
       return;
     }
@@ -394,6 +407,7 @@ class RoleState {
 
     if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
       if(flw) {
+        m_checkin=0;
         timer_managers_checkin(cfg_check_interval->get());
         return;
       }
@@ -413,21 +427,35 @@ class RoleState {
 
     Env::Clients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
-      [host_chk, next, flw, total]
-      (client::ClientConPtr conn){
-        if(conn == nullptr || !conn->is_open()){
-          host_chk->state = Types::MngrState::OFF;
-          Env::MngrRoleState::get()->managers_checker(next, total-1, flw);
-          return;
-        }
-        //conn->accept_requests();
-        host_chk->conn = conn;
-        Env::MngrRoleState::get()->m_major_updates = true;
-        Env::MngrRoleState::get()->set_mngr_inchain(host_chk->conn);
+      [host_chk, next, total, flw](client::ClientConPtr conn){
+        Env::MngrRoleState::get()->manager_checker(
+          host_chk, next, total, flw, conn);
       },
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
       cfg_conn_probes->get()
     );
+  }
+
+  void manager_checker(HostStatusPtr host, int next, size_t total, bool flw,
+                       client::ClientConPtr conn){
+    if(conn == nullptr || !conn->is_open()){
+      if(host->state == Types::MngrState::ACTIVE
+         && ++host->failures <= cfg_conn_fb_failures->get()){   
+        m_checkin=0;
+        timer_managers_checkin(cfg_delay_fallback->get());
+        HT_DEBUGF("Allowed conn Failure=%d before fallback", 
+                  host->failures);
+        return;
+      }
+      host->state = Types::MngrState::OFF;
+      managers_checker(next, total-1, flw);
+      return;
+    }
+    host->conn = conn;
+    host->failures = 0;
+    //conn->accept_requests();
+    m_major_updates = true;
+    set_mngr_inchain(host->conn);
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
@@ -555,6 +583,8 @@ class RoleState {
     
     run_mngr_inchain_queue();
     fill_states();
+    m_checkin=0;
+    timer_managers_checkin(cfg_check_interval->get());
   }
 
   EndPoints                    m_local_endpoints;
@@ -562,7 +592,7 @@ class RoleState {
 
   std::mutex                   m_mutex;
   HostStatuses                 m_states;
-  std::atomic<bool>            m_checkin;
+  std::atomic<uint8_t>         m_checkin;
   client::Mngr::SelectedGroups m_local_groups;
   std::vector<int64_t>         m_cols_active;
   std::unordered_map<uint64_t, EndPoint> m_mngrs_client_srv;
@@ -580,6 +610,8 @@ class RoleState {
 
   gInt32tPtr  cfg_conn_probes;
   gInt32tPtr  cfg_conn_timeout;
+  gInt32tPtr  cfg_conn_fb_failures;
+  
   gInt32tPtr  cfg_req_timeout;
   gInt32tPtr  cfg_delay_updated;
   gInt32tPtr  cfg_check_interval;
