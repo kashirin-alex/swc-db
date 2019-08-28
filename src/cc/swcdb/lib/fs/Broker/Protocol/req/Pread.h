@@ -47,7 +47,7 @@ class Pread : public Base {
       return;
 
     StaticBufferPtr buf = nullptr;
-    if(error == Error::OK) {
+    if(error == Error::OK || error == Error::FS_EOF) {
       Params::ReadRsp params;
       params.decode(&ptr, &remain);
       size_t offset = params.get_offset();
@@ -56,7 +56,7 @@ class Pread : public Base {
 
       if(remain != amount) {
         error = Error::SERIALIZATION_INPUT_OVERRUN;
-      } else {
+      } else if(amount > 0) {
         if(buffer == nullptr) {
           buf = std::make_shared<StaticBuffer>(remain); 
           buffer = buf->base;

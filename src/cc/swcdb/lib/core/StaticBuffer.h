@@ -61,15 +61,25 @@ namespace SWC {
      */
     explicit StaticBuffer(size_t len, size_t alignment=0)
       : alignment(alignment), size(len), own(true) {
+      allocate();
+    }
+
+    void allocate(){
       if (alignment > 0) {
         void *vptr = 0;
-        size_t aligned_len = (len % alignment) == 0 ? len :
-          ((len / alignment)+1)*alignment;
+        size_t aligned_len = (size % alignment) == 0 ? size :
+          ((size / alignment)+1)*alignment;
         HT_ASSERT(posix_memalign(&vptr, alignment, aligned_len) == 0);
         base = (uint8_t *)vptr;
       }
       else
-        base = new uint8_t[len];
+        base = new uint8_t[size];
+    }
+
+    void reallocate(uint32_t len) {
+      free();
+      size = len;
+      allocate();
     }
 
     /** Constructor; assigns an existing buffer and can take ownership of

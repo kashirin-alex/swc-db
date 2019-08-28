@@ -62,7 +62,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       return;
     }
      
-    cb->send_error(Error::NOT_LOADED_RANGE , "");
+    cb->send_error(Error::RS_NOT_LOADED_RANGE , "");
   }
 
   void unload_range(int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){

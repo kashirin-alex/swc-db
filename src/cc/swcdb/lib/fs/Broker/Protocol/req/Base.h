@@ -44,7 +44,8 @@ class Base : public DispatchHandler {
       error = Error::NOT_IMPLEMENTED;
 
     else if(error == Error::OK 
-        && (error = SWC::Protocol::response_code(ev)) == Error::OK) {
+            && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
+                || error == Error::FS_EOF) {
       *ptr = ev->payload + 4;
       *remain = ev->payload_len - 4;
     } 

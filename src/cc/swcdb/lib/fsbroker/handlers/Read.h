@@ -23,7 +23,6 @@ class Read : public AppHandler {
   void run() override {
 
     int err = Error::OK;
-    size_t amount = 0;
     size_t offset = 0;
     StaticBuffer rbuf;
 
@@ -40,9 +39,8 @@ class Read : public AppHandler {
         err = EBADR;
       else {
         offset = smartfd->pos();
-        StaticBuffer buf = StaticBuffer(params.get_amount());
-        rbuf = buf;
-        amount = Env::FsInterface::fs()->read(
+        rbuf.reallocate(params.get_amount());
+        rbuf.size = Env::FsInterface::fs()->read(
           err, smartfd, rbuf.base, params.get_amount());
       }
     }
@@ -52,7 +50,7 @@ class Read : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::ReadRsp rsp_params(offset, amount);
+      FS::Protocol::Params::ReadRsp rsp_params(offset, rbuf.size);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, 

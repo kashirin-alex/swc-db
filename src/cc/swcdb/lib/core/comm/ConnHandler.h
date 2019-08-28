@@ -410,7 +410,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       ev->load_message_header(data, filled);
     } catch(...){
       ev->type = Event::Type::ERROR;
-      ev->error = Error::REQUEST_TRUNCATED;
+      ev->error = Error::REQUEST_TRUNCATED_HEADER;
       ev->header = CommHeader();
       
       HT_WARNF("read, REQUEST HEADER_TRUNCATED: filled=%d", filled);
@@ -436,6 +436,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(filled != ev->payload_len) {
       ev->payload_len=0;
       e = ec;
+      ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
     }
     /*
     std::cout << "read id=" << ev->header.id << " len=" << ev->header.total_len  

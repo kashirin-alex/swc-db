@@ -77,10 +77,7 @@ class FileSystemHadoop: public FileSystem {
     hdfsGetWorkingDirectory(m_filesystem, buffer, 256);
     HT_DEBUGF("FS-Hadoop, working Dir='%s'", buffer);
 
-    int64_t sz_used = hdfsGetUsed(m_filesystem); 
-    HT_INFOF("Non DFS Used bytes: %ld", sz_used);
-    sz_used = hdfsGetCapacity(m_filesystem); 
-    HT_INFOF("Configured Capacity bytes: %ld", sz_used);
+
   }
 
   bool initialize(){
@@ -105,7 +102,25 @@ class FileSystemHadoop: public FileSystem {
         m_filesystem = hdfsBuilderConnect(bld);
         HT_DEBUGF("Connecting to namenode=%s", h.c_str());
 
-        if(m_filesystem != nullptr) return true;
+        if(m_filesystem != nullptr) {
+          errno = Error::OK;
+          // check status, namenode need to be active
+          int64_t sz_used = hdfsGetUsed(m_filesystem); 
+          if(sz_used == -1) {
+            HT_ERRORF("hdfsGetUsed('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
+            continue;
+          }
+          HT_INFOF("Non DFS Used bytes: %ld", sz_used);
+          
+          sz_used = hdfsGetCapacity(m_filesystem); 
+          if(sz_used == -1) {
+            HT_ERRORF("hdfsGetCapacity('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
+            continue;
+          }
+          HT_INFOF("Configured Capacity bytes: %ld", sz_used);
+
+          return true;
+        }
       }
 
     } else {
@@ -340,9 +355,11 @@ class FileSystemHadoop: public FileSystem {
       HT_ERRORF("read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
-
+      if(nread != amount)
+        err = Error::FS_EOF;
       hadoop_fd->pos(hadoop_fd->pos()+nread);
-      HT_DEBUGF("read(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+      HT_DEBUGF("read(ed) %s amount=%d eof=%d", 
+                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
   }
@@ -365,9 +382,11 @@ class FileSystemHadoop: public FileSystem {
       HT_ERRORF("pread failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
-
+      if(nread != amount)
+        err = Error::FS_EOF;
       hadoop_fd->pos(offset+nread);
-      HT_DEBUGF("pread(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+      HT_DEBUGF("pread(ed) %s amount=%d eof=%d", 
+                 smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
   }

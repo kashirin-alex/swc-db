@@ -246,9 +246,11 @@ class FileSystemLocal: public FileSystem {
       HT_ERRORF("read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
-
+      if(nread != amount)
+        err = Error::FS_EOF;
       smartfd->pos(smartfd->pos()+nread);
-      HT_DEBUGF("read(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+      HT_DEBUGF("read(ed) %s amount=%d eof=%d", 
+                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
   }
@@ -267,9 +269,11 @@ class FileSystemLocal: public FileSystem {
       HT_ERRORF("pread failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
-
+      if(nread != amount)
+        err = Error::FS_EOF;
       smartfd->pos(offset+nread);
-      HT_DEBUGF("pread(ed) %s amount=%d", smartfd->to_string().c_str(), nread);
+      HT_DEBUGF("pread(ed) %s amount=%d  eof=%d", 
+                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
   }

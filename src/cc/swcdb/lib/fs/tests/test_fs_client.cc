@@ -125,7 +125,7 @@ void run(size_t thread_id){
 
 
     // create >> append >> flush >> sync >> close >> exists >> length 
-    // >> open >> read >> seek >> read(suff) >> close >> remove
+    // >> open >> read >> seek >> read(suff) >> seek(for EOF) >> read(EOF) >> pread >> pread(EOF) >> close >> remove
 
     // create >> 
     Env::FsInterface::fs()->create(err, smartfd, -1, -1, -1);
@@ -248,6 +248,27 @@ void run(size_t thread_id){
     }
     std::cout << "read(suff)-data='" << std::string((char*)bufsuf, data_start.length()) << "'\n";
     
+    // seek(for EOF) >>
+    err = Error::OK;
+    seek_offset = len-data_end.length()+1;
+    Env::FsInterface::fs()->seek(err, smartfd, seek_offset);
+    if (err != Error::OK || smartfd->pos() != seek_offset) { 
+     std::cerr << "ERROR(seek) err=" << err << " to=" << seek_offset << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+
+    // read(with EOF) >>
+    err = Error::OK;
+    uint8_t bufeof[data_end.length()];
+    if (Env::FsInterface::fs()->read(err, smartfd, bufeof, data_end.length()) != data_end.length()-1 
+        || err != Error::FS_EOF 
+        || memcmp ((char*)bufeof, data_end.data()+1, data_end.length()-1 ) != 0) { 
+     std::cerr << "ERROR(read(with EOF)) err=" << err << " buf=" << bufeof << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    std::cout << "read(with EOF)-data='" << std::string((char*)bufeof, data_end.length()-1) << "'\n";
+
+
     // pread >>
     size_t pread_offset = 0;
     for(int i=0;i<num_blocks;i++){
@@ -265,6 +286,20 @@ void run(size_t thread_id){
       std::cout << "pread thread=" << thread_id << " blk=" << i 
                 << " start_data='" << std::string((char*)buf_start, data_start.length()) << "'\n";
     }
+    
+    // pread(with EOF) >>
+    err = Error::OK;
+    uint8_t bufpeof[data_end.length()];
+    if (Env::FsInterface::fs()->pread(err, smartfd, 
+                                      len-data_end.length()+1, 
+                                      bufpeof, data_end.length()) != data_end.length()-1 
+        || err != Error::FS_EOF 
+        || memcmp ((char*)bufpeof, data_end.data()+1, data_end.length()-1 ) != 0) { 
+     std::cerr << "ERROR(pread(with EOF)) err=" << err << " buf=" << bufpeof << " " << smartfd->to_string() <<"\n";
+     exit(1);
+    }
+    std::cout << "pread(with EOF)-data='" << std::string((char*)bufpeof, data_end.length()-1) << "'\n";
+
 
 
     // close >>

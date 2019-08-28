@@ -36,7 +36,7 @@ class IsRangeLoaded : public AppHandler {
       if(range != nullptr && range->is_loaded()){
         m_conn->response_ok(m_ev);
       } else {
-        m_conn->send_error(Error::NOT_LOADED_RANGE , "", m_ev);
+        m_conn->send_error(Error::RS_NOT_LOADED_RANGE , "", m_ev);
       }
     }
     catch (Exception &e) {

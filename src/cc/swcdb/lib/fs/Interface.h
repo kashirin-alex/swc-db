@@ -214,7 +214,45 @@ class Interface : std::enable_shared_from_this<Interface>{
         return;
     }
   }
+  
+  // default form to FS methods
 
+  bool exists(const String &name) {
+    bool state;
+    int err = Error::OK;
+    do{
+      state = m_fs->exists(err, name);
+    } while(err != Error::OK);
+    return state;
+  } 
+
+  void exists(Callback::ExistsCb_t cb, const String &name) {
+    Callback::ExistsCb_t cb_wrapper; 
+    cb_wrapper = [cb, name, &cb_wrapper, ptr=shared_from_this()]
+    (int err, bool state){ 
+      if(err != Error::OK) 
+        ptr->get_fs()->exists(cb_wrapper, name);
+      else 
+        cb(err, state);
+    };
+    m_fs->exists(cb_wrapper, name);
+  }
+
+  /* 
+  void open(SmartFdPtr &smartfd, int32_t bufsz=0) {
+    int err = Error::OK;
+    do{
+      m_fs->open(err, smartfd, bufsz);
+      if(err == ENOENT || err == EACCES)
+        return;
+      if(!smartfd->valid()){
+        std::cout << " FS::open err=" << err << "\n";
+        continue;
+      }
+    } while(err != Error::OK);
+  } 
+  */
+ 
   private:
   Types::Fs     m_type;
   FileSystemPtr m_fs;
