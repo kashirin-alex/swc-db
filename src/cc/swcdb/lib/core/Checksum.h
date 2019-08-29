@@ -26,23 +26,43 @@
 #ifndef swc_core_Checksum_h
 #define swc_core_Checksum_h
 
-#include "Compat.h"
+#include "Logger.h"
+#include "Serialization.h"
 
 namespace SWC {
 
-  /** @addtogroup Common
-   *  @{
-   */
+/** Compute fletcher32 checksum for arbitary data. See
+  * http://en.wikipedia.org/wiki/Fletcher%27s_checksum for more information
+  * about the algorithm. Fletcher32 is the default checksum.
+  *
+  * @param data Pointer to the input data
+  * @param len Input data length in bytes
+  * @return The calculated checksum
+*/
+extern uint32_t fletcher32(const void *data, size_t len);
 
-  /** Compute fletcher32 checksum for arbitary data. See
-   * http://en.wikipedia.org/wiki/Fletcher%27s_checksum for more information
-   * about the algorithm. Fletcher32 is the default checksum used in Hypertable.
-   *
-   * @param data Pointer to the input data
-   * @param len Input data length in bytes
-   * @return The calculated checksum
-   */
-  extern uint32_t fletcher32(const void *data, size_t len);
+
+inline bool checksum_i32_chk(uint32_t checksum, 
+                             const uint8_t *base, uint32_t len){
+  uint32_t computed = fletcher32(base, len);
+  if(checksum == computed)
+    return true;
+  HT_ERRORF("checksum_i32_chk, original(%u) != computed(%u)", 
+            checksum, computed);
+  return false;
+}
+
+inline bool checksum_i32_chk(uint32_t checksum, 
+                             const uint8_t *base, uint32_t len, 
+                             uint32_t offset){
+  memset((void *)(base+offset), 0, 4);
+  return checksum_i32_chk(checksum, base, len);
+}
+
+inline void checksum_i32(const uint8_t *start, const uint8_t *end, 
+                        uint8_t **ptr){
+  Serialization::encode_i32(ptr, fletcher32(start, end-start));
+}
 
   /** @}*/
 
