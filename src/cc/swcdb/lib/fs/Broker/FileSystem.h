@@ -14,6 +14,7 @@
 #include "Protocol/req/Mkdirs.h"
 #include "Protocol/req/Readdir.h"
 #include "Protocol/req/Rmdir.h"
+#include "Protocol/req/Write.h"
 #include "Protocol/req/Create.h"
 #include "Protocol/req/Append.h"
 #include "Protocol/req/Open.h"
@@ -209,6 +210,25 @@ class FileSystemBroker: public FileSystem {
   }
 
   /// SmartFd actions
+
+  void write(int &err, SmartFdPtr &smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer) override {
+    Protocol::Req::WritePtr hdlr = std::make_shared<Protocol::Req::Write>(
+      cfg_timeout->get(), smartfd, replication, blksz, buffer);
+
+    send_request_sync(hdlr, hdlr->promise());
+    err = hdlr->error;
+  }
+
+  void write(Callback::WriteCb_t cb, SmartFdPtr &smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer) override {
+    Protocol::Req::WritePtr hdlr = std::make_shared<Protocol::Req::Write>(
+      cfg_timeout->get(), smartfd, replication, blksz, buffer, cb);
+      
+    while(!send_request(hdlr));
+  }
 
   void create(int &err, SmartFdPtr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) override {

@@ -17,6 +17,7 @@
 #include "handlers/Mkdirs.h"
 #include "handlers/Readdir.h"
 #include "handlers/Rmdir.h"
+#include "handlers/Write.h"
 #include "handlers/Create.h"
 #include "handlers/Append.h"
 #include "handlers/Open.h"
@@ -97,6 +98,10 @@ class AppContext : public SWC::AppContext {
 
           case FS::Protocol::Cmd::FUNCTION_RMDIR:
             handler = new Handler::Rmdir(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_WRITE:
+            handler = new Handler::Write(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_CREATE:

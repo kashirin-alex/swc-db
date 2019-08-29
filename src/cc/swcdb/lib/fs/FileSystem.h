@@ -186,6 +186,18 @@ class FileSystem {
   }
 
   // File(fd) Actions
+  virtual void write(int &err, SmartFdPtr &smartfd,
+                     int32_t replication, int64_t blksz, 
+                     StaticBuffer &buffer) = 0;
+  virtual 
+  void write(Callback::WriteCb_t cb, SmartFdPtr &smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer) {
+    int err = Error::OK;
+    write(err, smartfd, replication, blksz, buffer);
+    cb(err, smartfd);
+  }
+
   virtual void create(int &err, SmartFdPtr &smartfd,
                       int32_t bufsz, int32_t replication, int64_t blksz) = 0;
   virtual 

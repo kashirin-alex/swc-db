@@ -148,6 +148,31 @@ class FileSystemLocal: public FileSystem {
     }
     HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
+  
+  void write(int &err, SmartFdPtr &smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer) {
+    HT_DEBUGF("write %s", smartfd->to_string().c_str());
+
+    create(err, smartfd, 0, replication, blksz);
+    if(!smartfd->valid() && err == Error::OK){
+      err = EBADF;
+      goto finish;
+    }
+
+    append(err, smartfd, buffer, Flags::FLUSH);
+    if(err != Error::OK)
+      goto finish;
+
+    finish:
+      int errtmp;
+      if(smartfd->valid())
+        close(err == Error::OK ? err : errtmp, smartfd);
+    
+    if(err != Error::OK)
+      HT_ERRORF("write failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+  }
 
   void create(int &err, SmartFdPtr &smartfd, 
               int32_t bufsz, int32_t replication, int64_t blksz) override {
@@ -171,8 +196,13 @@ class FileSystemLocal: public FileSystem {
     smartfd->fd(::open(abspath.c_str(), oflags, 0644));
     if (!smartfd->valid()) {
       err = errno;
-      HT_ERRORF("create failed: %d(%s),  %s", 
+      HT_ERRORF("create failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
+
+      if(err == EACCES || err == ENOENT)
+        err == Error::FS_PATH_NOT_FOUND;
+      else if (err == EPERM)
+        err == Error::FS_PERMISSION_DENIED;
       return;
     }
     
@@ -208,8 +238,13 @@ class FileSystemLocal: public FileSystem {
     smartfd->fd(::open(abspath.c_str(), oflags));
     if (!smartfd->valid()) {
       err = errno;
-      HT_ERRORF("open failed: %d(%s),  %s", 
+      HT_ERRORF("open failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
+                
+      if(err == EACCES || err == ENOENT)
+        err == Error::FS_PATH_NOT_FOUND;
+      else if (err == EPERM)
+        err == Error::FS_PERMISSION_DENIED;
       return;
     }
     
@@ -291,7 +326,7 @@ class FileSystemLocal: public FileSystem {
     if (smartfd->pos() != 0 
       && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
       err = errno;
-      HT_ERRORF("append, lseek failed: %d(%s),  %s", 
+      HT_ERRORF("append, lseek failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -301,7 +336,7 @@ class FileSystemLocal: public FileSystem {
                     smartfd->fd(), buffer.base, buffer.size)) == -1) {
       nwritten = 0;
       err = errno;
-      HT_ERRORF("write failed: %d(%s),  %s", 
+      HT_ERRORF("write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -310,7 +345,7 @@ class FileSystemLocal: public FileSystem {
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (fsync(smartfd->fd()) != 0) {     
         err = errno;
-        HT_ERRORF("write, fsync failed: %d(%s),  %s", 
+        HT_ERRORF("write, fsync failed: %d(%s), %s", 
                   errno, strerror(errno), smartfd->to_string().c_str());
       }
     }

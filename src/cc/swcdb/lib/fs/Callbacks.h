@@ -21,6 +21,7 @@ namespace Callback {
   typedef std::function<void(int)>               RmdirCb_t;
   
 
+  typedef std::function<void(int, SmartFdPtr)>                  WriteCb_t;
   typedef std::function<void(int, SmartFdPtr)>                  CreateCb_t;
   typedef std::function<void(int, SmartFdPtr)>                  OpenCb_t;
   typedef std::function<void(int, SmartFdPtr, StaticBufferPtr)> ReadCb_t;

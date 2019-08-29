@@ -27,6 +27,7 @@ namespace SWC{ namespace FS { namespace Protocol {
     FUNCTION_RENAME   = 16,   ///< Rename
     FUNCTION_DEBUG    = 17,   ///< Debug
     FUNCTION_SYNC     = 18,   ///< Sync
+    FUNCTION_WRITE    = 19,   ///< Write
     FUNCTION_MAX ///< Maximum code marker
   };
 }

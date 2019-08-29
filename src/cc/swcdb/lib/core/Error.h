@@ -144,6 +144,8 @@ namespace SWC {
       FS_INVALID_ARGUMENT                   = 0x00020006,
       FS_INVALID_CONFIG                     = 0x00020007,
       FS_EOF                                = 0x00020008,
+      FS_PATH_NOT_FOUND                     = 0x00020009,
+      
 
       SQL_PARSE_ERROR                              = 0x00060001,
       SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,

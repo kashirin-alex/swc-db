@@ -93,6 +93,7 @@ namespace {
     { Error::FS_INVALID_ARGUMENT,  "FS invalid argument" },
     { Error::FS_INVALID_CONFIG,    "FS invalid config value" },
     { Error::FS_EOF,               "FS end of file" },
+    { Error::FS_PATH_NOT_FOUND,    "FS destination path" },
 
     { Error::RS_NOT_LOADED_RANGE,     "RS range id not loaded"},
 

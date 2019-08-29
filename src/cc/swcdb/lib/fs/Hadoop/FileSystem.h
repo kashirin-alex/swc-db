@@ -267,6 +267,31 @@ class FileSystemHadoop: public FileSystem {
     return hd_fd;
   }
 
+  void write(int &err, SmartFdPtr &smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer) {
+    HT_DEBUGF("write %s", smartfd->to_string().c_str());
+
+    create(err, smartfd, 0, replication, blksz);
+    if(!smartfd->valid() && err == Error::OK){
+      err = EBADF;
+      goto finish;
+    }
+
+    append(err, smartfd, buffer, Flags::FLUSH);
+    if(err != Error::OK)
+      goto finish;
+
+    finish:
+      int errtmp;
+      if(smartfd->valid())
+        close(err == Error::OK ? err : errtmp, smartfd);
+        
+    if(err != Error::OK)
+      HT_ERRORF("write failed: %d(%s), %s", 
+                errno, strerror(errno), smartfd->to_string().c_str());
+  }
+
   void create(int &err, SmartFdPtr &smartfd, 
               int32_t bufsz, int32_t replication, int64_t blksz) override {
 
@@ -292,8 +317,13 @@ class FileSystemHadoop: public FileSystem {
                                         bufsz, replication, blksz)) == 0) {
       err = errno;
       hadoop_fd->fd(-1);
-      HT_ERRORF("create failed: %d(%s),  %s", 
+      HT_ERRORF("create failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
+                
+      if(err == EACCES || err == ENOENT)
+        err == Error::FS_PATH_NOT_FOUND;
+      else if (err == EPERM)
+        err == Error::FS_PERMISSION_DENIED;
       return;
     }
 
@@ -317,8 +347,13 @@ class FileSystemHadoop: public FileSystem {
                                         bufsz==-1? 0 : bufsz, 0, 0)) == 0) {
       err = errno;
       hadoop_fd->fd(-1);
-      HT_ERRORF("open failed: %d(%s),  %s", 
+      HT_ERRORF("open failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
+                
+      if(err == EACCES || err == ENOENT)
+        err == Error::FS_PATH_NOT_FOUND;
+      else if (err == EPERM)
+        err == Error::FS_PERMISSION_DENIED;
       return;
     }
 
@@ -415,7 +450,7 @@ class FileSystemHadoop: public FileSystem {
                              buffer.base, (tSize)buffer.size)) == -1) {
       nwritten = 0;
       err = errno;
-      HT_ERRORF("write failed: %d(%s),  %s", 
+      HT_ERRORF("write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -424,7 +459,7 @@ class FileSystemHadoop: public FileSystem {
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
         err = errno;
-        HT_ERRORF("write, fsync failed: %d(%s),  %s", 
+        HT_ERRORF("write, fsync failed: %d(%s), %s", 
                   errno, strerror(errno), smartfd->to_string().c_str());
         return nwritten;
       }
@@ -479,7 +514,7 @@ class FileSystemHadoop: public FileSystem {
 
     if(hadoop_fd->file != 0 
        && hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
-      HT_ERRORF("close, failed: %d(%s),  %s", 
+      HT_ERRORF("close, failed: %d(%s), %s", 
                  errno, strerror(errno), smartfd->to_string().c_str());
     }
     smartfd->fd(-1);
