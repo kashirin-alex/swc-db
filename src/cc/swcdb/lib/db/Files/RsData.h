@@ -93,7 +93,10 @@ class RsData {
         break;
       }
 
-      read(&ptr, &sz, chksum_data);
+      if(!checksum_i32_chk(chksum_data, ptr, sz))
+        break;
+
+      read(&ptr, &sz);
       break;
     }
     
@@ -101,10 +104,7 @@ class RsData {
       Env::FsInterface::fs()->close(err, smartfd);
   }
 
-  void read(const uint8_t **ptr, size_t* remain, uint32_t chksum) {
-
-    if(!checksum_i32_chk(chksum, *ptr, *remain))
-      return;
+  void read(const uint8_t **ptr, size_t* remain) {
 
     timestamp = Serialization::decode_i64(ptr, remain);
     rs_id = Serialization::decode_vi64(ptr, remain);
