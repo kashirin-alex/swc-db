@@ -18,22 +18,13 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   typedef std::function<void(client::ClientConPtr conn)> ConnCb_t;
 
   RsQueue(const EndPoints& endpoints)
-          : m_endpoints(endpoints), m_conn(nullptr),
+          : m_endpoints(endpoints), m_conn(nullptr), m_running(false),
             cfg_rs_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.timeout")),
             cfg_rs_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.probes")) {}
 
-  virtual ~RsQueue(){
-    ConnCb_t req;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    while(m_requests.size() > 0){
-      req = m_requests.front();
-      m_requests.pop();
-      req(nullptr);
-    }
-  }
+  virtual ~RsQueue(){ stop(); }
   
   void connect() {
     Env::Clients::get()->rs_service->get_connection(
@@ -53,6 +44,7 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   }
 
   void put(ConnCb_t req) {
+    std::cout << "RsQueue, put req\n";
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_requests.push(req);
@@ -85,9 +77,14 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   }
 
   void stop(){
+    ConnCb_t req;
     std::lock_guard<std::mutex> lock(m_mutex);
-    while(!m_requests.empty())
+
+    while(m_requests.size() > 0){
+      req = m_requests.front();
       m_requests.pop();
+      req(nullptr);
+    }
     if(m_conn != nullptr && m_conn->is_open())
       m_conn->do_close();
   }
