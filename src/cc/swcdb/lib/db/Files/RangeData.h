@@ -17,11 +17,13 @@
 
 namespace SWC { namespace Files { namespace RangeData {
 
-const int HEADER_SIZE=5;
+const int HEADER_SIZE=13;
+const int HEADER_OFFSET_CHKSUM=9;
 const int8_t VERSION=1;
 
 /* file-format: 
-    header: i8(version), i32(data-len)
+    header: i8(version), i32(data-len), 
+            i32(data-checksum), i32(header-checksum)
     data:   vi32(num-intervals), [vi32(cellstore-count), intervals]
 */
 
@@ -39,11 +41,21 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   Serialization::encode_i8(&dst_buf.ptr, VERSION);
   Serialization::encode_i32(&dst_buf.ptr, sz);
 
+  uint8_t* checksum_data_ptr = dst_buf.ptr;
+  Serialization::encode_i32(&dst_buf.ptr, 0);
+  uint8_t* checksum_header_ptr = dst_buf.ptr;
+  Serialization::encode_i32(&dst_buf.ptr, 0);
+
+  const uint8_t* start_data_ptr = dst_buf.ptr;
+
   Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
   for(auto& cs : cellstores){
     Serialization::encode_vi32(&dst_buf.ptr, cs->cs_id);
     cs->intervals->encode(&dst_buf.ptr);
   }
+
+  checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
+  checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
   
   assert(dst_buf.fill() <= dst_buf.size);
 }
@@ -53,17 +65,21 @@ bool save(const std::string filepath, CellStores &cellstores){
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
     filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
-  int err=Error::OK;
-  Env::FsInterface::fs()->create(err, smartfd, -1, -1, -1);
-  if(err != Error::OK) 
-    return false;
-
   DynamicBuffer input;
   write(input, cellstores);
   StaticBuffer send_buf(input);
-  Env::FsInterface::fs()->append(err, smartfd, send_buf, FS::Flags::SYNC);
-  Env::FsInterface::fs()->close(err, smartfd);
-  return err == Error::OK;
+
+  int err;
+  for(;;) {
+    err = Error::OK;
+    Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
+    if (err == Error::OK)
+      return true;
+    else if(err == Error::FS_FILE_NOT_FOUND 
+            || err == Error::FS_PERMISSION_DENIED)
+    return false;
+  }
+
 }
 
 
@@ -88,33 +104,65 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
 bool load(const std::string filepath, CellStores &cellstores){
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
 
-  int err = Error::OK;
-  if(!Env::FsInterface::fs()->exists(err, smartfd->filepath()) 
-    || err != Error::OK) 
-    return false;
-
-  Env::FsInterface::fs()->open(err, smartfd);
-  if(!smartfd->valid())
-    return false;
-
-  uint8_t buf[HEADER_SIZE];
-  const uint8_t *ptr = buf;
-  if (Env::FsInterface::fs()->read(err, smartfd, buf, 
-                                HEADER_SIZE) != HEADER_SIZE){
-    Env::FsInterface::fs()->close(err, smartfd);
-    return false;
-  }
-
-  size_t remain = HEADER_SIZE;
-  int8_t version = Serialization::decode_i8(&ptr, &remain);
-  size_t sz = Serialization::decode_i32(&ptr, &remain);
-
-  StaticBuffer read_buf(sz);
-  ptr = read_buf.base;
-  if (Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) == sz)
-    read(&ptr, &sz, cellstores);
+  int err;
+  for(;;) {
+    err = Error::OK;
     
-  Env::FsInterface::fs()->close(err, smartfd);
+    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) 
+      return false;
+    if(err != Error::OK)
+      continue;
+
+    Env::FsInterface::fs()->open(err, smartfd);
+    if(err == Error::FS_FILE_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
+      break;
+    if(!smartfd->valid())
+      continue;
+    if(err != Error::OK) {
+      Env::FsInterface::fs()->close(err, smartfd);
+      continue;
+    }
+
+    uint8_t buf[HEADER_SIZE];
+    const uint8_t *ptr = buf;
+    if (Env::FsInterface::fs()->read(err, smartfd, buf, 
+                                    HEADER_SIZE) != HEADER_SIZE){
+      if(err != Error::FS_EOF){
+        Env::FsInterface::fs()->close(err, smartfd);
+        continue;
+      }
+      break;
+    }
+
+    size_t remain = HEADER_SIZE;
+    int8_t version = Serialization::decode_i8(&ptr, &remain);
+    size_t sz = Serialization::decode_i32(&ptr, &remain);
+
+    size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
+      
+    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                         buf, HEADER_SIZE, HEADER_OFFSET_CHKSUM))
+      break;
+
+    StaticBuffer read_buf(sz);
+    ptr = read_buf.base;
+    if(Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz){
+      if(err != Error::FS_EOF){
+        Env::FsInterface::fs()->close(err, smartfd);
+        continue;
+      }
+      break;
+    }
+
+    if(!checksum_i32_chk(chksum_data, ptr, sz))
+      break;
+    
+    read(&ptr, &sz, cellstores);
+    break;
+  } 
+
+  if(smartfd->valid())
+    Env::FsInterface::fs()->close(err, smartfd);
 
   return cellstores.size() > 0;
 }
