@@ -142,6 +142,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_outgoing.size();
   }
 
+  bool due() {
+    return pending_read() > 0 || pending_write() > 0;
+  }
+
 
   virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
