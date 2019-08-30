@@ -52,7 +52,7 @@ class UnloadRange : public DispatchHandler {
 
     if(ev->header.command == Protocol::Command::REQ_RS_UNLOAD_RANGE 
        && Protocol::response_code(ev) == Error::OK){
-      std::cout << "Req, RANGE-UNLOADED, cid=" << range->cid << " rid=" << range->rid << "\n";
+      HT_DEBUGF("RANGE-UNLOADED %s", range->to_string().c_str());
       return;
     }
 

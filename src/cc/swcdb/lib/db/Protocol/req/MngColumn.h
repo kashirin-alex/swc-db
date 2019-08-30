@@ -114,27 +114,6 @@ class MngColumn: public ActiveMngrBase {
     uint32_t sz = 0;
     uint32_t len = 0;
     for(;;) {
-
-      /* 
-      std::cout << " make_requests queue sz=" << sz 
-                << " pending_writes=" << pending_write()
-                << " pending_read=" << pending_read() << "\n";
-      if(pending_write() > 1000 || pending_read() > 1000) {
-        (new asio::high_resolution_timer(
-          *Env::Clients::get()->mngr_service->io().get(), std::chrono::milliseconds(200)))
-        ->async_wait(
-          [ptr=shared_from_this()](const asio::error_code ec) {
-            if (ec != asio::error::operation_aborted){
-              std::dynamic_pointer_cast<MngColumn>(ptr)
-                ->make_requests(nullptr, false);
-            }
-          });
-        //run_within(Env::Clients::get()->mngr_service->io(), 200);
-        return;
-      }
-      */
-        
-
       {
         std::lock_guard<std::mutex> lock(m_mutex_queue);
         sz = m_queue.size();

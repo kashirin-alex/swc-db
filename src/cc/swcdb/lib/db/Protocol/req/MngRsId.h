@@ -35,6 +35,9 @@ class MngRsId: public ActiveMngrBase {
     m_cb = cb;
     m_shutting_down = true;
     ActiveMngrBase::run();
+  
+    HT_DEBUGF("RS_SHUTTINGDOWN(req) %s", 
+              Env::RsData::get()->to_string().c_str());
   }
 
   void run(const EndPoints& endpoints) override {
@@ -96,12 +99,11 @@ class MngRsId: public ActiveMngrBase {
        && ev->header.command == Protocol::Command::REQ_MNGR_MNG_RS_ID){
 
       if(Protocol::response_code(ev) == Error::OK){
-        std::cout << "MngRsId: RSP-OK, chk-interval=" << cfg_check_interval->get() << " \n";
         conn->do_close();
         run_within(conn->m_io_ctx, cfg_check_interval->get());
         return;
       }
-
+      
       try {
         const uint8_t *ptr = ev->payload;
         size_t remain = ev->payload_len;
@@ -109,9 +111,6 @@ class MngRsId: public ActiveMngrBase {
         Protocol::Params::MngRsId rsp_params;
         const uint8_t *base = ptr;
         rsp_params.decode(&ptr, &remain);
-
-        std::cout << "MngRsId: rs_id=" << rsp_params.rs_id
-                  << " flag=" << rsp_params.flag << "\n";
         
         if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
           run_within(conn->m_io_ctx, 50);
@@ -127,15 +126,14 @@ class MngRsId: public ActiveMngrBase {
 
           if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
              && rsp_params.fs != Env::FsInterface::interface()->get_type()){
-            HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
-                      " RS(shutting-down)",
-                      Env::FsInterface::interface()->to_string().c_str(), 
-                      (int)rsp_params.fs);
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
               rs_data->endpoints);
-            std::cout << "MngRsId: RS_SHUTTINGDOWN, rs_data=" 
-                          << rs_data->to_string() << "\n";
+
+            HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
+                      "RS_SHUTTINGDOWN %s",
+                      Env::FsInterface::interface()->to_string().c_str(), 
+                      (int)rsp_params.fs, rs_data->to_string().c_str());
             std::raise(SIGTERM);
 
           } else if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
@@ -146,15 +144,15 @@ class MngRsId: public ActiveMngrBase {
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_ACK, 
               rs_data->endpoints);
-            std::cout << "MngRsId: RS_ACK, rs_data=" 
-                      << rs_data->to_string() << "\n";
+              
+            HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
           } else {
 
             params = Protocol::Params::MngRsId(
               rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_DISAGREE, 
               rs_data->endpoints);
-            std::cout << "MngRsId: RS_DISAGREE, rs_data="
-                      << rs_data->to_string() << "\n";
+
+            HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
           }
 
           CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
@@ -166,7 +164,8 @@ class MngRsId: public ActiveMngrBase {
        
         }
         else if(rsp_params.flag == Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN) {
-          std::cout << "HandleRsShutdown: RSP-OK \n";
+          HT_DEBUGF("RS_SHUTTINGDOWN %s", 
+                    Env::RsData::get()->to_string().c_str());
           if(m_cb != 0)
              m_cb();
           else

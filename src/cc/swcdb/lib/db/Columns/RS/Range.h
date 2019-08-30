@@ -54,7 +54,7 @@ class Range : public DB::RangeBase {
   }
 
   bool load(){
-    HT_DEBUGF("LOADING RANGE cid=%d rid=%d", cid, rid);
+    HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
     
     if(!set_dirs())
       return false;
@@ -64,21 +64,22 @@ class Range : public DB::RangeBase {
     Files::RsDataPtr rs_last = get_last_rs();
 
     if(rs_last->endpoints.size() > 0) {
-      // if online, (means rs-mngr had comm issues with the RS-LAST )
-      //   req. unload (sync) 
-      std::cout << " RS-LAST=" << rs_last->to_string() << "\n"
-                << " RS-NEW =" << rs_data->to_string() << "\n";
+      HT_DEBUGF("RS-LAST=%s RS-NEW=%s", 
+                rs_last->to_string().c_str(), rs_data->to_string().c_str());
       if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
-        client::ClientConPtr old_conn = Env::Clients::get()->rs_service->get_connection(
-          rs_last->endpoints, std::chrono::milliseconds(10000), 1);
+        client::ClientConPtr old_conn 
+          = Env::Clients::get()->rs_service->get_connection(
+              rs_last->endpoints, std::chrono::milliseconds(10000), 1);
+        // if online, means rs-mngr had comm issues with the RS-LAST, 
+        //   req.unload (sync)
         if(old_conn != nullptr)
           Protocol::Req::UnloadRange(old_conn, RangeBase::shared());
       }
     }
-
     if(!rs_data->set_rs(get_path(rs_data_file)))
       return false;
     
+
     // range.data
     if(!Files::RangeData::load(get_path(range_data_file), cellstores)) {
       Files::RangeData::load_by_path(get_path("cs"), cellstores);
@@ -89,7 +90,7 @@ class Range : public DB::RangeBase {
     int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
     int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
     for(auto& cs : cellstores){
-      // cs->intervals->apply_if_wider(intervals);
+      // intervals->expande(cs->intervals);
 
       if(intervals->is_any_keys_begin() 
         || !intervals->is_in_begin(cs->intervals->get_keys_begin()))
@@ -117,14 +118,12 @@ class Range : public DB::RangeBase {
 
 
 
-    std::cout << to_string() << "\n";;
-
     if(is_loaded()) {
-      HT_DEBUGF("LOADED RANGE cid=%d rid=%d", cid, rid);
+      HT_DEBUGF("LOADED RANGE %s", to_string().c_str());
       return true;
     }
     
-    HT_WARNF("LOAD RANGE FAILED cid=%d rid=%d", cid, rid);
+    HT_WARNF("LOAD RANGE FAILED %s", to_string().c_str());
     return false;
   }
 
@@ -150,7 +149,7 @@ class Range : public DB::RangeBase {
     // CommitLogs  
     // CellStores
     // range.data
-    
+    /* 
     cellstores.clear();
     // TEST-DATA
     cellstores.push_back(std::make_shared<Files::CellStore>(1));
@@ -204,7 +203,7 @@ class Range : public DB::RangeBase {
     *d++ = 'b';
     *d++ = '6';
     *d++ = 0; 
-
+ 
     Serialization::encode_vi64(&d, 123);
     Serialization::encode_vi64(&d, 987);
     size_t remain = d-base;
@@ -212,7 +211,6 @@ class Range : public DB::RangeBase {
       size_t remain2 = remain;
       const uint8_t * base2 = base;
       *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
-      std::cout << "decoding remain=" << remain2 << " bufp=" << std::string((char*)base2, remain2) << "\n";
       cs->intervals->decode(&base2, &remain2);
     }
     delete [] d;
@@ -220,7 +218,7 @@ class Range : public DB::RangeBase {
     std::cout << to_string() << "\n";;
 
     Files::RangeData::save(get_path(range_data_file), cellstores);
-
+    */
     int err = Error::OK;
     if(completely)
       Env::FsInterface::fs()->remove(err, get_path(rs_data_file));
