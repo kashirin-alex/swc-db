@@ -248,11 +248,6 @@ class RoleState {
       );
       return false;
     }
-    
-    std::cout << "RoleStates:\n";
-    for(auto& h : m_states)
-      std::cout << h->to_string() << "\n";
-
     } // mutex-end
     
     if(cb != nullptr)
@@ -261,6 +256,7 @@ class RoleState {
     timer_managers_checkin(
       new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
     
+    std::cout << to_string() << "\n";
     return set_active_columns();
   }
 
@@ -272,8 +268,6 @@ class RoleState {
       //m_major_updates = true;
       timer_managers_checkin(500);
     }
-    //std::cout << "update_manager_addr,  new_srv=" << new_srv << " hash=" << hash 
-    //          << " mngr_host="<<mngr_host.address().to_string() << ":" <<mngr_host.port() << "\n";
   }
   
   bool disconnection(const EndPoint& endpoint_server, const EndPoint& endpoint_client, 
@@ -337,6 +331,27 @@ class RoleState {
     }
   }
 
+  const std::string to_string() {
+    std::string s("RoleStates:");
+    
+    for(auto& h : m_states) {
+      s.append("\n ");
+      s.append(h->to_string());
+    }
+    s.append("\nMngr-inchain: ");
+    s.append(m_mngr_inchain!=nullptr ?
+             client::to_string(m_mngr_inchain) : std::string("null"));
+
+    s.append("\nLocal-Endpoints: ");
+    for(auto& endpoint : m_local_endpoints) {
+      s.append(" [");
+      s.append(endpoint.address().to_string());
+      s.append("]:");
+      s.append(std::to_string(endpoint.port()));
+      s.append(",");
+    }
+    return s;
+  }
   private:
   
   void apply_cfg(){
@@ -400,6 +415,8 @@ class RoleState {
     HostStatusPtr host_chk;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
+      if(!m_run)
+        return;
       if(next == m_states.size())
         next = 0;
       host_chk = m_states.at(next++);
@@ -563,7 +580,6 @@ class RoleState {
         || !m_mngr_inchain->is_open())
         break;
 
-      std::cout << " run_mngr_inchain_queue=" << m_mngr_inchain_queue.size() << "\n";
       m_mngr_inchain_queue.front()(m_mngr_inchain);
       m_mngr_inchain_queue.pop();
     }
