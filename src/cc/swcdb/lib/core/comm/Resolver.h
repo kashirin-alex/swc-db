@@ -22,8 +22,8 @@ inline size_t encoded_length(const EndPoint& endpoint){
 }
 
 inline void encode(const EndPoint& endpoint, uint8_t **bufp){
-  Serialization::encode_i16(bufp, endpoint.port());
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
+  Serialization::encode_i16(bufp, endpoint.port());
   if(endpoint.address().is_v4()) {
     Serialization::encode_i32(bufp, endpoint.address().to_v4().to_ulong());
     return;
@@ -31,45 +31,21 @@ inline void encode(const EndPoint& endpoint, uint8_t **bufp){
     
   auto v6_bytes = endpoint.address().to_v6().to_bytes();
   Serialization::encode_bytes(bufp, v6_bytes.data(), 16);
-  //Serialization::encode_bytes32(bufp, v6_bytes.data(), v6_bytes.size());
-  
-  /* 
-  std::uint64_t part;
-  std::memcpy(&part, v6_bytes, 8);
-
-  std::cout << " part 1=" << part;
-  Serialization::encode_i64(bufp, part);
-  std::memcpy(&part, v6_bytes+8, 8);
-  Serialization::encode_i64(bufp, part);
-  std::cout << " part 2=" << part;
-  */
-  // std::cout << "encode, address_v6=" << endpoint.address().to_string() << "\n";
 }
   
 inline EndPoint decode(const uint8_t **bufp, size_t *remainp){
-  uint32_t port = Serialization::decode_i16(bufp, remainp);
   bool is_v4 = Serialization::decode_bool(bufp, remainp);
+  uint32_t port = Serialization::decode_i16(bufp, remainp);
   if(is_v4) 
     return EndPoint(
       asio::ip::make_address_v4(
         Serialization::decode_i32(bufp, remainp)), 
         port);
   
-  // uint32_t len;
-  // uint8_t* bytes = Serialization::decode_bytes32(bufp, remainp, &len);
   uint8_t* bytes = Serialization::decode_bytes(bufp, remainp, 16);
   asio::ip::address_v6::bytes_type v6_bytes;
   std::memcpy(v6_bytes.data(), bytes, 16);
 
-  /* 
-  size_t part = Serialization::decode_i64(bufp, remainp);
-  std::cout << " part 1=" << part;
-  std::memcpy(v6_bytes.data(), &part, 8);
-  part = Serialization::decode_i64(bufp, remainp);
-  std::cout << " part 2=" << part;
-  std::memcpy(v6_bytes.data()+8, &part, 8);
-  */
-  // std::cout << "decode, address_v6=" << asio::ip::address_v6(v6_bytes).to_string() << "\n";
   return EndPoint(asio::ip::address_v6(v6_bytes), port);
 }
 
