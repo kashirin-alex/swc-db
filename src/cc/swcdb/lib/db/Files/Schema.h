@@ -82,10 +82,11 @@ void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
   for(;;) {
     err = Error::OK;
     
-    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) 
+    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
+      if(err != Error::OK)
+        continue;
       return;
-    if(err != Error::OK)
-      continue;
+    }
 
     Env::FsInterface::fs()->open(err, smartfd);
     if(err == Error::FS_FILE_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)

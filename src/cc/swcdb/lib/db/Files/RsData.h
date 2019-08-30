@@ -49,10 +49,11 @@ class RsData {
     for(;;) {
       err = Error::OK;
     
-      if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) 
-        break;
-      if(err != Error::OK)
-        continue;
+      if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
+        if(err != Error::OK)
+          continue;
+        return;
+      }
 
       Env::FsInterface::fs()->open(err, smartfd);
       if(!smartfd->valid())
