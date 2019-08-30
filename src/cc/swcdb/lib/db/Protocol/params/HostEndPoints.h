@@ -11,7 +11,7 @@
 namespace SWC {
 namespace Protocol {
 namespace Params {
-
+ 
 class HostEndPoints: public Serializable {
   public:
 
@@ -21,25 +21,31 @@ class HostEndPoints: public Serializable {
   
   virtual ~HostEndPoints(){ }
 
+  void set(const EndPoints& points){
+    endpoints.clear();
+    endpoints.assign(points.begin(), points.end());
+  }
+
   uint8_t encoding_version() const {
     return 1;
   }
 
   size_t encoded_length_internal() const {
-    size_t len = 4;
+    size_t len = Serialization::encoded_length_vi32(endpoints.size());
     for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
     return len;
   }
 
   void encode_internal(uint8_t **bufp) const {
-    Serialization::encode_i32(bufp, endpoints.size());
+    Serialization::encode_vi32(bufp, endpoints.size());
     for(auto& endpoint : endpoints)
       Serialization::encode(endpoint, bufp);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) {
-    size_t len = Serialization::decode_i32(bufp, remainp);
+    size_t len = Serialization::decode_vi32(bufp, remainp);
+    endpoints.clear();
     for(size_t i=0;i<len;i++)
       endpoints.push_back(Serialization::decode(bufp, remainp));
   }
