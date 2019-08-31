@@ -27,8 +27,6 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   virtual ~RsQueue(){ stop(); }
   
   void connect() {
-    if(m_stopping)
-      return;
     Env::Clients::get()->rs_service->get_connection(
       m_endpoints, 
       [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
@@ -48,19 +46,14 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   void put(ConnCb_t req) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_stopping)
-        return;
-
       m_requests.push(req);
       if(m_requests.size() > 1)
         return;
-
       if(m_conn == nullptr || !m_conn->is_open()) {
         connect();
         return;
       }
     }
-
     run();
   }
 
@@ -69,25 +62,26 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
     for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-
-        if(m_requests.size() == 0)
-          break;
+        
+        if(m_requests.empty())
+          return;
         req = m_requests.front();
-        m_requests.pop();
       }
       req(m_conn);
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_requests.pop();
+        if(m_requests.empty())
+          return;
+      }
     }
   }
 
   void stop(){
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_stopping = true;
-
-      if(m_conn != nullptr && m_conn->is_open())
-        m_conn->do_close();
-    }
     run();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_conn != nullptr && m_conn->is_open())
+      m_conn->do_close();
   }
 
   private:

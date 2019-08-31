@@ -48,8 +48,9 @@ class MngColumn: public ActiveMngrBase {
   };
 
 
-  MngColumn(): ActiveMngrBase(1, 1), 
-               m_running(false), m_conn(nullptr) { }
+  MngColumn(uint32_t timeout=60000)
+            : ActiveMngrBase(1, 1), 
+              m_conn(nullptr), m_timeout(timeout) { }
 
   virtual ~MngColumn(){}
 
@@ -88,13 +89,10 @@ class MngColumn: public ActiveMngrBase {
     {
       std::lock_guard<std::mutex> lock(m_mutex_queue);
       m_queue.push(req);
+      if(m_queue.size() > 1)
+        return;
     }
-
-    if(!m_running) {
-      m_running = true;
-
-      make_requests(nullptr, false);
-    }
+    make_requests(nullptr, false);  
   }
 
   void make_requests(client::ClientConPtr conn, bool new_conn) {
@@ -117,28 +115,26 @@ class MngColumn: public ActiveMngrBase {
       {
         std::lock_guard<std::mutex> lock(m_mutex_queue);
         sz = m_queue.size();
-        m_running = sz > 0;
-        if(!m_running)
+        if(sz == 0)
           break;
         req = m_queue.front();
-        m_queue.pop();
       }
       
 
       Protocol::Params::MngColumn params(req->function, req->schema);
 
-      CommHeader header(Protocol::Command::CLIENT_REQ_MNG_COLUMN, sz*60000);
+      CommHeader header(Protocol::Command::CLIENT_REQ_MNG_COLUMN, sz*m_timeout);
       CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
       params.encode(cbp->get_data_ptr_address());
       
       if(m_conn->send_request(
         cbp, std::make_shared<CodeHandler>(req)) == Error::OK){
-        continue;  
-      }
-      
-      {
+
         std::lock_guard<std::mutex> lock(m_mutex_queue);
-        m_queue.push(req);
+        m_queue.pop();
+        if(m_queue.empty())
+          return;
+        continue;  
       }
 
       run_within(Env::Clients::get()->mngr_service->io(), 500);
@@ -175,12 +171,11 @@ class MngColumn: public ActiveMngrBase {
 
   private:
   
-  std::atomic<bool>     m_running;
   client::ClientConPtr  m_conn;
+  uint32_t              m_timeout;
   
   std::mutex            m_mutex_queue;
   std::queue<Req::Ptr>  m_queue;
-
 };
 typedef std::shared_ptr<MngColumn> MngColumnPtr;
 
