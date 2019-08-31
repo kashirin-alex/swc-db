@@ -9,6 +9,7 @@
 #include "swcdb/lib/client/AppContext.h"
 #include "swcdb/lib/db/Protocol/req/MngColumn.h"
 
+#include "swcdb/lib/db/Stats/Stat.h"
 
 
 namespace SWC{ namespace Config {
@@ -22,56 +23,16 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
-class Stat {
-  public:
-  Stat(): m_count(0), m_avg(0), m_max(0),m_min(-1) {}
-  virtual ~Stat(){}
-
-  void add(uint64_t v){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_avg *= m_count;
-    m_avg += v;
-    m_avg /= ++m_count;
-    if(v > m_max)
-      m_max = v;
-    if(v < m_min)
-      m_min = v;
-  }
-
-  uint64_t avg(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_avg;
-  }
-  uint64_t max(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_max;
-  }
-  uint64_t min(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_min;
-  }
-
-  uint64_t count(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_count;
-  }
-
-  private:
-  std::mutex m_mutex;
-  uint64_t m_count;
-  uint64_t m_avg;
-  uint64_t m_min;
-  uint64_t m_max;
-};
 
 void chk(Protocol::Req::MngColumnPtr hdlr, 
-         Protocol::Req::MngColumn::Function func, int threads_num=1, int checks=1){
+         Protocol::Req::MngColumn::Function func, 
+         int threads_num=1, int checks=1, bool verbose=false) {
   std::atomic<int> chks = checks+1;
-  std::shared_ptr<Stat> stat = std::make_shared<Stat>();
+  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 
   std::vector<std::thread*> threads;
   for(int t=1;t<=threads_num;t++) {
-    threads.push_back(new std::thread([hdlr, func, t, stat, &chks](){
+    threads.push_back(new std::thread([hdlr, func, t, latency, verbose, &chks](){
       int n;
       for(;;) {
         n = --chks;
@@ -83,12 +44,14 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
         hdlr->request(
           func,
           DB::Schema::make(0, name),
-          [hdlr, stat, start_ts=std::chrono::system_clock::now()]
+          [hdlr, latency, verbose, start_ts=std::chrono::system_clock::now()]
           (Protocol::Req::MngColumn::Req::BasePtr req, int err){
-            Protocol::Req::MngColumn::Req::Ptr ptr = std::dynamic_pointer_cast<Protocol::Req::MngColumn::Req>(req);
+            Protocol::Req::MngColumn::Req::Ptr ptr 
+              = std::dynamic_pointer_cast<Protocol::Req::MngColumn::Req>(req);
 
-            uint64_t took = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                        std::chrono::system_clock::now() - start_ts).count();
+            uint64_t took 
+              = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                  std::chrono::system_clock::now() - start_ts).count();
 
             if(err != Error::OK 
               && (
@@ -101,16 +64,19 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
               hdlr->make(ptr);
 
             } else
-              stat->add(took);
-            /* 
-            std::cout << " func="<< ptr->function 
-                      << " pending_writes=" << hdlr->pending_write()
-                      << " pending_read=" << hdlr->pending_read()
-                      << " queue=" << hdlr->queue()
-                      << " name="<< ptr->schema->col_name  
-                      << " " << err << "(" << Error::get_text(err) 
-                      << " took=" << took << ")\n"; 
-            */
+              latency->add(took);
+            
+            if(verbose)
+              std::cout << " func="<< ptr->function 
+                        << " err="<<err<< "(" << Error::get_text(err) << ")"
+                        << " pending_writes=" << hdlr->pending_write()
+                        << " pending_read=" << hdlr->pending_read()
+                        << " queue=" << hdlr->queue()
+                        << " avg=" << latency->avg()
+                        << " min=" << latency->min()
+                        << " max=" << latency->max()
+                        << " count=" << latency->count()
+                        << "\n";
           }
         );
       }
@@ -120,21 +86,21 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
   for(auto& t : threads)t->join();
   
   while(hdlr->due()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
     
-    std::cout << " threads_num="<< threads_num
-              << " checks="<< checks
-              << " func="<< func 
-              << " pending_writes=" << hdlr->pending_write()
-              << " pending_read=" << hdlr->pending_read()
-              << " queue=" << hdlr->queue()
-              << " avg=" << stat->avg()
-              << " min=" << stat->min()
-              << " max=" << stat->max()
-              << " count=" << stat->count()
-              << "\n";
+  std::cout << " threads_num="<< threads_num
+            << " checks="<< checks
+            << " func="<< func 
+            << " pending_writes=" << hdlr->pending_write()
+            << " pending_read=" << hdlr->pending_read()
+            << " queue=" << hdlr->queue()
+            << " avg=" << latency->avg()
+            << " min=" << latency->min()
+            << " max=" << latency->max()
+            << " count=" << latency->count()
+            << "\n";
   hdlr->close();
 }
 
@@ -148,7 +114,8 @@ int main(int argc, char** argv) {
   ));
   
 
-  Protocol::Req::MngColumnPtr hdlr = std::make_shared<Protocol::Req::MngColumn>();
+  Protocol::Req::MngColumnPtr hdlr 
+    = std::make_shared<Protocol::Req::MngColumn>();
   
   for(int i=1;i<=10;){
     chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 1);
@@ -167,13 +134,29 @@ int main(int argc, char** argv) {
   std::cout << "####\n";
 
   for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 128, 10000);
+    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 8, 1000);
     i+=1;
   }
-  std::cout << "####\n";
-  //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE);
+  std::cout << "####\n\n";
 
-  //chk(hdlr, Protocol::Req::MngColumn::Function::CREATE);
+
+  std::cout << "## already exists response expected ##\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10, true);
+  std::cout << "######################################\n\n";
+  
+  std::cout << "########### delete request ###########\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 10, true);
+  std::cout << "######################################\n\n";
+  
+  std::cout << "#### no exists response expected #####\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 10, true);
+  std::cout << "######################################\n\n";
+
+  std::cout << "########### create request ###########\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10, true);
+  std::cout << "######################################\n\n";
+
+
 
 
   Env::IoCtx::io()->stop();

@@ -9,6 +9,7 @@
 #include "swcdb/lib/client/AppContext.h"
 #include "swcdb/lib/db/Protocol/req/Echo.h"
 
+#include "swcdb/lib/db/Stats/Stat.h"
 
 
 namespace SWC{ namespace Config {
@@ -27,47 +28,6 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
-class Stat {
-  public:
-  Stat(): m_count(0), m_avg(0), m_max(0),m_min(-1) {}
-  virtual ~Stat(){}
-
-  void add(uint64_t v){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_avg *= m_count;
-    m_avg += v;
-    m_avg /= ++m_count;
-    if(v > m_max)
-      m_max = v;
-    if(v < m_min)
-      m_min = v;
-  }
-
-  uint64_t avg(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_avg;
-  }
-  uint64_t max(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_max;
-  }
-  uint64_t min(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_min;
-  }
-
-  uint64_t count(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_count;
-  }
-
-  private:
-  std::mutex m_mutex;
-  uint64_t m_count;
-  uint64_t m_avg;
-  uint64_t m_min;
-  uint64_t m_max;
-};
 
 class Checker: public std::enable_shared_from_this<Checker>{
   public:
@@ -86,11 +46,11 @@ class Checker: public std::enable_shared_from_this<Checker>{
           if(!state)
             ptr->failures++;
 
-          ptr->stat->add(
+          ptr->latency->add(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
               std::chrono::system_clock::now() - start_ts).count());   
       
-          if(ptr->stat->count() % 100000 == 0) {
+          if(ptr->latency->count() % 100000 == 0) {
             std::cout << conn->endpoint_local_str() << ",";
             ptr->print_stats();
             std::cout << "\n";
@@ -101,7 +61,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
           if(req_n < ptr->num_req){
             ptr->run(conn, req_n+1);
 
-          } else if(ptr->stat->count() == ptr->total) {
+          } else if(ptr->latency->count() == ptr->total) {
             ptr->processed.store(true);
             ptr->cv.notify_all();
           }  
@@ -135,10 +95,10 @@ class Checker: public std::enable_shared_from_this<Checker>{
   }
 
   void print_stats(){
-    std::cout << " avg=" << stat->avg()
-              << " min=" << stat->min()
-              << " max=" << stat->max()
-              << " count=" << stat->count()
+    std::cout << " avg=" << latency->avg()
+              << " min=" << latency->min()
+              << " max=" << latency->max()
+              << " count=" << latency->count()
               << " failures=" << failures;
   }
 
@@ -167,7 +127,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
               << " requests=" << num_req
               << " batch=" << batch_sz
               << " took=" << took
-              << " median=" << took/stat->count();
+              << " median=" << took/latency->count();
     print_stats();
     std::cout << "\n";
   }
@@ -181,7 +141,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
   std::mutex lock;
   std::condition_variable cv;
   
-  std::shared_ptr<Stat> stat = std::make_shared<Stat>();
+  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 };
 
 
