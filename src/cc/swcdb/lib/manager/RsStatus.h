@@ -18,8 +18,7 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   typedef std::function<void(client::ClientConPtr conn)> ConnCb_t;
 
   RsQueue(const EndPoints& endpoints)
-          : m_endpoints(endpoints), m_conn(nullptr), 
-            m_running(false), m_stopping(false),
+          : m_endpoints(endpoints), m_conn(nullptr), m_stopping(false),
             cfg_rs_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
               "swc.mngr.ranges.assign.RS.connection.timeout")),
             cfg_rs_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
@@ -51,10 +50,15 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_stopping)
         return;
+
       m_requests.push(req);
-      if(m_running)
+      if(m_requests.size() > 1)
         return;
-      m_running = true;
+
+      if(m_conn == nullptr || !m_conn->is_open()) {
+        connect();
+        return;
+      }
     }
 
     run();
@@ -65,13 +69,8 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
     for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_conn == nullptr || !m_conn->is_open()) {
-          connect();
-          return;
-        }
 
-        m_running = m_requests.size() > 0;
-        if(!m_running)
+        if(m_requests.size() == 0)
           break;
         req = m_requests.front();
         m_requests.pop();
@@ -81,17 +80,14 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   }
 
   void stop(){
-    ConnCb_t req;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_stopping = true;
 
-    m_stopping = true;
-    while(m_requests.size() > 0){
-      req = m_requests.front();
-      m_requests.pop();
-      req(nullptr);
+      if(m_conn != nullptr && m_conn->is_open())
+        m_conn->do_close();
     }
-    if(m_conn != nullptr && m_conn->is_open())
-      m_conn->do_close();
+    run();
   }
 
   private:
@@ -100,7 +96,6 @@ class RsQueue : public std::enable_shared_from_this<RsQueue> {
   const EndPoints       m_endpoints;
   client::ClientConPtr  m_conn;
   std::queue<ConnCb_t>  m_requests;
-  bool                  m_running;
   bool                  m_stopping;
 
   const gInt32tPtr cfg_rs_conn_timeout;
