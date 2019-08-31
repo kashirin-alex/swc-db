@@ -338,7 +338,6 @@ class RangeServers {
   private:
 
   void check_assignment(uint32_t t_ms = 0){
-    std::cout << " check_assignment: " << to_string() << "\n";
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -351,9 +350,15 @@ class RangeServers {
       timer_assignment_checkin(t_ms);
       return;
 
-    } else if(!assign_ranges()) {
-      timer_assignment_checkin(10000);
-      return;
+    } else {
+      int64_t assigned = assign_ranges();
+      if(assigned == -1) {
+        timer_assignment_checkin(10000);
+        return;
+      }
+      
+      std::cout << " check_assignment: " << to_string() << "\n";
+      std::cout << "  assigned=" << assigned << "\n";
     }
     
 
@@ -492,31 +497,34 @@ class RangeServers {
     return ++m_last_cid;
   }
   
-  bool assign_ranges(){
+  int64_t assign_ranges(){
+    int64_t assigned = 0;
     RangePtr range;
     for(;;){
       if((range = Env::MngrColumns::get()->get_next_unassigned()) == nullptr)
         break;
 
-      RsStatusPtr rs = nullptr;
+      { 
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        if(m_rs_status.size() == 0)
+          return -1;
+      }
       
       Files::RsDataPtr last_rs = range->get_last_rs();
+      RsStatusPtr rs = nullptr;
       next_rs(last_rs, rs);
       if(rs == nullptr)
-        return false;
+        return -1;
 
       range->set_state(Range::State::QUEUED, rs->rs_id);
-
       assign_range(rs, range, last_rs);
+      assigned++;
     }
-    return true;
+    return assigned;
   }
 
   void next_rs(Files::RsDataPtr &last_rs, RsStatusPtr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-    
-    if(m_rs_status.size() == 0)
-      return;
 
     if(last_rs->endpoints.size() > 0) {
        for(auto& rs : m_rs_status) {
