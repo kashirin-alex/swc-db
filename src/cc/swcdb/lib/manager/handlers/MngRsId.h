@@ -37,7 +37,9 @@ class MngRsId : public AppHandler {
       // std::cout << "MngRsId-run rs " << req_params.to_string() << "\n";
       
       if(!Env::MngrRoleState::get()->is_active(1)){
-        std::cout << "MNGR NOT ACTIVE: \n";
+        HT_DEBUGF("MNGR NOT ACTIVE, flag=%d rs_id=%d %s",
+                  req_params.flag, req_params.rs_id, 
+                  req_params.to_string().c_str());
       
         Protocol::Params::MngRsId rsp_params(
           0, Protocol::Params::MngRsId::Flag::MNGR_NOT_ACTIVE);
@@ -58,6 +60,9 @@ class MngRsId : public AppHandler {
         case Protocol::Params::MngRsId::Flag::RS_REQ: {
           uint64_t rs_id = rangeservers->rs_set_id(req_params.endpoints);
 
+          HT_DEBUGF("RS_REQ, rs_id=%d %s",
+                    req_params.rs_id, req_params.to_string().c_str());
+
           Protocol::Params::MngRsId rsp_params(
             rs_id, Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED);
           CommHeader header;
@@ -72,9 +77,13 @@ class MngRsId : public AppHandler {
 
         case Protocol::Params::MngRsId::Flag::RS_ACK: {
           if(rangeservers->rs_ack_id(req_params.rs_id, req_params.endpoints)){
+            HT_DEBUGF("RS_ACK, rs_id=%d %s",
+                      req_params.rs_id, req_params.to_string().c_str());
             m_conn->response_ok(m_ev);
 
           } else {
+            HT_DEBUGF("RS_ACK(MNGR_REREQ) rs_id=%d %s",
+                      req_params.rs_id, req_params.to_string().c_str());
 
             Protocol::Params::MngRsId rsp_params(
               0, Protocol::Params::MngRsId::Flag::MNGR_REREQ);
@@ -92,7 +101,8 @@ class MngRsId : public AppHandler {
         case Protocol::Params::MngRsId::Flag::RS_DISAGREE: {
           uint64_t rs_id = rangeservers->rs_had_id(req_params.rs_id, 
                                                    req_params.endpoints);
-          HT_DEBUGF("RS_DISAGREE, rs_had_id=%d > rs_id=%d", req_params.rs_id, rs_id);
+          HT_DEBUGF("RS_DISAGREE, rs_had_id=%d > rs_id=%d %s", 
+                    req_params.rs_id, rs_id, req_params.to_string().c_str());
 
           if (rs_id != 0){
             Protocol::Params::MngRsId rsp_params(
@@ -114,6 +124,9 @@ class MngRsId : public AppHandler {
 
         case Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN: {
           rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
+
+          HT_DEBUGF("RS_SHUTTINGDOWN, rs_id=%d %s",
+                    req_params.rs_id, req_params.to_string().c_str());
           
           Protocol::Params::MngRsId rsp_params(
             req_params.rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN);

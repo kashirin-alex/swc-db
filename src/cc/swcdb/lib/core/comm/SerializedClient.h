@@ -68,11 +68,11 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
       return;
     conn = m_conns.front();
     m_conns.pop();
-    if(conn->is_open())
-      HT_DEBUGF("Reusing connection: %s, %s", 
-                m_srv_name.c_str(), to_string(conn).c_str());
-    else
+    if(!conn->is_open())
       conn = nullptr;
+    // else
+    //  HT_DEBUGF("Reusing connection: %s, %s", 
+    //             m_srv_name.c_str(), to_string(conn).c_str());
   }
 
   void connection(ClientConPtr &conn, std::chrono::milliseconds timeout){
@@ -92,8 +92,8 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 
     conn = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
     conn->new_connection();
-    HT_DEBUGF("New connection: %s, %s", 
-              m_srv_name.c_str(), to_string(conn).c_str());
+    // HT_DEBUGF("New connection: %s, %s", 
+    //          m_srv_name.c_str(), to_string(conn).c_str());
   }
   
   void connection(std::chrono::milliseconds timeout, NewClientConnCb_t cb){
