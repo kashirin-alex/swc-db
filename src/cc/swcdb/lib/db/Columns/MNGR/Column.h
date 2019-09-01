@@ -158,13 +158,14 @@ class Column : public std::enable_shared_from_this<Column> {
     return rid;
   }
   
-
   void assigned(std::vector<uint64_t> &rs_ids){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     int64_t rs_id;
     for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it){
       rs_id = it->second->get_rs_id();
+      if(rs_id == 0)
+        continue;
       if(std::find_if(rs_ids.begin(), rs_ids.end(), [rs_id]
       (const uint64_t& rs_id2){return rs_id == rs_id2;}) == rs_ids.end())
         rs_ids.push_back(rs_id);
@@ -192,7 +193,9 @@ class Column : public std::enable_shared_from_this<Column> {
         auto it = m_ranges->begin();
         if(it == m_ranges->end())
           break;
-        if(rs_id == 0 || it->second->get_rs_id() == rs_id)
+        if(rs_id == 0 
+          || it->second->get_rs_id() == rs_id
+          || it->second->get_rs_id() == 0)
           m_ranges->erase(it);
       }
       empty = m_ranges->empty();

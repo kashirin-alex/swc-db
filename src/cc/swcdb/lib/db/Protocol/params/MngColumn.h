@@ -18,9 +18,11 @@ namespace Params {
   public:
 
     enum Function {
-      CREATE     = 1,
+      CREATE  = 1,
       MODIFY  = 2,
-      DELETE  = 3
+      DELETE  = 3,
+      INTERNAL_ACK_CREATE = 4,
+      INTERNAL_ACK_DELETE = 5,
     };
 
     MngColumn() {}

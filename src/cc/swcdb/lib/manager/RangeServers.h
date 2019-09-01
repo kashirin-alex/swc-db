@@ -116,13 +116,19 @@ class RangeServers {
         case Protocol::Params::MngColumn::Function::CREATE: {
           column_create(req.params.schema, err);  
           if(err == Error::OK)       
-            update_status(req.params.function, req.params.schema->cid);
+            update_status(req.params.function, req.params.schema->cid, true);
           break;
         }
         case Protocol::Params::MngColumn::Function::DELETE: {
           column_delete(req.params.schema, err);
-          if(err == Error::OK)
-            update_status(req.params.function, req.params.schema->cid);
+          if(err == Error::OK){
+            update_status(req.params.function, req.params.schema->cid, true);
+            {
+              std::lock_guard<std::mutex> lock(m_mutex);
+              m_cid_pending.push_back(req);
+            }
+            goto finish_action;
+          }
           break;
         }
         default:
@@ -133,10 +139,11 @@ class RangeServers {
       try{
         req.cb(err);
       } catch (std::exception &e) {
-        HT_ERROR_OUT << " column_action: err=" << e.what() 
-                     << " " << req.params.schema->to_string() << HT_END;
+        HT_ERRORF("Column Action cb err=%s %s", 
+                  e.what(), req.params.schema->to_string().c_str());
       }
 
+      finish_action:
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_actions.pop();
@@ -146,9 +153,49 @@ class RangeServers {
     }
   }
 
-  void update_status(Protocol::Params::MngColumn::Function func, int64_t cid){
+  void update_status(Protocol::Params::MngColumn::Function func, int64_t cid, 
+                     bool initial=false){
     
-    if(manage(cid)){
+    if(m_root_mngr 
+      && func == Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE){
+      int err = Error::OK;
+      if(Column::is_marked_deleted(cid))
+        err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
+      else {
+        do {
+          Env::FsInterface::fs()->remove(err, Files::Schema::filepath(cid));
+        } while(err != Error::OK);
+        Env::Schemas::get()->remove(cid);  
+
+        Column::mark_deleted(err, cid);
+        m_cols_reuse.push(cid);
+      }
+        
+      ColumnActionReq req;
+      for(;;){
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          auto it = std::find_if(m_cid_pending.begin(), m_cid_pending.end(),  
+                                [func, cid](const ColumnActionReq& req)
+                                {return req.params.schema->cid != cid 
+                                        && req.params.function != func;});
+          if(it == m_cid_pending.end())
+            break;  
+          req = *it;
+          m_cid_pending.erase(it);
+        }
+
+        try{
+          req.cb(err);
+        } catch (std::exception &e) {
+          HT_ERRORF("Column Pending cb err=%s %s", 
+                    e.what(), req.params.schema->to_string().c_str());
+        }
+      }
+      return;
+    }
+
+    if(manage(cid) && (initial || !m_root_mngr)){
       switch(func){
         case Protocol::Params::MngColumn::Function::CREATE: {
           {
@@ -165,9 +212,10 @@ class RangeServers {
         default:
           break;
       }
+      return;
     }
-    
-    Protocol::Req::MngrUpdateColumn::put(func, cid);
+    if(initial || !m_root_mngr)
+      Protocol::Req::MngrUpdateColumn::put(func, cid);
   }
 
   // RangeServer Actions
@@ -641,6 +689,8 @@ class RangeServers {
 
   void range_loaded(RsStatusPtr rs, RangePtr range, 
                     bool loaded, bool failure=false) { // + resource_chg
+    if(range->deleted())
+      return;
 
     if(!loaded){
       {
@@ -758,30 +808,23 @@ class RangeServers {
       err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
       return;
     }
-    int64_t cid = schema->cid;
-
-    Column::mark_deleted(err, cid);
-    m_cols_reuse.push(cid);
-
-    do {
-      Env::FsInterface::fs()->remove(err, Files::Schema::filepath(cid));
-    } while(err != Error::OK);
-    Env::Schemas::get()->remove(cid);  
   }
 
   void column_delete(int64_t cid) {
 
     ColumnPtr col = Env::MngrColumns::get()->get_column(cid, false);
-    if(col == nullptr || !col->do_remove())
+    if(col == nullptr){
+      column_delete(cid, 0);
       return;
-
+    }
+    if(!col->do_remove())
+      return;
     HT_DEBUGF("DELETING cid=%d", cid);
     
     std::vector<uint64_t> rs_ids;
     col->assigned(rs_ids);
     if(rs_ids.empty()){
-      col->finalize_remove(0);
-      Env::MngrColumns::get()->remove(cid);
+      column_delete(cid, 0);
       return;
     }
 
@@ -797,27 +840,25 @@ class RangeServers {
           if(conn == nullptr || !(
              std::make_shared<Protocol::Req::RsColumnDelete>(conn, cid, 
               [rs, cid, cb](bool ok){
-                // re-check?
-                if(ok)  Env::RangeServers::get()->column_delete(rs, cid);  
+                if(ok)  Env::RangeServers::get()->column_delete(cid, rs->rs_id);  
                 else    rs->put(*cb);
               }
           ))->run()) {
-            Env::RangeServers::get()->column_delete(rs, cid);
+            Env::RangeServers::get()->column_delete(cid, rs->rs_id);
           }
         };
         rs->put(cb);
       }
     }
-
   }
 
-  void column_delete(RsStatusPtr rs, int64_t cid) {
+  void column_delete(int64_t cid, int64_t rs_id) {
     ColumnPtr col = Env::MngrColumns::get()->get_column(cid, false);
-    if(col == nullptr)
-      return;
-      
-    if(col->finalize_remove(rs->rs_id))
+    if(col == nullptr || col->finalize_remove(rs_id)) {
       Env::MngrColumns::get()->remove(cid);
+      Protocol::Req::MngrUpdateColumn::put(
+        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid);
+    }
   }
 
   std::mutex          m_mutex;
@@ -833,6 +874,7 @@ class RangeServers {
   RsStatusList        m_rs_status;
   
   std::queue<ColumnActionReq> m_actions;
+  std::vector<ColumnActionReq> m_cid_pending;
 
 
   const gInt32tPtr cfg_rs_failures;

@@ -32,9 +32,6 @@ class UpdateColumn : public AppHandler {
       
       m_conn->response_ok(m_ev);
       
-      if(Env::MngrRoleState::get()->is_active(1)) // end-of-cycle
-        return;
-      
       Env::RangeServers::get()->update_status(params.function, params.cid);
 
     } catch (Exception &e) {

@@ -238,11 +238,7 @@ class Range : public DB::RangeBase {
       }
 
       int err = Error::OK;
-      Env::FsInterface::fs()->rmdir(err, get_path("log"));
-      Env::FsInterface::fs()->rmdir(err, get_path("cs"));
-
-      Env::FsInterface::fs()->remove(err, get_path(range_data_file));
-      Env::FsInterface::fs()->remove(err, get_path(rs_data_file));
+      Env::FsInterface::fs()->rmdir(err, get_path(""));
     }
     HT_DEBUGF("REMOVED RANGE %s", to_string().c_str());
   }
