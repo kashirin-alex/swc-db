@@ -30,16 +30,13 @@ class Column : public std::enable_shared_from_this<Column> {
   inline static const std::string deleted_file = "deleted.mark";
 
   static bool exists(int64_t id) {
-    std::string col_range_path(Range::get_column_path(id));
-    int err = Error::OK;
-    return Env::FsInterface::fs()->exists(err, col_range_path) 
-           && err == Error::OK;
+    return Env::FsInterface::interface()->exists(Range::get_column_path(id));
   }
   
   static bool create(int64_t id) {
-    std::string col_range_path(Range::get_column_path(id));
+    std::string col_path(Range::get_column_path(id));
     int err = Error::OK;
-    Env::FsInterface::fs()->mkdirs(err, col_range_path);
+    Env::FsInterface::fs()->mkdirs(err, col_path);
     if(err == 17)
       err = Error::OK;
     return err == Error::OK;
@@ -58,11 +55,10 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   static bool is_marked_deleted(int64_t cid) {
-    int err = Error::OK;
     std::string chk_file(Range::get_column_path(cid));
     chk_file.append("/");
     chk_file.append(deleted_file);
-    return Env::FsInterface::fs()->exists(err, chk_file);
+    return Env::FsInterface::interface()->exists(chk_file);
   }
 
   static void clear_marked_deleted(int64_t cid) {
@@ -83,9 +79,7 @@ class Column : public std::enable_shared_from_this<Column> {
   virtual ~Column(){}
 
   bool exists_range_path() {
-    std::string range_path(Range::get_path(cid));
-    int err = Error::OK;
-    return Env::FsInterface::fs()->exists(err, range_path) && err == Error::OK;
+    return Env::FsInterface::interface()->exists(Range::get_path(cid));
   }
 
   bool create() {
@@ -164,6 +158,56 @@ class Column : public std::enable_shared_from_this<Column> {
     return rid;
   }
   
+
+  void assigned(std::vector<uint64_t> &rs_ids){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    int64_t rs_id;
+    for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it){
+      rs_id = it->second->get_rs_id();
+      if(std::find_if(rs_ids.begin(), rs_ids.end(), [rs_id]
+      (const uint64_t& rs_id2){return rs_id == rs_id2;}) == rs_ids.end())
+        rs_ids.push_back(rs_id);
+    }
+  }
+
+  bool do_remove(){
+    bool was;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    was = m_state == State::DELETED;
+    if(!was){
+      m_state = State::DELETED;
+      for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it)
+        it->second->set_state(Range::State::DELETED);
+    }
+    return !was;
+  }
+
+  bool finalize_remove(uint64_t rs_id=0){
+    bool empty;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+
+      for(;;){
+        auto it = m_ranges->begin();
+        if(it == m_ranges->end())
+          break;
+        if(rs_id == 0 || it->second->get_rs_id() == rs_id)
+          m_ranges->erase(it);
+      }
+      empty = m_ranges->empty();
+      if(empty){
+        std::string col_range_path(Range::get_path(cid));
+        int err = Error::OK;
+        Env::FsInterface::fs()->rmdir(err, col_range_path);
+      }
+    }
+
+    if(empty)
+      HT_DEBUGF("FINALIZED REMOVE %s", to_string().c_str());
+    return empty;
+  }
+
   std::string to_string(){
     std::string s("[cid=");
     {

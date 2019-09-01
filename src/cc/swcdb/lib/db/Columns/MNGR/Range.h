@@ -30,8 +30,7 @@ class Range : public DB::RangeBase {
         : RangeBase(cid, rid), 
           m_state(State::NOTSET), rs_id(0) { 
 
-    int err = Error::OK;
-    if(Env::FsInterface::fs()->exists(err, get_path(deleted_file))){
+    if(Env::FsInterface::interface()->exists(get_path(deleted_file))){
       set_state(Range::State::DELETED, 0);
     }
   }
@@ -63,6 +62,11 @@ class Range : public DB::RangeBase {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_state = new_state;
     rs_id = new_rs_id;
+  }
+  
+  void set_state(State new_state){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_state = new_state;
   }
 
   uint64_t get_rs_id(){

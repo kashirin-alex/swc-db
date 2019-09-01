@@ -23,6 +23,7 @@
 #include "handlers/IsRangeLoaded.h"
 #include "handlers/LoadRange.h"
 #include "handlers/UnloadRange.h"
+#include "handlers/ColumnDelete.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -99,15 +100,22 @@ class AppContext : public SWC::AppContext {
           case Protocol::Command::REQ_RS_IS_RANGE_LOADED: 
             handler = new Handler::IsRangeLoaded(conn, ev);
             break;
+
           case Protocol::Command::REQ_RS_LOAD_RANGE: 
             handler = new Handler::LoadRange(conn, ev);
             break;
+
           case Protocol::Command::REQ_RS_UNLOAD_RANGE: 
             handler = new Handler::UnloadRange(conn, ev);
             break;
+
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED: 
             assign_rs_id();
             conn->response_ok(ev);
+            break;
+            
+          case Protocol::Command::REQ_RS_COLUMN_DELETE: 
+            handler = new Handler::ColumnDelete(conn, ev);
             break;
             
           case Protocol::Command::CLIENT_REQ_RS_ADDR:

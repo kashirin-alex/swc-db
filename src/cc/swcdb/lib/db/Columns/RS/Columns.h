@@ -50,7 +50,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   RangePtr get_range(int64_t cid, int64_t rid,  bool initialize=false){
     ColumnPtr col = get_column(cid, initialize);
-    if(col == nullptr) 
+    if(col == nullptr || col->removing()) 
       return nullptr;
     return col->get_range(rid, initialize);
   }
@@ -83,6 +83,20 @@ class Columns : public std::enable_shared_from_this<Columns> {
       it->second->unload_all();
       columns->erase(it);
     }
+  }
+
+  void remove(int64_t cid, Callback::ColumnDeleted_t cb){
+    ColumnPtr col = get_column(cid, false);
+    if(col != nullptr) {
+      col->remove_all();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        auto it = columns->find(cid);
+        if (it != columns->end()) 
+          columns->erase(it);
+      }
+    }
+    cb(true);
   }
   
   std::string to_string(){

@@ -23,12 +23,15 @@ class Column : public std::enable_shared_from_this<Column> {
   public:
 
   Column(int64_t id) 
-        : cid(id), m_ranges(std::make_shared<RangesMap>()) { }
+        : cid(id), 
+          m_ranges(std::make_shared<RangesMap>()), 
+          m_deleting(false) 
+        { }
 
   bool load() {
-    std::string col_range_path(Range::get_path(cid));
     int err = Error::OK;
-    if(!Env::FsInterface::fs()->exists(err, col_range_path)) {
+    std::string col_range_path(Range::get_path(cid));
+    if(!Env::FsInterface::interface()->exists(col_range_path)) {
       Env::FsInterface::fs()->mkdirs(err, col_range_path);
       if(err == 17)
         err = Error::OK;
@@ -76,11 +79,38 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
   
+  void remove_all(){
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_deleting = true;
+      
+      for(;;){
+        auto it = m_ranges->begin();
+        if(it == m_ranges->end())
+          break;
+        it->second->remove();
+        m_ranges->erase(it);
+      }
+    }
+
+    HT_DEBUGF("REMOVED %s", to_string().c_str());
+  }
+
+  bool removing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return  m_deleting;
+  }
+
   std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("[cid=");
     s.append(std::to_string(cid));
+
+    if(m_deleting){
+      s.append(", DELETING");
+    }
+
     s.append(", ranges=(");
     
     for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it){
@@ -96,7 +126,7 @@ class Column : public std::enable_shared_from_this<Column> {
   std::mutex                 m_mutex;
   int64_t                    cid;
   std::shared_ptr<RangesMap> m_ranges;
-
+  bool                       m_deleting;
 };
 typedef std::shared_ptr<Column> ColumnPtr;
 

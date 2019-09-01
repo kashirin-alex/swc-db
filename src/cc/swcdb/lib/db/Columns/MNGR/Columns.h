@@ -96,6 +96,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return cid;
   }
 
+  void remove(int64_t cid){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_columns->find(cid);
+    if (it != m_columns->end())
+      m_columns->erase(it);
+  }
+
   std::string to_string(){
     std::string s("ColumnsAssignment:");
     

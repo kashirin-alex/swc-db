@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 
   Protocol::Req::MngColumnPtr hdlr 
     = std::make_shared<Protocol::Req::MngColumn>();
-  
+  /* 
   for(int i=1;i<=10;){
     chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 1);
     i+=1;
@@ -138,25 +138,42 @@ int main(int argc, char** argv) {
     i+=1;
   }
   std::cout << "####\n\n";
-
-
+  */
+  int num_of_cols = 2000;
   std::cout << "## already exists response expected ##\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
+
+  //std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   
   std::cout << "########### delete request ###########\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 10, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
+
+  //std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   
   std::cout << "#### no exists response expected #####\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 10, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
+
+  //std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
   std::cout << "########### create request ###########\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
 
 
+  //std::this_thread::sleep_for(std::chrono::milliseconds(60000));
+
+  std::cout << "########### delete request ###########\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
+  std::cout << "######################################\n\n";
+
+  /* 
+  std::cout << "#### delete all (cid: 3+) #####\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 1000, true);
+  std::cout << "######################################\n\n";
+  */
 
 
   Env::IoCtx::io()->stop();

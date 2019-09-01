@@ -20,6 +20,7 @@
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateColumn.h"
+#include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -75,8 +76,7 @@ class RangeServers {
       cfg_delay_cols_init(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.delay.afterColumnsInit")),
       cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.interval.check")),
-      m_actions_run(false) {    
+        "swc.mngr.ranges.assign.interval.check")) {    
   }
 
   void new_columns() {
@@ -95,23 +95,20 @@ class RangeServers {
 
 
   // Columns Actions
-  void column_action(ColumnActionReq req){
+  void column_action(ColumnActionReq new_req){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_actions.push(req);
+      m_actions.push(new_req);
+      if(m_actions.size() > 1)
+        return;
     }
-    if(m_actions_run)
-      return;
-    m_actions_run = true;
-
+    
+    ColumnActionReq req;
     int err;
     for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_actions.size() == 0)
-          break;
         req = m_actions.front();
-        m_actions.pop();
       }
 
       err = Error::OK;
@@ -135,13 +132,18 @@ class RangeServers {
       
       try{
         req.cb(err);
-      } catch (Exception &e) {
-        HT_ERROR_OUT << " column_action: " << e << HT_END;
+      } catch (std::exception &e) {
+        HT_ERROR_OUT << " column_action: err=" << e.what() 
+                     << " " << req.params.schema->to_string() << HT_END;
+      }
+
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_actions.pop();
+        if(m_actions.empty())
+          return;
       }
     }
-
-    m_actions_run = false;
-    check_assignment(3000);
   }
 
   void update_status(Protocol::Params::MngColumn::Function func, int64_t cid){
@@ -151,13 +153,13 @@ class RangeServers {
         case Protocol::Params::MngColumn::Function::CREATE: {
           {
             std::lock_guard<std::mutex> lock(m_mutex);
-            initialize_col(cid);
+            column_init(cid);
           }
           check_assignment(3000);
           break;
         }
         case Protocol::Params::MngColumn::Function::DELETE: {
-      // remove, initialize_col(cid);
+          column_delete(cid);
           break;
         }
         default:
@@ -425,7 +427,7 @@ class RangeServers {
     m_root_mngr = manage(1);
 
     if(m_root_mngr && m_last_cid == 0) { // done once
-      while(initialize_col(last_id, true))
+      while(column_init(last_id, true))
         initialize_schema(last_id++);
       m_last_cid = last_id-1;
     }
@@ -436,11 +438,11 @@ class RangeServers {
       last_id = *cols.end();
     }
 
-    while(cols.size() > 0 && initialize_col(*cols.begin()))
+    while(cols.size() > 0 && column_init(*cols.begin()))
       cols.erase(cols.begin());
     
     if(till_end)
-      while(initialize_col(++last_id));
+      while(column_init(++last_id));
 
     m_columns_set = true;
   }
@@ -453,7 +455,7 @@ class RangeServers {
     Env::Schemas::get()->add(Files::Schema::load(cid));
   }
 
-  bool initialize_col(int64_t cid, 
+  bool column_init(int64_t cid, 
                       bool only_exists_chk=false) {
     bool exists = Column::exists(cid);
     if(cid > 3){
@@ -462,6 +464,8 @@ class RangeServers {
     }
 
     ColumnPtr col = Env::MngrColumns::get()->get_column(cid, true);
+    if(col->deleted())
+      return true;
     if(!exists || !col->exists_range_path()){
       // initialize 1st range
       col->create();
@@ -475,7 +479,10 @@ class RangeServers {
       int err = Error::OK;
       FS::IdEntries_t entries;
       col->ranges_by_fs(err, entries);
- 
+
+      if(entries.empty())
+        entries.push_back(1); // initialize 1st range
+
       for(auto rid : entries)
         col->get_range(rid, true); 
       
@@ -618,7 +625,8 @@ class RangeServers {
   void assign_range(RsStatusPtr rs, RangePtr range){
     rs->put(
       [rs, range](client::ClientConPtr conn){
-        if(conn == nullptr 
+        if(range->deleted()
+          || conn == nullptr 
           || !(std::make_shared<Protocol::Req::LoadRange>(
               conn, range, 
               [rs, range](bool loaded){
@@ -761,6 +769,57 @@ class RangeServers {
     Env::Schemas::get()->remove(cid);  
   }
 
+  void column_delete(int64_t cid) {
+
+    ColumnPtr col = Env::MngrColumns::get()->get_column(cid, false);
+    if(col == nullptr || !col->do_remove())
+      return;
+
+    HT_DEBUGF("DELETING cid=%d", cid);
+    
+    std::vector<uint64_t> rs_ids;
+    col->assigned(rs_ids);
+    if(rs_ids.empty()){
+      col->finalize_remove(0);
+      Env::MngrColumns::get()->remove(cid);
+      return;
+    }
+
+    for(auto rs_id : rs_ids){
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      for(auto& rs : m_rs_status){
+        if(rs_id != rs->rs_id)
+          continue;
+        rs->total_ranges--; 
+
+        RsQueue::ConnCb_t cb;
+        cb = [rs, cid, cb = &cb](client::ClientConPtr conn){
+          if(conn == nullptr || !(
+             std::make_shared<Protocol::Req::RsColumnDelete>(conn, cid, 
+              [rs, cid, cb](bool ok){
+                // re-check?
+                if(ok)  Env::RangeServers::get()->column_delete(rs, cid);  
+                else    rs->put(*cb);
+              }
+          ))->run()) {
+            Env::RangeServers::get()->column_delete(rs, cid);
+          }
+        };
+        rs->put(cb);
+      }
+    }
+
+  }
+
+  void column_delete(RsStatusPtr rs, int64_t cid) {
+    ColumnPtr col = Env::MngrColumns::get()->get_column(cid, false);
+    if(col == nullptr)
+      return;
+      
+    if(col->finalize_remove(rs->rs_id))
+      Env::MngrColumns::get()->remove(cid);
+  }
+
   std::mutex          m_mutex;
   bool                m_run=true; 
   TimerPtr            m_assign_timer; 
@@ -774,7 +833,6 @@ class RangeServers {
   RsStatusList        m_rs_status;
   
   std::queue<ColumnActionReq> m_actions;
-  std::atomic<bool>           m_actions_run;
 
 
   const gInt32tPtr cfg_rs_failures;

@@ -13,6 +13,7 @@ namespace Callback {
   typedef std::function<void(bool)> LoadRange_t;
   typedef std::function<void(bool)> IsRangeLoaded_t;
   typedef std::function<void(bool)> RsIdReqNeeded_t;
+  typedef std::function<void(bool)> RsColumnDelete_t;
 
 }
 

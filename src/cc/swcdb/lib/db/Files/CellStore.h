@@ -47,6 +47,8 @@ class CellStore {
     return s;
   } 
 
+  void remove() {}
+
   private:
   std::mutex              m_mutex;
 

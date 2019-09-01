@@ -228,6 +228,25 @@ class Range : public DB::RangeBase {
     HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }
 
+  void remove(){
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_state = State::DELETED;
+  
+      for(auto& cs : cellstores){
+        cs->remove();
+      }
+
+      int err = Error::OK;
+      Env::FsInterface::fs()->rmdir(err, get_path("log"));
+      Env::FsInterface::fs()->rmdir(err, get_path("cs"));
+
+      Env::FsInterface::fs()->remove(err, get_path(range_data_file));
+      Env::FsInterface::fs()->remove(err, get_path(rs_data_file));
+    }
+    HT_DEBUGF("REMOVED RANGE %s", to_string().c_str());
+  }
+
   std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -257,7 +276,7 @@ class Range : public DB::RangeBase {
 
   bool set_dirs(){
     int err = Error::OK;
-    if(!Env::FsInterface::fs()->exists(err, get_path(""))){
+    if(!Env::FsInterface::interface()->exists(get_path(""))){
       Env::FsInterface::fs()->mkdirs(err, get_path("log"));
       Env::FsInterface::fs()->mkdirs(err, get_path("cs"));
     } 
