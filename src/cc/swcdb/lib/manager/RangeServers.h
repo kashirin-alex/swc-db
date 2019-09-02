@@ -162,9 +162,7 @@ class RangeServers {
       if(Column::is_marked_deleted(cid))
         err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
       else {
-        do {
-          Env::FsInterface::fs()->remove(err, Files::Schema::filepath(cid));
-        } while(err != Error::OK);
+        Files::Schema::remove(cid);
         Env::Schemas::get()->remove(cid);  
 
         Column::mark_deleted(err, cid);
@@ -511,9 +509,10 @@ class RangeServers {
         return exists;
     }
 
-    ColumnPtr col = Env::MngrColumns::get()->get_column(cid, true);
-    if(col->deleted())
+    if(exists && Column::is_marked_deleted(cid))
       return true;
+
+    ColumnPtr col = Env::MngrColumns::get()->get_column(cid, true);
     if(!exists || !col->exists_range_path()){
       // initialize 1st range
       col->create();
@@ -543,12 +542,14 @@ class RangeServers {
   }
 
   int64_t get_next_cid(bool &reused) {
-    reused = m_cols_reuse.size() > 0;
-    if(reused){
+    while(m_cols_reuse.size() > 0) {
       int64_t cid = m_cols_reuse.front();
       m_cols_reuse.pop();
-      return cid;
+      reused = Env::Schemas::get()->get(cid) == nullptr;
+      if(reused)
+        return cid;
     }
+    reused = false;
     return ++m_last_cid;
   }
   
