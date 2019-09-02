@@ -86,7 +86,7 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
   for(auto& t : threads)t->join();
   
   while(hdlr->due()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
     
@@ -114,51 +114,25 @@ int main(int argc, char** argv) {
   ));
   
 
-  Protocol::Req::MngColumnPtr hdlr 
-    = std::make_shared<Protocol::Req::MngColumn>();
-  /* 
-  for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 1);
-    i+=1;
-  }
-  std::cout << "####\n";
-  for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 10);
-    i+=1;
-  }
-  std::cout << "####\n";
-  for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 4, 100);
-    i+=1;
-  }
-  std::cout << "####\n";
-
-  for(int i=1;i<=10;){
-    chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 8, 1000);
-    i+=1;
-  }
-  std::cout << "####\n\n";
-  */
   int num_of_cols = 2000;
+  Protocol::Req::MngColumnPtr hdlr 
+    = std::make_shared<Protocol::Req::MngColumn>(10000);
+    
   std::cout << "## already exists response expected ##\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
 
-  
   std::cout << "########### delete request ###########\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
-
   
   std::cout << "#### no exists response expected #####\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
 
-
   std::cout << "########### create request ###########\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols+1000, true);
   std::cout << "######################################\n\n";
-
 
   std::cout << "########### delete request ###########\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
