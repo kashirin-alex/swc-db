@@ -20,6 +20,7 @@
 
 #include "swcdb/lib/db/Protocol/req/MngRsId.h"
 
+#include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "handlers/IsRangeLoaded.h"
 #include "handlers/LoadRange.h"
 #include "handlers/UnloadRange.h"
@@ -126,16 +127,9 @@ class AppContext : public SWC::AppContext {
             //columns->get_cid_of_name(event);
             break;
 
-          default: {           
-
-            /*
-            ev_ctx->error(Error::PROTOCOL_ERROR,
-              format("Unimplemented command (%llu)", 
-                    (Llu)ev_ctx->event->header.command));
-            HT_ERRORF("Unimplemented protocol command (%llu)",
-                      (Llu)ev_ctx->event->header.command);
-                      */
-          }
+          default: 
+            handler = new common::Handler::NotImplemented(conn, ev);
+            break;
         }
 
         if(handler)
@@ -146,7 +140,8 @@ class AppContext : public SWC::AppContext {
       }
 
       default:
-        HT_WARNF("Unhandled, %s", ev->to_str().c_str());
+        HT_WARNF("Unimplemented event-type (%llu)", (Llu)ev->type);
+        break;
 
     }
     

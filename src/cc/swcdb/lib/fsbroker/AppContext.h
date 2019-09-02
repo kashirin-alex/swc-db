@@ -11,6 +11,8 @@
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/fs/Broker/Protocol/Commands.h"
 #include "FdsMap.h"
+
+#include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "handlers/Exists.h"
 #include "handlers/Remove.h"
 #include "handlers/Length.h"
@@ -140,7 +142,8 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::Close(conn, ev);
             break;
 
-          default:
+          default: 
+            handler = new common::Handler::NotImplemented(conn, ev);
             break;
         }
 
@@ -152,6 +155,7 @@ class AppContext : public SWC::AppContext {
       }
 
       default:
+        HT_WARNF("Unimplemented event-type (%llu)", (Llu)ev->type);
         break;
 
     }
