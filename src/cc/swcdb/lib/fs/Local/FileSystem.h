@@ -160,10 +160,12 @@ class FileSystemLocal: public FileSystem {
       goto finish;
     }
 
-    append(err, smartfd, buffer, Flags::FLUSH);
-    if(err != Error::OK)
-      goto finish;
-
+    if(buffer.size > 0) {
+      append(err, smartfd, buffer, Flags::FLUSH);
+      if(err != Error::OK)
+        goto finish;
+    }
+    
     finish:
       int errtmp;
       if(smartfd->valid())

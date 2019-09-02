@@ -99,11 +99,10 @@ class FileSystemBroker: public FileSystem {
         return true;
       }
     } while(conn == nullptr);
+    m_service->preserve(conn);
 
     if(conn->send_request(hdlr->cbp, hdlr) != Error::OK) 
       return false;
-
-    m_service->preserve(conn);
     return true;
   }
 

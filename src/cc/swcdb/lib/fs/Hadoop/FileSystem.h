@@ -277,10 +277,12 @@ class FileSystemHadoop: public FileSystem {
       err = EBADF;
       goto finish;
     }
-
-    append(err, smartfd, buffer, Flags::FLUSH);
-    if(err != Error::OK)
-      goto finish;
+    
+    if(buffer.size > 0) {
+      append(err, smartfd, buffer, Flags::FLUSH);
+      if(err != Error::OK)
+        goto finish;
+    }
 
     finish:
       int errtmp;

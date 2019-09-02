@@ -40,8 +40,11 @@ class Base : public DispatchHandler {
         break;
     }
 
-    if(ev->header.command != cmd)
+    if(ev->header.command != cmd){
       error = Error::NOT_IMPLEMENTED;
+      HT_ERRORF("error=%d(%s) cmd=%d", 
+                error, Error::get_text(error), ev->header.command);
+    }
 
     else if(error == Error::OK 
             && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
