@@ -28,6 +28,12 @@ const std::string filepath(int64_t cid){
   return path;
 }
 
+// REMOVE
+
+void remove(int64_t cid){
+  Env::FsInterface::interface()->remove(filepath(cid));
+}
+
 // SET 
 
 void write(SWC::DynamicBuffer &dst_buf, DB::SchemaPtr schema){
@@ -70,6 +76,8 @@ bool save(DB::SchemaPtr schema){
     else if(err == Error::FS_FILE_NOT_FOUND 
             || err == Error::FS_PERMISSION_DENIED)
     return false;
+    HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
+
   }
 }
 
@@ -78,8 +86,11 @@ bool save(DB::SchemaPtr schema){
 
 void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
 
-  int err;
+  int err = Error::OK;
   for(;;) {
+    if(err != Error::OK)
+      HT_DEBUGF("load, retrying to err=%d(%s)", err, Error::get_text(err));
+
     err = Error::OK;
     
     if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
