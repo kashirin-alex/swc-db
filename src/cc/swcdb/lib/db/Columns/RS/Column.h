@@ -29,14 +29,10 @@ class Column : public std::enable_shared_from_this<Column> {
         { }
 
   bool load() {
-    int err = Error::OK;
     std::string col_range_path(Range::get_path(cid));
-    if(!Env::FsInterface::interface()->exists(col_range_path)) {
-      Env::FsInterface::fs()->mkdirs(err, col_range_path);
-      if(err == 17)
-        err = Error::OK;
-    }
-    return err == Error::OK;
+    if(!Env::FsInterface::interface()->exists(col_range_path))
+      Env::FsInterface::interface()->mkdirs(col_range_path);
+    return true;
   }
 
   virtual ~Column(){}

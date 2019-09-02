@@ -56,8 +56,10 @@ class Range : public DB::RangeBase {
   bool load(){
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
     
-    if(!set_dirs())
-      return false;
+    if(!Env::FsInterface::interface()->exists(get_path(""))){
+      Env::FsInterface::interface()->mkdirs(get_path("log"));
+      Env::FsInterface::interface()->mkdirs(get_path("cs"));
+    } 
 
     // last_rs.data
     Files::RsDataPtr rs_data = Env::RsData::get();
@@ -219,9 +221,9 @@ class Range : public DB::RangeBase {
 
     Files::RangeData::save(get_path(range_data_file), cellstores);
     */
-    int err = Error::OK;
+
     if(completely)
-      Env::FsInterface::fs()->remove(err, get_path(rs_data_file));
+      Env::FsInterface::interface()->remove(get_path(rs_data_file));
 
     set_state(State::NOTLOADED);
 
@@ -237,8 +239,7 @@ class Range : public DB::RangeBase {
         cs->remove();
       }
 
-      int err = Error::OK;
-      Env::FsInterface::fs()->rmdir(err, get_path(""));
+      Env::FsInterface::interface()->rmdir(get_path(""));
     }
     HT_DEBUGF("REMOVED RANGE %s", to_string().c_str());
   }
@@ -268,17 +269,6 @@ class Range : public DB::RangeBase {
     return s;
   }
 
-  private:
-
-  bool set_dirs(){
-    int err = Error::OK;
-    if(!Env::FsInterface::interface()->exists(get_path(""))){
-      Env::FsInterface::fs()->mkdirs(err, get_path("log"));
-      Env::FsInterface::fs()->mkdirs(err, get_path("cs"));
-    } 
-    return err == Error::OK;
-  }
-  
   private:
 
   State               m_state;
