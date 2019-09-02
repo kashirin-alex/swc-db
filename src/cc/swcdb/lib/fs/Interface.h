@@ -220,11 +220,14 @@ class Interface : std::enable_shared_from_this<Interface>{
   bool exists(const String &name) {
     bool state;
     int err = Error::OK;
-    do{
+    for(;;) {
       state = m_fs->exists(err, name);
-    } while(err != Error::OK);
+      if(err == Error::OK)
+        break;
+      HT_DEBUGF("exists, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
     return state;
-  } 
+  }
 
   void exists(Callback::ExistsCb_t cb, const String &name) {
     Callback::ExistsCb_t cb_wrapper; 
@@ -237,6 +240,38 @@ class Interface : std::enable_shared_from_this<Interface>{
     };
     m_fs->exists(cb_wrapper, name);
   }
+
+  void mkdirs(const String &name) {
+    int err = Error::OK;
+    for(;;) {
+      m_fs->mkdirs(err, name);
+      if(err == Error::OK || err == EEXIST)
+        break;
+      HT_DEBUGF("mkdirs, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+  } 
+
+  void rmdir(const String &name) {
+    int err = Error::OK;
+    for(;;) {
+      m_fs->rmdir(err, name);
+      if(err == Error::OK || err == EACCES || err == ENOENT)
+        break;
+      HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+  }
+
+  void remove(const String &name) {
+    int err = Error::OK;
+    for(;;) {
+      m_fs->remove(err, name);
+      if(err == Error::OK || err == EACCES || err == ENOENT)
+        break;
+      HT_DEBUGF("remove, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+  } 
+
+  
 
   /* 
   void open(SmartFdPtr &smartfd, int32_t bufsz=0) {
