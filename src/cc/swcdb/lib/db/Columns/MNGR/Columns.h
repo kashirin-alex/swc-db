@@ -25,6 +25,10 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
+  static void columns_by_fs(int &err, FS::IdEntries_t &entries){
+    Env::FsInterface::interface()->get_structured_ids(err, "", entries);
+  }
+
   Columns() : m_columns(std::make_shared<ColumnsMap>()) {}
 
   void reset(){
@@ -35,18 +39,22 @@ class Columns : public std::enable_shared_from_this<Columns> {
   virtual ~Columns(){}
 
   ColumnPtr get_column(int64_t cid, bool initialize){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    ColumnPtr col = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_columns->find(cid);
-    if (it != m_columns->end())
-      return it->second;
-
-    if(initialize) {
-      ColumnPtr col = std::make_shared<Column>(cid);
-      m_columns->insert(ColumnsMapPair(cid, col));
-      return col;
+      auto it = m_columns->find(cid);
+      if (it != m_columns->end())
+        col = it->second;
+        
+      else if(initialize) {
+        col = std::make_shared<Column>(cid);
+        m_columns->insert(ColumnsMapPair(cid, col));
+      }
     }
-    return nullptr;
+    if(initialize) 
+      col->init();
+    return col;
   }
 
   RangePtr get_range(int64_t cid, int64_t rid,  bool initialize=false){
@@ -89,8 +97,6 @@ class Columns : public std::enable_shared_from_this<Columns> {
     for(;;){
       auto it = m_columns->find(++cid);
       if(it == m_columns->end())
-        break;
-      if(it->second->deleted())
         break;
     }
     return cid;

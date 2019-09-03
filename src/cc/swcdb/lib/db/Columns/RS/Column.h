@@ -23,34 +23,31 @@ class Column : public std::enable_shared_from_this<Column> {
   public:
 
   Column(int64_t id) 
-        : cid(id), 
-          m_ranges(std::make_shared<RangesMap>()), 
-          m_deleting(false) 
-        { }
+        : cid(id), m_ranges(std::make_shared<RangesMap>()), 
+          m_deleting(false) { }
 
-  bool load() {
-    std::string col_range_path(Range::get_path(cid));
-    if(!Env::FsInterface::interface()->exists(col_range_path))
-      Env::FsInterface::interface()->mkdirs(col_range_path);
-    return true;
-  }
+  void init() { }
 
   virtual ~Column(){}
 
   RangePtr get_range(int64_t rid, bool initialize=false){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    RangePtr range = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_ranges->find(rid);
-    if (it != m_ranges->end())
-      return it->second;
-
-    if(initialize) {
-      RangePtr range = std::make_shared<Range>(cid, rid);
-      if(range->load()) 
-        m_ranges->insert(RangesMapPair(rid, range));
-      return range;
+      auto it = m_ranges->find(rid);
+      if (it != m_ranges->end())
+        return it->second;
+      else if(initialize) {
+        range = std::make_shared<Range>(cid, rid);
+        m_ranges->insert(RangesMapPair(rid, range));;
+      }
     }
-    return nullptr;
+    if(initialize)
+      if(!range->load()) {
+        // ? remove from map
+      }
+    return range;
   }
 
   void unload(int64_t rid){

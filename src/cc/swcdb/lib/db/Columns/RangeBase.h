@@ -23,7 +23,6 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   
   inline static const std::string range_dir = "/range"; // .../a-cid/range/a-rid/(types)
   inline static const std::string rs_data_file = "last_rs.data";
-  inline static const std::string deleted_file = "deleted.mark";
 
   inline static std::string get_column_path(int64_t cid){
     std::string s;

@@ -29,33 +29,32 @@ class Range : public DB::RangeBase {
   Range(int64_t cid, int64_t rid)
         : RangeBase(cid, rid), 
           m_state(State::NOTSET), rs_id(0) { 
+  }
 
-    if(Env::FsInterface::interface()->exists(get_path(deleted_file))){
-      set_state(Range::State::DELETED, 0);
-    }
+  void init(){
+
   }
 
   virtual ~Range(){}
   
-  
-
   bool deleted(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::DELETED;
   }
+
   bool assigned(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::ASSIGNED;
   }
+
   bool queued(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::QUEUED;
   }
+
   bool need_assign(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_state != State::QUEUED 
-        && m_state != State::DELETED 
-        && m_state != State::ASSIGNED;
+    return m_state == State::NOTSET;
   }
 
   void set_state(State new_state, uint64_t new_rs_id){
@@ -64,9 +63,9 @@ class Range : public DB::RangeBase {
     rs_id = new_rs_id;
   }
   
-  void set_state(State new_state){
+  void set_deleted(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_state = new_state;
+    m_state = Range::State::DELETED;
   }
 
   uint64_t get_rs_id(){
