@@ -21,8 +21,10 @@ namespace Params {
       CREATE  = 1,
       MODIFY  = 2,
       DELETE  = 3,
-      INTERNAL_ACK_CREATE = 4,
-      INTERNAL_ACK_DELETE = 5,
+      INTERNAL_LOAD = 4,
+      INTERNAL_ACK_LOAD = 5,
+      INTERNAL_ACK_CREATE = 6,
+      INTERNAL_ACK_DELETE = 7
     };
 
     MngColumn() {}
