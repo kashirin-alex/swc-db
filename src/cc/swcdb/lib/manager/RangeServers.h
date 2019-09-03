@@ -117,6 +117,7 @@ class RangeServers {
       }
 
       if(err == Error::OK){
+        std::lock_guard<std::mutex> lock(m_mutex);
         DB::SchemaPtr schema = Env::Schemas::get()->get(req.params.schema->col_name);
 
         switch(req.params.function){
@@ -188,15 +189,14 @@ class RangeServers {
         }
         case Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE: {
           co_func = Protocol::Params::MngColumn::Function::DELETE;
+          std::lock_guard<std::mutex> lock(m_mutex);
+          
           if(Env::Schemas::get()->get(cid) == nullptr)
             err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
           else {
             Env::Schemas::get()->remove(cid);  
             Column::remove(cid); //Files::Schema::remove(cid);
-            {
-              std::lock_guard<std::mutex> lock(m_mutex);
-              m_cols_reuse.push(cid);
-            }
+            m_cols_reuse.push(cid);
           }
           break;
         }
@@ -821,8 +821,6 @@ class RangeServers {
   
 
   int64_t get_next_cid() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     while(m_cols_reuse.size() > 0) {
       int64_t cid = m_cols_reuse.front();
       m_cols_reuse.pop();
