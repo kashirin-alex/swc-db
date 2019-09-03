@@ -15,7 +15,7 @@ namespace Req {
 class MngrsState : public DispatchHandler {
   public:
 
-  static CommBufPtr get_buf(server::Mngr::HostStatuses states, 
+  static CommBufPtr get_buf(server::Mngr::MngrsStatus states, 
                             uint64_t token, const EndPoint& mngr_host, 
                             uint32_t timeout) {
     Protocol::Params::MngrsState params(states, token, mngr_host);

@@ -17,11 +17,11 @@ namespace Params {
 
     MngrsState() {}
 
-    MngrsState(server::Mngr::HostStatuses states, 
+    MngrsState(server::Mngr::MngrsStatus states, 
               uint64_t token, const EndPoint& mngr_host) 
               : states(states), token(token), mngr_host(mngr_host){}
 
-    server::Mngr::HostStatuses states;
+    server::Mngr::MngrsStatus states;
     uint64_t token;
     EndPoint mngr_host;
 
@@ -52,8 +52,8 @@ namespace Params {
       token = Serialization::decode_i64(bufp, remainp);
       mngr_host = Serialization::decode(bufp, remainp);
       for(size_t i =0; i<len; i++){
-        server::Mngr::HostStatusPtr host = 
-          std::make_shared<server::Mngr::HostStatus>();
+        server::Mngr::MngrStatusPtr host = 
+          std::make_shared<server::Mngr::MngrStatus>();
         host->decode(bufp, remainp);
         states.push_back(host);
       }

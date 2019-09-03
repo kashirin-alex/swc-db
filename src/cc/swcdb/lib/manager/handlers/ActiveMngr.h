@@ -31,7 +31,7 @@ class ActiveMngr : public AppHandler {
       const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
-      HostStatusPtr h = Env::MngrRoleState::get()->active_mngr(
+      MngrStatusPtr h = Env::MngrRoleState::get()->active_mngr(
         params.begin, params.end);
 
       EndPoints endpoints;

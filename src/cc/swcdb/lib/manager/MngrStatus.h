@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_HostStatus_h
-#define swc_app_manager_HostStatus_h
+#ifndef swc_app_manager_MngrStatus_h
+#define swc_app_manager_MngrStatus_h
 
 #include "swcdb/lib/db/Types/MngrState.h"
 #include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
@@ -11,19 +11,19 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-class HostStatus : public Protocol::Params::HostEndPoints {
+class MngrStatus : public Protocol::Params::HostEndPoints {
   public:
 
-  HostStatus() {}
+  MngrStatus() {}
 
-  HostStatus(uint64_t  begin, uint64_t  end,
+  MngrStatus(uint64_t  begin, uint64_t  end,
              const EndPoints& points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Params::HostEndPoints(points), conn(c), priority(pr),
                state(Types::MngrState::NOTSET),
                failures(0) { }
   
-  virtual ~HostStatus(){ }
+  virtual ~MngrStatus(){ }
 
   size_t encoded_length_internal() const {
     size_t len = 5 
@@ -51,7 +51,7 @@ class HostStatus : public Protocol::Params::HostEndPoints {
   }
 
   std::string to_string(){
-    std::string s("HostStatus:");
+    std::string s("MngrStatus:");
     
     s.append(" priority=");
     s.append(std::to_string(priority));
@@ -78,12 +78,12 @@ class HostStatus : public Protocol::Params::HostEndPoints {
   int                   failures;
 };
 
-typedef std::shared_ptr<HostStatus> HostStatusPtr;
-typedef std::vector<HostStatusPtr> HostStatuses;
+typedef std::shared_ptr<MngrStatus> MngrStatusPtr;
+typedef std::vector<MngrStatusPtr> MngrsStatus;
 
 
 
 
 }}}
 
-#endif // swc_app_manager_HostStatus_h
+#endif // swc_app_manager_MngrStatus_h

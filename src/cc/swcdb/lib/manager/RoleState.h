@@ -7,7 +7,7 @@
 
 #include "swcdb/lib/client/Clients.h"
 #include <queue>
-#include "HostStatus.h"
+#include "MngrStatus.h"
 
 namespace SWC { namespace server { namespace Mngr {
 class RoleState;
@@ -120,7 +120,7 @@ class RoleState {
     return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
   }
 
-  HostStatusPtr active_mngr(size_t begin, size_t end){
+  MngrStatusPtr active_mngr(size_t begin, size_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& host : m_states){
       if(host->state == Types::MngrState::ACTIVE 
@@ -140,7 +140,7 @@ class RoleState {
     run_mngr_inchain_queue();
   }
 
-  bool fill_states(HostStatuses states, uint64_t token, ResponseCallbackPtr cb){
+  bool fill_states(MngrsStatus states, uint64_t token, ResponseCallbackPtr cb){
 
     bool new_recs = false;
     bool turn_around = token == m_local_token;
@@ -155,7 +155,7 @@ class RoleState {
         continue;
       }
       
-      HostStatusPtr host_set = get_host(host->endpoints);
+      MngrStatusPtr host_set = get_host(host->endpoints);
       
       if(host_set->state == Types::MngrState::OFF 
          && host->state > Types::MngrState::OFF) {
@@ -173,7 +173,7 @@ class RoleState {
         continue;
       }
 
-      HostStatusPtr high_set = 
+      MngrStatusPtr high_set = 
         get_highest_state_host(host->col_begin, host->col_end);
        
       if(high_set->state == Types::MngrState::ACTIVE) {
@@ -217,8 +217,8 @@ class RoleState {
           || !has_endpoint(h, m_local_endpoints))
           continue;
             
-        HostStatusPtr l_host = get_host(m_local_endpoints);
-        HostStatusPtr l_hight = get_highest_state_host(
+        MngrStatusPtr l_host = get_host(m_local_endpoints);
+        MngrStatusPtr l_hight = get_highest_state_host(
           l_host->col_begin, l_host->col_end);
         if(l_hight->state < Types::MngrState::WANT) {
           update_state(m_local_endpoints, Types::MngrState::WANT);
@@ -283,7 +283,7 @@ class RoleState {
       } else 
         endpoints.push_back(endpoint_server);
     }
-    HostStatusPtr host_set = get_host(endpoints);
+    MngrStatusPtr host_set = get_host(endpoints);
     if(host_set == nullptr)
       return false;
 
@@ -371,7 +371,7 @@ class RoleState {
         }
         if(found)continue;
 
-        m_states.push_back(std::make_shared<HostStatus>(
+        m_states.push_back(std::make_shared<MngrStatus>(
           g->col_begin, g->col_end, endpoints, nullptr, ++pr)); 
       }
     }
@@ -395,7 +395,7 @@ class RoleState {
   }
 
   void fill_states(){
-    HostStatuses states;
+    MngrsStatus states;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       states.assign(m_states.begin(), m_states.end());
@@ -412,7 +412,7 @@ class RoleState {
       return;
     }
 
-    HostStatusPtr host_chk;
+    MngrStatusPtr host_chk;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(!m_run)
@@ -453,7 +453,7 @@ class RoleState {
     );
   }
 
-  void manager_checker(HostStatusPtr host, int next, size_t total, bool flw,
+  void manager_checker(MngrStatusPtr host, int next, size_t total, bool flw,
                        client::ClientConPtr conn){
     if(conn == nullptr || !conn->is_open()){
       if(host->state == Types::MngrState::ACTIVE
@@ -495,7 +495,7 @@ class RoleState {
     }
   }
   
-  HostStatusPtr get_host(const EndPoints& endpoints){
+  MngrStatusPtr get_host(const EndPoints& endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto& host : m_states){
@@ -505,10 +505,10 @@ class RoleState {
     return nullptr;
   }
 
-  HostStatusPtr get_highest_state_host(uint64_t begin, uint64_t end){
+  MngrStatusPtr get_highest_state_host(uint64_t begin, uint64_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    HostStatusPtr h = nullptr;
+    MngrStatusPtr h = nullptr;
     for(auto& host : m_states){
       if(host->col_begin == begin && host->col_end == end 
         && (h == nullptr || h->state < host->state)){
@@ -607,7 +607,7 @@ class RoleState {
   uint64_t                     m_local_token;
 
   std::mutex                   m_mutex;
-  HostStatuses                 m_states;
+  MngrsStatus                 m_states;
   std::atomic<uint8_t>         m_checkin;
   client::Mngr::SelectedGroups m_local_groups;
   std::vector<int64_t>         m_cols_active;
