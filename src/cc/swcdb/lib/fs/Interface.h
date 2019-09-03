@@ -185,7 +185,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     //path(base_path) .../111/222/333/444f >> IdEntries_t{(int64_t)111222333444}
     
     DirentList dirs;
-    m_fs->readdir(err, base_path, dirs);
+    readdir(err, base_path, dirs);
 
     if(err != Error::OK)
       return;
@@ -217,6 +217,19 @@ class Interface : std::enable_shared_from_this<Interface>{
   
   // default form to FS methods
 
+  void readdir(int &err, std::string& base_path, DirentList& dirs) {
+    for(;;) {
+      err = Error::OK;
+      DirentList found_dirs;
+      m_fs->readdir(err, base_path, found_dirs);
+      if(err == Error::OK || err == EACCES || err == ENOENT){
+        dirs = found_dirs;
+        return;
+      }
+      HT_DEBUGF("readdir, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+  }
+
   bool exists(const String &name) {
     bool state;
     int err = Error::OK;
@@ -246,7 +259,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     for(;;) {
       m_fs->mkdirs(err, name);
       if(err == Error::OK || err == EEXIST)
-        break;
+        return;
       HT_DEBUGF("mkdirs, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
@@ -256,7 +269,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     for(;;) {
       m_fs->rmdir(err, name);
       if(err == Error::OK || err == EACCES || err == ENOENT)
-        break;
+        return;
       HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
@@ -266,7 +279,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     for(;;) {
       m_fs->remove(err, name);
       if(err == Error::OK || err == EACCES || err == ENOENT)
-        break;
+        return;
       HT_DEBUGF("remove, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
