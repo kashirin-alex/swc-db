@@ -68,6 +68,7 @@ bool save(const std::string filepath, CellStores &cellstores){
   DynamicBuffer input;
   write(input, cellstores);
   StaticBuffer send_buf(input);
+  send_buf.own=false;
 
   int err;
   for(;;) {
@@ -78,7 +79,9 @@ bool save(const std::string filepath, CellStores &cellstores){
     else if(err == Error::FS_FILE_NOT_FOUND 
             || err == Error::FS_PERMISSION_DENIED)
     return false;
+    HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
   }
+  send_buf.own=true;
 
 }
 

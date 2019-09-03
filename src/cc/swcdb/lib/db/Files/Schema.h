@@ -66,6 +66,7 @@ bool save(DB::SchemaPtr schema){
   DynamicBuffer input;
   write(input, schema);
   StaticBuffer send_buf(input);
+  send_buf.own=false;
 
   int err;
   for(;;) {
@@ -77,8 +78,8 @@ bool save(DB::SchemaPtr schema){
             || err == Error::FS_PERMISSION_DENIED)
     return false;
     HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
-
   }
+  send_buf.own=true;
 }
 
 

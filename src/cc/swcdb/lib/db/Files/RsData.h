@@ -124,6 +124,7 @@ class RsData {
     DynamicBuffer input;
     write(input, ts==0 ? Time::now_ns() : ts);
     StaticBuffer send_buf(input);
+    send_buf.own=false;
 
     int err;
     for(;;) {
@@ -134,7 +135,9 @@ class RsData {
       else if(err == Error::FS_FILE_NOT_FOUND 
               || err == Error::FS_PERMISSION_DENIED)
         return false;
+      HT_DEBUGF("set_rs, retrying to err=%d(%s)", err, Error::get_text(err));
     } 
+    send_buf.own=true;
   }
 
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){
