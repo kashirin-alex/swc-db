@@ -16,7 +16,7 @@
 
 #include "swcdb/lib/db/Columns/Schema.h"
 
-#include "RoleState.h"
+#include "MngrRole.h"
 #include "RangeServers.h"
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"

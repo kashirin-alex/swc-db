@@ -2,16 +2,16 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_RoleState_h
-#define swc_app_manager_RoleState_h
+#ifndef swc_app_manager_MngrRole_h
+#define swc_app_manager_MngrRole_h
 
 #include "swcdb/lib/client/Clients.h"
 #include <queue>
 #include "MngrStatus.h"
 
 namespace SWC { namespace server { namespace Mngr {
-class RoleState;
-typedef std::shared_ptr<RoleState> RoleStatePtr;
+class MngrRole;
+typedef std::shared_ptr<MngrRole> MngrRolePtr;
 }}
 
 namespace Env {
@@ -22,18 +22,18 @@ class MngrRole {
     m_env = std::make_shared<MngrRole>();
   }
 
-  static server::Mngr::RoleStatePtr get(){
+  static server::Mngr::MngrRolePtr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_role_state;
   }
 
   MngrRole() 
-    : m_role_state(std::make_shared<server::Mngr::RoleState>()) {}
+    : m_role_state(std::make_shared<server::Mngr::MngrRole>()) {}
 
   virtual ~MngrRole(){}
 
   private:
-  server::Mngr::RoleStatePtr                    m_role_state = nullptr;
+  server::Mngr::MngrRolePtr                m_role_state = nullptr;
   inline static std::shared_ptr<MngrRole>  m_env = nullptr;
 };
 }
@@ -49,9 +49,9 @@ namespace SWC { namespace server { namespace Mngr {
 typedef std::function<void(client::ClientConPtr)> ReqMngrInchain_t;
 
 
-class RoleState {
+class MngrRole {
   public:
-  RoleState()
+  MngrRole()
     : m_check_timer(
         std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
       ),
@@ -73,7 +73,7 @@ class RoleState {
     
   }
 
-  virtual ~RoleState() { }
+  virtual ~MngrRole() { }
 
   void init(const EndPoints& endpoints) {
     m_local_endpoints = endpoints;
@@ -99,7 +99,7 @@ class RoleState {
           Env::MngrRole::get()->managers_checkin();
         }
     }); 
-    HT_DEBUGF("RoleState managers_checkin scheduled in ms=%d", t_ms);
+    HT_DEBUGF("MngrRole managers_checkin scheduled in ms=%d", t_ms);
   }
 
   bool has_active_columns(){
@@ -332,7 +332,7 @@ class RoleState {
   }
 
   const std::string to_string() {
-    std::string s("RoleStates:");
+    std::string s("Mngrs Role:");
     
     for(auto& h : m_states) {
       s.append("\n ");
@@ -653,4 +653,4 @@ namespace client { namespace Mngr {
 }}
 
 }
-#endif // swc_app_manager_RoleState_h
+#endif // swc_app_manager_MngrRole_h
