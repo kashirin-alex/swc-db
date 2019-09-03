@@ -15,11 +15,11 @@ typedef std::shared_ptr<RoleState> RoleStatePtr;
 }}
 
 namespace Env {
-class MngrRoleState {
+class MngrRole {
   public:
 
   static void init() {
-    m_env = std::make_shared<MngrRoleState>();
+    m_env = std::make_shared<MngrRole>();
   }
 
   static server::Mngr::RoleStatePtr get(){
@@ -27,14 +27,14 @@ class MngrRoleState {
     return m_env->m_role_state;
   }
 
-  MngrRoleState() 
+  MngrRole() 
     : m_role_state(std::make_shared<server::Mngr::RoleState>()) {}
 
-  virtual ~MngrRoleState(){}
+  virtual ~MngrRole(){}
 
   private:
   server::Mngr::RoleStatePtr                    m_role_state = nullptr;
-  inline static std::shared_ptr<MngrRoleState>  m_env = nullptr;
+  inline static std::shared_ptr<MngrRole>  m_env = nullptr;
 };
 }
 
@@ -96,7 +96,7 @@ class RoleState {
     m_check_timer->async_wait(
       [](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
-          Env::MngrRoleState::get()->managers_checkin();
+          Env::MngrRole::get()->managers_checkin();
         }
     }); 
     HT_DEBUGF("RoleState managers_checkin scheduled in ms=%d", t_ms);
@@ -243,7 +243,7 @@ class RoleState {
         )](client::ClientConPtr mngr) {
           if(!(std::make_shared<Protocol::Req::MngrsState>(mngr, cbp, cb)
               )->run())
-            Env::MngrRoleState::get()->timer_managers_checkin(3000);
+            Env::MngrRole::get()->timer_managers_checkin(3000);
         }
       );
       return false;
@@ -445,7 +445,7 @@ class RoleState {
     Env::Clients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
       [host_chk, next, total, flw](client::ClientConPtr conn){
-        Env::MngrRoleState::get()->manager_checker(
+        Env::MngrRole::get()->manager_checker(
           host_chk, next, total, flw, conn);
       },
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
@@ -640,14 +640,14 @@ class RoleState {
 
 namespace Protocol { namespace Req {
   void MngrsState::disconnected() {
-    Env::MngrRoleState::get()->disconnection(
+    Env::MngrRole::get()->disconnection(
       conn->endpoint_remote, conn->endpoint_local);
   }
 }}
 
 namespace client { namespace Mngr {
   void AppContext::disconnected(ConnHandlerPtr conn){
-    Env::MngrRoleState::get()->disconnection(
+    Env::MngrRole::get()->disconnection(
       conn->endpoint_remote, conn->endpoint_local);
   }
 }}

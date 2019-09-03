@@ -30,17 +30,17 @@ class MngrsState : public AppHandler {
       const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
-      bool new_active_columns = Env::MngrRoleState::get()->fill_states(
+      bool new_active_columns = Env::MngrRole::get()->fill_states(
         req_params.states, req_params.token, 
         nullptr // std::make_shared<ResponseCallback>(m_conn, m_ev)
       ); 
 
-      Env::MngrRoleState::get()->update_manager_addr(
+      Env::MngrRole::get()->update_manager_addr(
         m_conn->endpoint_remote_hash(), req_params.mngr_host);
 
       m_conn->response_ok(m_ev);
 
-      if(Env::MngrRoleState::get()->require_sync())
+      if(Env::MngrRole::get()->require_sync())
         Env::RangeServers::get()->require_sync();
 
       if(new_active_columns)

@@ -44,7 +44,7 @@ class AppContext : public SWC::AppContext {
 
     Env::IoCtx::init(
       Env::Config::settings()->get<int32_t>("swc.mngr.handlers"));
-    Env::MngrRoleState::init();
+    Env::MngrRole::init();
     Env::FsInterface::init();
     Env::Schemas::init();
     Env::MngrColumns::init();
@@ -56,7 +56,7 @@ class AppContext : public SWC::AppContext {
   }
   
   void init(const EndPoints& endpoints) override {
-    Env::MngrRoleState::get()->init(endpoints);
+    Env::MngrRole::get()->init(endpoints);
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -81,7 +81,7 @@ class AppContext : public SWC::AppContext {
         
       case Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        if(Env::MngrRoleState::get()->disconnection(
+        if(Env::MngrRole::get()->disconnection(
                           conn->endpoint_remote, conn->endpoint_local, true))
           return;
         return;
@@ -176,7 +176,7 @@ class AppContext : public SWC::AppContext {
     m_srv->stop_accepting(); // no further requests accepted
     
     Env::RangeServers::get()->stop();
-    Env::MngrRoleState::get()->stop();
+    Env::MngrRole::get()->stop();
 
     Env::Clients::get()->rs_service->stop();
     Env::Clients::get()->mngr_service->stop();

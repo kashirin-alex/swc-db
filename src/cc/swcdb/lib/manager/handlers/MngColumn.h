@@ -34,7 +34,7 @@ class MngColumn : public AppHandler {
       req_params.decode(&ptr, &remain);
 
       
-      if(!Env::MngrRoleState::get()->is_active(1)){
+      if(!Env::MngrRole::get()->is_active(1)){
         std::cout << "MNGR NOT ACTIVE: \n";
         err = Error::MNGR_NOT_ACTIVE;
       }

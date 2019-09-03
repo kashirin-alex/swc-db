@@ -36,7 +36,7 @@ class MngRsId : public AppHandler {
       
       // std::cout << "MngRsId-run rs " << req_params.to_string() << "\n";
       
-      if(!Env::MngrRoleState::get()->is_active(1)){
+      if(!Env::MngrRole::get()->is_active(1)){
         HT_DEBUGF("MNGR NOT ACTIVE, flag=%d rs_id=%d %s",
                   req_params.flag, req_params.rs_id, 
                   req_params.to_string().c_str());

@@ -26,7 +26,7 @@ class MngrUpdateColumn : public DispatchHandler {
     put(get_buf(function, cid));
   }
   static void put(CommBufPtr cbp){
-    Env::MngrRoleState::get()->req_mngr_inchain(
+    Env::MngrRole::get()->req_mngr_inchain(
       [cbp] (client::ClientConPtr mngr) {        
         // std::cout << "[RS-status] update req_mngr_inchain \n";
         (std::make_shared<MngrUpdateColumn>(mngr, cbp))->run();

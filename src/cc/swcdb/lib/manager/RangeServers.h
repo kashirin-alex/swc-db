@@ -190,7 +190,7 @@ class RangeServers {
         case Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE: {
           co_func = Protocol::Params::MngColumn::Function::DELETE;
           std::lock_guard<std::mutex> lock(m_mutex);
-          
+
           if(Env::Schemas::get()->get(cid) == nullptr)
             err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
           else {
@@ -440,7 +440,7 @@ class RangeServers {
 
   bool manage(int64_t cid){
     std::vector<int64_t> cols;
-    Env::MngrRoleState::get()->get_active_columns(cols);
+    Env::MngrRole::get()->get_active_columns(cols);
     if(cols.size() == 0){
       // if decommissioned
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -524,7 +524,7 @@ class RangeServers {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     std::vector<int64_t> cols;
-    Env::MngrRoleState::get()->get_active_columns(cols);
+    Env::MngrRole::get()->get_active_columns(cols);
     if(cols.size() == 0){
       m_columns_set = false;
       return false; 
@@ -815,7 +815,7 @@ class RangeServers {
       }
     }
     
-    if(Env::MngrRoleState::get()->has_active_columns())
+    if(Env::MngrRole::get()->has_active_columns())
       check_assignment_timer(cfg_delay_rs_chg->get());
   }
   
