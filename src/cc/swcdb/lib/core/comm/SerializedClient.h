@@ -62,20 +62,23 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 
   virtual ~ServerConnections(){}
 
-  void reusable(ClientConPtr &conn) {
+  void reusable(ClientConPtr &conn, bool preserve) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_conns.empty())
       return;
     conn = m_conns.front();
-    m_conns.pop();
-    if(!conn->is_open())
+    if(conn->is_open()){
+      if(preserve)
+        return;
+    } else
       conn = nullptr;
+    m_conns.pop();
     // else
     //  HT_DEBUGF("Reusing connection: %s, %s", 
     //             m_srv_name.c_str(), to_string(conn).c_str());
   }
 
-  void connection(ClientConPtr &conn, std::chrono::milliseconds timeout){
+  void connection(ClientConPtr &conn, std::chrono::milliseconds timeout, bool preserve){
 
     HT_DEBUGF("Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
@@ -92,18 +95,21 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 
     conn = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
     conn->new_connection();
+    if(preserve)
+      put_back(conn);
     // HT_DEBUGF("New connection: %s, %s", 
     //          m_srv_name.c_str(), to_string(conn).c_str());
   }
   
-  void connection(std::chrono::milliseconds timeout, NewClientConnCb_t cb){
+  void connection(std::chrono::milliseconds timeout, NewClientConnCb_t cb, 
+                  bool preserve){
 
     HT_DEBUGF("Connecting Async: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
     SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
     s->async_connect(m_endpoint, 
-      [s, cb, ptr=shared_from_this()]
+      [s, cb, preserve, ptr=shared_from_this()]
       (const std::error_code& ec){
         if(ec || !s->is_open()){
           cb(nullptr);
@@ -111,6 +117,8 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
           ClientConPtr conn 
             = std::make_shared<ConnHandlerClient>(ptr->m_ctx, s, ptr->m_ioctx);
           conn->new_connection();
+          if(preserve)
+            ptr->put_back(conn);
           //HT_DEBUGF("New connection: %s, %s", 
           //          ptr->m_srv_name.c_str(), to_string(conn).c_str());
 
@@ -152,7 +160,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 typedef std::shared_ptr<ServerConnections> ServerConnectionsPtr;
 typedef std::unordered_map<size_t, ServerConnectionsPtr> ServerConnectionsMap;
 
-class SerializedClient{
+class SerializedClient : public std::enable_shared_from_this<SerializedClient> {
 
   public:
 
@@ -178,7 +186,8 @@ class SerializedClient{
   ClientConPtr get_connection(
         const EndPoints& endpoints, 
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
-        uint32_t probes=0
+        uint32_t probes=0,
+        bool preserve=false
         ){
     
     ClientConPtr conn = nullptr;
@@ -193,11 +202,11 @@ class SerializedClient{
 
       for(auto& endpoint : endpoints){
         srv = get_srv(endpoint);
-        srv->reusable(conn);
+        srv->reusable(conn, preserve);
         if(conn != nullptr)
           return conn;
           
-        srv->connection(conn, timeout);
+        srv->connection(conn, timeout, preserve);
         if(conn != nullptr)
           return conn;
       }
@@ -213,7 +222,8 @@ class SerializedClient{
         const EndPoints& endpoints, 
         NewClientConnCb_t cb,
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
-        uint32_t probes=0){
+        uint32_t probes=0,
+        bool preserve=false){
     
     if(endpoints.empty()){
       HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
@@ -221,7 +231,7 @@ class SerializedClient{
       return;
     }
 
-    get_connection(endpoints, cb, timeout, probes, probes, 0);
+    get_connection(endpoints, cb, timeout, probes, probes, 0, preserve);
   }
   
   void get_connection(
@@ -229,14 +239,15 @@ class SerializedClient{
         NewClientConnCb_t cb,
         std::chrono::milliseconds timeout,
         uint32_t probes, uint32_t tries, 
-        int next){
+        int next,
+        bool preserve=false){
           
     if(next == endpoints.size())
       next = 0;
 
     ServerConnectionsPtr srv = get_srv(endpoints.at(next++));
     ClientConPtr conn = nullptr;
-    srv->reusable(conn);
+    srv->reusable(conn, preserve);
     if(conn != nullptr) {
       cb(conn);
       return;
@@ -244,19 +255,22 @@ class SerializedClient{
     
     HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
     srv->connection(timeout, 
-      [this, endpoints, cb, timeout, probes, tries, next]
+      [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
       (ClientConPtr conn){
         if(conn != nullptr && conn->is_open()){
           cb(conn);
           return;
         }
-        if(m_run.load() && (probes == 0 || tries-1 > 0)){
+        if(ptr->m_run.load() && (probes == 0 || tries-1 > 0)){
           std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-          get_connection(endpoints, cb, timeout, probes, tries-1, next);
+          ptr->get_connection(
+            endpoints, cb, timeout, probes, tries-1, next, preserve);
           return;
         }
         cb(nullptr);
-      });
+      },
+      preserve
+      );
   }
 
   void preserve(ClientConPtr conn){

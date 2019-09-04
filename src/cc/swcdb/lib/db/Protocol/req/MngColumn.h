@@ -81,7 +81,8 @@ class MngColumn: public ActiveMngrBase {
         std::dynamic_pointer_cast<MngColumn>(ptr)->make_requests(conn, true);
       },
       std::chrono::milliseconds(timeout_ms), 
-      1
+      1,
+      true
     );
   }
 
