@@ -85,7 +85,7 @@ class RangeServers {
 
   void new_columns() {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex_columns);
       m_columns_set = false;
     }
     check_assignment_timer(500);
@@ -101,9 +101,9 @@ class RangeServers {
   // Columns Actions
   void column_action(ColumnActionReq new_req){
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_actions.push(new_req);
-      if(m_actions.size() > 1)
+      std::lock_guard<std::mutex> lock(m_mutex_columns);
+      m_column_actions.push(new_req);
+      if(m_column_actions.size() > 1)
         return;
     }
     
@@ -111,8 +111,8 @@ class RangeServers {
     int err;
     for(;;){
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        req = m_actions.front();
+        std::lock_guard<std::mutex> lock(m_mutex_columns);
+        req = m_column_actions.front();
         err = m_columns_set ? Error::OK : Error::MNGR_NOT_INITIALIZED;
       }
 
@@ -142,11 +142,11 @@ class RangeServers {
       }
 
       if(err == Error::OK){
-        update_status(req.params.function, req.params.schema->cid, true);
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::lock_guard<std::mutex> lock(m_mutex_columns);
           m_cid_pending.push_back(req);
         }
+        update_status(req.params.function, req.params.schema->cid, true);
 
       } else {
         try{
@@ -159,9 +159,9 @@ class RangeServers {
       }
       
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_actions.pop();
-        if(m_actions.empty())
+        std::lock_guard<std::mutex> lock(m_mutex_columns);
+        m_column_actions.pop();
+        if(m_column_actions.empty())
           return;
       }
     }
@@ -209,7 +209,7 @@ class RangeServers {
         ColumnActionReq req;
         for(;;){
           {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::lock_guard<std::mutex> lock(m_mutex_columns);
             auto it = std::find_if(m_cid_pending.begin(), m_cid_pending.end(),  
               [co_func, cid](const ColumnActionReq& req)
               {return req.params.schema->cid == cid 
@@ -443,7 +443,8 @@ class RangeServers {
     Env::MngrRole::get()->get_active_columns(cols);
     if(cols.size() == 0){
       // if decommissioned
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard<std::mutex> lock1(m_mutex);
+      std::lock_guard<std::mutex> lock2(m_mutex_columns);
       if(m_columns_set){
         HT_INFO("Manager has been decommissioned");
         m_columns_set = false;
@@ -513,7 +514,9 @@ class RangeServers {
 
   bool initialize_cols(){
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard<std::mutex> lock1(m_mutex);
+      std::lock_guard<std::mutex> lock2(m_mutex_columns);
+      
       if(m_columns_set){
         if(m_root_mngr)
           chk_columns_load_ack();
@@ -521,7 +524,8 @@ class RangeServers {
       }
     }
     m_root_mngr = manage(1);
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock1(m_mutex);
+    std::lock_guard<std::mutex> lock2(m_mutex_columns);
     
     std::vector<int64_t> cols;
     Env::MngrRole::get()->get_active_columns(cols);
@@ -559,12 +563,12 @@ class RangeServers {
         if(manage(cid))
           Env::MngrColumns::get()->get_column(cid, true);
         else {
-          Protocol::Req::MngrUpdateColumn::put(
-            Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid);
-          
           m_cid_pending_load.push_back({
             .func=Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD, 
             .cid=cid});
+          
+          Protocol::Req::MngrUpdateColumn::put(
+            Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid);
         }
         if(cid > m_last_cid)
           m_last_cid = cid;
@@ -920,12 +924,14 @@ class RangeServers {
   bool                          m_run=true; 
 
   std::mutex                    m_mutex;
-  bool                          m_columns_set = false;
   int64_t                       m_last_cid = 0;
   std::queue<int64_t>           m_cols_reuse;
-  std::queue<ColumnActionReq>   m_actions;
-  std::vector<ColumnActionReq>  m_cid_pending;
   std::vector<ColumnFunction>   m_cid_pending_load;
+
+  std::mutex                    m_mutex_columns;
+  bool                          m_columns_set = false;
+  std::queue<ColumnActionReq>   m_column_actions;
+  std::vector<ColumnActionReq>  m_cid_pending;
 
   std::mutex                    m_mutex_rs_status;
   RsStatusList                  m_rs_status;
