@@ -116,8 +116,8 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 1000;
-  int num_of_cols_to_remain = 1000;
+  int num_of_cols = 100;
+  int num_of_cols_to_remain = 100;
   Protocol::Req::MngColumnPtr hdlr 
     = std::make_shared<Protocol::Req::MngColumn>(10000);
     
@@ -146,15 +146,24 @@ int main(int argc, char** argv) {
 
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
+  struct ExpctedRsp{
+    //int64_t     cid;
+    std::string name;
+    bool exists;
+  };
+  std::vector<ExpctedRsp> expected;
+
   Protocol::Req::GetColumnPtr hdlr_get
     = std::make_shared<Protocol::Req::GetColumn>(10000);
   for(int n=1; n<=num_of_cols+num_of_cols_to_remain;n++){
 
     std::string name("column-");
     name.append(std::to_string(n));
+    expected.push_back({.name=name, .exists=n>num_of_cols});
+
     hdlr_get->get_scheme_by_name(
       name, 
-      [latency, start_ts=std::chrono::system_clock::now()]
+      [name, expected, latency, start_ts=std::chrono::system_clock::now()]
       (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
       {
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -163,6 +172,19 @@ int main(int argc, char** argv) {
         std::cout << "GetColumnRsp: took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
+        
+        for(auto& rsp_expect : expected) {
+          if(rsp_expect.name.compare(name) == 0) {
+            std::cerr << " exists="<< rsp_expect.exists << " name=" << name << " \n";
+            if(!rsp_expect.exists && err==Error::OK)
+              exit(1);  
+            if(rsp_expect.exists && err!=Error::OK)
+              exit(1); 
+            if(err==Error::OK && rsp_expect.name.compare(rsp.schema->col_name) != 0)
+              exit(1); 
+
+          }
+        }
       }
     );
   }
@@ -185,7 +207,7 @@ int main(int argc, char** argv) {
     name.append(std::to_string(n));
     hdlr_get->get_id_by_name(
       name, 
-      [latency, start_ts=std::chrono::system_clock::now()]
+      [name, expected, latency, start_ts=std::chrono::system_clock::now()]
       (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
       {
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -194,6 +216,16 @@ int main(int argc, char** argv) {
         std::cout << "GetColumnRsp: took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.cid:-1) << "\n";
+
+        for(auto& rsp_expect : expected) {
+          if(rsp_expect.name.compare(name) == 0) {
+            std::cerr << " exists="<< rsp_expect.exists << " name=" << name << " \n";
+            if(!rsp_expect.exists && err==Error::OK)
+              exit(1);  
+            if(rsp_expect.exists && err!=Error::OK)
+              exit(1);  
+          }
+        }
       }
     );
   }
