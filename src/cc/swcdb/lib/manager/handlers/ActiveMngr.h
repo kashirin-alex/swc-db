@@ -28,7 +28,6 @@ class ActiveMngr : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::ActiveMngrReq params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       MngrStatusPtr h = Env::MngrRole::get()->active_mngr(

@@ -27,7 +27,6 @@ class ColumnDelete : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::ColumnId params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       Env::RsColumns::get()->remove(params.cid, 

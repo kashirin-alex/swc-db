@@ -28,7 +28,6 @@ class IsRangeLoaded : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::IsRangeLoaded params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       RangePtr range =  Env::RsColumns::get()->get_range(params.cid, params.rid);

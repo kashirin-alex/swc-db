@@ -71,7 +71,6 @@ class ActiveMngrBase : public DispatchHandler {
         size_t remain = ev->payload_len;
 
         Protocol::Params::ActiveMngrRsp params;
-        const uint8_t *base = ptr;
         params.decode(&ptr, &remain);
         
         if(params.available && params.endpoints.size() > 0){

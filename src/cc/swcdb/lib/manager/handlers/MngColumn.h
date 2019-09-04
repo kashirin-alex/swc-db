@@ -30,7 +30,6 @@ class MngColumn : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::MngColumn req_params;
-      const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
       

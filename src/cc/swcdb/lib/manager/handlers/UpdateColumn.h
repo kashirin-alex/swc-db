@@ -27,7 +27,6 @@ class UpdateColumn : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::MngrUpdateColumn params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
       
       m_conn->response_ok(m_ev);

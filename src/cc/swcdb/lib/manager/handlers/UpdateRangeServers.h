@@ -27,7 +27,6 @@ class UpdateRangeServers : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::MngrUpdateRangeServers params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
       
       // std::cout << params.to_string() << "\n";

@@ -27,7 +27,6 @@ class MngrsState : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::MngrsState req_params;
-      const uint8_t *base = ptr;
       req_params.decode(&ptr, &remain);
 
       bool new_active_columns = Env::MngrRole::get()->fill_states(

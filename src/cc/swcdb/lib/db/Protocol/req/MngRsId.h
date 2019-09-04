@@ -109,7 +109,6 @@ class MngRsId: public ActiveMngrBase {
         size_t remain = ev->payload_len;
 
         Protocol::Params::MngRsId rsp_params;
-        const uint8_t *base = ptr;
         rsp_params.decode(&ptr, &remain);
         
         if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){

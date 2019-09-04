@@ -27,7 +27,6 @@ class UnloadRange : public AppHandler {
       size_t remain = m_ev->payload_len;
 
       Protocol::Params::ColRangeId params;
-      const uint8_t *base = ptr;
       params.decode(&ptr, &remain);
 
       Env::RsColumns::get()->unload_range(params.cid, params.rid, 
