@@ -248,7 +248,7 @@ class SerializedClient : public std::enable_shared_from_this<SerializedClient> {
     ServerConnectionsPtr srv = get_srv(endpoints.at(next++));
     ClientConPtr conn = nullptr;
     srv->reusable(conn, preserve);
-    if(conn != nullptr) {
+    if(conn != nullptr || (probes > 0 && tries == 0)) {
       cb(conn);
       return;
     }
@@ -261,10 +261,13 @@ class SerializedClient : public std::enable_shared_from_this<SerializedClient> {
           cb(conn);
           return;
         }
-        if(ptr->m_run.load() && (probes == 0 || tries-1 > 0)){
+        if(ptr->m_run.load() && (probes == 0 || tries > 0 )){
           std::this_thread::sleep_for(std::chrono::milliseconds(5000));
           ptr->get_connection(
-            endpoints, cb, timeout, probes, tries-1, next, preserve);
+            endpoints, cb, timeout, 
+            probes, next == endpoints.size() ? tries-1 : tries, 
+            next, 
+            preserve);
           return;
         }
         cb(nullptr);
