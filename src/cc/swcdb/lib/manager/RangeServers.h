@@ -123,14 +123,14 @@ class RangeServers {
         switch(req.params.function){
           case Protocol::Params::MngColumn::Function::CREATE: {
             if(schema != nullptr)
-              err = Error::SCHEMA_COL_NAME_EXISTS;
+              err = Error::COLUMN_SCHEMA_NAME_EXISTS;
             else
               column_create(req.params.schema, err);  
             break;
           }
           case Protocol::Params::MngColumn::Function::DELETE: {
             if(schema == nullptr) 
-              err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
+              err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
             else 
               req.params.schema = schema;
             break;
@@ -192,7 +192,7 @@ class RangeServers {
           std::lock_guard<std::mutex> lock(m_mutex);
 
           if(Env::Schemas::get()->get(cid) == nullptr)
-            err = Error::SCHEMA_COL_NAME_NOT_EXISTS;
+            err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
           else {
             Env::Schemas::get()->remove(cid);  
             Column::remove(cid); //Files::Schema::remove(cid);

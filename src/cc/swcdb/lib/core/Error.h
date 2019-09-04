@@ -111,8 +111,9 @@ namespace SWC {
       CONFIG_GET_ERROR                             = CODE_START+1003,
       CONFIG_BAD_VALUE                             = CODE_START+1004,
 
-      SCHEMA_COL_NAME_EXISTS                       = CODE_START+2001,
-      SCHEMA_COL_NAME_NOT_EXISTS                   = CODE_START+2002,
+      COLUMN_SCHEMA_NAME_EXISTS                    = CODE_START+2001,
+      COLUMN_SCHEMA_NAME_NOT_EXISTS                = CODE_START+2002,
+      COLUMN_UNKNOWN_GET_FLAG                      = CODE_START+2003,
 
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,

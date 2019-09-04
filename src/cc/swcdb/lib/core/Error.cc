@@ -77,8 +77,10 @@ namespace {
     { Error::MNGR_NOT_ACTIVE,             "Manager not active for the duty" },
     { Error::MNGR_NOT_INITIALIZED,        "Manager is initializing" },
     
-    { Error::SCHEMA_COL_NAME_EXISTS,      "Schema column name already exists!"},
-    { Error::SCHEMA_COL_NAME_NOT_EXISTS,   "Schema column name doesn't exist!"},
+    { Error::COLUMN_SCHEMA_NAME_EXISTS,     "Schema column name already exists!"},
+    { Error::COLUMN_SCHEMA_NAME_NOT_EXISTS, "Schema column name doesn't exist!"},
+    { Error::COLUMN_UNKNOWN_GET_FLAG,       "unknown get column flag!"},
+                           
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
