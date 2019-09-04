@@ -212,7 +212,8 @@ class SerializedClient : public std::enable_shared_from_this<SerializedClient> {
       }
       HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
       
-      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
+
     } while (m_run.load() && (probes == 0 || --tries > 0));
 
     return conn;
@@ -257,23 +258,22 @@ class SerializedClient : public std::enable_shared_from_this<SerializedClient> {
     srv->connection(timeout, 
       [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
       (ClientConPtr conn){
-        if(conn != nullptr && conn->is_open()){
+        if(!ptr->m_run.load() || (conn != nullptr && conn->is_open())){
           cb(conn);
           return;
         }
-        if(ptr->m_run.load() && (probes == 0 || tries > 0 )){
-          std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-          ptr->get_connection(
-            endpoints, cb, timeout, 
-            probes, next == endpoints.size() ? tries-1 : tries, 
-            next, 
-            preserve);
-          return;
-        }
-        cb(nullptr);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
+
+        ptr->get_connection(
+          endpoints, cb, timeout, 
+          probes, next == endpoints.size() ? tries-1 : tries, 
+          next, 
+          preserve
+        );
       },
       preserve
-      );
+    );
   }
 
   void preserve(ClientConPtr conn){
