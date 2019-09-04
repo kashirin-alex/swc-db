@@ -25,6 +25,7 @@ namespace SWC { namespace Protocol {
     MNGR_UPDATE_COLUMN,
 
     CLIENT_REQ_MNG_COLUMN,
+    CLIENT_REQ_GET_COLUMN,
 
     REQ_ECHO,
     //

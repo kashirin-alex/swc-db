@@ -8,6 +8,7 @@
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/client/AppContext.h"
 #include "swcdb/lib/db/Protocol/req/MngColumn.h"
+#include "swcdb/lib/db/Protocol/req/GetColumn.h"
 
 #include "swcdb/lib/db/Stats/Stat.h"
 
@@ -43,7 +44,8 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
 
         hdlr->request(
           func,
-          DB::Schema::make(0, name),
+          DB::Schema::make(0, name, Types::Column::COUNTER_I64, 10, 1234, 3, Types::Encoding::PLAIN, 9876543),
+
           [hdlr, latency, verbose, start_ts=std::chrono::system_clock::now()]
           (Protocol::Req::MngColumn::Req::BasePtr req, int err){
             Protocol::Req::MngColumn::Req::Ptr ptr 
@@ -56,10 +58,10 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
             if(err != Error::OK 
               && (
                 (ptr->function == Protocol::Req::MngColumn::Function::CREATE 
-                  && err !=  Error::SCHEMA_COL_NAME_EXISTS ) 
+                  && err !=  Error::COLUMN_SCHEMA_NAME_EXISTS ) 
               || 
                 (ptr->function == Protocol::Req::MngColumn::Function::DELETE 
-                  && err !=  Error::SCHEMA_COL_NAME_NOT_EXISTS )
+                  && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
               )){
               hdlr->make(ptr);
 
@@ -114,7 +116,8 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 2000;
+  int num_of_cols = 1000;
+  int num_of_cols_to_remain = 1000;
   Protocol::Req::MngColumnPtr hdlr 
     = std::make_shared<Protocol::Req::MngColumn>(10000);
     
@@ -127,24 +130,86 @@ int main(int argc, char** argv) {
   std::cout << "######################################\n\n";
   
   std::cout << "#### no exists response expected #####\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols+num_of_cols_to_remain, true);
   std::cout << "######################################\n\n";
 
   std::cout << "########### create request ###########\n";
-  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols+1000, true);
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols+num_of_cols_to_remain, true);
   std::cout << "######################################\n\n";
 
   std::cout << "########### delete request ###########\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
 
+
+  std::cout << "########### get_scheme_by_name ###########\n";
+
+  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
+  Protocol::Req::GetColumnPtr hdlr_get
+    = std::make_shared<Protocol::Req::GetColumn>(10000);
+  for(int n=1; n<=num_of_cols+num_of_cols_to_remain;n++){
+
+    std::string name("column-");
+    name.append(std::to_string(n));
+    hdlr_get->get_scheme_by_name(
+      name, 
+      [latency, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
+      {
+        uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                          std::chrono::system_clock::now() - start_ts).count();
+        latency->add(took);
+        std::cout << "GetColumnRsp: took=" << took  
+                  << " err=" << err << "(" << Error::get_text(err) << ") " 
+                  << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
+      }
+    );
+  }
+  while(hdlr_get->due()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  std::cout << "get_scheme_by_name"
+            << " avg=" << latency->avg()
+            << " min=" << latency->min()
+            << " max=" << latency->max()
+            << " count=" << latency->count() 
+            << "\n";
+
+  std::cout << "########### get_id_by_name ###########\n";
+  latency = std::make_shared<Stats::Stat>();
+  for(int n=1; n<=num_of_cols+num_of_cols_to_remain;n++){
+
+    std::string name("column-");
+    name.append(std::to_string(n));
+    hdlr_get->get_id_by_name(
+      name, 
+      [latency, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
+      {
+        uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                          std::chrono::system_clock::now() - start_ts).count();
+        latency->add(took);
+        std::cout << "GetColumnRsp: took=" << took  
+                  << " err=" << err << "(" << Error::get_text(err) << ") " 
+                  << " " << (err==Error::OK?rsp.cid:-1) << "\n";
+      }
+    );
+  }
+  while(hdlr_get->due()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  std::cout << "get get_id_by_name"
+            << " avg=" << latency->avg()
+            << " min=" << latency->min()
+            << " max=" << latency->max()
+            << " count=" << latency->count() 
+            << "\n";
 
 
   Env::IoCtx::io()->stop();
-  std::cout << " ### EXIT ###, pending_writes=" << hdlr->pending_write()
-            << " pending_read=" << hdlr->pending_read()
-            << " queue=" << hdlr->queue()
-            << "\n";
+  std::cout << " ### EXIT ###\n";
   return 0;
 }
