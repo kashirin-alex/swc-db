@@ -100,7 +100,7 @@ class MngRsId: public ActiveMngrBase {
 
       if(Protocol::response_code(ev) == Error::OK){
         conn->do_close();
-        run_within(conn->m_io_ctx, cfg_check_interval->get());
+        run_within(conn->io_ctx, cfg_check_interval->get());
         return;
       }
       
@@ -112,7 +112,7 @@ class MngRsId: public ActiveMngrBase {
         rsp_params.decode(&ptr, &remain);
         
         if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
-          run_within(conn->m_io_ctx, 50);
+          run_within(conn->io_ctx, 50);
 
         } 
         else if(
@@ -183,7 +183,7 @@ class MngRsId: public ActiveMngrBase {
 
     if(!ok)
       conn->do_close();
-    run_within(conn->m_io_ctx, 1000);
+    run_within(conn->io_ctx, 1000);
   }
 
   client::ClientConPtr  m_conn;

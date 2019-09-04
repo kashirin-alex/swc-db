@@ -52,7 +52,7 @@ class ActiveMngrBase : public DispatchHandler {
     params.encode(cbp->get_data_ptr_address());
 
     if(conn->send_request(cbp, shared_from_this()) != Error::OK)
-      run_within(conn->m_io_ctx, 200);
+      run_within(conn->io_ctx, 200);
     else
       Env::Clients::get()->mngr_service->preserve(
         std::dynamic_pointer_cast<client::ConnHandlerClient>(conn));  // if ( ?ttl)
@@ -87,7 +87,7 @@ class ActiveMngrBase : public DispatchHandler {
     if(!ok)
       conn->do_close();
 
-    run_within(conn->m_io_ctx, 500);
+    run_within(conn->io_ctx, 500);
 
   }
 

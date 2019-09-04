@@ -25,12 +25,12 @@ class ConnHandlerServer : public ConnHandler {
     run(std::make_shared<Event>(Event::Type::CONNECTION_ESTABLISHED, Error::OK)); 
     accept_requests();
   }
-
+  
   void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) override {
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
-    else if(m_app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      m_app_ctx->handle(ptr(), ev); 
+    else if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      app_ctx->handle(ptr(), ev); 
   }
 
 };

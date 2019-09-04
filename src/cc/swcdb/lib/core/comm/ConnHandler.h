@@ -71,7 +71,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-            : m_app_ctx(app_ctx), m_sock(socket), m_io_ctx(io_ctx), m_next_req_id(0) { }
+            : app_ctx(app_ctx), m_sock(socket), io_ctx(io_ctx),
+              m_next_req_id(0) { }
 
   ConnHandlerPtr ptr(){
     return shared_from_this();
@@ -81,11 +82,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     do_close();
   }
   
-  EndPoint      endpoint_remote;
-  EndPoint      endpoint_local;
-  AppContextPtr m_app_ctx;
-  SocketPtr     m_sock;
-  IOCtxPtr      m_io_ctx;
+  const AppContextPtr   app_ctx;
+  const IOCtxPtr        io_ctx;
+  EndPoint        endpoint_remote;
+  EndPoint        endpoint_local;
 
   const std::string endpoint_local_str(){
     std::string s(endpoint_local.address().to_string());
@@ -173,7 +173,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if (msg.length() < max_msg_size)
       cbp = Protocol::create_error_message(header, error, msg.c_str());
     else {
-      cbp = Protocol::create_error_message(header, error, msg.substr(0, max_msg_size).c_str());
+      cbp = Protocol::create_error_message(
+        header, error, msg.substr(0, max_msg_size).c_str());
     }
     return send_response(cbp);
   }
@@ -576,6 +577,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   }
 
+  const SocketPtr           m_sock;
+  std::atomic<uint32_t>     m_next_req_id;
+
   std::mutex                m_mutex;
   std::queue<Outgoing>      m_outgoing;
   bool                      m_writing = 0;
@@ -587,7 +591,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   bool                      m_reading = 0;
 
   std::atomic<Error::Code>  m_err = Error::OK;
-  std::atomic<uint32_t>     m_next_req_id;
 
 };
 
