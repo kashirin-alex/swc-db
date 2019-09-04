@@ -273,8 +273,9 @@ class FileSystemHadoop: public FileSystem {
     HT_DEBUGF("write %s", smartfd->to_string().c_str());
 
     create(err, smartfd, 0, replication, blksz);
-    if(!smartfd->valid() && err == Error::OK){
-      err = EBADF;
+    if(!smartfd->valid() || err != Error::OK){
+      if(err == Error::OK) 
+        err = EBADF;
       goto finish;
     }
     
