@@ -74,7 +74,7 @@ bool save(DB::SchemaPtr schema){
     Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
     if (err == Error::OK)
       return true;
-    else if(err == Error::FS_FILE_NOT_FOUND 
+    else if(err == Error::FS_PATH_NOT_FOUND 
             || err == Error::FS_PERMISSION_DENIED)
     return false;
     HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
@@ -101,7 +101,7 @@ void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
     }
 
     Env::FsInterface::fs()->open(err, smartfd);
-    if(err == Error::FS_FILE_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
+    if(err == Error::FS_PATH_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
       break;
     if(!smartfd->valid())
       continue;

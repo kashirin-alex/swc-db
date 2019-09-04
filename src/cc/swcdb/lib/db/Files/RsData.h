@@ -132,7 +132,7 @@ class RsData {
       Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
       if (err == Error::OK)
         return true;
-      else if(err == Error::FS_FILE_NOT_FOUND 
+      else if(err == Error::FS_PATH_NOT_FOUND 
               || err == Error::FS_PERMISSION_DENIED)
         return false;
       HT_DEBUGF("set_rs, retrying to err=%d(%s)", err, Error::get_text(err));
