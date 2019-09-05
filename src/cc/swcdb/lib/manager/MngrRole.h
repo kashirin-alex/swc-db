@@ -572,21 +572,24 @@ class MngrRole {
         return;
       m_mngr_inchain_running = true;
     }
+    asio::post(*Env::IoCtx::io()->ptr(), 
+      [](){
+         Env::MngrRole::get()->run_mngr_queue();
+      });
+  }
 
+  void run_mngr_queue(){
     for(;;) {
       std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
       if(m_mngr_inchain_queue.size() == 0 
-        || m_mngr_inchain == nullptr 
-        || !m_mngr_inchain->is_open())
-        break;
+        || m_mngr_inchain == nullptr || !m_mngr_inchain->is_open()){
 
+        m_mngr_inchain_running = false;
+        return;
+      }
+      
       m_mngr_inchain_queue.front()(m_mngr_inchain);
       m_mngr_inchain_queue.pop();
-    }
-
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      m_mngr_inchain_running = false;
     }
   }
 
@@ -599,6 +602,7 @@ class MngrRole {
     
     run_mngr_inchain_queue();
     fill_states();
+    
     m_checkin=0;
     timer_managers_checkin(cfg_check_interval->get());
   }
@@ -607,7 +611,7 @@ class MngrRole {
   uint64_t                     m_local_token;
 
   std::mutex                   m_mutex;
-  MngrsStatus                 m_states;
+  MngrsStatus                  m_states;
   std::atomic<uint8_t>         m_checkin;
   client::Mngr::SelectedGroups m_local_groups;
   std::vector<int64_t>         m_cols_active;
