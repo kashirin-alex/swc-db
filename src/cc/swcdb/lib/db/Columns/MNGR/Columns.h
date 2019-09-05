@@ -38,6 +38,23 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   virtual ~Columns(){}
 
+  bool is_an_initialization(int64_t cid){
+    ColumnPtr col = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+
+      auto it = m_columns->find(cid);
+      if (it != m_columns->end())
+        return false;
+
+      col = std::make_shared<Column>(cid);
+      m_columns->insert(ColumnsMapPair(cid, col));
+    }
+
+    col->init();
+    return true;
+  }
+
   ColumnPtr get_column(int64_t cid, bool initialize){
     ColumnPtr col = nullptr;
     {
@@ -45,7 +62,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
       auto it = m_columns->find(cid);
       if (it != m_columns->end())
-        col = it->second;
+        return it->second;
         
       else if(initialize) {
         col = std::make_shared<Column>(cid);
