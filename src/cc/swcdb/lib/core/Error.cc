@@ -80,6 +80,7 @@ namespace {
     { Error::COLUMN_SCHEMA_NAME_EXISTS,     "Schema column name already exists!"},
     { Error::COLUMN_SCHEMA_NAME_NOT_EXISTS, "Schema column name doesn't exist!"},
     { Error::COLUMN_UNKNOWN_GET_FLAG,       "unknown get column flag!"},
+    { Error::COLUMN_REACHED_ID_LIMIT,       "Columd ID max-reached"},
                            
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
