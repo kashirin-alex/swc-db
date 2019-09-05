@@ -121,7 +121,7 @@ class Range : public DB::RangeBase {
 
 
     if(is_loaded()) {
-      HT_DEBUGF("LOADED RANGE %s", to_string().c_str());
+      HT_INFOF("LOADED RANGE %s", to_string().c_str());
       return true;
     }
     
@@ -227,7 +227,7 @@ class Range : public DB::RangeBase {
 
     set_state(State::NOTLOADED);
 
-    HT_DEBUGF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
+    HT_INFOF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }
 
   void remove(){
@@ -241,7 +241,7 @@ class Range : public DB::RangeBase {
 
       Env::FsInterface::interface()->rmdir(get_path(""));
     }
-    HT_DEBUGF("REMOVED RANGE %s", to_string().c_str());
+    HT_INFOF("REMOVED RANGE %s", to_string().c_str());
   }
 
   std::string to_string(){
