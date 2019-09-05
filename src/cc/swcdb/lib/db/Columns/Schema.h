@@ -169,6 +169,13 @@ class Schemas {
     return nullptr;
   }
 
+  void ids(std::vector<int64_t> &entries){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for( const auto& it : m_map) 
+      entries.push_back(it.first);
+  }
+
   private:
   std::mutex                             m_mutex;
   std::unordered_map<int64_t, SchemaPtr> m_map;
