@@ -148,9 +148,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
   virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
-    HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
+    if(ev->type == Event::Type::DISCONNECT)
+      return;
+    HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
   }
 
   void do_close(DispatchHandlerPtr hdlr=nullptr){
