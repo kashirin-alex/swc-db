@@ -93,6 +93,7 @@ class RangeServers {
   
   void require_sync() {
     rs_changes(m_rs_status, true);
+    columns_load();
   }
 
   virtual ~RangeServers(){}
@@ -180,7 +181,7 @@ class RangeServers {
         
         case Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD: {
           ColumnFunction pending;
-          while(column_pending_load(cid, pending));
+          while(column_load_pending(cid, pending));
           return;
         }
         case Protocol::Params::MngColumn::Function::INTERNAL_ACK_CREATE: {
@@ -196,7 +197,6 @@ class RangeServers {
           else {
             Env::Schemas::get()->remove(cid);  
             Column::remove(cid); //Files::Schema::remove(cid);
-            m_cols_reuse.push(cid);
           }
           break;
         }
@@ -449,10 +449,7 @@ class RangeServers {
         HT_INFO("Manager has been decommissioned");
         m_columns_set = false;
         m_root_mngr = false;
-        m_last_cid = 0;
         Env::MngrColumns::get()->reset();
-        while(!m_cols_reuse.empty())
-          m_cols_reuse.pop();
       }
       return false; 
     }
@@ -479,7 +476,6 @@ class RangeServers {
       return;
     } else if(assigned == -2)
       return;
-    std::cout << "  assigned=" << assigned << "\n";
 
     // for rangeserver cid-rid state
 
@@ -519,7 +515,7 @@ class RangeServers {
       
       if(m_columns_set){
         if(m_root_mngr)
-          chk_columns_load_ack();
+          columns_load_chk_ack();
         return true;
       }
     }
@@ -534,55 +530,33 @@ class RangeServers {
       return false; 
     }
 
-    if(!m_root_mngr || m_last_cid > 0){
-      m_columns_set = true;
+    if(!m_root_mngr)
       return true;
-    }
+    if(m_columns_set)
+      return true;
+
 
     int err = Error::OK;
     FS::IdEntries_t entries;
-
     Columns::columns_by_fs(err, entries); 
     if(err !=  Error::OK) {
       if(err != ENOENT)
         return false;
     }
-    
-    if(entries.empty()){
-      // initialize sys-columns
+    if(entries.empty()){ // initialize sys-columns
       for(int cid=1;cid<=3;cid++){
         Column::create(cid);
-        Env::Schemas::get()->add(Files::Schema::load(cid));
-        Env::MngrColumns::get()->get_column(cid, true);
-      }
-      m_last_cid = 3;
-
-    } else {
-      for(auto cid : entries){
-        Env::Schemas::get()->add(Files::Schema::load(cid));
-        if(manage(cid))
-          Env::MngrColumns::get()->get_column(cid, true);
-        else {
-          m_cid_pending_load.push_back({
-            .func=Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD, 
-            .cid=cid});
-          
-          Protocol::Req::MngrUpdateColumn::put(
-            Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid);
-        }
-        if(cid > m_last_cid)
-          m_last_cid = cid;
-      }
-      for(int cid=3;cid<=m_last_cid;cid++){
-        if(Env::Schemas::get()->get(cid) == nullptr)
-          m_cols_reuse.push(cid);
+        entries.push_back(cid);
       }
     }
+    for(auto cid : entries)
+      Env::Schemas::get()->add(Files::Schema::load(cid));
+    columns_load();
 
     m_columns_set = true;
     return true;
   }
-  
+
   void assign_ranges(int64_t &assigned) {
     {
       std::lock_guard<std::mutex> lock(m_mutex_assign);
@@ -760,7 +734,7 @@ class RangeServers {
       // ++ mng_inchain - req. MngrRsResource
       
       ColumnFunction pending;
-      while(column_pending_load(range->cid, pending))
+      while(column_load_pending(range->cid, pending))
         Protocol::Req::MngrUpdateColumn::put(pending.func, pending.cid);
     }
 
@@ -823,25 +797,69 @@ class RangeServers {
       check_assignment_timer(cfg_delay_rs_chg->get());
   }
   
+  void columns_load(){
+    std::vector<int64_t> entries;
+    Env::Schemas::get()->ids(entries);
+    for(auto& cid : entries)
+      column_load(cid);
+  }
+
+  void columns_load_chk_ack(){
+    for(auto& pending : m_cid_pending_load){
+      if(pending.func == Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD){
+        Protocol::Req::MngrUpdateColumn::put(
+          Protocol::Params::MngColumn::Function::INTERNAL_LOAD, pending.cid);
+      }
+    }
+  }
+
+  void column_load(int64_t cid){
+    if(manage(cid)) {
+      Env::MngrColumns::get()->get_column(cid, true);
+      return;
+    }
+
+    m_cid_pending_load.push_back({
+      .func=Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD, 
+      .cid=cid
+    });
+    Protocol::Req::MngrUpdateColumn::put(
+      Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid);
+  }
+
+  bool column_load_pending(int64_t cid, ColumnFunction &pending) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = std::find_if(m_cid_pending_load.begin(), 
+                           m_cid_pending_load.end(),  
+                          [cid](const ColumnFunction& pending) 
+                          {return pending.cid == cid;});
+    if(it == m_cid_pending_load.end())
+      return false;
+    pending = *it;
+    m_cid_pending_load.erase(it);
+    return true;
+  }
 
   int64_t get_next_cid() {
-    while(m_cols_reuse.size() > 0) {
-      int64_t cid = m_cols_reuse.front();
-      m_cols_reuse.pop();
-      if(Env::Schemas::get()->get(cid) == nullptr)
-        return cid;
-    }
-    return ++m_last_cid;
+    int64_t cid = 4;
+    while(Env::Schemas::get()->get(++cid) != nullptr);
+    return cid;
   }
 
   void column_create(DB::SchemaPtr &schema, int &err){
     int64_t cid = get_next_cid();
-    Column::create(cid);
-      
-    schema = DB::Schema::make(cid, schema);
-    Env::Schemas::get()->add(schema);
+    if(cid < 0) {
+      err = Error::COLUMN_REACHED_ID_LIMIT;
+      return;
+    } // if schema does exist on fs (sanity-check) 
 
-    Files::Schema::save(schema);
+    Column::create(cid);
+    Files::Schema::save(DB::Schema::make(cid, schema));
+    
+    Env::Schemas::get()->add(Files::Schema::load(cid));
+    schema = Env::Schemas::get()->get(cid);
+
   }
 
   void column_delete(int64_t cid) {
@@ -894,29 +912,10 @@ class RangeServers {
         Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid);
     }
   }
-         
-  bool column_pending_load(int64_t cid, ColumnFunction &pending) {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = std::find_if(m_cid_pending_load.begin(), 
-                           m_cid_pending_load.end(),  
-                          [cid](const ColumnFunction& pending) 
-                          {return pending.cid == cid;});
-    if(it == m_cid_pending_load.end())
-      return false;
-    pending = *it;
-    m_cid_pending_load.erase(it);
-    return true;
-  }
 
-  void chk_columns_load_ack(){
-    for(auto& pending : m_cid_pending_load){
-      if(pending.func == Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD){
-        Protocol::Req::MngrUpdateColumn::put(
-          Protocol::Params::MngColumn::Function::INTERNAL_LOAD, pending.cid);
-      }
-    }
-  }
+
+
 
 
   std::mutex                    m_mutex_timer;
@@ -924,8 +923,6 @@ class RangeServers {
   bool                          m_run=true; 
 
   std::mutex                    m_mutex;
-  int64_t                       m_last_cid = 0;
-  std::queue<int64_t>           m_cols_reuse;
   std::vector<ColumnFunction>   m_cid_pending_load;
 
   std::mutex                    m_mutex_columns;
