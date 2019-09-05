@@ -17,14 +17,20 @@ namespace Params {
   class MngColumn  : public Serializable {
   public:
 
-    enum Function {
-      CREATE  = 1,
-      MODIFY  = 2,
-      DELETE  = 3,
-      INTERNAL_LOAD = 4,
-      INTERNAL_ACK_LOAD = 5,
-      INTERNAL_ACK_CREATE = 6,
-      INTERNAL_ACK_DELETE = 7
+    enum Function { // corelation-sequence required
+      INTERNAL_LOAD_ALL     = 0,
+
+      INTERNAL_LOAD         = 1,
+      INTERNAL_ACK_LOAD     = 2,
+
+      CREATE                = 3,
+      INTERNAL_ACK_CREATE   = 4,
+
+      DELETE                = 5,
+      INTERNAL_ACK_DELETE   = 6,
+
+      MODIFY                = 7,
+      INTERNAL_ACK_MODIFY   = 8,
     };
 
     MngColumn() {}
