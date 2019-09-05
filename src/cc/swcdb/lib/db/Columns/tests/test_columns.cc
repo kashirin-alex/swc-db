@@ -23,7 +23,8 @@ void rs(){
     Env::RsColumns::init();
 
     Env::RsData::init();
-
+    
+    int err = Error::OK;
     server::RS::ColumnsPtr cols = Env::RsColumns::get();
 
     for(int64_t c=10; c<=11; c++){
@@ -31,7 +32,7 @@ void rs(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::RS::RangePtr range = cols->get_range(c, r, true);
+            server::RS::RangePtr range = cols->get_range(err, c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -43,7 +44,7 @@ void rs(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::RS::RangePtr range = cols->get_range(c, r);
+            server::RS::RangePtr range = cols->get_range(err, c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -59,13 +60,14 @@ void rs(){
 void mngr(){
     Env::MngrColumns::init();
     server::Mngr::ColumnsPtr cols = Env::MngrColumns::get();
+    int err = Error::OK;
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Mngr::RangePtr range = cols->get_range(c, r, true);
+            server::Mngr::RangePtr range = cols->get_range(err, c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -77,7 +79,7 @@ void mngr(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Mngr::RangePtr range = cols->get_range(c, r);
+            server::Mngr::RangePtr range = cols->get_range(err, c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);

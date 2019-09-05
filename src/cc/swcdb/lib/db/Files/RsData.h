@@ -32,10 +32,10 @@ class RsData {
   
   static const int8_t VERSION=1;
 
-  static RsDataPtr get_rs(std::string filepath){
+  static RsDataPtr get_rs(int &err, std::string filepath){
     RsDataPtr data = std::make_shared<RsData>();
     try{
-      data->read(FS::SmartFd::make_ptr(filepath, 0));
+      data->read(err, FS::SmartFd::make_ptr(filepath, 0));
     } catch(...){
       data = std::make_shared<RsData>();
     }
@@ -44,13 +44,12 @@ class RsData {
 
   RsData(): version(VERSION), rs_id(0), timestamp(0) { }
 
-  void read(FS::SmartFdPtr smartfd) {
-    int err;
+  void read(int &err, FS::SmartFdPtr smartfd) {
     for(;;) {
       err = Error::OK;
     
       if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-        if(err != Error::OK)
+        if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
           continue;
         return;
       }
@@ -116,28 +115,18 @@ class RsData {
   }
   
   // SET 
-  bool set_rs(std::string filepath, int64_t ts = 0){
-
-    FS::SmartFdPtr smartfd = 
-      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+  void set_rs(int &err, std::string filepath, int64_t ts = 0){
 
     DynamicBuffer input;
     write(input, ts==0 ? Time::now_ns() : ts);
     StaticBuffer send_buf(input);
-    send_buf.own=false;
 
-    int err;
-    for(;;) {
-      err = Error::OK;
-      Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
-      if (err == Error::OK)
-        return true;
-      else if(err == Error::FS_PATH_NOT_FOUND 
-              || err == Error::FS_PERMISSION_DENIED)
-        return false;
-      HT_DEBUGF("set_rs, retrying to err=%d(%s)", err, Error::get_text(err));
-    } 
-    send_buf.own=true;
+    Env::FsInterface::interface()->write(
+      err,
+      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
+      -1, -1, 
+      send_buf
+    );
   }
 
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){

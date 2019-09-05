@@ -26,11 +26,11 @@ class Column : public std::enable_shared_from_this<Column> {
         : cid(id), m_ranges(std::make_shared<RangesMap>()), 
           m_deleting(false) { }
 
-  void init() { }
+  void init(int &err) { }
 
   virtual ~Column(){}
 
-  RangePtr get_range(int64_t rid, bool initialize=false){
+  RangePtr get_range(int &err, int64_t rid, bool initialize=false){
     RangePtr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -43,36 +43,38 @@ class Column : public std::enable_shared_from_this<Column> {
         m_ranges->insert(RangesMapPair(rid, range));;
       }
     }
-    if(initialize)
-      if(!range->load()) {
+    if(initialize){
+      range->load(err);
+      if(err != Error::OK) {
         // ? remove from map
       }
+    }
     return range;
   }
 
-  void unload(int64_t rid){
+  void unload(int &err, int64_t rid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_ranges->find(rid);
     if (it != m_ranges->end()){
-      it->second->unload(true);
+      it->second->unload(err, true);
       m_ranges->erase(it);
     }
   }
 
-  void unload_all(){
+  void unload_all(int &err){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;;){
       auto it = m_ranges->begin();
       if(it == m_ranges->end())
         break;
-      it->second->unload(false);
+      it->second->unload(err, false);
       m_ranges->erase(it);
     }
   }
   
-  void remove_all(){
+  void remove_all(int &err){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_deleting = true;
@@ -81,7 +83,7 @@ class Column : public std::enable_shared_from_this<Column> {
         auto it = m_ranges->begin();
         if(it == m_ranges->end())
           break;
-        it->second->remove();
+        it->second->remove(err);
         m_ranges->erase(it);
       }
     }

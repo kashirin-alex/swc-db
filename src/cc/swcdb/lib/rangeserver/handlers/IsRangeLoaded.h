@@ -30,12 +30,16 @@ class IsRangeLoaded : public AppHandler {
       Protocol::Params::IsRangeLoaded params;
       params.decode(&ptr, &remain);
 
-      RangePtr range =  Env::RsColumns::get()->get_range(params.cid, params.rid);
+      int err = Error::OK;
+      RangePtr range =  Env::RsColumns::get()->get_range(
+        err, params.cid, params.rid, false);
       
       if(range != nullptr && range->is_loaded()){
         m_conn->response_ok(m_ev);
       } else {
-        m_conn->send_error(Error::RS_NOT_LOADED_RANGE , "", m_ev);
+        if(err == Error::OK)
+          err = Error::RS_NOT_LOADED_RANGE;
+        m_conn->send_error(err, "", m_ev);
       }
     }
     catch (Exception &e) {

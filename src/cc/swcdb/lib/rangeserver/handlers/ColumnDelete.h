@@ -29,9 +29,13 @@ class ColumnDelete : public AppHandler {
       Protocol::Params::ColumnId params;
       params.decode(&ptr, &remain);
 
-      Env::RsColumns::get()->remove(params.cid, 
-        [this](bool state){
-          m_conn->response_ok(m_ev);
+      int err = Error::OK;
+      Env::RsColumns::get()->remove(err, params.cid,
+        [this](int err){
+          if(err == Error::OK)
+            m_conn->response_ok(m_ev); // cb->run();
+          else
+            m_conn->send_error(err, "", m_ev);
         }
       );
     }

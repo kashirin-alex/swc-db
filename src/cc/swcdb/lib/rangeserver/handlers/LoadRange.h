@@ -31,9 +31,12 @@ class LoadRange : public AppHandler {
       Protocol::Params::ColRangeId params;
       params.decode(&ptr, &remain);
 
+      int err = Error::OK;
       Env::RsColumns::get()->load_range(
+        err,
         params.cid, params.rid, 
-         std::make_shared<Callback::RangeLoaded>(m_conn, m_ev));
+        std::make_shared<Callback::RangeLoaded>(m_conn, m_ev)
+      );
 
       // params.create?
     }

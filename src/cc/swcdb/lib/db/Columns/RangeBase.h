@@ -60,8 +60,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
-  Files::RsDataPtr get_last_rs(){
-    return Files::RsData::get_rs(get_path(rs_data_file));
+  Files::RsDataPtr get_last_rs(int &err){
+    return Files::RsData::get_rs(err, get_path(rs_data_file));
   }
 
   std::string to_string(){

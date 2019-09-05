@@ -38,13 +38,13 @@ class RsColumnDelete : public DispatchHandler {
 
     if(ev->type == Event::Type::DISCONNECT){
       if(!was_called)
-        cb(false);
+        cb(Error::COMM_NOT_CONNECTED);
       return;
     }
 
     if(ev->header.command == Protocol::Command::REQ_RS_COLUMN_DELETE){
       was_called = true;
-      cb(Protocol::response_code(ev) == Error::OK);
+      cb(Protocol::response_code(ev));
     }
     
   }

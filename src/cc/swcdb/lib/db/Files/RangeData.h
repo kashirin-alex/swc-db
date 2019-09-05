@@ -60,29 +60,18 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-bool save(const std::string filepath, CellStores &cellstores){
-
-  FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
-    filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+void save(int &err, const std::string filepath, CellStores &cellstores){
 
   DynamicBuffer input;
   write(input, cellstores);
   StaticBuffer send_buf(input);
-  send_buf.own=false;
 
-  int err;
-  for(;;) {
-    err = Error::OK;
-    Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
-    if (err == Error::OK)
-      return true;
-    else if(err == Error::FS_PATH_NOT_FOUND 
-            || err == Error::FS_PERMISSION_DENIED)
-    return false;
-    HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
-  }
-  send_buf.own=true;
-
+  Env::FsInterface::interface()->write(
+    err,
+    FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
+    -1, -1, 
+    send_buf
+  );
 }
 
 
@@ -104,17 +93,16 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
   }
 }
 
-bool load(const std::string filepath, CellStores &cellstores){
+void load(int &err, const std::string filepath, CellStores &cellstores){
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
 
-  int err;
   for(;;) {
     err = Error::OK;
     
     if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-      if(err != Error::OK)
+      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
         continue;
-      return false;
+      return;
     }
 
     Env::FsInterface::fs()->open(err, smartfd);
@@ -167,14 +155,10 @@ bool load(const std::string filepath, CellStores &cellstores){
 
   if(smartfd->valid())
     Env::FsInterface::fs()->close(err, smartfd);
-
-  return cellstores.size() > 0;
 }
 
-void load_by_path(const std::string cs_path, CellStores &cellstores){
-  std::cout << "Files::RangeData::load_by_path:\n";
+void load_by_path(int &err, const std::string cs_path, CellStores &cellstores){
   FS::IdEntries_t entries;
-  int err = Error::OK;
   Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
   for(auto cs_id : entries){
     CellStorePtr cs = std::make_shared<CellStore>(cs_id); 

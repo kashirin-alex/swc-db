@@ -53,17 +53,19 @@ class Range : public DB::RangeBase {
     return m_state == State::LOADED;
   }
 
-  bool load(){
+  void load(int &err){
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
     
-    if(!Env::FsInterface::interface()->exists(get_path(""))){
-      Env::FsInterface::interface()->mkdirs(get_path("log"));
-      Env::FsInterface::interface()->mkdirs(get_path("cs"));
+    if(!Env::FsInterface::interface()->exists(err, get_path(""))){
+      if(err != Error::OK)
+        return;
+      Env::FsInterface::interface()->mkdirs(err, get_path("log"));
+      Env::FsInterface::interface()->mkdirs(err, get_path("cs"));
     } 
 
     // last_rs.data
     Files::RsDataPtr rs_data = Env::RsData::get();
-    Files::RsDataPtr rs_last = get_last_rs();
+    Files::RsDataPtr rs_last = get_last_rs(err);
 
     if(rs_last->endpoints.size() > 0) {
       HT_DEBUGF("RS-LAST=%s RS-NEW=%s", 
@@ -78,14 +80,21 @@ class Range : public DB::RangeBase {
           Protocol::Req::UnloadRange(old_conn, RangeBase::shared());
       }
     }
-    if(!rs_data->set_rs(get_path(rs_data_file)))
-      return false;
+    rs_data->set_rs(err, get_path(rs_data_file));
+    if(err != Error::OK)
+      return;
     
 
     // range.data
-    if(!Files::RangeData::load(get_path(range_data_file), cellstores)) {
-      Files::RangeData::load_by_path(get_path("cs"), cellstores);
-      Files::RangeData::save(get_path(range_data_file), cellstores);
+    Files::RangeData::load(err, get_path(range_data_file), cellstores);
+    if(err != Error::OK || cellstores.size() == 0) {
+      err = Error::OK;
+      Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
+      if(err != Error::OK)
+        return;
+      Files::RangeData::save(err, get_path(range_data_file), cellstores);
+      if(err != Error::OK)
+        return;
     }
 
     int64_t ts;
@@ -122,11 +131,11 @@ class Range : public DB::RangeBase {
 
     if(is_loaded()) {
       HT_INFOF("LOADED RANGE %s", to_string().c_str());
-      return true;
+      return;
     }
     
     HT_WARNF("LOAD RANGE FAILED %s", to_string().c_str());
-    return false;
+    return;
   }
 
   void on_change(){ // range-interval || cellstores
@@ -142,11 +151,12 @@ class Range : public DB::RangeBase {
         break;
     }
 
-    Files::RangeData::save(get_path(range_data_file), cellstores);
+    int err;
+    Files::RangeData::save(err, get_path(range_data_file), cellstores);
 
   }
 
-  void unload(bool completely){
+  void unload(int &err, bool completely){
 
     // CommitLogs  
     // CellStores
@@ -221,25 +231,24 @@ class Range : public DB::RangeBase {
 
     Files::RangeData::save(get_path(range_data_file), cellstores);
     */
-
     if(completely)
-      Env::FsInterface::interface()->remove(get_path(rs_data_file));
+      Env::FsInterface::interface()->remove(err, get_path(rs_data_file));
 
     set_state(State::NOTLOADED);
 
     HT_INFOF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }
 
-  void remove(){
+  void remove(int &err){
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
   
       for(auto& cs : cellstores){
-        cs->remove();
+        cs->remove(err);
       }
 
-      Env::FsInterface::interface()->rmdir(get_path(""));
+      Env::FsInterface::interface()->rmdir(err, get_path(""));
     }
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
   }

@@ -163,7 +163,8 @@ class AppContext : public SWC::AppContext {
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
 
-    Env::RsColumns::get()->unload_all();
+    int err = Error::OK;
+    Env::RsColumns::get()->unload_all(err);
 
     mngr_root->shutting_down(
       [ptr=shared_from_this()](){

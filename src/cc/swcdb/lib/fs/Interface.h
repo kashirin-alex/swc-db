@@ -230,12 +230,12 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
   }
 
-  bool exists(const String &name) {
+  bool exists(int &err, const String &name) {
     bool state;
-    int err = Error::OK;
     for(;;) {
+      err = Error::OK;
       state = m_fs->exists(err, name);
-      if(err == Error::OK)
+      if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN)
         break;
       HT_DEBUGF("exists, retrying to err=%d(%s)", err, Error::get_text(err));
     }
@@ -246,60 +246,64 @@ class Interface : std::enable_shared_from_this<Interface>{
     Callback::ExistsCb_t cb_wrapper; 
     cb_wrapper = [cb, name, &cb_wrapper, ptr=shared_from_this()]
     (int err, bool state){ 
-      if(err != Error::OK) 
-        ptr->get_fs()->exists(cb_wrapper, name);
-      else 
+      if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN) 
         cb(err, state);
+      else 
+        ptr->get_fs()->exists(cb_wrapper, name);
     };
     m_fs->exists(cb_wrapper, name);
   }
 
-  void mkdirs(const String &name) {
-    int err = Error::OK;
+  void mkdirs(int &err, const String &name) {
     for(;;) {
+      err = Error::OK;
       m_fs->mkdirs(err, name);
-      if(err == Error::OK || err == EEXIST)
+      if(err == Error::OK || err == EEXIST 
+        || err == Error::SERVER_SHUTTING_DOWN)
         return;
       HT_DEBUGF("mkdirs, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
 
-  void rmdir(const String &name) {
-    int err = Error::OK;
+  void rmdir(int &err, const String &name) {
     for(;;) {
+      err = Error::OK;
       m_fs->rmdir(err, name);
-      if(err == Error::OK || err == EACCES || err == ENOENT)
+      if(err == Error::OK || err == EACCES || err == ENOENT
+        || err == Error::SERVER_SHUTTING_DOWN)
         return;
       HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
 
-  void remove(const String &name) {
-    int err = Error::OK;
+  void remove(int &err, const String &name) {
     for(;;) {
+      err = Error::OK;
       m_fs->remove(err, name);
-      if(err == Error::OK || err == EACCES || err == ENOENT)
+      if(err == Error::OK || err == EACCES || err == ENOENT 
+        || err == Error::SERVER_SHUTTING_DOWN)
         return;
       HT_DEBUGF("remove, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
 
+  void write(int &err, SmartFdPtr smartfd,
+             int32_t replication, int64_t blksz, 
+             StaticBuffer &buffer){
+    buffer.own=false;
+    for(;;) {
+      err = Error::OK;
+      m_fs->write(err, smartfd, -1, -1, buffer);
+      if (err == Error::OK
+          || err == Error::FS_PATH_NOT_FOUND 
+          || err == Error::FS_PERMISSION_DENIED
+          || err == Error::SERVER_SHUTTING_DOWN)
+        break;
+      HT_DEBUGF("write, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+    buffer.own=true;
+  }
   
-
-  /* 
-  void open(SmartFdPtr &smartfd, int32_t bufsz=0) {
-    int err = Error::OK;
-    do{
-      m_fs->open(err, smartfd, bufsz);
-      if(err == ENOENT || err == EACCES)
-        return;
-      if(!smartfd->valid()){
-        std::cout << " FS::open err=" << err << "\n";
-        continue;
-      }
-    } while(err != Error::OK);
-  } 
-  */
  
   private:
   Types::Fs     m_type;

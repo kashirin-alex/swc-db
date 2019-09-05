@@ -15,6 +15,10 @@ class FsClientAppCtx : public client::AppContext {
   virtual ~FsClientAppCtx(){}
     
   void handle(ConnHandlerPtr conn, EventPtr ev) override {
+    
+    if(ev->type == Event::Type::DISCONNECT)
+      return;
+      
     const uint8_t *ptr;
     size_t remain;
     if(Protocol::Req::Base().is_rsp(conn, ev, ev->header.command, &ptr, &remain))

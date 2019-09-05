@@ -38,7 +38,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   virtual ~Columns(){}
 
-  bool is_an_initialization(int64_t cid){
+  bool is_an_initialization(int &err, int64_t cid){
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -51,11 +51,11 @@ class Columns : public std::enable_shared_from_this<Columns> {
       m_columns->insert(ColumnsMapPair(cid, col));
     }
 
-    col->init();
+    col->init(err);
     return true;
   }
 
-  ColumnPtr get_column(int64_t cid, bool initialize){
+  ColumnPtr get_column(int &err, int64_t cid, bool initialize){
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -70,15 +70,15 @@ class Columns : public std::enable_shared_from_this<Columns> {
       }
     }
     if(initialize) 
-      col->init();
+      col->init(err);
     return col;
   }
 
-  RangePtr get_range(int64_t cid, int64_t rid,  bool initialize=false){
-    ColumnPtr col = get_column(cid, initialize);
+  RangePtr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
+    ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
-    return col->get_range(rid, initialize);
+    return col->get_range(err, rid, initialize);
   }
 
   RangePtr get_next_unassigned(){
@@ -119,7 +119,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return cid;
   }
 
-  void remove(int64_t cid){
+  void remove(int &err, int64_t cid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_columns->find(cid);

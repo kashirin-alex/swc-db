@@ -15,15 +15,17 @@ namespace Req {
 class MngrUpdateColumn : public DispatchHandler {
   public:
 
-  static CommBufPtr get_buf(Params::MngColumn::Function function, int64_t cid) {
-    Params::MngrUpdateColumn params(function, cid);
+  static CommBufPtr get_buf(Params::MngColumn::Function function, 
+                            int64_t cid, int err) {
+    Params::MngrUpdateColumn params(function, cid, err);
     CommHeader header(Command::MNGR_UPDATE_COLUMN, 60000);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
     return cbp;
   }
-  static void put(Params::MngColumn::Function function, int64_t cid){
-    put(get_buf(function, cid));
+  static void put(Params::MngColumn::Function function, int64_t cid, 
+                  int err=Error::OK){
+    put(get_buf(function, cid, err));
   }
   static void put(CommBufPtr cbp){
     Env::MngrRole::get()->req_mngr_inchain(

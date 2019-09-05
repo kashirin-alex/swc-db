@@ -31,7 +31,7 @@ class Range : public DB::RangeBase {
           m_state(State::NOTSET), rs_id(0) { 
   }
 
-  void init(){
+  void init(int &err){
 
   }
 

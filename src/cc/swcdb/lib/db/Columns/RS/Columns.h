@@ -32,7 +32,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   virtual ~Columns(){}
 
-  ColumnPtr get_column(int64_t cid, bool initialize){
+  ColumnPtr get_column(int &err, int64_t cid, bool initialize){
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -47,51 +47,53 @@ class Columns : public std::enable_shared_from_this<Columns> {
       }
     }
     if(initialize) 
-      col->init();
+      col->init(err);
     return col;
   }
 
-  RangePtr get_range(int64_t cid, int64_t rid,  bool initialize=false){
-    ColumnPtr col = get_column(cid, initialize);
+  RangePtr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
+    ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr || col->removing()) 
       return nullptr;
-    return col->get_range(rid, initialize);
+    return col->get_range(err, rid, initialize);
   }
 
-  void load_range(int64_t cid, int64_t rid, ResponseCallbackPtr cb){
-    RangePtr range = get_range(cid, rid, true);
-    if(range != nullptr && range->is_loaded()) {
+  void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
+    RangePtr range = get_range(err, cid, rid, true);
+    if(err != Error::OK)
+      cb->send_error(err , "");
+
+    else if(range != nullptr && range->is_loaded()) 
       cb->response_ok(); // cb->run();
-      return;
-    }
-     
-    cb->send_error(Error::RS_NOT_LOADED_RANGE , "");
+      
+    else
+      cb->send_error(Error::RS_NOT_LOADED_RANGE , "");
   }
 
-  void unload_range(int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
-    ColumnPtr col = get_column(cid, false);
+  void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
+    ColumnPtr col = get_column(err, cid, false);
     if(col != nullptr) 
-      col->unload(rid);
+      col->unload(err, rid);
     
-    cb(true);
+    cb(err);
   }
 
-  void unload_all(){
+  void unload_all(int &err){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;;){
       auto it = m_columns->begin();
       if(it == m_columns->end())
         break;
-      it->second->unload_all();
+      it->second->unload_all(err);
       m_columns->erase(it);
     }
   }
 
-  void remove(int64_t cid, Callback::ColumnDeleted_t cb){
-    ColumnPtr col = get_column(cid, false);
+  void remove(int &err, int64_t cid, Callback::ColumnDeleted_t cb){
+    ColumnPtr col = get_column(err, cid, false);
     if(col != nullptr) {
-      col->remove_all();
+      col->remove_all(err);
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_columns->find(cid);
@@ -99,7 +101,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
           m_columns->erase(it);
       }
     }
-    cb(true);
+    cb(err);
   }
   
   std::string to_string(){

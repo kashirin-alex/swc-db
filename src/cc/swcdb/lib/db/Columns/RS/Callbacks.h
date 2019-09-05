@@ -12,8 +12,8 @@ namespace SWC { namespace server { namespace RS {
   
 namespace Callback {
 
-typedef std::function<void(bool)> RangeUnloaded_t;
-typedef std::function<void(bool)> ColumnDeleted_t;
+typedef std::function<void(int)> RangeUnloaded_t;
+typedef std::function<void(int)> ColumnDeleted_t;
 
 }
 

@@ -30,8 +30,8 @@ const std::string filepath(int64_t cid){
 
 // REMOVE
 
-void remove(int64_t cid){
-  Env::FsInterface::interface()->remove(filepath(cid));
+void remove(int &err, int64_t cid){
+  Env::FsInterface::interface()->remove(err, filepath(cid));
 }
 
 // SET 
@@ -58,36 +58,25 @@ void write(SWC::DynamicBuffer &dst_buf, DB::SchemaPtr schema){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-bool save(DB::SchemaPtr schema){
-
-  FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
-    filepath(schema->cid), FS::OpenFlags::OPEN_FLAG_OVERWRITE);
-
+void save(int &err, DB::SchemaPtr schema){
   DynamicBuffer input;
   write(input, schema);
   StaticBuffer send_buf(input);
-  send_buf.own=false;
-
-  int err;
-  for(;;) {
-    err = Error::OK;
-    Env::FsInterface::fs()->write(err, smartfd, -1, -1, send_buf);
-    if (err == Error::OK)
-      return true;
-    else if(err == Error::FS_PATH_NOT_FOUND 
-            || err == Error::FS_PERMISSION_DENIED)
-    return false;
-    HT_DEBUGF("save, retrying to err=%d(%s)", err, Error::get_text(err));
-  }
-  send_buf.own=true;
+  
+  Env::FsInterface::interface()->write(
+    err,
+    FS::SmartFd::make_ptr(filepath(schema->cid), 
+                          FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
+    -1, -1, 
+    send_buf
+  );
 }
 
 
 //  GET
 
-void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
+void load(int &err, FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
 
-  int err = Error::OK;
   for(;;) {
     if(err != Error::OK)
       HT_DEBUGF("load, retrying to err=%d(%s)", err, Error::get_text(err));
@@ -95,7 +84,7 @@ void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
     err = Error::OK;
     
     if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-      if(err != Error::OK)
+      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
         continue;
       return;
     }
@@ -152,20 +141,21 @@ void load(FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
     Env::FsInterface::fs()->close(err, smartfd);
 }
 
-DB::SchemaPtr load(int64_t cid) {
+DB::SchemaPtr load(int &err, int64_t cid) {
 
   DB::SchemaPtr schema = nullptr;
   try{
-    load(FS::SmartFd::make_ptr(filepath(cid), 0), schema);
+    load(err, FS::SmartFd::make_ptr(filepath(cid), 0), schema);
   } catch (const std::exception& e) {
     HT_ERRORF("schema load exception (%s)", e.what());
     schema = nullptr;
   }
 
-  if(schema == nullptr){  // schama backups / intant create / throw ?
+  if(schema == nullptr){  // schama backups / instant create / throw ?
     HT_WARNF("Missing Column(cid=%d) Schema", cid);
     std::string name;
     if(cid < 4) {
+      err == Error::OK;
       name.append("sys_");
       if(cid == 3) {
         name.append("stats");
@@ -184,7 +174,7 @@ DB::SchemaPtr load(int64_t cid) {
 
     HT_WARNF("Missing Column(cid=%d) Schema set to %s", 
               cid, schema->to_string().c_str());
-    save(schema);
+    save(err, schema);
   }
   
   return schema;

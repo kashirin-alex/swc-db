@@ -124,12 +124,14 @@ class Schemas {
   Schemas(){}
   virtual ~Schemas(){}
   
-  void add(SchemaPtr schema){
+  void add(int &err, SchemaPtr schema){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(!m_map.insert(
-              std::pair<int64_t, SchemaPtr>(schema->cid, schema)).second)
+        std::pair<int64_t, SchemaPtr>(schema->cid, schema)).second) {
       HT_WARNF("Unable to add column %s, remove first", 
                 schema->to_string().c_str());
+      err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+    }
   }
 
   void remove(int64_t cid){
