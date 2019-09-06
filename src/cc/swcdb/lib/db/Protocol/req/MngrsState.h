@@ -6,67 +6,57 @@
 #ifndef swc_lib_db_protocol_req_MngrsState_h
 #define swc_lib_db_protocol_req_MngrsState_h
 
+#include "swcdb/lib/db/Protocol/req/ConnQueue.h"
 #include "swcdb/lib/db/Protocol/params/MngrsState.h"
-
+ 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class MngrsState : public DispatchHandler {
+class MngrsState : public ConnQueue::ReqBase {
   public:
 
-  static CommBufPtr get_buf(server::Mngr::MngrsStatus states, 
-                            uint64_t token, const EndPoint& mngr_host, 
-                            uint32_t timeout) {
+  MngrsState(ResponseCallbackPtr cb, server::Mngr::MngrsStatus &states, 
+              uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
+            : cb(cb) {
     Protocol::Params::MngrsState params(states, token, mngr_host);
     CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
-    return cbp;
-  }
-
-  MngrsState(client::ClientConPtr conn, CommBufPtr cbp,
-             ResponseCallbackPtr cb)
-            : conn(conn), cbp(cbp), cb(cb) {
   }
   
   virtual ~MngrsState() { }
-  
-  bool run(uint32_t timeout=60000) override {
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
-  }
 
-  void disconnected();
+  void disconnected(ConnHandlerPtr conn);
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
-    
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
-    
+    if(was_called)
+      return;
+
     if(ev->type == Event::Type::DISCONNECT){
-      disconnected();
+      disconnected(conn);
       return;
     }
+    if(ConnQueue::ReqBase::is_timeout(conn, ev))
+      return;
 
     if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE 
        && Protocol::response_code(ev) == Error::OK){
       if(cb != nullptr){
-        std::cout << "response_ok, cb=" << (size_t)cb.get() << " rsp, err=" << ev->to_str() << "\n";
+        //std::cout << "response_ok, cb=" << (size_t)cb.get() 
+        //          << " rsp, err=" << ev->to_str() << "\n";
         cb->response_ok();
       }
+      was_called = true;
       return;
     }
 
     conn->do_close();
-
   }
 
   private:
-  client::ClientConPtr  conn;
-  CommBufPtr            cbp;
   ResponseCallbackPtr   cb;
 };
-
-typedef std::shared_ptr<MngrsState> MngrsStatePtr;
 
 }}}
 

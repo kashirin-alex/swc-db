@@ -6,7 +6,7 @@
 #define swc_app_manager_MngrRole_h
 
 #include "swcdb/lib/client/Clients.h"
-#include <queue>
+
 #include "MngrStatus.h"
 
 namespace SWC { namespace server { namespace Mngr {
@@ -46,8 +46,6 @@ class MngrRole {
 
 namespace SWC { namespace server { namespace Mngr {
 
-typedef std::function<void(client::ClientConPtr)> ReqMngrInchain_t;
-
 
 class MngrRole {
   public:
@@ -69,7 +67,8 @@ class MngrRole {
         "swc.mngr.role.check.delay.updated")),
       cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.role.check.delay.fallback")),
-      m_checkin(false) {
+      m_checkin(false),
+      m_mngr_inchain(std::make_shared<Protocol::Req::ConnQueue>()) {
     
   }
 
@@ -132,12 +131,8 @@ class MngrRole {
     return nullptr;
   }
 
-  void req_mngr_inchain(ReqMngrInchain_t func){
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      m_mngr_inchain_queue.push(func);
-    }
-    run_mngr_inchain_queue();
+  void req_mngr_inchain(Protocol::Req::ConnQueue::ReqBase::Ptr req){
+    m_mngr_inchain->put(req);
   }
 
   bool fill_states(MngrsStatus states, uint64_t token, ResponseCallbackPtr cb){
@@ -229,26 +224,21 @@ class MngrRole {
     }
 
     {
-    std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-    if(token == 0 || !turn_around) {
-      if(token == 0)
-        token = m_local_token;
+      if(token == 0 || !turn_around) {
+        if(token == 0)
+          token = m_local_token;
 
-      req_mngr_inchain(
-        [cb, cbp=Protocol::Req::MngrsState::get_buf(
-              m_states, token, m_local_endpoints[0], 
-              (cfg_conn_probes->get() * cfg_conn_timeout->get()
-               + cfg_req_timeout->get()) * m_states.size()
-        )](client::ClientConPtr mngr) {
-          if(!(std::make_shared<Protocol::Req::MngrsState>(mngr, cbp, cb)
-              )->run())
-            Env::MngrRole::get()->timer_managers_checkin(3000);
-        }
-      );
-      return false;
+        req_mngr_inchain(std::make_shared<Protocol::Req::MngrsState>(
+          cb, m_states, token, m_local_endpoints[0], 
+          (cfg_conn_probes->get() * cfg_conn_timeout->get()
+          + cfg_req_timeout->get()) * m_states.size()
+          ));
+        //  Env::MngrRole::get()->timer_managers_checkin(3000);
+        return false;
+      }
     }
-    } // mutex-end
     
     if(cb != nullptr)
       cb->response_ok();
@@ -316,11 +306,9 @@ class MngrRole {
       m_check_timer->cancel();
       m_run = false;
     }
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      while(!m_mngr_inchain_queue.empty())
-        m_mngr_inchain_queue.pop();
-    }
+
+    m_mngr_inchain->stop();
+
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& host : m_states) {
@@ -338,9 +326,8 @@ class MngrRole {
       s.append("\n ");
       s.append(h->to_string());
     }
-    s.append("\nMngr-inchain: ");
-    s.append(m_mngr_inchain!=nullptr ?
-             client::to_string(m_mngr_inchain) : std::string("null"));
+    s.append("MngrInchain ");
+    s.append(m_mngr_inchain->to_string());
 
     s.append("\nLocal-Endpoints: ");
     for(auto& endpoint : m_local_endpoints) {
@@ -565,44 +552,10 @@ class MngrRole {
     return false;
   }
   
-  void run_mngr_inchain_queue(){
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      if(m_mngr_inchain_running)
-        return;
-      m_mngr_inchain_running = true;
-    }
-    asio::post(*Env::IoCtx::io()->ptr(), 
-      [](){
-         Env::MngrRole::get()->run_mngr_queue();
-      });
-  }
-
-  void run_mngr_queue(){
-    for(;;) {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      if(m_mngr_inchain_queue.size() == 0 
-        || m_mngr_inchain == nullptr || !m_mngr_inchain->is_open()){
-
-        m_mngr_inchain_running = false;
-        return;
-      }
-      
-      m_mngr_inchain_queue.front()(m_mngr_inchain);
-      m_mngr_inchain_queue.pop();
-    }
-  }
-
   void set_mngr_inchain(client::ClientConPtr mngr){
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex_mngr_inchain);
-      m_mngr_inchain = mngr;
-      // has_endpoint(m_mngr_inchain->endpoint_remote, m_local_endpoints);
-    }
-    
-    run_mngr_inchain_queue();
+    m_mngr_inchain->set(mngr);
+
     fill_states();
-    
     m_checkin=0;
     timer_managers_checkin(cfg_check_interval->get());
   }
@@ -622,10 +575,7 @@ class MngrRole {
   TimerPtr                     m_check_timer; 
   bool                         m_run=true; 
   
-  std::recursive_mutex         m_mutex_mngr_inchain;
-  std::queue<ReqMngrInchain_t> m_mngr_inchain_queue;
-  client::ClientConPtr         m_mngr_inchain = nullptr;
-  bool                         m_mngr_inchain_running = 0;
+  Protocol::Req::ConnQueuePtr  m_mngr_inchain;
 
 
   const gInt32tPtr cfg_conn_probes;
@@ -643,7 +593,7 @@ class MngrRole {
 
 
 namespace Protocol { namespace Req {
-  void MngrsState::disconnected() {
+  void MngrsState::disconnected(ConnHandlerPtr conn) {
     Env::MngrRole::get()->disconnection(
       conn->endpoint_remote, conn->endpoint_local);
   }

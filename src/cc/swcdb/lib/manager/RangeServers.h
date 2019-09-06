@@ -97,9 +97,8 @@ class RangeServers {
     if(m_root_mngr)
       columns_load();
     else
-      Protocol::Req::MngrUpdateColumn::put(
+      column_update(
         Protocol::Params::MngColumn::Function::INTERNAL_LOAD_ALL, -1);
-    
   }
 
   virtual ~RangeServers(){}
@@ -211,13 +210,13 @@ class RangeServers {
         } else if(m_root_mngr){
           update_status(co_func, cid, err);
         } else {
-          Protocol::Req::MngrUpdateColumn::put(co_func, cid, err);
+          column_update(co_func, cid, err);
         }
       }
       return;
     }
     
-    Protocol::Req::MngrUpdateColumn::put(func, cid, err);
+    column_update(func, cid, err);
   }
 
   // RangeServer Actions
@@ -701,7 +700,7 @@ class RangeServers {
       
       ColumnFunction pending;
       while(column_load_pending(range->cid, pending))
-        Protocol::Req::MngrUpdateColumn::put(pending.func, pending.cid);
+        column_update(pending.func, pending.cid);
     }
 
     HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
@@ -752,7 +751,10 @@ class RangeServers {
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       if(hosts.size() > 0){
-        Protocol::Req::MngrUpdateRangeServers::put(hosts, sync_all);
+        Env::MngrRole::get()->req_mngr_inchain(
+          std::make_shared<Protocol::Req::MngrUpdateRangeServers>(
+          hosts, sync_all));
+
         std::cout << " rs_changes: \n";
         for(auto& h : hosts)
           std::cout << " " << h->to_string() << "\n";
@@ -774,7 +776,7 @@ class RangeServers {
   void columns_load_chk_ack(){
     for(auto& ack : m_cid_pending_load){
       if(ack.func == Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD){
-        Protocol::Req::MngrUpdateColumn::put(
+        column_update(
           Protocol::Params::MngColumn::Function::INTERNAL_LOAD, ack.cid);
       }
     }
@@ -875,7 +877,7 @@ class RangeServers {
     ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr || col->finalize_remove(err, rs_id)) {
       Env::MngrColumns::get()->remove(err, cid);
-      Protocol::Req::MngrUpdateColumn::put(
+      column_update(
         Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid, err);
     }
   }
@@ -944,6 +946,11 @@ class RangeServers {
     }
   }
 
+  void column_update(Protocol::Params::MngColumn::Function func,
+                     int64_t cid, int err=Error::OK){
+    Env::MngrRole::get()->req_mngr_inchain(
+      std::make_shared<Protocol::Req::MngrUpdateColumn>(func, cid, err));
+  }
 
 
 
