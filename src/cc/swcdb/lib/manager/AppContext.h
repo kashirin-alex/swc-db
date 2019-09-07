@@ -14,6 +14,8 @@
 
 #include "swcdb/lib/fs/Interface.h"
 
+#include "swcdb/lib/db/Protocol/req/ConnQueue.h"
+
 #include "swcdb/lib/db/Columns/Schema.h"
 
 #include "MngrRole.h"
