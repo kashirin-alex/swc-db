@@ -6,55 +6,57 @@
 #ifndef swc_lib_db_protocol_req_RsColumnDelete_h
 #define swc_lib_db_protocol_req_RsColumnDelete_h
 
-#include "Callbacks.h"
 #include "swcdb/lib/db/Protocol/params/ColumnId.h"
 
-namespace SWC {
-namespace Protocol {
-namespace Req {
+namespace SWC { namespace Protocol { namespace Req {
+  
 
-class RsColumnDelete : public DispatchHandler {
+class RsColumnDelete : public ConnQueue::ReqBase  {
   public:
 
-  RsColumnDelete(client::ClientConPtr conn, int64_t cid, 
-            Callback::RsColumnDelete_t cb)
-            : conn(conn), cid(cid), cb(cb), was_called(false) { }
+  RsColumnDelete(server::Mngr::RsStatusPtr rs, int64_t cid) 
+                : ConnQueue::ReqBase(false), rs(rs), cid(cid) { 
+      
+    Params::ColumnId params = Params::ColumnId(cid);
+    CommHeader header(Command::REQ_RS_COLUMN_DELETE, 60000);
+    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+    params.encode(cbp->get_data_ptr_address());
+  }
   
   virtual ~RsColumnDelete() { }
   
-  bool run(uint32_t timeout=60000) override {
-    Protocol::Params::ColumnId params = Protocol::Params::ColumnId(cid);
-    
-    CommHeader header(Protocol::Command::REQ_RS_COLUMN_DELETE, timeout);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
 
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
-  }
+    if(was_called)
+      return;
 
-  void handle(ConnHandlerPtr conn_ptr, EventPtr &ev) {
-      
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
-
-    if(ev->type == Event::Type::DISCONNECT){
-      if(!was_called)
-        cb(Error::COMM_NOT_CONNECTED);
+    if(ev->type == Event::Type::DISCONNECT) {
+      handle_no_conn();
       return;
     }
 
-    if(ev->header.command == Protocol::Command::REQ_RS_COLUMN_DELETE){
-      was_called = true;
-      cb(Protocol::response_code(ev));
+    if(ev->header.command == Command::REQ_RS_COLUMN_DELETE){
+      int err = ev->error != Error::OK ? ev->error : response_code(ev);
+      if(err == Error::OK) {
+        was_called = true;
+        remove(err);
+      } else 
+        request_again();
+      return;
     }
-    
   }
 
+  void handle_no_conn() override { 
+    remove(Error::OK);
+  }
+  
+  void remove(int err);
+
+
   private:
-  client::ClientConPtr  conn;
-  int64_t               cid;
-  Callback::RsColumnDelete_t cb;
-  std::atomic<bool>     was_called;
-   
+
+  server::Mngr::RsStatusPtr   rs;
+  int64_t                     cid;
 };
 
 }}}

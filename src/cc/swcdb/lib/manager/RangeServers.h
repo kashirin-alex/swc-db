@@ -13,14 +13,15 @@
 #include "RsStatus.h"
 
 #include "swcdb/lib/db/Files/Schema.h"
-#include "swcdb/lib/db/Protocol/params/MngColumn.h"
 
-#include "swcdb/lib/db/Protocol/req/LoadRange.h"
+#include "swcdb/lib/db/Protocol/req/RsLoadRange.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
+#include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
+
+#include "swcdb/lib/db/Protocol/params/MngColumn.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateColumn.h"
-#include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -53,6 +54,8 @@ class RangeServers {
   inline static std::shared_ptr<RangeServers> m_env = nullptr;
 };
 }
+
+
 
 namespace server { namespace Mngr {
 
@@ -386,6 +389,52 @@ class RangeServers {
     }
   }
 
+
+  void assign_range(RsStatusPtr rs, RangePtr range){
+    rs->put(std::make_shared<Protocol::Req::RsLoadRange>(rs, range));
+  }
+
+  void range_loaded(RsStatusPtr rs, RangePtr range, 
+                    bool loaded, bool failure=false) {
+    if(range->deleted())
+      return;
+
+    if(!loaded){
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        rs->total_ranges--;
+        if(failure)
+          rs->failures++;
+      }
+      range->set_state(Range::State::NOTSET, 0); 
+      check_assignment_timer(2000);
+
+    } else {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        rs->failures=0;
+      }
+      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
+      // adjust rs->resource
+      // ++ mng_inchain - req. MngrRsResource
+      
+      ColumnFunction pending;
+      while(column_load_pending(range->cid, pending))
+        column_update(pending.func, pending.cid);
+    }
+
+    HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
+  }
+
+  void column_delete(int &err, int64_t cid, int64_t rs_id) {
+    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
+    if(col == nullptr || col->finalize_remove(err, rs_id)) {
+      Env::MngrColumns::get()->remove(err, cid);
+      column_update(
+        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid, err);
+    }
+  }
+
   private:
 
   bool manage(int64_t cid){
@@ -638,72 +687,12 @@ class RangeServers {
     }
     if(rs_last == nullptr){
       rs_last = std::make_shared<RsStatus>(0, last_rs->endpoints);
-      rs_last->init_queue();
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
       m_rs_status.push_back(rs_last);
     }
 
-    rs_last->put(
-      [rs, range](client::ClientConPtr conn){
-        if(conn == nullptr || !(std::make_shared<Protocol::Req::RsIdReqNeeded>(
-          conn, [rs, range](bool err) {     
-            err ? Env::RangeServers::get()->assign_range(rs, range)
-                : Env::RangeServers::get()->range_loaded(rs, range, false);
-          }))->run()) {
-          Env::RangeServers::get()->assign_range(rs, range);
-        }
-      }
-    );
-  }
-
-  void assign_range(RsStatusPtr rs, RangePtr range){
-    rs->put(
-      [rs, range](client::ClientConPtr conn){
-        if(range->deleted()
-          || conn == nullptr 
-          || !(std::make_shared<Protocol::Req::LoadRange>(
-              conn, range, 
-              [rs, range](bool loaded){
-                Env::RangeServers::get()->range_loaded(rs, range, loaded); 
-              }
-          ))->run()) {
-          Env::RangeServers::get()->range_loaded(rs, range, false, true);
-        }
-      }
-    );
-  }
-
-  void range_loaded(RsStatusPtr rs, RangePtr range, 
-                    bool loaded, bool failure=false) { // + resource_chg
-    if(range->deleted())
-      return;
-
-    if(!loaded){
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        rs->total_ranges--;
-        if(failure)
-          rs->failures++;
-      }
-      range->set_state(Range::State::NOTSET, 0); 
-      check_assignment_timer(2000);
-
-    } else {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        rs->failures=0;
-      }
-      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
-      // adjust rs->resource
-      // ++ mng_inchain - req. MngrRsResource
-      
-      ColumnFunction pending;
-      while(column_load_pending(range->cid, pending))
-        column_update(pending.func, pending.cid);
-    }
-
-    HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
+    rs_last->put(std::make_shared<Protocol::Req::RsIdReqNeeded>(rs, range));
   }
 
   RsStatusPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
@@ -851,34 +840,9 @@ class RangeServers {
       for(auto& rs : m_rs_status){
         if(rs_id != rs->rs_id)
           continue;
-        rs->total_ranges--; 
-
-        RsQueue::ConnCb_t cb;
-        cb = [rs, cid, cb = &cb](client::ClientConPtr conn){
-          if(conn == nullptr || !(
-             std::make_shared<Protocol::Req::RsColumnDelete>(conn, cid, 
-              [rs, cid, cb](int err){
-                if(err == Error::OK)  
-                  Env::RangeServers::get()->column_delete(err, cid, rs->rs_id);  
-                else    
-                  rs->put(*cb);
-              }
-          ))->run()) {
-            int err = Error::OK;
-            Env::RangeServers::get()->column_delete(err, cid, rs->rs_id);
-          }
-        };
-        rs->put(cb);
+        rs->total_ranges--;
+        rs->put(std::make_shared<Protocol::Req::RsColumnDelete>(rs, cid));
       }
-    }
-  }
-
-  void column_delete(int &err, int64_t cid, int64_t rs_id) {
-    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
-    if(col == nullptr || col->finalize_remove(err, rs_id)) {
-      Env::MngrColumns::get()->remove(err, cid);
-      column_update(
-        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid, err);
     }
   }
 
@@ -982,7 +946,26 @@ class RangeServers {
   
 };
 
+}} // namespace server
 
-}}}
+
+
+void Protocol::Req::RsLoadRange::loaded(int err, bool failure) {
+  Env::RangeServers::get()->range_loaded(rs, range, err == Error::OK, failure);
+}
+
+void Protocol::Req::RsIdReqNeeded::rsp(int err) {
+  if(err == Error::OK)
+    Env::RangeServers::get()->range_loaded(rs, range, false);
+  else
+    Env::RangeServers::get()->assign_range(rs, range);
+}
+
+void Protocol::Req::RsColumnDelete::remove(int err) {
+  Env::RangeServers::get()->column_delete(err, cid, rs->rs_id);  
+}
+
+
+}
 
 #endif // swc_lib_manager_RangeServers_h

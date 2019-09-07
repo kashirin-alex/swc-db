@@ -51,7 +51,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     }
 
     void request_again() {
-      std::cout << "ConnQueue request_again \n";
       queue->put(std::dynamic_pointer_cast<ReqBase>(shared_from_this()));
     }
 
@@ -88,8 +87,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void stop() {
-    
-    std::cout << " ConnQueue stop\n";
     ReqBase::Ptr req;
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -106,7 +103,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void put(ReqBase::Ptr req){
-    std::cout << " ConnQueue put " << req->to_string() << "\n";
     if(req->queue == nullptr) 
       req->queue = shared_from_this();
     {
@@ -123,7 +119,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void set(client::ClientConPtr conn){
-    std::cout << " ConnQueue set " << client::to_string(conn) << "\n";
     {
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
       m_conn = conn;
@@ -133,13 +128,13 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   const std::string to_string() {
-    std::string s("ConnQueue: ");
+    std::string s("ConnQueue:");
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    s.append("size=");
+    s.append(" size=");
     s.append(std::to_string(m_queue.size()));
-    s.append(" ");
-    s.append(m_conn!=nullptr?client::to_string(m_conn):std::string("null"));
+    s.append(" conn=");
+    s.append(m_conn!=nullptr?m_conn->endpoint_remote_str():std::string("no"));
     return s;
   }
 

@@ -65,7 +65,7 @@ class Range : public DB::RangeBase {
   
   void set_deleted(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_state = Range::State::DELETED;
+    m_state = State::DELETED;
   }
 
   uint64_t get_rs_id(){

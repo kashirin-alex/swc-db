@@ -6,47 +6,52 @@
 #ifndef swc_lib_db_protocol_req_RsIdReqNeeded_h
 #define swc_lib_db_protocol_req_RsIdReqNeeded_h
 
-#include "Callbacks.h"
+namespace SWC { namespace Protocol { namespace Req {
+  
 
-namespace SWC {
-namespace Protocol {
-namespace Req {
-
-class RsIdReqNeeded : public DispatchHandler {
+class RsIdReqNeeded : public ConnQueue::ReqBase {
   public:
 
-  RsIdReqNeeded(client::ClientConPtr conn, Callback::RsIdReqNeeded_t cb)
-                : conn(conn), cb(cb), was_called(false) { }
+  RsIdReqNeeded(server::Mngr::RsStatusPtr rs, server::Mngr::RangePtr range) 
+                : ConnQueue::ReqBase(false), rs(rs), range(range) {
+    CommHeader header(Command::REQ_RS_ASSIGN_ID_NEEDED, 60000);
+    cbp = std::make_shared<CommBuf>(header, 0);
+  }
   
   virtual ~RsIdReqNeeded() { }
-  
-  bool run(uint32_t timeout=60000) override {
-    CommHeader header(Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED, timeout);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, 0);
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
-  }
 
-  void handle(ConnHandlerPtr conn_ptr, EventPtr &ev) {
-    
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
-    
-    if(ev->type == Event::Type::DISCONNECT){
-      if(!was_called)
-        cb(false);
+  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+
+    if(was_called)
+      return;
+    was_called = true;
+
+    if(!valid() || ev->type == Event::Type::DISCONNECT) {
+      handle_no_conn();
       return;
     }
 
-    if(ev->header.command == Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED){
-      was_called = true;
-      cb(Protocol::response_code(ev) == Error::OK);
+    if(ev->header.command == Command::REQ_RS_ASSIGN_ID_NEEDED){
+      rsp(ev->error != Error::OK ? ev->error : response_code(ev));
+      return;
     }
-
   }
 
+  bool valid() override {
+    return !range->deleted();
+  }
+
+  void handle_no_conn() override {
+    rsp(Error::COMM_NOT_CONNECTED);
+  };
+
+  void rsp(int err);
+
+
   private:
-  client::ClientConPtr      conn;
-  Callback::RsIdReqNeeded_t cb;
-  std::atomic<bool>         was_called;
+
+  server::Mngr::RsStatusPtr rs;
+  server::Mngr::RangePtr    range;
 };
 
 }}}
