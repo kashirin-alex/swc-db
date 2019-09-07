@@ -59,6 +59,16 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
     virtual void handle_no_conn() {}
 
+    const std::string to_string(){
+      std::string s("ReqBase ");
+      s.append(" called=");
+      s.append(std::to_string(was_called.load()));
+      s.append(" insistent=");
+      s.append(std::to_string(insistent));
+      s.append(" command=");
+      s.append(std::to_string((int64_t)cbp->header.command));
+      return s;
+    }
     
     CommBufPtr            cbp;
     std::atomic<bool>     was_called;
@@ -67,38 +77,57 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   };
 
 
-  ConnQueue() : m_conn(nullptr), m_queue_running(false) { }
+  ConnQueue() : m_conn(nullptr), 
+                m_queue_running(false), 
+                m_connecting(false) { }
 
   virtual ~ConnQueue() { }
 
-  bool connection(){
-    std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    return m_conn != nullptr && m_conn->is_open();
+  virtual bool connect() { 
+    return false; // not implemented by default 
   }
 
   void stop() {
+    
+    std::cout << " ConnQueue stop\n";
+    ReqBase::Ptr req;
+
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    while(!m_queue.empty())
-      m_queue.pop();
-  
+
     if(m_conn != nullptr && m_conn->is_open())
       m_conn->do_close();
+
+    while(!m_queue.empty()) {
+      req = m_queue.front();
+      m_queue.pop();
+      if(!req->insistent && !req->was_called)
+        req->handle_no_conn();
+    }
   }
 
   void put(ReqBase::Ptr req){
+    std::cout << " ConnQueue put " << req->to_string() << "\n";
     if(req->queue == nullptr) 
       req->queue = shared_from_this();
     {
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
       m_queue.push(req);
+      if(m_conn == nullptr || !m_conn->is_open())
+        if(m_connecting)
+          return;
+        m_connecting = true;
+        if(connect())
+          return;
     }
     exec_queue();
   }
 
   void set(client::ClientConPtr conn){
+    std::cout << " ConnQueue set " << client::to_string(conn) << "\n";
     {
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
       m_conn = conn;
+      m_connecting = false;
     }
     exec_queue();
   }
@@ -129,33 +158,39 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void run_queue(){
-    ReqBase::Ptr req;
-
+    ReqBase::Ptr          req;
+    client::ClientConPtr  conn;
+    bool sent;
     for(;;) {
       {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
-        if(m_queue.empty() || m_conn == nullptr || !m_conn->is_open()){
+        if(m_queue.empty()){
+          m_queue_running = false;
+          return;
+        } 
+        req = m_queue.front();
+        if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
           m_queue_running = false;
           return;
         }
-        req = m_queue.front();
+        conn = m_conn;
       }
       
       HT_ASSERT(req->cbp != nullptr);
 
       if(!req->valid() 
-        || m_conn->send_request(req->cbp, req) == Error::OK 
+        || (sent = (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK)) 
         || !req->insistent){
 
-        if(!req->insistent)
+        if(!sent && !req->insistent)
           req->handle_no_conn();
 
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         m_queue.pop();
         m_queue_running = !m_queue.empty();
-        if(!m_queue_running) 
-          return;
-        continue;
+        if(m_queue_running) 
+          continue;
+        return;
       }
   
     }
@@ -165,6 +200,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   std::queue<ReqBase::Ptr>  m_queue;
   client::ClientConPtr      m_conn;
   bool                      m_queue_running;
+  bool                      m_connecting;
 };
 
 
