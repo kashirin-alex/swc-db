@@ -63,16 +63,19 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   virtual ~ServerConnections(){}
 
   void reusable(ClientConPtr &conn, bool preserve) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_conns.empty())
-      return;
-    conn = m_conns.front();
-    if(conn->is_open()){
-      if(preserve)
+    for(;;){
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_conns.empty())
         return;
-    } else
+      conn = m_conns.front();
+      if(conn->is_open()){
+        if(!preserve)
+          m_conns.pop();
+        return; 
+      }
+      m_conns.pop();
       conn = nullptr;
-    m_conns.pop();
+    }
     // else
     //  HT_DEBUGF("Reusing connection: %s, %s", 
     //             m_srv_name.c_str(), to_string(conn).c_str());
