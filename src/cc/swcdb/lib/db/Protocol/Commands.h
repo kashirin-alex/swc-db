@@ -10,24 +10,24 @@
 namespace SWC { namespace Protocol {
 
   enum Command {
-    MNGR_REQ_MNGRS_STATE,
-    CLIENT_REQ_ACTIVE_MNGR,
+    MNGR_REQ_MNGRS_STATE        = 0x00,
+    CLIENT_REQ_ACTIVE_MNGR      = 0x01,
     
-    REQ_MNGR_MNG_RS_ID,
+    REQ_MNGR_MNG_RS_ID          = 0x02,
 
-    REQ_RS_ASSIGN_ID_NEEDED,
-    REQ_RS_IS_RANGE_LOADED,
-    REQ_RS_LOAD_RANGE,
-    REQ_RS_UNLOAD_RANGE,
-    REQ_RS_COLUMN_DELETE,
+    REQ_RS_ASSIGN_ID_NEEDED     = 0x03,
+    REQ_RS_IS_RANGE_LOADED      = 0x04,
+    REQ_RS_LOAD_RANGE           = 0x05,
+    REQ_RS_UNLOAD_RANGE         = 0x06,
+    REQ_RS_COLUMN_DELETE        = 0x07,
     
-    MNGR_UPDATE_RANGESERVERS,
-    MNGR_UPDATE_COLUMN,
+    MNGR_UPDATE_RANGESERVERS    = 0x08,
+    MNGR_UPDATE_COLUMN          = 0x09,
 
-    CLIENT_REQ_MNG_COLUMN,
-    CLIENT_REQ_GET_COLUMN,
+    CLIENT_REQ_MNG_COLUMN       = 0x0a,
+    CLIENT_REQ_GET_COLUMN       = 0x0b,
 
-    REQ_ECHO,
+    REQ_ECHO                    = 0xff,      
     //
 
     RS_RSP_SCAN,
