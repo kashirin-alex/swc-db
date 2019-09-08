@@ -85,7 +85,8 @@ class RangeServers {
       cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.interval.check")),
       cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.due")) { }
+        "swc.mngr.ranges.assign.due")) { 
+  }
 
   void new_columns() {
     {
@@ -397,11 +398,11 @@ class RangeServers {
   }
 
   void range_loaded(RsStatusPtr rs, RangePtr range, 
-                    bool loaded, bool failure=false) {
+                    int err, bool failure=false) {
     bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
     if(!range->deleted()) {
-      if(!loaded){
+      if(err != Error::OK){
         {
           std::lock_guard<std::mutex> lock(m_mutex_rs_status);
           rs->total_ranges--;
@@ -427,7 +428,8 @@ class RangeServers {
           column_update(pending.func, pending.cid);
       }
 
-      HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
+      HT_INFOF("RANGE-STATUS %d(%s), %s", 
+                err, Error::get_text(err), range->to_string().c_str());
     }
 
     if(run_assign)
@@ -969,12 +971,14 @@ class RangeServers {
 
 
 void Protocol::Req::RsLoadRange::loaded(int err, bool failure) {
-  Env::RangeServers::get()->range_loaded(rs, range, err == Error::OK, failure);
+  Env::RangeServers::get()->range_loaded(rs, range, err, failure);
 }
 
 void Protocol::Req::RsIdReqNeeded::rsp(int err) {
-  if(err == Error::OK)
-    Env::RangeServers::get()->range_loaded(rs, range, false);
+  if(err == Error::OK) 
+  // RsId assignment on the way, put range back as not assigned 
+    Env::RangeServers::get()->range_loaded(
+      rs, range, Error::RS_NOT_LOADED_RANGE);
   else
     Env::RangeServers::get()->assign_range(rs, range);
 }
