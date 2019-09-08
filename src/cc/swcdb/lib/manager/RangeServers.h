@@ -85,9 +85,7 @@ class RangeServers {
       cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.interval.check")),
       cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.due")),
-      cfg_assign_due_delay(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.due.delay")) { }
+        "swc.mngr.ranges.assign.due")) { }
 
   void new_columns() {
     {
@@ -212,7 +210,7 @@ class RangeServers {
             std::lock_guard<std::mutex> lock(m_mutex_columns);
             m_cid_pending_load.push_back({.func=co_func, .cid=cid});
           }
-          check_assignment();
+          assign_ranges();
         } else if(m_root_mngr){
           HT_ASSERT(cid != 0);
           update_status(co_func, cid, err);
@@ -400,36 +398,40 @@ class RangeServers {
 
   void range_loaded(RsStatusPtr rs, RangePtr range, 
                     bool loaded, bool failure=false) {
-    m_assignments--;
-    if(range->deleted())
-      return;
+    bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
-    if(!loaded){
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        rs->total_ranges--;
-        if(failure)
-          rs->failures++;
-      }
-      range->set_state(Range::State::NOTSET, 0); 
-      check_assignment_timer(2000);
+    if(!range->deleted()) {
+      if(!loaded){
+        {
+          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+          rs->total_ranges--;
+          if(failure)
+            rs->failures++;
+        }
+        range->set_state(Range::State::NOTSET, 0); 
+        if(!run_assign) 
+          check_assignment_timer(2000);
 
-    } else {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
-        rs->failures=0;
-      }
-      range->set_state(Range::State::ASSIGNED, rs->rs_id); 
-      range->clear_last_rs();
-      // adjust rs->resource
-      // ++ mng_inchain - req. MngrRsResource
+      } else {
+        {
+          std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+          rs->failures=0;
+        }
+        range->set_state(Range::State::ASSIGNED, rs->rs_id); 
+        range->clear_last_rs();
+        // adjust rs->resource
+        // ++ mng_inchain - req. MngrRsResource
       
-      ColumnFunction pending;
-      while(column_load_pending(range->cid, pending))
-        column_update(pending.func, pending.cid);
+        ColumnFunction pending;
+        while(column_load_pending(range->cid, pending))
+          column_update(pending.func, pending.cid);
+      }
+
+      HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
     }
 
-    HT_DEBUGF("RANGE-STATUS, %s", range->to_string().c_str());
+    if(run_assign)
+      assign_ranges();
   }
 
   void column_delete(int &err, int64_t cid, int64_t rs_id) {
@@ -476,21 +478,7 @@ class RangeServers {
     }
 
     // if(m_root_mngr) (scheduled on column changes ) + chk(cid) LOAD_ACK
-
-    int64_t assigned = 0;
-    assign_ranges(assigned);
-    if(assigned == -1) {
-      check_assignment_timer(10000);
-      return;
-    } if(assigned == -2) {
-      check_assignment_timer(cfg_assign_due_delay->get());
-      return;
-    } else if(assigned == -3)
-      return;
-
-    // for rangeserver cid-rid state
-
-    check_assignment_timer(cfg_chk_assign->get());
+    assign_ranges();
   }
 
   void check_assignment_timer(uint32_t t_ms = 10000) {
@@ -580,16 +568,20 @@ class RangeServers {
     return true;
   }
 
-  void assign_ranges(int64_t &assigned) {
+  void assign_ranges() {
     {
       std::lock_guard<std::mutex> lock(m_mutex_assign);
-      if(m_runs_assign) {
-        assigned = -3;
+      if(m_runs_assign) 
         return;
-      }
       m_runs_assign = true;
     }
+    
+    asio::post(*Env::IoCtx::io()->ptr(), 
+      [](){ Env::RangeServers::get()->assign_ranges_run(); }
+    );
+  }
 
+  void assign_ranges_run() {
     int err;
     RangePtr range;
 
@@ -599,14 +591,14 @@ class RangeServers {
         std::lock_guard<std::mutex> lock(m_mutex_rs_status);
         if(m_rs_status.empty() || !m_run){
           m_runs_assign = false;
-          assigned = -1;
+          check_assignment_timer();
           return;
         }
       }
 
       if((range = Env::MngrColumns::get()->get_next_unassigned()) == nullptr){
         m_runs_assign = false;
-        return;
+        break;
       }
 
       err = Error::OK;
@@ -615,20 +607,20 @@ class RangeServers {
       next_rs(last_rs, rs);
       if(rs == nullptr){
         m_runs_assign = false;
-        assigned = -1;
+        check_assignment_timer();
         return;
       }
 
       range->set_state(Range::State::QUEUED, rs->rs_id);
       assign_range(rs, range, last_rs);
-      assigned++;
       if(++m_assignments > cfg_assign_due->get()){
         m_runs_assign = false;
-        assigned = -2;
         return;
       }
-
     }
+
+    // balance/check-assigments if not runs :for rangeserver cid-rid state
+    check_assignment_timer(cfg_chk_assign->get());
   }
 
   void next_rs(Files::RsDataPtr &last_rs, RsStatusPtr &rs_set){
@@ -969,7 +961,6 @@ class RangeServers {
   const gInt32tPtr cfg_delay_cols_init;
   const gInt32tPtr cfg_chk_assign;
   const gInt32tPtr cfg_assign_due;
-  const gInt32tPtr cfg_assign_due_delay;
   
 };
 
