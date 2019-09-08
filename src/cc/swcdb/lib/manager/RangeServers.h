@@ -83,8 +83,11 @@ class RangeServers {
       cfg_delay_cols_init(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.delay.afterColumnsInit")),
       cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.interval.check")) {
-  }
+        "swc.mngr.ranges.assign.interval.check")),
+      cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.due")),
+      cfg_assign_due_delay(Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.due.delay")) { }
 
   void new_columns() {
     {
@@ -211,6 +214,7 @@ class RangeServers {
           }
           check_assignment();
         } else if(m_root_mngr){
+          HT_ASSERT(cid != 0);
           update_status(co_func, cid, err);
         } else {
           column_update(co_func, cid, err);
@@ -396,6 +400,7 @@ class RangeServers {
 
   void range_loaded(RsStatusPtr rs, RangePtr range, 
                     bool loaded, bool failure=false) {
+    m_assignments--;
     if(range->deleted())
       return;
 
@@ -415,6 +420,7 @@ class RangeServers {
         rs->failures=0;
       }
       range->set_state(Range::State::ASSIGNED, rs->rs_id); 
+      range->clear_last_rs();
       // adjust rs->resource
       // ++ mng_inchain - req. MngrRsResource
       
@@ -476,7 +482,10 @@ class RangeServers {
     if(assigned == -1) {
       check_assignment_timer(10000);
       return;
-    } else if(assigned == -2)
+    } if(assigned == -2) {
+      check_assignment_timer(cfg_assign_due_delay->get());
+      return;
+    } else if(assigned == -3)
       return;
 
     // for rangeserver cid-rid state
@@ -523,7 +532,7 @@ class RangeServers {
     }
 
     m_root_mngr = manage(1);
-
+    DB::SchemaPtr schema;
     {
       std::lock_guard<std::mutex> lock1(m_mutex);
       std::lock_guard<std::mutex> lock2(m_mutex_columns);
@@ -557,7 +566,9 @@ class RangeServers {
       }
       for(auto cid : entries) {
         err = Error::OK;
-        Env::Schemas::get()->add(err, Files::Schema::load(err, cid));
+        schema = Files::Schema::load(err, cid);
+        if(err == Error::OK)
+          Env::Schemas::get()->add(err, schema);
         if(err !=  Error::OK)
           HT_WARNF("Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
       }
@@ -573,7 +584,7 @@ class RangeServers {
     {
       std::lock_guard<std::mutex> lock(m_mutex_assign);
       if(m_runs_assign) {
-        assigned = -2;
+        assigned = -3;
         return;
       }
       m_runs_assign = true;
@@ -611,6 +622,12 @@ class RangeServers {
       range->set_state(Range::State::QUEUED, rs->rs_id);
       assign_range(rs, range, last_rs);
       assigned++;
+      if(++m_assignments > cfg_assign_due->get()){
+        m_runs_assign = false;
+        assigned = -2;
+        return;
+      }
+
     }
   }
 
@@ -757,9 +774,11 @@ class RangeServers {
   void columns_load(){
     std::vector<int64_t> entries;
     Env::Schemas::get()->ids(entries);
-    for(auto& cid : entries)
+    for(auto& cid : entries) {
+      HT_ASSERT(cid != 0);
       update_status(Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid,
                     Error::OK, true);
+    }
   }
 
   void columns_load_chk_ack(){
@@ -803,15 +822,19 @@ class RangeServers {
     if(err != Error::OK)
       return;
 
-    Files::Schema::save(err, DB::Schema::make(cid, schema));
-    if(err == Error::OK){
+    DB::SchemaPtr schema_save = DB::Schema::make(cid, schema);
+    Files::Schema::save(err, schema_save);
+    if(err == Error::OK) {
       DB::SchemaPtr schema_new = Files::Schema::load(err, cid);
-      if(err == Error::OK){
-        Env::Schemas::get()->add(err, schema_new);
-        if(err == Error::OK) {
-          schema = Env::Schemas::get()->get(cid);
-          return;
+      if(err == Error::OK) {
+        if(schema_save == schema_new) {
+          Env::Schemas::get()->add(err, schema_new);
+          if(err == Error::OK) {
+            schema = Env::Schemas::get()->get(cid);
+            return;
+          }
         }
+        err == Error::COLUMN_SCHEMA_BAD_SAVE;
       }
     }
     Column::remove(err, cid);
@@ -889,6 +912,7 @@ class RangeServers {
           std::lock_guard<std::mutex> lock(m_mutex_columns);
           m_cid_pending.push_back(req);
         }
+        HT_ASSERT(req.params.schema->cid != 0);
         update_status(req.params.function, req.params.schema->cid, err, true);
 
       } else {
@@ -934,6 +958,7 @@ class RangeServers {
 
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign = false;
+  std::atomic<int>              m_assignments = 0; 
 
   std::atomic<bool>             m_root_mngr = false;
   std::atomic<bool>             m_run = true; 
@@ -943,6 +968,8 @@ class RangeServers {
   const gInt32tPtr cfg_delay_rs_chg;
   const gInt32tPtr cfg_delay_cols_init;
   const gInt32tPtr cfg_chk_assign;
+  const gInt32tPtr cfg_assign_due;
+  const gInt32tPtr cfg_assign_due_delay;
   
 };
 
