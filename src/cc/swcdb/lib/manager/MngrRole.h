@@ -5,8 +5,6 @@
 #ifndef swc_app_manager_MngrRole_h
 #define swc_app_manager_MngrRole_h
 
-#include "swcdb/lib/client/Clients.h"
-
 #include "MngrStatus.h"
 
 namespace SWC { namespace server { namespace Mngr {
@@ -326,7 +324,7 @@ class MngrRole {
       s.append("\n ");
       s.append(h->to_string());
     }
-    s.append("MngrInchain ");
+    s.append("\nMngrInchain ");
     s.append(m_mngr_inchain->to_string());
 
     s.append("\nLocal-Endpoints: ");

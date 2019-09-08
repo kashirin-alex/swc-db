@@ -13,8 +13,7 @@
 #include "swcdb/lib/core/comm/DispatchHandler.h"
 
 #include "swcdb/lib/fs/Interface.h"
-
-#include "swcdb/lib/db/Protocol/req/ConnQueue.h"
+#include "swcdb/lib/client/Clients.h"
 
 #include "swcdb/lib/db/Columns/Schema.h"
 
