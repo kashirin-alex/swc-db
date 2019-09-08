@@ -81,7 +81,7 @@ namespace {
     { Error::COLUMN_SCHEMA_NAME_NOT_EXISTS, "Schema column name doesn't exist!"},
     { Error::COLUMN_UNKNOWN_GET_FLAG,       "unknown get column flag!"},
     { Error::COLUMN_REACHED_ID_LIMIT,       "Columd ID max-reached"},
-                           
+    { Error::COLUMN_SCHEMA_BAD_SAVE,        "Schema for save not matches saved"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
@@ -99,6 +99,7 @@ namespace {
     { Error::FS_PATH_NOT_FOUND,    "FS destination path" },
 
     { Error::RS_NOT_LOADED_RANGE,     "RS range id not loaded"},
+    { Error::RS_DELETED_RANGE,        "RS range state deleted"},
 
     { Error::IO_ERROR,              " i/o error" },
     { Error::BAD_SCHEMA,           "bad schema" },

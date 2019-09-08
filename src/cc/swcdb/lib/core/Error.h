@@ -66,6 +66,7 @@ namespace SWC {
       MNGR_NOT_ACTIVE                              = CODE_START+10+0,
       MNGR_NOT_INITIALIZED                         = CODE_START+10+1,
       RS_NOT_LOADED_RANGE                          = CODE_START+10+2,
+      RS_DELETED_RANGE                             = CODE_START+10+3,
 
       SYNTAX_ERROR                                 = CODE_START+20+0,
       COMMAND_PARSE_ERROR                          = CODE_START+20+1,
@@ -115,6 +116,7 @@ namespace SWC {
       COLUMN_SCHEMA_NAME_NOT_EXISTS                = CODE_START+2002,
       COLUMN_UNKNOWN_GET_FLAG                      = CODE_START+2003,
       COLUMN_REACHED_ID_LIMIT                      = CODE_START+2004,
+      COLUMN_SCHEMA_BAD_SAVE                       = CODE_START+2005,
 
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,
