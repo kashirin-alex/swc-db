@@ -64,6 +64,17 @@ class Schema {
 
   virtual ~Schema() {}
 
+  bool operator ==(const SchemaPtr &other) {
+    return   cid == other->cid
+          && col_type == other->col_type
+          && cell_versions == other->cell_versions
+          && cell_ttl == other->cell_ttl
+          && blk_replication == other->blk_replication
+          && blk_encoding == other->blk_encoding
+          && blk_size == other->blk_size
+          && col_name.compare(other->col_name) == 0
+    ;
+  }
   const size_t encoded_length() const {
     return Serialization::encoded_length_vi64(cid)
          + Serialization::encoded_length_vstr(col_name.length())
