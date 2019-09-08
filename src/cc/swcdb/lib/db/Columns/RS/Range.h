@@ -72,6 +72,7 @@ class Range : public DB::RangeBase {
       cb->response_ok();
       return;
     }
+    set_state(State::LOADED);
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
     int err = Error::OK;
@@ -96,7 +97,7 @@ class Range : public DB::RangeBase {
       return loaded(err, cb);
 
     Env::RsData::get()->set_rs(err, get_path(rs_data_file));
-    loaded(err, cb);
+    loaded(err, cb); // RSP-LOAD-ACK
     if(err != Error::OK)
       return;
 
@@ -200,7 +201,7 @@ class Range : public DB::RangeBase {
       Env::FsInterface::interface()->remove(err, get_path(rs_data_file));
 
     set_state(State::NOTLOADED);
-
+    
     HT_INFOF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
   }
 
@@ -246,7 +247,7 @@ class Range : public DB::RangeBase {
   private:
   
   void loaded(int &err, ResponseCallbackPtr cb) {
-    if(is_loaded())
+    if(err == Error::OK)
       cb->response_ok(); // cb->run();
     else
       // ? remove from map
