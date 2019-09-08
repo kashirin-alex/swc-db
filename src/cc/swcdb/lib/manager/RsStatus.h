@@ -11,40 +11,6 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
-class RsQueue : public Protocol::Req::ConnQueue {
-
-  public:
-
-  RsQueue(const EndPoints& endpoints)
-          : m_endpoints(endpoints),
-            cfg_rs_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
-              "swc.mngr.ranges.assign.RS.connection.timeout")),
-            cfg_rs_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
-              "swc.mngr.ranges.assign.RS.connection.probes")) {}
-
-  virtual ~RsQueue(){
-    stop(); 
-  }
-  
-  bool connect() override {
-    Env::Clients::get()->rs_service->get_connection(
-      m_endpoints, 
-      [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
-      std::chrono::milliseconds(cfg_rs_conn_timeout->get()), 
-      cfg_rs_conn_probes->get(),
-      true
-    );
-    return true;
-  }
-
-  private:
-  
-  const EndPoints   m_endpoints;
-  
-  const gInt32tPtr cfg_rs_conn_timeout;
-  const gInt32tPtr cfg_rs_conn_probes;
-};
-
 
 class RsStatus : public Protocol::Params::HostEndPoints {
 
@@ -62,8 +28,9 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   RsStatus(uint64_t rs_id, const EndPoints& endpoints)
           : rs_id(rs_id), state(State::NONE), 
             failures(0), total_ranges(0),
-            Protocol::Params::HostEndPoints(endpoints),
-            m_queue(std::make_shared<RsQueue>(endpoints)) {}
+            Protocol::Params::HostEndPoints(endpoints) {
+    init_queue();
+  }
 
   virtual ~RsStatus(){}
 
@@ -106,7 +73,13 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   }
 
   void init_queue(){
-    m_queue = std::make_shared<RsQueue>(endpoints);
+    m_queue = std::make_shared<client::Rs::Host>(
+      endpoints,
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.RS.connection.timeout"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.mngr.ranges.assign.RS.connection.probes")
+    );
   }
 
   void put(Protocol::Req::ConnQueue::ReqBase::Ptr req){
@@ -125,7 +98,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   // int32_t resource;
   
   private:
-  std::shared_ptr<RsQueue> m_queue = nullptr;
+  client::Rs::Host::Ptr m_queue = nullptr;
 
 };
 typedef std::shared_ptr<RsStatus> RsStatusPtr;

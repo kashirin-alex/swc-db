@@ -43,7 +43,12 @@ class Clients : public std::enable_shared_from_this<Clients> {
       "RANGESERVER", ioctx, m_app_ctx
     );
 
-    rs = std::make_shared<Rs::ConnQueues>();
+    rs = std::make_shared<Rs::ConnQueues>(
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.RS.connection.timeout"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.RS.connection.probes")
+    );
   }
 
   operator ClientsPtr(){
