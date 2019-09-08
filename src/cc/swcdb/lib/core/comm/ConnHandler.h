@@ -64,7 +64,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   struct Outgoing {
     CommBufPtr cbuf;
-    TimerPtr tm;
     DispatchHandlerPtr hdlr; 
     bool sequential;
   };
@@ -201,8 +200,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     cbuf->write_header_and_reset();
     
     write_or_queue({
-     .cbuf=cbuf, 
-     .tm=get_timer(cbuf->header.timeout_ms, cbuf->header), 
+     .cbuf=cbuf,
      .hdlr=hdlr, 
      .sequential=false
     });
@@ -269,7 +267,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     write_or_queue({
      .cbuf=cbuf, 
-     .tm=get_timer(cbuf->header.timeout_ms, cbuf->header), 
      .hdlr=hdlr, 
      .sequential=sequential
     });
@@ -349,7 +346,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       add_pending({
         .id=data.cbuf->header.id, 
         .hdlr=data.hdlr, 
-        .tm=data.tm, 
+        .tm=get_timer(data.cbuf->header.timeout_ms, data.cbuf->header), 
         .sequential=data.sequential});
 
     asio::async_write(
@@ -359,8 +356,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         if(ec) {
           ptr->do_close();
         } else {
-          ptr->read_pending();
           ptr->next_outgoing();
+          ptr->read_pending();
         }
       }
     );
