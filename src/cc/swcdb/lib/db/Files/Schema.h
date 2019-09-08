@@ -151,7 +151,7 @@ DB::SchemaPtr load(int &err, int64_t cid) {
     schema = nullptr;
   }
 
-  if(schema == nullptr){  // schama backups / instant create / throw ?
+  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN){ 
     HT_WARNF("Missing Column(cid=%d) Schema", cid);
     std::string name;
     if(cid < 4) {
@@ -167,6 +167,7 @@ DB::SchemaPtr load(int &err, int64_t cid) {
         schema = DB::Schema::make(cid, name);
       }
     } else {
+     // schama backups || instant create || throw ?
       name.append("noname_");
       name.append(std::to_string(cid));
       schema = DB::Schema::make(cid, name);
