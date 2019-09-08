@@ -43,12 +43,6 @@ class Column : public std::enable_shared_from_this<Column> {
         m_ranges->insert(RangesMapPair(rid, range));;
       }
     }
-    if(initialize){
-      range->load(err);
-      if(err != Error::OK) {
-        // ? remove from map
-      }
-    }
     return range;
   }
 

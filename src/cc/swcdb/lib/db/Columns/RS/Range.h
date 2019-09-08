@@ -7,10 +7,18 @@
 #define swcdb_lib_db_Columns_RS_Range_h
 
 #include "swcdb/lib/db/Columns/RangeBase.h"
-#include "swcdb/lib/db/Protocol/req/UnloadRange.h"
+#include "swcdb/lib/db/Types/Range.h"
+
+namespace SWC { namespace server { namespace RS {
+
+class Range;
+typedef std::shared_ptr<Range> RangePtr;
+
+}}}
+
+#include "swcdb/lib/db/Protocol/req/RsUnloadRange.h"
 
 #include "swcdb/lib/db/Files/RangeData.h"
-#include "swcdb/lib/db/Types/Range.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -38,7 +46,6 @@ class Range : public DB::RangeBase {
       m_type = Types::Range::META;
     else
       m_type = Types::Range::DATA;
-
   }
 
   virtual ~Range(){}
@@ -53,89 +60,47 @@ class Range : public DB::RangeBase {
     return m_state == State::LOADED;
   }
 
-  void load(int &err){
-    HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
-    
-    if(!Env::FsInterface::interface()->exists(err, get_path(""))){
-      if(err != Error::OK)
-        return;
-      Env::FsInterface::interface()->mkdirs(err, get_path("log"));
-      Env::FsInterface::interface()->mkdirs(err, get_path("cs"));
-    } 
-
-    // last_rs.data
-    Files::RsDataPtr rs_data = Env::RsData::get();
-    Files::RsDataPtr rs_last = get_last_rs(err);
-
-    if(rs_last->endpoints.size() > 0) {
-      HT_DEBUGF("RS-LAST=%s RS-NEW=%s", 
-                rs_last->to_string().c_str(), rs_data->to_string().c_str());
-      if(!has_endpoint(rs_data->endpoints, rs_last->endpoints)){
-        client::ClientConPtr old_conn 
-          = Env::Clients::get()->rs_service->get_connection(
-              rs_last->endpoints, std::chrono::milliseconds(10000), 1);
-        // if online, means rs-mngr had comm issues with the RS-LAST, 
-        //   req.unload (sync)
-        if(old_conn != nullptr)
-          Protocol::Req::UnloadRange(old_conn, RangeBase::shared());
-      }
-    }
-    rs_data->set_rs(err, get_path(rs_data_file));
-    if(err != Error::OK)
-      return;
-    
-
-    // range.data
-    Files::RangeData::load(err, get_path(range_data_file), cellstores);
-    if(err != Error::OK || cellstores.size() == 0) {
-      err = Error::OK;
-      Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
-      if(err != Error::OK)
-        return;
-      Files::RangeData::save(err, get_path(range_data_file), cellstores);
-      if(err != Error::OK)
-        return;
-    }
-
-    int64_t ts;
-    int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
-    int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
-    for(auto& cs : cellstores){
-      // intervals->expande(cs->intervals);
-
-      if(intervals->is_any_keys_begin() 
-        || !intervals->is_in_begin(cs->intervals->get_keys_begin()))
-        intervals->set_keys_begin(cs->intervals);
-
-      if(intervals->is_any_keys_end() 
-        || !intervals->is_in_end(cs->intervals->get_keys_end()))
-        intervals->set_keys_end(cs->intervals);
-
-      ts = cs->intervals->get_ts_earliest();
-      if(ts_earliest == ScanSpecs::TIMESTAMP_NULL || ts_earliest > ts)
-        ts_earliest = ts;
-      ts = cs->intervals->get_ts_latest();
-      if(ts_latest == ScanSpecs::TIMESTAMP_NULL || ts_latest < ts)
-        ts_latest = ts;
-      }
-    
-    intervals->set_ts_earliest(ts_earliest);
-    intervals->set_ts_latest(ts_latest);
-    
-    // cellstores
-    // CommitLogs
-    
-    set_state(State::LOADED);
+  bool deleted() { 
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::DELETED;
+  }
 
 
+  void load(ResponseCallbackPtr cb){
 
     if(is_loaded()) {
-      HT_INFOF("LOADED RANGE %s", to_string().c_str());
+      cb->response_ok();
       return;
     }
-    
-    HT_WARNF("LOAD RANGE FAILED %s", to_string().c_str());
-    return;
+
+    HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
+    int err = Error::OK;
+
+    if(!Env::FsInterface::interface()->exists(err, get_path(""))){
+      if(err != Error::OK)
+        return loaded(err, cb);
+      Env::FsInterface::interface()->mkdirs(err, get_path("log"));
+      Env::FsInterface::interface()->mkdirs(err, get_path("cs"));
+      if(err != Error::OK)
+        return loaded(err, cb);
+      
+      take_ownership(err, cb);
+    } else {
+      last_rs_chk(err, cb);
+    }
+
+  }
+
+  void take_ownership(int &err, ResponseCallbackPtr cb){
+    if(err == Error::RS_DELETED_RANGE)
+      return loaded(err, cb);
+
+    Env::RsData::get()->set_rs(err, get_path(rs_data_file));
+    loaded(err, cb);
+    if(err != Error::OK)
+      return;
+
+    read_range_data(err);
   }
 
   void on_change(){ // range-interval || cellstores
@@ -279,6 +244,87 @@ class Range : public DB::RangeBase {
   }
 
   private:
+  
+  void loaded(int &err, ResponseCallbackPtr cb) {
+    if(is_loaded())
+      cb->response_ok(); // cb->run();
+    else
+      // ? remove from map
+     cb->send_error(err == Error::OK? Error::RS_NOT_LOADED_RANGE: err , "");
+  }
+
+  void last_rs_chk(int &err, ResponseCallbackPtr cb){
+    // last_rs.data
+    Files::RsDataPtr rs_data = Env::RsData::get();
+    Files::RsDataPtr rs_last = get_last_rs(err);
+
+    if(rs_last->endpoints.size() > 0 
+      && !has_endpoint(rs_data->endpoints, rs_last->endpoints)){
+      HT_DEBUGF("RS-LAST=%s RS-NEW=%s", 
+                rs_last->to_string().c_str(), rs_data->to_string().c_str());
+                
+      Env::Clients::get()->rs->get(rs_last->endpoints)->put(
+        std::make_shared<Protocol::Req::RsUnloadRange>(shared_from_this(), cb));
+      return;
+    }
+
+    take_ownership(err, cb);
+  }
+
+  void read_range_data(int &err) {
+
+    // range.data
+    Files::RangeData::load(err, get_path(range_data_file), cellstores);
+    if(err != Error::OK || cellstores.size() == 0) {
+      err = Error::OK;
+      Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
+      if(err == Error::OK)
+        Files::RangeData::save(err, get_path(range_data_file), cellstores);
+      
+      if(err != Error::OK)
+        // rs-to determine range-removal (+ Notify Mngr )
+        return;
+    }
+
+    int64_t ts;
+    int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
+    int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
+    for(auto& cs : cellstores){
+      // intervals->expande(cs->intervals);
+
+      if(intervals->is_any_keys_begin() 
+        || !intervals->is_in_begin(cs->intervals->get_keys_begin()))
+        intervals->set_keys_begin(cs->intervals);
+
+      if(intervals->is_any_keys_end() 
+        || !intervals->is_in_end(cs->intervals->get_keys_end()))
+        intervals->set_keys_end(cs->intervals);
+
+      ts = cs->intervals->get_ts_earliest();
+      if(ts_earliest == ScanSpecs::TIMESTAMP_NULL || ts_earliest > ts)
+        ts_earliest = ts;
+      ts = cs->intervals->get_ts_latest();
+      if(ts_latest == ScanSpecs::TIMESTAMP_NULL || ts_latest < ts)
+        ts_latest = ts;
+      }
+    
+    intervals->set_ts_earliest(ts_earliest);
+    intervals->set_ts_latest(ts_latest);
+    
+    // cellstores
+    // CommitLogs
+    
+
+    set_state(State::LOADED);
+    if(is_loaded()) {
+      HT_INFOF("LOADED RANGE %s", to_string().c_str());
+      return;
+    }
+    
+    HT_WARNF("LOAD RANGE FAILED %s", to_string().c_str());
+    return;
+  }
+
 
   State               m_state;
   
@@ -288,8 +334,17 @@ class Range : public DB::RangeBase {
 
 };
 
-typedef std::shared_ptr<Range> RangePtr;
 
 
-}}}
+}} // server namespace
+
+
+void Protocol::Req::RsUnloadRange::unloaded(int err, ResponseCallbackPtr cb) {
+  std::dynamic_pointer_cast<server::RS::Range>(range)->take_ownership(err, cb);
+}
+bool Protocol::Req::RsUnloadRange::valid() {
+  return !std::dynamic_pointer_cast<server::RS::Range>(range)->deleted();
+}
+
+}
 #endif

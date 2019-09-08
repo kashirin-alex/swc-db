@@ -186,6 +186,10 @@ void Settings::init_options() {
      "RS-Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i32(15000), 
      "RS-Manager default port if not defined in swc.mngr.host")
+    ("swc.client.RS.connection.timeout", g_i32(10000), 
+     "RsnageServer client connect timeout")
+    ("swc.client.RS.connection.probes", g_i32(1), 
+     "RsnageServer client connect probes")
     ;
     
   /*

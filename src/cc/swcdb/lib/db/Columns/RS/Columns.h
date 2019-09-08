@@ -59,15 +59,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
-    RangePtr range = get_range(err, cid, rid, true);
-    if(err != Error::OK)
-      cb->send_error(err , "");
-
-    else if(range != nullptr && range->is_loaded()) 
-      cb->response_ok(); // cb->run();
-      
-    else
-      cb->send_error(Error::RS_NOT_LOADED_RANGE , "");
+    get_range(err, cid, rid, true)->load(cb);
   }
 
   void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
