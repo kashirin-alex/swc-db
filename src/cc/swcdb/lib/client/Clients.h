@@ -9,12 +9,15 @@
 #include "swcdb/lib/client/mngr/Groups.h"
 #include "swcdb/lib/core/comm/SerializedClient.h"
 
+#include "swcdb/lib/db/Protocol/req/ConnQueue.h"
 #include <memory>
 
-namespace SWC { 
-  
+namespace SWC { namespace client {
 
-namespace client {
+namespace Rs {
+class ConnQueues;
+typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
+}
 
 class Clients;
 typedef std::shared_ptr<Clients> ClientsPtr;
@@ -40,7 +43,9 @@ class Clients : public std::enable_shared_from_this<Clients> {
       "RANGESERVER", ioctx, m_app_ctx
     );
 
+    rs = std::make_shared<Rs::ConnQueues>();
   }
+
   operator ClientsPtr(){
     return shared_from_this();
   }
@@ -48,9 +53,11 @@ class Clients : public std::enable_shared_from_this<Clients> {
   virtual ~Clients(){}
   
 
-  Mngr::GroupsPtr mngrs_groups;
-  ClientPtr       mngr_service = nullptr;
-  ClientPtr       rs_service   = nullptr;
+  Mngr::GroupsPtr   mngrs_groups;
+  ClientPtr         mngr_service = nullptr;
+  
+  ClientPtr         rs_service   = nullptr;
+  Rs::ConnQueuesPtr rs = nullptr;
 
   private:
   AppContextPtr     m_app_ctx = nullptr;
@@ -82,5 +89,7 @@ class Clients {
 }
 
 }
+
+#include "rs/ConnQueues.h"
 
 #endif // swc_lib_client_Clients_h
