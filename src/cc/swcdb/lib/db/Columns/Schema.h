@@ -64,7 +64,7 @@ class Schema {
 
   virtual ~Schema() {}
 
-  bool operator ==(const SchemaPtr &other) {
+  bool equal(const SchemaPtr &other) {
     return   cid == other->cid
           && col_type == other->col_type
           && cell_versions == other->cell_versions

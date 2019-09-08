@@ -821,14 +821,14 @@ class RangeServers {
     if(err == Error::OK) {
       DB::SchemaPtr schema_new = Files::Schema::load(err, cid);
       if(err == Error::OK) {
-        if(schema_save == schema_new) {
+        if(schema_new->equal(schema_save)) {
           Env::Schemas::get()->add(err, schema_new);
           if(err == Error::OK) {
             schema = Env::Schemas::get()->get(cid);
             return;
           }
         }
-        err == Error::COLUMN_SCHEMA_BAD_SAVE;
+        err = Error::COLUMN_SCHEMA_BAD_SAVE;
       }
     }
     Column::remove(err, cid);
