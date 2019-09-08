@@ -59,6 +59,10 @@ void Settings::init_app_options(){
     ("swc.mngr.ranges.assign.interval.check", g_i32(60000), 
      "Ranges assignment interval in milliseconds between checks")
 
+    ("swc.mngr.ranges.assign.due", g_i32(100), 
+     "Total allowed ranges due on RS assignment")
+    ("swc.mngr.ranges.assign.due.delay", g_i32(1000), 
+     "Delay of assignment as total allowed range reached")
   ;
   
 }
