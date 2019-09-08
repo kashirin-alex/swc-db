@@ -40,15 +40,14 @@ class Base : public DispatchHandler {
         break;
     }
 
-    if(ev->header.command != cmd){
+    if(error == Error::OK && ev->header.command != cmd){
       error = Error::NOT_IMPLEMENTED;
       HT_ERRORF("error=%d(%s) cmd=%d", 
                 error, Error::get_text(error), ev->header.command);
-    }
 
-    else if(error == Error::OK 
-            && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
-                || error == Error::FS_EOF) {
+    } else if(error == Error::OK 
+              && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
+                  || error == Error::FS_EOF) {
       *ptr = ev->payload + 4;
       *remain = ev->payload_len - 4;
     } 

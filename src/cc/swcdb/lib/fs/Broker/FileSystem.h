@@ -91,13 +91,15 @@ class FileSystemBroker: public FileSystem {
 
     client::ClientConPtr conn = nullptr;
     do {
+      if(!m_run) {
+        EventPtr ev = std::make_shared<Event>(
+          Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
+        hdlr->handle(conn, ev);
+        return true;
+      }
       conn = m_service->get_connection(
         m_endpoints, std::chrono::milliseconds(20000), 3);
     
-      if(!m_run) {
-        hdlr->error = Error::SERVER_SHUTTING_DOWN;
-        return true;
-      }
     } while(conn == nullptr);
     m_service->preserve(conn);
 
@@ -109,8 +111,7 @@ class FileSystemBroker: public FileSystem {
   void send_request_sync(Protocol::Req::ReqBasePtr hdlr, 
                          std::promise<void> res){
     while(!send_request(hdlr));
-    if(m_run)
-      res.get_future().wait();
+    res.get_future().wait();
   }
 
   /// File/Dir name actions
