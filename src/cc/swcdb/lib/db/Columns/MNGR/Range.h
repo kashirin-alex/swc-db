@@ -28,7 +28,7 @@ class Range : public DB::RangeBase {
 
   Range(int64_t cid, int64_t rid)
         : RangeBase(cid, rid), 
-          m_state(State::NOTSET), rs_id(0) { 
+          m_state(State::NOTSET), rs_id(0), m_last_rs(nullptr) { 
   }
 
   void init(int &err){
@@ -78,6 +78,18 @@ class Range : public DB::RangeBase {
     rs_id = new_rs_id;
   }
 
+  Files::RsDataPtr get_last_rs(int &err){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_last_rs == nullptr)
+      m_last_rs = DB::RangeBase::get_last_rs(err);
+    return m_last_rs;
+  }
+  
+  void clear_last_rs(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_last_rs = nullptr;
+  }
+
   std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("[");
@@ -91,8 +103,9 @@ class Range : public DB::RangeBase {
   }
 
   private:
-  State     m_state;
-  uint64_t  rs_id;
+  State             m_state;
+  uint64_t          rs_id;
+  Files::RsDataPtr  m_last_rs;
 };
 
 typedef std::shared_ptr<Range> RangePtr;
