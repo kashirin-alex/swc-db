@@ -23,39 +23,19 @@ class AppContext : public SWC::AppContext {
         break;
       }
       
-      case Event::Type::DISCONNECT:{
+      case Event::Type::DISCONNECT: {
         disconnected(conn);
         return;
       }
 
-      case Event::Type::ERROR:{
-        switch (ev->header.command) {
-
-          case Protocol::Command::MNGR_REQ_MNGRS_STATE:{
-            if(ev->error == Error::Code::REQUEST_TIMEOUT)
-            break;
-          }
-      
-          default: {
-            break;
-          }
-        }
+      case Event::Type::ERROR: {
+        HT_WARNF("unhandled: %s", ev->to_str().c_str());
         break;
       }
 
       case Event::Type::MESSAGE: {
-      
-        switch (ev->header.command) {
-
-          case Protocol::Command::MNGR_REQ_MNGRS_STATE:
-            break;
-      
-          default: {
-            break;
-          }
-          break;
-        }
-
+        HT_WARNF("unhandled: %s", ev->to_str().c_str());
+        break;
       }
 
       default: {
@@ -64,7 +44,6 @@ class AppContext : public SWC::AppContext {
 
     }
     
-    HT_WARNF("unhandled: %s", ev->to_str().c_str());
   }
   
 };
