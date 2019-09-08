@@ -28,9 +28,19 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
-  Columns() : m_columns(std::make_shared<ColumnsMap>()) {}
+  enum State{
+    OK,
+    SHUTTINGDOWN
+  };
+
+  Columns() : m_columns(std::make_shared<ColumnsMap>()), m_state(State::OK) {}
 
   virtual ~Columns(){}
+
+  bool shuttingdown(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::SHUTTINGDOWN;
+  }
 
   ColumnPtr get_column(int &err, int64_t cid, bool initialize){
     ColumnPtr col = nullptr;
@@ -41,13 +51,17 @@ class Columns : public std::enable_shared_from_this<Columns> {
       if (it != m_columns->end())
         col = it->second;
         
-      else if(initialize) {
+      else if(initialize && m_state == State::OK) {
         col = std::make_shared<Column>(cid);
         m_columns->insert(ColumnsMapPair(cid, col));
       }
     }
-    if(initialize) 
-      col->init(err);
+    if(initialize) {
+      if(shuttingdown())
+        err = Error::SERVER_SHUTTING_DOWN;
+      else
+        col->init(err);
+    }
     return col;
   }
 
@@ -59,7 +73,10 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
-    get_range(err, cid, rid, true)->load(cb);
+    if(shuttingdown())
+      cb->send_error(Error::SERVER_SHUTTING_DOWN, "");
+    else
+      get_range(err, cid, rid, true)->load(cb);
   }
 
   void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
@@ -70,8 +87,10 @@ class Columns : public std::enable_shared_from_this<Columns> {
     cb(err);
   }
 
-  void unload_all(int &err){
+  void unload_all(int &err, bool shuttingdown){
     std::lock_guard<std::mutex> lock(m_mutex);
+    if(shuttingdown)
+      m_state = State::SHUTTINGDOWN;
 
     for(;;){
       auto it = m_columns->begin();
@@ -111,6 +130,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   private:
   std::mutex                  m_mutex;
   std::shared_ptr<ColumnsMap> m_columns;
+  State                       m_state;
 
 };
 typedef std::shared_ptr<Columns> ColumnsPtr;

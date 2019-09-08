@@ -163,8 +163,10 @@ class AppContext : public SWC::AppContext {
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
 
+    m_srv->stop_accepting(); // no further requests accepted
+
     int err = Error::OK;
-    Env::RsColumns::get()->unload_all(err);
+    Env::RsColumns::get()->unload_all(err, true);
 
     mngr_root->shutting_down(
       [ptr=shared_from_this()](){
@@ -174,8 +176,6 @@ class AppContext : public SWC::AppContext {
   }
 
   void stop() override {
-    
-    m_srv->stop_accepting(); // no further requests accepted
 
     Env::Clients::get()->rs_service->stop();
     Env::Clients::get()->mngr_service->stop();
