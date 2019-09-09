@@ -24,6 +24,7 @@
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "handlers/IsRangeLoaded.h"
 #include "handlers/LoadRange.h"
+#include "handlers/UpdateSchema.h"
 #include "handlers/UnloadRange.h"
 #include "handlers/ColumnDelete.h"
 
@@ -106,6 +107,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::REQ_RS_LOAD_RANGE: 
             handler = new Handler::LoadRange(conn, ev);
+            break;
+
+          case Protocol::Command::REQ_RS_SCHEMA_UPDATE: 
+            handler = new Handler::UpdateSchema(conn, ev);
             break;
 
           case Protocol::Command::REQ_RS_UNLOAD_RANGE: 

@@ -20,12 +20,13 @@ namespace SWC { namespace Protocol {
     REQ_RS_LOAD_RANGE           = 0x05,
     REQ_RS_UNLOAD_RANGE         = 0x06,
     REQ_RS_COLUMN_DELETE        = 0x07,
+    REQ_RS_SCHEMA_UPDATE        = 0x08,
     
-    MNGR_UPDATE_RANGESERVERS    = 0x08,
-    MNGR_UPDATE_COLUMN          = 0x09,
+    MNGR_UPDATE_RANGESERVERS    = 0x09,
+    MNGR_UPDATE_COLUMN          = 0x0a,
 
-    CLIENT_REQ_MNG_COLUMN       = 0x0a,
-    CLIENT_REQ_GET_COLUMN       = 0x0b,
+    CLIENT_REQ_MNG_COLUMN       = 0x0b,
+    CLIENT_REQ_GET_COLUMN       = 0x0c,
 
     REQ_ECHO                    = 0xff,      
     //

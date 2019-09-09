@@ -43,11 +43,6 @@ class RsLoadRange : public ConnQueue::ReqBase {
     }
 
     if(ev->header.command == Command::REQ_RS_LOAD_RANGE){
-      if(schema != nullptr) {
-        int err = Error::OK;
-        Env::MngrColumns::get()->get_column(err, range->cid, false)
-                           ->add_rs(rs->rs_id, schema->revision);
-      }
       loaded(ev->error != Error::OK? ev->error: response_code(ev), false); 
       return; 
     }

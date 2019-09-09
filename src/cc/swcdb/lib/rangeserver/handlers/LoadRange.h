@@ -41,8 +41,7 @@ class LoadRange : public AppHandler {
         params.cid, params.rid, 
         std::make_shared<Callback::RangeLoaded>(m_conn, m_ev)
       );
-
-      // params.create?
+      
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

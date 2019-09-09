@@ -16,6 +16,7 @@
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
+#include "swcdb/lib/db/Protocol/req/RsUpdateSchema.h"
 
 #include "swcdb/lib/db/Protocol/params/MngColumn.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
@@ -972,8 +973,8 @@ class RangeServers {
     for(auto& rs_id : rs_ids) {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       for(auto& rs : m_rs_status) {
-        //if(rs->rs_id == rs_id)
-          //rs->put(std::make_shared<Protocol::Req::RsUpdateSchema>(rs, schema));
+        if(rs->rs_id == rs_id)
+          rs->put(std::make_shared<Protocol::Req::RsUpdateSchema>(rs, schema));
       }
     }
   }
@@ -1013,6 +1014,10 @@ class RangeServers {
 
 
 void Protocol::Req::RsLoadRange::loaded(int err, bool failure) {
+  if(schema != nullptr && err == Error::OK)
+    Env::MngrColumns::get()->get_column(err, range->cid, false)
+                            ->add_rs(rs->rs_id, schema->revision);
+
   Env::RangeServers::get()->range_loaded(rs, range, err, failure);
 }
 

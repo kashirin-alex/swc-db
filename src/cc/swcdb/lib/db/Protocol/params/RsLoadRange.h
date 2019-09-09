@@ -37,14 +37,14 @@ class RsLoadRange : public ColRangeId {
       schema->encode(bufp);
   }
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
-      ColRangeId::decode_internal(version, bufp, remainp);
-      if(Serialization::decode_bool(bufp, remainp))
-        schema = std::make_shared<DB::Schema>(bufp, remainp);
-    }
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp) {
+    ColRangeId::decode_internal(version, bufp, remainp);
+    if(Serialization::decode_bool(bufp, remainp))
+      schema = std::make_shared<DB::Schema>(bufp, remainp);
+  }
 
-  };
+};
   
 
 }}}
