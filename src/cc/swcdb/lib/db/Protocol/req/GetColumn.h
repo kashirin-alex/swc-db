@@ -95,7 +95,7 @@ class GetColumn: public ActiveMngrBase {
     request(Flag::ID_BY_NAME, name, cb);
   }
 
-  void request(Flag flag,  std::string& name, Req::Cb_t cb){
+  void request(Flag flag, std::string& name, Req::Cb_t cb){
     return make(std::make_shared<Req>(Protocol::Params::GetColumnReq(flag, name), cb));
   }
   void request(Flag flag, int64_t cid, Req::Cb_t cb){

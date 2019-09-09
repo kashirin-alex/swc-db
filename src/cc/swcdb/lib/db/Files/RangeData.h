@@ -24,7 +24,7 @@ const int8_t VERSION=1;
 /* file-format: 
     header: i8(version), i32(data-len), 
             i32(data-checksum), i32(header-checksum)
-    data:   vi32(num-intervals), [vi32(cellstore-count), intervals]
+    data:   vi32(num-cellstore) ,[vi32(cellstore-count), intervals]
 */
 
 

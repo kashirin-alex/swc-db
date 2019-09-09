@@ -16,6 +16,7 @@
 #include "swcdb/lib/client/Clients.h"
 
 #include "swcdb/lib/db/Columns/Schema.h"
+#include "swcdb/lib/db/Columns/MNGR/Columns.h"
 
 #include "MngrRole.h"
 #include "RangeServers.h"

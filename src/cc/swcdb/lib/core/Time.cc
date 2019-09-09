@@ -33,8 +33,7 @@
 #include <iostream>
 #include <ratio>
 
-namespace SWC {
-namespace Time {
+namespace SWC { namespace Time {
 
 int64_t now_ns() {
   assert((std::ratio_less_equal<std::chrono::system_clock::duration::period, std::chrono::nanoseconds::period>::value));
@@ -78,5 +77,4 @@ time_t timegm(struct tm *t) {
 }
 #endif
 
-}
-} 
+}} 

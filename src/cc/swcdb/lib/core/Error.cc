@@ -82,6 +82,7 @@ namespace {
     { Error::COLUMN_UNKNOWN_GET_FLAG,       "unknown get column flag!"},
     { Error::COLUMN_REACHED_ID_LIMIT,       "Columd ID max-reached"},
     { Error::COLUMN_SCHEMA_BAD_SAVE,        "Schema for save not matches saved"},
+    { Error::COLUMN_SCHEMA_NAME_EMPTY,      "Schema's column name cannot be empty"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },

@@ -25,28 +25,31 @@ class Schema {
          int32_t cell_versions=1, uint32_t cell_ttl=0,
          uint8_t blk_replication=0, 
          Types::Encoding blk_encoding=Types::Encoding::SNAPPY,
-         uint32_t blk_size=0){
+         uint32_t blk_size=0,
+         int64_t revision=0){
     return std::make_shared<Schema>(
       cid, col_name, col_type, 
       cell_versions, cell_ttl, 
-      blk_replication, blk_encoding, blk_size);
+      blk_replication, blk_encoding, blk_size, revision);
   }
   
-  inline static SchemaPtr make(int64_t cid, SchemaPtr other){
+  inline static SchemaPtr make(int64_t cid, SchemaPtr other, int64_t revision){
     return std::make_shared<Schema>(
       cid, other->col_name, other->col_type, 
       other->cell_versions, other->cell_ttl, 
-      other->blk_replication, other->blk_encoding, other->blk_size);
+      other->blk_replication, other->blk_encoding, other->blk_size,
+      revision);
   }
 
   Schema(int64_t cid, std::string col_name, Types::Column col_type,
          int32_t cell_versions, uint32_t cell_ttl,
          uint8_t blk_replication, Types::Encoding blk_encoding, 
-         uint32_t blk_size)
+         uint32_t blk_size, int64_t revision)
         : cid(cid), col_name(col_name), col_type(col_type),
           cell_versions(cell_versions), cell_ttl(cell_ttl),
           blk_replication(blk_replication),
-          blk_encoding(blk_encoding), blk_size(blk_size) {
+          blk_encoding(blk_encoding), blk_size(blk_size), 
+          revision(revision) {
   }
   
   Schema(const uint8_t **bufp, size_t *remainp)
@@ -59,7 +62,8 @@ class Schema {
 
       blk_replication(Serialization::decode_i8(bufp, remainp)),
       blk_encoding((Types::Encoding)Serialization::decode_i8(bufp, remainp)),
-      blk_size(Serialization::decode_vi32(bufp, remainp)) {
+      blk_size(Serialization::decode_vi32(bufp, remainp)),
+      revision(Serialization::decode_vi64(bufp, remainp)) {
   }
 
   virtual ~Schema() {}
@@ -73,6 +77,7 @@ class Schema {
           && blk_encoding == other->blk_encoding
           && blk_size == other->blk_size
           && col_name.compare(other->col_name) == 0
+          && revision == other->revision
     ;
   }
   const size_t encoded_length() const {
@@ -83,7 +88,8 @@ class Schema {
          + Serialization::encoded_length_vi32(cell_ttl)
          + 1 
          + 1
-         + Serialization::encoded_length_vi32(blk_size);
+         + Serialization::encoded_length_vi32(blk_size)
+         + Serialization::encoded_length_vi64(revision);
   } 
  
   void encode(uint8_t **bufp) const {
@@ -97,6 +103,7 @@ class Schema {
     Serialization::encode_i8(bufp, blk_replication);
     Serialization::encode_i8(bufp, (uint8_t)blk_encoding);
     Serialization::encode_vi32(bufp, blk_size);
+    Serialization::encode_vi64(bufp, revision);
   }
 
   const std::string to_string(){
@@ -110,6 +117,7 @@ class Schema {
         << ", blk_replication=" << std::to_string(blk_replication)
         << ", blk_encoding=" << std::to_string((uint8_t)blk_encoding)
         << ", blk_size=" << std::to_string(blk_size)
+        << ", revision=" << std::to_string(revision)
        ;
     return ss.str();
   }
@@ -126,6 +134,7 @@ class Schema {
 	const Types::Encoding blk_encoding;
 	const uint32_t        blk_size;
 
+	const int64_t         revision;
 };
 
 
@@ -157,10 +166,10 @@ class Schemas {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(schema->cid);
-    if(it != m_map.end())
-      m_map.erase(it);
-
-    m_map.insert(std::pair<int64_t, SchemaPtr>(schema->cid, schema));
+    if(it == m_map.end())
+       m_map.insert(std::pair<int64_t, SchemaPtr>(schema->cid, schema));
+    else
+      it->second = schema;
   }
 
   SchemaPtr get(int64_t cid){
@@ -182,11 +191,11 @@ class Schemas {
     return nullptr;
   }
 
-  void ids(std::vector<int64_t> &entries){
+  void all(std::vector<SchemaPtr> &entries){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for( const auto& it : m_map) 
-      entries.push_back(it.first);
+      entries.push_back(it.second);
   }
 
   private:

@@ -17,15 +17,15 @@ class MngrUpdateColumn : public Serializable {
 
   MngrUpdateColumn() {}
 
-  MngrUpdateColumn(MngColumn::Function function, int64_t cid, int err) 
-                  : function(function), cid(cid), err(err) {}
+  MngrUpdateColumn(MngColumn::Function function, DB::SchemaPtr schema, int err) 
+                  : function(function), schema(schema), err(err) {}
 
   const std::string to_string() {
     std::string s("MngrUpdateColumn-params:\n");
     s.append(" func=");
     s.append(std::to_string(function));
-    s.append(" cid=");
-    s.append(std::to_string(cid));
+    s.append(" ");
+    s.append(schema->to_string());
     s.append(" err=");
     s.append(std::to_string(err));
     s.append("\n");
@@ -33,7 +33,7 @@ class MngrUpdateColumn : public Serializable {
   }
   
   MngColumn::Function function;
-  int64_t             cid;
+  DB::SchemaPtr       schema;
   int                 err;
 
   private:
@@ -44,20 +44,20 @@ class MngrUpdateColumn : public Serializable {
     
   size_t encoded_length_internal() const {
     return 1
-          + Serialization::encoded_length_vi64(cid) 
+          + schema->encoded_length() 
           + Serialization::encoded_length_vi32(err);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i8(bufp, (uint8_t)function);
-    Serialization::encode_vi64(bufp, cid);
+    schema->encode(bufp);
     Serialization::encode_vi32(bufp, err);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                       size_t *remainp) {
     function = (MngColumn::Function)Serialization::decode_i8(bufp, remainp);
-    cid = Serialization::decode_vi64(bufp, remainp);
+    schema = std::make_shared<DB::Schema>(bufp, remainp);
     err = Serialization::decode_vi32(bufp, remainp);
   }
 

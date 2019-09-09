@@ -80,6 +80,20 @@ class Column : public std::enable_shared_from_this<Column> {
     return range;
   }
   
+  int64_t get_next_rid(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    int64_t rid = 0;
+    for(;;){
+      auto it = m_ranges->find(++rid);
+      if(it == m_ranges->end())
+        break;
+      if(it->second->deleted())
+        break;
+    }
+    return rid;
+  }
+
   RangePtr get_next_unassigned(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -98,6 +112,13 @@ class Column : public std::enable_shared_from_this<Column> {
         it->second->set_state(Range::State::NOTSET, 0);
       }
     }
+    
+    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
+      if(it->first == rs_id) {
+        m_schemas_rev.erase(it);
+        break;
+      }
+    }
   }
 
   void change_rs(uint64_t rs_id_old, uint64_t rs_id){
@@ -107,20 +128,37 @@ class Column : public std::enable_shared_from_this<Column> {
       if(it->second->get_rs_id() == rs_id_old)
         it->second->set_rs_id(rs_id);
     }
+    
+    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
+      if(it->first == rs_id_old) {
+        m_schemas_rev.insert(RsSchemaRev(rs_id, it->second));;
+        m_schemas_rev.erase(it);
+        break;
+      }
+    }
   }
 
-  int64_t get_next_rid(){
+  void add_rs(uint64_t rs_id, int64_t rev=0){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_schemas_rev.insert(RsSchemaRev(rs_id, rev));
+  }
+
+  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rs_ids){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    int64_t rid = 0;
-    for(;;){
-      auto it = m_ranges->find(++rid);
-      if(it == m_ranges->end())
-        break;
-      if(it->second->deleted())
-        break;
+    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
+      if(it->second != rev)
+        rs_ids.push_back(it->first);
     }
-    return rid;
+  }
+
+  bool need_schema_sync(uint64_t rs_id, int64_t rev){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_schemas_rev.find(rs_id);
+    if(it != m_schemas_rev.end())
+      return rev != it->second;
+    return true;
   }
   
   void assigned(std::vector<uint64_t> &rs_ids){
@@ -146,6 +184,7 @@ class Column : public std::enable_shared_from_this<Column> {
       for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it)
         it->second->set_deleted();
     }
+    m_schemas_rev.clear();
     return !was;
   }
 
@@ -217,6 +256,10 @@ class Column : public std::enable_shared_from_this<Column> {
   int64_t                    cid;
   std::shared_ptr<RangesMap> m_ranges;
   State                      m_state;
+
+
+  typedef std::pair<uint64_t, int64_t>    RsSchemaRev;
+  std::unordered_map<uint64_t, int64_t>   m_schemas_rev;
 
 };
 typedef std::shared_ptr<Column> ColumnPtr;

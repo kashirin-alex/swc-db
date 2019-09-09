@@ -7,8 +7,6 @@
 #define swc_lib_manager_RangeServers_h
 #include <memory>
 
-#include "swcdb/lib/db/Columns/MNGR/Columns.h"
-
 #include "swcdb/lib/db/Files/RsData.h"
 #include "RsStatus.h"
 
@@ -68,7 +66,7 @@ class RangeServers {
   };
   struct ColumnFunction {
     Protocol::Params::MngColumn::Function func;
-    int64_t  cid;
+    int64_t cid;
   };
 
   public:
@@ -103,7 +101,10 @@ class RangeServers {
       columns_load();
     else
       column_update(
-        Protocol::Params::MngColumn::Function::INTERNAL_LOAD_ALL, -1);
+        Protocol::Params::MngColumn::Function::INTERNAL_LOAD_ALL, 
+        DB::Schema::make(-1, "")
+      );
+        
   }
 
   virtual ~RangeServers(){}
@@ -125,9 +126,10 @@ class RangeServers {
     );
   }
 
-  void update_status(Protocol::Params::MngColumn::Function func, int64_t cid, 
+  void update_status(Protocol::Params::MngColumn::Function func, DB::SchemaPtr schema, 
                      int err, bool initial=false){
-    HT_ASSERT(cid != 0);
+    HT_ASSERT(schema->cid != 0);
+
 
     if(!initial && m_root_mngr) {
       if(err == Error::OK){
@@ -138,7 +140,7 @@ class RangeServers {
           }
           case Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD: {
             ColumnFunction pending;
-            while(column_load_pending(cid, pending));
+            while(column_load_pending(schema->cid, pending));
             return;
           }
           case Protocol::Params::MngColumn::Function::INTERNAL_ACK_CREATE: {
@@ -147,14 +149,14 @@ class RangeServers {
           case Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE: {
             std::lock_guard<std::mutex> lock(m_mutex);
 
-            if(Env::Schemas::get()->get(cid) == nullptr)
+            if(Env::Schemas::get()->get(schema->cid) == nullptr)
               err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
             else if(!m_run)
               err = Error::SERVER_SHUTTING_DOWN;
             else {  
-              Column::remove(err, cid); //Files::Schema::remove(cid);
+              Column::remove(err, schema->cid); // /cols/{ID}
               if(err == Error::OK)
-                Env::Schemas::get()->remove(cid);  
+                Env::Schemas::get()->remove(schema->cid);  
             }
             break;
           }
@@ -166,15 +168,16 @@ class RangeServers {
       auto co_func = (Protocol::Params::MngColumn::Function)(((uint8_t)func)-1);
 
       if(err != Error::OK)
-        HT_DEBUGF("COLUMN-ACK cid=%d func=%d, err=%d(%s)", 
-                  cid, co_func, err, Error::get_text(err));
+        HT_DEBUGF("COLUMN-ACK %s func=%d, err=%d(%s)", 
+                  schema->to_string().c_str(), co_func, 
+                  err, Error::get_text(err));
                   
       ColumnActionReq req;
       for(;;){
         {
           std::lock_guard<std::mutex> lock(m_mutex_columns);
           auto it = std::find_if(m_cid_pending.begin(), m_cid_pending.end(),  
-            [co_func, cid](const ColumnActionReq& req)
+            [co_func, cid=schema->cid](const ColumnActionReq& req)
             {return req.params.schema->cid == cid 
                     && req.params.function == co_func;});
             
@@ -194,35 +197,45 @@ class RangeServers {
       return;
     }
 
-    if(manage(cid)){
+    if(manage(schema->cid)){
+
       int err = Error::OK;
       if(func == Protocol::Params::MngColumn::Function::DELETE){
-        column_delete(err, cid);
+        column_delete(err, schema->cid);
+        
+      //} else if (func == Protocol::Params::MngColumn::Function::MODIFY){
+        //  update_schema(schema);
         
       } else if(func == Protocol::Params::MngColumn::Function::CREATE || 
                 func == Protocol::Params::MngColumn::Function::INTERNAL_LOAD){
-        
+
         auto co_func = (
           Protocol::Params::MngColumn::Function)(((uint8_t)func)+1);
 
-        if(Env::MngrColumns::get()->is_an_initialization(err, cid) 
+        if(Env::MngrColumns::get()->is_an_initialization(err, schema->cid) 
                                      && err == Error::OK) {
           {
             std::lock_guard<std::mutex> lock(m_mutex_columns);
-            m_cid_pending_load.push_back({.func=co_func, .cid=cid});
+            m_cid_pending_load.push_back({.func=co_func, .cid=schema->cid});
           }
+          if(!m_root_mngr)
+            update_schema(schema);
           assign_ranges();
+
         } else if(m_root_mngr){
-          HT_ASSERT(cid != 0);
-          update_status(co_func, cid, err);
+          HT_ASSERT(schema->cid != 0);
+          column_schema_sync_rs(schema);
+          update_status(co_func, schema, err);
+
         } else {
-          column_update(co_func, cid, err);
+          update_schema(schema);
+          column_update(co_func, schema, err);
         }
       }
       return;
     }
     
-    column_update(func, cid, err);
+    column_update(func, schema, err);
   }
 
   // RangeServer Actions
@@ -425,7 +438,7 @@ class RangeServers {
       
         ColumnFunction pending;
         while(column_load_pending(range->cid, pending))
-          column_update(pending.func, pending.cid);
+          column_update(pending.func, Env::Schemas::get()->get(pending.cid));
       }
 
       HT_INFOF("RANGE-STATUS %d(%s), %s", 
@@ -441,7 +454,10 @@ class RangeServers {
     if(col == nullptr || col->finalize_remove(err, rs_id)) {
       Env::MngrColumns::get()->remove(err, cid);
       column_update(
-        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE, cid, err);
+        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE,
+        Env::Schemas::get()->get(cid), err);
+      if(!m_root_mngr)
+        Env::Schemas::get()->remove(cid);
     }
   }
 
@@ -766,11 +782,11 @@ class RangeServers {
   }
   
   void columns_load(){
-    std::vector<int64_t> entries;
-    Env::Schemas::get()->ids(entries);
-    for(auto& cid : entries) {
-      HT_ASSERT(cid != 0);
-      update_status(Protocol::Params::MngColumn::Function::INTERNAL_LOAD, cid,
+    std::vector<DB::SchemaPtr> entries;
+    Env::Schemas::get()->all(entries);
+    for(auto& schema : entries) {
+      HT_ASSERT(schema->cid != 0);
+      update_status(Protocol::Params::MngColumn::Function::INTERNAL_LOAD, schema,
                     Error::OK, true);
     }
   }
@@ -779,7 +795,9 @@ class RangeServers {
     for(auto& ack : m_cid_pending_load){
       if(ack.func == Protocol::Params::MngColumn::Function::INTERNAL_ACK_LOAD){
         column_update(
-          Protocol::Params::MngColumn::Function::INTERNAL_LOAD, ack.cid);
+          Protocol::Params::MngColumn::Function::INTERNAL_LOAD,  
+          Env::Schemas::get()->get(ack.cid)
+        );
       }
     }
   }
@@ -816,7 +834,8 @@ class RangeServers {
     if(err != Error::OK)
       return;
 
-    DB::SchemaPtr schema_save = DB::Schema::make(cid, schema);
+    DB::SchemaPtr schema_save = DB::Schema::make(
+      cid, schema, schema->revision != 0 ? schema->revision : Time::now_ns());
     Files::Schema::save(err, schema_save);
     if(err == Error::OK) {
       DB::SchemaPtr schema_new = Files::Schema::load(err, cid);
@@ -875,6 +894,8 @@ class RangeServers {
       }
       if(!m_run)
         err = Error::SERVER_SHUTTING_DOWN;
+      else if(req.params.schema->col_name.length() == 0)
+        err = Error::COLUMN_SCHEMA_NAME_EMPTY;
 
       if(err == Error::OK){
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -907,7 +928,7 @@ class RangeServers {
           m_cid_pending.push_back(req);
         }
         HT_ASSERT(req.params.schema->cid != 0);
-        update_status(req.params.function, req.params.schema->cid, err, true);
+        update_status(req.params.function, req.params.schema, err, true);
 
       } else {
         try{
@@ -929,12 +950,33 @@ class RangeServers {
   }
 
   void column_update(Protocol::Params::MngColumn::Function func,
-                     int64_t cid, int err=Error::OK){
+                     DB::SchemaPtr schema, int err=Error::OK){
     Env::MngrRole::get()->req_mngr_inchain(
-      std::make_shared<Protocol::Req::MngrUpdateColumn>(func, cid, err));
+      std::make_shared<Protocol::Req::MngrUpdateColumn>(func, schema, err));
   }
 
+  void update_schema(DB::SchemaPtr schema){
+    DB::SchemaPtr existing = Env::Schemas::get()->get(schema->cid);
+    if(existing == nullptr || !existing->equal(schema)) {
+      Env::Schemas::get()->replace(schema);
+      column_schema_sync_rs(schema);
+    }
+  }
 
+  void column_schema_sync_rs(DB::SchemaPtr schema) {
+    std::vector<uint64_t> rs_ids;
+    int err = Error::OK;
+    Env::MngrColumns::get()->get_column(err, schema->cid, false)
+                           ->need_schema_sync(schema->revision, rs_ids);
+
+    for(auto& rs_id : rs_ids) {
+      std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+      for(auto& rs : m_rs_status) {
+        //if(rs->rs_id == rs_id)
+          //rs->put(std::make_shared<Protocol::Req::RsUpdateSchema>(rs, schema));
+      }
+    }
+  }
 
   std::mutex                    m_mutex_timer;
   TimerPtr                      m_assign_timer; 

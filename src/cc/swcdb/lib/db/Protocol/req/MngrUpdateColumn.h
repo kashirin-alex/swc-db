@@ -16,9 +16,9 @@ class MngrUpdateColumn : public ConnQueue::ReqBase {
   public:
 
   MngrUpdateColumn(Params::MngColumn::Function function, 
-                  int64_t cid, int err) {
+                  DB::SchemaPtr schema, int err) {
 
-    Params::MngrUpdateColumn params(function, cid, err);
+    Params::MngrUpdateColumn params(function, schema, err);
     CommHeader header(Command::MNGR_UPDATE_COLUMN, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());

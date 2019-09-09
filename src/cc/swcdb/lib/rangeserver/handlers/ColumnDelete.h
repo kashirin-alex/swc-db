@@ -31,13 +31,15 @@ class ColumnDelete : public AppHandler {
 
       int err = Error::OK;
       Env::RsColumns::get()->remove(err, params.cid,
-        [this](int err){
+        [this, cid=params.cid](int err){
+          Env::Schemas::get()->remove(cid);
           if(err == Error::OK)
             m_conn->response_ok(m_ev); // cb->run();
           else
             m_conn->send_error(err, "", m_ev);
         }
       );
+      
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

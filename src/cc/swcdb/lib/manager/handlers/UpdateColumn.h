@@ -32,7 +32,7 @@ class UpdateColumn : public AppHandler {
       m_conn->response_ok(m_ev);
       
       Env::RangeServers::get()->update_status(
-        params.function, params.cid, params.err);
+        params.function, params.schema, params.err);
 
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

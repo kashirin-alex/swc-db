@@ -16,6 +16,7 @@
 #include "swcdb/lib/db/Protocol/Commands.h"
 #include "swcdb/lib/db/Protocol/req/ActiveMngrBase.h"
 
+#include "swcdb/lib/db/Columns/Schema.h"
 #include "swcdb/lib/db/Columns/RS/Columns.h"
 
 #include "swcdb/lib/db/Protocol/req/MngRsId.h"
@@ -45,6 +46,7 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init();
     Env::RsData::init();
     Env::RsColumns::init();
+    Env::Schemas::init();
     
   }
 
