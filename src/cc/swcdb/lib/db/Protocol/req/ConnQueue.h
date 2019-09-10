@@ -24,6 +24,10 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
             : cbp(nullptr), was_called(false), queue(nullptr), 
               insistent(insistent) {}
 
+    Ptr req() {
+      return std::dynamic_pointer_cast<ReqBase>(shared_from_this());
+    }
+
     virtual ~ReqBase() {}
 
     void handle(ConnHandlerPtr conn, EventPtr &ev) {
@@ -51,7 +55,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     }
 
     void request_again() {
-      queue->put(std::dynamic_pointer_cast<ReqBase>(shared_from_this()));
+      queue->put(req());
     }
 
     virtual bool valid() { return true; }
