@@ -222,7 +222,8 @@ class Interface : std::enable_shared_from_this<Interface>{
       err = Error::OK;
       DirentList found_dirs;
       m_fs->readdir(err, base_path, found_dirs);
-      if(err == Error::OK || err == EACCES || err == ENOENT){
+      if(err == Error::OK || err == EACCES || err == ENOENT
+        || err == Error::SERVER_SHUTTING_DOWN){
         dirs = found_dirs;
         return;
       }
