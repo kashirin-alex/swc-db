@@ -64,8 +64,8 @@ void check_get(int num_of_cols, int num_of_cols_to_remain, bool modified = false
 
     hdlr_get->get_scheme_by_name(
       req->name, 
-      [req, latency, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
+      [hdlr_get, req, latency, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::GetColumn::Req::Ptr req_ptr, int err, Protocol::Params::GetColumnRsp rsp)
       {
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
                           std::chrono::system_clock::now() - start_ts).count();
@@ -73,6 +73,15 @@ void check_get(int num_of_cols, int num_of_cols_to_remain, bool modified = false
         std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
+        
+        Protocol::Req::GetColumn::Req::Ptr ptr 
+          = std::dynamic_pointer_cast<Protocol::Req::GetColumn::Req>(req_ptr);
+        if(err != Error::OK 
+          && err != Error::COLUMN_SCHEMA_NAME_EXISTS 
+          && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
+          hdlr_get->make(ptr);
+          return;
+        }
         
         if(!req->exists && err==Error::OK)
           exit(1);  
@@ -103,15 +112,25 @@ void check_get(int num_of_cols, int num_of_cols_to_remain, bool modified = false
   for(auto& req : expected){
     hdlr_get->get_id_by_name(
       req->name, 
-      [req, latency, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Req::GetColumn::Req::Ptr ptr, int err, Protocol::Params::GetColumnRsp rsp)
+      [hdlr_get, req, latency, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::GetColumn::Req::Ptr req_ptr, int err, Protocol::Params::GetColumnRsp rsp)
       {
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
                           std::chrono::system_clock::now() - start_ts).count();
+        
         latency->add(took);
         std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.cid:-1) << "\n";
+
+        Protocol::Req::GetColumn::Req::Ptr ptr 
+          = std::dynamic_pointer_cast<Protocol::Req::GetColumn::Req>(req_ptr);
+        if(err != Error::OK 
+          && err != Error::COLUMN_SCHEMA_NAME_EXISTS 
+          && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
+          hdlr_get->make(ptr);
+          return;
+        }
 
         if(!req->exists && err==Error::OK)
           exit(1);  
@@ -244,13 +263,23 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 1000;
+  int num_of_cols = 10;
   int num_of_cols_to_remain = 1000;
   Protocol::Req::MngColumnPtr hdlr 
     = std::make_shared<Protocol::Req::MngColumn>(60000);
     
-  //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 100000);
-  //exit(0);
+  chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
+  check_get(0, num_of_cols);
+
+  chk(hdlr, Protocol::Req::MngColumn::Function::MODIFY, 1, num_of_cols, true);
+  check_get(0, num_of_cols, true);
+
+  chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, num_of_cols, true);
+  check_get(num_of_cols, 0);
+
+  std::cout << " OK! \n";
+  exit(0);
+
 
   std::cout << "## already exists response expected ##\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);

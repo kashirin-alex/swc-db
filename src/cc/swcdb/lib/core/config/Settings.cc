@@ -187,9 +187,12 @@ void Settings::init_options() {
     ("swc.mngr.port", i32(15000), 
      "RS-Manager default port if not defined in swc.mngr.host")
     ("swc.client.RS.connection.timeout", g_i32(10000), 
-     "RsnageServer client connect timeout")
+     "RangeServer client connect timeout")
     ("swc.client.RS.connection.probes", g_i32(1), 
-     "RsnageServer client connect probes")
+     "RangeServer client connect probes")
+    ("swc.client.RS.connection.keepalive", g_i32(30000), 
+     "RangeServer client connection keepalive for ms since last action")
+     
     ;
     
   /*

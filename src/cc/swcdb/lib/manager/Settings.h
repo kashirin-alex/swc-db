@@ -44,11 +44,6 @@ void Settings::init_app_options(){
     ("swc.mngr.role.check.delay.updated", g_i32(200), 
      "Delay in milliseconds on Mngr-Hosts-Status changes")
 
-
-    ("swc.mngr.ranges.assign.RS.connection.timeout", g_i32(30000), 
-     "Timeout for connection establishing with RangeServer")
-    ("swc.mngr.ranges.assign.RS.connection.probes", g_i32(3), 
-     "Number of connection probes")
     ("swc.mngr.ranges.assign.RS.remove.failures", g_i32(255), 
      "Number of failures(establishing conn.x probes) after which the RangeServer is removed")
 

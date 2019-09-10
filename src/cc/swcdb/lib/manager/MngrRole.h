@@ -66,7 +66,7 @@ class MngrRole {
       cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
-      m_mngr_inchain(std::make_shared<Protocol::Req::ConnQueue>(true)) {
+      m_mngr_inchain(std::make_shared<Protocol::Req::ConnQueue>()) {
     
   }
 

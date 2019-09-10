@@ -48,9 +48,10 @@ class Clients : public std::enable_shared_from_this<Clients> {
         "swc.client.RS.connection.timeout"),
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.client.RS.connection.probes"),
-      false
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.RS.connection.keepalive")
     );
-  }
+  } 
 
   operator ClientsPtr(){
     return shared_from_this();

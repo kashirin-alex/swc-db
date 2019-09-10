@@ -53,7 +53,7 @@ class MngRsId : public AppHandler {
         return;
       }
 
-      RangeServersPtr  rangeservers = Env::RangeServers::get();
+      RangeServersPtr rangeservers = Env::RangeServers::get();
       switch(req_params.flag){
 
         case Protocol::Params::MngRsId::Flag::RS_REQ: {

@@ -29,7 +29,6 @@ class RsStatus : public Protocol::Params::HostEndPoints {
           : rs_id(rs_id), state(State::NONE), 
             failures(0), total_ranges(0),
             Protocol::Params::HostEndPoints(endpoints) {
-    init_queue();
   }
 
   virtual ~RsStatus(){}
@@ -73,14 +72,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   }
 
   void init_queue(){
-    m_queue = std::make_shared<client::Rs::Host>(
-      endpoints,
-      Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.RS.connection.timeout"),
-      Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.RS.connection.probes"),
-      false
-    );
+    m_queue = Env::Clients::get()->rs->get(endpoints);
   }
 
   void put(Protocol::Req::ConnQueue::ReqBase::Ptr req){

@@ -76,12 +76,9 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   };
 
 
-  ConnQueue(bool persistent) 
-            : m_conn(nullptr), 
-              m_queue_running(false), 
-              m_connecting(false),
-              m_persistent(persistent),
-              m_check_timer(nullptr) { }
+  ConnQueue(const gInt32tPtr keepalive_ms=nullptr) 
+            : m_conn(nullptr),  m_queue_running(false), m_connecting(false),
+              cfg_keepalive_ms(keepalive_ms), m_check_timer(nullptr) { }
 
   virtual ~ConnQueue() { }
 
@@ -202,11 +199,12 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   
     }
 
-    if(!m_persistent)
-      schedule_close();
+    schedule_close();
   }
 
   void schedule_close() {
+    if(cfg_keepalive_ms == nullptr)
+      return;
     // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -228,7 +226,8 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     else
       m_check_timer->cancel();
 
-    m_check_timer->expires_from_now(std::chrono::milliseconds(30000));
+    m_check_timer->expires_from_now(
+      std::chrono::milliseconds(cfg_keepalive_ms->get()));
     m_check_timer->async_wait(
       [ptr=shared_from_this()](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
@@ -246,7 +245,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   TimerPtr                  m_check_timer; 
 
   protected:
-  const bool                m_persistent;
+  const gInt32tPtr          cfg_keepalive_ms;
 };
 
 

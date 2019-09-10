@@ -13,12 +13,13 @@ class Host : public Protocol::Req::ConnQueue  {
 
   const EndPoints   endpoints;
 
-  Host(const EndPoints& endpoints, 
+  Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
        const gInt32tPtr timeout, const gInt32tPtr probes, 
-       const bool persistent)
-      : endpoints(endpoints),  
+       const gInt32tPtr keepalive_ms)
+      : queues(queues), endpoints(endpoints), 
         cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
-        Protocol::Req::ConnQueue(persistent) {}
+        Protocol::Req::ConnQueue(keepalive_ms) {
+  }
 
   virtual ~Host(){
     stop();  
@@ -30,28 +31,28 @@ class Host : public Protocol::Req::ConnQueue  {
       [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
       cfg_conn_probes->get(),
-      !m_persistent
+      cfg_keepalive_ms != nullptr
     );
     return true;
   }
 
   void close_issued() override;
 
-  private:
-  
-  const gInt32tPtr  cfg_conn_timeout;
-  const gInt32tPtr  cfg_conn_probes;
+  protected:
+  const ConnQueuesPtr queues;
+  const gInt32tPtr    cfg_conn_timeout;
+  const gInt32tPtr    cfg_conn_probes;
 };
 
 
-class ConnQueues {
+class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   public:
 
   ConnQueues(const gInt32tPtr timeout, const gInt32tPtr probes, 
-             bool persistent=true)
+             const gInt32tPtr keepalive_ms)
             : cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
-              m_persistent(persistent) {
+              cfg_keepalive_ms(keepalive_ms) {
   }
 
   virtual ~ConnQueues() { }
@@ -73,12 +74,12 @@ class ConnQueues {
       if(has_endpoint(host->endpoints, endpoints))
         return host;
     }
+
     auto host = std::make_shared<Host>(
-      endpoints,
-      cfg_conn_timeout,
-      cfg_conn_probes,
-      m_persistent
+      shared_from_this(), endpoints, 
+      cfg_conn_timeout, cfg_conn_probes, cfg_keepalive_ms
     );
+
     m_hosts.push_back(host);
     return host;
   }
@@ -98,17 +99,17 @@ class ConnQueues {
 
   std::mutex              m_mutex;
   std::vector<Host::Ptr>  m_hosts;
-  const bool              m_persistent;
 
   const gInt32tPtr    cfg_conn_timeout;
   const gInt32tPtr    cfg_conn_probes;
+  const gInt32tPtr    cfg_keepalive_ms;
   
 };
 
 
 
 void Host::close_issued() {
-  Env::Clients::get()->rs->remove(endpoints);
+  queues->remove(endpoints);
 }
 
 

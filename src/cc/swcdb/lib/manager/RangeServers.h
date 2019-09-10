@@ -682,6 +682,7 @@ class RangeServers {
     }
     if(rs_last == nullptr){
       rs_last = std::make_shared<RsStatus>(0, last_rs->endpoints);
+      rs_last->init_queue();
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
       m_rs_status.push_back(rs_last);
@@ -727,6 +728,7 @@ class RangeServers {
     } while(!ok);
 
     RsStatusPtr h = std::make_shared<RsStatus>(nxt, endpoints);
+    h->init_queue();
     m_rs_status.push_back(h);
     return h;
   }
@@ -833,7 +835,6 @@ class RangeServers {
       schema = Env::Schemas::get()->get(schema_save->cid);
     }
   }
-
 
   void column_delete(int &err, int64_t cid) {
 
