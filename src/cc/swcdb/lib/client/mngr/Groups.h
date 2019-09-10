@@ -15,6 +15,7 @@ namespace SWC { namespace client { namespace Mngr {
 
 class Group;
 typedef std::shared_ptr<Group>  GroupPtr;
+typedef std::vector<EndPoints>  Hosts;
 
 class Group {
   public:
@@ -27,8 +28,7 @@ class Group {
     m_hosts.push_back(endpoints);
   }
 
-  Group(size_t cbegin, size_t cend,
-        std::vector<EndPoints> hosts) 
+  Group(size_t cbegin, size_t cend, Hosts hosts) 
         : col_begin(cbegin), col_end(cend){
     m_hosts.swap(hosts);
   }
@@ -54,8 +54,8 @@ class Group {
     m_hosts.push_back(new_endpoints);
   }
 
-  std::vector<EndPoints> get_hosts(){
-    std::vector<EndPoints> hosts;
+  Hosts get_hosts(){
+    Hosts hosts;
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& endpoints : m_hosts){
       EndPoints host;
@@ -137,8 +137,8 @@ class Group {
     return;
   }
 
-  std::vector<EndPoints>  m_hosts;
-  std::mutex              m_mutex;
+  Hosts         m_hosts;
+  std::mutex    m_mutex;
 };
 
 
@@ -290,6 +290,17 @@ class Groups : public std::enable_shared_from_this<Groups>{
     return groups;
   }
 
+  Hosts hosts(size_t cid){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(auto& group : m_groups) {
+      if(group->col_begin <= cid 
+        && (group->col_end == 0 || group->col_end >= cid))
+        return group->get_hosts();
+    }
+    return {};
+  }
+
   SelectedGroups get_groups(const EndPoints& endpoints){
     SelectedGroups host_groups;
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -322,6 +333,8 @@ class Groups : public std::enable_shared_from_this<Groups>{
     }
     return endpoints;
   }
+
+
 
   std::string to_string(){
     std::string s("manager-groups:\n");
