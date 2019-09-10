@@ -806,7 +806,7 @@ class RangeServers {
       cid, schema, schema->revision != 0 ? schema->revision : Time::now_ns());
     HT_ASSERT(schema_save->cid != 0);
     
-    column_save_schema(err, schema_save);
+    Files::Schema::save_with_validation(err, schema_save);
     if(err == Error::OK) 
       Env::Schemas::get()->add(err, schema_save);
 
@@ -827,26 +827,13 @@ class RangeServers {
 
     HT_ASSERT(schema_save->cid != 0);
 
-    column_save_schema(err, schema_save);
+    Files::Schema::save_with_validation(err, schema_save);
     if(err == Error::OK) {
       Env::Schemas::get()->replace(schema_save);
       schema = Env::Schemas::get()->get(schema_save->cid);
     }
   }
 
-  void column_save_schema(int &err, DB::SchemaPtr schema_save){
-
-    Files::Schema::save(err, schema_save); // ?tmp-file 
-    if(err != Error::OK) 
-      return;
-    DB::SchemaPtr schema_new = Files::Schema::load(err, schema_save->cid);
-    if(err != Error::OK) 
-      return;
-    if(!schema_new->equal(schema_save)) {
-      err = Error::COLUMN_SCHEMA_BAD_SAVE;
-      return;
-    }
-  }
 
   void column_delete(int &err, int64_t cid) {
 

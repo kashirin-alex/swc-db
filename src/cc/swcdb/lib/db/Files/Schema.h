@@ -141,7 +141,7 @@ void load(int &err, FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
     Env::FsInterface::fs()->close(err, smartfd);
 }
 
-DB::SchemaPtr load(int &err, int64_t cid) {
+DB::SchemaPtr load(int &err, int64_t cid, bool recover=true) {
 
   DB::SchemaPtr schema = nullptr;
   try{
@@ -151,7 +151,7 @@ DB::SchemaPtr load(int &err, int64_t cid) {
     schema = nullptr;
   }
 
-  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN){ 
+  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){ 
     HT_WARNF("Missing Column(cid=%d) Schema", cid);
     std::string name;
     if(cid < 4) {
@@ -181,6 +181,19 @@ DB::SchemaPtr load(int &err, int64_t cid) {
   return schema;
 }
 
+
+void save_with_validation(int &err, DB::SchemaPtr schema_save){
+  save(err, schema_save); // ?tmp-file 
+  if(err != Error::OK) 
+    return;
+  DB::SchemaPtr schema_new = load(err, schema_save->cid, false);
+  if(err != Error::OK) 
+    return;
+  if(!schema_new->equal(schema_save)) {
+    err = Error::COLUMN_SCHEMA_BAD_SAVE;
+    return;
+  }
+}
 
 }}}
 
