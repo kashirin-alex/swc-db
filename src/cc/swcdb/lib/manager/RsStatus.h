@@ -78,7 +78,8 @@ class RsStatus : public Protocol::Params::HostEndPoints {
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.RS.connection.timeout"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.RS.connection.probes")
+        "swc.mngr.ranges.assign.RS.connection.probes"),
+      false
     );
   }
 

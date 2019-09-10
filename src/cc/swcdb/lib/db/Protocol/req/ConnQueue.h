@@ -76,15 +76,20 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   };
 
 
-  ConnQueue() : m_conn(nullptr), 
-                m_queue_running(false), 
-                m_connecting(false) { }
+  ConnQueue(bool persistent) 
+            : m_conn(nullptr), 
+              m_queue_running(false), 
+              m_connecting(false),
+              m_persistent(persistent),
+              m_check_timer(nullptr) { }
 
   virtual ~ConnQueue() { }
 
   virtual bool connect() { 
     return false; // not implemented by default 
   }
+
+  virtual void close_issued() { }
 
   void stop() {
     ReqBase::Ptr req;
@@ -153,6 +158,13 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void run_queue(){
+    { 
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      if(m_check_timer != nullptr) {
+        m_check_timer->cancel();
+        m_check_timer = nullptr;
+      }
+    }
     ReqBase::Ptr          req;
     client::ClientConPtr  conn;
     bool sent;
@@ -161,12 +173,12 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         if(m_queue.empty()){
           m_queue_running = false;
-          return;
+          break;
         } 
         req = m_queue.front();
-        if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
+          if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
           m_queue_running = false;
-          return;
+          break;
         }
         conn = m_conn;
       }
@@ -185,10 +197,45 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
         m_queue_running = !m_queue.empty();
         if(m_queue_running) 
           continue;
-        return;
+        break;
       }
   
     }
+
+    if(!m_persistent)
+      schedule_close();
+  }
+
+  void schedule_close() {
+    // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
+
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    
+    if(m_queue.empty() && (m_conn == nullptr || !m_conn->due())) {
+      if(m_conn != nullptr)
+        m_conn->do_close(); 
+      if(m_check_timer != nullptr) {
+        m_check_timer->cancel();
+        m_check_timer = nullptr;
+      }
+      close_issued();
+      return;
+    }
+    
+    if(m_check_timer == nullptr)
+      m_check_timer = std::make_shared<asio::high_resolution_timer>(
+        *Env::IoCtx::io()->ptr());
+    else
+      m_check_timer->cancel();
+
+    m_check_timer->expires_from_now(std::chrono::milliseconds(30000));
+    m_check_timer->async_wait(
+      [ptr=shared_from_this()](const asio::error_code ec) {
+        if (ec != asio::error::operation_aborted){
+          ptr->schedule_close();
+        }
+      }
+    );   
   }
 
   std::recursive_mutex      m_mutex;
@@ -196,6 +243,10 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   client::ClientConPtr      m_conn;
   bool                      m_queue_running;
   bool                      m_connecting;
+  TimerPtr                  m_check_timer; 
+
+  protected:
+  const bool                m_persistent;
 };
 
 

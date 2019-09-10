@@ -14,9 +14,11 @@ class Host : public Protocol::Req::ConnQueue  {
   const EndPoints   endpoints;
 
   Host(const EndPoints& endpoints, 
-        const gInt32tPtr timeout, const gInt32tPtr probes)
+       const gInt32tPtr timeout, const gInt32tPtr probes, 
+       const bool persistent)
       : endpoints(endpoints),  
-        cfg_conn_timeout(timeout), cfg_conn_probes(probes) {}
+        cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
+        Protocol::Req::ConnQueue(persistent) {}
 
   virtual ~Host(){
     stop();  
@@ -28,10 +30,12 @@ class Host : public Protocol::Req::ConnQueue  {
       [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
       cfg_conn_probes->get(),
-      true
+      !m_persistent
     );
     return true;
   }
+
+  void close_issued() override;
 
   private:
   
@@ -44,8 +48,11 @@ class ConnQueues {
 
   public:
 
-  ConnQueues(const gInt32tPtr timeout, const gInt32tPtr probes)
-            : cfg_conn_timeout(timeout), cfg_conn_probes(probes) {}
+  ConnQueues(const gInt32tPtr timeout, const gInt32tPtr probes, 
+             bool persistent=true)
+            : cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
+              m_persistent(persistent) {
+  }
 
   virtual ~ConnQueues() { }
 
@@ -69,17 +76,29 @@ class ConnQueues {
     auto host = std::make_shared<Host>(
       endpoints,
       cfg_conn_timeout,
-      cfg_conn_probes
+      cfg_conn_probes,
+      m_persistent
     );
     m_hosts.push_back(host);
     return host;
   }
 
+  void remove(const EndPoints& endpoints) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto it=m_hosts.begin(); it<m_hosts.end(); it++){
+
+      if(has_endpoint((*it)->endpoints, endpoints)) {
+        m_hosts.erase(it);
+        break;
+      }
+    }
+  }
 
   private:
 
   std::mutex              m_mutex;
   std::vector<Host::Ptr>  m_hosts;
+  const bool              m_persistent;
 
   const gInt32tPtr    cfg_conn_timeout;
   const gInt32tPtr    cfg_conn_probes;
@@ -87,6 +106,10 @@ class ConnQueues {
 };
 
 
+
+void Host::close_issued() {
+  Env::Clients::get()->rs->remove(endpoints);
+}
 
 
 }}}
