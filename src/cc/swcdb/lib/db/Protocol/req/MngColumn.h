@@ -63,6 +63,10 @@ class MngColumn: public ActiveMngrBase {
     return request(Function::CREATE, schema, cb);
   }
 
+  void modify(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
+    return request(Function::MODIFY, schema, cb);
+  }
+
   void remove(DB::SchemaPtr schema, CodeHandler::Req::Cb_t cb){
     return request(Function::DELETE, schema, cb);
   }

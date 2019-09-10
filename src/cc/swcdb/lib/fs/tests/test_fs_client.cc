@@ -4,10 +4,7 @@
 
 
 #include "swcdb/lib/fs/Settings.h"
-#include "swcdb/lib/core/comm/AppContext.h"
-#include "swcdb/lib/client/Clients.h"
-#include "swcdb/lib/db/Columns/RS/Columns.h"
-#include "swcdb/lib/db/Columns/MNGR/Columns.h"
+#include "swcdb/lib/fs/Interface.h"
 
 #include <iostream>
 

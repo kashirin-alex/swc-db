@@ -7,6 +7,7 @@
 #define swcdb_lib_db_RS_Columns_Columns_h
 
 #include "swcdb/lib/fs/Interface.h"
+#include "swcdb/lib/db/Columns/Schema.h"
 
 #include "swcdb/lib/core/comm/ResponseCallback.h"
 #include "Callbacks.h"
@@ -75,6 +76,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
   void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
     if(shuttingdown())
       cb->send_error(Error::SERVER_SHUTTING_DOWN, "");
+    else if(Env::Schemas::get()->get(cid) == nullptr)
+      cb->send_error(Error::COLUMN_SCHEMA_MISSING, "");
     else
       get_range(err, cid, rid, true)->load(cb);
   }

@@ -24,7 +24,7 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
-void check_get(int num_of_cols, int num_of_cols_to_remain){
+void check_get(int num_of_cols, int num_of_cols_to_remain, bool modified = false){
 
 
   std::cout << "########### get_scheme_by_name ###########\n";
@@ -33,10 +33,13 @@ void check_get(int num_of_cols, int num_of_cols_to_remain){
   
   struct ExpctedRsp{
     public:
-    ExpctedRsp(std::string name, bool exists)
-              : name(name), exists(exists), chks(0) { }
+    ExpctedRsp(std::string name, Types::Encoding blk_encoding, bool exists)
+              : name(name), blk_encoding(blk_encoding),
+                exists(exists), chks(0) { }
     //int64_t     cid;
+
     std::string name;
+    Types::Encoding blk_encoding;
     bool exists;
     std::atomic<int> chks;
   };
@@ -49,7 +52,12 @@ void check_get(int num_of_cols, int num_of_cols_to_remain){
     std::string name("column-");
     name.append(std::to_string(n));
     
-    expected.push_back(std::make_shared<ExpctedRsp>(name, n>num_of_cols));
+    
+    expected.push_back(std::make_shared<ExpctedRsp>(
+      name, 
+      modified ?  Types::Encoding::SNAPPY : Types::Encoding::PLAIN,
+      n>num_of_cols)
+    );
   }
 
   for(auto& req : expected){
@@ -62,13 +70,15 @@ void check_get(int num_of_cols, int num_of_cols_to_remain){
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
                           std::chrono::system_clock::now() - start_ts).count();
         latency->add(took);
-        std::cout << "GetColumnRsp: took=" << took  
+        std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
         
         if(!req->exists && err==Error::OK)
           exit(1);  
         if(req->exists && err!=Error::OK)
+          exit(1); 
+        if(err==Error::OK && req->blk_encoding != rsp.schema->blk_encoding)
           exit(1); 
         if(err==Error::OK && req->name.compare(rsp.schema->col_name) != 0)
           exit(1); 
@@ -99,14 +109,14 @@ void check_get(int num_of_cols, int num_of_cols_to_remain){
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
                           std::chrono::system_clock::now() - start_ts).count();
         latency->add(took);
-        std::cout << "GetColumnRsp: took=" << took  
+        std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
                   << " err=" << err << "(" << Error::get_text(err) << ") " 
                   << " " << (err==Error::OK?rsp.cid:-1) << "\n";
 
         if(!req->exists && err==Error::OK)
           exit(1);  
         if(req->exists && err!=Error::OK)
-          exit(1); 
+          exit(1);
         req->chks++;
 
       }
@@ -152,9 +162,13 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
         std::string name("column-");
         name.append(std::to_string(n));
 
+        Types::Encoding blk_encoding = Types::Encoding::PLAIN;
+        if(func == Protocol::Req::MngColumn::Function::MODIFY)
+          blk_encoding = Types::Encoding::SNAPPY;
+
         hdlr->request(
           func,
-          DB::Schema::make(0, name, Types::Column::COUNTER_I64, 10, 1234, 3, Types::Encoding::PLAIN, 9876543),
+          DB::Schema::make(0, name, Types::Column::COUNTER_I64, 10, 1234, 3, blk_encoding, 9876543),
 
           [hdlr, latency, verbose, start_ts=std::chrono::system_clock::now()]
           (Protocol::Req::MngColumn::Req::BasePtr req, int err){
@@ -172,7 +186,11 @@ void chk(Protocol::Req::MngColumnPtr hdlr,
               || 
                 (ptr->function == Protocol::Req::MngColumn::Function::DELETE 
                   && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
-              )){
+              || 
+                (ptr->function == Protocol::Req::MngColumn::Function::MODIFY 
+                  && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
+              ))
+              {
               hdlr->make(ptr);
 
             } else
@@ -225,13 +243,15 @@ int main(int argc, char** argv) {
     std::make_shared<client::AppContext>()
   ));
   
-  // check_get();
 
-  int num_of_cols = 100;
-  int num_of_cols_to_remain = 100;
+  int num_of_cols = 1000;
+  int num_of_cols_to_remain = 1000;
   Protocol::Req::MngColumnPtr hdlr 
     = std::make_shared<Protocol::Req::MngColumn>(60000);
     
+  //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 100000);
+  //exit(0);
+
   std::cout << "## already exists response expected ##\n";
   chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, num_of_cols, true);
   std::cout << "######################################\n\n";
@@ -254,7 +274,15 @@ int main(int argc, char** argv) {
 
   check_get(num_of_cols, num_of_cols_to_remain);
 
-  //chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 1000000);
+  
+  std::cout << "########### modify request ###########\n";
+  chk(hdlr, Protocol::Req::MngColumn::Function::MODIFY, 1, num_of_cols+num_of_cols_to_remain, true);
+  std::cout << "######################################\n\n";
+
+  check_get(num_of_cols, num_of_cols_to_remain, true);
+
+  //chk(hdlr, Protocol::Req::MngColumn::Function::CREATE, 1, 100000);
+  //chk(hdlr, Protocol::Req::MngColumn::Function::DELETE, 1, 100000);
 
 
   Env::IoCtx::io()->stop();

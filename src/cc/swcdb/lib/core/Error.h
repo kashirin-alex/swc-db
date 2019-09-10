@@ -119,6 +119,8 @@ namespace SWC {
       COLUMN_REACHED_ID_LIMIT                      = CODE_START+0x5f+0x4,
       COLUMN_SCHEMA_BAD_SAVE                       = CODE_START+0x5f+0x5,
       COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
+      COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
+      COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
 
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,

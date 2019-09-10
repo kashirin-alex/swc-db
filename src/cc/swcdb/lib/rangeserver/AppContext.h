@@ -46,8 +46,8 @@ class AppContext : public SWC::AppContext {
       Env::Config::settings()->get<int32_t>("swc.rs.handlers"));
     Env::FsInterface::init();
     Env::RsData::init();
-    Env::RsColumns::init();
     Env::Schemas::init();
+    Env::RsColumns::init();
     
   }
 

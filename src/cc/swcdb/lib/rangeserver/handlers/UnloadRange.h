@@ -33,7 +33,8 @@ class UnloadRange : public AppHandler {
       Env::RsColumns::get()->unload_range(err, params.cid, params.rid, 
         [this](int err){
           if(err == Error::OK)
-            m_conn->response_ok(m_ev); // cb->run();
+            m_conn->response_ok(m_ev); 
+            // + remove cid if no ranges left
           else
             m_conn->send_error(err, "", m_ev);
         }

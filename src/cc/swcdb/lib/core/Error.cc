@@ -83,6 +83,8 @@ namespace {
     { Error::COLUMN_REACHED_ID_LIMIT,       "Columd ID max-reached"},
     { Error::COLUMN_SCHEMA_BAD_SAVE,        "Schema for save not matches saved"},
     { Error::COLUMN_SCHEMA_NAME_EMPTY,      "Schema's column name cannot be empty"},
+    { Error::COLUMN_SCHEMA_NOT_DIFFERENT,   "Schemas expected to be different"},
+    { Error::COLUMN_SCHEMA_MISSING,         "cid's Schema is missing"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },

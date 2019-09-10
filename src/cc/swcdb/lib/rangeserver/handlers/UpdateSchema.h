@@ -31,7 +31,9 @@ class UpdateSchema : public AppHandler {
       params.decode(&ptr, &remain);
 
       Env::Schemas::get()->replace(params.schema);
-      m_conn->response_ok();
+      HT_DEBUGF("updated %s", params.schema->to_string().c_str());
+      
+      m_conn->response_ok(m_ev);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

@@ -37,13 +37,16 @@ class RsUpdateSchema : public ConnQueue::ReqBase {
     }
 
     if(ev->header.command == Command::REQ_RS_SCHEMA_UPDATE){
-      int err = ev->error != Error::OK? ev->error: response_code(ev);
-      if(err == Error::OK)
-        Env::MngrColumns::get()->get_column(err, schema->cid, false)
-                           ->add_rs(rs->rs_id, schema->revision);
+      updated(ev->error != Error::OK? ev->error: response_code(ev), false);
       return; 
     }
   }
+  
+  void handle_no_conn() override {
+    updated(Error::COMM_NOT_CONNECTED, true);
+  }
+
+  void updated(int err, bool failure);
 
   private:
 

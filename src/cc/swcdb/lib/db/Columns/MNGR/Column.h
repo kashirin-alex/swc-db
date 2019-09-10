@@ -138,9 +138,22 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
 
-  void add_rs(uint64_t rs_id, int64_t rev=0){
+  void change_rs_schema(uint64_t rs_id, int64_t rev=0){
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_schemas_rev.insert(RsSchemaRev(rs_id, rev));
+
+    auto it = m_schemas_rev.find(rs_id);
+    if(it == m_schemas_rev.end())
+       m_schemas_rev.insert(RsSchemaRev(rs_id, rev));
+    else
+      it->second = rev;
+  }
+
+  void remove_rs_schema(uint64_t rs_id){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_schemas_rev.find(rs_id);
+    if(it != m_schemas_rev.end())
+       m_schemas_rev.erase(it);
   }
 
   void need_schema_sync(int64_t rev, std::vector<uint64_t> &rs_ids){

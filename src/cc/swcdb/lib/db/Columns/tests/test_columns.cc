@@ -4,7 +4,6 @@
 
 
 #include "swcdb/lib/fs/Settings.h"
-#include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/RS/Columns.h"
 #include "swcdb/lib/db/Columns/MNGR/Columns.h"
@@ -97,6 +96,8 @@ int main(int argc, char** argv) {
     Env::Config::init(argc, argv);
 
     Env::FsInterface::init();
+    Env::Schemas::init();
+
     rs();
     mngr();
     exit(0);
