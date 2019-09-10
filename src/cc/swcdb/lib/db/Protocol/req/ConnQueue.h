@@ -182,13 +182,17 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
       
       HT_ASSERT(req->cbp != nullptr);
 
-      if(!req->valid() 
-        || (sent = (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK)) 
-        || !req->insistent){
+      if(!req->valid())
+        goto processed;
+        
+      if(sent = (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK))
+        goto processed;
 
-        if(!sent && !req->insistent)
-          req->handle_no_conn();
-
+      req->handle_no_conn();
+      if(req->insistent)
+        continue;
+        
+      processed: {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         m_queue.pop();
         m_queue_running = !m_queue.empty();
