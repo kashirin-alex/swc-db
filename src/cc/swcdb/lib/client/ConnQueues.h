@@ -2,10 +2,10 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_client_rs_ConnQueues_h
-#define swc_client_rs_ConnQueues_h
+#ifndef swc_client_ConnQueues_h
+#define swc_client_ConnQueues_h
 
-namespace SWC { namespace client { namespace Rs {
+namespace SWC { namespace client {
 
 class Host : public Protocol::Req::ConnQueue  {
   public:
@@ -113,6 +113,6 @@ void Host::close_issued() {
 }
 
 
-}}}
+}}
 
-#endif // swc_client_rs_ConnQueues_h
+#endif // swc_client_ConnQueues_h

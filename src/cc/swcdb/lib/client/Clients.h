@@ -14,10 +14,8 @@
 
 namespace SWC { namespace client {
 
-namespace Rs {
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
-}
 
 class Clients;
 typedef std::shared_ptr<Clients> ClientsPtr;
@@ -39,11 +37,19 @@ class Clients : public std::enable_shared_from_this<Clients> {
     mngr_service = std::make_shared<SerializedClient>(
       "RS-MANAGER", ioctx, m_app_ctx
     );
+    mngr = std::make_shared<ConnQueues>(
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.MNGR.connection.timeout"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.MNGR.connection.probes"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.MNGR.connection.keepalive")
+    );
+
     rs_service = std::make_shared<SerializedClient>(
       "RANGESERVER", ioctx, m_app_ctx
     );
-
-    rs = std::make_shared<Rs::ConnQueues>(
+    rs = std::make_shared<ConnQueues>(
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.client.RS.connection.timeout"),
       Env::Config::settings()->get_ptr<gInt32t>(
@@ -62,9 +68,10 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
   Mngr::GroupsPtr   mngrs_groups;
   ClientPtr         mngr_service = nullptr;
+  ConnQueuesPtr     mngr = nullptr;
   
   ClientPtr         rs_service   = nullptr;
-  Rs::ConnQueuesPtr rs = nullptr;
+  ConnQueuesPtr     rs = nullptr;
 
   private:
   AppContextPtr     m_app_ctx = nullptr;
@@ -97,6 +104,6 @@ class Clients {
 
 }
 
-#include "rs/ConnQueues.h"
+#include "ConnQueues.h"
 
 #endif // swc_lib_client_Clients_h

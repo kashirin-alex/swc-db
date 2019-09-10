@@ -91,7 +91,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   // int32_t resource;
   
   private:
-  client::Rs::Host::Ptr m_queue = nullptr;
+  client::Host::Ptr m_queue = nullptr;
 
 };
 typedef std::shared_ptr<RsStatus> RsStatusPtr;

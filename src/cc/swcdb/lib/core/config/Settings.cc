@@ -186,12 +186,20 @@ void Settings::init_options() {
      "RS-Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i32(15000), 
      "RS-Manager default port if not defined in swc.mngr.host")
+     
     ("swc.client.RS.connection.timeout", g_i32(10000), 
      "RangeServer client connect timeout")
     ("swc.client.RS.connection.probes", g_i32(1), 
      "RangeServer client connect probes")
     ("swc.client.RS.connection.keepalive", g_i32(30000), 
      "RangeServer client connection keepalive for ms since last action")
+
+    ("swc.client.MNGR.connection.timeout", g_i32(10000), 
+     "Manager client connect timeout")
+    ("swc.client.MNGR.connection.probes", g_i32(1), 
+     "Manager client connect probes")
+    ("swc.client.MNGR.connection.keepalive", g_i32(30000), 
+     "Manager client connection keepalive for ms since last action")
      
     ;
     
