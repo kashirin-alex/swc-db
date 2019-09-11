@@ -48,7 +48,6 @@ class AppContext : public SWC::AppContext {
     Env::RsData::init();
     Env::Schemas::init();
     Env::RsColumns::init();
-    
   }
 
   void init(const EndPoints& endpoints) override {
@@ -63,13 +62,9 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::RS::AppContext>()
     ));
     
-    assign_rs_id();
-  }
+    m_id_mngr = std::make_shared<Protocol::Req::MngRsId>();
+    m_id_mngr->assign();
 
-  void assign_rs_id(){
-    if(mngr_root == nullptr)
-      mngr_root = std::make_shared<Protocol::Req::MngRsId>();
-    mngr_root->assign();
   }
 
   void set_srv(SerializedServerPtr srv){
@@ -98,6 +93,12 @@ class AppContext : public SWC::AppContext {
 
       case Event::Type::MESSAGE: {
         
+        if(Env::RsData::get()->rs_id == 0 && 
+          ev->header.command != Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED){
+          try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
+          break;
+        }
+
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
@@ -117,9 +118,9 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::UnloadRange(conn, ev);
             break;
 
-          case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED: 
-            assign_rs_id();
-            conn->response_ok(ev);
+          case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
+            try{conn->response_ok(ev);}catch(...){}
+            m_id_mngr->assign();
             break;
             
           case Protocol::Command::REQ_RS_COLUMN_DELETE: 
@@ -142,14 +143,12 @@ class AppContext : public SWC::AppContext {
         if(handler)
           asio::post(*Env::IoCtx::io()->ptr(), 
                     [hdlr=AppHandlerPtr(handler)](){ hdlr->run();  });
-
         break;
       }
 
       default:
         HT_WARNF("Unimplemented event-type (%llu)", (Llu)ev->type);
         break;
-
     }
     
   }
@@ -167,7 +166,6 @@ class AppContext : public SWC::AppContext {
               sig, ec.message().c_str());
       return;
     }
-
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
 
     m_srv->stop_accepting(); // no further requests accepted
@@ -175,7 +173,7 @@ class AppContext : public SWC::AppContext {
     int err = Error::OK;
     Env::RsColumns::get()->unload_all(err, true);
 
-    mngr_root->shutting_down(
+    m_id_mngr->shutting_down(
       [ptr=shared_from_this()](){
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
       }
@@ -200,8 +198,8 @@ class AppContext : public SWC::AppContext {
 
   private:
 
-  SerializedServerPtr        m_srv = nullptr;
-  Protocol::Req::MngRsIdPtr  mngr_root = nullptr;
+  SerializedServerPtr           m_srv = nullptr;
+  Protocol::Req::MngRsId::Ptr   m_id_mngr = nullptr;
   
 };
 

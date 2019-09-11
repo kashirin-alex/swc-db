@@ -6,7 +6,7 @@
 #ifndef swc_lib_db_protocol_req_MngRsId_h
 #define swc_lib_db_protocol_req_MngRsId_h
 
-#include "ActiveMngrBase.h"
+#include "ActiveMngrRoute.h"
 #include "swcdb/lib/db/Protocol/params/MngRsId.h"
 
 namespace SWC {
@@ -14,186 +14,183 @@ namespace Protocol {
 namespace Req {
 
 
-class MngRsId: public ActiveMngrBase {
+class MngRsId: public ConnQueue::ReqBase {
 
   public:
+  typedef std::shared_ptr<MngRsId> Ptr;
 
-  MngRsId() 
-          : ActiveMngrBase(1, 1), m_conn(nullptr), m_shutting_down(false),
+  MngRsId(CommBufPtr cbp=nullptr) 
+          : ConnQueue::ReqBase(false, cbp),
             cfg_check_interval(
               Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rs.id.validation.interval")
-            ) { }
-
+                "swc.rs.id.validation.interval")) {
+  }
+  
   virtual ~MngRsId(){}
 
   void assign() {
-    ActiveMngrBase::run();
+    Files::RsDataPtr rs_data = Env::RsData::get();
+    create(
+      Protocol::Params::MngRsId(
+        0, 
+        Protocol::Params::MngRsId::Flag::RS_REQ, 
+        rs_data->endpoints
+      )
+    )->run();
   }
 
   void shutting_down(std::function<void()> cb) {
-    m_cb = cb;
-    m_shutting_down = true;
-    ActiveMngrBase::run();
-  
     HT_DEBUGF("RS_SHUTTINGDOWN(req) %s", 
               Env::RsData::get()->to_string().c_str());
-  }
-
-  void run(const EndPoints& endpoints) override {
-
-    if(m_conn != nullptr && m_conn->is_open()){
-      make_request(nullptr, false);
-      return;
-    }
-    Env::Clients::get()->mngr_service->get_connection(
-      endpoints, 
-      [ptr=shared_from_this()]
-      (client::ClientConPtr conn){
-        std::dynamic_pointer_cast<MngRsId>(ptr)->make_request(conn, true);
-      },
-      std::chrono::milliseconds(20000), 
-      1
-    );
-  }
-
-  void make_request(client::ClientConPtr conn, bool new_conn) {
-    if(new_conn)
-      m_conn = conn;
-
-    if(m_conn == nullptr || !m_conn->is_open()){
-      m_conn = nullptr;
-      if(!new_conn)
-        ActiveMngrBase::run();
-      else
-        run_within(Env::Clients::get()->mngr_service->io(), 200);
-      return;
-    }
     
     Files::RsDataPtr rs_data = Env::RsData::get();
-    Protocol::Params::MngRsId params(
-      m_shutting_down ? rs_data->rs_id.load() : 0, 
-      m_shutting_down ? Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN 
-                      : Protocol::Params::MngRsId::Flag::RS_REQ, 
-      rs_data->endpoints
+    Ptr req = create(
+      Protocol::Params::MngRsId(
+        rs_data->rs_id.load(), 
+        Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
+        rs_data->endpoints
+      )
     );
+    req->cb_shutdown = cb;
+    req->run();
+  }
 
-    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+  void handle_no_conn() override { 
+    if(was_called)
+      return;
+    clear_endpoints();
+    assign();
+  }
 
-    if(m_conn->send_request(cbp,shared_from_this()) != Error::OK)
-      run_within(Env::Clients::get()->mngr_service->io(), 500);
+  bool run(uint32_t timeout=0) override {
+    if(endpoints.empty()){
+      Env::Clients::get()->mngrs_groups->select(1, endpoints);
+      if(endpoints.empty()){
+        std::make_shared<ActiveMngrRoute>(1, shared_from_this())->run();
+        return false;
+      }
+    }
+    Env::Clients::get()->mngr->get(endpoints)->put(req());
+    return true;
   }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
-    
-    if(ev->header.command == Protocol::Command::CLIENT_REQ_ACTIVE_MNGR){
-      ActiveMngrBase::handle(conn, ev);
+    if(was_called)
+      return;
+    was_called = true;
+
+    if(ev->error != Error::OK 
+       || ev->header.command != Protocol::Command::REQ_MNGR_MNG_RS_ID){
+      schedule(conn, 1000);
       return;
     }
 
-    bool ok = false;
-
-    if(ev->error == Error::OK 
-       && ev->header.command == Protocol::Command::REQ_MNGR_MNG_RS_ID){
-
-      if(Protocol::response_code(ev) == Error::OK){
-        conn->do_close();
-        run_within(conn->io_ctx, cfg_check_interval->get());
-        return;
-      }
+    if(Protocol::response_code(ev) == Error::OK){
+      schedule(conn, cfg_check_interval->get());
+      return;
+    }
       
-      try {
-        const uint8_t *ptr = ev->payload;
-        size_t remain = ev->payload_len;
 
-        Protocol::Params::MngRsId rsp_params;
-        rsp_params.decode(&ptr, &remain);
+    Protocol::Params::MngRsId rsp_params;
+    try {
+      const uint8_t *ptr = ev->payload;
+      size_t remain = ev->payload_len;
+      rsp_params.decode(&ptr, &remain);
+ 
+    } catch (Exception &e) {
+      HT_ERROR_OUT << e << HT_END;
+    }
         
-        if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
-          run_within(conn->io_ctx, 50);
-
-        } 
-        else if(
-          rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
-          || 
-          rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN){
-
-          Files::RsDataPtr rs_data = Env::RsData::get();
-          Protocol::Params::MngRsId params;
-
-          if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
-             && rsp_params.fs != Env::FsInterface::interface()->get_type()){
-            params = Protocol::Params::MngRsId(
-              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
-              rs_data->endpoints);
-
-            HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
-                      "RS_SHUTTINGDOWN %s",
-                      Env::FsInterface::interface()->to_string().c_str(), 
-                      (int)rsp_params.fs, rs_data->to_string().c_str());
-            std::raise(SIGTERM);
-
-          } else if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
-            || (rs_data->rs_id != rsp_params.rs_id 
-                && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
-            rs_data->rs_id = rsp_params.rs_id;
-          
-            params = Protocol::Params::MngRsId(
-              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_ACK, 
-              rs_data->endpoints);
-              
-            HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
-          } else {
-
-            params = Protocol::Params::MngRsId(
-              rs_data->rs_id, Protocol::Params::MngRsId::Flag::RS_DISAGREE, 
-              rs_data->endpoints);
-
-            HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
-          }
-
-          CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
-          CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-          params.encode(cbp->get_data_ptr_address());
-
-          conn->send_request(cbp, shared_from_this());
-          return;
-       
-        }
-        else if(rsp_params.flag == Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN) {
-          HT_DEBUGF("RS_SHUTTINGDOWN %s", 
-                    Env::RsData::get()->to_string().c_str());
-          if(m_cb != 0)
-             m_cb();
-          else
-            HT_WARN("Shutdown flag without Callback!");
-          return;
-
-        } 
-          // else Flag can be only MNGR_NOT_ACTIVE
-        
-        ok = true;
-
-      } catch (Exception &e) {
-        HT_ERROR_OUT << e << HT_END;
-      }
+    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
+      assign();
+      return;
+    }
+    
+    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN) {
+      HT_DEBUGF("RS_SHUTTINGDOWN %s", 
+                Env::RsData::get()->to_string().c_str());
+      if(cb_shutdown != 0)
+        cb_shutdown();
+      else
+        HT_WARN("Shutdown flag without Callback!");
+      return;
     }
 
-    if(!ok)
-      conn->do_close();
-    run_within(conn->io_ctx, 1000);
+    if(rsp_params.flag != Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+        &&
+       rsp_params.flag != Protocol::Params::MngRsId::Flag::MNGR_REASSIGN){
+      clear_endpoints();
+      // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
+      schedule(conn, 1000);
+      return;
+    }
+
+    Files::RsDataPtr rs_data = Env::RsData::get();
+
+    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+       && rsp_params.fs != Env::FsInterface::interface()->get_type()){
+
+      HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
+                      "RS_SHUTTINGDOWN %s",
+        Env::FsInterface::interface()->to_string().c_str(), 
+        (int)rsp_params.fs, 
+        rs_data->to_string().c_str()
+      );
+        
+      std::raise(SIGTERM);
+      return;
+    }
+    
+    Protocol::Params::MngRsId::Flag flag;
+    if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
+       || (rs_data->rs_id != rsp_params.rs_id 
+           && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
+
+      rs_data->rs_id = rsp_params.rs_id;
+      flag = Protocol::Params::MngRsId::Flag::RS_ACK;
+      HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
+    } else {
+
+      flag = Protocol::Params::MngRsId::Flag::RS_DISAGREE;
+      HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
+    }
+
+    create(
+      Protocol::Params::MngRsId(rs_data->rs_id, flag, rs_data->endpoints)
+    )->run();
+  }
+   
+  std::function<void()> cb_shutdown = 0;
+  
+  private:
+  
+  Ptr create(Protocol::Params::MngRsId params) {
+    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
+    CommBufPtr new_cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+    params.encode(new_cbp->get_data_ptr_address());
+    return std::make_shared<MngRsId>(new_cbp);
   }
 
-  client::ClientConPtr  m_conn;
-  bool                  m_shutting_down;
-  
-  const gInt32tPtr cfg_check_interval;
+  void schedule(ConnHandlerPtr conn, uint32_t ms) {
+    Files::RsDataPtr rs_data = Env::RsData::get();
+    create(
+      Protocol::Params::MngRsId(
+        0, 
+        Protocol::Params::MngRsId::Flag::RS_REQ, 
+        rs_data->endpoints
+      )
+    )->run_within(conn->io_ctx, ms);
+  }
 
-  std::function<void()> m_cb = 0;
+  void clear_endpoints() {
+    Env::Clients::get()->mngrs_groups->remove(endpoints);
+    endpoints.clear();
+  }
+
+  const gInt32tPtr      cfg_check_interval;
+  EndPoints             endpoints;
+  
 };
-typedef std::shared_ptr<MngRsId> MngRsIdPtr;
 
 }}}
 
