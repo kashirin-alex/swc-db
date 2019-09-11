@@ -41,6 +41,8 @@ class ActiveMngrRoute : public ConnQueue::ReqBase {
   }
 
   bool run(uint32_t timeout=0) override {
+    if(Env::IoCtx::stopping())
+      return false;
 
     if(hosts.empty()) {
       Env::Clients::get()->mngrs_groups->hosts(cid, hosts, group_host);

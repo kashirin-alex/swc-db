@@ -39,7 +39,7 @@ class MngRsId: public ConnQueue::ReqBase {
       std::lock_guard<std::mutex> lock(m_mutex);
 
       m_timer->cancel();
-      if(Env::IoCtx::stopping())
+      if(m_timer == nullptr)
         return;
 
       m_timer->expires_from_now(
@@ -57,12 +57,14 @@ class MngRsId: public ConnQueue::ReqBase {
     void stop(){
       std::lock_guard<std::mutex> lock(m_mutex);
       m_timer->cancel();
+      m_timer = nullptr;
     }
 
     private:
-    std::mutex              m_mutex;
-    const gInt32tPtr        cfg_check_interval;
-    const TimerPtr          m_timer;
+    const gInt32tPtr  cfg_check_interval;
+    
+    std::mutex        m_mutex;
+    TimerPtr          m_timer;
   };
   
   void static assign(Scheduler::Ptr validator) {
