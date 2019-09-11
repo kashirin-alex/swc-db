@@ -103,6 +103,7 @@ namespace {
 
     { Error::RS_NOT_LOADED_RANGE,     "RS range id not loaded"},
     { Error::RS_DELETED_RANGE,        "RS range state deleted"},
+    { Error::RS_NOT_READY,            "RS is not ready, lacks rs_id"},
 
     { Error::IO_ERROR,              " i/o error" },
     { Error::BAD_SCHEMA,           "bad schema" },

@@ -63,17 +63,12 @@ namespace SWC {
       VERSION_MISMATCH                             = CODE_START+0x9,
       CHECKSUM_MISMATCH                            = CODE_START+0xa,
 
-      MNGR_NOT_ACTIVE                              = CODE_START+0xb,
-      MNGR_NOT_INITIALIZED                         = CODE_START+0xc,
-      RS_NOT_LOADED_RANGE                          = CODE_START+0xd,
-      RS_DELETED_RANGE                             = CODE_START+0xf,
+      MNGR_NOT_ACTIVE                              = CODE_START+0x0f+0x1,
+      MNGR_NOT_INITIALIZED                         = CODE_START+0x0f+0x2,
+      RS_NOT_READY                                 = CODE_START+0x0f+0x3,
+      RS_NOT_LOADED_RANGE                          = CODE_START+0x0f+0x4,
+      RS_DELETED_RANGE                             = CODE_START+0x0f+0x5,
 
-      SYNTAX_ERROR                                 = CODE_START+0x0f+0x1,
-      COMMAND_PARSE_ERROR                          = CODE_START+0x0f+0x2,
-      SCHEMA_PARSE_ERROR                           = CODE_START+0x0f+0x3,
-      BAD_SCAN_SPEC                                = CODE_START+0x0f+0x4,
-      BAD_SCHEMA                                   = CODE_START+0x0f+0x5,
-      BAD_KEY                                      = CODE_START+0x0f+0xf,
 
       BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+0x1f+0x1,
       BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+0x1f+0x2,
@@ -122,6 +117,13 @@ namespace SWC {
       COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
       COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
 
+      SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
+      COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
+      SCHEMA_PARSE_ERROR                           = CODE_START+0x6f+0x3,
+      BAD_SCAN_SPEC                                = CODE_START+0x6f+0x4,
+      BAD_SCHEMA                                   = CODE_START+0x6f+0x5,
+      BAD_KEY                                      = CODE_START+0x6f+0xf,
+      
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,
       COMM_CONNECT_ERROR                           = 0x00010003,
