@@ -18,8 +18,11 @@ typedef std::shared_ptr<IoContext> IoContextPtr;
 
 class IoContext {
   public:
+
+  std::atomic<bool>   running;
+
   IoContext(const std::string name, int32_t size) 
-    : m_name(name), m_run(true), m_size(size),
+    : m_name(name), running(true), m_size(size),
       m_pool(std::make_shared<asio::thread_pool>(size)),
       m_ioctx(std::make_shared<asio::io_context>(size)),
       m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get())))
@@ -35,7 +38,7 @@ class IoContext {
     do{
       m_ioctx->run();
       m_ioctx->restart();
-    }while(m_run);
+    }while(running);
   }
   
   IOCtxPtr shared(){
@@ -57,7 +60,7 @@ class IoContext {
 
   void stop(){
     HT_DEBUGF("Stopping IO-ctx(%s)", m_name.c_str());
-    m_run.store(false);
+    running.store(false);
     m_wrk->reset();
     
     // hold on for IO to finish
@@ -78,7 +81,6 @@ class IoContext {
 
   private:
   const std::string   m_name;
-  std::atomic<bool>   m_run;
   IOCtxPtr            m_ioctx;
   IO_DoWorkPtr        m_wrk = nullptr;
   IO_SignalsPtr       m_signals;
@@ -98,13 +100,16 @@ class IoCtx {
   static bool ok(){
     return m_env != nullptr;
   }
-
+  
   static IoContextPtr io(){
     HT_ASSERT(ok());
 
     return m_env->m_io;
   }
   
+  static bool stopping(){
+    return !m_env->m_io->running;
+  }
 
   IoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { 
     m_io->run(m_io);
