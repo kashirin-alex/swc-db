@@ -35,7 +35,7 @@ class MngRsId: public ConnQueue::ReqBase {
 
     virtual ~Scheduler(){}
 
-    void set(uint32_t ms=0) {
+    void set(uint32_t ms) {
       std::lock_guard<std::mutex> lock(m_mutex);
 
       m_timer->cancel();
@@ -71,9 +71,30 @@ class MngRsId: public ConnQueue::ReqBase {
 
   void static shutting_down(Scheduler::Ptr validator, 
                             std::function<void()> cb) {
-    std::make_shared<MngRsId>(validator)->shutting_down(cb);
+    Files::RsDataPtr rs_data = Env::RsData::get();
+    HT_DEBUGF("RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
+
+    Ptr req = std::make_shared<MngRsId>(
+      validator, 
+      create(
+        Protocol::Params::MngRsId(
+          rs_data->rs_id.load(), 
+          Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
+          rs_data->endpoints
+        )
+      )
+    );
+    req->cb_shutdown = cb;
+    req->run();
   }
   
+  static CommBufPtr create(Protocol::Params::MngRsId params) {
+    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
+    CommBufPtr new_cbp = std::make_shared<CommBuf>(
+      header, params.encoded_length());
+    params.encode(new_cbp->get_data_ptr_address());
+    return new_cbp;
+  }
 
   MngRsId(Scheduler::Ptr validator, CommBufPtr cbp=nullptr) 
           : ConnQueue::ReqBase(false, cbp),
@@ -84,36 +105,20 @@ class MngRsId: public ConnQueue::ReqBase {
 
   void assign() {
     Files::RsDataPtr rs_data = Env::RsData::get();
-    create(
+    cbp = create(
       Protocol::Params::MngRsId(
         0, 
         Protocol::Params::MngRsId::Flag::RS_REQ, 
         rs_data->endpoints
       )
-    )->run();
-  }
-
-  void shutting_down(std::function<void()> cb) {
-    HT_DEBUGF("RS_SHUTTINGDOWN(req) %s", 
-              Env::RsData::get()->to_string().c_str());
-    
-    Files::RsDataPtr rs_data = Env::RsData::get();
-    Ptr req = create(
-      Protocol::Params::MngRsId(
-        rs_data->rs_id.load(), 
-        Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
-        rs_data->endpoints
-      )
     );
-    req->cb_shutdown = cb;
-    req->run();
+    run();
   }
 
-  void handle_no_conn() override { 
-    if(was_called)
-      return;
+
+  void handle_no_conn() override {
     clear_endpoints();
-    assign();
+    validator->set(200);
   }
 
   bool run(uint32_t timeout=0) override {
@@ -129,9 +134,6 @@ class MngRsId: public ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
-    if(was_called)
-      return;
-    was_called = true;
 
     if(ev->error != Error::OK 
        || ev->header.command != Protocol::Command::REQ_MNGR_MNG_RS_ID){
@@ -140,7 +142,7 @@ class MngRsId: public ConnQueue::ReqBase {
     }
 
     if(Protocol::response_code(ev) == Error::OK){
-      validator->set();
+      validator->set(0);
       return;
     }      
     
@@ -154,8 +156,6 @@ class MngRsId: public ConnQueue::ReqBase {
       HT_ERROR_OUT << e << HT_END;
     }
         
-    HT_DEBUGF(" handle: flag=%d, %s", rsp_params.flag, ev->to_str().c_str());
-
     if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
       assign();
       return;
@@ -197,9 +197,9 @@ class MngRsId: public ConnQueue::ReqBase {
     }
     
     Protocol::Params::MngRsId::Flag flag;
-    if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id
-       || (rs_data->rs_id != rsp_params.rs_id 
-           && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
+    if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id || 
+      (rs_data->rs_id != rsp_params.rs_id 
+       && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
 
       rs_data->rs_id = rsp_params.rs_id;
       flag = Protocol::Params::MngRsId::Flag::RS_ACK;
@@ -210,21 +210,15 @@ class MngRsId: public ConnQueue::ReqBase {
       HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
     }
 
-    create(
+    cbp = create(
       Protocol::Params::MngRsId(rs_data->rs_id, flag, rs_data->endpoints)
-    )->run();
+    );
+    run();
   }
    
   std::function<void()> cb_shutdown = 0;
   
   private:
-  
-  Ptr create(Protocol::Params::MngRsId params) {
-    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
-    CommBufPtr new_cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(new_cbp->get_data_ptr_address());
-    return std::make_shared<MngRsId>(validator, new_cbp);
-  }
 
   void clear_endpoints() {
     Env::Clients::get()->mngrs_groups->remove(endpoints);
