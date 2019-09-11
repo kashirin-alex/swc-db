@@ -14,10 +14,8 @@ class Host : public Protocol::Req::ConnQueue  {
   const EndPoints   endpoints;
 
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-       const gInt32tPtr timeout, const gInt32tPtr probes, 
        const gInt32tPtr keepalive_ms)
       : queues(queues), endpoints(endpoints), 
-        cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
         Protocol::Req::ConnQueue(keepalive_ms) {
   }
 
@@ -25,23 +23,12 @@ class Host : public Protocol::Req::ConnQueue  {
     stop();  
   }
   
-  bool connect() override {
-    Env::Clients::get()->rs_service->get_connection(
-      endpoints, 
-      [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
-      std::chrono::milliseconds(cfg_conn_timeout->get()), 
-      cfg_conn_probes->get(),
-      cfg_keepalive_ms != nullptr
-    );
-    return true;
-  }
+  bool connect() override;
 
   void close_issued() override;
 
   protected:
   const ConnQueuesPtr queues;
-  const gInt32tPtr    cfg_conn_timeout;
-  const gInt32tPtr    cfg_conn_probes;
 };
 
 
@@ -49,9 +36,16 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   public:
 
-  ConnQueues(const gInt32tPtr timeout, const gInt32tPtr probes, 
+  const ClientPtr     service;
+  const gInt32tPtr    cfg_conn_timeout;
+  const gInt32tPtr    cfg_conn_probes;
+  const gInt32tPtr    cfg_keepalive_ms;
+  
+  ConnQueues(const ClientPtr service, 
+             const gInt32tPtr timeout, const gInt32tPtr probes, 
              const gInt32tPtr keepalive_ms)
-            : cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
+            : service(service),
+              cfg_conn_timeout(timeout), cfg_conn_probes(probes), 
               cfg_keepalive_ms(keepalive_ms) {
   }
 
@@ -76,10 +70,7 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
     }
 
     auto host = std::make_shared<Host>(
-      shared_from_this(), endpoints, 
-      cfg_conn_timeout, cfg_conn_probes, cfg_keepalive_ms
-    );
-
+      shared_from_this(), endpoints, cfg_keepalive_ms);
     m_hosts.push_back(host);
     return host;
   }
@@ -99,10 +90,6 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   std::mutex              m_mutex;
   std::vector<Host::Ptr>  m_hosts;
-
-  const gInt32tPtr    cfg_conn_timeout;
-  const gInt32tPtr    cfg_conn_probes;
-  const gInt32tPtr    cfg_keepalive_ms;
   
 };
 
@@ -110,6 +97,17 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
 void Host::close_issued() {
   queues->remove(endpoints);
+}
+
+bool Host::connect() {
+  queues->service->get_connection(
+    endpoints, 
+    [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
+    std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
+    queues->cfg_conn_probes->get(),
+    cfg_keepalive_ms != nullptr
+  );
+  return true;  
 }
 
 
