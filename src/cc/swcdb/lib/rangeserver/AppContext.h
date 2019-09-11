@@ -61,10 +61,9 @@ class AppContext : public SWC::AppContext {
       Env::IoCtx::io()->shared(),
       std::make_shared<client::RS::AppContext>()
     ));
-    
-    m_id_mngr = std::make_shared<Protocol::Req::MngRsId>();
-    m_id_mngr->assign();
 
+    m_rs_id_validator = std::make_shared<Protocol::Req::MngRsId::Scheduler>();
+    Protocol::Req::MngRsId::assign(m_rs_id_validator);
   }
 
   void set_srv(SerializedServerPtr srv){
@@ -120,7 +119,7 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
             try{conn->response_ok(ev);}catch(...){}
-            m_id_mngr->assign();
+            Protocol::Req::MngRsId::assign(m_rs_id_validator);
             break;
             
           case Protocol::Command::REQ_RS_COLUMN_DELETE: 
@@ -172,8 +171,9 @@ class AppContext : public SWC::AppContext {
 
     int err = Error::OK;
     Env::RsColumns::get()->unload_all(err, true);
-
-    m_id_mngr->shutting_down(
+    
+    Protocol::Req::MngRsId::shutting_down(
+      m_rs_id_validator,
       [ptr=shared_from_this()](){
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
       }
@@ -181,7 +181,8 @@ class AppContext : public SWC::AppContext {
   }
 
   void stop() override {
-
+    m_rs_id_validator->stop();
+    
     Env::Clients::get()->rs_service->stop();
     Env::Clients::get()->mngr_service->stop();
     
@@ -197,9 +198,11 @@ class AppContext : public SWC::AppContext {
 
 
   private:
-
-  SerializedServerPtr           m_srv = nullptr;
-  Protocol::Req::MngRsId::Ptr   m_id_mngr = nullptr;
+  
+  std::mutex                m_mutex;
+  SerializedServerPtr       m_srv = nullptr;
+  
+  Protocol::Req::MngRsId::Scheduler::Ptr   m_rs_id_validator;
   
 };
 
