@@ -20,9 +20,10 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
     typedef std::shared_ptr<ReqBase> Ptr;
 
-    ReqBase(bool insistent=true) 
-            : cbp(nullptr), was_called(false), queue(nullptr), 
-              insistent(insistent) {}
+    ReqBase(bool insistent=true, CommBufPtr cbp=nullptr) 
+            : insistent(insistent), cbp(cbp), 
+              was_called(false), queue(nullptr){
+    }
 
     Ptr req() {
       return std::dynamic_pointer_cast<ReqBase>(shared_from_this());
@@ -73,10 +74,10 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
       return s;
     }
     
+    const bool            insistent;
     CommBufPtr            cbp;
     std::atomic<bool>     was_called;
     ConnQueue::Ptr        queue;
-    const bool            insistent;
   };
 
 
@@ -100,10 +101,15 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     if(m_conn != nullptr && m_conn->is_open())
       m_conn->do_close();
 
+    if(m_check_timer != nullptr) {
+      m_check_timer->cancel();
+      m_check_timer = nullptr;
+    }
+
     while(!m_queue.empty()) {
       req = m_queue.front();
       m_queue.pop();
-      if(!req->insistent && !req->was_called)
+      if(!req->was_called)
         req->handle_no_conn();
     }
   }
@@ -253,7 +259,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   TimerPtr                  m_check_timer; 
 
   protected:
-  const gInt32tPtr          cfg_keepalive_ms;
+  const gInt32tPtr          cfg_keepalive_ms; // persistent == nullptr
 };
 
 
