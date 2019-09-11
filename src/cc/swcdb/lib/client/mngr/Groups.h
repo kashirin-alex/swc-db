@@ -149,7 +149,15 @@ typedef std::vector<GroupPtr>   SelectedGroups;
 
 
 class Groups : public std::enable_shared_from_this<Groups>{
+
   public:
+  
+  struct GroupHost {
+    int64_t   col_begin;
+    int64_t   col_end;
+    EndPoints endpoints;
+  };
+  
   Groups() {}
   Groups(std::vector<GroupPtr> groups) {
     m_groups.swap(groups);
@@ -290,15 +298,18 @@ class Groups : public std::enable_shared_from_this<Groups>{
     return groups;
   }
 
-  Hosts hosts(size_t cid){
+  void hosts(size_t cid, Hosts& hosts, GroupHost &group_host){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto& group : m_groups) {
       if(group->col_begin <= cid 
-        && (group->col_end == 0 || group->col_end >= cid))
-        return group->get_hosts();
+        && (group->col_end == 0 || group->col_end >= cid)) {
+          hosts = group->get_hosts();
+          group_host.col_begin = group->col_begin;
+          group_host.col_end = group->col_end;
+          break;
+        }
     }
-    return {};
   }
 
   SelectedGroups get_groups(const EndPoints& endpoints){
@@ -345,9 +356,46 @@ class Groups : public std::enable_shared_from_this<Groups>{
     return s;
   }
 
-  std::vector<GroupPtr> m_groups;
-  std::mutex            m_mutex;
+  void add(GroupHost& g_host){
+    std::lock_guard<std::mutex> lock(m_mutex);
 
+    for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++) {
+      if(has_endpoint(g_host.endpoints, it->endpoints))
+        return;
+      if(g_host.col_begin == it->col_begin && g_host.col_end == it->col_end){
+        it->endpoints = g_host.endpoints;
+        return;
+      }
+    }
+    m_active_g_host.push_back(g_host);
+  }
+
+  void remove(EndPoints& endpoints){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++){
+      if(has_endpoint(endpoints, it->endpoints)){
+        m_active_g_host.erase(it);
+      }
+    }
+  }
+
+  void select(int64_t cid, EndPoints& endpoints){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
+    for(auto& host : m_active_g_host) {
+      if(host.col_begin <= cid
+       && (host.col_end == 0 || host.col_end >= cid)) {
+        endpoints = host.endpoints;
+        return;
+      }
+    }
+  }
+
+  private:
+  std::mutex              m_mutex;
+  std::vector<GroupPtr>   m_groups;
+  std::vector<GroupHost>  m_active_g_host;
 };
 
 }}}
