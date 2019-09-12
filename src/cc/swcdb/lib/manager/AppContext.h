@@ -23,7 +23,7 @@
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "swcdb/lib/db/Protocol/handlers/Echo.h"
-#include "handlers/MngrsState.h"
+#include "handlers/MngrState.h"
 #include "handlers/ActiveMngr.h"
 #include "handlers/RsMngId.h"
 #include "handlers/RsUpdate.h"
@@ -98,7 +98,7 @@ class AppContext : public SWC::AppContext {
         switch (ev->header.command) {
 
           case Protocol::Command::MNGR_REQ_MNGRS_STATE:
-            handler = new Handler::MngrsState(conn, ev);
+            handler = new Handler::MngrState(conn, ev);
             break;
 
           case Protocol::Command::MNGR_UPDATE_RANGESERVERS:

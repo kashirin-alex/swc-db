@@ -3,28 +3,28 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_MngrsState_h
-#define swc_lib_db_protocol_req_MngrsState_h
+#ifndef swc_lib_db_protocol_req_MngrMngrState_h
+#define swc_lib_db_protocol_req_MngrMngrState_h
 
-#include "swcdb/lib/db/Protocol/params/MngrsState.h"
+#include "swcdb/lib/db/Protocol/params/MngrMngrState.h"
  
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class MngrsState : public ConnQueue::ReqBase {
+class MngrMngrState : public ConnQueue::ReqBase {
   public:
 
-  MngrsState(ResponseCallbackPtr cb, server::Mngr::MngrsStatus &states, 
+  MngrMngrState(ResponseCallbackPtr cb, server::Mngr::MngrsStatus &states, 
               uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
             : cb(cb) {
-    Protocol::Params::MngrsState params(states, token, mngr_host);
+    Protocol::Params::MngrMngrState params(states, token, mngr_host);
     CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
   
-  virtual ~MngrsState() { }
+  virtual ~MngrMngrState() { }
 
   void disconnected(ConnHandlerPtr conn);
 
@@ -59,4 +59,4 @@ class MngrsState : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_MngrsState_h
+#endif // swc_lib_db_protocol_req_MngrMngrState_h

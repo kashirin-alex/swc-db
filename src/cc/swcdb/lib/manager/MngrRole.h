@@ -39,7 +39,7 @@ class MngrRole {
 }
 #include "AppContextClient.h"
 
-#include "swcdb/lib/db/Protocol/req/MngrsState.h"
+#include "swcdb/lib/db/Protocol/req/MngrMngrState.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -228,7 +228,7 @@ class MngrRole {
         if(token == 0)
           token = m_local_token;
 
-        req_mngr_inchain(std::make_shared<Protocol::Req::MngrsState>(
+        req_mngr_inchain(std::make_shared<Protocol::Req::MngrMngrState>(
           cb, m_states, token, m_local_endpoints[0], 
           (cfg_conn_probes->get() * cfg_conn_timeout->get()
           + cfg_req_timeout->get()) * m_states.size()
@@ -591,7 +591,7 @@ class MngrRole {
 
 
 namespace Protocol { namespace Req {
-  void MngrsState::disconnected(ConnHandlerPtr conn) {
+  void MngrMngrState::disconnected(ConnHandlerPtr conn) {
     Env::MngrRole::get()->disconnection(
       conn->endpoint_remote, conn->endpoint_local);
   }

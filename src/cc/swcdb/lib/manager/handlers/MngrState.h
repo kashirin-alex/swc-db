@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_MngrsState_h
-#define swc_app_manager_handlers_MngrsStatee_h
+#ifndef swc_app_manager_handlers_MngrState_h
+#define swc_app_manager_handlers_MngrState_h
 
 
 
@@ -13,10 +13,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class MngrsState : public AppHandler {
+class MngrState : public AppHandler {
   public:
 
-  MngrsState(ConnHandlerPtr conn, EventPtr ev)
+  MngrState(ConnHandlerPtr conn, EventPtr ev)
              : AppHandler(conn, ev) { }
 
   void run() override {
@@ -26,7 +26,7 @@ class MngrsState : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrsState req_params;
+      Protocol::Params::MngrMngrState req_params;
       req_params.decode(&ptr, &remain);
 
       bool new_active_columns = Env::MngrRole::get()->fill_states(

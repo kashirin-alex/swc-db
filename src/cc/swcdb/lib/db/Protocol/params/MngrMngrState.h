@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngrsState_h
-#define swc_db_protocol_params_MngrsState_h
+#ifndef swc_db_protocol_params_MngrMngrState_h
+#define swc_db_protocol_params_MngrMngrState_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,14 +12,14 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class MngrsState : public Serializable {
+  class MngrMngrState : public Serializable {
   public:
 
-    MngrsState() {}
+    MngrMngrState() {}
 
-    MngrsState(server::Mngr::MngrsStatus states, 
-              uint64_t token, const EndPoint& mngr_host) 
-              : states(states), token(token), mngr_host(mngr_host){}
+    MngrMngrState(server::Mngr::MngrsStatus states, 
+                  uint64_t token, const EndPoint& mngr_host) 
+                  : states(states), token(token), mngr_host(mngr_host){}
 
     server::Mngr::MngrsStatus states;
     uint64_t token;
