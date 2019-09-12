@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_ActiveMngr_h
-#define swc_db_protocol_params_ActiveMngr_h
+#ifndef swc_db_protocol_params_MngrMngrActive_h
+#define swc_db_protocol_params_MngrMngrActive_h
 
 #include "HostEndPoints.h"
 
@@ -13,12 +13,12 @@ namespace Protocol {
 namespace Params {
 
 
-class ActiveMngrReq : public Serializable {
+class MngrMngrActiveReq : public Serializable {
   public:
 
-    ActiveMngrReq() {}
+    MngrMngrActiveReq() {}
 
-    ActiveMngrReq(size_t begin, size_t end) : begin(begin), end(end){}
+    MngrMngrActiveReq(size_t begin, size_t end) : begin(begin), end(end){}
 
     size_t begin; 
     size_t end;
@@ -49,12 +49,12 @@ class ActiveMngrReq : public Serializable {
   
 
 
-class ActiveMngrRsp : public HostEndPoints {
+class MngrMngrActiveRsp : public HostEndPoints {
   public:
 
-    ActiveMngrRsp() {}
+    MngrMngrActiveRsp() {}
 
-    ActiveMngrRsp(const EndPoints& endpoints) 
+    MngrMngrActiveRsp(const EndPoints& endpoints) 
                  : HostEndPoints(endpoints), available(endpoints.size()>0) { }
     bool available;
   
@@ -88,4 +88,4 @@ class ActiveMngrRsp : public HostEndPoints {
 
 }}}
 
-#endif // swc_db_protocol_params_ActiveMngr_h
+#endif // swc_db_protocol_params_MngrMngrActive_h

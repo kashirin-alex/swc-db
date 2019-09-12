@@ -24,7 +24,7 @@
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "swcdb/lib/db/Protocol/handlers/Echo.h"
 #include "handlers/MngrState.h"
-#include "handlers/ActiveMngr.h"
+#include "handlers/MngrActive.h"
 #include "handlers/RsMngId.h"
 #include "handlers/RsUpdate.h"
 #include "handlers/ColumnMng.h"
@@ -106,7 +106,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
-            handler = new Handler::ActiveMngr(conn, ev);
+            handler = new Handler::MngrActive(conn, ev);
             break;
 
           case Protocol::Command::REQ_MNGR_MNG_RS_ID:

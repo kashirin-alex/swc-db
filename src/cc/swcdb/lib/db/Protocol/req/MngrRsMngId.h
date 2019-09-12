@@ -6,7 +6,7 @@
 #ifndef swc_lib_db_protocol_req_MngrRsMngId_h
 #define swc_lib_db_protocol_req_MngrRsMngId_h
 
-#include "ActiveMngrRoute.h"
+#include "MngrMngrActive.h"
 #include "swcdb/lib/db/Protocol/params/MngrRsMngId.h"
 
 namespace SWC {
@@ -127,7 +127,7 @@ class MngrRsMngId: public ConnQueue::ReqBase {
     if(endpoints.empty()){
       Env::Clients::get()->mngrs_groups->select(1, endpoints);
       if(endpoints.empty()){
-        std::make_shared<ActiveMngrRoute>(1, shared_from_this())->run();
+        std::make_shared<MngrMngrActive>(1, shared_from_this())->run();
         return false;
       }
     }

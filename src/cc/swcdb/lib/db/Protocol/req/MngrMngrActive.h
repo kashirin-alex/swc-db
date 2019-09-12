@@ -3,32 +3,32 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_ActiveMngrRoute_h
-#define swc_lib_db_protocol_req_ActiveMngrRoute_h
+#ifndef swc_lib_db_protocol_req_MngrMngrActiveRoute_h
+#define swc_lib_db_protocol_req_MngrMngrActiveRoute_h
 
-#include "../params/ActiveMngr.h"
+#include "../params/MngrMngrActive.h"
 
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class ActiveMngrRoute : public ConnQueue::ReqBase {
+class MngrMngrActive : public ConnQueue::ReqBase {
   public:
 
   const int64_t cid;
 
-  ActiveMngrRoute(int64_t cid, DispatchHandlerPtr hdlr, 
+  MngrMngrActive(int64_t cid, DispatchHandlerPtr hdlr, 
                  uint32_t timeout_ms=60000)
                 : ConnQueue::ReqBase(false), cid(cid), hdlr(hdlr), 
                   timeout_ms(timeout_ms), nxt(0) {
-    Protocol::Params::ActiveMngrReq params(cid, cid);
+    Protocol::Params::MngrMngrActiveReq params(cid, cid);
     CommHeader header(Protocol::Command::CLIENT_REQ_ACTIVE_MNGR, timeout_ms);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
 
-  virtual ~ActiveMngrRoute(){ }
+  virtual ~MngrMngrActive(){ }
 
   void handle_no_conn() override { 
     if(hosts.size() == ++nxt) {
@@ -59,7 +59,7 @@ class ActiveMngrRoute : public ConnQueue::ReqBase {
 
   virtual void handle(ConnHandlerPtr conn, EventPtr &ev) {
     
-    // HT_DEBUGF("ActiveMngr handle: %s", ev->to_str().c_str());
+    // HT_DEBUGF(" handle: %s", ev->to_str().c_str());
 
     if(ev->error == Error::OK 
        && ev->header.command == Protocol::Command::CLIENT_REQ_ACTIVE_MNGR){
@@ -68,7 +68,7 @@ class ActiveMngrRoute : public ConnQueue::ReqBase {
         const uint8_t *ptr = ev->payload;
         size_t remain = ev->payload_len;
 
-        Protocol::Params::ActiveMngrRsp params;
+        Protocol::Params::MngrMngrActiveRsp params;
         params.decode(&ptr, &remain);
         
         if(params.available && params.endpoints.size() > 0){
@@ -98,4 +98,4 @@ class ActiveMngrRoute : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_ActiveMngrRoute_h
+#endif // swc_lib_db_protocol_req_MngrMngrActiveRoute_h
