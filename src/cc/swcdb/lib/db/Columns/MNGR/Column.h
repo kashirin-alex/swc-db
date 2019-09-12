@@ -33,7 +33,8 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   static bool remove(int &err, int64_t id) {
-    Env::FsInterface::interface()->rmdir_incl_opt_subs(err, Range::get_column_path(id));
+    Env::FsInterface::interface()->rmdir_incl_opt_subs(
+      err, Range::get_column_path(id), Range::get_column_path());
     return true;
   }
 

@@ -276,16 +276,20 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
-  void rmdir_incl_opt_subs(int &err, const String &name) {
+  void rmdir_incl_opt_subs(int &err, const String &name, 
+                           const String &up_to) {
     rmdir(err, name);
     if(err != Error::OK)
       return;
 
     const char* p=name.data();
+    std::string base_path;
     for(const char* c=p+name.length();c>p;c--){
       if(*c != '/')
         continue;
-      std::string base_path(p, c-p);
+      base_path = std::string(p, c-p);
+      if(up_to.compare(base_path) == 0)
+        break;
       DirentList entrs;
       readdir(err, base_path, entrs);
       if(err == Error::OK && entrs.size() == 0)
