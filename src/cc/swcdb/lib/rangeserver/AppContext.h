@@ -18,7 +18,7 @@
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "swcdb/lib/db/Columns/RS/Columns.h"
 
-#include "swcdb/lib/db/Protocol/req/MngRsId.h"
+#include "swcdb/lib/db/Protocol/req/MngrRsMngId.h"
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "handlers/RangeLoad.h"
@@ -61,8 +61,8 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::RS::AppContext>()
     ));
 
-    m_rs_id_validator = std::make_shared<Protocol::Req::MngRsId::Scheduler>();
-    Protocol::Req::MngRsId::assign(m_rs_id_validator);
+    m_rs_id_validator = std::make_shared<Protocol::Req::MngrRsMngId::Scheduler>();
+    Protocol::Req::MngrRsMngId::assign(m_rs_id_validator);
   }
 
   void set_srv(SerializedServerPtr srv){
@@ -119,7 +119,7 @@ class AppContext : public SWC::AppContext {
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
             HT_INFO(" REQ_RS_ASSIGN_ID_NEEDED");
             try{conn->response_ok(ev);}catch(...){}
-            Protocol::Req::MngRsId::assign(m_rs_id_validator);
+            Protocol::Req::MngrRsMngId::assign(m_rs_id_validator);
             break;
             
           case Protocol::Command::REQ_RS_COLUMN_DELETE: 
@@ -172,7 +172,7 @@ class AppContext : public SWC::AppContext {
     int err = Error::OK;
     Env::RsColumns::get()->unload_all(err, true);
     
-    Protocol::Req::MngRsId::shutting_down(
+    Protocol::Req::MngrRsMngId::shutting_down(
       m_rs_id_validator,
       [ptr=shared_from_this()](){
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
@@ -202,7 +202,7 @@ class AppContext : public SWC::AppContext {
   std::mutex                m_mutex;
   SerializedServerPtr       m_srv = nullptr;
   
-  Protocol::Req::MngRsId::Scheduler::Ptr   m_rs_id_validator;
+  Protocol::Req::MngrRsMngId::Scheduler::Ptr   m_rs_id_validator;
   
 };
 

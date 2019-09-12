@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngRsId_h
-#define swc_db_protocol_params_MngRsId_h
+#ifndef swc_db_protocol_params_MngrRsMngId_h
+#define swc_db_protocol_params_MngrRsMngId_h
 
 #include "swcdb/lib/core/Serializable.h"
 #include "HostEndPoints.h"
@@ -14,7 +14,7 @@ namespace Protocol {
 namespace Params {
 
 
-  class MngRsId  : public HostEndPoints {
+  class MngrRsMngId  : public HostEndPoints {
   public:
 
     enum Flag {
@@ -28,12 +28,12 @@ namespace Params {
       RS_SHUTTINGDOWN = 8
     };
 
-    MngRsId() {}
+    MngrRsMngId() {}
 
-    MngRsId(uint64_t rs_id, Flag flag) 
+    MngrRsMngId(uint64_t rs_id, Flag flag) 
             : rs_id(rs_id), flag(flag){
     }
-    MngRsId(uint64_t rs_id, Flag flag, const EndPoints& endpoints) 
+    MngrRsMngId(uint64_t rs_id, Flag flag, const EndPoints& endpoints) 
               : rs_id(rs_id), flag(flag), HostEndPoints(endpoints){     
     }
 
@@ -91,4 +91,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_MngRsId_h
+#endif // swc_db_protocol_params_MngrRsMngId_h

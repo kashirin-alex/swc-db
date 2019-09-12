@@ -3,21 +3,21 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_MngRsId_h
-#define swc_lib_db_protocol_req_MngRsId_h
+#ifndef swc_lib_db_protocol_req_MngrRsMngId_h
+#define swc_lib_db_protocol_req_MngrRsMngId_h
 
 #include "ActiveMngrRoute.h"
-#include "swcdb/lib/db/Protocol/params/MngRsId.h"
+#include "swcdb/lib/db/Protocol/params/MngrRsMngId.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
 
-class MngRsId: public ConnQueue::ReqBase {
+class MngrRsMngId: public ConnQueue::ReqBase {
 
   public:
-  typedef std::shared_ptr<MngRsId> Ptr;
+  typedef std::shared_ptr<MngrRsMngId> Ptr;
 
   class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
@@ -68,7 +68,7 @@ class MngRsId: public ConnQueue::ReqBase {
   };
   
   void static assign(Scheduler::Ptr validator) {
-    std::make_shared<MngRsId>(validator)->assign();
+    std::make_shared<MngrRsMngId>(validator)->assign();
   }
 
   void static shutting_down(Scheduler::Ptr validator, 
@@ -76,12 +76,12 @@ class MngRsId: public ConnQueue::ReqBase {
     Files::RsDataPtr rs_data = Env::RsData::get();
     HT_DEBUGF("RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
 
-    Ptr req = std::make_shared<MngRsId>(
+    Ptr req = std::make_shared<MngrRsMngId>(
       validator, 
       create(
-        Protocol::Params::MngRsId(
+        Protocol::Params::MngrRsMngId(
           rs_data->rs_id.load(), 
-          Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN, 
+          Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN, 
           rs_data->endpoints
         )
       )
@@ -90,7 +90,7 @@ class MngRsId: public ConnQueue::ReqBase {
     req->run();
   }
   
-  static CommBufPtr create(Protocol::Params::MngRsId params) {
+  static CommBufPtr create(Protocol::Params::MngrRsMngId params) {
     CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
     CommBufPtr new_cbp = std::make_shared<CommBuf>(
       header, params.encoded_length());
@@ -98,19 +98,19 @@ class MngRsId: public ConnQueue::ReqBase {
     return new_cbp;
   }
 
-  MngRsId(Scheduler::Ptr validator, CommBufPtr cbp=nullptr) 
+  MngrRsMngId(Scheduler::Ptr validator, CommBufPtr cbp=nullptr) 
           : ConnQueue::ReqBase(false, cbp),
             validator(validator) {
   }
   
-  virtual ~MngRsId(){}
+  virtual ~MngrRsMngId(){}
 
   void assign() {
     Files::RsDataPtr rs_data = Env::RsData::get();
     cbp = create(
-      Protocol::Params::MngRsId(
+      Protocol::Params::MngrRsMngId(
         0, 
-        Protocol::Params::MngRsId::Flag::RS_REQ, 
+        Protocol::Params::MngrRsMngId::Flag::RS_REQ, 
         rs_data->endpoints
       )
     );
@@ -148,7 +148,7 @@ class MngRsId: public ConnQueue::ReqBase {
       return;
     }      
     
-    Protocol::Params::MngRsId rsp_params;
+    Protocol::Params::MngrRsMngId rsp_params;
     try {
       const uint8_t *ptr = ev->payload;
       size_t remain = ev->payload_len;
@@ -158,12 +158,12 @@ class MngRsId: public ConnQueue::ReqBase {
       HT_ERROR_OUT << e << HT_END;
     }
         
-    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REREQ){
+    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_REREQ){
       assign();
       return;
     }
     
-    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN) {
+    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN) {
       HT_DEBUGF("RS_SHUTTINGDOWN %s", 
                 Env::RsData::get()->to_string().c_str());
       if(cb_shutdown != 0)
@@ -173,9 +173,9 @@ class MngRsId: public ConnQueue::ReqBase {
       return;
     }
 
-    if(rsp_params.flag != Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+    if(rsp_params.flag != Protocol::Params::MngrRsMngId::Flag::MNGR_ASSIGNED
         &&
-       rsp_params.flag != Protocol::Params::MngRsId::Flag::MNGR_REASSIGN){
+       rsp_params.flag != Protocol::Params::MngrRsMngId::Flag::MNGR_REASSIGN){
       clear_endpoints();
       // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
       validator->set(1000);
@@ -184,7 +184,7 @@ class MngRsId: public ConnQueue::ReqBase {
 
     Files::RsDataPtr rs_data = Env::RsData::get();
 
-    if(rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED
+    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()){
 
       HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
@@ -198,22 +198,22 @@ class MngRsId: public ConnQueue::ReqBase {
       return;
     }
     
-    Protocol::Params::MngRsId::Flag flag;
+    Protocol::Params::MngrRsMngId::Flag flag;
     if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id || 
       (rs_data->rs_id != rsp_params.rs_id 
-       && rsp_params.flag == Protocol::Params::MngRsId::Flag::MNGR_REASSIGN)){
+       && rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_REASSIGN)){
 
       rs_data->rs_id = rsp_params.rs_id;
-      flag = Protocol::Params::MngRsId::Flag::RS_ACK;
+      flag = Protocol::Params::MngrRsMngId::Flag::RS_ACK;
       HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
     } else {
 
-      flag = Protocol::Params::MngRsId::Flag::RS_DISAGREE;
+      flag = Protocol::Params::MngrRsMngId::Flag::RS_DISAGREE;
       HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
     }
 
     cbp = create(
-      Protocol::Params::MngRsId(rs_data->rs_id, flag, rs_data->endpoints)
+      Protocol::Params::MngrRsMngId(rs_data->rs_id, flag, rs_data->endpoints)
     );
     run();
   }
@@ -234,4 +234,4 @@ class MngRsId: public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_MngRsId_h
+#endif // swc_lib_db_protocol_req_MngrRsMngId_h

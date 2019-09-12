@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_manager_handlers_MngRsId_h
-#define swc_app_manager_handlers_MngRsId_h
+#ifndef swc_app_manager_handlers_RsMngId_h
+#define swc_app_manager_handlers_RsMngId_h
 
-#include "swcdb/lib/db/Protocol/params/MngRsId.h"
+#include "swcdb/lib/db/Protocol/params/MngrRsMngId.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class MngRsId : public AppHandler {
+class RsMngId : public AppHandler {
   public:
 
-    MngRsId(ConnHandlerPtr conn, EventPtr ev)
+    RsMngId(ConnHandlerPtr conn, EventPtr ev)
             : AppHandler(conn, ev){}
 
   void run() override {
@@ -27,21 +27,21 @@ class MngRsId : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngRsId req_params;
+      Protocol::Params::MngrRsMngId req_params;
       req_params.decode(&ptr, &remain);
 
       // ResponseCallbackPtr cb = 
       //  std::make_shared<ResponseCallback>(m_conn, m_ev);
       
-      // std::cout << "MngRsId-run rs " << req_params.to_string() << "\n";
+      // std::cout << "RsMngId-run rs " << req_params.to_string() << "\n";
       
       if(!Env::MngrRole::get()->is_active(1)){
         HT_DEBUGF("MNGR NOT ACTIVE, flag=%d rs_id=%d %s",
                   req_params.flag, req_params.rs_id, 
                   req_params.to_string().c_str());
       
-        Protocol::Params::MngRsId rsp_params(
-          0, Protocol::Params::MngRsId::Flag::MNGR_NOT_ACTIVE);
+        Protocol::Params::MngrRsMngId rsp_params(
+          0, Protocol::Params::MngrRsMngId::Flag::MNGR_NOT_ACTIVE);
         
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
@@ -56,14 +56,14 @@ class MngRsId : public AppHandler {
       RangeServersPtr rangeservers = Env::RangeServers::get();
       switch(req_params.flag){
 
-        case Protocol::Params::MngRsId::Flag::RS_REQ: {
+        case Protocol::Params::MngrRsMngId::Flag::RS_REQ: {
           uint64_t rs_id = rangeservers->rs_set_id(req_params.endpoints);
 
           HT_DEBUGF("RS_REQ, rs_id=%d %s",
                     req_params.rs_id, req_params.to_string().c_str());
 
-          Protocol::Params::MngRsId rsp_params(
-            rs_id, Protocol::Params::MngRsId::Flag::MNGR_ASSIGNED);
+          Protocol::Params::MngrRsMngId rsp_params(
+            rs_id, Protocol::Params::MngrRsMngId::Flag::MNGR_ASSIGNED);
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
           CommBufPtr cbp = std::make_shared<CommBuf>(
@@ -74,7 +74,7 @@ class MngRsId : public AppHandler {
           break;
         }
 
-        case Protocol::Params::MngRsId::Flag::RS_ACK: {
+        case Protocol::Params::MngrRsMngId::Flag::RS_ACK: {
           if(rangeservers->rs_ack_id(req_params.rs_id, req_params.endpoints)){
             HT_DEBUGF("RS_ACK, rs_id=%d %s",
                       req_params.rs_id, req_params.to_string().c_str());
@@ -84,8 +84,8 @@ class MngRsId : public AppHandler {
             HT_DEBUGF("RS_ACK(MNGR_REREQ) rs_id=%d %s",
                       req_params.rs_id, req_params.to_string().c_str());
 
-            Protocol::Params::MngRsId rsp_params(
-              0, Protocol::Params::MngRsId::Flag::MNGR_REREQ);
+            Protocol::Params::MngrRsMngId rsp_params(
+              0, Protocol::Params::MngrRsMngId::Flag::MNGR_REREQ);
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
             CommBufPtr cbp = std::make_shared<CommBuf>(
@@ -97,15 +97,15 @@ class MngRsId : public AppHandler {
           break;
         }
 
-        case Protocol::Params::MngRsId::Flag::RS_DISAGREE: {
+        case Protocol::Params::MngrRsMngId::Flag::RS_DISAGREE: {
           uint64_t rs_id = rangeservers->rs_had_id(req_params.rs_id, 
                                                    req_params.endpoints);
           HT_DEBUGF("RS_DISAGREE, rs_had_id=%d > rs_id=%d %s", 
                     req_params.rs_id, rs_id, req_params.to_string().c_str());
 
           if (rs_id != 0){
-            Protocol::Params::MngRsId rsp_params(
-              rs_id, Protocol::Params::MngRsId::Flag::MNGR_REASSIGN);
+            Protocol::Params::MngrRsMngId rsp_params(
+              rs_id, Protocol::Params::MngrRsMngId::Flag::MNGR_REASSIGN);
       
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
@@ -121,14 +121,14 @@ class MngRsId : public AppHandler {
           break;
         }
 
-        case Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN: {
+        case Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN: {
           rangeservers->rs_shutdown(req_params.rs_id, req_params.endpoints);
 
           HT_DEBUGF("RS_SHUTTINGDOWN, rs_id=%d %s",
                     req_params.rs_id, req_params.to_string().c_str());
           
-          Protocol::Params::MngRsId rsp_params(
-            req_params.rs_id, Protocol::Params::MngRsId::Flag::RS_SHUTTINGDOWN);
+          Protocol::Params::MngrRsMngId rsp_params(
+            req_params.rs_id, Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN);
       
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
@@ -155,4 +155,4 @@ class MngRsId : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_MngRsId_h
+#endif // swc_app_manager_handlers_RsMngId_h

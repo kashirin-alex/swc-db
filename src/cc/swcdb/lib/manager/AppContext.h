@@ -25,7 +25,7 @@
 #include "swcdb/lib/db/Protocol/handlers/Echo.h"
 #include "handlers/MngrsState.h"
 #include "handlers/ActiveMngr.h"
-#include "handlers/MngRsId.h"
+#include "handlers/RsMngId.h"
 #include "handlers/UpdateRangeServers.h"
 #include "handlers/ColumnMng.h"
 #include "handlers/ColumnGet.h"
@@ -110,7 +110,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_MNGR_MNG_RS_ID:
-            handler = new Handler::MngRsId(conn, ev);
+            handler = new Handler::RsMngId(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_MNG_COLUMN:
