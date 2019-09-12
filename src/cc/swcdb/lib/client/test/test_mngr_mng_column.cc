@@ -272,6 +272,7 @@ int main(int argc, char** argv) {
   std::cout << " OK! \n";
   exit(0);
   */
+  chk(Protocol::Req::Column::Mng::Func::DELETE, 1, num_of_cols, false);
     
   chk(Protocol::Req::Column::Mng::Func::CREATE, 1, num_of_cols, false);
   check_get(0, num_of_cols, false, false);

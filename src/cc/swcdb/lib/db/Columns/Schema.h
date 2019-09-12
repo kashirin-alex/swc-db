@@ -68,7 +68,7 @@ class Schema {
 
   virtual ~Schema() {}
 
-  bool equal(const SchemaPtr &other) {
+  bool equal(const SchemaPtr &other, bool with_rev=true) {
     return   cid == other->cid
           && col_type == other->col_type
           && cell_versions == other->cell_versions
@@ -77,7 +77,7 @@ class Schema {
           && blk_encoding == other->blk_encoding
           && blk_size == other->blk_size
           && col_name.compare(other->col_name) == 0
-          && revision == other->revision
+          && (!with_rev || revision == other->revision)
     ;
   }
   const size_t encoded_length() const {

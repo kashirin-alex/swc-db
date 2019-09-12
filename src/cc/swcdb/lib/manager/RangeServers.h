@@ -400,9 +400,11 @@ class RangeServers {
     ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr || col->finalize_remove(err, rs_id)) {
       Env::MngrColumns::get()->remove(err, cid);
-      column_update(
-        Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE,
-        Env::Schemas::get()->get(cid), err);
+      DB::SchemaPtr schema = Env::Schemas::get()->get(cid);
+      if(schema != nullptr)
+        column_update(
+          Protocol::Params::MngColumn::Function::INTERNAL_ACK_DELETE,
+          schema, err);
       if(!m_root_mngr)
         Env::Schemas::get()->remove(cid);
     }
@@ -829,6 +831,9 @@ class RangeServers {
 
     HT_ASSERT(schema_save->cid != 0);
 
+   if(schema->equal(schema_save, false))
+      err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
+
     Files::Schema::save_with_validation(err, schema_save);
     if(err == Error::OK) {
       Env::Schemas::get()->replace(schema_save);
@@ -895,8 +900,6 @@ class RangeServers {
           case Protocol::Params::MngColumn::Function::MODIFY: {
             if(schema == nullptr) 
               err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-            else if(schema->equal(req.params.schema))
-              err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
             else
               column_update_schema(err, req.params.schema, schema);
             break;
@@ -1006,7 +1009,7 @@ class RangeServers {
           else if(!m_run)
             err = Error::SERVER_SHUTTING_DOWN;
           else {  
-            Column::remove(err, schema->cid); // /cols/{ID}
+            Column::remove(err, schema->cid);
             if(err == Error::OK)
               Env::Schemas::get()->remove(schema->cid);  
           }
