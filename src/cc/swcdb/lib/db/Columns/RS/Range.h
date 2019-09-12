@@ -16,7 +16,7 @@ typedef std::shared_ptr<Range> RangePtr;
 
 }}}
 
-#include "swcdb/lib/db/Protocol/req/RsUnloadRange.h"
+#include "swcdb/lib/db/Protocol/req/RsRangeUnload.h"
 
 #include "swcdb/lib/db/Files/RangeData.h"
 
@@ -265,7 +265,7 @@ class Range : public DB::RangeBase {
                 rs_last->to_string().c_str(), rs_data->to_string().c_str());
                 
       Env::Clients::get()->rs->get(rs_last->endpoints)->put(
-        std::make_shared<Protocol::Req::RsUnloadRange>(shared_from_this(), cb));
+        std::make_shared<Protocol::Req::RsRangeUnload>(shared_from_this(), cb));
       return;
     }
 
@@ -340,10 +340,10 @@ class Range : public DB::RangeBase {
 }} // server namespace
 
 
-void Protocol::Req::RsUnloadRange::unloaded(int err, ResponseCallbackPtr cb) {
+void Protocol::Req::RsRangeUnload::unloaded(int err, ResponseCallbackPtr cb) {
   std::dynamic_pointer_cast<server::RS::Range>(range)->take_ownership(err, cb);
 }
-bool Protocol::Req::RsUnloadRange::valid() {
+bool Protocol::Req::RsRangeUnload::valid() {
   return !std::dynamic_pointer_cast<server::RS::Range>(range)->deleted();
 }
 

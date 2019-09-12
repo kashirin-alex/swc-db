@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_rangeserver_handlers_UnloadRange_h
-#define swc_app_rangeserver_handlers_UnloadRange_h
+#ifndef swc_app_rangeserver_handlers_RangeUnload_h
+#define swc_app_rangeserver_handlers_RangeUnload_h
 
 #include "swcdb/lib/db/Protocol/params/ColRangeId.h"
 
@@ -13,10 +13,10 @@ namespace SWC { namespace server { namespace RS {
 
 namespace Handler {
 
-class UnloadRange : public AppHandler {
+class RangeUnload : public AppHandler {
   public:
 
-  UnloadRange(ConnHandlerPtr conn, EventPtr ev)
+  RangeUnload(ConnHandlerPtr conn, EventPtr ev)
              : AppHandler(conn, ev) { }
 
   void run() override {
@@ -51,4 +51,4 @@ class UnloadRange : public AppHandler {
 
 }}}}
 
-#endif // swc_app_rangeserver_handlers_UnloadRange_h
+#endif // swc_app_rangeserver_handlers_RangeUnload_h

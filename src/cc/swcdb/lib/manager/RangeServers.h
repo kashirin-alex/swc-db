@@ -12,7 +12,7 @@
 
 #include "swcdb/lib/db/Files/Schema.h"
 
-#include "swcdb/lib/db/Protocol/req/RsLoadRange.h"
+#include "swcdb/lib/db/Protocol/req/RsRangeLoad.h"
 #include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
@@ -354,7 +354,7 @@ class RangeServers {
 
 
   void assign_range(RsStatusPtr rs, RangePtr range){
-    rs->put(std::make_shared<Protocol::Req::RsLoadRange>(rs, range));
+    rs->put(std::make_shared<Protocol::Req::RsRangeLoad>(rs, range));
   }
 
   void range_loaded(RsStatusPtr rs, RangePtr range, 
@@ -1085,7 +1085,7 @@ class RangeServers {
 
 
 
-void Protocol::Req::RsLoadRange::loaded(int err, bool failure) {
+void Protocol::Req::RsRangeLoad::loaded(int err, bool failure) {
   if(schema != nullptr && err == Error::OK)
     Env::MngrColumns::get()->get_column(err, range->cid, false)
                            ->change_rs_schema(rs->rs_id, schema->revision);

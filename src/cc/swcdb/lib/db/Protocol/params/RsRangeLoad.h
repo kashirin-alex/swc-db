@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_RsLoadRange_h
-#define swc_db_protocol_params_RsLoadRange_h
+#ifndef swc_db_protocol_params_RsRangeLoad_h
+#define swc_db_protocol_params_RsRangeLoad_h
 
 #include "ColRangeId.h"
 
@@ -12,14 +12,14 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-class RsLoadRange : public ColRangeId {
+class RsRangeLoad : public ColRangeId {
   public:
 
-  RsLoadRange() : schema(nullptr) {}
-  RsLoadRange(size_t cid, size_t rid, DB::SchemaPtr schema) 
+  RsRangeLoad() : schema(nullptr) {}
+  RsRangeLoad(size_t cid, size_t rid, DB::SchemaPtr schema) 
               : ColRangeId(cid, rid), schema(schema){}
              
-  virtual ~RsLoadRange() {}
+  virtual ~RsRangeLoad() {}
 
   DB::SchemaPtr schema;
   
@@ -49,4 +49,4 @@ class RsLoadRange : public ColRangeId {
 
 }}}
 
-#endif // swc_db_protocol_params_RsLoadRange_h
+#endif // swc_db_protocol_params_RsRangeLoad_h

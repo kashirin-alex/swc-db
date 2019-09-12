@@ -3,18 +3,18 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_RsLoadRange_h
-#define swc_lib_db_protocol_req_RsLoadRange_h
+#ifndef swc_lib_db_protocol_req_RsRangeLoad_h
+#define swc_lib_db_protocol_req_RsRangeLoad_h
 
-#include "swcdb/lib/db/Protocol/params/RsLoadRange.h"
+#include "swcdb/lib/db/Protocol/params/RsRangeLoad.h"
 
 namespace SWC { namespace Protocol { namespace Req {
 
 
-class RsLoadRange : public ConnQueue::ReqBase {
+class RsRangeLoad : public ConnQueue::ReqBase {
   public:
 
-  RsLoadRange(server::Mngr::RsStatusPtr rs, server::Mngr::RangePtr range) 
+  RsRangeLoad(server::Mngr::RsStatusPtr rs, server::Mngr::RangePtr range) 
               : ConnQueue::ReqBase(false), rs(rs), range(range), 
                 schema(Env::Schemas::get()->get(range->cid)) {
     int err = Error::OK;
@@ -22,14 +22,14 @@ class RsLoadRange : public ConnQueue::ReqBase {
                            ->need_schema_sync(rs->rs_id, schema->revision))
       schema = nullptr;                     
 
-    Params::RsLoadRange params = Params::RsLoadRange(
+    Params::RsRangeLoad params = Params::RsRangeLoad(
       range->cid, range->rid, schema);
     CommHeader header(Command::REQ_RS_LOAD_RANGE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
   
-  virtual ~RsLoadRange() { }
+  virtual ~RsRangeLoad() { }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
       
@@ -70,4 +70,4 @@ class RsLoadRange : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_RsLoadRange_h
+#endif // swc_lib_db_protocol_req_RsRangeLoad_h

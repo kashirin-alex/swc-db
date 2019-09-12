@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_UnloadRange_h
-#define swc_lib_db_protocol_req_UnloadRange_h
+#ifndef swc_lib_db_protocol_req_RangeUnload_h
+#define swc_lib_db_protocol_req_RangeUnload_h
 
 #include "swcdb/lib/db/Protocol/params/ColRangeId.h"
 
@@ -12,16 +12,16 @@ namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class UnloadRange : public DispatchHandler {
+class RangeUnload : public DispatchHandler {
   public:
 
-  UnloadRange(client::ClientConPtr conn, DB::RangeBasePtr range, bool sync=true)
+  RangeUnload(client::ClientConPtr conn, DB::RangeBasePtr range, bool sync=true)
             : conn(conn), range(range), sync(sync) { 
     if(sync)
       result_future = result_promise.get_future();
   }
   
-  virtual ~UnloadRange() { }
+  virtual ~RangeUnload() { }
   
   bool run(uint32_t timeout=60000) override {
     Protocol::Params::ColRangeId params = 
@@ -69,4 +69,4 @@ class UnloadRange : public DispatchHandler {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_UnloadRange_h
+#endif // swc_lib_db_protocol_req_RangeUnload_h

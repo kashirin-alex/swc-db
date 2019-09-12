@@ -22,9 +22,9 @@
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
 #include "handlers/IsRangeLoaded.h"
-#include "handlers/LoadRange.h"
+#include "handlers/RangeLoad.h"
 #include "handlers/UpdateSchema.h"
-#include "handlers/UnloadRange.h"
+#include "handlers/RangeUnload.h"
 #include "handlers/ColumnDelete.h"
 
 
@@ -105,7 +105,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_RS_LOAD_RANGE: 
-            handler = new Handler::LoadRange(conn, ev);
+            handler = new Handler::RangeLoad(conn, ev);
             break;
 
           case Protocol::Command::REQ_RS_SCHEMA_UPDATE: 
@@ -113,7 +113,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_RS_UNLOAD_RANGE: 
-            handler = new Handler::UnloadRange(conn, ev);
+            handler = new Handler::RangeUnload(conn, ev);
             break;
 
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:

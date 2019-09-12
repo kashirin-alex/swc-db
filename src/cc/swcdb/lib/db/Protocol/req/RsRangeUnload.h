@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_RsUnloadRange_h
-#define swc_lib_db_protocol_req_RsUnloadRange_h
+#ifndef swc_lib_db_protocol_req_RsRangeUnload_h
+#define swc_lib_db_protocol_req_RsRangeUnload_h
 
 #include "swcdb/lib/db/Protocol/params/ColRangeId.h"
 
@@ -13,10 +13,10 @@ namespace Protocol {
 namespace Req {
 
 
-class RsUnloadRange : public ConnQueue::ReqBase {
+class RsRangeUnload : public ConnQueue::ReqBase {
   public:
 
-  RsUnloadRange(DB::RangeBasePtr range, ResponseCallbackPtr cb,
+  RsRangeUnload(DB::RangeBasePtr range, ResponseCallbackPtr cb,
                 uint32_t timeout=60000) 
                : ConnQueue::ReqBase(false), range(range), cb(cb) {
 
@@ -26,7 +26,7 @@ class RsUnloadRange : public ConnQueue::ReqBase {
     params.encode(cbp->get_data_ptr_address());
   }
 
-  virtual ~RsUnloadRange() { }
+  virtual ~RsRangeUnload() { }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
       
@@ -60,4 +60,4 @@ class RsUnloadRange : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_RsUnloadRange_h
+#endif // swc_lib_db_protocol_req_RsRangeUnload_h

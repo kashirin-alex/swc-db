@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_rangeserver_handlers_LoadRange_h
-#define swc_app_rangeserver_handlers_LoadRange_h
+#ifndef swc_app_rangeserver_handlers_RangeLoad_h
+#define swc_app_rangeserver_handlers_RangeLoad_h
 
-#include "swcdb/lib/db/Protocol/params/RsLoadRange.h"
+#include "swcdb/lib/db/Protocol/params/RsRangeLoad.h"
 #include "swcdb/lib/rangeserver/callbacks/RangeLoaded.h"
 
 
@@ -15,10 +15,10 @@ namespace SWC { namespace server { namespace RS {
 namespace Handler {
 
 
-class LoadRange : public AppHandler {
+class RangeLoad : public AppHandler {
   public:
 
-  LoadRange(ConnHandlerPtr conn, EventPtr ev)
+  RangeLoad(ConnHandlerPtr conn, EventPtr ev)
             : AppHandler(conn, ev) { }
 
   void run() override {
@@ -28,7 +28,7 @@ class LoadRange : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::RsLoadRange params;
+      Protocol::Params::RsRangeLoad params;
       params.decode(&ptr, &remain);
 
       if(params.schema != nullptr) {
@@ -55,4 +55,4 @@ class LoadRange : public AppHandler {
 
 }}}}
 
-#endif // swc_app_rangeserver_handlers_LoadRange_h
+#endif // swc_app_rangeserver_handlers_RangeLoad_h
