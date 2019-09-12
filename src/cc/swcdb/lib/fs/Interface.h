@@ -276,6 +276,27 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
+  void rmdir_incl_opt_subs(int &err, const String &name) {
+    rmdir(err, name);
+    if(err != Error::OK)
+      return;
+
+    const char* p=name.data();
+    for(const char* c=p+name.length();c>p;c--){
+      if(*c != '/')
+        continue;
+      std::string base_path(p, c-p);
+      DirentList entrs;
+      readdir(err, base_path, entrs);
+      if(err == Error::OK && entrs.size() == 0)
+        rmdir(err, base_path);
+        if(err == Error::OK)
+          continue;
+      break;
+    }
+    if(err != Error::OK)
+      err = Error::OK;
+  }
 
   void remove(int &err, const String &name) {
     for(;;) {
