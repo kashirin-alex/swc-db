@@ -10,7 +10,7 @@ namespace SWC { namespace Protocol { namespace Req {
 
 namespace Callback {
 
-  typedef std::function<void(bool)> IsRangeLoaded_t;
+  typedef std::function<void(bool)> RangeIsLoaded_t;
 
 }
 

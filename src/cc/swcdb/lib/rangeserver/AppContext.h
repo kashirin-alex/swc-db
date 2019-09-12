@@ -21,10 +21,10 @@
 #include "swcdb/lib/db/Protocol/req/MngRsId.h"
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
-#include "handlers/IsRangeLoaded.h"
 #include "handlers/RangeLoad.h"
-#include "handlers/UpdateSchema.h"
 #include "handlers/RangeUnload.h"
+#include "handlers/RangeIsLoaded.h"
+#include "handlers/UpdateSchema.h"
 #include "handlers/ColumnDelete.h"
 
 
@@ -101,7 +101,7 @@ class AppContext : public SWC::AppContext {
         switch (ev->header.command) {
 
           case Protocol::Command::REQ_RS_IS_RANGE_LOADED: 
-            handler = new Handler::IsRangeLoaded(conn, ev);
+            handler = new Handler::RangeIsLoaded(conn, ev);
             break;
 
           case Protocol::Command::REQ_RS_LOAD_RANGE: 

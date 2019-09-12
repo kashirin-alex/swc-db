@@ -13,7 +13,7 @@
 #include "swcdb/lib/db/Files/Schema.h"
 
 #include "swcdb/lib/db/Protocol/req/RsRangeLoad.h"
-#include "swcdb/lib/db/Protocol/req/IsRangeLoaded.h"
+#include "swcdb/lib/db/Protocol/req/RsRangeIsLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
 #include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
 #include "swcdb/lib/db/Protocol/req/RsUpdateSchema.h"

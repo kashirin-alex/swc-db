@@ -3,28 +3,28 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_IsRangeLoaded_h
-#define swc_lib_db_protocol_req_IsRangeLoaded_h
+#ifndef swc_lib_db_protocol_req_RangeIsLoaded_h
+#define swc_lib_db_protocol_req_RangeIsLoaded_h
 
 #include "Callbacks.h"
-#include "swcdb/lib/db/Protocol/params/IsRangeLoaded.h"
+#include "swcdb/lib/db/Protocol/params/RsRangeIsLoaded.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class IsRangeLoaded : public DispatchHandler {
+class RangeIsLoaded : public DispatchHandler {
   public:
 
-  IsRangeLoaded(client::ClientConPtr conn, DB::RangeBasePtr range, 
-                Callback::IsRangeLoaded_t cb)
+  RangeIsLoaded(client::ClientConPtr conn, DB::RangeBasePtr range, 
+                Callback::RangeIsLoaded_t cb)
                 : conn(conn), range(range), cb(cb), was_called(false) { }
   
-  virtual ~IsRangeLoaded() { }
+  virtual ~RangeIsLoaded() { }
   
   bool run(uint32_t timeout=60000) override {
-    Protocol::Params::IsRangeLoaded params = 
-      Protocol::Params::IsRangeLoaded(range->cid, range->rid);
+    Protocol::Params::RangeIsLoaded params = 
+      Protocol::Params::RangeIsLoaded(range->cid, range->rid);
     
     CommHeader header(Protocol::Command::REQ_RS_IS_RANGE_LOADED, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -55,10 +55,10 @@ class IsRangeLoaded : public DispatchHandler {
   private:
   client::ClientConPtr      conn;
   DB::RangeBasePtr          range;
-  Callback::IsRangeLoaded_t cb;
+  Callback::RangeIsLoaded_t cb;
   std::atomic<bool>     was_called;
 };
 
 }}}
 
-#endif // swc_lib_db_protocol_req_IsRangeLoaded_h
+#endif // swc_lib_db_protocol_req_RangeIsLoaded_h

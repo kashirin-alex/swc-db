@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_rangeserver_handlers_IsRangeLoaded_h
-#define swc_app_rangeserver_handlers_IsRangeLoaded_h
+#ifndef swc_app_rangeserver_handlers_RangeIsLoaded_h
+#define swc_app_rangeserver_handlers_RangeIsLoaded_h
 
-#include "swcdb/lib/db/Protocol/params/IsRangeLoaded.h"
+#include "swcdb/lib/db/Protocol/params/RsRangeIsLoaded.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace RS {
 namespace Handler {
 
 
-class IsRangeLoaded : public AppHandler {
+class RangeIsLoaded : public AppHandler {
   public:
 
-  IsRangeLoaded(ConnHandlerPtr conn, EventPtr ev)
+  RangeIsLoaded(ConnHandlerPtr conn, EventPtr ev)
                : AppHandler(conn, ev){ }
 
   void run() override {
@@ -27,7 +27,7 @@ class IsRangeLoaded : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::IsRangeLoaded params;
+      Protocol::Params::RangeIsLoaded params;
       params.decode(&ptr, &remain);
 
       int err = Error::OK;
@@ -53,4 +53,4 @@ class IsRangeLoaded : public AppHandler {
 
 }}}}
 
-#endif // swc_app_rangeserver_handlers_IsRangeLoaded_h
+#endif // swc_app_rangeserver_handlers_RangeIsLoaded_h
