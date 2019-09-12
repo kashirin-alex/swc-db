@@ -26,7 +26,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
   public:
 
   static void columns_by_fs(int &err, FS::IdEntries_t &entries){
-    Env::FsInterface::interface()->get_structured_ids(err, "", entries);
+    Env::FsInterface::interface()->get_structured_ids(
+      err, Range::get_column_path(), entries);
   }
 
   Columns() : m_columns(std::make_shared<ColumnsMap>()) {}

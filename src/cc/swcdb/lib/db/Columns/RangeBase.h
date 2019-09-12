@@ -21,22 +21,34 @@ typedef std::shared_ptr<RangeBase> RangeBasePtr;
 class RangeBase : public std::enable_shared_from_this<RangeBase> {
   public:
   
-  inline static const std::string range_dir = "/range"; // .../a-cid/range/a-rid/(types)
+  inline static const std::string column_dir = "col"; 
+  inline static const std::string range_dir = "/range"; 
+  // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
   inline static const std::string rs_data_file = "last_rs.data";
 
-  inline static std::string get_column_path(int64_t cid){
-    std::string s;
+  inline static const std::string get_column_path(){
+    std::string s(column_dir);
+    return s;
+  }
+
+  inline static const std::string get_column_path(int64_t cid){
+    std::string s(get_column_path());
+    //if(!s.empty())
+    s.append("/");
     FS::set_structured_id(std::to_string(cid), s);
     return s;
   }
-  inline static std::string get_path(int64_t cid, int64_t rid=0){
+
+  inline static const std::string get_path(int64_t cid){
     std::string s(get_column_path(cid));
     s.append(range_dir);
-    if(rid > 0) {
-      s.append("/");
-      FS::set_structured_id(std::to_string(rid), s);
-      s.append("/");
-    }
+    return s;
+  }
+  inline static const std::string get_path(int64_t cid, int64_t rid){
+    std::string s(get_path(cid));
+    s.append("/");
+    FS::set_structured_id(std::to_string(rid), s);
+    s.append("/");
     return s;
   }
 
