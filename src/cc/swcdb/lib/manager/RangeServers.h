@@ -19,7 +19,7 @@
 #include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
 
 #include "swcdb/lib/db/Protocol/params/ColumnMng.h"
-#include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
+#include "swcdb/lib/db/Protocol/req/MngrRsUpdate.h"
 #include "swcdb/lib/db/Protocol/req/MngrColumnUpdate.h"
 
 
@@ -740,7 +740,7 @@ class RangeServers {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       if(hosts.size() > 0){
         Env::MngrRole::get()->req_mngr_inchain(
-          std::make_shared<Protocol::Req::MngrUpdateRangeServers>(
+          std::make_shared<Protocol::Req::MngrRsUpdate>(
           hosts, sync_all));
 
         std::cout << " rs_changes: \n";

@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_manager_handlers_UpdateRangeServers_h
-#define swc_app_manager_handlers_UpdateRangeServers_h
+#ifndef swc_app_manager_handlers_RsUpdate_h
+#define swc_app_manager_handlers_RsUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/MngrUpdateRangeServers.h"
+#include "swcdb/lib/db/Protocol/params/MngrRsUpdate.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class UpdateRangeServers : public AppHandler {
+class RsUpdate : public AppHandler {
   public:
 
-    UpdateRangeServers(ConnHandlerPtr conn, EventPtr ev)
+    RsUpdate(ConnHandlerPtr conn, EventPtr ev)
                       : AppHandler(conn, ev){}
 
   void run() override {
@@ -26,7 +26,7 @@ class UpdateRangeServers : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrUpdateRangeServers params;
+      Protocol::Params::MngrRsUpdate params;
       params.decode(&ptr, &remain);
       
       // std::cout << params.to_string() << "\n";
@@ -43,4 +43,4 @@ class UpdateRangeServers : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_UpdateRangeServers_h
+#endif // swc_app_manager_handlers_RsUpdate_h

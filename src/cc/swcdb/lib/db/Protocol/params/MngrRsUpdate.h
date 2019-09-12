@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngrUpdateRangeServers_h
-#define swc_db_protocol_params_MngrUpdateRangeServers_h
+#ifndef swc_db_protocol_params_MngrRsUpdate_h
+#define swc_db_protocol_params_MngrRsUpdate_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,13 +12,13 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-  class MngrUpdateRangeServers : public Serializable {
+  class MngrRsUpdate : public Serializable {
   public:
 
-    MngrUpdateRangeServers() {}
+    MngrRsUpdate() {}
 
-    MngrUpdateRangeServers(server::Mngr::RsStatusList hosts, 
-                           bool sync_all) : hosts(hosts), sync_all(sync_all) {}
+    MngrRsUpdate(server::Mngr::RsStatusList hosts, bool sync_all) 
+                : hosts(hosts), sync_all(sync_all) {}
 
     std::string to_string() const {
       std::string s("RangeServers-params:");

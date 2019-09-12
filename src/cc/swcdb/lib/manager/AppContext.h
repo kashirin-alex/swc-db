@@ -26,7 +26,7 @@
 #include "handlers/MngrsState.h"
 #include "handlers/ActiveMngr.h"
 #include "handlers/RsMngId.h"
-#include "handlers/UpdateRangeServers.h"
+#include "handlers/RsUpdate.h"
 #include "handlers/ColumnMng.h"
 #include "handlers/ColumnGet.h"
 #include "handlers/ColumnUpdate.h"
@@ -102,7 +102,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::MNGR_UPDATE_RANGESERVERS:
-            handler = new Handler::UpdateRangeServers(conn, ev);
+            handler = new Handler::RsUpdate(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
