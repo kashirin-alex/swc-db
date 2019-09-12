@@ -9,208 +9,119 @@
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 
-#include "ActiveMngrBase.h"
-#include "CodeHandler.h"
+#include "ActiveMngrRoute.h"
 #include "../params/GetColumn.h"
 
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
+namespace Column {
 
-
-class GetColumn: public ActiveMngrBase {
+  
+class Get: public ConnQueue::ReqBase {
   public:
-
+  
   using Flag = Params::GetColumnReq::Flag;
-
-  struct Req : public DispatchHandler {
-    public:
-
-    typedef std::shared_ptr<Req> Ptr;
-    typedef std::function<void(Ptr, int, Params::GetColumnRsp)> Cb_t;
-
-    Req(Protocol::Params::GetColumnReq params, Cb_t cb)
-        : params(params), cb(cb) {}
-
-    virtual ~Req(){}
-
-    void handle(ConnHandlerPtr conn, EventPtr &ev) override {
-      if(was_called)
-        return;
-
-      if(ev->type == Event::Type::DISCONNECT){
-        //if(!was_called)
-        // put(cbp);
-        return;
-      }
-
-      was_called = true;
-
-      Protocol::Params::GetColumnRsp rsp_params;
-      int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
-
-      if(err == Error::OK){
-        try{
-          const uint8_t *ptr = ev->payload+4;
-          size_t remain = ev->payload_len-4;
-          rsp_params.decode(&ptr, &remain);
-        } catch (Exception &e) {
-          HT_ERROR_OUT << e << HT_END;
-          err = e.code();
-        }
-      }
-
-      cb(
-        std::dynamic_pointer_cast<Req>(shared_from_this()), 
-        err,  
-        rsp_params
-      );
-
-    }
-
-    std::atomic<bool>     was_called = false;
-
-    
-    Protocol::Params::GetColumnReq params;
-    Cb_t        cb;
-  };
+  typedef std::function<
+            void(ConnQueue::ReqBase::Ptr, int, Params::GetColumnRsp)> Cb_t;
 
 
-  GetColumn(uint32_t timeout=60000)
-            : ActiveMngrBase(1, 1), 
-              m_conn(nullptr), m_timeout(timeout) { }
-
-  virtual ~GetColumn(){}
-
-  void get_scheme_by_name(std::string& name, Req::Cb_t cb) {
-    request(Flag::SCHEMA_BY_NAME, name, cb);
+  static void scheme(std::string& name, const Cb_t cb, 
+                     const uint32_t timeout = 10000) {
+    request(Flag::SCHEMA_BY_NAME, name, cb, timeout);
   }
   
-  void get_scheme_by_id(int64_t cid, Req::Cb_t cb) {
-    request(Flag::SCHEMA_BY_ID, cid, cb);
+  static void scheme(int64_t cid, const Cb_t cb, 
+                     const uint32_t timeout = 10000) {
+    request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
   }
 
-  void get_id_by_name(std::string& name, Req::Cb_t cb) {
-    request(Flag::ID_BY_NAME, name, cb);
+  static void cid(std::string& name, const Cb_t cb, 
+                  const uint32_t timeout = 10000) {
+    request(Flag::ID_BY_NAME, name, cb, timeout);
   }
 
-  void request(Flag flag, std::string& name, Req::Cb_t cb){
-    return make(std::make_shared<Req>(Protocol::Params::GetColumnReq(flag, name), cb));
-  }
-  void request(Flag flag, int64_t cid, Req::Cb_t cb){
-    return make(std::make_shared<Req>(Protocol::Params::GetColumnReq(flag, cid), cb));
-  }
-  
-  void run(const EndPoints& endpoints) override {
-
-    if(m_conn != nullptr && m_conn->is_open()){
-      make_requests(nullptr, false);
-      return;
-    }
-    Env::Clients::get()->mngr_service->get_connection(
-      endpoints, 
-      [ptr=shared_from_this()]
-      (client::ClientConPtr conn){
-        std::dynamic_pointer_cast<GetColumn>(ptr)->make_requests(conn, true);
-      },
-      std::chrono::milliseconds(timeout_ms), 
-      1,
-      true
-    );
+  static void request(Flag flag, std::string& name, const Cb_t cb, 
+                      const uint32_t timeout = 10000){
+    std::make_shared<Get>(
+      Protocol::Params::GetColumnReq(flag, name), cb, timeout
+    )->run();
   }
 
-  inline void make(Req::Ptr req) {
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_queue);
-      m_queue.push(req);
-      if(m_queue.size() > 1)
-        return;
-    }
-    make_requests(nullptr, false);  
+  static void request(Flag flag, int64_t cid, const Cb_t cb, 
+                      const uint32_t timeout = 10000){
+    std::make_shared<Get>(
+      Protocol::Params::GetColumnReq(flag, cid), cb, timeout
+    )->run();
   }
 
-  void make_requests(client::ClientConPtr conn, bool new_conn) {
-    if(new_conn)
-      m_conn = conn;
 
-    if(m_conn == nullptr || !m_conn->is_open()){
-      m_conn = nullptr;
-      if(!new_conn)
-        ActiveMngrBase::run();
-      else
-        run_within(Env::Clients::get()->mngr_service->io(), 200);
-      return;
-    }
-    
-    Req::Ptr req;
-    uint32_t sz = 0;
-    uint32_t len = 0;
-    for(;;) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_queue);
-        sz = m_queue.size();
-        if(sz == 0)
-          break;
-        req = m_queue.front();
+  Get(const Protocol::Params::GetColumnReq params, const Cb_t cb, 
+      const uint32_t timeout) : ConnQueue::ReqBase(false), cb(cb) {
+
+    CommHeader header(Protocol::Command::CLIENT_REQ_GET_COLUMN, timeout);
+    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+    params.encode(cbp->get_data_ptr_address());
+  }
+
+  virtual ~Get(){}
+
+  void handle_no_conn() override {
+    clear_endpoints();
+    run();
+  }
+
+  bool run(uint32_t timeout=0) override {
+    if(endpoints.empty()){
+      // columns-get (can be any mngr)
+      Env::Clients::get()->mngrs_groups->select(1, endpoints); 
+      if(endpoints.empty()){
+        std::make_shared<ActiveMngrRoute>(1, shared_from_this())->run();
+        return false;
       }
+    } 
+    Env::Clients::get()->mngr->get(endpoints)->put(req());
+    return true;
+  }
 
-      CommHeader header(Protocol::Command::CLIENT_REQ_GET_COLUMN, sz*m_timeout);
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, req->params.encoded_length());
-      req->params.encode(cbp->get_data_ptr_address());
-      
-      if(m_conn->send_request(cbp, req) == Error::OK){
+  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
 
-        std::lock_guard<std::mutex> lock(m_mutex_queue);
-        m_queue.pop();
-        if(m_queue.empty())
-          return;
-        continue;  
-      }
-
-      run_within(Env::Clients::get()->mngr_service->io(), 500);
+    if(ev->type == Event::Type::DISCONNECT){
+      handle_no_conn();
       return;
     }
 
-    if(!due()) 
-      m_conn->close();
-  }
+    Protocol::Params::GetColumnRsp rsp_params;
+    int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
 
-  size_t pending_write(){
-    if(m_conn == nullptr) return 0;
-    return m_conn->pending_write();
-  }
+    if(err == Error::OK){
+      try{
+        const uint8_t *ptr = ev->payload+4;
+        size_t remain = ev->payload_len-4;
+        rsp_params.decode(&ptr, &remain);
+      } catch (Exception &e) {
+        HT_ERROR_OUT << e << HT_END;
+        err = e.code();
+      }
+    }
 
-  size_t pending_read(){
-    if(m_conn == nullptr) return 0;
-    return m_conn->pending_read();
-  }
-
-  size_t queue(){
-    std::lock_guard<std::mutex> lock(m_mutex_queue);
-    return m_queue.size();
-  }
-
-  bool due(){
-    return  queue() > 0 || pending_read() > 0 || pending_write() > 0;
-  }
-
-  void close(){
-    if(m_conn != nullptr)
-      m_conn->close();
+    cb(req(), err, rsp_params);
   }
 
   private:
   
-  client::ClientConPtr  m_conn;
-  uint32_t              m_timeout;
-  
-  std::mutex            m_mutex_queue;
-  std::queue<Req::Ptr>  m_queue;
+  void clear_endpoints() {
+    Env::Clients::get()->mngrs_groups->remove(endpoints);
+    endpoints.clear();
+  }
+
+  const Cb_t  cb;
+  EndPoints   endpoints;
 };
-typedef std::shared_ptr<GetColumn> GetColumnPtr;
 
 
+}
 }}}
 
 #endif // swc_lib_db_protocol_req_GetColumn_h

@@ -48,8 +48,6 @@ class MngrGetColumn : public ConnQueue::ReqBase {
       was_called = true;
       return;
     }
-
-    conn->do_close();
   }
 
   private:

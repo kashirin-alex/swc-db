@@ -83,7 +83,8 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   ConnQueue(const gInt32tPtr keepalive_ms=nullptr) 
             : m_conn(nullptr),  m_queue_running(false), m_connecting(false),
-              cfg_keepalive_ms(keepalive_ms), m_check_timer(nullptr) { }
+              cfg_keepalive_ms(keepalive_ms), m_check_timer(nullptr) { 
+  }
 
   virtual ~ConnQueue() { }
 
@@ -217,7 +218,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   }
 
   void schedule_close() {
-    if(cfg_keepalive_ms == nullptr)
+    if(cfg_keepalive_ms == nullptr) // nullptr -eq persistent
       return;
     // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
 
@@ -259,7 +260,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   TimerPtr                  m_check_timer; 
 
   protected:
-  const gInt32tPtr          cfg_keepalive_ms; // persistent == nullptr
+  const gInt32tPtr          cfg_keepalive_ms;
 };
 
 

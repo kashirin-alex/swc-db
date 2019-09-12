@@ -14,7 +14,6 @@
 #include "AppContextClient.h"
 
 #include "swcdb/lib/db/Protocol/Commands.h"
-#include "swcdb/lib/db/Protocol/req/ActiveMngrBase.h"
 
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "swcdb/lib/db/Columns/RS/Columns.h"
@@ -118,6 +117,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
+            HT_INFO(" REQ_RS_ASSIGN_ID_NEEDED");
             try{conn->response_ok(ev);}catch(...){}
             Protocol::Req::MngRsId::assign(m_rs_id_validator);
             break;
