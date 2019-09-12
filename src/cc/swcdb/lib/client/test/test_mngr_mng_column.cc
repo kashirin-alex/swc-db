@@ -145,7 +145,8 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
         }
         req->chks++;
 
-      }
+      },
+      60000
     );
   }
   while(latency->count() < expected.size()) {
@@ -213,7 +214,8 @@ void chk(Protocol::Req::Column::Mng::Func func,
                   && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
               || 
                 (func == Protocol::Req::Column::Mng::Func::MODIFY 
-                  && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
+                  && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
+                  && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT )
               ))
               {
               req_ptr->request_again();
@@ -231,7 +233,8 @@ void chk(Protocol::Req::Column::Mng::Func func,
                         << " max=" << latency->max()
                         << " count=" << latency->count()
                         << "\n";
-          }
+          },
+          60000
         );
       }
     }));
@@ -264,7 +267,7 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 1000;
+  int num_of_cols = 2000;
   int num_of_cols_to_remain = 100;
 
   /*  
