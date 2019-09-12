@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngColumn_h
-#define swc_db_protocol_params_MngColumn_h
+#ifndef swc_db_protocol_params_ColumnMng_h
+#define swc_db_protocol_params_ColumnMng_h
 
 #include "swcdb/lib/core/Serializable.h"
 #include "swcdb/lib/db/Columns/Schema.h"
@@ -14,7 +14,7 @@ namespace Protocol {
 namespace Params {
 
 
-  class MngColumn  : public Serializable {
+  class ColumnMng  : public Serializable {
   public:
 
     enum Function { // corelation-sequence required
@@ -33,9 +33,9 @@ namespace Params {
       INTERNAL_ACK_MODIFY   = 8,
     };
 
-    MngColumn() {}
+    ColumnMng() {}
 
-    MngColumn(Function function,  DB::SchemaPtr schema)
+    ColumnMng(Function function,  DB::SchemaPtr schema)
               : function(function), schema(schema) {     
     }
 
@@ -68,4 +68,4 @@ namespace Params {
 
 }}}
 
-#endif // swc_db_protocol_params_MngColumn_h
+#endif // swc_db_protocol_params_ColumnMng_h

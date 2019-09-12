@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngrUpdateColumn_h
-#define swc_db_protocol_params_MngrUpdateColumn_h
+#ifndef swc_db_protocol_params_MngrColumnUpdate_h
+#define swc_db_protocol_params_MngrColumnUpdate_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,16 +12,16 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-class MngrUpdateColumn : public Serializable {
+class MngrColumnUpdate : public Serializable {
   public:
 
-  MngrUpdateColumn() {}
+  MngrColumnUpdate() {}
 
-  MngrUpdateColumn(MngColumn::Function function, DB::SchemaPtr schema, int err) 
+  MngrColumnUpdate(ColumnMng::Function function, DB::SchemaPtr schema, int err) 
                   : function(function), schema(schema), err(err) {}
 
   const std::string to_string() {
-    std::string s("MngrUpdateColumn-params:\n");
+    std::string s("MngrColumnUpdate-params:\n");
     s.append(" func=");
     s.append(std::to_string(function));
     s.append(" ");
@@ -32,7 +32,7 @@ class MngrUpdateColumn : public Serializable {
     return s;
   }
   
-  MngColumn::Function function;
+  ColumnMng::Function function;
   DB::SchemaPtr       schema;
   int                 err;
 
@@ -56,7 +56,7 @@ class MngrUpdateColumn : public Serializable {
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                       size_t *remainp) {
-    function = (MngColumn::Function)Serialization::decode_i8(bufp, remainp);
+    function = (ColumnMng::Function)Serialization::decode_i8(bufp, remainp);
     schema = std::make_shared<DB::Schema>(bufp, remainp);
     err = Serialization::decode_vi32(bufp, remainp);
   }

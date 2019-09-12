@@ -3,14 +3,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_MngColumn_h
-#define swc_lib_db_protocol_req_MngColumn_h
+#ifndef swc_lib_db_protocol_req_ColumnMng_h
+#define swc_lib_db_protocol_req_ColumnMng_h
 
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 
 #include "ActiveMngrRoute.h"
-#include "../params/MngColumn.h"
+#include "../params/ColumnMng.h"
 
 
 namespace SWC {
@@ -22,7 +22,7 @@ namespace Column {
 class Mng: public ConnQueue::ReqBase {
   public:
 
-  using Func = Params::MngColumn::Function;
+  using Func = Params::ColumnMng::Function;
   typedef std::function<void(ConnQueue::ReqBase::Ptr, int)> Cb_t;
 
 
@@ -44,14 +44,14 @@ class Mng: public ConnQueue::ReqBase {
   static void request(Func func, DB::SchemaPtr schema, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Mng>(
-      Protocol::Params::MngColumn(func, schema),
+      Protocol::Params::ColumnMng(func, schema),
       cb,
       timeout
     )->run();
   }
 
 
-  Mng(const Protocol::Params::MngColumn params, const Cb_t cb, 
+  Mng(const Protocol::Params::ColumnMng params, const Cb_t cb, 
             const uint32_t timeout) 
             : ConnQueue::ReqBase(false), cb(cb) {
     CommHeader header(Protocol::Command::CLIENT_REQ_MNG_COLUMN, timeout);
@@ -103,4 +103,4 @@ class Mng: public ConnQueue::ReqBase {
 }
 }}}
 
-#endif // swc_lib_db_protocol_req_MngColumn_h
+#endif // swc_lib_db_protocol_req_ColumnMng_h

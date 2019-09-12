@@ -3,14 +3,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_GetColumn_h
-#define swc_lib_db_protocol_req_GetColumn_h
+#ifndef swc_lib_db_protocol_req_ColumnGet_h
+#define swc_lib_db_protocol_req_ColumnGet_h
 
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 
 #include "ActiveMngrRoute.h"
-#include "../params/GetColumn.h"
+#include "../params/ColumnGet.h"
 
 
 namespace SWC {
@@ -22,9 +22,9 @@ namespace Column {
 class Get: public ConnQueue::ReqBase {
   public:
   
-  using Flag = Params::GetColumnReq::Flag;
+  using Flag = Params::ColumnGetReq::Flag;
   typedef std::function<
-            void(ConnQueue::ReqBase::Ptr, int, Params::GetColumnRsp)> Cb_t;
+            void(ConnQueue::ReqBase::Ptr, int, Params::ColumnGetRsp)> Cb_t;
 
 
   static void scheme(std::string& name, const Cb_t cb, 
@@ -45,19 +45,19 @@ class Get: public ConnQueue::ReqBase {
   static void request(Flag flag, std::string& name, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Get>(
-      Protocol::Params::GetColumnReq(flag, name), cb, timeout
+      Protocol::Params::ColumnGetReq(flag, name), cb, timeout
     )->run();
   }
 
   static void request(Flag flag, int64_t cid, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Get>(
-      Protocol::Params::GetColumnReq(flag, cid), cb, timeout
+      Protocol::Params::ColumnGetReq(flag, cid), cb, timeout
     )->run();
   }
 
 
-  Get(const Protocol::Params::GetColumnReq params, const Cb_t cb, 
+  Get(const Protocol::Params::ColumnGetReq params, const Cb_t cb, 
       const uint32_t timeout) : ConnQueue::ReqBase(false), cb(cb) {
 
     CommHeader header(Protocol::Command::CLIENT_REQ_GET_COLUMN, timeout);
@@ -92,7 +92,7 @@ class Get: public ConnQueue::ReqBase {
       return;
     }
 
-    Protocol::Params::GetColumnRsp rsp_params;
+    Protocol::Params::ColumnGetRsp rsp_params;
     int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
 
     if(err == Error::OK){
@@ -124,4 +124,4 @@ class Get: public ConnQueue::ReqBase {
 }
 }}}
 
-#endif // swc_lib_db_protocol_req_GetColumn_h
+#endif // swc_lib_db_protocol_req_ColumnGet_h

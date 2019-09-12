@@ -3,32 +3,32 @@
  */
 
 
-#ifndef swc_app_manager_handlers_GetColumn_h
-#define swc_app_manager_handlers_GetColumn_h
+#ifndef swc_app_manager_handlers_ColumnGet_h
+#define swc_app_manager_handlers_ColumnGet_h
 
-#include "swcdb/lib/db/Protocol/params/GetColumn.h"
-#include "swcdb/lib/db/Protocol/req/MngrGetColumn.h"
+#include "swcdb/lib/db/Protocol/params/ColumnGet.h"
+#include "swcdb/lib/db/Protocol/req/MngrColumnGet.h"
 
 namespace SWC { namespace server { namespace Mngr {
 
 namespace Handler {
 
 
-class GetColumn : public AppHandler {
+class ColumnGet : public AppHandler {
   public:
 
-  GetColumn(ConnHandlerPtr conn, EventPtr ev)
+  ColumnGet(ConnHandlerPtr conn, EventPtr ev)
             : AppHandler(conn, ev){}
 
-  DB::SchemaPtr get_schema(int &err, Protocol::Params::GetColumnReq params) {
+  DB::SchemaPtr get_schema(int &err, Protocol::Params::ColumnGetReq params) {
     switch(params.flag) {
-      case Protocol::Params::GetColumnReq::Flag::SCHEMA_BY_ID:
+      case Protocol::Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
         return Env::Schemas::get()->get(params.cid);
 
-      case Protocol::Params::GetColumnReq::Flag::SCHEMA_BY_NAME:
+      case Protocol::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME:
         return Env::Schemas::get()->get(params.name);
 
-      case Protocol::Params::GetColumnReq::Flag::ID_BY_NAME:
+      case Protocol::Params::ColumnGetReq::Flag::ID_BY_NAME:
         return Env::Schemas::get()->get(params.name);
 
       default:
@@ -40,14 +40,14 @@ class GetColumn : public AppHandler {
   void run() override {
 
     int err = Error::OK;
-    Protocol::Params::GetColumnReq::Flag flag;
+    Protocol::Params::ColumnGetReq::Flag flag;
 
     try {
 
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::GetColumnReq req_params;
+      Protocol::Params::ColumnGetReq req_params;
       req_params.decode(&ptr, &remain);
       flag = req_params.flag;
       
@@ -60,13 +60,13 @@ class GetColumn : public AppHandler {
         return;
       }
 
-      if(flag == Protocol::Params::GetColumnReq::Flag::ID_BY_NAME)
-        req_params.flag = Protocol::Params::GetColumnReq::Flag::SCHEMA_BY_NAME;
+      if(flag == Protocol::Params::ColumnGetReq::Flag::ID_BY_NAME)
+        req_params.flag = Protocol::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
 
       Env::MngrRole::get()->req_mngr_inchain(
-        std::make_shared<Protocol::Req::MngrGetColumn>(
+        std::make_shared<Protocol::Req::MngrColumnGet>(
           req_params,
-          [ptr=this](int err, Protocol::Params::GetColumnRsp params){
+          [ptr=this](int err, Protocol::Params::ColumnGetRsp params){
             if(err == Error::OK && params.schema != nullptr){
               int tmperr;
               Env::Schemas::get()->add(tmperr, params.schema);
@@ -84,7 +84,7 @@ class GetColumn : public AppHandler {
     response(err, flag, nullptr);
   }
 
-  void response(int err, Protocol::Params::GetColumnReq::Flag flag, 
+  void response(int err, Protocol::Params::ColumnGetReq::Flag flag, 
                 DB::SchemaPtr schema){
 
     if(err == Error::OK && schema == nullptr)
@@ -96,7 +96,7 @@ class GetColumn : public AppHandler {
       CommBufPtr cbp;
 
       if(err == Error::OK) {
-        Protocol::Params::GetColumnRsp rsp_params(flag, schema);
+        Protocol::Params::ColumnGetRsp rsp_params(flag, schema);
         cbp = std::make_shared<CommBuf>(header, 4+rsp_params.encoded_length());
         cbp->append_i32(err);
         rsp_params.encode(cbp->get_data_ptr_address());
@@ -117,4 +117,4 @@ class GetColumn : public AppHandler {
   
 }}}}
 
-#endif // swc_app_manager_handlers_GetColumn_h
+#endif // swc_app_manager_handlers_ColumnGet_h

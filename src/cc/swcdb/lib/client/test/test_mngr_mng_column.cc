@@ -7,8 +7,8 @@
 
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/client/AppContext.h"
-#include "swcdb/lib/db/Protocol/req/MngColumn.h"
-#include "swcdb/lib/db/Protocol/req/GetColumn.h"
+#include "swcdb/lib/db/Protocol/req/ColumnMng.h"
+#include "swcdb/lib/db/Protocol/req/ColumnGet.h"
 
 #include "swcdb/lib/db/Stats/Stat.h"
 
@@ -62,7 +62,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
-        int err, Protocol::Params::GetColumnRsp rsp) {
+        int err, Protocol::Params::ColumnGetRsp rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
           req_ptr->request_again();
@@ -73,7 +73,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
                           std::chrono::system_clock::now() - start_ts).count();
         latency->add(took);
         if(verbose)
-          std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
+          std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took  
                     << " count=" << latency->count()
                     << " err=" << err << "(" << Error::get_text(err) << ") " 
                     << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
@@ -118,7 +118,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, Protocol::Params::GetColumnRsp rsp) {
+       int err, Protocol::Params::ColumnGetRsp rsp) {
         
         if(err == Error::REQUEST_TIMEOUT) {
           req_ptr->request_again();
@@ -129,7 +129,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
                           std::chrono::system_clock::now() - start_ts).count();
         latency->add(took);
         if(verbose)
-          std::cout << "GetColumnRsp: exists="<< req->exists << " took=" << took  
+          std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took  
                     << " count=" << latency->count()
                     << " err=" << err << "(" << Error::get_text(err) << ") " 
                     << " " << (err==Error::OK?rsp.cid:-1) << "\n";
@@ -267,8 +267,8 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 2000;
-  int num_of_cols_to_remain = 100;
+  int num_of_cols = 20000;
+  int num_of_cols_to_remain = 1000;
 
   /*  
   chk(Protocol::Req::Column::Mng::Func::DELETE, 1, 31000, true);

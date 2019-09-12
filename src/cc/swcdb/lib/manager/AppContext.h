@@ -27,9 +27,9 @@
 #include "handlers/ActiveMngr.h"
 #include "handlers/MngRsId.h"
 #include "handlers/UpdateRangeServers.h"
-#include "handlers/MngColumn.h"
-#include "handlers/GetColumn.h"
-#include "handlers/UpdateColumn.h"
+#include "handlers/ColumnMng.h"
+#include "handlers/ColumnGet.h"
+#include "handlers/ColumnUpdate.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -114,15 +114,15 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::CLIENT_REQ_MNG_COLUMN:
-            handler = new Handler::MngColumn(conn, ev);
+            handler = new Handler::ColumnMng(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_GET_COLUMN:
-            handler = new Handler::GetColumn(conn, ev);
+            handler = new Handler::ColumnGet(conn, ev);
             break;
 
           case Protocol::Command::MNGR_UPDATE_COLUMN:
-            handler = new Handler::UpdateColumn(conn, ev);
+            handler = new Handler::ColumnUpdate(conn, ev);
             break;
 
           case Protocol::Command::REQ_ECHO:

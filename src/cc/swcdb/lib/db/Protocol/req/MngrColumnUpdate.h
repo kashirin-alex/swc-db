@@ -3,28 +3,28 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_MngrUpdateColumn_h
-#define swc_lib_db_protocol_req_MngrUpdateColumn_h
+#ifndef swc_lib_db_protocol_req_MngrColumnUpdate_h
+#define swc_lib_db_protocol_req_MngrColumnUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/MngrUpdateColumn.h"
+#include "swcdb/lib/db/Protocol/params/MngrColumnUpdate.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class MngrUpdateColumn : public ConnQueue::ReqBase {
+class MngrColumnUpdate : public ConnQueue::ReqBase {
   public:
 
-  MngrUpdateColumn(Params::MngColumn::Function function, 
+  MngrColumnUpdate(Params::ColumnMng::Function function, 
                   DB::SchemaPtr schema, int err) {
 
-    Params::MngrUpdateColumn params(function, schema, err);
+    Params::MngrColumnUpdate params(function, schema, err);
     CommHeader header(Command::MNGR_UPDATE_COLUMN, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
   
-  virtual ~MngrUpdateColumn() { }
+  virtual ~MngrColumnUpdate() { }
   
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     if(was_called || !is_rsp(conn, ev))
@@ -43,4 +43,4 @@ class MngrUpdateColumn : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_MngrUpdateColumn_h
+#endif // swc_lib_db_protocol_req_MngrColumnUpdate_h

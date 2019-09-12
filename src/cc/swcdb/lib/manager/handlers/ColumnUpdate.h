@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_manager_handlers_UpdateColumn_h
-#define swc_app_manager_handlers_UpdateColumn_h
+#ifndef swc_app_manager_handlers_ColumnUpdate_h
+#define swc_app_manager_handlers_ColumnUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/MngrUpdateColumn.h"
+#include "swcdb/lib/db/Protocol/params/MngrColumnUpdate.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class UpdateColumn : public AppHandler {
+class ColumnUpdate : public AppHandler {
   public:
 
-    UpdateColumn(ConnHandlerPtr conn, EventPtr ev)
+    ColumnUpdate(ConnHandlerPtr conn, EventPtr ev)
                 : AppHandler(conn, ev){}
 
   void run() override {
@@ -26,7 +26,7 @@ class UpdateColumn : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrUpdateColumn params;
+      Protocol::Params::MngrColumnUpdate params;
       params.decode(&ptr, &remain);
       
       m_conn->response_ok(m_ev);
@@ -44,4 +44,4 @@ class UpdateColumn : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_UpdateColumn_h
+#endif // swc_app_manager_handlers_ColumnUpdate_h

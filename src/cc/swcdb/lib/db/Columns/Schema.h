@@ -118,6 +118,7 @@ class Schema {
         << ", blk_encoding=" << std::to_string((uint8_t)blk_encoding)
         << ", blk_size=" << std::to_string(blk_size)
         << ", revision=" << std::to_string(revision)
+        << ")"
        ;
     return ss.str();
   }

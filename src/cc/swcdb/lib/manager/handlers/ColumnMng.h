@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_manager_handlers_MngColumn_h
-#define swc_app_manager_handlers_MngColumn_h
+#ifndef swc_app_manager_handlers_ColumnMng_h
+#define swc_app_manager_handlers_ColumnMng_h
 
-#include "swcdb/lib/db/Protocol/params/MngColumn.h"
+#include "swcdb/lib/db/Protocol/params/ColumnMng.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class MngColumn : public AppHandler {
+class ColumnMng : public AppHandler {
   public:
 
-  MngColumn(ConnHandlerPtr conn, EventPtr ev)
+  ColumnMng(ConnHandlerPtr conn, EventPtr ev)
             : AppHandler(conn, ev){}
 
   void run() override {
@@ -29,7 +29,7 @@ class MngColumn : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngColumn req_params;
+      Protocol::Params::ColumnMng req_params;
       req_params.decode(&ptr, &remain);
 
       
@@ -69,4 +69,4 @@ class MngColumn : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_MngColumn_h
+#endif // swc_app_manager_handlers_ColumnMng_h

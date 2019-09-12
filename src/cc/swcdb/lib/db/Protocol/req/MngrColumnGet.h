@@ -3,27 +3,27 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_MngrGetColumn_h
-#define swc_lib_db_protocol_req_MngrGetColumn_h
+#ifndef swc_lib_db_protocol_req_MngrColumnGet_h
+#define swc_lib_db_protocol_req_MngrColumnGet_h
 
-#include "swcdb/lib/db/Protocol/params/GetColumn.h"
+#include "swcdb/lib/db/Protocol/params/ColumnGet.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Req {
 
-class MngrGetColumn : public ConnQueue::ReqBase {
+class MngrColumnGet : public ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(int, Protocol::Params::GetColumnRsp)> Cb_t;
+  typedef std::function<void(int, Protocol::Params::ColumnGetRsp)> Cb_t;
 
-  MngrGetColumn(Params::GetColumnReq params, Cb_t cb) : cb(cb) {
+  MngrColumnGet(Params::ColumnGetReq params, Cb_t cb) : cb(cb) {
     CommHeader header(Command::CLIENT_REQ_GET_COLUMN, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
   
-  virtual ~MngrGetColumn() { }
+  virtual ~MngrColumnGet() { }
   
   void handle(ConnHandlerPtr conn, EventPtr &ev) {
     if(was_called || !is_rsp(conn, ev))
@@ -31,7 +31,7 @@ class MngrGetColumn : public ConnQueue::ReqBase {
 
     if(ev->header.command == Protocol::Command::CLIENT_REQ_GET_COLUMN) {
       
-      Protocol::Params::GetColumnRsp rsp_params;
+      Protocol::Params::ColumnGetRsp rsp_params;
       int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
 
       if(err == Error::OK){
@@ -57,4 +57,4 @@ class MngrGetColumn : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_MngrGetColumn_h
+#endif // swc_lib_db_protocol_req_MngrColumnGet_h
