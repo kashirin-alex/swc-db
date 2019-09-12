@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_RsUpdateSchema_h
-#define swc_db_protocol_params_RsUpdateSchema_h
+#ifndef swc_db_protocol_params_RsColumnUpdate_h
+#define swc_db_protocol_params_RsColumnUpdate_h
 
 #include "swcdb/lib/core/Serializable.h"
 
@@ -12,13 +12,13 @@ namespace SWC {
 namespace Protocol {
 namespace Params {
 
-class RsUpdateSchema : public Serializable {
+class RsColumnUpdate : public Serializable {
   public:
 
-  RsUpdateSchema() {}
-  RsUpdateSchema(DB::SchemaPtr schema) : schema(schema){}
+  RsColumnUpdate() {}
+  RsColumnUpdate(DB::SchemaPtr schema) : schema(schema){}
              
-  virtual ~RsUpdateSchema() {}
+  virtual ~RsColumnUpdate() {}
 
   DB::SchemaPtr schema;
   
@@ -46,4 +46,4 @@ class RsUpdateSchema : public Serializable {
 
 }}}
 
-#endif // swc_db_protocol_params_RsUpdateSchema_h
+#endif // swc_db_protocol_params_RsColumnUpdate_h

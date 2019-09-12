@@ -24,7 +24,7 @@
 #include "handlers/RangeLoad.h"
 #include "handlers/RangeUnload.h"
 #include "handlers/RangeIsLoaded.h"
-#include "handlers/UpdateSchema.h"
+#include "handlers/ColumnUpdate.h"
 #include "handlers/ColumnDelete.h"
 
 
@@ -109,7 +109,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_RS_SCHEMA_UPDATE: 
-            handler = new Handler::UpdateSchema(conn, ev);
+            handler = new Handler::ColumnUpdate(conn, ev);
             break;
 
           case Protocol::Command::REQ_RS_UNLOAD_RANGE: 

@@ -3,27 +3,27 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_RsUpdateSchema_h
-#define swc_lib_db_protocol_req_RsUpdateSchema_h
+#ifndef swc_lib_db_protocol_req_RsColumnUpdate_h
+#define swc_lib_db_protocol_req_RsColumnUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/RsUpdateSchema.h"
+#include "swcdb/lib/db/Protocol/params/RsColumnUpdate.h"
 
 namespace SWC { namespace Protocol { namespace Req {
 
 
-class RsUpdateSchema : public ConnQueue::ReqBase {
+class RsColumnUpdate : public ConnQueue::ReqBase {
   public:
 
-  RsUpdateSchema(server::Mngr::RsStatusPtr rs, DB::SchemaPtr schema) 
+  RsColumnUpdate(server::Mngr::RsStatusPtr rs, DB::SchemaPtr schema) 
               : ConnQueue::ReqBase(false), rs(rs), schema(schema) {
 
-    Params::RsUpdateSchema params = Params::RsUpdateSchema(schema);
+    Params::RsColumnUpdate params = Params::RsColumnUpdate(schema);
     CommHeader header(Command::REQ_RS_SCHEMA_UPDATE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
   
-  virtual ~RsUpdateSchema() { }
+  virtual ~RsColumnUpdate() { }
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
       
@@ -57,4 +57,4 @@ class RsUpdateSchema : public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_RsUpdateSchema_h
+#endif // swc_lib_db_protocol_req_RsColumnUpdate_h

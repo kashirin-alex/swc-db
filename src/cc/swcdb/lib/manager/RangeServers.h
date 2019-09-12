@@ -15,8 +15,8 @@
 #include "swcdb/lib/db/Protocol/req/RsRangeLoad.h"
 #include "swcdb/lib/db/Protocol/req/RsRangeIsLoaded.h"
 #include "swcdb/lib/db/Protocol/req/RsIdReqNeeded.h"
+#include "swcdb/lib/db/Protocol/req/RsColumnUpdate.h"
 #include "swcdb/lib/db/Protocol/req/RsColumnDelete.h"
-#include "swcdb/lib/db/Protocol/req/RsUpdateSchema.h"
 
 #include "swcdb/lib/db/Protocol/params/ColumnMng.h"
 #include "swcdb/lib/db/Protocol/req/MngrUpdateRangeServers.h"
@@ -968,7 +968,7 @@ class RangeServers {
           undergo = true;
           if(ack_required){
             rs->put(
-              std::make_shared<Protocol::Req::RsUpdateSchema>(rs, schema));
+              std::make_shared<Protocol::Req::RsColumnUpdate>(rs, schema));
           }
         }
       }
@@ -1097,7 +1097,7 @@ void Protocol::Req::RsRangeLoad::loaded(int err, bool failure) {
   Env::RangeServers::get()->range_loaded(rs, range, err, failure);
 }
 
-void Protocol::Req::RsUpdateSchema::updated(int err, bool failure) {
+void Protocol::Req::RsColumnUpdate::updated(int err, bool failure) {
   Env::RangeServers::get()->update_schema(err, rs, schema, failure);
   
  if(failure)

@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_rangeserver_handlers_UpdateSchema_h
-#define swc_app_rangeserver_handlers_UpdateSchema_h
+#ifndef swc_app_rangeserver_handlers_ColumnUpdate_h
+#define swc_app_rangeserver_handlers_ColumnUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/RsUpdateSchema.h"
+#include "swcdb/lib/db/Protocol/params/RsColumnUpdate.h"
 
 
 namespace SWC { namespace server { namespace RS {
@@ -14,10 +14,10 @@ namespace SWC { namespace server { namespace RS {
 namespace Handler {
 
 
-class UpdateSchema : public AppHandler {
+class ColumnUpdate : public AppHandler {
   public:
 
-  UpdateSchema(ConnHandlerPtr conn, EventPtr ev)
+  ColumnUpdate(ConnHandlerPtr conn, EventPtr ev)
               : AppHandler(conn, ev) { }
 
   void run() override {
@@ -27,7 +27,7 @@ class UpdateSchema : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::RsUpdateSchema params;
+      Protocol::Params::RsColumnUpdate params;
       params.decode(&ptr, &remain);
 
       Env::Schemas::get()->replace(params.schema);
@@ -46,4 +46,4 @@ class UpdateSchema : public AppHandler {
 
 }}}}
 
-#endif // swc_app_rangeserver_handlers_UpdateSchema_h
+#endif // swc_app_rangeserver_handlers_ColumnUpdate_h
