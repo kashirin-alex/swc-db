@@ -24,53 +24,49 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
+struct ExpctedRsp{
+  public:
+  ExpctedRsp(std::string name, Types::Encoding blk_encoding, bool exists)
+            : name(name), blk_encoding(blk_encoding),
+              exists(exists), chks(0) { }
 
-void check_get(int num_of_cols, int num_of_cols_to_remain, 
-              bool modified, bool verbose=false){
+  std::string name;
+  Types::Encoding blk_encoding;
+  bool exists;
+  std::atomic<int> chks;
+};
 
+std::string get_name(int n, bool modified=false){
+  std::string name("column-");
+  name.append(std::to_string(n));
+  if(modified)
+    name.append("-modified");
+  return name;
+}
 
+void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, bool exist = true, bool verbose=false){
   std::cout << "########### get_scheme_by_name ###########\n";
-
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
-  struct ExpctedRsp{
-    public:
-    ExpctedRsp(std::string name, Types::Encoding blk_encoding, bool exists, bool modified)
-              : name(name), blk_encoding(blk_encoding),
-                exists(exists), modified(modified), chks(0) { }
-    //int64_t     cid;
-
-    std::string name;
-    Types::Encoding blk_encoding;
-    bool exists;
-    std::atomic<int> chks;
-    bool modified;
-  };
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  for(int n=1; n<=num_of_cols+num_of_cols_to_remain;n++){
-    std::string name("column-");
-    name.append(std::to_string(n));
-    
+  for(int n=1; n<=num_of_cols;n++){
     expected.push_back(std::make_shared<ExpctedRsp>(
-      modified ? std::string(name+"-modified"): name, 
-      modified ? Types::Encoding::SNAPPY : Types::Encoding::PLAIN,
-      n>num_of_cols,
-      modified)
-    );
+      get_name(n, modified), 
+      blk_encoding,
+      exist
+    ));
   }
 
   for(auto& req : expected){
-    std::function<void()> make_req;
-    make_req = [&make_req, req, latency, verbose](){
     Protocol::Req::Column::Get::scheme(
       req->name, 
-      [make_req, req, latency, verbose, start_ts=std::chrono::system_clock::now()]
+      [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
         int err, Protocol::Params::ColumnGetRsp rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
-          std::cout << "create column: err=" << err << "(" << Error::get_text(err) << ") \n";
+          std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
           req_ptr->request_again();
           return;
         }
@@ -86,7 +82,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
 
         if(err==Error::OK){
           if(!req->exists) {
-            std::cerr << " SHOULDN'T exist \n";
+            std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
             exit(1); 
           }
           if(req->blk_encoding != rsp.schema->blk_encoding) {
@@ -98,46 +94,25 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
             exit(1); 
           }
         } else if(req->exists){
-          std::cerr << " SHOULD exist \n";
+          std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
-        if(req->chks == 1 || req->modified)
-          return;
         req->chks++;
-        req->name.append("-modified");
-        
-        Protocol::Req::Column::Mng::request(
-          Protocol::Req::Column::Mng::Func::MODIFY,
-          DB::Schema::make(req->name, rsp.schema, 2),
-
-          [make_req](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
-            if(err != Error::OK 
-              && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
-              && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
-              req_ptr->request_again();
-
-              std::cout << "modify name: err=" << err << "(" << Error::get_text(err) << ") \n";
-            } else 
-              make_req();
-          },
-          300000
-        );
-      }
+      },
+      300000
     );
-    };
-    make_req();
   }
-  int c_expected =  expected.size()*(modified?1:2);
-  while(latency->count() < expected.size()*2) {
+  
+  while(latency->count() < num_of_cols) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-
   std::cout << "get_scheme_by_name"
             << " avg=" << latency->avg()
             << " min=" << latency->min()
             << " max=" << latency->max()
             << " count=" << latency->count() 
             << "\n";
+
 
   std::cout << "########### get_id_by_name ###########\n";
   latency = std::make_shared<Stats::Stat>();
@@ -150,6 +125,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
        int err, Protocol::Params::ColumnGetRsp rsp) {
         
         if(err == Error::REQUEST_TIMEOUT) {
+          std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
           req_ptr->request_again();
           return;
         }
@@ -157,6 +133,7 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
         uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
                           std::chrono::system_clock::now() - start_ts).count();
         latency->add(took);
+
         if(verbose)
           std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took  
                     << " count=" << latency->count()
@@ -165,11 +142,11 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
 
         if(err==Error::OK){
           if(!req->exists) {
-            std::cerr << " SHOULDN'T exist \n";
+            std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
             exit(1); 
           }
         } else if(req->exists){
-          std::cerr << " SHOULD exist \n";
+          std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
         req->chks++;
@@ -178,7 +155,8 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
       300000
     );
   }
-  while(latency->count() < expected.size()) {
+
+  while(latency->count() < num_of_cols) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   std::cout << "get get_id_by_name"
@@ -188,9 +166,8 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
             << " count=" << latency->count() 
             << "\n";
 
-
   for(auto& req : expected) {
-    if(req->chks != 3){
+    if(req->chks != 2){
       
       std::cerr << " chks="<< req->chks.load()
                 << " name=" << req->name 
@@ -202,85 +179,128 @@ void check_get(int num_of_cols, int num_of_cols_to_remain,
 }
 
 
+void chk(Protocol::Req::Column::Mng::Func func, int num_of_cols, 
+         Types::Encoding blk_encoding, bool modified, bool verbose=false) {
 
-void chk(Protocol::Req::Column::Mng::Func func, 
-         int threads_num=1, int checks=1, bool verbose=false) {
-  std::atomic<int> chks = checks+1;
+  std::cout << "########### chk func=" << func << " ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 
-  std::vector<std::thread*> threads;
-  for(int t=1;t<=threads_num;t++) {
-    threads.push_back(new std::thread([func, t, latency, verbose, &chks](){
-      int n;
-      for(;;) {
-        n = --chks;
-        if(n <= 0)
-          break;
-        std::string name("column-");
-        name.append(std::to_string(n));
-        if(func != Protocol::Req::Column::Mng::Func::CREATE)
-          name.append("-modified");
+  for(int n=1;n<=num_of_cols;n++) {
+    Protocol::Req::Column::Mng::request(
+      func,
+      DB::Schema::make(
+        0, 
+        get_name(n, modified), 
+        Types::Column::COUNTER_I64, 
+        10, 1234, 3, blk_encoding, 9876543),
 
-        Types::Encoding blk_encoding = Types::Encoding::PLAIN;
-        if(func == Protocol::Req::Column::Mng::Func::MODIFY)
-          blk_encoding = Types::Encoding::SNAPPY;
+      [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
+
+        uint64_t took 
+          = std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::system_clock::now() - start_ts).count();
+
+        if(err != Error::OK && (
+            (func == Protocol::Req::Column::Mng::Func::CREATE 
+              && err != Error::COLUMN_SCHEMA_NAME_EXISTS)
+            || 
+            (func == Protocol::Req::Column::Mng::Func::DELETE 
+             && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
+            || 
+            (func == Protocol::Req::Column::Mng::Func::MODIFY 
+              && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
+              && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT )
+          )) {
+          std::cout << " func = " << func 
+                    << " err="<<err<< "(" << Error::get_text(err) << ")";
+          req_ptr->request_again();
+        } else {
+          latency->add(took);
+        }
+            
+        if(verbose)
+          std::cout << " func = " << func 
+            << " err="<<err<< "(" << Error::get_text(err) << ")"
+            << " took=" << took
+            << " avg=" << latency->avg()
+            << " min=" << latency->min()
+            << " max=" << latency->max()
+            << " count=" << latency->count()
+            << "\n";
+      },
+      300000
+      );
+  
+  }
+  
+  while(latency->count() < num_of_cols) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  std::cout << " func="<< func 
+            << " num_of_cols="<< num_of_cols
+            << " avg=" << latency->avg()
+            << " min=" << latency->min()
+            << " max=" << latency->max()
+            << " count=" << latency->count()
+            << "\n";
+}
+
+void chk_rename(int num_of_cols, bool verbose=false){
+  std::cout << "########### chk_rename ###########\n";
+  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
+  
+  std::vector<std::shared_ptr<ExpctedRsp>> expected;
+
+  for(int n=1; n<=num_of_cols;n++){
+    std::string name = get_name(n, false);
+    Protocol::Req::Column::Get::scheme(
+      name, 
+      [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
+      (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
+       int err, Protocol::Params::ColumnGetRsp rsp) {
+
+        if(err == Error::REQUEST_TIMEOUT) {
+          std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
+          req_ptr->request_again();
+          return;
+        }
+        
+
+        DB::SchemaPtr new_schema = DB::Schema::make(get_name(n, true), rsp.schema, 2);
+
+        if(verbose)
+          std::cout << "modify name: \n" 
+            << "from " << rsp.schema->to_string() << "\n"
+            << "to   " << new_schema->to_string() << "\n";
 
         Protocol::Req::Column::Mng::request(
-          func,
-          DB::Schema::make(0, name, Types::Column::COUNTER_I64, 10, 1234, 3, blk_encoding, 9876543),
-
-          [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
-          (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
-
-            uint64_t took 
-              = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                  std::chrono::system_clock::now() - start_ts).count();
-
+          Protocol::Req::Column::Mng::Func::MODIFY,
+          new_schema,
+          [latency, start_ts](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
             if(err != Error::OK 
-              && (
-                (func == Protocol::Req::Column::Mng::Func::CREATE 
-                  && err !=  Error::COLUMN_SCHEMA_NAME_EXISTS ) 
-              || 
-                (func == Protocol::Req::Column::Mng::Func::DELETE 
-                  && err !=  Error::COLUMN_SCHEMA_NAME_NOT_EXISTS )
-              || 
-                (func == Protocol::Req::Column::Mng::Func::MODIFY 
-                  && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
-                  && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT )
-              ))
-              {
+              && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
+              && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
+              
               req_ptr->request_again();
-
-            } else {
-              latency->add(took);
+              return;
             }
-            
-            if(verbose)
-              std::cout << " func="<< func
-                        << " err="<<err<< "(" << Error::get_text(err) << ")"
-                        << " took=" << took
-                        << " avg=" << latency->avg()
-                        << " min=" << latency->min()
-                        << " max=" << latency->max()
-                        << " count=" << latency->count()
-                        << "\n";
+            uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              std::chrono::system_clock::now() - start_ts).count();
+            latency->add(took);
           },
           300000
         );
       }
-    }));
+    ); 
   }
 
-  for(auto& t : threads)t->join();
-  
-  while(latency->count() < checks*threads_num ) {
+  while(latency->count() < num_of_cols) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-
-    
-  std::cout << " threads_num="<< threads_num
-            << " checks="<< checks
-            << " func="<< func 
+  
+  std::cout << " modify name "
+            << " num_of_cols="<< num_of_cols
             << " avg=" << latency->avg()
             << " min=" << latency->min()
             << " max=" << latency->max()
@@ -299,23 +319,25 @@ int main(int argc, char** argv) {
   
 
   int num_of_cols = 3333;
-  int num_of_cols_to_remain = 1000;
 
-  /*  
-  chk(Protocol::Req::Column::Mng::Func::DELETE, 1, 31000, true);
-  std::cout << " OK! \n";
-  exit(0);
-  */
-  chk(Protocol::Req::Column::Mng::Func::DELETE, 1, num_of_cols, false);
-    
-  chk(Protocol::Req::Column::Mng::Func::CREATE, 1, num_of_cols, false);
-  check_get(0, num_of_cols, false, false);
+  chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, false);
+  chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, true);
+  
+  chk(Protocol::Req::Column::Mng::Func::CREATE, num_of_cols, Types::Encoding::PLAIN, false);
+  check_get(num_of_cols, false, Types::Encoding::PLAIN);
+  std::cout << "\n";
 
-  chk(Protocol::Req::Column::Mng::Func::MODIFY, 1, num_of_cols, false);
-  check_get(0, num_of_cols, true, false);
+  chk_rename(num_of_cols, false);
+  check_get(num_of_cols, true, Types::Encoding::PLAIN, true);
+  std::cout << "\n";
 
-  chk(Protocol::Req::Column::Mng::Func::DELETE, 1, num_of_cols, false);
-  check_get(num_of_cols, 0, true, false);
+  chk(Protocol::Req::Column::Mng::Func::MODIFY, num_of_cols, Types::Encoding::SNAPPY, true);
+  check_get(num_of_cols, true, Types::Encoding::SNAPPY);
+  std::cout << "\n";
+
+  chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::SNAPPY, true);
+  check_get(num_of_cols, true, Types::Encoding::SNAPPY, false);
+  std::cout << "\n";
 
   std::cout << " OK! \n";
   exit(0);
