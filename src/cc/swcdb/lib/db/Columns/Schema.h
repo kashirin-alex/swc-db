@@ -18,6 +18,21 @@ typedef std::shared_ptr<Schema> SchemaPtr;
 class Schema {
 
   public:
+  static const int64_t NO_CID = 0;
+
+  inline static SchemaPtr make(
+         std::string col_name, 
+         Types::Column col_type=Types::Column::PLAIN,
+         int32_t cell_versions=1, uint32_t cell_ttl=0,
+         uint8_t blk_replication=0, 
+         Types::Encoding blk_encoding=Types::Encoding::SNAPPY,
+         uint32_t blk_size=0,
+         int64_t revision=0){
+    return std::make_shared<Schema>(
+      NO_CID, col_name, col_type, 
+      cell_versions, cell_ttl, 
+      blk_replication, blk_encoding, blk_size, revision);
+  }
 
   inline static SchemaPtr make(
          int64_t cid, std::string col_name, 
@@ -36,6 +51,15 @@ class Schema {
   inline static SchemaPtr make(int64_t cid, SchemaPtr other, int64_t revision){
     return std::make_shared<Schema>(
       cid, other->col_name, other->col_type, 
+      other->cell_versions, other->cell_ttl, 
+      other->blk_replication, other->blk_encoding, other->blk_size,
+      revision);
+  }
+  
+  inline static SchemaPtr make(std::string col_name, SchemaPtr other, 
+                               int64_t revision){
+    return std::make_shared<Schema>(
+      other->cid, col_name, other->col_type, 
       other->cell_versions, other->cell_ttl, 
       other->blk_replication, other->blk_encoding, other->blk_size,
       revision);
