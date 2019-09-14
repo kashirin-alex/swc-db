@@ -13,7 +13,7 @@ Local/FileSystem.cc
 ADD_LIB_TARGET(
 	NAME 		swcdb_fs_local
 	SRCS 		${swcdb_fsLocal_sources}
-	TARGETS swcdb_core_comm
+	TARGETS swcdb_core_config
 )
 
 
@@ -25,7 +25,7 @@ ADD_LIB_TARGET(
 #ADD_LIB_TARGET(
 #	NAME 		swcdb_fs_ceph
 #	SRCS 		${swcdb_fsCeph_sources}
-#	TARGETS swcdb_core_comm
+#	TARGETS swcdb_core_config
 #)
 
 
@@ -37,7 +37,7 @@ Hadoop/FileSystem.cc
 ADD_LIB_TARGET(
 	NAME 		swcdb_fs_hadoop
 	SRCS 		${swcdb_fsHadoop_sources}
-	TARGETS swcdb_core_comm
+	TARGETS swcdb_core_config
 	SHARED 	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
 	STATIC 	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
 )
@@ -51,7 +51,7 @@ Broker/FileSystem.cc
 ADD_LIB_TARGET(
 	NAME 		swcdb_fs_broker
 	SRCS 		${swcdb_fsBroker_sources}
-	TARGETS swcdb_core_comm
+	TARGETS swcdb_core_config
 )
 
 
@@ -59,6 +59,6 @@ ADD_LIB_TARGET(
 ADD_TEST_TARGET(
 	NAME      fs_client
 	SRCS      tests/test_fs_client.cc
-  TARGETS 	swcdb_core_comm swcdb_core_config swcdb_db  ${BUILTIN_FS_TARGETS}
+  TARGETS 	swcdb_core_config swcdb_db  ${BUILTIN_FS_TARGETS}
   ARGS      "--config=/root/swc-db/conf/swc.cfg"
 )

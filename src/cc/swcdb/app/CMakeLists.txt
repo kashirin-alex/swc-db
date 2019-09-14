@@ -12,14 +12,14 @@
 ADD_EXEC_TARGET(
 	NAME dbRangeServer
 	SRCS  rangeserver/main.cc
-	TARGETS swcdb_core_config swcdb_db swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core_config swcdb_db ${BUILTIN_FS_TARGETS}
 )
 
 # dbManager
 ADD_EXEC_TARGET(
 	NAME dbManager
 	SRCS  manager/main.cc
-	TARGETS swcdb_core_config swcdb_db swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core_config swcdb_db ${BUILTIN_FS_TARGETS}
 )
 
 
@@ -28,6 +28,6 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
 	NAME dbFsBroker
 	SRCS  fsbroker/main.cc
-	TARGETS swcdb_core_config swcdb_db swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core_config swcdb_db ${BUILTIN_FS_TARGETS}
 	FLAGS "-DFS_BROKER_APP"
 )

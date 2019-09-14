@@ -54,15 +54,3 @@ ADD_TEST_TARGET(
 	SRCS tests/sertest.cc
 	TARGETS swcdb_core 
 )
-
-
-
-# lib-swcdb_core_comm, #ifndef swcdb_core_comm_FileName_h
-set(swcdb_core_comm_sources
-	comm/CommHeader.cc
-)
-ADD_LIB_TARGET(
-	NAME 		swcdb_core_comm
-	SRCS 		${swcdb_core_comm_sources}
-	TARGETS swcdb_core swcdb_core_config
-)
