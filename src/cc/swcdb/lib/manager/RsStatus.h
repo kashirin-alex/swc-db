@@ -18,6 +18,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
 
   enum State {
     NONE,
+    AWAIT,
     ACK,
     REMOVED
   };
@@ -83,6 +84,18 @@ class RsStatus : public Protocol::Params::HostEndPoints {
     m_queue->stop();
   }
 
+  void pending_id(Protocol::Req::ConnQueue::ReqBase::Ptr req){
+    m_pending_id.push(req);
+  }
+
+  bool pending_id_pop(Protocol::Req::ConnQueue::ReqBase::Ptr& req){
+    if(m_pending_id.empty())
+      return false;
+    req = m_pending_id.front();
+    m_pending_id.pop();
+    return true;
+  }
+
   uint64_t   rs_id;
   State      state;
 
@@ -92,6 +105,7 @@ class RsStatus : public Protocol::Params::HostEndPoints {
   
   private:
   client::Host::Ptr m_queue = nullptr;
+  std::queue<Protocol::Req::ConnQueue::ReqBase::Ptr> m_pending_id;
 
 };
 typedef std::shared_ptr<RsStatus> RsStatusPtr;
