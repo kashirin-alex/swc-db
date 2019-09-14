@@ -12,8 +12,10 @@ namespace SWC { namespace Protocol { namespace Req {
 class RsIdReqNeeded : public ConnQueue::ReqBase {
   public:
 
-  RsIdReqNeeded(server::Mngr::RsStatusPtr rs, server::Mngr::RangePtr range) 
-                : ConnQueue::ReqBase(false), rs(rs), range(range) {
+  RsIdReqNeeded(server::Mngr::RsStatusPtr rs_chk, 
+                server::Mngr::RsStatusPtr rs_nxt, 
+                server::Mngr::RangePtr range) : ConnQueue::ReqBase(false), 
+                rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
     CommHeader header(Command::REQ_RS_ASSIGN_ID_NEEDED, 60000);
     cbp = std::make_shared<CommBuf>(header, 0);
   }
@@ -48,10 +50,11 @@ class RsIdReqNeeded : public ConnQueue::ReqBase {
   void rsp(int err);
 
 
+  server::Mngr::RsStatusPtr rs_nxt;
+  server::Mngr::RangePtr    range;
   private:
 
-  server::Mngr::RsStatusPtr rs;
-  server::Mngr::RangePtr    range;
+  server::Mngr::RsStatusPtr rs_chk;
 };
 
 }}}

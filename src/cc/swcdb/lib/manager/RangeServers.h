@@ -129,7 +129,7 @@ class RangeServers {
 
   void update_status(Protocol::Params::ColumnMng::Function func, DB::SchemaPtr schema, 
                      int err, bool initial=false){
-    HT_ASSERT(schema->cid != 0);
+    HT_ASSERT(schema->cid != DB::Schema::NO_CID);
 
     if(!initial && m_root_mngr) {
       update_status_ack(func, schema, err);
@@ -352,6 +352,22 @@ class RangeServers {
     }
   }
 
+  void assign_range_chk_last(int err, RsStatusPtr rs_chk) {
+    for(;;) {
+      Protocol::Req::ConnQueue::ReqBase::Ptr req;
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+        if(!rs_chk->pending_id_pop(req))
+          return;
+      }
+
+      auto qreq = std::dynamic_pointer_cast<Protocol::Req::RsIdReqNeeded>(req);
+      if(err == Error::OK) 
+        range_loaded(qreq->rs_nxt, qreq->range, Error::RS_NOT_READY);
+      else
+        assign_range(qreq->rs_nxt, qreq->range);
+    }
+  }
 
   void assign_range(RsStatusPtr rs, RangePtr range){
     rs->put(std::make_shared<Protocol::Req::RsRangeLoad>(rs, range));
@@ -672,12 +688,15 @@ class RangeServers {
       return;
     }
 
+    bool id_due;
     RsStatusPtr rs_last = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       for(auto& rs_chk : m_rs_status) {
         if(has_endpoint(rs_chk->endpoints, last_rs->endpoints)){
           rs_last = rs_chk;
+          id_due = rs_last->state == RsStatus::State::AWAIT;
+          rs_last->state = RsStatus::State::AWAIT;
           break;
         }
       }
@@ -688,9 +707,16 @@ class RangeServers {
       std::lock_guard<std::mutex> lock(m_mutex_rs_status);
       std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
       m_rs_status.push_back(rs_last);
+      rs_last->state = RsStatus::State::AWAIT;
+      id_due = false;
     }
-
-    rs_last->put(std::make_shared<Protocol::Req::RsIdReqNeeded>(rs, range));
+    
+    auto req = std::make_shared<Protocol::Req::RsIdReqNeeded>(
+      rs_last, rs, range);
+    if(id_due)
+      rs_last->pending_id(req);
+    else
+      rs_last->put(req);
   }
 
   RsStatusPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
@@ -757,7 +783,7 @@ class RangeServers {
     std::vector<DB::SchemaPtr> entries;
     Env::Schemas::get()->all(entries);
     for(auto& schema : entries) {
-      HT_ASSERT(schema->cid != 0);
+      HT_ASSERT(schema->cid != DB::Schema::NO_CID);
       update_status(Protocol::Params::ColumnMng::Function::INTERNAL_LOAD, schema,
                     Error::OK, true);
     }
@@ -808,7 +834,7 @@ class RangeServers {
 
     DB::SchemaPtr schema_save = DB::Schema::make(
       cid, schema, schema->revision != 0 ? schema->revision : Time::now_ns());
-    HT_ASSERT(schema_save->cid != 0);
+    HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
     
     Files::Schema::save_with_validation(err, schema_save);
     if(err == Error::OK) 
@@ -824,14 +850,14 @@ class RangeServers {
                             DB::SchemaPtr old) {
 
     DB::SchemaPtr schema_save = DB::Schema::make(
-      old->cid,
+      schema->cid == DB::Schema::NO_CID? old->cid: schema->cid,
       schema, 
       schema->revision != 0 ? 
       schema->revision : Time::now_ns());
 
-    HT_ASSERT(schema_save->cid != 0);
+    HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
 
-   if(schema->equal(schema_save, false))
+    if(schema->equal(schema_save, false))
       err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
 
     Files::Schema::save_with_validation(err, schema_save);
@@ -888,6 +914,8 @@ class RangeServers {
       if(err == Error::OK){
         std::lock_guard<std::mutex> lock(m_mutex);
         DB::SchemaPtr schema = Env::Schemas::get()->get(req.params.schema->col_name);
+        if(schema == nullptr && req.params.schema->cid != DB::Schema::NO_CID)
+          schema = Env::Schemas::get()->get(req.params.schema->cid);
 
         switch(req.params.function){
           case Protocol::Params::ColumnMng::Function::CREATE: {
@@ -922,7 +950,7 @@ class RangeServers {
           std::lock_guard<std::mutex> lock(m_mutex_columns);
           m_cid_pending.push_back(req);
         }
-        HT_ASSERT(req.params.schema->cid != 0);
+        HT_ASSERT(req.params.schema->cid != DB::Schema::NO_CID);
         update_status(req.params.function, req.params.schema, err, true);
 
       } else {
@@ -1105,12 +1133,17 @@ void Protocol::Req::RsColumnUpdate::updated(int err, bool failure) {
 }
 
 void Protocol::Req::RsIdReqNeeded::rsp(int err) {
+  
   if(err == Error::OK) 
-  // RsId assignment on the way, put range back as not assigned 
+    // RsId assignment on the way, put range back as not assigned 
     Env::RangeServers::get()->range_loaded(
-      rs, range, Error::RS_NOT_LOADED_RANGE);
+      rs_nxt, range, Error::RS_NOT_READY);
   else
-    Env::RangeServers::get()->assign_range(rs, range);
+    Env::RangeServers::get()->assign_range(
+      rs_nxt, range);
+
+    // the same cond to reqs pending_id
+  Env::RangeServers::get()->assign_range_chk_last(err, rs_chk);
 }
 
 void Protocol::Req::RsColumnDelete::remove(int err) {
