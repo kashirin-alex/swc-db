@@ -849,6 +849,12 @@ class RangeServers {
   void column_update_schema(int &err, DB::SchemaPtr &schema, 
                             DB::SchemaPtr old) {
 
+    if(old->col_name.compare(schema->col_name) != 0 
+      && Env::Schemas::get()->get(schema->col_name) != nullptr){
+      err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+      return;
+    }
+
     DB::SchemaPtr schema_save = DB::Schema::make(
       schema->cid == DB::Schema::NO_CID? old->cid: schema->cid,
       schema, 
