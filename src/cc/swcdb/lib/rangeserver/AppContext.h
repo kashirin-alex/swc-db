@@ -21,6 +21,7 @@
 #include "swcdb/lib/db/Protocol/req/MngrRsMngId.h"
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
+#include "handlers/AssignId.h"
 #include "handlers/RangeLoad.h"
 #include "handlers/RangeUnload.h"
 #include "handlers/RangeIsLoaded.h"
@@ -61,7 +62,8 @@ class AppContext : public SWC::AppContext {
       std::make_shared<client::RS::AppContext>()
     ));
 
-    m_rs_id_validator = std::make_shared<Protocol::Req::MngrRsMngId::Scheduler>();
+    m_rs_id_validator 
+      = std::make_shared<Protocol::Req::MngrRsMngId::Scheduler>(m_stopping);
     Protocol::Req::MngrRsMngId::assign(m_rs_id_validator);
   }
 
@@ -117,9 +119,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
-            HT_INFO(" REQ_RS_ASSIGN_ID_NEEDED");
-            try{conn->response_ok(ev);}catch(...){}
-            Protocol::Req::MngrRsMngId::assign(m_rs_id_validator);
+            handler = new Handler::AssignId(conn, ev, m_rs_id_validator);
             break;
             
           case Protocol::Command::REQ_RS_COLUMN_DELETE: 
@@ -166,7 +166,7 @@ class AppContext : public SWC::AppContext {
       return;
     }
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-
+    m_stopping = true;
     m_srv->stop_accepting(); // no further requests accepted
 
     int err = Error::OK;
@@ -186,9 +186,8 @@ class AppContext : public SWC::AppContext {
     Env::Clients::get()->rs_service->stop();
     Env::Clients::get()->mngr_service->stop();
     
-    Env::FsInterface::interface()->stop();
-    
     Env::IoCtx::io()->stop();
+    Env::FsInterface::interface()->stop();
     
     m_srv->shutdown();
 
@@ -201,6 +200,7 @@ class AppContext : public SWC::AppContext {
   
   std::mutex                m_mutex;
   SerializedServerPtr       m_srv = nullptr;
+  std::atomic<bool>         m_stopping = false;
   
   Protocol::Req::MngrRsMngId::Scheduler::Ptr   m_rs_id_validator;
   
