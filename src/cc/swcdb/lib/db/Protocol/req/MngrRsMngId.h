@@ -23,8 +23,10 @@ class MngrRsMngId: public ConnQueue::ReqBase {
 
     public:
     typedef std::shared_ptr<Scheduler> Ptr;
+    std::atomic<bool>& stopping;
 
-    Scheduler() :
+    Scheduler(std::atomic<bool>& stopping) :
+      stopping(stopping),
       m_timer(
         std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
       ),
@@ -106,6 +108,9 @@ class MngrRsMngId: public ConnQueue::ReqBase {
   virtual ~MngrRsMngId(){}
 
   void assign() {
+    if(validator->stopping)
+      return;
+
     Files::RsDataPtr rs_data = Env::RsData::get();
     cbp = create(
       Protocol::Params::MngrRsMngId(
