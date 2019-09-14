@@ -28,7 +28,6 @@
  */
 
 #include "CommHeader.h"
-#include "swcdb/lib/core/Compat.h"
 #include "swcdb/lib/core/Error.h"
 #include "swcdb/lib/core/Serialization.h"
 #include "swcdb/lib/core/Logger.h"
@@ -37,23 +36,24 @@
 
 using namespace SWC;
 
+
 void CommHeader::encode(uint8_t **bufp) {
   uint8_t *base = *bufp;
   Serialization::encode_i8(bufp, version);
   Serialization::encode_i8(bufp, header_len);
-  Serialization::encode_i16(bufp, alignment);
-  Serialization::encode_i16(bufp, flags);
-  Serialization::encode_i32(bufp, 0);
-  Serialization::encode_i32(bufp, id);
+  Serialization::encode_i8(bufp, flags);
   Serialization::encode_i32(bufp, gid);
-  Serialization::encode_i32(bufp, total_len);
+  Serialization::encode_i32(bufp, id);
   Serialization::encode_i32(bufp, timeout_ms);
-  Serialization::encode_i32(bufp, payload_checksum);
-  Serialization::encode_i64(bufp, command);
+  Serialization::encode_i16(bufp, command);
+  
+  Serialization::encode_i32(bufp, total_len);
+  Serialization::encode_i32(bufp, 0);
+
   // compute and serialize header checksum
   header_checksum = fletcher32(base, (*bufp)-base);
-  base += 6;
-  Serialization::encode_i32(&base, header_checksum);
+  *bufp -= 4;
+  Serialization::encode_i32(bufp, header_checksum);
 }
 
 void CommHeader::decode(const uint8_t **bufp, size_t *remainp) {
@@ -63,20 +63,21 @@ void CommHeader::decode(const uint8_t **bufp, size_t *remainp) {
               "Header size %d is less than the minumum fixed length %d",
               (int)*remainp, (int)FIXED_LENGTH);
   HT_TRY("decoding comm header",
-         version = Serialization::decode_i8(bufp, remainp);
-         header_len = Serialization::decode_i8(bufp, remainp);
-         alignment = Serialization::decode_i16(bufp, remainp);
-         flags = Serialization::decode_i16(bufp, remainp);
-         header_checksum = Serialization::decode_i32(bufp, remainp);
-         id = Serialization::decode_i32(bufp, remainp);
-         gid = Serialization::decode_i32(bufp, remainp);
-         total_len = Serialization::decode_i32(bufp, remainp);
-         timeout_ms = Serialization::decode_i32(bufp, remainp);
-         payload_checksum = Serialization::decode_i32(bufp, remainp);
-         command = Serialization::decode_i64(bufp, remainp));
-  memset((void *)(base+6), 0, 4);
+    version = Serialization::decode_i8(bufp, remainp);
+    header_len = Serialization::decode_i8(bufp, remainp);
+    flags = Serialization::decode_i8(bufp, remainp);
+    gid = Serialization::decode_i32(bufp, remainp);
+    id = Serialization::decode_i32(bufp, remainp);
+    timeout_ms = Serialization::decode_i32(bufp, remainp);
+    command = Serialization::decode_i16(bufp, remainp);
+    total_len = Serialization::decode_i32(bufp, remainp);
+    header_checksum = Serialization::decode_i32(bufp, remainp)
+  );
+  memset((void *)(*bufp-4), 0, 4);
   uint32_t checksum = fletcher32(base, *bufp-base);
-  if (checksum != header_checksum)
-    HT_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, "%u != %u", checksum,
-              header_checksum);
+  if (checksum != header_checksum){
+    HT_DEBUGF("checksum %u != %u", checksum, header_checksum);
+    HT_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
+              "checksum %u != %u", checksum, header_checksum);
+  }
 }

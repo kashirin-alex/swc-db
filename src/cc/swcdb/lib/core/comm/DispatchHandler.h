@@ -54,7 +54,7 @@ namespace SWC {
 
     /** Callback method.  When the Comm layer needs to deliver an event to the
      * application, this method is called to do so.  The set of event types
-     * include, CONNECTION_ESTABLISHED, DISCONNECT, MESSAGE, ERROR, and TIMER.
+     * include, CONNECTION_ESTABLISHED, DISCONNECT, MESSAGE, ERROR.
      *
      * @param event_ptr smart pointer to Event object
      */

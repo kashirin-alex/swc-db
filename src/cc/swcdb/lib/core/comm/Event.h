@@ -25,10 +25,9 @@ namespace SWC {
      */
     enum Type { 
       CONNECTION_ESTABLISHED, ///< Connection established event
-      DISCONNECT, ///< Connection disconnected event
-      MESSAGE,    ///< Request/response message event
-      ERROR,      ///< %Error event
-      TIMER       ///< %Timer event
+      DISCONNECT,             ///< Connection disconnected event
+      MESSAGE,                ///< Request/response message event
+      ERROR,                  ///< %Error event
     };
 
     Event(Type type_, int error_) 
@@ -80,33 +79,25 @@ namespace SWC {
      * </pre>
      */
     String to_str() const {
-      std::string dstr;
-
-      dstr = "Event: type=";
-      if (type == CONNECTION_ESTABLISHED)
-        dstr += "CONNECTION_ESTABLISHED";
-      else if (type == DISCONNECT)
-        dstr += "DISCONNECT";
-      else if (type == MESSAGE) {
-        dstr += "MESSAGE";
-        dstr += (String)" version=" + std::to_string((int)header.version);
-        dstr += (String)" total_len=" + std::to_string((int)header.total_len);
-        dstr += (String)" header_len=" + std::to_string((int)header.header_len);
-        dstr += (String)" header_checksum=" + std::to_string((int)header.header_checksum);
-        dstr += (String)" flags=" + std::to_string((int)header.flags);
-        dstr += (String)" id=" + std::to_string((int)header.id);
-        dstr += (String)" gid=" + std::to_string((int)header.gid);
-        dstr += (String)" timeout_ms=" + std::to_string((int)header.timeout_ms);
-        dstr += (String)" payload_checksum=" + std::to_string((int)header.payload_checksum);
-        dstr += (String)" command=" + std::to_string((int)header.command);
+      std::string dstr = "Event: type=";
+      switch(type){
+        case CONNECTION_ESTABLISHED:
+          dstr += "CONNECTION_ESTABLISHED";
+          break;
+        case DISCONNECT:
+          dstr += "DISCONNECT";
+          break;
+        case MESSAGE:
+          dstr += "MESSAGE" + header.to_string();
+          break;
+        case ERROR:
+          dstr += "ERROR";
+          break;
+        default:
+          dstr += "UKNOWN("+ std::to_string((int)type)+")";
+          break;
       }
-      else if (type == TIMER)
-        dstr += "TIMER";
-      else if (type == ERROR)
-        dstr += "ERROR";
-      else
-        dstr += std::to_string((int)type);
-
+      
       if (error != Error::OK)
         dstr += (String)" \"" + Error::get_text(error) + "\"";
 

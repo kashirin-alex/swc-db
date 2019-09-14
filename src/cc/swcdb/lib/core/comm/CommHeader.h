@@ -45,47 +45,40 @@ namespace SWC {
   public:
 
     static const uint8_t PROTOCOL_VERSION = 1;
-
-    static const size_t FIXED_LENGTH = 38;
+ 
+    static const uint8_t FIXED_LENGTH = 25;
 
     /** Enumeration constants for bits in flags field
      */
     enum Flags {
-      FLAGS_BIT_REQUEST          = 0x0001, //!< Request message
-      FLAGS_BIT_IGNORE_RESPONSE  = 0x0002, //!< Response should be ignored
-      FLAGS_BIT_URGENT           = 0x0004, //!< Request is urgent
-      FLAGS_BIT_PROFILE          = 0x0008, //!< Request should be profiled
-      FLAGS_BIT_PROXY_MAP_UPDATE = 0x4000, //!< ProxyMap update message
-      FLAGS_BIT_PAYLOAD_CHECKSUM = 0x8000  //!< Payload checksumming is enabled
+      FLAGS_BIT_REQUEST          = 0x1, //!< Request message
+      FLAGS_BIT_IGNORE_RESPONSE  = 0x2, //!< Response should be ignored
+      FLAGS_BIT_URGENT           = 0x4, //!< Request is urgent
     };
 
     /** Enumeration constants for flags field bitmaks
      */
     enum FlagMask {
-      FLAGS_MASK_REQUEST          = 0xFFFE, //!< Request message bit
-      FLAGS_MASK_IGNORE_RESPONSE  = 0xFFFD, //!< Response should be ignored bit
-      FLAGS_MASK_URGENT           = 0xFFFB, //!< Request is urgent bit
-      FLAGS_MASK_PROFILE          = 0xFFF7, //!< Request should be profiled
-      FLAGS_MASK_PROXY_MAP_UPDATE = 0xBFFF, //!< ProxyMap update message bit
-      FLAGS_MASK_PAYLOAD_CHECKSUM = 0x7FFF  //!< Payload checksumming is enabled bit
+      FLAGS_MASK_REQUEST          = 0xE, //!< Request message bit
+      FLAGS_MASK_IGNORE_RESPONSE  = 0xD, //!< Response should be ignored bit
+      FLAGS_MASK_URGENT           = 0xB, //!< Request is urgent bit
     };
 
     /** Default constructor.
      */
     CommHeader()
-      : version(1), header_len(FIXED_LENGTH), alignment(0), flags(0),
-        header_checksum(0), id(0), gid(0), total_len(0),
-        timeout_ms(0), payload_checksum(0), command(0) {  }
+      : version(1), header_len(FIXED_LENGTH), flags(0),
+        gid(0), id(0), timeout_ms(0), command(0), 
+        total_len(0), header_checksum(0) {  }
 
     /** Constructor taking command number and optional timeout.
      * @param cmd Command number
      * @param timeout Request timeout
      */
     CommHeader(uint64_t cmd, uint32_t timeout=0)
-      : version(1), header_len(FIXED_LENGTH), alignment(0), flags(0),
-        header_checksum(0), id(0), gid(0), total_len(0),
-        timeout_ms(timeout), payload_checksum(0),
-        command(cmd) {  }
+      : version(1), header_len(FIXED_LENGTH), flags(0),
+        gid(0), id(0), timeout_ms(timeout), command(cmd), 
+        total_len(0), header_checksum(0) {  }
 
     /** Returns fixed length of header.
      * @return Fixed length of header
@@ -130,23 +123,34 @@ namespace SWC {
      */
     void initialize_from_request_header(CommHeader &req_header) {
       flags = req_header.flags;
-      id = req_header.id;
       gid = req_header.gid;
+      id = req_header.id;
       command = req_header.command;
       total_len = 0;
     }
 
+    const std::string to_string() const {
+      std::string s = " version=" + std::to_string((int)version);
+      s += " header_len=" + std::to_string((int)header_len);
+      s += " flags=" + std::to_string((int)flags);
+      s += " gid=" + std::to_string((int)gid);
+      s += " id=" + std::to_string((int)id);
+      s += " timeout_ms=" + std::to_string((int)timeout_ms);
+      s += " command=" + std::to_string((int)command);
+      s += " total_len=" + std::to_string((int)total_len);
+      s += " header_checksum=" + std::to_string((int)header_checksum);
+      return s;
+    }
+
     uint8_t version;     //!< Protocol version
     uint8_t header_len;  //!< Length of header
-    uint16_t alignment;  //!< Align payload to this byte offset
-    uint16_t flags;      //!< Flags
-    uint32_t header_checksum; //!< Header checksum (computed with this member 0)
-    uint32_t id;         //!< Request ID
+    uint8_t flags;      //!< Flags
     uint32_t gid;        //!< Group ID (see ApplicationQueue)
-    uint32_t total_len;  //!< Total length of message including header
+    uint32_t id;         //!< Request ID
     uint32_t timeout_ms; //!< Request timeout
-    uint32_t payload_checksum; //!< Payload checksum (currently unused)
-    uint64_t command;    //!< Request command number
+    uint16_t command;    //!< Request command number
+    uint32_t total_len;  //!< Total length of message including header
+    uint32_t header_checksum; //!< Header checksum (computed with this member 0)
   };
   /** @}*/
 }
