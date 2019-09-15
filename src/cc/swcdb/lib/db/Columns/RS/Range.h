@@ -7,17 +7,9 @@
 #define swcdb_lib_db_Columns_RS_Range_h
 
 #include "swcdb/lib/db/Columns/RangeBase.h"
-#include "swcdb/lib/db/Types/Range.h"
-
-namespace SWC { namespace server { namespace RS {
-
-class Range;
-typedef std::shared_ptr<Range> RangePtr;
-
-}}}
-
 #include "swcdb/lib/db/Protocol/req/RsRangeUnload.h"
 
+#include "swcdb/lib/db/Types/Range.h"
 #include "swcdb/lib/db/Files/RangeData.h"
 
 
@@ -67,12 +59,14 @@ class Range : public DB::RangeBase {
 
 
   void load(ResponseCallbackPtr cb){
-
-    if(is_loaded()) {
-      cb->response_ok();
-      return;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_state != State::NOTLOADED) {
+        cb->response_ok();
+        return;
+      }
+      m_state = State::LOADED;
     }
-    set_state(State::LOADED);
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
     int err = Error::OK;
@@ -97,11 +91,10 @@ class Range : public DB::RangeBase {
       return loaded(err, cb);
 
     Env::RsData::get()->set_rs(err, get_path(rs_data_file));
-    loaded(err, cb); // RSP-LOAD-ACK
     if(err != Error::OK)
-      return;
+      return loaded(err, cb);
 
-    read_range_data(err);
+    read_range_data(err, cb);
   }
 
   void on_change(){ // range-interval || cellstores
@@ -122,8 +115,15 @@ class Range : public DB::RangeBase {
 
   }
 
-  void unload(int &err, bool completely){
-
+  void unload(Callback::RangeUnloaded_t cb, bool completely){
+    int err = Error::OK;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_state == State::DELETED){
+        cb(err);
+        return;
+      }
+    }
     // CommitLogs  
     // CellStores
     // range.data
@@ -200,9 +200,12 @@ class Range : public DB::RangeBase {
     if(completely)
       Env::FsInterface::interface()->remove(err, get_path(rs_data_file));
 
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     set_state(State::NOTLOADED);
     
     HT_INFOF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
+    cb(err);
   }
 
   void remove(int &err){
@@ -214,6 +217,7 @@ class Range : public DB::RangeBase {
         cs->remove(err);
       }
 
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       Env::FsInterface::interface()->rmdir(err, get_path(""));
     }
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
@@ -247,11 +251,24 @@ class Range : public DB::RangeBase {
   private:
   
   void loaded(int &err, ResponseCallbackPtr cb) {
+    if(Env::RsData::is_shuttingdown()) {
+      if(err == Error::OK){
+        err = Error::SERVER_SHUTTING_DOWN;
+        unload(
+          [cb](int err){cb->send_error(Error::SERVER_SHUTTING_DOWN, "");}, 
+          false
+        );
+        return;
+      }
+      err = Error::SERVER_SHUTTING_DOWN;
+    }
+
     if(err == Error::OK)
-      cb->response_ok(); // cb->run();
-    else
+        cb->response_ok();
+    else {
       // ? remove from map
-     cb->send_error(err == Error::OK? Error::RS_NOT_LOADED_RANGE: err , "");
+      cb->send_error(err, "");
+    }
   }
 
   void last_rs_chk(int &err, ResponseCallbackPtr cb){
@@ -272,70 +289,59 @@ class Range : public DB::RangeBase {
     take_ownership(err, cb);
   }
 
-  void read_range_data(int &err) {
+  void read_range_data(int &err, ResponseCallbackPtr cb) {
 
     // range.data
     Files::RangeData::load(err, get_path(range_data_file), cellstores);
     if(err != Error::OK || cellstores.size() == 0) {
       err = Error::OK;
       Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
+      for(auto& cs : cellstores) {
+        cs->load_trailer();
+      }
       if(err == Error::OK)
         Files::RangeData::save(err, get_path(range_data_file), cellstores);
       
-      if(err != Error::OK)
+      if(err != Error::OK) 
+        err = Error::OK;
         // rs-to determine range-removal (+ Notify Mngr )
-        return;
     }
 
-    int64_t ts;
-    int64_t ts_earliest = ScanSpecs::TIMESTAMP_NULL;
-    int64_t ts_latest = ScanSpecs::TIMESTAMP_NULL;
-    for(auto& cs : cellstores){
-      // intervals->expande(cs->intervals);
-
-      if(intervals->is_any_keys_begin() 
-        || !intervals->is_in_begin(cs->intervals->get_keys_begin()))
-        intervals->set_keys_begin(cs->intervals);
-
-      if(intervals->is_any_keys_end() 
-        || !intervals->is_in_end(cs->intervals->get_keys_end()))
-        intervals->set_keys_end(cs->intervals);
-
-      ts = cs->intervals->get_ts_earliest();
-      if(ts_earliest == ScanSpecs::TIMESTAMP_NULL || ts_earliest > ts)
-        ts_earliest = ts;
-      ts = cs->intervals->get_ts_latest();
-      if(ts_latest == ScanSpecs::TIMESTAMP_NULL || ts_latest < ts)
-        ts_latest = ts;
-      }
-    
-    intervals->set_ts_earliest(ts_earliest);
-    intervals->set_ts_latest(ts_latest);
+    for(auto& cs : cellstores) {
+      intervals->expande(cs->intervals);
+    }
     
     // cellstores
     // CommitLogs
     
 
-    set_state(State::LOADED);
-    if(is_loaded()) {
-      HT_INFOF("LOADED RANGE %s", to_string().c_str());
-      return;
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+      
+    loaded(err, cb); // RSP-LOAD-ACK
+
+    if(err == Error::OK) {
+      set_state(State::LOADED);
+      if(is_loaded()) {
+        HT_INFOF("LOADED RANGE %s", to_string().c_str());
+        return;
+      }
     }
-    
-    HT_WARNF("LOAD RANGE FAILED %s", to_string().c_str());
-    return;
+    HT_WARNF("LOAD RANGE FAILED err=%d(%s) %s", 
+             err, Error::get_text(err), to_string().c_str());
+    return; 
   }
 
 
-  State               m_state;
+  State                 m_state;
   
-  Types::Range        m_type;
-  Cells::IntervalsPtr intervals;
-  Files::CellStores   cellstores;
+  Types::Range          m_type;
+  Cells::Intervals::Ptr intervals;
+  Files::CellStores     cellstores;
 
 };
 
 
+typedef std::shared_ptr<Range> RangePtr;
 
 }} // server namespace
 
