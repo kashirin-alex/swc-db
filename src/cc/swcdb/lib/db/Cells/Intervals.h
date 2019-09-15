@@ -68,9 +68,6 @@ inline void decode(ScanSpecs::ListKeys &keys, uint8_t* &bufp,
   
 namespace Cells {
 
-class Intervals;
-typedef std::shared_ptr<Intervals> IntervalsPtr;
-
 class Intervals {
 
   /* encoded-format: 
@@ -81,6 +78,9 @@ class Intervals {
   */
 
   public:
+
+  typedef std::shared_ptr<Intervals> Ptr;
+
   Intervals() { }
 
   virtual ~Intervals(){ 
@@ -142,7 +142,7 @@ class Intervals {
       k.comp = Comparator::LT;
   }
 
-  void set_keys_begin(IntervalsPtr other){
+  void set_keys_begin(Ptr other){
     size_t len = other->get_keys_begin_len();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -152,7 +152,7 @@ class Intervals {
     decode_begin(&ptr, &len, m_serial_begin_len);
   }
 
-  void set_keys_end(IntervalsPtr other){
+  void set_keys_end(Ptr other){
     size_t len = other->get_keys_end_len();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -246,6 +246,27 @@ class Intervals {
         return false;
     }
     return true;
+  }
+
+
+  void expande(Ptr other){
+
+    if(is_any_keys_begin() || !is_in_begin(other->get_keys_begin()))
+      set_keys_begin(other);
+
+    if(is_any_keys_end() || !is_in_end(other->get_keys_end()))
+      set_keys_end(other);
+
+    {
+      auto ts = other->get_ts_earliest();
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_ts_earliest == ScanSpecs::TIMESTAMP_NULL || m_ts_earliest > ts)
+        m_ts_earliest = ts;
+
+      ts = other->get_ts_latest();
+      if(m_ts_latest == ScanSpecs::TIMESTAMP_NULL || m_ts_latest < ts)
+        m_ts_latest = ts;
+    }
   }
 
   const std::string to_string(){
