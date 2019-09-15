@@ -103,7 +103,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     }
   }
 
-  void unload_all() {
+  void unload_all(bool validation) {
 
     std::atomic<int>    unloaded = 0;
     std::promise<void>  r_promise;
@@ -119,12 +119,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
       auto it = m_columns->begin();
       if(it == m_columns->end())
         break;
+      if(validation)
+        HT_WARNF("Unload-Validation cid=%d remained", it->first);
       unloaded++;
       it->second->unload_all(unloaded, cb);
       m_columns->erase(it);
     }
 
-    if(unloaded > 0)
+    if(unloaded > 0) 
       r_promise.get_future().wait();
   }
 

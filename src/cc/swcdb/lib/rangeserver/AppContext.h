@@ -170,7 +170,7 @@ class AppContext : public SWC::AppContext {
 
     m_srv->stop_accepting(); // no further requests accepted
 
-    Env::RsColumns::get()->unload_all();
+    Env::RsColumns::get()->unload_all(false);
 
     Protocol::Req::MngrRsMngId::shutting_down(
       m_rs_id_validator,
@@ -178,12 +178,12 @@ class AppContext : public SWC::AppContext {
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
       }
     );
-    while(Env::RsData::in_process() > 0)
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   void stop() override {
-    Env::RsColumns::get()->unload_all(); //re-check
+    while(Env::RsData::in_process() > 0)
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    Env::RsColumns::get()->unload_all(true); //re-check
 
     m_rs_id_validator->stop();
     
