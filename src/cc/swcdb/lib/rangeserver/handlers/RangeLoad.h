@@ -33,9 +33,10 @@ class RangeLoad : public AppHandler {
 
       if(params.schema != nullptr) {
         Env::Schemas::get()->replace(params.schema);
-        HT_DEBUGF("updated %s", params.schema->to_string().c_str());
+        if(!Env::RsData::is_shuttingdown())
+          HT_DEBUGF("updated %s", params.schema->to_string().c_str());
       }
-  
+      
       int err = Error::OK;
       Env::RsColumns::get()->load_range(
         err,

@@ -31,7 +31,8 @@ class ColumnUpdate : public AppHandler {
       params.decode(&ptr, &remain);
 
       Env::Schemas::get()->replace(params.schema);
-      HT_DEBUGF("updated %s", params.schema->to_string().c_str());
+      if(!Env::RsData::is_shuttingdown())
+        HT_DEBUGF("updated %s", params.schema->to_string().c_str());
       
       m_conn->response_ok(m_ev);
     }

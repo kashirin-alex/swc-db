@@ -63,7 +63,7 @@ class AppContext : public SWC::AppContext {
     ));
 
     m_rs_id_validator 
-      = std::make_shared<Protocol::Req::MngrRsMngId::Scheduler>(m_stopping);
+      = std::make_shared<Protocol::Req::MngrRsMngId::Scheduler>();
     Protocol::Req::MngrRsMngId::assign(m_rs_id_validator);
   }
 
@@ -165,12 +165,13 @@ class AppContext : public SWC::AppContext {
               sig, ec.message().c_str());
       return;
     }
+    Env::RsData::shuttingdown();
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-    m_stopping = true;
+
     m_srv->stop_accepting(); // no further requests accepted
 
     int err = Error::OK;
-    Env::RsColumns::get()->unload_all(err, true);
+    Env::RsColumns::get()->unload_all(err);
     
     Protocol::Req::MngrRsMngId::shutting_down(
       m_rs_id_validator,
@@ -200,7 +201,6 @@ class AppContext : public SWC::AppContext {
   
   std::mutex                m_mutex;
   SerializedServerPtr       m_srv = nullptr;
-  std::atomic<bool>         m_stopping = false;
   
   Protocol::Req::MngrRsMngId::Scheduler::Ptr   m_rs_id_validator;
   

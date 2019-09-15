@@ -21,7 +21,7 @@ class AssignId : public AppHandler {
   void run() override {
 
     try {
-      if(validator->stopping){
+      if(Env::RsData::is_shuttingdown()){
         m_conn->send_error(Error::SERVER_SHUTTING_DOWN, "", m_ev);
         return;
       }
