@@ -20,9 +20,10 @@ class CellStore {
 
   static const int HEADER_SIZE=12;
   static const int8_t VERSION=1;
+  typedef std::shared_ptr<CellStore> Ptr;
 
-  Cells::IntervalsPtr  intervals;
-  uint32_t                cs_id;
+  Cells::Intervals::Ptr   intervals;
+  const uint32_t          cs_id;
 
   CellStore(uint32_t cs_id)
             : cs_id(cs_id), version(VERSION),
@@ -49,6 +50,11 @@ class CellStore {
 
   void remove(int &err) {}
 
+  void load_trailer() {
+
+    // sets cs->intervals
+  }
+
   private:
   std::mutex              m_mutex;
 
@@ -56,8 +62,7 @@ class CellStore {
   FS::SmartFdPtr          m_smartfd = nullptr;
 
 };
-typedef std::shared_ptr<CellStore> CellStorePtr;
-typedef std::vector<Files::CellStorePtr> CellStores;
+typedef std::vector<Files::CellStore::Ptr> CellStores;
 
 
 } // Files namespace
