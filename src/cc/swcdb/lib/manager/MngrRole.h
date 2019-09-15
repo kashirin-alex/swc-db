@@ -407,15 +407,17 @@ class MngrRole {
       host_chk = m_states.at(next++);
     }
 
-    if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total > 1){
+    if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1){
       if(flw) {
         m_checkin=0;
         timer_managers_checkin(cfg_check_interval->get());
         return;
       }
       flw = true;
-      managers_checker(next, total, flw);
-      return;
+      if(total > 1) {
+        managers_checker(next, total, flw);
+        return;
+      }
     }
     if(!flw) {
       managers_checker(next, total, flw);
