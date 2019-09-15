@@ -197,6 +197,7 @@ namespace Env {
 class RsData {  
   public:
 
+
   static void init() {
     m_env = std::make_shared<RsData>();
   }
@@ -206,12 +207,21 @@ class RsData {
     return m_env->m_rs_data;
   }
 
+  static bool is_shuttingdown(){
+    return m_env->m_shuttingdown;
+  }
+  static void shuttingdown(){
+    m_env->m_shuttingdown = true;
+  }
+
   RsData() : m_rs_data(std::make_shared<Files::RsData>()) {}
   virtual ~RsData(){}
+
 
   private:
   Files::RsDataPtr                      m_rs_data = nullptr;
   inline static std::shared_ptr<RsData> m_env = nullptr;
+  std::atomic<bool>                     m_shuttingdown = false;
 };
 }
 
