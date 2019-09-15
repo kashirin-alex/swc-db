@@ -54,7 +54,6 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   const int64_t     cid;
   const int64_t     rid;
-  std::mutex        m_mutex;
 
   RangeBase(int64_t cid, int64_t rid): 
             cid(cid), rid(rid),
@@ -87,7 +86,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   private:
   const std::string m_path;
 
-  
+  protected:
+  std::mutex        m_mutex;
 };
 
 
