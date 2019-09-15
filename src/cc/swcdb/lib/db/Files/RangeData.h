@@ -81,7 +81,7 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
     
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;i++) {
-    CellStorePtr cs = std::make_shared<CellStore>(
+    CellStore::Ptr cs = std::make_shared<CellStore>(
       Serialization::decode_vi32(ptr, remain)); 
     cs->intervals->decode(ptr, remain);
     cellstores.push_back(cs);
@@ -161,13 +161,11 @@ void load_by_path(int &err, const std::string cs_path, CellStores &cellstores){
   FS::IdEntries_t entries;
   Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
   for(auto cs_id : entries){
-    CellStorePtr cs = std::make_shared<CellStore>(cs_id); 
-    // cs->load_trailer(); // sets cs->intervals
+    CellStore::Ptr cs = std::make_shared<CellStore>(cs_id); 
     cellstores.push_back(cs);
     std::cout << cs->to_string() << "\n";
   }
 }
-
 
 }}}
 #endif
