@@ -59,14 +59,15 @@ class Range : public DB::RangeBase {
 
 
   void load(ResponseCallbackPtr cb){
-    int err = Error::OK;
     bool is_loaded;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       is_loaded = m_state != State::NOTLOADED;
       m_state = State::LOADED;
     }
-    if(is_loaded)
+    int err = Env::RsData::is_shuttingdown()
+              ?Error::SERVER_SHUTTING_DOWN:Error::OK;
+    if(is_loaded || err != Error::OK)
       return loaded(err, cb);
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
