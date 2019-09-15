@@ -43,6 +43,10 @@ class Column : public std::enable_shared_from_this<Column> {
           err = Error::SERVER_SHUTTING_DOWN;
           return range;
         }
+        if(m_deleting){
+          err = Error::COLUMN_MARKED_REMOVED;
+          return range;
+        }
         range = std::make_shared<Range>(cid, rid);
         m_ranges->insert(RangesMapPair(rid, range));;
       }
@@ -61,14 +65,13 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    unloaded += m_ranges->size();
 
     for(;;){
+      std::lock_guard<std::mutex> lock(m_mutex);
       auto it = m_ranges->begin();
       if(it == m_ranges->end())
         break;
-        
+      unloaded++;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [cb, range=it->second](){range->unload(cb, false);}
@@ -83,14 +86,15 @@ class Column : public std::enable_shared_from_this<Column> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_deleting = true;
+    }
       
-      for(;;){
-        auto it = m_ranges->begin();
-        if(it == m_ranges->end())
-          break;
-        it->second->remove(err);
-        m_ranges->erase(it);
-      }
+    for(;;){
+      std::lock_guard<std::mutex> lock(m_mutex);
+      auto it = m_ranges->begin();
+      if(it == m_ranges->end())
+        break;
+      it->second->remove(err);
+      m_ranges->erase(it);
     }
 
     HT_DEBUGF("REMOVED %s", to_string().c_str());

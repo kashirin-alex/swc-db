@@ -74,38 +74,39 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
+    RangePtr range;
+    
     if(Env::RsData::is_shuttingdown())
-      cb->send_error(Error::SERVER_SHUTTING_DOWN, "");
-      
+      err = Error::SERVER_SHUTTING_DOWN;
+
     else if(Env::Schemas::get()->get(cid) == nullptr)
-      cb->send_error(Error::COLUMN_SCHEMA_MISSING, "");
+      err = Error::COLUMN_SCHEMA_MISSING;
 
     else {
-      RangePtr range = get_range(err, cid, rid, true);
+      range = get_range(err, cid, rid, true);
       if(Env::RsData::is_shuttingdown())
-        cb->send_error(Error::SERVER_SHUTTING_DOWN, "");
-      else if(err != Error::OK)
-        cb->send_error(err, "");
-      else
-        range->load(cb);
+        err = Error::SERVER_SHUTTING_DOWN;
     }
+
+    if(err != Error::OK)
+      cb->response(err);
+    else 
+      range->load(cb);
+    
   }
 
   void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
     ColumnPtr col = get_column(err, cid, false);
-    if(col != nullptr) 
+    if(col != nullptr) {
       col->unload(rid, cb);
-    
-    cb(err);
+    } else {
+      cb(err);
+    }
   }
 
-  void unload_all(int &err){
+  void unload_all() {
+    
     std::atomic<int> unloaded = 0;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      unloaded += m_columns->size();
-    }
-
     std::promise<void>  r_promise;
     Callback::RangeUnloaded_t cb 
       = [&unloaded, await=&r_promise](int err){
@@ -119,6 +120,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       auto it = m_columns->begin();
       if(it == m_columns->end())
         break;
+      unloaded++;
       it->second->unload_all(unloaded, cb);
       m_columns->erase(it);
     }

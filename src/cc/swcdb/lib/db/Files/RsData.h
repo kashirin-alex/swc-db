@@ -210,8 +210,17 @@ class RsData {
   static bool is_shuttingdown(){
     return m_env->m_shuttingdown;
   }
+
   static void shuttingdown(){
     m_env->m_shuttingdown = true;
+  }
+
+  static int64_t in_process(){
+    return m_env->m_in_process;
+  }
+
+  static void in_process(int64_t count){
+    m_env->m_in_process += count;
   }
 
   RsData() : m_rs_data(std::make_shared<Files::RsData>()) {}
@@ -219,9 +228,11 @@ class RsData {
 
 
   private:
-  Files::RsDataPtr                      m_rs_data = nullptr;
-  inline static std::shared_ptr<RsData> m_env = nullptr;
-  std::atomic<bool>                     m_shuttingdown = false;
+  inline static std::shared_ptr<RsData> m_env           = nullptr;
+  Files::RsDataPtr                      m_rs_data       = nullptr;
+  std::atomic<bool>                     m_shuttingdown  = false;
+  std::atomic<int64_t>                  m_in_process    = 0;
+  
 };
 }
 

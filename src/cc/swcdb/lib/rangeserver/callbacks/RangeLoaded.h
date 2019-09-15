@@ -16,14 +16,37 @@ namespace Callback {
 class RangeLoaded : public ResponseCallback {
   public:
 
-  RangeLoaded(ConnHandlerPtr conn, EventPtr ev)
-              : ResponseCallback(conn, ev) { }
+  RangeLoaded(ConnHandlerPtr conn, EventPtr ev, 
+              const int64_t cid, const int64_t rid)
+              : ResponseCallback(conn, ev), cid(cid), rid(rid) {
+    Env::RsData::in_process(1);
+  }
 
   virtual ~RangeLoaded() { }
 
-  void run() override {
-      // ++ RS-resources
+  void response(int &err) override {
+    if(err == Error::OK && Env::RsData::is_shuttingdown()) 
+      err = Error::SERVER_SHUTTING_DOWN;
+
+    if(err == Error::OK) {
+      m_conn->response_ok(m_ev);
+      Env::RsData::in_process(-1);
+      return;
+    }
+
+    Env::RsColumns::get()->unload_range(err, cid, rid, 
+      [berr=err, ptr=shared_from_this()]
+      (int err){
+        ptr->send_error(berr, "");
+        Env::RsData::in_process(-1);
+      }
+    );
+    
   }
+
+  private:
+  const int64_t cid;
+  const int64_t rid;
 
 };
 typedef std::shared_ptr<RangeLoaded> RangeLoadedPtr;

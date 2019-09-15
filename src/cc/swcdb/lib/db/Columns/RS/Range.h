@@ -59,17 +59,15 @@ class Range : public DB::RangeBase {
 
 
   void load(ResponseCallbackPtr cb){
+    int err = Error::OK;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state != State::NOTLOADED) {
-        cb->response_ok();
-        return;
-      }
+      if(m_state != State::NOTLOADED) 
+        return loaded(err, cb);
       m_state = State::LOADED;
     }
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
-    int err = Error::OK;
 
     if(!Env::FsInterface::interface()->exists(err, get_path(""))){
       if(err != Error::OK)
@@ -251,24 +249,12 @@ class Range : public DB::RangeBase {
   private:
   
   void loaded(int &err, ResponseCallbackPtr cb) {
-    if(Env::RsData::is_shuttingdown()) {
-      if(err == Error::OK){
-        err = Error::SERVER_SHUTTING_DOWN;
-        unload(
-          [cb](int err){cb->send_error(Error::SERVER_SHUTTING_DOWN, "");}, 
-          false
-        );
-        return;
-      }
-      err = Error::SERVER_SHUTTING_DOWN;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_state == State::DELETED)
+        err = Error::RS_DELETED_RANGE;
     }
-
-    if(err == Error::OK)
-        cb->response_ok();
-    else {
-      // ? remove from map
-      cb->send_error(err, "");
-    }
+    cb->response(err);
   }
 
   void last_rs_chk(int &err, ResponseCallbackPtr cb){

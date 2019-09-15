@@ -41,7 +41,8 @@ class RangeLoad : public AppHandler {
       Env::RsColumns::get()->load_range(
         err,
         params.cid, params.rid, 
-        std::make_shared<Callback::RangeLoaded>(m_conn, m_ev)
+        std::make_shared<Callback::RangeLoaded>(
+          m_conn, m_ev, params.cid, params.rid)
       );
       
     }
