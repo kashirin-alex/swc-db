@@ -116,6 +116,7 @@ namespace SWC {
       COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
       COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
       COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
+      COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0x8,
 
       SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
       COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,

@@ -85,6 +85,7 @@ namespace {
     { Error::COLUMN_SCHEMA_NAME_EMPTY,      "Schema's column name cannot be empty"},
     { Error::COLUMN_SCHEMA_NOT_DIFFERENT,   "Schemas expected to be different"},
     { Error::COLUMN_SCHEMA_MISSING,         "cid's Schema is missing"},
+    { Error::COLUMN_MARKED_REMOVED,         "Column is being removed"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
