@@ -51,6 +51,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
         m_columns->insert(ColumnsMapPair(cid, col));
       }
     }
+
     if(initialize) {
       if(Env::RsData::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
@@ -64,12 +65,11 @@ class Columns : public std::enable_shared_from_this<Columns> {
     ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
+    if(col->removing()) 
+      err = Error::COLUMN_MARKED_REMOVED;
     if(err != Error::OK) 
       return nullptr;
-    if(col->removing()) {
-      err = Error::COLUMN_MARKED_REMOVED;
-      return nullptr;
-    }
+
     return col->get_range(err, rid, initialize);
   }
 
@@ -92,7 +92,6 @@ class Columns : public std::enable_shared_from_this<Columns> {
       cb->response(err);
     else 
       range->load(cb);
-    
   }
 
   void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
@@ -105,14 +104,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void unload_all() {
-    
-    std::atomic<int> unloaded = 0;
+
+    std::atomic<int>    unloaded = 0;
     std::promise<void>  r_promise;
     Callback::RangeUnloaded_t cb 
       = [&unloaded, await=&r_promise](int err){
-        std::cout << "unloaded= " << unloaded.load() << " err=" << err << "\n";
         if(--unloaded == 0)
           await->set_value();
+        std::cout << "unloaded= " << unloaded.load() << " err=" << err << "\n";
     };
 
     for(;;){

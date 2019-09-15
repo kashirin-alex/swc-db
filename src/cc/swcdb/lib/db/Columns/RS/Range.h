@@ -60,12 +60,14 @@ class Range : public DB::RangeBase {
 
   void load(ResponseCallbackPtr cb){
     int err = Error::OK;
+    bool is_loaded;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state != State::NOTLOADED) 
-        return loaded(err, cb);
+      is_loaded = m_state != State::NOTLOADED;
       m_state = State::LOADED;
     }
+    if(is_loaded)
+      return loaded(err, cb);
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
 
@@ -301,7 +303,7 @@ class Range : public DB::RangeBase {
     // CommitLogs
     
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
       
     loaded(err, cb); // RSP-LOAD-ACK
 

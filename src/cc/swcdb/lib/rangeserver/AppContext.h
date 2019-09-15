@@ -178,12 +178,12 @@ class AppContext : public SWC::AppContext {
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
       }
     );
+    while(Env::RsData::in_process() > 0)
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   void stop() override {
-    while(Env::RsData::in_process() > 0)
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    Env::RsColumns::get()->unload_all();
+    Env::RsColumns::get()->unload_all(); //re-check
 
     m_rs_id_validator->stop();
     
