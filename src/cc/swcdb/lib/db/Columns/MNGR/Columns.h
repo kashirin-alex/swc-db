@@ -72,6 +72,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
     }
     if(initialize) 
       col->init(err);
+    else
+      err = Error::COLUMN_NOT_EXISTS;
     return col;
   }
 
