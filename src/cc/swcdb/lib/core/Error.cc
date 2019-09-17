@@ -89,7 +89,7 @@ namespace {
     { Error::COLUMN_NOT_EXISTS,             "Column does not exist"},
     { Error::COLUMN_NOT_READY,              "Column is not ready"},
 
-    { Error::RANGE_NOT_FOUND,               "No corresponing range"},
+    { Error::RANGE_NOT_FOUND,               "No corresponding range"},
 
     { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
     { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
