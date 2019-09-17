@@ -43,8 +43,16 @@ class RsRangeLoad : public ConnQueue::ReqBase {
     }
 
     if(ev->header.command == Command::REQ_RS_LOAD_RANGE){
-      loaded(ev->error != Error::OK? ev->error: response_code(ev), false); 
-      return; 
+      int err = ev->error != Error::OK? ev->error: response_code(ev);
+      loaded(err, false, nullptr); 
+      if(err != Error::OK)
+        return; 
+      
+      const uint8_t *ptr = ev->payload+4;
+      size_t remain = ev->payload_len-4;
+      Params::RsRangeLoaded params;
+      params.decode(&ptr, &remain);
+      loaded(err, false, params.intervals); 
     }
   }
 
@@ -53,10 +61,10 @@ class RsRangeLoad : public ConnQueue::ReqBase {
   }
   
   void handle_no_conn() override {
-    loaded(Error::COMM_NOT_CONNECTED, true);
+    loaded(Error::COMM_NOT_CONNECTED, true, nullptr);
   }
 
-  void loaded(int err, bool failure);
+  void loaded(int err, bool failure, Cells::Intervals::Ptr intvals);
 
 
   private:

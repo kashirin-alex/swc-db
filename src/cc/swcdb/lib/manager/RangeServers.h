@@ -1119,16 +1119,22 @@ class RangeServers {
 
 
 
-void Protocol::Req::RsRangeLoad::loaded(int err, bool failure) {
+void Protocol::Req::RsRangeLoad::loaded(int err, bool failure, 
+                                        Cells::Intervals::Ptr intvals) { 
+  auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
+  if(col == nullptr){
+    Env::RangeServers::get()->range_loaded(
+      rs, range, Error::COLUMN_MARKED_REMOVED, failure);
+    return;
+  }
   if(schema != nullptr && err == Error::OK)
-    Env::MngrColumns::get()->get_column(err, range->cid, false)
-                           ->change_rs_schema(rs->rs_id, schema->revision);
+    col->change_rs_schema(rs->rs_id, schema->revision);
                            
   else if(err == Error::COLUMN_SCHEMA_MISSING)
-    Env::MngrColumns::get()->get_column(err, range->cid, false)
-                           ->remove_rs_schema(rs->rs_id);
+    col->remove_rs_schema(rs->rs_id);
 
   Env::RangeServers::get()->range_loaded(rs, range, err, failure);
+  col->chained_set(range, intvals);
 }
 
 void Protocol::Req::RsColumnUpdate::updated(int err, bool failure) {
