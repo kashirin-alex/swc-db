@@ -28,9 +28,8 @@ class Range : public DB::RangeBase {
   };
 
   Range(int64_t cid, int64_t rid)
-        : RangeBase(cid, rid), 
-          m_state(State::NOTLOADED),
-          intervals(std::make_shared<Cells::Intervals>()) { 
+        : RangeBase(cid, rid, std::make_shared<Cells::Intervals>()), 
+          m_state(State::NOTLOADED) { 
             
     if(cid == 1)
       m_type = Types::Range::MASTER;
@@ -56,7 +55,6 @@ class Range : public DB::RangeBase {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::DELETED;
   }
-
 
   void load(ResponseCallbackPtr cb){
     bool is_loaded;
@@ -102,10 +100,10 @@ class Range : public DB::RangeBase {
     
     switch(m_type){
       case Types::Range::DATA:
-        // + INSERT meta-range(col-2), cid,rid,intervals(keys)
+        // + INSERT meta-range(col-2), cid,rid,m_intervals(keys)
         break;
       case Types::Range::META:
-        // + INSERT master-range(col-1), cid(2),rid,intervals(keys)
+        // + INSERT master-range(col-1), cid(2),rid,m_intervals(keys)
         break;
       default: // Types::Range::MASTER:
         break;
@@ -127,85 +125,21 @@ class Range : public DB::RangeBase {
     }
     // CommitLogs  
     // CellStores
+    Files::RangeData::save(err, get_path(range_data_file), cellstores);
     // range.data
-    /* 
-    cellstores.clear();
-    // TEST-DATA
-    cellstores.push_back(std::make_shared<Files::CellStore>(1));
-    cellstores.push_back(std::make_shared<Files::CellStore>(2));
-    cellstores.push_back(std::make_shared<Files::CellStore>(3));
-    cellstores.push_back(std::make_shared<Files::CellStore>(4));
-    cellstores.push_back(std::make_shared<Files::CellStore>(5));
-    uint8_t* d = new uint8_t[
-      Serialization::encoded_length_vi32(28)
-      +28
-      +Serialization::encoded_length_vi32(6)
-      +6
-      +Serialization::encoded_length_vi64(123)
-      +Serialization::encoded_length_vi64(987)
-      ];
-    const uint8_t * base = d;
-    Serialization::encode_vi32(&d, 28);
-    *d++ = 'a';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    uint8_t* ptr_muta = d;
-    *d++ = '5'; // chk changed
-    *d++ = 0;
-    *d++ = 'b';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0;
-    *d++ = 'c';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0;
-    *d++ = 'd';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0; 
-    Serialization::encode_vi32(&d, 6);
-    *d++ = 'a';
-    *d++ = '6';
-    *d++ = 0;
-    *d++ = 'b';
-    *d++ = '6';
-    *d++ = 0; 
- 
-    Serialization::encode_vi64(&d, 123);
-    Serialization::encode_vi64(&d, 987);
-    size_t remain = d-base;
-    for(auto& cs : cellstores){
-      size_t remain2 = remain;
-      const uint8_t * base2 = base;
-      *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
-      cs->intervals->decode(&base2, &remain2);
-    }
-    delete [] d;
 
-    std::cout << to_string() << "\n";;
 
-    Files::RangeData::save(get_path(range_data_file), cellstores);
-    */
+
+    // rs_last.data
     if(completely)
       Env::FsInterface::interface()->remove(err, get_path(rs_data_file));
 
-    
+
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     set_state(State::NOTLOADED);
     
-    HT_INFOF("UNLOADED RANGE cid=%d rid=%d", cid, rid);
+    HT_INFOF("UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
+              cid, rid, err, Error::get_text(err));
     cb(err);
   }
 
@@ -236,7 +170,7 @@ class Range : public DB::RangeBase {
     s.append(std::to_string((int)m_type));
 
     s.append(", ");
-    s.append(intervals->to_string());
+    s.append(m_intervals->to_string());
 
     s.append(", cellstores=[");
     for(auto& cs : cellstores) {
@@ -279,33 +213,112 @@ class Range : public DB::RangeBase {
   }
 
   void read_range_data(int &err, ResponseCallbackPtr cb) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-    // range.data
-    Files::RangeData::load(err, get_path(range_data_file), cellstores);
-    if(err != Error::OK || cellstores.size() == 0) {
-      err = Error::OK;
-      Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
-      for(auto& cs : cellstores) {
-        cs->load_trailer();
-      }
-      if(err == Error::OK)
-        Files::RangeData::save(err, get_path(range_data_file), cellstores);
-      
-      if(err != Error::OK) 
+      // range.data
+      Files::RangeData::load(err, get_path(range_data_file), cellstores);
+      if(err != Error::OK || cellstores.size() == 0) {
         err = Error::OK;
-        // rs-to determine range-removal (+ Notify Mngr )
-    }
-
-    for(auto& cs : cellstores) {
-      intervals->expande(cs->intervals);
-    }
-    
-    // cellstores
-    // CommitLogs
-    
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+        Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
+        for(auto& cs : cellstores) {
+          cs->load_trailer();
+        }
+        if(err == Error::OK)
+          Files::RangeData::save(err, get_path(range_data_file), cellstores);
       
+        if(err != Error::OK) 
+          err = Error::OK;
+          // rs-to determine range-removal (+ Notify Mngr )
+      }
+
+      // cellstores
+    
+         
+    /*
+    // TEST-DATA
+    if(cellstores.size() == 0) {
+    cellstores.push_back(std::make_shared<Files::CellStore>(1));
+    cellstores.push_back(std::make_shared<Files::CellStore>(2));
+    cellstores.push_back(std::make_shared<Files::CellStore>(3));
+    cellstores.push_back(std::make_shared<Files::CellStore>(4));
+    cellstores.push_back(std::make_shared<Files::CellStore>(5));
+    uint8_t* d = new uint8_t[
+      Serialization::encoded_length_vi32(28)
+      +28
+      +Serialization::encoded_length_vi32(9)
+      +9
+      +Serialization::encoded_length_vi64(123)
+      +Serialization::encoded_length_vi64(987)
+      ];
+    const uint8_t * base = d;
+    Serialization::encode_vi32(&d, 28);
+    *d++ = 'a';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    uint8_t* ptr_muta = d;
+    *d++ = '5'; // chk changed
+    *d++ = 0;
+    *d++ = 'b';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0;
+    *d++ = 'c';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0;
+    *d++ = 'd';
+    *d++ = '1';
+    *d++ = '2'; 
+    *d++ = '3'; 
+    *d++ = '4'; 
+    *d++ = '5'; 
+    *d++ = 0; 
+    Serialization::encode_vi32(&d, 9);
+    *d++ = 'a';
+    uint8_t* end_ptr_muta = d;
+    *d++ = '6';
+    *d++ = 0;
+    *d++ = 'b';
+    *d++ = '6';
+    *d++ = 0; 
+    *d++ = 'c';
+    *d++ = '6';
+    *d++ = 0; 
+ 
+    Serialization::encode_vi64(&d, 123);
+    Serialization::encode_vi64(&d, 987);
+    size_t remain = d-base;
+    for(auto& cs : cellstores){
+      size_t remain2 = remain;
+      const uint8_t * base2 = base;
+      *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
+      *end_ptr_muta = *ptr_muta;
+      cs->intervals->decode(&base2, &remain2);
+    }
+    //delete [] d;
+    }
+    */
+    
+      bool init = false;
+      for(auto& cs : cellstores) {
+        m_intervals->expande(cs->intervals, init);
+        init=true;
+      }
+      // CommitLogs
+    
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    }
+    
     loaded(err, cb); // RSP-LOAD-ACK
 
     if(err == Error::OK) {
@@ -322,9 +335,7 @@ class Range : public DB::RangeBase {
 
 
   State                 m_state;
-  
   Types::Range          m_type;
-  Cells::Intervals::Ptr intervals;
   Files::CellStores     cellstores;
 
 };
