@@ -67,6 +67,17 @@ class Column : public std::enable_shared_from_this<Column> {
     if(m_state == State::OK)
       m_state = State::LOADING;
   }
+
+  void state(int& err) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_state == State::OK)
+      return;
+    if(m_state == State::DELETED)
+      err = Error::COLUMN_MARKED_REMOVED;
+    else
+      err = Error::COLUMN_NOT_READY;
+      
+  }
   
   RangePtr get_range(int &err, int64_t rid, bool initialize=false){
     RangePtr range = m_base_range;
@@ -84,6 +95,19 @@ class Column : public std::enable_shared_from_this<Column> {
       return range;
     } else
       return nullptr;
+  }
+
+  RangePtr get_range(int &err, const Cells::Intervals::Ptr& intervals, 
+                     bool& next){
+    RangePtr found;
+    RangePtr range = m_base_range;
+    range->chained_next(range);
+    for(;;){
+      range->chained_consist(intervals, found, next, range);
+      if(range == nullptr || next)
+        break;
+    }
+    return found;
   }
 
   void chained_set(RangePtr& range, Cells::Intervals::Ptr& intervals){
