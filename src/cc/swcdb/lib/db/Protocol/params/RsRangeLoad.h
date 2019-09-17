@@ -46,6 +46,35 @@ class RsRangeLoad : public ColRangeId {
 
 };
   
+class RsRangeLoaded : public Serializable {
+  public:
+  RsRangeLoaded() {}
+  RsRangeLoaded(Cells::Intervals::Ptr intervals): intervals(intervals) {}
+  virtual ~RsRangeLoaded(){}
+  
+  Cells::Intervals::Ptr intervals;
+  
+  private:
+
+  uint8_t encoding_version() const  {
+    return 1; 
+  }
+
+  size_t encoded_length_internal() const {
+    return intervals->encoded_length();
+  }
+    
+  void encode_internal(uint8_t **bufp) const {
+    intervals->encode(bufp);
+  }
+    
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp) {
+    intervals = std::make_shared<Cells::Intervals>();
+    intervals->decode(bufp, remainp);
+  }
+
+};
 
 }}}
 
