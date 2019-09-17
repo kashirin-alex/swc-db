@@ -116,7 +116,9 @@ namespace SWC {
       COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
       COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
       COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
-      COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0x8,
+      COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0x9,
+      COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xa,
+      COLUMN_NOT_READY                             = CODE_START+0x5f+0xb,
 
       SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
       COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
@@ -125,6 +127,8 @@ namespace SWC {
       BAD_SCHEMA                                   = CODE_START+0x6f+0x5,
       BAD_KEY                                      = CODE_START+0x6f+0xf,
       
+      RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
+
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,
       COMM_CONNECT_ERROR                           = 0x00010003,
