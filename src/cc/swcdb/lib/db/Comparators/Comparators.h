@@ -7,7 +7,7 @@
 #define swcdb_include_Comparators_h
 
 #include <iostream>
-
+#include <cstring>
 
 namespace SWC {
 
@@ -45,7 +45,15 @@ class ComparatorBase {
 
     ComparatorBase* get_matcher(Comparator comp);
 };
-  
+
+namespace Condition{
+
+inline static bool is_equal(const uint8_t *p1, uint32_t p1_len, 
+                            const uint8_t *p2, uint32_t p2_len){
+  return !(p1_len != p2_len || memcmp(p1, p2, p1_len));
+}
+
+}
 }
 
 
