@@ -30,6 +30,7 @@
 #include "handlers/ColumnMng.h"
 #include "handlers/ColumnGet.h"
 #include "handlers/ColumnUpdate.h"
+#include "handlers/RangeGetRs.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -97,20 +98,8 @@ class AppContext : public SWC::AppContext {
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
-          case Protocol::Command::MNGR_REQ_MNGRS_STATE:
-            handler = new Handler::MngrState(conn, ev);
-            break;
-
-          case Protocol::Command::MNGR_UPDATE_RANGESERVERS:
-            handler = new Handler::RsUpdate(conn, ev);
-            break;
-
           case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
             handler = new Handler::MngrActive(conn, ev);
-            break;
-
-          case Protocol::Command::REQ_MNGR_MNG_RS_ID:
-            handler = new Handler::RsMngId(conn, ev);
             break;
 
           case Protocol::Command::CLIENT_REQ_MNG_COLUMN:
@@ -121,8 +110,24 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::ColumnGet(conn, ev);
             break;
 
+          case Protocol::Command::CLIENT_REQ_GET_RANGE_RS:
+            handler = new Handler::RangeGetRs(conn, ev);
+            break;
+
+          case Protocol::Command::REQ_MNGR_MNG_RS_ID:
+            handler = new Handler::RsMngId(conn, ev);
+            break;
+
+          case Protocol::Command::MNGR_REQ_MNGRS_STATE:
+            handler = new Handler::MngrState(conn, ev);
+            break;
+
           case Protocol::Command::MNGR_UPDATE_COLUMN:
             handler = new Handler::ColumnUpdate(conn, ev);
+            break;
+
+          case Protocol::Command::MNGR_UPDATE_RANGESERVERS:
+            handler = new Handler::RsUpdate(conn, ev);
             break;
 
           case Protocol::Command::REQ_ECHO:
