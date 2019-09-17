@@ -125,7 +125,7 @@ class Intervals {
       keys_begin, m_serial_begin, ptr, m_serial_begin_len, remain);
 
     for(auto& k : keys_begin)
-      k.comp = Comparator::LT;
+      k.comp = Comparator::GE;
   }
 
   void decode_end(const uint8_t **ptr, size_t *remain, uint32_t len=0){
@@ -139,7 +139,7 @@ class Intervals {
       keys_end, m_serial_end, ptr, m_serial_end_len, remain);
 
     for(auto& k : keys_end)
-      k.comp = Comparator::LT;
+      k.comp = Comparator::LE;
   }
 
   void set_keys_begin(Ptr other){
@@ -160,6 +160,20 @@ class Intervals {
     }
     const uint8_t * ptr = other->get_keys_end_ptr();
     decode_end(&ptr, &len, m_serial_end_len);
+  }
+
+  bool equal(const Ptr &other){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return(
+      other != nullptr &&
+      other->get_keys_begin_len() == m_serial_begin_len && 
+      other->get_keys_end_len() == m_serial_end_len && 
+      Condition::is_equal(
+        m_serial_begin, m_serial_begin_len,
+        other->get_keys_begin_ptr(), other->get_keys_begin_len()) && 
+      Condition::is_equal(
+        m_serial_end, m_serial_end_len,
+        other->get_keys_end_ptr(), other->get_keys_end_len()));
   }
 
   const uint8_t* get_keys_begin_ptr() {
@@ -249,12 +263,12 @@ class Intervals {
   }
 
 
-  void expande(Ptr other){
-
-    if(is_any_keys_begin() || !is_in_begin(other->get_keys_begin()))
+  void expande(const Ptr& other, bool init){
+    
+    if(!init || !is_in_begin(other->get_keys_begin()))
       set_keys_begin(other);
 
-    if(is_any_keys_end() || !is_in_end(other->get_keys_end()))
+    if(!init || !is_in_end(other->get_keys_end()))
       set_keys_end(other);
 
     {
@@ -268,7 +282,7 @@ class Intervals {
         m_ts_latest = ts;
     }
   }
-
+  
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -276,6 +290,11 @@ class Intervals {
     ss << "Intervals(begin={" << keys_begin << "}, end={" << keys_end << "}"
        << ", earliest=" << m_ts_earliest << ", latest=" << m_ts_latest << ")";
     return ss.str();
+  }
+
+  bool consist(const Ptr& other) {
+    return is_in_begin(other->get_keys_end()) && 
+           is_in_end(other->get_keys_begin());
   }
 
   private:
@@ -311,6 +330,136 @@ class Intervals {
 };
 
 } // Cells namespace
+
+
+
+// R&D class
+template<class baseT>
+class ArrChain {
+  public:
+
+  template <class T = baseT>
+  class ItemBase {};
+
+  template <class T = baseT>
+  class Item : public ItemBase<T> {
+    public:
+    typedef Item<T>* Ptr;
+
+    Item(){}
+
+    Item(T item): m_item(item) {}
+
+    virtual ~Item(){
+      remove();
+    }
+
+    bool set_by_lt(T& item, Ptr& current, bool& chg){
+      std::lock_guard<std::mutex> lock(m_mutex);
+      
+      if(m_item != nullptr) {
+        chg = item == m_item;   // identity -eq
+        if(chg) {
+          chg = item != m_item; // property -ne
+          if(chg) {
+            ((Ptr)m_prev)->next((Ptr)m_next);
+            ((Ptr)m_next)->prev((Ptr)m_prev);
+            return false;
+          }
+          return true;
+        }
+        if(item < m_item){
+          Ptr new_item = new Item<baseT>(item);
+          new_item->next(this);
+          new_item->prev(m_prev);
+          m_prev = new_item;
+          return true;
+        }
+      }
+
+      if(m_next == nullptr){
+        Ptr new_item = new Item<baseT>(item);
+        if(m_item != nullptr)
+          new_item->prev(this); 
+        m_next = new_item;
+        return true;
+      }
+
+      current = m_next;
+      return false;
+    }
+
+    void consist(T& item, bool &next, bool &found, Ptr& current){
+      std::lock_guard<std::mutex> lock(m_mutex);
+
+      if(m_item->consist(item)) // property -lt
+        return;
+
+      if(found)
+        next = true;
+      else {
+        item = m_item;
+        found = true;
+      }
+      current = m_next;
+      return;
+    }
+
+
+    void next(Ptr next) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_next = next;
+    }
+
+    void prev(Ptr prev) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_prev = prev;
+    }
+
+    void remove(){
+      std::lock_guard<std::mutex> lock(m_mutex);
+      ((Ptr)m_prev)->next((Ptr)m_next);
+      ((Ptr)m_next)->prev((Ptr)m_prev);
+    }
+
+    private:
+    std::mutex  m_mutex;
+    T           m_item;
+    Ptr         m_next=nullptr;
+    Ptr         m_prev=nullptr;
+  };
+
+  
+  ArrChain(): first(new Item<baseT>()) {}
+  virtual ~ArrChain(){}
+
+  bool consist(baseT& item, bool &next){
+    next = false;
+    Item<baseT>* current = first;
+    bool found = false;
+    do{
+      current->consist(item, next, found, current);
+    } while(current != nullptr && (!found || (found && next)));
+    return found;
+  }
+
+  void set_by_lt(baseT& item){
+    bool chg;
+    Item<baseT>* current = first;
+    while(!current->set_lowerthan(item, current, chg) && current != nullptr){
+      if(chg)
+        current = first;
+    }
+  }
+
+  void remove(baseT& item){
+    first->remove(item);
+  }
+
+  const Item<baseT>* first;
+};
+
+inline static  ArrChain<Cells::Intervals::Ptr> ranggsfgfghes;
 
 }
 #endif
