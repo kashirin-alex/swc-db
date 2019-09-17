@@ -263,6 +263,17 @@ class RangeServers {
     rs_changes(sync_all ? m_rs_status : changed, sync_all && !m_root_mngr);
   }
 
+  void rs_get(const uint64_t rs_id, EndPoints& endpoints){
+    std::lock_guard<std::mutex> lock(m_mutex_rs_status);
+    for(auto& rs : m_rs_status) {
+      if(rs->rs_id == rs_id){
+        if(rs->state == RsStatus::State::ACK)
+          endpoints = rs->endpoints;
+        break;
+      }
+    }
+  }
+
   uint64_t rs_set_id(const EndPoints& endpoints, uint64_t opt_id=0){
     std::lock_guard<std::mutex> lock(m_mutex_rs_status);
     return rs_set(endpoints, opt_id)->rs_id;
