@@ -44,9 +44,10 @@ class RsRangeLoad : public ConnQueue::ReqBase {
 
     if(ev->header.command == Command::REQ_RS_LOAD_RANGE){
       int err = ev->error != Error::OK? ev->error: response_code(ev);
-      loaded(err, false, nullptr); 
-      if(err != Error::OK)
+      if(err != Error::OK){
+        loaded(err, false, nullptr); 
         return; 
+      }
       
       const uint8_t *ptr = ev->payload+4;
       size_t remain = ev->payload_len-4;
