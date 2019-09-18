@@ -10,6 +10,8 @@
 #include "swcdb/lib/db/Protocol/req/ColumnMng.h"
 #include "swcdb/lib/db/Protocol/req/ColumnGet.h"
 
+#include "swcdb/lib/db/Protocol/req/MngrRangeGetRs.h"
+
 #include "swcdb/lib/db/Stats/Stat.h"
 
 
@@ -318,7 +320,7 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 3333;
+  int num_of_cols = 10;
 
   chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, false);
   chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, true);
@@ -326,6 +328,9 @@ int main(int argc, char** argv) {
   chk(Protocol::Req::Column::Mng::Func::CREATE, num_of_cols, Types::Encoding::PLAIN, false);
   check_get(num_of_cols, false, Types::Encoding::PLAIN);
   std::cout << "\n";
+  std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+
 
   chk_rename(num_of_cols, false);
   check_get(num_of_cols, true, Types::Encoding::PLAIN, true);
@@ -335,11 +340,101 @@ int main(int argc, char** argv) {
   check_get(num_of_cols, true, Types::Encoding::SNAPPY);
   std::cout << "\n";
 
+
+  // query
+  ScanSpecs::Keys keys_start({
+    ScanSpecs::Key("a12341", Comparator::GT),
+    ScanSpecs::Key("b12346", 6, Comparator::GT),
+    ScanSpecs::Key("c12345", Comparator::GT)
+  });
+    
+  ScanSpecs::Keys keys_finish;
+  /*
+  keys_finish.keys.push_back(ScanSpecs::Key("a6", Comparator::LE));
+  keys_finish.keys.push_back(ScanSpecs::Key("b6", Comparator::GT));
+  keys_finish.keys.push_back(ScanSpecs::Key("c8", Comparator::GT));
+  */
+  ScanSpecs::ScanSpec ss;
+  ss.flags.limit = 10;
+  ss.flags.offset = 0;
+  ss.flags.max_versions = 2;
+  ScanSpecs::ColumnIntervals cs_is_1(
+    11,
+    {
+    ScanSpecs::CellsInterval(
+      keys_start,
+      keys_finish,
+      ScanSpecs::Value("aValue1", Comparator::EQ),
+      ScanSpecs::Timestamp(111,Comparator::EQ),
+      ScanSpecs::Timestamp(112,Comparator::EQ),
+      ss.flags
+    ),
+    ScanSpecs::CellsInterval(
+      keys_start,
+      keys_finish,
+      ScanSpecs::Value("aValue2", Comparator::EQ),
+      ScanSpecs::Timestamp(111,Comparator::EQ),
+      ScanSpecs::Timestamp(112,Comparator::EQ),
+      ss.flags
+    )
+    }
+  );
+  ss.columns.push_back(cs_is_1);
+
+
+  //range-locator (master) : cid+cells_interval => cid(1), rid(master), rs-endpoints 
+  for(auto &col : ss.columns){
+
+    for(auto &cells_interval : col.cells_interval){
+      Protocol::Req::MngrRangeGetRs::request(
+        col.cid, cells_interval, 
+        [cid=col.cid, ci=cells_interval]
+        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
+        int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
+          if(err != Error::OK){
+            std::cout << "get RS-master err="<< err << "("<<Error::get_text(err) <<  ")";
+            if(err == Error::COLUMN_NOT_EXISTS || 
+               err == Error::RANGE_NOT_FOUND) {
+              std::cout << "NO-RETRY \n";
+            } else {
+              std::cout << "RETRYING \n";
+              req_ptr->request_again();
+            }
+            return;
+          }
+          // req. rs(master-range) (cid+ci)
+          std::cout << "get RS-master " << rsp.to_string() << "\n";
+          // --> ci.keys_start = rsp.next_keys
+        }
+      );
+    }
+
+
+  }
+  
+  Protocol::Req::MngrRangeGetRs::request(
+    2, 1, 
+    [](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
+        int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
+      std::cout << "by-rid err="<< err << "("<<Error::get_text(err) <<  ") " 
+                << rsp.to_string() << "\n";
+    }
+  );
+
+
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+
+
+
   chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::SNAPPY, true);
   check_get(num_of_cols, true, Types::Encoding::SNAPPY, false);
   std::cout << "\n";
 
-  std::cout << " OK! \n";
+  std::cout << " OK! \n \n";
+
+
   exit(0);
 
 
