@@ -282,7 +282,22 @@ class Intervals {
         m_ts_latest = ts;
     }
   }
-  
+
+  bool consist(const Ptr& other) {
+    return is_in_begin(other->get_keys_end()) && 
+           is_in_end(other->get_keys_begin());
+  }
+
+  bool consist(ScanSpecs::CellsInterval& intervals) {
+    return (intervals.keys_finish.keys.empty() 
+            || 
+            is_in_begin(intervals.keys_finish.keys))
+            && 
+           (intervals.keys_start.keys.empty()
+            ||
+            is_in_end(intervals.keys_start.keys));
+  }
+
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -290,11 +305,6 @@ class Intervals {
     ss << "Intervals(begin={" << keys_begin << "}, end={" << keys_end << "}"
        << ", earliest=" << m_ts_earliest << ", latest=" << m_ts_latest << ")";
     return ss.str();
-  }
-
-  bool consist(const Ptr& other) {
-    return is_in_begin(other->get_keys_end()) && 
-           is_in_end(other->get_keys_begin());
   }
 
   private:
@@ -330,10 +340,11 @@ class Intervals {
 };
 
 } // Cells namespace
-
+}
 
 
 // R&D class
+/*
 template<class baseT>
 class ArrChain {
   public:
@@ -460,6 +471,6 @@ class ArrChain {
 };
 
 inline static  ArrChain<Cells::Intervals::Ptr> ranggsfgfghes;
+*/
 
-}
 #endif
