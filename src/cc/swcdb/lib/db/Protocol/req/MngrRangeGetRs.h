@@ -27,19 +27,26 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
   static void request(int64_t cid, int64_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, rid), cb, timeout
+      Protocol::Params::MngrRangeGetRsReq(cid, rid), 
+      cb, 
+      timeout
     )->run();
   }
-  static void request(int64_t cid, Cells::Intervals::Ptr intervals, 
+
+  static void request(int64_t cid, ScanSpecs::CellsInterval& intervals, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, intervals), cb, timeout
+      Protocol::Params::MngrRangeGetRsReq(cid, intervals), 
+      cb, 
+      timeout,
+      1
     )->run();
   }
 
 
   MngrRangeGetRs(const Protocol::Params::MngrRangeGetRsReq params, const Cb_t cb, 
-      const uint32_t timeout) : ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
+                 const uint32_t timeout, int64_t cid=0) 
+                : ConnQueue::ReqBase(false), cb(cb), cid(cid?cid:params.cid) {
 
     CommHeader header(Protocol::Command::CLIENT_REQ_GET_RANGE_RS, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
@@ -55,7 +62,6 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()){
-      // columns-get (can be any mngr) -- if col_name (cid=1)
       Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
       if(endpoints.empty()){
         std::make_shared<MngrMngrActive>(cid, shared_from_this())->run();

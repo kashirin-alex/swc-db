@@ -97,14 +97,14 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-  RangePtr get_range(int &err, const Cells::Intervals::Ptr& intervals, 
-                     bool& next){
+  RangePtr get_range(int &err, ScanSpecs::CellsInterval& intervals, 
+                     ScanSpecs::ListKeys &next_keys){
     RangePtr found;
     RangePtr range = m_base_range;
     range->chained_next(range);
     for(;;){
-      range->chained_consist(intervals, found, next, range);
-      if(range == nullptr || next)
+      range->chained_consist(intervals, found, next_keys, range);
+      if(range == nullptr || !next_keys.empty())
         break;
     }
     return found;

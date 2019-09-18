@@ -8,37 +8,39 @@
 
 #include "swcdb/lib/core/Serializable.h"
 #include "HostEndPoints.h"
-#include "swcdb/lib/db/Cells/Intervals.h"
+#include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Params {
 
 // flag(if cid==1) 
-//      in(cid+intervals)  out(cid + rid + rs-endpoints + ?next) 
+//      in(n(cid)+ScanSpecs::CellsInterval)  out(cid + rid + rs-endpoints + ?next) 
 // else 
-//      in(cid+rid)        out(cid + rid + rs-endpoints)
+//      in(cid+rid)                         out(cid + rid + rs-endpoints)
 
-//req-mngr-master, 1(cid)+n(cid):intervals => cid + rid + rs(endpoints) + ?next
-//              ->  req-rs. 1(cid)+rid+n(cid):intervals => 2(cid) + rid + ?next
-//req-mngr-meta,   2(cid)+rid              => cid + rid + rs(endpoints)
-//              ->  req-rs. 2(cid)+rid+n(cid):intervals => n(cid) + rid + ?next
-//req-mngr,        n(cid)+rid              => cid + rid + rs(endpoints)
-//              ->  req-rs. n(cid)+scanspecs => results
+//req-mngr-master, n(cid)+CellsInterval     => cid(1) + rid + rs(endpoints) + ?next
+//            ->  req-rs. 1(cid)+rid+n(cid):CellsInterval => 2(cid) + rid + ?next
+//req-mngr-meta,   2(cid)+rid              => cid(2) + rid + rs(endpoints)
+//            ->  req-rs. 2(cid)+rid+n(cid):CellsInterval => n(cid) + rid + ?next
+//req-mngr,        n(cid)+rid              => cid(n) + rid + rs(endpoints)
+//            ->  req-rs. n(cid)+rid+ScanSpecs::CellsInterval => results
 
 class MngrRangeGetRsReq : public Serializable {
   public:
-  MngrRangeGetRsReq(): cid(0), rid(0) {}
-  MngrRangeGetRsReq(int64_t cid, Cells::Intervals::Ptr intervals)
+  MngrRangeGetRsReq(): cid(0), rid(-1) {}
+
+  MngrRangeGetRsReq(int64_t cid, ScanSpecs::CellsInterval& intervals)
                    : cid(cid), rid(0), intervals(intervals) {}
+
   MngrRangeGetRsReq(int64_t cid, int64_t rid)
-                   : cid(cid), rid(rid), intervals(nullptr) {}
+                   : cid(cid), rid(rid) {}
 
   virtual ~MngrRangeGetRsReq(){}
   
-  int64_t               cid;
-  int64_t               rid;
-  Cells::Intervals::Ptr intervals;
+  int64_t                  cid;
+  int64_t                  rid;
+  ScanSpecs::CellsInterval intervals;
   
   private:
 
@@ -48,27 +50,26 @@ class MngrRangeGetRsReq : public Serializable {
 
   size_t encoded_length_internal() const {
     return Serialization::encoded_length_vi64(cid)
-         + (cid==1 ? 
-            intervals->encoded_length() : 
-            Serialization::encoded_length_vi64(rid));
+         + Serialization::encoded_length_vi64(rid)
+         + (rid == 0 ? intervals.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
-    if(cid==1)
-      intervals->encode(bufp);
-    else
-      Serialization::encode_vi64(bufp, rid);
+    Serialization::encode_vi64(bufp, rid);
+    if(rid == 0)
+      intervals.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
-    if(cid == 1) {
-      intervals = std::make_shared<Cells::Intervals>();
-      intervals->decode(bufp, remainp);
-    } else 
-      rid = Serialization::decode_vi64(bufp, remainp);
+    rid = Serialization::decode_vi64(bufp, remainp);
+    if(rid == 0) {
+      intervals.keys_start.keys.push_back(ScanSpecs::Key());
+      intervals.keys_finish.keys.push_back(ScanSpecs::Key());
+      intervals.decode(bufp, remainp);
+    }
   }
 
 };
@@ -80,13 +81,19 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
 
   MngrRangeGetRsRsp(): cid(0), rid(0) {}
 
-  MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, bool next) 
-                    : cid(cid), rid(rid), HostEndPoints(endpoints), next(next) {     
+  MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints) 
+                    :  HostEndPoints(endpoints), cid(cid), rid(rid) {
+  }
+
+  MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
+                    ScanSpecs::Keys next_keys)  
+                    : HostEndPoints(endpoints), cid(cid), rid(rid), 
+                      next_keys(next_keys) {
   }
 
   int64_t  cid; 
   int64_t  rid; 
-  bool     next;
+  ScanSpecs::Keys next_keys;
 
   const std::string to_string() {
     std::string s("Range-RS(");
@@ -97,8 +104,8 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     s.append(" ");
     s.append(HostEndPoints::to_string());
     if(cid == 1) {
-      s.append(" next=");
-      s.append(std::to_string(next));
+      s.append(" next_");
+      s.append(next_keys.to_string());
     }
     s.append(")");
     return s;
@@ -114,7 +121,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     return Serialization::encoded_length_vi64(cid)
          + Serialization::encoded_length_vi64(rid)
          + HostEndPoints::encoded_length_internal()
-         + (cid==1?1:0);
+         + (cid==1?next_keys.encoded_length(1):0);
   }
     
   void encode_internal(uint8_t **bufp) const {
@@ -122,7 +129,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     Serialization::encode_vi64(bufp, rid);
     HostEndPoints::encode_internal(bufp);
     if(cid == 1)
-      Serialization::encode_bool(bufp, next);
+      next_keys.encode(bufp, 1);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -131,7 +138,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     rid = Serialization::decode_vi64(bufp, remainp);
     HostEndPoints::decode_internal(version, bufp, remainp);
     if(cid == 1)
-      next = Serialization::decode_bool(bufp, remainp);
+      next_keys.decode(bufp, remainp);
   }
 
 };

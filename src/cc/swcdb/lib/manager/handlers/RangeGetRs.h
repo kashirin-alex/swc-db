@@ -31,13 +31,14 @@ class RangeGetRs : public AppHandler {
 
       Protocol::Params::MngrRangeGetRsReq params;
       params.decode(&ptr, &remain);
+      int cid = params.rid==0?1:params.cid;
 
-      if(!Env::MngrRole::get()->is_active(params.cid)){
-        std::cout << "MNGR NOT ACTIVE: cid=" << params.cid << "\n";
+      if(!Env::MngrRole::get()->is_active(cid)){
+        std::cout << "MNGR NOT ACTIVE: cid=" << cid << "\n";
         err = Error::MNGR_NOT_ACTIVE;
         goto send_error;
       }
-      auto col = Env::MngrColumns::get()->get_column(err, params.cid, false);
+      auto col = Env::MngrColumns::get()->get_column(err, cid, false);
       if(err != Error::OK)
         goto send_error;
 
@@ -45,13 +46,20 @@ class RangeGetRs : public AppHandler {
       if(err != Error::OK)
         goto send_error;
       
-      bool next = false;
+      ScanSpecs::ListKeys next_keys;
       server::Mngr::RangePtr range;
-      if(params.cid == 1){
-        range = col->get_range(err, params.intervals, next);
+      if(cid == 1){
+        std::string col_id(std::to_string(params.cid)); 
+        col_id.append(":");
+        ScanSpecs::Key cid_key(col_id.c_str(), col_id.length(), Comparator::NONE);
+        params.intervals.keys_start.keys[0] = cid_key;
+        params.intervals.keys_finish.keys[0] = cid_key;
+
+        range = col->get_range(err, params.intervals, next_keys);
       } else {
         range = col->get_range(err, params.rid);
       }
+
       if(range == nullptr) {
         err = Error::RANGE_NOT_FOUND;
         goto send_error;
@@ -63,13 +71,12 @@ class RangeGetRs : public AppHandler {
         err = Error::RS_NOT_READY;
         goto send_error;
       }
-
+      
       Protocol::Params::MngrRangeGetRsRsp rsp_params(
-        range->cid,
-        range->rid, 
-        endpoints, 
-        next
+        range->cid, range->rid, endpoints
       );
+      if(cid==1 && !next_keys.empty())
+        rsp_params.next_keys.set(next_keys);
       
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);

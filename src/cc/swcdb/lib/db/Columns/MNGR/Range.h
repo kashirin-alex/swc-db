@@ -135,18 +135,26 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void chained_consist(Cells::Intervals::Ptr& intvals, RangePtr& found, bool &next,
-               RangePtr& current){
+  void chained_consist(ScanSpecs::CellsInterval& intvals, RangePtr& found,
+                       ScanSpecs::ListKeys &next_keys, RangePtr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if(m_intervals == nullptr || !m_intervals->consist(intvals))
+    std::cout << "chained_consist, rid=" << current->rid  
+             << "\n this  " << (m_intervals==nullptr?std::string("NULL"): m_intervals->to_string())
+             << "\n other " << intvals;
+
+    if(m_intervals == nullptr || !m_intervals->consist(intvals)) {
+      std::cout << " FALSE\n";
+      current = nullptr;
       return;
+    }
+    std::cout << " TRUE\n";
 
     if(found != nullptr)
-      next = true;
-    else {
+      next_keys = (ScanSpecs::ListKeys)m_intervals->get_keys_begin();
+    else 
       found = current;
-    }
+
     current = m_chained_next;
     return;
   }
