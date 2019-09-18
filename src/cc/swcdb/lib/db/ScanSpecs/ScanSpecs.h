@@ -78,14 +78,19 @@ namespace ScanSpecs {
     Keys(): keys(0) {}
     Keys(ListKeys ks) : keys(ks) {}
     Keys operator=(Keys &other){
-      keys.assign(other.keys.begin(), other.keys.end());
+      set(other.keys);
       return *this; 
+    }
+    void set(ListKeys& other) {
+      keys.assign(other.begin(), other.end());
     }
     virtual ~Keys(){}
 
-    size_t encoded_length() const;
-    void encode(uint8_t **bufp) const;
-    void decode(const uint8_t **bufp, size_t *remainp);
+    size_t encoded_length(int skip=0) const;
+    void encode(uint8_t **bufp, int skip=0) const;
+    void decode(const uint8_t **bufp, size_t *remainp, int reserve=0);
+
+    const std::string to_string();
 
     ListKeys   keys;
   };
@@ -230,8 +235,17 @@ namespace ScanSpecs {
   class ColumnIntervals : public Serializable {
     public:
     ColumnIntervals(): cid(0), cells_interval(0) {}
+
     ColumnIntervals(int64_t col_id): cid(col_id), cells_interval(0) {}
-    ColumnIntervals(const uint8_t **bufp, size_t *remainp): cells_interval(0) {
+
+    ColumnIntervals(int64_t col_id, ListCellsInterval& cells_interval)
+                    : cid(col_id), cells_interval(cells_interval) {}
+                    
+    ColumnIntervals(int64_t col_id, ListCellsInterval cells_interval)
+                    : cid(col_id), cells_interval(cells_interval) {}
+
+    ColumnIntervals(const uint8_t **bufp, size_t *remainp)
+                    : cells_interval(0) {
        decode(bufp, remainp); 
     }
     ColumnIntervals operator=(ColumnIntervals &other){
@@ -245,7 +259,6 @@ namespace ScanSpecs {
     int64_t cid;
     ListCellsInterval cells_interval;
 
-    private:
     size_t encoded_length_internal() const override;
     uint8_t encoding_version() const override;
     void encode_internal(uint8_t **bufp) const override;
@@ -259,6 +272,7 @@ namespace ScanSpecs {
   class ScanSpec {
     public:
     ScanSpec(): columns(0) {}
+    ScanSpec(ListColumns& columns): columns(columns) {}
        
     ScanSpec operator=(ScanSpec &other){
       columns.assign(other.columns.begin(), other.columns.end());

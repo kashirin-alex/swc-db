@@ -103,21 +103,30 @@ void Key::decode(const uint8_t **bufp, size_t *remainp){
 
 
 // KEYS: encode, encoded_length, decode
-void Keys::encode(uint8_t **bufp) const {
+void Keys::encode(uint8_t **bufp, int skip) const {
   Serialization::encode_vi32(bufp, keys.size());
-  for(auto it=keys.begin();it<keys.end();++it)
+  for(auto it=keys.begin()+skip;it<keys.end();++it)
     (*it).encode(bufp);
 }
-size_t Keys::encoded_length() const {
+size_t Keys::encoded_length(int skip) const {
   size_t len = Serialization::encoded_length_vi32(keys.size());
-  for(auto it=keys.begin();it<keys.end();++it)
+  for(auto it=keys.begin()+skip;it<keys.end();++it)
     len += (*it).encoded_length(); 
   return len;
 }
-void Keys::decode(const uint8_t **bufp, size_t *remainp){
+void Keys::decode(const uint8_t **bufp, size_t *remainp, int reserve){
+  for(int n=0;n<reserve;n++)
+    keys.push_back(Key());
   for (size_t i = Serialization::decode_vi32(bufp, remainp); i--;)
     keys.push_back(Key(bufp, remainp));
 }
+
+const std::string Keys::to_string(){
+  std::stringstream ss;
+  ss  << keys;;
+  return ss.str();
+}
+
 
 
 
