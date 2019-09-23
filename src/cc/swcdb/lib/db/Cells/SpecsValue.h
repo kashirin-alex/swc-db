@@ -30,17 +30,12 @@ class Value {
                  Condition::Comp comp, bool own=false)
         : own(own), data((uint8_t*)data), size(size), comp(comp) {}
 
-  explicit Value(Value* other) {
-    copy((const Value&)*other);
-  }
-
   explicit Value(const Value &other){
     copy(other);
   }
 
   void copy(const Value &other) {
     free(); 
-    //std::cout << " copy(const Value &other) " << other.size << "\n";
     own   = true;
     size  = other.size;
     comp = other.comp;

@@ -27,14 +27,6 @@ class Scan : public Serializable {
     decode_internal(encoding_version(), bufp, remainp); 
   }
 
-  explicit Scan(const Scan& other) {
-    copy(other);
-  }
-
-  explicit Scan(Scan* other) {
-    copy((const Scan&)*other);
-  }
-
   void copy(const Scan &other) {
     //std::cout  << " copy(const Scan &other)\n";
     free();

@@ -20,10 +20,6 @@ class Timestamp {
 
   explicit Timestamp(int64_t timestamp, Condition::Comp comp)
             : value(timestamp), comp(comp){}
-
-  explicit Timestamp(Timestamp* other) {
-    copy((const Timestamp&)*other);
-  }
   
   explicit Timestamp(const Timestamp &other){
     copy(other);

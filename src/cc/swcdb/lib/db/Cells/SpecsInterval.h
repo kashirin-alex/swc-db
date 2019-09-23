@@ -38,12 +38,12 @@ class Interval {
     return std::make_shared<Interval>(bufp, remainp);
   }
 
-  inline static Ptr make_ptr(Ptr other){
-    return std::make_shared<Interval>(other.get());
+  inline static Ptr make_ptr(const Interval& other){
+    return std::make_shared<Interval>(other);
   }
 
-  inline static Ptr make_ptr(Interval* other){
-    return std::make_shared<Interval>(other);
+  inline static Ptr make_ptr(Ptr other){
+    return std::make_shared<Interval>(*other.get());
   }
   
   explicit Interval() {}
@@ -56,10 +56,6 @@ class Interval {
   
   explicit Interval(const uint8_t **bufp, size_t *remainp) {
     decode(bufp, remainp); 
-  }
-
-  explicit Interval(Interval* other) {
-    copy((const Interval&)*other);
   }
 
   explicit Interval(const Interval& other) {

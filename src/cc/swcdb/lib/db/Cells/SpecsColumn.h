@@ -33,21 +33,21 @@ class Column : public Serializable {
     return std::make_shared<Column>(bufp, remainp);
   }
 
-  inline static Ptr make_ptr(Ptr other){
-    return std::make_shared<Column>(other.get());
-  }
-
-  inline static Ptr make_ptr(Column* other){
+  inline static Ptr make_ptr(const Column& other){
     return std::make_shared<Column>(other);
   }
 
+  inline static Ptr make_ptr(Ptr other){
+    return std::make_shared<Column>(*other.get());
+  }
+
   explicit Column(int64_t cid=0, uint32_t reserve=0)
-        : cid(cid), intervals(0) {
+                  : cid(cid), intervals(0) {
     intervals.reserve(reserve);
   }
 
   explicit Column(int64_t cid, const Intervals& intervals)
-        : cid(cid), intervals(intervals) {}
+                  : cid(cid), intervals(intervals) {}
 
   explicit Column(const uint8_t **bufp, size_t *remainp) {
     decode_internal(encoding_version(), bufp, remainp); 
@@ -55,10 +55,6 @@ class Column : public Serializable {
 
   explicit Column(const Column& other) {
     copy(other);
-  }
-
-  explicit Column(Column* other) {
-    copy((const Column&)*other);
   }
 
   void copy(const Column &other) {

@@ -63,7 +63,7 @@ int main() {
       std::cout << "Copying Cell-"<< i << ":\n";
       //std::cout << (*it)->to_string() << "\n\n";
       // cells_copied.push_back(*(new Cells::Cell(*it)));  // OK 
-      cells_copied.push_back(Cells::Cell(*it));            // OK
+      cells_copied.push_back(Cells::Cell(**it));            // OK
 
       std::cout << " ptrs-orig key:"<<(size_t)(*it)->key.data 
                 << " value:"<<(size_t)(*it)->value << "\n";

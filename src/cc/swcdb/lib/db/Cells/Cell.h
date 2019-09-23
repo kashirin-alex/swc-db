@@ -92,16 +92,11 @@ class Cell {
   }
 
 
-  Cell(): flag(0), control(0), 
-          timestamp(0), revision(0),
-          value(0), vlen(0) { }
+  explicit Cell():  flag(0), control(0), timestamp(0), revision(0),
+                    value(0), vlen(0) { }
 
-  Cell(const Cell& other){
+  explicit Cell(const Cell& other){
     copy(other);
-  }
-
-  Cell(Cell* other) {
-    copy((const Cell)*other);
   }
 
   void copy(const Cell& other) {
@@ -123,6 +118,7 @@ class Cell {
     if(value != 0)
       delete [] value;
     vlen=0;
+    key.free();
   }
 
   void set_time_order_desc(bool desc){

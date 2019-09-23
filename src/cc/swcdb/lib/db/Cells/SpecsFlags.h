@@ -15,7 +15,7 @@ namespace SWC { namespace DB { namespace Specs {
 enum LimitType{
   KEY,
 };
-  
+
 
 class Flags {
   public:
@@ -23,10 +23,6 @@ class Flags {
   explicit Flags(): limit(0), offset(0), max_versions(0), 
                     limit_by(LimitType::KEY), offset_by(LimitType::KEY),
                     return_deletes(false), keys_only(false) {}
-
-  explicit Flags(Flags* other) {
-    copy((const Flags&)*other);
-  }
 
   explicit Flags(const Flags &other){
     copy(other);

@@ -16,16 +16,11 @@ class Key : public DB::Cell::Key {
 
   explicit Key() {}
   
-  explicit Key(Key* other) {
-    copy((const Key&)*other);
-  }
-
   explicit Key(const Key &other){
     copy(other);
   }
 
   virtual ~Key(){
-    //std::cout << " ~Specs::Key\n";
     free();
   }
 

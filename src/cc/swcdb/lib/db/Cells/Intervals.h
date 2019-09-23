@@ -22,7 +22,7 @@ class Intervals {
 
   typedef std::shared_ptr<Intervals> Ptr;
 
-  Intervals() { }
+  explicit Intervals() { }
 
   virtual ~Intervals(){ 
     free();

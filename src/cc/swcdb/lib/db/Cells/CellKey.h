@@ -15,10 +15,6 @@ class Key {
   public:
 
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) {}
-  
-  explicit Key(Key* other) {
-    copy((const Key&)*other);
-  }
 
   explicit Key(const Key &other){
     copy(other);
