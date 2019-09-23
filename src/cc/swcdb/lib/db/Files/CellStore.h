@@ -20,14 +20,15 @@ class CellStore {
 
   static const int HEADER_SIZE=12;
   static const int8_t VERSION=1;
+
   typedef std::shared_ptr<CellStore> Ptr;
 
-  Cells::Intervals::Ptr   intervals;
-  const uint32_t          cs_id;
+  DB::Cells::Intervals::Ptr intervals;
+  const uint32_t            cs_id;
 
   CellStore(uint32_t cs_id)
             : cs_id(cs_id), version(VERSION),
-              intervals(std::make_shared<Cells::Intervals>()) { }
+              intervals(std::make_shared<DB::Cells::Intervals>()) { }
 
   virtual ~CellStore(){}
 
@@ -36,12 +37,12 @@ class CellStore {
 
     std::string s("CellStore(version=");
     s.append(std::to_string(version));
-    s.append(", cs_id=");
+    s.append(" cs_id=");
     s.append(std::to_string(cs_id));
-    s.append(", ");
+    s.append(" ");
     s.append(intervals->to_string());
     if(m_smartfd != nullptr){
-      s.append(", ");
+      s.append(" ");
       s.append(m_smartfd->to_string());
     }
     s.append(")");

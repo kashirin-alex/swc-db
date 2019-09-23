@@ -3,69 +3,37 @@
  */
 
 
-#ifndef swcdb_db_Cell_h
-#define swcdb_db_Cell_h
+#ifndef swcdb_db_cells_Cell_h
+#define swcdb_db_cells_Cell_h
 
-
-#include <iostream>
-#include <ostream>
-#include <vector>
-#include <memory>
 #include <cassert>
+#include "CellKey.h"
 
 #include "swcdb/lib/core/DynamicBuffer.h"
-#include "swcdb/lib/core/Serialization.h"
-
-#include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
 
 
-namespace SWC {
+namespace SWC { namespace DB { namespace Cells {
 
-namespace Cells {
-
-class Key {
-  public:
-  Key(): key(0), len(0){}
-  Key(const char* k): key(k), len(strlen(k)){}
-  Key(const char* k, const uint32_t l): key(k), len(l){}
-  Key operator=(Key &other){
-    std::cout << "other-Key\n";
-    key = other.key;
-    len = other.len;
-    return *this; 
-  }
-  virtual ~Key(){}
-
-  const char*  key;
-  uint32_t     len;    
-  
-  static const std::string to_string(const Key &k){
-    std::string s("{key:\"");
-    s.append(k.key);
-    s.append("\",len:\"");
-    s.append(std::to_string(k.len));
-    s.append("\"}");
-    return s;
-  }
+enum Flag {
+  INSERT                    = 0x0,
+  DELETE                    = 0x1,
+  DELETE_VERSION            = 0x2,
+  DELETE_FRACTION           = 0x3,
+  DELETE_FRACTION_VERSION   = 0x4
 };
 
-std::ostream &operator<<(std::ostream &os, const Key &k){
-  os << Key::to_string(k);
-  return os;
-}
-typedef std::vector<Key> ListKeys;
+static const int64_t TIMESTAMP_MIN  = INT64_MIN;
+static const int64_t TIMESTAMP_MAX  = INT64_MAX;
+static const int64_t TIMESTAMP_NULL = INT64_MIN + 1;
+static const int64_t TIMESTAMP_AUTO = INT64_MIN + 2;
+static const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
 
+static const uint8_t HAVE_REVISION      =  0x80;
+static const uint8_t HAVE_TIMESTAMP     =  0x40;
+static const uint8_t AUTO_TIMESTAMP     =  0x20;
+static const uint8_t REV_IS_TS          =  0x10;
+static const uint8_t TS_DESC            =   0x1;
 
-bool operator==(ListKeys &ks1, ListKeys &ks2){
-  if(ks1.size() != ks1.size()) return false;
-  auto it1=ks1.begin();
-  for(auto it2=ks2.begin();it2<ks2.end();++it2,++it1){
-    if((*it1).len != (*it2).len 
-        || memcmp((*it1).key , (*it2).key , (*it1).len ) != 0)
-      return false;
-  }
-  return true;
-}
 
 static inline void encode_ts64(uint8_t **bufp, int64_t val, bool asc=true) {
   if (asc)
@@ -105,92 +73,71 @@ static inline int64_t decode_ts64(const uint8_t **bufp,  bool asc=true) {
 
   
 class Cell {
-
-  static const uint8_t HAVE_REVISION      =  0x80;
-  static const uint8_t HAVE_TIMESTAMP     =  0x40;
-  static const uint8_t AUTO_TIMESTAMP     =  0x20;
-  static const uint8_t REV_IS_TS          =  0x10;
-  static const uint8_t TS_DESC            =   0x1;
-
   public:
+  
+  static void get_key_and_seek(DB::Cell::Key& key, SWC::DynamicBuffer &src_buf){
+    ++src_buf.ptr;
+    size_t remain = src_buf.fill();
+    key.decode((const uint8_t **)&src_buf.ptr, &remain);
+    uint8_t control = *++src_buf.ptr;
+    if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP)
+      src_buf.ptr += 8;
+    if(control & HAVE_REVISION)
+      src_buf.ptr += 8;
+    src_buf.ptr += Serialization::decode_vi32((const uint8_t **)&src_buf.ptr);
+  }
+
+  static bool is_next(uint8_t flag, SWC::DynamicBuffer &src_buf) {
+    return *src_buf.ptr == flag;
+  }
+
+
   Cell(): flag(0), control(0), 
-          timestamp(0), revision(0), 
-          skey(0), klen(0), 
+          timestamp(0), revision(0),
           value(0), vlen(0) { }
-    
-  Cell(Cell* other, bool only_serial=false){
-      std::cout << "other-Cell\n";
-      
-      if(other->skey != 0)
-        other->make_skey();
-        
-      if(other->skey != 0) {
-        klen = other->klen;
-        skey = new uint8_t[klen];
-        memcpy(skey, other->skey, klen);
-        if(!only_serial)
-          load_skey();
-      }
 
-      if(other->value != 0) {
-        vlen = other->vlen;
-        value = new uint8_t[vlen];
-        memcpy(value, other->value, vlen);
-      }
-  }
-    
-  Cell* make_copy(bool only_serial=false){
-      return new Cell(this, only_serial);
+  Cell(const Cell& other){
+    copy(other);
   }
 
-  Cell operator=(Cell &other){
-      std::cout << "other-Cell\n";
-      return *(new Cell(&other));
+  Cell(Cell* other) {
+    copy((const Cell)*other);
   }
 
-  bool operator==(Cell &other){
-      return  control == other.control && 
-              flag == other.flag && 
-              timestamp == other.timestamp && 
-              revision == other.revision && 
-              klen == other.klen &&
-              vlen == other.vlen &&
-              memcmp(skey,  other.skey,  klen) == 0 && 
-              memcmp(value, other.value, vlen) == 0 && 
-              keys == other.keys;
+  void copy(const Cell& other) {
+    //std::cout << " copy(const Cell &other) vlen=" << other.vlen << "\n";
+    flag      = other.flag;
+    key.copy(other.key);
+    control   = other.control;
+    timestamp = other.timestamp;
+    revision  = other.revision;
+    vlen      = other.vlen;
+    if(vlen > 0) {
+      value = new uint8_t[vlen];
+      memcpy(value, other.value, vlen);
+    }
   }
 
   virtual ~Cell(){
-      std::cout << " ~Cell " 
-                << ",skey-ptr:" << (size_t)skey 
-                << ",value-ptr:" << (size_t)value 
-                << "\n";
-      if(skey!=0)
-        delete [] skey;
-      if(value!=0)
-        delete [] value;
+    //std::cout << " ~Cell\n";
+    if(value != 0)
+      delete [] value;
+    vlen=0;
   }
-        
-  // SET_KEY_OPTIONS
-  void set_flag(uint8_t f){
-    flag = f;
-  }
+
   void set_time_order_desc(bool desc){
     if(desc)  control |= TS_DESC;
     else      control != TS_DESC;
   }
+
   void set_timestamp(int64_t ts){
     timestamp = ts;
     control |= HAVE_TIMESTAMP;
   }
+
   void set_revision(uint64_t rev){
     revision = rev;
     control |= HAVE_REVISION;
-  }
-    
-  // SET_KEYS
-  void set_keys(ListKeys ks){
-      keys.assign(ks.begin(), ks.end());
   }
 
   // SET_VALUE
@@ -204,165 +151,111 @@ class Cell {
   void set_value(const char* v){
     set_value((uint8_t *)v, strlen(v));
   }
-
-  // READ - serialized
-  void read(uint8_t **ptr, bool load=true) {
-      const uint8_t *tmp_ptr = *ptr;
-
-      klen = Serialization::decode_vi32(&tmp_ptr);
-      skey = new uint8_t[klen];
-      memcpy(skey, tmp_ptr, klen);
-      tmp_ptr += klen;
-
-      vlen = Serialization::decode_vi32(&tmp_ptr);
-      if(vlen > 0){
-        value = new uint8_t[vlen];
-        memcpy(value, tmp_ptr, vlen);
-        tmp_ptr += vlen;
-      }
-      // assert(*(++*ptr)==0);
-
-      *ptr += tmp_ptr - *ptr;
-
-      if(load)
-        load_skey();
-  }
     
-  // LOAD - serialized key (skey)
-  void load_skey(){
-      
-      const uint8_t* ptr = skey;
-      const uint8_t* end_ptr = ptr + klen;
+  // READ
+  void read(uint8_t **ptr, size_t* remainp) {
+    const uint8_t* tmp_ptr = *ptr;
 
-      flag = *ptr++;
-      control = *ptr++;
-      uint8_t num_keys = *ptr++;
-      keys.reserve(num_keys);
-      
-      for(int i=0;i<num_keys;i++) {
-        Key k;
-        k.key = (const char *)ptr;
-        while (ptr < end_ptr && *ptr != 0)
-          *ptr++;
-        k.len = ptr - (uint8_t *)k.key;
-        *ptr++;
-        if(ptr >= end_ptr){
-          std::cerr << "key: {" << i << "} decode overrun" << std::endl;
-          assert(ptr >= end_ptr);
-        }
-        assert(strlen(k.key) == k.len);
-        keys.push_back(k);
-      }
-
-      if (control & HAVE_TIMESTAMP)
-        timestamp = decode_ts64((const uint8_t **)&ptr, (control & TS_DESC) != 0);
-      else if(control & AUTO_TIMESTAMP)
-        timestamp = ScanSpecs::AUTO_ASSIGN;
-
-      if (control & HAVE_REVISION)
-        revision = decode_ts64((const uint8_t **)&ptr, (control & TS_DESC) != 0);
-      else if (control & REV_IS_TS)
-        revision = timestamp;
-    
-      assert(ptr == end_ptr);
-  }
-
-  // Make - serialized-key
-  void make_skey() {
-      klen = 3; // 1(flag) + 1(control) + 1(keys_num)
-
-      for(auto it=keys.begin();it<keys.end();++it)
-        klen+=(*it).len+1;
-      if (control & HAVE_TIMESTAMP)
-        klen += 8;
-      if (control & HAVE_REVISION)
-        klen += 8;
-      
-      skey = new uint8_t[klen];
-      uint8_t* skey_base = skey; 
+    flag = *tmp_ptr++;
+    key.decode(&tmp_ptr, remainp);
+    control = *tmp_ptr++;
+    *remainp-=2;
   
-      *skey++ = flag;
-      *skey++ = control;      
-      *skey++ = (uint8_t)keys.size();
+    if (control & HAVE_TIMESTAMP){
+      timestamp = decode_ts64(&tmp_ptr, (control & TS_DESC) != 0);
+      *remainp-=8;
+    } else if(control & AUTO_TIMESTAMP)
+      timestamp = AUTO_ASSIGN;
 
-      for(auto it=keys.begin();it<keys.end();++it) {
-        if((*it).len > 0) {
-          memcpy(skey, (*it).key, (*it).len);
-          skey+=(*it).len;
-        }
-        *skey++ = 0;
-      }
-
-      if (control & HAVE_TIMESTAMP)
-        encode_ts64(&skey, timestamp, (control & TS_DESC) != 0);
-      if (control & HAVE_REVISION)
-        encode_ts64(&skey, revision, (control & TS_DESC) != 0);
-
-      skey = skey_base;
-  }
-
-    // WRITE - DynamicBuffer
-  void write(SWC::DynamicBuffer &dst_buf){
-
-      if(!skey) 
-        make_skey();
-
-      dst_buf.ensure(klen+vlen+12); // 12(2x encode_vi32)
-
-      Serialization::encode_vi32(&dst_buf.ptr, klen);
-      dst_buf.add_unchecked(skey, klen);
+    if (control & HAVE_REVISION) {
+      revision = decode_ts64(&tmp_ptr, (control & TS_DESC) != 0);
+      *remainp-=8;
+    } else if (control & REV_IS_TS)
+      revision = timestamp;
       
-      Serialization::encode_vi32(&dst_buf.ptr, vlen);
-      if(vlen>0)
-        dst_buf.add_unchecked(value, vlen);
+    vlen = Serialization::decode_vi32(&tmp_ptr, remainp);
+    if(vlen > 0){
+      value = new uint8_t[vlen];
+      memcpy(value, tmp_ptr, vlen);
+      tmp_ptr += vlen;
+      *remainp -= vlen;
+    }
 
-      assert(dst_buf.fill() <= dst_buf.size);
+    *ptr += tmp_ptr - *ptr;
   }
-    
-  uint8_t   flag;
-  uint8_t   control;
-  ListKeys  keys;
-  int64_t   timestamp;
-  uint64_t  revision;
-    
-  uint8_t*  skey;
-  uint32_t  klen;
 
+  // WRITE
+  void write(SWC::DynamicBuffer &dst_buf){
+    uint32_t klen = 1+key.encoded_length()+1;
+    if(control & HAVE_TIMESTAMP)
+      klen += 8;
+    if(control & HAVE_REVISION)
+      klen += 8;
+    dst_buf.ensure(klen+vlen+Serialization::encoded_length_vi32(vlen));
+
+    *dst_buf.ptr++ = flag;
+    key.encode(&dst_buf.ptr);
+    *dst_buf.ptr++ = control;
+    if(control & HAVE_TIMESTAMP)
+      encode_ts64(&dst_buf.ptr, timestamp, (control & TS_DESC) != 0);
+    if(control & HAVE_REVISION)
+      encode_ts64(&dst_buf.ptr, revision, (control & TS_DESC) != 0);
+      
+    Serialization::encode_vi32(&dst_buf.ptr, vlen);
+    if(vlen > 0)
+      dst_buf.add_unchecked(value, vlen);
+
+    assert(dst_buf.fill() <= dst_buf.size);
+  }
+
+  bool equal(Cell &other){
+    return  flag == other.flag && 
+            control == other.control &&
+            timestamp == other.timestamp && 
+            revision == other.revision && 
+            vlen == other.vlen &&
+            key.equal(other.key) &&
+            memcmp(value, other.value, vlen) == 0;
+  }
+
+  const std::string to_string() {
+    std::string s("Cell(");
+    s.append("flag=");
+    s.append(std::to_string(flag));
+
+    s.append(" key=");
+    s.append(key.to_string());
+
+    s.append(" control=");
+    s.append(std::to_string(control));
+
+    s.append(" ts=");
+    s.append(std::to_string(timestamp));
+
+    s.append(" rev=");
+    s.append(std::to_string(revision));
+
+    s.append(" value=(");
+    s.append(vlen>0?std::string((const char *)value, vlen):std::string(""));
+    s.append(", len=");
+    s.append(std::to_string(vlen));
+    s.append(")");
+    return s;
+  }
+
+  uint8_t         flag;
+  DB::Cell::Key   key;
+  uint8_t         control;
+  int64_t         timestamp;
+  uint64_t        revision;
+    
   uint8_t*  value;
   uint32_t  vlen;
 };
-  
-std::ostream &operator<<(std::ostream &os, Cell &cell){
 
-  if(!cell.skey) 
-    cell.make_skey();
-
-  os  << "{Cell:{"
-      << "flag:" << cell.flag << ","
-      << "control:" << cell.control << ","
-      << "keys:[";
-  if(cell.keys.size()>0){
-    for(auto it=cell.keys.begin(); it < cell.keys.end();it++)
-      os << (*it) << ",";
-  }
-  os  << "],"
-      << "timestamp:" << cell.timestamp << ","
-      << "revision:" << cell.revision << ","
-
-      << "value:\"" 
-      << (cell.vlen>0?std::string((const char *)cell.value, cell.vlen):"") 
-      << "\","
-      << "vlen:" << cell.vlen << ","
-
-      << "skey:\"" << std::string((const char *)cell.skey, cell.klen) << "\","
-      << "klen:" <<cell.klen << ","
-
-     << "}}";
-  return os;
-}
-
+ 
 // (int ScanBlock::load()) ScanBlock::next(CellSerial)
 
 
-}}
+}}}
 #endif

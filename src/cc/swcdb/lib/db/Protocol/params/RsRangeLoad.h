@@ -49,10 +49,10 @@ class RsRangeLoad : public ColRangeId {
 class RsRangeLoaded : public Serializable {
   public:
   RsRangeLoaded() {}
-  RsRangeLoaded(Cells::Intervals::Ptr intervals): intervals(intervals) {}
+  RsRangeLoaded(DB::Cells::Intervals::Ptr intervals): intervals(intervals) {}
   virtual ~RsRangeLoaded(){}
   
-  Cells::Intervals::Ptr intervals;
+  DB::Cells::Intervals::Ptr intervals;
   
   private:
 
@@ -70,7 +70,7 @@ class RsRangeLoaded : public Serializable {
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
-    intervals = std::make_shared<Cells::Intervals>();
+    intervals = std::make_shared<DB::Cells::Intervals>();
     intervals->decode(bufp, remainp);
   }
 

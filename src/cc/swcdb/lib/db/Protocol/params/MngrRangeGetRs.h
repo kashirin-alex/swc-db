@@ -8,39 +8,52 @@
 
 #include "swcdb/lib/core/Serializable.h"
 #include "HostEndPoints.h"
-#include "swcdb/lib/db/ScanSpecs/ScanSpecs.h"
+#include "swcdb/lib/db/Cells/Cell.h"
+#include "swcdb/lib/db/Cells/SpecsInterval.h"
 
 namespace SWC {
 namespace Protocol {
 namespace Params {
 
 // flag(if cid==1) 
-//      in(n(cid)+ScanSpecs::CellsInterval)  out(cid + rid + rs-endpoints + ?next) 
+//      in(n(cid)+Specs::Interval)  out(cid + rid + rs-endpoints + ?next) 
 // else 
 //      in(cid+rid)                         out(cid + rid + rs-endpoints)
 
-//req-mngr-master, n(cid)+CellsInterval     => cid(1) + rid + rs(endpoints) + ?next
-//            ->  req-rs. 1(cid)+rid+n(cid):CellsInterval => 2(cid) + rid + ?next
+//req-mngr-master, n(cid)+Cells::Interval     => cid(1) + rid + rs(endpoints) + ?next
+//            ->  req-rs. 1(cid)+rid+n(cid):Cells::Interval => 2(cid) + rid + ?next
 //req-mngr-meta,   2(cid)+rid              => cid(2) + rid + rs(endpoints)
-//            ->  req-rs. 2(cid)+rid+n(cid):CellsInterval => n(cid) + rid + ?next
+//            ->  req-rs. 2(cid)+rid+n(cid):Cells::Interval => n(cid) + rid + ?next
 //req-mngr,        n(cid)+rid              => cid(n) + rid + rs(endpoints)
-//            ->  req-rs. n(cid)+rid+ScanSpecs::CellsInterval => results
+//            ->  req-rs. n(cid)+rid+Specs::Interval => results
 
 class MngrRangeGetRsReq : public Serializable {
   public:
+
+  enum By {
+    KEYS,
+    INTERVALS,
+    RID
+  };
+
   MngrRangeGetRsReq(): cid(0), rid(-1) {}
 
-  MngrRangeGetRsReq(int64_t cid, ScanSpecs::CellsInterval& intervals)
-                   : cid(cid), rid(0), intervals(intervals) {}
+  MngrRangeGetRsReq(int64_t cid, const DB::Cell::Key& key)
+                   : cid(cid), rid(0), key(key), by(By::KEYS) {}
+
+  MngrRangeGetRsReq(int64_t cid, const DB::Specs::Interval& interval)
+                   : cid(cid), rid(0), interval(interval), by(By::INTERVALS) {}
 
   MngrRangeGetRsReq(int64_t cid, int64_t rid)
-                   : cid(cid), rid(rid) {}
+                   : cid(cid), rid(rid), by(By::RID) {}
 
   virtual ~MngrRangeGetRsReq(){}
   
-  int64_t                  cid;
-  int64_t                  rid;
-  ScanSpecs::CellsInterval intervals;
+  By                  by;
+  int64_t             cid;
+  int64_t             rid;
+  DB::Specs::Interval interval;
+  DB::Cell::Key       key;
   
   private:
 
@@ -49,26 +62,56 @@ class MngrRangeGetRsReq : public Serializable {
   }
 
   size_t encoded_length_internal() const {
-    return Serialization::encoded_length_vi64(cid)
-         + Serialization::encoded_length_vi64(rid)
-         + (rid == 0 ? intervals.encoded_length() : 0);
+    size_t len = 1+Serialization::encoded_length_vi64(cid);
+    switch(by) {
+      case By::RID:
+        return len + Serialization::encoded_length_vi64(rid);
+      case By::INTERVALS:
+        return len + interval.encoded_length();
+      case By::KEYS:
+        return len + key.encoded_length();
+      default:
+        return len;
+    }
   }
     
   void encode_internal(uint8_t **bufp) const {
+    Serialization::encode_i8(bufp, (uint8_t)by);
     Serialization::encode_vi64(bufp, cid);
-    Serialization::encode_vi64(bufp, rid);
-    if(rid == 0)
-      intervals.encode(bufp);
+    
+    switch(by) {
+      case By::RID:
+        Serialization::encode_vi64(bufp, rid);
+        return;
+      case By::INTERVALS:
+        interval.encode(bufp);
+        return;
+      case By::KEYS:
+        key.encode(bufp);
+        return;
+      default:
+        return;
+    }
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
-    rid = Serialization::decode_vi64(bufp, remainp);
-    if(rid == 0) {
-      intervals.keys_start.keys.push_back(ScanSpecs::Key());
-      intervals.keys_finish.keys.push_back(ScanSpecs::Key());
-      intervals.decode(bufp, remainp);
+    by = (By)Serialization::decode_i8(bufp, remainp);
+
+    switch(by) {
+      case By::RID:
+        rid = Serialization::decode_vi64(bufp, remainp);
+        return;
+      case By::INTERVALS:{
+        interval.decode(bufp, remainp);
+        return;
+      }
+      case By::KEYS:
+        key.decode(bufp, remainp);
+        return;
+      default:
+        return;
     }
   }
 
@@ -86,14 +129,14 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
   }
 
   MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
-                    ScanSpecs::Keys next_keys)  
+                    const DB::Specs::Key& next_key)  
                     : HostEndPoints(endpoints), cid(cid), rid(rid), 
-                      next_keys(next_keys) {
+                      next_key(next_key) {
   }
 
-  int64_t  cid; 
-  int64_t  rid; 
-  ScanSpecs::Keys next_keys;
+  int64_t         cid; 
+  int64_t         rid; 
+  DB::Specs::Key  next_key;
 
   const std::string to_string() {
     std::string s("Range-RS(");
@@ -104,8 +147,8 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     s.append(" ");
     s.append(HostEndPoints::to_string());
     if(cid == 1) {
-      s.append(" next_");
-      s.append(next_keys.to_string());
+      s.append(" Next");
+      s.append(next_key.to_string());
     }
     s.append(")");
     return s;
@@ -121,7 +164,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     return Serialization::encoded_length_vi64(cid)
          + Serialization::encoded_length_vi64(rid)
          + HostEndPoints::encoded_length_internal()
-         + (cid==1?next_keys.encoded_length(1):0);
+         + (cid==1?next_key.encoded_length():0);
   }
     
   void encode_internal(uint8_t **bufp) const {
@@ -129,7 +172,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     Serialization::encode_vi64(bufp, rid);
     HostEndPoints::encode_internal(bufp);
     if(cid == 1)
-      next_keys.encode(bufp, 1);
+      next_key.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -138,7 +181,7 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
     rid = Serialization::decode_vi64(bufp, remainp);
     HostEndPoints::decode_internal(version, bufp, remainp);
     if(cid == 1)
-      next_keys.decode(bufp, remainp);
+      next_key.decode(bufp, remainp);
   }
 
 };

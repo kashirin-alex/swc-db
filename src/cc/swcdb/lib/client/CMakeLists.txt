@@ -8,17 +8,17 @@
 ADD_EXEC_TARGET(
 	NAME      test_echo
 	SRCS      test/test_echo.cc
-	TARGETS   swcdb_core_config swcdb_db
+	TARGETS   swcdb_core_config
 )
 
 ADD_EXEC_TARGET(
 	NAME      test_mngr_client
 	SRCS      test/test_mngr_client.cc
-	TARGETS   swcdb_core_config swcdb_db
+	TARGETS   swcdb_core_config
 )
 
 ADD_EXEC_TARGET(
 	NAME      test_mngr_mng_column
 	SRCS      test/test_mngr_mng_column.cc
-	TARGETS   swcdb_core_config swcdb_db
+	TARGETS   swcdb_core_config
 )

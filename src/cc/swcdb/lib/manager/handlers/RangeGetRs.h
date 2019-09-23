@@ -31,7 +31,8 @@ class RangeGetRs : public AppHandler {
 
       Protocol::Params::MngrRangeGetRsReq params;
       params.decode(&ptr, &remain);
-      int cid = params.rid==0?1:params.cid;
+      int cid = params.by==Protocol::Params::MngrRangeGetRsReq::By::RID ? 
+                params.cid : 1;
 
       if(!Env::MngrRole::get()->is_active(cid)){
         std::cout << "MNGR NOT ACTIVE: cid=" << cid << "\n";
@@ -46,18 +47,29 @@ class RangeGetRs : public AppHandler {
       if(err != Error::OK)
         goto send_error;
       
-      ScanSpecs::ListKeys next_keys;
+      DB::Specs::Key next_key;
       server::Mngr::RangePtr range;
-      if(cid == 1){
+      if(params.by == Protocol::Params::MngrRangeGetRsReq::By::RID){
+        range = col->get_range(err, params.rid);
+
+      } else {
         std::string col_id(std::to_string(params.cid)); 
         col_id.append(":");
-        ScanSpecs::Key cid_key(col_id.c_str(), col_id.length(), Comparator::NONE);
-        params.intervals.keys_start.keys[0] = cid_key;
-        params.intervals.keys_finish.keys[0] = cid_key;
+        if(params.by == Protocol::Params::MngrRangeGetRsReq::By::INTERVALS){
+          /*
+          params.intervals.keys_start.keys[0] = ScanSpecs::Key(
+            col_id.c_str(), col_id.length(), Condition::GE);
+          params.intervals.keys_finish.keys[0] = ScanSpecs::Key(
+            col_id.c_str(), col_id.length(), Condition::LE);
+          */
+          range = col->get_range(err, params.interval, next_key);
 
-        range = col->get_range(err, params.intervals, next_keys);
-      } else {
-        range = col->get_range(err, params.rid);
+        } else {
+          //keys.keys[0].key = col_id.c_str();
+          //keys.keys[0].len = col_id.length();
+          
+          range = col->get_range(err, params.interval, next_key);
+        }
       }
 
       if(range == nullptr) {
@@ -75,8 +87,8 @@ class RangeGetRs : public AppHandler {
       Protocol::Params::MngrRangeGetRsRsp rsp_params(
         range->cid, range->rid, endpoints
       );
-      if(cid==1 && !next_keys.empty())
-        rsp_params.next_keys.set(next_keys);
+      if(cid==1 && !next_key.empty())
+        rsp_params.next_key = next_key;
       
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);

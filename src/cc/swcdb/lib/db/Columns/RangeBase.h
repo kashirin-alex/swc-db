@@ -98,11 +98,11 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   
   private:
-  const std::string     m_path;
+  const std::string         m_path;
 
   protected:
-  std::mutex            m_mutex;
-  Cells::Intervals::Ptr m_intervals;
+  std::mutex                m_mutex;
+  Cells::Intervals::Ptr     m_intervals;
 };
 
 }}

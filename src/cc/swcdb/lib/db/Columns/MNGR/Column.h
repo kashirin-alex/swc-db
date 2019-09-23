@@ -97,21 +97,34 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-  RangePtr get_range(int &err, ScanSpecs::CellsInterval& intervals, 
-                     ScanSpecs::ListKeys &next_keys){
+
+  RangePtr get_range(int &err, DB::Cell::Key& key, DB::Specs::Key &next_key){
     RangePtr found;
     RangePtr range = m_base_range;
     range->chained_next(range);
     for(;;){
-      range->chained_consist(intervals, found, next_keys, range);
-      if(range == nullptr || !next_keys.empty())
+      range->chained_consist(key, found, next_key, range);
+      if(range == nullptr || !next_key.empty())
         break;
     }
     return found;
   }
 
-  void chained_set(RangePtr& range, Cells::Intervals::Ptr& intervals){
-    Cells::Intervals::Ptr intvals = range->get_intervals();
+  RangePtr get_range(int &err, DB::Specs::Interval& intervals, 
+                     DB::Specs::Key &next_key){
+    RangePtr found;
+    RangePtr range = m_base_range;
+    range->chained_next(range);
+    for(;;){
+      range->chained_consist(intervals, found, next_key, range);
+      if(range == nullptr || !next_key.empty())
+        break;
+    }
+    return found;
+  }
+
+  void chained_set(RangePtr& range, DB::Cells::Intervals::Ptr& intervals){
+    DB::Cells::Intervals::Ptr intvals = range->get_intervals();
     if((intvals == nullptr && intervals == nullptr) || 
         (intervals != nullptr && intervals->equal(intvals)))
       return;

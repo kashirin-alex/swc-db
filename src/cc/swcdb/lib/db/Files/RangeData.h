@@ -83,7 +83,7 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
   for(size_t i=0;i<len;i++) {
     CellStore::Ptr cs = std::make_shared<CellStore>(
       Serialization::decode_vi32(ptr, remain)); 
-    cs->intervals->decode(ptr, remain);
+    cs->intervals->decode(ptr, remain, true);
     cellstores.push_back(cs);
   }
 

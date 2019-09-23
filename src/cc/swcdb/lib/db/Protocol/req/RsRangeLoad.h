@@ -65,7 +65,7 @@ class RsRangeLoad : public ConnQueue::ReqBase {
     loaded(Error::COMM_NOT_CONNECTED, true, nullptr);
   }
 
-  void loaded(int err, bool failure, Cells::Intervals::Ptr intvals);
+  void loaded(int err, bool failure, DB::Cells::Intervals::Ptr intvals);
 
 
   private:

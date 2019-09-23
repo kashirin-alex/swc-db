@@ -1131,7 +1131,7 @@ class RangeServers {
 
 
 void Protocol::Req::RsRangeLoad::loaded(int err, bool failure, 
-                                        Cells::Intervals::Ptr intvals) { 
+                                        DB::Cells::Intervals::Ptr intvals) { 
   auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
   if(col == nullptr){
     Env::RangeServers::get()->range_loaded(

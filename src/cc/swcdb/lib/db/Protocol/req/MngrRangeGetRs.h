@@ -33,15 +33,26 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
     )->run();
   }
 
-  static void request(int64_t cid, ScanSpecs::CellsInterval& intervals, 
+  static void request(int64_t cid, const DB::Specs::Interval& interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, intervals), 
+      Protocol::Params::MngrRangeGetRsReq(cid, interval), 
       cb, 
       timeout,
       1
     )->run();
   }
+  static void request(int64_t cid, const DB::Cell::Key& key, 
+                      const Cb_t cb, const uint32_t timeout = 10000){
+    std::make_shared<MngrRangeGetRs>(
+      Protocol::Params::MngrRangeGetRsReq(cid, key), 
+      cb, 
+      timeout,
+      1
+    )->run();
+  }
+
+  
 
 
   MngrRangeGetRs(const Protocol::Params::MngrRangeGetRsReq params, const Cb_t cb, 

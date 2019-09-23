@@ -10,6 +10,8 @@
 #include "swcdb/lib/db/Protocol/req/ColumnMng.h"
 #include "swcdb/lib/db/Protocol/req/ColumnGet.h"
 
+#include "swcdb/lib/db/Cells/SpecsScan.h"
+
 #include "swcdb/lib/db/Protocol/req/MngrRangeGetRs.h"
 
 #include "swcdb/lib/db/Stats/Stat.h"
@@ -320,7 +322,7 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 10;
+  int num_of_cols = 10000;
 
   chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, false);
   chk(Protocol::Req::Column::Mng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, true);
@@ -340,55 +342,57 @@ int main(int argc, char** argv) {
   check_get(num_of_cols, true, Types::Encoding::SNAPPY);
   std::cout << "\n";
 
+  exit(0);
 
   // query
-  ScanSpecs::Keys keys_start({
-    ScanSpecs::Key("a12341", Comparator::GT),
-    ScanSpecs::Key("b12346", 6, Comparator::GT),
-    ScanSpecs::Key("c12345", Comparator::GT)
-  });
+  DB::Specs::Key keys_start;
+  keys_start.add("a12341", Condition::GT);
+  keys_start.add("b12346", 6, Condition::GT);
+  keys_start.add("c12345", Condition::GT);
     
-  ScanSpecs::Keys keys_finish;
-  /*
-  keys_finish.keys.push_back(ScanSpecs::Key("a6", Comparator::LE));
-  keys_finish.keys.push_back(ScanSpecs::Key("b6", Comparator::GT));
-  keys_finish.keys.push_back(ScanSpecs::Key("c8", Comparator::GT));
-  */
-  ScanSpecs::ScanSpec ss;
+  DB::Specs::Key keys_finish;
+ 
+  //Protocol::Req::Scan::Ptr scanner = std::make_shared<Protocol::Req::Scan>();
+
+
+  DB::Specs::Scan ss;
+  
   ss.flags.limit = 10;
   ss.flags.offset = 0;
   ss.flags.max_versions = 2;
-  ScanSpecs::ColumnIntervals cs_is_1(
-    11,
-    {
-    ScanSpecs::CellsInterval(
+  
+  DB::Specs::Column::Ptr cs_is_1 = DB::Specs::Column::make_ptr(11, 2);
+  cs_is_1->intervals.push_back(
+    DB::Specs::Interval::make_ptr(
       keys_start,
       keys_finish,
-      ScanSpecs::Value("aValue1", Comparator::EQ),
-      ScanSpecs::Timestamp(111,Comparator::EQ),
-      ScanSpecs::Timestamp(112,Comparator::EQ),
-      ss.flags
-    ),
-    ScanSpecs::CellsInterval(
-      keys_start,
-      keys_finish,
-      ScanSpecs::Value("aValue2", Comparator::EQ),
-      ScanSpecs::Timestamp(111,Comparator::EQ),
-      ScanSpecs::Timestamp(112,Comparator::EQ),
+      DB::Specs::Value("aValue1", Condition::EQ),
+      DB::Specs::Timestamp(111,Condition::EQ),
+      DB::Specs::Timestamp(112,Condition::EQ),
       ss.flags
     )
-    }
+  );  
+  
+  cs_is_1->intervals.push_back(
+    DB::Specs::Interval::make_ptr(
+      keys_start,
+      keys_finish,
+      DB::Specs::Value("aValue2", Condition::EQ),
+      DB::Specs::Timestamp(111,Condition::EQ),
+      DB::Specs::Timestamp(112,Condition::EQ),
+      ss.flags
+    )
   );
   ss.columns.push_back(cs_is_1);
 
 
   //range-locator (master) : cid+cells_interval => cid(1), rid(master), rs-endpoints 
-  for(auto &col : ss.columns){
+  for(auto const &col : ss.columns){
 
-    for(auto &cells_interval : col.cells_interval){
+    for(auto const &interval : col->intervals){
       Protocol::Req::MngrRangeGetRs::request(
-        col.cid, cells_interval, 
-        [cid=col.cid, ci=cells_interval]
+        col->cid, *interval.get(), 
+        [cid=col->cid, intval=interval]
         (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
         int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
           if(err != Error::OK){
@@ -404,7 +408,7 @@ int main(int argc, char** argv) {
           }
           // req. rs(master-range) (cid+ci)
           std::cout << "get RS-master " << rsp.to_string() << "\n";
-          // --> ci.keys_start = rsp.next_keys
+          // --> ci.keys_start = rsp.next_key
         }
       );
     }

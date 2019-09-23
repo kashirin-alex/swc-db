@@ -28,7 +28,7 @@ class Range : public DB::RangeBase {
   };
 
   Range(int64_t cid, int64_t rid)
-        : RangeBase(cid, rid, std::make_shared<Cells::Intervals>()), 
+        : RangeBase(cid, rid, std::make_shared<DB::Cells::Intervals>()), 
           m_state(State::NOTLOADED) { 
             
     if(cid == 1)
@@ -100,10 +100,10 @@ class Range : public DB::RangeBase {
     
     switch(m_type){
       case Types::Range::DATA:
-        // + INSERT meta-range(col-2), cid,rid,m_intervals(keys)
+        // + INSERT meta-range(col-2), cid,rid,m_intervals(key)
         break;
       case Types::Range::META:
-        // + INSERT master-range(col-1), cid(2),rid,m_intervals(keys)
+        // + INSERT master-range(col-1), cid(2),rid,m_intervals(key)
         break;
       default: // Types::Range::MASTER:
         break;
@@ -233,9 +233,9 @@ class Range : public DB::RangeBase {
       }
 
       // cellstores
-    
-         
-    /*
+
+
+    //*
     // TEST-DATA
     if(cellstores.size() == 0) {
     cellstores.push_back(std::make_shared<Files::CellStore>(1));
@@ -243,71 +243,36 @@ class Range : public DB::RangeBase {
     cellstores.push_back(std::make_shared<Files::CellStore>(3));
     cellstores.push_back(std::make_shared<Files::CellStore>(4));
     cellstores.push_back(std::make_shared<Files::CellStore>(5));
-    uint8_t* d = new uint8_t[
-      Serialization::encoded_length_vi32(28)
-      +28
-      +Serialization::encoded_length_vi32(9)
-      +9
-      +Serialization::encoded_length_vi64(123)
-      +Serialization::encoded_length_vi64(987)
-      ];
-    const uint8_t * base = d;
-    Serialization::encode_vi32(&d, 28);
-    *d++ = 'a';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    uint8_t* ptr_muta = d;
-    *d++ = '5'; // chk changed
-    *d++ = 0;
-    *d++ = 'b';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0;
-    *d++ = 'c';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0;
-    *d++ = 'd';
-    *d++ = '1';
-    *d++ = '2'; 
-    *d++ = '3'; 
-    *d++ = '4'; 
-    *d++ = '5'; 
-    *d++ = 0; 
-    Serialization::encode_vi32(&d, 9);
-    *d++ = 'a';
-    uint8_t* end_ptr_muta = d;
-    *d++ = '6';
-    *d++ = 0;
-    *d++ = 'b';
-    *d++ = '6';
-    *d++ = 0; 
-    *d++ = 'c';
-    *d++ = '6';
-    *d++ = 0; 
- 
-    Serialization::encode_vi64(&d, 123);
-    Serialization::encode_vi64(&d, 987);
-    size_t remain = d-base;
     for(auto& cs : cellstores){
-      size_t remain2 = remain;
-      const uint8_t * base2 = base;
-      *ptr_muta = *(uint8_t*)std::to_string(cs->cs_id).c_str();
-      *end_ptr_muta = *ptr_muta;
-      cs->intervals->decode(&base2, &remain2);
+      auto s = std::to_string(cs->cs_id);
+      DB::Specs::Key key;
+      key.add("11:", Condition::GE);
+      key.add(std::string("a12345")+s, Condition::GE);
+      key.add(std::string("b12345")+s, Condition::GE);
+      key.add(std::string("c12345")+s, Condition::GE);
+      key.add(std::string("d12345")+s, Condition::GE);
+      cs->intervals->key_begin(key);
+      key.free();
+
+      key.add("11:", Condition::LE);
+      key.add(std::string("a98765")+s, Condition::LE);
+      key.add(std::string("b98765")+s, Condition::LE);
+      key.add(std::string("c98765")+s, Condition::LE);
+      key.add(std::string("d98765")+s, Condition::LE);
+      cs->intervals->key_end(key);
+
+      DB::Specs::Timestamp ts;
+      ts.comp = Condition::GE;
+      ts.value = 1234;
+      cs->intervals->ts_earliest(ts);
+      ts.comp = Condition::LE;
+      ts.value = 9876;
+      cs->intervals->ts_latest(ts);
     }
     //delete [] d;
     }
-    */
-    
+    //*/
+
       bool init = false;
       for(auto& cs : cellstores) {
         m_intervals->expande(cs->intervals, init);
