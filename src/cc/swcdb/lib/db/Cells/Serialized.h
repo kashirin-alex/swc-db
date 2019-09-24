@@ -13,15 +13,17 @@ namespace SWC {  namespace DB {  namespace Cells {
 class Serialized {
   public:
   
-  // typedef std::shared_ptr<QueryInsert>                        Ptr;
-  typedef std::unordered_map<const int64_t, DynamicBufferPtr> Columns;
-  typedef std::pair<const int64_t, DynamicBufferPtr>          Pair;
+  typedef std::shared_ptr<DB::Cells::Serialized>        Ptr;
+  typedef std::unordered_map<int64_t, DynamicBufferPtr> Columns;
+  typedef std::pair<int64_t, DynamicBufferPtr>          Pair;
   
   Serialized() { }
 
   Serialized(Columns map): m_map(map) { }
 
-  Serialized(const int64_t cid, DynamicBufferPtr buff) { add(cid, buff); }
+  Serialized(const int64_t cid, DynamicBufferPtr buff) { 
+    add(cid, buff); 
+  }
 
   virtual ~Serialized() {}
 
@@ -46,12 +48,14 @@ class Serialized {
   void pop(Pair& pair) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_map.first();
+    auto it = m_map.begin();
     if(it != m_map.end()){
-      pair = *it;
+      pair.first = it->first;
+      pair.second = it->second;
       m_map.erase(it);
     } else {
-      pair = Pair(0, nullptr);
+      pair.first = 0;
+      pair.second = nullptr;
     }
   }
 
@@ -78,11 +82,7 @@ class Serialized {
     }
   }
 
-  void add(const int64_t cid, Cell* cell) {
-    add(cid, *cell);
-  }
-
-  void add(const int64_t cid, const Cell& cell) {
+  void add(const int64_t cid, Cell& cell) {
     DynamicBufferPtr buff;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -93,12 +93,13 @@ class Serialized {
     } else
       buff = it->second;
 
-    buff.set_mark();
+    buff->set_mark();
     try{
       cell.write(*buff.get());
     } catch(...){
-      buff.ptr = buff.mark;
-      HT_THROW(Error::SERIALIZATION_INPUT_OVERRUN, "bad-cell");
+      buff->ptr = buff->mark;
+      HT_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
+                "bad-%s", cell.to_string().c_str());
     }
   }
 
