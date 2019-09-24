@@ -22,3 +22,8 @@ ADD_EXEC_TARGET(
 	SRCS      test/test_mngr_mng_column.cc
 	TARGETS   swcdb_core_config
 )
+ADD_EXEC_TARGET(
+	NAME      test_scan
+	SRCS      test/test_scan.cc
+	TARGETS   swcdb_core_config
+)

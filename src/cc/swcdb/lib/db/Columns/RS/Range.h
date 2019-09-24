@@ -246,7 +246,7 @@ class Range : public DB::RangeBase {
     for(auto& cs : cellstores){
       auto s = std::to_string(cs->cs_id);
       DB::Specs::Key key;
-      key.add("11:", Condition::GE);
+      key.add("11", Condition::GE);
       key.add(std::string("a12345")+s, Condition::GE);
       key.add(std::string("b12345")+s, Condition::GE);
       key.add(std::string("c12345")+s, Condition::GE);
@@ -254,7 +254,7 @@ class Range : public DB::RangeBase {
       cs->intervals->key_begin(key);
       key.free();
 
-      key.add("11:", Condition::LE);
+      key.add("11", Condition::LE);
       key.add(std::string("a98765")+s, Condition::LE);
       key.add(std::string("b98765")+s, Condition::LE);
       key.add(std::string("c98765")+s, Condition::LE);
