@@ -93,13 +93,14 @@ class Cell {
 
 
   explicit Cell():  flag(0), control(0), timestamp(0), revision(0),
-                    value(0), vlen(0) { }
+                    value(0), vlen(0), own(false) { }
 
   explicit Cell(const Cell& other){
     copy(other);
   }
 
   void copy(const Cell& other) {
+    own = true;
     //std::cout << " copy(const Cell &other) vlen=" << other.vlen << "\n";
     flag      = other.flag;
     key.copy(other.key);
@@ -115,10 +116,16 @@ class Cell {
 
   virtual ~Cell(){
     //std::cout << " ~Cell\n";
-    if(value != 0)
+    if(own && value != 0) 
       delete [] value;
-    vlen=0;
     key.free();
+  }
+
+  inline void free(){
+    if(own && value != 0) {
+      delete [] value;
+      vlen = 0;
+    }
   }
 
   void set_time_order_desc(bool desc){
@@ -149,35 +156,42 @@ class Cell {
   }
     
   // READ
-  void read(uint8_t **ptr, size_t* remainp) {
-    const uint8_t* tmp_ptr = *ptr;
+  void read(uint8_t **base, size_t* remainp) {
 
-    flag = *tmp_ptr++;
-    key.decode(&tmp_ptr, remainp);
-    control = *tmp_ptr++;
-    *remainp-=2;
+    const uint8_t* ptr = *base;
+    flag = *ptr++;
+    *remainp -= 1;
+    key.decode(&ptr, remainp);
+    control = *ptr++;
+    *remainp -= 1;
   
     if (control & HAVE_TIMESTAMP){
-      timestamp = decode_ts64(&tmp_ptr, (control & TS_DESC) != 0);
-      *remainp-=8;
+      timestamp = decode_ts64(&ptr, (control & TS_DESC) != 0);
+      *remainp -= 8;
     } else if(control & AUTO_TIMESTAMP)
       timestamp = AUTO_ASSIGN;
 
     if (control & HAVE_REVISION) {
-      revision = decode_ts64(&tmp_ptr, (control & TS_DESC) != 0);
-      *remainp-=8;
+      revision = decode_ts64(&ptr, (control & TS_DESC) != 0);
+      *remainp -= 8;
     } else if (control & REV_IS_TS)
       revision = timestamp;
       
-    vlen = Serialization::decode_vi32(&tmp_ptr, remainp);
+    free();
+    // own = owner;
+    vlen = Serialization::decode_vi32(&ptr, remainp);
     if(vlen > 0){
-      value = new uint8_t[vlen];
-      memcpy(value, tmp_ptr, vlen);
-      tmp_ptr += vlen;
+      if(own) {
+        value = new uint8_t[vlen];
+        memcpy(value, ptr, vlen);
+      } else
+        value = (uint8_t *)ptr;
+      ptr += vlen;
       *remainp -= vlen;
-    }
+    } else 
+      value = 0;
 
-    *ptr += tmp_ptr - *ptr;
+    *base += ptr - *base;
   }
 
   // WRITE
@@ -245,8 +259,9 @@ class Cell {
   int64_t         timestamp;
   uint64_t        revision;
     
-  uint8_t*  value;
-  uint32_t  vlen;
+  uint8_t*        value;
+  uint32_t        vlen;
+  bool            own;
 };
 
  

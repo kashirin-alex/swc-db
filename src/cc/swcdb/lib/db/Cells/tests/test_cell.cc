@@ -111,31 +111,32 @@ int main() {
    buff.set_mark();
    uint8_t* mark = buff.mark;
    uint8_t* bptr = buff.base;
-   std::cout << "base:"<< (size_t)bptr << ", mark:"<< (size_t)mark << ":\n";
+   size_t remain = mark-bptr;
+   std::cout << " remain=" << remain << " base:"<< (size_t)bptr << ", mark:"<< (size_t)mark << ":\n";
 
    i=0;
+   Cells::Cell cell;
    auto it1=cells.begin();
    auto it2=cells_copied.begin();
-   size_t remain = mark-bptr;
-   while(bptr < mark){
-      Cells::Cell* cell = new Cells::Cell();
-      cell->read(&bptr, &remain);
-      
-      std::cout << "Loaded Cell-"<< i << ":\n";
-      std::cout << cell->to_string() << "\n\n";
-      std::cout << "base:"<< (size_t)buff.base  << ",bptr:"<< (size_t)bptr << ",mark:"<< (size_t)mark << "\n";
-      i++;
-      
-      if( !(*it1)->equal(*cell) || !it2->equal(*cell) ){
-         std::cout << "LOADED SERIALIZED CELL NOT EQUAL:\n";
-         std::cout << cell->to_string() << "\n\n";
-         std::cout << (*it1)->to_string() << "\n\n";
-         std::cout << it2->to_string() << "\n\n";
-         exit(1);
-      }
 
-      it1++;
-      it2++;
+   while(mark > bptr) {
+    cell.read(&bptr, &remain);
+      
+    std::cout << "Loaded Cell-"<< i << ":\n";
+    std::cout << cell.to_string() << "\n\n";
+    std::cout << "base:"<< (size_t)buff.base  << ",bptr:"<< (size_t)bptr << ",mark:"<< (size_t)mark << "\n";
+    i++;
+      
+    if( !(*it1)->equal(cell) || !it2->equal(cell) ){
+      std::cout << "LOADED SERIALIZED CELL NOT EQUAL:\n";
+      std::cout << cell.to_string() << "\n\n";
+      std::cout << (*it1)->to_string() << "\n\n";
+      std::cout << it2->to_string() << "\n\n";
+    	exit(1);
+    }
+
+    it1++;
+    it2++;
    }
 
    std::cout << "\n-------------------------------\n";
