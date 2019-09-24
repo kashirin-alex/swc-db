@@ -72,7 +72,10 @@ class Key {
     uint8_t* data_tmp = new uint8_t[size];
     if(data != 0) {
       memcpy(data_tmp, data, prev_size);
-      delete [] data;
+      if(own)
+        delete [] data;
+      else
+        own = true;
     }
     data = data_tmp;
     *fraction_ptr = data + prev_size;
@@ -136,7 +139,10 @@ class Key {
       memcpy(*fraction_ptr, ptr_tmp, prev_size-offset);
     
     *fraction_ptr -= f_size;
-    delete [] data;
+    if(own)
+      delete [] data;
+    else
+      own = true;
     data = data_tmp;
     ++count;
   }
