@@ -22,7 +22,7 @@ class RangeGetRs : public AppHandler {
 
   void run() override {
 
-    int err = Error::OK;
+    Protocol::Params::MngrRangeGetRsRsp rsp_params;
     
     try {
 
@@ -31,89 +31,73 @@ class RangeGetRs : public AppHandler {
 
       Protocol::Params::MngrRangeGetRsReq params;
       params.decode(&ptr, &remain);
-      int cid = params.by==Protocol::Params::MngrRangeGetRsReq::By::RID ? 
-                params.cid : 1;
 
-      if(!Env::MngrRole::get()->is_active(cid)){
-        std::cout << "MNGR NOT ACTIVE: cid=" << cid << "\n";
-        err = Error::MNGR_NOT_ACTIVE;
-        goto send_error;
+
+      if(!Env::MngrRole::get()->is_active(params.cid)){
+        std::cout << "MNGR NOT ACTIVE: cid=" << params.cid << "\n";
+        rsp_params.err = Error::MNGR_NOT_ACTIVE;
+        goto send_response;
       }
-      auto col = Env::MngrColumns::get()->get_column(err, cid, false);
-      if(err != Error::OK)
-        goto send_error;
-
-      col->state(err);
-      if(err != Error::OK)
-        goto send_error;
       
-      DB::Specs::Key next_key;
+      auto col = Env::MngrColumns::get()->get_column(rsp_params.err, params.cid, false);
+      if(rsp_params.err != Error::OK)
+        goto send_response;
+
+      col->state(rsp_params.err);
+      if(rsp_params.err != Error::OK)
+        goto send_response;
+    
       server::Mngr::RangePtr range;
-      if(params.by == Protocol::Params::MngrRangeGetRsReq::By::RID){
-        range = col->get_range(err, params.rid);
-
-      } else {
-        std::string col_id(std::to_string(params.cid)); 
-        col_id.append(":");
-        if(params.by == Protocol::Params::MngrRangeGetRsReq::By::INTERVALS){
-          /*
-          params.intervals.keys_start.keys[0] = ScanSpecs::Key(
-            col_id.c_str(), col_id.length(), Condition::GE);
-          params.intervals.keys_finish.keys[0] = ScanSpecs::Key(
-            col_id.c_str(), col_id.length(), Condition::LE);
-          */
-          range = col->get_range(err, params.interval, next_key);
-
-        } else {
-          //keys.keys[0].key = col_id.c_str();
-          //keys.keys[0].len = col_id.length();
-          
-          range = col->get_range(err, params.interval, next_key);
-        }
+      switch(params.by){
+        case Protocol::Params::MngrRangeGetRsReq::By::KEY:
+          range = col->get_range(
+            rsp_params.err, params.key, rsp_params.next_key);
+          break;
+        case Protocol::Params::MngrRangeGetRsReq::By::INTERVAL:
+         range = col->get_range(
+           rsp_params.err, params.interval, rsp_params.next_key);
+          break;
+        case Protocol::Params::MngrRangeGetRsReq::By::RID:
+          range = col->get_range(
+            rsp_params.err, params.rid);
+          break;
+        default:
+          rsp_params.err = Error::NOT_IMPLEMENTED;
+          goto send_response;
       }
-
+      
       if(range == nullptr) {
-        err = Error::RANGE_NOT_FOUND;
-        goto send_error;
+        rsp_params.err = Error::RANGE_NOT_FOUND;
+        goto send_response;
       }
 
-      EndPoints endpoints;
-      Env::RangeServers::get()->rs_get(range->get_rs_id(), endpoints);
-      if(endpoints.empty()) {
-        err = Error::RS_NOT_READY;
-        goto send_error;
+      Env::RangeServers::get()->rs_get(
+        range->get_rs_id(), rsp_params.endpoints);
+      if(rsp_params.endpoints.empty()) {
+        rsp_params.err = Error::RS_NOT_READY;
+        goto send_response;
       }
-      
-      Protocol::Params::MngrRangeGetRsRsp rsp_params(
-        range->cid, range->rid, endpoints
-      );
-      if(cid==1 && !next_key.empty())
-        rsp_params.next_key = next_key;
-      
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, rsp_params.encoded_length()+4);
-      cbp->append_i32(err);
-      rsp_params.encode(cbp->get_data_ptr_address());
-      m_conn->send_response(cbp);
-      return;
-    }
-    catch (Exception &e) {
+
+      rsp_params.cid = range->cid;
+      rsp_params.rid = range->rid;
+
+    } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
-      err = e.code();
+      rsp_params.err = e.code();
     }
   
-    send_error:
+    send_response:
       try {
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
-        CommBufPtr cbp = std::make_shared<CommBuf>(header, 4);
-        cbp->append_i32(err);
+        CommBufPtr cbp = std::make_shared<CommBuf>(
+          header, rsp_params.encoded_length());
+        rsp_params.encode(cbp->get_data_ptr_address());
         m_conn->send_response(cbp);
       } catch (Exception &e) {
         HT_ERROR_OUT << e << HT_END;
       }
+    std::cout << "send_response : " << rsp_params.to_string() << "\n";
     
   }
 

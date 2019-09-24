@@ -22,43 +22,31 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
   public:
   
   typedef std::function<
-          void(ConnQueue::ReqBase::Ptr, int, Params::MngrRangeGetRsRsp)> Cb_t;
+          void(ConnQueue::ReqBase::Ptr, Params::MngrRangeGetRsRsp)> Cb_t;
 
   static void request(int64_t cid, int64_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, rid), 
-      cb, 
-      timeout
-    )->run();
+    request(Protocol::Params::MngrRangeGetRsReq(cid, rid), cb, timeout);
   }
 
   static void request(int64_t cid, const DB::Specs::Interval& interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, interval), 
-      cb, 
-      timeout,
-      1
-    )->run();
+    request(Protocol::Params::MngrRangeGetRsReq(cid, interval), cb, timeout);
   }
   static void request(int64_t cid, const DB::Cell::Key& key, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<MngrRangeGetRs>(
-      Protocol::Params::MngrRangeGetRsReq(cid, key), 
-      cb, 
-      timeout,
-      1
-    )->run();
+    request(Protocol::Params::MngrRangeGetRsReq(cid, key), cb, timeout);
   }
 
-  
+  static inline void request(const Protocol::Params::MngrRangeGetRsReq params,
+                             const Cb_t cb, const uint32_t timeout = 10000){
+    std::make_shared<MngrRangeGetRs>(params, cb, timeout)->run();
+  }
 
 
   MngrRangeGetRs(const Protocol::Params::MngrRangeGetRsReq params, const Cb_t cb, 
-                 const uint32_t timeout, int64_t cid=0) 
-                : ConnQueue::ReqBase(false), cb(cb), cid(cid?cid:params.cid) {
-
+                 const uint32_t timeout) 
+                : ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
     CommHeader header(Protocol::Command::CLIENT_REQ_GET_RANGE_RS, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
@@ -91,20 +79,15 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
     }
 
     Protocol::Params::MngrRangeGetRsRsp rsp_params;
-    int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
-
-    if(err == Error::OK){
-      try{
-        const uint8_t *ptr = ev->payload+4;
-        size_t remain = ev->payload_len-4;
-        rsp_params.decode(&ptr, &remain);
-      } catch (Exception &e) {
-        HT_ERROR_OUT << e << HT_END;
-        err = e.code();
-      }
+    try{
+      const uint8_t *ptr = ev->payload;
+      size_t remain = ev->payload_len;
+      rsp_params.decode(&ptr, &remain);
+    } catch (Exception &e) {
+      HT_ERROR_OUT << e << HT_END;
+      rsp_params.err = e.code();
     }
-
-    cb(req(), err, rsp_params);
+    cb(req(), rsp_params);
   }
 
   private:

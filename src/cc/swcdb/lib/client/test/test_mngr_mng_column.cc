@@ -393,20 +393,7 @@ int main(int argc, char** argv) {
       Protocol::Req::MngrRangeGetRs::request(
         col->cid, *interval.get(), 
         [cid=col->cid, intval=interval]
-        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
-        int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
-          if(err != Error::OK){
-            std::cout << "get RS-master err="<< err << "("<<Error::get_text(err) <<  ")";
-            if(err == Error::COLUMN_NOT_EXISTS || 
-               err == Error::RANGE_NOT_FOUND) {
-              std::cout << "NO-RETRY \n";
-            } else {
-              std::cout << "RETRYING \n";
-              req_ptr->request_again();
-            }
-            return;
-          }
-          // req. rs(master-range) (cid+ci)
+        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
           std::cout << "get RS-master " << rsp.to_string() << "\n";
           // --> ci.keys_start = rsp.next_key
         }
@@ -418,10 +405,8 @@ int main(int argc, char** argv) {
   
   Protocol::Req::MngrRangeGetRs::request(
     2, 1, 
-    [](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
-        int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
-      std::cout << "by-rid err="<< err << "("<<Error::get_text(err) <<  ") " 
-                << rsp.to_string() << "\n";
+    [](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr,  Protocol::Params::MngrRangeGetRsRsp rsp) {
+      std::cout << "by-rid " << rsp.to_string() << "\n";
     }
   );
 
