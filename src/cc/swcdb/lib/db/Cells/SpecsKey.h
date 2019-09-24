@@ -191,37 +191,8 @@ class Key : public DB::Cell::Key {
     }
   }
 
-  size_t encoded_length() const {
-    return Serialization::encoded_length_vi32(count) + size;
-  }
-  
-  void encode(uint8_t **bufp) const {
-    Serialization::encode_vi32(bufp, count);
-    memcpy(*bufp, data, size);
-    *bufp += size;
-  }
-
   void decode(const uint8_t **bufp, size_t *remainp, bool owner=false){
-    own = owner;
-    count = Serialization::decode_vi32(bufp, remainp);
-    data = (uint8_t *)*bufp;
-    for(uint32_t n=0; n<count; n++){
-      ++*bufp;
-      *bufp += Serialization::decode_vi32(bufp);
-    }
-    size = *bufp - data;
-    *remainp -= size;
-    
-    if(size == 0) {
-      data = 0;
-      count = 0;
-      return;
-    }
-    if(own) {
-      uint8_t* ptr = data;
-      data = new uint8_t[size];
-      memcpy(data, ptr, size);
-    }
+    return DB::Cell::Key::decode(bufp, remainp, owner, 1); 
   }
 
   const std::string to_string(){
