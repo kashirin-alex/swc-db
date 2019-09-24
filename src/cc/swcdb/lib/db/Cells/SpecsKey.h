@@ -35,6 +35,12 @@ class Key : public DB::Cell::Key {
   inline void add(const char* fraction, uint32_t len, Condition::Comp comp) {
     add((const uint8_t*)fraction, len, comp);
   }
+  
+  inline void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
+    uint8_t* fraction_ptr = 0;
+    DB::Cell::Key::add(fraction, len, &fraction_ptr, 1);
+    *fraction_ptr = (uint8_t)comp;
+  }
 
   inline void set(int32_t idx, Condition::Comp comp) {
     if(count == 0)
@@ -51,9 +57,25 @@ class Key : public DB::Cell::Key {
     }
   }
   
-  inline void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
+  inline void insert(uint32_t idx, const std::string fraction,
+                     Condition::Comp comp) {
+    insert(idx, (const uint8_t*)fraction.data(), fraction.length(), comp);
+  }
+
+  inline void insert(uint32_t idx, const char* fraction,
+                     Condition::Comp comp) {
+    insert(idx, (const uint8_t*)fraction, strlen(fraction), comp);
+  }
+
+  inline void insert(uint32_t idx, const char* fraction, uint32_t len,
+                     Condition::Comp comp) {
+    insert(idx, (const uint8_t*)fraction, len, comp);
+  }
+
+  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
+                    Condition::Comp comp) {
     uint8_t* fraction_ptr = 0;
-    DB::Cell::Key::add(fraction, len, &fraction_ptr, 1);
+    DB::Cell::Key::insert(idx, fraction, len, &fraction_ptr, 1);
     *fraction_ptr = (uint8_t)comp;
   }
 

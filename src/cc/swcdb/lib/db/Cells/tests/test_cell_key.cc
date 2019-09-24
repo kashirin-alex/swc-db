@@ -18,13 +18,13 @@ void test_basic(){
   Condition::Comp comp;
 
   std::cout << "\ntest_basic start! \n";
-  
-  std::cout << "\n # DB::Cell::Key\n";
   DB::Cell::Key key;
   key.add("abc");
   key.add("def", 3);
   key.add(std::string("ghi0"));
   key.add("jkl4");
+
+  std::cout << "\n # DB::Cell::Key\n";
   
   key.get(0, &fraction, &length);
   std::cout << std::string(fraction, length) << "(" << length <<"),";
@@ -49,6 +49,19 @@ void test_basic(){
     std::cout << "\n Bad-!key_cpy.equal(key) \n";
     std::cout <<  key.to_string() <<"\n";
     std::cout <<  key_cpy.to_string() <<"\n";
+    exit(1);
+  }
+  
+  DB::Cell::Key key_insert;
+  key_insert.add("abc");
+  key_insert.add(std::string("ghi0"));
+  key_insert.add("jkl4");
+  key_insert.insert(1, "def");
+
+  if(!key.equal(key_insert)) {
+    std::cout << "\n Bad-!key.equal(key_insert) \n";
+    std::cout <<  key.to_string() <<"\n";
+    std::cout <<  key_insert.to_string() <<"\n";
     exit(1);
   }
 
@@ -108,6 +121,19 @@ void test_basic(){
     exit(1);
   }
   
+  
+  DB::Specs::Key spec_key_insert;
+  spec_key_insert.add("def", 3, Condition::EQ);
+  spec_key_insert.add(std::string("ghi"), Condition::GE);
+  spec_key_insert.insert(0, "abc", Condition::LE);
+  spec_key_insert.insert(3, "jkl", Condition::GT);
+  
+  if(!spec_key.equal(spec_key_insert)) {
+    std::cout << "\n Bad-!spec_key.equal(spec_key_insert) \n";
+    std::cout <<  spec_key.to_string() <<"\n";
+    std::cout <<  spec_key_insert.to_string() <<"\n";
+    exit(1);
+  }
   
   
   std::cout << "\ntest_basic OK! \n";

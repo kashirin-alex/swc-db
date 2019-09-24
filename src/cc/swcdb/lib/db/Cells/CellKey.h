@@ -83,6 +83,64 @@ class Key {
     ++count;
   }
 
+  inline void insert(uint32_t idx, const std::string fraction) {
+    insert(idx, (const uint8_t*)fraction.data(), fraction.length());
+  }
+
+  inline void insert(uint32_t idx, const char* fraction) {
+    insert(idx, (const uint8_t*)fraction, strlen(fraction));
+  }
+
+  inline void insert(uint32_t idx, const char* fraction, uint32_t len) {
+    insert(idx, (const uint8_t*)fraction, len);
+  }
+
+  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
+    uint8_t* fraction_ptr = 0;
+    insert(idx, fraction, len, &fraction_ptr, 0);
+  }
+
+  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
+                     uint8_t** fraction_ptr, int8_t reserve) {
+    if(data == 0 || idx >= count) {
+      add(fraction, len, fraction_ptr, reserve);
+      return;
+    }
+
+    uint32_t prev_size = size;
+    uint32_t f_size = reserve + Serialization::encoded_length_vi32(len) + len;
+    size += f_size;
+
+    uint8_t* data_tmp = new uint8_t[size];
+    uint8_t* ptr_tmp = data;
+
+    uint32_t pos = 0;
+    uint32_t offset = 0;
+
+    for(;;) {
+      if(idx == pos++) {
+        if(offset != 0)
+          memcpy(data_tmp, data, offset);
+        *fraction_ptr = data_tmp + offset + reserve;
+        Serialization::encode_vi32(fraction_ptr, len);
+        memcpy(*fraction_ptr, fraction, len);
+        *fraction_ptr += len;
+        break;
+      }
+      ptr_tmp += reserve;
+      ptr_tmp += Serialization::decode_vi32((const uint8_t**)&ptr_tmp);
+      offset += ptr_tmp-data;
+    }
+    
+    if(prev_size-offset > 0)
+      memcpy(*fraction_ptr, ptr_tmp, prev_size-offset);
+    
+    *fraction_ptr -= f_size;
+    delete [] data;
+    data = data_tmp;
+    ++count;
+  }
+
   inline void get(uint32_t idx, char** ptr, uint32_t* length) {
     uint8_t* fraction_ptr = 0;
     get(idx, ptr, length, &fraction_ptr, 0);
