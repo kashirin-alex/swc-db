@@ -71,22 +71,32 @@ static inline int64_t decode_ts64(const uint8_t **bufp,  bool asc=true) {
   return (asc ? ~val : val);
 }
 
+static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
+                                           uint8_t** base, size_t* remainp){
+  const uint8_t* ptr = *base;
+  ptr++;
+  *remainp-=1;
+  key.decode(&ptr, remainp);
+  uint8_t control = *ptr++;
+  *remainp-=1;
+  if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP) {
+    ptr += 8;
+    *remainp -= 8;
+  }
+  if(control & HAVE_REVISION) {
+    ptr += 8;
+    *remainp -= 8;
+  }
+  uint32_t vlen = Serialization::decode_vi32(&ptr, remainp);
+  ptr += vlen;
+  *remainp -= vlen;
+  *base = (uint8_t*)ptr;
+}
+
   
 class Cell {
   public:
   
-  static void get_key_and_seek(DB::Cell::Key& key, SWC::DynamicBuffer &src_buf){
-    ++src_buf.ptr;
-    size_t remain = src_buf.fill();
-    key.decode((const uint8_t **)&src_buf.ptr, &remain);
-    uint8_t control = *++src_buf.ptr;
-    if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP)
-      src_buf.ptr += 8;
-    if(control & HAVE_REVISION)
-      src_buf.ptr += 8;
-    src_buf.ptr += Serialization::decode_vi32((const uint8_t **)&src_buf.ptr);
-  }
-
   static bool is_next(uint8_t flag, SWC::DynamicBuffer &src_buf) {
     return *src_buf.ptr == flag;
   }
