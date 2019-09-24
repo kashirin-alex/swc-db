@@ -38,7 +38,7 @@ class Key {
       delete [] data;
   }
 
-  void free(){
+  inline void free(){
     if(own && data != 0) {
       delete [] data;
       data = 0;
@@ -152,18 +152,31 @@ class Key {
   void encode(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, count);
     memcpy(*bufp, data, size);
-    *bufp+=size;
+    *bufp += size;
   }
 
-  void decode(const uint8_t **bufp, size_t* remainp){
-    own = false;
+  void decode(const uint8_t **bufp, size_t* remainp, 
+              bool owner=false, int8_t reserved=0){
+    own = owner;
     count = Serialization::decode_vi32(bufp, remainp);
     data = (uint8_t *)*bufp;
-    for(uint32_t n=0; n<count; n++)
+    for(uint32_t n=0; n<count; n++){
+      *bufp += reserved;
       *bufp += Serialization::decode_vi32(bufp);
-    
+    }
     size = *bufp - data;
     *remainp -= size;
+    
+    if(size == 0) {
+      data = 0;
+      count = 0;
+      return;
+    }
+    if(own) {
+      uint8_t* ptr = data;
+      data = new uint8_t[size];
+      memcpy(data, ptr, size);
+    }
   }
 
   const std::string to_string(){

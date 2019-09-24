@@ -38,6 +38,38 @@ void test_basic(){
   std::cout << "\nfractions-count=" <<  key.fractions() <<"\n";
   std::cout <<  key.to_string() <<"\n";
 
+  if(!key.equal(key)) {
+    std::cout << "\n Bad-!key.equal(key) \n";
+    std::cout <<  key.to_string() <<"\n";
+    exit(1);
+  }
+  
+  DB::Cell::Key key_cpy(key);
+  if(!key_cpy.equal(key)) {
+    std::cout << "\n Bad-!key_cpy.equal(key) \n";
+    std::cout <<  key.to_string() <<"\n";
+    std::cout <<  key_cpy.to_string() <<"\n";
+    exit(1);
+  }
+
+  size_t remain = key_cpy.encoded_length();
+  uint8_t* buff = new uint8_t[remain];
+  uint8_t* ptr = buff;
+  key_cpy.encode(&ptr);
+  DB::Cell::Key key_encoded;
+  const uint8_t* rptr = (const uint8_t*)buff;
+  key_encoded.decode(&rptr, &remain);
+
+  if(!key_encoded.equal(key_cpy)) {
+    std::cout << "\n Bad-!key_encoded.equal(key_cpy) \n";
+    std::cout <<  "encoded_length=" << key_cpy.encoded_length() <<"\n";
+    std::cout <<  "wrote=" << ptr-buff <<"\n";
+    std::cout <<  key_cpy.to_string() <<"\n";
+    std::cout <<  key_encoded.to_string() <<"\n";
+    std::cout <<  "read=" << rptr-buff <<"\n";
+    exit(1);
+  }
+  delete [] buff;
   
   std::cout << "\n # DB::Specs::Key\n";
   DB::Specs::Key spec_key;
@@ -75,6 +107,7 @@ void test_basic(){
     std::cout <<  spec_key2.to_string() <<"\n";
     exit(1);
   }
+  
   
   
   std::cout << "\ntest_basic OK! \n";
