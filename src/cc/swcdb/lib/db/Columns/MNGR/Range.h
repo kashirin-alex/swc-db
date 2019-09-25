@@ -141,41 +141,14 @@ class Range : public DB::RangeBase {
                        DB::Specs::Key &next_key, RangePtr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::cout << "chained_consist, rid=" << current->rid  
-             << "\n this  " << (m_intervals==nullptr?
-                                std::string("NULL"): m_intervals->to_string())
-             << "\n other " << intvals->to_string();
 
-    if(m_intervals == nullptr || !m_intervals->consist(intvals)) {
-      std::cout << " FALSE\n";
+    if(m_intervals == nullptr || !m_intervals->includes(intvals)) {
+      std::cout << " FALSE chained_consist, rid=" << current->rid << "\n" 
+                << "\n this  " << m_intervals->to_string()
+                << "\n other " << intvals->to_string();
       current = nullptr;
       return;
     }
-    std::cout << " TRUE\n";
-
-    if(found != nullptr)
-      next_key.copy(m_intervals->get_key_begin());
-    else 
-      found = current;
-
-    current = m_chained_next;
-    return;
-  }
-
-  void chained_consist(const DB::Cell::Key& key, RangePtr& found,
-                       DB::Specs::Key &next_key, RangePtr& current){
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    std::cout << "chained_consist(cell-key), rid=" << current->rid  
-    << (m_intervals==nullptr?
-        std::string("NULL"): m_intervals->to_string()) << "\n";
-
-    if(m_intervals == nullptr || !m_intervals->consist(key)) {
-      std::cout << " FALSE\n";
-      current = nullptr;
-      return;
-    }
-    std::cout << " TRUE\n";
 
     if(found != nullptr)
       next_key.copy(m_intervals->get_key_begin());

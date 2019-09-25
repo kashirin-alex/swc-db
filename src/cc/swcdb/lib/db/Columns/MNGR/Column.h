@@ -97,19 +97,6 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-
-  RangePtr get_range(int &err, DB::Cell::Key& key, DB::Specs::Key &next_key){
-    RangePtr found;
-    RangePtr range = m_base_range;
-    range->chained_next(range);
-    for(;;){
-      range->chained_consist(key, found, next_key, range);
-      if(range == nullptr || !next_key.empty())
-        break;
-    }
-    return found;
-  }
-
   RangePtr get_range(int &err, DB::Specs::Interval::Ptr& intervals, 
                      DB::Specs::Key &next_key){
     RangePtr found;
