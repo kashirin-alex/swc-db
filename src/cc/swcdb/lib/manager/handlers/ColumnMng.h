@@ -32,12 +32,8 @@ class ColumnMng : public AppHandler {
       Protocol::Params::ColumnMng req_params;
       req_params.decode(&ptr, &remain);
 
+      Env::RangeServers::get()->is_active(err, 1);
       
-      if(!Env::MngrRole::get()->is_active(1)){
-        std::cout << "MNGR NOT ACTIVE: \n";
-        err = Error::MNGR_NOT_ACTIVE;
-      }
-
       if(err == Error::OK) {
         Env::RangeServers::get()->column_action({
           .params=req_params, 

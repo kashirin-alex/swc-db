@@ -53,9 +53,12 @@ class ColumnGet : public AppHandler {
       
       DB::SchemaPtr schema = get_schema(err, req_params);
       
-      if(schema != nullptr
-         || Env::MngrRole::get()->is_active(1) 
-         || err == Error::COLUMN_UNKNOWN_GET_FLAG){
+      if(schema != nullptr || err){
+        response(err, flag, schema);
+        return;
+      }
+      Env::RangeServers::get()->is_active(err, 1);
+      if(err) {
         response(err, flag, schema);
         return;
       }
@@ -73,7 +76,8 @@ class ColumnGet : public AppHandler {
             }
             ptr->response(err, params.flag, params.schema);
           }
-        ));
+        )
+      );
       return;
 
     } catch (Exception &e) {

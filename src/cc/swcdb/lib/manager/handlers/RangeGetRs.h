@@ -32,14 +32,10 @@ class RangeGetRs : public AppHandler {
       Protocol::Params::MngrRangeGetRsReq params;
       params.decode(&ptr, &remain);
 
-
-      if(!Env::MngrRole::get()->is_active(params.cid)){
-        std::cout << "MNGR NOT ACTIVE: cid=" << params.cid << "\n";
-        rsp_params.err = Error::MNGR_NOT_ACTIVE;
+      Env::RangeServers::get()->is_active(rsp_params.err, params.cid); 
+      if(rsp_params.err != Error::OK)
         goto send_response;
-      }
-      // + Error::MNGR_NOT_INITIALIZED
-      
+
       auto col = Env::MngrColumns::get()->get_column(rsp_params.err, params.cid, false);
       if(rsp_params.err != Error::OK)
         goto send_response;
@@ -50,10 +46,6 @@ class RangeGetRs : public AppHandler {
     
       server::Mngr::RangePtr range;
       switch(params.by){
-        case Protocol::Params::MngrRangeGetRsReq::By::KEY:
-          range = col->get_range(
-            rsp_params.err, params.key, rsp_params.next_key);
-          break;
         case Protocol::Params::MngrRangeGetRsReq::By::INTERVAL:
          range = col->get_range(
            rsp_params.err, params.interval, rsp_params.next_key);

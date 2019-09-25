@@ -110,6 +110,26 @@ class RangeServers {
 
   virtual ~RangeServers(){}
 
+  void is_active(int& err, int64_t cid) {
+    if(!Env::MngrRole::get()->is_active(cid)){
+      err = Error::MNGR_NOT_ACTIVE;
+      return;
+    }
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_columns);
+      if(!m_columns_set) {
+        err = Error::MNGR_NOT_INITIALIZED;
+        return;  
+      }
+    }
+    
+    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
+    if(col == nullptr) {
+      err = Error::COLUMN_NOT_EXISTS;
+      return;  
+    }
+    col->state(err);
+  }
 
   // Columns Actions
   void column_action(ColumnActionReq new_req){
@@ -1132,6 +1152,7 @@ class RangeServers {
 
 void Protocol::Req::RsRangeLoad::loaded(int err, bool failure, 
                                         DB::Cells::Intervals::Ptr intvals) { 
+  std::cout << " Protocol::Req::RsRangeLoad::loaded" << "\n";
   auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
   if(col == nullptr){
     Env::RangeServers::get()->range_loaded(
@@ -1149,6 +1170,7 @@ void Protocol::Req::RsRangeLoad::loaded(int err, bool failure,
 }
 
 void Protocol::Req::RsColumnUpdate::updated(int err, bool failure) {
+  std::cout << " Protocol::Req::RsColumnUpdate::updated" << "\n";
   Env::RangeServers::get()->update_schema(err, rs, schema, failure);
   
  if(failure)
@@ -1156,6 +1178,7 @@ void Protocol::Req::RsColumnUpdate::updated(int err, bool failure) {
 }
 
 void Protocol::Req::RsIdReqNeeded::rsp(int err) {
+  std::cout << " Protocol::Req::RsIdReqNeeded::rsp" << "\n";
   
   if(err == Error::OK) 
     // RsId assignment on the way, put range back as not assigned 
