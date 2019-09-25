@@ -87,6 +87,15 @@ class Interval {
     value.free();
   }
 
+  void expand(const Cells::Cell& cell){
+    if(key_start.empty() || !key_start.is_matching(cell.key)){
+      key_start.set(cell.key, Condition::GE);
+    }
+    if(key_finish.empty() || !key_finish.is_matching(cell.key)){
+      key_finish.set(cell.key, Condition::LE);
+    }
+  }
+
   bool equal(const Interval &other) {
     return  ts_start.equal(other.ts_start) &&
             ts_finish.equal(other.ts_finish) &&
