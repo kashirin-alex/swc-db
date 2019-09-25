@@ -110,7 +110,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return found;
   }
 
-  RangePtr get_range(int &err, DB::Specs::Interval& intervals, 
+  RangePtr get_range(int &err, DB::Specs::Interval::Ptr& intervals, 
                      DB::Specs::Key &next_key){
     RangePtr found;
     RangePtr range = m_base_range;

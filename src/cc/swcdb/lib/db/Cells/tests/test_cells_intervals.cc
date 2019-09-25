@@ -82,7 +82,7 @@ int main() {
 
   bool init = false;
   for(const auto& cs : cellstores) {
-    intvals->expande(cs->intervals, init);
+    intvals->expand(cs->intervals, init);
     init=true;
     //std::cout << cs->to_string() << "\n";
   }

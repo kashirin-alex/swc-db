@@ -50,57 +50,43 @@ class Update : public std::enable_shared_from_this<Update> {
     //range-locator (master) : cid(1)+(cid[N]+Cell::Key) => cid(1), rid(N-master), rs-endpoints 
 
     DB::Cells::Serialized::Pair pair;
-    DB::Cell::Key key(false);
-    uint8_t* ptr;
-    size_t remain;
-    Protocol::Params::MngrRangeGetRsReq params;
     for(;;) {
       cells->pop(pair);
       if(pair.first == 0)
         break;
 
-      remain = pair.second->fill();
-      ptr = pair.second->base;
-      while(remain > 0){
-        DB::Cells::get_key_fwd_to_cell_end(key, &ptr, &remain);
-        // std::cout << "key: " << key.to_string() << " own=" << key.own << " ptr=" << (size_t)ptr << "\n";
-        
-        params.cid = 1;
-        params.key.copy(key);
-        params.key.insert(0, std::to_string(pair.first));
-        params.by = Protocol::Params::MngrRangeGetRsReq::By::KEY;
-        std::cout << "params.key: " << params.key.to_string() << "\n";
+      Protocol::Params::MngrRangeGetRsReq params(1, pair.second.interval);
+      params.interval->key_start.insert(0, std::to_string(pair.first), Condition::GE);
+      params.interval->key_finish.insert(0, std::to_string(pair.first), Condition::LE);
+      std::cout << params.interval->to_string() << "\n";
+      
+      Protocol::Req::MngrRangeGetRs::request(
+        params,
+        [pair=pair, ptr=shared_from_this()]
+        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
+          Result r;
+          std::cout << "get RS-master " << rsp.to_string() << "\n";
+          std::cout << pair.second.interval->to_string() << "\n";
 
-        Protocol::Req::MngrRangeGetRs::request(
-          params,
-          [ptr=shared_from_this()]
-          (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
-            Result r;
-            std::cout << "get RS-master " << rsp.to_string() << "\n";
-
-            if(rsp.err != Error::OK){
-              std::cout << "get RS-master err="<< rsp.err << "("<<Error::get_text(rsp.err) <<  ")";
-              if(rsp.err == Error::COLUMN_NOT_EXISTS ||  rsp.err == Error::RANGE_NOT_FOUND) {
-                std::cout << "NO-RETRY \n";
-              } else {
-                std::cout << "RETRYING \n";
-                req_ptr->request_again();
-              }
-              ptr->cb(r);
-              return;
+          if(rsp.err != Error::OK){
+            std::cout << "get RS-master err="<< rsp.err << "("<<Error::get_text(rsp.err) <<  ")";
+            if(rsp.err == Error::COLUMN_NOT_EXISTS ||  rsp.err == Error::RANGE_NOT_FOUND) {
+              std::cout << "NO-RETRY \n";
+            } else {
+              std::cout << "RETRYING \n";
+              req_ptr->request_again();
             }
-            // req. rs(master-range) (cid+ci)
-            // --> ci.keys_start = rsp.next_key
-            
             ptr->cb(r);
+            return;
           }
-        );
-        
-
-      }
-
-      params.free();
+          // req. rs(master-range) (cid+ci)
+          // --> ci.keys_start = rsp.next_key
+            
+          ptr->cb(r);
+        }
+      );
     }
+
   }
   
   void locate_rangeservers_meta() {

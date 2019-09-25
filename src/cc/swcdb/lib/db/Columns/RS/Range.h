@@ -275,7 +275,7 @@ class Range : public DB::RangeBase {
 
       bool init = false;
       for(auto& cs : cellstores) {
-        m_intervals->expande(cs->intervals, init);
+        m_intervals->expand(cs->intervals, init);
         init=true;
       }
       // CommitLogs

@@ -38,6 +38,7 @@ class RangeGetRs : public AppHandler {
         rsp_params.err = Error::MNGR_NOT_ACTIVE;
         goto send_response;
       }
+      // + Error::MNGR_NOT_INITIALIZED
       
       auto col = Env::MngrColumns::get()->get_column(rsp_params.err, params.cid, false);
       if(rsp_params.err != Error::OK)
@@ -87,6 +88,7 @@ class RangeGetRs : public AppHandler {
     }
   
     send_response:
+      std::cout << " " << rsp_params.to_string() << "\n";
       try {
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);

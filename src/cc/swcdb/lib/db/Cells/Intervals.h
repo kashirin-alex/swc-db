@@ -75,7 +75,7 @@ class Intervals {
     m_ts_latest.copy(ts);
   }
 
-  void expande(const Ptr& other, bool initiated){
+  void expand(const Ptr& other, bool initiated){
     std::lock_guard<std::mutex> lock(m_mutex);
     
     auto& key_begin = other->get_key_begin();
@@ -127,14 +127,18 @@ class Intervals {
            m_key_end.is_matching(other->get_key_begin());
   }
 
-  bool consist(const Specs::Interval& interval) {
+  bool consist(Specs::Interval& interval) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    //chg to by SS::CI key comparators
     return (interval.key_finish.size == 0 
-            || m_key_begin.is_matching(interval.key_finish))
+            || interval.key_finish.is_matching(m_key_begin))
             && 
            (interval.key_start.size == 0 
-           || m_key_end.is_matching(interval.key_start));
+           || interval.key_start.is_matching(m_key_end));
+  }
+
+  bool consist(const Specs::Interval::Ptr interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return consist(*interval.get());
   }
 
   bool consist(const DB::Cell::Key& key){

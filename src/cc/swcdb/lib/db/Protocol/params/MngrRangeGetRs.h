@@ -41,7 +41,7 @@ class MngrRangeGetRsReq : public Serializable {
   MngrRangeGetRsReq(int64_t cid, const DB::Cell::Key& key)
                    : cid(cid), rid(0), key(key), by(By::KEY) {}
 
-  MngrRangeGetRsReq(int64_t cid, const DB::Specs::Interval& interval)
+  MngrRangeGetRsReq(int64_t cid, DB::Specs::Interval::Ptr interval)
                    : cid(cid), rid(0), interval(interval), by(By::INTERVAL) {}
 
   MngrRangeGetRsReq(int64_t cid, int64_t rid)
@@ -53,15 +53,15 @@ class MngrRangeGetRsReq : public Serializable {
     by = By::RID;
     cid = 0;
     rid = 0;
-    interval.free();
+    interval->free();
     key.free();
   }
   
-  By                  by;
-  int64_t             cid;
-  int64_t             rid;
-  DB::Specs::Interval interval;
-  DB::Cell::Key       key;
+  By                        by;
+  int64_t                   cid;
+  int64_t                   rid;
+  DB::Specs::Interval::Ptr  interval;
+  DB::Cell::Key             key;
   
   private:
 
@@ -75,7 +75,7 @@ class MngrRangeGetRsReq : public Serializable {
       case By::RID:
         return len + Serialization::encoded_length_vi64(rid);
       case By::INTERVAL:
-        return len + interval.encoded_length();
+        return len + interval->encoded_length();
       case By::KEY:
         return len + key.encoded_length();
       default:
@@ -92,7 +92,7 @@ class MngrRangeGetRsReq : public Serializable {
         Serialization::encode_vi64(bufp, rid);
         return;
       case By::INTERVAL:
-        interval.encode(bufp);
+        interval->encode(bufp);
         return;
       case By::KEY:
         key.encode(bufp);
@@ -112,7 +112,7 @@ class MngrRangeGetRsReq : public Serializable {
         rid = Serialization::decode_vi64(bufp, remainp);
         return;
       case By::INTERVAL:
-        interval.decode(bufp, remainp);
+        interval = DB::Specs::Interval::make_ptr(bufp, remainp);
         return;
       case By::KEY:
         key.decode(bufp, remainp);

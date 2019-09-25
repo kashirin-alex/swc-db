@@ -29,7 +29,7 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
     request(Protocol::Params::MngrRangeGetRsReq(cid, rid), cb, timeout);
   }
 
-  static void request(int64_t cid, const DB::Specs::Interval& interval, 
+  static void request(int64_t cid, const DB::Specs::Interval::Ptr interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(Protocol::Params::MngrRangeGetRsReq(cid, interval), cb, timeout);
   }

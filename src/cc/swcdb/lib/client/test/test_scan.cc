@@ -69,10 +69,9 @@ void run_test() {
   update_req->cells->add(11, cell);
   cell.free();
   
-    pending += 4;
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  pending += 1;
 
   std::cout << " update_req->commit(); \n";
   

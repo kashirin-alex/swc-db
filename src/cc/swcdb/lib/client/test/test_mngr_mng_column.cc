@@ -391,7 +391,7 @@ int main(int argc, char** argv) {
 
     for(auto const &interval : col->intervals){
       Protocol::Req::MngrRangeGetRs::request(
-        col->cid, *interval.get(), 
+        col->cid, interval, 
         [cid=col->cid, intval=interval]
         (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
           std::cout << "get RS-master " << rsp.to_string() << "\n";
