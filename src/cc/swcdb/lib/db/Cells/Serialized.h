@@ -14,16 +14,23 @@ class Serialized {
   public:
   
   typedef std::shared_ptr<DB::Cells::Serialized>        Ptr;
-  typedef std::unordered_map<int64_t, DynamicBufferPtr> Columns;
-  typedef std::pair<int64_t, DynamicBufferPtr>          Pair;
+
+  struct ColumnData {
+    Specs::Interval::Ptr interval;
+    DynamicBufferPtr     buffer;
+  };
+  typedef std::unordered_map<int64_t, ColumnData> Columns;
+  typedef std::pair<int64_t, ColumnData>          Pair;
   
   Serialized() { }
 
   Serialized(Columns map): m_map(map) { }
 
+  /*
   Serialized(const int64_t cid, DynamicBufferPtr buff) { 
     add(cid, buff); 
   }
+  */
 
   virtual ~Serialized() {}
 
@@ -32,7 +39,7 @@ class Serialized {
     size_t total = 0;
     
     for(auto it = m_map.begin(); it != m_map.end(); ++it)
-      total += it->second->fill();
+      total += it->second.buffer->fill();
     return total;
   }
 
@@ -42,7 +49,7 @@ class Serialized {
     auto it = m_map.find(cid);
     if(it == m_map.end())
       return (size_t)0;
-    return it->second->fill();
+    return it->second.buffer->fill();
   }
 
   void pop(Pair& pair) {
@@ -55,22 +62,21 @@ class Serialized {
       m_map.erase(it);
     } else {
       pair.first = 0;
-      pair.second = nullptr;
     }
   }
 
-  void pop(const int64_t cid, DynamicBufferPtr& buff) {
+  void pop(const int64_t cid, Pair& pair) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(cid);
     if(it != m_map.end()){
-      buff = it->second;
+      pair = *it;
       m_map.erase(it);
     } else {
-      buff = nullptr;
+      pair.first = 0;
     }
   }
-
+/*
   void add(const int64_t cid, DynamicBufferPtr buff) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -81,23 +87,25 @@ class Serialized {
       it->second->add(buff->base, buff->fill());
     }
   }
-
+*/
   void add(const int64_t cid, Cell& cell) {
-    DynamicBufferPtr buff;
+    ColumnData data;
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(cid);
     if(it == m_map.end()){
-      buff = std::make_shared<DynamicBuffer>();
-      m_map.insert(Pair(cid, buff));
+      data.interval = Specs::Interval::make_ptr();
+      data.buffer = std::make_shared<DynamicBuffer>();
+      m_map.insert(Pair(cid, data));
     } else
-      buff = it->second;
+      data = it->second;
 
-    buff->set_mark();
+    data.buffer->set_mark();
     try{
-      cell.write(*buff.get());
+      cell.write(*data.buffer.get());
+      data.interval->expand(cell);
     } catch(...){
-      buff->ptr = buff->mark;
+      data.buffer->ptr = data.buffer->mark;
       HT_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
                 "bad-%s", cell.to_string().c_str());
     }
