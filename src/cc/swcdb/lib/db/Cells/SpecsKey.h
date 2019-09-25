@@ -6,7 +6,7 @@
 #ifndef swcdb_db_cells_SpecsKey_h
 #define swcdb_db_cells_SpecsKey_h
 
-#include "CellKey.h"
+#include "Cell.h"
 #include "Comparators.h"
 
 namespace SWC { namespace DB { namespace Specs {
@@ -22,6 +22,31 @@ class Key : public DB::Cell::Key {
 
   virtual ~Key(){
     free();
+  }
+
+  inline void set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
+    free();
+    own   = true;
+    count = cell_key.count;
+    size  = cell_key.size+count;
+    if(size == 0) 
+      return;
+    
+    data = new uint8_t[size];
+    uint8_t* data_ptr = data;
+    
+    uint32_t len;
+    const uint8_t* ptr = (const uint8_t*)cell_key.data;
+    const uint8_t* ptr_len;
+    for(int32_t n=0; n<count; n++) {
+      *data_ptr++ = (uint8_t)comp;
+      ptr_len = ptr; 
+      len = Serialization::decode_vi32(&ptr_len);
+      len += ptr_len-ptr;
+      memcpy(data_ptr, ptr, len);
+      data_ptr += len;
+      ptr += len;
+    }
   }
 
   inline void add(const std::string fraction, Condition::Comp comp) {
