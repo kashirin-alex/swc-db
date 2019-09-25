@@ -127,18 +127,13 @@ class Intervals {
            m_key_end.is_matching(other->get_key_begin());
   }
 
-  bool consist(Specs::Interval& interval) {
+  bool includes(const Specs::Interval::Ptr interval) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return (interval.key_finish.size == 0 
-            || interval.key_finish.is_matching(m_key_begin))
-            && 
-           (interval.key_start.size == 0 
-           || interval.key_start.is_matching(m_key_end));
-  }
-
-  bool consist(const Specs::Interval::Ptr interval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return consist(*interval.get());
+    return m_key_end.empty() || m_key_begin.empty() ||
+           interval->key_start.empty() || interval->key_finish.empty() ||
+           interval->key_start.is_matching(m_key_begin) ||
+           interval->key_finish.is_matching(m_key_end);
+           
   }
 
   bool consist(const DB::Cell::Key& key){
