@@ -143,7 +143,7 @@ class Range : public DB::RangeBase {
 
 
     if(m_intervals == nullptr || !m_intervals->includes(intvals)) {
-      std::cout << " FALSE chained_consist, rid=" << current->rid << "\n" 
+      std::cout << " FALSE chained_consist, rid=" << current->rid
                 << "\n this  " << m_intervals->to_string()
                 << "\n other " << intvals->to_string();
       current = nullptr;
