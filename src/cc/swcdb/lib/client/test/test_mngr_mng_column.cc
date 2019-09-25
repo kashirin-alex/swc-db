@@ -12,7 +12,7 @@
 
 #include "swcdb/lib/db/Cells/SpecsScan.h"
 
-#include "swcdb/lib/db/Protocol/req/MngrRangeGetRs.h"
+#include "swcdb/lib/db/Protocol/req/MngrRsGet.h"
 
 #include "swcdb/lib/db/Stats/Stat.h"
 
@@ -390,10 +390,10 @@ int main(int argc, char** argv) {
   for(auto const &col : ss.columns){
 
     for(auto const &interval : col->intervals){
-      Protocol::Req::MngrRangeGetRs::request(
+      Protocol::Req::MngrRsGet::request(
         col->cid, interval, 
         [cid=col->cid, intval=interval]
-        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
+        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRsGetRsp rsp) {
           std::cout << "get RS-master " << rsp.to_string() << "\n";
           // --> ci.keys_start = rsp.next_key
         }
@@ -403,9 +403,9 @@ int main(int argc, char** argv) {
 
   }
   
-  Protocol::Req::MngrRangeGetRs::request(
+  Protocol::Req::MngrRsGet::request(
     2, 1, 
-    [](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr,  Protocol::Params::MngrRangeGetRsRsp rsp) {
+    [](Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr,  Protocol::Params::MngrRsGetRsp rsp) {
       std::cout << "by-rid " << rsp.to_string() << "\n";
     }
   );

@@ -3,10 +3,10 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RangeGetRs_h
-#define swc_app_manager_handlers_RangeGetRs_h
+#ifndef swc_app_manager_handlers_RsGet_h
+#define swc_app_manager_handlers_RsGet_h
 
-#include "swcdb/lib/db/Protocol/params/MngrRangeGetRs.h"
+#include "swcdb/lib/db/Protocol/params/MngrRsGet.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -14,22 +14,21 @@ namespace SWC { namespace server { namespace Mngr {
 namespace Handler {
 
 
-class RangeGetRs : public AppHandler {
+class RsGet : public AppHandler {
   public:
 
-  RangeGetRs(ConnHandlerPtr conn, EventPtr ev)
-            : AppHandler(conn, ev){ }
+  RsGet(ConnHandlerPtr conn, EventPtr ev) : AppHandler(conn, ev){ }
 
   void run() override {
 
-    Protocol::Params::MngrRangeGetRsRsp rsp_params;
+    Protocol::Params::MngrRsGetRsp rsp_params;
     
     try {
 
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrRangeGetRsReq params;
+      Protocol::Params::MngrRsGetReq params;
       params.decode(&ptr, &remain);
 
       Env::RangeServers::get()->is_active(rsp_params.err, params.cid); 
@@ -46,11 +45,11 @@ class RangeGetRs : public AppHandler {
     
       server::Mngr::RangePtr range;
       switch(params.by){
-        case Protocol::Params::MngrRangeGetRsReq::By::INTERVAL:
+        case Protocol::Params::MngrRsGetReq::By::INTERVAL:
          range = col->get_range(
            rsp_params.err, params.interval, rsp_params.next_key);
           break;
-        case Protocol::Params::MngrRangeGetRsReq::By::RID:
+        case Protocol::Params::MngrRsGetReq::By::RID:
           range = col->get_range(
             rsp_params.err, params.rid);
           break;
@@ -104,4 +103,4 @@ class RangeGetRs : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RangeGetRs_h
+#endif // swc_app_manager_handlers_RsGet_h

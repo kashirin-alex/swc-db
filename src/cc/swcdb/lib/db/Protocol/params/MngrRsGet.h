@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_params_MngrRangeGetRs_h
-#define swc_db_protocol_params_MngrRangeGetRs_h
+#ifndef swc_db_protocol_params_MngrRsGet_h
+#define swc_db_protocol_params_MngrRsGet_h
 
 #include "swcdb/lib/core/Serializable.h"
 #include "HostEndPoints.h"
@@ -27,42 +27,58 @@ namespace Params {
 //req-mngr,        n(cid)+rid              => cid(n) + rid + rs(endpoints)
 //            ->  req-rs. n(cid)+rid+Specs::Interval => results
 
-class MngrRangeGetRsReq : public Serializable {
+class MngrRsGetReq : public Serializable {
   public:
 
   enum By {
-    KEY,
     INTERVAL,
     RID
   };
 
-  MngrRangeGetRsReq(int64_t cid = 0): cid(cid), rid(-1) {}
+  MngrRsGetReq(int64_t cid = 0): cid(cid), rid(-1) {}
 
-  MngrRangeGetRsReq(int64_t cid, const DB::Cell::Key& key)
-                   : cid(cid), rid(0), key(key), by(By::KEY) {}
-
-  MngrRangeGetRsReq(int64_t cid, DB::Specs::Interval::Ptr interval)
+  MngrRsGetReq(int64_t cid, DB::Specs::Interval::Ptr interval)
                    : cid(cid), rid(0), interval(interval), by(By::INTERVAL) {}
 
-  MngrRangeGetRsReq(int64_t cid, int64_t rid)
+  MngrRsGetReq(int64_t cid, int64_t rid)
                    : cid(cid), rid(rid), by(By::RID) {}
 
-  virtual ~MngrRangeGetRsReq(){ }
+  virtual ~MngrRsGetReq(){ }
 
   void free(){
     by = By::RID;
     cid = 0;
     rid = 0;
     interval->free();
-    key.free();
   }
   
   By                        by;
   int64_t                   cid;
   int64_t                   rid;
   DB::Specs::Interval::Ptr  interval;
-  DB::Cell::Key             key;
   
+  const std::string to_string() {
+    std::string s("Range-RS(");
+    s.append("by=");
+    s.append(std::to_string((uint8_t)by));
+    s.append(" cid=");
+    s.append(std::to_string(cid));
+    switch(by) {
+      case By::RID:
+        s.append(" rid=");
+        s.append(std::to_string(rid));
+        break;
+      case By::INTERVAL:
+        s.append(" interval=");
+        s.append(interval->to_string());
+        break;
+      default:
+        break;
+    }
+    s.append(")");
+    return s;
+  }
+
   private:
 
   uint8_t encoding_version() const  {
@@ -76,8 +92,6 @@ class MngrRangeGetRsReq : public Serializable {
         return len + Serialization::encoded_length_vi64(rid);
       case By::INTERVAL:
         return len + interval->encoded_length();
-      case By::KEY:
-        return len + key.encoded_length();
       default:
         return len;
     }
@@ -93,9 +107,6 @@ class MngrRangeGetRsReq : public Serializable {
         return;
       case By::INTERVAL:
         interval->encode(bufp);
-        return;
-      case By::KEY:
-        key.encode(bufp);
         return;
       default:
         return;
@@ -114,9 +125,6 @@ class MngrRangeGetRsReq : public Serializable {
       case By::INTERVAL:
         interval = DB::Specs::Interval::make_ptr(bufp, remainp);
         return;
-      case By::KEY:
-        key.decode(bufp, remainp);
-        return;
       default:
         return;
     }
@@ -126,16 +134,16 @@ class MngrRangeGetRsReq : public Serializable {
 
 
 
-class MngrRangeGetRsRsp  : public HostEndPoints {
+class MngrRsGetRsp  : public HostEndPoints {
   public:
 
-  MngrRangeGetRsRsp(): err(0), cid(0), rid(0) {}
+  MngrRsGetRsp(): err(0), cid(0), rid(0) {}
 
-  MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints) 
+  MngrRsGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints) 
                     :  HostEndPoints(endpoints), err(0), cid(cid), rid(rid) {
   }
 
-  MngrRangeGetRsRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
+  MngrRsGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
                     const DB::Specs::Key& next_key)  
                     : HostEndPoints(endpoints), err(0), cid(cid), rid(rid), 
                       next_key(next_key) {
@@ -214,4 +222,4 @@ class MngrRangeGetRsRsp  : public HostEndPoints {
 
 }}}
 
-#endif // swc_db_protocol_params_MngrRangeGetRs_h
+#endif // swc_db_protocol_params_MngrRsGet_h

@@ -30,7 +30,7 @@
 #include "handlers/ColumnMng.h"
 #include "handlers/ColumnGet.h"
 #include "handlers/ColumnUpdate.h"
-#include "handlers/RangeGetRs.h"
+#include "handlers/RsGet.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -110,8 +110,8 @@ class AppContext : public SWC::AppContext {
             handler = new Handler::ColumnGet(conn, ev);
             break;
 
-          case Protocol::Command::CLIENT_REQ_GET_RANGE_RS:
-            handler = new Handler::RangeGetRs(conn, ev);
+          case Protocol::Command::CLIENT_REQ_RS_GET:
+            handler = new Handler::RsGet(conn, ev);
             break;
 
           case Protocol::Command::REQ_MNGR_MNG_RS_ID:

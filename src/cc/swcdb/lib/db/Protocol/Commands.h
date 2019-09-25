@@ -27,7 +27,7 @@ namespace SWC { namespace Protocol {
 
     CLIENT_REQ_MNG_COLUMN       = 0x0b,
     CLIENT_REQ_GET_COLUMN       = 0x0c,
-    CLIENT_REQ_GET_RANGE_RS     = 0x0d,
+    CLIENT_REQ_RS_GET           = 0x0d,
 
     REQ_ECHO                    = 0xff,      
     //

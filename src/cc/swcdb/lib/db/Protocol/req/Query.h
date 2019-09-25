@@ -6,7 +6,7 @@
 #ifndef swc_lib_db_protocol_req_Query_h
 #define swc_lib_db_protocol_req_Query_h
 
-#include "swcdb/lib/db/Protocol/req/MngrRangeGetRs.h"
+#include "swcdb/lib/db/Protocol/req/MngrRsGet.h"
 #include "swcdb/lib/db/Cells/SpecsScan.h"
 #include "swcdb/lib/db/Cells/Serialized.h"
 
@@ -55,33 +55,33 @@ class Update : public std::enable_shared_from_this<Update> {
       if(pair.first == 0)
         break;
 
-      Protocol::Params::MngrRangeGetRsReq params(1, pair.second.interval);
+      Protocol::Params::MngrRsGetReq params(1, pair.second.interval);
       params.interval->key_start.insert(0, std::to_string(pair.first), Condition::GE);
       params.interval->key_finish.insert(0, std::to_string(pair.first), Condition::LE);
       std::cout << params.interval->to_string() << "\n";
       
-      Protocol::Req::MngrRangeGetRs::request(
+      Protocol::Req::MngrRsGet::request(
         params,
         [pair=pair, ptr=shared_from_this()]
-        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRangeGetRsRsp rsp) {
-          Result r;
+        (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRsGetRsp rsp) {
           std::cout << "get RS-master " << rsp.to_string() << "\n";
+
           std::cout << pair.second.interval->to_string() << "\n";
 
           if(rsp.err != Error::OK){
-            std::cout << "get RS-master err="<< rsp.err << "("<<Error::get_text(rsp.err) <<  ")";
             if(rsp.err == Error::COLUMN_NOT_EXISTS ||  rsp.err == Error::RANGE_NOT_FOUND) {
               std::cout << "NO-RETRY \n";
             } else {
               std::cout << "RETRYING \n";
               req_ptr->request_again();
+              return;
             }
-            ptr->cb(r);
-            return;
           }
+
           // req. rs(master-range) (cid+ci)
           // --> ci.keys_start = rsp.next_key
             
+          Result r;
           ptr->cb(r);
         }
       );
@@ -121,11 +121,11 @@ class Select : std::enable_shared_from_this<Select> {
     for(auto &col : specs.columns){
 
       for(auto &cells_interval : col.cells_interval){
-        Protocol::Req::MngrRangeGetRs::request(
+        Protocol::Req::MngrRsGet::request(
           col.cid, cells_interval, 
           [cid=col.cid, ci=cells_interval]
           (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, 
-          int err, Protocol::Params::MngrRangeGetRsRsp rsp) {
+          int err, Protocol::Params::MngrRsGetRsp rsp) {
             if(err != Error::OK){
               std::cout << "get RS-master err="<< err << "("<<Error::get_text(err) <<  ")";
               if(err == Error::COLUMN_NOT_EXISTS || 

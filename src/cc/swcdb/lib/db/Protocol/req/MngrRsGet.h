@@ -3,14 +3,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_MngrRangeGetRs_h
-#define swc_lib_db_protocol_req_MngrRangeGetRs_h
+#ifndef swc_lib_db_protocol_req_MngrRsGet_h
+#define swc_lib_db_protocol_req_MngrRsGet_h
 
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 
 #include "MngrMngrActive.h"
-#include "../params/MngrRangeGetRs.h"
+#include "../params/MngrRsGet.h"
 
 
 namespace SWC {
@@ -18,41 +18,37 @@ namespace Protocol {
 namespace Req {
 
   
-class MngrRangeGetRs: public ConnQueue::ReqBase {
+class MngrRsGet: public ConnQueue::ReqBase {
   public:
   
   typedef std::function<
-          void(ConnQueue::ReqBase::Ptr, Params::MngrRangeGetRsRsp)> Cb_t;
+          void(ConnQueue::ReqBase::Ptr, Params::MngrRsGetRsp)> Cb_t;
 
   static void request(int64_t cid, int64_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Protocol::Params::MngrRangeGetRsReq(cid, rid), cb, timeout);
+    request(Protocol::Params::MngrRsGetReq(cid, rid), cb, timeout);
   }
 
   static void request(int64_t cid, const DB::Specs::Interval::Ptr interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Protocol::Params::MngrRangeGetRsReq(cid, interval), cb, timeout);
-  }
-  static void request(int64_t cid, const DB::Cell::Key& key, 
-                      const Cb_t cb, const uint32_t timeout = 10000){
-    request(Protocol::Params::MngrRangeGetRsReq(cid, key), cb, timeout);
+    request(Protocol::Params::MngrRsGetReq(cid, interval), cb, timeout);
   }
 
-  static inline void request(const Protocol::Params::MngrRangeGetRsReq params,
+  static inline void request(const Protocol::Params::MngrRsGetReq params,
                              const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<MngrRangeGetRs>(params, cb, timeout)->run();
+    std::make_shared<MngrRsGet>(params, cb, timeout)->run();
   }
 
 
-  MngrRangeGetRs(const Protocol::Params::MngrRangeGetRsReq params, const Cb_t cb, 
+  MngrRsGet(const Protocol::Params::MngrRsGetReq params, const Cb_t cb, 
                  const uint32_t timeout) 
                 : ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-    CommHeader header(Protocol::Command::CLIENT_REQ_GET_RANGE_RS, timeout);
+    CommHeader header(Protocol::Command::CLIENT_REQ_RS_GET, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
 
-  virtual ~MngrRangeGetRs(){}
+  virtual ~MngrRsGet(){}
 
   void handle_no_conn() override {
     clear_endpoints();
@@ -78,7 +74,14 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
       return;
     }
 
-    Protocol::Params::MngrRangeGetRsRsp rsp_params;
+    Protocol::Params::MngrRsGetRsp rsp_params;
+    if(ev->type == Event::Type::ERROR){
+      rsp_params.err = ev->error;
+      cb(req(), rsp_params);
+      return;
+    }
+
+    std::cout << "MngrRsGet:handle " << ev->to_str() <<" \n"; 
     try{
       const uint8_t *ptr = ev->payload;
       size_t remain = ev->payload_len;
@@ -105,4 +108,4 @@ class MngrRangeGetRs: public ConnQueue::ReqBase {
 
 }}}
 
-#endif // swc_lib_db_protocol_req_MngrRangeGetRs_h
+#endif // swc_lib_db_protocol_req_MngrRsGet_h
