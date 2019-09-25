@@ -81,7 +81,6 @@ class MngrRsGet: public ConnQueue::ReqBase {
       return;
     }
 
-    std::cout << "MngrRsGet:handle " << ev->to_str() <<" \n"; 
     try{
       const uint8_t *ptr = ev->payload;
       size_t remain = ev->payload_len;

@@ -44,19 +44,11 @@ class RsGet : public AppHandler {
         goto send_response;
     
       server::Mngr::RangePtr range;
-      switch(params.by){
-        case Protocol::Params::MngrRsGetReq::By::INTERVAL:
-         range = col->get_range(
-           rsp_params.err, params.interval, rsp_params.next_key);
-          break;
-        case Protocol::Params::MngrRsGetReq::By::RID:
-          range = col->get_range(
-            rsp_params.err, params.rid);
-          break;
-        default:
-          rsp_params.err = Error::NOT_IMPLEMENTED;
-          goto send_response;
-      }
+      if(params.rid == 0)
+        range = col->get_range(
+          rsp_params.err, params.interval, rsp_params.next_key);
+      else 
+        range = col->get_range(rsp_params.err, params.rid);
       
       if(range == nullptr) {
         rsp_params.err = Error::RANGE_NOT_FOUND;
@@ -79,7 +71,6 @@ class RsGet : public AppHandler {
     }
   
     send_response:
-      std::cout << " " << rsp_params.to_string() << "\n";
       try {
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
@@ -90,7 +81,6 @@ class RsGet : public AppHandler {
       } catch (Exception &e) {
         HT_ERROR_OUT << e << HT_END;
       }
-    std::cout << "send_response : " << rsp_params.to_string() << "\n";
     
   }
 
