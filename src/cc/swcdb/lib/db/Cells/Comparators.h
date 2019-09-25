@@ -55,36 +55,36 @@ inline const std::string to_string(uint8_t comp) {
 
 inline static bool pf(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
-  return !(p1_len > p2_len || memcmp(p1, p2, p1_len) != 0);
+  return p1_len <= p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 inline static bool gt(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff > 0 || (diff == 0 && p1_len < p2_len);
+  return (diff < 0 && p1_len <= p2_len) || (diff == 0 && p1_len < p2_len);
 }
 
 inline static bool ge(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff >= 0 || p1_len <= p2_len;
+  return diff <= 0 && p1_len <= p2_len;
 }
 
 inline static bool eq(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
-  return !(p1_len != p2_len || memcmp(p1, p2, p1_len));
+  return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 inline static bool le(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff <= 0 || p1_len >= p2_len;
+  return diff >= 0 && p1_len >= p2_len;
 }
 
 inline static bool lt(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff < 0 || (diff == 0 && p1_len > p2_len);
+  return (diff > 0 && p1_len >= p2_len) || (diff == 0 && p1_len > p2_len);
 }
 
 inline static bool ne(const uint8_t *p1, uint32_t p1_len, 

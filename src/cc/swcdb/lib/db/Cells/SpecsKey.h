@@ -121,68 +121,33 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::fractions(1);
   }
   
-  inline bool is_matching(const DB::Cell::Key &cell_key) {
-      
-    uint32_t idx = 0;
-    uint8_t* ptr = 0;
-    uint32_t len;
-    uint8_t* ptr_tmp = data;
-    const uint8_t* ptr_end = data + size;
-
-    uint32_t idx_other = 0;
-    uint8_t* ptr_other = 0;
-    uint32_t len_other;
-    uint8_t* ptr_tmp_other = cell_key.data;
-    const uint8_t* ptr_end_other = cell_key.data + cell_key.size;
-
-    Condition::Comp comp = Condition::NONE;
-    do {
-
-      while(ptr_tmp < ptr_end){
-        comp = (Condition::Comp)*ptr_tmp++;
-        len = Serialization::decode_vi32((const uint8_t**)&ptr_tmp);
-        ptr = ptr_tmp;
-        ptr_tmp += len;
-        idx++;
-        break;
-      }
-
-      while(ptr_tmp_other < ptr_end_other){
-        len_other = Serialization::decode_vi32((const uint8_t**)&ptr_tmp_other);
-        ptr_other = ptr_tmp_other;
-        ptr_tmp_other += len_other;
-        idx_other++;
-        break;
-      }
-      
-      if(!is_matching(idx, idx_other, comp, ptr, len, ptr_other, len_other))
-        return false;
-
-    } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
-
-    return true;
+  inline bool is_matching(const DB::Cell::Key &other) {
+    return is_matching(other.data, other.data + other.size, 0);
   }
-  
+
   inline bool is_matching(const Key &other) {
-    
-    uint32_t idx = 0;
-    uint8_t* ptr = 0;
-    uint32_t len;
-    uint8_t* ptr_tmp = data;
+    return is_matching(other.data, other.data + other.size, 1);
+  }
+
+  inline bool is_matching(const uint8_t* ptr_tmp_other, const uint8_t* ptr_end_other,
+                          int8_t reserved) {
+    const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
 
+    uint32_t idx = 0;
+    uint32_t len;
+    const uint8_t* ptr = 0;
+
     uint32_t idx_other = 0;
-    uint8_t* ptr_other = 0;
     uint32_t len_other;
-    uint8_t* ptr_tmp_other = other.data;
-    const uint8_t* ptr_end_other = other.data + other.size;
+    const uint8_t* ptr_other = 0;
 
     Condition::Comp comp = Condition::NONE;
     do {
 
       while(ptr_tmp < ptr_end){
         comp = (Condition::Comp)*ptr_tmp++;
-        len = Serialization::decode_vi32((const uint8_t**)&ptr_tmp);
+        len = Serialization::decode_vi32(&ptr_tmp);
         ptr = ptr_tmp;
         ptr_tmp += len;
         idx++;
@@ -190,52 +155,44 @@ class Key : public DB::Cell::Key {
       }
 
       while(ptr_tmp_other < ptr_end_other){
-        comp = (Condition::Comp)*ptr_tmp_other++;
-        len_other = Serialization::decode_vi32((const uint8_t**)&ptr_tmp_other);
+        ptr_tmp_other += reserved;
+        len_other = Serialization::decode_vi32(&ptr_tmp_other);
         ptr_other = ptr_tmp_other;
         ptr_tmp_other += len_other;
         idx_other++;
         break;
       }
       
-      if(!is_matching(idx, idx_other, comp, ptr, len, ptr_other, len_other))
-        return false;
+      if(idx == idx_other){
+        if(!Condition::is_matching(comp, ptr, len, ptr_other, len_other))
+          return false;
+        
+      } else {
+        switch(comp) {
+          case Condition::LT:
+            return count == 0 || idx > idx_other;
+          case Condition::LE:
+            return count == 0 || idx > idx_other;
+          case Condition::GT:
+            return count == 0 || idx < idx_other;
+          case Condition::GE:
+            return count == 0 || idx < idx_other;
+          case Condition::PF:
+            return idx < idx_other;
+          case Condition::RE:
+            return idx < idx_other;
+          case Condition::NE:
+            return true;
+          case Condition::NONE:
+            return true;
+          default: // Condition::EQ:
+            return false;
+        }
+      }
 
     } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
 
     return true;
-  }
-
-  inline bool is_matching(const uint32_t& idx, 
-                          const uint32_t& idx_other, 
-                          const Condition::Comp& comp,
-                          const uint8_t* ptr, 
-                          const uint32_t& len, 
-                          const uint8_t* ptr_other, 
-                          const uint32_t& len_other) {
-    if(idx == idx_other)
-      return Condition::is_matching(comp, ptr, len, ptr_other, len_other);
-
-    switch(comp) {
-      case Condition::LT:
-        return count == 0 || idx > idx_other;
-      case Condition::LE:
-        return count == 0 || idx > idx_other;
-      case Condition::GT:
-        return count == 0 || idx < idx_other;
-      case Condition::GE:
-        return count == 0 || idx < idx_other;
-      case Condition::PF:
-        return idx < idx_other;
-      case Condition::RE:
-        return idx < idx_other;
-      case Condition::NE:
-        return true;
-      case Condition::NONE:
-        return true;
-      default:
-        return false;
-    }
   }
 
   void decode(const uint8_t **bufp, size_t *remainp, bool owner=false){

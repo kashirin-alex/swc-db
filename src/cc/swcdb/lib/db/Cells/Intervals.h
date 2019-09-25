@@ -131,8 +131,11 @@ class Intervals {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_key_end.empty() || m_key_begin.empty() ||
            interval->key_start.empty() || interval->key_finish.empty() ||
-           interval->key_start.is_matching(m_key_begin) ||
-           interval->key_finish.is_matching(m_key_end);
+           (
+            m_key_begin.is_matching(interval->key_finish) 
+            &&
+            m_key_end.is_matching(interval->key_start)
+           );
            
   }
 
