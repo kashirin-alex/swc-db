@@ -25,6 +25,7 @@
 #include "handlers/RangeLoad.h"
 #include "handlers/RangeUnload.h"
 #include "handlers/RangeIsLoaded.h"
+#include "handlers/RangeLocate.h"
 #include "handlers/ColumnUpdate.h"
 #include "handlers/ColumnDelete.h"
 
@@ -101,6 +102,10 @@ class AppContext : public SWC::AppContext {
 
         AppHandler *handler = 0;
         switch (ev->header.command) {
+
+          case Protocol::Command::RANGE_LOCATE: 
+            handler = new Handler::RangeLocate(conn, ev);
+            break;
 
           case Protocol::Command::REQ_RS_IS_RANGE_LOADED: 
             handler = new Handler::RangeIsLoaded(conn, ev);

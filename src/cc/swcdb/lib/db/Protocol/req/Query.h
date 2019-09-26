@@ -6,11 +6,25 @@
 #ifndef swc_lib_db_protocol_req_Query_h
 #define swc_lib_db_protocol_req_Query_h
 
-#include "swcdb/lib/db/Protocol/req/MngrRsGet.h"
 #include "swcdb/lib/db/Cells/SpecsScan.h"
 #include "swcdb/lib/db/Cells/Serialized.h"
 
+#include "swcdb/lib/db/Protocol/req/RsRangeLocate.h"
+#include "swcdb/lib/db/Protocol/req/MngrRsGet.h"
+
 namespace SWC { namespace Protocol { namespace Req { namespace Query {
+
+/*
+range-master: 
+  req-mngr. cid(1) + n(cid):Specs::Interval        => cid(1) + rid + rs(endpoints) + ?next	
+    req-rs. cid(1) + rid + cid(n):Specs::Interval  => cid(2) + rid + ?next	
+range-meta: 
+  req-mngr. cid(2) + rid                           => cid(2) + rid + rs(endpoints)	
+    req-rs. cid(2) + rid + cid(n):Specs::Interval  => cid(n) + rid + ?next	
+range-data: 
+  req-mngr. cid(n) + rid                           => cid(n) + rid + rs(endpoints)	
+    req-rs. cid(n) + rid + Specs::Interval         => results
+*/
 
 namespace Result{
 struct Update{
@@ -58,31 +72,42 @@ class Update : public std::enable_shared_from_this<Update> {
       Protocol::Params::MngrRsGetReq params(1, pair.second.interval);
       params.interval->key_start.insert(0, std::to_string(pair.first), Condition::GE);
       params.interval->key_finish.insert(0, std::to_string(pair.first), Condition::LE);
-      std::cout << params.interval->to_string() << "\n";
+      //std::cout << params.interval->to_string() << "\n";
       
       Protocol::Req::MngrRsGet::request(
         params,
-        [pair=pair, ptr=shared_from_this()]
+        [pair=pair, intval=params.interval, ptr=shared_from_this()]
         (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::MngrRsGetRsp rsp) {
-          std::cout << "get RS-master " << rsp.to_string() << "\n";
 
-          std::cout << pair.second.interval->to_string() << "\n";
+          //std::cout << pair.second.interval->to_string() << "\n";
 
           if(rsp.err != Error::OK){
             if(rsp.err == Error::COLUMN_NOT_EXISTS ||  rsp.err == Error::RANGE_NOT_FOUND) {
-              std::cout << "NO-RETRY \n";
+              //std::cout << "NO-RETRY \n";
             } else {
-              std::cout << "RETRYING \n";
+              std::cout << "RETRYING " << rsp.to_string() << "\n";
               req_ptr->request_again();
               return;
             }
           }
 
+          std::cout << "MngrRsGet: " << rsp.to_string() << "\n";
           // req. rs(master-range) (cid+ci)
           // --> ci.keys_start = rsp.next_key
-            
-          Result r;
-          ptr->cb(r);
+
+          Protocol::Params::RsRangeLocateReq params(rsp.cid, rsp.rid, intval);
+
+          Protocol::Req::RsRangeLocate::request(
+            params, rsp.endpoints, 
+            [req_ptr]() {req_ptr->request_again();},
+            [ptr] (Protocol::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Params::RsRangeLocateRsp rsp) {
+              std::cout << "RsRangeLocate: " << rsp.to_string() << "\n";
+              Result r;
+              ptr->cb(r);
+            }
+          );
+          
+          
         }
       );
     }

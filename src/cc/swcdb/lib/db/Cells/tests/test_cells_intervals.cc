@@ -24,7 +24,7 @@ int main() {
   for(const auto& cs : cellstores){
       auto s = std::to_string(n_cs-cs->cs_id);
       DB::Specs::Key key;
-      key.add("11:", Condition::GE);
+      key.add("11", Condition::GE);
       key.add(std::string("a")+s, Condition::GE);
       key.add(std::string("b")+s, Condition::GE);
       key.add(std::string("c")+s, Condition::GE);
@@ -39,7 +39,7 @@ int main() {
       key.free();
 
       s = std::to_string(cs->cs_id);
-      key.add("11:", Condition::LE);
+      key.add("11", Condition::LE);
       key.add(std::string("a")+s, Condition::LE);
       key.add(std::string("b")+s, Condition::LE);
       key.add(std::string("c")+s, Condition::LE);

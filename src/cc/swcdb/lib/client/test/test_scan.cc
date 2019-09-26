@@ -34,10 +34,11 @@ void run_test() {
     [&pending=pending](Query::Update::Result result)
     {
       pending--;
+      std::cout << "CB pending=" << pending.load() << "\n";
     }
   );
 
-  for(int i=0;i<100;i++) {
+  for(int i=0;i<1000000;i++) {
   Cells::Cell cell;
   cell.flag = Cells::INSERT;
   cell.set_timestamp(111);
@@ -68,14 +69,10 @@ void run_test() {
   cell.key.add("a8");
   update_req->cells->add(11, cell);
   cell.free();
-  
+    
   }
-
-  pending += 1;
-
-  std::cout << " update_req->commit(); \n";
-  
-  std::thread([update_req]{ update_req->commit(); }).detach();
+  pending++;
+  update_req->commit();
 
 
   std::cout << " ### Waiting ###\n";
