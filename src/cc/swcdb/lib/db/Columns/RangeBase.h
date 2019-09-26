@@ -8,7 +8,7 @@
 
 #include <mutex>
 
-#include "swcdb/lib/db/Files/RsData.h"
+#include "swcdb/lib/db/Files/RgrData.h"
 #include "swcdb/lib/db/Cells/Intervals.h"
 
 
@@ -23,7 +23,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   inline static const std::string column_dir = "col"; 
   inline static const std::string range_dir = "/range"; 
   // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
-  inline static const std::string rs_data_file = "last_rs.data";
+  inline static const std::string rs_data_file = "ranger.data";
 
   inline static const std::string get_column_path(){
     std::string s(column_dir);
@@ -75,8 +75,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
-  Files::RsDataPtr get_last_rs(int &err){
-    return Files::RsData::get_rs(err, get_path(rs_data_file));
+  Files::RgrDataPtr get_last_rgr(int &err){
+    return Files::RgrData::get_rgr(err, get_path(rs_data_file));
   }
 
   const Cells::Intervals::Ptr& get_intervals() {

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "swcdb/lib/db//Cells/Cell.h"
+#include "swcdb/lib/db/Cells/Cell.h"
 #include <vector>
 
 

@@ -106,9 +106,9 @@ namespace {
     { Error::FS_EOF,               "FS end of file" },
     { Error::FS_PATH_NOT_FOUND,    "FS destination path" },
 
-    { Error::RS_NOT_LOADED_RANGE,     "RS range id not loaded"},
-    { Error::RS_DELETED_RANGE,        "RS range state deleted"},
-    { Error::RS_NOT_READY,            "RS is not ready, lacks rs_id"},
+    { Error::RS_NOT_LOADED_RANGE,     "Ranger range id not loaded"},
+    { Error::RS_DELETED_RANGE,        "Ranger range state deleted"},
+    { Error::RS_NOT_READY,            "Ranger is not ready, lacks id"},
 
     { Error::IO_ERROR,              " i/o error" },
     { Error::BAD_SCHEMA,           "bad schema" },

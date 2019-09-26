@@ -6,12 +6,10 @@
 #ifndef swc_app_manager_handlers_MngrActive_h
 #define swc_app_manager_handlers_MngrActive_h
 
-#include "swcdb/lib/db/Protocol/params/MngrMngrActive.h"
+#include "swcdb/lib/db/Protocol/Mngr/params/MngrActive.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
-
-namespace Handler {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 class MngrActive : public AppHandler {
@@ -27,16 +25,16 @@ class MngrActive : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrMngrActiveReq params;
+      Params::MngrActiveReq params;
       params.decode(&ptr, &remain);
 
-      MngrStatusPtr h = Env::MngrRole::get()->active_mngr(
+      server::Mngr::MngrStatusPtr h = Env::MngrRole::get()->active_mngr(
         params.begin, params.end);
 
       EndPoints endpoints;
       if(h!=nullptr) 
         endpoints = h->endpoints;
-      Protocol::Params::MngrMngrActiveRsp rsp_params(endpoints);
+      Params::MngrActiveRsp rsp_params(endpoints);
       
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);

@@ -183,28 +183,28 @@ void Settings::init_options() {
 
   file_desc().add_options()
     ("swc.mngr.host", g_strs(gStrings()), 
-     "RS-Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
+     "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i32(15000), 
-     "RS-Manager default port if not defined in swc.mngr.host")
+     "Manager default port if not defined in swc.mngr.host")
      
-    ("swc.client.RS.connection.timeout", g_i32(10000), 
-     "RangeServer client connect timeout")
-    ("swc.client.RS.connection.probes", g_i32(1), 
-     "RangeServer client connect probes")
-    ("swc.client.RS.connection.keepalive", g_i32(30000), 
-     "RangeServer client connection keepalive for ms since last action")
+    ("swc.client.Rgr.connection.timeout", g_i32(10000), 
+     "Ranger client connect timeout")
+    ("swc.client.Rgr.connection.probes", g_i32(1), 
+     "Ranger client connect probes")
+    ("swc.client.Rgr.connection.keepalive", g_i32(30000), 
+     "Ranger client connection keepalive for ms since last action")
 
-    ("swc.client.MNGR.connection.timeout", g_i32(10000), 
+    ("swc.client.Mngr.connection.timeout", g_i32(10000), 
      "Manager client connect timeout")
-    ("swc.client.MNGR.connection.probes", g_i32(1), 
+    ("swc.client.Mngr.connection.probes", g_i32(1), 
      "Manager client connect probes")
-    ("swc.client.MNGR.connection.keepalive", g_i32(30000), 
+    ("swc.client.Mngr.connection.keepalive", g_i32(30000), 
      "Manager client connection keepalive for ms since last action")
      
     ;
     
   /*
-  alias("Hypertable.RangeServer.CommitLog.RollLimit",
+  alias("Hypertable.Ranger.CommitLog.RollLimit",
         "Hypertable.CommitLog.RollLimit");
   */
 }

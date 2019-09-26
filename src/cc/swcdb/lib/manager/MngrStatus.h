@@ -6,12 +6,12 @@
 #define swc_app_manager_MngrStatus_h
 
 #include "swcdb/lib/db/Types/MngrState.h"
-#include "swcdb/lib/db/Protocol/params/HostEndPoints.h"
+#include "swcdb/lib/db/Protocol/Common/params/HostEndPoints.h"
 
 namespace SWC { namespace server { namespace Mngr {
 
 
-class MngrStatus : public Protocol::Params::HostEndPoints {
+class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   public:
 
   MngrStatus() {}
@@ -19,8 +19,8 @@ class MngrStatus : public Protocol::Params::HostEndPoints {
   MngrStatus(uint64_t  begin, uint64_t  end,
              const EndPoints& points, client::ClientConPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
-               Protocol::Params::HostEndPoints(points), conn(c), priority(pr),
-               state(Types::MngrState::NOTSET),
+               Protocol::Common::Params::HostEndPoints(points), 
+               conn(c), priority(pr), state(Types::MngrState::NOTSET),
                failures(0) { }
   
   virtual ~MngrStatus(){ }
@@ -29,7 +29,7 @@ class MngrStatus : public Protocol::Params::HostEndPoints {
     size_t len = 5 
                + Serialization::encoded_length_vi64(col_begin)
                + Serialization::encoded_length_vi64(col_end)
-               + Protocol::Params::HostEndPoints::encoded_length_internal();
+               + Protocol::Common::Params::HostEndPoints::encoded_length_internal();
     return len;
   }
 
@@ -38,7 +38,7 @@ class MngrStatus : public Protocol::Params::HostEndPoints {
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_vi64(bufp, col_begin);
     Serialization::encode_vi64(bufp, col_end);
-    Protocol::Params::HostEndPoints::encode_internal(bufp);
+    Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
@@ -47,7 +47,7 @@ class MngrStatus : public Protocol::Params::HostEndPoints {
     col_begin = Serialization::decode_vi64(bufp, remainp);
     col_end = Serialization::decode_vi64(bufp, remainp);
 
-    Protocol::Params::HostEndPoints::decode_internal(version, bufp, remainp);
+    Protocol::Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
   }
 
   std::string to_string(){
@@ -65,7 +65,7 @@ class MngrStatus : public Protocol::Params::HostEndPoints {
     s.append(std::to_string(col_end));
 
     s.append(" ");
-    s.append(Protocol::Params::HostEndPoints::to_string());
+    s.append(Protocol::Common::Params::HostEndPoints::to_string());
     return s;
   }
 

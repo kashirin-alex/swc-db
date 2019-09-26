@@ -6,12 +6,10 @@
 #ifndef swc_app_manager_handlers_ColumnUpdate_h
 #define swc_app_manager_handlers_ColumnUpdate_h
 
-#include "swcdb/lib/db/Protocol/params/MngrColumnUpdate.h"
+#include "swcdb/lib/db/Protocol/Mngr/params/ColumnUpdate.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
-
-namespace Handler {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 class ColumnUpdate : public AppHandler {
@@ -26,12 +24,12 @@ class ColumnUpdate : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrColumnUpdate params;
+      Params::ColumnUpdate params;
       params.decode(&ptr, &remain);
       
       m_conn->response_ok(m_ev);
       
-      Env::RangeServers::get()->update_status(
+      Env::Rangers::get()->update_status(
         params.function, params.schema, params.err);
 
     } catch (Exception &e) {

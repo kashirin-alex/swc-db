@@ -4,14 +4,14 @@
 
 
 #add_subdirectory(manager)
-#add_subdirectory(rangeserver)
+#add_subdirectory(ranger)
 
 #add_subdirectory(thriftbroker)
 
-# swcdbRangeServer
+# dbRanger
 ADD_EXEC_TARGET(
-	NAME dbRangeServer
-	SRCS  rangeserver/main.cc
+	NAME dbRanger
+	SRCS  ranger/main.cc
 	TARGETS swcdb_core_config ${BUILTIN_FS_TARGETS}
 )
 

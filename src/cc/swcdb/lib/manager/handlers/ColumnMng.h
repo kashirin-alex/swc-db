@@ -6,12 +6,10 @@
 #ifndef swc_app_manager_handlers_ColumnMng_h
 #define swc_app_manager_handlers_ColumnMng_h
 
-#include "swcdb/lib/db/Protocol/params/ColumnMng.h"
+#include "swcdb/lib/db/Protocol/Mngr/params/ColumnMng.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
-
-namespace Handler {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 class ColumnMng : public AppHandler {
@@ -29,13 +27,13 @@ class ColumnMng : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::ColumnMng req_params;
+      Params::ColumnMng req_params;
       req_params.decode(&ptr, &remain);
 
-      Env::RangeServers::get()->is_active(err, 1);
+      Env::Rangers::get()->is_active(err, 1);
       
       if(err == Error::OK) {
-        Env::RangeServers::get()->column_action({
+        Env::Rangers::get()->column_action({
           .params=req_params, 
           .cb=[conn=m_conn, ev=m_ev](int err){
             if(err == Error::OK)

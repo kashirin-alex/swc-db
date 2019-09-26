@@ -163,92 +163,91 @@ class Column : public std::enable_shared_from_this<Column> {
     return range;
   }
 
-  void set_rs_unassigned(uint64_t rs_id){
+  void set_rgr_unassigned(uint64_t id){
 
     RangePtr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
         break;
-      if(range->get_rs_id() == rs_id) {
+      if(range->get_rgr_id() == id) {
         range->set_state(Range::State::NOTSET, 0);
         set_loading();
       }
     }
     
-    remove_rs_schema(rs_id);
+    remove_rgr_schema(id);
   }
 
-  void change_rs(uint64_t rs_id_old, uint64_t rs_id){
-
+  void change_rgr(uint64_t rgr_id_old, uint64_t id){
     RangePtr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
         break;
-      if(range->get_rs_id() == rs_id_old)
-        range->set_rs_id(rs_id);
+      if(range->get_rgr_id() == rgr_id_old)
+        range->set_rgr_id(id);
     }
 
     std::lock_guard<std::mutex> lock(m_mutex);    
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
-      if(it->first == rs_id_old) {
-        m_schemas_rev.insert(RsSchemaRev(rs_id, it->second));;
+      if(it->first == rgr_id_old) {
+        m_schemas_rev.insert(RsSchemaRev(id, it->second));;
         m_schemas_rev.erase(it);
         break;
       }
     }
   }
 
-  void change_rs_schema(uint64_t rs_id, int64_t rev=0){
+  void change_rgr_schema(uint64_t id, int64_t rev=0){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_schemas_rev.find(rs_id);
+    auto it = m_schemas_rev.find(id);
     if(it == m_schemas_rev.end())
-       m_schemas_rev.insert(RsSchemaRev(rs_id, rev));
+       m_schemas_rev.insert(RsSchemaRev(id, rev));
     else
       it->second = rev;
   }
 
-  void remove_rs_schema(uint64_t rs_id){
+  void remove_rgr_schema(uint64_t id){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_schemas_rev.find(rs_id);
+    auto it = m_schemas_rev.find(id);
     if(it != m_schemas_rev.end())
        m_schemas_rev.erase(it);
   }
 
-  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rs_ids){
+  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rgr_ids){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
       if(it->second != rev)
-        rs_ids.push_back(it->first);
+        rgr_ids.push_back(it->first);
     }
   }
 
-  bool need_schema_sync(uint64_t rs_id, int64_t rev){
+  bool need_schema_sync(uint64_t id, int64_t rev){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_schemas_rev.find(rs_id);
+    auto it = m_schemas_rev.find(id);
     if(it != m_schemas_rev.end())
       return rev != it->second;
     return true;
   }
   
-  void assigned(std::vector<uint64_t> &rs_ids){
+  void assigned(std::vector<uint64_t> &rgr_ids){
     RangePtr range = m_base_range;
-    uint64_t rs_id;
+    uint64_t id;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
         break;
-      rs_id = range->get_rs_id();
-      if(rs_id == 0)
+      id = range->get_rgr_id();
+      if(id == 0)
         continue;
-      if(std::find_if(rs_ids.begin(), rs_ids.end(), [rs_id]
-      (const uint64_t& rs_id2){return rs_id == rs_id2;}) == rs_ids.end())
-        rs_ids.push_back(rs_id);
+      if(std::find_if(rgr_ids.begin(), rgr_ids.end(), [id]
+      (const uint64_t& rgr_id2){return id == rgr_id2;}) == rgr_ids.end())
+        rgr_ids.push_back(id);
     }
   }
   
@@ -272,15 +271,15 @@ class Column : public std::enable_shared_from_this<Column> {
     return !was;
   }
 
-  bool finalize_remove(int &err, uint64_t rs_id=0){
-    uint64_t id;
+  bool finalize_remove(int &err, uint64_t id=0){
+    uint64_t eid;
     RangePtr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
         break;
-      id = range->get_rs_id();
-      if(rs_id == 0 || id == rs_id || id == 0)
+      eid = range->get_rgr_id();
+      if(id == 0 || eid == id || eid == 0)
         range->chained_remove();
     }
 

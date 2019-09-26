@@ -7,7 +7,7 @@
 
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/client/AppContext.h"
-#include "swcdb/lib/db/Protocol/req/Query.h"
+#include "swcdb/lib/db/Protocol/Common/req/Query.h"
 
 
 #include "swcdb/lib/db/Stats/Stat.h"
@@ -23,7 +23,7 @@ void Settings::init_post_cmd_args(){ }
 }}
 
 namespace Cells = SWC::DB::Cells;
-namespace Query = SWC::Protocol::Req::Query;
+namespace Query = SWC::Protocol::Common::Req::Query;
 
 
 

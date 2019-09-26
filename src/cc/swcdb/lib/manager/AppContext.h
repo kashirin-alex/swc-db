@@ -16,21 +16,21 @@
 #include "swcdb/lib/client/Clients.h"
 
 #include "swcdb/lib/db/Columns/Schema.h"
-#include "swcdb/lib/db/Columns/MNGR/Columns.h"
+#include "swcdb/lib/db/Columns/Mngr/Columns.h"
 
 #include "MngrRole.h"
-#include "RangeServers.h"
+#include "Rangers.h"
 
-#include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
-#include "swcdb/lib/db/Protocol/handlers/Echo.h"
+#include "swcdb/lib/db/Protocol/Common/handlers/NotImplemented.h"
+#include "swcdb/lib/db/Protocol/Common/handlers/Echo.h"
 #include "handlers/MngrState.h"
 #include "handlers/MngrActive.h"
-#include "handlers/RsMngId.h"
-#include "handlers/RsUpdate.h"
 #include "handlers/ColumnMng.h"
-#include "handlers/ColumnGet.h"
 #include "handlers/ColumnUpdate.h"
-#include "handlers/RsGet.h"
+#include "handlers/ColumnGet.h"
+#include "handlers/RgrMngId.h"
+#include "handlers/RgrUpdate.h"
+#include "handlers/RgrGet.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -56,7 +56,7 @@ class AppContext : public SWC::AppContext {
       Env::IoCtx::io()->shared(),
       std::make_shared<client::Mngr::AppContext>()
     ));
-    Env::RangeServers::init();
+    Env::Rangers::init();
   }
   
   void init(const EndPoints& endpoints) override {
@@ -91,7 +91,7 @@ class AppContext : public SWC::AppContext {
         return;
 
       case Event::Type::ERROR:
-        //rangeservers->decommision(event->addr);
+        //rangers->decommision(event->addr);
         break;
 
       case Event::Type::MESSAGE: {
@@ -99,43 +99,43 @@ class AppContext : public SWC::AppContext {
         switch (ev->header.command) {
 
           case Protocol::Mngr::MNGR_ACTIVE:
-            handler = new Handler::MngrActive(conn, ev);
+            handler = new Protocol::Mngr::Handler::MngrActive(conn, ev);
             break;
 
           case Protocol::Mngr::MNGR_STATE:
-            handler = new Handler::MngrState(conn, ev);
+            handler = new Protocol::Mngr::Handler::MngrState(conn, ev);
             break;
 
           case Protocol::Mngr::COLUMN_MNG:
-            handler = new Handler::ColumnMng(conn, ev);
+            handler = new Protocol::Mngr::Handler::ColumnMng(conn, ev);
             break;
 
           case Protocol::Mngr::COLUMN_GET:
-            handler = new Handler::ColumnGet(conn, ev);
+            handler = new Protocol::Mngr::Handler::ColumnGet(conn, ev);
             break;
 
           case Protocol::Mngr::COLUMN_UPDATE:
-            handler = new Handler::ColumnUpdate(conn, ev);
+            handler = new Protocol::Mngr::Handler::ColumnUpdate(conn, ev);
             break;
 
           case Protocol::Mngr::RGR_GET:
-            handler = new Handler::RsGet(conn, ev);
+            handler = new Protocol::Mngr::Handler::RgrGet(conn, ev);
             break;
 
           case Protocol::Mngr::RGR_MNG_ID:
-            handler = new Handler::RsMngId(conn, ev);
+            handler = new Protocol::Mngr::Handler::RgrMngId(conn, ev);
             break;
 
           case Protocol::Mngr::RGR_UPDATE:
-            handler = new Handler::RsUpdate(conn, ev);
+            handler = new Protocol::Mngr::Handler::RgrUpdate(conn, ev);
             break;
 
           case Protocol::Common::DO_ECHO:
-            handler = new common::Handler::Echo(conn, ev);
+            handler = new Protocol::Common::Handler::Echo(conn, ev);
             break;
 
           default: 
-            handler = new common::Handler::NotImplemented(conn, ev);
+            handler = new Protocol::Common::Handler::NotImplemented(conn, ev);
             break;
         }
 
@@ -176,10 +176,10 @@ class AppContext : public SWC::AppContext {
     
     m_srv->stop_accepting(); // no further requests accepted
     
-    Env::RangeServers::get()->stop();
+    Env::Rangers::get()->stop();
     Env::MngrRole::get()->stop();
 
-    Env::Clients::get()->rs_service->stop();
+    Env::Clients::get()->rgr_service->stop();
     Env::Clients::get()->mngr_service->stop();
 
     Env::IoCtx::io()->stop();

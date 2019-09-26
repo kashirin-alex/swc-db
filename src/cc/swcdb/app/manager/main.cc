@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 
   SWC::server::SerializedServerPtr srv 
     = std::make_shared<SWC::server::SerializedServer>(
-      "RS-MANAGER", 
+      "MANAGER", 
       SWC::Env::Config::settings()->get<int32_t>("swc.mngr.reactors"), 
       SWC::Env::Config::settings()->get<int32_t>("swc.mngr.workers"), 
       "swc.mngr.port",

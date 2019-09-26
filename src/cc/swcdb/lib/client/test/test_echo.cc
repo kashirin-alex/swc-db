@@ -7,7 +7,7 @@
 
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/client/AppContext.h"
-#include "swcdb/lib/db/Protocol/req/Echo.h"
+#include "swcdb/lib/db/Protocol/Common/req/Echo.h"
 
 #include "swcdb/lib/db/Stats/Stat.h"
 
@@ -38,7 +38,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
   void run(client::ClientConPtr conn, int req_n = 1){
     
     for(int i=1;i<=batch_sz;i++) {
-      std::make_shared<Protocol::Req::Echo>(
+      std::make_shared<Protocol::Common::Req::Echo>(
         conn, 
         [req_n, conn, last=i==batch_sz, ptr=shared_from_this(), start_ts=std::chrono::system_clock::now()]
         (bool state){

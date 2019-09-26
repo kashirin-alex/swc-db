@@ -16,12 +16,12 @@ void Settings::init_app_options(){
   init_comm_options();
   init_fs_options();
   file_desc().add_options()
-    ("swc.mngr.cfg", str(), "Specific cfg-file for RS-Manager")
-    ("swc.mngr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for RS-Manager")
+    ("swc.mngr.cfg", str(), "Specific cfg-file for Manager")
+    ("swc.mngr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Manager")
 
     ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.mngr.port", i32(15000), "RS-Manager port")
+    ("swc.mngr.port", i32(15000), "Manager port")
     ("swc.mngr.handlers", i32(8), "Number of App Handlers")
 
 
@@ -44,18 +44,18 @@ void Settings::init_app_options(){
     ("swc.mngr.role.check.delay.updated", g_i32(200), 
      "Delay in milliseconds on Mngr-Hosts-Status changes")
 
-    ("swc.mngr.ranges.assign.RS.remove.failures", g_i32(255), 
-     "Number of failures(establishing conn.x probes) after which the RangeServer is removed")
+    ("swc.mngr.ranges.assign.Rgr.remove.failures", g_i32(255), 
+     "Number of failures(establishing conn.x probes) after which the Ranger is removed")
 
-    ("swc.mngr.ranges.assign.delay.onRangeServerChange", g_i32(30000), 
-     "Delay of Ranges Assignment Check in milliseconds on RS(on/off)")
+    ("swc.mngr.ranges.assign.delay.onRangerChange", g_i32(30000), 
+     "Delay of Ranges Assignment Check in milliseconds on Ranger(on/off)")
     ("swc.mngr.ranges.assign.delay.afterColumnsInit", g_i32(30000), 
      "Delay of Ranges Assignment Check in milliseconds follow columns init")
     ("swc.mngr.ranges.assign.interval.check", g_i32(60000), 
      "Ranges assignment interval in milliseconds between checks")
 
     ("swc.mngr.ranges.assign.due", g_i32(100), 
-     "Total allowed ranges due on RS assignment")
+     "Total allowed ranges due on Ranger assignment")
   ;
   
 }

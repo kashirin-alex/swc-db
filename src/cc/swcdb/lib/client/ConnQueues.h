@@ -7,7 +7,7 @@
 
 namespace SWC { namespace client {
 
-class Host : public Protocol::Req::ConnQueue  {
+class Host : public Protocol::Common::Req::ConnQueue  {
   public:
   typedef std::shared_ptr<Host> Ptr;
 
@@ -16,7 +16,7 @@ class Host : public Protocol::Req::ConnQueue  {
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
        const gInt32tPtr keepalive_ms)
       : queues(queues), endpoints(endpoints), 
-        Protocol::Req::ConnQueue(keepalive_ms) {
+        Protocol::Common::Req::ConnQueue(keepalive_ms) {
   }
 
   virtual ~Host(){

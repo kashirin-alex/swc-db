@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_MNGR_Columns_Columns_h
-#define swcdb_lib_db_MNGR_Columns_Columns_h
+#ifndef swcdb_lib_db_Mngr_Columns_Columns_h
+#define swcdb_lib_db_Mngr_Columns_Columns_h
 
 #include "swcdb/lib/fs/Interface.h"
 
@@ -96,18 +96,18 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return range;
   }
 
-  void set_rs_unassigned(uint64_t rs_id){
+  void set_rgr_unassigned(uint64_t id){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
-      it->second->set_rs_unassigned(rs_id);
+      it->second->set_rgr_unassigned(id);
   }
 
-  void change_rs(uint64_t rs_id_old, uint64_t rs_id){
+  void change_rgr(uint64_t id_old, uint64_t id){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
-      it->second->change_rs(rs_id_old, rs_id);
+      it->second->change_rgr(id_old, id);
   }
   
   int64_t get_next_cid(){
@@ -144,7 +144,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 };
 typedef std::shared_ptr<Columns> ColumnsPtr;
 
-}} // namespace server::MNGR
+}} // namespace server::Mngr
 
 
 

@@ -9,7 +9,7 @@
 #include "swcdb/lib/client/mngr/Groups.h"
 #include "swcdb/lib/core/comm/SerializedClient.h"
 
-#include "swcdb/lib/db/Protocol/req/ConnQueue.h"
+#include "swcdb/lib/db/Protocol/Common/req/ConnQueue.h"
 #include <memory>
 
 namespace SWC { namespace client {
@@ -34,29 +34,29 @@ class Clients : public std::enable_shared_from_this<Clients> {
     }
 
     mngr_service = std::make_shared<SerializedClient>(
-      "RS-MANAGER", ioctx, m_app_ctx
+      "MANAGER", ioctx, m_app_ctx
     );
     mngr = std::make_shared<ConnQueues>(
       mngr_service,
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.MNGR.connection.timeout"),
+        "swc.client.Mngr.connection.timeout"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.MNGR.connection.probes"),
+        "swc.client.Mngr.connection.probes"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.MNGR.connection.keepalive")
+        "swc.client.Mngr.connection.keepalive")
     );
 
-    rs_service = std::make_shared<SerializedClient>(
-      "RANGESERVER", ioctx, m_app_ctx
+    rgr_service = std::make_shared<SerializedClient>(
+      "RANGER", ioctx, m_app_ctx
     );
-    rs = std::make_shared<ConnQueues>(
-      rs_service,
+    rgr = std::make_shared<ConnQueues>(
+      rgr_service,
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.RS.connection.timeout"),
+        "swc.client.Rgr.connection.timeout"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.RS.connection.probes"),
+        "swc.client.Rgr.connection.probes"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.RS.connection.keepalive")
+        "swc.client.Rgr.connection.keepalive")
     );
   } 
 
@@ -71,8 +71,8 @@ class Clients : public std::enable_shared_from_this<Clients> {
   ClientPtr               mngr_service = nullptr;
   ConnQueuesPtr           mngr = nullptr;
   
-  ClientPtr               rs_service   = nullptr;
-  ConnQueuesPtr           rs = nullptr;
+  ClientPtr               rgr_service   = nullptr;
+  ConnQueuesPtr           rgr = nullptr;
 
   private:
   const AppContextPtr     m_app_ctx = nullptr;
@@ -98,8 +98,8 @@ class Clients {
   virtual ~Clients(){}
 
   private:
-  client::ClientsPtr m_clients = nullptr;
-  inline static std::shared_ptr<Clients> m_env = nullptr;
+  client::ClientsPtr                      m_clients = nullptr;
+  inline static std::shared_ptr<Clients>  m_env = nullptr;
 };
 }
 

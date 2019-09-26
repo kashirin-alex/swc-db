@@ -12,7 +12,7 @@
 #include "swcdb/lib/fs/Broker/Protocol/Commands.h"
 #include "FdsMap.h"
 
-#include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
+#include "swcdb/lib/db/Protocol/Common/handlers/NotImplemented.h"
 #include "handlers/Exists.h"
 #include "handlers/Remove.h"
 #include "handlers/Length.h"
@@ -143,7 +143,7 @@ class AppContext : public SWC::AppContext {
             break;
 
           default: 
-            handler = new common::Handler::NotImplemented(conn, ev);
+            handler = new Protocol::Common::Handler::NotImplemented(conn, ev);
             break;
         }
 

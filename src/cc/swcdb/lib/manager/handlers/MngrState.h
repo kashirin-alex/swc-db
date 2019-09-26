@@ -7,17 +7,14 @@
 #define swc_app_manager_handlers_MngrState_h
 
 
-
-namespace SWC { namespace server { namespace Mngr {
-
-namespace Handler {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 class MngrState : public AppHandler {
   public:
 
   MngrState(ConnHandlerPtr conn, EventPtr ev)
-             : AppHandler(conn, ev) { }
+            : AppHandler(conn, ev) { }
 
   void run() override {
 
@@ -26,7 +23,7 @@ class MngrState : public AppHandler {
       const uint8_t *ptr = m_ev->payload;
       size_t remain = m_ev->payload_len;
 
-      Protocol::Params::MngrMngrState req_params;
+      Params::MngrState req_params;
       req_params.decode(&ptr, &remain);
 
       bool new_active_columns = Env::MngrRole::get()->fill_states(
@@ -40,10 +37,10 @@ class MngrState : public AppHandler {
       m_conn->response_ok(m_ev);
 
       if(Env::MngrRole::get()->require_sync())
-        Env::RangeServers::get()->require_sync();
+        Env::Rangers::get()->require_sync();
 
       if(new_active_columns)
-        Env::RangeServers::get()->new_columns();
+        Env::Rangers::get()->new_columns();
 
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
@@ -56,4 +53,4 @@ class MngrState : public AppHandler {
 
 }}}}
 
-#endif // swc_app_manager_handlers_IsMngrActive_h
+#endif // swc_app_manager_handlers_MngrState_h

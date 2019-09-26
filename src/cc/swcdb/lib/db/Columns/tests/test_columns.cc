@@ -5,8 +5,8 @@
 
 #include "swcdb/lib/fs/Settings.h"
 #include "swcdb/lib/client/Clients.h"
-#include "swcdb/lib/db/Columns/RS/Columns.h"
-#include "swcdb/lib/db/Columns/MNGR/Columns.h"
+#include "swcdb/lib/db/Columns/Rgr/Columns.h"
+#include "swcdb/lib/db/Columns/Mngr/Columns.h"
 
 #include <iostream>
 
@@ -18,20 +18,20 @@ void SWC::Config::Settings::init_post_cmd_args(){}
 
 using namespace SWC;
 
-void rs(){
-    Env::RsColumns::init();
+void rgr(){
+    Env::RgrColumns::init();
 
-    Env::RsData::init();
+    Env::RgrData::init();
     
     int err = Error::OK;
-    server::RS::ColumnsPtr cols = Env::RsColumns::get();
+    server::Rgr::ColumnsPtr cols = Env::RgrColumns::get();
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
 
         for(int64_t r=1; r<=3; r++){
 
-            server::RS::RangePtr range = cols->get_range(err, c, r, true);
+            server::Rgr::RangePtr range = cols->get_range(err, c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -43,7 +43,7 @@ void rs(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::RS::RangePtr range = cols->get_range(err, c, r);
+            server::Rgr::RangePtr range = cols->get_range(err, c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
     Env::FsInterface::init();
     Env::Schemas::init();
 
-    rs();
+    rgr();
     mngr();
     exit(0);
 }

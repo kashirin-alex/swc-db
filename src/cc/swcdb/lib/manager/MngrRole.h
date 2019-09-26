@@ -39,7 +39,7 @@ class MngrRole {
 }
 #include "AppContextClient.h"
 
-#include "swcdb/lib/db/Protocol/req/MngrMngrState.h"
+#include "../db/Protocol/Mngr/req/MngrState.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -66,7 +66,7 @@ class MngrRole {
       cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
-      m_mngr_inchain(std::make_shared<Protocol::Req::ConnQueue>()) {
+      m_mngr_inchain(std::make_shared<Protocol::Common::Req::ConnQueue>()) {
     
   }
 
@@ -129,7 +129,7 @@ class MngrRole {
     return nullptr;
   }
 
-  void req_mngr_inchain(Protocol::Req::ConnQueue::ReqBase::Ptr req){
+  void req_mngr_inchain(Protocol::Common::Req::ConnQueue::ReqBase::Ptr req){
     m_mngr_inchain->put(req);
   }
 
@@ -228,7 +228,7 @@ class MngrRole {
         if(token == 0)
           token = m_local_token;
 
-        req_mngr_inchain(std::make_shared<Protocol::Req::MngrMngrState>(
+        req_mngr_inchain(std::make_shared<Protocol::Mngr::Req::MngrState>(
           cb, m_states, token, m_local_endpoints[0], 
           (cfg_conn_probes->get() * cfg_conn_timeout->get()
           + cfg_req_timeout->get()) * m_states.size()
@@ -575,7 +575,7 @@ class MngrRole {
   TimerPtr                     m_check_timer; 
   bool                         m_run=true; 
   
-  Protocol::Req::ConnQueuePtr  m_mngr_inchain;
+  Protocol::Common::Req::ConnQueuePtr  m_mngr_inchain;
 
 
   const gInt32tPtr cfg_conn_probes;
@@ -592,12 +592,12 @@ class MngrRole {
 
 
 
-namespace Protocol { namespace Req {
-  void MngrMngrState::disconnected(ConnHandlerPtr conn) {
+namespace Protocol { namespace Mngr {namespace Req {
+  void MngrState::disconnected(ConnHandlerPtr conn) {
     Env::MngrRole::get()->disconnection(
       conn->endpoint_remote, conn->endpoint_local);
   }
-}}
+}}}
 
 namespace client { namespace Mngr {
   void AppContext::disconnected(ConnHandlerPtr conn){
