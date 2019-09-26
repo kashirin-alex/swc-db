@@ -26,7 +26,9 @@ class IoContext {
       m_pool(std::make_shared<asio::thread_pool>(size)),
       m_ioctx(std::make_shared<asio::io_context>(size)),
       m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get())))
-  { }
+  { 
+    HT_ASSERT(size>0);
+  }
 
   void run(IoContextPtr p){
     HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
@@ -77,6 +79,10 @@ class IoContext {
       m_ioctx->stop();
   }
 
+  int32_t get_size() {
+    return m_size;
+  }
+  
   virtual ~IoContext(){}
 
   private:
