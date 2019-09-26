@@ -114,11 +114,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     int64_t cid = 0;
-    for(;;){
-      auto it = m_columns->find(++cid);
-      if(it == m_columns->end())
-        break;
-    }
+    while(m_columns->find(++cid) != m_columns->end());
     return cid;
   }
 

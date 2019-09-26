@@ -112,15 +112,18 @@ class Column : public std::enable_shared_from_this<Column> {
 
   void chained_set(RangePtr& range, DB::Cells::Intervals::Ptr& intervals){
     DB::Cells::Intervals::Ptr intvals = range->get_intervals();
-    if((intvals == nullptr && intervals == nullptr) || 
-        (intervals != nullptr && intervals->equal(intvals)))
+
+    if(intvals == nullptr && intervals == nullptr) 
       return;
-    range->chained_remove();
-    range->set(intervals);
-    chained_set(range);
-    if(!range->assigned())
-      return;
-    
+
+    if(intervals == nullptr || !intervals->equal(intvals)) {
+      range->chained_remove();
+      range->set(intervals);
+      chained_set(range);
+      if(!range->assigned())
+        return;
+    }
+
     RangePtr next = m_base_range;
     do{
       next->chained_next(next);
@@ -336,7 +339,6 @@ class Column : public std::enable_shared_from_this<Column> {
       err, Range::get_path(cid), entries);
   }
 
-  
   void chained_set(RangePtr range){
     RangePtr current = m_base_range;
     while(!current->chained_set(range, current));
