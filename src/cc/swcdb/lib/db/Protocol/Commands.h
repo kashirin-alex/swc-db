@@ -9,44 +9,50 @@
 
 namespace SWC { namespace Protocol {
 
+
+namespace Common {
+  // Common Protocol Commands
   enum Command {
-    MNGR_REQ_MNGRS_STATE        = 0x00,
-    CLIENT_REQ_ACTIVE_MNGR      = 0x01,
-    
-    REQ_MNGR_MNG_RS_ID          = 0x02,
-
-    REQ_RS_ASSIGN_ID_NEEDED     = 0x03,
-    REQ_RS_IS_RANGE_LOADED      = 0x04,
-    REQ_RS_LOAD_RANGE           = 0x05,
-    REQ_RS_UNLOAD_RANGE         = 0x06,
-    REQ_RS_COLUMN_DELETE        = 0x07,
-    REQ_RS_SCHEMA_UPDATE        = 0x08,
-    
-    MNGR_UPDATE_RANGESERVERS    = 0x09,
-    MNGR_UPDATE_COLUMN          = 0x0a,
-
-    CLIENT_REQ_MNG_COLUMN       = 0x0b,
-    CLIENT_REQ_GET_COLUMN       = 0x0c,
-    CLIENT_REQ_RS_GET           = 0x0d,
-    RANGE_LOCATE                = 0x0e,
-
-    REQ_ECHO                    = 0xff,      
-    //
-
-    RS_RSP_SCAN,
-    RS_RSP_RANGE_LOADED,
-
-    MNGR_RSP_COLUMN_ADDED,
-    MNGR_RSP_CID,
-    MNGR_RSP_RS_ADDR,
-    MNGR_RSP_CID_NOT_MANAGED,
-
-    CLIENT_REQ_ADD_COLUMN,
-    CLIENT_REQ_CID_NAME,
-    CLIENT_REQ_RS_ADDR,
-    CLIENT_REQ_SCAN,
-
+    DO_ECHO              = 0xff
   };
+  
+}
+
+
+namespace Rgr {
+  // Ranger Protocol Commands
+  enum Command {
+    NOT_IMPLEMENTED      = 0x00,
+    
+    ASSIGN_ID_NEEDED     = 0x01,
+    COLUMN_DELETE        = 0x02,
+    SCHEMA_UPDATE        = 0x03,
+    RANGE_IS_LOADED      = 0x04,
+    RANGE_LOAD           = 0x05,
+    RANGE_UNLOAD         = 0x06,
+    RANGE_LOCATE         = 0x07,
+  };
+
+}
+
+
+namespace Mngr {
+  // Manager Protocol Commands
+  enum Command {
+    NOT_IMPLEMENTED      = 0x00,
+    
+    MNGR_STATE           = 0x01,
+    MNGR_ACTIVE          = 0x02,
+    COLUMN_MNG           = 0x03,
+    COLUMN_UPDATE        = 0x04,
+    COLUMN_GET           = 0x05,
+    RGR_MNG_ID           = 0x06,
+    RGR_UPDATE           = 0x07,
+    RGR_GET              = 0x08,
+  };
+
+}
+
 
 }}
 

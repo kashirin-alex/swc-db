@@ -16,7 +16,7 @@ class RsIdReqNeeded : public ConnQueue::ReqBase {
                 server::Mngr::RsStatusPtr rs_nxt, 
                 server::Mngr::RangePtr range) : ConnQueue::ReqBase(false), 
                 rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
-    CommHeader header(Command::REQ_RS_ASSIGN_ID_NEEDED, 60000);
+    CommHeader header(Rgr::ASSIGN_ID_NEEDED, 60000);
     cbp = std::make_shared<CommBuf>(header, 0);
   }
   
@@ -33,7 +33,7 @@ class RsIdReqNeeded : public ConnQueue::ReqBase {
       return;
     }
 
-    if(ev->header.command == Command::REQ_RS_ASSIGN_ID_NEEDED){
+    if(ev->header.command == Rgr::ASSIGN_ID_NEEDED){
       rsp(ev->error != Error::OK ? ev->error : response_code(ev));
       return;
     }

@@ -23,13 +23,10 @@ class RangeIsLoaded : public DispatchHandler {
   virtual ~RangeIsLoaded() { }
   
   bool run(uint32_t timeout=60000) override {
-    Protocol::Params::RangeIsLoaded params = 
-      Protocol::Params::RangeIsLoaded(range->cid, range->rid);
-    
-    CommHeader header(Protocol::Command::REQ_RS_IS_RANGE_LOADED, timeout);
+    Params::RangeIsLoaded params(range->cid, range->rid);
+    CommHeader header(Rgr::RANGE_IS_LOADED, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
-
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
 
@@ -45,9 +42,9 @@ class RangeIsLoaded : public DispatchHandler {
       return;
     }
 
-    if(ev->header.command == Protocol::Command::REQ_RS_IS_RANGE_LOADED){
+    if(ev->header.command == Rgr::RANGE_IS_LOADED){
       was_called = true;
-      cb(Protocol::response_code(ev) == Error::OK);
+      cb(response_code(ev) == Error::OK);
     }
 
   }

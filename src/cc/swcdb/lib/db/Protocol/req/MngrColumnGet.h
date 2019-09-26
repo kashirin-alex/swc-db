@@ -15,10 +15,10 @@ namespace Req {
 class MngrColumnGet : public ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(int, Protocol::Params::ColumnGetRsp)> Cb_t;
+  typedef std::function<void(int, Params::ColumnGetRsp)> Cb_t;
 
-  MngrColumnGet(Params::ColumnGetReq params, Cb_t cb) : cb(cb) {
-    CommHeader header(Command::CLIENT_REQ_GET_COLUMN, 60000);
+  MngrColumnGet(const Params::ColumnGetReq& params, Cb_t cb) : cb(cb) {
+    CommHeader header(Mngr::COLUMN_GET, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -29,10 +29,10 @@ class MngrColumnGet : public ConnQueue::ReqBase {
     if(was_called || !is_rsp(conn, ev))
       return;
 
-    if(ev->header.command == Protocol::Command::CLIENT_REQ_GET_COLUMN) {
+    if(ev->header.command == Mngr::COLUMN_GET) {
       
-      Protocol::Params::ColumnGetRsp rsp_params;
-      int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
+      Params::ColumnGetRsp rsp_params;
+      int err = ev->error != Error::OK? ev->error: response_code(ev);
 
       if(err == Error::OK){
         try{

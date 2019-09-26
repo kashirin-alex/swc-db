@@ -16,10 +16,10 @@ class MngrColumnUpdate : public ConnQueue::ReqBase {
   public:
 
   MngrColumnUpdate(Params::ColumnMng::Function function, 
-                  DB::SchemaPtr schema, int err) {
+                   DB::SchemaPtr schema, int err) {
 
     Params::MngrColumnUpdate params(function, schema, err);
-    CommHeader header(Command::MNGR_UPDATE_COLUMN, 60000);
+    CommHeader header(Mngr::COLUMN_UPDATE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -30,8 +30,8 @@ class MngrColumnUpdate : public ConnQueue::ReqBase {
     if(was_called || !is_rsp(conn, ev))
       return;
 
-    if(ev->header.command == Protocol::Command::MNGR_UPDATE_COLUMN 
-       && Protocol::response_code(ev) == Error::OK){
+    if(ev->header.command == Mngr::COLUMN_UPDATE 
+       && response_code(ev) == Error::OK){
       was_called = true;
       return;
     }

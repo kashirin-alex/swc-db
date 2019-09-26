@@ -17,7 +17,7 @@ class MngrRsUpdate : public ConnQueue::ReqBase {
 
   MngrRsUpdate(server::Mngr::RsStatusList &hosts, bool sync_all) {
     Params::MngrRsUpdate params(hosts, sync_all);
-    CommHeader header(Command::MNGR_UPDATE_RANGESERVERS, 60000);
+    CommHeader header(Mngr::RGR_UPDATE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -28,8 +28,8 @@ class MngrRsUpdate : public ConnQueue::ReqBase {
     if(was_called || !is_rsp(conn, ev))
       return;
 
-    if(ev->header.command == Protocol::Command::MNGR_UPDATE_RANGESERVERS 
-       && Protocol::response_code(ev) == Error::OK){
+    if(ev->header.command == Mngr::RGR_UPDATE 
+      && response_code(ev) == Error::OK){
       was_called = true;
       return;
     }

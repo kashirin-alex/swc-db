@@ -79,9 +79,9 @@ class MngrRsMngId: public ConnQueue::ReqBase {
     Ptr req = std::make_shared<MngrRsMngId>(
       validator, 
       create(
-        Protocol::Params::MngrRsMngId(
+        Params::MngrRsMngId(
           rs_data->rs_id.load(), 
-          Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN, 
+          Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN, 
           rs_data->endpoints
         )
       )
@@ -90,8 +90,8 @@ class MngrRsMngId: public ConnQueue::ReqBase {
     req->run();
   }
   
-  static CommBufPtr create(Protocol::Params::MngrRsMngId params) {
-    CommHeader header(Protocol::Command::REQ_MNGR_MNG_RS_ID, 60000);
+  static CommBufPtr create(const Params::MngrRsMngId& params) {
+    CommHeader header(Mngr::RGR_MNG_ID, 60000);
     CommBufPtr new_cbp = std::make_shared<CommBuf>(
       header, params.encoded_length());
     params.encode(new_cbp->get_data_ptr_address());
@@ -111,9 +111,9 @@ class MngrRsMngId: public ConnQueue::ReqBase {
 
     Files::RsDataPtr rs_data = Env::RsData::get();
     cbp = create(
-      Protocol::Params::MngrRsMngId(
+      Params::MngrRsMngId(
         0, 
-        Protocol::Params::MngrRsMngId::Flag::RS_REQ, 
+        Params::MngrRsMngId::Flag::RS_REQ, 
         rs_data->endpoints
       )
     );
@@ -141,17 +141,17 @@ class MngrRsMngId: public ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
 
     if(ev->error != Error::OK 
-       || ev->header.command != Protocol::Command::REQ_MNGR_MNG_RS_ID){
+       || ev->header.command != Mngr::RGR_MNG_ID){
       validator->set(1000);
       return;
     }
 
-    if(Protocol::response_code(ev) == Error::OK){
+    if(response_code(ev) == Error::OK){
       validator->set(0);
       return;
     }      
     
-    Protocol::Params::MngrRsMngId rsp_params;
+    Params::MngrRsMngId rsp_params;
     try {
       const uint8_t *ptr = ev->payload;
       size_t remain = ev->payload_len;
@@ -161,12 +161,12 @@ class MngrRsMngId: public ConnQueue::ReqBase {
       HT_ERROR_OUT << e << HT_END;
     }
         
-    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_REREQ){
+    if(rsp_params.flag == Params::MngrRsMngId::Flag::MNGR_REREQ){
       assign();
       return;
     }
     
-    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN) {
+    if(rsp_params.flag == Params::MngrRsMngId::Flag::RS_SHUTTINGDOWN) {
       HT_DEBUGF("RS_SHUTTINGDOWN %s", 
                 Env::RsData::get()->to_string().c_str());
       if(cb_shutdown != 0)
@@ -176,9 +176,9 @@ class MngrRsMngId: public ConnQueue::ReqBase {
       return;
     }
 
-    if(rsp_params.flag != Protocol::Params::MngrRsMngId::Flag::MNGR_ASSIGNED
+    if(rsp_params.flag != Params::MngrRsMngId::Flag::MNGR_ASSIGNED
         &&
-       rsp_params.flag != Protocol::Params::MngrRsMngId::Flag::MNGR_REASSIGN){
+       rsp_params.flag != Params::MngrRsMngId::Flag::MNGR_REASSIGN){
       clear_endpoints();
       // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
       validator->set(1000);
@@ -187,7 +187,7 @@ class MngrRsMngId: public ConnQueue::ReqBase {
 
     Files::RsDataPtr rs_data = Env::RsData::get();
 
-    if(rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_ASSIGNED
+    if(rsp_params.flag == Params::MngrRsMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()){
 
       HT_ERRORF("RS's %s not matching with Mngr's FS-type=%d,"
@@ -201,22 +201,22 @@ class MngrRsMngId: public ConnQueue::ReqBase {
       return;
     }
     
-    Protocol::Params::MngrRsMngId::Flag flag;
+    Params::MngrRsMngId::Flag flag;
     if(rs_data->rs_id == 0 || rs_data->rs_id == rsp_params.rs_id || 
       (rs_data->rs_id != rsp_params.rs_id 
-       && rsp_params.flag == Protocol::Params::MngrRsMngId::Flag::MNGR_REASSIGN)){
+       && rsp_params.flag == Params::MngrRsMngId::Flag::MNGR_REASSIGN)){
 
       rs_data->rs_id = rsp_params.rs_id;
-      flag = Protocol::Params::MngrRsMngId::Flag::RS_ACK;
+      flag = Params::MngrRsMngId::Flag::RS_ACK;
       HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
     } else {
 
-      flag = Protocol::Params::MngrRsMngId::Flag::RS_DISAGREE;
+      flag = Params::MngrRsMngId::Flag::RS_DISAGREE;
       HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
     }
 
     cbp = create(
-      Protocol::Params::MngrRsMngId(rs_data->rs_id, flag, rs_data->endpoints)
+      Params::MngrRsMngId(rs_data->rs_id, flag, rs_data->endpoints)
     );
     run();
   }

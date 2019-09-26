@@ -18,8 +18,8 @@ class MngrMngrState : public ConnQueue::ReqBase {
   MngrMngrState(ResponseCallbackPtr cb, server::Mngr::MngrsStatus &states, 
               uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
             : cb(cb) {
-    Protocol::Params::MngrMngrState params(states, token, mngr_host);
-    CommHeader header(Protocol::Command::MNGR_REQ_MNGRS_STATE, timeout);
+    Params::MngrMngrState params(states, token, mngr_host);
+    CommHeader header(Mngr::MNGR_STATE, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -39,8 +39,8 @@ class MngrMngrState : public ConnQueue::ReqBase {
     if(ConnQueue::ReqBase::is_timeout(conn, ev))
       return;
 
-    if(ev->header.command == Protocol::Command::MNGR_REQ_MNGRS_STATE 
-       && Protocol::response_code(ev) == Error::OK){
+    if(ev->header.command == Mngr::MNGR_STATE 
+       && response_code(ev) == Error::OK){
       if(cb != nullptr){
         //std::cout << "response_ok, cb=" << (size_t)cb.get() 
         //          << " rsp, err=" << ev->to_str() << "\n";

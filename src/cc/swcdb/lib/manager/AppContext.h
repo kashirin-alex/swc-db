@@ -98,51 +98,40 @@ class AppContext : public SWC::AppContext {
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
-          case Protocol::Command::CLIENT_REQ_ACTIVE_MNGR:
+          case Protocol::Mngr::MNGR_ACTIVE:
             handler = new Handler::MngrActive(conn, ev);
             break;
 
-          case Protocol::Command::CLIENT_REQ_MNG_COLUMN:
-            handler = new Handler::ColumnMng(conn, ev);
-            break;
-
-          case Protocol::Command::CLIENT_REQ_GET_COLUMN:
-            handler = new Handler::ColumnGet(conn, ev);
-            break;
-
-          case Protocol::Command::CLIENT_REQ_RS_GET:
-            handler = new Handler::RsGet(conn, ev);
-            break;
-
-          case Protocol::Command::REQ_MNGR_MNG_RS_ID:
-            handler = new Handler::RsMngId(conn, ev);
-            break;
-
-          case Protocol::Command::MNGR_REQ_MNGRS_STATE:
+          case Protocol::Mngr::MNGR_STATE:
             handler = new Handler::MngrState(conn, ev);
             break;
 
-          case Protocol::Command::MNGR_UPDATE_COLUMN:
+          case Protocol::Mngr::COLUMN_MNG:
+            handler = new Handler::ColumnMng(conn, ev);
+            break;
+
+          case Protocol::Mngr::COLUMN_GET:
+            handler = new Handler::ColumnGet(conn, ev);
+            break;
+
+          case Protocol::Mngr::COLUMN_UPDATE:
             handler = new Handler::ColumnUpdate(conn, ev);
             break;
 
-          case Protocol::Command::MNGR_UPDATE_RANGESERVERS:
+          case Protocol::Mngr::RGR_GET:
+            handler = new Handler::RsGet(conn, ev);
+            break;
+
+          case Protocol::Mngr::RGR_MNG_ID:
+            handler = new Handler::RsMngId(conn, ev);
+            break;
+
+          case Protocol::Mngr::RGR_UPDATE:
             handler = new Handler::RsUpdate(conn, ev);
             break;
 
-          case Protocol::Command::REQ_ECHO:
+          case Protocol::Common::DO_ECHO:
             handler = new common::Handler::Echo(conn, ev);
-            break;
-
-          // + MngrRsResource
-          
-
-          case Protocol::Command::CLIENT_REQ_RS_ADDR:
-            //rangeservers->get_addr(event);
-            break;
-
-          case Protocol::Command::CLIENT_REQ_CID_NAME:
-            //columns->get_cid_of_name(event);
             break;
 
           default: 

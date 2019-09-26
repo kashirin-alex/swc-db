@@ -22,8 +22,8 @@ class MngrMngrActive : public ConnQueue::ReqBase {
                  uint32_t timeout_ms=60000)
                 : ConnQueue::ReqBase(false), cid(cid), hdlr(hdlr), 
                   timeout_ms(timeout_ms), nxt(0) {
-    Protocol::Params::MngrMngrActiveReq params(cid, cid);
-    CommHeader header(Protocol::Command::CLIENT_REQ_ACTIVE_MNGR, timeout_ms);
+    Params::MngrMngrActiveReq params(cid, cid);
+    CommHeader header(Mngr::MNGR_ACTIVE, timeout_ms);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -61,14 +61,13 @@ class MngrMngrActive : public ConnQueue::ReqBase {
     
     // HT_DEBUGF(" handle: %s", ev->to_str().c_str());
 
-    if(ev->error == Error::OK 
-       && ev->header.command == Protocol::Command::CLIENT_REQ_ACTIVE_MNGR){
+    if(ev->error == Error::OK && ev->header.command == Mngr::MNGR_ACTIVE){
 
       try {
         const uint8_t *ptr = ev->payload;
         size_t remain = ev->payload_len;
 
-        Protocol::Params::MngrMngrActiveRsp params;
+        Params::MngrMngrActiveRsp params;
         params.decode(&ptr, &remain);
         
         if(params.available && params.endpoints.size() > 0){

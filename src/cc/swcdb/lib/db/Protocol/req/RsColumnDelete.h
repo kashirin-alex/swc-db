@@ -18,7 +18,7 @@ class RsColumnDelete : public ConnQueue::ReqBase  {
                 : ConnQueue::ReqBase(false), rs(rs), cid(cid) { 
       
     Params::ColumnId params = Params::ColumnId(cid);
-    CommHeader header(Command::REQ_RS_COLUMN_DELETE, 60000);
+    CommHeader header(Rgr::COLUMN_DELETE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -35,7 +35,7 @@ class RsColumnDelete : public ConnQueue::ReqBase  {
       return;
     }
 
-    if(ev->header.command == Command::REQ_RS_COLUMN_DELETE){
+    if(ev->header.command == Rgr::COLUMN_DELETE) {
       int err = ev->error != Error::OK ? ev->error : response_code(ev);
       if(err == Error::OK) {
         was_called = true;

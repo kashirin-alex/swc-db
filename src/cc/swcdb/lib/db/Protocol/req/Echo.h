@@ -21,7 +21,7 @@ class Echo : public DispatchHandler {
   virtual ~Echo() { }
   
   bool run(uint32_t timeout=60000) override {
-    CommHeader header(Protocol::Command::REQ_ECHO, timeout);
+    CommHeader header(Common::DO_ECHO, timeout);
     CommBufPtr cbp = std::make_shared<CommBuf>(header);
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
@@ -36,7 +36,7 @@ class Echo : public DispatchHandler {
       return;
     }
 
-    if(ev->header.command == Protocol::Command::REQ_ECHO){
+    if(ev->header.command == Common::DO_ECHO){
       was_called = true;
       cb(ev->error == Error::OK);
     }

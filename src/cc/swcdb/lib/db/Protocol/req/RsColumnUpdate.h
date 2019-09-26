@@ -16,9 +16,8 @@ class RsColumnUpdate : public ConnQueue::ReqBase {
 
   RsColumnUpdate(server::Mngr::RsStatusPtr rs, DB::SchemaPtr schema) 
               : ConnQueue::ReqBase(false), rs(rs), schema(schema) {
-
     Params::RsColumnUpdate params = Params::RsColumnUpdate(schema);
-    CommHeader header(Command::REQ_RS_SCHEMA_UPDATE, 60000);
+    CommHeader header(Rgr::SCHEMA_UPDATE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -36,7 +35,7 @@ class RsColumnUpdate : public ConnQueue::ReqBase {
       return;
     }
 
-    if(ev->header.command == Command::REQ_RS_SCHEMA_UPDATE){
+    if(ev->header.command == Rgr::SCHEMA_UPDATE){
       updated(ev->error != Error::OK? ev->error: response_code(ev), false);
       return; 
     }

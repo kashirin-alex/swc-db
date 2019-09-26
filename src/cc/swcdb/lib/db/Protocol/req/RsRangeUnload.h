@@ -19,9 +19,8 @@ class RsRangeUnload : public ConnQueue::ReqBase {
   RsRangeUnload(DB::RangeBasePtr range, ResponseCallbackPtr cb,
                 uint32_t timeout=60000) 
                : ConnQueue::ReqBase(false), range(range), cb(cb) {
-
-    Params::ColRangeId params = Params::ColRangeId(range->cid, range->rid);
-    CommHeader header(Protocol::Command::REQ_RS_UNLOAD_RANGE, timeout);
+    Params::ColRangeId params(range->cid, range->rid);
+    CommHeader header(Rgr::RANGE_UNLOAD, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -37,7 +36,7 @@ class RsRangeUnload : public ConnQueue::ReqBase {
     if(!valid())
       unloaded(Error::RS_DELETED_RANGE, cb); 
     else if(ev->type == Event::Type::DISCONNECT
-            || ev->header.command == Command::REQ_RS_UNLOAD_RANGE){
+            || ev->header.command == Rgr::RANGE_UNLOAD){
       unloaded(Error::OK, cb); 
     }
   }

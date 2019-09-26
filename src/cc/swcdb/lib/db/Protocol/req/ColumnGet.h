@@ -45,22 +45,22 @@ class Get: public ConnQueue::ReqBase {
   static void request(Flag flag, std::string& name, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Get>(
-      Protocol::Params::ColumnGetReq(flag, name), cb, timeout
+      Params::ColumnGetReq(flag, name), cb, timeout
     )->run();
   }
 
   static void request(Flag flag, int64_t cid, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Get>(
-      Protocol::Params::ColumnGetReq(flag, cid), cb, timeout
+      Params::ColumnGetReq(flag, cid), cb, timeout
     )->run();
   }
 
 
-  Get(const Protocol::Params::ColumnGetReq params, const Cb_t cb, 
+  Get(const Params::ColumnGetReq& params, const Cb_t cb, 
       const uint32_t timeout) : ConnQueue::ReqBase(false), cb(cb) {
 
-    CommHeader header(Protocol::Command::CLIENT_REQ_GET_COLUMN, timeout);
+    CommHeader header(Mngr::COLUMN_GET, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -92,8 +92,8 @@ class Get: public ConnQueue::ReqBase {
       return;
     }
 
-    Protocol::Params::ColumnGetRsp rsp_params;
-    int err = ev->error != Error::OK? ev->error: Protocol::response_code(ev);
+    Params::ColumnGetRsp rsp_params;
+    int err = ev->error != Error::OK? ev->error: response_code(ev);
 
     if(err == Error::OK){
       try{

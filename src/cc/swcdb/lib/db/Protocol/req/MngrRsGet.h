@@ -26,24 +26,24 @@ class MngrRsGet: public ConnQueue::ReqBase {
 
   static void request(int64_t cid, int64_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Protocol::Params::MngrRsGetReq(cid, rid), cb, timeout);
+    request(Params::MngrRsGetReq(cid, rid), cb, timeout);
   }
 
   static void request(int64_t cid, const DB::Specs::Interval::Ptr interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Protocol::Params::MngrRsGetReq(cid, interval), cb, timeout);
+    request(Params::MngrRsGetReq(cid, interval), cb, timeout);
   }
 
-  static inline void request(const Protocol::Params::MngrRsGetReq params,
+  static inline void request(const Params::MngrRsGetReq params,
                              const Cb_t cb, const uint32_t timeout = 10000){
     std::make_shared<MngrRsGet>(params, cb, timeout)->run();
   }
 
 
-  MngrRsGet(const Protocol::Params::MngrRsGetReq params, const Cb_t cb, 
-                 const uint32_t timeout) 
-                : ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-    CommHeader header(Protocol::Command::CLIENT_REQ_RS_GET, timeout);
+  MngrRsGet(const Params::MngrRsGetReq& params, const Cb_t cb, 
+            const uint32_t timeout) 
+            : ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
+    CommHeader header(Mngr::RGR_GET, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -74,7 +74,7 @@ class MngrRsGet: public ConnQueue::ReqBase {
       return;
     }
 
-    Protocol::Params::MngrRsGetRsp rsp_params;
+    Params::MngrRsGetRsp rsp_params;
     if(ev->type == Event::Type::ERROR){
       rsp_params.err = ev->error;
       cb(req(), rsp_params);

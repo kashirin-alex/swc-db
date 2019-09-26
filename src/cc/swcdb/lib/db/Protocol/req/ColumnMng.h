@@ -44,17 +44,16 @@ class Mng: public ConnQueue::ReqBase {
   static void request(Func func, DB::SchemaPtr schema, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<Mng>(
-      Protocol::Params::ColumnMng(func, schema),
+      Params::ColumnMng(func, schema),
       cb,
       timeout
     )->run();
   }
 
 
-  Mng(const Protocol::Params::ColumnMng params, const Cb_t cb, 
-            const uint32_t timeout) 
-            : ConnQueue::ReqBase(false), cb(cb) {
-    CommHeader header(Protocol::Command::CLIENT_REQ_MNG_COLUMN, timeout);
+  Mng(const Params::ColumnMng& params, const Cb_t cb, const uint32_t timeout)
+      : ConnQueue::ReqBase(false), cb(cb) {
+    CommHeader header(Mngr::COLUMN_MNG, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -85,7 +84,7 @@ class Mng: public ConnQueue::ReqBase {
       return;
     }
 
-    cb(req(), ev->error != Error::OK? ev->error: Protocol::response_code(ev));
+    cb(req(), ev->error != Error::OK? ev->error: response_code(ev));
   }
 
   private:

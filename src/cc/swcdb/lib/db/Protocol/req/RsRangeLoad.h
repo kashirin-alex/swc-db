@@ -22,9 +22,8 @@ class RsRangeLoad : public ConnQueue::ReqBase {
                            ->need_schema_sync(rs->rs_id, schema->revision))
       schema = nullptr;                     
 
-    Params::RsRangeLoad params = Params::RsRangeLoad(
-      range->cid, range->rid, schema);
-    CommHeader header(Command::REQ_RS_LOAD_RANGE, 60000);
+    Params::RsRangeLoad params(range->cid, range->rid, schema);
+    CommHeader header(Rgr::RANGE_LOAD, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -42,7 +41,7 @@ class RsRangeLoad : public ConnQueue::ReqBase {
       return;
     }
 
-    if(ev->header.command == Command::REQ_RS_LOAD_RANGE){
+    if(ev->header.command == Rgr::RANGE_LOAD){
       int err = ev->error != Error::OK? ev->error: response_code(ev);
       if(err != Error::OK){
         loaded(err, false, nullptr); 

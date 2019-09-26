@@ -21,6 +21,7 @@
 #include "swcdb/lib/db/Protocol/req/MngrRsMngId.h"
 
 #include "swcdb/lib/db/Protocol/handlers/NotImplemented.h"
+#include "swcdb/lib/db/Protocol/handlers/Echo.h"
 #include "handlers/AssignId.h"
 #include "handlers/RangeLoad.h"
 #include "handlers/RangeUnload.h"
@@ -95,7 +96,7 @@ class AppContext : public SWC::AppContext {
       case Event::Type::MESSAGE: {
         
         if(Env::RsData::get()->rs_id == 0 && 
-          ev->header.command != Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED){
+          ev->header.command != Protocol::Rgr::ASSIGN_ID_NEEDED){
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
           break;
         }
@@ -103,40 +104,36 @@ class AppContext : public SWC::AppContext {
         AppHandler *handler = 0;
         switch (ev->header.command) {
 
-          case Protocol::Command::RANGE_LOCATE: 
-            handler = new Handler::RangeLocate(conn, ev);
+          case Protocol::Rgr::ASSIGN_ID_NEEDED:
+            handler = new Handler::AssignId(conn, ev, m_rs_id_validator);
             break;
 
-          case Protocol::Command::REQ_RS_IS_RANGE_LOADED: 
-            handler = new Handler::RangeIsLoaded(conn, ev);
+          case Protocol::Rgr::COLUMN_DELETE: 
+            handler = new Handler::ColumnDelete(conn, ev);
             break;
 
-          case Protocol::Command::REQ_RS_LOAD_RANGE: 
-            handler = new Handler::RangeLoad(conn, ev);
-            break;
-
-          case Protocol::Command::REQ_RS_SCHEMA_UPDATE: 
+          case Protocol::Rgr::SCHEMA_UPDATE: 
             handler = new Handler::ColumnUpdate(conn, ev);
             break;
 
-          case Protocol::Command::REQ_RS_UNLOAD_RANGE: 
+          case Protocol::Rgr::RANGE_IS_LOADED: 
+            handler = new Handler::RangeIsLoaded(conn, ev);
+            break;
+
+          case Protocol::Rgr::RANGE_LOAD: 
+            handler = new Handler::RangeLoad(conn, ev);
+            break;
+
+          case Protocol::Rgr::RANGE_UNLOAD: 
             handler = new Handler::RangeUnload(conn, ev);
             break;
 
-          case Protocol::Command::REQ_RS_ASSIGN_ID_NEEDED:
-            handler = new Handler::AssignId(conn, ev, m_rs_id_validator);
+          case Protocol::Rgr::RANGE_LOCATE: 
+            handler = new Handler::RangeLocate(conn, ev);
             break;
             
-          case Protocol::Command::REQ_RS_COLUMN_DELETE: 
-            handler = new Handler::ColumnDelete(conn, ev);
-            break;
-            
-          case Protocol::Command::CLIENT_REQ_RS_ADDR:
-            //rangeservers->get_addr(event);
-            break;
-
-          case Protocol::Command::CLIENT_REQ_CID_NAME:
-            //columns->get_cid_of_name(event);
+          case Protocol::Common::DO_ECHO:
+            handler = new common::Handler::Echo(conn, ev);
             break;
 
           default: 

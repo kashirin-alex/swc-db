@@ -29,12 +29,12 @@ class RsRangeLocate: public ConnQueue::ReqBase {
                       const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(
-      Protocol::Params::RsRangeLocateReq(cid, rid, interval), 
+      Params::RsRangeLocateReq(cid, rid, interval), 
       endpoints, cb_no_conn, cb, timeout
     );
   }
 
-  static inline void request(const Protocol::Params::RsRangeLocateReq params,
+  static inline void request(const Params::RsRangeLocateReq& params,
                              const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
                              const Cb_t cb, const uint32_t timeout = 10000){
     std::make_shared<RsRangeLocate>(params, endpoints, cb_no_conn, cb, timeout)
@@ -42,12 +42,12 @@ class RsRangeLocate: public ConnQueue::ReqBase {
   }
 
 
-  RsRangeLocate(const Protocol::Params::RsRangeLocateReq params, 
+  RsRangeLocate(const Params::RsRangeLocateReq& params, 
                 const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
                 const Cb_t cb, const uint32_t timeout) 
               : ConnQueue::ReqBase(false), 
                 endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
-    CommHeader header(Protocol::Command::RANGE_LOCATE, timeout);
+    CommHeader header(Rgr::RANGE_LOCATE, timeout);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());
     params.encode(cbp->get_data_ptr_address());
   }
@@ -71,7 +71,7 @@ class RsRangeLocate: public ConnQueue::ReqBase {
       return;
     }
 
-    Protocol::Params::RsRangeLocateRsp rsp_params;
+    Params::RsRangeLocateRsp rsp_params;
     if(ev->type == Event::Type::ERROR){
       rsp_params.err = ev->error;
       cb(req(), rsp_params);
