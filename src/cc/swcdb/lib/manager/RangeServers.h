@@ -555,7 +555,6 @@ class RangeServers {
     }
 
     m_root_mngr = manage(1);
-    DB::SchemaPtr schema;
     {
       std::lock_guard<std::mutex> lock1(m_mutex);
       std::lock_guard<std::mutex> lock2(m_mutex_columns);
@@ -587,15 +586,38 @@ class RangeServers {
           entries.push_back(cid);
         }
       }
-      for(auto cid : entries) {
-        err = Error::OK;
-        schema = Files::Schema::load(err, cid);
-        if(err == Error::OK)
-          Env::Schemas::get()->add(err, schema);
-        if(err !=  Error::OK)
-          HT_WARNF("Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
+      
+      int32_t hdlrs = Env::IoCtx::io()->get_size()/4+1;
+      int32_t vol = entries.size()/hdlrs+1;
+      std::atomic<int64_t> pending = 0;
+      while(!entries.empty()) {
+        FS::IdEntries_t hdlr_entries;
+        for(auto n=0; n < vol && !entries.empty(); n++) {
+          hdlr_entries.push_back(entries.front());
+          entries.erase(entries.begin());
+        }
+        if(hdlr_entries.empty())
+          break;
+
+        pending++;
+        asio::post(*Env::IoCtx::io()->ptr(), 
+          [&pending, entries=hdlr_entries]() { 
+            DB::SchemaPtr schema;
+            for(auto cid : entries) {
+              int err = Error::OK;
+              schema = Files::Schema::load(err, cid);
+              if(err == Error::OK)
+                Env::Schemas::get()->add(err, schema);
+              if(err !=  Error::OK)
+                HT_WARNF("Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
+            }
+            pending--;
+          }
+        );
       }
 
+      while(pending > 0) // keep_locking
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
       m_columns_set = true;
     }
 
