@@ -56,6 +56,11 @@ class Range : public DB::RangeBase {
     return m_state == State::DELETED;
   }
 
+  void scan(DB::Specs::Interval::Ptr interval, ResponseCallbackPtr cb) {
+    int err = Error::OK;
+    cb->response(err);
+  }
+
   void load(ResponseCallbackPtr cb){
     bool is_loaded;
     {
@@ -96,7 +101,7 @@ class Range : public DB::RangeBase {
     read_range_data(err, cb);
   }
 
-  void on_change(){ // range-interval || cellstores
+  void on_change(int &err){ // range-interval || cellstores
     
     switch(m_type){
       case Types::Range::DATA:
@@ -109,9 +114,7 @@ class Range : public DB::RangeBase {
         break;
     }
 
-    int err;
     Files::RangeData::save(err, get_path(range_data_file), cellstores);
-
   }
 
   void unload(Callback::RangeUnloaded_t cb, bool completely){
@@ -125,7 +128,6 @@ class Range : public DB::RangeBase {
     }
     // CommitLogs  
     // CellStores
-    Files::RangeData::save(err, get_path(range_data_file), cellstores);
     // range.data
 
 
@@ -278,6 +280,7 @@ class Range : public DB::RangeBase {
         m_intervals->expand(cs->intervals, init);
         init=true;
       }
+      on_change(err);
       // CommitLogs
     
 
