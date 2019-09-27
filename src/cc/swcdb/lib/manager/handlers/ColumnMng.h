@@ -30,7 +30,7 @@ class ColumnMng : public AppHandler {
       Params::ColumnMng req_params;
       req_params.decode(&ptr, &remain);
 
-      Env::Rangers::get()->is_active(err, 1);
+      Env::Rangers::get()->is_active(err, 1, true);
       
       if(err == Error::OK) {
         Env::Rangers::get()->column_action({

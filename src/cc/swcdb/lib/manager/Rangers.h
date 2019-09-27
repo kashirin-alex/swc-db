@@ -107,7 +107,7 @@ class Rangers {
 
   virtual ~Rangers(){}
 
-  void is_active(int& err, int64_t cid) {
+  void is_active(int& err, int64_t cid, bool for_schema=false) {
     if(!Env::MngrRole::get()->is_active(cid)){
       err = Error::MNGR_NOT_ACTIVE;
       return;
@@ -116,6 +116,8 @@ class Rangers {
       err = Error::MNGR_NOT_INITIALIZED;
       return;  
     }
+    if(for_schema)
+      return;
 
     ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr) {

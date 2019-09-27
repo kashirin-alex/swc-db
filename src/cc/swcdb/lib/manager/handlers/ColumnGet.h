@@ -52,12 +52,12 @@ class ColumnGet : public AppHandler {
       DB::SchemaPtr schema = get_schema(err, req_params);
       
       if(schema != nullptr || err){
-        response(err, flag, schema);
+        response(m_conn, m_ev, err, flag, schema);
         return;
       }
-      Env::Rangers::get()->is_active(err, 1);
+      Env::Rangers::get()->is_active(err, 1, true);
       if(err) {
-        response(err, flag, schema);
+        response(m_conn, m_ev, err, flag, schema);
         return;
       }
 
@@ -67,12 +67,12 @@ class ColumnGet : public AppHandler {
       Env::MngrRole::get()->req_mngr_inchain(
         std::make_shared<Req::MngrColumnGet>(
           req_params,
-          [ptr=this](int err, Params::ColumnGetRsp params){
+          [conn=m_conn, ev=m_ev](int err, Params::ColumnGetRsp params){
             if(err == Error::OK && params.schema != nullptr){
               int tmperr;
               Env::Schemas::get()->add(tmperr, params.schema);
             }
-            ptr->response(err, params.flag, params.schema);
+            ColumnGet::response(conn, ev, err, params.flag, params.schema);
           }
         )
       );
@@ -83,18 +83,19 @@ class ColumnGet : public AppHandler {
       err = e.code();
     }
     
-    response(err, flag, nullptr);
+    response(m_conn, m_ev, err, flag, nullptr);
   }
 
-  void response(int err, Params::ColumnGetReq::Flag flag, 
-                DB::SchemaPtr schema){
+  static void response(ConnHandlerPtr conn, EventPtr ev,
+                        int err, Params::ColumnGetReq::Flag flag, 
+                        DB::SchemaPtr schema){
 
     if(err == Error::OK && schema == nullptr)
       err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
     try {
       CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
+      header.initialize_from_request_header(ev->header);
       CommBufPtr cbp;
 
       if(err == Error::OK) {
@@ -108,7 +109,7 @@ class ColumnGet : public AppHandler {
         cbp->append_i32(err);
       }
 
-      m_conn->send_response(cbp);
+      conn->send_response(cbp);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
