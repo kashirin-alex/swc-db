@@ -251,9 +251,11 @@ class FileSystemHadoop: public FileSystem {
     std::string abspath = get_abspath(name);
     errno = 0;
     if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
-      err = errno;
-      HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
-      return;
+      err = errno == 5? 2: errno; // io error(not-exists)
+      if(err != 2) {
+        HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
+        return;
+      }
     }
     HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
