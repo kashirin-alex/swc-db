@@ -35,10 +35,10 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
     void set(uint32_t ms) {
       std::lock_guard<std::mutex> lock(m_mutex);
-
-      m_timer->cancel();
       if(m_timer == nullptr)
         return;
+        
+      m_timer->cancel();
 
       m_timer->expires_from_now(
         std::chrono::milliseconds(ms == 0?cfg_check_interval->get():ms));
@@ -54,8 +54,10 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
     void stop(){
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_timer->cancel();
-      m_timer = nullptr;
+      if(m_timer != nullptr) {
+        m_timer->cancel();
+        m_timer = nullptr;
+      }
     }
 
     private:
