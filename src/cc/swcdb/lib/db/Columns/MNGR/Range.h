@@ -108,7 +108,7 @@ class Range : public DB::RangeBase {
     s.append(DB::RangeBase::to_string());
     s.append(", state=");
     s.append(std::to_string(m_state));
-    s.append(", id=");
+    s.append(", rgr=");
     s.append(std::to_string(rgr_id));
     s.append("]");
     return s;
@@ -118,12 +118,15 @@ class Range : public DB::RangeBase {
   bool chained_set(RangePtr range, RangePtr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    if(m_intervals != nullptr 
-      && !m_intervals->is_in_end(range->get_intervals()->get_key_begin())) {
-      range->chained_set_next(current);
-      range->chained_set_prev(m_chained_prev);
-      m_chained_prev = range;
-      return true;
+    if(m_intervals != nullptr) {
+      DB::Cells::Intervals::Ptr intvals = range->get_intervals();
+      if(intvals != nullptr 
+        && !m_intervals->is_in_end(intvals->get_key_begin())) {
+        range->chained_set_next(current);
+        range->chained_set_prev(m_chained_prev);
+        m_chained_prev = range;
+        return true;
+      }
     }
 
     if(m_chained_next == nullptr){
