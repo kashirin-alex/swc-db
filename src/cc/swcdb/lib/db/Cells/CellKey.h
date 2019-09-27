@@ -245,16 +245,21 @@ class Key {
 
   const std::string to_string(){
     std::string s("Key(");
+    s.append("sz=");
+    s.append(std::to_string(count));
+    s.append(" len=");
+    s.append(std::to_string(size));
+    s.append(" fractions=[");
     uint32_t len;
     uint8_t* ptr = data;
     for(uint32_t n=0; n<count; n++) {
-      s.append("[fraction(");
+      s.append("(");
       len = Serialization::decode_vi32((const uint8_t**)&ptr);
       s.append(std::string((const char*)ptr, len));
-      s.append(")], ");
+      s.append("),");
       ptr += len;
     }
-    s.append(")");
+    s.append("])");
     return s;
   }
 

@@ -102,11 +102,12 @@ class Value {
   */
 
   const std::string to_string(){
-    std::string s("Value(comp(");
-    s.append(Condition::to_string(comp));
-    s.append(") size(");
+    std::string s("Value(");
+    s.append("size=");
     s.append(std::to_string(size));
-    s.append(") data(");
+    s.append(" ");
+    s.append(Condition::to_string(comp));
+    s.append("(");
     s.append(std::string((const char*)data, size));
     s.append("))");
     return s;
