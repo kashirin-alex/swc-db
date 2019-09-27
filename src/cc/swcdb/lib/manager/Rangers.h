@@ -88,10 +88,7 @@ class Rangers {
   }
 
   void new_columns() {
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_columns);
-      m_columns_set = false;
-    }
+    m_columns_set = false;
     check_assignment_timer(500);
   }
   
@@ -115,14 +112,11 @@ class Rangers {
       err = Error::MNGR_NOT_ACTIVE;
       return;
     }
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_columns);
-      if(!m_columns_set) {
-        err = Error::MNGR_NOT_INITIALIZED;
-        return;  
-      }
+    if(!m_columns_set) {
+      err = Error::MNGR_NOT_INITIALIZED;
+      return;  
     }
-    
+
     ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr) {
       err = Error::COLUMN_NOT_EXISTS;
@@ -316,8 +310,10 @@ class Rangers {
       }
     }
 
-    if(new_ack != nullptr) 
-      rs_changes({new_ack});
+    if(new_ack != nullptr) {
+      RgrStatusList hosts({new_ack});
+      rs_changes(hosts);
+    }
     return ack;
   }
 
@@ -354,8 +350,10 @@ class Rangers {
         }
       }
     }
-    if(removed != nullptr)
-      rs_changes({removed});   
+    if(removed != nullptr){
+      RgrStatusList hosts({removed});
+      rs_changes(hosts);
+    }   
   }
 
   std::string to_string(){
@@ -384,8 +382,8 @@ class Rangers {
   }
 
   void assign_range_chk_last(int err, RgrStatusPtr rs_chk) {
+    Protocol::Common::Req::ConnQueue::ReqBase::Ptr req;
     for(;;) {
-      Protocol::Common::Req::ConnQueue::ReqBase::Ptr req;
       {
         std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
         if(!rs_chk->pending_id_pop(req))
@@ -411,21 +409,16 @@ class Rangers {
 
     if(!range->deleted()) {
       if(err != Error::OK){
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
-          rgr->total_ranges--;
-          if(failure)
-            rgr->failures++;
-        }
+        rgr->total_ranges--;
+        if(failure)
+          rgr->failures++;
+
         range->set_state(Range::State::NOTSET, 0); 
         if(!run_assign) 
           check_assignment_timer(2000);
 
       } else {
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
-          rgr->failures=0;
-        }
+        rgr->failures=0;
         range->set_state(Range::State::ASSIGNED, rgr->id); 
         range->clear_last_rgr();
         // adjust rgr->resource
@@ -465,7 +458,6 @@ class Rangers {
       Env::MngrColumns::get()->get_column(err, schema->cid, false)
                              ->change_rgr_schema(rgr->id, schema->revision);
     else if(failure) {
-      std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       rgr->failures++;
       return;
     }
@@ -486,8 +478,6 @@ class Rangers {
     Env::MngrRole::get()->get_active_columns(cols);
     if(cols.size() == 0){
       // if decommissioned
-      std::lock_guard<std::mutex> lock1(m_mutex);
-      std::lock_guard<std::mutex> lock2(m_mutex_columns);
       if(m_columns_set){
         HT_INFO("Manager has been decommissioned");
         m_columns_set = false;
@@ -544,35 +534,26 @@ class Rangers {
   }
 
   bool initialize_cols(){
-    {
-      std::lock_guard<std::mutex> lock1(m_mutex);
-      std::lock_guard<std::mutex> lock2(m_mutex_columns);
-      
-      if(m_columns_set){
-        if(m_root_mngr)
-          columns_load_chk_ack();
-        return true;
-      }
+    if(m_columns_set){
+      if(m_root_mngr)
+        columns_load_chk_ack();
+      return true;
     }
 
+    std::vector<int64_t> cols;
+    Env::MngrRole::get()->get_active_columns(cols);
+    if(cols.size() == 0) {
+      m_columns_set = false;
+      return false; 
+    }
     m_root_mngr = manage(1);
+    if(!m_root_mngr || m_columns_set)
+      return true;
+
     {
       std::lock_guard<std::mutex> lock1(m_mutex);
       std::lock_guard<std::mutex> lock2(m_mutex_columns);
     
-      std::vector<int64_t> cols;
-      Env::MngrRole::get()->get_active_columns(cols);
-      if(cols.size() == 0){
-        m_columns_set = false;
-        return false; 
-      }
-
-      if(!m_root_mngr)
-        return true;
-      if(m_columns_set)
-        return true;
-
-
       int err = Error::OK;
       FS::IdEntries_t entries;
       Columns::columns_by_fs(err, entries); 
@@ -619,8 +600,8 @@ class Rangers {
 
       while(pending > 0) // keep_locking
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      m_columns_set = true;
     }
+    m_columns_set = true;
 
     columns_load();
     return true;
@@ -815,7 +796,7 @@ class Rangers {
     return h;
   }
   
-  void rs_changes(RgrStatusList hosts, bool sync_all=false){
+  void rs_changes(RgrStatusList& hosts, bool sync_all=false){
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       if(hosts.size() > 0){
@@ -844,6 +825,7 @@ class Rangers {
   }
 
   void columns_load_chk_ack(){
+    std::lock_guard<std::mutex> lock(m_mutex_columns);
     for(auto& ack : m_cid_pending_load){
       if(ack.func == Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_LOAD){
         column_update(
@@ -964,14 +946,19 @@ class Rangers {
       {
         std::lock_guard<std::mutex> lock(m_mutex_columns);
         req = m_column_actions.front();
-        err = m_columns_set ? Error::OK : Error::MNGR_NOT_INITIALIZED;
       }
+
       if(!m_run)
         err = Error::SERVER_SHUTTING_DOWN;
+
+      else if(!m_columns_set)
+        err = Error::MNGR_NOT_INITIALIZED;
+
       else if(req.params.schema->col_name.length() == 0)
         err = Error::COLUMN_SCHEMA_NAME_EMPTY;
 
-      if(err == Error::OK){
+      else {
+        err = Error::OK;
         std::lock_guard<std::mutex> lock(m_mutex);
         DB::SchemaPtr schema = Env::Schemas::get()->get(req.params.schema->col_name);
         if(schema == nullptr && req.params.schema->cid != DB::Schema::NO_CID)
@@ -1145,18 +1132,18 @@ class Rangers {
   std::mutex                    m_mutex;
 
   std::mutex                    m_mutex_columns;
-  bool                          m_columns_set = false;
   std::queue<ColumnActionReq>   m_column_actions;
   std::vector<ColumnActionReq>  m_cid_pending;
   std::vector<ColumnFunction>   m_cid_pending_load;
 
   std::mutex                    m_mutex_rgr_status;
-  RgrStatusList                  m_rgr_status;
+  RgrStatusList                 m_rgr_status;
 
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign = false;
   std::atomic<int>              m_assignments = 0; 
 
+  std::atomic<bool>             m_columns_set = false;
   std::atomic<bool>             m_root_mngr = false;
   std::atomic<bool>             m_run = true; 
   

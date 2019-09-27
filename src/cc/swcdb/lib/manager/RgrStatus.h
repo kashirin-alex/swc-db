@@ -100,8 +100,8 @@ class RgrStatus : public Protocol::Common::Params::HostEndPoints {
   uint64_t   id;
   State      state;
 
-  int32_t    failures;
-  size_t     total_ranges;
+  std::atomic<int32_t>  failures;
+  std::atomic<size_t>   total_ranges;
   // int32_t resource;
   
   private:
