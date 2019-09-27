@@ -20,8 +20,8 @@ typedef std::shared_ptr<RangeBase> RangeBasePtr;
 class RangeBase : public std::enable_shared_from_this<RangeBase> {
   public:
   
-  inline static const std::string column_dir = "col"; 
-  inline static const std::string range_dir = "/range"; 
+  inline static const std::string column_dir = "C"; 
+  inline static const std::string range_dir = "/R"; 
   // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
   inline static const std::string rs_data_file = "ranger.data";
 
