@@ -7,9 +7,11 @@
 #define swcdb_db_cells_Cell_h
 
 #include <cassert>
-#include "CellKey.h"
-
+#include "swcdb/lib/core/Time.h"
 #include "swcdb/lib/core/DynamicBuffer.h"
+
+#include "swcdb/lib/db/Types/Column.h"
+#include "CellKey.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
@@ -32,44 +34,16 @@ static const uint8_t HAVE_REVISION      =  0x80;
 static const uint8_t HAVE_TIMESTAMP     =  0x40;
 static const uint8_t AUTO_TIMESTAMP     =  0x20;
 static const uint8_t REV_IS_TS          =  0x10;
-static const uint8_t TS_DESC            =   0x1;
+static const uint8_t HAVE_ON_FRACTION   =  0x8;
+//static const uint8_t TYPE_DEFINED     =  0x2;
+static const uint8_t TS_DESC            =  0x1;
 
+enum OP {
+  EQUAL  = 0x0,
+  PLUS   = 0x1,
+  MINUS  = 0x2,
+};
 
-static inline void encode_ts64(uint8_t **bufp, int64_t val, bool asc=true) {
-  if (asc)
-    val = ~val;
-#ifdef HT_LITTLE_ENDIAN
-  *(*bufp)++ = (uint8_t)(val >> 56);
-  *(*bufp)++ = (uint8_t)(val >> 48);
-  *(*bufp)++ = (uint8_t)(val >> 40);
-  *(*bufp)++ = (uint8_t)(val >> 32);
-  *(*bufp)++ = (uint8_t)(val >> 24);
-  *(*bufp)++ = (uint8_t)(val >> 16);
-  *(*bufp)++ = (uint8_t)(val >> 8);
-  *(*bufp)++ = (uint8_t)val;
-#else
-  memcpy(*bufp, &val, 8);
-  *bufp += 8;
-#endif
-}
-
-static inline int64_t decode_ts64(const uint8_t **bufp,  bool asc=true) {
-  int64_t val;
-#ifdef HT_LITTLE_ENDIAN
-  val = ((int64_t)*(*bufp)++ << 56);
-  val |= ((int64_t)(*(*bufp)++) << 48);
-  val |= ((int64_t)(*(*bufp)++) << 40);
-  val |= ((int64_t)(*(*bufp)++) << 32);
-  val |= ((int64_t)(*(*bufp)++) << 24);
-  val |= (*(*bufp)++ << 16);
-  val |= (*(*bufp)++ << 8);
-  val |= *(*bufp)++;
-#else
-  memcpy(&val, *bufp, 8);
-  *bufp += 8;
-#endif
-  return (asc ? ~val : val);
-}
 
 static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
                                            uint8_t** base, size_t* remainp){
@@ -79,14 +53,15 @@ static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key,
   key.decode(&ptr, remainp);
   uint8_t control = *ptr++;
   *remainp-=1;
-  if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP) {
-    ptr += 8;
-    *remainp -= 8;
-  }
-  if(control & HAVE_REVISION) {
-    ptr += 8;
-    *remainp -= 8;
-  }
+  if(control & HAVE_ON_FRACTION)
+    Serialization::decode_vi32(&ptr, remainp);
+
+  if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP) 
+    Serialization::decode_vi64(&ptr, remainp);
+
+  if(control & HAVE_REVISION) 
+    Serialization::decode_vi64(&ptr, remainp);
+
   uint32_t vlen = Serialization::decode_vi32(&ptr, remainp);
   ptr += vlen;
   *remainp -= vlen;
@@ -96,13 +71,15 @@ static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key,
   
 class Cell {
   public:
-  
+  typedef std::shared_ptr<Cell> Ptr;
+
   static bool is_next(uint8_t flag, SWC::DynamicBuffer &src_buf) {
     return *src_buf.ptr == flag;
   }
 
 
-  explicit Cell():  flag(0), control(0), timestamp(0), revision(0),
+  explicit Cell():  flag(0), control(0), 
+                    on_fraction(0), timestamp(0), revision(0),
                     value(0), vlen(0), own(false) { }
 
   explicit Cell(const Cell& other){
@@ -112,12 +89,13 @@ class Cell {
   void copy(const Cell& other) {
     own = true;
     //std::cout << " copy(const Cell &other) vlen=" << other.vlen << "\n";
-    flag      = other.flag;
+    flag        = other.flag;
     key.copy(other.key);
-    control   = other.control;
-    timestamp = other.timestamp;
-    revision  = other.revision;
-    vlen      = other.vlen;
+    control     = other.control;
+    on_fraction = other.on_fraction;
+    timestamp   = other.timestamp;
+    revision    = other.revision;
+    vlen        = other.vlen;
     if(vlen > 0) {
       value = new uint8_t[vlen];
       memcpy(value, other.value, vlen);
@@ -135,6 +113,18 @@ class Cell {
     if(own && value != 0) {
       delete [] value;
       vlen = 0;
+      value = 0;
+    }
+  }
+
+  void set_flag(uint8_t nflag, uint32_t fraction = 0){
+    flag = nflag;
+    if(fraction != 0 
+        && (flag == INSERT 
+         || flag == DELETE_FRACTION 
+         || flag == DELETE_FRACTION_VERSION)) {
+      control |= HAVE_ON_FRACTION;
+      on_fraction = fraction;
     }
   }
 
@@ -158,11 +148,39 @@ class Cell {
     value = v;
     vlen = len;
   }
+
   void set_value(const char* v, uint32_t len){
     set_value((uint8_t *)v, len);
   }
+
   void set_value(const char* v){
     set_value((uint8_t *)v, strlen(v));
+  }
+
+  void set_value(OP op, int64_t v){
+    free();
+    if(v == 0 && op == OP::EQUAL) {
+      vlen = 0;
+      value = 0;
+      return;
+    }
+    own = true;
+    vlen = 1+Serialization::encoded_length_vi64(v);
+    value = new uint8_t[vlen];
+    uint8_t* ptr = value;
+    *ptr++ = (uint8_t)op;
+    // +? i64's storing epochs 
+    Serialization::encode_vi64(&ptr, v);
+  }
+
+  int64_t get_value(OP *op) const {
+    if(vlen == 0) {
+      *op = OP::EQUAL;
+      return vlen;
+    }
+    const uint8_t *ptr = value;
+    *op = (OP)*ptr++;
+    return Serialization::decode_vi64(&ptr);
   }
     
   // READ
@@ -174,16 +192,17 @@ class Cell {
     key.decode(&ptr, remainp);
     control = *ptr++;
     *remainp -= 1;
-  
+
+    if (control & HAVE_ON_FRACTION)
+      on_fraction = Serialization::decode_vi32(&ptr, remainp);
+
     if (control & HAVE_TIMESTAMP){
-      timestamp = decode_ts64(&ptr, (control & TS_DESC) != 0);
-      *remainp -= 8;
+      timestamp = Serialization::decode_i64(&ptr, remainp);
     } else if(control & AUTO_TIMESTAMP)
       timestamp = AUTO_ASSIGN;
 
     if (control & HAVE_REVISION) {
-      revision = decode_ts64(&ptr, (control & TS_DESC) != 0);
-      *remainp -= 8;
+      revision = Serialization::decode_i64(&ptr, remainp);
     } else if (control & REV_IS_TS)
       revision = timestamp;
       
@@ -207,6 +226,8 @@ class Cell {
   // WRITE
   void write(SWC::DynamicBuffer &dst_buf){
     uint32_t klen = 1+key.encoded_length()+1;
+    if(control & HAVE_ON_FRACTION)
+      klen += Serialization::encoded_length_vi32(on_fraction);
     if(control & HAVE_TIMESTAMP)
       klen += 8;
     if(control & HAVE_REVISION)
@@ -215,11 +236,14 @@ class Cell {
 
     *dst_buf.ptr++ = flag;
     key.encode(&dst_buf.ptr);
+
     *dst_buf.ptr++ = control;
+    if(control & HAVE_ON_FRACTION)
+      Serialization::encode_vi32(&dst_buf.ptr, on_fraction);
     if(control & HAVE_TIMESTAMP)
-      encode_ts64(&dst_buf.ptr, timestamp, (control & TS_DESC) != 0);
+      Serialization::encode_i64(&dst_buf.ptr, timestamp);
     if(control & HAVE_REVISION)
-      encode_ts64(&dst_buf.ptr, revision, (control & TS_DESC) != 0);
+      Serialization::encode_i64(&dst_buf.ptr, revision);
       
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
     if(vlen > 0)
@@ -231,6 +255,7 @@ class Cell {
   bool equal(Cell &other){
     return  flag == other.flag && 
             control == other.control &&
+            on_fraction == other.on_fraction && 
             timestamp == other.timestamp && 
             revision == other.revision && 
             vlen == other.vlen &&
@@ -238,7 +263,24 @@ class Cell {
             memcmp(value, other.value, vlen) == 0;
   }
 
-  const std::string to_string() {
+  const bool removal() const {
+    return flag > Flag::INSERT;
+  }
+  
+  const bool is_removing(const int64_t rev) const {
+    return removal() &&
+      (revision >= rev 
+        && (flag == DELETE || flag == DELETE_FRACTION ))
+       ||
+      (revision == rev 
+        && (flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ));
+  }
+
+  const bool has_expired(const uint64_t ttl) const {
+    return ttl && Time::now_ns() >= timestamp + ttl;
+  }
+
+  const std::string to_string() const {
     std::string s("Cell(");
     s.append("flag=");
     s.append(std::to_string(flag));
@@ -248,15 +290,22 @@ class Cell {
 
     s.append(" control=");
     s.append(std::to_string(control));
-
+    
+    s.append(" on_fraction=");
+    s.append(std::to_string(on_fraction));
+    
     s.append(" ts=");
     s.append(std::to_string(timestamp));
 
     s.append(" rev=");
     s.append(std::to_string(revision));
 
-    s.append(" value=(");
-    s.append(vlen>0?std::string((const char *)value, vlen):std::string(""));
+    s.append(" value=(");     
+    char c;
+    for(int i=0; i<vlen;i++) {
+      c = *(value+i);
+      s.append(std::string(&c, 1));
+    }
     s.append(", len=");
     s.append(std::to_string(vlen));
     s.append(")");
@@ -266,6 +315,7 @@ class Cell {
   uint8_t         flag;
   DB::Cell::Key   key;
   uint8_t         control;
+  uint32_t        on_fraction;
   int64_t         timestamp;
   uint64_t        revision;
     
