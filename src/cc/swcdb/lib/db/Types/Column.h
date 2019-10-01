@@ -11,8 +11,9 @@ namespace SWC { namespace Types {
 
 
 enum class Column {
-  PLAIN       = 1,
-  COUNTER_I64 = 2
+  PLAIN         = 0x1,
+  COUNTER_I64   = 0x2,
+  CELL_DEFINED  = 0xf
 };
 
 }}
