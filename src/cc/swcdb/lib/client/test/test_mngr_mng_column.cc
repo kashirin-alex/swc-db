@@ -322,7 +322,7 @@ int main(int argc, char** argv) {
   ));
   
 
-  int num_of_cols = 10000;
+  int num_of_cols = 1000;
 
   chk(Protocol::Mngr::Req::ColumnMng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, false);
   chk(Protocol::Mngr::Req::ColumnMng::Func::DELETE, num_of_cols, Types::Encoding::PLAIN, true);
@@ -341,79 +341,6 @@ int main(int argc, char** argv) {
   chk(Protocol::Mngr::Req::ColumnMng::Func::MODIFY, num_of_cols, Types::Encoding::SNAPPY, true);
   check_get(num_of_cols, true, Types::Encoding::SNAPPY);
   std::cout << "\n";
-
-  exit(0);
-
-  // query
-  DB::Specs::Key keys_start;
-  keys_start.add("a12341", Condition::GT);
-  keys_start.add("b12346", 6, Condition::GT);
-  keys_start.add("c12345", Condition::GT);
-    
-  DB::Specs::Key keys_finish;
- 
-  //Protocol::Common::Req::Scan::Ptr scanner = std::make_shared<Protocol::Common::Req::Scan>();
-
-
-  DB::Specs::Scan ss;
-  
-  ss.flags.limit = 10;
-  ss.flags.offset = 0;
-  ss.flags.max_versions = 2;
-  
-  DB::Specs::Column::Ptr cs_is_1 = DB::Specs::Column::make_ptr(11, 2);
-  cs_is_1->intervals.push_back(
-    DB::Specs::Interval::make_ptr(
-      keys_start,
-      keys_finish,
-      DB::Specs::Value("aValue1", Condition::EQ),
-      DB::Specs::Timestamp(111,Condition::EQ),
-      DB::Specs::Timestamp(112,Condition::EQ),
-      ss.flags
-    )
-  );  
-  
-  cs_is_1->intervals.push_back(
-    DB::Specs::Interval::make_ptr(
-      keys_start,
-      keys_finish,
-      DB::Specs::Value("aValue2", Condition::EQ),
-      DB::Specs::Timestamp(111,Condition::EQ),
-      DB::Specs::Timestamp(112,Condition::EQ),
-      ss.flags
-    )
-  );
-  ss.columns.push_back(cs_is_1);
-
-
-  //range-locator (master) : cid+cells_interval => cid(1), rid(master), rgr-endpoints 
-  for(auto const &col : ss.columns){
-
-    for(auto const &interval : col->intervals){
-      Protocol::Mngr::Req::RgrGet::request(
-        col->cid, interval, 
-        [cid=col->cid, intval=interval]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, Protocol::Mngr::Params::RgrGetRsp rsp) {
-          std::cout << "get Ranger-master " << rsp.to_string() << "\n";
-          // --> ci.keys_start = rsp.next_key
-        }
-      );
-    }
-
-
-  }
-  
-  Protocol::Mngr::Req::RgrGet::request(
-    2, 1, 
-    [](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr,  Protocol::Mngr::Params::RgrGetRsp rsp) {
-      std::cout << "by-rid " << rsp.to_string() << "\n";
-    }
-  );
-
-
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-
 
 
 
