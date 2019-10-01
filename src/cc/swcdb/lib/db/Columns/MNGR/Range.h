@@ -123,7 +123,10 @@ class Range : public DB::RangeBase {
       if(intvals != nullptr 
         && !m_intervals->is_in_end(intvals->get_key_begin())) {
         range->chained_set_next(current);
-        range->chained_set_prev(m_chained_prev);
+        if(m_chained_prev != nullptr) {
+          range->chained_set_prev(m_chained_prev);
+          m_chained_prev->chained_set_next(range);
+        }
         m_chained_prev = range;
         return true;
       }
@@ -188,12 +191,12 @@ class Range : public DB::RangeBase {
   }
 
 
-  uint64_t          rgr_id;
-  State             m_state;
+  uint64_t            rgr_id;
+  State               m_state;
   Files::RgrDataPtr  m_last_rgr;
   
-  RangePtr          m_chained_next=nullptr;
-  RangePtr          m_chained_prev=nullptr;
+  RangePtr            m_chained_next=nullptr;
+  RangePtr            m_chained_prev=nullptr;
 
 };
 
