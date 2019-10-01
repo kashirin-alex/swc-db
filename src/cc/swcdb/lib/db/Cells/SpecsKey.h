@@ -7,7 +7,6 @@
 #define swcdb_db_cells_SpecsKey_h
 
 #include "Cell.h"
-#include "Comparators.h"
 
 namespace SWC { namespace DB { namespace Specs {
       
