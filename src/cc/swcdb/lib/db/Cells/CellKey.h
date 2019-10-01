@@ -7,6 +7,7 @@
 #define swcdb_db_cells_CellKey_h
 
 #include "swcdb/lib/core/Serialization.h"
+#include "Comparators.h"
 
 
 namespace SWC { namespace DB { namespace Cell {
@@ -192,6 +193,56 @@ class Key {
       && ((data == 0 && other.data == 0) || 
           memcmp(data, other.data, size) == 0);
   }
+  
+  Condition::Comp compare(const Key &other, uint32_t fractions=0) {
+
+    const uint8_t* ptr_tmp = data;
+    const uint8_t* ptr_end = data + size;
+    uint32_t idx = 0;
+    uint32_t len;
+    const uint8_t* ptr = 0;
+
+    const uint8_t* ptr_tmp_other = other.data;
+    const uint8_t* ptr_end_other = other.data + other.size;
+    uint32_t idx_other = 0;
+    uint32_t len_other;
+    const uint8_t* ptr_other = 0;
+    
+    Condition::Comp comp = Condition::EQ;
+    do {
+
+      while(ptr_tmp < ptr_end){
+        len = Serialization::decode_vi32(&ptr_tmp);
+        ptr = ptr_tmp;
+        ptr_tmp += len;
+        idx++;
+        break;
+      }
+
+      while(ptr_tmp_other < ptr_end_other){
+        len_other = Serialization::decode_vi32(&ptr_tmp_other);
+        ptr_other = ptr_tmp_other;
+        ptr_tmp_other += len_other;
+        idx_other++;
+        break;
+      }
+      
+      if(idx == idx_other){
+
+        comp = Condition::condition(ptr, len, ptr_other, len_other);
+        if(comp != Condition::EQ) 
+          return comp;
+
+        if(fractions && fractions == idx)
+          break;
+
+      } else 
+        return idx > idx_other? Condition::LT : Condition::GT;
+      
+    } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
+
+    return comp;
+  }
 
   inline size_t fractions(uint8_t offset=0) {
     uint32_t tmp_count = 0;
@@ -243,7 +294,7 @@ class Key {
     }
   }
 
-  const std::string to_string(){
+  const std::string to_string() const {
     std::string s("Key(");
     s.append("sz=");
     s.append(std::to_string(count));
@@ -255,7 +306,11 @@ class Key {
     for(uint32_t n=0; n<count; n++) {
       s.append("(");
       len = Serialization::decode_vi32((const uint8_t**)&ptr);
-      s.append(std::string((const char*)ptr, len));
+      char c;
+      for(int i=0; i<len;i++) {
+        c = *(ptr+i);
+        s.append(std::string(&c, 1));
+      }
       s.append("),");
       ptr += len;
     }
