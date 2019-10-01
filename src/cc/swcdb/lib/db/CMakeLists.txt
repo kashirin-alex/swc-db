@@ -29,6 +29,12 @@ ADD_TEST_TARGET(
 	SRCS	Cells/tests/test_cells_intervals.cc
 	TARGETS	swcdb_core
 )
+
+ADD_TEST_TARGET(
+	NAME	cells_mutable
+	SRCS	Cells/tests/test_cells_mutable.cc
+	TARGETS	swcdb_core
+)
 	
 
 ADD_TEST_TARGET(
@@ -37,3 +43,4 @@ ADD_TEST_TARGET(
 	TARGETS	swcdb_core_config swcdb_core ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
 )
+
