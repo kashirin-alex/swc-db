@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_RS_Columns_Columns_h
-#define swcdb_lib_db_RS_Columns_Columns_h
+#ifndef swcdb_lib_db_Rgr_Columns_Columns_h
+#define swcdb_lib_db_Rgr_Columns_Columns_h
 
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/db/Columns/Schema.h"

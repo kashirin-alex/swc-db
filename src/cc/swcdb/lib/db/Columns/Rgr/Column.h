@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_RS_Column_h
-#define swcdb_lib_db_Columns_RS_Column_h
+#ifndef swcdb_lib_db_Columns_Rgr_Column_h
+#define swcdb_lib_db_Columns_Rgr_Column_h
 
 #include "Range.h"
 
