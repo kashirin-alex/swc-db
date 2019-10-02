@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "swcdb/lib/db/Files/RgrData.h"
-#include "RgrStatus.h"
+#include "Ranger.h"
 
 #include "swcdb/lib/db/Files/Schema.h"
 
@@ -202,15 +202,15 @@ class Rangers {
   }
 
   // Ranger Actions
-  void update_status(RgrStatusList new_rgr_status, bool sync_all){
+  void update_status(RangerList new_rgr_status, bool sync_all){
     if(m_root_mngr && !sync_all)
       return;
 
-    RgrStatusList changed;
+    RangerList changed;
 
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
-      RgrStatusPtr h;
+      RangerPtr h;
       bool found;
       bool chg;
 
@@ -246,9 +246,9 @@ class Rangers {
               break;
             }
           }
-          if(rs_new->state == RgrStatus::State::ACK) {
+          if(rs_new->state == Ranger::State::ACK) {
             if(rs_new->state != h->state) {
-              h->state = RgrStatus::State::ACK;
+              h->state = Ranger::State::ACK;
               chg = true;
             }
           } else {
@@ -264,7 +264,7 @@ class Rangers {
         }
 
         if(!found){
-          if(rs_new->state == RgrStatus::State::ACK){
+          if(rs_new->state == Ranger::State::ACK){
             rs_new->init_queue();
             m_rgr_status.push_back(rs_new);
             if(!sync_all)
@@ -283,7 +283,7 @@ class Rangers {
     std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
     for(auto& rgr : m_rgr_status) {
       if(rgr->id == id){
-        if(rgr->state == RgrStatus::State::ACK)
+        if(rgr->state == Ranger::State::ACK)
           endpoints = rgr->endpoints;
         break;
       }
@@ -297,15 +297,15 @@ class Rangers {
 
   bool rs_ack_id(uint64_t id, const EndPoints& endpoints){
     bool ack = false;
-    RgrStatusPtr new_ack = nullptr;
+    RangerPtr new_ack = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
     
       for(auto& h : m_rgr_status){
         if(has_endpoint(h->endpoints, endpoints) && id == h->id){
-          if(h->state != RgrStatus::State::ACK)
+          if(h->state != Ranger::State::ACK)
             new_ack = h;
-          h->state = RgrStatus::State::ACK;
+          h->state = Ranger::State::ACK;
           ack = true;
           break;
         }
@@ -313,7 +313,7 @@ class Rangers {
     }
 
     if(new_ack != nullptr) {
-      RgrStatusList hosts({new_ack});
+      RangerList hosts({new_ack});
       rs_changes(hosts);
     }
     return ack;
@@ -338,7 +338,7 @@ class Rangers {
   }
 
   void rs_shutdown(uint64_t id, const EndPoints& endpoints){
-    RgrStatusPtr removed = nullptr;
+    RangerPtr removed = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++){
@@ -346,14 +346,14 @@ class Rangers {
         if(has_endpoint(h->endpoints, endpoints)){
           removed = h;
           m_rgr_status.erase(it);
-          removed->state = RgrStatus::State::REMOVED;
+          removed->state = Ranger::State::REMOVED;
           Env::MngrColumns::get()->set_rgr_unassigned(removed->id);
           break;
         }
       }
     }
     if(removed != nullptr){
-      RgrStatusList hosts({removed});
+      RangerList hosts({removed});
       rs_changes(hosts);
     }   
   }
@@ -383,7 +383,7 @@ class Rangers {
     }
   }
 
-  void assign_range_chk_last(int err, RgrStatusPtr rs_chk) {
+  void assign_range_chk_last(int err, RangerPtr rs_chk) {
     Protocol::Common::Req::ConnQueue::ReqBase::Ptr req;
     for(;;) {
       {
@@ -401,11 +401,11 @@ class Rangers {
     }
   }
 
-  void assign_range(RgrStatusPtr rgr, RangePtr range){
+  void assign_range(RangerPtr rgr, RangePtr range){
     rgr->put(std::make_shared<Protocol::Rgr::Req::RangeLoad>(rgr, range));
   }
 
-  void range_loaded(RgrStatusPtr rgr, RangePtr range, 
+  void range_loaded(RangerPtr rgr, RangePtr range, 
                     int err, bool failure=false) {
     bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
@@ -453,7 +453,7 @@ class Rangers {
     }
   }
 
-  void update_schema(int &err, RgrStatusPtr rgr, 
+  void update_schema(int &err, RangerPtr rgr, 
                      DB::SchemaPtr schema, bool failure) {
                        
     if(err == Error::OK)
@@ -644,7 +644,7 @@ class Rangers {
 
       err = Error::OK;
       Files::RgrDataPtr last_rgr = range->get_last_rgr(err);
-      RgrStatusPtr rgr = nullptr;
+      RangerPtr rgr = nullptr;
       next_rgr(last_rgr, rgr);
       if(rgr == nullptr){
         m_runs_assign = false;
@@ -664,12 +664,12 @@ class Rangers {
     check_assignment_timer(cfg_chk_assign->get());
   }
 
-  void next_rgr(Files::RgrDataPtr &last_rgr, RgrStatusPtr &rs_set){
+  void next_rgr(Files::RgrDataPtr &last_rgr, RangerPtr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
 
     if(last_rgr->endpoints.size() > 0) {
        for(auto& rgr : m_rgr_status) {
-          if(rgr->state == RgrStatus::State::ACK
+          if(rgr->state == Ranger::State::ACK
             && rgr->failures < cfg_rgr_failures->get() 
             && has_endpoint(rgr->endpoints, last_rgr->endpoints)){
             rs_set = rgr;
@@ -682,7 +682,7 @@ class Rangers {
     
     size_t num_rgr;
     size_t avg_ranges;
-    RgrStatusPtr rgr;
+    RangerPtr rgr;
 
     while(rs_set == nullptr && m_rgr_status.size() > 0){
       avg_ranges = 0;
@@ -690,7 +690,7 @@ class Rangers {
       // avg_resource_ratio = 0;
       for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++) {
         rgr = *it;
-        if(rgr->state != RgrStatus::State::ACK)
+        if(rgr->state != Ranger::State::ACK)
           continue;
         avg_ranges = avg_ranges*num_rgr + rgr->total_ranges;
         // resource_ratio = avg_resource_ratio*num_rgr + rgr->resource();
@@ -700,7 +700,7 @@ class Rangers {
 
       for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++){
         rgr = *it;
-        if(rgr->state != RgrStatus::State::ACK || avg_ranges < rgr->total_ranges)
+        if(rgr->state != Ranger::State::ACK || avg_ranges < rgr->total_ranges)
           continue;
 
         if(rgr->failures >= cfg_rgr_failures->get()){
@@ -718,7 +718,7 @@ class Rangers {
     return;
   }
 
-  void assign_range(RgrStatusPtr rgr, RangePtr range, 
+  void assign_range(RangerPtr rgr, RangePtr range, 
                     Files::RgrDataPtr last_rgr){
     if(last_rgr == nullptr){
       assign_range(rgr, range);
@@ -726,25 +726,25 @@ class Rangers {
     }
 
     bool id_due;
-    RgrStatusPtr rs_last = nullptr;
+    RangerPtr rs_last = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       for(auto& rs_chk : m_rgr_status) {
         if(has_endpoint(rs_chk->endpoints, last_rgr->endpoints)){
           rs_last = rs_chk;
-          id_due = rs_last->state == RgrStatus::State::AWAIT;
-          rs_last->state = RgrStatus::State::AWAIT;
+          id_due = rs_last->state == Ranger::State::AWAIT;
+          rs_last->state = Ranger::State::AWAIT;
           break;
         }
       }
     }
     if(rs_last == nullptr){
-      rs_last = std::make_shared<RgrStatus>(0, last_rgr->endpoints);
+      rs_last = std::make_shared<Ranger>(0, last_rgr->endpoints);
       rs_last->init_queue();
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
       m_rgr_status.push_back(rs_last);
-      rs_last->state = RgrStatus::State::AWAIT;
+      rs_last->state = Ranger::State::AWAIT;
       id_due = false;
     }
     
@@ -756,12 +756,12 @@ class Rangers {
       rs_last->put(req);
   }
 
-  RgrStatusPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
+  RangerPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
 
     for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++){
       auto h = *it;
       if(has_endpoint(h->endpoints, endpoints)) {
-        if(h->state == RgrStatus::State::ACK) {
+        if(h->state == Ranger::State::ACK) {
           h->set(endpoints);
           return h;
         } else {
@@ -792,13 +792,13 @@ class Rangers {
       }
     } while(!ok);
 
-    RgrStatusPtr h = std::make_shared<RgrStatus>(nxt, endpoints);
+    RangerPtr h = std::make_shared<Ranger>(nxt, endpoints);
     h->init_queue();
     m_rgr_status.push_back(h);
     return h;
   }
   
-  void rs_changes(RgrStatusList& hosts, bool sync_all=false){
+  void rs_changes(RangerList& hosts, bool sync_all=false){
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       if(hosts.size() > 0){
@@ -1041,7 +1041,7 @@ class Rangers {
 
       for(auto& rgr : m_rgr_status) {
         if(rgr->failures < cfg_rgr_failures->get() 
-          && rgr->state == RgrStatus::State::ACK && rgr->id == id) {
+          && rgr->state == Ranger::State::ACK && rgr->id == id) {
           undergo = true;
           if(ack_required){
             rgr->put(
@@ -1139,7 +1139,7 @@ class Rangers {
   std::vector<ColumnFunction>   m_cid_pending_load;
 
   std::mutex                    m_mutex_rgr_status;
-  RgrStatusList                 m_rgr_status;
+  RangerList                    m_rgr_status;
 
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign = false;

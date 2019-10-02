@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RgrUpdate : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  RgrUpdate(server::Mngr::RgrStatusList &hosts, bool sync_all) {
+  RgrUpdate(server::Mngr::RangerList &hosts, bool sync_all) {
     Params::RgrUpdate params(hosts, sync_all);
     CommHeader header(Mngr::RGR_UPDATE, 60000);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length());

@@ -12,8 +12,8 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  AssignIdNeeded(server::Mngr::RgrStatusPtr rs_chk, 
-                 server::Mngr::RgrStatusPtr rs_nxt, 
+  AssignIdNeeded(server::Mngr::RangerPtr rs_chk, 
+                 server::Mngr::RangerPtr rs_nxt, 
                  server::Mngr::RangePtr range) 
                 : Common::Req::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
@@ -51,11 +51,11 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
   void rsp(int err);
 
 
-  server::Mngr::RgrStatusPtr  rs_nxt;
+  server::Mngr::RangerPtr  rs_nxt;
   server::Mngr::RangePtr      range;
   private:
 
-  server::Mngr::RgrStatusPtr  rs_chk;
+  server::Mngr::RangerPtr  rs_chk;
 };
 
 }}}}

@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_RgrStatus_h
-#define swc_lib_manager_RgrStatus_h
+#ifndef swc_lib_manager_Ranger_h
+#define swc_lib_manager_Ranger_h
 
 #include "swcdb/lib/db/Protocol/Common/params/HostEndPoints.h"
 
@@ -12,7 +12,7 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-class RgrStatus : public Protocol::Common::Params::HostEndPoints {
+class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   public:
 
@@ -23,16 +23,16 @@ class RgrStatus : public Protocol::Common::Params::HostEndPoints {
     REMOVED
   };
   
-  RgrStatus():  id(0), state(State::NONE), 
-                failures(0), total_ranges(0) {}
+  Ranger(): id(0), state(State::NONE), 
+            failures(0), total_ranges(0) {}
                        
-  RgrStatus(uint64_t id, const EndPoints& endpoints)
-            : id(id), state(State::NONE), 
-              failures(0), total_ranges(0),
-              Protocol::Common::Params::HostEndPoints(endpoints) {
+  Ranger(uint64_t id, const EndPoints& endpoints)
+        : id(id), state(State::NONE), 
+          failures(0), total_ranges(0),
+          Protocol::Common::Params::HostEndPoints(endpoints) {
   }
 
-  virtual ~RgrStatus(){}
+  virtual ~Ranger(){}
 
   std::string to_string(){
     std::string s("[id=");
@@ -109,9 +109,9 @@ class RgrStatus : public Protocol::Common::Params::HostEndPoints {
   std::queue<Protocol::Common::Req::ConnQueue::ReqBase::Ptr> m_pending_id;
 
 };
-typedef std::shared_ptr<RgrStatus> RgrStatusPtr;
-typedef std::vector<RgrStatusPtr>  RgrStatusList;
+typedef std::shared_ptr<Ranger> RangerPtr;
+typedef std::vector<RangerPtr>  RangerList;
 
 }}}
 
-#endif // swc_lib_manager_RgrStatus_h
+#endif // swc_lib_manager_Ranger_h
