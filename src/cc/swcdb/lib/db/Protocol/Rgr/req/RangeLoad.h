@@ -53,7 +53,7 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
       size_t remain = ev->payload_len-4;
       Params::RangeLoaded params;
       params.decode(&ptr, &remain);
-      loaded(err, false, params.intervals); 
+      loaded(err, false, params.interval); 
     }
   }
 
@@ -65,7 +65,7 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
     loaded(Error::COMM_NOT_CONNECTED, true, nullptr);
   }
 
-  void loaded(int err, bool failure, DB::Cells::Intervals::Ptr intvals);
+  void loaded(int err, bool failure, DB::Cells::Interval::Ptr intval);
 
 
   private:

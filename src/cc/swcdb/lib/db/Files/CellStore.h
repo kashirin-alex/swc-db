@@ -23,12 +23,12 @@ class CellStore {
 
   typedef std::shared_ptr<CellStore> Ptr;
 
-  DB::Cells::Intervals::Ptr intervals;
+  DB::Cells::Interval::Ptr interval;
   const uint32_t            cs_id;
 
   CellStore(uint32_t cs_id)
             : cs_id(cs_id), version(VERSION),
-              intervals(std::make_shared<DB::Cells::Intervals>()) { }
+              interval(std::make_shared<DB::Cells::Interval>()) { }
 
   virtual ~CellStore(){}
 
@@ -40,7 +40,7 @@ class CellStore {
     s.append(" cs_id=");
     s.append(std::to_string(cs_id));
     s.append(" ");
-    s.append(intervals->to_string());
+    s.append(interval->to_string());
     if(m_smartfd != nullptr){
       s.append(" ");
       s.append(m_smartfd->to_string());
@@ -53,7 +53,7 @@ class CellStore {
 
   void load_trailer() {
 
-    // sets cs->intervals
+    // sets cs->interval
   }
 
   private:

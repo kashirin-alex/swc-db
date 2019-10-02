@@ -9,7 +9,7 @@
 #include <mutex>
 
 #include "swcdb/lib/db/Files/RgrData.h"
-#include "swcdb/lib/db/Cells/Intervals.h"
+#include "swcdb/lib/db/Cells/Interval.h"
 
 
 namespace SWC { namespace DB {
@@ -59,8 +59,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
             cid(cid), rid(rid),
             m_path(get_path(cid, rid))  { }
 
-  RangeBase(int64_t cid, int64_t rid, Cells::Intervals::Ptr intvals): 
-            cid(cid), rid(rid), m_intervals(intvals),
+  RangeBase(int64_t cid, int64_t rid, Cells::Interval::Ptr intval): 
+            cid(cid), rid(rid), m_interval(intval),
             m_path(get_path(cid, rid))  { }
 
   virtual ~RangeBase(){}
@@ -79,9 +79,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return Files::RgrData::get_rgr(err, get_path(rs_data_file));
   }
 
-  const Cells::Intervals::Ptr& get_intervals() {
+  const Cells::Interval::Ptr& get_interval() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_intervals;
+    return m_interval;
   }
 
   std::string to_string(){
@@ -89,9 +89,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     s.append(std::to_string(cid));
     s.append(", rid=");
     s.append(std::to_string(rid));
-    if(m_intervals != nullptr) {
+    if(m_interval != nullptr) {
       s.append(", ");
-      s.append(m_intervals->to_string());
+      s.append(m_interval->to_string());
     }
     return s;
   }
@@ -102,7 +102,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   protected:
   std::mutex                m_mutex;
-  Cells::Intervals::Ptr     m_intervals;
+  Cells::Interval::Ptr     m_interval;
 };
 
 }}

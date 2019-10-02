@@ -11,7 +11,7 @@
 #include "swcdb/lib/core/Serialization.h"
 #include "swcdb/lib/core/Time.h"
 
-#include "swcdb/lib/db/Cells/Intervals.h"
+#include "swcdb/lib/db/Cells/Interval.h"
 #include "swcdb/lib/db/Files/CellStore.h"
 
 
@@ -24,7 +24,7 @@ const int8_t VERSION=1;
 /* file-format: 
     header: i8(version), i32(data-len), 
             i32(data-checksum), i32(header-checksum)
-    data:   vi32(num-cellstore) ,[vi32(cellstore-count), intervals]
+    data:   vi32(num-cellstore) ,[vi32(cellstore-count), interval]
 */
 
 
@@ -34,7 +34,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
   for(auto& cs : cellstores) {
     sz += Serialization::encoded_length_vi32(cs->cs_id)
-        + cs->intervals->encoded_length();
+          + cs->interval->encoded_length();
   }
   dst_buf.ensure(HEADER_SIZE+sz);
 
@@ -51,7 +51,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
   for(auto& cs : cellstores){
     Serialization::encode_vi32(&dst_buf.ptr, cs->cs_id);
-    cs->intervals->encode(&dst_buf.ptr);
+    cs->interval->encode(&dst_buf.ptr);
   }
 
   checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
@@ -83,7 +83,7 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
   for(size_t i=0;i<len;i++) {
     CellStore::Ptr cs = std::make_shared<CellStore>(
       Serialization::decode_vi32(ptr, remain)); 
-    cs->intervals->decode(ptr, remain, true);
+    cs->interval->decode(ptr, remain, true);
     cellstores.push_back(cs);
   }
 

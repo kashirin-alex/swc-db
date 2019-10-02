@@ -48,10 +48,10 @@ class RangeLoad : public Common::Params::ColRangeId {
 class RangeLoaded : public Serializable {
   public:
   RangeLoaded() {}
-  RangeLoaded(DB::Cells::Intervals::Ptr intervals): intervals(intervals) {}
+  RangeLoaded(DB::Cells::Interval::Ptr interval): interval(interval) {}
   virtual ~RangeLoaded(){}
   
-  DB::Cells::Intervals::Ptr intervals;
+  DB::Cells::Interval::Ptr interval;
   
   private:
 
@@ -60,17 +60,17 @@ class RangeLoaded : public Serializable {
   }
 
   size_t encoded_length_internal() const {
-    return intervals->encoded_length();
+    return interval->encoded_length();
   }
     
   void encode_internal(uint8_t **bufp) const {
-    intervals->encode(bufp);
+    interval->encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
-    intervals = std::make_shared<DB::Cells::Intervals>();
-    intervals->decode(bufp, remainp);
+    interval = std::make_shared<DB::Cells::Interval>();
+    interval->decode(bufp, remainp);
   }
 
 };

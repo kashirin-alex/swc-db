@@ -97,28 +97,28 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-  RangePtr get_range(int &err, DB::Specs::Interval::Ptr& intervals, 
+  RangePtr get_range(int &err, DB::Specs::Interval::Ptr& interval, 
                      DB::Specs::Key &next_key){
     RangePtr found;
     RangePtr range = m_base_range;
     range->chained_next(range);
     for(;;){
-      range->chained_consist(intervals, found, next_key, range);
+      range->chained_consist(interval, found, next_key, range);
       if(range == nullptr || !next_key.empty())
         break;
     }
     return found;
   }
 
-  void chained_set(RangePtr& range, DB::Cells::Intervals::Ptr& intervals){
-    DB::Cells::Intervals::Ptr intvals = range->get_intervals();
+  void chained_set(RangePtr& range, DB::Cells::Interval::Ptr& interval){
+    DB::Cells::Interval::Ptr intval = range->get_interval();
 
-    if(intvals == nullptr && intervals == nullptr) 
+    if(intval == nullptr && interval == nullptr) 
       return;
 
-    if(intervals == nullptr || !intervals->equal(intvals)) {
+    if(interval == nullptr || !interval->equal(intval)) {
       range->chained_remove();
-      range->set(intervals);
+      range->set(interval);
       chained_set(range);
       if(!range->assigned())
         return;

@@ -95,11 +95,11 @@ class Range : public DB::RangeBase {
     m_last_rgr = nullptr;
   }
 
-  void set(DB::Cells::Intervals::Ptr intervals){
+  void set(DB::Cells::Interval::Ptr interval){
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_intervals == nullptr)
-       m_intervals = std::make_shared<DB::Cells::Intervals>();
-    m_intervals->copy(intervals);
+    if(m_interval == nullptr)
+       m_interval = std::make_shared<DB::Cells::Interval>();
+    m_interval->copy(interval);
   }
 
   std::string to_string(){
@@ -118,10 +118,10 @@ class Range : public DB::RangeBase {
   bool chained_set(RangePtr range, RangePtr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    if(m_intervals != nullptr) {
-      DB::Cells::Intervals::Ptr intvals = range->get_intervals();
-      if(intvals != nullptr 
-        && !m_intervals->is_in_end(intvals->get_key_begin())) {
+    if(m_interval != nullptr) {
+      DB::Cells::Interval::Ptr intval = range->get_interval();
+      if(intval != nullptr 
+        && !m_interval->is_in_end(intval->get_key_begin())) {
         range->chained_set_next(current);
         if(m_chained_prev != nullptr) {
           range->chained_set_prev(m_chained_prev);
@@ -143,21 +143,21 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void chained_consist(DB::Specs::Interval::Ptr& intvals, RangePtr& found,
+  void chained_consist(DB::Specs::Interval::Ptr& intval, RangePtr& found,
                        DB::Specs::Key &next_key, RangePtr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
 
 
-    if(m_intervals == nullptr || !m_intervals->includes(intvals)) {
+    if(m_interval == nullptr || !m_interval->includes(intval)) {
       std::cout << " FALSE chained_consist, rid=" << current->rid
-                << "\n this  " << m_intervals->to_string()
-                << "\n other " << intvals->to_string();
+                << "\n this  " << m_interval->to_string()
+                << "\n other " << intval->to_string();
       current = nullptr;
       return;
     }
 
     if(found != nullptr)
-      next_key.copy(m_intervals->get_key_begin());
+      next_key.copy(m_interval->get_key_begin());
     else 
       found = current;
 

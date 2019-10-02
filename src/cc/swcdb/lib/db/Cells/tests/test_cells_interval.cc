@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "swcdb/lib/fs/Interface.h"
-#include "swcdb/lib/db/Cells/Intervals.h"
+#include "swcdb/lib/db/Cells/Interval.h"
 #include "swcdb/lib/db/Files/CellStore.h"
 
 
@@ -15,7 +15,7 @@ namespace Condition = SWC::Condition;
 
 int main() {
   
-  DB::Cells::Intervals expected_expanded;
+  DB::Cells::Interval expected_expanded;
   int n_cs = 9999;
   Files::CellStores     cellstores;
   for(int n=1; n<=n_cs;n++)
@@ -29,9 +29,9 @@ int main() {
       key.add(std::string("b")+s, Condition::GE);
       key.add(std::string("c")+s, Condition::GE);
       key.add(std::string("d")+s, Condition::GE);
-      cs->intervals->key_begin(key);
-      if(!key.equal(cs->intervals->get_key_begin())) {
-        std::cerr << "!key.equal(cs->intervals->get_key_begin()): ERROR\n";
+      cs->interval->key_begin(key);
+      if(!key.equal(cs->interval->get_key_begin())) {
+        std::cerr << "!key.equal(cs->interval->get_key_begin()): ERROR\n";
         exit(1);
       }
       if(n_cs-cs->cs_id == 0)
@@ -44,9 +44,9 @@ int main() {
       key.add(std::string("b")+s, Condition::LE);
       key.add(std::string("c")+s, Condition::LE);
       key.add(std::string("d")+s, Condition::LE);
-      cs->intervals->key_end(key);
-      if(!key.equal(cs->intervals->get_key_end())) {
-        std::cerr << "!key.equal(cs->intervals->get_key_end()): ERROR\n";
+      cs->interval->key_end(key);
+      if(!key.equal(cs->interval->get_key_end())) {
+        std::cerr << "!key.equal(cs->interval->get_key_end()): ERROR\n";
         exit(1);
       }
       if(cs->cs_id == n_cs)
@@ -55,9 +55,9 @@ int main() {
       DB::Specs::Timestamp ts;
       ts.comp = Condition::GE;
       ts.value = n_cs-cs->cs_id;
-      cs->intervals->ts_earliest(ts);
-      if(!ts.equal(cs->intervals->get_ts_earliest())) {
-        std::cerr << "!ts.equal(cs->intervals->get_ts_earliest()): ERROR\n";
+      cs->interval->ts_earliest(ts);
+      if(!ts.equal(cs->interval->get_ts_earliest())) {
+        std::cerr << "!ts.equal(cs->interval->get_ts_earliest()): ERROR\n";
         exit(1);
       }
       if(ts.value == 0)
@@ -65,9 +65,9 @@ int main() {
 
       ts.comp = Condition::LE;
       ts.value = cs->cs_id;
-      cs->intervals->ts_latest(ts);
-      if(!ts.equal(cs->intervals->get_ts_latest())) {
-        std::cerr << "!ts.equal(cs->intervals->get_ts_latest()): ERROR\n";
+      cs->interval->ts_latest(ts);
+      if(!ts.equal(cs->interval->get_ts_latest())) {
+        std::cerr << "!ts.equal(cs->interval->get_ts_latest()): ERROR\n";
         exit(1);
       }
       if(ts.value == n_cs)
@@ -77,19 +77,19 @@ int main() {
   std::cout << " init OK\n";
   std::cout << "\n";
 
-  DB::Cells::Intervals::Ptr intvals = std::make_shared<DB::Cells::Intervals>();
+  DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
   std::cout << "\n";
 
   bool init = false;
   for(const auto& cs : cellstores) {
-    intvals->expand(cs->intervals, init);
+    intval->expand(cs->interval, init);
     init=true;
     //std::cout << cs->to_string() << "\n";
   }
-  if(!expected_expanded.equal(intvals)){
+  if(!expected_expanded.equal(intval)){
     std::cout << " expected,  " << expected_expanded.to_string() << "\n";
-    std::cout << " resulting, " << intvals->to_string() << "\n";
-    std::cerr << "!expected_expanded.equal(intvals)): ERROR\n";
+    std::cout << " resulting, " << intval->to_string() << "\n";
+    std::cerr << "!expected_expanded.equal(intval)): ERROR\n";
     exit(1);
   }
   exit(0);

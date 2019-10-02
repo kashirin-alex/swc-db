@@ -85,7 +85,7 @@ class RgrGet : public AppHandler {
 };
   
 // flag(if cid==1) 
-//      in(cid+intervals)  out(cid + rid + rgr-endpoints + ?next) 
+//      in(cid+interval)  out(cid + rid + rgr-endpoints + ?next) 
 // else 
 //      in(cid+rid)        out(cid + rid + rgr-endpoints)
 

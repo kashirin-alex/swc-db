@@ -25,8 +25,8 @@ ADD_TEST_TARGET(
 	TARGETS	swcdb_core
 )
 ADD_TEST_TARGET(
-	NAME	cells_intervals
-	SRCS	Cells/tests/test_cells_intervals.cc
+	NAME	cells_interval
+	SRCS	Cells/tests/test_cells_interval.cc
 	TARGETS	swcdb_core
 )
 

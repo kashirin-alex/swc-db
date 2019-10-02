@@ -1163,7 +1163,7 @@ class Rangers {
 
 
 void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure, 
-                                        DB::Cells::Intervals::Ptr intvals) { 
+                                        DB::Cells::Interval::Ptr intval) { 
   std::cout << " Protocol::Rgr::Req::RangeLoad::loaded" << "\n";
   auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
   if(col == nullptr){
@@ -1178,7 +1178,7 @@ void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure,
     col->remove_rgr_schema(rgr->id);
 
   Env::Rangers::get()->range_loaded(rgr, range, err, failure);
-  col->chained_set(range, intvals);
+  col->chained_set(range, intval);
 }
 
 void Protocol::Rgr::Req::ColumnUpdate::updated(int err, bool failure) {

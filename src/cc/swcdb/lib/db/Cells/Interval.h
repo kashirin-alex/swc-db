@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Cells_Intervals_h
-#define swcdb_db_Cells_Intervals_h
+#ifndef swcdb_db_Cells_Interval_h
+#define swcdb_db_Cells_Interval_h
 
 #include "swcdb/lib/db/Cells/Cell.h"
 #include "SpecsInterval.h"
@@ -12,7 +12,7 @@
 
 namespace SWC {  namespace DB { namespace Cells {
 
-class Intervals {
+class Interval {
 
   /* encoded-format: 
       key_begin-encoded key_end-encoded vi64(ts_earliest) vi64(ts_latest)
@@ -20,11 +20,11 @@ class Intervals {
 
   public:
 
-  typedef std::shared_ptr<Intervals> Ptr;
+  typedef std::shared_ptr<Interval> Ptr;
 
-  explicit Intervals() { }
+  explicit Interval() { }
 
-  virtual ~Intervals(){ 
+  virtual ~Interval(){ 
     free();
   }
 
@@ -170,7 +170,7 @@ class Intervals {
 
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("Intervals(begin=");
+    std::string s("Interval(begin=");
     s.append(m_key_begin.to_string());
     s.append( " end=");
     s.append(m_key_end.to_string());
@@ -322,7 +322,7 @@ class ArrChain {
   const Item<baseT>* first;
 };
 
-inline static  ArrChain<Cells::Intervals::Ptr> ranggsfgfghes;
+inline static  ArrChain<Cells::Interval::Ptr> ranggsfgfghes;
 */
 
 #endif

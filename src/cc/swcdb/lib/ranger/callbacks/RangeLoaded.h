@@ -40,7 +40,7 @@ class RangeLoaded : public ResponseCallback {
     
 
     try {
-      Protocol::Rgr::Params::RangeLoaded params(range->get_intervals());
+      Protocol::Rgr::Params::RangeLoaded params(range->get_interval());
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(
