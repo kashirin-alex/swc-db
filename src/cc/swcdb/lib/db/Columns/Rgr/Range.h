@@ -3,14 +3,16 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_RS_Range_h
-#define swcdb_lib_db_Columns_RS_Range_h
+#ifndef swcdb_lib_db_Columns_Rgr_Range_h
+#define swcdb_lib_db_Columns_Rgr_Range_h
 
 #include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Protocol/Rgr/req/RangeUnload.h"
 
+#include "swcdb/lib/db/Cells/Mutable.h"
 #include "swcdb/lib/db/Types/Range.h"
 #include "swcdb/lib/db/Files/RangeData.h"
+#include "CommitLog.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
@@ -28,7 +30,7 @@ class Range : public DB::RangeBase {
   };
 
   Range(int64_t cid, int64_t rid)
-        : RangeBase(cid, rid, std::make_shared<DB::Cells::Intervals>()), 
+        : RangeBase(cid, rid, std::make_shared<DB::Cells::Interval>()), 
           m_state(State::NOTLOADED) { 
             
     if(cid == 1)
@@ -102,19 +104,20 @@ class Range : public DB::RangeBase {
   }
 
   void on_change(int &err){ // range-interval || cellstores
+    std::lock_guard<std::mutex> lock(m_mutex);
     
     switch(m_type){
       case Types::Range::DATA:
-        // + INSERT meta-range(col-2), cid,rid,m_intervals(key)
+        // + INSERT meta-range(col-2), cid,rid,m_interval(key)
         break;
       case Types::Range::META:
-        // + INSERT master-range(col-1), cid(2),rid,m_intervals(key)
+        // + INSERT master-range(col-1), cid(2),rid,m_interval(key)
         break;
       default: // Types::Range::MASTER:
         break;
     }
 
-    Files::RangeData::save(err, get_path(range_data_file), cellstores);
+    Files::RangeData::save(err, get_path(range_data_file), m_cellstores);
   }
 
   void unload(Callback::RangeUnloaded_t cb, bool completely){
@@ -150,7 +153,7 @@ class Range : public DB::RangeBase {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
   
-      for(auto& cs : cellstores){
+      for(auto& cs : m_cellstores){
         cs->remove(err);
       }
 
@@ -172,10 +175,10 @@ class Range : public DB::RangeBase {
     s.append(std::to_string((int)m_type));
 
     s.append(", ");
-    s.append(m_intervals->to_string());
+    s.append(m_interval->to_string());
 
     s.append(", cellstores=[");
-    for(auto& cs : cellstores) {
+    for(auto& cs : m_cellstores) {
       s.append(cs->to_string());
       s.append(", ");
     }
@@ -218,16 +221,16 @@ class Range : public DB::RangeBase {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      // range.data
-      Files::RangeData::load(err, get_path(range_data_file), cellstores);
-      if(err != Error::OK || cellstores.size() == 0) {
+      // + range.data
+      Files::RangeData::load(err, get_path(range_data_file), m_cellstores);
+      if(err != Error::OK || m_cellstores.size() == 0) {
         err = Error::OK;
-        Files::RangeData::load_by_path(err, get_path("cs"), cellstores);
-        for(auto& cs : cellstores) {
+        Files::RangeData::load_by_path(err, get_path("cs"), m_cellstores);
+        for(auto& cs : m_cellstores) {
           cs->load_trailer();
         }
         if(err == Error::OK)
-          Files::RangeData::save(err, get_path(range_data_file), cellstores);
+          Files::RangeData::save(err, get_path(range_data_file), m_cellstores);
       
         if(err != Error::OK) 
           err = Error::OK;
@@ -237,7 +240,7 @@ class Range : public DB::RangeBase {
       // cellstores
 
 
-    //*
+    /*
     // TEST-DATA
     if(cellstores.size() == 0) {
     cellstores.push_back(std::make_shared<Files::CellStore>(1));
@@ -245,7 +248,7 @@ class Range : public DB::RangeBase {
     cellstores.push_back(std::make_shared<Files::CellStore>(3));
     cellstores.push_back(std::make_shared<Files::CellStore>(4));
     cellstores.push_back(std::make_shared<Files::CellStore>(5));
-    for(auto& cs : cellstores){
+    for(auto& cs : m_cellstores){
       auto s = std::to_string(cs->cs_id);
       DB::Specs::Key key;
       key.add("11", Condition::GE);
@@ -253,7 +256,7 @@ class Range : public DB::RangeBase {
       key.add(std::string("b12345")+s, Condition::GE);
       key.add(std::string("c12345")+s, Condition::GE);
       key.add(std::string("d12345")+s, Condition::GE);
-      cs->intervals->key_begin(key);
+      cs->interval->key_begin(key);
       key.free();
 
       key.add("11", Condition::LE);
@@ -261,33 +264,33 @@ class Range : public DB::RangeBase {
       key.add(std::string("b98765")+s, Condition::LE);
       key.add(std::string("c98765")+s, Condition::LE);
       key.add(std::string("d98765")+s, Condition::LE);
-      cs->intervals->key_end(key);
+      cs->interval->key_end(key);
 
       DB::Specs::Timestamp ts;
       ts.comp = Condition::GE;
       ts.value = 1234;
-      cs->intervals->ts_earliest(ts);
+      cs->interval->ts_earliest(ts);
       ts.comp = Condition::LE;
       ts.value = 9876;
-      cs->intervals->ts_latest(ts);
+      cs->interval->ts_latest(ts);
     }
     //delete [] d;
     }
-    //*/
+    //
+    */
 
       bool init = false;
-      for(auto& cs : cellstores) {
-        m_intervals->expand(cs->intervals, init);
+      for(auto& cs : m_cellstores) {
+        m_interval->expand(cs->interval, init);
         init=true;
       }
-      on_change(err);
-      // CommitLogs
-    
-
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+      m_log = std::make_shared<CommitLog>(shared_from_this());
+      m_interval->expand(m_log->interval, init);
     }
     
     loaded(err, cb); // RSP-LOAD-ACK
+
+    on_change(err);
 
     if(err == Error::OK) {
       set_state(State::LOADED);
@@ -302,11 +305,15 @@ class Range : public DB::RangeBase {
   }
 
 
-  State                 m_state;
-  Types::Range          m_type;
-  Files::CellStores     cellstores;
+  State                   m_state;
+  Types::Range            m_type;
+  DB::Cells::Mutable::Ptr m_cells;
+  Files::CellStores       m_cellstores;
+  CommitLog::Ptr          m_log;
 
 };
+// -> cellstores(interval) >> Cells::Mutable  << CommitLog-Fragments(Interval), 
+
 
 
 typedef std::shared_ptr<Range> RangePtr;
