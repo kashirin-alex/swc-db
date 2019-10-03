@@ -25,6 +25,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
   inline static const std::string rs_data_file = "ranger.data";
 
+  inline static const std::string cellstores_dir = "cs";
+  inline static const std::string log_dir = "log"; 
+
   inline static const std::string get_column_path(){
     std::string s(column_dir);
     return s;
@@ -72,6 +75,15 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   std::string get_path(std::string suff){
     std::string s(m_path);
     s.append(suff);
+    return s;
+  }
+
+  const std::string get_path_cs(int64_t cs_id){
+    std::string s(m_path);
+    s.append(cellstores_dir);
+    s.append("/");
+    FS::set_structured_id(std::to_string(cs_id), s);
+    s.append(".cs");
     return s;
   }
 
