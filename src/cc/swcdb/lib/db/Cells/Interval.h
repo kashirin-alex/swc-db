@@ -24,6 +24,10 @@ class Interval {
 
   explicit Interval() { }
 
+  explicit Interval(const uint8_t **ptr, size_t *remain) {
+    decode(ptr, remain, true); 
+  }
+
   virtual ~Interval(){ 
     free();
   }
