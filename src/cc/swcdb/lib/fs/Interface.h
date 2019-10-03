@@ -330,6 +330,22 @@ class Interface : std::enable_shared_from_this<Interface>{
     buffer.own=true;
   }
   
+  bool open(int& err, SmartFdPtr smartfd) {
+    m_fs->open(err, smartfd);
+    if(err == Error::FS_PATH_NOT_FOUND ||
+       err == Error::FS_PERMISSION_DENIED ||
+       err == Error::SERVER_SHUTTING_DOWN)
+      return false;
+    if(!smartfd->valid())
+      return true;
+      
+    if(err != Error::OK) {
+      int tmperr = Error::OK;
+      m_fs->close(tmperr, smartfd);
+      return true;
+    }
+    return false;
+  }
  
   private:
   Types::Fs     m_type;
