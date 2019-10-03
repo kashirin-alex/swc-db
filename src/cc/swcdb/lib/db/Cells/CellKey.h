@@ -17,7 +17,7 @@ class Key {
 
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) {}
 
-  explicit Key(const Key &other){
+  explicit Key(const Key &other) {
     copy(other);
   }
 
@@ -30,7 +30,8 @@ class Key {
     if(size > 0) {
       data = new uint8_t[size];
       memcpy(data, other.data, size);
-    }
+    } else 
+      data = 0;
   }
 
   virtual ~Key(){
