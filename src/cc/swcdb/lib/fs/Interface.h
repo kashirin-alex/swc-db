@@ -346,6 +346,24 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
     return false;
   }
+  
+  bool create(int& err, SmartFdPtr smartfd,
+              int32_t bufsz, int32_t replication, int64_t blksz) {
+    m_fs->create(err, smartfd, bufsz, replication, blksz);
+    if(err == Error::FS_PATH_NOT_FOUND ||
+       err == Error::FS_PERMISSION_DENIED ||
+       err == Error::SERVER_SHUTTING_DOWN)
+      return false;
+    if(!smartfd->valid())
+      return true;
+      
+    if(err != Error::OK) {
+      int tmperr = Error::OK;
+      m_fs->close(tmperr, smartfd);
+      return true;
+    }
+    return false;
+  }
  
   private:
   Types::Fs     m_type;
