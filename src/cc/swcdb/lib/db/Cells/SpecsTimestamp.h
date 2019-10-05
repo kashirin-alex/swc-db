@@ -16,10 +16,11 @@ namespace SWC { namespace DB { namespace Specs {
 class Timestamp {
   public:
 
-  explicit Timestamp(): value(0), comp(Condition::NONE){}
+  explicit Timestamp(): value(0), comp(Condition::NONE), was_set(false) {}
 
-  explicit Timestamp(int64_t timestamp, Condition::Comp comp)
-            : value(timestamp), comp(comp){}
+  explicit Timestamp(int64_t timestamp, Condition::Comp comp) {
+    set(timestamp, comp);
+  }
   
   explicit Timestamp(const Timestamp &other){
     copy(other);
@@ -27,12 +28,27 @@ class Timestamp {
 
   void copy(const Timestamp &other) {
     //std::cout << " copy(const Timestamp &other)\n";
-    value  = other.value;
-    comp  = other.comp;
+    set(other.value, other.comp);
+  }
+
+  void set(int64_t timestamp, Condition::Comp comperator) {
+    value = timestamp;
+    comp  = comperator;
+    was_set = true;
+  }
+
+  void free() {
+    value  = 0;
+    comp  = Condition::NONE;
+    was_set = false;
   }
 
   virtual ~Timestamp(){
     //std::cout << " ~Timestamp\n";
+  }
+
+  bool empty() {
+    return !was_set;
   }
 
   bool equal(const Timestamp &other) {
@@ -40,7 +56,7 @@ class Timestamp {
   }
 
   size_t encoded_length() const {
-    return 1+(comp!=Condition::NONE?8:0);
+    return 1+(comp != Condition::NONE? 8: 0);
   }
 
   void encode(uint8_t **bufp) const {
@@ -69,6 +85,7 @@ class Timestamp {
 
   int64_t          value; 
   Condition::Comp  comp;
+  bool             was_set;
 };
 
 }}}
