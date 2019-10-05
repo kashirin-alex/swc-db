@@ -6,187 +6,34 @@
 #ifndef swcdb_db_Files_CellStore_h
 #define swcdb_db_Files_CellStore_h
 
-#include "swcdb/lib/core/Encoder.h"
-#include "swcdb/lib/ranger/callbacks/RangeScan.h"
-
+#include "CellStoreBlock.h"
 
 
 namespace SWC { namespace Files {
 
-class Block {  
+namespace CellStore {
 
-  /* file-format: 
-        header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
-        data:   [cell]
-  */
+/* file-format: 
+    [blocks]: 
+      header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+      data:   [cell]
+    blocks-index:
+      header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
+      data:   [vi32(offset), interval, i32(checksum)]
+    trailer : i8(version), i32(blocks-index-len), i32(checksum)
+      (trailer-offset) = fileLength - TRAILER_SIZE
+      (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
+*/
 
+
+static const uint8_t  TRAILER_SIZE=9;
+static const int8_t   VERSION=1;
+
+
+
+class Read : public std::enable_shared_from_this<Read> {
   public:
-  typedef std::shared_ptr<Block> Ptr;
-  
-  static const int HEADER_SIZE=17;
-
-  Block(const size_t offset, DB::Cells::Interval::Ptr interval, 
-        DB::Cells::Mutable::Ptr log_cells = nullptr)
-        : offset(offset), loaded(false), interval(interval), log_cells(log_cells) { 
-  }
-
-  virtual ~Block(){}
-
-  Ptr make_fresh() {
-    return std::make_shared<Block>(offset, interval, log_cells);
-  }
-
-  void load(FS::SmartFdPtr smartfd, std::function<void()> call) {
-    std::cout << "blk::load\n";
-    if(loaded) {
-      call();
-      return;
-    }
-
-    int err;
-
-    for(;;) {
-      err = Error::OK;
-
-      if(!smartfd->valid() && !Env::FsInterface::interface()->open(err, smartfd) && err)
-        break;
-      if(err)
-        continue;
-      
-      uint8_t buf[HEADER_SIZE];
-      const uint8_t *ptr = buf;
-      if(Env::FsInterface::fs()->pread(err, smartfd, offset, buf, HEADER_SIZE)
-              != HEADER_SIZE) {
-        if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
-          continue;
-        }
-        break;
-      }
-
-      size_t remain = HEADER_SIZE;
-      Types::Encoding encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
-      uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
-      uint32_t sz = Serialization::decode_i32(&ptr, &remain);
-      if(!sz_enc) 
-        sz_enc = sz;
-      uint32_t cells_count = Serialization::decode_i32(&ptr, &remain);//?
-
-      if(!checksum_i32_chk(
-        Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
-        err = Error::CHECKSUM_MISMATCH;
-        break;
-      }
-
-      StaticBuffer read_buf(sz_enc);
-      for(;;) {
-        err = Error::OK;
-        if(Env::FsInterface::fs()->pread(
-                    err, smartfd, offset+HEADER_SIZE, read_buf.base, sz_enc)
-                  != sz_enc){
-          int tmperr = Error::OK;
-          Env::FsInterface::fs()->close(tmperr, smartfd);
-          if(err != Error::FS_EOF){
-            if(!Env::FsInterface::interface()->open(err, smartfd))
-              break;
-            continue;
-          }
-        }
-        break;
-      }
-      if(err)
-        break;
-
-      if(buffer == nullptr)
-        buffer = std::make_shared<StaticBuffer>(sz);
-      
-      if(encoder != Types::Encoding::PLAIN) {
-        Encoder::decode(encoder, read_buf.base, sz_enc, &buffer->base, sz, err);
-        if(err) {
-          int tmperr = Error::OK;
-          Env::FsInterface::fs()->close(tmperr, smartfd);
-          break;
-        }
-        read_buf.free();
-      } else {
-        read_buf.own = false;
-        buffer->base = read_buf.base;
-      }
-      break;
-    }
-    
-    loaded = err == Error::OK;
-    call();
-  }
-  
-  void scan(server::Rgr::Callback::RangeScan::Ptr req) {
-    std::cout << "blk::scan\n";
-    int err;
-    DB::Specs::Interval& spec = *(req->spec).get();
-    DB::Cells::Mutable& cells = *(req->cells).get();
-
-    log_cells->scan(spec, req->cells);
-    if(spec.flags.limit == cells.size())
-      return;
-
-    DB::Cells::Cell cell;
-    uint8_t* ptr = buffer->base;
-    size_t remain = buffer->size; 
-    
-    while(remain) {
-      cell.read(&ptr, &remain);
-      if(!spec.is_matching(cell))
-        continue;
-      cells.add(cell);
-      if(spec.flags.limit == cells.size())
-        break;
-    }
-  }
-
-
-  const std::string to_string() {
-    std::string s("Block(offset=");
-    s.append(std::to_string(offset));
-
-    s.append(" loaded=");
-    s.append(std::to_string(loaded));
-
-    s.append(" ");
-    s.append(interval->to_string());
-    s.append(")");
-    return s;
-  }
-
-  const size_t              offset;
-  DB::Cells::Interval::Ptr  interval;
-  std::atomic<bool>         loaded;
-  StaticBufferPtr           buffer;
-  DB::Cells::Mutable::Ptr   log_cells;
-
-};
-
-
-
-class CellStore : public std::enable_shared_from_this<CellStore> {
-
-  /* file-format: 
-      [blocks]: 
-        header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
-        data:   [cell]
-      blocks-index:
-        header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
-        data:   [vi32(offset), interval, i32(checksum)]
-      trailer : i8(version), i32(blocks-index-len), i32(checksum)
-        (trailer-offset) = fileLength - TRAILER_SIZE
-        (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
-  */
-
-  public:
-
-  static const int TRAILER_SIZE=9;
-  static const int8_t VERSION=1;
-
-  typedef std::shared_ptr<CellStore> Ptr;
+  typedef std::shared_ptr<Read>   Ptr;
 
   enum State {
     BLKS_IDX_NONE,
@@ -198,15 +45,15 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   FS::SmartFdPtr            smartfd;
   DB::Cells::Interval::Ptr  interval;
 
-  CellStore(uint32_t id) 
+  Read(uint32_t id) 
           : id(id), smartfd(nullptr), interval(nullptr), 
             m_state(State::BLKS_IDX_NONE) {            
   }
 
-  virtual ~CellStore(){}
+  virtual ~Read(){}
 
   State load_blocks_index(int& err, bool close_after=false) {
-    std::cout << "cs::load_blocks_index\n";
+    //std::cout << "cs::load_blocks_index\n";
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_state == State::BLKS_IDX_LOADED || m_state == State::BLKS_IDX_LOADING)
@@ -224,7 +71,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   }
 
   void scan(server::Rgr::Callback::RangeScan::Ptr req) {
-    std::cout << "cs::Scan\n";
+    //std::cout << "cs::Scan\n";
     int err = Error::OK;
 
     State state = load_blocks_index(err);
@@ -250,7 +97,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   }
 
   void run_queued() {
-    std::cout << "cs::run_queued\n";
+    //std::cout << "cs::run_queued\n";
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_blocks_q_runs || m_blocks_q.empty())
@@ -266,8 +113,8 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   }
 
   void scan_block(uint32_t idx, server::Rgr::Callback::RangeScan::Ptr req) {
-    std::cout << "cs::scan_block\n";
-    Block::Ptr blk;
+    //std::cout << "cs::scan_block\n";
+    Block::Read::Ptr blk;
     for(; idx < m_blocks.size(); idx++) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -280,11 +127,8 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
       if(!blk->loaded) {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
-          std::cout << "cs::scan_block, shared_from_this 1\n";
-          Ptr ptr= shared_from_this();
-          std::cout << "cs::scan_block, shared_from_this 2\n";
           m_blocks_q.push(
-            [blk, req, idx, ptr](){
+            [blk, req, idx, ptr=shared_from_this()](){
               blk->load(
                 ptr->smartfd, 
                 [req, idx, ptr](){
@@ -344,7 +188,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::string s("CellStore(v=");
+    std::string s("Read(v=");
     s.append(std::to_string(VERSION));
     s.append(" id=");
     s.append(std::to_string(id));
@@ -431,7 +275,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   }
 
   void _load_blocks_index(int& err, bool close_after=false) {
-    std::cout << "cs::_load_blocks_index\n";
+    //std::cout << "cs::_load_blocks_index\n";
     m_blocks.clear();
 
     size_t length = 0;
@@ -494,7 +338,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
     for(int n = 0; n < blks_count; n++){
       chk_ptr = ptr;
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
-      Block::Ptr blk = std::make_shared<Block>(
+      Block::Read::Ptr blk = std::make_shared<Block::Read>(
         offset, 
         std::make_shared<DB::Cells::Interval>(&ptr, &remain)
       );  
@@ -515,7 +359,7 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
   }
 
   void _run_queued() {
-    std::cout << "cs::_run_queued\n";
+    //std::cout << "cs::_run_queued\n";
     std::function<void()> call;
     
     for(;;) {
@@ -537,20 +381,218 @@ class CellStore : public std::enable_shared_from_this<CellStore> {
     }
   }
 
-  std::mutex                m_mutex;
-  std::atomic<State>        m_state;
-  std::vector<Block::Ptr>   m_blocks;
-  bool                      m_blocks_q_runs = false;
+  std::mutex                    m_mutex;
+  std::atomic<State>            m_state;
+  std::vector<Block::Read::Ptr> m_blocks;
+  bool                          m_blocks_q_runs = false;
   std::queue<std::function<void()>>  m_blocks_q;
 
 };
-typedef std::vector<Files::CellStore::Ptr> CellStores;
+typedef std::vector<Read::Ptr> RPtrs;
 
 
-} // Files namespace
 
-}
 
-#include "CellStoreWrite.h"
+class Write : public std::enable_shared_from_this<Write> {
+  public:
+  typedef std::shared_ptr<Write>  Ptr;
+
+  FS::SmartFdPtr            smartfd;
+  Types::Encoding           encoder;
+  size_t                    size;
+  DB::Cells::Interval::Ptr  interval;
+  std::atomic<uint32_t>     complition;
+
+  Write(const std::string& filepath, 
+                  Types::Encoding encoder=Types::Encoding::PLAIN)
+                : smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
+                  encoder(encoder), size(0), 
+                  interval(nullptr), complition(0) {
+  }
+
+  virtual ~Write(){}
+
+  void create(int& err, 
+              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=1) {
+    while(
+      Env::FsInterface::interface()->create(
+        err, smartfd, bufsz, replication, blksz));
+  }
+
+  void block(int& err, DB::Cells::Interval::Ptr blk_intval, 
+             DynamicBuffer& cells, uint32_t cell_count) {
+
+    Block::Write::Ptr blk = std::make_shared<Block::Write>(
+      size, blk_intval, cell_count);
+    
+    DynamicBuffer buff_raw;
+    blk->write(err, encoder, cells, cell_count, buff_raw);
+    cells.free();
+    blk_intval->free();
+    if(err)
+      return;
+    
+    m_blocks.push_back(blk);
+    
+    StaticBuffer buff_write(buff_raw);
+    size += buff_write.size;
+
+    complition++;
+    Env::FsInterface::fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+    complition--;
+  }
+
+  uint32_t write_blocks_index(int& err) {
+    if(complition > 0){
+      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      m_cv.wait(lock_wait, [count=&complition]{return count == 0;});
+    }
+
+    uint32_t len_data = 0;
+    bool init_interval = false;
+    for(auto blk : m_blocks) {
+      len_data += Serialization::encoded_length_vi32(blk->offset) 
+          + blk->interval->encoded_length()
+          + 4;;
+      
+      if(interval == nullptr)
+        interval = std::make_shared<DB::Cells::Interval>();
+      interval->expand(blk->interval, init_interval);
+      init_interval = true;
+    }
+
+    StaticBuffer raw_buffer(len_data);
+    uint8_t * ptr = raw_buffer.base;
+    uint8_t * chk_ptr;
+    for(auto blk : m_blocks) {
+      chk_ptr = ptr;
+      Serialization::encode_vi32(&ptr, blk->offset);
+      blk->interval->encode(&ptr);
+      checksum_i32(chk_ptr, ptr, &ptr);
+    }
+    
+    uint32_t len_header = 9 + Serialization::encoded_length_vi32(len_data) 
+                + Serialization::encoded_length_vi32(m_blocks.size());
+
+    DynamicBuffer buffer_write;
+    size_t len_enc = 0;
+    Encoder::encode(encoder, raw_buffer.base, len_data, 
+                    &len_enc, buffer_write, len_header, err);
+    raw_buffer.free();
+    if(err)
+      return 0;
+
+    uint8_t* header_ptr = buffer_write.base;
+    *header_ptr++ = (uint8_t)(len_enc? encoder: Types::Encoding::PLAIN);
+    Serialization::encode_i32(&header_ptr, len_enc);
+    Serialization::encode_vi32(&header_ptr, len_data);
+    Serialization::encode_vi32(&header_ptr, m_blocks.size());
+    checksum_i32(buffer_write.base, header_ptr, &header_ptr);
+
+    StaticBuffer buff_write(buffer_write);
+    Env::FsInterface::fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+    if(err)
+      return buff_write.size;
+
+    size += buff_write.size;
+    return buff_write.size;
+  }
+
+  void write_trailer(int& err) {
+    uint32_t blk_idx_sz = write_blocks_index(err);
+    if(err)
+      return;
+
+    StaticBuffer buff_write(TRAILER_SIZE);
+    uint8_t* ptr = buff_write.base;
+
+    *ptr++ = VERSION;
+    Serialization::encode_i32(&ptr, blk_idx_sz);
+    checksum_i32(buff_write.base, ptr, &ptr);
+    
+    Env::FsInterface::fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+    
+    size += buff_write.size;
+  }
+
+  void close_and_validate(int& err) {
+    Env::FsInterface::fs()->close(err, smartfd);
+
+    if(Env::FsInterface::fs()->length(err, smartfd->filepath()) != size)
+      err = Error::FS_EOF;
+    // + trailer-checksum
+  }
+
+  void finalize(int& err) {
+    write_trailer(err);
+    if(!err) {
+      close_and_validate(err);
+      if(!err)
+        return;
+    }
+    int tmperr = Error::OK;
+    remove(tmperr);
+  } 
+
+  void remove(int &err) {
+    Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
+  }
+
+
+  const std::string to_string(){
+    std::string s("CellStore(v=");
+    s.append(std::to_string(CellStore::VERSION));
+    s.append(" size=");
+    s.append(std::to_string(size));
+    s.append(" encoder=");
+    s.append(Types::to_string(encoder));
+    if(interval != nullptr) {
+      s.append(" ");
+      s.append(interval->to_string());
+    }
+    s.append(" ");
+    s.append(smartfd->to_string());
+
+    s.append(" blocks=");
+    s.append(std::to_string(m_blocks.size()));
+
+    s.append(" blocks=[");
+    for(auto blk : m_blocks) {
+        s.append(blk->to_string());
+       s.append(", ");
+    }
+    s.append("])");
+    return s;
+  } 
+
+  private:
+
+  std::mutex                     m_mutex;
+  std::vector<Block::Write::Ptr> m_blocks;
+
+  std::condition_variable        m_cv;
+};
+
+
+  typedef std::vector<Write::Ptr> WPtrs;
+
+} // namespace CellStore
+
+}}
 
 #endif

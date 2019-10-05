@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   size_t block_sz = 64000000;
   //Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(num_cells, 2, 0, SWC::Types::Column::PLAIN;
 
-  SWC::Files::CellStoreWrite cs_writer("test_file_1.cs", SWC::Types::Encoding::SNAPPY);
+  SWC::Files::CellStore::Write cs_writer("test_file_1.cs", SWC::Types::Encoding::SNAPPY);
   int err = SWC::Error::OK;
   cs_writer.create(err);
   hdlr_err(err);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
   std::cout << "\n-   OK-wrote   -\n\n";
 
   
-  SWC::Files::CellStore cs(0);
+  SWC::Files::CellStore::Read cs(0);
   cs.smartfd = cs_writer.smartfd;
   std::cout << "cs-read-init:\n " << cs.to_string() << "\n";
 
@@ -109,8 +109,22 @@ int main(int argc, char** argv) {
   std::cout << "cs-read-load_blocks_index:\n " << cs.to_string() << "\n";
 
   cs.close(err);
+  if(err != 53){
+    std::cerr << " FD should been closed after loading blocks-index \n"; 
+    exit(1);
+  }
   err = SWC::Error::OK;
+  std::cout << "cs-closed:\n " << cs.smartfd->to_string() << "\n";
 
+  std::cout << "\ncs-read-scan:\n";
+
+  SWC::Env::IoCtx::init(8);
+
+  SWC::Files::CellStore::Read::Ptr cs2 = std::make_shared<SWC::Files::CellStore::Read>(0);
+  cs2->smartfd = cs_writer.smartfd;
+
+  for(int n=1;n<=2;n++) {
+  for(int i=1; i<=10;i++) {
 
   Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(1234, 2, 0, SWC::Types::Column::PLAIN);
   SWC::server::Rgr::Callback::RangeScan::Ptr req 
@@ -122,18 +136,18 @@ int main(int argc, char** argv) {
       );
   req->spec->key_start.set(key_to_scan, SWC::Condition::GT);
   req->spec->flags.limit =2;
-  std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
+
+    //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
+  
+    cs2->scan(req);
+  }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
 
 
-  SWC::Files::CellStore::Ptr cs2 = std::make_shared<SWC::Files::CellStore>(0);
-  cs2->smartfd = cs_writer.smartfd;
 
-  SWC::Env::IoCtx::init(8);
-  cs2->scan(req);
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(30000));
-
-  std::cout << "cs-read-scan:\n " << cells_mutable->to_string() << "\n";
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+  std::cout << "cs-read-scan: OK\n";
 
 
   cs2->remove(err);

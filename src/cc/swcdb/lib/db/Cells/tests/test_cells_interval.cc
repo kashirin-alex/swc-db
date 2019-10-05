@@ -17,9 +17,9 @@ int main() {
   
   DB::Cells::Interval expected_expanded;
   int n_cs = 9999;
-  Files::CellStores     cellstores;
+  Files::CellStore::RPtrs     cellstores;
   for(int n=1; n<=n_cs;n++)
-    cellstores.push_back(std::make_shared<Files::CellStore>(n));
+    cellstores.push_back(std::make_shared<Files::CellStore::Read>(n));
 
   for(const auto& cs : cellstores){
       auto s = std::to_string(n_cs-cs->id);

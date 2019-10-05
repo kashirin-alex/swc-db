@@ -319,11 +319,11 @@ class Range : public DB::RangeBase {
 
   }
 
-  State                   m_state;
-  Types::Range            m_type;
+  State                       m_state;
+  Types::Range                m_type;
 
-  Files::CellStores       m_cellstores;
-  std::queue<ReqAdd*>     m_q_adding;
+  Files::CellStore::RPtrs     m_cellstores;
+  std::queue<ReqAdd*>         m_q_adding;
 };
 
 

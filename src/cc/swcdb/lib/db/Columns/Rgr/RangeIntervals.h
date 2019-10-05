@@ -16,10 +16,10 @@ class RangeInterval: public std::enable_shared_from_this<RangeInterval> {
   public:
   typedef std::shared_ptr<RangeInterval>  Ptr;
   DB::Cells::Mutable::Ptr                 cells;
-  CellStore::Ptr                          cellstore;
+  CellStore::Read::Ptr                    cellstore;
 
       
-  RangeInterval(Files::CellStore::Ptr cellstore)
+  RangeInterval(Files::CellStore::Read::Ptr cellstore)
                : cellstore(cellstore) {
   }
 
@@ -73,7 +73,7 @@ class RangeIntervals {
   typedef std::shared_ptr<RangeIntervals> Ptr;
 
   RangeIntervals(const DB::RangeBasePtr& range, 
-                 const Files::CellStores& cellstores) 
+                 const Files::CellStore::RPtrs& cellstores) 
                 : range(range),
                   log(std::make_shared<CommitLog>(m_range)) { 
   
@@ -108,7 +108,7 @@ class RangeIntervals {
   void add(const Cell& cell) {
     log->add(cell);
 
-    Files::CellStore::Ptr cellstore =  = nullptr;
+    Files::CellStore::Read::Ptr cellstore =  = nullptr;
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);

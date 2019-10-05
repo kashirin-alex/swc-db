@@ -18,16 +18,21 @@ namespace Callback {
 class RangeScan : public ResponseCallback {
   public:
   typedef std::shared_ptr<RangeScan>  Ptr;
-    
+  std::atomic<int> count=0;
+  int id=0;
+  int64_t took;
   RangeScan(ConnHandlerPtr conn, EventPtr ev,
             DB::Specs::Interval::Ptr spec, DB::Cells::Mutable::Ptr cells) 
             : ResponseCallback(conn, ev), spec(spec), cells(cells) {
+    took = SWC::Time::now_ns();
+    id = ++count;
   }
   
   virtual ~RangeScan() { }
 
   void response(int &err) override {
 
+  
     try {
       /*
       Protocol::Rgr::Params::RangeLoaded params(range->get_interval());
@@ -47,8 +52,9 @@ class RangeScan : public ResponseCallback {
       err = Error::COMM_SEND_ERROR;
       
     }
-
-    std::cout << "cells:" << cells->to_string() << "\n";
+    
+    std::cout << " chk=" << id << " took=" <<  SWC::Time::now_ns()-took 
+              << " cells:" << cells->to_string() << "\n";
     
   }
 

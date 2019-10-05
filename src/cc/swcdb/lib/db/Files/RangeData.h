@@ -29,7 +29,7 @@ const int8_t VERSION=1;
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
+void write(SWC::DynamicBuffer &dst_buf, CellStore::RPtrs &cellstores){
     
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
   for(auto& cs : cellstores) {
@@ -60,7 +60,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, const std::string filepath, CellStores &cellstores){
+void save(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
 
   DynamicBuffer input;
   write(input, cellstores);
@@ -76,12 +76,12 @@ void save(int &err, const std::string filepath, CellStores &cellstores){
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
+void read(const uint8_t **ptr, size_t* remain, CellStore::RPtrs &cellstores) {
   const uint8_t *ptr_end = *ptr+*remain;
     
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;i++) {
-    CellStore::Ptr cs = std::make_shared<CellStore>(
+    CellStore::Read::Ptr cs = std::make_shared<CellStore::Read>(
       Serialization::decode_vi32(ptr, remain)); 
     cs->interval = std::make_shared<DB::Cells::Interval>(ptr, remain);
     cellstores.push_back(cs);
@@ -93,7 +93,7 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
   }
 }
 
-void load(int &err, const std::string filepath, CellStores &cellstores){
+void load(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
 
   for(;;) {
@@ -157,11 +157,11 @@ void load(int &err, const std::string filepath, CellStores &cellstores){
     Env::FsInterface::fs()->close(err, smartfd);
 }
 
-void load_by_path(int &err, const std::string cs_path, CellStores &cellstores){
+void load_by_path(int &err, const std::string cs_path, CellStore::RPtrs &cellstores){
   FS::IdEntries_t entries;
   Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
   for(auto id : entries){
-    CellStore::Ptr cs = std::make_shared<CellStore>(id); 
+    CellStore::Read::Ptr cs = std::make_shared<CellStore::Read>(id); 
     cellstores.push_back(cs);
     std::cout << cs->to_string() << "\n";
   }
