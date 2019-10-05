@@ -60,6 +60,19 @@ class Columns : public std::enable_shared_from_this<Columns> {
     }
     return col;
   }
+  
+  ColumnPtr get_next(size_t idx) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_columns->empty())
+      return nullptr;
+
+    if(m_columns->size() < idx){
+      auto it = m_columns->begin();
+      for(int i=idx=1;i--;it++);
+      return it->second;
+    }
+    return nullptr;
+  }
 
   RangePtr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
     ColumnPtr col = get_column(err, cid, initialize);
