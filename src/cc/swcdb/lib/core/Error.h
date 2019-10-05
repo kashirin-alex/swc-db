@@ -128,6 +128,7 @@ namespace SWC {
       BAD_KEY                                      = CODE_START+0x6f+0xf,
       
       RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
+      RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
 
       COMM_NOT_CONNECTED                           = 0x00010001,
       COMM_BROKEN_CONNECTION                       = 0x00010002,
