@@ -150,6 +150,24 @@ class Read : public std::enable_shared_from_this<Read> {
     req->response(err);
   }
 
+  bool add_logged(DB::Cells::Cell& cell) {
+    if(!interval->consist(cell.key))
+      return false;
+
+    Block::Read::Ptr blk;
+    for(uint32_t idx=0; idx < m_blocks.size(); idx++) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        blk = m_blocks[idx];
+      }
+      if(blk->interval->consist(cell.key)) {
+        blk->log_cells->add(cell);
+        return true;
+      }
+    }
+    return false;
+  }
+
   size_t release(size_t bytes) {    
     size_t released = 0;
     {
