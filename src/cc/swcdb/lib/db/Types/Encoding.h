@@ -16,6 +16,18 @@ enum class Encoding {
   SNAPPY  = 3
 };
 
+const std::string to_string(Encoding typ) {
+  switch(typ){
+    case Encoding::PLAIN:
+      return std::string("plain");
+    case Encoding::ZLIB:
+      return std::string("zlib");
+    case Encoding::SNAPPY:
+      return std::string("snappy");
+    default:
+      return std::string("uknown");
+  }
+}
 }}
 
 #endif // swc_lib_db_types_Encoding_h
