@@ -28,6 +28,10 @@ class Interval {
     decode(ptr, remain, true); 
   }
 
+  explicit Interval(Ptr other) {
+    copy(other); 
+  }
+
   virtual ~Interval(){ 
     free();
   }
@@ -43,6 +47,8 @@ class Interval {
   void free(){
     m_key_begin.free();
     m_key_end.free();
+    m_ts_earliest.free();
+    m_ts_latest.free();
   }
 
   const Specs::Key& get_key_begin(){
@@ -95,14 +101,26 @@ class Interval {
     
     auto& earliest = other->get_ts_earliest();
     if(!initiated || !m_ts_earliest.is_matching(earliest.value)) {
-      m_ts_earliest.value = earliest.value;
-      m_ts_earliest.comp = Condition::GE;
+      m_ts_earliest.set(earliest.value, Condition::GE);
     }
     auto& latest = other->get_ts_latest();
     if(!initiated || !m_ts_latest.is_matching(latest.value)) {
-      m_ts_latest.value = latest.value;
-      m_ts_latest.comp = Condition::LE;
+      m_ts_earliest.set(latest.value, Condition::LE);
     }
+  }
+
+  void expand(const Cell& cell){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
+    if(m_key_begin.empty() || !m_key_begin.is_matching(cell.key))
+      m_key_begin.set(cell.key, Condition::GE);
+    if(m_key_end.empty() || !m_key_end.is_matching(cell.key))
+      m_key_end.set(cell.key, Condition::LE);
+    
+    if(m_ts_earliest.empty() || !m_ts_earliest.is_matching(cell.timestamp))
+      m_ts_earliest.set(cell.timestamp, Condition::GE);
+    if(m_ts_latest.empty() || !m_ts_latest.is_matching(cell.timestamp))
+      m_ts_latest.set(cell.timestamp, Condition::LE);
   }
   
   bool equal(const Ptr &other){
