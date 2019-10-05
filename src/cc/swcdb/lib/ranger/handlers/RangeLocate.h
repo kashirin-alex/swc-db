@@ -22,7 +22,7 @@ class RangeLocate : public AppHandler {
 
     int err = Error::OK;
     Params::RangeLocateReq params;
-    server::Rgr::RangePtr range;
+    server::Rgr::Range::Ptr range;
 
     try {
       const uint8_t *ptr = m_ev->payload;
@@ -48,11 +48,17 @@ class RangeLocate : public AppHandler {
       }
 
       params.interval->flags.limit = 2;
-      range->scan(
-        DB::Specs::Interval::make_ptr(params.interval), 
-        std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-          m_conn, m_ev, params.cid)
+
+      auto ptr = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+        m_conn, m_ev, params.cid);
+
+      ptr->req =  DB::Cells::ReqScan::make(
+        DB::Specs::Interval::make_ptr(params.interval),
+        DB::Cells::Mutable::make(2, 1, 0, SWC::Types::Column::PLAIN),
+        [ptr](int err){ptr->response(err);}
       );
+
+      range->scan(ptr->req);
   
     }
     catch (Exception &e) {

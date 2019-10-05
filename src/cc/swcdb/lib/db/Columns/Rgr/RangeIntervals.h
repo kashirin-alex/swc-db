@@ -72,7 +72,7 @@ class RangeIntervals {
 
   typedef std::shared_ptr<RangeIntervals> Ptr;
 
-  RangeIntervals(const DB::RangeBasePtr& range, 
+  RangeIntervals(const DB::RangeBase::Ptr& range, 
                  const Files::CellStore::RPtrs& cellstores) 
                 : range(range),
                   log(std::make_shared<CommitLog>(m_range)) { 
@@ -135,7 +135,7 @@ class RangeIntervals {
   }
 
   private:
-  const DB::RangeBasePtr            range
+  const DB::RangeBase::Ptr          range
   CommitLog::Ptr                    log;
 
   std::mutex                        m_mutex;

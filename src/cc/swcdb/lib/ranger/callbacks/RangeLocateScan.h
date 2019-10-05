@@ -32,12 +32,13 @@ class RangeLocateScan : public ResponseCallback {
       if(cid_scanned == 1)
         params.cid = 2;
       else if(cid_scanned == 2)
-        params.cid = 3; //  (result[0].key-fraction[0])
+        params.cid = 3; //  (req->cells->get(0).key.get(0, fraction, len);
       
-      params.rid = 3; //    (result[0].value-fraction[0])
+      params.rid = 3; //    (req->cells->get(0).value -fraction[0])
       // params.next_key =  // (result[1].key)
     }
 
+    std::cout << "RangeLocateScan, rsp " << req->to_string() << "\n";
 
     try {
       CommHeader header;
@@ -54,8 +55,11 @@ class RangeLocateScan : public ResponseCallback {
     
   }
 
+
+  DB::Cells::ReqScan::Ptr     req;
+
   private:
-  const int64_t cid_scanned;
+  const int64_t               cid_scanned;
 
 };
 typedef std::shared_ptr<RangeLocateScan> RangeLocateScanPtr;

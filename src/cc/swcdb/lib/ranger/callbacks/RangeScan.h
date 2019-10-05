@@ -18,14 +18,7 @@ namespace Callback {
 class RangeScan : public ResponseCallback {
   public:
 
-  RangeScan(ConnHandlerPtr conn, EventPtr ev,
-            DB::Specs::Interval::Ptr spec, DB::Cells::Mutable::Ptr cells) 
-            : ResponseCallback(conn, ev), 
-              req(DB::Cells::ReqScan::make(
-                spec, 
-                cells, 
-                [ptr=shared_from_this()](int err){ptr->response(err);}
-              ) {
+  RangeScan(ConnHandlerPtr conn, EventPtr ev) : ResponseCallback(conn, ev) {
   }
   
   virtual ~RangeScan() { }

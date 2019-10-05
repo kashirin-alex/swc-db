@@ -29,7 +29,7 @@ class RangeLoaded : public ResponseCallback {
     if(err == Error::OK && Env::RgrData::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
-    RangePtr range;
+    Range::Ptr range;
     if(err == Error::OK) {
       range =  Env::RgrColumns::get()->get_range(err, cid, rid, false);
       if(err != Error::OK || range == nullptr || !range->is_loaded())

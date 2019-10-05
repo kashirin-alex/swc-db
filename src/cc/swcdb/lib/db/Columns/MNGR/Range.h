@@ -14,11 +14,11 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
-class Range;
-typedef std::shared_ptr<Range> RangePtr;
 
 class Range : public DB::RangeBase {
   public:
+
+  typedef std::shared_ptr<Range> Ptr;
   
   enum State {
     NOTSET,
@@ -27,9 +27,6 @@ class Range : public DB::RangeBase {
     QUEUED
   };
 
-  RangePtr static Ptr(const DB::RangeBasePtr& other){
-    return std::dynamic_pointer_cast<Range>(other);
-  }
 
   Range(int64_t cid, int64_t rid)
         : RangeBase(cid, rid), 
@@ -38,6 +35,14 @@ class Range : public DB::RangeBase {
 
   void init(int &err){
 
+  }
+
+  inline Ptr shared() {
+    return std::dynamic_pointer_cast<Range>(shared_from_this());
+  }
+
+  inline static Ptr shared(const DB::RangeBase::Ptr& other){
+    return std::dynamic_pointer_cast<Range>(other);
   }
 
   virtual ~Range(){}
@@ -115,7 +120,7 @@ class Range : public DB::RangeBase {
   }
 
   
-  bool chained_set(RangePtr range, RangePtr& current){
+  bool chained_set(Ptr range, Ptr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
     
     if(m_interval != nullptr) {
@@ -143,8 +148,8 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void chained_consist(DB::Specs::Interval::Ptr& intval, RangePtr& found,
-                       DB::Specs::Key &next_key, RangePtr& current){
+  void chained_consist(DB::Specs::Interval::Ptr& intval, Ptr& found,
+                       DB::Specs::Key &next_key, Ptr& current){
     std::lock_guard<std::mutex> lock(m_mutex);
 
 
@@ -165,7 +170,7 @@ class Range : public DB::RangeBase {
     return;
   }
 
-  void chained_next(RangePtr& range) {
+  void chained_next(Ptr& range) {
     std::lock_guard<std::mutex> lock(m_mutex);
     range = m_chained_next;
   }
@@ -180,12 +185,12 @@ class Range : public DB::RangeBase {
 
   private:
 
-  void chained_set_next(RangePtr next) {
+  void chained_set_next(Ptr next) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_chained_next = next;
   }
 
-  void chained_set_prev(RangePtr prev) {
+  void chained_set_prev(Ptr prev) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_chained_prev = prev;
   }
@@ -193,10 +198,10 @@ class Range : public DB::RangeBase {
 
   uint64_t            rgr_id;
   State               m_state;
-  Files::RgrDataPtr  m_last_rgr;
+  Files::RgrDataPtr   m_last_rgr;
   
-  RangePtr            m_chained_next=nullptr;
-  RangePtr            m_chained_prev=nullptr;
+  Ptr                 m_chained_next=nullptr;
+  Ptr                 m_chained_prev=nullptr;
 
 };
 

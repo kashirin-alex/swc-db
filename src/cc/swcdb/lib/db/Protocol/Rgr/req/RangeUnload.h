@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeUnload : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  RangeUnload(DB::RangeBasePtr range, ResponseCallbackPtr cb,
+  RangeUnload(DB::RangeBase::Ptr range, ResponseCallbackPtr cb,
                 uint32_t timeout=60000) 
                : Common::Req::ConnQueue::ReqBase(false), 
                 range(range), cb(cb) {
@@ -53,7 +53,7 @@ class RangeUnload : public Common::Req::ConnQueue::ReqBase {
   private:
 
   ResponseCallbackPtr   cb;
-  DB::RangeBasePtr      range;
+  DB::RangeBase::Ptr    range;
    
 };
 

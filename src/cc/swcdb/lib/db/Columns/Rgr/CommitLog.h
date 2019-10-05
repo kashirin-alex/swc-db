@@ -16,8 +16,11 @@ class CommitLog {
 
   typedef std::shared_ptr<CommitLog>  Ptr;
 
+  inline static Ptr make(const DB::RangeBase::Ptr& range){
+    return std::make_shared<CommitLog>(range);
+  }
 
-  CommitLog(const DB::RangeBasePtr& range) : m_range(range) { }
+  CommitLog(const DB::RangeBase::Ptr& range) : m_range(range) { }
 
   virtual ~CommitLog(){}
 
@@ -27,14 +30,14 @@ class CommitLog {
   }
   
   const std::string get_log_fragment(int64_t frag) {
-    std::string s(m_range->get_path("log"));
+    std::string s(m_range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(std::to_string(frag));
     s.append(".frag");
     return s;
   }
   const std::string get_log_fragment(const std::string& frag) {
-    std::string s(m_range->get_path("log"));
+    std::string s(m_range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(frag);
     return s;
@@ -45,7 +48,7 @@ class CommitLog {
 
     err = Error::OK;
     FS::DirentList fragments;
-    Env::FsInterface::fs()->readdir(err, m_range->get_path("log"), fragments);
+    Env::FsInterface::fs()->readdir(err, m_range->get_path(DB::RangeBase::log_dir), fragments);
     if(err)
       return;
 
@@ -81,9 +84,9 @@ class CommitLog {
   private:
   
   std::mutex                  m_mutex;
-  const DB::RangeBasePtr      m_range;
+  const DB::RangeBase::Ptr    m_range;
 
-  Files::CommitLogFragment::Ptr m_frag_current;
+  Files::CommitLogFragment::Ptr               m_frag_current;
 
   std::vector<Files::CommitLogFragment::Ptr>  m_fragments;
 };

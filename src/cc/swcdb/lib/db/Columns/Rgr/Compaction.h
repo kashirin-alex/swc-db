@@ -27,7 +27,7 @@ class Compaction {
     running++;
 
     ColumnPtr col   = nullptr;
-    RangePtr  range = nullptr;
+    Range::Ptr  range = nullptr;
 
     for(;;) {
       { 
@@ -59,7 +59,7 @@ class Compaction {
     running--;
   }
 
-  void compact(RangePtr range) {
+  void compact(Range::Ptr range) {
 
   }
 

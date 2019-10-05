@@ -14,7 +14,7 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
 
   AssignIdNeeded(server::Mngr::RangerPtr rs_chk, 
                  server::Mngr::RangerPtr rs_nxt, 
-                 server::Mngr::RangePtr range) 
+                 server::Mngr::Range::Ptr range) 
                 : Common::Req::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
     CommHeader header(ASSIGN_ID_NEEDED, 60000);
@@ -51,8 +51,8 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
   void rsp(int err);
 
 
-  server::Mngr::RangerPtr  rs_nxt;
-  server::Mngr::RangePtr      range;
+  server::Mngr::RangerPtr   rs_nxt;
+  server::Mngr::Range::Ptr  range;
   private:
 
   server::Mngr::RangerPtr  rs_chk;

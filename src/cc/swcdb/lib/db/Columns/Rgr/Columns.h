@@ -74,7 +74,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return nullptr;
   }
 
-  RangePtr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
+  Range::Ptr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
     ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
@@ -87,7 +87,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
-    RangePtr range;
+    Range::Ptr range;
     
     if(Env::RgrData::is_shuttingdown())
       err = Error::SERVER_SHUTTING_DOWN;

@@ -31,7 +31,7 @@ void rgr(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Rgr::RangePtr range = cols->get_range(err, c, r, true);
+            server::Rgr::Range::Ptr range = cols->get_range(err, c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -43,7 +43,7 @@ void rgr(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Rgr::RangePtr range = cols->get_range(err, c, r);
+            server::Rgr::Range::Ptr range = cols->get_range(err, c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -66,7 +66,7 @@ void mngr(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Mngr::RangePtr range = cols->get_range(err, c, r, true);
+            server::Mngr::Range::Ptr range = cols->get_range(err, c, r, true);
             if(range == nullptr){
                 std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
                 exit(1);
@@ -78,7 +78,7 @@ void mngr(){
 
         for(int64_t r=1; r<=3; r++){
 
-            server::Mngr::RangePtr range = cols->get_range(err, c, r);
+            server::Mngr::Range::Ptr range = cols->get_range(err, c, r);
             if(range == nullptr){
                 std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
                 exit(1);

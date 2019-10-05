@@ -14,8 +14,8 @@
 
 namespace SWC { namespace server { namespace Rgr {
 
-typedef std::unordered_map<int64_t, RangePtr> RangesMap;
-typedef std::pair<int64_t, RangePtr> RangesMapPair;
+typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
+typedef std::pair<int64_t, Range::Ptr>          RangesMapPair;
 
 
 class Column : public std::enable_shared_from_this<Column> {
@@ -30,8 +30,8 @@ class Column : public std::enable_shared_from_this<Column> {
 
   virtual ~Column(){}
 
-  RangePtr get_range(int &err, int64_t rid, bool initialize=false){
-    RangePtr range = nullptr;
+  Range::Ptr get_range(int &err, int64_t rid, bool initialize=false){
+    Range::Ptr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -55,7 +55,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void unload(int64_t rid, Callback::RangeUnloaded_t cb){
-    RangePtr range = nullptr;
+    Range::Ptr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       auto it = m_ranges->find(rid);
@@ -111,7 +111,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return  m_deleting;
   }
 
-  RangePtr get_next(size_t &idx) {
+  Range::Ptr get_next(size_t &idx) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_ranges->empty())
       return nullptr;

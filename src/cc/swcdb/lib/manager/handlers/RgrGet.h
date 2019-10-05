@@ -41,7 +41,7 @@ class RgrGet : public AppHandler {
       if(rsp_params.err != Error::OK)
         goto send_response;
     
-      server::Mngr::RangePtr range;
+      server::Mngr::Range::Ptr range;
       if(params.rid == 0)
         range = col->get_range(
           rsp_params.err, params.interval, rsp_params.next_key);

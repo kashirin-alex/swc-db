@@ -401,11 +401,11 @@ class Rangers {
     }
   }
 
-  void assign_range(RangerPtr rgr, RangePtr range){
+  void assign_range(RangerPtr rgr, Range::Ptr range){
     rgr->put(std::make_shared<Protocol::Rgr::Req::RangeLoad>(rgr, range));
   }
 
-  void range_loaded(RangerPtr rgr, RangePtr range, 
+  void range_loaded(RangerPtr rgr, Range::Ptr range, 
                     int err, bool failure=false) {
     bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
@@ -624,7 +624,7 @@ class Rangers {
 
   void assign_ranges_run() {
     int err;
-    RangePtr range;
+    Range::Ptr range;
 
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex_assign);
@@ -718,7 +718,7 @@ class Rangers {
     return;
   }
 
-  void assign_range(RangerPtr rgr, RangePtr range, 
+  void assign_range(RangerPtr rgr, Range::Ptr range, 
                     Files::RgrDataPtr last_rgr){
     if(last_rgr == nullptr){
       assign_range(rgr, range);

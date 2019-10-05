@@ -79,8 +79,8 @@ class Column : public std::enable_shared_from_this<Column> {
       
   }
   
-  RangePtr get_range(int &err, int64_t rid, bool initialize=false){
-    RangePtr range = m_base_range;
+  Range::Ptr get_range(int &err, int64_t rid, bool initialize=false){
+    Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
@@ -97,10 +97,10 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-  RangePtr get_range(int &err, DB::Specs::Interval::Ptr& interval, 
+  Range::Ptr get_range(int &err, DB::Specs::Interval::Ptr& interval, 
                      DB::Specs::Key &next_key){
-    RangePtr found;
-    RangePtr range = m_base_range;
+    Range::Ptr found;
+    Range::Ptr range = m_base_range;
     range->chained_next(range);
     for(;;){
       range->chained_consist(interval, found, next_key, range);
@@ -110,7 +110,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return found;
   }
 
-  void chained_set(RangePtr& range, DB::Cells::Interval::Ptr& interval){
+  void chained_set(Range::Ptr& range, DB::Cells::Interval::Ptr& interval){
     DB::Cells::Interval::Ptr intval = range->get_interval();
 
     if(intval == nullptr && interval == nullptr) 
@@ -124,7 +124,7 @@ class Column : public std::enable_shared_from_this<Column> {
         return;
     }
 
-    RangePtr next = m_base_range;
+    Range::Ptr next = m_base_range;
     do{
       next->chained_next(next);
     } while(next != nullptr && next->assigned());
@@ -137,7 +137,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   int64_t get_next_rid(){
     int64_t rid = 0;
-    RangePtr range;
+    Range::Ptr range;
     for(;;){
       rid++;
       range = m_base_range;
@@ -152,8 +152,8 @@ class Column : public std::enable_shared_from_this<Column> {
     return rid;
   }
 
-  RangePtr get_next_unassigned(){    
-    RangePtr range = m_base_range;
+  Range::Ptr get_next_unassigned(){    
+    Range::Ptr range = m_base_range;
     do{
       range->chained_next(range);
     } while(range != nullptr && !range->need_assign());
@@ -165,7 +165,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   void set_rgr_unassigned(uint64_t id){
 
-    RangePtr range = m_base_range;
+    Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
@@ -180,7 +180,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void change_rgr(uint64_t rgr_id_old, uint64_t id){
-    RangePtr range = m_base_range;
+    Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
@@ -236,7 +236,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
   
   void assigned(std::vector<uint64_t> &rgr_ids){
-    RangePtr range = m_base_range;
+    Range::Ptr range = m_base_range;
     uint64_t id;
     for(;;){
       range->chained_next(range);
@@ -260,7 +260,7 @@ class Column : public std::enable_shared_from_this<Column> {
       m_schemas_rev.clear();
     }
     if(!was){
-      RangePtr range = m_base_range;
+      Range::Ptr range = m_base_range;
       for(;;){
         range->chained_next(range);
         if(range == nullptr)
@@ -273,7 +273,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   bool finalize_remove(int &err, uint64_t id=0){
     uint64_t eid;
-    RangePtr range = m_base_range;
+    Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
@@ -304,7 +304,7 @@ class Column : public std::enable_shared_from_this<Column> {
     s.append(std::to_string(get_next_rid()));
     s.append(", ranges=(");
     
-    RangePtr range = m_base_range;
+    Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
       if(range == nullptr)
@@ -338,8 +338,8 @@ class Column : public std::enable_shared_from_this<Column> {
       err, Range::get_path(cid), entries);
   }
 
-  void chained_set(RangePtr range){
-    RangePtr current = m_base_range;
+  void chained_set(Range::Ptr range){
+    Range::Ptr current = m_base_range;
     while(!current->chained_set(range, current));
   }
 
@@ -347,7 +347,7 @@ class Column : public std::enable_shared_from_this<Column> {
   std::mutex                 m_mutex;
   int64_t                    cid;
   std::atomic<State>         m_state;
-  const RangePtr             m_base_range;
+  const Range::Ptr           m_base_range;
 
 
   typedef std::pair<uint64_t, int64_t>    RsSchemaRev;

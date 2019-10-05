@@ -29,7 +29,7 @@ class RangeIsLoaded : public AppHandler {
       params.decode(&ptr, &remain);
 
       int err = Error::OK;
-      server::Rgr::RangePtr range =  Env::RgrColumns::get()->get_range(
+      server::Rgr::Range::Ptr range =  Env::RgrColumns::get()->get_range(
         err, params.cid, params.rid, false);
       
       if(range != nullptr && range->is_loaded()){

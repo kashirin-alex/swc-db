@@ -77,15 +77,16 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return col;
   }
 
-  RangePtr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
+  Range::Ptr get_range(int &err, int64_t cid, int64_t rid, 
+                       bool initialize=false){
     ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
     return col->get_range(err, rid, initialize);
   }
 
-  RangePtr get_next_unassigned(){
-    RangePtr range = nullptr;
+  Range::Ptr get_next_unassigned(){
+    Range::Ptr range = nullptr;
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_columns->begin(); it != m_columns->end(); ++it){

@@ -14,11 +14,10 @@
 
 namespace SWC { namespace DB {
 
-class RangeBase;
-typedef std::shared_ptr<RangeBase> RangeBasePtr;
 
 class RangeBase : public std::enable_shared_from_this<RangeBase> {
   public:
+  typedef std::shared_ptr<RangeBase> Ptr;
   
   inline static const std::string column_dir = "C"; 
   inline static const std::string range_dir = "/R"; 
@@ -68,7 +67,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   virtual ~RangeBase(){}
   
-  RangeBasePtr shared() {
+  Ptr shared() {
     return shared_from_this();
   }
 
