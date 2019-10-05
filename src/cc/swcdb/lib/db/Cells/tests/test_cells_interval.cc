@@ -22,7 +22,7 @@ int main() {
     cellstores.push_back(std::make_shared<Files::CellStore>(n));
 
   for(const auto& cs : cellstores){
-      auto s = std::to_string(n_cs-cs->cs_id);
+      auto s = std::to_string(n_cs-cs->id);
       DB::Specs::Key key;
       key.add("11", Condition::GE);
       key.add(std::string("a")+s, Condition::GE);
@@ -34,11 +34,11 @@ int main() {
         std::cerr << "!key.equal(cs->interval->get_key_begin()): ERROR\n";
         exit(1);
       }
-      if(n_cs-cs->cs_id == 0)
+      if(n_cs-cs->id == 0)
         expected_expanded.key_begin(key);
       key.free();
 
-      s = std::to_string(cs->cs_id);
+      s = std::to_string(cs->id);
       key.add("11", Condition::LE);
       key.add(std::string("a")+s, Condition::LE);
       key.add(std::string("b")+s, Condition::LE);
@@ -49,12 +49,12 @@ int main() {
         std::cerr << "!key.equal(cs->interval->get_key_end()): ERROR\n";
         exit(1);
       }
-      if(cs->cs_id == n_cs)
+      if(cs->id == n_cs)
         expected_expanded.key_end(key);
       
       DB::Specs::Timestamp ts;
       ts.comp = Condition::GE;
-      ts.value = n_cs-cs->cs_id;
+      ts.value = n_cs-cs->id;
       cs->interval->ts_earliest(ts);
       if(!ts.equal(cs->interval->get_ts_earliest())) {
         std::cerr << "!ts.equal(cs->interval->get_ts_earliest()): ERROR\n";
@@ -64,7 +64,7 @@ int main() {
         expected_expanded.ts_earliest(ts);
 
       ts.comp = Condition::LE;
-      ts.value = cs->cs_id;
+      ts.value = cs->id;
       cs->interval->ts_latest(ts);
       if(!ts.equal(cs->interval->get_ts_latest())) {
         std::cerr << "!ts.equal(cs->interval->get_ts_latest()): ERROR\n";
@@ -82,9 +82,9 @@ int main() {
 
   bool init = false;
   for(const auto& cs : cellstores) {
+    //std::cout << cs->to_string() << "\n";
     intval->expand(cs->interval, init);
     init=true;
-    //std::cout << cs->to_string() << "\n";
   }
   if(!expected_expanded.equal(intval)){
     std::cout << " expected,  " << expected_expanded.to_string() << "\n";

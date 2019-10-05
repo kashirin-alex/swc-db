@@ -36,9 +36,9 @@ class Mutable {
   }
 
   virtual ~Mutable() {
-    std::cout << " ~Mutable " << (size_t)this << " 1\n";
+    //std::cout << " ~Mutable " << (size_t)this << " 1\n";
     _free();
-    std::cout << " ~Mutable " << (size_t)this << " 2\n";
+    //std::cout << " ~Mutable " << (size_t)this << " 2\n";
   }
 
   void allocate_if_needed(uint32_t sz) {
@@ -46,7 +46,25 @@ class Mutable {
     return _allocate_if_needed(sz);
   }
 
+  Cell* front() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return *m_cells;
+  }
+  
+  Cell* back() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return *(m_cells+m_size-1);
+  }
+
   void add(Cell& e_cell){ 
+  
+    bool removing = false;
+    bool updating = false;
+    uint32_t revs = 0;
+    add(e_cell, removing, updating, revs);
+  }
+
+  void add(Cell& e_cell, bool& removing, bool& updating, uint32_t& revs){ 
     //std::cout << "add, " << e_cell.to_string() << "\n";
     
     if(e_cell.has_expired(m_ttl))
@@ -54,10 +72,6 @@ class Mutable {
 
     uint32_t size;
     Cell* cell;
-    uint32_t revs = 0;
-    bool removing = false;
-    bool updating = false;
-    uint32_t on_fraction;
     {
       //std::lock_guard<std::mutex> lock(m_mutex);
       size = m_size;
@@ -208,6 +222,11 @@ class Mutable {
     _free();
   }
 
+  bool scan(const Specs::Interval& specs, Mutable::Ptr cells){
+    //
+    return false;
+  }
+
   bool scan(const Specs::Interval& specs, DynamicBufferPtr result){
     //
     return false;
@@ -307,6 +326,129 @@ class Mutable {
   Types::Column     m_type;
 };
 
+
+class Mutables {
+  public:
+
+  typedef std::shared_ptr<Mutables>  Ptr;
+  
+  inline static Ptr make(const uint32_t index_max,
+                         const uint32_t cap=1, 
+                         const uint32_t max_revs=1, 
+                         const uint64_t ttl=0, 
+                         const Types::Column type=Types::Column::PLAIN) {
+    return std::make_shared<Mutables>(index_max, cap, max_revs, ttl, type);
+  }
+
+  explicit Mutables(const uint32_t index_max,
+                    const uint32_t cap=1, 
+                    const uint32_t max_revs=1, 
+                    const uint64_t ttl=0, 
+                    const Types::Column type=Types::Column::PLAIN)
+                  : m_index_max(index_max),
+                    m_cap(cap==0?1:cap), m_max_revs(max_revs), 
+                    m_ttl(ttl), m_type(type) {
+    m_index.push_back(new Mutable(m_index_max, m_max_revs, m_ttl, m_type));
+  }
+
+  virtual ~Mutables() { 
+    std::cout << " ~Mutables 1 sz=" << m_index.size() << "\n";
+    for(auto idx : m_index)
+      delete idx;
+    std::cout << " ~Mutables 2 \n";
+  }
+
+  void add(Cell& cell) {
+    uint32_t size;
+    Mutable* index;
+    Cell* idx_cell_begin;
+    Cell* idx_cell_end;
+
+    bool removing = false;
+    bool updating = false;
+    uint32_t revs = 0;
+    bool cell_set = false;
+    uint32_t idx_sz;
+    uint32_t n=0;
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      size = m_index.size();
+    }
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        
+        if(n < size) {        
+          if(n && size != m_index.size()){
+            size = m_index.size();
+            n = 0;
+            continue;
+          }
+          index = m_index.at(n++);
+          idx_cell_begin = index->front();
+          idx_cell_end = index->back();
+
+        } else {
+          index = m_index.back();
+          idx_cell_begin = nullptr;
+        }
+        
+      }
+
+      if(idx_cell_begin == nullptr) {
+        if(!removing && !updating) {
+          uint32_t sz = index->size();
+          index->add(cell, removing, updating, revs);
+          if(m_index_max == index->size() && sz != index->size()) 
+            alter(n);
+        }
+        break;
+      }
+       
+      if(idx_cell_end->key.compare(cell.key) == Condition::GT)
+        continue;
+
+      index->add(cell, removing, updating, revs);
+      if(!removing && !updating) {
+        uint32_t sz = index->size();
+        if(m_index_max == index->size() && sz != index->size()) 
+          alter(n);
+        break;
+      }
+    }
+
+  }
+
+  void alter(uint32_t n) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_index.insert(
+      m_index.begin()+n, new Mutable(m_index_max, m_max_revs, m_ttl, m_type));
+  }
+
+  void push_back(const Cell& cell){
+
+  }
+
+  const size_t size() {
+    size_t sz = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto idx : m_index)
+      sz += idx->size();
+    return sz;
+  }
+
+  private:
+
+  std::mutex            m_mutex;
+  std::vector<Mutable*> m_index;
+  
+  uint32_t              m_index_max;
+  uint32_t              m_cap;
+  uint32_t              m_max_revs;
+  uint64_t              m_ttl;
+  Types::Column         m_type;
+};
 
 
 }}}

@@ -8,18 +8,34 @@
 
 #include "swcdb/lib/core/Checksum.h"
 
-namespace SWC { namespace Files { namespace CommitLogFragment {
+namespace SWC { namespace Files { 
+  
+  
+class CommitLogFragment {
+  public:
+  typedef std::shared_ptr<CommitLogFragment> Ptr;
+  
+  static const int TRAILER_SIZE=13;
+  static const int8_t VERSION=1;
+  static const uint32_t BUFFER_SZ=1048576;
 
-static const int TRAILER_SIZE=13;
-static const int8_t VERSION=1;
-static const uint32_t BUFFER_SZ=1048576;
 
-/* file-format: 
-    data:   
-      cells [cell + i32(checksum)]
-*/
+  /* file-format: 
+        header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+        data:   [cell]
+  */
 
-inline static void load(int& err, FS::SmartFdPtr smartfd) {
+
+  void add(const DB::Cells::Cell& cell) {
+
+  }
+
+  const std::string to_string() {
+    std::string s;
+    return s;
+  }
+
+  static void load(int& err, FS::SmartFdPtr smartfd) {
     
     size_t offset = 0;
     DynamicBuffer read_buf;
@@ -79,6 +95,10 @@ inline static void load(int& err, FS::SmartFdPtr smartfd) {
       Env::FsInterface::fs()->close(err, smartfd);
     
   }
-}}}
+
+};
+
+
+}}
 
 #endif

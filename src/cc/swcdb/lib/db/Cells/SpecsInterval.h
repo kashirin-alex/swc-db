@@ -105,6 +105,10 @@ class Interval {
             value.equal(other.value) ;
   }
 
+  bool is_matching(const Cells::Cell& cell){
+    return true;
+  }
+
   size_t encoded_length() const {
     return key_start.encoded_length() + key_finish.encoded_length()
           + value.encoded_length()

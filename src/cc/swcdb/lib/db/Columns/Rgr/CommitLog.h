@@ -15,75 +15,77 @@ class CommitLog {
   public:
 
   typedef std::shared_ptr<CommitLog>  Ptr;
-  DB::Cells::Interval::Ptr           interval;
 
 
-  CommitLog(const DB::RangeBasePtr& range)
-            : m_range(range), m_next_frag(0),
-              interval(std::make_shared<DB::Cells::Interval>()) { }
+  CommitLog(const DB::RangeBasePtr& range) : m_range(range) { }
 
   virtual ~CommitLog(){}
 
+  void add(const DB::Cells::Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_frag_current->add(cell);
+  }
   
-  const std::string get_log(int64_t log){
+  const std::string get_log_fragment(int64_t frag) {
     std::string s(m_range->get_path("log"));
     s.append("/");
-    FS::set_structured_id(std::to_string(log), s);
+    s.append(std::to_string(frag));
     s.append(".frag");
     return s;
+  }
+  const std::string get_log_fragment(const std::string& frag) {
+    std::string s(m_range->get_path("log"));
+    s.append("/");
+    s.append(frag);
+    return s;
+  }
+
+  void load(int &err) {
+    //log.data >> file.frag(intervals)
+
+    err = Error::OK;
+    FS::DirentList fragments;
+    Env::FsInterface::fs()->readdir(err, m_range->get_path("log"), fragments);
+    if(err)
+      return;
+
+    for(auto entry : fragments) {
+
+      Files::CommitLogFragment::load(
+        err, FS::SmartFd::make_ptr(get_log_fragment(entry.name), 0));
+      //if(!err)
+        //m_fragments.push_back(frag);
+      //else 
+        //err = Error::OK;
+    }
+    
   }
 
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("CommitLog(");
-    s.append(interval->to_string());
     s.append(" fragments=[");
     for(auto frag : m_fragments){
-      s.append(std::to_string(frag));
+      s.append(frag->to_string());
       s.append(",");
     }
     s.append("]");
-
-    if(m_smartfd != nullptr) { // current fragment
-      s.append(" ");
-      s.append(m_smartfd->to_string());
-    }
     s.append(")");
     return s;
   } 
-
-
-  void load(int &err) {
-    FS::IdEntries_t entries;
-    Env::FsInterface::interface()->get_structured_ids(
-      err, m_range->get_path("log"), entries);
-    for(auto frag : entries) {
-      if(frag > m_next_frag)
-        m_next_frag = frag;
-
-      Files::CommitLogFragment::load(err, FS::SmartFd::make_ptr(get_log(frag), 0));
-      if(!err)
-        m_fragments.push_back(frag);
-      else 
-        err = Error::OK;
-    }
-    
-  }
 
   void remove(int &err) {}
 
 
   private:
   
-  std::mutex              m_mutex;
-  const DB::RangeBasePtr  m_range;
+  std::mutex                  m_mutex;
+  const DB::RangeBasePtr      m_range;
 
-  std::vector<int64_t>    m_fragments;
-  int64_t                 m_next_frag;
+  Files::CommitLogFragment::Ptr m_frag_current;
 
-  FS::SmartFdPtr          m_smartfd = nullptr;
-
+  std::vector<Files::CommitLogFragment::Ptr>  m_fragments;
 };
 
 

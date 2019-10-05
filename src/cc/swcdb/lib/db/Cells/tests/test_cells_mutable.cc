@@ -41,7 +41,7 @@ void check(size_t num_cells) {
   int64_t took_mutable;
   Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(1, 2, 0, SWC::Types::Column::COUNTER_I64);
   
-  int num_revs = 50;
+  int num_revs = 5;
   for(auto r=1;r<=num_revs;++r){
   for(auto i=0;i<num_cells;++i){
       //std::cout << "Initial Cell-"<< i << ":\n";
@@ -69,8 +69,8 @@ void check(size_t num_cells) {
 
       took_vector = SWC::Time::now_ns();
 
-      cells.insert(cells.begin(), new Cells::Cell(cell));
-      //cells.push_back(new Cells::Cell(cell));
+      //cells.insert(cells.begin(), new Cells::Cell(cell));
+      cells.push_back(new Cells::Cell(cell));
 
       took_vector = SWC::Time::now_ns()-took_vector;
       ts_total_vector += took_vector;
@@ -89,13 +89,14 @@ void check(size_t num_cells) {
       took_mutable = SWC::Time::now_ns();
 
       //cells_mutable->insert(0, cell);
-      cells_mutable->add(cell);
+      //cells_mutable->add(cell);
+      cells_mutable->push_back(cell);
 
       took_mutable = SWC::Time::now_ns()-took_mutable;
       ts_total_mutable += took_mutable;
       latency_mutable->add(took_mutable); 
 
-      if(i % 10000 == 0)
+      if(i % 100000 == 0)
         std::cout << "took=" << took_mutable << " " << r << "/" << i << " = " << cells_mutable->size() << "\n";
 
       //std::cout << cells.back()->to_string() << "\n\n";
@@ -157,7 +158,8 @@ void check(size_t num_cells) {
 
   for(auto & cell : cells) {
     cell->own = true;
-    delete cell;
+    //cell->key->own = true;
+    //delete cell;
   }
   cells.clear();
 

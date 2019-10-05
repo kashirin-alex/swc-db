@@ -33,7 +33,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
     
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
   for(auto& cs : cellstores) {
-    sz += Serialization::encoded_length_vi32(cs->cs_id)
+    sz += Serialization::encoded_length_vi32(cs->id)
           + cs->interval->encoded_length();
   }
   dst_buf.ensure(HEADER_SIZE+sz);
@@ -50,7 +50,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStores &cellstores){
 
   Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
   for(auto& cs : cellstores){
-    Serialization::encode_vi32(&dst_buf.ptr, cs->cs_id);
+    Serialization::encode_vi32(&dst_buf.ptr, cs->id);
     cs->interval->encode(&dst_buf.ptr);
   }
 
@@ -83,7 +83,7 @@ void read(const uint8_t **ptr, size_t* remain, CellStores &cellstores) {
   for(size_t i=0;i<len;i++) {
     CellStore::Ptr cs = std::make_shared<CellStore>(
       Serialization::decode_vi32(ptr, remain)); 
-    cs->interval->decode(ptr, remain, true);
+    cs->interval = std::make_shared<DB::Cells::Interval>(ptr, remain);
     cellstores.push_back(cs);
   }
 
@@ -160,8 +160,8 @@ void load(int &err, const std::string filepath, CellStores &cellstores){
 void load_by_path(int &err, const std::string cs_path, CellStores &cellstores){
   FS::IdEntries_t entries;
   Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
-  for(auto cs_id : entries){
-    CellStore::Ptr cs = std::make_shared<CellStore>(cs_id); 
+  for(auto id : entries){
+    CellStore::Ptr cs = std::make_shared<CellStore>(id); 
     cellstores.push_back(cs);
     std::cout << cs->to_string() << "\n";
   }
