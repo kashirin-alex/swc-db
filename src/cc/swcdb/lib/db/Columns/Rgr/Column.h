@@ -111,6 +111,20 @@ class Column : public std::enable_shared_from_this<Column> {
     return  m_deleting;
   }
 
+  RangePtr get_next(size_t &idx) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_ranges->empty())
+      return nullptr;
+
+    if(m_ranges->size() < idx){
+      auto it = m_ranges->begin();
+      for(int i=idx=1;i--;it++);
+      return it->second;
+    }
+    idx = 0;
+    return nullptr;
+  }
+
   std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
