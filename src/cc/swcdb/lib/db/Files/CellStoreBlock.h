@@ -7,12 +7,13 @@
 #define swcdb_db_Files_CellStoreBlock_h
 
 #include "swcdb/lib/core/Encoder.h"
-#include "swcdb/lib/ranger/callbacks/RangeScan.h"
+#include "swcdb/lib/db/Cells/ReqScan.h"
 
 
 
 namespace SWC { namespace Files { namespace CellStore {
-  
+
+
 namespace Block {
 
 /* file-format: 
@@ -123,8 +124,9 @@ class Read {
     call();
   }
   
-  void scan(server::Rgr::Callback::RangeScan::Ptr req) {
-    //std::cout << "blk::scan\n";
+  void scan(DB::Cells::ReqScan::Ptr req) {
+    //std::cout << "blk::scan 1 " << req->to_string() << "\n";
+    
     int err;
     DB::Specs::Interval& spec = *(req->spec).get();
     DB::Cells::Mutable& cells = *(req->cells).get();

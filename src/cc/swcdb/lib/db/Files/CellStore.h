@@ -70,7 +70,7 @@ class Read : public std::enable_shared_from_this<Read> {
     }
   }
 
-  void scan(server::Rgr::Callback::RangeScan::Ptr req) {
+  void scan(DB::Cells::ReqScan::Ptr req) {
     //std::cout << "cs::Scan\n";
     int err = Error::OK;
 
@@ -112,7 +112,7 @@ class Read : public std::enable_shared_from_this<Read> {
     );
   }
 
-  void scan_block(uint32_t idx, server::Rgr::Callback::RangeScan::Ptr req) {
+  void scan_block(uint32_t idx, DB::Cells::ReqScan::Ptr req) {
     //std::cout << "cs::scan_block\n";
     Block::Read::Ptr blk;
     for(; idx < m_blocks.size(); idx++) {

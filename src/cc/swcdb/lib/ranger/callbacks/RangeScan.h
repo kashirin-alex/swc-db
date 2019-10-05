@@ -6,7 +6,7 @@
 #define swc_lib_ranger_callbacks_RangesScan_h
 
 #include "swcdb/lib/core/comm/ResponseCallback.h"
-#include "swcdb/lib/db/Cells/Mutable.h"
+#include "swcdb/lib/db/Cells/ReqScan.h"
 //#include "swcdb/lib/db/Protocol/Rgr/params/RangeLoad.h"
 
 namespace SWC {
@@ -17,15 +17,15 @@ namespace Callback {
 
 class RangeScan : public ResponseCallback {
   public:
-  typedef std::shared_ptr<RangeScan>  Ptr;
-  std::atomic<int> count=0;
-  int id=0;
-  int64_t took;
+
   RangeScan(ConnHandlerPtr conn, EventPtr ev,
             DB::Specs::Interval::Ptr spec, DB::Cells::Mutable::Ptr cells) 
-            : ResponseCallback(conn, ev), spec(spec), cells(cells) {
-    took = SWC::Time::now_ns();
-    id = ++count;
+            : ResponseCallback(conn, ev), 
+              req(DB::Cells::ReqScan::make(
+                spec, 
+                cells, 
+                [ptr=shared_from_this()](int err){ptr->response(err);}
+              ) {
   }
   
   virtual ~RangeScan() { }
@@ -53,13 +53,9 @@ class RangeScan : public ResponseCallback {
       
     }
     
-    std::cout << " chk=" << id << " took=" <<  SWC::Time::now_ns()-took 
-              << " cells:" << cells->to_string() << "\n";
-    
   }
 
-  DB::Specs::Interval::Ptr   spec;
-  DB::Cells::Mutable::Ptr    cells;
+  DB::Cells::ReqScan::Ptr    req;
 };
 
 

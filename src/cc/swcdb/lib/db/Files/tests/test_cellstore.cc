@@ -123,30 +123,40 @@ int main(int argc, char** argv) {
   SWC::Files::CellStore::Read::Ptr cs2 = std::make_shared<SWC::Files::CellStore::Read>(0);
   cs2->smartfd = cs_writer.smartfd;
 
-  for(int n=1;n<=2;n++) {
-  for(int i=1; i<=10;i++) {
+  std::atomic<int> requests = 0;
 
-  Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(1234, 2, 0, SWC::Types::Column::PLAIN);
-  SWC::server::Rgr::Callback::RangeScan::Ptr req 
-    = std::make_shared<SWC::server::Rgr::Callback::RangeScan>(
-        SWC::ConnHandlerPtr(nullptr), 
-        SWC::EventPtr(nullptr),
-        SWC::DB::Specs::Interval::make_ptr(),
-        cells_mutable
-      );
-  req->spec->key_start.set(key_to_scan, SWC::Condition::GT);
-  req->spec->flags.limit =2;
+  for(int n=1;n<=3;n++) {
 
-    //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
-  
-    cs2->scan(req);
-  }
+    for(int i=1; i<=10;i++) {
+      requests++;
+
+      //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
+    std::thread([cs2, &key_to_scan, id=n*i, &count=requests](){
+
+      Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
+      Cells::ReqScan::Ptr req = Cells::ReqScan::make();
+      req->spec = SWC::DB::Specs::Interval::make_ptr();
+      req->spec->key_start.set(key_to_scan, SWC::Condition::GT);
+      req->spec->flags.limit = 2;
+      req->cells = cells_mutable;
+      req->cb = [req, id, &requests=count, took=SWC::Time::now_ns()](int err){
+        std::cout << " chk=" << id ;
+        std::cout << " took=" <<  SWC::Time::now_ns()-took << " " ;
+        std::cout << req->to_string() << "\n";
+        requests--;
+      };
+      cs2->scan(req);
+    }).detach();
+      
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 
 
+  while(requests>0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   std::cout << "cs-read-scan: OK\n";
 
 
