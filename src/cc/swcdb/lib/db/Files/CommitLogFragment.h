@@ -10,94 +10,212 @@
 
 namespace SWC { namespace Files { 
   
+namespace CommitLog {
   
-class CommitLogFragment {
-  public:
-  typedef std::shared_ptr<CommitLogFragment> Ptr;
-  
-  static const int TRAILER_SIZE=13;
-  static const int8_t VERSION=1;
-  static const uint32_t BUFFER_SZ=1048576;
-
+class Fragment {
 
   /* file-format: 
-        header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
-        data:   [cell]
+        header:      i8(version), i32(header_ext-len), i32(checksum)
+        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+        data:        [cell]
   */
 
+  public:
+  typedef std::shared_ptr<Fragment> Ptr;
+  
+  static const int8_t     HEADER_SIZE = 9;
+  static const int8_t     VERSION = 1;
+  
+  enum State {
+    CELLS_NONE,
+    CELLS_LOADING,
+    CELLS_LOADED,
+  };
+
+  DB::Cells::Interval::Ptr  interval;
+
+  Fragment(const std::string& filepath)
+          : m_smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
+            m_state(State::CELLS_NONE), 
+            m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0) {
+  }
+  
+  virtual ~Fragment(){}
 
   void add(const DB::Cells::Cell& cell) {
 
   }
 
-  const std::string to_string() {
-    std::string s;
-    return s;
-  }
-
-  static void load(int& err, FS::SmartFdPtr smartfd) {
+  void load_header(int& err, bool close_after=true) {
     
-    size_t offset = 0;
-    DynamicBuffer read_buf;
-
     for(;;) {
       err = Error::OK;
     
-      if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) {
+      if(!Env::FsInterface::fs()->exists(err, m_smartfd->filepath())) {
         if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
           continue;
         return;
       }
-      size_t length = Env::FsInterface::fs()->length(err, smartfd->filepath());
-      if(err) {
-        if(err == Error::SERVER_SHUTTING_DOWN)
-          return;
-        continue;
-      }
       
+      if(!Env::FsInterface::interface()->open(err, m_smartfd) && err)
+        return;
+      if(err)
+        continue;
       
-      /*
-
-      Env::FsInterface::fs()->open(err, smartfd);
-      if(err == Error::FS_PATH_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
-        break;
-      if(!smartfd->valid())
-        continue;
-      if(err != Error::OK) {
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
+      StaticBuffer buf(HEADER_SIZE);
+      const uint8_t *ptr = buf.base;
+      if(Env::FsInterface::fs()->pread(
+          err, m_smartfd, 0, buf.base, HEADER_SIZE) != HEADER_SIZE){
+        if(err != Error::FS_EOF){
+          Env::FsInterface::fs()->close(err, m_smartfd);
+          continue;
+        }
+        return;
       }
 
+      size_t remain = HEADER_SIZE;
+      int8_t version = Serialization::decode_i8(&ptr, &remain);
+      uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
+      if(!checksum_i32_chk(
+        Serialization::decode_i32(&ptr, &remain), buf.base, HEADER_SIZE-4)){  
+        err = Error::CHECKSUM_MISMATCH;
+        return;
+      }
+
+      buf.reallocate(header_extlen);
+      ptr = buf.base;
+      if(Env::FsInterface::fs()->pread(err, m_smartfd, HEADER_SIZE, 
+                                    buf.base, header_extlen) != header_extlen){
+        if(err != Error::FS_EOF){
+          Env::FsInterface::fs()->close(err, m_smartfd);
+          continue;
+        }
+        return;
+      }
+
+      remain = header_extlen;
+      interval = std::make_shared<DB::Cells::Interval>(&ptr, &remain);
+      m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+      m_size_enc = Serialization::decode_i32(&ptr, &remain);
+      m_size = Serialization::decode_i32(&ptr, &remain);
+      m_cells_count = Serialization::decode_i32(&ptr, &remain);
+
+      if(!checksum_i32_chk(
+        Serialization::decode_i32(&ptr, &remain), buf.base, header_extlen-4)){  
+        err = Error::CHECKSUM_MISMATCH;
+        return;
+      }
+      m_cells_offset = HEADER_SIZE+header_extlen;
+      break;
+    }
+
+    if(close_after && m_smartfd->valid()) {
+      int tmperr = Error::OK;
+      Env::FsInterface::fs()->close(tmperr, m_smartfd);
+    }
+  }
+
+  void load_cells(int& err, 
+                  const std::vector<CellStore::Read::Ptr>& cellstores) {
+    
+    for(;;) {
+      err = Error::OK;
+    
+      if(!m_smartfd->valid() 
+         && !Env::FsInterface::interface()->open(err, m_smartfd) && err)
+        return;
+      if(err)
+        continue;
       
-      for(length > 0; length-=BUFFER_SZ) {
-        ptr = read_buf.base;
-        offset
-        if(Env::FsInterface::fs()->pread(err, smartfd, offset, read_buf.base, sz) != sz){
+      StaticBuffer read_buf(m_size_enc);
+      for(;;) {
+        err = Error::OK;
+        if(Env::FsInterface::fs()->pread(
+                    err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc)
+                  != m_size_enc){
+          int tmperr = Error::OK;
+          Env::FsInterface::fs()->close(tmperr, m_smartfd);
           if(err != Error::FS_EOF){
-            Env::FsInterface::fs()->close(err, smartfd);
+            if(!Env::FsInterface::interface()->open(err, m_smartfd))
+              break;
             continue;
           }
+        }
+        break;
+      }
+      if(err)
+        break;
+
+      StaticBuffer buffer(m_size);
+      
+      if(m_encoder != Types::Encoding::PLAIN) {
+        Encoder::decode(
+          m_encoder, read_buf.base, m_size_enc, buffer.base, m_size, err);
+        if(err) {
+          int tmperr = Error::OK;
+          Env::FsInterface::fs()->close(tmperr, m_smartfd);
           break;
         }
-        size_t remain = 4;
-        int32_t chksum_trailer = Serialization::decode_i32(&ptr, &remain);
-        if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                              buf, TRAILER_SIZE)){
-          err != Error::CHECKSUM_MISMATCH;
-          break;
-        }
+        read_buf.free();
+      } else {
+        read_buf.own = false;
+        buffer.base = read_buf.base;
       }
 
-      */
-    } 
+      
+      DB::Cells::Cell cell;
+      uint8_t* ptr = buffer.base;
+      size_t remain = buffer.size; 
 
-    if(smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd);
-    
+      while(remain) {
+        cell.read(&ptr, &remain);
+        for(auto cs : cellstores) {
+          if(cs->add_logged(cell)) // add to all aplicable (.on_fraction)
+            break;
+        }
+      }
+      break;
+    }
+
+    if(m_smartfd->valid()) {
+      int tmperr = Error::OK;
+      Env::FsInterface::fs()->close(tmperr, m_smartfd);
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_state = State::CELLS_LOADED;
+    }
   }
+
+  bool loaded() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::CELLS_LOADED;
+  }
+
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("Fragment(state=");
+    s.append(std::to_string((uint8_t)m_state));
+    s.append(m_smartfd->to_string());
+    s.append(")");
+    return s;
+  }
+
+  private:
+  std::mutex      m_mutex;
+  State           m_state;
+  FS::SmartFdPtr  m_smartfd;
+  Types::Encoding m_encoder;
+  uint32_t        m_size_enc;
+  uint32_t        m_size;
+  uint32_t        m_cells_count;
+  uint32_t        m_cells_offset;
+  
 
 };
 
+}
 
 }}
 

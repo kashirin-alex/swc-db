@@ -54,8 +54,8 @@ class CommitLog {
 
     for(auto entry : fragments) {
 
-      Files::CommitLogFragment::load(
-        err, FS::SmartFd::make_ptr(get_log_fragment(entry.name), 0));
+      //Files::CommitLogFragment::load(
+      //  err, FS::SmartFd::make_ptr(get_log_fragment(entry.name), 0));
       //if(!err)
         //m_fragments.push_back(frag);
       //else 
@@ -86,9 +86,9 @@ class CommitLog {
   std::mutex                  m_mutex;
   const DB::RangeBase::Ptr    m_range;
 
-  Files::CommitLogFragment::Ptr               m_frag_current;
+  Files::CommitLog::Fragment::Ptr               m_frag_current; // Fragment::Write
 
-  std::vector<Files::CommitLogFragment::Ptr>  m_fragments;
+  std::vector<Files::CommitLog::Fragment::Ptr>  m_fragments;
 };
 
 
