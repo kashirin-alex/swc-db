@@ -171,7 +171,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     return m_fs;
   }
 
-  const String to_string(){
+  const std::string to_string(){
     return format("FS::Interface(type=%d, details=%s)", 
                   (int)m_type, m_fs==nullptr?"NULL":m_fs->to_string().c_str());
   }
@@ -217,7 +217,7 @@ class Interface : std::enable_shared_from_this<Interface>{
   
   // default form to FS methods
 
-  void readdir(int &err, std::string& base_path, DirentList& dirs) {
+  void readdir(int &err, const std::string& base_path, DirentList& dirs) {
     for(;;) {
       err = Error::OK;
       DirentList found_dirs;
@@ -231,7 +231,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
   }
 
-  bool exists(int &err, const String &name) {
+  bool exists(int &err, const std::string& name) {
     bool state;
     for(;;) {
       err = Error::OK;
@@ -243,7 +243,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     return state;
   }
 
-  void exists(Callback::ExistsCb_t cb, const String &name) {
+  void exists(Callback::ExistsCb_t cb, const std::string &name) {
     Callback::ExistsCb_t cb_wrapper; 
     cb_wrapper = [cb, name, &cb_wrapper, ptr=shared_from_this()]
     (int err, bool state){ 
@@ -255,7 +255,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     m_fs->exists(cb_wrapper, name);
   }
 
-  void mkdirs(int &err, const String &name) {
+  void mkdirs(int &err, const std::string &name) {
     for(;;) {
       err = Error::OK;
       m_fs->mkdirs(err, name);
@@ -266,7 +266,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
   } 
 
-  void rmdir(int &err, const String &name) {
+  void rmdir(int &err, const std::string &name) {
     for(;;) {
       err = Error::OK;
       m_fs->rmdir(err, name);
@@ -276,8 +276,8 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
-  void rmdir_incl_opt_subs(int &err, const String &name, 
-                           const String &up_to) {
+  void rmdir_incl_opt_subs(int &err, const std::string &name, 
+                           const std::string &up_to) {
     rmdir(err, name);
     if(err != Error::OK)
       return;
@@ -302,7 +302,7 @@ class Interface : std::enable_shared_from_this<Interface>{
       err = Error::OK;
   }
 
-  void remove(int &err, const String &name) {
+  void remove(int &err, const std::string &name) {
     for(;;) {
       err = Error::OK;
       m_fs->remove(err, name);
