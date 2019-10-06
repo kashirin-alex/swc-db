@@ -6,6 +6,7 @@
 
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/db/Cells/Interval.h"
+#include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Files/CellStore.h"
 
 
@@ -17,11 +18,11 @@ int main() {
   
   DB::Cells::Interval expected_expanded;
   int n_cs = 9999;
-  Files::CellStore::RPtrs     cellstores;
+  Files::CellStore::ReadersPtr cellstores = std::make_shared<Files::CellStore::Readers>();
   for(int n=1; n<=n_cs;n++)
-    cellstores.push_back(std::make_shared<Files::CellStore::Read>(n));
+    cellstores->push_back(std::make_shared<Files::CellStore::Read>(n, std::make_shared<DB::RangeBase>(1,1)));
 
-  for(const auto& cs : cellstores){
+  for(const auto& cs : *cellstores.get()){
       auto s = std::to_string(n_cs-cs->id);
       DB::Specs::Key key;
       key.add("11", Condition::GE);
@@ -81,7 +82,7 @@ int main() {
   std::cout << "\n";
 
   bool init = false;
-  for(const auto& cs : cellstores) {
+  for(const auto& cs : *cellstores.get()) {
     //std::cout << cs->to_string() << "\n";
     intval->expand(cs->interval, init);
     init=true;

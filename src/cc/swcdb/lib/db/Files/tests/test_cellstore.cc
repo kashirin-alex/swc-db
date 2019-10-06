@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
   std::cout << "\n-   OK-wrote   -\n\n";
 
   
-  SWC::Files::CellStore::Read cs(0);
+  SWC::Files::CellStore::Read cs(0, std::make_shared<SWC::DB::RangeBase>(1,1));
   cs.smartfd = cs_writer.smartfd;
   std::cout << "cs-read-init:\n " << cs.to_string() << "\n";
 
@@ -119,8 +119,11 @@ int main(int argc, char** argv) {
   std::cout << "\ncs-read-scan:\n";
 
   SWC::Env::IoCtx::init(8);
+  SWC::Env::Schemas::init();
+  SWC::Env::Schemas::get()->add(err, SWC::DB::Schema::make(1, "col-test"));
 
-  SWC::Files::CellStore::Read::Ptr cs2 = std::make_shared<SWC::Files::CellStore::Read>(0);
+  SWC::Files::CellStore::Read::Ptr cs2 
+    = std::make_shared<SWC::Files::CellStore::Read>(0, std::make_shared<SWC::DB::RangeBase>(1,1));
   cs2->smartfd = cs_writer.smartfd;
 
   std::atomic<int> requests = 0;

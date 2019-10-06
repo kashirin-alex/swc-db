@@ -23,6 +23,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   inline static const std::string range_dir = "/R"; 
   // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
   inline static const std::string rs_data_file = "ranger.data";
+  inline static const std::string range_data_file = "range.data";
 
   inline static const std::string cellstores_dir = "cs";
   inline static const std::string log_dir = "log"; 
@@ -71,7 +72,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return shared_from_this();
   }
 
-  std::string get_path(std::string suff){
+  const std::string get_path(const std::string suff) {
     std::string s(m_path);
     s.append(suff);
     return s;

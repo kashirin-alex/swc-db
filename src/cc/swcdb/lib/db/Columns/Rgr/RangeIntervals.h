@@ -73,7 +73,7 @@ class RangeIntervals {
   typedef std::shared_ptr<RangeIntervals> Ptr;
 
   RangeIntervals(const DB::RangeBase::Ptr& range, 
-                 const Files::CellStore::RPtrs& cellstores) 
+                 const Files::CellStore::ReadersPtr& cellstores) 
                 : range(range),
                   log(std::make_shared<CommitLog>(m_range)) { 
   

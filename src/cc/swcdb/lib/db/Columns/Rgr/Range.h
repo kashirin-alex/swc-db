@@ -20,12 +20,9 @@ namespace SWC { namespace server { namespace Rgr {
 
 class Range : public DB::RangeBase {
 
-  inline static const std::string range_data_file = "range.data";
-
   public:
   
   typedef std::shared_ptr<Range>                    Ptr;
-  typedef std::shared_ptr<Files::CellStore::RPtrs>  CellStores;
 
   struct ReqAdd {
     const StaticBufferPtr     input;
@@ -41,7 +38,7 @@ class Range : public DB::RangeBase {
   Range(int64_t cid, int64_t rid)
         : RangeBase(cid, rid, std::make_shared<DB::Cells::Interval>()), 
           m_state(State::NOTLOADED), 
-          m_cellstores(std::make_shared<Files::CellStore::RPtrs>())  { 
+          m_cellstores(std::make_shared<Files::CellStore::Readers>())  { 
             
     if(cid == 1)
       m_type = Types::Range::MASTER;
@@ -195,8 +192,8 @@ class Range : public DB::RangeBase {
       default: // Types::Range::MASTER:
         break;
     }
-
-    Files::RangeData::save(err, get_path(range_data_file), *m_cellstores.get());
+    // 
+    Files::RangeData::save(err, shared_from_this(), m_cellstores);
   }
 
   void unload(Callback::RangeUnloaded_t cb, bool completely){
@@ -209,7 +206,7 @@ class Range : public DB::RangeBase {
       }
     }
     // CommitLogs  
-    // CellStores
+    // rCellStores
     // range.data
 
 
@@ -256,6 +253,9 @@ class Range : public DB::RangeBase {
     s.append(", ");
     s.append(m_interval->to_string());
 
+    if(m_commit_log != nullptr) 
+      s.append(m_commit_log->to_string());
+      
     s.append(", cellstores=[");
     for(auto& cs : *m_cellstores.get()) {
       s.append(cs->to_string());
@@ -298,24 +298,16 @@ class Range : public DB::RangeBase {
 
   void load(int &err, ResponseCallbackPtr cb) {
     
-    Files::RangeData::load(err, get_path(range_data_file), *m_cellstores.get());
-    if(err != Error::OK || m_cellstores->size() == 0) {
-      err = Error::OK;
-      Files::RangeData::load_by_path(err, get_path(cellstores_dir), *m_cellstores.get());
-      if(err == Error::OK)
-        Files::RangeData::save(err, get_path(range_data_file), *m_cellstores.get());
-      if(err != Error::OK) 
-        err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
-    }
-    
+    Files::RangeData::load(err, shared_from_this(), m_cellstores);
+    if(err) 
+      err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
+
     bool init=false;
     for(auto& cs: *m_cellstores.get()) {
-      cs->smartfd = FS::SmartFd::make_ptr(get_path_cs(cs->id), 0); 
-      if(!cs->interval)
-        cs->load_blocks_index(err, true);
       m_interval->expand(cs->interval, init);
       init = true;
     }
+
     m_commit_log = CommitLog::make(shared_from_this());
 
     loaded(err, cb); // RSP-LOAD-ACK
@@ -390,13 +382,13 @@ class Range : public DB::RangeBase {
 
   }
 
-  State                       m_state;
-  Types::Range                m_type;
+  State                         m_state;
+  Types::Range                  m_type;
    
-  CellStores                  m_cellstores;
-  std::queue<ReqAdd*>         m_q_adding;
+  Files::CellStore::ReadersPtr  m_cellstores;
+  std::queue<ReqAdd*>           m_q_adding;
 
-  CommitLog::Ptr              m_commit_log;
+  CommitLog::Ptr                m_commit_log;
 };
 
 

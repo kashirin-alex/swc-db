@@ -29,8 +29,8 @@ const int8_t VERSION=1;
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, CellStore::RPtrs &cellstores){
-    
+void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
+
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
   for(auto& cs : cellstores) {
     sz += Serialization::encoded_length_vi32(cs->id)
@@ -60,15 +60,19 @@ void write(SWC::DynamicBuffer &dst_buf, CellStore::RPtrs &cellstores){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
+void save(int &err, DB::RangeBase::Ptr range, 
+          CellStore::ReadersPtr &cellstores){
 
   DynamicBuffer input;
-  write(input, cellstores);
+  write(input, *cellstores.get());
   StaticBuffer send_buf(input);
 
   Env::FsInterface::interface()->write(
     err,
-    FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
+    FS::SmartFd::make_ptr(
+      range->get_path(DB::RangeBase::range_data_file), 
+      FS::OpenFlags::OPEN_FLAG_OVERWRITE
+    ), 
     -1, -1, 
     send_buf
   );
@@ -76,25 +80,44 @@ void save(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, CellStore::RPtrs &cellstores) {
+void read(const uint8_t **ptr, size_t* remain, 
+          DB::RangeBase::Ptr range, CellStore::ReadersPtr &cellstores) {
   const uint8_t *ptr_end = *ptr+*remain;
     
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;i++) {
-    CellStore::Read::Ptr cs = std::make_shared<CellStore::Read>(
-      Serialization::decode_vi32(ptr, remain)); 
-    cs->interval = std::make_shared<DB::Cells::Interval>(ptr, remain);
-    cellstores.push_back(cs);
+    cellstores->push_back(
+      std::make_shared<CellStore::Read>(
+        Serialization::decode_vi32(ptr, remain), 
+        range, 
+        std::make_shared<DB::Cells::Interval>(ptr, remain)
+      )
+    );
   }
 
   if(*ptr != ptr_end){
     HT_WARNF("decode overrun remain=%d", remain);
-    cellstores.clear();
+    cellstores->clear();
   }
 }
 
-void load(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
-  FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(filepath, 0);
+void load_by_path(int &err, DB::RangeBase::Ptr range, 
+                  CellStore::ReadersPtr &cellstores){
+  FS::IdEntries_t entries;
+  Env::FsInterface::interface()->get_structured_ids(
+    err, range->get_path(DB::RangeBase::cellstores_dir), entries);
+  
+  for(auto id : entries){
+    cellstores->push_back(std::make_shared<CellStore::Read>(id, range));
+    std::cout << cellstores->back()->to_string() << "\n";
+  }
+}
+
+void load(int &err, DB::RangeBase::Ptr range, 
+          CellStore::ReadersPtr &cellstores){
+
+  FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
+    range->get_path(DB::RangeBase::range_data_file), 0);
 
   for(;;) {
     err = Error::OK;
@@ -102,7 +125,7 @@ void load(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
     if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
       if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
         continue;
-      return;
+      break;
     }
 
     Env::FsInterface::fs()->open(err, smartfd);
@@ -149,21 +172,27 @@ void load(int &err, const std::string filepath, CellStore::RPtrs &cellstores){
     if(!checksum_i32_chk(chksum_data, ptr, sz))
       break;
     
-    read(&ptr, &sz, cellstores);
+    read(&ptr, &sz, range, cellstores);
     break;
   } 
 
   if(smartfd->valid())
     Env::FsInterface::fs()->close(err, smartfd);
-}
-
-void load_by_path(int &err, const std::string cs_path, CellStore::RPtrs &cellstores){
-  FS::IdEntries_t entries;
-  Env::FsInterface::interface()->get_structured_ids(err, cs_path, entries);
-  for(auto id : entries){
-    CellStore::Read::Ptr cs = std::make_shared<CellStore::Read>(id); 
-    cellstores.push_back(cs);
-    std::cout << cs->to_string() << "\n";
+  
+  if(err || cellstores->empty()) {
+    cellstores->clear();
+    err = Error::OK;
+    load_by_path(err, range, cellstores);
+    if(!err){
+      if(!cellstores->empty()) {
+        for(auto& cs: *cellstores.get()) {
+          cs->smartfd = FS::SmartFd::make_ptr(range->get_path_cs(cs->id), 0); 
+          cs->load_blocks_index(err, true);
+        }
+        // sort cs
+      }
+      save(err, range, cellstores);
+    }
   }
 }
 

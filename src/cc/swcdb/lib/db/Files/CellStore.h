@@ -6,6 +6,7 @@
 #ifndef swcdb_db_Files_CellStore_h
 #define swcdb_db_Files_CellStore_h
 
+#include "swcdb/lib/db/Columns/Schema.h"
 #include "CellStoreBlock.h"
 
 
@@ -42,12 +43,14 @@ class Read : public std::enable_shared_from_this<Read> {
   };
 
   const uint32_t            id;
-  FS::SmartFdPtr            smartfd;
+  const DB::RangeBase::Ptr  range;
   DB::Cells::Interval::Ptr  interval;
+  FS::SmartFdPtr            smartfd;
 
-  Read(uint32_t id) 
-      : id(id), smartfd(nullptr), interval(nullptr), 
-        m_state(State::BLKS_IDX_NONE) {            
+  Read(uint32_t id, const DB::RangeBase::Ptr& range, 
+       DB::Cells::Interval::Ptr interval=nullptr) 
+      : id(id), range(range), interval(interval), 
+        smartfd(nullptr), m_state(State::BLKS_IDX_NONE) {            
   }
 
   virtual ~Read(){}
@@ -354,12 +357,20 @@ class Read : public std::enable_shared_from_this<Read> {
     bool init=false;
     if(interval == nullptr)
       interval = std::make_shared<DB::Cells::Interval>();
+    
+    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     for(int n = 0; n < blks_count; n++){
       chk_ptr = ptr;
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
       Block::Read::Ptr blk = std::make_shared<Block::Read>(
         offset, 
-        std::make_shared<DB::Cells::Interval>(&ptr, &remain)
+        std::make_shared<DB::Cells::Interval>(&ptr, &remain),
+        DB::Cells::Mutable::make(
+          10, 
+          schema->cell_versions, 
+          schema->cell_ttl, 
+          schema->col_type
+        )
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
@@ -407,7 +418,8 @@ class Read : public std::enable_shared_from_this<Read> {
   std::queue<std::function<void()>>  m_blocks_q;
 
 };
-typedef std::vector<Read::Ptr> RPtrs;
+typedef std::vector<Read::Ptr>    Readers;
+typedef std::shared_ptr<Readers>  ReadersPtr;
 
 
 
@@ -423,10 +435,10 @@ class Write : public std::enable_shared_from_this<Write> {
   std::atomic<uint32_t>     complition;
 
   Write(const std::string& filepath, 
-                  Types::Encoding encoder=Types::Encoding::PLAIN)
-                : smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
-                  encoder(encoder), size(0), 
-                  interval(nullptr), complition(0) {
+        Types::Encoding encoder=Types::Encoding::PLAIN)
+        : smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
+          encoder(encoder), size(0), 
+          interval(nullptr), complition(0) {
   }
 
   virtual ~Write(){}
@@ -607,8 +619,9 @@ class Write : public std::enable_shared_from_this<Write> {
   std::condition_variable        m_cv;
 };
 
+typedef std::vector<Write::Ptr>   Writers;
+typedef std::shared_ptr<Writers>  WritersPtr;
 
-  typedef std::vector<Write::Ptr> WPtrs;
 
 } // namespace CellStore
 
