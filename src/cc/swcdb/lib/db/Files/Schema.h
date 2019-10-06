@@ -10,9 +10,9 @@
 
 namespace SWC { namespace Files { namespace Schema {
 
-const int HEADER_SIZE=13;
-const int HEADER_OFFSET_CHKSUM=9;
-const int8_t VERSION=1;
+const uint8_t HEADER_SIZE=13;
+const uint8_t HEADER_OFFSET_CHKSUM=9;
+const uint8_t VERSION=1;
 const std::string schema_file = "schema.data";
 
 /* file-format: 
