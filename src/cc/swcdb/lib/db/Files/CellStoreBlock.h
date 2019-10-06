@@ -70,7 +70,8 @@ class Read {
       }
 
       size_t remain = HEADER_SIZE;
-      Types::Encoding encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+      Types::Encoding encoder 
+        = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
       uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
       uint32_t sz = Serialization::decode_i32(&ptr, &remain);
       if(!sz_enc) 
@@ -106,7 +107,7 @@ class Read {
         buffer = std::make_shared<StaticBuffer>(sz);
       
       if(encoder != Types::Encoding::PLAIN) {
-        Encoder::decode(encoder, read_buf.base, sz_enc, &buffer->base, sz, err);
+        Encoder::decode(encoder, read_buf.base, sz_enc, buffer->base, sz, err);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);

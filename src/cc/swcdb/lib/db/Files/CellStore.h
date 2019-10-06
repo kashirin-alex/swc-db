@@ -46,8 +46,8 @@ class Read : public std::enable_shared_from_this<Read> {
   DB::Cells::Interval::Ptr  interval;
 
   Read(uint32_t id) 
-          : id(id), smartfd(nullptr), interval(nullptr), 
-            m_state(State::BLKS_IDX_NONE) {            
+      : id(id), smartfd(nullptr), interval(nullptr), 
+        m_state(State::BLKS_IDX_NONE) {            
   }
 
   virtual ~Read(){}
@@ -321,7 +321,8 @@ class Read : public std::enable_shared_from_this<Read> {
 
     const uint8_t *ptr = read_buf.base;
     size_t remain = length;
-    Types::Encoding encoder = (Types::Encoding)*ptr++;
+    Types::Encoding encoder 
+      = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
     uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
     uint32_t sz = Serialization::decode_vi32(&ptr, &remain);
     uint32_t blks_count = Serialization::decode_vi32(&ptr, &remain);
@@ -338,7 +339,7 @@ class Read : public std::enable_shared_from_this<Read> {
     StaticBuffer decoded_buf;
     if(encoder != Types::Encoding::PLAIN) {
       decoded_buf.reallocate(sz);
-      Encoder::decode(encoder, ptr, sz_enc, &decoded_buf.base, sz, err);
+      Encoder::decode(encoder, ptr, sz_enc, decoded_buf.base, sz, err);
       if(err) {
         int tmperr = Error::OK;
         Env::FsInterface::fs()->close(tmperr, smartfd);

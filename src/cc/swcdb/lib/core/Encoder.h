@@ -12,7 +12,7 @@ namespace SWC { namespace Encoder {
 
 void decode(Types::Encoding encoder, 
             const uint8_t* src, size_t sz_enc, 
-            uint8_t **dst, size_t sz, 
+            uint8_t *dst, size_t sz, 
             int& err){
 }
 
