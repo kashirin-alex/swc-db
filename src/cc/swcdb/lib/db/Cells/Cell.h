@@ -223,16 +223,20 @@ class Cell {
     *base += ptr - *base;
   }
 
+  uint32_t encoded_length() {
+    uint32_t len = 1+key.encoded_length()+1;
+    if(control & HAVE_ON_FRACTION)
+      len += Serialization::encoded_length_vi32(on_fraction);
+    if(control & HAVE_TIMESTAMP)
+      len += 8;
+    if(control & HAVE_REVISION)
+      len += 8;
+    return len+vlen+Serialization::encoded_length_vi32(vlen);
+  }
+
   // WRITE
   void write(SWC::DynamicBuffer &dst_buf){
-    uint32_t klen = 1+key.encoded_length()+1;
-    if(control & HAVE_ON_FRACTION)
-      klen += Serialization::encoded_length_vi32(on_fraction);
-    if(control & HAVE_TIMESTAMP)
-      klen += 8;
-    if(control & HAVE_REVISION)
-      klen += 8;
-    dst_buf.ensure(klen+vlen+Serialization::encoded_length_vi32(vlen));
+    dst_buf.ensure(encoded_length());
 
     *dst_buf.ptr++ = flag;
     key.encode(&dst_buf.ptr);
