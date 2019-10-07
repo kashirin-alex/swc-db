@@ -10,6 +10,7 @@
 
 #include "swcdb/lib/db/Cells/Cell.h"
 #include "SpecsInterval.h"
+#include "Interval.h"
 
 namespace SWC { namespace DB { namespace Cells {
 
@@ -30,8 +31,8 @@ class Mutable {
                    const uint32_t max_revs=1, 
                    const uint64_t ttl=0, 
                    const Types::Column type=Types::Column::PLAIN)
-                  : m_cells(0), m_cap(cap==0?1:cap), m_size(0), 
-                    m_max_revs(max_revs), m_ttl(ttl), m_type(type) {
+                  : m_cells(0), m_cap(cap==0?1:cap), m_size(0), m_size_bytes(0), 
+                    m_max_revs(max_revs), m_ttl(ttl), m_type(type){
     _allocate();
   }
 
@@ -70,27 +71,15 @@ class Mutable {
     if(e_cell.has_expired(m_ttl))
       return;
 
-    uint32_t size;
     Cell* cell;
-    {
-      //std::lock_guard<std::mutex> lock(m_mutex);
-      size = m_size;
-    }
-
-    for(uint32_t offset = 0; offset < size; offset++) {
-      //std::lock_guard<std::mutex> lock(m_mutex);
-
-      if(size != m_size)  {
-        offset = 0;
-        size = m_size;
-        continue;
-      }
+    
+    std::lock_guard<std::mutex> lock(m_mutex);  
+    for(uint32_t offset = 0; offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl)) {
          _move_bwd(offset--, 1);
-        size = m_size;
         continue;
       }
 
@@ -104,7 +93,6 @@ class Mutable {
         if(removing) {
           if(e_cell.is_removing(cell->revision)){
             _move_bwd(offset--, 1);
-            size = m_size;
           }
           continue;
           
@@ -117,7 +105,6 @@ class Mutable {
         if(e_cell.removal()) {
           removing = true;
           _insert(offset++, e_cell);
-          size = m_size;
           continue;
         
         } else {
@@ -127,7 +114,6 @@ class Mutable {
             if(!updating && e_cell.on_fraction) {
               updating = true;
               _insert(offset++, e_cell);
-              size = m_size;
               continue;
             }
 
@@ -197,24 +183,27 @@ class Mutable {
       return;
     }
 
-    push_back(e_cell);
+    _push_back(e_cell);
   }
   
-  void push_back(const Cell& cell) {
-    //std::lock_guard<std::mutex> lock(m_mutex);
-    _allocate_if_needed(1);
-    *(m_cells + m_size) = new Cell(cell);
-    m_size++;
+  void push_back(Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _push_back(cell);
   }
   
-  void insert(uint32_t offset, const Cell& cell) {
-    //std::lock_guard<std::mutex> lock(m_mutex);
+  void insert(uint32_t offset, Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     _insert(offset, cell);
   }
 
   uint32_t size(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_size;
+  }
+
+  uint32_t size_bytes(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_size_bytes;
   }
 
   void free(){
@@ -231,6 +220,26 @@ class Mutable {
     //
     return false;
   }
+  void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
+                      Interval::Ptr& intval) {
+    Cell* cell;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    cells.ensure(m_size_bytes);
+
+    uint32_t offset = 0;
+    while(offset < m_size) {
+      cell = *(m_cells + offset++);
+      
+      if(cell->has_expired(m_ttl))
+        continue;
+      cell->write(cells);
+      cell_count++;
+      intval->expand(*cell);
+    }
+
+    _free();
+  }
 
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -244,6 +253,8 @@ class Mutable {
     s.append(std::to_string(m_cap));
     s.append(" size=");
     s.append(std::to_string(m_size));
+    s.append(" bytes=");
+    s.append(std::to_string(m_size_bytes));
     s.append(" max_revs=");
     s.append(std::to_string(m_max_revs));
     s.append(" ttl=");
@@ -262,17 +273,22 @@ class Mutable {
   }
 
   void _allocate() {
-    if(m_cells == 0) {
+    if(m_cells == 0) {      
       m_cells = new Cell*[m_cap];
+      //m_cells = (Cell**)std::malloc(m_cap*sizeof(Cell*));
 
     } else {
+      //void* cells_new = std::realloc(m_cells, (m_cap += m_size)*sizeof(Cell*));
+      //if(cells_new) 
+      //  m_cells = (Cell**)cells_new;
+      
       Cell** cells_old = m_cells;
       m_cells = new Cell*[m_cap += m_size];
 
       memcpy(m_cells, cells_old, m_size*sizeof(Cell*));
       //for(uint32_t n=m_size;n--;) 
       //  *(m_cells+n) = *(cells_old+n);
-
+     
       delete [] cells_old;
     }
 
@@ -290,37 +306,59 @@ class Mutable {
   }
 
   inline void _move_bwd(uint32_t offset, int32_t by) {
-    for(uint32_t n=0;n<by; n++)
-      if(*(m_cells+offset+n))
+    for(uint32_t n=0;n<by; n++){
+      if(*(m_cells+offset+n)){
+        m_size_bytes -= (*(m_cells+offset+n))->encoded_length();
         delete *(m_cells+offset+n);
+        //(*(m_cells+offset+n))->~Cell();
+        //std::free(*(m_cells+offset+n));
+      }
+    }
 
     memmove(m_cells+offset, m_cells+offset+by, (m_size-offset-by)*sizeof(Cell*));
     m_size-=by;
     memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
   }
   
-  inline void _insert(uint32_t offset, const Cell& cell) {
+  inline void _insert(uint32_t offset, Cell& cell) {
     _move_fwd(offset, 1);
     *(m_cells + offset) = new Cell(cell);
+    //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     m_size++;
+    m_size_bytes += cell.encoded_length();
+  }
+
+  inline void _push_back(Cell& cell) {
+    _allocate_if_needed(1);
+    *(m_cells + m_size) = new Cell(cell);
+    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell.encoded_length();
   }
 
   inline void _free() {
-    //std::cout << " _free, m_cells " << (size_t)*m_cells << " " << _to_string() << "\n";
     if(m_cells != 0) {
-      while(m_size) 
-        delete *(m_cells+(m_size--));
+      do { 
+        m_size--;
+        delete *(m_cells+m_size);
+        //(*(m_cells+m_size))->~Cell();
+        //std::free(*(m_cells+m_size));
+      } while(m_size);
+
       delete [] m_cells;
+      //std::free(m_cells);
+
       m_cap = 0;
       m_cells = 0;
+      m_size_bytes = 0;
     }
-    //std::cout << " _free 2\n";
   }
 
   std::mutex        m_mutex;
   Cell**            m_cells;
   uint32_t          m_cap;
   uint32_t          m_size;
+  uint32_t          m_size_bytes;
   uint32_t          m_max_revs;
   uint64_t          m_ttl;
   Types::Column     m_type;
@@ -426,7 +464,7 @@ class Mutables {
       m_index.begin()+n, new Mutable(m_index_max, m_max_revs, m_ttl, m_type));
   }
 
-  void push_back(const Cell& cell){
+  void push_back(Cell& cell){
 
   }
 
