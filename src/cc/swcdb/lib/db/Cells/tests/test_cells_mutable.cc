@@ -69,8 +69,8 @@ void check(size_t num_cells) {
 
       took_vector = SWC::Time::now_ns();
 
-      //cells.insert(cells.begin(), new Cells::Cell(cell));
-      cells.push_back(new Cells::Cell(cell));
+      cells.insert(cells.begin(), new Cells::Cell(cell));
+      //cells.push_back(new Cells::Cell(cell));
 
       took_vector = SWC::Time::now_ns()-took_vector;
       ts_total_vector += took_vector;
@@ -89,8 +89,8 @@ void check(size_t num_cells) {
       took_mutable = SWC::Time::now_ns();
 
       //cells_mutable->insert(0, cell);
-      //cells_mutable->add(cell);
-      cells_mutable->push_back(cell);
+      cells_mutable->add(cell);
+      //cells_mutable->push_back(cell);
 
       took_mutable = SWC::Time::now_ns()-took_mutable;
       ts_total_mutable += took_mutable;

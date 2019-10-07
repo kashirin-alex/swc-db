@@ -6,7 +6,7 @@
 #ifndef swcdb_db_Files_CommitLogFragment_h
 #define swcdb_db_Files_CommitLogFragment_h
 
-#include "swcdb/lib/core/Checksum.h"
+#include "CellStore.h"
 
 namespace SWC { namespace Files { 
   
@@ -41,6 +41,13 @@ class Fragment {
   }
   
   virtual ~Fragment(){}
+
+  void create(int& err, 
+              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=1) {
+    while(
+      Env::FsInterface::interface()->create(
+        err, m_smartfd, bufsz, replication, blksz));
+  }
 
   void write(int& err, Types::Encoding encoder, 
              DB::Cells::Interval::Ptr intval, 
@@ -87,9 +94,11 @@ class Fragment {
       int tmperr = Error::OK;
       Env::FsInterface::fs()->close(tmperr, m_smartfd);
     }
+
     if(Env::FsInterface::fs()->length(err, m_smartfd->filepath()) 
         != buff_write.size)
       err = Error::FS_EOF;
+      // do-again
 
     m_state = State::CELLS_LOADED;
   }
@@ -245,6 +254,11 @@ class Fragment {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("Fragment(state=");
     s.append(std::to_string((uint8_t)m_state));
+
+    s.append(" ");
+    s.append(interval->to_string());
+
+    s.append(" ");
     s.append(m_smartfd->to_string());
     s.append(")");
     return s;

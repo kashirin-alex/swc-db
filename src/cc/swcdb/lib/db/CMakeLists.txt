@@ -45,8 +45,15 @@ ADD_TEST_TARGET(
 )
 
 ADD_TEST_TARGET(
-	NAME	cellstore_write
+	NAME	cellstore
 	SRCS	Files/tests/test_cellstore.cc
+	TARGETS	swcdb_core_config ${BUILTIN_FS_TARGETS}
+	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+)
+
+ADD_TEST_TARGET(
+	NAME	commitlog
+	SRCS	Files/tests/test_commitlog.cc
 	TARGETS	swcdb_core_config ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
 )

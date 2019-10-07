@@ -21,10 +21,22 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     return std::make_shared<CommitLog>(range);
   }
 
-  CommitLog(const DB::RangeBase::Ptr& range) : m_range(range) {
-    m_size_commit = Env::Schemas::get()->get(range->cid)->blk_size;
+  CommitLog(const DB::RangeBase::Ptr& range) 
+            : m_range(range), m_commiting(false) {
+    
+    DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
+
+    m_size_commit = schema->blk_size;
     if(m_size_commit == 0)
       m_size_commit = 16000000; // cfg.default.blk.size
+    
+    m_cells = DB::Cells::Mutable::make(
+      1, 
+      schema->cell_versions, 
+      schema->cell_ttl, 
+      schema->col_type
+    );
+
    }
 
   virtual ~CommitLog(){}
@@ -43,7 +55,8 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     m_cells->add(cell);
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_cells->size_bytes() >= m_size_commit) {
+    if(!m_commiting && m_cells->size_bytes() >= m_size_commit) {
+      m_commiting = true;
       asio::post(*Env::IoCtx::io()->ptr(), 
         [ptr=shared_from_this()](){
           ptr->commit_new_fragment();
@@ -55,28 +68,30 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   void commit_new_fragment() {
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
     uint32_t blk_size = schema->blk_size;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(blk_size != 0) 
+        m_size_commit = blk_size;
+    }
+    
+    Files::CommitLog::Fragment::Ptr frag 
+      = std::make_shared<Files::CommitLog::Fragment>(
+          get_log_fragment(Time::now_ns()));
+    
+    int err = Error::OK;
+    frag->create(err, -1, schema->blk_replication, -1);
+    if(err) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_commiting = false;
+      return;
+    }
 
     DynamicBuffer cells;
     uint32_t cell_count = 0;
     DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-
-      if(blk_size != 0) {
-        m_size_commit = blk_size;
-        if(m_cells->size_bytes() < m_size_commit)
-          return;
-      }
-      m_cells->write_and_free(cells, cell_count, intval);
-    }
-
-    Files::CommitLog::Fragment::Ptr frag 
-      = std::make_shared<Files::CommitLog::Fragment>(
-          get_log_fragment(Time::now_ns()));
+    m_cells->write_and_free(cells, cell_count, intval);
 
     Types::Encoding encoder = schema->blk_encoding;
-    int err;
     do {
       frag->write(err, encoder, intval, cells, cell_count);
     } while(err);
@@ -84,6 +99,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_fragments.push_back(frag);
+      m_commiting = false;
     }
   }
 
@@ -118,7 +134,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
         get_log_fragment(entry.name));
       frag->load_header(err, true);
 
-      if(!err)
+      if(err)
         m_fragments_error.push_back(frag);
       else
         m_fragments.push_back(frag);
@@ -130,10 +146,16 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
 
     std::string s("CommitLog(");
     
-    s.append(" fragments=[");
+    s.append("cells=");
+    s.append(m_cells->to_string());
+
+    s.append(" fragments=");
+    s.append(std::to_string(m_fragments.size()));
+
+    s.append(" [");
     for(auto frag : m_fragments){
       s.append(frag->to_string());
-      s.append(",");
+      s.append(", ");
     }
     s.append("] errors=[");
     for(auto frag : m_fragments_error){
@@ -156,6 +178,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
 
   DB::Cells::Mutable::Ptr     m_cells;
   uint32_t                    m_size_commit;
+  bool                        m_commiting;
 
   std::vector<Files::CommitLog::Fragment::Ptr>  m_fragments;
   std::vector<Files::CommitLog::Fragment::Ptr>  m_fragments_error;
