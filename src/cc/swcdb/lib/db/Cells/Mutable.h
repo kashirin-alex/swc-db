@@ -16,6 +16,7 @@ namespace SWC { namespace DB { namespace Cells {
 
 
 class Mutable {
+  static const uint32_t narrow_sz = 20;
   public:
 
   typedef std::shared_ptr<Mutable>  Ptr;
@@ -57,24 +58,53 @@ class Mutable {
     return *(m_cells+m_size-1);
   }
 
-  void add(Cell& e_cell){ 
-  
-    bool removing = false;
-    bool updating = false;
-    uint32_t revs = 0;
-    add(e_cell, removing, updating, revs);
-  }
-
-  void add(Cell& e_cell, bool& removing, bool& updating, uint32_t& revs){ 
+  void add(Cell& e_cell) { 
     //std::cout << "add, " << e_cell.to_string() << "\n";
     
     if(e_cell.has_expired(m_ttl))
       return;
 
     Cell* cell;
+    Condition::Comp cond;
+    bool removing = false;
+    bool updating = false;
+    uint32_t revs = 0;
+    uint32_t offset = 0; 
     
-    std::lock_guard<std::mutex> lock(m_mutex);  
-    for(uint32_t offset = 0; offset < m_size; offset++) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    uint32_t narrows = 0;
+
+    if(m_size > narrow_sz) {
+      uint32_t sz = m_size/2;
+      offset = sz; 
+
+      for(;;) {
+        cond = (*(m_cells + offset))->key.compare(e_cell.key, e_cell.on_fraction); 
+        narrows++;
+
+        if(cond == Condition::GT){
+          if(sz < narrow_sz)
+            break;
+          offset += sz /= 2; 
+          continue;
+        }
+        if((sz /= 2) == 0)
+          ++sz;  
+
+        if(offset < sz) {
+          offset = 0;
+          break;
+        }
+        offset -= sz;
+      }
+    }
+    
+    //if(m_size < offset) {
+    //  std::cout << " size=" << m_size << " offset=" << offset << " narrows=" << narrows << "\n";
+    //  exit(1);
+    //}
+    
+    for(;offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
       
@@ -83,7 +113,7 @@ class Mutable {
         continue;
       }
 
-      Condition::Comp cond = cell->key.compare(
+      cond = cell->key.compare(
         e_cell.key, 
         (removing || updating) ?  e_cell.on_fraction : cell->on_fraction
       );
@@ -221,24 +251,31 @@ class Mutable {
     return false;
   }
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval::Ptr& intval) {
+                      Interval::Ptr& intval, uint32_t threshold) {
     Cell* cell;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    cells.ensure(m_size_bytes);
-
     uint32_t offset = 0;
-    while(offset < m_size) {
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+  
+    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
+
+    while(offset < m_size && threshold > cells.fill()) {
       cell = *(m_cells + offset++);
       
       if(cell->has_expired(m_ttl))
         continue;
+        
       cell->write(cells);
       cell_count++;
       intval->expand(*cell);
     }
-
-    _free();
+    
+    if(offset > 0) {
+      if(m_size == offset)
+        _free();
+      else 
+        _move_bwd(0, offset);
+    }
   }
 
   const std::string to_string() {
@@ -362,130 +399,6 @@ class Mutable {
   uint32_t          m_max_revs;
   uint64_t          m_ttl;
   Types::Column     m_type;
-};
-
-
-class Mutables {
-  public:
-
-  typedef std::shared_ptr<Mutables>  Ptr;
-  
-  inline static Ptr make(const uint32_t index_max,
-                         const uint32_t cap=1, 
-                         const uint32_t max_revs=1, 
-                         const uint64_t ttl=0, 
-                         const Types::Column type=Types::Column::PLAIN) {
-    return std::make_shared<Mutables>(index_max, cap, max_revs, ttl, type);
-  }
-
-  explicit Mutables(const uint32_t index_max,
-                    const uint32_t cap=1, 
-                    const uint32_t max_revs=1, 
-                    const uint64_t ttl=0, 
-                    const Types::Column type=Types::Column::PLAIN)
-                  : m_index_max(index_max),
-                    m_cap(cap==0?1:cap), m_max_revs(max_revs), 
-                    m_ttl(ttl), m_type(type) {
-    m_index.push_back(new Mutable(m_index_max, m_max_revs, m_ttl, m_type));
-  }
-
-  virtual ~Mutables() { 
-    std::cout << " ~Mutables 1 sz=" << m_index.size() << "\n";
-    for(auto idx : m_index)
-      delete idx;
-    std::cout << " ~Mutables 2 \n";
-  }
-
-  void add(Cell& cell) {
-    uint32_t size;
-    Mutable* index;
-    Cell* idx_cell_begin;
-    Cell* idx_cell_end;
-
-    bool removing = false;
-    bool updating = false;
-    uint32_t revs = 0;
-    bool cell_set = false;
-    uint32_t idx_sz;
-    uint32_t n=0;
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      size = m_index.size();
-    }
-    for(;;) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        
-        if(n < size) {        
-          if(n && size != m_index.size()){
-            size = m_index.size();
-            n = 0;
-            continue;
-          }
-          index = m_index.at(n++);
-          idx_cell_begin = index->front();
-          idx_cell_end = index->back();
-
-        } else {
-          index = m_index.back();
-          idx_cell_begin = nullptr;
-        }
-        
-      }
-
-      if(idx_cell_begin == nullptr) {
-        if(!removing && !updating) {
-          uint32_t sz = index->size();
-          index->add(cell, removing, updating, revs);
-          if(m_index_max == index->size() && sz != index->size()) 
-            alter(n);
-        }
-        break;
-      }
-       
-      if(idx_cell_end->key.compare(cell.key) == Condition::GT)
-        continue;
-
-      index->add(cell, removing, updating, revs);
-      if(!removing && !updating) {
-        uint32_t sz = index->size();
-        if(m_index_max == index->size() && sz != index->size()) 
-          alter(n);
-        break;
-      }
-    }
-
-  }
-
-  void alter(uint32_t n) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_index.insert(
-      m_index.begin()+n, new Mutable(m_index_max, m_max_revs, m_ttl, m_type));
-  }
-
-  void push_back(Cell& cell){
-
-  }
-
-  const size_t size() {
-    size_t sz = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto idx : m_index)
-      sz += idx->size();
-    return sz;
-  }
-
-  private:
-
-  std::mutex            m_mutex;
-  std::vector<Mutable*> m_index;
-  
-  uint32_t              m_index_max;
-  uint32_t              m_cap;
-  uint32_t              m_max_revs;
-  uint64_t              m_ttl;
-  Types::Column         m_type;
 };
 
 

@@ -67,15 +67,17 @@ void check(size_t num_cells) {
       //value = std::string("A-Data-Value-1234567890-"+n);
       //cell.set_value(value.data(), value.length());
 
+      /*
       took_vector = SWC::Time::now_ns();
 
-      cells.insert(cells.begin(), new Cells::Cell(cell));
-      //cells.push_back(new Cells::Cell(cell));
+      //cells.insert(cells.begin(), new Cells::Cell(cell));
+      cells.push_back(new Cells::Cell(cell));
 
       took_vector = SWC::Time::now_ns()-took_vector;
       ts_total_vector += took_vector;
       latency_vector->add(took_vector); 
-      
+      */
+
       /*
       took = SWC::Time::now_ns();
 
@@ -96,13 +98,16 @@ void check(size_t num_cells) {
       ts_total_mutable += took_mutable;
       latency_mutable->add(took_mutable); 
 
-      if(i % 100000 == 0)
-        std::cout << "took=" << took_mutable << " " << r << "/" << i << " = " << cells_mutable->size() << "\n";
-
+      if(i % 100000 == 0) {
+        //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size() << "\n";
+        std::cout << "m:took=" << took_mutable << " " << r << "/" << i << " = " << cells_mutable->size() << "\n";
+        std::cout << cells_mutable->to_string() << "\n";
+      }
       //std::cout << cells.back()->to_string() << "\n\n";
   }
   }
 
+  /*
   std::cout << " vector "
             << " avg="    << latency_vector->avg()
             << " min="    << latency_vector->min()
@@ -119,7 +124,8 @@ void check(size_t num_cells) {
   }
   std::cout << " counted=" << tmpc
             << " took=" << SWC::Time::now_ns()-took_vector << "\n"; 
-  
+  */
+
   /// 
   /*
   std::cout << " chained"
@@ -175,12 +181,14 @@ int main(int argc, char** argv) {
   check(100000);
   check(100000);
   check(100000);
-
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+  
   check(1000000);
-
-  for(auto i=1; i<=100; i++) {
-    check(1000000);
-  //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+  
+  for(auto i=1; i<=10; i++) {
+    check(100000000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   }
 
 
