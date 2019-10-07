@@ -72,12 +72,22 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(blk_size != 0) 
         m_size_commit = blk_size;
+      else 
+        blk_size = m_size_commit;
     }
     
     Files::CommitLog::Fragment::Ptr frag 
       = std::make_shared<Files::CommitLog::Fragment>(
           get_log_fragment(Time::now_ns()));
     
+
+    DynamicBuffer cells;
+    uint32_t cell_count = 0;
+    DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
+    m_cells->write_and_free(cells, cell_count, intval, blk_size);
+    if(cells.fill() == 0)
+      return;
+      
     int err = Error::OK;
     frag->create(err, -1, schema->blk_replication, -1);
     if(err) {
@@ -85,11 +95,6 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       m_commiting = false;
       return;
     }
-
-    DynamicBuffer cells;
-    uint32_t cell_count = 0;
-    DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
-    m_cells->write_and_free(cells, cell_count, intval);
 
     Types::Encoding encoder = schema->blk_encoding;
     do {
