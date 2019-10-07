@@ -31,9 +31,11 @@ void encode(Types::Encoding encoder, const uint8_t* src, size_t src_sz,
         break;
 
     default: {
+      *sz_enc = src_sz;
       output.ensure(reserve+src_sz);
       output.ptr += reserve;
-      output.add_unchecked(src, src_sz);
+      if(src_sz > 0)
+        output.add_unchecked(src, src_sz);
     }
   }
   
