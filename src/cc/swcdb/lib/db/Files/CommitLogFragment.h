@@ -42,8 +42,56 @@ class Fragment {
   
   virtual ~Fragment(){}
 
-  void add(const DB::Cells::Cell& cell) {
+  void write(int& err, Types::Encoding encoder, 
+             DB::Cells::Interval::Ptr intval, 
+             DynamicBuffer& cells, uint32_t cell_count) {
+    err = Error::OK;
 
+    uint32_t header_extlen = intval->encoded_length()+17;
+    m_cells_count = cell_count;
+    interval = intval;
+    m_size = cells.fill();
+    m_cells_offset = HEADER_SIZE+header_extlen;
+
+    DynamicBuffer output;
+    m_size_enc = 0;
+    output.set_mark();
+    Encoder::encode(encoder, cells.base, m_size, 
+                    &m_size_enc, output, m_cells_offset, err);
+    if(err)
+      return;
+                    
+    uint8_t * ptr = output.mark;
+    *ptr++ = VERSION;
+    Serialization::encode_i32(&ptr, header_extlen);
+    checksum_i32(output.mark, ptr, &ptr);
+    
+    uint8_t * header_extptr = ptr;
+    interval->encode(&ptr);
+    *ptr++ = (uint8_t)encoder;
+    Serialization::encode_i32(&ptr, m_size_enc);
+    Serialization::encode_i32(&ptr, m_size);
+    Serialization::encode_i32(&ptr, m_cells_count);
+    checksum_i32(header_extptr, ptr, &ptr);
+
+    StaticBuffer buff_write(output);
+
+    Env::FsInterface::fs()->append(
+      err,
+      m_smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+    
+    if(m_smartfd->valid()) {
+      int tmperr = Error::OK;
+      Env::FsInterface::fs()->close(tmperr, m_smartfd);
+    }
+    if(Env::FsInterface::fs()->length(err, m_smartfd->filepath()) 
+        != buff_write.size)
+      err = Error::FS_EOF;
+
+    m_state = State::CELLS_LOADED;
   }
 
   void load_header(int& err, bool close_after=true) {
@@ -207,8 +255,8 @@ class Fragment {
   State           m_state;
   FS::SmartFdPtr  m_smartfd;
   Types::Encoding m_encoder;
-  uint32_t        m_size_enc;
-  uint32_t        m_size;
+  size_t          m_size_enc;
+  size_t          m_size;
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
   
