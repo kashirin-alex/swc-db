@@ -88,7 +88,7 @@ class Cell {
 
   void copy(const Cell& other) {
     own = true;
-    //std::cout << " copy(const Cell &other) vlen=" << other.vlen << "\n";
+    //std::cout << " copy(const Cell &other) " << other.to_string() << "\n";
     flag        = other.flag;
     key.copy(other.key);
     control     = other.control;
@@ -99,13 +99,12 @@ class Cell {
     if(vlen > 0) {
       value = new uint8_t[vlen];
       memcpy(value, other.value, vlen);
-    }
+    } else 
+      value = 0;
   }
 
   virtual ~Cell(){
-    //std::cout << " ~Cell\n";
-    if(own && value != 0) 
-      delete [] value;
+    free();
     key.free();
   }
 

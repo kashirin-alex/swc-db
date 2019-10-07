@@ -153,14 +153,11 @@ void check(size_t num_cells) {
   
   
   std::cout << " clearing, ";
-
+  
   cells_mutable = nullptr;
 
-  for(auto & cell : cells) {
-    cell->own = true;
-    //cell->key->own = true;
-    //delete cell;
-  }
+  for(auto & cell : cells)
+    delete cell;
   cells.clear();
 
   std::cout << " cleared check with cells=" << num_cells << "\n";
@@ -180,14 +177,11 @@ int main(int argc, char** argv) {
   check(100000);
 
   check(1000000);
-  check(1000000);
-  check(1000000);
 
-  
-  //for(auto i=1; i<=100; i++) {
-  //  check(5000000);
+  for(auto i=1; i<=100; i++) {
+    check(1000000);
   //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  //}
+  }
 
 
   //for(auto i=1; i<=10000000; i*=10)

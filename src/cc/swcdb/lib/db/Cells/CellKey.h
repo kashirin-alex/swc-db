@@ -22,7 +22,7 @@ class Key {
   }
 
   void copy(const Key &other) {
-    //std::cout << " copy(const Key &other)\n";
+    //std::cout << " copy(const Key &other) " << other.to_string() << "\n";
     free(); 
     own   = true;
     count = other.count;
@@ -35,9 +35,7 @@ class Key {
   }
 
   virtual ~Key(){
-    //std::cout << " ~Cell::Key\n";
-    if(own && data != 0)
-      delete [] data;
+    free();
   }
 
   inline void free(){
