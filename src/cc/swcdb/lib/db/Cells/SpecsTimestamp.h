@@ -78,7 +78,8 @@ class Timestamp {
   const std::string to_string(){
     std::string s("Timestamp(");
     s.append(Condition::to_string(comp));
-    s.append(std::to_string(value));
+    if(comp != Condition::NONE)
+      s.append(std::to_string(value));
     s.append(")");
     return s;
   }
