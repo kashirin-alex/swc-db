@@ -207,6 +207,13 @@ class Read : public std::enable_shared_from_this<Read> {
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 
+  size_t log_cell_count() {
+    size_t count = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& blk : m_blocks)
+      count += blk->log_cell_count();
+    return count;
+  }
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 

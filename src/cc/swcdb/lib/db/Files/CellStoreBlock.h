@@ -184,6 +184,10 @@ class Read {
     return s;
   }
 
+  size_t log_cell_count() {
+    return log_cells == nullptr? 0: log_cells->size();
+  }
+  
   const size_t              offset;
   DB::Cells::Interval::Ptr  interval;
   std::atomic<bool>         loaded;
