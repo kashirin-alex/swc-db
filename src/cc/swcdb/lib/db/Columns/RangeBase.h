@@ -114,7 +114,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   protected:
   std::mutex                m_mutex;
-  Cells::Interval::Ptr     m_interval;
+  Cells::Interval::Ptr      m_interval;
 };
 
 }}

@@ -99,18 +99,24 @@ class Range : public DB::RangeBase {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req) {
-    size_t cs_ptr;
+    Files::CellStore::ReadersPtr cellstores;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      cs_ptr = (size_t)m_cellstores.get();
+      cellstores->assign(m_cellstores->begin(), m_cellstores->end());
     }
-    /*
     m_commit_log->load(
       req->spec, 
-      [cs_ptr, req, ptr=shared()](){ptr->scan(cs_ptr, 0, req);}
+      cellstores,
+      [req, ptr=shared()](int err) {
+        if(err){
+          req->response(err);
+        } else {
+          size_t cs_ptr = 0;
+          ptr->scan(cs_ptr, 0, req);
+        }
+      }
     );
-    */
-    scan(cs_ptr, 0, req);
+    //scan(cs_ptr, 0, req);
   }
 
   void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
@@ -302,17 +308,28 @@ class Range : public DB::RangeBase {
     if(err) 
       err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
+    else if(m_cellstores->empty()) {
+      // init 1st cs(for log_cells)
+      DB::SchemaPtr schema = Env::Schemas::get()->get(cid);
+      Files::CellStore::Read::Ptr cs 
+        = Files::CellStore::create_init_read(
+          err, schema->blk_encoding, shared_from_this());
+      if(!err) 
+        m_cellstores->push_back(cs);
+    }
+ 
     bool init=false;
     for(auto& cs: *m_cellstores.get()) {
       m_interval->expand(cs->interval, init);
       init = true;
     }
-
-    m_commit_log = CommitLog::make(shared_from_this());
+    if(!err)
+      m_commit_log = CommitLog::make(shared_from_this());
 
     loaded(err, cb); // RSP-LOAD-ACK
 
-    on_change(err);
+    if(!err)
+      on_change(err);
 
     if(err == Error::OK) {
       set_state(State::LOADED);
@@ -331,7 +348,7 @@ class Range : public DB::RangeBase {
 
     int err;
     DB::Cells::Cell cell;
-    uint8_t* ptr;
+    const uint8_t* ptr;
     size_t remain;
     size_t cs_ptr;
     uint32_t cs_idx;
