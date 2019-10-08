@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
   Env::Schemas::init();
   Env::IoCtx::init(8);
 
-  int num_cells = 100000;
+  int num_cells = 10000000;
   int err = Error::OK;
   Env::Schemas::get()->add(
     err, 
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
       
       0, 
       Types::Encoding::PLAIN,
-      6400000,
+      10000000,
       0
     )
   );
@@ -51,6 +51,8 @@ int main(int argc, char** argv) {
   
   Env::FsInterface::interface()->mkdirs(
     err, range->get_path(DB::RangeBase::log_dir));
+  Env::FsInterface::interface()->mkdirs(
+    err, range->get_path(DB::RangeBase::cellstores_dir));
 
   std::cout << " init:  \n" << commit_log->to_string() << "\n";
   
@@ -86,7 +88,7 @@ int main(int argc, char** argv) {
   commit_log->commit_new_fragment();
 
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+  std::this_thread::sleep_for(std::chrono::milliseconds(5000));
   std::cout << " added cell=" << num_cells << ": \n" << commit_log->to_string() << "\n";
   
   commit_log = server::Rgr::CommitLog::make(range);
@@ -101,17 +103,22 @@ int main(int argc, char** argv) {
   cellstores->push_back(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
 
-  commit_log->load(
-    DB::Specs::Interval::make_ptr(), 
-    cellstores,
-    [cellstores](int err) {
-      std::cout << "commit_log->load cb, err=" << err << " " << Error::get_text(err) << "\n";
-      std::cout << cellstores->front()->to_string() << "\n";
-    }
-  
-  );
+  std::atomic<int> chk = 0;
+  for(int i = 1;i<=10; i++){
+    chk++;
+    commit_log->load(
+      DB::Specs::Interval::make_ptr(), 
+      cellstores,
+      [cellstores, &chk](int err) {
+        std::cout << "commit_log->load cb, err=" << err << " " << Error::get_text(err) << "\n";
+        std::cout << cellstores->front()->to_string() << "\n";
+        chk--;
+      }
+    );
+  }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+  while(chk > 0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   std::cout << " loaded logs: \n" << commit_log->to_string() << "\n";
   
   exit(0);

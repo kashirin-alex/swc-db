@@ -159,15 +159,15 @@ class Read {
     s.append(std::to_string(loaded));
 
     s.append(" size=");
-    s.append(std::to_string(buffer!=nullptr?buffer->size:0));
+    s.append(std::to_string(buffer==nullptr?0:buffer->size));
 
-    if(log_cells !=nullptr) {
+    if(log_cells != nullptr) {
       s.append(" log=");
       s.append(log_cells->to_string());
-      if(log_cells->size()>0) {
-        s.append(" range=(");
-        
+      
+      if(log_cells->size() > 0) {
         DB::Cells::Cell cell;
+        s.append(" range=(");
         log_cells->get(0, cell);
         s.append(cell.to_string());
         s.append(")<=cell<=(");
@@ -176,8 +176,10 @@ class Read {
         s.append(")");
       }
     }
+    
     s.append(" ");
     s.append(interval->to_string());
+  
     s.append(")");
     return s;
   }

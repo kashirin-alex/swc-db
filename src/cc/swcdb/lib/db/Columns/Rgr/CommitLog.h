@@ -141,17 +141,29 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   void load(DB::Specs::Interval::Ptr spec, 
             Files::CellStore::ReadersPtr cellstores,
             std::function<void(int)> cb) {
-    bool awating = false;
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& frag : m_fragments) {  
-      if(frag->loaded() || !frag->interval->includes(spec))
-        continue;
-      frag->load_cells(cellstores, cb); // aggregeated cb for all due fragments
-      awating = true;
+    std::vector<Files::CommitLog::Fragment::Ptr>  fragments;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      for(auto& frag : m_fragments) {  
+        if(!frag->loaded() && frag->interval->includes(spec))
+          fragments.push_back(frag);
+      }
     }
-    if(!awating)
+    if(fragments.empty()){
       cb(Error::OK);
+      return;
+    }
+    std::shared_ptr<AwatingLoad> state = std::make_shared<AwatingLoad>();
+    state->count = fragments.size();
+    for(auto& frag : fragments){
+      frag->load_cells(
+        cellstores, [state, cb](int err){
+          std::cout << "state: " << state->count << "\n";
+          if(!--state->count) cb(err);
+        }
+      );
+    }
+      
   }
 
   const std::string to_string() {
@@ -186,6 +198,10 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
 
   private:
   
+  struct AwatingLoad {
+    std::atomic<uint32_t> count = 0;
+  };
+
   std::mutex                  m_mutex;
   const DB::RangeBase::Ptr    m_range;
 
