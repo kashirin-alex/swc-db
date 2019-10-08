@@ -12,7 +12,7 @@ namespace SWC { namespace Files {
   
 namespace CommitLog {
   
-class Fragment {
+class Fragment: public std::enable_shared_from_this<Fragment> {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
@@ -35,25 +35,21 @@ class Fragment {
   DB::Cells::Interval::Ptr  interval;
 
   Fragment(const std::string& filepath)
-          : m_smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
+          : m_smartfd(
+              FS::SmartFd::make_ptr(
+                filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
+            ), 
             m_state(State::CELLS_NONE), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0) {
   }
   
   virtual ~Fragment(){}
 
-  void create(int& err, 
-              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=1) {
-    while(
-      Env::FsInterface::interface()->create(
-        err, m_smartfd, bufsz, replication, blksz));
-  }
-
-  void write(int& err, Types::Encoding encoder, 
+  void write(int& err, int32_t replication, Types::Encoding encoder, 
              DB::Cells::Interval::Ptr intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
-    err = Error::OK;
-
+    
+    
     uint32_t header_extlen = intval->encoded_length()+17;
     m_cells_count = cell_count;
     interval = intval;
@@ -63,6 +59,7 @@ class Fragment {
     DynamicBuffer output;
     m_size_enc = 0;
     output.set_mark();
+    err = Error::OK;
     Encoder::encode(encoder, cells.base, m_size, 
                     &m_size_enc, output, m_cells_offset, err);
     if(err)
@@ -75,7 +72,9 @@ class Fragment {
     
     uint8_t * header_extptr = ptr;
     interval->encode(&ptr);
-    *ptr++ = (uint8_t)encoder;
+    *ptr++ = (uint8_t)(m_size_enc? encoder: Types::Encoding::PLAIN);
+    if(!m_size_enc)
+      m_size_enc = m_size;
     Serialization::encode_i32(&ptr, m_size_enc);
     Serialization::encode_i32(&ptr, m_size);
     Serialization::encode_i32(&ptr, m_cells_count);
@@ -83,22 +82,28 @@ class Fragment {
 
     StaticBuffer buff_write(output);
 
-    Env::FsInterface::fs()->append(
+    do_again:
+    Env::FsInterface::interface()->write(
       err,
       m_smartfd, 
-      buff_write, 
-      FS::Flags::FLUSH
+      replication, m_cells_offset+m_size_enc, 
+      buff_write
     );
-    
-    if(m_smartfd->valid()) {
-      int tmperr = Error::OK;
-      Env::FsInterface::fs()->close(tmperr, m_smartfd);
-    }
 
-    if(Env::FsInterface::fs()->length(err, m_smartfd->filepath()) 
-        != buff_write.size)
+    int tmperr = Error::OK;
+    if(!err && Env::FsInterface::fs()->length(
+        tmperr, m_smartfd->filepath()) != buff_write.size)
       err = Error::FS_EOF;
-      // do-again
+
+    if(err) {
+      if(err == Error::FS_PATH_NOT_FOUND 
+        //|| err == Error::FS_PERMISSION_DENIED
+          || err == Error::SERVER_SHUTTING_DOWN)
+        return;
+      // if not overwriteflag:
+      //   Env::FsInterface::fs()->remove(tmperr, m_smartfd->filepath()) 
+      goto do_again;
+    }
 
     m_state = State::CELLS_LOADED;
   }
@@ -172,40 +177,57 @@ class Fragment {
     }
   }
 
-  void load_cells(int& err, 
-                  const std::vector<CellStore::Read::Ptr>& cellstores) {
-    
+  void load_cells(CellStore::ReadersPtr cellstores, 
+                  std::function<void(int)> cb) {
+    bool run_loader;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_state == State::CELLS_LOADED) {
+        cb(Error::OK);
+        return;
+      }
+      m_queue_load.push(cb);
+      run_loader = m_queue_load.size() == 1;
+    }
+
+    if(run_loader){
+      asio::post(*Env::IoCtx::io()->ptr(), 
+        [cellstores, ptr=shared_from_this()](){
+          ptr->load_cells(cellstores);
+        }
+      );
+    }
+  }
+
+  void load_cells(CellStore::ReadersPtr cellstores) {
+    int err;
+    StaticBuffer read_buf(m_size_enc);
+
     for(;;) {
       err = Error::OK;
     
       if(!m_smartfd->valid() 
          && !Env::FsInterface::interface()->open(err, m_smartfd) && err)
-        return;
+        break;
       if(err)
         continue;
       
-      StaticBuffer read_buf(m_size_enc);
-      for(;;) {
-        err = Error::OK;
-        if(Env::FsInterface::fs()->pread(
-                    err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc)
-                  != m_size_enc){
+      if(Env::FsInterface::fs()->pread(
+            err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc) 
+          != m_size_enc){
+        if(m_smartfd->valid()) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, m_smartfd);
-          if(err != Error::FS_EOF){
-            if(!Env::FsInterface::interface()->open(err, m_smartfd))
-              break;
-            continue;
-          }
         }
-        break;
+        if(err == Error::FS_EOF)
+            break;
+        continue;
       }
       if(err)
-        break;
-
-      StaticBuffer buffer(m_size);
+        continue;
       
       if(m_encoder != Types::Encoding::PLAIN) {
+        StaticBuffer buffer(m_size);
         Encoder::decode(
           m_encoder, read_buf.base, m_size_enc, buffer.base, m_size, err);
         if(err) {
@@ -214,20 +236,19 @@ class Fragment {
           break;
         }
         read_buf.free();
-      } else {
-        read_buf.own = false;
-        buffer.base = read_buf.base;
+        read_buf.base = buffer.base;
+        buffer.own=false;
       }
-
       
       DB::Cells::Cell cell;
-      uint8_t* ptr = buffer.base;
-      size_t remain = buffer.size; 
+      const uint8_t* ptr = read_buf.base;
+      size_t remain = m_size; 
 
       while(remain) {
         cell.read(&ptr, &remain);
-        for(auto cs : cellstores) {
-          if(cs->add_logged(cell)) // add to all aplicable (.on_fraction)
+
+        for(auto cs : *cellstores.get()) {
+          if(cs->add_logged(cell) && !cell.on_fraction)
             break;
         }
       }
@@ -239,10 +260,28 @@ class Fragment {
       Env::FsInterface::fs()->close(tmperr, m_smartfd);
     }
 
-    {
+    if(!err) {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::CELLS_LOADED;
     }
+
+    std::function<void(int)> cb;
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        cb = m_queue_load.front();
+      }
+
+      cb(err);
+      
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue_load.pop();
+        if(m_queue_load.empty())
+          return;
+      }
+    }
+    std::cout << "LogFragment, load_cells-complete" << "\n";
   }
 
   bool loaded() {
@@ -254,6 +293,19 @@ class Fragment {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("Fragment(state=");
     s.append(std::to_string((uint8_t)m_state));
+
+    s.append(" count=");
+    s.append(std::to_string(m_cells_count));
+    s.append(" offset=");
+    s.append(std::to_string(m_cells_offset));
+
+    s.append(" encoder=");
+    s.append(Types::to_string(m_encoder));
+
+    s.append(" enc/size=");
+    s.append(std::to_string(m_size_enc));
+    s.append("/");
+    s.append(std::to_string(m_size));
 
     s.append(" ");
     s.append(interval->to_string());
@@ -273,6 +325,8 @@ class Fragment {
   size_t          m_size;
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
+
+  std::queue<std::function<void(int)>> m_queue_load;
   
 
 };

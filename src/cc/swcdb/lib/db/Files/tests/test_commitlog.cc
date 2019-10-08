@@ -45,7 +45,8 @@ int main(int argc, char** argv) {
     )
   );
 
-  DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(1,1);
+  DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(
+    1,1,std::make_shared<DB::Cells::Interval>());
   server::Rgr::CommitLog::Ptr commit_log = server::Rgr::CommitLog::make(range);
   
   Env::FsInterface::interface()->mkdirs(
@@ -77,16 +78,38 @@ int main(int argc, char** argv) {
       //  cell.set_value(Cells::OP::EQUAL, 0);
       //else
       //  cell.set_value(Cells::OP::PLUS, 1);
-      cell.set_value(std::string("A-Data-Value-1234567890-"+n).c_str());
+      std::string s("A-Data-Value-1234567890-"+n);
+      cell.set_value(s.data(), s.length());
 
     commit_log->add(cell);
   }
+  commit_log->commit_new_fragment();
 
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   std::cout << " added cell=" << num_cells << ": \n" << commit_log->to_string() << "\n";
   
-  commit_log->load(err);
+  commit_log = server::Rgr::CommitLog::make(range);
+  
+  std::cout << "new loading: \n" << commit_log->to_string() << "\n";
+  commit_log->load(err); // initial range loaded state
+  std::cout << "loaded: \n" << commit_log->to_string() << "\n";
+
+
+  Files::CellStore::ReadersPtr cellstores = std::make_shared<Files::CellStore::Readers>();
+  DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+  cellstores->push_back(
+    Files::CellStore::create_init_read(err, schema->blk_encoding, range));
+
+  commit_log->load(
+    DB::Specs::Interval::make_ptr(), 
+    cellstores,
+    [cellstores](int err) {
+      std::cout << "commit_log->load cb, err=" << err << " " << Error::get_text(err) << "\n";
+      std::cout << cellstores->front()->to_string() << "\n";
+    }
+  
+  );
 
   std::this_thread::sleep_for(std::chrono::milliseconds(30000));
   std::cout << " loaded logs: \n" << commit_log->to_string() << "\n";

@@ -41,16 +41,6 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
 
   virtual ~CommitLog(){}
 
-  void load(DB::Specs::Interval::Ptr spec, std::function<void()> cb) {
-    /*
-    m_commit_log->load(
-      req->spec, 
-      [cs_ptr, req, ptr=shared()](){ptr->scan(cs_ptr, 0, req);}
-    );
-    */
-  }
-  
-
   void add(DB::Cells::Cell& cell) {
     m_cells->add(cell);
 
@@ -76,34 +66,35 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
         blk_size = m_size_commit;
     }
     
-    Files::CommitLog::Fragment::Ptr frag 
-      = std::make_shared<Files::CommitLog::Fragment>(
-          get_log_fragment(Time::now_ns()));
-    
-
     DynamicBuffer cells;
     uint32_t cell_count = 0;
     DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
     m_cells->write_and_free(cells, cell_count, intval, blk_size);
-    if(cells.fill() == 0)
-      return;
-      
-    int err = Error::OK;
-    frag->create(err, -1, schema->blk_replication, -1);
-    if(err) {
+    if(cells.fill() == 0){
       std::lock_guard<std::mutex> lock(m_mutex);
       m_commiting = false;
       return;
     }
 
-    Types::Encoding encoder = schema->blk_encoding;
-    do {
-      frag->write(err, encoder, intval, cells, cell_count);
-    } while(err);
+    Files::CommitLog::Fragment::Ptr frag 
+      = std::make_shared<Files::CommitLog::Fragment>(
+          get_log_fragment(Time::now_ns()));
+    int err;
+    frag->write(
+      err, 
+      schema->blk_replication, 
+      schema->blk_encoding, 
+      intval, cells, cell_count
+    );
+    if(err){ 
+      // server already shutting down or major fs issue (PATH NOT FOUND)
+      // write temp(local) file for recovery
+    }
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_fragments.push_back(frag);
+      if(!err)
+        m_fragments.push_back(frag);
       m_commiting = false;
     }
   }
@@ -124,6 +115,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   }
 
   void load(int &err) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     // fragments header OR log.data >> file.frag(intervals)
 
     err = Error::OK;
@@ -144,6 +136,22 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       else
         m_fragments.push_back(frag);
     }
+  }
+  
+  void load(DB::Specs::Interval::Ptr spec, 
+            Files::CellStore::ReadersPtr cellstores,
+            std::function<void(int)> cb) {
+    bool awating = false;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& frag : m_fragments) {  
+      if(frag->loaded() || !frag->interval->includes(spec))
+        continue;
+      frag->load_cells(cellstores, cb); // aggregeated cb for all due fragments
+      awating = true;
+    }
+    if(!awating)
+      cb(Error::OK);
   }
 
   const std::string to_string() {
