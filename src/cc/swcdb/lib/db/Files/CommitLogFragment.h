@@ -214,27 +214,23 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       
       if(Env::FsInterface::fs()->pread(
             err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc) 
-          != m_size_enc){
-        if(m_smartfd->valid()) {
-          int tmperr = Error::OK;
-          Env::FsInterface::fs()->close(tmperr, m_smartfd);
-        }
+          != m_size_enc) {
+        err = Error::FS_IO_ERROR;
+      }
+      if(m_smartfd->valid()) {
+        int tmperr = Error::OK;
+        Env::FsInterface::fs()->close(tmperr, m_smartfd);
+      }
+      if(err) {
         if(err == Error::FS_EOF)
-            break;
+          break;
         continue;
       }
-      if(err)
-        continue;
       
       if(m_encoder != Types::Encoding::PLAIN) {
         StaticBuffer buffer(m_size);
         Encoder::decode(
           m_encoder, read_buf.base, m_size_enc, buffer.base, m_size, err);
-        if(err) {
-          int tmperr = Error::OK;
-          Env::FsInterface::fs()->close(tmperr, m_smartfd);
-          break;
-        }
         read_buf.free();
         read_buf.base = buffer.base;
         buffer.own=false;
@@ -253,11 +249,6 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
         }
       }
       break;
-    }
-
-    if(m_smartfd->valid()) {
-      int tmperr = Error::OK;
-      Env::FsInterface::fs()->close(tmperr, m_smartfd);
     }
 
     if(!err) {
