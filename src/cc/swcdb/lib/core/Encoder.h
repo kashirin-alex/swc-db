@@ -29,9 +29,7 @@ void encode(Types::Encoding encoder, const uint8_t* src, size_t src_sz,
 
       if(*sz_enc)
         break;
-
     default: {
-      *sz_enc = src_sz;
       output.ensure(reserve+src_sz);
       output.ptr += reserve;
       if(src_sz > 0)
