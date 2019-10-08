@@ -48,9 +48,9 @@ class Mutable {
     return _allocate_if_needed(sz);
   }
 
-  void get(uint32_t idx, Cell& cell) {
+  void get(int32_t idx, Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    cell.copy(**(m_cells+(idx<0?m_size+idx:idx)));
+    cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
 
   Cell* front() {
