@@ -55,7 +55,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     }
   }
   
-  void commit_new_fragment() {
+  void commit_new_fragment(bool finalize=false) {
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
     uint32_t blk_size = schema->blk_size;
     {
@@ -66,37 +66,41 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
         blk_size = m_size_commit;
     }
     
-    DynamicBuffer cells;
-    uint32_t cell_count = 0;
-    DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
-    m_cells->write_and_free(cells, cell_count, intval, blk_size);
-    if(cells.fill() == 0){
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_commiting = false;
-      return;
-    }
+    do {
+      DynamicBuffer cells;
+      uint32_t cell_count = 0;
+      DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
+      m_cells->write_and_free(cells, cell_count, intval, blk_size);
+      if(cells.fill() == 0){
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_commiting = false;
+        return;
+      }
 
-    Files::CommitLog::Fragment::Ptr frag 
-      = std::make_shared<Files::CommitLog::Fragment>(
-          get_log_fragment(Time::now_ns()));
-    int err;
-    frag->write(
-      err, 
-      schema->blk_replication, 
-      schema->blk_encoding, 
-      intval, cells, cell_count
-    );
-    if(err){ 
-      // server already shutting down or major fs issue (PATH NOT FOUND)
-      // write temp(local) file for recovery
-    }
+      Files::CommitLog::Fragment::Ptr frag 
+        = std::make_shared<Files::CommitLog::Fragment>(
+            get_log_fragment(Time::now_ns()));
+      int err;
+      frag->write(
+        err, 
+        schema->blk_replication, 
+        schema->blk_encoding, 
+        intval, cells, cell_count
+      );
+      if(err){ 
+        // server already shutting down or major fs issue (PATH NOT FOUND)
+        // write temp(local) file for recovery
+      }
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(!err)
+          m_fragments.push_back(frag);
+      }
+    } while((finalize && m_cells->size() > 0 ) 
+            || m_cells->size_bytes() >= m_size_commit);
     
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(!err)
-        m_fragments.push_back(frag);
-      m_commiting = false;
-    }
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_commiting = false;
   }
 
   const std::string get_log_fragment(int64_t frag) {
@@ -158,20 +162,28 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     for(auto& frag : fragments){
       frag->load_cells(
         cellstores, [state, cb](int err){
-          std::cout << "state: " << state->count << "\n";
-          if(!--state->count) cb(err);
+          if(!state->more()) cb(err);
         }
       );
     }
-      
+  }
+
+  size_t cells_count() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    size_t count = 0;
+    for(auto frag : m_fragments)
+      count+= frag->cells_count();
+    return count;
   }
 
   const std::string to_string() {
+    size_t count = cells_count();
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::string s("CommitLog(");
+    std::string s("CommitLog(count=");
+    s.append(std::to_string(count));
     
-    s.append("cells=");
+    s.append(" cells=");
     s.append(m_cells->to_string());
 
     s.append(" fragments=");
@@ -199,7 +211,13 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   private:
   
   struct AwatingLoad {
-    std::atomic<uint32_t> count = 0;
+    std::mutex m_mutex;
+    uint32_t count = 0;
+    
+    bool more() {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      return --count;
+    }
   };
 
   std::mutex                  m_mutex;
