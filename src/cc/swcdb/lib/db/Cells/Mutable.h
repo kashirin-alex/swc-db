@@ -48,6 +48,11 @@ class Mutable {
     return _allocate_if_needed(sz);
   }
 
+  void get(uint32_t idx, Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    cell.copy(**(m_cells+(idx<0?m_size+idx:idx)));
+  }
+
   Cell* front() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return *m_cells;
@@ -250,6 +255,7 @@ class Mutable {
     //
     return false;
   }
+  
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval::Ptr& intval, uint32_t threshold) {
     Cell* cell;
