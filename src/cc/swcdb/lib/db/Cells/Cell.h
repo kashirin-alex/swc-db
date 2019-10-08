@@ -109,11 +109,10 @@ class Cell {
   }
 
   inline void free(){
-    if(own && value != 0) {
+    if(own && value != 0)
       delete [] value;
-      vlen = 0;
-      value = 0;
-    }
+    vlen = 0;
+    value = 0;
   }
 
   void set_flag(uint8_t nflag, uint32_t fraction = 0){
@@ -183,43 +182,36 @@ class Cell {
   }
     
   // READ
-  void read(uint8_t **base, size_t* remainp) {
+  void read(const uint8_t **bufp, size_t* remainp) {
 
-    const uint8_t* ptr = *base;
-    flag = *ptr++;
-    *remainp -= 1;
-    key.decode(&ptr, remainp);
-    control = *ptr++;
-    *remainp -= 1;
+    flag = Serialization::decode_i8(bufp, remainp);
+    key.decode(bufp, remainp);
+    control = Serialization::decode_i8(bufp, remainp);
 
     if (control & HAVE_ON_FRACTION)
-      on_fraction = Serialization::decode_vi32(&ptr, remainp);
+      on_fraction = Serialization::decode_vi32(bufp, remainp);
 
-    if (control & HAVE_TIMESTAMP){
-      timestamp = Serialization::decode_i64(&ptr, remainp);
-    } else if(control & AUTO_TIMESTAMP)
+    if (control & HAVE_TIMESTAMP)
+      timestamp = Serialization::decode_i64(bufp, remainp);
+    else if(control & AUTO_TIMESTAMP)
       timestamp = AUTO_ASSIGN;
 
-    if (control & HAVE_REVISION) {
-      revision = Serialization::decode_i64(&ptr, remainp);
-    } else if (control & REV_IS_TS)
+    if (control & HAVE_REVISION)
+      revision = Serialization::decode_i64(bufp, remainp);
+    else if (control & REV_IS_TS)
       revision = timestamp;
       
     free();
     // own = owner;
-    vlen = Serialization::decode_vi32(&ptr, remainp);
-    if(vlen > 0){
+    if((vlen = Serialization::decode_vi32(bufp, remainp)) > 0) {
       if(own) {
         value = new uint8_t[vlen];
-        memcpy(value, ptr, vlen);
+        memcpy(value, *bufp, vlen);
       } else
-        value = (uint8_t *)ptr;
-      ptr += vlen;
+        value = (uint8_t *)*bufp;
+      *bufp += vlen;
       *remainp -= vlen;
-    } else 
-      value = 0;
-
-    *base += ptr - *base;
+    }
   }
 
   uint32_t encoded_length() {

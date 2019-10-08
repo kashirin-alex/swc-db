@@ -110,7 +110,7 @@ int main() {
    std::cout << "\n---Load Serialized Cells-----\n";
    buff.set_mark();
    uint8_t* mark = buff.mark;
-   uint8_t* bptr = buff.base;
+   const uint8_t* bptr = buff.base;
    size_t remain = mark-bptr;
    std::cout << " remain=" << remain << " base:"<< (size_t)bptr << ", mark:"<< (size_t)mark << ":\n";
 
