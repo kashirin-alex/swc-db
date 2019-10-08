@@ -45,7 +45,6 @@ class Read {
       call();
       return;
     }
-
     //std::cout << "blk::load\n";
 
     int err;
@@ -83,6 +82,8 @@ class Read {
         err = Error::CHECKSUM_MISMATCH;
         break;
       }
+      if(sz_enc == 0)
+        break;
 
       StaticBuffer read_buf(sz_enc);
       for(;;) {
@@ -133,11 +134,11 @@ class Read {
     DB::Cells::Mutable& cells = *(req->cells).get();
 
     log_cells->scan(spec, req->cells);
-    if(spec.flags.limit == cells.size())
+    if(spec.flags.limit == cells.size() || buffer == nullptr)
       return;
 
     DB::Cells::Cell cell;
-    uint8_t* ptr = buffer->base;
+    const uint8_t* ptr = buffer->base;
     size_t remain = buffer->size; 
     
     while(remain) {
@@ -157,6 +158,24 @@ class Read {
     s.append(" loaded=");
     s.append(std::to_string(loaded));
 
+    s.append(" size=");
+    s.append(std::to_string(buffer!=nullptr?buffer->size:0));
+
+    if(log_cells !=nullptr) {
+      s.append(" log=");
+      s.append(log_cells->to_string());
+      if(log_cells->size()>0) {
+        s.append(" range=(");
+        
+        DB::Cells::Cell cell;
+        log_cells->get(0, cell);
+        s.append(cell.to_string());
+        s.append(")<=cell<=(");
+        log_cells->get(-1, cell);
+        s.append(cell.to_string());
+        s.append(")");
+      }
+    }
     s.append(" ");
     s.append(interval->to_string());
     s.append(")");
@@ -178,10 +197,10 @@ class Write {
   typedef std::shared_ptr<Write> Ptr;
 
   Write(const size_t offset, DB::Cells::Interval::Ptr interval, 
-             uint32_t cell_count)
-            : offset(offset), 
-              interval(std::make_shared<DB::Cells::Interval>(interval)), 
-              cell_count(cell_count) { 
+        uint32_t cell_count)
+        : offset(offset), 
+          interval(std::make_shared<DB::Cells::Interval>(interval)), 
+          cell_count(cell_count) { 
   }
 
   virtual ~Write(){}
