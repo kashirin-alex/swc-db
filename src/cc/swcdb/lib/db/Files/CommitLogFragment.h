@@ -48,27 +48,25 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   void write(int& err, int32_t replication, Types::Encoding encoder, 
              DB::Cells::Interval::Ptr intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
-    
-    
-    uint32_t header_extlen = intval->encoded_length()+17;
-    m_cells_count = cell_count;
     interval = intval;
+    
+    uint32_t header_extlen = interval->encoded_length()+17;
+    m_cells_count = cell_count;
     m_size = cells.fill();
     m_cells_offset = HEADER_SIZE+header_extlen;
 
     DynamicBuffer output;
     m_size_enc = 0;
-    output.set_mark();
     err = Error::OK;
     Encoder::encode(encoder, cells.base, m_size, 
                     &m_size_enc, output, m_cells_offset, err);
     if(err)
       return;
                     
-    uint8_t * ptr = output.mark;
+    uint8_t * ptr = output.base;
     *ptr++ = VERSION;
     Serialization::encode_i32(&ptr, header_extlen);
-    checksum_i32(output.mark, ptr, &ptr);
+    checksum_i32(output.base, ptr, &ptr);
     
     uint8_t * header_extptr = ptr;
     interval->encode(&ptr);
@@ -200,6 +198,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   }
 
   void load_cells(CellStore::ReadersPtr cellstores) {
+    //std::cout << "load_cells " << to_string() << "\n"; 
     int err;
     StaticBuffer read_buf(m_size_enc);
 
@@ -240,8 +239,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       const uint8_t* ptr = read_buf.base;
       size_t remain = m_size; 
 
+      //std::cout << "load_cells " << to_string() << "\n"; 
       while(remain) {
+        //std::cout << "remain=" << remain << ", "; 
         cell.read(&ptr, &remain);
+        //std::cout << cell.to_string() << "\n"; 
 
         for(auto cs : *cellstores.get()) {
           if(cs->add_logged(cell) && !cell.on_fraction)
@@ -278,6 +280,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   bool loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::CELLS_LOADED;
+  }
+  
+  uint32_t cells_count() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_cells_count;
   }
 
   const std::string to_string() {
