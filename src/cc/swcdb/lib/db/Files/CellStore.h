@@ -50,7 +50,8 @@ class Read : public std::enable_shared_from_this<Read> {
   Read(uint32_t id, const DB::RangeBase::Ptr& range, 
        DB::Cells::Interval::Ptr interval=nullptr) 
       : id(id), range(range), interval(interval), 
-        smartfd(nullptr), m_state(State::BLKS_IDX_NONE) {            
+        smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
+        m_state(State::BLKS_IDX_NONE) {            
   }
 
   virtual ~Read(){}
@@ -296,7 +297,7 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   void _load_blocks_index(int& err, bool close_after=false) {
-    //std::cout << "cs::_load_blocks_index\n";
+    //std::cout << "cs::_load_blocks_index 1 \n";
     m_blocks.clear();
 
     size_t length = 0;
@@ -339,9 +340,8 @@ class Read : public std::enable_shared_from_this<Read> {
       return;
     }
     
-    StaticBuffer decoded_buf;
     if(encoder != Types::Encoding::PLAIN) {
-      decoded_buf.reallocate(sz);
+      StaticBuffer decoded_buf(sz);
       Encoder::decode(encoder, ptr, sz_enc, decoded_buf.base, sz, err);
       if(err) {
         int tmperr = Error::OK;
@@ -458,8 +458,6 @@ class Write : public std::enable_shared_from_this<Write> {
     
     DynamicBuffer buff_raw;
     blk->write(err, encoder, cells, cell_count, buff_raw);
-    cells.free();
-    blk_intval->free();
     if(err)
       return;
     
@@ -584,7 +582,6 @@ class Write : public std::enable_shared_from_this<Write> {
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 
-
   const std::string to_string(){
     std::string s("CellStore(v=");
     s.append(std::to_string(CellStore::VERSION));
@@ -622,6 +619,34 @@ class Write : public std::enable_shared_from_this<Write> {
 typedef std::vector<Write::Ptr>   Writers;
 typedef std::shared_ptr<Writers>  WritersPtr;
 
+
+
+
+inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding, 
+                                         DB::RangeBase::Ptr range) {
+  Write writer(range->get_path_cs(1), encoding);
+  writer.create(err);
+  if(err)
+    return nullptr;
+  DynamicBuffer cells;
+  writer.block(err, range->get_interval(), cells, 0);
+  if(!err) {
+    writer.finalize(err);
+    if(!err) {
+      Read::Ptr cs = std::make_shared<Read>(
+        1, 
+        range, 
+        std::make_shared<DB::Cells::Interval>(range->get_interval())
+      );
+      cs->load_blocks_index(err, true);
+      if(!err)
+        return cs;
+    }
+  }
+  int errtmp;
+  writer.remove(errtmp);
+  return nullptr;
+};
 
 } // namespace CellStore
 
