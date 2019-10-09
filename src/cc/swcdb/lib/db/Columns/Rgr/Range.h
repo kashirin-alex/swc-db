@@ -382,7 +382,7 @@ class Range : public DB::RangeBase {
             break;;
           }
           if(cs->add_logged(cell))
-            break;;
+            break;
         }
       }
 
