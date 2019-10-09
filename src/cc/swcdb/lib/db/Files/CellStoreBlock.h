@@ -29,9 +29,10 @@ class Read {
   public:
   typedef std::shared_ptr<Read> Ptr;
   
-  Read(const size_t offset, DB::Cells::Interval::Ptr interval, 
+  Read(const size_t offset, const DB::Cells::Interval::Ptr interval, 
         DB::Cells::Mutable::Ptr log_cells = nullptr)
-        : offset(offset), loaded(false), interval(interval), log_cells(log_cells) { 
+        : offset(offset), interval(interval), log_cells(log_cells), 
+          loaded(false), buffer(nullptr) { 
   }
 
   virtual ~Read(){}
@@ -188,11 +189,11 @@ class Read {
     return log_cells == nullptr? 0: log_cells->size();
   }
   
-  const size_t              offset;
-  DB::Cells::Interval::Ptr  interval;
-  std::atomic<bool>         loaded;
-  StaticBufferPtr           buffer;
-  DB::Cells::Mutable::Ptr   log_cells;
+  const size_t                    offset;
+  const DB::Cells::Interval::Ptr  interval;
+  DB::Cells::Mutable::Ptr         log_cells;
+  std::atomic<bool>               loaded;
+  StaticBufferPtr                 buffer;
 
 };
 
