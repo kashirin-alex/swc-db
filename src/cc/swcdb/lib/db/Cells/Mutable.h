@@ -16,7 +16,9 @@ namespace SWC { namespace DB { namespace Cells {
 
 
 class Mutable {
+
   static const uint32_t narrow_sz = 20;
+
   public:
 
   typedef std::shared_ptr<Mutable>  Ptr;
@@ -48,19 +50,34 @@ class Mutable {
     return _allocate_if_needed(sz);
   }
 
+  void free(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _free();
+  }
+
   void get(int32_t idx, Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
     cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
 
-  Cell* front() {
+  uint32_t size(){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return *m_cells;
+    return m_size;
+  }
+
+  uint32_t size_bytes(){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_size_bytes;
+  }
+
+  void push_back(Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _push_back(cell);
   }
   
-  Cell* back() {
+  void insert(uint32_t offset, Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return *(m_cells+m_size-1);
+    _insert(offset, cell);
   }
 
   void add(Cell& e_cell) { 
@@ -70,45 +87,15 @@ class Mutable {
       return;
 
     Cell* cell;
+    Cell cell_cpy;
     Condition::Comp cond;
     bool removing = false;
     bool updating = false;
     uint32_t revs = 0;
-    uint32_t offset = 0; 
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    uint32_t narrows = 0;
-
-    if(m_size > narrow_sz) {
-      uint32_t sz = m_size/2;
-      offset = sz; 
-
-      for(;;) {
-        cond = (*(m_cells + offset))->key.compare(e_cell.key, e_cell.on_fraction); 
-        narrows++;
-
-        if(cond == Condition::GT){
-          if(sz < narrow_sz)
-            break;
-          offset += sz /= 2; 
-          continue;
-        }
-        if((sz /= 2) == 0)
-          ++sz;  
-
-        if(offset < sz) {
-          offset = 0;
-          break;
-        }
-        offset -= sz;
-      }
-    }
     
-    //if(m_size < offset) {
-    //  std::cout << " size=" << m_size << " offset=" << offset << " narrows=" << narrows << "\n";
-    //  exit(1);
-    //}
-    
+    uint32_t offset = narrow(e_cell);
     for(;offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
@@ -123,127 +110,106 @@ class Mutable {
         (removing || updating) ?  e_cell.on_fraction : cell->on_fraction
       );
       
-      if(cond == Condition::EQ) {
-
-        if(removing) {
-          if(e_cell.is_removing(cell->revision)){
-            _move_bwd(offset--, 1);
-          }
-          continue;
-          
-        } else if(cell->removal()) {
-          if(cell->is_removing(e_cell.revision))
-            return;
-          continue;
-        }
-
-        if(e_cell.removal()) {
-          removing = true;
-          _insert(offset++, e_cell);
-          continue;
-        
-        } else {
-
-          if(m_type == Types::Column::COUNTER_I64) {
-            
-            if(!updating && e_cell.on_fraction) {
-              updating = true;
-              _insert(offset++, e_cell);
-              continue;
-            }
-
-            OP op1;
-            int64_t v1 = cell->get_value(&op1);
-            OP op2;
-            int64_t v2 = e_cell.get_value(&op2);
-
-            if(op1 == OP::EQUAL && op2 == OP::EQUAL 
-              && cell->revision > e_cell.revision)
-              return;
-
-            v2 = op2 == OP::EQUAL? v2 :(v1+(op2 == OP::MINUS?-v2:+v2));
-            if(cell->on_fraction) {
-              //std::cout << "cell->on_fraction\n";
-              e_cell.set_value(OP::EQUAL, v2);
-              if(e_cell.revision < cell->revision)
-                e_cell.revision = cell->revision;
-              if(e_cell.timestamp < cell->timestamp)
-                e_cell.timestamp = cell->timestamp;
-              continue;
-            }
-
-            cell->set_value(OP::EQUAL, v2);
-            if(cell->revision < e_cell.revision)
-              cell->revision = e_cell.revision;
-            if(cell->timestamp < e_cell.timestamp)
-              cell->timestamp = e_cell.timestamp;
-            
-            //std::cout << cell->key.to_string() << " == " << cell->get_value(&op2) << "\n";
-            if(updating)
-              continue;
-            return;
-
-          } else {
-
-            if(cell->revision == e_cell.revision) {
-              cell->copy(e_cell);
-              return;
-            }
-
-            if(m_max_revs == revs)
-              return;
-
-            if(e_cell.control & TS_DESC 
-              ? e_cell.timestamp < cell->timestamp
-              : e_cell.timestamp > cell->timestamp) {
-              if(m_max_revs == ++revs) {
-                //std::cout << "revs=" << revs << "\n";
-                //std::cout << "old " << cell->to_string() << "\n";
-                //std::cout << "new " << e_cell.to_string() << "\n";
-                return;
-              }
-              continue;
-            }
-          }
-
-        } 
-
-      } else if(removing || updating)
-        return;
-
       if(cond == Condition::GT)
         continue;
 
-      _insert(offset, e_cell);
-      return;
+      if(cond == Condition::LT){
+        if(removing || updating)
+          return;
+        _insert(offset, e_cell);
+        return;
+      }
+
+      // (cond == Condition::EQ)
+      if(removing) {
+        if(e_cell.is_removing(cell->revision))
+          _move_bwd(offset--, 1);
+        continue;
+          
+      } else if(cell->removal()) {
+        if(cell->is_removing(e_cell.revision))
+          return;
+        continue;
+      }
+
+      if(e_cell.removal()) {
+        removing = true;
+        _insert(offset++, e_cell);
+        continue;
+      }
+      
+      switch(m_type) {
+        case Types::Column::COUNTER_I64: {
+            
+          if(!updating && e_cell.on_fraction) {
+            updating = true;
+            _insert(offset++, e_cell);
+            continue;
+          }
+          if(cell->on_fraction) {
+            if(!(cell_cpy.control & HAVE_REVISION) 
+              || cell_cpy.revision < cell->revision)
+              cell_cpy.copy(*cell);
+            continue;
+          } // on_fraction agrregated evaluation
+
+          OP op1;
+          int64_t v1 = cell->get_value(&op1);
+          OP op2;
+          int64_t v2 = e_cell.get_value(&op2);
+
+          if(op1 == OP::EQUAL) {
+            if(cell->revision > e_cell.revision) 
+              return;
+            continue;
+          } 
+          if(op2 == OP::EQUAL) {
+            _insert(offset++, e_cell);
+            v1 = 0;
+          }
+          if((v2 += (op1 == OP::MINUS? -v1 : v1)) > 0) {
+            op2 = OP::PLUS;
+          } else {
+            op2 = OP::MINUS;
+            v2 *= -1;
+          }
+          cell->set_value(op2, v2);
+
+          if(cell->revision < e_cell.revision)
+            cell->revision = e_cell.revision;
+          if(cell->timestamp < e_cell.timestamp)
+            cell->timestamp = e_cell.timestamp;
+            
+          if(updating)
+            continue;
+          return;
+        }
+
+        default: { // PLAIN
+          if(cell->revision == e_cell.revision) {
+            cell->copy(e_cell);
+            return;
+          }
+          ++revs;
+          if(e_cell.control & TS_DESC 
+            ? e_cell.timestamp < cell->timestamp
+            : e_cell.timestamp > cell->timestamp) {
+            if(m_max_revs == revs)
+              return;
+            continue;
+          }
+          if(m_max_revs == revs) {
+            cell->copy(e_cell);
+          } else {
+            _insert(offset, e_cell);
+            remove_overhead(++offset, e_cell.key, revs);
+          }
+          return;
+        }
+      }
     }
 
     _push_back(e_cell);
-  }
-  
-  void push_back(Cell& cell) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    _push_back(cell);
-  }
-  
-  void insert(uint32_t offset, Cell& cell) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    _insert(offset, cell);
-  }
-
-  uint32_t size(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_size;
-  }
-
-  uint32_t size_bytes(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_size_bytes;
-  }
-
-  void free(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    _free();
   }
 
   bool scan(const Specs::Interval& specs, Mutable::Ptr cells){
@@ -251,9 +217,25 @@ class Mutable {
     return false;
   }
 
-  bool scan(const Specs::Interval& specs, DynamicBufferPtr result){
-    //
-    return false;
+  void scan(const Specs::Interval& specs, DynamicBuffer& result, 
+            size_t& count, size_t& skips){
+    Cell* cell;
+    uint32_t offset = specs.flags.offset; //(narrower over specs.key_start)
+    uint32_t count_skips = 0;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(specs.is_matching(*cell, m_type)) {
+        if(count_skips++ < specs.flags.offset) 
+          continue;
+        cell->write(result);
+        if(++count == specs.flags.limit)
+          break;
+      } else 
+        skips++;
+    }
   }
   
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
@@ -298,6 +280,8 @@ class Mutable {
     s.append(std::to_string(m_size));
     s.append(" bytes=");
     s.append(std::to_string(m_size_bytes));
+    s.append(" type=");
+    s.append(Types::to_string(m_type));
     s.append(" max_revs=");
     s.append(std::to_string(m_max_revs));
     s.append(" ttl=");
@@ -340,7 +324,7 @@ class Mutable {
     //  *(m_cells+m_size+n) = nullptr;
   }
 
-  inline void _move_fwd(uint32_t offset, int32_t by) {
+  void _move_fwd(uint32_t offset, int32_t by) {
     _allocate_if_needed(by);
     memmove(m_cells+offset+by, m_cells+offset, (m_size-offset)*sizeof(Cell*));
     //Cell** end = m_cells+m_size+by-1;
@@ -348,7 +332,7 @@ class Mutable {
       //*end-- = *(end-by); 
   }
 
-  inline void _move_bwd(uint32_t offset, int32_t by) {
+  void _move_bwd(uint32_t offset, int32_t by) {
     for(uint32_t n=0;n<by; n++){
       if(*(m_cells+offset+n)){
         m_size_bytes -= (*(m_cells+offset+n))->encoded_length();
@@ -363,7 +347,7 @@ class Mutable {
     memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
   }
   
-  inline void _insert(uint32_t offset, Cell& cell) {
+  void _insert(uint32_t offset, Cell& cell) {
     _move_fwd(offset, 1);
     *(m_cells + offset) = new Cell(cell);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
@@ -371,7 +355,7 @@ class Mutable {
     m_size_bytes += cell.encoded_length();
   }
 
-  inline void _push_back(Cell& cell) {
+  void _push_back(Cell& cell) {
     _allocate_if_needed(1);
     *(m_cells + m_size) = new Cell(cell);
     //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
@@ -379,7 +363,7 @@ class Mutable {
     m_size_bytes += cell.encoded_length();
   }
 
-  inline void _free() {
+  void _free() {
     if(m_cells != 0) {
       do { 
         m_size--;
@@ -394,6 +378,70 @@ class Mutable {
       m_cap = 0;
       m_cells = 0;
       m_size_bytes = 0;
+    }
+  }
+
+
+  uint32_t narrow(const Cell& cell){
+    uint32_t offset = 0;
+
+    if(m_size < narrow_sz)
+      return offset;
+
+    uint32_t narrows = 0;
+    uint32_t sz = m_size/2;
+    offset = sz; 
+    Condition::Comp cond;
+
+    for(;;) {
+      cond = (*(m_cells + offset))->key.compare(cell.key, cell.on_fraction); 
+      narrows++;
+
+      if(cond == Condition::GT){
+        if(sz < narrow_sz)
+          break;
+        offset += sz /= 2; 
+        continue;
+      }
+      if((sz /= 2) == 0)
+        ++sz;  
+
+      if(offset < sz) {
+        offset = 0;
+        break;
+      }
+      offset -= sz;
+    }
+  
+    //if(narrows > 20)
+    //  std::cout << " size=" << m_size << " offset=" << offset << " narrows=" << narrows << "\n";
+    //if(m_size < offset) {
+    //  std::cout << " size=" << m_size << " offset=" << offset << " narrows=" << narrows << "\n";
+    //  exit(1);
+    //}
+    return offset;
+  }
+
+  void remove_overhead(uint32_t offset, const DB::Cell::Key& key, uint32_t revs) {
+    Cell* cell;
+    for(;offset < m_size; offset++) {
+
+      cell = *(m_cells + offset);
+      
+      if(cell->flag != INSERT)
+        continue;
+
+      if(cell->has_expired(m_ttl)) {
+         _move_bwd(offset--, 1);
+        continue;
+      }
+    
+      if(cell->key.compare(key, 0) != Condition::EQ)
+        return;
+      if(++revs > m_max_revs) {
+        //std::cout << "remove_overhead " << cell->to_string() << "\n";
+        _move_bwd(offset--, 1);
+      }
     }
   }
 
