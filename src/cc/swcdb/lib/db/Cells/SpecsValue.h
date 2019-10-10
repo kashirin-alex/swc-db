@@ -18,30 +18,48 @@ class Value {
   explicit Value(bool own=true)
         : own(own), data(0), size(0), comp(Condition::NONE) {}
 
-  explicit Value(const char* data, Condition::Comp comp, 
-        bool own=false)
-        : own(own), data((uint8_t*)data), size(strlen(data)), comp(comp) {}
+  explicit Value(const char* data_n, Condition::Comp comp_n,
+                 bool owner=false) {
+    set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
+  }
 
-  explicit Value(const char* data, const uint32_t size, 
-                 Condition::Comp comp, bool own=false)
-        : own(own), data((uint8_t*)data), size(size), comp(comp) {}
+  explicit Value(const char* data_n, const uint32_t size_n, 
+                 Condition::Comp comp_n, bool owner=false) {
+    set((uint8_t*)data_n, size_n, comp_n, owner);
+  }
 
-  explicit Value(const uint8_t* data, const uint32_t size, 
-                 Condition::Comp comp, bool own=false)
-        : own(own), data((uint8_t*)data), size(size), comp(comp) {}
+  explicit Value(const uint8_t* data_n, const uint32_t size_n, 
+                 Condition::Comp comp_n, bool owner=false) {
+    set(data_n, size_n, comp_n, owner);
+  }
 
   explicit Value(const Value &other){
     copy(other);
   }
 
+  void set(const char* data_n, Condition::Comp comp_n, bool owner=true) {
+    set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
+  }
+
   void copy(const Value &other) {
     free(); 
-    own   = true;
-    size  = other.size;
-    comp = other.comp;
+    set(other.data, other.size, other.comp, true);
+  }
+  
+  void set(const uint8_t* data_n, const uint32_t size_n, 
+           Condition::Comp comp_n, bool owner=false) {
+    free();
+
+    own   = owner;
+    comp = comp_n;
+    size = size_n;
     if(size > 0) {
-      data = new uint8_t[size];
-      memcpy(data, other.data, size);
+      if (own) {
+        data = new uint8_t[size];
+        memcpy(data, data_n, size);
+      } else {
+        data = (uint8_t*)data_n;
+      }
     }
   }
 
@@ -90,7 +108,7 @@ class Value {
     }
   }
 
-  bool is_matching(const uint8_t *other_data, const uint32_t other_size){
+  bool is_matching(const uint8_t *other_data, const uint32_t other_size) const {
     return Condition::is_matching(comp, data, size, other_data, other_size);
   }
   
