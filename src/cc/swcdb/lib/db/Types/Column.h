@@ -16,6 +16,19 @@ enum class Column {
   CELL_DEFINED  = 0xf
 };
 
+const std::string to_string(Column typ) {
+  switch(typ){
+    case Column::PLAIN:
+      return std::string("PLAIN");
+    case Column::COUNTER_I64:
+      return std::string("COUNTER_I64");
+    case Column::CELL_DEFINED:
+      return std::string("CELL_DEFINED");
+    default:
+      return std::string("UKNOWN");
+  }
+}
+
 }}
 
 #endif // swc_lib_db_types_Column_h
