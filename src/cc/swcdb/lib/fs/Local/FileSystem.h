@@ -391,7 +391,13 @@ class FileSystemLocal: public FileSystem {
 
   void close(int &err, SmartFdPtr &smartfd) override {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
-    ::close(smartfd->fd());
+    errno = 0;
+    if(smartfd->valid()) { 
+      ::close(smartfd->fd());
+      err = errno;
+    } else 
+      err = EBADR;
+    
     smartfd->fd(-1);
     smartfd->pos(0);
   }

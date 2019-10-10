@@ -517,11 +517,14 @@ class FileSystemHadoop: public FileSystem {
     SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("close %s", hadoop_fd->to_string().c_str());
 
-    if(hadoop_fd->file != 0 
-       && hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
-      HT_ERRORF("close, failed: %d(%s), %s", 
-                 errno, strerror(errno), smartfd->to_string().c_str());
-    }
+    if(hadoop_fd->file != 0) {
+      if(hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
+        err = errno;
+        HT_ERRORF("close, failed: %d(%s), %s", 
+                   errno, strerror(errno), smartfd->to_string().c_str());
+      }
+    } else 
+      err = EBADR;
     smartfd->fd(-1);
     smartfd->pos(0);
   }
