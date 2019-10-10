@@ -43,6 +43,16 @@ enum OP {
   PLUS   = 0x1,
   MINUS  = 0x2,
 };
+inline const std::string to_string(OP op){
+  switch(op) {
+    case PLUS:
+      return "+";
+    case MINUS:
+      return "-";
+    default:
+      return "=";
+  }
+};
 
 
 static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
@@ -275,7 +285,7 @@ class Cell {
     return ttl && Time::now_ns() >= timestamp + ttl;
   }
 
-  const std::string to_string() const {
+  const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
     std::string s("Cell(");
     s.append("flag=");
     s.append(std::to_string(flag));
@@ -296,10 +306,17 @@ class Cell {
     s.append(std::to_string(revision));
 
     s.append(" value=(");     
-    char c;
-    for(int i=0; i<vlen;i++) {
-      c = *(value+i);
-      s.append(std::string(&c, 1));
+    if(typ == Types::Column::COUNTER_I64) {
+      OP op;
+      int64_t v = get_value(&op);
+      s.append(Cells::to_string(v==0?OP::EQUAL:op));
+      s.append(std::to_string(v));
+    } else {
+      char c;
+      for(int i=0; i<vlen;i++) {
+        c = *(value+i);
+        s.append(std::string(&c, 1));
+      }
     }
     s.append(", len=");
     s.append(std::to_string(vlen));
