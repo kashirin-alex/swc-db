@@ -71,7 +71,7 @@ class Timestamp {
       value = Serialization::decode_i64(bufp, remainp);
   }
 
-  bool is_matching(int64_t other){
+  bool is_matching(int64_t other) const {
     return Condition::is_matching(comp, value, other);
   }
 

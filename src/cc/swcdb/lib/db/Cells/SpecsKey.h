@@ -120,16 +120,16 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::fractions(1);
   }
   
-  inline bool is_matching(const DB::Cell::Key &other) {
+  inline bool is_matching(const DB::Cell::Key &other) const {
     return is_matching(other.data, other.data + other.size, 0);
   }
 
-  inline bool is_matching(const Key &other) {
+  inline bool is_matching(const Key &other) const {
     return is_matching(other.data, other.data + other.size, 1);
   }
 
   inline bool is_matching(const uint8_t* ptr_tmp_other, const uint8_t* ptr_end_other,
-                          int8_t reserved) {
+                          int8_t reserved) const {
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
 
@@ -198,7 +198,7 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::decode(bufp, remainp, owner, 1); 
   }
 
-  const std::string to_string(){
+  const std::string to_string() const {
     std::string s("Key(");
     s.append("sz=");
     s.append(std::to_string(count));

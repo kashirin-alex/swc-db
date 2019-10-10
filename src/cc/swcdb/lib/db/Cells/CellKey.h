@@ -255,7 +255,7 @@ class Key {
     return tmp_count;
   }
 
-  bool empty() {
+  bool empty() const {
     return count == 0;
   }
   
