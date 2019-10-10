@@ -190,6 +190,16 @@ class Cell {
     *op = (OP)*ptr++;
     return Serialization::decode_vi64(&ptr);
   }
+
+  int64_t get_value() const {
+    if(vlen == 0) 
+      return vlen;
+
+    const uint8_t *ptr = value;
+    OP op = (OP)*ptr++;
+    int64_t v = Serialization::decode_vi64(&ptr);
+    return (op==OP::MINUS?-v:v);
+  }
     
   // READ
   void read(const uint8_t **bufp, size_t* remainp) {

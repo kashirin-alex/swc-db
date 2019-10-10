@@ -105,8 +105,22 @@ class Interval {
             value.equal(other.value) ;
   }
 
-  bool is_matching(const Cells::Cell& cell){
-    return true;
+  const bool is_matching(const Cells::Cell& cell, 
+                         Types::Column typ=Types::Column::PLAIN) const {
+    bool match = 
+      ts_start.is_matching(cell.timestamp) &&
+      ts_finish.is_matching(cell.timestamp) &&
+      (key_start.empty()  || key_start.is_matching(cell.key)) &&
+      (key_finish.empty() || key_finish.is_matching(cell.key));
+    if(!match)
+      return match;
+    
+    switch(typ) {
+      case Types::Column::COUNTER_I64: 
+        return value.is_matching(cell.get_value());
+      default:
+        return value.is_matching(cell.value, cell.vlen);
+    }
   }
 
   size_t encoded_length() const {
