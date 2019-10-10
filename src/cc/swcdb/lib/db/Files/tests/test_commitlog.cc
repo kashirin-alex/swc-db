@@ -36,12 +36,12 @@ int main(int argc, char** argv) {
       1, 
       "col-test",
       Types::Column::PLAIN,
-      3, //versions, 
+      2, //versions, 
       0,
       
       0, 
       Types::Encoding::PLAIN,
-      10000000,
+      50000000,
       0
     )
   );
@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
 
   DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
   
+  Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(
     err, range->get_path(DB::RangeBase::log_dir));
   Env::FsInterface::interface()->mkdirs(
@@ -133,8 +134,9 @@ int main(int argc, char** argv) {
   cellstores->push_back(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
 
-  std::atomic<int> chk = 10;
-  for(int i = 1;i<=10; i++){
+  int num_chks = 10;
+  std::atomic<int> chk = num_chks;
+  for(int i = 1;i<=num_chks; i++){
     commit_log->load(
       DB::Specs::Interval::make_ptr(), 
       cellstores,
@@ -153,17 +155,21 @@ int main(int argc, char** argv) {
   std::cout << " cells_count=" << commit_log->cells_count() << "\n";
   if((versions == 1 || versions == schema->cell_versions) 
     && schema->cell_versions*num_cells != commit_log->cells_count()) {
+    std::cerr << " BAD, expected="<< schema->cell_versions*num_cells << "\n";
     exit(1);
   }
+  std::cerr << " OK\n";
 
   size_t counted = 0;
   for(auto& cs : *cellstores.get())
     counted += cs->log_cell_count();
 
-  std::cout << " cs counted=" << counted << "\n";
-  if(num_cells != counted) {
+  std::cout << " cs counted=" << counted;
+  if(schema->cell_versions*num_cells != counted) {
+    std::cerr << " BAD, expected="<< schema->cell_versions*num_cells << "\n";
     exit(1);
   }
+  std::cerr << " OK\n";
 
   exit(0);
 }

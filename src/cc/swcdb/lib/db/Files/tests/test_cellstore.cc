@@ -40,6 +40,9 @@ int main(int argc, char** argv) {
 
   int64_t cid = 11;
   SWC::DB::RangeBase::Ptr range = std::make_shared<SWC::DB::RangeBase>(cid,1);
+  SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
+  SWC::Env::FsInterface::interface()->mkdirs(
+    err, range->get_path(SWC::DB::RangeBase::cellstores_dir));
 
   SWC::Files::CellStore::Write cs_writer(range->get_path_cs(1), SWC::Types::Encoding::SNAPPY);
   cs_writer.create(err);
@@ -70,8 +73,6 @@ int main(int argc, char** argv) {
       cell.key.add("aKey3");
       cell.key.add("aKey4");
       cell.key.add("aKey5");
-      if(r==1&&i==1)
-        key_to_scan.copy(cell.key);
       //if(num_revs == r)
       //  cell.set_value(Cells::OP::EQUAL, 0);
       //else
@@ -87,6 +88,10 @@ int main(int argc, char** argv) {
       blk_intval->expand(cell);
 
       if(buff.fill() > block_sz || (num_revs == r && num_cells == i)){
+        
+        if(num_revs == r && num_cells == i)
+          key_to_scan.copy(cell.key);
+
         std::cout << "add   block: " << cs_writer.to_string() << "\n";
 
         cs_writer.block(err, blk_intval, buff, cell_count);
@@ -116,8 +121,8 @@ int main(int argc, char** argv) {
   std::cout << "cs-read-load_blocks_index:\n " << cs.to_string() << "\n";
 
   cs.close(err);
-  if(err != 53){
-    std::cerr << " FD should been closed after loading blocks-index \n"; 
+  if(err != EBADR){
+    std::cerr << " FD should been closed after loading blocks-index err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n";
     exit(1);
   }
   err = SWC::Error::OK;
@@ -132,30 +137,35 @@ int main(int argc, char** argv) {
   SWC::Files::CellStore::Read::Ptr cs2 
     = std::make_shared<SWC::Files::CellStore::Read>(1, range);
 
-  std::atomic<int> requests = 0;
+  std::atomic<int> requests = 10;
 
   for(int n=1;n<=3;n++) {
 
     for(int i=1; i<=10;i++) {
-      requests++;
 
       //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
-    std::thread([cs2, &key_to_scan, id=n*i, &count=requests](){
+    auto t = std::thread([cs2, &key_to_scan, id=n*i, &count=requests](){
 
       Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
       Cells::ReqScan::Ptr req = Cells::ReqScan::make();
       req->spec = SWC::DB::Specs::Interval::make_ptr();
-      req->spec->key_start.set(key_to_scan, SWC::Condition::GT);
+      req->spec->key_start.set(key_to_scan, SWC::Condition::GE);
       req->spec->flags.limit = 2;
       req->cells = cells_mutable;
       req->cb = [req, id, &requests=count, took=SWC::Time::now_ns()](int err){
         std::cout << " chk=" << id ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << " " ;
+        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
         std::cout << req->to_string() << "\n";
         requests--;
       };
       cs2->scan(req);
-    }).detach();
+    });
+    if((n== 1 && i == 1) || (n== 3 && i == 10))
+      t.join();
+    else
+      t.detach();
+    
       
     }
 
