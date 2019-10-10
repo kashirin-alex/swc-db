@@ -105,7 +105,7 @@ class Interval {
     }
     auto& latest = other->get_ts_latest();
     if(!initiated || !m_ts_latest.is_matching(latest.value)) {
-      m_ts_earliest.set(latest.value, Condition::LE);
+      m_ts_latest.set(latest.value, Condition::LE);
     }
   }
 
