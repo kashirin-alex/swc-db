@@ -33,8 +33,20 @@ class Value {
     set(data_n, size_n, comp_n, owner);
   }
 
+  explicit Value(int64_t count, Condition::Comp comp_n) {
+    set(count, comp_n);
+  }
+
   explicit Value(const Value &other){
     copy(other);
+  }
+
+  void set(int64_t count, Condition::Comp comp_n) {
+    uint32_t len = Serialization::encoded_length_vi64(count);
+    uint8_t data_n[len];
+    uint8_t* ptr = data_n;
+    Serialization::encode_vi64(&ptr, count);
+    set(data_n, len, comp_n, true);
   }
 
   void set(const char* data_n, Condition::Comp comp_n, bool owner=true) {
@@ -112,12 +124,12 @@ class Value {
     return Condition::is_matching(comp, data, size, other_data, other_size);
   }
   
-  /*
-  bool is_matching_counter(int64_t other){
-    if(matcher == nullptr) matcher = matcher->get_matcher(comp);
-    return matcher->is_matching(&data, other);
+  bool is_matching(int64_t other) const {
+    const uint8_t* counter = data;
+    size_t remain = size;
+    return Condition::is_matching(
+      comp, Serialization::decode_vi64(&counter, &remain), other);
   }
-  */
 
   const std::string to_string(){
     std::string s("Value(");
