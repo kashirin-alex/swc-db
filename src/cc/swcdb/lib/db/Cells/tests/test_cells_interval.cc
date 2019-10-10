@@ -20,7 +20,12 @@ int main() {
   int n_cs = 9999;
   Files::CellStore::ReadersPtr cellstores = std::make_shared<Files::CellStore::Readers>();
   for(int n=1; n<=n_cs;n++)
-    cellstores->push_back(std::make_shared<Files::CellStore::Read>(n, std::make_shared<DB::RangeBase>(1,1)));
+    cellstores->push_back(
+      std::make_shared<Files::CellStore::Read>(
+        n, 
+        std::make_shared<DB::RangeBase>(1,1), 
+        std::make_shared<DB::Cells::Interval>())
+    );
 
   for(const auto& cs : *cellstores.get()){
       auto s = std::to_string(n_cs-cs->id);
@@ -53,9 +58,7 @@ int main() {
       if(cs->id == n_cs)
         expected_expanded.key_end(key);
       
-      DB::Specs::Timestamp ts;
-      ts.comp = Condition::GE;
-      ts.value = n_cs-cs->id;
+      DB::Specs::Timestamp ts(n_cs-cs->id, Condition::GE);
       cs->interval->ts_earliest(ts);
       if(!ts.equal(cs->interval->get_ts_earliest())) {
         std::cerr << "!ts.equal(cs->interval->get_ts_earliest()): ERROR\n";
@@ -64,8 +67,7 @@ int main() {
       if(ts.value == 0)
         expected_expanded.ts_earliest(ts);
 
-      ts.comp = Condition::LE;
-      ts.value = cs->id;
+      ts.set(cs->id, Condition::LE);
       cs->interval->ts_latest(ts);
       if(!ts.equal(cs->interval->get_ts_latest())) {
         std::cerr << "!ts.equal(cs->interval->get_ts_latest()): ERROR\n";
