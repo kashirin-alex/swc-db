@@ -45,9 +45,9 @@ class Mutable {
     //std::cout << " ~Mutable " << (size_t)this << " 2\n";
   }
 
-  void allocate_if_needed(uint32_t sz) {
+  void ensure(uint32_t sz) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return _allocate_if_needed(sz);
+    return _ensure(sz);
   }
 
   void free(){
@@ -212,17 +212,32 @@ class Mutable {
     _push_back(e_cell);
   }
 
-  bool scan(const Specs::Interval& specs, Mutable::Ptr cells){
-    //
-    return false;
+  void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
+            size_t* cell_offset, size_t& skips){
+    Cell* cell;
+    uint32_t offset = 0; //(narrower over specs.key_start)
+    uint count_skips = 0 ;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(specs.is_matching(*cell, m_type)) {
+        if(count_skips++ < specs.flags.offset-*cell_offset) 
+          continue;
+        cells->add(*cell);
+        *cell_offset--;
+        if(cells->size() == specs.flags.limit)
+          break;
+      } else 
+        skips++;
+    }
   }
 
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
             size_t& count, size_t& skips){
     Cell* cell;
     uint32_t offset = specs.flags.offset; //(narrower over specs.key_start)
-    uint32_t count_skips = 0;
-
+    uint count_skips = 0 ;
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;offset < m_size; offset++){
@@ -239,7 +254,7 @@ class Mutable {
   }
   
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval::Ptr& intval, uint32_t threshold) {
+                      Interval& intval, uint32_t threshold) {
     Cell* cell;
     uint32_t offset = 0;
 
@@ -255,7 +270,7 @@ class Mutable {
         
       cell->write(cells);
       cell_count++;
-      intval->expand(*cell);
+      intval.expand(*cell);
     }
     
     if(offset > 0) {
@@ -266,14 +281,14 @@ class Mutable {
     }
   }
 
-  const std::string to_string() {
+  const std::string to_string()  {
     std::lock_guard<std::mutex> lock(m_mutex);
     return _to_string();
   }
   
   private:
 
-  inline const std::string _to_string() {
+  inline const std::string _to_string() const {
     std::string s("CellsMutable(cap=");
     s.append(std::to_string(m_cap));
     s.append(" size=");
@@ -290,7 +305,7 @@ class Mutable {
     return s;
   }
 
-  inline void _allocate_if_needed(uint32_t sz) {
+  inline void _ensure(uint32_t sz) {
     if(m_cap < m_size + sz){
       m_cap += sz;
       //auto ts = Time::now_ns();
@@ -325,7 +340,7 @@ class Mutable {
   }
 
   void _move_fwd(uint32_t offset, int32_t by) {
-    _allocate_if_needed(by);
+    _ensure(by);
     memmove(m_cells+offset+by, m_cells+offset, (m_size-offset)*sizeof(Cell*));
     //Cell** end = m_cells+m_size+by-1;
     //for(uint32_t n = m_size-offset;n--;)
@@ -356,7 +371,7 @@ class Mutable {
   }
 
   void _push_back(Cell& cell) {
-    _allocate_if_needed(1);
+    _ensure(1);
     *(m_cells + m_size) = new Cell(cell);
     //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     m_size++;
@@ -365,12 +380,14 @@ class Mutable {
 
   void _free() {
     if(m_cells != 0) {
-      do { 
-        m_size--;
-        delete *(m_cells+m_size);
-        //(*(m_cells+m_size))->~Cell();
-        //std::free(*(m_cells+m_size));
-      } while(m_size);
+      if(m_size > 0) {
+        do { 
+          m_size--;
+          delete *(m_cells+m_size);
+          //(*(m_cells+m_size))->~Cell();
+          //std::free(*(m_cells+m_size));
+        } while(m_size);
+      }
 
       delete [] m_cells;
       //std::free(m_cells);
