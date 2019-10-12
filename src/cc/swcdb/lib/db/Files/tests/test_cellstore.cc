@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
   hdlr_err(err);
 
   SWC::DynamicBuffer buff;
-  Cells::Interval::Ptr blk_intval = std::make_shared<Cells::Interval>();
+  Cells::Interval blk_intval = Cells::Interval();
 
   Cells::Cell cell;
   SWC::DB::Cell::Key key_to_scan;
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 
       cell.write(buff);
       cell_count++;
-      blk_intval->expand(cell);
+      blk_intval.expand(cell);
 
       if(buff.fill() > block_sz || (num_revs == r && num_cells == i)){
         
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         std::cout << "add   block: " << cs_writer.to_string() << "\n";
 
         cs_writer.block(err, blk_intval, buff, cell_count);
-        blk_intval->free();
+        blk_intval.free();
         buff.free();
         hdlr_err(err);
 
@@ -113,7 +113,8 @@ int main(int argc, char** argv) {
   std::cout << "\n-   OK-wrote   -\n\n";
 
   
-  SWC::Files::CellStore::Read cs(1, range);
+  SWC::DB::Cells::Interval intval;
+  SWC::Files::CellStore::Read cs(1, range, intval);
   std::cout << "cs-read-init:\n " << cs.to_string() << "\n";
 
   cs.load_blocks_index(err, true);
@@ -134,9 +135,10 @@ int main(int argc, char** argv) {
   
   SWC::Env::IoCtx::init(8);
   
+  SWC::DB::Cells::Interval intval_r;
   SWC::Files::CellStore::Read::Ptr cs2 
-    = std::make_shared<SWC::Files::CellStore::Read>(1, range);
-
+    = std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r);
+  cs2->set(SWC::server::Rgr::CommitLog::make(range));
   std::atomic<int> requests = 10;
 
   for(int n=1;n<=3;n++) {

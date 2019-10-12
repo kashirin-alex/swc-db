@@ -8,6 +8,7 @@
 
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "CellStoreBlock.h"
+#include "swcdb/lib/db/Columns/Rgr/CommitLog.h"
 
 
 namespace SWC { namespace Files {
@@ -44,14 +45,14 @@ class Read : public std::enable_shared_from_this<Read> {
 
   const uint32_t            id;
   const DB::RangeBase::Ptr  range;
-  DB::Cells::Interval::Ptr  interval;
+  DB::Cells::Interval       interval;
   FS::SmartFdPtr            smartfd;
 
-  Read(uint32_t id, const DB::RangeBase::Ptr& range, 
-       DB::Cells::Interval::Ptr interval=nullptr) 
-      : id(id), range(range), interval(interval), 
+  Read(const uint32_t id, const DB::RangeBase::Ptr& range, 
+       const DB::Cells::Interval& interval) 
+      : id(id), range(range), interval(interval),
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        m_state(State::BLKS_IDX_NONE) {            
+        m_state(State::BLKS_IDX_NONE) {   
   }
 
   virtual ~Read(){}
@@ -115,6 +116,10 @@ class Read : public std::enable_shared_from_this<Read> {
       }
     );
   }
+  
+  void set(server::Rgr::CommitLog::Ptr log) {
+    m_commit_log = log;
+  }
 
   void scan_block(uint32_t idx, DB::Cells::ReqScan::Ptr req) {
     //std::cout << "cs::scan_block\n";
@@ -125,18 +130,21 @@ class Read : public std::enable_shared_from_this<Read> {
         blk = m_blocks[idx];
       }
 
-      if(!blk->interval->includes(req->spec))
+      if(!blk->interval.includes(req->spec))
         continue;
     
-      if(!blk->loaded) {
+      if(blk->state == Block::Read::State::NONE) {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_blocks_q.push(
             [blk, req, idx, ptr=shared_from_this()](){
               blk->load(
                 ptr->smartfd, 
-                [req, idx, ptr](){
-                  ptr->scan_block(idx, req);
+                [req, idx, ptr](int err){
+                  if(err)
+                    req->response(err);
+                  else
+                    ptr->scan_block(idx, req);
                 }
               );
             }
@@ -144,8 +152,28 @@ class Read : public std::enable_shared_from_this<Read> {
         }
         run_queued();
         return;  
-      }
 
+      } else if(blk->state == Block::Read::State::CELLS_LOADED) {
+        blk->state = Block::Read::State::LOGS_LOADING;
+        m_commit_log->load_to_block(
+          blk, 
+          [req, idx, ptr=shared_from_this()](int err){
+            if(err)
+              req->response(err);
+            else
+              ptr->scan_block(idx, req);
+          }
+        );
+        return; 
+
+      } else if(blk->state == Block::Read::State::LOGS_LOADING) {
+        blk->pending_logs_load(
+          [req, idx, ptr=shared_from_this()](){
+            ptr->scan_block(idx, req);
+        });
+        return; 
+      }
+      
       blk->scan(req);
       if(req->spec->flags.limit == req->cells->size())
         break;
@@ -155,17 +183,19 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   bool add_logged(DB::Cells::Cell& cell) {
-    if(!interval->consist(cell.key))
+    if(!interval.consist(cell.key))
       return false;
 
     Block::Read::Ptr blk;
     for(uint32_t idx=0; idx < m_blocks.size(); idx++) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
+        if(blk->state != Block::Read::State::LOGS_LOADED)
+          continue;
         blk = m_blocks[idx];
       }
-      if(blk->interval->consist(cell.key)) {
-        blk->log_cells->add(cell);
+      if(blk->interval.consist(cell.key)) {
+        blk->add_logged(cell);
         return true;
       }
     }
@@ -181,18 +211,19 @@ class Read : public std::enable_shared_from_this<Read> {
     }
 
     size_t used;
+    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     for(uint32_t idx = m_blocks.size(); --idx >= 0;) {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      if(!m_blocks[idx]->loaded)
+      if(m_blocks[idx]->state == Block::Read::State::NONE)
         continue;
 
-      used = m_blocks[idx]->buffer->size;
+      used = m_blocks[idx]->cells.size();
       if(!used)
         continue;
 
       released += used;
-      m_blocks[idx] = m_blocks[idx]->make_fresh();
+      m_blocks[idx] = m_blocks[idx]->make_fresh(schema);
       if(released >= bytes)
         break;
     }
@@ -207,13 +238,14 @@ class Read : public std::enable_shared_from_this<Read> {
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 
-  size_t log_cell_count() {
+  const size_t cell_count() {
     size_t count = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& blk : m_blocks)
-      count += blk->log_cell_count();
+      count += blk->cell_count();
     return count;
   }
+
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -224,8 +256,8 @@ class Read : public std::enable_shared_from_this<Read> {
     s.append(" state=");
     s.append(std::to_string((uint8_t) m_state));
     s.append(" ");
-    if(interval != nullptr)
-      s.append(interval->to_string());
+    s.append(interval.to_string());
+
     if(smartfd != nullptr){
       s.append(" ");
       s.append(smartfd->to_string());
@@ -361,23 +393,19 @@ class Read : public std::enable_shared_from_this<Read> {
     }
 
     const uint8_t* chk_ptr;
-    bool init=false;
-    if(interval == nullptr)
-      interval = std::make_shared<DB::Cells::Interval>();
-    
+    interval.free();
+
+    Block::Read::Ptr blk;
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+
     for(int n = 0; n < blks_count; n++){
       chk_ptr = ptr;
+
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
-      Block::Read::Ptr blk = std::make_shared<Block::Read>(
+      blk = std::make_shared<Block::Read>(
         offset, 
-        std::make_shared<DB::Cells::Interval>(&ptr, &remain),
-        DB::Cells::Mutable::make(
-          10, 
-          schema->cell_versions, 
-          schema->cell_ttl, 
-          schema->col_type
-        )
+        DB::Cells::Interval(&ptr, &remain), 
+        schema
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
@@ -387,8 +415,7 @@ class Read : public std::enable_shared_from_this<Read> {
       }
 
       m_blocks.push_back(blk);
-      interval->expand(blk->interval, init);
-      init = true;
+      interval.expand(blk->interval);
     }
     
     if(close_after && smartfd->valid())
@@ -418,11 +445,12 @@ class Read : public std::enable_shared_from_this<Read> {
     }
   }
 
-  std::mutex                    m_mutex;
-  std::atomic<State>            m_state;
-  std::vector<Block::Read::Ptr> m_blocks;
-  bool                          m_blocks_q_runs = false;
-  std::queue<std::function<void()>>  m_blocks_q;
+  std::mutex                          m_mutex;
+  std::atomic<State>                  m_state;
+  std::vector<Block::Read::Ptr>       m_blocks;
+  bool                                m_blocks_q_runs = false;
+  std::queue<std::function<void()>>   m_blocks_q;
+  server::Rgr::CommitLog::Ptr         m_commit_log;
 
 };
 typedef std::vector<Read::Ptr>    Readers;
@@ -438,14 +466,13 @@ class Write : public std::enable_shared_from_this<Write> {
   FS::SmartFdPtr            smartfd;
   Types::Encoding           encoder;
   size_t                    size;
-  DB::Cells::Interval::Ptr  interval;
+  DB::Cells::Interval       interval;
   std::atomic<uint32_t>     complition;
 
   Write(const std::string& filepath, 
         Types::Encoding encoder=Types::Encoding::PLAIN)
         : smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
-          encoder(encoder), size(0), 
-          interval(nullptr), complition(0) {
+          encoder(encoder), size(0), complition(0) {
   }
 
   virtual ~Write(){}
@@ -457,14 +484,14 @@ class Write : public std::enable_shared_from_this<Write> {
         err, smartfd, bufsz, replication, blksz));
   }
 
-  void block(int& err, DB::Cells::Interval::Ptr blk_intval, 
-             DynamicBuffer& cells, uint32_t cell_count) {
+  void block(int& err, const DB::Cells::Interval& blk_intval, 
+             DynamicBuffer& cells_buff, uint32_t cell_count) {
 
     Block::Write::Ptr blk = std::make_shared<Block::Write>(
       size, blk_intval, cell_count);
     
     DynamicBuffer buff_raw;
-    blk->write(err, encoder, cells, cell_count, buff_raw);
+    blk->write(err, encoder, cells_buff, buff_raw);
     if(err)
       return;
     
@@ -490,16 +517,13 @@ class Write : public std::enable_shared_from_this<Write> {
     }
 
     uint32_t len_data = 0;
-    bool init_interval = false;
+    interval.free();
     for(auto blk : m_blocks) {
       len_data += Serialization::encoded_length_vi32(blk->offset) 
-          + blk->interval->encoded_length()
+          + blk->interval.encoded_length()
           + 4;;
-      
-      if(interval == nullptr)
-        interval = std::make_shared<DB::Cells::Interval>();
-      interval->expand(blk->interval, init_interval);
-      init_interval = true;
+
+      interval.expand(blk->interval);
     }
 
     StaticBuffer raw_buffer(len_data);
@@ -508,7 +532,7 @@ class Write : public std::enable_shared_from_this<Write> {
     for(auto blk : m_blocks) {
       chk_ptr = ptr;
       Serialization::encode_vi32(&ptr, blk->offset);
-      blk->interval->encode(&ptr);
+      blk->interval.encode(&ptr);
       checksum_i32(chk_ptr, ptr, &ptr);
     }
     
@@ -589,17 +613,15 @@ class Write : public std::enable_shared_from_this<Write> {
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 
-  const std::string to_string(){
+  const std::string to_string() {
     std::string s("CellStore(v=");
     s.append(std::to_string(CellStore::VERSION));
     s.append(" size=");
     s.append(std::to_string(size));
     s.append(" encoder=");
     s.append(Types::to_string(encoder));
-    if(interval != nullptr) {
-      s.append(" ");
-      s.append(interval->to_string());
-    }
+    s.append(" ");
+    s.append(interval.to_string());
     s.append(" ");
     s.append(smartfd->to_string());
 
@@ -635,16 +657,12 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   writer.create(err);
   if(err)
     return nullptr;
-  DynamicBuffer cells;
-  writer.block(err, range->get_interval(), cells, 0);
+  DynamicBuffer cells_buff;
+  writer.block(err, range->get_interval(), cells_buff, 0);
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      Read::Ptr cs = std::make_shared<Read>(
-        1, 
-        range, 
-        std::make_shared<DB::Cells::Interval>(range->get_interval())
-      );
+      Read::Ptr cs = std::make_shared<Read>(1, range, range->get_interval());
       cs->load_blocks_index(err, true);
       if(!err)
         return cs;

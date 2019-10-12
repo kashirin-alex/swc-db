@@ -28,15 +28,28 @@ class ReqScan  {
   ReqScan() {}
 
   ReqScan(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb)
-          : spec(spec), cells(cells), cb(cb) {}
+          : spec(spec), cells(cells), cb(cb), 
+            offset(spec->flags.offset), limit(spec->flags.limit), size(0) {}
 
   void response(int err) {
     cb(err);
   }
 
+  void adjust() {
+    if(size == 0 || size == cells->size())
+      return; 
+    //cells->adjust(spec, &offset, &limit);
+    
+    size = cells->size();
+  }
+
+  bool more() {
+    return limit > 0;
+  }
+ 
   virtual ~ReqScan() {}
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("ReqScan(");
     s.append(spec->to_string());
     s.append(" ");
@@ -47,6 +60,11 @@ class ReqScan  {
   Cb_t                    cb;
   Specs::Interval::Ptr    spec;
   Mutable::Ptr            cells;
+
+  // state of a scan
+  size_t                  offset;
+  uint32_t                limit;
+  size_t                  size;
 };
 
 }}}

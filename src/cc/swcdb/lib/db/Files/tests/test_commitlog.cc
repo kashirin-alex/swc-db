@@ -6,7 +6,7 @@
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/RangeBase.h"
-#include "swcdb/lib/db/Columns/Rgr/CommitLog.h"
+#include "swcdb/lib/db/Files/CellStore.h"
 
 #include <iostream>
 
@@ -41,13 +41,12 @@ int main(int argc, char** argv) {
       
       0, 
       Types::Encoding::PLAIN,
-      50000000,
+      6400000,
       0
     )
   );
 
-  DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(
-    1,1,std::make_shared<DB::Cells::Interval>());
+  DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(1,1);
   server::Rgr::CommitLog::Ptr commit_log = server::Rgr::CommitLog::make(range);
 
   DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
@@ -133,23 +132,57 @@ int main(int argc, char** argv) {
 
   cellstores->push_back(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
+  auto log = SWC::server::Rgr::CommitLog::make(range);
+  log->load(err);
+  cellstores->front()->set(log);
 
   int num_chks = 10;
   std::atomic<int> chk = num_chks;
   for(int i = 1;i<=num_chks; i++){
-    commit_log->load(
-      DB::Specs::Interval::make_ptr(), 
-      cellstores,
-      [cellstores, &chk, i](int err) {
-        std::cout << "commit_log->load cb, chk=" << i << " err=" << err << " " << Error::get_text(err) << "\n";
+    
+    DB::Cells::Mutable::Ptr cells_mutable = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
+    DB::Cells::ReqScan::Ptr req = DB::Cells::ReqScan::make();
+    req->spec = SWC::DB::Specs::Interval::make_ptr();
+    req->spec->flags.limit = 2;
+    req->cells = cells_mutable;
+    req->cb = [cellstores, req, &chk, i](int err){
+        std::cout << " chk=" << i ;
+        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
+        std::cout << req->to_string() << "\n";
         std::cout << cellstores->front()->to_string() << "\n";
         chk--;
-      }
-    );
+      };
+    cellstores->front()->scan(req);
   }
 
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  
+  // re-check over already loaded fragments
+  num_chks = 10;
+  chk = num_chks;
+  for(int i = 1;i<=num_chks; i++){
+    
+    DB::Cells::Mutable::Ptr cells_mutable = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
+    DB::Cells::ReqScan::Ptr req = DB::Cells::ReqScan::make();
+    req->spec = SWC::DB::Specs::Interval::make_ptr();
+    req->spec->flags.limit = 2;
+    req->cells = cells_mutable;
+    
+    req->cb = [cellstores, req, &chk, i](int err){
+        std::cout << " chk=" << i ;
+        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
+        std::cout << req->to_string() << "\n";
+        std::cout << cellstores->front()->to_string() << "\n";
+        chk--;
+      };
+    cellstores->front()->scan(req);
+  }
+  
+  while(chk > 0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    
+
   std::cout << " loaded logs: \n" << commit_log->to_string() << "\n";
   
   std::cout << " cells_count=" << commit_log->cells_count() << "\n";
@@ -162,7 +195,7 @@ int main(int argc, char** argv) {
 
   size_t counted = 0;
   for(auto& cs : *cellstores.get())
-    counted += cs->log_cell_count();
+    counted += cs->cell_count();
 
   std::cout << " cs counted=" << counted;
   if(schema->cell_versions*num_cells != counted) {

@@ -6,7 +6,7 @@
 #ifndef swcdb_db_Files_CommitLogFragment_h
 #define swcdb_db_Files_CommitLogFragment_h
 
-#include "CellStore.h"
+#include "CellStoreBlock.h"
 
 namespace SWC { namespace Files { 
   
@@ -32,7 +32,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     CELLS_LOADED,
   };
 
-  DB::Cells::Interval::Ptr  interval;
+  DB::Cells::Interval  interval;
 
   Fragment(const std::string& filepath)
           : m_smartfd(
@@ -46,11 +46,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   virtual ~Fragment(){}
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 
-             DB::Cells::Interval::Ptr intval, 
+             const DB::Cells::Interval& intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
-    interval = intval;
+    interval.copy(intval);
     
-    uint32_t header_extlen = interval->encoded_length()+17;
+    uint32_t header_extlen = interval.encoded_length()+17;
     m_cells_count = cell_count;
     m_size = cells.fill();
     m_cells_offset = HEADER_SIZE+header_extlen;
@@ -69,7 +69,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     checksum_i32(output.base, ptr, &ptr);
     
     uint8_t * header_extptr = ptr;
-    interval->encode(&ptr);
+    interval.encode(&ptr);
     *ptr++ = (uint8_t)(m_size_enc? encoder: Types::Encoding::PLAIN);
     if(!m_size_enc)
       m_size_enc = m_size;
@@ -154,7 +154,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       }
 
       remain = header_extlen;
-      interval = std::make_shared<DB::Cells::Interval>(&ptr, &remain);
+      interval.decode(&ptr, &remain, true);
       m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
@@ -175,32 +175,9 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     }
   }
 
-  void load_cells(CellStore::ReadersPtr cellstores, 
-                  std::function<void(int)> cb) {
-    bool run_loader;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state == State::CELLS_LOADED) {
-        cb(Error::OK);
-        return;
-      }
-      m_queue_load.push(cb);
-      run_loader = m_queue_load.size() == 1;
-    }
-
-    if(run_loader){
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [cellstores, ptr=shared_from_this()](){
-          ptr->load_cells(cellstores);
-        }
-      );
-    }
-  }
-
-  void load_cells(CellStore::ReadersPtr cellstores) {
+  void load() {
     //std::cout << "load_cells " << to_string() << "\n"; 
     int err;
-    StaticBuffer read_buf(m_size_enc);
 
     for(;;) {
       err = Error::OK;
@@ -211,6 +188,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       if(err)
         continue;
       
+      StaticBuffer read_buf(m_size_enc);
       if(Env::FsInterface::fs()->pread(
             err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc) 
           != m_size_enc) {
@@ -226,37 +204,25 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
         continue;
       }
       
+      m_buffer = std::make_shared<StaticBuffer>(m_size);
       if(m_encoder != Types::Encoding::PLAIN) {
         StaticBuffer buffer(m_size);
         Encoder::decode(
-          m_encoder, read_buf.base, m_size_enc, buffer.base, m_size, err);
+          m_encoder, read_buf.base, m_size_enc, m_buffer->base, m_size, err);
         read_buf.free();
-        read_buf.base = buffer.base;
-        buffer.own=false;
-      }
-      
-      DB::Cells::Cell cell;
-      const uint8_t* ptr = read_buf.base;
-      size_t remain = m_size; 
-
-      //std::cout << "load_cells " << to_string() << "\n"; 
-      while(remain) {
-        //std::cout << "remain=" << remain << ", "; 
-        cell.read(&ptr, &remain);
-        //std::cout << cell.to_string() << "\n"; 
-
-        for(auto cs : *cellstores.get()) {
-          if(cs->add_logged(cell) && !cell.on_fraction)
-            break;
-        }
+      } else {
+        m_buffer->base = read_buf.base;
+        read_buf.own=false;
       }
       break;
     }
 
-    if(!err) {
+    
+    {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = State::CELLS_LOADED;
+      m_state = err ? State::CELLS_NONE : State::CELLS_LOADED;
     }
+
 
     std::function<void(int)> cb;
     for(;;) {
@@ -277,11 +243,76 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     std::cout << "LogFragment, load_cells-complete" << "\n";
   }
 
+  void load(std::function<void(int)> cb) {
+    bool state;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      state = m_state == State::CELLS_LOADED;
+    }
+    
+    if(state) {
+      cb(Error::OK);
+      return;
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_queue_load.push(cb);
+      state = m_queue_load.size() == 1;
+    }
+
+    if(state) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_state == State::CELLS_LOADING)
+          return;
+        m_state = State::CELLS_LOADING;
+      }
+      asio::post(*Env::IoCtx::io()->ptr(), 
+        [ptr=shared_from_this()](){
+          ptr->load();
+        }
+      );
+    }
+  }
+  
+  void load_cells(const DB::Cells::Interval& intval, 
+                  DB::Cells::Mutable& cells) {
+
+    const uint8_t* ptr = m_buffer->base;
+    size_t remain = m_size; 
+
+    auto ts = Time::now_ns();
+    int64_t ts_cells_read = 0;
+    int64_t ts_cells_add = 0;
+    size_t count = 0;
+
+    DB::Cells::Cell cell;
+    while(remain) {
+
+      auto ts_cellr = Time::now_ns();
+      cell.read(&ptr, &remain);
+      ts_cells_read += Time::now_ns()-ts_cellr;
+
+      if(!intval.consist(cell.key))
+        continue;
+
+      auto ts_cella = Time::now_ns();
+      cells.add(cell);
+      ts_cells_add += Time::now_ns()-ts_cella;
+      count++;
+    }
+    ts = Time::now_ns()-ts;
+    std::cout << " frag-load_cells-took=" << ts
+                << " read=" << ts_cells_read 
+                << " add=" << ts_cells_add << " count=" << count << " avg=" << ts/count << "\n";
+  }
+
   bool loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::CELLS_LOADED;
   }
-  
+
   uint32_t cells_count() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_cells_count;
@@ -306,7 +337,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     s.append(std::to_string(m_size));
 
     s.append(" ");
-    s.append(interval->to_string());
+    s.append(interval.to_string());
 
     s.append(" ");
     s.append(m_smartfd->to_string());
@@ -321,6 +352,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   Types::Encoding m_encoder;
   size_t          m_size_enc;
   size_t          m_size;
+  StaticBufferPtr m_buffer;
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
 

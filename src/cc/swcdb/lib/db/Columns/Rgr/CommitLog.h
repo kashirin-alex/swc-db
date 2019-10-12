@@ -80,7 +80,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       err = Error::OK;
       DynamicBuffer cells;
       cell_count = 0;
-      DB::Cells::Interval::Ptr intval = std::make_shared<DB::Cells::Interval>();
+      DB::Cells::Interval intval;
       m_cells->write_and_free(cells, cell_count, intval, blk_size);
       if(cells.fill() == 0)
         break;
@@ -111,7 +111,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     m_cv.notify_one();
   }
 
-  const std::string get_log_fragment(int64_t frag) {
+  const std::string get_log_fragment(const int64_t frag) const {
     std::string s(m_range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(std::to_string(frag));
@@ -119,7 +119,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     return s;
   }
 
-  const std::string get_log_fragment(const std::string& frag) {
+  const std::string get_log_fragment(const std::string& frag) const {
     std::string s(m_range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(frag);
@@ -150,37 +150,43 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     }
   }
   
-  void load(DB::Specs::Interval::Ptr spec, 
-            Files::CellStore::ReadersPtr cellstores,
-            const std::function<void(int)>& cb) {
+  void load_to_block(Files::CellStore::Block::Read::Ptr blk, 
+                     std::function<void(int)> cb) {
     std::vector<Files::CommitLog::Fragment::Ptr>  fragments;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
-        if(!frag->loaded() && frag->interval->includes(spec))
-          fragments.push_back(frag);
+        if(!frag->interval.includes(blk->interval))
+          continue;
+        fragments.push_back(frag);
       }
     }
+
     if(fragments.empty()){
+      blk->state = Files::CellStore::Block::Read::State::LOGS_LOADED;
+      load_cells(blk->interval, blk->cells);
+      blk->pending_logs_load();
       cb(Error::OK);
       return;
     }
-    std::shared_ptr<AwaitingLoad> state 
-      = std::make_shared<AwaitingLoad>(fragments.size(), cb);
-    for(auto& frag : fragments){
-      frag->load_cells(
-        cellstores, [state](int err){
-          state->processed(err);
-        }
-      );
-    }
+
+    AwaitingLoad::Ptr state = std::make_shared<AwaitingLoad>(
+      fragments.size(), blk, cb, shared_from_this());
+    for(auto& frag : fragments) 
+      frag->load([frag, state](int err){ state->processed(err, frag); });
+  }
+
+  void load_cells(const DB::Cells::Interval& intval, 
+                  DB::Cells::Mutable& cells) {
+    // + ? whether a commit_new_fragment happened 
+    m_cells->scan(intval, cells);
   }
 
   size_t cells_count() {
     std::lock_guard<std::mutex> lock(m_mutex);
     size_t count = 0;
     for(auto frag : m_fragments)
-      count+= frag->cells_count();
+      count += frag->cells_count();
     return count;
   }
 
@@ -220,25 +226,44 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   
   struct AwaitingLoad {
     public:
-    typedef std::function<void(int)> Cb_t;
+    typedef std::function<void(int)>      Cb_t;
+    typedef std::shared_ptr<AwaitingLoad> Ptr;
+    
+    AwaitingLoad(int32_t count, Files::CellStore::Block::Read::Ptr blk, 
+                  const Cb_t& cb, CommitLog::Ptr log) 
+                : count(count), blk(blk), cb(cb), log(log) {
+    }
 
-    AwaitingLoad(int32_t count, const Cb_t& cb) : count(count), cb(cb){}
-
-    void processed(int err) {
+    void processed(int err, Files::CommitLog::Fragment::Ptr frag) {
       bool call;
+      bool good;
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        call = --count == 0 || err;
+        good = --count == 0;
+        std::cout << "AwaitingLoad count="<<count << "\n";
+        call = good || err;
         if(err) 
           count = 0;
       }
+      if(!err) {
+        frag->load_cells(blk->interval, blk->cells);
+        if(good) {
+          blk->state = Files::CellStore::Block::Read::State::LOGS_LOADED;
+          log->load_cells(blk->interval, blk->cells);
+          blk->pending_logs_load();
+        }
+      }
+
       if(call)
         cb(err);
     }
 
-    std::mutex m_mutex;
-    int32_t    count = 0;
-    const Cb_t cb;
+    std::mutex                m_mutex;
+    int32_t                   count = 0;
+    DB::Cells::ReqScan::Ptr   req;
+    Files::CellStore::Block::Read::Ptr          blk;
+    const Cb_t                cb;
+    CommitLog::Ptr            log;
   };
 
   std::mutex                  m_mutex;

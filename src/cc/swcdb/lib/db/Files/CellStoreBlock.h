@@ -28,27 +28,49 @@ static const uint8_t HEADER_SIZE=17;
 class Read {  
   public:
   typedef std::shared_ptr<Read> Ptr;
+
+  enum State {
+    NONE,
+    CELLS_LOADED,
+    LOGS_LOADING,
+    LOGS_LOADED
+  };
+
+  inline static const std::string to_string(const State state) {
+    switch(state) {
+      case State::CELLS_LOADED:
+        return "CELLS_LOADED";
+      case State::LOGS_LOADED:
+        return "LOGS_LOADED";
+      case State::LOGS_LOADING:
+        return "LOGS_LOADING";
+      default:
+        return "NONE";
+    }
+  }
   
-  Read(const size_t offset, const DB::Cells::Interval::Ptr interval, 
-        DB::Cells::Mutable::Ptr log_cells = nullptr)
-        : offset(offset), interval(interval), log_cells(log_cells), 
-          loaded(false), buffer(nullptr) { 
+  
+  Read(const size_t offset, const DB::Cells::Interval& interval, 
+       const DB::SchemaPtr s)
+      : offset(offset),  
+        cells(DB::Cells::Mutable(
+          0, s->cell_versions, s->cell_ttl, s->col_type)),
+        interval(interval), state(State::NONE) {
   }
 
   virtual ~Read(){}
 
-  Ptr make_fresh() {
-    return std::make_shared<Read>(offset, interval, log_cells);
+  Ptr make_fresh(const DB::SchemaPtr schema) {
+    return std::make_shared<Read>(offset, interval, schema);
   }
 
-  void load(FS::SmartFdPtr smartfd, std::function<void()> call) {
-    if(loaded) {
-      call();
+  void load(FS::SmartFdPtr smartfd, std::function<void(int)> call) {
+    int err = Error::OK;
+    if(state != State::NONE) {
+      call(err);
       return;
     }
     //std::cout << "blk::load\n";
-
-    int err;
 
     for(;;) {
       err = Error::OK;
@@ -76,7 +98,7 @@ class Read {
       uint32_t sz = Serialization::decode_i32(&ptr, &remain);
       if(!sz_enc) 
         sz_enc = sz;
-      uint32_t cells_count = Serialization::decode_i32(&ptr, &remain);//?
+      uint32_t cells_count = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
@@ -105,96 +127,128 @@ class Read {
       if(err)
         break;
 
-      if(buffer == nullptr)
-        buffer = std::make_shared<StaticBuffer>(sz);
       
       if(encoder != Types::Encoding::PLAIN) {
-        Encoder::decode(encoder, read_buf.base, sz_enc, buffer->base, sz, err);
+        StaticBuffer buffer(sz);
+        Encoder::decode(encoder, read_buf.base, sz_enc, buffer.base, sz, err);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
           break;
         }
         read_buf.free();
-      } else {
-        read_buf.own = false;
-        buffer->base = read_buf.base;
+        read_buf.base = buffer.base;
+        buffer.own = false;
       }
+
+      cells.free();
+      cells.ensure(cells_count);
+
+      load_cells(read_buf.base, read_buf.size);
       break;
     }
-    
-    loaded = err == Error::OK;
-    call();
+  
+    if(err == Error::OK)
+      state = State::CELLS_LOADED;
+  
+    call(err);
+  }
+
+  void load_cells(const uint8_t* ptr, size_t remain) {
+    DB::Cells::Cell cell;
+
+    auto ts = Time::now_ns();
+
+    while(remain) {
+      cell.read(&ptr, &remain);
+      cells.push_back(cell);
+    }
+
+    auto took = Time::now_ns()-ts;
+    std::cout << " cs-block-took=" << took
+              << " avg=" << took / cells.size()
+              << " " << cells.to_string() << "\n";
   }
   
+  void add_logged(DB::Cells::Cell& cell) {
+    cells.add(cell);
+  }
+
   void scan(DB::Cells::ReqScan::Ptr req) {
     //std::cout << "blk::scan 1 " << req->to_string() << "\n";
     
     int err;
     DB::Specs::Interval& spec = *(req->spec).get();
-    DB::Cells::Mutable& cells = *(req->cells).get();
+    size_t skips = 0;
+    cells.scan(spec, req->cells, &req->offset, skips);
+    //req->adjust();
+  }
 
-    log_cells->scan(spec, req->cells);
-    if(spec.flags.limit == cells.size() || buffer == nullptr)
-      return;
+  const size_t cell_count() {
+    return cells.size();
+  }
 
-    DB::Cells::Cell cell;
-    const uint8_t* ptr = buffer->base;
-    size_t remain = buffer->size; 
-    
-    while(remain) {
-      cell.read(&ptr, &remain);
-      if(!spec.is_matching(cell))
-        continue;
-      cells.add(cell);
-      if(spec.flags.limit == cells.size())
-        break;
+  void pending_logs_load(std::function<void()> cb) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_pending_q.push(cb);
+    std::cout << "pending_logs_load add, sz=" << m_pending_q.size() << "\n";
+  }
+
+  void pending_logs_load() {
+    std::function<void()> call;
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_pending_q.empty())
+          return;
+        call = m_pending_q.front();
+        
+        std::cout << "pending_logs_load call, sz=" << m_pending_q.size() << "\n";
+      }
+
+      call();
+      
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_pending_q.pop();
+      }
     }
   }
 
   const std::string to_string() {
     std::string s("Block(offset=");
     s.append(std::to_string(offset));
-
-    s.append(" loaded=");
-    s.append(std::to_string(loaded));
-
-    s.append(" size=");
-    s.append(std::to_string(buffer==nullptr?0:buffer->size));
-
-    if(log_cells != nullptr) {
-      s.append(" log=");
-      s.append(log_cells->to_string());
-      
-      if(log_cells->size() > 0) {
-        DB::Cells::Cell cell;
-        s.append(" range=(");
-        log_cells->get(0, cell);
-        s.append(cell.to_string());
-        s.append(")<=cell<=(");
-        log_cells->get(-1, cell);
-        s.append(cell.to_string());
-        s.append(")");
-      }
-    }
-    
     s.append(" ");
-    s.append(interval->to_string());
-  
+    s.append(interval.to_string());
+
+    s.append(" state=");
+    s.append(to_string(state));
+
+    s.append(" ");
+    s.append(cells.to_string());
+      
+    if(cells.size() > 0) {
+      DB::Cells::Cell cell;
+      s.append(" range=(");
+      cells.get(0, cell);
+      s.append(cell.to_string());
+      s.append(")<=cell<=(");
+      cells.get(-1, cell);
+      s.append(cell.to_string());
+      s.append(")");
+    }
+
     s.append(")");
     return s;
   }
 
-  size_t log_cell_count() {
-    return log_cells == nullptr? 0: log_cells->size();
-  }
-  
   const size_t                    offset;
-  const DB::Cells::Interval::Ptr  interval;
-  DB::Cells::Mutable::Ptr         log_cells;
-  std::atomic<bool>               loaded;
-  StaticBufferPtr                 buffer;
-
+  const DB::Cells::Interval       interval;
+  DB::Cells::Mutable              cells;
+  std::atomic<State>              state;
+  
+  std::mutex                         m_mutex;
+  std::queue<std::function<void()>>  m_pending_q;
 };
 
 
@@ -203,17 +257,15 @@ class Write {
   public:
   typedef std::shared_ptr<Write> Ptr;
 
-  Write(const size_t offset, DB::Cells::Interval::Ptr interval, 
-        uint32_t cell_count)
-        : offset(offset), 
-          interval(std::make_shared<DB::Cells::Interval>(interval)), 
-          cell_count(cell_count) { 
+  Write(const size_t offset, const DB::Cells::Interval& interval, 
+        const uint32_t cell_count)
+        : offset(offset), interval(interval), cell_count(cell_count) { 
   }
 
   virtual ~Write(){}
 
   void write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
-             uint32_t cell_count, DynamicBuffer& output) {
+             DynamicBuffer& output) {
     
     size_t len_enc = 0;
     output.set_mark();
@@ -236,14 +288,14 @@ class Write {
     s.append(" cell_count=");
     s.append(std::to_string(cell_count));
     s.append(" ");
-    s.append(interval->to_string());
+    s.append(interval.to_string());
     s.append(")");
     return s;
   }
 
   const size_t              offset;
-  DB::Cells::Interval::Ptr  interval;
-  uint32_t                  cell_count;
+  const DB::Cells::Interval interval;
+  const uint32_t            cell_count;
 
 };
 
