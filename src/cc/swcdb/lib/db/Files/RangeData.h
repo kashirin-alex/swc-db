@@ -34,7 +34,7 @@ void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
   size_t sz = Serialization::encoded_length_vi32(cellstores.size());
   for(auto& cs : cellstores) {
     sz += Serialization::encoded_length_vi32(cs->id)
-          + cs->interval->encoded_length();
+          + cs->interval.encoded_length();
   }
   dst_buf.ensure(HEADER_SIZE+sz);
 
@@ -51,7 +51,7 @@ void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
   Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
   for(auto& cs : cellstores){
     Serialization::encode_vi32(&dst_buf.ptr, cs->id);
-    cs->interval->encode(&dst_buf.ptr);
+    cs->interval.encode(&dst_buf.ptr);
   }
 
   checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
@@ -84,15 +84,13 @@ void read(const uint8_t **ptr, size_t* remain,
           DB::RangeBase::Ptr range, CellStore::ReadersPtr &cellstores) {
   const uint8_t *ptr_end = *ptr+*remain;
     
+  uint32_t offset;
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;i++) {
+    offset = Serialization::decode_vi32(ptr, remain);
     cellstores->push_back(
       std::make_shared<CellStore::Read>(
-        Serialization::decode_vi32(ptr, remain), 
-        range, 
-        std::make_shared<DB::Cells::Interval>(ptr, remain)
-      )
-    );
+        offset, range, DB::Cells::Interval(ptr, remain)));
   }
 
   if(*ptr != ptr_end){
@@ -108,7 +106,9 @@ void load_by_path(int &err, DB::RangeBase::Ptr range,
     err, range->get_path(DB::RangeBase::cellstores_dir), entries);
   
   for(auto id : entries){
-    cellstores->push_back(std::make_shared<CellStore::Read>(id, range));
+    cellstores->push_back(
+      std::make_shared<CellStore::Read>(id, range, DB::Cells::Interval())
+    );
     std::cout << cellstores->back()->to_string() << "\n";
   }
 }

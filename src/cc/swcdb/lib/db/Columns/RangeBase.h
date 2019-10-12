@@ -28,12 +28,14 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   inline static const std::string cellstores_dir = "cs";
   inline static const std::string log_dir = "log"; 
 
-  inline static const std::string get_column_path(){
+  inline static const std::string 
+  get_column_path() {
     std::string s(column_dir);
     return s;
   }
 
-  inline static const std::string get_column_path(int64_t cid){
+  inline static const std::string 
+  get_column_path(const int64_t cid) {
     std::string s(get_column_path());
     //if(!s.empty())
     s.append("/");
@@ -41,13 +43,15 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
-  inline static const std::string get_path(int64_t cid){
+  inline static const std::string 
+  get_path(const int64_t cid) {
     std::string s(get_column_path(cid));
     s.append(range_dir);
     return s;
   }
   
-  inline static const std::string get_path(int64_t cid, int64_t rid){
+  inline static const std::string 
+  get_path(const int64_t cid, const int64_t rid) {
     std::string s(get_path(cid));
     s.append("/");
     FS::set_structured_id(std::to_string(rid), s);
@@ -58,13 +62,14 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   const int64_t     cid;
   const int64_t     rid;
 
-  RangeBase(int64_t cid, int64_t rid): 
+  RangeBase(const int64_t cid, const int64_t rid): 
             cid(cid), rid(rid),
             m_path(get_path(cid, rid))  { }
 
-  RangeBase(int64_t cid, int64_t rid, Cells::Interval::Ptr intval): 
-            cid(cid), rid(rid), m_interval(intval),
-            m_path(get_path(cid, rid))  { }
+  RangeBase(const int64_t cid, const int64_t rid, 
+            const Cells::Interval& intval)
+            : cid(cid), rid(rid), m_interval(intval),
+              m_path(get_path(cid, rid))  { }
 
   virtual ~RangeBase(){}
   
@@ -72,13 +77,13 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return shared_from_this();
   }
 
-  const std::string get_path(const std::string suff) {
+  const std::string get_path(const std::string suff) const {
     std::string s(m_path);
     s.append(suff);
     return s;
   }
 
-  const std::string get_path_cs(int64_t cs_id){
+  const std::string get_path_cs(const int64_t cs_id) const {
     std::string s(m_path);
     s.append(cellstores_dir);
     s.append("/");
@@ -87,24 +92,22 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
-  Files::RgrDataPtr get_last_rgr(int &err){
+  Files::RgrDataPtr get_last_rgr(int &err) {
     return Files::RgrData::get_rgr(err, get_path(rs_data_file));
   }
 
-  const Cells::Interval::Ptr& get_interval() {
+  const Cells::Interval& get_interval() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_interval;
+    return m_interval; // ?return copy
   }
 
-  std::string to_string(){
+  const std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
     s.append(", rid=");
     s.append(std::to_string(rid));
-    if(m_interval != nullptr) {
-      s.append(", ");
-      s.append(m_interval->to_string());
-    }
+    s.append(", ");
+    s.append(m_interval.to_string());
     return s;
   }
 
@@ -114,7 +117,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
 
   protected:
   std::mutex                m_mutex;
-  Cells::Interval::Ptr      m_interval;
+  Cells::Interval           m_interval;
 };
 
 }}

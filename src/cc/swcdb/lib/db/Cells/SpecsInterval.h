@@ -62,8 +62,8 @@ class Interval {
     copy(other);
   }
 
-  void copy(const Interval &other) {
-    //std::cout  << " copy(const Interval &other)\n";
+  void copy(const Interval& other) {
+    //std::cout  << " copy(const Interval& other)\n";
 
     key_start.copy(other.key_start);
     key_finish.copy(other.key_finish);
@@ -87,7 +87,7 @@ class Interval {
     value.free();
   }
 
-  void expand(const Cells::Cell& cell){
+  void expand(const Cells::Cell& cell) {
     if(key_start.empty() || !key_start.is_matching(cell.key)){
       key_start.set(cell.key, Condition::GE);
     }
@@ -96,7 +96,7 @@ class Interval {
     }
   }
 
-  bool equal(const Interval &other) {
+  bool equal(const Interval& other) const {
     return  ts_start.equal(other.ts_start) &&
             ts_finish.equal(other.ts_finish) &&
             flags.equal(other.flags) &&
@@ -123,7 +123,7 @@ class Interval {
     }
   }
 
-  size_t encoded_length() const {
+  const size_t encoded_length() const {
     return key_start.encoded_length() + key_finish.encoded_length()
           + value.encoded_length()
           + ts_start.encoded_length() + ts_finish.encoded_length()
@@ -148,7 +148,7 @@ class Interval {
     flags.decode(bufp, remainp);
   }
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("Interval(Start");
     s.append(key_start.to_string());
     s.append(" Finish");

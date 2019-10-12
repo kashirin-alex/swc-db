@@ -45,7 +45,7 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
     if(ev->header.command == RANGE_LOAD){
       int err = ev->error != Error::OK? ev->error: response_code(ev);
       if(err != Error::OK){
-        loaded(err, false, nullptr); 
+        loaded(err, false, DB::Cells::Interval()); 
         return; 
       }
       
@@ -62,10 +62,10 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
   }
   
   void handle_no_conn() override {
-    loaded(Error::COMM_NOT_CONNECTED, true, nullptr);
+    loaded(Error::COMM_NOT_CONNECTED, true, DB::Cells::Interval());
   }
 
-  void loaded(int err, bool failure, DB::Cells::Interval::Ptr intval);
+  void loaded(int err, bool failure, const DB::Cells::Interval& intval);
 
 
   private:

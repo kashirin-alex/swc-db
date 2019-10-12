@@ -187,7 +187,7 @@ class Key {
     */
   }
 
-  bool equal(const Key &other) {
+  bool const equal(const Key &other) const {
     return size == other.size && count == other.count 
       && ((data == 0 && other.data == 0) || 
           memcmp(data, other.data, size) == 0);
@@ -255,11 +255,11 @@ class Key {
     return tmp_count;
   }
 
-  bool empty() const {
+  const bool empty() const {
     return count == 0;
   }
   
-  uint32_t encoded_length() const {
+  const uint32_t encoded_length() const {
     return Serialization::encoded_length_vi32(count) + size;;
   }
   

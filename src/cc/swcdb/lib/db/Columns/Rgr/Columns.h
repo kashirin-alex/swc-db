@@ -37,7 +37,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   virtual ~Columns(){}
 
-  ColumnPtr get_column(int &err, int64_t cid, bool initialize){
+  ColumnPtr get_column(int &err, const int64_t cid, bool initialize){
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -74,7 +74,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return nullptr;
   }
 
-  Range::Ptr get_range(int &err, int64_t cid, int64_t rid,  bool initialize=false){
+  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid,
+                       bool initialize=false) {
     ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
@@ -86,7 +87,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return col->get_range(err, rid, initialize);
   }
 
-  void load_range(int &err, int64_t cid, int64_t rid, ResponseCallbackPtr cb){
+  void load_range(int &err, const int64_t cid, const int64_t rid, 
+                  ResponseCallbackPtr cb){
     Range::Ptr range;
     
     if(Env::RgrData::is_shuttingdown())
@@ -107,7 +109,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
       range->load(cb);
   }
 
-  void unload_range(int &err, int64_t cid, int64_t rid, Callback::RangeUnloaded_t cb){
+  void unload_range(int &err, const int64_t cid, const int64_t rid,
+                    Callback::RangeUnloaded_t cb){
     ColumnPtr col = get_column(err, cid, false);
     if(col != nullptr) {
       col->unload(rid, cb);
@@ -143,7 +146,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       r_promise.get_future().wait();
   }
 
-  void remove(int &err, int64_t cid, Callback::ColumnDeleted_t cb){
+  void remove(int &err, const int64_t cid, Callback::ColumnDeleted_t cb) {
     ColumnPtr col = get_column(err, cid, false);
     if(col != nullptr) {
       col->remove_all(err);
@@ -157,7 +160,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     cb(err);
   }
   
-  std::string to_string(){
+  const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("columns=(");

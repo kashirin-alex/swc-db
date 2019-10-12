@@ -11,9 +11,9 @@
 
 #include "swcdb/lib/db/Cells/Mutable.h"
 #include "swcdb/lib/db/Types/Range.h"
+#include "CommitLog.h"
 #include "swcdb/lib/db/Files/RangeData.h"
 
-#include "CommitLog.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
@@ -35,17 +35,12 @@ class Range : public DB::RangeBase {
     DELETED
   };
 
-  Range(int64_t cid, int64_t rid)
-        : RangeBase(cid, rid, std::make_shared<DB::Cells::Interval>()), 
+  Range(const int64_t cid, const int64_t rid)
+        : RangeBase(cid, rid), 
           m_state(State::NOTLOADED), 
-          m_cellstores(std::make_shared<Files::CellStore::Readers>())  { 
-            
-    if(cid == 1)
-      m_type = Types::Range::MASTER;
-    else if(cid == 2)
-      m_type = Types::Range::META;
-    else
-      m_type = Types::Range::DATA;
+          m_type(cid == 1 ? Types::Range::MASTER 
+               :(cid == 2 ? Types::Range::META : Types::Range::DATA)),
+          m_cellstores(std::make_shared<Files::CellStore::Readers>()) {
   }
 
   inline Ptr shared() {
@@ -58,12 +53,12 @@ class Range : public DB::RangeBase {
 
   virtual ~Range(){}
   
-  void set_state(State new_state){
+  void set_state(State new_state) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_state = new_state;
   }
 
-  bool is_loaded(){
+  bool is_loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::LOADED;
   }
@@ -99,38 +94,24 @@ class Range : public DB::RangeBase {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req) {
-    Files::CellStore::ReadersPtr cellstores;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      cellstores->assign(m_cellstores->begin(), m_cellstores->end());
-    }
-    m_commit_log->load(
-      req->spec, 
-      cellstores,
-      [req, ptr=shared()](int err) {
-        if(err){
-          req->response(err);
-        } else {
-          size_t cs_ptr = 0;
-          ptr->scan(cs_ptr, 0, req);
-        }
-      }
-    );
-    //scan(cs_ptr, 0, req);
+    size_t cs_ptr = 0;
+    scan(cs_ptr, 0, req);
   }
 
   void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
-    if(req->spec->flags.limit == req->cells->size()) {
-      req->response(Error::OK);
-      return;
-    }
-    Files::CellStore::Read::Ptr cs;
-    get_next(cs_ptr, idx, cs);
-    if(cs == nullptr){
-      req->response(Error::OK);
-      return;
-    }
-    if(cs->interval->includes(req->spec))
+    for(;;) {
+      if(req->spec->flags.limit == req->cells->size()) {
+        req->response(Error::OK);
+        return;
+      }
+      Files::CellStore::Read::Ptr cs;
+      get_next(cs_ptr, idx, cs);
+      if(cs == nullptr){
+        req->response(Error::OK);
+        return;
+      }
+      if(!cs->interval.includes(req->spec))
+        continue;
       cs->scan(
         DB::Cells::ReqScan::make(
           req->spec,
@@ -143,9 +124,11 @@ class Range : public DB::RangeBase {
           }
         )
       );
+      return;
+    }
   }
 
-  void load(ResponseCallbackPtr cb){
+  void load(ResponseCallbackPtr cb) {
     bool is_loaded;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -174,7 +157,7 @@ class Range : public DB::RangeBase {
 
   }
 
-  void take_ownership(int &err, ResponseCallbackPtr cb){
+  void take_ownership(int &err, ResponseCallbackPtr cb) {
     if(err == Error::RS_DELETED_RANGE)
       return loaded(err, cb);
 
@@ -185,7 +168,7 @@ class Range : public DB::RangeBase {
     load(err, cb);
   }
 
-  void on_change(int &err){ // range-interval || cellstores
+  void on_change(int &err) { // range-interval || cellstores
     std::lock_guard<std::mutex> lock(m_mutex);
     
     switch(m_type){
@@ -202,7 +185,7 @@ class Range : public DB::RangeBase {
     Files::RangeData::save(err, shared_from_this(), m_cellstores);
   }
 
-  void unload(Callback::RangeUnloaded_t cb, bool completely){
+  void unload(Callback::RangeUnloaded_t cb, bool completely) {
     int err = Error::OK;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -230,7 +213,7 @@ class Range : public DB::RangeBase {
     cb(err);
   }
 
-  void remove(int &err){
+  void remove(int &err) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
@@ -245,7 +228,7 @@ class Range : public DB::RangeBase {
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
   }
 
-  std::string to_string(){
+  const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     std::string s("[");
@@ -257,7 +240,7 @@ class Range : public DB::RangeBase {
     s.append(std::to_string((int)m_type));
 
     s.append(", ");
-    s.append(m_interval->to_string());
+    s.append(m_interval.to_string());
 
     if(m_commit_log != nullptr) 
       s.append(m_commit_log->to_string());
@@ -284,7 +267,7 @@ class Range : public DB::RangeBase {
     cb->response(err);
   }
 
-  void last_rgr_chk(int &err, ResponseCallbackPtr cb){
+  void last_rgr_chk(int &err, ResponseCallbackPtr cb) {
     // ranger.data
     Files::RgrDataPtr rs_data = Env::RgrData::get();
     Files::RgrDataPtr rs_last = get_last_rgr(err);
@@ -318,13 +301,14 @@ class Range : public DB::RangeBase {
         m_cellstores->push_back(cs);
     }
  
-    bool init=false;
-    for(auto& cs: *m_cellstores.get()) {
-      m_interval->expand(cs->interval, init);
-      init = true;
-    }
     if(!err)
       m_commit_log = CommitLog::make(shared_from_this());
+
+    m_interval.free();
+    for(auto& cs: *m_cellstores.get()) {
+      m_interval.expand(cs->interval);
+      cs->set(m_commit_log);
+    }
 
     loaded(err, cb); // RSP-LOAD-ACK
 
@@ -400,7 +384,7 @@ class Range : public DB::RangeBase {
   }
 
   State                         m_state;
-  Types::Range                  m_type;
+  const Types::Range            m_type;
    
   Files::CellStore::ReadersPtr  m_cellstores;
   std::queue<ReqAdd*>           m_q_adding;

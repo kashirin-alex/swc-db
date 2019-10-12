@@ -47,15 +47,15 @@ class Timestamp {
     //std::cout << " ~Timestamp\n";
   }
 
-  bool empty() {
+  const bool empty() const {
     return !was_set;
   }
 
-  bool equal(const Timestamp &other) {
+  const bool equal(const Timestamp &other) const {
     return value == other.value && comp == other.comp;
   }
 
-  size_t encoded_length() const {
+  const size_t encoded_length() const {
     return 1+(comp != Condition::NONE? 8: 0);
   }
 
@@ -71,11 +71,11 @@ class Timestamp {
       value = Serialization::decode_i64(bufp, remainp);
   }
 
-  bool is_matching(int64_t other) const {
+  const bool is_matching(int64_t other) const {
     return Condition::is_matching(comp, value, other);
   }
 
-  const std::string to_string(){
+  const std::string to_string() const {
     std::string s("Timestamp(");
     s.append(Condition::to_string(comp));
     if(comp != Condition::NONE)

@@ -25,18 +25,18 @@ class Column : public std::enable_shared_from_this<Column> {
     DELETED
   };
   
-  static bool create(int &err, int64_t id) {
+  static bool create(int &err, const int64_t id) {
     Env::FsInterface::interface()->mkdirs(err, Range::get_column_path(id));
     return true;
   }
 
-  static bool remove(int &err, int64_t id) {
+  static bool remove(int &err, const int64_t id) {
     Env::FsInterface::interface()->rmdir_incl_opt_subs(
       err, Range::get_column_path(id), Range::get_column_path());
     return true;
   }
 
-  Column(int64_t id) 
+  Column(const int64_t id) 
         : cid(id), m_state(State::LOADING),
           m_base_range(std::make_shared<Range>(cid, -1)) {
   }
@@ -62,7 +62,7 @@ class Column : public std::enable_shared_from_this<Column> {
       get_range(err, rid, true); 
   }
 
-  void set_loading(){
+  void set_loading() {
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_state == State::OK)
       m_state = State::LOADING;
@@ -79,7 +79,7 @@ class Column : public std::enable_shared_from_this<Column> {
       
   }
   
-  Range::Ptr get_range(int &err, int64_t rid, bool initialize=false){
+  Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
     Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
@@ -97,8 +97,8 @@ class Column : public std::enable_shared_from_this<Column> {
       return nullptr;
   }
 
-  Range::Ptr get_range(int &err, DB::Specs::Interval::Ptr& interval, 
-                     DB::Specs::Key &next_key){
+  Range::Ptr get_range(int &err, DB::Specs::Interval::Ptr interval, 
+                       DB::Specs::Key &next_key) {
     Range::Ptr found;
     Range::Ptr range = m_base_range;
     range->chained_next(range);
@@ -110,13 +110,13 @@ class Column : public std::enable_shared_from_this<Column> {
     return found;
   }
 
-  void chained_set(Range::Ptr& range, DB::Cells::Interval::Ptr& interval){
-    DB::Cells::Interval::Ptr intval = range->get_interval();
+  void chained_set(Range::Ptr& range, const DB::Cells::Interval& interval) {
+    const DB::Cells::Interval& intval = range->get_interval();
 
-    if(intval == nullptr && interval == nullptr) 
+    if(!intval.was_set && !interval.was_set) 
       return;
 
-    if(interval == nullptr || !interval->equal(intval)) {
+    if(!intval.was_set || !interval.equal(intval)) {
       range->chained_remove();
       range->set(interval);
       chained_set(range);
@@ -135,7 +135,7 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
 
-  int64_t get_next_rid(){
+  int64_t get_next_rid() {
     int64_t rid = 0;
     Range::Ptr range;
     for(;;){
@@ -152,7 +152,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return rid;
   }
 
-  Range::Ptr get_next_unassigned(){    
+  Range::Ptr get_next_unassigned() {    
     Range::Ptr range = m_base_range;
     do{
       range->chained_next(range);
@@ -163,7 +163,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return range;
   }
 
-  void set_rgr_unassigned(uint64_t id){
+  void set_rgr_unassigned(uint64_t id) {
 
     Range::Ptr range = m_base_range;
     for(;;){
@@ -179,7 +179,7 @@ class Column : public std::enable_shared_from_this<Column> {
     remove_rgr_schema(id);
   }
 
-  void change_rgr(uint64_t rgr_id_old, uint64_t id){
+  void change_rgr(uint64_t rgr_id_old, uint64_t id) {
     Range::Ptr range = m_base_range;
     for(;;){
       range->chained_next(range);
@@ -199,7 +199,7 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
 
-  void change_rgr_schema(uint64_t id, int64_t rev=0){
+  void change_rgr_schema(const uint64_t id, int64_t rev=0) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_schemas_rev.find(id);
@@ -209,7 +209,7 @@ class Column : public std::enable_shared_from_this<Column> {
       it->second = rev;
   }
 
-  void remove_rgr_schema(uint64_t id){
+  void remove_rgr_schema(const uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_schemas_rev.find(id);
@@ -217,7 +217,7 @@ class Column : public std::enable_shared_from_this<Column> {
        m_schemas_rev.erase(it);
   }
 
-  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rgr_ids){
+  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rgr_ids) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
@@ -226,7 +226,7 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
 
-  bool need_schema_sync(uint64_t id, int64_t rev){
+  bool need_schema_sync(const uint64_t id, int64_t rev) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_schemas_rev.find(id);
@@ -235,7 +235,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return true;
   }
   
-  void assigned(std::vector<uint64_t> &rgr_ids){
+  void assigned(std::vector<uint64_t> &rgr_ids) {
     Range::Ptr range = m_base_range;
     uint64_t id;
     for(;;){
@@ -251,7 +251,7 @@ class Column : public std::enable_shared_from_this<Column> {
     }
   }
   
-  bool do_remove(){
+  bool do_remove() {
     bool was;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -271,7 +271,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return !was;
   }
 
-  bool finalize_remove(int &err, uint64_t id=0){
+  bool finalize_remove(int &err, uint64_t id=0) {
     uint64_t eid;
     Range::Ptr range = m_base_range;
     for(;;){
@@ -293,7 +293,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return empty;
   }
 
-  std::string to_string(){
+  const std::string to_string() {
     std::string s("[cid=");
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -345,7 +345,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
 
   std::mutex                 m_mutex;
-  int64_t                    cid;
+  const int64_t              cid;
   std::atomic<State>         m_state;
   const Range::Ptr           m_base_range;
 

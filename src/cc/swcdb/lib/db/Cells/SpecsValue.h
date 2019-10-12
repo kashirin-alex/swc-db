@@ -89,13 +89,13 @@ class Value {
     size = 0;
   }
 
-  bool equal(const Value &other) {
+  const bool equal(const Value &other) const {
     return size == other.size 
       && ((data == 0 && other.data == 0) || 
           memcmp(data, other.data, size) == 0);
   }
 
-  size_t encoded_length() const {
+  const size_t encoded_length() const {
     return 1+(
       comp==Condition::NONE? 0: Serialization::encoded_length_vi32(size)+size);
   }
@@ -109,7 +109,7 @@ class Value {
     }
   }
 
-  void decode(const uint8_t **bufp, size_t *remainp){
+  void decode(const uint8_t **bufp, size_t *remainp) {
     own = false;
     comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
     if(comp != Condition::NONE){
@@ -120,18 +120,18 @@ class Value {
     }
   }
 
-  bool is_matching(const uint8_t *other_data, const uint32_t other_size) const {
+  const bool is_matching(const uint8_t *other_data, const uint32_t other_size) const {
     return Condition::is_matching(comp, data, size, other_data, other_size);
   }
   
-  bool is_matching(int64_t other) const {
+  const bool is_matching(int64_t other) const {
     const uint8_t* counter = data;
     size_t remain = size;
     return Condition::is_matching(
       comp, Serialization::decode_vi64(&counter, &remain), other);
   }
 
-  const std::string to_string(){
+  const std::string to_string() const {
     std::string s("Value(");
     s.append("size=");
     s.append(std::to_string(size));

@@ -25,21 +25,21 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   public:
 
-  static void columns_by_fs(int &err, FS::IdEntries_t &entries){
+  static void columns_by_fs(int &err, FS::IdEntries_t &entries) {
     Env::FsInterface::interface()->get_structured_ids(
       err, Range::get_column_path(), entries);
   }
 
   Columns() : m_columns(std::make_shared<ColumnsMap>()) {}
 
-  void reset(){
+  void reset() {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_columns = std::make_shared<ColumnsMap>();
   }
 
   virtual ~Columns(){}
 
-  bool is_an_initialization(int &err, int64_t cid){
+  bool is_an_initialization(int &err, const int64_t cid) {
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -56,7 +56,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return true;
   }
 
-  ColumnPtr get_column(int &err, int64_t cid, bool initialize){
+  ColumnPtr get_column(int &err, const int64_t cid, bool initialize) {
     ColumnPtr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -77,15 +77,15 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return col;
   }
 
-  Range::Ptr get_range(int &err, int64_t cid, int64_t rid, 
-                       bool initialize=false){
+  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid, 
+                       bool initialize=false) {
     ColumnPtr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
     return col->get_range(err, rid, initialize);
   }
 
-  Range::Ptr get_next_unassigned(){
+  Range::Ptr get_next_unassigned() {
     Range::Ptr range = nullptr;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -97,14 +97,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return range;
   }
 
-  void set_rgr_unassigned(uint64_t id){
+  void set_rgr_unassigned(uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
       it->second->set_rgr_unassigned(id);
   }
 
-  void change_rgr(uint64_t id_old, uint64_t id){
+  void change_rgr(uint64_t id_old, uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
@@ -119,7 +119,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return cid;
   }
 
-  void remove(int &err, int64_t cid){
+  void remove(int &err, const int64_t cid) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_columns->find(cid);
@@ -127,7 +127,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       m_columns->erase(it);
   }
 
-  std::string to_string(){
+  const std::string to_string() {
     std::string s("ColumnsAssignment:");
     
     std::lock_guard<std::mutex> lock(m_mutex);

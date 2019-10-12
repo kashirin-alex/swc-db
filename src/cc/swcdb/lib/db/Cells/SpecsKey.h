@@ -112,7 +112,7 @@ class Key : public DB::Cell::Key {
       *comp = (Condition::Comp)*(fraction_ptr);
   }
 
-  bool equal(const Key &other) {
+  const bool equal(const Key &other) const {
     return DB::Cell::Key::equal(other);
   }
   
@@ -120,16 +120,17 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::fractions(1);
   }
   
-  inline bool is_matching(const DB::Cell::Key &other) const {
+  inline const bool is_matching(const DB::Cell::Key &other) const {
     return is_matching(other.data, other.data + other.size, 0);
   }
 
-  inline bool is_matching(const Key &other) const {
+  inline const bool is_matching(const Key &other) const {
     return is_matching(other.data, other.data + other.size, 1);
   }
 
-  inline bool is_matching(const uint8_t* ptr_tmp_other, const uint8_t* ptr_end_other,
-                          int8_t reserved) const {
+  inline const bool is_matching(const uint8_t* ptr_tmp_other, 
+                                const uint8_t* ptr_end_other,
+                                int8_t reserved) const {
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
 

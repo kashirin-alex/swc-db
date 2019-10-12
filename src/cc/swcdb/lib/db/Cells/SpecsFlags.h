@@ -43,7 +43,7 @@ class Flags {
     //std::cout << " ~Flags\n";
   }
 
-  bool equal(const Flags &other) {
+  const bool equal(const Flags &other) const {
     return  limit == other.limit && 
             offset == other.offset  && 
             max_versions == other.max_versions  && 
@@ -53,7 +53,7 @@ class Flags {
             keys_only == other.keys_only ;
   }
 
-  size_t encoded_length() const {
+  const size_t encoded_length() const {
     return 4+Serialization::encoded_length_vi32(limit)
             +Serialization::encoded_length_vi32(offset)
             +Serialization::encoded_length_vi32(max_versions);
@@ -79,7 +79,7 @@ class Flags {
     keys_only = Serialization::decode_bool(bufp, remainp);
   }
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("Flags(");
     
     s.append("limit=");

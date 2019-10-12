@@ -406,7 +406,7 @@ class Rangers {
   }
 
   void range_loaded(RangerPtr rgr, Range::Ptr range, 
-                    int err, bool failure=false) {
+                    int err, bool failure=false, bool verbose=true) {
     bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
     if(!range->deleted()) {
@@ -430,9 +430,9 @@ class Rangers {
         while(column_load_pending(range->cid, pending))
           column_update(pending.func, Env::Schemas::get()->get(pending.cid));
       }
-
-      HT_INFOF("RANGE-STATUS %d(%s), %s", 
-                err, Error::get_text(err), range->to_string().c_str());
+      if(verbose)
+        HT_INFOF("RANGE-STATUS %d(%s), %s", 
+                  err, Error::get_text(err), range->to_string().c_str());
     }
 
     if(run_assign)
@@ -1163,7 +1163,7 @@ class Rangers {
 
 
 void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure, 
-                                        DB::Cells::Interval::Ptr intval) { 
+                                           const DB::Cells::Interval& intval) {
   std::cout << " Protocol::Rgr::Req::RangeLoad::loaded" << "\n";
   auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
   if(col == nullptr){
@@ -1177,8 +1177,10 @@ void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure,
   else if(err == Error::COLUMN_SCHEMA_MISSING)
     col->remove_rgr_schema(rgr->id);
 
-  Env::Rangers::get()->range_loaded(rgr, range, err, failure);
+  Env::Rangers::get()->range_loaded(rgr, range, err, failure, false);
   col->chained_set(range, intval);
+  HT_INFOF("RANGE-STATUS %d(%s), %s", 
+            err, Error::get_text(err), range->to_string().c_str());
 }
 
 void Protocol::Rgr::Req::ColumnUpdate::updated(int err, bool failure) {

@@ -22,15 +22,16 @@ class Column : public std::enable_shared_from_this<Column> {
   
   public:
 
-  Column(int64_t cid) 
+  Column(const int64_t cid) 
         : cid(cid), m_ranges(std::make_shared<RangesMap>()), 
-          m_deleting(false) { }
+          m_deleting(false) { 
+  }
 
   void init(int &err) { }
 
   virtual ~Column(){}
 
-  Range::Ptr get_range(int &err, int64_t rid, bool initialize=false){
+  Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
     Range::Ptr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -54,7 +55,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return range;
   }
 
-  void unload(int64_t rid, Callback::RangeUnloaded_t cb){
+  void unload(const int64_t rid, Callback::RangeUnloaded_t cb) {
     Range::Ptr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -70,7 +71,7 @@ class Column : public std::enable_shared_from_this<Column> {
       cb(Error::OK);
   }
 
-  void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb){
+  void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb) {
 
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -88,7 +89,7 @@ class Column : public std::enable_shared_from_this<Column> {
     cb(Error::OK);
   }
   
-  void remove_all(int &err){
+  void remove_all(int &err) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_deleting = true;
@@ -108,7 +109,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   bool removing() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return  m_deleting;
+    return m_deleting;
   }
 
   Range::Ptr get_next(size_t &idx) {
@@ -125,7 +126,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return nullptr;
   }
 
-  std::string to_string() {
+  const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("[cid=");
@@ -148,7 +149,7 @@ class Column : public std::enable_shared_from_this<Column> {
   private:
 
   std::mutex                 m_mutex;
-  int64_t                    cid;
+  const int64_t              cid;
   std::shared_ptr<RangesMap> m_ranges;
   bool                       m_deleting;
 };

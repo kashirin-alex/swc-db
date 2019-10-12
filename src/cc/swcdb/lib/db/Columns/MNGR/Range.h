@@ -28,7 +28,7 @@ class Range : public DB::RangeBase {
   };
 
 
-  Range(int64_t cid, int64_t rid)
+  Range(const int64_t cid, const int64_t rid)
         : RangeBase(cid, rid), 
           m_state(State::NOTSET), rgr_id(0), m_last_rgr(nullptr) { 
   }
@@ -100,14 +100,12 @@ class Range : public DB::RangeBase {
     m_last_rgr = nullptr;
   }
 
-  void set(DB::Cells::Interval::Ptr interval){
+  void set(const DB::Cells::Interval& interval){
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_interval == nullptr)
-       m_interval = std::make_shared<DB::Cells::Interval>();
-    m_interval->copy(interval);
+    m_interval.copy(interval);
   }
 
-  std::string to_string(){
+  const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("[");
     s.append(DB::RangeBase::to_string());
@@ -120,13 +118,13 @@ class Range : public DB::RangeBase {
   }
 
   
-  bool chained_set(Ptr range, Ptr& current){
+  bool chained_set(Ptr range, Ptr& current) {
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    if(m_interval != nullptr) {
-      DB::Cells::Interval::Ptr intval = range->get_interval();
-      if(intval != nullptr 
-        && !m_interval->is_in_end(intval->get_key_begin())) {
+    if(!m_interval.was_set) {
+      const DB::Cells::Interval& intval = range->get_interval();
+      if(!intval.was_set
+        && !m_interval.is_in_end(intval.key_begin)) {
         range->chained_set_next(current);
         if(m_chained_prev != nullptr) {
           range->chained_set_prev(m_chained_prev);
@@ -148,21 +146,20 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void chained_consist(DB::Specs::Interval::Ptr& intval, Ptr& found,
-                       DB::Specs::Key &next_key, Ptr& current){
+  void chained_consist(DB::Specs::Interval::Ptr intval, Ptr& found,
+                       DB::Specs::Key &next_key, Ptr& current) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-
-    if(m_interval == nullptr || !m_interval->includes(intval)) {
+    if(!m_interval.was_set || !m_interval.includes(intval)) {
       std::cout << " FALSE chained_consist, rid=" << current->rid
-                << "\n this  " << m_interval->to_string()
+                << "\n this  " << m_interval.to_string()
                 << "\n other " << intval->to_string();
       current = nullptr;
       return;
     }
 
     if(found != nullptr)
-      next_key.copy(m_interval->get_key_begin());
+      next_key.copy(m_interval.key_begin);
     else 
       found = current;
 
@@ -175,7 +172,7 @@ class Range : public DB::RangeBase {
     range = m_chained_next;
   }
 
-  void chained_remove(){
+  void chained_remove() {
     std::lock_guard<std::mutex> lock(m_mutex);
     if(rid != -1)
       m_chained_prev->chained_set_next(m_chained_next);
