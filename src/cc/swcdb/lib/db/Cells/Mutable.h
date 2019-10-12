@@ -70,17 +70,17 @@ class Mutable {
     return m_size_bytes;
   }
 
-  void push_back(Cell& cell) {
+  void push_back(const Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
     _push_back(cell);
   }
   
-  void insert(uint32_t offset, Cell& cell) {
+  void insert(uint32_t offset, const Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
     _insert(offset, cell);
   }
 
-  void add(Cell& e_cell) { 
+  void add(const Cell& e_cell) { 
     //std::cout << "add, " << e_cell.to_string() << "\n";
     
     if(e_cell.has_expired(m_ttl))
@@ -95,7 +95,7 @@ class Mutable {
     
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    uint32_t offset = narrow(e_cell);
+    uint32_t offset = narrow(e_cell.key, e_cell.on_fraction);
     for(;offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
@@ -215,9 +215,9 @@ class Mutable {
   void scan(const DB::Cells::Interval& interval, 
                   DB::Cells::Mutable& cells){
     Cell* cell;
-    uint32_t offset = 0; //(narrower over intval.key_begin)
     std::lock_guard<std::mutex> lock(m_mutex);
 
+    uint32_t offset = narrow(interval.key_begin, 0);
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
       if(!interval.consist(cell->key))
@@ -376,7 +376,7 @@ class Mutable {
     memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
   }
   
-  void _insert(uint32_t offset, Cell& cell) {
+  void _insert(uint32_t offset, const Cell& cell) {
     _move_fwd(offset, 1);
     *(m_cells + offset) = new Cell(cell);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
@@ -384,7 +384,7 @@ class Mutable {
     m_size_bytes += cell.encoded_length();
   }
 
-  void _push_back(Cell& cell) {
+  void _push_back(const Cell& cell) {
     _ensure(1);
     *(m_cells + m_size) = new Cell(cell);
     //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
@@ -413,7 +413,7 @@ class Mutable {
   }
 
 
-  uint32_t narrow(const Cell& cell){
+  uint32_t narrow(const DB::Cell::Key& key, uint32_t on_fraction=0){
     uint32_t offset = 0;
 
     if(m_size < narrow_sz)
@@ -425,7 +425,7 @@ class Mutable {
     Condition::Comp cond;
 
     for(;;) {
-      cond = (*(m_cells + offset))->key.compare(cell.key, cell.on_fraction); 
+      cond = (*(m_cells + offset))->key.compare(key, on_fraction); 
       narrows++;
 
       if(cond == Condition::GT){

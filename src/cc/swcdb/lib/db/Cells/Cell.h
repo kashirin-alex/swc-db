@@ -234,7 +234,7 @@ class Cell {
     }
   }
 
-  uint32_t encoded_length() {
+  const uint32_t encoded_length() const {
     uint32_t len = 1+key.encoded_length()+1;
     if(control & HAVE_ON_FRACTION)
       len += Serialization::encoded_length_vi32(on_fraction);
@@ -246,7 +246,7 @@ class Cell {
   }
 
   // WRITE
-  void write(SWC::DynamicBuffer &dst_buf){
+  void write(SWC::DynamicBuffer &dst_buf) const {
     dst_buf.ensure(encoded_length());
 
     *dst_buf.ptr++ = flag;
@@ -267,7 +267,7 @@ class Cell {
     assert(dst_buf.fill() <= dst_buf.size);
   }
 
-  bool equal(Cell &other){
+  const bool equal(Cell &other) const {
     return  flag == other.flag && 
             control == other.control &&
             on_fraction == other.on_fraction && 
