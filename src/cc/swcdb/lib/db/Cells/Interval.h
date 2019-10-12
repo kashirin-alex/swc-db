@@ -120,8 +120,18 @@ class Interval {
            key_end.is_matching(other.key_begin);
   }
 
+  const bool includes(const Interval& other) const {
+    return key_begin.empty() || key_end.empty() ||
+           other.key_begin.empty() || other.key_end.empty() ||
+           (
+            key_begin.is_matching(other.key_end) 
+            &&
+            key_end.is_matching(other.key_begin)
+           );           
+  }
+
   const bool includes(const Specs::Interval::Ptr interval) const {
-    return key_end.empty() || key_begin.empty() ||
+    return key_begin.empty() || key_end.empty() ||
            interval->key_start.empty() || interval->key_finish.empty() ||
            (
             key_begin.is_matching(interval->key_finish) 
