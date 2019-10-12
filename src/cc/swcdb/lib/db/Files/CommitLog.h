@@ -3,25 +3,32 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_CommitLog_h
-#define swcdb_lib_db_Columns_Rgr_CommitLog_h
+#ifndef swcdb_db_Files_CommitLog_h
+#define swcdb_db_Files_CommitLog_h
 
 #include "swcdb/lib/core/Time.h"
-#include "swcdb/lib/db/Files/CommitLogFragment.h"
+#include "CommitLogFragment.h"
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Files { 
+  
+namespace CommitLog {
 
 
-class CommitLog: public std::enable_shared_from_this<CommitLog> {
+class Fragments: public std::enable_shared_from_this<Fragments> {
+  
+  /* file-format(dir-structure): 
+    ../log/{N}.frag
+  */
+
   public:
 
-  typedef std::shared_ptr<CommitLog>  Ptr;
+  typedef std::shared_ptr<Fragments>  Ptr;
 
   inline static Ptr make(const DB::RangeBase::Ptr& range){
-    return std::make_shared<CommitLog>(range);
+    return std::make_shared<Fragments>(range);
   }
 
-  CommitLog(const DB::RangeBase::Ptr& range) 
+  Fragments(const DB::RangeBase::Ptr& range) 
             : m_range(range), m_commiting(false) {
     
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
@@ -39,7 +46,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
 
   }
 
-  virtual ~CommitLog(){}
+  virtual ~Fragments(){}
 
   void add(DB::Cells::Cell& cell) {
     m_cells->add(cell);
@@ -73,7 +80,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
     
-    Files::CommitLog::Fragment::Ptr frag; 
+    Fragment::Ptr frag; 
     uint32_t cell_count;
     int err;
     do {
@@ -85,7 +92,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       if(cells.fill() == 0)
         break;
 
-      frag = std::make_shared<Files::CommitLog::Fragment>(
+      frag = std::make_shared<Fragment>(
         get_log_fragment(Time::now_ns()));
       frag->write(
         err, 
@@ -137,9 +144,9 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     if(err)
       return;
 
-    Files::CommitLog::Fragment::Ptr frag;
+    Fragment::Ptr frag;
     for(auto entry : fragments) {
-      frag = std::make_shared<Files::CommitLog::Fragment>(
+      frag = std::make_shared<Fragment>(
         get_log_fragment(entry.name));
       frag->load_header(err, true);
 
@@ -150,9 +157,9 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     }
   }
   
-  void load_to_block(Files::CellStore::Block::Read::Ptr blk, 
+  void load_to_block(CellStore::Block::Read::Ptr blk, 
                      std::function<void(int)> cb) {
-    std::vector<Files::CommitLog::Fragment::Ptr>  fragments;
+    std::vector<Fragment::Ptr>  fragments;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
@@ -163,7 +170,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     }
 
     if(fragments.empty()){
-      blk->state = Files::CellStore::Block::Read::State::LOGS_LOADED;
+      blk->state = CellStore::Block::Read::State::LOGS_LOADED;
       load_cells(blk->interval, blk->cells);
       blk->pending_logs_load();
       cb(Error::OK);
@@ -229,12 +236,12 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     typedef std::function<void(int)>      Cb_t;
     typedef std::shared_ptr<AwaitingLoad> Ptr;
     
-    AwaitingLoad(int32_t count, Files::CellStore::Block::Read::Ptr blk, 
-                  const Cb_t& cb, CommitLog::Ptr log) 
+    AwaitingLoad(int32_t count, CellStore::Block::Read::Ptr blk, 
+                  const Cb_t& cb, Fragments::Ptr log) 
                 : count(count), blk(blk), cb(cb), log(log) {
     }
 
-    void processed(int err, Files::CommitLog::Fragment::Ptr frag) {
+    void processed(int err, Fragment::Ptr frag) {
       bool call;
       bool good;
       {
@@ -248,7 +255,7 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
       if(!err) {
         frag->load_cells(blk->interval, blk->cells);
         if(good) {
-          blk->state = Files::CellStore::Block::Read::State::LOGS_LOADED;
+          blk->state = CellStore::Block::Read::State::LOGS_LOADED;
           log->load_cells(blk->interval, blk->cells);
           blk->pending_logs_load();
         }
@@ -261,9 +268,9 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
     std::mutex                m_mutex;
     int32_t                   count = 0;
     DB::Cells::ReqScan::Ptr   req;
-    Files::CellStore::Block::Read::Ptr          blk;
+    CellStore::Block::Read::Ptr          blk;
     const Cb_t                cb;
-    CommitLog::Ptr            log;
+    Fragments::Ptr            log;
   };
 
   std::mutex                  m_mutex;
@@ -275,8 +282,8 @@ class CommitLog: public std::enable_shared_from_this<CommitLog> {
   
   std::condition_variable     m_cv;
 
-  std::vector<Files::CommitLog::Fragment::Ptr>  m_fragments;
-  std::vector<Files::CommitLog::Fragment::Ptr>  m_fragments_error;
+  std::vector<Fragment::Ptr>  m_fragments;
+  std::vector<Fragment::Ptr>  m_fragments_error;
 };
 
 

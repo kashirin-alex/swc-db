@@ -22,7 +22,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   inline static const std::string column_dir = "C"; 
   inline static const std::string range_dir = "/R"; 
   // (swc.fs.path.data)+column_dir+/+{cid}+/range_dir+/+{rid}+/+(types)
-  inline static const std::string rs_data_file = "ranger.data";
+  inline static const std::string ranger_data_file = "ranger.data";
   inline static const std::string range_data_file = "range.data";
 
   inline static const std::string cellstores_dir = "cs";
@@ -93,7 +93,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   Files::RgrDataPtr get_last_rgr(int &err) {
-    return Files::RgrData::get_rgr(err, get_path(rs_data_file));
+    return Files::RgrData::get_rgr(err, get_path(ranger_data_file));
   }
 
   const Cells::Interval& get_interval() {

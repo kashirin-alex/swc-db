@@ -8,7 +8,7 @@
 
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "CellStoreBlock.h"
-#include "swcdb/lib/db/Columns/Rgr/CommitLog.h"
+#include "CommitLog.h"
 
 
 namespace SWC { namespace Files {
@@ -117,7 +117,7 @@ class Read : public std::enable_shared_from_this<Read> {
     );
   }
   
-  void set(server::Rgr::CommitLog::Ptr log) {
+  void set(CommitLog::Fragments::Ptr log) {
     m_commit_log = log;
   }
 
@@ -231,7 +231,8 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   void close(int &err) {
-    Env::FsInterface::fs()->close(err, smartfd); 
+    if(smartfd->valid())
+      Env::FsInterface::fs()->close(err, smartfd); 
   }
 
   void remove(int &err) {
@@ -310,7 +311,7 @@ class Read : public std::enable_shared_from_this<Read> {
                 err, smartfd, length-TRAILER_SIZE, buf, TRAILER_SIZE)
               != TRAILER_SIZE){
         if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
+          close(err);
           continue;
         }
         return state;
@@ -330,8 +331,8 @@ class Read : public std::enable_shared_from_this<Read> {
       break;
     }
 
-    if(close_after && smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd);
+    if(close_after)
+      close(err);
     return state;
   }
 
@@ -351,7 +352,7 @@ class Read : public std::enable_shared_from_this<Read> {
                           err, smartfd, offset, read_buf.base, length)
                 != length){
         int tmperr = Error::OK;
-        Env::FsInterface::fs()->close(tmperr, smartfd);
+        close(tmperr);
         if(err != Error::FS_EOF){
           if(!Env::FsInterface::interface()->open(err, smartfd))
             return;
@@ -374,7 +375,7 @@ class Read : public std::enable_shared_from_this<Read> {
         Serialization::decode_i32(&ptr, &remain), 
         read_buf.base, ptr-read_buf.base)
       ) {
-      Env::FsInterface::fs()->close(err, smartfd);
+      close(err);
       err = Error::CHECKSUM_MISMATCH;
       return;
     }
@@ -384,7 +385,7 @@ class Read : public std::enable_shared_from_this<Read> {
       Encoder::decode(encoder, ptr, sz_enc, decoded_buf.base, sz, err);
       if(err) {
         int tmperr = Error::OK;
-        Env::FsInterface::fs()->close(tmperr, smartfd);
+        close(tmperr);
         return;
       }
       read_buf.free();
@@ -409,7 +410,7 @@ class Read : public std::enable_shared_from_this<Read> {
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
-        Env::FsInterface::fs()->close(err, smartfd);
+        close(err);
         err = Error::CHECKSUM_MISMATCH;
         return;
       }
@@ -418,8 +419,8 @@ class Read : public std::enable_shared_from_this<Read> {
       interval.expand(blk->interval);
     }
     
-    if(close_after && smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd);
+    if(close_after)
+      close(err);
   }
 
   void _run_queued() {
@@ -439,6 +440,8 @@ class Read : public std::enable_shared_from_this<Read> {
         m_blocks_q.pop();
         if(m_blocks_q.empty()){
           m_blocks_q_runs = false;
+          int tmperr = Error::OK;
+          close(tmperr);
           return;
         }
       }
@@ -450,7 +453,7 @@ class Read : public std::enable_shared_from_this<Read> {
   std::vector<Block::Read::Ptr>       m_blocks;
   bool                                m_blocks_q_runs = false;
   std::queue<std::function<void()>>   m_blocks_q;
-  server::Rgr::CommitLog::Ptr         m_commit_log;
+  CommitLog::Fragments::Ptr           m_commit_log;
 
 };
 typedef std::vector<Read::Ptr>    Readers;

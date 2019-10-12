@@ -11,7 +11,6 @@
 
 #include "swcdb/lib/db/Cells/Mutable.h"
 #include "swcdb/lib/db/Types/Range.h"
-#include "CommitLog.h"
 #include "swcdb/lib/db/Files/RangeData.h"
 
 
@@ -161,7 +160,7 @@ class Range : public DB::RangeBase {
     if(err == Error::RS_DELETED_RANGE)
       return loaded(err, cb);
 
-    Env::RgrData::get()->set_rgr(err, get_path(rs_data_file));
+    Env::RgrData::get()->set_rgr(err, get_path(ranger_data_file));
     if(err != Error::OK)
       return loaded(err, cb);
 
@@ -194,15 +193,15 @@ class Range : public DB::RangeBase {
         return;
       }
     }
-    // CommitLogs  
-    // rCellStores
-    // range.data
+
+    m_commit_log->commit_new_fragment(true);  
+    m_cellstores->clear();
+    // range.data (from compaction)
 
 
-
-    // rs_last.data
-    if(completely)
-      Env::FsInterface::interface()->remove(err, get_path(rs_data_file));
+    
+    if(completely) // whether to keep ranger_data_file
+      Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
 
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -301,13 +300,14 @@ class Range : public DB::RangeBase {
         m_cellstores->push_back(cs);
     }
  
-    if(!err)
-      m_commit_log = CommitLog::make(shared_from_this());
+    if(!err) {
+      m_commit_log = Files::CommitLog::Fragments::make(shared_from_this());
 
-    m_interval.free();
-    for(auto& cs: *m_cellstores.get()) {
-      m_interval.expand(cs->interval);
-      cs->set(m_commit_log);
+      m_interval.free();
+      for(auto& cs: *m_cellstores.get()) {
+        m_interval.expand(cs->interval);
+        cs->set(m_commit_log);
+      }
     }
 
     loaded(err, cb); // RSP-LOAD-ACK
@@ -383,13 +383,13 @@ class Range : public DB::RangeBase {
 
   }
 
-  State                         m_state;
-  const Types::Range            m_type;
+  State                             m_state;
+  const Types::Range                m_type;
    
-  Files::CellStore::ReadersPtr  m_cellstores;
-  std::queue<ReqAdd*>           m_q_adding;
+  Files::CellStore::ReadersPtr      m_cellstores;
+  std::queue<ReqAdd*>               m_q_adding;
 
-  CommitLog::Ptr                m_commit_log;
+  Files::CommitLog::Fragments::Ptr  m_commit_log;
 };
 
 

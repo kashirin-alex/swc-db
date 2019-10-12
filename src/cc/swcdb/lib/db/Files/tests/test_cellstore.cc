@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
   SWC::DB::Cells::Interval intval_r;
   SWC::Files::CellStore::Read::Ptr cs2 
     = std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r);
-  cs2->set(SWC::server::Rgr::CommitLog::make(range));
+  cs2->set(SWC::Files::CommitLog::Fragments::make(range));
   std::atomic<int> requests = 10;
 
   for(int n=1;n<=3;n++) {

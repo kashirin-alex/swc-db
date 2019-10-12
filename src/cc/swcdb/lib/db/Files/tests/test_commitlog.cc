@@ -47,7 +47,8 @@ int main(int argc, char** argv) {
   );
 
   DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(1,1);
-  server::Rgr::CommitLog::Ptr commit_log = server::Rgr::CommitLog::make(range);
+  Files::CommitLog::Fragments::Ptr commit_log 
+    = Files::CommitLog::Fragments::make(range);
 
   DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
   
@@ -121,7 +122,7 @@ int main(int argc, char** argv) {
   
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
   
-  commit_log = server::Rgr::CommitLog::make(range);
+  commit_log = Files::CommitLog::Fragments::make(range);
   std::cout << "new loading: \n" << commit_log->to_string() << "\n";
 
   commit_log->load(err); // initial range loaded state
@@ -132,7 +133,7 @@ int main(int argc, char** argv) {
 
   cellstores->push_back(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
-  auto log = SWC::server::Rgr::CommitLog::make(range);
+  auto log = SWC::Files::CommitLog::Fragments::make(range);
   log->load(err);
   cellstores->front()->set(log);
 
