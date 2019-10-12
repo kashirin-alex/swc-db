@@ -212,6 +212,20 @@ class Mutable {
     _push_back(e_cell);
   }
 
+  void scan(const DB::Cells::Interval& interval, 
+                  DB::Cells::Mutable& cells){
+    Cell* cell;
+    uint32_t offset = 0; //(narrower over intval.key_begin)
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(!interval.consist(cell->key))
+        continue;
+      cells.add(*cell);
+    }
+  }
+
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
             size_t* cell_offset, size_t& skips){
     Cell* cell;
