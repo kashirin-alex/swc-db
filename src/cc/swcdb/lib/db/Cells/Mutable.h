@@ -80,11 +80,256 @@ class Mutable {
     _insert(offset, cell);
   }
 
-  void add(const Cell& e_cell) { 
+  void add(const Cell& cell) { 
     //std::cout << "add, " << e_cell.to_string() << "\n";
     
-    if(e_cell.has_expired(m_ttl))
+    if(cell.has_expired(m_ttl))
       return;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _add(cell);
+  }
+
+  void scan(const DB::Cells::Interval& interval, 
+                  DB::Cells::Mutable& cells){
+    Cell* cell;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    uint32_t offset = narrow(interval.key_begin, 0);
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(!interval.consist(cell->key))
+        continue;
+      cells.add(*cell);
+    }
+  }
+
+  void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
+            size_t* cell_offset, size_t& skips){
+    Cell* cell;
+    uint32_t offset = 0; //(narrower over specs.key_start)
+    uint count_skips = 0 ;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(specs.is_matching(*cell, m_type)) {
+        if(count_skips++ < specs.flags.offset-*cell_offset) 
+          continue;
+        cells->add(*cell);
+        *cell_offset--;
+        if(cells->size() == specs.flags.limit)
+          break;
+      } else 
+        skips++;
+    }
+  }
+
+  void scan(const Specs::Interval& specs, DynamicBuffer& result, 
+            size_t& count, size_t& skips){
+    Cell* cell;
+    uint32_t offset = specs.flags.offset; //(narrower over specs.key_start)
+    uint count_skips = 0 ;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      cell = *(m_cells + offset);
+      if(specs.is_matching(*cell, m_type)) {
+        if(count_skips++ < specs.flags.offset) 
+          continue;
+        cell->write(result);
+        if(++count == specs.flags.limit)
+          break;
+      } else 
+        skips++;
+    }
+  }
+  
+  void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
+                      Interval& intval, uint32_t threshold) {
+    Cell* cell;
+    uint32_t offset = 0;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+  
+    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
+
+    while(offset < m_size && threshold > cells.fill()) {
+      cell = *(m_cells + offset++);
+      
+      if(cell->has_expired(m_ttl))
+        continue;
+        
+      cell->write(cells);
+      cell_count++;
+      intval.expand(*cell);
+    }
+    
+    if(offset > 0) {
+      if(m_size == offset)
+        _free();
+      else 
+        _move_bwd(0, offset);
+    }
+  }
+  
+  bool write_and_free(const Specs::Interval& specs,
+                      DynamicBuffer& cells, uint32_t threshold) {
+    Cell* cell;
+    uint32_t offset = 0; //(narrower over specs.key_start)
+    int32_t offset_applied = -1;
+    uint32_t count = 0;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+  
+    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
+
+    for(;offset < m_size;offset++) {
+      cell = *(m_cells + offset);
+      if((!specs.key_start.empty() && !specs.key_start.is_matching(cell->key))
+        || (!specs.key_finish.empty() && !specs.key_finish.is_matching(cell->key)))
+        continue;
+
+      count++;
+      if(offset_applied == -1)
+        offset_applied = offset;
+
+      if(cell->has_expired(m_ttl))
+        continue;
+      
+      cell->write(cells);
+      if(threshold < cells.fill())
+        break;
+    }
+    
+    if(count > 0) {
+      if(m_size == count) {
+        _free();
+        return false;
+      }
+      _move_bwd(offset_applied, offset);
+      return true;
+    }
+    return false;
+  }
+
+  void add(const DynamicBuffer& cells) {
+    Cell cell;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    const uint8_t* ptr = cells.base;
+    size_t remain = cells.size;
+    while(remain) {
+      cell.read(&ptr, &remain);
+      _add(cell);
+    }
+  }
+
+  void add_to(Ptr cells) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(uint32_t offset = 0;offset < m_size; offset++)
+      cells->add(**(m_cells + offset));
+  }
+  
+
+  const std::string to_string()  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _to_string();
+  }
+  
+  private:
+
+  inline const std::string _to_string() const {
+    std::string s("CellsMutable(cap=");
+    s.append(std::to_string(m_cap));
+    s.append(" size=");
+    s.append(std::to_string(m_size));
+    s.append(" bytes=");
+    s.append(std::to_string(m_size_bytes));
+    s.append(" type=");
+    s.append(Types::to_string(m_type));
+    s.append(" max_revs=");
+    s.append(std::to_string(m_max_revs));
+    s.append(" ttl=");
+    s.append(std::to_string(m_ttl));
+    s.append(")");
+    return s;
+  }
+
+  inline void _ensure(uint32_t sz) {
+    if(m_cap < m_size + sz){
+      m_cap += sz;
+      //auto ts = Time::now_ns();
+      _allocate();
+      //std::cout << " _allocate took=" << Time::now_ns()-ts << " " << _to_string() << "\n";
+    }
+  }
+
+  void _allocate() {
+    if(m_cells == 0) {      
+      m_cells = new Cell*[m_cap];
+      //m_cells = (Cell**)std::malloc(m_cap*sizeof(Cell*));
+
+    } else {
+      //void* cells_new = std::realloc(m_cells, (m_cap += m_size)*sizeof(Cell*));
+      //if(cells_new) 
+      //  m_cells = (Cell**)cells_new;
+      
+      Cell** cells_old = m_cells;
+      m_cells = new Cell*[m_cap += m_size];
+
+      memcpy(m_cells, cells_old, m_size*sizeof(Cell*));
+      //for(uint32_t n=m_size;n--;) 
+      //  *(m_cells+n) = *(cells_old+n);
+     
+      delete [] cells_old;
+    }
+
+    memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
+    //for(uint32_t n=m_cap-m_size; n--;) 
+    //  *(m_cells+m_size+n) = nullptr;
+  }
+
+  void _move_fwd(uint32_t offset, int32_t by) {
+    _ensure(by);
+    memmove(m_cells+offset+by, m_cells+offset, (m_size-offset)*sizeof(Cell*));
+    //Cell** end = m_cells+m_size+by-1;
+    //for(uint32_t n = m_size-offset;n--;)
+      //*end-- = *(end-by); 
+  }
+
+  void _move_bwd(uint32_t offset, int32_t by) {
+    for(uint32_t n=0;n<by; n++){
+      if(*(m_cells+offset+n)){
+        m_size_bytes -= (*(m_cells+offset+n))->encoded_length();
+        delete *(m_cells+offset+n);
+        //(*(m_cells+offset+n))->~Cell();
+        //std::free(*(m_cells+offset+n));
+      }
+    }
+
+    memmove(m_cells+offset, m_cells+offset+by, (m_size-offset-by)*sizeof(Cell*));
+    m_size-=by;
+    memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
+  }
+  
+  void _insert(uint32_t offset, const Cell& cell) {
+    _move_fwd(offset, 1);
+    *(m_cells + offset) = new Cell(cell);
+    //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell.encoded_length();
+  }
+
+  void _push_back(const Cell& cell) {
+    _ensure(1);
+    *(m_cells + m_size) = new Cell(cell);
+    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell.encoded_length();
+  }
+
+  void _add(const Cell& e_cell) {
 
     Cell* cell;
     Cell cell_cpy;
@@ -93,7 +338,6 @@ class Mutable {
     bool updating = false;
     uint32_t revs = 0;
     
-    std::lock_guard<std::mutex> lock(m_mutex);
     
     uint32_t offset = narrow(e_cell.key, e_cell.on_fraction);
     for(;offset < m_size; offset++) {
@@ -210,186 +454,6 @@ class Mutable {
     }
 
     _push_back(e_cell);
-  }
-
-  void scan(const DB::Cells::Interval& interval, 
-                  DB::Cells::Mutable& cells){
-    Cell* cell;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    uint32_t offset = narrow(interval.key_begin, 0);
-    for(;offset < m_size; offset++){
-      cell = *(m_cells + offset);
-      if(!interval.consist(cell->key))
-        continue;
-      cells.add(*cell);
-    }
-  }
-
-  void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
-            size_t* cell_offset, size_t& skips){
-    Cell* cell;
-    uint32_t offset = 0; //(narrower over specs.key_start)
-    uint count_skips = 0 ;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    for(;offset < m_size; offset++){
-      cell = *(m_cells + offset);
-      if(specs.is_matching(*cell, m_type)) {
-        if(count_skips++ < specs.flags.offset-*cell_offset) 
-          continue;
-        cells->add(*cell);
-        *cell_offset--;
-        if(cells->size() == specs.flags.limit)
-          break;
-      } else 
-        skips++;
-    }
-  }
-
-  void scan(const Specs::Interval& specs, DynamicBuffer& result, 
-            size_t& count, size_t& skips){
-    Cell* cell;
-    uint32_t offset = specs.flags.offset; //(narrower over specs.key_start)
-    uint count_skips = 0 ;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    for(;offset < m_size; offset++){
-      cell = *(m_cells + offset);
-      if(specs.is_matching(*cell, m_type)) {
-        if(count_skips++ < specs.flags.offset) 
-          continue;
-        cell->write(result);
-        if(++count == specs.flags.limit)
-          break;
-      } else 
-        skips++;
-    }
-  }
-  
-  void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval& intval, uint32_t threshold) {
-    Cell* cell;
-    uint32_t offset = 0;
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-  
-    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
-
-    while(offset < m_size && threshold > cells.fill()) {
-      cell = *(m_cells + offset++);
-      
-      if(cell->has_expired(m_ttl))
-        continue;
-        
-      cell->write(cells);
-      cell_count++;
-      intval.expand(*cell);
-    }
-    
-    if(offset > 0) {
-      if(m_size == offset)
-        _free();
-      else 
-        _move_bwd(0, offset);
-    }
-  }
-
-  const std::string to_string()  {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return _to_string();
-  }
-  
-  private:
-
-  inline const std::string _to_string() const {
-    std::string s("CellsMutable(cap=");
-    s.append(std::to_string(m_cap));
-    s.append(" size=");
-    s.append(std::to_string(m_size));
-    s.append(" bytes=");
-    s.append(std::to_string(m_size_bytes));
-    s.append(" type=");
-    s.append(Types::to_string(m_type));
-    s.append(" max_revs=");
-    s.append(std::to_string(m_max_revs));
-    s.append(" ttl=");
-    s.append(std::to_string(m_ttl));
-    s.append(")");
-    return s;
-  }
-
-  inline void _ensure(uint32_t sz) {
-    if(m_cap < m_size + sz){
-      m_cap += sz;
-      //auto ts = Time::now_ns();
-      _allocate();
-      //std::cout << " _allocate took=" << Time::now_ns()-ts << " " << _to_string() << "\n";
-    }
-  }
-
-  void _allocate() {
-    if(m_cells == 0) {      
-      m_cells = new Cell*[m_cap];
-      //m_cells = (Cell**)std::malloc(m_cap*sizeof(Cell*));
-
-    } else {
-      //void* cells_new = std::realloc(m_cells, (m_cap += m_size)*sizeof(Cell*));
-      //if(cells_new) 
-      //  m_cells = (Cell**)cells_new;
-      
-      Cell** cells_old = m_cells;
-      m_cells = new Cell*[m_cap += m_size];
-
-      memcpy(m_cells, cells_old, m_size*sizeof(Cell*));
-      //for(uint32_t n=m_size;n--;) 
-      //  *(m_cells+n) = *(cells_old+n);
-     
-      delete [] cells_old;
-    }
-
-    memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
-    //for(uint32_t n=m_cap-m_size; n--;) 
-    //  *(m_cells+m_size+n) = nullptr;
-  }
-
-  void _move_fwd(uint32_t offset, int32_t by) {
-    _ensure(by);
-    memmove(m_cells+offset+by, m_cells+offset, (m_size-offset)*sizeof(Cell*));
-    //Cell** end = m_cells+m_size+by-1;
-    //for(uint32_t n = m_size-offset;n--;)
-      //*end-- = *(end-by); 
-  }
-
-  void _move_bwd(uint32_t offset, int32_t by) {
-    for(uint32_t n=0;n<by; n++){
-      if(*(m_cells+offset+n)){
-        m_size_bytes -= (*(m_cells+offset+n))->encoded_length();
-        delete *(m_cells+offset+n);
-        //(*(m_cells+offset+n))->~Cell();
-        //std::free(*(m_cells+offset+n));
-      }
-    }
-
-    memmove(m_cells+offset, m_cells+offset+by, (m_size-offset-by)*sizeof(Cell*));
-    m_size-=by;
-    memset(m_cells+m_size, 0, (m_cap-m_size)*sizeof(Cell*));
-  }
-  
-  void _insert(uint32_t offset, const Cell& cell) {
-    _move_fwd(offset, 1);
-    *(m_cells + offset) = new Cell(cell);
-    //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    m_size++;
-    m_size_bytes += cell.encoded_length();
-  }
-
-  void _push_back(const Cell& cell) {
-    _ensure(1);
-    *(m_cells + m_size) = new Cell(cell);
-    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    m_size++;
-    m_size_bytes += cell.encoded_length();
   }
 
   void _free() {
