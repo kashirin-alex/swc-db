@@ -19,6 +19,10 @@ class Key : public DB::Cell::Key {
     copy(other);
   }
 
+  explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp){
+    set(cell_key, comp);
+  }
+
   virtual ~Key(){
     free();
   }
@@ -81,7 +85,7 @@ class Key : public DB::Cell::Key {
     }
   }
   
-  inline void insert(uint32_t idx, const std::string fraction,
+  inline void insert(uint32_t idx, const std::string& fraction,
                      Condition::Comp comp) {
     insert(idx, (const uint8_t*)fraction.data(), fraction.length(), comp);
   }

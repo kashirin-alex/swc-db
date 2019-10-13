@@ -86,7 +86,7 @@ class Key {
     ++count;
   }
 
-  inline void insert(uint32_t idx, const std::string fraction) {
+  inline void insert(uint32_t idx, const std::string& fraction) {
     insert(idx, (const uint8_t*)fraction.data(), fraction.length());
   }
 
