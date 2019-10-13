@@ -183,6 +183,11 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   bool add_logged(DB::Cells::Cell& cell) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_blks_count == 0)
+          return false;
+    }
     if(!interval.consist(cell.key))
       return false;
 
@@ -196,7 +201,8 @@ class Read : public std::enable_shared_from_this<Read> {
       }
       if(blk->interval.consist(cell.key)) {
         blk->add_logged(cell);
-        return true;
+        if(!cell.on_fraction)
+          return true;
       }
     }
     return false;
@@ -369,7 +375,10 @@ class Read : public std::enable_shared_from_this<Read> {
       = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
     uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
     uint32_t sz = Serialization::decode_vi32(&ptr, &remain);
-    uint32_t blks_count = Serialization::decode_vi32(&ptr, &remain);
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_blks_count = Serialization::decode_vi32(&ptr, &remain);
+    }
     
     if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), 
@@ -399,7 +408,7 @@ class Read : public std::enable_shared_from_this<Read> {
     Block::Read::Ptr blk;
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
 
-    for(int n = 0; n < blks_count; n++){
+    for(int n = 0; n < m_blks_count; n++){
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
@@ -454,6 +463,7 @@ class Read : public std::enable_shared_from_this<Read> {
   bool                                m_blocks_q_runs = false;
   std::queue<std::function<void()>>   m_blocks_q;
   CommitLog::Fragments::Ptr           m_commit_log;
+  uint32_t                            m_blks_count;
 
 };
 typedef std::vector<Read::Ptr>    Readers;
