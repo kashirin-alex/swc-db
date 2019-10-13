@@ -165,6 +165,10 @@ class Cell {
     set_value((uint8_t *)v, strlen(v));
   }
 
+  void set_value(const std::string& v){
+    set_value((uint8_t *)v.data(), v.length());
+  }
+
   void set_value(OP op, int64_t v){
     free();
     if(v == 0 && op == OP::EQUAL) {
