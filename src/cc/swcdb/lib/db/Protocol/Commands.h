@@ -31,6 +31,7 @@ namespace Rgr {
     RANGE_LOAD           = 0x05,
     RANGE_UNLOAD         = 0x06,
     RANGE_LOCATE         = 0x07,
+    RANGE_QUERY_UPDATE   = 0x08,
   };
 
 }

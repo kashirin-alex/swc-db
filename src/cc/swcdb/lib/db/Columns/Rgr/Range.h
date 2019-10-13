@@ -12,8 +12,10 @@
 #include "swcdb/lib/db/Cells/Mutable.h"
 #include "swcdb/lib/db/Types/Range.h"
 #include "swcdb/lib/db/Files/RangeData.h"
+#include "swcdb/lib/db/Protocol/Common/req/Query.h"
 
 
+namespace Query = SWC::Protocol::Common::Req::Query;
 
 namespace SWC { namespace server { namespace Rgr {
 
@@ -24,10 +26,13 @@ class Range : public DB::RangeBase {
   typedef std::shared_ptr<Range>                    Ptr;
 
   struct ReqAdd {
+    public:
+    ReqAdd(const StaticBufferPtr& input, const ResponseCallbackPtr& cb) 
+          : input(input), cb(cb) {}
+    virtual ~ReqAdd() {}
     const StaticBufferPtr     input;
     const ResponseCallbackPtr cb;
   };
-
   enum State{
     NOTLOADED,
     LOADED,
@@ -174,9 +179,22 @@ class Range : public DB::RangeBase {
       case Types::Range::DATA:
         // + INSERT meta-range(col-2), cid,rid,m_interval(key)
         break;
-      case Types::Range::META:
-        // + INSERT master-range(col-1), cid(2),rid,m_interval(key)
+      case Types::Range::META: {
+        DB::Cells::Cell cell;
+        cell.flag = DB::Cells::INSERT;
+        cell.key.copy(m_interval.key_begin);
+        cell.key.insert(0, std::to_string(cid));
+        cell.set_value(std::to_string(rid));
+        Query::Update::Ptr update_req = std::make_shared<Query::Update>(
+          [](Query::Update::Result::Ptr result) {
+            std::cout << "CB pending=" <<result->err << "\n";
+          }
+        );
+        update_req->columns_cells->add(1, cell);
+        update_req->commit();
+        // + INSERT master-range(col-1), key[range->cid + m_interval(key)], value(range->rid),
         break;
+      }
       default: // Types::Range::MASTER:
         break;
     }
@@ -194,7 +212,8 @@ class Range : public DB::RangeBase {
       }
     }
 
-    m_commit_log->commit_new_fragment(true);  
+    if(m_commit_log != nullptr) 
+      m_commit_log->commit_new_fragment(true);  
     m_cellstores->clear();
     // range.data (from compaction)
 
@@ -230,28 +249,29 @@ class Range : public DB::RangeBase {
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    std::string s("[");
+    std::string s("(");
     s.append(DB::RangeBase::to_string());
-    s.append(", state=");
+    s.append(" state=");
     s.append(std::to_string(m_state));
     
-    s.append(", type=");
+    s.append(" type=");
     s.append(std::to_string((int)m_type));
 
-    s.append(", ");
+    s.append(" ");
     s.append(m_interval.to_string());
 
-    if(m_commit_log != nullptr) 
+    if(m_commit_log != nullptr) {
+      s.append(" ");
       s.append(m_commit_log->to_string());
-      
-    s.append(", cellstores=[");
+    }
+
+    s.append(" cellstores=[");
     for(auto& cs : *m_cellstores.get()) {
       s.append(cs->to_string());
       s.append(", ");
     }
-    s.append("], ");
-    
-    s.append("]");
+    s.append("] ");
+    s.append(")");
     return s;
   }
 
@@ -285,7 +305,7 @@ class Range : public DB::RangeBase {
   }
 
   void load(int &err, ResponseCallbackPtr cb) {
-    
+    bool is_initial_column_range = false;
     Files::RangeData::load(err, shared_from_this(), m_cellstores);
     if(err) 
       err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
@@ -298,6 +318,8 @@ class Range : public DB::RangeBase {
           err, schema->blk_encoding, shared_from_this());
       if(!err) 
         m_cellstores->push_back(cs);
+      else 
+        is_initial_column_range = true;
     }
  
     if(!err) {
@@ -312,7 +334,7 @@ class Range : public DB::RangeBase {
 
     loaded(err, cb); // RSP-LOAD-ACK
 
-    if(!err)
+    if(!err && is_initial_column_range)
       on_change(err);
 
     if(err == Error::OK) {
@@ -354,19 +376,19 @@ class Range : public DB::RangeBase {
       remain = req->input->size; 
       while(remain) {
         cell.read(&ptr, &remain);
+        // validate over range.interval match
 
         m_commit_log->add(cell);
 
         cs_idx = 0;
         for(;;) {
           get_next(cs_ptr, cs_idx, cs);
-          if(cs == nullptr) {
-            HT_WARNF("No CS interval matching for %s", 
-                      cell.to_string().c_str());
-            break;;
-          }
-          if(cs->add_logged(cell))
+          if(cs == nullptr)
             break;
+          if(cs->add_logged(cell)) {
+            if(!cell.on_fraction)
+              break;
+          }
         }
       }
 

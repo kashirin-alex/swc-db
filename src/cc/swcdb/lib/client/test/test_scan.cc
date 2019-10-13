@@ -31,14 +31,17 @@ void run_test() {
   // Req::Query::Update
   std::atomic<int> pending=0;
   Query::Update::Ptr update_req = std::make_shared<Query::Update>(
-    [&pending=pending](Query::Update::Result result)
+    [&pending=pending](Query::Update::Result::Ptr result)
     {
       pending--;
-      std::cout << "CB pending=" << pending.load() << "\n";
+      std::cout << "CB pending=" << pending.load() << " " << result->completion.load() << "\n";
     }
   );
+  
+  update_req->columns_cells->create(SWC::DB::Schema::make(1, "sys_master"));
 
   for(int i=0;i<1000000;i++) {
+  std::string cell_number(std::to_string(i));
   Cells::Cell cell;
   cell.flag = Cells::INSERT;
   cell.set_timestamp(111);
@@ -49,25 +52,29 @@ void run_test() {
   cell.key.add("b123451");
   cell.key.add("c123451");
   cell.key.add("d123451");
-  update_req->cells->add(11, cell);
+  cell.key.add("e"+cell_number);
+  update_req->columns_cells->add(1, cell);
 
   cell.key.free();
   cell.key.add("a987651");
   cell.key.add("b987652");
   cell.key.add("c987653");
   cell.key.add("d987654");
-  update_req->cells->add(11, cell);
+  cell.key.add("e"+cell_number);
+  update_req->columns_cells->add(1, cell);
 
   cell.key.free();
   cell.key.add("a123454");
   cell.key.add("b123453");
   cell.key.add("c123452");
   cell.key.add("d123451");
-  update_req->cells->add(11, cell);
+  cell.key.add("e"+cell_number);
+  update_req->columns_cells->add(1, cell);
 
   cell.key.free();
   cell.key.add("a8");
-  update_req->cells->add(11, cell);
+  cell.key.add("e"+cell_number);
+  update_req->columns_cells->add(1, cell);
   cell.free();
     
   }
