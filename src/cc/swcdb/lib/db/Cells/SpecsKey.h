@@ -19,15 +19,17 @@ class Key : public DB::Cell::Key {
     copy(other);
   }
 
-  explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp){
-    set(cell_key, comp);
+  explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp, 
+               uint32_t offset=0){
+    set(cell_key, comp, offset);
   }
 
   virtual ~Key(){
     free();
   }
 
-  inline void set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
+  inline void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
+                  uint32_t offset=0) {
     free();
     own   = true;
     count = cell_key.count;
@@ -41,7 +43,7 @@ class Key : public DB::Cell::Key {
     uint32_t len;
     const uint8_t* ptr = (const uint8_t*)cell_key.data;
     const uint8_t* ptr_len;
-    for(int32_t n=0; n<count; n++) {
+    for(offset; offset<count; offset++) {
       *data_ptr++ = (uint8_t)comp;
       ptr_len = ptr; 
       len = Serialization::decode_vi32(&ptr_len);
