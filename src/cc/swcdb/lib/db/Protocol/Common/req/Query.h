@@ -75,39 +75,45 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void wait() {
     std::unique_lock<std::mutex> lock_wait(m_mutex);
-    cv.wait(lock_wait, [](){return true;});
+    cv.wait(
+      lock_wait, 
+      [ptr=shared_from_this()](){return ptr->result->completion==0;}
+    );  
   }
 
   void commit() {
     DB::Cells::MapMutable::ColumnCells pair;
     for(size_t idx=0;columns_cells->get(idx, pair);idx++)
-      locate_ranger_master(pair);
+      locate_ranger_master(pair.first, pair.second);
   }
   
-  void locate_ranger_master(const DB::Cells::MapMutable::ColumnCells& pair) {
+  void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells) {
     //range-locator (master) : cid(1)+(cid[N]+Cell::Key) => cid(1), rid(N-master), rgr-endpoints 
-    DB::Specs::Interval::Ptr cells_interval = DB::Specs::Interval::make_ptr();
-
-    Mngr::Params::RgrGetReq params(1, DB::Specs::Interval::make_ptr());
-    DB::Cells::Cell cell;
     
-    pair.second->get(0, cell);
-    cells_interval->key_start.set(cell.key, Condition::GE);
-    params.interval->key_start.set(cell.key, Condition::GE);
-    params.interval->key_start.insert(0, std::to_string(pair.first), Condition::GE);
+    DB::Specs::Interval::Ptr intval = DB::Specs::Interval::make_ptr();
+    DB::Cells::Cell cell;
+    cells->get(0, cell);
+    intval->key_start.set(cell.key, Condition::GE);
+    cells->get(-1, cell);
+    intval->key_finish.set(cell.key, Condition::LE);;
 
-    pair.second->get(-1, cell);
-    params.interval->key_finish.set(cell.key, Condition::LE);
-    params.interval->key_finish.insert(0, std::to_string(pair.first), Condition::LE);
+    DB::Specs::Interval::Ptr intval_cells = DB::Specs::Interval::make_ptr(intval);
 
-    std::cout << params.interval->to_string() << "\n";
+    intval->key_start.insert(0, std::to_string(cid), Condition::GE);
+    intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
+    locate_ranger_master(cid, cells, intval, intval_cells);
+  }
+
+  void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells,
+                            DB::Specs::Interval::Ptr intval, 
+                            DB::Specs::Interval::Ptr intval_cells) {
+    std::cout << intval->to_string() << "\n";
     
     result->completion++;
+
     Mngr::Req::RgrGet::request(
-      params,
-      [cells_interval, 
-       pair = DB::Cells::MapMutable::ColumnCells(pair.first, pair.second), 
-       intval_loc = params.interval, ptr = shared_from_this()]
+      Mngr::Params::RgrGetReq(1, intval),
+      [cid, cells, intval, intval_cells, ptr=shared_from_this()]
       (Req::ConnQueue::ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
 
         if(rsp.err != Error::OK){
@@ -120,30 +126,51 @@ class Update : public std::enable_shared_from_this<Update> {
             return;
           }
         }
-        ptr->result->completion--;
 
-        std::cout << "RgrGet: " << rsp.to_string() << " cid=" << pair.first  << " " << pair.second->to_string() << "\n";
+        std::cout << "RgrGet: " << rsp.to_string() << " cid=" << cid  << " " << cells->to_string() << "\n";
 
-        if(pair.first == 1) {
-          cells_interval->key_finish.set(rsp.next_key, Condition::LT);
-          ptr->commit_data(rsp.endpoints, rsp.cid, rsp.rid, cells_interval, pair);
-          return;
+        if(cid == 1) {
+          if(cid != rsp.cid) {
+            ptr->result->err=Error::NOT_ALLOWED;
+            ptr->response();
+            ptr->result->completion--;
+            return;   
+          }
+          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr(intval_cells);
+          ci->key_finish.set(rsp.next_key, Condition::LT);
+          ptr->commit_data(rsp.endpoints, rsp.cid, rsp.rid, ci, cells);
+
+        } else {
+          ptr->result->completion++;
+          Rgr::Params::RangeLocateReq params(rsp.cid, rsp.rid, intval);
+
+          Rgr::Req::RangeLocate::request(
+            params, rsp.endpoints, 
+            [req_ptr]() {
+              req_ptr->request_again();
+            },
+            [ptr] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
+              // locate_ranger_meta(), mngr-> getRanger of rsp.cid+rsp.rid
+              std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
+              ptr->result->err=rsp.err;
+              if(!--ptr->result->completion)
+                ptr->response();          
+              }
+          );
         }
 
-        ptr->result->completion++;
-        Rgr::Params::RangeLocateReq params(rsp.cid, rsp.rid, intval_loc);
+        if(!rsp.next_key.empty()) {
+          // if cells -gt next_key
+          DB::Specs::Interval::Ptr intval_nxt = DB::Specs::Interval::make_ptr(intval);
+          intval_nxt->key_start.set(rsp.next_key, Condition::GE);
 
-        Rgr::Req::RangeLocate::request(
-          params, rsp.endpoints, 
-          [req_ptr]() {req_ptr->request_again();},
-          [ptr] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
-            std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
-            ptr->result->err=rsp.err;
-            if(!--ptr->result->completion)
-              ptr->response();          
-            }
-        );
-
+          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
+          ci->key_start.set(rsp.next_key, Condition::LT, 1);
+          ci->key_finish.copy(intval_cells->key_finish);
+          ptr->locate_ranger_master(cid, cells, intval_nxt, ci);
+        }
+        
+        ptr->result->completion--;
       }
     );
   }
@@ -155,21 +182,22 @@ class Update : public std::enable_shared_from_this<Update> {
   }
   
   void commit_data(EndPoints rgr, int64_t cid, uint64_t rid,
-                   DB::Specs::Interval::Ptr interval, 
-                   const DB::Cells::MapMutable::ColumnCells& pair) {
+                   DB::Specs::Interval::Ptr ci, 
+                   DB::Cells::Mutable::Ptr cells) {
     bool more;
     do {
    
-      DynamicBufferPtr cells = std::make_shared<DynamicBuffer>();     
-      more = pair.second->write_and_free(*interval.get(), *cells.get(), buff_sz);
-      std::cout << "Query::Update commit_data: sz=" << cells->fill() << " " << pair.second->to_string() << "\n"; 
+      DynamicBufferPtr cells_buff = std::make_shared<DynamicBuffer>();     
+      more = cells->write_and_free(*ci.get(), *cells_buff.get(), buff_sz);
+      std::cout << "Query::Update commit_data: sz=" << cells_buff->fill() << " " << cells->to_string() << "\n"; 
+      
       result->completion++;
     
       Rgr::Req::RangeQueryUpdate::request(
-        Rgr::Params::RangeQueryUpdateReq(cid, rid, cells->fill()), cells, rgr, 
-        [pair, cells, ptr=shared_from_this()]() {
-          pair.second->add(*cells.get());
-          ptr->locate_ranger_master(pair);
+        Rgr::Params::RangeQueryUpdateReq(cid, rid, cells_buff->fill()), cells_buff, rgr, 
+        [cid, cells, cells_buff, ptr=shared_from_this()]() {
+          cells->add(*cells_buff.get());
+          ptr->locate_ranger_master(cid, cells);
           --ptr->result->completion;
         },
         [ptr=shared_from_this()] 
