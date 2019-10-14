@@ -218,7 +218,7 @@ class Mutable {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     const uint8_t* ptr = cells.base;
-    size_t remain = cells.size;
+    size_t remain = cells.fill();
     while(remain) {
       cell.read(&ptr, &remain);
       _add(cell);
