@@ -99,7 +99,9 @@ class Update : public std::enable_shared_from_this<Update> {
 
     DB::Specs::Interval::Ptr intval_cells = DB::Specs::Interval::make_ptr(intval);
 
+    intval->key_start.insert(0, "2", Condition::GE);
     intval->key_start.insert(0, std::to_string(cid), Condition::GE);
+    intval->key_finish.insert(0, "2", Condition::LE);
     intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
     locate_ranger_master(cid, cells, intval, intval_cells);
   }
@@ -107,7 +109,7 @@ class Update : public std::enable_shared_from_this<Update> {
   void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells,
                             DB::Specs::Interval::Ptr intval, 
                             DB::Specs::Interval::Ptr intval_cells) {
-    std::cout << intval->to_string() << "\n";
+    std::cout << "locate_ranger_master: " << intval->to_string() << "\n";
     
     result->completion++;
 
@@ -115,6 +117,9 @@ class Update : public std::enable_shared_from_this<Update> {
       Mngr::Params::RgrGetReq(1, intval),
       [cid, cells, intval, intval_cells, ptr=shared_from_this()]
       (Req::ConnQueue::ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
+
+        std::cout << "RgrGet: " << rsp.to_string() 
+                  << " cid=" << cid  << " " << cells->to_string() << "\n";
 
         if(rsp.err != Error::OK){
           if(rsp.err == Error::COLUMN_NOT_EXISTS 
@@ -126,8 +131,6 @@ class Update : public std::enable_shared_from_this<Update> {
             return;
           }
         }
-
-        std::cout << "RgrGet: " << rsp.to_string() << " cid=" << cid  << " " << cells->to_string() << "\n";
 
         if(cid == 1) {
           if(cid != rsp.cid) {
@@ -203,7 +206,7 @@ class Update : public std::enable_shared_from_this<Update> {
         [cid, cells, cells_buff, ptr=shared_from_this()] 
         (Req::ConnQueue::ReqBase::Ptr req_ptr, 
          Rgr::Params::RangeQueryUpdateRsp rsp) {
-          std::cout << "Rgr::Req::RangeQueryUpdate: " << rsp.to_string() << "\n";
+          std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: " << rsp.to_string() << "\n";
           if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
             cells->add(*cells_buff.get());
             ptr->locate_ranger_master(cid, cells);

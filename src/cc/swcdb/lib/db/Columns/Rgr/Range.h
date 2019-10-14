@@ -103,6 +103,8 @@ class Range : public DB::RangeBase {
   }
 
   void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
+    std::cout << "Range::Scan" << " cs-idx=" << idx << " " << req->spec->to_string() << "\n";
+
     for(;;) {
       if(req->spec->flags.limit == req->cells->size()) {
         req->response(Error::OK);
@@ -172,34 +174,55 @@ class Range : public DB::RangeBase {
     load(err, cb);
   }
 
-  void on_change(int &err) { // range-interval || cellstores
+  void on_change(int &err) { // change of range-interval
     std::lock_guard<std::mutex> lock(m_mutex);
     
+    if(m_req_set_intval == nullptr) {
+      uint8_t cid_typ = m_type == Types::Range::DATA ? 2 : 1;
+      DB::SchemaPtr schema = Env::Schemas::get()->get(cid_typ);
+      if(schema == nullptr) {
+        schema = Env::Clients::get()->schemas->get(err, cid_typ);
+        if(err)
+          return;
+      }
+      m_req_set_intval = std::make_shared<Query::Update>();
+      m_req_set_intval->columns_cells->create(schema);
+    }
     switch(m_type){
-      case Types::Range::DATA:
-        // + INSERT meta-range(col-2), cid,rid,m_interval(key)
+      case Types::Range::DATA:{
+        DB::Cells::Cell cell;
+        cell.flag = DB::Cells::INSERT;
+        cell.key.copy(m_interval.key_begin);
+        cell.key.insert(0, std::to_string(cid));
+        cell.set_value(std::to_string(rid));
+
+        m_req_set_intval->columns_cells->add(2, cell);
+        m_req_set_intval->commit();
+        m_req_set_intval->wait();
+        err = m_req_set_intval->result->err;
+        // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
         break;
+      }
       case Types::Range::META: {
         DB::Cells::Cell cell;
         cell.flag = DB::Cells::INSERT;
         cell.key.copy(m_interval.key_begin);
         cell.key.insert(0, std::to_string(cid));
         cell.set_value(std::to_string(rid));
-        Query::Update::Ptr update_req = std::make_shared<Query::Update>(
-          [](Query::Update::Result::Ptr result) {
-            std::cout << "CB pending=" <<result->err << "\n";
-          }
-        );
-        update_req->columns_cells->add(1, cell);
-        update_req->commit();
-        // + INSERT master-range(col-1), key[range->cid + m_interval(key)], value(range->rid),
+        m_req_set_intval->columns_cells->add(1, cell);
+        m_req_set_intval->commit();
+        m_req_set_intval->wait();
+        err = m_req_set_intval->result->err;
+        // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
         break;
       }
       default: // Types::Range::MASTER:
+        // update manager-root
         break;
     }
     // 
     Files::RangeData::save(err, shared_from_this(), m_cellstores);
+    // 
   }
 
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
@@ -255,7 +278,7 @@ class Range : public DB::RangeBase {
     s.append(std::to_string(m_state));
     
     s.append(" type=");
-    s.append(std::to_string((int)m_type));
+    s.append(Types::to_string(m_type));
 
     s.append(" ");
     s.append(m_interval.to_string());
@@ -308,7 +331,8 @@ class Range : public DB::RangeBase {
     bool is_initial_column_range = false;
     Files::RangeData::load(err, shared_from_this(), m_cellstores);
     if(err) 
-      err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
+      (void)err;
+      //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
     else if(m_cellstores->empty()) {
       // init 1st cs(for log_cells)
@@ -316,10 +340,10 @@ class Range : public DB::RangeBase {
       Files::CellStore::Read::Ptr cs 
         = Files::CellStore::create_init_read(
           err, schema->blk_encoding, shared_from_this());
-      if(!err) 
+      if(!err) {
         m_cellstores->push_back(cs);
-      else 
         is_initial_column_range = true;
+      }
     }
  
     if(!err) {
@@ -330,12 +354,11 @@ class Range : public DB::RangeBase {
         m_interval.expand(cs->interval);
         cs->set(m_commit_log);
       }
+      if(is_initial_column_range)
+        on_change(err);
     }
 
     loaded(err, cb); // RSP-LOAD-ACK
-
-    if(!err && is_initial_column_range)
-      on_change(err);
 
     if(err == Error::OK) {
       set_state(State::LOADED);
@@ -379,6 +402,7 @@ class Range : public DB::RangeBase {
         // validate over range.interval match
 
         m_commit_log->add(cell);
+        std::cout << "Range::add " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {
@@ -412,6 +436,7 @@ class Range : public DB::RangeBase {
   std::queue<ReqAdd*>               m_q_adding;
 
   Files::CommitLog::Fragments::Ptr  m_commit_log;
+  Query::Update::Ptr                m_req_set_intval;
 };
 
 

@@ -27,20 +27,21 @@ namespace Query = SWC::Protocol::Common::Req::Query;
 
 
 
-void run_test() {
+void run_test(Query::Update::Ptr update_req, int64_t cid) {
   // Req::Query::Update
-  std::atomic<int> pending=0;
-  Query::Update::Ptr update_req = std::make_shared<Query::Update>(
-    [&pending=pending](Query::Update::Result::Ptr result)
-    {
-      pending--;
-      std::cout << "CB pending=" << pending.load() << " " << result->completion.load() << "\n";
-    }
-  );
-  
-  update_req->columns_cells->create(SWC::DB::Schema::make(1, "sys_master"));
+  int err = SWC::Error::OK;
+  SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
+    if(err) {
+    std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
+  std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
+  update_req->columns_cells->create(schema);
 
-  for(int i=0;i<1000000;i++) {
+  // master-range
+  for(int vers=0;vers<2;vers++) {
+
+  for(int i=0;i<1000;i++) {
   std::string cell_number(std::to_string(i));
   Cells::Cell cell;
   cell.flag = Cells::INSERT;
@@ -53,7 +54,7 @@ void run_test() {
   cell.key.add("c123451");
   cell.key.add("d123451");
   cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(1, cell);
+  update_req->columns_cells->add(cid, cell);
 
   cell.key.free();
   cell.key.add("a987651");
@@ -61,7 +62,7 @@ void run_test() {
   cell.key.add("c987653");
   cell.key.add("d987654");
   cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(1, cell);
+  update_req->columns_cells->add(cid, cell);
 
   cell.key.free();
   cell.key.add("a123454");
@@ -69,28 +70,21 @@ void run_test() {
   cell.key.add("c123452");
   cell.key.add("d123451");
   cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(1, cell);
+  update_req->columns_cells->add(cid, cell);
 
   cell.key.free();
   cell.key.add("a8");
   cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(1, cell);
+  update_req->columns_cells->add(cid, cell);
   cell.free();
     
   }
-  pending++;
+  }
+
   update_req->commit();
 
+  update_req->wait();
 
-  std::cout << " ### Waiting ###\n";
-
-  while(pending > 0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  SWC::Env::IoCtx::io()->stop();
-  std::cout << " ### EXIT ###\n";
-  
-  exit(0);
 }
 
 int main(int argc, char** argv) {
@@ -101,5 +95,27 @@ int main(int argc, char** argv) {
     std::make_shared<SWC::client::AppContext>()
   ));
   
-  run_test();
+  Query::Update::Ptr update_req = std::make_shared<Query::Update>(
+    [](Query::Update::Result::Ptr result)
+    {
+      std::cout << "CB completion=" << result->completion.load() << "\n";
+    }
+  );
+  
+
+  std::cout << " ### running-cid=1 ###\n";
+  run_test(update_req, 1);
+  std::cout << " ### running-cid=2 ###\n";
+  run_test(update_req, 2);
+
+
+
+  std::cout << " ### Waiting ###\n";
+  update_req->wait();
+
+  
+  SWC::Env::IoCtx::io()->stop();
+  std::cout << " ### EXIT ###\n";
+  
+  exit(0);
 }
