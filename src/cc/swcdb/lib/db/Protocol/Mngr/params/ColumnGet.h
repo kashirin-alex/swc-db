@@ -24,10 +24,10 @@ class ColumnGetReq  : public Serializable {
 
   ColumnGetReq() {}
 
-  ColumnGetReq(Flag flag,  std::string& name)
+  ColumnGetReq(Flag flag, const std::string& name)
               : flag(flag), name(name) {}
 
-  ColumnGetReq(Flag flag,  int64_t cid)
+  ColumnGetReq(Flag flag, int64_t cid)
               : flag(flag), cid(cid) {}
 
   Flag        flag;

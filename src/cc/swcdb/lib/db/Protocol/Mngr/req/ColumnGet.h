@@ -24,22 +24,22 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
                             int, Params::ColumnGetRsp)> Cb_t;
 
 
-  static void scheme(std::string& name, const Cb_t cb, 
+  static void schema(const std::string& name, const Cb_t cb, 
                      const uint32_t timeout = 10000) {
     request(Flag::SCHEMA_BY_NAME, name, cb, timeout);
   }
   
-  static void scheme(int64_t cid, const Cb_t cb, 
+  static void schema(int64_t cid, const Cb_t cb, 
                      const uint32_t timeout = 10000) {
     request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
   }
 
-  static void cid(std::string& name, const Cb_t cb, 
+  static void cid(const std::string& name, const Cb_t cb, 
                   const uint32_t timeout = 10000) {
     request(Flag::ID_BY_NAME, name, cb, timeout);
   }
 
-  static void request(Flag flag, std::string& name, const Cb_t cb, 
+  static void request(Flag flag, const std::string& name, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<ColumnGet>(
       Params::ColumnGetReq(flag, name), cb, timeout

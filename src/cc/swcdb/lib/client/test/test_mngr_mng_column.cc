@@ -49,7 +49,7 @@ std::string get_name(int n, bool modified=false){
 }
 
 void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, bool exist = true, bool verbose=false){
-  std::cout << "########### get_scheme_by_name ###########\n";
+  std::cout << "########### get_schema_by_name ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
@@ -63,7 +63,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
   }
 
   for(auto& req : expected){
-    Protocol::Mngr::Req::ColumnGet::scheme(
+    Protocol::Mngr::Req::ColumnGet::schema(
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, 
@@ -110,7 +110,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
   while(latency->count() < num_of_cols) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-  std::cout << "get_scheme_by_name"
+  std::cout << "get_schema_by_name"
             << " avg=" << latency->avg()
             << " min=" << latency->min()
             << " max=" << latency->max()
@@ -258,7 +258,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
 
   for(int n=1; n<=num_of_cols;n++){
     std::string name = get_name(n, false);
-    Protocol::Mngr::Req::ColumnGet::scheme(
+    Protocol::Mngr::Req::ColumnGet::schema(
       name, 
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, 
