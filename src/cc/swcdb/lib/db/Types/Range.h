@@ -15,6 +15,19 @@ enum Range{
   DATA    = 3
 };
 
+const std::string to_string(Range typ) {
+  switch(typ){
+    case Range::MASTER:
+      return std::string("MASTER");
+    case Range::META:
+      return std::string("META");
+    case Range::DATA:
+      return std::string("DATA");
+    default:
+      return std::string("uknown");
+  }
+}
+
 }}
 
 #endif // swc_lib_db_types_Range_h
