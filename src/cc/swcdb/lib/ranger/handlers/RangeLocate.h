@@ -42,6 +42,13 @@ class RangeLocate : public AppHandler {
     }
 
     try{
+      
+      DB::SchemaPtr schema = Env::Schemas::get()->get(params.cid);
+      if(schema == nullptr) { 
+        // cannot be happening, range-loaded always with schema
+        err = Error::COLUMN_SCHEMA_MISSING;
+      }
+
       if(err) {
         m_conn->send_error(err, "", m_ev);
         return;
@@ -49,16 +56,17 @@ class RangeLocate : public AppHandler {
 
       params.interval->flags.limit = 2;
 
-      auto ptr = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+      auto cb = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
         m_conn, m_ev, params.cid);
 
-      ptr->req =  DB::Cells::ReqScan::make(
+      cb->req = DB::Cells::ReqScan::make(
         DB::Specs::Interval::make_ptr(params.interval),
-        DB::Cells::Mutable::make(2, 1, 0, SWC::Types::Column::PLAIN),
-        [ptr](int err){ptr->response(err);}
+        DB::Cells::Mutable::make(
+          2, schema->cell_versions, schema->cell_ttl, schema->col_type),
+        [cb](int err){cb->response(err);}
       );
 
-      range->scan(ptr->req);
+      range->scan(cb->req);
   
     }
     catch (Exception &e) {
