@@ -5,14 +5,17 @@
 #ifndef swc_lib_client_Clients_h
 #define swc_lib_client_Clients_h
 
-#include "swcdb/lib/client/AppContext.h"
-#include "swcdb/lib/client/mngr/Groups.h"
-#include "swcdb/lib/core/comm/SerializedClient.h"
-
-#include "swcdb/lib/db/Protocol/Common/req/ConnQueue.h"
 #include <memory>
 
+#include "AppContext.h"
+#include "mngr/Groups.h"
+#include "swcdb/lib/core/comm/SerializedClient.h"
+#include "swcdb/lib/db/Protocol/Common/req/ConnQueue.h"
+
 namespace SWC { namespace client {
+
+class Schemas;
+typedef std::shared_ptr<Schemas> SchemasPtr;
 
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
@@ -58,6 +61,11 @@ class Clients : public std::enable_shared_from_this<Clients> {
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.client.Rgr.connection.keepalive")
     );
+
+    schemas = std::make_shared<Schemas>(
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.schema.expiry")
+    );
   } 
 
   operator ClientsPtr(){
@@ -73,6 +81,8 @@ class Clients : public std::enable_shared_from_this<Clients> {
   
   ClientPtr               rgr_service   = nullptr;
   ConnQueuesPtr           rgr = nullptr;
+
+  SchemasPtr              schemas = nullptr;
 
   private:
   const AppContextPtr     m_app_ctx = nullptr;
@@ -106,5 +116,6 @@ class Clients {
 }
 
 #include "ConnQueues.h"
+#include "Schemas.h"
 
 #endif // swc_lib_client_Clients_h
