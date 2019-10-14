@@ -196,6 +196,7 @@ class Range : public DB::RangeBase {
         cell.key.insert(0, std::to_string(cid));
         cell.set_value(std::to_string(rid));
 
+        //m_req_set_intval->columns_cells->add(2, cell_del);
         m_req_set_intval->columns_cells->add(2, cell);
         m_req_set_intval->commit();
         m_req_set_intval->wait();
@@ -209,6 +210,7 @@ class Range : public DB::RangeBase {
         cell.key.copy(m_interval.key_begin);
         cell.key.insert(0, std::to_string(cid));
         cell.set_value(std::to_string(rid));
+        //m_req_set_intval->columns_cells->add(1, cell_del);
         m_req_set_intval->columns_cells->add(1, cell);
         m_req_set_intval->commit();
         m_req_set_intval->wait();
@@ -418,7 +420,9 @@ class Range : public DB::RangeBase {
 
       req->cb->response(err);
 
+      std::cout << "run_add_queue del req, buff-sz=" << req->input->size << "\n";
       delete req;
+      std::cout << "run_add_queue next \n";
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_q_adding.pop();

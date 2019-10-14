@@ -100,9 +100,11 @@ class Update : public std::enable_shared_from_this<Update> {
     DB::Specs::Interval::Ptr intval_cells = DB::Specs::Interval::make_ptr(intval);
 
     intval->key_start.insert(0, "2", Condition::GE);
-    intval->key_start.insert(0, std::to_string(cid), Condition::GE);
+    if(cid != 2)
+      intval->key_start.insert(0, std::to_string(cid), Condition::GE);
     intval->key_finish.insert(0, "2", Condition::LE);
-    intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
+    if(cid != 2)
+      intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
     locate_ranger_master(cid, cells, intval, intval_cells);
   }
 
