@@ -183,14 +183,12 @@ void load(int &err, DB::RangeBase::Ptr range,
     cellstores->clear();
     err = Error::OK;
     load_by_path(err, range, cellstores);
-    if(!err){
-      if(!cellstores->empty()) {
-        for(auto& cs: *cellstores.get()) {
-          cs->smartfd = FS::SmartFd::make_ptr(range->get_path_cs(cs->id), 0); 
-          cs->load_blocks_index(err, true);
-        }
-        // sort cs
+    if(!err && !cellstores->empty()) {
+      for(auto& cs: *cellstores.get()) {
+        cs->smartfd = FS::SmartFd::make_ptr(range->get_path_cs(cs->id), 0); 
+        cs->load_blocks_index(err, true);
       }
+      // sort 
       save(err, range, cellstores);
     }
   }
