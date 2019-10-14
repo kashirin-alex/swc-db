@@ -200,11 +200,16 @@ class Update : public std::enable_shared_from_this<Update> {
           ptr->locate_ranger_master(cid, cells);
           --ptr->result->completion;
         },
-        [ptr=shared_from_this()] 
+        [cid, cells, cells_buff, ptr=shared_from_this()] 
         (Req::ConnQueue::ReqBase::Ptr req_ptr, 
          Rgr::Params::RangeQueryUpdateRsp rsp) {
-
-          std::cout << "Rgr::Req::RangeQueryUpdate: " << rsp.to_string() << "\n";        
+          std::cout << "Rgr::Req::RangeQueryUpdate: " << rsp.to_string() << "\n";
+          if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+            cells->add(*cells_buff.get());
+            ptr->locate_ranger_master(cid, cells);
+            --ptr->result->completion;
+            return;
+          }        
           ptr->result->err=rsp.err;
           if(!--ptr->result->completion)
             ptr->response();
