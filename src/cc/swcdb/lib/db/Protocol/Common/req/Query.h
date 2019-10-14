@@ -84,7 +84,8 @@ class Update : public std::enable_shared_from_this<Update> {
   void commit() {
     DB::Cells::MapMutable::ColumnCells pair;
     for(size_t idx=0;columns_cells->get(idx, pair);idx++)
-      locate_ranger_master(pair.first, pair.second);
+      if(pair.second->size() > 0)
+        locate_ranger_master(pair.first, pair.second);
   }
   
   void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells) {
@@ -111,7 +112,8 @@ class Update : public std::enable_shared_from_this<Update> {
   void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells,
                             DB::Specs::Interval::Ptr intval, 
                             DB::Specs::Interval::Ptr intval_cells) {
-    std::cout << "locate_ranger_master: " << intval->to_string() << "\n";
+    std::cout << "locate_ranger_master 1: " << intval->to_string() 
+              << " cells=" << (size_t)cells.get() << "\n";
     
     result->completion++;
 
@@ -178,6 +180,7 @@ class Update : public std::enable_shared_from_this<Update> {
         ptr->result->completion--;
       }
     );
+    std::cout << "locate_ranger_master 2\n";
   }
 
   void locate_ranger_meta() {
