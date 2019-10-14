@@ -200,7 +200,9 @@ void Settings::init_options() {
      "Manager client connect probes")
     ("swc.client.Mngr.connection.keepalive", g_i32(30000), 
      "Manager client connection keepalive for ms since last action")
-     
+    ("swc.client.schema.expiry", g_i32(1800000), 
+     "Schemas expiry in ms")
+    
     ;
     
   /*
