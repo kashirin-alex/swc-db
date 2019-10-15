@@ -167,17 +167,19 @@ class Key {
       ptr_tmp += len;
       len += reserved;
       if(offset == idx) {
+        uint8_t* begin = (uint8_t*)ptr_tmp-len;
         if(recursive) {
-          size = ptr_tmp-data;
+          size = begin-data;
+          count = offset+1;
         } else {
-          memmove((void*)(ptr_tmp-len), ptr_tmp, size-(ptr_tmp-data));
+          memmove(begin, ptr_tmp, size-(ptr_tmp-data)); 
           size -= len;
+          count--;
         }
         ptr_tmp = data;
         data = new uint8_t[size];
         memcpy(data, (void*)ptr_tmp, size);
         delete ptr_tmp;
-        count = offset+1;
         return;
       }
     }
