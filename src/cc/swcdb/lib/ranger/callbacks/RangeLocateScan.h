@@ -28,14 +28,20 @@ class RangeLocateScan : public ResponseCallback {
       err = Error::SERVER_SHUTTING_DOWN;
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
-    if(err == Error::OK){
-      if(cid_scanned == 1)
-        params.cid = 2;
-      else if(cid_scanned == 2)
-        params.cid = 3; //  (req->cells->get(0).key.get(0, fraction, len);
+    if(err == Error::OK && req->cells->size() > 0) {
+
+      DB::Cells::Cell cell;
+      req->cells->get(0, cell);
+      std::string id_name(cell.key.get_string(0));
+      params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
       
-      params.rid = 3; //    (req->cells->get(0).value -fraction[0])
-      // params.next_key =  // (result[1].key)
+      id_name = std::string((char *)cell.value, cell.vlen);
+      params.rid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+
+      if(req->cells->size() > 1) {
+        req->cells->get(1, cell);
+        params.next_key.set(cell.key, Condition::GE);
+      }
     }
 
     std::cout << "RangeLocateScan, rsp " << req->to_string() << "\n";
