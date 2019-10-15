@@ -157,13 +157,15 @@ class Update : public std::enable_shared_from_this<Update> {
             [req_ptr]() {
               req_ptr->request_again();
             },
-            [ptr] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
+            [ptr, intval, intval_cells, cells] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
               // locate_ranger_meta(), mngr-> getRanger of rsp.cid+rsp.rid
               std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
               ptr->result->err=rsp.err;
-              if(!--ptr->result->completion)
-                ptr->response();          
-              }
+              ptr->locate_ranger_meta(rsp.cid, rsp.rid, rsp.next_key, intval, intval_cells, cells);
+              ptr->result->completion--;
+
+              //if rsp.next_key && cells -gt next_key
+            }
           );
         }
 
@@ -184,7 +186,64 @@ class Update : public std::enable_shared_from_this<Update> {
     std::cout << "locate_ranger_master 2\n";
   }
 
-  void locate_ranger_meta() {
+  void locate_ranger_meta(int64_t cid, int64_t rid, const DB::Specs::Key& next_key,
+                          DB::Specs::Interval::Ptr intval, 
+                          DB::Specs::Interval::Ptr intval_cells, 
+                          DB::Cells::Mutable::Ptr cells) {
+    result->completion++;
+
+    Mngr::Req::RgrGet::request(
+      Mngr::Params::RgrGetReq(cid, rid),
+      [cid, intval, intval_cells, cells, next_key=DB::Specs::Key(next_key), ptr=shared_from_this()]
+      (Req::ConnQueue::ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
+        if(rsp.err != Error::OK){
+          if(rsp.err == Error::COLUMN_NOT_EXISTS 
+            || rsp.err == Error::RANGE_NOT_FOUND) {
+            //std::cout << "NO-RETRY \n";
+          } else {
+            std::cout << "RETRYING " << rsp.to_string() << "\n";
+            req_ptr->request_again();
+            return;
+          }
+        }    
+        std::cout << "locate_ranger_meta,  Mngr::Req::RgrGet::request " << rsp.to_string() << "\n";
+        
+        if(cid == 2) {
+          if(cid != rsp.cid) {
+            ptr->result->err=Error::NOT_ALLOWED;
+            ptr->response();
+            ptr->result->completion--;
+            return;   
+          }
+          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr(intval_cells);
+          ci->key_finish.set(next_key, Condition::LT);
+          ptr->commit_data(rsp.endpoints, rsp.cid, rsp.rid, ci, cells);
+
+        } else {
+          ptr->result->completion++;
+          DB::Specs::Interval::Ptr intval_meta = DB::Specs::Interval::make_ptr(intval);
+          intval_meta->key_start.remove(0);
+          intval_meta->key_finish.remove(0);
+          Rgr::Params::RangeLocateReq params(rsp.cid, rsp.rid, intval_meta);
+
+          Rgr::Req::RangeLocate::request(
+            params, rsp.endpoints, 
+            [req_ptr]() {
+              req_ptr->request_again();
+            },
+            [ptr, intval_cells, cells] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
+              // locate_ranger_meta(), mngr-> getRanger of rsp.cid+rsp.rid
+              std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
+              ptr->result->err=rsp.err;
+              //ptr->locate_ranger_meta(rsp.cid, rsp.rid, intval_cells, cells);
+              // locate_ranger_data
+              ptr->result->completion--;
+            }
+          );
+        }
+        ptr->result->completion--;
+      }
+    );
   }
 
   void locate_ranger_data() {
