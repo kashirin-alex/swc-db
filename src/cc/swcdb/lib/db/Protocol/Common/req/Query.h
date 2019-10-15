@@ -96,16 +96,17 @@ class Update : public std::enable_shared_from_this<Update> {
     cells->get(0, cell);
     intval->key_start.set(cell.key, Condition::GE);
     cells->get(-1, cell);
-    intval->key_finish.set(cell.key, Condition::LE);;
-
+    intval->key_finish.set(cell.key, Condition::LE);
     DB::Specs::Interval::Ptr intval_cells = DB::Specs::Interval::make_ptr(intval);
+    
+    intval->key_start.insert(0, std::to_string(cid), Condition::GE);
+    intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
 
-    intval->key_start.insert(0, "2", Condition::GE);
-    if(cid != 2)
-      intval->key_start.insert(0, std::to_string(cid), Condition::GE);
-    intval->key_finish.insert(0, "2", Condition::LE);
-    if(cid != 2)
-      intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
+    if(cid > 2) {
+      intval->key_finish.insert(0, "2", Condition::LE);
+      intval->key_start.insert(0, "2", Condition::GE);
+    }
+
     locate_ranger_master(cid, cells, intval, intval_cells);
   }
 
@@ -172,7 +173,7 @@ class Update : public std::enable_shared_from_this<Update> {
           intval_nxt->key_start.set(rsp.next_key, Condition::GE);
 
           DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
-          ci->key_start.set(rsp.next_key, Condition::LT, 1);
+          ci->key_start.set(rsp.next_key, Condition::GE, cid > 2 ? 2 : 1);
           ci->key_finish.copy(intval_cells->key_finish);
           ptr->locate_ranger_master(cid, cells, intval_nxt, ci);
         }
