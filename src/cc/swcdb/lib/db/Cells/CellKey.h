@@ -146,6 +146,50 @@ class Key {
     data = data_tmp;
     ++count;
   }
+  
+  inline void remove(uint32_t idx, bool recursive=false, int8_t reserved=0) {
+    if(data == 0 || idx >= count) {
+      return;
+    }
+    const uint8_t* ptr_tmp;
+    if(!own) {
+      own   = true;
+      ptr_tmp = data;
+      data = new uint8_t[size];
+      memcpy(data, ptr_tmp, size);
+    }      
+    ptr_tmp = data;
+
+    uint32_t len = 0;
+    for(uint32_t offset = 0; offset < count; offset++) {
+      ptr_tmp += reserved;
+      len = Serialization::decode_vi32(&ptr_tmp);
+      ptr_tmp += len;
+      len += reserved;
+      if(offset == idx) {
+        if(recursive) {
+          size = ptr_tmp-data;
+        } else {
+          memmove((void*)(ptr_tmp-len), ptr_tmp, size-(ptr_tmp-data));
+          size -= len;
+        }
+        ptr_tmp = data;
+        data = new uint8_t[size];
+        memcpy(data, (void*)ptr_tmp, size);
+        delete ptr_tmp;
+        count = offset+1;
+        return;
+      }
+    }
+
+  }
+
+  const std::string get_string(uint32_t idx) {    
+    char* fraction;
+    uint32_t length = 0;
+    get(0, &fraction, &length);
+    return std::string(fraction, length);
+  }
 
   inline void get(uint32_t idx, char** ptr, uint32_t* length) {
     uint8_t* fraction_ptr = 0;
@@ -153,7 +197,7 @@ class Key {
   }
 
   inline void get(uint32_t idx, char** ptr, uint32_t* length, 
-                  uint8_t** fraction_ptr, uint8_t offset) {
+                  uint8_t** fraction_ptr, uint8_t reserved) {
     *ptr = 0;
     *length = 0;
     if(idx > count)
@@ -162,7 +206,7 @@ class Key {
     uint8_t* ptr_tmp = data;
     for(;;) {
       *fraction_ptr = ptr_tmp;
-      ptr_tmp += offset;
+      ptr_tmp += reserved;
       *length = Serialization::decode_vi32((const uint8_t**)&ptr_tmp);
       if(idx-- == 0)
         break;

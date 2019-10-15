@@ -118,6 +118,10 @@ class Key : public DB::Cell::Key {
       *comp = (Condition::Comp)*(fraction_ptr);
   }
 
+  inline void remove(uint32_t idx, bool recursive=false) {
+    DB::Cell::Key::remove(idx, recursive, 1);
+  }
+
   const bool equal(const Key &other) const {
     return DB::Cell::Key::equal(other);
   }
