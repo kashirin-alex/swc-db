@@ -79,7 +79,8 @@ class Range : public DB::RangeBase {
     if(cs_ptr != (size_t)m_cellstores.get()) {
       cs_ptr = (size_t)m_cellstores.get();
       idx = 0;
-    } else if(idx >= m_cellstores->size()) {
+    } 
+    if(idx >= m_cellstores->size()) {
       cs = nullptr;
       return;
     } 
@@ -103,7 +104,9 @@ class Range : public DB::RangeBase {
   }
 
   void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
-    std::cout << "Range::Scan" << " cs-idx=" << idx << " " << req->spec->to_string() << "\n";
+    //std::cout << "Range::Scan cid=" << cid 
+    //          << " cs-idx=" << idx << " " 
+    //          << req->spec->to_string() << "\n";
 
     for(;;) {
       if(req->spec->flags.limit == req->cells->size()) {
@@ -404,7 +407,8 @@ class Range : public DB::RangeBase {
         // validate over range.interval match
 
         m_commit_log->add(cell);
-        std::cout << "Range::add " << cell.to_string() << "\n";
+        //std::cout << "Range::add cid="<<cid 
+        //          << " " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {
@@ -420,9 +424,7 @@ class Range : public DB::RangeBase {
 
       req->cb->response(err);
 
-      std::cout << "run_add_queue del req, buff-sz=" << req->input->size << "\n";
       delete req;
-      std::cout << "run_add_queue next \n";
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_q_adding.pop();
