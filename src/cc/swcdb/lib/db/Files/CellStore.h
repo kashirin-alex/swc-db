@@ -182,7 +182,7 @@ class Read : public std::enable_shared_from_this<Read> {
     req->response(err);
   }
 
-  bool add_logged(DB::Cells::Cell& cell) {
+  bool add_logged(const DB::Cells::Cell& cell) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_state != State::BLKS_IDX_LOADED)
@@ -195,7 +195,7 @@ class Read : public std::enable_shared_from_this<Read> {
     for(uint32_t idx=0; idx < m_blocks.size(); idx++) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(blk->state != Block::Read::State::LOGS_LOADED)
+        if(m_blocks[idx]->state != Block::Read::State::LOGS_LOADED)
           continue;
         blk = m_blocks[idx];
       }

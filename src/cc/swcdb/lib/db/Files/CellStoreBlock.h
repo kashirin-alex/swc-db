@@ -170,13 +170,13 @@ class Read {
               << " " << cells.to_string() << "\n";
   }
   
-  void add_logged(DB::Cells::Cell& cell) {
+  void add_logged(const DB::Cells::Cell& cell) {
     cells.add(cell);
   }
 
   void scan(DB::Cells::ReqScan::Ptr req) {
     //std::cout << "blk::scan 1 " << req->to_string() << "\n";
-    
+
     int err;
     DB::Specs::Interval& spec = *(req->spec).get();
     size_t skips = 0;
