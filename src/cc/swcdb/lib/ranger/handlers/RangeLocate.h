@@ -53,16 +53,26 @@ class RangeLocate : public AppHandler {
         m_conn->send_error(err, "", m_ev);
         return;
       }
+;
+      auto cb = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+        m_conn, m_ev, params.cid);
 
       params.interval->flags.limit = 2;
 
-      auto cb = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-        m_conn, m_ev, params.cid);
+      uint32_t intval_count = range->get_interval().key_begin.count;
+      if(intval_count == 0)
+        params.interval->key_start.free();
+      else if(params.interval->key_start.count > intval_count)
+        params.interval->key_start.remove(intval_count, true);
 
       cb->req = DB::Cells::ReqScan::make(
         DB::Specs::Interval::make_ptr(params.interval),
         DB::Cells::Mutable::make(
-          2, schema->cell_versions, schema->cell_ttl, schema->col_type),
+          params.interval->flags.limit, 
+          schema->cell_versions, 
+          schema->cell_ttl, 
+          schema->col_type
+        ),
         [cb](int err){cb->response(err);}
       );
 
