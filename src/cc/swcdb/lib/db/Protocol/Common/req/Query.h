@@ -12,11 +12,14 @@
 #include "swcdb/lib/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/lib/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/lib/db/Protocol/Rgr/req/RangeQueryUpdate.h"
+#include "swcdb/lib/db/Types/Range.h"
 
 
 namespace SWC { namespace Protocol { namespace Common { namespace Req { 
   
 namespace Query {
+
+using ReqBase = Req::ConnQueue::ReqBase;
 
 /*
 range-master: 
@@ -31,15 +34,20 @@ range-data:
 */
  
 namespace Result{
+
 struct Update{
   typedef std::shared_ptr<Update> Ptr;
   int err;
   std::atomic<uint32_t> completion = 0;
+  
+  DB::Cells::MapMutable::Ptr  errored;
 };
+
 struct Select{
 
 };
 }
+  
 
 class Update : public std::enable_shared_from_this<Update> {
   public:
@@ -68,6 +76,7 @@ class Update : public std::enable_shared_from_this<Update> {
   virtual ~Update(){ }
  
   void response() {
+    // if cells not empty commit-again
     if(cb)
       cb(result);
     cv.notify_all();
@@ -82,176 +91,240 @@ class Update : public std::enable_shared_from_this<Update> {
   }
 
   void commit() {
-    DB::Cells::MapMutable::ColumnCells pair;
-    for(size_t idx=0;columns_cells->get(idx, pair);idx++)
-      if(pair.second->size() > 0)
-        locate_ranger_master(pair.first, pair.second);
-  }
-  
-  void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells) {
-    //range-locator (master) : cid(1)+(cid[N]+Cell::Key) => cid(1), rid(N-master), rgr-endpoints 
-    
-    DB::Specs::Interval::Ptr intval = DB::Specs::Interval::make_ptr();
     DB::Cells::Cell cell;
-    cells->get(0, cell);
-    intval->key_start.set(cell.key, Condition::GE);
-    cells->get(-1, cell);
-    intval->key_finish.set(cell.key, Condition::LE);
-    DB::Specs::Interval::Ptr intval_cells = DB::Specs::Interval::make_ptr(intval);
+    DB::Specs::Interval::Ptr interval;
     
-    intval->key_start.insert(0, std::to_string(cid), Condition::GE);
-    intval->key_finish.insert(0, std::to_string(cid), Condition::LE);
+    DB::Cells::MapMutable::ColumnCells pair;
+    for(size_t idx=0;columns_cells->get(idx, pair);idx++) {
+      std::cout << " cid=" << pair.first << " size=" << pair.second->size() << "\n";
+      if(pair.second->size() == 0) 
+        continue;
+      auto cid = pair.first;
+      auto& cells = pair.second;
 
-    if(cid > 2) {
-      intval->key_finish.insert(0, "2", Condition::LE);
-      intval->key_start.insert(0, "2", Condition::GE);
+      interval = DB::Specs::Interval::make_ptr();
+
+      cells->get(0, cell);
+      interval->key_start.set(cell.key, Condition::GE);
+      cells->get(-1, cell);
+      interval->key_finish.set(cell.key, Condition::LE);;
+    
+      interval->key_start.insert(0, std::to_string(cid), Condition::GE);
+      interval->key_finish.insert(0, std::to_string(cid), Condition::LE);
+      if(cid > 2) {
+        interval->key_start.insert(0, "2", Condition::GE);
+        interval->key_finish.insert(0, "2", Condition::LE);
+      }
+
+      std::make_shared<Locator>(
+        Types::Range::MASTER,
+        cid, cells, interval, shared_from_this()
+      )->locate_on_manager();
+    }
+  }
+
+  class Locator : public std::enable_shared_from_this<Locator> {
+    public:
+    const Types::Range        type;
+    const int64_t             cid;
+    DB::Cells::Mutable::Ptr   cells;
+    DB::Specs::Interval::Ptr  interval;
+    Update::Ptr               updater;
+    ReqBase::Ptr              parent_req;
+    const int64_t             rid;
+    
+    Locator(const Types::Range type, 
+            const int64_t cid, 
+            DB::Cells::Mutable::Ptr cells,
+            DB::Specs::Interval::Ptr interval,
+            Update::Ptr updater,
+            ReqBase::Ptr parent_req=nullptr, const int64_t rid=0) 
+            : type(type), cid(cid), cells(cells), interval(interval), 
+              updater(updater), parent_req(parent_req), rid(rid) {
+    }
+    virtual ~Locator() { }
+
+    const std::string to_string() {
+      std::string s("Locator(type=");
+      s.append(Types::to_string(type));
+      s.append(" cid=");
+      s.append(std::to_string(cid));
+      s.append(" rid=");
+      s.append(std::to_string(rid));
+      s.append(" completion=");
+      s.append(std::to_string(updater->result->completion.load()));
+      s.append(" ");
+      s.append(cells->to_string());
+      s.append(" ");
+      s.append(interval->to_string());
+      return s;
     }
 
-    locate_ranger_master(cid, cells, intval, intval_cells);
-  }
+    void locate_on_manager() {
+      std::cout << "locate_on_manager:\n " << to_string() << "\n";
+      updater->result->completion++;
 
-  void locate_ranger_master(const int64_t cid, DB::Cells::Mutable::Ptr cells,
-                            DB::Specs::Interval::Ptr intval, 
-                            DB::Specs::Interval::Ptr intval_cells) {
-    std::cout << "locate_ranger_master 1: " << intval->to_string() 
-              << " cells=" << (size_t)cells.get() << "\n";
-    
-    result->completion++;
-
-    Mngr::Req::RgrGet::request(
-      Mngr::Params::RgrGetReq(1, intval),
-      [cid, cells, intval, intval_cells, ptr=shared_from_this()]
-      (Req::ConnQueue::ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
-
-        std::cout << "RgrGet: " << rsp.to_string() 
-                  << " cid=" << cid  << " " << cells->to_string() << "\n";
-
-        if(rsp.err != Error::OK){
-          if(rsp.err == Error::COLUMN_NOT_EXISTS 
-            || rsp.err == Error::RANGE_NOT_FOUND) {
-            //std::cout << "NO-RETRY \n";
-          } else {
-            std::cout << "RETRYING " << rsp.to_string() << "\n";
-            req_ptr->request_again();
-            return;
-          }
+      Mngr::Req::RgrGet::request(
+        Mngr::Params::RgrGetReq(1, interval),
+        [ptr=shared_from_this()]
+        (ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
+          if(ptr->located_on_manager(req_ptr, rsp))
+            ptr->updater->result->completion--;
         }
+      );
+    }
 
+    void resolve_on_manager() {
+      std::cout << "resolve_on_manager:\n " << to_string() << "\n";
+
+      updater->result->completion++;
+
+      Mngr::Req::RgrGet::request(
+        Mngr::Params::RgrGetReq(cid, rid),
+        [ptr=shared_from_this()]
+        (ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
+          if(ptr->located_on_manager(req_ptr, rsp))
+            ptr->updater->result->completion--;
+        }
+      );
+    }
+
+    bool located_on_manager(const ReqBase::Ptr& base_req, const Mngr::Params::RgrGetRsp& rsp) {
+
+      std::cout << "located_on_manager:\n " << to_string() << "\n "<< rsp.to_string() << "\n";
+
+      if(rsp.err != Error::OK){
+        // err type? ~| parent_req->request_again();
+        if(rsp.err == Error::COLUMN_NOT_EXISTS 
+          || rsp.err == Error::RANGE_NOT_FOUND) {
+          //std::cout << "NO-RETRY \n";
+          return true;
+        } else {
+          std::cout << "RETRYING " << rsp.to_string() << "\n";
+          base_req->request_again();
+          return false;
+        }
+      }      
+      
+      if(type == Types::Range::DATA) {
+        updater->commit_data(
+          rsp.endpoints, cid, rid, interval, cells, base_req);
+        return true;
+      }
+
+      if(type == Types::Range::MASTER) {
         if(cid == 1) {
           if(cid != rsp.cid) {
-            ptr->result->err=Error::NOT_ALLOWED;
-            ptr->response();
-            ptr->result->completion--;
-            return;   
-          }
-          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr(intval_cells);
-          ci->key_finish.set(rsp.next_key, Condition::LT);
-          ptr->commit_data(rsp.endpoints, rsp.cid, rsp.rid, ci, cells);
-
-        } else {
-          ptr->result->completion++;
-          Rgr::Params::RangeLocateReq params(rsp.cid, rsp.rid, intval);
-
-          Rgr::Req::RangeLocate::request(
-            params, rsp.endpoints, 
-            [req_ptr]() {
-              req_ptr->request_again();
-            },
-            [ptr, intval, intval_cells, cells] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
-              // locate_ranger_meta(), mngr-> getRanger of rsp.cid+rsp.rid
-              std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
-              ptr->result->err=rsp.err;
-              ptr->locate_ranger_meta(rsp.cid, rsp.rid, rsp.next_key, intval, intval_cells, cells);
-              ptr->result->completion--;
-
-              //if rsp.next_key && cells -gt next_key
-            }
-          );
-        }
-
-        if(!rsp.next_key.empty()) {
-          // if cells -gt next_key
-          DB::Specs::Interval::Ptr intval_nxt = DB::Specs::Interval::make_ptr(intval);
-          intval_nxt->key_start.set(rsp.next_key, Condition::GE);
-
-          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
-          ci->key_start.set(rsp.next_key, Condition::GE, cid > 2 ? 2 : 1);
-          ci->key_finish.copy(intval_cells->key_finish);
-          ptr->locate_ranger_master(cid, cells, intval_nxt, ci);
-        }
-        
-        ptr->result->completion--;
-      }
-    );
-    std::cout << "locate_ranger_master 2\n";
-  }
-
-  void locate_ranger_meta(int64_t cid, int64_t rid, const DB::Specs::Key& next_key,
-                          DB::Specs::Interval::Ptr intval, 
-                          DB::Specs::Interval::Ptr intval_cells, 
-                          DB::Cells::Mutable::Ptr cells) {
-    result->completion++;
-
-    Mngr::Req::RgrGet::request(
-      Mngr::Params::RgrGetReq(cid, rid),
-      [cid, intval, intval_cells, cells, next_key=DB::Specs::Key(next_key), ptr=shared_from_this()]
-      (Req::ConnQueue::ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
-        if(rsp.err != Error::OK){
-          if(rsp.err == Error::COLUMN_NOT_EXISTS 
-            || rsp.err == Error::RANGE_NOT_FOUND) {
-            //std::cout << "NO-RETRY \n";
+            updater->result->err = Error::NOT_ALLOWED;
+            updater->response();
           } else {
-            std::cout << "RETRYING " << rsp.to_string() << "\n";
-            req_ptr->request_again();
-            return;
+            DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
+            ci->key_start.copy(rsp.key_start);
+            ci->key_finish.set(rsp.key_next, Condition::LT);
+            updater->commit_data(
+              rsp.endpoints, rsp.cid, rsp.rid, ci, cells, base_req);
           }
-        }    
-        std::cout << "locate_ranger_meta,  Mngr::Req::RgrGet::request " << rsp.to_string() << "\n";
-        
+        } else {
+      
+          std::make_shared<Locator>(
+            type, rsp.cid, cells, interval, updater, base_req, rsp.rid
+          )->locate_on_ranger(rsp.endpoints);
+        }
+
+      } else if(type == Types::Range::META) {
         if(cid == 2) {
           if(cid != rsp.cid) {
-            ptr->result->err=Error::NOT_ALLOWED;
-            ptr->response();
-            ptr->result->completion--;
-            return;   
+            updater->result->err = Error::NOT_ALLOWED;
+            updater->response();
+          } else {
+            updater->commit_data(
+              rsp.endpoints, rsp.cid, rsp.rid, interval, cells, base_req);
           }
-          DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr(intval_cells);
-          ci->key_finish.set(next_key, Condition::LT);
-          ptr->commit_data(rsp.endpoints, rsp.cid, rsp.rid, ci, cells);
-
         } else {
-          ptr->result->completion++;
-          DB::Specs::Interval::Ptr intval_meta = DB::Specs::Interval::make_ptr(intval);
+
+          DB::Specs::Interval::Ptr intval_meta = DB::Specs::Interval::make_ptr(interval);
           intval_meta->key_start.remove(0);
           intval_meta->key_finish.remove(0);
-          Rgr::Params::RangeLocateReq params(rsp.cid, rsp.rid, intval_meta);
 
-          Rgr::Req::RangeLocate::request(
-            params, rsp.endpoints, 
-            [req_ptr]() {
-              req_ptr->request_again();
-            },
-            [ptr, intval_cells, cells] (Req::ConnQueue::ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
-              // locate_ranger_meta(), mngr-> getRanger of rsp.cid+rsp.rid
-              std::cout << "Rgr::Req::RangeLocate: " << rsp.to_string() << "\n";
-              ptr->result->err=rsp.err;
-              //ptr->locate_ranger_meta(rsp.cid, rsp.rid, intval_cells, cells);
-              // locate_ranger_data
-              ptr->result->completion--;
-            }
-          );
+          std::make_shared<Locator>(
+            type, rsp.cid, cells, intval_meta, updater, base_req, rsp.rid
+          )->locate_on_ranger(rsp.endpoints);
         }
-        ptr->result->completion--;
       }
-    );
-  }
 
-  void locate_ranger_data() {
-  }
+      if(!rsp.key_next.empty()) { // && cells -gt key_next
+        DB::Specs::Interval::Ptr intval_nxt 
+          = DB::Specs::Interval::make_ptr(interval);
+        intval_nxt->key_start.set(rsp.key_next, Condition::GE);
+
+        std::make_shared<Locator>(
+          type, cid, cells, intval_nxt, updater, 
+          parent_req == nullptr ? base_req : parent_req
+        )->locate_on_manager();
+      }
+      
+      return true;
+    }
+
+    void locate_on_ranger(const EndPoints& endpoints) {
+      std::cout << "locate_on_ranger:\n " << to_string() << "\n";
+      updater->result->completion++;
+
+      Rgr::Req::RangeLocate::request(
+        Rgr::Params::RangeLocateReq(cid, rid, interval), 
+        endpoints, 
+        [ptr=shared_from_this()]() {
+          ptr->parent_req->request_again();
+        },
+        [endpoints, ptr=shared_from_this()] 
+        (ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
+          if(ptr->located_on_ranger(endpoints, req_ptr, rsp))
+            ptr->updater->result->completion--;
+        }
+      );
+    }
+
+    bool located_on_ranger(const EndPoints& endpoints, 
+                           const ReqBase::Ptr& base_req, 
+                           const Rgr::Params::RangeLocateRsp& rsp) {
+      std::cout << "located_on_ranger:\n " << to_string() 
+                << "\n " << rsp.to_string() << "\n";
+
+      if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+        parent_req->request_again();
+        return false;
+      }
+
+      updater->result->err=rsp.err;
+
+      DB::Specs::Interval::Ptr interval = DB::Specs::Interval::make_ptr();
+      interval->key_start.copy(rsp.key_start);
+      interval->key_finish.set(rsp.key_next, Condition::LT);
+
+      std::make_shared<Locator>(
+        type == Types::Range::MASTER
+        ? Types::Range::META : Types::Range::DATA,
+        rsp.cid, cells, interval, updater, parent_req, rsp.rid
+      )->resolve_on_manager();
+
+      if(!rsp.key_next.empty()) { // && cells -gt key_next
+        DB::Specs::Interval::Ptr intval_nxt 
+          = DB::Specs::Interval::make_ptr(interval);
+
+        intval_nxt->key_start.set(rsp.key_next, Condition::GE);
+        std::make_shared<Locator>(
+          type, cid, cells, intval_nxt, updater, parent_req
+        )->locate_on_ranger(endpoints);
+      }
+      return true;
+    }
+  };
   
-  void commit_data(EndPoints rgr, int64_t cid, uint64_t rid,
+  
+  void commit_data(EndPoints endpoints, int64_t cid, uint64_t rid,
                    DB::Specs::Interval::Ptr ci, 
-                   DB::Cells::Mutable::Ptr cells) {
+                   DB::Cells::Mutable::Ptr cells,
+                   const ReqBase::Ptr& base_req) {
     bool more;
     do {
    
@@ -262,19 +335,21 @@ class Update : public std::enable_shared_from_this<Update> {
       result->completion++;
     
       Rgr::Req::RangeQueryUpdate::request(
-        Rgr::Params::RangeQueryUpdateReq(cid, rid, cells_buff->fill()), cells_buff, rgr, 
-        [cid, cells, cells_buff, ptr=shared_from_this()]() {
+        Rgr::Params::RangeQueryUpdateReq(cid, rid, cells_buff->fill()), 
+        cells_buff, endpoints, 
+        [cells, cells_buff, base_req, ptr=shared_from_this()]() {
           cells->add(*cells_buff.get());
-          ptr->locate_ranger_master(cid, cells);
+          base_req->request_again();
           --ptr->result->completion;
         },
-        [cid, cells, cells_buff, ptr=shared_from_this()] 
-        (Req::ConnQueue::ReqBase::Ptr req_ptr, 
-         Rgr::Params::RangeQueryUpdateRsp rsp) {
-          std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: " << rsp.to_string() << "\n";
+        [cells, cells_buff, base_req, ptr=shared_from_this()] 
+        (ReqBase::Ptr req_ptr, Rgr::Params::RangeQueryUpdateRsp rsp) {
+
+          std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: " << rsp.to_string() 
+                    << " completion=" << ptr->result->completion.load() << "\n";
           if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
             cells->add(*cells_buff.get());
-            ptr->locate_ranger_master(cid, cells);
+            base_req->request_again();
             --ptr->result->completion;
             return;
           }        
@@ -288,6 +363,12 @@ class Update : public std::enable_shared_from_this<Update> {
 
   uint32_t buff_sz = 32000000;
 };
+
+
+
+
+
+
 /*
 class Select : std::enable_shared_from_this<Select> {
   public:
@@ -312,7 +393,7 @@ class Select : std::enable_shared_from_this<Select> {
         Mngr::Req::RgrGet::request(
           col.cid, cells_interval, 
           [cid=col.cid, ci=cells_interval]
-          (Req::ConnQueue::ReqBase::Ptr req_ptr, 
+          (ReqBase::Ptr req_ptr, 
           int err, Mngr::Params::RgrGetRsp rsp) {
             if(err != Error::OK){
               std::cout << "get Ranger-master err="<< err << "("<<Error::get_text(err) <<  ")";
@@ -327,7 +408,7 @@ class Select : std::enable_shared_from_this<Select> {
             }
             // req. rgr(master-range) (cid+ci)
             std::cout << "get Ranger-master " << rsp.to_string() << "\n";
-            // --> ci.keys_start = rsp.next_key
+            // --> ci.keys_start = rsp.key_next
           }
         );
       }
