@@ -55,7 +55,7 @@ class RangeLocate : public AppHandler {
       }
 ;
       auto cb = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-        m_conn, m_ev, params.cid);
+        m_conn, m_ev);
 
       params.interval->flags.limit = 2;
 

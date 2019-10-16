@@ -53,7 +53,6 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
   virtual ~RangeLocate(){}
 
   void handle_no_conn() override {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
     cb_no_conn();
   }
 

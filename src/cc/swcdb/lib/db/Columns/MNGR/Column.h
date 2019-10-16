@@ -98,13 +98,13 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   Range::Ptr get_range(int &err, DB::Specs::Interval::Ptr interval, 
-                       DB::Specs::Key &next_key) {
+                       DB::Specs::Key &key_next) {
     Range::Ptr found;
     Range::Ptr range = m_base_range;
     range->chained_next(range);
     for(;;){
-      range->chained_consist(interval, found, next_key, range);
-      if(range == nullptr || !next_key.empty())
+      range->chained_consist(interval, found, key_next, range);
+      if(range == nullptr || !key_next.empty())
         break;
     }
     return found;

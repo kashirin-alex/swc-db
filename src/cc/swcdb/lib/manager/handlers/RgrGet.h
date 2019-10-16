@@ -42,10 +42,11 @@ class RgrGet : public AppHandler {
         goto send_response;
     
       server::Mngr::Range::Ptr range;
-      if(params.rid == 0)
+      if(params.rid == 0) {
         range = col->get_range(
-          rsp_params.err, params.interval, rsp_params.next_key);
-      else 
+          rsp_params.err, params.interval, rsp_params.key_next);
+          rsp_params.key_start.copy(range->get_interval().key_begin);
+      } else 
         range = col->get_range(rsp_params.err, params.rid);
       
       if(range == nullptr) {

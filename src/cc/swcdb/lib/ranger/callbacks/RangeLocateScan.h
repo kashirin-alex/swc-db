@@ -16,8 +16,8 @@ namespace Callback {
 class RangeLocateScan : public ResponseCallback {
   public:
 
-  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev, const int64_t cid_scanned)
-                  : ResponseCallback(conn, ev), cid_scanned(cid_scanned) {
+  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev)
+                  : ResponseCallback(conn, ev) {
   }
 
   virtual ~RangeLocateScan() { }
@@ -28,19 +28,24 @@ class RangeLocateScan : public ResponseCallback {
       err = Error::SERVER_SHUTTING_DOWN;
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
-    if(err == Error::OK && req->cells->size() > 0) {
+    if(err == Error::OK) {
+      if(req->cells->size() > 0) {
 
-      DB::Cells::Cell cell;
-      req->cells->get(0, cell);
-      std::string id_name(cell.key.get_string(0));
-      params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+        DB::Cells::Cell cell;
+        req->cells->get(0, cell);
+        std::string id_name(cell.key.get_string(0));
+        params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
       
-      id_name = std::string((char *)cell.value, cell.vlen);
-      params.rid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+        id_name = std::string((char *)cell.value, cell.vlen);
+        params.rid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
 
-      if(req->cells->size() > 1) {
-        req->cells->get(1, cell);
-        params.next_key.set(cell.key, Condition::GE);
+        params.key_start.set(cell.key, Condition::GE);
+        if(req->cells->size() > 1) {
+          req->cells->get(1, cell);
+          params.key_next.set(cell.key, Condition::GE);
+        }
+      } else {
+        err = Error::RANGE_NOT_FOUND;
       }
     }
 
@@ -63,9 +68,6 @@ class RangeLocateScan : public ResponseCallback {
 
 
   DB::Cells::ReqScan::Ptr     req;
-
-  private:
-  const int64_t               cid_scanned;
 
 };
 typedef std::shared_ptr<RangeLocateScan> RangeLocateScanPtr;
