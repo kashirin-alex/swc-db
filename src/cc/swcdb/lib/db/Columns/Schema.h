@@ -135,11 +135,11 @@ class Schema {
     ss << "Schema(" 
         << "cid=" << std::to_string(cid)
         << ", col_name=" << col_name
-        << ", col_type=" << std::to_string((uint8_t)col_type)
+        << ", col_type=" << Types::to_string(col_type)
         << ", cell_versions=" << std::to_string(cell_versions)
         << ", cell_ttl=" << std::to_string(cell_ttl)
         << ", blk_replication=" << std::to_string(blk_replication)
-        << ", blk_encoding=" << std::to_string((uint8_t)blk_encoding)
+        << ", blk_encoding=" << Types::to_string(blk_encoding)
         << ", blk_size=" << std::to_string(blk_size)
         << ", revision=" << std::to_string(revision)
         << ")"
