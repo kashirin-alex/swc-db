@@ -23,6 +23,22 @@ enum Flag {
   DELETE_FRACTION           = 0x3,
   DELETE_FRACTION_VERSION   = 0x4
 };
+const std::string to_string(Flag flag) {
+  switch(flag){
+    case Flag::INSERT:
+      return std::string("INSERT");
+    case Flag::DELETE:
+      return std::string("DELETE");
+    case Flag::DELETE_VERSION:
+      return std::string("DELETE_VERSION");
+    case Flag::DELETE_FRACTION:
+      return std::string("DELETE_FRACTION");
+    case Flag::DELETE_FRACTION_VERSION:
+      return std::string("DELETE_FRACTION_VERSION");
+    default:
+      return std::string("UKNONWN");
+  }
+}
 
 static const int64_t TIMESTAMP_MIN  = INT64_MIN;
 static const int64_t TIMESTAMP_MAX  = INT64_MAX;
@@ -296,13 +312,13 @@ class Cell {
   }
 
   const bool has_expired(const uint64_t ttl) const {
-    return ttl && Time::now_ns() >= timestamp + ttl;
+    return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
   }
 
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
     std::string s("Cell(");
     s.append("flag=");
-    s.append(std::to_string(flag));
+    s.append(Cells::to_string((Flag)flag));
 
     s.append(" key=");
     s.append(key.to_string());
