@@ -151,7 +151,39 @@ void test_basic(){
     exit(1);
   }
 
-  
+  DB::Specs::Key spec_key_remove;
+  spec_key_remove.add("def", 3, Condition::EQ);
+  spec_key_remove.add(std::string("ghi"), Condition::GE);
+  spec_key_remove.insert(0, "abc", Condition::LE);
+
+  DB::Specs::Key spec_key_remove_cpy;
+  spec_key_remove_cpy.copy(spec_key_remove);
+  spec_key_remove.insert(3, "jkl", Condition::GT); // removed
+  spec_key_remove.remove(3);
+
+
+  if(!spec_key_remove_cpy.equal(spec_key_remove)) {
+    std::cout << "\n Bad-!spec_key_remove_cpy.equal(spec_key_remove)) \n";
+    std::cout <<  spec_key_remove_cpy.to_string() <<"\n";
+    std::cout <<  spec_key_remove.to_string() <<"\n";
+    exit(1);
+  }
+
+  DB::Specs::Key spec_key_remove_recurs;
+  spec_key_remove_recurs.copy(spec_key_remove);
+  spec_key_remove_recurs.add("jkl", Condition::GT); // removed
+  spec_key_remove_recurs.add("jk2", Condition::GT); // removed
+  spec_key_remove_recurs.add("jk3", Condition::GT); // removed
+  spec_key_remove_recurs.add("jk4", Condition::GT); // removed
+  spec_key_remove_recurs.remove(3, true);
+
+  if(!spec_key_remove_cpy.equal(spec_key_remove_recurs)) {
+    std::cout << "\n Bad-!spec_key_remove_cpy.equal(spec_key_remove_recurs)) \n";
+    std::cout <<  spec_key_remove_cpy.to_string() <<"\n";
+    std::cout <<  spec_key_remove_recurs.to_string() <<"\n";
+    exit(1);
+  }
+
   std::cout << "\ntest_basic OK! \n";
 }
 

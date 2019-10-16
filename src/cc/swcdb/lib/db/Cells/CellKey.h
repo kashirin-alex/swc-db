@@ -147,7 +147,7 @@ class Key {
     ++count;
   }
   
-  inline void remove(uint32_t idx, bool recursive=false, int8_t reserved=0) {
+  inline void remove(uint32_t idx, bool recursive=false, uint8_t reserved=0) {
     if(data == 0 || idx >= count) {
       return;
     }
@@ -160,17 +160,17 @@ class Key {
     }      
     ptr_tmp = data;
 
+    uint8_t* begin;
     uint32_t len = 0;
     for(uint32_t offset = 0; offset < count; offset++) {
+      begin = (uint8_t*)ptr_tmp;
       ptr_tmp += reserved;
-      len = Serialization::decode_vi32(&ptr_tmp);
-      ptr_tmp += len;
-      len += reserved;
+      ptr_tmp += Serialization::decode_vi32(&ptr_tmp);
+      len = ptr_tmp-begin;
       if(offset == idx) {
-        uint8_t* begin = (uint8_t*)ptr_tmp-len;
         if(recursive) {
           size = begin-data;
-          count = offset+1;
+          count = offset;
         } else {
           memmove(begin, ptr_tmp, size-(ptr_tmp-data)); 
           size -= len;
