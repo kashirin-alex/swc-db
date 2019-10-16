@@ -137,6 +137,23 @@ class MapMutable {
     return it->second->size_bytes();
   }
 
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("MapMutable(size=");
+    s.append(std::to_string(m_map.size()));
+
+    s.append(" map=[");
+    for(auto it = m_map.begin(); it != m_map.end(); ++it){
+      s.append("(cid=");
+      s.append(std::to_string(it->first));
+      s.append(" ");
+      s.append(it->second->to_string());
+      s.append("), ");
+    }
+    s.append("])");
+    return s;
+  }
+
   private:
   std::mutex   m_mutex;
   Columns      m_map;
