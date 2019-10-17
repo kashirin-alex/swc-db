@@ -353,14 +353,17 @@ class Range : public DB::RangeBase {
  
     if(!err) {
       m_commit_log = Files::CommitLog::Fragments::make(shared_from_this());
+      m_commit_log->load(err);
 
-      m_interval.free();
-      for(auto& cs: *m_cellstores.get()) {
-        m_interval.expand(cs->interval);
-        cs->set(m_commit_log);
+      if(!err) {
+        m_interval.free();
+        for(auto& cs: *m_cellstores.get()) {
+          m_interval.expand(cs->interval);
+          cs->set(m_commit_log);
+        }
+        if(is_initial_column_range)
+          on_change(err);
       }
-      if(is_initial_column_range)
-        on_change(err);
     }
 
     loaded(err, cb); // RSP-LOAD-ACK
@@ -407,8 +410,8 @@ class Range : public DB::RangeBase {
         // validate over range.interval match
 
         m_commit_log->add(cell);
-        //std::cout << "Range::add cid="<<cid 
-        //          << " " << cell.to_string() << "\n";
+        std::cout << "Range::add cid="<<cid 
+                  << " " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {
