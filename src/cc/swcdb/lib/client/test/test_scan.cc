@@ -38,7 +38,6 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool dele
   std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
   update_req->columns_cells->create(schema);
 
-  int64_t took =  SWC::Time::now_ns();
   int counted = 0;
   // master-range
   Cells::Cell cell;
@@ -98,6 +97,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool dele
   size_t bytes = update_req->columns_cells->size_bytes();
   std::cout << update_req->columns_cells->to_string() << "\n";
 
+  int64_t took =  SWC::Time::now_ns();
   update_req->commit();
   std::cout << " completion=" << update_req->result->completion.load() << "\n";
   update_req->wait();
@@ -127,11 +127,11 @@ int main(int argc, char** argv) {
   //std::cout << " ### running-cid=2 ###\n";
   //run_test(update_req, 2);
   
-  for(int check=1; check<=100; check++)
-    run_test(update_req, 11, check);
+  for(int check=1; check<=10; check++)
+    run_test(update_req, 9, check);
 
   for(int check=1; check<=100; check++)
-    run_test(update_req, 11, check, true);
+    run_test(update_req, 9, check, true);
 
 
   std::cout << " ### Waiting ###\n";
