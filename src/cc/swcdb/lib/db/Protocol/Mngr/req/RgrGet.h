@@ -27,7 +27,7 @@ class RgrGet: public Common::Req::ConnQueue::ReqBase {
     request(Params::RgrGetReq(cid, rid), cb, timeout);
   }
 
-  static void request(int64_t cid, const DB::Specs::Interval::Ptr interval, 
+  static void request(int64_t cid, const DB::Specs::Interval& interval, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(Params::RgrGetReq(cid, interval), cb, timeout);
   }

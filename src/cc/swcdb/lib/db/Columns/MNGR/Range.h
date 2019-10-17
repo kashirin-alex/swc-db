@@ -146,14 +146,14 @@ class Range : public DB::RangeBase {
     return false;
   }
 
-  void chained_consist(DB::Specs::Interval::Ptr intval, Ptr& found,
+  void chained_consist(const DB::Specs::Interval& intval, Ptr& found,
                        DB::Specs::Key &key_next, Ptr& current) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(!m_interval.was_set || !m_interval.includes(intval)) {
       std::cout << " FALSE chained_consist, rid=" << current->rid
                 << "\n this  " << m_interval.to_string()
-                << "\n other " << intval->to_string();
+                << "\n other " << intval.to_string();
       current = nullptr;
       return;
     }

@@ -19,20 +19,17 @@ class RangeLocateReq : public Serializable {
 
   RangeLocateReq() {}
 
-  RangeLocateReq(int64_t cid, int64_t rid, DB::Specs::Interval::Ptr interval)
-                : cid(cid), rid(rid), interval(interval) {}
+  RangeLocateReq(int64_t cid, int64_t rid)
+                : cid(cid), rid(rid) {}
+
+  RangeLocateReq(int64_t cid, int64_t rid, const DB::Specs::Interval& interval)
+                : cid(cid), rid(rid) {}
 
   virtual ~RangeLocateReq(){ }
 
-  void free(){
-    cid = 0;
-    rid = 0;
-    interval->free();
-  }
-
-  int64_t                   cid;
-  int64_t                   rid;
-  DB::Specs::Interval::Ptr  interval;
+  int64_t              cid;
+  int64_t              rid;
+  DB::Specs::Interval  interval;
   
   const std::string to_string() {
     std::string s("RangeLocateReq(");
@@ -41,7 +38,7 @@ class RangeLocateReq : public Serializable {
     s.append(" rid=");
     s.append(std::to_string(rid));
     s.append(" ");
-    s.append(interval->to_string());
+    s.append(interval.to_string());
     s.append(")");
     return s;
   }
@@ -55,20 +52,20 @@ class RangeLocateReq : public Serializable {
   size_t encoded_length_internal() const {
     return  Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(rid)
-          + interval->encoded_length();
+          + interval.encoded_length();
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    interval->encode(bufp);
+    interval.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    interval = DB::Specs::Interval::make_ptr(bufp, remainp);
+    interval.decode(bufp, remainp);
   }
 
 };

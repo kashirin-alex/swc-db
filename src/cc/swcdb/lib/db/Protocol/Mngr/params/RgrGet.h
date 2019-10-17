@@ -19,22 +19,16 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class RgrGetReq : public Serializable {
   public:
 
-  RgrGetReq(int64_t cid, DB::Specs::Interval::Ptr interval)
-            : cid(cid), rid(0), interval(interval) {}
-
   RgrGetReq(int64_t cid=0, int64_t rid=0) : cid(cid), rid(rid) {}
 
-  virtual ~RgrGetReq(){ }
+  RgrGetReq(int64_t cid, const DB::Specs::Interval& interval)
+            : cid(cid), rid(0), interval(interval) {}
 
-  void free(){
-    cid = 0;
-    rid = 0;
-    interval->free();
-  }
+  virtual ~RgrGetReq(){ }
   
-  int64_t                   cid;
-  int64_t                   rid;
-  DB::Specs::Interval::Ptr  interval;
+  int64_t              cid;
+  int64_t              rid;
+  DB::Specs::Interval  interval;
   
   const std::string to_string() {
     std::string s("Ranger(");
@@ -44,7 +38,7 @@ class RgrGetReq : public Serializable {
     s.append(std::to_string(rid));
     if(rid == 0) {
       s.append(" ");
-      s.append(interval->to_string());
+      s.append(interval.to_string());
     }
     s.append(")");
     return s;
@@ -59,14 +53,14 @@ class RgrGetReq : public Serializable {
   size_t encoded_length_internal() const {
     return Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
-      + (rid == 0 ? interval->encoded_length() : 0);
+      + (rid == 0 ? interval.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
     if(rid == 0) 
-      interval->encode(bufp);
+      interval.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -74,7 +68,7 @@ class RgrGetReq : public Serializable {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
     if(rid == 0)
-      interval = DB::Specs::Interval::make_ptr(bufp, remainp);
+      interval.decode(bufp, remainp);
   }
 
 };

@@ -38,6 +38,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
                    const uint32_t timeout) 
                   : Common::Req::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
+    // timeout by buffer->fill() bytes ratio
     CommHeader header(RANGE_QUERY_UPDATE, timeout);
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
     cbp = std::make_shared<CommBuf>(header, params.encoded_length(), snd_buf);

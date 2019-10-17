@@ -23,7 +23,7 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void()> Cb_no_conn_t;
 
   static void request(int64_t cid, int64_t rid, 
-                      const DB::Specs::Interval::Ptr interval, 
+                      const DB::Specs::Interval& interval, 
                       const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(
