@@ -112,7 +112,7 @@ class Rangers {
       err = Error::MNGR_NOT_ACTIVE;
       return;
     }
-    if(!m_columns_set) {
+    if(m_root_mngr && !m_columns_set) {
       err = Error::MNGR_NOT_INITIALIZED;
       return;  
     }

@@ -129,10 +129,10 @@ int main(int argc, char** argv) {
   //run_test(update_req, 2);
   
   for(int check=1; check<=10; check++)
-    run_test(update_req, 9, check);
+    run_test(update_req, 11, check);
 
   for(int check=1; check<=100; check++)
-    run_test(update_req, 9, check, true);
+    run_test(update_req, 11, check, true);
 
 
   std::cout << " ### Waiting ###\n";

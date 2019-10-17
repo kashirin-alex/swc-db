@@ -66,7 +66,7 @@ class RangeLocateScan : public ResponseCallback {
       1 2 3 4 5 6
       1 2 3 4 5 6 a
       1 2 3 4 5 6 ab
-      1 2 3 4 5 6 acb
+      1 2 3 4 5 6 abc
       1 2 3 4 5 6 abc1           N  v(1 2 3 4 5 6 acb1)
       1 2 3 4 5 6 abc1 1         N  v(1 2 3 4 5 6 acb1 1)
       1 2 3 4 5 6 abc1 1  1 1    N
