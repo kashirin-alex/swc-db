@@ -27,7 +27,7 @@ namespace Query = SWC::Protocol::Common::Req::Query;
 
 
 
-void run_test(Query::Update::Ptr update_req, int64_t cid) {
+void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool deleting=false) {
   // Req::Query::Update
   int err = SWC::Error::OK;
   SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
@@ -38,15 +38,17 @@ void run_test(Query::Update::Ptr update_req, int64_t cid) {
   std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
   update_req->columns_cells->create(schema);
 
+  int64_t took =  SWC::Time::now_ns();
+  int counted = 0;
   // master-range
+  Cells::Cell cell;
   for(int vers=0;vers<2;vers++) {
 
-  for(int i=0;i<1000;i++) {
-  std::string cell_number(std::to_string(i));
-  Cells::Cell cell;
-  cell.flag = Cells::INSERT;
-  cell.set_timestamp(111);
-  cell.set_revision(222);
+  for(int i=0;i<200000;i++) {
+  std::string cell_number(std::to_string(check)+"-"+std::to_string(i));
+  cell.flag = !deleting? Cells::INSERT : Cells::DELETE;
+  //cell.set_timestamp(111);
+  //cell.set_revision(1234);
   cell.set_time_order_desc(true);
 
   cell.key.add("a123451");
@@ -55,6 +57,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid) {
   cell.key.add("d123451");
   cell.key.add("e"+cell_number);
   update_req->columns_cells->add(cid, cell);
+  counted++;
 
   cell.key.free();
   cell.key.add("a987651");
@@ -63,6 +66,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid) {
   cell.key.add("d987654");
   cell.key.add("e"+cell_number);
   update_req->columns_cells->add(cid, cell);
+  counted++;
 
   cell.key.free();
   cell.key.add("a123454");
@@ -71,19 +75,34 @@ void run_test(Query::Update::Ptr update_req, int64_t cid) {
   cell.key.add("d123451");
   cell.key.add("e"+cell_number);
   update_req->columns_cells->add(cid, cell);
+  counted++;
 
   cell.key.free();
   cell.key.add("a8");
   cell.key.add("e"+cell_number);
   update_req->columns_cells->add(cid, cell);
+  counted++;
+
+  cell.key.free();
+  cell.key.add("a7");
+  cell.key.add("a8");
+  cell.key.add("a9");
+  cell.key.add("e"+cell_number);
+  update_req->columns_cells->add(cid, cell);
+  counted++;
+
+  //std::cout << cell.to_string() << "\n";
   cell.free();
-    
   }
   }
+  size_t bytes = update_req->columns_cells->size_bytes();
+  std::cout << update_req->columns_cells->to_string() << "\n";
 
   update_req->commit();
-
+  std::cout << " completion=" << update_req->result->completion.load() << "\n";
   update_req->wait();
+  took = SWC::Time::now_ns() - took;
+  std::cout << " TOOK=" << took << " cells=" << counted << " bytes=" << bytes << " avg="<< took/counted << "\n";
 
 }
 
@@ -103,11 +122,16 @@ int main(int argc, char** argv) {
   );
   
 
-  std::cout << " ### running-cid=1 ###\n";
-  run_test(update_req, 1);
-  std::cout << " ### running-cid=2 ###\n";
-  run_test(update_req, 2);
+  //std::cout << " ### running-cid=1 ###\n";
+  //run_test(update_req, 1);
+  //std::cout << " ### running-cid=2 ###\n";
+  //run_test(update_req, 2);
+  
+  for(int check=1; check<=100; check++)
+    run_test(update_req, 11, check);
 
+  for(int check=1; check<=100; check++)
+    run_test(update_req, 11, check, true);
 
 
   std::cout << " ### Waiting ###\n";

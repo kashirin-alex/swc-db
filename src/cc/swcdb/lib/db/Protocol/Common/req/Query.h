@@ -23,14 +23,20 @@ using ReqBase = Req::ConnQueue::ReqBase;
 
 /*
 range-master: 
-  req-mngr.   cid(1) + n(cid):Specs::Interval        => cid(1) + rid + rgr(endpoints) + ?next	
-    req-rgr.  cid(1) + rid + cid(n):Specs::Interval  => cid(2) + rid + ?next	
+  req-mngr.   cid(1) + n(cid):Specs::Interval        
+              => cid(1) + rid + rgr(endpoints) + key_start + ?key_next	
+    req-rgr.  cid(1) + rid + cid(n):Specs::Interval  
+              => cid(2) + rid + key_start + ?key_next	
 range-meta: 
-  req-mngr.   cid(2) + rid                           => cid(2) + rid + rgr(endpoints)	
-    req-rgr.  cid(2) + rid + cid(n):Specs::Interval  => cid(n) + rid + ?next	
+  req-mngr.   cid(2) + rid                           
+              => cid(2) + rid + rgr(endpoints)	
+    req-rgr.  cid(2) + rid + cid(n):Specs::Interval  
+              => cid(n) + rid + key_start + ?key_next	
 range-data: 
-  req-mngr.   cid(n) + rid                           => cid(n) + rid + rgr(endpoints)	
-    req-rgr.  cid(n) + rid + Specs::Interval         => results
+  req-mngr.   cid(n) + rid                           
+              => cid(n) + rid + rgr(endpoints)	
+    req-rgr.  cid(n) + rid + Specs::Interval         
+              => results
 */
  
 namespace Result{
@@ -96,7 +102,6 @@ class Update : public std::enable_shared_from_this<Update> {
     
     DB::Cells::MapMutable::ColumnCells pair;
     for(size_t idx=0;columns_cells->get(idx, pair);idx++) {
-      std::cout << " cid=" << pair.first << " size=" << pair.second->size() << "\n";
       if(pair.second->size() == 0) 
         continue;
       auto cid = pair.first;
@@ -108,17 +113,10 @@ class Update : public std::enable_shared_from_this<Update> {
       interval->key_start.set(cell.key, Condition::GE);
       cells->get(-1, cell);
       interval->key_finish.set(cell.key, Condition::LE);;
-    
-      interval->key_start.insert(0, std::to_string(cid), Condition::GE);
-      interval->key_finish.insert(0, std::to_string(cid), Condition::LE);
-      if(cid > 2) {
-        interval->key_start.insert(0, "2", Condition::GE);
-        interval->key_finish.insert(0, "2", Condition::LE);
-      }
-
+  
       std::make_shared<Locator>(
         Types::Range::MASTER,
-        cid, cells, interval, shared_from_this()
+        cid, cells, cid, interval, shared_from_this()
       )->locate_on_manager();
     }
   }
@@ -128,18 +126,19 @@ class Update : public std::enable_shared_from_this<Update> {
     const Types::Range        type;
     const int64_t             cid;
     DB::Cells::Mutable::Ptr   cells;
+    const int64_t             cells_cid;
     DB::Specs::Interval::Ptr  interval;
     Update::Ptr               updater;
     ReqBase::Ptr              parent_req;
     const int64_t             rid;
     
-    Locator(const Types::Range type, 
-            const int64_t cid, 
-            DB::Cells::Mutable::Ptr cells,
+    Locator(const Types::Range type, const int64_t cid, 
+            DB::Cells::Mutable::Ptr cells, const int64_t cells_cid,
             DB::Specs::Interval::Ptr interval,
             Update::Ptr updater,
             ReqBase::Ptr parent_req=nullptr, const int64_t rid=0) 
-            : type(type), cid(cid), cells(cells), interval(interval), 
+            : type(type), cid(cid), cells(cells), cells_cid(cells_cid), 
+              interval(interval), 
               updater(updater), parent_req(parent_req), rid(rid) {
     }
     virtual ~Locator() { }
@@ -153,6 +152,8 @@ class Update : public std::enable_shared_from_this<Update> {
       s.append(std::to_string(rid));
       s.append(" completion=");
       s.append(std::to_string(updater->result->completion.load()));
+      s.append(" cells_cid=");
+      s.append(std::to_string(cells_cid));
       s.append(" ");
       s.append(cells->to_string());
       s.append(" ");
@@ -164,8 +165,18 @@ class Update : public std::enable_shared_from_this<Update> {
       std::cout << "locate_on_manager:\n " << to_string() << "\n";
       updater->result->completion++;
 
+      Mngr::Params::RgrGetReq params(1);
+      params.interval.key_start.copy(interval->key_start);
+      params.interval.key_finish.copy(interval->key_finish);
+      params.interval.key_start.insert(0, std::to_string(cid), Condition::GE);
+      params.interval.key_finish.insert(0, std::to_string(cid), Condition::LE);
+      if(cid > 2) {
+        params.interval.key_start.insert(0, "2", Condition::GE);
+        params.interval.key_finish.insert(0, "2", Condition::LE);
+      }
+
       Mngr::Req::RgrGet::request(
-        Mngr::Params::RgrGetReq(1, interval),
+        params,
         [ptr=shared_from_this()]
         (ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
           if(ptr->located_on_manager(req_ptr, rsp))
@@ -192,7 +203,7 @@ class Update : public std::enable_shared_from_this<Update> {
     bool located_on_manager(const ReqBase::Ptr& base_req, const Mngr::Params::RgrGetRsp& rsp) {
 
       std::cout << "located_on_manager:\n " << to_string() << "\n "<< rsp.to_string() << "\n";
-
+      
       if(rsp.err != Error::OK){
         // err type? ~| parent_req->request_again();
         if(rsp.err == Error::COLUMN_NOT_EXISTS 
@@ -204,17 +215,25 @@ class Update : public std::enable_shared_from_this<Update> {
           base_req->request_again();
           return false;
         }
-      }      
+      }
+      if(rsp.rid == 0) {
+        std::cout << "RETRYING " << rsp.to_string() << "\n";
+        (parent_req == nullptr ? base_req : parent_req)->request_again();
+        return false;
+      }
       
       if(type == Types::Range::DATA) {
+        DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
+        ci->key_start.copy(rsp.key_start);
+        ci->key_finish.set(rsp.key_next, Condition::LT);
         updater->commit_data(
-          rsp.endpoints, cid, rid, interval, cells, base_req);
+          rsp.endpoints, cells_cid, rsp.rid, ci, cells, base_req);
         return true;
       }
 
       if(type == Types::Range::MASTER) {
-        if(cid == 1) {
-          if(cid != rsp.cid) {
+        if(cells_cid == 1) {
+          if(cid != rsp.cid || cells_cid != cid) {
             updater->result->err = Error::NOT_ALLOWED;
             updater->response();
           } else {
@@ -222,32 +241,31 @@ class Update : public std::enable_shared_from_this<Update> {
             ci->key_start.copy(rsp.key_start);
             ci->key_finish.set(rsp.key_next, Condition::LT);
             updater->commit_data(
-              rsp.endpoints, rsp.cid, rsp.rid, ci, cells, base_req);
+              rsp.endpoints, cells_cid, rsp.rid, ci, cells, base_req);
           }
         } else {
       
           std::make_shared<Locator>(
-            type, rsp.cid, cells, interval, updater, base_req, rsp.rid
+            type, rsp.cid, cells, cells_cid, interval, updater, base_req, rsp.rid
           )->locate_on_ranger(rsp.endpoints);
         }
 
       } else if(type == Types::Range::META) {
-        if(cid == 2) {
-          if(cid != rsp.cid) {
+        if(cells_cid == 2) {
+          if(cid != rsp.cid || cells_cid != cid) {
             updater->result->err = Error::NOT_ALLOWED;
             updater->response();
           } else {
+            DB::Specs::Interval::Ptr ci = DB::Specs::Interval::make_ptr();
+            ci->key_start.copy(rsp.key_start);
+            ci->key_finish.set(rsp.key_next, Condition::LT);
             updater->commit_data(
-              rsp.endpoints, rsp.cid, rsp.rid, interval, cells, base_req);
+              rsp.endpoints, cells_cid, rsp.rid, ci, cells, base_req);
           }
         } else {
 
-          DB::Specs::Interval::Ptr intval_meta = DB::Specs::Interval::make_ptr(interval);
-          intval_meta->key_start.remove(0);
-          intval_meta->key_finish.remove(0);
-
           std::make_shared<Locator>(
-            type, rsp.cid, cells, intval_meta, updater, base_req, rsp.rid
+            type, rsp.cid, cells, cells_cid, interval, updater, base_req, rsp.rid
           )->locate_on_ranger(rsp.endpoints);
         }
       }
@@ -258,7 +276,7 @@ class Update : public std::enable_shared_from_this<Update> {
         intval_nxt->key_start.set(rsp.key_next, Condition::GE);
 
         std::make_shared<Locator>(
-          type, cid, cells, intval_nxt, updater, 
+          type, cid, cells, cells_cid, intval_nxt, updater, 
           parent_req == nullptr ? base_req : parent_req
         )->locate_on_manager();
       }
@@ -270,8 +288,21 @@ class Update : public std::enable_shared_from_this<Update> {
       std::cout << "locate_on_ranger:\n " << to_string() << "\n";
       updater->result->completion++;
 
+      Rgr::Params::RangeLocateReq params(cid, rid);
+
+      if(type != Types::Range::DATA) {
+        params.interval.key_start.copy(interval->key_start);
+        params.interval.key_finish.copy(interval->key_finish);
+        params.interval.key_start.insert(0, std::to_string(cells_cid), Condition::GE);
+        params.interval.key_finish.insert(0, std::to_string(cells_cid), Condition::LE);
+        if(cells_cid > 2 && type == Types::Range::MASTER) {
+          params.interval.key_start.insert(0, "2", Condition::GE);
+          params.interval.key_finish.insert(0, "2", Condition::LE);
+        }
+      }
+
       Rgr::Req::RangeLocate::request(
-        Rgr::Params::RangeLocateReq(cid, rid, interval), 
+        params, 
         endpoints, 
         [ptr=shared_from_this()]() {
           ptr->parent_req->request_again();
@@ -294,26 +325,35 @@ class Update : public std::enable_shared_from_this<Update> {
         parent_req->request_again();
         return false;
       }
-
       updater->result->err=rsp.err;
 
-      DB::Specs::Interval::Ptr interval = DB::Specs::Interval::make_ptr();
-      interval->key_start.copy(rsp.key_start);
-      interval->key_finish.set(rsp.key_next, Condition::LT);
+      DB::Specs::Interval::Ptr intval = DB::Specs::Interval::make_ptr();
+
+      DB::Cells::Cell cell;
+      cells->get(rsp.key_start, cell);
+      intval->key_start.set(cell.key, Condition::GE);
+      if(!rsp.key_next.empty()) {
+        cells->get(rsp.key_next, cell);
+        intval->key_finish.set(cell.key, Condition::LT);
+      } else {
+        intval->key_finish.copy(interval->key_finish);
+      }
 
       std::make_shared<Locator>(
         type == Types::Range::MASTER
         ? Types::Range::META : Types::Range::DATA,
-        rsp.cid, cells, interval, updater, parent_req, rsp.rid
+        rsp.cid, cells, cells_cid, intval, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
       if(!rsp.key_next.empty()) { // && cells -gt key_next
         DB::Specs::Interval::Ptr intval_nxt 
-          = DB::Specs::Interval::make_ptr(interval);
+          = DB::Specs::Interval::make_ptr(intval);
+        intval_nxt->key_start.copy(intval->key_finish);
+        intval_nxt->key_start.set(-1, Condition::GE);
+        intval_nxt->key_finish.copy(interval->key_finish);
 
-        intval_nxt->key_start.set(rsp.key_next, Condition::GE);
         std::make_shared<Locator>(
-          type, cid, cells, intval_nxt, updater, parent_req
+          type, cid, cells, cells_cid, intval_nxt, updater, parent_req
         )->locate_on_ranger(endpoints);
       }
       return true;
@@ -356,12 +396,14 @@ class Update : public std::enable_shared_from_this<Update> {
           ptr->result->err=rsp.err;
           if(!--ptr->result->completion)
             ptr->response();
-        }
+        },
+        timeout_commit
       );
     } while(more);
   }
 
   uint32_t buff_sz = 32000000;
+  uint32_t timeout_commit = 60000;
 };
 
 
