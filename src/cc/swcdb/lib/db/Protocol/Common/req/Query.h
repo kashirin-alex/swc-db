@@ -167,14 +167,11 @@ class Update : public std::enable_shared_from_this<Update> {
 
       Mngr::Params::RgrGetReq params(1);
       params.interval.key_start.copy(interval->key_start);
-      params.interval.key_finish.copy(interval->key_finish);
       params.interval.key_start.insert(0, std::to_string(cid), Condition::GE);
-      params.interval.key_finish.insert(0, std::to_string(cid), Condition::LE);
-      if(cid > 2) {
-        params.interval.key_start.insert(0, "2", Condition::GE);
-        params.interval.key_finish.insert(0, "2", Condition::LE);
-      }
+      if(cid > 2)
+        params.interval.key_start.insert(0, "2", Condition::EQ);
 
+      std::cout << " Mngr::Req::RangeLocate:\n " << params.interval.to_string() << "\n";
       Mngr::Req::RgrGet::request(
         params,
         [ptr=shared_from_this()]
@@ -286,20 +283,17 @@ class Update : public std::enable_shared_from_this<Update> {
 
     void locate_on_ranger(const EndPoints& endpoints) {
       std::cout << "locate_on_ranger:\n " << to_string() << "\n";
-      updater->result->completion++;
+      HT_ASSERT(type != Types::Range::DATA);
 
+      updater->result->completion++;
       Rgr::Params::RangeLocateReq params(cid, rid);
 
-      if(type != Types::Range::DATA) {
-        params.interval.key_start.copy(interval->key_start);
-        params.interval.key_finish.copy(interval->key_finish);
-        params.interval.key_start.insert(0, std::to_string(cells_cid), Condition::GE);
-        params.interval.key_finish.insert(0, std::to_string(cells_cid), Condition::LE);
-        if(cells_cid > 2 && type == Types::Range::MASTER) {
-          params.interval.key_start.insert(0, "2", Condition::GE);
-          params.interval.key_finish.insert(0, "2", Condition::LE);
-        }
-      }
+      params.interval.key_start.copy(interval->key_start);
+      params.interval.key_start.insert(0, std::to_string(cells_cid), Condition::GE);
+      if(type == Types::Range::MASTER && cells_cid > 2) 
+        params.interval.key_start.insert(0, "2", Condition::EQ);
+
+      std::cout << " Rgr::Req::RangeLocate:\n " << params.interval.to_string() << "\n";
 
       Rgr::Req::RangeLocate::request(
         params, 
@@ -325,15 +319,43 @@ class Update : public std::enable_shared_from_this<Update> {
         parent_req->request_again();
         return false;
       }
+      if(rsp.rid == 0) {
+        exit(1);
+        std::cout << "RETRYING " << rsp.to_string() << "\n";
+        parent_req->request_again();
+        return false;
+      }
+      if(type == Types::Range::META && rsp.cid != cells_cid) {
+        exit(1);
+        std::cout << "RETRYING " << rsp.to_string() << "\n";
+        parent_req->request_again();
+        return false;
+      }
+
       updater->result->err=rsp.err;
 
       DB::Specs::Interval::Ptr intval = DB::Specs::Interval::make_ptr();
 
+      DB::Specs::Key key(rsp.key_start);
+      if(type != Types::Range::DATA) 
+        key.remove(0);
+      if(type == Types::Range::MASTER) 
+        key.remove(0);
       DB::Cells::Cell cell;
-      cells->get(rsp.key_start, cell);
+      cells->get(key, cell);
       intval->key_start.set(cell.key, Condition::GE);
+      
+      key.free();
       if(!rsp.key_next.empty()) {
-        cells->get(rsp.key_next, cell);
+        key.copy(rsp.key_next);
+        if(type != Types::Range::DATA) 
+          key.remove(0);
+        if(type == Types::Range::MASTER) 
+          key.remove(0);
+      }
+      bool more = !key.empty();
+      if(more) {
+        more = cells->get(key, cell);
         intval->key_finish.set(cell.key, Condition::LT);
       } else {
         intval->key_finish.copy(interval->key_finish);
@@ -345,7 +367,7 @@ class Update : public std::enable_shared_from_this<Update> {
         rsp.cid, cells, cells_cid, intval, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
-      if(!rsp.key_next.empty()) { // && cells -gt key_next
+      if(more) {
         DB::Specs::Interval::Ptr intval_nxt 
           = DB::Specs::Interval::make_ptr(intval);
         intval_nxt->key_start.copy(intval->key_finish);
