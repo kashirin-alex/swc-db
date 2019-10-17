@@ -131,14 +131,17 @@ class Interval {
   }
 
   const bool includes(const Specs::Interval::Ptr interval) const {
+    return includes(*interval.get());
+  }
+
+  const bool includes(const Specs::Interval& interval) const {
     return key_begin.empty() || key_end.empty() ||
-           interval->key_start.empty() || interval->key_finish.empty() ||
+           interval.key_start.empty() || interval.key_finish.empty() ||
            (
-            key_begin.is_matching(interval->key_finish) 
+            key_begin.is_matching(interval.key_finish) 
             &&
-            key_end.is_matching(interval->key_start)
+            key_end.is_matching(interval.key_start)
            );
-           
   }
 
   const bool consist(const DB::Cell::Key& key) const {
