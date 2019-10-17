@@ -60,6 +60,20 @@ class Mutable {
     cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
 
+  bool get(const Specs::Key& key, Cell& cell) {
+    Cell* ptr;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(uint32_t offset = 0;offset < m_size; offset++){
+      ptr = *(m_cells + offset);
+      if(key.is_matching(ptr->key)) {
+        cell.copy(*ptr);
+        return true;
+      }
+    }
+    return false;
+  }
+
   uint32_t size(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_size;
@@ -144,7 +158,7 @@ class Mutable {
         skips++;
     }
   }
-  
+
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval& intval, uint32_t threshold) {
     Cell* cell;
