@@ -192,7 +192,7 @@ class Range : public DB::RangeBase {
       m_req_set_intval->columns_cells->create(schema);
     }
     switch(m_type){
-      case Types::Range::DATA:{
+      case Types::Range::DATA: {
         DB::Cells::Cell cell;
         cell.flag = DB::Cells::INSERT;
         cell.key.copy(m_interval.key_begin);

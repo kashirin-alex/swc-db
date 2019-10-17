@@ -16,8 +16,8 @@ namespace Callback {
 class RangeLocateScan : public ResponseCallback {
   public:
 
-  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev)
-                  : ResponseCallback(conn, ev) {
+  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev, Range::Ptr range)
+                  : ResponseCallback(conn, ev), range(range) {
   }
 
   virtual ~RangeLocateScan() { }
@@ -44,8 +44,42 @@ class RangeLocateScan : public ResponseCallback {
           req->cells->get(1, cell);
           params.key_next.set(cell.key, Condition::GE);
         }
-      } else {
-        err = Error::RANGE_NOT_FOUND;
+      } else  {
+        // range->cid == 1 || 2
+        bool widen = false;
+        if(req->spec->key_start.count > 1) {
+          req->spec->key_start.remove(req->spec->key_start.count-1, true);
+          widen = true;
+        }
+        if(req->spec->key_finish.count > 1) {
+          req->spec->key_finish.remove(req->spec->key_finish.count-1, true);
+          widen = true;
+        }
+        if(widen) {
+          range->scan(req);
+          return;
+        } else {
+          err = Error::RANGE_NOT_FOUND;
+        }
+      /* a miss for closest to under last key fraction 
+      // opt, to add value with key_end comp to LE else next
+      1 2 3 4 5 6
+      1 2 3 4 5 6 a
+      1 2 3 4 5 6 ab
+      1 2 3 4 5 6 acb
+      1 2 3 4 5 6 abc1           N  v(1 2 3 4 5 6 acb1)
+      1 2 3 4 5 6 abc1 1         N  v(1 2 3 4 5 6 acb1 1)
+      1 2 3 4 5 6 abc1 1  1 1    N
+      1 2 3 4 5 6 abc1 2         N  v(1 2 3 4 5 6 acb1 7)
+      1 2 3 4 5 6 abc1 8 a a a a ??? (next new key_begin)
+      1 2 3 4 5 6 abc1 9  1 1    Y !!! v(1 2 3 4 5 6 acb1 98)
+      1 2 3 4 5 6 abc1 99 1 1  
+      1 2 3 4 5 6 acb2
+
+      1 2 3 4 5 6 abc1 8 a a a a ?(which range)
+      
+      begin(widen) 1 2 3 4 5 6 abc1 + end(value)1 2 3 4 5 6 abc1 >=8
+      */
       }
     }
 
@@ -67,7 +101,8 @@ class RangeLocateScan : public ResponseCallback {
   }
 
 
-  DB::Cells::ReqScan::Ptr     req;
+  DB::Cells::ReqScan::Ptr req;
+  Range::Ptr              range;
 
 };
 typedef std::shared_ptr<RangeLocateScan> RangeLocateScanPtr;

@@ -17,11 +17,13 @@ class ReqScan  {
   typedef std::shared_ptr<ReqScan>  Ptr;
   typedef std::function<void(int)>  Cb_t;
 
-  inline static Ptr make(){
+  inline static Ptr 
+  make(){
     return std::make_shared<ReqScan>();
   }
 
-  inline static Ptr make(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb){
+  inline static Ptr 
+  make(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb){
     return std::make_shared<ReqScan>(spec, cells, cb);
   }
 
