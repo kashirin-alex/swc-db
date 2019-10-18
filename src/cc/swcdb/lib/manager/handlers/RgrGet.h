@@ -33,7 +33,8 @@ class RgrGet : public AppHandler {
       if(rsp_params.err != Error::OK)
         goto send_response;
 
-      auto col = Env::MngrColumns::get()->get_column(rsp_params.err, params.cid, false);
+      auto col = Env::MngrColumns::get()->get_column(
+        rsp_params.err, params.cid, false);
       if(rsp_params.err != Error::OK)
         goto send_response;
 
@@ -44,8 +45,8 @@ class RgrGet : public AppHandler {
       server::Mngr::Range::Ptr range;
       if(params.rid == 0) {
         range = col->get_range(
-          rsp_params.err, params.interval, rsp_params.key_next);
-          rsp_params.key_start.copy(range->get_interval().key_begin);
+          rsp_params.err, params.interval, rsp_params.next_key);
+        range->apply_interval(rsp_params.key_start, rsp_params.key_end);
       } else 
         range = col->get_range(rsp_params.err, params.rid);
       
