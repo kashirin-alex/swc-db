@@ -180,7 +180,7 @@ class Read {
     int err;
     DB::Specs::Interval& spec = *(req->spec).get();
     size_t skips = 0;
-    cells.scan(spec, req->cells, &req->offset, skips);
+    cells.scan(spec, req->cells, &req->offset, skips, req->selector);
     //req->adjust();
   }
 
