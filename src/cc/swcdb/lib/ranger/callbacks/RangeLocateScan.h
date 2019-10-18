@@ -33,29 +33,28 @@ class RangeLocateScan : public ResponseCallback {
 
         DB::Cells::Cell cell;
         req->cells->get(0, cell);
+        
         std::string id_name(cell.key.get_string(0));
         params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
-      
-        id_name = std::string((char *)cell.value, cell.vlen);
-        params.rid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
-
         params.key_start.set(cell.key, Condition::GE);
-        if(req->cells->size() > 1) {
-          req->cells->get(1, cell);
-          params.key_next.set(cell.key, Condition::GE);
-        }
+
+        const uint8_t* ptr = cell.value;
+        size_t remain = cell.vlen;
+        params.rid = Serialization::decode_vi64(&ptr, &remain);
+        DB::Cell::Key key_end;
+        key_end.decode(&ptr, &remain);
+        params.key_start.set(key_end, Condition::LE);
+
+        params.next_key = req->cells->size() > 1;
+        
       } else  {
         // range->cid == 1 || 2
-        bool widen = false;
         if(req->spec->key_start.count > 1) {
+          req->spec->key_finish.copy(req->spec->key_start);
+          req->spec->key_finish.set(-1, Condition::LE);
+          if(range->type != Types::Range::DATA)
+            req->spec->key_finish.set(0, Condition::EQ);
           req->spec->key_start.remove(req->spec->key_start.count-1, true);
-          widen = true;
-        }
-        if(req->spec->key_finish.count > 1) {
-          req->spec->key_finish.remove(req->spec->key_finish.count-1, true);
-          widen = true;
-        }
-        if(widen) {
           range->scan(req);
           return;
         } else {
@@ -71,7 +70,7 @@ class RangeLocateScan : public ResponseCallback {
       1 2 3 4 5 6 abc1 1         N  v(1 2 3 4 5 6 acb1 1)
       1 2 3 4 5 6 abc1 1  1 1    N
       1 2 3 4 5 6 abc1 2         N  v(1 2 3 4 5 6 acb1 7)
-      1 2 3 4 5 6 abc1 8 a a a a ??? (next new key_begin)
+  >>  1 2 3 4 5 6 abc1 8 a a a a ??? (next new key_begin)
       1 2 3 4 5 6 abc1 9  1 1    Y !!! v(1 2 3 4 5 6 acb1 98)
       1 2 3 4 5 6 abc1 99 1 1  
       1 2 3 4 5 6 acb2

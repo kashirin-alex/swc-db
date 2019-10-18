@@ -58,18 +58,45 @@ class RangeLocate : public AppHandler {
         m_conn, m_ev, range);
 
       params.interval.flags.limit = 2;
+      auto spec = DB::Specs::Interval::make_ptr(params.interval);
+      spec->key_finish.copy(spec->key_start);
+      spec->key_finish.set(-1, Condition::LE);
+      if(range->type != Types::Range::DATA) 
+        spec->key_finish.set(0, Condition::EQ);
 
       cb->req = DB::Cells::ReqScan::make(
-        DB::Specs::Interval::make_ptr(params.interval),
+        spec,
         DB::Cells::Mutable::make(
           params.interval.flags.limit, 
           schema->cell_versions, 
           schema->cell_ttl, 
           schema->col_type
         ),
-        [cb](int err){cb->response(err);}
+        [cb](int err){cb->response(err);},
+        [cb](const DB::Cells::Cell& cell) {
+            
+          size_t remain = cell.vlen;
+          const uint8_t * ptr = cell.value;
+          Serialization::decode_vi64(&ptr, &remain);
+          DB::Cell::Key key_end;
+          key_end.decode(&ptr, &remain);
+          /*
+          std::cout << "cell begin: "<< cell.key.to_string() << "\n";
+          std::cout << "spec begin: " << cb->req->spec->key_start.to_string() << "\n";
+          std::cout << "cell end:   "<< key_end.to_string() << "\n";
+          std::cout << "spec end:   " << cb->req->spec->key_finish.to_string() << "\n";
+          */
+          if(!cb->req->spec->key_start.is_matching(cell.key))
+            return false;
+          if(cb->req->cells->size() == 1)
+            return true; // next_key
+          return key_end.empty() || 
+                 cb->req->spec->key_finish.is_matching(key_end);
+        }
       );
-
+      
+      //std::cout << " handler::RangeLocate,  " << cb->req->to_string() << "\n";
+      
       range->scan(cb->req);
   
     }
