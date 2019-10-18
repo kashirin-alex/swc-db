@@ -13,6 +13,8 @@ namespace SWC { namespace DB { namespace Specs {
 class Key : public DB::Cell::Key {
   public:
 
+  typedef std::shared_ptr<Key> Ptr;
+
   explicit Key() {}
   
   explicit Key(const Key &other){

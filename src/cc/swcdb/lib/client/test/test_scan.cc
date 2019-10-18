@@ -43,7 +43,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool dele
   Cells::Cell cell;
   for(int vers=0;vers<2;vers++) {
 
-  for(int i=0;i<200000;i++) {
+  for(int i=0;i<20000;i++) {
   std::string cell_number(std::to_string(check)+"-"+std::to_string(i));
   cell.flag = !deleting? Cells::INSERT : Cells::DELETE;
   //cell.set_timestamp(111);
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
   for(int check=1; check<=10; check++)
     run_test(update_req, 11, check);
 
-  for(int check=1; check<=100; check++)
+  for(int check=1; check<=10; check++)
     run_test(update_req, 11, check, true);
 
 
