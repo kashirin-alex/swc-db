@@ -7,6 +7,7 @@
 #define swcdb_lib_db_Cells_Mutable_h
 
 #include <mutex>
+#include <functional>
 
 #include "swcdb/lib/db/Cells/Cell.h"
 #include "SpecsInterval.h"
@@ -21,7 +22,8 @@ class Mutable {
 
   public:
 
-  typedef std::shared_ptr<Mutable>  Ptr;
+  typedef std::shared_ptr<Mutable>          Ptr;
+  typedef std::function<bool(const Cell&)>  Selector_t;
   
   inline static Ptr make(const uint32_t cap=1, 
                          const uint32_t max_revs=1, 
@@ -119,7 +121,7 @@ class Mutable {
   }
 
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
-            size_t* cell_offset, size_t& skips){
+            size_t* cell_offset, size_t& skips, const Selector_t selector=0){
     Cell* cell;
     uint32_t offset = 0; //(narrower over specs.key_start)
     uint32_t count_skips = 0 ;
@@ -129,7 +131,7 @@ class Mutable {
       cell = *(m_cells + offset);
       //std::cout << "scan, " << cell->to_string() << "\n";
       //std::cout << "scan, "  << specs.to_string() << "\n";
-      if(specs.is_matching(*cell, m_type)) {
+      if(specs.is_matching(*cell, m_type) && (!selector || selector(*cell))) {
         //std::cout << "scan matching, " << cell->to_string() << "\n";
         //if(count_skips++ < specs.flags.offset-*cell_offset)
         //  skips++;
