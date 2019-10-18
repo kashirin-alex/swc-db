@@ -39,10 +39,12 @@ class Range : public DB::RangeBase {
     DELETED
   };
 
+  const Types::Range  type;
+
   Range(const int64_t cid, const int64_t rid)
         : RangeBase(cid, rid), 
           m_state(State::NOTLOADED), 
-          m_type(cid == 1 ? Types::Range::MASTER 
+          type(cid == 1 ? Types::Range::MASTER 
                :(cid == 2 ? Types::Range::META : Types::Range::DATA)),
           m_cellstores(std::make_shared<Files::CellStore::Readers>()) {
   }
@@ -130,7 +132,8 @@ class Range : public DB::RangeBase {
               ptr->scan(cs_ptr, idx, req);
             else
               req->response(err);
-          }
+          },
+          req->selector
         )
       );
       return;
@@ -180,8 +183,8 @@ class Range : public DB::RangeBase {
   void on_change(int &err) { // change of range-interval
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    if(m_type != Types::Range::MASTER) {
-      uint8_t cid_typ = m_type == Types::Range::DATA ? 2 : 1;
+    if(type != Types::Range::MASTER) {
+      uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
       
       if(m_req_set_intval == nullptr) {
         DB::SchemaPtr schema = Env::Schemas::get()->get(cid_typ);
@@ -198,14 +201,18 @@ class Range : public DB::RangeBase {
       cell.flag = DB::Cells::INSERT;
       cell.key.copy(m_interval.key_begin);
       cell.key.insert(0, std::to_string(cid));
+
+      DB::Cell::Key key_end;
+      key_end.copy(m_interval.key_end); // Specs::Key::get(Cell::Key&)
+      key_end.insert(0, std::to_string(cid));
         
       cell.own = true;
       cell.vlen = Serialization::encoded_length_vi64(rid) 
-                + m_interval.key_end.encoded_length();
+                + key_end.encoded_length();
       cell.value = new uint8_t[cell.vlen];
       uint8_t * ptr = cell.value;
       Serialization::encode_vi64(&ptr, rid);
-      m_interval.key_end.encode(&ptr);
+      key_end.encode(&ptr);
 
       //m_req_set_intval->columns_cells->add(cid_typ, cell_del);
       m_req_set_intval->columns_cells->add(cid_typ, cell);
@@ -275,7 +282,7 @@ class Range : public DB::RangeBase {
     s.append(std::to_string(m_state));
     
     s.append(" type=");
-    s.append(Types::to_string(m_type));
+    s.append(Types::to_string(type));
 
     s.append(" ");
     s.append(m_interval.to_string());
@@ -431,7 +438,6 @@ class Range : public DB::RangeBase {
   }
 
   State                             m_state;
-  const Types::Range                m_type;
    
   Files::CellStore::ReadersPtr      m_cellstores;
   std::queue<ReqAdd*>               m_q_adding;
