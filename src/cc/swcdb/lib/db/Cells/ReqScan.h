@@ -24,17 +24,18 @@ class ReqScan  {
 
   inline static Ptr 
   make(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb, 
-       Mutable::Selector_t selector = 0){
+       const Mutable::Selector_t& selector = 0){
     return std::make_shared<ReqScan>(spec, cells, cb, selector);
   }
 
   ReqScan() {}
 
   ReqScan(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb, 
-          Mutable::Selector_t selector = 0)
+          const Mutable::Selector_t& selector = 0)
           : spec(spec), cells(cells), cb(cb), 
             offset(spec->flags.offset), limit(spec->flags.limit), size(0), 
-            selector(selector) {}
+            selector(selector) {
+  }
 
   void response(int err) {
     cb(err);
@@ -57,6 +58,8 @@ class ReqScan  {
   const std::string to_string() const {
     std::string s("ReqScan(");
     s.append(spec->to_string());
+    s.append(" selector=");
+    s.append(selector?"true":"false");
     s.append(" ");
     s.append(cells->to_string());
     return s;
