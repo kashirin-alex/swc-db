@@ -101,6 +101,19 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return m_interval; // ?return copy
   }
 
+  const void apply_interval(Specs::Key& key_start, Specs::Key& key_end) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    key_start.copy(m_interval.key_begin);
+    key_end.copy(m_interval.key_end);
+  }
+
+  const void apply_interval(Cells::Interval& interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    interval.copy(m_interval);
+  }
+
   const std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
