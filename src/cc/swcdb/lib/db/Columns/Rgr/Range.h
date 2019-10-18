@@ -180,50 +180,42 @@ class Range : public DB::RangeBase {
   void on_change(int &err) { // change of range-interval
     std::lock_guard<std::mutex> lock(m_mutex);
     
-    if(m_req_set_intval == nullptr) {
+    if(m_type != Types::Range::MASTER) {
       uint8_t cid_typ = m_type == Types::Range::DATA ? 2 : 1;
-      DB::SchemaPtr schema = Env::Schemas::get()->get(cid_typ);
-      if(schema == nullptr) {
-        schema = Env::Clients::get()->schemas->get(err, cid_typ);
-        if(err)
-          return;
+      
+      if(m_req_set_intval == nullptr) {
+        DB::SchemaPtr schema = Env::Schemas::get()->get(cid_typ);
+        if(schema == nullptr) {
+          schema = Env::Clients::get()->schemas->get(err, cid_typ);
+          if(err)
+            return;
+        }
+        m_req_set_intval = std::make_shared<Query::Update>();
+        m_req_set_intval->columns_cells->create(schema);
       }
-      m_req_set_intval = std::make_shared<Query::Update>();
-      m_req_set_intval->columns_cells->create(schema);
-    }
-    switch(m_type){
-      case Types::Range::DATA: {
-        DB::Cells::Cell cell;
-        cell.flag = DB::Cells::INSERT;
-        cell.key.copy(m_interval.key_begin);
-        cell.key.insert(0, std::to_string(cid));
-        cell.set_value(std::to_string(rid));
 
-        //m_req_set_intval->columns_cells->add(2, cell_del);
-        m_req_set_intval->columns_cells->add(2, cell);
-        m_req_set_intval->commit();
-        m_req_set_intval->wait();
-        err = m_req_set_intval->result->err;
-        // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
-        break;
-      }
-      case Types::Range::META: {
-        DB::Cells::Cell cell;
-        cell.flag = DB::Cells::INSERT;
-        cell.key.copy(m_interval.key_begin);
-        cell.key.insert(0, std::to_string(cid));
-        cell.set_value(std::to_string(rid));
-        //m_req_set_intval->columns_cells->add(1, cell_del);
-        m_req_set_intval->columns_cells->add(1, cell);
-        m_req_set_intval->commit();
-        m_req_set_intval->wait();
-        err = m_req_set_intval->result->err;
-        // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
-        break;
-      }
-      default: // Types::Range::MASTER:
-        // update manager-root
-        break;
+      DB::Cells::Cell cell;
+      cell.flag = DB::Cells::INSERT;
+      cell.key.copy(m_interval.key_begin);
+      cell.key.insert(0, std::to_string(cid));
+        
+      cell.own = true;
+      cell.vlen = Serialization::encoded_length_vi64(rid) 
+                + m_interval.key_end.encoded_length();
+      cell.value = new uint8_t[cell.vlen];
+      uint8_t * ptr = cell.value;
+      Serialization::encode_vi64(&ptr, rid);
+      m_interval.key_end.encode(&ptr);
+
+      //m_req_set_intval->columns_cells->add(cid_typ, cell_del);
+      m_req_set_intval->columns_cells->add(cid_typ, cell);
+      m_req_set_intval->commit();
+      m_req_set_intval->wait();
+      err = m_req_set_intval->result->err;
+      // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
+      // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
+    } else {
+      // update manager-root
     }
     // 
     Files::RangeData::save(err, shared_from_this(), m_cellstores);
