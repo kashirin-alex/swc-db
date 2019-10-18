@@ -126,12 +126,11 @@ class Mutable {
     uint32_t offset = 0; //(narrower over specs.key_start)
     uint32_t count_skips = 0 ;
     std::lock_guard<std::mutex> lock(m_mutex);
-
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
-      //std::cout << "scan, " << cell->to_string() << "\n";
-      //std::cout << "scan, "  << specs.to_string() << "\n";
-      if(specs.is_matching(*cell, m_type) && (!selector || selector(*cell))) {
+      
+      if((!selector && specs.is_matching(*cell, m_type))
+       || (selector && selector(*cell))) {
         //std::cout << "scan matching, " << cell->to_string() << "\n";
         //if(count_skips++ < specs.flags.offset-*cell_offset)
         //  skips++;
