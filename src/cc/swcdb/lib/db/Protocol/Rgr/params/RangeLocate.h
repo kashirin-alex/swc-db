@@ -80,16 +80,18 @@ class RangeLocateRsp  : public Serializable {
 
   RangeLocateRsp(int64_t cid, int64_t rid, 
                  const DB::Specs::Key& key_start, 
-                 const DB::Specs::Key& key_next)
+                 const DB::Specs::Key& key_end,
+                 bool next_key)
                  : err(0), cid(cid), rid(rid), 
-                  key_start(key_start), key_next(key_next) {
+                  key_start(key_start), key_end(key_end), next_key(next_key) {
   }
 
   int             err;         
   int64_t         cid; 
   int64_t         rid; 
   DB::Specs::Key  key_start;
-  DB::Specs::Key  key_next;
+  DB::Specs::Key  key_end;
+  bool            next_key;
 
   const std::string to_string() const {
     std::string s("Range(");
@@ -103,8 +105,10 @@ class RangeLocateRsp  : public Serializable {
 
       s.append(" Start");
       s.append(key_start.to_string());
-      s.append(" Next");
-      s.append(key_next.to_string());
+      s.append(" End");
+      s.append(key_end.to_string());
+      s.append(" next_key=");
+      s.append(std::to_string(next_key));
       
     } else {
       s.append("(");
@@ -127,7 +131,8 @@ class RangeLocateRsp  : public Serializable {
           (Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(rid)
           + key_start.encoded_length()
-          + key_next.encoded_length()
+          + key_end.encoded_length()
+          + 1
           )
         );
   }
@@ -138,7 +143,8 @@ class RangeLocateRsp  : public Serializable {
       Serialization::encode_vi64(bufp, cid);
       Serialization::encode_vi64(bufp, rid);
       key_start.encode(bufp);
-      key_next.encode(bufp);
+      key_end.encode(bufp);
+      Serialization::encode_bool(bufp, next_key);
     }
   }
     
@@ -149,7 +155,8 @@ class RangeLocateRsp  : public Serializable {
       cid = Serialization::decode_vi64(bufp, remainp);
       rid = Serialization::decode_vi64(bufp, remainp);
       key_start.decode(bufp, remainp, true);
-      key_next.decode(bufp, remainp, true);
+      key_end.decode(bufp, remainp, true);
+      next_key = Serialization::decode_bool(bufp, remainp);
     }
   }
 

@@ -147,7 +147,7 @@ class Range : public DB::RangeBase {
   }
 
   void chained_consist(const DB::Specs::Interval& intval, Ptr& found,
-                       DB::Specs::Key &key_next, Ptr& current) {
+                       bool &next_key, Ptr& current) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(!m_interval.was_set || !m_interval.includes(intval)) {
@@ -159,7 +159,7 @@ class Range : public DB::RangeBase {
     }
 
     if(found != nullptr)
-      key_next.copy(m_interval.key_begin);
+      next_key = true;
     else 
       found = current;
 
