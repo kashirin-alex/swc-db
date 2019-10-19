@@ -15,9 +15,11 @@ namespace SWC { namespace DB { namespace Cell {
 class Key {
   public:
 
+  typedef std::shared_ptr<Key> Ptr;
+
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) {}
 
-  explicit Key(const Key &other) {
+  explicit Key(const Key &other): own(false) {
     copy(other);
   }
 
@@ -239,7 +241,7 @@ class Key {
           memcmp(data, other.data, size) == 0);
   }
   
-  Condition::Comp compare(const Key &other, uint32_t fractions=0) {
+  const Condition::Comp compare(const Key &other, uint32_t fractions=0) const {
 
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
