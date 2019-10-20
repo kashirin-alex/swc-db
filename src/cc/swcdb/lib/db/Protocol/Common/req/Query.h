@@ -67,6 +67,9 @@ class Update : public std::enable_shared_from_this<Update> {
   DB::Cells::MapMutable::Ptr  columns_cells;
   Result::Ptr                 result;
 
+  uint32_t buff_sz          = 8000000;
+  uint32_t timeout_commit   = 60000;
+
   std::mutex                  m_mutex;
   std::condition_variable     cv;
 
@@ -136,8 +139,8 @@ class Update : public std::enable_shared_from_this<Update> {
             : type(type), cid(cid), cells(cells), cells_cid(cells_cid), 
               key_start(key_start), 
               updater(updater), parent_req(parent_req), rid(rid) {
-      std::cout << " LOCATOR, " << to_string() <<"\n";
     }
+
     virtual ~Locator() { }
 
     const std::string to_string() {
@@ -163,7 +166,8 @@ class Update : public std::enable_shared_from_this<Update> {
       Mngr::Params::RgrGetReq params(1);
       params.interval.key_start.set(*key_start.get(), Condition::GE);
       if(cid > 2)
-        params.interval.key_start.insert(0, std::to_string(cid), Condition::GE);
+        params.interval.key_start.insert(
+          0, std::to_string(cid), Condition::GE);
       if(cid >= 2)
         params.interval.key_start.insert(0, "2", Condition::EQ);
       if(cid == 1) 
@@ -201,7 +205,8 @@ class Update : public std::enable_shared_from_this<Update> {
       );
     }
 
-    bool located_on_manager(const ReqBase::Ptr& base_req, const Mngr::Params::RgrGetRsp& rsp) {
+    bool located_on_manager(const ReqBase::Ptr& base_req, 
+                            const Mngr::Params::RgrGetRsp& rsp) {
 
       std::cout << "located_on_manager:\n " << to_string() 
                 << "\n " << rsp.to_string() << "\n";
@@ -224,36 +229,29 @@ class Update : public std::enable_shared_from_this<Update> {
         return false;
       }
 
-       // (rsp.key_start lacks importance, needs to be key_start)
-
-      if(type == Types::Range::DATA) {
-        // cells_cid != rsp.cid
-        updater->commit_data(
-          rsp.endpoints, cells_cid, rsp.rid, 
-          *key_start.get(), rsp.key_end,  
-          cells, base_req);
-        return true;
-      }
-
-      if((type == Types::Range::MASTER && cells_cid == 1) ||
-         (type == Types::Range::META   && cells_cid == 2 )) {
+      if(type == Types::Range::DATA || 
+        (type == Types::Range::MASTER && cells_cid == 1) ||
+        (type == Types::Range::META   && cells_cid == 2 )) {
         if(cid != rsp.cid || cells_cid != cid) {
-          updater->result->err = Error::NOT_ALLOWED;
-          updater->response();
-        } else {
-          updater->commit_data(
-            rsp.endpoints, cells_cid, rsp.rid, 
-            *key_start.get(), rsp.key_end,
-            cells, base_req);
+          (parent_req == nullptr ? base_req : parent_req)->request_again();
+          return false;
+          //updater->result->err = Error::NOT_ALLOWED;
+          //updater->response();
         }
-      } else {
+        commit_data(rsp.endpoints, rsp.rid, rsp.key_end, base_req);
+        if(type == Types::Range::DATA)
+          return true;
+      
+      } else 
         std::make_shared<Locator>(
-          type, rsp.cid, cells, cells_cid, key_start, updater, base_req, rsp.rid
+          type, rsp.cid, cells, cells_cid, key_start, updater, 
+          base_req, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
-      }
 
       if(rsp.next_key && !rsp.key_end.empty()) {
-      std::cout << "located_on_manager, NEXT-KEY: " << Types::to_string(type) << " " << rsp.key_end.to_string() << "\n";
+        std::cout << "located_on_manager, NEXT-KEY: " 
+                  << Types::to_string(type) 
+                  << " " << rsp.key_end.to_string() << "\n";
         auto key_next = get_key_next(rsp.key_end);
         if(key_next != nullptr) {
           std::make_shared<Locator>(
@@ -332,8 +330,11 @@ class Update : public std::enable_shared_from_this<Update> {
         rsp.cid, cells, cells_cid, key_start, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
-      if(rsp.next_key && !rsp.key_end.empty()) { // if end not any , master: (2: []), meta: (cells_cid: [])
-      std::cout << "located_on_ranger, NEXT-KEY: " << Types::to_string(type) << " " << rsp.key_end.to_string() << "\n";
+      if(rsp.next_key && !rsp.key_end.empty()) {
+      std::cout << "located_on_ranger, NEXT-KEY: " 
+        << Types::to_string(type) 
+        << " " << rsp.key_end.to_string() << "\n";
+
         auto key_next = get_key_next(rsp.key_end);
         if(key_next != nullptr) {
           std::make_shared<Locator>(
@@ -346,76 +347,70 @@ class Update : public std::enable_shared_from_this<Update> {
     
     DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key, 
                                     bool start_key=false) {
-      /*
-      DB::Cell::Key key(eval_key);
-      if(type != Types::Range::DATA) 
-        key.remove(0);
-      if(type == Types::Range::MASTER) 
-        key.remove(0);
-      */
       DB::Cells::Cell cell;
       if(!cells->get(eval_key, start_key? Condition::GE : Condition::GT, cell))
         return nullptr;
       return std::make_shared<DB::Cell::Key>(cell.key);
     }
 
+    void commit_data(EndPoints endpoints, uint64_t rid,
+                     const DB::Cell::Key& key_end,
+                     const ReqBase::Ptr& base_req) {
+      std::cout << "Query::Update commit_data, cid=" << cells_cid 
+                << " rid=" << rid << " " << cells->to_string() << "\n"; 
+              
+      bool more;
+      DynamicBufferPtr cells_buff;
+      do {
+        cells_buff = std::make_shared<DynamicBuffer>();     
+        more = cells->write_and_free(
+          *key_start.get(), key_end, *cells_buff.get(), updater->buff_sz);
+
+        std::cout << "Query::Update commit_data:\n sz=" << cells_buff->fill() 
+                  << " more=" << more << " cid=" << cells_cid << " rid=" << rid
+                  << " key_start=" << key_start->to_string() 
+                  << " key_end=" << key_end.to_string() 
+                  << " " << cells->to_string() << "\n"; 
+      
+        updater->result->completion++;
+    
+        Rgr::Req::RangeQueryUpdate::request(
+          Rgr::Params::RangeQueryUpdateReq(
+            cells_cid, rid, cells_buff->fill()), 
+          cells_buff, 
+          endpoints, 
+          [cells_buff, base_req, ptr=shared_from_this()]() {
+            ptr->cells->add(*cells_buff.get());
+            base_req->request_again();
+            --ptr->updater->result->completion;
+              std::cout << "RETRYING NO-CONN\n";
+          },
+          [cells_buff, base_req, ptr=shared_from_this()] 
+          (ReqBase::Ptr req_ptr, Rgr::Params::RangeQueryUpdateRsp rsp) {
+
+            std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: "
+              << rsp.to_string() 
+              << " completion=" 
+              << ptr->updater->result->completion.load() << "\n";
+
+            if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+              ptr->cells->add(*cells_buff.get());
+              base_req->request_again();
+              --ptr->updater->result->completion;
+              std::cout << "RETRYING " << rsp.to_string() << "\n";
+              return;
+            }        
+            ptr->updater->result->err=rsp.err;
+            if(!--ptr->updater->result->completion)
+              ptr->updater->response();
+          },
+          updater->timeout_commit
+        );
+      } while(more);
+    }
+
   };
 
-
-  void commit_data(EndPoints endpoints, 
-                   int64_t cid, uint64_t rid,
-                   const DB::Cell::Key& key_start, 
-                   const DB::Cell::Key& key_end, 
-                   DB::Cells::Mutable::Ptr cells,
-                   const ReqBase::Ptr& base_req) {
-
-    std::cout << "Query::Update commit_data, cid=" << cid << " rid=" << rid 
-              << " " << cells->to_string() << "\n"; 
-              
-    bool more;
-    do {
-   
-      DynamicBufferPtr cells_buff = std::make_shared<DynamicBuffer>();     
-      more = cells->write_and_free(key_start, key_end, *cells_buff.get(), buff_sz);
-      std::cout << "Query::Update commit_data:\n sz=" << cells_buff->fill() 
-                << " more=" << more << " cid=" << cid << " rid=" << rid
-                << " key_start=" << key_start.to_string() << " key_end=" << key_end.to_string() 
-                << " " << cells->to_string() << "\n"; 
-      
-      result->completion++;
-    
-      Rgr::Req::RangeQueryUpdate::request(
-        Rgr::Params::RangeQueryUpdateReq(cid, rid, cells_buff->fill()), 
-        cells_buff, endpoints, 
-        [cells, cells_buff, base_req, ptr=shared_from_this()]() {
-          cells->add(*cells_buff.get());
-          base_req->request_again();
-          --ptr->result->completion;
-            std::cout << "RETRYING NO-CONN\n";
-        },
-        [cells, cells_buff, base_req, ptr=shared_from_this()] 
-        (ReqBase::Ptr req_ptr, Rgr::Params::RangeQueryUpdateRsp rsp) {
-
-          std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: " << rsp.to_string() 
-                    << " completion=" << ptr->result->completion.load() << "\n";
-          if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
-            cells->add(*cells_buff.get());
-            base_req->request_again();
-            --ptr->result->completion;
-            std::cout << "RETRYING " << rsp.to_string() << "\n";
-            return;
-          }        
-          ptr->result->err=rsp.err;
-          if(!--ptr->result->completion)
-            ptr->response();
-        },
-        timeout_commit
-      );
-    } while(more);
-  }
-
-  uint32_t buff_sz = 8000000;
-  uint32_t timeout_commit = 60000;
 };
 
 
