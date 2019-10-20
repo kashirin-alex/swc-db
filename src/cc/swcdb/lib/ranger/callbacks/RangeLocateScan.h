@@ -42,6 +42,13 @@ class RangeLocateScan : public ResponseCallback {
         size_t remain = cell.vlen;
         params.rid = Serialization::decode_vi64(&ptr, &remain);
         params.key_end.decode(&ptr, &remain, true);
+        if(range->type == Types::Range::MASTER) {
+          params.key_start.remove(0);
+          params.key_end.remove(0);
+        }
+        params.key_start.remove(0);
+        params.key_end.remove(0);
+
         params.next_key = req->cells->size() > 1;
         
       } else  {

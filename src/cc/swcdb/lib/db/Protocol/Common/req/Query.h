@@ -252,7 +252,8 @@ class Update : public std::enable_shared_from_this<Update> {
         )->locate_on_ranger(rsp.endpoints);
       }
 
-      if(rsp.next_key) {
+      if(rsp.next_key && !rsp.key_end.empty()) {
+      std::cout << "located_on_manager, NEXT-KEY: " << Types::to_string(type) << " " << rsp.key_end.to_string() << "\n";
         auto key_next = get_key_next(rsp.key_end);
         if(key_next != nullptr) {
           std::make_shared<Locator>(
@@ -331,7 +332,8 @@ class Update : public std::enable_shared_from_this<Update> {
         rsp.cid, cells, cells_cid, key_start, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
-      if(rsp.next_key) {
+      if(rsp.next_key && !rsp.key_end.empty()) { // if end not any , master: (2: []), meta: (cells_cid: [])
+      std::cout << "located_on_ranger, NEXT-KEY: " << Types::to_string(type) << " " << rsp.key_end.to_string() << "\n";
         auto key_next = get_key_next(rsp.key_end);
         if(key_next != nullptr) {
           std::make_shared<Locator>(
@@ -344,13 +346,15 @@ class Update : public std::enable_shared_from_this<Update> {
     
     DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key, 
                                     bool start_key=false) {
+      /*
       DB::Cell::Key key(eval_key);
       if(type != Types::Range::DATA) 
         key.remove(0);
       if(type == Types::Range::MASTER) 
         key.remove(0);
+      */
       DB::Cells::Cell cell;
-      if(!cells->get(key, start_key? Condition::GE : Condition::GT, cell))
+      if(!cells->get(eval_key, start_key? Condition::GE : Condition::GT, cell))
         return nullptr;
       return std::make_shared<DB::Cell::Key>(cell.key);
     }
@@ -364,6 +368,10 @@ class Update : public std::enable_shared_from_this<Update> {
                    const DB::Cell::Key& key_end, 
                    DB::Cells::Mutable::Ptr cells,
                    const ReqBase::Ptr& base_req) {
+
+    std::cout << "Query::Update commit_data, cid=" << cid << " rid=" << rid 
+              << " " << cells->to_string() << "\n"; 
+              
     bool more;
     do {
    

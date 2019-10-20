@@ -47,8 +47,13 @@ class RgrGet : public AppHandler {
       if(params.rid == 0) {
         range = col->get_range(
           rsp_params.err, params.interval, rsp_params.next_key);
-        if(range != nullptr)
+        if(range != nullptr) {
           range->get_interval(rsp_params.key_start, rsp_params.key_end);
+          rsp_params.key_start.remove(0);
+          rsp_params.key_start.remove(0);
+          rsp_params.key_end.remove(0);
+          rsp_params.key_end.remove(0);
+        }
       } else 
         range = col->get_range(rsp_params.err, params.rid);
       

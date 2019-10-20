@@ -58,7 +58,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr conn, EventPtr &ev) override {
     
-    std::cout << "RangeQueryUpdateRsp " << ev->to_str() << "\n";
+    //std::cout << "RangeQueryUpdateRsp " << ev->to_str() << "\n";
     if(ev->type == Event::Type::DISCONNECT){
       handle_no_conn();
       return;
