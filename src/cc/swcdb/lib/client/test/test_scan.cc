@@ -26,9 +26,20 @@ namespace Cells = SWC::DB::Cells;
 namespace Query = SWC::Protocol::Common::Req::Query;
 
 
+void run_test(Query::Select::Ptr select_req, int64_t cid, int versions=2, int num_cells=1, int check=1) {
+  std::cout << "Select run_test cid=" << cid << " versions=" << versions 
+                                      << " num-cells=" << num_cells 
+                                      << " check=" << check <<"\n";
+  // Req::Query::Select
+  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {SWC::DB::Specs::Interval::make_ptr()})};
+  select_req->scan();
+  select_req->wait();
+
+}
+
 
 void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int num_cells=1, int check=1, bool deleting=false) {
-  std::cout << "run_test cid=" << cid << " versions=" << versions 
+  std::cout << "Update run_test cid=" << cid << " versions=" << versions 
                                       << " num-cells=" << num_cells 
                                       << " check=" << check 
                                       << " deleting=" << deleting << "\n";
@@ -125,13 +136,23 @@ int main(int argc, char** argv) {
       std::cout << "CB completion=" << result->completion.load() << "\n";
     }
   );
+
+  Query::Select::Ptr select_req = std::make_shared<Query::Select>(
+    [](Query::Select::Result::Ptr result)
+    {
+      std::cout << "CB completion=" << result->completion.load() << "\n";
+    }
+  );
   
 
   //std::cout << " ### running-cid=1 ###\n";
   //run_test(update_req, 1);
   //std::cout << " ### running-cid=2 ###\n";
   //run_test(update_req, 2);
-  
+  run_test(update_req, 11, 1, 100000, 1);
+  run_test(select_req, 11, 1, 100, 1);
+  exit(0);
+
   for(int check=1; check<=10; check++)
     run_test(update_req, 11, 2, 100000, check);
 

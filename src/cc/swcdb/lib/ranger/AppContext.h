@@ -28,6 +28,7 @@
 #include "handlers/RangeIsLoaded.h"
 #include "handlers/RangeLocate.h"
 #include "handlers/RangeQueryUpdate.h"
+#include "handlers/RangeQuerySelect.h"
 #include "handlers/ColumnUpdate.h"
 #include "handlers/ColumnDelete.h"
 
@@ -136,6 +137,10 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Rgr::RANGE_QUERY_UPDATE: 
             handler = new Protocol::Rgr::Handler::RangeQueryUpdate(conn, ev);
+            break;
+
+          case Protocol::Rgr::RANGE_QUERY_SELECT: 
+            handler = new Protocol::Rgr::Handler::RangeQuerySelect(conn, ev);
             break;
             
           case Protocol::Common::DO_ECHO:
