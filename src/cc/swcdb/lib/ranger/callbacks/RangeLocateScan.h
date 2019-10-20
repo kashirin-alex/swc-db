@@ -36,15 +36,12 @@ class RangeLocateScan : public ResponseCallback {
         
         std::string id_name(cell.key.get_string(0));
         params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
-        params.key_start.set(cell.key, Condition::GE);
+        params.key_start.copy(cell.key);
 
         const uint8_t* ptr = cell.value;
         size_t remain = cell.vlen;
         params.rid = Serialization::decode_vi64(&ptr, &remain);
-        DB::Cell::Key key_end;
-        key_end.decode(&ptr, &remain);
-        params.key_start.set(key_end, Condition::LE);
-
+        params.key_end.decode(&ptr, &remain, true);
         params.next_key = req->cells->size() > 1;
         
       } else  {
@@ -58,7 +55,7 @@ class RangeLocateScan : public ResponseCallback {
           range->scan(req);
           return;
         } else {
-          err = Error::RANGE_NOT_FOUND;
+          params.err = Error::RANGE_NOT_FOUND;
         }
       /* a miss for closest to under last key fraction 
       // opt, to add value with key_end comp to LE else next
@@ -83,6 +80,7 @@ class RangeLocateScan : public ResponseCallback {
     }
 
     std::cout << "RangeLocateScan, rsp " << req->to_string() << "\n";
+    std::cout << params.to_string() << "\n";
 
     try {
       CommHeader header;

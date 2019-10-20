@@ -42,9 +42,11 @@ class RangeLocate : public AppHandler {
     }
 
     try{
-      
+      std::cout << "RangeLocate, req: cid=" << params.cid << " rid=" << params.rid 
+                << " " << params.interval.to_string() << "\n";
+
       DB::SchemaPtr schema = Env::Schemas::get()->get(params.cid);
-      if(schema == nullptr) { 
+      if(!err && schema == nullptr) { 
         // cannot be happening, range-loaded always with schema
         err = Error::COLUMN_SCHEMA_MISSING;
       }
@@ -73,25 +75,23 @@ class RangeLocate : public AppHandler {
           schema->col_type
         ),
         [cb](int err){cb->response(err);},
-        [cb](const DB::Cells::Cell& cell) {
-            
-          size_t remain = cell.vlen;
-          const uint8_t * ptr = cell.value;
-          Serialization::decode_vi64(&ptr, &remain);
-          DB::Cell::Key key_end;
-          key_end.decode(&ptr, &remain);
-          /*
+        [cb](const DB::Cells::Cell& cell) { // ref bool stop
+          
           std::cout << "cell begin: "<< cell.key.to_string() << "\n";
           std::cout << "spec begin: " << cb->req->spec->key_start.to_string() << "\n";
-          std::cout << "cell end:   "<< key_end.to_string() << "\n";
-          std::cout << "spec end:   " << cb->req->spec->key_finish.to_string() << "\n";
-          */
-          if(!cb->req->spec->key_start.is_matching(cell.key))
-            return false;
-          if(cb->req->cells->size() == 1)
-            return true; // next_key
-          return key_end.empty() || 
-                 cb->req->spec->key_finish.is_matching(key_end);
+          
+          if(cb->req->spec->key_start.is_matching(cell.key)) {
+            size_t remain = cell.vlen;
+            const uint8_t * ptr = cell.value;
+            Serialization::decode_vi64(&ptr, &remain);
+            DB::Cell::Key key_end;
+            key_end.decode(&ptr, &remain);
+            std::cout << "cell end:   "<< key_end.to_string() << "\n";
+            std::cout << "spec end:   " << cb->req->spec->key_finish.to_string() << "\n";
+            return key_end.empty() || 
+                  cb->req->spec->key_finish.is_matching(key_end);
+          }
+          return cb->req->cells->size() == 1; // next_key
         }
       );
       

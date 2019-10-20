@@ -1178,7 +1178,7 @@ void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure,
     col->remove_rgr_schema(rgr->id);
 
   Env::Rangers::get()->range_loaded(rgr, range, err, failure, false);
-  col->chained_set(range, intval);
+  col->sort(range, intval);
   HT_INFOF("RANGE-STATUS %d(%s), %s", 
             err, Error::get_text(err), range->to_string().c_str());
 }

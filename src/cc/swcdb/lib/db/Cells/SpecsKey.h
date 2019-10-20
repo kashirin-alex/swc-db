@@ -120,6 +120,27 @@ class Key : public DB::Cell::Key {
       *comp = (Condition::Comp)*(fraction_ptr);
   }
 
+  void get(DB::Cell::Key &cell_key) {
+    cell_key.free();
+    
+    if(count > 0) {
+      cell_key.own = true;
+      cell_key.count = count;
+      cell_key.size  = size-count;
+      cell_key.data = new uint8_t[cell_key.size];
+      const uint8_t* ptr = data;
+      const uint8_t* ptr_len;
+      uint8_t* data_ptr = cell_key.data;
+      uint32_t len;
+      for(uint8_t i=0; i<count; i++) {
+        ptr_len = ++ptr;
+        ptr += Serialization::decode_vi32(&ptr);
+        memcpy(data_ptr, ptr_len, len = ptr-ptr_len);
+        data_ptr += len;
+      }
+    }
+  }
+
   inline void remove(uint32_t idx, bool recursive=false) {
     DB::Cell::Key::remove(idx, recursive, 1);
   }

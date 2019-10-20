@@ -85,7 +85,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
               err(0), cid(cid), rid(rid), next_key(false) { }
 
   RgrGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
-            const DB::Specs::Key& key_start, const DB::Specs::Key& key_end, 
+            const DB::Cell::Key& key_start, const DB::Cell::Key& key_end, 
             bool next_key)  
             : Common::Params::HostEndPoints(endpoints), 
               err(0), cid(cid), rid(rid), 
@@ -94,8 +94,8 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
   int             err;         
   int64_t         cid; 
   int64_t         rid; 
-  DB::Specs::Key  key_start;
-  DB::Specs::Key  key_end;
+  DB::Cell::Key   key_start;
+  DB::Cell::Key   key_end;
   bool            next_key;
 
   const std::string to_string() const {

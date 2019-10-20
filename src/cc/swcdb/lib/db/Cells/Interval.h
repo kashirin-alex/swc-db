@@ -51,12 +51,12 @@ class Interval {
     was_set = false;
   }
   
-  void set_key_begin(const Specs::Key& key) {
+  void set_key_begin(const DB::Cell::Key& key) {
     key_begin.copy(key);
     was_set = true;
   }
 
-  void set_key_end(const Specs::Key& key) {
+  void set_key_end(const DB::Cell::Key& key) {
     key_end.copy(key);
     was_set = true;
   }
@@ -74,10 +74,10 @@ class Interval {
   void expand(const Interval& other) {
     bool initiated = was_set;
     
-    if(!initiated || !key_begin.is_matching(other.key_begin))
+    if(!initiated || !is_in_begin(other.key_begin))
       set_key_begin(other.key_begin);
   
-    if(!initiated || !key_end.is_matching(other.key_end))
+    if(!initiated || !is_in_end(other.key_end))
       set_key_end(other.key_end);
 
     if(!initiated || !ts_earliest.is_matching(other.ts_earliest.value))
@@ -87,10 +87,10 @@ class Interval {
   }
 
   void expand(const Cell& cell) {
-    if(key_begin.empty() || !key_begin.is_matching(cell.key))
-      key_begin.set(cell.key, Condition::GE);
-    if(key_end.empty() || !key_end.is_matching(cell.key))
-      key_end.set(cell.key, Condition::LE);
+    if(key_begin.empty() || !is_in_begin(cell.key))
+      key_begin.copy(cell.key);
+    if(key_end.empty() || !is_in_end(cell.key))
+      key_end.copy(cell.key);
     
     if(ts_earliest.empty() || !ts_earliest.is_matching(cell.timestamp))
       ts_earliest.set(cell.timestamp, Condition::GE);
@@ -107,27 +107,25 @@ class Interval {
       ts_latest.equal(other.ts_latest);
   }
 
-  const bool is_in_begin(const Specs::Key &key) const {
-    return key_begin.is_matching(key);
+  inline const bool is_in_begin(const DB::Cell::Key &key) const {
+    return key_begin.empty() || key_begin.compare(key) != Condition::LT;
   }
   
-  const bool is_in_end(const Specs::Key &key) const {
-    return key_end.is_matching(key);
+  inline const bool is_in_end(const DB::Cell::Key &key) const {
+    return key_end.empty() || key_end.compare(key) != Condition::GT;
   }
 
-  const bool consist(const Interval& other) const {
-    return key_begin.is_matching(other.key_end) && 
-           key_end.is_matching(other.key_begin);
+  inline const bool consist(const Interval& other) const {
+    return is_in_begin(other.key_end) && is_in_end(other.key_begin);
+  }
+
+  inline const bool consist(const DB::Cell::Key& key) const {
+    return is_in_begin(key) && is_in_end(key);
   }
 
   const bool includes(const Interval& other) const {
-    return key_begin.empty() || key_end.empty() ||
-           other.key_begin.empty() || other.key_end.empty() ||
-           (
-            key_begin.is_matching(other.key_end) 
-            &&
-            key_end.is_matching(other.key_begin)
-           );           
+    return other.key_begin.empty() || other.key_end.empty() ||
+           consist(other);           
   }
 
   const bool includes(const Specs::Interval::Ptr interval) const {
@@ -135,17 +133,13 @@ class Interval {
   }
 
   const bool includes(const Specs::Interval& interval) const {
-    return key_begin.empty() || key_end.empty() ||
-           interval.key_start.empty() || interval.key_finish.empty() ||
-           (
-            key_begin.is_matching(interval.key_finish) 
-            &&
-            key_end.is_matching(interval.key_start)
-           );
-  }
-
-  const bool consist(const DB::Cell::Key& key) const {
-    return key_begin.is_matching(key) && key_end.is_matching(key);
+    std::cout << "Interval::includes Specs: " <<  interval.to_string() << "\n";
+    std::cout << "Interval::includes Cells: " <<  to_string() << "\n";
+    return (interval.key_start.empty()  || key_end.empty() || 
+            interval.key_start.is_matching(key_end))     
+          && 
+           (interval.key_finish.empty() || key_begin.empty() || 
+           interval.key_finish.is_matching(key_begin));
   }
 
   const size_t encoded_length() const {
@@ -186,8 +180,8 @@ class Interval {
   }
 
 
-  Specs::Key        key_begin;
-  Specs::Key        key_end;  
+  DB::Cell::Key     key_begin;
+  DB::Cell::Key     key_end;  
   Specs::Timestamp  ts_earliest;
   Specs::Timestamp  ts_latest;
   bool              was_set = false;

@@ -28,6 +28,7 @@ class RgrGet : public AppHandler {
 
       Params::RgrGetReq params;
       params.decode(&ptr, &remain);
+      std::cout << "RgrGet: " << params.to_string() << "\n";
 
       Env::Rangers::get()->is_active(rsp_params.err, params.cid); 
       if(rsp_params.err != Error::OK)
@@ -46,7 +47,8 @@ class RgrGet : public AppHandler {
       if(params.rid == 0) {
         range = col->get_range(
           rsp_params.err, params.interval, rsp_params.next_key);
-        range->apply_interval(rsp_params.key_start, rsp_params.key_end);
+        if(range != nullptr)
+          range->get_interval(rsp_params.key_start, rsp_params.key_end);
       } else 
         range = col->get_range(rsp_params.err, params.rid);
       
@@ -72,6 +74,7 @@ class RgrGet : public AppHandler {
   
     send_response:
       try {
+        std::cout << "RgrGet(RSP): " << rsp_params.to_string() << "\n";
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
         CommBufPtr cbp = std::make_shared<CommBuf>(

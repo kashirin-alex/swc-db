@@ -61,6 +61,25 @@ class Mutable {
     std::lock_guard<std::mutex> lock(m_mutex);
     cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
+   
+  bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) {
+    Cell* ptr;
+    Condition::Comp chk;
+    uint32_t offset = 0; // narrower
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(;offset < m_size; offset++){
+      ptr = *(m_cells + offset);
+      chk = key.compare(ptr->key, 0);
+      if(chk == Condition::GT 
+        || (comp == Condition::GE && chk == Condition::EQ)){
+        cell.copy(*ptr);
+        return true;
+      }
+    }
+    return false;
+  }
 
   bool get(const Specs::Key& key, Cell& cell) {
     Cell* ptr;
@@ -126,6 +145,7 @@ class Mutable {
     uint32_t offset = 0; //(narrower over specs.key_start)
     uint32_t count_skips = 0 ;
     std::lock_guard<std::mutex> lock(m_mutex);
+    
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
       
@@ -193,22 +213,27 @@ class Mutable {
     }
   }
   
-  bool write_and_free(const Specs::Interval& specs,
+  bool write_and_free(const DB::Cell::Key& key_start, 
+                      const DB::Cell::Key& key_finish,
                       DynamicBuffer& cells, uint32_t threshold) {
     Cell* cell;
-    uint32_t offset = 0; //(narrower over specs.key_start)
-    int32_t offset_applied = -1;
+    uint32_t offset = 0; //(narrower over key_start)
     uint32_t count = 0;
-
+    int32_t offset_applied = -1;
+    Condition::Comp cond;
+    
     std::lock_guard<std::mutex> lock(m_mutex);
-  
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
 
     for(;offset < m_size;offset++) {
       cell = *(m_cells + offset);
-      if((!specs.key_start.empty() && !specs.key_start.is_matching(cell->key))
-        || (!specs.key_finish.empty() && !specs.key_finish.is_matching(cell->key)))
+
+      cond = cell->key.compare(key_start, 0);
+      if(cond == Condition::GT) 
         continue;
+      cond = cell->key.compare(key_finish, 0);
+      if(cond == Condition::GT)
+        break;
 
       count++;
       if(offset_applied == -1)
@@ -232,7 +257,7 @@ class Mutable {
     }
     return false;
   }
-
+  
   void add(const DynamicBuffer& cells) {
     Cell cell;
     std::lock_guard<std::mutex> lock(m_mutex);

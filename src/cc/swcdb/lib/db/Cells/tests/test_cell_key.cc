@@ -184,6 +184,12 @@ void test_basic(){
     exit(1);
   }
 
+  std::cout << "SPEC KEY TO CELL KEY: \n";
+  DB::Cell::Key spec_to_key;
+  spec_key_remove_recurs.get(spec_to_key);
+  std::cout << spec_key_remove_recurs.to_string() << "\n";
+  std::cout << spec_to_key.to_string() << "\n";
+
   std::cout << "\ntest_basic OK! \n";
 }
 

@@ -100,11 +100,6 @@ class Range : public DB::RangeBase {
     m_last_rgr = nullptr;
   }
 
-  void set(const DB::Cells::Interval& interval){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_interval.copy(interval);
-  }
-
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("[");
@@ -117,88 +112,11 @@ class Range : public DB::RangeBase {
     return s;
   }
 
-  
-  bool chained_set(Ptr range, Ptr& current) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
-    if(!m_interval.was_set) {
-      const DB::Cells::Interval& intval = range->get_interval();
-      if(!intval.was_set
-        && !m_interval.is_in_end(intval.key_begin)) {
-        range->chained_set_next(current);
-        if(m_chained_prev != nullptr) {
-          range->chained_set_prev(m_chained_prev);
-          m_chained_prev->chained_set_next(range);
-        }
-        m_chained_prev = range;
-        return true;
-      }
-    }
-
-    if(m_chained_next == nullptr){
-      if(range->rid != -1)
-        range->chained_set_prev(current); 
-      m_chained_next = range;
-      return true;
-    }
-
-    current = m_chained_next;
-    return false;
-  }
-
-  void chained_consist(const DB::Specs::Interval& intval, Ptr& found,
-                       bool &next_key, Ptr& current) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(!m_interval.was_set || !m_interval.includes(intval)) {
-      std::cout << " FALSE chained_consist, rid=" << current->rid
-                << "\n this  " << m_interval.to_string()
-                << "\n other " << intval.to_string();
-      current = nullptr;
-      return;
-    }
-
-    if(found != nullptr)
-      next_key = true;
-    else 
-      found = current;
-
-    current = m_chained_next;
-    return;
-  }
-
-  void chained_next(Ptr& range) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    range = m_chained_next;
-  }
-
-  void chained_remove() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(rid != -1)
-      m_chained_prev->chained_set_next(m_chained_next);
-    if(m_chained_next != nullptr)
-      m_chained_next->chained_set_prev(m_chained_prev);
-  }
-
   private:
-
-  void chained_set_next(Ptr next) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_chained_next = next;
-  }
-
-  void chained_set_prev(Ptr prev) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_chained_prev = prev;
-  }
-
 
   uint64_t            rgr_id;
   State               m_state;
   Files::RgrDataPtr   m_last_rgr;
-  
-  Ptr                 m_chained_next=nullptr;
-  Ptr                 m_chained_prev=nullptr;
 
 };
 

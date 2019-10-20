@@ -96,22 +96,55 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return Files::RgrData::get_rgr(err, get_path(ranger_data_file));
   }
 
-  const Cells::Interval& get_interval() {
+  void set(const Cells::Interval& interval){
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_interval; // ?return copy
+    m_interval.copy(interval);
   }
 
-  const void apply_interval(Specs::Key& key_start, Specs::Key& key_end) {
+  bool after(const Ptr& range) { 
     std::lock_guard<std::mutex> lock(m_mutex);
+    return range->before(m_interval);
+  }   
 
-    key_start.copy(m_interval.key_begin);
+  bool const before(const Cells::Interval& intval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return (!intval.was_set && m_interval.was_set) 
+            ||
+           (intval.was_set && m_interval.was_set 
+            && !intval.is_in_end(m_interval.key_begin));
+  }
+
+  bool const equal(const Cells::Interval& intval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_interval.equal(intval);
+  }
+
+  bool const interval() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_interval.was_set;
+  }
+
+  bool includes(const DB::Specs::Interval& intval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_interval.includes(intval);
+  }
+
+
+  const void get_interval(Cells::Interval& interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    interval.copy(m_interval);
+  }
+
+  const void get_interval(Cell::Key& key_begin, Cell::Key& key_end) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    key_begin.copy(m_interval.key_begin);
     key_end.copy(m_interval.key_end);
   }
 
-  const void apply_interval(Cells::Interval& interval) {
+  const void get_interval(Specs::Key& key_start, Specs::Key& key_end) {
     std::lock_guard<std::mutex> lock(m_mutex);
-
-    interval.copy(m_interval);
+    key_start.set(m_interval.key_begin, Condition::GE);
+    key_end.set(m_interval.key_end, Condition::LE);
   }
 
   const std::string to_string() const {

@@ -176,7 +176,6 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   }
 
   void load() {
-    //std::cout << "load_cells " << to_string() << "\n"; 
     int err;
 
     for(;;) {
@@ -216,13 +215,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       }
       break;
     }
-
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = err ? State::CELLS_NONE : State::CELLS_LOADED;
     }
-
 
     std::function<void(int)> cb;
     for(;;) {
@@ -240,7 +237,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
           return;
       }
     }
-    std::cout << "LogFragment, load_cells-complete" << "\n";
+    std::cout << "LogFragment, load-complete" << "\n";
   }
 
   void load(std::function<void(int)> cb) {
@@ -305,7 +302,8 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     ts = Time::now_ns()-ts;
     std::cout << " frag-load_cells-took=" << ts
                 << " read=" << ts_cells_read 
-                << " add=" << ts_cells_add << " count=" << count << " avg=" << ts/count << "\n";
+                << " add=" << ts_cells_add << " count=" << count 
+                << " avg=" << (count>0? ts/count : 0) << "\n";
   }
 
   bool loaded() {

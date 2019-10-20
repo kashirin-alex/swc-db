@@ -247,7 +247,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         good = --count == 0;
-        std::cout << "AwaitingLoad count="<<count << "\n";
+        std::cout << "AwaitingLoad count="<<count 
+                  << " err=" << err << " loaded=" << frag->to_string() << "\n";
         call = good || err;
         if(err) 
           count = 0;
@@ -265,12 +266,12 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         cb(err);
     }
 
-    std::mutex                m_mutex;
-    int32_t                   count = 0;
-    DB::Cells::ReqScan::Ptr   req;
-    CellStore::Block::Read::Ptr          blk;
-    const Cb_t                cb;
-    Fragments::Ptr            log;
+    std::mutex                    m_mutex;
+    int32_t                       count = 0;
+    DB::Cells::ReqScan::Ptr       req;
+    CellStore::Block::Read::Ptr   blk;
+    const Cb_t                    cb;
+    Fragments::Ptr                log;
   };
 
   std::mutex                  m_mutex;

@@ -27,7 +27,11 @@ namespace Query = SWC::Protocol::Common::Req::Query;
 
 
 
-void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool deleting=false) {
+void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int num_cells=1, int check=1, bool deleting=false) {
+  std::cout << "run_test cid=" << cid << " versions=" << versions 
+                                      << " num-cells=" << num_cells 
+                                      << " check=" << check 
+                                      << " deleting=" << deleting << "\n";
   // Req::Query::Update
   int err = SWC::Error::OK;
   SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
@@ -41,9 +45,9 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int check=1, bool dele
   int counted = 0;
   // master-range
   Cells::Cell cell;
-  for(int vers=0;vers<2;vers++) {
+  for(int vers=0;vers<versions;vers++) {
 
-  for(int i=0;i<20000;i++) {
+  for(int i=0;i<num_cells;i++) {
   std::string cell_number(std::to_string(check)+"-"+std::to_string(i));
   cell.flag = !deleting? Cells::INSERT : Cells::DELETE;
   //cell.set_timestamp(111);
@@ -129,14 +133,16 @@ int main(int argc, char** argv) {
   //run_test(update_req, 2);
   
   for(int check=1; check<=10; check++)
-    run_test(update_req, 11, check);
+    run_test(update_req, 11, 2, 100000, check);
 
   for(int check=1; check<=10; check++)
-    run_test(update_req, 11, check, true);
+    run_test(update_req, 11, 2, 100000, check, true);
 
+  for(int check=1; check<=1000; check++)
+    run_test(update_req, 11, 2, 1, check);
 
-  std::cout << " ### Waiting ###\n";
-  update_req->wait();
+  for(int check=1; check<=1000; check++)
+    run_test(update_req, 11, 2, 1, check, true);
 
   
   SWC::Env::IoCtx::io()->stop();

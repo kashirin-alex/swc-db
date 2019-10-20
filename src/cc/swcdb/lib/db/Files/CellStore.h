@@ -666,12 +666,16 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   writer.create(err);
   if(err)
     return nullptr;
+    
+  DB::Cells::Interval interval;
+  range->get_interval(interval);
+
   DynamicBuffer cells_buff;
-  writer.block(err, range->get_interval(), cells_buff, 0);
+  writer.block(err, interval, cells_buff, 0);
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      Read::Ptr cs = std::make_shared<Read>(1, range, range->get_interval());
+      Read::Ptr cs = std::make_shared<Read>(1, range, interval);
       cs->load_blocks_index(err, true);
       if(!err)
         return cs;

@@ -202,8 +202,7 @@ class Range : public DB::RangeBase {
       cell.key.copy(m_interval.key_begin);
       cell.key.insert(0, std::to_string(cid));
 
-      DB::Cell::Key key_end;
-      key_end.copy(m_interval.key_end); // Specs::Key::get(Cell::Key&)
+      DB::Cell::Key key_end(m_interval.key_end);
       key_end.insert(0, std::to_string(cid));
         
       cell.own = true;
@@ -402,6 +401,8 @@ class Range : public DB::RangeBase {
         req = m_q_adding.front();
       }
 
+      std::cout << "Range::add cid="<<cid 
+               << " sz=" << req->input->size << "\n";
       ptr = req->input->base;
       remain = req->input->size; 
       while(remain) {
@@ -409,8 +410,6 @@ class Range : public DB::RangeBase {
         // validate over range.interval match
 
         m_commit_log->add(cell);
-        std::cout << "Range::add cid="<<cid 
-                  << " " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {

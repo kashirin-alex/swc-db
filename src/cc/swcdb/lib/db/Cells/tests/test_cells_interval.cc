@@ -32,12 +32,12 @@ int main() {
 
   for(const auto& cs : *cellstores.get()){
       auto s = std::to_string(n_cs-cs->id);
-      DB::Specs::Key key;
-      key.add("11", Condition::GE);
-      key.add(std::string("a")+s, Condition::GE);
-      key.add(std::string("b")+s, Condition::GE);
-      key.add(std::string("c")+s, Condition::GE);
-      key.add(std::string("d")+s, Condition::GE);
+      DB::Cell::Key key;
+      key.add("11");
+      key.add(std::string("a")+s);
+      key.add(std::string("b")+s);
+      key.add(std::string("c")+s);
+      key.add(std::string("d")+s);
       cs->interval.set_key_begin(key);
       if(!key.equal(cs->interval.key_begin)) {
         std::cerr << "!key.equal(cs->interval.key_begin): ERROR\n";
@@ -48,11 +48,11 @@ int main() {
       key.free();
 
       s = std::to_string(cs->id);
-      key.add("11", Condition::LE);
-      key.add(std::string("a")+s, Condition::LE);
-      key.add(std::string("b")+s, Condition::LE);
-      key.add(std::string("c")+s, Condition::LE);
-      key.add(std::string("d")+s, Condition::LE);
+      key.add("11");
+      key.add(std::string("a")+s);
+      key.add(std::string("b")+s);
+      key.add(std::string("c")+s);
+      key.add(std::string("d")+s);
       cs->interval.set_key_end(key);
       if(!key.equal(cs->interval.key_end)) {
         std::cerr << "!key.equal(cs->interval.key_end): ERROR\n";

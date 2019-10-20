@@ -19,7 +19,7 @@ class Key {
 
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) {}
 
-  explicit Key(const Key &other): own(false) {
+  explicit Key(const Key &other): own(false), data(0) {
     copy(other);
   }
 

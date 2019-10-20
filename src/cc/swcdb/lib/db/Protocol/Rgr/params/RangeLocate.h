@@ -33,7 +33,7 @@ class RangeLocateReq : public Serializable {
   
   const std::string to_string() {
     std::string s("RangeLocateReq(");
-    s.append(" cid=");
+    s.append("cid=");
     s.append(std::to_string(cid));
     s.append(" rid=");
     s.append(std::to_string(rid));
@@ -79,8 +79,8 @@ class RangeLocateRsp  : public Serializable {
                   : err(err), cid(cid), rid(rid) {  }
 
   RangeLocateRsp(int64_t cid, int64_t rid, 
-                 const DB::Specs::Key& key_start, 
-                 const DB::Specs::Key& key_end,
+                 const DB::Cell::Key& key_start, 
+                 const DB::Cell::Key& key_end,
                  bool next_key)
                  : err(0), cid(cid), rid(rid), 
                   key_start(key_start), key_end(key_end), next_key(next_key) {
@@ -89,8 +89,8 @@ class RangeLocateRsp  : public Serializable {
   int             err;         
   int64_t         cid; 
   int64_t         rid; 
-  DB::Specs::Key  key_start;
-  DB::Specs::Key  key_end;
+  DB::Cell::Key   key_start;
+  DB::Cell::Key   key_end;
   bool            next_key;
 
   const std::string to_string() const {

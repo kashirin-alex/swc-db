@@ -36,9 +36,7 @@ class Column : public std::enable_shared_from_this<Column> {
     return true;
   }
 
-  Column(const int64_t id) 
-        : cid(id), m_state(State::LOADING),
-          m_base_range(std::make_shared<Range>(cid, -1)) {
+  Column(const int64_t id) : cid(id), m_state(State::LOADING) {
   }
 
   virtual ~Column(){}
@@ -64,8 +62,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   void set_loading() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_state == State::OK)
-      m_state = State::LOADING;
+    _set_loading();
   }
 
   void state(int& err) {
@@ -76,120 +73,119 @@ class Column : public std::enable_shared_from_this<Column> {
       err = Error::COLUMN_MARKED_REMOVED;
     else
       err = Error::COLUMN_NOT_READY;
-      
   }
   
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
-    Range::Ptr range = m_base_range;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
-      if(range->rid == rid)
-        return range;
-    }
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
+                          [rid](const Range::Ptr& range) 
+                          {return range->rid == rid;});
+    if(it != m_ranges.end())
+      return *it;
+
     if(initialize) {
-      range = std::make_shared<Range>(cid, rid);
-      range->init(err);
-      chained_set(range);
+      Range::Ptr range = std::make_shared<Range>(cid, rid);
+      //range->init(err);
+      m_ranges.push_back(range);
       return range;
-    } else
-      return nullptr;
+    } 
+    return nullptr;
   }
 
-  Range::Ptr get_range(int &err, const DB::Specs::Interval& interval, 
+  Range::Ptr get_range(int &err, const DB::Specs::Interval& intval, 
                        bool &next_key) {
-    Range::Ptr found;
-    Range::Ptr range = m_base_range;
-    range->chained_next(range);
-    for(;;){
-      range->chained_consist(interval, found, next_key, range);
-      if(range == nullptr || next_key)
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    Range::Ptr found = nullptr;
+    for(auto& range : m_ranges){
+      if(range->includes(intval)) {
+        if(found == nullptr){
+          found = range;
+          continue;
+        }
+        next_key = true;
         break;
+      }
     }
     return found;
   }
 
-  void chained_set(Range::Ptr& range, const DB::Cells::Interval& interval) {
-    const DB::Cells::Interval& intval = range->get_interval();
+  void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
+    // std::sort(m_ranges.begin(), m_ranges.end(), Range); 
+    if(interval.was_set != range->interval() || !range->equal(interval)) {
+      range->set(interval);
+      
+      if(m_ranges.size() > 1) {
+        m_ranges.erase(
+          std::find_if(m_ranges.begin(), m_ranges.end(), 
+            [rid=range->rid](const Range::Ptr& range) 
+            {return range->rid == rid;})
+        );
+        bool added = false;
+        for(auto it=m_ranges.begin();it<m_ranges.end();it++){
+          if((*it)->after(range)) {
+            m_ranges.insert(it, range);
+            added = true;
+            break;
+          }
+        }
+        if(!added)
+          m_ranges.push_back(range);
+      }
+    }
 
-    if(!intval.was_set && !interval.was_set) 
+
+    if(m_state != State::LOADING)
       return;
 
-    if(!intval.was_set || !interval.equal(intval)) {
-      range->chained_remove();
-      range->set(interval);
-      chained_set(range);
+    for(auto& range : m_ranges){
       if(!range->assigned())
         return;
     }
-
-    Range::Ptr next = m_base_range;
-    do{
-      next->chained_next(next);
-    } while(next != nullptr && next->assigned());
-    if(next == nullptr) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state == State::LOADING)
-        m_state = State::OK;
-    }
+    if(m_state == State::LOADING)
+      m_state = State::OK;
   }
 
   int64_t get_next_rid() {
-    int64_t rid = 0;
-    Range::Ptr range;
-    for(;;){
-      rid++;
-      range = m_base_range;
-      for(;;){
-        range->chained_next(range);
-        if(range == nullptr || range->rid == rid)
-          break;
-      }
-      if(range == nullptr)
-        break;
-    }
-    return rid;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _get_next_rid();
   }
 
-  Range::Ptr get_next_unassigned() {    
-    Range::Ptr range = m_base_range;
-    do{
-      range->chained_next(range);
-    } while(range != nullptr && !range->need_assign());
-    
-    if(range != nullptr)
-      set_loading();
-    return range;
+  Range::Ptr get_next_unassigned() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for(auto range : m_ranges) {
+      if(range->need_assign()) {
+        _set_loading();
+        return range;
+      }
+    }
+    return nullptr;
   }
 
   void set_rgr_unassigned(uint64_t id) {
+    std::lock_guard<std::mutex> lock(m_mutex);    
 
-    Range::Ptr range = m_base_range;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
-      if(range->get_rgr_id() == id) {
+    for(auto range : m_ranges){
+      if(range->get_rgr_id() == id){
         range->set_state(Range::State::NOTSET, 0);
-        set_loading();
+        _set_loading();
       }
     }
-    
-    remove_rgr_schema(id);
+    _remove_rgr_schema(id);
   }
 
   void change_rgr(uint64_t rgr_id_old, uint64_t id) {
-    Range::Ptr range = m_base_range;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
+    std::lock_guard<std::mutex> lock(m_mutex);    
+
+    for(auto range : m_ranges) {
       if(range->get_rgr_id() == rgr_id_old)
         range->set_rgr_id(id);
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex);    
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
       if(it->first == rgr_id_old) {
         m_schemas_rev.insert(RsSchemaRev(id, it->second));;
@@ -211,10 +207,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   void remove_rgr_schema(const uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
-
-    auto it = m_schemas_rev.find(id);
-    if(it != m_schemas_rev.end())
-       m_schemas_rev.erase(it);
+    _remove_rgr_schema(id);
   }
 
   void need_schema_sync(int64_t rev, std::vector<uint64_t> &rgr_ids) {
@@ -236,84 +229,59 @@ class Column : public std::enable_shared_from_this<Column> {
   }
   
   void assigned(std::vector<uint64_t> &rgr_ids) {
-    Range::Ptr range = m_base_range;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     uint64_t id;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
+    for(auto range : m_ranges) {
       id = range->get_rgr_id();
       if(id == 0)
         continue;
-      if(std::find_if(rgr_ids.begin(), rgr_ids.end(), [id]
-      (const uint64_t& rgr_id2){return id == rgr_id2;}) == rgr_ids.end())
+      if(std::find_if(rgr_ids.begin(), rgr_ids.end(), 
+        [id](const uint64_t& rgr_id2){return id == rgr_id2;}) == rgr_ids.end())
         rgr_ids.push_back(id);
     }
   }
   
   bool do_remove() {
-    bool was;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      was = m_state == State::DELETED;
-      m_state = State::DELETED;
-      m_schemas_rev.clear();
-    }
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    bool was = m_state == State::DELETED;
+    m_state = State::DELETED;
+    m_schemas_rev.clear();
+    
     if(!was){
-      Range::Ptr range = m_base_range;
-      for(;;){
-        range->chained_next(range);
-        if(range == nullptr)
-          break;
+      for(auto range : m_ranges)
         range->set_deleted();
-      }
     }
     return !was;
   }
 
   bool finalize_remove(int &err, uint64_t id=0) {
-    uint64_t eid;
-    Range::Ptr range = m_base_range;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
-      eid = range->get_rgr_id();
-      if(id == 0 || eid == id || eid == 0)
-        range->chained_remove();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
+    if(id == 0) {
+      m_ranges.clear();
+    } else {
+      uint64_t eid;
+      for(auto it=m_ranges.begin();it<m_ranges.end();){
+        eid = (*it)->get_rgr_id();
+        if(eid == id || eid == 0)
+          m_ranges.erase(it);
+        else
+          it++;
+      }
     }
-
-    range = m_base_range;
-    range->chained_next(range);
-    bool empty = range == nullptr;
-    if(empty) {
+    if(m_ranges.empty()) {
       Env::FsInterface::interface()->rmdir(err, Range::get_path(cid));
-      HT_DEBUGF("FINALIZED REMOVE %s", to_string().c_str());
+      HT_DEBUGF("FINALIZED REMOVE %s", _to_string().c_str());
+      return true;
     }
-    return empty;
+    return false;
   }
 
   const std::string to_string() {
-    std::string s("[cid=");
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      s.append(std::to_string(cid));
-    }
-
-    s.append(", next-rid=");
-    s.append(std::to_string(get_next_rid()));
-    s.append(", ranges=(");
-    
-    Range::Ptr range = m_base_range;
-    for(;;){
-      range->chained_next(range);
-      if(range == nullptr)
-        break;
-      s.append(range->to_string());
-      s.append(",");
-    }
-    s.append(")]");
-    return s;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _to_string();
   }
 
   private:
@@ -338,16 +306,48 @@ class Column : public std::enable_shared_from_this<Column> {
       err, Range::get_path(cid), entries);
   }
 
-  void chained_set(Range::Ptr range){
-    Range::Ptr current = m_base_range;
-    while(!current->chained_set(range, current));
+  const std::string _to_string() {
+    std::string s("[cid=");
+    s.append(std::to_string(cid));
+    s.append(", next-rid=");
+    s.append(std::to_string(_get_next_rid()));
+    s.append(", ranges=(");
+    
+    for(auto& range : m_ranges){
+      s.append(range->to_string());
+      s.append(",");
+    }
+    s.append(")]");
+    return s;
   }
 
+  inline void _set_loading() {
+    if(m_state == State::OK)
+      m_state = State::LOADING;
+  }
+  
+  int64_t _get_next_rid() {
+    int64_t rid = 1;
+    for(
+      ;std::find_if(m_ranges.begin(), m_ranges.end(), 
+        [rid](const Range::Ptr& range) 
+        {return range->rid == rid;}) != m_ranges.end()
+      ;rid++
+    );
+    return rid;
+  }
+
+  inline void _remove_rgr_schema(const uint64_t id) {
+    auto it = m_schemas_rev.find(id);
+    if(it != m_schemas_rev.end())
+       m_schemas_rev.erase(it);
+  }
 
   std::mutex                 m_mutex;
   const int64_t              cid;
   std::atomic<State>         m_state;
-  const Range::Ptr           m_base_range;
+
+  std::vector<Range::Ptr>    m_ranges;
 
 
   typedef std::pair<uint64_t, int64_t>    RsSchemaRev;
