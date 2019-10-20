@@ -130,18 +130,23 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
 
-  const void get_interval(Cells::Interval& interval) {
+  void get_interval(Cells::Interval& interval) {
     std::lock_guard<std::mutex> lock(m_mutex);
     interval.copy(m_interval);
   }
 
-  const void get_interval(Cell::Key& key_begin, Cell::Key& key_end) {
+  void get_interval(Cell::Key& key_begin, Cell::Key& key_end) {
     std::lock_guard<std::mutex> lock(m_mutex);
     key_begin.copy(m_interval.key_begin);
     key_end.copy(m_interval.key_end);
   }
 
-  const void get_interval(Specs::Key& key_start, Specs::Key& key_end) {
+  void get_key_end(Cell::Key& key_end) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    key_end.copy(m_interval.key_end);
+  }
+
+ void get_interval(Specs::Key& key_start, Specs::Key& key_end) {
     std::lock_guard<std::mutex> lock(m_mutex);
     key_start.set(m_interval.key_begin, Condition::GE);
     key_end.set(m_interval.key_end, Condition::LE);

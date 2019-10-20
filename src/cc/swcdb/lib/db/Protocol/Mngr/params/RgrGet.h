@@ -85,16 +85,15 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
               err(0), cid(cid), rid(rid), next_key(false) { }
 
   RgrGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
-            const DB::Cell::Key& key_start, const DB::Cell::Key& key_end, 
+            const DB::Cell::Key& key_end, 
             bool next_key)  
             : Common::Params::HostEndPoints(endpoints), 
               err(0), cid(cid), rid(rid), 
-              key_start(key_start), key_end(key_end), next_key(next_key) { }
+              key_end(key_end), next_key(next_key) { }
 
   int             err;         
   int64_t         cid; 
   int64_t         rid; 
-  DB::Cell::Key   key_start;
   DB::Cell::Key   key_end;
   bool            next_key;
 
@@ -110,8 +109,6 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       s.append(" ");
       s.append(Common::Params::HostEndPoints::to_string());
       if(cid == 1) {
-        s.append(" Start");
-        s.append(key_start.to_string());
         s.append(" End");
         s.append(key_end.to_string());
         s.append(" next_key=");
@@ -138,7 +135,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
         (Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + Common::Params::HostEndPoints::encoded_length_internal()
-        + (cid==1 ? key_start.encoded_length()+key_end.encoded_length()+1 : 0)
+        + (cid==1 ? key_end.encoded_length()+1 : 0)
         )
       );
   }
@@ -150,7 +147,6 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       Serialization::encode_vi64(bufp, rid);
       Common::Params::HostEndPoints::encode_internal(bufp);
       if(cid == 1) {
-        key_start.encode(bufp);
         key_end.encode(bufp);
         Serialization::encode_bool(bufp, next_key);
       }
@@ -165,7 +161,6 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       rid = Serialization::decode_vi64(bufp, remainp);
       Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
       if(cid == 1) {
-        key_start.decode(bufp, remainp, true);
         key_end.decode(bufp, remainp, true);
         next_key = Serialization::decode_bool(bufp, remainp);
       }
