@@ -175,7 +175,8 @@ class Read : public std::enable_shared_from_this<Read> {
       }
       
       blk->scan(req);
-      if(req->spec->flags.limit == req->cells->size())
+      if(req->spec->flags.limit > 0 
+        && req->spec->flags.limit == req->cells->size())
         break;
     }
     int err = Error::OK;

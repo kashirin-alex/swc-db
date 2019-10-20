@@ -106,12 +106,13 @@ class Range : public DB::RangeBase {
   }
 
   void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
-    //std::cout << "Range::Scan cid=" << cid 
-    //          << " cs-idx=" << idx << " " 
-    //          << req->spec->to_string() << "\n";
+    /*std::cout << "Range::Scan cid=" << cid 
+              << " cs-idx=" << idx << " " 
+              << req->spec->to_string() << "\n";*/
 
     for(;;) {
-      if(req->spec->flags.limit == req->cells->size()) {
+      if(req->spec->flags.limit > 0 
+        && req->spec->flags.limit == req->cells->size()) {
         req->response(Error::OK);
         return;
       }
