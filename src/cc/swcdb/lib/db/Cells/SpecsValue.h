@@ -89,6 +89,10 @@ class Value {
     size = 0;
   }
 
+  const bool empty() const {
+    return comp == Condition::NONE;
+  }
+
   const bool equal(const Value &other) const {
     return size == other.size 
       && ((data == 0 && other.data == 0) || 

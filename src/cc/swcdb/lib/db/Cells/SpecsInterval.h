@@ -112,7 +112,7 @@ class Interval {
       ts_finish.is_matching(cell.timestamp) &&
       (key_start.empty()  || key_start.is_matching(cell.key)) &&
       (key_finish.empty() || key_finish.is_matching(cell.key));
-    if(!match)
+    if(!match || value.empty())
       return match;
     
     switch(typ) {
