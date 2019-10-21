@@ -25,7 +25,7 @@ const std::string to_string(Encoding typ) {
     case Encoding::SNAPPY:
       return std::string("snappy");
     default:
-      return std::string("uknown");
+      return std::string("unknown");
   }
 }
 }}
