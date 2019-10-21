@@ -20,14 +20,17 @@ class RangeQuerySelectReq : public Serializable {
   RangeQuerySelectReq() {}
 
   RangeQuerySelectReq(int64_t cid, int64_t rid, 
-                      const DB::Specs::Interval& interval)
-                      : cid(cid), rid(rid), interval(interval) {}
+                      const DB::Specs::Interval& interval, 
+                      uint32_t limit_buffer_sz = 0)
+                      : cid(cid), rid(rid), interval(interval), 
+                        limit_buffer_sz(limit_buffer_sz) {}
 
   virtual ~RangeQuerySelectReq(){ }
 
   int64_t              cid;
   int64_t              rid;
   DB::Specs::Interval  interval;
+  uint32_t             limit_buffer_sz;
   
   const std::string to_string() {
     std::string s("RangeQuerySelectReq(");
@@ -37,6 +40,8 @@ class RangeQuerySelectReq : public Serializable {
     s.append(std::to_string(rid));
     s.append(" ");
     s.append(interval.to_string());
+    s.append(" limit_buffer_sz=");
+    s.append(std::to_string(limit_buffer_sz));
     s.append(")");
     return s;
   }
@@ -50,13 +55,15 @@ class RangeQuerySelectReq : public Serializable {
   size_t encoded_length_internal() const {
     return  Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(rid)
-          + interval.encoded_length();
+          + interval.encoded_length()
+          + Serialization::encoded_length_vi32(limit_buffer_sz);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
     interval.encode(bufp);
+    Serialization::encode_vi32(bufp, limit_buffer_sz);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -64,6 +71,7 @@ class RangeQuerySelectReq : public Serializable {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
     interval.decode(bufp, remainp);
+    limit_buffer_sz = Serialization::decode_vi32(bufp, remainp);
   }
 
 };
@@ -73,9 +81,13 @@ class RangeQuerySelectReq : public Serializable {
 class RangeQuerySelectRsp  : public Serializable {
   public:
 
-  RangeQuerySelectRsp(int err = 0) : err(err) {  }
+  RangeQuerySelectRsp(int err = 0, size_t size=0, bool reached_limit=false) 
+                      : err(err), size(size), reached_limit(reached_limit) {  }
 
-  int32_t   err;
+  int32_t         err;
+  size_t          size;
+  bool            reached_limit;
+  const uint8_t * bufp; // set to event::payload_ptr
 
   const std::string to_string() {
     std::string s("RangeQuerySelectRsp(");
@@ -83,7 +95,12 @@ class RangeQuerySelectRsp  : public Serializable {
     s.append(std::to_string(err));
     s.append("(");
     s.append(Error::get_text(err));
-    s.append("))");
+    s.append(")");
+    s.append(" size=");
+    s.append(std::to_string(size));
+    s.append(" reached_limit=");
+    s.append(std::to_string(reached_limit));
+    s.append(")");
     return s;
   }
 
@@ -94,16 +111,22 @@ class RangeQuerySelectRsp  : public Serializable {
   }
     
   size_t encoded_length_internal() const {
-    return  Serialization::encoded_length_vi32(err);
+    return  Serialization::encoded_length_vi32(err)
+          + Serialization::encoded_length_vi64(size)
+          + 1;
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
+    Serialization::encode_vi64(bufp, size);
+    Serialization::encode_bool(bufp, reached_limit);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     err = Serialization::decode_vi32(bufp, remainp);
+    size = Serialization::decode_vi64(bufp, remainp);
+    reached_limit = Serialization::decode_bool(bufp, remainp);
   }
 
 };

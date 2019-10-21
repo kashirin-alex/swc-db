@@ -43,8 +43,7 @@ class RangeQuerySelect : public AppHandler {
     }
 
     try{
-      std::cout << "RangeQuerySelect, req: cid=" << params.cid << " rid=" << params.rid 
-                << " " << params.interval.to_string() << "\n";
+      std::cout << "RangeQuerySelect: " << params.to_string() << "\n";
 
       DB::SchemaPtr schema = Env::Schemas::get()->get(params.cid);
       if(!err && schema == nullptr) { 
@@ -64,13 +63,15 @@ class RangeQuerySelect : public AppHandler {
         DB::Specs::Interval::make_ptr(params.interval),
         DB::Cells::Mutable::make(
           params.interval.flags.limit, 
-          schema->cell_versions, 
+          params.interval.flags.max_versions != 0 ? 
+          params.interval.flags.max_versions : schema->cell_versions, 
           schema->cell_ttl, 
           schema->col_type
         ),
         [cb](int err){cb->response(err);}
       );
       
+      cb->req->limit_buffer_sz = params.limit_buffer_sz;
       range->scan(cb->req);
     }
     catch (Exception &e) {

@@ -46,13 +46,16 @@ class Interval {
     return std::make_shared<Interval>(*other.get());
   }
   
-  explicit Interval() {}
+  explicit Interval() : offset_rev(0) {}
 
-  explicit Interval(const Key& key_start, const Key& key_finish, const Value& value, 
+  explicit Interval(const Key& key_start, const Key& key_finish, 
+                    const Value& value, 
                     const Timestamp& ts_start, const Timestamp& ts_finish, 
                     const Flags& flags=Flags())
-                    : key_start(key_start), key_finish(key_finish), value(value),
-                      ts_start(ts_start), ts_finish(ts_finish), flags(flags) {}
+                    : key_start(key_start), key_finish(key_finish), 
+                      value(value),
+                      ts_start(ts_start), ts_finish(ts_finish), 
+                      flags(flags), offset_rev(0) {}
   
   explicit Interval(const uint8_t **bufp, size_t *remainp) {
     decode(bufp, remainp); 
@@ -102,12 +105,16 @@ class Interval {
             flags.equal(other.flags) &&
             key_start.equal(other.key_start) &&
             key_finish.equal(other.key_finish) &&
-            value.equal(other.value) ;
+            value.equal(other.value) &&
+            offset_key.equal(offset_key) &&
+            offset_rev == offset_rev ;
   }
 
   const bool is_matching(const Cells::Cell& cell, 
                          Types::Column typ=Types::Column::PLAIN) const {
     bool match = 
+      (offset_key.empty() || (offset_key.compare(cell.key) != Condition::LT 
+                              && offset_rev < cell.revision)) &&
       ts_start.is_matching(cell.timestamp) &&
       ts_finish.is_matching(cell.timestamp) &&
       (key_start.empty()  || key_start.is_matching(cell.key)) &&
@@ -127,7 +134,9 @@ class Interval {
     return key_start.encoded_length() + key_finish.encoded_length()
           + value.encoded_length()
           + ts_start.encoded_length() + ts_finish.encoded_length()
-          + flags.encoded_length();
+          + flags.encoded_length()
+          + offset_key.encoded_length()
+          + Serialization::encoded_length_vi64(offset_rev);
   }
 
   void encode(uint8_t **bufp) const {
@@ -137,6 +146,8 @@ class Interval {
     ts_start.encode(bufp);
     ts_finish.encode(bufp);
     flags.encode(bufp);
+    offset_key.encode(bufp);
+    Serialization::encode_vi64(bufp, offset_rev);
   }
 
   void decode(const uint8_t **bufp, size_t *remainp){
@@ -146,6 +157,8 @@ class Interval {
     ts_start.decode(bufp, remainp);
     ts_finish.decode(bufp, remainp);
     flags.decode(bufp, remainp);
+    offset_key.decode(bufp, remainp);
+    offset_rev = Serialization::decode_vi64(bufp, remainp);
   }
   
   const std::string to_string() const {
@@ -161,6 +174,10 @@ class Interval {
     s.append(ts_finish.to_string());
     s.append(" ");
     s.append(flags.to_string());
+    s.append(" Offset");
+    s.append(offset_key.to_string());
+    s.append(" OffsetRev=");
+    s.append(std::to_string(offset_rev));
     return s;
   }
 
@@ -168,6 +185,9 @@ class Interval {
   Value      value;
   Timestamp  ts_start, ts_finish;
   Flags      flags;
+
+  Cell::Key  offset_key;
+  int64_t    offset_rev;
 };
 
 
