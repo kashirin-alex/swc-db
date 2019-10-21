@@ -121,11 +121,11 @@ int main(int argc, char** argv) {
   hdlr_err(err);
   std::cout << "cs-read-load_blocks_index:\n " << cs.to_string() << "\n";
 
-  cs.close(err);
-  if(err != EBADR){
-    std::cerr << " FD should been closed after loading blocks-index err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n";
-    exit(1);
-  }
+  //cs.close(err);
+  //if(err != EBADR){
+  //  std::cerr << " FD should been closed after loading blocks-index err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n";
+  //  exit(1);
+  //}
   err = SWC::Error::OK;
   std::cout << "cs-closed:\n " << cs.smartfd->to_string() << "\n";
 
