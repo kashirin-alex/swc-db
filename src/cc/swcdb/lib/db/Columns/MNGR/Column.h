@@ -96,10 +96,15 @@ class Column : public std::enable_shared_from_this<Column> {
   Range::Ptr get_range(int &err, const DB::Specs::Interval& intval, 
                        bool &next_key) {
     std::lock_guard<std::mutex> lock(m_mutex);
+    int64_t offset = intval.flags.offset;
 
     Range::Ptr found = nullptr;
     for(auto& range : m_ranges){
       if(range->includes(intval)) {
+        if(offset != 0) {
+          --offset;
+          continue;
+        }
         if(found == nullptr){
           found = range;
           continue;
