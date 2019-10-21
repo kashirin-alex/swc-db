@@ -16,6 +16,7 @@ class ReqScan  {
   public:
   typedef std::shared_ptr<ReqScan>  Ptr;
   typedef std::function<void(int)>  Cb_t;
+  typedef std::function<void()>     NextCall_t;
 
   inline static Ptr 
   make(){
@@ -28,29 +29,28 @@ class ReqScan  {
     return std::make_shared<ReqScan>(spec, cells, cb, selector);
   }
 
-  ReqScan() {}
+  ReqScan(): limit_buffer_sz(0) {}
 
   ReqScan(Specs::Interval::Ptr spec, Mutable::Ptr cells, Cb_t cb, 
           const Mutable::Selector_t& selector = 0)
           : spec(spec), cells(cells), cb(cb), 
-            offset(spec->flags.offset), limit(spec->flags.limit), size(0), 
-            selector(selector) {
+            offset(spec->flags.offset), selector(selector), 
+            limit_buffer_sz(0) {
   }
 
   void response(int err) {
-    cb(err);
+    if(!err && next_call && !reached_limits()){
+      auto call = next_call;
+      next_call = 0;
+      call();
+    } else 
+      cb(err);
   }
 
-  void adjust() {
-    if(size == 0 || size == cells->size())
-      return; 
-    //cells->adjust(spec, &offset, &limit);
-    
-    size = cells->size();
-  }
-
-  bool more() {
-    return limit > 0;
+  bool reached_limits() {
+    return (spec->flags.limit > 0 && spec->flags.limit == cells->size()) 
+           || 
+           (limit_buffer_sz > 0 && limit_buffer_sz <= cells->size_bytes());
   }
  
   virtual ~ReqScan() {}
@@ -62,6 +62,8 @@ class ReqScan  {
     s.append(selector?"true":"false");
     s.append(" ");
     s.append(cells->to_string());
+    s.append(" limit_buffer_sz=");
+    s.append(std::to_string(limit_buffer_sz));
     return s;
   }
 
@@ -70,10 +72,10 @@ class ReqScan  {
   Cb_t                      cb;
   const Mutable::Selector_t selector;
 
+  uint32_t                  limit_buffer_sz = 0;
+  NextCall_t                next_call = 0;
   // state of a scan
-  size_t                  offset;
-  uint32_t                limit;
-  size_t                  size;
+  size_t                    offset;
 };
 
 }}}

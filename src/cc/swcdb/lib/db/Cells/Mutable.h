@@ -140,10 +140,10 @@ class Mutable {
   }
 
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
-            size_t* cell_offset, size_t& skips, const Selector_t selector=0){
+            size_t* cell_offset, const std::function<bool()>& reached_limits, 
+            size_t& skips, const Selector_t selector=0){
     Cell* cell;
     uint32_t offset = 0; //(narrower over specs.key_start)
-    uint32_t count_skips = 0 ;
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for(;offset < m_size; offset++){
@@ -151,13 +151,13 @@ class Mutable {
       
       if((!selector && specs.is_matching(*cell, m_type))
        || (selector && selector(*cell))) {
-        //std::cout << "scan matching, " << cell->to_string() << "\n";
-        //if(count_skips++ < specs.flags.offset-*cell_offset)
-        //  skips++;
-        //  continue;
+        if(*cell_offset != 0){
+          *cell_offset--;
+          skips++;  
+          continue;
+        }
         cells->add(*cell);
-        *cell_offset--;
-        if(cells->size() == specs.flags.limit)
+        if(reached_limits())
           break;
       } else 
         skips++;
@@ -407,11 +407,18 @@ class Mutable {
          _move_bwd(offset--, 1);
         continue;
       }
-
+      try {
       cond = cell->key.compare(
         e_cell.key, 
         (removing || updating) ?  e_cell.on_fraction : cell->on_fraction
       );
+      } catch (const std::exception& e) {
+        
+        std::cout << "exception : " << e.what() << "\n";
+        std::cout << "new " << e_cell.to_string() << "\n"; 
+        std::cout << "old " << cell->to_string() << "\n";  
+        exit(1);
+      }
       
       if(cond == Condition::GT)
         continue;

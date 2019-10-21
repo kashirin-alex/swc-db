@@ -175,12 +175,19 @@ class Read {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req) {
-    //std::cout << "blk::scan 1 " << req->to_string() << "\n";
+    //std::cout << "blk::scan 1 " << to_string() << "\n";
 
     int err;
     DB::Specs::Interval& spec = *(req->spec).get();
     size_t skips = 0;
-    cells.scan(spec, req->cells, &req->offset, skips, req->selector);
+    cells.scan(
+      spec, 
+      req->cells, 
+      &req->offset,
+      [req]() { return req->reached_limits(); },
+      skips, 
+      req->selector
+    );
     //req->adjust();
   }
 

@@ -109,36 +109,24 @@ class Range : public DB::RangeBase {
     /*std::cout << "Range::Scan cid=" << cid 
               << " cs-idx=" << idx << " " 
               << req->spec->to_string() << "\n";*/
-
+    
+    Files::CellStore::Read::Ptr cs;
     for(;;) {
-      if(req->spec->flags.limit > 0 
-        && req->spec->flags.limit == req->cells->size()) {
-        req->response(Error::OK);
-        return;
-      }
-      Files::CellStore::Read::Ptr cs;
       get_next(cs_ptr, idx, cs);
-      if(cs == nullptr){
-        req->response(Error::OK);
-        return;
-      }
+      if(cs == nullptr)
+        break;
+      
       if(!cs->interval.includes(req->spec))
         continue;
-      cs->scan(
-        DB::Cells::ReqScan::make(
-          req->spec,
-          req->cells,
-          [cs_ptr, idx, req, ptr=shared()](int err) {
-            if(!err)
-              ptr->scan(cs_ptr, idx, req);
-            else
-              req->response(err);
-          },
-          req->selector
-        )
-      );
+      
+      req->next_call = [cs_ptr, idx, req, ptr=shared()]() {
+        ptr->scan(cs_ptr, idx, req);
+      };
+      cs->scan(req);
       return;
     }
+    
+    req->response(Error::OK);
   }
 
   void load(ResponseCallbackPtr cb) {
