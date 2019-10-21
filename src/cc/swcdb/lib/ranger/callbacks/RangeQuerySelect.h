@@ -27,21 +27,23 @@ class RangeQuerySelect : public ResponseCallback {
     if(err == Error::OK && Env::RgrData::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
+    DynamicBuffer buffer;
     Protocol::Rgr::Params::RangeQuerySelectRsp params(err);
-    if(err == Error::OK) {
-      if(req->cells->size() > 0) {
-      // params.cells// 
-      }
+    if(req->cells->size() > 0) {
+      req->cells->write(buffer);
+      params.reached_limit = req->limit_buffer_sz <= req->cells->size_bytes();
     }
+    params.size = buffer.fill();
 
     std::cout << "RangeQuerySelect, rsp " << req->to_string() << "\n";
     std::cout << params.to_string() << "\n";
 
     try {
+      StaticBuffer sndbuf(buffer);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
       CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, params.encoded_length());
+        header, params.encoded_length(), sndbuf);
       params.encode(cbp->get_data_ptr_address());
 
       m_conn->send_response(cbp);

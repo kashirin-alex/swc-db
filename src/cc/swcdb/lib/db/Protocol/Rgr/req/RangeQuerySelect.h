@@ -30,7 +30,8 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       params, endpoints, cb_no_conn, cb, timeout)
       ->run();
   }
-
+  
+  EndPoints     endpoints;
 
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                    const EndPoints& endpoints, 
@@ -73,6 +74,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       const uint8_t *ptr = ev->payload;
       size_t remain = ev->payload_len;
       rsp_params.decode(&ptr, &remain);
+      rsp_params.bufp = ptr;
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
       rsp_params.err = e.code();
@@ -82,7 +84,6 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
 
   private:
 
-  EndPoints     endpoints;
   Cb_no_conn_t  cb_no_conn;
   const Cb_t    cb;
 };

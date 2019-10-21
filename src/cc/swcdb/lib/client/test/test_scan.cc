@@ -31,7 +31,15 @@ void run_test(Query::Select::Ptr select_req, int64_t cid, int versions=2, int nu
                                       << " num-cells=" << num_cells 
                                       << " check=" << check <<"\n";
   // Req::Query::Select
-  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {SWC::DB::Specs::Interval::make_ptr()})};
+  int err = SWC::Error::OK;
+  SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
+    if(err) {
+    std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
+  std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
+
+  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(schema->cid, {SWC::DB::Specs::Interval::make_ptr()})};
   select_req->scan();
   select_req->wait();
 
@@ -56,13 +64,14 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int nu
   int counted = 0;
   // master-range
   Cells::Cell cell;
-  for(int vers=0;vers<versions;vers++) {
+  for(int vers=1;vers<=versions;vers++) {
 
   for(int i=0;i<num_cells;i++) {
   std::string cell_number(std::to_string(check)+"-"+std::to_string(i));
   cell.flag = !deleting? Cells::INSERT : Cells::DELETE;
   //cell.set_timestamp(111);
   //cell.set_revision(1234);
+  cell.set_revision(vers);
   cell.set_time_order_desc(true);
 
   cell.key.free();
