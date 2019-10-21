@@ -9,7 +9,7 @@
 #include <mutex>
 #include <functional>
 
-#include "swcdb/lib/db/Cells/Cell.h"
+#include "Cell.h"
 #include "SpecsInterval.h"
 #include "Interval.h"
 
@@ -157,7 +157,6 @@ class Mutable {
         //  continue;
         cells->add(*cell);
         *cell_offset--;
-        //std::cout << "scan size, " << cells->size() << "\n";
         if(cells->size() == specs.flags.limit)
           break;
       } else 
@@ -182,6 +181,21 @@ class Mutable {
           break;
       } else 
         skips++;
+    }
+  }
+
+  void write(DynamicBuffer& cells) {
+    Cell* cell;
+    cells.ensure(m_size_bytes);
+    uint32_t offset = 0;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    while(offset < m_size) {
+      cell = *(m_cells + offset++);
+      if(cell->has_expired(m_ttl))
+        continue;
+        
+      cell->write(cells);
     }
   }
 
