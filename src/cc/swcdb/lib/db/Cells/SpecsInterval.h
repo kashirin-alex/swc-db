@@ -77,6 +77,8 @@ class Interval {
     ts_finish.copy(other.ts_finish);
 
     flags.copy(other.flags);
+    offset_key.copy(other.offset_key);
+    offset_rev = other.offset_rev;
   }
 
   virtual ~Interval(){
@@ -88,6 +90,7 @@ class Interval {
     key_start.free();
     key_finish.free();
     value.free();
+    offset_key.free();
   }
 
   void expand(const Cells::Cell& cell) {
@@ -112,9 +115,21 @@ class Interval {
 
   const bool is_matching(const Cells::Cell& cell, 
                          Types::Column typ=Types::Column::PLAIN) const {
+    if(!offset_key.empty()) {
+      switch(offset_key.compare(cell.key)) {
+        case Condition::LT: {
+          return false;
+        }
+        case Condition::EQ: {
+          if(offset_rev >= cell.revision)
+            return false;
+          break;
+        }
+        default:
+          break;
+      }
+    }
     bool match = 
-      (offset_key.empty() || (offset_key.compare(cell.key) != Condition::LT 
-                              && offset_rev < cell.revision)) &&
       ts_start.is_matching(cell.timestamp) &&
       ts_finish.is_matching(cell.timestamp) &&
       (key_start.empty()  || key_start.is_matching(cell.key)) &&
