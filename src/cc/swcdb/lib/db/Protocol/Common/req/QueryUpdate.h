@@ -210,10 +210,13 @@ class Update : public std::enable_shared_from_this<Update> {
       
       if(rsp.err != Error::OK){
         // err type? ~| parent_req->request_again();
-        if(rsp.err == Error::COLUMN_NOT_EXISTS 
-          || rsp.err == Error::RANGE_NOT_FOUND) {
+        if(rsp.err == Error::COLUMN_NOT_EXISTS) {
           //std::cout << "NO-RETRY \n";
           return true;
+        } else if(rsp.err == Error::RANGE_NOT_FOUND) {
+          std::cout << "RETRYING " << rsp.to_string() << "\n";
+          (parent_req == nullptr ? base_req : parent_req)->request_again();
+          return false;
         } else {
           std::cout << "RETRYING " << rsp.to_string() << "\n";
           base_req->request_again();
