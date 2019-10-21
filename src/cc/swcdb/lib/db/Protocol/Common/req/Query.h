@@ -6,6 +6,8 @@
 #ifndef swc_lib_db_protocol_common_req_Query_h
 #define swc_lib_db_protocol_common_req_Query_h
 
+#include "swcdb/lib/db/Cells/Vector.h"
+
 #include "QueryUpdate.h"
 #include "swcdb/lib/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
@@ -17,8 +19,12 @@ namespace Result{
 
 struct Select{
   typedef std::shared_ptr<Select> Ptr;
+
   std::atomic<uint32_t> completion = 0;
   int err = Error::OK;
+
+  std::unordered_map<int64_t, DB::Cells::Vector::Ptr> columns;
+
 };
 }
 
@@ -34,7 +40,7 @@ class Select : public std::enable_shared_from_this<Select> {
   DB::Specs::Scan             specs;
   Result::Ptr                 result;
 
-  uint32_t buff_sz          = 8000000;
+  uint32_t buff_sz          = 1000000;
   uint32_t timeout_commit   = 60000;
 
   std::mutex                  m_mutex;
@@ -65,9 +71,12 @@ class Select : public std::enable_shared_from_this<Select> {
   }
 
   void scan() {
+    for(auto &col : specs.columns)
+      result->columns.insert(std::make_pair(col->cid, DB::Cells::Vector::make()));
+    
     for(auto &col : specs.columns){
+      std::cout << "Select::scan, " << col->to_string() << "\n";
       for(auto &intval : col->intervals){
-        std::cout << " SPEC_COL: " << col->to_string() << "\n";
         std::make_shared<Scanner>(
           Types::Range::MASTER,
           col->cid, col->cid, 
@@ -77,6 +86,7 @@ class Select : public std::enable_shared_from_this<Select> {
       }
     }
   }
+
 
   class Scanner: public std::enable_shared_from_this<Scanner> {
     public:
@@ -89,14 +99,23 @@ class Select : public std::enable_shared_from_this<Select> {
     const int64_t             rid;
     uint64_t                  offset;
 
+    typedef std::shared_ptr<std::vector<std::function<void()>>> NextCalls;
+    NextCalls next_calls;
+
     Scanner(const Types::Range type, 
             const int64_t cid, const int64_t cells_cid, 
             DB::Specs::Interval::Ptr interval,
             Select::Ptr selector,
+            NextCalls next_calls=nullptr, 
             ReqBase::Ptr parent_req=nullptr, 
             const uint64_t offset=0, const int64_t rid=0)
           : type(type), cid(cid), cells_cid(cells_cid), 
             interval(interval), selector(selector),
+            next_calls(
+              next_calls == nullptr ? 
+              std::make_shared<std::vector<std::function<void()>>>() : 
+              next_calls
+            ),
             parent_req(parent_req), rid(rid), offset(offset)  {
     }
 
@@ -115,6 +134,9 @@ class Select : public std::enable_shared_from_this<Select> {
       s.append(std::to_string(cells_cid));
       s.append(" offset=");
       s.append(std::to_string(offset));
+      s.append(" next_calls=");
+      s.append(std::to_string(next_calls->size()));
+      
       s.append(" ");
       s.append(interval->to_string());
       return s;
@@ -174,10 +196,13 @@ class Select : public std::enable_shared_from_this<Select> {
       
       if(rsp.err != Error::OK){
         // err type? ~| parent_req->request_again();
-        if(rsp.err == Error::COLUMN_NOT_EXISTS 
-          || rsp.err == Error::RANGE_NOT_FOUND) {
+        if(rsp.err == Error::COLUMN_NOT_EXISTS) {
           //std::cout << "NO-RETRY \n";
           return true;
+        } else if(rsp.err == Error::RANGE_NOT_FOUND) {
+          std::cout << "RETRYING " << rsp.to_string() << "\n";
+          (parent_req == nullptr ? base_req : parent_req)->request_again();
+          return false;
         } else {
           std::cout << "RETRYING " << rsp.to_string() << "\n";
           base_req->request_again();
@@ -190,35 +215,34 @@ class Select : public std::enable_shared_from_this<Select> {
         return false;
       }
 
+      if(type != Types::Range::DATA && rsp.next_key && !rsp.key_end.empty()) {
+        std::cout << "located_on_manager, NEXT-KEY: " 
+                  << Types::to_string(type) 
+                  << " " << rsp.key_end.to_string() << "\n";
+        next_calls->push_back([scanner=std::make_shared<Scanner>(
+          type, cid, cells_cid, interval, selector, next_calls,
+          parent_req == nullptr ? base_req : parent_req,
+          ++offset)] () { scanner->locate_on_manager(); });
+      }
+
+
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && cells_cid == 1) ||
         (type == Types::Range::META   && cells_cid == 2 )) {
         if(cid != rsp.cid || cells_cid != cid) {
           (parent_req == nullptr ? base_req : parent_req)->request_again();
           return false;
-          //updater->result->err = Error::NOT_ALLOWED;
-          //updater->response();
+          //selector->result->err = Error::NOT_ALLOWED;
+          //selector->response();
         }
         select(rsp.endpoints, rsp.rid, base_req);
-        if(type == Types::Range::DATA)
-          return true;
-        
+
       } else 
         std::make_shared<Scanner>(
-          type, rsp.cid, cells_cid, interval, selector, 
+          type, rsp.cid, cells_cid, interval, selector, next_calls,
           base_req, 0, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
 
-      if(rsp.next_key && !rsp.key_end.empty()) {
-        std::cout << "located_on_manager, NEXT-KEY: " 
-                  << Types::to_string(type) 
-                  << " " << rsp.key_end.to_string() << "\n";
-        std::make_shared<Scanner>(
-          type, cid, cells_cid, interval, selector, 
-          parent_req == nullptr ? base_req : parent_req,
-          ++offset
-        )->locate_on_manager();
-      }
       return true;
     }
 
@@ -278,42 +302,45 @@ class Select : public std::enable_shared_from_this<Select> {
         return true;
       }
 
-      std::make_shared<Scanner>(
-        type == Types::Range::MASTER
-        ? Types::Range::META : Types::Range::DATA,
-        rsp.cid, cells_cid, interval, selector, parent_req, offset, rsp.rid
-      )->resolve_on_manager();
-
+      auto current_offset = offset;
       if(rsp.next_key && !rsp.key_end.empty()
-        && (type != Types::Range::META 
-            || interval->key_finish.is_matching(rsp.key_end))) {
-
+        && type != Types::Range::DATA 
+        && interval->key_finish.is_matching(rsp.key_end)) {
+              
         std::cout << "located_on_ranger, NEXT-KEY: " 
           << Types::to_string(type) 
           << " " << rsp.key_end.to_string() << "\n";
-
-        std::make_shared<Scanner>(
-          type, cid, cells_cid, interval, selector, parent_req, ++offset
-        )->locate_on_ranger(endpoints);
-        
+          
+        next_calls->push_back([endpoints, scanner=std::make_shared<Scanner>(
+          type, cid, cells_cid, interval, selector, next_calls, parent_req, ++offset
+        )] () { scanner->locate_on_ranger(endpoints); });
       }
+
+      std::make_shared<Scanner>(
+        type == Types::Range::MASTER
+        ? Types::Range::META : Types::Range::DATA,
+        rsp.cid, cells_cid, interval, selector, next_calls, 
+        parent_req, current_offset, rsp.rid
+      )->resolve_on_manager();
+
       return true;
     }
 
-    void select(EndPoints endpoints, uint64_t rid,
-                     const ReqBase::Ptr& base_req) {
+    void select(EndPoints endpoints, uint64_t rid, 
+                const ReqBase::Ptr& base_req) {
       std::cout << "Query::Select select, cid=" << cells_cid 
-                << " rid=" << rid << " \n"; 
-              
+                << " rid=" << rid << ""  << interval->to_string() << "\n"; 
+      selector->result->completion++;
+
       Rgr::Req::RangeQuerySelect::request(
-        Rgr::Params::RangeQuerySelectReq(cells_cid, rid, *interval.get()), 
+        Rgr::Params::RangeQuerySelectReq(cells_cid, rid, *interval.get(), selector->buff_sz), 
         endpoints, 
         [base_req, ptr=shared_from_this()]() {
           base_req->request_again();
           --ptr->selector->result->completion;
           std::cout << "RETRYING NO-CONN\n";
         },
-        [base_req, ptr=shared_from_this()] 
+        [rid, base_req, ptr=shared_from_this()] 
         (ReqBase::Ptr req_ptr, Rgr::Params::RangeQuerySelectRsp rsp) {
 
           std::cout << "select, Rgr::Req::RangeQuerySelect: "
@@ -326,10 +353,41 @@ class Select : public std::enable_shared_from_this<Select> {
             --ptr->selector->result->completion;
             std::cout << "RETRYING " << rsp.to_string() << "\n";
             return;
-          }        
+          }      
+          auto col = ptr->selector->result->columns[ptr->cells_cid]; 
+          if(rsp.size > 0) 
+            col->add(&rsp.bufp, &rsp.size);
+          
+          std::cout << col->cells.size() << "\n";
+
+          if(ptr->interval->flags.limit == 0 
+            || col->cells.size() < ptr->interval->flags.limit) {
+            if(rsp.reached_limit) {
+              auto qreq = std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req_ptr);
+              auto last = col->cells.back();
+              std::cout << "LAST cell, " << last->to_string() << "\n";
+              ptr->interval->offset_key.copy(last->key);
+              ptr->interval->offset_rev = last->revision;
+              ptr->select(qreq->endpoints, rid, base_req);
+              --ptr->selector->result->completion;
+              return;
+            }
+            if(!ptr->next_calls->empty()) {
+              ptr->interval->offset_key.free();
+              ptr->interval->offset_rev = 0;
+              auto it = ptr->next_calls->begin();
+              auto call = *it;
+              ptr->next_calls->erase(it);
+              call();
+              --ptr->selector->result->completion;
+              return;
+            }
+          }
+
           ptr->selector->result->err=rsp.err;
-          if(!--ptr->selector->result->completion)
+          if(!--ptr->selector->result->completion) {
             ptr->selector->response();
+          }
         },
         selector->timeout_commit
       );
