@@ -155,6 +155,13 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       else
         m_fragments.push_back(frag);
     }
+    
+    if(m_fragments_error.size() > 0) {
+      std::cerr << "Error-Fragments: \n";
+      for(auto frag : m_fragments_error)
+        std::cerr << " " << frag->to_string() << "\n";
+      exit(1);
+    }
   }
   
   void load_to_block(CellStore::Block::Read::Ptr blk, 
@@ -170,8 +177,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     }
 
     if(fragments.empty()){
-      blk->state = CellStore::Block::Read::State::LOGS_LOADED;
       load_cells(blk->interval, blk->cells);
+      blk->state = CellStore::Block::Read::State::LOGS_LOADED;
       blk->pending_logs_load();
       cb(Error::OK);
       return;
@@ -256,8 +263,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       if(!err) {
         frag->load_cells(blk->interval, blk->cells);
         if(good) {
-          blk->state = CellStore::Block::Read::State::LOGS_LOADED;
           log->load_cells(blk->interval, blk->cells);
+          blk->state = CellStore::Block::Read::State::LOGS_LOADED;
           blk->pending_logs_load();
         }
       }
