@@ -36,6 +36,7 @@ class RangeQuerySelect : public ResponseCallback {
     params.size = buffer.fill();
 
     std::cout << "RangeQuerySelect, rsp " << req->to_string() << "\n";
+    req = nullptr;
     std::cout << params.to_string() << "\n";
 
     try {
