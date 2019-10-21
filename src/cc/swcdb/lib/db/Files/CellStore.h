@@ -477,17 +477,19 @@ class Write : public std::enable_shared_from_this<Write> {
   size_t                    size;
   DB::Cells::Interval       interval;
   std::atomic<uint32_t>     complition;
-
+ 
   Write(const std::string& filepath, 
         Types::Encoding encoder=Types::Encoding::PLAIN)
-        : smartfd(FS::SmartFd::make_ptr(filepath, 0)), 
+        : smartfd(
+            FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
+          ), 
           encoder(encoder), size(0), complition(0) {
   }
 
   virtual ~Write(){}
 
   void create(int& err, 
-              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=1) {
+              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=-1) {
     while(
       Env::FsInterface::interface()->create(
         err, smartfd, bufsz, replication, blksz));
