@@ -65,14 +65,13 @@ class Mutable {
   bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) {
     Cell* ptr;
     Condition::Comp chk;
-    uint32_t offset = 0; // narrower
+    uint32_t offset = narrow(key, 0);
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;offset < m_size; offset++){
       ptr = *(m_cells + offset);
-      chk = key.compare(ptr->key, 0);
-      if(chk == Condition::GT 
+      if((chk = key.compare(ptr->key, 0)) == Condition::GT 
         || (comp == Condition::GE && chk == Condition::EQ)){
         cell.copy(*ptr);
         return true;
@@ -128,19 +127,21 @@ class Mutable {
   void scan(const DB::Cells::Interval& interval, 
                   DB::Cells::Mutable& cells){
     Cell* cell;
+    uint32_t offset = narrow(interval.key_begin, 0);
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    uint32_t offset = narrow(interval.key_begin, 0);
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
-      if(!interval.consist(cell->key))
+      if(cell->has_expired(m_ttl) || !interval.is_in_begin(cell->key))
         continue;
+      if(!interval.is_in_end(cell->key))
+        break; 
       cells.add(*cell);
     }
   }
 
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
-            size_t* cell_offset, const std::function<bool()>& reached_limits, 
+            size_t& cell_offset, const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t selector=0){
     Cell* cell;
     uint32_t offset = 0; //(narrower over specs.key_start)
@@ -148,11 +149,18 @@ class Mutable {
     
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
-      
+
+      //std::cout << " " << cell->to_string() << "\n";
+      if(cell->has_expired(m_ttl) || cell->on_fraction 
+        || (cell->flag != INSERT && !specs.flags.return_deletes))
+        continue;
+
       if((!selector && specs.is_matching(*cell, m_type))
-       || (selector && selector(*cell))) {
-        if(*cell_offset != 0){
-          *cell_offset--;
+          || (selector && selector(*cell))) {
+        //std::cout << " " << cell->to_string() << "\n";
+        //std::cout << " " << specs.to_string() << "\n";
+        if(cell_offset != 0){
+          cell_offset--;
           skips++;  
           continue;
         }
@@ -167,15 +175,24 @@ class Mutable {
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
             size_t& count, size_t& skips){
     Cell* cell;
-    uint32_t offset = specs.flags.offset; //(narrower over specs.key_start)
-    uint count_skips = 0 ;
+    uint32_t offset = 0; //specs.flags.offset; //(narrower over specs.key_start)
+    uint cell_offset = specs.flags.offset;
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
+
+      if(cell->has_expired(m_ttl) || cell->on_fraction 
+        || (cell->flag != INSERT && !specs.flags.return_deletes))
+        continue;
+
       if(specs.is_matching(*cell, m_type)) {
-        if(count_skips++ < specs.flags.offset) 
+        if(cell_offset != 0){
+          cell_offset--;
+          skips++;  
           continue;
+        }
+        
         cell->write(result);
         if(++count == specs.flags.limit)
           break;
@@ -231,7 +248,7 @@ class Mutable {
                       const DB::Cell::Key& key_finish,
                       DynamicBuffer& cells, uint32_t threshold) {
     Cell* cell;
-    uint32_t offset = 0; //(narrower over key_start)
+    uint32_t offset = narrow(key_start, 0);
     uint32_t count = 0;
     int32_t offset_applied = -1;
     Condition::Comp cond;
@@ -241,6 +258,9 @@ class Mutable {
 
     for(;offset < m_size;offset++) {
       cell = *(m_cells + offset);
+
+      if(cell->has_expired(m_ttl))
+        continue;
 
       cond = cell->key.compare(key_start, 0);
       if(cond == Condition::GT) 
@@ -253,9 +273,6 @@ class Mutable {
       if(offset_applied == -1)
         offset_applied = offset;
 
-      if(cell->has_expired(m_ttl))
-        continue;
-      
       cell->write(cells);
       if(threshold < cells.fill())
         break;
@@ -432,8 +449,10 @@ class Mutable {
 
       // (cond == Condition::EQ)
       if(removing) {
-        if(e_cell.is_removing(cell->revision))
+        if(e_cell.is_removing(cell->revision)) {
+          //std::cout << " e_cell is_removing: " << cell->to_string() << "\n";
           _move_bwd(offset--, 1);
+        }
         continue;
           
       } else if(cell->removal()) {
@@ -444,7 +463,7 @@ class Mutable {
 
       if(e_cell.removal()) {
         removing = true;
-        _insert(offset++, e_cell);
+        _insert(offset, e_cell);
         continue;
       }
       
