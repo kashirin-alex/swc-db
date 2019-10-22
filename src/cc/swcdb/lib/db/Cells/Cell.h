@@ -82,7 +82,7 @@ static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key,
   if(control & HAVE_ON_FRACTION)
     Serialization::decode_vi32(&ptr, remainp);
 
-  if(control & HAVE_TIMESTAMP || control & AUTO_TIMESTAMP) 
+  if(control & HAVE_TIMESTAMP) 
     Serialization::decode_vi64(&ptr, remainp);
 
   if(control & HAVE_REVISION) 
