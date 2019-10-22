@@ -16,15 +16,17 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
-        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), i32(cells), 
+                     i32(data-checksum), i32(checksum)
         data:        [cell]
   */
 
   public:
   typedef std::shared_ptr<Fragment> Ptr;
   
-  static const int8_t     HEADER_SIZE = 9;
-  static const int8_t     VERSION = 1;
+  static const uint8_t     HEADER_SIZE = 9;
+  static const uint8_t     VERSION = 1;
+  static const uint8_t     HEADER_EXT_FIXED_SIZE = 21;
   
   enum State {
     CELLS_NONE,
@@ -40,7 +42,8 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
                 filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
             ), 
             m_state(State::CELLS_NONE), 
-            m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0) {
+            m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
+            m_data_checksum(0) {
   }
   
   virtual ~Fragment(){}
@@ -48,9 +51,10 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   void write(int& err, int32_t replication, Types::Encoding encoder, 
              const DB::Cells::Interval& intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
+    m_version = VERSION;
     interval.copy(intval);
     
-    uint32_t header_extlen = interval.encoded_length()+17;
+    uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
     m_cells_count = cell_count;
     m_size = cells.fill();
     m_cells_offset = HEADER_SIZE+header_extlen;
@@ -62,20 +66,29 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
                     &m_size_enc, output, m_cells_offset, err);
     if(err)
       return;
+
+    if(m_size_enc) {
+      m_encoder = encoder;
+    } else {
+      m_size_enc = m_size;
+      m_encoder = Types::Encoding::PLAIN;
+    }
+    m_buffer = std::make_shared<StaticBuffer>(cells);
                     
     uint8_t * ptr = output.base;
-    *ptr++ = VERSION;
+    Serialization::encode_i8(&ptr, m_version);
     Serialization::encode_i32(&ptr, header_extlen);
     checksum_i32(output.base, ptr, &ptr);
-    
+
     uint8_t * header_extptr = ptr;
     interval.encode(&ptr);
-    *ptr++ = (uint8_t)(m_size_enc? encoder: Types::Encoding::PLAIN);
-    if(!m_size_enc)
-      m_size_enc = m_size;
+    Serialization::encode_i8(&ptr, (uint8_t)m_encoder);
     Serialization::encode_i32(&ptr, m_size_enc);
     Serialization::encode_i32(&ptr, m_size);
     Serialization::encode_i32(&ptr, m_cells_count);
+    
+    checksum_i32(output.base+m_cells_offset, output.base+output.fill(), 
+                 &ptr, m_data_checksum);
     checksum_i32(header_extptr, ptr, &ptr);
 
     StaticBuffer buff_write(output);
@@ -134,7 +147,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       }
 
       size_t remain = HEADER_SIZE;
-      int8_t version = Serialization::decode_i8(&ptr, &remain);
+      m_version = Serialization::decode_i8(&ptr, &remain);
       uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf.base, HEADER_SIZE-4)){  
@@ -159,6 +172,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
       m_cells_count = Serialization::decode_i32(&ptr, &remain);
+      m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf.base, header_extlen-4)){  
@@ -177,7 +191,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
   void load() {
     int err;
-
+    uint8_t tries = 0;
     for(;;) {
       err = Error::OK;
     
@@ -203,6 +217,14 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
         continue;
       }
       
+      if(!checksum_i32_chk(m_data_checksum, read_buf.base, m_size_enc)){  
+        if(++tries == 3) {
+          err = Error::CHECKSUM_MISMATCH;
+          break;
+        }
+        continue;
+      }
+
       m_buffer = std::make_shared<StaticBuffer>(m_size);
       if(m_encoder != Types::Encoding::PLAIN) {
         StaticBuffer buffer(m_size);
@@ -289,6 +311,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
       auto ts_cellr = Time::now_ns();
       cell.read(&ptr, &remain);
+      if(++count == m_cells_count && remain != 0){
+        HT_THROWF(
+          Error::SERIALIZATION_INPUT_OVERRUN,
+          "Cell trunclated remained %llu %s", remain, cell.to_string().c_str());
+      }
       ts_cells_read += Time::now_ns()-ts_cellr;
 
       if(!intval.consist(cell.key))
@@ -297,7 +324,6 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       auto ts_cella = Time::now_ns();
       cells.add(cell);
       ts_cells_add += Time::now_ns()-ts_cella;
-      count++;
     }
     ts = Time::now_ns()-ts;
     std::cout << " frag-load_cells-took=" << ts
@@ -318,7 +344,10 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("Fragment(state=");
+    std::string s("Fragment(version=");
+    s.append(std::to_string(m_version));
+
+    s.append(" state=");
     s.append(std::to_string((uint8_t)m_state));
 
     s.append(" count=");
@@ -347,12 +376,14 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   std::mutex      m_mutex;
   State           m_state;
   FS::SmartFdPtr  m_smartfd;
+  uint8_t         m_version;
   Types::Encoding m_encoder;
   size_t          m_size_enc;
   size_t          m_size;
   StaticBufferPtr m_buffer;
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
+  uint32_t        m_data_checksum;
 
   std::queue<std::function<void(int)>> m_queue_load;
   
