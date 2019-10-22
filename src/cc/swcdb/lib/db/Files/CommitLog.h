@@ -65,17 +65,15 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   void commit_new_fragment(bool finalize=false) {
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
     uint32_t blk_size = schema->blk_size;
-    bool commiting;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(blk_size != 0) 
         m_size_commit = blk_size;
       else 
         blk_size = m_size_commit;
-      commiting = m_commiting;
     }
 
-    if(finalize && commiting){
+    if(finalize && m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
@@ -110,9 +108,9 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       }
     } while((finalize && m_cells->size() > 0 ) 
             || m_cells->size_bytes() >= m_size_commit);
-   
+    
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_commiting = false;
     }
     m_cv.notify_one();
@@ -166,6 +164,11 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   
   void load_to_block(CellStore::Block::Read::Ptr blk, 
                      std::function<void(int)> cb) {
+    if(m_commiting){
+      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+    }
+    
     std::vector<Fragment::Ptr>  fragments;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -286,7 +289,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
   DB::Cells::Mutable::Ptr     m_cells;
   uint32_t                    m_size_commit;
-  bool                        m_commiting;
+  std::atomic<bool>           m_commiting;
   
   std::condition_variable     m_cv;
 
