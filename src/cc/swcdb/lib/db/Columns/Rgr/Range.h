@@ -392,13 +392,28 @@ class Range : public DB::RangeBase {
 
       std::cout << "Range::add cid="<<cid 
                << " sz=" << req->input->size << "\n";
+      uint32_t count = 0;
       ptr = req->input->base;
       remain = req->input->size; 
+
       while(remain) {
         cell.read(&ptr, &remain);
-        // validate over range.interval match
+        if(!m_interval.is_in_end(cell.key)) {
+          // validate over range.interval match skip( with error)
+          continue;
+        }
+        
+        if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
+          cell.set_timestamp(Time::now_ns());
+          if(cell.control & DB::Cells::AUTO_TIMESTAMP)
+            cell.control ^= DB::Cells::AUTO_TIMESTAMP;
+        }
+        if(!(cell.control & DB::Cells::HAVE_REVISION))
+          cell.control |= DB::Cells::REV_IS_TS;
 
+        count++;
         m_commit_log->add(cell);
+      //std::cout << " " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {
@@ -411,6 +426,8 @@ class Range : public DB::RangeBase {
           }
         }
       }
+      std::cout << "Range::added cid=" << cid 
+               << " count=" << count << "\n";
 
       req->cb->response(err);
 
