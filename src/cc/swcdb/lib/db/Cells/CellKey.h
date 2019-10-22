@@ -188,16 +188,17 @@ class Key {
 
   }
 
-  const std::string get_string(uint32_t idx) {    
+  const std::string get_string(uint32_t idx, uint8_t reserved=0) {    
     char* fraction;
     uint32_t length = 0;
-    get(0, &fraction, &length);
+    get(idx, &fraction, &length, reserved);
     return std::string(fraction, length);
   }
 
-  inline void get(uint32_t idx, char** ptr, uint32_t* length) {
+  inline void get(uint32_t idx, char** ptr, uint32_t* length, 
+                  uint8_t reserved=0) {
     uint8_t* fraction_ptr = 0;
-    get(idx, ptr, length, &fraction_ptr, 0);
+    get(idx, ptr, length, &fraction_ptr, reserved);
   }
 
   inline void get(uint32_t idx, char** ptr, uint32_t* length, 

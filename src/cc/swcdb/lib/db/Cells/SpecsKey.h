@@ -111,6 +111,10 @@ class Key : public DB::Cell::Key {
     *fraction_ptr = (uint8_t)comp;
   }
 
+  const std::string get_string(uint32_t idx) {    
+    return DB::Cell::Key::get_string(idx, 1);
+  }
+
   inline void get(uint32_t idx, char** ptr, uint32_t* length, Condition::Comp* comp) {
     *length = 0;
     *ptr = 0;
