@@ -64,6 +64,12 @@ inline void checksum_i32(const uint8_t *start, const uint8_t *end,
   Serialization::encode_i32(ptr, fletcher32(start, end-start));
 }
 
+inline void checksum_i32(const uint8_t *start, const uint8_t *end, 
+                        uint8_t **ptr, uint32_t& checksum){
+  checksum = fletcher32(start, end-start);
+  Serialization::encode_i32(ptr, checksum);
+}
+
   /** @}*/
 
 } // namespace SWC
