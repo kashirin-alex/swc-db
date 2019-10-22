@@ -23,7 +23,7 @@ ADD_EXEC_TARGET(
 	TARGETS   swcdb_core_config
 )
 ADD_EXEC_TARGET(
-	NAME      test_scan
-	SRCS      test/test_scan.cc
+	NAME      test_query
+	SRCS      test/test_query.cc
 	TARGETS   swcdb_core_config
 )
