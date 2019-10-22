@@ -121,7 +121,9 @@ class Interval {
           return false;
         }
         case Condition::EQ: {
-          if(offset_rev >= cell.revision)
+          if(cell.control & Cells::TS_DESC 
+            ? offset_rev <= cell.timestamp
+            : offset_rev >= cell.timestamp)
             return false;
           break;
         }
