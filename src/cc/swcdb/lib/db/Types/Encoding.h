@@ -11,9 +11,9 @@ namespace SWC { namespace Types {
 
 
 enum class Encoding {
-  PLAIN   = 1,
-  ZLIB    = 2,
-  SNAPPY  = 3
+  PLAIN   = 0x01,
+  ZLIB    = 0x02,
+  SNAPPY  = 0x03
 };
 
 const std::string to_string(Encoding typ) {
@@ -25,7 +25,7 @@ const std::string to_string(Encoding typ) {
     case Encoding::SNAPPY:
       return std::string("snappy");
     default:
-      return std::string("unknown");
+      return std::string("unknown(" + std::to_string((uint8_t)typ) +")");
   }
 }
 }}
