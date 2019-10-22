@@ -144,13 +144,13 @@ class MapMutable {
 
     s.append(" map=[");
     for(auto it = m_map.begin(); it != m_map.end(); ++it){
-      s.append("(cid=");
+      s.append("\n (cid=");
       s.append(std::to_string(it->first));
       s.append(" ");
       s.append(it->second->to_string());
       s.append("), ");
     }
-    s.append("])");
+    s.append("\n])");
     return s;
   }
 

@@ -76,16 +76,14 @@ class RangeLocate : public AppHandler {
         ),
         [cb](int err){cb->response(err);},
         [cb](const DB::Cells::Cell& cell) { // ref bool stop
-          
-          std::cout << "cell begin: "<< cell.key.to_string() << "\n";
-          std::cout << "spec begin: " << cb->req->spec->key_start.to_string() << "\n";
-          
           if(cb->req->spec->key_start.is_matching(cell.key)) {
             size_t remain = cell.vlen;
             const uint8_t * ptr = cell.value;
             Serialization::decode_vi64(&ptr, &remain);
             DB::Cell::Key key_end;
             key_end.decode(&ptr, &remain);
+            std::cout << "cell begin: "<< cell.key.to_string() << "\n";
+            std::cout << "spec begin: " << cb->req->spec->key_start.to_string() << "\n";
             std::cout << "cell end:   "<< key_end.to_string() << "\n";
             std::cout << "spec end:   " << cb->req->spec->key_finish.to_string() << "\n";
             return key_end.empty() || 

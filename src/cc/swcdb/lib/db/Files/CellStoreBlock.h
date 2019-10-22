@@ -177,18 +177,15 @@ class Read {
   void scan(DB::Cells::ReqScan::Ptr req) {
     //std::cout << "blk::scan 1 " << to_string() << "\n";
 
-    int err;
-    DB::Specs::Interval& spec = *(req->spec).get();
-    size_t skips = 0;
+    size_t skips = 0; // Ranger::Stats
     cells.scan(
-      spec, 
+      *(req->spec).get(), 
       req->cells, 
-      &req->offset,
+      req->offset,
       [req]() { return req->reached_limits(); },
       skips, 
       req->selector
     );
-    //req->adjust();
   }
 
   const size_t cell_count() {

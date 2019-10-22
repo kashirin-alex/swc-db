@@ -64,6 +64,8 @@ class ReqScan  {
     s.append(cells->to_string());
     s.append(" limit_buffer_sz=");
     s.append(std::to_string(limit_buffer_sz));
+    s.append(" state-offset=");
+    s.append(std::to_string(offset));
     return s;
   }
 
