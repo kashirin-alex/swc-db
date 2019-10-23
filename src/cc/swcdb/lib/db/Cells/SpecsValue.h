@@ -52,6 +52,10 @@ class Value {
   void set(const char* data_n, Condition::Comp comp_n, bool owner=true) {
     set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
   }
+  
+  void set(const std::string& data_n, Condition::Comp comp_n) {
+    set((uint8_t*)data_n.data(), data_n.length(), comp_n, true);
+  }
 
   void copy(const Value &other) {
     free(); 
