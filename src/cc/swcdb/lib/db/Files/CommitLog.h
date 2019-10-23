@@ -99,12 +99,15 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         intval, cells, cell_count
       );
 
-      if(err) { 
-        // server already shutting down or major fs issue (PATH NOT FOUND)
-        // write temp(local) file for recovery
-      } else {
+      {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_fragments.push_back(frag);
+        if(err) { 
+          m_fragments_error.push_back(frag);
+          // server already shutting down or major fs issue (PATH NOT FOUND)
+          // write temp(local) file for recovery
+        } else {
+          m_fragments.push_back(frag);
+        }
       }
     } while((finalize && m_cells->size() > 0 ) 
             || m_cells->size_bytes() >= m_size_commit);
@@ -248,37 +251,43 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     
     AwaitingLoad(int32_t count, CellStore::Block::Read::Ptr blk, 
                   const Cb_t& cb, Fragments::Ptr log) 
-                : count(count), blk(blk), cb(cb), log(log) {
+                : m_count(count), blk(blk), cb(cb), log(log) {
     }
 
     void processed(int err, Fragment::Ptr frag) {
-      bool call;
-      bool good;
-      {
+      { 
         std::lock_guard<std::mutex> lock(m_mutex);
-        good = --count == 0;
-        std::cout << "AwaitingLoad count="<<count 
+        --m_count;
+        std::cout << "AwaitingLoad count=" << m_count 
                   << " err=" << err << " loaded=" << frag->to_string() << "\n";
-        call = good || err;
-        if(err) 
-          count = 0;
+        m_pending.push(frag);
+        if(m_pending.size() > 1)
+          return;
       }
-      if(!err) {
+      for(;;) {
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          frag = m_pending.front();
+        }
         frag->load_cells(blk->interval, blk->cells);
-        if(good) {
-          log->load_cells(blk->interval, blk->cells);
-          blk->state = CellStore::Block::Read::State::LOGS_LOADED;
-          blk->pending_logs_load();
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          m_pending.pop();
+          if(m_pending.empty())
+            break;
         }
       }
-
-      if(call)
+      if(m_count == 0) {
+        log->load_cells(blk->interval, blk->cells);
+        blk->state = CellStore::Block::Read::State::LOGS_LOADED;
+        blk->pending_logs_load();
         cb(err);
+      }
     }
 
     std::mutex                    m_mutex;
-    int32_t                       count = 0;
-    DB::Cells::ReqScan::Ptr       req;
+    int32_t                       m_count = 0;
+    std::queue<Fragment::Ptr>     m_pending;
     CellStore::Block::Read::Ptr   blk;
     const Cb_t                    cb;
     Fragments::Ptr                log;
