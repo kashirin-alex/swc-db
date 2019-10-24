@@ -43,8 +43,10 @@ class ReqScan  {
       auto call = next_call;
       next_call = 0;
       call();
-    } else 
+    } else {
       cb(err);
+      std::cout << " ReqScan::response \n";
+    }
   }
 
   bool reached_limits() {
@@ -53,7 +55,9 @@ class ReqScan  {
            (limit_buffer_sz > 0 && limit_buffer_sz <= cells->size_bytes());
   }
  
-  virtual ~ReqScan() {}
+  virtual ~ReqScan() {
+    std::cout << " ~ReqScan \n";
+  }
   
   const std::string to_string() const {
     std::string s("ReqScan(");
