@@ -240,7 +240,7 @@ class Cell {
       revision = Serialization::decode_i64(bufp, remainp);
     else if (control & REV_IS_TS)
       revision = timestamp;
-      
+
     free();
     // own = owner;
     if((vlen = Serialization::decode_vi32(bufp, remainp)) > 0) {
@@ -303,12 +303,18 @@ class Cell {
   }
   
   const bool is_removing(const int64_t rev) const {
-    return removal() &&
-      (revision >= rev 
+    return removal() && (
+      (get_revision() >= rev 
         && (flag == DELETE || flag == DELETE_FRACTION ))
        ||
-      (revision == rev 
-        && (flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ));
+      (get_revision() == rev 
+        && (flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ))
+    );
+  }
+
+  const int64_t get_revision() const {
+    return control & HAVE_REVISION ? revision 
+          : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
   }
 
   const bool has_expired(const uint64_t ttl) const {
