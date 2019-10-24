@@ -133,8 +133,8 @@ class Interval {
   }
 
   const bool includes(const Specs::Interval& interval) const {
-    std::cout << "Interval::includes Specs: " <<  interval.to_string() << "\n";
-    std::cout << "Interval::includes Cells: " <<  to_string() << "\n";
+    //std::cout << "Interval::includes Specs: " <<  interval.to_string() << "\n";
+    //std::cout << "Interval::includes Cells: " <<  to_string() << "\n";
     return (interval.key_start.empty()  || key_end.empty() || 
             interval.key_start.is_matching(key_end))     
           && 
