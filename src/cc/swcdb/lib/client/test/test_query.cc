@@ -140,7 +140,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int nu
 
 
 void test_1(const std::string& col_name) {
-  int num_cells = 10000000; // test require at least 12
+  int num_cells = 1000000; // test require at least 12
   
 
   // Req::Query::Update
@@ -180,6 +180,7 @@ void test_1(const std::string& col_name) {
   
 
   int64_t took =  SWC::Time::now_ns();
+  update_req->timeout_commit = 10*num_cells;
   update_req->commit();
   update_req->wait();
   took = SWC::Time::now_ns() - took;
@@ -214,12 +215,14 @@ void test_1(const std::string& col_name) {
   select_req->wait();
 
   if(select_req->result->columns[schema->cid]->cells.size() != spec->flags.limit) {
-    std::cerr << "BAD, offset over value-match, select cells count: \n" 
+    std::cerr << "BAD, on offset, select cells count: \n" 
               << " " << spec->to_string() << "\n"
               << " expected_value=" << spec->flags.limit << "\n"
-              << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n";
+              << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n"
+              << " " << cell.to_string() << "\n";
     exit(1);
   }
+  // std::this_thread::sleep_for(std::chrono::milliseconds(60000));
 
   Cells::Cell* cell_res = select_req->result->columns[schema->cid]->cells.front();
   std::string value((const char*)cell_res->value, cell_res->vlen);
@@ -300,6 +303,7 @@ void test_1(const std::string& col_name) {
   std::cout << update_req->columns_cells->to_string() << "\n";
   
   took =  SWC::Time::now_ns();
+  update_req->timeout_commit = 10*num_cells;
   update_req->commit();
   update_req->wait();
   if(update_req->columns_cells->size_bytes() != 0) {
@@ -333,7 +337,6 @@ void test_1(const std::string& col_name) {
   took = SWC::Time::now_ns() - took;
   std::cout << "SELECT-TOOK=" << took  << "\n";
   
-  finished = true;
 }
 
 
@@ -378,7 +381,12 @@ int main(int argc, char** argv) {
             req_ptr->request_again();
             return;
           }
-          test_1(schema->col_name);
+          for(int i=0;i<10;i++) {
+            test_1(schema->col_name);
+            std::cout << "test_1 chk=" << i << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+          }
+          finished = true;
         },
         10000
       );

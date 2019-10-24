@@ -146,16 +146,19 @@ class Mutable {
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t selector=0){
     Cell* cell;
-    uint32_t offset = 0; //(narrower over specs.key_start)
     std::lock_guard<std::mutex> lock(m_mutex);
+
+    uint32_t offset = 0; //(narrower over specs.key_start)
     
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
 
-      //std::cout << " " << cell->to_string() << "\n";
       if(cell->has_expired(m_ttl) || cell->on_fraction 
-        || (cell->flag != INSERT && !specs.flags.return_deletes))
+        || (cell->flag != INSERT && !specs.flags.return_deletes)) {
+        skips++;
+        //std::cout << " " << cell->to_string() << "\n";
         continue;
+      }
 
       if((!selector && specs.is_matching(*cell, m_type))
           || (selector && selector(*cell))) {
@@ -172,6 +175,8 @@ class Mutable {
       } else 
         skips++;
     }
+    //std::cout << "scan: " << _to_string() 
+    //          << " skips="<< skips << " " << cell->to_string() << "\n";
   }
 
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
@@ -426,7 +431,8 @@ class Mutable {
     bool removing = false;
     bool updating = false;
     uint32_t revs = 0;
-    
+    int64_t revision_exist;
+    int64_t revision_new;
     
     uint32_t offset = _narrow(e_cell.key, e_cell.on_fraction);
     //std::cout << "NARROWED add(offset)=" << offset << "\n";
@@ -457,27 +463,27 @@ class Mutable {
 
       // (cond == Condition::EQ)
 
+      revision_exist = cell->get_revision();
+      revision_new   = e_cell.get_revision();
+    
       if(removing) {
-        if(e_cell.is_removing(cell->revision)) {
-          //std::cout << " e_cell is_removing: " << cell->to_string() << "\n";
+        if(e_cell.is_removing(revision_exist)) {
           _move_bwd(offset--, 1);
         }
         continue;
           
       } else if(cell->removal()) {
-        if(cell->is_removing(e_cell.revision)) {
-          //std::cout << " cell is_removing: " << e_cell.to_string() << "\n";
+        if(cell->is_removing(revision_new)) {
+          std::cout << "               " << cell->to_string() << "\n";  
+          std::cout << "  is_removing: " << e_cell.to_string() << "\n";
           return;
         }
         continue;
       }
 
-      //std::cout << "new " << e_cell.to_string() << "\n"; 
-      //std::cout << "old " << cell->to_string() << "\n";  
-      //std::cout << "cond " << Condition::to_string(cond) << "\n";  
       if(e_cell.removal()) {
         removing = true;
-        if(e_cell.is_removing(cell->revision))
+        if(e_cell.is_removing(revision_exist))
           cell->copy(e_cell);
         else 
           _insert(offset, e_cell);
@@ -494,7 +500,7 @@ class Mutable {
           }
           if(cell->on_fraction) {
             if(!(cell_cpy.control & HAVE_REVISION) 
-              || cell_cpy.revision < cell->revision)
+              || cell_cpy.get_revision() < revision_exist)
               cell_cpy.copy(*cell);
             continue;
           } // on_fraction agrregated evaluation
@@ -505,7 +511,7 @@ class Mutable {
           int64_t v2 = e_cell.get_value(&op2);
 
           if(op1 == OP::EQUAL) {
-            if(cell->revision > e_cell.revision) 
+            if(revision_exist > revision_new) 
               return;
             continue;
           } 
@@ -514,7 +520,7 @@ class Mutable {
             v1 = 0;
           }
 
-          if(cell->revision == e_cell.revision) {
+          if(revision_exist == revision_new) {
             if(updating)
               continue;
             return;
@@ -528,8 +534,8 @@ class Mutable {
           }
           cell->set_value(op2, v2);
 
-          if(cell->revision < e_cell.revision)
-            cell->revision = e_cell.revision;
+          if(revision_exist < revision_new)
+            revision_exist = revision_new;
           if(cell->timestamp < e_cell.timestamp)
             cell->timestamp = e_cell.timestamp;
             
@@ -539,7 +545,7 @@ class Mutable {
         }
 
         default: { // PLAIN
-          if(cell->revision == e_cell.revision) {
+          if(revision_exist == revision_new) {
             cell->copy(e_cell);
             return;
           }

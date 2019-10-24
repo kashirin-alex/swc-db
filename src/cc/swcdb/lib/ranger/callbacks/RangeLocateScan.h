@@ -83,8 +83,8 @@ class RangeLocateScan : public ResponseCallback {
     }
 
     std::cout << "RangeLocateScan, rsp " << req->to_string() << "\n";
-    std::cout << params.to_string() << "\n";
     req = nullptr;
+    std::cout << params.to_string() << "\n";
     
     try {
       CommHeader header;

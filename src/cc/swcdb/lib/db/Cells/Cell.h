@@ -302,7 +302,7 @@ class Cell {
     return flag > Flag::INSERT;
   }
   
-  const bool is_removing(const int64_t rev) const {
+  const bool is_removing(const int64_t& rev) const {
     return removal() && (
       (get_revision() >= rev 
         && (flag == DELETE || flag == DELETE_FRACTION ))

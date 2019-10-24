@@ -40,7 +40,7 @@ class Select : public std::enable_shared_from_this<Select> {
   DB::Specs::Scan             specs;
   Result::Ptr                 result;
 
-  uint32_t buff_sz          = 1000000;
+  uint32_t buff_sz          = 8000000;
   uint32_t timeout_commit   = 60000;
 
   std::mutex                  m_mutex;
