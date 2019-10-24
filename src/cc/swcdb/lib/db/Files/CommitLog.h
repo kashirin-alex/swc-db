@@ -258,8 +258,6 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         --m_count;
-        std::cout << "AwaitingLoad count=" << m_count 
-                  << " err=" << err << " loaded=" << frag->to_string() << "\n";
         m_pending.push(frag);
         if(m_pending.size() > 1)
           return;
@@ -281,6 +279,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         log->load_cells(blk->interval, blk->cells);
         blk->state = CellStore::Block::Read::State::LOGS_LOADED;
         blk->pending_logs_load();
+        std::cout << "AwaitingLoad CALL\n";
         cb(err);
       }
     }
