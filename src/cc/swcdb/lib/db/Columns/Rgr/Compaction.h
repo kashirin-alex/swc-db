@@ -20,7 +20,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                                               "swc.rgr.maintenance.handlers"))
             : m_io(std::make_shared<IoContext>("RangerMaintenance", workers)), 
               m_check_timer(asio::high_resolution_timer(*m_io->ptr())),
-              m_run(true), m_running(0),
+              m_run(true), m_running(0), m_scheduled(false),
               m_idx_cid(0), m_idx_rid(0), 
               cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
                 "swc.rgr.compaction.check.interval")) {
@@ -93,10 +93,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   }
 
   void compact(Range::Ptr range) {
-    
-
-
-
+    if(!range->is_loaded())
+      return;
+      
   }
 
 
@@ -142,6 +141,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   asio::high_resolution_timer  m_check_timer;
   bool                         m_run;
   uint32_t                     m_running;
+  bool                         m_scheduled;
   
   size_t                       m_idx_cid;
   size_t                       m_idx_rid;
