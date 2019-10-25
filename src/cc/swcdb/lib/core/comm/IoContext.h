@@ -13,13 +13,11 @@ typedef asio::executor_work_guard<asio::io_context::executor_type> IO_DoWork;
 typedef std::shared_ptr<IO_DoWork> IO_DoWorkPtr;
 typedef std::shared_ptr<asio::signal_set> IO_SignalsPtr;
 
-class IoContext;
-typedef std::shared_ptr<IoContext> IoContextPtr;
-
 class IoContext {
   public:
 
-  std::atomic<bool>   running;
+typedef std::shared_ptr<IoContext>  Ptr;
+  std::atomic<bool>                 running;
 
   IoContext(const std::string name, int32_t size) 
     : m_name(name), running(true), m_size(size),
@@ -30,7 +28,7 @@ class IoContext {
     HT_ASSERT(size>0);
   }
 
-  void run(IoContextPtr p){
+  void run(Ptr p){
     HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
     for(int n=0;n<m_size;n++)
       asio::post(*m_pool.get(), std::bind(&IoContext::do_run, p));
@@ -107,7 +105,7 @@ class IoCtx {
     return m_env != nullptr;
   }
   
-  static IoContextPtr io(){
+  static IoContext::Ptr io(){
     HT_ASSERT(ok());
 
     return m_env->m_io;
@@ -124,7 +122,7 @@ class IoCtx {
   virtual ~IoCtx(){ }
 
   private:
-  IoContextPtr                         m_io;
+  IoContext::Ptr                         m_io;
   inline static std::shared_ptr<IoCtx> m_env = nullptr;
 };
 }

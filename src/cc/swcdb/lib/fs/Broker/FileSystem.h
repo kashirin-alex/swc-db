@@ -390,7 +390,7 @@ class FileSystemBroker: public FileSystem {
 
   private:
 
-  IoContextPtr      m_io;
+  IoContext::Ptr    m_io;
   client::ClientPtr m_service = nullptr;
   Types::Fs         m_type_underlying;
   const EndPoints   m_endpoints;

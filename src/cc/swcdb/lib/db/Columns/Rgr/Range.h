@@ -33,6 +33,7 @@ class Range : public DB::RangeBase {
     const StaticBufferPtr     input;
     const ResponseCallbackPtr cb;
   };
+
   enum State{
     NOTLOADED,
     LOADED,
@@ -180,7 +181,7 @@ class Range : public DB::RangeBase {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_q_adding.push(req);
     
-    if(m_q_adding.size() == 1) {
+    if(m_q_adding.size() == 1) { 
       asio::post(*Env::IoCtx::io()->ptr(), 
         [ptr=shared()](){ ptr->run_add_queue(); }
       );
@@ -508,7 +509,7 @@ class Range : public DB::RangeBase {
         m_commit_log->add(cell);
 
         cs_idx = 0;
-        for(;;) {
+        for(;;) { // // or run handlers under total cellstore-blocks count
           get_next(cs_ptr, cs_idx, cs);
           if(cs == nullptr)
             break;
