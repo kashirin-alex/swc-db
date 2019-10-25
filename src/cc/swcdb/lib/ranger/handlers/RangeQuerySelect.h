@@ -50,29 +50,28 @@ class RangeQuerySelect : public AppHandler {
         // cannot be happening, range-loaded always with schema
         err = Error::COLUMN_SCHEMA_MISSING;
       }
-
       if(err) {
         m_conn->send_error(err, "", m_ev);
         return;
       }
 
-      auto cb = std::make_shared<server::Rgr::Callback::RangeQuerySelect>(
-        m_conn, m_ev, range);
+      range->scan(
+        std::make_shared<server::Rgr::Callback::RangeQuerySelect>(
+          m_conn, m_ev,
 
-      cb->req = DB::Cells::ReqScan::make(
-        DB::Specs::Interval::make_ptr(params.interval),
-        DB::Cells::Mutable::make(
-          params.interval.flags.limit, 
-          params.interval.flags.max_versions != 0 ? 
-          params.interval.flags.max_versions : schema->cell_versions, 
-          schema->cell_ttl, 
-          schema->col_type
-        ),
-        [cb](int err){cb->response(err);}
+          DB::Specs::Interval::make_ptr(params.interval),
+          DB::Cells::Mutable::make(
+            params.interval.flags.limit, 
+            params.interval.flags.max_versions != 0 ? 
+            params.interval.flags.max_versions : schema->cell_versions, 
+            schema->cell_ttl, 
+            schema->col_type
+          ), 
+        
+          range,
+          params.limit_buffer_sz
+        )
       );
-      
-      cb->req->limit_buffer_sz = params.limit_buffer_sz;
-      range->scan(cb->req);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

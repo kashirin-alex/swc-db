@@ -178,8 +178,8 @@ class Read : public std::enable_shared_from_this<Read> {
       if(req->reached_limits())
         break;
     }
-    
-    req->response(Error::OK);
+    int err = Error::OK;
+    req->response(err);
   }
 
   bool add_logged(const DB::Cells::Cell& cell) {

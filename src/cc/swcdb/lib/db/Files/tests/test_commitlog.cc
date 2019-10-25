@@ -141,11 +141,11 @@ int main(int argc, char** argv) {
   std::atomic<int> chk = num_chks;
   for(int i = 1;i<=num_chks; i++){
     
-    DB::Cells::Mutable::Ptr cells_mutable = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
-    DB::Cells::ReqScan::Ptr req = DB::Cells::ReqScan::make();
+    auto req = DB::Cells::ReqScanTest::make();
+    req->cells = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
     req->spec = SWC::DB::Specs::Interval::make_ptr();
     req->spec->flags.limit = 2;
-    req->cells = cells_mutable;
+    
     req->cb = [cellstores, req, &chk, i](int err){
         std::cout << " chk=" << i ;
         std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
@@ -164,19 +164,18 @@ int main(int argc, char** argv) {
   chk = num_chks;
   for(int i = 1;i<=num_chks; i++){
     
-    DB::Cells::Mutable::Ptr cells_mutable = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
-    DB::Cells::ReqScan::Ptr req = DB::Cells::ReqScan::make();
+    auto req = DB::Cells::ReqScanTest::make();
     req->spec = SWC::DB::Specs::Interval::make_ptr();
     req->spec->flags.limit = 2;
-    req->cells = cells_mutable;
+    req->cells = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
     
     req->cb = [cellstores, req, &chk, i](int err){
-        std::cout << " chk=" << i ;
-        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-        std::cout << req->to_string() << "\n";
-        std::cout << cellstores->front()->to_string() << "\n";
-        chk--;
-      };
+      std::cout << " chk=" << i ;
+      std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
+      std::cout << req->to_string() << "\n";
+      std::cout << cellstores->front()->to_string() << "\n";
+      chk--;
+    };
     cellstores->front()->scan(req);
   }
   

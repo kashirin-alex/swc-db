@@ -184,7 +184,10 @@ class Read {
       req->offset,
       [req]() { return req->reached_limits(); },
       skips, 
-      req->selector
+      req->has_selector 
+        ? [req](const DB::Cells::Cell& cell) 
+          { return req->selector(cell); }
+        : (DB::Cells::Mutable::Selector_t)0 
     );
   }
 

@@ -148,12 +148,11 @@ int main(int argc, char** argv) {
       //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
     auto t = std::thread([cs2, &key_to_scan, id=n*i, &count=requests](){
 
-      Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
-      Cells::ReqScan::Ptr req = Cells::ReqScan::make();
+      auto req = Cells::ReqScanTest::make();
+      req->cells = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
       req->spec = SWC::DB::Specs::Interval::make_ptr();
       req->spec->key_start.set(key_to_scan, SWC::Condition::GE);
       req->spec->flags.limit = 2;
-      req->cells = cells_mutable;
       req->cb = [req, id, &requests=count, took=SWC::Time::now_ns()](int err){
         std::cout << " chk=" << id ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << " " ;

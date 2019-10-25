@@ -88,6 +88,93 @@ class Range : public DB::RangeBase {
     } 
     cs = *(m_cellstores->begin()+(idx++));
   }
+  
+/*
+  void add(ReqAdd* req) {
+
+    int  err = Error::OK;
+    DB::Cells::Cell cell;
+    size_t cs_ptr;
+    uint32_t cs_idx;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      cs_ptr = (size_t)m_cellstores.get();
+    }
+    
+    Files::CellStore::Read::Ptr cs;
+
+    int64_t ts = Time::now_ns();
+    int64_t ts_log = 0;
+    int64_t ts_cs = 0;
+    int64_t ts2;
+      
+    std::cout << "Range::add cid="<<cid 
+              << " sz=" << req->input->size << "\n";
+    uint32_t count = 0;
+    const uint8_t* ptr = req->input->base;
+    size_t remain = req->input->size; 
+
+    while(remain) {
+      cell.read(&ptr, &remain);
+        
+      if(cell.flag == DB::Cells::Flag::NONE) {
+        std::cerr << "Range::run_add_queue FLAG::NONE " << cell.to_string() << "\n";
+        exit(1);
+      }
+      if(!m_interval.is_in_end(cell.key)) {
+        // validate over range.interval match skip( with error)
+        continue;
+      }
+        
+      if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
+        cell.set_timestamp(Time::now_ns());
+        if(cell.control & DB::Cells::AUTO_TIMESTAMP)
+          cell.control ^= DB::Cells::AUTO_TIMESTAMP;
+      }
+      if(!(cell.control & DB::Cells::HAVE_REVISION))
+        cell.control |= DB::Cells::REV_IS_TS;
+        
+      if(m_state == State::DELETED) {
+        err = Error::COLUMN_MARKED_REMOVED;
+        break;
+      }
+      count++;
+        
+      ts2 = Time::now_ns();
+      m_commit_log->add(cell);
+      ts_log += Time::now_ns()-ts2;
+      //std::cout << " " << cell.to_string() << "\n";
+
+      ts2 = Time::now_ns();
+      cs_idx = 0;
+      for(;;) {
+        get_next(cs_ptr, cs_idx, cs);
+        if(cs == nullptr)
+          break;
+        if(cs->add_logged(cell)) {
+          if(!cell.on_fraction)
+            break;
+        }
+      }
+      ts_cs += Time::now_ns()-ts2;
+    }
+
+    auto took = Time::now_ns() - ts;
+    std::cout << "Range::added cid=" << cid 
+              << " count=" << count << " took=" << took 
+              << " avg=" << (count? took/count : 0)
+              << " log=" << ts_log << " cs=" << ts_cs << " \n";
+    std::cout << " " << m_commit_log->to_string() << "\n";
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      for(auto& cs : *m_cellstores.get())
+        std::cout << " " << cs->to_string() << "\n";
+    }
+
+    req->cb->response(err);
+    delete req;
+  }
+*/
 
   void add(ReqAdd* req) {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -125,8 +212,8 @@ class Range : public DB::RangeBase {
       cs->scan(req);
       return;
     }
-    
-    req->response(Error::OK);
+    int err = Error::OK;
+    req->response(err);
   }
 
   void load(ResponseCallbackPtr cb) {
@@ -250,10 +337,12 @@ class Range : public DB::RangeBase {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
-  
+
       for(auto& cs : *m_cellstores.get()){
         cs->remove(err);
       }
+      m_cellstores->clear();
+      m_commit_log->remove(err);
 
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       Env::FsInterface::interface()->rmdir(err, get_path(""));
@@ -389,9 +478,7 @@ class Range : public DB::RangeBase {
         std::lock_guard<std::mutex> lock(m_mutex);
         req = m_q_adding.front();
       }
-
-      std::cout << "Range::add cid="<<cid 
-               << " sz=" << req->input->size << "\n";
+      
       uint32_t count = 0;
       ptr = req->input->base;
       remain = req->input->size; 
@@ -410,10 +497,14 @@ class Range : public DB::RangeBase {
         }
         if(!(cell.control & DB::Cells::HAVE_REVISION))
           cell.control |= DB::Cells::REV_IS_TS;
+        
+        if(m_state == State::DELETED) {
+          err = Error::COLUMN_MARKED_REMOVED;
+          break;
+        }
 
         count++;
         m_commit_log->add(cell);
-      //std::cout << " " << cell.to_string() << "\n";
 
         cs_idx = 0;
         for(;;) {
@@ -426,9 +517,6 @@ class Range : public DB::RangeBase {
           }
         }
       }
-      std::cout << "Range::added cid=" << cid 
-               << " count=" << count << "\n";
-
       req->cb->response(err);
 
       delete req;
@@ -442,7 +530,7 @@ class Range : public DB::RangeBase {
 
   }
 
-  State                             m_state;
+  std::atomic<State>                m_state;
    
   Files::CellStore::ReadersPtr      m_cellstores;
   std::queue<ReqAdd*>               m_q_adding;

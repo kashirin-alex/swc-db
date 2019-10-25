@@ -55,47 +55,27 @@ class RangeLocate : public AppHandler {
         m_conn->send_error(err, "", m_ev);
         return;
       }
-;
-      auto cb = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-        m_conn, m_ev, range);
 
-      params.interval.flags.limit = 2;
       auto spec = DB::Specs::Interval::make_ptr(params.interval);
       spec->key_finish.copy(spec->key_start);
       spec->key_finish.set(-1, Condition::LE);
       if(range->type != Types::Range::DATA) 
         spec->key_finish.set(0, Condition::EQ);
+      spec->flags.limit = 2;
 
-      cb->req = DB::Cells::ReqScan::make(
-        spec,
-        DB::Cells::Mutable::make(
-          params.interval.flags.limit, 
-          schema->cell_versions, 
-          schema->cell_ttl, 
-          schema->col_type
-        ),
-        [cb](int err){cb->response(err);},
-        [cb](const DB::Cells::Cell& cell) { // ref bool stop
-          if(cb->req->spec->key_start.is_matching(cell.key)) {
-            size_t remain = cell.vlen;
-            const uint8_t * ptr = cell.value;
-            Serialization::decode_vi64(&ptr, &remain);
-            DB::Cell::Key key_end;
-            key_end.decode(&ptr, &remain);
-            std::cout << "cell begin: "<< cell.key.to_string() << "\n";
-            std::cout << "spec begin: " << cb->req->spec->key_start.to_string() << "\n";
-            std::cout << "cell end:   "<< key_end.to_string() << "\n";
-            std::cout << "spec end:   " << cb->req->spec->key_finish.to_string() << "\n";
-            return key_end.empty() || 
-                  cb->req->spec->key_finish.is_matching(key_end);
-          }
-          return cb->req->cells->size() == 1; // next_key
-        }
+      range->scan(
+        std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+          m_conn, m_ev, 
+          spec,  
+          DB::Cells::Mutable::make(
+            params.interval.flags.limit, 
+            schema->cell_versions, 
+            schema->cell_ttl, 
+            schema->col_type
+          ), 
+          range
+        )
       );
-      
-      //std::cout << " handler::RangeLocate,  " << cb->req->to_string() << "\n";
-      
-      range->scan(cb->req);
   
     }
     catch (Exception &e) {

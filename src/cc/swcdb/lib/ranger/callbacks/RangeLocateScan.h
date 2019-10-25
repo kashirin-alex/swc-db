@@ -6,6 +6,7 @@
 #define swc_lib_ranger_callbacks_RangeLocateScan_h
 
 #include "swcdb/lib/core/comm/ResponseCallback.h"
+#include "swcdb/lib/db/Cells/ReqScan.h"
 
 namespace SWC {
 namespace server {
@@ -13,26 +14,50 @@ namespace Rgr {
 namespace Callback {
 
 
-class RangeLocateScan : public ResponseCallback {
+class RangeLocateScan : public DB::Cells::ReqScan {
   public:
 
-  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev, Range::Ptr range)
-                  : ResponseCallback(conn, ev), range(range) {
+  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev, 
+                  DB::Specs::Interval::Ptr spec, 
+                  DB::Cells::Mutable::Ptr cells,
+                  Range::Ptr range)
+                  : DB::Cells::ReqScan(conn, ev, spec, cells), 
+                    range(range) {
+    has_selector = true;
   }
 
   virtual ~RangeLocateScan() { }
 
+  bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
+    if(!spec->key_start.is_matching(cell.key)) 
+      return cells->size() == 1; // next_key
+
+    size_t remain = cell.vlen;
+    const uint8_t * ptr = cell.value;
+    Serialization::decode_vi64(&ptr, &remain);
+    DB::Cell::Key key_end;
+    key_end.decode(&ptr, &remain);
+    std::cout << "cell begin: "<< cell.key.to_string() << "\n";
+    std::cout << "spec begin: " << spec->key_start.to_string() << "\n";
+    std::cout << "cell end:   "<< key_end.to_string() << "\n";
+    std::cout << "spec end:   " << spec->key_finish.to_string() << "\n";
+    return key_end.empty() || 
+            spec->key_finish.is_matching(key_end);
+  }
+
   void response(int &err) override {
+    if(!DB::Cells::ReqScan::ready(err))
+      return;
 
     if(err == Error::OK && Env::RgrData::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(err == Error::OK) {
-      if(req->cells->size() > 0) {
+      if(cells->size() > 0) {
 
         DB::Cells::Cell cell;
-        req->cells->get(0, cell);
+        cells->get(0, cell);
         
         std::string id_name(cell.key.get_string(0));
         params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
@@ -45,45 +70,25 @@ class RangeLocateScan : public ResponseCallback {
           params.key_end.remove(0);
         params.key_end.remove(0);
 
-        params.next_key = req->cells->size() > 1;
+        params.next_key = cells->size() > 1;
         
       } else  {
         // range->cid == 1 || 2
-        if(req->spec->key_start.count > 1) {
-          req->spec->key_finish.copy(req->spec->key_start);
-          req->spec->key_finish.set(-1, Condition::LE);
+        if(spec->key_start.count > 1) {
+          spec->key_finish.copy(spec->key_start);
+          spec->key_finish.set(-1, Condition::LE);
           if(range->type != Types::Range::DATA)
-            req->spec->key_finish.set(0, Condition::EQ);
-          req->spec->key_start.remove(req->spec->key_start.count-1, true);
-          range->scan(req);
+            spec->key_finish.set(0, Condition::EQ);
+          spec->key_start.remove(spec->key_start.count-1, true);
+          range->scan(get_req_scan());
           return;
         } else {
           params.err = Error::RANGE_NOT_FOUND;
         }
-      /* a miss for closest to under last key fraction 
-      // opt, to add value with key_end comp to LE else next
-      1 2 3 4 5 6
-      1 2 3 4 5 6 a
-      1 2 3 4 5 6 ab
-      1 2 3 4 5 6 abc
-      1 2 3 4 5 6 abc1           N  v(1 2 3 4 5 6 acb1)
-      1 2 3 4 5 6 abc1 1         N  v(1 2 3 4 5 6 acb1 1)
-      1 2 3 4 5 6 abc1 1  1 1    N
-      1 2 3 4 5 6 abc1 2         N  v(1 2 3 4 5 6 acb1 7)
-  >>  1 2 3 4 5 6 abc1 8 a a a a ??? (next new key_begin)
-      1 2 3 4 5 6 abc1 9  1 1    Y !!! v(1 2 3 4 5 6 acb1 98)
-      1 2 3 4 5 6 abc1 99 1 1  
-      1 2 3 4 5 6 acb2
-
-      1 2 3 4 5 6 abc1 8 a a a a ?(which range)
-      
-      begin(widen) 1 2 3 4 5 6 abc1 + end(value)1 2 3 4 5 6 abc1 >=8
-      */
       }
     }
 
-    std::cout << "RangeLocateScan, rsp " << req->to_string() << "\n";
-    req = nullptr;
+    std::cout << "RangeLocateScan, rsp " << to_string() << "\n";    
     std::cout << params.to_string() << "\n";
     
     try {
@@ -101,12 +106,9 @@ class RangeLocateScan : public ResponseCallback {
     
   }
 
-
-  DB::Cells::ReqScan::Ptr req;
   Range::Ptr              range;
 
 };
-typedef std::shared_ptr<RangeLocateScan> RangeLocateScanPtr;
 
 
 }
