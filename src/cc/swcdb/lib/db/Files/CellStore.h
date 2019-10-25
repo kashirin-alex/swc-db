@@ -242,6 +242,8 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   void remove(int &err) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_blocks.clear();
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 

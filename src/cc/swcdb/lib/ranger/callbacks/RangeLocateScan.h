@@ -48,9 +48,16 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   void response(int &err) override {
     if(!DB::Cells::ReqScan::ready(err))
       return;
+      
+    if(err == Error::OK) {
+      if(Env::RgrData::is_shuttingdown())
+        err = Error::SERVER_SHUTTING_DOWN;
+      if(range->deleted())
+        err = Error::COLUMN_MARKED_REMOVED;
+    }
+    if(err == Error::COLUMN_MARKED_REMOVED)
+      cells->free();
 
-    if(err == Error::OK && Env::RgrData::is_shuttingdown()) 
-      err = Error::SERVER_SHUTTING_DOWN;
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(err == Error::OK) {
@@ -97,7 +104,6 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       CommBufPtr cbp = std::make_shared<CommBuf>(
         header, params.encoded_length());
       params.encode(cbp->get_data_ptr_address());
-
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

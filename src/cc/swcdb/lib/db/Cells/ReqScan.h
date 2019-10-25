@@ -33,7 +33,7 @@ class ReqScan  : public ResponseCallback {
 
   virtual bool selector(const DB::Cells::Cell& cell) { return true; }
   
-  bool ready(int err) {
+  bool ready(int& err) {
     auto call = next_call;
     next_call = 0;
     if(!err && call && !reached_limits()){

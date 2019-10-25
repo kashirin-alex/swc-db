@@ -29,7 +29,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   Fragments(const DB::RangeBase::Ptr& range) 
-            : m_range(range), m_commiting(false) {
+            : m_range(range), m_commiting(false), m_deleting(false) {
     
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
 
@@ -52,7 +52,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     m_cells->add(cell);
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(!m_commiting && m_cells->size_bytes() >= m_size_commit) {
+    if(!m_deleting && !m_commiting && m_cells->size_bytes() >= m_size_commit) {
       m_commiting = true;
       asio::post(*Env::IoCtx::io()->ptr(), 
         [ptr=shared_from_this()](){
@@ -61,7 +61,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       );
     }
   }
-  
+
   void commit_new_fragment(bool finalize=false) {
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
     uint32_t blk_size = schema->blk_size;
@@ -86,12 +86,19 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       DynamicBuffer cells;
       cell_count = 0;
       DB::Cells::Interval intval;
-      m_cells->write_and_free(cells, cell_count, intval, blk_size);
+      for(;;) {
+        m_cells->write_and_free(cells, cell_count, intval, blk_size);
+        if(cells.fill() >= blk_size)
+          break;
+        if(finalize && m_cells->size() == 0)
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if(m_cells->size() == 0)
+          break;
+      }
       if(cells.fill() == 0)
         break;
 
-      frag = std::make_shared<Fragment>(
-        get_log_fragment(Time::now_ns()));
+      frag = std::make_shared<Fragment>(get_log_fragment(Time::now_ns()));
       frag->write(
         err, 
         schema->blk_replication, 
@@ -108,15 +115,17 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         } else {
           m_fragments.push_back(frag);
         }
+        if(m_deleting)
+          break;
       }
     } while((finalize && m_cells->size() > 0 ) 
-            || m_cells->size_bytes() >= m_size_commit);
+            || m_cells->size_bytes() >= blk_size);
     
     {
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_commiting = false;
     }
-    m_cv.notify_one();
+    m_cv.notify_all();
   }
 
   const std::string get_log_fragment(const int64_t frag) const {
@@ -239,8 +248,30 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     return s;
   }
 
-  void remove(int &err) {}
+  void remove(int &err) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_deleting = true;
+    }
 
+    if(m_commiting) {
+      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+    }
+    
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_fragments.clear();
+      m_fragments_error.clear();
+    }
+    
+    m_cells->free();
+  }
+
+  bool deleting() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_deleting;
+  }
 
   private:
   
@@ -267,11 +298,14 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
           std::lock_guard<std::mutex> lock(m_mutex);
           frag = m_pending.front();
         }
-        frag->load_cells(blk->interval, blk->cells);
+        if(log->deleting())
+          err = Error::COLUMN_MARKED_REMOVED;
+        else
+          frag->load_cells(blk->interval, blk->cells);
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
-          if(m_pending.empty())
+          if(m_pending.empty()) 
             break;
         }
       }
@@ -298,6 +332,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   DB::Cells::Mutable::Ptr     m_cells;
   uint32_t                    m_size_commit;
   std::atomic<bool>           m_commiting;
+  bool                        m_deleting;
   
   std::condition_variable     m_cv;
 

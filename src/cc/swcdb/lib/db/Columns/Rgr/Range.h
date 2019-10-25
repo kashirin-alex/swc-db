@@ -88,7 +88,7 @@ class Range : public DB::RangeBase {
     } 
     cs = *(m_cellstores->begin()+(idx++));
   }
-  
+
 /*
   void add(ReqAdd* req) {
 
@@ -342,7 +342,8 @@ class Range : public DB::RangeBase {
         cs->remove(err);
       }
       m_cellstores->clear();
-      m_commit_log->remove(err);
+      if(m_commit_log != nullptr) 
+        m_commit_log->remove(err);
 
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       Env::FsInterface::interface()->rmdir(err, get_path(""));
