@@ -17,11 +17,12 @@
 namespace SWC { namespace DB { namespace Cells {
 
 enum Flag {
-  INSERT                    = 0x0,
-  DELETE                    = 0x1,
-  DELETE_VERSION            = 0x2,
-  DELETE_FRACTION           = 0x3,
-  DELETE_FRACTION_VERSION   = 0x4
+  NONE                      = 0x0, // empty instance
+  INSERT                    = 0x1,
+  DELETE                    = 0x2,
+  DELETE_VERSION            = 0x3,
+  DELETE_FRACTION           = 0x4,
+  DELETE_FRACTION_VERSION   = 0x5
 };
 const std::string to_string(Flag flag) {
   switch(flag){
@@ -35,6 +36,8 @@ const std::string to_string(Flag flag) {
       return std::string("DELETE_FRACTION");
     case Flag::DELETE_FRACTION_VERSION:
       return std::string("DELETE_FRACTION_VERSION");
+    case Flag::NONE:
+      return std::string("NONE");
     default:
       return std::string("UKNONWN");
   }
@@ -104,7 +107,7 @@ class Cell {
   }
 
 
-  explicit Cell():  flag(0), control(0), 
+  explicit Cell():  flag(Flag::NONE), control(0), 
                     on_fraction(0), timestamp(0), revision(0),
                     value(0), vlen(0), own(false) { }
 

@@ -144,7 +144,7 @@ class Mutable {
 
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
-            size_t& skips, const Selector_t selector=0){
+            size_t& skips, const Selector_t& selector=0){
     Cell* cell;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -153,6 +153,12 @@ class Mutable {
     for(;offset < m_size; offset++){
       cell = *(m_cells + offset);
 
+      if(cell->flag == NONE) {
+        // temp checkup
+        std::cerr << "FLAG::NONE, offset=" << offset << " size=" << m_size << " " << cell->to_string() << "\n";
+        exit(1);
+      }
+      
       if(cell->has_expired(m_ttl) || cell->on_fraction 
         || (cell->flag != INSERT && !specs.flags.return_deletes)) {
         skips++;
@@ -440,7 +446,7 @@ class Mutable {
     for(;offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
-      
+
       if(cell->has_expired(m_ttl)) {
          _move_bwd(offset--, 1);
         continue;
