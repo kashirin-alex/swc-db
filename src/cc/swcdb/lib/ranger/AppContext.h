@@ -17,6 +17,7 @@
 
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "swcdb/lib/db/Columns/Rgr/Columns.h"
+#include "swcdb/lib/db/Columns/Rgr/Compaction.h"
 
 #include "swcdb/lib/db/Protocol/Mngr/req/RgrMngId.h"
 
@@ -69,6 +70,8 @@ class AppContext : public SWC::AppContext {
     m_id_validator 
       = std::make_shared<Protocol::Mngr::Req::RgrMngId::Scheduler>();
     Protocol::Mngr::Req::RgrMngId::assign(m_id_validator);
+
+    m_compaction = std::make_shared<Compaction>();
   }
 
   void set_srv(SerializedServerPtr srv){
@@ -155,6 +158,7 @@ class AppContext : public SWC::AppContext {
         if(handler)
           asio::post(*Env::IoCtx::io()->ptr(), 
                     [hdlr=AppHandlerPtr(handler)](){ hdlr->run();  });
+        //std::cout << " cmd=" << ev->header.command << "\n";
         break;
       }
 
@@ -217,6 +221,7 @@ class AppContext : public SWC::AppContext {
   
   std::mutex                m_mutex;
   SerializedServerPtr       m_srv = nullptr;
+  Compaction::Ptr           m_compaction;
   
   Protocol::Mngr::Req::RgrMngId::Scheduler::Ptr   m_id_validator;
   
