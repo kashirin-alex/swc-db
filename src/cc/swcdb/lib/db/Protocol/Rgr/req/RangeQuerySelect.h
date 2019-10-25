@@ -19,7 +19,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
-                             Params::RangeQuerySelectRsp)> Cb_t;
+                             const Params::RangeQuerySelectRsp&)> Cb_t;
   typedef std::function<void()> Cb_no_conn_t;
 
   static inline void 

@@ -136,7 +136,39 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int nu
 
 }
 
+void expect_empty_column(int64_t cid) {
+    // Req::Query::Select
+  Query::Select::Ptr select_req = std::make_shared<Query::Select>(
+    [](Query::Select::Result::Ptr result)
+    {
+      if(quite)return;
+      std::cout << "CB completion=" << result->completion.load() << "\n";
+      for(auto col : result->columns) {
+        std::cout << " cid=" << col.first << ": sz=" << col.second->cells.size() << "\n";
+        int num=0;
+        for(auto cell : col.second->cells)
+          std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
+      }
+    }
+  );
+  
+  auto spec = SWC::DB::Specs::Interval::make_ptr();
+  spec->flags.offset=0;
+  spec->flags.limit=1;
+  // spec->flags.return_deletes = true;
+  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {spec})};
+  select_req->scan();
+  select_req->wait();
 
+  if(select_req->result->columns[cid]->cells.size() > 0) {
+    std::cerr << "BAD, column not empty: \n" 
+              << " " << spec->to_string() << "\n"
+              << " expected_value=0\n"
+              << "  result_value=" << select_req->result->columns[cid]->cells.size() << "\n"
+              << " " << select_req->result->columns[cid]->cells[0]->to_string() << "\n";
+    exit(1);
+  }
+}
 
 
 void test_1(const std::string& col_name) {
@@ -246,7 +278,12 @@ void test_1(const std::string& col_name) {
   select_req->scan();
   select_req->wait();
   if(select_req->result->columns[schema->cid]->cells.size() != spec->flags.limit) {
-    std::cerr << "BAD, select cells count: \n" 
+    for(auto c : select_req->result->columns[schema->cid]->cells)
+      std::cerr << " " << c->to_string() << "\n";
+
+    std::cerr << "\n first: " << select_req->result->columns[schema->cid]->cells.front()->to_string() << "\n";
+    std::cerr <<   "  last: " << select_req->result->columns[schema->cid]->cells.back()->to_string() << "\n";
+    std::cerr << "\nBAD, select cells count: \n" 
               << " " << spec->to_string() << "\n"
               << " expected_value=" << spec->flags.limit << "\n"
               << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n";
@@ -381,6 +418,11 @@ int main(int argc, char** argv) {
             req_ptr->request_again();
             return;
           }
+          
+          expect_empty_column(
+            SWC::Env::Clients::get()->schemas->get(err, schema->col_name)->cid
+          );
+
           for(int i=0;i<10;i++) {
             test_1(schema->col_name);
             std::cout << "test_1 chk=" << i << "\n";

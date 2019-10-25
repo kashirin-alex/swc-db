@@ -341,7 +341,7 @@ class Select : public std::enable_shared_from_this<Select> {
           //std::cout << "RETRYING NO-CONN\n";
         },
         [rid, base_req, ptr=shared_from_this()] 
-        (ReqBase::Ptr req_ptr, Rgr::Params::RangeQuerySelectRsp rsp) {
+        (ReqBase::Ptr req_ptr, const Rgr::Params::RangeQuerySelectRsp& rsp) {
 
           //std::cout << "select, Rgr::Req::RangeQuerySelect: "
           //  << rsp.to_string() 
@@ -355,8 +355,12 @@ class Select : public std::enable_shared_from_this<Select> {
             return;
           }      
           auto col = ptr->selector->result->columns[ptr->cells_cid]; 
-          if(rsp.size > 0) 
-            col->add(&rsp.bufp, &rsp.size);
+          
+          if(rsp.size > 0) {
+            size_t size = rsp.size;
+            const uint8_t * bufp = rsp.bufp;
+            col->add(&bufp, &size);
+          }
           
           //std::cout << col->cells.size() << "\n";
 
