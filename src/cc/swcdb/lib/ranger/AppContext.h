@@ -72,6 +72,7 @@ class AppContext : public SWC::AppContext {
     Protocol::Mngr::Req::RgrMngId::assign(m_id_validator);
 
     m_compaction = std::make_shared<Compaction>();
+    m_compaction->schedule();
   }
 
   void set_srv(SerializedServerPtr srv){

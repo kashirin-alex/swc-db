@@ -25,7 +25,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
               cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
                 "swc.rgr.compaction.check.interval")) {
     m_io->run(m_io);
-    schedule(cfg_check_interval->get());
   }
 
   virtual ~Compaction(){}
@@ -37,7 +36,11 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     m_io->stop();
   }
 
-  void schedule(uint32_t t_ms = 300000) {
+  void schedule() {
+    schedule(cfg_check_interval->get());
+  }
+  
+  void schedule(uint32_t t_ms) {
     std::lock_guard<std::mutex> lock(m_mutex);
     _schedule(t_ms);
   }
