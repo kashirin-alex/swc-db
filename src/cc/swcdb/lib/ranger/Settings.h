@@ -23,9 +23,13 @@ void Settings::init_app_options(){
     ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")
     ("swc.rgr.port", i32(16000), "Ranger port")
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
+    ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
 
     ("swc.rgr.id.validation.interval", g_i32(120000), 
     "Validation of Ranger-ID against Mngr(root)")
+
+    ("swc.rgr.compaction.check.interval", g_i32(300000), 
+    "Interval in ms for Compaction ")
   ;
 
 }
