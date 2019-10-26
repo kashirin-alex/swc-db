@@ -8,6 +8,7 @@
 #include "swcdb/lib/core/config/Settings.h"
 #include "swcdb/lib/core/comm/Settings.h"
 #include "swcdb/lib/fs/Settings.h"
+#include "swcdb/lib/db/Types/Encoding.h"
 
 namespace SWC{ namespace Config {
 
@@ -15,6 +16,11 @@ namespace SWC{ namespace Config {
 void Settings::init_app_options(){
   init_comm_options();
   init_fs_options();
+
+  gEnumExt blk_enc((int)Types::Encoding::SNAPPY);
+  blk_enc.set_from_string(Types::from_string_encoding);
+  blk_enc.set_repr(Types::repr_encoding);
+
   file_desc().add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
     ("swc.rgr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Ranger")
@@ -30,6 +36,17 @@ void Settings::init_app_options(){
 
     ("swc.rgr.compaction.check.interval", g_i32(300000), 
     "Interval in ms for Compaction ")
+
+    ("swc.rgr.Range.CellStore.count.max", g_i32(10), 
+     "Number of cellstores allowed in range before range-split")  
+    ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
+     "Default CellStore size")  
+    ("swc.rgr.Range.block.size", g_i32(640000000), 
+     "Default Block Size")  
+    ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
+     "Default Block encoding NONE/SNAPPY/ZLIB")  
+    ("swc.rgr.Range.compaction.size.percent", g_i32(33), 
+    "Compaction threshold in % applied over size of either by range, cellstore or block")
   ;
 
 }

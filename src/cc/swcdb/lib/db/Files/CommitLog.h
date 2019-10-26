@@ -29,13 +29,15 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   Fragments(const DB::RangeBase::Ptr& range) 
-            : m_range(range), m_commiting(false), m_deleting(false) {
+            : m_range(range), m_commiting(false), m_deleting(false),
+              cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
+                "swc.rgr.Range.block.size")), 
+              cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
+                "swc.rgr.Range.block.encoding")) {
     
     DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
 
-    m_size_commit = schema->blk_size;
-    if(m_size_commit == 0)
-      m_size_commit = 16000000; // cfg.default.blk.size
+    m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
     m_cells = DB::Cells::Mutable::make(
       1, 
@@ -63,20 +65,22 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   void commit_new_fragment(bool finalize=false) {
-    DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
-    uint32_t blk_size = schema->blk_size;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(blk_size != 0) 
-        m_size_commit = blk_size;
-      else 
-        blk_size = m_size_commit;
-    }
 
     if(finalize && m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
+
+    DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
+    uint32_t blk_size;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_size_commit = blk_size = schema->blk_size ? 
+                      schema->blk_size : cfg_blk_sz->get();
+    }
+    auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
+                        schema->blk_encoding : 
+                        (Types::Encoding)cfg_blk_enc->get();
     
     Fragment::Ptr frag; 
     uint32_t cell_count;
@@ -103,7 +107,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         frag->write(
           err, 
           schema->blk_replication, 
-          schema->blk_encoding, 
+          blk_encoding, 
           intval, cells, cell_count
         );
         if(!err)
@@ -273,6 +277,9 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     return size;
   }
 
+  const gInt32tPtr            cfg_blk_sz;
+  const gEnumExtPtr           cfg_blk_enc;
+
   private:
   
   struct AwaitingLoad {
@@ -337,6 +344,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   std::condition_variable     m_cv;
 
   std::vector<Fragment::Ptr>  m_fragments;
+
 };
 
 
