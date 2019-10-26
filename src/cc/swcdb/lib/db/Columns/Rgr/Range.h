@@ -36,6 +36,7 @@ class Range : public DB::RangeBase {
 
   enum State{
     NOTLOADED,
+    LOADING,
     LOADED,
     DELETED
   };
@@ -222,7 +223,8 @@ class Range : public DB::RangeBase {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       is_loaded = m_state != State::NOTLOADED;
-      m_state = State::LOADED;
+      if(m_state == State::NOTLOADED)
+        m_state = State::LOADING;
     }
     int err = Env::RgrData::is_shuttingdown()
               ?Error::SERVER_SHUTTING_DOWN:Error::OK;
@@ -352,6 +354,10 @@ class Range : public DB::RangeBase {
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
   }
 
+  Files::CommitLog::Fragments::Ptr get_log() {
+    return m_commit_log;
+  }
+
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -443,19 +449,17 @@ class Range : public DB::RangeBase {
           on_change(err);
       }
     }
-
-    loaded(err, cb); // RSP-LOAD-ACK
-
-    if(err == Error::OK) {
+  
+    if(!err) 
       set_state(State::LOADED);
-      if(is_loaded()) {
-        HT_INFOF("LOADED RANGE %s", to_string().c_str());
-        return;
-      }
-    }
-    HT_WARNF("LOAD RANGE FAILED err=%d(%s) %s", 
-             err, Error::get_text(err), to_string().c_str());
-    return; 
+      
+    loaded(err, cb);   // RSP-LOAD-ACK
+
+    if(is_loaded()) {
+      HT_INFOF("LOADED RANGE %s", to_string().c_str());
+    } else 
+      HT_WARNF("LOAD RANGE FAILED err=%d(%s) %s", 
+               err, Error::get_text(err), to_string().c_str());
   }
 
   void run_add_queue() {
