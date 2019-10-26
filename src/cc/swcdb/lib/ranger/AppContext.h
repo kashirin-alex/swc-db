@@ -188,6 +188,7 @@ class AppContext : public SWC::AppContext {
 
     m_srv->stop_accepting(); // no further requests accepted
 
+    m_compaction->stop();
     Env::RgrColumns::get()->unload_all(false);
 
     Protocol::Mngr::Req::RgrMngId::shutting_down(
