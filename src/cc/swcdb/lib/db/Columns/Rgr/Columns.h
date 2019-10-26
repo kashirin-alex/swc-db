@@ -61,16 +61,15 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return col;
   }
   
-  ColumnPtr get_next(size_t idx) {
+  ColumnPtr get_next(size_t& idx) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_columns->empty())
-      return nullptr;
 
-    if(m_columns->size() < idx){
+    if(m_columns->size() > idx){
       auto it = m_columns->begin();
-      for(int i=idx=1;i--;it++);
+      for(int i=idx;i--;it++);
       return it->second;
     }
+    idx = 0;
     return nullptr;
   }
 
