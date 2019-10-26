@@ -22,6 +22,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   */
 
   public:
+
   typedef std::shared_ptr<Fragment> Ptr;
   
   static const uint8_t     HEADER_SIZE = 9;
@@ -32,7 +33,23 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     CELLS_NONE,
     CELLS_LOADING,
     CELLS_LOADED,
+    ERROR,
   };
+
+  static const std::string to_string(State state) {
+    switch(state) {
+      case State::CELLS_NONE:
+        return std::string("CELLS_NONE");
+      case State::CELLS_LOADING:
+        return std::string("CELLS_LOADING");
+      case State::CELLS_LOADED:
+        return std::string("CELLS_LOADED");
+      case State::ERROR:
+        return std::string("ERROR");
+      default:
+        return std::string("UKNONWN");
+    }
+  }
 
   DB::Cells::Interval  interval;
 
@@ -117,6 +134,13 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     }
 
     m_state = State::CELLS_LOADED;
+  }
+
+  void load_header(bool close_after=true) {
+    int err = Error::OK;
+    load_header(err, close_after);
+    if(err)
+      m_state = State::ERROR;
   }
 
   void load_header(int& err, bool close_after=true) {
@@ -240,7 +264,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err ? State::CELLS_NONE : State::CELLS_LOADED;
+      m_state = err ? State::ERROR : State::CELLS_LOADED;
     }
 
     std::function<void(int)> cb;
@@ -302,21 +326,22 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     size_t remain = m_size; 
 
     auto ts = Time::now_ns();
-    int64_t ts_cells_read = 0;
     int64_t ts_cells_add = 0;
     size_t count = 0;
 
     DB::Cells::Cell cell;
     while(remain) {
+      try {
+        cell.read(&ptr, &remain);
 
-      auto ts_cellr = Time::now_ns();
-      cell.read(&ptr, &remain);
-      if(++count == m_cells_count && remain != 0){
-        HT_THROWF(
-          Error::SERIALIZATION_INPUT_OVERRUN,
-          "Cell trunclated remained %llu %s", remain, cell.to_string().c_str());
+        if(++count == m_cells_count && remain != 0)
+          throw Error::SERIALIZATION_INPUT_OVERRUN;
+      } catch(std::exception) {
+        HT_ERRORF(
+          "Cell trunclated count=%llu remain=%llu %s, %s", 
+          count, remain, cell.to_string().c_str(),  to_string().c_str());
+        break;
       }
-      ts_cells_read += Time::now_ns()-ts_cellr;
 
       if(!intval.consist(cell.key))
         continue;
@@ -325,11 +350,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       cells.add(cell);
       ts_cells_add += Time::now_ns()-ts_cella;
     }
+
     ts = Time::now_ns()-ts;
     std::cout << " frag-load_cells-took=" << ts
-                << " read=" << ts_cells_read 
-                << " add=" << ts_cells_add << " count=" << count 
-                << " avg=" << (count>0? ts/count : 0) << "\n";
+              << " add=" << ts_cells_add << " count=" << count 
+              << " avg=" << (count>0? ts/count : 0) << "\n";
   }
 
   bool loaded() {
@@ -337,9 +362,19 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     return m_state == State::CELLS_LOADED;
   }
 
+  bool errored() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::ERROR;
+  }
+
   uint32_t cells_count() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_cells_count;
+  }
+
+  size_t size_bytes() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_size;
   }
 
   const std::string to_string() {
@@ -348,7 +383,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     s.append(std::to_string(m_version));
 
     s.append(" state=");
-    s.append(std::to_string((uint8_t)m_state));
+    s.append(to_string(m_state));
 
     s.append(" count=");
     s.append(std::to_string(m_cells_count));

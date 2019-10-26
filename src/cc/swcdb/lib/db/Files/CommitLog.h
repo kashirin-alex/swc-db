@@ -98,23 +98,24 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       if(cells.fill() == 0)
         break;
 
-      frag = std::make_shared<Fragment>(get_log_fragment(Time::now_ns()));
-      frag->write(
-        err, 
-        schema->blk_replication, 
-        schema->blk_encoding, 
-        intval, cells, cell_count
-      );
+      for(;;) {
+        frag = std::make_shared<Fragment>(get_log_fragment(Time::now_ns()));
+        frag->write(
+          err, 
+          schema->blk_replication, 
+          schema->blk_encoding, 
+          intval, cells, cell_count
+        );
+        if(!err)
+          break;
+        // err == ? 
+        // server already shutting down or major fs issue (PATH NOT FOUND)
+        // write temp(local) file for recovery
+      }
 
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(err) { 
-          m_fragments_error.push_back(frag);
-          // server already shutting down or major fs issue (PATH NOT FOUND)
-          // write temp(local) file for recovery
-        } else {
-          m_fragments.push_back(frag);
-        }
+        m_fragments.push_back(frag);
         if(m_deleting)
           break;
       }
@@ -158,19 +159,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     for(auto entry : fragments) {
       frag = std::make_shared<Fragment>(
         get_log_fragment(entry.name));
-      frag->load_header(err, true);
-
-      if(err)
-        m_fragments_error.push_back(frag);
-      else
-        m_fragments.push_back(frag);
-    }
-    
-    if(m_fragments_error.size() > 0) {
-      std::cerr << "Error-Fragments: \n";
-      for(auto frag : m_fragments_error)
-        std::cerr << " " << frag->to_string() << "\n";
-      exit(1);
+      frag->load_header(true);
+      m_fragments.push_back(frag);
     }
   }
   
@@ -185,7 +175,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
-        if(!frag->interval.includes(blk->interval))
+        if(frag->errored() || !frag->interval.includes(blk->interval))
           continue;
         fragments.push_back(frag);
       }
@@ -213,7 +203,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
   size_t cells_count() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    size_t count = 0;
+    size_t count = m_cells->size();
     for(auto frag : m_fragments)
       count += frag->cells_count();
     return count;
@@ -237,11 +227,6 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       s.append(frag->to_string());
       s.append(", ");
     }
-    s.append("] errors=[");
-    for(auto frag : m_fragments_error){
-      s.append(frag->to_string());
-      s.append(",");
-    }
     s.append("]");
 
     s.append(")");
@@ -262,7 +247,6 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_fragments.clear();
-      m_fragments_error.clear();
     }
     
     m_cells->free();
@@ -271,6 +255,22 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   bool deleting() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_deleting;
+  }
+
+  void get(std::vector<Fragment::Ptr>& fragments) {
+    fragments.clear();
+    
+    std::lock_guard<std::mutex> lock(m_mutex);
+    fragments.assign(m_fragments.begin(), m_fragments.end());
+  }
+
+  size_t size_bytes() {
+    size_t size = m_cells->size_bytes();
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& frag : m_fragments)
+      size += frag->size_bytes();
+    return size;
   }
 
   private:
@@ -337,7 +337,6 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   std::condition_variable     m_cv;
 
   std::vector<Fragment::Ptr>  m_fragments;
-  std::vector<Fragment::Ptr>  m_fragments_error;
 };
 
 
