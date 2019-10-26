@@ -315,20 +315,15 @@ class Range : public DB::RangeBase {
         cb(err);
         return;
       }
+
+      if(m_commit_log != nullptr) 
+        m_commit_log->commit_new_fragment(true);  
+      m_cellstores->clear();
     }
-
-    if(m_commit_log != nullptr) 
-      m_commit_log->commit_new_fragment(true);  
-    m_cellstores->clear();
-    // range.data (from compaction)
-
-
     
     if(completely) // whether to keep ranger_data_file
       Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
 
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     set_state(State::NOTLOADED);
     
     HT_INFOF("UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
@@ -356,6 +351,11 @@ class Range : public DB::RangeBase {
 
   Files::CommitLog::Fragments::Ptr get_log() {
     return m_commit_log;
+  }
+
+  void get_cellstores(Files::CellStore::Readers& cellstores) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    cellstores.assign(m_cellstores->begin(), m_cellstores->end());    
   }
 
   const std::string to_string() {
@@ -535,6 +535,7 @@ class Range : public DB::RangeBase {
     }
 
   }
+
 
   std::atomic<State>                m_state;
    
