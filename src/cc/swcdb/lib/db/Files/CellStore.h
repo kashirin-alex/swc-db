@@ -255,6 +255,19 @@ class Read : public std::enable_shared_from_this<Read> {
     return count;
   }
 
+  const size_t size_bytes() {
+    size_t size = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& blk : m_blocks)
+      size += blk->size_bytes();
+    return size;
+  }
+
+  const size_t blocks_count() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_blocks.size();
+  }
+
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 

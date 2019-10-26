@@ -194,6 +194,10 @@ class Read {
   const size_t cell_count() {
     return cells.size();
   }
+  
+  const size_t size_bytes() {
+    return cells.size_bytes();
+  }
 
   void pending_logs_load(std::function<void()> cb) {
     std::lock_guard<std::mutex> lock(m_mutex);

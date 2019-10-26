@@ -46,7 +46,7 @@ void Settings::init_app_options(){
     ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
      "Default Block encoding NONE/SNAPPY/ZLIB")  
     ("swc.rgr.Range.compaction.size.percent", g_i32(33), 
-    "Compaction threshold in % applied over size of either by range, cellstore or block")
+    "Compaction threshold in % applied over size of either by cellstore or block")
   ;
 
 }
