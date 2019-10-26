@@ -43,7 +43,7 @@ class ReqScan  : public ResponseCallback {
     return true;
   }
 
-  bool reached_limits() {
+  virtual bool reached_limits() {
     return (spec->flags.limit > 0 && spec->flags.limit == cells->size()) 
            || 
            (limit_buffer_sz > 0 && limit_buffer_sz <= cells->size_bytes());
