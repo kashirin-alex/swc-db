@@ -25,7 +25,7 @@ class Schema {
          Types::Column col_type=Types::Column::PLAIN,
          int32_t cell_versions=1, uint32_t cell_ttl=0,
          uint8_t blk_replication=0, 
-         Types::Encoding blk_encoding=Types::Encoding::SNAPPY,
+         Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
          uint32_t blk_size=0,
          int64_t revision=0){
     return std::make_shared<Schema>(
@@ -39,7 +39,7 @@ class Schema {
          Types::Column col_type=Types::Column::PLAIN,
          int32_t cell_versions=1, uint32_t cell_ttl=0,
          uint8_t blk_replication=0, 
-         Types::Encoding blk_encoding=Types::Encoding::SNAPPY,
+         Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
          uint32_t blk_size=0,
          int64_t revision=0){
     return std::make_shared<Schema>(
