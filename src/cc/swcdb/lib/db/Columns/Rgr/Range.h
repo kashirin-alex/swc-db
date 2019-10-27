@@ -358,6 +358,16 @@ class Range : public DB::RangeBase {
     cellstores.assign(m_cellstores->begin(), m_cellstores->end());    
   }
 
+  const bool compacting() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_compacting;
+  }
+
+  void compacting(bool state) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_compacting = state;
+  }
+
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -544,6 +554,7 @@ class Range : public DB::RangeBase {
 
   Files::CommitLog::Fragments::Ptr  m_commit_log;
   Query::Update::Ptr                m_req_set_intval;
+  bool                              m_compacting;
 };
 
 
