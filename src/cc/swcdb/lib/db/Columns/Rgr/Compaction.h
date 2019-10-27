@@ -90,7 +90,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         *m_io->ptr(), 
         [range, ptr=shared_from_this()](){ 
           ptr->compact(range); 
-          ptr->compacted();
         }
       );
       if(running == m_io->get_size())
@@ -102,42 +101,145 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   }
 
   void compact(Range::Ptr range) {
+
     if(!range->is_loaded())
-      return;
-    
-    //Files::CellStore::ReadersPtr      m_cellstores;
-
-    Files::CommitLog::Fragments::Ptr  log = range->get_log();
-    size_t log_sz = log->size_bytes();
-    
-    std::vector<Files::CommitLog::Fragment::Ptr> fragments;
-    log->get(fragments);
-              
+      return compacted();
+       
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+    Files::CommitLog::Fragments::Ptr  log = range->get_log();
 
+    uint32_t cs_size = cfg_cs_sz->get(); 
     uint32_t blk_size = schema->blk_size ? 
                         schema->blk_size : log->cfg_blk_sz->get();
     auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
                         schema->blk_encoding : 
                         (Types::Encoding)log->cfg_blk_enc->get();
+    uint32_t perc     = cfg_compact_percent->get(); 
+    // % of size of either by cellstore or block
 
+    uint32_t allowed_sz_cs  = (cs_size  / 100) * perc;
+    uint32_t allowed_sz_blk = (blk_size / 100) * perc;
 
-    std::cout << "Compaction cid=" << range->cid << " rid=" << range->rid 
-              << " log_sz=" << log_sz 
-              << " cells_count=" << log->cells_count() 
-              << ", config:" 
-              << " check_interval=" << cfg_check_interval->get()
-              << " cs_max=" << cfg_cs_max->get()
-              << " cs_sz=" << cfg_cs_sz->get()
-              << " blk_sz=" << blk_size
-              << " blk_enc=" << Types::to_string(blk_encoding)
-              << " compact_percent=" << cfg_compact_percent->get()
-              << "\n";
-  
+    uint32_t log_sz = log->size_bytes();
+    bool do_compaction = log_sz >= allowed_sz_cs;
 
-    //range->scan(all, no deletes)
+    std::string info_log;
+    size_t cs_total_sz = 0;
+    uint32_t blk_total_count = 0;
 
+    if(!do_compaction) {
+      info_log.append(" blk-avg=");
+      size_t   sz;
+      uint32_t blk_count;
+      uint32_t cs_sz    = cs_size  + allowed_sz_cs;
+      uint32_t blk_sz   = blk_size + allowed_sz_blk;
+
+      Files::CellStore::Readers cellstores;
+      range->get_cellstores(cellstores);
+      for(auto& cs : cellstores) {
+        sz = cs->size_bytes();
+        if(!sz)
+          continue;
+        cs_total_sz += sz;
+        blk_count = cs->blocks_count();
+        blk_total_count += blk_count;
+        if(sz >= cs_sz || sz/blk_count >= blk_sz) { //or by max_blk_sz
+          do_compaction = true;
+          break;
+        }
+      }
+      info_log.append(std::to_string(
+        blk_total_count? (cs_total_sz/blk_total_count)/1000000 : 0));
+      info_log.append("MB");
+    }
+    
+    HT_INFOF(
+      "Compaction %s-range(%d,%d) log=%dMB%s"
+      " allowed(cs=%dMB blk=%dMB)",
+      do_compaction ? "started" : "skipped",
+      range->cid, range->rid, 
+      log_sz/1000000,  
+      info_log.c_str(),
+      allowed_sz_cs/1000000, 
+      allowed_sz_blk/1000000
+    );
+
+    if(!do_compaction)
+      return compacted();
+
+    // log->compacting(); // set intermidiate current log + commit_current
+    std::vector<Files::CommitLog::Fragment::Ptr> fragments;
+    log->get(fragments);
+
+    // range(scan) or cs-load + read-blocks) + log(fragments load+read)
+    range->scan(
+      std::make_shared<CompactScan>(
+        shared_from_this(), range, cs_size, blk_size, schema
+      )
+    );
   }
+
+  class CompactScan : public DB::Cells::ReqScan {
+    public:
+  
+    typedef std::shared_ptr<CompactScan>  Ptr;
+
+    CompactScan(Compaction::Ptr compactor, Range::Ptr range,
+                const uint32_t blk_size, const uint32_t cs_size, 
+                DB::SchemaPtr schema) 
+                : compactor(compactor), range(range),
+                  blk_size(blk_size), cs_size(cs_size), 
+                  schema(schema) {
+      cells = DB::Cells::Mutable::make(
+        1000, 
+        schema->cell_versions, 
+        schema->cell_ttl, 
+        schema->col_type
+      );
+      spec = DB::Specs::Interval::make_ptr();
+    }
+
+    virtual ~CompactScan() { }
+
+    bool reached_limits() override {
+      return blk_size <= cells->size_bytes();
+    }
+
+    void response(int &err) override {
+      if(!range->is_loaded()) {
+        // clear temp dir
+        return compactor->compacted();
+      }
+      std::cout << "CompactScan::response cells="<< cells->size() << "\n";
+      if(!ready(err))
+        return;
+      
+      if(!cells->size()) {
+        return finalize();
+      }
+      
+      /// cell cs-writer
+      
+      // adjust spec lask_key with last-cell
+      cells->free();
+
+      range->scan(get_req_scan());
+    }
+
+    void finalize() {
+
+      return compactor->compacted();
+    }
+
+
+    Compaction::Ptr   compactor;
+    const uint32_t    cs_size;
+    const uint32_t    blk_size;
+    DB::SchemaPtr     schema;
+    Range::Ptr        range;
+    
+    Files::CellStore::Readers cellstores;
+  };
 
   private:
   
@@ -197,6 +299,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   const gInt32tPtr            cfg_cs_sz;
   const gInt32tPtr            cfg_compact_percent;
 };
+
+
 
 
 
