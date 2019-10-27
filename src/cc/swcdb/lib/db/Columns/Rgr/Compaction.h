@@ -82,9 +82,10 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         continue;
       }
       m_idx_rid++;
-      if(!range->is_loaded())
+      if(!range->is_loaded() || range->compacting())
         continue;
-      
+
+      range->compacting(true);
       ++running;
       asio::post(
         *m_io->ptr(), 
@@ -103,8 +104,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   void compact(Range::Ptr range) {
 
     if(!range->is_loaded())
-      return compacted();
-       
+      return compacted(range);
+
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     Files::CommitLog::Fragments::Ptr  log = range->get_log();
 
@@ -165,18 +166,18 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     );
 
     if(!do_compaction)
-      return compacted();
-
-    // log->compacting(); // set intermidiate current log + commit_current
-    std::vector<Files::CommitLog::Fragment::Ptr> fragments;
-    log->get(fragments);
-
-    // range(scan) or cs-load + read-blocks) + log(fragments load+read)
-    range->scan(
-      std::make_shared<CompactScan>(
-        shared_from_this(), range, cs_size, blk_size, schema
-      )
+      return compacted(range);
+    
+    
+    auto req = std::make_shared<CompactScan>(
+      shared_from_this(), range, cs_size, blk_size, schema
     );
+
+    log->commit_new_fragment(true);
+    log->get(req->fragments_old); // fragments for deletion at finalize-compaction 
+
+    range->scan(req); 
+    // scan OR cellstores(load + read-blocks) + log(fragments load+read)
   }
 
   class CompactScan : public DB::Cells::ReqScan {
@@ -201,14 +202,18 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     virtual ~CompactScan() { }
 
+    Ptr shared() {
+      return std::dynamic_pointer_cast<CompactScan>(shared_from_this());
+    }
+
     bool reached_limits() override {
-      return blk_size <= cells->size_bytes();
+      return cells->size_bytes() >= blk_size;
     }
 
     void response(int &err) override {
       if(!range->is_loaded()) {
         // clear temp dir
-        return compactor->compacted();
+        return compactor->compacted(range);
       }
       std::cout << "CompactScan::response cells="<< cells->size() << "\n";
       if(!ready(err))
@@ -217,18 +222,30 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       if(!cells->size()) {
         return finalize();
       }
-      
+
+      asio::post(
+        *compactor->io()->ptr(), [ptr=shared()](){ptr->process_and_get_more();}
+      );
+    }
+
+    void process_and_get_more() {
       /// cell cs-writer
       
-      // adjust spec lask_key with last-cell
+      DB::Cells::Cell last;
+      cells->get(-1, last);
+      std::cout << "CompactScan::response last="<< last.to_string() << "\n";
+          
+      spec->offset_key.copy(last.key);
+      spec->offset_rev = last.revision;
       cells->free();
 
       range->scan(get_req_scan());
     }
 
     void finalize() {
-
-      return compactor->compacted();
+      // last cs close
+      // rmr "cs" + rename tmp to "cs"
+      return compactor->compacted(range);
     }
 
 
@@ -238,11 +255,21 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     DB::SchemaPtr     schema;
     Range::Ptr        range;
     
-    Files::CellStore::Readers cellstores;
+    std::vector<Files::CommitLog::Fragment::Ptr> fragments_old;
+    Files::CellStore::Writers cellstores;
   };
+
+  IoContext::Ptr io() {
+    return m_io;
+  }
 
   private:
   
+  void compacted(Range::Ptr range) {
+    range->compacting(false);
+    compacted();
+  }
+
   void compacted() {
     //std::cout << "Compaction::compacted running=" << running.load() << "\n";
 
