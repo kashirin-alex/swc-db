@@ -24,7 +24,7 @@ const int8_t VERSION=1;
 /* file-format: 
     header: i8(version), i32(data-len), 
             i32(data-checksum), i32(header-checksum)
-    data:   vi32(num-cellstore) ,[vi32(cellstore-count), interval]
+    data:   vi32(num-cellstores) ,[vi32(cellstore-id), interval]
 */
 
 
@@ -84,13 +84,13 @@ void read(const uint8_t **ptr, size_t* remain,
           DB::RangeBase::Ptr range, CellStore::ReadersPtr &cellstores) {
   const uint8_t *ptr_end = *ptr+*remain;
     
-  uint32_t offset;
+  uint32_t id;
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;i++) {
-    offset = Serialization::decode_vi32(ptr, remain);
+    id = Serialization::decode_vi32(ptr, remain);
     cellstores->push_back(
       std::make_shared<CellStore::Read>(
-        offset, range, DB::Cells::Interval(ptr, remain)));
+        id, range, DB::Cells::Interval(ptr, remain)));
   }
 
   if(*ptr != ptr_end){
