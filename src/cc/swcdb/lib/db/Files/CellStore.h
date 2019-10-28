@@ -175,11 +175,17 @@ class Read : public std::enable_shared_from_this<Read> {
       }
       
       blk->scan(req);
+      if(req->drop_caches) {
+      //&& !blk->interval.key_begin.empty() && !blk->interval.key_end.empty()) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        refresh(idx);
+      }
       if(req->reached_limits())
         break;
     }
     int err = Error::OK;
     req->response(err);
+
   }
 
   bool add_logged(const DB::Cells::Cell& cell) {
@@ -217,7 +223,6 @@ class Read : public std::enable_shared_from_this<Read> {
     }
 
     size_t used;
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     for(uint32_t idx = m_blocks.size(); --idx >= 0;) {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -229,11 +234,16 @@ class Read : public std::enable_shared_from_this<Read> {
         continue;
 
       released += used;
-      m_blocks[idx] = m_blocks[idx]->make_fresh(schema);
+      refresh(idx);
       if(released >= bytes)
         break;
     }
     return released;
+  }
+
+  void refresh(uint32_t idx) {
+    m_blocks[idx] = m_blocks[idx]->make_fresh(
+      Env::Schemas::get()->get(range->cid));
   }
 
   void close(int &err) {
@@ -487,18 +497,20 @@ class Write : public std::enable_shared_from_this<Write> {
   public:
   typedef std::shared_ptr<Write>  Ptr;
 
+  const uint32_t            id;
   FS::SmartFdPtr            smartfd;
   Types::Encoding           encoder;
   size_t                    size;
   DB::Cells::Interval       interval;
-  std::atomic<uint32_t>     complition;
+  std::atomic<uint32_t>     completion;
  
-  Write(const std::string& filepath, 
+  Write(const uint32_t id, const std::string& filepath, 
         Types::Encoding encoder=Types::Encoding::PLAIN)
-        : smartfd(
+        : id(id), 
+          smartfd(
             FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
           ), 
-          encoder(encoder), size(0), complition(0) {
+          encoder(encoder), size(0), completion(0) {
   }
 
   virtual ~Write(){}
@@ -526,20 +538,20 @@ class Write : public std::enable_shared_from_this<Write> {
     StaticBuffer buff_write(buff_raw);
     size += buff_write.size;
 
-    complition++;
+    completion++;
     Env::FsInterface::fs()->append(
       err,
       smartfd, 
       buff_write, 
       FS::Flags::FLUSH
     );
-    complition--;
+    completion--;
   }
 
   uint32_t write_blocks_index(int& err) {
-    if(complition > 0){
+    if(completion > 0){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
-      m_cv.wait(lock_wait, [count=&complition]{return count == 0;});
+      m_cv.wait(lock_wait, [count=&completion]{return count == 0;});
     }
 
     uint32_t len_data = 0;
@@ -636,6 +648,8 @@ class Write : public std::enable_shared_from_this<Write> {
   } 
 
   void remove(int &err) {
+    if(smartfd->valid())
+      Env::FsInterface::fs()->close(err, smartfd); 
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
   }
 
@@ -679,7 +693,7 @@ typedef std::shared_ptr<Writers>  WritersPtr;
 
 inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding, 
                                          DB::RangeBase::Ptr range) {
-  Write writer(range->get_path_cs(1), encoding);
+  Write writer(1, range->get_path_cs(1), encoding);
   writer.create(err);
   if(err)
     return nullptr;

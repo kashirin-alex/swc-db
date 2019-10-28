@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   SWC::Env::FsInterface::interface()->mkdirs(
     err, range->get_path(SWC::DB::RangeBase::cellstores_dir));
 
-  SWC::Files::CellStore::Write cs_writer(range->get_path_cs(1), SWC::Types::Encoding::SNAPPY);
+  SWC::Files::CellStore::Write cs_writer(1, range->get_path_cs(1), SWC::Types::Encoding::SNAPPY);
   cs_writer.create(err);
   hdlr_err(err);
 
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
           key_to_scan.copy(cell.key);
 
         std::cout << "add   block: " << cs_writer.to_string() << "\n";
-
+ 
         cs_writer.block(err, blk_intval, buff, cell_count);
         blk_intval.free();
         buff.free();
