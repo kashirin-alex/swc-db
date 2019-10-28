@@ -125,6 +125,14 @@ class Mutable {
     _add(cell);
   }
 
+  void pop(int32_t idx, Cell& cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    uint32_t offset = idx < 0? m_size+idx: idx;
+    cell.copy(**(m_cells+offset));
+    
+    _move_bwd(offset, 1);
+  }
+
   void scan(const DB::Cells::Interval& interval, 
                   DB::Cells::Mutable& cells){
     Cell* cell;
@@ -238,7 +246,7 @@ class Mutable {
   
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
 
-    while(offset < m_size && threshold > cells.fill()) {
+    while(offset < m_size && (!threshold || threshold > cells.fill())) {
       cell = *(m_cells + offset++);
       
       if(cell->has_expired(m_ttl))
@@ -297,7 +305,7 @@ class Mutable {
         _free();
         return false;
       }
-      _move_bwd(offset_applied, offset);
+      _move_bwd(offset_applied, offset-offset_applied);
       return true;
     }
     return false;
@@ -409,7 +417,8 @@ class Mutable {
     } while(++ptr < offset_end_ptr);
 
     m_size -= by;
-    memmove(offset_ptr, offset_end_ptr, (m_size-offset)*_cell_sz);
+    if(offset < m_size)
+      memmove(offset_ptr, offset_end_ptr, (m_size-offset)*_cell_sz);
     memset(m_cells+m_size, 0, by*_cell_sz);
   }
   
