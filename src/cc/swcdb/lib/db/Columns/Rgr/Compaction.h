@@ -85,7 +85,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       if(!range->is_loaded() || range->compacting())
         continue;
 
-      range->compacting(true);
+      range->compacting(Range::Compact::CHECKING);
       ++running;
       asio::post(
         *m_io->ptr(), 
@@ -122,7 +122,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     uint32_t allowed_sz_blk = (blk_size / 100) * perc;
 
     uint32_t log_sz = log->size_bytes();
-    bool do_compaction = log_sz >= allowed_sz_cs;
+    bool do_compaction = log_sz >= cs_size + allowed_sz_cs;
 
     std::string info_log;
     size_t cs_total_sz = 0;
@@ -144,6 +144,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         cs_total_sz += sz;
         blk_count = cs->blocks_count();
         blk_total_count += blk_count;
+        
         if(sz >= cs_sz || sz/blk_count >= blk_sz) { //or by max_blk_sz
           do_compaction = true;
           break;
@@ -152,6 +153,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       info_log.append(std::to_string(
         blk_total_count? (cs_total_sz/blk_total_count)/1000000 : 0));
       info_log.append("MB");
+      
+      info_log.append(" cs-count=");
+      info_log.append(std::to_string(cellstores.size()));
     }
     
     HT_INFOF(
@@ -168,16 +172,16 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     if(!do_compaction)
       return compacted(range);
     
+    range->compacting(Range::Compact::COMPACTING);
     
     auto req = std::make_shared<CompactScan>(
-      shared_from_this(), range, cs_size, blk_size, schema
+      shared_from_this(), range, cs_size, blk_size, blk_encoding, schema
     );
-
+    req->drop_caches = true;
     log->commit_new_fragment(true);
     log->get(req->fragments_old); // fragments for deletion at finalize-compaction 
 
-    range->scan(req); 
-    // scan OR cellstores(load + read-blocks) + log(fragments load+read)
+    range->scan_internal(req);
   }
 
   class CompactScan : public DB::Cells::ReqScan {
@@ -186,10 +190,12 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     typedef std::shared_ptr<CompactScan>  Ptr;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
-                const uint32_t blk_size, const uint32_t cs_size, 
+                const uint32_t cs_size, const uint32_t blk_size, 
+                const Types::Encoding blk_encoding,
                 DB::SchemaPtr schema) 
                 : compactor(compactor), range(range),
-                  blk_size(blk_size), cs_size(cs_size), 
+                  cs_size(cs_size), blk_size(blk_size), 
+                  blk_encoding(blk_encoding),
                   schema(schema) {
       cells = DB::Cells::Mutable::make(
         1000, 
@@ -215,10 +221,11 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         // clear temp dir
         return compactor->compacted(range);
       }
-      std::cout << "CompactScan::response cells="<< cells->size() << "\n";
       if(!ready(err))
         return;
       
+      std::cout << "CompactScan::response cells="<< cells->size() 
+                << " sz=" << cells->size_bytes() << "\n";
       if(!cells->size()) {
         return finalize();
       }
@@ -229,34 +236,176 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void process_and_get_more() {
-      /// cell cs-writer
-      
       DB::Cells::Cell last;
       cells->get(-1, last);
       std::cout << "CompactScan::response last="<< last.to_string() << "\n";
-          
+      //spec->key_start.set(last.key, Condition::GE);
+      //spec->ts_start.set(last.timestamp, Condition::GT);
       spec->offset_key.copy(last.key);
       spec->offset_rev = last.revision;
+
+      int err = Error::OK;
+      write_cells(err);
+      if(err)
+        return quit();
+      
       cells->free();
 
-      range->scan(get_req_scan());
+      if(!range->is_loaded())
+        return quit();
+
+      range->scan_internal(get_req_scan());
+    }
+
+    void write_cells(int& err) {
+
+      // if(cellstores.size() == cfg_cs_sz->get() ||
+      //    new_ranges.back() == cfg_cs_sz->get()) { 
+      // mngr.get_next_rid 
+      // continue with adding cellstore to the new range (new_ranges.back())
+      // }
+
+      if(!tmp_dir) { 
+        Env::FsInterface::interface()->rmdir(
+          err, range->get_path(Range::cellstores_tmp_dir));
+        err = Error::OK;
+        Env::FsInterface::interface()->mkdirs(
+          err, range->get_path(Range::cellstores_tmp_dir));
+        tmp_dir = true;
+        if(err)
+          return;
+      }
+
+      if(cs_writer == nullptr) {
+        uint32_t id = cellstores.size()+1;
+        cs_writer = std::make_shared<Files::CellStore::Write>(
+          id, 
+          range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
+          blk_encoding
+        );
+        int32_t replication=-1;
+        cs_writer->create(err, -1, replication, blk_size);
+        if(err)
+          return;
+
+        if(id == 1 && range->is_any_begin()) {
+          DB::Cells::Interval blk_intval;
+          DynamicBuffer buff;
+          uint32_t cell_count = 0;
+          cells->write_and_free(buff, cell_count, blk_intval, 1);
+          blk_intval.key_begin.free();
+          // 1st block of begin-any set with key_end as first cell
+          cs_writer->block(err, blk_intval, buff, cell_count);
+          if(err)
+            return;
+        }
+      }
+
+      DB::Cells::Interval blk_intval;
+      DynamicBuffer buff;
+      uint32_t cell_count = 0;
+
+      if(range->is_any_end()){
+        if(!last_cell.key.empty()) {
+          cell_count++;
+          last_cell.write(buff);
+          blk_intval.expand(last_cell);
+        }
+        cells->pop(-1, last_cell);
+        //last block of end-any to be set with first key as last cell
+      }
+      cells->write_and_free(buff, cell_count, blk_intval, 0);
+
+      if(buff.fill() > 0) {
+        cs_writer->block(err, blk_intval, buff, cell_count);
+        if(err)
+          return;
+      }
+      if(cs_writer->size >= cs_size) {
+        add_cs(err);
+        if(err)
+          return;
+      }
+    }
+
+    void add_cs(int& err) {
+      cs_writer->finalize(err);
+      cellstores.push_back(cs_writer);
+      cs_writer = nullptr;
     }
 
     void finalize() {
-      // last cs close
-      // rmr "cs" + rename tmp to "cs"
-      return compactor->compacted(range);
+      std::cout << "COMAPACT ::finalize 1\n";
+      int err = Error::OK;
+
+      if(cs_writer != nullptr) {
+
+        if(range->is_any_end() && !last_cell.key.empty()) {
+          DB::Cells::Interval blk_intval;
+          blk_intval.expand(last_cell);
+          blk_intval.key_end.free();
+
+          uint32_t cell_count = 1;
+          DynamicBuffer buff;
+          last_cell.write(buff);
+          last_cell.free();
+          // last block of end-any set with key_begin as last cell
+          cs_writer->block(err, blk_intval, buff, cell_count);
+          if(err)
+            return quit();
+        }
+        if(cs_writer->size == 0)
+          return quit();
+
+        add_cs(err);
+        if(err)
+          return quit();
+      }
+      
+      std::cout << "CellStore::Writers: \n";
+      for(auto cs : cellstores)
+        std::cout << " " << cs->to_string() << "\n";
+
+      if(cellstores.size() > 0) 
+        range->apply_new(err, cellstores, fragments_old);
+      if(err)
+        return quit();
+        
+      compactor->compacted(range);
+
+      std::cout << "COMAPACT ::finalize 2\n";
+    }
+
+    void quit() {
+      int err = Error::OK;
+      if(cs_writer != nullptr) {
+        cs_writer->remove(err);
+        cs_writer = nullptr;
+      }
+      if(tmp_dir)
+        Env::FsInterface::interface()->rmdir(
+          err, range->get_path(Range::cellstores_tmp_dir));
+
+      compactor->compacted(range);
     }
 
 
-    Compaction::Ptr   compactor;
-    const uint32_t    cs_size;
-    const uint32_t    blk_size;
-    DB::SchemaPtr     schema;
-    Range::Ptr        range;
+    Compaction::Ptr         compactor;
+    Range::Ptr              range;
+    const uint32_t          cs_size;
+    const uint32_t          blk_size;
+    const Types::Encoding   blk_encoding;
+    DB::SchemaPtr           schema;
     
     std::vector<Files::CommitLog::Fragment::Ptr> fragments_old;
-    Files::CellStore::Writers cellstores;
+    
+    bool                            tmp_dir = false;
+    Files::CellStore::Write::Ptr    cs_writer = nullptr;
+    Files::CellStore::Writers       cellstores;
+    DB::Cells::Cell                 last_cell;
+
+    std::vector<Range::Ptr>         new_ranges;
+
   };
 
   IoContext::Ptr io() {
@@ -266,7 +415,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   private:
   
   void compacted(Range::Ptr range) {
-    range->compacting(false);
+    range->compacting(Range::Compact::NONE);
     compacted();
   }
 
