@@ -237,6 +237,18 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     return s;
   }
 
+  void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto it = m_fragments.begin(); it < m_fragments.end(); it++){
+      if(std::find_if(fragments_old.begin(), fragments_old.end(), 
+        [frag=*it](Fragment::Ptr& other){return frag->is_equal(other);})
+        == fragments_old.end())
+        continue;
+      (*it)->remove(err);
+      m_fragments.erase(it);
+    }
+  }
+
   void remove(int &err) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
