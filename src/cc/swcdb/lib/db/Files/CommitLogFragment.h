@@ -65,6 +65,15 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   
   virtual ~Fragment(){}
 
+  const bool is_equal(Ptr& other) {
+    return filepath().compare(other->filepath()) == 0;
+  }
+
+  const std::string& filepath() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_smartfd->filepath();
+  }
+
   void write(int& err, int32_t replication, Types::Encoding encoder, 
              const DB::Cells::Interval& intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
@@ -375,6 +384,11 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   size_t size_bytes() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_size;
+  }
+
+  void remove(int &err) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
   }
 
   const std::string to_string() {
