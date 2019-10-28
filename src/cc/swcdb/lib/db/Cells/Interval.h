@@ -80,9 +80,16 @@ class Interval {
     if(!initiated || !is_in_end(other.key_end))
       set_key_end(other.key_end);
 
-    if(!initiated || !ts_earliest.is_matching(other.ts_earliest.value))
+    if(!initiated 
+       || (!other.ts_earliest.empty() 
+            && other.ts_earliest.comp == Condition::NONE)
+       || !ts_earliest.is_matching(other.ts_earliest.value))
       set_ts_earliest(other.ts_earliest);
-    if(!initiated || !ts_latest.is_matching(other.ts_latest.value))
+
+    if(!initiated
+       || (!other.ts_latest.empty() 
+            && other.ts_latest.comp == Condition::NONE)
+       || !ts_latest.is_matching(other.ts_latest.value))
       set_ts_latest(other.ts_latest);
   }
 
@@ -108,11 +115,13 @@ class Interval {
   }
 
   inline const bool is_in_begin(const DB::Cell::Key &key) const {
-    return key_begin.empty() || key_begin.compare(key) != Condition::LT;
+    return key_begin.empty() || 
+          (!key.empty() && key_begin.compare(key) != Condition::LT);
   }
   
   inline const bool is_in_end(const DB::Cell::Key &key) const {
-    return key_end.empty() || key_end.compare(key) != Condition::GT;
+    return key_end.empty() || 
+          (!key.empty() && key_end.compare(key) != Condition::GT);
   }
 
   inline const bool consist(const Interval& other) const {
@@ -133,13 +142,15 @@ class Interval {
   }
 
   const bool includes(const Specs::Interval& interval) const {
-    //std::cout << "Interval::includes Specs: " <<  interval.to_string() << "\n";
-    //std::cout << "Interval::includes Cells: " <<  to_string() << "\n";
-    return (interval.key_start.empty()  || key_end.empty() || 
-            interval.key_start.is_matching(key_end))     
-          && 
-           (interval.key_finish.empty() || key_begin.empty() || 
-           interval.key_finish.is_matching(key_begin));
+    return  // (interval.offset_key.empty() || 
+            //  consist(interval.offset_key) ) && 
+            (interval.key_start.empty() || 
+              key_end.empty() || 
+              interval.key_start.is_matching(key_end) ) && 
+            (interval.key_finish.empty() || 
+              key_begin.empty() || 
+              interval.key_finish.is_matching(key_begin) )
+          ;
   }
 
   const size_t encoded_length() const {
