@@ -19,12 +19,13 @@ class ReqScan  : public ResponseCallback {
   typedef std::function<void()>     NextCall_t;
 
   ReqScan() : ResponseCallback(nullptr, nullptr), 
-              limit_buffer_sz(0), has_selector(false) {              
+              limit_buffer_sz(0), has_selector(false), drop_caches(false) {          
   }
 
   ReqScan(ConnHandlerPtr conn, EventPtr ev, Specs::Interval::Ptr spec, Mutable::Ptr cells)
           : ResponseCallback(conn, ev), spec(spec), cells(cells),
-            offset(spec->flags.offset), limit_buffer_sz(0), has_selector(false) {
+            offset(spec->flags.offset), limit_buffer_sz(0), 
+            has_selector(false), drop_caches(false) {
   }
 
   inline Ptr get_req_scan() {
@@ -65,14 +66,17 @@ class ReqScan  : public ResponseCallback {
     return s;
   }
 
-  Specs::Interval::Ptr      spec;
-  Mutable::Ptr              cells;
+  Specs::Interval::Ptr   spec;
+  Mutable::Ptr           cells;
 
-  uint32_t                  limit_buffer_sz = 0;
-  NextCall_t                next_call = 0;
-  bool                      has_selector;
+  uint32_t                limit_buffer_sz;
+  bool                    has_selector;
+  bool                    drop_caches;
+
+  NextCall_t              next_call = 0;
+  
   // state of a scan
-  size_t                    offset;
+  size_t                  offset;
 };
 
 class ReqScanTest : public ReqScan {
