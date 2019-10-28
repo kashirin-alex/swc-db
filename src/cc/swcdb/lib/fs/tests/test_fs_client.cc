@@ -38,6 +38,27 @@ void run(size_t thread_id){
     }
 
     err = Error::OK;
+    Env::FsInterface::fs()->rename(err, std::to_string(thread_id), std::to_string(thread_id)+"new");
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(rename-dir) err=" << err << "\n";
+     exit(1);
+    }
+    if(!Env::FsInterface::fs()->exists(err, std::to_string(thread_id)+"new") || err != Error::OK){ 
+     std::cerr << "ERROR(rename-dir) exists err=" << err << "\n";
+     exit(1);
+    }
+    err = Error::OK;
+    Env::FsInterface::fs()->rename(err, std::to_string(thread_id)+"new", std::to_string(thread_id));
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(rename-dir) err=" << err << "\n";
+     exit(1);
+    }
+    if(!Env::FsInterface::fs()->exists(err, std::to_string(thread_id)) || err != Error::OK){ 
+     std::cerr << "ERROR(rename-dir) exists err=" << err << "\n";
+     exit(1);
+    }
+
+    err = Error::OK;
     FS::DirentList listing;
     Env::FsInterface::fs()->readdir(err, "", listing);
     if(err != Error::OK){ 
@@ -304,6 +325,17 @@ void run(size_t thread_id){
     Env::FsInterface::fs()->close(err, smartfd);
     if(err != Error::OK){ 
      std::cerr << "ERROR(close,open) err=" << err << "\n";
+     exit(1);
+    }
+
+    err = Error::OK;
+    Env::FsInterface::fs()->rename(err, smartfd->filepath(), smartfd->filepath()+"new");
+    if(err != Error::OK){ 
+     std::cerr << "ERROR(rename) err=" << err << "\n";
+     exit(1);
+    }
+    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath()+"new") || err != Error::OK){ 
+     std::cerr << "ERROR(rename) exists err=" << err << "\n";
      exit(1);
     }
 

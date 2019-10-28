@@ -19,6 +19,7 @@ namespace Callback {
   typedef std::function<void(int)>               MkdirsCb_t;
   typedef std::function<void(int, DirentList)>   ReaddirCb_t;
   typedef std::function<void(int)>               RmdirCb_t;
+  typedef std::function<void(int)>               RenameCb_t;
   
 
   typedef std::function<void(int, SmartFdPtr)>                  WriteCb_t;

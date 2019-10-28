@@ -184,6 +184,16 @@ class FileSystem {
     rmdir(err, name);
     cb(err);
   }
+  
+  virtual void rename(int &err, const std::string &from, 
+                                const std::string &to) = 0;
+  virtual 
+  void rename(Callback::RmdirCb_t cb, const std::string &from, 
+                                      const std::string &to) {
+    int err = Error::OK;
+    rename(err, from, to);
+    cb(err);
+  }
 
   // File(fd) Actions
   virtual void write(int &err, SmartFdPtr &smartfd,

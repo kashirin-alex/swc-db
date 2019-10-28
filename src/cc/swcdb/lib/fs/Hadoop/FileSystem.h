@@ -260,6 +260,20 @@ class FileSystemHadoop: public FileSystem {
     HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
 
+  void rename(int &err, const std::string &from, 
+                        const std::string &to)  override {
+    std::string abspath_from = get_abspath(from);
+    std::string abspath_to = get_abspath(to);
+    errno = 0;
+    if (hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str()) == -1) {
+      HT_ERRORF("rename('%s' to '%s') failed - %s", 
+                abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("rename('%s' to '%s')", 
+              abspath_from.c_str(), abspath_to.c_str());
+  }
+
   SmartFdHadoopPtr get_fd(SmartFdPtr &smartfd){
     SmartFdHadoopPtr hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
     if(!hd_fd){

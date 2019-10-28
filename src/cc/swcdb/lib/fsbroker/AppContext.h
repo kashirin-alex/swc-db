@@ -19,6 +19,7 @@
 #include "handlers/Mkdirs.h"
 #include "handlers/Readdir.h"
 #include "handlers/Rmdir.h"
+#include "handlers/Rename.h"
 #include "handlers/Write.h"
 #include "handlers/Create.h"
 #include "handlers/Append.h"
@@ -100,6 +101,10 @@ class AppContext : public SWC::AppContext {
 
           case FS::Protocol::Cmd::FUNCTION_RMDIR:
             handler = new Handler::Rmdir(conn, ev);
+            break;
+
+          case FS::Protocol::Cmd::FUNCTION_RENAME:
+            handler = new Handler::Rename(conn, ev);
             break;
 
           case FS::Protocol::Cmd::FUNCTION_WRITE:

@@ -14,6 +14,7 @@
 #include "Protocol/req/Mkdirs.h"
 #include "Protocol/req/Readdir.h"
 #include "Protocol/req/Rmdir.h"
+#include "Protocol/req/Rename.h"
 #include "Protocol/req/Write.h"
 #include "Protocol/req/Create.h"
 #include "Protocol/req/Append.h"
@@ -205,6 +206,23 @@ class FileSystemBroker: public FileSystem {
   void rmdir(Callback::RmdirCb_t cb, const String &name) override {
     Protocol::Req::RmdirPtr hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name, cb);
+      
+    while(!send_request(hdlr));
+  }
+
+  void rename(int &err, const std::string &from, 
+                        const std::string &to)  override {
+    Protocol::Req::RenamePtr hdlr = std::make_shared<Protocol::Req::Rename>(
+      cfg_timeout->get(), from, to);
+
+    send_request_sync(hdlr, hdlr->promise());
+    err = hdlr->error;
+  }
+
+  void rename(Callback::RenameCb_t cb, 
+              const std::string &from, const std::string &to)  override {
+    Protocol::Req::RenamePtr hdlr = std::make_shared<Protocol::Req::Rename>(
+      cfg_timeout->get(), from, to, cb);
       
     while(!send_request(hdlr));
   }

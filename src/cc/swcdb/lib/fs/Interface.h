@@ -312,6 +312,17 @@ class Interface : std::enable_shared_from_this<Interface>{
       HT_DEBUGF("remove, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
+  
+  void rename(int &err, const std::string &from , const std::string &to) {
+    for(;;) {
+      err = Error::OK;
+      m_fs->rename(err, from, to);
+      if(err == Error::OK || err == EACCES || err == ENOENT 
+        || err == Error::SERVER_SHUTTING_DOWN)
+        return;
+      HT_DEBUGF("rename, retrying to err=%d(%s)", err, Error::get_text(err));
+    }
+  } 
 
   void write(int &err, SmartFdPtr smartfd,
              int32_t replication, int64_t blksz, 

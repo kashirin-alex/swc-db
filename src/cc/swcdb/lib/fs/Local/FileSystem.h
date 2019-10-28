@@ -148,6 +148,22 @@ class FileSystemLocal: public FileSystem {
     }
     HT_DEBUGF("rmdir('%s')", abspath.c_str());
   }
+
+  void rename(int &err, const std::string &from, 
+                        const std::string &to)  override {
+    std::string abspath_from = get_abspath(from);
+    std::string abspath_to = get_abspath(to);
+    std::error_code ec;
+    std::filesystem::rename(abspath_from, abspath_to, ec);
+    if (ec) {
+      err = ec.value();
+      HT_ERRORF("rename('%s' to '%s') failed - %s", 
+                abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
+      return;
+    }
+    HT_DEBUGF("rename('%s' to '%s')", 
+              abspath_from.c_str(), abspath_to.c_str());
+  }
   
   void write(int &err, SmartFdPtr &smartfd,
              int32_t replication, int64_t blksz, 
