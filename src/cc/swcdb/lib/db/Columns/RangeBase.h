@@ -26,6 +26,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   inline static const std::string range_data_file = "range.data";
 
   inline static const std::string cellstores_dir = "cs";
+  inline static const std::string cellstores_bak_dir = "cs_bak";
+  inline static const std::string cellstores_tmp_dir = "cs_tmp";
+  
   inline static const std::string log_dir = "log"; 
 
   inline static const std::string 
@@ -92,6 +95,17 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
+  const std::string get_path_cs_on(const std::string folder, 
+                                  const int64_t cs_id) const {
+    std::string s(m_path);
+    s.append(folder);
+    s.append("/");
+    FS::set_structured_id(std::to_string(cs_id), s);
+    s.append(".cs");
+    return s;
+  }
+  
+
   Files::RgrDataPtr get_last_rgr(int &err) {
     return Files::RgrData::get_rgr(err, get_path(ranger_data_file));
   }
@@ -139,6 +153,21 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     std::lock_guard<std::mutex> lock(m_mutex);
     key_begin.copy(m_interval.key_begin);
     key_end.copy(m_interval.key_end);
+  }
+
+  const bool is_any_begin() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_interval.key_begin.empty();
+  }
+
+  void get_key_begin(Cell::Key& key_begin) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    key_begin.copy(m_interval.key_begin);
+  }
+
+  const bool is_any_end() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_interval.key_end.empty();
   }
 
   void get_key_end(Cell::Key& key_end) {
