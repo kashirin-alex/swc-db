@@ -113,26 +113,29 @@ class Interval {
             offset_rev == offset_rev ;
   }
 
+  const bool is_matching(const Cell::Key& key, 
+                         int64_t timestamp, bool desc) const {
+    if(offset_key.empty()) 
+      return true;
+
+    switch(offset_key.compare(key)) {
+      case Condition::LT:
+        return false;
+      case Condition::EQ:
+        return desc ? offset_rev >= timestamp : offset_rev <= timestamp;
+      default:
+        return true;
+    }
+  }
+
   const bool is_matching(const Cells::Cell& cell, 
                          Types::Column typ=Types::Column::PLAIN) const {
-    if(!offset_key.empty()) {
-      switch(offset_key.compare(cell.key)) {
-        case Condition::LT: {
-          return false;
-        }
-        case Condition::EQ: {
-          if(cell.control & Cells::TS_DESC 
-            ? offset_rev <= cell.timestamp
-            : offset_rev >= cell.timestamp)
-            return false;
-          break;
-        }
-        default:
-          break;
-      }
-    }
-    bool match = 
-      ts_start.is_matching(cell.timestamp) &&
+    bool match = is_matching(
+      cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
+    if(!match)
+      return match;
+
+    match = ts_start.is_matching(cell.timestamp) &&
       ts_finish.is_matching(cell.timestamp) &&
       (key_start.empty()  || key_start.is_matching(cell.key)) &&
       (key_finish.empty() || key_finish.is_matching(cell.key));
