@@ -132,6 +132,16 @@ class Interval {
     return is_in_begin(key) && is_in_end(key);
   }
 
+  inline const bool consist(const DB::Cell::Key& key, int64_t ts) const {
+    return is_in_begin(key) 
+          && 
+           is_in_end(key) 
+          &&
+           (ts_earliest.empty() || ts_earliest.is_matching(ts))
+          &&    
+           (ts_latest.empty() || ts_latest.is_matching(ts));
+  }
+
   const bool includes(const Interval& other) const {
     return other.key_begin.empty() || other.key_end.empty() ||
            consist(other);           
