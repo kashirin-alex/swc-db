@@ -61,6 +61,11 @@ class Mutable {
     std::lock_guard<std::mutex> lock(m_mutex);
     cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
+
+  void get(int32_t idx, DB::Cell::Key& key) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    key.copy((*(m_cells+(idx < 0? m_size+idx: idx)))->key);
+  }
    
   bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) {
     Cell* ptr;
@@ -311,6 +316,40 @@ class Mutable {
     return false;
   }
   
+  void write_and_free_on_key_offset(uint32_t from, Mutable& cells) {
+    Cell* cell;
+    uint32_t count = 0;
+    int32_t offset_applied = -1;
+    DB::Cell::Key key_start;
+    
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    key_start.copy((*(m_cells + from))->key);
+
+    uint32_t offset = _narrow(key_start, 0);
+    for(;offset < m_size;offset++) {
+      cell = *(m_cells + offset);
+
+      if(cell->has_expired(m_ttl))
+        continue;
+      if(cell->key.compare(key_start, 0) == Condition::GT) 
+        continue;
+
+      count++;
+      if(offset_applied == -1)
+        offset_applied = offset;
+      
+      cells.push_back(*cell);
+    }
+    
+    if(count > 0) {
+      if(m_size == count) 
+        _free();
+      else 
+        _move_bwd(offset_applied, offset-offset_applied);
+    }
+  }
+  
   void add(const DynamicBuffer& cells) {
     Cell cell;
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -328,7 +367,12 @@ class Mutable {
     for(uint32_t offset = 0;offset < m_size; offset++)
       cells->add(**(m_cells + offset));
   }
-  
+
+  void expand(DB::Cells::Interval& interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    interval.expand(**(m_cells));
+    interval.expand(**(m_cells + m_size-1));
+  }
 
   const std::string to_string(bool with_cells=false)  {
     std::lock_guard<std::mutex> lock(m_mutex);
