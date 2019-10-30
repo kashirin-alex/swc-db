@@ -66,6 +66,13 @@ class Mutable {
     std::lock_guard<std::mutex> lock(m_mutex);
     key.copy((*(m_cells+(idx < 0? m_size+idx: idx)))->key);
   }
+
+  void get(int32_t idx, DB::Cell::Key& key, int64_t& ts) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    Cell* cell = *(m_cells+(idx < 0? m_size+idx: idx));
+    key.copy(cell->key);
+    ts = cell->timestamp;
+  }
    
   bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) {
     Cell* ptr;
