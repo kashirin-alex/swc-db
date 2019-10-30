@@ -82,6 +82,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       } else  {
         // range->cid == 1 || 2
         if(spec->key_start.count > 1) {
+          spec->offset_key.free();
           spec->key_finish.copy(spec->key_start);
           spec->key_finish.set(-1, Condition::LE);
           if(range->type != Types::Range::DATA)

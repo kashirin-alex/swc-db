@@ -14,6 +14,8 @@
 #include "swcdb/lib/db/Files/RangeData.h"
 #include "swcdb/lib/db/Protocol/Common/req/Query.h"
 
+#include "IntervalBlocks.h"
+
 
 namespace Query = SWC::Protocol::Common::Req::Query;
 
@@ -83,108 +85,6 @@ class Range : public DB::RangeBase {
     return m_state == State::DELETED;
   }
 
-  void get_next(size_t& cs_ptr, uint32_t& idx, 
-                Files::CellStore::Read::Ptr& cs) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(cs_ptr != (size_t)m_cellstores.get()) {
-      cs_ptr = (size_t)m_cellstores.get();
-      idx = 0;
-    } 
-    if(idx >= m_cellstores->size()) {
-      cs = nullptr;
-      return;
-    } 
-    cs = *(m_cellstores->begin()+(idx++));
-  }
-
-/*
-  void add(ReqAdd* req) {
-
-    int  err = Error::OK;
-    DB::Cells::Cell cell;
-    size_t cs_ptr;
-    uint32_t cs_idx;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      cs_ptr = (size_t)m_cellstores.get();
-    }
-    
-    Files::CellStore::Read::Ptr cs;
-
-    int64_t ts = Time::now_ns();
-    int64_t ts_log = 0;
-    int64_t ts_cs = 0;
-    int64_t ts2;
-      
-    std::cout << "Range::add cid="<<cid 
-              << " sz=" << req->input->size << "\n";
-    uint32_t count = 0;
-    const uint8_t* ptr = req->input->base;
-    size_t remain = req->input->size; 
-
-    while(remain) {
-      cell.read(&ptr, &remain);
-        
-      if(cell.flag == DB::Cells::Flag::NONE) {
-        std::cerr << "Range::run_add_queue FLAG::NONE " << cell.to_string() << "\n";
-        exit(1);
-      }
-      if(!m_interval.is_in_end(cell.key)) {
-        // validate over range.interval match skip( with error)
-        continue;
-      }
-        
-      if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
-        cell.set_timestamp(Time::now_ns());
-        if(cell.control & DB::Cells::AUTO_TIMESTAMP)
-          cell.control ^= DB::Cells::AUTO_TIMESTAMP;
-      }
-      if(!(cell.control & DB::Cells::HAVE_REVISION))
-        cell.control |= DB::Cells::REV_IS_TS;
-        
-      if(m_state == State::DELETED) {
-        err = Error::COLUMN_MARKED_REMOVED;
-        break;
-      }
-      count++;
-        
-      ts2 = Time::now_ns();
-      m_commit_log->add(cell);
-      ts_log += Time::now_ns()-ts2;
-      //std::cout << " " << cell.to_string() << "\n";
-
-      ts2 = Time::now_ns();
-      cs_idx = 0;
-      for(;;) {
-        get_next(cs_ptr, cs_idx, cs);
-        if(cs == nullptr)
-          break;
-        if(cs->add_logged(cell)) {
-          if(!cell.on_fraction)
-            break;
-        }
-      }
-      ts_cs += Time::now_ns()-ts2;
-    }
-
-    auto took = Time::now_ns() - ts;
-    std::cout << "Range::added cid=" << cid 
-              << " count=" << count << " took=" << took 
-              << " avg=" << (count? took/count : 0)
-              << " log=" << ts_log << " cs=" << ts_cs << " \n";
-    std::cout << " " << m_commit_log->to_string() << "\n";
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      for(auto& cs : *m_cellstores.get())
-        std::cout << " " << cs->to_string() << "\n";
-    }
-
-    req->cb->response(err);
-    delete req;
-  }
-*/
-
   void add(ReqAdd* req) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_q_adding.push(req);
@@ -198,39 +98,17 @@ class Range : public DB::RangeBase {
 
   void scan(DB::Cells::ReqScan::Ptr req) {
     wait();
-    
-    size_t cs_ptr = 0;
-    scan(cs_ptr, 0, req);
+
+    if(m_blocks == nullptr) {
+      int err = Error::RS_NOT_LOADED_RANGE;
+      req->response(err);
+      return;
+    }
+    m_blocks->scan(req);
   }
 
   void scan_internal(DB::Cells::ReqScan::Ptr req) {
-    size_t cs_ptr = 0;
-    scan(cs_ptr, 0, req);
-  }
-
-  void scan(size_t cs_ptr, uint32_t idx, DB::Cells::ReqScan::Ptr req) {
-    /*std::cout << "Range::Scan cid=" << cid 
-              << " cs-idx=" << idx << " " 
-              << req->spec->to_string() << "\n";*/
-    
-    Files::CellStore::Read::Ptr cs;
-    for(;;) {
-
-      get_next(cs_ptr, idx, cs);
-      if(cs == nullptr)
-        break;
-      
-      if(!cs->interval.includes(req->spec))
-        continue;
-      
-      req->next_call = [cs_ptr, idx, req, ptr=shared()]() {
-        ptr->scan(cs_ptr, idx, req);
-      };
-      cs->scan(req);
-      return;
-    }
-    int err = Error::OK;
-    req->response(err);
+    m_blocks->scan(req);
   }
 
   void load(ResponseCallbackPtr cb) {
@@ -421,7 +299,8 @@ class Range : public DB::RangeBase {
             cs->id, shared_from_this(), cs->interval
           )
         );
-        // cs->load_blocks_index(err, true); cs can be not loaded untill 1st scan-req
+        // cs->load_blocks_index(err, true);
+        // cs can be not loaded and done with 1st scan-req
       }
       Files::RangeData::save(err, shared_from_this(), m_cellstores);
       
@@ -432,7 +311,6 @@ class Range : public DB::RangeBase {
 
       for(auto& cs: *m_cellstores.get()) {
         m_interval.expand(cs->interval);
-        cs->set(m_commit_log);
       }
       intval_changed = !m_interval.key_begin.equal(m_interval_old.key_begin)
                     || !m_interval.key_end.equal(m_interval_old.key_end); 
@@ -529,13 +407,13 @@ class Range : public DB::RangeBase {
         m_interval.free();
         for(auto& cs: *m_cellstores.get()) {
           m_interval.expand(cs->interval);
-          cs->set(m_commit_log);
         }
         if(is_initial_column_range) {
           Files::RangeData::save(err, shared_from_this(), m_cellstores);
           on_change(err);
         }
       }
+      m_blocks = std::make_shared<IntervalBlocks>(m_cellstores, m_commit_log);
     }
   
     if(!err) 
@@ -564,12 +442,6 @@ class Range : public DB::RangeBase {
     DB::Cells::Cell cell;
     const uint8_t* ptr;
     size_t remain;
-    size_t cs_ptr;
-    uint32_t cs_idx;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      cs_ptr = (size_t)m_cellstores.get();
-    }
     
     Files::CellStore::Read::Ptr cs;
 
@@ -604,20 +476,8 @@ class Range : public DB::RangeBase {
         }
 
         wait();
-
+        m_blocks->add_logged(cell);
         count++;
-        m_commit_log->add(cell);
-
-        cs_idx = 0;
-        for(;;) { // // or run handlers under total cellstore-blocks count
-          get_next(cs_ptr, cs_idx, cs);
-          if(cs == nullptr)
-            break;
-          if(cs->add_logged(cell)) {
-            if(!cell.on_fraction)
-              break;
-          }
-        }
       }
       req->cb->response(err);
 
@@ -629,6 +489,11 @@ class Range : public DB::RangeBase {
           break;
       }
     }
+    
+    
+    //std::cout << " run_add_queue log-count=" << m_commit_log->cells_count() 
+    //          << " blocks-count=" << m_blocks->cells_count()
+    //          << " " << m_blocks->to_string() << "\n";
 
   }
 
@@ -640,6 +505,8 @@ class Range : public DB::RangeBase {
   std::queue<ReqAdd*>               m_q_adding;
 
   Files::CommitLog::Fragments::Ptr  m_commit_log;
+  IntervalBlocks::Ptr               m_blocks;
+  
   Query::Update::Ptr                m_req_set_intval;
 
   std::condition_variable           m_cv;

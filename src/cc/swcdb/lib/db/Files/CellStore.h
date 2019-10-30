@@ -43,62 +43,108 @@ class Read : public std::enable_shared_from_this<Read> {
     BLKS_IDX_LOADED,
   };
 
-  const uint32_t            id;
-  const DB::RangeBase::Ptr  range;
-  DB::Cells::Interval       interval;
-  FS::SmartFdPtr            smartfd;
+  const uint32_t                id;
+  const DB::RangeBase::Ptr      range;
+  DB::Cells::Interval           interval;
+  FS::SmartFdPtr                smartfd;
+  std::vector<Block::Read::Ptr> blocks;
+  std::atomic<State>            state;
 
   Read(const uint32_t id, const DB::RangeBase::Ptr& range, 
        const DB::Cells::Interval& interval) 
       : id(id), range(range), interval(interval),
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        m_state(State::BLKS_IDX_NONE) {   
+        state(State::BLKS_IDX_NONE) {   
   }
 
   virtual ~Read(){}
 
   State load_blocks_index(int& err, bool close_after=false) {
-    //std::cout << "cs::load_blocks_index\n";
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state == State::BLKS_IDX_LOADED || m_state == State::BLKS_IDX_LOADING)
-        return m_state;
-      m_state = State::BLKS_IDX_LOADING;
+      if(state == State::BLKS_IDX_LOADED || state == State::BLKS_IDX_LOADING)
+        return state;
+      state = State::BLKS_IDX_LOADING;
     }
 
     _load_blocks_index(err, close_after);
 
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err? State::BLKS_IDX_NONE : State::BLKS_IDX_LOADED;
-      return m_state;
+      state = err? State::BLKS_IDX_NONE : State::BLKS_IDX_LOADED;
+      return state;
     }
   }
 
-  void scan(DB::Cells::ReqScan::Ptr req) {
-    //std::cout << "cs::Scan\n";
-    int err = Error::OK;
+  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {    
+    //std::cout << "CellStore::load_cells\n";
 
-    State state = load_blocks_index(err);
+    {
+      int err = Error::OK;
+      State applied = load_blocks_index(err);
 
-    if(state == State::BLKS_IDX_NONE){
-      if(!err)
-        err = Error::RANGE_CS_BAD;
-      req->response(err);
-      return;
+      if(applied == State::BLKS_IDX_NONE){
+        if(!err)
+          err = Error::RANGE_CS_BAD;
+        cb(err);
+        return;
+      }
+ 
+      if(applied == State::BLKS_IDX_LOADING) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_blocks_q.push(
+          [cells_block, cb, ptr=shared_from_this()](){
+            ptr->load_cells(cells_block, cb);
+          }
+        );
+        return;
+      }
+      run_queued();
     }
 
-    if(state == State::BLKS_IDX_LOADING) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_blocks_q.push(
-        [req, ptr=shared_from_this()](){ptr->scan_block(0, req);}
-      );
+    std::vector<Block::Read::Ptr>  applicable;
+    for(auto& blk : blocks) {  
+      if(!blk->interval.consist(cells_block->interval))
+        continue; 
+      applicable.push_back(blk);
+    }
+
+    if(applicable.empty()){
+      cb(Error::OK);
       return;
     }
-    
+  
+    AwaitingLoad::Ptr waiter = std::make_shared<AwaitingLoad>(
+      applicable.size(), cells_block, cb);
+
+    for(auto& blk : applicable) {
+      switch(blk->need_load()) {
+
+        case Block::Read::State::NONE: {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          m_blocks_q.push(
+            [blk, waiter, fd=smartfd](){
+              blk->load(
+                fd, [blk, waiter](int err){ waiter->processed(err, blk); }
+              );
+            }
+          );
+          break;
+        }
+
+        case Block::Read::State::LOADED: {
+          waiter->processed(Error::OK, blk);
+          break;
+        }
+
+        default: {
+          blk->pending_load(
+            [blk, waiter](int err){ waiter->processed(err, blk);});
+        }
+      }
+    }
+
     run_queued();
-    
-    scan_block(0, req);
   }
 
   void run_queued() {
@@ -116,134 +162,22 @@ class Read : public std::enable_shared_from_this<Read> {
       }
     );
   }
-  
-  void set(CommitLog::Fragments::Ptr log) {
-    m_commit_log = log;
-  }
-
-  void scan_block(uint32_t idx, DB::Cells::ReqScan::Ptr req) {
-    //std::cout << "cs::scan_block\n";
-    Block::Read::Ptr blk;
-    for(; idx < m_blocks.size(); idx++) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        blk = m_blocks[idx];
-      }
-
-      if(!blk->interval.includes(req->spec))
-        continue;
-    
-      if(blk->state == Block::Read::State::NONE) {
-        {
-          std::lock_guard<std::mutex> lock(m_mutex);
-          m_blocks_q.push(
-            [blk, req, idx, ptr=shared_from_this()](){
-              blk->load(
-                ptr->smartfd, 
-                [req, idx, ptr](int err){
-                  if(err)
-                    req->response(err);
-                  else
-                    ptr->scan_block(idx, req);
-                }
-              );
-            }
-          );
-        }
-        run_queued();
-        return;  
-
-      } else if(blk->state == Block::Read::State::CELLS_LOADED) {
-        blk->state = Block::Read::State::LOGS_LOADING;
-        m_commit_log->load_to_block(
-          blk, 
-          [req, idx, ptr=shared_from_this()](int err){
-            if(err)
-              req->response(err);
-            else
-              ptr->scan_block(idx, req);
-          }
-        );
-        return; 
-
-      } else if(blk->state == Block::Read::State::LOGS_LOADING) {
-        blk->pending_logs_load(
-          [req, idx, ptr=shared_from_this()](){
-            ptr->scan_block(idx, req);
-        });
-        return; 
-      }
-      
-      blk->scan(req);
-      if(req->drop_caches) {
-      //&& !blk->interval.key_begin.empty() && !blk->interval.key_end.empty()) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        refresh(idx);
-      }
-      if(req->reached_limits())
-        break;
-    }
-    int err = Error::OK;
-    req->response(err);
-
-  }
-
-  bool add_logged(const DB::Cells::Cell& cell) {
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state != State::BLKS_IDX_LOADED)
-        return false;
-    }
-    if(!interval.consist(cell.key))
-      return false;
-
-    Block::Read::Ptr blk;
-    for(uint32_t idx=0; idx < m_blocks.size(); idx++) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_blocks[idx]->state != Block::Read::State::LOGS_LOADED)
-          continue;
-        blk = m_blocks[idx];
-      }
-      if(blk->interval.consist(cell.key)) {
-        blk->add_logged(cell);
-        if(!cell.on_fraction)
-          return true;
-      }
-    }
-    return false;
-  }
 
   size_t release(size_t bytes) {    
     size_t released = 0;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state != State::BLKS_IDX_LOADED)
-        return released;
-    }
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    size_t used;
-    for(uint32_t idx = m_blocks.size(); --idx >= 0;) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+    if(state != State::BLKS_IDX_LOADED)
+      return released;
 
-      if(m_blocks[idx]->state == Block::Read::State::NONE)
+    for(auto& blk : blocks) {
+      if(!blk->loaded())
         continue;
-
-      used = m_blocks[idx]->cells.size();
-      if(!used)
-        continue;
-
-      released += used;
-      refresh(idx);
+      released += blk->release();
       if(released >= bytes)
         break;
     }
     return released;
-  }
-
-  void refresh(uint32_t idx) {
-    m_blocks[idx] = m_blocks[idx]->make_fresh(
-      Env::Schemas::get()->get(range->cid));
   }
 
   void close(int &err) {
@@ -253,29 +187,18 @@ class Read : public std::enable_shared_from_this<Read> {
 
   void remove(int &err) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_blocks.clear();
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
-  }
-
-  const size_t cell_count() {
-    size_t count = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& blk : m_blocks)
-      count += blk->cell_count();
-    return count;
   }
 
   const size_t size_bytes() {
     size_t size = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& blk : m_blocks)
+    for(auto& blk : blocks)
       size += blk->size_bytes();
     return size;
   }
 
   const size_t blocks_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_blocks.size();
+    return blocks.size();
   }
 
   const std::string to_string(){
@@ -286,7 +209,7 @@ class Read : public std::enable_shared_from_this<Read> {
     s.append(" id=");
     s.append(std::to_string(id));
     s.append(" state=");
-    s.append(std::to_string((uint8_t) m_state));
+    s.append(std::to_string((uint8_t) state));
     s.append(" ");
     s.append(interval.to_string());
 
@@ -296,10 +219,10 @@ class Read : public std::enable_shared_from_this<Read> {
     }
 
     s.append(" blocks=");
-    s.append(std::to_string(m_blocks.size()));
+    s.append(std::to_string(blocks.size()));
     
     s.append(" blocks=[");
-    for(auto blk : m_blocks) {
+    for(auto blk : blocks) {
         s.append(blk->to_string());
        s.append(", ");
     }
@@ -312,27 +235,27 @@ class Read : public std::enable_shared_from_this<Read> {
   bool load_trailer(int& err, size_t& blks_idx_size, 
                               size_t& blks_idx_offset, 
                               bool close_after=false) {
-    bool state;
+    bool loaded;
     for(;;) {
       err = Error::OK;
-      state = false;
+      loaded = false;
     
       if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) {
         if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
           continue;
-        return state;
+        return loaded;
       }
       size_t length = Env::FsInterface::fs()->length(err, smartfd->filepath());
       if(err) {
         if(err == Error::FS_PATH_NOT_FOUND ||
            err == Error::FS_PERMISSION_DENIED ||
            err == Error::SERVER_SHUTTING_DOWN)
-          return state;
+          return loaded;
         continue;
       }
       
       if(!Env::FsInterface::interface()->open(err, smartfd) && err)
-        return state;
+        return loaded;
       if(err)
         continue;
       
@@ -345,7 +268,7 @@ class Read : public std::enable_shared_from_this<Read> {
           close(err);
           continue;
         }
-        return state;
+        return loaded;
       }
 
       size_t remain = TRAILER_SIZE;
@@ -358,18 +281,18 @@ class Read : public std::enable_shared_from_this<Read> {
       }
       
       blks_idx_offset = length-blks_idx_size-TRAILER_SIZE;      
-      state = true;
+      loaded = true;
       break;
     }
 
     if(close_after)
       close(err);
-    return state;
+    return loaded;
   }
 
   void _load_blocks_index(int& err, bool close_after=false) {
     //std::cout << "cs::_load_blocks_index 1 \n";
-    m_blocks.clear();
+    blocks.clear();
 
     size_t length = 0;
     size_t offset = 0;
@@ -428,16 +351,13 @@ class Read : public std::enable_shared_from_this<Read> {
     interval.free();
 
     Block::Read::Ptr blk;
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
-
     for(int n = 0; n < blks_count; n++){
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
       blk = std::make_shared<Block::Read>(
         offset, 
-        DB::Cells::Interval(&ptr, &remain), 
-        schema
+        DB::Cells::Interval(&ptr, &remain)
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
@@ -446,7 +366,7 @@ class Read : public std::enable_shared_from_this<Read> {
         return;
       }
 
-      m_blocks.push_back(blk);
+      blocks.push_back(blk);
       interval.expand(blk->interval);
     }
     
@@ -457,7 +377,6 @@ class Read : public std::enable_shared_from_this<Read> {
   void _run_queued() {
     //std::cout << "cs::_run_queued\n";
     std::function<void()> call;
-    
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -479,12 +398,56 @@ class Read : public std::enable_shared_from_this<Read> {
     }
   }
 
+  struct AwaitingLoad {
+    public:
+    typedef std::function<void(int)>      Cb_t;
+    typedef std::shared_ptr<AwaitingLoad> Ptr;
+    
+    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, Cb_t cb) 
+                : m_count(count), cells_block(cells_block), cb(cb) {
+    }
+
+    void processed(int err, Block::Read::Ptr blk) {
+      //std::cout << " " << blk->to_string() <<"\n";
+      //std::cout << " " << cells_block->to_string() <<"\n";
+      { 
+        std::lock_guard<std::mutex> lock(m_mutex);
+        --m_count;
+        m_pending.push(blk);
+        if(m_pending.size() > 1)
+          return;
+      }
+      for(;;) {
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          blk = m_pending.front();
+        }
+
+        blk->load_cells(cells_block);
+        
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          m_pending.pop();
+          if(m_pending.empty()) 
+            break;
+        }
+      }
+      if(m_count == 0) {
+        cb(err);
+        blk->pending_load(err);
+      }
+    }
+
+    std::mutex                    m_mutex;
+    int32_t                       m_count = 0;
+    std::queue<Block::Read::Ptr>  m_pending;
+    CellsBlock::Ptr               cells_block;
+    const Cb_t                    cb;
+  };
+
   std::mutex                          m_mutex;
-  std::atomic<State>                  m_state;
-  std::vector<Block::Read::Ptr>       m_blocks;
   bool                                m_blocks_q_runs = false;
   std::queue<std::function<void()>>   m_blocks_q;
-  CommitLog::Fragments::Ptr           m_commit_log;
 
 };
 typedef std::vector<Read::Ptr>    Readers;

@@ -6,13 +6,8 @@
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/Rgr/Columns.h"
 
+#include "swcdb/lib/ranger/Settings.h"
 #include <iostream>
-
-
-void SWC::Config::Settings::init_app_options(){
-  init_fs_options();
-}
-void SWC::Config::Settings::init_post_cmd_args(){}
 
 
 namespace Cells = SWC::DB::Cells;
@@ -33,8 +28,7 @@ int main(int argc, char** argv) {
   int err = SWC::Error::OK;
   SWC::Env::Schemas::get()->add(err, SWC::DB::Schema::make(11, "col-test-cs"));
 
-  size_t num_cells = 1000000;
-  int num_revs = 5;
+  size_t num_cells = 10000000;
   size_t block_sz = 64000000;
   //Cells::Mutable::Ptr cells_mutable = Cells::Mutable::make(num_cells, 2, 0, SWC::Types::Column::PLAIN;
 
@@ -56,54 +50,46 @@ int main(int argc, char** argv) {
   uint32_t cell_count = 0;
   int64_t rev;
   
-  for(auto r=1;r<=num_revs;++r){
-    for(auto i=1;i<=num_cells;++i){
-      std::string n = std::to_string(i);
+  for(auto i=1;i<=num_cells;++i){
+    std::string n = std::to_string(i);
       
-      rev = SWC::Time::now_ns();
-      cell.flag = Cells::INSERT;
-      cell.set_timestamp(rev-1);
-      cell.set_revision(rev);
-      cell.set_time_order_desc(false);
+    rev = SWC::Time::now_ns();
+    cell.flag = Cells::INSERT;
+    cell.set_timestamp(rev-1);
+    cell.set_revision(rev);
+    cell.set_time_order_desc(false);
 
-      cell.key.free();
-      cell.key.add("aKey1");
-      cell.key.add("aKey2");
-      cell.key.add(n);
-      cell.key.add("aKey3");
-      cell.key.add("aKey4");
-      cell.key.add("aKey5");
-      //if(num_revs == r)
-      //  cell.set_value(Cells::OP::EQUAL, 0);
-      //else
-      //  cell.set_value(Cells::OP::PLUS, 1);
+    cell.key.free();
+    cell.key.add("aKey1");
+    cell.key.add("aKey2");
+    cell.key.add(n);
+    cell.key.add("aKey3");
+    cell.key.add("aKey4");
+    cell.key.add("aKey5");
 
-      std::string value("A-Data-Value-1234567890-"+n);
-      cell.set_value(value.data(), value.length());
+    std::string value("A-Data-Value-1234567890-"+n);
+    cell.set_value(value.data(), value.length());
 
-      //cells_mutable->add(cell);
+    cell.write(buff);
+    cell_count++;
+    blk_intval.expand(cell);
 
-      cell.write(buff);
-      cell_count++;
-      blk_intval.expand(cell);
+    if(num_cells == i)
+      key_to_scan.copy(cell.key);
 
-      if(buff.fill() > block_sz || (num_revs == r && num_cells == i)){
-        
-        if(num_revs == r && num_cells == i)
-          key_to_scan.copy(cell.key);
-
-        std::cout << "add   block: " << cs_writer.to_string() << "\n";
+    if(buff.fill() > block_sz || num_cells == i){
+      std::cout << "add   block: " << cs_writer.to_string() << "\n";
  
-        cs_writer.block(err, blk_intval, buff, cell_count);
-        blk_intval.free();
-        buff.free();
-        hdlr_err(err);
+      cs_writer.block(err, blk_intval, buff, cell_count);
+      blk_intval.free();
+      buff.free();
+      hdlr_err(err);
 
-        cell_count = 0;
+      cell_count = 0;
 
-        std::cout << "added block: " << cs_writer.to_string() << "\n";
-      }
+      std::cout << "added block: " << cs_writer.to_string() << "\n";
     }
+    
   }
 
   cs_writer.finalize(err);
@@ -136,31 +122,47 @@ int main(int argc, char** argv) {
   SWC::Env::IoCtx::init(8);
   
   SWC::DB::Cells::Interval intval_r;
-  SWC::Files::CellStore::Read::Ptr cs2 
-    = std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r);
-  cs2->set(SWC::Files::CommitLog::Fragments::make(range));
-  std::atomic<int> requests = 10;
+  
+  auto cellstores = std::make_shared<SWC::Files::CellStore::Readers>();
+  cellstores->push_back(std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r));
+  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(
+    cellstores, SWC::Files::CommitLog::Fragments::make(range));
+  std::atomic<int> requests = 110;
+  size_t id = 0;
+  for(int n=1;n<=20;n++) {
 
-  for(int n=1;n<=3;n++) {
-
-    for(int i=1; i<=10;i++) {
-
+    for(int i=1; i<=(n>10?1:10);i++) {
+      id++;
       //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
-    auto t = std::thread([cs2, &key_to_scan, id=n*i, &count=requests](){
+    auto t = std::thread([blocks, &key_to_scan, id, &count=requests](){
 
       auto req = Cells::ReqScanTest::make();
       req->cells = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
       req->spec = SWC::DB::Specs::Interval::make_ptr();
       req->spec->key_start.set(key_to_scan, SWC::Condition::GE);
       req->spec->flags.limit = 2;
-      req->cb = [req, id, &requests=count, took=SWC::Time::now_ns()](int err){
+      req->cb = [req, id, key_to_scan, &requests=count, took=SWC::Time::now_ns()](int err){
         std::cout << " chk=" << id ;
-        std::cout << " took=" <<  SWC::Time::now_ns()-took << " " ;
-        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-        std::cout << req->to_string() << "\n";
+        std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
+        if(err) {
+          std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
+          std::cout << req->to_string() << "\n";
+        }
         requests--;
+        if(req->cells->size() != 1) {
+          std::cerr << "ERROR: req->cells.size()=" << req->cells->size() 
+                    << " expected=1\n";
+          exit(1);
+        }
+        SWC::DB::Cells::Cell cell;
+        req->cells->get(0, cell);
+        if(!cell.key.equal(key_to_scan)) {
+          std::cerr << "ERROR: !cell.key.equal(key_to_scan) " << cell.to_string() 
+                    << " expected=" << key_to_scan.to_string()  << "\n";
+          exit(1);
+        }
       };
-      cs2->scan(req);
+      blocks->scan(req);
     });
     if((n== 1 && i == 1) || (n== 3 && i == 10))
       t.join();
@@ -180,7 +182,7 @@ int main(int argc, char** argv) {
   std::cout << "cs-read-scan: OK\n";
 
 
-  cs2->remove(err);
+  cellstores->front()->remove(err);
   hdlr_err(err);
 
   std::cout << "\n-   OK-read   -\n\n";

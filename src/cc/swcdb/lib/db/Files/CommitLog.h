@@ -9,9 +9,7 @@
 #include "swcdb/lib/core/Time.h"
 #include "CommitLogFragment.h"
 
-namespace SWC { namespace Files { 
-  
-namespace CommitLog {
+namespace SWC { namespace Files { namespace CommitLog {
 
 
 class Fragments: public std::enable_shared_from_this<Fragments> {
@@ -28,14 +26,16 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     return std::make_shared<Fragments>(range);
   }
 
+  const DB::RangeBase::Ptr range;
+
   Fragments(const DB::RangeBase::Ptr& range) 
-            : m_range(range), m_commiting(false), m_deleting(false),
+            : range(range), m_commiting(false), m_deleting(false),
               cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
                 "swc.rgr.Range.block.size")), 
               cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
                 "swc.rgr.Range.block.encoding")) {
     
-    DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
+    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
 
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
@@ -50,7 +50,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
   virtual ~Fragments(){}
 
-  void add(DB::Cells::Cell& cell) {
+  void add(const DB::Cells::Cell& cell) {
     m_cells->add(cell);
 
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -71,7 +71,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
 
-    DB::SchemaPtr schema = Env::Schemas::get()->get(m_range->cid);
+    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     uint32_t blk_size;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -134,7 +134,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   const std::string get_log_fragment(const int64_t frag) const {
-    std::string s(m_range->get_path(DB::RangeBase::log_dir));
+    std::string s(range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(std::to_string(frag));
     s.append(".frag");
@@ -142,7 +142,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   const std::string get_log_fragment(const std::string& frag) const {
-    std::string s(m_range->get_path(DB::RangeBase::log_dir));
+    std::string s(range->get_path(DB::RangeBase::log_dir));
     s.append("/");
     s.append(frag);
     return s;
@@ -155,7 +155,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     err = Error::OK;
     FS::DirentList fragments;
     Env::FsInterface::interface()->readdir(
-      err, m_range->get_path(DB::RangeBase::log_dir), fragments);
+      err, range->get_path(DB::RangeBase::log_dir), fragments);
     if(err)
       return;
 
@@ -168,8 +168,13 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     }
   }
   
-  void load_to_block(CellStore::Block::Read::Ptr blk, 
-                     std::function<void(int)> cb) {
+  void load_cells(CellsBlock::Ptr cells_block) {
+    // + ? whether a commit_new_fragment happened 
+    m_cells->scan(cells_block->interval, cells_block->cells);
+  }
+  
+  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {
+    //std::cout << "CommitLog::load_cells\n";
     if(m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
@@ -179,62 +184,43 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
-        if(frag->errored() || !frag->interval.includes(blk->interval))
+        if(frag->errored() || !frag->interval.includes(cells_block->interval))
           continue;
         fragments.push_back(frag);
       }
     }
 
     if(fragments.empty()){
-      load_cells(blk->interval, blk->cells);
-      blk->state = CellStore::Block::Read::State::LOGS_LOADED;
-      blk->pending_logs_load();
+      load_cells(cells_block);
       cb(Error::OK);
       return;
     }
 
     AwaitingLoad::Ptr state = std::make_shared<AwaitingLoad>(
-      fragments.size(), blk, cb, shared_from_this());
+      fragments.size(), cells_block, cb, shared_from_this());
     for(auto& frag : fragments) 
       frag->load([frag, state](int err){ state->processed(err, frag); });
   }
 
-  void load_cells(const DB::Cells::Interval& intval, 
-                  DB::Cells::Mutable& cells) {
-    // + ? whether a commit_new_fragment happened 
-    m_cells->scan(intval, cells);
-  }
-
-  size_t cells_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t count = m_cells->size();
-    for(auto frag : m_fragments)
-      count += frag->cells_count();
-    return count;
-  }
-
-  const std::string to_string() {
-    size_t count = cells_count();
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    std::string s("CommitLog(count=");
-    s.append(std::to_string(count));
+  void get(std::vector<Fragment::Ptr>& fragments) {
+    fragments.clear();
     
-    s.append(" cells=");
-    s.append(m_cells->to_string());
+    std::lock_guard<std::mutex> lock(m_mutex);
+    fragments.assign(m_fragments.begin(), m_fragments.end());
+  }
 
-    s.append(" fragments=");
-    s.append(std::to_string(m_fragments.size()));
+  size_t release(size_t bytes) {    
+    size_t released = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    s.append(" [");
-    for(auto frag : m_fragments){
-      s.append(frag->to_string());
-      s.append(", ");
+    for(auto& frag : m_fragments) {
+      if(!frag->loaded())
+        continue;
+      released += frag->release();
+      if(released >= bytes)
+        break;
     }
-    s.append("]");
-
-    s.append(")");
-    return s;
+    return released;
   }
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
@@ -273,11 +259,12 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     return m_deleting;
   }
 
-  void get(std::vector<Fragment::Ptr>& fragments) {
-    fragments.clear();
-    
+  size_t cells_count() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    fragments.assign(m_fragments.begin(), m_fragments.end());
+    size_t count = m_cells->size();
+    for(auto frag : m_fragments)
+      count += frag->cells_count();
+    return count;
   }
 
   size_t size_bytes() {
@@ -287,6 +274,30 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     for(auto& frag : m_fragments)
       size += frag->size_bytes();
     return size;
+  }
+
+  const std::string to_string() {
+    size_t count = cells_count();
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    std::string s("CommitLog(count=");
+    s.append(std::to_string(count));
+    
+    s.append(" cells=");
+    s.append(m_cells->to_string());
+
+    s.append(" fragments=");
+    s.append(std::to_string(m_fragments.size()));
+
+    s.append(" [");
+    for(auto frag : m_fragments){
+      s.append(frag->to_string());
+      s.append(", ");
+    }
+    s.append("]");
+
+    s.append(")");
+    return s;
   }
 
   const gInt32tPtr            cfg_blk_sz;
@@ -299,9 +310,9 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     typedef std::function<void(int)>      Cb_t;
     typedef std::shared_ptr<AwaitingLoad> Ptr;
     
-    AwaitingLoad(int32_t count, CellStore::Block::Read::Ptr blk, 
+    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, 
                   const Cb_t& cb, Fragments::Ptr log) 
-                : m_count(count), blk(blk), cb(cb), log(log) {
+                : m_count(count), cells_block(cells_block), cb(cb), log(log) {
     }
 
     void processed(int err, Fragment::Ptr frag) {
@@ -320,7 +331,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         if(log->deleting())
           err = Error::COLUMN_MARKED_REMOVED;
         else
-          frag->load_cells(blk->interval, blk->cells);
+          frag->load_cells(cells_block);
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
@@ -328,11 +339,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
             break;
         }
       }
-      if(m_count == 0) {
-        log->load_cells(blk->interval, blk->cells);
-        blk->state = CellStore::Block::Read::State::LOGS_LOADED;
-        blk->pending_logs_load();
-        std::cout << "AwaitingLoad CALL\n";
+      if(m_count == 0){
+        log->load_cells(cells_block);
         cb(err);
       }
     }
@@ -340,13 +348,12 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     std::mutex                    m_mutex;
     int32_t                       m_count = 0;
     std::queue<Fragment::Ptr>     m_pending;
-    CellStore::Block::Read::Ptr   blk;
+    CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
     Fragments::Ptr                log;
   };
 
   std::mutex                  m_mutex;
-  const DB::RangeBase::Ptr    m_range;
 
   DB::Cells::Mutable::Ptr     m_cells;
   uint32_t                    m_size_commit;

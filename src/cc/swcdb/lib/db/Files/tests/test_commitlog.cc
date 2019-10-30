@@ -8,13 +8,10 @@
 #include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Files/CellStore.h"
 
+#include "swcdb/lib/db/Columns/Rgr/IntervalBlocks.h"
 #include <iostream>
 
-
-void SWC::Config::Settings::init_app_options(){
-  init_fs_options();
-}
-void SWC::Config::Settings::init_post_cmd_args(){}
+#include "swcdb/lib/ranger/Settings.h"
 
 using namespace SWC;
 
@@ -27,7 +24,7 @@ int main(int argc, char** argv) {
   Env::Schemas::init();
   Env::IoCtx::init(8);
 
-  int num_cells = 1000000;
+  int num_cells = 200000;
   int versions = 3;
   int err = Error::OK;
   Env::Schemas::get()->add(
@@ -61,7 +58,7 @@ int main(int argc, char** argv) {
   std::cout << " init:  \n" << commit_log->to_string() << "\n";
   
 
-  int num_threads = 1;
+  int num_threads = 8;
   std::atomic<int> threads_processing = num_threads;
 
   for(int t=0;t<num_threads;t++) {
@@ -129,13 +126,13 @@ int main(int argc, char** argv) {
   std::cout << "loaded: \n" << commit_log->to_string() << "\n";
 
 
-  Files::CellStore::ReadersPtr cellstores = std::make_shared<Files::CellStore::Readers>();
-
-  cellstores->push_back(
-    Files::CellStore::create_init_read(err, schema->blk_encoding, range));
   auto log = SWC::Files::CommitLog::Fragments::make(range);
   log->load(err);
-  cellstores->front()->set(log);
+  auto cellstores = std::make_shared<Files::CellStore::Readers>();
+  cellstores->push_back(
+    Files::CellStore::create_init_read(err, schema->blk_encoding, range));
+  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(cellstores, log);
+
 
   int num_chks = 10;
   std::atomic<int> chk = num_chks;
@@ -153,7 +150,7 @@ int main(int argc, char** argv) {
         std::cout << cellstores->front()->to_string() << "\n";
         chk--;
       };
-    cellstores->front()->scan(req);
+    blocks->scan(req);
   }
 
   while(chk > 0)
@@ -176,7 +173,7 @@ int main(int argc, char** argv) {
       std::cout << cellstores->front()->to_string() << "\n";
       chk--;
     };
-    cellstores->front()->scan(req);
+    blocks->scan(req);
   }
   
   while(chk > 0)
@@ -193,9 +190,7 @@ int main(int argc, char** argv) {
   }
   std::cerr << " OK\n";
 
-  size_t counted = 0;
-  for(auto& cs : *cellstores.get())
-    counted += cs->cell_count();
+  size_t counted = blocks->cells_count();
 
   std::cout << " cs counted=" << counted;
   if(schema->cell_versions*num_cells != counted) {
@@ -203,6 +198,67 @@ int main(int argc, char** argv) {
     exit(1);
   }
   std::cerr << " OK\n";
+  
 
+
+  std::cout << "BEFORE(split): \n" << blocks->to_string() << "\n";
+
+  blocks->split(); // result the same -- split happened at State::LOADED
+
+  std::cout << "AFTER(split): \n" << blocks->to_string() << "\n";
+
+  counted = blocks->cells_count();
+
+  std::cout << " cs counted=" << counted;
+  if(schema->cell_versions*num_cells != counted) {
+    std::cerr << " BAD after(split), expected="<< schema->cell_versions*num_cells << "\n";
+    exit(1);
+  }
+  std::cerr << "\n OK\n";
+
+  std::cerr << "blocks->add_logged: \n";
+
+  int added_num = 1000000;
+  DB::Cells::Cell cell;
+  int64_t rev;
+  for(int v=0;v<versions;v++) {
+    for(auto i=0;i<added_num;i++){
+
+        std::string n = std::to_string(i)+"-added";
+      
+        rev = SWC::Time::now_ns();
+        cell.flag = DB::Cells::INSERT;
+        cell.set_timestamp(rev-1);
+        cell.set_revision(rev);
+        cell.set_time_order_desc(false);
+
+        cell.key.free();
+        cell.key.add("aFraction1");
+        cell.key.add("aFraction2");
+        cell.key.add(n);
+        cell.key.add("aFraction3");
+        cell.key.add("aFraction4");
+        cell.key.add("aFraction5");
+        //if(num_revs == r)
+        //  cell.set_value(Cells::OP::EQUAL, 0);
+        //else
+        //  cell.set_value(Cells::OP::PLUS, 1);
+        std::string s("A-Data-Value-1234567890-"+n);
+        cell.set_value(s.data(), s.length());
+
+        blocks->add_logged(cell);
+    }
+  }
+
+  std::cout << "AFTER(add_logged): \n" << blocks->to_string() << "\n";
+
+  counted = blocks->cells_count();
+
+  std::cout << " cs counted=" << counted;
+  if(schema->cell_versions*(num_cells+added_num) != counted) {
+    std::cerr << " BAD after(add_logged), expected="<< (schema->cell_versions*(num_cells+added_num)) << "\n";
+    exit(1);
+  }
+  std::cerr << " OK\n";
   exit(0);
 }

@@ -172,7 +172,7 @@ void expect_empty_column(int64_t cid) {
 
 
 void test_1(const std::string& col_name) {
-  int num_cells = 1000000; // test require at least 12
+  int num_cells = 500001; // test require at least 12
   
 
   // Req::Query::Update
@@ -193,6 +193,7 @@ void test_1(const std::string& col_name) {
   std::cout << schema->to_string() << "\n";
   update_req->columns_cells->create(schema);
   
+  int64_t took =  SWC::Time::now_ns();
   Cells::Cell cell;
   for(int i=0;i<num_cells;i++) {
     std::string cell_number(std::to_string(i));
@@ -205,13 +206,19 @@ void test_1(const std::string& col_name) {
     cell.set_value("V_OF: "+cell_number);
 
     update_req->columns_cells->add(schema->cid, cell);
+    /*if(i % 100000 && update_req->result->completion == 0)
+      update_req->commit();
+
+    while(update_req->result->completion > 1)
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    */
+
   }
   
   size_t bytes = update_req->columns_cells->size_bytes();
   std::cout << update_req->columns_cells->to_string() << "\n";
   
 
-  int64_t took =  SWC::Time::now_ns();
   update_req->timeout_commit = 10*num_cells;
   update_req->commit();
   update_req->wait();
@@ -222,7 +229,7 @@ void test_1(const std::string& col_name) {
             << " avg="<< took/num_cells << "\n";
 
   std::cout << "\n";
-
+  //exit(1);
   // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
     [](Query::Select::Result::Ptr result)
@@ -250,8 +257,7 @@ void test_1(const std::string& col_name) {
     std::cerr << "BAD, on offset, select cells count: \n" 
               << " " << spec->to_string() << "\n"
               << " expected_value=" << spec->flags.limit << "\n"
-              << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n"
-              << " " << cell.to_string() << "\n";
+              << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n";
     exit(1);
   }
   // std::this_thread::sleep_for(std::chrono::milliseconds(60000));
@@ -374,6 +380,7 @@ void test_1(const std::string& col_name) {
   took = SWC::Time::now_ns() - took;
   std::cout << "SELECT-TOOK=" << took  << "\n";
   
+  std::cout << "\n";
 }
 
 
@@ -391,7 +398,7 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::PLAIN, 64000000
+    1, 0, 3, SWC::Types::Encoding::PLAIN, 1000000
   );
 
   // 1st DELETE & CREATE COLUMN

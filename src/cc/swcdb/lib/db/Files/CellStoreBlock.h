@@ -11,6 +11,71 @@
 
 
 
+namespace SWC { namespace Files { 
+
+struct CellsBlock {
+  public:
+  typedef std::shared_ptr<CellsBlock> Ptr;
+
+  CellsBlock(const DB::Cells::Interval& interval, const DB::SchemaPtr s) 
+            : interval(interval),  
+              cells(
+                DB::Cells::Mutable(
+                  0, s->cell_versions, s->cell_ttl, s->col_type)
+              ) {
+  }
+
+  virtual ~CellsBlock() {}
+  
+  size_t load_cells(const uint8_t* ptr, size_t remain) {
+    DB::Cells::Cell cell;
+    size_t count = 0;
+    bool synced = !cells.size();
+
+    auto ts = Time::now_ns();
+    while(remain) {
+      try {
+        cell.read(&ptr, &remain);
+      } catch(std::exception) {
+        HT_ERRORF(
+          "Cell trunclated count=%llu remain=%llu %s, %s", 
+          count, remain, cell.to_string().c_str(),  to_string().c_str());
+        break;
+      }
+      
+      if(!interval.consist(cell.key))
+        continue;
+
+      if(synced)
+        cells.push_back(cell);
+      else
+        cells.add(cell);
+      count++;
+    }
+
+    auto took = Time::now_ns()-ts;
+    std::cout << "CellsBlock::load_cells took=" << took
+              << " synced=" << synced
+              << " avg=" << (count>0 ? took / count : 0)
+              << " " << cells.to_string() << "\n";
+    return count;
+  }
+
+  const std::string to_string(){
+      std::string s("CellsBlock(");
+      s.append(interval.to_string());
+      s.append(" ");
+      s.append(cells.to_string());
+      s.append(")");
+      return s;
+    }
+
+  DB::Cells::Interval       interval;
+  DB::Cells::Mutable        cells;
+};
+
+}}
+
 namespace SWC { namespace Files { namespace CellStore {
 
 
@@ -31,46 +96,49 @@ class Read {
 
   enum State {
     NONE,
-    CELLS_LOADED,
-    LOGS_LOADING,
-    LOGS_LOADED
+    LOADING,
+    LOADED
   };
 
   inline static const std::string to_string(const State state) {
     switch(state) {
-      case State::CELLS_LOADED:
-        return "CELLS_LOADED";
-      case State::LOGS_LOADED:
-        return "LOGS_LOADED";
-      case State::LOGS_LOADING:
-        return "LOGS_LOADING";
+      case State::LOADED:
+        return "LOADED";
+      case State::LOADING:
+        return "LOADING";
       default:
         return "NONE";
     }
   }
   
-  
-  Read(const size_t offset, const DB::Cells::Interval& interval, 
-       const DB::SchemaPtr s)
-      : offset(offset),  
-        cells(DB::Cells::Mutable(
-          0, s->cell_versions, s->cell_ttl, s->col_type)),
-        interval(interval), state(State::NONE) {
+  Read(const size_t offset, const DB::Cells::Interval& interval)
+      : offset(offset), interval(interval), 
+        state(State::NONE), m_size(0), m_count(0) {
   }
 
   virtual ~Read(){}
+  
+  State need_load() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(state == Block::Read::State::NONE) {
+      state = Block::Read::State::LOADING;
+      return Block::Read::State::NONE;
+    }
+    return state;
+  }
 
-  Ptr make_fresh(const DB::SchemaPtr schema) {
-    return std::make_shared<Read>(offset, interval, schema);
+  bool loaded() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return state == State::LOADED;
   }
 
   void load(FS::SmartFdPtr smartfd, std::function<void(int)> call) {
     int err = Error::OK;
-    if(state != State::NONE) {
+    if(loaded()) {
       call(err);
       return;
     }
-    //std::cout << "blk::load\n";
+    //std::cout << "CS::Read::load\n";
 
     for(;;) {
       err = Error::OK;
@@ -95,10 +163,10 @@ class Read {
       Types::Encoding encoder 
         = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
       uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
-      uint32_t sz = Serialization::decode_i32(&ptr, &remain);
+      m_size = Serialization::decode_i32(&ptr, &remain);
       if(!sz_enc) 
-        sz_enc = sz;
-      uint32_t cells_count = Serialization::decode_i32(&ptr, &remain);
+        sz_enc = m_size;
+      m_count = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
@@ -108,11 +176,11 @@ class Read {
       if(sz_enc == 0)
         break;
 
-      StaticBuffer read_buf(sz_enc);
+      m_buffer = std::make_shared<StaticBuffer>(sz_enc);
       for(;;) {
         err = Error::OK;
         if(Env::FsInterface::fs()->pread(
-                    err, smartfd, offset+HEADER_SIZE, read_buf.base, sz_enc)
+                    err, smartfd, offset+HEADER_SIZE, m_buffer->base, sz_enc)
                   != sz_enc){
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
@@ -129,95 +197,66 @@ class Read {
 
       
       if(encoder != Types::Encoding::PLAIN) {
-        StaticBuffer buffer(sz);
-        Encoder::decode(encoder, read_buf.base, sz_enc, buffer.base, sz, err);
+        StaticBuffer buffer(m_size);
+        Encoder::decode(
+          encoder, m_buffer->base, sz_enc, buffer.base, m_size, err);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
           break;
         }
-        read_buf.free();
-        read_buf.base = buffer.base;
+        m_buffer->free();
+        m_buffer->base = buffer.base;
         buffer.own = false;
       }
 
-      cells.free();
-      cells.ensure(cells_count);
-
-      load_cells(read_buf.base, read_buf.size);
       break;
     }
   
-    if(err == Error::OK)
-      state = State::CELLS_LOADED;
-  
+    state = !err ? State::LOADED : State::NONE;
     call(err);
   }
 
-  void load_cells(const uint8_t* ptr, size_t remain) {
-    DB::Cells::Cell cell;
+  void load_cells(CellsBlock::Ptr cells_block) {
+    if(!m_count)
+      return;
 
-    auto ts = Time::now_ns();
-
-    while(remain) {
-      cell.read(&ptr, &remain);
-      cells.push_back(cell);
-    }
-
-    auto took = Time::now_ns()-ts;
-    std::cout << " cs-block-took=" << took
-              << " avg=" << took / cells.size()
-              << " " << cells.to_string() << "\n";
+    m_count -= cells_block->load_cells(m_buffer->base, m_buffer->size);
+    if(!m_count)
+      release();
   }
   
-  void add_logged(const DB::Cells::Cell& cell) {
-    cells.add(cell);
+  size_t release() {
+    //std::cout << "CellStoreBlock release buffer \n";
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    size_t released = 0;      
+    if(!m_pending_q.empty())
+      return released; 
+    released += m_buffer->size;    
+    state = State::NONE;
+    m_count = 0;  
+    m_buffer = nullptr;
+    return released;
   }
 
-  void scan(DB::Cells::ReqScan::Ptr req) {
-    //std::cout << "blk::scan 1 " << to_string() << "\n";
-
-    size_t skips = 0; // Ranger::Stats
-    cells.scan(
-      *(req->spec).get(), 
-      req->cells, 
-      req->offset,
-      [req]() { return req->reached_limits(); },
-      skips, 
-      req->has_selector 
-        ? [req](const DB::Cells::Cell& cell) 
-          { return req->selector(cell); }
-        : (DB::Cells::Mutable::Selector_t)0 
-    );
-  }
-
-  const size_t cell_count() {
-    return cells.size();
-  }
-  
-  const size_t size_bytes() {
-    return cells.size_bytes();
-  }
-
-  void pending_logs_load(std::function<void()> cb) {
+  void pending_load(std::function<void(int)> cb) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_pending_q.push(cb);
-    std::cout << "pending_logs_load add, sz=" << m_pending_q.size() << "\n";
+    //std::cout << "pending_load add, sz=" << m_pending_q.size() << "\n";
   }
 
-  void pending_logs_load() {
-    std::function<void()> call;
+  void pending_load(int& err) {
+    std::function<void(int)> call;
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         if(m_pending_q.empty())
           return;
         call = m_pending_q.front();
-        
-        std::cout << "pending_logs_load call, sz=" << m_pending_q.size() << "\n";
       }
 
-      call();
+      call(err);
       
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -226,40 +265,34 @@ class Read {
     }
   }
 
+  size_t size_bytes() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_size;
+  }
+
   const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
     std::string s("Block(offset=");
     s.append(std::to_string(offset));
-    s.append(" ");
-    s.append(interval.to_string());
-
     s.append(" state=");
     s.append(to_string(state));
-
+    s.append(" size=");
+    s.append(std::to_string(m_size));
     s.append(" ");
-    s.append(cells.to_string());
-      
-    if(cells.size() > 0) {
-      DB::Cells::Cell cell;
-      s.append(" range=(");
-      cells.get(0, cell);
-      s.append(cell.to_string());
-      s.append(")<=cell<=(");
-      cells.get(-1, cell);
-      s.append(cell.to_string());
-      s.append(")");
-    }
-
+    s.append(interval.to_string());
     s.append(")");
     return s;
   }
 
-  const size_t                    offset;
-  const DB::Cells::Interval       interval;
-  DB::Cells::Mutable              cells;
-  std::atomic<State>              state;
+  const size_t                          offset;
+  const DB::Cells::Interval             interval;
+  std::atomic<State>                    state;
   
-  std::mutex                         m_mutex;
-  std::queue<std::function<void()>>  m_pending_q;
+  std::mutex                            m_mutex;
+  size_t                                m_size;
+  std::atomic<size_t>                   m_count;
+  StaticBufferPtr                       m_buffer;
+  std::queue<std::function<void(int)>>  m_pending_q;
 };
 
 

@@ -8,9 +8,8 @@
 
 #include "CellStoreBlock.h"
 
-namespace SWC { namespace Files { 
-  
-namespace CommitLog {
+namespace SWC { namespace Files { namespace CommitLog {
+
   
 class Fragment: public std::enable_shared_from_this<Fragment> {
 
@@ -30,20 +29,20 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   static const uint8_t     HEADER_EXT_FIXED_SIZE = 21;
   
   enum State {
-    CELLS_NONE,
-    CELLS_LOADING,
-    CELLS_LOADED,
+    NONE,
+    LOADING,
+    LOADED,
     ERROR,
   };
 
   static const std::string to_string(State state) {
     switch(state) {
-      case State::CELLS_NONE:
-        return std::string("CELLS_NONE");
-      case State::CELLS_LOADING:
-        return std::string("CELLS_LOADING");
-      case State::CELLS_LOADED:
-        return std::string("CELLS_LOADED");
+      case State::NONE:
+        return std::string("NONE");
+      case State::LOADING:
+        return std::string("LOADING");
+      case State::LOADED:
+        return std::string("LOADED");
       case State::ERROR:
         return std::string("ERROR");
       default:
@@ -58,9 +57,9 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
               FS::SmartFd::make_ptr(
                 filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
             ), 
-            m_state(State::CELLS_NONE), 
+            m_state(State::NONE), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0) {
+            m_data_checksum(0), cells_loaded(0) {
   }
   
   virtual ~Fragment(){}
@@ -142,7 +141,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       goto do_again;
     }
 
-    m_state = State::CELLS_LOADED;
+    release(); //  m_state = State::LOADED;
   }
 
   void load_header(bool close_after=true) {
@@ -205,6 +204,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
       m_cells_count = Serialization::decode_i32(&ptr, &remain);
+      cells_loaded = m_cells_count;
       m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
@@ -273,7 +273,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err ? State::ERROR : State::CELLS_LOADED;
+      m_state = err ? State::ERROR : State::LOADED;
     }
 
     std::function<void(int)> cb;
@@ -292,21 +292,17 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
           return;
       }
     }
-    std::cout << "LogFragment, load-complete" << "\n";
+    //std::cout << "LogFragment, load-complete" << "\n";
   }
 
   void load(std::function<void(int)> cb) {
-    bool state;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      state = m_state == State::CELLS_LOADED;
-    }
-    
-    if(state) {
+
+    if(loaded()) {
       cb(Error::OK);
       return;
     }
 
+    bool state;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_queue_load.push(cb);
@@ -316,9 +312,9 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     if(state) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_state == State::CELLS_LOADING)
+        if(m_state == State::LOADING)
           return;
-        m_state = State::CELLS_LOADING;
+        m_state = State::LOADING;
       }
       asio::post(*Env::IoCtx::io()->ptr(), 
         [ptr=shared_from_this()](){
@@ -328,47 +324,32 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     }
   }
   
-  void load_cells(const DB::Cells::Interval& intval, 
-                  DB::Cells::Mutable& cells) {
+  void load_cells(CellsBlock::Ptr cells_block) {
+    if(!cells_loaded)
+      return;
+    
+    cells_loaded -= cells_block->load_cells(m_buffer->base, m_size);
+    if(!cells_loaded)
+      release();
+  }
+  
+  size_t release() {
+    //std::cout << "Fragment release buffer \n";
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    const uint8_t* ptr = m_buffer->base;
-    size_t remain = m_size; 
-
-    auto ts = Time::now_ns();
-    int64_t ts_cells_add = 0;
-    size_t count = 0;
-
-    DB::Cells::Cell cell;
-    while(remain) {
-      try {
-        cell.read(&ptr, &remain);
-
-        if(++count == m_cells_count && remain != 0)
-          throw Error::SERIALIZATION_INPUT_OVERRUN;
-      } catch(std::exception) {
-        HT_ERRORF(
-          "Cell trunclated count=%llu remain=%llu %s, %s", 
-          count, remain, cell.to_string().c_str(),  to_string().c_str());
-        break;
-      }
-
-      if(!intval.consist(cell.key))
-        continue;
-
-      auto ts_cella = Time::now_ns();
-      cells.add(cell);
-      ts_cells_add += Time::now_ns()-ts_cella;
-    }
-
-    ts = Time::now_ns()-ts;
-    std::cout << " frag-load_cells-took=" << ts
-              << " add=" << ts_cells_add << " count=" << count 
-              << " avg=" << (count>0? ts/count : 0) << "\n";
+    size_t released = 0;      
+    if(!m_queue_load.empty())
+      return released; 
+    released += m_buffer->size;    
+    m_state = State::NONE;
+    cells_loaded = m_cells_count;
+    m_buffer = nullptr;
+    return released;
   }
 
   bool loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_state == State::CELLS_LOADED;
+    return m_state == State::LOADED;
   }
 
   bool errored() {
@@ -433,6 +414,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
   uint32_t        m_data_checksum;
+  std::atomic<size_t> cells_loaded;
 
   std::queue<std::function<void(int)>> m_queue_load;
   

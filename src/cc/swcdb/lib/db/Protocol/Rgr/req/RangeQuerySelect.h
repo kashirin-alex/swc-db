@@ -80,6 +80,8 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       rsp_params.err = e.code();
     }
     cb(req(), rsp_params);
+    
+    (void)ev;
   }
 
   private:

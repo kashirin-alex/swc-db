@@ -177,7 +177,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     auto req = std::make_shared<CompactScan>(
       shared_from_this(), range, cs_size, blk_size, blk_encoding, schema
     );
-    req->drop_caches = true;
     log->commit_new_fragment(true);
     log->get(req->fragments_old); // fragments for deletion at finalize-compaction 
 
@@ -204,6 +203,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         schema->col_type
       );
       spec = DB::Specs::Interval::make_ptr();
+      //drop_caches = true;
     }
 
     virtual ~CompactScan() { }
@@ -242,7 +242,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       //spec->key_start.set(last.key, Condition::GE);
       //spec->ts_start.set(last.timestamp, Condition::GT);
       spec->offset_key.copy(last.key);
-      spec->offset_rev = last.revision;
+      spec->offset_rev = last.timestamp;
 
       int err = Error::OK;
       write_cells(err);
