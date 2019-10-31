@@ -125,7 +125,8 @@ class Interval {
   }
 
   inline const bool consist(const Interval& other) const {
-    return is_in_begin(other.key_end) && is_in_end(other.key_begin);
+    return (other.key_end.empty()   || is_in_begin(other.key_end)) 
+        && (other.key_begin.empty() || is_in_end(other.key_begin));
   }
 
   inline const bool consist(const DB::Cell::Key& key) const {
