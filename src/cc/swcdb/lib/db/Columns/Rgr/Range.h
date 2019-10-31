@@ -219,12 +219,9 @@ class Range : public DB::RangeBase {
       }
       m_state = State::NOTLOADED;
     }
-    { 
-      std::lock_guard<std::mutex> lock(m_mutex);
-      while(!m_q_adding.empty()) 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      blocks.unload();
-    }  
+    
+    wait_queue();
+    blocks.unload();
 
     if(completely) // whether to keep ranger_data_file
       Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
@@ -233,6 +230,17 @@ class Range : public DB::RangeBase {
               cid, rid, err, Error::get_text(err));
     cb(err);
   }
+
+  void wait_queue() {
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_q_adding.empty())
+          break;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
   
   void remove(int &err) {
     wait();
@@ -240,13 +248,9 @@ class Range : public DB::RangeBase {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
     }
-    { 
-      std::lock_guard<std::mutex> lock(m_mutex);
-      while(!m_q_adding.empty()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      }
-      blocks.remove(err);
-    }
+
+    wait_queue();
+    blocks.remove(err);
 
     Env::FsInterface::interface()->rmdir(err, get_path(""));  
     
