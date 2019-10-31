@@ -30,11 +30,11 @@ int main() {
       interval.expand(cell);
 
       if(n == 0) {
-        expected_expanded.set_key_begin(cell.key);
+        expected_expanded.set_key_end(cell.key);
         expected_expanded.set_ts_earliest(DB::Specs::Timestamp(n, Condition::GE));
       }
       if(n == num_keys) {
-        expected_expanded.set_key_end(cell.key);
+        expected_expanded.set_key_begin(cell.key);
         expected_expanded.set_ts_latest(DB::Specs::Timestamp(n, Condition::LE));
       }
   }
