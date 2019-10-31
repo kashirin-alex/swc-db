@@ -184,9 +184,9 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   const std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
-    s.append(", rid=");
+    s.append(" rid=");
     s.append(std::to_string(rid));
-    s.append(", ");
+    s.append(" ");
     s.append(m_interval.to_string());
     return s;
   }
