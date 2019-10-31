@@ -248,7 +248,6 @@ class Range : public DB::RangeBase {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
     }
-
     wait_queue();
     blocks.remove(err);
 
