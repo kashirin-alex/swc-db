@@ -23,8 +23,7 @@ class Column : public std::enable_shared_from_this<Column> {
   public:
 
   Column(const int64_t cid) 
-        : cid(cid), m_ranges(std::make_shared<RangesMap>()), 
-          m_deleting(false) { 
+        : cid(cid), m_deleting(false) { 
   }
 
   void init(int &err) { }
@@ -36,8 +35,8 @@ class Column : public std::enable_shared_from_this<Column> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      auto it = m_ranges->find(rid);
-      if (it != m_ranges->end())
+      auto it = m_ranges.find(rid);
+      if (it != m_ranges.end())
         return it->second;
 
       else if(initialize) {
@@ -49,7 +48,7 @@ class Column : public std::enable_shared_from_this<Column> {
         if(err != Error::OK)
           return range;
         range = std::make_shared<Range>(cid, rid);
-        m_ranges->insert(RangesMapPair(rid, range));;
+        m_ranges.insert(RangesMapPair(rid, range));;
       }
     }
     return range;
@@ -59,10 +58,10 @@ class Column : public std::enable_shared_from_this<Column> {
     Range::Ptr range = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      auto it = m_ranges->find(rid);
-      if (it != m_ranges->end()){
+      auto it = m_ranges.find(rid);
+      if (it != m_ranges.end()){
         range = it->second;
-        m_ranges->erase(it);
+        m_ranges.erase(it);
       }
     }
     if(range != nullptr)
@@ -75,15 +74,15 @@ class Column : public std::enable_shared_from_this<Column> {
 
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex);
-      auto it = m_ranges->begin();
-      if(it == m_ranges->end())
+      auto it = m_ranges.begin();
+      if(it == m_ranges.end())
         break;
       unloaded++;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [cb, range=it->second](){range->unload(cb, false);}
       );
-      m_ranges->erase(it);
+      m_ranges.erase(it);
     }
 
     cb(Error::OK);
@@ -97,11 +96,11 @@ class Column : public std::enable_shared_from_this<Column> {
       
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex);
-      auto it = m_ranges->begin();
-      if(it == m_ranges->end())
+      auto it = m_ranges.begin();
+      if(it == m_ranges.end())
         break;
       it->second->remove(err);
-      m_ranges->erase(it);
+      m_ranges.erase(it);
     }
 
     HT_DEBUGF("REMOVED %s", to_string().c_str());
@@ -115,8 +114,8 @@ class Column : public std::enable_shared_from_this<Column> {
   Range::Ptr get_next(size_t &idx) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if(m_ranges->size() > idx){
-      auto it = m_ranges->begin();
+    if(m_ranges.size() > idx){
+      auto it = m_ranges.begin();
       for(int i=idx;i--;it++);
       return it->second;
     }
@@ -136,7 +135,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
     s.append(", ranges=(");
     
-    for(auto it = m_ranges->begin(); it != m_ranges->end(); ++it){
+    for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it){
       s.append(it->second->to_string());
       s.append(",");
     }
@@ -146,10 +145,10 @@ class Column : public std::enable_shared_from_this<Column> {
 
   private:
 
-  std::mutex                 m_mutex;
-  const int64_t              cid;
-  std::shared_ptr<RangesMap> m_ranges;
-  bool                       m_deleting;
+  std::mutex          m_mutex;
+  const int64_t       cid;
+  RangesMap           m_ranges;
+  bool                m_deleting;
 };
 typedef std::shared_ptr<Column> ColumnPtr;
 
