@@ -124,9 +124,9 @@ int main(int argc, char** argv) {
   SWC::DB::Cells::Interval intval_r;
   
   auto cellstores = std::make_shared<SWC::Files::CellStore::Readers>();
-  cellstores->push_back(std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r));
+  cellstores->add(std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r));
   auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(
-    cellstores, SWC::Files::CommitLog::Fragments::make(range));
+    cellstores.get(), SWC::Files::CommitLog::Fragments::make(range));
   std::atomic<int> requests = 110;
   size_t id = 0;
   for(int n=1;n<=20;n++) {
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
   std::cout << "cs-read-scan: OK\n";
 
 
-  cellstores->front()->remove(err);
+  cellstores->remove(err);
   hdlr_err(err);
 
   std::cout << "\n-   OK-read   -\n\n";

@@ -29,13 +29,10 @@ const int8_t VERSION=1;
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
+void write(SWC::DynamicBuffer &dst_buf, 
+           const CellStore::Readers::Ptr cellstores) {
 
-  size_t sz = Serialization::encoded_length_vi32(cellstores.size());
-  for(auto& cs : cellstores) {
-    sz += Serialization::encoded_length_vi32(cs->id)
-          + cs->interval.encoded_length();
-  }
+  size_t sz = cellstores->encoded_length();
   dst_buf.ensure(HEADER_SIZE+sz);
 
   Serialization::encode_i8(&dst_buf.ptr, VERSION);
@@ -47,12 +44,7 @@ void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
   Serialization::encode_i32(&dst_buf.ptr, 0);
 
   const uint8_t* start_data_ptr = dst_buf.ptr;
-
-  Serialization::encode_vi32(&dst_buf.ptr, cellstores.size());
-  for(auto& cs : cellstores){
-    Serialization::encode_vi32(&dst_buf.ptr, cs->id);
-    cs->interval.encode(&dst_buf.ptr);
-  }
+  cellstores->encode(&dst_buf.ptr);
 
   checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
@@ -61,10 +53,10 @@ void write(SWC::DynamicBuffer &dst_buf, const CellStore::Readers &cellstores){
 }
 
 void save(int &err, DB::RangeBase::Ptr range, 
-          CellStore::ReadersPtr &cellstores){
+          const CellStore::Readers::Ptr cellstores) {
 
   DynamicBuffer input;
-  write(input, *cellstores.get());
+  write(input, cellstores);
   StaticBuffer send_buf(input);
 
   Env::FsInterface::interface()->write(
@@ -80,18 +72,11 @@ void save(int &err, DB::RangeBase::Ptr range,
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, 
-          DB::RangeBase::Ptr range, CellStore::ReadersPtr &cellstores) {
+void read(const uint8_t **ptr, size_t* remain, DB::RangeBase::Ptr range, 
+          const CellStore::Readers::Ptr cellstores) {
+  
   const uint8_t *ptr_end = *ptr+*remain;
-    
-  uint32_t id;
-  uint32_t len = Serialization::decode_vi32(ptr, remain);
-  for(size_t i=0;i<len;i++) {
-    id = Serialization::decode_vi32(ptr, remain);
-    cellstores->push_back(
-      std::make_shared<CellStore::Read>(
-        id, range, DB::Cells::Interval(ptr, remain)));
-  }
+  cellstores->decode(ptr, remain, range);
 
   if(*ptr != ptr_end){
     HT_WARNF("decode overrun remain=%d", remain);
@@ -99,22 +84,8 @@ void read(const uint8_t **ptr, size_t* remain,
   }
 }
 
-void load_by_path(int &err, DB::RangeBase::Ptr range, 
-                  CellStore::ReadersPtr &cellstores){
-  FS::IdEntries_t entries;
-  Env::FsInterface::interface()->get_structured_ids(
-    err, range->get_path(DB::RangeBase::cellstores_dir), entries);
-  
-  for(auto id : entries){
-    cellstores->push_back(
-      std::make_shared<CellStore::Read>(id, range, DB::Cells::Interval())
-    );
-    std::cout << cellstores->back()->to_string() << "\n";
-  }
-}
-
 void load(int &err, DB::RangeBase::Ptr range, 
-          CellStore::ReadersPtr &cellstores){
+          const CellStore::Readers::Ptr cellstores){
 
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
     range->get_path(DB::RangeBase::range_data_file), 0);
@@ -180,17 +151,11 @@ void load(int &err, DB::RangeBase::Ptr range,
     Env::FsInterface::fs()->close(err, smartfd);
   
   if(err || cellstores->empty()) {
-    cellstores->clear();
     err = Error::OK;
-    load_by_path(err, range, cellstores);
-    if(!err && !cellstores->empty()) {
-      for(auto& cs: *cellstores.get()) {
-        cs->smartfd = FS::SmartFd::make_ptr(range->get_path_cs(cs->id), 0); 
-        cs->load_blocks_index(err, true);
-      }
-      // sort 
+    cellstores->load_from_path(err, range);
+    if(!err)
       save(err, range, cellstores);
-    }
+    std::cout << cellstores->to_string() << "\n";
   }
 }
 

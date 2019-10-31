@@ -13,7 +13,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
   public:
   typedef std::shared_ptr<IntervalBlocks> Ptr;
 
-  Files::CellStore::ReadersPtr      cellstores;
+  Files::CellStore::Readers::Ptr    cellstores;
   Files::CommitLog::Fragments::Ptr  commitlog;
 
 
@@ -77,18 +77,17 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
       }
 
       if(run) {
-        bool expected = false;
-        for(auto& cs : *blocks->cellstores.get()) {
-          if(!cs->interval.consist(cells_block->interval))
-            continue;
-          expected = true;
-          cs->load_cells(
-            cells_block, 
-            [ptr=shared_from_this()](int err) {
-              ptr->loaded_cellstores(err);
-            }
-          );
-        }
+        bool expected = blocks->cellstores->foreach(
+          cells_block->interval, 
+          [ptr=shared_from_this()](const Files::CellStore::Read::Ptr& cs){
+            cs->load_cells(
+              ptr->cells_block, 
+              [ptr](int err) {
+                ptr->loaded_cellstores(err);
+              }
+            );
+          }
+        );
         if(!expected) {
           int err = Error::OK;
           loaded_cellstores(err);
@@ -241,7 +240,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
 
   // scan >> blk match >> load-cs + load+logs 
 
-  IntervalBlocks(Files::CellStore::ReadersPtr cellstores,    
+  IntervalBlocks(Files::CellStore::Readers::Ptr cellstores,    
                  Files::CommitLog::Fragments::Ptr commitlog)
                 : cellstores(cellstores), commitlog(commitlog) {
   }
@@ -358,21 +357,21 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
   }
 
   size_t release(size_t bytes=0) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t released = 0;
-    
-    // released += cellstores->release(bytes);
+    size_t released = cellstores->release(bytes);
     if(bytes && released >= bytes)
       return released;
-    // released += commitlog->release(bytes);
+    
+    released += commitlog->release(bytes);
     if(bytes && released >= bytes)
       return released;
 
+    std::lock_guard<std::mutex> lock(m_mutex);
     for(auto blk : m_blocks) {
       released += blk->release();
       if(bytes && released >= bytes)
         return released;
     }
+
     return released;
   }
 
@@ -393,28 +392,21 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
   private:
   
   void init(int& err) {
-    DB::SchemaPtr schema = Env::Schemas::get()->get(commitlog->range->cid);
-
-    for(auto& cs : *cellstores.get()) {
-      if(cs->blocks.empty()) {
-        cs->load_blocks_index(err, true);
-        if(err) {
-          m_blocks.clear();
-          return;
-        }
-      }
-
-      for(auto& blk : cs->blocks) {
-        //std::cout << "m_blocks.push_back " << blk->to_string() << "\n";
-        m_blocks.push_back(
-          std::make_shared<Block>(
-            std::make_shared<Files::CellsBlock>(blk->interval, schema), 
-            shared_from_this()
-          )
-        );
-      }
+    std::vector<Files::CellStore::Block::Read::Ptr> blocks;
+    cellstores->get_blocks(err, blocks);
+    if(err) {
+      m_blocks.clear();
+      return;
     }
-
+    DB::SchemaPtr schema = Env::Schemas::get()->get(commitlog->range->cid);
+    for(auto& blk : blocks) {
+      m_blocks.push_back(
+        std::make_shared<Block>(
+          std::make_shared<Files::CellsBlock>(blk->interval, schema), 
+          shared_from_this()
+        )
+      );
+    }
     if(commitlog->range->is_any_begin())
       m_blocks.front()->cells_block->interval.key_begin.free();
     if(commitlog->range->is_any_end()) 

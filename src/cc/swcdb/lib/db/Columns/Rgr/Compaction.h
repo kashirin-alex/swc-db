@@ -125,37 +125,23 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     bool do_compaction = log_sz >= cs_size + allowed_sz_cs;
 
     std::string info_log;
-    size_t cs_total_sz = 0;
-    uint32_t blk_total_count = 0;
 
     if(!do_compaction) {
       info_log.append(" blk-avg=");
-      size_t   sz;
-      uint32_t blk_count;
-      uint32_t cs_sz    = cs_size  + allowed_sz_cs;
-      uint32_t blk_sz   = blk_size + allowed_sz_blk;
 
-      Files::CellStore::Readers cellstores;
-      range->get_cellstores(cellstores);
-      for(auto& cs : cellstores) {
-        sz = cs->size_bytes();
-        if(!sz)
-          continue;
-        cs_total_sz += sz;
-        blk_count = cs->blocks_count();
-        blk_total_count += blk_count;
-        
-        if(sz >= cs_sz || sz/blk_count >= blk_sz) { //or by max_blk_sz
-          do_compaction = true;
-          break;
-        }
-      }
+      do_compaction = range->cellstores->need_compaction(
+        cs_size  + allowed_sz_cs, blk_size + allowed_sz_blk);
+
+     uint32_t blk_total_count = range->cellstores->blocks_count();
       info_log.append(std::to_string(
-        blk_total_count? (cs_total_sz/blk_total_count)/1000000 : 0));
+        blk_total_count? 
+        (range->cellstores->size_bytes()/blk_total_count)/1000000 
+        : 0)
+      );
       info_log.append("MB");
       
       info_log.append(" cs-count=");
-      info_log.append(std::to_string(cellstores.size()));
+      info_log.append(std::to_string(range->cellstores->size()));
     }
     
     HT_INFOF(

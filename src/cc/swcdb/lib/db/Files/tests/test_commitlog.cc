@@ -129,9 +129,9 @@ int main(int argc, char** argv) {
   auto log = SWC::Files::CommitLog::Fragments::make(range);
   log->load(err);
   auto cellstores = std::make_shared<Files::CellStore::Readers>();
-  cellstores->push_back(
+  cellstores->add(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
-  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(cellstores, log);
+  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(cellstores.get(), log);
 
 
   int num_chks = 10;
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
         std::cout << " chk=" << i ;
         std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
         std::cout << req->to_string() << "\n";
-        std::cout << cellstores->front()->to_string() << "\n";
+        std::cout << cellstores->to_string() << "\n";
         chk--;
       };
     blocks->scan(req);
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
       std::cout << " chk=" << i ;
       std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
       std::cout << req->to_string() << "\n";
-      std::cout << cellstores->front()->to_string() << "\n";
+      std::cout << cellstores->to_string() << "\n";
       chk--;
     };
     blocks->scan(req);
