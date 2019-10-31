@@ -33,7 +33,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     OK
   };
 
-  Columns() : m_columns(std::make_shared<ColumnsMap>()), m_state(State::OK) {}
+  Columns() : m_state(State::OK) {}
 
   virtual ~Columns(){}
 
@@ -42,13 +42,13 @@ class Columns : public std::enable_shared_from_this<Columns> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      auto it = m_columns->find(cid);
-      if (it != m_columns->end())
+      auto it = m_columns.find(cid);
+      if (it != m_columns.end())
         col = it->second;
         
       else if(initialize && !Env::RgrData::is_shuttingdown()) {
         col = std::make_shared<Column>(cid);
-        m_columns->insert(ColumnsMapPair(cid, col));
+        m_columns.insert(ColumnsMapPair(cid, col));
       }
     }
 
@@ -64,8 +64,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
   ColumnPtr get_next(size_t& idx) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if(m_columns->size() > idx){
-      auto it = m_columns->begin();
+    if(m_columns.size() > idx){
+      auto it = m_columns.begin();
       for(int i=idx;i--;it++);
       return it->second;
     }
@@ -131,14 +131,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex);
-      auto it = m_columns->begin();
-      if(it == m_columns->end())
+      auto it = m_columns.begin();
+      if(it == m_columns.end())
         break;
       if(validation)
         HT_WARNF("Unload-Validation cid=%d remained", it->first);
       unloaded++;
       it->second->unload_all(unloaded, cb);
-      m_columns->erase(it);
+      m_columns.erase(it);
     }
 
     if(unloaded > 0) 
@@ -151,9 +151,9 @@ class Columns : public std::enable_shared_from_this<Columns> {
       col->remove_all(err);
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_columns->find(cid);
-        if (it != m_columns->end()) 
-          m_columns->erase(it);
+        auto it = m_columns.find(cid);
+        if (it != m_columns.end()) 
+          m_columns.erase(it);
       }
     }
     cb(err);
@@ -163,7 +163,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("columns=(");
-    for(auto it = m_columns->begin(); it != m_columns->end(); ++it){
+    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
       s.append(it->second->to_string());
       s.append(",");
     }
@@ -172,9 +172,9 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   private:
-  std::mutex                  m_mutex;
-  std::shared_ptr<ColumnsMap> m_columns;
-  State                       m_state;
+  std::mutex     m_mutex;
+  ColumnsMap     m_columns;
+  State          m_state;
 
 };
 typedef std::shared_ptr<Columns> ColumnsPtr;

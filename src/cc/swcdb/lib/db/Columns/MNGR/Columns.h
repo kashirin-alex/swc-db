@@ -30,11 +30,11 @@ class Columns : public std::enable_shared_from_this<Columns> {
       err, Range::get_column_path(), entries);
   }
 
-  Columns() : m_columns(std::make_shared<ColumnsMap>()) {}
+  Columns()  {}
 
   void reset() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_columns = std::make_shared<ColumnsMap>();
+    m_columns.clear();
   }
 
   virtual ~Columns(){}
@@ -44,12 +44,12 @@ class Columns : public std::enable_shared_from_this<Columns> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      auto it = m_columns->find(cid);
-      if (it != m_columns->end())
+      auto it = m_columns.find(cid);
+      if (it != m_columns.end())
         return false;
 
       col = std::make_shared<Column>(cid);
-      m_columns->insert(ColumnsMapPair(cid, col));
+      m_columns.insert(ColumnsMapPair(cid, col));
     }
 
     col->init(err);
@@ -61,13 +61,13 @@ class Columns : public std::enable_shared_from_this<Columns> {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      auto it = m_columns->find(cid);
-      if (it != m_columns->end())
+      auto it = m_columns.find(cid);
+      if (it != m_columns.end())
         return it->second;
         
       else if(initialize) {
         col = std::make_shared<Column>(cid);
-        m_columns->insert(ColumnsMapPair(cid, col));
+        m_columns.insert(ColumnsMapPair(cid, col));
       }
     }
     if(initialize) 
@@ -89,7 +89,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     Range::Ptr range = nullptr;
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto it = m_columns->begin(); it != m_columns->end(); ++it){
+    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
       range = it->second->get_next_unassigned();
       if(range != nullptr)
         break;
@@ -100,14 +100,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
   void set_rgr_unassigned(uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
+    for(auto it = m_columns.begin(); it != m_columns.end(); ++it)
       it->second->set_rgr_unassigned(id);
   }
 
   void change_rgr(uint64_t id_old, uint64_t id) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto it = m_columns->begin(); it != m_columns->end(); ++it)
+    for(auto it = m_columns.begin(); it != m_columns.end(); ++it)
       it->second->change_rgr(id_old, id);
   }
   
@@ -115,23 +115,23 @@ class Columns : public std::enable_shared_from_this<Columns> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     int64_t cid = 0;
-    while(m_columns->find(++cid) != m_columns->end());
+    while(m_columns.find(++cid) != m_columns.end());
     return cid;
   }
 
   void remove(int &err, const int64_t cid) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_columns->find(cid);
-    if (it != m_columns->end())
-      m_columns->erase(it);
+    auto it = m_columns.find(cid);
+    if (it != m_columns.end())
+      m_columns.erase(it);
   }
 
   const std::string to_string() {
     std::string s("ColumnsAssignment:");
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto it = m_columns->begin(); it != m_columns->end(); ++it){
+    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
       s.append("\n ");
       s.append(it->second->to_string());
     }
@@ -139,8 +139,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   private:
-  std::mutex                  m_mutex;
-  std::shared_ptr<ColumnsMap> m_columns;
+  std::mutex    m_mutex;
+  ColumnsMap    m_columns;
 
 };
 typedef std::shared_ptr<Columns> ColumnsPtr;
