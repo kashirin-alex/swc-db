@@ -125,13 +125,12 @@ int main(int argc, char** argv) {
   commit_log->load(err); // initial range loaded state
   std::cout << "loaded: \n" << commit_log->to_string() << "\n";
 
-
-  auto log = SWC::Files::CommitLog::Fragments::make(range);
-  log->load(err);
-  auto cellstores = std::make_shared<Files::CellStore::Readers>();
-  cellstores->add(
+  SWC::server::Rgr::IntervalBlocks blocks;
+  blocks.init(range);
+  blocks.load(err);
+  blocks.cellstores->add(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
-  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(cellstores.get(), log);
+
 
 
   int num_chks = 10;
@@ -143,14 +142,14 @@ int main(int argc, char** argv) {
     req->spec = SWC::DB::Specs::Interval::make_ptr();
     req->spec->flags.limit = 2;
     
-    req->cb = [cellstores, req, &chk, i](int err){
+    req->cb = [req, &chk, i, cellstores = blocks.cellstores](int err){
         std::cout << " chk=" << i ;
         std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
         std::cout << req->to_string() << "\n";
         std::cout << cellstores->to_string() << "\n";
         chk--;
       };
-    blocks->scan(req);
+    blocks.scan(req);
   }
 
   while(chk > 0)
@@ -166,14 +165,14 @@ int main(int argc, char** argv) {
     req->spec->flags.limit = 2;
     req->cells = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
     
-    req->cb = [cellstores, req, &chk, i](int err){
+    req->cb = [req, &chk, i, cellstores = blocks.cellstores](int err){
       std::cout << " chk=" << i ;
       std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
       std::cout << req->to_string() << "\n";
       std::cout << cellstores->to_string() << "\n";
       chk--;
     };
-    blocks->scan(req);
+    blocks.scan(req);
   }
   
   while(chk > 0)
@@ -190,7 +189,7 @@ int main(int argc, char** argv) {
   }
   std::cerr << " OK\n";
 
-  size_t counted = blocks->cells_count();
+  size_t counted = blocks.cells_count();
 
   std::cout << " cs counted=" << counted;
   if(schema->cell_versions*num_cells != counted) {
@@ -201,13 +200,13 @@ int main(int argc, char** argv) {
   
 
 
-  std::cout << "BEFORE(split): \n" << blocks->to_string() << "\n";
+  std::cout << "BEFORE(split): \n" << blocks.to_string() << "\n";
 
-  blocks->split(); // result the same -- split happened at State::LOADED
+  blocks.split(); // result the same -- split happened at State::LOADED
 
-  std::cout << "AFTER(split): \n" << blocks->to_string() << "\n";
+  std::cout << "AFTER(split): \n" << blocks.to_string() << "\n";
 
-  counted = blocks->cells_count();
+  counted = blocks.cells_count();
 
   std::cout << " cs counted=" << counted;
   if(schema->cell_versions*num_cells != counted) {
@@ -216,7 +215,7 @@ int main(int argc, char** argv) {
   }
   std::cerr << "\n OK\n";
 
-  std::cerr << "blocks->add_logged: \n";
+  std::cerr << "blocks.add_logged: \n";
 
   int added_num = 1000000;
   DB::Cells::Cell cell;
@@ -246,13 +245,13 @@ int main(int argc, char** argv) {
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
 
-        blocks->add_logged(cell);
+        blocks.add_logged(cell);
     }
   }
 
-  std::cout << "AFTER(add_logged): \n" << blocks->to_string() << "\n";
+  std::cout << "AFTER(add_logged): \n" << blocks.to_string() << "\n";
 
-  counted = blocks->cells_count();
+  counted = blocks.cells_count();
 
   std::cout << " cs counted=" << counted;
   if(schema->cell_versions*(num_cells+added_num) != counted) {

@@ -52,8 +52,7 @@ void write(SWC::DynamicBuffer &dst_buf,
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, DB::RangeBase::Ptr range, 
-          const CellStore::Readers::Ptr cellstores) {
+void save(int& err, const CellStore::Readers::Ptr cellstores) {
 
   DynamicBuffer input;
   write(input, cellstores);
@@ -62,7 +61,7 @@ void save(int &err, DB::RangeBase::Ptr range,
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      range->get_path(DB::RangeBase::range_data_file), 
+      cellstores->range->get_path(DB::RangeBase::range_data_file), 
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ), 
     -1, -1, 
@@ -72,11 +71,11 @@ void save(int &err, DB::RangeBase::Ptr range,
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, DB::RangeBase::Ptr range, 
+void read(const uint8_t **ptr, size_t* remain, 
           const CellStore::Readers::Ptr cellstores) {
   
   const uint8_t *ptr_end = *ptr+*remain;
-  cellstores->decode(ptr, remain, range);
+  cellstores->decode(ptr, remain);
 
   if(*ptr != ptr_end){
     HT_WARNF("decode overrun remain=%d", remain);
@@ -84,11 +83,10 @@ void read(const uint8_t **ptr, size_t* remain, DB::RangeBase::Ptr range,
   }
 }
 
-void load(int &err, DB::RangeBase::Ptr range, 
-          const CellStore::Readers::Ptr cellstores){
+void load(int& err, const CellStore::Readers::Ptr cellstores){
 
   FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
-    range->get_path(DB::RangeBase::range_data_file), 0);
+    cellstores->range->get_path(DB::RangeBase::range_data_file), 0);
 
   for(;;) {
     err = Error::OK;
@@ -143,7 +141,7 @@ void load(int &err, DB::RangeBase::Ptr range,
     if(!checksum_i32_chk(chksum_data, ptr, sz))
       break;
     
-    read(&ptr, &sz, range, cellstores);
+    read(&ptr, &sz, cellstores);
     break;
   } 
 
@@ -152,9 +150,9 @@ void load(int &err, DB::RangeBase::Ptr range,
   
   if(err || cellstores->empty()) {
     err = Error::OK;
-    cellstores->load_from_path(err, range);
+    cellstores->load_from_path(err);
     if(!err)
-      save(err, range, cellstores);
+      save(err, cellstores);
     std::cout << cellstores->to_string() << "\n";
   }
 }

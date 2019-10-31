@@ -9,17 +9,19 @@
 
 namespace SWC { namespace server { namespace Rgr {
 
-class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
+class IntervalBlocks {
   public:
-  typedef std::shared_ptr<IntervalBlocks> Ptr;
+  typedef IntervalBlocks* Ptr;
 
-  Files::CellStore::Readers::Ptr    cellstores;
+
+  DB::RangeBase::Ptr                range;
   Files::CommitLog::Fragments::Ptr  commitlog;
+  Files::CellStore::Readers::Ptr    cellstores;
 
 
-  class Block : public std::enable_shared_from_this<Block> {
+  class Block {
     public:
-    typedef std::shared_ptr<Block> Ptr;
+    typedef Block* Ptr;
 
     enum State {
       NONE,
@@ -29,13 +31,26 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
 
     Files::CellsBlock::Ptr    cells_block;   
     IntervalBlocks::Ptr       blocks;
-        
+    
+    inline static Ptr make(Files::CellsBlock::Ptr cells_block, 
+                           IntervalBlocks::Ptr blocks,
+                           State state=State::NONE) {
+      return new Block(cells_block, blocks, state);
+    }
+
     Block(Files::CellsBlock::Ptr cells_block, IntervalBlocks::Ptr blocks,
           State state=State::NONE)
           : cells_block(cells_block), blocks(blocks), m_state(state) {
     }
+    
+    Ptr ptr() {
+      return this;
+    }
 
-    virtual ~Block() {}
+    virtual ~Block() {
+      std::cout << " IntervalBlocks::~Block\n";
+      delete cells_block;
+    }
 
     bool loaded() {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -70,7 +85,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         
-        m_queue.push(new Callback(req, shared_from_this()));
+        m_queue.push(new Callback(req, ptr()));
 
         if((run = state == Block::State::NONE))
           m_state = Block::State::LOADING;
@@ -79,7 +94,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
       if(run) {
         bool expected = blocks->cellstores->foreach(
           cells_block->interval, 
-          [ptr=shared_from_this()](const Files::CellStore::Read::Ptr& cs){
+          [ptr=ptr()](const Files::CellStore::Read::Ptr& cs){
             cs->load_cells(
               ptr->cells_block, 
               [ptr](int err) {
@@ -104,15 +119,14 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
       
       blocks->commitlog->load_cells(
         cells_block,
-        [ptr=shared_from_this()](int err){
+        [ptr=ptr()](int err){
           ptr->loaded_logs(err);
         }
       );
     }
 
     void loaded_logs(int& err) {
-      //std::cout << " IntervalBlock::loaded_logs\n";
-      blocks->split(this);
+      blocks->split(ptr());
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_state = Block::State::LOADED;
@@ -145,10 +159,10 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
       //std::cout << " IntervalBlock::split(THIS)\n";
       std::lock_guard<std::mutex> lock(m_mutex);
 
-      Ptr blk = std::make_shared<Block>(
-        std::make_shared<Files::CellsBlock>(
+      Ptr blk = Block::make(
+        Files::CellsBlock::make(
           DB::Cells::Interval(), 
-          Env::Schemas::get()->get(blocks->commitlog->range->cid)
+          Env::Schemas::get()->get(blocks->range->cid)
         ), 
         blocks,
         Block::State::LOADED
@@ -226,7 +240,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
         if(req->reached_limits()) {
           req->response(err);
         } else {
-          ptr->blocks->scan(req, ptr.get()); 
+          ptr->blocks->scan(req, ptr); 
         }
       }
     };
@@ -240,23 +254,68 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
 
   // scan >> blk match >> load-cs + load+logs 
 
-  IntervalBlocks(Files::CellStore::Readers::Ptr cellstores,    
-                 Files::CommitLog::Fragments::Ptr commitlog)
-                : cellstores(cellstores), commitlog(commitlog) {
+  IntervalBlocks(): commitlog(nullptr), cellstores(nullptr) {
   }
   
-  virtual ~IntervalBlocks(){
+  void init(DB::RangeBase::Ptr for_range) {
+    range       = for_range;
+    commitlog   = Files::CommitLog::Fragments::make(range);
+    cellstores  = Files::CellStore::Readers::make(range);
   }
- 
-  void stop() {
+
+  Ptr ptr() {
+    return this;
+  }
+
+  virtual ~IntervalBlocks(){
+    //std::cout << " ~IntervalBlocks\n";
+    free();
+  }
+  
+  void load(int& err) {
+    commitlog->load(err);
+  }
+
+  void unload() {
+    stop();
     std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(commitlog != nullptr) 
+      commitlog->commit_new_fragment(true);
+    free();
+  }
+  
+  void remove(int& err) {
+    stop();
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(commitlog != nullptr) 
+      commitlog->remove(err);
+    if(cellstores != nullptr)
+      cellstores->remove(err);  
+    free();
+  }
+
+  void stop() {
     int err = Error::RS_NOT_READY;
-    for(auto& blk : m_blocks)
-      blk->run_queue(err);
+    std::vector<Block::Ptr>::iterator it;
+    bool started=false;
+    for(;;){
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(!started) {
+          it = m_blocks.begin();
+          started = true;
+        }
+        if(it == m_blocks.end())
+          break;
+          
+      }
+      (*it++)->run_queue(err);
+    }
   }
   
   void add_logged(const DB::Cells::Cell& cell) {
-
     commitlog->add(cell);
     
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -270,7 +329,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
 
   }
 
-  void scan(DB::Cells::ReqScan::Ptr req, Block* blk_ptr = nullptr) {
+  void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
     //std::cout << "IntervalBlocks::scan "<<  to_string() << " " << req->to_string() << "\n";
     int err = Error::OK;
     {
@@ -279,7 +338,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
         err = Error::RS_NOT_LOADED_RANGE;
 
       else if(m_blocks.empty()) 
-        init(err);
+        init_blocks(err);
     }
     if(err) {
       req->response(err);
@@ -298,7 +357,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
 
         for(auto& eval : m_blocks) {
           if(!flw && blk_ptr != nullptr) {
-            if(blk_ptr == eval.get())
+            if(blk_ptr == eval)
               flw = true;
             continue;
           }
@@ -306,7 +365,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
               || eval->cells_block->interval.is_in_end(req->spec->offset_key))
              && eval->cells_block->interval.includes(req->spec)) {
             blk = eval;
-            blk_ptr = eval.get();
+            blk_ptr = eval;
             break;
           }
         }
@@ -349,7 +408,7 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto idx = 0; idx<m_blocks.size(); idx++) {
-      if(ptr == m_blocks[idx].get()) {
+      if(ptr == m_blocks[idx]) {
         split(idx);
         return;
       }
@@ -385,31 +444,56 @@ class IntervalBlocks : public std::enable_shared_from_this<IntervalBlocks> {
         s.append(blk->to_string());
        s.append(", ");
     }
-    s.append("])");
+    s.append("] ");
+    if(commitlog != nullptr)
+      s.append(commitlog->to_string());
+    s.append(" ");
+    if(cellstores != nullptr)
+      s.append(cellstores->to_string());
+    s.append(")");
     return s;
   } 
 
   private:
   
-  void init(int& err) {
+  void free() {
+    if(cellstores != nullptr) {
+      delete cellstores;
+      cellstores = nullptr;
+    }
+    if(commitlog != nullptr) {
+      delete commitlog;
+      commitlog = nullptr;
+    }
+    range = nullptr;
+    
+    for(auto & blk : m_blocks) 
+      delete blk;
+    m_blocks.clear();
+  }
+
+  void init_blocks(int& err) {
     std::vector<Files::CellStore::Block::Read::Ptr> blocks;
     cellstores->get_blocks(err, blocks);
     if(err) {
+      for(auto& blk : m_blocks) 
+        delete blk;
       m_blocks.clear();
       return;
     }
-    DB::SchemaPtr schema = Env::Schemas::get()->get(commitlog->range->cid);
+
+    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
     for(auto& blk : blocks) {
       m_blocks.push_back(
-        std::make_shared<Block>(
-          std::make_shared<Files::CellsBlock>(blk->interval, schema), 
-          shared_from_this()
+        Block::make(
+          Files::CellsBlock::make(blk->interval, schema), 
+          ptr()
         )
       );
     }
-    if(commitlog->range->is_any_begin())
+    if(range->is_any_begin())
       m_blocks.front()->cells_block->interval.key_begin.free();
-    if(commitlog->range->is_any_end()) 
+    if(range->is_any_end()) 
       m_blocks.back()->cells_block->interval.key_end.free();
   }
 

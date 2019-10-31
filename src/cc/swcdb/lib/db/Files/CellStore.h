@@ -33,9 +33,9 @@ static const int8_t   VERSION=1;
 
 
 
-class Read : public std::enable_shared_from_this<Read> {
+class Read  {
   public:
-  typedef std::shared_ptr<Read>   Ptr;
+  typedef Read*  Ptr;
 
   enum State {
     BLKS_IDX_NONE,
@@ -44,20 +44,31 @@ class Read : public std::enable_shared_from_this<Read> {
   };
 
   const uint32_t                id;
-  const DB::RangeBase::Ptr      range;
-  DB::Cells::Interval           interval;
   FS::SmartFdPtr                smartfd;
+  DB::Cells::Interval           interval;
   std::vector<Block::Read::Ptr> blocks;
   std::atomic<State>            state;
+  
+  inline static Ptr make(const uint32_t id, const DB::RangeBase::Ptr& range, 
+                         const DB::Cells::Interval& interval) {
+    return new Read(id, range, interval);
+  }
 
   Read(const uint32_t id, const DB::RangeBase::Ptr& range, 
        const DB::Cells::Interval& interval) 
-      : id(id), range(range), interval(interval),
+      : id(id), 
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        state(State::BLKS_IDX_NONE) {   
+        interval(interval), state(State::BLKS_IDX_NONE) {   
   }
 
-  virtual ~Read(){}
+  Ptr ptr() {
+    return this;
+  }
+
+  virtual ~Read(){
+    //std::cout << " ~CellStore::Read\n";
+    free();
+  }
 
   State load_blocks_index(int& err, bool close_after=false) {
     {
@@ -93,7 +104,7 @@ class Read : public std::enable_shared_from_this<Read> {
       if(applied == State::BLKS_IDX_LOADING) {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_blocks_q.push(
-          [cells_block, cb, ptr=shared_from_this()](){
+          [cells_block, cb, ptr=ptr()](){
             ptr->load_cells(cells_block, cb);
           }
         );
@@ -157,7 +168,7 @@ class Read : public std::enable_shared_from_this<Read> {
     }
     
     asio::post(*Env::IoCtx::io()->ptr(), 
-      [ptr=shared_from_this()](){
+      [ptr=ptr()](){
         ptr->_run_queued();
       }
     );
@@ -165,7 +176,6 @@ class Read : public std::enable_shared_from_this<Read> {
 
   size_t release(size_t bytes) {    
     size_t released = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if(state != State::BLKS_IDX_LOADED)
       return released;
@@ -186,8 +196,8 @@ class Read : public std::enable_shared_from_this<Read> {
   }
 
   void remove(int &err) {
-    std::lock_guard<std::mutex> lock(m_mutex);
     Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
+    free();
   }
 
   const size_t size_bytes() {
@@ -226,11 +236,20 @@ class Read : public std::enable_shared_from_this<Read> {
         s.append(blk->to_string());
        s.append(", ");
     }
-    s.append("])");
+    s.append("]");
+    s.append(" queue=");
+    s.append(std::to_string(m_blocks_q.size()));
+    s.append(")");
     return s;
   } 
 
   private:
+
+  void free() {
+    for(auto& blk : blocks)
+      delete blk;
+    blocks.clear();
+  }
 
   bool load_trailer(int& err, size_t& blks_idx_size, 
                               size_t& blks_idx_offset, 
@@ -292,7 +311,7 @@ class Read : public std::enable_shared_from_this<Read> {
 
   void _load_blocks_index(int& err, bool close_after=false) {
     //std::cout << "cs::_load_blocks_index 1 \n";
-    blocks.clear();
+    free();
 
     size_t length = 0;
     size_t offset = 0;
@@ -355,7 +374,7 @@ class Read : public std::enable_shared_from_this<Read> {
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
-      blk = std::make_shared<Block::Read>(
+      blk = Block::Read::make(
         offset, 
         DB::Cells::Interval(&ptr, &remain)
       );  
@@ -456,12 +475,19 @@ class Read : public std::enable_shared_from_this<Read> {
 class Readers {
   public:
   typedef Readers*  Ptr;
-  
-  static Ptr make_ptr() { return new Readers(); }
 
-  Readers() {}
+  inline static Ptr make(const DB::RangeBase::Ptr& range) { 
+    return new Readers(range); 
+  }
 
-  virtual ~Readers() {}
+  DB::RangeBase::Ptr range;
+
+  Readers(const DB::RangeBase::Ptr& range): range(range) {}
+
+  virtual ~Readers() {
+    //std::cout << " ~CellStore::Readers\n";
+    free();
+  }
 
   void add(Read::Ptr cs) {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -504,17 +530,20 @@ class Readers {
     size_t released = 0;
     return released;
   }
-  
+
   void clear() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_cellstores.clear();
+    int err = Error::OK;
+    for(auto& cs : m_cellstores)
+      cs->close(err);
+    free();
   }
   
   void remove(int &err) {
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& cs : m_cellstores)
       cs->remove(err);
-    m_cellstores.clear();
+    free();
   }
   
   template <class P>
@@ -596,39 +625,41 @@ class Readers {
     }
   }
 
-  void decode(const uint8_t** ptr, size_t* remain, 
-              const DB::RangeBase::Ptr& range) {
+  void decode(const uint8_t** ptr, size_t* remain) {
     std::lock_guard<std::mutex> lock(m_mutex);
-
     uint32_t id;
     uint32_t len = Serialization::decode_vi32(ptr, remain);
     for(size_t i=0;i<len;i++) {
       id = Serialization::decode_vi32(ptr, remain);
       m_cellstores.push_back(
-        std::make_shared<Read>(
-          id, range, DB::Cells::Interval(ptr, remain)));
+        Read::make(id, range, DB::Cells::Interval(ptr, remain)));
     }
   }
   
 
-  void load_from_path(int &err, DB::RangeBase::Ptr range){
+  void load_from_path(int &err){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     FS::IdEntries_t entries;
     Env::FsInterface::interface()->get_structured_ids(
       err, range->get_path(DB::RangeBase::cellstores_dir), entries);
   
-    m_cellstores.clear();
+    free();
     for(auto id : entries){
-      m_cellstores.push_back(
-        std::make_shared<Read>(id, range, DB::Cells::Interval())
-      );
+      m_cellstores.push_back(Read::make(id, range, DB::Cells::Interval()));
     }
 
     //sorted
   }
 
   private:
+  
+  void free() {
+    for(auto& cs : m_cellstores)
+      delete cs;
+    m_cellstores.clear();
+  }
+
   std::mutex             m_mutex;
   std::vector<Read::Ptr> m_cellstores;
 };
@@ -848,7 +879,7 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      Read::Ptr cs = std::make_shared<Read>(1, range, interval);
+      Read::Ptr cs = Read::make(1, range, interval);
       cs->load_blocks_index(err, true);
       if(!err)
         return cs;

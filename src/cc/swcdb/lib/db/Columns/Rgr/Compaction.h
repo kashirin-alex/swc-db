@@ -107,7 +107,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       return compacted(range);
 
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
-    Files::CommitLog::Fragments::Ptr  log = range->get_log();
+    Files::CommitLog::Fragments::Ptr log = range->blocks.commitlog;
 
     uint32_t cs_size = cfg_cs_sz->get(); 
     uint32_t blk_size = schema->blk_size ? 
@@ -128,20 +128,20 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     if(!do_compaction) {
       info_log.append(" blk-avg=");
-
-      do_compaction = range->cellstores->need_compaction(
+      auto cellstores = range->blocks.cellstores;
+      do_compaction = cellstores->need_compaction(
         cs_size  + allowed_sz_cs, blk_size + allowed_sz_blk);
 
-     uint32_t blk_total_count = range->cellstores->blocks_count();
+     uint32_t blk_total_count = cellstores->blocks_count();
       info_log.append(std::to_string(
         blk_total_count? 
-        (range->cellstores->size_bytes()/blk_total_count)/1000000 
+        (cellstores->size_bytes()/blk_total_count)/1000000 
         : 0)
       );
       info_log.append("MB");
       
       info_log.append(" cs-count=");
-      info_log.append(std::to_string(range->cellstores->size()));
+      info_log.append(std::to_string(cellstores->size()));
     }
     
     HT_INFOF(

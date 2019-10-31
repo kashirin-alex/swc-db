@@ -12,7 +12,7 @@
 namespace SWC { namespace Files { namespace CommitLog {
 
 
-class Fragments: public std::enable_shared_from_this<Fragments> {
+class Fragments {
   
   /* file-format(dir-structure): 
     ../log/{N}.frag
@@ -20,10 +20,10 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
   public:
 
-  typedef std::shared_ptr<Fragments>  Ptr;
+  typedef Fragments*  Ptr;
 
   inline static Ptr make(const DB::RangeBase::Ptr& range){
-    return std::make_shared<Fragments>(range);
+    return new Fragments(range);
   }
 
   const DB::RangeBase::Ptr range;
@@ -36,7 +36,6 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
                 "swc.rgr.Range.block.encoding")) {
     
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
-
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
     m_cells = DB::Cells::Mutable::make(
@@ -45,10 +44,16 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
       schema->cell_ttl, 
       schema->col_type
     );
-
   }
 
-  virtual ~Fragments(){}
+  Ptr ptr() {
+    return this;
+  }
+
+  virtual ~Fragments() {
+    //std::cout << " ~CommitLog::Fragments\n";
+    free();
+  }
 
   void add(const DB::Cells::Cell& cell) {
     m_cells->add(cell);
@@ -57,7 +62,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     if(!m_deleting && !m_commiting && m_cells->size_bytes() >= m_size_commit) {
       m_commiting = true;
       asio::post(*Env::IoCtx::io()->ptr(), 
-        [ptr=shared_from_this()](){
+        [ptr=ptr()](){
           ptr->commit_new_fragment();
         }
       );
@@ -103,7 +108,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         break;
 
       for(;;) {
-        frag = std::make_shared<Fragment>(get_log_fragment(Time::now_ns()));
+        frag = Fragment::make(get_log_fragment(Time::now_ns()));
         frag->write(
           err, 
           schema->blk_replication, 
@@ -161,8 +166,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
     Fragment::Ptr frag;
     for(auto entry : fragments) {
-      frag = std::make_shared<Fragment>(
-        get_log_fragment(entry.name));
+      frag = Fragment::make(get_log_fragment(entry.name));
       frag->load_header(true);
       m_fragments.push_back(frag);
     }
@@ -197,7 +201,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     }
 
     AwaitingLoad::Ptr state = std::make_shared<AwaitingLoad>(
-      fragments.size(), cells_block, cb, shared_from_this());
+      fragments.size(), cells_block, cb, ptr());
     for(auto& frag : fragments) 
       frag->load([frag, state](int err){ state->processed(err, frag); });
   }
@@ -231,6 +235,7 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
         == fragments_old.end())
         continue;
       (*it)->remove(err);
+      delete *it;
       m_fragments.erase(it);
     }
   }
@@ -248,9 +253,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_fragments.clear();
+      free();
     }
-    
     m_cells->free();
   }
 
@@ -260,8 +264,8 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
   }
 
   size_t cells_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
     size_t count = m_cells->size();
+    std::lock_guard<std::mutex> lock(m_mutex);
     for(auto frag : m_fragments)
       count += frag->cells_count();
     return count;
@@ -305,6 +309,12 @@ class Fragments: public std::enable_shared_from_this<Fragments> {
 
   private:
   
+  void free() {  
+    for(auto frag : m_fragments)
+      delete frag;
+    m_fragments.clear();
+  }
+
   struct AwaitingLoad {
     public:
     typedef std::function<void(int)>      Cb_t;

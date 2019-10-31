@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
   SWC::DB::Cell::Key key_to_scan;
   uint32_t cell_count = 0;
   int64_t rev;
-  
+  size_t expected_blocks = 0;
   for(auto i=1;i<=num_cells;++i){
     std::string n = std::to_string(i);
       
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
       hdlr_err(err);
 
       cell_count = 0;
-
+      expected_blocks++;
       std::cout << "added block: " << cs_writer.to_string() << "\n";
     }
     
@@ -106,7 +106,12 @@ int main(int argc, char** argv) {
   cs.load_blocks_index(err, true);
   hdlr_err(err);
   std::cout << "cs-read-load_blocks_index:\n " << cs.to_string() << "\n";
-
+  if(cs.blocks_count() != expected_blocks) {
+    std::cerr << "ERROR: cs.blocks_count() != expected_blocks \n" 
+              << " expected=" << expected_blocks << "\n"
+              << " counted=" << cs.blocks_count() << "\n";
+    exit(1);
+  }
   //cs.close(err);
   //if(err != EBADR){
   //  std::cerr << " FD should been closed after loading blocks-index err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n";
@@ -122,11 +127,11 @@ int main(int argc, char** argv) {
   SWC::Env::IoCtx::init(8);
   
   SWC::DB::Cells::Interval intval_r;
-  
-  auto cellstores = std::make_shared<SWC::Files::CellStore::Readers>();
-  cellstores->add(std::make_shared<SWC::Files::CellStore::Read>(1, range, intval_r));
-  auto blocks = std::make_shared<SWC::server::Rgr::IntervalBlocks>(
-    cellstores.get(), SWC::Files::CommitLog::Fragments::make(range));
+  SWC::server::Rgr::IntervalBlocks blocks;
+  blocks.init(range);
+  blocks.cellstores->add(
+    SWC::Files::CellStore::Read::make(1, range, intval_r));
+
   std::atomic<int> requests = 110;
   size_t id = 0;
   for(int n=1;n<=20;n++) {
@@ -134,7 +139,7 @@ int main(int argc, char** argv) {
     for(int i=1; i<=(n>10?1:10);i++) {
       id++;
       //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
-    auto t = std::thread([blocks, &key_to_scan, id, &count=requests](){
+    auto t = std::thread([&blocks, &key_to_scan, id, &count=requests](){
 
       auto req = Cells::ReqScanTest::make();
       req->cells = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
@@ -162,7 +167,7 @@ int main(int argc, char** argv) {
           exit(1);
         }
       };
-      blocks->scan(req);
+      blocks.scan(req);
     });
     if((n== 1 && i == 1) || (n== 3 && i == 10))
       t.join();
@@ -182,7 +187,7 @@ int main(int argc, char** argv) {
   std::cout << "cs-read-scan: OK\n";
 
 
-  cellstores->remove(err);
+  blocks.remove(err);
   hdlr_err(err);
 
   std::cout << "\n-   OK-read   -\n\n";

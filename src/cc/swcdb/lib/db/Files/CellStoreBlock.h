@@ -15,8 +15,13 @@ namespace SWC { namespace Files {
 
 struct CellsBlock {
   public:
-  typedef std::shared_ptr<CellsBlock> Ptr;
-
+  typedef CellsBlock* Ptr;
+  
+  inline static Ptr make(const DB::Cells::Interval& interval, 
+                         const DB::SchemaPtr s) {
+    return new CellsBlock(interval, s);
+  } 
+  
   CellsBlock(const DB::Cells::Interval& interval, const DB::SchemaPtr s) 
             : interval(interval),  
               cells(
@@ -25,7 +30,9 @@ struct CellsBlock {
               ) {
   }
 
-  virtual ~CellsBlock() {}
+  virtual ~CellsBlock() {
+    //std::cout << " ~CellsBlock\n";
+  }
   
   size_t load_cells(const uint8_t* ptr, size_t remain) {
     DB::Cells::Cell cell;
@@ -92,7 +99,7 @@ static const uint8_t HEADER_SIZE=17;
 
 class Read {  
   public:
-  typedef std::shared_ptr<Read> Ptr;
+  typedef Read* Ptr;
 
   enum State {
     NONE,
@@ -111,12 +118,23 @@ class Read {
     }
   }
   
+  inline static Ptr make(const size_t offset, 
+                         const DB::Cells::Interval& interval) {
+    return new Read(offset, interval);
+  }
+
   Read(const size_t offset, const DB::Cells::Interval& interval)
       : offset(offset), interval(interval), 
         state(State::NONE), m_size(0), m_count(0) {
   }
+  
+  Ptr ptr() {
+    return this;
+  }
 
-  virtual ~Read(){}
+  virtual ~Read(){
+    //std::cout << " ~CellStore::Block::Read\n";
+  }
   
   State need_load() {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -280,6 +298,8 @@ class Read {
     s.append(std::to_string(m_size));
     s.append(" ");
     s.append(interval.to_string());
+    s.append(" queue=");
+    s.append(std::to_string(m_pending_q.size()));
     s.append(")");
     return s;
   }

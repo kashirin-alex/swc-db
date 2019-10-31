@@ -49,16 +49,19 @@ class Range : public DB::RangeBase {
     COMPACTING,
   };
 
-  const Types::Range                    type;
-  const Files::CellStore::Readers::Ptr  cellstores;
+  const Types::Range   type;
+  IntervalBlocks       blocks;
 
   Range(const int64_t cid, const int64_t rid)
         : RangeBase(cid, rid), 
           m_state(State::NOTLOADED), 
           type(cid == 1 ? Types::Range::MASTER 
                :(cid == 2 ? Types::Range::META : Types::Range::DATA)),
-          cellstores(Files::CellStore::Readers::make_ptr()), 
           m_compacting(Compact::NONE) {
+  }
+
+  void init() {
+    blocks.init(shared_from_this());
   }
 
   inline Ptr shared() {
@@ -71,7 +74,6 @@ class Range : public DB::RangeBase {
 
   virtual ~Range(){
     std::cout << " ~Range cid=" << cid << " rid=" << rid << "\n"; 
-    delete cellstores;
   }
   
   void set_state(State new_state) {
@@ -102,17 +104,11 @@ class Range : public DB::RangeBase {
 
   void scan(DB::Cells::ReqScan::Ptr req) {
     wait();
-
-    if(m_blocks == nullptr) {
-      int err = Error::RS_NOT_LOADED_RANGE;
-      req->response(err);
-      return;
-    }
-    m_blocks->scan(req);
+    blocks.scan(req);
   }
 
   void scan_internal(DB::Cells::ReqScan::Ptr req) {
-    m_blocks->scan(req);
+    blocks.scan(req);
   }
 
   void load(ResponseCallbackPtr cb) {
@@ -214,47 +210,48 @@ class Range : public DB::RangeBase {
 
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
     int err = Error::OK;
+    wait();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_state == State::DELETED){
         cb(err);
         return;
       }
-
-      if(m_commit_log != nullptr) 
-        m_commit_log->commit_new_fragment(true);  
-      cellstores->clear();
+      m_state = State::NOTLOADED;
     }
-    
+    { 
+      std::lock_guard<std::mutex> lock(m_mutex);
+      while(!m_q_adding.empty()) 
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      blocks.unload();
+    }  
+
     if(completely) // whether to keep ranger_data_file
       Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
-
-    set_state(State::NOTLOADED);
     
     HT_INFOF("UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
               cid, rid, err, Error::get_text(err));
     cb(err);
   }
-
+  
   void remove(int &err) {
+    wait();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = State::DELETED;
-      
-      cellstores->remove(err);
-      
-      if(m_commit_log != nullptr) 
-        m_commit_log->remove(err);
-
-      Env::FsInterface::interface()->rmdir(err, get_path(""));
     }
+    { 
+      std::lock_guard<std::mutex> lock(m_mutex);
+      while(!m_q_adding.empty()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+      blocks.remove(err);
+    }
+
+    Env::FsInterface::interface()->rmdir(err, get_path(""));  
     
     on_change(err, true);
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
-  }
-
-  Files::CommitLog::Fragments::Ptr get_log() {
-    return m_commit_log;
   }
 
   const bool compacting() {
@@ -287,23 +284,24 @@ class Range : public DB::RangeBase {
       }
       fs->rmdir(err, get_path(cellstores_bak_dir));
 
-      cellstores->clear();
+      // cellstores->replace(..);
+      blocks.cellstores->clear();
       for(auto cs : w_cellstores) {
-        cellstores->add(
-          std::make_shared<Files::CellStore::Read>(
+        blocks.cellstores->add(
+          Files::CellStore::Read::make(
             cs->id, shared_from_this(), cs->interval
           )
         );
         // cs->load_blocks_index(err, true);
         // cs can be not loaded and done with 1st scan-req
       }
-      Files::RangeData::save(err, shared_from_this(), cellstores);
+      Files::RangeData::save(err, blocks.cellstores);
       
-      m_commit_log->remove(err, fragments_old);
+      blocks.commitlog->remove(err, fragments_old);
 
       m_interval_old.copy(m_interval);
       m_interval.free();
-      cellstores->expand(m_interval);
+      blocks.cellstores->expand(m_interval);
 
       intval_changed = !m_interval.key_begin.equal(m_interval_old.key_begin)
                     || !m_interval.key_end.equal(m_interval_old.key_end); 
@@ -322,27 +320,16 @@ class Range : public DB::RangeBase {
     s.append(DB::RangeBase::to_string());
     s.append(" state=");
     s.append(std::to_string(m_state));
-    
     s.append(" type=");
     s.append(Types::to_string(type));
-
     s.append(" ");
-    s.append(m_interval.to_string());
-
-    if(m_commit_log != nullptr) {
-      s.append(" ");
-      s.append(m_commit_log->to_string());
-    }
-    
-    s.append(" ");
-    s.append(cellstores->to_string());
-
+    s.append(blocks.to_string());
     s.append(")");
     return s;
   }
 
   private:
-  
+
   void loaded(int &err, ResponseCallbackPtr cb) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -363,7 +350,8 @@ class Range : public DB::RangeBase {
                 rs_last->to_string().c_str(), rs_data->to_string().c_str());
                 
       Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
-        std::make_shared<Protocol::Rgr::Req::RangeUnload>(shared_from_this(), cb));
+        std::make_shared<Protocol::Rgr::Req::RangeUnload>(
+          shared_from_this(), cb));
       return;
     }
 
@@ -372,36 +360,33 @@ class Range : public DB::RangeBase {
 
   void load(int &err, ResponseCallbackPtr cb) {
     bool is_initial_column_range = false;
-    Files::RangeData::load(err, shared_from_this(), cellstores);
+    Files::RangeData::load(err, blocks.cellstores);
     if(err) 
       (void)err;
       //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
-    else if(cellstores->empty()) {
+    else if(blocks.cellstores->empty()) {
       // init 1st cs(for log_cells)
       DB::SchemaPtr schema = Env::Schemas::get()->get(cid);
       Files::CellStore::Read::Ptr cs 
         = Files::CellStore::create_init_read(
           err, schema->blk_encoding, shared_from_this());
       if(!err) {
-        cellstores->add(cs);
+        blocks.cellstores->add(cs);
         is_initial_column_range = true;
       }
     }
  
     if(!err) {
-      m_commit_log = Files::CommitLog::Fragments::make(shared_from_this());
-      m_commit_log->load(err);
-
+      blocks.load(err);
       if(!err) {
         m_interval.free();
-        cellstores->expand(m_interval);
+        blocks.cellstores->expand(m_interval);
         if(is_initial_column_range) {
-          Files::RangeData::save(err, shared_from_this(), cellstores);
+          Files::RangeData::save(err, blocks.cellstores);
           on_change(err);
         }
       }
-      m_blocks = std::make_shared<IntervalBlocks>(cellstores, m_commit_log);
     }
   
     if(!err) 
@@ -430,8 +415,6 @@ class Range : public DB::RangeBase {
     DB::Cells::Cell cell;
     const uint8_t* ptr;
     size_t remain;
-    
-    Files::CellStore::Read::Ptr cs;
 
     for(;;) {
       err = Error::OK;
@@ -443,7 +426,7 @@ class Range : public DB::RangeBase {
       ptr = req->input->base;
       remain = req->input->size; 
 
-      while(remain) {
+      while(!err && remain) {
         cell.read(&ptr, &remain);
         if(!m_interval.is_in_end(cell.key)) {
           // validate over range.interval match skip( with error)
@@ -458,13 +441,15 @@ class Range : public DB::RangeBase {
         if(!(cell.control & DB::Cells::HAVE_REVISION))
           cell.control |= DB::Cells::REV_IS_TS;
         
-        if(m_state == State::DELETED) {
-          err = Error::COLUMN_MARKED_REMOVED;
+        if(m_state != State::LOADED) {
+          err = m_state == State::DELETED ? 
+                Error::COLUMN_MARKED_REMOVED 
+                : Error::RS_NOT_LOADED_RANGE;
           break;
-        }
+        } 
 
         wait();
-        m_blocks->add_logged(cell);
+        blocks.add_logged(cell);
         count++;
       }
       req->cb->response(err);
@@ -480,8 +465,8 @@ class Range : public DB::RangeBase {
     
     
     //std::cout << " run_add_queue log-count=" << m_commit_log->cells_count() 
-    //          << " blocks-count=" << m_blocks->cells_count()
-    //          << " " << m_blocks->to_string() << "\n";
+    //          << " blocks-count=" << blocks.cells_count()
+    //          << " " << blocks.to_string() << "\n";
 
   }
 
@@ -491,8 +476,6 @@ class Range : public DB::RangeBase {
   std::atomic<Compact>              m_compacting;
   std::queue<ReqAdd*>               m_q_adding;
 
-  Files::CommitLog::Fragments::Ptr  m_commit_log;
-  IntervalBlocks::Ptr               m_blocks;
   
   Query::Update::Ptr                m_req_set_intval;
 

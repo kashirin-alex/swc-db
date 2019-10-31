@@ -11,7 +11,7 @@
 namespace SWC { namespace Files { namespace CommitLog {
 
   
-class Fragment: public std::enable_shared_from_this<Fragment> {
+class Fragment {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
@@ -22,7 +22,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
   public:
 
-  typedef std::shared_ptr<Fragment> Ptr;
+  typedef Fragment* Ptr;
   
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
@@ -50,6 +50,10 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
     }
   }
 
+  inline static Ptr make(const std::string& filepath){
+    return new Fragment(filepath);
+  }
+
   DB::Cells::Interval  interval;
 
   Fragment(const std::string& filepath)
@@ -62,7 +66,13 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
             m_data_checksum(0), cells_loaded(0) {
   }
   
-  virtual ~Fragment(){}
+  Ptr ptr() {
+    return this;
+  }
+
+  virtual ~Fragment(){
+    //std::cout << " ~CommitLog::Fragment\n";
+  }
 
   const bool is_equal(Ptr& other) {
     return filepath().compare(other->filepath()) == 0;
@@ -317,7 +327,7 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
         m_state = State::LOADING;
       }
       asio::post(*Env::IoCtx::io()->ptr(), 
-        [ptr=shared_from_this()](){
+        [ptr=ptr()](){
           ptr->load();
         }
       );
@@ -398,6 +408,9 @@ class Fragment: public std::enable_shared_from_this<Fragment> {
 
     s.append(" ");
     s.append(m_smartfd->to_string());
+
+    s.append(" queue=");
+    s.append(std::to_string(m_queue_load.size()));
     s.append(")");
     return s;
   }
