@@ -450,9 +450,188 @@ class Read : public std::enable_shared_from_this<Read> {
   std::queue<std::function<void()>>   m_blocks_q;
 
 };
-typedef std::vector<Read::Ptr>    Readers;
-typedef std::shared_ptr<Readers>  ReadersPtr;
 
+
+
+class Readers {
+  public:
+  typedef Readers*  Ptr;
+  
+  static Ptr make_ptr() { return new Readers(); }
+
+  Readers() {}
+
+  virtual ~Readers() {}
+
+  void add(Read::Ptr cs) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_cellstores.push_back(cs);
+  }
+
+  void expand(DB::Cells::Interval& interval) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto& cs : m_cellstores)
+      interval.expand(cs->interval);
+  }
+
+  const bool empty() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_cellstores.empty();
+  }
+
+  const size_t size() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_cellstores.size();
+  }
+
+  const size_t size_bytes() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    size_t  sz = 0;
+    for(auto& cs : m_cellstores)
+      sz += cs->size_bytes();
+    return sz;
+  }
+
+  const size_t blocks_count() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    size_t  sz = 0;
+    for(auto& cs : m_cellstores)
+      sz += cs->blocks_count();
+    return sz;
+  }
+
+  size_t release(size_t bytes) {
+    size_t released = 0;
+    return released;
+  }
+  
+  void clear() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_cellstores.clear();
+  }
+  
+  void remove(int &err) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& cs : m_cellstores)
+      cs->remove(err);
+    m_cellstores.clear();
+  }
+  
+  template <class P>
+  void iterate(P call) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::for_each(m_cellstores.begin(), m_cellstores.end(), call);
+  }
+  
+  bool foreach(const DB::Cells::Interval& interval, 
+               const std::function<void(const Read::Ptr&)>& call) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    bool expected = false;
+    for(auto& cs : m_cellstores) {
+      if(!cs->interval.consist(interval))
+        continue;
+      expected = true;
+      call(cs);
+    }
+    return expected;
+  }  
+  
+  void get_blocks(int& err, std::vector<Block::Read::Ptr>& blocks) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& cs : m_cellstores) {
+      if(cs->blocks.empty()) {
+        cs->load_blocks_index(err, true);
+        if(err) 
+          return;
+      }
+      for(auto& blk : cs->blocks)
+        blocks.push_back(blk);
+    }
+    return;
+  }
+
+  const bool need_compaction(size_t cs_sz, size_t blk_sz) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    size_t  sz;
+    for(auto& cs : m_cellstores) {
+      sz = cs->size_bytes();
+      if(!sz)
+        continue;
+      if(sz >= cs_sz || sz/cs->blocks_count() >= blk_sz) //or by max_blk_sz
+        return true;
+    }
+    return false;
+  }
+
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("CellStoreReaders(count=");
+    s.append(std::to_string(m_cellstores.size()));
+
+    s.append(" cellstores=[");
+    for(auto& cs : m_cellstores) {
+      s.append(cs->to_string());
+      s.append(", ");
+    }
+    s.append("] ");
+    return s;
+  }
+
+  const size_t encoded_length() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    size_t sz = Serialization::encoded_length_vi32(m_cellstores.size());
+    for(auto& cs : m_cellstores) {
+      sz += Serialization::encoded_length_vi32(cs->id)
+          + cs->interval.encoded_length();
+    }
+    return sz;
+  }
+
+  void encode(uint8_t** ptr) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    Serialization::encode_vi32(ptr, m_cellstores.size());
+    for(auto& cs : m_cellstores) {
+      Serialization::encode_vi32(ptr, cs->id);
+      cs->interval.encode(ptr);
+    }
+  }
+
+  void decode(const uint8_t** ptr, size_t* remain, 
+              const DB::RangeBase::Ptr& range) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    uint32_t id;
+    uint32_t len = Serialization::decode_vi32(ptr, remain);
+    for(size_t i=0;i<len;i++) {
+      id = Serialization::decode_vi32(ptr, remain);
+      m_cellstores.push_back(
+        std::make_shared<Read>(
+          id, range, DB::Cells::Interval(ptr, remain)));
+    }
+  }
+  
+
+  void load_from_path(int &err, DB::RangeBase::Ptr range){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    FS::IdEntries_t entries;
+    Env::FsInterface::interface()->get_structured_ids(
+      err, range->get_path(DB::RangeBase::cellstores_dir), entries);
+  
+    m_cellstores.clear();
+    for(auto id : entries){
+      m_cellstores.push_back(
+        std::make_shared<Read>(id, range, DB::Cells::Interval())
+      );
+    }
+
+    //sorted
+  }
+
+  private:
+  std::mutex             m_mutex;
+  std::vector<Read::Ptr> m_cellstores;
+};
 
 
 
@@ -681,6 +860,7 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
 };
 
 } // namespace CellStore
+
 
 }}
 
