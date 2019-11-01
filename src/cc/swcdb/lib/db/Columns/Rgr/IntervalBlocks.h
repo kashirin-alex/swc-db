@@ -6,6 +6,8 @@
 #ifndef swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
 #define swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
 
+#include "swcdb/lib/db/Files/CellStoreReaders.h"
+#include "swcdb/lib/db/Files/CommitLog.h"
 
 namespace SWC { namespace server { namespace Rgr {
 
@@ -31,6 +33,7 @@ class IntervalBlocks {
 
     Files::CellsBlock::Ptr    cells_block;   
     IntervalBlocks::Ptr       blocks;
+    std::atomic<size_t>       processing;
     
     inline static Ptr make(Files::CellsBlock::Ptr cells_block, 
                            IntervalBlocks::Ptr blocks,
@@ -40,7 +43,8 @@ class IntervalBlocks {
 
     Block(Files::CellsBlock::Ptr cells_block, IntervalBlocks::Ptr blocks,
           State state=State::NONE)
-          : cells_block(cells_block), blocks(blocks), m_state(state) {
+          : cells_block(cells_block), blocks(blocks), m_state(state), 
+            processing(0) {
     }
     
     Ptr ptr() {
@@ -49,6 +53,7 @@ class IntervalBlocks {
 
     virtual ~Block() {
       std::cout << " IntervalBlocks::~Block\n";
+      wait_processing();
       delete cells_block;
     }
 
@@ -185,15 +190,27 @@ class IntervalBlocks {
       return blk;
     }
 
+    void wait_processing() {
+      while(processing > 0) {
+        std::cout << "wait_processing: " << to_string() << "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+    }
+
     const std::string to_string() {
       std::lock_guard<std::mutex> lock(m_mutex);
 
       std::string s("Block(state=");
       s.append(std::to_string((uint8_t)m_state));
-      s.append(" queue=");
-      s.append(std::to_string(m_queue.size()));
+      
       s.append(" ");
       s.append(cells_block->to_string());
+
+      s.append(" queue=");
+      s.append(std::to_string(m_queue.size()));
+
+      s.append(" processing=");
+      s.append(std::to_string(processing.load()));
       s.append(")");
       return s;
     }
@@ -277,7 +294,7 @@ class IntervalBlocks {
   }
 
   void unload() {
-    stop();
+    stop(Error::RS_NOT_READY);
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -288,7 +305,7 @@ class IntervalBlocks {
   }
   
   void remove(int& err) {
-    stop();
+    stop(Error::COLUMN_MARKED_REMOVED);
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -300,8 +317,7 @@ class IntervalBlocks {
     free();
   }
 
-  void stop() {
-    int err = Error::RS_NOT_READY;
+  void stop(int err) {
     std::vector<Block::Ptr>::iterator it;
     bool started=false;
     for(;;){
@@ -317,6 +333,7 @@ class IntervalBlocks {
       }
       (*it)->run_queue(err);
     }
+    wait_processing();
   }
   
   void add_logged(const DB::Cells::Cell& cell) {
@@ -390,7 +407,7 @@ class IntervalBlocks {
     req->response(err);
   }
 
-  size_t cells_count() {
+  const size_t cells_count() {
     size_t sz = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& blk : m_blocks) {
@@ -419,7 +436,7 @@ class IntervalBlocks {
     }
   }
 
-  size_t release(size_t bytes=0) {
+  const size_t release(size_t bytes=0) {
     size_t released = cellstores->release(bytes);
     if(bytes && released >= bytes)
       return released;
@@ -438,28 +455,54 @@ class IntervalBlocks {
     return released;
   }
 
+  const size_t processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _processing();
+  }
+
+  void wait_processing() {
+    while(processing() > 0) {
+      std::cout << "wait_processing: " << to_string() << "\n";
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
   const std::string to_string(){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("IntervalBlocks(count=");
     s.append(std::to_string(m_blocks.size()));
+
     s.append(" blocks=[");
     for(auto blk : m_blocks) {
         s.append(blk->to_string());
        s.append(", ");
     }
     s.append("] ");
+
     if(commitlog != nullptr)
       s.append(commitlog->to_string());
+
     s.append(" ");
     if(cellstores != nullptr)
       s.append(cellstores->to_string());
+
+    s.append(" processing=");
+    s.append(std::to_string(_processing()));
+
     s.append(")");
     return s;
   } 
 
   private:
   
+  const size_t _processing() {
+    size_t sz = 0;
+    for(auto blk : m_blocks) 
+      sz += blk->processing;
+    return sz;
+  }
+
   void free() {
     if(cellstores != nullptr) {
       delete cellstores;

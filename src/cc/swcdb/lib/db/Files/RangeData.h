@@ -12,7 +12,7 @@
 #include "swcdb/lib/core/Time.h"
 
 #include "swcdb/lib/db/Cells/Interval.h"
-#include "CellStore.h"
+#include "CellStoreReaders.h"
 
 
 namespace SWC { namespace Files { namespace RangeData {

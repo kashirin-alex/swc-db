@@ -52,6 +52,7 @@ class Fragments {
 
   virtual ~Fragments() {
     //std::cout << " ~CommitLog::Fragments\n";
+    wait_processing();
     free();
   }
 
@@ -201,8 +202,10 @@ class Fragments {
     }
 
     auto waiter = new AwaitingLoad(fragments.size(), cells_block, cb, ptr());
-    for(auto& frag : fragments) 
+    for(auto& frag : fragments) {
+      frag->processing++;
       frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
+    }
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {
@@ -212,7 +215,7 @@ class Fragments {
     fragments.assign(m_fragments.begin(), m_fragments.end());
   }
 
-  size_t release(size_t bytes) {    
+  const size_t release(size_t bytes) {    
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -252,6 +255,14 @@ class Fragments {
     
     {
       std::lock_guard<std::mutex> lock(m_mutex);
+      for(auto frag : m_fragments)
+        frag->remove(err);
+    }
+
+    wait_processing();
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       free();
     }
     m_cells->free();
@@ -262,7 +273,7 @@ class Fragments {
     return m_deleting;
   }
 
-  size_t cells_count() {
+  const size_t cells_count() {
     size_t count = m_cells->size();
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto frag : m_fragments)
@@ -270,13 +281,25 @@ class Fragments {
     return count;
   }
 
-  size_t size_bytes() {
+  const size_t size_bytes() {
     size_t size = m_cells->size_bytes();
 
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& frag : m_fragments)
       size += frag->size_bytes();
     return size;
+  }
+
+  const size_t processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _processing() + m_commiting.load();
+  }
+
+  void wait_processing() {
+    while(processing() > 0)  {
+      //std::cout << "wait_processing: " << to_string() << "\n";
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
 
   const std::string to_string() {
@@ -299,6 +322,9 @@ class Fragments {
     }
     s.append("]");
 
+    s.append(" processing=");
+    s.append(std::to_string(_processing()));
+
     s.append(")");
     return s;
   }
@@ -308,19 +334,29 @@ class Fragments {
 
   private:
   
+  
   void free() {  
     for(auto frag : m_fragments)
       delete frag;
     m_fragments.clear();
   }
 
+  const size_t _processing() {
+    size_t size = 0;
+    for(auto& frag : m_fragments)
+      size += frag->processing;
+    return size;
+  }
+
+
   struct AwaitingLoad {
     public:
     typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, 
-                  const Cb_t& cb, Fragments::Ptr log) 
-                : m_count(count), cells_block(cells_block), cb(cb), log(log) {
+    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb,
+                  Fragments::Ptr log) 
+                : m_count(count), cells_block(cells_block), cb(cb), 
+                  log(log) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -338,10 +374,13 @@ class Fragments {
           std::lock_guard<std::mutex> lock(m_mutex);
           frag = m_pending.front();
         }
+
         if(log->deleting())
           err = Error::COLUMN_MARKED_REMOVED;
         else
           frag->load_cells(cells_block);
+        
+        frag->processing--;
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();

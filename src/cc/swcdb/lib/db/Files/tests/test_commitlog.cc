@@ -6,7 +6,7 @@
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/RangeBase.h"
-#include "swcdb/lib/db/Files/CellStore.h"
+#include "swcdb/lib/db/Files/CellStoreReaders.h"
 
 #include "swcdb/lib/db/Columns/Rgr/IntervalBlocks.h"
 #include <iostream>

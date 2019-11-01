@@ -321,7 +321,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void finalize() {
-      std::cout << "COMAPACT ::finalize 1\n";
+      std::cout << "Compact ::finalize 1\n";
       int err = Error::OK;
 
       if(cs_writer != nullptr) {
@@ -359,7 +359,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         
       compactor->compacted(range);
 
-      std::cout << "COMAPACT ::finalize 2\n";
+      std::cout << "Compact ::finalize 2\n";
     }
 
     void quit() {

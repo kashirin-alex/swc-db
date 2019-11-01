@@ -54,7 +54,8 @@ class Fragment {
     return new Fragment(filepath);
   }
 
-  DB::Cells::Interval  interval;
+  DB::Cells::Interval   interval;
+  std::atomic<size_t>   processing;
 
   Fragment(const std::string& filepath)
           : m_smartfd(
@@ -63,7 +64,7 @@ class Fragment {
             ), 
             m_state(State::NONE), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0), cells_loaded(0) {
+            m_data_checksum(0), cells_loaded(0), processing(0) {
   }
   
   Ptr ptr() {
@@ -71,6 +72,7 @@ class Fragment {
   }
 
   virtual ~Fragment(){
+    wait_processing();
     //std::cout << " ~CommitLog::Fragment\n";
   }
 
@@ -337,7 +339,7 @@ class Fragment {
   void load_cells(CellsBlock::Ptr cells_block) {
     if(!cells_loaded)
       return;
-    
+
     cells_loaded -= cells_block->load_cells(m_buffer->base, m_size);
     if(!cells_loaded)
       release();
@@ -378,8 +380,16 @@ class Fragment {
   }
 
   void remove(int &err) {
+    wait_processing();
     std::lock_guard<std::mutex> lock(m_mutex);
     Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
+  }
+
+  void wait_processing() {
+    while(processing > 0) {
+      //std::cout << "wait_processing: " << to_string() << "\n";
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
 
   const std::string to_string() {
@@ -411,6 +421,10 @@ class Fragment {
 
     s.append(" queue=");
     s.append(std::to_string(m_queue_load.size()));
+
+    s.append(" processing=");
+    s.append(std::to_string(processing.load()));
+    
     s.append(")");
     return s;
   }

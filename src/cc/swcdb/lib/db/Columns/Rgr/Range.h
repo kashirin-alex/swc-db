@@ -234,17 +234,6 @@ class Range : public DB::RangeBase {
               cid, rid, err, Error::get_text(err));
     cb(err);
   }
-
-  void wait_queue() {
-    for(;;) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_q_adding.empty())
-          break;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
   
   void remove(int &err) {
     wait();
@@ -261,6 +250,17 @@ class Range : public DB::RangeBase {
     HT_INFOF("REMOVED RANGE %s", to_string().c_str());
   }
 
+  void wait_queue() {
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_q_adding.empty())
+          break;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
   const bool compacting() {
     return m_compacting != Compact::NONE;
   }
@@ -274,34 +274,11 @@ class Range : public DB::RangeBase {
   void apply_new(int &err,
                 Files::CellStore::Writers& w_cellstores, 
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
-    std::cout << "RANGE::apply_new 1\n";
     bool intval_changed;
     {
-      auto fs = Env::FsInterface::interface();
-      std::lock_guard<std::mutex> lock(m_mutex);
-      
-      fs->rename(err, get_path(cellstores_dir), get_path(cellstores_bak_dir));
+      blocks.cellstores->replace(err, w_cellstores);
       if(err)
         return;
-      fs->rename(err, get_path(cellstores_tmp_dir), get_path(cellstores_dir));
-      if(err) {
-        fs->rmdir(err, get_path(cellstores_dir));
-        fs->rename(err, get_path(cellstores_bak_dir), get_path(cellstores_dir));
-        return;
-      }
-      fs->rmdir(err, get_path(cellstores_bak_dir));
-
-      // cellstores->replace(..);
-      blocks.cellstores->clear();
-      for(auto cs : w_cellstores) {
-        blocks.cellstores->add(
-          Files::CellStore::Read::make(
-            cs->id, shared_from_this(), cs->interval
-          )
-        );
-        // cs->load_blocks_index(err, true);
-        // cs can be not loaded and done with 1st scan-req
-      }
       Files::RangeData::save(err, blocks.cellstores);
       
       blocks.commitlog->remove(err, fragments_old);

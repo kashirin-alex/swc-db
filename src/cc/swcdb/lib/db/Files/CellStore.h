@@ -8,7 +8,6 @@
 
 #include "swcdb/lib/db/Columns/Schema.h"
 #include "CellStoreBlock.h"
-#include "CommitLog.h"
 
 
 namespace SWC { namespace Files {
@@ -48,6 +47,7 @@ class Read  {
   DB::Cells::Interval           interval;
   std::vector<Block::Read::Ptr> blocks;
   std::atomic<State>            state;
+  std::atomic<size_t>           processing;
   
   inline static Ptr make(const uint32_t id, const DB::RangeBase::Ptr& range, 
                          const DB::Cells::Interval& interval) {
@@ -58,7 +58,7 @@ class Read  {
        const DB::Cells::Interval& interval) 
       : id(id), 
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        interval(interval), state(State::BLKS_IDX_NONE) {   
+        interval(interval), state(State::BLKS_IDX_NONE), processing(0) {   
   }
 
   Ptr ptr() {
@@ -125,8 +125,9 @@ class Read  {
       return;
     }
   
-    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
+    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb, ptr());
     for(auto& blk : applicable) {
+      processing++;
       switch(blk->need_load()) {
 
         case Block::Read::State::NONE: {
@@ -189,13 +190,22 @@ class Read  {
   }
 
   void close(int &err) {
+    wait_processing();
     if(smartfd->valid())
       Env::FsInterface::fs()->close(err, smartfd); 
   }
 
   void remove(int &err) {
-    Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
+    wait_processing();
+    Env::FsInterface::fs()->remove(err, smartfd->filepath());
     free();
+  }
+
+  void wait_processing() {
+    while(processing > 0) {
+      //std::cout << "wait_processing: " << to_string() << "\n";
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
 
   const size_t size_bytes() {
@@ -228,15 +238,19 @@ class Read  {
 
     s.append(" blocks=");
     s.append(std::to_string(blocks.size()));
-    
     s.append(" blocks=[");
     for(auto blk : blocks) {
-        s.append(blk->to_string());
-       s.append(", ");
+      s.append(blk->to_string());
+      s.append(", ");
     }
     s.append("]");
+
     s.append(" queue=");
     s.append(std::to_string(m_blocks_q.size()));
+
+    s.append(" processing=");
+    s.append(std::to_string(processing.load()));
+
     s.append(")");
     return s;
   } 
@@ -244,6 +258,7 @@ class Read  {
   private:
 
   void free() {
+    wait_processing();
     for(auto& blk : blocks)
       delete blk;
     blocks.clear();
@@ -419,8 +434,10 @@ class Read  {
     public:
     typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, Cb_t cb) 
-                : m_count(count), cells_block(cells_block), cb(cb) {
+    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb,
+                 Read::Ptr cs) 
+                : m_count(count), cells_block(cells_block), cb(cb), 
+                  cs(cs) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -440,7 +457,8 @@ class Read  {
         }
 
         blk->load_cells(cells_block);
-        
+       
+        cs->processing--; 
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
@@ -459,6 +477,7 @@ class Read  {
     int32_t                       m_count = 0;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
+    Read::Ptr                     cs;
     std::queue<Block::Read::Ptr>  m_pending;
   };
 
@@ -466,200 +485,6 @@ class Read  {
   bool                                m_blocks_q_runs = false;
   std::queue<std::function<void()>>   m_blocks_q;
 
-};
-
-
-
-class Readers {
-  public:
-  typedef Readers*  Ptr;
-
-  inline static Ptr make(const DB::RangeBase::Ptr& range) { 
-    return new Readers(range); 
-  }
-
-  DB::RangeBase::Ptr range;
-
-  Readers(const DB::RangeBase::Ptr& range): range(range) {}
-
-  virtual ~Readers() {
-    //std::cout << " ~CellStore::Readers\n";
-    free();
-  }
-
-  void add(Read::Ptr cs) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_cellstores.push_back(cs);
-  }
-
-  void expand(DB::Cells::Interval& interval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(const auto& cs : m_cellstores)
-      interval.expand(cs->interval);
-  }
-
-  const bool empty() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_cellstores.empty();
-  }
-
-  const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_cellstores.size();
-  }
-
-  const size_t size_bytes() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t  sz = 0;
-    for(auto& cs : m_cellstores)
-      sz += cs->size_bytes();
-    return sz;
-  }
-
-  const size_t blocks_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t  sz = 0;
-    for(auto& cs : m_cellstores)
-      sz += cs->blocks_count();
-    return sz;
-  }
-
-  size_t release(size_t bytes) {
-    size_t released = 0;
-    return released;
-  }
-
-  void clear() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    int err = Error::OK;
-    for(auto& cs : m_cellstores)
-      cs->close(err);
-    free();
-  }
-  
-  void remove(int &err) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& cs : m_cellstores)
-      cs->remove(err);
-    free();
-  }
-  
-  template <class P>
-  void iterate(P call) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::for_each(m_cellstores.begin(), m_cellstores.end(), call);
-  }
-  
-  bool foreach(const DB::Cells::Interval& interval, 
-               const std::function<void(const Read::Ptr&)>& call) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    bool expected = false;
-    for(auto& cs : m_cellstores) {
-      if(!cs->interval.consist(interval))
-        continue;
-      expected = true;
-      call(cs);
-    }
-    return expected;
-  }  
-  
-  void get_blocks(int& err, std::vector<Block::Read::Ptr>& blocks) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& cs : m_cellstores) {
-      if(cs->blocks.empty()) {
-        cs->load_blocks_index(err, true);
-        if(err) 
-          return;
-      }
-      for(auto& blk : cs->blocks)
-        blocks.push_back(blk);
-    }
-    return;
-  }
-
-  const bool need_compaction(size_t cs_sz, size_t blk_sz) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t  sz;
-    for(auto& cs : m_cellstores) {
-      sz = cs->size_bytes();
-      if(!sz)
-        continue;
-      if(sz >= cs_sz || sz/cs->blocks_count() >= blk_sz) //or by max_blk_sz
-        return true;
-    }
-    return false;
-  }
-
-  const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("CellStoreReaders(count=");
-    s.append(std::to_string(m_cellstores.size()));
-
-    s.append(" cellstores=[");
-    for(auto& cs : m_cellstores) {
-      s.append(cs->to_string());
-      s.append(", ");
-    }
-    s.append("] ");
-    return s;
-  }
-
-  const size_t encoded_length() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    size_t sz = Serialization::encoded_length_vi32(m_cellstores.size());
-    for(auto& cs : m_cellstores) {
-      sz += Serialization::encoded_length_vi32(cs->id)
-          + cs->interval.encoded_length();
-    }
-    return sz;
-  }
-
-  void encode(uint8_t** ptr) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    Serialization::encode_vi32(ptr, m_cellstores.size());
-    for(auto& cs : m_cellstores) {
-      Serialization::encode_vi32(ptr, cs->id);
-      cs->interval.encode(ptr);
-    }
-  }
-
-  void decode(const uint8_t** ptr, size_t* remain) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    uint32_t id;
-    uint32_t len = Serialization::decode_vi32(ptr, remain);
-    for(size_t i=0;i<len;i++) {
-      id = Serialization::decode_vi32(ptr, remain);
-      m_cellstores.push_back(
-        Read::make(id, range, DB::Cells::Interval(ptr, remain)));
-    }
-  }
-  
-
-  void load_from_path(int &err){
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    FS::IdEntries_t entries;
-    Env::FsInterface::interface()->get_structured_ids(
-      err, range->get_path(DB::RangeBase::cellstores_dir), entries);
-  
-    free();
-    for(auto id : entries){
-      m_cellstores.push_back(Read::make(id, range, DB::Cells::Interval()));
-    }
-
-    //sorted
-  }
-
-  private:
-  
-  void free() {
-    for(auto& cs : m_cellstores)
-      delete cs;
-    m_cellstores.clear();
-  }
-
-  std::mutex             m_mutex;
-  std::vector<Read::Ptr> m_cellstores;
 };
 
 

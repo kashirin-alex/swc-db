@@ -172,8 +172,9 @@ void expect_empty_column(int64_t cid) {
 
 
 void test_1(const std::string& col_name) {
-  int num_cells = 500001; // test require at least 12
-  
+  int num_cells = 200000; // test require at least 12
+  int batches = 10;
+  int64_t took;
 
   // Req::Query::Update
   Query::Update::Ptr update_req = std::make_shared<Query::Update>(
@@ -193,10 +194,11 @@ void test_1(const std::string& col_name) {
   std::cout << schema->to_string() << "\n";
   update_req->columns_cells->create(schema);
   
-  int64_t took =  SWC::Time::now_ns();
   Cells::Cell cell;
+  for(int b=0;b<batches;b++) {
+  took =  SWC::Time::now_ns();
   for(int i=0;i<num_cells;i++) {
-    std::string cell_number(std::to_string(i));
+    std::string cell_number(std::to_string(b)+":"+std::to_string(i));
     cell.flag = Cells::INSERT;
     cell.set_time_order_desc(true);
 
@@ -206,15 +208,8 @@ void test_1(const std::string& col_name) {
     cell.set_value("V_OF: "+cell_number);
 
     update_req->columns_cells->add(schema->cid, cell);
-    /*if(i % 100000 && update_req->result->completion == 0)
-      update_req->commit();
-
-    while(update_req->result->completion > 1)
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    */
-
   }
-  
+
   size_t bytes = update_req->columns_cells->size_bytes();
   std::cout << update_req->columns_cells->to_string() << "\n";
   
@@ -228,6 +223,8 @@ void test_1(const std::string& col_name) {
             << " bytes=" << bytes 
             << " avg="<< took/num_cells << "\n";
 
+  }
+  
   std::cout << "\n";
   //exit(1);
   // Req::Query::Select
@@ -247,7 +244,7 @@ void test_1(const std::string& col_name) {
   
   took =  SWC::Time::now_ns();
   auto spec = SWC::DB::Specs::Interval::make_ptr();
-  spec->flags.offset=num_cells-1;
+  spec->flags.offset=batches*num_cells-1;
   spec->flags.limit=1;
   select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(schema->cid, {spec})};
   select_req->scan();
@@ -264,7 +261,9 @@ void test_1(const std::string& col_name) {
 
   Cells::Cell* cell_res = select_req->result->columns[schema->cid]->cells.front();
   std::string value((const char*)cell_res->value, cell_res->vlen);
-  std::string expected_value("V_OF: "+std::to_string(spec->flags.offset));
+  
+  std::string expected_value(
+    "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-1));
   if(expected_value.compare(value) != 0) {
     std::cerr << "BAD, selected cell's value doesn't match: \n" 
               << " expected_value=" << expected_value << "\n"
@@ -278,7 +277,7 @@ void test_1(const std::string& col_name) {
   select_req->result->columns[schema->cid]->free();
   spec =  select_req->specs.columns[0]->intervals[0];
   spec->flags.offset=10;
-  spec->flags.limit=num_cells-spec->flags.offset;
+  spec->flags.limit=batches*num_cells-spec->flags.offset;
 
   took =  SWC::Time::now_ns();
   select_req->scan();
@@ -307,7 +306,8 @@ void test_1(const std::string& col_name) {
   spec->key_start.add("", SWC::Condition::NONE);
   spec->key_start.add("", SWC::Condition::NONE);
   spec->key_start.add("", SWC::Condition::NONE);
-  std::string faction("e"+std::to_string(num_cells-12));
+  std::string faction(
+    "e"+std::to_string(batches-1)+":"+std::to_string(num_cells-12));
   spec->key_start.add(faction, SWC::Condition::EQ);
   spec->key_start.add("", SWC::Condition::NONE);
   spec->flags.offset=0;
@@ -331,9 +331,11 @@ void test_1(const std::string& col_name) {
   std::cout << "SELECT-TOOK=" << took  << "\n";
   
 
+  for(int b=0;b<batches;b++) {
+  took =  SWC::Time::now_ns();
   for(int i=0;i<num_cells;i++) {
     cell.free();
-    std::string cell_number(std::to_string(i));
+    std::string cell_number(std::to_string(b)+":"+std::to_string(i));
     cell.flag = Cells::DELETE;
     cell.key.free();
     for(uint8_t chr=97; chr<=122;chr++)
@@ -341,8 +343,9 @@ void test_1(const std::string& col_name) {
     update_req->columns_cells->add(schema->cid, cell);
     //std::cout << " add: " << cell.to_string() << "\n";
   }
+
   
-  bytes = update_req->columns_cells->size_bytes();
+  size_t bytes = update_req->columns_cells->size_bytes();
   std::cout << update_req->columns_cells->to_string() << "\n";
   
   took =  SWC::Time::now_ns();
@@ -359,6 +362,7 @@ void test_1(const std::string& col_name) {
             << " bytes=" << bytes 
             << " remain_bytes=" << update_req->columns_cells->size_bytes() 
             << " avg="<< took/num_cells << "\n";
+  }
 
   std::cout << "\n";
 
@@ -398,7 +402,7 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::PLAIN, 1000000
+    1, 0, 3, SWC::Types::Encoding::PLAIN, 64000000
   );
 
   // 1st DELETE & CREATE COLUMN
