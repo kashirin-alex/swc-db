@@ -140,6 +140,8 @@ class IntervalBlocks {
       for(;;) {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
+          if(m_queue.empty())
+            return;
           cb = m_queue.front();
         }
 
@@ -149,8 +151,6 @@ class IntervalBlocks {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_queue.pop();
-          if(m_queue.empty())
-            return;
         }
       }
     }
@@ -278,21 +278,25 @@ class IntervalBlocks {
 
   void unload() {
     stop();
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(commitlog != nullptr) 
       commitlog->commit_new_fragment(true);
+
     free();
   }
   
   void remove(int& err) {
     stop();
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(commitlog != nullptr) 
       commitlog->remove(err);
     if(cellstores != nullptr)
       cellstores->remove(err);  
+
     free();
   }
 
@@ -306,12 +310,12 @@ class IntervalBlocks {
         if(!started) {
           it = m_blocks.begin();
           started = true;
-        }
+        } else 
+          it++;
         if(it == m_blocks.end())
           break;
-          
       }
-      (*it++)->run_queue(err);
+      (*it)->run_queue(err);
     }
   }
   
