@@ -40,7 +40,8 @@ class Range : public DB::RangeBase {
     NOTLOADED,
     LOADING,
     LOADED,
-    DELETED
+    UNLOADING,
+    DELETED,
   };
   
   enum Compact{
@@ -210,17 +211,20 @@ class Range : public DB::RangeBase {
 
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
     int err = Error::OK;
-    wait();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_state == State::DELETED){
         cb(err);
         return;
       }
-      m_state = State::NOTLOADED;
+      m_state = State::UNLOADING;
     }
-    
+
+    wait();
     wait_queue();
+
+    set_state(State::NOTLOADED);
+
     blocks.unload();
 
     if(completely) // whether to keep ranger_data_file
@@ -444,7 +448,7 @@ class Range : public DB::RangeBase {
         if(!(cell.control & DB::Cells::HAVE_REVISION))
           cell.control |= DB::Cells::REV_IS_TS;
         
-        if(m_state != State::LOADED) {
+        if(m_state != State::LOADED && m_state != State::UNLOADING) {
           err = m_state == State::DELETED ? 
                 Error::COLUMN_MARKED_REMOVED 
                 : Error::RS_NOT_LOADED_RANGE;
