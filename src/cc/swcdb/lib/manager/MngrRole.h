@@ -48,9 +48,7 @@ namespace SWC { namespace server { namespace Mngr {
 class MngrRole {
   public:
   MngrRole()
-    : m_check_timer(
-        std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
-      ),
+    : m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       cfg_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.role.connection.probes")),
       cfg_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
@@ -84,13 +82,13 @@ class MngrRole {
     if(!m_run)
       return;
     auto set_in = std::chrono::milliseconds(t_ms);
-    auto set_on = m_check_timer->expires_from_now();
+    auto set_on = m_check_timer.expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
       return;
-    m_check_timer->cancel();
-    m_check_timer->expires_from_now(set_in);
+    m_check_timer.cancel();
+    m_check_timer.expires_from_now(set_in);
 
-    m_check_timer->async_wait(
+    m_check_timer.async_wait(
       [](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
           Env::MngrRole::get()->managers_checkin();
@@ -301,7 +299,7 @@ class MngrRole {
   void stop() {
     {
       std::lock_guard<std::mutex> lock(m_mutex_timer);
-      m_check_timer->cancel();
+      m_check_timer.cancel();
       m_run = false;
     }
 
@@ -572,7 +570,7 @@ class MngrRole {
   bool                         m_major_updates = false;
   
   std::mutex                   m_mutex_timer;
-  TimerPtr                     m_check_timer; 
+  asio::high_resolution_timer  m_check_timer; 
   bool                         m_run=true; 
   
   Protocol::Common::Req::ConnQueuePtr  m_mngr_inchain;

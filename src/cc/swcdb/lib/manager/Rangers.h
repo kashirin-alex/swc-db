@@ -72,9 +72,7 @@ class Rangers {
 
   public:
   Rangers()
-    : m_assign_timer(
-        std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
-      ),
+    : m_assign_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       cfg_rgr_failures(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.Rgr.remove.failures")),
       cfg_delay_rgr_chg(Env::Config::settings()->get_ptr<gInt32t>(
@@ -374,7 +372,7 @@ class Rangers {
     m_run = false;
     {
       std::lock_guard<std::mutex> lock(m_mutex_timer);
-      m_assign_timer->cancel();
+      m_assign_timer.cancel();
     }
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
@@ -503,13 +501,13 @@ class Rangers {
     std::lock_guard<std::mutex> lock(m_mutex_timer);
 
     auto set_in = std::chrono::milliseconds(t_ms);
-    auto set_on = m_assign_timer->expires_from_now();
+    auto set_on = m_assign_timer.expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
       return;
-    m_assign_timer->cancel();
-    m_assign_timer->expires_from_now(set_in);
+    m_assign_timer.cancel();
+    m_assign_timer.expires_from_now(set_in);
 
-    m_assign_timer->async_wait(
+    m_assign_timer.async_wait(
       [](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
           Env::Rangers::get()->check_assignment();
@@ -1129,7 +1127,7 @@ class Rangers {
   }
 
   std::mutex                    m_mutex_timer;
-  TimerPtr                      m_assign_timer; 
+  asio::high_resolution_timer   m_assign_timer; 
 
   std::mutex                    m_mutex;
 
