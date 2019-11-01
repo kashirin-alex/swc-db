@@ -540,8 +540,8 @@ class Mutable {
           
       } else if(cell->removal()) {
         if(cell->is_removing(revision_new)) {
-          std::cout << "               " << cell->to_string() << "\n";  
-          std::cout << "  is_removing: " << e_cell.to_string() << "\n";
+          //std::cout << "               " << cell->to_string() << "\n";  
+          //std::cout << "  is_removing: " << e_cell.to_string() << "\n";
           return;
         }
         continue;
