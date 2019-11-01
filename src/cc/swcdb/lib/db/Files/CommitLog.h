@@ -200,10 +200,9 @@ class Fragments {
       return;
     }
 
-    AwaitingLoad::Ptr state = std::make_shared<AwaitingLoad>(
-      fragments.size(), cells_block, cb, ptr());
+    auto waiter = new AwaitingLoad(fragments.size(), cells_block, cb, ptr());
     for(auto& frag : fragments) 
-      frag->load([frag, state](int err){ state->processed(err, frag); });
+      frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {
@@ -317,13 +316,14 @@ class Fragments {
 
   struct AwaitingLoad {
     public:
-    typedef std::function<void(int)>      Cb_t;
-    typedef std::shared_ptr<AwaitingLoad> Ptr;
+    typedef std::function<void(int)>  Cb_t;
     
     AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, 
                   const Cb_t& cb, Fragments::Ptr log) 
                 : m_count(count), cells_block(cells_block), cb(cb), log(log) {
     }
+
+    virtual ~AwaitingLoad() { }
 
     void processed(int err, Fragment::Ptr frag) {
       { 
@@ -352,15 +352,16 @@ class Fragments {
       if(m_count == 0){
         log->load_cells(cells_block);
         cb(err);
+        delete this;
       }
     }
 
     std::mutex                    m_mutex;
     int32_t                       m_count = 0;
-    std::queue<Fragment::Ptr>     m_pending;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
     Fragments::Ptr                log;
+    std::queue<Fragment::Ptr>     m_pending;
   };
 
   std::mutex                  m_mutex;

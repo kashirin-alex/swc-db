@@ -125,9 +125,7 @@ class Read  {
       return;
     }
   
-    AwaitingLoad::Ptr waiter = std::make_shared<AwaitingLoad>(
-      applicable.size(), cells_block, cb);
-
+    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
     for(auto& blk : applicable) {
       switch(blk->need_load()) {
 
@@ -419,16 +417,15 @@ class Read  {
 
   struct AwaitingLoad {
     public:
-    typedef std::function<void(int)>      Cb_t;
-    typedef std::shared_ptr<AwaitingLoad> Ptr;
+    typedef std::function<void(int)>  Cb_t;
     
     AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, Cb_t cb) 
                 : m_count(count), cells_block(cells_block), cb(cb) {
     }
 
+    virtual ~AwaitingLoad() { }
+
     void processed(int err, Block::Read::Ptr blk) {
-      //std::cout << " " << blk->to_string() <<"\n";
-      //std::cout << " " << cells_block->to_string() <<"\n";
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         --m_count;
@@ -454,14 +451,15 @@ class Read  {
       if(m_count == 0) {
         cb(err);
         blk->pending_load(err);
+        delete this;
       }
     }
 
     std::mutex                    m_mutex;
     int32_t                       m_count = 0;
-    std::queue<Block::Read::Ptr>  m_pending;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
+    std::queue<Block::Read::Ptr>  m_pending;
   };
 
   std::mutex                          m_mutex;
