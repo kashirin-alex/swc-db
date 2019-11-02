@@ -64,7 +64,7 @@ class Fragment {
             ), 
             m_state(State::NONE), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0), cells_loaded(0), processing(0) {
+            m_data_checksum(0), processing(0) {
   }
   
   Ptr ptr() {
@@ -216,7 +216,6 @@ class Fragment {
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
       m_cells_count = Serialization::decode_i32(&ptr, &remain);
-      cells_loaded = m_cells_count;
       m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
@@ -337,12 +336,15 @@ class Fragment {
   }
   
   void load_cells(CellsBlock::Ptr cells_block) {
-    if(!cells_loaded)
+    if(!loaded())
+      // err
+      return;
+    if(!m_size)
       return;
 
-    cells_loaded -= cells_block->load_cells(m_buffer->base, m_size);
-    if(!cells_loaded)
-      release();
+    cells_block->load_cells(m_buffer->base, m_buffer->size);
+    
+    release();
   }
   
   size_t release() {
@@ -350,11 +352,11 @@ class Fragment {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     size_t released = 0;      
-    if(!m_queue_load.empty())
+    if(processing.load() || !m_queue_load.empty())
       return released; 
+
     released += m_buffer->size;    
     m_state = State::NONE;
-    cells_loaded = m_cells_count;
     m_buffer = nullptr;
     return released;
   }
@@ -441,7 +443,6 @@ class Fragment {
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
   uint32_t        m_data_checksum;
-  std::atomic<size_t> cells_loaded;
 
   std::queue<std::function<void(int)>> m_queue_load;
   
