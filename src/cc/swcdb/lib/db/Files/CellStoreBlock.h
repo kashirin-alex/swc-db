@@ -198,11 +198,11 @@ class Read {
       if(sz_enc == 0)
         break;
 
-      m_buffer = std::make_shared<StaticBuffer>(sz_enc);
+      m_buffer.reallocate(sz_enc);
       for(;;) {
         err = Error::OK;
         if(Env::FsInterface::fs()->pread(
-                    err, smartfd, offset+HEADER_SIZE, m_buffer->base, sz_enc)
+                    err, smartfd, offset+HEADER_SIZE, m_buffer.base, sz_enc)
                   != sz_enc){
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
@@ -221,14 +221,13 @@ class Read {
       if(encoder != Types::Encoding::PLAIN) {
         StaticBuffer buffer(m_size);
         Encoder::decode(
-          encoder, m_buffer->base, sz_enc, buffer.base, m_size, err);
+          encoder, m_buffer.base, sz_enc, buffer.base, m_size, err);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
           break;
         }
-        m_buffer->free();
-        m_buffer->base = buffer.base;
+        m_buffer.set(buffer.base, buffer.size);
         buffer.own = false;
       }
 
@@ -243,32 +242,30 @@ class Read {
     if(!loaded()) 
       // err
       return;
-    if(!m_size)
+    if(!m_buffer.size)
       return;
 
-    cells_block->load_cells(m_buffer->base, m_buffer->size);
+    cells_block->load_cells(m_buffer.base, m_buffer.size);
     
     release();
   }
   
   size_t release() {
-    //std::cout << "CellStoreBlock release buffer \n";
     std::lock_guard<std::mutex> lock(m_mutex);
 
     size_t released = 0;
     if(processing.load() || !m_pending_q.empty())
       return released; 
 
-    released += m_buffer->size;    
+    released += m_buffer.size;    
     state = State::NONE;
-    m_buffer = nullptr;
+    m_buffer.free();
     return released;
   }
 
   void pending_load(std::function<void(int)> cb) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_pending_q.push(cb);
-    //std::cout << "pending_load add, sz=" << m_pending_q.size() << "\n";
   }
 
   void pending_load(int& err) {
@@ -307,6 +304,8 @@ class Read {
     s.append(interval.to_string());
     s.append(" queue=");
     s.append(std::to_string(m_pending_q.size()));
+    s.append(" processing=");
+    s.append(std::to_string(processing.load()));
     s.append(")");
     return s;
   }
@@ -315,7 +314,7 @@ class Read {
   
   std::mutex                            m_mutex;
   size_t                                m_size;
-  StaticBufferPtr                       m_buffer;
+  StaticBuffer                          m_buffer;
   std::queue<std::function<void(int)>>  m_pending_q;
 };
 
