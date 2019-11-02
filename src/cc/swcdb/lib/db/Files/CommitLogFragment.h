@@ -110,7 +110,6 @@ class Fragment {
       m_size_enc = m_size;
       m_encoder = Types::Encoding::PLAIN;
     }
-    m_buffer = std::make_shared<StaticBuffer>(cells);
                     
     uint8_t * ptr = output.base;
     Serialization::encode_i8(&ptr, m_version);
@@ -153,7 +152,7 @@ class Fragment {
       goto do_again;
     }
 
-    release(); //  m_state = State::LOADED;
+    release(); //  StaticBuffer m_buffer(cells); m_state = State::LOADED;
   }
 
   void load_header(bool close_after=true) {
@@ -268,15 +267,14 @@ class Fragment {
         }
         continue;
       }
-
-      m_buffer = std::make_shared<StaticBuffer>(m_size);
+      
+      m_buffer.reallocate(m_size);
       if(m_encoder != Types::Encoding::PLAIN) {
-        StaticBuffer buffer(m_size);
         Encoder::decode(
-          m_encoder, read_buf.base, m_size_enc, m_buffer->base, m_size, err);
+          m_encoder, read_buf.base, m_size_enc, m_buffer.base, m_size, err);
         read_buf.free();
       } else {
-        m_buffer->base = read_buf.base;
+        m_buffer.base = read_buf.base;
         read_buf.own=false;
       }
       break;
@@ -339,25 +337,24 @@ class Fragment {
     if(!loaded())
       // err
       return;
-    if(!m_size)
+    if(!m_buffer.size)
       return;
 
-    cells_block->load_cells(m_buffer->base, m_buffer->size);
+    cells_block->load_cells(m_buffer.base, m_buffer.size);
     
     release();
   }
   
   size_t release() {
-    //std::cout << "Fragment release buffer \n";
     std::lock_guard<std::mutex> lock(m_mutex);
 
     size_t released = 0;      
     if(processing.load() || !m_queue_load.empty())
       return released; 
-
-    released += m_buffer->size;    
+ 
     m_state = State::NONE;
-    m_buffer = nullptr;
+    released += m_buffer.size;   
+    m_buffer.free();
     return released;
   }
 
@@ -388,10 +385,8 @@ class Fragment {
   }
 
   void wait_processing() {
-    while(processing > 0) {
-      //std::cout << "wait_processing: " << to_string() << "\n";
+    while(processing > 0) 
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
   }
 
   const std::string to_string() {
@@ -439,7 +434,7 @@ class Fragment {
   Types::Encoding m_encoder;
   size_t          m_size_enc;
   size_t          m_size;
-  StaticBufferPtr m_buffer;
+  StaticBuffer    m_buffer;
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
   uint32_t        m_data_checksum;
