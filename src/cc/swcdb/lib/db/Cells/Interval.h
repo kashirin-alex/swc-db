@@ -99,10 +99,15 @@ class Interval {
     if(key_end.empty() || !is_in_end(cell.key))
       key_end.copy(cell.key);
     
-    if(ts_earliest.empty() || !ts_earliest.is_matching(cell.timestamp))
-      ts_earliest.set(cell.timestamp, Condition::GE);
-    if(ts_latest.empty() || !ts_latest.is_matching(cell.timestamp))
-      ts_latest.set(cell.timestamp, Condition::LE);
+    expand(cell.timestamp);
+    was_set = true;
+  }
+
+  void expand(const int64_t& ts) {
+    if(ts_earliest.empty() || !ts_earliest.is_matching(ts))
+      ts_earliest.set(ts, Condition::GE);
+    if(ts_latest.empty() || !ts_latest.is_matching(ts))
+      ts_latest.set(ts, Condition::LE);
     was_set = true;
   }
 
