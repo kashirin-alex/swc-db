@@ -67,14 +67,26 @@ class IntervalBlocks {
     }
 
     bool add_logged(const DB::Cells::Cell& cell) { 
-      if(!cells_block->interval.consist(cell.key))
+
+      if(!cells_block->interval.is_in_end(cell.key))
         return false;
 
       cells_block->cells.add(cell);
+
+      if(cell.on_fraction)
+        // return added for fraction under current end
+        return cells_block->interval.key_end.compare(
+          cell.key, cell.on_fraction) != Condition::GT;
+      
+      if(!cells_block->interval.is_in_begin(cell.key)) {
+        cells_block->interval.key_begin.copy(cell.key); 
+        cells_block->interval.expand(cell.timestamp);
+      }
       return true;
     }
-
+    
     bool scan(DB::Cells::ReqScan::Ptr req) {
+      //std::cout << " Block::scan "<< to_string()<<" \n";
       State state;
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -161,7 +173,6 @@ class IntervalBlocks {
     }
 
     Ptr split(size_t keep=100000) {
-      //std::cout << " IntervalBlock::split(THIS)\n";
       std::lock_guard<std::mutex> lock(m_mutex);
 
       Ptr blk = Block::make(
@@ -173,9 +184,9 @@ class IntervalBlocks {
         Block::State::LOADED
       );
 
-      cells_block->cells.write_and_free_on_key_offset(
+      cells_block->cells.move_from_key_offset(
         keep, blk->cells_block->cells);
-
+      
       bool any_begin = cells_block->interval.key_begin.empty();
       bool any_end = cells_block->interval.key_end.empty();
       cells_block->interval.free();
@@ -340,18 +351,20 @@ class IntervalBlocks {
     commitlog->add(cell);
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto idx = 0; idx<m_blocks.size(); idx++) {
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(m_blocks[idx]->loaded())
         split(idx);
 
-      if(m_blocks[idx]->add_logged(cell) && !cell.on_fraction)
+      if(m_blocks[idx]->add_logged(cell))
         break;
     }
-
+    
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    //std::cout << "IntervalBlocks::scan "<<  to_string() << " " << req->to_string() << "\n";
+    //std::cout << "IntervalBlocks::scan " <<  to_string() 
+    //          << " " << req->to_string() << "\n";
+
     int err = Error::OK;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -392,14 +405,11 @@ class IntervalBlocks {
         }
         if(blk == nullptr)  
           break;
-        //std::cout << "IntervalBlocks::scan count=" << m_blocks.size() << " "
-        //            <<  blk->to_string() << "\n";
       }
 
       if(blk->scan(req))
         return;
       
-      //std::cout << "IntervalBlocks::scan "<<  req->to_string() << "\n";
       if(req->reached_limits())
         break;
     }
@@ -419,7 +429,7 @@ class IntervalBlocks {
   void split() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto idx = 0; idx<m_blocks.size(); idx++) {
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(m_blocks[idx]->loaded())
         split(idx);
     }
@@ -428,7 +438,7 @@ class IntervalBlocks {
   void split(Block* ptr) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(auto idx = 0; idx<m_blocks.size(); idx++) {
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
         split(idx);
         return;

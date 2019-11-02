@@ -172,7 +172,7 @@ void expect_empty_column(int64_t cid) {
 
 
 void test_1(const std::string& col_name) {
-  int num_cells = 200000; // test require at least 12
+  int num_cells = 1000000; // test require at least 12
   int batches = 10;
   int64_t took;
 
@@ -195,6 +195,7 @@ void test_1(const std::string& col_name) {
   update_req->columns_cells->create(schema);
   
   Cells::Cell cell;
+  size_t added_count = 0;
   for(int b=0;b<batches;b++) {
   took =  SWC::Time::now_ns();
   for(int i=0;i<num_cells;i++) {
@@ -208,6 +209,7 @@ void test_1(const std::string& col_name) {
     cell.set_value("V_OF: "+cell_number);
 
     update_req->columns_cells->add(schema->cid, cell);
+    added_count++;
   }
 
   size_t bytes = update_req->columns_cells->size_bytes();
@@ -225,7 +227,7 @@ void test_1(const std::string& col_name) {
 
   }
   
-  std::cout << "\n";
+  std::cout << "INSERT added_count="<<added_count<<"\n";
   //exit(1);
   // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
