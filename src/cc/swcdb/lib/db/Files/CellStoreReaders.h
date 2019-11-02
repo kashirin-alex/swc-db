@@ -271,7 +271,7 @@ class Readers {
   const size_t _processing() {
     size_t size = 0;
     for(auto& cs : m_cellstores)
-      size += cs->processing;
+      size += cs->processing();
     return size;
   }
 

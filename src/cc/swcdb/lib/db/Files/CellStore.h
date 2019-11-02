@@ -47,7 +47,6 @@ class Read  {
   DB::Cells::Interval           interval;
   std::vector<Block::Read::Ptr> blocks;
   std::atomic<State>            state;
-  std::atomic<size_t>           processing;
   
   inline static Ptr make(const uint32_t id, const DB::RangeBase::Ptr& range, 
                          const DB::Cells::Interval& interval) {
@@ -58,7 +57,7 @@ class Read  {
        const DB::Cells::Interval& interval) 
       : id(id), 
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        interval(interval), state(State::BLKS_IDX_NONE), processing(0) {   
+        interval(interval), state(State::BLKS_IDX_NONE) {   
   }
 
   Ptr ptr() {
@@ -67,6 +66,7 @@ class Read  {
 
   virtual ~Read(){
     //std::cout << " ~CellStore::Read\n";
+    wait_processing();
     free();
   }
 
@@ -125,9 +125,10 @@ class Read  {
       return;
     }
   
-    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb, ptr());
+    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
     for(auto& blk : applicable) {
-      processing++;
+      blk->processing++;
+      
       switch(blk->need_load()) {
 
         case Block::Read::State::NONE: {
@@ -199,11 +200,16 @@ class Read  {
     wait_processing();
     Env::FsInterface::fs()->remove(err, smartfd->filepath());
     free();
+  } 
+
+  const size_t processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _processing();
   }
 
   void wait_processing() {
-    while(processing > 0) {
-      //std::cout << "wait_processing: " << to_string() << "\n";
+    while(processing() > 0) {
+      std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
@@ -249,7 +255,7 @@ class Read  {
     s.append(std::to_string(m_blocks_q.size()));
 
     s.append(" processing=");
-    s.append(std::to_string(processing.load()));
+    s.append(std::to_string(_processing()));
 
     s.append(")");
     return s;
@@ -257,8 +263,14 @@ class Read  {
 
   private:
 
+  const size_t _processing() {
+    size_t sz = 0;
+    for(auto& blk : blocks)
+      sz += blk->processing;
+    return sz;
+  }
+
   void free() {
-    wait_processing();
     for(auto& blk : blocks)
       delete blk;
     blocks.clear();
@@ -434,10 +446,8 @@ class Read  {
     public:
     typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb,
-                 Read::Ptr cs) 
-                : m_count(count), cells_block(cells_block), cb(cb), 
-                  cs(cs) {
+    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb) 
+                : m_count(count), cells_block(cells_block), cb(cb) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -457,8 +467,7 @@ class Read  {
         }
 
         blk->load_cells(cells_block);
-       
-        cs->processing--; 
+        blk->processing--; 
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
@@ -477,7 +486,6 @@ class Read  {
     int32_t                       m_count = 0;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
-    Read::Ptr                     cs;
     std::queue<Block::Read::Ptr>  m_pending;
   };
 

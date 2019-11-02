@@ -34,7 +34,7 @@ struct CellsBlock {
     //std::cout << " ~CellsBlock\n";
   }
   
-  size_t load_cells(const uint8_t* ptr, size_t remain) {
+  void load_cells(const uint8_t* ptr, size_t remain) {
     DB::Cells::Cell cell;
     size_t count = 0;
     bool synced = !cells.size();
@@ -65,7 +65,6 @@ struct CellsBlock {
               << " synced=" << synced
               << " avg=" << (count>0 ? took / count : 0)
               << " " << cells.to_string() << "\n";
-    return count;
   }
 
   const std::string to_string(){
@@ -123,9 +122,14 @@ class Read {
     return new Read(offset, interval);
   }
 
+  const size_t                          offset;
+  const DB::Cells::Interval             interval;
+  std::atomic<State>                    state;
+  std::atomic<size_t>                   processing;
+
   Read(const size_t offset, const DB::Cells::Interval& interval)
       : offset(offset), interval(interval), 
-        state(State::NONE), m_size(0), m_count(0) {
+        state(State::NONE), processing(0), m_size(0) {
   }
   
   Ptr ptr() {
@@ -184,7 +188,7 @@ class Read {
       m_size = Serialization::decode_i32(&ptr, &remain);
       if(!sz_enc) 
         sz_enc = m_size;
-      m_count = Serialization::decode_i32(&ptr, &remain);
+      uint32_t count = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
@@ -236,24 +240,27 @@ class Read {
   }
 
   void load_cells(CellsBlock::Ptr cells_block) {
-    if(!m_count)
+    if(!loaded()) 
+      // err
+      return;
+    if(!m_size)
       return;
 
-    m_count -= cells_block->load_cells(m_buffer->base, m_buffer->size);
-    if(!m_count)
-      release();
+    cells_block->load_cells(m_buffer->base, m_buffer->size);
+    
+    release();
   }
   
   size_t release() {
     //std::cout << "CellStoreBlock release buffer \n";
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    size_t released = 0;      
-    if(!m_pending_q.empty())
+    size_t released = 0;
+    if(processing.load() || !m_pending_q.empty())
       return released; 
+
     released += m_buffer->size;    
     state = State::NONE;
-    m_count = 0;  
     m_buffer = nullptr;
     return released;
   }
@@ -304,13 +311,10 @@ class Read {
     return s;
   }
 
-  const size_t                          offset;
-  const DB::Cells::Interval             interval;
-  std::atomic<State>                    state;
+  private:
   
   std::mutex                            m_mutex;
   size_t                                m_size;
-  std::atomic<size_t>                   m_count;
   StaticBufferPtr                       m_buffer;
   std::queue<std::function<void(int)>>  m_pending_q;
 };
