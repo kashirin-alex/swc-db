@@ -202,10 +202,8 @@ class Fragments {
     }
 
     auto waiter = new AwaitingLoad(fragments.size(), cells_block, cb, ptr());
-    for(auto& frag : fragments) {
-      frag->processing++;
+    for(auto& frag : fragments)
       frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
-    }
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {
@@ -377,12 +375,12 @@ class Fragments {
           frag = m_pending.front();
         }
 
-        if(log->deleting())
+        if(log->deleting()) {
           err = Error::COLUMN_MARKED_REMOVED;
-        else
+          frag->processing--;
+        } else
           frag->load_cells(cells_block);
         
-        frag->processing--;
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();

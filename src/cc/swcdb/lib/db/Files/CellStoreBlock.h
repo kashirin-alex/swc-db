@@ -140,7 +140,8 @@ class Read {
     //std::cout << " ~CellStore::Block::Read\n";
   }
   
-  State need_load() {
+  State load() {
+    processing++;
     std::lock_guard<std::mutex> lock(m_mutex);
     if(state == Block::Read::State::NONE) {
       state = Block::Read::State::LOADING;
@@ -239,14 +240,14 @@ class Read {
   }
 
   void load_cells(CellsBlock::Ptr cells_block) {
-    if(!loaded()) 
-      // err
-      return;
-    if(!m_buffer.size)
-      return;
+    if(loaded()) {
+      if(m_buffer.size)
+        cells_block->load_cells(m_buffer.base, m_buffer.size);
+    } else {
+      //err
+    }
 
-    cells_block->load_cells(m_buffer.base, m_buffer.size);
-    
+    processing--; 
     release();
   }
   
@@ -254,7 +255,7 @@ class Read {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     size_t released = 0;
-    if(processing.load() || !m_pending_q.empty())
+    if(processing.load())
       return released; 
 
     released += m_buffer.size;    

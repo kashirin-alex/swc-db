@@ -296,6 +296,7 @@ class Fragment {
   }
 
   void load(std::function<void(int)> cb) {
+    processing++;
 
     if(loaded()) {
       cb(Error::OK);
@@ -325,14 +326,14 @@ class Fragment {
   }
   
   void load_cells(CellsBlock::Ptr cells_block) {
-    if(!loaded())
-      // err
-      return;
-    if(!m_buffer.size)
-      return;
+    if(loaded()) {
+      if(m_buffer.size)
+        cells_block->load_cells(m_buffer.base, m_buffer.size);
+    } else {
+      //err
+    }
 
-    cells_block->load_cells(m_buffer.base, m_buffer.size);
-    
+    processing--; 
     release();
   }
   
@@ -340,7 +341,7 @@ class Fragment {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     size_t released = 0;      
-    if(processing.load() || !m_queue_load.empty())
+    if(processing.load())
       return released; 
  
     m_state = State::NONE;

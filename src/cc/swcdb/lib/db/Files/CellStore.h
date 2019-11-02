@@ -126,9 +126,8 @@ class Read  {
   
     auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
     for(auto& blk : applicable) {
-      blk->processing++;
-      
-      switch(blk->need_load()) {
+
+      switch(blk->load()) {
 
         case Block::Read::State::NONE: {
           std::lock_guard<std::mutex> lock(m_mutex);
@@ -190,7 +189,7 @@ class Read  {
   }
 
   void close(int &err) {
-    
+
     if(smartfd->valid())
       Env::FsInterface::fs()->close(err, smartfd); 
   }
@@ -463,7 +462,6 @@ class Read  {
         }
 
         blk->load_cells(cells_block);
-        blk->processing--; 
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
