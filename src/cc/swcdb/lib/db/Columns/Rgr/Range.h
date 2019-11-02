@@ -276,6 +276,8 @@ class Range : public DB::RangeBase {
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
     bool intval_changed;
     {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      
       blocks.cellstores->replace(err, w_cellstores);
       if(err)
         return;
@@ -294,7 +296,6 @@ class Range : public DB::RangeBase {
     if(intval_changed)
       on_change(err);
     err = Error::OK;
-    std::cout << "RANGE::apply_new 2\n";
   }
 
   const std::string to_string() {

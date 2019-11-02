@@ -87,8 +87,7 @@ class Read  {
     }
   }
 
-  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {    
-    //std::cout << "CellStore::load_cells\n";
+  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {
 
     {
       int err = Error::OK;
@@ -159,7 +158,7 @@ class Read  {
   }
 
   void run_queued() {
-    //std::cout << "cs::run_queued\n";
+
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_blocks_q_runs || m_blocks_q.empty())
@@ -191,7 +190,7 @@ class Read  {
   }
 
   void close(int &err) {
-    wait_processing();
+    
     if(smartfd->valid())
       Env::FsInterface::fs()->close(err, smartfd); 
   }
@@ -208,10 +207,8 @@ class Read  {
   }
 
   void wait_processing() {
-    while(processing() > 0) {
-      std::cout << "wait_processing: " << to_string() << "\n";
+    while(processing() > 0) 
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
   }
 
   const size_t size_bytes() {
@@ -264,9 +261,9 @@ class Read  {
   private:
 
   const size_t _processing() {
-    size_t sz = 0;
+    size_t sz = m_blocks_q.size() + (state == State::BLKS_IDX_LOADING);
     for(auto& blk : blocks)
-      sz += blk->processing;
+      sz += blk->processing.load();
     return sz;
   }
 
@@ -335,7 +332,6 @@ class Read  {
   }
 
   void _load_blocks_index(int& err, bool close_after=false) {
-    //std::cout << "cs::_load_blocks_index 1 \n";
     free();
 
     size_t length = 0;
@@ -419,7 +415,7 @@ class Read  {
   }
 
   void _run_queued() {
-    //std::cout << "cs::_run_queued\n";
+
     std::function<void()> call;
     for(;;) {
       {
@@ -432,7 +428,7 @@ class Read  {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_blocks_q.pop();
-        if(m_blocks_q.empty()){
+        if(m_blocks_q.empty()) {
           m_blocks_q_runs = false;
           int tmperr = Error::OK;
           close(tmperr);

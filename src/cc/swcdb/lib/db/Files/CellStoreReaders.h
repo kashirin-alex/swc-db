@@ -77,10 +77,8 @@ class Readers {
   }
 
   void wait_processing() {
-    while(processing() > 0) {
-      //std::cout << "wait_processing: " << to_string() << "\n";
+    while(processing() > 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
   }
 
   void clear() {
@@ -196,6 +194,7 @@ class Readers {
   
   void load_from_path(int &err){
     wait_processing();
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     FS::IdEntries_t entries;
@@ -211,7 +210,7 @@ class Readers {
   }
 
   void replace(int &err, Files::CellStore::Writers& w_cellstores) {
-    wait_processing();
+    wait_processing();    
 
     auto fs = Env::FsInterface::interface();
     std::lock_guard<std::mutex> lock(m_mutex);
