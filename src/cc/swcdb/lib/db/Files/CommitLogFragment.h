@@ -76,15 +76,6 @@ class Fragment {
     //std::cout << " ~CommitLog::Fragment\n";
   }
 
-  const bool is_equal(Ptr& other) {
-    return filepath().compare(other->filepath()) == 0;
-  }
-
-  const std::string& filepath() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_smartfd->filepath();
-  }
-
   void write(int& err, int32_t replication, Types::Encoding encoder, 
              const DB::Cells::Interval& intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
