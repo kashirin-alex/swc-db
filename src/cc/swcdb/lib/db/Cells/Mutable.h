@@ -122,6 +122,11 @@ class Mutable {
     _push_back(cell);
   }
   
+  void push_back(Cell* cell) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _push_back(cell);
+  }
+  
   void insert(uint32_t offset, const Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
     _insert(offset, cell);
@@ -323,12 +328,11 @@ class Mutable {
     return false;
   }
   
-  void write_and_free_on_key_offset(uint32_t from, Mutable& cells) {
+  void move_from_key_offset(uint32_t from, Mutable& cells) {
     Cell* cell;
-    uint32_t count = 0;
-    int32_t offset_applied = -1;
+    size_t count = 0;
     DB::Cell::Key key_start;
-    
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     key_start.copy((*(m_cells + from))->key);
@@ -336,25 +340,19 @@ class Mutable {
     uint32_t offset = _narrow(key_start, 0);
     for(;offset < m_size;offset++) {
       cell = *(m_cells + offset);
-
-      if(cell->has_expired(m_ttl))
-        continue;
       if(cell->key.compare(key_start, 0) == Condition::GT) 
         continue;
-
       count++;
-      if(offset_applied == -1)
-        offset_applied = offset;
+
+      memset(m_cells + offset, 0, _cell_sz);
+      if(cell->has_expired(m_ttl)){
+        _remove(cell);
+        continue;
+      }
       
-      cells.push_back(*cell);
+      cells.push_back(cell);
     }
-    
-    if(count > 0) {
-      if(m_size == count) 
-        _free();
-      else 
-        _move_bwd(offset_applied, offset-offset_applied);
-    }
+    m_size -= count;
   }
   
   void add(const DynamicBuffer& cells) {
@@ -377,7 +375,7 @@ class Mutable {
 
   void expand(DB::Cells::Interval& interval) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    interval.expand(**(m_cells));
+    interval.expand(**(m_cells)); // !on_fraction
     interval.expand(**(m_cells + m_size-1));
   }
 
@@ -461,16 +459,20 @@ class Mutable {
     Cell** offset_end_ptr = offset_ptr+by;
     Cell** ptr = offset_ptr;
     do {
-      m_size_bytes -= (*ptr)->encoded_length();
-      delete *ptr;
-      //(*ptr)->~Cell();
-      //std::free(*ptr);
+      _remove(*ptr);
     } while(++ptr < offset_end_ptr);
 
     m_size -= by;
     if(offset < m_size)
       memmove(offset_ptr, offset_end_ptr, (m_size-offset)*_cell_sz);
     memset(m_cells+m_size, 0, by*_cell_sz);
+  }
+
+  void _remove(Cell* cell) {
+    m_size_bytes -= cell->encoded_length();
+    delete cell;
+    //(*ptr)->~Cell();
+    //std::free(*ptr);
   }
   
   void _insert(uint32_t offset, const Cell& cell) {
@@ -487,6 +489,14 @@ class Mutable {
     //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     m_size++;
     m_size_bytes += cell.encoded_length();
+  }
+
+  void _push_back(Cell* cell) {
+    _ensure(1);
+    *(m_cells + m_size) = cell;
+    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell->encoded_length();
   }
 
   void _add(const Cell& e_cell) {
