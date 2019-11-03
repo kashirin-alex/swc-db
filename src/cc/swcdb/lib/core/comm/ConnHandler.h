@@ -215,8 +215,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
     cbuf->write_header_and_reset();
 
+    std::vector<asio::const_buffer> buffers;
+    cbuf->get(buffers);
+
     std::future<size_t> f = asio::async_write(
-      *m_sock.get(), cbuf->get_buffers(), asio::use_future);
+      *m_sock.get(), buffers, asio::use_future);
 
     std::future_status status = f.wait_for(
       std::chrono::milliseconds(timeout_ms));
@@ -348,10 +351,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         .hdlr=data.hdlr, 
         .tm=get_timer(data.cbuf->header.timeout_ms, data.cbuf->header), 
         .sequential=data.sequential});
+    
+    std::vector<asio::const_buffer> buffers;
+    data.cbuf->get(buffers);
 
     asio::async_write(
       *m_sock.get(), 
-      data.cbuf->get_buffers(),
+      buffers,
       [ptr=ptr()](const asio::error_code ec, uint32_t len){
         if(ec) {
           ptr->do_close();

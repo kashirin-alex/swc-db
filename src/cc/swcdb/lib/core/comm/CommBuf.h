@@ -100,13 +100,13 @@ namespace SWC {
      * @param hdr Comm header
      * @param len Length of the primary buffer to allocate
      * @param buffer Extended buffer
-     */
+     */ 
     CommBuf(CommHeader &hdr, uint32_t len, StaticBuffer &buffer)
       : ext(buffer), header(hdr) {
       len += header.encoded_length();
       data.set(new uint8_t [len], len, true);
       data_ptr = data.base + header.encoded_length();
-      header.set_total_length(len+buffer.size);
+      header.set_total_length(len+ext.size);
       ext_ptr = ext.base;
     }
 
@@ -153,25 +153,11 @@ namespace SWC {
       ext_ptr = ext.base;
     }
 
-    std::vector<asio::const_buffer> get_buffers(size_t offset=0){
-      std::vector<asio::const_buffer> buffers;
-      size_t left = data.size-offset;
-      if(left > 0){
-        buffers.push_back(asio::buffer(data.base+offset, left));
-        left = 0;
-      }
-      left += ext.size;
-      if(left > 0)
-        buffers.push_back(asio::buffer(ext.base+(ext.size-left), left));
-      return buffers;
+    void get(std::vector<asio::const_buffer>& buffers){
+      buffers.push_back(asio::buffer(data.base, data.size));
+      if(ext.size)
+        buffers.push_back(asio::buffer(ext.base, ext.size));
     }
-    /*
-          at-most-buff, size_t sz
-          for(size_t s=offset; s<left; s+=sz) {
-            buffers.push_back(asio::buffer(data.base+s, left-s<sz?left-s:sz));
-            return buffers;
-          }
-   */
 
     /** Returns the primary buffer internal data pointer
      */
