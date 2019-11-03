@@ -235,9 +235,9 @@ class Fragment {
       if(err)
         continue;
       
-      StaticBuffer read_buf(m_size_enc);
+      m_buffer.reallocate(m_size_enc);
       if(Env::FsInterface::fs()->pread(
-            err, m_smartfd, m_cells_offset, read_buf.base, m_size_enc) 
+            err, m_smartfd, m_cells_offset, m_buffer.base, m_size_enc) 
           != m_size_enc) {
         err = Error::FS_IO_ERROR;
       }
@@ -251,22 +251,25 @@ class Fragment {
         continue;
       }
       
-      if(!checksum_i32_chk(m_data_checksum, read_buf.base, m_size_enc)){  
+      if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)){  
         if(++tries == 3) {
           err = Error::CHECKSUM_MISMATCH;
           break;
         }
         continue;
       }
-      
-      m_buffer.reallocate(m_size);
+
       if(m_encoder != Types::Encoding::PLAIN) {
+        StaticBuffer buffer(m_size);
         Encoder::decode(
-          m_encoder, read_buf.base, m_size_enc, m_buffer.base, m_size, err);
-        read_buf.free();
-      } else {
-        m_buffer.base = read_buf.base;
-        read_buf.own=false;
+          m_encoder, m_buffer.base, m_size_enc, buffer.base, m_size, err);
+        if(err) {
+          int tmperr = Error::OK;
+          Env::FsInterface::fs()->close(tmperr, m_smartfd);
+          break;
+        }
+        m_buffer.set(buffer.base, buffer.size);
+        buffer.own = false;
       }
       break;
     }
@@ -340,6 +343,7 @@ class Fragment {
   size_t release() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
+    std::cout << " Fragment release, processing=" << processing.load() <<"\n";
     size_t released = 0;      
     if(processing.load())
       return released; 
@@ -365,8 +369,10 @@ class Fragment {
     return m_cells_count;
   }
 
-  size_t size_bytes() {
+  size_t size_bytes(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if(only_loaded && m_state != State::LOADED)
+      return 0;
     return m_size;
   }
 
@@ -397,7 +403,7 @@ class Fragment {
     s.append(" encoder=");
     s.append(Types::to_string(m_encoder));
 
-    s.append(" enc/size=");
+    s.append(" enc/size");
     s.append(std::to_string(m_size_enc));
     s.append("/");
     s.append(std::to_string(m_size));
