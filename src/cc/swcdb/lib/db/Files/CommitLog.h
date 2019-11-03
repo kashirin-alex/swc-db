@@ -281,13 +281,13 @@ class Fragments {
     return count;
   }
 
-  const size_t size_bytes() {
-    size_t size = m_cells->size_bytes();
-
+  const size_t size() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& frag : m_fragments)
-      size += frag->size_bytes();
-    return size;
+    return m_fragments.size()+1;
+  }
+
+  const size_t size_bytes(bool only_loaded=false) {
+    return _size_bytes(only_loaded);
   }
 
   const size_t processing() {
@@ -325,6 +325,11 @@ class Fragments {
     s.append(" processing=");
     s.append(std::to_string(_processing()));
 
+    s.append(" used/actual=");
+    s.append(std::to_string(_size_bytes(true)));
+    s.append("/");
+    s.append(std::to_string(_size_bytes()));
+
     s.append(")");
     return s;
   }
@@ -348,6 +353,12 @@ class Fragments {
     return size;
   }
 
+  const size_t _size_bytes(bool only_loaded=false) {
+    size_t size = m_cells->size_bytes();
+    for(auto& frag : m_fragments)
+      size += frag->size_bytes(only_loaded);
+    return size;
+  }
 
   struct AwaitingLoad {
     public:

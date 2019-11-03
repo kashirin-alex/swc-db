@@ -425,6 +425,23 @@ class IntervalBlocks {
     }
     return sz;
   }
+
+  const size_t size() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_blocks.size();
+  }
+
+  const size_t size_bytes() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _size_bytes();
+  }
+
+  const size_t size_bytes_total(bool only_loaded=false) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _size_bytes(only_loaded) 
+          + (cellstores ? cellstores->size_bytes(only_loaded) : 0)
+          + (commitlog  ? commitlog->size_bytes(only_loaded)  : 0);
+  }
   
   void split() {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -500,6 +517,9 @@ class IntervalBlocks {
     s.append(" processing=");
     s.append(std::to_string(_processing()));
 
+    s.append(" bytes=");
+    s.append(std::to_string(_size_bytes()));
+
     s.append(")");
     return s;
   } 
@@ -559,6 +579,13 @@ class IntervalBlocks {
       auto blk = m_blocks[idx++]->split(100000);
       m_blocks.insert(m_blocks.begin()+idx, blk);
     }
+  }
+
+  const size_t _size_bytes(bool only_loaded=false) {
+    size_t sz = 0;
+    for(auto& blk : m_blocks)
+      sz += blk->cells_block->cells.size_bytes();
+    return sz;
   }
 
   std::mutex                   m_mutex;

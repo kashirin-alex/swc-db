@@ -253,7 +253,7 @@ class Read {
   
   size_t release() {
     std::lock_guard<std::mutex> lock(m_mutex);
-
+    //std::cout << " CellStore release, processing=" << processing.load() <<"\n";
     size_t released = 0;
     if(processing.load())
       return released; 
@@ -288,8 +288,10 @@ class Read {
     }
   }
 
-  size_t size_bytes() {
+  size_t size_bytes(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if(only_loaded && state != State::LOADED)
+      return 0;
     return m_size;
   }
 

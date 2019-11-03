@@ -107,7 +107,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       return compacted(range);
 
     DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
-    Files::CommitLog::Fragments::Ptr log = range->blocks.commitlog;
+    auto log        = range->blocks.commitlog;
+    auto cellstores = range->blocks.cellstores;
 
     uint32_t cs_size = cfg_cs_sz->get(); 
     uint32_t blk_size = schema->blk_size ? 
@@ -118,41 +119,32 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     uint32_t perc     = cfg_compact_percent->get(); 
     // % of size of either by cellstore or block
 
-    uint32_t allowed_sz_cs  = (cs_size  / 100) * perc;
-    uint32_t allowed_sz_blk = (blk_size / 100) * perc;
+    uint32_t allowed_sz_cs  = cs_size + (cs_size  / 100) * perc;
 
     uint32_t log_sz = log->size_bytes();
-    bool do_compaction = log_sz >= cs_size + allowed_sz_cs;
+    bool do_compaction = log_sz >= allowed_sz_cs;
 
-    std::string info_log;
-
-    if(!do_compaction) {
-      info_log.append(" blk-avg=");
-      auto cellstores = range->blocks.cellstores;
+    if(!do_compaction)
       do_compaction = cellstores->need_compaction(
-        cs_size  + allowed_sz_cs, blk_size + allowed_sz_blk);
-
-     uint32_t blk_total_count = cellstores->blocks_count();
-      info_log.append(std::to_string(
-        blk_total_count? 
-        (cellstores->size_bytes()/blk_total_count)/1000000 
-        : 0)
-      );
-      info_log.append("MB");
-      
-      info_log.append(" cs-count=");
-      info_log.append(std::to_string(cellstores->size()));
-    }
+       allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
     
     HT_INFOF(
-      "Compaction %s-range(%d,%d) log=%dMB%s"
-      " allowed(cs=%dMB blk=%dMB)",
+      "Compaction %s-range %d/%d allow=%dMB"
+      " log=%d=%d/%dMB cs=%d=%d/%dMB blocks=%d=%dMB",
       do_compaction ? "started" : "skipped",
       range->cid, range->rid, 
-      log_sz/1000000,  
-      info_log.c_str(),
-      allowed_sz_cs/1000000, 
-      allowed_sz_blk/1000000
+      allowed_sz_cs/1000000,
+
+      log->size(),
+      log->size_bytes(true)/1000000,
+      log_sz/1000000,
+
+      cellstores->size(),
+      cellstores->size_bytes(true)/1000000,
+      cellstores->size_bytes()/1000000,
+      
+      range->blocks.size(),
+      range->blocks.size_bytes()
     );
 
     if(!do_compaction)

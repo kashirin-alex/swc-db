@@ -50,12 +50,9 @@ class Readers {
     return m_cellstores.size();
   }
 
-  const size_t size_bytes() {
+  const size_t size_bytes(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    size_t  sz = 0;
-    for(auto& cs : m_cellstores)
-      sz += cs->size_bytes();
-    return sz;
+    return _size_bytes(only_loaded);
   }
 
   const size_t blocks_count() {
@@ -157,6 +154,11 @@ class Readers {
 
     s.append(" processing=");
     s.append(std::to_string(_processing()));
+
+    s.append(" used/actual=");
+    s.append(std::to_string(_size_bytes(true)));
+    s.append("/");
+    s.append(std::to_string(_size_bytes()));
 
     s.append(")");
     return s;
@@ -272,6 +274,13 @@ class Readers {
     for(auto& cs : m_cellstores)
       size += cs->processing();
     return size;
+  }
+  
+  const size_t _size_bytes(bool only_loaded=false) {
+    size_t  sz = 0;
+    for(auto& cs : m_cellstores)
+      sz += cs->size_bytes(only_loaded);
+    return sz;
   }
 
   std::mutex             m_mutex;

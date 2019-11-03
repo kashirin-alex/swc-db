@@ -210,10 +210,10 @@ class Read  {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
-  const size_t size_bytes() {
+  const size_t size_bytes(bool only_loaded=false) {
     size_t size = 0;
     for(auto& blk : blocks)
-      size += blk->size_bytes();
+      size += blk->size_bytes(only_loaded);
     return size;
   }
 
@@ -252,6 +252,11 @@ class Read  {
 
     s.append(" processing=");
     s.append(std::to_string(_processing()));
+
+    s.append(" used/actual=");
+    s.append(std::to_string(size_bytes(true)));
+    s.append("/");
+    s.append(std::to_string(size_bytes()));
 
     s.append(")");
     return s;
