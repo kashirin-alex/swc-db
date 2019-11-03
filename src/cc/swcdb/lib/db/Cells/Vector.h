@@ -37,15 +37,20 @@ class Vector  {
   }  
   
   void add(const uint8_t** ptr, size_t* remainp) {
-    Cell cell;
+    Cell* cell;
+    //size_t sz;
     while(*remainp) {
-      cell.read(ptr, remainp);
-      if(cell.flag == NONE) {
+      //sz = *remainp;
+      cells.push_back(new Cell(ptr, remainp, true));
+      /*
+      if(sz < *remainp)
+        std::cerr << "Vector remainp=" <<*remainp << "\n";
+      if(cells.back()->flag == NONE) {
         // temp checkup
-        std::cerr << "Vector remainp=" <<*remainp << " FLAG::NONE " << cell.to_string() << "\n";
+        std::cerr << "Vector remainp=" <<*remainp << " FLAG::NONE " << cells.back()->to_string() << "\n";
         exit(1);
       }
-      add(cell);
+      */
     }
   }
 

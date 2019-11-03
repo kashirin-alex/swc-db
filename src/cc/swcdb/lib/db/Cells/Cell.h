@@ -111,6 +111,11 @@ class Cell {
                     on_fraction(0), timestamp(0), revision(0),
                     value(0), vlen(0), own(false) { }
 
+  explicit Cell(const uint8_t **bufp, size_t* remainp, bool own=false)
+                : value(0) { 
+    read(bufp, remainp, own);             
+  }
+
   explicit Cell(const Cell& other){
     copy(other);
   }
@@ -225,7 +230,7 @@ class Cell {
   }
     
   // READ
-  void read(const uint8_t **bufp, size_t* remainp) {
+  void read(const uint8_t **bufp, size_t* remainp, bool owner=false) {
 
     flag = Serialization::decode_i8(bufp, remainp);
     key.decode(bufp, remainp);
@@ -245,13 +250,14 @@ class Cell {
       revision = timestamp;
 
     free();
-    // own = owner;
+    own = owner;
     if((vlen = Serialization::decode_vi32(bufp, remainp)) > 0) {
       if(own) {
         value = new uint8_t[vlen];
         memcpy(value, *bufp, vlen);
       } else
         value = (uint8_t *)*bufp;
+      
       *bufp += vlen;
       *remainp -= vlen;
     }
@@ -265,17 +271,17 @@ class Cell {
       len += 8;
     if(control & HAVE_REVISION)
       len += 8;
-    return len+vlen+Serialization::encoded_length_vi32(vlen);
+    return len+Serialization::encoded_length_vi32(vlen)+vlen;
   }
 
   // WRITE
   void write(SWC::DynamicBuffer &dst_buf) const {
     dst_buf.ensure(encoded_length());
 
-    *dst_buf.ptr++ = flag;
+    Serialization::encode_i8(&dst_buf.ptr, flag);
     key.encode(&dst_buf.ptr);
 
-    *dst_buf.ptr++ = control;
+    Serialization::encode_i8(&dst_buf.ptr, control);
     if(control & HAVE_ON_FRACTION)
       Serialization::encode_vi32(&dst_buf.ptr, on_fraction);
     if(control & HAVE_TIMESTAMP)
