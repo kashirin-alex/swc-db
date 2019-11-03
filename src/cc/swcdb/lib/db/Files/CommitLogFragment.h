@@ -32,6 +32,7 @@ class Fragment {
     NONE,
     LOADING,
     LOADED,
+    WRITING,
     ERROR,
   };
 
@@ -45,24 +46,27 @@ class Fragment {
         return std::string("LOADED");
       case State::ERROR:
         return std::string("ERROR");
+      case State::WRITING:
+        return std::string("WRITING");
       default:
         return std::string("UKNONWN");
     }
   }
 
-  inline static Ptr make(const std::string& filepath){
-    return new Fragment(filepath);
+  inline static Ptr make(const std::string& filepath, 
+                         State state=State::NONE) {
+    return new Fragment(filepath, state);
   }
 
   DB::Cells::Interval   interval;
   std::atomic<size_t>   processing;
 
-  Fragment(const std::string& filepath)
+  Fragment(const std::string& filepath, State state=State::NONE)
           : m_smartfd(
               FS::SmartFd::make_ptr(
                 filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
             ), 
-            m_state(State::NONE), 
+            m_state(state), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
             m_data_checksum(0), processing(0) {
   }
@@ -77,10 +81,8 @@ class Fragment {
   }
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 
-             const DB::Cells::Interval& intval, 
              DynamicBuffer& cells, uint32_t cell_count) {
     m_version = VERSION;
-    interval.copy(intval);
     
     uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
     m_cells_count = cell_count;
@@ -102,21 +104,21 @@ class Fragment {
       m_encoder = Types::Encoding::PLAIN;
     }
                     
-    uint8_t * ptr = output.base;
-    Serialization::encode_i8(&ptr, m_version);
-    Serialization::encode_i32(&ptr, header_extlen);
-    checksum_i32(output.base, ptr, &ptr);
+    uint8_t * bufp = output.base;
+    Serialization::encode_i8(&bufp, m_version);
+    Serialization::encode_i32(&bufp, header_extlen);
+    checksum_i32(output.base, bufp, &bufp);
 
-    uint8_t * header_extptr = ptr;
-    interval.encode(&ptr);
-    Serialization::encode_i8(&ptr, (uint8_t)m_encoder);
-    Serialization::encode_i32(&ptr, m_size_enc);
-    Serialization::encode_i32(&ptr, m_size);
-    Serialization::encode_i32(&ptr, m_cells_count);
+    uint8_t * header_extptr = bufp;
+    interval.encode(&bufp);
+    Serialization::encode_i8(&bufp, (uint8_t)m_encoder);
+    Serialization::encode_i32(&bufp, m_size_enc);
+    Serialization::encode_i32(&bufp, m_size);
+    Serialization::encode_i32(&bufp, m_cells_count);
     
     checksum_i32(output.base+m_cells_offset, output.base+output.fill(), 
-                 &ptr, m_data_checksum);
-    checksum_i32(header_extptr, ptr, &ptr);
+                 &bufp, m_data_checksum);
+    checksum_i32(header_extptr, bufp, &bufp);
 
     StaticBuffer buff_write(output);
 
@@ -136,14 +138,35 @@ class Fragment {
     if(err) {
       if(err == Error::FS_PATH_NOT_FOUND 
         //|| err == Error::FS_PERMISSION_DENIED
-          || err == Error::SERVER_SHUTTING_DOWN)
+          || err == Error::SERVER_SHUTTING_DOWN) {
+    
+        // err == ? 
+        // server already shutting down or major fs issue (PATH NOT FOUND)
+        // write temp(local) file for recovery
         return;
+      }
       // if not overwriteflag:
       //   Env::FsInterface::fs()->remove(tmperr, m_smartfd->filepath()) 
       goto do_again;
     }
 
-    release(); //  StaticBuffer m_buffer(cells); m_state = State::LOADED;
+    bool keep;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_state = err ? State::ERROR : State::LOADED;
+      keep = !m_queue_load.empty() || processing.load() > 0;
+    }
+    if(keep) {
+      m_buffer.set(cells.base, cells.fill());
+      cells.own = false;
+      
+      asio::post(*Env::IoCtx::io()->ptr(), 
+        [&err, ptr=ptr()](){
+          ptr->run_queue(err);
+        }
+      );
+    } else
+      release();
   }
 
   void load_header(bool close_after=true) {
@@ -279,6 +302,10 @@ class Fragment {
       m_state = err ? State::ERROR : State::LOADED;
     }
 
+    run_queue(err);
+  }
+
+  void run_queue(int& err) {
     std::function<void(int)> cb;
     for(;;) {
       {
@@ -295,7 +322,6 @@ class Fragment {
           return;
       }
     }
-    //std::cout << "LogFragment, load-complete" << "\n";
   }
 
   void load(std::function<void(int)> cb) {
@@ -316,7 +342,7 @@ class Fragment {
     if(state) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_state == State::LOADING)
+        if(m_state == State::LOADING || m_state == State::WRITING)
           return;
         m_state = State::LOADING;
       }

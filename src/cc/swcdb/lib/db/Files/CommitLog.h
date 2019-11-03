@@ -59,6 +59,9 @@ class Fragments {
   void add(const DB::Cells::Cell& cell) {
     m_cells->add(cell);
 
+    if(m_commiting)
+      return;
+    
     std::lock_guard<std::mutex> lock(m_mutex);
     if(!m_deleting && !m_commiting && m_cells->size_bytes() >= m_size_commit) {
       m_commiting = true;
@@ -95,45 +98,38 @@ class Fragments {
       err = Error::OK;
       DynamicBuffer cells;
       cell_count = 0;
-      DB::Cells::Interval intval;
-      for(;;) {
-        m_cells->write_and_free(cells, cell_count, intval, blk_size);
-        if(cells.fill() >= blk_size)
-          break;
-        if(finalize && m_cells->size() == 0)
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        if(m_cells->size() == 0)
-          break;
-      }
-      if(cells.fill() == 0)
-        break;
-
-      for(;;) {
-        frag = Fragment::make(get_log_fragment(Time::now_ns()));
-        frag->write(
-          err, 
-          schema->blk_replication, 
-          blk_encoding, 
-          intval, cells, cell_count
-        );
-        if(!err)
-          break;
-        // err == ? 
-        // server already shutting down or major fs issue (PATH NOT FOUND)
-        // write temp(local) file for recovery
-      }
-
+      frag = Fragment::make(
+        get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
+      
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_fragments.push_back(frag);
-        if(m_deleting)
+        for(;;) {
+          m_cells->write_and_free(cells, cell_count, frag->interval, blk_size);
+          if(cells.fill() >= blk_size)
+            break;
+          if(finalize && m_cells->size() == 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          if(m_cells->size() == 0)
+            break;
+        }
+        if(m_deleting || cells.fill() == 0) {
+          delete frag;
           break;
+        }
+        m_fragments.push_back(frag);
       }
+
+      frag->write(
+        err, 
+        schema->blk_replication, 
+        blk_encoding, 
+        cells, cell_count
+      );
     } while((finalize && m_cells->size() > 0 ) 
             || m_cells->size_bytes() >= blk_size);
     
     {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      std::lock_guard<std::mutex> lock_wait(m_mutex);
       m_commiting = false;
     }
     m_cv.notify_all();
