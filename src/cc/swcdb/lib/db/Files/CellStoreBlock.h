@@ -58,6 +58,9 @@ struct CellsBlock {
       else
         cells.add(cell);
       count++;
+
+      //if(splitter)
+      //  splitter();
     }
 
     auto took = Time::now_ns()-ts;
@@ -75,7 +78,7 @@ struct CellsBlock {
       s.append(")");
       return s;
     }
-
+  //std::function<void()>     splitter=0;
   DB::Cells::Interval       interval;
   DB::Cells::Mutable        cells;
 };
