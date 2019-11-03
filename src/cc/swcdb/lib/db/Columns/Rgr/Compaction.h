@@ -144,7 +144,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       cellstores->size_bytes()/1000000,
       
       range->blocks.size(),
-      range->blocks.size_bytes()
+      range->blocks.size_bytes()/1000000
     );
 
     if(!do_compaction)
