@@ -21,9 +21,7 @@ class Seek : public Base {
     HT_DEBUGF("seek offset=%d %s", offset, smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_SEEK, timeout);
-    Params::SeekReq params(smartfd->fd(), offset);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::SeekReq(smartfd->fd(), offset));
   }
 
   std::promise<void> promise(){
@@ -33,7 +31,7 @@ class Seek : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

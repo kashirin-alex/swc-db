@@ -54,11 +54,11 @@ namespace SWC {
 
     /** Callback method.  When the Comm layer needs to deliver an event to the
      * application, this method is called to do so.  The set of event types
-     * include, CONNECTION_ESTABLISHED, DISCONNECT, MESSAGE, ERROR.
+     * include, ESTABLISHED, DISCONNECT, MESSAGE, ERROR.
      *
      * @param event_ptr smart pointer to Event object
      */
-    virtual void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+    virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
       HT_DEBUGF("handle(virtual): %s", ev->to_str().c_str());
       // Not a pure method,
       // instead of wait and keep a handler method for outstanding events in parent

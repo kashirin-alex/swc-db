@@ -15,15 +15,15 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 class RangeUnload : public AppHandler {
   public:
 
-  RangeUnload(ConnHandlerPtr conn, EventPtr ev)
+  RangeUnload(ConnHandlerPtr conn, Event::Ptr ev)
              : AppHandler(conn, ev) { }
 
   void run() override {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Common::Params::ColRangeId params;
       params.decode(&ptr, &remain);

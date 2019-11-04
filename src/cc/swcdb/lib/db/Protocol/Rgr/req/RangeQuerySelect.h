@@ -40,8 +40,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
                   : Common::Req::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
     CommHeader header(RANGE_QUERY_SELECT, timeout);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, params);
   }
 
   virtual ~RangeQuerySelect(){}
@@ -55,7 +54,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
     
     //std::cout << "RangeQuerySelectRsp " << ev->to_str() << "\n";
     if(ev->type == Event::Type::DISCONNECT){
@@ -71,17 +70,33 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
     }
 
     try{
-      const uint8_t *ptr = ev->payload;
-      size_t remain = ev->payload_len;
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
       rsp_params.bufp = ptr;
+      
+      if(rsp_params.size 
+        && !checksum_i32_chk(
+          rsp_params.checksum , rsp_params.bufp, rsp_params.size))
+        rsp_params.err = Error::CHECKSUM_MISMATCH;
+
+      if(remain != rsp_params.size) {
+        std::cerr << "RangeQuerySelect remain=" << remain << " rsp_params.size=" << rsp_params.size << "\n";
+        exit(1);
+      }
+      DB::Cells::Cell cell;
+      while(remain) {
+        cell.read(&ptr, &remain);
+        if(cell.flag == DB::Cells::NONE) {
+          std::cerr << "RangeQuerySelect remain=" << remain << " FLAG::NONE " << cell.to_string() << "\n";
+          exit(1);
+        }
+      }
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
       rsp_params.err = e.code();
     }
     cb(req(), rsp_params);
-    
-    (void)ev;
   }
 
   private:

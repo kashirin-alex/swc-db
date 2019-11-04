@@ -59,8 +59,7 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
             : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
 
     CommHeader header(Mngr::COLUMN_GET, timeout);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, params);
   }
 
   virtual ~ColumnGet(){}
@@ -83,7 +82,7 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
 
     if(ev->type == Event::Type::DISCONNECT){
       handle_no_conn();
@@ -95,8 +94,8 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
 
     if(err == Error::OK){
       try{
-        const uint8_t *ptr = ev->payload+4;
-        size_t remain = ev->payload_len-4;
+        const uint8_t *ptr = ev->data.base+4;
+        size_t remain = ev->data.size-4;
         rsp_params.decode(&ptr, &remain);
       } catch (Exception &e) {
         HT_ERROR_OUT << e << HT_END;

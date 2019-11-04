@@ -17,7 +17,7 @@ namespace Callback {
 class RangeQuerySelect : public DB::Cells::ReqScan {
   public:
 
-  RangeQuerySelect(ConnHandlerPtr conn, EventPtr ev, 
+  RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
                    DB::Specs::Interval::Ptr spec, 
                    DB::Cells::Mutable::Ptr cells, 
                    Range::Ptr range, uint32_t limit_buffer)
@@ -41,7 +41,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     if(err == Error::COLUMN_MARKED_REMOVED)
       cells->free();
     
-    CommBufPtr cbp;
+    CommBuf::Ptr cbp;
     CommHeader header;
     header.initialize_from_request_header(m_ev->header);
     Protocol::Rgr::Params::RangeQuerySelectRsp params(err);
@@ -49,16 +49,16 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     if(cells->size() > 0) {
       DynamicBuffer buffer;
       cells->write(buffer);
+      StaticBuffer sndbuf(buffer);
 
       params.reached_limit = limit_buffer_sz <= cells->size_bytes();
-      params.size = buffer.fill();
+      params.size = sndbuf.size;
+      params.checksum = sndbuf.size ? fletcher32(sndbuf.base, sndbuf.size) : 0;
       
-      StaticBuffer sndbuf(buffer);
-      cbp = std::make_shared<CommBuf>(header, params.encoded_length(), sndbuf);
-
+      cbp = CommBuf::make(header, params, sndbuf);
       // temp checkup
-      const uint8_t* ptr = buffer.base;
-      size_t remainp = buffer.size;
+      const uint8_t* ptr = cbp->buf_ext.base;
+      size_t remainp = cbp->buf_ext.size;
       DB::Cells::Cell cell;
       while(remainp) {
         cell.read(&ptr, &remainp);
@@ -68,14 +68,13 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
         }
       }
     } else {
-      cbp = std::make_shared<CommBuf>(header, params.encoded_length());
+      cbp = CommBuf::make(header, params);
     }
     
     std::cout << "RangeQuerySelect, rsp " << to_string() << "\n";
     std::cout << params.to_string() << "\n";
 
     try {
-      params.encode(cbp->get_data_ptr_address());
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

@@ -17,7 +17,7 @@ namespace Handler {
 class Read : public AppHandler {
   public:
 
-  Read(ConnHandlerPtr conn, EventPtr ev)
+  Read(ConnHandlerPtr conn, Event::Ptr ev)
        : AppHandler(conn, ev){ }
 
   void run() override {
@@ -28,8 +28,8 @@ class Read : public AppHandler {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       FS::Protocol::Params::ReadReq params;
       params.decode(&ptr, &remain);
@@ -50,14 +50,16 @@ class Read : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::ReadRsp rsp_params(offset, rbuf.size);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, 
-                            4+rsp_params.encoded_length(), rbuf);
+      auto cbp = CommBuf::make(
+        header, 
+        FS::Protocol::Params::ReadRsp(offset, rbuf.size), 
+        rbuf, 
+        4
+      );
       cbp->append_i32(err);
-      rsp_params.encode(cbp->get_data_ptr_address());
-
+      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

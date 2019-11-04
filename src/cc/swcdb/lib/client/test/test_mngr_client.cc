@@ -23,7 +23,7 @@ class ReqHandler : public SWC::DispatchHandler{
     m_start = std::chrono::system_clock::now();
   }
 
-  void handle(SWC::ConnHandlerPtr conn, SWC::EventPtr &ev) { 
+  void handle(SWC::ConnHandlerPtr conn, SWC::Event::Ptr &ev) { 
     if(ev->type == SWC::Event::Type::DISCONNECT) {
       std::cout << "ReqHandler: t=" << m_tnum << " num=" << m_num  << " " << ev->to_str() << "\n"; 
       return;
@@ -85,8 +85,10 @@ int main(int argc, char** argv) {
         SWC::DispatchHandlerPtr req = std::make_shared<ReqHandler>(t, n, total);
         SWC::CommHeader header;
         header.timeout_ms = 10000;
-        SWC::CommBufPtr cbp = SWC::Protocol::create_error_message(
-          header, SWC::Error::OK, SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str());
+        auto cbp = SWC::Protocol::create_error_message(
+          header, 
+          SWC::Error::OK, 
+          SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str());
         con_h->send_request(cbp, req, false); // sequential readings
         //std::this_thread::sleep_for(std::chrono::microseconds(500));
       }

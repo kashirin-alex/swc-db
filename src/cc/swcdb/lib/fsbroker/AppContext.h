@@ -58,12 +58,12 @@ class AppContext : public SWC::AppContext {
 
   virtual ~AppContext(){}
 
-  void handle(ConnHandlerPtr conn, EventPtr ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr ev) override {
     //HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
     switch (ev->type) {
 
-      case Event::Type::CONNECTION_ESTABLISHED:
+      case Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
         return; 
         

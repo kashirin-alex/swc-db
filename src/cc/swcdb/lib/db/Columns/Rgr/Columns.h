@@ -87,7 +87,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void load_range(int &err, const int64_t cid, const int64_t rid, 
-                  ResponseCallbackPtr cb){
+                  ResponseCallback::Ptr cb){
     Range::Ptr range;
     
     if(Env::RgrData::is_shuttingdown())

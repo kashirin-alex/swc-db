@@ -173,7 +173,7 @@ void expect_empty_column(int64_t cid) {
 
 void test_1(const std::string& col_name) {
   int num_cells = 1000000; // test require at least 12
-  int batches = 10;
+  int batches = 1;
   int64_t took;
 
   // Req::Query::Update
@@ -285,8 +285,16 @@ void test_1(const std::string& col_name) {
   select_req->scan();
   select_req->wait();
   if(select_req->result->columns[schema->cid]->cells.size() != spec->flags.limit) {
-    for(auto c : select_req->result->columns[schema->cid]->cells)
-      std::cerr << " " << c->to_string() << "\n";
+    Cells::Cell prev;
+    for(auto c : select_req->result->columns[schema->cid]->cells) {
+      if(prev.flag != Cells::NONE) {
+        if(c->key.equal(prev.key)) {
+          std::cerr << " current  " << c->to_string() << "\n";
+          std::cerr << " previous " << prev.to_string() << "\n";
+        }
+      }
+      prev.copy(*c);
+    }
 
     std::cerr << "\n first: " << select_req->result->columns[schema->cid]->cells.front()->to_string() << "\n";
     std::cerr <<   "  last: " << select_req->result->columns[schema->cid]->cells.back()->to_string() << "\n";
@@ -420,6 +428,7 @@ int main(int argc, char** argv) {
         req_ptr->request_again();
         return;
       }
+       /**/
       // CREATE
       SWC::Protocol::Mngr::Req::ColumnMng::request(
         SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
@@ -431,7 +440,7 @@ int main(int argc, char** argv) {
             req_ptr->request_again();
             return;
           }
-          
+           /**/
           expect_empty_column(
             SWC::Env::Clients::get()->schemas->get(err, schema->col_name)->cid
           );
@@ -445,6 +454,8 @@ int main(int argc, char** argv) {
         },
         10000
       );
+  /*
+  */
     },
     10000
   );

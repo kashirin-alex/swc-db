@@ -26,19 +26,19 @@ class Pread : public Base {
               offset, len, timeout, smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_PREAD, timeout);
-    Params::PreadReq params(smartfd->fd(), offset, len);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::PreadReq(smartfd->fd(), offset, len));
   }
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, SmartFdPtr smartfd, StaticBufferPtr buf){await->set_value();};
+         (int err, SmartFdPtr smartfd, StaticBuffer::Ptr buf){
+           await->set_value();
+          };
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;
@@ -46,7 +46,7 @@ class Pread : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_PREAD, &ptr, &remain))
       return;
 
-    StaticBufferPtr buf = nullptr;
+    StaticBuffer::Ptr buf = nullptr;
     if(error == Error::OK || error == Error::FS_EOF) {
       Params::ReadRsp params;
       params.decode(&ptr, &remain);

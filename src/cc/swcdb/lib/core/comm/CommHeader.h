@@ -15,8 +15,8 @@ class CommHeader {
   public:
 
   static const uint8_t PROTOCOL_VERSION = 1;
- 
-  static const uint8_t FIXED_LENGTH = 25;
+  static const uint8_t FIXED_LENGTH     = 22;
+  static const uint8_t BUFFER_HEADER    = 8;
 
   enum Flags {
     FLAGS_BIT_REQUEST          = 0x1, //!< Request message
@@ -30,14 +30,16 @@ class CommHeader {
     FLAGS_MASK_URGENT           = 0xB, //!< Request is urgent bit
   };
 
-  CommHeader(): version(1), header_len(FIXED_LENGTH), flags(0),
-                gid(0), id(0), timeout_ms(0), command(0), 
-                total_len(0), header_checksum(0) {  }
+  CommHeader()
+            : version(1), header_len(FIXED_LENGTH), flags(0),
+              gid(0), id(0), timeout_ms(0), command(0), 
+              buffers(0), header_checksum(0) {
+  }
 
   CommHeader(uint64_t cmd, uint32_t timeout=0)
             : version(1), header_len(FIXED_LENGTH), flags(0),
               gid(0), id(0), timeout_ms(timeout), command(cmd), 
-              total_len(0), header_checksum(0) {  }
+              buffers(0), header_checksum(0) {  }
   
   size_t encoded_length() const { return FIXED_LENGTH; }
 
@@ -51,8 +53,7 @@ class CommHeader {
     Serialization::encode_i32(bufp, id);
     Serialization::encode_i32(bufp, timeout_ms);
     Serialization::encode_i16(bufp, command);
-  
-    Serialization::encode_i32(bufp, total_len);
+    Serialization::encode_i8(bufp, buffers);
     checksum_i32(base, *bufp, bufp);
   }
 
@@ -71,7 +72,7 @@ class CommHeader {
       id = Serialization::decode_i32(bufp, remainp);
       timeout_ms = Serialization::decode_i32(bufp, remainp);
       command = Serialization::decode_i16(bufp, remainp);
-      total_len = Serialization::decode_i32(bufp, remainp);
+      buffers = Serialization::decode_i8(bufp, remainp);
       header_checksum = Serialization::decode_i32(bufp, remainp)
     );
 
@@ -79,15 +80,13 @@ class CommHeader {
       HT_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
                 "header-checksum decoded-len=%d", *bufp-base);
   }
-  
-  void set_total_length(uint32_t len) { total_len = len; }
 
   void initialize_from_request_header(CommHeader &req_header) {
     flags = req_header.flags;
     gid = req_header.gid;
     id = req_header.id;
     command = req_header.command;
-    total_len = 0;
+    buffers = 0;
   }
 
   const std::string to_string() const {
@@ -98,20 +97,21 @@ class CommHeader {
     s += " id=" + std::to_string((int)id);
     s += " timeout_ms=" + std::to_string((int)timeout_ms);
     s += " command=" + std::to_string((int)command);
-    s += " total_len=" + std::to_string((int)total_len);
+    s += " buffers=" + std::to_string(buffers);
     s += " header_checksum=" + std::to_string((int)header_checksum);
     return s;
   }
 
-  uint8_t version;      //!< Protocol version
-  uint8_t header_len;   //!< Length of header
-  uint8_t flags;        //!< Flags
-  uint32_t gid;         //!< Group ID (base of Req.ID)
-  uint32_t id;          //!< Request ID
-  uint32_t timeout_ms;  //!< Request timeout
-  uint16_t command;     //!< Request command number
-  uint32_t total_len;   //!< Total length of message including header
+  uint8_t  version;         //!< Protocol version
+  uint8_t  header_len;      //!< Length of header
+  uint8_t  flags;           //!< Flags
+  uint32_t gid;             //!< Group ID (base of Req.ID)
+  uint32_t id;              //!< Request ID
+  uint32_t timeout_ms;      //!< Request timeout
+  uint16_t command;         //!< Request command number
+  uint8_t  buffers;         //!< number of buffers from 0 to 2 (data+data_ext) 
   uint32_t header_checksum; //!< Header checksum (excl. at computation)
+
 };
   
 }

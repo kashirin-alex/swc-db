@@ -15,19 +15,18 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeUnload : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  RangeUnload(DB::RangeBase::Ptr range, ResponseCallbackPtr cb,
+  RangeUnload(DB::RangeBase::Ptr range, ResponseCallback::Ptr cb,
                 uint32_t timeout=60000) 
                : Common::Req::ConnQueue::ReqBase(false), 
                 range(range), cb(cb) {
-    Common::Params::ColRangeId params(range->cid, range->rid);
     CommHeader header(RANGE_UNLOAD, timeout);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(
+      header, Common::Params::ColRangeId(range->cid, range->rid));
   }
 
   virtual ~RangeUnload() { }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
       
     if(was_called)
       return;
@@ -47,12 +46,12 @@ class RangeUnload : public Common::Req::ConnQueue::ReqBase {
     unloaded(Error::OK, cb); 
   }
 
-  void unloaded(int err, ResponseCallbackPtr cb);
+  void unloaded(int err, ResponseCallback::Ptr cb);
 
 
   private:
 
-  ResponseCallbackPtr   cb;
+  ResponseCallback::Ptr cb;
   DB::RangeBase::Ptr    range;
    
 };

@@ -22,16 +22,16 @@ namespace Callback {
   typedef std::function<void(int)>               RenameCb_t;
   
 
-  typedef std::function<void(int, SmartFdPtr)>                  WriteCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  CreateCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  OpenCb_t;
-  typedef std::function<void(int, SmartFdPtr, StaticBufferPtr)> ReadCb_t;
-  typedef std::function<void(int, SmartFdPtr, StaticBufferPtr)> PreadCb_t;
-  typedef std::function<void(int, SmartFdPtr, size_t)>          AppendCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  SeekCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  FlushCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  SyncCb_t;
-  typedef std::function<void(int, SmartFdPtr)>                  CloseCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    WriteCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    CreateCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    OpenCb_t;
+  typedef std::function<void(int, SmartFdPtr, StaticBuffer::Ptr)> ReadCb_t;
+  typedef std::function<void(int, SmartFdPtr, StaticBuffer::Ptr)> PreadCb_t;
+  typedef std::function<void(int, SmartFdPtr, size_t)>            AppendCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    SeekCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    FlushCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    SyncCb_t;
+  typedef std::function<void(int, SmartFdPtr)>                    CloseCb_t;
  
 }
 

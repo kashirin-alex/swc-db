@@ -60,7 +60,7 @@ namespace SWC {
 
     /** Destructor; releases the buffer if it "owns" it */
     ~DynamicBuffer() {
-      if (own)
+      if (own && base != 0)
         delete [] base;
     }
 

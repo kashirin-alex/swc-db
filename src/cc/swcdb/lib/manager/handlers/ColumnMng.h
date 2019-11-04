@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class ColumnMng : public AppHandler {
   public:
 
-  ColumnMng(ConnHandlerPtr conn, EventPtr ev)
+  ColumnMng(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev){}
 
   void run() override {
@@ -24,8 +24,8 @@ class ColumnMng : public AppHandler {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::ColumnMng req_params;
       req_params.decode(&ptr, &remain);

@@ -21,6 +21,7 @@ void Settings::init_app_options(){
     ("batch", i32(1), "batch size of each request")
     ("threads", i32(1), "number of threads x (requests x batch)")
     ("threads_conn", i32(1), "threads a connection") 
+    ("buffer", i64(0), "buffer size to send and receive")
   ;
 }
 void Settings::init_post_cmd_args(){ }
@@ -28,6 +29,7 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
+size_t buffer_sz = 0;
 
 class Checker: public std::enable_shared_from_this<Checker>{
   public:
@@ -66,7 +68,8 @@ class Checker: public std::enable_shared_from_this<Checker>{
             ptr->cv.notify_all();
           }  
 
-        }
+        },
+        buffer_sz
       )->run();
     }
   }
@@ -153,6 +156,7 @@ int main(int argc, char** argv) {
     std::make_shared<client::AppContext>()
   ));
 
+  buffer_sz = Env::Config::settings()->get<int64_t>("buffer");
 
   std::make_shared<Checker>(
     Env::Config::settings()->get<int32_t>("requests"), 

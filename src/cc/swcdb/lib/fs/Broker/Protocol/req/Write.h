@@ -21,10 +21,12 @@ class Write : public Base {
     HT_DEBUGF("write %s", smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_WRITE, timeout);
-    Params::WriteReq params(smartfd->filepath(), smartfd->flags(), 
-                            replication, blksz, buffer.size);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length(), buffer));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(
+      header, 
+      Params::WriteReq(smartfd->filepath(), smartfd->flags(), 
+                       replication, blksz, buffer.size), 
+      buffer
+    );
   }
 
   std::promise<void> promise(){
@@ -33,7 +35,7 @@ class Write : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

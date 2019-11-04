@@ -131,7 +131,8 @@ class MngrRole {
     m_mngr_inchain->put(req);
   }
 
-  bool fill_states(MngrsStatus states, uint64_t token, ResponseCallbackPtr cb){
+  bool fill_states(MngrsStatus states, uint64_t token, 
+                   ResponseCallback::Ptr cb){
 
     bool new_recs = false;
     bool turn_around = token == m_local_token;

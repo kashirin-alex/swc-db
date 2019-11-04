@@ -13,15 +13,15 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class MngrState : public AppHandler {
   public:
 
-  MngrState(ConnHandlerPtr conn, EventPtr ev)
+  MngrState(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev) { }
 
   void run() override {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::MngrState req_params;
       req_params.decode(&ptr, &remain);

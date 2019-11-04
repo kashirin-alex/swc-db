@@ -23,7 +23,7 @@ class ReqScan  : public ResponseCallback {
               has_selector(false), drop_caches(false) {          
   }
 
-  ReqScan(ConnHandlerPtr conn, EventPtr ev, 
+  ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           Specs::Interval::Ptr spec, Mutable::Ptr cells)
           : ResponseCallback(conn, ev), spec(spec), cells(cells),
             offset(spec->flags.offset), limit_buffer_sz(0), 

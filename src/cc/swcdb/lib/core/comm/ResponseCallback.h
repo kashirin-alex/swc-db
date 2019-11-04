@@ -13,7 +13,11 @@ namespace SWC {
 class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   public:
-  ResponseCallback(ConnHandlerPtr conn, EventPtr ev): m_conn(conn), m_ev(ev){}
+
+  typedef std::shared_ptr<ResponseCallback> Ptr;
+
+  ResponseCallback(ConnHandlerPtr conn, Event::Ptr ev)
+                  : m_conn(conn), m_ev(ev){}
     
   virtual ~ResponseCallback() { }
 
@@ -37,10 +41,9 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
   
   protected:
   ConnHandlerPtr m_conn;
-  EventPtr m_ev;
+  Event::Ptr     m_ev;
 };
 
-typedef std::shared_ptr<ResponseCallback> ResponseCallbackPtr;
 
 
 }

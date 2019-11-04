@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
 class NotImplemented : public AppHandler {
   public:
 
-  NotImplemented(ConnHandlerPtr conn, EventPtr ev)
+  NotImplemented(ConnHandlerPtr conn, Event::Ptr ev)
        : AppHandler(conn, ev){}
 
   void run() override {
@@ -21,8 +21,9 @@ class NotImplemented : public AppHandler {
 
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);      
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, 4);
+      auto cbp = CommBuf::make(header, 4);
       cbp->append_i32(Error::NOT_IMPLEMENTED);
+      cbp->finalize_data();
 
       m_conn->send_response(cbp);
     } catch (Exception &e) {

@@ -16,15 +16,15 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 class RangeLoad : public AppHandler {
   public:
 
-  RangeLoad(ConnHandlerPtr conn, EventPtr ev)
+  RangeLoad(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev) { }
 
   void run() override {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::RangeLoad params;
       params.decode(&ptr, &remain);

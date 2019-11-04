@@ -15,20 +15,20 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class RgrMngId : public AppHandler {
   public:
 
-    RgrMngId(ConnHandlerPtr conn, EventPtr ev)
+    RgrMngId(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev){}
 
   void run() override {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::RgrMngId req_params;
       req_params.decode(&ptr, &remain);
 
-      // ResponseCallbackPtr cb = 
+      // ResponseCallback::Ptr cb = 
       //  std::make_shared<ResponseCallback>(m_conn, m_ev);
       
       
@@ -36,16 +36,13 @@ class RgrMngId : public AppHandler {
         HT_DEBUGF("MNGR NOT ACTIVE, flag=%d id=%d %s",
                   req_params.flag, req_params.id, 
                   req_params.to_string().c_str());
-      
-        Params::RgrMngId rsp_params(
-          0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE);
         
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
-        CommBufPtr cbp = std::make_shared<CommBuf>(
-          header, rsp_params.encoded_length());
-        rsp_params.encode(cbp->get_data_ptr_address());
-
+        auto cbp = CommBuf::make(
+          header, 
+          Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE)
+        );
         m_conn->send_response(cbp);
         return;
       }
@@ -59,14 +56,12 @@ class RgrMngId : public AppHandler {
           HT_DEBUGF("RS_REQ, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
 
-          Params::RgrMngId rsp_params(
-            id, Params::RgrMngId::Flag::MNGR_ASSIGNED);
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
-          CommBufPtr cbp = std::make_shared<CommBuf>(
-            header, rsp_params.encoded_length());
-          rsp_params.encode(cbp->get_data_ptr_address());
-
+          auto cbp = CommBuf::make(
+            header, 
+            Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_ASSIGNED)
+          );
           m_conn->send_response(cbp);
           break;
         }
@@ -80,15 +75,13 @@ class RgrMngId : public AppHandler {
           } else {
             HT_DEBUGF("RS_ACK(MNGR_REREQ) id=%d %s",
                       req_params.id, req_params.to_string().c_str());
-
-            Params::RgrMngId rsp_params(
-              0, Params::RgrMngId::Flag::MNGR_REREQ);
+            
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
-            CommBufPtr cbp = std::make_shared<CommBuf>(
-              header, rsp_params.encoded_length());
-            rsp_params.encode(cbp->get_data_ptr_address());
-
+            auto cbp = CommBuf::make(
+              header, 
+              Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
+            );
             m_conn->send_response(cbp);
           }
           break;
@@ -101,15 +94,13 @@ class RgrMngId : public AppHandler {
                     req_params.id, id, req_params.to_string().c_str());
 
           if (id != 0){
-            Params::RgrMngId rsp_params(
-              id, Params::RgrMngId::Flag::MNGR_REASSIGN);
       
             CommHeader header;
             header.initialize_from_request_header(m_ev->header);
-            CommBufPtr cbp = std::make_shared<CommBuf>(
-              header, rsp_params.encoded_length());
-            rsp_params.encode(cbp->get_data_ptr_address());
-
+            auto cbp = CommBuf::make(
+              header, 
+              Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_REASSIGN)
+            );
             m_conn->send_response(cbp);
           } else {
             m_conn->response_ok(m_ev);
@@ -123,16 +114,14 @@ class RgrMngId : public AppHandler {
 
           HT_DEBUGF("RS_SHUTTINGDOWN, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
-          
-          Params::RgrMngId rsp_params(
-            req_params.id, Params::RgrMngId::Flag::RS_SHUTTINGDOWN);
       
           CommHeader header;
           header.initialize_from_request_header(m_ev->header);
-          CommBufPtr cbp = std::make_shared<CommBuf>(
-            header, rsp_params.encoded_length());
-          rsp_params.encode(cbp->get_data_ptr_address());
-
+          auto cbp = CommBuf::make(
+            header, 
+            Params::RgrMngId(
+              req_params.id, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
+          );
           m_conn->send_response(cbp);
           break;
         }

@@ -16,17 +16,14 @@ class ColumnDelete : public Common::Req::ConnQueue::ReqBase  {
 
   ColumnDelete(server::Mngr::RangerPtr rgr, int64_t cid) 
               : Common::Req::ConnQueue::ReqBase(false), 
-                rgr(rgr), cid(cid) { 
-      
-    Common::Params::ColumnId params(cid);
+                rgr(rgr), cid(cid) {
     CommHeader header(COLUMN_DELETE, 60000);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Common::Params::ColumnId(cid));
   }
   
   virtual ~ColumnDelete() { }
   
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
 
     if(was_called)
       return;

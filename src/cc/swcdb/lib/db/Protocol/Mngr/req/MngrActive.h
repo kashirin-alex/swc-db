@@ -21,10 +21,8 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
              uint32_t timeout_ms=60000)
             : Common::Req::ConnQueue::ReqBase(false), 
               cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0) {
-    Params::MngrActiveReq params(cid, cid);
     CommHeader header(MNGR_ACTIVE, timeout_ms);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::MngrActiveReq(cid, cid));
   }
 
   virtual ~MngrActive(){ }
@@ -56,15 +54,15 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  virtual void handle(ConnHandlerPtr conn, EventPtr &ev) {
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
     
     // HT_DEBUGF(" handle: %s", ev->to_str().c_str());
 
     if(ev->error == Error::OK && ev->header.command == MNGR_ACTIVE){
 
       try {
-        const uint8_t *ptr = ev->payload;
-        size_t remain = ev->payload_len;
+        const uint8_t *ptr = ev->data.base;
+        size_t remain = ev->data.size;
 
         Params::MngrActiveRsp params;
         params.decode(&ptr, &remain);

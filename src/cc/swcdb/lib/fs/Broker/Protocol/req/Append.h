@@ -24,9 +24,11 @@ class Append : public Base {
               flags, timeout, smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_APPEND, timeout);
-    Params::AppendReq params(smartfd->fd(), buffer.size, (uint8_t)flags);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length(), buffer));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(
+      header,
+      Params::AppendReq(smartfd->fd(), buffer.size, (uint8_t)flags),
+      buffer
+    );
   }
 
   std::promise<void> promise(){
@@ -36,7 +38,7 @@ class Append : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

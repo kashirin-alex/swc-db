@@ -59,9 +59,14 @@ inline bool checksum_i32_chk(uint32_t checksum,
   return checksum_i32_chk(checksum, base, len);
 }
 
+inline void checksum_i32(const uint8_t *start, size_t len, 
+                        uint8_t **ptr){
+  Serialization::encode_i32(ptr, fletcher32(start, len));
+}
+
 inline void checksum_i32(const uint8_t *start, const uint8_t *end, 
                         uint8_t **ptr){
-  Serialization::encode_i32(ptr, fletcher32(start, end-start));
+  checksum_i32(start, end-start, ptr);
 }
 
 inline void checksum_i32(const uint8_t *start, const uint8_t *end, 

@@ -20,9 +20,8 @@ class Open : public Base {
     HT_DEBUGF("open %s", smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_OPEN, timeout);
-    Params::OpenReq params(smartfd->filepath(), smartfd->flags(), bufsz);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(
+      header, Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
   }
 
   std::promise<void> promise(){
@@ -31,7 +30,7 @@ class Open : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

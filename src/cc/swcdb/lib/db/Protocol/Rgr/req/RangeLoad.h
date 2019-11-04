@@ -21,17 +21,17 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
     int err = Error::OK;
     if(!Env::MngrColumns::get()->get_column(err, range->cid, false)
                            ->need_schema_sync(rgr->id, schema->revision))
-      schema = nullptr;                     
+      schema = nullptr;
 
-    Params::RangeLoad params(range->cid, range->rid, schema);
     CommHeader header(RANGE_LOAD, 60000);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(
+      header, Params::RangeLoad(range->cid, range->rid, schema)
+    );
   }
   
   virtual ~RangeLoad() { }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
       
     if(was_called)
       return;
@@ -49,8 +49,8 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
         return; 
       }
       
-      const uint8_t *ptr = ev->payload+4;
-      size_t remain = ev->payload_len-4;
+      const uint8_t *ptr = ev->data.base+4;
+      size_t remain = ev->data.size-4;
       Params::RangeLoaded params;
       params.decode(&ptr, &remain);
       loaded(err, false, params.interval); 

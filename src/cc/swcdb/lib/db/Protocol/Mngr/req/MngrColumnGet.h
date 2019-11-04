@@ -17,13 +17,12 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
 
   MngrColumnGet(const Params::ColumnGetReq& params, Cb_t cb) : cb(cb) {
     CommHeader header(COLUMN_GET, 60000);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, params);
   }
   
   virtual ~MngrColumnGet() { }
   
-  void handle(ConnHandlerPtr conn, EventPtr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
     if(was_called || !is_rsp(conn, ev))
       return;
 
@@ -34,8 +33,8 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
 
       if(err == Error::OK){
         try{
-          const uint8_t *ptr = ev->payload+4;
-          size_t remain = ev->payload_len-4;
+          const uint8_t *ptr = ev->data.base+4;
+          size_t remain = ev->data.size-4;
           rsp_params.decode(&ptr, &remain);
         } catch (Exception &e) {
           HT_ERROR_OUT << e << HT_END;
@@ -49,7 +48,7 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
   }
 
   private:
-  Cb_t                  cb;
+  Cb_t   cb;
   
 };
 

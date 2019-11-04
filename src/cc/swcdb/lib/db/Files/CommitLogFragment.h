@@ -276,6 +276,8 @@ class Fragment {
       
       if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)){  
         if(++tries == 3) {
+          HT_WARNF("CHECKSUM_MISMATCH try=%d %s", 
+                    tries, m_smartfd->to_string().c_str());
           err = Error::CHECKSUM_MISMATCH;
           break;
         }

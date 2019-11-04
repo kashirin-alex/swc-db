@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 class RangeLocate : public AppHandler {
   public:
 
-  RangeLocate(ConnHandlerPtr conn, EventPtr ev)
+  RangeLocate(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev) { }
 
   void run() override {
@@ -25,8 +25,8 @@ class RangeLocate : public AppHandler {
     server::Rgr::Range::Ptr range;
 
     try {
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
       params.decode(&ptr, &remain);
 
       range =  Env::RgrColumns::get()->get_range(

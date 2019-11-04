@@ -17,7 +17,7 @@ namespace Callback {
 class RangeLocateScan : public DB::Cells::ReqScan {
   public:
 
-  RangeLocateScan(ConnHandlerPtr conn, EventPtr ev, 
+  RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   DB::Specs::Interval::Ptr spec, 
                   DB::Cells::Mutable::Ptr cells,
                   Range::Ptr range)
@@ -102,9 +102,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     try {
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, params.encoded_length());
-      params.encode(cbp->get_data_ptr_address());
+      auto cbp = CommBuf::make(header, params);
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

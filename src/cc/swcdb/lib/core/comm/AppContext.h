@@ -29,7 +29,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual ~AppContext(){}
 
-  virtual void handle(ConnHandlerPtr conn, EventPtr ev){
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr ev){
     ev->display();
     std::cerr << "AppContext(handle is Virtual!)\n";
   }

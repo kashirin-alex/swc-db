@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 class AssignId : public AppHandler {
   public:
 
-  AssignId(ConnHandlerPtr conn, EventPtr ev, 
+  AssignId(ConnHandlerPtr conn, Event::Ptr ev, 
            Mngr::Req::RgrMngId::Scheduler::Ptr validator)
           : AppHandler(conn, ev), validator(validator) { }
 

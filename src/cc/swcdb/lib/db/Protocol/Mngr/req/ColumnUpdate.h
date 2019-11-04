@@ -13,16 +13,15 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(Params::ColumnMng::Function function, DB::SchemaPtr schema, int err) {
-    Params::ColumnUpdate params(function, schema, err);
+  ColumnUpdate(Params::ColumnMng::Function function, DB::SchemaPtr schema, 
+               int err) {
     CommHeader header(COLUMN_UPDATE, 60000);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::ColumnUpdate(function, schema, err));
   }
   
   virtual ~ColumnUpdate() { }
   
-  void handle(ConnHandlerPtr conn, EventPtr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
     if(was_called || !is_rsp(conn, ev))
       return;
 

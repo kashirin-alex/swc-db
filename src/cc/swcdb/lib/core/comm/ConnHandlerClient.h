@@ -22,11 +22,11 @@ class ConnHandlerClient : public ConnHandler {
 
   void new_connection() override {
     ConnHandler::new_connection();
-    run(std::make_shared<Event>(Event::Type::CONNECTION_ESTABLISHED, Error::OK)); 
+    run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
   }
 
 
-  void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) override {
+  void run(Event::Ptr ev, DispatchHandlerPtr hdlr=nullptr) override {
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
     else if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)

@@ -32,7 +32,7 @@
 
 #include "CommBuf.h"
 #include "Event.h"
-#include "swcdb/lib/core/Serialization.h"
+#include "../Serialization.h"
 
 namespace SWC { namespace Protocol {
 
@@ -41,23 +41,14 @@ static int32_t response_code(const Event *event) {
   if (event->type == Event::ERROR)
     return event->error;
 
-  const uint8_t *msg = event->payload;
-  size_t remaining = event->payload_len;
+  const uint8_t *msg = event->data.base;
+  size_t remaining = event->data.size;
 
   try { return Serialization::decode_i32(&msg, &remaining); }
   catch (Exception &e) { return e.code(); }
 }
 
-    /** Returns the response code from an event <code>event</code> generated
-     * in response to a request message.
-     * If <code>event</code> is of type ERROR, then <code>event->error</code>
-     * is returned, otherwise the response code is decoded from the first four
-     * bytes of the message payload.
-     * @return Error or response code from <code>event</code> or
-     * Error::SERIALIZATION_INPUT_OVERRUN if payload of MESSAGE event is less
-     * than 4 bytes.
-     */
-static int32_t response_code(const EventPtr &event) {
+static int32_t response_code(const Event::Ptr &event) {
   return response_code(event.get());
 }
 
@@ -73,11 +64,12 @@ static int32_t response_code(const EventPtr &event) {
      * @param msg %Error message
      * @return Pointer to Commbuf message holding standard error response
      */
-static CommBufPtr 
+static CommBuf::Ptr 
 create_error_message(CommHeader &header, int error, const char *msg){
-  CommBufPtr cbp = std::make_shared<CommBuf>(header, 4 + Serialization::encoded_length_str16(msg));
+  auto cbp = CommBuf::make(header, 4 + Serialization::encoded_length_str16(msg));
   cbp->append_i32(error);
   cbp->append_str16(msg);
+  cbp->finalize_data();
   return cbp;
 }
 
@@ -103,8 +95,8 @@ static String string_format_message(const Event *event) {
   if (event == 0)
     return String("NULL event");
 
-  const uint8_t *msg = event->payload;
-  size_t remaining = event->payload_len;
+  const uint8_t *msg = event->data.base;
+  size_t remaining = event->data.size;
 
   if (event->type != Event::MESSAGE)
     return event->to_str();
@@ -125,7 +117,7 @@ static String string_format_message(const Event *event) {
   }
 }
 
-static String string_format_message(const EventPtr &event) {
+static String string_format_message(const Event::Ptr &event) {
   return string_format_message(event.get());
 }
 

@@ -12,7 +12,7 @@ class Base : public DispatchHandler {
 
   public:
 
-  CommBufPtr     cbp;
+  CommBuf::Ptr cbp;
   int          error;
   bool    was_called;
 
@@ -20,7 +20,7 @@ class Base : public DispatchHandler {
 
   virtual ~Base() {}
 
-  bool is_rsp(ConnHandlerPtr conn, EventPtr &ev, int cmd, 
+  bool is_rsp(ConnHandlerPtr conn, Event::Ptr &ev, int cmd, 
               const uint8_t **ptr, size_t *remain) { 
     // HT_DEBUGF("handle: %s", ev->to_str().c_str());
 
@@ -34,7 +34,7 @@ class Base : public DispatchHandler {
       case Event::Type::ERROR:
         error = ev->error;
         break;
-      case Event::Type::CONNECTION_ESTABLISHED:
+      case Event::Type::ESTABLISHED:
         return false;
       default:
         break;
@@ -48,8 +48,8 @@ class Base : public DispatchHandler {
     } else if(error == Error::OK 
               && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
                   || error == Error::FS_EOF) {
-      *ptr = ev->payload + 4;
-      *remain = ev->payload_len - 4;
+      *ptr = ev->data.base + 4;
+      *remain = ev->data.size - 4;
     } 
     
     if(error != Error::OK)

@@ -17,7 +17,7 @@ namespace Handler {
 class Append : public AppHandler {
   public:
 
-  Append(ConnHandlerPtr conn, EventPtr ev)
+  Append(ConnHandlerPtr conn, Event::Ptr ev)
          : AppHandler(conn, ev){ }
 
   void run() override {
@@ -28,8 +28,8 @@ class Append : public AppHandler {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       FS::Protocol::Params::AppendReq params;
       params.decode(&ptr, &remain);
@@ -55,14 +55,12 @@ class Append : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::AppendRsp rsp_params(offset, amount);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, 
-                            4+rsp_params.encoded_length());
+      auto cbp = CommBuf::make(
+        header, FS::Protocol::Params::AppendRsp(offset, amount), 4);
       cbp->append_i32(err);
-      rsp_params.encode(cbp->get_data_ptr_address());
-
+      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

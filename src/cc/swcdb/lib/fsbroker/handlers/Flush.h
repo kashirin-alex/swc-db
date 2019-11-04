@@ -17,7 +17,7 @@ namespace Handler {
 class Flush : public AppHandler {
   public:
 
-  Flush(ConnHandlerPtr conn, EventPtr ev)
+  Flush(ConnHandlerPtr conn, Event::Ptr ev)
         : AppHandler(conn, ev){ }
 
   void run() override {
@@ -26,8 +26,8 @@ class Flush : public AppHandler {
     
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       FS::Protocol::Params::FlushReq params;
       params.decode(&ptr, &remain);
@@ -46,8 +46,9 @@ class Flush : public AppHandler {
     try {
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, 4);
+      auto cbp = CommBuf::make(header, 4);
       cbp->append_i32(err);
+      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

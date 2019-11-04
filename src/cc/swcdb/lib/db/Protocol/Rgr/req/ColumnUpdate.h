@@ -17,15 +17,13 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   ColumnUpdate(server::Mngr::RangerPtr rgr, DB::SchemaPtr schema) 
               : Common::Req::ConnQueue::ReqBase(false), 
                 rgr(rgr), schema(schema) {
-    Params::ColumnUpdate params(schema);
     CommHeader header(SCHEMA_UPDATE, 60000);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::ColumnUpdate(schema));
   }
   
   virtual ~ColumnUpdate() { }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
       
     if(was_called)
       return;

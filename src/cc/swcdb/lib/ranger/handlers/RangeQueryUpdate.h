@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 class RangeQueryUpdate : public AppHandler {
   public:
 
-  RangeQueryUpdate(ConnHandlerPtr conn, EventPtr ev)
+  RangeQueryUpdate(ConnHandlerPtr conn, Event::Ptr ev)
                   : AppHandler(conn, ev) { }
 
   void run() override {
@@ -23,11 +23,11 @@ class RangeQueryUpdate : public AppHandler {
     int err = Error::OK;
     Params::RangeQueryUpdateReq params;
     server::Rgr::Range::Ptr range;
-    StaticBufferPtr buffer;
+    StaticBuffer::Ptr buffer;
 
     try {
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
       params.decode(&ptr, &remain);
 
       range =  Env::RgrColumns::get()->get_range(

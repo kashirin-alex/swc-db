@@ -16,7 +16,7 @@ namespace Callback {
 class RangeQueryUpdate : public ResponseCallback {
   public:
 
-  RangeQueryUpdate(ConnHandlerPtr conn, EventPtr ev)
+  RangeQueryUpdate(ConnHandlerPtr conn, Event::Ptr ev)
                   : ResponseCallback(conn, ev) {
   }
 
@@ -24,14 +24,13 @@ class RangeQueryUpdate : public ResponseCallback {
 
   void response(int &err) override {
 
-    Protocol::Rgr::Params::RangeQueryUpdateRsp params(err);
     try {
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, params.encoded_length());
-      params.encode(cbp->get_data_ptr_address());
-
+      auto cbp = CommBuf::make(
+        header, 
+        Protocol::Rgr::Params::RangeQueryUpdateRsp(err)
+      );
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

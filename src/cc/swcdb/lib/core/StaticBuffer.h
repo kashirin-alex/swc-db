@@ -20,10 +20,6 @@
  * 02110-1301, USA.
  */
 
-/** @file
- * A memory buffer of static size.
- * The %StaticBuffer is a memory buffer of static size.
- */
 
 #ifndef swc_core_StaticBuffer_h
 #define swc_core_StaticBuffer_h
@@ -36,48 +32,35 @@
 
 namespace SWC {
 
-  /// @addtogroup Common
-  ///  @{
-
   /** A memory buffer of static size. The actual buffer can be allocated or
    * assigned by the caller. If the StaticBuffer "owns" the pointer then it
    * will be released when going out of scope.
    */
   class StaticBuffer {
   public:
+  
+    typedef std::shared_ptr<StaticBuffer> Ptr;
+
     /** Constructor.  Creates an empty buffer */
-    StaticBuffer()
-      : base(0), alignment(0), size(0), own(true) {
+    StaticBuffer() : base(0), size(0), own(true) {
     }
 
     /** Constructor.
      * Allocates a new buffer of size <code>len</code>. If
-     * <code>alignment</code> is non-zero, then the posix_memalign() function
-     * will be called to obtain memory and #alignment is set to
-     * <code>alignment</code>.  Memory will be released when going out of scope.
      *
      * @param len The size of the new buffer, in bytes
-     * @param alignment Buffer alignment
      */
-    explicit StaticBuffer(size_t len, size_t alignment=0)
-      : alignment(alignment), size(len), own(true) {
+    explicit StaticBuffer(size_t len) : size(len), own(true) {
       allocate();
     }
 
     void allocate(){
-      if (alignment > 0) {
-        void *vptr = 0;
-        size_t aligned_len = (size % alignment) == 0 ? size :
-          ((size / alignment)+1)*alignment;
-        HT_ASSERT(posix_memalign(&vptr, alignment, aligned_len) == 0);
-        base = (uint8_t *)vptr;
-      }
-      else
-        base = new uint8_t[size];
+      base = new uint8_t[size];
     }
 
     void reallocate(uint32_t len) {
       free();
+      own = true;
       size = len;
       allocate();
     }
@@ -92,7 +75,7 @@ namespace SWC {
      *      buffer was allocated with new[]!
      */
     StaticBuffer(void *data, uint32_t len, bool take_ownership = true)
-      : base((uint8_t *)data), alignment(0), size(len), own(take_ownership) {
+                : base((uint8_t *)data), size(len), own(take_ownership) {
     }
 
     /** Constructor; takes ownership from a DynamicBuffer */
@@ -100,16 +83,10 @@ namespace SWC {
       base = dbuf.base;
       size = dbuf.fill();
       own = dbuf.own;
-      alignment = 0;
       if (own) {
         dbuf.base = dbuf.ptr = 0;
         dbuf.size = 0;
       }
-    }
-
-    /** Destructor; if "own" is true then the buffer will be delete[]d */
-    ~StaticBuffer() {
-      free();
     }
 
     /**
@@ -128,51 +105,10 @@ namespace SWC {
       base = other.base;
       size = other.size;
       own = other.own;
-      alignment = other.alignment;
       if (own) {
         other.own = false;
         other.base = 0;
       }
-    }
-
-    /**
-     * Assignment operator.
-     *
-     * WARNING: This assignment operator will cause the ownership of the buffer
-     * to transfer to the lvalue buffer if the own flag is set to 'true' in the
-     * buffer being copied.  The buffer being copied will be modified to have
-     * it's 'own' flag set to false and the 'base' pointer will be set to NULL.
-     * In other words, the buffer being copied is no longer usable after the
-     * assignment.
-     *
-     * @param other Reference to the original instance
-     */
-    StaticBuffer &operator=(StaticBuffer &other) {
-      base = other.base;
-      size = other.size;
-      own = other.own;
-      alignment = other.alignment;
-      if (own) {
-        other.own = false;
-        other.base = 0;
-      }
-      return *this;
-    }
-
-    /** Assignment operator for DynamicBuffer
-     *
-     * @param dbuf Reference to the original DynamicBuffer instance
-     */
-    StaticBuffer &operator=(DynamicBuffer &dbuf) {
-      base = dbuf.base;
-      size = dbuf.fill();
-      own = dbuf.own;
-      alignment = 0;
-      if (own) {
-        dbuf.base = dbuf.ptr = 0;
-        dbuf.size = 0;
-      }
-      return *this;
     }
 
     /** Sets data pointer; the existing buffer is discarded and deleted
@@ -188,32 +124,26 @@ namespace SWC {
       base = data;
       size = len;
       own = take_ownership;
-      alignment = 0;
     }
 
     /** Clears the data; if this object is owner of the data then the allocated
      * buffer is delete[]d */
     void free() {
-      if (own && base) {
-        if (alignment > 0)
-          ::free(base);
-        else
-          delete [] base;
-      }
+      if (own && base)
+        delete [] base;
       base = 0;
       size = 0;
     }
 
-    size_t aligned_size() {
-      if (alignment == 0 || (size % alignment) == 0)
-        return size;
-      return ((size / alignment)+1) * alignment;
+    /** Destructor; if "own" is true then the buffer will be delete[]d */
+    ~StaticBuffer() {
+      free();
     }
 
-    uint8_t *base;
-    size_t alignment;
-    uint32_t size;
-    bool own;
+    uint8_t   *base;
+    uint32_t  size;
+    bool      own;
+
   };
 
   /** "Less than" operator for StaticBuffer; uses @a memcmp */
@@ -239,10 +169,6 @@ namespace SWC {
     return !(sb1 == sb2);
   }
 
-  /// Smart pointer to StaticBuffer
-  typedef std::shared_ptr<StaticBuffer> StaticBufferPtr;
-
-  /// @}
 
 } // namespace SWC
 

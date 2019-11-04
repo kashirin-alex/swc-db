@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
 class Echo : public AppHandler {
   public:
 
-  Echo(ConnHandlerPtr conn, EventPtr ev)
+  Echo(ConnHandlerPtr conn, Event::Ptr ev)
        : AppHandler(conn, ev){}
 
   void run() override {
@@ -22,14 +22,13 @@ class Echo : public AppHandler {
 
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp;
+      CommBuf::Ptr cbp;
 
-      if(m_ev->payload_len > 0) {
-        StaticBuffer buf = StaticBuffer((void*)m_ev->payload, m_ev->payload_len);
-
-        cbp = std::make_shared<CommBuf>(header, 0, buf);
+      if(m_ev->data.size > 0) {
+        StaticBuffer buf = StaticBuffer((void*)m_ev->data.base, m_ev->data.size);
+        cbp = CommBuf::make(header, buf);
       } else 
-        cbp = std::make_shared<CommBuf>(header);
+        cbp = CommBuf::make(header);
       
       m_conn->send_response(cbp);
 

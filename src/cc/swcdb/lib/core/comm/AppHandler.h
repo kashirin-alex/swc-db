@@ -16,15 +16,17 @@ class AppHandler {
   public:
   typedef std::unique_ptr<AppHandler> Ptr;
 
-  AppHandler(ConnHandlerPtr conn, EventPtr ev): m_conn(conn), m_ev(ev){}
+  AppHandler(ConnHandlerPtr conn, Event::Ptr ev)
+             : m_conn(conn), m_ev(ev) {
+  }
     
   virtual ~AppHandler() { }
 
   virtual void run() = 0;
 
   protected:
-  ConnHandlerPtr m_conn;
-  EventPtr m_ev;
+  ConnHandlerPtr  m_conn;
+  Event::Ptr      m_ev;
 };
 
 } // namespace SWC

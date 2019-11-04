@@ -29,11 +29,11 @@ class Range : public DB::RangeBase {
 
   struct ReqAdd {
     public:
-    ReqAdd(const StaticBufferPtr& input, const ResponseCallbackPtr& cb) 
+    ReqAdd(const StaticBuffer::Ptr& input, const ResponseCallback::Ptr& cb) 
           : input(input), cb(cb) {}
     virtual ~ReqAdd() {}
-    const StaticBufferPtr     input;
-    const ResponseCallbackPtr cb;
+    const StaticBuffer::Ptr     input;
+    const ResponseCallback::Ptr cb;
   };
 
   enum State{
@@ -112,7 +112,7 @@ class Range : public DB::RangeBase {
     blocks.scan(req);
   }
 
-  void load(ResponseCallbackPtr cb) {
+  void load(ResponseCallback::Ptr cb) {
     bool is_loaded;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -142,7 +142,7 @@ class Range : public DB::RangeBase {
 
   }
 
-  void take_ownership(int &err, ResponseCallbackPtr cb) {
+  void take_ownership(int &err, ResponseCallback::Ptr cb) {
     if(err == Error::RS_DELETED_RANGE)
       return loaded(err, cb);
 
@@ -315,7 +315,7 @@ class Range : public DB::RangeBase {
 
   private:
 
-  void loaded(int &err, ResponseCallbackPtr cb) {
+  void loaded(int &err, ResponseCallback::Ptr cb) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_state == State::DELETED)
@@ -324,7 +324,7 @@ class Range : public DB::RangeBase {
     cb->response(err);
   }
 
-  void last_rgr_chk(int &err, ResponseCallbackPtr cb) {
+  void last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
     // ranger.data
     Files::RgrDataPtr rs_data = Env::RgrData::get();
     Files::RgrDataPtr rs_last = get_last_rgr(err);
@@ -343,7 +343,7 @@ class Range : public DB::RangeBase {
     take_ownership(err, cb);
   }
 
-  void load(int &err, ResponseCallbackPtr cb) {
+  void load(int &err, ResponseCallback::Ptr cb) {
     bool is_initial_column_range = false;
     Files::RangeData::load(err, blocks.cellstores);
     if(err) 
@@ -473,7 +473,8 @@ class Range : public DB::RangeBase {
 }} // server namespace
 
 
-void Protocol::Rgr::Req::RangeUnload::unloaded(int err, ResponseCallbackPtr cb) {
+void Protocol::Rgr::Req::RangeUnload::unloaded(
+                            int err, ResponseCallback::Ptr cb) {
   server::Rgr::Range::shared(range)->take_ownership(err, cb);
 }
 bool Protocol::Rgr::Req::RangeUnload::valid() {

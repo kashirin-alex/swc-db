@@ -90,15 +90,12 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     req->run();
   }
   
-  static CommBufPtr create(const Params::RgrMngId& params) {
+  static CommBuf::Ptr create(const Params::RgrMngId& params) {
     CommHeader header(RGR_MNG_ID, 60000);
-    CommBufPtr new_cbp = std::make_shared<CommBuf>(
-      header, params.encoded_length());
-    params.encode(new_cbp->get_data_ptr_address());
-    return new_cbp;
+    return CommBuf::make(header, params);
   }
 
-  RgrMngId(Scheduler::Ptr validator, CommBufPtr cbp=nullptr) 
+  RgrMngId(Scheduler::Ptr validator, CommBuf::Ptr cbp=nullptr) 
           : Common::Req::ConnQueue::ReqBase(false, cbp),
             validator(validator) {
   }
@@ -138,7 +135,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
 
     if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
       validator->set(1000);
@@ -152,8 +149,8 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     
     Params::RgrMngId rsp_params;
     try {
-      const uint8_t *ptr = ev->payload;
-      size_t remain = ev->payload_len;
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
  
     } catch (Exception &e) {

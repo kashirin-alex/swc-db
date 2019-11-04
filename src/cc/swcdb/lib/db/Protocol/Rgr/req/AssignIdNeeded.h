@@ -18,12 +18,12 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
                 : Common::Req::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
     CommHeader header(ASSIGN_ID_NEEDED, 60000);
-    cbp = std::make_shared<CommBuf>(header, 0);
+    cbp = CommBuf::make(header);
   }
   
   virtual ~AssignIdNeeded() { }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
 
     if(was_called)
       return;

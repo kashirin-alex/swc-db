@@ -8,117 +8,118 @@
 
 #include "CommHeader.h"
 
-#include "swcdb/lib/core/Clock.h"
-#include "swcdb/lib/core/String.h"
-#include "swcdb/lib/core/Logger.h"
+#include "../Clock.h"
+#include "../Error.h"
+#include "../StaticBuffer.h"
 
 #include <iostream>
 #include <memory>
 
 namespace SWC {
 
-  class Event {
+class Event {
 
   public:
 
-    /** Enumeration for event types.
-     */
-    enum Type { 
-      CONNECTION_ESTABLISHED, ///< Connection established event
-      DISCONNECT,             ///< Connection disconnected event
-      MESSAGE,                ///< Request/response message event
-      ERROR,                  ///< %Error event
-    };
-
-    Event(Type type_, int error_) 
-         : type(type_), error(error_), arrival_time(ClockT::now()) {
-     }
-
-
-    /** Destructor.  Deallocates message payload buffer and proxy name buffer
-     */
-    ~Event() {
-      if (payload_aligned)
-        free((void *)payload);
-      else
-        delete [] payload;
-    }
-
-    /** Loads header object from serialized message buffer.  This method
-     * also sets the group_id member.
-     *
-     * @param buf Buffer containing serialized header
-     * @param len Length of buffer
-     */
-    void load_message_header(const uint8_t *buf, size_t len) {
-      header.decode(&buf, &len);
-    }
-
-    /** Deadline for request.
-     * @return Absolute deadline
-     */
-    ClockT::time_point deadline() {
-      HT_ASSERT(arrival_time.time_since_epoch().count() > 0);
-      return arrival_time + std::chrono::milliseconds(header.timeout_ms);
-    }
-
-    Type type;
-    int error {};
-    CommHeader header;
-    const uint8_t *payload {};
-    size_t payload_len {};
-    ClockT::time_point arrival_time {};
-
-    /// Flag indicating if payload was allocated with posix_memalign
-    bool payload_aligned {};
-
-    /** Generates a one-line string representation of the event.  For example:
-     * <pre>
-     *   Event: type=MESSAGE id=2 gid=0 header_len=16 total_len=20 \
-     *   from=127.0.0.1:15861 ...
-     * </pre>
-     */
-    String to_str() const {
-      std::string dstr = "Event: type=";
-      switch(type){
-        case CONNECTION_ESTABLISHED:
-          dstr += "CONNECTION_ESTABLISHED";
-          break;
-        case DISCONNECT:
-          dstr += "DISCONNECT";
-          break;
-        case MESSAGE:
-          dstr += "MESSAGE" + header.to_string();
-          break;
-        case ERROR:
-          dstr += "ERROR";
-          break;
-        default:
-          dstr += "UKNOWN("+ std::to_string((int)type)+")";
-          break;
-      }
-      
-      if (error != Error::OK)
-        dstr += (String)" \"" + Error::get_text(error) + "\"";
-
-      if(payload_len > 0)
-        dstr += (String)" payload=\"" 
-             + std::string((const char*)payload, payload_len<256?payload_len:256) + "\"";
-
-      return dstr;
-    }
-
-    /** Displays a one-line string representation of the event to stdout.
-     * @see to_str
-     */
-    void display() { std::cerr << to_str() << std::endl; }
-    
+  /** Enumeration for event types.*/
+  enum Type { 
+    ESTABLISHED,  ///< Connection established event
+    DISCONNECT,   ///< Connection disconnected event
+    MESSAGE,      ///< Request/response message event
+    ERROR,        ///< %Error event
   };
 
-  /// Smart pointer to Event
-  typedef std::shared_ptr<Event> EventPtr;
-  /** @}*/
+  typedef std::shared_ptr<Event> Ptr;
 
+  static Ptr make(Type type, int error) {
+    return std::make_shared<Event>(type, error);
+  }
+
+  explicit Event(Type type_, int error_) 
+                : type(type_), error(error_), 
+                  arrival_time(ClockT::now()) {
+   }
+
+  ~Event() { }
+
+  /** Loads header object from serialized message buffer.  This method
+   * also sets the group_id member.
+   *
+   * @param buf Buffer containing serialized header
+   * @param len Length of buffer
+   */
+  void load_message_header(const uint8_t *buf, size_t len) {
+    header.decode(&buf, &len);
+  }
+
+  /** Deadline for request.
+   * @return Absolute deadline
+   */
+  ClockT::time_point deadline() {
+    HT_ASSERT(arrival_time.time_since_epoch().count() > 0);
+    return arrival_time + std::chrono::milliseconds(header.timeout_ms);
+  }
+
+  /** Generates a one-line string representation of the event.  For example:
+   * <pre>
+   *   Event: type=MESSAGE id=2 gid=0 header_len=16 total_len=20 \
+   *   from=127.0.0.1:15861 ...
+   * </pre>
+   */
+  const std::string to_str() const {
+    std::string dstr("Event: type=");
+    switch(type){
+    case ESTABLISHED:
+      dstr += "ESTABLISHED";
+      break;
+    case DISCONNECT:
+      dstr += "DISCONNECT";
+      break;
+    case MESSAGE:
+      dstr += "MESSAGE " + header.to_string();
+      break;
+    case ERROR:
+      dstr += "ERROR";
+      break;
+    default:
+      dstr += "UKNOWN("+ std::to_string((int)type)+")";
+      break;
+    }
+    if (error != Error::OK){
+      dstr.append(" err=");
+      dstr.append(std::to_string(error));
+      dstr.append("(");
+      dstr.append(Error::get_text(error));
+      dstr.append(")");
+    }
+    if(data.size) {
+      dstr.append(" data=(");
+      dstr.append(std::string((const char*)data.base, data.size<256?data.size:256));
+      dstr.append(")");
+    }
+    if(data_ext.size) {
+      dstr.append(" data_ext=(");
+      dstr.append(std::string((const char*)data_ext.base, data_ext.size<256?data_ext.size:256));
+      dstr.append(")");
+    }
+    return dstr;
+  }
+
+  /** Displays a one-line string representation of the event to stdout.
+   * @see to_str
+   */
+  void display() {
+    std::cerr << to_str() << std::endl; 
+  }
+  
+
+  Type                type;
+  int                 error;
+  ClockT::time_point  arrival_time;
+  StaticBuffer        data;     //!< Primary data buffer
+  StaticBuffer        data_ext; //!< Extended buffer
+  CommHeader          header;
+};
 
 } // namespace SWC
 

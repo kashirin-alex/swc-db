@@ -232,7 +232,7 @@ class FileSystem {
   virtual 
   void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
     int err = Error::OK;
-    StaticBufferPtr dst = std::make_shared<StaticBuffer>(amount);
+    StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
     dst->size = read(err, smartfd, dst->base, amount);
   
     cb(err, smartfd, dst);
@@ -244,7 +244,7 @@ class FileSystem {
   void pread(Callback::PreadCb_t cb, SmartFdPtr &smartfd, 
             uint64_t offset, size_t amount) {
     int err = Error::OK;
-    StaticBufferPtr dst = std::make_shared<StaticBuffer>(amount);
+    StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
     dst->size = pread(err, smartfd, offset, dst->base, amount);
   
     cb(err, smartfd, dst);

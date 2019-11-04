@@ -59,11 +59,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     DispatchHandlerPtr hdlr;
     TimerPtr           tm;
     bool               sequential;
-    EventPtr           ev;
+    Event::Ptr         ev;
   };
 
   struct Outgoing {
-    CommBufPtr cbuf;
+    CommBuf::Ptr cbuf;
     DispatchHandlerPtr hdlr; 
     bool sequential;
   };
@@ -146,7 +146,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
 
-  virtual void run(EventPtr ev, DispatchHandlerPtr hdlr=nullptr) {
+  virtual void run(Event::Ptr ev, DispatchHandlerPtr hdlr=nullptr) {
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
     if(ev->type == Event::Type::DISCONNECT)
@@ -157,11 +157,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void do_close(DispatchHandlerPtr hdlr=nullptr){
     if(m_err == Error::OK) {
       close();
-      run(std::make_shared<Event>(Event::Type::DISCONNECT, m_err), hdlr);
+      run(Event::make(Event::Type::DISCONNECT, m_err), hdlr);
     }
   }
 
-  int send_error(int error, const String &msg, EventPtr ev=nullptr) {
+  int send_error(int error, const String &msg, Event::Ptr ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -169,7 +169,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(ev != nullptr)
       header.initialize_from_request_header(ev->header);
     
-    CommBufPtr cbp;
+    CommBuf::Ptr cbp;
     size_t max_msg_size = std::numeric_limits<int16_t>::max();
     if (msg.length() < max_msg_size)
       cbp = Protocol::create_error_message(header, error, msg.c_str());
@@ -180,25 +180,26 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_response(cbp);
   }
 
-  int response_ok(EventPtr ev=nullptr) {
+  int response_ok(Event::Ptr ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
       
     CommHeader header;
     if(ev != nullptr)
       header.initialize_from_request_header(ev->header);
-    CommBufPtr cbp = std::make_unique<CommBuf>(header, 4);
+    auto cbp = CommBuf::make(header, 4);
     cbp->append_i32(Error::OK);
+    cbp->finalize_data();
     return send_response(cbp);
   }
 
-  inline int send_response(CommBufPtr &cbuf, DispatchHandlerPtr hdlr=nullptr){
+  inline int send_response(CommBuf::Ptr &cbuf, DispatchHandlerPtr hdlr=nullptr){
     if(m_err != Error::OK)
       return m_err;
 
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-    cbuf->write_header_and_reset();
-    
+    cbuf->write_header();
+
     write_or_queue({
      .cbuf=cbuf,
      .hdlr=hdlr, 
@@ -207,13 +208,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_err;
   }
 
-  inline int send_response(CommBufPtr &cbuf, uint32_t timeout_ms){
+  inline int send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms){
     if(m_err != Error::OK)
       return m_err;
 
     int e = Error::OK;
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-    cbuf->write_header_and_reset();
+    cbuf->write_header();
 
     std::vector<asio::const_buffer> buffers;
     cbuf->get(buffers);
@@ -238,7 +239,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   /* 
-  inline int send_response_sync(CommBufPtr &cbuf){
+  inline int send_response_sync(CommBuf::Ptr &cbuf){
     if(m_err != Error::OK)
       return m_err;
 
@@ -250,13 +251,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
   */
 
-  inline int send_request(uint32_t timeout_ms, CommBufPtr &cbuf, 
+  inline int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
                     DispatchHandlerPtr hdlr, bool sequential=false) {
     cbuf->header.timeout_ms = timeout_ms;
     return send_request(cbuf, hdlr, sequential);
   }
 
-  inline int send_request(CommBufPtr &cbuf, DispatchHandlerPtr hdlr, 
+  inline int send_request(CommBuf::Ptr &cbuf, DispatchHandlerPtr hdlr, 
                           bool sequential=false) {
     if(m_err != Error::OK)
       return m_err;
@@ -266,7 +267,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(cbuf->header.id == 0)
       cbuf->header.id = next_req_id();
 
-    cbuf->write_header_and_reset();
+    cbuf->write_header();
 
     write_or_queue({
      .cbuf=cbuf, 
@@ -308,7 +309,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       [header, ptr=ptr()]
       (const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
-          EventPtr ev = std::make_shared<Event>(
+          auto ev = Event::make(
             Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
           ev->header = header;
           ptr->run_pending(header.id, ev, true);
@@ -382,7 +383,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       m_reading = true;
     }
 
-    EventPtr ev = std::make_shared<Event>(Event::Type::MESSAGE, Error::OK);
+    Event::Ptr ev = Event::make(Event::Type::MESSAGE, Error::OK);
     uint8_t* data = new uint8_t[CommHeader::FIXED_LENGTH+1];
 
     asio::async_read(
@@ -397,7 +398,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     );
   }
   
-  size_t read_condition_hdlr(EventPtr ev, uint8_t* data,
+  size_t read_condition_hdlr(Event::Ptr ev, uint8_t* data,
                              const asio::error_code e, size_t filled){
     asio::error_code ec = e;
     size_t remain = read_condition(ev, data, ec, filled);
@@ -410,8 +411,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return remain;
   }
   
-  inline size_t read_condition(EventPtr ev, uint8_t* data,
-                        asio::error_code &e, size_t filled){
+  inline size_t read_condition(Event::Ptr ev, uint8_t* data,
+                               asio::error_code &e, size_t filled){
                   
     if(filled < CommHeader::FIXED_LENGTH)
       return CommHeader::FIXED_LENGTH-filled;
@@ -427,40 +428,65 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       e = asio::error::eof;
       return (size_t)0;
     }
-
-    if(ev->header.total_len == ev->header.header_len)
+    ev->display();
+    
+    uint8_t num_buffers = ev->header.buffers;
+    if(!num_buffers)
       return (size_t)0;
 
-    ev->payload_len = ev->header.total_len-ev->header.header_len;
-    uint8_t* payload = new uint8_t[ev->payload_len]; 
-    ev->payload = payload; 
-    
     asio::error_code ec;
-    filled = 0;
-    do{
-      filled += m_sock->read_some(
-        asio::mutable_buffer(payload+filled, ev->payload_len-filled),
-        ec);
-    } while (!ec && filled < ev->payload_len);
+    uint8_t   buf_header[CommHeader::BUFFER_HEADER];
+    size_t    remain;
+    size_t    read;
+    uint32_t  checksum;
+    const uint8_t *ptr;
 
-    if(filled != ev->payload_len) {
-      ev->payload_len=0;
-      e = ec;
-      ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
+    for(uint8_t n=0; n < num_buffers; n++) {
+      ptr = buf_header;
+      m_sock->read_some(
+        asio::mutable_buffer((void*)ptr, CommHeader::BUFFER_HEADER),
+        ec
+      );
+      if(ec)
+        break;
+      StaticBuffer& buffer = n == 0 ? ev->data :  ev->data_ext;
+
+      remain = CommHeader::BUFFER_HEADER;
+      checksum = Serialization::decode_i32(&ptr, &remain);
+      buffer.reallocate(Serialization::decode_i32(&ptr, &remain)); 
+
+      ptr = buffer.base;
+      remain = buffer.size;
+      read = 0;
+      do {
+        read = m_sock->read_some(
+          asio::mutable_buffer((void*)(ptr+=read), remain-=read), ec);
+      } while(!ec && remain);
+      if(ec) 
+        break;
+      if(!checksum_i32_chk(checksum, buffer.base, buffer.size)) {
+        ec = asio::error::eof;
+        break;
+      }
     }
+
+    if(ec) {
+      ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
+      ev->data.free();
+      ev->data_ext.free();
+      HT_WARNF("read, REQUEST PAYLOAD_TRUNCATED: filled=%d error=%s ", 
+                filled, ec, ev->to_str().c_str());
+    }
+
     /*
     std::cout << "read id=" << ev->header.id << " len=" << ev->header.total_len  
               << " filled=" << filled 
               << " ec=" << ec << " " << endpoint_remote_str() << "\n";
     */
-    if(e){ 
-      HT_WARNF("read, REQUEST PAYLOAD_TRUNCATED: filled=%d error=%s ", 
-              filled, ec, ev->to_str().c_str());
-    }
     return (size_t)0;
   }
 
-  void received(EventPtr ev, const asio::error_code ec, size_t filled){
+  void received(Event::Ptr ev, const asio::error_code ec, size_t filled){
     ev->arrival_time = ClockT::now();
     if(ec) {
       do_close();
@@ -496,11 +522,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       }
       
       if(q.tm != nullptr) q.tm->cancel();
-      run(std::make_shared<Event>(Event::Type::DISCONNECT, m_err), q.hdlr);
+      run(Event::make(Event::Type::DISCONNECT, m_err), q.hdlr);
     }
   }
 
-  inline void run_pending(uint32_t id, EventPtr ev, bool cancelling=false){
+  inline void run_pending(uint32_t id, Event::Ptr ev, bool cancelling=false){
     bool found_current = false;
     bool found_not = false;
     bool found_next;

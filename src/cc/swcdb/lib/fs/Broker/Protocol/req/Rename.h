@@ -20,9 +20,7 @@ class Rename : public Base {
     HT_DEBUGF("rename '%s' to '%s'", from.c_str(), to.c_str());
 
     CommHeader header(Cmd::FUNCTION_RENAME, timeout);
-    Params::RenameReq params(from, to);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::RenameReq(from, to));
   }
 
   std::promise<void> promise(){
@@ -31,7 +29,7 @@ class Rename : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

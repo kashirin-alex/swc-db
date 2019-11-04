@@ -51,8 +51,7 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
   ColumnMng(const Params::ColumnMng& params, const Cb_t cb, const uint32_t timeout)
             : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
     CommHeader header(COLUMN_MNG, timeout);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, params);
   }
 
   virtual ~ColumnMng(){}
@@ -74,7 +73,7 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
 
     if(ev->type == Event::Type::DISCONNECT){
       handle_no_conn();

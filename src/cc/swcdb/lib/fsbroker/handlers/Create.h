@@ -18,7 +18,7 @@ namespace Handler {
 class Create : public AppHandler {
   public:
 
-  Create(ConnHandlerPtr conn, EventPtr ev)
+  Create(ConnHandlerPtr conn, Event::Ptr ev)
          : AppHandler(conn, ev){ }
 
   void run() override {
@@ -28,8 +28,8 @@ class Create : public AppHandler {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       FS::Protocol::Params::CreateReq params;
       params.decode(&ptr, &remain);
@@ -51,14 +51,11 @@ class Create : public AppHandler {
     }
   
     try {
-      FS::Protocol::Params::OpenRsp rsp_params(fd);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(header, 
-                            4+rsp_params.encoded_length());
+      auto cbp = CommBuf::make(header, FS::Protocol::Params::OpenRsp(fd), 4);
       cbp->append_i32(err);
-      rsp_params.encode(cbp->get_data_ptr_address());
-
+      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

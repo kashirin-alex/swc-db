@@ -17,7 +17,7 @@ namespace Callback {
 class RangeLoaded : public ResponseCallback {
   public:
 
-  RangeLoaded(ConnHandlerPtr conn, EventPtr ev, 
+  RangeLoaded(ConnHandlerPtr conn, Event::Ptr ev, 
               const int64_t cid, const int64_t rid)
             : ResponseCallback(conn, ev), cid(cid), rid(rid) {
     Env::RgrData::in_process(1);
@@ -44,11 +44,9 @@ class RangeLoaded : public ResponseCallback {
       range->get_interval(params.interval);
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBufPtr cbp = std::make_shared<CommBuf>(
-        header, 4+params.encoded_length());
+      auto cbp = CommBuf::make(header, params, 4);
       cbp->append_i32(err);
-      params.encode(cbp->get_data_ptr_address());
-
+      cbp->finalize_data();
       m_conn->send_response(cbp);
       Env::RgrData::in_process(-1);
       return;

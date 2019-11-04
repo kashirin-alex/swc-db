@@ -24,16 +24,16 @@ class RangeIsLoaded : public DispatchHandler {
   virtual ~RangeIsLoaded() { }
   
   bool run(uint32_t timeout=60000) override {
-    Params::RangeIsLoaded params(range->cid, range->rid);
     CommHeader header(RANGE_IS_LOADED, timeout);
-    CommBufPtr cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    auto cbp = CommBuf::make(
+      header, Params::RangeIsLoaded(range->cid, range->rid)
+    );
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
 
   void disconnected() {};
 
-  void handle(ConnHandlerPtr conn_ptr, EventPtr &ev) {
+  void handle(ConnHandlerPtr conn_ptr, Event::Ptr &ev) {
     
     // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     

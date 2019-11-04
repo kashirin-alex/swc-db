@@ -15,14 +15,14 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class ColumnUpdate : public AppHandler {
   public:
 
-    ColumnUpdate(ConnHandlerPtr conn, EventPtr ev)
+    ColumnUpdate(ConnHandlerPtr conn, Event::Ptr ev)
                 : AppHandler(conn, ev){}
 
   void run() override {
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::ColumnUpdate params;
       params.decode(&ptr, &remain);

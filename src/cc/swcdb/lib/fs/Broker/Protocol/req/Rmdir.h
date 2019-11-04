@@ -19,9 +19,7 @@ class Rmdir : public Base {
     HT_DEBUGF("rmdir path='%s'", name.c_str());
 
     CommHeader header(Cmd::FUNCTION_RMDIR, timeout);
-    Params::RmdirReq params(name);
-    cbp = CommBufPtr(new CommBuf(header, params.encoded_length()));
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::RmdirReq(name));
   }
 
   std::promise<void> promise(){
@@ -30,7 +28,7 @@ class Rmdir : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
 
     const uint8_t *ptr;
     size_t remain;

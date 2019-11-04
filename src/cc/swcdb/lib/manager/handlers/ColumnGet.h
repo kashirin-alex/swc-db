@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class ColumnGet : public AppHandler {
   public:
 
-  ColumnGet(ConnHandlerPtr conn, EventPtr ev)
+  ColumnGet(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev){}
 
   DB::SchemaPtr get_schema(int &err, Params::ColumnGetReq params) {
@@ -42,8 +42,8 @@ class ColumnGet : public AppHandler {
 
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::ColumnGetReq req_params;
       req_params.decode(&ptr, &remain);
@@ -86,7 +86,7 @@ class ColumnGet : public AppHandler {
     response(m_conn, m_ev, err, flag, nullptr);
   }
 
-  static void response(ConnHandlerPtr conn, EventPtr ev,
+  static void response(ConnHandlerPtr conn, Event::Ptr ev,
                         int err, Params::ColumnGetReq::Flag flag, 
                         DB::SchemaPtr schema){
 
@@ -96,17 +96,20 @@ class ColumnGet : public AppHandler {
     try {
       CommHeader header;
       header.initialize_from_request_header(ev->header);
-      CommBufPtr cbp;
+      CommBuf::Ptr cbp;
 
       if(err == Error::OK) {
-        Params::ColumnGetRsp rsp_params(flag, schema);
-        cbp = std::make_shared<CommBuf>(header, 4+rsp_params.encoded_length());
+        cbp = CommBuf::make(
+          header, 
+          Params::ColumnGetRsp(flag, schema), 
+          4
+        );
         cbp->append_i32(err);
-        rsp_params.encode(cbp->get_data_ptr_address());
-
+        cbp->finalize_data();
       } else {
-        cbp = std::make_shared<CommBuf>(header, 4);
+        cbp = CommBuf::make(header, 4);
         cbp->append_i32(err);
+        cbp->finalize_data();
       }
 
       conn->send_response(cbp);

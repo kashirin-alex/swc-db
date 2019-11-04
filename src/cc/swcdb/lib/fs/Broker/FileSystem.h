@@ -93,8 +93,7 @@ class FileSystemBroker: public FileSystem {
     client::ClientConPtr conn = nullptr;
     do {
       if(!m_run) {
-        EventPtr ev = std::make_shared<Event>(
-          Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
+        auto ev = Event::make(Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
         hdlr->handle(conn, ev);
         return true;
       }

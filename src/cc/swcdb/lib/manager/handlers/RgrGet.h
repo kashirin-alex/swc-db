@@ -15,7 +15,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 class RgrGet : public AppHandler {
   public:
 
-  RgrGet(ConnHandlerPtr conn, EventPtr ev) : AppHandler(conn, ev){ }
+  RgrGet(ConnHandlerPtr conn, Event::Ptr ev) 
+        : AppHandler(conn, ev){ }
 
   void run() override {
 
@@ -23,8 +24,8 @@ class RgrGet : public AppHandler {
     
     try {
 
-      const uint8_t *ptr = m_ev->payload;
-      size_t remain = m_ev->payload_len;
+      const uint8_t *ptr = m_ev->data.base;
+      size_t remain = m_ev->data.size;
 
       Params::RgrGetReq params;
       params.decode(&ptr, &remain);
@@ -80,9 +81,7 @@ class RgrGet : public AppHandler {
         std::cout << "RgrGet(RSP): " << rsp_params.to_string() << "\n";
         CommHeader header;
         header.initialize_from_request_header(m_ev->header);
-        CommBufPtr cbp = std::make_shared<CommBuf>(
-          header, rsp_params.encoded_length());
-        rsp_params.encode(cbp->get_data_ptr_address());
+        auto cbp = CommBuf::make(header, rsp_params);
         m_conn->send_response(cbp);
       } catch (Exception &e) {
         HT_ERROR_OUT << e << HT_END;

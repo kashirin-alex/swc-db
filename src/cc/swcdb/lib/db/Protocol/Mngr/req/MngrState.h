@@ -14,20 +14,18 @@ namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 class MngrState : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  MngrState(ResponseCallbackPtr cb, server::Mngr::MngrsStatus &states, 
+  MngrState(ResponseCallback::Ptr cb, server::Mngr::MngrsStatus &states, 
             uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
             : cb(cb) {
-    Params::MngrState params(states, token, mngr_host);
     CommHeader header(MNGR_STATE, timeout);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length());
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, Params::MngrState(states, token, mngr_host));
   }
   
   virtual ~MngrState() { }
 
   void disconnected(ConnHandlerPtr conn);
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
     if(was_called)
       return;
 
@@ -52,7 +50,7 @@ class MngrState : public Common::Req::ConnQueue::ReqBase {
   }
 
   private:
-  ResponseCallbackPtr   cb;
+  ResponseCallback::Ptr   cb;
 };
 
 }}}}

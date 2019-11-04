@@ -41,8 +41,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
     // timeout by buffer->fill() bytes ratio
     CommHeader header(RANGE_QUERY_UPDATE, timeout);
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-    cbp = std::make_shared<CommBuf>(header, params.encoded_length(), snd_buf);
-    params.encode(cbp->get_data_ptr_address());
+    cbp = CommBuf::make(header, params, snd_buf);
   }
 
   virtual ~RangeQueryUpdate(){}
@@ -56,7 +55,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, EventPtr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
     
     //std::cout << "RangeQueryUpdateRsp " << ev->to_str() << "\n";
     if(ev->type == Event::Type::DISCONNECT){
@@ -72,8 +71,8 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
     }
 
     try{
-      const uint8_t *ptr = ev->payload;
-      size_t remain = ev->payload_len;
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
