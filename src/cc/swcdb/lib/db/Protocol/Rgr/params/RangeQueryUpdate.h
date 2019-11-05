@@ -19,14 +19,13 @@ class RangeQueryUpdateReq : public Serializable {
 
   RangeQueryUpdateReq() {}
 
-  RangeQueryUpdateReq(int64_t cid, int64_t rid, uint32_t size)
-                      : cid(cid), rid(rid), size(size) {}
+  RangeQueryUpdateReq(int64_t cid, int64_t rid)
+                      : cid(cid), rid(rid) {}
 
   virtual ~RangeQueryUpdateReq(){ }
 
   int64_t           cid;
   int64_t           rid;
-  uint32_t          size;
   
   const std::string to_string() {
     std::string s("RangeQueryUpdateReq(");
@@ -34,8 +33,6 @@ class RangeQueryUpdateReq : public Serializable {
     s.append(std::to_string(cid));
     s.append(" rid=");
     s.append(std::to_string(rid));
-    s.append(" size=");
-    s.append(std::to_string(size));
     s.append(")");
     return s;
   }
@@ -48,21 +45,18 @@ class RangeQueryUpdateReq : public Serializable {
 
   size_t encoded_length_internal() const {
     return  Serialization::encoded_length_vi64(cid)
-          + Serialization::encoded_length_vi64(rid)
-          + Serialization::encoded_length_vi32(size);
+          + Serialization::encoded_length_vi64(rid);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    Serialization::encode_vi32(bufp, size);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    size = Serialization::decode_vi32(bufp, remainp);
   }
 
 };

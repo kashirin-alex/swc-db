@@ -375,8 +375,7 @@ class Update : public std::enable_shared_from_this<Update> {
         updater->result->completion++;
     
         Rgr::Req::RangeQueryUpdate::request(
-          Rgr::Params::RangeQueryUpdateReq(
-            cells_cid, rid, cells_buff->fill()), 
+          Rgr::Params::RangeQueryUpdateReq(cells_cid, rid), 
           cells_buff, 
           endpoints, 
           [cells_buff, base_req, ptr=shared_from_this()]() {

@@ -33,20 +33,14 @@ class Append : public AppHandler {
 
       FS::Protocol::Params::AppendReq params;
       params.decode(&ptr, &remain);
-
-      if (remain != params.get_size()) {
-        err = Error::SERIALIZATION_INPUT_OVERRUN;
-
-      } else { 
-        FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
-        if(smartfd == nullptr)
-          err = EBADR;
-        else {
-          offset = smartfd->pos();
-          StaticBuffer buffer((uint8_t*)ptr, params.get_size(), false);
-          amount = Env::FsInterface::fs()->append(
-            err, smartfd, buffer, (FS::Flags)params.get_flags());
-        }
+      
+      FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
+      if(smartfd == nullptr)
+        err = EBADR;
+      else {
+        offset = smartfd->pos();
+        amount = Env::FsInterface::fs()->append(
+          err, smartfd, m_ev->data_ext, (FS::Flags)params.get_flags());
       }
     }
     catch (Exception &e) {
@@ -60,7 +54,6 @@ class Append : public AppHandler {
       auto cbp = CommBuf::make(
         header, FS::Protocol::Params::AppendRsp(offset, amount), 4);
       cbp->append_i32(err);
-      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

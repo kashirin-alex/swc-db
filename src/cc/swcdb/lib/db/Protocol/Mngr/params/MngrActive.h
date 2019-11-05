@@ -14,9 +14,9 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class MngrActiveReq : public Serializable {
   public:
 
-    MngrActiveReq() {}
-
-    MngrActiveReq(size_t begin, size_t end) : begin(begin), end(end){}
+    MngrActiveReq(size_t begin=0, size_t end=0) 
+                  : begin(begin), end(end){
+    }
 
     size_t begin; 
     size_t end;

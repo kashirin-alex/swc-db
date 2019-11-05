@@ -87,65 +87,50 @@ class CommBuf {
           StaticBuffer& buffer, uint32_t reserve=0) 
           : header(hdr), buf_ext(buffer) {
     set_data(params, reserve);
-    set_ext();
   }
 
   CommBuf(CommHeader &hdr, StaticBuffer& buffer) 
           : header(hdr), buf_ext(buffer) {
-    set_ext();
   }
 
   virtual ~CommBuf() { }
-  
+
+  void set_data(uint32_t sz) {
+    buf_data.reallocate(sz);
+    data_ptr = buf_data.base; 
+  }
+
+  void set_data(const Serializable& params, uint32_t reserve) {
+    set_data(reserve + params.encoded_length());
+
+    data_ptr = buf_data.base + reserve;
+    params.encode(&data_ptr);
+    data_ptr = buf_data.base;
+  }
+
   void write_header() {
-    if(ready)
-      return;
-    ready = true;
+    if(buf_data.size) {
+      header.data_size   = buf_data.size;
+      header.data_chksum = fletcher32(buf_data.base, buf_data.size);
+    }
+    if(buf_ext.size) {  
+      header.data_ext_size   = buf_ext.size;
+      header.data_ext_chksum = fletcher32(buf_ext.base, buf_ext.size);
+    }
     buf_header.reallocate(header.encoded_length());
     uint8_t *buf = buf_header.base;
     header.encode(&buf);
   }
 
-  void set_data(uint32_t reserve) {
-    header.buffers++;
-    buf_data.reallocate(8+reserve);
-    
-    data_ptr = buf_data.base; 
-    Serialization::encode_i32(&data_ptr, 0); // reserved for checksum
-    Serialization::encode_i32(&data_ptr, buf_data.size);
-  }
+  void get(std::vector<asio::const_buffer>& buffers) {
 
-  void set_data(const Serializable& params, uint32_t reserve) {
-    set_data(reserve+params.encoded_length());
-
-    data_ptr = buf_data.base + 8 + reserve;
-    params.encode(&data_ptr);
-    data_ptr = buf_data.base + 8;
-  }
-
-  void finalize_data() {
-    uint8_t * ptr = buf_data.base;
-    checksum_i32(ptr+4, buf_data.size-4, &ptr);
-  }
-
-  void set_ext() {
-    header.buffers++;
-    buf_ext_header.reallocate(8);
-    uint8_t * ptr = buf_ext_header.base; 
-    checksum_i32(buf_ext.base, buf_ext.size, &ptr);
-    Serialization::encode_i32(&ptr, buf_ext.size);
-  }
-  
-  void get(std::vector<asio::const_buffer>& buffers) const {
+    write_header();
     buffers.push_back(asio::buffer(buf_header.base, buf_header.size));
 
     if(buf_data.size) 
       buffers.push_back(asio::buffer(buf_data.base, buf_data.size));
-    
-    if(buf_ext.size) {
-      buffers.push_back(asio::buffer(buf_ext_header.base, buf_ext_header.size));
+    if(buf_ext.size) 
       buffers.push_back(asio::buffer(buf_ext.base, buf_ext.size));
-    }
   }
 
   /** Returns the primary buffer internal data pointer
@@ -274,13 +259,11 @@ class CommBuf {
   StaticBuffer          buf_header;     //!< Header buffer
   StaticBuffer          buf_data;       //!< Primary data buffer
   StaticBuffer          buf_ext;        //!< Extended buffer
-  StaticBuffer          buf_ext_header; //!< Extended header buffer 
 
   protected:
 
   /// Write pointer into #buf_data
   uint8_t   *data_ptr;
-  bool      ready = false;
 
 };
 

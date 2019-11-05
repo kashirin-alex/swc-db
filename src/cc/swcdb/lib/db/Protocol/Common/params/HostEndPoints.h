@@ -16,7 +16,8 @@ class HostEndPoints: public Serializable {
 
   HostEndPoints() {}
 
-  HostEndPoints(const EndPoints& points) : endpoints(points) { }
+  HostEndPoints(const EndPoints& points) 
+               : endpoints(points) { }
   
   virtual ~HostEndPoints(){ }
 
@@ -61,6 +62,7 @@ class HostEndPoints: public Serializable {
     s.append(")");
     return s;
   }
+  
   EndPoints    endpoints;
 };
 

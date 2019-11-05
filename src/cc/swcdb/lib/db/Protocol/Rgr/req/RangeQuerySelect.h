@@ -73,17 +73,12 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       const uint8_t *ptr = ev->data.base;
       size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
-      rsp_params.bufp = ptr;
-      
-      if(rsp_params.size 
-        && !checksum_i32_chk(
-          rsp_params.checksum , rsp_params.bufp, rsp_params.size))
-        rsp_params.err = Error::CHECKSUM_MISMATCH;
 
-      if(remain != rsp_params.size) {
-        std::cerr << "RangeQuerySelect remain=" << remain << " rsp_params.size=" << rsp_params.size << "\n";
-        exit(1);
-      }
+      rsp_params.bufp = ev->data_ext.base;
+      rsp_params.size = ev->data_ext.size;
+      
+      ptr = ev->data_ext.base;
+      remain = ev->data_ext.size;
       DB::Cells::Cell cell;
       while(remain) {
         cell.read(&ptr, &remain);

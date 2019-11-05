@@ -49,18 +49,15 @@ class Read : public Base {
     if(error == Error::OK || error == Error::FS_EOF) {
       Params::ReadRsp params;
       params.decode(&ptr, &remain);
-      size_t offset = params.get_offset();
-      amount = params.get_amount();
-      smartfd->pos(offset+amount);
+      amount = ev->data_ext.size;
+      smartfd->pos(params.get_offset()+amount);
 
-      if(remain != amount) {
-        error = Error::SERIALIZATION_INPUT_OVERRUN;
-      } else if(amount > 0) {
+      if(amount > 0) {
         if(buffer == nullptr) {
-          buf = std::make_shared<StaticBuffer>(remain); 
-          buffer = buf->base;
+          buf = std::make_shared<StaticBuffer>(ev->data_ext); 
+        } else {
+          memcpy(buffer, ev->data_ext.base, amount);
         }
-        memcpy(buffer, ptr, remain);
       }
     }
 

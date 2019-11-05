@@ -20,16 +20,14 @@ class WriteReq : public Serializable {
   WriteReq() {}
 
   WriteReq(const std::string &fname, uint32_t flags,
-	          int32_t replication, int64_t blksz, int32_t size)
+	          int32_t replication, int64_t blksz)
             : m_fname(fname), m_flags(flags),
-	            m_replication(replication), m_blksz(blksz), 
-              m_size(size) {}
+	            m_replication(replication), m_blksz(blksz) {
+  }
 
   const std::string get_name() { return m_fname; }
 
   uint32_t get_flags() { return m_flags; }
-
-  int32_t get_size() { return m_size; }
 
   int32_t get_replication() { return m_replication; }
 
@@ -42,7 +40,7 @@ class WriteReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return 20 + Serialization::encoded_length_vstr(m_fname);
+    return 16 + Serialization::encoded_length_vstr(m_fname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
@@ -50,7 +48,6 @@ class WriteReq : public Serializable {
     Serialization::encode_i32(bufp, m_replication);
     Serialization::encode_i64(bufp, m_blksz);
     Serialization::encode_vstr(bufp, m_fname);
-    Serialization::encode_i32(bufp, m_size);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
@@ -61,7 +58,6 @@ class WriteReq : public Serializable {
     m_blksz = (int64_t)Serialization::decode_i64(bufp, remainp);
     m_fname.clear();
     m_fname.append(Serialization::decode_vstr(bufp, remainp));
-    m_size = (int32_t)Serialization::decode_i32(bufp, remainp);
   }
 
   /// File name
@@ -69,9 +65,6 @@ class WriteReq : public Serializable {
 
   /// Write flags
   uint32_t m_flags;
-
-  /// Size of data buffer
-  uint32_t m_size {};
 
   /// Replication
   int32_t m_replication;

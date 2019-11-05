@@ -57,7 +57,6 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
   ColumnGet(const Params::ColumnGetReq& params, const Cb_t cb, 
             const uint32_t timeout) 
             : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
-
     CommHeader header(Mngr::COLUMN_GET, timeout);
     cbp = CommBuf::make(header, params);
   }

@@ -17,7 +17,8 @@ class ColumnUpdate : public Serializable {
   ColumnUpdate() {}
 
   ColumnUpdate(ColumnMng::Function function, DB::SchemaPtr schema, int err) 
-              : function(function), schema(schema), err(err) {}
+              : function(function), schema(schema), err(err) {
+  }
 
   const std::string to_string() {
     std::string s("Update-params:\n");
@@ -32,8 +33,8 @@ class ColumnUpdate : public Serializable {
   }
   
   ColumnMng::Function   function;
-  DB::SchemaPtr   schema;
-  int             err;
+  DB::SchemaPtr         schema;
+  int                   err;
 
   private:
 

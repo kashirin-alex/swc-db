@@ -52,7 +52,6 @@ class Seek : public AppHandler {
       auto cbp = CommBuf::make(
         header, FS::Protocol::Params::SeekRsp(offset), 4);
       cbp->append_i32(err);
-      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

@@ -20,13 +20,13 @@ class Append : public Base {
         StaticBuffer &buffer, Flags flags, Callback::AppendCb_t cb=0) 
         : smartfd(smartfd), cb(cb), amount(0) {
 
-    HT_DEBUGF("append flags=%d timeout=%d %s", 
-              flags, timeout, smartfd->to_string().c_str());
+    HT_DEBUGF("append flags=%d timeout=%d amount=%d %s", 
+              flags, timeout, buffer.size, smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_APPEND, timeout);
     cbp = CommBuf::make(
       header,
-      Params::AppendReq(smartfd->fd(), buffer.size, (uint8_t)flags),
+      Params::AppendReq(smartfd->fd(), (uint8_t)flags),
       buffer
     );
   }
@@ -49,9 +49,8 @@ class Append : public Base {
     if(error == Error::OK) {
       Params::AppendRsp params;
       params.decode(&ptr, &remain);
-      size_t offset = params.get_offset();
       amount = params.get_amount();
-      smartfd->pos(offset+amount);
+      smartfd->pos(params.get_offset()+amount);
     }
 
     HT_DEBUGF("append %s amount='%d' error='%d'", 

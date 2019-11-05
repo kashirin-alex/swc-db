@@ -18,13 +18,13 @@ class Write : public Base {
         Callback::WriteCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
 
-    HT_DEBUGF("write %s", smartfd->to_string().c_str());
+    HT_DEBUGF("write amount=%d %s", buffer.size, smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_WRITE, timeout);
     cbp = CommBuf::make(
       header, 
       Params::WriteReq(smartfd->filepath(), smartfd->flags(), 
-                       replication, blksz, buffer.size), 
+                       replication, blksz), 
       buffer
     );
   }

@@ -14,17 +14,15 @@ class NotImplemented : public AppHandler {
   public:
 
   NotImplemented(ConnHandlerPtr conn, Event::Ptr ev)
-       : AppHandler(conn, ev){}
+                : AppHandler(conn, ev){
+  }
 
   void run() override {
     try {
-
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);      
       auto cbp = CommBuf::make(header, 4);
       cbp->append_i32(Error::NOT_IMPLEMENTED);
-      cbp->finalize_data();
-
       m_conn->send_response(cbp);
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

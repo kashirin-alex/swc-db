@@ -15,23 +15,17 @@ class Echo : public AppHandler {
   public:
 
   Echo(ConnHandlerPtr conn, Event::Ptr ev)
-       : AppHandler(conn, ev){}
+       : AppHandler(conn, ev){
+  }
 
   void run() override {
     try {
-
       CommHeader header;
       header.initialize_from_request_header(m_ev->header);
-      CommBuf::Ptr cbp;
-
-      if(m_ev->data.size > 0) {
-        StaticBuffer buf = StaticBuffer((void*)m_ev->data.base, m_ev->data.size);
-        cbp = CommBuf::make(header, buf);
-      } else 
-        cbp = CommBuf::make(header);
-      
+      CommBuf::Ptr cbp = m_ev->data_ext.size ? 
+                          CommBuf::make(header, m_ev->data_ext) 
+                        : CommBuf::make(header);
       m_conn->send_response(cbp);
-
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }

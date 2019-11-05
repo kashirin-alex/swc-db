@@ -42,16 +42,6 @@ class Event {
 
   ~Event() { }
 
-  /** Loads header object from serialized message buffer.  This method
-   * also sets the group_id member.
-   *
-   * @param buf Buffer containing serialized header
-   * @param len Length of buffer
-   */
-  void load_message_header(const uint8_t *buf, size_t len) {
-    header.decode(&buf, &len);
-  }
-
   /** Deadline for request.
    * @return Absolute deadline
    */

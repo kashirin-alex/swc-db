@@ -14,7 +14,9 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
   class ColumnId : public Serializable {
   public:
 
-    ColumnId(int64_t cid = 0) : cid(cid){}
+    ColumnId(int64_t cid = 0) 
+             : cid(cid){
+    }
              
     virtual ~ColumnId() {}
 

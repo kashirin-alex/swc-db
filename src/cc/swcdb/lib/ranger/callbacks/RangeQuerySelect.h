@@ -44,18 +44,18 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     CommBuf::Ptr cbp;
     CommHeader header;
     header.initialize_from_request_header(m_ev->header);
-    Protocol::Rgr::Params::RangeQuerySelectRsp params(err);
+    Protocol::Rgr::Params::RangeQuerySelectRsp params(
+      err,  
+      limit_buffer_sz <= cells->size_bytes()
+    );
 
     if(cells->size() > 0) {
       DynamicBuffer buffer;
       cells->write(buffer);
       StaticBuffer sndbuf(buffer);
 
-      params.reached_limit = limit_buffer_sz <= cells->size_bytes();
-      params.size = sndbuf.size;
-      params.checksum = sndbuf.size ? fletcher32(sndbuf.base, sndbuf.size) : 0;
-      
       cbp = CommBuf::make(header, params, sndbuf);
+      
       // temp checkup
       const uint8_t* ptr = cbp->buf_ext.base;
       size_t remainp = cbp->buf_ext.size;

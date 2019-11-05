@@ -20,7 +20,7 @@ class Close : public Base {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
 
     CommHeader header(Cmd::FUNCTION_CLOSE, timeout);    
-    cbp = CommBuf::make(header,  Params::CloseReq(smartfd->fd()));
+    cbp = CommBuf::make(header, Params::CloseReq(smartfd->fd()));
   }
 
   std::promise<void> promise(){

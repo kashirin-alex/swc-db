@@ -81,12 +81,10 @@ class ReadRsp : public Serializable {
 
   ReadRsp() {}
 
-  ReadRsp(uint64_t offset, uint32_t amount)
-           : m_offset(offset), m_amount(amount) {}
+  ReadRsp(uint64_t offset) 
+          : m_offset(offset) {}
 
   uint64_t get_offset() { return m_offset; }
-
-  uint32_t get_amount() { return m_amount; }
 
   private:
 
@@ -95,26 +93,22 @@ class ReadRsp : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-      return 12;
+      return 8;
   }
 
   void encode_internal(uint8_t **bufp) const override {
     Serialization::encode_i64(bufp, m_offset);
-    Serialization::encode_i32(bufp, m_amount);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 			     size_t *remainp) override {
     (void)version;
     m_offset = Serialization::decode_i64(bufp, remainp);
-    m_amount = Serialization::decode_i32(bufp, remainp);
   }
   
   /// Offset at which data was appended
   uint64_t m_offset {};
 
-  /// Amount of data appended
-  uint32_t m_amount {};
 };
 
 }}}}

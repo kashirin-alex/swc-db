@@ -34,11 +34,10 @@ class Write : public AppHandler {
       FS::SmartFdPtr smartfd 
         = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
  
-      StaticBuffer buffer((uint8_t*)ptr, params.get_size(), false);
       Env::FsInterface::fs()->write(
         err, smartfd,
         params.get_replication(), params.get_block_size(),
-        buffer
+        m_ev->data_ext
       );
 
     }
@@ -52,7 +51,6 @@ class Write : public AppHandler {
       header.initialize_from_request_header(m_ev->header);
       auto cbp = CommBuf::make(header, 4);
       cbp->append_i32(err);
-      cbp->finalize_data();
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

@@ -81,15 +81,15 @@ class RangeQuerySelectReq : public Serializable {
 class RangeQuerySelectRsp  : public Serializable {
   public:
 
-  RangeQuerySelectRsp(int err = 0, size_t size=0, bool reached_limit=false) 
-                      : err(err), size(size), reached_limit(reached_limit), 
-                        checksum(0) {  }
+  RangeQuerySelectRsp(int err = 0, bool reached_limit=false) 
+                      : err(err), reached_limit(reached_limit) {  
+  }
 
   int32_t         err;
-  size_t          size;
   bool            reached_limit;
-  const uint8_t * bufp; // set to event::payload_ptr
-  uint32_t        checksum;
+  
+  const uint8_t * bufp; // set to event::data_ext.base
+  uint32_t        size; // set to event::data_ext.size
 
   const std::string to_string() {
     std::string s("RangeQuerySelectRsp(");
@@ -98,12 +98,8 @@ class RangeQuerySelectRsp  : public Serializable {
     s.append("(");
     s.append(Error::get_text(err));
     s.append(")");
-    s.append(" size=");
-    s.append(std::to_string(size));
     s.append(" reached_limit=");
     s.append(std::to_string(reached_limit));
-    s.append(" checksum=");
-    s.append(std::to_string(checksum));
     s.append(")");
     return s;
   }
@@ -116,24 +112,18 @@ class RangeQuerySelectRsp  : public Serializable {
     
   size_t encoded_length_internal() const {
     return  Serialization::encoded_length_vi32(err)
-          + Serialization::encoded_length_vi64(size)
-          + 1
-          + Serialization::encoded_length_vi32(checksum);
+          + 1;
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
-    Serialization::encode_vi64(bufp, size);
     Serialization::encode_bool(bufp, reached_limit);
-    Serialization::encode_vi32(bufp, checksum);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     err = Serialization::decode_vi32(bufp, remainp);
-    size = Serialization::decode_vi64(bufp, remainp);
     reached_limit = Serialization::decode_bool(bufp, remainp);
-    checksum = Serialization::decode_vi32(bufp, remainp);
   }
 
 };

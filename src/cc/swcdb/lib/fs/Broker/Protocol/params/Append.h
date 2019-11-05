@@ -37,12 +37,10 @@ class AppendReq : public Serializable {
 
   AppendReq() {}
 
-  AppendReq(int32_t fd, uint32_t size, uint8_t flags)
-            : m_fd(fd), m_size(size), m_flags(flags) {}
+  AppendReq(int32_t fd, uint8_t flags)
+            : m_fd(fd), m_flags(flags) {}
 
   int32_t get_fd() { return m_fd; }
-
-  uint32_t get_size() { return m_size; }
 
   uint8_t get_flags() { return m_flags; }
 
@@ -53,12 +51,11 @@ class AppendReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-      return 9;
+      return 5;
   }
 
   void encode_internal(uint8_t **bufp) const override {
     Serialization::encode_i32(bufp, m_fd);
-    Serialization::encode_i32(bufp, m_size);
     Serialization::encode_i8(bufp, m_flags);
   }
 
@@ -66,15 +63,11 @@ class AppendReq : public Serializable {
 			     size_t *remainp) override {
     (void)version;
     m_fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-    m_size = Serialization::decode_i32(bufp, remainp);
     m_flags = Serialization::decode_i8(bufp, remainp);
   }
   
   /// File descriptor to which append applies
   int32_t m_fd {};
-
-  /// Size of data buffer
-  uint32_t m_size {};
 
   /// Flags (FLUSH or SYNC)
   uint8_t m_flags {};

@@ -37,12 +37,11 @@ class RangeQueryUpdate : public AppHandler {
         if(err == Error::OK)
           err = Error::RS_NOT_LOADED_RANGE;
       }
-      if(err == Error::OK && (params.size == 0 || params.size != remain)) {
+      if(err == Error::OK && m_ev->data_ext.size == 0) {
         err = Error::INVALID_ARGUMENT;
-        std::cout << "params.size=" << params.size << " remain=" << remain << "\n";
+        std::cout << " empty cells size=" << m_ev->data_ext.size  << "\n";
       } else {
-        buffer = std::make_shared<StaticBuffer>(params.size);
-        memcpy(buffer->base, ptr, remain);
+        buffer = std::make_shared<StaticBuffer>(m_ev->data_ext);
       }
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

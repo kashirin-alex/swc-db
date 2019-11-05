@@ -89,29 +89,16 @@ class ColumnGet : public AppHandler {
   static void response(ConnHandlerPtr conn, Event::Ptr ev,
                         int err, Params::ColumnGetReq::Flag flag, 
                         DB::SchemaPtr schema){
-
     if(err == Error::OK && schema == nullptr)
       err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
     try {
       CommHeader header;
       header.initialize_from_request_header(ev->header);
-      CommBuf::Ptr cbp;
-
-      if(err == Error::OK) {
-        cbp = CommBuf::make(
-          header, 
-          Params::ColumnGetRsp(flag, schema), 
-          4
-        );
-        cbp->append_i32(err);
-        cbp->finalize_data();
-      } else {
-        cbp = CommBuf::make(header, 4);
-        cbp->append_i32(err);
-        cbp->finalize_data();
-      }
-
+      CommBuf::Ptr cbp = err ? 
+          CommBuf::make(header, 4)
+        : CommBuf::make(header, Params::ColumnGetRsp(flag, schema), 4);
+      cbp->append_i32(err);
       conn->send_response(cbp);
     }
     catch (Exception &e) {

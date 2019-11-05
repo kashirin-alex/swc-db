@@ -69,7 +69,6 @@ create_error_message(CommHeader &header, int error, const char *msg){
   auto cbp = CommBuf::make(header, 4 + Serialization::encoded_length_str16(msg));
   cbp->append_i32(error);
   cbp->append_str16(msg);
-  cbp->finalize_data();
   return cbp;
 }
 
