@@ -111,7 +111,7 @@ class Cell {
                     on_fraction(0), timestamp(0), revision(0),
                     value(0), vlen(0), own(false) { }
 
-  explicit Cell(const uint8_t **bufp, size_t* remainp, bool own=false)
+  explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
                 : value(0) { 
     read(bufp, remainp, own);             
   }
@@ -233,7 +233,7 @@ class Cell {
   void read(const uint8_t **bufp, size_t* remainp, bool owner=false) {
 
     flag = Serialization::decode_i8(bufp, remainp);
-    key.decode(bufp, remainp);
+    key.decode(bufp, remainp, owner);
     control = Serialization::decode_i8(bufp, remainp);
 
     if (control & HAVE_ON_FRACTION)
@@ -271,7 +271,7 @@ class Cell {
       len += 8;
     if(control & HAVE_REVISION)
       len += 8;
-    return len+Serialization::encoded_length_vi32(vlen)+vlen;
+    return len + Serialization::encoded_length_vi32(vlen) + vlen;
   }
 
   // WRITE
