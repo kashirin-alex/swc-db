@@ -356,12 +356,8 @@ class Select : public std::enable_shared_from_this<Select> {
           }      
           auto col = ptr->selector->result->columns[ptr->cells_cid]; 
           
-          if(rsp.size > 0) {
-            size_t size = rsp.size;
-            const uint8_t * bufp = rsp.bufp;
-            col->add(&bufp, &size);
-          }
-          
+          if(rsp.data.size > 0)
+            col->add(rsp.data.base, rsp.data.size);
           //std::cout << col->cells.size() << "\n";
 
           if(ptr->interval->flags.limit == 0 

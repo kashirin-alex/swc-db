@@ -62,7 +62,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       return;
     }
 
-    Params::RangeQuerySelectRsp rsp_params;
+    Params::RangeQuerySelectRsp rsp_params(ev->data_ext);
     if(ev->type == Event::Type::ERROR){
       rsp_params.err = ev->error;
       cb(req(), rsp_params);
@@ -73,20 +73,6 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
       const uint8_t *ptr = ev->data.base;
       size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
-
-      rsp_params.bufp = ev->data_ext.base;
-      rsp_params.size = ev->data_ext.size;
-      
-      ptr = ev->data_ext.base;
-      remain = ev->data_ext.size;
-      DB::Cells::Cell cell;
-      while(remain) {
-        cell.read(&ptr, &remain);
-        if(cell.flag == DB::Cells::NONE) {
-          std::cerr << "RangeQuerySelect remain=" << remain << " FLAG::NONE " << cell.to_string() << "\n";
-          exit(1);
-        }
-      }
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
       rsp_params.err = e.code();

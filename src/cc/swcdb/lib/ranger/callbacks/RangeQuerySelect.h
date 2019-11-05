@@ -53,20 +53,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
       DynamicBuffer buffer;
       cells->write(buffer);
       StaticBuffer sndbuf(buffer);
-
       cbp = CommBuf::make(header, params, sndbuf);
-      
-      // temp checkup
-      const uint8_t* ptr = cbp->buf_ext.base;
-      size_t remainp = cbp->buf_ext.size;
-      DB::Cells::Cell cell;
-      while(remainp) {
-        cell.read(&ptr, &remainp);
-        if(cell.flag == DB::Cells::NONE) {
-          std::cerr << "RangeQuerySelect remainp=" << remainp << " FLAG::NONE " << cell.to_string() << "\n";
-          exit(1);
-        }
-      }
     } else {
       cbp = CommBuf::make(header, params);
     }

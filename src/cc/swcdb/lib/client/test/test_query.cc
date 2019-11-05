@@ -333,8 +333,8 @@ void test_1(const std::string& col_name) {
   }
   if(select_req->result->columns[schema->cid]->cells[0]->key.get_string(4).compare(faction) != 0) {
     std::cerr << "BAD, select cell by key fraction: \n" 
-              << " expected_value=" << spec->key_start.get_string(4) << "\n"
-              << "   result_value=" << select_req->result->columns[schema->cid]->cells[0]->key.get_string(4) << "\n";
+              << "  expected_value=" << spec->key_start.get_string(4) << "\n"
+              << " (4)result_value=" << select_req->result->columns[schema->cid]->cells[0]->to_string() << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;
