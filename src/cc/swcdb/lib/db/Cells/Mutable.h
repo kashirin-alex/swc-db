@@ -80,9 +80,8 @@ class Mutable {
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    uint32_t offset = _narrow(key, 0);
-
-    for(;offset < m_size; offset++){
+    
+    for(uint32_t offset = _narrow(key, 0); offset < m_size; offset++) {
       ptr = *(m_cells + offset);
       if((chk = key.compare(ptr->key, 0)) == Condition::GT 
         || (comp == Condition::GE && chk == Condition::EQ)){
@@ -97,7 +96,7 @@ class Mutable {
     Cell* ptr;
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(uint32_t offset = 0;offset < m_size; offset++){
+    for(uint32_t offset = 0; offset < m_size; offset++){
       ptr = *(m_cells + offset);
       if(key.is_matching(ptr->key)) {
         cell.copy(*ptr);
@@ -155,14 +154,15 @@ class Mutable {
     Cell* cell;
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    uint32_t offset = _narrow(interval.key_begin, 0);
-
-    for(;offset < m_size; offset++){
+    for(uint32_t offset = _narrow(interval.key_begin, 0);
+        offset < m_size; offset++){
       cell = *(m_cells + offset);
+
       if(cell->has_expired(m_ttl) || !interval.is_in_begin(cell->key))
         continue;
       if(!interval.is_in_end(cell->key))
         break; 
+
       cells.add(*cell);
     }
   }
@@ -175,12 +175,14 @@ class Mutable {
 
     uint32_t offset = 0; //(narrower over specs.key_start)
     
-    for(;offset < m_size; offset++){
+    for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
 
       if(cell->flag == NONE) {
         // temp checkup
-        std::cerr << "FLAG::NONE, offset=" << offset << " size=" << m_size << " " << cell->to_string() << "\n";
+        std::cerr << "FLAG::NONE, offset=" << offset 
+                  << " size=" << m_size << " " 
+                  << cell->to_string() << "\n";
         exit(1);
       }
       
@@ -217,8 +219,9 @@ class Mutable {
     uint cell_offset = specs.flags.offset;
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for(;offset < m_size; offset++){
+    for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
+
       if(cell->has_expired(m_ttl) || cell->on_fraction 
         || (cell->flag != INSERT && !specs.flags.return_deletes))
         continue;
@@ -241,12 +244,12 @@ class Mutable {
 
   void write(DynamicBuffer& cells) {
     Cell* cell;
-    cells.ensure(m_size_bytes);
-    uint32_t offset = 0;
-
     std::lock_guard<std::mutex> lock(m_mutex);
-    while(offset < m_size) {
-      cell = *(m_cells + offset++);
+    cells.ensure(m_size_bytes);
+
+    for(uint32_t offset = 0; offset < m_size; offset++) {
+      cell = *(m_cells + offset);
+      
       if(cell->has_expired(m_ttl))
         continue;
         
@@ -257,14 +260,13 @@ class Mutable {
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval& intval, uint32_t threshold) {
     Cell* cell;
-    uint32_t offset = 0;
 
     std::lock_guard<std::mutex> lock(m_mutex);
-  
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
-
-    while(offset < m_size && (!threshold || threshold > cells.fill())) {
-      cell = *(m_cells + offset++);
+    uint32_t offset = 0;
+    for(; offset < m_size && (!threshold || threshold > cells.fill()); 
+        offset++) {
+      cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
         continue;
@@ -292,10 +294,10 @@ class Mutable {
     
     std::lock_guard<std::mutex> lock(m_mutex);
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
-
-    uint32_t offset = _narrow(key_start, 0);
     
-    for(;offset < m_size;offset++) {
+    uint32_t offset = _narrow(key_start, 0);
+
+    for(; offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl))
@@ -337,9 +339,10 @@ class Mutable {
 
     key_start.copy((*(m_cells + from))->key);
 
-    uint32_t offset = _narrow(key_start, 0);
-    for(;offset < m_size;offset++) {
+    for(uint32_t offset = _narrow(key_start, 0);
+        offset < m_size; offset++) {
       cell = *(m_cells + offset);
+
       if(cell->key.compare(key_start, 0) == Condition::GT) 
         continue;
       count++;
@@ -369,7 +372,7 @@ class Mutable {
 
   void add_to(Ptr cells) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(uint32_t offset = 0;offset < m_size; offset++)
+    for(uint32_t offset = 0; offset < m_size; offset++)
       cells->add(**(m_cells + offset));
   }
 
@@ -401,7 +404,7 @@ class Mutable {
     s.append(std::to_string(m_ttl));
     if(with_cells) {
       s.append(" cells=[");
-      for(uint32_t offset=0;offset < m_size; offset++) {
+      for(uint32_t offset=0; offset < m_size; offset++) {
         s.append((*(m_cells + offset))->to_string(m_type));
         s.append("\n");
       }
@@ -510,11 +513,8 @@ class Mutable {
     int64_t revision_exist;
     int64_t revision_new;
     
-    uint32_t offset = _narrow(e_cell.key, e_cell.on_fraction);
-    //std::cout << "NARROWED add(offset)=" << offset << "\n";
-
-    for(;offset < m_size; offset++) {
-
+    for(uint32_t offset = _narrow(e_cell.key, e_cell.on_fraction);
+        offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl)) {
@@ -712,7 +712,7 @@ class Mutable {
 
   void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, uint32_t revs) {
     Cell* cell;
-    for(;offset < m_size; offset++) {
+    for(; offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
       
