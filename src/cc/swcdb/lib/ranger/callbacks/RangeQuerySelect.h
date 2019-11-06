@@ -41,22 +41,21 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     if(err == Error::COLUMN_MARKED_REMOVED)
       cells->free();
     
-    CommBuf::Ptr cbp;
-    CommHeader header;
-    header.initialize_from_request_header(m_ev->header);
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err,  
       limit_buffer_sz <= cells->size_bytes()
     );
 
+    CommBuf::Ptr cbp;
     if(cells->size() > 0) {
       DynamicBuffer buffer;
       cells->write(buffer);
       StaticBuffer sndbuf(buffer);
-      cbp = CommBuf::make(header, params, sndbuf);
+      cbp = CommBuf::make(params, sndbuf);
     } else {
-      cbp = CommBuf::make(header, params);
+      cbp = CommBuf::make(params);
     }
+    cbp->header.initialize_from_request_header(m_ev->header);
     
     std::cout << "RangeQuerySelect, rsp " << to_string() << "\n";
     std::cout << params.to_string() << "\n";

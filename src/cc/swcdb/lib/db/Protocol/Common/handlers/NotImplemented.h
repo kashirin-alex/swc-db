@@ -21,7 +21,7 @@ class NotImplemented : public AppHandler {
     try {
       auto cbp = CommBuf::make(4);
       cbp->header.initialize_from_request_header(m_ev->header);
-      cbp->append_i32(err);
+      cbp->append_i32(Error::NOT_IMPLEMENTED);
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

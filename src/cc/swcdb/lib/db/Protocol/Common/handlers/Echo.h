@@ -20,11 +20,10 @@ class Echo : public AppHandler {
 
   void run() override {
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      CommBuf::Ptr cbp = m_ev->data_ext.size ? 
-                          CommBuf::make(header, m_ev->data_ext) 
-                        : CommBuf::make(header);
+      auto cbp = m_ev->data_ext.size ? 
+                    CommBuf::make(m_ev->data_ext) 
+                  : CommBuf::make();
+      cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
     } catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

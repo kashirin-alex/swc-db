@@ -89,7 +89,8 @@ class CommBuf {
   CommBuf(CommHeader &hdr) : header(hdr) { }
 
   CommBuf(CommHeader &hdr, uint32_t reserve) : header(hdr) {
-    set_data(reserve);
+    if(reserve)
+      set_data(reserve);
   }
 
   CommBuf(CommHeader &hdr, const Serializable& params, uint32_t reserve=0) 
@@ -107,8 +108,9 @@ class CommBuf {
           : header(hdr), buf_ext(buffer) {
   }
 
-  CommBuf(uint32_t reserve) {
-    set_data(reserve);
+  CommBuf(uint32_t reserve=0) {
+    if(reserve)
+      set_data(reserve);
   }
 
   CommBuf(const Serializable& params, uint32_t reserve=0) {

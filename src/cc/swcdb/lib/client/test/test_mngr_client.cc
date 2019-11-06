@@ -83,12 +83,11 @@ int main(int argc, char** argv) {
 
       for(size_t n=1;n<=num_req;n++){
         SWC::DispatchHandlerPtr req = std::make_shared<ReqHandler>(t, n, total);
-        SWC::CommHeader header;
-        header.timeout_ms = 10000;
         auto cbp = SWC::Protocol::create_error_message(
-          header, 
           SWC::Error::OK, 
-          SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str());
+          SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str()
+        );  
+        cbp->header.timeout_ms = 10000;
         con_h->send_request(cbp, req, false); // sequential readings
         //std::this_thread::sleep_for(std::chrono::microseconds(500));
       }

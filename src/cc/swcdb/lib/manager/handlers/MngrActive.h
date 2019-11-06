@@ -34,10 +34,9 @@ class MngrActive : public AppHandler {
       EndPoints endpoints;
       if(h!=nullptr) 
         endpoints = h->endpoints;
-      
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      auto cbp = CommBuf::make(header, Params::MngrActiveRsp(endpoints));
+
+      auto cbp = CommBuf::make(Params::MngrActiveRsp(endpoints));
+      cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
     
     }

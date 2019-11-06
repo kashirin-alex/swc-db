@@ -93,11 +93,10 @@ class ColumnGet : public AppHandler {
       err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
     try {
-      CommHeader header;
-      header.initialize_from_request_header(ev->header);
-      CommBuf::Ptr cbp = err ? 
-          CommBuf::make(header, 4)
-        : CommBuf::make(header, Params::ColumnGetRsp(flag, schema), 4);
+      auto cbp = err ? 
+          CommBuf::make(4)
+        : CommBuf::make(Params::ColumnGetRsp(flag, schema), 4);
+      cbp->header.initialize_from_request_header(ev->header);
       cbp->append_i32(err);
       conn->send_response(cbp);
     }

@@ -79,9 +79,8 @@ class RgrGet : public AppHandler {
     send_response:
       try {
         std::cout << "RgrGet(RSP): " << rsp_params.to_string() << "\n";
-        CommHeader header;
-        header.initialize_from_request_header(m_ev->header);
-        auto cbp = CommBuf::make(header, rsp_params);
+        auto cbp = CommBuf::make(rsp_params);
+        cbp->header.initialize_from_request_header(m_ev->header);
         m_conn->send_response(cbp);
       } catch (Exception &e) {
         HT_ERROR_OUT << e << HT_END;

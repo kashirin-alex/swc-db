@@ -100,9 +100,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     std::cout << params.to_string() << "\n";
     
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      auto cbp = CommBuf::make(header, params);
+      auto cbp = CommBuf::make(params);
+      cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

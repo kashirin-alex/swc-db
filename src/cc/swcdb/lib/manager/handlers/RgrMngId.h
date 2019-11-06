@@ -37,12 +37,10 @@ class RgrMngId : public AppHandler {
                   req_params.flag, req_params.id, 
                   req_params.to_string().c_str());
         
-        CommHeader header;
-        header.initialize_from_request_header(m_ev->header);
         auto cbp = CommBuf::make(
-          header, 
           Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE)
         );
+        cbp->header.initialize_from_request_header(m_ev->header);
         m_conn->send_response(cbp);
         return;
       }
@@ -56,12 +54,10 @@ class RgrMngId : public AppHandler {
           HT_DEBUGF("RS_REQ, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
 
-          CommHeader header;
-          header.initialize_from_request_header(m_ev->header);
           auto cbp = CommBuf::make(
-            header, 
             Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_ASSIGNED)
           );
+          cbp->header.initialize_from_request_header(m_ev->header);
           m_conn->send_response(cbp);
           break;
         }
@@ -76,12 +72,10 @@ class RgrMngId : public AppHandler {
             HT_DEBUGF("RS_ACK(MNGR_REREQ) id=%d %s",
                       req_params.id, req_params.to_string().c_str());
             
-            CommHeader header;
-            header.initialize_from_request_header(m_ev->header);
             auto cbp = CommBuf::make(
-              header, 
               Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
             );
+            cbp->header.initialize_from_request_header(m_ev->header);
             m_conn->send_response(cbp);
           }
           break;
@@ -94,13 +88,10 @@ class RgrMngId : public AppHandler {
                     req_params.id, id, req_params.to_string().c_str());
 
           if (id != 0){
-      
-            CommHeader header;
-            header.initialize_from_request_header(m_ev->header);
             auto cbp = CommBuf::make(
-              header, 
               Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_REASSIGN)
             );
+            cbp->header.initialize_from_request_header(m_ev->header);
             m_conn->send_response(cbp);
           } else {
             m_conn->response_ok(m_ev);
@@ -115,13 +106,11 @@ class RgrMngId : public AppHandler {
           HT_DEBUGF("RS_SHUTTINGDOWN, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
       
-          CommHeader header;
-          header.initialize_from_request_header(m_ev->header);
           auto cbp = CommBuf::make(
-            header, 
             Params::RgrMngId(
               req_params.id, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
           );
+          cbp->header.initialize_from_request_header(m_ev->header);
           m_conn->send_response(cbp);
           break;
         }

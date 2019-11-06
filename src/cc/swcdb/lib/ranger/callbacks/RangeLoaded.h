@@ -42,9 +42,8 @@ class RangeLoaded : public ResponseCallback {
     try {
       Protocol::Rgr::Params::RangeLoaded params;
       range->get_interval(params.interval);
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      auto cbp = CommBuf::make(header, params, 4);
+      auto cbp = CommBuf::make(params, 4);
+      cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
       Env::RgrData::in_process(-1);

@@ -50,7 +50,7 @@ namespace SWC {
 
     /** Destructor
      */
-    virtual ~DispatchHandler() { return; }
+    virtual ~DispatchHandler() { }
 
     /** Callback method.  When the Comm layer needs to deliver an event to the
      * application, this method is called to do so.  The set of event types

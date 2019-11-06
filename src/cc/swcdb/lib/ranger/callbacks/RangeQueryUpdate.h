@@ -25,12 +25,9 @@ class RangeQueryUpdate : public ResponseCallback {
   void response(int &err) override {
 
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
       auto cbp = CommBuf::make(
-        header, 
-        Protocol::Rgr::Params::RangeQueryUpdateRsp(err)
-      );
+        Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
+      cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {

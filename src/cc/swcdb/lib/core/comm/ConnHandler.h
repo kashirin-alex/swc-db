@@ -63,15 +63,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   };
 
   struct Outgoing {
-    CommBuf::Ptr cbuf;
-    DispatchHandlerPtr hdlr; 
-    bool sequential;
+    CommBuf::Ptr        cbuf;
+    DispatchHandlerPtr  hdlr; 
+    bool                sequential;
   };
 
   public:
   ConnHandler(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
             : app_ctx(app_ctx), m_sock(socket), io_ctx(io_ctx),
-              m_next_req_id(0) { 
+              m_next_req_id(0) {
   }
 
   ConnHandlerPtr ptr(){
@@ -166,18 +166,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(m_err != Error::OK)
       return m_err;
 
-    CommHeader header;
-    if(ev != nullptr)
-      header.initialize_from_request_header(ev->header);
-    
-    CommBuf::Ptr cbp;
     size_t max_msg_size = std::numeric_limits<int16_t>::max();
-    if (msg.length() < max_msg_size)
-      cbp = Protocol::create_error_message(header, error, msg.c_str());
-    else {
-      cbp = Protocol::create_error_message(
-        header, error, msg.substr(0, max_msg_size).c_str());
-    }
+    auto cbp = Protocol::create_error_message(
+      error, msg.length() < max_msg_size ? 
+        msg.c_str() 
+      :  msg.substr(0, max_msg_size).c_str()
+    );
+    if(ev != nullptr)
+      cbp->header.initialize_from_request_header(ev->header);
     return send_response(cbp);
   }
 
@@ -185,10 +181,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(m_err != Error::OK)
       return m_err;
       
-    CommHeader header;
+    auto cbp = CommBuf::make(4);
     if(ev != nullptr)
-      header.initialize_from_request_header(ev->header);
-    auto cbp = CommBuf::make(header, 4);
+      cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(Error::OK);
     return send_response(cbp);
   }
@@ -199,11 +194,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
 
-    write_or_queue({
+    write_or_queue(new Outgoing({
      .cbuf=cbuf,
      .hdlr=hdlr, 
      .sequential=false
-    });
+    }));
     return m_err;
   }
 
@@ -265,11 +260,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(cbuf->header.id == 0)
       cbuf->header.id = next_req_id();
 
-    write_or_queue({
+    write_or_queue(new Outgoing({
      .cbuf=cbuf, 
      .hdlr=hdlr, 
      .sequential=sequential
-    });
+    }));
     return m_err;
   }
 
@@ -280,11 +275,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   inline void accept_requests(DispatchHandlerPtr hdlr, 
                               uint32_t timeout_ms=0) {
-    add_pending({
+    add_pending(new PendingRsp({
       .id=0,  // initial req.acceptor
       .hdlr=hdlr,
       .tm=get_timer(timeout_ms)
-    });
+    }));
     read_pending();
   }
 
@@ -315,7 +310,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return tm;
   }
     
-  inline void write_or_queue(Outgoing data){ 
+  inline void write_or_queue(Outgoing* data){ 
     {
       std::lock_guard<std::mutex> lock(m_mutex);  
       if(m_writing) {
@@ -328,7 +323,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
   
   inline void next_outgoing() {
-    Outgoing data;
+    Outgoing* data;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_writing = m_outgoing.size() > 0;
@@ -340,22 +335,25 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     write(data); 
   }
   
-  inline void write(Outgoing data){
+  inline void write(Outgoing* data){
 
-    if(data.cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      add_pending({
-        .id=data.cbuf->header.id, 
-        .hdlr=data.hdlr, 
-        .tm=get_timer(data.cbuf->header.timeout_ms, data.cbuf->header), 
-        .sequential=data.sequential});
+    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      add_pending(new PendingRsp({
+        .id=data->cbuf->header.id, 
+        .hdlr=data->hdlr, 
+        .tm=get_timer(data->cbuf->header.timeout_ms, data->cbuf->header), 
+        .sequential=data->sequential
+      }));
     
     std::vector<asio::const_buffer> buffers;
-    data.cbuf->get(buffers);
+    data->cbuf->get(buffers);
 
     asio::async_write(
       *m_sock.get(), 
       buffers,
-      [ptr=ptr()](const asio::error_code ec, uint32_t len){
+      [data, ptr=ptr()]
+      (const asio::error_code ec, uint32_t len) {
+        delete data;
         if(ec) {
           ptr->do_close();
         } else {
@@ -366,7 +364,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     );
   }
 
-  inline void add_pending(PendingRsp q){        
+  inline void add_pending(PendingRsp* q){        
     std::lock_guard<std::mutex> lock(m_mutex_reading);
     m_pending.push_back(q);
   }
@@ -515,7 +513,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
     
     for(;;) {
-      PendingRsp q;
+      PendingRsp* q;
       {
         std::lock_guard<std::mutex> lock(m_mutex_reading);
         if(m_pending.empty())
@@ -524,8 +522,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         m_pending.erase(m_pending.begin());
       }
       
-      if(q.tm != nullptr) q.tm->cancel();
-      run(Event::make(Event::Type::DISCONNECT, m_err), q.hdlr);
+      if(q->tm != nullptr) q->tm->cancel();
+      run(Event::make(Event::Type::DISCONNECT, m_err), q->hdlr);
+      delete q;
     }
   }
 
@@ -534,11 +533,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     bool found_not = false;
     bool found_next;
     bool skip;
-    std::vector<PendingRsp>::iterator it_found;
-    std::vector<PendingRsp>::iterator it_end;
+    std::vector<PendingRsp*>::iterator it_found;
+    std::vector<PendingRsp*>::iterator it_end;
 
-    PendingRsp q_now;
-    PendingRsp q_next;
+    PendingRsp* q_now;
+    PendingRsp* q_next;
     do {
       found_next = false;
       skip = false;
@@ -548,7 +547,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         std::cout << "run_pending: m_cancelled=" << m_cancelled.size() 
                   << " m_pending=" << m_pending.size() << "\n";
         for(auto q :m_pending )
-          std::cout << " id=" << q.id << "\n";
+          std::cout << " id=" << q->id << "\n";
         std::cout << "looking for id=" << id << " fd="<<m_sock->native_handle()<<" ptr="<<this
         << " " << endpoint_local_str() <<"\n";
         */
@@ -558,22 +557,23 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         found_not = m_pending.empty();
         if(!found_not){
           it_found = std::find_if(m_pending.begin(), m_pending.end(), 
-                                 [id](const PendingRsp & q){return q.id == id;});
+                                 [id](const PendingRsp* q)
+                                     {return q->id == id;});
           it_end = m_pending.end();
           found_not = it_found == it_end;
         }
         if(!found_not){
-          found_current = !it_found->sequential || it_found == m_pending.begin();
+          found_current = !(*it_found)->sequential || it_found == m_pending.begin();
 
           if(found_current){
             q_now = *it_found;
 
-            if(q_now.tm != nullptr) 
-              q_now.tm->cancel();
+            if(q_now->tm != nullptr) 
+              q_now->tm->cancel();
 
-            if(q_now.sequential){
+            if(q_now->sequential){
               if(++it_found != it_end){
-                found_next = it_found->ev != nullptr;
+                found_next = (*it_found)->ev != nullptr;
                 if(found_next)
                   q_next = *it_found;
               }
@@ -582,7 +582,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
               m_pending.erase(it_found);
 
           } else {
-            it_found->ev=ev;
+            (*it_found)->ev=ev;
           }
           
         } else if(!cancelling) {
@@ -602,10 +602,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         
       } else if(found_current){
 
-        run(ev, q_now.hdlr);
+        run(ev, q_now->hdlr);
+        delete q_now;
         
         if(found_next)
-          run_pending(q_next.id, q_next.ev);
+          run_pending(q_next->id, q_next->ev);
       }
     } while(found_next);
 
@@ -615,11 +616,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   std::atomic<uint32_t>     m_next_req_id;
 
   std::mutex                m_mutex;
-  std::queue<Outgoing>      m_outgoing;
+  std::queue<Outgoing*>     m_outgoing;
   bool                      m_writing = 0;
 
   std::mutex                m_mutex_reading;
-  std::vector<PendingRsp>   m_pending;
+  std::vector<PendingRsp*>  m_pending;
   std::vector<uint32_t>     m_cancelled;
   bool                      m_accepting = 0;
   bool                      m_reading = 0;
