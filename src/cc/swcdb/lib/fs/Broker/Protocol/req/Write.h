@@ -17,16 +17,14 @@ class Write : public Base {
         int32_t replication, int64_t blksz, StaticBuffer &buffer,
         Callback::WriteCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-
     HT_DEBUGF("write amount=%d %s", buffer.size, smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_WRITE, timeout);
     cbp = CommBuf::make(
-      header, 
       Params::WriteReq(smartfd->filepath(), smartfd->flags(), 
                        replication, blksz), 
       buffer
     );
+    cbp->header.set(Cmd::FUNCTION_WRITE, timeout);
   }
 
   std::promise<void> promise(){

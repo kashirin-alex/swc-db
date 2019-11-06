@@ -16,11 +16,10 @@ class Close : public Base {
 
   Close(uint32_t timeout, SmartFdPtr &smartfd, Callback::CloseCb_t cb=0)
         : smartfd(smartfd), cb(cb) {
-
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
-
-    CommHeader header(Cmd::FUNCTION_CLOSE, timeout);    
-    cbp = CommBuf::make(header, Params::CloseReq(smartfd->fd()));
+ 
+    cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
+    cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
   }
 
   std::promise<void> promise(){

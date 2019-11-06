@@ -18,8 +18,8 @@ class Mkdirs : public Base {
         : name(name), cb(cb) {
     HT_DEBUGF("mkdirs path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_MKDIRS, timeout);
-    cbp = CommBuf::make(header, Params::MkdirsReq(name));
+    cbp = CommBuf::make(Params::MkdirsReq(name));
+    cbp->header.set(Cmd::FUNCTION_MKDIRS, timeout);
   }
 
   std::promise<void> promise(){

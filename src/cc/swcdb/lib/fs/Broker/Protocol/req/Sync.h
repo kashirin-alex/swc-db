@@ -16,11 +16,10 @@ class Sync : public Base {
   
   Sync(uint32_t timeout, SmartFdPtr &smartfd, Callback::SyncCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
-
     HT_DEBUGF("sync %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_SYNC, timeout);    
-    cbp = CommBuf::make(header, Params::SyncReq(smartfd->fd()));
+    cbp = CommBuf::make(Params::SyncReq(smartfd->fd()));
+    cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
   }
 
   std::promise<void> promise(){

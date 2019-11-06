@@ -19,15 +19,13 @@ class Create : public Base {
         int32_t bufsz, int32_t replication, int64_t blksz, 
         Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-
     HT_DEBUGF("create %s", smartfd->to_string().c_str());
-
-    CommHeader header(Cmd::FUNCTION_CREATE, timeout);
+    
     cbp = CommBuf::make(
-      header, 
       Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
                         bufsz, replication, blksz)
     );
+    cbp->header.set(Cmd::FUNCTION_CREATE, timeout);
   }
 
   std::promise<void> promise(){

@@ -14,14 +14,14 @@ class Open : public Base {
 
   public:
 
-  Open(uint32_t timeout, SmartFdPtr &smartfd, int32_t bufsz, Callback::OpenCb_t cb=0) 
-       : smartfd(smartfd), cb(cb) {
-
+  Open(uint32_t timeout, SmartFdPtr &smartfd, int32_t bufsz, 
+       Callback::OpenCb_t cb=0) 
+      : smartfd(smartfd), cb(cb) {
     HT_DEBUGF("open %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_OPEN, timeout);
     cbp = CommBuf::make(
-      header, Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
+      Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
+    cbp->header.set(Cmd::FUNCTION_OPEN, timeout);
   }
 
   std::promise<void> promise(){

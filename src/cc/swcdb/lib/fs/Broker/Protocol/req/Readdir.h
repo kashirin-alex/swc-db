@@ -20,8 +20,8 @@ class Readdir : public Base {
          : name(name), cb(cb) {
     HT_DEBUGF("readdir path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_READDIR, timeout);
-    cbp = CommBuf::make(header, Params::ReaddirReq(name));
+    cbp = CommBuf::make(Params::ReaddirReq(name));
+    cbp->header.set(Cmd::FUNCTION_READDIR, timeout);
   }
 
   std::promise<void> promise(){

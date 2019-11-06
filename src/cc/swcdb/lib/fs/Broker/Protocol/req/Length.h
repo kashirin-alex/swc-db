@@ -20,8 +20,8 @@ class Length : public Base {
         : name(name), cb(cb), length(0) {
     HT_DEBUGF("length path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_LENGTH, timeout);
-    cbp = CommBuf::make(header, Params::LengthReq(name));
+    cbp = CommBuf::make(Params::LengthReq(name));
+    cbp->header.set(Cmd::FUNCTION_LENGTH, timeout);
   }
 
   std::promise<void> promise(){

@@ -18,8 +18,8 @@ class Rmdir : public Base {
         : name(name), cb(cb) {
     HT_DEBUGF("rmdir path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_RMDIR, timeout);
-    cbp = CommBuf::make(header, Params::RmdirReq(name));
+    cbp = CommBuf::make(Params::RmdirReq(name));
+    cbp->header.set(Cmd::FUNCTION_RMDIR, timeout);
   }
 
   std::promise<void> promise(){

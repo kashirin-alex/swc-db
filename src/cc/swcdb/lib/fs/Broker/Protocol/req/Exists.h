@@ -20,8 +20,8 @@ class Exists : public Base {
         : name(name), cb(cb) {
     HT_DEBUGF("exists path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_EXISTS, timeout);
-    cbp = CommBuf::make(header, Params::ExistsReq(name));
+    cbp = CommBuf::make(Params::ExistsReq(name));
+    cbp->header.set(Cmd::FUNCTION_EXISTS, timeout);
   }
 
   std::promise<void> promise(){

@@ -21,12 +21,11 @@ class Pread : public Base {
         uint64_t offset, void* dst, size_t len, 
         Callback::PreadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
-
     HT_DEBUGF("pread offset=%d len=%d timeout=%d %s", 
               offset, len, timeout, smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_PREAD, timeout);
-    cbp = CommBuf::make(header, Params::PreadReq(smartfd->fd(), offset, len));
+    cbp = CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));
+    cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
   }
 
   std::promise<void> promise(){

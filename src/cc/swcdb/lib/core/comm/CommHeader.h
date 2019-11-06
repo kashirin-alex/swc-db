@@ -41,6 +41,11 @@ class CommHeader {
   
   virtual ~CommHeader() { }
 
+  void set(uint64_t cmd=0, uint32_t timeout=0) {
+    command     = cmd;
+    timeout_ms  = timeout;
+  }
+
   const size_t encoded_length() { 
     header_len = FIXED_LENGTH;
     buffers = 0;

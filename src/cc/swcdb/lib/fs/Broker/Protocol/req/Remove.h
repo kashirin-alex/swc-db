@@ -18,8 +18,8 @@ class Remove : public Base {
         : name(name), cb(cb) {
     HT_DEBUGF("remove path='%s'", name.c_str());
 
-    CommHeader header(Cmd::FUNCTION_REMOVE, timeout);
-    cbp = CommBuf::make(header, Params::RemoveReq(name));
+    cbp = CommBuf::make(Params::RemoveReq(name));
+    cbp->header.set(Cmd::FUNCTION_REMOVE, timeout);
   }
 
   std::promise<void> promise(){

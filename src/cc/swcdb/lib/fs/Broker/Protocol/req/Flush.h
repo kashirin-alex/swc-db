@@ -16,11 +16,10 @@ class Flush : public Base {
 
   Flush(uint32_t timeout, SmartFdPtr &smartfd, Callback::FlushCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-
     HT_DEBUGF("flush %s", smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_FLUSH, timeout);
-    cbp = CommBuf::make(header, Params::FlushReq(smartfd->fd()));
+    cbp = CommBuf::make(Params::FlushReq(smartfd->fd()));
+    cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
   }
 
   std::promise<void> promise(){

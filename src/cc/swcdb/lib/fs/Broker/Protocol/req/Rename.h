@@ -19,8 +19,8 @@ class Rename : public Base {
         : from(from), to(to), cb(cb) {
     HT_DEBUGF("rename '%s' to '%s'", from.c_str(), to.c_str());
 
-    CommHeader header(Cmd::FUNCTION_RENAME, timeout);
-    cbp = CommBuf::make(header, Params::RenameReq(from, to));
+    cbp = CommBuf::make(Params::RenameReq(from, to));
+    cbp->header.set(Cmd::FUNCTION_RENAME, timeout);
   }
 
   std::promise<void> promise(){

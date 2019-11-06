@@ -20,12 +20,11 @@ class Read : public Base {
   Read(uint32_t timeout, SmartFdPtr &smartfd, void* dst, size_t len, 
       Callback::ReadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
-
     HT_DEBUGF("read len=%d timeout=%d %s", 
               len, timeout, smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_READ, timeout);
-    cbp = CommBuf::make(header, Params::ReadReq(smartfd->fd(), len));
+    cbp = CommBuf::make(Params::ReadReq(smartfd->fd(), len));
+    cbp->header.set(Cmd::FUNCTION_READ, timeout);
   }
 
   std::promise<void> promise(){

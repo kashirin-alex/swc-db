@@ -19,16 +19,14 @@ class Append : public Base {
   Append(uint32_t timeout, SmartFdPtr &smartfd, 
         StaticBuffer &buffer, Flags flags, Callback::AppendCb_t cb=0) 
         : smartfd(smartfd), cb(cb), amount(0) {
-
     HT_DEBUGF("append flags=%d timeout=%d amount=%d %s", 
               flags, timeout, buffer.size, smartfd->to_string().c_str());
 
-    CommHeader header(Cmd::FUNCTION_APPEND, timeout);
     cbp = CommBuf::make(
-      header,
       Params::AppendReq(smartfd->fd(), (uint8_t)flags),
       buffer
     );
+    cbp->header.set(Cmd::FUNCTION_APPEND, timeout);
   }
 
   std::promise<void> promise(){
