@@ -91,8 +91,9 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   }
   
   static CommBuf::Ptr create(const Params::RgrMngId& params) {
-    CommHeader header(RGR_MNG_ID, 60000);
-    return CommBuf::make(header, params);
+    auto cbp = CommBuf::make(params);
+    cbp->header.set(RGR_MNG_ID, 60000);
+    return cbp;
   }
 
   RgrMngId(Scheduler::Ptr validator, CommBuf::Ptr cbp=nullptr) 

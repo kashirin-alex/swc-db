@@ -21,8 +21,8 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
              uint32_t timeout_ms=60000)
             : Common::Req::ConnQueue::ReqBase(false), 
               cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0) {
-    CommHeader header(MNGR_ACTIVE, timeout_ms);
-    cbp = CommBuf::make(header, Params::MngrActiveReq(cid, cid));
+    cbp = CommBuf::make(Params::MngrActiveReq(cid, cid));
+    cbp->header.set(MNGR_ACTIVE, timeout_ms);
   }
 
   virtual ~MngrActive(){ }

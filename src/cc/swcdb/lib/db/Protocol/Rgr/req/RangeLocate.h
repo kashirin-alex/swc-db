@@ -45,8 +45,8 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
                 const Cb_t cb, const uint32_t timeout) 
               : Common::Req::ConnQueue::ReqBase(false), 
                 endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
-    CommHeader header(RANGE_LOCATE, timeout);
-    cbp = CommBuf::make(header, params);
+    cbp = CommBuf::make(params);
+    cbp->header.set(RANGE_LOCATE, timeout);
   }
 
   virtual ~RangeLocate(){}

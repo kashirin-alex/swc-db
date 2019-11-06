@@ -23,10 +23,8 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
                            ->need_schema_sync(rgr->id, schema->revision))
       schema = nullptr;
 
-    CommHeader header(RANGE_LOAD, 60000);
-    cbp = CommBuf::make(
-      header, Params::RangeLoad(range->cid, range->rid, schema)
-    );
+    cbp = CommBuf::make(Params::RangeLoad(range->cid, range->rid, schema));
+    cbp->header.set(RANGE_LOAD, 60000);
   }
   
   virtual ~RangeLoad() { }

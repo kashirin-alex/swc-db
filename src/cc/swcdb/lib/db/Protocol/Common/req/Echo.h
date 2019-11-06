@@ -16,26 +16,28 @@ class Echo : public DispatchHandler {
 
   Echo(client::ClientConPtr conn, EchoCb_t cb, size_t buf_sz=0)
        : conn(conn), cb(cb), was_called(false) { 
-    CommHeader header(DO_ECHO, 60000);
 
     if(!buf_sz) {
-      cbp = CommBuf::make(header);
-      return;
-    }
+      cbp = CommBuf::make();
 
-    StaticBuffer sndbuf(buf_sz);
-    uint8_t* ptr = sndbuf.base;
-    const uint8_t* end = sndbuf.base + buf_sz-4;
+    } else {
+      StaticBuffer sndbuf(buf_sz);
+      uint8_t* ptr = sndbuf.base;
+      const uint8_t* end = sndbuf.base + buf_sz-4;
     
-    uint8_t i=0;
-    while(ptr < end) {
-      if(i == 127)
-        i = 0;
-      else
-        i++;
-      *ptr++ = i;
+      uint8_t i=0;
+      while(ptr < end) {
+        if(i == 127)
+          i = 0;
+        else
+          i++;
+        *ptr++ = i;
+      }
+      
+      cbp = CommBuf::make(sndbuf);
     }
-    cbp = CommBuf::make(header, sndbuf);
+    
+    cbp->header.set(DO_ECHO, 60000);
   }
   
   virtual ~Echo() { }

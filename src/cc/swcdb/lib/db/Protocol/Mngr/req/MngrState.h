@@ -17,8 +17,8 @@ class MngrState : public Common::Req::ConnQueue::ReqBase {
   MngrState(ResponseCallback::Ptr cb, server::Mngr::MngrsStatus &states, 
             uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
             : cb(cb) {
-    CommHeader header(MNGR_STATE, timeout);
-    cbp = CommBuf::make(header, Params::MngrState(states, token, mngr_host));
+    cbp = CommBuf::make(Params::MngrState(states, token, mngr_host));
+    cbp->header.set(MNGR_STATE, timeout);
   }
   
   virtual ~MngrState() { }

@@ -16,8 +16,8 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void(int, Params::ColumnGetRsp)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, Cb_t cb) : cb(cb) {
-    CommHeader header(COLUMN_GET, 60000);
-    cbp = CommBuf::make(header, params);
+    cbp = CommBuf::make(params);
+    cbp->header.set(COLUMN_GET, 60000);
   }
   
   virtual ~MngrColumnGet() { }

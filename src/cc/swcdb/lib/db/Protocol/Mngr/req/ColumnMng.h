@@ -50,8 +50,8 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
 
   ColumnMng(const Params::ColumnMng& params, const Cb_t cb, const uint32_t timeout)
             : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
-    CommHeader header(COLUMN_MNG, timeout);
-    cbp = CommBuf::make(header, params);
+    cbp = CommBuf::make(params);    
+    cbp->header.set(COLUMN_MNG, timeout);
   }
 
   virtual ~ColumnMng(){}

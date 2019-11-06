@@ -15,8 +15,8 @@ class RgrUpdate : public Common::Req::ConnQueue::ReqBase {
   public:
 
   RgrUpdate(server::Mngr::RangerList &hosts, bool sync_all) {
-    CommHeader header(Mngr::RGR_UPDATE, 60000);
-    cbp = CommBuf::make(header, Params::RgrUpdate(hosts, sync_all));
+    cbp = CommBuf::make(Params::RgrUpdate(hosts, sync_all));
+    cbp->header.set(RGR_UPDATE, 60000);
   }
   
   virtual ~RgrUpdate() { }

@@ -39,9 +39,9 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
                   : Common::Req::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
     // timeout by buffer->fill() bytes ratio
-    CommHeader header(RANGE_QUERY_UPDATE, timeout);
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-    cbp = CommBuf::make(header, params, snd_buf);
+    cbp = CommBuf::make(params, snd_buf);
+    cbp->header.set(RANGE_QUERY_UPDATE, timeout);
   }
 
   virtual ~RangeQueryUpdate(){}

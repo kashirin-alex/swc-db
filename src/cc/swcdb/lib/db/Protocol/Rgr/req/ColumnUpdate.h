@@ -17,8 +17,8 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   ColumnUpdate(server::Mngr::RangerPtr rgr, DB::SchemaPtr schema) 
               : Common::Req::ConnQueue::ReqBase(false), 
                 rgr(rgr), schema(schema) {
-    CommHeader header(SCHEMA_UPDATE, 60000);
-    cbp = CommBuf::make(header, Params::ColumnUpdate(schema));
+    cbp = CommBuf::make(Params::ColumnUpdate(schema));
+    cbp->header.set(SCHEMA_UPDATE, 60000);
   }
   
   virtual ~ColumnUpdate() { }

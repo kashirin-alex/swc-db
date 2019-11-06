@@ -47,28 +47,6 @@ class CommBuf {
 
   typedef std::shared_ptr<CommBuf> Ptr;
 
-  inline Ptr static make(CommHeader &hdr) {
-    return std::make_shared<CommBuf>(hdr);
-  }
-
-  inline Ptr static make(CommHeader &hdr, uint32_t reserve) {
-    return std::make_shared<CommBuf>(hdr, reserve);
-  }
-
-  inline Ptr static make(CommHeader &hdr, const Serializable& params, 
-                         uint32_t reserve=0) {
-    return std::make_shared<CommBuf>(hdr, params, reserve);
-  }
-
-  inline Ptr static make(CommHeader &hdr, const Serializable& params, 
-                         StaticBuffer& buffer, uint32_t reserve=0) {
-    return std::make_shared<CommBuf>(hdr, params, buffer, reserve);
-  }
-
-  inline Ptr static make(CommHeader &hdr, StaticBuffer& buffer) {
-    return std::make_shared<CommBuf>(hdr, buffer);
-  }
-
   inline Ptr static make(uint32_t reserve=0) {
     return std::make_shared<CommBuf>(reserve);
   }
@@ -84,28 +62,6 @@ class CommBuf {
 
   inline Ptr static make(StaticBuffer& buffer) {
     return std::make_shared<CommBuf>(buffer);
-  }
-
-  CommBuf(CommHeader &hdr) : header(hdr) { }
-
-  CommBuf(CommHeader &hdr, uint32_t reserve) : header(hdr) {
-    if(reserve)
-      set_data(reserve);
-  }
-
-  CommBuf(CommHeader &hdr, const Serializable& params, uint32_t reserve=0) 
-          : header(hdr) {
-    set_data(params, reserve);
-  }
-
-  CommBuf(CommHeader &hdr, const Serializable& params, 
-          StaticBuffer& buffer, uint32_t reserve=0) 
-          : header(hdr), buf_ext(buffer) {
-    set_data(params, reserve);
-  }
-
-  CommBuf(CommHeader &hdr, StaticBuffer& buffer) 
-          : header(hdr), buf_ext(buffer) {
   }
 
   CommBuf(uint32_t reserve=0) {

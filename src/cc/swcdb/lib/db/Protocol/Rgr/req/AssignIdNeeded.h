@@ -17,8 +17,8 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
                  server::Mngr::Range::Ptr range) 
                 : Common::Req::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
-    CommHeader header(ASSIGN_ID_NEEDED, 60000);
-    cbp = CommBuf::make(header);
+    cbp = CommBuf::make();
+    cbp->header.set(ASSIGN_ID_NEEDED, 60000);
   }
   
   virtual ~AssignIdNeeded() { }

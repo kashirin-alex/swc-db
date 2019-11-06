@@ -41,8 +41,8 @@ class RgrGet: public Common::Req::ConnQueue::ReqBase {
   RgrGet(const Params::RgrGetReq& params, const Cb_t cb, 
             const uint32_t timeout) 
             : Common::Req::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-    CommHeader header(RGR_GET, timeout);
-    cbp = CommBuf::make(header, params);
+    cbp = CommBuf::make(params);
+    cbp->header.set(RGR_GET, timeout);
   }
 
   virtual ~RgrGet(){}

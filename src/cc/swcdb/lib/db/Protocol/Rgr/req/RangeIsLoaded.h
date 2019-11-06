@@ -24,10 +24,8 @@ class RangeIsLoaded : public DispatchHandler {
   virtual ~RangeIsLoaded() { }
   
   bool run(uint32_t timeout=60000) override {
-    CommHeader header(RANGE_IS_LOADED, timeout);
-    auto cbp = CommBuf::make(
-      header, Params::RangeIsLoaded(range->cid, range->rid)
-    );
+    auto cbp = CommBuf::make(Params::RangeIsLoaded(range->cid, range->rid));
+    cbp->header.set(RANGE_IS_LOADED, timeout);
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
 

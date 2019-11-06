@@ -39,8 +39,8 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
                    const uint32_t timeout) 
                   : Common::Req::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
-    CommHeader header(RANGE_QUERY_SELECT, timeout);
-    cbp = CommBuf::make(header, params);
+    cbp = CommBuf::make(params);
+    cbp->header.set(RANGE_QUERY_SELECT, timeout);
   }
 
   virtual ~RangeQuerySelect(){}

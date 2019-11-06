@@ -17,8 +17,8 @@ class ColumnDelete : public Common::Req::ConnQueue::ReqBase  {
   ColumnDelete(server::Mngr::RangerPtr rgr, int64_t cid) 
               : Common::Req::ConnQueue::ReqBase(false), 
                 rgr(rgr), cid(cid) {
-    CommHeader header(COLUMN_DELETE, 60000);
-    cbp = CommBuf::make(header, Common::Params::ColumnId(cid));
+    cbp = CommBuf::make(Common::Params::ColumnId(cid));
+    cbp->header.set(COLUMN_DELETE, 60000);
   }
   
   virtual ~ColumnDelete() { }
