@@ -236,7 +236,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     }
     
     if(m_check_timer == nullptr)
-      m_check_timer = std::make_shared<asio::high_resolution_timer>(
+      m_check_timer = std::make_unique<asio::high_resolution_timer>(
         *Env::IoCtx::io()->ptr());
     else
       m_check_timer->cancel();
@@ -257,7 +257,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   client::ClientConPtr      m_conn;
   bool                      m_queue_running;
   bool                      m_connecting;
-  TimerPtr                  m_check_timer; 
+  std::unique_ptr<asio::high_resolution_timer> m_check_timer; 
 
   protected:
   const gInt32tPtr          cfg_keepalive_ms;
