@@ -56,9 +56,7 @@ private:
           return;
         }
         std::make_shared<ConnHandlerServer>(
-          m_app_ctx, 
-          std::make_shared<asio::ip::tcp::socket>(std::move(new_sock)),
-          m_io_ctx
+          m_app_ctx, new_sock, m_io_ctx
         )->new_connection();
 
         do_accept();

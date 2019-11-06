@@ -15,8 +15,10 @@ namespace SWC { namespace server {
 class ConnHandlerServer : public ConnHandler {
 
   public:
-  ConnHandlerServer(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-                    : ConnHandler(app_ctx, socket, io_ctx){}
+
+  ConnHandlerServer(AppContextPtr app_ctx, Socket& socket, IOCtxPtr io_ctx) 
+                    : ConnHandler(app_ctx, socket, io_ctx){
+  }
 
   virtual ~ConnHandlerServer(){}
 

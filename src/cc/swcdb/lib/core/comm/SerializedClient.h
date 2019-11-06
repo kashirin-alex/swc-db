@@ -86,17 +86,17 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     HT_DEBUGF("Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
-    SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
+    asio::ip::tcp::socket sock(*m_ioctx.get());
     asio::error_code ec;
-    s->open(m_endpoint.protocol(), ec);
-    if(ec || !s->is_open())
+    sock.open(m_endpoint.protocol(), ec);
+    if(ec || !sock.is_open())
       return;
 
-    s->connect(m_endpoint, ec);
-    if(ec || !s->is_open())
+    sock.connect(m_endpoint, ec);
+    if(ec || !sock.is_open())
       return;
 
-    conn = std::make_shared<ConnHandlerClient>(m_ctx, s, m_ioctx);
+    conn = std::make_shared<ConnHandlerClient>(m_ctx, sock, m_ioctx);
     conn->new_connection();
     if(preserve)
       put_back(conn);
@@ -110,15 +110,15 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     HT_DEBUGF("Connecting Async: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
-    SocketPtr s = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
-    s->async_connect(m_endpoint, 
-      [s, cb, preserve, ptr=shared_from_this()]
+    auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
+    sock->async_connect(m_endpoint, 
+      [sock, cb, preserve, ptr=shared_from_this()]
       (const std::error_code& ec){
-        if(ec || !s->is_open()){
+        if(ec || !sock->is_open()){
           cb(nullptr);
         } else {
-          ClientConPtr conn 
-            = std::make_shared<ConnHandlerClient>(ptr->m_ctx, s, ptr->m_ioctx);
+          ClientConPtr conn = std::make_shared<ConnHandlerClient>(
+            ptr->m_ctx, *sock.get(), ptr->m_ioctx);
           conn->new_connection();
           if(preserve)
             ptr->put_back(conn);

@@ -15,8 +15,9 @@ namespace SWC { namespace client {
 class ConnHandlerClient : public ConnHandler {
 
   public:
-  ConnHandlerClient(AppContextPtr app_ctx, SocketPtr socket, IOCtxPtr io_ctx) 
-                    : ConnHandler(app_ctx, socket, io_ctx){}
+  ConnHandlerClient(AppContextPtr app_ctx, Socket& socket, IOCtxPtr io_ctx) 
+                    : ConnHandler(app_ctx, socket, io_ctx){
+  }
 
   virtual ~ConnHandlerClient(){}
 
