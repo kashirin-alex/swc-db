@@ -49,10 +49,9 @@ class Append : public AppHandler {
     }
   
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
       auto cbp = CommBuf::make(
-        header, FS::Protocol::Params::AppendRsp(offset, amount), 4);
+        FS::Protocol::Params::AppendRsp(offset, amount), 4);
+      cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
     }

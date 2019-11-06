@@ -47,16 +47,14 @@ class Write : public AppHandler {
     }
   
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      auto cbp = CommBuf::make(header, 4);
+      auto cbp = CommBuf::make(4);
+      cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;
     }
-
   }
 
 };

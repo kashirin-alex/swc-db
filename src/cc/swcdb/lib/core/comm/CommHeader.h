@@ -36,9 +36,11 @@ class CommHeader {
               buffers(0), 
               data_size(0), data_chksum(0), 
               data_ext_size(0), data_ext_chksum(0), 
-              checksum(0) {  
+              checksum(0) { 
   }
   
+  virtual ~CommHeader() { }
+
   const size_t encoded_length() { 
     header_len = FIXED_LENGTH;
     buffers = 0;

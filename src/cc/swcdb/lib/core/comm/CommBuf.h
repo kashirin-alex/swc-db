@@ -69,17 +69,31 @@ class CommBuf {
     return std::make_shared<CommBuf>(hdr, buffer);
   }
 
-  CommBuf(CommHeader &hdr) 
-          : header(hdr) {
+  inline Ptr static make(uint32_t reserve=0) {
+    return std::make_shared<CommBuf>(reserve);
   }
 
-  CommBuf(CommHeader &hdr, uint32_t reserve) 
-        : header(hdr) {
+  inline Ptr static make(const Serializable& params, uint32_t reserve=0) {
+    return std::make_shared<CommBuf>(params, reserve);
+  }
+
+  inline Ptr static make(const Serializable& params, StaticBuffer& buffer, 
+                         uint32_t reserve=0) {
+    return std::make_shared<CommBuf>(params, buffer, reserve);
+  }
+
+  inline Ptr static make(StaticBuffer& buffer) {
+    return std::make_shared<CommBuf>(buffer);
+  }
+
+  CommBuf(CommHeader &hdr) : header(hdr) { }
+
+  CommBuf(CommHeader &hdr, uint32_t reserve) : header(hdr) {
     set_data(reserve);
   }
 
   CommBuf(CommHeader &hdr, const Serializable& params, uint32_t reserve=0) 
-        : header(hdr) {
+          : header(hdr) {
     set_data(params, reserve);
   }
 
@@ -91,6 +105,22 @@ class CommBuf {
 
   CommBuf(CommHeader &hdr, StaticBuffer& buffer) 
           : header(hdr), buf_ext(buffer) {
+  }
+
+  CommBuf(uint32_t reserve) {
+    set_data(reserve);
+  }
+
+  CommBuf(const Serializable& params, uint32_t reserve=0) {
+    set_data(params, reserve);
+  }
+
+  CommBuf(const Serializable& params, StaticBuffer& buffer, 
+          uint32_t reserve=0) : buf_ext(buffer) {
+    set_data(params, reserve);
+  }
+
+  CommBuf(StaticBuffer& buffer) : buf_ext(buffer) {
   }
 
   virtual ~CommBuf() { }

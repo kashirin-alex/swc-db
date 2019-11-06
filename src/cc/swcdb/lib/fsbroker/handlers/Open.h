@@ -47,9 +47,8 @@ class Open : public AppHandler {
     }
   
     try {
-      CommHeader header;
-      header.initialize_from_request_header(m_ev->header);
-      auto cbp = CommBuf::make(header, FS::Protocol::Params::OpenRsp(fd), 4);
+      auto cbp = CommBuf::make(FS::Protocol::Params::OpenRsp(fd), 4);
+      cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
     }
