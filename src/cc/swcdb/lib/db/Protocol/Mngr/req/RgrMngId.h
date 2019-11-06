@@ -23,9 +23,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     typedef std::shared_ptr<Scheduler> Ptr;
 
     Scheduler() :
-      m_timer(
-        std::make_shared<asio::high_resolution_timer>(*Env::IoCtx::io()->ptr())
-      ),
+      m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       cfg_check_interval(
         Env::Config::settings()->get_ptr<gInt32t>(
            "swc.rgr.id.validation.interval")) {
@@ -35,15 +33,15 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
     void set(uint32_t ms) {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_timer == nullptr)
+      if(!m_run)
         return;
         
-      m_timer->cancel();
+      m_timer.cancel();
 
-      m_timer->expires_from_now(
+      m_timer.expires_from_now(
         std::chrono::milliseconds(ms == 0?cfg_check_interval->get():ms));
 
-      m_timer->async_wait(
+      m_timer.async_wait(
         [ptr=shared_from_this()](const asio::error_code ec) {
           if (ec != asio::error::operation_aborted){
             assign(ptr);
@@ -54,17 +52,17 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
     void stop(){
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_timer != nullptr) {
-        m_timer->cancel();
-        m_timer = nullptr;
-      }
+      if(m_run) 
+        m_timer.cancel();
+      m_run = false;
     }
 
     private:
-    const gInt32tPtr  cfg_check_interval;
+    const gInt32tPtr             cfg_check_interval;
     
-    std::mutex        m_mutex;
-    TimerPtr          m_timer;
+    std::mutex                   m_mutex;
+    asio::high_resolution_timer  m_timer;
+    bool                         m_run;
   };
   
   void static assign(Scheduler::Ptr validator) {
