@@ -20,13 +20,13 @@ typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 }
  
+#include <queue>
 #include <memory>
 #include "DispatchHandler.h"
 
 #include "Event.h"
 #include "CommBuf.h"
 #include "Protocol.h"
-#include <queue>
 
 namespace SWC { 
 
@@ -210,6 +210,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_err;
   }
 
+  /*
   inline int send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms){
     if(m_err != Error::OK)
       return m_err;
@@ -240,10 +241,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   inline int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
-                    DispatchHandlerPtr hdlr, bool sequential=false) {
+                          DispatchHandlerPtr hdlr, bool sequential=false) {
     cbuf->header.timeout_ms = timeout_ms;
     return send_request(cbuf, hdlr, sequential);
   }
+  */
 
   inline int send_request(CommBuf::Ptr &cbuf, DispatchHandlerPtr hdlr, 
                           bool sequential=false) {
@@ -251,7 +253,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       return m_err;
 
     cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-
     if(cbuf->header.id == 0)
       cbuf->header.id = next_req_id();
 
@@ -268,6 +269,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     read_pending();
   }
 
+  /* 
   inline void accept_requests(DispatchHandlerPtr hdlr, 
                               uint32_t timeout_ms=0) {
     auto q = new PendingRsp(0, hdlr, false);  // initial req.acceptor
@@ -278,6 +280,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     read_pending();
   }
+  */
 
   private:
 
@@ -286,7 +289,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   void set_timer(asio::high_resolution_timer*& tm, 
-                 uint32_t t_ms, CommHeader header=0) {
+                 uint32_t t_ms, CommHeader& header) {
     tm = new asio::high_resolution_timer(
       m_sock.get_executor(), std::chrono::milliseconds(t_ms)); 
 
@@ -319,7 +322,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     Outgoing* data;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_writing = m_outgoing.size() > 0;
+      m_writing = !m_outgoing.empty();
       if(!m_writing) 
         return;
       data = m_outgoing.front();
@@ -330,7 +333,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
   inline void write(Outgoing* data){
 
-    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) { 
+    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
       auto q = new PendingRsp(
         data->cbuf->header.id, data->hdlr, data->sequential);
       if(data->cbuf->header.timeout_ms) 
@@ -366,7 +369,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   inline void read_pending(){
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
-      if(m_err != Error::OK || m_reading)
+      if(m_err || m_reading)
         return;
       m_reading = true;
     }
@@ -493,7 +496,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
       m_reading = false;
-      more = m_accepting || m_pending.size() > 0;
+      more = m_accepting || !m_pending.empty();
     }
     if(more)
       read_pending();
