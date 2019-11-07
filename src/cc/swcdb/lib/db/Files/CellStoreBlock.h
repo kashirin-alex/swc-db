@@ -202,11 +202,11 @@ class Read {
       if(sz_enc == 0)
         break;
 
-      m_buffer.reallocate(sz_enc);
       for(;;) {
+        m_buffer.free();
         err = Error::OK;
         if(Env::FsInterface::fs()->pread(
-                    err, smartfd, offset+HEADER_SIZE, m_buffer.base, sz_enc)
+                    err, smartfd, offset+HEADER_SIZE, &m_buffer, sz_enc)
                   != sz_enc){
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
@@ -231,8 +231,7 @@ class Read {
           Env::FsInterface::fs()->close(tmperr, smartfd);
           break;
         }
-        m_buffer.set(buffer.base, buffer.size);
-        buffer.own = false;
+        m_buffer.set(buffer);
       }
 
       break;

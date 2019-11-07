@@ -120,15 +120,15 @@ void load(int &err, FS::SmartFd::Ptr smartfd, DB::Schema::Ptr &schema) {
                          buf, HEADER_SIZE, HEADER_OFFSET_CHKSUM))
       break;
 
-    StaticBuffer read_buf(sz);
-    ptr = read_buf.base;
-    if(Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz){
+    StaticBuffer read_buf;
+    if(Env::FsInterface::fs()->read(err, smartfd, &read_buf, sz) != sz){
       if(err != Error::FS_EOF){
         Env::FsInterface::fs()->close(err, smartfd);
         continue;
       }
       break;
     }
+    ptr = read_buf.base;
 
     if(!checksum_i32_chk(chksum_data, ptr, sz))
       break;

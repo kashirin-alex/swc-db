@@ -192,16 +192,16 @@ class Fragment {
       if(err)
         continue;
       
-      StaticBuffer buf(HEADER_SIZE);
-      const uint8_t *ptr = buf.base;
+      StaticBuffer buf;
       if(Env::FsInterface::fs()->pread(
-          err, m_smartfd, 0, buf.base, HEADER_SIZE) != HEADER_SIZE){
+          err, m_smartfd, 0, &buf, HEADER_SIZE) != HEADER_SIZE){
         if(err != Error::FS_EOF){
           Env::FsInterface::fs()->close(err, m_smartfd);
           continue;
         }
         return;
       }
+      const uint8_t *ptr = buf.base;
 
       size_t remain = HEADER_SIZE;
       m_version = Serialization::decode_i8(&ptr, &remain);
@@ -211,17 +211,17 @@ class Fragment {
         err = Error::CHECKSUM_MISMATCH;
         return;
       }
-
-      buf.reallocate(header_extlen);
-      ptr = buf.base;
+      buf.free();
+      
       if(Env::FsInterface::fs()->pread(err, m_smartfd, HEADER_SIZE, 
-                                    buf.base, header_extlen) != header_extlen){
+                                       &buf, header_extlen) != header_extlen) {
         if(err != Error::FS_EOF){
           Env::FsInterface::fs()->close(err, m_smartfd);
           continue;
         }
         return;
       }
+      ptr = buf.base;
 
       remain = header_extlen;
       interval.decode(&ptr, &remain, true);

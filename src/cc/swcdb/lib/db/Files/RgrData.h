@@ -82,15 +82,15 @@ class RgrData {
         break;
 
 
-      StaticBuffer read_buf(sz);
-      ptr = read_buf.base;
-      if(Env::FsInterface::fs()->read(err, smartfd, read_buf.base, sz) != sz){
+      StaticBuffer read_buf;
+      if(Env::FsInterface::fs()->read(err, smartfd, &read_buf, sz) != sz){
         if(err != Error::FS_EOF){
           Env::FsInterface::fs()->close(err, smartfd);
           continue;
         }
         break;
       }
+      ptr = read_buf.base;
 
       if(!checksum_i32_chk(chksum_data, ptr, sz))
         break;

@@ -343,11 +343,12 @@ class Read  {
     if(!load_trailer(err, length, offset, false))
       return;
 
-    StaticBuffer read_buf(length);
+    StaticBuffer read_buf;
     for(;;) {
+      read_buf.free();
       err = Error::OK;
       if(Env::FsInterface::fs()->pread(
-                          err, smartfd, offset, read_buf.base, length)
+                          err, smartfd, offset, &read_buf, length)
                 != length){
         int tmperr = Error::OK;
         close(tmperr);
@@ -360,8 +361,8 @@ class Read  {
       }
       break;
     }
-
     const uint8_t *ptr = read_buf.base;
+
     size_t remain = length;
     Types::Encoding encoder 
       = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
@@ -386,8 +387,8 @@ class Read  {
         close(tmperr);
         return;
       }
-      read_buf.free();
-      ptr = decoded_buf.base;
+      read_buf.set(decoded_buf);
+      ptr = read_buf.base;
       remain = sz;
     }
 
