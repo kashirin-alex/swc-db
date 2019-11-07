@@ -258,9 +258,9 @@ class Fragment {
       if(err)
         continue;
       
-      m_buffer.reallocate(m_size_enc);
+      m_buffer.free();
       if(Env::FsInterface::fs()->pread(
-            err, m_smartfd, m_cells_offset, m_buffer.base, m_size_enc) 
+            err, m_smartfd, m_cells_offset, &m_buffer, m_size_enc) 
           != m_size_enc) {
         err = Error::FS_IO_ERROR;
       }
@@ -293,8 +293,7 @@ class Fragment {
           Env::FsInterface::fs()->close(tmperr, m_smartfd);
           break;
         }
-        m_buffer.set(buffer.base, buffer.size);
-        buffer.own = false;
+        m_buffer.set(buffer);
       }
       break;
     }

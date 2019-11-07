@@ -304,7 +304,18 @@ class FileSystemBroker: public FileSystem {
               void *dst, size_t amount) override {
     auto hdlr = std::make_shared<Protocol::Req::Read>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, dst, amount);
+      smartfd, dst, amount, true);
+
+    send_request_sync(hdlr, hdlr->promise());
+    err = hdlr->error;
+    return hdlr->amount;
+  }
+   
+  size_t read(int &err, SmartFd::Ptr &smartfd, 
+              StaticBuffer* dst, size_t amount) override {
+    auto hdlr = std::make_shared<Protocol::Req::Read>(
+      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+      smartfd, (void*)dst, amount, false);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
@@ -315,7 +326,7 @@ class FileSystemBroker: public FileSystem {
             size_t amount) override {
     auto hdlr = std::make_shared<Protocol::Req::Read>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, nullptr, amount, cb);
+      smartfd, nullptr, amount, false, cb);
       
     while(!send_request(hdlr));
   }
@@ -324,7 +335,18 @@ class FileSystemBroker: public FileSystem {
               uint64_t offset, void *dst, size_t amount) override {
     auto hdlr = std::make_shared<Protocol::Req::Pread>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, dst, amount);
+      smartfd, offset, dst, amount, true);
+
+    send_request_sync(hdlr, hdlr->promise());
+    err = hdlr->error;
+    return hdlr->amount;
+  }
+
+  size_t pread(int &err, SmartFd::Ptr &smartfd, 
+              uint64_t offset, StaticBuffer* dst, size_t amount) override {
+    auto hdlr = std::make_shared<Protocol::Req::Pread>(
+      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+      smartfd, offset, (void*)dst, amount, false);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
@@ -335,7 +357,7 @@ class FileSystemBroker: public FileSystem {
             uint64_t offset, size_t amount) override {
     auto hdlr = std::make_shared<Protocol::Req::Pread>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, nullptr, amount, cb);
+      smartfd, offset, nullptr, amount, false, cb);
       
     while(!send_request(hdlr));
   }

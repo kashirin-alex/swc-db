@@ -14,12 +14,14 @@ class Read : public Base {
 
   public:
   
-  size_t amount;
-  void* buffer;
+  void*   buffer;
+  bool    allocated;
+  size_t  amount;
   
   Read(uint32_t timeout, SmartFd::Ptr &smartfd, void* dst, size_t len, 
-      Callback::ReadCb_t cb=0)
-      : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
+      bool allocated, Callback::ReadCb_t cb=0)
+      : smartfd(smartfd), buffer(dst), allocated(allocated),
+        cb(cb), amount(0) {
     HT_DEBUGF("read len=%d timeout=%d %s", 
               len, timeout, smartfd->to_string().c_str());
 
@@ -27,7 +29,7 @@ class Read : public Base {
     cbp->header.set(Cmd::FUNCTION_READ, timeout);
   }
 
-  std::promise<void> promise(){
+  std::promise<void> promise() {
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
          (int err, SmartFd::Ptr smartfd, StaticBuffer::Ptr buf){
@@ -36,7 +38,7 @@ class Read : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
+  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
 
     const uint8_t *ptr;
     size_t remain;
@@ -55,7 +57,10 @@ class Read : public Base {
         if(buffer == nullptr) {
           buf = std::make_shared<StaticBuffer>(ev->data_ext); 
         } else {
-          memcpy(buffer, ev->data_ext.base, amount);
+          if(allocated)
+            memcpy(buffer, ev->data_ext.base, amount);
+          else
+            ((StaticBuffer*)buffer)->set(ev->data_ext);
         }
       }
     }

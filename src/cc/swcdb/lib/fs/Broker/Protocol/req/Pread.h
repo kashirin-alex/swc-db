@@ -14,21 +14,22 @@ class Pread : public Base {
 
   public:
   
-  size_t amount;
-  void* buffer;
+  void*   buffer;
+  bool    allocated;
+  size_t  amount;
   
   Pread(uint32_t timeout, SmartFd::Ptr &smartfd, 
-        uint64_t offset, void* dst, size_t len, 
+        uint64_t offset, void* dst, size_t len, bool allocated,
         Callback::PreadCb_t cb=0)
-      : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
+      : smartfd(smartfd), buffer(dst), allocated(allocated), 
+        cb(cb), amount(0) {
     HT_DEBUGF("pread offset=%d len=%d timeout=%d %s", 
               offset, len, timeout, smartfd->to_string().c_str());
-
     cbp = CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));
     cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
   }
 
-  std::promise<void> promise(){
+  std::promise<void> promise() {
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
          (int err, SmartFd::Ptr smartfd, StaticBuffer::Ptr buf){
@@ -56,7 +57,10 @@ class Pread : public Base {
         if(buffer == nullptr) {
           buf = std::make_shared<StaticBuffer>(ev->data_ext); 
         } else {
-          memcpy(buffer, ev->data_ext.base, amount);
+          if(allocated)
+            memcpy(buffer, ev->data_ext.base, amount);
+          else
+            ((StaticBuffer*)buffer)->set(ev->data_ext);
         }
       }
     }

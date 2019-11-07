@@ -231,24 +231,34 @@ class FileSystem {
 
   virtual size_t read(int &err, SmartFd::Ptr &smartfd, 
                       void *dst, size_t amount) = 0;
+  virtual size_t read(int &err, SmartFd::Ptr &smartfd, 
+                      StaticBuffer* dst, size_t amount) {
+    if(!dst->size)
+      dst->reallocate(amount);
+    return read(err, smartfd, dst->base, amount);
+  }
   virtual 
   void read(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, size_t amount) {
     int err = Error::OK;
-    StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
-    dst->size = read(err, smartfd, dst->base, amount);
-  
+    auto dst = std::make_shared<StaticBuffer>();
+    read(err, smartfd, dst.get(), amount);
     cb(err, smartfd, dst);
   }
   
   virtual size_t pread(int &err, SmartFd::Ptr &smartfd, 
                        uint64_t offset, void *dst, size_t amount) = 0;
+  virtual size_t pread(int &err, SmartFd::Ptr &smartfd, 
+                       uint64_t offset, StaticBuffer* dst, size_t amount) {
+    if(!dst->size)
+      dst->reallocate(amount);
+    return pread(err, smartfd, offset, dst->base, amount);
+  }
   virtual 
   void pread(Callback::PreadCb_t cb, SmartFd::Ptr &smartfd, 
             uint64_t offset, size_t amount) {
     int err = Error::OK;
-    StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
-    dst->size = pread(err, smartfd, offset, dst->base, amount);
-  
+    auto dst = std::make_shared<StaticBuffer>();
+    pread(err, smartfd, offset, dst.get(), amount);
     cb(err, smartfd, dst);
   }
 
