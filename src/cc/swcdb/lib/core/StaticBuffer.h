@@ -111,6 +111,17 @@ namespace SWC {
       }
     }
 
+    void set(StaticBuffer& other) {
+      base = other.base;
+      size = other.size;
+      own = other.own;
+      if (own) {
+        other.own = false;
+        other.base = 0;
+        other.size = 0;
+      }
+    }
+
     /** Sets data pointer; the existing buffer is discarded and deleted
      *
      * @param data Pointer to the existing buffer
