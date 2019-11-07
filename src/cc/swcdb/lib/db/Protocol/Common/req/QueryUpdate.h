@@ -360,7 +360,7 @@ class Update : public std::enable_shared_from_this<Update> {
                 << " rid=" << rid << " " << cells->to_string() << "\n"; 
               
       bool more;
-      DynamicBufferPtr cells_buff;
+      DynamicBuffer::Ptr cells_buff;
       do {
         cells_buff = std::make_shared<DynamicBuffer>();     
         more = cells->write_and_free(

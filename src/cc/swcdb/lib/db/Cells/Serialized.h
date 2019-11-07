@@ -17,7 +17,7 @@ class Serialized {
 
   struct ColumnData {
     Specs::Interval::Ptr interval;
-    DynamicBufferPtr     buffer;
+    DynamicBuffer::Ptr   buffer;
   };
   typedef std::unordered_map<int64_t, ColumnData> Columns;
   typedef std::pair<int64_t, ColumnData>          Pair;
@@ -27,7 +27,7 @@ class Serialized {
   Serialized(Columns map): m_map(map) { }
 
   /*
-  Serialized(const int64_t cid, DynamicBufferPtr buff) { 
+  Serialized(const int64_t cid, DynamicBuffer::Ptr buff) { 
     add(cid, buff); 
   }
   */
@@ -77,7 +77,7 @@ class Serialized {
     }
   }
 /*
-  void add(const int64_t cid, DynamicBufferPtr buff) {
+  void add(const int64_t cid, DynamicBuffer::Ptr buff) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(cid);

@@ -15,12 +15,12 @@ class RangeLoad : public Common::Params::ColRangeId {
   public:
 
   RangeLoad() : schema(nullptr) {}
-  RangeLoad(size_t cid, size_t rid, DB::SchemaPtr schema) 
+  RangeLoad(size_t cid, size_t rid, DB::Schema::Ptr schema) 
             : Common::Params::ColRangeId(cid, rid), schema(schema){}
              
   virtual ~RangeLoad() {}
 
-  DB::SchemaPtr schema;
+  DB::Schema::Ptr schema;
   
   private:
 

@@ -37,7 +37,7 @@ void run_test(Query::Select::Ptr select_req, int64_t cid, int versions=2, int nu
                                       << " check=" << check <<"\n";
   // Req::Query::Select
   int err = SWC::Error::OK;
-  SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
+  auto schema = SWC::Env::Clients::get()->schemas->get(err, cid);
     if(err) {
     std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
     exit(1);
@@ -58,7 +58,7 @@ void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int nu
                                       << " deleting=" << deleting << "\n";
   // Req::Query::Update
   int err = SWC::Error::OK;
-  SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, cid);
+  auto schema = SWC::Env::Clients::get()->schemas->get(err, cid);
     if(err) {
     std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
     exit(1);
@@ -186,7 +186,7 @@ void test_1(const std::string& col_name) {
   );
   
   int err = SWC::Error::OK;
-  SWC::DB::SchemaPtr schema = SWC::Env::Clients::get()->schemas->get(err, col_name);
+  auto schema = SWC::Env::Clients::get()->schemas->get(err, col_name);
     if(err) {
     std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
     exit(1);
@@ -402,13 +402,15 @@ void test_1(const std::string& col_name) {
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   
-  SWC::Env::Clients::init(std::make_shared<SWC::client::Clients>(
-    nullptr,
-    std::make_shared<SWC::client::AppContext>()
-  ));
+  SWC::Env::Clients::init(
+    std::make_shared<SWC::client::Clients>(
+      nullptr,
+      std::make_shared<SWC::client::AppContext>()
+    )
+  );
   
   // PLAIN one version
-  SWC::DB::SchemaPtr schema = SWC::DB::Schema::make(
+  auto schema = SWC::DB::Schema::make(
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 

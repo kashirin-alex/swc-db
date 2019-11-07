@@ -160,7 +160,7 @@ class Range : public DB::RangeBase {
       uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
       
       if(m_req_set_intval == nullptr) {
-        DB::SchemaPtr schema = Env::Schemas::get()->get(cid_typ);
+        DB::Schema::Ptr schema = Env::Schemas::get()->get(cid_typ);
         if(schema == nullptr) {
           schema = Env::Clients::get()->schemas->get(err, cid_typ);
           if(err)
@@ -326,8 +326,8 @@ class Range : public DB::RangeBase {
 
   void last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
     // ranger.data
-    Files::RgrDataPtr rs_data = Env::RgrData::get();
-    Files::RgrDataPtr rs_last = get_last_rgr(err);
+    auto rs_data = Env::RgrData::get();
+    Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
     if(rs_last->endpoints.size() > 0 
       && !has_endpoint(rs_data->endpoints, rs_last->endpoints)){
@@ -352,7 +352,7 @@ class Range : public DB::RangeBase {
 
     else if(blocks.cellstores->empty()) {
       // init 1st cs(for log_cells)
-      DB::SchemaPtr schema = Env::Schemas::get()->get(cid);
+      DB::Schema::Ptr schema = Env::Schemas::get()->get(cid);
       Files::CellStore::Read::Ptr cs 
         = Files::CellStore::create_init_read(
           err, schema->blk_encoding, shared_from_this());

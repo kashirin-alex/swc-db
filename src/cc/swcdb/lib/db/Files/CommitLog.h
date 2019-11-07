@@ -35,7 +35,7 @@ class Fragments {
               cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
                 "swc.rgr.Range.block.encoding")) {
     
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+    DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
     m_cells = DB::Cells::Mutable::make(
@@ -80,7 +80,7 @@ class Fragments {
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
 
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+    DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     uint32_t blk_size;
     {
       std::lock_guard<std::mutex> lock(m_mutex);

@@ -43,7 +43,7 @@ class Read  {
   };
 
   const uint32_t                id;
-  FS::SmartFdPtr                smartfd;
+  FS::SmartFd::Ptr              smartfd;
   DB::Cells::Interval           interval;
   std::vector<Block::Read::Ptr> blocks;
   std::atomic<State>            state;
@@ -501,7 +501,7 @@ class Write : public std::enable_shared_from_this<Write> {
   typedef std::shared_ptr<Write>  Ptr;
 
   const uint32_t            id;
-  FS::SmartFdPtr            smartfd;
+  FS::SmartFd::Ptr          smartfd;
   Types::Encoding           encoder;
   size_t                    size;
   DB::Cells::Interval       interval;

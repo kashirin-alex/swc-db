@@ -56,7 +56,7 @@ class FileSystemBroker: public FileSystem {
     : FileSystem(apply_broker()),
       m_io(std::make_shared<IoContext>("FsBroker",
         Env::Config::settings()->get<int32_t>("swc.fs.broker.handlers"))),
-      m_service(std::make_shared<client::SerializedClient>(
+      m_service(std::make_shared<client::Serialized>(
         "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
       m_type_underlying(parse_fs_type(
         Env::Config::settings()->get<String>("swc.fs.broker.underlying"))),
@@ -88,9 +88,9 @@ class FileSystemBroker: public FileSystem {
   }
 
 
-  bool send_request(Protocol::Req::ReqBasePtr hdlr){
+  bool send_request(Protocol::Req::Base::Ptr hdlr){
 
-    client::ClientConPtr conn = nullptr;
+    client::ConnHandler::Ptr conn = nullptr;
     do {
       if(!m_run) {
         auto ev = Event::make(Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
@@ -108,7 +108,7 @@ class FileSystemBroker: public FileSystem {
     return true;
   }
 
-  void send_request_sync(Protocol::Req::ReqBasePtr hdlr, 
+  void send_request_sync(Protocol::Req::Base::Ptr hdlr, 
                          std::promise<void> res){
     while(!send_request(hdlr));
     res.get_future().wait();
@@ -117,7 +117,7 @@ class FileSystemBroker: public FileSystem {
   /// File/Dir name actions
 
   bool exists(int &err, const String &name) override {
-    Protocol::Req::ExistsPtr hdlr = std::make_shared<Protocol::Req::Exists>(
+    auto hdlr = std::make_shared<Protocol::Req::Exists>(
       cfg_timeout->get(), name);
     
     send_request_sync(hdlr, hdlr->promise());
@@ -126,14 +126,14 @@ class FileSystemBroker: public FileSystem {
   }
 
   void exists(Callback::ExistsCb_t cb, const String &name) override {
-    Protocol::Req::ExistsPtr hdlr = std::make_shared<Protocol::Req::Exists>(
+    auto hdlr = std::make_shared<Protocol::Req::Exists>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
   void remove(int &err, const String &name) override {
-    Protocol::Req::RemovePtr hdlr = std::make_shared<Protocol::Req::Remove>(
+    auto hdlr = std::make_shared<Protocol::Req::Remove>(
       cfg_timeout->get(), name);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -141,14 +141,14 @@ class FileSystemBroker: public FileSystem {
   }
 
   void remove(Callback::RemoveCb_t cb, const String &name) override {
-    Protocol::Req::RemovePtr hdlr = std::make_shared<Protocol::Req::Remove>(
+    auto hdlr = std::make_shared<Protocol::Req::Remove>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
   
   size_t length(int &err, const String &name) override {
-    Protocol::Req::LengthPtr hdlr = std::make_shared<Protocol::Req::Length>(
+    auto hdlr = std::make_shared<Protocol::Req::Length>(
       cfg_timeout->get(), name);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -157,14 +157,14 @@ class FileSystemBroker: public FileSystem {
   }
 
   void length(Callback::LengthCb_t cb, const String &name) override {
-    Protocol::Req::LengthPtr hdlr = std::make_shared<Protocol::Req::Length>(
+    auto hdlr = std::make_shared<Protocol::Req::Length>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
   void mkdirs(int &err, const String &name) override {
-    Protocol::Req::MkdirsPtr hdlr = std::make_shared<Protocol::Req::Mkdirs>(
+    auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
       cfg_timeout->get(), name);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -172,14 +172,14 @@ class FileSystemBroker: public FileSystem {
   }
 
   void mkdirs(Callback::MkdirsCb_t cb, const String &name) override {
-    Protocol::Req::MkdirsPtr hdlr = std::make_shared<Protocol::Req::Mkdirs>(
+    auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
   void readdir(int &err, const String &name, DirentList &results) override {
-    Protocol::Req::ReaddirPtr hdlr = std::make_shared<Protocol::Req::Readdir>(
+    auto hdlr = std::make_shared<Protocol::Req::Readdir>(
       cfg_timeout->get(), name);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -188,14 +188,14 @@ class FileSystemBroker: public FileSystem {
   }
 
   void readdir(Callback::ReaddirCb_t cb, const String &name) override {
-    Protocol::Req::ReaddirPtr hdlr = std::make_shared<Protocol::Req::Readdir>(
+    auto hdlr = std::make_shared<Protocol::Req::Readdir>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
   void rmdir(int &err, const String &name) override {
-    Protocol::Req::RmdirPtr hdlr = std::make_shared<Protocol::Req::Rmdir>(
+    auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -203,7 +203,7 @@ class FileSystemBroker: public FileSystem {
   }
 
   void rmdir(Callback::RmdirCb_t cb, const String &name) override {
-    Protocol::Req::RmdirPtr hdlr = std::make_shared<Protocol::Req::Rmdir>(
+    auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
@@ -211,7 +211,7 @@ class FileSystemBroker: public FileSystem {
 
   void rename(int &err, const std::string &from, 
                         const std::string &to)  override {
-    Protocol::Req::RenamePtr hdlr = std::make_shared<Protocol::Req::Rename>(
+    auto hdlr = std::make_shared<Protocol::Req::Rename>(
       cfg_timeout->get(), from, to);
 
     send_request_sync(hdlr, hdlr->promise());
@@ -220,7 +220,7 @@ class FileSystemBroker: public FileSystem {
 
   void rename(Callback::RenameCb_t cb, 
               const std::string &from, const std::string &to)  override {
-    Protocol::Req::RenamePtr hdlr = std::make_shared<Protocol::Req::Rename>(
+    auto hdlr = std::make_shared<Protocol::Req::Rename>(
       cfg_timeout->get(), from, to, cb);
       
     while(!send_request(hdlr));
@@ -228,45 +228,45 @@ class FileSystemBroker: public FileSystem {
 
   /// SmartFd actions
 
-  void write(int &err, SmartFdPtr &smartfd,
+  void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) override {
-    Protocol::Req::WritePtr hdlr = std::make_shared<Protocol::Req::Write>(
+    auto hdlr = std::make_shared<Protocol::Req::Write>(
       cfg_timeout->get(), smartfd, replication, blksz, buffer);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
-  void write(Callback::WriteCb_t cb, SmartFdPtr &smartfd,
+  void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) override {
-    Protocol::Req::WritePtr hdlr = std::make_shared<Protocol::Req::Write>(
+    auto hdlr = std::make_shared<Protocol::Req::Write>(
       cfg_timeout->get(), smartfd, replication, blksz, buffer, cb);
       
     while(!send_request(hdlr));
   }
 
-  void create(int &err, SmartFdPtr &smartfd,
+  void create(int &err, SmartFd::Ptr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) override {
-    Protocol::Req::CreatePtr hdlr = std::make_shared<Protocol::Req::Create>(
+    auto hdlr = std::make_shared<Protocol::Req::Create>(
       cfg_timeout->get(), smartfd, bufsz, replication, blksz);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
-  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd,
+  void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) override {
-    Protocol::Req::CreatePtr hdlr = std::make_shared<Protocol::Req::Create>(
+    auto hdlr = std::make_shared<Protocol::Req::Create>(
       cfg_timeout->get(), smartfd, bufsz, replication, blksz, cb);
       
     while(!send_request(hdlr));
   }
   
-  size_t append(int &err, SmartFdPtr &smartfd, 
+  size_t append(int &err, SmartFd::Ptr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
-    Protocol::Req::AppendPtr hdlr = std::make_shared<Protocol::Req::Append>(
+    auto hdlr = std::make_shared<Protocol::Req::Append>(
       cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
       smartfd, buffer, flags);
 
@@ -275,34 +275,34 @@ class FileSystemBroker: public FileSystem {
     return hdlr->amount;
   }
    
-  void append(Callback::AppendCb_t cb, SmartFdPtr &smartfd, 
+  void append(Callback::AppendCb_t cb, SmartFd::Ptr &smartfd, 
               StaticBuffer &buffer, Flags flags) override {
-    Protocol::Req::AppendPtr hdlr = std::make_shared<Protocol::Req::Append>(
+    auto hdlr = std::make_shared<Protocol::Req::Append>(
       cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
       smartfd, buffer, flags, cb);
       
     while(!send_request(hdlr));
   }
 
-  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz) override {
-    Protocol::Req::OpenPtr hdlr = std::make_shared<Protocol::Req::Open>(
+  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) override {
+    auto hdlr = std::make_shared<Protocol::Req::Open>(
       cfg_timeout->get(), smartfd, bufsz);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
-  void open(Callback::OpenCb_t cb, SmartFdPtr &smartfd, 
+  void open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, 
             int32_t bufsz) override {
-    Protocol::Req::OpenPtr hdlr = std::make_shared<Protocol::Req::Open>(
+    auto hdlr = std::make_shared<Protocol::Req::Open>(
       cfg_timeout->get(), smartfd, bufsz, cb);
       
     while(!send_request(hdlr));
   }
   
-  size_t read(int &err, SmartFdPtr &smartfd, 
+  size_t read(int &err, SmartFd::Ptr &smartfd, 
               void *dst, size_t amount) override {
-    Protocol::Req::ReadPtr hdlr = std::make_shared<Protocol::Req::Read>(
+    auto hdlr = std::make_shared<Protocol::Req::Read>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, dst, amount);
 
@@ -311,18 +311,18 @@ class FileSystemBroker: public FileSystem {
     return hdlr->amount;
   }
    
-  void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, 
+  void read(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
             size_t amount) override {
-    Protocol::Req::ReadPtr hdlr = std::make_shared<Protocol::Req::Read>(
+    auto hdlr = std::make_shared<Protocol::Req::Read>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, nullptr, amount, cb);
       
     while(!send_request(hdlr));
   }
   
-  size_t pread(int &err, SmartFdPtr &smartfd, 
+  size_t pread(int &err, SmartFd::Ptr &smartfd, 
               uint64_t offset, void *dst, size_t amount) override {
-    Protocol::Req::PreadPtr hdlr = std::make_shared<Protocol::Req::Pread>(
+    auto hdlr = std::make_shared<Protocol::Req::Pread>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, offset, dst, amount);
 
@@ -331,71 +331,71 @@ class FileSystemBroker: public FileSystem {
     return hdlr->amount;
   }
    
-  void pread(Callback::ReadCb_t cb, SmartFdPtr &smartfd, 
+  void pread(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
             uint64_t offset, size_t amount) override {
-    Protocol::Req::PreadPtr hdlr = std::make_shared<Protocol::Req::Pread>(
+    auto hdlr = std::make_shared<Protocol::Req::Pread>(
       cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
       smartfd, offset, nullptr, amount, cb);
       
     while(!send_request(hdlr));
   }
 
-  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
-    Protocol::Req::SeekPtr hdlr = std::make_shared<Protocol::Req::Seek>(
+  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
+    auto hdlr = std::make_shared<Protocol::Req::Seek>(
       cfg_timeout->get(), smartfd, offset);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
    
-  void seek(Callback::SeekCb_t cb, SmartFdPtr &smartfd, 
+  void seek(Callback::SeekCb_t cb, SmartFd::Ptr &smartfd, 
             size_t offset) override {
-    Protocol::Req::SeekPtr hdlr = std::make_shared<Protocol::Req::Seek>(
+    auto hdlr = std::make_shared<Protocol::Req::Seek>(
       cfg_timeout->get(), smartfd, offset, cb);
       
     while(!send_request(hdlr));
   }
 
-  void flush(int &err, SmartFdPtr &smartfd) override {
-    Protocol::Req::FlushPtr hdlr = std::make_shared<Protocol::Req::Flush>(
+  void flush(int &err, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Flush>(
       cfg_timeout->get(), smartfd);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
   
-  void flush(Callback::FlushCb_t cb, SmartFdPtr &smartfd) override {
-    Protocol::Req::FlushPtr hdlr = std::make_shared<Protocol::Req::Flush>(
+  void flush(Callback::FlushCb_t cb, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Flush>(
       cfg_timeout->get(), smartfd, cb);
       
     while(!send_request(hdlr));
   }
 
-  void sync(int &err, SmartFdPtr &smartfd) override {
-    Protocol::Req::SyncPtr hdlr = std::make_shared<Protocol::Req::Sync>(
+  void sync(int &err, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Sync>(
       cfg_timeout->get(), smartfd);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
   
-  void sync(Callback::SyncCb_t cb, SmartFdPtr &smartfd) override {
-    Protocol::Req::SyncPtr hdlr = std::make_shared<Protocol::Req::Sync>(
+  void sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Sync>(
       cfg_timeout->get(), smartfd, cb);
       
     while(!send_request(hdlr));
   }
 
-  void close(int &err, SmartFdPtr &smartfd) override {
-    Protocol::Req::ClosePtr hdlr = std::make_shared<Protocol::Req::Close>(
+  void close(int &err, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Close>(
       cfg_timeout->get(), smartfd);
 
     send_request_sync(hdlr, hdlr->promise());
     err = hdlr->error;
   }
 
-  void close(Callback::CreateCb_t cb, SmartFdPtr &smartfd) override {
-    Protocol::Req::ClosePtr hdlr = std::make_shared<Protocol::Req::Close>(
+  void close(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd) override {
+    auto hdlr = std::make_shared<Protocol::Req::Close>(
       cfg_timeout->get(), smartfd, cb);
       
     while(!send_request(hdlr));
@@ -407,11 +407,11 @@ class FileSystemBroker: public FileSystem {
 
   private:
 
-  IoContext::Ptr    m_io;
-  client::ClientPtr m_service = nullptr;
-  Types::Fs         m_type_underlying;
-  const EndPoints   m_endpoints;
-  std::atomic<bool> m_run;
+  IoContext::Ptr          m_io;
+  client::Serialized::Ptr m_service = nullptr;
+  Types::Fs               m_type_underlying;
+  const EndPoints         m_endpoints;
+  std::atomic<bool>       m_run;
 
   const gInt32tPtr cfg_timeout;
   const gInt32tPtr cfg_timeout_ratio;
@@ -423,7 +423,7 @@ class FileSystemBroker: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_broker();
-void fs_apply_cfg_broker(SWC::Env::ConfigPtr env);
+void fs_apply_cfg_broker(SWC::Env::Config::Ptr env);
 }
 
 #endif  // swc_lib_fs_Broker_FileSystem_h

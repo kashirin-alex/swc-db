@@ -56,7 +56,6 @@ class Exists : public Base {
   const String          name;
   Callback::ExistsCb_t  cb;
 };
-typedef std::shared_ptr<Exists> ExistsPtr;
 
 
 

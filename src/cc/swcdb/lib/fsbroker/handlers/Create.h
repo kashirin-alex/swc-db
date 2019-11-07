@@ -34,7 +34,7 @@ class Create : public AppHandler {
       FS::Protocol::Params::CreateReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd 
+      FS::SmartFd::Ptr smartfd 
         = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
  
       Env::FsInterface::fs()->create(

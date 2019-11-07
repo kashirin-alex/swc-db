@@ -22,7 +22,8 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     ACK,
     REMOVED
   };
-  
+  typedef std::shared_ptr<Ranger> Ptr;
+
   Ranger(): id(0), state(State::NONE), 
             failures(0), total_ranges(0) {}
                        
@@ -109,8 +110,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   std::queue<Protocol::Common::Req::ConnQueue::ReqBase::Ptr> m_pending_id;
 
 };
-typedef std::shared_ptr<Ranger> RangerPtr;
-typedef std::vector<RangerPtr>  RangerList;
+typedef std::vector<Ranger::Ptr>  RangerList;
 
 }}}
 

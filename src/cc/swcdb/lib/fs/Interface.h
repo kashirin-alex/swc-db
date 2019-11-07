@@ -42,11 +42,10 @@ const char id_split_last = 'g';
 
 /// Interface to FileSystems
 
-class Interface;
-typedef std::shared_ptr<Interface> InterfacePtr;
-
-class Interface : std::enable_shared_from_this<Interface>{
+class Interface {
   public:
+  
+  typedef Interface* Ptr;
 
   Interface(Types::Fs typ=Types::Fs::NONE): m_type(typ) {
 
@@ -64,7 +63,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     HT_INFOF("INIT-%s", to_string().c_str());
   }
   
-  FileSystemPtr use_filesystem(){
+  FileSystem::Ptr use_filesystem(){
     std::string fs_name;
     
     switch(m_type){
@@ -149,10 +148,12 @@ class Interface : std::enable_shared_from_this<Interface>{
                 fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
     
     loaded_dl = {.lib=handle, .cfg=f_cfg_ptr, .make=f_new_ptr};
-    return FileSystemPtr(((fs_make_new_t*)f_new_ptr)());
+    return FileSystem::Ptr(((fs_make_new_t*)f_new_ptr)());
   }
 
-  operator InterfacePtr(){ return shared_from_this(); }
+  Ptr ptr(){ 
+    return this; 
+  }
 
   virtual ~Interface(){
     stop();
@@ -167,7 +168,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     return m_fs->get_type();
   }
 
-  FileSystemPtr get_fs(){
+  FileSystem::Ptr get_fs(){
     return m_fs;
   }
 
@@ -245,7 +246,7 @@ class Interface : std::enable_shared_from_this<Interface>{
 
   void exists(Callback::ExistsCb_t cb, const std::string &name) {
     Callback::ExistsCb_t cb_wrapper; 
-    cb_wrapper = [cb, name, &cb_wrapper, ptr=shared_from_this()]
+    cb_wrapper = [cb, name, &cb_wrapper, ptr=ptr()]
     (int err, bool state){ 
       if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN) 
         cb(err, state);
@@ -324,7 +325,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     }
   } 
 
-  void write(int &err, SmartFdPtr smartfd,
+  void write(int &err, SmartFd::Ptr smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer){
     buffer.own=false;
@@ -341,7 +342,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     buffer.own=true;
   }
   
-  bool open(int& err, SmartFdPtr smartfd) {
+  bool open(int& err, SmartFd::Ptr smartfd) {
     m_fs->open(err, smartfd);
     if(err == Error::FS_PATH_NOT_FOUND ||
        err == Error::FS_PERMISSION_DENIED ||
@@ -358,7 +359,7 @@ class Interface : std::enable_shared_from_this<Interface>{
     return false;
   }
   
-  bool create(int& err, SmartFdPtr smartfd,
+  bool create(int& err, SmartFd::Ptr smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) {
     m_fs->create(err, smartfd, bufsz, replication, blksz);
     if(err == Error::FS_PATH_NOT_FOUND ||
@@ -377,8 +378,8 @@ class Interface : std::enable_shared_from_this<Interface>{
   }
  
   private:
-  Types::Fs     m_type;
-  FileSystemPtr m_fs;
+  Types::Fs       m_type;
+  FileSystem::Ptr m_fs;
 
   struct LoadedDL{
     void* lib = nullptr;
@@ -412,37 +413,40 @@ void set_structured_id(std::string number, std::string &s){
 
 namespace Env {
 
-class FsInterface;
-typedef std::shared_ptr<FsInterface> FsInterfacePtr;
-
 class FsInterface {
   
   public:
+  
+  typedef std::shared_ptr<FsInterface> Ptr;
 
   static void init() {
     m_env = std::make_shared<FsInterface>();
   }
 
-  static FsInterfacePtr get(){
+  static Ptr get(){
     return m_env;
   }
 
-  static FS::InterfacePtr interface(){
+  static FS::Interface::Ptr interface(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_interface;
   }
 
-  static FS::FileSystemPtr fs(){
+  static FS::FileSystem::Ptr fs(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_interface->get_fs();
   }
 
-  FsInterface() : m_interface(std::make_shared<FS::Interface>()) {}
-  virtual ~FsInterface(){}
+  FsInterface() : m_interface(new FS::Interface()) {}
+
+  virtual ~FsInterface(){
+    if(m_interface != nullptr)
+      delete m_interface;
+  }
 
   private:
-  FS::InterfacePtr             m_interface = nullptr;
-  inline static FsInterfacePtr m_env = nullptr;
+  FS::Interface::Ptr  m_interface = nullptr;
+  inline static Ptr   m_env = nullptr;
 };
 }
 

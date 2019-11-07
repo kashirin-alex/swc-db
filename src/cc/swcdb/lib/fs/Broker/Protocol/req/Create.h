@@ -15,7 +15,7 @@ class Create : public Base {
 
   public:
   
-  Create(uint32_t timeout, SmartFdPtr &smartfd, 
+  Create(uint32_t timeout, SmartFd::Ptr &smartfd, 
         int32_t bufsz, int32_t replication, int64_t blksz, 
         Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
@@ -30,7 +30,7 @@ class Create : public Base {
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
-    cb = [await=&r_promise](int err, SmartFdPtr smartfd){await->set_value();};
+    cb = [await=&r_promise](int err, SmartFd::Ptr smartfd){await->set_value();};
     return r_promise;
   }
 
@@ -55,10 +55,9 @@ class Create : public Base {
   }
 
   private:
-  SmartFdPtr            smartfd;
+  SmartFd::Ptr          smartfd;
   Callback::CreateCb_t  cb;
 };
-typedef std::shared_ptr<Create> CreatePtr;
 
 
 

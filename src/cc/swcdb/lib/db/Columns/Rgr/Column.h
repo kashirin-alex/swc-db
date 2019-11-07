@@ -14,13 +14,15 @@
 
 namespace SWC { namespace server { namespace Rgr {
 
-typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
-typedef std::pair<int64_t, Range::Ptr>          RangesMapPair;
 
 
 class Column : public std::enable_shared_from_this<Column> {
   
   public:
+
+  typedef std::shared_ptr<Column>                 Ptr;
+  typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
+  typedef std::pair<int64_t, Range::Ptr>          RangesMapPair;
 
   Column(const int64_t cid) 
         : cid(cid), m_deleting(false) { 
@@ -152,7 +154,6 @@ class Column : public std::enable_shared_from_this<Column> {
   RangesMap           m_ranges;
   bool                m_deleting;
 };
-typedef std::shared_ptr<Column> ColumnPtr;
 
 }}}
 

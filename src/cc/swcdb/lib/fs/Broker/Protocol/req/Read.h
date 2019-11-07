@@ -17,7 +17,7 @@ class Read : public Base {
   size_t amount;
   void* buffer;
   
-  Read(uint32_t timeout, SmartFdPtr &smartfd, void* dst, size_t len, 
+  Read(uint32_t timeout, SmartFd::Ptr &smartfd, void* dst, size_t len, 
       Callback::ReadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
     HT_DEBUGF("read len=%d timeout=%d %s", 
@@ -30,7 +30,7 @@ class Read : public Base {
   std::promise<void> promise(){
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, SmartFdPtr smartfd, StaticBuffer::Ptr buf){
+         (int err, SmartFd::Ptr smartfd, StaticBuffer::Ptr buf){
            await->set_value();
           };
     return r_promise;
@@ -67,10 +67,9 @@ class Read : public Base {
   }
 
   private:
-  SmartFdPtr          smartfd;
+  SmartFd::Ptr        smartfd;
   Callback::ReadCb_t  cb;
 };
-typedef std::shared_ptr<Read> ReadPtr;
 
 
 

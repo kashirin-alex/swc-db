@@ -14,9 +14,6 @@
 namespace SWC { namespace Files {
 
 
-class RgrData;
-typedef std::shared_ptr<RgrData> RgrDataPtr;
-
 class RgrData {
   /* file-format: 
       header: i8(version), i32(data-len), 
@@ -27,13 +24,15 @@ class RgrData {
 
   public:
 
+  typedef std::shared_ptr<RgrData> Ptr;
+
   static const int HEADER_SIZE=13;
   static const int HEADER_OFFSET_CHKSUM=9;
   
   static const int8_t VERSION=1;
 
-  static RgrDataPtr get_rgr(int &err, std::string filepath){
-    RgrDataPtr data = std::make_shared<RgrData>();
+  static Ptr get_rgr(int &err, std::string filepath){
+    Ptr data = std::make_shared<RgrData>();
     try{
       data->read(err, FS::SmartFd::make_ptr(filepath, 0));
     } catch(...){
@@ -44,7 +43,7 @@ class RgrData {
 
   RgrData(): version(VERSION), id(0), timestamp(0) { }
 
-  void read(int &err, FS::SmartFdPtr smartfd) {
+  void read(int &err, FS::SmartFd::Ptr smartfd) {
     for(;;) {
       err = Error::OK;
     
@@ -202,7 +201,7 @@ class RgrData {
     m_env = std::make_shared<RgrData>();
   }
 
-  static Files::RgrDataPtr get(){
+  static Files::RgrData* get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_rgr_data;
   }
@@ -223,13 +222,17 @@ class RgrData {
     m_env->m_in_process += count;
   }
 
-  RgrData() : m_rgr_data(std::make_shared<Files::RgrData>()) {}
-  virtual ~RgrData(){}
+  RgrData() : m_rgr_data(new Files::RgrData()) {}
+
+  virtual ~RgrData(){
+    if(m_rgr_data != nullptr)
+      delete m_rgr_data;
+  }
 
 
   private:
   inline static std::shared_ptr<RgrData>  m_env           = nullptr;
-  Files::RgrDataPtr                       m_rgr_data      = nullptr;
+  Files::RgrData*                         m_rgr_data      = nullptr;
   std::atomic<bool>                       m_shuttingdown  = false;
   std::atomic<int64_t>                    m_in_process    = 0;
   

@@ -39,7 +39,7 @@ extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoop());
 };
-void fs_apply_cfg_hadoop(SWC::Env::ConfigPtr env){
+void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env){
   SWC::Env::Config::set(env);
 };
 }

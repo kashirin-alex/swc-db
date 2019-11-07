@@ -17,21 +17,35 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
 
   const int64_t cid;
 
-  MngrActive(int64_t cid, DispatchHandlerPtr hdlr, 
+  MngrActive(int64_t cid, DispatchHandler::Ptr hdlr, 
              uint32_t timeout_ms=60000)
             : Common::Req::ConnQueue::ReqBase(false), 
-              cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0) {
+              cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),
+              timer(asio::high_resolution_timer(
+                *Env::Clients::get()->mngr_service->io().get())) {
     cbp = CommBuf::make(Params::MngrActiveReq(cid, cid));
     cbp->header.set(MNGR_ACTIVE, timeout_ms);
   }
 
   virtual ~MngrActive(){ }
 
+  void run_within(uint32_t t_ms = 1000) {
+    timer.cancel();
+    timer.expires_from_now(std::chrono::milliseconds(t_ms));
+    timer.async_wait(
+      [ptr=shared_from_this()](const asio::error_code ec) {
+        if (ec != asio::error::operation_aborted){
+          ptr->run();
+        }
+      }
+    );
+  }
+
   void handle_no_conn() override { 
     if(hosts.size() == ++nxt) {
       nxt = 0;
       hosts.clear();
-      run_within(Env::Clients::get()->mngr_service->io(), 1000);
+      run_within(1000);
       return;
     }
     run();
@@ -45,7 +59,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
       Env::Clients::get()->mngrs_groups->hosts(cid, hosts, group_host);
       if(hosts.empty()) {
         HT_WARNF("Empty cfg of mngr.host for cid=%d", cid);
-        run_within(Env::Clients::get()->mngr_service->io(), 5000);
+        run_within(5000);
         return false;
       }
     }
@@ -79,14 +93,15 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
       }
     }
 
-    run_within(conn->io_ctx, 500);
+    run_within(500);
   }
 
   private:
-  DispatchHandlerPtr      hdlr;
-  int                     nxt;
-  client::Mngr::Hosts     hosts;
+  DispatchHandler::Ptr            hdlr;
+  int                             nxt;
+  client::Mngr::Hosts             hosts;
   client::Mngr::Groups::GroupHost group_host;
+  asio::high_resolution_timer     timer;
 
   protected:
   const uint32_t  timeout_ms;

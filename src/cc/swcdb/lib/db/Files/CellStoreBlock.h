@@ -18,11 +18,11 @@ struct CellsBlock {
   typedef CellsBlock* Ptr;
   
   inline static Ptr make(const DB::Cells::Interval& interval, 
-                         const DB::SchemaPtr s) {
+                         const DB::Schema::Ptr s) {
     return new CellsBlock(interval, s);
   } 
   
-  CellsBlock(const DB::Cells::Interval& interval, const DB::SchemaPtr s) 
+  CellsBlock(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
             : interval(interval),  
               cells(
                 DB::Cells::Mutable(
@@ -158,7 +158,7 @@ class Read {
     return state == State::LOADED;
   }
 
-  void load(FS::SmartFdPtr smartfd, std::function<void(int)> call) {
+  void load(FS::SmartFd::Ptr smartfd, std::function<void(int)> call) {
     int err = Error::OK;
     if(loaded()) {
       call(err);

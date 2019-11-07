@@ -45,7 +45,6 @@ class Rmdir : public Base {
   const String          name;
   Callback::RmdirCb_t  cb;
 };
-typedef std::shared_ptr<Rmdir> RmdirPtr;
 
 
 

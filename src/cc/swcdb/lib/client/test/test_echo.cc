@@ -37,7 +37,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
           : num_req(num_req), batch_sz(batch_sz), threads_conn(threads_conn),
             total(num_req*batch_sz*threads_conn) {}
 
-  void run(client::ClientConPtr conn, int req_n = 1){
+  void run(client::ConnHandler::Ptr conn, int req_n = 1){
     
     for(int i=1;i<=batch_sz;i++) {
       std::make_shared<Protocol::Common::Req::Echo>(
@@ -77,7 +77,7 @@ class Checker: public std::enable_shared_from_this<Checker>{
   void get_conn(){
     Env::Clients::get()->mngr_service->get_connection(
       Env::Clients::get()->mngrs_groups->get_endpoints(1, 1), 
-      [ptr=shared_from_this()](client::ClientConPtr conn){
+      [ptr=shared_from_this()](client::ConnHandler::Ptr conn){
         if(conn == nullptr || !conn->is_open()){
           std::this_thread::sleep_for(std::chrono::milliseconds(1));
           ptr->get_conn();
@@ -151,10 +151,12 @@ class Checker: public std::enable_shared_from_this<Checker>{
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
   
-  Env::Clients::init(std::make_shared<client::Clients>(
-    nullptr,
-    std::make_shared<client::AppContext>()
-  ));
+  Env::Clients::init(
+    std::make_shared<client::Clients>(
+      nullptr,
+      std::make_shared<client::AppContext>()
+    )
+  );
 
   buffer_sz = Env::Config::settings()->get<int64_t>("buffer");
 

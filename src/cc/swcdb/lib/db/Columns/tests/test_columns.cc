@@ -24,7 +24,7 @@ void rgr(){
     Env::RgrData::init();
     
     int err = Error::OK;
-    server::Rgr::ColumnsPtr cols = Env::RgrColumns::get();
+    auto cols = Env::RgrColumns::get();
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";
@@ -58,7 +58,7 @@ void rgr(){
 }
 void mngr(){
     Env::MngrColumns::init();
-    server::Mngr::ColumnsPtr cols = Env::MngrColumns::get();
+    auto cols = Env::MngrColumns::get();
     int err = Error::OK;
 
     for(int64_t c=10; c<=11; c++){

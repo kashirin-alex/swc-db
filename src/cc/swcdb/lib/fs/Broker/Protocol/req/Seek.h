@@ -14,7 +14,7 @@ class Seek : public Base {
 
   public:
   
-  Seek(uint32_t timeout, SmartFdPtr &smartfd, size_t offset,
+  Seek(uint32_t timeout, SmartFd::Ptr &smartfd, size_t offset,
       Callback::SeekCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
     HT_DEBUGF("seek offset=%d %s", offset, smartfd->to_string().c_str());
@@ -26,7 +26,7 @@ class Seek : public Base {
   std::promise<void> promise(){
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, SmartFdPtr smartfd){await->set_value();};
+         (int err, SmartFd::Ptr smartfd){await->set_value();};
     return r_promise;
   }
 
@@ -51,10 +51,9 @@ class Seek : public Base {
   }
 
   private:
-  SmartFdPtr          smartfd;
+  SmartFd::Ptr        smartfd;
   Callback::SeekCb_t  cb;
 };
-typedef std::shared_ptr<Seek> SeekPtr;
 
 
 

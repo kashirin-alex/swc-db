@@ -65,7 +65,7 @@ class FileSystemCeph: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph();
-void fs_apply_cfg_ceph(SWC::Env::ConfigPtr env);
+void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
 }
 
 #endif  // swc_lib_fs_Ceph_FileSystem_h

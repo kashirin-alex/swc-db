@@ -7,36 +7,6 @@
 
 #include "MngrStatus.h"
 
-namespace SWC { namespace server { namespace Mngr {
-class MngrRole;
-typedef std::shared_ptr<MngrRole> MngrRolePtr;
-}}
-
-namespace Env {
-class MngrRole {
-  public:
-
-  static void init() {
-    m_env = std::make_shared<MngrRole>();
-  }
-
-  static server::Mngr::MngrRolePtr get(){
-    HT_ASSERT(m_env != nullptr);
-    return m_env->m_role_state;
-  }
-
-  MngrRole() 
-    : m_role_state(std::make_shared<server::Mngr::MngrRole>()) {}
-
-  virtual ~MngrRole(){}
-
-  private:
-  server::Mngr::MngrRolePtr                m_role_state = nullptr;
-  inline static std::shared_ptr<MngrRole>  m_env = nullptr;
-};
-}
-
-}
 #include "AppContextClient.h"
 
 #include "../db/Protocol/Mngr/req/MngrState.h"
@@ -47,6 +17,9 @@ namespace SWC { namespace server { namespace Mngr {
 
 class MngrRole {
   public:
+  
+  typedef MngrRole* Ptr;
+
   MngrRole()
     : m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       cfg_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
@@ -64,8 +37,11 @@ class MngrRole {
       cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
-      m_mngr_inchain(std::make_shared<Protocol::Common::Req::ConnQueue>()) {
-    
+      m_mngr_inchain(std::make_shared<Protocol::Common::Req::ConnQueue>()) {    
+  }
+
+  Ptr ptr() {
+    return this;
   }
 
   virtual ~MngrRole() { }
@@ -81,17 +57,19 @@ class MngrRole {
     std::lock_guard<std::mutex> lock(m_mutex_timer);
     if(!m_run)
       return;
+
     auto set_in = std::chrono::milliseconds(t_ms);
     auto set_on = m_check_timer.expires_from_now();
     if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
       return;
+
     m_check_timer.cancel();
     m_check_timer.expires_from_now(set_in);
 
     m_check_timer.async_wait(
-      [](const asio::error_code ec) {
-        if (ec != asio::error::operation_aborted){
-          Env::MngrRole::get()->managers_checkin();
+      [ptr=ptr()](const asio::error_code ec) {
+        if(ec != asio::error::operation_aborted){
+          ptr->managers_checkin();
         }
     }); 
     HT_DEBUGF("MngrRole managers_checkin scheduled in ms=%d", t_ms);
@@ -115,7 +93,7 @@ class MngrRole {
     return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
   }
 
-  MngrStatusPtr active_mngr(size_t begin, size_t end){
+  MngrStatus::Ptr active_mngr(size_t begin, size_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& host : m_states){
       if(host->state == Types::MngrState::ACTIVE 
@@ -147,7 +125,7 @@ class MngrRole {
         continue;
       }
       
-      MngrStatusPtr host_set = get_host(host->endpoints);
+      MngrStatus::Ptr host_set = get_host(host->endpoints);
       
       if(host_set->state == Types::MngrState::OFF 
          && host->state > Types::MngrState::OFF) {
@@ -165,7 +143,7 @@ class MngrRole {
         continue;
       }
 
-      MngrStatusPtr high_set = 
+      MngrStatus::Ptr high_set = 
         get_highest_state_host(host->col_begin, host->col_end);
        
       if(high_set->state == Types::MngrState::ACTIVE) {
@@ -209,8 +187,8 @@ class MngrRole {
           || !has_endpoint(h, m_local_endpoints))
           continue;
             
-        MngrStatusPtr l_host = get_host(m_local_endpoints);
-        MngrStatusPtr l_hight = get_highest_state_host(
+        MngrStatus::Ptr l_host = get_host(m_local_endpoints);
+        MngrStatus::Ptr l_hight = get_highest_state_host(
           l_host->col_begin, l_host->col_end);
         if(l_hight->state < Types::MngrState::WANT) {
           update_state(m_local_endpoints, Types::MngrState::WANT);
@@ -232,7 +210,7 @@ class MngrRole {
           (cfg_conn_probes->get() * cfg_conn_timeout->get()
           + cfg_req_timeout->get()) * m_states.size()
           ));
-        //  Env::MngrRole::get()->timer_managers_checkin(3000);
+        //  timer_managers_checkin(3000);
         return false;
       }
     }
@@ -270,7 +248,7 @@ class MngrRole {
       } else 
         endpoints.push_back(endpoint_server);
     }
-    MngrStatusPtr host_set = get_host(endpoints);
+    MngrStatus::Ptr host_set = get_host(endpoints);
     if(host_set == nullptr)
       return false;
 
@@ -340,7 +318,7 @@ class MngrRole {
   
   void apply_cfg(){
 
-    client::Mngr::SelectedGroups groups = 
+    client::Mngr::Groups::Selected groups = 
       Env::Clients::get()->mngrs_groups->get_groups();
     
     for(auto& g : groups) {
@@ -396,7 +374,7 @@ class MngrRole {
       return;
     }
 
-    MngrStatusPtr host_chk;
+    MngrStatus::Ptr host_chk;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(!m_run)
@@ -430,17 +408,17 @@ class MngrRole {
 
     Env::Clients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
-      [host_chk, next, total, flw](client::ClientConPtr conn){
-        Env::MngrRole::get()->manager_checker(
-          host_chk, next, total, flw, conn);
+      [host_chk, next, total, flw, ptr=ptr()]
+      (client::ConnHandler::Ptr conn){
+        ptr->manager_checker(host_chk, next, total, flw, conn);
       },
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
       cfg_conn_probes->get()
     );
   }
 
-  void manager_checker(MngrStatusPtr host, int next, size_t total, bool flw,
-                       client::ClientConPtr conn){
+  void manager_checker(MngrStatus::Ptr host, int next, size_t total, bool flw,
+                       client::ConnHandler::Ptr conn){
     if(conn == nullptr || !conn->is_open()){
       if(host->state == Types::MngrState::ACTIVE
          && ++host->failures <= cfg_conn_fb_failures->get()){   
@@ -481,7 +459,7 @@ class MngrRole {
     }
   }
   
-  MngrStatusPtr get_host(const EndPoints& endpoints){
+  MngrStatus::Ptr get_host(const EndPoints& endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto& host : m_states){
@@ -491,10 +469,10 @@ class MngrRole {
     return nullptr;
   }
 
-  MngrStatusPtr get_highest_state_host(uint64_t begin, uint64_t end){
+  MngrStatus::Ptr get_highest_state_host(uint64_t begin, uint64_t end){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    MngrStatusPtr h = nullptr;
+    MngrStatus::Ptr h = nullptr;
     for(auto& host : m_states){
       if(host->col_begin == begin && host->col_end == end 
         && (h == nullptr || h->state < host->state)){
@@ -518,7 +496,7 @@ class MngrRole {
 
   bool set_active_columns(){
     
-    client::Mngr::SelectedGroups groups;
+    client::Mngr::Groups::Selected groups;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       groups = m_local_groups;
@@ -551,7 +529,7 @@ class MngrRole {
     return false;
   }
   
-  void set_mngr_inchain(client::ClientConPtr mngr){
+  void set_mngr_inchain(client::ConnHandler::Ptr mngr){
     m_mngr_inchain->set(mngr);
 
     fill_states();
@@ -559,22 +537,22 @@ class MngrRole {
     timer_managers_checkin(cfg_check_interval->get());
   }
 
-  EndPoints                    m_local_endpoints;
-  uint64_t                     m_local_token;
+  EndPoints                       m_local_endpoints;
+  uint64_t                        m_local_token;
 
-  std::mutex                   m_mutex;
-  MngrsStatus                  m_states;
-  std::atomic<uint8_t>         m_checkin;
-  client::Mngr::SelectedGroups m_local_groups;
-  std::vector<int64_t>         m_cols_active;
-  std::unordered_map<uint64_t, EndPoint> m_mngrs_client_srv;
-  bool                         m_major_updates = false;
+  std::mutex                      m_mutex;
+  MngrsStatus                     m_states;
+  std::atomic<uint8_t>            m_checkin;
+  client::Mngr::Groups::Selected  m_local_groups;
+  std::vector<int64_t>            m_cols_active;
+  bool                            m_major_updates = false;
+  std::unordered_map<uint64_t,  EndPoint> m_mngrs_client_srv;
   
-  std::mutex                   m_mutex_timer;
-  asio::high_resolution_timer  m_check_timer; 
-  bool                         m_run=true; 
+  std::mutex                      m_mutex_timer;
+  asio::high_resolution_timer     m_check_timer; 
+  bool                            m_run = true; 
   
-  Protocol::Common::Req::ConnQueuePtr  m_mngr_inchain;
+  Protocol::Common::Req::ConnQueue::Ptr  m_mngr_inchain;
 
 
   const gInt32tPtr cfg_conn_probes;
@@ -588,6 +566,34 @@ class MngrRole {
 };
 
 }} // server namespace
+
+
+
+namespace Env {
+class MngrRole {
+  public:
+
+  static void init() {
+    m_env = std::make_shared<MngrRole>();
+  }
+
+  static server::Mngr::MngrRole::Ptr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_role_state;
+  }
+
+  MngrRole() : m_role_state(new server::Mngr::MngrRole()) {}
+
+  virtual ~MngrRole(){
+    if(m_role_state != nullptr)
+      delete m_role_state;
+  }
+
+  private:
+  server::Mngr::MngrRole::Ptr              m_role_state = nullptr;
+  inline static std::shared_ptr<MngrRole>  m_env = nullptr;
+};
+} // Env namespace
 
 
 

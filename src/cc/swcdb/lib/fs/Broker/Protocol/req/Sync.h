@@ -14,7 +14,7 @@ class Sync : public Base {
 
   public:
   
-  Sync(uint32_t timeout, SmartFdPtr &smartfd, Callback::SyncCb_t cb=0) 
+  Sync(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::SyncCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
     HT_DEBUGF("sync %s", smartfd->to_string().c_str());
 
@@ -24,7 +24,7 @@ class Sync : public Base {
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
-    cb = [await=&r_promise](int err, SmartFdPtr smartfd){await->set_value();};
+    cb = [await=&r_promise](int err, SmartFd::Ptr smartfd){await->set_value();};
     return r_promise;
   }
 
@@ -42,10 +42,9 @@ class Sync : public Base {
   }
 
   private:
-  SmartFdPtr          smartfd;
+  SmartFd::Ptr        smartfd;
   Callback::SyncCb_t  cb;
 };
-typedef std::shared_ptr<Sync> SyncPtr;
 
 
 

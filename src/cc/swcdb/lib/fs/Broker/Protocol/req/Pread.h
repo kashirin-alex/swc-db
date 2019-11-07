@@ -17,7 +17,7 @@ class Pread : public Base {
   size_t amount;
   void* buffer;
   
-  Pread(uint32_t timeout, SmartFdPtr &smartfd, 
+  Pread(uint32_t timeout, SmartFd::Ptr &smartfd, 
         uint64_t offset, void* dst, size_t len, 
         Callback::PreadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), cb(cb), amount(0) {
@@ -31,7 +31,7 @@ class Pread : public Base {
   std::promise<void> promise(){
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, SmartFdPtr smartfd, StaticBuffer::Ptr buf){
+         (int err, SmartFd::Ptr smartfd, StaticBuffer::Ptr buf){
            await->set_value();
           };
     return r_promise;
@@ -68,10 +68,9 @@ class Pread : public Base {
   }
 
   private:
-  SmartFdPtr          smartfd;
+  SmartFd::Ptr        smartfd;
   Callback::PreadCb_t cb;
 };
-typedef std::shared_ptr<Pread> PreadPtr;
 
 
 

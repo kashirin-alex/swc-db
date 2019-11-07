@@ -22,6 +22,8 @@ namespace SWC { namespace server {
 
 class Acceptor{
 public:
+  typedef std::shared_ptr<Acceptor> Ptr;
+
   Acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor, 
            AppContextPtr app_ctx, IOCtxPtr io_ctx)
           : m_acceptor(acceptor), m_app_ctx(app_ctx), 
@@ -55,7 +57,7 @@ private:
                       ec.value(), ec.message().c_str());
           return;
         }
-        std::make_shared<ConnHandlerServer>(
+        std::make_shared<ConnHandler>(
           m_app_ctx, new_sock, m_io_ctx
         )->new_connection();
 
@@ -69,12 +71,13 @@ private:
   AppContextPtr     m_app_ctx;
   IOCtxPtr          m_io_ctx;
 };
-typedef std::shared_ptr<Acceptor> AcceptorPtr;
 
 
 
-class SerializedServer{
+class SerializedServer {
   public:
+
+  typedef std::shared_ptr<SerializedServer> Ptr;
 
   SerializedServer(
     std::string name, 
@@ -174,6 +177,7 @@ class SerializedServer{
       if(it == m_thread_pools.end())
         break;
       (*it)->join();
+      delete *it;
       m_thread_pools.erase(it);
     }
       
@@ -229,17 +233,15 @@ class SerializedServer{
   private:
   
   std::vector<asio::thread_pool*> m_thread_pools;
-  std::atomic<bool> m_run;
-  std::string       m_appname;
-  std::vector<AcceptorPtr> m_acceptors;
+  std::atomic<bool>               m_run;
+  std::string                     m_appname;
+  std::vector<Acceptor::Ptr>      m_acceptors;
   std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
 
-  
   std::mutex                  m_mutex;
   std::vector<ConnHandlerPtr> m_conns;
 };
 
-typedef std::shared_ptr<SerializedServer> SerializedServerPtr;
 }}
 
 #endif // swc_core_comm_SerializedServer_h

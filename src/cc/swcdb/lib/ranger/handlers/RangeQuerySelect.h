@@ -45,7 +45,7 @@ class RangeQuerySelect : public AppHandler {
     try{
       std::cout << "RangeQuerySelect: " << params.to_string() << "\n";
 
-      DB::SchemaPtr schema = Env::Schemas::get()->get(params.cid);
+      DB::Schema::Ptr schema = Env::Schemas::get()->get(params.cid);
       if(!err && schema == nullptr) { 
         // cannot be happening, range-loaded always with schema
         err = Error::COLUMN_SCHEMA_MISSING;

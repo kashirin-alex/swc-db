@@ -33,12 +33,12 @@ class ColumnMng  : public Serializable {
 
     ColumnMng() {}
 
-    ColumnMng(Function function,  DB::SchemaPtr schema)
+    ColumnMng(Function function,  DB::Schema::Ptr schema)
               : function(function), schema(schema) {     
     }
 
     Function        function;
-    DB::SchemaPtr   schema;
+    DB::Schema::Ptr schema;
 
   private:
 

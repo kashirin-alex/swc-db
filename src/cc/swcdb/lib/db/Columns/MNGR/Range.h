@@ -88,7 +88,7 @@ class Range : public DB::RangeBase {
     rgr_id = new_rgr_id;
   }
 
-  Files::RgrDataPtr get_last_rgr(int &err){
+  Files::RgrData::Ptr get_last_rgr(int &err){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_last_rgr == nullptr)
       m_last_rgr = DB::RangeBase::get_last_rgr(err);
@@ -114,9 +114,9 @@ class Range : public DB::RangeBase {
 
   private:
 
-  uint64_t            rgr_id;
-  State               m_state;
-  Files::RgrDataPtr   m_last_rgr;
+  uint64_t              rgr_id;
+  State                 m_state;
+  Files::RgrData::Ptr   m_last_rgr;
 
 };
 

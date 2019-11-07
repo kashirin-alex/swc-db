@@ -7,55 +7,36 @@
 #define swc_core_comm_ConnHandler_h
 
 #include <asio.hpp>
-#include "swcdb/lib/core/comm/Resolver.h"
+#include <queue>
+#include <memory>
+
+#include "Resolver.h"
+#include "Event.h"
+#include "CommBuf.h"
+#include "Protocol.h"
+
 
 namespace SWC { 
 
-using Socket = asio::ip::tcp::socket;
-typedef std::shared_ptr<asio::io_context> IOCtxPtr;
-
+typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
 // forward declarations
 class ConnHandler;
 typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 }
  
-#include <queue>
-#include <memory>
 #include "DispatchHandler.h"
 
-#include "Event.h"
-#include "CommBuf.h"
-#include "Protocol.h"
 
 namespace SWC { 
 
-
-inline size_t endpoints_hash(const EndPoints& endpoints){
-  std::string s;
-  for(auto& endpoint : endpoints){
-    s.append(endpoint.address().to_string());
-    s.append(":");
-    s.append(std::to_string(endpoint.port()));
-  }
-  std::hash<std::string> hasher;
-  return hasher(s);
-}
-
-inline size_t endpoint_hash(const EndPoint& endpoint){
-  std::hash<std::string> hasher;
-  return hasher(
-    (std::string)endpoint.address().to_string()
-    +":"
-    +std::to_string(endpoint.port()));
-}
-
+using Socket = asio::ip::tcp::socket;
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   struct PendingRsp {
     public:
-    PendingRsp(uint32_t id, DispatchHandlerPtr hdlr, bool sequential)
+    PendingRsp(uint32_t id, DispatchHandler::Ptr hdlr, bool sequential)
               : id(id), hdlr(hdlr), sequential(sequential) {}
     
     virtual ~PendingRsp() { 
@@ -64,16 +45,16 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
 
     uint32_t                      id;
-    DispatchHandlerPtr            hdlr;
+    DispatchHandler::Ptr          hdlr;
     bool                          sequential;
     Event::Ptr                    ev;
     asio::high_resolution_timer*  tm;
   };
 
   struct Outgoing {
-    CommBuf::Ptr        cbuf;
-    DispatchHandlerPtr  hdlr; 
-    bool                sequential;
+    CommBuf::Ptr          cbuf;
+    DispatchHandler::Ptr  hdlr; 
+    bool                  sequential;
   };
 
   public:
@@ -155,7 +136,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
 
-  virtual void run(Event::Ptr ev, DispatchHandlerPtr hdlr=nullptr) {
+  virtual void run(Event::Ptr ev, DispatchHandler::Ptr hdlr=nullptr) {
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
     if(ev->type == Event::Type::DISCONNECT)
@@ -163,7 +144,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
   }
 
-  void do_close(DispatchHandlerPtr hdlr=nullptr){
+  void do_close(DispatchHandler::Ptr hdlr=nullptr){
     if(m_err == Error::OK) {
       close();
       run(Event::make(Event::Type::DISCONNECT, m_err), hdlr);
@@ -196,7 +177,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_response(cbp);
   }
 
-  inline int send_response(CommBuf::Ptr &cbuf, DispatchHandlerPtr hdlr=nullptr){
+  inline int send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr){
     if(m_err != Error::OK)
       return m_err;
 
@@ -241,13 +222,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   inline int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
-                          DispatchHandlerPtr hdlr, bool sequential=false) {
+                          DispatchHandler::Ptr hdlr, bool sequential=false) {
     cbuf->header.timeout_ms = timeout_ms;
     return send_request(cbuf, hdlr, sequential);
   }
   */
 
-  inline int send_request(CommBuf::Ptr &cbuf, DispatchHandlerPtr hdlr, 
+  inline int send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr, 
                           bool sequential=false) {
     if(m_err != Error::OK)
       return m_err;
@@ -270,7 +251,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   /* 
-  inline void accept_requests(DispatchHandlerPtr hdlr, 
+  inline void accept_requests(DispatchHandler::Ptr hdlr, 
                               uint32_t timeout_ms=0) {
     auto q = new PendingRsp(0, hdlr, false);  // initial req.acceptor
     if(timeout_ms) 
@@ -281,6 +262,34 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     read_pending();
   }
   */
+const std::string to_string() {
+    std::string s("Connection");
+
+    if(!is_open()) {
+      s.append(" CLOSED");
+      return s;
+    }
+
+    s.append(" remote=");
+    try{
+      s.append(endpoint_remote_str());
+      s.append(" (hash=");
+      s.append(std::to_string(endpoint_remote_hash()));
+      s.append(")");
+    } catch(...){
+      s.append("Exception");
+    }
+    s.append(" local=");
+    try{
+      s.append(endpoint_local_str());
+      s.append(" (hash=");
+      s.append(std::to_string(endpoint_local_hash()));
+      s.append(")");
+    } catch(...){
+      s.append("Exception");
+    }
+    return s;
+  }
 
   private:
 

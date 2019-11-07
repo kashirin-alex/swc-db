@@ -20,10 +20,10 @@ class Schemas  {
 
   virtual ~Schemas(){ }
   
-  DB::SchemaPtr get(int& err, int64_t cid){
+  DB::Schema::Ptr get(int& err, int64_t cid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    DB::SchemaPtr schema;
+    DB::Schema::Ptr schema;
     auto it = m_track.find(cid);
     if(it == m_track.end() || Time::now_ns() - it->second > m_expiry_ms->get()) {
       request(err, cid);
@@ -38,8 +38,8 @@ class Schemas  {
     return schema;
   }
   
-  DB::SchemaPtr get(int& err, const std::string &name){
-    DB::SchemaPtr schema = m_schemas->get(name);
+  DB::Schema::Ptr get(int& err, const std::string &name){
+    DB::Schema::Ptr schema = m_schemas->get(name);
     if(schema != nullptr)
       return get(err, schema->cid);
 
@@ -103,7 +103,7 @@ class Schemas  {
   private:
   std::mutex                            m_mutex;
   std::unordered_map<int64_t, uint64_t> m_track; // .second {time,queue(promises)}
-  DB::SchemasPtr                        m_schemas = nullptr;
+  std::shared_ptr<DB::Schemas>          m_schemas = nullptr;
   gInt32tPtr                            m_expiry_ms;
   
 };

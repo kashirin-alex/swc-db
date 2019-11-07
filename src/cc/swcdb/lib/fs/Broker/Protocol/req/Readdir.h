@@ -54,7 +54,6 @@ class Readdir : public Base {
   const std::string      name;
   Callback::ReaddirCb_t  cb;
 };
-typedef std::shared_ptr<Readdir> ReaddirPtr;
 
 
 

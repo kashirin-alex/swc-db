@@ -55,7 +55,7 @@ class RgrUpdate : public Serializable {
                         size_t *remainp) {   
       sync_all = Serialization::decode_bool(bufp, remainp);
       size_t len = Serialization::decode_vi32(bufp, remainp);
-      server::Mngr::RangerPtr h;
+      server::Mngr::Ranger::Ptr h;
       hosts.clear();
       for(size_t i =0; i<len; i++){
         h = std::make_shared<server::Mngr::Ranger>();

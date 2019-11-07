@@ -48,7 +48,7 @@ class ReqHandler : public SWC::DispatchHandler{
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   
-  SWC::client::ClientsPtr clients = std::make_shared<SWC::client::Clients>(
+  auto clients = std::make_shared<SWC::client::Clients>(
     nullptr,
     std::make_shared<SWC::client::AppContext>()
   );
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
   
   /* 
-  SWC::client::ClientConPtr con_h = client->get_connection(endpoints);
+  SWC::client::ConnHandler::Ptr con_h = client->get_connection(endpoints);
   std::cout << client->to_str(con_h) << " (NEW)\n";
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   */
@@ -75,14 +75,14 @@ int main(int argc, char** argv) {
     std::cout << "starting thread=" << t << "\n";
     threads.push_back(new std::thread([clients, endpoints_copy, t](){
       
-      SWC::client::ClientConPtr con_h = clients->mngr_service->get_connection(endpoints_copy);
+      auto con_h = clients->mngr_service->get_connection(endpoints_copy);
       std::cout << "thread=" << t << " " << clients->mngr_service->to_str(con_h) << " (NEW)\n";
       //std::this_thread::sleep_for(std::chrono::microseconds(1000));
       size_t num_req = 1000;
       std::atomic<size_t> total = num_req;
 
       for(size_t n=1;n<=num_req;n++){
-        SWC::DispatchHandlerPtr req = std::make_shared<ReqHandler>(t, n, total);
+        SWC::DispatchHandler::Ptr req = std::make_shared<ReqHandler>(t, n, total);
         auto cbp = SWC::Protocol::create_error_message(
           SWC::Error::OK, 
           SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str()

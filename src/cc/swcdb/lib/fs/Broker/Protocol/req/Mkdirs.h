@@ -45,7 +45,6 @@ class Mkdirs : public Base {
   const String          name;
   Callback::MkdirsCb_t  cb;
 };
-typedef std::shared_ptr<Mkdirs> MkdirsPtr;
 
 
 

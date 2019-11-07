@@ -36,12 +36,12 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   public:
 
-  const ClientPtr     service;
+  const Serialized::Ptr     service;
   const gInt32tPtr    cfg_conn_timeout;
   const gInt32tPtr    cfg_conn_probes;
   const gInt32tPtr    cfg_keepalive_ms;
   
-  ConnQueues(const ClientPtr service, 
+  ConnQueues(const Serialized::Ptr service, 
              const gInt32tPtr timeout, const gInt32tPtr probes, 
              const gInt32tPtr keepalive_ms)
             : service(service),
@@ -102,7 +102,7 @@ void Host::close_issued() {
 bool Host::connect() {
   queues->service->get_connection(
     endpoints, 
-    [ptr=shared_from_this()] (client::ClientConPtr conn){ptr->set(conn);},
+    [ptr=shared_from_this()] (client::ConnHandler::Ptr conn){ptr->set(conn);},
     std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
     queues->cfg_conn_probes->get(),
     cfg_keepalive_ms != nullptr

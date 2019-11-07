@@ -18,7 +18,7 @@ class ColumnGet : public AppHandler {
   ColumnGet(ConnHandlerPtr conn, Event::Ptr ev)
             : AppHandler(conn, ev){}
 
-  DB::SchemaPtr get_schema(int &err, Params::ColumnGetReq params) {
+  DB::Schema::Ptr get_schema(int &err, Params::ColumnGetReq params) {
     switch(params.flag) {
       case Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
         return Env::Schemas::get()->get(params.cid);
@@ -49,7 +49,7 @@ class ColumnGet : public AppHandler {
       req_params.decode(&ptr, &remain);
       flag = req_params.flag;
       
-      DB::SchemaPtr schema = get_schema(err, req_params);
+      DB::Schema::Ptr schema = get_schema(err, req_params);
       
       if(schema != nullptr || err){
         response(m_conn, m_ev, err, flag, schema);
@@ -88,7 +88,7 @@ class ColumnGet : public AppHandler {
 
   static void response(ConnHandlerPtr conn, Event::Ptr ev,
                         int err, Params::ColumnGetReq::Flag flag, 
-                        DB::SchemaPtr schema){
+                        DB::Schema::Ptr schema){
     if(err == Error::OK && schema == nullptr)
       err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 

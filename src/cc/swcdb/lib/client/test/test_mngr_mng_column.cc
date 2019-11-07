@@ -271,7 +271,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
         }
         
 
-        DB::SchemaPtr new_schema = DB::Schema::make(get_name(n, true), rsp.schema, 2);
+        auto new_schema = DB::Schema::make(get_name(n, true), rsp.schema, 2);
 
         if(verbose)
           std::cout << "modify name: \n" 
@@ -316,10 +316,12 @@ void chk_rename(int num_of_cols, bool verbose=false){
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
   
-  Env::Clients::init(std::make_shared<client::Clients>(
-    nullptr,
-    std::make_shared<client::AppContext>()
-  ));
+  Env::Clients::init(
+    std::make_shared<client::Clients>(
+      nullptr,
+      std::make_shared<client::AppContext>()
+    )
+  );
   
 
   int num_of_cols = 1000;

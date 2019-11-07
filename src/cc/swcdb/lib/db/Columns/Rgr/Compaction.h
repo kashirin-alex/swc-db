@@ -65,7 +65,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       m_scheduled = true;
     }
 
-    ColumnPtr col     = nullptr;
+    Column::Ptr col     = nullptr;
     Range::Ptr range  = nullptr;
 
     for(;;) {
@@ -106,7 +106,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     if(!range->is_loaded())
       return compacted(range);
 
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+    auto schema     = Env::Schemas::get()->get(range->cid);
     auto log        = range->blocks.commitlog;
     auto cellstores = range->blocks.cellstores;
 
@@ -169,7 +169,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
                 const uint32_t cs_size, const uint32_t blk_size, 
                 const Types::Encoding blk_encoding,
-                DB::SchemaPtr schema) 
+                DB::Schema::Ptr schema) 
                 : compactor(compactor), range(range),
                   cs_size(cs_size), blk_size(blk_size), 
                   blk_encoding(blk_encoding),
@@ -373,7 +373,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     const uint32_t          cs_size;
     const uint32_t          blk_size;
     const Types::Encoding   blk_encoding;
-    DB::SchemaPtr           schema;
+    DB::Schema::Ptr         schema;
     
     std::vector<Files::CommitLog::Fragment::Ptr> fragments_old;
     

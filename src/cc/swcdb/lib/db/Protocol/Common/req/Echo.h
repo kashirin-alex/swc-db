@@ -14,7 +14,7 @@ class Echo : public DispatchHandler {
   public:
   typedef std::function<void(bool)> EchoCb_t;
 
-  Echo(client::ClientConPtr conn, EchoCb_t cb, size_t buf_sz=0)
+  Echo(client::ConnHandler::Ptr conn, EchoCb_t cb, size_t buf_sz=0)
        : conn(conn), cb(cb), was_called(false) { 
 
     if(!buf_sz) {
@@ -63,7 +63,7 @@ class Echo : public DispatchHandler {
   }
 
   private:
-  client::ClientConPtr  conn;
+  client::ConnHandler::Ptr  conn;
   EchoCb_t              cb;
   std::atomic<bool>     was_called;
   CommBuf::Ptr          cbp;

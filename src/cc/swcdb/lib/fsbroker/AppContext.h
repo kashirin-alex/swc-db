@@ -52,7 +52,7 @@ class AppContext : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(SerializedServerPtr srv){
+  void set_srv(SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -188,7 +188,7 @@ class AppContext : public SWC::AppContext {
      
     m_srv->stop_accepting(); // no further requests accepted
 
-    FS::SmartFdPtr fd;
+    FS::SmartFd::Ptr fd;
     int err;
     while((fd = Env::Fds::get()->pop_next()) != nullptr){
       if(fd->flags() & O_WRONLY)
@@ -207,7 +207,7 @@ class AppContext : public SWC::AppContext {
   }
 
   private:
-  SerializedServerPtr m_srv = nullptr;
+  SerializedServer::Ptr m_srv = nullptr;
 };
 
 }}}

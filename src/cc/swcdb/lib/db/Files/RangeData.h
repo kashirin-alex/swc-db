@@ -85,7 +85,7 @@ void read(const uint8_t **ptr, size_t* remain,
 
 void load(int& err, const CellStore::Readers::Ptr cellstores){
 
-  FS::SmartFdPtr smartfd = FS::SmartFd::make_ptr(
+  FS::SmartFd::Ptr smartfd = FS::SmartFd::make_ptr(
     cellstores->range->get_path(DB::RangeBase::range_data_file), 0);
 
   for(;;) {

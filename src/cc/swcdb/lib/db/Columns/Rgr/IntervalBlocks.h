@@ -652,7 +652,7 @@ class IntervalBlocks {
       return;
     }
 
-    DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+    DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     for(auto& blk : blocks) {
       m_blocks.push_back(
         Block::make(

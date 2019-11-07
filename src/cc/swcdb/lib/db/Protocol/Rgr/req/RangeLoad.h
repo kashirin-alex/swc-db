@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeLoad : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  RangeLoad(server::Mngr::RangerPtr rgr, server::Mngr::Range::Ptr range) 
+  RangeLoad(server::Mngr::Ranger::Ptr rgr, server::Mngr::Range::Ptr range) 
             : Common::Req::ConnQueue::ReqBase(false), 
               rgr(rgr), range(range), 
               schema(Env::Schemas::get()->get(range->cid)) {
@@ -68,10 +68,9 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
 
   private:
 
-  server::Mngr::RangerPtr  rgr;
-  server::Mngr::Range::Ptr range;
-
-  DB::SchemaPtr            schema; 
+  server::Mngr::Ranger::Ptr rgr;
+  server::Mngr::Range::Ptr  range;
+  DB::Schema::Ptr           schema; 
    
 };
 

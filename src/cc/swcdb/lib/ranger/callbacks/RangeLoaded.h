@@ -70,7 +70,6 @@ class RangeLoaded : public ResponseCallback {
   const int64_t rid;
 
 };
-typedef std::shared_ptr<RangeLoaded> RangeLoadedPtr;
 
 
 }

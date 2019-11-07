@@ -106,7 +106,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
   
 
-  Files::RgrDataPtr get_last_rgr(int &err) {
+  Files::RgrData::Ptr get_last_rgr(int &err) {
     return Files::RgrData::get_rgr(err, get_path(ranger_data_file));
   }
 

@@ -52,10 +52,12 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init();
     Env::Schemas::init();
     Env::MngrColumns::init();
-    Env::Clients::init(std::make_shared<client::Clients>(
-      Env::IoCtx::io()->shared(),
-      std::make_shared<client::Mngr::AppContext>()
-    ));
+    Env::Clients::init(
+      std::make_shared<client::Clients>(
+        Env::IoCtx::io()->shared(),
+        std::make_shared<client::Mngr::AppContext>()
+      )
+    );
     Env::Rangers::init();
   }
   
@@ -67,7 +69,7 @@ class AppContext : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(SerializedServerPtr srv){
+  void set_srv(SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -192,7 +194,7 @@ class AppContext : public SWC::AppContext {
   }
 
   private:
-  SerializedServerPtr m_srv = nullptr;
+  SerializedServer::Ptr m_srv = nullptr;
   //ColmNameToIDMap columns;       // column-name > CID
 
 

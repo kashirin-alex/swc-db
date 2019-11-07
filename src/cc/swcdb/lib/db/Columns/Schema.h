@@ -12,15 +12,15 @@
 namespace SWC { namespace DB {
 
 
-class Schema;
-typedef std::shared_ptr<Schema> SchemaPtr;
-
 class Schema {
 
   public:
+  
+  typedef std::shared_ptr<Schema> Ptr;
+
   static const int64_t NO_CID = 0;
 
-  inline static SchemaPtr make(
+  inline static Ptr make(
          std::string col_name, 
          Types::Column col_type=Types::Column::PLAIN,
          int32_t cell_versions=1, uint32_t cell_ttl=0,
@@ -34,7 +34,7 @@ class Schema {
       blk_replication, blk_encoding, blk_size, revision);
   }
 
-  inline static SchemaPtr make(
+  inline static Ptr make(
          int64_t cid, std::string col_name, 
          Types::Column col_type=Types::Column::PLAIN,
          int32_t cell_versions=1, uint32_t cell_ttl=0,
@@ -48,7 +48,7 @@ class Schema {
       blk_replication, blk_encoding, blk_size, revision);
   }
   
-  inline static SchemaPtr make(int64_t cid, SchemaPtr other, int64_t revision){
+  inline static Ptr make(int64_t cid, Ptr other, int64_t revision){
     return std::make_shared<Schema>(
       cid, other->col_name, other->col_type, 
       other->cell_versions, other->cell_ttl, 
@@ -56,7 +56,7 @@ class Schema {
       revision);
   }
   
-  inline static SchemaPtr make(std::string col_name, SchemaPtr other, 
+  inline static Ptr make(std::string col_name, Ptr other, 
                                int64_t revision){
     return std::make_shared<Schema>(
       other->cid, col_name, other->col_type, 
@@ -92,7 +92,7 @@ class Schema {
 
   virtual ~Schema() {}
 
-  bool equal(const SchemaPtr &other, bool with_rev=true) {
+  bool equal(const Ptr &other, bool with_rev=true) {
     return   cid == other->cid
           && col_type == other->col_type
           && cell_versions == other->cell_versions
@@ -166,13 +166,17 @@ class Schema {
 
 class Schemas {
   public:
+  
+  typedef Schemas* Ptr;
+
   Schemas(){}
+
   virtual ~Schemas(){}
   
-  void add(int &err, SchemaPtr schema){
+  void add(int &err, Schema::Ptr schema){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(!m_map.insert(
-        std::pair<int64_t, SchemaPtr>(schema->cid, schema)).second) {
+        std::pair<int64_t, Schema::Ptr>(schema->cid, schema)).second) {
       HT_WARNF("Unable to add column %s, remove first", 
                 schema->to_string().c_str());
       err = Error::COLUMN_SCHEMA_NAME_EXISTS;
@@ -187,17 +191,17 @@ class Schemas {
       m_map.erase(it);
   }
 
-  void replace(SchemaPtr schema){
+  void replace(Schema::Ptr schema){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(schema->cid);
     if(it == m_map.end())
-       m_map.insert(std::pair<int64_t, SchemaPtr>(schema->cid, schema));
+       m_map.insert(std::pair<int64_t, Schema::Ptr>(schema->cid, schema));
     else
       it->second = schema;
   }
 
-  SchemaPtr get(int64_t cid){
+  Schema::Ptr get(int64_t cid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(cid);
@@ -206,7 +210,7 @@ class Schemas {
     return  it->second;
   }
   
-  SchemaPtr get(const std::string &name){
+  Schema::Ptr get(const std::string &name){
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for( const auto& it : m_map ) {
@@ -216,7 +220,7 @@ class Schemas {
     return nullptr;
   }
 
-  void all(std::vector<SchemaPtr> &entries){
+  void all(std::vector<Schema::Ptr> &entries){
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for( const auto& it : m_map) 
@@ -224,10 +228,9 @@ class Schemas {
   }
 
   private:
-  std::mutex                             m_mutex;
-  std::unordered_map<int64_t, SchemaPtr> m_map;
+  std::mutex                                m_mutex;
+  std::unordered_map<int64_t, Schema::Ptr>  m_map;
 };
-typedef std::shared_ptr<Schemas> SchemasPtr;
 
 
 
@@ -241,16 +244,20 @@ class Schemas {
     m_env = std::make_shared<Schemas>();
   }
 
-  static DB::SchemasPtr get(){
+  static DB::Schemas::Ptr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_schemas;
   }
 
-  Schemas() : m_schemas(std::make_shared<DB::Schemas>()) {}
-  virtual ~Schemas(){}
+  Schemas() : m_schemas(new DB::Schemas()) {}
+  
+  virtual ~Schemas(){
+    if(m_schemas != nullptr)
+      delete m_schemas;
+  }
 
   private:
-  DB::SchemasPtr                         m_schemas = nullptr;
+  DB::Schemas::Ptr                       m_schemas = nullptr;
   inline static std::shared_ptr<Schemas> m_env = nullptr;
 };
 }

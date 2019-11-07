@@ -15,16 +15,17 @@ namespace SWC{ namespace FS {
 bool apply_hadoop();
 
 struct SmartFdHadoop;
-typedef std::shared_ptr<SmartFdHadoop> SmartFdHadoopPtr;
 
 struct SmartFdHadoop : public SmartFd {
   public:
   
-  static SmartFdHadoopPtr make_ptr(const String &filepath, uint32_t flags){
+  typedef std::shared_ptr<SmartFdHadoop> Ptr;
+  
+  static Ptr make_ptr(const String &filepath, uint32_t flags){
     return std::make_shared<SmartFdHadoop>(filepath, flags);
   }
 
-  static SmartFdHadoopPtr make_ptr(SmartFdPtr &smart_fd){
+  static Ptr make_ptr(SmartFd::Ptr &smart_fd){
     return std::make_shared<SmartFdHadoop>(
       smart_fd->filepath(), smart_fd->flags(), 
       smart_fd->fd(), smart_fd->pos()
@@ -274,8 +275,8 @@ class FileSystemHadoop: public FileSystem {
               abspath_from.c_str(), abspath_to.c_str());
   }
 
-  SmartFdHadoopPtr get_fd(SmartFdPtr &smartfd){
-    SmartFdHadoopPtr hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
+  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr &smartfd){
+    auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
     if(!hd_fd){
       hd_fd = SmartFdHadoop::make_ptr(smartfd);
       smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
@@ -283,7 +284,7 @@ class FileSystemHadoop: public FileSystem {
     return hd_fd;
   }
 
-  void write(int &err, SmartFdPtr &smartfd,
+  void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) {
     HT_DEBUGF("write %s", smartfd->to_string().c_str());
@@ -311,7 +312,7 @@ class FileSystemHadoop: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
   }
 
-  void create(int &err, SmartFdPtr &smartfd, 
+  void create(int &err, SmartFd::Ptr &smartfd, 
               int32_t bufsz, int32_t replication, int64_t blksz) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
@@ -330,7 +331,7 @@ class FileSystemHadoop: public FileSystem {
     if (blksz == -1)
       blksz = 0;
 
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     /* Open the file */
     if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
                                         bufsz, replication, blksz)) == 0) {
@@ -352,7 +353,7 @@ class FileSystemHadoop: public FileSystem {
               bufsz, (int)replication, (Lld)blksz);
   }
 
-  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz = -1) override {
+  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz = -1) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
     HT_DEBUGF("open %s bufsz=%d",
@@ -360,7 +361,7 @@ class FileSystemHadoop: public FileSystem {
 
     int oflags = O_RDONLY;
 
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     /* Open the file */
     if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
                                         bufsz==-1? 0 : bufsz, 0, 0)) == 0) {
@@ -380,10 +381,10 @@ class FileSystemHadoop: public FileSystem {
     HT_DEBUGF("opened %s", smartfd->to_string().c_str());
   }
   
-  size_t read(int &err, SmartFdPtr &smartfd, 
+  size_t read(int &err, SmartFd::Ptr &smartfd, 
               void *dst, size_t amount) override {
 
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     
     HT_DEBUGF("read %s amount=%d file-%lld", hadoop_fd->to_string().c_str(), 
               amount, (size_t) hadoop_fd->file);
@@ -419,10 +420,10 @@ class FileSystemHadoop: public FileSystem {
   }
 
   
-  size_t pread(int &err, SmartFdPtr &smartfd, 
+  size_t pread(int &err, SmartFd::Ptr &smartfd, 
                uint64_t offset, void *dst, size_t amount) override {
 
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("pread %s offset=%d amount=%d file-%lld", 
               hadoop_fd->to_string().c_str(),
               offset, amount, (size_t) hadoop_fd->file);
@@ -445,10 +446,10 @@ class FileSystemHadoop: public FileSystem {
     return nread;
   }
 
-  size_t append(int &err, SmartFdPtr &smartfd, 
+  size_t append(int &err, SmartFd::Ptr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("append %s amount=%d flags=%d", 
               hadoop_fd->to_string().c_str(), buffer.size, flags);
     
@@ -488,9 +489,9 @@ class FileSystemHadoop: public FileSystem {
     return nwritten;
   }
 
-  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
+  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
 
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("seek %s offset=%d", hadoop_fd->to_string().c_str(), offset);
     
     errno = 0;
@@ -504,8 +505,8 @@ class FileSystemHadoop: public FileSystem {
     hadoop_fd->pos(offset);
   }
 
-  void flush(int &err, SmartFdPtr &smartfd) override {
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+  void flush(int &err, SmartFd::Ptr &smartfd) override {
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("flush %s", hadoop_fd->to_string().c_str());
 
     if (hdfsHFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
@@ -515,8 +516,8 @@ class FileSystemHadoop: public FileSystem {
     }
   }
 
-  void sync(int &err, SmartFdPtr &smartfd) override {
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+  void sync(int &err, SmartFd::Ptr &smartfd) override {
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("sync %s", hadoop_fd->to_string().c_str());
 
     if (hdfsHSync(m_filesystem, hadoop_fd->file) != Error::OK) {
@@ -526,9 +527,9 @@ class FileSystemHadoop: public FileSystem {
     }
   }
 
-  void close(int &err, SmartFdPtr &smartfd) {
+  void close(int &err, SmartFd::Ptr &smartfd) {
     
-    SmartFdHadoopPtr hadoop_fd = get_fd(smartfd);
+    auto hadoop_fd = get_fd(smartfd);
     HT_DEBUGF("close %s", hadoop_fd->to_string().c_str());
 
     if(hadoop_fd->file != 0) {
@@ -556,7 +557,7 @@ class FileSystemHadoop: public FileSystem {
 
 extern "C" { 
 SWC::FS::FileSystem* fs_make_new_hadoop();
-void fs_apply_cfg_hadoop(SWC::Env::ConfigPtr env);
+void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env);
 }
 
 #endif  // swc_lib_fs_Hadoop_FileSystem_h

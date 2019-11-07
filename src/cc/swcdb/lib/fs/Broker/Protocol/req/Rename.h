@@ -47,7 +47,6 @@ class Rename : public Base {
   const std::string     to;
   Callback::RenameCb_t  cb;
 };
-typedef std::shared_ptr<Rename> RenamePtr;
 
 
 

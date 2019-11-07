@@ -90,6 +90,8 @@ inline std::string type_to_string(Types::Fs typ){
 class FileSystem {
   public:
 
+  typedef std::shared_ptr<FileSystem> Ptr;
+
   FileSystem() { }
   
   FileSystem(bool setting_applied) { }
@@ -196,11 +198,11 @@ class FileSystem {
   }
 
   // File(fd) Actions
-  virtual void write(int &err, SmartFdPtr &smartfd,
+  virtual void write(int &err, SmartFd::Ptr &smartfd,
                      int32_t replication, int64_t blksz, 
                      StaticBuffer &buffer) = 0;
   virtual 
-  void write(Callback::WriteCb_t cb, SmartFdPtr &smartfd,
+  void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) {
     int err = Error::OK;
@@ -208,29 +210,29 @@ class FileSystem {
     cb(err, smartfd);
   }
 
-  virtual void create(int &err, SmartFdPtr &smartfd,
+  virtual void create(int &err, SmartFd::Ptr &smartfd,
                       int32_t bufsz, int32_t replication, int64_t blksz) = 0;
   virtual 
-  void create(Callback::CreateCb_t cb, SmartFdPtr &smartfd,
+  void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz) {
     int err = Error::OK;
     create(err, smartfd, bufsz, replication, blksz);
     cb(err, smartfd);
   }
 
-  virtual void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) = 0;
+  virtual void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz=0) = 0;
   virtual 
-  void open(Callback::OpenCb_t cb, SmartFdPtr &smartfd, int32_t bufsz=0) {
+  void open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, int32_t bufsz=0) {
     int err = Error::OK;
     open(err, smartfd, bufsz);
     cb(err, smartfd);
   }
   
 
-  virtual size_t read(int &err, SmartFdPtr &smartfd, 
+  virtual size_t read(int &err, SmartFd::Ptr &smartfd, 
                       void *dst, size_t amount) = 0;
   virtual 
-  void read(Callback::ReadCb_t cb, SmartFdPtr &smartfd, size_t amount) {
+  void read(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, size_t amount) {
     int err = Error::OK;
     StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
     dst->size = read(err, smartfd, dst->base, amount);
@@ -238,10 +240,10 @@ class FileSystem {
     cb(err, smartfd, dst);
   }
   
-  virtual size_t pread(int &err, SmartFdPtr &smartfd, 
+  virtual size_t pread(int &err, SmartFd::Ptr &smartfd, 
                        uint64_t offset, void *dst, size_t amount) = 0;
   virtual 
-  void pread(Callback::PreadCb_t cb, SmartFdPtr &smartfd, 
+  void pread(Callback::PreadCb_t cb, SmartFd::Ptr &smartfd, 
             uint64_t offset, size_t amount) {
     int err = Error::OK;
     StaticBuffer::Ptr dst = std::make_shared<StaticBuffer>(amount);
@@ -250,43 +252,43 @@ class FileSystem {
     cb(err, smartfd, dst);
   }
 
-  virtual size_t append(int &err, SmartFdPtr &smartfd, 
+  virtual size_t append(int &err, SmartFd::Ptr &smartfd, 
                         StaticBuffer &buffer, Flags flags) = 0;
   virtual 
-  void append(Callback::AppendCb_t cb, SmartFdPtr &smartfd, 
+  void append(Callback::AppendCb_t cb, SmartFd::Ptr &smartfd, 
               StaticBuffer &buffer, Flags flags) {
     int err = Error::OK;
     size_t len = append(err, smartfd, buffer, flags);
     cb(err, smartfd, len);
   }
 
-  virtual void seek(int &err, SmartFdPtr &smartfd, size_t offset) = 0;
+  virtual void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) = 0;
   virtual 
-  void seek(Callback::CloseCb_t cb, SmartFdPtr &smartfd, size_t offset) {
+  void seek(Callback::CloseCb_t cb, SmartFd::Ptr &smartfd, size_t offset) {
     int err = Error::OK;
     seek(err, smartfd, offset);
     cb(err, smartfd);
   }
 
-  virtual void flush(int &err, SmartFdPtr &smartfd) = 0;
+  virtual void flush(int &err, SmartFd::Ptr &smartfd) = 0;
   virtual 
-  void flush(Callback::FlushCb_t cb, SmartFdPtr &smartfd) {
+  void flush(Callback::FlushCb_t cb, SmartFd::Ptr &smartfd) {
     int err = Error::OK;
     flush(err, smartfd);
     cb(err, smartfd);
   }
 
-  virtual void sync(int &err, SmartFdPtr &smartfd) = 0;
+  virtual void sync(int &err, SmartFd::Ptr &smartfd) = 0;
   virtual 
-  void sync(Callback::SyncCb_t cb, SmartFdPtr &smartfd) {
+  void sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) {
     int err = Error::OK;
     sync(err, smartfd);
     cb(err, smartfd);
   }
 
-  virtual void close(int &err, SmartFdPtr &smartfd) = 0;
+  virtual void close(int &err, SmartFd::Ptr &smartfd) = 0;
   virtual 
-  void close(Callback::CloseCb_t cb, SmartFdPtr &smartfd) {
+  void close(Callback::CloseCb_t cb, SmartFd::Ptr &smartfd) {
     int err = Error::OK;
     close(err, smartfd);
     cb(err, smartfd);
@@ -304,19 +306,16 @@ class FileSystem {
 
 };
 
-typedef std::shared_ptr<FileSystem> FileSystemPtr;
-
-
-
-
 }}
+
 
 extern "C"{
 typedef SWC::FS::FileSystem* fs_make_new_t();
 // SWC::FS::FileSystem* fs_make_new_Named();
 
-typedef void fs_apply_cfg_t(SWC::Env::ConfigPtr env);
+typedef void fs_apply_cfg_t(SWC::Env::Config::Ptr env);
 // void fs_apply_cfg_Named();
 }
+
 
 #endif  // swc_lib_fs_FileSystem_h

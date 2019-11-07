@@ -36,7 +36,7 @@ void remove(int &err, int64_t cid){
 
 // SET 
 
-void write(SWC::DynamicBuffer &dst_buf, DB::SchemaPtr schema){
+void write(SWC::DynamicBuffer &dst_buf, DB::Schema::Ptr schema){
     
   size_t sz = schema->encoded_length();
   dst_buf.ensure(HEADER_SIZE+sz);
@@ -58,7 +58,7 @@ void write(SWC::DynamicBuffer &dst_buf, DB::SchemaPtr schema){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, DB::SchemaPtr schema){
+void save(int &err, DB::Schema::Ptr schema){
   DynamicBuffer input;
   write(input, schema);
   StaticBuffer send_buf(input);
@@ -75,7 +75,7 @@ void save(int &err, DB::SchemaPtr schema){
 
 //  GET
 
-void load(int &err, FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
+void load(int &err, FS::SmartFd::Ptr smartfd, DB::Schema::Ptr &schema) {
 
   for(;;) {
     if(err != Error::OK)
@@ -141,9 +141,9 @@ void load(int &err, FS::SmartFdPtr smartfd, DB::SchemaPtr &schema) {
     Env::FsInterface::fs()->close(err, smartfd);
 }
 
-DB::SchemaPtr load(int &err, int64_t cid, bool recover=true) {
+DB::Schema::Ptr load(int &err, int64_t cid, bool recover=true) {
 
-  DB::SchemaPtr schema = nullptr;
+  DB::Schema::Ptr schema = nullptr;
   try{
     load(err, FS::SmartFd::make_ptr(filepath(cid), 0), schema);
   } catch (const std::exception& e) {
@@ -182,11 +182,11 @@ DB::SchemaPtr load(int &err, int64_t cid, bool recover=true) {
 }
 
 
-void save_with_validation(int &err, DB::SchemaPtr schema_save){
+void save_with_validation(int &err, DB::Schema::Ptr schema_save){
   save(err, schema_save); // ?tmp-file 
   if(err != Error::OK) 
     return;
-  DB::SchemaPtr schema_new = load(err, schema_save->cid, false);
+  DB::Schema::Ptr schema_new = load(err, schema_save->cid, false);
   if(err != Error::OK) 
     return;
   if(!schema_new->equal(schema_save)) {

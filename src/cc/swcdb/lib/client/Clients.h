@@ -20,11 +20,10 @@ typedef std::shared_ptr<Schemas> SchemasPtr;
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
-class Clients;
-typedef std::shared_ptr<Clients> ClientsPtr;
-
-class Clients : public std::enable_shared_from_this<Clients> {
+class Clients {
   public:
+
+  typedef std::shared_ptr<Clients> Ptr;
 
   Clients(IOCtxPtr ioctx, const AppContextPtr app_ctx)
           : m_app_ctx(app_ctx),
@@ -36,7 +35,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
       ioctx = Env::IoCtx::io()->shared();
     }
 
-    mngr_service = std::make_shared<SerializedClient>(
+    mngr_service = std::make_shared<Serialized>(
       "MANAGER", ioctx, m_app_ctx
     );
     mngr = std::make_shared<ConnQueues>(
@@ -49,7 +48,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
         "swc.client.Mngr.connection.keepalive")
     );
 
-    rgr_service = std::make_shared<SerializedClient>(
+    rgr_service = std::make_shared<Serialized>(
       "RANGER", ioctx, m_app_ctx
     );
     rgr = std::make_shared<ConnQueues>(
@@ -68,18 +67,14 @@ class Clients : public std::enable_shared_from_this<Clients> {
     );
   } 
 
-  operator ClientsPtr(){
-    return shared_from_this();
-  }
-
   virtual ~Clients(){}
   
 
-  const Mngr::GroupsPtr   mngrs_groups;
-  ClientPtr               mngr_service = nullptr;
+  const Mngr::Groups::Ptr mngrs_groups;
+  Serialized::Ptr         mngr_service = nullptr;
   ConnQueuesPtr           mngr = nullptr;
   
-  ClientPtr               rgr_service   = nullptr;
+  Serialized::Ptr         rgr_service   = nullptr;
   ConnQueuesPtr           rgr = nullptr;
 
   SchemasPtr              schemas = nullptr;
@@ -95,20 +90,20 @@ namespace Env {
 class Clients {
   public:
 
-  static void init(client::ClientsPtr clients) {
+  static void init(client::Clients::Ptr clients) {
     m_env = std::make_shared<Clients>(clients);
   }
 
-  static client::ClientsPtr get(){
+  static client::Clients::Ptr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_clients;
   }
 
-  Clients(client::ClientsPtr clients) : m_clients(clients) {}
+  Clients(client::Clients::Ptr clients) : m_clients(clients) {}
   virtual ~Clients(){}
 
   private:
-  client::ClientsPtr                      m_clients = nullptr;
+  client::Clients::Ptr                    m_clients = nullptr;
   inline static std::shared_ptr<Clients>  m_env = nullptr;
 };
 }

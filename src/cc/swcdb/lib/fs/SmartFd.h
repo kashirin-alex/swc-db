@@ -12,14 +12,12 @@ namespace SWC{ namespace FS {
 
 /// Smart FileDescriptor 
 
-struct SmartFd;
-typedef std::shared_ptr<SmartFd> SmartFdPtr;
-
-
 struct SmartFd : std::enable_shared_from_this<SmartFd>{
   public:
+
+  typedef std::shared_ptr<SmartFd> Ptr;
   
-  static SmartFdPtr make_ptr(const std::string &filepath, uint32_t flags, 
+  static Ptr make_ptr(const std::string &filepath, uint32_t flags, 
                             int32_t fd=-1, uint64_t pos=0){
     return std::make_shared<SmartFd>(filepath, flags, fd, pos);
   }
@@ -29,7 +27,7 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
           : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
   }
 
-  operator SmartFdPtr() { 
+  operator Ptr() { 
     return shared_from_this();
   }
 

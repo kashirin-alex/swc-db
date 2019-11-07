@@ -28,7 +28,7 @@ class MngrActive : public AppHandler {
       Params::MngrActiveReq params;
       params.decode(&ptr, &remain);
 
-      server::Mngr::MngrStatusPtr h = Env::MngrRole::get()->active_mngr(
+      server::Mngr::MngrStatus::Ptr h = Env::MngrRole::get()->active_mngr(
         params.begin, params.end);
 
       EndPoints endpoints;

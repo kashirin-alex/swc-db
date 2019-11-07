@@ -75,12 +75,12 @@ class ColumnGetRsp  : public Serializable {
 
   ColumnGetRsp() {}
 
-  ColumnGetRsp(ColumnGetReq::Flag flag, DB::SchemaPtr schema)
+  ColumnGetRsp(ColumnGetReq::Flag flag, DB::Schema::Ptr schema)
               : flag(flag), schema(schema) {     
   }
 
   ColumnGetReq::Flag  flag;
-  DB::SchemaPtr       schema = nullptr;
+  DB::Schema::Ptr     schema = nullptr;
   int64_t             cid {};
 
   private:

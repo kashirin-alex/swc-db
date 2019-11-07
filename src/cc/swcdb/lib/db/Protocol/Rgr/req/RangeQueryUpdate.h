@@ -23,7 +23,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void()> Cb_no_conn_t;
 
   static inline void 
-  request(const Params::RangeQueryUpdateReq& params, DynamicBufferPtr buffer,
+  request(const Params::RangeQueryUpdateReq& params, DynamicBuffer::Ptr buffer,
           const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, const Cb_t cb, 
           const uint32_t timeout = 10000){
     std::make_shared<RangeQueryUpdate>(
@@ -33,7 +33,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
 
 
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
-                   DynamicBufferPtr buffer, const EndPoints& endpoints, 
+                   DynamicBuffer::Ptr buffer, const EndPoints& endpoints,
                    Cb_no_conn_t cb_no_conn, const Cb_t cb, 
                    const uint32_t timeout) 
                   : Common::Req::ConnQueue::ReqBase(false), 

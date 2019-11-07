@@ -34,7 +34,7 @@ class Append : public AppHandler {
       FS::Protocol::Params::AppendReq params;
       params.decode(&ptr, &remain);
       
-      FS::SmartFdPtr smartfd = Env::Fds::get()->select(params.get_fd());
+      FS::SmartFd::Ptr smartfd = Env::Fds::get()->select(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else {

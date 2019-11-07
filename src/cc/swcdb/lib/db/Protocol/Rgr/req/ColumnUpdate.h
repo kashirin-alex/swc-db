@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(server::Mngr::RangerPtr rgr, DB::SchemaPtr schema) 
+  ColumnUpdate(server::Mngr::Ranger::Ptr rgr, DB::Schema::Ptr schema) 
               : Common::Req::ConnQueue::ReqBase(false), 
                 rgr(rgr), schema(schema) {
     cbp = CommBuf::make(Params::ColumnUpdate(schema));
@@ -48,8 +48,8 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
 
   private:
 
-  server::Mngr::RangerPtr  rgr;
-  DB::SchemaPtr            schema; 
+  server::Mngr::Ranger::Ptr   rgr;
+  DB::Schema::Ptr             schema; 
    
 };
 

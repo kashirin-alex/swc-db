@@ -32,7 +32,7 @@ class Close : public AppHandler {
       FS::Protocol::Params::CloseReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFdPtr smartfd = Env::Fds::get()->remove(params.get_fd());
+      FS::SmartFd::Ptr smartfd = Env::Fds::get()->remove(params.get_fd());
       if(smartfd == nullptr)
         err = EBADR;
       else

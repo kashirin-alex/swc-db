@@ -12,9 +12,11 @@ class Base : public DispatchHandler {
 
   public:
 
-  CommBuf::Ptr cbp;
-  int          error;
-  bool    was_called;
+  typedef std::shared_ptr<Base> Ptr;
+
+  CommBuf::Ptr  cbp;
+  int           error;
+  bool          was_called;
 
   Base() : error(Error::OK), was_called(false) {}
 
@@ -60,7 +62,6 @@ class Base : public DispatchHandler {
   }
 
 };
-typedef std::shared_ptr<Base> ReqBasePtr;
 
 
 

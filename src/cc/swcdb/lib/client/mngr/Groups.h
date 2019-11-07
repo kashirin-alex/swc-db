@@ -13,13 +13,12 @@
 
 namespace SWC { namespace client { namespace Mngr {
 
-class Group;
-typedef std::shared_ptr<Group>  GroupPtr;
 typedef std::vector<EndPoints>  Hosts;
 
 class Group {
   public:
 
+  typedef std::shared_ptr<Group>  Ptr;
   size_t col_begin;
   size_t col_end;
 
@@ -35,7 +34,7 @@ class Group {
   
   virtual ~Group(){}
   
-  GroupPtr copy(){
+  Ptr copy(){
     return std::make_shared<Group>(col_begin, col_end, get_hosts());
   }
 
@@ -143,10 +142,6 @@ class Group {
 
 
 
-class Groups;
-typedef std::shared_ptr<Groups> GroupsPtr;
-typedef std::vector<GroupPtr>   SelectedGroups;
-
 
 class Groups : public std::enable_shared_from_this<Groups>{
 
@@ -157,16 +152,20 @@ class Groups : public std::enable_shared_from_this<Groups>{
     int64_t   col_end;
     EndPoints endpoints;
   };
-  
+  typedef std::shared_ptr<Groups> Ptr;
+  typedef std::vector<Group::Ptr> Selected;
+
   Groups() {}
-  Groups(std::vector<GroupPtr> groups) {
+
+  Groups(Selected groups) {
     m_groups.swap(groups);
   }
+
   virtual ~Groups() {
     std::cout << " ~Groups()\n";
   }
 
-  GroupsPtr init(){
+  Ptr init(){
     Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host")
       ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
     
@@ -174,12 +173,12 @@ class Groups : public std::enable_shared_from_this<Groups>{
     return shared_from_this();
   }
 
-  operator GroupsPtr(){
+  operator Ptr(){
     return shared_from_this();
   }
 
-  GroupsPtr copy(){
-    std::vector<GroupPtr> groups;
+  Ptr copy(){
+    Selected groups;
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& group : m_groups)
       groups.push_back(group->copy());
@@ -290,8 +289,8 @@ class Groups : public std::enable_shared_from_this<Groups>{
     }
   }
 
-  SelectedGroups get_groups(){
-    SelectedGroups groups;
+  Selected get_groups(){
+    Selected groups;
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& group : m_groups)
       groups.push_back(group);
@@ -312,15 +311,15 @@ class Groups : public std::enable_shared_from_this<Groups>{
     }
   }
 
-  SelectedGroups get_groups(const EndPoints& endpoints){
-    SelectedGroups host_groups;
+  Selected get_groups(const EndPoints& endpoints){
+    Selected host_groups;
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for(auto& group : m_groups){
       for(auto& endpoint : endpoints){
         if(group->is_in_group(endpoint) 
           && std::find_if(host_groups.begin(), host_groups.end(), 
-             [group](const GroupPtr & g){return g == group;})
+             [group](const Group::Ptr & g){return g == group;})
              == host_groups.end()
           )
           host_groups.push_back(group);
@@ -394,7 +393,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
   private:
   std::mutex              m_mutex;
-  std::vector<GroupPtr>   m_groups;
+  Selected                m_groups;
   std::vector<GroupHost>  m_active_g_host;
 };
 

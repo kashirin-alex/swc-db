@@ -17,8 +17,8 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
-typedef std::unordered_map<int64_t, ColumnPtr> ColumnsMap;
-typedef std::pair<int64_t, ColumnPtr> ColumnsMapPair;
+typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
+typedef std::pair<int64_t, Column::Ptr>           ColumnsMapPair;
 
 
 class Columns : public std::enable_shared_from_this<Columns> {
@@ -30,6 +30,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
       err, Range::get_column_path(), entries);
   }
 
+  typedef Columns* Ptr;
+
   Columns()  {}
 
   void reset() {
@@ -40,7 +42,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   virtual ~Columns(){}
 
   bool is_an_initialization(int &err, const int64_t cid) {
-    ColumnPtr col = nullptr;
+    Column::Ptr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -56,8 +58,8 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return true;
   }
 
-  ColumnPtr get_column(int &err, const int64_t cid, bool initialize) {
-    ColumnPtr col = nullptr;
+  Column::Ptr get_column(int &err, const int64_t cid, bool initialize) {
+    Column::Ptr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -79,7 +81,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid, 
                        bool initialize=false) {
-    ColumnPtr col = get_column(err, cid, initialize);
+    Column::Ptr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
     return col->get_range(err, rid, initialize);
@@ -143,7 +145,6 @@ class Columns : public std::enable_shared_from_this<Columns> {
   ColumnsMap    m_columns;
 
 };
-typedef std::shared_ptr<Columns> ColumnsPtr;
 
 }} // namespace server::Mngr
 
@@ -157,16 +158,20 @@ class MngrColumns {
     m_env = std::make_shared<MngrColumns>();
   }
 
-  static server::Mngr::ColumnsPtr get(){
+  static server::Mngr::Columns::Ptr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_columns;
   }
 
-  MngrColumns() : m_columns(std::make_shared<server::Mngr::Columns>()) {}
-  virtual ~MngrColumns(){}
+  MngrColumns() : m_columns(new server::Mngr::Columns()) {}
+
+  virtual ~MngrColumns() {
+    if(m_columns != nullptr)
+      delete m_columns;
+  }
 
   private:
-  server::Mngr::ColumnsPtr                   m_columns = nullptr;
+  server::Mngr::Columns::Ptr                 m_columns = nullptr;
   inline static std::shared_ptr<MngrColumns> m_env = nullptr;
 };
 }

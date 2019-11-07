@@ -43,6 +43,9 @@ namespace SWC {
   class DynamicBuffer {
 
   public:
+
+    typedef std::shared_ptr<DynamicBuffer> Ptr;
+
     /**
      * Constructor
      *
@@ -204,8 +207,6 @@ namespace SWC {
      * scope; if false then the caller has to release it */
     bool own;
   };
-
-  typedef std::shared_ptr<DynamicBuffer> DynamicBufferPtr;
 
   /** @}*/
 

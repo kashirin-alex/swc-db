@@ -10,17 +10,20 @@
 
 namespace SWC { namespace server { namespace FsBroker {
 
-typedef std::unordered_map<int32_t, FS::SmartFdPtr> FdsMap;
-typedef std::pair<int32_t, FS::SmartFdPtr> FdpPair;
-
 class Fds {
 
   public:
 
+  typedef Fds* Ptr;
+
+  typedef std::unordered_map<int32_t, FS::SmartFd::Ptr> FdsMap;
+  typedef std::pair<int32_t, FS::SmartFd::Ptr>          FdpPair;
+  
   Fds() : m_next_fd(0) {}
+  
   virtual ~Fds(){}
 
-  int32_t add(FS::SmartFdPtr fd) {
+  int32_t add(FS::SmartFd::Ptr fd) {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     do{
@@ -29,18 +32,18 @@ class Fds {
     return m_next_fd;
   }
 
-  FS::SmartFdPtr remove(int32_t fd) {
+  FS::SmartFd::Ptr remove(int32_t fd) {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     auto it = m_fds.find(fd);
     if(it == m_fds.end())
       return nullptr;
-    FS::SmartFdPtr smartfd = it->second;
+    FS::SmartFd::Ptr smartfd = it->second;
     m_fds.erase(it);
     return smartfd;
   }
 
-  FS::SmartFdPtr select(int32_t fd) {
+  FS::SmartFd::Ptr select(int32_t fd) {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     auto it = m_fds.find(fd);
@@ -49,13 +52,13 @@ class Fds {
     return nullptr;
   }
 
-  FS::SmartFdPtr pop_next() {
+  FS::SmartFd::Ptr pop_next() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
     auto it = m_fds.begin();
     if(it == m_fds.end())
       return nullptr;
-    FS::SmartFdPtr smartfd = it->second;
+    FS::SmartFd::Ptr smartfd = it->second;
     m_fds.erase(it);
     return smartfd;
   }
@@ -63,9 +66,8 @@ class Fds {
   private:
   std::mutex   m_mutex;
   int32_t      m_next_fd;
-  std::unordered_map<int32_t, FS::SmartFdPtr> m_fds;
+  std::unordered_map<int32_t, FS::SmartFd::Ptr> m_fds;
 };
-typedef std::shared_ptr<Fds> FdsPtr;
 
 }}
 
@@ -78,17 +80,20 @@ class Fds {
     m_env = std::make_shared<Fds>();
   }
 
-  static server::FsBroker::FdsPtr get(){
+  static server::FsBroker::Fds::Ptr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_fds;
   }
 
-  Fds() : m_fds(std::make_shared<server::FsBroker::Fds>()) {}
+  Fds() : m_fds(new server::FsBroker::Fds()) {}
 
-  virtual ~Fds(){}
+  virtual ~Fds(){
+    if(m_fds != nullptr)  
+      delete m_fds;
+  }
 
   private:
-  server::FsBroker::FdsPtr           m_fds = nullptr;
+  server::FsBroker::Fds::Ptr         m_fds = nullptr;
   inline static std::shared_ptr<Fds> m_env = nullptr;
 };
 }

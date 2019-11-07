@@ -37,7 +37,6 @@ class RangeQueryUpdate : public ResponseCallback {
   }
 
 };
-typedef std::shared_ptr<RangeQueryUpdate> RangeQueryUpdatePtr;
 
 
 }

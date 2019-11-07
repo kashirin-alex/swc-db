@@ -14,7 +14,7 @@ class Open : public Base {
 
   public:
 
-  Open(uint32_t timeout, SmartFdPtr &smartfd, int32_t bufsz, 
+  Open(uint32_t timeout, SmartFd::Ptr &smartfd, int32_t bufsz, 
        Callback::OpenCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
     HT_DEBUGF("open %s", smartfd->to_string().c_str());
@@ -26,7 +26,7 @@ class Open : public Base {
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
-    cb = [await=&r_promise](int err, SmartFdPtr smartfd){await->set_value();};
+    cb = [await=&r_promise](int err, SmartFd::Ptr smartfd){await->set_value();};
     return r_promise;
   }
 
@@ -51,10 +51,9 @@ class Open : public Base {
   }
 
   private:
-  SmartFdPtr          smartfd;
+  SmartFd::Ptr        smartfd;
   Callback::OpenCb_t  cb;
 };
-typedef std::shared_ptr<Open> OpenPtr;
 
 
 

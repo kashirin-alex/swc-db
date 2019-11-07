@@ -16,7 +16,7 @@ class ColumnUpdate : public Serializable {
 
   ColumnUpdate() {}
 
-  ColumnUpdate(ColumnMng::Function function, DB::SchemaPtr schema, int err) 
+  ColumnUpdate(ColumnMng::Function function, DB::Schema::Ptr schema, int err) 
               : function(function), schema(schema), err(err) {
   }
 
@@ -33,7 +33,7 @@ class ColumnUpdate : public Serializable {
   }
   
   ColumnMng::Function   function;
-  DB::SchemaPtr         schema;
+  DB::Schema::Ptr       schema;
   int                   err;
 
   private:

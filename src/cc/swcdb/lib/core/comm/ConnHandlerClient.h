@@ -12,22 +12,24 @@
 namespace SWC { namespace client {
 
 
-class ConnHandlerClient : public ConnHandler {
-
+class ConnHandler : public SWC::ConnHandler {
   public:
-  ConnHandlerClient(AppContextPtr app_ctx, Socket& socket, IOCtxPtr io_ctx) 
-                    : ConnHandler(app_ctx, socket, io_ctx){
+  
+  typedef std::shared_ptr<ConnHandler> Ptr;
+
+  ConnHandler(AppContextPtr app_ctx, Socket& socket, IOCtxPtr io_ctx) 
+              : SWC::ConnHandler(app_ctx, socket, io_ctx){
   }
 
-  virtual ~ConnHandlerClient(){}
+  virtual ~ConnHandler(){}
 
   void new_connection() override {
-    ConnHandler::new_connection();
+    SWC::ConnHandler::new_connection();
     run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
   }
 
 
-  void run(Event::Ptr ev, DispatchHandlerPtr hdlr=nullptr) override {
+  void run(Event::Ptr ev, DispatchHandler::Ptr hdlr=nullptr) override {
     if(hdlr != nullptr)
       hdlr->handle(ptr(), ev);
     else if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
@@ -36,7 +38,6 @@ class ConnHandlerClient : public ConnHandler {
 
 };
 
-typedef std::shared_ptr<ConnHandlerClient> ConnHandlerClientPtr;
 }}
 
 #endif // swc_core_comm_ConnHandlerClient_h

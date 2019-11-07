@@ -17,7 +17,7 @@ class RangeIsLoaded : public DispatchHandler {
   
   typedef std::function<void(bool)> RangeIsLoaded_t;
 
-  RangeIsLoaded(client::ClientConPtr conn, DB::RangeBase::Ptr range, 
+  RangeIsLoaded(client::ConnHandler::Ptr conn, DB::RangeBase::Ptr range, 
                 RangeIsLoaded_t cb)
                 : conn(conn), range(range), cb(cb), was_called(false) { }
   
@@ -49,7 +49,7 @@ class RangeIsLoaded : public DispatchHandler {
   }
 
   private:
-  client::ClientConPtr      conn;
+  client::ConnHandler::Ptr  conn;
   DB::RangeBase::Ptr        range;
   RangeIsLoaded_t           cb;
   std::atomic<bool>         was_called;

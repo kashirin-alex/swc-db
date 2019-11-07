@@ -54,7 +54,6 @@ class Length : public Base {
   const String          name;
   Callback::LengthCb_t  cb;
 };
-typedef std::shared_ptr<Length> LengthPtr;
 
 
 

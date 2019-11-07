@@ -45,7 +45,7 @@ class RgrMngId : public AppHandler {
         return;
       }
 
-      server::Mngr::RangersPtr rangers = Env::Rangers::get();
+      server::Mngr::Rangers::Ptr rangers = Env::Rangers::get();
       switch(req_params.flag){
 
         case Params::RgrMngId::Flag::RS_REQ: {

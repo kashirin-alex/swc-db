@@ -16,7 +16,7 @@ class Append : public Base {
   
   size_t amount;
   
-  Append(uint32_t timeout, SmartFdPtr &smartfd, 
+  Append(uint32_t timeout, SmartFd::Ptr &smartfd, 
         StaticBuffer &buffer, Flags flags, Callback::AppendCb_t cb=0) 
         : smartfd(smartfd), cb(cb), amount(0) {
     HT_DEBUGF("append flags=%d timeout=%d amount=%d %s", 
@@ -32,7 +32,7 @@ class Append : public Base {
   std::promise<void> promise(){
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, SmartFdPtr smartfd, size_t n){await->set_value();};
+         (int err, SmartFd::Ptr smartfd, size_t n){await->set_value();};
     return r_promise;
   }
 
@@ -58,10 +58,9 @@ class Append : public Base {
   }
 
   private:
-  SmartFdPtr            smartfd;
+  SmartFd::Ptr          smartfd;
   Callback::AppendCb_t  cb;
 };
-typedef std::shared_ptr<Append> AppendPtr;
 
 
 

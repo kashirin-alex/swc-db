@@ -9,9 +9,7 @@
 
 namespace SWC {
   
-typedef asio::executor_work_guard<asio::io_context::executor_type> IO_DoWork;
-typedef std::shared_ptr<IO_DoWork> IO_DoWorkPtr;
-typedef std::shared_ptr<asio::signal_set> IO_SignalsPtr;
+typedef std::shared_ptr<asio::signal_set>   IO_SignalsPtr;
 
 class IoContext {
   public:
@@ -21,9 +19,9 @@ typedef std::shared_ptr<IoContext>  Ptr;
 
   IoContext(const std::string name, int32_t size) 
     : m_name(name), running(true), m_size(size),
-      m_pool(std::make_shared<asio::thread_pool>(size)),
+      m_pool(asio::thread_pool(size)),
       m_ioctx(std::make_shared<asio::io_context>(size)),
-      m_wrk(std::make_shared<IO_DoWork>(asio::make_work_guard(*m_ioctx.get())))
+      m_wrk(asio::make_work_guard(*m_ioctx.get()))
   { 
     HT_ASSERT(size>0);
   }
@@ -31,7 +29,7 @@ typedef std::shared_ptr<IoContext>  Ptr;
   void run(Ptr p){
     HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
     for(int n=0;n<m_size;n++)
-      asio::post(*m_pool.get(), std::bind(&IoContext::do_run, p));
+      asio::post(m_pool, std::bind(&IoContext::do_run, p));
   }
 
   void do_run(){
@@ -61,7 +59,7 @@ typedef std::shared_ptr<IoContext>  Ptr;
   void stop(){
     HT_DEBUGF("Stopping IO-ctx(%s)", m_name.c_str());
     running.store(false);
-    m_wrk->reset();
+    m_wrk.reset();
     
     // hold on for IO to finish
     for(int i=0;i<10;i++){
@@ -86,9 +84,9 @@ typedef std::shared_ptr<IoContext>  Ptr;
   private:
   const std::string   m_name;
   IOCtxPtr            m_ioctx;
-  IO_DoWorkPtr        m_wrk = nullptr;
   IO_SignalsPtr       m_signals;
-  std::shared_ptr<asio::thread_pool>   m_pool;
+  asio::thread_pool   m_pool;
+  asio::executor_work_guard<asio::io_context::executor_type> m_wrk;
   int32_t             m_size;
 };
 

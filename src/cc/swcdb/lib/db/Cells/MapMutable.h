@@ -22,7 +22,7 @@ class MapMutable {
 
   virtual ~MapMutable() {}
 
-  bool create(SchemaPtr schema) {
+  bool create(Schema::Ptr schema) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     return m_map.insert(

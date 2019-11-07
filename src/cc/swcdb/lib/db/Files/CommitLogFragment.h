@@ -455,7 +455,7 @@ class Fragment {
   private:
   std::mutex      m_mutex;
   State           m_state;
-  FS::SmartFdPtr  m_smartfd;
+  FS::SmartFd::Ptr  m_smartfd;
   uint8_t         m_version;
   Types::Encoding m_encoder;
   size_t          m_size_enc;

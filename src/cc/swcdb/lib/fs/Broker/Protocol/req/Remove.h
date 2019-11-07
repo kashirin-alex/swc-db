@@ -45,7 +45,6 @@ class Remove : public Base {
   const String          name;
   Callback::RemoveCb_t  cb;
 };
-typedef std::shared_ptr<Remove> RemovePtr;
 
 
 

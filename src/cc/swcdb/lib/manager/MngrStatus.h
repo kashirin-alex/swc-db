@@ -14,10 +14,13 @@ namespace SWC { namespace server { namespace Mngr {
 class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   public:
 
+  typedef std::shared_ptr<MngrStatus> Ptr;
+
   MngrStatus() {}
 
   MngrStatus(uint64_t  begin, uint64_t  end,
-             const EndPoints& points, client::ClientConPtr c, uint32_t pr)
+             const EndPoints& points, 
+             client::ConnHandler::Ptr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Common::Params::HostEndPoints(points), 
                conn(c), priority(pr), state(Types::MngrState::NOTSET),
@@ -74,12 +77,11 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   uint64_t          col_begin;
   uint64_t          col_end;
 
-  client::ClientConPtr  conn; // mngr-inchain
-  int                   failures;
+  client::ConnHandler::Ptr  conn; // mngr-inchain
+  int                       failures;
 };
 
-typedef std::shared_ptr<MngrStatus> MngrStatusPtr;
-typedef std::vector<MngrStatusPtr> MngrsStatus;
+typedef std::vector<MngrStatus::Ptr> MngrsStatus;
 
 
 

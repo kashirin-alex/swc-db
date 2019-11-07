@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(Params::ColumnMng::Function function, DB::SchemaPtr schema, 
+  ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
                int err) {
     cbp = CommBuf::make(Params::ColumnUpdate(function, schema, err));
     cbp->header.set(COLUMN_UPDATE, 60000);

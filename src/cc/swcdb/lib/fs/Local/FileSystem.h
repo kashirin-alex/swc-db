@@ -165,7 +165,7 @@ class FileSystemLocal: public FileSystem {
               abspath_from.c_str(), abspath_to.c_str());
   }
   
-  void write(int &err, SmartFdPtr &smartfd,
+  void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) {
     HT_DEBUGF("write %s", smartfd->to_string().c_str());
@@ -193,7 +193,7 @@ class FileSystemLocal: public FileSystem {
                 errno, strerror(errno), smartfd->to_string().c_str());
   }
 
-  void create(int &err, SmartFdPtr &smartfd, 
+  void create(int &err, SmartFd::Ptr &smartfd, 
               int32_t bufsz, int32_t replication, int64_t blksz) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
@@ -240,7 +240,7 @@ class FileSystemLocal: public FileSystem {
 
   }
 
-  void open(int &err, SmartFdPtr &smartfd, int32_t bufsz=0) override {
+  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz=0) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
     HT_DEBUGF("open %s, bufsz=%d", smartfd->to_string().c_str(), bufsz);
@@ -276,7 +276,7 @@ class FileSystemLocal: public FileSystem {
 
   }
   
-  size_t read(int &err, SmartFdPtr &smartfd, 
+  size_t read(int &err, SmartFd::Ptr &smartfd, 
               void *dst, size_t amount) override {
     
     HT_DEBUGF("read %s amount=%d", smartfd->to_string().c_str(), amount);
@@ -309,7 +309,7 @@ class FileSystemLocal: public FileSystem {
     return nread;
   }
 
-  size_t pread(int &err, SmartFdPtr &smartfd, 
+  size_t pread(int &err, SmartFd::Ptr &smartfd, 
                uint64_t offset, void *dst, size_t amount) override {
     
     HT_DEBUGF("pread %s offset=%d amount=%d", 
@@ -332,7 +332,7 @@ class FileSystemLocal: public FileSystem {
     return nread;
   }
 
-  size_t append(int &err, SmartFdPtr &smartfd, 
+  size_t append(int &err, SmartFd::Ptr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
     HT_DEBUGF("append %s amount=%d flags=%d", 
@@ -374,7 +374,7 @@ class FileSystemLocal: public FileSystem {
     return nwritten;
   }
 
-  void seek(int &err, SmartFdPtr &smartfd, size_t offset) override {
+  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
     HT_DEBUGF("seek %s offset=%d", smartfd->to_string().c_str(), offset);
     
     errno = 0;
@@ -391,10 +391,10 @@ class FileSystemLocal: public FileSystem {
   }
 
 
-  void flush(int &err, SmartFdPtr &smartfd) override {
+  void flush(int &err, SmartFd::Ptr &smartfd) override {
     sync(err, smartfd);
   }
-  void sync(int &err, SmartFdPtr &smartfd) override {
+  void sync(int &err, SmartFd::Ptr &smartfd) override {
     HT_DEBUGF("sync %s", smartfd->to_string().c_str());
     
     errno = 0;
@@ -405,7 +405,7 @@ class FileSystemLocal: public FileSystem {
     }
   }
 
-  void close(int &err, SmartFdPtr &smartfd) override {
+  void close(int &err, SmartFd::Ptr &smartfd) override {
     HT_DEBUGF("close %s", smartfd->to_string().c_str());
     errno = 0;
     if(smartfd->valid()) { 
@@ -431,7 +431,7 @@ class FileSystemLocal: public FileSystem {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_local();
-void fs_apply_cfg_local(SWC::Env::ConfigPtr env);
+void fs_apply_cfg_local(SWC::Env::Config::Ptr env);
 }
 
 #endif  // swc_lib_fs_Local_FileSystem_h

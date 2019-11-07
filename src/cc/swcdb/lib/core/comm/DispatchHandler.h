@@ -20,26 +20,15 @@
  * 02110-1301, USA.
  */
 
-/** @file
- * Declarations for DispatchHandler.
- * This file contains type declarations for DispatchHandler, an abstract
- * base class from which are derived handlers for delivering communication
- * events to an application.
- */
 
 #ifndef swc_core_comm_DispatchHandler_h
 #define swc_core_comm_DispatchHandler_h
 
-#include "Event.h"
-
 
 #include <memory>
+#include "Event.h"
 
 namespace SWC {
-
-  /** @addtogroup AsyncComm
-   *  @{
-   */
 
   /** Abstract base class for application dispatch handlers registered with
    * AsyncComm.  Dispatch handlers are the mechanism by which an application
@@ -48,44 +37,21 @@ namespace SWC {
   class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
   public:
 
-    /** Destructor
-     */
+    typedef std::shared_ptr<DispatchHandler> Ptr;
+
     virtual ~DispatchHandler() { }
 
-    /** Callback method.  When the Comm layer needs to deliver an event to the
-     * application, this method is called to do so.  The set of event types
-     * include, ESTABLISHED, DISCONNECT, MESSAGE, ERROR.
-     *
-     * @param event_ptr smart pointer to Event object
-     */
     virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
-      HT_DEBUGF("handle(virtual): %s", ev->to_str().c_str());
-      // Not a pure method,
-      // instead of wait and keep a handler method for outstanding events in parent
-      // do a discard
+      HT_WARNF("handle(virtual): %s", ev->to_str().c_str());
       return;
     }
     
-    virtual bool run(uint32_t timeout=0) { return false; }
-    
-    virtual void run(ConnHandlerPtr conn) {}
-  
-    void run_within(IOCtxPtr io_ctx, uint32_t t_ms = 1000) {
-      (new asio::high_resolution_timer(
-        *io_ctx.get(), std::chrono::milliseconds(t_ms)))
-      ->async_wait(
-          [ptr=shared_from_this()](const asio::error_code ec) {
-            if (ec != asio::error::operation_aborted){
-              ptr->run();
-            }
-          });
+    virtual bool run(uint32_t timeout=0) { 
+      return false; 
     }
-
+  
   };
 
-  /// Smart pointer to DispatchHandler
-  typedef std::shared_ptr<DispatchHandler> DispatchHandlerPtr;
-  /** @}*/
 }
 
 #endif // swc_core_comm_DispatchHandler_h

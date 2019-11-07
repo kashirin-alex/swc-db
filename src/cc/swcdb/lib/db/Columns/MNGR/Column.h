@@ -24,6 +24,7 @@ class Column : public std::enable_shared_from_this<Column> {
     LOADING,
     DELETED
   };
+  typedef std::shared_ptr<Column> Ptr;
   
   static bool create(int &err, const int64_t id) {
     Env::FsInterface::interface()->mkdirs(err, Range::get_column_path(id));
@@ -359,7 +360,6 @@ class Column : public std::enable_shared_from_this<Column> {
   std::unordered_map<uint64_t, int64_t>   m_schemas_rev;
 
 };
-typedef std::shared_ptr<Column> ColumnPtr;
 
 }}}
 

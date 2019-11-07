@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   Files::CommitLog::Fragments::Ptr commit_log 
     = Files::CommitLog::Fragments::make(range);
 
-  DB::SchemaPtr schema = Env::Schemas::get()->get(range->cid);
+  auto schema = Env::Schemas::get()->get(range->cid);
   
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(

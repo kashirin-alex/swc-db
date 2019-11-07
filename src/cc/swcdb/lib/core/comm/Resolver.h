@@ -69,6 +69,26 @@ inline bool has_endpoint(const EndPoints& endpoints, const EndPoints& endpoints_
 }
 
 
+inline size_t endpoints_hash(const EndPoints& endpoints){
+  std::string s;
+  for(auto& endpoint : endpoints){
+    s.append(endpoint.address().to_string());
+    s.append(":");
+    s.append(std::to_string(endpoint.port()));
+  }
+  std::hash<std::string> hasher;
+  return hasher(s);
+}
+
+inline size_t endpoint_hash(const EndPoint& endpoint){
+  std::hash<std::string> hasher;
+  return hasher(
+    (std::string)endpoint.address().to_string()
+    +":"
+    +std::to_string(endpoint.port()));
+}
+
+
 
 namespace Resolver {
 

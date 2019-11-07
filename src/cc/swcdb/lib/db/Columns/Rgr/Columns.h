@@ -20,8 +20,8 @@
 
 namespace SWC { namespace server { namespace Rgr {
 
-typedef std::unordered_map<int64_t, ColumnPtr> ColumnsMap;
-typedef std::pair<int64_t, ColumnPtr> ColumnsMapPair;
+typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
+typedef std::pair<int64_t, Column::Ptr>           ColumnsMapPair;
 
 
 
@@ -32,13 +32,14 @@ class Columns : public std::enable_shared_from_this<Columns> {
   enum State{
     OK
   };
+  typedef Columns* Ptr;
 
   Columns() : m_state(State::OK) {}
 
   virtual ~Columns(){}
 
-  ColumnPtr get_column(int &err, const int64_t cid, bool initialize){
-    ColumnPtr col = nullptr;
+  Column::Ptr get_column(int &err, const int64_t cid, bool initialize){
+    Column::Ptr col = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -61,7 +62,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return col;
   }
   
-  ColumnPtr get_next(size_t& idx) {
+  Column::Ptr get_next(size_t& idx) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(m_columns.size() > idx){
@@ -75,7 +76,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid,
                        bool initialize=false) {
-    ColumnPtr col = get_column(err, cid, initialize);
+    Column::Ptr col = get_column(err, cid, initialize);
     if(col == nullptr) 
       return nullptr;
     if(col->removing()) 
@@ -110,7 +111,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   void unload_range(int &err, const int64_t cid, const int64_t rid,
                     Callback::RangeUnloaded_t cb){
-    ColumnPtr col = get_column(err, cid, false);
+    Column::Ptr col = get_column(err, cid, false);
     if(col != nullptr) {
       col->unload(rid, cb);
     } else {
@@ -146,7 +147,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void remove(int &err, const int64_t cid, Callback::ColumnDeleted_t cb) {
-    ColumnPtr col = get_column(err, cid, false);
+    Column::Ptr col = get_column(err, cid, false);
     if(col != nullptr) {
       col->remove_all(err);
       {
@@ -177,7 +178,6 @@ class Columns : public std::enable_shared_from_this<Columns> {
   State          m_state;
 
 };
-typedef std::shared_ptr<Columns> ColumnsPtr;
 
 }} // namespace server::Rgr
 
@@ -191,16 +191,19 @@ class RgrColumns {
     m_env = std::make_shared<RgrColumns>();
   }
 
-  static server::Rgr::ColumnsPtr get(){
+  static server::Rgr::Columns::Ptr get(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_columns;
   }
 
-  RgrColumns() : m_columns(std::make_shared<server::Rgr::Columns>()) {}
-  virtual ~RgrColumns(){}
+  RgrColumns() : m_columns(new server::Rgr::Columns()) {}
+  virtual ~RgrColumns(){
+    if(m_columns != nullptr)
+      delete m_columns;
+  }
 
   private:
-  server::Rgr::ColumnsPtr                   m_columns = nullptr;
+  server::Rgr::Columns::Ptr                 m_columns = nullptr;
   inline static std::shared_ptr<RgrColumns> m_env = nullptr;
 };
 }

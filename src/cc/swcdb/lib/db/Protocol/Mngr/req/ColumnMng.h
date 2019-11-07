@@ -23,22 +23,22 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, int)> Cb_t;
 
 
-  static void create(DB::SchemaPtr schema, const Cb_t cb, 
+  static void create(DB::Schema::Ptr schema, const Cb_t cb, 
                      const uint32_t timeout = 10000){
     request(Func::CREATE, schema, cb, timeout);
   }
 
-  static void modify(DB::SchemaPtr schema, const Cb_t cb, 
+  static void modify(DB::Schema::Ptr schema, const Cb_t cb, 
                      const uint32_t timeout = 10000){
     request(Func::MODIFY, schema, cb, timeout);
   }
 
-  static void remove(DB::SchemaPtr schema, const Cb_t cb, 
+  static void remove(DB::Schema::Ptr schema, const Cb_t cb, 
                      const uint32_t timeout = 10000){
     request(Func::DELETE, schema, cb, timeout);
   }
 
-  static void request(Func func, DB::SchemaPtr schema, const Cb_t cb, 
+  static void request(Func func, DB::Schema::Ptr schema, const Cb_t cb, 
                       const uint32_t timeout = 10000){
     std::make_shared<ColumnMng>(
       Params::ColumnMng(func, schema),

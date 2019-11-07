@@ -13,7 +13,7 @@ class Write : public Base {
 
   public:
   
-  Write(uint32_t timeout, SmartFdPtr &smartfd, 
+  Write(uint32_t timeout, SmartFd::Ptr &smartfd, 
         int32_t replication, int64_t blksz, StaticBuffer &buffer,
         Callback::WriteCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
@@ -29,7 +29,7 @@ class Write : public Base {
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
-    cb = [await=&r_promise](int err, SmartFdPtr smartfd){await->set_value();};
+    cb = [await=&r_promise](int err, SmartFd::Ptr smartfd){await->set_value();};
     return r_promise;
   }
 
@@ -49,10 +49,9 @@ class Write : public Base {
   }
 
   private:
-  SmartFdPtr           smartfd;
+  SmartFd::Ptr           smartfd;
   Callback::WriteCb_t  cb;
 };
-typedef std::shared_ptr<Write> WritePtr;
 
 
 

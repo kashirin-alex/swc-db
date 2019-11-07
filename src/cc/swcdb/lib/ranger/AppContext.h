@@ -62,10 +62,12 @@ class AppContext : public SWC::AppContext {
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
 
-    Env::Clients::init(std::make_shared<client::Clients>(
-      Env::IoCtx::io()->shared(),
-      std::make_shared<client::Rgr::AppContext>()
-    ));
+    Env::Clients::init(
+      std::make_shared<client::Clients>(
+        Env::IoCtx::io()->shared(),
+        std::make_shared<client::Rgr::AppContext>()
+      )
+    );
 
     m_id_validator 
       = std::make_shared<Protocol::Mngr::Req::RgrMngId::Scheduler>();
@@ -75,7 +77,7 @@ class AppContext : public SWC::AppContext {
     m_compaction->schedule();
   }
 
-  void set_srv(SerializedServerPtr srv){
+  void set_srv(SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -222,7 +224,7 @@ class AppContext : public SWC::AppContext {
   private:
   
   std::mutex                m_mutex;
-  SerializedServerPtr       m_srv = nullptr;
+  SerializedServer::Ptr     m_srv = nullptr;
   Compaction::Ptr           m_compaction;
   
   Protocol::Mngr::Req::RgrMngId::Scheduler::Ptr   m_id_validator;

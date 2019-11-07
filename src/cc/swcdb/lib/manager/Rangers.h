@@ -25,45 +25,12 @@
 
 namespace SWC { namespace server { namespace Mngr {
 
-class Rangers;
-typedef std::shared_ptr<Rangers> RangersPtr;
-}}
-
-namespace Env {
-class Rangers {
-  
-  public:
-
-  static void init() {
-    m_env = std::make_shared<Rangers>();
-  }
-
-  static server::Mngr::RangersPtr get(){
-    HT_ASSERT(m_env != nullptr);
-    return m_env->m_rangers;
-  }
-
-  Rangers() 
-    : m_rangers(std::make_shared<server::Mngr::Rangers>()) {}
-
-  virtual ~Rangers(){}
-
-  private:
-  server::Mngr::RangersPtr               m_rangers = nullptr;
-  inline static std::shared_ptr<Rangers> m_env = nullptr;
-};
-}
-
-
-
-namespace server { namespace Mngr {
-
 
 class Rangers {
 
   struct ColumnActionReq {
     Protocol::Mngr::Params::ColumnMng params;
-    std::function<void(int)>    cb;
+    std::function<void(int)>          cb;
   };
   struct ColumnFunction {
     Protocol::Mngr::Params::ColumnMng::Function func;
@@ -71,6 +38,9 @@ class Rangers {
   };
 
   public:
+  
+  typedef Rangers*  Ptr;
+
   Rangers()
     : m_assign_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       cfg_rgr_failures(Env::Config::settings()->get_ptr<gInt32t>(
@@ -84,6 +54,12 @@ class Rangers {
       cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.due")) { 
   }
+
+  Ptr ptr() {
+    return this;
+  }
+
+  virtual ~Rangers(){}
 
   void new_columns() {
     m_columns_set = false;
@@ -103,8 +79,6 @@ class Rangers {
         
   }
 
-  virtual ~Rangers(){}
-
   void is_active(int& err, int64_t cid, bool for_schema=false) {
     if(!Env::MngrRole::get()->is_active(cid)){
       err = Error::MNGR_NOT_ACTIVE;
@@ -117,7 +91,7 @@ class Rangers {
     if(for_schema)
       return;
 
-    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
+    Column::Ptr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr) {
       err = Error::COLUMN_NOT_EXISTS;
       return;  
@@ -135,14 +109,14 @@ class Rangers {
     }
     
     asio::post(*Env::IoCtx::io()->ptr(), 
-      [](){
-         Env::Rangers::get()->column_actions_run();
+      [ptr=ptr()](){
+         ptr->column_actions_run();
       }
     );
   }
 
-  void update_status(Protocol::Mngr::Params::ColumnMng::Function func, DB::SchemaPtr schema, 
-                     int err, bool initial=false){
+  void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
+                     DB::Schema::Ptr schema, int err, bool initial=false) {
     HT_ASSERT(schema->cid != DB::Schema::NO_CID);
 
     if(!initial && m_root_mngr) {
@@ -208,7 +182,7 @@ class Rangers {
 
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
-      RangerPtr h;
+      Ranger::Ptr h;
       bool found;
       bool chg;
 
@@ -295,7 +269,7 @@ class Rangers {
 
   bool rs_ack_id(uint64_t id, const EndPoints& endpoints){
     bool ack = false;
-    RangerPtr new_ack = nullptr;
+    Ranger::Ptr new_ack = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
     
@@ -336,7 +310,7 @@ class Rangers {
   }
 
   void rs_shutdown(uint64_t id, const EndPoints& endpoints){
-    RangerPtr removed = nullptr;
+    Ranger::Ptr removed = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++){
@@ -381,7 +355,7 @@ class Rangers {
     }
   }
 
-  void assign_range_chk_last(int err, RangerPtr rs_chk) {
+  void assign_range_chk_last(int err, Ranger::Ptr rs_chk) {
     Protocol::Common::Req::ConnQueue::ReqBase::Ptr req;
     for(;;) {
       {
@@ -399,11 +373,11 @@ class Rangers {
     }
   }
 
-  void assign_range(RangerPtr rgr, Range::Ptr range){
+  void assign_range(Ranger::Ptr rgr, Range::Ptr range){
     rgr->put(std::make_shared<Protocol::Rgr::Req::RangeLoad>(rgr, range));
   }
 
-  void range_loaded(RangerPtr rgr, Range::Ptr range, 
+  void range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                     int err, bool failure=false, bool verbose=true) {
     bool run_assign = m_assignments-- > cfg_assign_due->get();           
 
@@ -438,10 +412,10 @@ class Rangers {
   }
 
   void column_delete(int &err, int64_t cid, int64_t id) {
-    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
+    Column::Ptr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr || col->finalize_remove(err, id)) {
       Env::MngrColumns::get()->remove(err, cid);
-      DB::SchemaPtr schema = Env::Schemas::get()->get(cid);
+      DB::Schema::Ptr schema = Env::Schemas::get()->get(cid);
       if(schema != nullptr)
         column_update(
           Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_DELETE,
@@ -451,8 +425,8 @@ class Rangers {
     }
   }
 
-  void update_schema(int &err, RangerPtr rgr, 
-                     DB::SchemaPtr schema, bool failure) {
+  void update_schema(int &err, Ranger::Ptr rgr, DB::Schema::Ptr schema, 
+                     bool failure) {
                        
     if(err == Error::OK)
       Env::MngrColumns::get()->get_column(err, schema->cid, false)
@@ -508,9 +482,9 @@ class Rangers {
     m_assign_timer.expires_from_now(set_in);
 
     m_assign_timer.async_wait(
-      [](const asio::error_code ec) {
+      [ptr=ptr()](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
-          Env::Rangers::get()->check_assignment();
+          ptr->check_assignment();
         }
     }); 
 
@@ -584,7 +558,7 @@ class Rangers {
         pending++;
         asio::post(*Env::IoCtx::io()->ptr(), 
           [&pending, entries=hdlr_entries]() { 
-            DB::SchemaPtr schema;
+            DB::Schema::Ptr schema;
             for(auto cid : entries) {
               int err = Error::OK;
               schema = Files::Schema::load(err, cid);
@@ -616,7 +590,7 @@ class Rangers {
     }
     
     asio::post(*Env::IoCtx::io()->ptr(), 
-      [](){ Env::Rangers::get()->assign_ranges_run(); }
+      [ptr=ptr()](){ ptr->assign_ranges_run(); }
     );
   }
 
@@ -641,8 +615,8 @@ class Rangers {
       }
 
       err = Error::OK;
-      Files::RgrDataPtr last_rgr = range->get_last_rgr(err);
-      RangerPtr rgr = nullptr;
+      Files::RgrData::Ptr last_rgr = range->get_last_rgr(err);
+      Ranger::Ptr rgr = nullptr;
       next_rgr(last_rgr, rgr);
       if(rgr == nullptr){
         m_runs_assign = false;
@@ -662,7 +636,7 @@ class Rangers {
     check_assignment_timer(cfg_chk_assign->get());
   }
 
-  void next_rgr(Files::RgrDataPtr &last_rgr, RangerPtr &rs_set){
+  void next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
 
     if(last_rgr->endpoints.size() > 0) {
@@ -680,7 +654,7 @@ class Rangers {
     
     size_t num_rgr;
     size_t avg_ranges;
-    RangerPtr rgr;
+    Ranger::Ptr rgr;
 
     while(rs_set == nullptr && m_rgr_status.size() > 0){
       avg_ranges = 0;
@@ -716,15 +690,15 @@ class Rangers {
     return;
   }
 
-  void assign_range(RangerPtr rgr, Range::Ptr range, 
-                    Files::RgrDataPtr last_rgr){
+  void assign_range(Ranger::Ptr rgr, Range::Ptr range, 
+                    Files::RgrData::Ptr last_rgr){
     if(last_rgr == nullptr){
       assign_range(rgr, range);
       return;
     }
 
     bool id_due;
-    RangerPtr rs_last = nullptr;
+    Ranger::Ptr rs_last = nullptr;
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
       for(auto& rs_chk : m_rgr_status) {
@@ -754,7 +728,7 @@ class Rangers {
       rs_last->put(req);
   }
 
-  RangerPtr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
+  Ranger::Ptr rs_set(const EndPoints& endpoints, uint64_t opt_id=0){
 
     for(auto it=m_rgr_status.begin();it<m_rgr_status.end(); it++){
       auto h = *it;
@@ -790,7 +764,7 @@ class Rangers {
       }
     } while(!ok);
 
-    RangerPtr h = std::make_shared<Ranger>(nxt, endpoints);
+    Ranger::Ptr h = std::make_shared<Ranger>(nxt, endpoints);
     h->init_queue();
     m_rgr_status.push_back(h);
     return h;
@@ -815,7 +789,7 @@ class Rangers {
   }
   
   void columns_load(){
-    std::vector<DB::SchemaPtr> entries;
+    std::vector<DB::Schema::Ptr> entries;
     Env::Schemas::get()->all(entries);
     for(auto& schema : entries) {
       HT_ASSERT(schema->cid != DB::Schema::NO_CID);
@@ -857,7 +831,7 @@ class Rangers {
     return cid;
   }
 
-  void column_create(int &err, DB::SchemaPtr &schema){
+  void column_create(int &err, DB::Schema::Ptr &schema) {
     int64_t cid = get_next_cid();
     if(cid < 0) {
       err = Error::COLUMN_REACHED_ID_LIMIT;
@@ -868,7 +842,7 @@ class Rangers {
     if(err != Error::OK)
       return;
 
-    DB::SchemaPtr schema_save = DB::Schema::make(
+    DB::Schema::Ptr schema_save = DB::Schema::make(
       cid, schema, schema->revision != 0 ? schema->revision : Time::now_ns());
     HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
     
@@ -882,8 +856,8 @@ class Rangers {
       Column::remove(err, cid);
   }
   
-  void column_update_schema(int &err, DB::SchemaPtr &schema, 
-                            DB::SchemaPtr old) {
+  void column_update_schema(int &err, DB::Schema::Ptr &schema, 
+                            DB::Schema::Ptr old) {
 
     if(old->col_name.compare(schema->col_name) != 0 
       && Env::Schemas::get()->get(schema->col_name) != nullptr){
@@ -891,7 +865,7 @@ class Rangers {
       return;
     }
 
-    DB::SchemaPtr schema_save = DB::Schema::make(
+    DB::Schema::Ptr schema_save = DB::Schema::make(
       schema->cid == DB::Schema::NO_CID? old->cid: schema->cid,
       schema, 
       schema->revision != 0 ? 
@@ -911,7 +885,7 @@ class Rangers {
 
   void column_delete(int &err, int64_t cid) {
 
-    ColumnPtr col = Env::MngrColumns::get()->get_column(err, cid, false);
+    Column::Ptr col = Env::MngrColumns::get()->get_column(err, cid, false);
     if(col == nullptr){
       column_delete(err, cid, 0);
       return;
@@ -960,7 +934,8 @@ class Rangers {
       else {
         err = Error::OK;
         std::lock_guard<std::mutex> lock(m_mutex);
-        DB::SchemaPtr schema = Env::Schemas::get()->get(req.params.schema->col_name);
+        DB::Schema::Ptr schema = Env::Schemas::get()->get(
+          req.params.schema->col_name);
         if(schema == nullptr && req.params.schema->cid != DB::Schema::NO_CID)
           schema = Env::Schemas::get()->get(req.params.schema->cid);
 
@@ -1019,8 +994,8 @@ class Rangers {
     }
   }
 
-  bool update_schema(DB::SchemaPtr schema) {
-    DB::SchemaPtr existing = Env::Schemas::get()->get(schema->cid);
+  bool update_schema(DB::Schema::Ptr schema) {
+    DB::Schema::Ptr existing = Env::Schemas::get()->get(schema->cid);
     if(existing == nullptr || !existing->equal(schema)) {
       Env::Schemas::get()->replace(schema);
       return update_schema_rgr(schema, true);
@@ -1028,7 +1003,7 @@ class Rangers {
     return false;
   }
 
-  bool update_schema_rgr(DB::SchemaPtr schema, bool ack_required) {
+  bool update_schema_rgr(DB::Schema::Ptr schema, bool ack_required) {
     std::vector<uint64_t> rgr_ids;
     int err = Error::OK;
     Env::MngrColumns::get()->get_column(err, schema->cid, false)
@@ -1052,13 +1027,13 @@ class Rangers {
   }
 
   void column_update(Protocol::Mngr::Params::ColumnMng::Function func,
-                     DB::SchemaPtr schema, int err=Error::OK){
+                     DB::Schema::Ptr schema, int err=Error::OK){
     Env::MngrRole::get()->req_mngr_inchain(
       std::make_shared<Protocol::Mngr::Req::ColumnUpdate>(func, schema, err));
   }
 
   void update_status_ack(Protocol::Mngr::Params::ColumnMng::Function func,
-                         DB::SchemaPtr schema, int err){
+                         DB::Schema::Ptr schema, int err){
     if(err == Error::OK){
       switch(func){
         case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL: {
@@ -1157,6 +1132,34 @@ class Rangers {
 };
 
 }} // namespace server
+
+
+namespace Env {
+class Rangers {
+  
+  public:
+
+  static void init() {
+    m_env = std::make_shared<Rangers>();
+  }
+
+  static server::Mngr::Rangers::Ptr get(){
+    HT_ASSERT(m_env != nullptr);
+    return m_env->m_rangers;
+  }
+
+  Rangers() : m_rangers(new server::Mngr::Rangers()) {}
+
+  virtual ~Rangers(){
+    if(m_rangers != nullptr)
+      delete m_rangers;
+  }
+
+  private:
+  server::Mngr::Rangers::Ptr             m_rangers = nullptr;
+  inline static std::shared_ptr<Rangers> m_env = nullptr;
+};
+}// namespace Env
 
 
 

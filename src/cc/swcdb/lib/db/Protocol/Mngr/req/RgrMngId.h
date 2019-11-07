@@ -71,7 +71,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
   void static shutting_down(Scheduler::Ptr validator, 
                             std::function<void()> cb) {
-    Files::RgrDataPtr rs_data = Env::RgrData::get();
+    auto rs_data = Env::RgrData::get();
     HT_DEBUGF("RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
 
     Ptr req = std::make_shared<RgrMngId>(
@@ -105,12 +105,11 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     if(Env::RgrData::is_shuttingdown())
       return;
 
-    Files::RgrDataPtr rs_data = Env::RgrData::get();
     cbp = create(
       Params::RgrMngId(
         0, 
         Params::RgrMngId::Flag::RS_REQ, 
-        rs_data->endpoints
+        Env::RgrData::get()->endpoints
       )
     );
     run();
@@ -180,7 +179,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       return;
     }
 
-    Files::RgrDataPtr rs_data = Env::RgrData::get();
+    auto rs_data = Env::RgrData::get();
 
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()){

@@ -198,44 +198,47 @@ class Settings {
   }
 
 };
-typedef std::shared_ptr<Settings> SettingsPtr;
 
   /** @}*/
 }
 
 namespace Env {
-class Config;
-typedef std::shared_ptr<Config> ConfigPtr;
 
 class Config {
   
   public:
 
+  typedef std::shared_ptr<Config> Ptr;
+
   static void init(int argc, char** argv) {
     get()->m_settings->init(argc, argv);
   }
 
-  static void set(ConfigPtr env){
+  static void set(Ptr env){
     m_env = env;
   }
 
-  static ConfigPtr get(){
+  static Ptr get(){
     if(m_env == nullptr)
       m_env = std::make_shared<Config>();
     return m_env;
   }
 
-  static SWC::Config::SettingsPtr settings(){
+  static SWC::Config::Settings* settings(){
     HT_ASSERT(m_env != nullptr);
     return m_env->m_settings;
   }
 
-  Config() : m_settings(std::make_shared<SWC::Config::Settings>()){}
-  virtual ~Config(){}
+  Config() : m_settings(new SWC::Config::Settings()){}
+
+  virtual ~Config(){
+    if(m_settings != nullptr)
+      delete m_settings;
+  }
 
   private:
-  SWC::Config::SettingsPtr  m_settings = nullptr;
-  inline static ConfigPtr   m_env = nullptr;
+  SWC::Config::Settings*  m_settings = nullptr;
+  inline static Ptr       m_env = nullptr;
 };
 }
 
