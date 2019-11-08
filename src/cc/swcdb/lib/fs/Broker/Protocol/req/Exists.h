@@ -41,7 +41,7 @@ class Exists : public Base {
     if(error == Error::OK) {
       Params::ExistsRsp params;
       params.decode(&ptr, &remain);
-      state = params.get_exists();
+      state = params.exists;
     } else {
       state = false;
     }

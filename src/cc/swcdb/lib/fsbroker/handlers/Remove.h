@@ -32,7 +32,7 @@ class Remove : public AppHandler {
       FS::Protocol::Params::RemoveReq params;
       params.decode(&ptr, &remain);
 
-      Env::FsInterface::fs()->remove(err, params.get_fname());
+      Env::FsInterface::fs()->remove(err, params.fname);
     }
     catch (Exception &e) {
       err = e.code();

@@ -45,7 +45,7 @@ class Create : public Base {
     if(error == Error::OK) {
       Params::OpenRsp params;
       params.decode(&ptr, &remain);
-      smartfd->fd(params.get_fd());
+      smartfd->fd(params.fd);
       smartfd->pos(0);
     }
 

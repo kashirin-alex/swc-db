@@ -1,27 +1,6 @@
-/* -*- c++ -*-
+/*
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
- * Copyright (C) 2007-2016 Hypertable, Inc.
- *
- * This file is part of Hypertable.
- *
- * Hypertable is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * Hypertable is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
  */
-
-/// @file
-/// Declarations for Rename parameters.
 
 #ifndef swc_lib_fs_Broker_Protocol_params_Rename_h
 #define swc_lib_fs_Broker_Protocol_params_Rename_h
@@ -37,12 +16,11 @@ class RenameReq : public Serializable {
 
   RenameReq() {}
 
-  RenameReq(const std::string &from, const std::string &to) 
-            : m_from(from), m_to(to) {}
+  RenameReq(const std::string& from, const std::string& to) 
+            : from(from), to(to) {}
 
-  const std::string& get_from() { return m_from; }
-  
-  const std::string& get_to() { return m_to; }
+  std::string from;
+  std::string to;
 
   private:
 
@@ -51,26 +29,24 @@ class RenameReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-  return Serialization::encoded_length_vstr(m_from)
-       + Serialization::encoded_length_vstr(m_to);
+  return Serialization::encoded_length_vstr(from)
+       + Serialization::encoded_length_vstr(to);
   }
 
   void encode_internal(uint8_t **bufp) const override {
-    Serialization::encode_vstr(bufp, m_from);
-    Serialization::encode_vstr(bufp, m_to);
+    Serialization::encode_vstr(bufp, from);
+    Serialization::encode_vstr(bufp, to);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
 			     size_t *remainp) override {
     (void)version;
-    m_from.clear();
-    m_from.append(Serialization::decode_vstr(bufp, remainp));
-    m_to.clear();
-    m_to.append(Serialization::decode_vstr(bufp, remainp));
+    from.clear();
+    from.append(Serialization::decode_vstr(bufp, remainp));
+    to.clear();
+    to.append(Serialization::decode_vstr(bufp, remainp));
   }
 
-  std::string m_from;
-  std::string m_to;
 };
 
 }}}}

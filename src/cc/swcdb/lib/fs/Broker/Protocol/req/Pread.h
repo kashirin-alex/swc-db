@@ -51,7 +51,7 @@ class Pread : public Base {
       Params::ReadRsp params;
       params.decode(&ptr, &remain);
       amount = ev->data_ext.size;
-      smartfd->pos(params.get_offset()+amount);
+      smartfd->pos(params.offset+amount);
 
       if(amount > 0) {
         if(buffer == nullptr) {

@@ -33,10 +33,9 @@ class Open : public AppHandler {
       FS::Protocol::Params::OpenReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd 
-        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
+      auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
  
-      Env::FsInterface::fs()->open(err, smartfd, params.get_buffer_size());
+      Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
       
       if(smartfd->valid() && err==Error::OK)
         fd = Env::Fds::get()->add(smartfd);

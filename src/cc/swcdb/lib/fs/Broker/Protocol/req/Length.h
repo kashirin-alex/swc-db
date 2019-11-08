@@ -41,7 +41,7 @@ class Length : public Base {
     if(error == Error::OK) {
       Params::LengthRsp params;
       params.decode(&ptr, &remain);
-      length = params.get_length();
+      length = params.length;
     }
 
     HT_DEBUGF("length path='%s' error='%d' length='%d'",

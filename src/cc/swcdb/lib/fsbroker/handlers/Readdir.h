@@ -33,7 +33,7 @@ class Readdir : public AppHandler {
       FS::Protocol::Params::ReaddirReq params;
       params.decode(&ptr, &remain);
 
-      Env::FsInterface::fs()->readdir(err, params.get_dirname(), results);
+      Env::FsInterface::fs()->readdir(err, params.dirname, results);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

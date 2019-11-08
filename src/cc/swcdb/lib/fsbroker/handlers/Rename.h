@@ -32,7 +32,7 @@ class Rename : public AppHandler {
       FS::Protocol::Params::RenameReq params;
       params.decode(&ptr, &remain);
 
-      Env::FsInterface::fs()->rename(err, params.get_from(), params.get_to());
+      Env::FsInterface::fs()->rename(err, params.from, params.to);
     }
     catch (Exception &e) {
       err = e.code();

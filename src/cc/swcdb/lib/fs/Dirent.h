@@ -17,13 +17,13 @@ class Dirent : public Serializable {
 
   public:
   /// File or directory name
-  String name;
+  String    name;
   /// Length of file
-  uint64_t length {};
+  uint64_t  length {};
   /// Last modification time
-  time_t last_modification_time {};
+  time_t    last_modification_time {};
   /// Flag indicating if entry id a directory
-  bool is_dir {};
+  bool      is_dir {};
 
   std::string to_string(){
     std::string s("Dirent(");

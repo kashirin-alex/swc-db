@@ -41,7 +41,7 @@ class Seek : public Base {
     if(error == Error::OK) {
       Params::SeekRsp params;
       params.decode(&ptr, &remain);
-      smartfd->pos(params.get_offset());
+      smartfd->pos(params.offset);
     }
 
     HT_DEBUGF("seek %s error='%d'", 

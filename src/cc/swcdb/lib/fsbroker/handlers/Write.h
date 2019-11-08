@@ -31,13 +31,10 @@ class Write : public AppHandler {
       FS::Protocol::Params::WriteReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd 
-        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
- 
+      auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
+      
       Env::FsInterface::fs()->write(
-        err, smartfd,
-        params.get_replication(), params.get_block_size(),
-        m_ev->data_ext
+        err, smartfd, params.replication, params.blksz, m_ev->data_ext
       );
 
     }

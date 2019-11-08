@@ -32,7 +32,7 @@ class Mkdirs : public AppHandler {
       FS::Protocol::Params::MkdirsReq params;
       params.decode(&ptr, &remain);
 
-      Env::FsInterface::fs()->mkdirs(err, params.get_dirname());
+      Env::FsInterface::fs()->mkdirs(err, params.dirname);
     }
     catch (Exception &e) {
       HT_ERROR_OUT << e << HT_END;

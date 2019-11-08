@@ -34,13 +34,14 @@ class Append : public AppHandler {
       FS::Protocol::Params::AppendReq params;
       params.decode(&ptr, &remain);
       
-      FS::SmartFd::Ptr smartfd = Env::Fds::get()->select(params.get_fd());
+      auto smartfd = Env::Fds::get()->select(params.fd);
+      
       if(smartfd == nullptr)
         err = EBADR;
       else {
         offset = smartfd->pos();
         amount = Env::FsInterface::fs()->append(
-          err, smartfd, m_ev->data_ext, (FS::Flags)params.get_flags());
+          err, smartfd, m_ev->data_ext, (FS::Flags)params.flags);
       }
     }
     catch (Exception &e) {

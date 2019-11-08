@@ -34,14 +34,15 @@ class Pread : public AppHandler {
       FS::Protocol::Params::PreadReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd = Env::Fds::get()->select(params.get_fd());
+      auto smartfd = Env::Fds::get()->select(params.fd);
+      
       if(smartfd == nullptr)
         err = EBADR;
       else {
-        offset = params.get_offset();
-        rbuf.reallocate(params.get_amount());
+        offset = params.offset;
+        rbuf.reallocate(params.amount);
         rbuf.size = Env::FsInterface::fs()->pread(
-          err, smartfd, params.get_offset(), rbuf.base, params.get_amount());
+          err, smartfd, params.offset, rbuf.base, params.amount);
       }
     }
     catch (Exception &e) {

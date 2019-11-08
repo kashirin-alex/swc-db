@@ -34,14 +34,15 @@ class Read : public AppHandler {
       FS::Protocol::Params::ReadReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd = Env::Fds::get()->select(params.get_fd());
+      auto smartfd = Env::Fds::get()->select(params.fd);
+      
       if(smartfd == nullptr)
         err = EBADR;
       else {
         offset = smartfd->pos();
-        rbuf.reallocate(params.get_amount());
+        rbuf.reallocate(params.amount);
         rbuf.size = Env::FsInterface::fs()->read(
-          err, smartfd, rbuf.base, params.get_amount());
+          err, smartfd, rbuf.base, params.amount);
       }
     }
     catch (Exception &e) {

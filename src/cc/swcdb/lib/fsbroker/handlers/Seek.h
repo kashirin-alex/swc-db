@@ -33,11 +33,12 @@ class Seek : public AppHandler {
       FS::Protocol::Params::SeekReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd = Env::Fds::get()->select(params.get_fd());
+      auto smartfd = Env::Fds::get()->select(params.fd);
+      
       if(smartfd == nullptr)
         err = EBADR;
       else {
-        Env::FsInterface::fs()->seek(err, smartfd, params.get_offset());
+        Env::FsInterface::fs()->seek(err, smartfd, params.offset);
         offset = smartfd->pos();
       }
     }

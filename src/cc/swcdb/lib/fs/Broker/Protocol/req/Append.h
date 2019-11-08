@@ -47,8 +47,8 @@ class Append : public Base {
     if(error == Error::OK) {
       Params::AppendRsp params;
       params.decode(&ptr, &remain);
-      amount = params.get_amount();
-      smartfd->pos(params.get_offset()+amount);
+      amount = params.amount;
+      smartfd->pos(params.offset+amount);
     }
 
     HT_DEBUGF("append %s amount='%d' error='%d'", 

@@ -34,12 +34,10 @@ class Create : public AppHandler {
       FS::Protocol::Params::CreateReq params;
       params.decode(&ptr, &remain);
 
-      FS::SmartFd::Ptr smartfd 
-        = FS::SmartFd::make_ptr(params.get_name(), params.get_flags());
+      auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
  
       Env::FsInterface::fs()->create(
-        err, smartfd, params.get_buffer_size(), 
-        params.get_replication(), params.get_block_size()
+        err, smartfd, params.bufsz, params.replication, params.blksz
       );
 
       if(smartfd->valid() && err==Error::OK)
