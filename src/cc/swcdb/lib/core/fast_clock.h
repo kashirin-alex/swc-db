@@ -28,27 +28,41 @@
 #ifndef swc_core_clock_h
 #define swc_core_clock_h
 
+#include "Compat.h"
 #include <chrono>
 #include <ctime>
 
-namespace std {
-
-  namespace chrono {
-
-    class fast_clock {
-    public:
-      typedef microseconds duration;
-      typedef duration::rep rep;
-      typedef duration::period period;
-      typedef chrono::time_point<fast_clock> time_point;
-      static constexpr bool is_steady = false;
-
-      static time_point now() noexcept;
-      static time_t     to_time_t  (const time_point& __t) noexcept;
-      static time_point from_time_t(time_t __t) noexcept;
-    };
-
-  }
+extern "C" {
+#include <sys/time.h>
 }
+
+
+namespace std { namespace chrono {
+
+class fast_clock {
+  public:
+  typedef microseconds      duration;
+  typedef duration::rep     rep;
+  typedef duration::period  period;
+  typedef chrono::time_point<fast_clock> time_point;
+  static constexpr bool is_steady = false;
+
+  static time_point now() noexcept {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return time_point(microseconds((tv.tv_sec * 1000000LL) + tv.tv_usec));
+  }
+
+  static time_t to_time_t (const time_point& __t) noexcept {
+    return (time_t)(__t.time_since_epoch().count() / 1000000LL);
+  }
+
+  static time_point from_time_t(time_t __t) noexcept {
+    return time_point(microseconds(__t * 1000000LL));
+  }
+
+};
+
+}}
 
 #endif // swc_core_clock_h

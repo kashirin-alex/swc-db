@@ -28,19 +28,38 @@
 
 #include "Compat.h"
 
-#include <iosfwd>
+#include <cassert>
+#include <chrono>
+#include <ratio>
+
+#include <iostream>
+#include <iomanip>
+//#include <iosfwd>
 
 namespace SWC {namespace Time {
 
-  /// Returns the current time in nanoseconds as a 64bit number
-  int64_t now_ns();
+/// Returns the current time in nanoseconds as a 64bit number
+int64_t now_ns() {
+  assert((
+    std::ratio_less_equal<
+      std::chrono::system_clock::duration::period, 
+      std::chrono::nanoseconds::period
+    >::value
+  ));
+  return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
-  /// Prints the current time as seconds and nanoseconds, delimited by '.'
-  std::ostream &hires_now_ns(std::ostream &);
+/// Prints the current time as seconds and nanoseconds, delimited by '.'
+std::ostream &hires_now_ns(std::ostream &out) {
+  auto now = std::chrono::system_clock::now();
+  return out << std::chrono::duration_cast<std::chrono::seconds>(
+                  now.time_since_epoch()).count() 
+             <<'.'<< std::setw(9) << std::setfill('0') 
+             << (std::chrono::duration_cast<std::chrono::nanoseconds>(
+                now.time_since_epoch()).count() % 1000000000LL);
+}
 
-#if defined(__sun__)
-  time_t timegm(struct tm *t);
-#endif
 
 }}
 

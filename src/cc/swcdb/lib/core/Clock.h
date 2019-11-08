@@ -28,7 +28,7 @@
 #ifndef swc_core_Clock_h
 #define swc_core_Clock_h
 
-#include "swcdb/lib/core/fast_clock.h"
+#include "fast_clock.h"
 
 namespace SWC {
 

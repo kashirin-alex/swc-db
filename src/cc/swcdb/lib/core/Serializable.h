@@ -29,6 +29,9 @@
 #define swc_core_Serializable_h
 
 #include "Compat.h"
+#include "Logger.h"
+#include "Error.h"
+#include "Serialization.h"
 
 namespace SWC {
 
@@ -73,7 +76,10 @@ namespace SWC {
     /// Returns the serialized length of the object as encoded by encode().
     /// @see encode() for encoding format
     /// @return Overall serialized object length
-    virtual size_t encoded_length() const;
+    virtual size_t encoded_length() const {
+      size_t length = encoded_length_internal();
+      return 1 + Serialization::encoded_length_vi32(length) + length;
+    }
 
     /// Writes serialized representation of object to a buffer.
     /// This function encodes a serialized representation of the object,
@@ -81,7 +87,11 @@ namespace SWC {
     /// serialized length of the object.  After the header, the object per-se is
     /// encoded with encode_internal().
     /// @param bufp Address of destination buffer pointer (advanced by call)
-    virtual void encode(uint8_t **bufp) const;
+    virtual void encode(uint8_t **bufp) const{
+      Serialization::encode_i8(bufp, encoding_version());
+      Serialization::encode_vi32(bufp, encoded_length_internal());
+      encode_internal(bufp);
+    }
 
     /// Reads serialized representation of object from a buffer.
     /// @param bufp Address of destination buffer pointer (advanced by call)
@@ -89,7 +99,21 @@ namespace SWC {
     /// @see encode() for encoding format
     /// @throws Exception with code Error::PROTOCOL_ERROR if version being
     /// decoded is greater than that returned by encoding_version().
-    virtual void decode(const uint8_t **bufp, size_t *remainp);
+    virtual void decode(const uint8_t **bufp, size_t *remainp) {
+      uint8_t version = Serialization::decode_i8(bufp, remainp);
+      if (version > encoding_version())
+        HT_THROWF(Error::PROTOCOL_ERROR, "Unsupported version %d", (int)version);
+      size_t encoding_length = Serialization::decode_vi32(bufp, remainp);
+      const uint8_t *end = *bufp + encoding_length;
+      size_t tmp_remain = encoding_length;
+      decode_internal(version, bufp, &tmp_remain);
+      HT_ASSERT(*bufp <= end);
+      *remainp -= encoding_length;
+      // If encoding is longer than we expect, that means we're decoding a newer
+      // version, so skip the newer portion that we don't know about
+      if (*bufp < end)
+        *bufp = end;
+    };
 
   protected:
 

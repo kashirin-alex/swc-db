@@ -12,13 +12,10 @@ set(swcdb_core_sources
 	String.cc
 	Error.cc
 	Logger.cc
-	Serializable.cc
 	Version.cc
 	FileUtils.cc
-	fast_clock.cc
 	Checksum.cc
 	Random.cc
-	Time.cc
 )
 configure_file(Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Version.h)
 ADD_LIB_TARGET(
