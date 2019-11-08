@@ -164,6 +164,12 @@ class Read {
       call(err);
       return;
     }
+    
+    load(err, smartfd);
+    asio::post(*Env::IoCtx::io()->ptr(), [call, err](){ call(err); });
+  }
+
+  void load(int& err, FS::SmartFd::Ptr smartfd) {
     //std::cout << "CS::Read::load\n";
 
     for(;;) {
@@ -238,7 +244,6 @@ class Read {
     }
   
     state = !err ? State::LOADED : State::NONE;
-    call(err);
   }
 
   void load_cells(CellsBlock::Ptr cells_block) {
