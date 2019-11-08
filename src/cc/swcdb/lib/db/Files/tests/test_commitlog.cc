@@ -3,15 +3,16 @@
  */
 
 
+#include "swcdb/lib/ranger/Settings.h"
+
 #include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/client/Clients.h"
 #include "swcdb/lib/db/Columns/RangeBase.h"
-#include "swcdb/lib/db/Files/CellStoreReaders.h"
+#include "swcdb/lib/core/Resources.h"
 
 #include "swcdb/lib/db/Columns/Rgr/IntervalBlocks.h"
 #include <iostream>
 
-#include "swcdb/lib/ranger/Settings.h"
 
 using namespace SWC;
 
@@ -23,6 +24,11 @@ int main(int argc, char** argv) {
   Env::FsInterface::init();
   Env::Schemas::init();
   Env::IoCtx::init(8);
+  Env::Resources.init(
+    Env::IoCtx::io()->ptr(),
+    Env::Config::settings()->get_ptr<SWC::gInt32t>(
+      "swc.rgr.ram.percent")
+  );
 
   int num_cells = 200000;
   int versions = 3;

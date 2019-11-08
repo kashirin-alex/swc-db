@@ -5,6 +5,8 @@
 #ifndef swc_app_ranger_AppContext_h
 #define swc_app_ranger_AppContext_h
 
+#include "swcdb/lib/core/Resources.h"
+
 #include "swcdb/lib/core/comm/AppContext.h"
 #include "swcdb/lib/core/comm/AppHandler.h"
 #include "swcdb/lib/core/comm/ResponseCallback.h"
@@ -49,6 +51,10 @@ class AppContext : public SWC::AppContext {
 
     Env::IoCtx::init(
       Env::Config::settings()->get<int32_t>("swc.rgr.handlers"));
+    Env::Resources.init(
+      Env::IoCtx::io()->ptr(),
+      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent")
+    );
     Env::FsInterface::init();
     Env::RgrData::init();
     Env::Schemas::init();
@@ -169,7 +175,7 @@ class AppContext : public SWC::AppContext {
         HT_WARNF("Unimplemented event-type (%llu)", (Llu)ev->type);
         break;
     }
-    
+
   }
 
   void shutting_down(const std::error_code &ec, const int &sig) {
@@ -205,8 +211,9 @@ class AppContext : public SWC::AppContext {
     while(Env::RgrData::in_process() > 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     Env::RgrColumns::get()->unload_all(true); //re-check
-
+    
     m_id_validator->stop();
+    Env::Resources.stop();
     
     Env::Clients::get()->rgr_service->stop();
     Env::Clients::get()->mngr_service->stop();

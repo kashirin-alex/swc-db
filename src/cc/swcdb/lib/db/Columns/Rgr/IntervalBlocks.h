@@ -446,14 +446,15 @@ class IntervalBlocks {
         }
         if(blk == nullptr)  
           break;
-      }
-
-      // if(sys.ram.need(blocks->size_bytes_total()/blocks->size()))
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [blk, ptr=ptr()](){
-          ptr->release_prior(blk); // release_and_merge(blk);
+         
+        if(Env::Resources.need_ram(commitlog->cfg_blk_sz->get())) {
+          asio::post(*Env::IoCtx::io()->ptr(), 
+            [blk, ptr=ptr()](){
+              ptr->release_prior(blk); // release_and_merge(blk);
+            }
+          );
         }
-      );
+      }
 
       if(blk->scan(req))
         return;
@@ -571,6 +572,8 @@ class IntervalBlocks {
       if(bytes && released >= bytes)
         return released;
     }
+    if(!bytes)
+      clear();
 
     return released;
   }
@@ -626,6 +629,12 @@ class IntervalBlocks {
     return sz;
   }
 
+  void clear() {
+    for(auto & blk : m_blocks) 
+      delete blk;
+    m_blocks.clear();
+  }
+
   void free() {
     if(cellstores != nullptr) {
       delete cellstores;
@@ -637,18 +646,14 @@ class IntervalBlocks {
     }
     range = nullptr;
     
-    for(auto & blk : m_blocks) 
-      delete blk;
-    m_blocks.clear();
+    clear();
   }
 
   void init_blocks(int& err) {
     std::vector<Files::CellStore::Block::Read::Ptr> blocks;
     cellstores->get_blocks(err, blocks);
     if(err) {
-      for(auto& blk : m_blocks) 
-        delete blk;
-      m_blocks.clear();
+      clear();
       return;
     }
 

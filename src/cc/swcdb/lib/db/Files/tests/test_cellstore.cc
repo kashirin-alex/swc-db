@@ -2,11 +2,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#include "swcdb/lib/fs/Settings.h"
+#include "swcdb/lib/ranger/Settings.h"
+
+#include "swcdb/lib/fs/Interface.h"
 #include "swcdb/lib/client/Clients.h"
+#include "swcdb/lib/core/Resources.h"
 #include "swcdb/lib/db/Columns/Rgr/Columns.h"
 
-#include "swcdb/lib/ranger/Settings.h"
 #include <iostream>
 
 
@@ -24,7 +26,16 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::FsInterface::init();
   SWC::Env::Schemas::init();
-   
+
+  
+  SWC::Env::IoCtx::init(8);
+
+  SWC::Env::Resources.init(
+    SWC::Env::IoCtx::io()->ptr(),
+    SWC::Env::Config::settings()->get_ptr<SWC::gInt32t>(
+      "swc.rgr.ram.percent")
+  );
+
   int err = SWC::Error::OK;
   SWC::Env::Schemas::get()->add(err, SWC::DB::Schema::make(11, "col-test-cs"));
 
@@ -123,8 +134,6 @@ int main(int argc, char** argv) {
   std::cout << "\ncs-read-scan:\n";
 
   
-  
-  SWC::Env::IoCtx::init(8);
   
   SWC::DB::Cells::Interval intval_r;
   SWC::server::Rgr::IntervalBlocks blocks;

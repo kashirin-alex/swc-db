@@ -30,6 +30,8 @@ void Settings::init_app_options(){
     ("swc.rgr.port", i32(16000), "Ranger port")
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
+    ("swc.rgr.ram.percent", g_i32(33), 
+     "Memory RSS allowed without freeing/releasing")
 
     ("swc.rgr.id.validation.interval", g_i32(120000), 
     "Validation of Ranger-ID against Mngr(root)")

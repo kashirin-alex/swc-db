@@ -5,6 +5,7 @@
 
 #include "swcdb/lib/fs/Settings.h"
 #include "swcdb/lib/client/Clients.h"
+#include "swcdb/lib/core/Resources.h"
 #include "swcdb/lib/db/Columns/Rgr/Columns.h"
 #include "swcdb/lib/db/Columns/Mngr/Columns.h"
 
