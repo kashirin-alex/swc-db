@@ -54,11 +54,8 @@ namespace SWC {
      *      buffer and releases it when going out of scope
      */
     explicit DynamicBuffer(size_t initial_size = 0, bool own_buffer = true)
-        : size(initial_size), own(own_buffer) {
-      if (size)
-        base = ptr = mark = new uint8_t[size];
-      else
-        base = ptr = mark = 0;
+        : size(initial_size), own(own_buffer),
+          base(size ? new uint8_t[size] : 0), ptr(base), mark(base) {
     }
 
     /** Destructor; releases the buffer if it "owns" it */
@@ -191,6 +188,13 @@ namespace SWC {
       size = new_size;
     }
 
+    /** The size of the allocated memory buffer (@ref base) */
+    uint32_t size;
+    
+    /** If true then the buffer (@ref base) will be released when going out of
+     * scope; if false then the caller has to release it */
+    bool own;
+
     /** Pointer to the allocated memory buffer */
     uint8_t *base;
 
@@ -200,12 +204,7 @@ namespace SWC {
     /** A "bookmark", can be set by the caller */
     uint8_t *mark;
 
-    /** The size of the allocated memory buffer (@ref base) */
-    uint32_t size;
 
-    /** If true then the buffer (@ref base) will be released when going out of
-     * scope; if false then the caller has to release it */
-    bool own;
   };
 
   /** @}*/
