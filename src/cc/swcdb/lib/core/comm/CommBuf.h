@@ -29,15 +29,14 @@
 #ifndef swc_core_comm_CommBuf_h
 #define swc_core_comm_CommBuf_h
 
-#include "CommHeader.h"
-
-#include "swcdb/lib/core/ByteString.h"
-#include "swcdb/lib/core/Logger.h"
-#include "swcdb/lib/core/Serializable.h"
-#include "swcdb/lib/core/StaticBuffer.h"
-
 #include <memory>
 #include <string>
+
+#include "../Logger.h"
+#include "../Serializable.h"
+#include "../StaticBuffer.h"
+
+#include "CommHeader.h"
 
 namespace SWC {
 

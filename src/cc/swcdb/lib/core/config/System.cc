@@ -26,8 +26,8 @@
 
 #include "SystemInfo.h"
 
-#include "swcdb/lib/core/Logger.h"
-#include "swcdb/lib/core/FileUtils.h"
+#include "../Logger.h"
+#include "../FileUtils.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>

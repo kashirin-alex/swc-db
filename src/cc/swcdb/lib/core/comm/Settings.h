@@ -5,7 +5,7 @@
 #ifndef swc_core_comm_Settings_h
 #define swc_core_comm_Settings_h
 
-#include "swcdb/lib/core/config/Settings.h"
+#include "../config/Settings.h"
 
 namespace SWC{ namespace Config {
 

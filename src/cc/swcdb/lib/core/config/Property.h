@@ -9,10 +9,10 @@
 #include "PropertyValueEnumExt.h"
 #include "PropertyValueGuarded.h"
 
-#include "swcdb/lib/core/Compat.h"
-#include "swcdb/lib/core/String.h"
-#include "swcdb/lib/core/Logger.h"
-#include "swcdb/lib/core/Error.h"
+#include "../Compat.h"
+#include "../String.h"
+#include "../Logger.h"
+#include "../Error.h"
 
 // #include <string>
 #include <atomic>

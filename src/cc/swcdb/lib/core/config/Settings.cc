@@ -28,8 +28,8 @@
 
 #include "Settings.h"
 
-#include "swcdb/lib/core/Version.h"
-#include "swcdb/lib/core/FileUtils.h"
+#include "../Version.h"
+#include "../FileUtils.h"
 
 #include <filesystem>
 #include <fstream>

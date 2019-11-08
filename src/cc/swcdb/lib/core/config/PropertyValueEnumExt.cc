@@ -2,9 +2,9 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#include "swcdb/lib/core/Compat.h"
-#include "swcdb/lib/core/Logger.h"
-#include "swcdb/lib/core/Error.h"
+#include "../Compat.h"
+#include "../Logger.h"
+#include "../Error.h"
 
 #include "PropertyValueEnumExt.h"
 

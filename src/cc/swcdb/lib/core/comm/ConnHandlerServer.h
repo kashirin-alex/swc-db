@@ -6,7 +6,7 @@
 #ifndef swc_core_comm_ConnHandlerServer_h
 #define swc_core_comm_ConnHandlerServer_h
 
-#include "swcdb/lib/core/comm/ConnHandler.h"
+#include "ConnHandler.h"
 
 
 namespace SWC { namespace server {

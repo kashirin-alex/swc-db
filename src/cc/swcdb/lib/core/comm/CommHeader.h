@@ -5,8 +5,7 @@
 #ifndef swc_core_comm_CommHeader_h
 #define swc_core_comm_CommHeader_h
 
-#include "swcdb/lib/core/Compat.h"
-#include "swcdb/lib/core/Checksum.h"
+#include "../Checksum.h"
 
 namespace SWC {
 
@@ -36,7 +35,7 @@ class CommHeader {
               buffers(0), 
               data_size(0), data_chksum(0), 
               data_ext_size(0), data_ext_chksum(0), 
-              checksum(0) { 
+              checksum(0) {
   }
   
   virtual ~CommHeader() { }

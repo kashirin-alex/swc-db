@@ -30,27 +30,26 @@
 
 namespace SWC {
 
-  /** Abstract base class for application dispatch handlers registered with
-   * AsyncComm.  Dispatch handlers are the mechanism by which an application
-   * is notified of communication events.
-   */
-  class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
+/** Abstract base class for application dispatch handlers registered with
+* AsyncComm.  Dispatch handlers are the mechanism by which an application
+* is notified of communication events.
+*/
+
+class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
   public:
 
-    typedef std::shared_ptr<DispatchHandler> Ptr;
+  typedef std::shared_ptr<DispatchHandler> Ptr;
 
-    virtual ~DispatchHandler() { }
-
-    virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
-      HT_WARNF("handle(virtual): %s", ev->to_str().c_str());
-      return;
-    }
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
+    HT_WARNF("handle(virtual): %s", ev->to_str().c_str());
+    return;
+  }
     
-    virtual bool run(uint32_t timeout=0) { 
-      return false; 
-    }
+  virtual bool run(uint32_t timeout=0) { 
+    return false; 
+  }
   
-  };
+};
 
 }
 

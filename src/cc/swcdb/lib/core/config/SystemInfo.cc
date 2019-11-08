@@ -26,7 +26,7 @@
 
 #include "SystemInfo.h"
 #include "Config.h"
-#include "swcdb/lib/core/Serialization.h"
+#include "../Serialization.h"
 
 #if defined(TCMALLOC) || defined(TCMALLOC_MINIMAL)
 #include <gperftools/malloc_extension.h>

@@ -6,8 +6,8 @@
 #ifndef swc_core_comm_AppHandler_h
 #define swc_core_comm_AppHandler_h
 
-#include "swcdb/lib/core/comm/Event.h"
-#include "swcdb/lib/core/comm/ConnHandlerServer.h"
+#include "Event.h"
+#include "ConnHandlerServer.h"
 
 namespace SWC {
 

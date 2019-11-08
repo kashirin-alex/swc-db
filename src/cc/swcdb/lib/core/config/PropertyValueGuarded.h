@@ -9,7 +9,7 @@
 #ifndef swc_core_config_PropertyValueGuarded_h
 #define swc_core_config_PropertyValueGuarded_h
 
-#include "swcdb/lib/core/Compat.h"
+#include "../Compat.h"
 
 #include <vector>
 #include <string>

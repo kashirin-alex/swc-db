@@ -27,8 +27,8 @@
 #ifndef swc_core_config_System_h
 #define swc_core_config_System_h
 
-#include "swcdb/lib/core/String.h"
-#include "swcdb/lib/core/Version.h"
+#include "../String.h"
+#include "../Version.h"
 
 #include <ctime>
 #include <memory>

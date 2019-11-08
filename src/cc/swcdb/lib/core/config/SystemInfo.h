@@ -29,7 +29,7 @@
 
 #include "System.h"
 
-#include "swcdb/lib/core/Stopwatch.h"
+#include "../Stopwatch.h"
 
 #include <iosfwd>
 #include <vector>

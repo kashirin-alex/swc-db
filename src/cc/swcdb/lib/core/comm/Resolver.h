@@ -6,7 +6,7 @@
 #ifndef swc_core_comm_Resolver_h
 #define swc_core_comm_Resolver_h
 
-#include "swcdb/lib/core/Serialization.h"
+#include "../Serialization.h"
 #include <string>
 #include <vector>
 

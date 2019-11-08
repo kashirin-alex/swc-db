@@ -7,7 +7,7 @@
 #define swc_core_config_PropertyEnumExt_h
 
 
-#include "swcdb/lib/core/String.h"
+#include "../String.h"
 
 
 // #include <string>
