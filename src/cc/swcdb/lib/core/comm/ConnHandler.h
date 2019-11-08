@@ -36,25 +36,33 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   struct PendingRsp {
     public:
-    PendingRsp(uint32_t id, DispatchHandler::Ptr hdlr, bool sequential)
-              : id(id), hdlr(hdlr), sequential(sequential) {}
+    PendingRsp(const uint32_t id, DispatchHandler::Ptr hdlr, 
+               const bool sequential)
+              : id(id), hdlr(hdlr), sequential(sequential) {
+    }
     
     virtual ~PendingRsp() { 
       if(tm) 
         delete tm; 
     }
 
-    uint32_t                      id;
+    const uint32_t                id;
     DispatchHandler::Ptr          hdlr;
-    bool                          sequential;
+    const bool                    sequential;
     Event::Ptr                    ev;
     asio::high_resolution_timer*  tm;
   };
 
   struct Outgoing {
+    public:
+    Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr, 
+             const bool sequential)
+            : cbuf(cbuf), hdlr(hdlr), sequential(sequential) {
+    }
+    virtual ~Outgoing() { }
     CommBuf::Ptr          cbuf;
     DispatchHandler::Ptr  hdlr; 
-    bool                  sequential;
+    const bool            sequential;
   };
 
   public:
@@ -183,11 +191,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
 
-    write_or_queue(new Outgoing({
-     .cbuf=cbuf,
-     .hdlr=hdlr, 
-     .sequential=false
-    }));
+    write_or_queue(new Outgoing(cbuf, hdlr, false));
     return m_err;
   }
 
@@ -237,11 +241,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(cbuf->header.id == 0)
       cbuf->header.id = next_req_id();
 
-    write_or_queue(new Outgoing({
-     .cbuf=cbuf, 
-     .hdlr=hdlr, 
-     .sequential=sequential
-    }));
+    write_or_queue(new Outgoing(cbuf, hdlr, sequential));
     return m_err;
   }
 
