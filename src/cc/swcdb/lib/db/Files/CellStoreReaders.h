@@ -56,15 +56,21 @@ class Readers {
   }
 
   const size_t blocks_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
     size_t  sz = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& cs : m_cellstores)
       sz += cs->blocks_count();
     return sz;
   }
 
-  const size_t release(size_t bytes) {
+  const size_t release(size_t bytes) {    
     size_t released = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto& cs : m_cellstores) {
+      released += cs->release(bytes ? bytes-released : bytes);
+      if(bytes && released >= bytes)
+        break;
+    }
     return released;
   }
 

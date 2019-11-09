@@ -173,7 +173,7 @@ void expect_empty_column(int64_t cid) {
 
 void test_1(const std::string& col_name) {
   int num_cells = 1000000; // test require at least 12
-  int batches = 1;
+  int batches = 100;
   int64_t took;
 
   // Req::Query::Update
@@ -278,15 +278,17 @@ void test_1(const std::string& col_name) {
   for(int tmp=1;tmp <=3;tmp++) {
   select_req->result->columns[schema->cid]->free();
   spec =  select_req->specs.columns[0]->intervals[0];
-  spec->flags.offset=10;
-  spec->flags.limit=batches*num_cells-spec->flags.offset;
+  spec->flags.offset=batches*num_cells-1000;
+  spec->flags.limit=1000; //batches*num_cells-spec->flags.offset;
 
   took =  SWC::Time::now_ns();
   select_req->scan();
   select_req->wait();
   if(select_req->result->columns[schema->cid]->cells.size() != spec->flags.limit) {
     Cells::Cell prev;
+    int count = 0;
     for(auto c : select_req->result->columns[schema->cid]->cells) {
+      count++;
       if(prev.flag != Cells::NONE) {
         if(c->key.equal(prev.key)) {
           std::cerr << " current  " << c->to_string() << "\n";
@@ -294,6 +296,15 @@ void test_1(const std::string& col_name) {
         }
       }
       prev.copy(*c);
+      
+      std::string expected_value(
+        "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-spec->flags.limit-1+count));
+      if(expected_value.compare(value) != 0) {
+        std::cerr << "BAD, selected cell's value doesn't match: \n" 
+                  << " expected_value=" << expected_value << "\n"
+                  << "   result_value=" << value << "\n";
+         exit(1);
+      }
     }
 
     std::cerr << "\n first: " << select_req->result->columns[schema->cid]->cells.front()->to_string() << "\n";

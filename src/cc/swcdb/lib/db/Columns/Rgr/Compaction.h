@@ -67,7 +67,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     Column::Ptr col     = nullptr;
     Range::Ptr range  = nullptr;
-
+    size_t ram = 0;
     for(;;) {
       
       if((col = Env::RgrColumns::get()->get_next(m_idx_cid)) == nullptr)
@@ -82,9 +82,11 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         continue;
       }
       m_idx_rid++;
-      if(!range->is_loaded() || range->compacting())
+      if(!range->is_loaded() 
+        || range->compacting() 
+        || range->blocks.processing())
         continue;
-
+        
       range->compacting(Range::Compact::CHECKING);
       ++running;
       asio::post(
@@ -118,15 +120,16 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                         (Types::Encoding)log->cfg_blk_enc->get();
     uint32_t perc     = cfg_compact_percent->get(); 
     // % of size of either by cellstore or block
-
-    uint32_t allowed_sz_cs  = cs_size + (cs_size  / 100) * perc;
-
+    
+    uint32_t allow_sz = (cs_size  / 100) * perc; 
+    uint32_t allowed_sz_cs  = cs_size + allow_sz;
     uint32_t log_sz = log->size_bytes();
-    bool do_compaction = log_sz >= allowed_sz_cs;
 
-    if(!do_compaction)
-      do_compaction = cellstores->need_compaction(
-       allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
+    bool do_compaction = log_sz >= allowed_sz_cs
+      || log->size() > allowed_sz_cs/blk_size 
+      || (log_sz > allow_sz && log_sz > (cellstores->size_bytes()/100) * perc)
+      || cellstores->need_compaction(
+          allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
     
     HT_INFOF(
       "Compaction %s-range %d/%d allow=%dMB"
@@ -151,6 +154,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       return compacted(range);
     
     range->compacting(Range::Compact::COMPACTING);
+    range->blocks.wait_processing();
     
     auto req = std::make_shared<CompactScan>(
       shared_from_this(), range, cs_size, blk_size, blk_encoding, schema
@@ -394,6 +398,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   
   void compacted(Range::Ptr range) {
     range->compacting(Range::Compact::NONE);
+    size_t bytes = Env::Resources.need_ram();
+    if(bytes)
+      range->blocks.release(bytes);
     compacted();
   }
 

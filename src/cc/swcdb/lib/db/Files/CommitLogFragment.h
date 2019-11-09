@@ -68,7 +68,7 @@ class Fragment {
             ), 
             m_state(state), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0), processing(0) {
+            m_data_checksum(0), processing(0), m_cells_remain(0) {
   }
   
   Ptr ptr() {
@@ -85,7 +85,7 @@ class Fragment {
     m_version = VERSION;
     
     uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
-    m_cells_count = cell_count;
+    m_cells_remain = m_cells_count = cell_count;
     m_size = cells.fill();
     m_cells_offset = HEADER_SIZE+header_extlen;
 
@@ -165,7 +165,7 @@ class Fragment {
           ptr->run_queue(err);
         }
       );
-    } else
+    } else if(Env::Resources.need_ram(m_size))
       release();
   }
 
@@ -228,7 +228,7 @@ class Fragment {
       m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
-      m_cells_count = Serialization::decode_i32(&ptr, &remain);
+      m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
       m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
       if(!checksum_i32_chk(
@@ -358,13 +358,15 @@ class Fragment {
   void load_cells(CellsBlock::Ptr cells_block) {
     if(loaded()) {
       if(m_buffer.size)
-        cells_block->load_cells(m_buffer.base, m_buffer.size);
+        m_cells_remain -= cells_block->load_cells(
+          m_buffer.base, m_buffer.size);
     } else {
       //err
     }
 
     processing--; 
-    release();
+    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+      release();
   }
   
   size_t release() {
@@ -378,6 +380,7 @@ class Fragment {
     m_state = State::NONE;
     released += m_buffer.size;   
     m_buffer.free();
+    m_cells_remain = m_cells_count;
     return released;
   }
 
@@ -463,6 +466,8 @@ class Fragment {
   uint32_t        m_cells_count;
   uint32_t        m_cells_offset;
   uint32_t        m_data_checksum;
+
+  std::atomic<uint32_t> m_cells_remain;
 
   std::queue<std::function<void(int)>> m_queue_load;
   

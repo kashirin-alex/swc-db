@@ -262,6 +262,7 @@ class IntervalBlocks {
     private:
 
     void _scan(DB::Cells::ReqScan::Ptr req) {
+      // if(!req->only_load_blk) {
       size_t skips = 0; // Ranger::Stats
       cells_block->cells.scan(
         *(req->spec).get(), 
@@ -274,6 +275,7 @@ class IntervalBlocks {
               { return req->selector(cell); }
         : (DB::Cells::Mutable::Selector_t)0 
       );  
+      // }
 
       //if(req->cells->size())
       //  req->cells->get(
@@ -437,9 +439,14 @@ class IntervalBlocks {
              && eval->cells_block->interval.includes(req->spec)) {
             blk = eval;
             blk_ptr = eval;
-            /* load next
-            if(++it != m_blocks.end() && !(*it)->loaded())
-              (*it)->load();
+            /* preload next
+            if(++it != m_blocks.end() && !(*it)->loaded()) {
+              asio::post(*Env::IoCtx::io()->ptr(), 
+                [blk=*it](){ 
+                  blk->scan(std::make_shared<DB::Cells::ReqScan>(BLK_PRELOAD));
+                }
+              );
+            }
             */
             break;
           }
@@ -547,12 +554,9 @@ class IntervalBlocks {
       }
     }
     if(state) {
-      std::cout << "--release_and_merge: \n";
       for(auto blk : m_blocks)
         std::cout << " " << blk->to_string() << "\n"; 
     }
-
-
   }
 
   const size_t release(size_t bytes=0) {
@@ -560,7 +564,7 @@ class IntervalBlocks {
     if(bytes && released >= bytes)
       return released;
     
-    released += commitlog->release(bytes);
+    released += commitlog->release(bytes ? bytes-released : bytes);
     if(bytes && released >= bytes)
       return released;
 
@@ -570,11 +574,10 @@ class IntervalBlocks {
         continue;
       released += blk->release();
       if(bytes && released >= bytes)
-        return released;
+        break;
     }
     if(!bytes)
       clear();
-
     return released;
   }
 

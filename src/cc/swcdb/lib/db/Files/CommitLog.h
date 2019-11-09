@@ -217,7 +217,7 @@ class Fragments {
       if(!frag->loaded())
         continue;
       released += frag->release();
-      if(released >= bytes)
+      if(bytes && released >= bytes)
         break;
     }
     return released;

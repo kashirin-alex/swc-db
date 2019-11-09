@@ -51,14 +51,16 @@ class AppContext : public SWC::AppContext {
 
     Env::IoCtx::init(
       Env::Config::settings()->get<int32_t>("swc.rgr.handlers"));
-    Env::Resources.init(
-      Env::IoCtx::io()->ptr(),
-      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent")
-    );
     Env::FsInterface::init();
     Env::RgrData::init();
     Env::Schemas::init();
     Env::RgrColumns::init();
+
+    Env::Resources.init(
+      Env::IoCtx::io()->ptr(),
+      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
+      [](size_t bytes) { Env::RgrColumns::get()->release(bytes); }
+    );
   }
 
   void init(const EndPoints& endpoints) override {

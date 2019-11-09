@@ -182,7 +182,7 @@ class Read  {
       if(!blk->loaded())
         continue;
       released += blk->release();
-      if(released >= bytes)
+      if(bytes && released >= bytes)
         break;
     }
     return released;

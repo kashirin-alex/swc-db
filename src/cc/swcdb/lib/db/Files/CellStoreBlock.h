@@ -34,7 +34,7 @@ struct CellsBlock {
     //std::cout << " ~CellsBlock\n";
   }
   
-  void load_cells(const uint8_t* ptr, size_t remain) {
+  size_t load_cells(const uint8_t* ptr, size_t remain) {
     DB::Cells::Cell cell;
     size_t count = 0;
     bool synced = !cells.size();
@@ -43,6 +43,7 @@ struct CellsBlock {
     while(remain) {
       try {
         cell.read(&ptr, &remain);
+        count++;
       } catch(std::exception) {
         HT_ERRORF(
           "Cell trunclated count=%llu remain=%llu %s, %s", 
@@ -57,7 +58,6 @@ struct CellsBlock {
         cells.push_back(cell);
       else
         cells.add(cell);
-      count++;
 
       //if(splitter)
       //  splitter();
@@ -68,6 +68,7 @@ struct CellsBlock {
               << " synced=" << synced
               << " avg=" << (count>0 ? took / count : 0)
               << " " << cells.to_string() << "\n";
+    return count;
   }
 
   const std::string to_string(){
@@ -132,7 +133,7 @@ class Read {
 
   Read(const size_t offset, const DB::Cells::Interval& interval)
       : offset(offset), interval(interval), 
-        state(State::NONE), processing(0), m_size(0) {
+        state(State::NONE), processing(0), m_size(0), m_sz_enc(0) {
   }
   
   Ptr ptr() {
@@ -180,40 +181,42 @@ class Read {
       if(err)
         continue;
       
-      uint8_t buf[HEADER_SIZE];
-      const uint8_t *ptr = buf;
-      if(Env::FsInterface::fs()->pread(err, smartfd, offset, buf, HEADER_SIZE)
-              != HEADER_SIZE) {
-        if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
-          continue;
+      if(!m_loaded_header) { // load header once
+        uint8_t buf[HEADER_SIZE];
+        const uint8_t *ptr = buf;
+        if(Env::FsInterface::fs()->pread(err, smartfd, offset, buf, HEADER_SIZE)
+                != HEADER_SIZE) {
+          if(err != Error::FS_EOF){
+            Env::FsInterface::fs()->close(err, smartfd);
+            continue;
+          }
+          break;
         }
-        break;
-      }
 
-      size_t remain = HEADER_SIZE;
-      Types::Encoding encoder 
-        = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
-      uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
-      m_size = Serialization::decode_i32(&ptr, &remain);
-      if(!sz_enc) 
-        sz_enc = m_size;
-      uint32_t count = Serialization::decode_i32(&ptr, &remain);
+        size_t remain = HEADER_SIZE;
+        m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+        m_sz_enc = Serialization::decode_i32(&ptr, &remain);
+        m_size = Serialization::decode_i32(&ptr, &remain);
+        if(!m_sz_enc) 
+          m_sz_enc = m_size;
+        m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
 
-      if(!checksum_i32_chk(
-        Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
-        err = Error::CHECKSUM_MISMATCH;
-        break;
+        if(!checksum_i32_chk(
+          Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
+          err = Error::CHECKSUM_MISMATCH;
+          break;
+        }
+        m_loaded_header = true;
       }
-      if(sz_enc == 0)
+      if(m_sz_enc == 0) // a zero cells type cs (initial of any to any block)
         break;
 
       for(;;) {
         m_buffer.free();
         err = Error::OK;
         if(Env::FsInterface::fs()->pread(
-                    err, smartfd, offset+HEADER_SIZE, &m_buffer, sz_enc)
-                  != sz_enc){
+              err, smartfd, offset+HEADER_SIZE, &m_buffer, m_sz_enc)
+            != m_sz_enc){
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
           if(err != Error::FS_EOF){
@@ -228,10 +231,10 @@ class Read {
         break;
 
       
-      if(encoder != Types::Encoding::PLAIN) {
+      if(m_encoder != Types::Encoding::PLAIN) {
         StaticBuffer buffer(m_size);
         Encoder::decode(
-          encoder, m_buffer.base, sz_enc, buffer.base, m_size, err);
+          m_encoder, m_buffer.base, m_sz_enc, buffer.base, m_size, err);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
@@ -249,13 +252,15 @@ class Read {
   void load_cells(CellsBlock::Ptr cells_block) {
     if(loaded()) {
       if(m_buffer.size)
-        cells_block->load_cells(m_buffer.base, m_buffer.size);
+        m_cells_remain -= cells_block->load_cells(
+          m_buffer.base, m_buffer.size);
     } else {
       //err
     }
 
     processing--; 
-    release();
+    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+      release();
   }
   
   size_t release() {
@@ -268,6 +273,7 @@ class Read {
     released += m_buffer.size;    
     state = State::NONE;
     m_buffer.free();
+    m_cells_remain = m_cells_count;
     return released;
   }
 
@@ -323,9 +329,14 @@ class Read {
   private:
   
   std::mutex                            m_mutex;
+  bool                                  m_loaded_header;
+  Types::Encoding                       m_encoder;
   size_t                                m_size;
+  size_t                                m_sz_enc;
+  uint32_t                              m_cells_count;
   StaticBuffer                          m_buffer;
   std::queue<std::function<void(int)>>  m_pending_q;
+  std::atomic<uint32_t>                 m_cells_remain;
 };
 
 

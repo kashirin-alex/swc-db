@@ -127,6 +127,26 @@ class Column : public std::enable_shared_from_this<Column> {
     return nullptr;
   }
 
+  const size_t release(size_t bytes=0) {
+    size_t released = 0;
+    Range::Ptr range;
+    for(;;) {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        auto it = m_ranges.begin();
+        if(it == m_ranges.end())
+          break;
+        range = it->second;
+      }
+      if(!range->is_loaded() || range->compacting())
+        continue;
+      released += range->blocks.release(bytes ? bytes-released : bytes);
+      if(bytes && released >= bytes)
+        break;
+    }
+    return released;
+  }
+
   const std::string to_string() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
