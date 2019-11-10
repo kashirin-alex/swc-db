@@ -29,6 +29,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   virtual ~RangeLocateScan() { }
 
   bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
+    //std::cout << " selector checking: "<< cell.to_string() << "\n";
     if(!spec->key_start.is_matching(cell.key)) 
       return cells->size() == 1; // next_key
 

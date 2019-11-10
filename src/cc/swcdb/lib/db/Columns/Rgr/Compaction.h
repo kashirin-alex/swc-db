@@ -275,10 +275,15 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           DynamicBuffer buff;
           uint32_t cell_count = 0;
           cells->write_and_free(buff, cell_count, blk_intval, 1);
-          blk_intval.key_begin.free();
           // 1st block of begin-any set with key_end as first cell
+          blk_intval.key_begin.free();
+
+          if(range->is_any_end() && !cells->size()) // there was one cell
+            blk_intval.key_end.free(); 
+          
           cs_writer->block(err, blk_intval, buff, cell_count);
-          if(err)
+
+          if(err || !cells->size())
             return;
         }
       }
