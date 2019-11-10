@@ -15,19 +15,24 @@ namespace SWC { namespace DB { namespace Cells {
 class ReqScan  : public ResponseCallback {
 
   public:
+  enum Type {
+    QUERY,
+    BLK_PRELOAD
+  };
   typedef std::shared_ptr<ReqScan>  Ptr;
   typedef std::function<void()>     NextCall_t;
 
-  ReqScan() : ResponseCallback(nullptr, nullptr), 
+  ReqScan(Type type=Type::QUERY) : ResponseCallback(nullptr, nullptr), 
               limit_buffer_sz(0), offset(0), 
-              has_selector(false), drop_caches(false) {          
+              has_selector(false), drop_caches(false), 
+              type(type) {          
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           Specs::Interval::Ptr spec, Mutable::Ptr cells)
           : ResponseCallback(conn, ev), spec(spec), cells(cells),
             offset(spec->flags.offset), limit_buffer_sz(0), 
-            has_selector(false), drop_caches(false) {
+            has_selector(false), drop_caches(false), type(Type::QUERY) {
   }
 
   inline Ptr get_req_scan() {
@@ -79,6 +84,7 @@ class ReqScan  : public ResponseCallback {
   
   // state of a scan
   size_t                  offset;
+  Type                    type;
 };
 
 class ReqScanTest : public ReqScan {

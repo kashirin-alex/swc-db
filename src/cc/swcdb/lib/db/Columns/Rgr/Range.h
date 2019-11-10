@@ -267,7 +267,7 @@ class Range : public DB::RangeBase {
 
   void compacting(Compact state) {
     m_compacting = state;
-    if(m_compacting == Compact::NONE)
+    if(state == Compact::NONE)
       m_cv.notify_all();
   }
 

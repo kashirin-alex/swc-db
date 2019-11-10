@@ -116,6 +116,10 @@ class IntervalBlocks {
         std::lock_guard<std::mutex> lock(m_mutex);
         if(m_state == Block::State::REMOVED)
           return false;
+
+        if(m_state != Block::State::LOADED)
+          m_queue.push(new Callback(req, ptr()));
+
         state = m_state;
       }
 
@@ -123,11 +127,6 @@ class IntervalBlocks {
         _scan(req);
         return false;
       } 
-
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_queue.push(new Callback(req, ptr()));
-      }
 
       load();
       return true;
@@ -262,20 +261,23 @@ class IntervalBlocks {
     private:
 
     void _scan(DB::Cells::ReqScan::Ptr req) {
-      // if(!req->only_load_blk) {
-      size_t skips = 0; // Ranger::Stats
-      cells_block->cells.scan(
-        *(req->spec).get(), 
-        req->cells, 
-        req->offset,
-        [req]() { return req->reached_limits(); },
-        skips, 
-        req->has_selector 
-        ? [req](const DB::Cells::Cell& cell) 
-              { return req->selector(cell); }
-        : (DB::Cells::Mutable::Selector_t)0 
-      );  
-      // }
+
+      if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
+
+        size_t skips = 0; // Ranger::Stats
+        cells_block->cells.scan(
+          *(req->spec).get(), 
+          req->cells, 
+          req->offset,
+          [req]() { return req->reached_limits(); },
+          skips, 
+          req->has_selector 
+          ? [req](const DB::Cells::Cell& cell) 
+                { return req->selector(cell); }
+          : (DB::Cells::Mutable::Selector_t)0 
+        );  
+        
+      }
 
       //if(req->cells->size())
       //  req->cells->get(
@@ -420,10 +422,12 @@ class IntervalBlocks {
     
     Block::Ptr blk;
     bool flw;
+    Block::Ptr nxt_blk;
     for(;;) {
       {
         blk = nullptr;
         flw = false;
+        nxt_blk = nullptr;
         std::lock_guard<std::mutex> lock(m_mutex);
         // it = narrower on req->spec->offset_key
 
@@ -439,28 +443,35 @@ class IntervalBlocks {
              && eval->cells_block->interval.includes(req->spec)) {
             blk = eval;
             blk_ptr = eval;
-            /* preload next
-            if(++it != m_blocks.end() && !(*it)->loaded()) {
-              asio::post(*Env::IoCtx::io()->ptr(), 
-                [blk=*it](){ 
-                  blk->scan(std::make_shared<DB::Cells::ReqScan>(BLK_PRELOAD));
-                }
-              );
-            }
-            */
+            
+            if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
+                && ++it != m_blocks.end() && !(*it)->loaded())
+              nxt_blk = *it;
             break;
           }
         }
         if(blk == nullptr)  
           break;
-         
-        if(Env::Resources.need_ram(commitlog->cfg_blk_sz->get())) {
-          asio::post(*Env::IoCtx::io()->ptr(), 
-            [blk, ptr=ptr()](){
-              ptr->release_prior(blk); // release_and_merge(blk);
-            }
-          );
-        }
+      }
+
+      if(nxt_blk != nullptr) {
+        asio::post(*Env::IoCtx::io()->ptr(), 
+          [nxt_blk](){ 
+            nxt_blk->scan(
+              std::make_shared<DB::Cells::ReqScan>(
+                DB::Cells::ReqScan::Type::BLK_PRELOAD)
+            );
+          }
+        );
+      }
+
+      if(Env::Resources.need_ram(
+          commitlog->cfg_blk_sz->get() * (nxt_blk==nullptr?1:2) )) {
+        asio::post(*Env::IoCtx::io()->ptr(), 
+          [blk, ptr=ptr()](){
+            ptr->release_prior(blk); // release_and_merge(blk);
+          }
+        );
       }
 
       if(blk->scan(req))
@@ -578,6 +589,10 @@ class IntervalBlocks {
     }
     if(!bytes)
       clear();
+    //else if(m_blocks.size() > 1000)
+    // merge in pairs down to 1000 blks
+
+
     return released;
   }
 
