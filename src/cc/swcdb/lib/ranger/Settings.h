@@ -16,6 +16,7 @@ namespace SWC{ namespace Config {
 void Settings::init_app_options(){
   init_comm_options();
   init_fs_options();
+  init_client_options();
 
   gEnumExt blk_enc((int)Types::Encoding::SNAPPY);
   blk_enc.set_from_string(Types::from_string_encoding);

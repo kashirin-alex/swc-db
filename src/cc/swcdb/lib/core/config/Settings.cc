@@ -179,7 +179,9 @@ void Settings::init_options() {
     ("timeout,t", i32(), "System wide timeout in milliseconds")
     ;
   alias("logging-level", "swc.logging.level");
-  alias("timeout", "Hypertable.Request.Timeout");
+}
+
+void Settings::init_client_options() {
 
   file_desc().add_options()
     ("swc.mngr.host", g_strs(gStrings()), 
@@ -202,15 +204,8 @@ void Settings::init_options() {
      "Manager client connection keepalive for ms since last action")
     ("swc.client.schema.expiry", g_i32(1800000), 
      "Schemas expiry in ms")
-    
     ;
-    
-  /*
-  alias("Hypertable.Ranger.CommitLog.RollLimit",
-        "Hypertable.CommitLog.RollLimit");
-  */
-}
-
+} 
 
 void Settings::init(int argc, char *argv[]) {
 

@@ -62,11 +62,14 @@ class Settings {
   virtual ~Settings(){}
 
   void init(int argc, char *argv[]);
+
   void init_app_options();
 
   void init_comm_options();
   
   void init_fs_options();
+
+  void init_client_options();
   
   void init_post_cmd_args();
 
