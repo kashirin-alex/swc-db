@@ -170,16 +170,21 @@ void Settings::init_options() {
     ("verbose,v", g_boo(false)->zero_token(), "Show more verbose output")
     ("debug", boo(false)->zero_token(), "Shortcut to --logging-level debug")
     ("quiet", boo(false)->zero_token(), "Negate verbose")
-    ("silent", boo()->zero_token(),
-     "as Not Interactive or Show as little output as possible")
     ("logging-level,l", g_enum_ext(logging_level), 
      "Logging level: debug, info, notice, warn, error, crit, alert, fatal")
     ("config", str(default_config), "Configuration file.")
     ("induce-failure", str(), "Arguments for inducing failure")
-    ("timeout,t", i32(), "System wide timeout in milliseconds")
+    
+    /* Interactive-Shell options
+    ("silent", boo()->zero_token(),
+     "as Not Interactive or Show as little output as possible") 
+    */
+    
     ;
   alias("logging-level", "swc.logging.level");
-  alias("timeout", "Hypertable.Request.Timeout");
+}
+
+void Settings::init_client_options() {
 
   file_desc().add_options()
     ("swc.mngr.host", g_strs(gStrings()), 
@@ -202,15 +207,8 @@ void Settings::init_options() {
      "Manager client connection keepalive for ms since last action")
     ("swc.client.schema.expiry", g_i32(1800000), 
      "Schemas expiry in ms")
-    
     ;
-    
-  /*
-  alias("Hypertable.Ranger.CommitLog.RollLimit",
-        "Hypertable.CommitLog.RollLimit");
-  */
-}
-
+} 
 
 void Settings::init(int argc, char *argv[]) {
 
