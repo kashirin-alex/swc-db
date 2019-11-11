@@ -160,12 +160,11 @@ class Interval {
   const bool includes(const Specs::Interval& interval) const {
     return  // (interval.offset_key.empty() || 
             //  consist(interval.offset_key) ) && 
-            (interval.key_start.empty() || 
-              key_end.empty() || 
-              interval.key_start.is_matching(key_end) ) && 
-            (interval.key_finish.empty() || 
-              key_begin.empty() || 
-              interval.key_finish.is_matching(key_begin) )
+            (interval.key_start.empty() || key_end.empty() 
+              || interval.key_start.is_matching(key_end) ) 
+          && 
+            (interval.key_finish.empty() || key_begin.empty() 
+              || interval.key_finish.is_matching(key_begin) )
           ;
   }
 

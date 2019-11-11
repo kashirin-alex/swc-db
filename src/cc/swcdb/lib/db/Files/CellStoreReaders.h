@@ -115,10 +115,10 @@ class Readers {
     std::lock_guard<std::mutex> lock(m_mutex);
     bool expected = false;
     for(auto& cs : m_cellstores) {
-      if(!cs->interval.consist(interval))
-        continue;
-      expected = true;
-      call(cs);
+      if(cs->interval.consist(interval)) {
+        expected = true;
+        call(cs);
+      }
     }
     return expected;
   }  
@@ -148,30 +148,6 @@ class Readers {
         return true;
     }
     return false;
-  }
-
-  const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("CellStores(count=");
-    s.append(std::to_string(m_cellstores.size()));
-
-    s.append(" cellstores=[");
-    for(auto& cs : m_cellstores) {
-      s.append(cs->to_string());
-      s.append(", ");
-    }
-    s.append("] ");
-
-    s.append(" processing=");
-    s.append(std::to_string(_processing()));
-
-    s.append(" used/actual=");
-    s.append(std::to_string(_size_bytes(true)));
-    s.append("/");
-    s.append(std::to_string(_size_bytes()));
-
-    s.append(")");
-    return s;
   }
 
   const size_t encoded_length() {
@@ -255,15 +231,41 @@ class Readers {
     fs->rmdir(err, range->get_path(DB::RangeBase::cellstores_bak_dir));
 
     free();
-    for(auto cs : w_cellstores) 
+    for(auto cs : w_cellstores) {
       m_cellstores.push_back(
         Files::CellStore::Read::make(cs->id, range, cs->interval)
       );
-      // cs->load_blocks_index(err, true);
+      // m_cellstores.back()->load_blocks_index(err, true);
       // cs can be not loaded and will happen with 1st scan-req
+    }
     err = Error::OK;
   }
   
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    std::string s("CellStores(count=");
+    s.append(std::to_string(m_cellstores.size()));
+
+    s.append(" cellstores=[");
+    for(auto& cs : m_cellstores) {
+      s.append(cs->to_string());
+      s.append(", ");
+    }
+    s.append("] ");
+
+    s.append(" processing=");
+    s.append(std::to_string(_processing()));
+
+    s.append(" used/actual=");
+    s.append(std::to_string(_size_bytes(true)));
+    s.append("/");
+    s.append(std::to_string(_size_bytes()));
+
+    s.append(")");
+    return s;
+  }
+
   private:
   
 

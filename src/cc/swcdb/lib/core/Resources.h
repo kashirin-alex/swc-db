@@ -34,8 +34,7 @@ class Resources {
   }
 
   const size_t need_ram() {
-    ssize_t sz = ram.used - ram.allowed;
-    return sz > 0 ? sz : 0;
+   return ram.used > ram.allowed ? ram.used - ram.allowed : 0;
   }
 
   const bool need_ram(const uint32_t& sz) {
@@ -63,7 +62,6 @@ class Resources {
 
     if(release) {
       size_t bytes = need_ram();
-      //std::cout << " Resources::need_ram=" << bytes <<  "\n";
       if(bytes)
         release(bytes);
     }

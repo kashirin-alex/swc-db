@@ -277,7 +277,7 @@ class Read {
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if(m_processing)
+    if(m_processing || m_state != State::LOADED)
       return released; 
 
     released += m_buffer.size;    

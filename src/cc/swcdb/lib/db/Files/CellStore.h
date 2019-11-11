@@ -113,9 +113,8 @@ class Read  {
 
     std::vector<Block::Read::Ptr>  applicable;
     for(auto& blk : blocks) {  
-      if(!blk->interval.consist(cells_block->interval))
-        continue; 
-      applicable.push_back(blk);
+      if(blk->interval.consist(cells_block->interval))
+        applicable.push_back(blk);
     }
 
     if(applicable.empty()){
@@ -182,8 +181,6 @@ class Read  {
     }
 
     for(auto& blk : blocks) {
-      if(!blk->loaded())
-        continue;
       released += blk->release();
       if(bytes && released >= bytes)
         break;
@@ -419,7 +416,7 @@ class Read  {
       blocks.push_back(blk);
       interval.expand(blk->interval);
     }
-    
+        
     if(close_after)
       close(err);
   }
@@ -569,9 +566,9 @@ class Write : public std::enable_shared_from_this<Write> {
     interval.free();
     for(auto blk : m_blocks) {
       len_data += Serialization::encoded_length_vi32(blk->offset) 
-          + blk->interval.encoded_length()
-          + 4;;
-
+                + blk->interval.encoded_length()
+                + 4;
+                
       interval.expand(blk->interval);
     }
 
