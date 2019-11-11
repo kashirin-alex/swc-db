@@ -46,7 +46,6 @@ class Read  {
   FS::SmartFd::Ptr              smartfd;
   DB::Cells::Interval           interval;
   std::vector<Block::Read::Ptr> blocks;
-  std::atomic<State>            state;
   
   inline static Ptr make(const uint32_t id, const DB::RangeBase::Ptr& range, 
                          const DB::Cells::Interval& interval) {
@@ -57,7 +56,7 @@ class Read  {
        const DB::Cells::Interval& interval) 
       : id(id), 
         smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        interval(interval), state(State::BLKS_IDX_NONE) {   
+        interval(interval), m_state(State::BLKS_IDX_NONE) {   
   }
 
   Ptr ptr() {
@@ -73,17 +72,17 @@ class Read  {
   State load_blocks_index(int& err, bool close_after=false) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(state == State::BLKS_IDX_LOADED || state == State::BLKS_IDX_LOADING)
-        return state;
-      state = State::BLKS_IDX_LOADING;
+      if(m_state == State::BLKS_IDX_LOADED || m_state == State::BLKS_IDX_LOADING)
+        return m_state;
+      m_state = State::BLKS_IDX_LOADING;
     }
 
     _load_blocks_index(err, close_after);
 
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      state = err? State::BLKS_IDX_NONE : State::BLKS_IDX_LOADED;
-      return state;
+      m_state = err? State::BLKS_IDX_NONE : State::BLKS_IDX_LOADED;
+      return m_state;
     }
   }
 
@@ -172,11 +171,15 @@ class Read  {
     );
   }
 
-  size_t release(size_t bytes) {    
+  size_t release(size_t bytes) {  
+    //std::cout << "CellStore::release=" << bytes << "\n";   
     size_t released = 0;
 
-    if(state != State::BLKS_IDX_LOADED)
-      return released;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_state != State::BLKS_IDX_LOADED)
+        return released;
+    }
 
     for(auto& blk : blocks) {
       if(!blk->loaded())
@@ -206,8 +209,10 @@ class Read  {
   }
 
   void wait_processing() {
-    while(processing() > 0) 
+    while(processing() > 0)  {
+      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
 
   const size_t size_bytes(bool only_loaded=false) {
@@ -229,7 +234,7 @@ class Read  {
     s.append(" id=");
     s.append(std::to_string(id));
     s.append(" state=");
-    s.append(std::to_string((uint8_t) state));
+    s.append(std::to_string((uint8_t) m_state));
     s.append(" ");
     s.append(interval.to_string());
 
@@ -265,9 +270,9 @@ class Read  {
   private:
 
   const size_t _processing() {
-    size_t sz = m_blocks_q.size() + (state == State::BLKS_IDX_LOADING);
+    size_t sz = m_blocks_q.size() + (m_state == State::BLKS_IDX_LOADING);
     for(auto& blk : blocks)
-      sz += blk->processing.load();
+      sz += blk->processing();
     return sz;
   }
 
@@ -468,6 +473,7 @@ class Read  {
         }
 
         blk->load_cells(cells_block);
+
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
@@ -490,6 +496,7 @@ class Read  {
   };
 
   std::mutex                          m_mutex;
+  State                               m_state;
   bool                                m_blocks_q_runs = false;
   std::queue<std::function<void()>>   m_blocks_q;
 

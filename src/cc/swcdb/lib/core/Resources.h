@@ -63,25 +63,29 @@ class Resources {
 
     if(release) {
       size_t bytes = need_ram();
+      //std::cout << " Resources::need_ram=" << bytes <<  "\n";
       if(bytes)
         release(bytes);
     }
+
     schedule();
   }
 
   void refresh_stats() {
-    uint32_t page_size = sysconf(_SC_PAGE_SIZE);
+    if(next_major_chk++ == 0) {
+      page_size = sysconf(_SC_PAGE_SIZE);
     
+      ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
+      ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
+      ram.allowed = (ram.total/100) * cfg_percent_ram->get();
+    }
+
     size_t sz = 0, rss = 0;
     std::ifstream buffer("/proc/self/statm");
     buffer >> sz >> rss;
     buffer.close();
     rss *= page_size;
-
     ram.used    = ram.used ? (ram.used+rss)/2 : rss;
-    ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
-    ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
-    ram.allowed = (ram.total/100) * cfg_percent_ram->get();
   }
 
   void schedule(uint32_t ms = 10000) {
@@ -122,7 +126,9 @@ class Resources {
   gInt32tPtr                    cfg_percent_ram;
   std::function<void(size_t)>   release;
 
+  int8_t                        next_major_chk = 0;
   Component                     ram;
+  uint32_t                      page_size;
   // Component                     storage;
 
   

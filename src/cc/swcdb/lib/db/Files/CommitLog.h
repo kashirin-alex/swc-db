@@ -209,13 +209,12 @@ class Fragments {
     fragments.assign(m_fragments.begin(), m_fragments.end());
   }
 
-  const size_t release(size_t bytes) {    
+  const size_t release(size_t bytes) { 
+    //std::cout << "CommitLog::release=" << bytes << "\n";     
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(auto& frag : m_fragments) {
-      if(!frag->loaded())
-        continue;
       released += frag->release();
       if(bytes && released >= bytes)
         break;
@@ -345,7 +344,7 @@ class Fragments {
   const size_t _processing() {
     size_t size = 0;
     for(auto& frag : m_fragments)
-      size += frag->processing;
+      size += frag->processing();
     return size;
   }
 
@@ -382,11 +381,7 @@ class Fragments {
           frag = m_pending.front();
         }
 
-        if(log->deleting()) {
-          err = Error::COLUMN_MARKED_REMOVED;
-          frag->processing--;
-        } else
-          frag->load_cells(cells_block);
+        frag->load_cells(cells_block);
         
         {
           std::lock_guard<std::mutex> lock(m_mutex);

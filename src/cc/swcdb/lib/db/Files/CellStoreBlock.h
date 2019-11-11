@@ -39,7 +39,7 @@ struct CellsBlock {
     size_t count = 0;
     bool synced = !cells.size();
 
-    auto ts = Time::now_ns();
+    //auto ts = Time::now_ns();
     while(remain) {
       try {
         cell.read(&ptr, &remain);
@@ -63,11 +63,11 @@ struct CellsBlock {
       //  splitter();
     }
 
-    auto took = Time::now_ns()-ts;
-    std::cout << "CellsBlock::load_cells took=" << took
-              << " synced=" << synced
-              << " avg=" << (count>0 ? took / count : 0)
-              << " " << cells.to_string() << "\n";
+    //auto took = Time::now_ns()-ts;
+    //std::cout << "CellsBlock::load_cells took=" << took
+    //          << " synced=" << synced
+    //         << " avg=" << (count>0 ? took / count : 0)
+    //          << " " << cells.to_string() << "\n";
     return count;
   }
 
@@ -128,12 +128,11 @@ class Read {
 
   const size_t                          offset;
   const DB::Cells::Interval             interval;
-  std::atomic<State>                    state;
-  std::atomic<size_t>                   processing;
 
   Read(const size_t offset, const DB::Cells::Interval& interval)
       : offset(offset), interval(interval), 
-        state(State::NONE), processing(0), m_size(0), m_sz_enc(0) {
+        m_state(State::NONE), m_processing(0), m_loaded_header(false),
+        m_size(0), m_sz_enc(0) {
   }
   
   Ptr ptr() {
@@ -145,18 +144,23 @@ class Read {
   }
   
   State load() {
-    processing++;
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(state == Block::Read::State::NONE) {
-      state = Block::Read::State::LOADING;
+    m_processing++;
+    if(m_state == Block::Read::State::NONE) {
+      m_state = Block::Read::State::LOADING;
       return Block::Read::State::NONE;
     }
-    return state;
+    return m_state;
+  }
+
+  size_t processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_processing;
   }
 
   bool loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return state == State::LOADED;
+    return m_state == State::LOADED;
   }
 
   void load(FS::SmartFd::Ptr smartfd, std::function<void(int)> call) {
@@ -245,8 +249,9 @@ class Read {
 
       break;
     }
-  
-    state = !err ? State::LOADED : State::NONE;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_state = !err ? State::LOADED : State::NONE;
   }
 
   void load_cells(CellsBlock::Ptr cells_block) {
@@ -258,20 +263,25 @@ class Read {
       //err
     }
 
-    processing--; 
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing--; 
+    }
+
     if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
       release();
   }
   
-  size_t release() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    //std::cout << " CellStore release, processing=" << processing.load() <<"\n";
+  size_t release() {    
+    //std::cout << "CellStore::Block::release\n";  
     size_t released = 0;
-    if(processing.load())
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(m_processing)
       return released; 
 
     released += m_buffer.size;    
-    state = State::NONE;
+    m_state = State::NONE;
     m_buffer.free();
     m_cells_remain = m_cells_count;
     return released;
@@ -303,7 +313,7 @@ class Read {
 
   size_t size_bytes(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(only_loaded && state != State::LOADED)
+    if(only_loaded && m_state != State::LOADED)
       return 0;
     return m_size;
   }
@@ -313,7 +323,7 @@ class Read {
     std::string s("Block(offset=");
     s.append(std::to_string(offset));
     s.append(" state=");
-    s.append(to_string(state));
+    s.append(to_string(m_state));
     s.append(" size=");
     s.append(std::to_string(m_size));
     s.append(" ");
@@ -321,7 +331,7 @@ class Read {
     s.append(" queue=");
     s.append(std::to_string(m_pending_q.size()));
     s.append(" processing=");
-    s.append(std::to_string(processing.load()));
+    s.append(std::to_string(m_processing));
     s.append(")");
     return s;
   }
@@ -329,6 +339,8 @@ class Read {
   private:
   
   std::mutex                            m_mutex;
+  State                                 m_state;
+  size_t                                m_processing;
   bool                                  m_loaded_header;
   Types::Encoding                       m_encoder;
   size_t                                m_size;

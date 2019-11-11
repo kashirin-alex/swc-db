@@ -206,8 +206,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       if(!ready(err))
         return;
       
-      std::cout << "CompactScan::response cells="<< cells->size() 
-                << " sz=" << cells->size_bytes() << "\n";
+      //std::cout << "CompactScan::response cells="<< cells->size() 
+      //          << " sz=" << cells->size_bytes() << "\n";
       if(!cells->size()) {
         return finalize();
       }
@@ -220,7 +220,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     void process_and_get_more() {
       DB::Cells::Cell last;
       cells->get(-1, last);
-      std::cout << "CompactScan::response last="<< last.to_string() << "\n";
+      //std::cout << "CompactScan::response last="<< last.to_string() << "\n";
       //spec->key_start.set(last.key, Condition::GE);
       //spec->ts_start.set(last.timestamp, Condition::GT);
       spec->offset_key.copy(last.key);
@@ -349,9 +349,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           return quit();
       }
       
-      std::cout << "CellStore::Writers: \n";
-      for(auto cs : cellstores)
-        std::cout << " " << cs->to_string() << "\n";
+      //std::cout << "CellStore::Writers: \n";
+      //for(auto cs : cellstores)
+      //  std::cout << " " << cs->to_string() << "\n";
 
       if(cellstores.size() > 0) 
         range->apply_new(err, cellstores, fragments_old);

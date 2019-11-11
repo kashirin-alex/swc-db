@@ -59,7 +59,6 @@ class Fragment {
   }
 
   DB::Cells::Interval   interval;
-  std::atomic<size_t>   processing;
 
   Fragment(const std::string& filepath, State state=State::NONE)
           : m_smartfd(
@@ -68,7 +67,7 @@ class Fragment {
             ), 
             m_state(state), 
             m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0), processing(0), m_cells_remain(0) {
+            m_data_checksum(0), m_processing(0), m_cells_remain(0) {
   }
   
   Ptr ptr() {
@@ -154,7 +153,7 @@ class Fragment {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = err ? State::ERROR : State::LOADED;
-      keep = !m_queue_load.empty() || processing.load() > 0;
+      keep = !m_queue_load.empty() || m_processing > 0;
     }
     if(keep) {
       m_buffer.set(cells.base, cells.fill());
@@ -326,33 +325,24 @@ class Fragment {
   }
 
   void load(std::function<void(int)> cb) {
-    processing++;
-
-    if(loaded()) {
-      cb(Error::OK);
-      return;
-    }
-
-    bool state;
+    bool loaded;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_queue_load.push(cb);
-      state = m_queue_load.size() == 1;
-    }
-
-    if(state) {
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing++;
+      if(!(loaded = m_state == State::LOADED)) {
+        m_queue_load.push(cb);
         if(m_state == State::LOADING || m_state == State::WRITING)
           return;
         m_state = State::LOADING;
       }
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [ptr=ptr()](){
-          ptr->load();
-        }
-      );
     }
+
+    if(loaded) {
+      cb(Error::OK);
+      return;
+    }
+
+    asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
   }
   
   void load_cells(CellsBlock::Ptr cells_block) {
@@ -364,17 +354,21 @@ class Fragment {
       //err
     }
 
-    processing--; 
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing--; 
+    }
+
     if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
       release();
   }
   
   size_t release() {
+    //std::cout << "CommitLog::Fragment::release\n";  
+    size_t released = 0;     
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::cout << " Fragment release, processing=" << processing.load() <<"\n";
-    size_t released = 0;      
-    if(processing.load())
+    if(m_processing || m_state != State::LOADED)
       return released; 
  
     m_state = State::NONE;
@@ -413,8 +407,15 @@ class Fragment {
   }
 
   void wait_processing() {
-    while(processing > 0) 
+    while(processing() > 0)  {
+      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
+  bool processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_processing;
   }
 
   const std::string to_string() {
@@ -433,7 +434,7 @@ class Fragment {
     s.append(" encoder=");
     s.append(Types::to_string(m_encoder));
 
-    s.append(" enc/size");
+    s.append(" enc/size=");
     s.append(std::to_string(m_size_enc));
     s.append("/");
     s.append(std::to_string(m_size));
@@ -448,24 +449,25 @@ class Fragment {
     s.append(std::to_string(m_queue_load.size()));
 
     s.append(" processing=");
-    s.append(std::to_string(processing.load()));
+    s.append(std::to_string(m_processing));
     
     s.append(")");
     return s;
   }
 
   private:
-  std::mutex      m_mutex;
-  State           m_state;
+  std::mutex        m_mutex;
+  State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
-  uint8_t         m_version;
-  Types::Encoding m_encoder;
-  size_t          m_size_enc;
-  size_t          m_size;
-  StaticBuffer    m_buffer;
-  uint32_t        m_cells_count;
-  uint32_t        m_cells_offset;
-  uint32_t        m_data_checksum;
+  uint8_t           m_version;
+  Types::Encoding   m_encoder;
+  size_t            m_size_enc;
+  size_t            m_size;
+  StaticBuffer      m_buffer;
+  uint32_t          m_cells_count;
+  uint32_t          m_cells_offset;
+  uint32_t          m_data_checksum;
+  size_t            m_processing;
 
   std::atomic<uint32_t> m_cells_remain;
 
