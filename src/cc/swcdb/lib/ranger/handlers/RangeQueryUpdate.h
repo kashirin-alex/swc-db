@@ -39,7 +39,6 @@ class RangeQueryUpdate : public AppHandler {
       }
       if(err == Error::OK && m_ev->data_ext.size == 0) {
         err = Error::INVALID_ARGUMENT;
-        std::cout << " empty cells size=" << m_ev->data_ext.size  << "\n";
       } else {
         buffer = std::make_shared<StaticBuffer>(m_ev->data_ext);
       }

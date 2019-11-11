@@ -38,10 +38,12 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     Serialization::decode_vi64(&ptr, &remain);
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
+    /*
     std::cout << "cell begin: "<< cell.key.to_string() << "\n";
     std::cout << "spec begin: " << spec->key_start.to_string() << "\n";
     std::cout << "cell end:   "<< key_end.to_string() << "\n";
     std::cout << "spec end:   " << spec->key_finish.to_string() << "\n";
+    */
     return key_end.empty() || 
             spec->key_finish.is_matching(key_end);
   }
@@ -98,7 +100,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     }
 
     std::cout << "RangeLocateScan, rsp " << to_string() << "\n";    
-    std::cout << params.to_string() << "\n";
+    //std::cout << params.to_string() << "\n";
     
     try {
       auto cbp = CommBuf::make(params);

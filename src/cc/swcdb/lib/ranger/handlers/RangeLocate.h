@@ -42,8 +42,6 @@ class RangeLocate : public AppHandler {
     }
 
     try{
-      std::cout << "RangeLocate, req: cid=" << params.cid << " rid=" << params.rid 
-                << " " << params.interval.to_string() << "\n";
 
       DB::Schema::Ptr schema = Env::Schemas::get()->get(params.cid);
       if(!err && schema == nullptr) { 
