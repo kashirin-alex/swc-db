@@ -60,7 +60,7 @@ class IntervalBlocks {
 
     bool loaded() {
       std::lock_guard<std::mutex> lock(m_mutex);
-      return m_state = State::LOADED;
+      return m_state == State::LOADED;
     }
 
     bool add_logged(const DB::Cells::Cell& cell) { 
@@ -125,7 +125,6 @@ class IntervalBlocks {
     }
 
     void loaded_cellstores(int& err) {
-      //std::cout << " loaded_cellstores \n ";
       if(err) {
         run_queue(err);
         return;
@@ -450,12 +449,17 @@ class IntervalBlocks {
              && eval->cells_block->interval.includes(req->spec)) {
             blk = eval;
             blk_ptr = eval;
-            
+
             if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
                 && ++it != m_blocks.end() && !(*it)->loaded())
               nxt_blk = *it;
             break;
-          }
+          }/* else {
+            std::cout << " scan eval-blk-mismatch "
+                      << "\n block " << eval->cells_block->interval.to_string()
+                      << "\n specs " << req->spec->to_string()
+                      << "\n";
+          }*/
         }
         if(blk == nullptr)  
           break;
