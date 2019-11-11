@@ -163,10 +163,16 @@ class Columns : public std::enable_shared_from_this<Columns> {
   const size_t release(size_t bytes=0) {
     size_t released = 0;
     Column::Ptr col;
+    ColumnsMap::iterator it;
+    bool started = false;
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_columns.begin();
+        if(!started) { 
+          it = m_columns.begin();
+          started = true;
+        } else
+          it++;
         if(it == m_columns.end())
           break;
         if(it->first < 3)
