@@ -95,6 +95,8 @@ class Column : public std::enable_shared_from_this<Column> {
   void remove_all(int &err) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_deleting)
+        return;
       m_deleting = true;
     }
       
@@ -135,6 +137,8 @@ class Column : public std::enable_shared_from_this<Column> {
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_deleting)
+          return released;
         if(!started) { 
           it = m_ranges.begin();
           started = true;
