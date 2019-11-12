@@ -319,7 +319,6 @@ class Readers {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_count--;
-        //std::cout  << " Readers::AwaitingLoad m_count=" << m_count << "\n";
         if(m_count)
           return;
       }

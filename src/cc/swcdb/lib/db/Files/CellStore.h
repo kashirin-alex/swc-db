@@ -101,7 +101,7 @@ class Read  {
  
       if(applied == State::BLKS_IDX_LOADING) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_blocks_q.push(
+        m_queue.push(
           [cells_block, cb, ptr=ptr()](){
             ptr->load_cells(cells_block, cb);
           }
@@ -124,30 +124,10 @@ class Read  {
   
     auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
     for(auto& blk : applicable) {
-
-      switch(blk->load()) {
-
-        case Block::Read::State::NONE: {
-          std::lock_guard<std::mutex> lock(m_mutex);
-          m_blocks_q.push(
-            [blk, waiter, fd=smartfd](){
-              blk->load(
-                fd, [blk, waiter](int err){ waiter->processed(err, blk); }
-              );
-            }
-          );
-          break;
-        }
-
-        case Block::Read::State::LOADED: {
-          waiter->processed(Error::OK, blk);
-          break;
-        }
-
-        default: {
-          blk->pending_load(
-            [blk, waiter](int err){ waiter->processed(err, blk);});
-        }
+      auto cb = [blk, waiter](int err){ waiter->processed(err, blk); };
+      if(blk->load(cb)) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.push([blk, cb, fd=smartfd](){ blk->load(fd, cb); });
       }
     }
 
@@ -155,18 +135,16 @@ class Read  {
   }
 
   void run_queued() {
-
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_blocks_q_runs || m_blocks_q.empty())
+      if(m_q_runs || m_queue.empty())
         return;
-      m_blocks_q_runs = true;
+      m_q_runs = true;
     }
     
-    asio::post(*Env::IoCtx::io()->ptr(), 
-      [ptr=ptr()](){
-        ptr->_run_queued();
-      }
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [ptr=ptr()](){ ptr->_run_queued(); }
     );
   }
 
@@ -250,7 +228,7 @@ class Read  {
     s.append("]");
 
     s.append(" queue=");
-    s.append(std::to_string(m_blocks_q.size()));
+    s.append(std::to_string(m_queue.size()));
 
     s.append(" processing=");
     s.append(std::to_string(_processing()));
@@ -267,7 +245,7 @@ class Read  {
   private:
 
   const size_t _processing() {
-    size_t sz = m_blocks_q.size() + (m_state == State::BLKS_IDX_LOADING);
+    size_t sz = m_queue.size() + (m_state == State::BLKS_IDX_LOADING);
     for(auto& blk : blocks)
       sz += blk->processing();
     return sz;
@@ -422,21 +400,20 @@ class Read  {
   }
 
   void _run_queued() {
-
     std::function<void()> call;
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        call = m_blocks_q.front();
+        call = m_queue.front();
       }
 
       call();
       
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_blocks_q.pop();
-        if(m_blocks_q.empty()) {
-          m_blocks_q_runs = false;
+        m_queue.pop();
+        if(m_queue.empty()) {
+          m_q_runs = false;
           int tmperr = Error::OK;
           close(tmperr);
           return;
@@ -459,7 +436,6 @@ class Read  {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_count--;
-        //std::cout  << " CS::AwaitingLoad m_count=" << m_count << "\n";
         m_pending.push(blk);
         if(m_pending.size() > 1)
           return;
@@ -484,7 +460,6 @@ class Read  {
       }
 
       cb(err);
-      blk->pending_load(err);
       delete this;
     }
 
@@ -497,8 +472,8 @@ class Read  {
 
   std::mutex                          m_mutex;
   State                               m_state;
-  bool                                m_blocks_q_runs = false;
-  std::queue<std::function<void()>>   m_blocks_q;
+  bool                                m_q_runs = false;
+  std::queue<std::function<void()>>   m_queue;
 
 };
 

@@ -143,14 +143,62 @@ class Read {
     //std::cout << " ~CellStore::Block::Read\n";
   }
   
-  State load() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_processing++;
-    if(m_state == Block::Read::State::NONE) {
-      m_state = Block::Read::State::LOADING;
-      return Block::Read::State::NONE;
+  bool load(const std::function<void(int)>& cb) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing++;
+      if(m_state == State::NONE) {
+        m_state = State::LOADING;
+        return true;
+      }
+      if(m_state != State::LOADED) {
+        m_queue.push(cb);
+        return false;
+      }
     }
-    return m_state;
+    asio::post(*Env::IoCtx::io()->ptr(), [cb](){ cb(Error::OK); } );
+    return false;
+  }
+
+  void load(FS::SmartFd::Ptr smartfd, const std::function<void(int)>& cb) {
+    int err = Error::OK;
+    load(err, smartfd);
+    
+    asio::post(*Env::IoCtx::io()->ptr(), [cb, err](){ cb(err); } );
+    run_queued(err);
+  }
+
+  void load_cells(CellsBlock::Ptr cells_block) {
+    if(loaded()) {
+      if(m_buffer.size)
+        m_cells_remain -= cells_block->load_cells(
+          m_buffer.base, m_buffer.size);
+    } else {
+      //err
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing--; 
+    }
+
+    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+      release();
+  }
+  
+  size_t release() {    
+    //std::cout << "CellStore::Block::release\n";  
+    size_t released = 0;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(m_processing || m_state != State::LOADED)
+      return released; 
+
+    released += m_buffer.size;    
+    m_state = State::NONE;
+    m_buffer.free();
+    m_cells_remain = m_cells_count;
+    return released;
   }
 
   size_t processing() {
@@ -163,17 +211,34 @@ class Read {
     return m_state == State::LOADED;
   }
 
-  void load(FS::SmartFd::Ptr smartfd, std::function<void(int)> call) {
-    int err = Error::OK;
-    if(loaded()) {
-      call(err);
-      return;
-    }
-    
-    load(err, smartfd);
-    asio::post(*Env::IoCtx::io()->ptr(), [call, err](){ call(err); });
+  size_t size_bytes(bool only_loaded=false) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(only_loaded && m_state != State::LOADED)
+      return 0;
+    return m_size;
   }
 
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("Block(offset=");
+    s.append(std::to_string(offset));
+    s.append(" state=");
+    s.append(to_string(m_state));
+    s.append(" size=");
+    s.append(std::to_string(m_size));
+    s.append(" ");
+    s.append(interval.to_string());
+    s.append(" queue=");
+    s.append(std::to_string(m_queue.size()));
+    s.append(" processing=");
+    s.append(std::to_string(m_processing));
+    s.append(")");
+    return s;
+  }
+
+  
+  private:
+  
   void load(int& err, FS::SmartFd::Ptr smartfd) {
     //std::cout << "CS::Read::load\n";
 
@@ -254,90 +319,41 @@ class Read {
     m_state = !err ? State::LOADED : State::NONE;
   }
 
-  void load_cells(CellsBlock::Ptr cells_block) {
-    if(loaded()) {
-      if(m_buffer.size)
-        m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size);
-    } else {
-      //err
-    }
-
+  void run_queued(int err) {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_processing--; 
+      if(m_q_runs || m_queue.empty()) 
+        return;
+      m_q_runs = true;
     }
-
-    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
-      release();
-  }
-  
-  size_t release() {    
-    //std::cout << "CellStore::Block::release\n";  
-    size_t released = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(m_processing || m_state != State::LOADED)
-      return released; 
-
-    released += m_buffer.size;    
-    m_state = State::NONE;
-    m_buffer.free();
-    m_cells_remain = m_cells_count;
-    return released;
+    
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [err, ptr=ptr()](){ ptr->_run_queued(err); }
+    );
   }
 
-  void pending_load(std::function<void(int)> cb) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_pending_q.push(cb);
-  }
-
-  void pending_load(int& err) {
+  void _run_queued(int err) {
     std::function<void(int)> call;
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(m_pending_q.empty())
-          return;
-        call = m_pending_q.front();
+        call = m_queue.front();
       }
 
       call(err);
       
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_pending_q.pop();
+        m_queue.pop();
+        if(m_queue.empty()) {
+          m_q_runs = false;
+          return;
+        }
       }
     }
   }
 
-  size_t size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(only_loaded && m_state != State::LOADED)
-      return 0;
-    return m_size;
-  }
-
-  const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("Block(offset=");
-    s.append(std::to_string(offset));
-    s.append(" state=");
-    s.append(to_string(m_state));
-    s.append(" size=");
-    s.append(std::to_string(m_size));
-    s.append(" ");
-    s.append(interval.to_string());
-    s.append(" queue=");
-    s.append(std::to_string(m_pending_q.size()));
-    s.append(" processing=");
-    s.append(std::to_string(m_processing));
-    s.append(")");
-    return s;
-  }
-
-  private:
-  
   std::mutex                            m_mutex;
   State                                 m_state;
   size_t                                m_processing;
@@ -347,7 +363,8 @@ class Read {
   size_t                                m_sz_enc;
   uint32_t                              m_cells_count;
   StaticBuffer                          m_buffer;
-  std::queue<std::function<void(int)>>  m_pending_q;
+  bool                                  m_q_runs = false;
+  std::queue<std::function<void(int)>>  m_queue;
   std::atomic<uint32_t>                 m_cells_remain;
 };
 

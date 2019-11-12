@@ -153,18 +153,14 @@ class Fragment {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = err ? State::ERROR : State::LOADED;
-      keep = !m_queue_load.empty() || m_processing > 0;
+      if(keep = !m_queue.empty() || m_processing > 0) {
+        m_buffer.set(cells.base, cells.fill());
+        cells.own = false;
+      }
     }
-    if(keep) {
-      m_buffer.set(cells.base, cells.fill());
-      cells.own = false;
-      
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [&err, ptr=ptr()](){
-          ptr->run_queue(err);
-        }
-      );
-    } else if(Env::Resources.need_ram(m_size))
+    if(keep)
+      run_queued(err);
+    else if(Env::Resources.need_ram(m_size))
       release();
   }
 
@@ -174,6 +170,140 @@ class Fragment {
     if(err)
       m_state = State::ERROR;
   }
+
+  void load(const std::function<void(int)>& cb) {
+    bool loaded;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing++;
+      loaded = m_state == State::LOADED;
+      if(!loaded) {
+        m_queue.push(cb);
+
+        if(m_state == State::LOADING || m_state == State::WRITING)
+          return;
+        m_state = State::LOADING;
+      }
+    }
+
+    if(loaded)
+      asio::post(*Env::IoCtx::io()->ptr(), [cb](){ cb(Error::OK); } );
+    else 
+      asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
+  }
+  
+  void load_cells(CellsBlock::Ptr cells_block) {
+    if(loaded()) {
+      if(m_buffer.size)
+        m_cells_remain -= cells_block->load_cells(
+          m_buffer.base, m_buffer.size);
+    } else {
+      //err
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_processing--; 
+    }
+
+    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+      release();
+  }
+  
+  size_t release() {
+    //std::cout << "CommitLog::Fragment::release\n";  
+    size_t released = 0;     
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(m_processing || m_state != State::LOADED)
+      return released; 
+ 
+    m_state = State::NONE;
+    released += m_buffer.size;   
+    m_buffer.free();
+    m_cells_remain = m_cells_count;
+    return released;
+  }
+
+  bool loaded() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::LOADED;
+  }
+
+  bool errored() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_state == State::ERROR;
+  }
+
+  uint32_t cells_count() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_cells_count;
+  }
+
+  size_t size_bytes(bool only_loaded=false) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(only_loaded && m_state != State::LOADED)
+      return 0;
+    return m_size;
+  }
+
+  bool processing() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_processing;
+  }
+
+  void wait_processing() {
+    while(processing() > 0)  {
+      //std::cout << "wait_processing: " << to_string() << "\n";
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
+  void remove(int &err) {
+    wait_processing();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
+  }
+
+  const std::string to_string() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string s("Fragment(version=");
+    s.append(std::to_string(m_version));
+
+    s.append(" state=");
+    s.append(to_string(m_state));
+
+    s.append(" count=");
+    s.append(std::to_string(m_cells_count));
+    s.append(" offset=");
+    s.append(std::to_string(m_cells_offset));
+
+    s.append(" encoder=");
+    s.append(Types::to_string(m_encoder));
+
+    s.append(" enc/size=");
+    s.append(std::to_string(m_size_enc));
+    s.append("/");
+    s.append(std::to_string(m_size));
+
+    s.append(" ");
+    s.append(interval.to_string());
+
+    s.append(" ");
+    s.append(m_smartfd->to_string());
+
+    s.append(" queue=");
+    s.append(std::to_string(m_queue.size()));
+
+    s.append(" processing=");
+    s.append(std::to_string(m_processing));
+    
+    s.append(")");
+    return s;
+  }
+
+  private:
+  
 
   void load_header(int& err, bool close_after=true) {
     
@@ -302,160 +432,45 @@ class Fragment {
       m_state = err ? State::ERROR : State::LOADED;
     }
 
-    run_queue(err);
+    run_queued(err);
   }
 
-  void run_queue(int& err) {
+
+  void run_queued(int err) {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if(m_q_runs || m_queue.empty())
+        return;
+      m_q_runs = true;
+    }
+    
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [err, ptr=ptr()](){ ptr->_run_queued(err); }
+    );
+  }
+
+  void _run_queued(int err) {
     std::function<void(int)> cb;
     for(;;) {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        cb = m_queue_load.front();
+        cb = m_queue.front();
       }
 
       cb(err);
       
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_queue_load.pop();
-        if(m_queue_load.empty())
+        m_queue.pop();
+        if(m_queue.empty()) {
+          m_q_runs = false;
           return;
+        }
       }
     }
   }
-
-  void load(std::function<void(int)> cb) {
-    bool loaded;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_processing++;
-      if(!(loaded = m_state == State::LOADED)) {
-        m_queue_load.push(cb);
-        if(m_state == State::LOADING || m_state == State::WRITING)
-          return;
-        m_state = State::LOADING;
-      }
-    }
-
-    if(loaded) {
-      cb(Error::OK);
-      return;
-    }
-
-    asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
-  }
   
-  void load_cells(CellsBlock::Ptr cells_block) {
-    if(loaded()) {
-      if(m_buffer.size)
-        m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size);
-    } else {
-      //err
-    }
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_processing--; 
-    }
-
-    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
-      release();
-  }
-  
-  size_t release() {
-    //std::cout << "CommitLog::Fragment::release\n";  
-    size_t released = 0;     
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if(m_processing || m_state != State::LOADED)
-      return released; 
- 
-    m_state = State::NONE;
-    released += m_buffer.size;   
-    m_buffer.free();
-    m_cells_remain = m_cells_count;
-    return released;
-  }
-
-  bool loaded() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_state == State::LOADED;
-  }
-
-  bool errored() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_state == State::ERROR;
-  }
-
-  uint32_t cells_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_cells_count;
-  }
-
-  size_t size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(only_loaded && m_state != State::LOADED)
-      return 0;
-    return m_size;
-  }
-
-  void remove(int &err) {
-    wait_processing();
-    std::lock_guard<std::mutex> lock(m_mutex);
-    Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
-  }
-
-  void wait_processing() {
-    while(processing() > 0)  {
-      //std::cout << "wait_processing: " << to_string() << "\n";
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  bool processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_processing;
-  }
-
-  const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("Fragment(version=");
-    s.append(std::to_string(m_version));
-
-    s.append(" state=");
-    s.append(to_string(m_state));
-
-    s.append(" count=");
-    s.append(std::to_string(m_cells_count));
-    s.append(" offset=");
-    s.append(std::to_string(m_cells_offset));
-
-    s.append(" encoder=");
-    s.append(Types::to_string(m_encoder));
-
-    s.append(" enc/size=");
-    s.append(std::to_string(m_size_enc));
-    s.append("/");
-    s.append(std::to_string(m_size));
-
-    s.append(" ");
-    s.append(interval.to_string());
-
-    s.append(" ");
-    s.append(m_smartfd->to_string());
-
-    s.append(" queue=");
-    s.append(std::to_string(m_queue_load.size()));
-
-    s.append(" processing=");
-    s.append(std::to_string(m_processing));
-    
-    s.append(")");
-    return s;
-  }
-
-  private:
   std::mutex        m_mutex;
   State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
@@ -471,7 +486,8 @@ class Fragment {
 
   std::atomic<uint32_t> m_cells_remain;
 
-  std::queue<std::function<void(int)>> m_queue_load;
+  bool                                 m_q_runs = false;
+  std::queue<std::function<void(int)>> m_queue;
   
 
 };

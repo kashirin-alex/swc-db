@@ -372,7 +372,6 @@ class Fragments {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_count--;
-        //std::cout  << " Log::AwaitingLoad m_count=" << m_count << "\n";
         m_pending.push(frag);
         if(m_pending.size() > 1)
           return;
@@ -395,14 +394,13 @@ class Fragments {
           }
         }
       }
-
       log->load_cells(cells_block);
       cb(err);
       delete this;
     }
 
     std::mutex                    m_mutex;
-    int32_t                       m_count = 0;
+    int32_t                       m_count;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
     Fragments::Ptr                log;
@@ -410,14 +408,11 @@ class Fragments {
   };
 
   std::mutex                  m_mutex;
-
   DB::Cells::Mutable::Ptr     m_cells;
   uint32_t                    m_size_commit;
   std::atomic<bool>           m_commiting;
   bool                        m_deleting;
-  
   std::condition_variable     m_cv;
-
   std::vector<Fragment::Ptr>  m_fragments;
 
 };
