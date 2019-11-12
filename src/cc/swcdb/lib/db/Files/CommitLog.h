@@ -174,7 +174,8 @@ class Fragments {
     m_cells->scan(cells_block->interval, cells_block->cells);
   }
   
-  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {
+  void load_cells(CellsBlock::Ptr cells_block, 
+                  const std::function<void(int)>& cb) {
     //std::cout << "CommitLog::load_cells\n";
     if(m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
@@ -370,7 +371,8 @@ class Fragments {
     void processed(int err, Fragment::Ptr frag) {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
-        --m_count;
+        m_count--;
+        //std::cout  << " Log::AwaitingLoad m_count=" << m_count << "\n";
         m_pending.push(frag);
         if(m_pending.size() > 1)
           return;
@@ -386,15 +388,17 @@ class Fragments {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
-          if(m_pending.empty()) 
+          if(m_pending.empty()) {
+            if(m_count)
+              return;
             break;
+          }
         }
       }
-      if(m_count == 0){
-        log->load_cells(cells_block);
-        cb(err);
-        delete this;
-      }
+
+      log->load_cells(cells_block);
+      cb(err);
+      delete this;
     }
 
     std::mutex                    m_mutex;

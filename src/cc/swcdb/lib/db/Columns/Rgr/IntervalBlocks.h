@@ -106,21 +106,10 @@ class IntervalBlocks {
         return false;
       } 
 
-      bool expected = blocks->cellstores->foreach(
-        cells_block->interval, 
-        [ptr=ptr()](const Files::CellStore::Read::Ptr& cs){
-          cs->load_cells(
-            ptr->cells_block, 
-            [ptr](int err) {
-              ptr->loaded_cellstores(err);
-            }
-          );
-        }
+      blocks->cellstores->load_cells(
+        cells_block, 
+        [ptr=ptr()](int err) { ptr->loaded_cellstores(err); }
       );
-      if(!expected) {
-        int err = Error::OK;
-        loaded_cellstores(err);
-      }      
       return true;
     }
 
@@ -132,9 +121,7 @@ class IntervalBlocks {
       
       blocks->commitlog->load_cells(
         cells_block,
-        [ptr=ptr()](int err){
-          ptr->loaded_logs(err);
-        }
+        [ptr=ptr()](int err){ ptr->loaded_logs(err); }
       );
     }
 
@@ -309,6 +296,9 @@ class IntervalBlocks {
 
         ptr->_scan(req); 
         
+        if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) 
+          return; 
+
         if(req->reached_limits()) {
           req->response(err);
         } else {
@@ -466,6 +456,7 @@ class IntervalBlocks {
       }
 
       if(nxt_blk != nullptr 
+        && !Env::Resources.need_ram(commitlog->cfg_blk_sz->get() * 10)
         && nxt_blk->cells_block->interval.includes(req->spec)) {
         //std::cout << " BLK_PRELOAD " << nxt_blk->to_string() << "\n";
         asio::post(*Env::IoCtx::io()->ptr(), 
@@ -478,8 +469,7 @@ class IntervalBlocks {
         );
       }
 
-      if(Env::Resources.need_ram(
-          commitlog->cfg_blk_sz->get() * (nxt_blk==nullptr?1:2) )) {
+      if(Env::Resources.need_ram(commitlog->cfg_blk_sz->get())) {
         asio::post(*Env::IoCtx::io()->ptr(), 
           [blk, ptr=ptr()](){
             ptr->release_prior(blk); // release_and_merge(blk);

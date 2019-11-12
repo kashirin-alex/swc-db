@@ -86,8 +86,8 @@ class Read  {
     }
   }
 
-  void load_cells(CellsBlock::Ptr cells_block, std::function<void(int)> cb) {
-
+  void load_cells(CellsBlock::Ptr cells_block, 
+                  const std::function<void(int)>& cb) {
     {
       int err = Error::OK;
       State applied = load_blocks_index(err);
@@ -458,7 +458,8 @@ class Read  {
     void processed(int err, Block::Read::Ptr blk) {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
-        --m_count;
+        m_count--;
+        //std::cout  << " CS::AwaitingLoad m_count=" << m_count << "\n";
         m_pending.push(blk);
         if(m_pending.size() > 1)
           return;
@@ -474,19 +475,21 @@ class Read  {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
-          if(m_pending.empty()) 
+          if(m_pending.empty()) {
+            if(m_count)
+              return;
             break;
+          }
         }
       }
-      if(m_count == 0) {
-        cb(err);
-        blk->pending_load(err);
-        delete this;
-      }
+
+      cb(err);
+      blk->pending_load(err);
+      delete this;
     }
 
     std::mutex                    m_mutex;
-    int32_t                       m_count = 0;
+    int32_t                       m_count;
     CellsBlock::Ptr               cells_block;
     const Cb_t                    cb;
     std::queue<Block::Read::Ptr>  m_pending;

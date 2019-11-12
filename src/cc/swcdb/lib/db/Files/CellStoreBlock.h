@@ -39,7 +39,7 @@ struct CellsBlock {
     size_t count = 0;
     bool synced = !cells.size();
 
-    //auto ts = Time::now_ns();
+    auto ts = Time::now_ns();
     while(remain) {
       try {
         cell.read(&ptr, &remain);
@@ -63,11 +63,11 @@ struct CellsBlock {
       //  splitter();
     }
 
-    //auto took = Time::now_ns()-ts;
-    //std::cout << "CellsBlock::load_cells took=" << took
-    //          << " synced=" << synced
-    //         << " avg=" << (count>0 ? took / count : 0)
-    //          << " " << cells.to_string() << "\n";
+    auto took = Time::now_ns()-ts;
+    std::cout << "CellsBlock::load_cells took=" << took
+              << " synced=" << synced
+              << " avg=" << (count>0 ? took / count : 0)
+              << " " << cells.to_string() << "\n";
     return count;
   }
 
