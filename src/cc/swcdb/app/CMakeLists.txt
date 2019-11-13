@@ -13,6 +13,9 @@ ADD_EXEC_TARGET(
 	NAME dbRanger
 	SRCS  ranger/main.cc
 	TARGETS swcdb_core_config ${BUILTIN_FS_TARGETS}
+
+	SHARED  ${SNAPPY_LIBRARIES_SHARED}
+	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
 )
 
 # dbManager

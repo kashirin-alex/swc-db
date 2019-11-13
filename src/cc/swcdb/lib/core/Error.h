@@ -68,15 +68,15 @@ namespace SWC {
       RS_NOT_READY                                 = CODE_START+0x0f+0x3,
       RS_NOT_LOADED_RANGE                          = CODE_START+0x0f+0x4,
       RS_DELETED_RANGE                             = CODE_START+0x0f+0x5,
-
+      
+      ENCODER_ENCODE                               = CODE_START+0x1f+0x6,
+      ENCODER_DECODE                               = CODE_START+0x1f+0x7,
 
       BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+0x1f+0x1,
       BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+0x1f+0x2,
       BLOCK_COMPRESSOR_BAD_HEADER                  = CODE_START+0x1f+0x3,
       BLOCK_COMPRESSOR_BAD_MAGIC                   = CODE_START+0x1f+0x4,
       BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = CODE_START+0x1f+0x5,
-      BLOCK_COMPRESSOR_DEFLATE_ERROR               = CODE_START+0x1f+0x6,
-      BLOCK_COMPRESSOR_INFLATE_ERROR               = CODE_START+0x1f+0x7,
       BLOCK_COMPRESSOR_INIT_ERROR                  = CODE_START+0x1f+0x8,
       BLOCK_COMPRESSOR_INVALID_ARG                 = CODE_START+0x1f+0x9,
       

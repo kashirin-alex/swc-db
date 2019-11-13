@@ -301,15 +301,15 @@ class Read {
 
       
       if(m_encoder != Types::Encoding::PLAIN) {
-        StaticBuffer buffer(m_size);
+        StaticBuffer decoded_buf(m_size);
         Encoder::decode(
-          m_encoder, m_buffer.base, m_sz_enc, buffer.base, m_size, err);
+          err, m_encoder, m_buffer.base, m_sz_enc, decoded_buf.base, m_size);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, smartfd);
           break;
         }
-        m_buffer.set(buffer);
+        m_buffer.set(decoded_buf);
       }
 
       break;
@@ -386,8 +386,8 @@ class Write {
     
     size_t len_enc = 0;
     output.set_mark();
-    Encoder::encode(encoder, cells.base, cells.fill(), 
-                    &len_enc, output, HEADER_SIZE, err);
+    Encoder::encode(err, encoder, cells.base, cells.fill(), 
+                    &len_enc, output, HEADER_SIZE);
     if(err)
       return;
                     

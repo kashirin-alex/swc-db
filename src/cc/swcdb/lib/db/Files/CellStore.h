@@ -361,7 +361,7 @@ class Read  {
     
     if(encoder != Types::Encoding::PLAIN) {
       StaticBuffer decoded_buf(sz);
-      Encoder::decode(encoder, ptr, sz_enc, decoded_buf.base, sz, err);
+      Encoder::decode(err, encoder, ptr, sz_enc, decoded_buf.base, sz);
       if(err) {
         int tmperr = Error::OK;
         close(tmperr);
@@ -565,8 +565,8 @@ class Write : public std::enable_shared_from_this<Write> {
 
     DynamicBuffer buffer_write;
     size_t len_enc = 0;
-    Encoder::encode(encoder, raw_buffer.base, len_data, 
-                    &len_enc, buffer_write, len_header, err);
+    Encoder::encode(err, encoder, raw_buffer.base, len_data, 
+                    &len_enc, buffer_write, len_header);
     raw_buffer.free();
     if(err)
       return 0;

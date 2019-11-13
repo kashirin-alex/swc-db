@@ -91,8 +91,8 @@ class Fragment {
     DynamicBuffer output;
     m_size_enc = 0;
     err = Error::OK;
-    Encoder::encode(encoder, cells.base, m_size, 
-                    &m_size_enc, output, m_cells_offset, err);
+    Encoder::encode(err, encoder, cells.base, m_size, 
+                    &m_size_enc, output, m_cells_offset);
     if(err)
       return;
 
@@ -414,15 +414,15 @@ class Fragment {
       }
 
       if(m_encoder != Types::Encoding::PLAIN) {
-        StaticBuffer buffer(m_size);
+        StaticBuffer decoded_buf(m_size);
         Encoder::decode(
-          m_encoder, m_buffer.base, m_size_enc, buffer.base, m_size, err);
+          err, m_encoder, m_buffer.base, m_size_enc, decoded_buf.base, m_size);
         if(err) {
           int tmperr = Error::OK;
           Env::FsInterface::fs()->close(tmperr, m_smartfd);
           break;
         }
-        m_buffer.set(buffer);
+        m_buffer.set(decoded_buf);
       }
       break;
     }
