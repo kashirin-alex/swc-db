@@ -132,10 +132,11 @@ namespace {
         "block compressor bad magic string" },
     { Error::BLOCK_COMPRESSOR_CHECKSUM_MISMATCH,
         "block compressor block checksum mismatch" },
-    { Error::BLOCK_COMPRESSOR_DEFLATE_ERROR,
-        "block compressor deflate error" },
-    { Error::BLOCK_COMPRESSOR_INFLATE_ERROR,
-        "block compressor inflate error" },
+        
+    { Error::ENCODER_ENCODE,
+        "encoder decode-error" },
+    { Error::ENCODER_DECODE,
+        "encoder encode-error" },
     { Error::BLOCK_COMPRESSOR_INIT_ERROR,
         "block compressor initialization error" },
         

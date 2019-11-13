@@ -42,6 +42,9 @@ ADD_TEST_TARGET(
 	SRCS	Columns/tests/test_columns.cc
 	TARGETS	swcdb_core_config swcdb_core ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+
+	SHARED  ${SNAPPY_LIBRARIES_SHARED}
+	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
 )
 
 ADD_TEST_TARGET(
@@ -49,6 +52,9 @@ ADD_TEST_TARGET(
 	SRCS	Files/tests/test_cellstore.cc
 	TARGETS	swcdb_core_config ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+
+	SHARED  ${SNAPPY_LIBRARIES_SHARED}
+	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
 )
 
 ADD_TEST_TARGET(
@@ -56,4 +62,7 @@ ADD_TEST_TARGET(
 	SRCS	Files/tests/test_commitlog.cc
 	TARGETS	swcdb_core_config ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+
+	SHARED  ${SNAPPY_LIBRARIES_SHARED}
+	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
 )
