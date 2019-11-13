@@ -112,6 +112,7 @@ namespace SWC {
     }
 
     void set(StaticBuffer& other) {
+      free();
       base = other.base;
       size = other.size;
       own = other.own;
