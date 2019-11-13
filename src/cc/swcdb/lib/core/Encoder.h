@@ -7,6 +7,7 @@
 
 #include "swcdb/lib/db/Types/Encoding.h"
 #include <snappy.h>
+#include <zlib.h>
 
 namespace SWC { namespace Encoder {
 
@@ -17,7 +18,25 @@ void decode(int& err, Types::Encoding encoder,
 
   switch(encoder){
     case Types::Encoding::ZLIB: {
-      break;
+      z_stream strm;
+      memset(&strm, 0, sizeof(z_stream));
+      strm.zalloc = Z_NULL;
+      strm.zfree = Z_NULL;
+      strm.opaque = Z_NULL;
+      strm.avail_in = 0;
+      strm.next_in = Z_NULL;
+      if(::inflateInit(&strm) != Z_OK) {
+        err = Error::ENCODER_DECODE;
+        return;
+      }
+      strm.avail_in = sz_enc;
+      strm.next_in = (Bytef *)src;
+      strm.avail_out = sz;
+      strm.next_out = dst;
+      if(::inflate(&strm, Z_NO_FLUSH) != Z_STREAM_END || strm.avail_out)
+        err = Error::ENCODER_DECODE;
+      ::inflateReset(&strm);
+      return;
     }
 
     case Types::Encoding::SNAPPY: {
@@ -41,8 +60,31 @@ void encode(int& err, Types::Encoding encoder,
   switch(encoder){
     case Types::Encoding::ZLIB: {
 
-      if(*sz_enc)
-        break;
+      z_stream strm;
+      memset(&strm, 0, sizeof(z_stream));
+      strm.zalloc = Z_NULL;
+      strm.zfree = Z_NULL;
+      strm.opaque = Z_NULL;
+      if(::deflateInit(&strm, 7) == Z_OK) {
+
+        uint32_t avail_out = src_sz + 6 + (((src_sz / 16000) + 1) * 5);
+        output.ensure(reserve + avail_out);
+        output.ptr += reserve;
+        
+        strm.avail_out = avail_out;
+        strm.next_out = output.ptr;
+        strm.avail_in = src_sz;
+        strm.next_in = (Bytef*)src;
+        if(::deflate(&strm, Z_FINISH) == Z_STREAM_END)
+          *sz_enc = avail_out - strm.avail_out;
+      }
+      ::deflateReset(&strm);
+      if(*sz_enc && *sz_enc < src_sz) {
+        output.ptr += *sz_enc;
+        return;
+      }
+      *sz_enc = 0; 
+      output.free();
     }
 
     case Types::Encoding::SNAPPY: {
@@ -52,7 +94,7 @@ void encode(int& err, Types::Encoding encoder,
                           (char *)output.ptr, sz_enc);
       if(*sz_enc && *sz_enc < src_sz) {
         output.ptr += *sz_enc;
-        break;
+        return;
       }
       *sz_enc = 0; 
       output.free();
