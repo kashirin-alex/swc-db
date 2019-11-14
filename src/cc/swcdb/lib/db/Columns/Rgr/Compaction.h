@@ -203,14 +203,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void response(int &err) override {
-      if(m_stopped)
-        return;
-
-      if(!range->is_loaded()) {
-        // clear temp dir
-        return;
-      }
-      if(!ready(err))
+      if(m_stopped || !ready(err))
         return;
 
       std::cout << "CompactScan::response: \n"
@@ -392,6 +385,10 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     void finalize() {
       std::cout << "Compact ::finalize 1\n";
+      
+      if(!range->is_loaded())
+        return quit();
+
       int err = Error::OK;
 
       if(cs_writer != nullptr) {
