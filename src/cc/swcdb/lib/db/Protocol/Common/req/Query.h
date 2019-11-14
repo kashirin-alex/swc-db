@@ -343,22 +343,21 @@ class Select : public std::enable_shared_from_this<Select> {
         [rid, base_req, ptr=shared_from_this()] 
         (ReqBase::Ptr req_ptr, const Rgr::Params::RangeQuerySelectRsp& rsp) {
 
-          //std::cout << "select, Rgr::Req::RangeQuerySelect: "
-          //  << rsp.to_string() 
-          //  << " completion=" 
-          //  << ptr->selector->result->completion.load() << "\n";
-
-          if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
-            base_req->request_again();
-            --ptr->selector->result->completion;
-            //std::cout << "RETRYING " << rsp.to_string() << "\n";
+          if(rsp.err) {
+            if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+              base_req->request_again();
+              --ptr->selector->result->completion;
+              //std::cout << "RETRYING " << rsp.to_string() << "\n";
+            } else {
+              std::cout << "RETRYING " << rsp.to_string() << "\n";
+              req_ptr->request_again();
+            }
             return;
-          }      
+          }
           auto col = ptr->selector->result->columns[ptr->cells_cid]; 
           
           if(rsp.data.size > 0)
             col->add(rsp.data.base, rsp.data.size);
-          //std::cout << col->cells.size() << "\n";
 
           if(ptr->interval->flags.limit == 0 
             || col->cells.size() < ptr->interval->flags.limit) {
