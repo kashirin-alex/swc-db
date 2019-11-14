@@ -37,6 +37,10 @@ class Resources {
    return ram.used > ram.allowed ? ram.used - ram.allowed : 0;
   }
 
+  const size_t avail_ram() {
+   return ram.allowed - ram.used  ? ram.allowed - ram.used : 0;
+  }
+
   const bool need_ram(const uint32_t& sz) {
     return ram.free - sz*2 < 0 || ram.used + sz > ram.allowed;
   }
