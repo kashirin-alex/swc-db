@@ -283,6 +283,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         if(m_stopped)
           return;
         
+        request_more();
+        
         write_cells(err, selected_cells);
 
         if(m_stopped)
@@ -290,7 +292,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         if(err || !range->is_loaded())
           return quit();
 
-        request_more();
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_queue.pop();
@@ -299,6 +300,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
             break;
         }
       }
+      request_more();
     }
 
     uint32_t create_cs(int& err) { 
