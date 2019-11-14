@@ -284,7 +284,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           return;
         
         request_more();
-        
+
         write_cells(err, selected_cells);
 
         if(m_stopped)
@@ -393,6 +393,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
       int err = Error::OK;
 
+      bool empty_cs = false;
       if(cs_writer != nullptr) {
         if(range->is_any_end() && !last_cell.key.empty()) {
           DB::Cells::Interval blk_intval;
@@ -416,6 +417,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         range->get_interval(blk_intval.key_begin, blk_intval.key_end);
         DynamicBuffer buff;
         cs_writer->block(err, blk_intval, buff, cell_count);
+        empty_cs = true;
       }
       if(err || cs_writer->size == 0)
         return quit();
@@ -433,7 +435,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       if(err)
         return quit();
         
-      compactor->compacted(range);
+      compactor->compacted(range, empty_cs);
 
       std::cout << "Compact ::finalize 2\n";
     }
@@ -480,11 +482,13 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
   private:
   
-  void compacted(Range::Ptr range) {
-    range->compacting(Range::Compact::NONE);
-    size_t bytes = Env::Resources.need_ram();
-    if(bytes)
+  void compacted(Range::Ptr range, bool all=false) {
+    if(all)
+      range->blocks.release(0);
+    else if(size_t bytes = Env::Resources.need_ram())
       range->blocks.release(bytes);
+    
+    range->compacting(Range::Compact::NONE);
     compacted();
   }
 
