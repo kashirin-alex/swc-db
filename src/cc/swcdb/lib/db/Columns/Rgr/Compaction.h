@@ -168,7 +168,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   class CompactScan : public DB::Cells::ReqScan {
     public:
   
-    typedef std::shared_ptr<CompactScan>  Ptr;
+    typedef std::shared_ptr<CompactScan>          Ptr;
+    std::vector<Files::CommitLog::Fragment::Ptr>  fragments_old;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
                 const uint32_t cs_size, const uint32_t blk_size, 
@@ -178,14 +179,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                   cs_size(cs_size), blk_size(blk_size), 
                   blk_encoding(blk_encoding),
                   schema(schema) {
-      cells = DB::Cells::Mutable::make(
-        1000, 
-        schema->cell_versions, 
-        schema->cell_ttl, 
-        schema->col_type
-      );
       spec = DB::Specs::Interval::make_ptr();
-      //drop_caches = true;
+      make_cells();
     }
 
     virtual ~CompactScan() { }
@@ -194,59 +189,126 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       return std::dynamic_pointer_cast<CompactScan>(shared_from_this());
     }
 
-    bool reached_limits() override {
-      return cells->size_bytes() >= blk_size;
-    }
-
-    void response(int &err) override {
-      if(!range->is_loaded()) {
-        // clear temp dir
-        return compactor->compacted(range);
-      }
-      if(!ready(err))
-        return;
-      
-      //std::cout << "CompactScan::response cells="<< cells->size() 
-      //          << " sz=" << cells->size_bytes() << "\n";
-      if(!cells->size()) {
-        return finalize();
-      }
-
-      asio::post(
-        *compactor->io()->ptr(), [ptr=shared()](){ptr->process_and_get_more();}
+    void make_cells() {
+      cells = DB::Cells::Mutable::make(
+        1000, 
+        schema->cell_versions, 
+        schema->cell_ttl, 
+        schema->col_type
       );
     }
 
-    void process_and_get_more() {
-      DB::Cells::Cell last;
-      cells->get(-1, last);
-      //std::cout << "CompactScan::response last="<< last.to_string() << "\n";
-      //spec->key_start.set(last.key, Condition::GE);
-      //spec->ts_start.set(last.timestamp, Condition::GT);
-      spec->offset_key.copy(last.key);
-      spec->offset_rev = last.timestamp;
-
-      int err = Error::OK;
-      write_cells(err);
-      if(err)
-        return quit();
-      
-      cells->free();
-
-      if(!range->is_loaded())
-        return quit();
-
-      range->scan_internal(get_req_scan());
+    bool reached_limits() override {
+      return m_stopped || cells->size_bytes() >= blk_size;
     }
 
-    void write_cells(int& err) {
+    void response(int &err) override {
+      if(m_stopped)
+        return;
 
-      // if(cellstores.size() == cfg_cs_sz->get() ||
-      //    new_ranges.back() == cfg_cs_sz->get()) { 
-      // mngr.get_next_rid 
-      // continue with adding cellstore to the new range (new_ranges.back())
-      // }
+      if(!range->is_loaded()) {
+        // clear temp dir
+        return;
+      }
+      if(!ready(err))
+        return;
 
+      std::cout << "CompactScan::response: \n"
+                << "  spec=" << spec->to_string() << "\n"
+                << " cells="<< cells->size() << " sz=" << cells->size_bytes() << "\n";
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(!cells->size()) {
+          if(m_writing)
+            m_queue.push(nullptr);
+          else 
+            finalize();
+          return;
+        }
+        m_getting = false;
+      }
+
+      auto selected_cells = cells;
+      make_cells();
+
+      DB::Cells::Cell first;
+      selected_cells->get(0, first);
+      DB::Cells::Cell last;
+      selected_cells->get(-1, last);
+      
+      std::cout << "CompactScan::response : \n" 
+                << " first=" << first.to_string() << "\n"
+                << "  last=" << last.to_string() << "\n";
+
+      spec->offset_key.copy(last.key);
+      spec->offset_rev = last.timestamp;
+      
+      { 
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.push(selected_cells);
+        if(m_writing) 
+          return;
+        m_writing = true;
+      }
+      asio::post(*compactor->io()->ptr(), [ptr=shared()](){ ptr->process(); });
+      request_more();
+    }
+
+    private:
+
+    void request_more() {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if(m_getting 
+          || (!m_queue.empty() 
+              && (m_queue.size() >= compactor->io()->get_size()
+                  || m_queue.size() > Env::Resources.avail_ram()/blk_size )))
+          return;
+        m_getting = true;
+      }
+
+      asio::post(
+        *compactor->io()->ptr(), 
+        [ptr=shared()](){
+          ptr->range->scan_internal(ptr->get_req_scan());
+        }
+      );
+    }
+
+    void process() {
+      int err = Error::OK;
+      DB::Cells::Mutable::Ptr selected_cells;
+      for(;;) {
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          selected_cells = m_queue.front();
+        }
+        if(selected_cells == nullptr) {
+          finalize();
+          return;
+        }
+        if(m_stopped)
+          return;
+        
+        write_cells(err, selected_cells);
+
+        if(m_stopped)
+          return;
+        if(err || !range->is_loaded())
+          return quit();
+
+        request_more();
+        {
+          std::lock_guard<std::mutex> lock(m_mutex);
+          m_queue.pop();
+          m_writing = !m_queue.empty();
+          if(!m_writing)
+            break;
+        }
+      }
+    }
+
+    uint32_t create_cs(int& err) { 
       if(!tmp_dir) { 
         Env::FsInterface::interface()->rmdir(
           err, range->get_path(Range::cellstores_tmp_dir));
@@ -255,18 +317,25 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           err, range->get_path(Range::cellstores_tmp_dir));
         tmp_dir = true;
         if(err)
-          return;
+          return 0;
       }
 
+      uint32_t id = cellstores.size()+1;
+      cs_writer = std::make_shared<Files::CellStore::Write>(
+        id, 
+        range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
+        blk_encoding
+      );
+      int32_t replication=-1;
+      cs_writer->create(err, -1, replication, blk_size);
+      return id;
+
+    }
+
+    void write_cells(int& err, DB::Cells::Mutable::Ptr selected_cells) {
+      
       if(cs_writer == nullptr) {
-        uint32_t id = cellstores.size()+1;
-        cs_writer = std::make_shared<Files::CellStore::Write>(
-          id, 
-          range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
-          blk_encoding
-        );
-        int32_t replication=-1;
-        cs_writer->create(err, -1, replication, blk_size);
+        uint32_t id = create_cs(err);
         if(err)
           return;
 
@@ -274,16 +343,16 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           DB::Cells::Interval blk_intval;
           DynamicBuffer buff;
           uint32_t cell_count = 0;
-          cells->write_and_free(buff, cell_count, blk_intval, 1);
+          selected_cells->write_and_free(buff, cell_count, blk_intval, 1);
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
-          if(range->is_any_end() && !cells->size()) // there was one cell
+          if(range->is_any_end() && !selected_cells->size()) // there was one cell
             blk_intval.key_end.free(); 
           
           cs_writer->block(err, blk_intval, buff, cell_count);
 
-          if(err || !cells->size())
+          if(err || !selected_cells->size())
             return;
         }
       }
@@ -298,10 +367,10 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           last_cell.write(buff);
           blk_intval.expand(last_cell);
         }
-        cells->pop(-1, last_cell);
+        selected_cells->pop(-1, last_cell);
         //last block of end-any to be set with first key as last cell
       }
-      cells->write_and_free(buff, cell_count, blk_intval, 0);
+      selected_cells->write_and_free(buff, cell_count, blk_intval, 0);
 
       if(buff.fill() > 0) {
         cs_writer->block(err, blk_intval, buff, cell_count);
@@ -326,7 +395,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       int err = Error::OK;
 
       if(cs_writer != nullptr) {
-
         if(range->is_any_end() && !last_cell.key.empty()) {
           DB::Cells::Interval blk_intval;
           blk_intval.expand(last_cell);
@@ -338,16 +406,24 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           last_cell.free();
           // last block of end-any set with key_begin as last cell
           cs_writer->block(err, blk_intval, buff, cell_count);
-          if(err)
-            return quit();
         }
-        if(cs_writer->size == 0)
-          return quit();
-
-        add_cs(err);
+      } else {
+        uint32_t id = create_cs(err);
         if(err)
-          return quit();
+          return;
+        // as an initial empty range cs
+        uint32_t cell_count = 0;
+        DB::Cells::Interval blk_intval;
+        range->get_interval(blk_intval.key_begin, blk_intval.key_end);
+        DynamicBuffer buff;
+        cs_writer->block(err, blk_intval, buff, cell_count);
       }
+      if(err || cs_writer->size == 0)
+        return quit();
+
+      add_cs(err);
+      if(err)
+        return quit();
       
       //std::cout << "CellStore::Writers: \n";
       //for(auto cs : cellstores)
@@ -364,14 +440,17 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void quit() {
+      m_stopped = true;
       int err = Error::OK;
       if(cs_writer != nullptr) {
         cs_writer->remove(err);
         cs_writer = nullptr;
       }
-      if(tmp_dir)
+      if(tmp_dir) {
+        tmp_dir = false;
         Env::FsInterface::interface()->rmdir(
           err, range->get_path(Range::cellstores_tmp_dir));
+      }
 
       compactor->compacted(range);
     }
@@ -384,15 +463,16 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     const Types::Encoding   blk_encoding;
     DB::Schema::Ptr         schema;
     
-    std::vector<Files::CommitLog::Fragment::Ptr> fragments_old;
-    
     bool                            tmp_dir = false;
     Files::CellStore::Write::Ptr    cs_writer = nullptr;
     Files::CellStore::Writers       cellstores;
     DB::Cells::Cell                 last_cell;
 
-    std::vector<Range::Ptr>         new_ranges;
-
+    std::mutex                          m_mutex;
+    bool                                m_writing = false;
+    std::queue<DB::Cells::Mutable::Ptr> m_queue;
+    std::atomic<bool>                   m_stopped = false;
+    bool                                m_getting = false;
   };
 
   IoContext::Ptr io() {
