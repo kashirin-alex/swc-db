@@ -192,11 +192,12 @@ class Fragment {
       asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
   }
   
-  void load_cells(CellsBlock::Ptr cells_block) {
+  void load_cells(DB::Cells::Block::Ptr cells_block) {
+    bool was_splitted = false;
     if(loaded()) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size);
+          m_buffer.base, m_buffer.size, was_splitted);
     } else {
       //err
     }
@@ -206,7 +207,8 @@ class Fragment {
       m_processing--; 
     }
 
-    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+    if(!was_splitted 
+       && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
       release();
   }
   

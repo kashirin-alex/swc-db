@@ -163,8 +163,8 @@ int main(int argc, char** argv) {
           std::cout << req->to_string() << "\n";
         }
         requests--;
-        if(req->cells->size() != 1) {
-          std::cerr << "ERROR: req->cells.size()=" << req->cells->size() 
+        if(req->cells->size != 1) {
+          std::cerr << "ERROR: req->cells.size=" << req->cells->size 
                     << " expected=1\n";
           exit(1);
         }

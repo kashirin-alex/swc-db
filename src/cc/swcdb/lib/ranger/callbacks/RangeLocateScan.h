@@ -29,9 +29,9 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   virtual ~RangeLocateScan() { }
 
   bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
-    //std::cout << " selector checking: "<< cell.to_string() << "\n";
+    std::cout << " selector checking: "<< cell.to_string() << "\n";
     if(!spec->key_start.is_matching(cell.key)) 
-      return cells->size() == 1; // next_key
+      return cells->size == 1; // next_key
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
@@ -64,7 +64,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(err == Error::OK) {
-      if(cells->size() > 0) {
+      if(cells->size > 0) {
 
         DB::Cells::Cell cell;
         cells->get(0, cell);
@@ -80,7 +80,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
           params.key_end.remove(0);
         params.key_end.remove(0);
 
-        params.next_key = cells->size() > 1;
+        params.next_key = cells->size > 1;
         
       } else  {
         // range->cid == 1 || 2

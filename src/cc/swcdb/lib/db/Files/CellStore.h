@@ -86,7 +86,7 @@ class Read  {
     }
   }
 
-  void load_cells(CellsBlock::Ptr cells_block, 
+  void load_cells(DB::Cells::Block::Ptr cells_block, 
                   const std::function<void(int)>& cb) {
     {
       int err = Error::OK;
@@ -113,7 +113,7 @@ class Read  {
 
     std::vector<Block::Read::Ptr>  applicable;
     for(auto& blk : blocks) {  
-      if(blk->interval.consist(cells_block->interval))
+      if(cells_block->is_consist(blk->interval))
         applicable.push_back(blk);
     }
 
@@ -426,7 +426,8 @@ class Read  {
     public:
     typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb) 
+    AwaitingLoad(int32_t count, DB::Cells::Block::Ptr cells_block, 
+                  const Cb_t& cb) 
                 : m_count(count), cells_block(cells_block), cb(cb) {
     }
 
@@ -465,7 +466,7 @@ class Read  {
 
     std::mutex                    m_mutex;
     int32_t                       m_count;
-    CellsBlock::Ptr               cells_block;
+    DB::Cells::Block::Ptr         cells_block;
     const Cb_t                    cb;
     std::queue<Block::Read::Ptr>  m_pending;
   };

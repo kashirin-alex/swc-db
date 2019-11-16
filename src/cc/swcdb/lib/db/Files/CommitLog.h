@@ -57,15 +57,21 @@ class Fragments {
   }
 
   void add(const DB::Cells::Cell& cell) {
-    m_cells->add(cell);
+    size_t size_bytes;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      m_cells->add(cell);
 
-    if(m_commiting)
-      return;
-    
+      if(m_commiting)
+        return;
+      size_bytes = m_cells->size_bytes;
+    }
+
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(!m_deleting && !m_commiting && m_cells->size_bytes() >= m_size_commit) {
+    if(!m_deleting && !m_commiting && size_bytes >= m_size_commit) {
       m_commiting = true;
-      asio::post(*Env::IoCtx::io()->ptr(), 
+      asio::post(
+        *Env::IoCtx::io()->ptr(), 
         [ptr=ptr()](){
           ptr->commit_new_fragment();
         }
@@ -94,7 +100,7 @@ class Fragments {
     Fragment::Ptr frag; 
     uint32_t cell_count;
     int err;
-    do {
+    for(;;) {
       err = Error::OK;
       DynamicBuffer cells;
       cell_count = 0;
@@ -104,12 +110,13 @@ class Fragments {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         for(;;) {
+          std::lock_guard<std::mutex> lock(m_mutex_cells);
           m_cells->write_and_free(cells, cell_count, frag->interval, blk_size);
           if(cells.fill() >= blk_size)
             break;
-          if(finalize && m_cells->size() == 0)
+          if(finalize && m_cells->size == 0)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-          if(m_cells->size() == 0)
+          if(m_cells->size == 0)
             break;
         }
         if(m_deleting || cells.fill() == 0) {
@@ -118,15 +125,20 @@ class Fragments {
         }
         m_fragments.push_back(frag);
       }
-
+      
       frag->write(
         err, 
         schema->blk_replication, 
         blk_encoding, 
         cells, cell_count
       );
-    } while((finalize && m_cells->size() > 0 ) 
-            || m_cells->size_bytes() >= blk_size);
+
+      {
+        std::lock_guard<std::mutex> lock(m_mutex_cells);
+        if(m_cells->size == 0 || (m_cells->size_bytes < blk_size && !finalize))
+          break; 
+      }   
+    }
     
     {
       std::lock_guard<std::mutex> lock_wait(m_mutex);
@@ -169,13 +181,13 @@ class Fragments {
     }
   }
   
-  void load_cells(CellsBlock::Ptr cells_block) {
+  void load_current_cells(DB::Cells::Block::Ptr cells_block) {
     // + ? whether a commit_new_fragment happened 
-    m_cells->scan(cells_block->interval, cells_block->cells);
+    std::lock_guard<std::mutex> lock(m_mutex_cells);
+    cells_block->load_cells(m_cells);
   }
   
-  void load_cells(CellsBlock::Ptr cells_block, 
-                  const std::function<void(int)>& cb) {
+  void load_cells(DB::Cells::Block::Ptr cells_block) {
     //std::cout << "CommitLog::load_cells\n";
     if(m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
@@ -186,19 +198,19 @@ class Fragments {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
-        if(frag->errored() || !frag->interval.includes(cells_block->interval))
+        if(frag->errored() || !cells_block->is_include(frag->interval))
           continue;
         fragments.push_back(frag);
       }
     }
 
     if(fragments.empty()){
-      load_cells(cells_block);
-      cb(Error::OK);
+      load_current_cells(cells_block);
+      cells_block->loaded_logs(Error::OK);
       return;
     }
 
-    auto waiter = new AwaitingLoad(fragments.size(), cells_block, cb, ptr());
+    auto waiter = new AwaitingLoad(fragments.size(), cells_block, ptr());
     for(auto& frag : fragments)
       frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
   }
@@ -261,6 +273,8 @@ class Fragments {
       std::lock_guard<std::mutex> lock(m_mutex);
       free();
     }
+
+    std::lock_guard<std::mutex> lock(m_mutex_cells);
     m_cells->free();
   }
 
@@ -270,7 +284,11 @@ class Fragments {
   }
 
   const size_t cells_count() {
-    size_t count = m_cells->size();
+    size_t count = 0;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      count += m_cells->size;
+    }
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto frag : m_fragments)
       count += frag->cells_count();
@@ -306,7 +324,10 @@ class Fragments {
     s.append(std::to_string(count));
     
     s.append(" cells=");
-    s.append(m_cells->to_string());
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      s.append(m_cells->to_string());
+    }
 
     s.append(" fragments=");
     s.append(std::to_string(m_fragments.size()));
@@ -350,7 +371,9 @@ class Fragments {
   }
 
   const size_t _size_bytes(bool only_loaded=false) {
-    size_t size = m_cells->size_bytes();
+    std::lock_guard<std::mutex> lock(m_mutex_cells);
+
+    size_t size = m_cells->size_bytes;
     for(auto& frag : m_fragments)
       size += frag->size_bytes(only_loaded);
     return size;
@@ -358,12 +381,10 @@ class Fragments {
 
   struct AwaitingLoad {
     public:
-    typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, CellsBlock::Ptr cells_block, const Cb_t& cb,
+    AwaitingLoad(int32_t count, DB::Cells::Block::Ptr cells_block, 
                   Fragments::Ptr log) 
-                : m_count(count), cells_block(cells_block), cb(cb), 
-                  log(log) {
+                : m_count(count), cells_block(cells_block), log(log) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -394,21 +415,21 @@ class Fragments {
           }
         }
       }
-      log->load_cells(cells_block);
-      cb(err);
+      log->load_current_cells(cells_block);
+      cells_block->loaded_logs(err);
       delete this;
     }
 
     std::mutex                    m_mutex;
     int32_t                       m_count;
-    CellsBlock::Ptr               cells_block;
-    const Cb_t                    cb;
+    DB::Cells::Block::Ptr         cells_block;
     Fragments::Ptr                log;
     std::queue<Fragment::Ptr>     m_pending;
   };
 
-  std::mutex                  m_mutex;
+  std::mutex                  m_mutex_cells;
   DB::Cells::Mutable::Ptr     m_cells;
+  std::mutex                  m_mutex;
   uint32_t                    m_size_commit;
   std::atomic<bool>           m_commiting;
   bool                        m_deleting;

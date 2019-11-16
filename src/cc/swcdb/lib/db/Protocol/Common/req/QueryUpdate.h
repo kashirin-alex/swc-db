@@ -101,7 +101,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
     DB::Cells::MapMutable::ColumnCells pair;
     for(size_t idx=0;columns_cells->get(idx, pair);idx++) {
-      if(pair.second->size() == 0) 
+      if(pair.second->size == 0) 
         continue;
       auto cid = pair.first;
       auto& cells = pair.second;

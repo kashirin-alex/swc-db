@@ -32,111 +32,6 @@ bool quite = true;
 std::atomic<bool> finished = false;
 
 
-void run_test(Query::Select::Ptr select_req, int64_t cid, int versions=2, int num_cells=1, int check=1) {
-  std::cout << "Select run_test cid=" << cid << " versions=" << versions 
-                                      << " num-cells=" << num_cells 
-                                      << " check=" << check <<"\n";
-  // Req::Query::Select
-  int err = SWC::Error::OK;
-  auto schema = SWC::Env::Clients::get()->schemas->get(err, cid);
-    if(err) {
-    std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
-    exit(1);
-  }
-  std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
-
-  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(schema->cid, {SWC::DB::Specs::Interval::make_ptr()})};
-  select_req->scan();
-  select_req->wait();
-
-}
-
-
-void run_test(Query::Update::Ptr update_req, int64_t cid, int versions=2, int num_cells=1, int check=1, bool deleting=false) {
-  std::cout << "Update run_test cid=" << cid << " versions=" << versions 
-                                      << " num-cells=" << num_cells 
-                                      << " check=" << check 
-                                      << " deleting=" << deleting << "\n";
-  // Req::Query::Update
-  int err = SWC::Error::OK;
-  auto schema = SWC::Env::Clients::get()->schemas->get(err, cid);
-    if(err) {
-    std::cerr << "err=" << err << "(" << SWC::Error::get_text(err) << ")\n";
-    exit(1);
-  }
-  std::cout << "cid=" << cid << " " << schema->to_string() << "\n";
-  update_req->columns_cells->create(schema);
-
-  int counted = 0;
-  // master-range
-  Cells::Cell cell;
-  for(int vers=1;vers<=versions;vers++) {
-
-  for(int i=0;i<num_cells;i++) {
-  std::string cell_number(std::to_string(check)+"-"+std::to_string(i));
-  cell.flag = !deleting? Cells::INSERT : Cells::DELETE;
-  //cell.set_timestamp(111);
-  //cell.set_revision(1234);
-  cell.set_revision(vers);
-  cell.set_time_order_desc(true);
-
-  cell.key.free();
-  cell.key.add("a123451");
-  cell.key.add("b123451");
-  cell.key.add("c123451");
-  cell.key.add("d123451");
-  cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(cid, cell);
-  counted++;
-
-  cell.key.free();
-  cell.key.add("a987651");
-  cell.key.add("b987652");
-  cell.key.add("c987653");
-  cell.key.add("d987654");
-  cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(cid, cell);
-  counted++;
-
-  cell.key.free();
-  cell.key.add("a123454");
-  cell.key.add("b123453");
-  cell.key.add("c123452");
-  cell.key.add("d123451");
-  cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(cid, cell);
-  counted++;
-
-  cell.key.free();
-  cell.key.add("a8");
-  cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(cid, cell);
-  counted++;
-
-  cell.key.free();
-  cell.key.add("a7");
-  cell.key.add("a8");
-  cell.key.add("a9");
-  cell.key.add("e"+cell_number);
-  update_req->columns_cells->add(cid, cell);
-  counted++;
-
-  //std::cout << cell.to_string() << "\n";
-  cell.free();
-  }
-  }
-  size_t bytes = update_req->columns_cells->size_bytes();
-  std::cout << update_req->columns_cells->to_string() << "\n";
-
-  int64_t took =  SWC::Time::now_ns();
-  update_req->commit();
-  std::cout << " completion=" << update_req->result->completion.load() << "\n";
-  update_req->wait();
-  took = SWC::Time::now_ns() - took;
-  std::cout << " TOOK=" << took << " cells=" << counted << " bytes=" << bytes << " avg="<< took/counted << "\n";
-
-}
-
 void expect_empty_column(int64_t cid) {
     // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
@@ -174,7 +69,7 @@ void expect_empty_column(int64_t cid) {
 
 void test_1(const std::string& col_name) {
   int num_cells = 1000000; // test require at least 12
-  int batches = 100;
+  int batches = 10;
   int64_t took;
 
   // Req::Query::Update
@@ -426,8 +321,16 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::PLAIN, 64000000
+    1, 0, 3, SWC::Types::Encoding::ZLIB, 64000000
   );
+
+  /*
+  int err;
+          expect_empty_column(
+            SWC::Env::Clients::get()->schemas->get(err, schema->col_name)->cid
+          );
+      exit(0);
+  */
 
   // 1st DELETE & CREATE COLUMN
   

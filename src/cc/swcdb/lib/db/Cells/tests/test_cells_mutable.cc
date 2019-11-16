@@ -64,8 +64,8 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
       latency_mutable->add(took); 
 
       if(i % 1000000 == 0) {
-        //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size() << "\n";
-        std::cout << "   m:took=" << took << " " << r << "/" << i << " = " << cells_mutable->size() << "\n";
+        //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size << "\n";
+        std::cout << "   m:took=" << took << " " << r << "/" << i << " = " << cells_mutable->size << "\n";
       }
   }
   }
@@ -102,15 +102,15 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
    expected_sz *= (max_versions > num_revs?num_revs:max_versions);
 
 
-  if(cells_mutable->size() != expected_sz) {
+  if(cells_mutable->size != expected_sz) {
     std::cerr << "SIZE NOT AS EXPECTED, "
-              << "expected(" << expected_sz << ") != result(" << cells_mutable->size()  << ")\n";
+              << "expected(" << expected_sz << ") != result(" << cells_mutable->size  << ")\n";
     exit(1);
   }
 
   std::cout << " mutable (add)"
             << " num="  << latency_mutable->count()
-            << " counted=" << cells_mutable->size()
+            << " counted=" << cells_mutable->size
             << " avg="    << latency_mutable->avg()
             << " min="    << latency_mutable->min()
             << " max="    << latency_mutable->max()
@@ -162,8 +162,8 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     exit(1);
   }
   std::cout << " mutable (scan)"
-            << " num="  << cells_mutable->size()
-            << " avg="  << took / cells_mutable->size()
+            << " num="  << cells_mutable->size
+            << " avg="  << took / cells_mutable->size
             << " took=" << took / 1000000 << "ms"
             << "\n"; 
 
@@ -175,10 +175,10 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
      num_revs, reverse, num_cells, gen_historic, Cells::DELETE, counter, time_order_desc);
   /// 
 
-  if(cells_mutable->size() != num_cells) {
+  if(cells_mutable->size != num_cells) {
     std::cerr << "\n" << cells_mutable->to_string(true);
     std::cerr << "\nSIZE NOT AS EXPECTED, "
-              << "expected(" << num_cells << ") != result(" << cells_mutable->size()  << ")\n";
+              << "expected(" << num_cells << ") != result(" << cells_mutable->size  << ")\n";
     exit(1);
   }
   
@@ -187,14 +187,14 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   size_t cell_skips = 0;
   cells_mutable->scan(SWC::DB::Specs::Interval(), results, cell_offset, [](){return false;}, cell_skips);
 
-  if(results->size() != 0) {
+  if(results->size != 0) {
     std::cerr << "SIZE NOT AS EXPECTED, "
-              << "expected(" << 0 << ") != result(" << results->size()  << ")\n";
+              << "expected(" << 0 << ") != result(" << results->size  << ")\n";
     exit(1);
   }
   std::cout << " mutable (del)"
             << " num="  << latency_mutable->count()
-            << " counted=" << cells_mutable->size()
+            << " counted=" << cells_mutable->size
             << " avg="    << latency_mutable->avg()
             << " min="    << latency_mutable->min()
             << " max="    << latency_mutable->max()

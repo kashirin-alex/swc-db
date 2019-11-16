@@ -6,6 +6,7 @@
 #ifndef swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
 #define swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
 
+#include "swcdb/lib/db/Cells/ReqScan.h"
 #include "swcdb/lib/db/Files/CellStoreReaders.h"
 #include "swcdb/lib/db/Files/CommitLog.h"
 
@@ -21,7 +22,7 @@ class IntervalBlocks {
   Files::CellStore::Readers::Ptr    cellstores;
 
 
-  class Block {
+  class Block : public DB::Cells::Block {
     public:
     typedef Block* Ptr;
 
@@ -32,20 +33,23 @@ class IntervalBlocks {
       REMOVED
     };
 
-    Files::CellsBlock::Ptr    cells_block;   
-    IntervalBlocks::Ptr       blocks;
+    IntervalBlocks::Ptr      blocks;
     
-    inline static Ptr make(Files::CellsBlock::Ptr cells_block, 
-                           IntervalBlocks::Ptr blocks,
+    inline static Ptr make(const DB::Cells::Interval& interval, 
+                           const DB::Schema::Ptr s, 
+                           IntervalBlocks::Ptr blocks, 
                            State state=State::NONE) {
-      return new Block(cells_block, blocks, state);
+      return new Block(interval, s, blocks, state);
     }
 
-    Block(Files::CellsBlock::Ptr cells_block, IntervalBlocks::Ptr blocks,
-          State state=State::NONE)
-          : cells_block(cells_block), blocks(blocks), m_state(state), 
+    Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s, 
+          IntervalBlocks::Ptr blocks, State state=State::NONE)
+          : DB::Cells::Block(interval, s), blocks(blocks), m_state(state), 
             m_processing(0) {
-      //cells_block->splitter = [ptr=ptr()](){ ptr->blocks->split(ptr); };
+    }
+
+    void splitter() override {
+      blocks->_split(ptr(), false);
     }
     
     Ptr ptr() {
@@ -55,7 +59,6 @@ class IntervalBlocks {
     virtual ~Block() {
       //std::cout << " IntervalBlocks::~Block\n";
       wait_processing();
-      delete cells_block;
     }
 
     bool loaded() {
@@ -64,22 +67,21 @@ class IntervalBlocks {
     }
 
     bool add_logged(const DB::Cells::Cell& cell) { 
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-      if(!cells_block->interval.is_in_end(cell.key))
+      if(!m_interval.is_in_end(cell.key))
         return false;
 
-      cells_block->cells.add(cell);
+      m_cells.add(cell);
 
       if(cell.on_fraction)
         // return added for fraction under current end
-        return cells_block->interval.key_end.compare(
+        return m_interval.key_end.compare(
           cell.key, cell.on_fraction) != Condition::GT;
       
-      if(!cells_block->interval.is_in_begin(cell.key)) {
-        cells_block->interval.key_begin.copy(cell.key); 
-        cells_block->interval.expand(cell.timestamp);
-        //std::cout << " add_logged expand key_begin: " 
-        // << cells_block->interval.key_begin.to_string() << "\n";
+      if(!m_interval.is_in_begin(cell.key)) {
+        m_interval.key_begin.copy(cell.key); 
+        m_interval.expand(cell.timestamp);
       }
       return true;
     }
@@ -104,29 +106,21 @@ class IntervalBlocks {
       if(loaded) {
         _scan(req);
         return false;
-      } 
+      }
 
-      blocks->cellstores->load_cells(
-        cells_block, 
-        [ptr=ptr()](int err) { ptr->loaded_cellstores(err); }
-      );
+      blocks->cellstores->load_cells(ptr());
       return true;
     }
 
-    void loaded_cellstores(int& err) {
+    void loaded_cellstores(int err) override {
       if(err) {
         run_queue(err);
         return;
       }
-      
-      blocks->commitlog->load_cells(
-        cells_block,
-        [ptr=ptr()](int err){ ptr->loaded_logs(err); }
-      );
+      blocks->commitlog->load_cells(ptr());
     }
 
-    void loaded_logs(int& err) {
-      blocks->split(ptr());
+    void loaded_logs(int err) override {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_state = State::LOADED;
@@ -155,62 +149,67 @@ class IntervalBlocks {
       }
     }
 
-    Ptr split(size_t keep=100000) {
+    Ptr split(size_t keep=100000, bool loaded=true) {
       std::lock_guard<std::mutex> lock(m_mutex);
-
+      return _split(keep, loaded);
+    }
+    
+    Ptr _split(size_t keep=100000, bool loaded=true) {
       Ptr blk = Block::make(
-        Files::CellsBlock::make(
-          DB::Cells::Interval(), 
-          Env::Schemas::get()->get(blocks->range->cid)
-        ), 
+        DB::Cells::Interval(), 
+        Env::Schemas::get()->get(blocks->range->cid), 
         blocks,
-        State::LOADED
+        loaded ? State::LOADED : State::NONE
       );
 
-      cells_block->cells.move_from_key_offset(
-        keep, blk->cells_block->cells);
+      m_cells.move_from_key_offset(keep, blk->m_cells);
       
-      bool any_begin = cells_block->interval.key_begin.empty();
-      bool any_end = cells_block->interval.key_end.empty();
-      cells_block->interval.free();
+      bool any_begin = m_interval.key_begin.empty();
+      bool any_end = m_interval.key_end.empty();
+      m_interval.free();
 
-      cells_block->cells.expand(cells_block->interval);
-      blk->cells_block->cells.expand(blk->cells_block->interval);
+      m_cells.expand(m_interval);
+      blk->m_cells.expand(blk->m_interval);
 
       if(any_begin)
-        cells_block->interval.key_begin.free();
+        m_interval.key_begin.free();
       if(any_end)
-        blk->cells_block->interval.key_end.free();
+        blk->m_interval.key_end.free();
+      
+      if(!loaded)
+        blk->m_cells.free();
+
       return blk;
     }
 
     void expand_next_and_release(DB::Cell::Key& key_begin) {
       std::lock_guard<std::mutex> lock(m_mutex);
+
       m_state = State::REMOVED;
-      
-      key_begin.copy(cells_block->interval.key_begin);
-      cells_block->cells.free();
-      cells_block->interval.free();
+      key_begin.copy(m_interval.key_begin);
+      m_cells.free();
+      m_interval.free();
     }
 
     void merge_and_release(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex); 
+      std::lock_guard<std::mutex> lock(m_mutex);
+
       m_state = State::NONE;
-      blk->expand_next_and_release(cells_block->interval.key_begin);
-      cells_block->cells.free();
+      blk->expand_next_and_release(m_interval.key_begin);
+      m_cells.free();
     }
 
     const size_t release() {
       size_t released = 0;
+      std::lock_guard<std::mutex> lock(m_mutex);
 
-      std::lock_guard<std::mutex> lock(m_mutex); 
       if(m_processing || m_state != State::LOADED)
         return released;
-        
-      //std::cout << "IntervalBlocks::Block::release\n"; 
       m_state = State::NONE;
-      released += cells_block->cells.size();
-      cells_block->cells.free();
+
+      //std::cout << "IntervalBlocks::Block::release\n"; 
+      released += m_cells.size;
+      m_cells.free();
       return released;
     }
 
@@ -232,8 +231,9 @@ class IntervalBlocks {
       std::string s("Block(state=");
       s.append(std::to_string((uint8_t)m_state));
       
+      s.append(m_interval.to_string());
       s.append(" ");
-      s.append(cells_block->to_string());
+      s.append(m_cells.to_string());
 
       s.append(" queue=");
       s.append(std::to_string(m_queue.size()));
@@ -249,9 +249,10 @@ class IntervalBlocks {
     void _scan(DB::Cells::ReqScan::Ptr req) {
 
       if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
+        std::lock_guard<std::mutex> lock(m_mutex);
 
         size_t skips = 0; // Ranger::Stats
-        cells_block->cells.scan(
+        m_cells.scan(
           *(req->spec).get(), 
           req->cells, 
           req->offset,
@@ -265,7 +266,7 @@ class IntervalBlocks {
         
       }
 
-      //if(req->cells->size())
+      //if(req->cells->size)
       //  req->cells->get(
       //    -1, req->spec->offset_key, req->spec->offset_rev);
       
@@ -307,7 +308,6 @@ class IntervalBlocks {
       }
     };
     
-    std::mutex             m_mutex;
     State                  m_state;
     size_t                 m_processing;
     std::queue<Callback*>  m_queue;
@@ -434,9 +434,7 @@ class IntervalBlocks {
               flw = true;
             continue;
           }
-          if((req->spec->offset_key.empty() 
-              || eval->cells_block->interval.is_in_end(req->spec->offset_key))
-             && eval->cells_block->interval.includes(req->spec)) {
+          if(eval->is_next(req->spec)) {
             blk = eval;
             blk_ptr = eval;
 
@@ -446,7 +444,7 @@ class IntervalBlocks {
             break;
           }/* else {
             std::cout << " scan eval-blk-mismatch "
-                      << "\n block " << eval->cells_block->interval.to_string()
+                      << "\n block " << eval->to_string()
                       << "\n specs " << req->spec->to_string()
                       << "\n";
           }*/
@@ -455,9 +453,9 @@ class IntervalBlocks {
           break;
       }
 
-      if(nxt_blk != nullptr 
-        && !Env::Resources.need_ram(commitlog->cfg_blk_sz->get() * 10)
-        && nxt_blk->cells_block->interval.includes(req->spec)) {
+      if(nxt_blk != nullptr
+        && !Env::Resources.need_ram(commitlog->cfg_blk_sz->get() * 10) 
+        && nxt_blk->includes(req->spec)) {
         //std::cout << " BLK_PRELOAD " << nxt_blk->to_string() << "\n";
         asio::post(*Env::IoCtx::io()->ptr(), 
           [nxt_blk](){ 
@@ -490,9 +488,8 @@ class IntervalBlocks {
   const size_t cells_count() {
     size_t sz = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& blk : m_blocks) {
-      sz += blk->cells_block->cells.size();
-    }
+    for(auto& blk : m_blocks) 
+      sz += blk->size();
     return sz;
   }
 
@@ -522,12 +519,12 @@ class IntervalBlocks {
     }
   }
 
-  void split(Block::Ptr ptr) {
+  void _split(Block::Ptr ptr, bool loaded=true) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
-        split(idx);
+        _split(idx, loaded);
         return;
       }
     }
@@ -681,31 +678,33 @@ class IntervalBlocks {
     }
 
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
-    for(auto& blk : blocks) {
-      m_blocks.push_back(
-        Block::make(
-          Files::CellsBlock::make(blk->interval, schema), 
-          ptr()
-        )
-      );
-    }
+    for(auto& blk : blocks)
+      m_blocks.push_back(Block::make(blk->interval, schema, ptr()));
+  
     if(range->is_any_begin())
-      m_blocks.front()->cells_block->interval.key_begin.free();
+      m_blocks.front()->free_key_begin();
     if(range->is_any_end()) 
-      m_blocks.back()->cells_block->interval.key_end.free();
+      m_blocks.back()->free_key_end();
   }
 
-  void split(size_t idx) {
-    while(m_blocks[idx]->cells_block->cells.size() >= 200000) {
-      auto blk = m_blocks[idx++]->split(100000);
+  void split(size_t idx, bool loaded=true) {
+    while(m_blocks[idx]->size() > 200000) {
+      auto blk = m_blocks[idx++]->split(100000, loaded);
+      m_blocks.insert(m_blocks.begin()+idx, blk);
+    }
+  }
+
+  void _split(size_t idx, bool loaded=true) {
+    while(m_blocks[idx]->_size() >= 200000) {
+      auto blk = m_blocks[idx++]->_split(100000, loaded);
       m_blocks.insert(m_blocks.begin()+idx, blk);
     }
   }
 
   const size_t _size_bytes(bool only_loaded=false) {
     size_t sz = 0;
-    for(auto& blk : m_blocks)
-      sz += blk->cells_block->cells.size_bytes();
+    for(auto& blk : m_blocks) 
+      sz += blk->size_bytes();
     return sz;
   }
 

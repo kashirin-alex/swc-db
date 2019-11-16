@@ -124,7 +124,7 @@ class MapMutable {
 
     size_t total = 0;
     for(auto it = m_map.begin(); it != m_map.end(); ++it)
-      total += it->second->size_bytes();
+      total += it->second->size_bytes;
     return total;
   }
 
@@ -134,7 +134,7 @@ class MapMutable {
     auto it = m_map.find(cid);
     if(it == m_map.end())
       return (size_t)0;
-    return it->second->size_bytes();
+    return it->second->size_bytes;
   }
 
   const std::string to_string() {

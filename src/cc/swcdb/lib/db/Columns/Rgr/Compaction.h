@@ -199,7 +199,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     bool reached_limits() override {
-      return m_stopped || cells->size_bytes() >= blk_size;
+      return m_stopped || cells->size_bytes >= blk_size;
     }
 
     void response(int &err) override {
@@ -208,10 +208,10 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
       std::cout << "CompactScan::response: \n"
                 << "  spec=" << spec->to_string() << "\n"
-                << " cells="<< cells->size() << " sz=" << cells->size_bytes() << "\n";
+                << " cells="<< cells->size << " sz=" << cells->size_bytes << "\n";
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(!cells->size()) {
+        if(!cells->size) {
           if(m_writing)
             m_queue.push(nullptr);
           else 
@@ -342,12 +342,12 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
-          if(range->is_any_end() && !selected_cells->size()) // there was one cell
+          if(range->is_any_end() && !selected_cells->size) // there was one cell
             blk_intval.key_end.free(); 
           
           cs_writer->block(err, blk_intval, buff, cell_count);
 
-          if(err || !selected_cells->size())
+          if(err || !selected_cells->size)
             return;
         }
       }

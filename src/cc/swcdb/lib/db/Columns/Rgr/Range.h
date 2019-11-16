@@ -9,7 +9,6 @@
 #include "swcdb/lib/db/Columns/RangeBase.h"
 #include "swcdb/lib/db/Protocol/Rgr/req/RangeUnload.h"
 
-#include "swcdb/lib/db/Cells/Mutable.h"
 #include "swcdb/lib/db/Types/Range.h"
 #include "swcdb/lib/db/Files/RangeData.h"
 #include "swcdb/lib/db/Protocol/Common/req/Query.h"
@@ -176,6 +175,7 @@ class Range : public DB::RangeBase {
 
       if(removal) {
         cell.flag = DB::Cells::DELETE;
+        //m_req_set_intval->columns_cells->add(cid_typ, cell);
       } else {
 
         cell.flag = DB::Cells::INSERT;

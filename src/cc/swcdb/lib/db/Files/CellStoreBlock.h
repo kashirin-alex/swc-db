@@ -7,84 +7,8 @@
 #define swcdb_db_Files_CellStoreBlock_h
 
 #include "swcdb/lib/core/Encoder.h"
-#include "swcdb/lib/db/Cells/ReqScan.h"
+#include "swcdb/lib/db/Cells/Block.h"
 
-
-
-namespace SWC { namespace Files { 
-
-struct CellsBlock {
-  public:
-  typedef CellsBlock* Ptr;
-  
-  inline static Ptr make(const DB::Cells::Interval& interval, 
-                         const DB::Schema::Ptr s) {
-    return new CellsBlock(interval, s);
-  } 
-  
-  CellsBlock(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
-            : interval(interval),  
-              cells(
-                DB::Cells::Mutable(
-                  0, s->cell_versions, s->cell_ttl, s->col_type)
-              ) {
-  }
-
-  virtual ~CellsBlock() {
-    //std::cout << " ~CellsBlock\n";
-  }
-  
-  size_t load_cells(const uint8_t* ptr, size_t remain) {
-    DB::Cells::Cell cell;
-    size_t count = 0;
-    bool synced = !cells.size();
-
-    auto ts = Time::now_ns();
-    while(remain) {
-      try {
-        cell.read(&ptr, &remain);
-        count++;
-      } catch(std::exception) {
-        HT_ERRORF(
-          "Cell trunclated count=%llu remain=%llu %s, %s", 
-          count, remain, cell.to_string().c_str(),  to_string().c_str());
-        break;
-      }
-      
-      if(!interval.consist(cell.key))
-        continue;
-
-      if(synced)
-        cells.push_back(cell);
-      else
-        cells.add(cell);
-
-      //if(splitter)
-      //  splitter();
-    }
-
-    auto took = Time::now_ns()-ts;
-    std::cout << "CellsBlock::load_cells took=" << took
-              << " synced=" << synced
-              << " avg=" << (count>0 ? took / count : 0)
-              << " " << cells.to_string() << "\n";
-    return count;
-  }
-
-  const std::string to_string(){
-      std::string s("CellsBlock(");
-      s.append(interval.to_string());
-      s.append(" ");
-      s.append(cells.to_string());
-      s.append(")");
-      return s;
-    }
-  //std::function<void()>     splitter=0;
-  DB::Cells::Interval       interval;
-  DB::Cells::Mutable        cells;
-};
-
-}}
 
 namespace SWC { namespace Files { namespace CellStore {
 
@@ -168,11 +92,12 @@ class Read {
     run_queued(err);
   }
 
-  void load_cells(CellsBlock::Ptr cells_block) {
+  void load_cells(DB::Cells::Block::Ptr cells_block) {
+    bool was_splitted = false;
     if(loaded()) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size);
+          m_buffer.base, m_buffer.size, was_splitted);
     } else {
       //err
     }
@@ -182,7 +107,8 @@ class Read {
       m_processing--; 
     }
 
-    if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
+    if(!was_splitted 
+       && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
       release();
   }
   

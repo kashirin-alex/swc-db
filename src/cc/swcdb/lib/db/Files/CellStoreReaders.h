@@ -110,24 +110,23 @@ class Readers {
     std::for_each(m_cellstores.begin(), m_cellstores.end(), call);
   }
   
-  void load_cells(CellsBlock::Ptr cells_block, 
-                  const std::function<void(int)>& cb) {
+  void load_cells(DB::Cells::Block::Ptr cells_block) {
 
     std::vector<Files::CellStore::Read::Ptr> cellstores;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& cs : m_cellstores) {
-        if(cs->interval.consist(cells_block->interval))
+        if(cells_block->is_consist(cs->interval))
           cellstores.push_back(cs);
       }
     }
 
     if(cellstores.empty()) {
-      cb(Error::OK);
+      cells_block->loaded_cellstores(Error::OK);
       return;
     }
     
-    auto waiter = new AwaitingLoad(cellstores.size(), cb);
+    auto waiter = new AwaitingLoad(cellstores.size(), cells_block);
     for(auto& cs : cellstores)
       cs->load_cells(cells_block, [waiter](int err){ waiter->processed(err); });   
   }
@@ -307,10 +306,9 @@ class Readers {
 
   struct AwaitingLoad {
     public:
-    typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, const Cb_t& cb) 
-                : m_count(count), cb(cb) {
+    AwaitingLoad(int32_t count, const DB::Cells::Block::Ptr& cells_block) 
+                 : m_count(count), cells_block(cells_block) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -322,13 +320,13 @@ class Readers {
         if(m_count)
           return;
       }
-      cb(err);
+      cells_block->loaded_cellstores(err);
       delete this;
     }
 
     std::mutex    m_mutex;
     int32_t       m_count;
-    const Cb_t    cb;
+    const DB::Cells::Block::Ptr cells_block;
   };
 
   std::mutex             m_mutex;

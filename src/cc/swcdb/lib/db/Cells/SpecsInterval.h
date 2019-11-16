@@ -204,6 +204,7 @@ class Interval {
     return s;
   }
 
+  Cell::Key  range_begin, range_end;
   Key        key_start, key_finish;
   Value      value;
   Timestamp  ts_start, ts_finish;
