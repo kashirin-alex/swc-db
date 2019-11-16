@@ -21,11 +21,11 @@ class Block {
           m_cells(Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
-  virtual void splitter() { }
+  virtual void splitter() = 0;
 
-  virtual void loaded_cellstores(int err) { }
+  virtual void loaded_cellstores(int err) = 0;
 
-  virtual void loaded_logs(int err) { }
+  virtual void loaded_logs(int err) = 0;
   
   virtual ~Block() {
     //std::cout << " ~Block\n";
@@ -88,7 +88,8 @@ class Block {
       } catch(std::exception) {
         HT_ERRORF(
           "Cell trunclated at count=%llu remain=%llu %s, %s", 
-          count, remain, cell.to_string().c_str(),  _to_string().c_str());
+          count, remain, 
+          cell.to_string().c_str(),  m_interval.to_string().c_str());
         break;
       }
       
@@ -118,7 +119,8 @@ class Block {
 
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells took=" << took
-              << " synced=" << synced
+              << " synced=" << synced << " added=" << added 
+              << " skipped=" << count-added << " remain=" << remain
               << " avg=" << (added>0 ? took / added : 0)
               << " " << m_cells.to_string() << "\n";
     return added;

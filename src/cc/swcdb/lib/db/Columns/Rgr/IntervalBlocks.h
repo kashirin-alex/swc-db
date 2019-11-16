@@ -32,24 +32,22 @@ class IntervalBlocks {
       LOADED,
       REMOVED
     };
-
-    IntervalBlocks::Ptr      blocks;
     
     inline static Ptr make(const DB::Cells::Interval& interval, 
                            const DB::Schema::Ptr s, 
-                           IntervalBlocks::Ptr blocks, 
+                           const IntervalBlocks::Ptr& blocks, 
                            State state=State::NONE) {
       return new Block(interval, s, blocks, state);
     }
 
     Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s, 
-          IntervalBlocks::Ptr blocks, State state=State::NONE)
-          : DB::Cells::Block(interval, s), blocks(blocks), m_state(state), 
+          const IntervalBlocks::Ptr& blocks, State state=State::NONE)
+          : DB::Cells::Block(interval, s), m_blocks(blocks), m_state(state), 
             m_processing(0) {
     }
 
     void splitter() override {
-      blocks->_split(ptr(), false);
+      m_blocks->_split(ptr(), false);
     }
     
     Ptr ptr() {
@@ -108,7 +106,7 @@ class IntervalBlocks {
         return false;
       }
 
-      blocks->cellstores->load_cells(ptr());
+      m_blocks->cellstores->load_cells(ptr());
       return true;
     }
 
@@ -117,7 +115,7 @@ class IntervalBlocks {
         run_queue(err);
         return;
       }
-      blocks->commitlog->load_cells(ptr());
+      m_blocks->commitlog->load_cells(ptr());
     }
 
     void loaded_logs(int err) override {
@@ -157,8 +155,8 @@ class IntervalBlocks {
     Ptr _split(size_t keep=100000, bool loaded=true) {
       Ptr blk = Block::make(
         DB::Cells::Interval(), 
-        Env::Schemas::get()->get(blocks->range->cid), 
-        blocks,
+        Env::Schemas::get()->get(m_blocks->range->cid), 
+        m_blocks,
         loaded ? State::LOADED : State::NONE
       );
 
@@ -303,14 +301,15 @@ class IntervalBlocks {
         if(req->reached_limits()) {
           req->response(err);
         } else {
-          ptr->blocks->scan(req, ptr); 
+          ptr->m_blocks->scan(req, ptr); 
         }
       }
     };
     
-    State                  m_state;
-    size_t                 m_processing;
-    std::queue<Callback*>  m_queue;
+    State                     m_state;
+    size_t                    m_processing;
+    std::queue<Callback*>     m_queue;
+    const IntervalBlocks::Ptr m_blocks;
 
   }; // class Block
 
@@ -383,6 +382,7 @@ class IntervalBlocks {
   }
   
   void add_logged(const DB::Cells::Cell& cell) {
+    
     commitlog->add(cell);
     
     std::lock_guard<std::mutex> lock(m_mutex);
