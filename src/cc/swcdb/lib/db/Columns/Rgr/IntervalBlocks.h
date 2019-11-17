@@ -50,12 +50,11 @@ class IntervalBlocks {
       m_blocks->_split(ptr(), false);
     }
     
-    Ptr ptr() {
+    Ptr ptr() override {
       return this;
     }
 
     virtual ~Block() {
-      //std::cout << " IntervalBlocks::~Block\n";
       wait_processing();
     }
 
@@ -69,6 +68,11 @@ class IntervalBlocks {
 
       if(!m_interval.is_in_end(cell.key))
         return false;
+
+      if(m_state != State::LOADED)
+        return cell.on_fraction ? 
+          m_interval.key_end.compare(cell.key, cell.on_fraction) 
+          != Condition::GT : true;
 
       m_cells.add(cell);
 
@@ -85,7 +89,6 @@ class IntervalBlocks {
     }
     
     bool scan(DB::Cells::ReqScan::Ptr req) {
-      //std::cout << " Block::scan "<< to_string()<<" \n";
       bool loaded;
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -176,7 +179,6 @@ class IntervalBlocks {
       
       if(!loaded)
         blk->m_cells.free();
-
       return blk;
     }
 
@@ -205,7 +207,6 @@ class IntervalBlocks {
         return released;
       m_state = State::NONE;
 
-      //std::cout << "IntervalBlocks::Block::release\n"; 
       released += m_cells.size;
       m_cells.free();
       return released;
@@ -218,7 +219,6 @@ class IntervalBlocks {
 
     void wait_processing() {
       while(processing() > 0) {
-        //std::cout << "wait_processing: " << to_string() << "\n";
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
     }
@@ -229,9 +229,20 @@ class IntervalBlocks {
       std::string s("Block(state=");
       s.append(std::to_string((uint8_t)m_state));
       
+      s.append(" ");
       s.append(m_interval.to_string());
+
       s.append(" ");
       s.append(m_cells.to_string());
+      s.append(" ");
+      if(m_cells.size) {
+        DB::Cells::Cell cell;
+        m_cells.get(0, cell);
+        s.append(cell.key.to_string());
+        s.append(" <= range <= ");
+        m_cells.get(-1, cell);
+        s.append(cell.key.to_string());
+      }
 
       s.append(" queue=");
       s.append(std::to_string(m_queue.size()));
@@ -247,8 +258,8 @@ class IntervalBlocks {
     void _scan(DB::Cells::ReqScan::Ptr req) {
 
       if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
+        //std::cout << "BLOCK::_scan " << to_string() << "\n"; 
         std::lock_guard<std::mutex> lock(m_mutex);
-
         size_t skips = 0; // Ranger::Stats
         m_cells.scan(
           *(req->spec).get(), 
@@ -330,7 +341,6 @@ class IntervalBlocks {
   }
 
   virtual ~IntervalBlocks(){
-    //std::cout << " ~IntervalBlocks\n";
     free();
   }
   
@@ -382,25 +392,20 @@ class IntervalBlocks {
   }
   
   void add_logged(const DB::Cells::Cell& cell) {
-    
+
     commitlog->add(cell);
     
     std::lock_guard<std::mutex> lock(m_mutex);
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
-      if(!m_blocks[idx]->loaded())
-        continue;
-      split(idx);
-
-      if(m_blocks[idx]->add_logged(cell))
+      if(m_blocks[idx]->add_logged(cell)) {
+        split(idx);
         break;
+      }
     }
     
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    //std::cout << "IntervalBlocks::scan " <<  to_string() 
-    //          << " " << req->to_string() << "\n";
-
     int err = Error::OK;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -420,38 +425,38 @@ class IntervalBlocks {
     bool flw;
     Block::Ptr nxt_blk;
     for(;;) {
+      blk = nullptr;
+      flw = false;
+      nxt_blk = nullptr;
       {
-        blk = nullptr;
-        flw = false;
-        nxt_blk = nullptr;
         std::lock_guard<std::mutex> lock(m_mutex);
         // it = narrower on req->spec->offset_key
-
         for(auto it=m_blocks.begin(); it< m_blocks.end(); it++) {
-          auto eval = *it;
           if(!flw && blk_ptr != nullptr) {
-            if(blk_ptr == eval)
+            if(blk_ptr == *it)
               flw = true;
             continue;
           }
-          if(eval->is_next(req->spec)) {
-            blk = eval;
-            blk_ptr = eval;
-
-            if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
-                && ++it != m_blocks.end() && !(*it)->loaded())
-              nxt_blk = *it;
-            break;
-          }/* else {
+          if(!(*it)->is_next(req->spec)) {
+            /*
             std::cout << " scan eval-blk-mismatch "
                       << "\n block " << eval->to_string()
                       << "\n specs " << req->spec->to_string()
                       << "\n";
-          }*/
-        }
-        if(blk == nullptr)  
+            */
+            continue;
+          }
+          blk = *it;
+          blk_ptr = blk;
+
+          if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
+              && ++it != m_blocks.end() && !(*it)->loaded())
+            nxt_blk = *it; 
           break;
+        }
       }
+      if(blk == nullptr)  
+        break;
 
       if(nxt_blk != nullptr
         && !Env::Resources.need_ram(commitlog->cfg_blk_sz->get() * 10) 
@@ -475,7 +480,7 @@ class IntervalBlocks {
         );
       }
 
-      if(blk->scan(req))
+      if(blk->scan(req)) // true(queued)
         return;
       
       if(req->reached_limits())
@@ -520,14 +525,16 @@ class IntervalBlocks {
   }
 
   void _split(Block::Ptr ptr, bool loaded=true) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    if(!m_mutex.try_lock())
+      return;
 
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
         _split(idx, loaded);
-        return;
+        break;
       }
     }
+    m_mutex.unlock();
   }
 
   void release_prior(Block::Ptr ptr) {
@@ -573,8 +580,6 @@ class IntervalBlocks {
   }
 
   const size_t release(size_t bytes=0) {
-    //std::cout << "IntervalBlocks::release=" << bytes << "\n"; 
-    
     size_t released = cellstores->release(bytes);
     if(!bytes || released < bytes) {
 
@@ -594,7 +599,6 @@ class IntervalBlocks {
     //else if(m_blocks.size() > 1000)
     // merge in pairs down to 1000 blks
 
-    //std::cout << "IntervalBlocks::release=" << bytes << " released=" << released << "\n"; 
     return released;
   }
 
@@ -605,7 +609,6 @@ class IntervalBlocks {
 
   void wait_processing() {
     while(processing() > 0) {
-      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
