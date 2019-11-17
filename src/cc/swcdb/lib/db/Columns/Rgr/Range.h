@@ -262,10 +262,12 @@ class Range : public DB::RangeBase {
   }
 
   const bool compacting() {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_compacting != Compact::NONE;
   }
 
   void compacting(Compact state) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_compacting = state;
     if(state == Compact::NONE)
       m_cv.notify_all();
@@ -386,11 +388,10 @@ class Range : public DB::RangeBase {
                err, Error::get_text(err), to_string().c_str());
   }
 
-  void wait() {  
-    if(m_compacting == Compact::COMPACTING) {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
+  void wait() {
+    std::unique_lock<std::mutex> lock_wait(m_mutex);
+    if(m_compacting == Compact::COMPACTING)
       m_cv.wait(lock_wait, [&compacting=m_compacting](){return compacting == Compact::NONE;});  
-    }
   }
 
   void run_add_queue() {
@@ -456,16 +457,16 @@ class Range : public DB::RangeBase {
   }
 
 
-  std::atomic<State>                m_state;
+  std::atomic<State>            m_state;
    
-  std::atomic<Compact>              m_compacting;
-  std::queue<ReqAdd*>               m_q_adding;
+  Compact                       m_compacting;
+  std::queue<ReqAdd*>           m_q_adding;
 
   
-  Query::Update::Ptr                m_req_set_intval;
+  Query::Update::Ptr            m_req_set_intval;
 
-  std::condition_variable           m_cv;
-  DB::Cells::Interval               m_interval_old;
+  std::condition_variable       m_cv;
+  DB::Cells::Interval           m_interval_old;
 };
 
 
