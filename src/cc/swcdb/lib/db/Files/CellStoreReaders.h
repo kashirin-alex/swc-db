@@ -24,7 +24,6 @@ class Readers {
   Readers(const DB::RangeBase::Ptr& range): range(range) {}
 
   virtual ~Readers() {
-    //std::cout << " ~CellStore::Readers\n";
     wait_processing();
     free();
   }
@@ -64,7 +63,6 @@ class Readers {
   }
 
   const size_t release(size_t bytes) {    
-    //std::cout << "CellStoreReaders::release=" << bytes << "\n";  
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -83,7 +81,6 @@ class Readers {
 
   void wait_processing() {
     while(processing() > 0)  {
-      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }

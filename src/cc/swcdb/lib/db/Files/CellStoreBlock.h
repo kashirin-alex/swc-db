@@ -64,7 +64,6 @@ class Read {
   }
 
   virtual ~Read(){
-    //std::cout << " ~CellStore::Block::Read\n";
   }
   
   bool load(const std::function<void(int)>& cb) {
@@ -87,7 +86,10 @@ class Read {
   void load(FS::SmartFd::Ptr smartfd, const std::function<void(int)>& cb) {
     int err = Error::OK;
     load(err, smartfd);
-    
+    if(err)
+      HT_ERRORF("CellStore::Block load err=%d(%s) %s", 
+                err, Error::get_text(err), to_string().c_str());
+                
     asio::post(*Env::IoCtx::io()->ptr(), [cb, err](){ cb(err); } );
     run_queued(err);
   }
@@ -113,7 +115,6 @@ class Read {
   }
   
   size_t release() {    
-    //std::cout << "CellStore::Block::release\n";  
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -166,7 +167,6 @@ class Read {
   private:
   
   void load(int& err, FS::SmartFd::Ptr smartfd) {
-    //std::cout << "CS::Read::load\n";
 
     for(;;) {
       err = Error::OK;

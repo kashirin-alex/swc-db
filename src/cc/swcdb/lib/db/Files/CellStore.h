@@ -64,7 +64,6 @@ class Read  {
   }
 
   virtual ~Read(){
-    //std::cout << " ~CellStore::Read\n";
     wait_processing();
     free();
   }
@@ -78,6 +77,9 @@ class Read  {
     }
 
     _load_blocks_index(err, close_after);
+    if(err)
+      HT_ERRORF("CellStore load_blocks_index err=%d(%s) %s", 
+                err, Error::get_text(err), to_string().c_str());
 
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -148,8 +150,7 @@ class Read  {
     );
   }
 
-  size_t release(size_t bytes) {  
-    //std::cout << "CellStore::release=" << bytes << "\n";   
+  size_t release(size_t bytes) {   
     size_t released = 0;
 
     {
@@ -185,7 +186,6 @@ class Read  {
 
   void wait_processing() {
     while(processing() > 0)  {
-      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
@@ -459,7 +459,6 @@ class Read  {
           }
         }
       }
-
       cb(err);
       delete this;
     }
