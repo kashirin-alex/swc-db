@@ -27,6 +27,10 @@ class Block {
 
   virtual void loaded_logs(int err) = 0;
   
+  virtual Ptr ptr() {
+    return this;
+  }
+
   virtual ~Block() {
     //std::cout << " ~Block\n";
   }
@@ -44,12 +48,12 @@ class Block {
   
   const bool is_consist(const Interval& intval) {
     std::lock_guard<std::mutex> lock(m_mutex);
+    /*
+    std::cout << " Block::is_consist = " << intval.consist(m_interval) << "\n"
+              << "  other "  << intval.to_string()     <<  "\n"
+              << "   this "  << m_interval.to_string() <<  "\n";
+    */
     return intval.consist(m_interval);
-  }
-
-  const bool is_include(const Interval& intval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return intval.includes(m_interval);
   }
 
   const size_t size() {
@@ -66,12 +70,12 @@ class Block {
     return m_cells.size_bytes;
   }
   
-  void load_cells(const Mutable::Ptr& cells) {
+  void load_cells(const Mutable& cells) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    cells->scan(m_interval, m_cells);
+    cells.scan(m_interval, m_cells);
   }
 
-  size_t load_cells(const uint8_t* ptr, size_t remain, bool& was_splitted) {
+  size_t load_cells(const uint8_t* rbuf, size_t remain, bool& was_splitted) {
     Cell cell;
     size_t count = 0;
     size_t added = 0;
@@ -83,7 +87,7 @@ class Block {
     bool synced = !m_cells.size;
     while(remain) {
       try {
-        cell.read(&ptr, &remain);
+        cell.read(&rbuf, &remain);
         count++;
       } catch(std::exception) {
         HT_ERRORF(
@@ -110,8 +114,10 @@ class Block {
         m_cells.add(cell);
       
       added++;
-      
-      sz = m_cells.size;
+
+      if((sz = m_cells.size) < 200000)
+        continue;
+
       splitter();
       if(!was_splitted && sz != m_cells.size)
         was_splitted = true;
@@ -136,6 +142,14 @@ class Block {
     m_interval.key_end.free();
   }
 
+  const std::string to_string() {
+    std::string s("Cells::Block(");
+    s.append(m_interval.to_string());
+    s.append(" ");
+    s.append(m_cells.to_string());
+    s.append(")");
+    return s;
+  }
   
   protected:
   std::mutex              m_mutex;
