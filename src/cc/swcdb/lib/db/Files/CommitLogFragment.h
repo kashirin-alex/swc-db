@@ -76,7 +76,6 @@ class Fragment {
 
   virtual ~Fragment(){
     wait_processing();
-    //std::cout << " ~CommitLog::Fragment\n";
   }
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 
@@ -152,11 +151,12 @@ class Fragment {
     bool keep;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err ? State::ERROR : State::LOADED;
-      if(keep = !m_queue.empty() || m_processing > 0) {
-        m_buffer.set(cells.base, cells.fill());
-        cells.own = false;
-      }
+      keep = !m_queue.empty() || m_processing > 0;
+      m_state = err ? State::ERROR : (keep ? State::LOADED : State::NONE);
+      if(!err && keep)
+        m_buffer.set(cells);
+      else
+        m_buffer.free();
     }
     if(keep)
       run_queued(err);
@@ -167,8 +167,11 @@ class Fragment {
   void load_header(bool close_after=true) {
     int err = Error::OK;
     load_header(err, close_after);
-    if(err)
+    if(err) {
       m_state = State::ERROR;
+      HT_ERRORF("CommitLog::Fragment load_header err=%d(%s) %s", 
+                err, Error::get_text(err), to_string().c_str());
+    }
   }
 
   void load(const std::function<void(int)>& cb) {
@@ -213,7 +216,6 @@ class Fragment {
   }
   
   size_t release() {
-    //std::cout << "CommitLog::Fragment::release\n";  
     size_t released = 0;     
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -256,7 +258,6 @@ class Fragment {
 
   void wait_processing() {
     while(processing() > 0)  {
-      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
@@ -433,6 +434,9 @@ class Fragment {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_state = err ? State::ERROR : State::LOADED;
     }
+    if(err)
+      HT_ERRORF("CommitLog::Fragment load err=%d(%s) %s", 
+                err, Error::get_text(err), to_string().c_str());
 
     run_queued(err);
   }
