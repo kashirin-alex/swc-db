@@ -123,6 +123,17 @@ namespace SWC {
       }
     }
 
+    void set(DynamicBuffer &dbuf) {
+      free();
+      base = dbuf.base;
+      size = dbuf.fill();
+      own = dbuf.own;
+      if (own) {
+        dbuf.base = dbuf.ptr = 0;
+        dbuf.size = 0;
+      }
+    }
+
     /** Sets data pointer; the existing buffer is discarded and deleted
      *
      * @param data Pointer to the existing buffer
