@@ -151,8 +151,12 @@ class IntervalBlocks {
     }
 
     Ptr split(size_t keep=100000, bool loaded=true) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      return _split(keep, loaded);
+      Ptr blk = nullptr;
+      if(!m_mutex.try_lock())
+        return blk;
+      blk = _split(keep, loaded);
+      m_mutex.unlock();
+      return blk;
     }
     
     Ptr _split(size_t keep=100000, bool loaded=true) {
@@ -693,6 +697,8 @@ class IntervalBlocks {
   void split(size_t idx, bool loaded=true) {
     while(m_blocks[idx]->size() > 200000) {
       auto blk = m_blocks[idx++]->split(100000, loaded);
+      if(blk == nullptr)
+        return;
       m_blocks.insert(m_blocks.begin()+idx, blk);
     }
   }
