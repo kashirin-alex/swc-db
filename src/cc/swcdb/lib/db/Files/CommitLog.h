@@ -51,7 +51,6 @@ class Fragments {
   }
 
   virtual ~Fragments() {
-    //std::cout << " ~CommitLog::Fragments\n";
     wait_processing();
     free();
   }
@@ -110,14 +109,19 @@ class Fragments {
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         for(;;) {
-          std::lock_guard<std::mutex> lock(m_mutex_cells);
-          m_cells->write_and_free(cells, cell_count, frag->interval, blk_size);
+          {
+            std::lock_guard<std::mutex> lock(m_mutex_cells);
+            m_cells->write_and_free(cells, cell_count, frag->interval, blk_size);
+          }
           if(cells.fill() >= blk_size)
             break;
-          if(finalize && m_cells->size == 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-          if(m_cells->size == 0)
-            break;
+          {
+            std::lock_guard<std::mutex> lock(m_mutex_cells);
+            if(finalize && m_cells->size == 0)
+              std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            if(m_cells->size == 0)
+              break;
+          }
         }
         if(m_deleting || cells.fill() == 0) {
           delete frag;
@@ -188,7 +192,6 @@ class Fragments {
   }
   
   void load_cells(DB::Cells::Block::Ptr cells_block) {
-    //std::cout << "CommitLog::load_cells\n";
     if(m_commiting){
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
@@ -198,7 +201,7 @@ class Fragments {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       for(auto& frag : m_fragments) {  
-        if(frag->errored() || !cells_block->is_include(frag->interval))
+        if(frag->errored() || !cells_block->is_consist(frag->interval))
           continue;
         fragments.push_back(frag);
       }
@@ -222,8 +225,7 @@ class Fragments {
     fragments.assign(m_fragments.begin(), m_fragments.end());
   }
 
-  const size_t release(size_t bytes) { 
-    //std::cout << "CommitLog::release=" << bytes << "\n";     
+  const size_t release(size_t bytes) {   
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -311,7 +313,6 @@ class Fragments {
 
   void wait_processing() {
     while(processing() > 0)  {
-      //std::cout << "wait_processing: " << to_string() << "\n";
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
