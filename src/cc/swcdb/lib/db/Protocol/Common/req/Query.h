@@ -364,11 +364,8 @@ class Select : public std::enable_shared_from_this<Select> {
             if(rsp.reached_limit) {
               auto qreq = std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req_ptr);
               auto last = col->cells.back();
-              if(ptr->interval->flags.offset) {
-                ssize_t adj = ptr->interval->flags.offset-col->cells.size();
-                ptr->interval->flags.offset = adj < 0 ? 0 : adj;
-              }
               //std::cout << "LAST cell, " << last->to_string() << "\n";
+              ptr->interval->flags.offset = 0;
               ptr->interval->offset_key.copy(last->key);
               ptr->interval->offset_rev = last->revision;
               ptr->select(qreq->endpoints, rid, base_req);
