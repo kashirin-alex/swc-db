@@ -74,18 +74,15 @@ class Fragments {
   }
 
   void commit_new_fragment(bool finalize=false) {
-    bool hold;
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     uint32_t blk_size;
     {
-      std::lock_guard<std::mutex> lock_wait(m_mutex);
-      hold = finalize && m_commiting;
+      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      if(finalize && m_commiting)
+        m_cv.wait(lock_wait, [&commiting=m_commiting]
+                             {return !commiting && (commiting = true);});
       m_size_commit = blk_size = schema->blk_size ? 
                       schema->blk_size : cfg_blk_sz->get();
-    }
-    if(hold) {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting && (commiting = true);});
     }
 
     auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
@@ -188,14 +185,10 @@ class Fragments {
   }
   
   void load_cells(DB::Cells::Block::Ptr cells_block) {
-    bool hold;
     {
-      std::lock_guard<std::mutex> lock_wait(m_mutex);
-      hold = m_commiting;
-    }
-    if(hold) {
       std::unique_lock<std::mutex> lock_wait(m_mutex);
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+      if(m_commiting)
+        m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
     
     std::vector<Fragment::Ptr>  fragments;
@@ -253,15 +246,11 @@ class Fragments {
   }
 
   void remove(int &err) {
-    bool hold;
     {
-      std::lock_guard<std::mutex> lock_wait(m_mutex);
-      m_deleting = true;
-      hold = m_commiting;
-    }
-    if(hold) {
       std::unique_lock<std::mutex> lock_wait(m_mutex);
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+      m_deleting = true;
+      if(m_commiting)
+        m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
     
     {

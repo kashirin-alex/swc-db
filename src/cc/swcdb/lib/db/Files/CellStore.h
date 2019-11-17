@@ -488,7 +488,7 @@ class Write : public std::enable_shared_from_this<Write> {
   Types::Encoding           encoder;
   size_t                    size;
   DB::Cells::Interval       interval;
-  std::atomic<uint32_t>     completion;
+  //std::atomic<uint32_t>     completion;
  
   Write(const uint32_t id, const std::string& filepath, 
         Types::Encoding encoder=Types::Encoding::PLAIN)
@@ -496,7 +496,7 @@ class Write : public std::enable_shared_from_this<Write> {
           smartfd(
             FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
           ), 
-          encoder(encoder), size(0), completion(0) {
+          encoder(encoder), size(0) { //, completion(0)
   }
 
   virtual ~Write(){}
@@ -524,21 +524,21 @@ class Write : public std::enable_shared_from_this<Write> {
     StaticBuffer buff_write(buff_raw);
     size += buff_write.size;
 
-    completion++;
+    //completion++; async(append)
     Env::FsInterface::fs()->append(
       err,
       smartfd, 
       buff_write, 
       FS::Flags::FLUSH
     );
-    completion--;
+    //completion--;
   }
 
   uint32_t write_blocks_index(int& err) {
-    if(completion > 0){
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
-      m_cv.wait(lock_wait, [count=&completion]{return count == 0;});
-    }
+    //if(completion > 0){ 
+    //  std::unique_lock<std::mutex> lock_wait(m_mutex);
+    //  m_cv.wait(lock_wait, [count=&completion]{return count == 0;});
+    //}
 
     uint32_t len_data = 0;
     interval.free();
