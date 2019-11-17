@@ -74,21 +74,21 @@ class Mutable {
     }
   }
 
-  void get(int32_t idx, Cell& cell) {
+  void get(int32_t idx, Cell& cell) const {
     cell.copy(**(m_cells+(idx < 0? size+idx: idx)));
   }
 
-  void get(int32_t idx, DB::Cell::Key& key) {
+  void get(int32_t idx, DB::Cell::Key& key) const {
     key.copy((*(m_cells+(idx < 0? size+idx: idx)))->key);
   }
 
-  void get(int32_t idx, DB::Cell::Key& key, int64_t& ts) {
+  void get(int32_t idx, DB::Cell::Key& key, int64_t& ts) const {
     Cell* cell = *(m_cells+(idx < 0? size+idx: idx));
     key.copy(cell->key);
     ts = cell->timestamp;
   }
    
-  bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) {
+  bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) const {
     Cell* ptr;
     Condition::Comp chk;
 
@@ -103,7 +103,7 @@ class Mutable {
     return false;
   }
 
-  bool get(const Specs::Key& key, Cell& cell) {
+  bool get(const Specs::Key& key, Cell& cell) const {
     Cell* ptr;
 
     for(uint32_t offset = 0; offset < size; offset++){
@@ -297,7 +297,7 @@ class Mutable {
   }
 
   void scan(const DB::Cells::Interval& interval, 
-                  DB::Cells::Mutable& cells){
+                  DB::Cells::Mutable& cells) const {
     Cell* cell;
 
     for(uint32_t offset = _narrow(interval.key_begin, 0);
@@ -315,7 +315,7 @@ class Mutable {
 
   void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
-            size_t& skips, const Selector_t& selector=0){
+            size_t& skips, const Selector_t& selector=0) const {
     Cell* cell;
 
     uint32_t offset = 0; //(narrower over specs.key_start)
@@ -358,7 +358,7 @@ class Mutable {
   }
 
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
-            size_t& count, size_t& skips){
+            size_t& count, size_t& skips) const {
     Cell* cell;
     uint32_t offset = 0; //specs.flags.offset; //(narrower over specs.key_start)
     uint cell_offset = specs.flags.offset;
@@ -601,7 +601,7 @@ class Mutable {
     //std::free(*ptr);
   }
 
-  uint32_t _narrow(const DB::Cell::Key& key, uint32_t on_fraction=0){
+  uint32_t _narrow(const DB::Cell::Key& key, uint32_t on_fraction=0) const {
     uint32_t offset = 0;
 
     if(size < narrow_sz)
@@ -641,7 +641,8 @@ class Mutable {
     return offset;
   }
 
-  void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, uint32_t revs) {
+  void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, 
+                        uint32_t revs) {
     Cell* cell;
     for(; offset < size; offset++) {
 
