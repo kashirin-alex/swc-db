@@ -171,6 +171,11 @@ class AppContext : public SWC::AppContext {
 
     HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
     
+    if(m_srv == nullptr) {
+      HT_INFO("Exit");
+      std::quick_exit(0);
+    }
+    
     (new std::thread([ptr=shared_from_this()]{ ptr->stop(); }))->detach();
   }
 
