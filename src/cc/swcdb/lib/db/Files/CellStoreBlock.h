@@ -99,7 +99,7 @@ class Read {
     if(loaded()) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size, was_splitted);
+          m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
     } else {
       //err
     }

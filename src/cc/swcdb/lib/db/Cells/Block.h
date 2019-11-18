@@ -48,11 +48,6 @@ class Block {
   
   const bool is_consist(const Interval& intval) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    /*
-    std::cout << " Block::is_consist = " << intval.consist(m_interval) << "\n"
-              << "  other "  << intval.to_string()     <<  "\n"
-              << "   this "  << m_interval.to_string() <<  "\n";
-    */
     return intval.consist(m_interval);
   }
 
@@ -72,16 +67,32 @@ class Block {
   
   void load_cells(const Mutable& cells) {
     std::lock_guard<std::mutex> lock(m_mutex);
+    //auto ts = Time::now_ns();
+    //size_t added = m_cells.size;
+
     cells.scan(m_interval, m_cells);
+    /*
+    added = m_cells.size - added;
+    auto took = Time::now_ns()-ts;
+    std::cout << "Cells::Block::load_cells(cells)"
+              << " synced=0"
+              << " avail=" << cells.size 
+              << " added=" << added 
+              << " skipped=" << cells.size-added
+              << " avg=" << (added>0 ? took / added : 0)
+              << " took=" << took
+              << " " << m_cells.to_string() << "\n";
+    */
   }
 
-  size_t load_cells(const uint8_t* rbuf, size_t remain, bool& was_splitted) {
+  size_t load_cells(const uint8_t* rbuf, size_t remain, 
+                    size_t avail, bool& was_splitted) {
     Cell cell;
     size_t count = 0;
     size_t added = 0;
     uint32_t sz = 0;
     
-    auto ts = Time::now_ns();
+    //auto ts = Time::now_ns();
     std::lock_guard<std::mutex> lock(m_mutex);
 
     bool synced = !m_cells.size;
@@ -92,19 +103,18 @@ class Block {
       } catch(std::exception) {
         HT_ERRORF(
           "Cell trunclated at count=%llu remain=%llu %s, %s", 
-          count, remain, 
+          count, avail-count, 
           cell.to_string().c_str(),  m_interval.to_string().c_str());
         break;
       }
-      
+
+      if(!m_interval.key_begin.empty() 
+          && m_interval.key_begin.compare(cell.key) == Condition::LT)
+        continue;
       if(!m_interval.key_end.empty() 
           && m_interval.key_end.compare(cell.key) == Condition::GT)
         break;
       
-      if(!m_interval.key_begin.empty() 
-          && m_interval.key_begin.compare(cell.key) == Condition::LT)
-        continue;
-
       //if(!m_interval.consist(cell.key))
         //continue;
 
@@ -122,13 +132,17 @@ class Block {
       if(!was_splitted && sz != m_cells.size)
         was_splitted = true;
     }
-
+    /*
     auto took = Time::now_ns()-ts;
-    std::cout << "Cells::Block::load_cells took=" << took
-              << " synced=" << synced << " added=" << added 
-              << " skipped=" << count-added << " remain=" << remain
+    std::cout << "Cells::Block::load_cells(rbuf)"
+              << " synced=" << synced 
+              << " avail=" << avail 
+              << " added=" << added 
+              << " skipped=" << avail-added
               << " avg=" << (added>0 ? took / added : 0)
+              << " took=" << took
               << " " << m_cells.to_string() << "\n";
+    */          
     return added;
   }
 

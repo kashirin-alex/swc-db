@@ -58,10 +58,12 @@ class Fragment {
     return new Fragment(filepath, state);
   }
 
+  const int64_t         ts;
   DB::Cells::Interval   interval;
 
   Fragment(const std::string& filepath, State state=State::NONE)
-          : m_smartfd(
+          : ts(Time::now_ns()),
+            m_smartfd(
               FS::SmartFd::make_ptr(
                 filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
             ), 
@@ -200,11 +202,10 @@ class Fragment {
     if(loaded()) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size, was_splitted);
+          m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
     } else {
       //err
     }
-
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_processing--; 
