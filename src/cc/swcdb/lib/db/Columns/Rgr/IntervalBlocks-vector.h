@@ -43,7 +43,7 @@ class IntervalBlocks {
     Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s, 
           const IntervalBlocks::Ptr& blocks, State state=State::NONE)
           : DB::Cells::Block(interval, s), m_blocks(blocks), m_state(state), 
-            m_processing(0), m_next(nullptr), m_prev(nullptr) {
+            m_processing(0) {
     }
 
     void splitter() override {
@@ -58,14 +58,14 @@ class IntervalBlocks {
       wait_processing();
     }
 
-    const bool removed() {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      return m_state == State::REMOVED;
-    }
-
     const bool loaded() {
       std::lock_guard<std::mutex> lock(m_mutex);
       return m_state == State::LOADED;
+    }
+
+    const bool removed() {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      return m_state == State::REMOVED;
     }
 
     const bool add_logged(const DB::Cells::Cell& cell) { 
@@ -197,43 +197,9 @@ class IntervalBlocks {
       
       if(!loaded)
         blk->m_cells.free();
-      
-      _add(blk);
       return blk;
     }
 
-    void add(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      _add(blk);
-    }
-
-    void set_prev(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_prev = blk;
-    }
-
-    void set_next(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_next = blk;
-    }
-
-    Ptr get_prev() {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      return m_prev;
-    }
-
-    Ptr get_next() {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      return m_next;
-    }
-
-    bool get_next(Ptr& blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      blk = m_next;
-      return blk != nullptr;
-    }
-
-    /*
     void expand_next_and_release(DB::Cell::Key& key_begin) {
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -250,7 +216,6 @@ class IntervalBlocks {
       blk->expand_next_and_release(m_interval.key_begin);
       m_cells.free();
     }
-    */
 
     const size_t release() {
       size_t released = 0;
@@ -318,15 +283,6 @@ class IntervalBlocks {
 
     private:
 
-    void _add(Ptr blk) {
-      if(m_next) {
-        m_next->set_prev(blk);
-        blk->set_next(m_next);
-      } 
-      m_next = blk;
-      blk->set_prev(ptr());
-    }
-
     void _scan(DB::Cells::ReqScan::Ptr req) {
 
       if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
@@ -347,7 +303,7 @@ class IntervalBlocks {
         
       }
       
-      //std::cout << to_string() << "\n";
+      std::cout << to_string() << "\n";
 
       //if(req->cells->size)
       //  req->cells->get(
@@ -390,16 +346,13 @@ class IntervalBlocks {
     size_t                    m_processing;
     std::queue<Callback*>     m_queue;
     const IntervalBlocks::Ptr m_blocks;
-    
-    Block::Ptr                m_next;
-    Block::Ptr                m_prev;
 
   }; // class Block
 
 
   // scan >> blk match >> load-cs + load+logs 
 
-  IntervalBlocks(): commitlog(nullptr), cellstores(nullptr), m_block(nullptr) {
+  IntervalBlocks(): commitlog(nullptr), cellstores(nullptr) {
   }
   
   void init(DB::RangeBase::Ptr for_range) {
@@ -445,13 +398,20 @@ class IntervalBlocks {
   }
 
   void stop(int err) {
-    for(Block::Ptr blk = m_block;blk;){
-      blk->run_queue(err);
+    std::vector<Block::Ptr>::iterator it;
+    bool started=false;
+    for(;;){
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(!blk->get_next(blk))
+        if(!started) {
+          it = m_blocks.begin();
+          started = true;
+        } else 
+          it++;
+        if(it == m_blocks.end())
           break;
       }
+      (*it)->run_queue(err);
     }
     wait_processing();
   }
@@ -461,55 +421,60 @@ class IntervalBlocks {
     commitlog->add(cell);
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk)) {
-      if(blk->add_logged(cell)) {
-        if(blk->loaded()) {
-          while(blk->size() >= 200000)
-            blk = blk->split(100000, true);
-        }
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
+      if(m_blocks[idx]->add_logged(cell)) {
+        split(idx);
         break;
       }
     }
+    
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    Block::Ptr eval;
     int err = Error::OK;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(cellstores->empty())
         err = Error::RS_NOT_LOADED_RANGE;
 
-      else if(!m_block) 
+      else if(m_blocks.empty()) 
         init_blocks(err);
-
-      eval = m_block;
     }
     if(err) {
       req->response(err);
       return;
     }
 
+    
     Block::Ptr blk;
+    bool flw;
     Block::Ptr nxt_blk;
     for(;;) {
       blk = nullptr;
+      flw = false;
       nxt_blk = nullptr;
-      if(blk_ptr)
-        blk_ptr->get_next(eval);
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-
-        for(; eval; eval->get_next(eval)) {
-          if(eval->removed() || !eval->is_next(req->spec)) 
+        // it = narrower on req->spec->offset_key
+        for(auto it=m_blocks.begin(); it< m_blocks.end(); it++) {
+          if(!flw && blk_ptr != nullptr) {
+            if(blk_ptr == *it)
+              flw = true;
             continue;
-          blk = eval;
+          }
+          if((*it)->removed() || !(*it)->is_next(req->spec)) {
+            std::cout << " BLK::skip " << (*it)->to_string() << "\n";
+            continue;
+          }
+
+          blk = *it;
           blk_ptr = blk;
           blk->processing_increment();
 
           if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
-              && eval->get_next(eval) && !eval->loaded() && !eval->removed()) {
-            nxt_blk = eval;
+              && ++it != m_blocks.end() 
+              && !(*it)->loaded() && !(*it)->removed()) {
+            nxt_blk = *it;
             nxt_blk->processing_increment();
           }
           break;
@@ -547,14 +512,14 @@ class IntervalBlocks {
   const size_t cells_count() {
     size_t sz = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk))
+    for(auto& blk : m_blocks) 
       sz += blk->size();
     return sz;
   }
 
   const size_t size() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return _size();
+    return m_blocks.size();
   }
 
   const size_t size_bytes() {
@@ -564,21 +529,50 @@ class IntervalBlocks {
 
   const size_t size_bytes_total(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return _size_bytes() 
+    return _size_bytes(only_loaded) 
           + (cellstores ? cellstores->size_bytes(only_loaded) : 0)
           + (commitlog  ? commitlog->size_bytes(only_loaded)  : 0);
   }
+  
+  void split() {
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-  void release_prior(Block::Ptr ptr) {
-    auto prev = ptr->get_prev();
-    if(prev && !prev->processing()) 
-      prev->release();
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
+      if(m_blocks[idx]->loaded())
+        split(idx);
+    }
   }
 
-  /*
+  void _split(Block::Ptr ptr, bool loaded=true) {
+    if(!m_mutex.try_lock())
+      return;
+
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
+      if(ptr == m_blocks[idx]) {
+        _split(idx, loaded);
+        break;
+      }
+    }
+    m_mutex.unlock();
+  }
+
+  void release_prior(Block::Ptr ptr) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(size_t idx = 0; idx<m_blocks.size(); idx++) {
+      if(ptr == m_blocks[idx]) {
+        if(idx < 1)
+          return;
+        auto prior = m_blocks[idx-1];
+        if(prior->processing())
+          return;
+        prior->release();
+      }
+    }
+  }
+
   void release_and_merge(Block::Ptr ptr) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    bool state = false;
+    //bool state = false;
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
         if(idx < 2)
@@ -596,12 +590,13 @@ class IntervalBlocks {
         //state = true;
       }
     }
+    /*
     if(state) {
       for(auto blk : m_blocks)
         std::cout << " " << blk->to_string() << "\n"; 
     }
+    */
   }
-  */
 
   const size_t release(size_t bytes=0) {
     size_t released = cellstores->release(bytes);
@@ -611,40 +606,28 @@ class IntervalBlocks {
       if(!bytes || released < bytes) {
 
         std::lock_guard<std::mutex> lock(m_mutex);
-        for(Block::Ptr blk=m_block; blk; blk->get_next(blk)) {
+        for(auto blk : m_blocks) {
           released += blk->release();
           if(bytes && released >= bytes)
             break;
         }
       }
     }
-    if(!bytes) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+    if(!bytes)
       clear();
-    }
-    //else if(_size() > 1000)
+    //else if(m_blocks.size() > 1000)
     // merge in pairs down to 1000 blks
 
     return released;
   }
 
-  void _split(Block::Ptr blk, bool loaded=true) {
-    if(!m_mutex.try_lock())
-      return;
-
-    while(blk->_size() >= 200000)
-      blk = blk->_split(100000, loaded);
-
-    m_mutex.unlock();
-  }
-
-  const bool processing() {
+  const size_t processing() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return _processing();
   }
 
   void wait_processing() {
-    while(processing()) {
+    while(processing() > 0) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
@@ -653,13 +636,12 @@ class IntervalBlocks {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::string s("IntervalBlocks(count=");
-    s.append(std::to_string(_size()));
+    s.append(std::to_string(m_blocks.size()));
 
     s.append(" blocks=[");
-    
-    for(Block::Ptr blk = m_block; blk; blk->get_next(blk)) {
-      s.append(blk->to_string());
-      s.append(", ");
+    for(auto blk : m_blocks) {
+        s.append(blk->to_string());
+       s.append(", ");
     }
     s.append("] ");
 
@@ -681,41 +663,18 @@ class IntervalBlocks {
   } 
 
   private:
-
-  const size_t _size() {
-    size_t sz = 0;
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk))
-      sz++;
-    return sz;
-  }
-
-  const size_t _size_bytes() {
-    size_t sz = 0;
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk))
-      sz += blk->size_bytes();
-    return sz;
-  }
   
-  const bool _processing() {
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk)) {
-      if(blk->processing()) 
-        return true;
-    }
-    return false;
+  const size_t _processing() {
+    size_t sz = 0;
+    for(auto blk : m_blocks) 
+      sz += blk->processing();
+    return sz;
   }
 
   void clear() {
-    Block::Ptr blk = m_block;
-    for(;blk;) {
-      if(blk->get_prev())
-        delete blk->get_prev();
-      auto ptr = blk;
-      if(!ptr->get_next(blk)) {
-        delete ptr;
-        break;
-      }
-    }
-    m_block = nullptr;
+    for(auto & blk : m_blocks) 
+      delete blk;
+    m_blocks.clear();
   }
 
   void free() {
@@ -741,25 +700,40 @@ class IntervalBlocks {
     }
 
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
-    Block::Ptr blk = nullptr;
-    Block::Ptr new_blk;
-    for(auto& cs_blk : blocks) {
-      new_blk = Block::make(cs_blk->interval, schema, ptr());
-      if(blk == nullptr)
-        m_block = new_blk;
-      else
-        blk->add(new_blk);
-      blk = new_blk;
-    }
-
+    for(auto& blk : blocks)
+      m_blocks.push_back(Block::make(blk->interval, schema, ptr()));
+  
     if(range->is_any_begin())
-      m_block->free_key_begin();
+      m_blocks.front()->free_key_begin();
     if(range->is_any_end()) 
-      blk->free_key_end();
+      m_blocks.back()->free_key_end();
   }
 
-  std::mutex      m_mutex;
-  Block::Ptr      m_block;
+  void split(size_t idx, bool loaded=true) {
+    while(m_blocks[idx]->size() > 200000) {
+      auto blk = m_blocks[idx++]->split(100000, loaded);
+      if(blk == nullptr)
+        return;
+      m_blocks.insert(m_blocks.begin()+idx, blk);
+    }
+  }
+
+  void _split(size_t idx, bool loaded=true) {
+    while(m_blocks[idx]->_size() >= 200000) {
+      auto blk = m_blocks[idx++]->_split(100000, loaded);
+      m_blocks.insert(m_blocks.begin()+idx, blk);
+    }
+  }
+
+  const size_t _size_bytes(bool only_loaded=false) {
+    size_t sz = 0;
+    for(auto& blk : m_blocks) 
+      sz += blk->size_bytes();
+    return sz;
+  }
+
+  std::mutex                   m_mutex;
+  std::vector<Block::Ptr>      m_blocks;
 
 };
 

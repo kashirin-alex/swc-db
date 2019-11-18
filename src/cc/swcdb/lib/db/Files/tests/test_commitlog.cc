@@ -204,23 +204,6 @@ int main(int argc, char** argv) {
   }
   std::cerr << " OK\n";
   
-
-
-  std::cout << "BEFORE(split): \n" << blocks.to_string() << "\n";
-
-  blocks.split(); // result the same -- split happened at State::LOADED
-
-  std::cout << "AFTER(split): \n" << blocks.to_string() << "\n";
-
-  counted = blocks.cells_count();
-
-  std::cout << " cs counted=" << counted;
-  if(schema->cell_versions*num_cells != counted) {
-    std::cerr << " BAD after(split), expected="<< schema->cell_versions*num_cells << "\n";
-    exit(1);
-  }
-  std::cerr << "\n OK\n";
-
   std::cerr << "blocks.add_logged: \n";
 
   int added_num = 1000000;
