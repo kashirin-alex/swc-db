@@ -7,6 +7,7 @@
 #define swcdb_lib_db_Columns_RangeBase_h
 
 #include <mutex>
+#include <shared_mutex>
 
 #include "swcdb/lib/db/Files/RgrData.h"
 #include "swcdb/lib/db/Cells/Interval.h"
@@ -111,17 +112,17 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   void set(const Cells::Interval& interval){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_interval.copy(interval);
   }
 
   bool after(const Ptr& range) { 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return range->before(m_interval);
   }   
 
   bool const before(const Cells::Interval& intval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return (!intval.was_set && m_interval.was_set) 
             ||
            (intval.was_set && m_interval.was_set 
@@ -129,54 +130,54 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   bool const equal(const Cells::Interval& intval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_interval.equal(intval);
   }
 
   bool const interval() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_interval.was_set;
   }
 
   bool includes(const DB::Specs::Interval& intval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_interval.includes(intval);
   }
 
 
   void get_interval(Cells::Interval& interval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     interval.copy(m_interval);
   }
 
   void get_interval(Cell::Key& key_begin, Cell::Key& key_end) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     key_begin.copy(m_interval.key_begin);
     key_end.copy(m_interval.key_end);
   }
 
   const bool is_any_begin() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_interval.key_begin.empty();
   }
 
   void get_key_begin(Cell::Key& key_begin) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     key_begin.copy(m_interval.key_begin);
   }
 
   const bool is_any_end() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_interval.key_end.empty();
   }
 
   void get_key_end(Cell::Key& key_end) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     key_end.copy(m_interval.key_end);
   }
 
  void get_interval(Specs::Key& key_start, Specs::Key& key_end) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     key_start.set(m_interval.key_begin, Condition::GE);
     key_end.set(m_interval.key_end, Condition::LE);
   }
@@ -196,7 +197,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   const std::string         m_path;
 
   protected:
-  std::mutex                m_mutex;
+  std::shared_mutex         m_mutex;
   Cells::Interval           m_interval;
 };
 

@@ -54,7 +54,7 @@ class MngrRole {
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
-    std::lock_guard<std::mutex> lock(m_mutex_timer);
+    std::lock_guard lock(m_mutex_timer);
     if(!m_run)
       return;
 
@@ -76,7 +76,7 @@ class MngrRole {
   }
 
   bool has_active_columns(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_cols_active.size() > 0;
   }
 
@@ -84,7 +84,7 @@ class MngrRole {
     if(!has_active_columns())
       set_active_columns();
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     cols.assign(m_cols_active.begin(), m_cols_active.end());
   }
 
@@ -94,7 +94,7 @@ class MngrRole {
   }
 
   MngrStatus::Ptr active_mngr(size_t begin, size_t end){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     for(auto& host : m_states){
       if(host->state == Types::MngrState::ACTIVE 
         && host->col_begin <= begin 
@@ -199,7 +199,7 @@ class MngrRole {
     }
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
 
       if(token == 0 || !turn_around) {
         if(token == 0)
@@ -226,7 +226,7 @@ class MngrRole {
   }
 
   void update_manager_addr(uint64_t hash, const EndPoint& mngr_host){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     bool new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
     if(new_srv) {
@@ -239,7 +239,7 @@ class MngrRole {
                      bool srv=false){
     EndPoints endpoints;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
     
       auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
       if(it != m_mngrs_client_srv.end()) {
@@ -269,7 +269,7 @@ class MngrRole {
   }
   
   bool require_sync(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     bool current = m_major_updates;
     m_major_updates = false;
     return current;
@@ -277,7 +277,7 @@ class MngrRole {
 
   void stop() {
     {
-      std::lock_guard<std::mutex> lock(m_mutex_timer);
+      std::lock_guard lock(m_mutex_timer);
       m_check_timer.cancel();
       m_run = false;
     }
@@ -285,7 +285,7 @@ class MngrRole {
     m_mngr_inchain->stop();
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       for(auto& host : m_states) {
         if(host->conn != nullptr && host->conn->is_open())
           asio::post(
@@ -349,7 +349,7 @@ class MngrRole {
     //HT_DEBUG("managers_checkin");
     size_t sz;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       apply_cfg();
       sz = m_states.size();
     }
@@ -359,7 +359,7 @@ class MngrRole {
   void fill_states(){
     MngrsStatus states;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       states.assign(m_states.begin(), m_states.end());
     }
     fill_states(states, 0, nullptr);
@@ -376,7 +376,7 @@ class MngrRole {
 
     MngrStatus::Ptr host_chk;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       if(!m_run)
         return;
       if(next == m_states.size())
@@ -440,7 +440,7 @@ class MngrRole {
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& host : m_states){
       if(has_endpoint(endpoint, host->endpoints)){
@@ -450,7 +450,7 @@ class MngrRole {
   }
 
   void update_state(const EndPoints& endpoints, Types::MngrState state){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& host : m_states){
       if(has_endpoint(endpoints, host->endpoints)){
@@ -460,7 +460,7 @@ class MngrRole {
   }
   
   MngrStatus::Ptr get_host(const EndPoints& endpoints){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     for(auto& host : m_states){
       if(has_endpoint(endpoints, host->endpoints))
@@ -470,7 +470,7 @@ class MngrRole {
   }
 
   MngrStatus::Ptr get_highest_state_host(uint64_t begin, uint64_t end){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     MngrStatus::Ptr h = nullptr;
     for(auto& host : m_states){
@@ -483,7 +483,7 @@ class MngrRole {
   }
   
   bool is_off(uint64_t begin, uint64_t end){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     bool offline = true;
     for(auto& host : m_states){
@@ -498,7 +498,7 @@ class MngrRole {
     
     client::Mngr::Groups::Selected groups;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       groups = m_local_groups;
     }
 
@@ -520,7 +520,7 @@ class MngrRole {
     }
     
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if(cols_active != m_cols_active){
         m_cols_active.swap(cols_active);
         return true;
@@ -540,7 +540,7 @@ class MngrRole {
   EndPoints                       m_local_endpoints;
   uint64_t                        m_local_token;
 
-  std::mutex                      m_mutex;
+  std::shared_mutex               m_mutex;
   MngrsStatus                     m_states;
   std::atomic<uint8_t>            m_checkin;
   client::Mngr::Groups::Selected  m_local_groups;

@@ -35,24 +35,24 @@ class Block {
     //std::cout << " ~Block\n";
   }
 
-  bool is_next(const Specs::Interval::Ptr spec) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool is_next(const Specs::Interval::Ptr spec) {
+    std::shared_lock lock(m_mutex);
     return (spec->offset_key.empty() || m_interval.is_in_end(spec->offset_key))
             && m_interval.includes(spec);
   }
 
-  bool includes(const Specs::Interval::Ptr spec) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool includes(const Specs::Interval::Ptr spec) {
+    std::shared_lock lock(m_mutex);
     return m_interval.includes(spec);
   }
   
   const bool is_consist(const Interval& intval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return intval.consist(m_interval);
   }
 
   const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_cells.size;
   }
 
@@ -61,12 +61,12 @@ class Block {
   }
   
   const size_t size_bytes() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_cells.size_bytes;
   }
   
   void load_cells(const Mutable& cells) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     //auto ts = Time::now_ns();
     //size_t added = m_cells.size;
 
@@ -93,7 +93,7 @@ class Block {
     uint32_t sz = 0;
     
     //auto ts = Time::now_ns();
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     bool synced = !m_cells.size;
     while(remain) {
@@ -147,16 +147,17 @@ class Block {
   }
 
   void free_key_begin() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_interval.key_begin.free();
   }
 
   void free_key_end() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_interval.key_end.free();
   }
 
   const std::string to_string() {
+    std::shared_lock lock(m_mutex);
     std::string s("Cells::Block(");
     s.append(m_interval.to_string());
     s.append(" ");
@@ -166,7 +167,7 @@ class Block {
   }
   
   protected:
-  std::mutex              m_mutex;
+  std::shared_mutex       m_mutex;
   Interval                m_interval;
   Mutable                 m_cells;
 };

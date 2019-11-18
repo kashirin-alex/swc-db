@@ -72,27 +72,27 @@ class Range : public DB::RangeBase {
     return std::dynamic_pointer_cast<Range>(other);
   }
 
-  virtual ~Range(){
+  virtual ~Range() {
     std::cout << " ~Range cid=" << cid << " rid=" << rid << "\n"; 
   }
   
   void set_state(State new_state) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_state = new_state;
   }
 
   bool is_loaded() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_state == State::LOADED;
   }
 
   bool deleted() { 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_state == State::DELETED;
   }
 
   void add(ReqAdd* req) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_q_adding.push(req);
     
     if(m_q_adding.size() == 1) { 
@@ -114,7 +114,7 @@ class Range : public DB::RangeBase {
   void load(ResponseCallback::Ptr cb) {
     bool is_loaded;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       is_loaded = m_state != State::NOTLOADED;
       if(m_state == State::NOTLOADED)
         m_state = State::LOADING;
@@ -153,7 +153,7 @@ class Range : public DB::RangeBase {
   }
 
   void on_change(int &err, bool removal=false) { // change of range-interval
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     
     if(type != Types::Range::MASTER) {
       uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
@@ -212,7 +212,7 @@ class Range : public DB::RangeBase {
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
     int err = Error::OK;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if(m_state == State::DELETED){
         cb(err);
         return;
@@ -238,7 +238,7 @@ class Range : public DB::RangeBase {
   void remove(int &err) {
     wait();
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_state = State::DELETED;
     }
     wait_queue();
@@ -253,7 +253,7 @@ class Range : public DB::RangeBase {
   void wait_queue() {
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         if(m_q_adding.empty())
           break;
       }
@@ -262,12 +262,12 @@ class Range : public DB::RangeBase {
   }
 
   const bool compacting() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_compacting != Compact::NONE;
   }
 
   void compacting(Compact state) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_compacting = state;
     if(state == Compact::NONE)
       m_cv.notify_all();
@@ -278,7 +278,7 @@ class Range : public DB::RangeBase {
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
     bool intval_changed;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       
       blocks.cellstores->replace(err, w_cellstores);
       if(err)
@@ -301,7 +301,7 @@ class Range : public DB::RangeBase {
   }
 
   const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     
     std::string s("(");
     s.append(DB::RangeBase::to_string());
@@ -319,7 +319,7 @@ class Range : public DB::RangeBase {
 
   void loaded(int &err, ResponseCallback::Ptr cb) {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       if(m_state == State::DELETED)
         err = Error::RS_DELETED_RANGE;
     }
@@ -389,9 +389,12 @@ class Range : public DB::RangeBase {
   }
 
   void wait() {
-    std::unique_lock<std::mutex> lock_wait(m_mutex);
+    std::unique_lock lock_wait(m_mutex);
     if(m_compacting == Compact::COMPACTING)
-      m_cv.wait(lock_wait, [&compacting=m_compacting](){return compacting == Compact::NONE;});  
+      m_cv.wait(
+        lock_wait, 
+        [&compacting=m_compacting](){return compacting == Compact::NONE;}
+      );  
   }
 
   void run_add_queue() {
@@ -405,7 +408,7 @@ class Range : public DB::RangeBase {
     for(;;) {
       err = Error::OK;
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         req = m_q_adding.front();
       }
       uint32_t count = 0;
@@ -442,7 +445,7 @@ class Range : public DB::RangeBase {
 
       delete req;
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard lock(m_mutex);
         m_q_adding.pop();
         if(m_q_adding.empty())
           break;
@@ -465,7 +468,7 @@ class Range : public DB::RangeBase {
   
   Query::Update::Ptr            m_req_set_intval;
 
-  std::condition_variable       m_cv;
+  std::condition_variable_any   m_cv;
   DB::Cells::Interval           m_interval_old;
 };
 

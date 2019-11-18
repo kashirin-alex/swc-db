@@ -13,7 +13,6 @@
 #include "Callbacks.h"
 #include "Column.h"
 
-#include <mutex>
 #include <memory>
 #include <unordered_map>
 #include <iostream>
@@ -41,7 +40,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   Column::Ptr get_column(int &err, const int64_t cid, bool initialize){
     Column::Ptr col = nullptr;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
 
       auto it = m_columns.find(cid);
       if (it != m_columns.end())
@@ -63,7 +62,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
   
   Column::Ptr get_next(size_t& idx) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     if(m_columns.size() > idx){
       auto it = m_columns.begin();
@@ -131,7 +130,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     };
 
     for(;;){
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       auto it = m_columns.begin();
       if(it == m_columns.end())
         break;
@@ -151,7 +150,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     if(col != nullptr) {
       col->remove_all(err);
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard lock(m_mutex);
         auto it = m_columns.find(cid);
         if (it != m_columns.end()) 
           m_columns.erase(it);
@@ -167,7 +166,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     bool started = false;
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         if(!started) { 
           it = m_columns.begin();
           started = true;
@@ -187,7 +186,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     std::string s("columns=(");
     for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
@@ -199,9 +198,9 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   private:
-  std::mutex     m_mutex;
-  ColumnsMap     m_columns;
-  State          m_state;
+  std::shared_mutex m_mutex;
+  ColumnsMap        m_columns;
+  State             m_state;
 
 };
 

@@ -9,6 +9,8 @@
 #include "swcdb/lib/db/Types/Column.h"
 #include "swcdb/lib/db/Types/Encoding.h"
 
+#include <shared_mutex>
+
 namespace SWC { namespace DB {
 
 
@@ -174,7 +176,7 @@ class Schemas {
   virtual ~Schemas(){}
   
   void add(int &err, Schema::Ptr schema){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(!m_map.insert(
         std::pair<int64_t, Schema::Ptr>(schema->cid, schema)).second) {
       HT_WARNF("Unable to add column %s, remove first", 
@@ -184,7 +186,7 @@ class Schemas {
   }
 
   void remove(int64_t cid){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     auto it = m_map.find(cid);
     if(it != m_map.end())
@@ -192,7 +194,7 @@ class Schemas {
   }
 
   void replace(Schema::Ptr schema){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     auto it = m_map.find(schema->cid);
     if(it == m_map.end())
@@ -202,7 +204,7 @@ class Schemas {
   }
 
   Schema::Ptr get(int64_t cid){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     auto it = m_map.find(cid);
     if(it == m_map.end())
@@ -211,7 +213,7 @@ class Schemas {
   }
   
   Schema::Ptr get(const std::string &name){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     
     for( const auto& it : m_map ) {
       if(name.compare(it.second->col_name) == 0)
@@ -221,14 +223,14 @@ class Schemas {
   }
 
   void all(std::vector<Schema::Ptr> &entries){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     for( const auto& it : m_map) 
       entries.push_back(it.second);
   }
 
   private:
-  std::mutex                                m_mutex;
+  std::shared_mutex                         m_mutex;
   std::unordered_map<int64_t, Schema::Ptr>  m_map;
 };
 

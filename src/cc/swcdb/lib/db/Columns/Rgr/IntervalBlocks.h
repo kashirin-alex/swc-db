@@ -59,25 +59,29 @@ class IntervalBlocks {
     }
 
     const bool removed() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       return m_state == State::REMOVED;
     }
 
     const bool loaded() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       return m_state == State::LOADED;
     }
 
-    const bool add_logged(const DB::Cells::Cell& cell) { 
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(!m_interval.is_in_end(cell.key))
-        return false;
+    const bool add_logged(const DB::Cells::Cell& cell) {
+      {
+        std::shared_lock lock(m_mutex);
+      
+        if(!m_interval.is_in_end(cell.key))
+          return false;
 
-      if(m_state != State::LOADED)
-        return cell.on_fraction ? 
-          m_interval.key_end.compare(cell.key, cell.on_fraction) 
-          != Condition::GT : true;
+        if(m_state != State::LOADED)
+          return cell.on_fraction ? 
+            m_interval.key_end.compare(cell.key, cell.on_fraction) 
+            != Condition::GT : true;
+      }
 
+      std::lock_guard lock(m_mutex);
       m_cells.add(cell);
 
       if(cell.on_fraction)
@@ -108,7 +112,7 @@ class IntervalBlocks {
     bool scan(DB::Cells::ReqScan::Ptr req) {
       bool loaded;
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard lock(m_mutex);
 
         if(!(loaded = m_state == State::LOADED)) {
           m_queue.push(new Callback(req, ptr()));
@@ -137,7 +141,7 @@ class IntervalBlocks {
 
     void loaded_logs(int err) override {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard lock(m_mutex);
         m_state = State::LOADED;
       }
       run_queue(err);
@@ -148,7 +152,7 @@ class IntervalBlocks {
     
       for(;;) {
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::shared_lock lock(m_mutex);
           if(m_queue.empty())
             return;
           cb = m_queue.front();
@@ -158,7 +162,7 @@ class IntervalBlocks {
         delete cb;
 
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::lock_guard lock(m_mutex);
           m_queue.pop();
         }
       }
@@ -203,39 +207,42 @@ class IntervalBlocks {
     }
 
     void add(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       _add(blk);
     }
 
     void set_prev(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_prev = blk;
     }
 
-    void set_next(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_next = blk;
+    void set_chain(Ptr prev, Ptr next) {
+      std::lock_guard lock(m_mutex);
+      m_next = next;
+      m_prev = prev;
     }
 
     Ptr get_prev() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       return m_prev;
     }
 
     Ptr get_next() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       return m_next;
     }
 
     bool get_next(Ptr& blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      blk = m_next;
+      {
+        std::shared_lock lock(m_mutex);
+        blk = m_next;
+      }
       return blk != nullptr;
     }
 
     /*
     void expand_next_and_release(DB::Cell::Key& key_begin) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
 
       m_state = State::REMOVED;
       key_begin.copy(m_interval.key_begin);
@@ -244,7 +251,7 @@ class IntervalBlocks {
     }
 
     void merge_and_release(Ptr blk) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
 
       m_state = State::NONE;
       blk->expand_next_and_release(m_interval.key_begin);
@@ -254,7 +261,7 @@ class IntervalBlocks {
 
     const size_t release() {
       size_t released = 0;
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
 
       if(m_processing || m_state != State::LOADED)
         return released;
@@ -266,28 +273,28 @@ class IntervalBlocks {
     }
 
     void processing_increment() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_processing++;
     }
 
     void processing_decrement() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_processing--;
     }
 
-    const size_t processing() {
-      std::lock_guard<std::mutex> lock(m_mutex); 
+    const bool processing() {
+      std::shared_lock lock(m_mutex); 
       return m_processing;
     }
 
     void wait_processing() {
-      while(processing() > 0) {
+      while(processing()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
     }
 
     const std::string to_string() {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
 
       std::string s("Block(state=");
       s.append(std::to_string((uint8_t)m_state));
@@ -319,18 +326,17 @@ class IntervalBlocks {
     private:
 
     void _add(Ptr blk) {
-      if(m_next) {
-        m_next->set_prev(blk);
-        blk->set_next(m_next);
-      } 
+      auto nxt = m_next;
       m_next = blk;
-      blk->set_prev(ptr());
+      m_next->set_chain(ptr(), nxt);
+      if(nxt)
+        nxt->set_prev(blk);
     }
 
     void _scan(DB::Cells::ReqScan::Ptr req) {
 
       if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
 
         size_t skips = 0; // Ranger::Stats
         m_cells.scan(
@@ -423,7 +429,7 @@ class IntervalBlocks {
   void unload() {
     stop(Error::RS_NOT_READY);
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     if(commitlog != nullptr) 
       commitlog->commit_new_fragment(true);
@@ -434,7 +440,7 @@ class IntervalBlocks {
   void remove(int& err) {
     stop(Error::COLUMN_MARKED_REMOVED);
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     if(commitlog != nullptr) 
       commitlog->remove(err);
@@ -448,7 +454,7 @@ class IntervalBlocks {
     for(Block::Ptr blk = m_block;blk;){
       blk->run_queue(err);
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         if(!blk->get_next(blk))
           break;
       }
@@ -460,34 +466,37 @@ class IntervalBlocks {
 
     commitlog->add(cell);
     
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(Block::Ptr blk=m_block; blk; blk->get_next(blk)) {
-      if(blk->add_logged(cell)) {
-        if(blk->loaded()) {
-          while(blk->size() >= 200000)
-            blk = blk->split(100000, true);
+    bool to_split=false;
+    Block::Ptr blk;
+    {
+      std::shared_lock lock(m_mutex);
+      for(blk=m_block; blk; blk->get_next(blk)) {
+        if(blk->add_logged(cell)) {
+          to_split = blk->loaded();
+          break;
         }
-        break;
       }
+    }
+    if(to_split) {
+      std::lock_guard lock(m_mutex);
+      while(blk->size() >= 200000)
+        blk = blk->split(100000, true);
     }
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    Block::Ptr eval;
-    int err = Error::OK;
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(cellstores->empty())
-        err = Error::RS_NOT_LOADED_RANGE;
-
-      else if(!m_block) 
-        init_blocks(err);
-
-      eval = m_block;
-    }
+    int err = cellstores->empty() ? Error::RS_NOT_LOADED_RANGE : Error::OK;
     if(err) {
       req->response(err);
       return;
+    }
+
+    Block::Ptr eval;
+    {
+      std::lock_guard lock(m_mutex);
+      if(!m_block) 
+        init_blocks(err);
+      eval = m_block;
     }
 
     Block::Ptr blk;
@@ -498,7 +507,7 @@ class IntervalBlocks {
       if(blk_ptr)
         blk_ptr->get_next(eval);
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
 
         for(; eval; eval->get_next(eval)) {
           if(eval->removed() || !eval->is_next(req->spec)) 
@@ -546,24 +555,24 @@ class IntervalBlocks {
 
   const size_t cells_count() {
     size_t sz = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     for(Block::Ptr blk=m_block; blk; blk->get_next(blk))
       sz += blk->size();
     return sz;
   }
 
   const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return _size();
   }
 
   const size_t size_bytes() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return _size_bytes();
   }
 
   const size_t size_bytes_total(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return _size_bytes() 
           + (cellstores ? cellstores->size_bytes(only_loaded) : 0)
           + (commitlog  ? commitlog->size_bytes(only_loaded)  : 0);
@@ -577,7 +586,7 @@ class IntervalBlocks {
 
   /*
   void release_and_merge(Block::Ptr ptr) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     bool state = false;
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
@@ -610,7 +619,7 @@ class IntervalBlocks {
       released += commitlog->release(bytes ? bytes-released : bytes);
       if(!bytes || released < bytes) {
 
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         for(Block::Ptr blk=m_block; blk; blk->get_next(blk)) {
           released += blk->release();
           if(bytes && released >= bytes)
@@ -619,7 +628,8 @@ class IntervalBlocks {
       }
     }
     if(!bytes) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      wait_processing();
+      std::lock_guard lock(m_mutex);
       clear();
     }
     //else if(_size() > 1000)
@@ -639,7 +649,7 @@ class IntervalBlocks {
   }
 
   const bool processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return _processing();
   }
 
@@ -650,7 +660,7 @@ class IntervalBlocks {
   }
 
   const std::string to_string(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     std::string s("IntervalBlocks(count=");
     s.append(std::to_string(_size()));
@@ -758,8 +768,8 @@ class IntervalBlocks {
       blk->free_key_end();
   }
 
-  std::mutex      m_mutex;
-  Block::Ptr      m_block;
+  std::shared_mutex   m_mutex;
+  Block::Ptr          m_block;
 
 };
 
