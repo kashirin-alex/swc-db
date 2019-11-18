@@ -46,9 +46,9 @@ class Column : public std::enable_shared_from_this<Column> {
           err = Error::SERVER_SHUTTING_DOWN;
         else if(m_deleting)
           err = Error::COLUMN_MARKED_REMOVED;
-        
-        if(err != Error::OK)
+        if(err)
           return range;
+          
         range = std::make_shared<Range>(cid, rid);
         m_ranges.insert(RangesMapPair(rid, range));;
       }

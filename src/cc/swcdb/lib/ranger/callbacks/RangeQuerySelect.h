@@ -57,7 +57,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     }
     cbp->header.initialize_from_request_header(m_ev->header);
     
-    std::cout << "RangeQuerySelect, rsp " << to_string() << "\n";
+    //std::cout << "RangeQuerySelect, rsp " << to_string() << "\n";
     //std::cout << params.to_string() << "\n";
 
     try {

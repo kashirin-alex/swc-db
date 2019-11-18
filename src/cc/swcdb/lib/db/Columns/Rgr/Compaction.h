@@ -152,7 +152,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     if(!do_compaction)
       return compacted(range);
-    
+      
     range->compacting(Range::Compact::COMPACTING);
     range->blocks.wait_processing();
     
@@ -162,6 +162,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     log->commit_new_fragment(true);
     log->get(req->fragments_old); // fragments for deletion at finalize-compaction 
 
+    //std::cout << "\n\n" << range->to_string() << "\n\n";
     range->scan_internal(req);
   }
 
@@ -170,6 +171,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   
     typedef std::shared_ptr<CompactScan>          Ptr;
     std::vector<Files::CommitLog::Fragment::Ptr>  fragments_old;
+    std::atomic<size_t> total_cells = 0;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
                 const uint32_t cs_size, const uint32_t blk_size, 
@@ -205,10 +207,14 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     void response(int &err) override {
       if(m_stopped || !ready(err))
         return;
-
+      /*
       std::cout << "CompactScan::response: \n"
                 << "  spec=" << spec->to_string() << "\n"
                 << " cells="<< cells->size << " sz=" << cells->size_bytes << "\n";
+      */
+      total_cells+=cells->size;
+      std::cout << "CompactScan::response: total_cells=" << total_cells.load() << "\n";
+
       {
         std::lock_guard<std::mutex> lock(m_mutex);
         if(!cells->size) {
@@ -228,11 +234,11 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       selected_cells->get(0, first);
       DB::Cells::Cell last;
       selected_cells->get(-1, last);
-      
+      /*
       std::cout << "CompactScan::response : \n" 
                 << " first=" << first.to_string() << "\n"
                 << "  last=" << last.to_string() << "\n";
-
+      */
       spec->offset_key.copy(last.key);
       spec->offset_rev = last.timestamp;
       
@@ -386,7 +392,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void finalize() {
-      std::cout << "Compact ::finalize 1\n";
       
       if(!range->is_loaded())
         return quit();
@@ -437,7 +442,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         
       compactor->compacted(range, empty_cs);
 
-      std::cout << "Compact ::finalize 2\n";
+      std::cout << "Compact ::finalized\n";
     }
 
     void quit() {

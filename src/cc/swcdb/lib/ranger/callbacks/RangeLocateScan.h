@@ -99,7 +99,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       }
     }
 
-    std::cout << "RangeLocateScan, rsp " << to_string() << "\n";    
+    //std::cout << "RangeLocateScan, rsp " << to_string() << "\n";    
     //std::cout << params.to_string() << "\n";
     
     try {
