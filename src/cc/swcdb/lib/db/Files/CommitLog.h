@@ -34,7 +34,7 @@ class Fragments {
                 "swc.rgr.Range.block.size")), 
               cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
                 "swc.rgr.Range.block.encoding")) {
-    
+    HT_ASSERT(range != nullptr);
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
@@ -178,35 +178,46 @@ class Fragments {
     }
   }
   
-  void load_current_cells(DB::Cells::Block::Ptr cells_block) {
-    // + ? whether a commit_new_fragment happened 
-    std::lock_guard<std::mutex> lock(m_mutex_cells);
-    cells_block->load_cells(m_cells);
+  void load_current_cells(int err, DB::Cells::Block::Ptr cells_block, 
+                          int64_t after_ts = 0) {
+    if(!err) {
+      if(after_ts) {// + ? whether a commit_new_fragment happened
+        load_cells(cells_block, after_ts);
+        return;
+      }
+      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      cells_block->load_cells(m_cells);
+    }
+    
+    cells_block->loaded_logs(err);
   }
   
-  void load_cells(DB::Cells::Block::Ptr cells_block) {
+  void load_cells(DB::Cells::Block::Ptr cells_block, int64_t after_ts = 0) {
     {
       std::unique_lock<std::mutex> lock_wait(m_mutex);
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
-    
+
+    int64_t ts;
     std::vector<Fragment::Ptr>  fragments;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
+      ts = Time::now_ns();
       for(auto& frag : m_fragments) {  
-        if(cells_block->is_consist(frag->interval))
+        if(after_ts < frag->ts && cells_block->is_consist(frag->interval))
           fragments.push_back(frag);
       }
     }
-
-    if(fragments.empty()){
-      load_current_cells(cells_block);
-      cells_block->loaded_logs(Error::OK);
+    if(fragments.empty()) {
+      load_current_cells(Error::OK, cells_block);
       return;
     }
+    //if(after_ts) {
+    //  std::cout << " LOG::after_ts sz=" << fragments.size() << "\n";
+    //}
 
-    auto waiter = new AwaitingLoad(fragments.size(), cells_block, ptr());
+    auto waiter = new AwaitingLoad(ts, fragments.size(), cells_block, ptr());
     for(auto& frag : fragments)
       frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
   }
@@ -373,9 +384,9 @@ class Fragments {
   struct AwaitingLoad {
     public:
     
-    AwaitingLoad(int32_t count, DB::Cells::Block::Ptr cells_block, 
+    AwaitingLoad(int64_t ts, int32_t count, DB::Cells::Block::Ptr cells_block, 
                   Fragments::Ptr log) 
-                : m_count(count), cells_block(cells_block), log(log) {
+                : ts(ts), m_count(count), cells_block(cells_block), log(log) {
     }
 
     virtual ~AwaitingLoad() { }
@@ -395,7 +406,7 @@ class Fragments {
         }
 
         frag->load_cells(cells_block);
-        
+
         {
           std::lock_guard<std::mutex> lock(m_mutex);
           m_pending.pop();
@@ -406,11 +417,11 @@ class Fragments {
           }
         }
       }
-      log->load_current_cells(cells_block);
-      cells_block->loaded_logs(err);
+      log->load_current_cells(err, cells_block, ts);
       delete this;
     }
 
+    const int64_t                 ts;
     std::mutex                    m_mutex;
     int32_t                       m_count;
     DB::Cells::Block::Ptr         cells_block;
