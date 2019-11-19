@@ -18,38 +18,44 @@ namespace SWC { namespace server {
 
 
 class Acceptor{
-public:
+  public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
-  Acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor, 
+  Acceptor(asio::ip::tcp::acceptor& acceptor, 
            AppContext::Ptr app_ctx, IOCtxPtr io_ctx)
-          : m_acceptor(acceptor), m_app_ctx(app_ctx), 
-            m_io_ctx(io_ctx)
-  {
+          : m_acceptor(std::move(acceptor)), m_app_ctx(app_ctx), 
+            m_io_ctx(io_ctx) {
     do_accept();
     
     HT_INFOF("Listening On: [%s]:%d fd=%d", 
-             m_acceptor->local_endpoint().address().to_string().c_str(), 
-             m_acceptor->local_endpoint().port(), 
-             (ssize_t)m_acceptor->native_handle());
+             m_acceptor.local_endpoint().address().to_string().c_str(), 
+             m_acceptor.local_endpoint().port(), 
+             (ssize_t)m_acceptor.native_handle());
   }
-  void stop(){
-    HT_INFOF("Stopping to Listen On: [%s]:%d fd=%d", 
-             m_acceptor->local_endpoint().address().to_string().c_str(), 
-             m_acceptor->local_endpoint().port(), 
-             (ssize_t)m_acceptor->native_handle());
 
-    if(m_acceptor->is_open())
-      m_acceptor->close();
+  void stop() {
+    HT_INFOF("Stopping to Listen On: [%s]:%d fd=%d", 
+             m_acceptor.local_endpoint().address().to_string().c_str(), 
+             m_acceptor.local_endpoint().port(), 
+             (ssize_t)m_acceptor.native_handle());
+
+    if(m_acceptor.is_open())
+      m_acceptor.close();
   }
+
   virtual ~Acceptor(){}
 
-private:
+  asio::ip::tcp::acceptor* sock() {
+    return &m_acceptor;
+  }
+
+  private:
+  
   void do_accept() {
-    m_acceptor->async_accept(
+    m_acceptor.async_accept(
       [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
-        if (ec) {
-          if (ec.value() != 125) 
+        if(ec) {
+          if(ec.value() != 125) 
             HT_DEBUGF("SRV-accept error=%d(%s)", 
                       ec.value(), ec.message().c_str());
           return;
@@ -65,9 +71,9 @@ private:
   }
 
   private:
-  std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
-  AppContext::Ptr   m_app_ctx;
-  IOCtxPtr          m_io_ctx;
+  asio::ip::tcp::acceptor m_acceptor;
+  AppContext::Ptr         m_app_ctx;
+  IOCtxPtr                m_io_ctx;
 };
 
 
@@ -106,54 +112,35 @@ class SerializedServer {
       true
     );
 
-    std::vector<std::shared_ptr<asio::ip::tcp::acceptor>> main_acceptors;
     EndPoints endpoints_final;
 
-    for(uint32_t reactor=0;reactor<reactors;reactor++){
+    for(uint32_t reactor=0; reactor<reactors; reactor++) {
 
       auto io_ctx = std::make_shared<asio::io_context>(workers);
       m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
 
-      for (std::size_t i = 0; i < endpoints.size(); ++i){
+      for (std::size_t i = 0; i < endpoints.size(); ++i) {
         auto& endpoint = endpoints[i];
 
-        std::shared_ptr<asio::ip::tcp::acceptor> acceptor;
-        if(reactor == 0){ 
-          acceptor = std::make_shared<asio::ip::tcp::acceptor>(
-            *io_ctx.get(), 
-            endpoint
-          );
-          main_acceptors.push_back(acceptor);
+        if(reactor == 0) { 
+          auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
+          m_acceptors.push_back(
+            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+          endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
         } else {
-          acceptor = std::make_shared<asio::ip::tcp::acceptor>(
-            *io_ctx.get(), 
-            endpoint.protocol(),  
-            dup(main_acceptors[i]->native_handle())
-          );
-        }
-        
-        m_acceptors.push_back(
-          std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
-
-        if(reactor == 0){ 
-          endpoints_final.push_back(acceptor->local_endpoint());
-          // if(!acceptor->local_endpoint().address().to_string().compare("::"))
-          //  endpoints_final.push_back(acceptor->local_endpoint());
-          // else {
-          // + localhost public ips
-          // endpoints_final.push_back(acceptor->local_endpoint());
-          // }
+          auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), 
+            endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle()));
+          m_acceptors.push_back(
+            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
         }
       }
 
       if(reactor == 0)
         app_ctx->init(endpoints_final);
 
-        
       asio::thread_pool* pool = new asio::thread_pool(workers);
-
-      for(int n=0;n<workers;n++)
+      for(int n=0; n<workers; n++)
         asio::post(*pool, [d=io_ctx, run=&m_run]{
           // HT_INFOF("START DELAY: %s 3secs",  m_appname.c_str());
           std::this_thread::sleep_for(std::chrono::milliseconds(5000));
