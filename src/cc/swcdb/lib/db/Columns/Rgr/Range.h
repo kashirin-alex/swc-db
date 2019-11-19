@@ -73,6 +73,7 @@ class Range : public DB::RangeBase {
   }
 
   virtual ~Range() {
+    blocks.free();
     std::cout << " ~Range cid=" << cid << " rid=" << rid << "\n"; 
   }
   
