@@ -65,11 +65,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
               : app_ctx(app_ctx), m_sock(std::move(socket)), m_next_req_id(0) {
   }
 
-  ConnHandlerPtr ptr(){
+  ConnHandlerPtr ptr() {
     return shared_from_this();
   }
 
-  virtual ~ConnHandler(){ 
+  virtual ~ConnHandler() { 
     do_close();
   }
   
@@ -77,25 +77,25 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  const std::string endpoint_local_str(){
+  const std::string endpoint_local_str() {
     std::string s(endpoint_local.address().to_string());
     s.append(":");
     s.append(std::to_string(endpoint_local.port()));
     return s;
   }
   
-  const std::string endpoint_remote_str(){
+  const std::string endpoint_remote_str() {
     std::string s(endpoint_remote.address().to_string());
     s.append(":");
     s.append(std::to_string(endpoint_remote.port()));
     return s;
   }
   
-  const size_t endpoint_remote_hash(){
+  const size_t endpoint_remote_hash() {
     return endpoint_hash(endpoint_remote);
   }
   
-  const size_t endpoint_local_hash(){
+  const size_t endpoint_local_hash() {
     return endpoint_hash(endpoint_local);
   }
   
@@ -116,8 +116,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_err == Error::OK && m_sock.is_open();
   }
 
-  void close(){
-    if(is_open()){
+  void close() {
+    if(is_open()) {
       std::lock_guard<std::mutex> lock(m_mutex);
       try{m_sock.close();}catch(...){}
     }
@@ -125,12 +125,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     disconnected();
   }
 
-  const size_t pending_read(){
+  const size_t pending_read() {
     std::lock_guard<std::mutex> lock(m_mutex_reading);
     return m_pending.size();
   }
 
-  const size_t pending_write(){
+  const size_t pending_write() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_outgoing.size();
   }
@@ -145,7 +145,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       app_ctx->handle(ptr(), ev); 
   }
 
-  void do_close(){
+  void do_close() {
     if(m_err == Error::OK) {
       close();
       auto ev = Event::make(Event::Type::DISCONNECT, m_err);
@@ -180,7 +180,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_response(cbp);
   }
 
-  const int send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr){
+  const int send_response(CommBuf::Ptr &cbuf, 
+                          DispatchHandler::Ptr hdlr=nullptr) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -245,14 +246,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   /* 
-  void accept_requests(DispatchHandler::Ptr hdlr, 
-                              uint32_t timeout_ms=0) {
-    auto q = new PendingRsp(0, hdlr, false);  // initial req.acceptor
-    if(timeout_ms) 
-      set_timer(q->tm, timeout_ms);
-
-    add_pending(q);
-
+  void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0) {
+    add_pending(new PendingRsp(hdlr, get_timer(timeout_ms)));
     read_pending();
   }
   */
@@ -317,7 +312,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return tm;
   }
     
-  void write_or_queue(Outgoing* data){ 
+  void write_or_queue(Outgoing* data) { 
     {
       std::lock_guard<std::mutex> lock(m_mutex);  
       if(m_writing) {
@@ -388,19 +383,20 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       [ev, data, ptr=ptr()](const asio::error_code e, size_t filled) {
         return ptr->read_condition_hdlr(ev, data, e, filled);
       },
-      [ev, ptr=ptr()](const asio::error_code e, size_t filled){
+      [ev, ptr=ptr()](const asio::error_code e, size_t filled) {
         ptr->received(ev, e);
       }
     );
   }
   
   size_t read_condition_hdlr(const Event::Ptr ev, uint8_t* data,
-                             const asio::error_code e, size_t filled) {
-    if(filled < CommHeader::PREFIX_LENGTH)
-      return CommHeader::PREFIX_LENGTH-filled;
-
-    asio::error_code ec = e;
-    size_t remain = read_condition(ev, data, ec);
+                             const asio::error_code e, size_t filled) { 
+    size_t remain;
+    asio::error_code ec = e;                      
+    if(!ec) 
+      remain = filled < CommHeader::PREFIX_LENGTH ? 
+                CommHeader::PREFIX_LENGTH-filled
+                : read_condition(ev, data, ec);
     if(ec) {
       remain = 0;
       do_close();
@@ -410,7 +406,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return remain;
   }
   
-  size_t read_condition(const Event::Ptr& ev, uint8_t* data, asio::error_code &ec) {
+  size_t read_condition(const Event::Ptr& ev, uint8_t* data, 
+                        asio::error_code &ec) {
     size_t remain = CommHeader::PREFIX_LENGTH;
     const uint8_t* ptr = data;
     size_t  read = 0;
@@ -502,7 +499,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     run_pending(ev);
   }
 
-  void disconnected(){
+  void disconnected() {
     PendingRsp* pending;
     Event::Ptr ev;
     for(;;) {
