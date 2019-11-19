@@ -42,7 +42,7 @@ class Checker {
     expected = num_req * batch_sz * threads_conn;
   }
 
-  void run(client::ConnHandler::Ptr conn, int req_n = 0){
+  void run(ConnHandlerPtr conn, int req_n = 0){
     if(++req_n > num_req)
       return;
 
@@ -81,7 +81,7 @@ class Checker {
   void get_conn(){
     Env::Clients::get()->mngr_service->get_connection(
       Env::Clients::get()->mngrs_groups->get_endpoints(1, 1), 
-      [this](client::ConnHandler::Ptr conn){
+      [this](ConnHandlerPtr conn){
         if(conn == nullptr || !conn->is_open()){
           get_conn();
           return;

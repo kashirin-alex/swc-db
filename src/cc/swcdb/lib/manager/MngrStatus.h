@@ -20,7 +20,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
 
   MngrStatus(uint64_t  begin, uint64_t  end,
              const EndPoints& points, 
-             client::ConnHandler::Ptr c, uint32_t pr)
+             ConnHandlerPtr c, uint32_t pr)
              : col_begin(begin), col_end(end), 
                Protocol::Common::Params::HostEndPoints(points), 
                conn(c), priority(pr), state(Types::MngrState::NOTSET),
@@ -77,7 +77,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   uint64_t          col_begin;
   uint64_t          col_end;
 
-  client::ConnHandler::Ptr  conn; // mngr-inchain
+  ConnHandlerPtr  conn; // mngr-inchain
   int                       failures;
 };
 

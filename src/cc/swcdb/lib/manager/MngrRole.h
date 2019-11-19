@@ -409,7 +409,7 @@ class MngrRole {
     Env::Clients::get()->mngr_service->get_connection(
       host_chk->endpoints, 
       [host_chk, next, total, flw, ptr=ptr()]
-      (client::ConnHandler::Ptr conn){
+      (ConnHandlerPtr conn){
         ptr->manager_checker(host_chk, next, total, flw, conn);
       },
       std::chrono::milliseconds(cfg_conn_timeout->get()), 
@@ -418,7 +418,7 @@ class MngrRole {
   }
 
   void manager_checker(MngrStatus::Ptr host, int next, size_t total, bool flw,
-                       client::ConnHandler::Ptr conn){
+                       ConnHandlerPtr conn){
     if(conn == nullptr || !conn->is_open()){
       if(host->state == Types::MngrState::ACTIVE
          && ++host->failures <= cfg_conn_fb_failures->get()){   
@@ -529,7 +529,7 @@ class MngrRole {
     return false;
   }
   
-  void set_mngr_inchain(client::ConnHandler::Ptr mngr){
+  void set_mngr_inchain(ConnHandlerPtr mngr){
     m_mngr_inchain->set(mngr);
 
     fill_states();

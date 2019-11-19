@@ -90,7 +90,7 @@ class FileSystemBroker: public FileSystem {
 
   bool send_request(Protocol::Req::Base::Ptr hdlr){
 
-    client::ConnHandler::Ptr conn = nullptr;
+    ConnHandlerPtr conn = nullptr;
     do {
       if(!m_run) {
         auto ev = Event::make(Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);

@@ -49,7 +49,6 @@ class AppContext : public SWC::AppContext {
   }
   
 };
-typedef std::shared_ptr<AppContext> AppContextPtr;
 
 }}}
 

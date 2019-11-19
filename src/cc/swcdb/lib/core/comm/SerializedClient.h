@@ -13,8 +13,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "AppContext.h"
-#include "ConnHandlerClient.h"
+#include "ConnHandler.h"
 
 
 namespace SWC { namespace client {
@@ -23,16 +22,16 @@ namespace SWC { namespace client {
 class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
   public:
   typedef std::shared_ptr<ServerConnections>    Ptr;
-  typedef std::function<void(ConnHandler::Ptr)> NewCb_t;
+  typedef std::function<void(ConnHandlerPtr)> NewCb_t;
 
   ServerConnections(std::string srv_name, const EndPoint& endpoint,
-                    IOCtxPtr ioctx, AppContextPtr ctx)
+                    IOCtxPtr ioctx, AppContext::Ptr ctx)
                   : m_srv_name(srv_name), m_endpoint(endpoint), 
                     m_ioctx(ioctx), m_ctx(ctx){}
 
   virtual ~ServerConnections(){}
 
-  void reusable(ConnHandler::Ptr &conn, bool preserve) {
+  void reusable(ConnHandlerPtr &conn, bool preserve) {
     for(;;){
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_conns.empty())
@@ -51,7 +50,8 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     //             m_srv_name.c_str(), to_string(conn).c_str());
   }
 
-  void connection(ConnHandler::Ptr &conn, std::chrono::milliseconds timeout, bool preserve){
+  void connection(ConnHandlerPtr &conn, std::chrono::milliseconds timeout, 
+                  bool preserve){
 
     HT_DEBUGF("Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
@@ -66,7 +66,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     if(ec || !sock.is_open())
       return;
 
-    conn = std::make_shared<ConnHandler>(m_ctx, sock, m_ioctx);
+    conn = std::make_shared<ConnHandler>(m_ctx, sock);
     conn->new_connection();
     if(preserve)
       put_back(conn);
@@ -87,8 +87,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
         if(ec || !sock->is_open()){
           cb(nullptr);
         } else {
-          auto conn = std::make_shared<ConnHandler>(
-            ptr->m_ctx, *sock.get(), ptr->m_ioctx);
+          auto conn = std::make_shared<ConnHandler>(ptr->m_ctx, *sock.get());
           conn->new_connection();
           if(preserve)
             ptr->put_back(conn);
@@ -101,7 +100,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     );       
   }
 
-  void put_back(ConnHandler::Ptr conn){
+  void put_back(ConnHandlerPtr conn){
     std::lock_guard<std::mutex> lock(m_mutex);
     m_conns.push(conn);
   }
@@ -124,9 +123,9 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   const std::string             m_srv_name;
   const EndPoint                m_endpoint;
   IOCtxPtr                      m_ioctx;
-  AppContextPtr                 m_ctx;
+  AppContext::Ptr               m_ctx;
   std::mutex                    m_mutex;
-  std::queue<ConnHandler::Ptr>  m_conns;
+  std::queue<ConnHandlerPtr>    m_conns;
 
 };
 
@@ -138,7 +137,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   typedef std::shared_ptr<Serialized>                  Ptr;
   typedef std::unordered_map<size_t, ServerConnections::Ptr> Map;
 
-  Serialized(std::string srv_name, IOCtxPtr ioctx, AppContextPtr ctx)
+  Serialized(std::string srv_name, IOCtxPtr ioctx, AppContext::Ptr ctx)
              : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx), m_run(true) {
     HT_INFOF("Init: %s", m_srv_name.c_str());
   }
@@ -157,14 +156,14 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
     return srv;
   }
 
-  ConnHandler::Ptr get_connection(
+  ConnHandlerPtr get_connection(
         const EndPoints& endpoints, 
         std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
         ){
     
-    ConnHandler::Ptr conn = nullptr;
+    ConnHandlerPtr conn = nullptr;
     if(endpoints.empty()){
       HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
       return conn;
@@ -221,7 +220,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
       next = 0;
 
     ServerConnections::Ptr srv = get_srv(endpoints.at(next++));
-    ConnHandler::Ptr conn = nullptr;
+    ConnHandlerPtr conn = nullptr;
     srv->reusable(conn, preserve);
     if(conn != nullptr || (probes > 0 && tries == 0)) {
       cb(conn);
@@ -231,7 +230,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
     HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
     srv->connection(timeout, 
       [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
-      (ConnHandler::Ptr conn){
+      (ConnHandlerPtr conn){
         if(!ptr->m_run.load() || (conn != nullptr && conn->is_open())){
           cb(conn);
           return;
@@ -250,7 +249,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
     );
   }
 
-  void preserve(ConnHandler::Ptr conn){
+  void preserve(ConnHandlerPtr conn){
     size_t hash = conn->endpoint_remote_hash();
 
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -259,7 +258,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
       (*it).second->put_back(conn);
   }
 
-  void close(ConnHandler::Ptr conn){
+  void close(ConnHandlerPtr conn){
     size_t hash = conn->endpoint_remote_hash();
     conn->do_close();
 
@@ -273,7 +272,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
     return m_ioctx; 
   }             
   
-  std::string to_str(ConnHandler::Ptr conn){
+  std::string to_str(ConnHandlerPtr conn){
     std::string s(m_srv_name);
     s.append(" ");
     s.append(conn->to_string());
@@ -297,7 +296,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   private:
   const std::string     m_srv_name;
   IOCtxPtr              m_ioctx;
-  AppContextPtr         m_ctx;
+  AppContext::Ptr       m_ctx;
 
   std::mutex            m_mutex;
   Map                   m_srv_conns;

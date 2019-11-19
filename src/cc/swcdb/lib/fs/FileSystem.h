@@ -10,7 +10,7 @@
 #include "Dirent.h"
 #include "Callbacks.h"
 
-#include "swcdb/lib/core/comm/AppContext.h"
+#include "swcdb/lib/core/comm/ConnHandler.h"
 
 namespace SWC{ namespace Types {
 

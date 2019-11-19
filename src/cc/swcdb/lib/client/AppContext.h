@@ -5,8 +5,7 @@
 #ifndef swc_lib_client_AppContext_h
 #define swc_lib_client_AppContext_h
 
-#include "swcdb/lib/core/comm/AppContext.h"
-#include "swcdb/lib/core/comm/AppHandler.h"
+#include "swcdb/lib/core/comm/ConnHandler.h"
 
 #include "swcdb/lib/db/Protocol/Commands.h"
 

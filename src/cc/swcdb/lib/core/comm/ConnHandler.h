@@ -10,6 +10,7 @@
 #include <queue>
 #include <memory>
 
+#include "IoContext.h"
 #include "Resolver.h"
 #include "Event.h"
 #include "CommBuf.h"
@@ -18,13 +19,13 @@
 
 namespace SWC { 
 
-typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
 // forward declarations
 class ConnHandler;
 typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 }
  
+#include "AppContext.h"
 #include "DispatchHandler.h"
 
 
@@ -60,9 +61,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   };
 
   public:
-  ConnHandler(AppContextPtr app_ctx, Socket& socket, IOCtxPtr io_ctx) 
-            : app_ctx(app_ctx), m_sock(std::move(socket)), 
-              io_ctx(io_ctx), m_next_req_id(0) {
+  ConnHandler(AppContext::Ptr app_ctx, Socket& socket) 
+              : app_ctx(app_ctx), m_sock(std::move(socket)), m_next_req_id(0) {
   }
 
   ConnHandlerPtr ptr(){
@@ -73,10 +73,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     do_close();
   }
   
-  const AppContextPtr   app_ctx;
-  const IOCtxPtr        io_ctx;
-  EndPoint        endpoint_remote;
-  EndPoint        endpoint_local;
+  const AppContext::Ptr app_ctx;
+  EndPoint              endpoint_remote;
+  EndPoint              endpoint_local;
 
   const std::string endpoint_local_str(){
     std::string s(endpoint_local.address().to_string());
@@ -108,6 +107,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     HT_DEBUGF("new_connection local=%s, remote=%s, executor=%d",
               endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
               (size_t)&m_sock.get_executor().context());
+              
+    auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
+    run(ev); 
   }
 
   const bool is_open() {
@@ -138,10 +140,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   virtual void run(Event::Ptr& ev) {
-    if(ev->type == Event::Type::DISCONNECT)
-      return;
-
-    HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
+    if(app_ctx != nullptr) 
+      // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      app_ctx->handle(ptr(), ev); 
   }
 
   void do_close(){
@@ -301,9 +302,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       return nullptr;
 
     auto tm = new asio::high_resolution_timer(
-      m_sock.get_executor(), std::chrono::milliseconds(header.timeout_ms)); 
-      
-    auto ev = Event::make(Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
+      m_sock.get_executor(), std::chrono::milliseconds(header.timeout_ms));
+
+    auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
     ev->header.initialize_from_request_header(header);
 
     tm->async_wait(

@@ -11,13 +11,10 @@
 #include <memory>
 #include <iostream>
 
-
-#include "AppContext.h"
-#include "ConnHandlerServer.h"
+#include "ConnHandler.h"
 
 
 namespace SWC { namespace server {
-
 
 
 class Acceptor{
@@ -25,7 +22,7 @@ public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
   Acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor, 
-           AppContextPtr app_ctx, IOCtxPtr io_ctx)
+           AppContext::Ptr app_ctx, IOCtxPtr io_ctx)
           : m_acceptor(acceptor), m_app_ctx(app_ctx), 
             m_io_ctx(io_ctx)
   {
@@ -57,9 +54,10 @@ private:
                       ec.value(), ec.message().c_str());
           return;
         }
-        std::make_shared<ConnHandler>(
-          m_app_ctx, new_sock, m_io_ctx
-        )->new_connection();
+
+        auto conn = std::make_shared<ConnHandler>(m_app_ctx, new_sock);
+        conn->new_connection();
+        conn->accept_requests();
 
         do_accept();
       }
@@ -68,7 +66,7 @@ private:
 
   private:
   std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
-  AppContextPtr     m_app_ctx;
+  AppContext::Ptr   m_app_ctx;
   IOCtxPtr          m_io_ctx;
 };
 
@@ -83,7 +81,7 @@ class SerializedServer {
     std::string name, 
     uint32_t reactors, uint32_t workers,
     std::string port_cfg_name,
-    AppContextPtr app_ctx
+    AppContext::Ptr app_ctx
   ): m_appname(name), m_run(true){
     
     HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
@@ -113,8 +111,7 @@ class SerializedServer {
 
     for(uint32_t reactor=0;reactor<reactors;reactor++){
 
-      std::shared_ptr<asio::io_context> io_ctx = 
-        std::make_shared<asio::io_context>(workers);
+      auto io_ctx = std::make_shared<asio::io_context>(workers);
       m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
 
       for (std::size_t i = 0; i < endpoints.size(); ++i){

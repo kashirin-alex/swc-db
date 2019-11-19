@@ -42,28 +42,29 @@ static String logger_name;
 static LogWriter *logger_obj = 0;
 static std::mutex mutex;
 
+static const char *priority_name[] = {
+  "FATAL",
+  "ALERT",
+  "CRIT",
+  "ERROR",
+  "WARN",
+  "NOTICE",
+  "INFO",
+  "DEBUG",
+  "NOTSET"
+};
+
 void initialize(const String &name) {
   logger_name = name;
 }
 
-LogWriter *get() {
+LogWriter* get() {
   if (!logger_obj)
     logger_obj = new LogWriter(logger_name);
   return logger_obj;
 }
 
 void LogWriter::log_string(int priority, const char *message) {
-  static const char *priority_name[] = {
-    "FATAL",
-    "ALERT",
-    "CRIT",
-    "ERROR",
-    "WARN",
-    "NOTICE",
-    "INFO",
-    "DEBUG",
-    "NOTSET"
-  };
 
   std::lock_guard<std::mutex> lock(mutex);
   if (m_test_mode) {

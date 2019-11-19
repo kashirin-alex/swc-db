@@ -10,12 +10,13 @@
 namespace SWC {
   
 typedef std::shared_ptr<asio::signal_set>   IO_SignalsPtr;
+typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
 
 class IoContext {
   public:
 
-typedef std::shared_ptr<IoContext>  Ptr;
-  std::atomic<bool>                 running;
+  typedef std::shared_ptr<IoContext>  Ptr;
+  std::atomic<bool>                   running;
 
   IoContext(const std::string name, int32_t size) 
     : m_name(name), running(true), m_size(size),

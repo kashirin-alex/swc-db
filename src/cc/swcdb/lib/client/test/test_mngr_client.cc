@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
   
   /* 
-  SWC::client::ConnHandler::Ptr con_h = client->get_connection(endpoints);
+  SWC::ConnHandlerPtr con_h = client->get_connection(endpoints);
   std::cout << client->to_str(con_h) << " (NEW)\n";
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   */

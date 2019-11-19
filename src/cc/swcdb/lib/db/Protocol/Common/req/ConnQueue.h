@@ -131,7 +131,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     exec_queue();
   }
 
-  void set(client::ConnHandler::Ptr conn){
+  void set(ConnHandlerPtr conn){
     {
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
       m_conn = conn;
@@ -173,8 +173,8 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
         m_check_timer = nullptr;
       }
     }
-    ReqBase::Ptr          req;
-    client::ConnHandler::Ptr  conn;
+    ReqBase::Ptr    req;
+    ConnHandlerPtr  conn;
     bool sent;
     for(;;) {
       {
@@ -254,7 +254,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   std::recursive_mutex      m_mutex;
   std::queue<ReqBase::Ptr>  m_queue;
-  client::ConnHandler::Ptr  m_conn;
+  ConnHandlerPtr            m_conn;
   bool                      m_queue_running;
   bool                      m_connecting;
   std::unique_ptr<asio::high_resolution_timer> m_check_timer; 

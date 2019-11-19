@@ -7,24 +7,15 @@
 #define swc_core_comm_AppContext_h
 
 
-#include <memory>
 #include <iostream>
-
-//forward declarations
-namespace SWC {
-class AppContext;
-typedef std::shared_ptr<AppContext> AppContextPtr;
-}
-
-#include "Event.h"
-#include "ConnHandler.h"
-
-#include "IoContext.h"
 
 namespace SWC {
 
 class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
+  
+  typedef std::shared_ptr<AppContext> Ptr;
+
   AppContext(){}
 
   virtual ~AppContext(){}

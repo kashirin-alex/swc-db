@@ -25,7 +25,7 @@ class Clients {
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(IOCtxPtr ioctx, const AppContextPtr app_ctx)
+  Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx)
           : m_app_ctx(app_ctx),
             mngrs_groups(std::make_shared<Mngr::Groups>()->init()) {
 
@@ -80,7 +80,7 @@ class Clients {
   SchemasPtr              schemas = nullptr;
 
   private:
-  const AppContextPtr     m_app_ctx = nullptr;
+  const AppContext::Ptr   m_app_ctx = nullptr;
 };
 
 } // namespace client 
