@@ -25,11 +25,12 @@ class ConnHandler : public SWC::ConnHandler {
 
   void new_connection() override {
     SWC::ConnHandler::new_connection();
-    run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
+    auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
+    run(ev); 
   }
 
 
-  void run(Event::Ptr ev) override {
+  void run(Event::Ptr& ev) override {
     if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
       app_ctx->handle(ptr(), ev); 
   }

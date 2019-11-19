@@ -25,7 +25,7 @@ class RangeUnload : public Common::Req::ConnQueue::ReqBase {
 
   virtual ~RangeUnload() { }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
       
     if(was_called)
       return;

@@ -115,7 +115,7 @@ class CommHeader {
                 "header-checksum decoded-len=%d", *bufp-base);
   }
 
-  void initialize_from_request_header(CommHeader &req_header) {
+  void initialize_from_request_header(const CommHeader &req_header) {
     flags = req_header.flags;
     id = req_header.id;
     command = req_header.command;

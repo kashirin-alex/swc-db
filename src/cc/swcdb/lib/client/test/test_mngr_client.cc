@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
           SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str()
         );  
         cbp->header.timeout_ms = 10000;
-        con_h->send_request(cbp, req, false); // sequential readings
+        con_h->send_request(cbp, req); // sequential readings
         //std::this_thread::sleep_for(std::chrono::microseconds(500));
       }
 

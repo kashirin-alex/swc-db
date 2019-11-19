@@ -48,8 +48,8 @@ static int32_t response_code(const Event *event) {
   catch (Exception &e) { return e.code(); }
 }
 
-static int32_t response_code(const Event::Ptr &event) {
-  return response_code(event.get());
+static int32_t response_code(const Event::Ptr& ev) {
+  return response_code(ev.get());
 }
 
     /** Creates a standard error message response.  This method creates a
@@ -115,8 +115,8 @@ static String string_format_message(const Event *event) {
   }
 }
 
-static String string_format_message(const Event::Ptr &event) {
-  return string_format_message(event.get());
+static String string_format_message(const Event::Ptr& ev) {
+  return string_format_message(ev.get());
 }
 
 

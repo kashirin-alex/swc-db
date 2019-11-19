@@ -133,7 +133,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
     if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
       validator->set(1000);

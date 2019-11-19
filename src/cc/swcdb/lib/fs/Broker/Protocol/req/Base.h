@@ -22,7 +22,7 @@ class Base : public DispatchHandler {
 
   virtual ~Base() {}
 
-  bool is_rsp(ConnHandlerPtr conn, Event::Ptr &ev, int cmd, 
+  bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev, int cmd, 
               const uint8_t **ptr, size_t *remain) { 
     // HT_DEBUGF("handle: %s", ev->to_str().c_str());
 

@@ -46,7 +46,7 @@ class Echo : public DispatchHandler {
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }
 
-  void handle(ConnHandlerPtr conn_ptr, Event::Ptr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
       
     //HT_DEBUGF("handle: %s", ev->to_str().c_str());
 

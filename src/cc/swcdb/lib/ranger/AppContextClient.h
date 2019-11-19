@@ -16,7 +16,7 @@ class AppContext : public SWC::AppContext {
 
   void disconnected(ConnHandlerPtr conn) {};
 
-  void handle(ConnHandlerPtr conn, Event::Ptr ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     switch (ev->type) {
 

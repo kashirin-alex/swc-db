@@ -25,7 +25,7 @@ class MngrState : public Common::Req::ConnQueue::ReqBase {
 
   void disconnected(ConnHandlerPtr conn);
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     if(was_called)
       return;
 

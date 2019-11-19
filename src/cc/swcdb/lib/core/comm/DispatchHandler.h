@@ -40,7 +40,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   typedef std::shared_ptr<DispatchHandler> Ptr;
 
-  virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) { 
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev) { 
     HT_WARNF("handle(virtual): %s", ev->to_str().c_str());
     return;
   }

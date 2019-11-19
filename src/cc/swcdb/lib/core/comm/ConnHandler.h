@@ -110,7 +110,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
               (size_t)&m_sock.get_executor().context());
   }
 
-  bool is_open() {
+  const bool is_open() {
     return m_err == Error::OK && m_sock.is_open();
   }
 
@@ -137,7 +137,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return pending_read() > 0 || pending_write() > 0;
   }
 
-  virtual void run(Event::Ptr ev) {
+  virtual void run(Event::Ptr& ev) {
     if(ev->type == Event::Type::DISCONNECT)
       return;
 
@@ -147,11 +147,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void do_close(){
     if(m_err == Error::OK) {
       close();
-      run(Event::make(Event::Type::DISCONNECT, m_err));
+      auto ev = Event::make(Event::Type::DISCONNECT, m_err);
+      run(ev);
     }
   }
 
-  const int send_error(int error, const String &msg, Event::Ptr ev=nullptr) {
+  const int send_error(int error, const String &msg, 
+                       const Event::Ptr& ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -166,7 +168,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_response(cbp);
   }
 
-  int response_ok(Event::Ptr ev=nullptr) {
+  const int response_ok(const Event::Ptr& ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
       
@@ -294,21 +296,21 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return m_next_req_id;
   }
 
-  asio::high_resolution_timer* get_timer(CommHeader& header) {
+  asio::high_resolution_timer* get_timer(const CommHeader& header) {
     if(!header.timeout_ms)
       return nullptr;
 
     auto tm = new asio::high_resolution_timer(
       m_sock.get_executor(), std::chrono::milliseconds(header.timeout_ms)); 
+      
+    auto ev = Event::make(Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
+    ev->header.initialize_from_request_header(header);
+
     tm->async_wait(
-      [header, ptr=ptr()]
+      [ev, ptr=ptr()]
       (const asio::error_code ec) {
-        if (ec != asio::error::operation_aborted){
-          auto ev = Event::make(
-            Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
-          ev->header = header;
+        if(ec != asio::error::operation_aborted)
           ptr->run_pending(ev);
-        } 
       }
     );
     return tm;
@@ -339,13 +341,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     write(data); 
   }
   
-  void write(Outgoing* data){
+  void write(Outgoing* data) {
 
-    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      add_pending(
+    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
+      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      m_pending.insert(std::make_pair(
         data->cbuf->header.id, 
         new PendingRsp(data->hdlr, get_timer(data->cbuf->header))
-      );
+      ));
+    }
     
     std::vector<asio::const_buffer> buffers;
     data->cbuf->get(buffers);
@@ -366,12 +370,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     );
   }
 
-  void add_pending(uint32_t id, PendingRsp* q){        
-    std::lock_guard<std::mutex> lock(m_mutex_reading);
-    m_pending.insert(std::make_pair(id, q));
-  }
-
-  void read_pending(){
+  void read_pending() {
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
       if(m_err || m_reading)
@@ -394,7 +393,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     );
   }
   
-  size_t read_condition_hdlr(Event::Ptr ev, uint8_t* data,
+  size_t read_condition_hdlr(const Event::Ptr ev, uint8_t* data,
                              const asio::error_code e, size_t filled) {
     if(filled < CommHeader::PREFIX_LENGTH)
       return CommHeader::PREFIX_LENGTH-filled;
@@ -410,7 +409,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return remain;
   }
   
-  size_t read_condition(Event::Ptr ev, uint8_t* data, asio::error_code &ec) {
+  size_t read_condition(const Event::Ptr& ev, uint8_t* data, asio::error_code &ec) {
     size_t remain = CommHeader::PREFIX_LENGTH;
     const uint8_t* ptr = data;
     size_t  read = 0;
@@ -483,7 +482,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return (size_t)0;
   }
 
-  void received(Event::Ptr ev, const asio::error_code ec) {
+  void received(const Event::Ptr& ev, const asio::error_code ec) {
     if(ec) {
       do_close();
       return;
@@ -521,7 +520,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
   }
 
-  void run_pending(Event::Ptr& ev) {
+  void run_pending(Event::Ptr ev) {
     if(ev->header.id == 0) {
       run(ev);
       return;

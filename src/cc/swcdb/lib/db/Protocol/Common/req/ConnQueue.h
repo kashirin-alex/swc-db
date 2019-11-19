@@ -31,20 +31,20 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
     virtual ~ReqBase() {}
 
-    void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
+    void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
       if(was_called || !is_rsp(conn, ev))
         return;
       // HT_DEBUGF("handle: %s", ev->to_str().c_str());
     }
 
-    bool is_timeout(ConnHandlerPtr conn, Event::Ptr &ev) {
+    bool is_timeout(ConnHandlerPtr conn, Event::Ptr& ev) {
       bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
       if(out)
         request_again();
       return out;
     }
 
-    bool is_rsp(ConnHandlerPtr conn, Event::Ptr &ev){
+    bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev){
       if(ev->type == Event::Type::DISCONNECT 
         || ev->error == Error::Code::REQUEST_TIMEOUT){
 

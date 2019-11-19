@@ -23,7 +23,7 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
   
   virtual ~AssignIdNeeded() { }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
     if(was_called)
       return;

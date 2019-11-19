@@ -68,7 +68,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  virtual void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     // HT_DEBUGF(" handle: %s", ev->to_str().c_str());
 

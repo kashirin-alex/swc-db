@@ -22,7 +22,7 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
   
   virtual ~MngrColumnGet() { }
   
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     if(was_called || !is_rsp(conn, ev))
       return;
 

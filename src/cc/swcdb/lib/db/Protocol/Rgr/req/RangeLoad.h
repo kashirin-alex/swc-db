@@ -29,7 +29,7 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
   
   virtual ~RangeLoad() { }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
       
     if(was_called)
       return;

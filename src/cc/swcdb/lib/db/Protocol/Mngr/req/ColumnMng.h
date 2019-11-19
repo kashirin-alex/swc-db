@@ -73,7 +73,7 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
     if(ev->type == Event::Type::DISCONNECT){
       handle_no_conn();

@@ -66,6 +66,42 @@ void expect_empty_column(int64_t cid) {
   }
 }
 
+void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
+  Query::Select::Ptr select_req = std::make_shared<Query::Select>();
+  
+  auto took =  SWC::Time::now_ns();
+  auto spec = SWC::DB::Specs::Interval::make_ptr();
+  spec->flags.offset=offset;
+  spec->flags.limit=0;
+  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {spec})};
+  select_req->scan();
+  select_req->wait();
+  
+  auto res_sz = select_req->result->columns[cid]->cells.size();
+  took = SWC::Time::now_ns() - took;
+  std::cout << "SELECT-ALL offset=" << offset 
+            << " expected=" << expected_sz 
+            << " cells=" << res_sz 
+            << " TOOK="  << took 
+            << " avg="<< (res_sz?took/res_sz:0) << "\n";
+  
+  if(res_sz != expected_sz) {
+    size_t num=0;
+    for(auto cell : select_req->result->columns[cid]->cells) {
+      std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
+    }
+    std::cerr << "\n BAD, on offset, select cells count: \n" 
+              << " " << spec->to_string() << "\n"
+              << " expected_value=" << expected_sz << "\n"
+              << "   result_value=" << res_sz << "\n";
+    std::cout << "SELECT-ALL offset=" << offset 
+              << " expected=" << expected_sz 
+              << " cells=" << res_sz 
+              << " TOOK="  << took 
+              << " avg="<< (res_sz?took/res_sz:0) << "\n";
+    exit(1);
+  }
+}
 
 void test_1(const std::string& col_name) {
   int num_cells = 1000000; // test require at least 12
@@ -93,38 +129,42 @@ void test_1(const std::string& col_name) {
   Cells::Cell cell;
   size_t added_count = 0;
   for(int b=0;b<batches;b++) {
-  took =  SWC::Time::now_ns();
-  for(int i=0;i<num_cells;i++) {
-    std::string cell_number(std::to_string(b)+":"+std::to_string(i));
-    cell.flag = Cells::INSERT;
-    cell.set_time_order_desc(true);
+    took =  SWC::Time::now_ns();
+    for(int i=0;i<num_cells;i++) {
+      std::string cell_number(std::to_string(b)+":"+std::to_string(i));
+      cell.flag = Cells::INSERT;
+      cell.set_time_order_desc(true);
 
-    cell.key.free();
-    for(uint8_t chr=97; chr<=122;chr++)
-      cell.key.add(((char)chr)+cell_number);
-    cell.set_value("V_OF: "+cell_number);
+      cell.key.free();
+      for(uint8_t chr=97; chr<=122;chr++)
+        cell.key.add(((char)chr)+cell_number);
+      cell.set_value("V_OF: "+cell_number);
 
-    update_req->columns_cells->add(schema->cid, cell);
-    added_count++;
-  }
+      update_req->columns_cells->add(schema->cid, cell);
+      added_count++;
+    }
 
-  size_t bytes = update_req->columns_cells->size_bytes();
-  std::cout << update_req->columns_cells->to_string() << "\n";
+    size_t bytes = update_req->columns_cells->size_bytes();
+    std::cout << update_req->columns_cells->to_string() << "\n";
   
 
-  update_req->timeout_commit = 10*num_cells;
-  update_req->commit();
-  update_req->wait();
-  took = SWC::Time::now_ns() - took;
-  std::cout << "UPDATE-INSERT-TOOK=" << took 
-            << " cells=" << num_cells 
-            << " bytes=" << bytes 
-            << " avg="<< took/num_cells << "\n";
+    update_req->timeout_commit = 10*num_cells;
+    update_req->commit();
+    update_req->wait();
+    took = SWC::Time::now_ns() - took;
+    std::cout << "UPDATE-INSERT-TOOK=" << took 
+              << " cells=" << num_cells 
+              << " bytes=" << bytes 
+              << " avg="<< took/num_cells << "\n";
 
+    select_all(schema->cid, num_cells, b*num_cells);
   }
   
+
   std::cout << "INSERT added_count="<<added_count<<"\n";
+  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   //exit(1);
+
   // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
     [](Query::Select::Result::Ptr result)
@@ -139,7 +179,7 @@ void test_1(const std::string& col_name) {
       }
     }
   );
-  
+
   took =  SWC::Time::now_ns();
   auto spec = SWC::DB::Specs::Interval::make_ptr();
   spec->flags.offset=batches*num_cells-1;
@@ -155,8 +195,6 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n";
     exit(1);
   }
-  // std::this_thread::sleep_for(std::chrono::milliseconds(60000));
-
   Cells::Cell* cell_res = select_req->result->columns[schema->cid]->cells.front();
   std::string value((const char*)cell_res->value, cell_res->vlen);
   
@@ -220,12 +258,9 @@ void test_1(const std::string& col_name) {
   spec =  select_req->specs.columns[0]->intervals[0];
   spec->free();
   spec->key_start.add("", SWC::Condition::NONE);
-  spec->key_start.add("", SWC::Condition::NONE);
-  spec->key_start.add("", SWC::Condition::NONE);
-  spec->key_start.add("", SWC::Condition::NONE);
-  std::string faction(
-    "e"+std::to_string(batches-1)+":"+std::to_string(num_cells-12));
-  spec->key_start.add(faction, SWC::Condition::EQ);
+  std::string fraction(
+    "b"+std::to_string(batches-1)+":"+std::to_string(num_cells-12));
+  spec->key_start.add(fraction, SWC::Condition::EQ);
   spec->key_start.add("", SWC::Condition::NONE);
   spec->flags.offset=0;
   spec->flags.limit=1;
@@ -238,10 +273,10 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << select_req->result->columns[schema->cid]->cells.size() << "\n";
     exit(1);
   }
-  if(select_req->result->columns[schema->cid]->cells[0]->key.get_string(4).compare(faction) != 0) {
+  if(select_req->result->columns[schema->cid]->cells[0]->key.get_string(1).compare(fraction) != 0) {
     std::cerr << "BAD, select cell by key fraction: \n" 
-              << "  expected_value=" << spec->key_start.get_string(4) << "\n"
-              << " (4)result_value=" << select_req->result->columns[schema->cid]->cells[0]->to_string() << "\n";
+              << "  expected_value=" << spec->key_start.get_string(1) << "\n"
+              << " (1)result_value=" << select_req->result->columns[schema->cid]->cells[0]->to_string() << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;

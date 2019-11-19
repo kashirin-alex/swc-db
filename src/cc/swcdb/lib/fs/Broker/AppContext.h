@@ -14,7 +14,7 @@ class FsClientAppCtx : public client::AppContext {
   FsClientAppCtx(){}
   virtual ~FsClientAppCtx(){}
     
-  void handle(ConnHandlerPtr conn, Event::Ptr ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     if(ev->type == Event::Type::DISCONNECT)
       return;

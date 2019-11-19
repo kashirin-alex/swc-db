@@ -21,7 +21,7 @@ class RgrUpdate : public Common::Req::ConnQueue::ReqBase {
   
   virtual ~RgrUpdate() { }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     if(was_called || !is_rsp(conn, ev))
       return;
 

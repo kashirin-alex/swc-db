@@ -23,7 +23,7 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
   
   virtual ~ColumnUpdate() { }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
       
     if(was_called)
       return;

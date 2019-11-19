@@ -54,7 +54,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr &ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     //std::cout << "RangeQuerySelectRsp " << ev->to_str() << "\n";
     if(ev->type == Event::Type::DISCONNECT){
