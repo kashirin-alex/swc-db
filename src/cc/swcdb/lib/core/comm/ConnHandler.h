@@ -36,9 +36,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   struct PendingRsp {
     public:
-    PendingRsp(const uint32_t id, DispatchHandler::Ptr hdlr, 
-               const bool sequential)
-              : id(id), hdlr(hdlr), sequential(sequential) {
+    PendingRsp(DispatchHandler::Ptr hdlr, asio::high_resolution_timer* tm) 
+              : hdlr(hdlr), tm(tm) {
     }
     
     virtual ~PendingRsp() { 
@@ -46,23 +45,18 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
         delete tm; 
     }
 
-    const uint32_t                id;
     DispatchHandler::Ptr          hdlr;
-    const bool                    sequential;
-    Event::Ptr                    ev;
     asio::high_resolution_timer*  tm;
   };
 
   struct Outgoing {
     public:
-    Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr, 
-             const bool sequential)
-            : cbuf(cbuf), hdlr(hdlr), sequential(sequential) {
+    Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr)
+            : cbuf(cbuf), hdlr(hdlr) {
     }
     virtual ~Outgoing() { }
     CommBuf::Ptr          cbuf;
     DispatchHandler::Ptr  hdlr; 
-    const bool            sequential;
   };
 
   public:
@@ -116,7 +110,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
               (size_t)&m_sock.get_executor().context());
   }
 
-  inline bool is_open() {
+  bool is_open() {
     return m_err == Error::OK && m_sock.is_open();
   }
 
@@ -129,37 +123,35 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     disconnected();
   }
 
-  size_t pending_read(){
+  const size_t pending_read(){
     std::lock_guard<std::mutex> lock(m_mutex_reading);
     return m_pending.size();
   }
 
-  size_t pending_write(){
+  const size_t pending_write(){
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_outgoing.size();
   }
 
-  bool due() {
+  const bool due() {
     return pending_read() > 0 || pending_write() > 0;
   }
 
-
-  virtual void run(Event::Ptr ev, DispatchHandler::Ptr hdlr=nullptr) {
-    if(hdlr != nullptr)
-      hdlr->handle(ptr(), ev);
+  virtual void run(Event::Ptr ev) {
     if(ev->type == Event::Type::DISCONNECT)
       return;
+
     HT_WARNF("run is Virtual!, %s", ev->to_str().c_str());
   }
 
-  void do_close(DispatchHandler::Ptr hdlr=nullptr){
+  void do_close(){
     if(m_err == Error::OK) {
       close();
-      run(Event::make(Event::Type::DISCONNECT, m_err), hdlr);
+      run(Event::make(Event::Type::DISCONNECT, m_err));
     }
   }
 
-  int send_error(int error, const String &msg, Event::Ptr ev=nullptr) {
+  const int send_error(int error, const String &msg, Event::Ptr ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -185,18 +177,18 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return send_response(cbp);
   }
 
-  inline int send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr){
+  const int send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr){
     if(m_err != Error::OK)
       return m_err;
 
     cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
 
-    write_or_queue(new Outgoing(cbuf, hdlr, false));
+    write_or_queue(new Outgoing(cbuf, hdlr));
     return m_err;
   }
 
   /*
-  inline int send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms){
+  int send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms){
     if(m_err != Error::OK)
       return m_err;
 
@@ -225,15 +217,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return e;
   }
 
-  inline int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
-                          DispatchHandler::Ptr hdlr, bool sequential=false) {
+  int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
+                          DispatchHandler::Ptr hdlr) {
     cbuf->header.timeout_ms = timeout_ms;
-    return send_request(cbuf, hdlr, sequential);
+    return send_request(cbuf, hdlr);
   }
   */
 
-  inline int send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr, 
-                          bool sequential=false) {
+  const int send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr) {
     if(m_err != Error::OK)
       return m_err;
 
@@ -241,17 +232,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(cbuf->header.id == 0)
       cbuf->header.id = next_req_id();
 
-    write_or_queue(new Outgoing(cbuf, hdlr, sequential));
+    write_or_queue(new Outgoing(cbuf, hdlr));
     return m_err;
   }
 
-  inline void accept_requests() {
+  void accept_requests() {
     m_accepting = true;
     read_pending();
   }
 
   /* 
-  inline void accept_requests(DispatchHandler::Ptr hdlr, 
+  void accept_requests(DispatchHandler::Ptr hdlr, 
                               uint32_t timeout_ms=0) {
     auto q = new PendingRsp(0, hdlr, false);  // initial req.acceptor
     if(timeout_ms) 
@@ -262,7 +253,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     read_pending();
   }
   */
-const std::string to_string() {
+
+  const std::string to_string() {
     std::string s("Connection");
 
     if(!is_open()) {
@@ -293,15 +285,21 @@ const std::string to_string() {
 
   private:
 
-  inline uint32_t next_req_id(){
-    return ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id.load();
+  const uint32_t next_req_id() {
+    std::lock_guard<std::mutex> lock(m_mutex_reading);  
+    while(m_pending.find(
+      ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
+      ) != m_pending.end()
+    );
+    return m_next_req_id;
   }
 
-  void set_timer(asio::high_resolution_timer*& tm, 
-                 uint32_t t_ms, CommHeader& header) {
-    tm = new asio::high_resolution_timer(
-      m_sock.get_executor(), std::chrono::milliseconds(t_ms)); 
+  asio::high_resolution_timer* get_timer(CommHeader& header) {
+    if(!header.timeout_ms)
+      return nullptr;
 
+    auto tm = new asio::high_resolution_timer(
+      m_sock.get_executor(), std::chrono::milliseconds(header.timeout_ms)); 
     tm->async_wait(
       [header, ptr=ptr()]
       (const asio::error_code ec) {
@@ -309,13 +307,14 @@ const std::string to_string() {
           auto ev = Event::make(
             Event::Type::ERROR, Error::Code::REQUEST_TIMEOUT);
           ev->header = header;
-          ptr->run_pending(header.id, ev, true);
+          ptr->run_pending(ev);
         } 
       }
     );
+    return tm;
   }
     
-  inline void write_or_queue(Outgoing* data){ 
+  void write_or_queue(Outgoing* data){ 
     {
       std::lock_guard<std::mutex> lock(m_mutex);  
       if(m_writing) {
@@ -327,7 +326,7 @@ const std::string to_string() {
     write(data);
   }
   
-  inline void next_outgoing() {
+  void next_outgoing() {
     Outgoing* data;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -340,16 +339,13 @@ const std::string to_string() {
     write(data); 
   }
   
-  inline void write(Outgoing* data){
+  void write(Outgoing* data){
 
-    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
-      auto q = new PendingRsp(
-        data->cbuf->header.id, data->hdlr, data->sequential);
-      if(data->cbuf->header.timeout_ms) 
-        set_timer(q->tm, data->cbuf->header.timeout_ms, data->cbuf->header);
-      
-      add_pending(q);
-    }
+    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      add_pending(
+        data->cbuf->header.id, 
+        new PendingRsp(data->hdlr, get_timer(data->cbuf->header))
+      );
     
     std::vector<asio::const_buffer> buffers;
     data->cbuf->get(buffers);
@@ -370,12 +366,12 @@ const std::string to_string() {
     );
   }
 
-  inline void add_pending(PendingRsp* q){        
+  void add_pending(uint32_t id, PendingRsp* q){        
     std::lock_guard<std::mutex> lock(m_mutex_reading);
-    m_pending.push_back(q);
+    m_pending.insert(std::make_pair(id, q));
   }
 
-  inline void read_pending(){
+  void read_pending(){
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
       if(m_err || m_reading)
@@ -393,15 +389,18 @@ const std::string to_string() {
         return ptr->read_condition_hdlr(ev, data, e, filled);
       },
       [ev, ptr=ptr()](const asio::error_code e, size_t filled){
-        ptr->received(ev, e, filled);
+        ptr->received(ev, e);
       }
     );
   }
   
   size_t read_condition_hdlr(Event::Ptr ev, uint8_t* data,
                              const asio::error_code e, size_t filled) {
+    if(filled < CommHeader::PREFIX_LENGTH)
+      return CommHeader::PREFIX_LENGTH-filled;
+
     asio::error_code ec = e;
-    size_t remain = read_condition(ev, data, ec, filled);
+    size_t remain = read_condition(ev, data, ec);
     if(ec) {
       remain = 0;
       do_close();
@@ -411,33 +410,24 @@ const std::string to_string() {
     return remain;
   }
   
-  inline size_t read_condition(Event::Ptr ev, uint8_t* data,
-                               asio::error_code &ec, size_t filled) {
-                  
-    if(filled < CommHeader::PREFIX_LENGTH)
-      return CommHeader::PREFIX_LENGTH-filled;
-  
-    size_t remain;
-    const uint8_t* ptr;
+  size_t read_condition(Event::Ptr ev, uint8_t* data, asio::error_code &ec) {
+    size_t remain = CommHeader::PREFIX_LENGTH;
+    const uint8_t* ptr = data;
+    size_t  read = 0;
     uint8_t* bufp;
-    size_t  read;
     
     try{
-      ptr = data;
-      remain = CommHeader::PREFIX_LENGTH;
       ev->header.decode_prefix(&ptr, &remain);
-      ptr = data;
 
       uint8_t buf_header[ev->header.header_len];
       bufp = buf_header;
-      for(uint8_t n=0;n<CommHeader::PREFIX_LENGTH;n++)
+      ptr = data;
+      for(uint8_t n=0; n<CommHeader::PREFIX_LENGTH; n++)
         *bufp++ = *ptr++;
 
-      read = 0;
       remain = ev->header.header_len - CommHeader::PREFIX_LENGTH;
       do {
         read = m_sock.read_some(asio::mutable_buffer(bufp+=read, remain), ec);
-        filled += read;
       } while(!ec && (remain -= read));  
       
       ptr = buf_header;
@@ -451,8 +441,7 @@ const std::string to_string() {
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_HEADER;
       ev->header = CommHeader();
-      HT_WARNF("read, REQUEST HEADER_TRUNCATED: remain=%d filled=%d", 
-                remain, filled);
+      HT_WARNF("read, REQUEST HEADER_TRUNCATED: remain=%d", remain);
       return (size_t)0;
     }
     if(!ev->header.buffers)
@@ -494,8 +483,7 @@ const std::string to_string() {
     return (size_t)0;
   }
 
-  void received(Event::Ptr ev, const asio::error_code ec, size_t filled){
-    ev->arrival_time = ClockT::now();
+  void received(Event::Ptr ev, const asio::error_code ec) {
     if(ec) {
       do_close();
       return;
@@ -510,121 +498,67 @@ const std::string to_string() {
     if(more)
       read_pending();
 
-    run_pending(ev->header.id, ev);
+    ev->arrival_time = ClockT::now();
+    run_pending(ev);
   }
 
   void disconnected(){
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
-      m_cancelled.clear();
-    }
-    
+    PendingRsp* pending;
+    Event::Ptr ev;
     for(;;) {
-      PendingRsp* q;
       {
         std::lock_guard<std::mutex> lock(m_mutex_reading);
         if(m_pending.empty())
           return;
-        q = *m_pending.begin();
+        pending = m_pending.begin()->second;
         m_pending.erase(m_pending.begin());
       }
-      
-      if(q->tm != nullptr) 
-        q->tm->cancel();
-      run(Event::make(Event::Type::DISCONNECT, m_err), q->hdlr);
-      delete q;
+      if(pending->tm != nullptr) 
+        pending->tm->cancel();
+      ev = Event::make(Event::Type::DISCONNECT, m_err);
+      pending->hdlr->handle(ptr(), ev);
+      delete pending;
     }
   }
 
-  inline void run_pending(uint32_t id, Event::Ptr ev, bool cancelling=false){
-    bool found_current = false;
-    bool found_not = false;
-    bool found_next;
-    bool skip;
-    std::vector<PendingRsp*>::iterator it_found;
-    std::vector<PendingRsp*>::iterator it_end;
+  void run_pending(Event::Ptr& ev) {
+    if(ev->header.id == 0) {
+      run(ev);
+      return;
+    }
 
-    PendingRsp* q_now;
-    PendingRsp* q_next;
-    do {
-      found_next = false;
-      skip = false;
-      {
-        std::lock_guard<std::mutex> lock(m_mutex_reading);
-
-        if(cancelling)
-          m_cancelled.push_back(id);
-
-        found_not = m_pending.empty();
-        if(!found_not){
-          it_found = std::find_if(m_pending.begin(), m_pending.end(), 
-                                 [id](const PendingRsp* q)
-                                     {return q->id == id;});
-          it_end = m_pending.end();
-          found_not = it_found == it_end;
-        }
-        if(!found_not){
-          found_current = !(*it_found)->sequential || it_found == m_pending.begin();
-
-          if(found_current){
-            q_now = *it_found;
-
-            if(q_now->tm != nullptr) 
-              q_now->tm->cancel();
-
-            if(q_now->sequential){
-              if(++it_found != it_end){
-                found_next = (*it_found)->ev != nullptr;
-                if(found_next)
-                  q_next = *it_found;
-              }
-              m_pending.erase(--it_found);
-            } else
-              m_pending.erase(it_found);
-
-          } else {
-            (*it_found)->ev=ev;
-          }
-          
-        } else if(!cancelling) {
-            auto it = std::find_if(m_cancelled.begin(), m_cancelled.end(), 
-                                  [id](uint32_t i){return i == id;});
-            skip = (it != m_cancelled.end());
-            if(skip)
-              m_cancelled.erase(it);
-        }
+    PendingRsp* pending = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      auto it = m_pending.find(ev->header.id);
+      if(it != m_pending.end()) {
+        pending = it->second;
+        if(pending->tm != nullptr)
+          pending->tm->cancel();
+        m_pending.erase(it);
       }
-    
-      if(found_not){
-        if(id == 0)
-          run(ev);
-        else if(!skip)
-          run_pending(0, ev);
-        
-      } else if(found_current){
+    }
 
-        run(ev, q_now->hdlr);
-        delete q_now;
-        
-        if(found_next)
-          run_pending(q_next->id, q_next->ev);
-      }
-    } while(found_next);
+    if(pending) {
+      pending->hdlr->handle(ptr(), ev);
+      delete pending;
+    } else {
+      run(ev);
+    }
 
   }
 
   Socket                    m_sock;
-  std::atomic<uint32_t>     m_next_req_id;
+  uint32_t                  m_next_req_id;
 
   std::mutex                m_mutex;
   std::queue<Outgoing*>     m_outgoing;
   bool                      m_writing = 0;
 
   std::mutex                m_mutex_reading;
-  std::vector<PendingRsp*>  m_pending;
-  std::vector<uint32_t>     m_cancelled;
   bool                      m_accepting = 0;
   bool                      m_reading = 0;
+  std::unordered_map<uint32_t, PendingRsp*>  m_pending;
 
   std::atomic<Error::Code>  m_err = Error::OK;
 

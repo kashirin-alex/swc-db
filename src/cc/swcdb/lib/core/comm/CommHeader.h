@@ -15,7 +15,7 @@ class CommHeader {
 
   static const uint8_t PROTOCOL_VERSION = 1;
   static const uint8_t PREFIX_LENGTH    = 2;
-  static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH+20;
+  static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH+16;
 
   enum Flags {
     FLAGS_BIT_REQUEST          = 0x1, //!< Request message
@@ -31,7 +31,7 @@ class CommHeader {
 
   CommHeader(uint64_t cmd=0, uint32_t timeout=0)
             : version(1), header_len(0), flags(0),
-              gid(0), id(0), timeout_ms(timeout), command(cmd), 
+              id(0), timeout_ms(timeout), command(cmd), 
               buffers(0), 
               data_size(0), data_chksum(0), 
               data_ext_size(0), data_ext_chksum(0), 
@@ -64,7 +64,6 @@ class CommHeader {
     Serialization::encode_i8(bufp,  version);
     Serialization::encode_i8(bufp,  header_len);
     Serialization::encode_i8(bufp,  flags);
-    Serialization::encode_i32(bufp, gid);
     Serialization::encode_i32(bufp, id);
     Serialization::encode_i32(bufp, timeout_ms);
     Serialization::encode_i16(bufp, command);
@@ -97,7 +96,6 @@ class CommHeader {
     *bufp += 2;
     
     flags = Serialization::decode_i8(bufp, remainp);
-    gid = Serialization::decode_i32(bufp, remainp);
     id = Serialization::decode_i32(bufp, remainp);
     timeout_ms = Serialization::decode_i32(bufp, remainp);
     command = Serialization::decode_i16(bufp, remainp);
@@ -119,7 +117,6 @@ class CommHeader {
 
   void initialize_from_request_header(CommHeader &req_header) {
     flags = req_header.flags;
-    gid = req_header.gid;
     id = req_header.id;
     command = req_header.command;
     buffers = 0;
@@ -133,7 +130,6 @@ class CommHeader {
     std::string s = " version=" + std::to_string((int)version);
     s += " header_len=" + std::to_string((int)header_len);
     s += " flags=" + std::to_string((int)flags);
-    s += " gid=" + std::to_string((int)gid);
     s += " id=" + std::to_string((int)id);
     s += " timeout_ms=" + std::to_string((int)timeout_ms);
     s += " command=" + std::to_string((int)command);
@@ -149,7 +145,6 @@ class CommHeader {
   uint8_t  version;         //!< Protocol version
   uint8_t  header_len;      //!< Length of header
   uint8_t  flags;           //!< Flags
-  uint32_t gid;             //!< Group ID (base of Req.ID)
   uint32_t id;              //!< Request ID
   uint32_t timeout_ms;      //!< Request timeout
   uint16_t command;         //!< Request command number

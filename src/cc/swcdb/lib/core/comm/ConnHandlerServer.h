@@ -28,10 +28,8 @@ class ConnHandler : public SWC::ConnHandler {
     accept_requests();
   }
   
-  void run(Event::Ptr ev, DispatchHandler::Ptr hdlr=nullptr) override {
-    if(hdlr != nullptr)
-      hdlr->handle(ptr(), ev);
-    else if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+  void run(Event::Ptr ev) override {
+    if(app_ctx != nullptr) // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
       app_ctx->handle(ptr(), ev); 
   }
 
