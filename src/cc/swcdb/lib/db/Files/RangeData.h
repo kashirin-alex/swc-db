@@ -151,7 +151,7 @@ void load(int& err, const CellStore::Readers::Ptr cellstores){
   if(err || cellstores->empty()) {
     err = Error::OK;
     cellstores->load_from_path(err);
-    if(!err)
+    if(!err && !cellstores->empty())
       save(err, cellstores);
     std::cout << cellstores->to_string() << "\n";
   }
