@@ -83,10 +83,13 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   ConnQueue(const gInt32tPtr keepalive_ms=nullptr) 
             : m_conn(nullptr),  m_queue_running(false), m_connecting(false),
-              cfg_keepalive_ms(keepalive_ms), m_check_timer(nullptr) { 
+              cfg_keepalive_ms(keepalive_ms), m_timer(nullptr) { 
   }
 
-  virtual ~ConnQueue() { }
+  virtual ~ConnQueue() {
+    if(m_timer)
+      delete m_timer;
+  }
 
   virtual bool connect() { 
     return false; // not implemented by default 
@@ -102,9 +105,9 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     if(m_conn != nullptr && m_conn->is_open())
       m_conn->do_close();
 
-    if(m_check_timer != nullptr) {
-      m_check_timer->cancel();
-      m_check_timer = nullptr;
+    if(m_timer != nullptr) {
+      m_timer->cancel();
+      m_timer = nullptr;
     }
 
     while(!m_queue.empty()) {
@@ -168,9 +171,9 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   void run_queue(){
     { 
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
-      if(m_check_timer != nullptr) {
-        m_check_timer->cancel();
-        m_check_timer = nullptr;
+      if(m_timer != nullptr) {
+        m_timer->cancel();
+        m_timer = nullptr;
       }
     }
     ReqBase::Ptr    req;
@@ -227,23 +230,22 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     if(m_queue.empty() && (m_conn == nullptr || !m_conn->due())) {
       if(m_conn != nullptr)
         m_conn->do_close(); 
-      if(m_check_timer != nullptr) {
-        m_check_timer->cancel();
-        m_check_timer = nullptr;
+      if(m_timer != nullptr) {
+        m_timer->cancel();
+        m_timer = nullptr;
       }
       close_issued();
       return;
     }
     
-    if(m_check_timer == nullptr)
-      m_check_timer = std::make_unique<asio::high_resolution_timer>(
-        *Env::IoCtx::io()->ptr());
+    if(m_timer == nullptr)
+      m_timer = new asio::high_resolution_timer(*Env::IoCtx::io()->ptr());
     else
-      m_check_timer->cancel();
+      m_timer->cancel();
 
-    m_check_timer->expires_from_now(
+    m_timer->expires_from_now(
       std::chrono::milliseconds(cfg_keepalive_ms->get()));
-    m_check_timer->async_wait(
+    m_timer->async_wait(
       [ptr=shared_from_this()](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
           ptr->schedule_close();
@@ -252,12 +254,12 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     );   
   }
 
-  std::recursive_mutex      m_mutex;
-  std::queue<ReqBase::Ptr>  m_queue;
-  ConnHandlerPtr            m_conn;
-  bool                      m_queue_running;
-  bool                      m_connecting;
-  std::unique_ptr<asio::high_resolution_timer> m_check_timer; 
+  std::recursive_mutex          m_mutex;
+  std::queue<ReqBase::Ptr>      m_queue;
+  ConnHandlerPtr                m_conn;
+  bool                          m_queue_running;
+  bool                          m_connecting;
+  asio::high_resolution_timer*  m_timer; 
 
   protected:
   const gInt32tPtr          cfg_keepalive_ms;
