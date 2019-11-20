@@ -389,7 +389,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     );
   }
   
-  size_t read_condition_hdlr(const Event::Ptr ev, uint8_t* data,
+  size_t read_condition_hdlr(const Event::Ptr& ev, uint8_t* data,
                              const asio::error_code e, size_t filled) { 
     size_t remain;
     asio::error_code ec = e;                      
@@ -485,7 +485,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       do_close();
       return;
     }
-
+    
+    ev->arrival_time = ClockT::now();
     bool more;
     {
       std::lock_guard<std::mutex> lock(m_mutex_reading);
@@ -495,7 +496,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     if(more)
       read_pending();
 
-    ev->arrival_time = ClockT::now();
     run_pending(ev);
   }
 
