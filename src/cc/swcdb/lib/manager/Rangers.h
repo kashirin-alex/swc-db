@@ -691,7 +691,7 @@ class Rangers {
   }
 
   void assign_range(Ranger::Ptr rgr, Range::Ptr range, 
-                    Files::RgrData::Ptr last_rgr){
+                    Files::RgrData::Ptr last_rgr) {
     if(last_rgr == nullptr){
       assign_range(rgr, range);
       return;
@@ -1200,8 +1200,7 @@ void Protocol::Rgr::Req::AssignIdNeeded::rsp(int err) {
     Env::Rangers::get()->range_loaded(
       rs_nxt, range, Error::RS_NOT_READY);
   else
-    Env::Rangers::get()->assign_range(
-      rs_nxt, range);
+    Env::Rangers::get()->assign_range(rs_nxt, range);
 
     // the same cond to reqs pending_id
   Env::Rangers::get()->assign_range_chk_last(err, rs_chk);

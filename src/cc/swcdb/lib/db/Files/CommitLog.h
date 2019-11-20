@@ -51,20 +51,30 @@ class Fragments {
   }
 
   virtual ~Fragments() {
-    wait_processing();
-    free();
+    _free();
   }
 
   void add(const DB::Cells::Cell& cell) {
     size_t size_bytes;
     {
-      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      std::lock_guard lock(m_mutex_cells);
       m_cells.add(cell);
       size_bytes = m_cells.size_bytes;
     }
+    
+    {
+      if(!m_mutex.try_lock_shared())
+        return;
+      bool skip = m_deleting || m_commiting || size_bytes < m_size_commit;
+      m_mutex.unlock_shared();
+      if(skip)
+        return;
+    }
 
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(!m_deleting && !m_commiting && size_bytes >= m_size_commit) {
+    {
+      std::lock_guard lock(m_mutex);
+      if(m_deleting || m_commiting)
+        return;
       m_commiting = true;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
@@ -77,7 +87,7 @@ class Fragments {
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     uint32_t blk_size;
     {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
       if(finalize && m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]
                              {return !commiting && (commiting = true);});
@@ -99,17 +109,17 @@ class Fragments {
         get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
       
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard lock(m_mutex);
         for(;;) {
           {
-            std::lock_guard<std::mutex> lock(m_mutex_cells);
+            std::lock_guard lock2(m_mutex_cells);
             m_cells.write_and_free(
               cells, cell_count, frag->interval, blk_size);
           }
           if(cells.fill() >= blk_size)
             break;
           {
-            std::lock_guard<std::mutex> lock(m_mutex_cells);
+            std::shared_lock lock(m_mutex_cells);
             if(finalize && m_cells.size == 0)
               std::this_thread::sleep_for(std::chrono::milliseconds(100));
             if(m_cells.size == 0)
@@ -131,14 +141,14 @@ class Fragments {
       );
 
       {
-        std::lock_guard<std::mutex> lock(m_mutex_cells);
+        std::shared_lock lock(m_mutex_cells);
         if(m_cells.size == 0 || (m_cells.size_bytes < blk_size && !finalize))
           break; 
       }   
     }
     
     {
-      std::lock_guard<std::mutex> lock_wait(m_mutex);
+      std::lock_guard lock_wait(m_mutex);
       m_commiting = false;
     }
     m_cv.notify_all();
@@ -160,7 +170,7 @@ class Fragments {
   }
 
   void load(int &err) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     // fragments header OR log.data >> file.frag(intervals)
 
     err = Error::OK;
@@ -185,7 +195,7 @@ class Fragments {
         load_cells(cells_block, after_ts);
         return;
       }
-      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      std::shared_lock lock(m_mutex_cells);
       cells_block->load_cells(m_cells);
     }
     
@@ -194,7 +204,7 @@ class Fragments {
   
   void load_cells(DB::Cells::Block::Ptr cells_block, int64_t after_ts = 0) {
     {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
@@ -202,7 +212,7 @@ class Fragments {
     int64_t ts;
     std::vector<Fragment::Ptr>  fragments;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       ts = Time::now_ns();
       for(auto& frag : m_fragments) {  
         if(after_ts < frag->ts && cells_block->is_consist(frag->interval))
@@ -225,13 +235,13 @@ class Fragments {
   void get(std::vector<Fragment::Ptr>& fragments) {
     fragments.clear();
     
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     fragments.assign(m_fragments.begin(), m_fragments.end());
   }
 
   const size_t release(size_t bytes) {   
     size_t released = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     for(auto& frag : m_fragments) {
       released += frag->release();
@@ -242,11 +252,11 @@ class Fragments {
   }
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto old = fragments_old.begin(); old < fragments_old.end(); old++){
       for(auto it = m_fragments.begin(); it < m_fragments.end(); it++) {
-        if((*it) == (*old)) {
+        if(*it == *old) {
           (*it)->remove(err);
           delete *it;
           m_fragments.erase(it);
@@ -258,48 +268,40 @@ class Fragments {
 
   void remove(int &err) {
     {
-      std::unique_lock<std::mutex> lock_wait(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
       m_deleting = true;
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
+
+    wait_processing();
     
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       for(auto frag : m_fragments)
         frag->remove(err);
     }
-
-    wait_processing();
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      free();
-    }
-
-    std::lock_guard<std::mutex> lock(m_mutex_cells);
-    m_cells.free();
   }
 
   const bool deleting() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_deleting;
   }
 
   const size_t cells_count() {
     size_t count = 0;
     {
-      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      std::shared_lock lock(m_mutex_cells);
       count += m_cells.size;
     }
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     for(auto frag : m_fragments)
       count += frag->cells_count();
     return count;
   }
 
   const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_fragments.size()+1;
   }
 
@@ -307,9 +309,9 @@ class Fragments {
     return _size_bytes(only_loaded);
   }
 
-  const size_t processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return _processing() + m_commiting;
+  const bool processing() {
+    std::shared_lock lock(m_mutex);
+    return _processing();
   }
 
   void wait_processing() {
@@ -318,16 +320,29 @@ class Fragments {
     }
   }
 
+  void free() {
+    wait_processing();
+    
+    {
+      std::lock_guard lock(m_mutex);
+      _free();
+    }
+    {
+      std::lock_guard lock(m_mutex_cells);
+      m_cells.free();
+    }
+  }
+
   const std::string to_string() {
     size_t count = cells_count();
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     std::string s("CommitLog(count=");
     s.append(std::to_string(count));
     
     s.append(" cells=");
     {
-      std::lock_guard<std::mutex> lock(m_mutex_cells);
+      std::shared_lock lock(m_mutex_cells);
       s.append(m_cells.to_string());
     }
 
@@ -359,23 +374,29 @@ class Fragments {
   private:
   
   
-  void free() {  
-    for(auto frag : m_fragments)
+  void _free() {  
+    for(auto frag : m_fragments) {
+      frag->wait_processing();
       delete frag;
+    }
     m_fragments.clear();
   }
 
-  const size_t _processing() {
-    size_t size = 0;
+  const bool _processing() {
+    if(m_commiting)
+      return true;
     for(auto& frag : m_fragments)
-      size += frag->processing();
-    return size;
+      if(frag->processing())
+        return true;
+    return false;
   }
 
   const size_t _size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex_cells);
-
-    size_t size = m_cells.size_bytes;
+    size_t size = 0;
+    {
+      std::shared_lock lock(m_mutex_cells);
+      size += m_cells.size_bytes;
+    }
     for(auto& frag : m_fragments)
       size += frag->size_bytes(only_loaded);
     return size;
@@ -429,13 +450,14 @@ class Fragments {
     std::queue<Fragment::Ptr>     m_pending;
   };
 
-  std::mutex                  m_mutex_cells;
+  std::shared_mutex           m_mutex_cells;
   DB::Cells::Mutable          m_cells;
-  std::mutex                  m_mutex;
+
+  std::shared_mutex           m_mutex;
   uint32_t                    m_size_commit;
   bool                        m_commiting;
   bool                        m_deleting;
-  std::condition_variable     m_cv;
+  std::condition_variable_any m_cv;
   std::vector<Fragment::Ptr>  m_fragments;
 
 };

@@ -399,9 +399,9 @@ class IntervalBlocks {
     wait_processing();
     std::lock_guard lock(m_mutex);
 
-    if(commitlog != nullptr) 
+    if(commitlog != nullptr)
       commitlog->commit_new_fragment(true);
-
+      
     _free();
   }
   
@@ -598,7 +598,8 @@ class IntervalBlocks {
     }
     if(!bytes) {
       std::lock_guard lock(m_mutex);
-      _clear();
+      if(!m_processing)
+        _clear();
     }
     //else if(_size() > 1000)
     // merge in pairs down to 1000 blks
@@ -619,7 +620,7 @@ class IntervalBlocks {
 
   void free() {
     wait_processing();
-    std::shared_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     _free();
   }
 
@@ -681,11 +682,8 @@ class IntervalBlocks {
   }
 
   void _clear() {
-    if(m_processing)
-      return;
-
     Block::Ptr blk = m_block;
-    for(;blk;blk=blk->next) {
+    for(; blk; blk=blk->next) {
       if(blk->prev)
         delete blk->prev;
       if(!blk->next) {
@@ -698,10 +696,12 @@ class IntervalBlocks {
 
   void _free() {
     if(cellstores != nullptr) {
+      cellstores->free();
       delete cellstores;
       cellstores = nullptr;
     }
     if(commitlog != nullptr) {
+      commitlog->free();
       delete commitlog;
       commitlog = nullptr;
     }

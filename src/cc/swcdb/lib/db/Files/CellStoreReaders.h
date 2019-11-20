@@ -24,39 +24,38 @@ class Readers {
   Readers(const DB::RangeBase::Ptr& range): range(range) {}
 
   virtual ~Readers() {
-    wait_processing();
-    free();
+    _free();
   }
 
   void add(Read::Ptr cs) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_cellstores.push_back(cs);
   }
 
   void expand(DB::Cells::Interval& interval) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     for(const auto& cs : m_cellstores)
       interval.expand(cs->interval);
   }
 
   const bool empty() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_cellstores.empty();
   }
 
   const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_cellstores.size();
   }
 
   const size_t size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return _size_bytes(only_loaded);
   }
 
   const size_t blocks_count() {
     size_t  sz = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     for(auto& cs : m_cellstores)
       sz += cs->blocks_count();
     return sz;
@@ -64,7 +63,7 @@ class Readers {
 
   const size_t release(size_t bytes) {    
     size_t released = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     for(auto& cs : m_cellstores) {
       released += cs->release(bytes ? bytes-released : bytes);
@@ -74,8 +73,8 @@ class Readers {
     return released;
   }
 
-  const size_t processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool processing() {
+    std::shared_lock lock(m_mutex);
     return _processing();
   }
 
@@ -87,31 +86,25 @@ class Readers {
 
   void clear() {
     wait_processing();
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     _close();
-    free();
+    _free();
   }
   
   void remove(int &err) {
     wait_processing();
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     _close();
     for(auto& cs : m_cellstores)
       cs->remove(err);
-    free();
-  }
-  
-  template <class P>
-  void iterate(P call) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::for_each(m_cellstores.begin(), m_cellstores.end(), call);
+    _free();
   }
   
   void load_cells(DB::Cells::Block::Ptr cells_block) {
 
     std::vector<Files::CellStore::Read::Ptr> cellstores;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::shared_lock lock(m_mutex);
       for(auto& cs : m_cellstores) {
         if(cells_block->is_consist(cs->interval))
           cellstores.push_back(cs);
@@ -129,7 +122,7 @@ class Readers {
   }
   
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& blocks) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& cs : m_cellstores) {
       if(cs->blocks.empty()) {
         cs->load_blocks_index(err, true);
@@ -143,7 +136,7 @@ class Readers {
   }
 
   const bool need_compaction(size_t cs_sz, size_t blk_sz) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     size_t  sz;
     for(auto& cs : m_cellstores) {
       sz = cs->size_bytes();
@@ -156,7 +149,7 @@ class Readers {
   }
 
   const size_t encoded_length() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     size_t sz = Serialization::encoded_length_vi32(m_cellstores.size());
     for(auto& cs : m_cellstores) {
       sz += Serialization::encoded_length_vi32(cs->id)
@@ -166,7 +159,7 @@ class Readers {
   }
 
   void encode(uint8_t** ptr) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     Serialization::encode_vi32(ptr, m_cellstores.size());
     for(auto& cs : m_cellstores) {
       Serialization::encode_vi32(ptr, cs->id);
@@ -175,7 +168,7 @@ class Readers {
   }
 
   void decode(const uint8_t** ptr, size_t* remain) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     uint32_t id;
     uint32_t len = Serialization::decode_vi32(ptr, remain);
     for(size_t i=0;i<len;i++) {
@@ -185,16 +178,16 @@ class Readers {
     }
   }
   
-  void load_from_path(int &err){
+  void load_from_path(int &err) {
     wait_processing();
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     FS::IdEntries_t entries;
     Env::FsInterface::interface()->get_structured_ids(
       err, range->get_path(DB::RangeBase::cellstores_dir), entries);
   
-    free();
+    _free();
     for(auto id : entries){
       m_cellstores.push_back(Read::make(id, range, DB::Cells::Interval()));
     }
@@ -206,7 +199,7 @@ class Readers {
     wait_processing();    
 
     auto fs = Env::FsInterface::interface();
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     
     _close();
 
@@ -235,7 +228,7 @@ class Readers {
     }
     fs->rmdir(err, range->get_path(DB::RangeBase::cellstores_bak_dir));
 
-    free();
+    _free();
     for(auto cs : w_cellstores) {
       m_cellstores.push_back(
         Files::CellStore::Read::make(cs->id, range, cs->interval)
@@ -246,8 +239,15 @@ class Readers {
     err = Error::OK;
   }
   
+  void free() {
+    wait_processing();
+    std::lock_guard lock(m_mutex);
+    _close();
+    _free();
+  }
+
   const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     std::string s("CellStores(count=");
     s.append(std::to_string(m_cellstores.size()));
@@ -274,9 +274,11 @@ class Readers {
   private:
   
 
-  void free() {
-    for(auto& cs : m_cellstores)
+  void _free() {
+    for(auto& cs : m_cellstores) {
+      cs->free();
       delete cs;
+    }
     m_cellstores.clear();
   }
 
@@ -286,11 +288,11 @@ class Readers {
       cs->close(err);
   }
 
-  const size_t _processing() {
-    size_t size = 0;
+  const bool _processing() {
     for(auto& cs : m_cellstores)
-      size += cs->processing();
-    return size;
+      if(cs->processing())
+        return true;
+    return false;
   }
   
   const size_t _size_bytes(bool only_loaded=false) {
@@ -305,29 +307,24 @@ class Readers {
     public:
     
     AwaitingLoad(int32_t count, const DB::Cells::Block::Ptr& cells_block) 
-                 : m_count(count), cells_block(cells_block) {
+                 : count(count), cells_block(cells_block) {
     }
 
     virtual ~AwaitingLoad() { }
 
     void processed(int err) {      
-      { 
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_count--;
-        if(m_count)
-          return;
-      }
+      if(--count)
+        return;
       cells_block->loaded_cellstores(err);
       delete this;
     }
 
-    std::mutex    m_mutex;
-    int32_t       m_count;
+    std::atomic<int32_t>        count;
     const DB::Cells::Block::Ptr cells_block;
   };
 
-  std::mutex             m_mutex;
-  std::vector<Read::Ptr> m_cellstores;
+  std::shared_mutex       m_mutex;
+  std::vector<Read::Ptr>  m_cellstores;
 };
 
 }}}

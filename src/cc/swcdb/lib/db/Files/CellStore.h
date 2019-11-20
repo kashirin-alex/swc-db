@@ -64,8 +64,7 @@ class Read  {
   }
 
   virtual ~Read(){
-    wait_processing();
-    free();
+    _free();
   }
 
   State load_blocks_index(int& err, bool close_after=false) {
@@ -168,18 +167,16 @@ class Read  {
   }
 
   void close(int &err) {
-
     if(smartfd->valid())
       Env::FsInterface::fs()->close(err, smartfd); 
   }
 
   void remove(int &err) {
-    wait_processing();
-    Env::FsInterface::fs()->remove(err, smartfd->filepath());
     free();
+    Env::FsInterface::fs()->remove(err, smartfd->filepath());
   } 
 
-  const size_t processing() {
+  const bool processing() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return _processing();
   }
@@ -199,6 +196,12 @@ class Read  {
 
   const size_t blocks_count() {
     return blocks.size();
+  }
+
+  void free() {
+    wait_processing();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    _free();
   }
 
   const std::string to_string(){
@@ -244,14 +247,16 @@ class Read  {
 
   private:
 
-  const size_t _processing() {
-    size_t sz = m_queue.size() + (m_state == State::BLKS_IDX_LOADING);
+  const bool _processing() {
+    if(m_queue.size() || m_state == State::BLKS_IDX_LOADING)
+      return true;
     for(auto& blk : blocks)
-      sz += blk->processing();
-    return sz;
+      if(blk->processing())
+        return true;
+    return false;
   }
 
-  void free() {
+  void _free() {
     for(auto& blk : blocks)
       delete blk;
     blocks.clear();
@@ -316,7 +321,7 @@ class Read  {
   }
 
   void _load_blocks_index(int& err, bool close_after=false) {
-    free();
+    _free();
 
     size_t length = 0;
     size_t offset = 0;
@@ -640,7 +645,7 @@ class Write : public std::enable_shared_from_this<Write> {
   }
 
   const std::string to_string() {
-    std::string s("CellStore(v=");
+    std::string s("Write(v=");
     s.append(std::to_string(CellStore::VERSION));
     s.append(" size=");
     s.append(std::to_string(size));

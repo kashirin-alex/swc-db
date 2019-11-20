@@ -76,8 +76,7 @@ class Fragment {
     return this;
   }
 
-  virtual ~Fragment(){
-    wait_processing();
+  virtual ~Fragment() {
   }
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 

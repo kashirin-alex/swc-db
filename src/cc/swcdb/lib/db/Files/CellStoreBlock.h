@@ -63,7 +63,7 @@ class Read {
     return this;
   }
 
-  virtual ~Read(){
+  virtual ~Read() {
   }
   
   bool load(const std::function<void(int)>& cb) {
@@ -114,7 +114,7 @@ class Read {
       release();
   }
   
-  size_t release() {    
+  const size_t release() {    
     size_t released = 0;
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -128,17 +128,17 @@ class Read {
     return released;
   }
 
-  size_t processing() {
+  const bool processing() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_processing;
   }
 
-  bool loaded() {
+  const bool loaded() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_state == State::LOADED;
   }
 
-  size_t size_bytes(bool only_loaded=false) {
+  const size_t size_bytes(bool only_loaded=false) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if(only_loaded && m_state != State::LOADED)
       return 0;

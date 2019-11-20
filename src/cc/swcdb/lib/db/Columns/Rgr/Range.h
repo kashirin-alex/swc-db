@@ -127,7 +127,7 @@ class Range : public DB::RangeBase {
 
     HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
 
-    if(!Env::FsInterface::interface()->exists(err, get_path(""))){
+    if(!Env::FsInterface::interface()->exists(err, get_path(cellstores_dir))) {
       if(err != Error::OK)
         return loaded(err, cb);
       Env::FsInterface::interface()->mkdirs(err, get_path(log_dir));
@@ -237,11 +237,11 @@ class Range : public DB::RangeBase {
   }
   
   void remove(int &err) {
-    wait();
     {
       std::lock_guard lock(m_mutex);
       m_state = State::DELETED;
     }
+    wait();
     wait_queue();
     blocks.remove(err);
 
