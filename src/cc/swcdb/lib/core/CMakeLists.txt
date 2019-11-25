@@ -51,3 +51,9 @@ ADD_TEST_TARGET(
 	SRCS tests/sertest.cc
 	TARGETS swcdb_core 
 )
+
+ADD_EXEC_TARGET(
+	NAME      check_mutex
+	SRCS      tests/mutex.cc
+	TARGETS   swcdb_core
+)
