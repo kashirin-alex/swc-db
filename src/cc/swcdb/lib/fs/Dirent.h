@@ -6,9 +6,7 @@
 #define swc_lib_fs_Dirent_h
 
 #include <memory>
-#include "swcdb/lib/core/String.h"
-#include "swcdb/lib/core/Serialization.h"
-#include "swcdb/lib/core/Serializable.h"
+#include "../core/Serializable.h"
 
 namespace SWC{ namespace FS {
 
@@ -17,7 +15,7 @@ class Dirent : public Serializable {
 
   public:
   /// File or directory name
-  String    name;
+  std::string    name;
   /// Length of file
   uint64_t  length {};
   /// Last modification time

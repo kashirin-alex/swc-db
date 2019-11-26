@@ -6,7 +6,6 @@
 #define swc_lib_fs_SmartFd_h
 
 #include <memory>
-#include "swcdb/lib/core/String.h"
 
 namespace SWC{ namespace FS {
 

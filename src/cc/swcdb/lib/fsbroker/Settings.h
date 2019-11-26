@@ -30,9 +30,9 @@ void Settings::init_app_options(){
 }
 
 void Settings::init_post_cmd_args(){
-  parse_file(get<String>("swc.fs.broker.cfg", ""), "");
-  parse_file(get<String>("swc.FsBroker.cfg", ""), 
-             get<String>("swc.FsBroker.OnFileChange.cfg", ""));
+  parse_file(get<std::string>("swc.fs.broker.cfg", ""), "");
+  parse_file(get<std::string>("swc.FsBroker.cfg", ""), 
+             get<std::string>("swc.FsBroker.OnFileChange.cfg", ""));
 }
 
 

@@ -14,7 +14,7 @@ class Rmdir : public Base {
 
   public:
 
-  Rmdir(uint32_t timeout, const String &name, Callback::RmdirCb_t cb=0) 
+  Rmdir(uint32_t timeout, const std::string &name, Callback::RmdirCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("rmdir path='%s'", name.c_str());
 
@@ -42,7 +42,7 @@ class Rmdir : public Base {
   }
 
   private:
-  const String          name;
+  const std::string    name;
   Callback::RmdirCb_t  cb;
 };
 

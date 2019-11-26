@@ -42,8 +42,6 @@ namespace SWC {
    * always causes a heap allocation, and is lacking in functionalities
    * cf. http://www.and.org/vstr/comparison
    */
-  typedef std::string String;
-
   /** Shortcut for printf formats */
   typedef long unsigned int Lu;
 
@@ -54,16 +52,16 @@ namespace SWC {
   typedef long long int Lld;
 
   /**
-   * Returns a String using printf like format facilities
+   * Returns a std::string using printf like format facilities
    * Vanilla snprintf is about 1.5x faster than this, which is about:
    *   10x faster than boost::format;
    *   1.5x faster than std::string append (operator+=);
    *   3.5x faster than std::string operator+;
    *
    * @param fmt A printf-like format string
-   * @return A new String with the formatted text
+   * @return A new std::string with the formatted text
    */
-  String format(const char *fmt, ...) __attribute__((format (printf, 1, 2)));
+  std::string format(const char *fmt, ...) __attribute__((format (printf, 1, 2)));
 
   /**
    * Return decimal number string separated by a separator (default: comma)
@@ -71,9 +69,9 @@ namespace SWC {
    *
    * @param n The 64-bit number
    * @param sep The separator for every 3 digits
-   * @return A new String with the formatted text
+   * @return A new std::string with the formatted text
    */
-  String format_number(int64_t n, int sep = ',');
+  std::string format_number(int64_t n, int sep = ',');
 
   /**
    * Return first n bytes of buffer with an optional trailer if the
@@ -83,9 +81,9 @@ namespace SWC {
    * @param buf The memory buffer
    * @param len The size of the memory buffer
    * @param trailer Appended if %len exceeds %n
-   * @return A new String with the formatted text
+   * @return A new std::string with the formatted text
    */
-  String format_bytes(size_t n, const void *buf, size_t len,
+  std::string format_bytes(size_t n, const void *buf, size_t len,
           const char *trailer = "...");
 
   /**
@@ -94,10 +92,10 @@ namespace SWC {
    *
    * @param seq A STL-compatible sequence with forward-directional iterators
    * @param sep A separator which is inserted after each list item
-   * @return A new String with the formatted text
+   * @return A new std::string with the formatted text
    */
   template <class SequenceT>
-  String format_list(const SequenceT &seq, const char *sep = ", ") {
+  std::string format_list(const SequenceT &seq, const char *sep = ", ") {
     typedef typename SequenceT::const_iterator Iterator;
     Iterator it = seq.begin(), end = seq.end();
     std::ostringstream out;

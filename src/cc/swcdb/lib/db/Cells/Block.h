@@ -67,11 +67,11 @@ class Block {
   
   void load_cells(const Mutable& cells) {
     std::lock_guard lock(m_mutex);
-    //auto ts = Time::now_ns();
-    //size_t added = m_cells.size;
+    auto ts = Time::now_ns();
+    size_t added = m_cells.size;
 
     cells.scan(m_interval, m_cells);
-    /*
+    
     added = m_cells.size - added;
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells(cells)"
@@ -82,7 +82,7 @@ class Block {
               << " avg=" << (added>0 ? took / added : 0)
               << " took=" << took
               << " " << m_cells.to_string() << "\n";
-    */
+    
   }
 
   size_t load_cells(const uint8_t* rbuf, size_t remain, 
@@ -92,7 +92,7 @@ class Block {
     size_t added = 0;
     uint32_t sz = 0;
     
-    //auto ts = Time::now_ns();
+    auto ts = Time::now_ns();
     std::lock_guard lock(m_mutex);
 
     bool synced = !m_cells.size;
@@ -132,7 +132,7 @@ class Block {
       if(!was_splitted && sz != m_cells.size)
         was_splitted = true;
     }
-    /*
+    
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells(rbuf)"
               << " synced=" << synced 
@@ -142,7 +142,7 @@ class Block {
               << " avg=" << (added>0 ? took / added : 0)
               << " took=" << took
               << " " << m_cells.to_string() << "\n";
-    */          
+             
     return added;
   }
 

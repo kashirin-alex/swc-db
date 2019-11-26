@@ -100,14 +100,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
   
   virtual void new_connection() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    {
+      LockAtomic::Unique::Scope lock(m_mutex);
 
-    endpoint_remote = m_sock.remote_endpoint();
-    endpoint_local = m_sock.local_endpoint();
-    HT_DEBUGF("new_connection local=%s, remote=%s, executor=%d",
-              endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
-              (size_t)&m_sock.get_executor().context());
-              
+      endpoint_remote = m_sock.remote_endpoint();
+      endpoint_local = m_sock.local_endpoint();
+      HT_DEBUGF("new_connection local=%s, remote=%s, executor=%d",
+                endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
+                (size_t)&m_sock.get_executor().context());
+    }         
     auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
     run(ev); 
   }
@@ -118,7 +119,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void close() {
     if(is_open()) {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
       try{m_sock.close();}catch(...){}
     }
     m_err = Error::COMM_NOT_CONNECTED;
@@ -126,12 +127,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   }
 
   const size_t pending_read() {
-    std::lock_guard<std::mutex> lock(m_mutex_reading);
+    LockAtomic::Unique::Scope lock(m_mutex_reading);
     return m_pending.size();
   }
 
   const size_t pending_write() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
     return m_outgoing.size();
   }
 
@@ -153,7 +154,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
   }
 
-  const int send_error(int error, const String &msg, 
+  const int send_error(int error, const std::string &msg, 
                        const Event::Ptr& ev=nullptr) {
     if(m_err != Error::OK)
       return m_err;
@@ -284,7 +285,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   private:
 
   const uint32_t next_req_id() {
-    std::lock_guard<std::mutex> lock(m_mutex_reading);  
+    LockAtomic::Unique::Scope lock(m_mutex_reading);  
     while(m_pending.find(
       ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
       ) != m_pending.end()
@@ -314,7 +315,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     
   void write_or_queue(Outgoing* data) { 
     {
-      std::lock_guard<std::mutex> lock(m_mutex);  
+      LockAtomic::Unique::Scope lock(m_mutex);  
       if(m_writing) {
         m_outgoing.push(data);
         return;
@@ -327,7 +328,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void next_outgoing() {
     Outgoing* data;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
       m_writing = !m_outgoing.empty();
       if(!m_writing) 
         return;
@@ -340,7 +341,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void write(Outgoing* data) {
 
     if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      LockAtomic::Unique::Scope lock(m_mutex_reading);
       m_pending.insert(std::make_pair(
         data->cbuf->header.id, 
         new PendingRsp(data->hdlr, get_timer(data->cbuf->header))
@@ -368,7 +369,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void read_pending() {
     {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      LockAtomic::Unique::Scope lock(m_mutex_reading);
       if(m_err || m_reading)
         return;
       m_reading = true;
@@ -489,7 +490,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     ev->arrival_time = ClockT::now();
     bool more;
     {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      LockAtomic::Unique::Scope lock(m_mutex_reading);
       m_reading = false;
       more = m_accepting || !m_pending.empty();
     }
@@ -504,7 +505,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     Event::Ptr ev;
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex_reading);
+        LockAtomic::Unique::Scope lock(m_mutex_reading);
         if(m_pending.empty())
           return;
         pending = m_pending.begin()->second;
@@ -526,7 +527,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     PendingRsp* pending = nullptr;
     {
-      std::lock_guard<std::mutex> lock(m_mutex_reading);
+      LockAtomic::Unique::Scope lock(m_mutex_reading);
       auto it = m_pending.find(ev->header.id);
       if(it != m_pending.end()) {
         pending = it->second;
@@ -548,11 +549,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   Socket                    m_sock;
   uint32_t                  m_next_req_id;
 
-  std::mutex                m_mutex;
+  LockAtomic::Unique        m_mutex;
   std::queue<Outgoing*>     m_outgoing;
   bool                      m_writing = 0;
 
-  std::mutex                m_mutex_reading;
+  LockAtomic::Unique        m_mutex_reading;
   bool                      m_accepting = 0;
   bool                      m_reading = 0;
   std::unordered_map<uint32_t, PendingRsp*>  m_pending;

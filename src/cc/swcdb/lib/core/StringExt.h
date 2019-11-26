@@ -21,13 +21,12 @@
  */
 
 /** @file
- * String extensions and helpers: sets, maps, append operators etc.
+ * std::string extensions and helpers: sets, maps, append operators etc.
  */
 
 #ifndef swc_core_StringExt_h
 #define swc_core_StringExt_h
 
-#include "String.h"
 
 #include <cstdio>
 #include <set>
@@ -40,7 +39,7 @@
 using namespace SWC;
 
 /** STL Set managing Strings */
-typedef std::set<String> StringSet;
+typedef std::set<std::string> StringSet;
 
 /** STL Strict Weak Ordering for comparing c-style strings */
 struct LtCstr {
@@ -59,32 +58,32 @@ typedef std::map<const char *, int32_t, LtCstr> CstrToInt32Map;
 typedef std::map<const char *, int64_t, LtCstr> CstrToInt64MapT;
 
 /** Append operator for shorts */ 
-inline String operator+(const String &s1, short sval) {
+inline std::string operator+(const std::string &s1, short sval) {
   return s1 + Int16Formatter(sval).c_str();
 }
 
 /** Append operator for ushorts */
-inline String operator+(const String &s1, uint16_t sval) {
+inline std::string operator+(const std::string &s1, uint16_t sval) {
   return s1 + UInt16Formatter(sval).c_str();
 }
 
 /** Append operator for integers */ 
-inline String operator+(const String &s1, int ival) {
+inline std::string operator+(const std::string &s1, int ival) {
   return s1 + Int32Formatter(ival).c_str();
 }
 
 /** Append operator for unsigned integers */ 
-inline String operator+(const String &s1, uint32_t ival) {
+inline std::string operator+(const std::string &s1, uint32_t ival) {
   return s1 + UInt32Formatter(ival).c_str();
 }
 
 /** Append operator for 64bit integers */ 
-inline String operator+(const String &s1, int64_t llval) {
+inline std::string operator+(const std::string &s1, int64_t llval) {
   return s1 + Int64Formatter(llval).c_str();
 }
 
 /** Append operator for 64bit unsigned integers */ 
-inline String operator+(const String &s1, uint64_t llval) {
+inline std::string operator+(const std::string &s1, uint64_t llval) {
   return s1 + UInt64Formatter(llval).c_str();
 }
 

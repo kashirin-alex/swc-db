@@ -16,7 +16,7 @@ class Readdir : public Base {
 
   DirentList listing;
 
-  Readdir(uint32_t timeout, const String &name, Callback::ReaddirCb_t cb=0) 
+  Readdir(uint32_t timeout, const std::string &name, Callback::ReaddirCb_t cb=0) 
          : name(name), cb(cb) {
     HT_DEBUGF("readdir path='%s'", name.c_str());
 

@@ -14,7 +14,7 @@ class Mkdirs : public Base {
 
   public:
 
-  Mkdirs(uint32_t timeout, const String &name, Callback::MkdirsCb_t cb=0) 
+  Mkdirs(uint32_t timeout, const std::string &name, Callback::MkdirsCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("mkdirs path='%s'", name.c_str());
 
@@ -42,7 +42,7 @@ class Mkdirs : public Base {
   }
 
   private:
-  const String          name;
+  const std::string     name;
   Callback::MkdirsCb_t  cb;
 };
 

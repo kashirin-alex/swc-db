@@ -28,7 +28,7 @@
 #ifndef swc_core_FileUtils_h
 #define swc_core_FileUtils_h
 
-#include "String.h"
+#include "Logger.h"
 
 #include <mutex>
 #include <vector>
@@ -51,13 +51,13 @@ namespace SWC {
    */
   class FileUtils {
   public:
-    /** Reads a whole file into a String
+    /** Reads a whole file into a std::string
      *
      * @param fname The file name
-     * @param contents A reference to a String which will receive the data
+     * @param contents A reference to a std::string which will receive the data
      * @return <i>true</i> on success, <i>false</i> on error
      */
-    static bool read(const String &fname, String &contents);
+    static bool read(const std::string &fname, std::string &contents);
 
     /** Reads data from a file descriptor into a buffer
      *
@@ -78,14 +78,14 @@ namespace SWC {
      */
     static ssize_t pread(int fd, off_t offset, void *vptr, size_t n);
 
-    /** Writes a String buffer to a file; the file is overwritten if it
+    /** Writes a std::string buffer to a file; the file is overwritten if it
      * already exists
      *
      * @param fname Path of the file that is (over)written
      * @param contents The string contents that are written to the file
      * @return Number of bytes written, or -1 on error
      */
-    static ssize_t write(const String &fname, const std::string &contents);
+    static ssize_t write(const std::string &fname, const std::string &contents);
 
     /** Writes a memory buffer to a file descriptor
      *
@@ -99,7 +99,7 @@ namespace SWC {
     /** Writes a string to a file descriptor
      *
      * @param fd Open file handle
-     * @param str String to write to file
+     * @param str std::string to write to file
      * @return Number of bytes written, or -1 on error
      */
     static ssize_t write(int fd, const std::string &str) {
@@ -181,14 +181,14 @@ namespace SWC {
      * @return A pointer allocated with new[]; needs to be delete[]d by
      *          the caller. Returns 0 on error (sets errno)
      */
-    static char *file_to_buffer(const String &fname, off_t *lenp);
+    static char *file_to_buffer(const std::string &fname, off_t *lenp);
 
-    /** Reads a full file into a String
+    /** Reads a full file into a std::string
      *
      * @param fname The file name
      * @return A string with the data, or an empty string on error (sets errno)
      */
-    static String file_to_string(const String &fname);
+    static std::string file_to_string(const std::string &fname);
 
     /** Maps a full file into memory using mmap; the mapping will be released
      * when the application terminates (there's currently no munmap)
@@ -197,26 +197,26 @@ namespace SWC {
      * @param lenp Receives the length of the buffer, in bytes
      * @return A pointer to the mapped data
      */
-    static void *mmap(const String &fname, off_t *lenp);
+    static void *mmap(const std::string &fname, off_t *lenp);
 
     /** Creates a directory (with all parent directories, if required)
      *
      * @param dirname The directory name to create
      * @return true on success, otherwise falls (sets errno)
      */
-    static bool mkdirs(const String &dirname);
+    static bool mkdirs(const std::string &dirname);
 
     /** Checks if a file or directory exists
      *
      * @return true if the file or directory exists, otherwise false
      */
-    static bool exists(const String &fname);
+    static bool exists(const std::string &fname);
 
     /** Unlinks (deletes) a file or directory
      *
      * @return true on success, otherwise false (sets errno)
      */
-    static bool unlink(const String &fname);
+    static bool unlink(const std::string &fname);
 
     /** Renames a file or directory
      *
@@ -224,31 +224,31 @@ namespace SWC {
      * @param newpath The new filename
      * @return true on success, otherwise false (sets errno)
      */
-    static bool rename(const String &oldpath, const String &newpath);
+    static bool rename(const std::string &oldpath, const std::string &newpath);
 
     /** Returns the size of a file (0 on error)
      *
      * @param fname The path of the file
      * @return The file size (in bytes) or 0 on error (sets errno)
      */
-    static uint64_t size(const String &fname);
+    static uint64_t size(const std::string &fname);
 
     /** Returns the size of a file (-1 on error)
      *
      * @param fname The path of the file
      * @return The file size (in bytes) or -1 on error (sets errno)
      */
-    static off_t length(const String &fname);
+    static off_t length(const std::string &fname);
 
     /** Returns the last modification time
      *
      * @param fname The path of the file
      * @return The file modification time_t or 0 on error (sets errno)
      */
-    static time_t modification(const String &fname);
+    static time_t modification(const std::string &fname);
 
     /** Adds a trailing slash to a path */
-    static void add_trailing_slash(String &path);
+    static void add_trailing_slash(std::string &path);
 
     /** Expands a leading tilde character in a filename
      *
@@ -259,7 +259,7 @@ namespace SWC {
      *
      *  @return true on success, false on error
      */
-    static bool expand_tilde(String &fname);
+    static bool expand_tilde(std::string &fname);
 
     /** Reads all directory entries, applies a regular expression and returns
      * those which match.
@@ -270,7 +270,7 @@ namespace SWC {
      * @param fname_regex The regular expression; can be empty
      * @param listing Vector with the results
      */
-    static void readdir(const String &dirname, const String &fname_regex,
+    static void readdir(const std::string &dirname, const std::string &fname_regex,
 			std::vector<struct dirent> &listing);
 
     /// Mutex for protecting thread-unsafe glibc library function calls

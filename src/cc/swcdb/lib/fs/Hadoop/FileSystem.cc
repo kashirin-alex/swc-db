@@ -18,8 +18,8 @@ bool apply_hadoop() {
     ("swc.fs.hadoop.user", str(), "Hadoop user")
   ;
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<String>("swc.fs.hadoop.cfg", ""),
-    Env::Config::settings()->get<String>("swc.fs.hadoop.OnFileChange.cfg", "")
+    Env::Config::settings()->get<std::string>("swc.fs.hadoop.cfg", ""),
+    Env::Config::settings()->get<std::string>("swc.fs.hadoop.OnFileChange.cfg", "")
   );
   return true;
 }

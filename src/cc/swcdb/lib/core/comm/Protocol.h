@@ -87,11 +87,11 @@ static CommBuf::Ptr create_error_message(int error, const char *msg){
      * @return %Error message
      */
 
-static String string_format_message(const Event *event) {
+static std::string string_format_message(const Event *event) {
   int error = Error::OK;
 
   if (event == 0)
-    return String("NULL event");
+    return std::string("NULL event");
 
   const uint8_t *msg = event->data.base;
   size_t remaining = event->data.size;
@@ -108,14 +108,14 @@ static String string_format_message(const Event *event) {
     uint16_t len;
     const char *str = Serialization::decode_str16(&msg, &remaining, &len);
 
-    return String(str, len > 150 ? 150 : len);
+    return std::string(str, len > 150 ? 150 : len);
   }
   catch (Exception &e) {
     return format("%s - %s", e.what(), Error::get_text(e.code()));
   }
 }
 
-static String string_format_message(const Event::Ptr& ev) {
+static std::string string_format_message(const Event::Ptr& ev) {
   return string_format_message(ev.get());
 }
 

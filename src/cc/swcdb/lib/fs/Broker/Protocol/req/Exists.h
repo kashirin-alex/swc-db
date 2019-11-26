@@ -16,7 +16,7 @@ class Exists : public Base {
 
   bool  state;
 
-  Exists(uint32_t timeout, const String &name, Callback::ExistsCb_t cb=0) 
+  Exists(uint32_t timeout, const std::string &name, Callback::ExistsCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("exists path='%s'", name.c_str());
 
@@ -53,7 +53,7 @@ class Exists : public Base {
   }
 
   private:
-  const String          name;
+  const std::string     name;
   Callback::ExistsCb_t  cb;
 };
 

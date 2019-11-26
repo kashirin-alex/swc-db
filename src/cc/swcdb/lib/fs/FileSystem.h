@@ -100,7 +100,7 @@ class FileSystem {
     : path_root(normalize_pathname(root)),
       path_data(
         normalize_pathname(
-          Env::Config::settings()->get<String>("swc.fs.path.data")))
+          Env::Config::settings()->get<std::string>("swc.fs.path.data")))
   { }
 
   virtual ~FileSystem() { std::cout << " ~FileSystem() \n"; }
@@ -135,25 +135,25 @@ class FileSystem {
   }
 
   
-  virtual bool exists(int &err, const String &name) = 0;
+  virtual bool exists(int &err, const std::string &name) = 0;
   virtual 
-  void exists(Callback::ExistsCb_t cb, const String &name) {
+  void exists(Callback::ExistsCb_t cb, const std::string &name) {
     int err = Error::OK;
     bool state = exists(err, name);
     cb(err, state);
   }
 
-  virtual void remove(int &err, const String &name) = 0;
+  virtual void remove(int &err, const std::string &name) = 0;
   virtual 
-  void remove(Callback::RemoveCb_t cb, const String &name) {
+  void remove(Callback::RemoveCb_t cb, const std::string &name) {
     int err = Error::OK;
     remove(err, name);
     cb(err);
   }
 
-  virtual size_t length(int &err, const String &name) = 0;
+  virtual size_t length(int &err, const std::string &name) = 0;
   virtual 
-  void length(Callback::LengthCb_t cb, const String &name) {
+  void length(Callback::LengthCb_t cb, const std::string &name) {
     int err = Error::OK;
     size_t len = length(err, name);
     cb(err, len);
@@ -163,7 +163,7 @@ class FileSystem {
   // Directory Actions
   virtual void mkdirs(int &err, const std::string &name) = 0;
   virtual 
-  void mkdirs(Callback::MkdirsCb_t cb, const String &name) {
+  void mkdirs(Callback::MkdirsCb_t cb, const std::string &name) {
     int err = Error::OK;
     mkdirs(err, name);
     cb(err);
@@ -172,16 +172,16 @@ class FileSystem {
   virtual void readdir(int &err, const std::string &name, 
                        DirentList &results) = 0;
   virtual 
-  void readdir(Callback::ReaddirCb_t cb, const String &name) {
+  void readdir(Callback::ReaddirCb_t cb, const std::string &name) {
     int err = Error::OK;
     DirentList listing;
     readdir(err, name, listing);
     cb(err, listing);
   }
 
-  virtual void rmdir(int &err, const String &name) = 0;
+  virtual void rmdir(int &err, const std::string &name) = 0;
   virtual 
-  void rmdir(Callback::RmdirCb_t cb, const String &name) {
+  void rmdir(Callback::RmdirCb_t cb, const std::string &name) {
     int err = Error::OK;
     rmdir(err, name);
     cb(err);
@@ -306,8 +306,8 @@ class FileSystem {
 
 
   /* 
-  virtual void rename(const String &src, const String &dst) = 0;
-  virtual void rename(const String &src, const String &dst,
+  virtual void rename(const std::string &src, const std::string &dst) = 0;
+  virtual void rename(const std::string &src, const std::string &dst,
       DispatchHandler *handler) = 0;
       
   */

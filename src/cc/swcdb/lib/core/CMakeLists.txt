@@ -14,18 +14,15 @@ set(swcdb_core_sources
 	Logger.cc
 	Version.cc
 	FileUtils.cc
-	Checksum.cc
 	Random.cc
 )
 configure_file(Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Version.h)
 ADD_LIB_TARGET(
 	NAME 		swcdb_core
 	SRCS 		${swcdb_core_sources}
-	SHARED  ${BOOST_LIBRARIES_SHARED} 
-					${RE2_LIBRARIES_SHARED} 
+	SHARED  ${ATOMIC_LIBRARIES_SHARED} ${RE2_LIBRARIES_SHARED} 
 					${ZLIB_LIBRARIES_SHARED} ${LZMA_LIBRARIES_SHARED} ${BZIP2_LIBRARIES_SHARED}
-	STATIC  ${BOOST_LIBRARIES_STATIC} 
-					${RE2_LIBRARIES_STATIC} 
+	STATIC  ${ATOMIC_LIBRARIES_STATIC} ${RE2_LIBRARIES_STATIC} 
 					${ZLIB_LIBRARIES_STATIC} ${LZMA_LIBRARIES_STATIC} ${BZIP2_LIBRARIES_STATIC}
 )
 
@@ -33,10 +30,7 @@ ADD_LIB_TARGET(
 # lib-swcdb_core_config, #ifndef swc_core_config_FileName_h
 set(swcdb_core_config_sources
 	config/Settings.cc
-	config/Properties.cc
 	config/PropertiesParser.cc
-	config/Property.cc
-	config/PropertyValueEnumExt.cc
 	# config/System.cc
 	# config/SystemInfo.cc
 )
@@ -55,5 +49,5 @@ ADD_TEST_TARGET(
 ADD_EXEC_TARGET(
 	NAME      check_mutex
 	SRCS      tests/mutex.cc
-	TARGETS   swcdb_core
+	TARGETS swcdb_core
 )

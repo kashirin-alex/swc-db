@@ -54,7 +54,7 @@ class Interface {
 #if defined (FS_BROKER_APP)
       fs_cfg.append(".broker.underlying");
 #endif 
-      m_type = parse_fs_type(Env::Config::settings()->get<String>(fs_cfg));
+      m_type = parse_fs_type(Env::Config::settings()->get<std::string>(fs_cfg));
     }
     
 
@@ -115,7 +115,7 @@ class Interface {
     
     std::string fs_lib;
     if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
-      fs_lib.append(Env::Config::settings()->get<String>("swc.fs.lib."+fs_name));
+      fs_lib.append(Env::Config::settings()->get<std::string>("swc.fs.lib."+fs_name));
     } else {
       fs_lib.append(Env::Config::settings()->install_path);
       fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)

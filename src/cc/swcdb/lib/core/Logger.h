@@ -30,153 +30,241 @@
 #ifndef swc_core_LOGGER_H
 #define swc_core_LOGGER_H
 
-#include "Error.h"
-#include "String.h"
-#include "FixedStream.h"
-
 #include <iostream>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <mutex>
 #include <atomic>
 
-
-namespace SWC { 
+#include "Compat.h"
+#include "String.h"
+#include "Error.h"
+#include "FixedStream.h"
 
 /** Logging framework. */
-namespace Logger {
+namespace SWC { namespace Logger {
 
-  /** @addtogroup Common
-   *  @{
-   */
+/** Output priorities modelled after syslog */
+namespace Priority {
+  enum {
+    EMERG  = 0,
+    FATAL  = 0,
+    ALERT  = 1,
+    CRIT   = 2,
+    ERROR  = 3,
+    WARN   = 4,
+    NOTICE = 5,
+    INFO   = 6,
+    DEBUG  = 7,
+    NOTSET = 8
+  };
+  
+  static const char *name[] = {
+    "FATAL",
+    "ALERT",
+    "CRIT",
+    "ERROR",
+    "WARN",
+    "NOTICE",
+    "INFO",
+    "DEBUG",
+    "NOTSET"
+  };
+} // namespace Priority
 
-  /** Output priorities modelled after syslog */
-  namespace Priority {
-    enum {
-      EMERG  = 0,
-      FATAL  = 0,
-      ALERT  = 1,
-      CRIT   = 2,
-      ERROR  = 3,
-      WARN   = 4,
-      NOTICE = 5,
-      INFO   = 6,
-      DEBUG  = 7,
-      NOTSET = 8
-    };
-  } // namespace Priority
 
+/** Property Extended Enum Cfg calls */
+namespace cfg {
 
-  /** Property Extended Enum Cfg calls */
-  namespace cfg {
+inline int from_string(const std::string& loglevel) {
+  if (loglevel == "info")
+    return Logger::Priority::INFO;
+  if (loglevel == "debug")
+    return Logger::Priority::DEBUG;
+  if (loglevel == "notice")
+    return Logger::Priority::NOTICE;
+  if (loglevel == "warn")
+    return Logger::Priority::WARN;
+  if (loglevel == "error")
+    return Logger::Priority::ERROR;
+  if (loglevel == "crit")
+    return Logger::Priority::CRIT;
+  if (loglevel == "alert")
+    return Logger::Priority::ALERT;
+  if (loglevel == "fatal")
+    return Logger::Priority::FATAL;
+  return -1;
+}
 
-    int from_string(String loglevel);
+inline const std::string repr(int value) {
+  switch(value){
+    case Logger::Priority::INFO:
+      return "info";
+    case Logger::Priority::DEBUG:
+      return "debug";
+    case Logger::Priority::NOTICE:
+      return "notice";
+    case Logger::Priority::WARN:
+      return "warn";
+    case Logger::Priority::ERROR:
+      return "error";
+    case Logger::Priority::CRIT:
+      return "crit";
+    case Logger::Priority::ALERT:
+      return "alert";
+    case Logger::Priority::FATAL:
+      return "fatal";
+    default:
+      return format("undefined logging level: %d", value);
+  }
+}
 
-    String repr(int value);
-
-  } // namespace cfg
+} // namespace cfg
 
 
   /** The LogWriter class writes to stdout. It's not used directly, but
    * rather through the macros below (i.e. HT_ERROR_OUT, HT_ERRORF etc).
    */
-  class LogWriter {
-    public:
-      /** Constructor
-       *
-       * @param name The name of the application
-       */
-      LogWriter(const String &name)
-        : m_show_line_numbers(true), m_test_mode(false), m_name(name),
-          m_priority(Priority::INFO), m_file(stdout) {
-      }
+class LogWriter {
+  public:
+  
+  /** Constructor
+  *
+  * @param name The name of the application
+  */
+  LogWriter(const std::string& name = "") : m_show_line_numbers(true), m_test_mode(false),
+                m_priority(Priority::INFO), m_file(stdout), m_name(name) {
+    //std::cout << " LogWriter()=" << (size_t)this << "\n";
+  }
+  
+  void initialize(const std::string& name) {
+    //std::cout << " LogWriter::initialize name=" << name << " ptr=" << (size_t)this << "\n";
+    m_name.clear();
+    m_name.append(name);
+  }
 
-      /** Sets the message level; all messages with a higher level are discarded
-       */
-      void set_level(int level) {
-        m_priority = level;
-      }
+  /** Sets the message level; all messages with a higher level are discarded
+  */
+  void set_level(int level) {
+    m_priority = level;
+  }
 
-      /** Returns the message level */
-      int  get_level() const {
-        return m_priority;
-      }
+  /** Returns the message level */
+  int  get_level() const {
+    return m_priority;
+  }
 
-      /** Returns true if a message with this level is not discarded */
-      bool is_enabled(int level) const {
-        return level <= m_priority;
-      }
+  /** Returns true if a message with this level is not discarded */
+  bool is_enabled(int level) const {
+    return level <= m_priority;
+  }
 
-      /** The test mode disables line numbers and timestamps and can
-       * redirect the output to a separate file descriptor
-       */
-      void set_test_mode(int fd = -1) {
-        if (fd != -1)
-          m_file = fdopen(fd, "wt");
-        m_show_line_numbers = false;
-        m_test_mode = true;
-      }
+  /** The test mode disables line numbers and timestamps and can
+  * redirect the output to a separate file descriptor
+  */
+  void set_test_mode(int fd = -1) {
+    if (fd != -1)
+      m_file = fdopen(fd, "wt");
+    m_show_line_numbers = false;
+    m_test_mode = true;
+  }
 
-      /** Returns true if line numbers are printed */ 
-      bool show_line_numbers() const {
-        return m_show_line_numbers;
-      }
+  /** Returns true if line numbers are printed */ 
+  bool show_line_numbers() const {
+    return m_show_line_numbers;
+  }
 
-      /** Flushes the log file */
-      void flush() {
-        fflush(m_file);
-      }
+  /** Flushes the log file */
+  void flush() {
+    fflush(m_file);
+  }
 
-      /** Prints a debug message with variable arguments (similar to printf) */
-      void debug(const char *format, ...);
+  /** Prints a debug message with variable arguments (similar to printf) */
+  void debug(const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    log_varargs(Priority::DEBUG, format, ap);
+    va_end(ap);
+  }
 
-      /** Prints a debug message */
-      void debug(const String &message) {
-        log(Priority::DEBUG, message);
-      }
+  /** Prints a debug message */
+  void debug(const std::string &message) {
+    log(Priority::DEBUG, message);
+  }
 
-      /** Prints a message with variable arguments */
-      void log(int priority, const char *format, ...);
+  /** Prints a message with variable arguments */
+  void log(int priority, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    log_varargs(priority, format, ap);
+    va_end(ap);
+  }
 
-      /** Prints a message */
-      void log(int priority, const String &message) {
-        log_string(priority, message.c_str());
-      }
+  /** Prints a message */
+  void log(int priority, const std::string &message) {
+    log_string(priority, message.c_str());
+  }
 
-    private:
-      /** Appends a string message to the log */
-      void log_string(int priority, const char *message);
+  private:
 
-      /** Appends a string message with variable arguments to the log */
-      void log_varargs(int priority, const char *format, va_list ap);
+  /** Appends a string message to the log */
+  void log_string(int priority, const char *message) {
+    std::lock_guard<std::mutex> lock(mutex);
 
-      /** True if line numbers are shown */
-      bool m_show_line_numbers;
+    if (m_test_mode) {
+      fprintf(m_file, "%s %s : %s\n", Priority::name[priority], m_name.c_str(),
+              message);
+    } else {
+      time_t t = ::time(0);
+      fprintf(m_file, "%u %s %s : %s\n", (unsigned)t, Priority::name[priority],
+              m_name.c_str(), message);
+    }
+    flush();
+  }
 
-      /** True if this log is in test mode */
-      bool m_test_mode;
+  /** Appends a string message with variable arguments to the log */
+  void log_varargs(int priority, const char *format, va_list ap) {
+    char buffer[1024 * 16];
+    vsnprintf(buffer, sizeof(buffer), format, ap);
+    log_string(priority, buffer);
+  }
 
-      /** The name of the application */
-      String m_name;
+  /** True if line numbers are shown */
+  bool m_show_line_numbers;
 
-      /** The current priority (everything above is filtered) */
-      std::atomic<int> m_priority;
+  /** True if this log is in test mode */
+  bool m_test_mode;
 
-      /** The output file handle */
-      FILE *m_file;
-  };
+  /** The name of the application */
+  std::string m_name;
 
-  /** Public initialization function - creates a singleton instance of
-   * LogWriter
-   */
-  extern void initialize(const String &name);
+  /** The current priority (everything above is filtered) */
+  std::atomic<int> m_priority;
 
-  /** Accessor for the LogWriter singleton instance */
-  extern LogWriter *get();
+  /** The output file handle */
+  FILE *m_file;
+      
+  std::mutex mutex;
+};
 
-  /** @} */
+
+extern LogWriter logger;
+
+/** Public name initialization function */
+inline void initialize(const std::string& name) {
+  logger.initialize(name);
+}
+
+/** Accessor for the LogWriter singleton instance */
+inline LogWriter* get() {
+  return &logger;
+}
 
 }} // namespace SWC::Logger
+
+
+
 
 
 #define HT_LOG_BUFSZ 1024

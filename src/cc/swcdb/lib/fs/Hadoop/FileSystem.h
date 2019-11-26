@@ -21,7 +21,7 @@ struct SmartFdHadoop : public SmartFd {
   
   typedef std::shared_ptr<SmartFdHadoop> Ptr;
   
-  static Ptr make_ptr(const String &filepath, uint32_t flags){
+  static Ptr make_ptr(const std::string &filepath, uint32_t flags){
     return std::make_shared<SmartFdHadoop>(filepath, flags);
   }
 
@@ -32,7 +32,7 @@ struct SmartFdHadoop : public SmartFd {
     );
   }
 
-  SmartFdHadoop(const String &filepath, uint32_t flags,
+  SmartFdHadoop(const std::string &filepath, uint32_t flags,
                 int32_t fd=-1, uint64_t pos=0)
                : SmartFd(filepath, flags, fd, pos) { }
   virtual ~SmartFdHadoop() { }
@@ -47,7 +47,7 @@ class FileSystemHadoop: public FileSystem {
 
   FileSystemHadoop() 
     : FileSystem(
-        Env::Config::settings()->get<String>("swc.fs.hadoop.path.root"),
+        Env::Config::settings()->get<std::string>("swc.fs.hadoop.path.root"),
         apply_hadoop()
       ),
       m_run(true), m_nxt_fd(0)
@@ -97,7 +97,7 @@ class FileSystemHadoop: public FileSystem {
         if (Env::Config::settings()->has("swc.fs.hadoop.user")) 
           hdfsBuilderSetUserName(
             bld, 
-            Env::Config::settings()->get<String>("swc.fs.hadoop.user").c_str()
+            Env::Config::settings()->get<std::string>("swc.fs.hadoop.user").c_str()
           );
         
         m_filesystem = hdfsBuilderConnect(bld);
@@ -160,7 +160,7 @@ class FileSystemHadoop: public FileSystem {
 
 
 
-  bool exists(int &err, const String &name) override {
+  bool exists(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     bool state = hdfsExists(m_filesystem, abspath.c_str()) == 0;
@@ -170,7 +170,7 @@ class FileSystemHadoop: public FileSystem {
     return state;
   }
   
-  void remove(int &err, const String &name) override {
+  void remove(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
@@ -183,7 +183,7 @@ class FileSystemHadoop: public FileSystem {
     HT_DEBUGF("remove('%s')", abspath.c_str());
   }
 
-  size_t length(int &err, const String &name) override {
+  size_t length(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     
@@ -202,7 +202,7 @@ class FileSystemHadoop: public FileSystem {
     return len;
   }
 
-  void mkdirs(int &err, const String &name) override {
+  void mkdirs(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("mkdirs path='%s'", abspath.c_str());
   
@@ -211,7 +211,7 @@ class FileSystemHadoop: public FileSystem {
     err = errno;
   }
 
-  void readdir(int &err, const String &name, DirentList &results) override {
+  void readdir(int &err, const std::string &name, DirentList &results) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("Readdir dir='%s'", abspath.c_str());
 
@@ -235,9 +235,9 @@ class FileSystemHadoop: public FileSystem {
         continue;
       const char *ptr;
       if ((ptr = strrchr(fileInfo[i].mName, '/')))
-	      entry.name = (String)(ptr+1);
+	      entry.name = (std::string)(ptr+1);
       else
-	      entry.name = (String)fileInfo[i].mName;
+	      entry.name = (std::string)fileInfo[i].mName;
 
       entry.length = fileInfo[i].mSize;
       entry.last_modification_time = fileInfo[i].mLastMod;
@@ -248,7 +248,7 @@ class FileSystemHadoop: public FileSystem {
     hdfsFreeFileInfo(fileInfo, numEntries);
   }
 
-  void rmdir(int &err, const String &name) override {
+  void rmdir(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {

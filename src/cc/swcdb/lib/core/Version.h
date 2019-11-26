@@ -32,8 +32,8 @@
 
 // version macros for detecting header/library mismatch
 #define SWC_VERSION_MAJOR        0
-#define SWC_VERSION_MINOR        9
-#define SWC_VERSION_MICRO        9
+#define SWC_VERSION_MINOR        0
+#define SWC_VERSION_MICRO        0
 #define SWC_VERSION_PATCH        0
 #define SWC_VERSION_MISC_SUFFIX  ""
 #define SWC_VERSION_STRING       ""

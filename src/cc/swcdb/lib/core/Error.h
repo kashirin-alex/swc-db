@@ -30,7 +30,7 @@
 #ifndef swc_core_ERROR_H
 #define swc_core_ERROR_H
 
-#include "String.h"
+#include "Logger.h"
 #include <ostream>
 #include <stdexcept>
 
@@ -162,62 +162,10 @@ namespace SWC {
       FS_EOF                                = 0x00020008,
       FS_PATH_NOT_FOUND                     = 0x00020009,
       
-
       SQL_PARSE_ERROR                              = 0x00060001,
       SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
-      SQL_BAD_COMMAND                              = 0x00060003,
+      SQL_BAD_COMMAND                              = 0x00060003
 
-      MASTER_BAD_SCHEMA                            = 0x00040002,
-      MASTER_NOT_RUNNING                           = 0x00040003,
-      MASTER_NO_RANGESERVERS                       = 0x00040004,
-      MASTER_BAD_COLUMN_FAMILY                     = 0x00040007,
-      MASTER_SCHEMA_GENERATION_MISMATCH            = 0x00040008,
-      MASTER_LOCATION_ALREADY_ASSIGNED             = 0x00040009,
-      MASTER_LOCATION_INVALID                      = 0x0004000A,
-      MASTER_OPERATION_IN_PROGRESS                 = 0x0004000B,
-      MASTER_RANGESERVER_IN_RECOVERY               = 0x0004000C,
-      MASTER_BALANCE_PREVENTED                     = 0x0004000D,
-
-      RANGESERVER_GENERATION_MISMATCH              = 0x00050001,
-      RANGESERVER_RANGE_ALREADY_LOADED             = 0x00050002,
-      RANGESERVER_RANGE_MISMATCH                   = 0x00050003,
-      RANGESERVER_NONEXISTENT_RANGE                = 0x00050004,
-      RANGESERVER_OUT_OF_RANGE                     = 0x00050005,
-      RANGESERVER_RANGE_NOT_FOUND                  = 0x00050006,
-      RANGESERVER_INVALID_SCANNER_ID               = 0x00050007,
-      RANGESERVER_SCHEMA_PARSE_ERROR               = 0x00050008,
-      RANGESERVER_SCHEMA_INVALID_CFID              = 0x00050009,
-      RANGESERVER_INVALID_COLUMNFAMILY             = 0x0005000A,
-      RANGESERVER_TRUNCATED_COMMIT_LOG             = 0x0005000B,
-      RANGESERVER_NO_METADATA_FOR_RANGE            = 0x0005000C,
-      RANGESERVER_SHUTTING_DOWN                    = 0x0005000D,
-      RANGESERVER_CORRUPT_COMMIT_LOG               = 0x0005000E,
-      RANGESERVER_UNAVAILABLE                      = 0x0005000F,
-      RANGESERVER_REVISION_ORDER_ERROR             = 0x00050010,
-      RANGESERVER_ROW_OVERFLOW                     = 0x00050011,
-      RANGESERVER_BAD_SCAN_SPEC                    = 0x00050013,
-      RANGESERVER_CLOCK_SKEW                       = 0x00050014,
-      RANGESERVER_BAD_CELLSTORE_FILENAME           = 0x00050015,
-      RANGESERVER_CORRUPT_CELLSTORE                = 0x00050016,
-      RANGESERVER_TABLE_DROPPED                    = 0x00050017,
-      RANGESERVER_UNEXPECTED_TABLE_ID              = 0x00050018,
-      RANGESERVER_RANGE_BUSY                       = 0x00050019,
-      RANGESERVER_BAD_CELL_INTERVAL                = 0x0005001A,
-      RANGESERVER_SHORT_CELLSTORE_READ             = 0x0005001B,
-      RANGESERVER_RANGE_NOT_ACTIVE                 = 0x0005001C,
-      RANGESERVER_FRAGMENT_ALREADY_PROCESSED       = 0x0005001D,
-      RANGESERVER_RECOVERY_PLAN_GENERATION_MISMATCH = 0x0005001E,
-      RANGESERVER_PHANTOM_RANGE_MAP_NOT_FOUND      = 0x0005001F,
-      RANGESERVER_RANGES_ALREADY_LIVE              = 0x00050020,
-      RANGESERVER_RANGE_NOT_YET_ACKNOWLEDGED       = 0x00050021,
-      RANGESERVER_SERVER_IN_READONLY_MODE          = 0x00050022,
-      RANGESERVER_RANGE_NOT_YET_RELINQUISHED       = 0x00050023,
-    
-
-      THRIFTBROKER_BAD_SCANNER_ID                  = 0x00090001,
-      THRIFTBROKER_BAD_MUTATOR_ID                  = 0x00090002,
-      THRIFTBROKER_BAD_NAMESPACE_ID                = 0x00090003,
-      THRIFTBROKER_BAD_FUTURE_ID                   = 0x00090004
     };
 
     /** Returns a descriptive error message
@@ -305,7 +253,7 @@ namespace SWC {
      * @param fn The function name
      * @param fl The file name
      */
-    Exception(int error, const String &msg, int l = 0, const char *fn = 0,
+    Exception(int error, const std::string &msg, int l = 0, const char *fn = 0,
             const char *fl = 0)
       : Parent(msg), m_error(error), m_line(l), m_func(fn), m_file(fl),
       prev(0) {
@@ -320,7 +268,7 @@ namespace SWC {
      * @param fn The function name
      * @param fl The file name
      */
-    Exception(int error, const String &msg, const Exception &ex, int l = 0,
+    Exception(int error, const std::string &msg, const Exception &ex, int l = 0,
             const char *fn = 0, const char *fl = 0)
       : Parent(msg), m_error(error), m_line(l), m_func(fn), m_file(fl),
         prev(new Exception(ex)) {

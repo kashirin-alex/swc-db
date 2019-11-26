@@ -6,6 +6,7 @@
 #ifndef swc_core_comm_IoContext_h
 #define swc_core_comm_IoContext_h
 
+#include "../Mutex.h"
 
 namespace SWC {
   

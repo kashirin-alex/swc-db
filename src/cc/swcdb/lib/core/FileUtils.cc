@@ -26,7 +26,6 @@
  */
 
 #include "FileUtils.h"
-#include "Logger.h"
 
 #include <iomanip>
 #include <iostream>
@@ -53,7 +52,7 @@ using namespace SWC;
 
 std::mutex FileUtils::ms_mutex;
 
-bool FileUtils::read(const String &fname, String &contents) {
+bool FileUtils::read(const std::string &fname, std::string &contents) {
   off_t len {};
   char *buf = file_to_buffer(fname, &len);
   if (buf != 0) {
@@ -118,7 +117,7 @@ ssize_t FileUtils::pread(int fd, off_t offset, void *vptr, size_t n) {
 }
 
 
-ssize_t FileUtils::write(const String &fname, const std::string &contents) {
+ssize_t FileUtils::write(const std::string &fname, const std::string &contents) {
   int fd = open(fname.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
     int saved_errno = errno;
@@ -276,7 +275,7 @@ bool FileUtils::set_flags(int fd, int flags) {
 }
 
 
-char *FileUtils::file_to_buffer(const String &fname, off_t *lenp) {
+char *FileUtils::file_to_buffer(const std::string &fname, off_t *lenp) {
   struct stat statbuf;
   int fd;
 
@@ -327,8 +326,8 @@ char *FileUtils::file_to_buffer(const String &fname, off_t *lenp) {
 }
 
 
-String FileUtils::file_to_string(const String &fname) {
-  String str;
+std::string FileUtils::file_to_string(const std::string &fname) {
+  std::string str;
   off_t len;
   char *contents = file_to_buffer(fname, &len);
   str = (contents == 0) ? "" : contents;
@@ -337,7 +336,7 @@ String FileUtils::file_to_string(const String &fname) {
 }
 
 
-void *FileUtils::mmap(const String &fname, off_t *lenp) {
+void *FileUtils::mmap(const std::string &fname, off_t *lenp) {
   int fd;
   struct stat statbuf;
   void *map;
@@ -360,7 +359,7 @@ void *FileUtils::mmap(const String &fname, off_t *lenp) {
 }
 
 
-bool FileUtils::mkdirs(const String &dirname) {
+bool FileUtils::mkdirs(const std::string &dirname) {
   struct stat statbuf;
 
   char *tmpdir = new char [dirname.length() + 1];	
@@ -398,14 +397,14 @@ bool FileUtils::mkdirs(const String &dirname) {
 }
 
 
-bool FileUtils::exists(const String &fname) {
+bool FileUtils::exists(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return false;
   return true;
 }
 
-bool FileUtils::unlink(const String &fname) {
+bool FileUtils::unlink(const std::string &fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
     HT_ERRORF("unlink(\"%s\") failed - %s", fname.c_str(),
@@ -416,7 +415,7 @@ bool FileUtils::unlink(const String &fname) {
   return true;
 }
 
-bool FileUtils::rename(const String &oldpath, const String &newpath) {
+bool FileUtils::rename(const std::string &oldpath, const std::string &newpath) {
   if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
     int saved_errno = errno;
     HT_ERRORF("rename(\"%s\", \"%s\") failed - %s",
@@ -428,7 +427,7 @@ bool FileUtils::rename(const String &oldpath, const String &newpath) {
 }
 
 
-uint64_t FileUtils::size(const String &fname) {
+uint64_t FileUtils::size(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
@@ -436,14 +435,14 @@ uint64_t FileUtils::size(const String &fname) {
 }
 
 
-off_t FileUtils::length(const String &fname) {
+off_t FileUtils::length(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return (off_t)-1;
   return statbuf.st_size;
 }
 
-time_t FileUtils::modification(const String &fname) {
+time_t FileUtils::modification(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
@@ -451,13 +450,13 @@ time_t FileUtils::modification(const String &fname) {
 }
 
 
-void FileUtils::add_trailing_slash(String &path) {
+void FileUtils::add_trailing_slash(std::string &path) {
   if (path.find('/', path.length() - 1) == std::string::npos)
     path += "/";
 }
 
 
-bool FileUtils::expand_tilde(String &fname) {
+bool FileUtils::expand_tilde(std::string &fname) {
 
   if (fname[0] != '~')
     return false;
@@ -471,10 +470,10 @@ bool FileUtils::expand_tilde(String &fname) {
   if (fname.length() == 1 || fname[1] == '/') {
     if (getpwuid_r(getuid() , &pbuf, buf, 256, &prbuf) != 0 || prbuf == 0)
       return false;
-    fname = (String)pbuf.pw_dir + fname.substr(1);
+    fname = (std::string)pbuf.pw_dir + fname.substr(1);
   }
   else {
-    String name;
+    std::string name;
     size_t first_slash = fname.find_first_of('/');
 
     if (first_slash == std::string::npos)
@@ -488,14 +487,15 @@ bool FileUtils::expand_tilde(String &fname) {
     if (first_slash == std::string::npos)
       fname = pbuf.pw_dir;
     else
-      fname = (String)pbuf.pw_dir + fname.substr(first_slash);
+      fname = (std::string)pbuf.pw_dir + fname.substr(first_slash);
   }
 
   return true;
 }
 
-void FileUtils::readdir(const String &dirname, const String &fname_regex,
-			std::vector<struct dirent> &listing) {
+void FileUtils::readdir(const std::string &dirname, 
+                        const std::string &fname_regex,
+                        std::vector<struct dirent> &listing) {
 
   errno = 0;
   DIR *dirp = opendir(dirname.c_str());

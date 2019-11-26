@@ -195,7 +195,7 @@ void test_ser() {
 
 } // local namespace
 
-int main(int ac, char *av[]) {
+int main(int argc, char *argv[]) {
   try {
     test_ser();
   }

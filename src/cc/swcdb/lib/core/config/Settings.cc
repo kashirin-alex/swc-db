@@ -26,6 +26,7 @@
  * from a command line parameter).
  */
 
+
 #include "Settings.h"
 
 #include "../Version.h"
@@ -36,12 +37,11 @@
 #include <iostream>
 #include <mutex>
 
-#include <errno.h>
 
 namespace SWC { namespace Config {
 
 
-static String filename;
+static std::string filename;
 
 namespace{ //local
 static int terminal_line_length() {
@@ -74,9 +74,8 @@ PropertiesDesc& Settings::file_desc(const char *usage) {
   std::lock_guard<std::recursive_mutex> lock(rec_mutex);
 
   if (!file_descp)
-    file_descp = new PropertiesDesc(usage ? usage : "Settings Properties",
-            terminal_line_length());
-
+    file_descp = new PropertiesDesc(
+      usage ? usage : "Settings Properties", terminal_line_length());
   return *file_descp;
 }
 
@@ -127,7 +126,7 @@ void Settings::parse_args(int argc, char *argv[]) {
               "cfg file=%s not found", filename.c_str());
 }
 
-void Settings::parse_file(const String &fname, const String &onchg) {
+void Settings::parse_file(const std::string &fname, const std::string &onchg) {
   if(!fname.empty()){
     if(!FileUtils::exists(fname))
       HT_THROWF(Error::FS_FILE_NOT_FOUND, 
@@ -141,24 +140,24 @@ void Settings::parse_file(const String &fname, const String &onchg) {
   }
 }
 
-void Settings::alias(const String &cmdline_opt, const String &file_opt) {
+void Settings::alias(const std::string &cmdline_opt, const std::string &file_opt) {
   properties->alias(cmdline_opt, file_opt);
 }
 
-bool Settings::has(const String &name) {
+bool Settings::has(const std::string &name) {
   HT_ASSERT(properties);
   return properties->has(name);
 }
 
-bool Settings::defaulted(const String &name) {
+bool Settings::defaulted(const std::string &name) {
   HT_ASSERT(properties);
   return properties->defaulted(name);
 }
 
 
 void Settings::init_options() {
-  String default_config = install_path + "/conf/swc.cfg";
-  String default_data_dir = install_path;
+  std::string default_config = install_path + "/conf/swc.cfg";
+  std::string default_data_dir = install_path;
     
   gEnumExt logging_level(Logger::Priority::INFO);
   logging_level.set_from_string(Logger::cfg::from_string).set_repr(Logger::cfg::repr);
@@ -211,8 +210,11 @@ void Settings::init_client_options() {
 } 
 
 void Settings::init(int argc, char *argv[]) {
-
   executable = std::string(argv[0]);
+   
+  auto at = executable.find_last_of("/");
+  Logger::initialize(executable.substr(at?++at:at, executable.length()));
+
   install_path = std::filesystem::absolute(argv[0]).parent_path().parent_path();
 
   init_options();

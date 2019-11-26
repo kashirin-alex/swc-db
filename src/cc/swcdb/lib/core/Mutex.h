@@ -5,19 +5,14 @@
 #ifndef swc_core_Mutex_h
 #define swc_core_Mutex_h
 
-#include <atomic>
+#include "LockAtomicUnique.h"
+#include "LockAtomicRecursive.h"
+
 #include <mutex>
 #include <thread>
 #include <condition_variable>
 
-namespace SWC {
-
-
-namespace LockAtomic {
-
-inline const size_t get_thread_id() {
-  return std::hash<std::thread::id>{}(std::this_thread::get_id());
-}
+namespace SWC { namespace LockAtomic {
 
 class RW {
   public:
@@ -29,11 +24,11 @@ class RW {
   void lock(const uint32_t& us_sleep = 0) {
     size_t tid = get_thread_id();
     if(state.load(std::memory_order_acquire).owner != tid) {
-		  uint16_t i = 0;
+      uint16_t i = 0;
 
       State new_state({true, tid});
       State empty({false, 0});
-		  for(auto at=empty;
+      for(auto at=empty;
           !state.compare_exchange_weak(at, new_state, std::memory_order_seq_cst);
           at=empty)
         if(++i == 0)
@@ -147,122 +142,17 @@ class RW {
   }
 
   struct State {
-	  bool    want_x;
-	  size_t  owner;
+    bool    want_x;
+    size_t  owner;
   };
   std::atomic<State>  state;
-	uint32_t            recurse;
+  uint32_t            recurse;
   User                users[8];
 };
 
-class Recursive {
-  public:
-
-  explicit Recursive(): owner(0), recurse(0) { }
-  ~Recursive() { }
-
-  void lock() {
-    size_t tid = get_thread_id();
-    if(owner.load(std::memory_order_acquire) != tid) {
-		  uint16_t i = 0;
-		  for(size_t at=0;
-          !owner.compare_exchange_weak(at, tid, std::memory_order_seq_cst);
-          at=0)
-        if(++i == 0) 
-          std::this_thread::yield();
-    }
-    recurse++;
-  }
-
-  void lock(const uint32_t& us_sleep) {
-    size_t tid = get_thread_id();
-    if(owner.load(std::memory_order_acquire) != tid) {
-		  uint16_t i = 0;
-		  for(size_t at=0;
-          !owner.compare_exchange_weak(at, tid, std::memory_order_seq_cst);
-          at=0)
-        if(++i == 0) 
-          std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
-    }
-    recurse++;
-  }
-
-  void unlock() {
-    if(!--recurse)
-		  owner.store(0, std::memory_order_release);
-  }
-  
-  class Scope {
-    public:
-    explicit Scope(Recursive& m) : _m(m) {
-      _m.lock();
-    }
-    explicit Scope(Recursive& m, const uint32_t& us_sleep) : _m(m) {
-      _m.lock(us_sleep);
-    }
-    virtual ~Scope() {
-      _m.unlock();
-    }
-    private:
-    Recursive& _m;
-  };
-  
-  private:
-
-	std::atomic<size_t>  owner;
-	uint32_t             recurse;
-};
-
-class Unique {
-  public:
-
-  explicit Unique(): want(false) { }
-
-  ~Unique() { }
-
-  void lock() {
-		uint16_t i = 0;
-		for(auto at=false;
-        !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
-        at=false)
-      if(++i == 0)
-        std::this_thread::yield();
-  }
-
-  void lock(const uint32_t& us_sleep) {
-		uint16_t i = 0;
-		for(auto at=false;
-        !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
-        at=false)
-      if(++i == 0)
-        std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
-  }
-
-  void unlock() {
-		want.store(false, std::memory_order_release);
-  }
-  
-  class Scope {
-    public:
-    explicit Scope(Unique& m) : _m(m) {
-      _m.lock();
-    }
-    explicit Scope(Unique& m, const uint32_t& us_sleep) : _m(m) {
-      _m.lock(us_sleep);
-    }
-    virtual ~Scope() {
-      _m.unlock();
-    }
-    private:
-    Unique& _m;
-  };
-
-  private:
-
-	std::atomic<bool> want;
-};
-
 }
+
+
 
 template<class M>
 class SharedLock {
@@ -306,7 +196,7 @@ class Mutex {
   virtual ~Mutex() { }
   
   void lock_shared() {
-		lock();
+    lock();
   }
 
   void unlock_shared() {
@@ -315,17 +205,17 @@ class Mutex {
 
   
   void lock() {
-		if(!own())
+    if(!own())
       take_ownership();
-		++recursive_xlock_count;
+    ++recursive_xlock_count;
   }
 
   void unlock() {
     assert(recursive_xlock_count > 0);
 
     if(!--recursive_xlock_count) {
-			tid_clear();
-			want_x_lock.store(false, std::memory_order_release);			
+      tid_clear();
+      want_x_lock.store(false, std::memory_order_release);      
     }
   }
   
@@ -337,23 +227,23 @@ class Mutex {
   }
 
   void take_ownership() {
-		uint16_t i = 0;
+    uint16_t i = 0;
     bool nowant = false;
     auto tid = std::this_thread::get_id(); 
     std::thread::id no_tid;
 
-		while(!want_x_lock.compare_exchange_strong(nowant, true, std::memory_order_seq_cst)
+    while(!want_x_lock.compare_exchange_strong(nowant, true, std::memory_order_seq_cst)
        || !owner_tid.compare_exchange_strong(no_tid, tid, std::memory_order_seq_cst))
       if(++i == 0) std::this_thread::yield();
   }
 
   void tid_clear() {
-		owner_tid.store(std::thread::id(), std::memory_order_release);
+    owner_tid.store(std::thread::id(), std::memory_order_release);
   }
 
-	uint32_t                      recursive_xlock_count;
-	std::atomic<bool>             want_x_lock;
-	std::atomic<std::thread::id>  owner_tid;
+  uint32_t                      recursive_xlock_count;
+  std::atomic<bool>             want_x_lock;
+  std::atomic<std::thread::id>  owner_tid;
 };
 *************/
 

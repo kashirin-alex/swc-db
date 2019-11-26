@@ -225,8 +225,10 @@ class Read  {
     s.append(std::to_string(blocks.size()));
     s.append(" blocks=[");
     for(auto blk : blocks) {
+      std::cout << "cs blk->to_string 1 \n"; 
       s.append(blk->to_string());
       s.append(", ");
+      std::cout << "cs blk->to_string 2 \n"; 
     }
     s.append("]");
 
@@ -442,6 +444,7 @@ class Read  {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_count--;
+        std::cout << " CellStore::AwaitingLoad count=" << m_count << "\n";
         m_pending.push(blk);
         if(m_pending.size() > 1)
           return;

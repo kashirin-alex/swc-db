@@ -30,6 +30,7 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
+#include "../Logger.h"
 
 #include "Properties.h"
 
@@ -51,15 +52,16 @@ class Settings {
 
   public:
 
-  String install_path;
-  String executable;
+  std::string install_path;
+  std::string executable;
   /** This singleton map stores all options */
-  PropertiesPtr properties;
+  Properties::Ptr properties;
 
-  Settings() {
-    properties = std::make_shared<Properties>();
+  Settings(): properties(std::make_shared<Properties>()) { }
+
+  virtual ~Settings() {
+
   }
-  virtual ~Settings(){}
 
   void init(int argc, char *argv[]);
 
@@ -78,14 +80,14 @@ class Settings {
    * @param name The name of the option to search for
    * @return true if there is an option with this name
    */
-  bool has(const String &name);
+  bool has(const std::string &name);
 
   /** Check if a configuration value is defaulted
    *
    * @param name The name of the option
    * @return true if this option's value is the default value
    */
-  bool defaulted(const String &name);
+  bool defaulted(const std::string &name);
 
   /** Retrieves a configuration value
    *
@@ -97,7 +99,7 @@ class Settings {
    * @return The option's value
    */
   template <typename T>
-  T get(const String &name) {
+  T get(const std::string &name) {
     HT_ASSERT(properties);
     return properties->get<T>(name);
   }
@@ -112,7 +114,7 @@ class Settings {
    * @return The option's value
    */
   template <typename T>
-  T* get_ptr(const String &name) {
+  T* get_ptr(const std::string &name) {
     HT_ASSERT(properties);
     return properties->get_ptr<T>(name);
   }
@@ -126,7 +128,7 @@ class Settings {
    * @return The option's value
    */
   template <typename T>
-  T get(const String &name, T default_value) {
+  T get(const std::string &name, T default_value) {
     HT_ASSERT(properties);
     return properties->get<T>(name, default_value);
   }
@@ -175,7 +177,7 @@ class Settings {
    * @param onchg The cfg-name eg. swc.OnFileChange.cfg
    * @throws Error::CONFIG_BAD_CFG_FILE on error
    */
-  void parse_file(const String &fname, const String &onchg);
+  void parse_file(const std::string &fname, const std::string &onchg);
 
   /**
    * Setup command line option alias for config file option.
@@ -188,9 +190,9 @@ class Settings {
    * @param file_opt Configuration file option name
    * @param overwrite If true then existing aliases are overwritten
    */
-  void alias(const String &cmdline_opt, const String &file_opt);
+  void alias(const std::string &cmdline_opt, const std::string &file_opt);
 
-  String usage_str(const char *usage) {
+  std::string usage_str(const char *usage) {
     if (!usage)
       usage = "Usage: %s [options]\n\nOptions";
 
@@ -234,7 +236,7 @@ class Config {
 
   Config() : m_settings(new SWC::Config::Settings()){}
 
-  virtual ~Config(){
+  virtual ~Config() {
     if(m_settings != nullptr)
       delete m_settings;
   }

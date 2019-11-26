@@ -9,24 +9,13 @@
 #ifndef swc_core_config_PropertyValueGuarded_h
 #define swc_core_config_PropertyValueGuarded_h
 
-#include "../Compat.h"
-
-#include <vector>
-#include <string>
-#include <atomic>
-#include <mutex>
-#include <functional>
-
 
 namespace SWC {
 
-/** @addtogroup Common
- *  @{
- */
 
-typedef std::vector<String> Strings;
-typedef std::vector<int64_t> Int64s;
-typedef std::vector<double> Doubles;
+typedef std::vector<std::string>  Strings;
+typedef std::vector<int64_t>      Int64s;
+typedef std::vector<double>       Doubles;
 
 
 namespace Property {
@@ -36,59 +25,59 @@ class ValueGuardedAtomic {
   
   public:
 
-    ValueGuardedAtomic () noexcept {}
+  ValueGuardedAtomic () noexcept {}
  
-    ValueGuardedAtomic (T nv) noexcept {
-      store(nv);
-    }
+  ValueGuardedAtomic (T nv) noexcept {
+    store(nv);
+  }
  
-    ValueGuardedAtomic (ValueGuardedAtomic &other) noexcept {
-      store(other.get());
-    }
+  ValueGuardedAtomic (ValueGuardedAtomic &other) noexcept {
+    store(other.get());
+  }
  
-    void store(T nv){
-      if(nv == vg.load()) 
-        return;
-      vg.store(nv);
-      if(on_chg_cb)
-        on_chg_cb();
-    }
+  void store(T nv){
+    if(nv == vg.load()) 
+      return;
+    vg.store(nv);
+    if(on_chg_cb)
+      on_chg_cb();
+  }
 
-    ~ValueGuardedAtomic () noexcept {};
+  ~ValueGuardedAtomic () noexcept {};
     
-    operator ValueGuardedAtomic*() { 
-      return this;    
-    }
+  operator ValueGuardedAtomic*() { 
+    return this;    
+  }
     
-    ValueGuardedAtomic* operator =(T nv) {
-      store(nv);
-      return *this;
-    }
+  ValueGuardedAtomic* operator =(T nv) {
+    store(nv);
+    return *this;
+  }
 
-    ValueGuardedAtomic* operator =(ValueGuardedAtomic &other) {
-      store(other.get());
-      return *this;
-    }
+  ValueGuardedAtomic* operator =(ValueGuardedAtomic &other) {
+    store(other.get());
+    return *this;
+  }
     
-    operator T() {
-      return vg.load(); 
-    }
+  operator T() {
+    return vg.load(); 
+  }
 
-    T get() {
-      return vg.load(); 
-    }
+  T get() {
+    return vg.load(); 
+  }
 
-    operator std::atomic<T>*() {
-      return &vg; 
-    }
+  operator std::atomic<T>*() {
+    return &vg; 
+  }
 
-    void set_cb_on_chg(std::function<void()> cb) {
-      on_chg_cb = cb;
-    }
+  void set_cb_on_chg(std::function<void()> cb) {
+    on_chg_cb = cb;
+  }
 
   private:
-    std::atomic<T> vg;
-    std::function<void()> on_chg_cb;
+  std::atomic<T> vg;
+  std::function<void()> on_chg_cb;
 };
 
 }
@@ -99,76 +88,76 @@ typedef gBool*    gBoolPtr;
 typedef gInt32t*  gInt32tPtr;
 
 
+
 namespace Property {
 
 template <class T>
 class ValueGuardedVector {
 
   private:
-
-    std::mutex mutex;	
-    T v;
-    using T_of = typename std::decay<decltype(*v.begin())>::type;
-    std::function<void()> on_chg_cb;
+  std::mutex mutex;	
+  T v;
+  using T_of = typename std::decay<decltype(*v.begin())>::type;
+  std::function<void()> on_chg_cb;
 
   public:
 
-    ValueGuardedVector () noexcept {}
+  ValueGuardedVector () noexcept {}
  
-    ValueGuardedVector (T nv) noexcept {
-      set(nv);
-    }
+  ValueGuardedVector (T nv) noexcept {
+    set(nv);
+  }
  
-    ValueGuardedVector (ValueGuardedVector &other) noexcept {
-      set(other.get());
-    }
+  ValueGuardedVector (ValueGuardedVector &other) noexcept {
+    set(other.get());
+  }
  
-    ~ValueGuardedVector () noexcept {};
+  ~ValueGuardedVector () noexcept {};
     
-    operator ValueGuardedVector*()   { 
-      return this;    
-    }
+  operator ValueGuardedVector*() {
+    return this;    
+  }
     
-    ValueGuardedVector* operator =(T nv){
-      set(nv);
+  ValueGuardedVector* operator =(T nv){
+    set(nv);
       
-      if(on_chg_cb)
-        on_chg_cb();
-      return *this;
-    }
+    if(on_chg_cb)
+      on_chg_cb();
+    return *this;
+  }
 
-    ValueGuardedVector* operator =(ValueGuardedVector &other){
-      set(other.get());
-      return *this;
-    } 
+  ValueGuardedVector* operator =(ValueGuardedVector &other){
+    set(other.get());
+    return *this;
+  } 
     
-    void set(T nv)  {
-      std::lock_guard<std::mutex> lock(mutex);	
-      v.swap(nv);
-    }
+  void set(T nv)  {
+    std::lock_guard<std::mutex> lock(mutex);	
+    v.swap(nv);
+  }
     
-    operator T(){
-      return get(); 
-    }
+  operator T(){
+    return get(); 
+  }
 
-    T get(){
-      std::lock_guard<std::mutex> lock(mutex);	
-      return v;      
-    }
+  T get(){
+    std::lock_guard<std::mutex> lock(mutex);	
+    return v;      
+  }
 
-    size_t size()  {
-      std::lock_guard<std::mutex> lock(mutex);	
-      return v.size();
-    }
+  size_t size()  {
+    std::lock_guard<std::mutex> lock(mutex);	
+    return v.size();
+  }
 
-    T_of get_item(size_t n){
-      std::lock_guard<std::mutex> lock(mutex);	
-      return v[n];
-    }
+  T_of get_item(size_t n){
+    std::lock_guard<std::mutex> lock(mutex);	
+    return v[n];
+  }
 
-    void set_cb_on_chg(std::function<void()> cb) {
-      on_chg_cb = cb;
-    }
+  void set_cb_on_chg(std::function<void()> cb) {
+    on_chg_cb = cb;
+  }
 
 };
 
@@ -176,10 +165,8 @@ class ValueGuardedVector {
 
 
 typedef Property::ValueGuardedVector<Strings> gStrings;
-typedef gStrings* gStringsPtr;
+typedef gStrings*                             gStringsPtr;
 
-
-/** @} */
 
 } // namespace SWC
 

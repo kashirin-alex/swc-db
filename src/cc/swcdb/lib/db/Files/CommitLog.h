@@ -416,6 +416,7 @@ class Fragments {
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_count--;
+        std::cout << " Fragments::AwaitingLoad count=" << m_count << "\n";
         m_pending.push(frag);
         if(m_pending.size() > 1)
           return;

@@ -331,12 +331,12 @@ namespace SWC { namespace Serialization {
   }
 
   /**
-   * Computes the encoded length of a String.
+   * Computes the encoded length of a std::string.
    *
    * @param str Reference to string object
    * @return The encoded length of str
    */
-  inline size_t encoded_length_str16(const String &str) {
+  inline size_t encoded_length_str16(const std::string &str) {
     return 2 + str.length() + 1;
   }
 
@@ -378,7 +378,7 @@ namespace SWC { namespace Serialization {
    * pointer.
    *
    * @param bufp Pointer to pointer of the destinatin buffer
-   * @param str The String to encode
+   * @param str The std::string to encode
    */
   template <class StringT>
   inline void encode_str16(uint8_t **bufp, const StringT &str) {
@@ -423,7 +423,7 @@ namespace SWC { namespace Serialization {
   }
 
   /**
-   * Decodes a str16 from the given buffer to a String.  The encoding of the
+   * Decodes a str16 from the given buffer to a std::string.  The encoding of the
    * string is a 2 byte length followed by the string, followed by a '\\0'
    * termination byte.  The length does not include the '\\0' terminator.
    * Increments buffer pointer and decrements remainp on success.
@@ -468,7 +468,7 @@ namespace SWC { namespace Serialization {
    * @param s The string to encode
    * @return The encoded length of s
    */
-  inline size_t encoded_length_vstr(const String &s) {
+  inline size_t encoded_length_vstr(const std::string &s) {
     return encoded_length_vstr(s.length());
   }
 
@@ -494,7 +494,7 @@ namespace SWC { namespace Serialization {
   }
 
   /**
-   * Encode a String as vstr
+   * Encode a std::string as vstr
    *
    * @param bufp Pointer to pointer of destination buffer
    * @param s The string to encode
@@ -529,7 +529,7 @@ namespace SWC { namespace Serialization {
    * @return The decoded string
    */
   template <class StringT>
-  inline String decode_vstr(const uint8_t **bufp, size_t *remainp) {
+  inline std::string decode_vstr(const uint8_t **bufp, size_t *remainp) {
     char *buf;
     size_t len;
     HT_DECODE_VSTR(*bufp, *remainp, buf, len);

@@ -42,8 +42,8 @@ class AppContext : public SWC::AppContext {
 
   AppContext() {
     Env::Config::settings()->parse_file(
-      Env::Config::settings()->get<String>("swc.mngr.cfg", ""),
-      Env::Config::settings()->get<String>("swc.mngr.OnFileChange.cfg", "")
+      Env::Config::settings()->get<std::string>("swc.mngr.cfg", ""),
+      Env::Config::settings()->get<std::string>("swc.mngr.OnFileChange.cfg", "")
     );
 
     Env::IoCtx::init(

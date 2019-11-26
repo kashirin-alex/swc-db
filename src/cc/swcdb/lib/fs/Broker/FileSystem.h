@@ -38,7 +38,7 @@ class FileSystemBroker: public FileSystem {
   public:
 
   static const EndPoints get_endpoints(){
-    std::string host = Env::Config::settings()->get<String>(
+    std::string host = Env::Config::settings()->get<std::string>(
       "swc.fs.broker.host", "");
     if(host.empty()){
       char hostname[256];
@@ -59,7 +59,7 @@ class FileSystemBroker: public FileSystem {
       m_service(std::make_shared<client::Serialized>(
         "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
       m_type_underlying(parse_fs_type(
-        Env::Config::settings()->get<String>("swc.fs.broker.underlying"))),
+        Env::Config::settings()->get<std::string>("swc.fs.broker.underlying"))),
       cfg_timeout(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.fs.broker.timeout")),
       cfg_timeout_ratio(Env::Config::settings()->get_ptr<gInt32t>(
@@ -116,7 +116,7 @@ class FileSystemBroker: public FileSystem {
 
   /// File/Dir name actions
 
-  bool exists(int &err, const String &name) override {
+  bool exists(int &err, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Exists>(
       cfg_timeout->get(), name);
     
@@ -125,14 +125,14 @@ class FileSystemBroker: public FileSystem {
     return hdlr->state;
   }
 
-  void exists(Callback::ExistsCb_t cb, const String &name) override {
+  void exists(Callback::ExistsCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Exists>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
-  void remove(int &err, const String &name) override {
+  void remove(int &err, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Remove>(
       cfg_timeout->get(), name);
 
@@ -140,14 +140,14 @@ class FileSystemBroker: public FileSystem {
     err = hdlr->error;
   }
 
-  void remove(Callback::RemoveCb_t cb, const String &name) override {
+  void remove(Callback::RemoveCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Remove>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
   
-  size_t length(int &err, const String &name) override {
+  size_t length(int &err, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Length>(
       cfg_timeout->get(), name);
 
@@ -156,14 +156,14 @@ class FileSystemBroker: public FileSystem {
     return hdlr->length;
   }
 
-  void length(Callback::LengthCb_t cb, const String &name) override {
+  void length(Callback::LengthCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Length>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
-  void mkdirs(int &err, const String &name) override {
+  void mkdirs(int &err, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
       cfg_timeout->get(), name);
 
@@ -171,14 +171,14 @@ class FileSystemBroker: public FileSystem {
     err = hdlr->error;
   }
 
-  void mkdirs(Callback::MkdirsCb_t cb, const String &name) override {
+  void mkdirs(Callback::MkdirsCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
-  void readdir(int &err, const String &name, DirentList &results) override {
+  void readdir(int &err, const std::string &name, DirentList &results) override {
     auto hdlr = std::make_shared<Protocol::Req::Readdir>(
       cfg_timeout->get(), name);
 
@@ -187,14 +187,14 @@ class FileSystemBroker: public FileSystem {
     results = hdlr->listing;
   }
 
-  void readdir(Callback::ReaddirCb_t cb, const String &name) override {
+  void readdir(Callback::ReaddirCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Readdir>(
       cfg_timeout->get(), name, cb);
       
     while(!send_request(hdlr));
   }
 
-  void rmdir(int &err, const String &name) override {
+  void rmdir(int &err, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name);
 
@@ -202,7 +202,7 @@ class FileSystemBroker: public FileSystem {
     err = hdlr->error;
   }
 
-  void rmdir(Callback::RmdirCb_t cb, const String &name) override {
+  void rmdir(Callback::RmdirCb_t cb, const std::string &name) override {
     auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
       cfg_timeout->get(), name, cb);
       

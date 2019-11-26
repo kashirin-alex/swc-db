@@ -16,7 +16,7 @@ class Length : public Base {
 
   size_t length;
 
-  Length(uint32_t timeout, const String &name, Callback::LengthCb_t cb=0) 
+  Length(uint32_t timeout, const std::string &name, Callback::LengthCb_t cb=0) 
         : name(name), cb(cb), length(0) {
     HT_DEBUGF("length path='%s'", name.c_str());
 
@@ -51,7 +51,7 @@ class Length : public Base {
   }
 
   private:
-  const String          name;
+  const std::string     name;
   Callback::LengthCb_t  cb;
 };
 

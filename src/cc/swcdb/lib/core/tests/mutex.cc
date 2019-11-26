@@ -462,7 +462,8 @@ void ProfileAndPring(std::string msg) {
               << "\n";          
 }
 
-int main() {
+int main(int argc, char** argv) {
+
   std::cout << " size of:\n";
   std::cout << " # std::mutex                     = " << sizeof(std::mutex) << "\n";
   std::cout << " # std::shared_mutex              = " << sizeof(std::shared_mutex) << "\n";

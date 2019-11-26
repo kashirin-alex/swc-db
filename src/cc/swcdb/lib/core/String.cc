@@ -32,7 +32,7 @@
 
 namespace SWC {
 
-String format(const char *fmt, ...) {
+std::string format(const char *fmt, ...) {
   char buf[1024];       // should be enough for most cases
   int n, size = sizeof(buf);
   char *p = buf;
@@ -68,7 +68,7 @@ String format(const char *fmt, ...) {
 
 char const *const digits = "0123456789";
 
-String format_number(int64_t n, int sep) {
+std::string format_number(int64_t n, int sep) {
   char buf[30], *p = buf, *p0 = buf;
   int ndigits = 0;
   uint64_t num; // for edge cases when -n is still negative when n < 0
@@ -94,16 +94,16 @@ String format_number(int64_t n, int sep) {
   int len = ndigits + (ndigits - 1) / 3;
   std::reverse(p0, p0 + len);
 
-  return String(buf, len + p0 - buf);
+  return std::string(buf, len + p0 - buf);
 }
 
-String
+std::string
 format_bytes(size_t n, const void *buf, size_t len, const char *trailer) {
   if (buf) {
     if (len <= n)
-      return String((char *)buf, len);
+      return std::string((char *)buf, len);
 
-    String out((char *)buf, n);
+    std::string out((char *)buf, n);
     out += trailer;
     return out;
   }

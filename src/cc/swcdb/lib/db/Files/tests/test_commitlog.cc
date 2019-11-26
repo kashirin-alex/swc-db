@@ -17,6 +17,33 @@
 using namespace SWC;
 
 
+void count_all_cells(DB::Schema::Ptr schema, size_t num_cells, 
+                     SWC::server::Rgr::IntervalBlocks& blocks) {
+  std::atomic<int> chk = 1;
+  
+  auto req = DB::Cells::ReqScanTest::make();
+  req->cells = DB::Cells::Mutable::make(
+    schema->cid, schema->cell_versions, 0, SWC::Types::Column::PLAIN);
+  req->spec = SWC::DB::Specs::Interval::make_ptr();
+  req->spec->flags.limit = num_cells * schema->cell_versions;
+    
+  req->cb = [req, &chk, blocks=&blocks](int err){
+    std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
+    if(req->cells->size != req->spec->flags.limit) {
+      std::cerr << "all-ver, req->cells->size() != req->spec->flags.limit  \n" 
+                << " " << req->cells->size << " != "  << req->spec->flags.limit <<"\n";
+      exit(1);
+    }
+    //std::cout << req->to_string() << "\n";
+    //std::cout << blocks->to_string() << "\n";
+    chk--;
+  };
+
+  blocks.scan(req);
+
+  while(chk > 0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
 
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
@@ -49,12 +76,11 @@ int main(int argc, char** argv) {
     )
   );
 
-  DB::RangeBase::Ptr range = std::make_shared<DB::RangeBase>(1,1);
-  Files::CommitLog::Fragments::Ptr commit_log 
-    = Files::CommitLog::Fragments::make(range);
 
+  auto range = std::make_shared<DB::RangeBase>(1, 1);
   auto schema = Env::Schemas::get()->get(range->cid);
-  
+  auto commit_log = Files::CommitLog::Fragments::make(range);
+
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(
     err, range->get_path(DB::RangeBase::log_dir));
@@ -122,21 +148,21 @@ int main(int argc, char** argv) {
       && num_cells*schema->cell_versions != commit_log->cells_count()) {
     exit(1);
   }
+  std::cout << "\n FINISH CREATE LOG\n\n ";
   
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
   
-  commit_log = Files::CommitLog::Fragments::make(range);
-  std::cout << "new loading: \n" << commit_log->to_string() << "\n";
 
-  commit_log->load(err); // initial range loaded state
-  std::cout << "loaded: \n" << commit_log->to_string() << "\n";
+  ///
+
 
   SWC::server::Rgr::IntervalBlocks blocks;
   blocks.init(range);
-  blocks.load(err);
+  std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores->add(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
-
+  blocks.load(err);
+  std::cout << "loaded: \n" << blocks.to_string() << "\n";
 
 
   int num_chks = 10;
@@ -144,65 +170,35 @@ int main(int argc, char** argv) {
   for(int i = 1;i<=num_chks; i++){
     
     auto req = DB::Cells::ReqScanTest::make();
-    req->cells = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
+    req->cells = DB::Cells::Mutable::make(
+      schema->cid, 1, 0, SWC::Types::Column::PLAIN);
     req->spec = SWC::DB::Specs::Interval::make_ptr();
-    req->spec->flags.limit = 2;
+    req->spec->flags.limit = num_cells;
     
-    req->cb = [req, &chk, i, cellstores = blocks.cellstores](int err){
-        std::cout << " chk=" << i ;
-        std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-        std::cout << req->to_string() << "\n";
-        std::cout << cellstores->to_string() << "\n";
-        chk--;
-      };
-    blocks.scan(req);
-  }
-
-  while(chk > 0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  
-  // re-check over already loaded fragments
-  num_chks = 10;
-  chk = num_chks;
-  for(int i = 1;i<=num_chks; i++){
-    
-    auto req = DB::Cells::ReqScanTest::make();
-    req->spec = SWC::DB::Specs::Interval::make_ptr();
-    req->spec->flags.limit = 2;
-    req->cells = DB::Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
-    
-    req->cb = [req, &chk, i, cellstores = blocks.cellstores](int err){
-      std::cout << " chk=" << i ;
-      std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-      std::cout << req->to_string() << "\n";
-      std::cout << cellstores->to_string() << "\n";
+    req->cb = [req, &chk, i, blocks=&blocks](int err){
+      std::cout << " chk=" << i 
+                << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
+      if(req->cells->size != req->spec->flags.limit) {
+        std::cerr << "one-ver, req->cells->size() != req->spec->flags.limit  \n" 
+                  << " " << req->cells->size << " !="  << req->spec->flags.limit <<"\n";
+        exit(1);
+      }
+      //std::cout << req->to_string() << "\n";
+      //std::cout << blocks->to_string() << "\n";
       chk--;
     };
     blocks.scan(req);
   }
-  
+
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    
-
-  std::cout << " loaded logs: \n" << commit_log->to_string() << "\n";
   
-  std::cout << " cells_count=" << commit_log->cells_count() << "\n";
-  if((versions == 1 || versions == schema->cell_versions) 
-    && schema->cell_versions*num_cells != commit_log->cells_count()) {
-    std::cerr << " BAD, expected="<< schema->cell_versions*num_cells << "\n";
-    exit(1);
-  }
-  std::cerr << " OK\n";
+  count_all_cells(schema, num_cells, blocks);
 
-  size_t counted = blocks.cells_count();
+  std::cout << " scanned blocks: \n" << blocks.to_string() << "\n";
+  std::cerr << " scanned blocks, OK\n";
 
-  std::cout << " cs counted=" << counted;
-  if(schema->cell_versions*num_cells != counted) {
-    std::cerr << " BAD, expected="<< schema->cell_versions*num_cells << "\n";
-    exit(1);
-  }
-  std::cerr << " OK\n";
+
   
   std::cerr << "blocks.add_logged: \n";
 
@@ -238,15 +234,12 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::cout << "AFTER(add_logged): \n" << blocks.to_string() << "\n";
+  std::cout << " scanned blocks (add_logged): \n" << blocks.to_string() << "\n";
 
-  counted = blocks.cells_count();
+  count_all_cells(schema, num_cells+added_num, blocks);
 
-  std::cout << " cs counted=" << counted;
-  if(schema->cell_versions*(num_cells+added_num) != counted) {
-    std::cerr << " BAD after(add_logged), expected="<< (schema->cell_versions*(num_cells+added_num)) << "\n";
-    exit(1);
-  }
-  std::cerr << " OK\n";
+  std::cout << " scanned blocks (add_logged): \n" << blocks.to_string() << "\n";
+  std::cerr << " scanned blocks (add_logged), OK\n";
+
   exit(0);
 }

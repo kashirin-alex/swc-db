@@ -14,8 +14,8 @@ bool apply_local() {
     ("swc.fs.local.OnFileChange.cfg", str(), "Dyn-config file")
   ;
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<String>("swc.fs.local.cfg", ""),
-    Env::Config::settings()->get<String>("swc.fs.local.OnFileChange.cfg", "")
+    Env::Config::settings()->get<std::string>("swc.fs.local.cfg", ""),
+    Env::Config::settings()->get<std::string>("swc.fs.local.OnFileChange.cfg", "")
   );
   return true;
 }

@@ -19,8 +19,8 @@ bool apply_broker() {
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
   ;
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<String>("swc.fs.broker.cfg", ""),
-    Env::Config::settings()->get<String>("swc.fs.broker.OnFileChange.cfg", "")
+    Env::Config::settings()->get<std::string>("swc.fs.broker.cfg", ""),
+    Env::Config::settings()->get<std::string>("swc.fs.broker.OnFileChange.cfg", "")
   );
   return true;
 }

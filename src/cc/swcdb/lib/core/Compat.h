@@ -40,14 +40,6 @@
 #include <memory>
 
 // C++ specific stuff
-#ifndef BOOST_SPIRIT_THREADSAFE
-#  define BOOST_SPIRIT_THREADSAFE
-#endif
-
-#define BOOST_IOSTREAMS_USE_DEPRECATED
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_DEPRECATED     1
-
 #define HT_UNUSED(x) static_cast<void>(x)
 
 #if defined(__APPLE__) || !defined(_GLIBCXX_HAVE_QUICK_EXIT)

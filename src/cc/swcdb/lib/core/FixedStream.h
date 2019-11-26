@@ -27,7 +27,6 @@
 #ifndef swc_core_FIXED_STREAM_H
 #define swc_core_FIXED_STREAM_H
 
-#include "String.h"
 #include <streambuf>
 #include <istream>
 #include <ostream>
@@ -65,8 +64,8 @@ public:
     setg((char *)buf, (char *)next, (char *)end);
   }
 
-  /** Returns a String object from the output buffer */
-  String str() { return String(pbase(), pptr()); }
+  /** Returns a std::string object from the output buffer */
+  std::string str() { return std::string(pbase(), pptr()); }
 };
 
 /**
@@ -95,8 +94,8 @@ public:
   /** Returns a pointer to the end of the output buffer */
   char *output_end() { return StreamBuf::epptr(); }
 
-  /** Returns a String object from the output buffer */
-  String str() { return StreamBuf::str(); }
+  /** Returns a std::string object from the output buffer */
+  std::string str() { return StreamBuf::str(); }
 };
 
 /**

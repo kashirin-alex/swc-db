@@ -93,12 +93,12 @@ class SerializedServer {
     HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
               m_appname.c_str(), reactors, workers);
 
-    SWC::PropertiesPtr props = Env::Config::settings()->properties;
+    auto props = Env::Config::settings()->properties;
 
     Strings addrs = props->has("addr") ? props->get<Strings>("addr") : Strings();
-    String host;
+    std::string host;
     if(props->has("host"))
-      host = host.append(props->get<String>("host"));
+      host = host.append(props->get<std::string>("host"));
     else {
       char hostname[256];
       gethostname(hostname, sizeof(hostname));

@@ -5,7 +5,7 @@
 #ifndef swc_core_Encoder_h
 #define swc_core_Encoder_h
 
-#include "swcdb/lib/db/Types/Encoding.h"
+#include "../db/Types/Encoding.h"
 #include <snappy.h>
 #include <zlib.h>
 

@@ -20,7 +20,7 @@ class FileSystemLocal: public FileSystem {
 
   FileSystemLocal()
     : FileSystem(
-        Env::Config::settings()->get<String>("swc.fs.local.path.root"),
+        Env::Config::settings()->get<std::string>("swc.fs.local.path.root"),
         apply_local()
       ),
       m_directio(Env::Config::settings()->get<bool>(
@@ -41,7 +41,7 @@ class FileSystemLocal: public FileSystem {
 
 
 
-  bool exists(int &err, const String &name) override {
+  bool exists(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     bool state = FileUtils::exists(abspath);
@@ -50,7 +50,7 @@ class FileSystemLocal: public FileSystem {
     return state;
   }
 
-  void remove(int &err, const String &name) override {
+  void remove(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     if(!FileUtils::unlink(abspath)) {
@@ -64,7 +64,7 @@ class FileSystemLocal: public FileSystem {
     HT_DEBUGF("remove('%s')", abspath.c_str());
   }
   
-  size_t length(int &err, const String &name) override {
+  size_t length(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     errno = 0;
     
@@ -80,7 +80,7 @@ class FileSystemLocal: public FileSystem {
     return len;
   }
 
-  void mkdirs(int &err, const String &name) override {
+  void mkdirs(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("mkdirs path='%s'", abspath.c_str());
     
@@ -89,7 +89,7 @@ class FileSystemLocal: public FileSystem {
     err = errno;
   }
 
-  void readdir(int &err, const String &name, DirentList &results) override {
+  void readdir(int &err, const std::string &name, DirentList &results) override {
     std::string abspath = get_abspath(name);
     HT_DEBUGF("Readdir dir='%s'", abspath.c_str());
 
@@ -104,7 +104,7 @@ class FileSystemLocal: public FileSystem {
     }
     
     Dirent entry;
-    String full_entry_path;
+    std::string full_entry_path;
     struct stat statbuf;
 
     for(auto& result : listing){
@@ -137,7 +137,7 @@ class FileSystemLocal: public FileSystem {
     }
   }
 
-  void rmdir(int &err, const String &name) override {
+  void rmdir(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
     std::error_code ec;
     std::filesystem::remove_all(abspath, ec);

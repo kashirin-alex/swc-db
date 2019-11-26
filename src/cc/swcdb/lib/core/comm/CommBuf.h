@@ -32,11 +32,10 @@
 #include <memory>
 #include <string>
 
-#include "../Logger.h"
-#include "../Serializable.h"
 #include "../StaticBuffer.h"
-
+#include "../Serializable.h"
 #include "CommHeader.h"
+
 
 namespace SWC {
 
@@ -170,14 +169,14 @@ class CommBuf {
   }
 
   /**
-   * Appends a String to the primary buffer.  A string is encoded as
+   * Appends a std::string to the primary buffer.  A string is encoded as
    * a 16-bit length, followed by the characters, followed by
    * a terminating '\\0'.
    *
    * @param str std string to append
    * @see Serialization::encode_str16
    */
-  void append_str16(const String &str) {
+  void append_str16(const std::string &str) {
     Serialization::encode_str16(&data_ptr, str);
   }
 
@@ -220,13 +219,13 @@ class CommBuf {
     Serialization::encode_vstr(&data_ptr, str);
   }
 
-  /** Appends a String to the primary buffer.  A string is encoded as
+  /** Appends a std::string to the primary buffer.  A string is encoded as
    * a vint64 length, followed by the characters, followed by
    * a terminating '\\0'.
    * @param str C++ string to append
    * @see Serialization::encode_vstr
    */
-  void append_vstr(const String &str) {
+  void append_vstr(const std::string &str) {
     Serialization::encode_vstr(&data_ptr, str);
   }
 

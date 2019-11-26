@@ -24,7 +24,6 @@
 #ifndef swc_core_StaticBuffer_h
 #define swc_core_StaticBuffer_h
 
-#include "Logger.h"
 #include "DynamicBuffer.h"
 
 #include <cstdlib>

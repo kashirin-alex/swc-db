@@ -14,7 +14,7 @@ class Remove : public Base {
 
   public:
 
-  Remove(uint32_t timeout, const String &name, Callback::RemoveCb_t cb=0) 
+  Remove(uint32_t timeout, const std::string &name, Callback::RemoveCb_t cb=0) 
         : name(name), cb(cb) {
     HT_DEBUGF("remove path='%s'", name.c_str());
 
@@ -42,7 +42,7 @@ class Remove : public Base {
   }
 
   private:
-  const String          name;
+  const std::string     name;
   Callback::RemoveCb_t  cb;
 };
 
