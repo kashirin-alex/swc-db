@@ -9,7 +9,7 @@ namespace SWC{ namespace FS {
 
 
 bool apply_hadoop() {
-  Env::Config::settings()->file_desc().add_options()
+  Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop.path.root", str(""), "Hadoop FileSystem's base root path")
     ("swc.fs.hadoop.OnFileChange.cfg", str(), "Dyn-config file")
 

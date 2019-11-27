@@ -22,7 +22,7 @@ void Settings::init_app_options(){
   blk_enc.set_from_string(Types::from_string_encoding);
   blk_enc.set_repr(Types::repr_encoding);
 
-  file_desc().add_options()
+  file_desc.add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
     ("swc.rgr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Ranger")
 

@@ -17,7 +17,7 @@ void Settings::init_app_options(){
   init_fs_options();
   init_client_options();
   
-  file_desc().add_options()
+  file_desc.add_options()
     ("swc.mngr.cfg", str(), "Specific cfg-file for Manager")
     ("swc.mngr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Manager")
 

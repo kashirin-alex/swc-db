@@ -9,7 +9,7 @@ namespace SWC{ namespace FS {
 
 
 bool apply_ceph() {
-  settings->file_desc().add_options()
+  settings->file_desc.add_options()
     ("swc.fs.ceph.path.root", str(""), "Ceph FileSystem's base root path")
     ("swc.fs.ceph.OnFileChange.cfg", str(), "Dyn-config file")
   ;

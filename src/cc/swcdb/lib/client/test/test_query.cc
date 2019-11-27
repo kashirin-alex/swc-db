@@ -20,7 +20,7 @@ namespace SWC{ namespace Config {
 void Settings::init_app_options(){
   init_comm_options();
   init_client_options();
-  // file_desc().add_options();
+  // file_desc.add_options();
 }
 void Settings::init_post_cmd_args(){ }
 }}

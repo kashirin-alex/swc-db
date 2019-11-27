@@ -90,118 +90,80 @@
     const { return get<double>(name, default_value); } \
   inline Doubles get_f64s(const std::string &name, Doubles default_value) \
     const { return get<Doubles>(name, default_value); }
-  */
- 
+*/
+
 
 namespace SWC {
 
-
-/** @addtogroup Common
- *  @{
- */
-
-typedef Config::ParserConfig PropertiesDesc;
-
-
-/**
- * Manages a collection of program options.
- *
- * Implements getters and setters, aliases and default values.
- */
 class Properties {
+
   typedef std::map<std::string, Property::Value::Ptr> Map;
   typedef std::pair<std::string, Property::Value::Ptr> MapPair;
   typedef std::pair<Map::iterator, bool> InsRet;
   typedef std::map<std::string, std::string> AliasMap;
   
-public:
+  public:
 
   typedef std::shared_ptr<Properties> Ptr;
 
-  /** Default constructor; creates an empty set */
-  Properties() {  }
-
-  /** Constructor; load properties from a filename
-   *
-   * @param filename The name of the file with the properties
-   * @param desc A Property description with valid properties, default values
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   */
-  Properties(const std::string &filename, PropertiesDesc &desc,
-             bool allow_unregistered = false) {
-    load(filename, desc, allow_unregistered);
+  Properties() { }
+  
+  virtual ~Properties() { 
+    reset();
   }
 
-  /**
-   * Loads a configuration file with properties
-   *
-   * @param filename The name of the configuration file
-   * @param desc A property description
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   */
-  void load(const std::string &fname, PropertiesDesc &desc,
+  void reset() {
+    for (const auto &kv : m_map)
+      delete kv.second;
+    m_map.clear();
+  }
+
+  void load(const std::string &fname, 
+            const Config::ParserConfig &filedesc,
+            const Config::ParserConfig &cmddesc,
             bool allow_unregistered=false) {
     std::ifstream in(fname.c_str());
-    Config::Parser prs(in, desc, allow_unregistered);
+    Config::Parser prs(in, filedesc, cmddesc, allow_unregistered);
     load_from(prs.get_options());
   } 
 
-  /**
-   * Loads the parsed options to properties
-   *
-   * @param opts onfig::Parser::Options
-   * @param only_guarded update only huarded property
-   */
-  void load_from(Config::Parser::Options opts, bool only_guarded=false) {
-    AliasMap::iterator it;
+  void load_from(const Config::Parser::Options& opts, 
+                 bool only_guarded=false) {
+    //AliasMap::iterator it;
     for(const auto &kv : opts){
       if(has(kv.first) && (kv.second->is_default() || 
                            (only_guarded && !kv.second->is_guarded())))
       continue;
       set(kv.first, kv.second);
-      
+      /* -- cross-get done by get_value_ptr
       it = m_alias_map.find(kv.first);
       if(it != m_alias_map.end())
-        set((*it).second, get_value_ptr(kv.first));
+        set(it->second, get_value_ptr(kv.first));
+      */
     }
   }
-
-  /**
-   * Loads a configuration files by property name
-  *
-   * @param names_prop The name of property name
-   * @param desc A property description
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   */
-  void load_files_by(const std::string &names_prop, PropertiesDesc &desc, 
+  
+  void load_files_by(const std::string &fileprop, 
+                     const Config::ParserConfig &filedesc,
+                     const Config::ParserConfig &cmddesc,
 	                   bool allow_unregistered = false) {
-    if(names_prop.empty() || !has(names_prop)) 
+    if(fileprop.empty() || !has(fileprop)) 
       return;
 
-    Strings files = get_strs(names_prop);
-    for (Strings::iterator it=files.begin(); it<files.end(); it++){
+    Strings files = get_strs(fileprop);
+    for (auto it=files.begin(); it<files.end(); it++){
 	    try {
-        load(*it, desc, allow_unregistered);
-      }
-	    catch (std::exception &e) {
+        load(*it, filedesc, cmddesc, allow_unregistered);
+      } catch (std::exception &e) {
 		    HT_WARNF("%s has bad cfg file %s: %s", 
-                  names_prop.c_str(), (*it).c_str(), e.what());
+                  fileprop.c_str(), it->c_str(), e.what());
       }
     }
   }
     
-  /**
-   * ReLoads a configuration file with properties
-   *
-   * @param filename The name of the configuration file
-   * @param desc A property description
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   */
-  std::string reload(const std::string &fname, PropertiesDesc &desc,
+  std::string reload(const std::string &fname, 
+                     const Config::ParserConfig &filedesc,
+                     const Config::ParserConfig &cmddesc,
 	                   bool allow_unregistered = false) {
     std::string out;
 	  try {
@@ -213,7 +175,7 @@ public:
       out.append("\n\nCurrent Configurations:\n");
       append_to_string(out);
 
-      Config::Parser prs(in, desc, allow_unregistered);
+      Config::Parser prs(in, filedesc, cmddesc, allow_unregistered);
       load_from(prs.get_options(), true);
 
       out.append("\n\nNew Configurations:\n");
@@ -226,58 +188,22 @@ public:
                       fname.c_str(), e.what(), out.c_str());
 	  }
   }
-  /**
-   * Parses command line arguments
-   *
-   * @param argc The argument count (from main)
-   * @param argv The argument array (from main)
-   * @param desc The options description
-   * @param hidden The hidden options description
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   * @throw Error::CONFIG_INVALID_ARGUMENT on error
-   */
-  void parse_args(int argc, char *argv[],
-                  PropertiesDesc &desc, PropertiesDesc *hidden = 0,
-                  bool allow_unregistered = false) {
-    Config::Parser prs(argc, argv, desc, hidden, allow_unregistered);
-    load_from(prs.get_options());
-  }
 
-  /**
-   * Parses command line arguments
-   *
-   * @param args A vector of Strings with the command line arguments
-   * @param desc The options description
-   * @param hidden The hidden options description
-   * @param allow_unregistered If true, unknown/unregistered properties are
-   *        accepted
-   * @throw Error::CONFIG_INVALID_ARGUMENT on error
-   */
-  void parse_args(const std::vector<std::string> &args,
-                  PropertiesDesc &desc, PropertiesDesc *hidden = 0,
-                  bool allow_unregistered = false) {
-    Config::Parser prs(args, desc, hidden, allow_unregistered);
-    load_from(prs.get_options());
-  }
-
-  /**
-   * Get the ptr of property value. Throws if name is not defined.
-   * 
-   * @param name The name of the property
-   * @throw Error::CONFIG_GET_ERROR if the requested property is not defined
-   * @return Property::Value::Ptr
-   */
   Property::Value::Ptr get_value_ptr(const std::string &name) {
-    try{
-      return m_map.at(name);
+    auto it = m_map.find(name);
+    if (it != m_map.end())
+      return it->second;
+
+    auto alias = m_alias_map.find(name);
+    if(alias != m_alias_map.end()) {
+      it = m_map.find(alias->second);
+      if (it != m_map.end())
+        return it->second;
     }
-    catch (std::exception &e) {
-      HT_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
-                name.c_str(), e.what());
-    }
-    // 
-    // return nullptr;
+    
+    HT_THROWF(Error::CONFIG_GET_ERROR, 
+              "getting value of '%s' - missing",
+              name.c_str());
   }
 
   /**
@@ -305,21 +231,8 @@ public:
     return get_value_ptr(name)->get_ptr<T>();
   }
   
-  /**
-   * Get the std::string representation of property name 
-   *
-   * @param name The name of the property
-   * @throw Error::CONFIG_GET_ERROR if the requested property is not defined
-   * @return const std::string
-   */
   const std::string str(const std::string &name) {
-    try {
-      return get_value_ptr(name)->str();
-    }
-    catch (std::exception &e) {
-      HT_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
-                name.c_str(), e.what());
-    }
+    return get_value_ptr(name)->str();
   }
   /**
    * Get the value of option of type T. Throws if option is not defined.
@@ -331,8 +244,7 @@ public:
   T get(const std::string &name) {
     try {
       return get_value_ptr(name)->get<T>();
-    }
-    catch (std::exception &e) {
+    } catch (std::exception &e) {
       HT_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
                 name.c_str(), e.what());
     }
@@ -365,52 +277,20 @@ public:
    */
   template <typename T>
   T get(const std::string &name, T default_value) {
-    try {
-      Map::const_iterator it = m_map.find(name);
-
-      if (it != m_map.end())
-        return (*it).second->get<T>();
-      
-      set(name, default_value);
-    
-      return get<T>(name);
-    }
-    catch (std::exception &e) {
-      HT_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
-                name.c_str(), e.what());
-    }
+    auto it = m_map.find(name);
+    if (it != m_map.end())
+      return it->second->get<T>();
+    set(name, default_value);
+    return get<T>(name);
   }
-  /*
-  template <typename T>
-  const T get(const std::string &name, T &default_value)  {
-    T v = get(name, default_value);
-    return std::as_const(v);
-  }
-  */
-
-  /**
-   * Check whether a property is by default value
-   *
-   * @param name The name of the property
-   * @return true if the value is default
-   */
-  bool defaulted(const std::string &name) {
+  
+  const bool defaulted(const std::string &name) {
     return get_value_ptr(name)->is_default();
   }
 
-  /** Check whether a property exists
-   *
-   * @param name The name of the property
-   * @return true if the property exists
-   */
-  bool has(const std::string &name) {
+  const bool has(const std::string &name) const {
     return m_map.count(name);
   }
-  /*
-  bool has(const std::string &name) const {
-    return m_map.count(name);
-  }
-  */
 
   HT_PROPERTIES_ABBR_ACCESSORS()
 
@@ -445,9 +325,9 @@ public:
   template<typename T>
   void set(const std::string &name, T v, bool defaulted=false)  {
     InsRet r = add(name, v);
-    if (!r.second){
+    if (!r.second)
       (*r.first).second = new Property::Value(v);
-    } else 
+    else 
       (*r.first).second->set_value(v);
     if(defaulted)
       (*r.first).second->default_value();
@@ -462,9 +342,9 @@ public:
   template<typename T>
   void set(const std::string &name, Property::ValueDef<T> v)  {
     InsRet r = add(name, v.get_value());
-    if (!r.second){
+    if (!r.second)
       (*r.first).second = new Property::Value(v.get_value());
-    } else 
+    else 
       (*r.first).second->set_value(v.get_value());
   }
 
@@ -476,7 +356,7 @@ public:
    */
   void set(const std::string &name, Property::Value::Ptr p) {
     Property::Value::Ptr p_set;
-    if(m_map.count(name)==0){
+    if(m_map.count(name) == 0) {
       p_set = Property::Value::make_new(p);
       
       if(p->is_default())
@@ -522,9 +402,9 @@ public:
    *
    * @param names reference to vector to hold names of all properties
    */
-  void get_names(std::vector<std::string> &names) {
-    for (Map::const_iterator it = m_map.begin(); it != m_map.end(); it++)
-      names.push_back((*it).first);
+  void get_names(std::vector<std::string> &names) const {
+    for(auto it = m_map.begin(); it != m_map.end(); it++)
+      names.push_back(it->first);
   }
 
   /**
@@ -533,7 +413,7 @@ public:
    * @param out The output stream
    * @param include_default If true then default values are included
    */
-  void print(std::ostream &out, bool include_default = false) {
+  void print(std::ostream &out, bool include_default = false) const {
     for (const auto &kv : m_map) {
       bool isdefault = kv.second->is_default();
 
@@ -553,7 +433,7 @@ public:
    * @param out The std::string to append 
    * @param include_default If true then default values are included
    */
-  void append_to_string(std::string &out, bool include_default = false) {
+  void append_to_string(std::string &out, bool include_default = false) const {
     bool isdefault;
     for (const auto &kv : m_map) {
       isdefault = kv.second->is_default();
@@ -566,7 +446,7 @@ public:
     }
   }
 
-private:
+  private:
 
   /** The map containing all properties */
   Map m_map;

@@ -11,7 +11,7 @@ namespace SWC{ namespace Config {
 
 
 inline void Settings::init_fs_options(){
-  file_desc().add_options()
+  file_desc.add_options()
     ("swc.fs.path.data", str("swcdb/"), 
      "SWC-DB data-path, within the FS(specific) base-path")
 

@@ -9,7 +9,7 @@ namespace SWC{ namespace FS {
 
 
 bool apply_broker() {
-  Env::Config::settings()->file_desc().add_options()
+  Env::Config::settings()->file_desc.add_options()
     ("swc.fs.broker.OnFileChange.cfg", str(), "Dyn-config file")
     ("swc.fs.broker.host", str(), "FsBroker host (default by hostname)") 
     ("swc.fs.broker.port", i32(17000), "FsBroker port")

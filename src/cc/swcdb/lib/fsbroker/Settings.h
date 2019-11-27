@@ -15,7 +15,7 @@ namespace SWC{ namespace Config {
 void Settings::init_app_options(){
   init_comm_options();
   init_fs_options();
-  file_desc().add_options()
+  file_desc.add_options()
     ("swc.fs.broker.host", str(), "FsBroker host (default resolve by hostname)") 
     ("swc.fs.broker.port", i32(17000), "FsBroker port")
     

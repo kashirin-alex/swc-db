@@ -3,6 +3,8 @@
 #
 
 
+set(TEST_DIFF ${CMAKE_SOURCE_DIR}/src/testutils/testdiff)
+
 
 include_directories(
   cc

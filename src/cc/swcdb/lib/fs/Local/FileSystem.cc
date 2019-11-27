@@ -9,7 +9,7 @@ namespace SWC{ namespace FS {
 
 
 bool apply_local() {
-  Env::Config::settings()->file_desc().add_options()
+  Env::Config::settings()->file_desc.add_options()
     ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
     ("swc.fs.local.OnFileChange.cfg", str(), "Dyn-config file")
   ;
