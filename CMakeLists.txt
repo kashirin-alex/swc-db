@@ -36,15 +36,18 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 message(STATUS "Optimization Level: " ${O_LEVEL})
-if(NOT O_LEVEL)
+if(NOT O_LEVEL AND NOT O_LEVEL STREQUAL "0")
   SET (CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG")
 
 else()
   SET (CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG")
   SET (CMAKE_CXX_FLAGS_DEBUG          "")
 
-  if(O_LEVEL MATCHES "[1-2]")
-    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+  if(O_LEVEL STREQUAL "0")
+    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
+
+  elseif(O_LEVEL MATCHES "[1-2]")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
     
     if (O_LEVEL STREQUAL "2")
   	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")

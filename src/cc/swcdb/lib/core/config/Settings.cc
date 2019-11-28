@@ -6,9 +6,6 @@
 #include "Settings.h"
 
 #include "../Version.h"
-#include "../FileUtils.h"
-
-#include <filesystem>
 
 
 namespace SWC { namespace Config {
@@ -59,8 +56,9 @@ void Settings::parse_args(int argc, char *argv[]) {
 
 void Settings::init_options() {
   gEnumExt logging_level(Logger::Priority::INFO);
-  logging_level.set_from_string(Logger::cfg::from_string).set_repr(Logger::cfg::repr);
-        
+  logging_level.set_from_string(Logger::cfg::from_string)
+               .set_repr(Logger::cfg::repr);
+
   cmdline_desc.add_options()
     ("help,h", "Show this help message and exit")
     ("help-config", "Show help message for config properties")
@@ -83,7 +81,8 @@ void Settings::init_options() {
 
 void Settings::init_client_options() {
   gEnumExt logging_level(Logger::Priority::INFO);
-  logging_level.set_from_string(Logger::cfg::from_string).set_repr(Logger::cfg::repr);
+  logging_level.set_from_string(Logger::cfg::from_string)
+               .set_repr(Logger::cfg::repr);
   
   file_desc.add_options()
     ("swc.logging.level", g_enum_ext(logging_level), 
@@ -115,9 +114,10 @@ void Settings::init(int argc, char *argv[]) {
   executable = std::string(argv[0]);
    
   auto at = executable.find_last_of("/");
-  Logger::initialize(executable.substr(at?++at:at, executable.length()));
+  Logger::initialize(executable.substr(at?at+1:at, executable.length()));
 
-  install_path = std::filesystem::absolute(argv[0]).parent_path().parent_path();
+  install_path = executable.substr(
+    0, executable.substr(0, at).find_last_of("/"));
 
   init_options();
 

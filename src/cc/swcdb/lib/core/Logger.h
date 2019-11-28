@@ -135,11 +135,11 @@ class LogWriter {
   */
   LogWriter(const std::string& name = "") : m_show_line_numbers(true), m_test_mode(false),
                 m_priority(Priority::INFO), m_file(stdout), m_name(name) {
-    //std::cout << " LogWriter()=" << (size_t)this << "\n";
+    std::cout << " LogWriter()=" << (size_t)this << "\n";
   }
   
   void initialize(const std::string& name) {
-    //std::cout << " LogWriter::initialize name=" << name << " ptr=" << (size_t)this << "\n";
+    std::cout << " LogWriter::initialize name=" << name << " ptr=" << (size_t)this << "\n";
     m_name.clear();
     m_name.append(name);
   }

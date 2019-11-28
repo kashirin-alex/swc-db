@@ -5,9 +5,6 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
-#include <mutex>
-
-#include "../Logger.h"
 #include "../FileUtils.h"
 
 #include "Properties.h"
@@ -18,8 +15,6 @@ namespace SWC { namespace Config {
 class Settings {
 
   public:
-
-  std::recursive_mutex  mutex;
 
   ParserConfig    cmdline_desc;
   ParserConfig    file_desc;
@@ -109,6 +104,7 @@ class Settings {
 
 }
 
+
 namespace Env {
 
 class Config {
@@ -146,6 +142,7 @@ class Config {
   private:
   SWC::Config::Settings*  m_settings = nullptr;
   inline static Ptr       m_env = nullptr;
+
 };
 }
 

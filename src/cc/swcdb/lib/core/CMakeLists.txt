@@ -33,22 +33,23 @@ set(swcdb_core_config_sources
 	# config/System.cc
 	# config/SystemInfo.cc
 )
+
+ADD_LIB_TARGET(
+	NAME 		swcdb_core_config
+	SRCS 		${swcdb_core_config_sources}
+)
+
 ADD_TEST_TARGET(
 	NAME core-serialization
 	SRCS tests/sertest.cc
 	TARGETS swcdb_core 
 )
 
-ADD_LIB_TARGET(
-	NAME 		swcdb_core_config
-	SRCS 		${swcdb_core_config_sources}
-	TARGETS swcdb_core
-)
 
 ADD_TEST_EXEC(
 	NAME properties_parser_test
 	SRCS tests/properties_parser_test.cc
-	TARGETS swcdb_core_config 
+	TARGETS swcdb_core swcdb_core_config 
 )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/properties_parser_test.cfg ${CMAKE_CURRENT_BINARY_DIR}/properties_parser_test.cfg)
 add_test(properties_parser_test ${TEST_DIFF}

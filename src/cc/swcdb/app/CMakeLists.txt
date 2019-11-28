@@ -12,7 +12,7 @@
 ADD_EXEC_TARGET(
 	NAME dbRanger
 	SRCS  ranger/main.cc
-	TARGETS swcdb_core_config ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
 	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
@@ -22,7 +22,7 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
 	NAME dbManager
 	SRCS  manager/main.cc
-	TARGETS swcdb_core_config ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
 )
 
 
@@ -31,6 +31,6 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
 	NAME dbFsBroker
 	SRCS  fsbroker/main.cc
-	TARGETS swcdb_core_config ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
 	FLAGS "-DFS_BROKER_APP"
 )
