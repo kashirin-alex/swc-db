@@ -28,36 +28,31 @@
 #ifndef swc_core_FileUtils_h
 #define swc_core_FileUtils_h
 
-#include "Logger.h"
+#include "Error.h"
 
-#include <mutex>
 #include <vector>
 
 extern "C" {
 #include <dirent.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <sys/types.h>
+#include <sys/stat.h>
 }
 
 namespace SWC {
 
-  /** @addtogroup Common
-   *  @{
-   */
-
   /**
-   * The FileUtils class provides static functions to easily access
+   * The FileUtils namespace provides functions to easily access
    * and handle files and the file system.
    */
-  class FileUtils {
-  public:
+  namespace FileUtils {
     /** Reads a whole file into a std::string
      *
      * @param fname The file name
      * @param contents A reference to a std::string which will receive the data
      * @return <i>true</i> on success, <i>false</i> on error
      */
-    static bool read(const std::string &fname, std::string &contents);
+    bool read(const std::string &fname, std::string &contents);
 
     /** Reads data from a file descriptor into a buffer
      *
@@ -66,7 +61,7 @@ namespace SWC {
      * @param n Maximum size to read, in bytes
      * @return The number of bytes read, or -1 on error
      */
-    static ssize_t read(int fd, void *vptr, size_t n);
+    ssize_t read(int fd, void *vptr, size_t n);
 
     /** Reads positional data from a file descriptor into a buffer
      *
@@ -76,7 +71,7 @@ namespace SWC {
      * @param n Maximum size to read, in bytes
      * @return The number of bytes read, or -1 on error
      */
-    static ssize_t pread(int fd, off_t offset, void *vptr, size_t n);
+    ssize_t pread(int fd, off_t offset, void *vptr, size_t n);
 
     /** Writes a std::string buffer to a file; the file is overwritten if it
      * already exists
@@ -85,7 +80,7 @@ namespace SWC {
      * @param contents The string contents that are written to the file
      * @return Number of bytes written, or -1 on error
      */
-    static ssize_t write(const std::string &fname, const std::string &contents);
+    ssize_t write(const std::string &fname, const std::string &contents);
 
     /** Writes a memory buffer to a file descriptor
      *
@@ -94,7 +89,7 @@ namespace SWC {
      * @param n Size of the memory buffer, in bytes
      * @return Number of bytes written, or -1 on error
      */
-    static ssize_t write(int fd, const void *vptr, size_t n);
+    ssize_t write(int fd, const void *vptr, size_t n);
 
     /** Writes a string to a file descriptor
      *
@@ -102,10 +97,92 @@ namespace SWC {
      * @param str std::string to write to file
      * @return Number of bytes written, or -1 on error
      */
-    static ssize_t write(int fd, const std::string &str) {
+    ssize_t write(int fd, const std::string &str) {
       return write(fd, str.c_str(), str.length());
     }
 
+    /** Reads a full file into a new buffer; the buffer is allocated with
+     * operator new[], and the caller has to delete[] it.
+     *
+     * @param fname The file name
+     * @param lenp Receives the length of the buffer, in bytes
+     * @return A pointer allocated with new[]; needs to be delete[]d by
+     *          the caller. Returns 0 on error (sets errno)
+     */
+    char *file_to_buffer(const std::string &fname, off_t *lenp);
+
+    /** Reads a full file into a std::string
+     *
+     * @param fname The file name
+     * @return A string with the data, or an empty string on error (sets errno)
+     */
+    std::string file_to_string(const std::string &fname);
+
+    /** Creates a directory (with all parent directories, if required)
+     *
+     * @param dirname The directory name to create
+     * @return true on success, otherwise falls (sets errno)
+     */
+    bool mkdirs(const std::string &dirname);
+
+    /** Checks if a file or directory exists
+     *
+     * @return true if the file or directory exists, otherwise false
+     */
+    const bool exists(const std::string &fname) {
+      struct stat statbuf;
+      if (stat(fname.c_str(), &statbuf) != 0)
+        return false;
+      return true;
+    }
+
+    /** Unlinks (deletes) a file or directory
+     *
+     * @return true on success, otherwise false (sets errno)
+     */
+    bool unlink(const std::string &fname);
+
+    /** Renames a file or directory
+     *
+     * @param oldpath The path of the file (or directory) to rename
+     * @param newpath The new filename
+     * @return true on success, otherwise false (sets errno)
+     */
+    bool rename(const std::string &oldpath, const std::string &newpath);
+
+    /** Returns the size of a file (0 on error)
+     *
+     * @param fname The path of the file
+     * @return The file size (in bytes) or 0 on error (sets errno)
+     */
+    uint64_t size(const std::string &fname);
+
+    /** Returns the size of a file (-1 on error)
+     *
+     * @param fname The path of the file
+     * @return The file size (in bytes) or -1 on error (sets errno)
+     */
+    off_t length(const std::string &fname);
+
+    /** Returns the last modification time
+     *
+     * @param fname The path of the file
+     * @return The file modification time_t or 0 on error (sets errno)
+     */
+    time_t modification(const std::string &fname);
+
+    /** Reads all directory entries, applies a regular expression and returns
+     * those which match.
+     *
+     * This function will call HT_FATAL on error!
+     *
+     * @param dirname The directory name
+     * @param fname_regex The regular expression; can be empty
+     * @param listing Vector with the results
+     */
+    void readdir(const std::string &dirname, const std::string &fname_regex,
+			           std::vector<struct dirent> &listing);
+/*
     /** Atomically writes data from multiple buffers to a file descriptor
      *
      *    struct iovec {
@@ -117,8 +194,8 @@ namespace SWC {
      * @param vector An iovec array holding pointers to the data
      * @param count Number of iovec structures in @a vector
      * @return Total number of bytes written, or -1 on error
-     */
-    static ssize_t writev(int fd, const struct iovec *vector, int count);
+     *
+    ssize_t writev(int fd, const struct iovec *vector, int count);
 
     /** Sends data through a network connection; if the socket is TCP then
      * the address is ignored. For UDP sockets the address structure
@@ -130,8 +207,8 @@ namespace SWC {
      * @param to The recipient's address (only UDP; ignored for TCP sockets)
      * @param tolen Length of the sockaddr structure
      * @return Total number of bytes sent, or -1 on error
-     */
-    static ssize_t sendto(int fd, const void *vptr, size_t n,
+     *
+    ssize_t sendto(int fd, const void *vptr, size_t n,
                           const sockaddr *to, socklen_t tolen);
 
     /** Sends data through a network connection
@@ -140,8 +217,8 @@ namespace SWC {
      * @param vptr Pointer to the memory buffer which is sent
      * @param n Size of the memory buffer, in bytes
      * @return Total number of bytes sent, or -1 on error
-     */
-    static ssize_t send(int fd, const void *vptr, size_t n);
+     *
+    ssize_t send(int fd, const void *vptr, size_t n);
 
     /** Receives data from a network connection and returns the sender's
      * address
@@ -152,8 +229,8 @@ namespace SWC {
      * @param from The sender's address
      * @param fromlen Length of the sockaddr structure
      * @return Total number of bytes received, or -1 on error, 0 on eof
-     */
-    static ssize_t recvfrom(int fd, void *vptr, size_t n,
+     *
+    ssize_t recvfrom(int fd, void *vptr, size_t n,
             struct sockaddr *from, socklen_t *fromlen);
 
     /** Receives data from a network connection
@@ -162,33 +239,16 @@ namespace SWC {
      * @param vptr Pointer to the memory buffer which receives the data
      * @param n Capacity of the memory buffer, in bytes
      * @return Total number of bytes received, or -1 on error, 0 on eof
-     */
-    static ssize_t recv(int fd, void *vptr, size_t n);
+     *
+    ssize_t recv(int fd, void *vptr, size_t n);
 
     /** Sets fcntl flags of a socket
      *
      * @param fd Open file handle/socket descriptor
      * @param flags The fcntl flags; will be ORed with the existing flags
      * @return true on success, otherwise false (sets errno)
-     */
-    static bool set_flags(int fd, int flags);
-
-    /** Reads a full file into a new buffer; the buffer is allocated with
-     * operator new[], and the caller has to delete[] it.
      *
-     * @param fname The file name
-     * @param lenp Receives the length of the buffer, in bytes
-     * @return A pointer allocated with new[]; needs to be delete[]d by
-     *          the caller. Returns 0 on error (sets errno)
-     */
-    static char *file_to_buffer(const std::string &fname, off_t *lenp);
-
-    /** Reads a full file into a std::string
-     *
-     * @param fname The file name
-     * @return A string with the data, or an empty string on error (sets errno)
-     */
-    static std::string file_to_string(const std::string &fname);
+    bool set_flags(int fd, int flags);
 
     /** Maps a full file into memory using mmap; the mapping will be released
      * when the application terminates (there's currently no munmap)
@@ -196,59 +256,11 @@ namespace SWC {
      * @param fname The file name
      * @param lenp Receives the length of the buffer, in bytes
      * @return A pointer to the mapped data
-     */
-    static void *mmap(const std::string &fname, off_t *lenp);
-
-    /** Creates a directory (with all parent directories, if required)
      *
-     * @param dirname The directory name to create
-     * @return true on success, otherwise falls (sets errno)
-     */
-    static bool mkdirs(const std::string &dirname);
+    void *mmap(const std::string &fname, off_t *lenp);
 
-    /** Checks if a file or directory exists
-     *
-     * @return true if the file or directory exists, otherwise false
-     */
-    static bool exists(const std::string &fname);
-
-    /** Unlinks (deletes) a file or directory
-     *
-     * @return true on success, otherwise false (sets errno)
-     */
-    static bool unlink(const std::string &fname);
-
-    /** Renames a file or directory
-     *
-     * @param oldpath The path of the file (or directory) to rename
-     * @param newpath The new filename
-     * @return true on success, otherwise false (sets errno)
-     */
-    static bool rename(const std::string &oldpath, const std::string &newpath);
-
-    /** Returns the size of a file (0 on error)
-     *
-     * @param fname The path of the file
-     * @return The file size (in bytes) or 0 on error (sets errno)
-     */
-    static uint64_t size(const std::string &fname);
-
-    /** Returns the size of a file (-1 on error)
-     *
-     * @param fname The path of the file
-     * @return The file size (in bytes) or -1 on error (sets errno)
-     */
-    static off_t length(const std::string &fname);
-
-    /** Returns the last modification time
-     *
-     * @param fname The path of the file
-     * @return The file modification time_t or 0 on error (sets errno)
-     */
-    static time_t modification(const std::string &fname);
-
-    /** Adds a trailing slash to a path */
-    static void add_trailing_slash(std::string &path);
+    /** Adds a trailing slash to a path *
+    void add_trailing_slash(std::string &path);
 
     /** Expands a leading tilde character in a filename
      *
@@ -258,26 +270,10 @@ namespace SWC {
      *      ~/foo      -> /home/$USER/foo
      *
      *  @return true on success, false on error
-     */
-    static bool expand_tilde(std::string &fname);
-
-    /** Reads all directory entries, applies a regular expression and returns
-     * those which match.
      *
-     * This function will call HT_FATAL on error!
-     *
-     * @param dirname The directory name
-     * @param fname_regex The regular expression; can be empty
-     * @param listing Vector with the results
-     */
-    static void readdir(const std::string &dirname, const std::string &fname_regex,
-			std::vector<struct dirent> &listing);
-
-    /// Mutex for protecting thread-unsafe glibc library function calls
-    static std::mutex ms_mutex;
-  };
-
-  /** @} */
+    bool expand_tilde(std::string &fname);
+    */
+  }
 
 }
 

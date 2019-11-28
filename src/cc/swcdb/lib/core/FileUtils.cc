@@ -27,32 +27,28 @@
 
 #include "FileUtils.h"
 
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <cstdio>
-#include <memory>
+//#include <iostream>
+//#include <sstream>
+//#include <cstdio>
+//#include <iomanip>
 
 extern "C" {
-#include <unistd.h>
-#include <errno.h>
-#include <pwd.h>
 #include <fcntl.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/uio.h>
+#include <errno.h>
+//#include <unistd.h>
+//#include <string.h>
+//#include <pwd.h>
+//#include <sys/mman.h>
 }
 
 #include <re2/re2.h>
 
 
-using namespace SWC;
+namespace SWC { namespace FileUtils {
 
-std::mutex FileUtils::ms_mutex;
 
-bool FileUtils::read(const std::string &fname, std::string &contents) {
+
+bool read(const std::string &fname, std::string &contents) {
   off_t len {};
   char *buf = file_to_buffer(fname, &len);
   if (buf != 0) {
@@ -64,7 +60,7 @@ bool FileUtils::read(const std::string &fname, std::string &contents) {
 }
 
 
-ssize_t FileUtils::read(int fd, void *vptr, size_t n) {
+ssize_t read(int fd, void *vptr, size_t n) {
   size_t nleft;
   ssize_t nread;
   char *ptr;
@@ -90,7 +86,7 @@ ssize_t FileUtils::read(int fd, void *vptr, size_t n) {
 }
 
 
-ssize_t FileUtils::pread(int fd, off_t offset, void *vptr, size_t n) {
+ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
   ssize_t nleft;
   ssize_t nread;
   char *ptr;
@@ -117,7 +113,7 @@ ssize_t FileUtils::pread(int fd, off_t offset, void *vptr, size_t n) {
 }
 
 
-ssize_t FileUtils::write(const std::string &fname, const std::string &contents) {
+ssize_t write(const std::string &fname, const std::string &contents) {
   int fd = open(fname.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
     int saved_errno = errno;
@@ -132,7 +128,7 @@ ssize_t FileUtils::write(const std::string &fname, const std::string &contents) 
 }
 
 
-ssize_t FileUtils::write(int fd, const void *vptr, size_t n) {
+ssize_t write(int fd, const void *vptr, size_t n) {
   size_t nleft;
   ssize_t nwritten;
   const char *ptr;
@@ -155,211 +151,7 @@ ssize_t FileUtils::write(int fd, const void *vptr, size_t n) {
   return n - nleft;
 }
 
-ssize_t FileUtils::writev(int fd, const struct iovec *vector, int count) {
-  ssize_t nwritten;
-  while ((nwritten = ::writev(fd, vector, count)) <= 0) {
-    if (errno == EINTR)
-      nwritten = 0; /* and call write() again */
-    else if (errno == EAGAIN) {
-      nwritten = 0;
-      break;
-    }
-    else
-      return -1; /* error */
-  }
-  return nwritten;
-}
-
-
-ssize_t FileUtils::sendto(int fd, const void *vptr, size_t n,
-        const sockaddr *to, socklen_t tolen) {
-  size_t nleft;
-  ssize_t nsent;
-  const char *ptr;
-
-  ptr = (const char *)vptr;
-  nleft = n;
-  while (nleft > 0) {
-    if ((nsent = ::sendto(fd, ptr, nleft, 0, to, tolen)) <= 0) {
-      if (errno == EINTR)
-        nsent = 0; /* and call sendto() again */
-      else if (errno == EAGAIN || errno == ENOBUFS)
-        break;
-      else
-        return -1; /* error */
-    }
-
-    nleft -= nsent;
-    ptr   += nsent;
-  }
-  return n - nleft;
-}
-
-
-ssize_t FileUtils::send(int fd, const void *vptr, size_t n) {
-  size_t nleft;
-  ssize_t nsent;
-  const char *ptr;
-
-  ptr = (const char *)vptr;
-  nleft = n;
-  while (nleft > 0) {
-    if ((nsent = ::send(fd, ptr, nleft, 0)) <= 0) {
-      if (errno == EINTR)
-        nsent = 0; /* and call sendto() again */
-      else if (errno == EAGAIN || errno == ENOBUFS)
-        break;
-      else
-        return -1; /* error */
-    }
-
-    nleft -= nsent;
-    ptr   += nsent;
-  }
-  return n - nleft;
-}
-
-
-ssize_t FileUtils::recvfrom(int fd, void *vptr, size_t n, sockaddr *from,
-        socklen_t *fromlen) {
-  ssize_t nread;
-  while (true) {
-    if ((nread = ::recvfrom(fd, vptr, n, 0, from, fromlen)) < 0) {
-      if (errno != EINTR)
-        break;
-    }
-    else
-      break;
-  }
-  return nread;
-}
-
-
-ssize_t FileUtils::recv(int fd, void *vptr, size_t n) {
-  ssize_t nread;
-  while (true) {
-    if ((nread = ::recv(fd, vptr, n, 0)) < 0) {
-      if (errno != EINTR)
-        break;
-    }
-    else
-      break;
-  }
-  return nread;
-}
-
-
-bool FileUtils::set_flags(int fd, int flags) {
-  int val;
-  bool ret = true;
-
-  if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
-    int saved_errno = errno;
-    HT_ERROR_OUT << "fcnt(F_GETFL) failed : " << ::strerror(saved_errno)
-        << HT_END;
-    errno = saved_errno;
-    ret = false;
-  }
-
-  val |= flags;
-
-  if (fcntl(fd, F_SETFL, val) < 0) {
-    int saved_errno = errno;
-    HT_ERROR_OUT << "fcnt(F_SETFL) failed : " << ::strerror(saved_errno)
-        << HT_END;
-    errno = saved_errno;
-    ret = false;
-  }
-
-  return ret;
-}
-
-
-char *FileUtils::file_to_buffer(const std::string &fname, off_t *lenp) {
-  struct stat statbuf;
-  int fd;
-
-  *lenp = 0;
-
-  if ((fd = open(fname.c_str(), O_RDONLY)) < 0) {
-    int saved_errno = errno;
-    HT_ERRORF("open(\"%s\") failure - %s", fname.c_str(),
-            strerror(saved_errno));
-    errno = saved_errno;
-    return 0;
-  }
-
-  if (fstat(fd, &statbuf) < 0) {
-    int saved_errno = errno;
-    HT_ERRORF("fstat(\"%s\") failure - %s", fname.c_str(),
-           strerror(saved_errno));
-    errno = saved_errno;
-    return 0;
-  }
-
-  *lenp = statbuf.st_size;
-
-  char *rbuf = new char [*lenp + 1];
-
-  ssize_t nread = FileUtils::read(fd, rbuf, *lenp);
-
-  ::close(fd);
-
-  if (nread == (ssize_t)-1) {
-    int saved_errno = errno;
-    HT_ERRORF("read(\"%s\") failure - %s", fname.c_str(),
-            strerror(saved_errno));
-    errno = saved_errno;
-    delete [] rbuf;
-    *lenp = 0;
-    return 0;
-  }
-
-  if (nread < *lenp) {
-    HT_WARNF("short read (%d of %d bytes)", (int)nread, (int)*lenp);
-    *lenp = nread;
-  }
-
-  rbuf[nread] = 0;
-
-  return rbuf;
-}
-
-
-std::string FileUtils::file_to_string(const std::string &fname) {
-  std::string str;
-  off_t len;
-  char *contents = file_to_buffer(fname, &len);
-  str = (contents == 0) ? "" : contents;
-  delete [] contents;
-  return str;
-}
-
-
-void *FileUtils::mmap(const std::string &fname, off_t *lenp) {
-  int fd;
-  struct stat statbuf;
-  void *map;
-
-  if (::stat(fname.c_str(), &statbuf) != 0)
-    HT_FATALF("Unable determine length of '%s' for memory mapping - %s",
-            fname.c_str(), strerror(errno));
-  *lenp = (off_t)statbuf.st_size;
-
-  if ((fd = ::open(fname.c_str(), O_RDONLY)) == -1)
-    HT_FATALF("Unable to open '%s' for memory mapping - %s", fname.c_str(),
-            strerror(errno));
-  
-  if ((map = ::mmap(0, *lenp, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
-    HT_FATALF("Unable to memory map file '%s' - %s", fname.c_str(),
-            strerror(errno));
-
-  close(fd);
-  return map;
-}
-
-
-bool FileUtils::mkdirs(const std::string &dirname) {
+bool mkdirs(const std::string &dirname) {
   struct stat statbuf;
 
   char *tmpdir = new char [dirname.length() + 1];	
@@ -397,14 +189,7 @@ bool FileUtils::mkdirs(const std::string &dirname) {
 }
 
 
-bool FileUtils::exists(const std::string &fname) {
-  struct stat statbuf;
-  if (stat(fname.c_str(), &statbuf) != 0)
-    return false;
-  return true;
-}
-
-bool FileUtils::unlink(const std::string &fname) {
+bool unlink(const std::string &fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
     HT_ERRORF("unlink(\"%s\") failed - %s", fname.c_str(),
@@ -415,7 +200,7 @@ bool FileUtils::unlink(const std::string &fname) {
   return true;
 }
 
-bool FileUtils::rename(const std::string &oldpath, const std::string &newpath) {
+bool rename(const std::string &oldpath, const std::string &newpath) {
   if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
     int saved_errno = errno;
     HT_ERRORF("rename(\"%s\", \"%s\") failed - %s",
@@ -426,8 +211,7 @@ bool FileUtils::rename(const std::string &oldpath, const std::string &newpath) {
   return true;
 }
 
-
-uint64_t FileUtils::size(const std::string &fname) {
+uint64_t size(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
@@ -435,28 +219,274 @@ uint64_t FileUtils::size(const std::string &fname) {
 }
 
 
-off_t FileUtils::length(const std::string &fname) {
+off_t length(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return (off_t)-1;
   return statbuf.st_size;
 }
 
-time_t FileUtils::modification(const std::string &fname) {
+time_t modification(const std::string &fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
   return statbuf.st_mtime;
 }
 
+void readdir(const std::string &dirname, 
+                        const std::string &fname_regex,
+                        std::vector<struct dirent> &listing) {
 
-void FileUtils::add_trailing_slash(std::string &path) {
+  errno = 0;
+  DIR *dirp = opendir(dirname.c_str());
+  if(dirp == nullptr || errno != 0){
+    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+              strerror(errno));
+    return;
+  }
+  re2::RE2* regex = fname_regex.length()
+                    ? new re2::RE2(fname_regex)
+                    : nullptr;
+
+  struct dirent *dep;
+
+#if defined(USE_READDIR_R) && USE_READDIR_R
+
+  int ret;
+  struct dirent de;
+  for(;;) {
+    if((ret = ::readdir_r(dirp, &de, &dep)) != 0 || dep == nullptr)
+      break;
+    if(!regex || re2::RE2::FullMatch(de.d_name, *regex))
+      listing.push_back(de);
+  };
+
+#else
+
+  for(;;) {
+    if((dep = ::readdir(dirp)) == nullptr)
+      break;
+    if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
+      listing.push_back(*dep);
+  }
+  
+#endif
+
+  if(errno > 0)
+    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+              strerror(errno));
+  (void)closedir(dirp);
+  if(regex)
+    delete regex;
+}
+
+char *file_to_buffer(const std::string &fname, off_t *lenp) {
+  struct stat statbuf;
+  int fd;
+
+  *lenp = 0;
+
+  if ((fd = open(fname.c_str(), O_RDONLY)) < 0) {
+    int saved_errno = errno;
+    HT_ERRORF("open(\"%s\") failure - %s", fname.c_str(),
+            strerror(saved_errno));
+    errno = saved_errno;
+    return 0;
+  }
+
+  if (fstat(fd, &statbuf) < 0) {
+    int saved_errno = errno;
+    HT_ERRORF("fstat(\"%s\") failure - %s", fname.c_str(),
+           strerror(saved_errno));
+    errno = saved_errno;
+    return 0;
+  }
+
+  *lenp = statbuf.st_size;
+
+  char *rbuf = new char [*lenp + 1];
+
+  ssize_t nread = read(fd, rbuf, *lenp);
+
+  ::close(fd);
+
+  if (nread == (ssize_t)-1) {
+    int saved_errno = errno;
+    HT_ERRORF("read(\"%s\") failure - %s", fname.c_str(),
+            strerror(saved_errno));
+    errno = saved_errno;
+    delete [] rbuf;
+    *lenp = 0;
+    return 0;
+  }
+
+  if (nread < *lenp) {
+    HT_WARNF("short read (%d of %d bytes)", (int)nread, (int)*lenp);
+    *lenp = nread;
+  }
+
+  rbuf[nread] = 0;
+  return rbuf;
+}
+
+std::string file_to_string(const std::string &fname) {
+  off_t len;
+  char *contents = file_to_buffer(fname, &len);
+  std::string str(contents == 0 ? "" : contents);
+  delete [] contents;
+  return str;
+}
+
+
+/*
+ssize_t writev(int fd, const struct iovec *vector, int count) {
+  ssize_t nwritten;
+  while ((nwritten = ::writev(fd, vector, count)) <= 0) {
+    if (errno == EINTR)
+      nwritten = 0; // and call write() again
+    else if (errno == EAGAIN) {
+      nwritten = 0;
+      break;
+    }
+    else
+      return -1; // error 
+  }
+  return nwritten;
+}
+
+ssize_t sendto(int fd, const void *vptr, size_t n,
+        const sockaddr *to, socklen_t tolen) {
+  size_t nleft;
+  ssize_t nsent;
+  const char *ptr;
+
+  ptr = (const char *)vptr;
+  nleft = n;
+  while (nleft > 0) {
+    if ((nsent = ::sendto(fd, ptr, nleft, 0, to, tolen)) <= 0) {
+      if (errno == EINTR)
+        nsent = 0; // and call sendto() again 
+      else if (errno == EAGAIN || errno == ENOBUFS)
+        break;
+      else
+        return -1; // error
+    }
+
+    nleft -= nsent;
+    ptr   += nsent;
+  }
+  return n - nleft;
+}
+
+ssize_t send(int fd, const void *vptr, size_t n) {
+  size_t nleft;
+  ssize_t nsent;
+  const char *ptr;
+
+  ptr = (const char *)vptr;
+  nleft = n;
+  while (nleft > 0) {
+    if ((nsent = ::send(fd, ptr, nleft, 0)) <= 0) {
+      if (errno == EINTR)
+        nsent = 0; // and call sendto() again 
+      else if (errno == EAGAIN || errno == ENOBUFS)
+        break;
+      else
+        return -1; // error
+    }
+
+    nleft -= nsent;
+    ptr   += nsent;
+  }
+  return n - nleft;
+}
+
+ssize_t recvfrom(int fd, void *vptr, size_t n, sockaddr *from,
+        socklen_t *fromlen) {
+  ssize_t nread;
+  while (true) {
+    if ((nread = ::recvfrom(fd, vptr, n, 0, from, fromlen)) < 0) {
+      if (errno != EINTR)
+        break;
+    }
+    else
+      break;
+  }
+  return nread;
+}
+
+ssize_t recv(int fd, void *vptr, size_t n) {
+  ssize_t nread;
+  while (true) {
+    if ((nread = ::recv(fd, vptr, n, 0)) < 0) {
+      if (errno != EINTR)
+        break;
+    }
+    else
+      break;
+  }
+  return nread;
+}
+
+bool set_flags(int fd, int flags) {
+  int val;
+  bool ret = true;
+
+  if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
+    int saved_errno = errno;
+    HT_ERROR_OUT << "fcnt(F_GETFL) failed : " << ::strerror(saved_errno)
+        << HT_END;
+    errno = saved_errno;
+    ret = false;
+  }
+
+  val |= flags;
+
+  if (fcntl(fd, F_SETFL, val) < 0) {
+    int saved_errno = errno;
+    HT_ERROR_OUT << "fcnt(F_SETFL) failed : " << ::strerror(saved_errno)
+        << HT_END;
+    errno = saved_errno;
+    ret = false;
+  }
+
+  return ret;
+}
+
+void *mmap(const std::string &fname, off_t *lenp) {
+  int fd;
+  struct stat statbuf;
+  void *map;
+
+  if (::stat(fname.c_str(), &statbuf) != 0)
+    HT_FATALF("Unable determine length of '%s' for memory mapping - %s",
+            fname.c_str(), strerror(errno));
+  *lenp = (off_t)statbuf.st_size;
+
+  if ((fd = ::open(fname.c_str(), O_RDONLY)) == -1)
+    HT_FATALF("Unable to open '%s' for memory mapping - %s", fname.c_str(),
+            strerror(errno));
+  
+  if ((map = ::mmap(0, *lenp, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
+    HT_FATALF("Unable to memory map file '%s' - %s", fname.c_str(),
+            strerror(errno));
+
+  close(fd);
+  return map;
+}
+
+void add_trailing_slash(std::string &path) {
   if (path.find('/', path.length() - 1) == std::string::npos)
     path += "/";
 }
 
+namespace FileUtils {  
+/// Mutex for protecting thread-unsafe glibc library function calls
+std::mutex ms_mutex;
+}
 
-bool FileUtils::expand_tilde(std::string &fname) {
+
+bool expand_tilde(std::string &fname) {
 
   if (fname[0] != '~')
     return false;
@@ -492,50 +522,6 @@ bool FileUtils::expand_tilde(std::string &fname) {
 
   return true;
 }
+*/
 
-void FileUtils::readdir(const std::string &dirname, 
-                        const std::string &fname_regex,
-                        std::vector<struct dirent> &listing) {
-
-  errno = 0;
-  DIR *dirp = opendir(dirname.c_str());
-  if(dirp == nullptr || errno != 0){
-    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
-              strerror(errno));
-    return;
-  }
-  std::shared_ptr<re2::RE2> regex(fname_regex.length()
-                                  ? new re2::RE2(fname_regex)
-                                  : 0);
-  struct dirent *dep;
-
-#if defined(USE_READDIR_R) && USE_READDIR_R
-
-  int ret;
-  struct dirent de;
-  for(;;) {
-    if((ret = ::readdir_r(dirp, &de, &dep)) != 0 || dep == nullptr)
-      break;
-    if(!regex || re2::RE2::FullMatch(de.d_name, *regex))
-      listing.push_back(de);
-  };
-
-#else
-
-  for(;;) {
-    if((dep = ::readdir(dirp)) == nullptr)
-      break;
-    if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
-      listing.push_back(*dep);
-  }
-  
-#endif
-
-  if(errno > 0)
-    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
-              strerror(errno));
-  (void)closedir(dirp);
-}
-
-
-
+}}
