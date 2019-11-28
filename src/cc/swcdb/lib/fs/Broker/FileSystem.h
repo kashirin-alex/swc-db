@@ -40,7 +40,7 @@ class FileSystemBroker: public FileSystem {
   static const EndPoints get_endpoints(){
     std::string host = Env::Config::settings()->get<std::string>(
       "swc.fs.broker.host", "");
-    if(host.empty()){
+    if(host.empty()) {
       char hostname[256];
       gethostname(hostname, sizeof(hostname));
       host.append(hostname);

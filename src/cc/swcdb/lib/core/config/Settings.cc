@@ -21,8 +21,9 @@ void Settings::parse_args(int argc, char *argv[]) {
   prs.config.add(file_desc);
   prs.parse_cmdline(argc, argv);
 
-  m_cmd_args = prs.get_options();
-  properties.load_from(m_cmd_args);
+  prs.own_options(m_cmd_args);
+  
+  properties.load_from(prs.get_options());
     
   // some built-in behavior
   if (has("help")) {
@@ -67,7 +68,7 @@ void Settings::init_options() {
     ("verbose,v", g_boo(false)->zero_token(), "Show more verbose output")
     ("debug", boo(false)->zero_token(), "Shortcut to --logging-level debug")
     ("quiet", boo(false)->zero_token(), "Negate verbose")
-    ("swc.logging.level,logging-level,l", g_enum_ext(logging_level), 
+    ("logging-level,l", g_enum_ext(logging_level), 
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     ("config", str(install_path + "/conf/swc.cfg"), "Configuration file.")
     ("induce-failure", str(), "Arguments for inducing failure")
@@ -81,8 +82,12 @@ void Settings::init_options() {
 }
 
 void Settings::init_client_options() {
-
+  gEnumExt logging_level(Logger::Priority::INFO);
+  logging_level.set_from_string(Logger::cfg::from_string).set_repr(Logger::cfg::repr);
+  
   file_desc.add_options()
+    ("swc.logging.level", g_enum_ext(logging_level), 
+     "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     ("swc.mngr.host", g_strs(gStrings()), 
      "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i32(15000), 
@@ -121,7 +126,7 @@ void Settings::init(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   init_post_cmd_args();
-  
+
   gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
   bool verbose = properties.get<gBool>("verbose");
 

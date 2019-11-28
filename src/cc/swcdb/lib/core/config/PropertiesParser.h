@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <fstream>
 
-#include <map>
 
 namespace SWC {
 
@@ -124,17 +123,29 @@ class ParserConfig {
   Positions     positions;
   Map           options;
   int           line_length;
+  bool          own;
 
 
-  ParserConfig(const std::string& usage = "", int line_len=0)
-              : usage(usage), line_length(line_len) {
+  explicit ParserConfig(const std::string& usage = "", 
+                        int line_len=0, bool own=true)
+                        : usage(usage), line_length(line_len), own(own) {
   }
 
-  ParserConfig(const ParserConfig& other) {
+  explicit ParserConfig(const ParserConfig& other) {
     add(other);
   }
 
-  virtual ~ParserConfig(){}
+  virtual ~ParserConfig() {
+    free();
+  }
+
+  void free() {
+    if(own) {
+      for(auto& opt : options)
+        delete opt.second.value;
+      options.clear();
+    }
+  }
   
   ParserConfig& definition(const std::string& u) {
     usage.append(u);
@@ -176,25 +187,25 @@ class ParserConfig {
     return *this;
   }
 
-  ParserConfig &operator()(const std::string& name, Property::Value::Ptr vptr, 
+  ParserConfig& operator()(const std::string& name, Property::Value::Ptr vptr, 
                           const std::string& description) {
     return add(name, vptr, description);
   }
 
-  ParserConfig &add_options(){
+  ParserConfig& add_options(){
     return *this;
   }
 
-  ParserConfig &add_options(const std::string &name, Property::Value::Ptr vptr, 
+  ParserConfig& add_options(const std::string &name, Property::Value::Ptr vptr, 
                             const std::string& description){
     return add(name, vptr, description);
   }
 
-  ParserConfig &add(const std::string &names, const std::string& description){
-    return add(names, cfg(true, true)->zero_token(), description);
+  ParserConfig& add(const std::string &name, const std::string& description){
+    return add(name, cfg(true, true)->zero_token(), description);
   }
 
-  ParserConfig &operator()(const std::string &name, const std::string&  description) {
+  ParserConfig& operator()(const std::string &name, const std::string&  description) {
     return add(name, description);
   }
     
@@ -204,12 +215,8 @@ class ParserConfig {
     return *this;
   }
 
-  ParserConfig &operator()(const std::string s, int pos) {
+  ParserConfig& operator()(const std::string s, int pos) {
     return add_pos(s, pos);
-  }
-
-  operator ParserConfig*(){
-    return this;
   }
 
   const std::string position_name(int n){
@@ -296,10 +303,10 @@ inline std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg) {
 
 
 
-class Parser{
+class Parser {
   public:
-  typedef std::map<std::string, Property::Value::Ptr>   Options;
-  typedef std::pair<std::string, Property::Value::Ptr>  OptPair;
+
+  ParserConfig config;
 
   static Strings arsg_to_strings(int argc, char *argv[]) {
     Strings raw_strings;
@@ -308,16 +315,35 @@ class Parser{
     return raw_strings;
   }
 
-  ParserConfig  config;
+  class Options {
+    public:
+    bool  own;
+    std::map<std::string, Property::Value::Ptr> map;
 
-  Parser(bool unregistered=false) : m_unregistered(unregistered) { }
+    Options(bool own=true) : own(own) { }
 
-  Parser(std::ifstream &in, 
+    virtual ~Options() {
+      free();
+    }
+
+    void free() {
+      if(own) {
+        for(const auto &kv : map)
+          delete kv.second;
+        map.clear();
+       }
+    }
+  };
+
+  explicit Parser(bool unregistered=false) 
+                  : m_unregistered(unregistered),
+                    config("", 0, false) { }
+
+  explicit Parser(std::ifstream &in, 
          const Config::ParserConfig &filedesc,
          const Config::ParserConfig &cmddesc, 
          bool unregistered=false)
-         : m_unregistered(unregistered) {
-    // config = *(new ParserConfig());
+         : m_unregistered(unregistered), config("", 0, false) {
     config.add(cmddesc);
     config.add(filedesc);
     
@@ -354,8 +380,12 @@ class Parser{
   }
   
   virtual ~Parser() {
-    //for(const auto &kv : m_opts)
-    //  delete kv.second;
+    free();
+  }
+
+  void free() {
+    m_opts.free();
+    config.free();
   }
 
   void parse_cmdline(int argc, char *argv[]) { 
@@ -496,7 +526,7 @@ class Parser{
   void make_options() {
     for(const auto &kv : raw_opts) {
       if(!config.has(kv.first) && m_unregistered)
-        add_opt(kv.first, str(), kv.second);  // unregistered cfg
+        add_opt(kv.first, nullptr, kv.second);  // unregistered cfg
       else
         add_opt(kv.first, config.get_default(kv.first), kv.second);
     }
@@ -511,14 +541,23 @@ class Parser{
   // convert, validate and add property to options
   void add_opt(const std::string& name, Property::Value::Ptr p, 
                const Strings& raw_opt) {
-    auto p_set = Property::Value::make_new(p, raw_opt);
+    auto tmp = p ? p : str();
+    auto p_set = Property::Value::make_new(tmp, raw_opt);
+    if(!p) {
+      delete tmp;
+    }
     if(raw_opt.empty())
       p_set->default_value();
     if(p->is_guarded())
       p_set->guarded(true);
-    m_opts.insert(OptPair(name, p_set));
+    m_opts.map.insert(std::make_pair(name, p_set));
   }
       
+  void own_options(Options& opts) {
+    opts = m_opts;
+    m_opts.own = false;
+  }
+
   const Options& get_options(){
     return m_opts;
   }
@@ -531,7 +570,7 @@ class Parser{
 
   void print_options(std::ostream& os) const {
     os << std::string("*** Parsed Options:") << "\n";
-    for(const auto &kv : m_opts)
+    for(const auto &kv : m_opts.map)
       os << kv.first << "=" << kv.second->str() << "\n";
   }
 

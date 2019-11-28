@@ -6,7 +6,10 @@
 #ifndef swc_core_config_Property_h
 #define swc_core_config_Property_h
 
+#include <mutex>
 #include <atomic>
+#include <functional>
+#include <vector>
 
 #include "PropertyValueEnumExt.h"
 #include "PropertyValueGuarded.h"
@@ -280,11 +283,11 @@ inline void ValueDef<bool>::from_strings(const Strings& values) {
 
 template <>
 inline void ValueDef<gBool>::from_strings(const Strings& values) {
-  bool res;
   std::string str = values.back();
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-  res = (str.compare("1")==0)||(str.compare("true")==0)||(str.compare("yes")==0);
-  set_value(res);
+  set_value(str.compare("1") == 0 || 
+            str.compare("true") == 0 || 
+            str.compare("yes") == 0);
 }
 
 template <>
@@ -400,7 +403,6 @@ template <>
 inline const std::string ValueDef<gEnumExt>::str(){
   return v.to_str();
 }
-
 
     
 /**

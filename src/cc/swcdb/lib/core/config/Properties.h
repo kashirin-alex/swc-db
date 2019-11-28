@@ -24,11 +24,10 @@
 #ifndef swc_core_config_Properties_h
 #define swc_core_config_Properties_h
 
-#include <vector>
+#include <map>
 
 #include "Property.h"
 #include "PropertiesParser.h"
-
 
 
 // convenience/abbreviated accessors
@@ -97,14 +96,12 @@ namespace SWC {
 
 class Properties {
 
-  typedef std::map<std::string, Property::Value::Ptr> Map;
-  typedef std::pair<std::string, Property::Value::Ptr> MapPair;
-  typedef std::pair<Map::iterator, bool> InsRet;
-  typedef std::map<std::string, std::string> AliasMap;
+  typedef std::map<std::string, Property::Value::Ptr>   Map;
+  typedef std::pair<std::string, Property::Value::Ptr>  MapPair;
+  typedef std::pair<Map::iterator, bool>      InsRet;
+  typedef std::map<std::string, std::string>  AliasMap;
   
   public:
-
-  typedef std::shared_ptr<Properties> Ptr;
 
   Properties() { }
   
@@ -129,17 +126,11 @@ class Properties {
 
   void load_from(const Config::Parser::Options& opts, 
                  bool only_guarded=false) {
-    //AliasMap::iterator it;
-    for(const auto &kv : opts){
+    for(const auto &kv : opts.map) {
       if(has(kv.first) && (kv.second->is_default() || 
                            (only_guarded && !kv.second->is_guarded())))
       continue;
       set(kv.first, kv.second);
-      /* -- cross-get done by get_value_ptr
-      it = m_alias_map.find(kv.first);
-      if(it != m_alias_map.end())
-        set(it->second, get_value_ptr(kv.first));
-      */
     }
   }
   
@@ -189,6 +180,11 @@ class Properties {
 	  }
   }
 
+  void alias(const std::string &primary, const std::string &secondary) {
+    m_alias_map[primary] = secondary;
+    m_alias_map[secondary] = primary;
+  }
+
   Property::Value::Ptr get_value_ptr(const std::string &name) {
     auto it = m_map.find(name);
     if (it != m_map.end())
@@ -204,6 +200,37 @@ class Properties {
     HT_THROWF(Error::CONFIG_GET_ERROR, 
               "getting value of '%s' - missing",
               name.c_str());
+  }
+
+  const bool has(const std::string &name) const {
+    if(m_map.count(name))
+      return true;
+      
+    auto alias = m_alias_map.find(name);
+    if(alias == m_alias_map.end()) 
+      return false;
+    return m_map.count(alias->second);
+  }
+
+  const bool defaulted(const std::string &name) {
+    return get_value_ptr(name)->is_default();
+  }
+
+  const std::string str(const std::string &name) {
+    return get_value_ptr(name)->str();
+  }
+  
+  void get_names(std::vector<std::string> &names) const {
+    for(auto it = m_map.begin(); it != m_map.end(); it++)
+      names.push_back(it->first);
+  }
+
+  void remove(const std::string &name) {
+    auto it = m_map.find(name);
+    if(it != m_map.end()) {
+      delete it->second;
+      m_map.erase(it);
+    }
   }
 
   /**
@@ -231,9 +258,6 @@ class Properties {
     return get_value_ptr(name)->get_ptr<T>();
   }
   
-  const std::string str(const std::string &name) {
-    return get_value_ptr(name)->str();
-  }
   /**
    * Get the value of option of type T. Throws if option is not defined.
    *
@@ -282,14 +306,6 @@ class Properties {
       return it->second->get<T>();
     set(name, default_value);
     return get<T>(name);
-  }
-  
-  const bool defaulted(const std::string &name) {
-    return get_value_ptr(name)->is_default();
-  }
-
-  const bool has(const std::string &name) const {
-    return m_map.count(name);
   }
 
   HT_PROPERTIES_ABBR_ACCESSORS()
@@ -374,38 +390,6 @@ class Properties {
     }
   }
 
-  /**
-   * Remove a property from the map
-   *
-   * @param name The name of the property
-  void remove(const std::string &name) {
-    m_map.erase(name);
-  }
-   */
-
-  /**
-   * Setup an alias for a property.
-   *
-   * The primary property has higher priority, meaning when
-   * aliases are sync'ed the primary value can override secondary value
-   *
-   * @param primary The primary property name
-   * @param secondary The secondary property name
-   */
-  void alias(const std::string &primary, const std::string &secondary) {
-    m_alias_map[primary] = secondary;
-    m_alias_map[secondary] = primary;
-  }
-
-  /**
-   * Returns all property names
-   *
-   * @param names reference to vector to hold names of all properties
-   */
-  void get_names(std::vector<std::string> &names) const {
-    for(auto it = m_map.begin(); it != m_map.end(); it++)
-      names.push_back(it->first);
-  }
 
   /**
    * Prints keys and values of the configuration map
@@ -448,16 +432,11 @@ class Properties {
 
   private:
 
-  /** The map containing all properties */
-  Map m_map;
-  
-  /** A map with all aliases */
-  AliasMap m_alias_map;
+  Map       m_map;
+  AliasMap  m_alias_map;
 };
 
 
-
-/** @} */
 
 }
 #endif // swc_core_config_Properties_h

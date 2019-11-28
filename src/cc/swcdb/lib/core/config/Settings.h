@@ -80,7 +80,7 @@ class Settings {
     if(!FileUtils::exists(fname))
       HT_THROWF(Error::FS_FILE_NOT_FOUND, 
                 "cfg file=%s not found", fname.c_str());
-
+    
     properties.load(fname, file_desc, cmdline_desc, false);
     if(!onchg.empty())
       properties.load_files_by(onchg, file_desc, cmdline_desc, false);
@@ -102,8 +102,8 @@ class Settings {
 
   void init_options();
 
-  std::string           cfg_filename;
-  Parser::Options       m_cmd_args;
+  std::string          cfg_filename;
+  Parser::Options      m_cmd_args;
 };
 
 

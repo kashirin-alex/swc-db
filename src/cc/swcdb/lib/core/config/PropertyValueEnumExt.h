@@ -8,10 +8,6 @@
 
 
 
-#include <functional>
-
-
-
 namespace SWC { namespace Property {
 
 

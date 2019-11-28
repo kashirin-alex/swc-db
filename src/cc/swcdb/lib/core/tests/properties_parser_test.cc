@@ -8,7 +8,8 @@
 namespace SWC{ namespace Config {
 
 void Settings::init_app_options() {
-  cmdline_desc.definition("Usage: %s [Options] [args]\nOptions")
+  cmdline_desc
+  .definition("Usage: %s [Options] [args]\nOptions")
   .add_options()
    ("i16", i16(1), "16-bit integer")
    ("i32", i32(), "32-bit integer")

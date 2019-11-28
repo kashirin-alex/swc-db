@@ -2,32 +2,32 @@
 Config::cmdline_desc
 Usage: %s [Options] [args]
 Options
-  --app                                    application filename, zero pos skipped                          
-  --arg-1                                  argument one                                                    
-  --args                                   rest of arguments                                             []
-  --boo -[b]                               a boolean arg                                                 false
-  --config                                 Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
-  --debug                                  Shortcut to --logging-level debug                             false
-  --f64s                                   a list of doubles                                             []
-  --false                                  token defaults to false                                       false
-  --float64                                a double arg                                                  3.12
-  --help -[h]                              Show this help message and exit                               true
-  --help-config                            Show help message for config properties                       true
-  --i16                                    16-bit integer                                                1 
-  --i32                                    32-bit integer                                                0 
-  --i64                                    64-bit integer                                                1 
-  --induce-failure                         Arguments for inducing failure                                  
-  --int64s                                 a list of 64-bit integers                                     []
-  --is_true                                if set token true                                             false
-  --quiet                                  Negate verbose                                                false
-  --skip1                                  a skipped token                                               true
-  --skip2                                  a skipped token                                               true
-  --string -[str, s]                       a string arg                                                  A Default std::string Value
-  --strs                                   a list of strings                                             []
-  --swc.logging.level -[logging-level, l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
-  --true                                   token defaults to true                                        true
-  --verbose -[v]                           Show more verbose output                                      false
-  --version                                Show version information and exit                             true
+  --app                 application filename, zero pos skipped                          
+  --arg-1               argument one                                                    
+  --args                rest of arguments                                             []
+  --boo -[b]            a boolean arg                                                 false
+  --config              Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
+  --debug               Shortcut to --logging-level debug                             false
+  --f64s                a list of doubles                                             []
+  --false               token defaults to false                                       false
+  --float64             a double arg                                                  3.12
+  --help -[h]           Show this help message and exit                               true
+  --help-config         Show help message for config properties                       true
+  --i16                 16-bit integer                                                1 
+  --i32                 32-bit integer                                                0 
+  --i64                 64-bit integer                                                1 
+  --induce-failure      Arguments for inducing failure                                  
+  --int64s              a list of 64-bit integers                                     []
+  --is_true             if set token true                                             false
+  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --quiet               Negate verbose                                                false
+  --skip1               a skipped token                                               true
+  --skip2               a skipped token                                               true
+  --string -[str, s]    a string arg                                                  A Default std::string Value
+  --strs                a list of strings                                             []
+  --true                token defaults to true                                        true
+  --verbose -[v]        Show more verbose output                                      false
+  --version             Show version information and exit                             true
 arg-1=argOne
 boo=true
 i16=1000
@@ -86,44 +86,44 @@ Config::file_desc
 
 Usage: %s [Options] [args]
 Options
-  --aGroupOne.arg.1                        a group arg                                                   0 
-  --aGroupOne.arg.2                        a group arg                                                   0 
-  --aGroupOne.arg.3                        a group arg                                                   0 
-  --aGroupOne.arg.4                        a group arg                                                   0 
-  --aGroupOne.arg.5                        a group arg                                                   0 
-  --app                                    application filename, zero pos skipped                          
-  --arg-1                                  argument one                                                    
-  --args                                   rest of arguments                                             []
-  --boo -[b]                               a boolean arg                                                 false
-  --config                                 Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
-  --debug                                  Shortcut to --logging-level debug                             false
-  --f64s                                   a list of doubles                                             []
-  --false                                  token defaults to false                                       false
-  --float64                                a double arg                                                  3.12
-  --help -[h]                              Show this help message and exit                               true
-  --help-config                            Show help message for config properties                       true
-  --i16                                    16-bit integer                                                1 
-  --i32                                    32-bit integer                                                0 
-  --i64                                    64-bit integer                                                1 
-  --induce-failure                         Arguments for inducing failure                                  
-  --int64s                                 a list of 64-bit integers                                     []
-  --is_no_bool                             a boolean arg                                                 true
-  --is_one_bool                            a boolean arg                                                 false
-  --is_rest_bool                           a boolean arg                                                 true
-  --is_true                                if set token true                                             false
-  --is_true_bool                           a boolean arg                                                 false
-  --is_yes_bool                            a boolean arg                                                 false
-  --missing                                a string arg                                                  a missing string in cfg file, default applies
-  --quiet                                  Negate verbose                                                false
-  --skip1                                  a skipped token                                               true
-  --skip2                                  a skipped token                                               true
-  --string -[str, s]                       a string arg                                                  A Default std::string Value
-  --string.qouted                          a string arg                                                  A Default std::string Value
-  --strs                                   a list of strings                                             []
-  --swc.logging.level -[logging-level, l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
-  --true                                   token defaults to true                                        true
-  --verbose -[v]                           Show more verbose output                                      false
-  --version                                Show version information and exit                             true
+  --aGroupOne.arg.1     a group arg                                                   0 
+  --aGroupOne.arg.2     a group arg                                                   0 
+  --aGroupOne.arg.3     a group arg                                                   0 
+  --aGroupOne.arg.4     a group arg                                                   0 
+  --aGroupOne.arg.5     a group arg                                                   0 
+  --app                 application filename, zero pos skipped                          
+  --arg-1               argument one                                                    
+  --args                rest of arguments                                             []
+  --boo -[b]            a boolean arg                                                 false
+  --config              Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
+  --debug               Shortcut to --logging-level debug                             false
+  --f64s                a list of doubles                                             []
+  --false               token defaults to false                                       false
+  --float64             a double arg                                                  3.12
+  --help -[h]           Show this help message and exit                               true
+  --help-config         Show help message for config properties                       true
+  --i16                 16-bit integer                                                1 
+  --i32                 32-bit integer                                                0 
+  --i64                 64-bit integer                                                1 
+  --induce-failure      Arguments for inducing failure                                  
+  --int64s              a list of 64-bit integers                                     []
+  --is_no_bool          a boolean arg                                                 true
+  --is_one_bool         a boolean arg                                                 false
+  --is_rest_bool        a boolean arg                                                 true
+  --is_true             if set token true                                             false
+  --is_true_bool        a boolean arg                                                 false
+  --is_yes_bool         a boolean arg                                                 false
+  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --missing             a string arg                                                  a missing string in cfg file, default applies
+  --quiet               Negate verbose                                                false
+  --skip1               a skipped token                                               true
+  --skip2               a skipped token                                               true
+  --string -[str, s]    a string arg                                                  A Default std::string Value
+  --string.qouted       a string arg                                                  A Default std::string Value
+  --strs                a list of strings                                             []
+  --true                token defaults to true                                        true
+  --verbose -[v]        Show more verbose output                                      false
+  --version             Show version information and exit                             true
 *** Raw Parsed Options:
 aGroupOne.arg.1=[1]
 aGroupOne.arg.2=[2]
@@ -167,12 +167,12 @@ is_rest_bool=false
 is_true=false
 is_true_bool=true
 is_yes_bool=true
+logging-level=info  # (6)
 missing=a missing string in cfg file, default applies
 quiet=false
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
-swc.logging.level=info  # (6)
 true=true
 verbose=false
 true
@@ -198,11 +198,11 @@ is_rest_bool=false
 is_true=false (default)
 is_true_bool=true
 is_yes_bool=true
+logging-level=info  # (6) (default)
 missing=a missing string in cfg file, default applies (default)
 quiet=false (default)
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
-swc.logging.level=info  # (6) (default)
 true=true (default)
 verbose=false (default)

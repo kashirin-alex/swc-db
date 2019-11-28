@@ -86,7 +86,7 @@ class SerializedServer {
   SerializedServer(
     std::string name, 
     uint32_t reactors, uint32_t workers,
-    std::string port_cfg_name,
+    const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
   ): m_appname(name), m_run(true){
     
