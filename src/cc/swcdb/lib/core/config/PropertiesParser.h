@@ -159,8 +159,9 @@ class ParserConfig {
     for (auto& pos : other_cfg.positions) 
       add_pos(pos.second, pos.first);
 
-    for (const auto &kv : other_cfg.options)
+    for(const auto &kv : other_cfg.options)
       options.insert(MapPair(kv.first, kv.second));
+      //auto r= if(r.second && !kv.second.aliases.empty()) { } // ?merge alias
     return *this;
   }
 
@@ -336,17 +337,19 @@ class Parser {
   };
 
   explicit Parser(bool unregistered=false) 
-                  : m_unregistered(unregistered),
-                    config("", 0, false) { }
+                  : m_unregistered(unregistered), config("", 0, false) { 
+  }
+  
+  virtual ~Parser() {
+    free();
+  }
 
-  explicit Parser(std::ifstream &in, 
-         const Config::ParserConfig &filedesc,
-         const Config::ParserConfig &cmddesc, 
-         bool unregistered=false)
-         : m_unregistered(unregistered), config("", 0, false) {
-    config.add(cmddesc);
-    config.add(filedesc);
-    
+  void free() {
+    m_opts.free();
+    config.free();
+  }
+  
+  void parse_filedata(std::ifstream &in) {
     size_t at;
     std::string group = "";
     std::string line, g_tmp;
@@ -377,15 +380,6 @@ class Parser {
 
     }
     make_options();
-  }
-  
-  virtual ~Parser() {
-    free();
-  }
-
-  void free() {
-    m_opts.free();
-    config.free();
   }
 
   void parse_cmdline(int argc, char *argv[]) { 

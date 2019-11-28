@@ -80,7 +80,10 @@ int main(int argc, char *argv[]) {
   std::cout << settings->file_desc;
 
   std::ifstream in("properties_parser_test.cfg");
-  Config::Parser prs_file(in, settings->file_desc, settings->cmdline_desc);
+  Config::Parser prs_file(false);
+  prs_file.config.add(settings->file_desc);
+  prs_file.config.add(settings->cmdline_desc);
+  prs_file.parse_filedata(in);
   
   std::cout << std::string("\nConfig::file_desc");
   std::cout << settings->file_desc; // original configuration (left untouched)

@@ -94,7 +94,7 @@ Options
   --app                 application filename, zero pos skipped                          
   --arg-1               argument one                                                    
   --args                rest of arguments                                             []
-  --boo -[b]            a boolean arg                                                 false
+  --boo                 a boolean arg                                                 false
   --config              Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
   --debug               Shortcut to --logging-level debug                             false
   --f64s                a list of doubles                                             []
@@ -118,7 +118,7 @@ Options
   --quiet               Negate verbose                                                false
   --skip1               a skipped token                                               true
   --skip2               a skipped token                                               true
-  --string -[str, s]    a string arg                                                  A Default std::string Value
+  --string              a string arg                                                  A Default std::string Value
   --string.qouted       a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
   --true                token defaults to true                                        true

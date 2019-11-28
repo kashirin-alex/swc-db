@@ -115,15 +115,6 @@ class Properties {
     m_map.clear();
   }
 
-  void load(const std::string &fname, 
-            const Config::ParserConfig &filedesc,
-            const Config::ParserConfig &cmddesc,
-            bool allow_unregistered=false) {
-    std::ifstream in(fname.c_str());
-    Config::Parser prs(in, filedesc, cmddesc, allow_unregistered);
-    load_from(prs.get_options());
-  } 
-
   void load_from(const Config::Parser::Options& opts, 
                  bool only_guarded=false) {
     for(const auto &kv : opts.map) {
@@ -133,6 +124,20 @@ class Properties {
       set(kv.first, kv.second);
     }
   }
+
+  void load(const std::string &fname, 
+            const Config::ParserConfig &filedesc,
+            const Config::ParserConfig &cmddesc,
+            bool allow_unregistered=false, bool only_guarded=false) {
+    Config::Parser prs(false);
+    prs.config.add(filedesc);
+    prs.config.add(cmddesc);
+    
+    std::ifstream in(fname.c_str());
+    prs.parse_filedata(in);
+
+    load_from(prs.get_options(), only_guarded);
+  } 
   
   void load_files_by(const std::string &fileprop, 
                      const Config::ParserConfig &filedesc,
@@ -158,16 +163,10 @@ class Properties {
 	                   bool allow_unregistered = false) {
     std::string out;
 	  try {
-		  std::ifstream in(fname.c_str());
-
-      HT_INFOF("Reloading Configuration File %s", fname.c_str());
-		  if (!in) throw;
-    
       out.append("\n\nCurrent Configurations:\n");
       append_to_string(out);
 
-      Config::Parser prs(in, filedesc, cmddesc, allow_unregistered);
-      load_from(prs.get_options(), true);
+      load(fname, filedesc, cmddesc, allow_unregistered, true);
 
       out.append("\n\nNew Configurations:\n");
       append_to_string(out);
