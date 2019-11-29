@@ -30,6 +30,7 @@
 #ifndef swc_core_ERROR_H
 #define swc_core_ERROR_H
 
+#include "String.h"
 #include "Logger.h"
 #include <ostream>
 #include <stdexcept>
@@ -410,7 +411,7 @@ namespace SWC {
               __VA_ARGS__); \
   } \
   catch (...) { \
-    HT_ERRORF("caught unknown exception " _fmt_, __VA_ARGS__); \
+    SWC_LOGF(LOG_ERROR, "caught unknown exception " _fmt_, __VA_ARGS__); \
     throw; \
   }
 
@@ -425,19 +426,33 @@ namespace SWC {
 
 /* Convenience macros for catching and logging exceptions in destructors */
 #define SWC_LOG_EXCEPTION(_s_) \
-  catch (Exception &e) { HT_ERROR_OUT << e <<", "<< _s_ << HT_END; } \
+  catch (Exception &e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (std::bad_alloc &e) { \
-    HT_ERROR_OUT << "Out of memory, " << _s_ << HT_END; } \
+    SWC_LOG_OUT(LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
   catch (std::exception &e) { \
-    HT_ERROR_OUT << "Caught exception: " << e.what() <<", "<< _s_ << HT_END; } \
+    SWC_LOG_OUT(LOG_ERROR) << "Caught exception: " << e.what() <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (...) { \
-    HT_ERROR_OUT << "Caught unknown exception, " << _s_ << HT_END; }
+    SWC_LOG_OUT(LOG_ERROR) << "Caught unknown exception, " << _s_ << SWC_LOG_OUT_END; }
 
 /* Convenience macro to execute code and log all exceptions */
 #define SWC_TRY_OR_LOG(_s_, _code_) do { \
   try { _code_; } \
   SWC_LOG_EXCEPTION(_s_) \
 } while (0)
+
+
+// Probably should be in its own file, but...
+#define HT_EXPECT(_e_, _code_) do { if (_e_); else { \
+    if (_code_ == Error::FAILED_EXPECTATION) \
+      SWC_LOG_FATAL("failed expectation: " #_e_); \
+    HT_THROW(_code_, "failed expectation: " #_e_); } \
+} while (0)
+
+// A short cut for HT_EXPECT(expr, Error::FAILED_EXPECTATION)
+// unlike assert, it cannot be turned off
+#define HT_ASSERT(_e_) HT_EXPECT(_e_, Error::FAILED_EXPECTATION)
+
+
 
 /** @} */
 

@@ -17,7 +17,7 @@ class Rename : public Base {
   Rename(uint32_t timeout, const std::string &from, const std::string &to,
         Callback::RenameCb_t cb=0) 
         : from(from), to(to), cb(cb) {
-    HT_DEBUGF("rename '%s' to '%s'", from.c_str(), to.c_str());
+    SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 
     cbp = CommBuf::make(Params::RenameReq(from, to));
     cbp->header.set(Cmd::FUNCTION_RENAME, timeout);
@@ -37,7 +37,7 @@ class Rename : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_RENAME, &ptr, &remain))
       return;
 
-    HT_DEBUGF("rename '%s' to '%s' error='%d'", 
+    SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s' error='%d'", 
               from.c_str(), to.c_str(), error);
     cb(error);
   }

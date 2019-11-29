@@ -59,7 +59,7 @@ class FileSystemHadoop: public FileSystem {
 
     uint32_t tries=0; 
     while(m_run.load() && !initialize()) {
-      HT_ERRORF("FS-Hadoop, unable to initialize connection to hadoop, try=%d",
+      SWC_LOGF(LOG_ERROR, "FS-Hadoop, unable to initialize connection to hadoop, try=%d",
                ++tries);
     }
     hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
@@ -69,14 +69,14 @@ class FileSystemHadoop: public FileSystem {
     int32_t port;
     hdfsConfGetStr("hdfs.namenode.host", &host);
     hdfsConfGetInt("hdfs.namenode.port", &port);
-    HT_INFOF("FS-Hadoop, connected to namenode=[%s]:%d", host, port);
+    SWC_LOGF(LOG_INFO, "FS-Hadoop, connected to namenode=[%s]:%d", host, port);
     hdfsConfStrFree(host);
     */
 
     // status check
     char buffer[256];
     hdfsGetWorkingDirectory(m_filesystem, buffer, 256);
-    HT_DEBUGF("FS-Hadoop, working Dir='%s'", buffer);
+    SWC_LOGF(LOG_DEBUG, "FS-Hadoop, working Dir='%s'", buffer);
 
 
   }
@@ -101,24 +101,24 @@ class FileSystemHadoop: public FileSystem {
           );
         
         m_filesystem = hdfsBuilderConnect(bld);
-        HT_DEBUGF("Connecting to namenode=%s", h.c_str());
+        SWC_LOGF(LOG_DEBUG, "Connecting to namenode=%s", h.c_str());
 
         if(m_filesystem != nullptr) {
           errno = Error::OK;
           // check status, namenode need to be active
           int64_t sz_used = hdfsGetUsed(m_filesystem); 
           if(sz_used == -1) {
-            HT_ERRORF("hdfsGetUsed('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
+            SWC_LOGF(LOG_ERROR, "hdfsGetUsed('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
             continue;
           }
-          HT_INFOF("Non DFS Used bytes: %ld", sz_used);
+          SWC_LOGF(LOG_INFO, "Non DFS Used bytes: %ld", sz_used);
           
           sz_used = hdfsGetCapacity(m_filesystem); 
           if(sz_used == -1) {
-            HT_ERRORF("hdfsGetCapacity('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
+            SWC_LOGF(LOG_ERROR, "hdfsGetCapacity('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
             continue;
           }
-          HT_INFOF("Configured Capacity bytes: %ld", sz_used);
+          SWC_LOGF(LOG_INFO, "Configured Capacity bytes: %ld", sz_used);
 
           return true;
         }
@@ -133,7 +133,7 @@ class FileSystemHadoop: public FileSystem {
       
       char* value;
       hdfsConfGetStr("fs.defaultFS", &value);
-      HT_DEBUGF("FS-Hadoop, connecting to default namenode=%s", value);
+      SWC_LOGF(LOG_DEBUG, "FS-Hadoop, connecting to default namenode=%s", value);
     }
     
     return m_filesystem != nullptr;
@@ -165,7 +165,7 @@ class FileSystemHadoop: public FileSystem {
     errno = 0;
     bool state = hdfsExists(m_filesystem, abspath.c_str()) == 0;
     err = errno==2?0:errno;
-    HT_DEBUGF("exists state='%d' err='%d' path='%s'", 
+    SWC_LOGF(LOG_DEBUG, "exists state='%d' err='%d' path='%s'", 
               (int)state, err, abspath.c_str());
     return state;
   }
@@ -176,11 +176,11 @@ class FileSystemHadoop: public FileSystem {
     if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
       err = errno == 5? 2: errno;
       if(err != 2) {
-        HT_ERRORF("remove('%s') failed - %s", abspath.c_str(), strerror(err));
+        SWC_LOGF(LOG_ERROR, "remove('%s') failed - %s", abspath.c_str(), strerror(err));
         return;
       }
     }
-    HT_DEBUGF("remove('%s')", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
   }
 
   size_t length(int &err, const std::string &name) override {
@@ -192,19 +192,19 @@ class FileSystemHadoop: public FileSystem {
 
     if((fileInfo = hdfsGetPathInfo(m_filesystem, abspath.c_str())) == 0) {
       err = errno;
-      HT_ERRORF("length('%s') failed - %s", abspath.c_str(), strerror(err));
+      SWC_LOGF(LOG_ERROR, "length('%s') failed - %s", abspath.c_str(), strerror(err));
       return len;
     }
     len = fileInfo->mSize;
     hdfsFreeFileInfo(fileInfo, 1);
 
-    HT_DEBUGF("length len='%d' path='%s'", len, abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "length len='%d' path='%s'", len, abspath.c_str());
     return len;
   }
 
   void mkdirs(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("mkdirs path='%s'", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
   
     errno = 0;
     hdfsCreateDirectory(m_filesystem, abspath.c_str());
@@ -213,7 +213,7 @@ class FileSystemHadoop: public FileSystem {
 
   void readdir(int &err, const std::string &name, DirentList &results) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("Readdir dir='%s'", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
     Dirent entry;
     hdfsFileInfo *fileInfo;
@@ -224,7 +224,7 @@ class FileSystemHadoop: public FileSystem {
                       m_filesystem, abspath.c_str(), &numEntries)) == 0) {
       if(errno != 0) {
         err = errno;
-        HT_ERRORF("readdir('%s') failed - %s", 
+        SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s", 
                   abspath.c_str(), strerror(errno)); 
       }
       return;
@@ -254,11 +254,11 @@ class FileSystemHadoop: public FileSystem {
     if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
       err = errno == 5? 2: errno; // io error(not-exists)
       if(err != 2) {
-        HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
+        SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
         return;
       }
     }
-    HT_DEBUGF("rmdir('%s')", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
   }
 
   void rename(int &err, const std::string &from, 
@@ -267,11 +267,11 @@ class FileSystemHadoop: public FileSystem {
     std::string abspath_to = get_abspath(to);
     errno = 0;
     if (hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str()) == -1) {
-      HT_ERRORF("rename('%s' to '%s') failed - %s", 
+      SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
                 abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
       return;
     }
-    HT_DEBUGF("rename('%s' to '%s')", 
+    SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
               abspath_from.c_str(), abspath_to.c_str());
   }
 
@@ -287,7 +287,7 @@ class FileSystemHadoop: public FileSystem {
   void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) {
-    HT_DEBUGF("write %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
 
     create(err, smartfd, 0, replication, blksz);
     if(!smartfd->valid() || err != Error::OK){
@@ -308,7 +308,7 @@ class FileSystemHadoop: public FileSystem {
         close(err == Error::OK ? err : errtmp, smartfd);
         
     if(err != Error::OK)
-      HT_ERRORF("write failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
   }
 
@@ -316,7 +316,7 @@ class FileSystemHadoop: public FileSystem {
               int32_t bufsz, int32_t replication, int64_t blksz) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
-    HT_DEBUGF("create %s bufsz=%d replication=%d blksz=%lld",
+    SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
               smartfd->to_string().c_str(), 
               bufsz, (int)replication, (Lld)blksz);
 
@@ -337,7 +337,7 @@ class FileSystemHadoop: public FileSystem {
                                         bufsz, replication, blksz)) == 0) {
       err = errno;
       hadoop_fd->fd(-1);
-      HT_ERRORF("create failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
                 
       if(err == EACCES || err == ENOENT)
@@ -348,7 +348,7 @@ class FileSystemHadoop: public FileSystem {
     }
 
     hadoop_fd->fd(++m_nxt_fd);
-    HT_DEBUGF("created %s bufsz=%d replication=%d blksz=%lld",
+    SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
               smartfd->to_string().c_str(), 
               bufsz, (int)replication, (Lld)blksz);
   }
@@ -356,7 +356,7 @@ class FileSystemHadoop: public FileSystem {
   void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz = -1) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
-    HT_DEBUGF("open %s bufsz=%d",
+    SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
               smartfd->to_string().c_str(), bufsz);
 
     int oflags = O_RDONLY;
@@ -367,7 +367,7 @@ class FileSystemHadoop: public FileSystem {
                                         bufsz==-1? 0 : bufsz, 0, 0)) == 0) {
       err = errno;
       hadoop_fd->fd(-1);
-      HT_ERRORF("open failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
                 
       if(err == EACCES || err == ENOENT)
@@ -378,7 +378,7 @@ class FileSystemHadoop: public FileSystem {
     }
 
     hadoop_fd->fd(++m_nxt_fd);
-    HT_DEBUGF("opened %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
   }
   
   size_t read(int &err, SmartFd::Ptr &smartfd, 
@@ -386,7 +386,7 @@ class FileSystemHadoop: public FileSystem {
 
     auto hadoop_fd = get_fd(smartfd);
     
-    HT_DEBUGF("read %s amount=%d file-%lld", hadoop_fd->to_string().c_str(), 
+    SWC_LOGF(LOG_DEBUG, "read %s amount=%d file-%lld", hadoop_fd->to_string().c_str(), 
               amount, (size_t) hadoop_fd->file);
     ssize_t nread = 0;
     errno = 0;
@@ -396,7 +396,7 @@ class FileSystemHadoop: public FileSystem {
     if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
                  == (uint64_t)-1) {
       err = errno;
-      HT_ERRORF("read, tell failed: %d(%s), %s offset=%d", 
+      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%d", 
                 errno, strerror(errno), smartfd->to_string().c_str(), offset);
       return nread;
     }
@@ -407,13 +407,13 @@ class FileSystemHadoop: public FileSystem {
     if (nread == -1) {
       nread = 0;
       err = errno;
-      HT_ERRORF("read failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
       if(nread != amount)
         err = Error::FS_EOF;
       hadoop_fd->pos(hadoop_fd->pos()+nread);
-      HT_DEBUGF("read(ed) %s amount=%d eof=%d", 
+      SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%d eof=%d", 
                 smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
@@ -424,7 +424,7 @@ class FileSystemHadoop: public FileSystem {
                uint64_t offset, void *dst, size_t amount) override {
 
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("pread %s offset=%d amount=%d file-%lld", 
+    SWC_LOGF(LOG_DEBUG, "pread %s offset=%d amount=%d file-%lld", 
               hadoop_fd->to_string().c_str(),
               offset, amount, (size_t) hadoop_fd->file);
 
@@ -434,13 +434,13 @@ class FileSystemHadoop: public FileSystem {
     if (nread == -1) {
       nread = 0;
       err = errno;
-      HT_ERRORF("pread failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
       if(nread != amount)
         err = Error::FS_EOF;
       hadoop_fd->pos(offset+nread);
-      HT_DEBUGF("pread(ed) %s amount=%d eof=%d", 
+      SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%d eof=%d", 
                  smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
@@ -450,7 +450,7 @@ class FileSystemHadoop: public FileSystem {
                 StaticBuffer &buffer, Flags flags) override {
     
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("append %s amount=%d flags=%d", 
+    SWC_LOGF(LOG_DEBUG, "append %s amount=%d flags=%d", 
               hadoop_fd->to_string().c_str(), buffer.size, flags);
     
     ssize_t nwritten = 0;
@@ -460,7 +460,7 @@ class FileSystemHadoop: public FileSystem {
     if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
            == (uint64_t)-1) {
       err = errno;
-      HT_ERRORF("write, tell failed: %d(%s), %s offset=%d", 
+      SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%d", 
                 errno, strerror(errno), smartfd->to_string().c_str(), offset);
       return nwritten;
     }
@@ -470,7 +470,7 @@ class FileSystemHadoop: public FileSystem {
                              buffer.base, (tSize)buffer.size)) == -1) {
       nwritten = 0;
       err = errno;
-      HT_ERRORF("write failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -479,12 +479,12 @@ class FileSystemHadoop: public FileSystem {
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
         err = errno;
-        HT_ERRORF("write, fsync failed: %d(%s), %s", 
+        SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
                   errno, strerror(errno), smartfd->to_string().c_str());
         return nwritten;
       }
     }
-    HT_DEBUGF("appended %s amount=%d", 
+    SWC_LOGF(LOG_DEBUG, "appended %s amount=%d", 
               smartfd->to_string().c_str(), nwritten);
     return nwritten;
   }
@@ -492,13 +492,13 @@ class FileSystemHadoop: public FileSystem {
   void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
 
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("seek %s offset=%d", hadoop_fd->to_string().c_str(), offset);
+    SWC_LOGF(LOG_DEBUG, "seek %s offset=%d", hadoop_fd->to_string().c_str(), offset);
     
     errno = 0;
     uint64_t at = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
     if (at == (uint64_t)-1 || at != Error::OK || errno != Error::OK) {
       err = errno;
-      HT_ERRORF("seek failed - at=%d %d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "seek failed - at=%d %d(%s) %s", 
                 at, err, strerror(errno), smartfd->to_string().c_str());
       return;
     }
@@ -507,22 +507,22 @@ class FileSystemHadoop: public FileSystem {
 
   void flush(int &err, SmartFd::Ptr &smartfd) override {
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("flush %s", hadoop_fd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "flush %s", hadoop_fd->to_string().c_str());
 
     if (hdfsHFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
       err = errno;
-      HT_ERRORF("flush failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     }
   }
 
   void sync(int &err, SmartFd::Ptr &smartfd) override {
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("sync %s", hadoop_fd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "sync %s", hadoop_fd->to_string().c_str());
 
     if (hdfsHSync(m_filesystem, hadoop_fd->file) != Error::OK) {
       err = errno;
-      HT_ERRORF("flush failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     }
   }
@@ -530,12 +530,12 @@ class FileSystemHadoop: public FileSystem {
   void close(int &err, SmartFd::Ptr &smartfd) {
     
     auto hadoop_fd = get_fd(smartfd);
-    HT_DEBUGF("close %s", hadoop_fd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
     if(hadoop_fd->file != 0) {
       if(hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
         err = errno;
-        HT_ERRORF("close, failed: %d(%s), %s", 
+        SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
                    errno, strerror(errno), smartfd->to_string().c_str());
       }
     } else 

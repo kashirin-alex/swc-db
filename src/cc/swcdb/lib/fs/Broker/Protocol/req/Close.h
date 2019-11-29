@@ -16,7 +16,7 @@ class Close : public Base {
 
   Close(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::CloseCb_t cb=0)
         : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("close %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
  
     cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
     cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
@@ -38,7 +38,7 @@ class Close : public Base {
 
     smartfd->fd(-1);
     smartfd->pos(0);
-    HT_DEBUGF("close %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "close %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);
   }

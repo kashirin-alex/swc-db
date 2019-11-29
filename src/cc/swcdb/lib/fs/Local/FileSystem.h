@@ -46,7 +46,7 @@ class FileSystemLocal: public FileSystem {
     errno = 0;
     bool state = FileUtils::exists(abspath);
     err = errno==2?0:errno;
-    HT_DEBUGF("exists state='%d' path='%s'", (int)state, abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'", (int)state, abspath.c_str());
     return state;
   }
 
@@ -56,12 +56,12 @@ class FileSystemLocal: public FileSystem {
     if(!FileUtils::unlink(abspath)) {
       err = errno;
       if(err != 2) {
-        HT_ERRORF("remove('%s') failed - %d(%s)", 
+        SWC_LOGF(LOG_ERROR, "remove('%s') failed - %d(%s)", 
                   abspath.c_str(), errno, strerror(errno));
         return;
       }
     }
-    HT_DEBUGF("remove('%s')", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
   }
   
   size_t length(int &err, const std::string &name) override {
@@ -71,18 +71,18 @@ class FileSystemLocal: public FileSystem {
     size_t len = 0; 
     if ((len = FileUtils::length(abspath)) == (size_t)-1) {
       err = errno;
-      HT_ERRORF("length('%s') failed - %d(%s)", 
+      SWC_LOGF(LOG_ERROR, "length('%s') failed - %d(%s)", 
                 abspath.c_str(), errno, strerror(errno));
       len = 0;
       return len;
     }
-    HT_DEBUGF("length len='%d' path='%s'", len, abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "length len='%d' path='%s'", len, abspath.c_str());
     return len;
   }
 
   void mkdirs(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("mkdirs path='%s'", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
     
     errno = 0;
     FileUtils::mkdirs(abspath);
@@ -91,14 +91,14 @@ class FileSystemLocal: public FileSystem {
 
   void readdir(int &err, const std::string &name, DirentList &results) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("Readdir dir='%s'", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
     std::vector<struct dirent> listing;
     errno = 0;
     FileUtils::readdir(abspath, "", listing);
     if (errno > 0) {
       err = errno;
-      HT_ERRORF("FileUtils::readdir('%s') failed - %s", 
+      SWC_LOGF(LOG_ERROR, "FileUtils::readdir('%s') failed - %s", 
                 abspath.c_str(), strerror(errno));
       return;
     }
@@ -127,7 +127,7 @@ class FileSystemLocal: public FileSystem {
           return;
         }
         err = errno;
-        HT_ERRORF("readdir('%s') stat failed - %d(%s)", 
+        SWC_LOGF(LOG_ERROR, "readdir('%s') stat failed - %d(%s)", 
                    full_entry_path.c_str(), errno, strerror(errno));
         return;
       }
@@ -143,10 +143,10 @@ class FileSystemLocal: public FileSystem {
     std::filesystem::remove_all(abspath, ec);
     if (ec) {
       err = ec.value();
-      HT_ERRORF("rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
+      SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
       return;
     }
-    HT_DEBUGF("rmdir('%s')", abspath.c_str());
+    SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
   }
 
   void rename(int &err, const std::string &from, 
@@ -157,18 +157,18 @@ class FileSystemLocal: public FileSystem {
     std::filesystem::rename(abspath_from, abspath_to, ec);
     if (ec) {
       err = ec.value();
-      HT_ERRORF("rename('%s' to '%s') failed - %s", 
+      SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
                 abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
       return;
     }
-    HT_DEBUGF("rename('%s' to '%s')", 
+    SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
               abspath_from.c_str(), abspath_to.c_str());
   }
   
   void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
              StaticBuffer &buffer) {
-    HT_DEBUGF("write %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
 
     create(err, smartfd, 0, replication, blksz);
     if(!smartfd->valid() || err != Error::OK){
@@ -189,7 +189,7 @@ class FileSystemLocal: public FileSystem {
         close(err == Error::OK ? err : errtmp, smartfd);
     
     if(err != Error::OK)
-      HT_ERRORF("write failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
   }
 
@@ -197,7 +197,7 @@ class FileSystemLocal: public FileSystem {
               int32_t bufsz, int32_t replication, int64_t blksz) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
-    HT_DEBUGF("create %s bufsz=%d replication=%d blksz=%lld",
+    SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
               smartfd->to_string().c_str(), 
               bufsz, (int)replication, (Lld)blksz);
 
@@ -215,7 +215,7 @@ class FileSystemLocal: public FileSystem {
     smartfd->fd(::open(abspath.c_str(), oflags, 0644));
     if (!smartfd->valid()) {
       err = errno;
-      HT_ERRORF("create failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
 
       if(err == EACCES || err == ENOENT)
@@ -225,7 +225,7 @@ class FileSystemLocal: public FileSystem {
       return;
     }
     
-    HT_DEBUGF("created %s bufsz=%d replication=%d blksz=%lld",
+    SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
               smartfd->to_string().c_str(), 
               bufsz, (int)replication, (Lld)blksz);
 
@@ -243,7 +243,7 @@ class FileSystemLocal: public FileSystem {
   void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz=0) override {
 
     std::string abspath = get_abspath(smartfd->filepath());
-    HT_DEBUGF("open %s, bufsz=%d", smartfd->to_string().c_str(), bufsz);
+    SWC_LOGF(LOG_DEBUG, "open %s, bufsz=%d", smartfd->to_string().c_str(), bufsz);
 
     int oflags = O_RDONLY;
                
@@ -257,7 +257,7 @@ class FileSystemLocal: public FileSystem {
     smartfd->fd(::open(abspath.c_str(), oflags));
     if (!smartfd->valid()) {
       err = errno;
-      HT_ERRORF("open failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
                 
       if(err == EACCES || err == ENOENT)
@@ -267,7 +267,7 @@ class FileSystemLocal: public FileSystem {
       return;
     }
     
-    HT_DEBUGF("opened %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
 
 #if defined(__sun__)
     if(m_directio)
@@ -279,7 +279,7 @@ class FileSystemLocal: public FileSystem {
   size_t read(int &err, SmartFd::Ptr &smartfd, 
               void *dst, size_t amount) override {
     
-    HT_DEBUGF("read %s amount=%d", smartfd->to_string().c_str(), amount);
+    SWC_LOGF(LOG_DEBUG, "read %s amount=%d", smartfd->to_string().c_str(), amount);
     ssize_t nread = 0;
     errno = 0;
     
@@ -287,7 +287,7 @@ class FileSystemLocal: public FileSystem {
     uint64_t offset;
     if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
       err = errno;
-      HT_ERRORF("read, lseek failed: %d(%s), %s offset=%d", 
+      SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%d", 
                 errno, strerror(errno), smartfd->to_string().c_str(), offset);
       return nread;
     }
@@ -297,13 +297,13 @@ class FileSystemLocal: public FileSystem {
     if (nread == -1) {
       nread = 0;
       err = errno;
-      HT_ERRORF("read failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
       if(nread != amount)
         err = Error::FS_EOF;
       smartfd->pos(smartfd->pos()+nread);
-      HT_DEBUGF("read(ed) %s amount=%d eof=%d", 
+      SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%d eof=%d", 
                 smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
@@ -312,7 +312,7 @@ class FileSystemLocal: public FileSystem {
   size_t pread(int &err, SmartFd::Ptr &smartfd, 
                uint64_t offset, void *dst, size_t amount) override {
     
-    HT_DEBUGF("pread %s offset=%d amount=%d", 
+    SWC_LOGF(LOG_DEBUG, "pread %s offset=%d amount=%d", 
                smartfd->to_string().c_str(), offset, amount);
 
     errno = 0;
@@ -320,13 +320,13 @@ class FileSystemLocal: public FileSystem {
     if (nread == -1) {
       nread = 0;
       err = errno;
-      HT_ERRORF("pread failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
     } else {
       if(nread != amount)
         err = Error::FS_EOF;
       smartfd->pos(offset+nread);
-      HT_DEBUGF("pread(ed) %s amount=%d  eof=%d", 
+      SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%d  eof=%d", 
                 smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
     }
     return nread;
@@ -335,7 +335,7 @@ class FileSystemLocal: public FileSystem {
   size_t append(int &err, SmartFd::Ptr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override {
     
-    HT_DEBUGF("append %s amount=%d flags=%d", 
+    SWC_LOGF(LOG_DEBUG, "append %s amount=%d flags=%d", 
               smartfd->to_string().c_str(), buffer.size, flags);
     
     ssize_t nwritten = 0;
@@ -345,7 +345,7 @@ class FileSystemLocal: public FileSystem {
     if (smartfd->pos() != 0 
       && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
       err = errno;
-      HT_ERRORF("append, lseek failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "append, lseek failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -355,7 +355,7 @@ class FileSystemLocal: public FileSystem {
                     smartfd->fd(), buffer.base, buffer.size)) == -1) {
       nwritten = 0;
       err = errno;
-      HT_ERRORF("write failed: %d(%s), %s", 
+      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
       return nwritten;
     }
@@ -364,24 +364,24 @@ class FileSystemLocal: public FileSystem {
     if (flags == Flags::FLUSH || flags == Flags::SYNC) {
       if (fsync(smartfd->fd()) != 0) {     
         err = errno;
-        HT_ERRORF("write, fsync failed: %d(%s), %s", 
+        SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
                   errno, strerror(errno), smartfd->to_string().c_str());
       }
     }
     
-    HT_DEBUGF("appended %s written=%d", 
+    SWC_LOGF(LOG_DEBUG, "appended %s written=%d", 
               smartfd->to_string().c_str(), nwritten);
     return nwritten;
   }
 
   void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
-    HT_DEBUGF("seek %s offset=%d", smartfd->to_string().c_str(), offset);
+    SWC_LOGF(LOG_DEBUG, "seek %s offset=%d", smartfd->to_string().c_str(), offset);
     
     errno = 0;
     uint64_t at = lseek(smartfd->fd(), offset, SEEK_SET); 
     if (at == (uint64_t)-1 || at != offset || errno != Error::OK) {
       err = errno;
-      HT_ERRORF("seek failed - %d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
                 err, strerror(errno), smartfd->to_string().c_str());
       if(at > 0)
         smartfd->pos(at);
@@ -395,18 +395,18 @@ class FileSystemLocal: public FileSystem {
     sync(err, smartfd);
   }
   void sync(int &err, SmartFd::Ptr &smartfd) override {
-    HT_DEBUGF("sync %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
     
     errno = 0;
     if(fsync(smartfd->fd()) != Error::OK) {
       err = errno;
-      HT_ERRORF("sync failed - %d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "sync failed - %d(%s) %s", 
                 err, strerror(errno), smartfd->to_string().c_str());
     }
   }
 
   void close(int &err, SmartFd::Ptr &smartfd) override {
-    HT_DEBUGF("close %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
     errno = 0;
     if(smartfd->valid()) { 
       ::close(smartfd->fd());

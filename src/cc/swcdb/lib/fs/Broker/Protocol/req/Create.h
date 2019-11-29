@@ -19,7 +19,7 @@ class Create : public Base {
         int32_t bufsz, int32_t replication, int64_t blksz, 
         Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("create %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "create %s", smartfd->to_string().c_str());
     
     cbp = CommBuf::make(
       Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
@@ -49,7 +49,7 @@ class Create : public Base {
       smartfd->pos(0);
     }
 
-    HT_DEBUGF("create %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "create %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);
   }

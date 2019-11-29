@@ -179,7 +179,7 @@ class Schemas {
     std::lock_guard lock(m_mutex);
     if(!m_map.insert(
         std::pair<int64_t, Schema::Ptr>(schema->cid, schema)).second) {
-      HT_WARNF("Unable to add column %s, remove first", 
+      SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
                 schema->to_string().c_str());
       err = Error::COLUMN_SCHEMA_NAME_EXISTS;
     }

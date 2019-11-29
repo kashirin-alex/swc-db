@@ -18,7 +18,7 @@ class Exists : public Base {
 
   Exists(uint32_t timeout, const std::string &name, Callback::ExistsCb_t cb=0) 
         : name(name), cb(cb) {
-    HT_DEBUGF("exists path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::ExistsReq(name));
     cbp->header.set(Cmd::FUNCTION_EXISTS, timeout);
@@ -46,7 +46,7 @@ class Exists : public Base {
       state = false;
     }
 
-    HT_DEBUGF("exists path='%s' error='%d' state='%d'",
+    SWC_LOGF(LOG_DEBUG, "exists path='%s' error='%d' state='%d'",
                name.c_str(), error, (int)state);
     
     cb(error, state);

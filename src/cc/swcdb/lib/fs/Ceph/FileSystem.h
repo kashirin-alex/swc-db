@@ -39,7 +39,7 @@ class FileSystemCeph: public FileSystem {
   
   bool exists(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("exists file='%s'", abspath);
+    SWC_LOGF(LOG_DEBUG, "exists file='%s'", abspath);
 
     errno = 0;
     bool state = false; // ceph-exists(m_filesystem, abspath.c_str()) == -1);
@@ -49,7 +49,7 @@ class FileSystemCeph: public FileSystem {
 
   void mkdirs(int &err, const std::string &name) override {
     std::string abspath = get_abspath(name);
-    HT_DEBUGF("mkdirs path='%s'", abspath);
+    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath);
     
     errno = 0;
     //ceph-mkdirs(m_filesystem, abspath.c_str());

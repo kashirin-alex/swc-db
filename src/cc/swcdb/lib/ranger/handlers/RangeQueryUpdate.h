@@ -43,7 +43,7 @@ class RangeQueryUpdate : public AppHandler {
         buffer = std::make_shared<StaticBuffer>(m_ev->data_ext);
       }
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
 
@@ -58,7 +58,7 @@ class RangeQueryUpdate : public AppHandler {
       range->add(new server::Rgr::Range::ReqAdd(buffer, cb));
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   
   }

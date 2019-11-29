@@ -278,7 +278,7 @@ class Column : public std::enable_shared_from_this<Column> {
     }
     if(m_ranges.empty()) {
       Env::FsInterface::interface()->rmdir(err, Range::get_path(cid));
-      HT_DEBUGF("FINALIZED REMOVE %s", _to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "FINALIZED REMOVE %s", _to_string().c_str());
       return true;
     }
     return false;

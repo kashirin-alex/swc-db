@@ -101,7 +101,7 @@ class Block {
         cell.read(&rbuf, &remain);
         count++;
       } catch(std::exception) {
-        HT_ERRORF(
+        SWC_LOGF(LOG_ERROR, 
           "Cell trunclated at count=%llu remain=%llu %s, %s", 
           count, avail-count, 
           cell.to_string().c_str(),  m_interval.to_string().c_str());

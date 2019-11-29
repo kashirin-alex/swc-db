@@ -60,7 +60,7 @@ class Interface {
 
     m_fs = use_filesystem();
 
-    HT_INFOF("INIT-%s", to_string().c_str());
+    SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
   }
   
   FileSystem::Ptr use_filesystem(){
@@ -201,7 +201,7 @@ class Interface {
         try {
           entries.push_back((int64_t)strtoll(id_name.c_str(), NULL, 0));
         } catch(...){
-          HT_ERRORF("Error converting id_name=%s to int64", id_name.c_str());
+          SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64", id_name.c_str());
         }
         continue;
       }
@@ -228,7 +228,7 @@ class Interface {
         dirs = found_dirs;
         return;
       }
-      HT_DEBUGF("readdir, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "readdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
 
@@ -239,7 +239,7 @@ class Interface {
       state = m_fs->exists(err, name);
       if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN)
         break;
-      HT_DEBUGF("exists, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "exists, retrying to err=%d(%s)", err, Error::get_text(err));
     }
     return state;
   }
@@ -263,7 +263,7 @@ class Interface {
       if(err == Error::OK || err == EEXIST 
         || err == Error::SERVER_SHUTTING_DOWN)
         return;
-      HT_DEBUGF("mkdirs, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "mkdirs, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
 
@@ -274,7 +274,7 @@ class Interface {
       if(err == Error::OK || err == EACCES || err == ENOENT
         || err == Error::SERVER_SHUTTING_DOWN)
         return;
-      HT_DEBUGF("rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "rmdir, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   }
   void rmdir_incl_opt_subs(int &err, const std::string &name, 
@@ -310,7 +310,7 @@ class Interface {
       if(err == Error::OK || err == EACCES || err == ENOENT 
         || err == Error::SERVER_SHUTTING_DOWN)
         return;
-      HT_DEBUGF("remove, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "remove, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
   
@@ -321,7 +321,7 @@ class Interface {
       if(err == Error::OK || err == EACCES || err == ENOENT 
         || err == Error::SERVER_SHUTTING_DOWN)
         return;
-      HT_DEBUGF("rename, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "rename, retrying to err=%d(%s)", err, Error::get_text(err));
     }
   } 
 
@@ -337,7 +337,7 @@ class Interface {
           || err == Error::FS_PERMISSION_DENIED
           || err == Error::SERVER_SHUTTING_DOWN)
         break;
-      HT_DEBUGF("write, retrying to err=%d(%s)", err, Error::get_text(err));
+      SWC_LOGF(LOG_DEBUG, "write, retrying to err=%d(%s)", err, Error::get_text(err));
     }
     buffer.own=true;
   }

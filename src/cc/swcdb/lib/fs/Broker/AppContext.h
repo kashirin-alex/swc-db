@@ -22,7 +22,7 @@ class FsClientAppCtx : public client::AppContext {
     const uint8_t *ptr;
     size_t remain;
     if(Protocol::Req::Base().is_rsp(conn, ev, ev->header.command, &ptr, &remain))
-      HT_WARNF("Unhandled %s", ev->to_str().c_str());
+      SWC_LOGF(LOG_WARN, "Unhandled %s", ev->to_str().c_str());
   }
 };
 

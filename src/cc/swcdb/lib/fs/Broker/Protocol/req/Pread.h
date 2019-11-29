@@ -23,7 +23,7 @@ class Pread : public Base {
         Callback::PreadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), allocated(allocated), 
         cb(cb), amount(0) {
-    HT_DEBUGF("pread offset=%d len=%d timeout=%d %s", 
+    SWC_LOGF(LOG_DEBUG, "pread offset=%d len=%d timeout=%d %s", 
               offset, len, timeout, smartfd->to_string().c_str());
     cbp = CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));
     cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
@@ -65,7 +65,7 @@ class Pread : public Base {
       }
     }
 
-    HT_DEBUGF("pread %s amount='%d' error='%d'", 
+    SWC_LOGF(LOG_DEBUG, "pread %s amount='%d' error='%d'", 
               smartfd->to_string().c_str(), amount, error);
 
     cb(error, smartfd, buf);

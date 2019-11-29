@@ -45,7 +45,7 @@ class Append : public AppHandler {
       }
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
   
@@ -57,7 +57,7 @@ class Append : public AppHandler {
       m_conn->send_response(cbp);
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
 
     // add to fds-map

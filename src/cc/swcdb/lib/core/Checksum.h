@@ -97,7 +97,7 @@ inline bool checksum_i32_chk(uint32_t checksum,
   uint32_t computed = fletcher32(base, len);
   if(checksum == computed)
     return true;
-  HT_ERRORF("checksum_i32_chk, original(%u) != computed(%u)", 
+  SWC_LOGF(LOG_ERROR, "checksum_i32_chk, original(%u) != computed(%u)", 
             checksum, computed);
   return false;
 }

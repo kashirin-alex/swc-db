@@ -135,7 +135,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       if(it == m_columns.end())
         break;
       if(validation)
-        HT_WARNF("Unload-Validation cid=%d remained", it->first);
+        SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
       unloaded++;
       it->second->unload_all(unloaded, cb);
       m_columns.erase(it);

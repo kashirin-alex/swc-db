@@ -108,7 +108,7 @@ class Column : public std::enable_shared_from_this<Column> {
       m_ranges.erase(it);
     }
 
-    HT_DEBUGF("REMOVED %s", to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "REMOVED %s", to_string().c_str());
   }
 
   bool removing() {

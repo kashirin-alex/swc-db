@@ -72,7 +72,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   void static shutting_down(Scheduler::Ptr validator, 
                             std::function<void()> cb) {
     auto rs_data = Env::RgrData::get();
-    HT_DEBUGF("RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
 
     Ptr req = std::make_shared<RgrMngId>(
       validator, 
@@ -152,7 +152,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       rsp_params.decode(&ptr, &remain);
  
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
         
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_REREQ){
@@ -161,12 +161,12 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     }
     
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
-      HT_DEBUGF("RS_SHUTTINGDOWN %s", 
+      SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN %s", 
                 Env::RgrData::get()->to_string().c_str());
       if(cb_shutdown != 0)
         cb_shutdown();
       else
-        HT_WARN("Shutdown flag without Callback!");
+        SWC_LOG(LOG_WARN, "Shutdown flag without Callback!");
       return;
     }
 
@@ -184,7 +184,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()){
 
-      HT_ERRORF("Ranger's %s not matching with Mngr's FS-type=%d,"
+      SWC_LOGF(LOG_ERROR, "Ranger's %s not matching with Mngr's FS-type=%d,"
                       "RS_SHUTTINGDOWN %s",
         Env::FsInterface::interface()->to_string().c_str(), 
         (int)rsp_params.fs, 
@@ -202,11 +202,11 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
       rs_data->id = rsp_params.id;
       flag = Params::RgrMngId::Flag::RS_ACK;
-      HT_DEBUGF("RS_ACK %s", rs_data->to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "RS_ACK %s", rs_data->to_string().c_str());
     } else {
 
       flag = Params::RgrMngId::Flag::RS_DISAGREE;
-      HT_DEBUGF("RS_DISAGREE %s", rs_data->to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rs_data->to_string().c_str());
     }
 
     cbp = create(

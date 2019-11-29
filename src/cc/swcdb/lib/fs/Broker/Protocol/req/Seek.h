@@ -17,7 +17,7 @@ class Seek : public Base {
   Seek(uint32_t timeout, SmartFd::Ptr &smartfd, size_t offset,
       Callback::SeekCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("seek offset=%d %s", offset, smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "seek offset=%d %s", offset, smartfd->to_string().c_str());
 
     cbp = CommBuf::make(Params::SeekReq(smartfd->fd(), offset));
     cbp->header.set(Cmd::FUNCTION_SEEK, timeout);
@@ -44,7 +44,7 @@ class Seek : public Base {
       smartfd->pos(params.offset);
     }
 
-    HT_DEBUGF("seek %s error='%d'", 
+    SWC_LOGF(LOG_DEBUG, "seek %s error='%d'", 
               smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);

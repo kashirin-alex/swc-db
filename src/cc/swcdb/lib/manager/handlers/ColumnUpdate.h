@@ -33,7 +33,7 @@ class ColumnUpdate : public AppHandler {
         params.function, params.schema, params.err);
 
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   }
 

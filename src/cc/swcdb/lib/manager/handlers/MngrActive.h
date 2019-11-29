@@ -41,7 +41,7 @@ class MngrActive : public AppHandler {
     
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   
   }

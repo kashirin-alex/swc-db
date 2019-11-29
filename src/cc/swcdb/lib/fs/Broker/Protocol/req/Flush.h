@@ -16,7 +16,7 @@ class Flush : public Base {
 
   Flush(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::FlushCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("flush %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
 
     cbp = CommBuf::make(Params::FlushReq(smartfd->fd()));
     cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
@@ -36,7 +36,7 @@ class Flush : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_FLUSH, &ptr, &remain))
       return;
 
-    HT_DEBUGF("flush %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "flush %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);
   }

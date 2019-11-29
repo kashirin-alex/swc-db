@@ -18,7 +18,7 @@ class Readdir : public Base {
 
   Readdir(uint32_t timeout, const std::string &name, Callback::ReaddirCb_t cb=0) 
          : name(name), cb(cb) {
-    HT_DEBUGF("readdir path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::ReaddirReq(name));
     cbp->header.set(Cmd::FUNCTION_READDIR, timeout);
@@ -44,7 +44,7 @@ class Readdir : public Base {
       params.get_listing(listing);
     }
 
-    HT_DEBUGF("readdir path='%s' error='%d' sz='%d'",
+    SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%d'",
                name.c_str(), error, listing.size());
     
     cb(error, listing);

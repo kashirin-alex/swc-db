@@ -170,7 +170,7 @@ class Fragment {
     load_header(err, close_after);
     if(err) {
       m_state = State::ERROR;
-      HT_ERRORF("CommitLog::Fragment load_header err=%d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load_header err=%d(%s) %s", 
                 err, Error::get_text(err), to_string().c_str());
     }
   }
@@ -408,7 +408,7 @@ class Fragment {
       
       if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)){  
         if(++tries == 3) {
-          HT_WARNF("CHECKSUM_MISMATCH try=%d %s", 
+          SWC_LOGF(LOG_WARN, "CHECKSUM_MISMATCH try=%d %s", 
                     tries, m_smartfd->to_string().c_str());
           err = Error::CHECKSUM_MISMATCH;
           break;
@@ -435,7 +435,7 @@ class Fragment {
       m_state = err ? State::ERROR : State::LOADED;
     }
     if(err)
-      HT_ERRORF("CommitLog::Fragment load err=%d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load err=%d(%s) %s", 
                 err, Error::get_text(err), to_string().c_str());
 
     run_queued(err);

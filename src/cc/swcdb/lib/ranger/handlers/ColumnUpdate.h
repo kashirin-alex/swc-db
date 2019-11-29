@@ -30,12 +30,12 @@ class ColumnUpdate : public AppHandler {
 
       Env::Schemas::get()->replace(params.schema);
       if(!Env::RgrData::is_shuttingdown())
-        HT_DEBUGF("updated %s", params.schema->to_string().c_str());
+        SWC_LOGF(LOG_DEBUG, "updated %s", params.schema->to_string().c_str());
       
       m_conn->response_ok(m_ev);
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   
   }

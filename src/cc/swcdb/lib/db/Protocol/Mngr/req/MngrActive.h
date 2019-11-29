@@ -58,7 +58,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
     if(hosts.empty()) {
       Env::Clients::get()->mngrs_groups->hosts(cid, hosts, group_host);
       if(hosts.empty()) {
-        HT_WARNF("Empty cfg of mngr.host for cid=%d", cid);
+        SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for cid=%d", cid);
         run_within(5000);
         return false;
       }
@@ -70,7 +70,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
-    // HT_DEBUGF(" handle: %s", ev->to_str().c_str());
+    // SWC_LOGF(LOG_DEBUG, " handle: %s", ev->to_str().c_str());
 
     if(ev->error == Error::OK && ev->header.command == MNGR_ACTIVE){
 
@@ -89,7 +89,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
         }
 
       } catch (Exception &e) {
-        HT_ERROR_OUT << e << HT_END;
+        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       }
     }
 

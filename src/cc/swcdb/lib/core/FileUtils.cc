@@ -117,7 +117,7 @@ ssize_t write(const std::string &fname, const std::string &contents) {
   int fd = open(fname.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
     int saved_errno = errno;
-    HT_ERRORF("Unable to open file \"%s\" for writing - %s", fname.c_str(),
+    SWC_LOGF(LOG_ERROR, "Unable to open file \"%s\" for writing - %s", fname.c_str(),
               strerror(saved_errno));
     errno = saved_errno;
     return -1;
@@ -168,14 +168,14 @@ bool mkdirs(const std::string &dirname) {
     if (stat(tmpdir, &statbuf) != 0) {
       if (errno != ENOENT) {	
         saved_errno = errno;	
-        HT_ERRORF("Problem stat'ing directory '%s' - %d(%s)", tmpdir,	
+        SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,	
                   saved_errno, strerror(saved_errno));	
         break;	
       }
       errno = 0;
       if (mkdir(tmpdir, 0755) != 0 && errno != EEXIST) {	
         saved_errno = errno;	
-        HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,	
+        SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,	
                    saved_errno, strerror(saved_errno));	
         break;	
       }	
@@ -192,7 +192,7 @@ bool mkdirs(const std::string &dirname) {
 bool unlink(const std::string &fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
-    HT_ERRORF("unlink(\"%s\") failed - %s", fname.c_str(),
+    SWC_LOGF(LOG_ERROR, "unlink(\"%s\") failed - %s", fname.c_str(),
               strerror(saved_errno));
     errno = saved_errno;
     return false;
@@ -203,7 +203,7 @@ bool unlink(const std::string &fname) {
 bool rename(const std::string &oldpath, const std::string &newpath) {
   if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
     int saved_errno = errno;
-    HT_ERRORF("rename(\"%s\", \"%s\") failed - %s",
+    SWC_LOGF(LOG_ERROR, "rename(\"%s\", \"%s\") failed - %s",
               oldpath.c_str(), newpath.c_str(), strerror(saved_errno));
     errno = saved_errno;
     return false;
@@ -240,7 +240,7 @@ void readdir(const std::string &dirname,
   errno = 0;
   DIR *dirp = opendir(dirname.c_str());
   if(dirp == nullptr || errno != 0){
-    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+    SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
               strerror(errno));
     return;
   }
@@ -273,7 +273,7 @@ void readdir(const std::string &dirname,
 #endif
 
   if(errno > 0)
-    HT_ERRORF("Problem reading directory '%s' - %s", dirname.c_str(),
+    SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
               strerror(errno));
   (void)closedir(dirp);
   if(regex)
@@ -288,7 +288,7 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
 
   if ((fd = open(fname.c_str(), O_RDONLY)) < 0) {
     int saved_errno = errno;
-    HT_ERRORF("open(\"%s\") failure - %s", fname.c_str(),
+    SWC_LOGF(LOG_ERROR, "open(\"%s\") failure - %s", fname.c_str(),
             strerror(saved_errno));
     errno = saved_errno;
     return 0;
@@ -296,7 +296,7 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
 
   if (fstat(fd, &statbuf) < 0) {
     int saved_errno = errno;
-    HT_ERRORF("fstat(\"%s\") failure - %s", fname.c_str(),
+    SWC_LOGF(LOG_ERROR, "fstat(\"%s\") failure - %s", fname.c_str(),
            strerror(saved_errno));
     errno = saved_errno;
     return 0;
@@ -312,7 +312,7 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
 
   if (nread == (ssize_t)-1) {
     int saved_errno = errno;
-    HT_ERRORF("read(\"%s\") failure - %s", fname.c_str(),
+    SWC_LOGF(LOG_ERROR, "read(\"%s\") failure - %s", fname.c_str(),
             strerror(saved_errno));
     errno = saved_errno;
     delete [] rbuf;
@@ -321,7 +321,7 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
   }
 
   if (nread < *lenp) {
-    HT_WARNF("short read (%d of %d bytes)", (int)nread, (int)*lenp);
+    SWC_LOGF(LOG_WARN, "short read (%d of %d bytes)", (int)nread, (int)*lenp);
     *lenp = nread;
   }
 
@@ -434,8 +434,8 @@ bool set_flags(int fd, int flags) {
 
   if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
     int saved_errno = errno;
-    HT_ERROR_OUT << "fcnt(F_GETFL) failed : " << ::strerror(saved_errno)
-        << HT_END;
+    SWC_LOG_OUT(LOG_ERROR) << "fcnt(F_GETFL) failed : " << ::strerror(saved_errno)
+        << SWC_LOG_OUT_END;
     errno = saved_errno;
     ret = false;
   }
@@ -444,8 +444,8 @@ bool set_flags(int fd, int flags) {
 
   if (fcntl(fd, F_SETFL, val) < 0) {
     int saved_errno = errno;
-    HT_ERROR_OUT << "fcnt(F_SETFL) failed : " << ::strerror(saved_errno)
-        << HT_END;
+    SWC_LOG_OUT(LOG_ERROR) << "fcnt(F_SETFL) failed : " << ::strerror(saved_errno)
+        << SWC_LOG_OUT_END;
     errno = saved_errno;
     ret = false;
   }
@@ -459,16 +459,16 @@ void *mmap(const std::string &fname, off_t *lenp) {
   void *map;
 
   if (::stat(fname.c_str(), &statbuf) != 0)
-    HT_FATALF("Unable determine length of '%s' for memory mapping - %s",
+    SWC_LOG_FATAL("Unable determine length of '%s' for memory mapping - %s",
             fname.c_str(), strerror(errno));
   *lenp = (off_t)statbuf.st_size;
 
   if ((fd = ::open(fname.c_str(), O_RDONLY)) == -1)
-    HT_FATALF("Unable to open '%s' for memory mapping - %s", fname.c_str(),
+    SWC_LOG_FATAL("Unable to open '%s' for memory mapping - %s", fname.c_str(),
             strerror(errno));
   
   if ((map = ::mmap(0, *lenp, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
-    HT_FATALF("Unable to memory map file '%s' - %s", fname.c_str(),
+    SWC_LOG_FATAL("Unable to memory map file '%s' - %s", fname.c_str(),
             strerror(errno));
 
   close(fd);

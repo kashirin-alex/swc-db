@@ -16,7 +16,7 @@ class Rmdir : public Base {
 
   Rmdir(uint32_t timeout, const std::string &name, Callback::RmdirCb_t cb=0) 
         : name(name), cb(cb) {
-    HT_DEBUGF("rmdir path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::RmdirReq(name));
     cbp->header.set(Cmd::FUNCTION_RMDIR, timeout);
@@ -36,7 +36,7 @@ class Rmdir : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_RMDIR, &ptr, &remain))
       return;
 
-    HT_DEBUGF("rmdir path='%s' error='%d'", name.c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "rmdir path='%s' error='%d'", name.c_str(), error);
     
     cb(error);
   }

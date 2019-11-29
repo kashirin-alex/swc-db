@@ -46,14 +46,14 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
       conn = nullptr;
     }
     // else
-    //  HT_DEBUGF("Reusing connection: %s, %s", 
+    //  SWC_LOGF(LOG_DEBUG, "Reusing connection: %s, %s", 
     //             m_srv_name.c_str(), to_string(conn).c_str());
   }
 
   void connection(ConnHandlerPtr &conn, std::chrono::milliseconds timeout, 
                   bool preserve){
 
-    HT_DEBUGF("Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
+    SWC_LOGF(LOG_DEBUG, "Connecting Sync: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
     asio::ip::tcp::socket sock(*m_ioctx.get());
@@ -70,14 +70,14 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
     conn->new_connection();
     if(preserve)
       put_back(conn);
-    // HT_DEBUGF("New connection: %s, %s", 
+    // SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
     //          m_srv_name.c_str(), to_string(conn).c_str());
   }
   
   void connection(std::chrono::milliseconds timeout, NewCb_t cb, 
                   bool preserve){
 
-    HT_DEBUGF("Connecting Async: %s, addr=[%s]:%d", m_srv_name.c_str(), 
+    SWC_LOGF(LOG_DEBUG, "Connecting Async: %s, addr=[%s]:%d", m_srv_name.c_str(), 
               m_endpoint.address().to_string().c_str(), m_endpoint.port());
     
     auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
@@ -91,7 +91,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
           conn->new_connection();
           if(preserve)
             ptr->put_back(conn);
-          //HT_DEBUGF("New connection: %s, %s", 
+          //SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
           //          ptr->m_srv_name.c_str(), to_string(conn).c_str());
 
           cb(conn);
@@ -139,7 +139,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
 
   Serialized(std::string srv_name, IOCtxPtr ioctx, AppContext::Ptr ctx)
              : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx), m_run(true) {
-    HT_INFOF("Init: %s", m_srv_name.c_str());
+    SWC_LOGF(LOG_INFO, "Init: %s", m_srv_name.c_str());
   }
 
   ServerConnections::Ptr get_srv(EndPoint endpoint) {
@@ -165,7 +165,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
     
     ConnHandlerPtr conn = nullptr;
     if(endpoints.empty()){
-      HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
+      SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
       return conn;
     }
     
@@ -183,7 +183,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
         if(conn != nullptr)
           return conn;
       }
-      HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
+      SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
       
       std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
 
@@ -200,7 +200,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
         bool preserve=false){
     
     if(endpoints.empty()){
-      HT_WARNF("get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
+      SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints", m_srv_name.c_str());
       cb(nullptr);
       return;
     }
@@ -227,7 +227,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
       return;
     }
     
-    HT_DEBUGF("get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
+    SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
     srv->connection(timeout, 
       [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
       (ConnHandlerPtr conn){
@@ -288,7 +288,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
       it->second->close_all();
       m_srv_conns.erase(it);
     }
-    HT_INFOF("Stop: %s", m_srv_name.c_str());
+    SWC_LOGF(LOG_INFO, "Stop: %s", m_srv_name.c_str());
   }
 
   virtual ~Serialized(){}

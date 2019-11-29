@@ -33,7 +33,7 @@ class RgrMngId : public AppHandler {
       
       
       if(!Env::MngrRole::get()->is_active(1)){
-        HT_DEBUGF("MNGR NOT ACTIVE, flag=%d id=%d %s",
+        SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d id=%d %s",
                   req_params.flag, req_params.id, 
                   req_params.to_string().c_str());
         
@@ -51,7 +51,7 @@ class RgrMngId : public AppHandler {
         case Params::RgrMngId::Flag::RS_REQ: {
           uint64_t id = rangers->rs_set_id(req_params.endpoints);
 
-          HT_DEBUGF("RS_REQ, id=%d %s",
+          SWC_LOGF(LOG_DEBUG, "RS_REQ, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
 
           auto cbp = CommBuf::make(
@@ -64,12 +64,12 @@ class RgrMngId : public AppHandler {
 
         case Params::RgrMngId::Flag::RS_ACK: {
           if(rangers->rs_ack_id(req_params.id, req_params.endpoints)){
-            HT_DEBUGF("RS_ACK, id=%d %s",
+            SWC_LOGF(LOG_DEBUG, "RS_ACK, id=%d %s",
                       req_params.id, req_params.to_string().c_str());
             m_conn->response_ok(m_ev);
 
           } else {
-            HT_DEBUGF("RS_ACK(MNGR_REREQ) id=%d %s",
+            SWC_LOGF(LOG_DEBUG, "RS_ACK(MNGR_REREQ) id=%d %s",
                       req_params.id, req_params.to_string().c_str());
             
             auto cbp = CommBuf::make(
@@ -84,7 +84,7 @@ class RgrMngId : public AppHandler {
         case Params::RgrMngId::Flag::RS_DISAGREE: {
           uint64_t id = rangers->rs_had_id(req_params.id, 
                                                    req_params.endpoints);
-          HT_DEBUGF("RS_DISAGREE, rs_had_id=%d > id=%d %s", 
+          SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rs_had_id=%d > id=%d %s", 
                     req_params.id, id, req_params.to_string().c_str());
 
           if (id != 0){
@@ -103,7 +103,7 @@ class RgrMngId : public AppHandler {
         case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
           rangers->rs_shutdown(req_params.id, req_params.endpoints);
 
-          HT_DEBUGF("RS_SHUTTINGDOWN, id=%d %s",
+          SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
       
           auto cbp = CommBuf::make(
@@ -120,7 +120,7 @@ class RgrMngId : public AppHandler {
       }
 
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
     
   }

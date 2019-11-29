@@ -27,14 +27,14 @@ class Acceptor{
             m_io_ctx(io_ctx) {
     do_accept();
     
-    HT_INFOF("Listening On: [%s]:%d fd=%d", 
+    SWC_LOGF(LOG_INFO, "Listening On: [%s]:%d fd=%d", 
              m_acceptor.local_endpoint().address().to_string().c_str(), 
              m_acceptor.local_endpoint().port(), 
              (ssize_t)m_acceptor.native_handle());
   }
 
   void stop() {
-    HT_INFOF("Stopping to Listen On: [%s]:%d fd=%d", 
+    SWC_LOGF(LOG_INFO, "Stopping to Listen On: [%s]:%d fd=%d", 
              m_acceptor.local_endpoint().address().to_string().c_str(), 
              m_acceptor.local_endpoint().port(), 
              (ssize_t)m_acceptor.native_handle());
@@ -56,7 +56,7 @@ class Acceptor{
       [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
         if(ec) {
           if(ec.value() != 125) 
-            HT_DEBUGF("SRV-accept error=%d(%s)", 
+            SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
                       ec.value(), ec.message().c_str());
           return;
         }
@@ -90,7 +90,7 @@ class SerializedServer {
     AppContext::Ptr app_ctx
   ): m_appname(name), m_run(true){
     
-    HT_INFOF("STARTING SERVER: %s, reactors=%d, workers=%d", 
+    SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d", 
               m_appname.c_str(), reactors, workers);
 
     auto& props = Env::Config::settings()->properties;
@@ -142,7 +142,7 @@ class SerializedServer {
       asio::thread_pool* pool = new asio::thread_pool(workers);
       for(int n=0; n<workers; n++)
         asio::post(*pool, [d=io_ctx, run=&m_run]{
-          // HT_INFOF("START DELAY: %s 3secs",  m_appname.c_str());
+          // SWC_LOGF(LOG_INFO, "START DELAY: %s 3secs",  m_appname.c_str());
           std::this_thread::sleep_for(std::chrono::milliseconds(5000));
           do{
             d->run();
@@ -165,7 +165,7 @@ class SerializedServer {
       m_thread_pools.erase(it);
     }
       
-    HT_INFOF("STOPPED SERVER: %s", m_appname.c_str());
+    SWC_LOGF(LOG_INFO, "STOPPED SERVER: %s", m_appname.c_str());
   }
 
   void stop_accepting() {
@@ -177,11 +177,11 @@ class SerializedServer {
       m_acceptors.erase(it);
     }
 
-    HT_INFOF("STOPPED ACCEPTING: %s", m_appname.c_str());
+    SWC_LOGF(LOG_INFO, "STOPPED ACCEPTING: %s", m_appname.c_str());
   }
 
   void shutdown() {
-    HT_INFOF("STOPPING SERVER: %s", m_appname.c_str());
+    SWC_LOGF(LOG_INFO, "STOPPING SERVER: %s", m_appname.c_str());
     m_run.store(false);
 
     {
@@ -198,7 +198,7 @@ class SerializedServer {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_conns.push_back(conn);
 
-    //HT_DEBUGF("%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
+    //SWC_LOGF(LOG_DEBUG, "%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
   }
 
   void connection_del(ConnHandlerPtr conn) {
@@ -209,7 +209,7 @@ class SerializedServer {
         break;
       }
     }
-    //HT_DEBUGF("%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
+    //SWC_LOGF(LOG_DEBUG, "%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
   }
 
   virtual ~SerializedServer(){}

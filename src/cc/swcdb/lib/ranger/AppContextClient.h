@@ -30,12 +30,12 @@ class AppContext : public SWC::AppContext {
       }
 
       case Event::Type::ERROR:{
-        HT_WARNF("unhandled: %s", ev->to_str().c_str());
+        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
         break;
       }
 
       case Event::Type::MESSAGE: {
-        HT_WARNF("unhandled: %s", ev->to_str().c_str());
+        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
         break;
       }
 

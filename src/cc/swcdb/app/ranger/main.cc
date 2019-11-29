@@ -13,16 +13,16 @@ namespace SWC {
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx = std::make_shared<SWC::server::Rgr::AppContext>();
+  auto app_ctx = std::make_shared<server::Rgr::AppContext>();
 
-  auto srv = std::make_shared<SWC::server::SerializedServer>(
+  auto srv = std::make_shared<server::SerializedServer>(
     "RANGER", 
-    SWC::Env::Config::settings()->get<int32_t>("swc.rgr.reactors"), 
-    SWC::Env::Config::settings()->get<int32_t>("swc.rgr.workers"), 
+    Env::Config::settings()->get<int32_t>("swc.rgr.reactors"), 
+    Env::Config::settings()->get<int32_t>("swc.rgr.workers"), 
     "swc.rgr.port",
     app_ctx
   );
-  ((SWC::server::Rgr::AppContext*)app_ctx.get())->set_srv(srv);
+  ((server::Rgr::AppContext*)app_ctx.get())->set_srv(srv);
   srv->run();
 
   return 0);

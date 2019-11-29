@@ -54,9 +54,9 @@ void Settings::parse_args(int argc, char *argv[]) {
 
 
 void Settings::init_options() {
-  gEnumExt logging_level(Logger::Priority::INFO);
-  logging_level.set_from_string(Logger::cfg::from_string)
-               .set_repr(Logger::cfg::repr);
+  gEnumExt logging_level(LOG_INFO);
+  logging_level.set_from_string(Logger::logger.from_string)
+               .set_repr(Logger::logger.repr);
 
   cmdline_desc.add_options()
     ("help,h", "Show this help message and exit")
@@ -118,10 +118,10 @@ void Settings::init(int argc, char *argv[]) {
 
   gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
   if(properties.get_bool("debug"))
-    loglevel->set_value(Logger::Priority::DEBUG);
+    loglevel->set_value(LOG_DEBUG);
 
   if(loglevel->get() == -1){
-    HT_ERROR_OUT << "unknown logging level: "<< loglevel->str() << HT_END;
+    SWC_LOG_OUT(LOG_ERROR) << "unknown logging level: "<< loglevel->str() << SWC_LOG_OUT_END;
     std::quick_exit(EXIT_SUCCESS);
   }
 

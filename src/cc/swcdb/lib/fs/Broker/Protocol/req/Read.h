@@ -22,7 +22,7 @@ class Read : public Base {
       bool allocated, Callback::ReadCb_t cb=0)
       : smartfd(smartfd), buffer(dst), allocated(allocated),
         cb(cb), amount(0) {
-    HT_DEBUGF("read len=%d timeout=%d %s", 
+    SWC_LOGF(LOG_DEBUG, "read len=%d timeout=%d %s", 
               len, timeout, smartfd->to_string().c_str());
 
     cbp = CommBuf::make(Params::ReadReq(smartfd->fd(), len));
@@ -65,7 +65,7 @@ class Read : public Base {
       }
     }
 
-    HT_DEBUGF("read %s amount='%d' error='%d'", 
+    SWC_LOGF(LOG_DEBUG, "read %s amount='%d' error='%d'", 
               smartfd->to_string().c_str(), amount, error);
 
     cb(error, smartfd, buf);

@@ -16,7 +16,7 @@ class Remove : public Base {
 
   Remove(uint32_t timeout, const std::string &name, Callback::RemoveCb_t cb=0) 
         : name(name), cb(cb) {
-    HT_DEBUGF("remove path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::RemoveReq(name));
     cbp->header.set(Cmd::FUNCTION_REMOVE, timeout);
@@ -36,7 +36,7 @@ class Remove : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_REMOVE, &ptr, &remain))
       return;
 
-    HT_DEBUGF("remove path='%s' error='%d'", name.c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "remove path='%s' error='%d'", name.c_str(), error);
     
     cb(error);
   }

@@ -67,7 +67,7 @@ class ValueEnumExtBase {
         HT_THROWF(Error::CONFIG_GET_ERROR, 
                   "Bad Value %s, no corresponding enum", opt.c_str());
       else
-        HT_WARNF("Bad cfg Value %s, no corresponding enum", opt.c_str());
+        SWC_LOGF(LOG_WARN, "Bad cfg Value %s, no corresponding enum", opt.c_str());
     }
     return get();
   }

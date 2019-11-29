@@ -17,7 +17,7 @@ class Open : public Base {
   Open(uint32_t timeout, SmartFd::Ptr &smartfd, int32_t bufsz, 
        Callback::OpenCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("open %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "open %s", smartfd->to_string().c_str());
 
     cbp = CommBuf::make(
       Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
@@ -45,7 +45,7 @@ class Open : public Base {
       smartfd->pos(0);
     }
 
-    HT_DEBUGF("open %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "open %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);
   }

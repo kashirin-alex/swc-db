@@ -72,7 +72,7 @@ class MngrRole {
           ptr->managers_checkin();
         }
     }); 
-    HT_DEBUGF("MngrRole managers_checkin scheduled in ms=%d", t_ms);
+    SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%d", t_ms);
   }
 
   bool has_active_columns(){
@@ -256,7 +256,7 @@ class MngrRole {
       host_set->state == Types::MngrState::ACTIVE ? 
       cfg_delay_fallback->get() : cfg_check_interval->get());
 
-    HT_DEBUGF("disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
+    SWC_LOGF(LOG_DEBUG, "disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
               (int)srv,
               endpoint_server.address().to_string().c_str(), 
               endpoint_server.port(), 
@@ -322,7 +322,7 @@ class MngrRole {
       Env::Clients::get()->mngrs_groups->get_groups();
     
     for(auto& g : groups) {
-      // HT_DEBUG( g->to_string().c_str());
+      // SWC_LOG(LOG_DEBUG,  g->to_string().c_str());
       uint32_t pr = 0;
       for(auto& endpoints : g->get_hosts()) {
 
@@ -346,7 +346,7 @@ class MngrRole {
     if(m_checkin++)
       return;
 
-    //HT_DEBUG("managers_checkin");
+    //SWC_LOG(LOG_DEBUG, "managers_checkin");
     size_t sz;
     {
       std::lock_guard lock(m_mutex);
@@ -424,7 +424,7 @@ class MngrRole {
          && ++host->failures <= cfg_conn_fb_failures->get()){   
         m_checkin=0;
         timer_managers_checkin(cfg_delay_fallback->get());
-        HT_DEBUGF("Allowed conn Failure=%d before fallback", 
+        SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
                   host->failures);
         return;
       }

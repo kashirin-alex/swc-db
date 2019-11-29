@@ -33,7 +33,7 @@ class RangeIsLoaded : public DispatchHandler {
 
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
     
     if(ev->type == Event::Type::DISCONNECT){
       if(!was_called)

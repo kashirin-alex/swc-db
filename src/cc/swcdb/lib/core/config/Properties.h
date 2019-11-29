@@ -89,7 +89,7 @@ class Properties {
 	    try {
         load(*it, filedesc, cmddesc, allow_unregistered);
       } catch (std::exception &e) {
-		    HT_WARNF("%s has bad cfg file %s: %s", 
+		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
                   fileprop.c_str(), it->c_str(), e.what());
       }
     }
@@ -111,7 +111,7 @@ class Properties {
       return out;
 	  }
 	  catch (std::exception &e) {
-		  HT_WARNF("Error::CONFIG_BAD_CFG_FILE %s: %s", fname.c_str(), e.what());
+		  SWC_LOGF(LOG_WARN, "Error::CONFIG_BAD_CFG_FILE %s: %s", fname.c_str(), e.what());
       return format("Error::CONFIG_BAD_CFG_FILE %s: %s \noutput:\n%s", 
                       fname.c_str(), e.what(), out.c_str());
 	  }

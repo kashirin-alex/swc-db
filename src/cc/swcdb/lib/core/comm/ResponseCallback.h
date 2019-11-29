@@ -29,12 +29,12 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
   }
 
   virtual void response_ok()  {
-    //HT_DEBUGF("response_ok, %s", m_ev->to_str().c_str());
+    //SWC_LOGF(LOG_DEBUG, "response_ok, %s", m_ev->to_str().c_str());
     m_conn->response_ok(m_ev);
   }
 
   virtual void send_error(int code, std::string msg) {
-    //HT_DEBUGF("send_error, %s", m_ev->to_str().c_str());
+    //SWC_LOGF(LOG_DEBUG, "send_error, %s", m_ev->to_str().c_str());
     m_conn->send_error(code , msg, m_ev);
   }
 

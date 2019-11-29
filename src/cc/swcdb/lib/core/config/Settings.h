@@ -56,12 +56,12 @@ class Settings {
     Logger::logger.initialize(executable);
     if(daemon)
       Logger::logger.daemon(properties.get_str("swc.logging.path"));
-
+    
     if(properties.get<gBool>("verbose")) {
-      HT_NOTICE_OUT << "Initialized " << executable 
-                    << " (SWC-DB " << version_string() << ")\n"
-                    << "Process Settings: \n"
-                    << properties.to_string() << HT_END;
+      SWC_LOG_OUT(LOG_NOTICE) 
+        << "Initialized " << executable 
+        << " (SWC-DB " << version_string() << ")\n"
+        << "Process Settings: \n" << properties.to_string() << SWC_LOG_OUT_END;
     }
   }
 

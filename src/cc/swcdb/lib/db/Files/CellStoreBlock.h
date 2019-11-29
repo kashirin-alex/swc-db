@@ -87,7 +87,7 @@ class Read {
     int err = Error::OK;
     load(err, smartfd);
     if(err)
-      HT_ERRORF("CellStore::Block load err=%d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "CellStore::Block load err=%d(%s) %s", 
                 err, Error::get_text(err), to_string().c_str());
                 
     asio::post(*Env::IoCtx::io()->ptr(), [cb, err](){ cb(err); } );

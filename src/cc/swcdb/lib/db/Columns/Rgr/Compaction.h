@@ -131,7 +131,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       || cellstores->need_compaction(
           allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
     
-    HT_INFOF(
+    SWC_LOGF(LOG_INFO, 
       "Compaction %s-range %d/%d allow=%dMB"
       " log=%d=%d/%dMB cs=%d=%d/%dMB blocks=%d=%dMB",
       do_compaction ? "started" : "skipped",
@@ -534,7 +534,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         }
     }); 
 
-    HT_DEBUGF("Ranger compaction scheduled in ms=%d", t_ms);
+    SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%d", t_ms);
   }
 
   std::mutex                   m_mutex;

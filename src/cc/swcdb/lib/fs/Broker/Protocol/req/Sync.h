@@ -16,7 +16,7 @@ class Sync : public Base {
   
   Sync(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::SyncCb_t cb=0) 
       : smartfd(smartfd), cb(cb) {
-    HT_DEBUGF("sync %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
 
     cbp = CommBuf::make(Params::SyncReq(smartfd->fd()));
     cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
@@ -36,7 +36,7 @@ class Sync : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_SYNC, &ptr, &remain))
       return;
 
-    HT_DEBUGF("sync %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "sync %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);
   }

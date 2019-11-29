@@ -77,7 +77,7 @@ class Read  {
 
     _load_blocks_index(err, close_after);
     if(err)
-      HT_ERRORF("CellStore load_blocks_index err=%d(%s) %s", 
+      SWC_LOGF(LOG_ERROR, "CellStore load_blocks_index err=%d(%s) %s", 
                 err, Error::get_text(err), to_string().c_str());
 
     {

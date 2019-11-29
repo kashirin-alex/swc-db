@@ -432,7 +432,7 @@ class Parser {
         opt.append(raw_opt); 
     
 
-      // HT_INFOF("parsing: %s", opt.c_str());
+      // SWC_LOGF(LOG_INFO, "parsing: %s", opt.c_str());
       cfg_name = parse_opt(opt); // << input need to be NAME=VALUE else false
       if(!cfg_name) {
         name = config.position_name(-1);
@@ -486,7 +486,7 @@ class Parser {
 
     //cfg_name = parse_opt(line);
     // if(!cfg_name)
-    //  HT_WARNF("unknown cfg: %s", line.c_str());
+    //  SWC_LOGF(LOG_WARN, "unknown cfg: %s", line.c_str());
     // line.clear();
   }
 
@@ -502,7 +502,7 @@ class Parser {
 
     std::string name = s.substr(0, at);
     std::string alias_to;
-    // HT_INFOF("looking: %s", name.c_str());
+    // SWC_LOGF(LOG_INFO, "looking: %s", name.c_str());
     if(!config.has(name, alias_to) && !m_unregistered)
       return false;
     
@@ -510,7 +510,7 @@ class Parser {
       Pair(alias_to.length() ? alias_to : name, Strings()));
 
     std::string value = s.substr(at+1);
-    // HT_INFOF("value: %s", value.c_str());
+    // SWC_LOGF(LOG_INFO, "value: %s", value.c_str());
     if(value.empty()) 
       return true;
     (*r.first).second.push_back(value);

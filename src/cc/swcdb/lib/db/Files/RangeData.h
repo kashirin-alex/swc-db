@@ -78,7 +78,7 @@ void read(const uint8_t **ptr, size_t* remain,
   cellstores->decode(ptr, remain);
 
   if(*ptr != ptr_end){
-    HT_WARNF("decode overrun remain=%d", remain);
+    SWC_LOGF(LOG_WARN, "decode overrun remain=%d", remain);
     cellstores->clear();
   }
 }

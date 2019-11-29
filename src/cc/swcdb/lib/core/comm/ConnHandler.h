@@ -105,7 +105,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
       endpoint_remote = m_sock.remote_endpoint();
       endpoint_local = m_sock.local_endpoint();
-      HT_DEBUGF("new_connection local=%s, remote=%s, executor=%d",
+      SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%d",
                 endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
                 (size_t)&m_sock.get_executor().context());
     }         
@@ -439,7 +439,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_HEADER;
       ev->header = CommHeader();
-      HT_WARNF("read, REQUEST HEADER_TRUNCATED: remain=%d", remain);
+      SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: remain=%d", remain);
       return (size_t)0;
     }
     if(!ev->header.buffers)
@@ -475,7 +475,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
       ev->data.free();
       ev->data_ext.free();
-      HT_WARNF("read, REQUEST PAYLOAD_TRUNCATED: error=(%s) %s", 
+      SWC_LOGF(LOG_WARN, "read, REQUEST PAYLOAD_TRUNCATED: error=(%s) %s", 
                 ec.message().c_str(), ev->to_str().c_str());
     }
     return (size_t)0;

@@ -72,7 +72,7 @@ class RgrGet : public AppHandler {
       rsp_params.rid = range->rid;
 
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       rsp_params.err = e.code();
     }
   
@@ -83,7 +83,7 @@ class RgrGet : public AppHandler {
         cbp->header.initialize_from_request_header(m_ev->header);
         m_conn->send_response(cbp);
       } catch (Exception &e) {
-        HT_ERROR_OUT << e << HT_END;
+        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       }
     
   }

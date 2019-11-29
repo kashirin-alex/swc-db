@@ -38,7 +38,7 @@ class RangeQuerySelect : public AppHandler {
           err = Error::RS_NOT_LOADED_RANGE;
       }
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
 
@@ -73,7 +73,7 @@ class RangeQuerySelect : public AppHandler {
       );
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   
   }

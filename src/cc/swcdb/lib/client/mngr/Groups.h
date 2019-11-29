@@ -186,7 +186,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
   }
 
   void on_cfg_update(){
-    HT_DEBUG("update_cfg()");
+    SWC_LOG(LOG_DEBUG, "update_cfg()");
 
     gStringsPtr cfg_mngr_hosts
      = Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host");
@@ -197,7 +197,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
     int c = cfg_mngr_hosts->size();
     for(int n=0; n<c;n++){
       std::string cfg = cfg_mngr_hosts->get_item(n);
-      HT_DEBUGF("cfg=%d swc.mngr.host=%s", n, cfg.c_str());
+      SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
       
       auto at = cfg.find_first_of("|");
       if(at == std::string::npos) {
@@ -249,7 +249,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
     }
 
-    HT_DEBUG(to_string().c_str());
+    SWC_LOG(LOG_DEBUG, to_string().c_str());
   }
 
   void add_host(size_t col_begin, size_t col_end, 

@@ -515,7 +515,7 @@ DiskStat &DiskStat::refresh(const char *dir_prefix) {
   memset(&s, 0, sizeof(s));
 
   if (compute_disk_usage(dir_prefix, s)) {
-    HT_DEBUGF("curr_disk_stat: reads=%llu, reads=%llu, read_bytes=%llu "
+    SWC_LOGF(LOG_DEBUG, "curr_disk_stat: reads=%llu, reads=%llu, read_bytes=%llu "
 	      "write_bytes=%llu", (Llu)s.reads, (Llu)s.writes,
 	      (Llu)s.read_bytes, (Llu)s.write_bytes);
 
@@ -639,7 +639,7 @@ NetInfo &NetInfo::init() {
       primary_addr = addrbuf;
     }
     else
-      HT_FATALF("Unable to find network interface '%s'", ifname.c_str());
+      SWC_LOG_FATAL("Unable to find network interface '%s'", ifname.c_str());
   }
   else if (sigar_net_interface_config_primary_get(sigar(), &ifc) == SIGAR_OK) {
     primary_if = ifc.name;
@@ -681,7 +681,7 @@ NetStat &NetStat::refresh() {
           == SIGAR_OK) {
         _prev_net_statp = &_prev_net_stat;
         _net_stat_stopwatch.start();
-        HT_DEBUGF("prev_net_stat: rx_bytes=%llu, tx_bytes=%llu",
+        SWC_LOGF(LOG_DEBUG, "prev_net_stat: rx_bytes=%llu, tx_bytes=%llu",
                   (Llu)_prev_net_stat.rx_bytes, (Llu)_prev_net_stat.tx_bytes);
         need_pause = true;
       }
@@ -702,7 +702,7 @@ NetStat &NetStat::refresh() {
       if (sigar_net_interface_stat_get(sigar(), ifname, &curr) == SIGAR_OK) {
         _net_stat_stopwatch.stop();
         double elapsed = _net_stat_stopwatch.elapsed();
-        HT_DEBUGF("curr_net_stat: rx_bytes=%llu, tx_bytes=%llu",
+        SWC_LOGF(LOG_DEBUG, "curr_net_stat: rx_bytes=%llu, tx_bytes=%llu",
                   (Llu)curr.rx_bytes, (Llu)curr.tx_bytes);
 
         rx_rate = (curr.rx_bytes - _prev_net_stat.rx_bytes) / elapsed;

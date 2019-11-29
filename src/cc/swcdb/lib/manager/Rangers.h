@@ -403,7 +403,7 @@ class Rangers {
           column_update(pending.func, Env::Schemas::get()->get(pending.cid));
       }
       if(verbose)
-        HT_INFOF("RANGE-STATUS %d(%s), %s", 
+        SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
                   err, Error::get_text(err), range->to_string().c_str());
     }
 
@@ -453,7 +453,7 @@ class Rangers {
     if(cols.size() == 0){
       // if decommissioned
       if(m_columns_set){
-        HT_INFO("Manager has been decommissioned");
+        SWC_LOG(LOG_INFO, "Manager has been decommissioned");
         m_columns_set = false;
         m_root_mngr = false;
         Env::MngrColumns::get()->reset();
@@ -491,7 +491,7 @@ class Rangers {
     if(t_ms > 10000) {
       std::cout << to_string() << "\n";
     }
-    HT_DEBUGF("Rangers ranges check_assignment scheduled in ms=%d", t_ms);
+    SWC_LOGF(LOG_DEBUG, "Rangers ranges check_assignment scheduled in ms=%d", t_ms);
   }
 
   void check_assignment(){
@@ -565,7 +565,7 @@ class Rangers {
               if(err == Error::OK)
                 Env::Schemas::get()->add(err, schema);
               if(err !=  Error::OK)
-                HT_WARNF("Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
+                SWC_LOGF(LOG_WARN, "Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
             }
             pending--;
           }
@@ -892,7 +892,7 @@ class Rangers {
     }
     if(!col->do_remove())
       return;
-    HT_DEBUGF("DELETING cid=%d", cid);
+    SWC_LOGF(LOG_DEBUG, "DELETING cid=%d", cid);
     
     std::vector<uint64_t> rgr_ids;
     col->assigned(rgr_ids);
@@ -979,7 +979,7 @@ class Rangers {
         try{
           req.cb(err);
         } catch (std::exception &e) {
-          HT_ERRORF("Column Action cb err=%s func=%d %s", 
+          SWC_LOGF(LOG_ERROR, "Column Action cb err=%s func=%d %s", 
                     e.what(), req.params.function, 
                     req.params.schema->to_string().c_str());
         }
@@ -1073,7 +1073,7 @@ class Rangers {
     auto co_func = (Protocol::Mngr::Params::ColumnMng::Function)(((uint8_t)func)-1);
 
     if(err != Error::OK)
-      HT_DEBUGF("COLUMN-ACK %s func=%d, err=%d(%s)", 
+      SWC_LOGF(LOG_DEBUG, "COLUMN-ACK %s func=%d, err=%d(%s)", 
                 schema->to_string().c_str(), co_func, 
                 err, Error::get_text(err));
                   
@@ -1095,7 +1095,7 @@ class Rangers {
       try {
         req.cb(err);
       } catch (std::exception &e) {
-        HT_ERRORF("Column Pending func=%d cb err=%s %s", 
+        SWC_LOGF(LOG_ERROR, "Column Pending func=%d cb err=%s %s", 
                   func, e.what(), req.params.schema->to_string().c_str());
       }
     }
@@ -1180,7 +1180,7 @@ void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure,
 
   Env::Rangers::get()->range_loaded(rgr, range, err, failure, false);
   col->sort(range, intval);
-  HT_INFOF("RANGE-STATUS %d(%s), %s", 
+  SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
             err, Error::get_text(err), range->to_string().c_str());
 }
 

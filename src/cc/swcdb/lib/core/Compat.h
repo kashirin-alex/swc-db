@@ -36,6 +36,7 @@
 // The same stuff for C code
 #include "compat-c.h"
 
+#include <signal.h>
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
 
@@ -46,6 +47,13 @@
 namespace std {
   inline void quick_exit(int status) { _exit(status); }
 }
+#endif
+
+/* The HT_ABORT macro terminates the application and generates a core dump */
+#ifdef HT_USE_ABORT
+#define HT_ABORT abort()
+#else
+#define HT_ABORT raise(SIGABRT)
 #endif
 
 /** @}*/

@@ -18,7 +18,7 @@ class Length : public Base {
 
   Length(uint32_t timeout, const std::string &name, Callback::LengthCb_t cb=0) 
         : name(name), cb(cb), length(0) {
-    HT_DEBUGF("length path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::LengthReq(name));
     cbp->header.set(Cmd::FUNCTION_LENGTH, timeout);
@@ -44,7 +44,7 @@ class Length : public Base {
       length = params.length;
     }
 
-    HT_DEBUGF("length path='%s' error='%d' length='%d'",
+    SWC_LOGF(LOG_DEBUG, "length path='%s' error='%d' length='%d'",
                name.c_str(), error, length);
     
     cb(error, length);

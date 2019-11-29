@@ -37,7 +37,7 @@ class RangeLocate : public AppHandler {
           err = Error::RS_NOT_LOADED_RANGE;
       }
     } catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
 
@@ -77,7 +77,7 @@ class RangeLocate : public AppHandler {
   
     }
     catch (Exception &e) {
-      HT_ERROR_OUT << e << HT_END;
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
   
   }

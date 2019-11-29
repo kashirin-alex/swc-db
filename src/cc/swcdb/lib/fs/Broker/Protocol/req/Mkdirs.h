@@ -16,7 +16,7 @@ class Mkdirs : public Base {
 
   Mkdirs(uint32_t timeout, const std::string &name, Callback::MkdirsCb_t cb=0) 
         : name(name), cb(cb) {
-    HT_DEBUGF("mkdirs path='%s'", name.c_str());
+    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::MkdirsReq(name));
     cbp->header.set(Cmd::FUNCTION_MKDIRS, timeout);
@@ -36,7 +36,7 @@ class Mkdirs : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_MKDIRS, &ptr, &remain))
       return;
 
-    HT_DEBUGF("mkdirs path='%s' error='%d'", name.c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s' error='%d'", name.c_str(), error);
     
     cb(error);
   }

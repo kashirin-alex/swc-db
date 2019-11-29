@@ -37,7 +37,7 @@ class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
           size_t remain = ev->data.size-4;
           rsp_params.decode(&ptr, &remain);
         } catch (Exception &e) {
-          HT_ERROR_OUT << e << HT_END;
+          SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
           err = e.code();
         }
       }

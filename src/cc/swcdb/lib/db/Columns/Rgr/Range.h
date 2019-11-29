@@ -125,7 +125,7 @@ class Range : public DB::RangeBase {
     if(is_loaded || err != Error::OK)
       return loaded(err, cb);
 
-    HT_DEBUGF("LOADING RANGE %s", to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "LOADING RANGE %s", to_string().c_str());
 
     if(!Env::FsInterface::interface()->exists(err, get_path(cellstores_dir))) {
       if(err != Error::OK)
@@ -231,7 +231,7 @@ class Range : public DB::RangeBase {
     if(completely) // whether to keep ranger_data_file
       Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
     
-    HT_INFOF("UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
+    SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
               cid, rid, err, Error::get_text(err));
     cb(err);
   }
@@ -248,7 +248,7 @@ class Range : public DB::RangeBase {
     Env::FsInterface::interface()->rmdir(err, get_path(""));  
     
     on_change(err, true);
-    HT_INFOF("REMOVED RANGE %s", to_string().c_str());
+    SWC_LOGF(LOG_INFO, "REMOVED RANGE %s", to_string().c_str());
   }
 
   void wait_queue() {
@@ -334,7 +334,7 @@ class Range : public DB::RangeBase {
 
     if(rs_last->endpoints.size() > 0 
       && !has_endpoint(rs_data->endpoints, rs_last->endpoints)){
-      HT_DEBUGF("RANGER-LAST=%s RANGER-NEW=%s", 
+      SWC_LOGF(LOG_DEBUG, "RANGER-LAST=%s RANGER-NEW=%s", 
                 rs_last->to_string().c_str(), rs_data->to_string().c_str());
                 
       Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
@@ -383,9 +383,9 @@ class Range : public DB::RangeBase {
     loaded(err, cb);   // RSP-LOAD-ACK
 
     if(is_loaded()) {
-      HT_INFOF("LOADED RANGE %s", to_string().c_str());
+      SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
     } else 
-      HT_WARNF("LOAD RANGE FAILED err=%d(%s) %s", 
+      SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
                err, Error::get_text(err), to_string().c_str());
   }
 

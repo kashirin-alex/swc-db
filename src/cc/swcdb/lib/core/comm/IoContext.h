@@ -29,7 +29,7 @@ class IoContext {
   }
 
   void run(Ptr p){
-    HT_DEBUGF("Starting IO-ctx(%s)", m_name.c_str());
+    SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s)", m_name.c_str());
     for(int n=0;n<m_size;n++)
       asio::post(m_pool, std::bind(&IoContext::do_run, p));
   }
@@ -59,7 +59,7 @@ class IoContext {
   }
 
   void stop(){
-    HT_DEBUGF("Stopping IO-ctx(%s)", m_name.c_str());
+    SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", m_name.c_str());
     running.store(false);
     m_wrk.reset();
     
@@ -67,10 +67,10 @@ class IoContext {
     for(int i=0;i<10;i++){
       if(m_ioctx->stopped())
         break;
-      HT_DEBUGF("Waiting for IO-ctx(%s)", m_name.c_str());
+      SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", m_name.c_str());
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    HT_DEBUGF("Wait for IO-ctx(%s) finished %sgracefully", 
+    SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully", 
               m_name.c_str(), m_ioctx->stopped()?"":"not ");
 
     if(!m_ioctx->stopped())

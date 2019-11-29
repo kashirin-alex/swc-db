@@ -94,7 +94,7 @@ class AppContext : public SWC::AppContext {
 
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
-    // HT_DEBUGF("handle: %s", ev->to_str().c_str());
+    // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
     
     switch (ev->type) {
 
@@ -174,7 +174,7 @@ class AppContext : public SWC::AppContext {
       }
 
       default:
-        HT_WARNF("Unimplemented event-type (%llu)", (Llu)ev->type);
+        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%llu)", (Llu)ev->type);
         break;
     }
 
@@ -185,19 +185,19 @@ class AppContext : public SWC::AppContext {
     if(sig==0){ // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
-          HT_INFOF("Received signal, sig=%d ec=%s", sig, ec.message().c_str());
+          SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
           ptr->shutting_down(ec, sig); 
         }
       ); 
-      HT_INFOF("Listening for Shutdown signal, set at sig=%d ec=%s", 
+      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
               sig, ec.message().c_str());
       return;
     }
     Env::RgrData::shuttingdown();
-    HT_INFOF("Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
+    SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
     
     if(m_srv == nullptr) {
-      HT_INFO("Exit");
+      SWC_LOG(LOG_INFO, "Exit");
       std::quick_exit(0);
     }
     
@@ -230,7 +230,7 @@ class AppContext : public SWC::AppContext {
     
     m_srv->shutdown();
 
-    HT_INFO("Exit");
+    SWC_LOG(LOG_INFO, "Exit");
     std::quick_exit(0);
   }
 
