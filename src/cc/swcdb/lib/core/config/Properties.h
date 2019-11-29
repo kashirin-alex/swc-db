@@ -102,12 +102,12 @@ class Properties {
     std::string out;
 	  try {
       out.append("\n\nCurrent Configurations:\n");
-      append_to_string(out);
+      out.append(to_string());
 
       load(fname, filedesc, cmddesc, allow_unregistered, true);
 
       out.append("\n\nNew Configurations:\n");
-      append_to_string(out);
+      out.append(to_string());
       return out;
 	  }
 	  catch (std::exception &e) {
@@ -333,36 +333,22 @@ class Properties {
    * @param include_default If true then default values are included
    */
   void print(std::ostream &out, bool include_default = false) const {
-    for (const auto &kv : m_map) {
-      bool isdefault = kv.second->is_default();
-
-      if (include_default || !isdefault) {
-        out << kv.first << '=' << kv.second->str();
-
-        if (isdefault)
-          out << " (default)";
-        out << std::endl;
-      }
-    }
+    out << to_string(include_default);
   }
 
-  /**
-   * Append to std::string keys and values of the configuration map for print
-   *   
-   * @param out The std::string to append 
-   * @param include_default If true then default values are included
-   */
-  void append_to_string(std::string &out, bool include_default = false) const {
+  const std::string to_string(bool include_default = false) const {
+    std::string out;
     bool isdefault;
-    for (const auto &kv : m_map) {
+    for(const auto &kv : m_map) {
       isdefault = kv.second->is_default();
-      if (include_default || !isdefault) {
+      if(include_default || !isdefault) {
         out.append(format("%s=%s", kv.first.c_str(), kv.second->str().c_str()));
-        if (isdefault)
+        if(isdefault)
           out.append(" (default)");
         out.append("\n");
       }
     }
+    return out;
   }
 
   bool get_bool(const std::string &name) {

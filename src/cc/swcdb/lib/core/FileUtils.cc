@@ -173,7 +173,7 @@ bool mkdirs(const std::string &dirname) {
         break;	
       }
       errno = 0;
-      if (mkdir(tmpdir, 0755) != 0 && errno != 17) {	
+      if (mkdir(tmpdir, 0755) != 0 && errno != EEXIST) {	
         saved_errno = errno;	
         HT_ERRORF("Problem creating directory '%s' - %d(%s)", tmpdir,	
                    saved_errno, strerror(saved_errno));	

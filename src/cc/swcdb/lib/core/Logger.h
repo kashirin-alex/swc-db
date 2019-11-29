@@ -30,16 +30,17 @@
 #ifndef swc_core_LOGGER_H
 #define swc_core_LOGGER_H
 
+#include <cstdio>
 #include <iostream>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <mutex>
 #include <atomic>
+#include <sys/stat.h>
 
 #include "Compat.h"
 #include "String.h"
-#include "Error.h"
 #include "FixedStream.h"
 
 /** Logging framework. */
@@ -133,15 +134,39 @@ class LogWriter {
   *
   * @param name The name of the application
   */
-  LogWriter(const std::string& name = "") : m_show_line_numbers(true), m_test_mode(false),
-                m_priority(Priority::INFO), m_file(stdout), m_name(name) {
+  LogWriter(const std::string& name = "", const std::string& logs_path = "") 
+            : m_name(name), m_logs_path(logs_path), 
+              m_file_out(stdout), m_file_err(stderr), 
+              m_priority(Priority::INFO), m_show_line_numbers(true), 
+              m_daemon(true) {
     std::cout << " LogWriter()=" << (size_t)this << "\n";
   }
   
   void initialize(const std::string& name) {
     std::cout << " LogWriter::initialize name=" << name << " ptr=" << (size_t)this << "\n";
+
+    std::lock_guard<std::mutex> lock(mutex);
     m_name.clear();
     m_name.append(name);
+  }
+
+  void use_file(const std::string& logs_path) {
+    std::cout << " LogWriter::use_file logs_path=" << logs_path << " ptr=" << (size_t)this << "\n";
+    errno = 0;
+
+    std::lock_guard<std::mutex> lock(mutex);
+    m_logs_path = logs_path;
+    if(m_logs_path.back() != '/')
+      m_logs_path.append("/");
+    m_daemon = true;
+
+    renew_files();
+
+    if(errno) 
+      throw std::runtime_error(
+        "SWC::Logger::initialize err="
+        + std::to_string(errno)+"("+strerror(errno)+")"
+      );
   }
 
   /** Sets the message level; all messages with a higher level are discarded
@@ -151,33 +176,18 @@ class LogWriter {
   }
 
   /** Returns the message level */
-  int  get_level() const {
+  const int get_level() const {
     return m_priority;
   }
 
   /** Returns true if a message with this level is not discarded */
-  bool is_enabled(int level) const {
+  const bool is_enabled(int level) const {
     return level <= m_priority;
-  }
-
-  /** The test mode disables line numbers and timestamps and can
-  * redirect the output to a separate file descriptor
-  */
-  void set_test_mode(int fd = -1) {
-    if (fd != -1)
-      m_file = fdopen(fd, "wt");
-    m_show_line_numbers = false;
-    m_test_mode = true;
   }
 
   /** Returns true if line numbers are printed */ 
   bool show_line_numbers() const {
     return m_show_line_numbers;
-  }
-
-  /** Flushes the log file */
-  void flush() {
-    fflush(m_file);
   }
 
   /** Prints a debug message with variable arguments (similar to printf) */
@@ -206,21 +216,76 @@ class LogWriter {
     log_string(priority, message.c_str());
   }
 
+  /** Flushes the log file */
+  void flush() {
+    std::lock_guard<std::mutex> lock(mutex);
+    _flush();
+  }
+
   private:
+
+  void renew_files() {
+    errno = 0;
+    m_last_time = (::time(0)/86400)*86400;
+    auto ltm = localtime(&m_last_time);
+    
+    ::mkdir(m_logs_path.c_str(), 0755);
+
+    std::string filepath(m_logs_path);
+    filepath.append(std::to_string(1900+ltm->tm_year));
+    ::mkdir(filepath.c_str(), 0755);
+    filepath.append("/");
+    filepath.append(std::to_string(1+ltm->tm_mon));
+    ::mkdir(filepath.c_str(), 0755);
+    filepath.append("/");
+    filepath.append(std::to_string(ltm->tm_mday));
+    ::mkdir(filepath.c_str(), 0755);
+    if(errno == EEXIST)
+      errno = 0;
+
+    filepath.append("/");
+    filepath.append(m_name);
+
+    std::string filepath_out(filepath+".log");
+    std::string filepath_err(filepath+".err");
+
+    if(!errno) {
+      m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
+      m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
+      std::cout << "Changed Standard Output File to=" << filepath_out << "\n";
+      std::cerr << "Changed Error Output File to=" << filepath_err << "\n";
+    }
+
+    /* else { fallback
+      m_file_out = std::freopen('0', "w", m_file_out);
+      m_file_err = std::freopen('1', "w", m_file_err);
+      ::fdopen(0, "wt");
+    }*/
+
+  }
+
+  void _flush() {
+    ::fflush(m_file_out);
+    ::fflush(m_file_err);
+  }
 
   /** Appends a string message to the log */
   void log_string(int priority, const char *message) {
     std::lock_guard<std::mutex> lock(mutex);
 
-    if (m_test_mode) {
-      fprintf(m_file, "%s %s : %s\n", Priority::name[priority], m_name.c_str(),
-              message);
-    } else {
-      time_t t = ::time(0);
-      fprintf(m_file, "%u %s %s : %s\n", (unsigned)t, Priority::name[priority],
-              m_name.c_str(), message);
-    }
-    flush();
+    auto t = ::time(0);
+    if(m_daemon && m_last_time < t-86400)
+      renew_files();
+    
+    std::cout << (uint32_t)(t/86400) 
+              << ' ' << Priority::name[priority] << ':'
+              << ' ' << message 
+              << std::endl;
+
+    //fprintf(m_file_out, 
+    //         "%u %s: %s\n", 
+    //         (uint32_t)(t/86400), Priority::name[priority], message);
+    //_flush();
   }
 
   /** Appends a string message with variable arguments to the log */
@@ -230,36 +295,34 @@ class LogWriter {
     log_string(priority, buffer);
   }
 
-  /** True if line numbers are shown */
-  bool m_show_line_numbers;
-
-  /** True if this log is in test mode */
-  bool m_test_mode;
-
+  std::mutex mutex;
   /** The name of the application */
   std::string m_name;
+
+  /** The path for logs of the application */
+  std::string m_logs_path;
+
+  /** The output file handle */
+  FILE* m_file_out;
+
+  /** The err output file handle */
+  FILE* m_file_err;
 
   /** The current priority (everything above is filtered) */
   std::atomic<int> m_priority;
 
-  /** The output file handle */
-  FILE *m_file;
-      
-  std::mutex mutex;
+  /** True if line numbers are shown */
+  bool m_show_line_numbers;
+
+  /** True if this log is in test mode */
+  bool m_daemon;
+
+  
+  time_t m_last_time;
 };
 
 
 extern LogWriter logger;
-
-/** Public name initialization function */
-inline void initialize(const std::string& name) {
-  logger.initialize(name);
-}
-
-/** Accessor for the LogWriter singleton instance */
-inline LogWriter* get() {
-  return &logger;
-}
 
 }} // namespace SWC::Logger
 
@@ -278,47 +341,48 @@ inline LogWriter* get() {
 
 // printf interface macro helper; do not use directly
 #define HT_LOG(priority, msg) do { \
-  if (Logger::get()->is_enabled(priority)) { \
-    if (Logger::get()->show_line_numbers()) \
-      Logger::get()->log(priority, SWC::format( \
+  if (Logger::logger.is_enabled(priority)) { \
+    if (Logger::logger.show_line_numbers()) \
+      Logger::logger.log(priority, SWC::format( \
           "(%s:%d) %s", __FILE__, __LINE__, msg)); \
     else \
-      Logger::get()->log(priority, msg); \
+      Logger::logger.log(priority, msg); \
   } \
 } while (0)
 
 #define HT_LOGF(priority, fmt, ...) do { \
-  if (Logger::get()->is_enabled(priority)) { \
-    if (Logger::get()->show_line_numbers()) \
-      Logger::get()->log(priority, SWC::format( \
+  if (Logger::logger.is_enabled(priority)) { \
+    if (Logger::logger.show_line_numbers()) \
+      Logger::logger.log(priority, SWC::format( \
           "(%s:%d) " fmt, __FILE__, __LINE__, __VA_ARGS__)); \
     else \
-      Logger::get()->log(priority, SWC::format( \
+      Logger::logger.log(priority, SWC::format( \
           fmt, __VA_ARGS__));  \
   } \
 } while (0)
+// ,%s __func__
 
 // stream interface macro helpers
 #define HT_LOG_BUF_SIZE 4096
 
-#define HT_OUT(priority) do { if (Logger::get()->is_enabled(priority)) { \
+#define HT_OUT(priority) do { if (Logger::logger.is_enabled(priority)) { \
   char logbuf[HT_LOG_BUF_SIZE]; \
-  int _priority_ = Logger::get()->get_level(); \
+  int _priority_ = Logger::logger.get_level(); \
   FixedOstream _out_(logbuf, sizeof(logbuf)); \
-  if (Logger::get()->show_line_numbers()) \
+  if (Logger::logger.show_line_numbers()) \
     _out_ <<"("<< __FILE__ <<':'<< __LINE__ <<") "; \
   _out_
 
-#define HT_OUT2(priority) do { if (Logger::get()->is_enabled(priority)) { \
+#define HT_OUT2(priority) do { if (Logger::logger.is_enabled(priority)) { \
   char logbuf[HT_LOG_BUF_SIZE]; \
   int _priority_ = priority; \
   FixedOstream _out_(logbuf, sizeof(logbuf)); \
   _out_ << __func__; \
-  if (Logger::get()->show_line_numbers()) \
+  if (Logger::logger.show_line_numbers()) \
     _out_ << " ("<< __FILE__ <<':'<< __LINE__ <<")"; \
   _out_ <<": "
 
-#define HT_END ""; Logger::get()->log(_priority_, _out_.str()); \
+#define HT_END ""; Logger::logger.log(_priority_, _out_.str()); \
   if (_priority_ == Logger::Priority::FATAL) HT_ABORT; \
 } /* if enabled */ } while (0)
 
@@ -340,20 +404,20 @@ inline LogWriter* get() {
 #ifndef HT_DISABLE_LOG_DEBUG
 
 #define HT_LOG_ENTER do { \
-  if (Logger::get()->is_enabled(Logger::Priority::DEBUG)) {\
-    if (Logger::get()->show_line_numbers()) \
-      Logger::get()->debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, HT_FUNC);\
+  if (Logger::logger.is_enabled(Logger::Priority::DEBUG)) {\
+    if (Logger::logger.show_line_numbers()) \
+      Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, HT_FUNC);\
     else \
-      Logger::get()->debug("%s() ENTER", HT_FUNC); \
+      Logger::logger.debug("%s() ENTER", HT_FUNC); \
   } \
 } while(0)
 
 #define HT_LOG_EXIT do { \
-  if (Logger::get()->is_enabled(Logger::Priority::DEBUG)) { \
-    if (Logger::get()->show_line_numbers()) \
-      Logger::get()->debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, HT_FUNC); \
+  if (Logger::logger.is_enabled(Logger::Priority::DEBUG)) { \
+    if (Logger::logger.show_line_numbers()) \
+      Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, HT_FUNC); \
     else \
-      Logger::get()->debug("%s() EXIT", HT_FUNC); \
+      Logger::logger.debug("%s() EXIT", HT_FUNC); \
   } \
 } while(0)
 

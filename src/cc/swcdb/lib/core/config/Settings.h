@@ -5,6 +5,7 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
+#include "../Version.h"
 #include "../FileUtils.h"
 
 #include "Properties.h"
@@ -39,6 +40,30 @@ class Settings {
   void init_client_options();
   
   void init_post_cmd_args();
+
+  void init_process() {
+    bool daemon = properties.has("daemon");
+
+    if(daemon) {
+      if(pid_t p = fork())
+        exit(0);
+    }
+    auto pid = getpid();
+
+    executable.append(".");
+    executable.append(std::to_string((size_t)pid));
+
+    Logger::logger.initialize(executable);
+    if(daemon)
+      Logger::logger.use_file(properties.get_str("swc.logging.path"));
+
+    if(properties.get<gBool>("verbose")) {
+      HT_NOTICE_OUT << "Initialized " << executable 
+                    << " (SWC-DB " << version_string() << ")\n"
+                    << "Process Settings: \n"
+                    << properties.to_string() << HT_END;
+    }
+  }
 
   const bool has(const std::string &name) const {
     return properties.has(name);

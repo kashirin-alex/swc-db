@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "Settings.h"
 #include "AppContext.h"
 #include "mngr/Groups.h"
 #include "swcdb/lib/core/comm/SerializedClient.h"

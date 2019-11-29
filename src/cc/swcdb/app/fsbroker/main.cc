@@ -8,9 +8,7 @@
 #include "swcdb/lib/fsbroker/AppContext.h"
 
 
-int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
-
+int run() {
   auto app_ctx = std::make_shared<SWC::server::FsBroker::AppContext>();
 
   auto srv = std::make_shared<SWC::server::SerializedServer>(
@@ -24,4 +22,12 @@ int main(int argc, char** argv) {
   srv->run();
 
   return 0;
+}
+
+int main(int argc, char** argv) {
+  
+  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::settings()->init_process();
+
+  return run();
 }

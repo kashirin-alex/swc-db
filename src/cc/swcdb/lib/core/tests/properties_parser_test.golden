@@ -1,3 +1,4 @@
+ LogWriter()=4322208
 
 Config::cmdline_desc
 Usage: %s [Options] [args]
@@ -6,7 +7,8 @@ Options
   --arg-1               argument one                                                    
   --args                rest of arguments                                             []
   --boo -[b]            a boolean arg                                                 false
-  --config              Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
+  --config              Configuration file.                                           ./conf/swc.cfg
+  --daemon              Start process in background mode                              true
   --debug               Shortcut to --logging-level debug                             false
   --f64s                a list of doubles                                             []
   --false               token defaults to false                                       false
@@ -16,7 +18,6 @@ Options
   --i16                 16-bit integer                                                1 
   --i32                 32-bit integer                                                0 
   --i64                 64-bit integer                                                1 
-  --induce-failure      Arguments for inducing failure                                  
   --int64s              a list of 64-bit integers                                     []
   --is_true             if set token true                                             false
   --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
@@ -25,64 +26,72 @@ Options
   --skip2               a skipped token                                               true
   --string -[str, s]    a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
+  --swc.logging.path    Path of log files                                             ./log/
   --true                token defaults to true                                        true
   --verbose -[v]        Show more verbose output                                      false
   --version             Show version information and exit                             true
 arg-1=argOne
 boo=true
+config=properties_parser_test.cfg
+f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
+float64=1.1234
 i16=1000
 i32=64000
 i64=1000000000
+int64s=[1000000000, 2000000000, 3000000000]
 is_true=true
+string=aStringNoSpaces
 strs=[1, 2, 3, 4, 5, 6]
 
 Config::file_desc
 
-  --aGroupOne.arg.1  a group arg                0 
-  --aGroupOne.arg.2  a group arg                0 
-  --aGroupOne.arg.3  a group arg                0 
-  --aGroupOne.arg.4  a group arg                0 
-  --aGroupOne.arg.5  a group arg                0 
-  --boo              a boolean arg              false
-  --f64s             a list of doubles          []
-  --float64          a double arg               3.12
-  --i16              16-bit integer             1 
-  --i32              32-bit integer             0 
-  --i64              64-bit integer             1 
-  --int64s           a list of 64-bit integers  []
-  --is_no_bool       a boolean arg              true
-  --is_one_bool      a boolean arg              false
-  --is_rest_bool     a boolean arg              true
-  --is_true_bool     a boolean arg              false
-  --is_yes_bool      a boolean arg              false
-  --missing          a string arg               a missing string in cfg file, default applies
-  --string           a string arg               A Default std::string Value
-  --string.qouted    a string arg               A Default std::string Value
-  --strs             a list of strings          []
+  --aGroupOne.arg.1    a group arg                                                   0 
+  --aGroupOne.arg.2    a group arg                                                   0 
+  --aGroupOne.arg.3    a group arg                                                   0 
+  --aGroupOne.arg.4    a group arg                                                   0 
+  --aGroupOne.arg.5    a group arg                                                   0 
+  --boo                a boolean arg                                                 false
+  --f64s               a list of doubles                                             []
+  --float64            a double arg                                                  3.12
+  --i16                16-bit integer                                                1 
+  --i32                32-bit integer                                                0 
+  --i64                64-bit integer                                                1 
+  --int64s             a list of 64-bit integers                                     []
+  --is_no_bool         a boolean arg                                                 true
+  --is_one_bool        a boolean arg                                                 false
+  --is_rest_bool       a boolean arg                                                 true
+  --is_true_bool       a boolean arg                                                 false
+  --is_yes_bool        a boolean arg                                                 false
+  --missing            a string arg                                                  a missing string in cfg file, default applies
+  --string             a string arg                                                  A Default std::string Value
+  --string.qouted      a string arg                                                  A Default std::string Value
+  --strs               a list of strings                                             []
+  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
 
 Config::file_desc
 
-  --aGroupOne.arg.1  a group arg                0 
-  --aGroupOne.arg.2  a group arg                0 
-  --aGroupOne.arg.3  a group arg                0 
-  --aGroupOne.arg.4  a group arg                0 
-  --aGroupOne.arg.5  a group arg                0 
-  --boo              a boolean arg              false
-  --f64s             a list of doubles          []
-  --float64          a double arg               3.12
-  --i16              16-bit integer             1 
-  --i32              32-bit integer             0 
-  --i64              64-bit integer             1 
-  --int64s           a list of 64-bit integers  []
-  --is_no_bool       a boolean arg              true
-  --is_one_bool      a boolean arg              false
-  --is_rest_bool     a boolean arg              true
-  --is_true_bool     a boolean arg              false
-  --is_yes_bool      a boolean arg              false
-  --missing          a string arg               a missing string in cfg file, default applies
-  --string           a string arg               A Default std::string Value
-  --string.qouted    a string arg               A Default std::string Value
-  --strs             a list of strings          []
+  --aGroupOne.arg.1    a group arg                                                   0 
+  --aGroupOne.arg.2    a group arg                                                   0 
+  --aGroupOne.arg.3    a group arg                                                   0 
+  --aGroupOne.arg.4    a group arg                                                   0 
+  --aGroupOne.arg.5    a group arg                                                   0 
+  --boo                a boolean arg                                                 false
+  --f64s               a list of doubles                                             []
+  --float64            a double arg                                                  3.12
+  --i16                16-bit integer                                                1 
+  --i32                32-bit integer                                                0 
+  --i64                64-bit integer                                                1 
+  --int64s             a list of 64-bit integers                                     []
+  --is_no_bool         a boolean arg                                                 true
+  --is_one_bool        a boolean arg                                                 false
+  --is_rest_bool       a boolean arg                                                 true
+  --is_true_bool       a boolean arg                                                 false
+  --is_yes_bool        a boolean arg                                                 false
+  --missing            a string arg                                                  a missing string in cfg file, default applies
+  --string             a string arg                                                  A Default std::string Value
+  --string.qouted      a string arg                                                  A Default std::string Value
+  --strs               a list of strings                                             []
+  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
 
 Usage: %s [Options] [args]
 Options
@@ -95,7 +104,8 @@ Options
   --arg-1               argument one                                                    
   --args                rest of arguments                                             []
   --boo                 a boolean arg                                                 false
-  --config              Configuration file.                                           /root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
+  --config              Configuration file.                                           ./conf/swc.cfg
+  --daemon              Start process in background mode                              true
   --debug               Shortcut to --logging-level debug                             false
   --f64s                a list of doubles                                             []
   --false               token defaults to false                                       false
@@ -105,7 +115,6 @@ Options
   --i16                 16-bit integer                                                1 
   --i32                 32-bit integer                                                0 
   --i64                 64-bit integer                                                1 
-  --induce-failure      Arguments for inducing failure                                  
   --int64s              a list of 64-bit integers                                     []
   --is_no_bool          a boolean arg                                                 true
   --is_one_bool         a boolean arg                                                 false
@@ -121,6 +130,8 @@ Options
   --string              a string arg                                                  A Default std::string Value
   --string.qouted       a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
+  --swc.logging.level   Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --swc.logging.path    Path of log files                                             ./log/
   --true                token defaults to true                                        true
   --verbose -[v]        Show more verbose output                                      false
   --version             Show version information and exit                             true
@@ -152,7 +163,7 @@ aGroupOne.arg.3=3
 aGroupOne.arg.4=4
 aGroupOne.arg.5=5
 boo=true
-config=/root/swc/src/cc/swcdb/lib/core/conf/swc.cfg
+config=./conf/swc.cfg
 debug=false
 f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
 false=false
@@ -173,6 +184,8 @@ quiet=false
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
+swc.logging.level=info  # (6)
+swc.logging.path=./log/
 true=true
 verbose=false
 true
@@ -182,7 +195,7 @@ aGroupOne.arg.3=3
 aGroupOne.arg.4=4
 aGroupOne.arg.5=5
 boo=true
-config=/root/swc/src/cc/swcdb/lib/core/conf/swc.cfg (default)
+config=./conf/swc.cfg (default)
 debug=false (default)
 dummy=true
 f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
@@ -204,5 +217,7 @@ quiet=false (default)
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
+swc.logging.level=info  # (6) (default)
+swc.logging.path=./log/ (default)
 true=true (default)
 verbose=false (default)

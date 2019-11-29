@@ -5,7 +5,6 @@
 
 #include "Settings.h"
 
-#include "../Version.h"
 
 
 namespace SWC { namespace Config {
@@ -63,61 +62,45 @@ void Settings::init_options() {
     ("help,h", "Show this help message and exit")
     ("help-config", "Show help message for config properties")
     ("version", "Show version information and exit")
+
+    ("daemon ", boo()->zero_token(), "Start process in background mode")
     ("verbose,v", g_boo(false)->zero_token(), "Show more verbose output")
     ("debug", boo(false)->zero_token(), "Shortcut to --logging-level debug")
     ("quiet", boo(false)->zero_token(), "Negate verbose")
+
     ("logging-level,l", g_enum_ext(logging_level), 
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
-    ("config", str(install_path + "/conf/swc.cfg"), "Configuration file.")
-    ("induce-failure", str(), "Arguments for inducing failure")
     
+    ("config", str(install_path + "/conf/swc.cfg"), "Configuration file.")
+    ("swc.logging.path", str(install_path + "/log/"), "Path of log files")
+
+    //("induce-failure", str(), "Arguments for inducing failure")
     /* Interactive-Shell options
     ("silent", boo()->zero_token(),
      "as Not Interactive or Show as little output as possible") 
     */
     ;
+    
   alias("logging-level", "swc.logging.level");
-}
 
-void Settings::init_client_options() {
-  gEnumExt logging_level(Logger::Priority::INFO);
-  logging_level.set_from_string(Logger::cfg::from_string)
-               .set_repr(Logger::cfg::repr);
-  
   file_desc.add_options()
     ("swc.logging.level", g_enum_ext(logging_level), 
-     "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
-    ("swc.mngr.host", g_strs(gStrings()), 
-     "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
-    ("swc.mngr.port", i32(15000), 
-     "Manager default port if not defined in swc.mngr.host")
-     
-    ("swc.client.Rgr.connection.timeout", g_i32(10000), 
-     "Ranger client connect timeout")
-    ("swc.client.Rgr.connection.probes", g_i32(1), 
-     "Ranger client connect probes")
-    ("swc.client.Rgr.connection.keepalive", g_i32(30000), 
-     "Ranger client connection keepalive for ms since last action")
+     "Logging level: debug|info|notice|warn|error|crit|alert|fatal");
+}
 
-    ("swc.client.Mngr.connection.timeout", g_i32(10000), 
-     "Manager client connect timeout")
-    ("swc.client.Mngr.connection.probes", g_i32(1), 
-     "Manager client connect probes")
-    ("swc.client.Mngr.connection.keepalive", g_i32(30000), 
-     "Manager client connection keepalive for ms since last action")
-    ("swc.client.schema.expiry", g_i32(1800000), 
-     "Schemas expiry in ms")
-    ;
-} 
 
 void Settings::init(int argc, char *argv[]) {
-  executable = std::string(argv[0]);
-   
-  auto at = executable.find_last_of("/");
-  Logger::initialize(executable.substr(at?at+1:at, executable.length()));
-
-  install_path = executable.substr(
-    0, executable.substr(0, at).find_last_of("/"));
+  install_path = std::string(argv[0]);
+  auto at = install_path.find_last_of("/");
+  if(at == std::string::npos) {
+    executable = install_path;
+    install_path = ".";
+  } else {
+    executable = install_path.substr(at?at+1:at, install_path.length());
+    install_path = install_path.substr(0, at);
+    at = install_path.find_last_of("/");
+    install_path = at == std::string::npos ? "." : install_path.substr(0, at);
+  }
 
   init_options();
 
@@ -127,29 +110,23 @@ void Settings::init(int argc, char *argv[]) {
 
   init_post_cmd_args();
 
-  gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
   bool verbose = properties.get<gBool>("verbose");
-
-  if (verbose && properties.get_bool("quiet")) {
+  if(verbose && properties.get_bool("quiet")) {
     verbose = false;
     properties.set("verbose", (gBool)false);
   }
-  if (properties.get_bool("debug")) {
+
+  gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
+  if(properties.get_bool("debug"))
     loglevel->set_value(Logger::Priority::DEBUG);
-  }
-  if(loglevel->get()==-1){
+
+  if(loglevel->get() == -1){
     HT_ERROR_OUT << "unknown logging level: "<< loglevel->str() << HT_END;
     std::quick_exit(EXIT_SUCCESS);
   }
-  
-  Logger::get()->set_level(loglevel->get());
-  loglevel->set_cb_on_chg([](int value){Logger::get()->set_level(value);});
 
-  if (verbose) {
-    HT_NOTICE_OUT << "Initializing " << executable << " (SWC-DB "
-        << version_string() << ")..." << HT_END;
-  }
-
+  Logger::logger.set_level(loglevel->get());
+  loglevel->set_cb_on_chg([](int value){Logger::logger.set_level(value);});
 }
 
 

@@ -185,7 +185,7 @@ namespace {
 } // local namespace
 
 const char *Error::get_text(int error) {
-
+  
   const char *text = error < 2048? strerror(error) :text_map[error];
   if (text == 0)
     return "ERROR NOT REGISTERED";
@@ -225,7 +225,7 @@ std::ostream &operator<<(std::ostream &out, const Exception &e) {
 
   if (e.line()) {
     out <<"\n\tat "<< e.func() <<" (";
-    if (Logger::get()->show_line_numbers())
+    if (Logger::logger.show_line_numbers())
       out << e.file() <<':'<< e.line();
     else
       out << relative_fname(e);
@@ -236,7 +236,7 @@ std::ostream &operator<<(std::ostream &out, const Exception &e) {
 
   for (Exception *prev = e.prev; prev; prev = prev->prev) {
     out <<"\n\tat "<< (prev->func() ? prev->func() : "-") <<" (";
-    if (Logger::get()->show_line_numbers())
+    if (Logger::logger.show_line_numbers())
       out << (prev->file() ? prev->file() : "-") <<':'<< prev->line();
     else
       out << relative_fname(*prev);
