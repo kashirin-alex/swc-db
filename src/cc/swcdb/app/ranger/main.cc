@@ -8,9 +8,11 @@
 #include "swcdb/lib/ranger/AppContext.h"
 
 
-int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+namespace SWC {
 
+int run() {
+  SWC_TRY_OR_LOG("", 
+  
   auto app_ctx = std::make_shared<SWC::server::Rgr::AppContext>();
 
   auto srv = std::make_shared<SWC::server::SerializedServer>(
@@ -23,5 +25,14 @@ int main(int argc, char** argv) {
   ((SWC::server::Rgr::AppContext*)app_ctx.get())->set_srv(srv);
   srv->run();
 
-  return 0;
+  return 0);
+  return 1;
+}
+
+}
+
+int main(int argc, char** argv) {
+  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::settings()->init_process();
+  return SWC::run();
 }

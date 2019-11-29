@@ -138,20 +138,22 @@ class LogWriter {
             : m_name(name), m_logs_path(logs_path), 
               m_file_out(stdout), m_file_err(stderr), 
               m_priority(Priority::INFO), m_show_line_numbers(true), 
-              m_daemon(true) {
-    std::cout << " LogWriter()=" << (size_t)this << "\n";
+              m_daemon(false), m_last_time(0) {
+    //std::cout << " LogWriter()=" << (size_t)this << "\n";
   }
   
   void initialize(const std::string& name) {
-    std::cout << " LogWriter::initialize name=" << name << " ptr=" << (size_t)this << "\n";
+    //std::cout << " LogWriter::initialize name=" << name 
+    //          << " ptr=" << (size_t)this << "\n";
 
     std::lock_guard<std::mutex> lock(mutex);
     m_name.clear();
     m_name.append(name);
   }
 
-  void use_file(const std::string& logs_path) {
-    std::cout << " LogWriter::use_file logs_path=" << logs_path << " ptr=" << (size_t)this << "\n";
+  void daemon(const std::string& logs_path) {
+    //std::cout << " LogWriter::daemon logs_path=" << logs_path 
+    //          << " ptr=" << (size_t)this << "\n";
     errno = 0;
 
     std::lock_guard<std::mutex> lock(mutex);
@@ -277,7 +279,7 @@ class LogWriter {
     if(m_daemon && m_last_time < t-86400)
       renew_files();
     
-    std::cout << (uint32_t)(t/86400) 
+    std::cout << (uint32_t)(t-86400*(t/86400)) // seconds since start of a day
               << ' ' << Priority::name[priority] << ':'
               << ' ' << message 
               << std::endl;
@@ -324,10 +326,7 @@ class LogWriter {
 
 extern LogWriter logger;
 
-}} // namespace SWC::Logger
-
-
-
+} // namespace Logger
 
 
 #define HT_LOG_BUFSZ 1024
@@ -560,4 +559,6 @@ extern LogWriter logger;
 // unlike assert, it cannot be turned off
 #define HT_ASSERT(_e_) HT_EXPECT(_e_, Error::FAILED_EXPECTATION)
 
+
+} // namespace SWC
 #endif // 

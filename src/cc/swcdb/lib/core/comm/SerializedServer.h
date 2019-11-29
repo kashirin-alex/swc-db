@@ -155,7 +155,7 @@ class SerializedServer {
 
   }
 
-  void run(){
+  void run() {
     for(;;) {
       auto it = m_thread_pools.begin();
       if(it == m_thread_pools.end())

@@ -55,7 +55,7 @@ class Settings {
 
     Logger::logger.initialize(executable);
     if(daemon)
-      Logger::logger.use_file(properties.get_str("swc.logging.path"));
+      Logger::logger.daemon(properties.get_str("swc.logging.path"));
 
     if(properties.get<gBool>("verbose")) {
       HT_NOTICE_OUT << "Initialized " << executable 

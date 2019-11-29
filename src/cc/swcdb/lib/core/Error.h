@@ -424,7 +424,7 @@ namespace SWC {
 } while (0)
 
 /* Convenience macros for catching and logging exceptions in destructors */
-#define HT_LOG_EXCEPTION(_s_) \
+#define SWC_LOG_EXCEPTION(_s_) \
   catch (Exception &e) { HT_ERROR_OUT << e <<", "<< _s_ << HT_END; } \
   catch (std::bad_alloc &e) { \
     HT_ERROR_OUT << "Out of memory, " << _s_ << HT_END; } \
@@ -434,9 +434,9 @@ namespace SWC {
     HT_ERROR_OUT << "Caught unknown exception, " << _s_ << HT_END; }
 
 /* Convenience macro to execute code and log all exceptions */
-#define HT_TRY_OR_LOG(_s_, _code_) do { \
+#define SWC_TRY_OR_LOG(_s_, _code_) do { \
   try { _code_; } \
-  HT_LOG_EXCEPTION(_s_) \
+  SWC_LOG_EXCEPTION(_s_) \
 } while (0)
 
 /** @} */
