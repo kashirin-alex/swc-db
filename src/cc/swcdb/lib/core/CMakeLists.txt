@@ -12,11 +12,10 @@ set(swcdb_core_sources
 	String.cc
 	Error.cc
 	Logger.cc
-	Version.cc
 	FileUtils.cc
 	Random.cc
 )
-configure_file(Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Version.h)
+configure_file(Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Version.h @ONLY)
 ADD_LIB_TARGET(
 	NAME 		swcdb_core
 	SRCS 		${swcdb_core_sources}

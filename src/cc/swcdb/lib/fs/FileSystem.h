@@ -10,7 +10,7 @@
 #include "Dirent.h"
 #include "Callbacks.h"
 
-#include "swcdb/lib/core/comm/ConnHandler.h"
+#include "../core/comm/ConnHandler.h"
 
 namespace SWC{ namespace Types {
 
@@ -116,7 +116,7 @@ class FileSystem {
   
   virtual const std::string to_string() {
     return format(
-      "(type=NONE, path_root=%s, path_data=%s)", 
+      "(type=NONE path_root=%s path_data=%s)", 
       path_root.c_str(),
       path_data.c_str()
     );

@@ -29,9 +29,7 @@
 #ifndef swc_core_COMPAT_H
 #define swc_core_COMPAT_H
 
-/** @addtogroup Common
- *  @{
- */
+#include "Version.h"
 
 // The same stuff for C code
 #include "compat-c.h"
@@ -56,6 +54,5 @@ namespace std {
 #define HT_ABORT raise(SIGABRT)
 #endif
 
-/** @}*/
 
 #endif

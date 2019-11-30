@@ -5,7 +5,6 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
-#include "../Version.h"
 #include "../FileUtils.h"
 
 #include "Properties.h"
@@ -59,8 +58,7 @@ class Settings {
     
     if(properties.get<gBool>("verbose")) {
       SWC_LOG_OUT(LOG_NOTICE) 
-        << "Initialized " << executable 
-        << " (SWC-DB " << version_string() << ")\n"
+        << "Initialized " << executable << " (" << version() << ")\n"
         << "Process Settings: \n" << properties.to_string() << SWC_LOG_OUT_END;
     }
   }

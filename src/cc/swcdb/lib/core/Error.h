@@ -30,6 +30,7 @@
 #ifndef swc_core_ERROR_H
 #define swc_core_ERROR_H
 
+#include "Compat.h"
 #include "String.h"
 #include "Logger.h"
 #include <ostream>
@@ -37,16 +38,12 @@
 
 namespace SWC {
 
-  /** @addtogroup Common
-   *  @{
-   */
+namespace Error {
 
-  namespace Error {
-
- 	// error codes staring 2048
-  #define CODE_START 0x800  
+// error codes staring 2048
+#define CODE_START 0x800  
     
-    enum Code {
+enum Code {
       UNPOSSIBLE                                   = -3,
       EXTERNAL                                     = -2,
       FAILED_EXPECTATION                           = -1,
@@ -167,209 +164,203 @@ namespace SWC {
       SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
       SQL_BAD_COMMAND                              = 0x00060003
 
-    };
+};
 
-    /** Returns a descriptive error message
-     *
-     * @param error The error code
-     * @return The descriptive error message of this code
-     */
-    const char *get_text(int error);
+/** Returns a descriptive error message
+*
+* @param error The error code
+* @return The descriptive error message of this code
+*/
+const char* get_text(const int& err);
 
-    /** Generates and print the error documentation as html
-     *
-     * @param out The ostream which is used for printing
-     */
-    void generate_html_error_code_documentation(std::ostream &out);
-
-  } // namespace Error
+} // namespace Error
 
 
-  class Exception;
+class Exception;
 
-  /** Helper class to render an exception message a la IO manipulators */
-  struct ExceptionMessageRenderer {
-    ExceptionMessageRenderer(const Exception &e) : ex(e) { }
+/** Helper class to render an exception message a la IO manipulators */
+struct ExceptionMessageRenderer {
+  ExceptionMessageRenderer(const Exception& e) : ex(e) { }
 
-    std::ostream &render(std::ostream &out) const;
+  std::ostream& render(std::ostream& out) const;
 
-    const Exception &ex;
-  };
+  const Exception& ex;
+};
 
-  /** Helper class to render an exception message a la IO manipulators
-   *
-   * When printing an Exception, this class also appends a separator. This
-   * is used for printing chained Exceptions
-   */
-  struct ExceptionMessagesRenderer {
-    ExceptionMessagesRenderer(const Exception &e, const char *sep = ": ")
-      : ex(e), separator(sep) { }
+/** Helper class to render an exception message a la IO manipulators
+  *
+  * When printing an Exception, this class also appends a separator. This
+  * is used for printing chained Exceptions   
+*/
+struct ExceptionMessagesRenderer {
+  ExceptionMessagesRenderer(const Exception& e, const char *sep = ": ")
+                            : ex(e), separator(sep) { }
 
-    std::ostream &render(std::ostream &out) const;
+  std::ostream& render(std::ostream& out) const;
 
-    const Exception &ex;
-    const char *separator;
-  };
+  const Exception& ex;
+  const char *separator;
+};
 
-  /**
-   * This is a generic exception class for Hypertable.  It takes an error code
-   * as a constructor argument and translates it into an error message.
-   * Exceptions can be "chained".
-   */
-  class Exception : public std::runtime_error {
-    /** Do not allow assignments */
-    const Exception &operator=(const Exception &);
+/**
+  * This is a generic exception class for Hypertable.  It takes an error code
+  * as a constructor argument and translates it into an error message.
+  * Exceptions can be "chained".
+*/
+class Exception : public std::runtime_error {
+  /** Do not allow assignments */
+  const Exception& operator=(const Exception& );
 
-    /** The error code */
-    int m_error;
+  /** The error code */
+  int m_error;
 
-    /** The source code line where the exception was thrown */
-    int m_line;
+  /** The source code line where the exception was thrown */
+  int m_line;
 
-    /** The function name where the exception was thrown */
-    const char *m_func;
+  /** The function name where the exception was thrown */
+  const char *m_func;
 
-    /** The source code file where the exception was thrown */
-    const char *m_file;
+  /** The source code file where the exception was thrown */
+  const char *m_file;
 
   public:
-    typedef std::runtime_error Parent;
+  typedef std::runtime_error Parent;
 
-    /** Constructor
-     *
-     * @param error The error code
-     * @param l The source code line
-     * @param fn The function name
-     * @param fl The file name
-     */
-    Exception(int error, int l = 0, const char *fn = 0, const char *fl = 0)
-      : Parent(""), m_error(error), m_line(l), m_func(fn), m_file(fl), prev(0) {
-    }
+  /** Constructor
+    * @param error The error code
+    * @param l The source code line
+    * @param fn The function name
+    * @param fl The file name
+  */
+  Exception(int error, int l = 0, const char *fn = 0, const char *fl = 0)
+            : Parent(""), 
+              m_error(error), m_line(l), m_func(fn), m_file(fl), prev(0) {
+  }
 
-    /** Constructor
-     *
-     * @param error The error code
-     * @param msg An additional error message
-     * @param l The source code line
-     * @param fn The function name
-     * @param fl The file name
-     */
-    Exception(int error, const std::string &msg, int l = 0, const char *fn = 0,
+  /** Constructor
+    * @param error The error code
+    * @param msg An additional error message
+    * @param l The source code line
+    * @param fn The function name
+    * @param fl The file name
+    */
+  Exception(int error, const std::string& msg, int l = 0, const char *fn = 0,
             const char *fl = 0)
-      : Parent(msg), m_error(error), m_line(l), m_func(fn), m_file(fl),
-      prev(0) {
-    }
+            : Parent(msg), 
+              m_error(error), m_line(l), m_func(fn), m_file(fl), prev(0) {
+  }
 
-    /** Constructor
-     *
-     * @param error The error code
-     * @param msg An additional error message
-     * @param ex The previous exception in the exception chain
-     * @param l The source code line
-     * @param fn The function name
-     * @param fl The file name
-     */
-    Exception(int error, const std::string &msg, const Exception &ex, int l = 0,
+  /** Constructor
+    * @param error The error code
+    * @param msg An additional error message
+    * @param ex The previous exception in the exception chain
+    * @param l The source code line
+    * @param fn The function name
+    * @param fl The file name
+  */
+  Exception(int error, const std::string& msg, const Exception& ex, int l = 0,
             const char *fn = 0, const char *fl = 0)
-      : Parent(msg), m_error(error), m_line(l), m_func(fn), m_file(fl),
-        prev(new Exception(ex)) {
-    }
-
-    /** Copy constructor
-     *
-     * @param ex The exception that is copied
-     */
-    Exception(const Exception &ex)
-      : Parent(ex), m_error(ex.m_error), m_line(ex.m_line), m_func(ex.m_func),
-      m_file(ex.m_file) {
-      prev = ex.prev ? new Exception(*ex.prev) : 0;
-    }
-
-    /** Destructor */
-    ~Exception() throw() { delete prev; prev = 0; }
-
-    /** Returns the error code
-     *
-     * @return The error code of this exception.
-     * @sa Error::get_text to retrieve a descriptive error string
-     */
-    int code() const { return m_error; }
-
-    /** Returns the source code line number where the exception was thrown
-     *
-     * @return The line number
-     */
-    int line() const { return m_line; }
-
-    /** Returns the name of the function which threw the Exception
-     *
-     * @return The function name
-     */
-    const char *func() const { return m_func; }
-
-    /** Returns the source code line number where the exception was thrown
-     *
-     * @return The file name
-     */
-    const char *file() const { return m_file; }
-
-    /** Renders an Exception to an ostream
-     *
-     * @param out Reference to the ostream
-     */
-    virtual std::ostream &render_message(std::ostream &out) const {
-      return out << what(); // override for custom exceptions
-    }
-
-    // render messages for the entire exception chain
-    /** Renders multiple Exceptions to an ostream
-     *
-     * @param out Reference to the ostream
-     * @param sep The separator between the Exceptions, i.e. ':'
-     */
-    virtual std::ostream &render_messages(std::ostream &out,
-            const char *sep) const;
-
-    /** Retrieves a Renderer for this Exception */
-    ExceptionMessageRenderer message() const {
-      return ExceptionMessageRenderer(*this);
-    }
-
-    /** Retrieves a Renderer for chained Exceptions */
-    ExceptionMessagesRenderer messages(const char *sep = ": ") const {
-      return ExceptionMessagesRenderer(*this, sep);
-    }
-
-    /** The previous exception in the exception chain */
-    Exception *prev;
-  };
-
-  /** Global operator to print an Exception to a std::ostream */
-  std::ostream &operator<<(std::ostream &out, const Exception &);
-
-  /** Global helper function to print an Exception to a std::ostream */
-  inline std::ostream &
-  ExceptionMessageRenderer::render(std::ostream &out) const {
-    return ex.render_message(out);
+          : Parent(msg), 
+            m_error(error), m_line(l), m_func(fn), m_file(fl),
+            prev(new Exception(ex)) {
   }
 
-  /** Global helper function to print an Exception to a std::ostream */
-  inline std::ostream &
-  ExceptionMessagesRenderer::render(std::ostream &out) const {
-    return ex.render_messages(out, separator);
+  /** Copy constructor
+    * @param ex The exception that is copied
+    */
+  Exception(const Exception& ex)
+            : Parent(ex), 
+              m_error(ex.m_error), m_line(ex.m_line), m_func(ex.m_func),
+              m_file(ex.m_file),
+              prev(ex.prev ? new Exception(*ex.prev) : 0) {
   }
 
-  /** Global helper operator to print an Exception to a std::ostream */
-  inline std::ostream &
-  operator<<(std::ostream &out, const ExceptionMessageRenderer &r) {
-    return r.render(out);
+  /** Destructor */
+  ~Exception() throw() { 
+    if(prev) { 
+      delete prev; 
+      prev = 0; 
+    } 
   }
 
-  /** Global helper operator to print an Exception to a std::ostream */
-  inline std::ostream &
-  operator<<(std::ostream &out, const ExceptionMessagesRenderer &r) {
-    return r.render(out);
+  /** Returns the error code
+    * @return The error code of this exception.
+    * @sa Error::get_text to retrieve a descriptive error string
+    */
+  int code() const { return m_error; }
+
+  /** Returns the source code line number where the exception was thrown
+    * @return The line number
+    */
+  int line() const { return m_line; }
+
+  /** Returns the name of the function which threw the Exception
+    * @return The function name
+    */
+  const char *func() const { return m_func; }
+
+  /** Returns the source code line number where the exception was thrown
+    * @return The file name
+    */
+  const char *file() const { return m_file; }
+
+  /** Renders an Exception to an ostream
+    *
+    * @param out Reference to the ostream
+    */
+  virtual std::ostream& render_message(std::ostream& out) const {
+    return out << what(); // override for custom exceptions
   }
+
+  // render messages for the entire exception chain
+  /** Renders multiple Exceptions to an ostream
+    * @param out Reference to the ostream
+    * @param sep The separator between the Exceptions, i.e. ':'
+    */
+  virtual std::ostream& render_messages(std::ostream& out,
+                                        const char *sep) const;
+
+  /** Retrieves a Renderer for this Exception */
+  ExceptionMessageRenderer message() const {
+    return ExceptionMessageRenderer(*this);
+  }
+
+  /** Retrieves a Renderer for chained Exceptions */
+  ExceptionMessagesRenderer messages(const char *sep = ": ") const {
+    return ExceptionMessagesRenderer(*this, sep);
+  }
+
+  /** The previous exception in the exception chain */
+  Exception *prev;
+};
+
+/** Global operator to print an Exception to a std::ostream */
+std::ostream& operator<<(std::ostream& out, const Exception& );
+
+/** Global helper function to print an Exception to a std::ostream */
+inline std::ostream& 
+ExceptionMessageRenderer::render(std::ostream& out) const {
+  return ex.render_message(out);
+}
+
+/** Global helper function to print an Exception to a std::ostream */
+inline std::ostream&
+ExceptionMessagesRenderer::render(std::ostream& out) const {
+  return ex.render_messages(out, separator);
+}
+
+/** Global helper operator to print an Exception to a std::ostream */
+inline std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessageRenderer& r) {
+  return r.render(out);
+}
+
+/** Global helper operator to print an Exception to a std::ostream */
+inline std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessagesRenderer& r) {
+  return r.render(out);
+}
+
 
 /* Convenience macro to create an exception stack trace */
 #define HT_EXCEPTION(_code_, _msg_) \
@@ -402,11 +393,11 @@ namespace SWC {
 /* Convenience macro to catch and rethrow exceptions with a printf-like
  * message */
 #define HT_RETHROWF(_fmt_, ...) \
-  catch (Exception &e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
-  catch (std::bad_alloc &e) { \
+  catch (Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
+  catch (std::bad_alloc& e) { \
     HT_THROWF(Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
   } \
-  catch (std::exception &e) { \
+  catch (std::exception& e) { \
     HT_THROWF(Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
               __VA_ARGS__); \
   } \
@@ -426,10 +417,10 @@ namespace SWC {
 
 /* Convenience macros for catching and logging exceptions in destructors */
 #define SWC_LOG_EXCEPTION(_s_) \
-  catch (Exception &e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
-  catch (std::bad_alloc &e) { \
+  catch (Exception& e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
+  catch (std::bad_alloc& e) { \
     SWC_LOG_OUT(LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
-  catch (std::exception &e) { \
+  catch (std::exception& e) { \
     SWC_LOG_OUT(LOG_ERROR) << "Caught exception: " << e.what() <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (...) { \
     SWC_LOG_OUT(LOG_ERROR) << "Caught unknown exception, " << _s_ << SWC_LOG_OUT_END; }
@@ -453,8 +444,6 @@ namespace SWC {
 #define HT_ASSERT(_e_) HT_EXPECT(_e_, Error::FAILED_EXPECTATION)
 
 
-
-/** @} */
 
 }
 

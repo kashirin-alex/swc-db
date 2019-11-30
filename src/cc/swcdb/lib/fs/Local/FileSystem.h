@@ -7,10 +7,12 @@
 
 #include <iostream>
 #include <filesystem>
-#include "swcdb/lib/fs/FileSystem.h"
-#include "swcdb/lib/core/FileUtils.h"
+
+#include "../FileSystem.h"
+#include "../../core/FileUtils.h"
 
 namespace SWC{ namespace FS {
+
 
 bool apply_local();
 
@@ -32,7 +34,8 @@ class FileSystemLocal: public FileSystem {
 
   const std::string to_string() override {
     return format(
-      "(type=LOCAL, path_root=%s, path_data=%s)", 
+      "(version=%s type=LOCAL path_root=%s path_data=%s)", 
+      SWC_VERSION,
       path_root.c_str(),
       path_data.c_str()
     );

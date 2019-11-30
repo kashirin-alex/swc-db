@@ -33,7 +33,7 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if (has("version")) {
-    std::cout << version_string() << std::endl;
+    std::cout << "Version: " << SWC_VERSION << std::endl;
     std::quick_exit(EXIT_SUCCESS);
   }
 
@@ -61,10 +61,10 @@ void Settings::init_options() {
   cmdline_desc.add_options()
     ("help,h", "Show this help message and exit")
     ("help-config", "Show help message for config properties")
-    ("version", "Show version information and exit")
+    ("version,v", "Show version information and exit")
 
     ("daemon ", boo()->zero_token(), "Start process in background mode")
-    ("verbose,v", g_boo(false)->zero_token(), "Show more verbose output")
+    ("verbose", g_boo(false)->zero_token(), "Show more verbose output")
     ("debug", boo(false)->zero_token(), "Shortcut to --logging-level debug")
     ("quiet", boo(false)->zero_token(), "Negate verbose")
 
@@ -90,6 +90,7 @@ void Settings::init_options() {
 
 
 void Settings::init(int argc, char *argv[]) {
+  
   install_path = std::string(argv[0]);
   auto at = install_path.find_last_of("/");
   if(at == std::string::npos) {

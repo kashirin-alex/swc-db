@@ -50,13 +50,13 @@ class LogWriter {
     "NOTSET"
   };
 
-  static const std::string repr(int priority) {
+  static const std::string repr(uint8_t priority) {
     return priority < LOG_NOTSET ? 
             name[priority] 
           : "undefined logging level: " +std::to_string(priority);
   }
 
-  static int from_string(const std::string& loglevel) {
+  static uint8_t from_string(const std::string& loglevel) {
     if(loglevel == "info")
       return LOG_INFO;
     if(loglevel == "debug")
@@ -111,19 +111,20 @@ class LogWriter {
     if(errno) 
       throw std::runtime_error(
         "SWC::Logger::initialize err="
-        + std::to_string(errno)+"("+strerror(errno)+")"
+        + std::to_string(errno)+"("+strerror(errno)+") version(" 
+        + SWC_VERSION + ")"
       );
   }
 
-  void set_level(int level) {
+  void set_level(uint8_t level) {
     m_priority = level;
   }
 
-  const int get_level() const {
+  const uint8_t get_level() const {
     return m_priority;
   }
 
-  const bool is_enabled(int level) const {
+  const bool is_enabled(uint8_t level) const {
     return level <= m_priority;
   }
 
@@ -140,14 +141,14 @@ class LogWriter {
   }
 
   template<typename T>
-  void log(int priority, const T& msg) {
+  void log(uint8_t priority, const T& msg) {
     std::lock_guard<std::mutex> lock(mutex);
     std::cout << seconds() << ' ' << name[priority] 
               << ": " << msg << std::endl;
   }
 
   template<typename T>
-  void log(int priority, const char* filen, int fline, const T& msg) {
+  void log(uint8_t priority, const char* filen, int fline, const T& msg) {
     std::lock_guard<std::mutex> lock(mutex);
     std::cout << seconds() << ' ' << name[priority] 
               << ": (" << filen << ':' << fline << ") "
@@ -155,7 +156,7 @@ class LogWriter {
   }
 
   template<typename... Args> 
-  void log(int priority, const char *format, 
+  void log(uint8_t priority, const char *format, 
            Args... args) {
     std::lock_guard<std::mutex> lock(mutex);
     std::cout << seconds() << ' ' << name[priority] << ": ";
@@ -164,7 +165,7 @@ class LogWriter {
   }
 
   template<typename... Args> 
-  void log(int priority, const char* filen, int fline, const char *format,
+  void log(uint8_t priority, const char* filen, int fline, const char *format,
            Args... args) {
     std::lock_guard<std::mutex> lock(mutex);
     std::cout << seconds() << ' ' << name[priority]
@@ -215,10 +216,11 @@ class LogWriter {
     std::string filepath_err(filepath+".err");
 
     if(!errno) {
+      std::cout << "Changing Standard Output File to=" << filepath_out << "\n";
       m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
+
+      std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
       m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
-      std::cout << "Changed Standard Output File to=" << filepath_out << "\n";
-      std::cerr << "Changed Error Output File to=" << filepath_err << "\n";
     }
 
     /* else { fallback
@@ -234,14 +236,14 @@ class LogWriter {
     ::fflush(m_file_err);
   }
 
-  std::string       m_name;
-  std::string       m_logs_path;
-  FILE*             m_file_out;
-  FILE*             m_file_err;
-  std::atomic<int>  m_priority;
-  bool              m_show_line_numbers;
-  bool              m_daemon;
-  time_t            m_last_time;
+  std::string           m_name;
+  std::string           m_logs_path;
+  FILE*                 m_file_out;
+  FILE*                 m_file_err;
+  std::atomic<uint8_t>  m_priority;
+  bool                  m_show_line_numbers;
+  bool                  m_daemon;
+  time_t                m_last_time;
 };
 
 
@@ -291,7 +293,7 @@ extern LogWriter logger;
 
 #define SWC_LOG_OUT(priority) \
   if(Logger::logger.is_enabled(priority)) { \
-    int _priority_ = priority; \
+    uint8_t _priority_ = priority; \
     std::lock_guard<std::mutex> lock(Logger::logger.mutex); \
     if(Logger::logger.show_line_numbers()) \
       std::cout << Logger::logger.seconds() \

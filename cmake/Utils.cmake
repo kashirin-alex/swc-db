@@ -39,7 +39,7 @@ SET(REQUIRED_STATIC OFF)
 message(" ------------------------ BUILD CONFIGURATIONS ----------------------- ")
 
 message(STATUS "Project Name: ${PROJECT_NAME}")
-message(STATUS "Version: ${VERSION}")
+message(STATUS "Version: ${VERSION_STRING}")
 message(STATUS "Install Prefix: ${INSTALL_DIR}")
   
 
@@ -610,8 +610,8 @@ function(ADD_UTIL_TARGET)
   endif()
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
-  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED} -DBUILDING_EXEC)
-  target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
+  target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
@@ -658,8 +658,8 @@ function(ADD_EXEC_TARGET)
   endif()
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
-  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED} -DBUILDING_EXEC)
-  target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
+  target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
@@ -712,8 +712,8 @@ function(ADD_TEST_TARGET)
     endif ()
 
     add_executable(test-${OPT_NAME}-static ${OPT_SRCS} ${OPT_EXEC_DEPS})
-    target_link_libraries(test-${OPT_NAME}-static ${STATIC_LINKING} ${STATIC_TARGETS} -DBUILDING_EXEC)
-    target_compile_options(test-${OPT_NAME}-static PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+    target_link_libraries(test-${OPT_NAME}-static ${STATIC_LINKING} ${STATIC_TARGETS})
+    target_compile_options(test-${OPT_NAME}-static PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
 
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
@@ -739,8 +739,8 @@ function(ADD_TEST_TARGET)
     endif ()
 
     add_executable(test-${OPT_NAME}-shared ${OPT_SRCS} ${OPT_EXEC_DEPS})
-    target_link_libraries(test-${OPT_NAME}-shared ${SHARED_LINKING} ${SHARED_TARGETS} -DBUILDING_EXEC)
-    target_compile_options(test-${OPT_NAME}-shared PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+    target_link_libraries(test-${OPT_NAME}-shared ${SHARED_LINKING} ${SHARED_TARGETS})
+    target_compile_options(test-${OPT_NAME}-shared PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
     
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
@@ -806,8 +806,8 @@ endif()
 
 
 add_executable(${OPT_NAME} ${OPT_SRCS})
-target_link_libraries(${OPT_NAME} ${TARGETS_LINKED} ${LINKED_LIBS} -DBUILDING_EXEC)
-target_compile_options(${OPT_NAME} PRIVATE -DBUILDING_EXEC ${OPT_FLAGS} ${MALLOC_FLAGS})
+target_link_libraries(${OPT_NAME} ${TARGETS_LINKED} ${LINKED_LIBS})
+target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
 
 endfunction()
 # END ADD_TEST_EXEC
