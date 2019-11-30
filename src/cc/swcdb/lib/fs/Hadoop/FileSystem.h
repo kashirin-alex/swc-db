@@ -151,8 +151,7 @@ class FileSystemHadoop: public FileSystem {
 
   const std::string to_string() override {
     return format(
-      "(version=%s type=HADOOP path_root=%s path_data=%s)", 
-      SWC_VERSION,
+      "(type=HADOOP path_root=%s path_data=%s)", 
       path_root.c_str(),
       path_data.c_str()
     );

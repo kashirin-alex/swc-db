@@ -84,8 +84,7 @@ class FileSystemBroker: public FileSystem {
 
   const std::string to_string() override {
     return format(
-      "(version=%s type=BROKER underlying-type=%s)", 
-      SWC_VERSION,
+      "(type=BROKER underlying-type=%s)",
       type_to_string(m_type_underlying).c_str()
     );
   }

@@ -33,7 +33,7 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if (has("version")) {
-    std::cout << "Version: " << SWC_VERSION << std::endl;
+    std::cout << "Version: " << SWC::VERSION << std::endl;
     std::quick_exit(EXIT_SUCCESS);
   }
 

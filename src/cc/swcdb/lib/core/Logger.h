@@ -111,8 +111,7 @@ class LogWriter {
     if(errno) 
       throw std::runtime_error(
         "SWC::Logger::initialize err="
-        + std::to_string(errno)+"("+strerror(errno)+") version(" 
-        + SWC_VERSION + ")"
+        + std::to_string(errno)+"("+strerror(errno)+")"
       );
   }
 

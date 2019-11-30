@@ -7,4 +7,8 @@
 
 inline const char* SWC_VERSION  = "@VERSION_STRING@";
 
+namespace SWC {
+inline const char* VERSION = SWC_VERSION;
+}
+
 #endif

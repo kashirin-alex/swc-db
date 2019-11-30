@@ -58,7 +58,7 @@ class Settings {
     
     if(properties.get<gBool>("verbose")) {
       SWC_LOG_OUT(LOG_NOTICE) 
-        << "Initialized " << executable << " (" << SWC_VERSION << ")\n"
+        << "Initialized " << executable << " (" << SWC::VERSION << ")\n"
         << "Process Settings: \n" << properties.to_string() << SWC_LOG_OUT_END;
     }
   }
