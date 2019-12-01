@@ -19,6 +19,7 @@ else()
 	set(TARGETS "swcdb_core;swcdb_core_config;${BUILTIN_FS_TARGETS}")
 endif()
 
+
 # dbRanger
 ADD_EXEC_TARGET(
 	NAME dbRanger
