@@ -8,21 +8,37 @@
 
 #add_subdirectory(thriftbroker)
 
+get_property(SWC_LIB_CORE_SHARED GLOBAL PROPERTY SWC_LIB_CORE_SHARED)
+get_property(SWC_LIB_CORE_STATIC GLOBAL PROPERTY SWC_LIB_CORE_STATIC)
+
+set(FLAGS )
+set(TARGETS )
+if(SWC_IMPL_SOURCE)
+	set(FLAGS "-DSWC_IMPL_SOURCE")
+else()
+	set(TARGETS "swcdb_core;swcdb_core_config;${BUILTIN_FS_TARGETS}")
+endif()
+
 # dbRanger
 ADD_EXEC_TARGET(
 	NAME dbRanger
 	SRCS  ranger/main.cc
-	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
+	TARGETS ${TARGETS}
 
-	SHARED  ${SNAPPY_LIBRARIES_SHARED}
-	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
+	SHARED  ${SWC_LIB_CORE_SHARED}
+	STATIC  ${SWC_LIB_CORE_STATIC}
+	FLAGS 	${FLAGS}
 )
 
 # dbManager
 ADD_EXEC_TARGET(
 	NAME dbManager
 	SRCS  manager/main.cc
-	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
+	TARGETS ${TARGETS}
+
+	SHARED  ${SWC_LIB_CORE_SHARED}
+	STATIC  ${SWC_LIB_CORE_STATIC}
+	FLAGS 	${FLAGS}
 )
 
 
@@ -31,6 +47,11 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
 	NAME dbFsBroker
 	SRCS  fsbroker/main.cc
-	TARGETS swcdb_core swcdb_core_config ${BUILTIN_FS_TARGETS}
-	FLAGS "-DFS_BROKER_APP"
+	TARGETS ${TARGETS}
+
+	SHARED  ${SWC_LIB_CORE_SHARED}
+	STATIC  ${SWC_LIB_CORE_STATIC}
+	FLAGS "-DFS_BROKER_APP" ${FLAGS}
+
+	ONLY_DYN TRUE
 )

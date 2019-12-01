@@ -251,4 +251,8 @@ namespace SWC {
 
 }
 
+#ifdef SWC_IMPL_SOURCE
+#include "String.cc"
+#endif 
+
 #endif 

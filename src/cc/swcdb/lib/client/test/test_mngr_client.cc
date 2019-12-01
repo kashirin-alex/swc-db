@@ -2,7 +2,6 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
  
-#include "swcdb/lib/core/Error.h"
 #include "swcdb/lib/manager/Settings.h"
 
 #include "swcdb/lib/client/Clients.h"

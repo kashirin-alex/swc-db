@@ -97,7 +97,7 @@ namespace SWC {
      * @param str std::string to write to file
      * @return Number of bytes written, or -1 on error
      */
-    ssize_t write(int fd, const std::string &str) {
+    inline ssize_t write(int fd, const std::string &str) {
       return write(fd, str.c_str(), str.length());
     }
 
@@ -129,7 +129,7 @@ namespace SWC {
      *
      * @return true if the file or directory exists, otherwise false
      */
-    const bool exists(const std::string &fname) {
+    inline const bool exists(const std::string &fname) {
       struct stat statbuf;
       if (stat(fname.c_str(), &statbuf) != 0)
         return false;
@@ -276,6 +276,10 @@ namespace SWC {
   }
 
 }
+
+#ifdef SWC_IMPL_SOURCE
+#include "FileUtils.cc"
+#endif 
 
 #endif // swc_core_FileUtils_h
 
