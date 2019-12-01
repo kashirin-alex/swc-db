@@ -436,4 +436,9 @@ SWC::FS::FileSystem* fs_make_new_local();
 void fs_apply_cfg_local(SWC::Env::Config::Ptr env);
 }
 
+#ifdef SWC_IMPL_SOURCE
+#include "FileSystem.cc"
+#endif 
+
+
 #endif  // swc_lib_fs_Local_FileSystem_h

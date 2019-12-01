@@ -47,7 +47,7 @@ namespace SWC {
 #define HT_F32_DO8(buf, i)  HT_F32_DO4(buf, i); HT_F32_DO4(buf, i + 8);
 #define HT_F32_DO16(buf, i) HT_F32_DO8(buf, i); HT_F32_DO8(buf, i + 16);
 
-uint32_t fletcher32(const void *data8, size_t len8) {
+inline uint32_t fletcher32(const void *data8, size_t len8) {
   /* data may not be aligned properly and would segfault on
    * many systems if cast and used as 16-bit words
    */

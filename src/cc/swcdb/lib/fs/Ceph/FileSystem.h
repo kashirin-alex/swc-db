@@ -68,4 +68,9 @@ SWC::FS::FileSystem* fs_make_new_ceph();
 void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
 }
 
+
+#ifdef SWC_IMPL_SOURCE
+#include "FileSystem.cc"
+#endif 
+
 #endif  // swc_lib_fs_Ceph_FileSystem_h

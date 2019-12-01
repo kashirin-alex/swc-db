@@ -356,4 +356,9 @@ extern LogWriter logger;
 
 } // namespace SWC
 
+
+#ifdef SWC_IMPL_SOURCE
+#include "Logger.cc"
+#endif 
+
 #endif
