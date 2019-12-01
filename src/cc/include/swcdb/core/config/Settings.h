@@ -24,7 +24,9 @@ class Settings {
 
   Properties      properties;
 
-  Settings() { }
+  Settings() { 
+    cmdline_desc.definition(usage_str());
+  }
 
   virtual ~Settings() { }
 
@@ -106,9 +108,9 @@ class Settings {
     properties.load_from(m_cmd_args);  // Inforce cmdline properties 
   }
 
-  std::string usage_str(const char *usage) {
+  std::string usage_str(const char *usage = 0) {
     if (!usage)
-      usage = "Usage: %s [options]\nOptions:";
+      usage = "Usage: %s [options]\n\nOptions:";
 
     if (strstr(usage, "%s"))
       return format(usage, executable.c_str());

@@ -148,7 +148,7 @@ class ParserConfig {
   }
   
   ParserConfig& definition(const std::string& u) {
-    usage.append(u);
+    usage = u;
     return *this;
   }
 
@@ -265,7 +265,7 @@ class ParserConfig {
   }
 
   void print(std::ostream& os) const {
-    os << "\n" << usage << "\n";
+    os << usage << "\n";
   
     size_t tmp;
     size_t len_name=5;
@@ -402,13 +402,6 @@ class Parser {
     for(const std::string& raw_opt: raw_strings) {
       n++;
 
-      // position based name with position's value
-      name = config.position_name(n);
-      if(!name.empty()) {
-        set_pos_parse(name, raw_opt);
-        continue;
-      }
-
       // if arg is a --name / -name
       if(!fill && raw_opt.find_first_of("-", 0, 1) != std::string::npos) {
         name = raw_opt.substr(1);
@@ -428,10 +421,16 @@ class Parser {
           }
           opt.append("1"); // zero-token true default 
         }
-      } else 
-        opt.append(raw_opt); 
+      } else {
+        // position based name with position's value
+        name = config.position_name(n);
+        if(!name.empty()) {
+          set_pos_parse(name, raw_opt);
+          continue;
+        }
+        opt.append(raw_opt);
+      }
     
-
       // SWC_LOGF(LOG_INFO, "parsing: %s", opt.c_str());
       cfg_name = parse_opt(opt); // << input need to be NAME=VALUE else false
       if(!cfg_name) {

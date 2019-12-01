@@ -16,19 +16,19 @@ void Settings::parse_args(int argc, char *argv[]) {
   prs.config.add(cmdline_desc);
   prs.config.add(file_desc);
   prs.parse_cmdline(argc, argv);
-
+ 
   prs.own_options(m_cmd_args);
   
   properties.load_from(prs.get_options());
     
   // some built-in behavior
   if (has("help")) {
-    std::cout << usage_str(0) << cmdline_desc << std::flush;
+    std::cout << cmdline_desc << std::flush;
     std::quick_exit(EXIT_SUCCESS);
   }
 
   if (has("help-config")) {
-    std::cout << usage_str(0) << file_desc << std::flush;
+    std::cout << file_desc << std::flush;
     std::quick_exit(EXIT_SUCCESS);
   }
 
