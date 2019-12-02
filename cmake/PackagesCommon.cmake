@@ -39,15 +39,7 @@ SET_DEPS(
 
 find_package(FileSystems REQUIRED)
 
-SET_DEPS(
-	NAME "TINFOW" 
-	LIB_PATHS 
-	INC_PATHS 
-	STATIC libncursesw.a libtinfow.a 
-	SHARED ncursesw tinfow
-	INCLUDE ncurses.h termcap.h
-)
-SET_DEPS(NAME "EDITLINE" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libedit.a SHARED edit INCLUDE INCLUDE editline/readline.h)
+SET_DEPS(NAME "EDITLINE" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libeditline.a SHARED editline INCLUDE editline.h)
 
 
 
@@ -62,8 +54,6 @@ SET_DEPS(NAME "SSP" REQUIRED TRUE LIB_PATHS "" INC_PATHS "/usr/local/lib/gcc/x86
 
 endif()
 
-
-# find_package(Editline REQUIRED)
 
 # find_package(Doxygen)
 

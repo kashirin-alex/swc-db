@@ -12,15 +12,21 @@ int run() {
   auto settings = SWC::Env::Config::settings();
 
   if(settings->has("ranger"))
-    return Rgr::run();
+    return Rgr().run();
     
   if(settings->has("manager"))
-    return Mngr::run();
+    return Mngr().run();
   
   if(settings->has("fsbroker"))
-    return FsBroker::run();
-  
-  return DbClient::run();
+    return FsBroker().run();
+
+  try {
+    return DbClient().run();
+  } catch (std::exception& e) {
+    std::cout << e.what() << '\n';
+  }
+
+  return 1;
 }
 
 }}} // namespace SWC::Utils::shell
