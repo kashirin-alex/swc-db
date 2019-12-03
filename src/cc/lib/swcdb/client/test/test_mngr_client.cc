@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
       for(size_t n=1;n<=num_req;n++){
         SWC::DispatchHandler::Ptr req = std::make_shared<ReqHandler>(t, n, total);
-        auto cbp = SWC::Protocol::create_error_message(
+        auto cbp = SWC::CommBuf::create_error_message(
           SWC::Error::OK, 
           SWC::format("req.BLOCK_COMPRESSOR_UNSUPPORTED_TYPE t=(%d) n=(%d)", t, n).c_str()
         );  

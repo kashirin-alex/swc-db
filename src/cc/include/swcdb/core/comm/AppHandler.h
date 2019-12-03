@@ -12,13 +12,10 @@
 namespace SWC {
 
 class AppHandler {
-
   public:
   typedef std::unique_ptr<AppHandler> Ptr;
 
-  AppHandler(ConnHandlerPtr conn, Event::Ptr ev)
-             : m_conn(conn), m_ev(ev) {
-  }
+  AppHandler(ConnHandlerPtr conn, Event::Ptr ev): m_conn(conn), m_ev(ev) { }
     
   virtual ~AppHandler() { }
 

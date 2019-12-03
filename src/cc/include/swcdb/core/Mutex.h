@@ -5,12 +5,13 @@
 #ifndef swc_core_Mutex_h
 #define swc_core_Mutex_h
 
-#include "swcdb/core/LockAtomicUnique.h"
-#include "swcdb/core/LockAtomicRecursive.h"
 
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+
+#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/LockAtomicRecursive.h"
 
 namespace SWC { namespace LockAtomic {
 

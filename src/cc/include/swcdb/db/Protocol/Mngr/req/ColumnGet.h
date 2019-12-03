@@ -89,7 +89,7 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
     }
 
     Params::ColumnGetRsp rsp_params;
-    int err = ev->error != Error::OK? ev->error: response_code(ev);
+    int err = ev->error != Error::OK? ev->error: ev->response_code();
 
     if(err == Error::OK){
       try{

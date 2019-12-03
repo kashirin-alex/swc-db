@@ -26,7 +26,7 @@ class RgrUpdate : public Common::Req::ConnQueue::ReqBase {
       return;
 
     if(ev->header.command == RGR_UPDATE 
-      && response_code(ev) == Error::OK){
+      && ev->response_code() == Error::OK){
       was_called = true;
       return;
     }

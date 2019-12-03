@@ -140,7 +140,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       return;
     }
 
-    if(response_code(ev) == Error::OK){
+    if(ev->response_code() == Error::OK){
       validator->set(0);
       return;
     }      

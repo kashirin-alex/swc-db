@@ -35,7 +35,7 @@ class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
     }
 
     if(ev->header.command == ASSIGN_ID_NEEDED){
-      rsp(ev->error != Error::OK ? ev->error : response_code(ev));
+      rsp(ev->error != Error::OK ? ev->error : ev->response_code());
       return;
     }
   }

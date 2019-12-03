@@ -5,7 +5,7 @@
 #ifndef swc_core_comm_ResponseCallback_h
 #define swc_core_comm_ResponseCallback_h
 
-#include "swcdb/core/comm/Event.h"
+#include "swcdb/core/comm/ConnHandler.h"
 
 
 namespace SWC {
@@ -16,28 +16,17 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   typedef std::shared_ptr<ResponseCallback> Ptr;
 
-  ResponseCallback(ConnHandlerPtr conn, Event::Ptr ev)
-                  : m_conn(conn), m_ev(ev){}
+  ResponseCallback(ConnHandlerPtr conn, Event::Ptr ev);
     
-  virtual ~ResponseCallback() { }
+  virtual ~ResponseCallback();
 
+  virtual void run();
 
-  virtual void run() {}
+  virtual void response(int& err);
 
-  virtual void response(int& err) {
-    m_conn->send_error(err , "", m_ev);
-  }
+  virtual void response_ok();
 
-  virtual void response_ok()  {
-    //SWC_LOGF(LOG_DEBUG, "response_ok, %s", m_ev->to_str().c_str());
-    m_conn->response_ok(m_ev);
-  }
-
-  virtual void send_error(int code, std::string msg) {
-    //SWC_LOGF(LOG_DEBUG, "send_error, %s", m_ev->to_str().c_str());
-    m_conn->send_error(code , msg, m_ev);
-  }
-
+  virtual void send_error(int code, std::string msg);
   
   protected:
   ConnHandlerPtr m_conn;
@@ -45,6 +34,12 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 };
 
 
+} // namespace SWC
 
-}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/ResponseCallback.cc"
+#endif 
+
 #endif // swc_core_comm_ResponseCallback_h

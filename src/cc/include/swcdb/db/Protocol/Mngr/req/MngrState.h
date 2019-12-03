@@ -36,7 +36,7 @@ class MngrState : public Common::Req::ConnQueue::ReqBase {
     if(Common::Req::ConnQueue::ReqBase::is_timeout(conn, ev))
       return;
 
-    if(ev->header.command == MNGR_STATE && response_code(ev) == Error::OK){
+    if(ev->header.command == MNGR_STATE && ev->response_code() == Error::OK){
       if(cb != nullptr){
         //std::cout << "response_ok, cb=" << (size_t)cb.get() 
         //          << " rsp, err=" << ev->to_str() << "\n";

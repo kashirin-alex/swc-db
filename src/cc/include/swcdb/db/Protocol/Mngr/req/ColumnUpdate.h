@@ -25,7 +25,7 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
     if(was_called || !is_rsp(conn, ev))
       return;
 
-    if(ev->header.command == COLUMN_UPDATE && response_code(ev) == Error::OK){
+    if(ev->header.command == COLUMN_UPDATE && ev->response_code() == Error::OK){
       was_called = true;
       return;
     }

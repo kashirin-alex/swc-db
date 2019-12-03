@@ -6,6 +6,8 @@
 #ifndef swc_core_Checksum_h
 #define swc_core_Checksum_h
 
+#include "swcdb/core/Compat.h"
+
 namespace SWC {
 
 uint32_t fletcher32(const void *data8, size_t len8);

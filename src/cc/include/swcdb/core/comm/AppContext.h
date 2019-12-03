@@ -6,36 +6,42 @@
 #ifndef swc_core_comm_AppContext_h
 #define swc_core_comm_AppContext_h
 
-
-#include <iostream>
+#include <memory>
+#include "swcdb/core/comm/Event.h"
+#include "swcdb/core/comm/Resolver.h"
 
 namespace SWC {
+
+// forward declarations
+class ConnHandler;
+typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
+
 
 class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
   
   typedef std::shared_ptr<AppContext> Ptr;
 
-  AppContext(){}
+  AppContext();
 
-  virtual ~AppContext(){}
+  virtual ~AppContext();
 
-  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev) {
-    ev->display();
-    std::cerr << "AppContext(handle is Virtual!)\n";
-  }
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev);
 
-  virtual void init(const EndPoints& endpoints) {
-    m_endpoints = endpoints;
-  }
-  
-  virtual void stop() {
-    std::cerr << "AppContext(stop is Virtual)!\n";
-  }
+  virtual void init(const EndPoints& endpoints);
+
+  virtual void stop();
 
   EndPoints m_endpoints;
 };
 
-}
+
+} // namespace SWC
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/AppContext.cc"
+#endif 
 
 #endif // swc_core_comm_AppContext_h

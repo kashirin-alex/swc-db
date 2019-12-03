@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "swcdb/core/comm/Event.h"
+#include "swcdb/core/comm/AppContext.h"
 
 namespace SWC {
 
@@ -40,17 +41,19 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   typedef std::shared_ptr<DispatchHandler> Ptr;
 
-  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev) { 
-    SWC_LOGF(LOG_WARN, "handle(virtual): %s", ev->to_str().c_str());
-    return;
-  }
+  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev);
     
-  virtual bool run(uint32_t timeout=0) { 
-    return false; 
-  }
+  virtual bool run(uint32_t timeout=0);
   
 };
 
-}
+
+} // namespace SWC
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/DispatchHandler.cc"
+#endif 
 
 #endif // swc_core_comm_DispatchHandler_h

@@ -43,7 +43,7 @@ class RangeIsLoaded : public DispatchHandler {
 
     if(ev->header.command == RANGE_IS_LOADED){
       was_called = true;
-      cb(response_code(ev) == Error::OK);
+      cb(ev->response_code() == Error::OK);
     }
 
   }

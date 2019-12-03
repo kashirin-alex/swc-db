@@ -29,13 +29,14 @@
 #ifndef swc_core_comm_CommBuf_h
 #define swc_core_comm_CommBuf_h
 
-#include <memory>
-#include <string>
-
-#include "swcdb/core/StaticBuffer.h"
+#include <asio.hpp>
 #include "swcdb/core/Serializable.h"
+#include "swcdb/core/StaticBuffer.h"
 #include "swcdb/core/comm/CommHeader.h"
 
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace SWC {
 
@@ -45,106 +46,63 @@ class CommBuf {
 
   typedef std::shared_ptr<CommBuf> Ptr;
 
-  inline Ptr static make(uint32_t reserve=0) {
-    return std::make_shared<CommBuf>(reserve);
-  }
+  static Ptr make(uint32_t reserve=0);
 
-  inline Ptr static make(const Serializable& params, uint32_t reserve=0) {
-    return std::make_shared<CommBuf>(params, reserve);
-  }
+  static Ptr make(const Serializable& params, uint32_t reserve=0);
 
-  inline Ptr static make(const Serializable& params, StaticBuffer& buffer, 
-                         uint32_t reserve=0) {
-    return std::make_shared<CommBuf>(params, buffer, reserve);
-  }
+  static Ptr make(const Serializable& params, StaticBuffer& buffer, 
+                  uint32_t reserve=0);
 
-  inline Ptr static make(StaticBuffer& buffer) {
-    return std::make_shared<CommBuf>(buffer);
-  }
+  static Ptr make(StaticBuffer& buffer);
 
-  CommBuf(uint32_t reserve=0) {
-    if(reserve)
-      set_data(reserve);
-  }
+  static Ptr create_error_message(int error, const char *msg);
 
-  CommBuf(const Serializable& params, uint32_t reserve=0) {
-    set_data(params, reserve);
-  }
+
+  CommBuf(uint32_t reserve=0);
+
+  CommBuf(const Serializable& params, uint32_t reserve=0);
 
   CommBuf(const Serializable& params, StaticBuffer& buffer, 
-          uint32_t reserve=0) : buf_ext(buffer) {
-    set_data(params, reserve);
-  }
+          uint32_t reserve=0);
 
-  CommBuf(StaticBuffer& buffer) : buf_ext(buffer) {
-  }
+  CommBuf(StaticBuffer& buffer);
 
-  virtual ~CommBuf() { }
+  virtual ~CommBuf();
 
-  void set_data(uint32_t sz) {
-    buf_data.reallocate(sz);
-    data_ptr = buf_data.base; 
-  }
+  void set_data(uint32_t sz);
 
-  void set_data(const Serializable& params, uint32_t reserve) {
-    set_data(reserve + params.encoded_length());
+  void set_data(const Serializable& params, uint32_t reserve);
 
-    data_ptr = buf_data.base + reserve;
-    params.encode(&data_ptr);
-    data_ptr = buf_data.base;
-  }
+  void write_header();
 
-  void write_header() {
-    if(buf_data.size) {
-      header.data_size   = buf_data.size;
-      header.data_chksum = fletcher32(buf_data.base, buf_data.size);
-    }
-    if(buf_ext.size) {  
-      header.data_ext_size   = buf_ext.size;
-      header.data_ext_chksum = fletcher32(buf_ext.base, buf_ext.size);
-    }
-    buf_header.reallocate(header.encoded_length());
-    uint8_t *buf = buf_header.base;
-    header.encode(&buf);
-  }
-
-  void get(std::vector<asio::const_buffer>& buffers) {
-
-    write_header();
-    buffers.push_back(asio::buffer(buf_header.base, buf_header.size));
-
-    if(buf_data.size) 
-      buffers.push_back(asio::buffer(buf_data.base, buf_data.size));
-    if(buf_ext.size) 
-      buffers.push_back(asio::buffer(buf_ext.base, buf_ext.size));
-  }
+  void get(std::vector<asio::const_buffer>& buffers);
 
   /** Returns the primary buffer internal data pointer
    */
-  void *get_data_ptr() { return data_ptr; }
+  void *get_data_ptr();
 
   /** Returns address of the primary buffer internal data pointer
    */
-  uint8_t **get_data_ptr_address() { return &data_ptr; }
+  uint8_t **get_data_ptr_address();
 
   /** Advance the primary buffer internal data pointer by <code>len</code>
    * bytes
    * @param len the number of bytes to advance the pointer by
    * @return returns the advanced internal data pointer
    */
-  void *advance_data_ptr(size_t len) { data_ptr += len; return data_ptr; }
+  void *advance_data_ptr(size_t len);
 
   /** Appends a boolean value to the primary buffer.  After appending, this
    * method advances the primary buffer internal data pointer by 1
    * @param bval Boolean value to append to primary buffer
    */
-  void append_bool(bool bval) { Serialization::encode_bool(&data_ptr, bval); }
+  void append_bool(bool bval);
 
   /** Appends a byte of data to the primary buffer.  After appending, this
    * method advances the primary buffer internal data pointer by 1
    * @param bval byte value to append into buffer
    */
-  void append_byte(uint8_t bval) { *data_ptr++ = bval; }
+  void append_byte(uint8_t bval);
 
   /** Appends a sequence of bytes to the primary buffer.  After appending,
    * this method advances the primary buffer internal data pointer by the
@@ -152,10 +110,7 @@ class CommBuf {
    * @param bytes Starting address of byte sequence
    * @param len Number of bytes in sequence
    */
-  void append_bytes(const uint8_t *bytes, uint32_t len) {
-    memcpy(data_ptr, bytes, len);
-    data_ptr += len;
-  }
+  void append_bytes(const uint8_t *bytes, uint32_t len);
 
   /** Appends a c-style string to the primary buffer.  A string is encoded
    * as a 16-bit length, followed by the characters, followed by
@@ -164,9 +119,7 @@ class CommBuf {
    * @param str c-style string to append
    * @see Serialization::encode_str16
    */
-  void append_str16(const char *str) {
-    Serialization::encode_str16(&data_ptr, str);
-  }
+  void append_str16(const char *str);
 
   /**
    * Appends a std::string to the primary buffer.  A string is encoded as
@@ -176,9 +129,7 @@ class CommBuf {
    * @param str std string to append
    * @see Serialization::encode_str16
    */
-  void append_str16(const std::string &str) {
-    Serialization::encode_str16(&data_ptr, str);
-  }
+  void append_str16(const std::string &str);
 
   /**
    * Appends a 16-bit integer to the primary buffer.  The integer is encoded
@@ -186,27 +137,21 @@ class CommBuf {
    * advanced to the position immediately following the encoded integer.
    * @param sval Two-byte short integer to append into buffer
    */
-  void append_i16(uint16_t sval) {
-    Serialization::encode_i16(&data_ptr, sval);
-  }
+  void append_i16(uint16_t sval);
 
   /** Appends a 32-bit integer to the primary buffer.  The integer is encoded
    * in little endian order and the primary buffer internal data pointer is
    * advanced to the position immediately following the encoded integer.
    * @param ival Four-byte integer value to append into buffer
    */
-  void append_i32(uint32_t ival) {
-    Serialization::encode_i32(&data_ptr, ival);
-  }
+  void append_i32(uint32_t ival);
 
   /** Appends a 64-bit integer to the primary buffer.  The integer is encoded
    * in little endian order and the primary buffer pointer is advanced
    * to the position immediately following the encoded integer.
    * @param lval Eight-byte long integer value to append into buffer
    */
-  void append_i64(uint64_t lval) {
-    Serialization::encode_i64(&data_ptr, lval);
-  }
+  void append_i64(uint64_t lval);
 
   /** Appends a c-style string to the primary buffer.  A string is encoded
    * as a vint64 length, followed by the characters, followed by
@@ -215,9 +160,7 @@ class CommBuf {
    * @param str C-style string to append
    * @see Serialization::encode_vstr
    */
-  void append_vstr(const char *str) {
-    Serialization::encode_vstr(&data_ptr, str);
-  }
+  void append_vstr(const char *str);
 
   /** Appends a std::string to the primary buffer.  A string is encoded as
    * a vint64 length, followed by the characters, followed by
@@ -225,9 +168,7 @@ class CommBuf {
    * @param str C++ string to append
    * @see Serialization::encode_vstr
    */
-  void append_vstr(const std::string &str) {
-    Serialization::encode_vstr(&data_ptr, str);
-  }
+  void append_vstr(const std::string &str);
 
   /** Appends a variable sized string to the primary buffer.  The
    * string is encoded as a vint length, followed by the bytes
@@ -237,9 +178,7 @@ class CommBuf {
    * @param len Length of string
    * @see Serialization::encode_vstr
    */
-  void append_vstr(const void *str, uint32_t len) {
-    Serialization::encode_vstr(&data_ptr, str, len);
-  }
+  void append_vstr(const void *str, uint32_t len);
 
   CommHeader            header;         //!< Comm header
   StaticBuffer          buf_header;     //!< Header buffer
@@ -256,5 +195,10 @@ class CommBuf {
 
 } // namespace SWC
 
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/CommBuf.cc"
+#endif 
 
 #endif // swc_core_comm_CommBuf_h

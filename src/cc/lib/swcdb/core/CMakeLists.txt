@@ -56,6 +56,17 @@ ADD_LIB_TARGET(
 
 set(swcdb_core_comm_sources
 	comm/Settings.cc
+	comm/SerializedServer.cc
+	comm/SerializedClient.cc
+	comm/Resolver.cc
+	comm/Event.cc
+	comm/CommHeader.cc
+	comm/CommBuf.cc
+	comm/ConnHandler.cc
+	comm/AppContext.cc
+	comm/DispatchHandler.cc
+	comm/ResponseCallback.cc
+	comm/IoContext.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_comm

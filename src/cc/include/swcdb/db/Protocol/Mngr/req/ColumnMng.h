@@ -80,7 +80,7 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
       return;
     }
 
-    cb(req(), ev->error != Error::OK? ev->error: response_code(ev));
+    cb(req(), ev->error != Error::OK? ev->error: ev->response_code());
   }
 
   private:

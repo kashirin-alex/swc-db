@@ -6,7 +6,8 @@
 #ifndef swc_core_comm_IoContext_h
 #define swc_core_comm_IoContext_h
 
-#include "swcdb/core/Mutex.h"
+#include <asio.hpp>
+#include "swcdb/core/Logger.h"
 
 namespace SWC {
   
@@ -19,69 +20,25 @@ class IoContext {
   typedef std::shared_ptr<IoContext>  Ptr;
   std::atomic<bool>                   running;
 
-  IoContext(const std::string name, int32_t size) 
-    : m_name(name), running(true), m_size(size),
-      m_pool(asio::thread_pool(size)),
-      m_ioctx(std::make_shared<asio::io_context>(size)),
-      m_wrk(asio::make_work_guard(*m_ioctx.get()))
-  { 
-    HT_ASSERT(size>0);
-  }
+  IoContext(const std::string name, int32_t size);
 
-  void run(Ptr p){
-    SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s)", m_name.c_str());
-    for(int n=0;n<m_size;n++)
-      asio::post(m_pool, std::bind(&IoContext::do_run, p));
-  }
+  void run(Ptr ptr);
 
-  void do_run(){
-    do{
-      m_ioctx->run();
-      m_ioctx->restart();
-    }while(running);
-  }
+  void do_run();
   
-  IOCtxPtr shared(){
-    return m_ioctx;
-  }
+  IOCtxPtr shared();
 
-  asio::io_context* ptr(){
-    return m_ioctx.get();
-  }
+  asio::io_context* ptr();
 
-  void set_signals(){
-    m_signals = std::make_shared<asio::signal_set>(
-      *m_ioctx.get(), SIGINT, SIGTERM);
-  }
+  void set_signals();
 
-  IO_SignalsPtr signals(){
-    return m_signals;
-  }
+  IO_SignalsPtr signals();
 
-  void stop(){
-    SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", m_name.c_str());
-    running.store(false);
-    m_wrk.reset();
-    
-    // hold on for IO to finish
-    for(int i=0;i<10;i++){
-      if(m_ioctx->stopped())
-        break;
-      SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", m_name.c_str());
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-    SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully", 
-              m_name.c_str(), m_ioctx->stopped()?"":"not ");
+  void stop();
 
-    if(!m_ioctx->stopped())
-      m_ioctx->stop();
-  }
-
-  int32_t get_size() {
-    return m_size;
-  }
+  const int32_t get_size() const;
   
-  virtual ~IoContext(){}
+  virtual ~IoContext();
 
   private:
   const std::string   m_name;
@@ -97,36 +54,30 @@ namespace Env {
 class IoCtx {
   public:
 
-  static void init(int32_t size) {
-    m_env = std::make_shared<IoCtx>(size);
-  }
+  static void init(int32_t size);
 
-  static bool ok(){
-    return m_env != nullptr;
-  }
+  static const bool ok();
   
-  static IoContext::Ptr io(){
-    HT_ASSERT(ok());
-
-    return m_env->m_io;
-  }
+  static IoContext::Ptr io();
   
-  static bool stopping(){
-    return !m_env->m_io->running;
-  }
+  static const bool stopping();
 
-  IoCtx(int32_t size) : m_io(std::make_shared<IoContext>("Env", size)) { 
-    m_io->run(m_io);
-  }
+  IoCtx(int32_t size);
 
-  virtual ~IoCtx(){ }
+  virtual ~IoCtx();
 
   private:
-  IoContext::Ptr                         m_io;
+  IoContext::Ptr                       m_io;
   inline static std::shared_ptr<IoCtx> m_env = nullptr;
 };
-}
+} // namespace Env
 
-}
+} // namespace SWC
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/IoContext.cc"
+#endif 
 
 #endif // swc_core_comm_IoContext_h

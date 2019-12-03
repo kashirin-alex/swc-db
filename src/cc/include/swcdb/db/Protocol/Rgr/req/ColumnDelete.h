@@ -34,7 +34,7 @@ class ColumnDelete : public Common::Req::ConnQueue::ReqBase  {
     }
 
     if(ev->header.command == COLUMN_DELETE) {
-      int err = ev->error != Error::OK ? ev->error : response_code(ev);
+      int err = ev->error != Error::OK ? ev->error : ev->response_code();
       if(err == Error::OK) {
         was_called = true;
         remove(err);

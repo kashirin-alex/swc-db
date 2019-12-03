@@ -35,7 +35,7 @@ class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
     }
 
     if(ev->header.command == SCHEMA_UPDATE){
-      updated(ev->error != Error::OK? ev->error: response_code(ev), false);
+      updated(ev->error != Error::OK? ev->error: ev->response_code(), false);
       return; 
     }
   }

@@ -48,7 +48,7 @@ class Base : public DispatchHandler {
                 error, Error::get_text(error), ev->header.command);
 
     } else if(error == Error::OK 
-              && ((error = SWC::Protocol::response_code(ev)) == Error::OK) 
+              && ((error = ev->response_code()) == Error::OK)
                   || error == Error::FS_EOF) {
       *ptr = ev->data.base + 4;
       *remain = ev->data.size - 4;
