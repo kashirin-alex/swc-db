@@ -252,7 +252,7 @@ namespace SWC {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../lib/swcdb/core/String.cc"
+#include "../../../lib/swcdb/core/String.cc"
 #endif 
 
 #endif 

@@ -223,6 +223,7 @@ class LogWriter {
     }
 
     /* else { fallback
+      rdbuf
       m_file_out = std::freopen('0', "w", m_file_out);
       m_file_err = std::freopen('1', "w", m_file_err);
       ::fdopen(0, "wt");
@@ -358,7 +359,7 @@ extern LogWriter logger;
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../lib/swcdb/Logger.cc"
+#include "../../../lib/swcdb/core/Logger.cc"
 #endif 
 
 #endif

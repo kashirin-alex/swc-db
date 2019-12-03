@@ -448,7 +448,7 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r) {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../lib/swcdb/core/Error.cc"
+#include "../../../lib/swcdb/core/Error.cc"
 #endif 
 
 #endif
