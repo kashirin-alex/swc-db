@@ -188,6 +188,12 @@ bool mkdirs(const std::string &dirname) {
   return saved_errno == 0;
 }
 
+const bool exists(const std::string &fname) {
+  struct stat statbuf;
+  if(stat(fname.c_str(), &statbuf) != 0)
+    return false;
+  return true;
+}
 
 bool unlink(const std::string &fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {

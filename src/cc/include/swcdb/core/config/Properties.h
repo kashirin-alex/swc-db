@@ -26,6 +26,7 @@
 
 #include <map>
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/config/PropertiesParser.h"
 
@@ -41,134 +42,43 @@ class Properties {
   
   public:
 
-  Properties() { }
-  
-  virtual ~Properties() { 
-    reset();
-  }
+  Properties();
 
-  void reset() {
-    for (const auto &kv : m_map)
-      delete kv.second;
-    m_map.clear();
-  }
+  virtual ~Properties();
+
+  void reset();
 
   void load_from(const Config::Parser::Options& opts, 
-                 bool only_guarded=false) {
-    for(const auto &kv : opts.map) {
-      if(has(kv.first) && (kv.second->is_default() || 
-                           (only_guarded && !kv.second->is_guarded())))
-      continue;
-      set(kv.first, kv.second);
-    }
-  }
+                 bool only_guarded=false);
 
   void load(const std::string &fname, 
             const Config::ParserConfig &filedesc,
             const Config::ParserConfig &cmddesc,
-            bool allow_unregistered=false, bool only_guarded=false) {
-    Config::Parser prs(false);
-    prs.config.add(filedesc);
-    prs.config.add(cmddesc);
-    
-    std::ifstream in(fname.c_str());
-    prs.parse_filedata(in);
-
-    load_from(prs.get_options(), only_guarded);
-  } 
+            bool allow_unregistered=false, bool only_guarded=false);
   
   void load_files_by(const std::string &fileprop, 
                      const Config::ParserConfig &filedesc,
                      const Config::ParserConfig &cmddesc,
-	                   bool allow_unregistered = false) {
-    if(fileprop.empty() || !has(fileprop)) 
-      return;
-
-    Strings files = get_strs(fileprop);
-    for (auto it=files.begin(); it<files.end(); it++){
-	    try {
-        load(*it, filedesc, cmddesc, allow_unregistered);
-      } catch (std::exception &e) {
-		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
-                  fileprop.c_str(), it->c_str(), e.what());
-      }
-    }
-  }
+	                   bool allow_unregistered = false);
     
   std::string reload(const std::string &fname, 
                      const Config::ParserConfig &filedesc,
                      const Config::ParserConfig &cmddesc,
-	                   bool allow_unregistered = false) {
-    std::string out;
-	  try {
-      out.append("\n\nCurrent Configurations:\n");
-      out.append(to_string());
+	                   bool allow_unregistered = false);
 
-      load(fname, filedesc, cmddesc, allow_unregistered, true);
+  void alias(const std::string &primary, const std::string &secondary);
 
-      out.append("\n\nNew Configurations:\n");
-      out.append(to_string());
-      return out;
-	  }
-	  catch (std::exception &e) {
-		  SWC_LOGF(LOG_WARN, "Error::CONFIG_BAD_CFG_FILE %s: %s", fname.c_str(), e.what());
-      return format("Error::CONFIG_BAD_CFG_FILE %s: %s \noutput:\n%s", 
-                      fname.c_str(), e.what(), out.c_str());
-	  }
-  }
+  Property::Value::Ptr get_value_ptr(const std::string &name);
 
-  void alias(const std::string &primary, const std::string &secondary) {
-    m_alias_map[primary] = secondary;
-    m_alias_map[secondary] = primary;
-  }
+  const bool has(const std::string &name) const;
 
-  Property::Value::Ptr get_value_ptr(const std::string &name) {
-    auto it = m_map.find(name);
-    if (it != m_map.end())
-      return it->second;
+  const bool defaulted(const std::string &name);
 
-    auto alias = m_alias_map.find(name);
-    if(alias != m_alias_map.end()) {
-      it = m_map.find(alias->second);
-      if (it != m_map.end())
-        return it->second;
-    }
-    
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "getting value of '%s' - missing",
-              name.c_str());
-  }
-
-  const bool has(const std::string &name) const {
-    if(m_map.count(name))
-      return true;
-      
-    auto alias = m_alias_map.find(name);
-    if(alias == m_alias_map.end()) 
-      return false;
-    return m_map.count(alias->second);
-  }
-
-  const bool defaulted(const std::string &name) {
-    return get_value_ptr(name)->is_default();
-  }
-
-  const std::string str(const std::string &name) {
-    return get_value_ptr(name)->str();
-  }
+  const std::string str(const std::string &name);
   
-  void get_names(std::vector<std::string> &names) const {
-    for(auto it = m_map.begin(); it != m_map.end(); it++)
-      names.push_back(it->first);
-  }
+  void get_names(std::vector<std::string> &names) const;
 
-  void remove(const std::string &name) {
-    auto it = m_map.find(name);
-    if(it != m_map.end()) {
-      delete it->second;
-      m_map.erase(it);
-    }
-  }
+  void remove(const std::string &name);
 
   /**
    * Get the ptr of property value type. Throws if name is not defined.
@@ -305,26 +215,46 @@ class Properties {
    * @param name The name of the property
    * @param v The Property::Value::Ptr
    */
-  void set(const std::string &name, Property::Value::Ptr p) {
-    Property::Value::Ptr p_set;
-    if(m_map.count(name) == 0) {
-      p_set = Property::Value::make_new(p);
-      
-      if(p->is_default())
-        p_set->default_value();
-      
-      if(p->is_guarded())
-        p_set->guarded(true);
-        
-      add(name, p_set);
+  void set(const std::string &name, Property::Value::Ptr p);
 
-    } else if(!p->is_default()) {
-      p_set = get_value_ptr(name);
-      p_set->set_value_from(p);
-      p_set->default_value(false);
-    }
-  }
 
+  bool get_bool(const std::string &name);
+  
+  std::string get_str(const std::string &name);
+  
+  Strings get_strs(const std::string &name);
+  
+  uint16_t get_i16(const std::string &name);
+  
+  int32_t get_i32(const std::string &name);
+  
+  int64_t get_i64(const std::string &name);
+  
+  Int64s get_i64s(const std::string &name);
+  
+  double get_f64(const std::string &name);
+  
+  Doubles get_f64s(const std::string &name);
+  
+  bool get_bool(const std::string &name, bool default_value);
+  
+  std::string get_str(const std::string &name, std::string &default_value);
+  
+  std::string get_str(const std::string &name, std::string default_value);
+  
+  Strings get_strs(const std::string &name, Strings default_value);
+  
+  uint16_t get_i16(const std::string &name, uint16_t default_value);
+  
+  int32_t get_i32(const std::string &name, int32_t default_value);
+  
+  int64_t get_i64(const std::string &name, int64_t default_value);
+  
+  Int64s get_i64s(const std::string &name, Int64s &default_value);
+  
+  double get_f64(const std::string &name, double default_value); 
+  
+  Doubles get_f64s(const std::string &name, Doubles default_value);
 
   /**
    * Prints keys and values of the configuration map
@@ -332,83 +262,10 @@ class Properties {
    * @param out The output stream
    * @param include_default If true then default values are included
    */
-  void print(std::ostream &out, bool include_default = false) const {
-    out << to_string(include_default);
-  }
-
-  const std::string to_string(bool include_default = false) const {
-    std::string out;
-    bool isdefault;
-    for(const auto &kv : m_map) {
-      isdefault = kv.second->is_default();
-      if(include_default || !isdefault) {
-        out.append(format("%s=%s", kv.first.c_str(), kv.second->str().c_str()));
-        if(isdefault)
-          out.append(" (default)");
-        out.append("\n");
-      }
-    }
-    return out;
-  }
-
-  bool get_bool(const std::string &name) {
-    return get<bool>(name); 
-  }
-  std::string get_str(const std::string &name) {
-    return get<std::string>(name); 
-  }
-  Strings get_strs(const std::string &name) {
-    return get<Strings>(name); 
-  }
-  uint16_t get_i16(const std::string &name) {
-    return get<uint16_t>(name); 
-  }
-  int32_t get_i32(const std::string &name) {
-    return get<int32_t>(name); 
-  }
-  int64_t get_i64(const std::string &name) {
-    return get<int64_t>(name); 
-  }
-  Int64s get_i64s(const std::string &name) {
-    return get<Int64s>(name); 
-  }
-  double get_f64(const std::string &name) {
-    return get<double>(name); 
-  }
-  Doubles get_f64s(const std::string &name) {
-    return get<Doubles>(name); 
-  }
-  bool get_bool(const std::string &name, bool default_value) {
-    return get<bool>(name, default_value); 
-  }
-  std::string get_str(const std::string &name, std::string &default_value) {
-    return get<std::string>(name, static_cast<std::string>(default_value)); 
-  }
-  std::string get_str(const std::string &name, std::string default_value) {
-    return get<std::string>(name, default_value); 
-  }
-  Strings get_strs(const std::string &name, Strings default_value) {
-    return get<Strings>(name, default_value); 
-  }
-  uint16_t get_i16(const std::string &name, uint16_t default_value) {
-    return get<uint16_t>(name, default_value); 
-  }
-  int32_t get_i32(const std::string &name, int32_t default_value) {
-    return get<int32_t>(name, default_value); 
-  }
-  int64_t get_i64(const std::string &name, int64_t default_value) {
-    return get<int64_t>(name, default_value); 
-  }
-  Int64s get_i64s(const std::string &name, Int64s &default_value) {
-    return get<Int64s>(name, default_value); 
-  }
-  double get_f64(const std::string &name, double default_value) {
-    return get<double>(name, default_value); 
-  }
-  Doubles get_f64s(const std::string &name, Doubles default_value) {
-    return get<Doubles>(name, default_value); 
-  }
-
+  void print(std::ostream &out, bool include_default = false) const;
+  
+  const std::string to_string(bool include_default = false) const;
+  
   private:
 
   Map       m_map;
@@ -418,4 +275,9 @@ class Properties {
 
 
 }
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/config/Properties.cc"
+#endif 
+
 #endif // swc_core_config_Properties_h

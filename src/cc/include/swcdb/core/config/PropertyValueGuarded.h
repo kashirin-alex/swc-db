@@ -2,13 +2,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-/** @file
- * A Property Value Guarded used with Properties 
- */
 
 #ifndef swc_core_config_PropertyValueGuarded_h
 #define swc_core_config_PropertyValueGuarded_h
 
+#include <mutex>
+#include <functional>
+#include <vector>
+#include <atomic>
 
 namespace SWC {
 
@@ -42,6 +43,8 @@ class ValueGuardedAtomic {
     if(on_chg_cb)
       on_chg_cb();
   }
+
+
 
   ~ValueGuardedAtomic () noexcept {};
     
@@ -111,7 +114,7 @@ class ValueGuardedVector {
   ValueGuardedVector (ValueGuardedVector &other) noexcept {
     set(other.get());
   }
- 
+
   ~ValueGuardedVector () noexcept {};
     
   operator ValueGuardedVector*() {

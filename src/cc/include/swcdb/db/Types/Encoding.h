@@ -6,6 +6,7 @@
 #ifndef swc_lib_db_types_Encoding_h
 #define swc_lib_db_types_Encoding_h
 
+#include <string>
 
 namespace SWC { namespace Types { 
 

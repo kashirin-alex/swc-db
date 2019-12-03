@@ -27,15 +27,9 @@
 #ifndef swc_core_DynamicBuffer_h
 #define swc_core_DynamicBuffer_h
 
-#include <cstdint>
-#include <cstring>
 #include <memory>
 
 namespace SWC {
-
-  /** @addtogroup Common
-   *  @{
-   */
 
   /**
    * A dynamic, resizable and reference counted memory buffer
@@ -53,25 +47,19 @@ namespace SWC {
      * @param own_buffer If true, then this object takes ownership of the
      *      buffer and releases it when going out of scope
      */
-    explicit DynamicBuffer(size_t initial_size = 0, bool own_buffer = true)
-        : size(initial_size), own(own_buffer),
-          base(size ? new uint8_t[size] : 0), ptr(base), mark(base) {
-    }
+    explicit DynamicBuffer(size_t initial_size = 0, bool own_buffer = true);
 
     /** Destructor; releases the buffer if it "owns" it */
-    ~DynamicBuffer() {
-      if (own && base != 0)
-        delete [] base;
-    }
+    ~DynamicBuffer();
 
     /** Returns the size of the unused portion */
-    size_t remaining() const { return size - (ptr - base); }
+    const size_t remaining() const;
 
     /** Returns the size of the used portion */
-    size_t fill() const { return ptr - base; }
+    const size_t fill() const;
 
     /** Returns true if the buffer is empty */
-    bool empty() const { return ptr == base; }
+    const bool empty() const;
 
     /**
      * Ensure space for additional data
@@ -80,10 +68,7 @@ namespace SWC {
      *
      * @param len Additional bytes to grow
      */
-    void ensure(size_t len) {
-      if (len > remaining())
-        grow((fill() + len) * 3 / 2);
-    }
+    void ensure(size_t len);
 
     /**
      * Reserve space for additional data
@@ -93,10 +78,7 @@ namespace SWC {
      * @param len Size of the reserved space
      * @param nocopy If true then the existing data is not preserved
      */
-    void reserve(size_t len, bool nocopy = false) {
-      if (len > remaining())
-        grow(fill() + len, nocopy);
-    }
+    void reserve(size_t len, bool nocopy = false);
 
     /** Adds additional data without boundary checks
      *
@@ -104,14 +86,7 @@ namespace SWC {
      * @param len The size of the new data
      * @return A pointer to the added data
      */
-    uint8_t *add_unchecked(const void *data, size_t len) {
-      if (data == 0)
-        return 0;
-      uint8_t *rptr = ptr;
-      memcpy(ptr, data, len);
-      ptr += len;
-      return rptr;
-    }
+    uint8_t *add_unchecked(const void *data, size_t len);
 
     /** Adds more data WITH boundary checks; if required the buffer is resized
      * and existing data is preserved
@@ -120,73 +95,38 @@ namespace SWC {
      * @param len The size of the new data
      * @return A pointer to the added data
      */
-    uint8_t *add(const void *data, size_t len) {
-      ensure(len);
-      return add_unchecked(data, len);
-    }
+    uint8_t *add(const void *data, size_t len);
 
     /** Overwrites the existing data
      *
      * @param data A pointer to the new data
      * @param len The size of the new data
      */
-    void set(const void *data, size_t len) {
-      clear();
-      reserve(len);
-      add_unchecked(data, len);
-    }
+    void set(const void *data, size_t len);
 
     /** Clears the buffer */
-    void clear() {
-      ptr = base;
-    }
+    void clear();
 
     /** Sets the mark; the mark can be used by the caller just like a
      * bookmark */
-    void set_mark() {
-      mark = ptr;
-    }
+    void set_mark();
 
     /** Frees resources */
-    void free() {
-      if (own)
-        delete [] base;
-      base = ptr = mark = 0;
-      size = 0;
-    }
+    void free();
 
     /** Moves ownership of the buffer to the caller
      *
      * @param lenp If not null then the length of the buffer is stored
      * @return A pointer to the data
      */
-    uint8_t *release(size_t *lenp = 0) {
-      uint8_t *rbuf = base;
-      if (lenp)
-        *lenp = fill();
-      ptr = base = mark = 0;
-      size = 0;
-      return rbuf;
-    }
+    uint8_t *release(size_t *lenp = 0);
 
     /** Grows the buffer and copies the data unless nocopy is true
      *
      * @param new_size The new buffer size
      * @param nocopy If true then the data will not be preserved
      */
-    void grow(size_t new_size, bool nocopy = false) {
-      uint8_t *new_buf = new uint8_t[new_size];
-
-      if (!nocopy && base)
-        memcpy(new_buf, base, ptr-base);
-
-      ptr = new_buf + (ptr-base);
-      mark = new_buf + (mark-base);
-      if (own)
-        delete [] base;
-      base = new_buf;
-      size = new_size;
-    }
+    void grow(size_t new_size, bool nocopy = false);
 
     /** The size of the allocated memory buffer (@ref base) */
     uint32_t size;
@@ -207,10 +147,13 @@ namespace SWC {
 
   };
 
-  /** @}*/
 
 }
 
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../lib/swcdb/core/DynamicBuffer.cc"
+#endif 
 
 
 #endif // Common_DynamicBuffer_h

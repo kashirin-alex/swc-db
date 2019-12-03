@@ -9,14 +9,13 @@
 
 namespace SWC{ namespace Config {
 
-
-void Settings::init_comm_options(){
-  file_desc.add_options()
-    ("addr", strs(), "IP-port, addr to listen on else resolved(hostname):swc.ServiceName.port")
-    ("host", str(),  "host:port to listen on IPv4+IPv6, if port not specified swc.ServiceName.port is used");
-}
-
+//void Settings::init_comm_options();
 
 }}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/comm/Settings.cc"
+#endif 
 
 #endif // swc_core_comm_Settings_h

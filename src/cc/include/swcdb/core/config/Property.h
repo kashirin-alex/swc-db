@@ -34,71 +34,13 @@ namespace Property {
  * Convertors & Validators from std::string
 */
 
-inline double double_from_string(const std::string& s){
-  char *last;
-  double res = strtod(s.c_str(), &last);
+double double_from_string(const std::string& s);
 
-  if (s.c_str() == last)
-    HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+int64_t int64_t_from_string(const std::string& s);
 
-  switch (*last) {
-    case 'k':
-    case 'K': res *= 1000LL;         break;
-    case 'm':
-    case 'M': res *= 1000000LL;      break;
-    case 'g':
-    case 'G': res *= 1000000000LL;   break;
-    case '\0':                          break;
-    default: 
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
-                "Bad Value %s unknown suffix %s", s.c_str(), last);
-  }
-  return res;
-}
+uint16_t uint16_t_from_string(const std::string& s);
 
-inline int64_t int64_t_from_string(const std::string& s){
-  char *last;
-  int64_t res = strtoll(s.c_str(), &last, 0);
-
-  if (s.c_str() == last)
-    HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
-
-  if (res > INT64_MAX || res < INT64_MIN) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, number out of range of 64-bit integer", s.c_str());
-  
-  switch (*last) {
-    case 'k':
-    case 'K': res *= 1000LL;         break;
-    case 'm':
-    case 'M': res *= 1000000LL;      break;
-    case 'g':
-    case 'G': res *= 1000000000LL;   break;
-    case '\0':                          break;
-    default: 
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
-                "Bad Value %s unknown suffix %s", s.c_str(), last);
-  }
-  return res;
-}
-
-inline uint16_t uint16_t_from_string(const std::string& s){
-  int64_t res = int64_t_from_string(s);
-
-  if (res > UINT16_MAX || res < -UINT16_MAX) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, number out of range of 16-bit integer", s.c_str());
-  return (uint16_t)res;
-}
-
-inline int32_t int32_t_from_string(const std::string& s){
-  int64_t res = int64_t_from_string(s);
-
-  if (res > INT32_MAX || res < INT32_MIN) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, number out of range of 32-bit integer", s.c_str());
-  return (int32_t)res;
-}
+int32_t int32_t_from_string(const std::string& s);
 
 enum ValueType {
   UNKNOWN,
@@ -244,165 +186,85 @@ class  ValueDef : public TypeDef {
 
 
 template <>
-inline void ValueDef<EnumExt>::from_strings(const Strings& values){
-  get_ptr()->from_string(values.back());
-}
+void ValueDef<EnumExt>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<gEnumExt>::from_strings(const Strings& values){
-  get_ptr()->from_string(values.back());
-}
+void ValueDef<gEnumExt>::from_strings(const Strings& values);
 
 template <>
-inline ValueDef<EnumExt>::ValueDef(const Strings& values, EnumExt defaulted)
-                            : TypeDef(ValueType::ENUMEXT) {
-  get_ptr()->set_from(defaulted);  // assign call functions if set
-  if(!values.empty())
-    from_strings(values);
-}
+ValueDef<EnumExt>::ValueDef(const Strings& values, EnumExt defaulted);
 
 template <>
-inline ValueDef<gEnumExt>::ValueDef(const Strings& values, gEnumExt defaulted) 
-                            : TypeDef(ValueType::G_ENUMEXT) {
-  get_ptr()->set_from(defaulted);  // assign call functions if set
-  if(!values.empty())
-    from_strings(values);
-}
+ValueDef<gEnumExt>::ValueDef(const Strings& values, gEnumExt defaulted);
 
 
 /* set_value from_strings */
 
 template <>
-inline void ValueDef<bool>::from_strings(const Strings& values) {
-  bool res;
-  std::string str = values.back();
-  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-  res = (str.compare("1")==0)||(str.compare("true")==0)||(str.compare("yes")==0);
-  set_value(res);
-}
+void ValueDef<bool>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<gBool>::from_strings(const Strings& values) {
-  std::string str = values.back();
-  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-  set_value(str.compare("1") == 0 || 
-            str.compare("true") == 0 || 
-            str.compare("yes") == 0);
-}
+void ValueDef<gBool>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<std::string>::from_strings(const Strings& values){
-  set_value(values.back());
-}
+void ValueDef<std::string>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<double>::from_strings(const Strings& values) {
-  set_value(double_from_string(values.back()));
-}
+void ValueDef<double>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<uint16_t>::from_strings(const Strings& values) {
-  set_value(uint16_t_from_string(values.back()));
-}
+void ValueDef<uint16_t>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<int32_t>::from_strings(const Strings& values) {
-  set_value(int32_t_from_string(values.back()));
-}
+void ValueDef<int32_t>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<gInt32t>::from_strings(const Strings& values) {
-  set_value(int32_t_from_string(values.back()));
-}
+void ValueDef<gInt32t>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<int64_t>::from_strings(const Strings& values) {
-  set_value(int64_t_from_string(values.back()));
-}
+void ValueDef<int64_t>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<Doubles>::from_strings(const Strings& values){
-  Doubles value;
-  for(const std::string& s: values)
-    value.push_back(double_from_string(s));
-  set_value(value);
-}
+void ValueDef<Doubles>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<Int64s>::from_strings(const Strings& values){
-  Int64s value;
-  for(const std::string& s: values)
-    value.push_back(int64_t_from_string(s));
-  set_value(value);
-}
+void ValueDef<Int64s>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<Strings>::from_strings(const Strings& values){
-  set_value(values);
-}
+void ValueDef<Strings>::from_strings(const Strings& values);
 
 template <>
-inline void ValueDef<gStrings>::from_strings(const Strings& values){
-  set_value(values);
-}
+void ValueDef<gStrings>::from_strings(const Strings& values);
 
 /* return string representation */
 template <>
-inline const std::string ValueDef<bool>::str(){
-  return get_value() ? "true" : "false";;
-}
+const std::string ValueDef<bool>::str();
 template <>
-inline const std::string ValueDef<gBool>::str(){
-  return (bool)get_value() ? "true" : "false";;
-}
+const std::string ValueDef<gBool>::str();
 template <>
-inline const std::string ValueDef<std::string>::str(){
-  return get_value();
-}
+const std::string ValueDef<std::string>::str();
 template <>
-inline const std::string ValueDef<double>::str(){
-  return format("%g", get_value());
-}
+const std::string ValueDef<double>::str();
 template <>
-inline const std::string ValueDef<uint16_t>::str(){
-  return format("%u", (unsigned)get_value());
-}
+const std::string ValueDef<uint16_t>::str();
 template <>
-inline const std::string ValueDef<int32_t>::str(){
-  return format("%d", get_value());
-}
+const std::string ValueDef<int32_t>::str();
 template <>
-inline const std::string ValueDef<gInt32t>::str(){
-  return format("%d", (int32_t)get_value());
-}
+const std::string ValueDef<gInt32t>::str();
 template <>
-inline const std::string ValueDef<int64_t>::str(){
-  return format("%ld", get_value());
-}
+const std::string ValueDef<int64_t>::str();
 template <>
-inline const std::string ValueDef<Doubles>::str(){
-  return format_list(get_value());
-}
+const std::string ValueDef<Doubles>::str();
 template <>
-inline const std::string ValueDef<Int64s>::str(){
-  return format_list(get_value());
-}
+const std::string ValueDef<Int64s>::str();
 template <>
-inline const std::string ValueDef<Strings>::str(){
-  return format_list(get_value());
-}
+const std::string ValueDef<Strings>::str();
 template <>
-inline const std::string ValueDef<gStrings>::str(){
-  return format_list((Strings)get_value());
-}
+const std::string ValueDef<gStrings>::str();
 template <>
-inline const std::string ValueDef<EnumExt>::str(){
-  return v.to_str();
-}
+const std::string ValueDef<EnumExt>::str();
 template <>
-inline const std::string ValueDef<gEnumExt>::str(){
-  return v.to_str();
-}
+const std::string ValueDef<gEnumExt>::str();
 
     
 /**
@@ -417,84 +279,18 @@ class Value {
 
   typedef Value* Ptr;
 
-  static Ptr make_new(Value::Ptr p, const Strings& values = Strings()) {
-    switch(p->get_type()){
-
-      case ValueType::STRING:
-        return new Value(
-          (TypeDef*)new ValueDef<std::string>(values, p->get<std::string>()));
-
-      case ValueType::BOOL: 
-        return new Value(
-          (TypeDef*)new ValueDef<bool>(values, p->get<bool>()));
-      case ValueType::G_BOOL: 
-        return new Value(
-          (TypeDef*)new ValueDef<gBool>(values, p->get<gBool>()));
-
-      case ValueType::DOUBLE:
-        return new Value(
-          (TypeDef*)new ValueDef<double>(values, p->get<double>()));
-
-      case ValueType::UINT16_T:
-        return new Value(
-          (TypeDef*)new ValueDef<uint16_t>(values, p->get<uint16_t>()));
-
-      case ValueType::INT32_T:
-        return new Value(
-          (TypeDef*)new ValueDef<int32_t>(values, p->get<int32_t>()));
-      case ValueType::G_INT32_T: 
-        return new Value(
-          (TypeDef*)new ValueDef<gInt32t>(values, p->get<gInt32t>()));
-
-      case ValueType::INT64_T:
-        return new Value(
-          (TypeDef*)new ValueDef<int64_t>(values, p->get<int64_t>()));
-
-      case ValueType::STRINGS:
-        return new Value(
-          (TypeDef*)new ValueDef<Strings>(values, p->get<Strings>()));
-      case ValueType::G_STRINGS:
-        return new Value(
-          (TypeDef*)new ValueDef<gStrings>(values, p->get<gStrings>()));
-
-      case ValueType::INT64S:
-        return new Value(
-          (TypeDef*)new ValueDef<Int64s>(values, p->get<Int64s>()));
-
-      case ValueType::DOUBLES:
-        return new Value(
-          (TypeDef*)new ValueDef<Doubles>(values, p->get<Doubles>()));
-
-      case ValueType::ENUMEXT:
-        return new Value(
-          (TypeDef*)new ValueDef<EnumExt>(values, p->get<EnumExt>()));
-      case ValueType::G_ENUMEXT:
-        return new Value(
-          (TypeDef*)new ValueDef<gEnumExt>(values, p->get<gEnumExt>()));
-      
-      case ValueType::ENUM:
-      default:
-        HT_THROWF(Error::CONFIG_GET_ERROR, 
-                  "Bad Type for values %s", format_list(values).c_str());
-    }
-  }  
+  static Ptr make_new(Value::Ptr p, const Strings& values = Strings());
   
   template<typename T>
-  Value(T v, bool skippable=false, bool guarded=false) {
-    m_skippable = skippable;
-    m_guarded = guarded;
+  Value(T v, bool skippable=false, bool guarded=false)
+        : m_skippable(skippable), m_guarded(guarded) {
     set_value(v);
   }
     
     /* init from (TypeDef*)ValueDef<T> */
-  Value(TypeDef* v) {
-    type_ptr = v;
-  }
+  Value(TypeDef* v);
 
-  virtual ~Value() {
-    if(type_ptr)
-      delete type_ptr;
-  }
+  virtual ~Value();
     
   // update/set the new value to the ValueDef<T>
   template<typename T>
@@ -507,55 +303,12 @@ class Value {
   }
 
   /* set value from from other Value::Ptr */
-  void set_value_from(Value::Ptr from) {
-    switch(get_type()){
-      case ValueType::STRING:
-        return set_value(from->get<std::string>());
-
-      case ValueType::BOOL: 
-        return set_value(from->get<bool>());
-      case ValueType::G_BOOL: 
-        return set_value(from->get<gBool>());
-
-      case ValueType::DOUBLE:
-        return set_value(from->get<double>());
-      case ValueType::UINT16_T:
-        return set_value(from->get<uint16_t>());
-
-      case ValueType::INT32_T:
-        return set_value(from->get<int32_t>());
-      case ValueType::G_INT32_T: 
-        return set_value(from->get<gInt32t>());
-
-      case ValueType::INT64_T:
-        return set_value(from->get<int64_t>());
-
-      case ValueType::STRINGS:
-        return set_value(from->get<Strings>());
-      case ValueType::G_STRINGS:
-        return set_value(from->get<gStrings>());
-
-      case ValueType::INT64S:
-        return set_value(from->get<Int64s>());
-      case ValueType::DOUBLES:
-        return set_value(from->get<Doubles>());
-
-      case ValueType::ENUMEXT:
-        return set_value(from->get<EnumExt>());
-      case ValueType::G_ENUMEXT:
-        return set_value(from->get<gEnumExt>());
-
-      case ValueType::ENUM:
-      default:
-        HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Type %s", str().c_str());
-    }
-  }
+  void set_value_from(Value::Ptr from);
 
   template<typename T>
   T get() const {
     if (type_ptr == nullptr)
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
-                "T get(): type=%s (UNKNOWN VALUE TYPE)", typeid(T).name());;
+      getting_error(typeid(T).name());
 
     return ((ValueDef<T>*)type_ptr)->get_value();
   }
@@ -565,102 +318,34 @@ class Value {
     return ((ValueDef<T>*)type_ptr)->get_ptr();
   }
 
-  TypeDef* get_type_ptr() {
-    return type_ptr;
-  }
+  TypeDef* get_type_ptr();
 
-  const ValueType get_type() const {
-    return type_ptr->get_type();
-  }
-    
+  const ValueType get_type() const;
+
+  void getting_error(const char* tname) const;
+
   /* a Default Value */
-  Ptr default_value(bool defaulted=true){
-    m_defaulted = defaulted;
-    return *this;
-  }
+  Ptr default_value(bool defaulted=true);
 
-  const bool is_default() const {
-    return m_defaulted;
-  }
+  const bool is_default() const;
 
   /* a Skippable property (no default value) */
-  const bool is_skippable() const {
-    return m_skippable;
-  }
+  const bool is_skippable() const;
     
   /* a Zero Token Type */
-  Ptr zero_token() {
-    m_no_token = true;
-    return *this;
-  }
+  Ptr zero_token();
   
-  const bool is_zero_token() const {
-    return m_no_token;
-  }
+  const bool is_zero_token() const;
 
   /* a Guarded Type */
-  const bool is_guarded() const {
-    return m_guarded;
-  }
+  const bool is_guarded() const;
 
-  void guarded(bool guarded){
-      m_guarded = guarded;
-  }
+  void guarded(bool guarded);
 
-  operator Value*() { 
-    return this;
-  }
+  operator Value*();
 
   /* represent value in string */
-  const std::string str() {
-    if (type_ptr == nullptr)
-      return "nullptr";
-      
-    switch(get_type()) {
-
-      case ValueType::STRING:
-        return ((ValueDef<std::string>*)type_ptr)->str();
-
-      case ValueType::BOOL: 
-        return ((ValueDef<bool>*)type_ptr)->str();
-      case ValueType::G_BOOL: 
-        return ((ValueDef<gBool>*)type_ptr)->str();
-
-      case ValueType::DOUBLE:
-        return ((ValueDef<double>*)type_ptr)->str();
-
-      case ValueType::UINT16_T:
-        return ((ValueDef<uint16_t>*)type_ptr)->str();
-
-      case ValueType::INT32_T:
-        return ((ValueDef<int32_t>*)type_ptr)->str();
-      case ValueType::G_INT32_T: 
-        return ((ValueDef<gInt32t>*)type_ptr)->str();
-
-      case ValueType::INT64_T:
-        return ((ValueDef<int64_t>*)type_ptr)->str();
-
-      case ValueType::STRINGS:
-        return ((ValueDef<Strings>*)type_ptr)->str();
-      case ValueType::G_STRINGS: 
-        return ((ValueDef<gStrings>*)type_ptr)->str();
-
-      case ValueType::INT64S:
-        return ((ValueDef<Int64s>*)type_ptr)->str();
-      case ValueType::DOUBLES:
-        return ((ValueDef<Doubles>*)type_ptr)->str();
-
-      case ValueType::ENUMEXT:
-        return ((ValueDef<EnumExt>*)type_ptr)->str();
-      case ValueType::G_ENUMEXT:
-        return ((ValueDef<gEnumExt>*)type_ptr)->str();
-
-      case ValueType::ENUM:
-        return "An ENUM TYPE";
-      default:
-        return "invalid option type";
-    }
-  }
+  const std::string str();
   private:
 
   TypeDef* type_ptr = nullptr;
@@ -675,5 +360,10 @@ class Value {
 
 
 }} // namespace SWC::Property
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/core/config/Property.cc"
+#endif 
 
 #endif // swc_core_config_Property_h

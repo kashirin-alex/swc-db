@@ -38,118 +38,41 @@ namespace Logger {
 class LogWriter {
   public:
   
-  static const constexpr char *name[] = {
-    "FATAL",
-    "ALERT",
-    "CRIT",
-    "ERROR",
-    "WARN",
-    "NOTICE",
-    "INFO",
-    "DEBUG",
-    "NOTSET"
-  };
+  static const std::string repr(uint8_t priority);
 
-  static const std::string repr(uint8_t priority) {
-    return priority < LOG_NOTSET ? 
-            name[priority] 
-          : "undefined logging level: " +std::to_string(priority);
-  }
+  static const char* get_name(uint8_t priority);
 
-  static uint8_t from_string(const std::string& loglevel) {
-    if(loglevel == "info")
-      return LOG_INFO;
-    if(loglevel == "debug")
-      return LOG_DEBUG;
-    if(loglevel == "notice")
-      return LOG_NOTICE;
-    if(loglevel == "warn")
-      return LOG_WARN;
-    if(loglevel == "error")
-      return LOG_ERROR;
-    if(loglevel == "crit")
-      return LOG_CRIT;
-    if(loglevel == "alert")
-      return LOG_ALERT;
-    if(loglevel == "fatal")
-      return LOG_FATAL;
-    return -1;
-  }
+  static uint8_t from_string(const std::string& loglevel);
 
   std::mutex    mutex;
 
-  LogWriter(const std::string& name = "", const std::string& logs_path = "") 
-            : m_name(name), m_logs_path(logs_path), 
-              m_file_out(stdout), m_file_err(stderr), 
-              m_priority(LOG_INFO), m_show_line_numbers(true), 
-              m_daemon(false), m_last_time(0) {
-    //std::cout << " LogWriter()=" << (size_t)this << "\n";
-  }
+  LogWriter(const std::string& name="", const std::string& logs_path="");
   
-  void initialize(const std::string& name) {
-    //std::cout << " LogWriter::initialize name=" << name 
-    //          << " ptr=" << (size_t)this << "\n";
+  void initialize(const std::string& name);
 
-    std::lock_guard<std::mutex> lock(mutex);
-    m_name.clear();
-    m_name.append(name);
-  }
+  void daemon(const std::string& logs_path);
 
-  void daemon(const std::string& logs_path) {
-    //std::cout << " LogWriter::daemon logs_path=" << logs_path 
-    //          << " ptr=" << (size_t)this << "\n";
-    errno = 0;
+  void set_level(uint8_t level);
 
-    std::lock_guard<std::mutex> lock(mutex);
-    m_logs_path = logs_path;
-    if(m_logs_path.back() != '/')
-      m_logs_path.append("/");
-    m_daemon = true;
+  const uint8_t get_level() const;
 
-    renew_files();
+  const bool is_enabled(uint8_t level) const;
 
-    if(errno) 
-      throw std::runtime_error(
-        "SWC::Logger::initialize err="
-        + std::to_string(errno)+"("+strerror(errno)+")"
-      );
-  }
+  const bool show_line_numbers() const;
 
-  void set_level(uint8_t level) {
-    m_priority = level;
-  }
-
-  const uint8_t get_level() const {
-    return m_priority;
-  }
-
-  const bool is_enabled(uint8_t level) const {
-    return level <= m_priority;
-  }
-
-  const bool show_line_numbers() const {
-    return m_show_line_numbers;
-  }
-
-  const uint32_t seconds() {
-    auto t = ::time(0);
-    if(m_daemon && m_last_time < t-86400)
-      renew_files();
-    return (uint32_t)(t-86400*(t/86400)); 
-    // seconds since start of a day
-  }
+  const uint32_t seconds();
 
   template<typename T>
   void log(uint8_t priority, const T& msg) {
     std::lock_guard<std::mutex> lock(mutex);
-    std::cout << seconds() << ' ' << name[priority] 
+    std::cout << seconds() << ' ' << get_name(priority) 
               << ": " << msg << std::endl;
   }
 
   template<typename T>
   void log(uint8_t priority, const char* filen, int fline, const T& msg) {
     std::lock_guard<std::mutex> lock(mutex);
-    std::cout << seconds() << ' ' << name[priority] 
+    std::cout << seconds() << ' ' << get_name(priority) 
               << ": (" << filen << ':' << fline << ") "
               << msg << std::endl;
   }
@@ -158,7 +81,7 @@ class LogWriter {
   void log(uint8_t priority, const char *format, 
            Args... args) {
     std::lock_guard<std::mutex> lock(mutex);
-    std::cout << seconds() << ' ' << name[priority] << ": ";
+    std::cout << seconds() << ' ' << get_name(priority) << ": ";
     std::printf(format, args...);
     std::cout << std::endl;
   }
@@ -167,7 +90,7 @@ class LogWriter {
   void log(uint8_t priority, const char* filen, int fline, const char *format,
            Args... args) {
     std::lock_guard<std::mutex> lock(mutex);
-    std::cout << seconds() << ' ' << name[priority]
+    std::cout << seconds() << ' ' << get_name(priority)
               << ": (" << filen << ':' << fline << ") ";
     std::printf(format, args...);
     std::cout << std::endl;
@@ -183,63 +106,14 @@ class LogWriter {
     log(LOG_DEBUG, format, args...);
   }
 
-  void flush() {
-    std::lock_guard<std::mutex> lock(mutex);
-    _flush();
-  }
-
   private:
 
-  void renew_files() {
-    errno = 0;
-    m_last_time = (::time(0)/86400)*86400;
-    auto ltm = localtime(&m_last_time);
-    
-    std::string filepath(m_logs_path);
-    ::mkdir(filepath.c_str(), 0755);
-    filepath.append(std::to_string(1900+ltm->tm_year));
-    ::mkdir(filepath.c_str(), 0755);
-    filepath.append("/");
-    filepath.append(std::to_string(1+ltm->tm_mon));
-    ::mkdir(filepath.c_str(), 0755);
-    filepath.append("/");
-    filepath.append(std::to_string(ltm->tm_mday));
-    ::mkdir(filepath.c_str(), 0755);
-    if(errno == EEXIST)
-      errno = 0;
-
-    filepath.append("/");
-    filepath.append(m_name);
-
-    std::string filepath_out(filepath+".log");
-    std::string filepath_err(filepath+".err");
-
-    if(!errno) {
-      std::cout << "Changing Standard Output File to=" << filepath_out << "\n";
-      m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
-
-      std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
-      m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
-    }
-
-    /* else { fallback
-      rdbuf
-      m_file_out = std::freopen('0', "w", m_file_out);
-      m_file_err = std::freopen('1', "w", m_file_err);
-      ::fdopen(0, "wt");
-    }*/
-
-  }
-
-  void _flush() {
-    ::fflush(m_file_out);
-    ::fflush(m_file_err);
-  }
+  void renew_files();
 
   std::string           m_name;
   std::string           m_logs_path;
   FILE*                 m_file_out;
-  FILE*                 m_file_err;
+  //FILE*               m_file_err;
   std::atomic<uint8_t>  m_priority;
   bool                  m_show_line_numbers;
   bool                  m_daemon;
@@ -297,11 +171,11 @@ extern LogWriter logger;
     std::lock_guard<std::mutex> lock(Logger::logger.mutex); \
     if(Logger::logger.show_line_numbers()) \
       std::cout << Logger::logger.seconds() \
-                << ' ' << Logger::logger.name[priority]  \
+                << ' ' << Logger::logger.get_name(priority)  \
                 << ": (" << __FILE__ << ':' << __LINE__ << ") "; \
     else \
       std::cout << Logger::logger.seconds() \
-                << ' ' << Logger::logger.name[priority] << ": "; \
+                << ' ' << Logger::logger.get_name(priority) << ": "; \
   std::cout 
 #define SWC_LOG_OUT_END ""; if(_priority_ == LOG_FATAL) HT_ABORT; }
 

@@ -5,9 +5,11 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
-#include "swcdb/core/FileUtils.h"
+#include <memory>
+#include "swcdb/core/Error.h"
 
 #include "swcdb/core/config/Properties.h"
+#include "swcdb/core/config/PropertiesParser.h"
 
 
 namespace SWC { namespace Config {
@@ -24,13 +26,13 @@ class Settings {
 
   Properties      properties;
 
-  Settings() { 
-    cmdline_desc.definition(usage_str());
-  }
+  Settings();
 
-  virtual ~Settings() { }
+  virtual ~Settings();
 
   void init(int argc, char *argv[]);
+
+  void init_options();
 
   void init_app_options();
 
@@ -41,37 +43,16 @@ class Settings {
   void init_client_options();
   
   void init_post_cmd_args();
+ 
+  void parse_args(int argc, char *argv[]);
 
-  void init_process() {
-    bool daemon = properties.has("daemon");
+  void parse_file(const std::string &fname, const std::string &onchg);
 
-    if(daemon) {
-      if(pid_t p = fork())
-        exit(0);
-    }
-    auto pid = getpid();
+  void init_process();
 
-    executable.append(".");
-    executable.append(std::to_string((size_t)pid));
+  const bool has(const std::string &name) const;
 
-    Logger::logger.initialize(executable);
-    if(daemon)
-      Logger::logger.daemon(properties.get_str("swc.logging.path"));
-    
-    if(properties.get<gBool>("verbose")) {
-      SWC_LOG_OUT(LOG_NOTICE) 
-        << "Initialized " << executable << " (" << SWC::VERSION << ")\n"
-        << "Process Settings: \n" << properties.to_string() << SWC_LOG_OUT_END;
-    }
-  }
-
-  const bool has(const std::string &name) const {
-    return properties.has(name);
-  }
-
-  const bool defaulted(const std::string &name) {
-    return properties.defaulted(name);
-  }
+  const bool defaulted(const std::string &name);
 
   template <typename T>
   T get(const std::string &name) {
@@ -88,39 +69,12 @@ class Settings {
     return properties.get<T>(name, default_value);
   }
 
-  void alias(const std::string &minor, const std::string &major) {
-    properties.alias(minor, major);
-  } 
-
-  void parse_args(int argc, char *argv[]);
-
-  void parse_file(const std::string &fname, const std::string &onchg) {
-    if(fname.empty())
-      return;
-    if(!FileUtils::exists(fname))
-      HT_THROWF(Error::FS_FILE_NOT_FOUND, 
-                "cfg file=%s not found", fname.c_str());
-    
-    properties.load(fname, file_desc, cmdline_desc, false);
-    if(!onchg.empty())
-      properties.load_files_by(onchg, file_desc, cmdline_desc, false);
-    
-    properties.load_from(m_cmd_args);  // Inforce cmdline properties 
-  }
-
-  std::string usage_str(const char *usage = 0) {
-    if (!usage)
-      usage = "Usage: %s [options]\n\nOptions:";
-
-    if (strstr(usage, "%s"))
-      return format(usage, executable.c_str());
-
-    return usage;
-  }
+  void alias(const std::string &minor, const std::string &major);
+  
+  std::string usage_str(const char *usage = 0);
 
   private:
 
-  void init_options();
 
   std::string          cfg_filename;
   Parser::Options      m_cmd_args;
@@ -174,7 +128,7 @@ class Config {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../lib/swcdb/config/Settings.cc"
+#include "../../../../lib/swcdb/core/config/Settings.cc"
 #endif 
 
 #endif // swc_core_config_Config_h

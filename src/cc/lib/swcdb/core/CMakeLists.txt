@@ -11,6 +11,10 @@ set(swcdb_core_sources
 	String.cc
 	Error.cc
 	Logger.cc
+	Checksum.cc
+	StaticBuffer.cc
+	DynamicBuffer.cc
+	Encoder.cc
 	FileUtils.cc
 	Random.cc
 )
@@ -36,6 +40,10 @@ ADD_LIB_TARGET(
 # lib-swcdb_core_config, #ifndef swc_core_config_FileName_h
 set(swcdb_core_config_sources
 	config/Settings.cc
+	config/Properties.cc
+	config/Property.cc
+	config/PropertyValueEnumExt.cc
+	config/PropertiesParser.cc
 	# config/System.cc
 	# config/SystemInfo.cc
 )
@@ -44,6 +52,16 @@ ADD_LIB_TARGET(
 	NAME 		swcdb_core_config
 	SRCS 		${swcdb_core_config_sources}
 )
+
+
+set(swcdb_core_comm_sources
+	comm/Settings.cc
+)
+ADD_LIB_TARGET(
+	NAME 		swcdb_core_comm
+	SRCS 		${swcdb_core_comm_sources}
+)
+
 
 ADD_TEST_TARGET(
 	NAME core-serialization

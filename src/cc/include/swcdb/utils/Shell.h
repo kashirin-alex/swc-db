@@ -97,22 +97,22 @@ class Interface {
                 });
     if(opt != options.end()) {
 	    printf("\t\t\tran|%s|\n", line);
-      return (*opt)->call(this, line);
+      return (*opt)->call(line);
     } else {
       std::cout << "Unknown command='\033[31m" << line << "\033[00m'\n";
     }
     return true;
   }
   
-  static bool quit(Interface* ptr, const char* line) {
+  virtual bool quit(const char* line) {
     return false;
   }
 
-  static bool help(Interface* ptr, const char* line) {
+  virtual bool help(const char* line) {
     std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
     size_t offset_name = 0;
     size_t offset_desc = 0;
-    for(auto opt : ptr->options) {
+    for(auto opt : options) {
       if(offset_name < opt->name.length())
         offset_name = opt->name.length();
       if(offset_desc < opt->desc.length())
@@ -120,7 +120,7 @@ class Interface {
     }
     offset_name += 4;
     offset_desc += 4;
-    for(auto opt : ptr->options)
+    for(auto opt : options)
       std::cout << std::left << std::setw(2) << " "
                 << std::left << std::setw(offset_name) << opt->name
                 << std::left << std::setw(offset_desc) << opt->desc
@@ -134,7 +134,7 @@ class Interface {
   protected:
 
   struct Option {
-    typedef std::function<bool(Interface*, const char*)> Call_t;
+    typedef std::function<bool(const char*)> Call_t;
     Option(const std::string& name, const std::string& desc, 
             const Call_t& call, const re2::RE2* re) 
           : name(name), desc(desc), call(call), re(re) { }
@@ -150,9 +150,11 @@ class Interface {
 
   std::vector<Option*> options {
     new Option("quit", "Quit or Exit the Console", 
-                quit, new re2::RE2("(^|\\s+)(quit|exit)(\\s+|);(\\s+|$)")),
+                [ptr=this](const char* line){return ptr->quit(line);}, 
+                new re2::RE2("(^|\\s+)(quit|exit)(\\s+|);(\\s+|$)")),
     new Option("help", "Commands help information", 
-                help, new re2::RE2("(^|\\s+)help(\\s+|);(\\s+|$)"))
+                [ptr=this](const char* line){return ptr->help(line);}, 
+                new re2::RE2("(^|\\s+)help(\\s+|);(\\s+|$)"))
   };
 }; 
 

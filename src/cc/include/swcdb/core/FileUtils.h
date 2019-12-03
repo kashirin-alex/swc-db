@@ -129,12 +129,7 @@ namespace SWC {
      *
      * @return true if the file or directory exists, otherwise false
      */
-    inline const bool exists(const std::string &fname) {
-      struct stat statbuf;
-      if (stat(fname.c_str(), &statbuf) != 0)
-        return false;
-      return true;
-    }
+    const bool exists(const std::string &fname);
 
     /** Unlinks (deletes) a file or directory
      *
