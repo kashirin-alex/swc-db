@@ -5,6 +5,7 @@
 #ifndef swc_client_Settings_h
 #define swc_client_Settings_h
 
+#include "swcdb/core/config/Settings.h"
 namespace SWC{ namespace Config {
 
 void Settings::init_client_options() {

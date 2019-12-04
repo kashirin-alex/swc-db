@@ -7,6 +7,10 @@
 
 #include "swcdb/fs/FileSystem.h"
 
+#include "swcdb/core/Serialization.h"
+#include "swcdb/core/comm/ConnHandler.h"
+
+
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fs/Broker/Protocol/req/Exists.h"
 #include "swcdb/fs/Broker/Protocol/req/Remove.h"

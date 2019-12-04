@@ -5,544 +5,97 @@
 #ifndef swc_lib_fs_Hadoop_FileSystem_h
 #define swc_lib_fs_Hadoop_FileSystem_h
 
-#include <iostream>
 #include "swcdb/fs/FileSystem.h"
-
 #include <hdfs.h>
 
 namespace SWC{ namespace FS {
 
 bool apply_hadoop();
 
-struct SmartFdHadoop;
+
 
 struct SmartFdHadoop : public SmartFd {
   public:
   
   typedef std::shared_ptr<SmartFdHadoop> Ptr;
   
-  static Ptr make_ptr(const std::string &filepath, uint32_t flags){
-    return std::make_shared<SmartFdHadoop>(filepath, flags);
-  }
+  static Ptr make_ptr(const std::string &filepath, uint32_t flags);
 
-  static Ptr make_ptr(SmartFd::Ptr &smart_fd){
-    return std::make_shared<SmartFdHadoop>(
-      smart_fd->filepath(), smart_fd->flags(), 
-      smart_fd->fd(), smart_fd->pos()
-    );
-  }
+  static Ptr make_ptr(SmartFd::Ptr &smart_fd);
 
   SmartFdHadoop(const std::string &filepath, uint32_t flags,
-                int32_t fd=-1, uint64_t pos=0)
-               : SmartFd(filepath, flags, fd, pos) { }
-  virtual ~SmartFdHadoop() { }
+                int32_t fd=-1, uint64_t pos=0);
+
+  virtual ~SmartFdHadoop();
 
   hdfsFile file = 0;
 };
 
 
-
+ 
 class FileSystemHadoop: public FileSystem {
   public:
 
-  FileSystemHadoop() 
-    : FileSystem(
-        Env::Config::settings()->get<std::string>("swc.fs.hadoop.path.root"),
-        apply_hadoop()
-      ),
-      m_run(true), m_nxt_fd(0)
-  { 
-    setup_connection();
-  }
+  FileSystemHadoop();
 
-  void setup_connection(){
+  void setup_connection();
 
-    uint32_t tries=0; 
-    while(m_run.load() && !initialize()) {
-      SWC_LOGF(LOG_ERROR, "FS-Hadoop, unable to initialize connection to hadoop, try=%d",
-               ++tries);
-    }
-    hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
-    
-    /* 
-    char* host;
-    int32_t port;
-    hdfsConfGetStr("hdfs.namenode.host", &host);
-    hdfsConfGetInt("hdfs.namenode.port", &port);
-    SWC_LOGF(LOG_INFO, "FS-Hadoop, connected to namenode=[%s]:%d", host, port);
-    hdfsConfStrFree(host);
-    */
+  bool initialize();
 
-    // status check
-    char buffer[256];
-    hdfsGetWorkingDirectory(m_filesystem, buffer, 256);
-    SWC_LOGF(LOG_DEBUG, "FS-Hadoop, working Dir='%s'", buffer);
+  virtual ~FileSystemHadoop();
 
-
-  }
-
-  bool initialize(){
-    
-    if (Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
-      for(auto& h : Env::Config::settings()->get<Strings>(
-                                    "swc.fs.hadoop.namenode")){
-	      hdfsBuilder* bld = hdfsNewBuilder();
-        hdfsBuilderSetNameNode(bld, h.c_str());
-
-        if (Env::Config::settings()->has("swc.fs.hadoop.namenode.port")) 
-          hdfsBuilderSetNameNodePort(
-            bld, Env::Config::settings()->get<int32_t>(
-              "swc.fs.hadoop.namenode.port"));
-
-        if (Env::Config::settings()->has("swc.fs.hadoop.user")) 
-          hdfsBuilderSetUserName(
-            bld, 
-            Env::Config::settings()->get<std::string>("swc.fs.hadoop.user").c_str()
-          );
-        
-        m_filesystem = hdfsBuilderConnect(bld);
-        SWC_LOGF(LOG_DEBUG, "Connecting to namenode=%s", h.c_str());
-
-        if(m_filesystem != nullptr) {
-          errno = Error::OK;
-          // check status, namenode need to be active
-          int64_t sz_used = hdfsGetUsed(m_filesystem); 
-          if(sz_used == -1) {
-            SWC_LOGF(LOG_ERROR, "hdfsGetUsed('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
-            continue;
-          }
-          SWC_LOGF(LOG_INFO, "Non DFS Used bytes: %ld", sz_used);
-          
-          sz_used = hdfsGetCapacity(m_filesystem); 
-          if(sz_used == -1) {
-            SWC_LOGF(LOG_ERROR, "hdfsGetCapacity('%s') failed - %d(%s)", h.c_str(), errno, strerror(errno));
-            continue;
-          }
-          SWC_LOGF(LOG_INFO, "Configured Capacity bytes: %ld", sz_used);
-
-          return true;
-        }
-      }
-
-    } else {
-	    hdfsBuilder* bld = hdfsNewBuilder();
-       //"default" > read hadoop config from LIBHDFS3_CONF=path
-      hdfsBuilderSetNameNode(bld, "default"); 
-
-      m_filesystem = hdfsBuilderConnect(bld);
-      
-      char* value;
-      hdfsConfGetStr("fs.defaultFS", &value);
-      SWC_LOGF(LOG_DEBUG, "FS-Hadoop, connecting to default namenode=%s", value);
-    }
-    
-    return m_filesystem != nullptr;
-  }
-
-  virtual ~FileSystemHadoop(){ std::cout << " ~FileSystemHadoop() \n"; }
-
-  void stop() override {
-    m_run.store(false);
-    if(m_filesystem != nullptr)
-      hdfsDisconnect(m_filesystem);
-  }
+  void stop() override;
 
   Types::Fs get_type() override;
 
-  const std::string to_string() override {
-    return format(
-      "(type=HADOOP path_root=%s path_data=%s)", 
-      path_root.c_str(),
-      path_data.c_str()
-    );
-  }
+  const std::string to_string() override;
 
 
 
 
-  bool exists(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    bool state = hdfsExists(m_filesystem, abspath.c_str()) == 0;
-    err = errno==2?0:errno;
-    SWC_LOGF(LOG_DEBUG, "exists state='%d' err='%d' path='%s'", 
-              (int)state, err, abspath.c_str());
-    return state;
-  }
+  bool exists(int &err, const std::string &name) override;
   
-  void remove(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
-      err = errno == 5? 2: errno;
-      if(err != 2) {
-        SWC_LOGF(LOG_ERROR, "remove('%s') failed - %s", abspath.c_str(), strerror(err));
-        return;
-      }
-    }
-    SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
-  }
+  void remove(int &err, const std::string &name) override;
 
-  size_t length(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    
-    size_t len = 0; 
-    hdfsFileInfo *fileInfo;
+  size_t length(int &err, const std::string &name) override;
 
-    if((fileInfo = hdfsGetPathInfo(m_filesystem, abspath.c_str())) == 0) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "length('%s') failed - %s", abspath.c_str(), strerror(err));
-      return len;
-    }
-    len = fileInfo->mSize;
-    hdfsFreeFileInfo(fileInfo, 1);
+  void mkdirs(int &err, const std::string &name) override;
 
-    SWC_LOGF(LOG_DEBUG, "length len='%d' path='%s'", len, abspath.c_str());
-    return len;
-  }
+  void readdir(int &err, const std::string &name, 
+                DirentList &results) override;
 
-  void mkdirs(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
-    SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
-  
-    errno = 0;
-    hdfsCreateDirectory(m_filesystem, abspath.c_str());
-    err = errno;
-  }
-
-  void readdir(int &err, const std::string &name, DirentList &results) override {
-    std::string abspath = get_abspath(name);
-    SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
-
-    Dirent entry;
-    hdfsFileInfo *fileInfo;
-    int numEntries;
-
-    errno = 0;
-    if ((fileInfo = hdfsListDirectory(
-                      m_filesystem, abspath.c_str(), &numEntries)) == 0) {
-      if(errno != 0) {
-        err = errno;
-        SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s", 
-                  abspath.c_str(), strerror(errno)); 
-      }
-      return;
-    }
-
-    for (int i=0; i<numEntries; i++) {
-      if (fileInfo[i].mName[0] == '.' || fileInfo[i].mName[0] == 0)
-        continue;
-      const char *ptr;
-      if ((ptr = strrchr(fileInfo[i].mName, '/')))
-	      entry.name = (std::string)(ptr+1);
-      else
-	      entry.name = (std::string)fileInfo[i].mName;
-
-      entry.length = fileInfo[i].mSize;
-      entry.last_modification_time = fileInfo[i].mLastMod;
-      entry.is_dir = fileInfo[i].mKind == kObjectKindDirectory;
-      results.push_back(entry);      
-    }
-
-    hdfsFreeFileInfo(fileInfo, numEntries);
-  }
-
-  void rmdir(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
-    errno = 0;
-    if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
-      err = errno == 5? 2: errno; // io error(not-exists)
-      if(err != 2) {
-        SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s", abspath.c_str(), strerror(errno));
-        return;
-      }
-    }
-    SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
-  }
+  void rmdir(int &err, const std::string &name) override;
 
   void rename(int &err, const std::string &from, 
-                        const std::string &to)  override {
-    std::string abspath_from = get_abspath(from);
-    std::string abspath_to = get_abspath(to);
-    errno = 0;
-    if (hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str()) == -1) {
-      SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
-                abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
-      return;
-    }
-    SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
-              abspath_from.c_str(), abspath_to.c_str());
-  }
+                        const std::string &to)  override;
 
-  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr &smartfd){
-    auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
-    if(!hd_fd){
-      hd_fd = SmartFdHadoop::make_ptr(smartfd);
-      smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
-    }
-    return hd_fd;
-  }
+  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr &smartfd);
 
   void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
-             StaticBuffer &buffer) {
-    SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
-
-    create(err, smartfd, 0, replication, blksz);
-    if(!smartfd->valid() || err != Error::OK){
-      if(err == Error::OK) 
-        err = EBADF;
-      goto finish;
-    }
-    
-    if(buffer.size > 0) {
-      append(err, smartfd, buffer, Flags::FLUSH);
-      if(err != Error::OK)
-        goto finish;
-    }
-
-    finish:
-      int errtmp;
-      if(smartfd->valid())
-        close(err == Error::OK ? err : errtmp, smartfd);
-        
-    if(err != Error::OK)
-      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-  }
+             StaticBuffer &buffer) override;
 
   void create(int &err, SmartFd::Ptr &smartfd, 
-              int32_t bufsz, int32_t replication, int64_t blksz) override {
+              int32_t bufsz, int32_t replication, int64_t blksz) override;
 
-    std::string abspath = get_abspath(smartfd->filepath());
-    SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
-              smartfd->to_string().c_str(), 
-              bufsz, (int)replication, (Lld)blksz);
-
-    int oflags = O_WRONLY;
-    if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
-      oflags |= O_APPEND;
-
-    if (bufsz == -1)
-      bufsz = 0;
-    if (replication == -1)
-      replication = 0;
-    if (blksz == -1)
-      blksz = 0;
-
-    auto hadoop_fd = get_fd(smartfd);
-    /* Open the file */
-    if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
-                                        bufsz, replication, blksz)) == 0) {
-      err = errno;
-      hadoop_fd->fd(-1);
-      SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-                
-      if(err == EACCES || err == ENOENT)
-        err == Error::FS_PATH_NOT_FOUND;
-      else if (err == EPERM)
-        err == Error::FS_PERMISSION_DENIED;
-      return;
-    }
-
-    hadoop_fd->fd(++m_nxt_fd);
-    SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
-              smartfd->to_string().c_str(), 
-              bufsz, (int)replication, (Lld)blksz);
-  }
-
-  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz = -1) override {
-
-    std::string abspath = get_abspath(smartfd->filepath());
-    SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
-              smartfd->to_string().c_str(), bufsz);
-
-    int oflags = O_RDONLY;
-
-    auto hadoop_fd = get_fd(smartfd);
-    /* Open the file */
-    if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
-                                        bufsz==-1? 0 : bufsz, 0, 0)) == 0) {
-      err = errno;
-      hadoop_fd->fd(-1);
-      SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-                
-      if(err == EACCES || err == ENOENT)
-        err == Error::FS_PATH_NOT_FOUND;
-      else if (err == EPERM)
-        err == Error::FS_PERMISSION_DENIED;
-      return;
-    }
-
-    hadoop_fd->fd(++m_nxt_fd);
-    SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
-  }
+  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz = -1) override;
   
   size_t read(int &err, SmartFd::Ptr &smartfd, 
-              void *dst, size_t amount) override {
+              void *dst, size_t amount) override;
 
-    auto hadoop_fd = get_fd(smartfd);
-    
-    SWC_LOGF(LOG_DEBUG, "read %s amount=%d file-%lld", hadoop_fd->to_string().c_str(), 
-              amount, (size_t) hadoop_fd->file);
-    ssize_t nread = 0;
-    errno = 0;
-
-    /* 
-    uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
-                 == (uint64_t)-1) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%d", 
-                errno, strerror(errno), smartfd->to_string().c_str(), offset);
-      return nread;
-    }
-    */
-    
-    nread = (ssize_t)hdfsRead(
-      m_filesystem, hadoop_fd->file, dst, (tSize)amount);
-    if (nread == -1) {
-      nread = 0;
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-    } else {
-      if(nread != amount)
-        err = Error::FS_EOF;
-      hadoop_fd->pos(hadoop_fd->pos()+nread);
-      SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%d eof=%d", 
-                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
-    }
-    return nread;
-  }
-
-  
   size_t pread(int &err, SmartFd::Ptr &smartfd, 
-               uint64_t offset, void *dst, size_t amount) override {
-
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "pread %s offset=%d amount=%d file-%lld", 
-              hadoop_fd->to_string().c_str(),
-              offset, amount, (size_t) hadoop_fd->file);
-
-    errno = 0;
-    ssize_t nread = (ssize_t)hdfsPread(
-      m_filesystem, hadoop_fd->file, (tOffset)offset, dst, (tSize)amount);
-    if (nread == -1) {
-      nread = 0;
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-    } else {
-      if(nread != amount)
-        err = Error::FS_EOF;
-      hadoop_fd->pos(offset+nread);
-      SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%d eof=%d", 
-                 smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
-    }
-    return nread;
-  }
+               uint64_t offset, void *dst, size_t amount) override;
 
   size_t append(int &err, SmartFd::Ptr &smartfd, 
-                StaticBuffer &buffer, Flags flags) override {
-    
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "append %s amount=%d flags=%d", 
-              hadoop_fd->to_string().c_str(), buffer.size, flags);
-    
-    ssize_t nwritten = 0;
-    errno = 0;
-    /* 
-    uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
-           == (uint64_t)-1) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%d", 
-                errno, strerror(errno), smartfd->to_string().c_str(), offset);
-      return nwritten;
-    }
-    */
+                StaticBuffer &buffer, Flags flags) override;
 
-    if ((nwritten = (ssize_t)hdfsWrite(m_filesystem, hadoop_fd->file, 
-                             buffer.base, (tSize)buffer.size)) == -1) {
-      nwritten = 0;
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-      return nwritten;
-    }
-    hadoop_fd->pos(smartfd->pos()+nwritten);
+  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override;
 
-    if (flags == Flags::FLUSH || flags == Flags::SYNC) {
-      if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
-        err = errno;
-        SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
-                  errno, strerror(errno), smartfd->to_string().c_str());
-        return nwritten;
-      }
-    }
-    SWC_LOGF(LOG_DEBUG, "appended %s amount=%d", 
-              smartfd->to_string().c_str(), nwritten);
-    return nwritten;
-  }
+  void flush(int &err, SmartFd::Ptr &smartfd) override;
 
-  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
+  void sync(int &err, SmartFd::Ptr &smartfd) override;
 
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "seek %s offset=%d", hadoop_fd->to_string().c_str(), offset);
-    
-    errno = 0;
-    uint64_t at = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
-    if (at == (uint64_t)-1 || at != Error::OK || errno != Error::OK) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "seek failed - at=%d %d(%s) %s", 
-                at, err, strerror(errno), smartfd->to_string().c_str());
-      return;
-    }
-    hadoop_fd->pos(offset);
-  }
-
-  void flush(int &err, SmartFd::Ptr &smartfd) override {
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "flush %s", hadoop_fd->to_string().c_str());
-
-    if (hdfsHFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-    }
-  }
-
-  void sync(int &err, SmartFd::Ptr &smartfd) override {
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "sync %s", hadoop_fd->to_string().c_str());
-
-    if (hdfsHSync(m_filesystem, hadoop_fd->file) != Error::OK) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
-    }
-  }
-
-  void close(int &err, SmartFd::Ptr &smartfd) {
-    
-    auto hadoop_fd = get_fd(smartfd);
-    SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
-
-    if(hadoop_fd->file != 0) {
-      if(hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
-        err = errno;
-        SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
-                   errno, strerror(errno), smartfd->to_string().c_str());
-      }
-    } else 
-      err = EBADR;
-    smartfd->fd(-1);
-    smartfd->pos(0);
-  }
+  void close(int &err, SmartFd::Ptr &smartfd) override;
 
   private:
 	hdfsFS                m_filesystem;
@@ -559,5 +112,10 @@ extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop();
 void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env);
 }
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/fs/Hadoop/FileSystem.cc"
+#endif 
+
 
 #endif  // swc_lib_fs_Hadoop_FileSystem_h

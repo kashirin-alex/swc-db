@@ -17,57 +17,32 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
   typedef std::shared_ptr<SmartFd> Ptr;
   
   static Ptr make_ptr(const std::string &filepath, uint32_t flags, 
-                            int32_t fd=-1, uint64_t pos=0){
-    return std::make_shared<SmartFd>(filepath, flags, fd, pos);
-  }
+                      int32_t fd=-1, uint64_t pos=0);
 
   SmartFd(const std::string &filepath, uint32_t flags, 
-          int32_t fd=-1, uint64_t pos=0)
-          : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
-  }
+          int32_t fd=-1, uint64_t pos=0);
 
-  operator Ptr() { 
-    return shared_from_this();
-  }
+  operator Ptr();
 
-  virtual ~SmartFd() { }
+  virtual ~SmartFd();
 
-  const std::string& filepath() { 
-    return m_filepath; 
-  }
+  const std::string& filepath() const;
 
-  void flags(uint32_t flags) { 
-    m_flags = flags; 
-  }
+  void flags(uint32_t flags);
 
-  uint32_t flags() { 
-    return m_flags; 
-  }
+  const uint32_t flags() const;
 
-  void fd(int32_t fd) { 
-    m_fd = fd; 
-  }
+  void fd(int32_t fd);
 
-  int32_t fd() {
-    return m_fd; 
-  }
+  const int32_t fd() const;
 
-  void pos(uint64_t pos) {
-    m_pos = pos; 
-  }
+  void pos(uint64_t pos);
   
-  uint64_t pos() { 
-    return m_pos; 
-  }
+  const uint64_t pos() const;
 
-  bool valid() { 
-    return m_fd != -1; 
-  }
+  const bool valid() const;
 
-  const std::string to_string(){
-    return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
-                           m_filepath.c_str(), m_flags, m_fd, m_pos);
-  }
+  const std::string to_string() const;
 
   private:
   
@@ -79,5 +54,10 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 
 }}
 
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../lib/swcdb/fs/SmartFd.cc"
+#endif 
 
 #endif  // swc_lib_fs_SmartFd_h

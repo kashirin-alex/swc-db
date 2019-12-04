@@ -249,6 +249,7 @@ Exception::render_messages(std::ostream &out, const char *sep) const {
 
   for (Exception *p = prev; p; p = p->prev)
     out << sep << p->message();
+  out << std::endl;
   return out;
 }
 

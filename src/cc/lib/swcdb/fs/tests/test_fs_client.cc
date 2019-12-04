@@ -341,7 +341,7 @@ void run(size_t thread_id){
 
     err = Error::OK;
     Env::FsInterface::fs()->remove(err, smartfd->filepath());
-    if(err != Error::OK){ 
+    if(err != Error::OK){  
      std::cerr << "ERROR(remove) written-file err=" << err << "\n";
      exit(1);
     }

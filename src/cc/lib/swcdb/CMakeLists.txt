@@ -4,11 +4,13 @@
 
 add_subdirectory(core)          #ifndef swc_core_path_FileName_h
 
-add_subdirectory(client)        #ifndef swc_client_FileName_h
 
 add_subdirectory(fs)            #ifndef swc_fs_FileName_h
 
 add_subdirectory(db)            #ifndef swc_db_FileName_h
+
+
+add_subdirectory(client)        #ifndef swc_client_FileName_h
 
 
 add_subdirectory(ranger)        #ifndef swc_ranger_FileName_h

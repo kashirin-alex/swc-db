@@ -40,7 +40,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	columns
 	SRCS	Columns/tests/test_columns.cc
-	TARGETS	swcdb_core swcdb_core_config swcdb_core swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm ${BUILTIN_FS_TARGETS}
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}

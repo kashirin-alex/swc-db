@@ -2,7 +2,7 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
  
-#include "swcdb/manager/Settings.h"
+#include "swcdb/client/Settings.h"
 
 #include "swcdb/client/Clients.h"
 #include "swcdb/client/AppContext.h"
@@ -12,6 +12,10 @@
 
 #include <chrono>
 #include <thread>
+namespace SWC { namespace Config {
+void Settings::init_app_options() {}
+void Settings::init_post_cmd_args() {}
+}}
 
 
 class ReqHandler : public SWC::DispatchHandler{
