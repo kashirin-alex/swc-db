@@ -3,9 +3,9 @@
  */
 
 
+#include "swcdb/core/comm/ConnHandler.h"
 #include "swcdb/core/Checksum.h"
 
-#include "swcdb/core/comm/ConnHandler.h"
 
 
 namespace SWC { 

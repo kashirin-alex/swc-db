@@ -9,6 +9,7 @@
 #include <asio.hpp>
 #include <queue>
 #include <memory>
+#include "swcdb/core/Error.h"
 #include "swcdb/core/LockAtomicUnique.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/CommBuf.h"

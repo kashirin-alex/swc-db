@@ -62,40 +62,35 @@
 #else
 # include <cstdio>
 # ifndef HT_THROW_INPUT_OVERRUN
-#   define HT_THROW_INPUT_OVERRUN(_s_) do { \
+#   define HT_THROW_INPUT_OVERRUN(_s_) \
       std::fprintf(stderr, "Error: %s (%s:%d): input overrun deocding %s", \
                    HT_FUNC, __FILE__, __LINE__, _s_); \
-      abort(); \
-    } while (0)
+      abort();
 # endif
 # ifndef HT_THROW_BAD_VSTR
-#   define HT_THROW_BAD_VSTR(_s_) do { \
+#   define HT_THROW_BAD_VSTR(_s_) \
       std::fprintf(stderr, "Error: %s (%s:%d): malformed input decoding %s", \
                    HT_FUNC, __FILE__, __LINE__, _s_); \
-      abort(); \
-    } while (0)
+      abort(); 
 # endif
 # ifndef HT_THROW_BAD_VINT
-#   define HT_THROW_BAD_VINT(_s_) do { \
+#   define HT_THROW_BAD_VINT(_s_) \
       std::fprintf(stderr, "Error: %s (%s:%d): malformed input decoding %s", \
                    HT_FUNC, __FILE__, __LINE__, _s_); \
-      abort(); \
-    } while (0)
+      abort();
 # endif
 # ifndef HT_THROW_UNPOSSIBLE
-#   define HT_THROW_UNPOSSIBLE(_s_) do { \
+#   define HT_THROW_UNPOSSIBLE(_s_) \
       std::fprintf(stderr, "Error: %s (%s:%d): unpossible!: %s", \
                    HT_FUNC, __FILE__, __LINE__, _s_); \
-      abort(); \
-    } while (0)
+      abort();
 # endif
 #endif
 
-#define HT_DECODE_NEED(_r_, _l_) do { \
+#define HT_DECODE_NEED(_r_, _l_) \
   if (_r_ < _l_) \
     HT_THROW_INPUT_OVERRUN(_r_, _l_); \
-  _r_ -= _l_; \
-} while (0)
+  _r_ -= _l_;
 
 
 /*
@@ -112,41 +107,36 @@
 /*
  * Decode a 8-bit integer (a byte/character)
  */
-#define HT_DECODE_I8(_ip_, _r_, _v_) do { \
+#define HT_DECODE_I8(_ip_, _r_, _v_) \
   HT_DECODE_NEED(_r_, 1); \
-  _v_ = *(_ip_)++; \
-} while (0)
+  _v_ = *(_ip_)++;
 
 /*
  * Encode a 16 bit integer in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_ENCODE_I16(_op_, _v_) do { \
+# define HT_ENCODE_I16(_op_, _v_) \
     memcpy(_op_, &(_v_), 2); \
-    _op_ += 2; \
-  } while (0)
+    _op_ += 2;
 #else
-# define HT_ENCODE_I16(_op_, _v_) do { \
+# define HT_ENCODE_I16(_op_, _v_) \
     *(_op_)++ = (uint8_t)(_v_); \
-    *(_op_)++ = (uint8_t)((_v_) >> 8); \
-  } while (0)
+    *(_op_)++ = (uint8_t)((_v_) >> 8);
 #endif
 
 /*
  * Decoded a 16 bit integer encoded in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_DECODE_I16(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I16(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 2); \
     memcpy(&(_v_), _ip_, 2); \
-    _ip_ += 2; \
-  } while (0)
+    _ip_ += 2;
 #else
-# define HT_DECODE_I16(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I16(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 2); \
     _v_ = *(_ip_)++; \
-    _v_ |= (*(_ip_)++ << 8); \
-  } while (0)
+    _v_ |= (*(_ip_)++ << 8);
 #endif
 
 
@@ -154,36 +144,32 @@
  * Enocde a 32-bit integer in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_ENCODE_I32(_op_, _v_) do { \
+# define HT_ENCODE_I32(_op_, _v_) \
     memcpy(_op_, &(_v_), 4); \
-    _op_ += 4; \
-  } while (0)
+    _op_ += 4;
 #else
-# define HT_ENCODE_I32(_op_, _v_) do { \
+# define HT_ENCODE_I32(_op_, _v_) \
     *(_op_)++ = (uint8_t)(_v_); \
     *(_op_)++ = (uint8_t)((_v_) >> 8); \
     *(_op_)++ = (uint8_t)((_v_) >> 16); \
-    *(_op_)++ = (uint8_t)((_v_) >> 24); \
-  } while (0)
+    *(_op_)++ = (uint8_t)((_v_) >> 24);
 #endif
 
 /*
  * Decode a 32-bit integer encoded in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_DECODE_I32(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I32(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 4); \
     memcpy(&_v_, _ip_, 4); \
-    _ip_ += 4; \
-  } while (0)
+    _ip_ += 4;
 #else
-# define HT_DECODE_I32(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I32(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 4); \
     _v_ = *(_ip_)++; \
     _v_ |= (*(_ip_)++ << 8); \
     _v_ |= (*(_ip_)++ << 16); \
-    _v_ |= (*(_ip_)++ << 24); \
-  } while (0)
+    _v_ |= (*(_ip_)++ << 24);
 #endif
 
 
@@ -191,12 +177,11 @@
  * Encode a 64-bit integer in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_ENCODE_I64(_op_, _v_) do { \
+# define HT_ENCODE_I64(_op_, _v_) \
     memcpy(_op_, &(_v_), 8); \
-    _op_ += 8; \
-  } while (0)
+    _op_ += 8;
 #else
-# define HT_ENCODE_I64(_op_, _v_) do { \
+# define HT_ENCODE_I64(_op_, _v_) \
     *(_op_)++ = (uint8_t)(_v_); \
     *(_op_)++ = (uint8_t)((_v_) >> 8); \
     *(_op_)++ = (uint8_t)((_v_) >> 16); \
@@ -204,21 +189,19 @@
     *(_op_)++ = (uint8_t)((_v_) >> 32); \
     *(_op_)++ = (uint8_t)((_v_) >> 40); \
     *(_op_)++ = (uint8_t)((_v_) >> 48); \
-    *(_op_)++ = (uint8_t)((_v_) >> 56); \
-  } while (0)
+    *(_op_)++ = (uint8_t)((_v_) >> 56);
 #endif
 
 /*
  * Decode a 64-bit integer encoded in little endian format
  */
 #ifdef HT_LITTLE_ENDIAN
-# define HT_DECODE_I64(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I64(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 8); \
     memcpy(&(_v_), _ip_, 8); \
-    _ip_ += 8; \
-  } while (0)
+    _ip_ += 8;
 #else
-# define HT_DECODE_I64(_ip_, _r_, _v_) do { \
+# define HT_DECODE_I64(_ip_, _r_, _v_) \
     HT_DECODE_NEED(_r_, 8); \
     _v_ = *(_ip_)++; \
     _v_ |= (*(_ip_)++ << 8); \
@@ -227,8 +210,7 @@
     _v_ |= ((uint64_t)(*(_ip_)++) << 32); \
     _v_ |= ((uint64_t)(*(_ip_)++) << 40); \
     _v_ |= ((uint64_t)(*(_ip_)++) << 48); \
-    _v_ |= ((uint64_t)(*(_ip_)++) << 56); \
-  } while (0)
+    _v_ |= ((uint64_t)(*(_ip_)++) << 56);
 #endif
 
 
@@ -378,10 +360,9 @@
  * @param _ip_ - input buffer pointer
  * @param _len_ - input buffer length
  */
-#define HT_ENCODE_BYTES(_op_, _ip_, _len_) do { \
+#define HT_ENCODE_BYTES(_op_, _ip_, _len_) \
   memcpy(_op_, _ip_, _len_); \
-  _op_ += _len_; \
-} while (0)
+  _op_ += _len_;
 
 /*
  * Decode a known-fixed bytes (data)
@@ -391,11 +372,10 @@
  * @param _out_ - variable for output
  * @param _len_ - input buffer length
  */
-#define HT_DECODE_BYTES(_ip_, _r_, _out_, _len_) do { \
+#define HT_DECODE_BYTES(_ip_, _r_, _out_, _len_) \
   HT_DECODE_NEED(_r_, _len_); \
   _out_ = (uint8_t *)(_ip_); \
-  _ip_ += _len_; \
-} while (0)
+  _ip_ += _len_;
 
 
 /*
@@ -405,11 +385,10 @@
  * @param _ip_ - input buffer pointer
  * @param _len_ - input buffer length
  */
-#define HT_ENCODE_BYTES32(_op_, _ip_, _len_) do { \
+#define HT_ENCODE_BYTES32(_op_, _ip_, _len_) \
   HT_ENCODE_I32(_op_, _len_); \
   memcpy(_op_, _ip_, _len_); \
-  _op_ += _len_; \
-} while (0)
+  _op_ += _len_;
 
 /*
  * Decode bytes32 (i32, data)
@@ -419,14 +398,13 @@
  * @param _out_ - variable for output
  * @param _len_ - variable for result length
  */
-#define HT_DECODE_BYTES32(_ip_, _r_, _out_, _len_) do { \
+#define HT_DECODE_BYTES32(_ip_, _r_, _out_, _len_) \
   uint32_t _tmp_; \
   HT_DECODE_I32(_ip_, _r_, _tmp_); \
   HT_DECODE_NEED(_r_, _tmp_); \
   _out_ = (uint8_t *)(_ip_); \
   _ip_ += _tmp_; \
-  _len_ = _tmp_; \
-} while (0)
+  _len_ = _tmp_;
 
 /*
  * Encode a string buffer in str16 format (i16, data, null)
@@ -435,15 +413,14 @@
  * @param _s_ - input buffer pointer
  * @param _len_ - input buffer length
  */
-#define HT_ENCODE_STR16(_op_, _s_, _len_) do { \
+#define HT_ENCODE_STR16(_op_, _s_, _len_) \
   uint16_t _s16tmp_ = _len_; /* just to be cautious */ \
   HT_ENCODE_I16(_op_, _s16tmp_); /* length */ \
   if (_s16tmp_ > 0) { \
     memcpy(_op_, _s_, _s16tmp_); /* data */ \
     _op_ += len; \
   } \
-  *(*bufp)++ = 0; /* null */ \
-} while (0)
+  *(*bufp)++ = 0; /* null */
 
 /*
  * Decode str16 (i16, data, null)
@@ -453,12 +430,11 @@
  * @param _s_ - variable for result
  * @param _len_ - variable for result length
  */
-#define HT_DECODE_STR16(_ip_, _r_, _s_, _len_) do { \
+#define HT_DECODE_STR16(_ip_, _r_, _s_, _len_) \
   HT_DECODE_I16(_ip_, _r_, _len_); \
   _s_ = (char *)(_ip_); \
   _r_ -= (size_t)(_len_) + 1; \
-  _ip_ += (size_t)(_len_) + 1; \
-} while (0)
+  _ip_ += (size_t)(_len_) + 1;
 
 
 /*
@@ -468,20 +444,19 @@
  * @param _s_ - input buffer pointer
  * @param _len_ - input buffer length
  */
-#define HT_ENCODE_VSTR(_op_, _s_, _len_) do { \
+#define HT_ENCODE_VSTR(_op_, _s_, _len_) \
   size_t _vs64tmp_ = _len_; /* ditto */ \
   HT_ENCODE_VI64(_op_, _vs64tmp_, break); \
   if (_vs64tmp_) { \
     memcpy((_op_), _s_, _vs64tmp_); \
     (_op_) += _vs64tmp_; \
   } \
-  *(_op_)++ = 0; \
-} while (0)
+  *(_op_)++ = 0;
 
 /*
  * Decode a vstr (vint, data, null)
  */
-#define HT_DECODE_VSTR(_ip_, _r_, _out_, _len_) do { \
+#define HT_DECODE_VSTR(_ip_, _r_, _out_, _len_) \
   uint64_t _tmp_; \
   HT_DECODE_VI64(_ip_, _r_, _tmp_, break); \
   if (_tmp_ > (uint64_t)(SIZE_MAX)) \
@@ -491,8 +466,7 @@
   HT_DECODE_NEED(_r_, _tmp_); \
   _ip_ += _tmp_; \
   if ((_ip_)[-1]) /* should be null */ \
-    HT_THROW_BAD_VSTR("vstr"); \
-} while (0)
+    HT_THROW_BAD_VSTR("vstr");
 
 
 #endif /* HT_SERIALIZATION_C_H */

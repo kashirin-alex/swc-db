@@ -8,6 +8,7 @@
 
 # lib-swcdb_core,  #ifndef swc_core_common_FileName_h
 set(swcdb_core_sources
+	Time.cc
 	String.cc
 	Error.cc
 	Logger.cc
@@ -17,6 +18,8 @@ set(swcdb_core_sources
 	Encoder.cc
 	FileUtils.cc
 	Random.cc
+	Serializable.cc
+	Serialization.cc
 )
 
 set(SWC_LIB_CORE_SHARED ${ATOMIC_LIBRARIES_SHARED} ${RE2_LIBRARIES_SHARED} 

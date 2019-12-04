@@ -29,14 +29,8 @@
 #define swc_core_Serializable_h
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/Logger.h"
-#include "swcdb/core/Error.h"
-#include "swcdb/core/Serialization.h"
 
 namespace SWC {
-
-  /// @addtogroup Common
-  /// @{
 
   /// Mixin class that provides a standard serialization interface.
   /// This class is designed to provide a standard serialization interface to
@@ -57,10 +51,10 @@ namespace SWC {
   /// void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) {
   ///   if (version == 1) {
   ///     m_num = Serialization::decode_i32(bufp, remainp);
-  ///     // Check to see if we're at the end of the record and if so return.
-  ///     if (*remainp == 0)
-  ///       return;
-  ///     m_str = Serialization::decode_vstr(bufp, remainp);
+  ///   // Check to see if we're at the end of the record and if so return.
+  ///   if (*remainp == 0)
+  ///     return;
+  ///   m_str = Serialization::decode_vstr(bufp, remainp);
   ///   }
   /// }
   /// </pre>
@@ -68,85 +62,70 @@ namespace SWC {
   /// changed in a forward incompatible way.  The decode() function will throw
   /// an Exception with code Error::PROTOCOL_ERROR if the version being decoded
   /// is greater than the version returned by encoding_version().
-  class Serializable {
+
+class Serializable {
 
   public:
 
-    /// Returns serialized object length.
-    /// Returns the serialized length of the object as encoded by encode().
-    /// @see encode() for encoding format
-    /// @return Overall serialized object length
-    virtual size_t encoded_length() const {
-      size_t length = encoded_length_internal();
-      return 1 + Serialization::encoded_length_vi32(length) + length;
-    }
+  /// Returns serialized object length.
+  /// Returns the serialized length of the object as encoded by encode().
+  /// @see encode() for encoding format
+  /// @return Overall serialized object length
+  virtual size_t encoded_length() const;
 
-    /// Writes serialized representation of object to a buffer.
-    /// This function encodes a serialized representation of the object,
-    /// starting with a header that includes the encoding version and the
-    /// serialized length of the object.  After the header, the object per-se is
-    /// encoded with encode_internal().
-    /// @param bufp Address of destination buffer pointer (advanced by call)
-    virtual void encode(uint8_t **bufp) const{
-      Serialization::encode_i8(bufp, encoding_version());
-      Serialization::encode_vi32(bufp, encoded_length_internal());
-      encode_internal(bufp);
-    }
+  /// Writes serialized representation of object to a buffer.
+  /// This function encodes a serialized representation of the object,
+  /// starting with a header that includes the encoding version and the
+  /// serialized length of the object.  After the header, the object per-se is
+  /// encoded with encode_internal().
+  /// @param bufp Address of destination buffer pointer (advanced by call)
+  virtual void encode(uint8_t **bufp) const;
 
-    /// Reads serialized representation of object from a buffer.
-    /// @param bufp Address of destination buffer pointer (advanced by call)
-    /// @param remainp Address of integer holding amount of remaining buffer
-    /// @see encode() for encoding format
-    /// @throws Exception with code Error::PROTOCOL_ERROR if version being
-    /// decoded is greater than that returned by encoding_version().
-    virtual void decode(const uint8_t **bufp, size_t *remainp) {
-      uint8_t version = Serialization::decode_i8(bufp, remainp);
-      if (version > encoding_version())
-        HT_THROWF(Error::PROTOCOL_ERROR, "Unsupported version %d", (int)version);
-      size_t encoding_length = Serialization::decode_vi32(bufp, remainp);
-      const uint8_t *end = *bufp + encoding_length;
-      size_t tmp_remain = encoding_length;
-      decode_internal(version, bufp, &tmp_remain);
-      HT_ASSERT(*bufp <= end);
-      *remainp -= encoding_length;
-      // If encoding is longer than we expect, that means we're decoding a newer
-      // version, so skip the newer portion that we don't know about
-      if (*bufp < end)
-        *bufp = end;
-    };
+  /// Reads serialized representation of object from a buffer.
+  /// @param bufp Address of destination buffer pointer (advanced by call)
+  /// @param remainp Address of integer holding amount of remaining buffer
+  /// @see encode() for encoding format
+  /// @throws Exception with code Error::PROTOCOL_ERROR if version being
+  /// decoded is greater than that returned by encoding_version().
+  virtual void decode(const uint8_t **bufp, size_t *remainp);
 
   protected:
 
-    /// Returns encoding version.
-    /// @return Encoding version
-    virtual uint8_t encoding_version() const = 0;
+  /// Returns encoding version.
+  /// @return Encoding version
+  virtual uint8_t encoding_version() const = 0;
 
-    /// Returns internal serialized length.
-    /// This function is to be overridden by derived classes and should return
-    /// the length of the the serialized object per-se.
-    /// @return Internal serialized length
-    /// @see encode_internal() for encoding format
-    virtual size_t encoded_length_internal() const = 0;
+  /// Returns internal serialized length.
+  /// This function is to be overridden by derived classes and should return
+  /// the length of the the serialized object per-se.
+  /// @return Internal serialized length
+  /// @see encode_internal() for encoding format
+  virtual size_t encoded_length_internal() const = 0;
 
-    /// Writes serialized representation of object to a buffer.
-    /// This function is to be overridden by derived classes and should encode
-    /// the object per-se.
-    /// @param bufp Address of destination buffer pointer (advanced by call)
-    virtual void encode_internal(uint8_t **bufp) const = 0;
+  /// Writes serialized representation of object to a buffer.
+  /// This function is to be overridden by derived classes and should encode
+  /// the object per-se.
+  /// @param bufp Address of destination buffer pointer (advanced by call)
+  virtual void encode_internal(uint8_t **bufp) const = 0;
 
-    /// Reads serialized representation of object from a buffer.
-    /// This function is to be overridden by derived classes and should decode
-    /// the object per-se as encoded with encode_internal().
-    /// @param version Encoding version
-    /// @param bufp Address of destination buffer pointer (advanced by call)
-    /// @param remainp Address of integer holding amount of serialized encoding remaining
-    /// @see encode_internal() for encoding format
-    virtual void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) = 0;
+  /// Reads serialized representation of object from a buffer.
+  /// This function is to be overridden by derived classes and should decode
+  /// the object per-se as encoded with encode_internal().
+  /// @param version Encoding version
+  /// @param bufp Address of destination buffer pointer (advanced by call)
+  /// @param remainp Address of integer holding amount of serialized encoding remaining
+  /// @see encode_internal() for encoding format
+  virtual void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) = 0;
 
-  };
-
-  /// @}
+};
 
 }
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "../../../lib/swcdb/core/Serializable.cc"
+#endif 
+
 
 #endif

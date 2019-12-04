@@ -31,10 +31,6 @@
 
 namespace SWC {
 
-  /** @addtogroup Common
-   *  @{
-   */
-
   /**
    * A String is simply a typedef to std::string.
    *
@@ -84,7 +80,7 @@ namespace SWC {
    * @return A new std::string with the formatted text
    */
   std::string format_bytes(size_t n, const void *buf, size_t len,
-          const char *trailer = "...");
+                           const char *trailer = "...");
 
   /**
    * Return a string presentation of a sequence. Is quite slow but versatile,
@@ -247,7 +243,6 @@ namespace SWC {
   typedef NumericSignedFormatter<int32_t> Int32Formatter;
   typedef NumericSignedFormatter<int64_t> Int64Formatter;
 
-  /** @} */
 
 }
 

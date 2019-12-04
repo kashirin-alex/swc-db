@@ -6,6 +6,7 @@
 #ifndef swcdb_lib_db_Columns_Schema_h
 #define swcdb_lib_db_Columns_Schema_h
 
+#include "swcdb/core/Serialization.h"
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoding.h"
 

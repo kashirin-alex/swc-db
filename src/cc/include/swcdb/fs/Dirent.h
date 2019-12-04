@@ -6,6 +6,7 @@
 #define swc_lib_fs_Dirent_h
 
 #include <memory>
+#include "swcdb/core/Serialization.h"
 #include "swcdb/core/Serializable.h"
 
 namespace SWC{ namespace FS {

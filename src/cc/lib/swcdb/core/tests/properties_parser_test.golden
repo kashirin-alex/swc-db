@@ -1,7 +1,5 @@
- LogWriter()=4322208
 
-Config::cmdline_desc
-Usage: %s [Options] [args]
+Config::cmdline_descUsage: %s [Options] [args]
 Options
   --app                 application filename, zero pos skipped                          
   --arg-1               argument one                                                    
@@ -20,7 +18,7 @@ Options
   --i64                 64-bit integer                                                1 
   --int64s              a list of 64-bit integers                                     []
   --is_true             if set token true                                             false
-  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
   --quiet               Negate verbose                                                false
   --skip1               a skipped token                                               true
   --skip2               a skipped token                                               true
@@ -28,8 +26,8 @@ Options
   --strs                a list of strings                                             []
   --swc.logging.path    Path of log files                                             ./log/
   --true                token defaults to true                                        true
-  --verbose -[v]        Show more verbose output                                      false
-  --version             Show version information and exit                             true
+  --verbose             Show more verbose output                                      false
+  --version -[v]        Show version information and exit                             true
 arg-1=argOne
 boo=true
 config=properties_parser_test.cfg
@@ -44,7 +42,6 @@ string=aStringNoSpaces
 strs=[1, 2, 3, 4, 5, 6]
 
 Config::file_desc
-
   --aGroupOne.arg.1    a group arg                                                   0 
   --aGroupOne.arg.2    a group arg                                                   0 
   --aGroupOne.arg.3    a group arg                                                   0 
@@ -66,10 +63,9 @@ Config::file_desc
   --string             a string arg                                                  A Default std::string Value
   --string.qouted      a string arg                                                  A Default std::string Value
   --strs               a list of strings                                             []
-  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
 
 Config::file_desc
-
   --aGroupOne.arg.1    a group arg                                                   0 
   --aGroupOne.arg.2    a group arg                                                   0 
   --aGroupOne.arg.3    a group arg                                                   0 
@@ -91,8 +87,7 @@ Config::file_desc
   --string             a string arg                                                  A Default std::string Value
   --string.qouted      a string arg                                                  A Default std::string Value
   --strs               a list of strings                                             []
-  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
-
+  --swc.logging.level  Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
 Usage: %s [Options] [args]
 Options
   --aGroupOne.arg.1     a group arg                                                   0 
@@ -122,7 +117,7 @@ Options
   --is_true             if set token true                                             false
   --is_true_bool        a boolean arg                                                 false
   --is_yes_bool         a boolean arg                                                 false
-  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --logging-level -[l]  Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
   --missing             a string arg                                                  a missing string in cfg file, default applies
   --quiet               Negate verbose                                                false
   --skip1               a skipped token                                               true
@@ -130,11 +125,11 @@ Options
   --string              a string arg                                                  A Default std::string Value
   --string.qouted       a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
-  --swc.logging.level   Logging level: debug|info|notice|warn|error|crit|alert|fatal  info  # (6)
+  --swc.logging.level   Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
   --swc.logging.path    Path of log files                                             ./log/
   --true                token defaults to true                                        true
-  --verbose -[v]        Show more verbose output                                      false
-  --version             Show version information and exit                             true
+  --verbose             Show more verbose output                                      false
+  --version -[v]        Show version information and exit                             true
 *** Raw Parsed Options:
 aGroupOne.arg.1=[1]
 aGroupOne.arg.2=[2]
@@ -178,13 +173,13 @@ is_rest_bool=false
 is_true=false
 is_true_bool=true
 is_yes_bool=true
-logging-level=info  # (6)
+logging-level=INFO  # (6)
 missing=a missing string in cfg file, default applies
 quiet=false
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
-swc.logging.level=info  # (6)
+swc.logging.level=INFO  # (6)
 swc.logging.path=./log/
 true=true
 verbose=false
@@ -211,13 +206,13 @@ is_rest_bool=false
 is_true=false (default)
 is_true_bool=true
 is_yes_bool=true
-logging-level=info  # (6) (default)
+logging-level=INFO  # (6) (default)
 missing=a missing string in cfg file, default applies (default)
 quiet=false (default)
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
-swc.logging.level=info  # (6) (default)
+swc.logging.level=INFO  # (6) (default)
 swc.logging.path=./log/ (default)
 true=true (default)
 verbose=false (default)

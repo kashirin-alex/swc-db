@@ -44,125 +44,126 @@ namespace Error {
 #define CODE_START 0x800  
     
 enum Code {
-      UNPOSSIBLE                                   = -3,
-      EXTERNAL                                     = -2,
-      FAILED_EXPECTATION                           = -1,
-      OK                                           = 0,
+  UNPOSSIBLE                                   = -3,
+  EXTERNAL                                     = -2,
+  FAILED_EXPECTATION                           = -1,
+  OK                                           = 0,
 
-      IO_ERROR                                     = CODE_START+0x1,
-      BAD_MEMORY_ALLOCATION                        = CODE_START+0x2,
+  IO_ERROR                                     = CODE_START+0x1,
+  BAD_MEMORY_ALLOCATION                        = CODE_START+0x2,
 
-      PROTOCOL_ERROR                               = CODE_START+0x3,
-      REQUEST_TRUNCATED_HEADER                     = CODE_START+0x4,
-      REQUEST_TRUNCATED_PAYLOAD                    = CODE_START+0x5,
-      REQUEST_TIMEOUT                              = CODE_START+0x6,
-      REQUEST_MALFORMED                            = CODE_START+0x7,
-      NOT_IMPLEMENTED                              = CODE_START+0x8,
-      VERSION_MISMATCH                             = CODE_START+0x9,
-      CHECKSUM_MISMATCH                            = CODE_START+0xa,
+  PROTOCOL_ERROR                               = CODE_START+0x3,
+  REQUEST_TRUNCATED_HEADER                     = CODE_START+0x4,
+  REQUEST_TRUNCATED_PAYLOAD                    = CODE_START+0x5,
+  REQUEST_TIMEOUT                              = CODE_START+0x6,
+  REQUEST_MALFORMED                            = CODE_START+0x7,
+  NOT_IMPLEMENTED                              = CODE_START+0x8,
+  VERSION_MISMATCH                             = CODE_START+0x9,
+  CHECKSUM_MISMATCH                            = CODE_START+0xa,
 
-      MNGR_NOT_ACTIVE                              = CODE_START+0x0f+0x1,
-      MNGR_NOT_INITIALIZED                         = CODE_START+0x0f+0x2,
-      RS_NOT_READY                                 = CODE_START+0x0f+0x3,
-      RS_NOT_LOADED_RANGE                          = CODE_START+0x0f+0x4,
-      RS_DELETED_RANGE                             = CODE_START+0x0f+0x5,
+  MNGR_NOT_ACTIVE                              = CODE_START+0x0f+0x1,
+  MNGR_NOT_INITIALIZED                         = CODE_START+0x0f+0x2,
+  RS_NOT_READY                                 = CODE_START+0x0f+0x3,
+  RS_NOT_LOADED_RANGE                          = CODE_START+0x0f+0x4,
+  RS_DELETED_RANGE                             = CODE_START+0x0f+0x5,
       
-      ENCODER_ENCODE                               = CODE_START+0x1f+0x6,
-      ENCODER_DECODE                               = CODE_START+0x1f+0x7,
+  ENCODER_ENCODE                               = CODE_START+0x1f+0x6,
+  ENCODER_DECODE                               = CODE_START+0x1f+0x7,
 
-      BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+0x1f+0x1,
-      BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+0x1f+0x2,
-      BLOCK_COMPRESSOR_BAD_HEADER                  = CODE_START+0x1f+0x3,
-      BLOCK_COMPRESSOR_BAD_MAGIC                   = CODE_START+0x1f+0x4,
-      BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = CODE_START+0x1f+0x5,
-      BLOCK_COMPRESSOR_INIT_ERROR                  = CODE_START+0x1f+0x8,
-      BLOCK_COMPRESSOR_INVALID_ARG                 = CODE_START+0x1f+0x9,
+  BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+0x1f+0x1,
+  BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+0x1f+0x2,
+  BLOCK_COMPRESSOR_BAD_HEADER                  = CODE_START+0x1f+0x3,
+  BLOCK_COMPRESSOR_BAD_MAGIC                   = CODE_START+0x1f+0x4,
+  BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = CODE_START+0x1f+0x5,
+  BLOCK_COMPRESSOR_INIT_ERROR                  = CODE_START+0x1f+0x8,
+  BLOCK_COMPRESSOR_INVALID_ARG                 = CODE_START+0x1f+0x9,
       
       
 
-      CANCELLED                                    = CODE_START+0x2f+0x1,
-      DOUBLE_UNGET                                 = CODE_START+0x2f+0x2,
-      NO_RESPONSE                                  = CODE_START+0x2f+0x3,
-      NOT_ALLOWED                                  = CODE_START+0x2f+0x4,
-      INDUCED_FAILURE                              = CODE_START+0x2f+0x5,
-      SERVER_SHUTTING_DOWN                         = CODE_START+0x2f+0x6,
-      ALREADY_EXISTS                               = CODE_START+0x2f+0x7,
-      CLOSED                                       = CODE_START+0x2f+0x8,
-      DUPLICATE_RANGE                              = CODE_START+0x2f+0x9,
-      BAD_FORMAT                                   = CODE_START+0x2f+0xa,
-      INVALID_ARGUMENT                             = CODE_START+0x2f+0xb,
-      INVALID_OPERATION                            = CODE_START+0x2f+0xc,
-      UNSUPPORTED_OPERATION                        = CODE_START+0x2f+0xd,
-      NOTHING_TO_DO                                = CODE_START+0x2f+0xf,
+  CANCELLED                                    = CODE_START+0x2f+0x1,
+  DOUBLE_UNGET                                 = CODE_START+0x2f+0x2,
+  NO_RESPONSE                                  = CODE_START+0x2f+0x3,
+  NOT_ALLOWED                                  = CODE_START+0x2f+0x4,
+  INDUCED_FAILURE                              = CODE_START+0x2f+0x5,
+  SERVER_SHUTTING_DOWN                         = CODE_START+0x2f+0x6,
+  ALREADY_EXISTS                               = CODE_START+0x2f+0x7,
+  CLOSED                                       = CODE_START+0x2f+0x8,
+  DUPLICATE_RANGE                              = CODE_START+0x2f+0x9,
+  BAD_FORMAT                                   = CODE_START+0x2f+0xa,
+  INVALID_ARGUMENT                             = CODE_START+0x2f+0xb,
+  INVALID_OPERATION                            = CODE_START+0x2f+0xc,
+  UNSUPPORTED_OPERATION                        = CODE_START+0x2f+0xd,
+  NOTHING_TO_DO                                = CODE_START+0x2f+0xf,
 
-      INCOMPATIBLE_OPTIONS                         = CODE_START+0x3f+0x1,
-      BAD_VALUE                                    = CODE_START+0x3f+0x2,
-      SCHEMA_GENERATION_MISMATCH                   = CODE_START+0x3f+0x3,
-      INVALID_METHOD_IDENTIFIER                    = CODE_START+0x3f+0x4,
-      SERVER_NOT_READY                             = CODE_START+0x3f+0x5,
+  INCOMPATIBLE_OPTIONS                         = CODE_START+0x3f+0x1,
+  BAD_VALUE                                    = CODE_START+0x3f+0x2,
+  SCHEMA_GENERATION_MISMATCH                   = CODE_START+0x3f+0x3,
+  INVALID_METHOD_IDENTIFIER                    = CODE_START+0x3f+0x4,
+  SERVER_NOT_READY                             = CODE_START+0x3f+0x5,
 
-      CONFIG_BAD_ARGUMENT                          = CODE_START+0x4f+0x1,
-      CONFIG_BAD_CFG_FILE                          = CODE_START+0x4f+0x2,
-      CONFIG_GET_ERROR                             = CODE_START+0x4f+0x3,
-      CONFIG_BAD_VALUE                             = CODE_START+0x4f+0x4,
+  CONFIG_BAD_ARGUMENT                          = CODE_START+0x4f+0x1,
+  CONFIG_BAD_CFG_FILE                          = CODE_START+0x4f+0x2,
+  CONFIG_GET_ERROR                             = CODE_START+0x4f+0x3,
+  CONFIG_BAD_VALUE                             = CODE_START+0x4f+0x4,
 
-      COLUMN_SCHEMA_NAME_EXISTS                    = CODE_START+0x5f+0x1,
-      COLUMN_SCHEMA_NAME_NOT_EXISTS                = CODE_START+0x5f+0x2,
-      COLUMN_UNKNOWN_GET_FLAG                      = CODE_START+0x5f+0x3,
-      COLUMN_REACHED_ID_LIMIT                      = CODE_START+0x5f+0x4,
-      COLUMN_SCHEMA_BAD_SAVE                       = CODE_START+0x5f+0x5,
-      COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
-      COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
-      COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
-      COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0x9,
-      COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xa,
-      COLUMN_NOT_READY                             = CODE_START+0x5f+0xb,
+  COLUMN_SCHEMA_NAME_EXISTS                    = CODE_START+0x5f+0x1,
+  COLUMN_SCHEMA_NAME_NOT_EXISTS                = CODE_START+0x5f+0x2,
+  COLUMN_UNKNOWN_GET_FLAG                      = CODE_START+0x5f+0x3,
+  COLUMN_REACHED_ID_LIMIT                      = CODE_START+0x5f+0x4,
+  COLUMN_SCHEMA_BAD_SAVE                       = CODE_START+0x5f+0x5,
+  COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
+  COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x7,
+  COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0x8,
+  COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0x9,
+  COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xa,
+  COLUMN_NOT_READY                             = CODE_START+0x5f+0xb,
 
-      SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
-      COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
-      SCHEMA_PARSE_ERROR                           = CODE_START+0x6f+0x3,
-      BAD_SCAN_SPEC                                = CODE_START+0x6f+0x4,
-      BAD_SCHEMA                                   = CODE_START+0x6f+0x5,
-      BAD_KEY                                      = CODE_START+0x6f+0xf,
+  SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
+  COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
+  SCHEMA_PARSE_ERROR                           = CODE_START+0x6f+0x3,
+  BAD_SCAN_SPEC                                = CODE_START+0x6f+0x4,
+  BAD_SCHEMA                                   = CODE_START+0x6f+0x5,
+  BAD_KEY                                      = CODE_START+0x6f+0xf,
       
-      RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
-      RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
+  RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
+  RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
 
-      COMM_NOT_CONNECTED                           = 0x00010001,
-      COMM_BROKEN_CONNECTION                       = 0x00010002,
-      COMM_CONNECT_ERROR                           = 0x00010003,
-      COMM_ALREADY_CONNECTED                       = 0x00010004,
+  COMM_NOT_CONNECTED                           = 0x00010001,
+  COMM_BROKEN_CONNECTION                       = 0x00010002,
+  COMM_CONNECT_ERROR                           = 0x00010003,
+  COMM_ALREADY_CONNECTED                       = 0x00010004,
 
-      COMM_SEND_ERROR                              = 0x00010006,
-      COMM_RECEIVE_ERROR                           = 0x00010007,
-      COMM_POLL_ERROR                              = 0x00010008,
-      COMM_CONFLICTING_ADDRESS                     = 0x00010009,
-      COMM_SOCKET_ERROR                            = 0x0001000A,
-      COMM_BIND_ERROR                              = 0x0001000B,
-      COMM_LISTEN_ERROR                            = 0x0001000C,
-      COMM_HEADER_CHECKSUM_MISMATCH                = 0x0001000D,
-      COMM_PAYLOAD_CHECKSUM_MISMATCH               = 0x0001000E,
-      COMM_BAD_HEADER                              = 0x0001000F,
-      COMM_INVALID_PROXY                           = 0x00010010,
+  COMM_SEND_ERROR                              = 0x00010006,
+  COMM_RECEIVE_ERROR                           = 0x00010007,
+  COMM_POLL_ERROR                              = 0x00010008,
+  COMM_CONFLICTING_ADDRESS                     = 0x00010009,
+  COMM_SOCKET_ERROR                            = 0x0001000A,
+  COMM_BIND_ERROR                              = 0x0001000B,
+  COMM_LISTEN_ERROR                            = 0x0001000C,
+  COMM_HEADER_CHECKSUM_MISMATCH                = 0x0001000D,
+  COMM_PAYLOAD_CHECKSUM_MISMATCH               = 0x0001000E,
+  COMM_BAD_HEADER                              = 0x0001000F,
+  COMM_INVALID_PROXY                           = 0x00010010,
 
-      SERIALIZATION_INPUT_OVERRUN                  = 0x00080001,
-      SERIALIZATION_BAD_VINT                       = 0x00080002,
-      SERIALIZATION_BAD_VSTR                       = 0x00080003,
-      SERIALIZATION_VERSION_MISMATCH               = 0x00080004,
 
-      FS_BAD_FILE_HANDLE                    = 0x00020001,
-      FS_IO_ERROR                           = 0x00020002,
-      FS_FILE_NOT_FOUND                     = 0x00020003,
-      FS_BAD_FILENAME                       = 0x00020004,
-      FS_PERMISSION_DENIED                  = 0x00020005,
-      FS_INVALID_ARGUMENT                   = 0x00020006,
-      FS_INVALID_CONFIG                     = 0x00020007,
-      FS_EOF                                = 0x00020008,
-      FS_PATH_NOT_FOUND                     = 0x00020009,
+  SERIALIZATION_INPUT_OVERRUN                  = 0x00080001,
+  SERIALIZATION_BAD_VINT                       = 0x00080002,
+  SERIALIZATION_BAD_VSTR                       = 0x00080003,
+  SERIALIZATION_VERSION_MISMATCH               = 0x00080004,
+
+  FS_BAD_FILE_HANDLE                    = 0x00020001,
+  FS_IO_ERROR                           = 0x00020002,
+  FS_FILE_NOT_FOUND                     = 0x00020003,
+  FS_BAD_FILENAME                       = 0x00020004,
+  FS_PERMISSION_DENIED                  = 0x00020005,
+  FS_INVALID_ARGUMENT                   = 0x00020006,
+  FS_INVALID_CONFIG                     = 0x00020007,
+  FS_EOF                                = 0x00020008,
+  FS_PATH_NOT_FOUND                     = 0x00020009,
       
-      SQL_PARSE_ERROR                              = 0x00060001,
-      SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
-      SQL_BAD_COMMAND                              = 0x00060003
+  SQL_PARSE_ERROR                              = 0x00060001,
+  SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
+  SQL_BAD_COMMAND                              = 0x00060003
 
 };
 
@@ -180,7 +181,7 @@ class Exception;
 
 /** Helper class to render an exception message a la IO manipulators */
 struct ExceptionMessageRenderer {
-  ExceptionMessageRenderer(const Exception& e) : ex(e) { }
+  ExceptionMessageRenderer(const Exception& e);
 
   std::ostream& render(std::ostream& out) const;
 
@@ -193,8 +194,7 @@ struct ExceptionMessageRenderer {
   * is used for printing chained Exceptions   
 */
 struct ExceptionMessagesRenderer {
-  ExceptionMessagesRenderer(const Exception& e, const char *sep = ": ")
-                            : ex(e), separator(sep) { }
+  ExceptionMessagesRenderer(const Exception& e, const char *sep = ": ");
 
   std::ostream& render(std::ostream& out) const;
 
@@ -232,10 +232,7 @@ class Exception : public std::runtime_error {
     * @param fn The function name
     * @param fl The file name
   */
-  Exception(int error, int l = 0, const char *fn = 0, const char *fl = 0)
-            : Parent(""), 
-              m_error(error), m_line(l), m_func(fn), m_file(fl), prev(0) {
-  }
+  Exception(int error, int l = 0, const char *fn = 0, const char *fl = 0);
 
   /** Constructor
     * @param error The error code
@@ -245,10 +242,7 @@ class Exception : public std::runtime_error {
     * @param fl The file name
     */
   Exception(int error, const std::string& msg, int l = 0, const char *fn = 0,
-            const char *fl = 0)
-            : Parent(msg), 
-              m_error(error), m_line(l), m_func(fn), m_file(fl), prev(0) {
-  }
+            const char *fl = 0);
 
   /** Constructor
     * @param error The error code
@@ -259,58 +253,42 @@ class Exception : public std::runtime_error {
     * @param fl The file name
   */
   Exception(int error, const std::string& msg, const Exception& ex, int l = 0,
-            const char *fn = 0, const char *fl = 0)
-          : Parent(msg), 
-            m_error(error), m_line(l), m_func(fn), m_file(fl),
-            prev(new Exception(ex)) {
-  }
+            const char *fn = 0, const char *fl = 0);
 
   /** Copy constructor
     * @param ex The exception that is copied
     */
-  Exception(const Exception& ex)
-            : Parent(ex), 
-              m_error(ex.m_error), m_line(ex.m_line), m_func(ex.m_func),
-              m_file(ex.m_file),
-              prev(ex.prev ? new Exception(*ex.prev) : 0) {
-  }
+  Exception(const Exception& ex);
 
   /** Destructor */
-  ~Exception() throw() { 
-    if(prev) { 
-      delete prev; 
-      prev = 0; 
-    } 
-  }
+  ~Exception();
 
   /** Returns the error code
     * @return The error code of this exception.
     * @sa Error::get_text to retrieve a descriptive error string
     */
-  int code() const { return m_error; }
+  const int code() const;
 
   /** Returns the source code line number where the exception was thrown
     * @return The line number
     */
-  int line() const { return m_line; }
+  const int line() const;
 
   /** Returns the name of the function which threw the Exception
     * @return The function name
     */
-  const char *func() const { return m_func; }
+  const char *func() const;
 
   /** Returns the source code line number where the exception was thrown
     * @return The file name
     */
-  const char *file() const { return m_file; }
+  const char *file() const;
 
   /** Renders an Exception to an ostream
     *
     * @param out Reference to the ostream
     */
-  virtual std::ostream& render_message(std::ostream& out) const {
-    return out << what(); // override for custom exceptions
-  }
+  virtual std::ostream& render_message(std::ostream& out) const;
 
   // render messages for the entire exception chain
   /** Renders multiple Exceptions to an ostream
@@ -321,45 +299,29 @@ class Exception : public std::runtime_error {
                                         const char *sep) const;
 
   /** Retrieves a Renderer for this Exception */
-  ExceptionMessageRenderer message() const {
-    return ExceptionMessageRenderer(*this);
-  }
+  ExceptionMessageRenderer message() const;
 
   /** Retrieves a Renderer for chained Exceptions */
-  ExceptionMessagesRenderer messages(const char *sep = ": ") const {
-    return ExceptionMessagesRenderer(*this, sep);
-  }
+  ExceptionMessagesRenderer messages(const char *sep = ": ") const;
 
   /** The previous exception in the exception chain */
   Exception *prev;
 };
 
+
+
 /** Global operator to print an Exception to a std::ostream */
-std::ostream& operator<<(std::ostream& out, const Exception& );
-
-/** Global helper function to print an Exception to a std::ostream */
-inline std::ostream& 
-ExceptionMessageRenderer::render(std::ostream& out) const {
-  return ex.render_message(out);
-}
-
-/** Global helper function to print an Exception to a std::ostream */
-inline std::ostream&
-ExceptionMessagesRenderer::render(std::ostream& out) const {
-  return ex.render_messages(out, separator);
-}
+std::ostream& 
+operator<<(std::ostream& out, const Exception&);
 
 /** Global helper operator to print an Exception to a std::ostream */
-inline std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessageRenderer& r) {
-  return r.render(out);
-}
+std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessageRenderer& r);
 
 /** Global helper operator to print an Exception to a std::ostream */
-inline std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessagesRenderer& r) {
-  return r.render(out);
-}
+std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
+
 
 
 /* Convenience macro to create an exception stack trace */

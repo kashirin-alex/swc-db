@@ -8,7 +8,7 @@
 
 #include "swcdb/core/comm/CommHeader.h"
 
-#include "swcdb/core/Clock.h"
+#include "swcdb/core/Time.h"
 #include "swcdb/core/StaticBuffer.h"
 
 #include <memory>

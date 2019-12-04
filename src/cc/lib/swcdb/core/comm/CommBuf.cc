@@ -4,6 +4,7 @@
 
 
 #include "swcdb/core/comm/CommBuf.h"
+#include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
 namespace SWC {

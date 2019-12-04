@@ -173,7 +173,98 @@ const char* Error::get_text(const int& err) {
 }
 
 
-std::ostream &operator<<(std::ostream &out, const Exception &e) {
+ExceptionMessageRenderer::ExceptionMessageRenderer(const Exception& e) 
+                                                  : ex(e) { }
+std::ostream& 
+ExceptionMessageRenderer::render(std::ostream& out) const {
+  return ex.render_message(out);
+}
+
+ExceptionMessagesRenderer::ExceptionMessagesRenderer(const Exception& e, 
+                                                     const char *sep)
+                                                    : ex(e), separator(sep) { }
+std::ostream&
+ExceptionMessagesRenderer::render(std::ostream& out) const {
+  return ex.render_messages(out, separator);
+}
+
+
+Exception::Exception(int error, int l, const char *fn, const char *fl)
+                    : Parent(""), 
+                      m_error(error), m_line(l), m_func(fn), m_file(fl), 
+                      prev(0) {
+}
+
+Exception::Exception(int error, const std::string& msg, int l, const char *fn,
+                     const char *fl)
+                    : Parent(msg), 
+                      m_error(error), m_line(l), m_func(fn), m_file(fl), 
+                      prev(0) {
+}
+
+Exception::Exception(int error, const std::string& msg, const Exception& ex, 
+                     int l, const char *fn, const char *fl)
+                     : Parent(msg), 
+                       m_error(error), m_line(l), m_func(fn), m_file(fl),
+                       prev(new Exception(ex)) {
+}
+
+Exception::Exception(const Exception& ex)
+                    : Parent(ex), 
+                      m_error(ex.m_error), m_line(ex.m_line), 
+                      m_func(ex.m_func), m_file(ex.m_file),
+                      prev(ex.prev ? new Exception(*ex.prev) : 0) {
+}
+
+Exception::~Exception() throw() { 
+  if(prev) { 
+    delete prev; 
+    prev = 0; 
+  } 
+}
+
+const int Exception::code() const { 
+  return m_error; 
+}
+
+const int Exception::line() const { 
+  return m_line; 
+}
+
+const char* Exception::func() const { 
+  return m_func; 
+}
+
+const char* Exception::file() const { 
+  return m_file; 
+}
+
+std::ostream& Exception::render_message(std::ostream& out) const {
+  return out << what(); // override for custom exceptions
+}
+
+std::ostream &
+Exception::render_messages(std::ostream &out, const char *sep) const {
+  out << message() <<" - "<< Error::get_text(m_error);
+
+  for (Exception *p = prev; p; p = p->prev)
+    out << sep << p->message();
+  return out;
+}
+
+ExceptionMessageRenderer Exception::message() const {
+  return ExceptionMessageRenderer(*this);
+}
+
+ExceptionMessagesRenderer Exception::messages(const char *sep) const {
+  return ExceptionMessagesRenderer(*this, sep);
+}
+
+
+
+
+std::ostream 
+&operator<<(std::ostream &out, const Exception &e) {
   out <<"SWC::Exception: "<< e.message() <<" - "
       << Error::get_text(e.code());
 
@@ -200,13 +291,14 @@ std::ostream &operator<<(std::ostream &out, const Exception &e) {
   return out;
 }
 
-std::ostream &
-Exception::render_messages(std::ostream &out, const char *sep) const {
-  out << message() <<" - "<< Error::get_text(m_error);
+std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessageRenderer& r) {
+  return r.render(out);
+}
 
-  for (Exception *p = prev; p; p = p->prev)
-    out << sep << p->message();
-  return out;
+std::ostream& 
+operator<<(std::ostream& out, const ExceptionMessagesRenderer& r) {
+  return r.render(out);
 }
 
 }
