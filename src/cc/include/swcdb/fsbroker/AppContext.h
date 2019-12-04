@@ -42,7 +42,8 @@ class AppContext : public SWC::AppContext {
   AppContext() {
     Env::IoCtx::init(
       Env::Config::settings()->get<int32_t>("swc.FsBroker.handlers"));
-    Env::FsInterface::init();
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs.broker.underlying")));
     Env::Fds::init();
   }
   

@@ -24,7 +24,8 @@ void hdlr_err(int err){
 int main(int argc, char** argv) {
 
   SWC::Env::Config::init(argc, argv);
-  SWC::Env::FsInterface::init();
+  SWC::Env::FsInterface::init(SWC::FS::fs_type(
+    SWC::Env::Config::settings()->get<std::string>("swc.fs")));
   SWC::Env::Schemas::init();
 
   

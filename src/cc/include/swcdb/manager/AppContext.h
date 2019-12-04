@@ -48,8 +48,12 @@ class AppContext : public SWC::AppContext {
 
     Env::IoCtx::init(
       Env::Config::settings()->get<int32_t>("swc.mngr.handlers"));
+
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs")));
+      
     Env::MngrRole::init();
-    Env::FsInterface::init();
+    
     Env::Schemas::init();
     Env::MngrColumns::init();
     Env::Clients::init(

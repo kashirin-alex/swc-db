@@ -96,7 +96,8 @@ void mngr(){
 int main(int argc, char** argv) {
     Env::Config::init(argc, argv);
 
-    Env::FsInterface::init();
+    Env::FsInterface::init(FS::fs_type(
+        Env::Config::settings()->get<std::string>("swc.fs")));
     Env::Schemas::init();
 
     rgr();

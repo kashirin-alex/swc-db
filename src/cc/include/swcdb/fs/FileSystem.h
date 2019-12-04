@@ -41,7 +41,7 @@ enum Flags : uint8_t {
 
 std::string normalize_pathname(std::string s);
 
-Types::Fs parse_fs_type(std::string fs_name);
+Types::Fs fs_type(std::string fs_name);
 
 std::string type_to_string(Types::Fs typ);
 

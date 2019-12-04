@@ -38,10 +38,10 @@ const char  id_split_last = 'g';
 
 class Interface {
   public:
-  
+
   typedef Interface* Ptr;
 
-  Interface(Types::Fs typ=Types::Fs::NONE);
+  Interface(Types::Fs typ);
   
   FileSystem::Ptr use_filesystem();
 
@@ -89,6 +89,7 @@ class Interface {
               int32_t bufsz, int32_t replication, int64_t blksz);
  
   private:
+  bool            is_fsbroker;
   Types::Fs       m_type;
   FileSystem::Ptr m_fs;
 
@@ -115,7 +116,7 @@ class FsInterface {
   
   typedef std::shared_ptr<FsInterface> Ptr;
 
-  static void init();
+  static void init(Types::Fs typ);
 
   static Ptr get();
 
@@ -123,7 +124,7 @@ class FsInterface {
 
   static FS::FileSystem::Ptr fs();
 
-  FsInterface();
+  FsInterface(Types::Fs typ);
 
   virtual ~FsInterface();
 

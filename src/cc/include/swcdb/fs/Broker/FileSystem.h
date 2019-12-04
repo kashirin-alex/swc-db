@@ -62,7 +62,7 @@ class FileSystemBroker: public FileSystem {
         Env::Config::settings()->get<int32_t>("swc.fs.broker.handlers"))),
       m_service(std::make_shared<client::Serialized>(
         "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
-      m_type_underlying(parse_fs_type(
+      m_type_underlying(fs_type(
         Env::Config::settings()->get<std::string>("swc.fs.broker.underlying"))),
       cfg_timeout(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.fs.broker.timeout")),

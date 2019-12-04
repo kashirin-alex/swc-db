@@ -17,7 +17,7 @@ std::string normalize_pathname(std::string s) {
   return s;
 }
 
-Types::Fs parse_fs_type(std::string fs_name) {
+Types::Fs fs_type(std::string fs_name) {
   std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
                  [](unsigned char c){ return std::tolower(c); });
     

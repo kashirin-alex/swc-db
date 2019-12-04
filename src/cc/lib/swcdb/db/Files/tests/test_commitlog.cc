@@ -48,7 +48,8 @@ void count_all_cells(DB::Schema::Ptr schema, size_t num_cells,
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
 
-  Env::FsInterface::init();
+  Env::FsInterface::init(FS::fs_type(
+    Env::Config::settings()->get<std::string>("swc.fs")));
   Env::Schemas::init();
   Env::IoCtx::init(8);
   Env::Resources.init(

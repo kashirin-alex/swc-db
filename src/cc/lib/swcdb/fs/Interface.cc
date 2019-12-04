@@ -6,20 +6,9 @@
 #include "swcdb/fs/Interface.h"
 #include <dlfcn.h>
 
-
 namespace SWC{ namespace FS {
 
-Interface::Interface(Types::Fs typ): m_type(typ) {
-
-  if(m_type == Types::Fs::NONE) {
-    std::string fs_cfg("swc.fs");
-#if defined (FS_BROKER_APP)
-    fs_cfg.append(".broker.underlying");
-#endif 
-    m_type = parse_fs_type(Env::Config::settings()->get<std::string>(fs_cfg));
-  }
-    
-  m_fs = use_filesystem();
+Interface::Interface(Types::Fs typ) : m_type(typ), m_fs(use_filesystem()) {
 
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
 }
@@ -37,7 +26,6 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-#if !defined (FS_BROKER_APP) // broker shouldn't be running the Fs-Broker
     case Types::Fs::BROKER:{
 #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemBroker>();
@@ -45,7 +33,6 @@ FileSystem::Ptr Interface::use_filesystem(){
       fs_name.append("broker");
       break;
     }
-#endif
 
     case Types::Fs::HADOOP:{
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
@@ -76,7 +63,8 @@ FileSystem::Ptr Interface::use_filesystem(){
     
   std::string fs_lib;
   if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
-    fs_lib.append(Env::Config::settings()->get<std::string>("swc.fs.lib."+fs_name));
+    fs_lib.append(
+      Env::Config::settings()->get<std::string>("swc.fs.lib."+fs_name));
   } else {
     fs_lib.append(Env::Config::settings()->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
@@ -372,8 +360,8 @@ void set_structured_id(std::string number, std::string &s) {
 
 namespace Env {
 
-void FsInterface::init() {
-  m_env = std::make_shared<FsInterface>();
+void FsInterface::init(Types::Fs typ) {
+  m_env = std::make_shared<FsInterface>(typ);
 }
 
 FsInterface::Ptr FsInterface::get(){
@@ -390,7 +378,8 @@ FS::FileSystem::Ptr FsInterface::fs(){
   return m_env->m_interface->get_fs();
 }
 
-FsInterface::FsInterface() : m_interface(new FS::Interface()) {}
+FsInterface::FsInterface(Types::Fs typ) 
+                        : m_interface(new FS::Interface(typ)) {}
 
 FsInterface::~FsInterface(){
   if(m_interface != nullptr)
