@@ -16,7 +16,7 @@
 
 namespace std { namespace chrono {
 
-class fast_clock {
+class fast_clock final {
   public:
   typedef microseconds      duration;
   typedef duration::rep     rep;

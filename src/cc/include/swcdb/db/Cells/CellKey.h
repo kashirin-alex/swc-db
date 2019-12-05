@@ -36,11 +36,11 @@ class Key {
       data = 0;
   }
 
-  virtual ~Key(){
+  virtual ~Key() {
     free();
   }
 
-  inline void free(){
+  inline void free() {
     if(own && data != 0) {
       delete [] data;
       data = 0;

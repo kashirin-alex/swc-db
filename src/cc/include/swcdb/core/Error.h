@@ -180,7 +180,7 @@ const char* get_text(const int& err);
 class Exception;
 
 /** Helper class to render an exception message a la IO manipulators */
-struct ExceptionMessageRenderer {
+struct ExceptionMessageRenderer final {
   ExceptionMessageRenderer(const Exception& e);
 
   std::ostream& render(std::ostream& out) const;
@@ -193,8 +193,8 @@ struct ExceptionMessageRenderer {
   * When printing an Exception, this class also appends a separator. This
   * is used for printing chained Exceptions   
 */
-struct ExceptionMessagesRenderer {
-  ExceptionMessagesRenderer(const Exception& e, const char *sep = ": ");
+struct ExceptionMessagesRenderer final  {
+  ExceptionMessagesRenderer(const Exception& e, const char* sep = ": ");
 
   std::ostream& render(std::ostream& out) const;
 

@@ -26,13 +26,13 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-class Rangers {
+class Rangers final {
 
-  struct ColumnActionReq {
+  struct ColumnActionReq final {
     Protocol::Mngr::Params::ColumnMng params;
     std::function<void(int)>          cb;
   };
-  struct ColumnFunction {
+  struct ColumnFunction final {
     Protocol::Mngr::Params::ColumnMng::Function func;
     int64_t cid;
   };
@@ -59,7 +59,7 @@ class Rangers {
     return this;
   }
 
-  virtual ~Rangers(){}
+  ~Rangers(){}
 
   void new_columns() {
     m_columns_set = false;
@@ -1135,7 +1135,7 @@ class Rangers {
 
 
 namespace Env {
-class Rangers {
+class Rangers final {
   
   public:
 
@@ -1150,7 +1150,7 @@ class Rangers {
 
   Rangers() : m_rangers(new server::Mngr::Rangers()) {}
 
-  virtual ~Rangers(){
+  ~Rangers(){
     if(m_rangers != nullptr)
       delete m_rangers;
   }

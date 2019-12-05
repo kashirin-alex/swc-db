@@ -34,7 +34,7 @@ namespace SWC {
   * assigned by the caller. If the StaticBuffer "owns" the pointer then it
   * will be released when going out of scope.
   */
-class StaticBuffer {
+class StaticBuffer final {
   public:
   
   typedef std::shared_ptr<StaticBuffer> Ptr;
@@ -100,7 +100,7 @@ class StaticBuffer {
   void free();
 
   /** Destructor; if "own" is true then the buffer will be delete[]d */
-  virtual ~StaticBuffer();
+  ~StaticBuffer();
 
   uint8_t   *base;
   uint32_t  size;

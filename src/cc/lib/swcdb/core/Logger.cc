@@ -59,7 +59,10 @@ LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
                       m_daemon(false), m_last_time(0) {
   //std::cout << " LogWriter()=" << (size_t)this << "\n";
 }
-  
+LogWriter::~LogWriter() { 
+  std::cout << std::flush;
+}
+
 void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name 
   //          << " ptr=" << (size_t)this << "\n";

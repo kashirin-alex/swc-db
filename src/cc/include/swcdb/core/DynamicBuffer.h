@@ -34,7 +34,7 @@ namespace SWC {
   /**
    * A dynamic, resizable and reference counted memory buffer
    */
-  class DynamicBuffer {
+  class DynamicBuffer final {
 
   public:
 
@@ -50,7 +50,7 @@ namespace SWC {
     explicit DynamicBuffer(size_t initial_size = 0, bool own_buffer = true);
 
     /** Destructor; releases the buffer if it "owns" it */
-    virtual ~DynamicBuffer();
+    ~DynamicBuffer();
 
     /** Returns the size of the unused portion */
     const size_t remaining() const;

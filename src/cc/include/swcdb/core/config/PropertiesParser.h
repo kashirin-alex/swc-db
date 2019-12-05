@@ -58,9 +58,9 @@ Property::Value::Ptr f64s();
 namespace Config {
 
   
-class ParserConfig {
+class ParserConfig final {
   
-  struct ParserOpt {
+  struct ParserOpt final {
     Property::Value::Ptr  value;
     Strings               aliases;
     std::string           desc;
@@ -84,7 +84,7 @@ class ParserConfig {
 
   explicit ParserConfig(const ParserConfig& other);
 
-  virtual ~ParserConfig();
+  ~ParserConfig();
 
   void free();
   
@@ -132,28 +132,28 @@ std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg);
 
 
 
-class Parser {
+class Parser final {
   public:
 
   ParserConfig config;
 
   static Strings args_to_strings(int argc, char *argv[]);
 
-  class Options {
+  class Options final {
     public:
     bool  own;
     std::map<std::string, Property::Value::Ptr> map;
 
     Options(bool own=true);
 
-    virtual ~Options();
+    ~Options();
 
     void free();
   };
 
   explicit Parser(bool unregistered=false);
   
-  virtual ~Parser();
+  ~Parser();
 
   void free();
   

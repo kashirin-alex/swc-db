@@ -209,7 +209,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
 
 namespace Env {
-class RgrColumns {
+class RgrColumns final {
   public:
 
   static void init() {
@@ -222,7 +222,8 @@ class RgrColumns {
   }
 
   RgrColumns() : m_columns(new server::Rgr::Columns()) {}
-  virtual ~RgrColumns(){
+  
+  ~RgrColumns(){
     if(m_columns != nullptr)
       delete m_columns;
   }

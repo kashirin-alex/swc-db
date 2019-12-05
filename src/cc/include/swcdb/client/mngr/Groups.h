@@ -15,7 +15,7 @@ namespace SWC { namespace client { namespace Mngr {
 
 typedef std::vector<EndPoints>  Hosts;
 
-class Group {
+class Group final {
   public:
 
   typedef std::shared_ptr<Group>  Ptr;
@@ -32,7 +32,7 @@ class Group {
     m_hosts.swap(hosts);
   }
   
-  virtual ~Group(){}
+  ~Group(){}
   
   Ptr copy(){
     return std::make_shared<Group>(col_begin, col_end, get_hosts());
@@ -147,7 +147,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
   public:
   
-  struct GroupHost {
+  struct GroupHost final {
     int64_t   col_begin;
     int64_t   col_end;
     EndPoints endpoints;

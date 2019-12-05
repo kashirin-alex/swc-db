@@ -12,12 +12,12 @@
 
 namespace SWC { 
 
-class Resources {
+class Resources final {
   public:
 
   Resources() {}
 
-  virtual ~Resources() {
+  ~Resources() {
     if(m_timer != nullptr)
       delete m_timer;
   }
@@ -102,7 +102,7 @@ class Resources {
 
 
   
-  struct Component {
+  struct Component final {
     std::atomic<size_t> total    = 0;
     std::atomic<size_t> free     = 0;
     std::atomic<size_t> used     = 0;

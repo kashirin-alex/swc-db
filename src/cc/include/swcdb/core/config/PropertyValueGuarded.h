@@ -22,7 +22,7 @@ typedef std::vector<double>       Doubles;
 namespace Property {
 
 template <class T>
-class ValueGuardedAtomic {
+class ValueGuardedAtomic final {
   
   public:
 
@@ -46,7 +46,7 @@ class ValueGuardedAtomic {
 
 
 
-  virtual ~ValueGuardedAtomic () noexcept {};
+  ~ValueGuardedAtomic () noexcept {};
     
   operator ValueGuardedAtomic*() { 
     return this;    
@@ -95,7 +95,7 @@ typedef gInt32t*  gInt32tPtr;
 namespace Property {
 
 template <class T>
-class ValueGuardedVector {
+class ValueGuardedVector final {
 
   private:
   std::mutex mutex;	
@@ -115,7 +115,7 @@ class ValueGuardedVector {
     set(other.get());
   }
 
-  virtual ~ValueGuardedVector () noexcept {};
+  ~ValueGuardedVector () noexcept {};
     
   operator ValueGuardedVector*() {
     return this;    

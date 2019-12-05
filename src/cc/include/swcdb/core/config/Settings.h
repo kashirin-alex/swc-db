@@ -86,7 +86,7 @@ class Settings {
 
 namespace Env {
 
-class Config {
+class Config final {
   
   public:
 
@@ -113,7 +113,7 @@ class Config {
 
   Config() : m_settings(new SWC::Config::Settings()){}
 
-  virtual ~Config() {
+  ~Config() {
     if(m_settings != nullptr)
       delete m_settings;
   }

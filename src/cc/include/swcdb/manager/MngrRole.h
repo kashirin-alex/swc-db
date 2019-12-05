@@ -15,7 +15,7 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-class MngrRole {
+class MngrRole final {
   public:
   
   typedef MngrRole* Ptr;
@@ -44,7 +44,7 @@ class MngrRole {
     return this;
   }
 
-  virtual ~MngrRole() { }
+  ~MngrRole() { }
 
   void init(const EndPoints& endpoints) {
     m_local_endpoints = endpoints;
@@ -570,7 +570,7 @@ class MngrRole {
 
 
 namespace Env {
-class MngrRole {
+class MngrRole final {
   public:
 
   static void init() {
@@ -584,7 +584,7 @@ class MngrRole {
 
   MngrRole() : m_role_state(new server::Mngr::MngrRole()) {}
 
-  virtual ~MngrRole(){
+  ~MngrRole(){
     if(m_role_state != nullptr)
       delete m_role_state;
   }

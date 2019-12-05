@@ -35,7 +35,7 @@ enum LogPriority {
 namespace Logger {
 
 
-class LogWriter {
+class LogWriter final {
   public:
   
   static const std::string repr(uint8_t priority);
@@ -47,6 +47,8 @@ class LogWriter {
   std::mutex    mutex;
 
   LogWriter(const std::string& name="", const std::string& logs_path="");
+  
+  ~LogWriter();
   
   void initialize(const std::string& name);
 

@@ -14,11 +14,11 @@ inline const size_t get_thread_id() {
   return std::hash<std::thread::id>{}(std::this_thread::get_id());
 }
 
-class Recursive {
+class Recursive final {
   public:
 
   explicit Recursive(): owner(0), recurse(0) { }
-  virtual ~Recursive() { }
+  ~Recursive() { }
 
   void lock() {
     size_t tid = get_thread_id();
@@ -51,7 +51,7 @@ class Recursive {
       owner.store(0, std::memory_order_release);
   }
   
-  class Scope {
+  class Scope final {
     public:
     explicit Scope(Recursive& m) : _m(m) {
       _m.lock();
@@ -59,7 +59,7 @@ class Recursive {
     explicit Scope(Recursive& m, const uint32_t& us_sleep) : _m(m) {
       _m.lock(us_sleep);
     }
-    virtual ~Scope() {
+    ~Scope() {
       _m.unlock();
     }
     private:

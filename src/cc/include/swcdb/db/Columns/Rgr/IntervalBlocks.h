@@ -12,7 +12,7 @@
 
 namespace SWC { namespace server { namespace Rgr {
 
-class IntervalBlocks {
+class IntervalBlocks final {
   public:
   typedef IntervalBlocks* Ptr;
 
@@ -325,7 +325,7 @@ class IntervalBlocks {
       processing_decrement();
     }
     
-    struct Callback {
+    struct Callback final {
       public:
       DB::Cells::ReqScan::Ptr req;
       Block::Ptr              ptr;
@@ -333,7 +333,7 @@ class IntervalBlocks {
       Callback(DB::Cells::ReqScan::Ptr req, Block::Ptr ptr) 
                : req(req), ptr(ptr) { }
 
-      virtual ~Callback() { }
+      ~Callback() { }
 
       void call(int err) {
         if(!err)
@@ -377,7 +377,7 @@ class IntervalBlocks {
     return this;
   }
 
-  virtual ~IntervalBlocks(){ 
+  ~IntervalBlocks(){ 
     _free();
   }
   
@@ -454,6 +454,10 @@ class IntervalBlocks {
       std::lock_guard lock(m_mutex);
       if(!m_block) 
         init_blocks(err);
+      if(err) {
+        req->response(err);
+        return;
+      }
     }
     if(!blk_ptr)
       processing_increment();
@@ -728,6 +732,10 @@ class IntervalBlocks {
       else
         blk->add(new_blk);
       blk = new_blk;
+    }
+    if(!m_block) {
+      err = Error::RS_NOT_LOADED_RANGE;
+      return;
     }
 
     if(range->is_any_begin())

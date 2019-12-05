@@ -150,7 +150,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
 
 namespace Env {
-class MngrColumns {
+class MngrColumns final {
   public:
 
   static void init() {
@@ -164,7 +164,7 @@ class MngrColumns {
 
   MngrColumns() : m_columns(new server::Mngr::Columns()) {}
 
-  virtual ~MngrColumns() {
+  ~MngrColumns() {
     if(m_columns != nullptr)
       delete m_columns;
   }

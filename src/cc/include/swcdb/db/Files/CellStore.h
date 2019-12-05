@@ -32,7 +32,7 @@ static const int8_t   VERSION=1;
 
 
 
-class Read  {
+class Read final {
   public:
   typedef Read*  Ptr;
 
@@ -63,7 +63,7 @@ class Read  {
     return this;
   }
 
-  virtual ~Read(){
+  ~Read(){
     _free();
   }
 
@@ -429,7 +429,7 @@ class Read  {
     }
   }
 
-  struct AwaitingLoad {
+  struct AwaitingLoad final {
     public:
     typedef std::function<void(int)>  Cb_t;
     
@@ -438,7 +438,7 @@ class Read  {
                 : m_count(count), cells_block(cells_block), cb(cb) {
     }
 
-    virtual ~AwaitingLoad() { }
+    ~AwaitingLoad() { }
 
     void processed(int err, Block::Read::Ptr blk) {
       { 

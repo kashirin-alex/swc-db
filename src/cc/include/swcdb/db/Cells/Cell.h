@@ -98,7 +98,7 @@ static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key,
 }
 
   
-class Cell {
+class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
@@ -137,7 +137,7 @@ class Cell {
       value = 0;
   }
 
-  virtual ~Cell(){
+  ~Cell(){
     free();
     key.free();
   }

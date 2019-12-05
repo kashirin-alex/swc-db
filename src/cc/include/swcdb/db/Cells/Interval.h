@@ -12,7 +12,7 @@
 
 namespace SWC {  namespace DB { namespace Cells {
 
-class Interval {
+class Interval final {
 
   /* encoded-format: 
       key_begin-encoded key_end-encoded vi64(ts_earliest) vi64(ts_latest)
@@ -30,7 +30,7 @@ class Interval {
     copy(other); 
   }
 
-  virtual ~Interval(){ 
+  ~Interval(){ 
     free();
   }
 

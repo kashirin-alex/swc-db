@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Files { namespace CellStore {
 
-class Readers {
+class Readers final {
   public:
   typedef Readers*  Ptr;
 
@@ -23,7 +23,7 @@ class Readers {
 
   Readers(const DB::RangeBase::Ptr& range): range(range) {}
 
-  virtual ~Readers() {
+  ~Readers() {
     _free();
   }
 
@@ -303,14 +303,14 @@ class Readers {
   }
 
 
-  struct AwaitingLoad {
+  struct AwaitingLoad final {
     public:
     
     AwaitingLoad(int32_t count, const DB::Cells::Block::Ptr& cells_block) 
                  : count(count), cells_block(cells_block) {
     }
 
-    virtual ~AwaitingLoad() { }
+    ~AwaitingLoad() { }
 
     void processed(int err) {      
       if(--count)

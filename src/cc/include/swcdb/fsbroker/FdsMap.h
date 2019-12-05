@@ -10,7 +10,7 @@
 
 namespace SWC { namespace server { namespace FsBroker {
 
-class Fds {
+class Fds final {
 
   public:
 
@@ -21,7 +21,7 @@ class Fds {
   
   Fds() : m_next_fd(0) {}
   
-  virtual ~Fds(){}
+  ~Fds(){}
 
   int32_t add(FS::SmartFd::Ptr fd) {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -73,7 +73,7 @@ class Fds {
 
 
 namespace Env {
-class Fds {
+class Fds final {
   public:
 
   static void init() {
@@ -87,7 +87,7 @@ class Fds {
 
   Fds() : m_fds(new server::FsBroker::Fds()) {}
 
-  virtual ~Fds(){
+  ~Fds(){
     if(m_fds != nullptr)  
       delete m_fds;
   }

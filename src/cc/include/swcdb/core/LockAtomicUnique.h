@@ -9,12 +9,12 @@
 
 namespace SWC { namespace LockAtomic {
 
-class Unique {
+class Unique final {
   public:
 
   explicit Unique(): want(false) { }
 
-  virtual ~Unique() { }
+  ~Unique() { }
 
   void lock() {
     uint16_t i = 0;
@@ -38,7 +38,7 @@ class Unique {
     want.store(false, std::memory_order_release);
   }
   
-  class Scope {
+  class Scope final {
     public:
     explicit Scope(Unique& m) : _m(m) {
       _m.lock();
@@ -46,7 +46,7 @@ class Unique {
     explicit Scope(Unique& m, const uint32_t& us_sleep) : _m(m) {
       _m.lock(us_sleep);
     }
-    virtual ~Scope() {
+    ~Scope() {
       _m.unlock();
     }
     private:

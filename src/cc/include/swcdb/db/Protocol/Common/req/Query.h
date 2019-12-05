@@ -17,7 +17,7 @@ namespace Query {
  
 namespace Result{
 
-struct Select{
+struct Select final {
   typedef std::shared_ptr<Select> Ptr;
 
   std::atomic<uint32_t> completion = 0;

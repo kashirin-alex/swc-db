@@ -274,7 +274,7 @@ const std::string ValueDef<gEnumExt>::str();
 *   * the whether the value is a default value or skippable
  */
 
-class Value {
+class Value final {
   public:
 
   typedef Value* Ptr;
@@ -290,7 +290,7 @@ class Value {
     /* init from (TypeDef*)ValueDef<T> */
   Value(TypeDef* v);
 
-  virtual ~Value();
+  ~Value();
     
   // update/set the new value to the ValueDef<T>
   template<typename T>

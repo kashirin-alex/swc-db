@@ -76,9 +76,12 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         size_t remain = cell.vlen;
         params.rid = Serialization::decode_vi64(&ptr, &remain);
         params.key_end.decode(&ptr, &remain, true);
+        std::cout << params.to_string() << "\n";
+
         if(range->type == Types::Range::MASTER) 
           params.key_end.remove(0);
-        params.key_end.remove(0);
+        if(!params.key_end.empty())
+          params.key_end.remove(0);
 
         params.next_key = cells->size > 1;
         

@@ -21,7 +21,7 @@ typedef std::shared_ptr<Schemas> SchemasPtr;
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
-class Clients {
+class Clients final {
   public:
 
   typedef std::shared_ptr<Clients> Ptr;
@@ -68,7 +68,7 @@ class Clients {
     );
   } 
 
-  virtual ~Clients(){}
+  ~Clients(){}
   
 
   const Mngr::Groups::Ptr mngrs_groups;
@@ -88,7 +88,7 @@ class Clients {
 
 
 namespace Env {
-class Clients {
+class Clients final {
   public:
 
   static void init(client::Clients::Ptr clients) {
@@ -101,7 +101,7 @@ class Clients {
   }
 
   Clients(client::Clients::Ptr clients) : m_clients(clients) {}
-  virtual ~Clients(){}
+  ~Clients(){}
 
   private:
   client::Clients::Ptr                    m_clients = nullptr;

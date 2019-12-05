@@ -14,7 +14,7 @@ namespace SWC {
 typedef std::shared_ptr<asio::signal_set>   IO_SignalsPtr;
 typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
 
-class IoContext {
+class IoContext final {
   public:
 
   typedef std::shared_ptr<IoContext>  Ptr;
@@ -38,7 +38,7 @@ class IoContext {
 
   const int32_t get_size() const;
   
-  virtual ~IoContext();
+  ~IoContext();
 
   private:
   const std::string   m_name;
@@ -51,7 +51,7 @@ class IoContext {
 
 
 namespace Env {
-class IoCtx {
+class IoCtx final {
   public:
 
   static void init(int32_t size);
@@ -64,7 +64,7 @@ class IoCtx {
 
   IoCtx(int32_t size);
 
-  virtual ~IoCtx();
+  ~IoCtx();
 
   private:
   IoContext::Ptr                       m_io;

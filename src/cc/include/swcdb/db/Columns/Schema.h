@@ -15,7 +15,7 @@
 namespace SWC { namespace DB {
 
 
-class Schema {
+class Schema final {
 
   public:
   
@@ -93,7 +93,7 @@ class Schema {
       revision(Serialization::decode_vi64(bufp, remainp)) {
   }
 
-  virtual ~Schema() {}
+  ~Schema() {}
 
   bool equal(const Ptr &other, bool with_rev=true) {
     return   cid == other->cid
@@ -167,14 +167,14 @@ class Schema {
 
 
 
-class Schemas {
+class Schemas final {
   public:
   
   typedef Schemas* Ptr;
 
   Schemas(){}
 
-  virtual ~Schemas(){}
+  ~Schemas(){}
   
   void add(int &err, Schema::Ptr schema){
     std::lock_guard lock(m_mutex);
@@ -240,7 +240,7 @@ class Schemas {
 } // DB namespace
 
 namespace Env {
-class Schemas {
+class Schemas final {
   public:
 
   static void init() {
@@ -254,7 +254,7 @@ class Schemas {
 
   Schemas() : m_schemas(new DB::Schemas()) {}
   
-  virtual ~Schemas(){
+  ~Schemas(){
     if(m_schemas != nullptr)
       delete m_schemas;
   }

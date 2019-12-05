@@ -11,7 +11,7 @@
 namespace SWC { namespace Files { namespace CommitLog {
 
   
-class Fragment {
+class Fragment final {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
@@ -76,7 +76,7 @@ class Fragment {
     return this;
   }
 
-  virtual ~Fragment() {
+  ~Fragment() {
   }
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 

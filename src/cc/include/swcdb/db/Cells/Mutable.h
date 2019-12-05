@@ -15,7 +15,7 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-class Mutable {
+class Mutable final {
 
   static const uint32_t narrow_sz = 20;
 
@@ -43,7 +43,7 @@ class Mutable {
     _allocate();
   }
 
-  virtual ~Mutable() {
+  ~Mutable() {
     free();
   }
 

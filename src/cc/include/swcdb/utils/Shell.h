@@ -133,7 +133,7 @@ class Interface {
 
   protected:
 
-  struct Option {
+  struct Option final {
     typedef std::function<bool(const char*)> Call_t;
     Option(const std::string& name, const std::string& desc, 
             const Call_t& call, const re2::RE2* re) 

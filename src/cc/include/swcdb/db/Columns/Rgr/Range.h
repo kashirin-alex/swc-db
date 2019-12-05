@@ -26,11 +26,11 @@ class Range : public DB::RangeBase {
   
   typedef std::shared_ptr<Range>                    Ptr;
 
-  struct ReqAdd {
+  struct ReqAdd final {
     public:
     ReqAdd(const StaticBuffer::Ptr& input, const ResponseCallback::Ptr& cb) 
           : input(input), cb(cb) {}
-    virtual ~ReqAdd() {}
+    ~ReqAdd() {}
     const StaticBuffer::Ptr     input;
     const ResponseCallback::Ptr cb;
   };
@@ -176,7 +176,7 @@ class Range : public DB::RangeBase {
 
       if(removal) {
         cell.flag = DB::Cells::DELETE;
-        //m_req_set_intval->columns_cells->add(cid_typ, cell);
+        m_req_set_intval->columns_cells->add(cid_typ, cell);
       } else {
 
         cell.flag = DB::Cells::INSERT;

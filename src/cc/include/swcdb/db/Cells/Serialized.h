@@ -10,12 +10,12 @@
 
 namespace SWC {  namespace DB {  namespace Cells { 
 
-class Serialized {
+class Serialized final {
   public:
   
   typedef std::shared_ptr<DB::Cells::Serialized>        Ptr;
 
-  struct ColumnData {
+  struct ColumnData final {
     Specs::Interval::Ptr interval;
     DynamicBuffer::Ptr   buffer;
   };
@@ -32,7 +32,7 @@ class Serialized {
   }
   */
 
-  virtual ~Serialized() {}
+  ~Serialized() {}
 
   size_t get_size() {
     std::lock_guard<std::mutex> lock(m_mutex);

@@ -97,7 +97,7 @@ class Interface {
   Types::Fs       m_type;
   FileSystem::Ptr m_fs;
 
-  struct LoadedDL{
+  struct LoadedDL final {
     void* lib = nullptr;
     void* cfg = nullptr;
     void* make = nullptr;

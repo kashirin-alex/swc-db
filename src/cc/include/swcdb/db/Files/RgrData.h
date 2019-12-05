@@ -14,7 +14,7 @@
 namespace SWC { namespace Files {
 
 
-class RgrData {
+class RgrData final {
   /* file-format: 
       header: i8(version), i32(data-len), 
               i32(data-checksum), i32(header-checksum),
@@ -180,7 +180,7 @@ class RgrData {
     return s;
   } 
   
-  virtual ~RgrData(){ }
+  ~RgrData(){ }
 
   int8_t     version;
   std::atomic<int64_t>   id;
@@ -193,7 +193,7 @@ class RgrData {
 
 
 namespace Env {
-class RgrData {  
+class RgrData final {  
   public:
 
 
@@ -224,7 +224,7 @@ class RgrData {
 
   RgrData() : m_rgr_data(new Files::RgrData()) {}
 
-  virtual ~RgrData(){
+  ~RgrData(){
     if(m_rgr_data != nullptr)
       delete m_rgr_data;
   }

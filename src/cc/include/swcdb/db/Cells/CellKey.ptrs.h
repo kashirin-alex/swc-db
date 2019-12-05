@@ -17,7 +17,7 @@ class Key {
 
   public:
   
-  struct Fraction {
+  struct Fraction final {
     uint32_t  size;
     uint8_t*  data;
   };

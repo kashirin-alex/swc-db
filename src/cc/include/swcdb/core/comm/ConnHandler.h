@@ -25,18 +25,18 @@ using Socket = asio::ip::tcp::socket;
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
-  struct PendingRsp {
+  struct PendingRsp final {
     public:
     PendingRsp(DispatchHandler::Ptr hdlr, asio::high_resolution_timer* tm);
-    virtual ~PendingRsp();
+    ~PendingRsp();
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  tm;
   };
 
-  struct Outgoing {
+  struct Outgoing final {
     public:
     Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr);
-    virtual ~Outgoing();
+    ~Outgoing();
     CommBuf::Ptr          cbuf;
     DispatchHandler::Ptr  hdlr; 
   };

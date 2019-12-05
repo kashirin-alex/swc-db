@@ -9,7 +9,7 @@
 
 namespace SWC {
 
-class CommHeader {
+class CommHeader final {
 
   public:
 
@@ -31,7 +31,7 @@ class CommHeader {
 
   CommHeader(uint64_t cmd=0, uint32_t timeout=0);
 
-  virtual ~CommHeader();
+  ~CommHeader();
 
   void set(uint64_t cmd=0, uint32_t timeout=0);
 

@@ -15,12 +15,12 @@
 
 namespace SWC { namespace LockAtomic {
 
-class RW {
+class RW final {
   public:
 
   explicit RW() : state({false, 0}), recurse(0) { }
 
-  virtual ~RW() { }
+  ~RW() { }
 
   void lock(const uint32_t& us_sleep = 0) {
     size_t tid = get_thread_id();
@@ -67,24 +67,24 @@ class RW {
       usr.tid.store(0, std::memory_order_release);
   }
 
-  class UniqueScope {
+  class UniqueScope final {
     public:
     explicit UniqueScope(RW& m, const uint32_t& us_sleep = 0) : _m(m) {
       _m.lock(us_sleep);
     }
-    virtual ~UniqueScope() {
+    ~UniqueScope() {
       _m.unlock();
     }
     private:
     RW& _m;
   };
 
-  class SharedScope {
+  class SharedScope final {
     public:
     explicit SharedScope(RW& m, const uint32_t& us_sleep = 0) : _m(m) {
       _m.lock_shared(us_sleep);
     }
-    virtual ~SharedScope() {
+    ~SharedScope() {
       _m.unlock_shared();
     }
     private:
@@ -93,7 +93,7 @@ class RW {
   
   private:
 
-  struct User {
+  struct User final {
     std::atomic<size_t>   tid = 0;
     std::atomic<uint32_t> value = 0;
   };
@@ -142,7 +142,7 @@ class RW {
     }
   }
 
-  struct State {
+  struct State final {
     bool    want_x;
     size_t  owner;
   };
@@ -156,13 +156,13 @@ class RW {
 
 
 template<class M>
-class SharedLock {
+class SharedLock final {
   public:
   explicit SharedLock(M& m) : _m(m) {
     _m.lock_shared();
   }
     
-  virtual ~SharedLock() {
+  ~SharedLock() {
     _m.unlock_shared();
   }
 
@@ -171,13 +171,13 @@ class SharedLock {
 };
 
 template<class M>
-class UniqueLock {
+class UniqueLock final {
   public:
   explicit UniqueLock(M& m) : _m(m) {
     _m.lock();
   }
 
-  virtual ~UniqueLock() {
+  ~UniqueLock() {
     _m.unlock();
   }
     

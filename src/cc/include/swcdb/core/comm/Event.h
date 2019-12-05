@@ -15,7 +15,7 @@
 
 namespace SWC {
 
-class Event {
+class Event final {
 
   public:
 
@@ -33,7 +33,7 @@ class Event {
 
   explicit Event(Type type_, int error_);
 
-  virtual ~Event();
+  ~Event();
 
   ClockT::time_point deadline();
   

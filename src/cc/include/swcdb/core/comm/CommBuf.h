@@ -41,7 +41,7 @@
 namespace SWC {
 
 
-class CommBuf {
+class CommBuf final {
   public:
 
   typedef std::shared_ptr<CommBuf> Ptr;
@@ -67,7 +67,7 @@ class CommBuf {
 
   CommBuf(StaticBuffer& buffer);
 
-  virtual ~CommBuf();
+  ~CommBuf();
 
   void set_data(uint32_t sz);
 

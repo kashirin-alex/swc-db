@@ -12,7 +12,7 @@
 namespace SWC { namespace Files { namespace CommitLog {
 
 
-class Fragments {
+class Fragments final {
   
   /* file-format(dir-structure): 
     ../log/{N}.frag
@@ -50,7 +50,7 @@ class Fragments {
     return this;
   }
 
-  virtual ~Fragments() {
+  ~Fragments() {
     _free();
   }
 
@@ -402,7 +402,7 @@ class Fragments {
     return size;
   }
 
-  struct AwaitingLoad {
+  struct AwaitingLoad final {
     public:
     
     AwaitingLoad(int64_t ts, int32_t count, DB::Cells::Block::Ptr cells_block, 
@@ -410,7 +410,7 @@ class Fragments {
                 : ts(ts), m_count(count), cells_block(cells_block), log(log) {
     }
 
-    virtual ~AwaitingLoad() { }
+    ~AwaitingLoad() { }
 
     void processed(int err, Fragment::Ptr frag) {
       { 

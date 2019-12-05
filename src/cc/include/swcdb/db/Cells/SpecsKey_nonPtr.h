@@ -14,7 +14,7 @@ class Key {
   
   public:
   
-  struct Fraction {
+  struct Fraction final {
     Condition::Comp comp;
     uint32_t        size;
     uint8_t*        data;

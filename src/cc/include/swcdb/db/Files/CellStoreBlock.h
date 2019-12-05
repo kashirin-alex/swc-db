@@ -24,7 +24,7 @@ static const uint8_t HEADER_SIZE=17;
 
 
 
-class Read {  
+class Read final {  
   public:
   typedef Read* Ptr;
 
@@ -63,7 +63,7 @@ class Read {
     return this;
   }
 
-  virtual ~Read() {
+  ~Read() {
   }
   
   bool load(const std::function<void(int)>& cb) {
@@ -296,7 +296,7 @@ class Read {
 
 
 
-class Write {  
+class Write final {  
   public:
   typedef std::shared_ptr<Write> Ptr;
 
@@ -305,7 +305,7 @@ class Write {
         : offset(offset), interval(interval), cell_count(cell_count) { 
   }
 
-  virtual ~Write(){}
+  ~Write(){}
 
   void write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
              DynamicBuffer& output) {

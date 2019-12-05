@@ -18,7 +18,7 @@
 namespace SWC { namespace server {
 
 
-class Acceptor{
+class Acceptor final {
   public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
@@ -27,7 +27,7 @@ class Acceptor{
 
   void stop();
 
-  virtual ~Acceptor();
+  ~Acceptor();
 
   asio::ip::tcp::acceptor* sock();
 
@@ -42,7 +42,7 @@ class Acceptor{
 
 
 
-class SerializedServer {
+class SerializedServer final {
   public:
 
   typedef std::shared_ptr<SerializedServer> Ptr;
@@ -64,7 +64,7 @@ class SerializedServer {
 
   void connection_del(ConnHandlerPtr conn);
 
-  virtual ~SerializedServer();
+  ~SerializedServer();
 
   private:
   

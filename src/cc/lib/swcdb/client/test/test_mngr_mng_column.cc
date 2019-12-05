@@ -29,7 +29,7 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
-struct ExpctedRsp{
+struct ExpctedRsp final {
   public:
   ExpctedRsp(std::string name, Types::Encoding blk_encoding, bool exists)
             : name(name), blk_encoding(blk_encoding),
