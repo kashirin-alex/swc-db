@@ -100,7 +100,7 @@ class StaticBuffer {
   void free();
 
   /** Destructor; if "own" is true then the buffer will be delete[]d */
-  ~StaticBuffer();
+  virtual ~StaticBuffer();
 
   uint8_t   *base;
   uint32_t  size;

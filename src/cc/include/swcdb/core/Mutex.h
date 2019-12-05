@@ -20,7 +20,7 @@ class RW {
 
   explicit RW() : state({false, 0}), recurse(0) { }
 
-  ~RW() { }
+  virtual ~RW() { }
 
   void lock(const uint32_t& us_sleep = 0) {
     size_t tid = get_thread_id();

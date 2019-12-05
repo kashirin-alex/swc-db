@@ -33,7 +33,7 @@ class Event {
 
   explicit Event(Type type_, int error_);
 
-  ~Event();
+  virtual ~Event();
 
   ClockT::time_point deadline();
   

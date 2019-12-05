@@ -18,7 +18,7 @@ class Recursive {
   public:
 
   explicit Recursive(): owner(0), recurse(0) { }
-  ~Recursive() { }
+  virtual ~Recursive() { }
 
   void lock() {
     size_t tid = get_thread_id();

@@ -261,7 +261,7 @@ class Exception : public std::runtime_error {
   Exception(const Exception& ex);
 
   /** Destructor */
-  ~Exception();
+  virtual ~Exception();
 
   /** Returns the error code
     * @return The error code of this exception.

@@ -14,7 +14,7 @@ class Unique {
 
   explicit Unique(): want(false) { }
 
-  ~Unique() { }
+  virtual ~Unique() { }
 
   void lock() {
     uint16_t i = 0;

@@ -34,7 +34,7 @@ StaticBuffer::StaticBuffer(size_t len) : size(len), own(true) {
   allocate();
 }
 
-void StaticBuffer::allocate(){
+void StaticBuffer::allocate() {
   base = new uint8_t[size];
 }
 

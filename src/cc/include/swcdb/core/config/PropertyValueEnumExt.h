@@ -66,7 +66,7 @@ class ValueEnumExt : public ValueEnumExtBase {
 
   int get() override;
 
-  ~ValueEnumExt ();
+  virtual ~ValueEnumExt ();
 
   private:
   int value;
@@ -88,7 +88,7 @@ class ValueGuardedEnumExt : public ValueEnumExtBase {
 
   void set_cb_on_chg(std::function<void(int)> cb);
 
-  ~ValueGuardedEnumExt ();
+  virtual ~ValueGuardedEnumExt ();
 
   private:
   std::atomic<int> value;

@@ -46,7 +46,7 @@ class ValueGuardedAtomic {
 
 
 
-  ~ValueGuardedAtomic () noexcept {};
+  virtual ~ValueGuardedAtomic () noexcept {};
     
   operator ValueGuardedAtomic*() { 
     return this;    
@@ -115,7 +115,7 @@ class ValueGuardedVector {
     set(other.get());
   }
 
-  ~ValueGuardedVector () noexcept {};
+  virtual ~ValueGuardedVector () noexcept {};
     
   operator ValueGuardedVector*() {
     return this;    
