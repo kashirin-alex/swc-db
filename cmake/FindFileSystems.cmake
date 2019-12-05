@@ -29,6 +29,27 @@ SET_DEPS(
 )
 
 
+
+SET_DEPS(
+	NAME "HADOOP" 
+	LIB_PATHS ""
+	INC_PATHS ""
+	STATIC libhdfspp.a
+	SHARED hdfspp 
+	INCLUDE hdfspp/hdfspp.h
+)
+SET_DEPS(
+	NAME "PROTOBUF" 
+	LIB_PATHS ""
+	INC_PATHS ""
+	STATIC libprotobuf.a
+	SHARED protobuf 
+	INCLUDE google/protobuf/stubs/common.h
+)
+
+
+
+
 set(BUILTIN_FS_TARGETS "")
 if(BUILTIN_FS)
 
@@ -42,6 +63,7 @@ if(BUILTIN_FS)
 			string(TOLOWER ${fs} fs)
 			set(BUILTIN_FS_TARGETS ${BUILTIN_FS_TARGETS} swcdb_fs_${fs})
 			string(TOUPPER ${fs} fs)
+			set("BUILTIN_FS_${fs}" ON)
 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBUILTIN_FS_${fs}")
 		endforeach()
 	endif()

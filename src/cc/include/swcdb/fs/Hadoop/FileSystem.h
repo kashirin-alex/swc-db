@@ -5,8 +5,9 @@
 #ifndef swc_lib_fs_Hadoop_FileSystem_h
 #define swc_lib_fs_Hadoop_FileSystem_h
 
+#include <asio.hpp>
 #include "swcdb/fs/FileSystem.h"
-#include <hdfs.h>
+#include "hdfspp/hdfspp.h"
 
 namespace SWC{ namespace FS {
 
@@ -28,7 +29,7 @@ struct SmartFdHadoop : public SmartFd {
 
   virtual ~SmartFdHadoop();
 
-  hdfsFile file = 0;
+  hdfs::FileHandle* file = nullptr;
 };
 
 
@@ -98,7 +99,7 @@ class FileSystemHadoop: public FileSystem {
   void close(int &err, SmartFd::Ptr &smartfd) override;
 
   private:
-	hdfsFS                m_filesystem;
+	hdfs::FileSystem*     m_filesystem;
   std::atomic<bool>     m_run;
   std::atomic<int32_t>  m_nxt_fd;
 };

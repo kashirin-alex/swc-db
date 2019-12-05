@@ -45,6 +45,39 @@ ADD_LIB_TARGET(
 #)
 
 
+
+########### HADOOP FILESYSTEM ###########
+
+set(swcdb_fsHadoop_sources
+	Hadoop/FileSystem.cc
+)
+
+ADD_LIB_TARGET(
+	NAME	swcdb_fs_hadoop
+	SRCS	${swcdb_fsHadoop_sources}
+	TARGETS	swcdb_fs
+	SHARED	${HADOOP_LIBRARIES_SHARED} ${PROTOBUF_LIBRARIES_SHARED}
+	STATIC	${HADOOP_LIBRARIES_STATIC} ${PROTOBUF_LIBRARIES_STATIC}
+)
+
+
+set(SWC_LIB_FS_SHARED )
+set(SWC_LIB_FS_STATIC )
+if(BUILTIN_FS_HADOOP)
+	set(SWC_LIB_FS_SHARED ${SWC_LIB_FS_SHARED} ${HADOOP_LIBRARIES_SHARED} ${PROTOBUF_LIBRARIES_SHARED})
+	set(SWC_LIB_FS_STATIC ${SWC_LIB_FS_STATIC} ${HADOOP_LIBRARIES_STATIC} ${PROTOBUF_LIBRARIES_STATIC})
+endif()
+
+if(SWC_LIB_FS_SHARED)
+	set_property(GLOBAL PROPERTY SWC_LIB_FS_SHARED ${SWC_LIB_FS_SHARED})
+endif()
+if(SWC_LIB_FS_STATIC)
+	set_property(GLOBAL PROPERTY SWC_LIB_FS_STATIC ${SWC_LIB_FS_STATIC})
+endif()
+
+#########################
+
+
 ########### HADOOP_JVM FILESYSTEM ###########
 
 set(swcdb_fsHadoop_jvm_sources
