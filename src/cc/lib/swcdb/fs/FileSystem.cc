@@ -30,6 +30,8 @@ Types::Fs fs_type(std::string fs_name) {
     return Types::Fs::LOCAL;
   if(fs_name.compare("hadoop") == 0)
     return Types::Fs::HADOOP;
+  if(fs_name.compare("hadoop_jvm") == 0)
+    return Types::Fs::HADOOP_JVM;
   if(fs_name.compare("ceph") == 0)
     return Types::Fs::CEPH;
   if(fs_name.compare("custom") == 0)
@@ -47,6 +49,8 @@ std::string type_to_string(Types::Fs typ) {
     return "Local";
   if(typ == Types::Fs::HADOOP)
     return "Hadoop";
+  if(typ == Types::Fs::HADOOP_JVM)
+    return "HadoopJVM";
   if(typ == Types::Fs::CEPH)
     return "Ceph";
   if(typ == Types::Fs::CUSTOM)

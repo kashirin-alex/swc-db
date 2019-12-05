@@ -22,6 +22,11 @@
 #include "swcdb/fs/Hadoop/FileSystem.h"
 #endif
 
+#if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
+#include "swcdb/fs/HadoopJVM/FileSystem.h"
+#endif
+
+
 #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
 #include "swcdb/fs/Broker/FileSystem.h"
 #endif

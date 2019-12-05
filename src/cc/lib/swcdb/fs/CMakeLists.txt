@@ -19,6 +19,7 @@ ADD_LIB_TARGET(
 )
 
 
+
 ########### LOCAL FILESYSTEM ###########
 
 set(swcdb_fsLocal_sources
@@ -29,6 +30,7 @@ ADD_LIB_TARGET(
 	SRCS	${swcdb_fsLocal_sources}
 	TARGETS	swcdb_fs swcdb_core swcdb_core_config
 )
+
 
 
 ########### CEPH FILESYSTEM ###########
@@ -43,18 +45,19 @@ ADD_LIB_TARGET(
 #)
 
 
-########### HADOOP FILESYSTEM ###########
+########### HADOOP_JVM FILESYSTEM ###########
 
-set(swcdb_fsHadoop_sources
-	Hadoop/FileSystem.cc
+set(swcdb_fsHadoop_jvm_sources
+	HadoopJVM/FileSystem.cc
 )
 ADD_LIB_TARGET(
-	NAME	swcdb_fs_hadoop
-	SRCS	${swcdb_fsHadoop_sources}
+	NAME	swcdb_fs_hadoop_jvm
+	SRCS	${swcdb_fsHadoop_jvm_sources}
 	TARGETS	swcdb_fs
-	SHARED	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
-	STATIC	${HADOOP_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
+	SHARED	${HADOOP_JVM_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
+	STATIC	${HADOOP_JVM_LIBRARIES_SHARED} ${JAVA_LIBRARIES_SHARED} 
 )
+
 
 
 ########### FSBROKER FILESYSTEM ###########

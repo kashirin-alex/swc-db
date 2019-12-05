@@ -19,6 +19,7 @@ enum Fs {
   CUSTOM,
   LOCAL,
   HADOOP,
+  HADOOP_JVM,
   CEPH,
   BROKER
 };   

@@ -13,13 +13,16 @@ void Settings::init_fs_options() {
     ("swc.fs.path.data", str("swcdb/"), 
      "SWC-DB data-path, within the FS(specific) base-path")
 
-    ("swc.fs", str(), "main FileSystem: local|hadoop|ceph|broker|custom")
+    ("swc.fs", str(), "main FileSystem: local|hadoop|hadoop_jvm|ceph|broker|custom")
 
     ("swc.fs.local.cfg", str(), "Specific cfg-file for FS-local")
     ("swc.fs.lib.local", str(), "FS-local Lib-path based on fs/FileSystem.h")
 
     ("swc.fs.hadoop.cfg", str(), "Specific cfg-file for FS-hadoop")
     ("swc.fs.lib.hadoop", str(), "FS-hadoop Lib-path based on fs/FileSystem.h")
+
+    ("swc.fs.hadoop_jvm.cfg", str(), "Specific cfg-file for FS-hadoop_jvm")
+    ("swc.fs.lib.hadoop_jvm", str(), "FS-hadoop-JVM Lib-path based on fs/FileSystem.h")
 
     ("swc.fs.ceph.cfg", str(), "Specific cfg-file for FS-ceph")
     ("swc.fs.lib.ceph", str(), "FS-ceph Lib-path based on fs/FileSystem.h")

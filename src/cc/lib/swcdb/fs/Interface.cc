@@ -34,11 +34,19 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::HADOOP:{
+    case Types::Fs::HADOOP: {
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemHadoop>();
 #endif
       fs_name.append("hadoop");
+      break;
+    }
+
+    case Types::Fs::HADOOP_JVM: {
+#if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
+      return std::make_shared<FileSystemHadoopJVM>();
+#endif
+      fs_name.append("hadoop_jvm");
       break;
     }
 /* 

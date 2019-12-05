@@ -16,7 +16,7 @@ SET_DEPS(
 )
 
 SET_DEPS(
-	NAME "HADOOP" 
+	NAME "HADOOP_JVM" 
 	LIB_PATHS /opt/mapr/lib  
 						$ENV{HADOOP_HOME}/lib/native
 						${HADOOP_LIB_PATH}/lib/native
