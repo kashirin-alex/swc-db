@@ -2,8 +2,7 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-
-#include "swcdb/fs/Settings.h"
+#include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 #include "swcdb/core/Resources.h"
 #include "swcdb/db/Columns/Rgr/Columns.h"

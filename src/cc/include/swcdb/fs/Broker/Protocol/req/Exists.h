@@ -5,7 +5,6 @@
 #ifndef swc_lib_fs_Broker_Protocol_req_Exists_h
 #define swc_lib_fs_Broker_Protocol_req_Exists_h
 
-#include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
 namespace SWC { namespace FS { namespace Protocol { namespace Req {

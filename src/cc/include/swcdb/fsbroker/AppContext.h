@@ -5,6 +5,8 @@
 #ifndef swc_app_fsbroker_AppContext_h
 #define swc_app_fsbroker_AppContext_h
 
+#include "swcdb/core/Serialization.h"
+
 #include "swcdb/core/comm/AppContext.h"
 #include "swcdb/core/comm/AppHandler.h"
 

@@ -5,6 +5,8 @@
 #ifndef swc_lib_fs_Broker_Protocol_req_Base_h
 #define swc_lib_fs_Broker_Protocol_req_Base_h
 
+#include "swcdb/core/Serialization.h"
+#include "swcdb/core/comm/DispatchHandler.h"
 
 namespace SWC { namespace FS { namespace Protocol { namespace Req {
 
@@ -12,7 +14,7 @@ class Base : public DispatchHandler {
 
   public:
 
-  typedef std::shared_ptr<Base> Ptr;
+  using Ptr = BasePtr;
 
   CommBuf::Ptr  cbp;
   int           error;

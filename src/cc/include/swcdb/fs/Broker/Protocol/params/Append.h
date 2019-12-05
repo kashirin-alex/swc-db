@@ -5,7 +5,6 @@
 #ifndef swc_lib_fs_Broker_Protocol_params_Append_h
 #define swc_lib_fs_Broker_Protocol_params_Append_h
 
-#include "swcdb/core/Serializable.h"
 
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {

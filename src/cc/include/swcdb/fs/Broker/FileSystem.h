@@ -7,33 +7,14 @@
 
 #include "swcdb/fs/FileSystem.h"
 
-#include "swcdb/core/Serialization.h"
-#include "swcdb/core/comm/ConnHandler.h"
-
-
-#include "swcdb/fs/Broker/Protocol/Commands.h"
-#include "swcdb/fs/Broker/Protocol/req/Exists.h"
-#include "swcdb/fs/Broker/Protocol/req/Remove.h"
-#include "swcdb/fs/Broker/Protocol/req/Length.h"
-#include "swcdb/fs/Broker/Protocol/req/Mkdirs.h"
-#include "swcdb/fs/Broker/Protocol/req/Readdir.h"
-#include "swcdb/fs/Broker/Protocol/req/Rmdir.h"
-#include "swcdb/fs/Broker/Protocol/req/Rename.h"
-#include "swcdb/fs/Broker/Protocol/req/Write.h"
-#include "swcdb/fs/Broker/Protocol/req/Create.h"
-#include "swcdb/fs/Broker/Protocol/req/Append.h"
-#include "swcdb/fs/Broker/Protocol/req/Open.h"
-#include "swcdb/fs/Broker/Protocol/req/Read.h"
-#include "swcdb/fs/Broker/Protocol/req/Pread.h"
-#include "swcdb/fs/Broker/Protocol/req/Seek.h"
-#include "swcdb/fs/Broker/Protocol/req/Sync.h"
-#include "swcdb/fs/Broker/Protocol/req/Flush.h"
-#include "swcdb/fs/Broker/Protocol/req/Close.h"
-
 #include "swcdb/core/comm/SerializedClient.h"
-#include "swcdb/fs/Broker/AppContext.h"
 
 namespace SWC{ namespace FS {
+
+namespace Protocol { namespace Req {
+class Base;
+typedef std::shared_ptr<Base> BasePtr;
+}}
 
 bool apply_broker();
 
@@ -41,397 +22,117 @@ bool apply_broker();
 class FileSystemBroker: public FileSystem {
   public:
 
-  static const EndPoints get_endpoints(){
-    std::string host = Env::Config::settings()->get<std::string>(
-      "swc.fs.broker.host", "");
-    if(host.empty()) {
-      char hostname[256];
-      gethostname(hostname, sizeof(hostname));
-      host.append(hostname);
-    }
-    Strings addr;
-    return Resolver::get_endpoints(
-      Env::Config::settings()->get<int32_t>("swc.fs.broker.port"),
-      addr, host, true
-    );
-  }
+  static const EndPoints get_endpoints();
 
-  FileSystemBroker()
-    : FileSystem(apply_broker()),
-      m_io(std::make_shared<IoContext>("FsBroker",
-        Env::Config::settings()->get<int32_t>("swc.fs.broker.handlers"))),
-      m_service(std::make_shared<client::Serialized>(
-        "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
-      m_type_underlying(fs_type(
-        Env::Config::settings()->get<std::string>("swc.fs.broker.underlying"))),
-      cfg_timeout(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.fs.broker.timeout")),
-      cfg_timeout_ratio(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.fs.broker.timeout.bytes.ratio")),
-      m_endpoints(get_endpoints()),
-      m_run(true) { 
-        
-    m_io->run(m_io);
-  }
+  FileSystemBroker();
 
-  virtual ~FileSystemBroker(){}
+  virtual ~FileSystemBroker();
 
-  void stop() override {
-    m_run = false;
-    m_service->stop();
-    m_io->stop();
-  }
+  void stop() override;
 
-  Types::Fs get_type() override {
-    return m_type_underlying;
-  }
+  Types::Fs get_type() override;
 
-  const std::string to_string() override {
-    return format(
-      "(type=BROKER underlying-type=%s)",
-      type_to_string(m_type_underlying).c_str()
-    );
-  }
+  const std::string to_string() override;
 
+  bool send_request(Protocol::Req::BasePtr hdlr);
 
-  bool send_request(Protocol::Req::Base::Ptr hdlr){
-
-    ConnHandlerPtr conn = nullptr;
-    do {
-      if(!m_run) {
-        auto ev = Event::make(Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
-        hdlr->handle(conn, ev);
-        return true;
-      }
-      conn = m_service->get_connection(
-        m_endpoints, std::chrono::milliseconds(20000), 3);
-    
-    } while(conn == nullptr);
-    m_service->preserve(conn);
-
-    if(conn->send_request(hdlr->cbp, hdlr) != Error::OK) 
-      return false;
-    return true;
-  }
-
-  void send_request_sync(Protocol::Req::Base::Ptr hdlr, 
-                         std::promise<void> res){
-    while(!send_request(hdlr));
-    res.get_future().wait();
-  }
+  void send_request_sync(Protocol::Req::BasePtr hdlr, 
+                         std::promise<void> res);
 
   /// File/Dir name actions
 
-  bool exists(int &err, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Exists>(
-      cfg_timeout->get(), name);
-    
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->state;
-  }
+  bool exists(int &err, const std::string &name) override;
 
-  void exists(Callback::ExistsCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Exists>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void exists(Callback::ExistsCb_t cb, const std::string &name) override;
 
-  void remove(int &err, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Remove>(
-      cfg_timeout->get(), name);
+  void remove(int &err, const std::string &name) override;
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
-
-  void remove(Callback::RemoveCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Remove>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void remove(Callback::RemoveCb_t cb, const std::string &name) override;
   
-  size_t length(int &err, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Length>(
-      cfg_timeout->get(), name);
+  size_t length(int &err, const std::string &name) override;
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->length;
-  }
+  void length(Callback::LengthCb_t cb, const std::string &name) override;
 
-  void length(Callback::LengthCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Length>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void mkdirs(int &err, const std::string &name) override;
 
-  void mkdirs(int &err, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
-      cfg_timeout->get(), name);
+  void mkdirs(Callback::MkdirsCb_t cb, const std::string &name) override;
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void readdir(int &err, const std::string &name, 
+               DirentList &results) override;
 
-  void mkdirs(Callback::MkdirsCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Mkdirs>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void readdir(Callback::ReaddirCb_t cb, const std::string &name) override;
 
-  void readdir(int &err, const std::string &name, DirentList &results) override {
-    auto hdlr = std::make_shared<Protocol::Req::Readdir>(
-      cfg_timeout->get(), name);
+  void rmdir(int &err, const std::string &name) override;
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    results = hdlr->listing;
-  }
+  void rmdir(Callback::RmdirCb_t cb, const std::string &name) override;
 
-  void readdir(Callback::ReaddirCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Readdir>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
-
-  void rmdir(int &err, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
-      cfg_timeout->get(), name);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
-
-  void rmdir(Callback::RmdirCb_t cb, const std::string &name) override {
-    auto hdlr = std::make_shared<Protocol::Req::Rmdir>(
-      cfg_timeout->get(), name, cb);
-      
-    while(!send_request(hdlr));
-  }
-
-  void rename(int &err, const std::string &from, 
-                        const std::string &to)  override {
-    auto hdlr = std::make_shared<Protocol::Req::Rename>(
-      cfg_timeout->get(), from, to);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void rename(int &err, 
+              const std::string &from, const std::string &to) override;
 
   void rename(Callback::RenameCb_t cb, 
-              const std::string &from, const std::string &to)  override {
-    auto hdlr = std::make_shared<Protocol::Req::Rename>(
-      cfg_timeout->get(), from, to, cb);
-      
-    while(!send_request(hdlr));
-  }
+              const std::string &from, const std::string &to)  override;
 
   /// SmartFd actions
 
   void write(int &err, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
-             StaticBuffer &buffer) override {
-    auto hdlr = std::make_shared<Protocol::Req::Write>(
-      cfg_timeout->get(), smartfd, replication, blksz, buffer);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+             StaticBuffer &buffer) override;
 
   void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
              int32_t replication, int64_t blksz, 
-             StaticBuffer &buffer) override {
-    auto hdlr = std::make_shared<Protocol::Req::Write>(
-      cfg_timeout->get(), smartfd, replication, blksz, buffer, cb);
-      
-    while(!send_request(hdlr));
-  }
+             StaticBuffer &buffer) override;
 
   void create(int &err, SmartFd::Ptr &smartfd,
-              int32_t bufsz, int32_t replication, int64_t blksz) override {
-    auto hdlr = std::make_shared<Protocol::Req::Create>(
-      cfg_timeout->get(), smartfd, bufsz, replication, blksz);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+              int32_t bufsz, int32_t replication, int64_t blksz) override;
 
   void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
-              int32_t bufsz, int32_t replication, int64_t blksz) override {
-    auto hdlr = std::make_shared<Protocol::Req::Create>(
-      cfg_timeout->get(), smartfd, bufsz, replication, blksz, cb);
-      
-    while(!send_request(hdlr));
-  }
+              int32_t bufsz, int32_t replication, int64_t blksz) override;
   
   size_t append(int &err, SmartFd::Ptr &smartfd, 
-                StaticBuffer &buffer, Flags flags) override {
-    auto hdlr = std::make_shared<Protocol::Req::Append>(
-      cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
-      smartfd, buffer, flags);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+                StaticBuffer &buffer, Flags flags) override;
    
   void append(Callback::AppendCb_t cb, SmartFd::Ptr &smartfd, 
-              StaticBuffer &buffer, Flags flags) override {
-    auto hdlr = std::make_shared<Protocol::Req::Append>(
-      cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
-      smartfd, buffer, flags, cb);
-      
-    while(!send_request(hdlr));
-  }
+              StaticBuffer &buffer, Flags flags) override;
 
-  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) override {
-    auto hdlr = std::make_shared<Protocol::Req::Open>(
-      cfg_timeout->get(), smartfd, bufsz);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) override;
 
   void open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, 
-            int32_t bufsz) override {
-    auto hdlr = std::make_shared<Protocol::Req::Open>(
-      cfg_timeout->get(), smartfd, bufsz, cb);
-      
-    while(!send_request(hdlr));
-  }
+            int32_t bufsz) override;
   
   size_t read(int &err, SmartFd::Ptr &smartfd, 
-              void *dst, size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Read>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, dst, amount, true);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+              void *dst, size_t amount) override;
    
   size_t read(int &err, SmartFd::Ptr &smartfd, 
-              StaticBuffer* dst, size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Read>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, (void*)dst, amount, false);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+              StaticBuffer* dst, size_t amount) override;
    
   void read(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
-            size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Read>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, nullptr, amount, false, cb);
-      
-    while(!send_request(hdlr));
-  }
+            size_t amount) override;
   
   size_t pread(int &err, SmartFd::Ptr &smartfd, 
-              uint64_t offset, void *dst, size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Pread>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, dst, amount, true);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+              uint64_t offset, void *dst, size_t amount) override;
 
   size_t pread(int &err, SmartFd::Ptr &smartfd, 
-              uint64_t offset, StaticBuffer* dst, size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Pread>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, (void*)dst, amount, false);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+              uint64_t offset, StaticBuffer* dst, size_t amount) override;
    
   void pread(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
-            uint64_t offset, size_t amount) override {
-    auto hdlr = std::make_shared<Protocol::Req::Pread>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, nullptr, amount, false, cb);
-      
-    while(!send_request(hdlr));
-  }
+            uint64_t offset, size_t amount) override;
 
-  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override {
-    auto hdlr = std::make_shared<Protocol::Req::Seek>(
-      cfg_timeout->get(), smartfd, offset);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override;
    
   void seek(Callback::SeekCb_t cb, SmartFd::Ptr &smartfd, 
-            size_t offset) override {
-    auto hdlr = std::make_shared<Protocol::Req::Seek>(
-      cfg_timeout->get(), smartfd, offset, cb);
-      
-    while(!send_request(hdlr));
-  }
+            size_t offset) override;
 
-  void flush(int &err, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Flush>(
-      cfg_timeout->get(), smartfd);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void flush(int &err, SmartFd::Ptr &smartfd) override;
   
-  void flush(Callback::FlushCb_t cb, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Flush>(
-      cfg_timeout->get(), smartfd, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void flush(Callback::FlushCb_t cb, SmartFd::Ptr &smartfd) override;
 
-  void sync(int &err, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Sync>(
-      cfg_timeout->get(), smartfd);
-
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
+  void sync(int &err, SmartFd::Ptr &smartfd) override;
   
-  void sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Sync>(
-      cfg_timeout->get(), smartfd, cb);
-      
-    while(!send_request(hdlr));
-  }
+  void sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) override;
 
-  void close(int &err, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Close>(
-      cfg_timeout->get(), smartfd);
+  void close(int &err, SmartFd::Ptr &smartfd) override;
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-  }
-
-  void close(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd) override {
-    auto hdlr = std::make_shared<Protocol::Req::Close>(
-      cfg_timeout->get(), smartfd, cb);
-      
-    while(!send_request(hdlr));
-  }
-
-  //
-
-
+  void close(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd) override;
 
   private:
 
