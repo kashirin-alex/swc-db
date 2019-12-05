@@ -41,7 +41,7 @@ range-data:
  
 namespace Result{
 
-struct Update{
+struct Update final {
   typedef std::shared_ptr<Update> Ptr;
   int err;
   std::atomic<uint32_t> completion = 0;
@@ -105,13 +105,16 @@ class Update : public std::enable_shared_from_this<Update> {
         continue;
       auto cid = pair.first;
       auto& cells = pair.second;
-
-      cells->get(0, cell);
+      if(!cells->size)
+        continue;
+      
+      auto key_start = std::make_shared<DB::Cell::Key>();
+      cells->get(0, *key_start.get()); 
   
       std::make_shared<Locator>(
         Types::Range::MASTER,
         cid, cells, cid, 
-        std::make_shared<DB::Cell::Key>(cell.key), 
+        key_start, 
         shared_from_this()
       )->locate_on_manager();
     }
