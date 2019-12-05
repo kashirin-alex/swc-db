@@ -161,28 +161,28 @@ class Interface {
 class Rgr : public Interface {
   public:
   Rgr() 
-    : Interface("\033[32mSWC-DB(\033[36mrgr\033[32m\033[00m)\033[33m> \033[00m",
+    : Interface("\033[32mSWC-DB(\033[36mrgr\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-ranger-history") {
   }
 };
 class Mngr : public Interface {
   public:
   Mngr() 
-    : Interface("\033[32mSWC-DB(\033[36mmngr\033[32m\033[00m)\033[33m> \033[00m",
+    : Interface("\033[32mSWC-DB(\033[36mmngr\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-manager-history") {
   }
 };
 class FsBroker : public Interface {
   public:
   FsBroker() 
-    : Interface("\033[32mSWC-DB(\033[36mfsbroker\033[32m\033[00m)\033[33m> \033[00m",
+    : Interface("\033[32mSWC-DB(\033[36mfsbroker\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-fsbroker-history") {
   }
 };
 class DbClient : public Interface {
   public:
   DbClient() 
-    : Interface("\033[32mSWC-DB(\033[36mclient\033[32m\033[00m)\033[33m> \033[00m",
+    : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-dbclient-history") {
   }
 };

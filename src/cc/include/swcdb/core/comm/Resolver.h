@@ -46,7 +46,7 @@ const bool is_ipv4_address(const std::string& str);
 
 const bool is_ipv6_address(const std::string& str);
 
-EndPoints get_endpoints(int32_t defaul_port, 
+EndPoints get_endpoints(uint16_t defaul_port, 
                         const Strings &addrs, 
                         const std::string &host, 
                         bool srv=false);

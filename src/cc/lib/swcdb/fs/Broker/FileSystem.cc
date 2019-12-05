@@ -35,7 +35,7 @@ bool apply_broker() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.broker.OnFileChange.cfg", str(), "Dyn-config file")
     ("swc.fs.broker.host", str(), "FsBroker host (default by hostname)") 
-    ("swc.fs.broker.port", i32(17000), "FsBroker port")
+    ("swc.fs.broker.port", i16(17000), "FsBroker port")
     ("swc.fs.broker.handlers", i32(48), "Handlers for broker tasks")
     ("swc.fs.broker.timeout", g_i32(30000), "Default request timeout in ms")
     ("swc.fs.broker.timeout.bytes.ratio", g_i32(1000), 
@@ -60,7 +60,7 @@ const EndPoints FileSystemBroker::get_endpoints() {
   }
   Strings addr;
   return Resolver::get_endpoints(
-    Env::Config::settings()->get<int32_t>("swc.fs.broker.port"),
+    Env::Config::settings()->get<int16_t>("swc.fs.broker.port"),
     addr, host, true
   );
 }

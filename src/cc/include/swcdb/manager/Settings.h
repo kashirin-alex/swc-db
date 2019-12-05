@@ -24,7 +24,7 @@ void Settings::init_app_options(){
 
     ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.mngr.port", i32(15000), "Manager port")
+    ("swc.mngr.port", i16(15000), "Manager port")
     ("swc.mngr.handlers", i32(8), "Number of App Handlers")
 
 

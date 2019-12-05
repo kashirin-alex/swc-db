@@ -30,7 +30,7 @@ void Settings::init_app_options(){
 
     ("swc.rgr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.rgr.port", i32(16000), "Ranger port")
+    ("swc.rgr.port", i16(16000), "Ranger port")
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
     ("swc.rgr.ram.percent", g_i32(33), 

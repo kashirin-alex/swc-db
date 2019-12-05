@@ -94,7 +94,6 @@ class Interface {
               int32_t bufsz, int32_t replication, int64_t blksz);
  
   private:
-  bool            is_fsbroker;
   Types::Fs       m_type;
   FileSystem::Ptr m_fs;
 

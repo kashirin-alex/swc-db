@@ -22,7 +22,7 @@ bool apply_hadoop() {
 
     ("swc.fs.hadoop.namenode", strs(), 
       "Namenode Host + optional(:Port), muliple")
-    ("swc.fs.hadoop.namenode.port", i32(), 
+    ("swc.fs.hadoop.namenode.port", i16(), 
       "Namenode Port")
     ("swc.fs.hadoop.user", str(), 
       "Hadoop user")
@@ -117,7 +117,7 @@ bool FileSystemHadoop::initialize() {
   io_service->InitWorkers(
     Env::Config::settings()->get<int32_t>("swc.fs.hadoop.handlers"));
 
-  m_filesystem = hdfs::FileSystem::New();
+  m_filesystem = hdfs::FileSystem::New(
     io_service, 
     Env::Config::settings()->get<std::string>("swc.fs.hadoop.user", ""), 
     options
@@ -129,7 +129,7 @@ bool FileSystemHadoop::initialize() {
   if(Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
     for(auto& h : Env::Config::settings()->get<Strings>(
                                   "swc.fs.hadoop.namenode")) {
-      port = std::to_string(Env::Config::settings()->get<int32_t>(
+      port = std::to_string((uint16_t)Env::Config::settings()->get<int16_t>(
         "swc.fs.hadoop.namenode.port", 0));
 
       SWC_LOGF(LOG_DEBUG, "FS-Hadoop, Connecting to namenode=[%s]:%s", 

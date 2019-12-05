@@ -82,7 +82,7 @@ SerializedServer::SerializedServer(
   }
     
   EndPoints endpoints = Resolver::get_endpoints(
-    props.get<int32_t>(port_cfg_name),
+    props.get<int16_t>(port_cfg_name),
     addrs,
     host,
     true

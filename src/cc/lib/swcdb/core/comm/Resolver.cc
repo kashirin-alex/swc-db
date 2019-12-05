@@ -28,7 +28,7 @@ void encode(const EndPoint& endpoint, uint8_t **bufp) {
   
 EndPoint decode(const uint8_t **bufp, size_t *remainp) {
   bool is_v4 = Serialization::decode_bool(bufp, remainp);
-  uint32_t port = Serialization::decode_i16(bufp, remainp);
+  uint16_t port = Serialization::decode_i16(bufp, remainp);
   if(is_v4) 
     return EndPoint(
       asio::ip::make_address_v4(
@@ -96,39 +96,34 @@ const bool is_ipv6_address(const std::string& str) {
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr)) != 0;
 }
 
-EndPoints get_endpoints(int32_t defaul_port, 
+EndPoints get_endpoints(uint16_t defaul_port, 
                         const Strings &addrs, 
                         const std::string &host, 
                         bool srv) {
   EndPoints endpoints;
+  std::string ip;
+  uint16_t port;
   if(!addrs.empty()) {
-    std::string ip;
-    uint32_t port;
     for(auto& addr : addrs) {
       auto at = addr.find_first_of("-");
       if(at != std::string::npos) {
         ip = addr.substr(0, at);  
-        port = SWC::Property::int32_t_from_string(addr.substr(at+1));
+        port = SWC::Property::uint16_t_from_string(addr.substr(at+1));
       } else {
         ip = addr;  
         port = defaul_port;
       }
       endpoints.push_back(
-        asio::ip::tcp::endpoint(
-          asio::ip::make_address(ip.c_str()), 
-          (uint32_t)port
-      ));
+        asio::ip::tcp::endpoint(asio::ip::make_address(ip.c_str()), port ));
     }
 
   } else if(!host.empty()) {
-    uint32_t port;
-    std::string ip;
     std::string hostname;
     auto hostname_cfg = host;
     auto at = host.find_first_of(":");
     if(at != std::string::npos) {
         hostname = host.substr(0, at);  
-        port = SWC::Property::int32_t_from_string(host.substr(at+1));
+        port = SWC::Property::uint16_t_from_string(host.substr(at+1));
       } else {
         port = defaul_port;
         hostname = host;  
@@ -172,7 +167,7 @@ EndPoints get_endpoints(int32_t defaul_port,
                   hostname.c_str(), rp->ai_addr);
         
       endpoints.push_back(
-        asio::ip::tcp::endpoint(asio::ip::make_address(c_addr), (uint32_t)port
+        asio::ip::tcp::endpoint(asio::ip::make_address(c_addr), port
       ));
     }
   }

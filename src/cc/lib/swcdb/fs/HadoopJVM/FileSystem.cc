@@ -19,7 +19,7 @@ bool apply_hadoop_jvm() {
 
     ("swc.fs.hadoop_jvm.namenode", strs(), 
       "Namenode Host + optional(:Port), muliple")
-    ("swc.fs.hadoop_jvm.namenode.port", i32(), 
+    ("swc.fs.hadoop_jvm.namenode.port", i16(), 
       "Namenode Port")
     ("swc.fs.hadoop_jvm.user", str(), 
       "HadoopJVM user")
@@ -77,7 +77,7 @@ void FileSystemHadoopJVM::setup_connection() {
     
   /* 
   char* host;    
-  int32_t port;
+  uint16_t port;
   hdfsConfGetStr("hdfs.namenode.host", &host);
   hdfsConfGetInt("hdfs.namenode.port", &port);
   SWC_LOGF(LOG_INFO, "FS-HadoopJV<, connected to namenode=[%s]:%d", host, port);
@@ -100,7 +100,7 @@ bool FileSystemHadoopJVM::initialize() {
 
       if (Env::Config::settings()->has("swc.fs.hadoop_jvm.namenode.port")) 
         hdfsBuilderSetNameNodePort(
-          bld, Env::Config::settings()->get<int32_t>(
+          bld, (uint16_t)Env::Config::settings()->get<int16_t>(
             "swc.fs.hadoop_jvm.namenode.port"));
 
       if (Env::Config::settings()->has("swc.fs.hadoop_jvm.user")) 

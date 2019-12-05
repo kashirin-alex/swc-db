@@ -185,13 +185,13 @@ class Groups : public std::enable_shared_from_this<Groups>{
     return std::make_shared<Groups>(groups);
   }
 
-  void on_cfg_update(){
+  void on_cfg_update() {
     SWC_LOG(LOG_DEBUG, "update_cfg()");
 
     gStringsPtr cfg_mngr_hosts
      = Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host");
-    uint32_t default_port
-     = Env::Config::settings()->get<int32_t>("swc.mngr.port");
+    uint16_t default_port
+     = Env::Config::settings()->get<int16_t>("swc.mngr.port");
 
 
     int c = cfg_mngr_hosts->size();
@@ -218,14 +218,14 @@ class Groups : public std::enable_shared_from_this<Groups>{
           
       auto host_and_ip = cfg.substr(at+1);
       std::string host_or_ips;
-      uint32_t port;
+      uint16_t port;
       auto addr_at = host_and_ip.find_first_of("|");
       if(addr_at == std::string::npos) {
         host_or_ips = host_and_ip;
         port = default_port;
       } else {
         host_or_ips = host_and_ip.substr(0, addr_at);
-        port = Property::int32_t_from_string(host_and_ip.substr(addr_at+1));
+        port = Property::uint16_t_from_string(host_and_ip.substr(addr_at+1));
       }
 
       size_t col_begin, col_end;
@@ -253,7 +253,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
   }
 
   void add_host(size_t col_begin, size_t col_end, 
-                uint32_t port, std::string host_or_ips){
+                uint16_t port, std::string host_or_ips){
 
     std::vector<std::string> ips;
     std::string host;

@@ -12,7 +12,7 @@ void Settings::init_client_options() {
   file_desc.add_options()
     ("swc.mngr.host", g_strs(gStrings()), 
      "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
-    ("swc.mngr.port", i32(15000), 
+    ("swc.mngr.port", i16(15000), 
      "Manager default port if not defined in swc.mngr.host")
      
     ("swc.client.Rgr.connection.timeout", g_i32(10000), 
