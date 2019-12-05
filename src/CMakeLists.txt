@@ -7,12 +7,10 @@ set(TEST_DIFF ${CMAKE_SOURCE_DIR}/src/testutils/testdiff)
 
 
 include_directories(
-  cc
   cc/include
   ${CMAKE_CURRENT_BINARY_DIR}/cc
 )
 
-# add_subdirectory(cc/hypertable)
 
 configure_file(
   cc/include/swcdb/core/Version.h.in 

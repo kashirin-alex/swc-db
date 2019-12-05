@@ -10,7 +10,7 @@
 namespace SWC{ namespace FS {
 
  
-bool apply_hadoop() {
+bool apply_hadoop_jvm() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop_jvm.path.root", str(""), 
       "HadoopJVM FileSystem's base root path")
@@ -58,7 +58,7 @@ SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 FileSystemHadoopJVM::FileSystemHadoopJVM() 
     : FileSystem(
         Env::Config::settings()->get<std::string>("swc.fs.hadoop_jvm.path.root"),
-        apply_hadoop()
+        apply_hadoop_jvm()
       ),
       m_run(true), m_nxt_fd(0) { 
   setup_connection();
