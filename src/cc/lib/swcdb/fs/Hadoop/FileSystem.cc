@@ -26,6 +26,7 @@ bool apply_hadoop() {
       "Namenode Port")
     ("swc.fs.hadoop.user", str(), 
       "Hadoop user")
+    ("swc.fs.hadoop.handlers", i32(48), "Handlers for hadoop tasks")
   ;
 
   Env::Config::settings()->parse_file(
@@ -63,22 +64,15 @@ FileSystemHadoop::FileSystemHadoop()
         Env::Config::settings()->get<std::string>("swc.fs.hadoop.path.root"),
         apply_hadoop()
       ),
-      m_run(true), m_nxt_fd(0) { 
-  //setup_connection();
+      m_run(true), m_nxt_fd(0) {
 
-  hdfs::ConfigParser parser;
-  if(!parser.LoadDefaultResources()){
-    std::cerr << "hdfs::ConfigParser could not load default resources. " << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  std::cout << " fs.defaultFS=" << parser.get_string_or("fs.defaultFS", "NONE") << "\n";
+  setup_connection();
+
 }
 
 FileSystemHadoop::~FileSystemHadoop() { 
   std::cout << " ~FileSystemHadoop() \n"; 
 }
-
-#ifdef DODODOD
 
 void FileSystemHadoop::setup_connection() {
 
@@ -89,90 +83,96 @@ void FileSystemHadoop::setup_connection() {
       ++tries);
   }
   
-  hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
+  //hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
     
-  /* 
-  char* host;    
-  int32_t port;
-  hdfsConfGetStr("hdfs.namenode.host", &host);
-  hdfsConfGetInt("hdfs.namenode.port", &port);
-  SWC_LOGF(LOG_INFO, "FS-HadoopJV<, connected to namenode=[%s]:%d", host, port);
-  hdfsConfStrFree(host);
-  */
-
+ 
   // status check
-  char buffer[256];
-  hdfsGetWorkingDirectory(m_filesystem, buffer, 256);
-  SWC_LOGF(LOG_DEBUG, "FS-Hadoop, working Dir='%s'", buffer);
+  //char buffer[256];
+  //hdfsGetWorkingDirectory(m_filesystem, buffer, 256);
+  //SWC_LOGF(LOG_DEBUG, "FS-Hadoop, working Dir='%s'", buffer);
 }
 
 bool FileSystemHadoop::initialize() {
 
-  if (Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
+  hdfs::ConfigParser parser;
+  if(!parser.LoadDefaultResources()){
+    std::cerr << "hdfs::ConfigParser could not load default resources. " << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  auto stats = parser.ValidateResources();
+  for(auto s : stats) {
+    std::cout << s.first << "=" << s.second.ToString() << std::endl;
+    if(!s.second.ok())
+      (EXIT_FAILURE);
+  }
+  std::cout << " fs.defaultFS=" << parser.get_string_or("fs.defaultFS", "NONE") << "\n";
+
+  hdfs::Options options;
+  if(!parser.get_options(options)){
+    std::cerr << "hdfs::ConfigParser could not load Options object. " << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  hdfs::IoService* io_service = hdfs::IoService::New();
+  io_service->InitWorkers(
+    Env::Config::settings()->get<int32_t>("swc.fs.hadoop.handlers"));
+
+  m_filesystem = hdfs::FileSystem::New();
+    io_service, 
+    Env::Config::settings()->get<std::string>("swc.fs.hadoop.user", ""), 
+    options
+  );
+  std::cout << "hdfs::FileSystem Initialized" << std::endl;
+
+  hdfs::Status status;
+  std::string port;
+  if(Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
     for(auto& h : Env::Config::settings()->get<Strings>(
-                                  "swc.fs.hadoop.namenode")){
-	    hdfsBuilder* bld = hdfsNewBuilder();
-      hdfsBuilderSetNameNode(bld, h.c_str());
+                                  "swc.fs.hadoop.namenode")) {
+      port = std::to_string(Env::Config::settings()->get<int32_t>(
+        "swc.fs.hadoop.namenode.port", 0));
 
-      if (Env::Config::settings()->has("swc.fs.hadoop.namenode.port")) 
-        hdfsBuilderSetNameNodePort(
-          bld, Env::Config::settings()->get<int32_t>(
-            "swc.fs.hadoop.namenode.port"));
-
-      if (Env::Config::settings()->has("swc.fs.hadoop.user")) 
-        hdfsBuilderSetUserName(
-          bld, 
-          Env::Config::settings()->get<std::string>(
-            "swc.fs.hadoop.user").c_str()
-        );
-        
-      m_filesystem = hdfsBuilderConnect(bld);
-      SWC_LOGF(LOG_DEBUG, "Connecting to namenode=%s", h.c_str());
-      // java.lang.IllegalArgumentException: java.net.UnknownHostException:
-      if(m_filesystem != nullptr) {
-        errno = Error::OK;
-        // check status, namenode need to be active
-        int64_t sz_used = hdfsGetUsed(m_filesystem); 
-        if(sz_used == -1) {
-          SWC_LOGF(LOG_ERROR, "hdfsGetUsed('%s') failed - %d(%s)", 
-                                h.c_str(), errno, strerror(errno));
-          continue;
+      SWC_LOGF(LOG_DEBUG, "FS-Hadoop, Connecting to namenode=[%s]:%s", 
+                            h.c_str(), port.c_str());
+      
+      status = m_filesystem->Connect(h, port);
+      if(status.ok()) {
+        hdfs::FsInfo fs_info;
+        status =  m_filesystem->GetFsStats(fs_info);
+        if(status.ok()) {
+          SWC_LOGF(LOG_INFO, "%s", fs_info.str("FS-Hadoop").c_str());
+          return true;
         }
-        SWC_LOGF(LOG_INFO, "Non DFS Used bytes: %ld", sz_used);
-          
-        sz_used = hdfsGetCapacity(m_filesystem); 
-        if(sz_used == -1) {
-          SWC_LOGF(LOG_ERROR, "hdfsGetCapacity('%s') failed - %d(%s)", 
-                                h.c_str(), errno, strerror(errno));
-          continue;
-        }
-        SWC_LOGF(LOG_INFO, "Configured Capacity bytes: %ld", sz_used);
-
-        return true;
       }
+      std::cerr << "FS-Hadoop, Could not connect to " << h << ":" << port 
+                << ". " << status.ToString() << std::endl;
     }
 
   } else {
-	  hdfsBuilder* bld = hdfsNewBuilder();
-     //"default" > read hadoop config from LIBHDFS3_CONF=path
-    hdfsBuilderSetNameNode(bld, "default"); 
-
-    m_filesystem = hdfsBuilderConnect(bld);
-      
-    char* value;
-    hdfsConfGetStr("fs.defaultFS", &value);
-    SWC_LOGF(LOG_DEBUG, "FS-Hadoop, connecting to default namenode=%s", value);
+    SWC_LOGF(LOG_DEBUG, "FS-Hadoop, connecting to default namenode=%s", options.defaultFS);
+    status = m_filesystem->ConnectToDefaultFs();
+    if(status.ok()) {
+      hdfs::FsInfo fs_info;
+      status =  m_filesystem->GetFsStats(fs_info);
+      if(status.ok()) {
+        SWC_LOGF(LOG_INFO, "%s", fs_info.str("FS-Hadoop").c_str());
+        return true;
+      }
+    }
+    std::cerr << "FS-Hadoop, Could not connect to " << options.defaultFS
+              << ". " << status.ToString() << std::endl;
   }
     
   return m_filesystem != nullptr;
 }
-#endif
 
 
 void FileSystemHadoop::stop() {
   m_run.store(false);
-  //if(m_filesystem != nullptr)
-  //  hdfsDisconnect(m_filesystem);
+  if(m_filesystem != nullptr) {
+    //hdfsDisconnect(m_filesystem);
+    delete m_filesystem;
+  }
 }
 
 Types::Fs FileSystemHadoop::get_type() {
