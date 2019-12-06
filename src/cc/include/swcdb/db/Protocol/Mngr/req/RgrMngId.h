@@ -17,10 +17,9 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<RgrMngId> Ptr;
 
-  class Scheduler : public std::enable_shared_from_this<Scheduler> {
+  class Scheduler final {
 
     public:
-    typedef std::shared_ptr<Scheduler> Ptr;
 
     Scheduler() :
       m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
@@ -29,7 +28,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
            "swc.rgr.id.validation.interval")) {
     }
 
-    virtual ~Scheduler(){}
+    ~Scheduler(){}
 
     void set(uint32_t ms) {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -42,15 +41,15 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
         std::chrono::milliseconds(ms == 0?cfg_check_interval->get():ms));
 
       m_timer.async_wait(
-        [ptr=shared_from_this()](const asio::error_code ec) {
+        [this](const asio::error_code ec) {
           if (ec != asio::error::operation_aborted){
-            assign(ptr);
+            assign(this);
           }
         }
       );
     }
 
-    void stop(){
+    void stop() {
       std::lock_guard<std::mutex> lock(m_mutex);
       if(m_run) 
         m_timer.cancel();
@@ -65,11 +64,11 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     bool                         m_run;
   };
   
-  void static assign(Scheduler::Ptr validator) {
+  void static assign(Scheduler* validator) {
     std::make_shared<RgrMngId>(validator)->assign();
   }
 
-  void static shutting_down(Scheduler::Ptr validator, 
+  void static shutting_down(Scheduler* validator, 
                             std::function<void()> cb) {
     auto rs_data = Env::RgrData::get();
     SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
@@ -94,7 +93,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     return cbp;
   }
 
-  RgrMngId(Scheduler::Ptr validator, CommBuf::Ptr cbp=nullptr) 
+  RgrMngId(Scheduler* validator, CommBuf::Ptr cbp=nullptr) 
           : Common::Req::ConnQueue::ReqBase(false, cbp),
             validator(validator) {
   }
@@ -224,8 +223,8 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     endpoints.clear();
   }
 
-  const Scheduler::Ptr  validator;
-  EndPoints             endpoints;
+  Scheduler*  validator;
+  EndPoints   endpoints;
 
 };
 

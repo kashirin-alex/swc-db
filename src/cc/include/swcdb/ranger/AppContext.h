@@ -43,7 +43,7 @@ namespace SWC { namespace server { namespace Rgr {
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext() {
+  static AppContext::Ptr make() {
     Env::Config::settings()->parse_file(
       Env::Config::settings()->get<std::string>("swc.rgr.cfg", ""),
       Env::Config::settings()->get<std::string>("swc.rgr.OnFileChange.cfg", "")
@@ -64,6 +64,12 @@ class AppContext : public SWC::AppContext {
       Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
       [](size_t bytes) { Env::RgrColumns::get()->release(bytes); }
     );
+
+    return std::make_shared<AppContext>();
+  }
+
+  AppContext() { 
+
   }
 
   void init(const EndPoints& endpoints) override {
@@ -80,9 +86,7 @@ class AppContext : public SWC::AppContext {
       )
     );
 
-    m_id_validator 
-      = std::make_shared<Protocol::Mngr::Req::RgrMngId::Scheduler>();
-    Protocol::Mngr::Req::RgrMngId::assign(m_id_validator);
+    Protocol::Mngr::Req::RgrMngId::assign(&m_id_validator);
 
     m_compaction = std::make_shared<Compaction>();
     m_compaction->schedule();
@@ -125,7 +129,7 @@ class AppContext : public SWC::AppContext {
 
           case Protocol::Rgr::ASSIGN_ID_NEEDED:
             handler = new Protocol::Rgr::Handler::AssignId(
-              conn, ev, m_id_validator);
+              conn, ev, &m_id_validator);
             break;
 
           case Protocol::Rgr::COLUMN_DELETE: 
@@ -210,7 +214,7 @@ class AppContext : public SWC::AppContext {
     Env::RgrColumns::get()->unload_all(false);
 
     Protocol::Mngr::Req::RgrMngId::shutting_down(
-      m_id_validator,
+      &m_id_validator,
       [ptr=shared_from_this()](){
         (new std::thread([ptr]{ ptr->stop(); }))->detach();
       }
@@ -222,7 +226,7 @@ class AppContext : public SWC::AppContext {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     Env::RgrColumns::get()->unload_all(true); //re-check
     
-    m_id_validator->stop();
+    m_id_validator.stop();
     Env::Resources.stop();
     
     Env::Clients::get()->rgr_service->stop();
@@ -243,8 +247,8 @@ class AppContext : public SWC::AppContext {
   std::mutex                m_mutex;
   SerializedServer::Ptr     m_srv = nullptr;
   Compaction::Ptr           m_compaction;
-  
-  Protocol::Mngr::Req::RgrMngId::Scheduler::Ptr   m_id_validator;
+
+  Protocol::Mngr::Req::RgrMngId::Scheduler  m_id_validator;
   
 };
 

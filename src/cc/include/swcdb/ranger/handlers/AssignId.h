@@ -14,7 +14,7 @@ class AssignId : public AppHandler {
   public:
 
   AssignId(ConnHandlerPtr conn, Event::Ptr ev, 
-           Mngr::Req::RgrMngId::Scheduler::Ptr validator)
+          Mngr::Req::RgrMngId::Scheduler* validator)
           : AppHandler(conn, ev), validator(validator) { }
 
   void run() override {
@@ -34,7 +34,7 @@ class AssignId : public AppHandler {
   }
 
   private:
-  Mngr::Req::RgrMngId::Scheduler::Ptr validator;
+  Mngr::Req::RgrMngId::Scheduler* validator;
 };
   
 
