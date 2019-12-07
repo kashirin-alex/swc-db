@@ -17,9 +17,9 @@ class IntervalBlocks final {
   typedef IntervalBlocks* Ptr;
 
 
-  DB::RangeBase::Ptr                range;
-  Files::CommitLog::Fragments::Ptr  commitlog;
-  Files::CellStore::Readers::Ptr    cellstores;
+  DB::RangeBase::Ptr           range;
+  Files::CommitLog::Fragments  commitlog;
+  Files::CellStore::Readers    cellstores;
 
 
   class Block : public DB::Cells::Block {
@@ -129,7 +129,7 @@ class IntervalBlocks final {
         return false;
       }
 
-      m_blocks->cellstores->load_cells(ptr());
+      m_blocks->cellstores.load_cells(ptr());
       return true;
     }
 
@@ -138,7 +138,7 @@ class IntervalBlocks final {
         run_queue(err);
         return;
       }
-      m_blocks->commitlog->load_cells(ptr());
+      m_blocks->commitlog.load_cells(ptr());
     }
 
     void loaded_logs(int err) override {
@@ -363,14 +363,13 @@ class IntervalBlocks final {
 
   // scan >> blk match >> load-cs + load+logs 
 
-  IntervalBlocks(): commitlog(nullptr), cellstores(nullptr), m_block(nullptr), 
-                    m_processing(0) {
+  IntervalBlocks(): m_block(nullptr), m_processing(0) {
   }
   
   void init(DB::RangeBase::Ptr for_range) {
-    range       = for_range;
-    commitlog   = Files::CommitLog::Fragments::make(range);
-    cellstores  = Files::CellStore::Readers::make(range);
+    range = for_range;
+    commitlog.init(range);
+    cellstores.init(range);
   }
 
   Ptr ptr() {
@@ -392,16 +391,15 @@ class IntervalBlocks final {
   }
 
   void load(int& err) {
-    commitlog->load(err);
+    commitlog.load(err);
   }
 
   void unload() {
     wait_processing();
     std::lock_guard lock(m_mutex);
 
-    if(commitlog != nullptr)
-      commitlog->commit_new_fragment(true);
-      
+    commitlog.commit_new_fragment(true);  
+
     _free();
   }
   
@@ -409,10 +407,8 @@ class IntervalBlocks final {
     wait_processing();
     std::lock_guard lock(m_mutex);
 
-    if(commitlog != nullptr) 
-      commitlog->remove(err);
-    if(cellstores != nullptr)
-      cellstores->remove(err);  
+    commitlog.remove(err);
+    cellstores.remove(err);  
 
     _free();
   }
@@ -420,7 +416,7 @@ class IntervalBlocks final {
   void add_logged(const DB::Cells::Cell& cell) {
     processing_increment();
 
-    commitlog->add(cell);
+    commitlog.add(cell);
     
     bool to_split=false;
     Block::Ptr blk;
@@ -443,7 +439,7 @@ class IntervalBlocks final {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    int err = cellstores->empty() ? Error::RS_NOT_LOADED_RANGE : Error::OK;
+    int err = cellstores.empty() ? Error::RS_NOT_LOADED_RANGE : Error::OK;
     if(err) {
       if(blk_ptr)
         processing_decrement();
@@ -490,14 +486,14 @@ class IntervalBlocks final {
         break;
 
       if(nxt_blk != nullptr) {
-        if(!Env::Resources.need_ram(commitlog->cfg_blk_sz->get() * 10)
+        if(!Env::Resources.need_ram(commitlog.cfg_blk_sz->get() * 10)
             && nxt_blk->includes(req->spec))
           nxt_blk->preload();
         else 
           nxt_blk->processing_decrement();
       }
 
-      if(Env::Resources.need_ram(commitlog->cfg_blk_sz->get())) {
+      if(Env::Resources.need_ram(commitlog.cfg_blk_sz->get())) {
         asio::post(*Env::IoCtx::io()->ptr(), 
           [blk, ptr=ptr()](){
             ptr->release_prior(blk); // release_and_merge(blk);
@@ -547,8 +543,8 @@ class IntervalBlocks final {
   const size_t size_bytes_total(bool only_loaded=false) {
     std::shared_lock lock(m_mutex);
     return _size_bytes() 
-          + (cellstores ? cellstores->size_bytes(only_loaded) : 0)
-          + (commitlog  ? commitlog->size_bytes(only_loaded)  : 0);
+          + cellstores.size_bytes(only_loaded) 
+          + commitlog.size_bytes(only_loaded);
   }
 
   void release_prior(Block::Ptr ptr) {
@@ -586,10 +582,10 @@ class IntervalBlocks final {
   */
 
   const size_t release(size_t bytes=0) {
-    size_t released = cellstores->release(bytes);
+    size_t released = cellstores.release(bytes);
     if(!bytes || released < bytes) {
 
-      released += commitlog->release(bytes ? bytes-released : bytes);
+      released += commitlog.release(bytes ? bytes-released : bytes);
       if(!bytes || released < bytes) {
 
         std::shared_lock lock(m_mutex);
@@ -642,12 +638,10 @@ class IntervalBlocks final {
     }
     s.append("] ");
 
-    if(commitlog != nullptr)
-      s.append(commitlog->to_string());
+    s.append(commitlog.to_string());
 
     s.append(" ");
-    if(cellstores != nullptr)
-      s.append(cellstores->to_string());
+    s.append(cellstores.to_string());
 
     s.append(" processing=");
     s.append(std::to_string(_processing()));
@@ -699,24 +693,17 @@ class IntervalBlocks final {
   }
 
   void _free() {
-    if(cellstores != nullptr) {
-      cellstores->free();
-      delete cellstores;
-      cellstores = nullptr;
-    }
-    if(commitlog != nullptr) {
-      commitlog->free();
-      delete commitlog;
-      commitlog = nullptr;
-    }
+    cellstores.free();
+    commitlog.free();
+
     range = nullptr;
-    
+
     _clear();
   }
 
   void init_blocks(int& err) {
     std::vector<Files::CellStore::Block::Read::Ptr> blocks;
-    cellstores->get_blocks(err, blocks);
+    cellstores.get_blocks(err, blocks);
     if(err) {
       _clear();
       return;

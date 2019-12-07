@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
   SWC::DB::Cells::Interval intval_r;
   SWC::server::Rgr::IntervalBlocks blocks;
   blocks.init(range);
-  blocks.cellstores->add(
+  blocks.cellstores.add(
     SWC::Files::CellStore::Read::make(1, range, intval_r));
 
   std::atomic<int> requests = 110;

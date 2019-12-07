@@ -15,13 +15,13 @@ class Readers final {
   public:
   typedef Readers*  Ptr;
 
-  inline static Ptr make(const DB::RangeBase::Ptr& range) { 
-    return new Readers(range); 
-  }
-
   DB::RangeBase::Ptr range;
 
-  Readers(const DB::RangeBase::Ptr& range): range(range) {}
+  Readers() {}
+
+  void init(DB::RangeBase::Ptr for_range) {
+    range = for_range;
+  }
 
   ~Readers() {
     _free();
@@ -244,6 +244,7 @@ class Readers final {
     std::lock_guard lock(m_mutex);
     _close();
     _free();
+    range = nullptr;
   }
 
   const std::string to_string() {

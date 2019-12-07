@@ -109,26 +109,26 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       return compacted(range);
 
     auto schema     = Env::Schemas::get()->get(range->cid);
-    auto log        = range->blocks.commitlog;
-    auto cellstores = range->blocks.cellstores;
+    auto& commitlog  = range->blocks.commitlog;
+    auto& cellstores = range->blocks.cellstores;
 
     uint32_t cs_size = cfg_cs_sz->get(); 
     uint32_t blk_size = schema->blk_size ? 
-                        schema->blk_size : log->cfg_blk_sz->get();
+                        schema->blk_size : commitlog.cfg_blk_sz->get();
     auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
                         schema->blk_encoding : 
-                        (Types::Encoding)log->cfg_blk_enc->get();
+                        (Types::Encoding)commitlog.cfg_blk_enc->get();
     uint32_t perc     = cfg_compact_percent->get(); 
     // % of size of either by cellstore or block
     
     uint32_t allow_sz = (cs_size  / 100) * perc; 
     uint32_t allowed_sz_cs  = cs_size + allow_sz;
-    uint32_t log_sz = log->size_bytes();
+    uint32_t log_sz = commitlog.size_bytes();
 
     bool do_compaction = log_sz >= allowed_sz_cs
-      || log->size() > allowed_sz_cs/blk_size 
-      || (log_sz > allow_sz && log_sz > (cellstores->size_bytes()/100) * perc)
-      || cellstores->need_compaction(
+      || commitlog.size() > allowed_sz_cs/blk_size 
+      || (log_sz > allow_sz && log_sz > (cellstores.size_bytes()/100) * perc)
+      || cellstores.need_compaction(
           allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
     
     SWC_LOGF(LOG_INFO, 
@@ -138,13 +138,13 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       range->cid, range->rid, 
       allowed_sz_cs/1000000,
 
-      log->size(),
-      log->size_bytes(true)/1000000,
+      commitlog.size(),
+      commitlog.size_bytes(true)/1000000,
       log_sz/1000000,
 
-      cellstores->size(),
-      cellstores->size_bytes(true)/1000000,
-      cellstores->size_bytes()/1000000,
+      cellstores.size(),
+      cellstores.size_bytes(true)/1000000,
+      cellstores.size_bytes()/1000000,
       
       range->blocks.size(),
       range->blocks.size_bytes()/1000000
@@ -159,8 +159,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     auto req = std::make_shared<CompactScan>(
       shared_from_this(), range, cs_size, blk_size, blk_encoding, schema
     );
-    log->commit_new_fragment(true);
-    log->get(req->fragments_old); // fragments for deletion at finalize-compaction 
+    commitlog.commit_new_fragment(true);
+    commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 
 
     //std::cout << "\n\n" << range->to_string() << "\n\n";
     range->scan_internal(req);

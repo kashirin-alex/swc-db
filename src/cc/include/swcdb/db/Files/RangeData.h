@@ -29,10 +29,9 @@ const int8_t VERSION=1;
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, 
-           const CellStore::Readers::Ptr cellstores) {
+void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores) {
 
-  size_t sz = cellstores->encoded_length();
+  size_t sz = cellstores.encoded_length();
   dst_buf.ensure(HEADER_SIZE+sz);
 
   Serialization::encode_i8(&dst_buf.ptr, VERSION);
@@ -44,7 +43,7 @@ void write(SWC::DynamicBuffer &dst_buf,
   Serialization::encode_i32(&dst_buf.ptr, 0);
 
   const uint8_t* start_data_ptr = dst_buf.ptr;
-  cellstores->encode(&dst_buf.ptr);
+  cellstores.encode(&dst_buf.ptr);
 
   checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
@@ -52,7 +51,7 @@ void write(SWC::DynamicBuffer &dst_buf,
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int& err, const CellStore::Readers::Ptr cellstores) {
+void save(int& err, CellStore::Readers& cellstores) {
 
   DynamicBuffer input;
   write(input, cellstores);
@@ -61,7 +60,7 @@ void save(int& err, const CellStore::Readers::Ptr cellstores) {
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      cellstores->range->get_path(DB::RangeBase::range_data_file), 
+      cellstores.range->get_path(DB::RangeBase::range_data_file), 
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ), 
     -1, -1, 
@@ -71,22 +70,21 @@ void save(int& err, const CellStore::Readers::Ptr cellstores) {
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, 
-          const CellStore::Readers::Ptr cellstores) {
+void read(const uint8_t **ptr, size_t* remain, CellStore::Readers& cellstores) {
   
   const uint8_t *ptr_end = *ptr+*remain;
-  cellstores->decode(ptr, remain);
+  cellstores.decode(ptr, remain);
 
   if(*ptr != ptr_end){
     SWC_LOGF(LOG_WARN, "decode overrun remain=%d", remain);
-    cellstores->clear();
+    cellstores.clear();
   }
 }
 
-void load(int& err, const CellStore::Readers::Ptr cellstores){
-  HT_ASSERT(cellstores != nullptr);
-  FS::SmartFd::Ptr smartfd = FS::SmartFd::make_ptr(
-    cellstores->range->get_path(DB::RangeBase::range_data_file), 0);
+void load(int& err, CellStore::Readers& cellstores){
+  
+  auto smartfd = FS::SmartFd::make_ptr(
+    cellstores.range->get_path(DB::RangeBase::range_data_file), 0);
 
   for(;;) {
     err = Error::OK;
@@ -148,12 +146,12 @@ void load(int& err, const CellStore::Readers::Ptr cellstores){
   if(smartfd->valid())
     Env::FsInterface::fs()->close(err, smartfd);
   
-  if(err || cellstores->empty()) {
+  if(err || cellstores.empty()) {
     err = Error::OK;
-    cellstores->load_from_path(err);
-    if(!err && !cellstores->empty())
+    cellstores.load_from_path(err);
+    if(!err && !cellstores.empty())
       save(err, cellstores);
-    std::cout << cellstores->to_string() << "\n";
+    std::cout << cellstores.to_string() << "\n";
   }
 }
 

@@ -22,18 +22,18 @@ class Fragments final {
 
   typedef Fragments*  Ptr;
 
-  inline static Ptr make(const DB::RangeBase::Ptr& range){
-    return new Fragments(range);
+  DB::RangeBase::Ptr range;
+
+  Fragments() : m_commiting(false), m_deleting(false),
+                cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
+                  "swc.rgr.Range.block.size")), 
+                cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
+                  "swc.rgr.Range.block.encoding")) {
   }
 
-  const DB::RangeBase::Ptr range;
+  void init(DB::RangeBase::Ptr for_range) {
+    range = for_range;
 
-  Fragments(const DB::RangeBase::Ptr& range) 
-            : range(range), m_commiting(false), m_deleting(false),
-              cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.block.size")), 
-              cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
-                "swc.rgr.Range.block.encoding")) {
     HT_ASSERT(range != nullptr);
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
@@ -46,12 +46,12 @@ class Fragments final {
     );
   }
 
-  Ptr ptr() {
-    return this;
-  }
-
   ~Fragments() {
     _free();
+  }
+
+  Ptr ptr() {
+    return this;
   }
 
   void add(const DB::Cells::Cell& cell) {
@@ -331,6 +331,7 @@ class Fragments final {
       std::lock_guard lock(m_mutex_cells);
       m_cells.free();
     }
+    range = nullptr;
   }
 
   const std::string to_string() {

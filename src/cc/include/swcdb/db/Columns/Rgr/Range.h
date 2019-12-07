@@ -78,7 +78,7 @@ class Range : public DB::RangeBase {
   }
   
   void set_state(State new_state) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_state = new_state;
   }
 
@@ -93,7 +93,7 @@ class Range : public DB::RangeBase {
   }
 
   void add(ReqAdd* req) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_q_adding.push(req);
     
     if(m_q_adding.size() == 1) { 
@@ -115,7 +115,7 @@ class Range : public DB::RangeBase {
   void load(ResponseCallback::Ptr cb) {
     bool is_loaded;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       is_loaded = m_state != State::NOTLOADED;
       if(m_state == State::NOTLOADED)
         m_state = State::LOADING;
@@ -154,7 +154,7 @@ class Range : public DB::RangeBase {
   }
 
   void on_change(int &err, bool removal=false) { // change of range-interval
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     
     if(type != Types::Range::MASTER) {
       uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
@@ -213,7 +213,7 @@ class Range : public DB::RangeBase {
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
     int err = Error::OK;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       if(m_state == State::DELETED){
         cb(err);
         return;
@@ -238,16 +238,17 @@ class Range : public DB::RangeBase {
   
   void remove(int &err) {
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       m_state = State::DELETED;
     }
+    on_change(err, true);
+
     wait();
     wait_queue();
     blocks.remove(err);
 
     Env::FsInterface::interface()->rmdir(err, get_path(""));  
-    
-    on_change(err, true);
+
     SWC_LOGF(LOG_INFO, "REMOVED RANGE %s", to_string().c_str());
   }
 
@@ -268,7 +269,7 @@ class Range : public DB::RangeBase {
   }
 
   void compacting(Compact state) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_compacting = state;
     if(state == Compact::NONE)
       m_cv.notify_all();
@@ -279,18 +280,18 @@ class Range : public DB::RangeBase {
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
     bool intval_changed;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       
-      blocks.cellstores->replace(err, w_cellstores);
+      blocks.cellstores.replace(err, w_cellstores);
       if(err)
         return;
       Files::RangeData::save(err, blocks.cellstores);
       
-      blocks.commitlog->remove(err, fragments_old);
+      blocks.commitlog.remove(err, fragments_old);
 
       m_interval_old.copy(m_interval);
       m_interval.free();
-      blocks.cellstores->expand(m_interval);
+      blocks.cellstores.expand(m_interval);
 
       intval_changed = !m_interval.key_begin.equal(m_interval_old.key_begin)
                     || !m_interval.key_end.equal(m_interval_old.key_end); 
@@ -353,14 +354,14 @@ class Range : public DB::RangeBase {
       (void)err;
       //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
-    else if(blocks.cellstores->empty()) {
+    else if(blocks.cellstores.empty()) {
       // init 1st cs(for log_cells)
       DB::Schema::Ptr schema = Env::Schemas::get()->get(cid);
       Files::CellStore::Read::Ptr cs 
         = Files::CellStore::create_init_read(
           err, schema->blk_encoding, shared_from_this());
       if(!err) {
-        blocks.cellstores->add(cs);
+        blocks.cellstores.add(cs);
         is_initial_column_range = true;
       }
     }
@@ -369,7 +370,7 @@ class Range : public DB::RangeBase {
       blocks.load(err);
       if(!err) {
         m_interval.free();
-        blocks.cellstores->expand(m_interval);
+        blocks.cellstores.expand(m_interval);
         if(is_initial_column_range) {
           Files::RangeData::save(err, blocks.cellstores);
           on_change(err);
@@ -446,7 +447,7 @@ class Range : public DB::RangeBase {
 
       delete req;
       {
-        std::lock_guard lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         m_q_adding.pop();
         if(m_q_adding.empty())
           break;

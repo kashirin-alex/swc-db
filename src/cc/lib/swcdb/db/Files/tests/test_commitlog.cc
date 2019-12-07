@@ -80,7 +80,8 @@ int main(int argc, char** argv) {
 
   auto range = std::make_shared<DB::RangeBase>(1, 1);
   auto schema = Env::Schemas::get()->get(range->cid);
-  auto commit_log = Files::CommitLog::Fragments::make(range);
+  Files::CommitLog::Fragments commitlog;
+  commitlog.init(range);
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
   Env::FsInterface::interface()->mkdirs(
     err, range->get_path(DB::RangeBase::cellstores_dir));
 
-  std::cout << " init:  \n" << commit_log->to_string() << "\n";
+  std::cout << " init:  \n" << commitlog.to_string() << "\n";
   
 
   int num_threads = 8;
@@ -96,7 +97,7 @@ int main(int argc, char** argv) {
 
   for(int t=0;t<num_threads;t++) {
     
-    std::thread([t, versions, commit_log, &threads_processing, num=num_cells/num_threads](){
+    std::thread([t, versions, commitlog = &commitlog, &threads_processing, num=num_cells/num_threads](){
       std::cout << "thread-adding=" << t 
                 << " offset=" << t*num 
                 << " until=" << t*num+num << "\n";
@@ -127,7 +128,7 @@ int main(int argc, char** argv) {
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
 
-        commit_log->add(cell);
+        commitlog->add(cell);
         
         if((i % 100000) == 0)
           std::cout << "thread-adding=" << t 
@@ -141,12 +142,12 @@ int main(int argc, char** argv) {
   while(threads_processing > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-  commit_log->commit_new_fragment(true);
+  commitlog.commit_new_fragment(true);
 
-  std::cout << " added cell=" << num_cells << ": \n" << commit_log->to_string() << "\n";
-  std::cout << " cells_count=" << commit_log->cells_count() << "\n";
+  std::cout << " added cell=" << num_cells << ": \n" << commitlog.to_string() << "\n";
+  std::cout << " cells_count=" << commitlog.cells_count() << "\n";
   if((versions == 1 || versions == schema->cell_versions) 
-      && num_cells*schema->cell_versions != commit_log->cells_count()) {
+      && num_cells*schema->cell_versions != commitlog.cells_count()) {
     exit(1);
   }
   std::cout << "\n FINISH CREATE LOG\n\n ";
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
   SWC::server::Rgr::IntervalBlocks blocks;
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
-  blocks.cellstores->add(
+  blocks.cellstores.add(
     Files::CellStore::create_init_read(err, schema->blk_encoding, range));
   blocks.load(err);
   std::cout << "loaded: \n" << blocks.to_string() << "\n";
