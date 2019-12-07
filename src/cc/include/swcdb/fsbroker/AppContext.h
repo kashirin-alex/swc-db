@@ -156,14 +156,8 @@ class AppContext : public SWC::AppContext {
         }
 
         if(handler)
-          asio::post(
-            *Env::IoCtx::io()->ptr(), 
-            [handler](){ 
-              handler->run();  
-              delete handler;
-            }
-          );
-
+          asio::post(*Env::IoCtx::io()->ptr(), 
+                    [handler](){ handler->run(); delete handler; });
         break;
       }
 
