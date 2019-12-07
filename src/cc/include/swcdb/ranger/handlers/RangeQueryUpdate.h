@@ -12,58 +12,50 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
-class RangeQueryUpdate : public AppHandler {
-  public:
 
-  RangeQueryUpdate(ConnHandlerPtr conn, Event::Ptr ev)
-                  : AppHandler(conn, ev) { }
+void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
+  int err = Error::OK;
+  Params::RangeQueryUpdateReq params;
+  server::Rgr::Range::Ptr range;
+  StaticBuffer::Ptr buffer;
 
-  void run() override {
+  try {      
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
+    params.decode(&ptr, &remain);
 
-    int err = Error::OK;
-    Params::RangeQueryUpdateReq params;
-    server::Rgr::Range::Ptr range;
-    StaticBuffer::Ptr buffer;
-
-    try {
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-      params.decode(&ptr, &remain);
-
-      range =  Env::RgrColumns::get()->get_range(
-        err, params.cid, params.rid, false);
+    range =  Env::RgrColumns::get()->get_range(
+      err, params.cid, params.rid, false);
       
-      if(range == nullptr || !range->is_loaded()){
-        if(err == Error::OK)
-          err = Error::RS_NOT_LOADED_RANGE;
-      }
-      if(err == Error::OK && m_ev->data_ext.size == 0) {
-        err = Error::INVALID_ARGUMENT;
-      } else {
-        buffer = std::make_shared<StaticBuffer>(m_ev->data_ext);
-      }
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      err = e.code();
+    if(range == nullptr || !range->is_loaded()){
+      if(err == Error::OK)
+        err = Error::RS_NOT_LOADED_RANGE;
     }
-
-    try{
-      auto cb = std::make_shared<server::Rgr::Callback::RangeQueryUpdate>(
-        m_conn, m_ev);
-      if(err) {
-        cb->response(err);
-        return;
-      }
-      
-      range->add(new server::Rgr::Range::ReqAdd(buffer, cb));
+    if(err == Error::OK && !ev->data_ext.size) {
+      err = Error::INVALID_ARGUMENT;
+    } else {
+      buffer = std::make_shared<StaticBuffer>(ev->data_ext);
     }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-  
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
   }
 
-};
+  try{
+    auto cb = std::make_shared<server::Rgr::Callback::RangeQueryUpdate>(
+      conn, ev);
+    if(err) {
+      cb->response(err);
+      return;
+    }
+      
+    range->add(new server::Rgr::Range::ReqAdd(buffer, cb));
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+  
+}
   
 
 }}}}

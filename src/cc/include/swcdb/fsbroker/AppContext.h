@@ -111,7 +111,7 @@ class AppContext : public SWC::AppContext {
             handlers[cmd](conn, ev); 
           }
         );
-        break;
+        return;
       }
 
       default:

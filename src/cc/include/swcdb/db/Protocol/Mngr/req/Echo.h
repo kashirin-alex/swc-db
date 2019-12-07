@@ -3,11 +3,11 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_common_req_Echo_h
-#define swc_lib_db_protocol_common_req_Echo_h
+#ifndef swc_lib_db_protocol_mngr_req_Echo_h
+#define swc_lib_db_protocol_mngr_req_Echo_h
 
 
-namespace SWC { namespace Protocol { namespace Common { namespace Req {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 class Echo : public DispatchHandler {
@@ -71,4 +71,4 @@ class Echo : public DispatchHandler {
 
 }}}}
 
-#endif // swc_lib_db_protocol_common_req_Echo_h
+#endif // swc_lib_db_protocol_mngr_req_Echo_h

@@ -22,7 +22,6 @@
 #include "swcdb/manager/Rangers.h"
 
 #include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
-#include "swcdb/db/Protocol/Common/handlers/Echo.h"
 #include "swcdb/manager/handlers/MngrState.h"
 #include "swcdb/manager/handlers/MngrActive.h"
 #include "swcdb/manager/handlers/ColumnMng.h"
@@ -31,6 +30,7 @@
 #include "swcdb/manager/handlers/RgrMngId.h"
 #include "swcdb/manager/handlers/RgrUpdate.h"
 #include "swcdb/manager/handlers/RgrGet.h"
+#include "swcdb/manager/handlers/Echo.h"
 
 
 namespace SWC { namespace server { namespace Mngr {
@@ -49,7 +49,7 @@ class AppContext : public SWC::AppContext {
     &Protocol::Mngr::Handler::rgr_mng_id,
     &Protocol::Mngr::Handler::rgr_update,
     &Protocol::Mngr::Handler::rgr_get,
-    &Protocol::Common::Handler::do_echo,
+    &Protocol::Mngr::Handler::do_echo,
     //&Handler::debug,
     //&Handler::status,
     //&Handler::shutdown
@@ -118,15 +118,15 @@ class AppContext : public SWC::AppContext {
         break;
 
       case Event::Type::MESSAGE: {
-      uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
-                    ? Protocol::Mngr::NOT_IMPLEMENTED : ev->header.command;
+        uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
+                      ? Protocol::Mngr::NOT_IMPLEMENTED : ev->header.command;
         asio::post(
           *Env::IoCtx::io()->ptr(), 
           [cmd, conn, ev]() { 
             handlers[cmd](conn, ev); 
           }
         );
-        break;
+        return;
       }
 
       default:

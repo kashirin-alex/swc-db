@@ -24,7 +24,6 @@
 #include "swcdb/db/Protocol/Mngr/req/RgrMngId.h"
 
 #include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
-#include "swcdb/db/Protocol/Common/handlers/Echo.h"
 #include "swcdb/ranger/handlers/AssignId.h"
 #include "swcdb/ranger/handlers/RangeLoad.h"
 #include "swcdb/ranger/handlers/RangeUnload.h"
@@ -40,7 +39,25 @@ namespace SWC { namespace server { namespace Rgr {
 
 
 
-class AppContext : public SWC::AppContext {
+class AppContext : public SWC::AppContext { 
+
+  // in-order of Protocol::Rgr::Command
+  static constexpr const AppHandler_t handlers[] = { 
+    &Protocol::Common::Handler::not_implemented,
+    &Protocol::Rgr::Handler::column_delete,
+    &Protocol::Rgr::Handler::column_update,
+    &Protocol::Rgr::Handler::range_is_loaded,
+    &Protocol::Rgr::Handler::range_load,
+    &Protocol::Rgr::Handler::range_unload,
+    &Protocol::Rgr::Handler::range_locate,
+    &Protocol::Rgr::Handler::range_query_update,
+    &Protocol::Rgr::Handler::range_query_select,
+    //&Handler::debug,
+    //&Handler::status,
+    //&Handler::shutdown
+  }; 
+
+  
   public:
 
   static AppContext::Ptr make() {
@@ -117,66 +134,33 @@ class AppContext : public SWC::AppContext {
         return;
 
       case Event::Type::MESSAGE: {
+        uint8_t cmd = ev->header.command >= Protocol::Rgr::MAX_CMD
+                    ? Protocol::Rgr::NOT_IMPLEMENTED : ev->header.command;
         
-        if(Env::RgrData::get()->id == 0 && 
-          ev->header.command != Protocol::Rgr::ASSIGN_ID_NEEDED){
+        if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
+          asio::post(
+            *Env::IoCtx::io()->ptr(), 
+            [handler = new Protocol::Rgr::Handler::AssignId(
+              conn, ev, &m_id_validator)]() { 
+              handler->run(); 
+              delete handler;
+            }
+          );
+          return;
+        }
+
+        if(Env::RgrData::get()->id == 0) {
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
-          break;
+          return;
         }
-
-        AppHandler *handler = 0;
-        switch (ev->header.command) {
-
-          case Protocol::Rgr::ASSIGN_ID_NEEDED:
-            handler = new Protocol::Rgr::Handler::AssignId(
-              conn, ev, &m_id_validator);
-            break;
-
-          case Protocol::Rgr::COLUMN_DELETE: 
-            handler = new Protocol::Rgr::Handler::ColumnDelete(conn, ev);
-            break;
-
-          case Protocol::Rgr::SCHEMA_UPDATE: 
-            handler = new Protocol::Rgr::Handler::ColumnUpdate(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_IS_LOADED: 
-            handler = new Protocol::Rgr::Handler::RangeIsLoaded(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_LOAD: 
-            handler = new Protocol::Rgr::Handler::RangeLoad(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_UNLOAD: 
-            handler = new Protocol::Rgr::Handler::RangeUnload(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_LOCATE: 
-            handler = new Protocol::Rgr::Handler::RangeLocate(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_QUERY_UPDATE: 
-            handler = new Protocol::Rgr::Handler::RangeQueryUpdate(conn, ev);
-            break;
-
-          case Protocol::Rgr::RANGE_QUERY_SELECT: 
-            handler = new Protocol::Rgr::Handler::RangeQuerySelect(conn, ev);
-            break;
-            
-          case Protocol::Common::DO_ECHO:
-            handler = new Protocol::Common::Handler::Echo(conn, ev);
-            break;
-
-          default: 
-            handler = new Protocol::Common::Handler::NotImplemented(conn, ev);
-            break;
-        }
-
-        if(handler)
-          asio::post(*Env::IoCtx::io()->ptr(), 
-                    [handler](){ handler->run(); delete handler; });
-        break;
+        
+        asio::post(
+          *Env::IoCtx::io()->ptr(), 
+          [cmd, conn, ev]() { 
+            handlers[cmd](conn, ev); 
+          }
+        );
+        return;
       }
 
       default:

@@ -12,41 +12,29 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-class RangeIsLoaded : public AppHandler {
-  public:
+void range_is_loaded(ConnHandlerPtr conn, Event::Ptr ev) {
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-  RangeIsLoaded(ConnHandlerPtr conn, Event::Ptr ev)
-               : AppHandler(conn, ev){ }
+    Params::RangeIsLoaded params;
+    params.decode(&ptr, &remain);
 
-  void run() override {
-
-    try {
-
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-
-      Params::RangeIsLoaded params;
-      params.decode(&ptr, &remain);
-
-      int err = Error::OK;
-      server::Rgr::Range::Ptr range =  Env::RgrColumns::get()->get_range(
-        err, params.cid, params.rid, false);
+    int err = Error::OK;
+    server::Rgr::Range::Ptr range =  Env::RgrColumns::get()->get_range(
+      err, params.cid, params.rid, false);
       
-      if(range != nullptr && range->is_loaded()){
-        m_conn->response_ok(m_ev);
-      } else {
-        if(err == Error::OK)
-          err = Error::RS_NOT_LOADED_RANGE;
-        m_conn->send_error(err, "", m_ev);
-      }
+    if(range != nullptr && range->is_loaded()){
+      conn->response_ok(ev);
+    } else {
+      if(err == Error::OK)
+        err = Error::RS_NOT_LOADED_RANGE;
+      conn->send_error(err, "", ev);
     }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-  
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
-
-};
+}
   
 
 }}}}
