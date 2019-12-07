@@ -10,45 +10,34 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-class MngrState : public AppHandler {
-  public:
+void mngr_state(ConnHandlerPtr conn, Event::Ptr ev) {
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-  MngrState(ConnHandlerPtr conn, Event::Ptr ev)
-            : AppHandler(conn, ev) { }
+    Params::MngrState req_params;
+    req_params.decode(&ptr, &remain);
 
-  void run() override {
+    bool new_active_columns = Env::MngrRole::get()->fill_states(
+      req_params.states, req_params.token, 
+      nullptr // std::make_shared<ResponseCallback>(conn, ev)
+    ); 
 
-    try {
+    Env::MngrRole::get()->update_manager_addr(
+      conn->endpoint_remote_hash(), req_params.mngr_host);
 
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
+    conn->response_ok(ev);
 
-      Params::MngrState req_params;
-      req_params.decode(&ptr, &remain);
+    if(Env::MngrRole::get()->require_sync())
+      Env::Rangers::get()->require_sync();
 
-      bool new_active_columns = Env::MngrRole::get()->fill_states(
-        req_params.states, req_params.token, 
-        nullptr // std::make_shared<ResponseCallback>(m_conn, m_ev)
-      ); 
+    if(new_active_columns)
+      Env::Rangers::get()->new_columns();
 
-      Env::MngrRole::get()->update_manager_addr(
-        m_conn->endpoint_remote_hash(), req_params.mngr_host);
-
-      m_conn->response_ok(m_ev);
-
-      if(Env::MngrRole::get()->require_sync())
-        Env::Rangers::get()->require_sync();
-
-      if(new_active_columns)
-        Env::Rangers::get()->new_columns();
-
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-  
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
-
-};
+}
   
 
 }}}}

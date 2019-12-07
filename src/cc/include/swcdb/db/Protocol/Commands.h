@@ -51,6 +51,7 @@ namespace Mngr {
     RGR_MNG_ID           = 0x06,
     RGR_UPDATE           = 0x07,
     RGR_GET              = 0x08,
+    MAX_CMD              = 0x09
   };
 
 }

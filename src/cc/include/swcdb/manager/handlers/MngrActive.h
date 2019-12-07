@@ -12,41 +12,26 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-class MngrActive : public AppHandler {
-  public:
+void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-  MngrActive(ConnHandlerPtr conn, Event::Ptr ev)
-            : AppHandler(conn, ev){ }
+    Params::MngrActiveReq params;
+    params.decode(&ptr, &remain);
 
-  void run() override {
+    server::Mngr::MngrStatus::Ptr h = Env::MngrRole::get()->active_mngr(
+      params.begin, params.end);
 
-    try {
-
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-
-      Params::MngrActiveReq params;
-      params.decode(&ptr, &remain);
-
-      server::Mngr::MngrStatus::Ptr h = Env::MngrRole::get()->active_mngr(
-        params.begin, params.end);
-
-      EndPoints endpoints;
-      if(h!=nullptr) 
-        endpoints = h->endpoints;
-
-      auto cbp = CommBuf::make(Params::MngrActiveRsp(endpoints));
-      cbp->header.initialize_from_request_header(m_ev->header);
-      m_conn->send_response(cbp);
-    
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-  
+    auto cbp = CommBuf::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
+    cbp->header.initialize_from_request_header(ev->header);
+    conn->send_response(cbp);
   }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+}
 
-};
   
 
 }}}}

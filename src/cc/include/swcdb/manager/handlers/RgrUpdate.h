@@ -12,31 +12,22 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-class RgrUpdate : public AppHandler {
-  public:
+void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-    RgrUpdate(ConnHandlerPtr conn, Event::Ptr ev)
-              : AppHandler(conn, ev){}
-
-  void run() override {
-    try {
-
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-
-      Params::RgrUpdate params;
-      params.decode(&ptr, &remain);
+    Params::RgrUpdate params;
+    params.decode(&ptr, &remain);
       
-      // std::cout << params.to_string() << "\n";
-      m_conn->response_ok(m_ev);
-      Env::Rangers::get()->update_status(params.hosts, params.sync_all);
+    // std::cout << params.to_string() << "\n";
+    conn->response_ok(ev);
+    Env::Rangers::get()->update_status(params.hosts, params.sync_all);
 
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
-
-};
+}
   
 
 }}}}

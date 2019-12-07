@@ -12,53 +12,41 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-class ColumnMng : public AppHandler {
-  public:
+void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
+  int err = Error::OK;
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-  ColumnMng(ConnHandlerPtr conn, Event::Ptr ev)
-            : AppHandler(conn, ev){}
+    Params::ColumnMng req_params;
+    req_params.decode(&ptr, &remain);
 
-  void run() override {
-
-    int err = Error::OK;
-
-    try {
-
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-
-      Params::ColumnMng req_params;
-      req_params.decode(&ptr, &remain);
-
-      Env::Rangers::get()->is_active(err, 1, true);
+    Env::Rangers::get()->is_active(err, 1, true);
       
-      if(err == Error::OK) {
-        Env::Rangers::get()->column_action({
-          .params=req_params, 
-          .cb=[conn=m_conn, ev=m_ev](int err){
-            if(err == Error::OK)
-              conn->response_ok(ev);
-            else
-              conn->send_error(err , "", ev);
-            }
-        });
-      }
-
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      err = e.code();
+    if(err == Error::OK) {
+      Env::Rangers::get()->column_action({
+        .params=req_params, 
+        .cb=[conn, ev](int err){
+          if(err == Error::OK)
+            conn->response_ok(ev);
+          else
+            conn->send_error(err , "", ev);
+          }
+      });
     }
-
-    try{
-      if(err != Error::OK)
-        m_conn->send_error(err , "", m_ev);
-
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
   }
 
-};
+  try{
+    if(err != Error::OK)
+      conn->send_error(err , "", ev);
+
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+}
   
 
 }}}}

@@ -10,6 +10,17 @@
 
 namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
 
+void do_echo(ConnHandlerPtr conn, Event::Ptr ev) {
+    try {
+      auto cbp = ev->data_ext.size ? 
+                    CommBuf::make(ev->data_ext) 
+                  : CommBuf::make();
+      cbp->header.initialize_from_request_header(ev->header);
+      conn->send_response(cbp);
+    } catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    }
+}
 
 class Echo : public AppHandler {
   public:
@@ -19,15 +30,7 @@ class Echo : public AppHandler {
   }
 
   void run() override {
-    try {
-      auto cbp = m_ev->data_ext.size ? 
-                    CommBuf::make(m_ev->data_ext) 
-                  : CommBuf::make();
-      cbp->header.initialize_from_request_header(m_ev->header);
-      m_conn->send_response(cbp);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+    do_echo(m_conn, m_ev);
   }
 
 };

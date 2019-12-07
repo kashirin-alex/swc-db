@@ -37,7 +37,24 @@ namespace SWC { namespace server { namespace Mngr {
 
 
 class AppContext : public SWC::AppContext {
-  
+   
+  // in-order of Protocol::Mngr::Command
+  static constexpr const AppHandler_t handlers[] = { 
+    &Protocol::Common::Handler::not_implemented,
+    &Protocol::Mngr::Handler::mngr_state,
+    &Protocol::Mngr::Handler::mngr_active,
+    &Protocol::Mngr::Handler::column_mng,
+    &Protocol::Mngr::Handler::column_update,
+    &Protocol::Mngr::Handler::column_get,
+    &Protocol::Mngr::Handler::rgr_mng_id,
+    &Protocol::Mngr::Handler::rgr_update,
+    &Protocol::Mngr::Handler::rgr_get,
+    &Protocol::Common::Handler::do_echo,
+    //&Handler::debug,
+    //&Handler::status,
+    //&Handler::shutdown
+  }; 
+
   public:
 
   AppContext() {
@@ -101,53 +118,14 @@ class AppContext : public SWC::AppContext {
         break;
 
       case Event::Type::MESSAGE: {
-        AppHandler *handler = 0;
-        switch (ev->header.command) {
-
-          case Protocol::Mngr::MNGR_ACTIVE:
-            handler = new Protocol::Mngr::Handler::MngrActive(conn, ev);
-            break;
-
-          case Protocol::Mngr::MNGR_STATE:
-            handler = new Protocol::Mngr::Handler::MngrState(conn, ev);
-            break;
-
-          case Protocol::Mngr::COLUMN_MNG:
-            handler = new Protocol::Mngr::Handler::ColumnMng(conn, ev);
-            break;
-
-          case Protocol::Mngr::COLUMN_GET:
-            handler = new Protocol::Mngr::Handler::ColumnGet(conn, ev);
-            break;
-
-          case Protocol::Mngr::COLUMN_UPDATE:
-            handler = new Protocol::Mngr::Handler::ColumnUpdate(conn, ev);
-            break;
-
-          case Protocol::Mngr::RGR_GET:
-            handler = new Protocol::Mngr::Handler::RgrGet(conn, ev);
-            break;
-
-          case Protocol::Mngr::RGR_MNG_ID:
-            handler = new Protocol::Mngr::Handler::RgrMngId(conn, ev);
-            break;
-
-          case Protocol::Mngr::RGR_UPDATE:
-            handler = new Protocol::Mngr::Handler::RgrUpdate(conn, ev);
-            break;
-
-          case Protocol::Common::DO_ECHO:
-            handler = new Protocol::Common::Handler::Echo(conn, ev);
-            break;
-
-          default: 
-            handler = new Protocol::Common::Handler::NotImplemented(conn, ev);
-            break;
-        }
-
-        if(handler)
-          asio::post(*Env::IoCtx::io()->ptr(), 
-                    [handler](){ handler->run(); delete handler; });
+      uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
+                    ? Protocol::Mngr::NOT_IMPLEMENTED : ev->header.command;
+        asio::post(
+          *Env::IoCtx::io()->ptr(), 
+          [cmd, conn, ev]() { 
+            handlers[cmd](conn, ev); 
+          }
+        );
         break;
       }
 
