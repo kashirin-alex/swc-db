@@ -39,6 +39,31 @@ namespace SWC { namespace server { namespace FsBroker {
 
 class AppContext : public SWC::AppContext {
   
+  // in-order of FS::Protocol::Cmd
+  static constexpr const AppHandler_t handlers[] = { 
+    &Protocol::Common::Handler::not_implemented,
+    &Handler::open,
+    &Handler::create,
+    &Handler::close,
+    &Handler::read,
+    &Handler::append,
+    &Handler::seek,
+    &Handler::remove,
+    &Handler::length,
+    &Handler::pread,
+    &Handler::mkdirs,
+    &Handler::flush,
+    &Handler::rmdir,
+    &Handler::readdir,
+    &Handler::exists,
+    &Handler::rename,
+    &Handler::sync,
+    &Handler::write
+    //&Handler::debug,
+    //&Handler::status,
+    //&Handler::shutdown
+  }; 
+
   public:
 
   AppContext() {
@@ -78,86 +103,14 @@ class AppContext : public SWC::AppContext {
         break;
 
       case Event::Type::MESSAGE: {
-        
-        AppHandler_t handler = 0;
-        switch (ev->header.command) {
-
-          case FS::Protocol::Cmd::FUNCTION_EXISTS:
-            handler = &Handler::exists;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_REMOVE:
-            handler = &Handler::remove;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_LENGTH:
-            handler = &Handler::length;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_MKDIRS:
-            handler = &Handler::mkdirs;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_READDIR:
-            handler = &Handler::readdir;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_RMDIR:
-            handler = &Handler::rmdir;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_RENAME:
-            handler = &Handler::rename;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_WRITE:
-            handler = &Handler::write;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_CREATE:
-            handler = &Handler::create;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_APPEND:
-            handler = &Handler::append;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_OPEN:
-            handler = &Handler::open;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_READ:
-            handler = &Handler::read;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_PREAD:
-            handler = &Handler::pread;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_SEEK:
-            handler = &Handler::seek;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_FLUSH:
-            handler = &Handler::flush;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_SYNC:
-            handler = &Handler::sync;
-            break;
-
-          case FS::Protocol::Cmd::FUNCTION_CLOSE:
-            handler = &Handler::close;
-            break;
-
-          default: 
-            handler = &Protocol::Common::Handler::not_implemented;
-            break;
-        }
-
-        if(handler)
-          asio::post(*Env::IoCtx::io()->ptr(), 
-                    [handler, conn, ev](){ handler(conn, ev); });
+      uint8_t cmd = ev->header.command > FS::Protocol::Cmd::FUNCTION_MAX 
+                    ? FS::Protocol::Cmd::NOT_IMPLEMENTED : ev->header.command;
+        asio::post(
+          *Env::IoCtx::io()->ptr(), 
+          [cmd, conn, ev]() { 
+            handlers[cmd](conn, ev); 
+          }
+        );
         break;
       }
 
