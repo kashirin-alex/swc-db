@@ -9,6 +9,18 @@
 
 namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
 
+void not_implemented(ConnHandlerPtr conn, Event::Ptr ev) {
+    try {
+      auto cbp = CommBuf::make(4);
+      cbp->header.initialize_from_request_header(ev->header);
+      cbp->append_i32(Error::NOT_IMPLEMENTED);
+      conn->send_response(cbp);
+    }
+    catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    }
+}
+
 
 class NotImplemented : public AppHandler {
   public:
@@ -18,15 +30,7 @@ class NotImplemented : public AppHandler {
   }
 
   void run() override {
-    try {
-      auto cbp = CommBuf::make(4);
-      cbp->header.initialize_from_request_header(m_ev->header);
-      cbp->append_i32(Error::NOT_IMPLEMENTED);
-      m_conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+    not_implemented(m_conn, m_ev);
   }
 
 };

@@ -79,85 +79,85 @@ class AppContext : public SWC::AppContext {
 
       case Event::Type::MESSAGE: {
         
-        AppHandler *handler = 0;
+        AppHandler_t handler = 0;
         switch (ev->header.command) {
 
           case FS::Protocol::Cmd::FUNCTION_EXISTS:
-            handler = new Handler::Exists(conn, ev);
+            handler = &Handler::exists;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_REMOVE:
-            handler = new Handler::Remove(conn, ev);
+            handler = &Handler::remove;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_LENGTH:
-            handler = new Handler::Length(conn, ev);
+            handler = &Handler::length;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_MKDIRS:
-            handler = new Handler::Mkdirs(conn, ev);
+            handler = &Handler::mkdirs;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_READDIR:
-            handler = new Handler::Readdir(conn, ev);
+            handler = &Handler::readdir;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_RMDIR:
-            handler = new Handler::Rmdir(conn, ev);
+            handler = &Handler::rmdir;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_RENAME:
-            handler = new Handler::Rename(conn, ev);
+            handler = &Handler::rename;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_WRITE:
-            handler = new Handler::Write(conn, ev);
+            handler = &Handler::write;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_CREATE:
-            handler = new Handler::Create(conn, ev);
+            handler = &Handler::create;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_APPEND:
-            handler = new Handler::Append(conn, ev);
+            handler = &Handler::append;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_OPEN:
-            handler = new Handler::Open(conn, ev);
+            handler = &Handler::open;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_READ:
-            handler = new Handler::Read(conn, ev);
+            handler = &Handler::read;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_PREAD:
-            handler = new Handler::Pread(conn, ev);
+            handler = &Handler::pread;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_SEEK:
-            handler = new Handler::Seek(conn, ev);
+            handler = &Handler::seek;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_FLUSH:
-            handler = new Handler::Flush(conn, ev);
+            handler = &Handler::flush;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_SYNC:
-            handler = new Handler::Sync(conn, ev);
+            handler = &Handler::sync;
             break;
 
           case FS::Protocol::Cmd::FUNCTION_CLOSE:
-            handler = new Handler::Close(conn, ev);
+            handler = &Handler::close;
             break;
 
           default: 
-            handler = new Protocol::Common::Handler::NotImplemented(conn, ev);
+            handler = &Protocol::Common::Handler::not_implemented;
             break;
         }
 
         if(handler)
           asio::post(*Env::IoCtx::io()->ptr(), 
-                    [handler](){ handler->run(); delete handler; });
+                    [handler, conn, ev](){ handler(conn, ev); });
         break;
       }
 

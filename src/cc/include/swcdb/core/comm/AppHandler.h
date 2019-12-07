@@ -11,6 +11,10 @@
 
 namespace SWC {
 
+namespace { typedef void handler(ConnHandlerPtr conn, Event::Ptr ev); }
+typedef handler* AppHandler_t;
+
+
 class AppHandler {
   public:
 

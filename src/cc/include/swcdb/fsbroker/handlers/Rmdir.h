@@ -9,25 +9,16 @@
 #include "swcdb/fs/Broker/Protocol/params/Rmdir.h"
 
 
-namespace SWC { namespace server { namespace FsBroker {
-
-namespace Handler {
+namespace SWC { namespace server { namespace FsBroker { namespace Handler {
 
 
-class Rmdir : public AppHandler {
-  public:
+void rmdir(ConnHandlerPtr conn, Event::Ptr ev) {
 
-  Rmdir(ConnHandlerPtr conn, Event::Ptr ev)
-         : AppHandler(conn, ev){ }
-
-  void run() override {
-
-    int err = Error::OK;
-    
+    int err = Error::OK;    
     try {
 
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
 
       FS::Protocol::Params::RmdirReq params;
       params.decode(&ptr, &remain);
@@ -41,16 +32,14 @@ class Rmdir : public AppHandler {
 
     try {
       auto cbp = CommBuf::make(4);
-      cbp->header.initialize_from_request_header(m_ev->header);
+      cbp->header.initialize_from_request_header(ev->header);
       cbp->append_i32(err);
-      m_conn->send_response(cbp);
+      conn->send_response(cbp);
     }
     catch (Exception &e) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
-  }
-
-};
+}
   
 
 }}}}

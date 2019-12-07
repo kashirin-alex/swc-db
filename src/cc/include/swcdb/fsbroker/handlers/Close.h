@@ -9,54 +9,42 @@
 #include "swcdb/fs/Broker/Protocol/params/Close.h"
 
 
-namespace SWC { namespace server { namespace FsBroker {
+namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+  
 
-namespace Handler {
+void close(ConnHandlerPtr conn, Event::Ptr ev) {
 
+  int err = Error::OK;
+  try {
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-class Close : public AppHandler {
-  public:
+    FS::Protocol::Params::CloseReq params;
+    params.decode(&ptr, &remain);
 
-  Close(ConnHandlerPtr conn, Event::Ptr ev)
-         : AppHandler(conn, ev){ }
-
-  void run() override {
-
-    int err = Error::OK;
-    
-    try {
-
-      const uint8_t *ptr = m_ev->data.base;
-      size_t remain = m_ev->data.size;
-
-      FS::Protocol::Params::CloseReq params;
-      params.decode(&ptr, &remain);
-
-      auto smartfd = Env::Fds::get()->remove(params.fd);
+    auto smartfd = Env::Fds::get()->remove(params.fd);
       
-      if(smartfd == nullptr)
-        err = EBADR;
-      else
-        Env::FsInterface::fs()->close(err, smartfd);
-    }
-    catch (Exception &e) {
-      err = e.code();
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-
-    try {
-      auto cbp = CommBuf::make(4);
-      cbp->header.initialize_from_request_header(m_ev->header);
-      cbp->append_i32(err);
-      m_conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+    if(smartfd == nullptr)
+      err = EBADR;
+    else
+      Env::FsInterface::fs()->close(err, smartfd);
+  }
+  catch (Exception &e) {
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 
-};
-  
+  try {
+    auto cbp = CommBuf::make(4);
+    cbp->header.initialize_from_request_header(ev->header);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+}
+
 
 }}}}
 
