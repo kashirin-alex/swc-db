@@ -6,7 +6,7 @@
 #define swc_app_fsbroker_FdsMap_h
 
 #include <unordered_map>
-
+#include <shared_mutex>
 
 namespace SWC { namespace server { namespace FsBroker {
 
