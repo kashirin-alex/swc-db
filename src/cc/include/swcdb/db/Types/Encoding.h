@@ -27,7 +27,7 @@ const std::string to_string(Encoding typ) {
     case Encoding::SNAPPY:
       return std::string("SNAPPY");
     default:
-      return std::string("UMKNOWN(" + std::to_string((uint8_t)typ) +")");
+      return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
   }
 }
 
