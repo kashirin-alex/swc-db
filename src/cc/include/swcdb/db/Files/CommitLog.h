@@ -57,30 +57,22 @@ class Fragments final {
   void add(const DB::Cells::Cell& cell) {
     size_t size_bytes;
     {
-      std::lock_guard lock(m_mutex_cells);
+      std::unique_lock lock(m_mutex_cells);
       m_cells.add(cell);
       size_bytes = m_cells.size_bytes;
     }
-    
-    {
-      if(!m_mutex.try_lock_shared())
-        return;
-      bool skip = m_deleting || m_commiting || size_bytes < m_size_commit;
-      m_mutex.unlock_shared();
-      if(skip)
-        return;
-    }
 
-    {
-      std::lock_guard lock(m_mutex);
-      if(m_deleting || m_commiting)
-        return;
+    if(!m_mutex.try_lock())
+      return;
+
+    if(!m_deleting && !m_commiting && size_bytes >= m_size_commit) {
       m_commiting = true;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [ptr=ptr()](){ ptr->commit_new_fragment(); }
       );
     }
+    m_mutex.unlock();
   }
 
   void commit_new_fragment(bool finalize=false) {
@@ -109,19 +101,23 @@ class Fragments final {
         get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
       
       {
-        std::lock_guard lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         for(;;) {
           {
-            std::lock_guard lock2(m_mutex_cells);
+            std::unique_lock lock2(m_mutex_cells);
             m_cells.write_and_free(
               cells, cell_count, frag->interval, blk_size);
           }
           if(cells.fill() >= blk_size)
             break;
           {
-            std::shared_lock lock(m_mutex_cells);
-            if(finalize && m_cells.size == 0)
-              std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::shared_lock lock2(m_mutex_cells);
+            if(!finalize && m_cells.size == 0)
+              break;
+          }
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          {
+            std::shared_lock lock2(m_mutex_cells);
             if(m_cells.size == 0)
               break;
           }
@@ -148,7 +144,7 @@ class Fragments final {
     }
     
     {
-      std::lock_guard lock_wait(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
       m_commiting = false;
     }
     m_cv.notify_all();
@@ -170,7 +166,7 @@ class Fragments final {
   }
 
   void load(int &err) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     // fragments header OR log.data >> file.frag(intervals)
 
     err = Error::OK;
@@ -252,7 +248,7 @@ class Fragments final {
   }
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     for(auto old = fragments_old.begin(); old < fragments_old.end(); old++){
       for(auto it = m_fragments.begin(); it < m_fragments.end(); it++) {
@@ -324,11 +320,11 @@ class Fragments final {
     wait_processing();
     
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       _free();
     }
     {
-      std::lock_guard lock(m_mutex_cells);
+      std::unique_lock lock(m_mutex_cells);
       m_cells.free();
     }
     range = nullptr;
@@ -379,8 +375,10 @@ class Fragments final {
     for(auto frag : m_fragments) {
       frag->wait_processing();
       delete frag;
+      std::cout << " Fragments::_free , delete frag;\n";
     }
     m_fragments.clear();
+    std::cout << " Fragments::_free , exit\n";
   }
 
   const bool _processing() {
@@ -415,7 +413,7 @@ class Fragments final {
 
     void processed(int err, Fragment::Ptr frag) {
       { 
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
         m_count--;
         std::cout << " Fragments::AwaitingLoad count=" << m_count << "\n";
         m_pending.push(frag);
@@ -424,14 +422,14 @@ class Fragments final {
       }
       for(;;) {
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::unique_lock<std::mutex> lock(m_mutex);
           frag = m_pending.front();
         }
 
         frag->load_cells(cells_block);
 
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::unique_lock<std::mutex> lock(m_mutex);
           m_pending.pop();
           if(m_pending.empty()) {
             if(m_count)
