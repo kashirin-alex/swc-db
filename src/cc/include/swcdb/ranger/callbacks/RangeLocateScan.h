@@ -29,13 +29,14 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   virtual ~RangeLocateScan() { }
 
   bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
-    std::cout << " selector checking: "<< cell.to_string() << "\n";
+    //std::cout << " selector  checking: "<< cell.to_string() << "\n";
+    //std::cout << " vs spec->key_start: "<< spec->key_start.to_string() << "\n";
     if(!spec->key_start.is_matching(cell.key)) 
       return cells->size == 1; // next_key
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
-    Serialization::decode_vi64(&ptr, &remain);
+    Serialization::decode_vi64(&ptr, &remain); // rid(here-unused)
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
     /*

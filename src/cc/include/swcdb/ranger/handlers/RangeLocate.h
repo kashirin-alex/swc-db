@@ -26,10 +26,9 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     range =  Env::RgrColumns::get()->get_range(
       err, params.cid, params.rid, false);
     
-    if(range == nullptr || !range->is_loaded()){
-      if(err == Error::OK)
-        err = Error::RS_NOT_LOADED_RANGE;
-    }
+    if(!err && (range == nullptr || !range->is_loaded()))
+      err = Error::RS_NOT_LOADED_RANGE;
+
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
