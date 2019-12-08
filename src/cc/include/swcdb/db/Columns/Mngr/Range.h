@@ -68,13 +68,13 @@ class Range : public DB::RangeBase {
   }
 
   void set_state(State new_state, uint64_t new_rgr_id){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_state = new_state;
     rgr_id = new_rgr_id;
   }
   
   void set_deleted(){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_state = State::DELETED;
   }
 
@@ -84,19 +84,19 @@ class Range : public DB::RangeBase {
   }
 
   void set_rgr_id(uint64_t new_rgr_id){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     rgr_id = new_rgr_id;
   }
 
   Files::RgrData::Ptr get_last_rgr(int &err){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     if(m_last_rgr == nullptr)
       m_last_rgr = DB::RangeBase::get_last_rgr(err);
     return m_last_rgr;
   }
   
   void clear_last_rgr(){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_last_rgr = nullptr;
   }
 

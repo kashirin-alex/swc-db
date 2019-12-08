@@ -9,8 +9,8 @@
 #include <asio.hpp>
 #include <queue>
 #include <memory>
+#include <mutex>
 #include "swcdb/core/Error.h"
-#include "swcdb/core/LockAtomicUnique.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/CommBuf.h"
 #include "swcdb/core/comm/Resolver.h"
@@ -130,11 +130,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   Socket                    m_sock;
   uint32_t                  m_next_req_id;
 
-  LockAtomic::Unique        m_mutex;
+  std::mutex                m_mutex;
   std::queue<Outgoing*>     m_outgoing;
   bool                      m_writing = 0;
 
-  LockAtomic::Unique        m_mutex_reading;
+  std::mutex                m_mutex_reading;
   bool                      m_accepting = 0;
   bool                      m_reading = 0;
   std::unordered_map<uint32_t, PendingRsp*>  m_pending;

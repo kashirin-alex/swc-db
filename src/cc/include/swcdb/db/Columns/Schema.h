@@ -177,7 +177,7 @@ class Schemas final {
   ~Schemas(){}
   
   void add(int &err, Schema::Ptr schema){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     if(!m_map.insert(
         std::pair<int64_t, Schema::Ptr>(schema->cid, schema)).second) {
       SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
@@ -187,7 +187,7 @@ class Schemas final {
   }
 
   void remove(int64_t cid){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     auto it = m_map.find(cid);
     if(it != m_map.end())
@@ -195,7 +195,7 @@ class Schemas final {
   }
 
   void replace(Schema::Ptr schema){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     auto it = m_map.find(schema->cid);
     if(it == m_map.end())

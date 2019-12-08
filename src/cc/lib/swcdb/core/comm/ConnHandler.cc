@@ -63,7 +63,7 @@ const size_t ConnHandler::endpoint_local_hash() {
   
 void ConnHandler::new_connection() {
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     endpoint_remote = m_sock.remote_endpoint();
     endpoint_local = m_sock.local_endpoint();
@@ -81,7 +81,7 @@ const bool ConnHandler::is_open() {
 
 void ConnHandler::close() {
   if(is_open()) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     try{m_sock.close();}catch(...){}
   }
   m_err = Error::COMM_NOT_CONNECTED;
@@ -89,12 +89,12 @@ void ConnHandler::close() {
 }
 
 const size_t ConnHandler::pending_read() {
-  LockAtomic::Unique::Scope lock(m_mutex_reading);
+  std::unique_lock lock(m_mutex_reading);
   return m_pending.size();
 }
 
 const size_t ConnHandler::pending_write() {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   return m_outgoing.size();
 }
 
@@ -247,7 +247,7 @@ const std::string ConnHandler::to_string() {
 }
 
 const uint32_t ConnHandler::next_req_id() {
-  LockAtomic::Unique::Scope lock(m_mutex_reading);  
+  std::unique_lock lock(m_mutex_reading);  
   while(m_pending.find(
     ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
     ) != m_pending.end()
@@ -277,7 +277,7 @@ asio::high_resolution_timer* ConnHandler::get_timer(const CommHeader& header) {
     
 void ConnHandler::write_or_queue(ConnHandler::Outgoing* data) { 
   {
-    LockAtomic::Unique::Scope lock(m_mutex);  
+    std::unique_lock lock(m_mutex);  
     if(m_writing) {
       m_outgoing.push(data);
       return;
@@ -290,7 +290,7 @@ void ConnHandler::write_or_queue(ConnHandler::Outgoing* data) {
 void ConnHandler::next_outgoing() {
   ConnHandler::Outgoing* data;
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_writing = !m_outgoing.empty();
     if(!m_writing) 
       return;
@@ -303,7 +303,7 @@ void ConnHandler::next_outgoing() {
 void ConnHandler::write(ConnHandler::Outgoing* data) {
 
   if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
-    LockAtomic::Unique::Scope lock(m_mutex_reading);
+    std::unique_lock lock(m_mutex_reading);
     m_pending.insert(std::make_pair(
       data->cbuf->header.id, 
       new ConnHandler::PendingRsp(data->hdlr, get_timer(data->cbuf->header))
@@ -331,7 +331,7 @@ void ConnHandler::write(ConnHandler::Outgoing* data) {
 
 void ConnHandler::read_pending() {
   {
-    LockAtomic::Unique::Scope lock(m_mutex_reading);
+    std::unique_lock lock(m_mutex_reading);
     if(m_err || m_reading)
       return;
     m_reading = true;
@@ -453,7 +453,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code ec) {
   ev->arrival_time = ClockT::now();
   bool more;
   {
-    LockAtomic::Unique::Scope lock(m_mutex_reading);
+    std::unique_lock lock(m_mutex_reading);
     m_reading = false;
     more = m_accepting || !m_pending.empty();
   }
@@ -468,7 +468,7 @@ void ConnHandler::disconnected() {
   Event::Ptr ev;
   for(;;) {
     {
-      LockAtomic::Unique::Scope lock(m_mutex_reading);
+      std::unique_lock lock(m_mutex_reading);
       if(m_pending.empty())
         return;
       pending = m_pending.begin()->second;
@@ -490,7 +490,7 @@ void ConnHandler::run_pending(Event::Ptr ev) {
 
   ConnHandler::PendingRsp* pending = nullptr;
   {
-    LockAtomic::Unique::Scope lock(m_mutex_reading);
+    std::unique_lock lock(m_mutex_reading);
     auto it = m_pending.find(ev->header.id);
     if(it != m_pending.end()) {
       pending = it->second;

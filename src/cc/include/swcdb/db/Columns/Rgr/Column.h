@@ -34,7 +34,7 @@ class Column : public std::enable_shared_from_this<Column> {
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
     Range::Ptr range = nullptr;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
 
       auto it = m_ranges.find(rid);
       if (it != m_ranges.end())
@@ -60,7 +60,7 @@ class Column : public std::enable_shared_from_this<Column> {
   void unload(const int64_t rid, Callback::RangeUnloaded_t cb) {
     Range::Ptr range = nullptr;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       auto it = m_ranges.find(rid);
       if (it != m_ranges.end()){
         range = it->second;
@@ -76,7 +76,7 @@ class Column : public std::enable_shared_from_this<Column> {
   void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb) {
 
     for(;;){
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       auto it = m_ranges.begin();
       if(it == m_ranges.end())
         break;
@@ -93,14 +93,14 @@ class Column : public std::enable_shared_from_this<Column> {
   
   void remove_all(int &err) {
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       if(m_deleting)
         return;
       m_deleting = true;
     }
       
     for(;;){
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       auto it = m_ranges.begin();
       if(it == m_ranges.end())
         break;

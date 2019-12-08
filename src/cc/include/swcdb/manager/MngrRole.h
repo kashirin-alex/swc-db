@@ -54,7 +54,7 @@ class MngrRole final {
   }
 
   void timer_managers_checkin(uint32_t t_ms = 10000) {
-    std::lock_guard lock(m_mutex_timer);
+    std::unique_lock lock(m_mutex_timer);
     if(!m_run)
       return;
 
@@ -226,7 +226,7 @@ class MngrRole final {
   }
 
   void update_manager_addr(uint64_t hash, const EndPoint& mngr_host){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     bool new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
     if(new_srv) {
@@ -239,7 +239,7 @@ class MngrRole final {
                      bool srv=false){
     EndPoints endpoints;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
     
       auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
       if(it != m_mngrs_client_srv.end()) {
@@ -269,7 +269,7 @@ class MngrRole final {
   }
   
   bool require_sync(){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     bool current = m_major_updates;
     m_major_updates = false;
     return current;
@@ -277,7 +277,7 @@ class MngrRole final {
 
   void stop() {
     {
-      std::lock_guard lock(m_mutex_timer);
+      std::unique_lock lock(m_mutex_timer);
       m_check_timer.cancel();
       m_run = false;
     }
@@ -349,7 +349,7 @@ class MngrRole final {
     //SWC_LOG(LOG_DEBUG, "managers_checkin");
     size_t sz;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       apply_cfg();
       sz = m_states.size();
     }
@@ -440,7 +440,7 @@ class MngrRole final {
   }
   
   void update_state(EndPoint endpoint, Types::MngrState state){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     for(auto& host : m_states){
       if(has_endpoint(endpoint, host->endpoints)){
@@ -450,7 +450,7 @@ class MngrRole final {
   }
 
   void update_state(const EndPoints& endpoints, Types::MngrState state){
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     for(auto& host : m_states){
       if(has_endpoint(endpoints, host->endpoints)){
@@ -520,7 +520,7 @@ class MngrRole final {
     }
     
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       if(cols_active != m_cols_active){
         m_cols_active.swap(cols_active);
         return true;

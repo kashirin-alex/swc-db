@@ -40,7 +40,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   Column::Ptr get_column(int &err, const int64_t cid, bool initialize){
     Column::Ptr col = nullptr;
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
 
       auto it = m_columns.find(cid);
       if (it != m_columns.end())
@@ -130,7 +130,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     };
 
     for(;;){
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       auto it = m_columns.begin();
       if(it == m_columns.end())
         break;
@@ -150,7 +150,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
     if(col != nullptr) {
       col->remove_all(err);
       {
-        std::lock_guard lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         auto it = m_columns.find(cid);
         if (it != m_columns.end()) 
           m_columns.erase(it);

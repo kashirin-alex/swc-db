@@ -66,7 +66,7 @@ class Block {
   }
   
   void load_cells(const Mutable& cells) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     auto ts = Time::now_ns();
     size_t added = m_cells.size;
 
@@ -93,7 +93,7 @@ class Block {
     uint32_t sz = 0;
     
     auto ts = Time::now_ns();
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     bool synced = !m_cells.size;
     while(remain) {
@@ -147,12 +147,12 @@ class Block {
   }
 
   void free_key_begin() {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_interval.key_begin.free();
   }
 
   void free_key_end() {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_interval.key_end.free();
   }
 

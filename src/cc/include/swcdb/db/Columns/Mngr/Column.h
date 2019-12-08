@@ -45,7 +45,7 @@ class Column : public std::enable_shared_from_this<Column> {
     FS::IdEntries_t entries;
 
     {
-      std::lock_guard lock(m_mutex);
+      std::unique_lock lock(m_mutex);
 
       if(!exists_range_path(err))
         create_range_path(err);
@@ -61,7 +61,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void set_loading() {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     _set_loading();
   }
 
@@ -76,7 +76,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
   
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
                           [rid](const Range::Ptr& range) 
@@ -117,7 +117,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     
     // std::sort(m_ranges.begin(), m_ranges.end(), Range); 
     if(interval.was_set != range->interval() || !range->equal(interval)) {
@@ -160,7 +160,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   Range::Ptr get_next_unassigned() {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     for(auto range : m_ranges) {
       if(range->need_assign()) {
@@ -172,7 +172,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void set_rgr_unassigned(uint64_t id) {
-    std::lock_guard lock(m_mutex);    
+    std::unique_lock lock(m_mutex);    
 
     for(auto range : m_ranges){
       if(range->get_rgr_id() == id){
@@ -184,7 +184,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void change_rgr(uint64_t rgr_id_old, uint64_t id) {
-    std::lock_guard lock(m_mutex);    
+    std::unique_lock lock(m_mutex);    
 
     for(auto range : m_ranges) {
       if(range->get_rgr_id() == rgr_id_old)
@@ -201,7 +201,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void change_rgr_schema(const uint64_t id, int64_t rev=0) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     auto it = m_schemas_rev.find(id);
     if(it == m_schemas_rev.end())
@@ -211,7 +211,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   void remove_rgr_schema(const uint64_t id) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     _remove_rgr_schema(id);
   }
 
@@ -248,7 +248,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
   
   bool do_remove() {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     bool was = m_state == State::DELETED;
     m_state = State::DELETED;
@@ -262,7 +262,7 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   bool finalize_remove(int &err, uint64_t id=0) {
-    std::lock_guard lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     
     if(id == 0) {
       m_ranges.clear();
