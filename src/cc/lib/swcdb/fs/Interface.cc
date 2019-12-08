@@ -344,6 +344,17 @@ bool Interface::create(int& err, SmartFd::Ptr smartfd,
   return false;
 }
 
+void Interface::close(int& err, SmartFd::Ptr smartfd) {
+  for(;smartfd->valid();err = Error::OK) {
+    m_fs->close(err, smartfd);
+    if(err == Error::OK || err == EACCES || err == ENOENT 
+      || err == Error::SERVER_SHUTTING_DOWN)
+      break;
+    SWC_LOGF(LOG_DEBUG, "close, retrying to err=%d(%s)", 
+              err, Error::get_text(err));
+  }
+}
+
 
 
 void set_structured_id(std::string number, std::string &s) {

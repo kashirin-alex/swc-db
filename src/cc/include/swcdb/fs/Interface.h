@@ -92,6 +92,8 @@ class Interface {
   
   bool create(int& err, SmartFd::Ptr smartfd,
               int32_t bufsz, int32_t replication, int64_t blksz);
+              
+  void close(int& err, SmartFd::Ptr smartfd);
  
   private:
   Types::Fs       m_type;
