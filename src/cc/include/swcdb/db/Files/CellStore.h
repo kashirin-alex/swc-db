@@ -36,237 +36,31 @@ class Read final {
   public:
   typedef Read*  Ptr;
 
-  enum State {
-    BLKS_IDX_NONE,
-    BLKS_IDX_LOADING,
-    BLKS_IDX_LOADED,
-  };
-
-  const uint32_t                id;
-  FS::SmartFd::Ptr              smartfd;
-  DB::Cells::Interval           interval;
-  std::vector<Block::Read::Ptr> blocks;
-  
-  inline static Ptr make(const uint32_t id, const DB::RangeBase::Ptr& range, 
+  inline static Ptr make(int& err, const uint32_t id, 
+                         const DB::RangeBase::Ptr& range, 
                          const DB::Cells::Interval& interval) {
-    return new Read(id, range, interval);
-  }
-
-  Read(const uint32_t id, const DB::RangeBase::Ptr& range, 
-       const DB::Cells::Interval& interval) 
-      : id(id), 
-        smartfd(FS::SmartFd::make_ptr(range->get_path_cs(id), 0)), 
-        interval(interval), m_state(State::BLKS_IDX_NONE) {   
-  }
-
-  Ptr ptr() {
-    return this;
-  }
-
-  ~Read(){
-    _free();
-  }
-
-  State load_blocks_index(int& err, bool close_after=false) {
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state == State::BLKS_IDX_LOADED || m_state == State::BLKS_IDX_LOADING)
-        return m_state;
-      m_state = State::BLKS_IDX_LOADING;
-    }
-
-    _load_blocks_index(err, close_after);
-    if(err)
-      SWC_LOGF(LOG_ERROR, "CellStore load_blocks_index err=%d(%s) %s", 
-                err, Error::get_text(err), to_string().c_str());
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err? State::BLKS_IDX_NONE : State::BLKS_IDX_LOADED;
-      return m_state;
-    }
-  }
-
-  void load_cells(DB::Cells::Block::Ptr cells_block, 
-                  const std::function<void(int)>& cb) {
-    {
-      int err = Error::OK;
-      State applied = load_blocks_index(err);
-
-      if(applied == State::BLKS_IDX_NONE){
-        if(!err)
-          err = Error::RANGE_CS_BAD;
-        cb(err);
-        return;
-      }
- 
-      if(applied == State::BLKS_IDX_LOADING) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_queue.push(
-          [cells_block, cb, ptr=ptr()](){
-            ptr->load_cells(cells_block, cb);
-          }
-        );
-        return;
-      }
-      run_queued();
-    }
-
-    std::vector<Block::Read::Ptr>  applicable;
-    for(auto& blk : blocks) {  
-      if(cells_block->is_consist(blk->interval))
-        applicable.push_back(blk);
-    }
-
-    if(applicable.empty()){
-      cb(Error::OK);
-      return;
-    }
-  
-    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
-    for(auto& blk : applicable) {
-      auto cb = [blk, waiter](int err){ waiter->processed(err, blk); };
-      if(blk->load(cb)) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_queue.push([blk, cb, fd=smartfd](){ blk->load(fd, cb); });
-      }
-    }
-
-    run_queued();
-  }
-
-  void run_queued() {
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_q_runs || m_queue.empty())
-        return;
-      m_q_runs = true;
-    }
+    auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(id), 0);
+    DB::Cells::Interval interval_by_blks;
+    std::vector<Block::Read::Ptr> blocks;
     
-    asio::post(
-      *Env::IoCtx::io()->ptr(), 
-      [ptr=ptr()](){ ptr->_run_queued(); }
-    );
+    load_blocks_index(err, smartfd, interval_by_blks, blocks);
+    if(err)
+      SWC_LOGF(LOG_ERROR, 
+        "CellStore load_blocks_index err=%d(%s) %s (id=%d %s %s", 
+        err, Error::get_text(err), id, range->to_string().c_str(), 
+        interval.to_string().c_str());
+
+    return new Read(
+      id, 
+      interval_by_blks.was_set ? interval_by_blks : interval, 
+      blocks, 
+      smartfd);
   }
 
-  size_t release(size_t bytes) {   
-    size_t released = 0;
-
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_state != State::BLKS_IDX_LOADED)
-        return released;
-    }
-
-    for(auto& blk : blocks) {
-      released += blk->release();
-      if(bytes && released >= bytes)
-        break;
-    }
-    return released;
-  }
-
-  void close(int &err) {
-    if(smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd); 
-  }
-
-  void remove(int &err) {
-    free();
-    Env::FsInterface::fs()->remove(err, smartfd->filepath());
-  } 
-
-  const bool processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return _processing();
-  }
-
-  void wait_processing() {
-    while(processing() > 0)  {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  const size_t size_bytes(bool only_loaded=false) {
-    size_t size = 0;
-    for(auto& blk : blocks)
-      size += blk->size_bytes(only_loaded);
-    return size;
-  }
-
-  const size_t blocks_count() {
-    return blocks.size();
-  }
-
-  void free() {
-    wait_processing();
-    std::lock_guard<std::mutex> lock(m_mutex);
-    _free();
-  }
-
-  const std::string to_string(){
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    std::string s("Read(v=");
-    s.append(std::to_string(VERSION));
-    s.append(" id=");
-    s.append(std::to_string(id));
-    s.append(" state=");
-    s.append(std::to_string((uint8_t) m_state));
-    s.append(" ");
-    s.append(interval.to_string());
-
-    if(smartfd != nullptr){
-      s.append(" ");
-      s.append(smartfd->to_string());
-    }
-
-    s.append(" blocks=");
-    s.append(std::to_string(blocks.size()));
-    s.append(" blocks=[");
-    for(auto blk : blocks) {
-      std::cout << "cs blk->to_string 1 \n"; 
-      s.append(blk->to_string());
-      s.append(", ");
-      std::cout << "cs blk->to_string 2 \n"; 
-    }
-    s.append("]");
-
-    s.append(" queue=");
-    s.append(std::to_string(m_queue.size()));
-
-    s.append(" processing=");
-    s.append(std::to_string(_processing()));
-
-    s.append(" used/actual=");
-    s.append(std::to_string(size_bytes(true)));
-    s.append("/");
-    s.append(std::to_string(size_bytes()));
-
-    s.append(")");
-    return s;
-  } 
-
-  private:
-
-  const bool _processing() {
-    if(m_queue.size() || m_state == State::BLKS_IDX_LOADING)
-      return true;
-    for(auto& blk : blocks)
-      if(blk->processing())
-        return true;
-    return false;
-  }
-
-  void _free() {
-    for(auto& blk : blocks)
-      delete blk;
-    blocks.clear();
-  }
-
-  bool load_trailer(int& err, size_t& blks_idx_size, 
-                              size_t& blks_idx_offset, 
-                              bool close_after=false) {
+  static bool load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
+                           size_t& blks_idx_size, 
+                           size_t& blks_idx_offset, 
+                           bool close_after=false) {
     bool loaded;
     for(;;) {
       err = Error::OK;
@@ -297,7 +91,7 @@ class Read final {
                 err, smartfd, length-TRAILER_SIZE, buf, TRAILER_SIZE)
               != TRAILER_SIZE){
         if(err != Error::FS_EOF){
-          close(err);
+          Env::FsInterface::interface()->close(err, smartfd); 
           continue;
         }
         return loaded;
@@ -318,16 +112,17 @@ class Read final {
     }
 
     if(close_after)
-      close(err);
+      Env::FsInterface::interface()->close(err, smartfd); 
     return loaded;
   }
 
-  void _load_blocks_index(int& err, bool close_after=false) {
-    _free();
+  static void load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
+                                DB::Cells::Interval& interval,
+                                std::vector<Block::Read::Ptr>& blocks) {
 
-    size_t length = 0;
+    size_t blks_idx_size = 0;
     size_t offset = 0;
-    if(!load_trailer(err, length, offset, false))
+    if(!load_trailer(err, smartfd, blks_idx_size, offset, false))
       return;
 
     StaticBuffer read_buf;
@@ -335,10 +130,10 @@ class Read final {
       read_buf.free();
       err = Error::OK;
       if(Env::FsInterface::fs()->pread(
-                          err, smartfd, offset, &read_buf, length)
-                != length){
+                          err, smartfd, offset, &read_buf, blks_idx_size)
+                != blks_idx_size){
         int tmperr = Error::OK;
-        close(tmperr);
+        Env::FsInterface::interface()->close(tmperr, smartfd); 
         if(err != Error::FS_EOF){
           if(!Env::FsInterface::interface()->open(err, smartfd))
             return;
@@ -350,7 +145,7 @@ class Read final {
     }
     const uint8_t *ptr = read_buf.base;
 
-    size_t remain = length;
+    size_t remain = blks_idx_size;
     Types::Encoding encoder 
       = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
     uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
@@ -361,7 +156,7 @@ class Read final {
         Serialization::decode_i32(&ptr, &remain), 
         read_buf.base, ptr-read_buf.base)
       ) {
-      close(err);
+      Env::FsInterface::interface()->close(err, smartfd); 
       err = Error::CHECKSUM_MISMATCH;
       return;
     }
@@ -371,7 +166,7 @@ class Read final {
       Encoder::decode(err, encoder, ptr, sz_enc, decoded_buf.base, sz);
       if(err) {
         int tmperr = Error::OK;
-        close(tmperr);
+        Env::FsInterface::interface()->close(tmperr, smartfd); 
         return;
       }
       read_buf.set(decoded_buf);
@@ -380,10 +175,9 @@ class Read final {
     }
 
     const uint8_t* chk_ptr;
-    interval.free();
 
     Block::Read::Ptr blk;
-    for(int n = 0; n < blks_count; n++){
+    for(int n = 0; n < blks_count; n++) {
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
@@ -393,7 +187,7 @@ class Read final {
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
-        close(err);
+        Env::FsInterface::interface()->close(err, smartfd); 
         err = Error::CHECKSUM_MISMATCH;
         return;
       }
@@ -401,23 +195,176 @@ class Read final {
       blocks.push_back(blk);
       interval.expand(blk->interval);
     }
-        
-    if(close_after)
-      close(err);
+
+    Env::FsInterface::interface()->close(err, smartfd); 
+  }
+
+  // 
+  
+  const uint32_t                      id;
+  const DB::Cells::Interval           interval;
+  const std::vector<Block::Read::Ptr> blocks;
+  
+  Read(const uint32_t id,
+       const DB::Cells::Interval& interval, 
+       const std::vector<Block::Read::Ptr>& blocks,
+       FS::SmartFd::Ptr smartfd) 
+      : id(id), 
+        interval(interval), 
+        blocks(blocks), 
+        m_smartfd(smartfd) {   
+  }
+
+  Ptr ptr() {
+    return this;
+  }
+
+  ~Read() {
+    for(auto blk : blocks)
+      delete blk;
+  }
+
+  void load_cells(DB::Cells::Block::Ptr cells_block, 
+                  const std::function<void(int)>& cb) {
+                    
+    std::vector<Block::Read::Ptr>  applicable;
+    for(auto blk : blocks) {  
+      if(cells_block->is_consist(blk->interval))
+        applicable.push_back(blk);
+    }
+
+    if(applicable.empty()){
+      cb(Error::OK);
+      return;
+    }
+  
+    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
+    for(auto blk : applicable) {
+      auto cb = [blk, waiter](int err){ waiter->processed(err, blk); };
+      if(blk->load(cb)) {
+        std::unique_lock lock(m_mutex);
+        m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
+      }
+    }
+
+    run_queued();
+  }
+
+  void run_queued() {
+    {
+      std::unique_lock lock(m_mutex);
+      if(m_q_runs || m_queue.empty())
+        return;
+      m_q_runs = true;
+    }
+    
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [ptr=ptr()](){ ptr->_run_queued(); }
+    );
+  }
+
+  void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
+    for(auto blk : blocks)
+      to.push_back(blk);
+  }
+
+  size_t release(size_t bytes) {   
+    size_t released = 0;
+    for(auto blk : blocks) {
+      released += blk->release();
+      if(bytes && released >= bytes)
+        break;
+    }
+    return released;
+  }
+
+  void close(int &err) {
+    Env::FsInterface::interface()->close(err, m_smartfd); 
+  }
+
+  void remove(int &err) {
+    Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
+  } 
+
+  const bool processing() {
+    std::shared_lock lock(m_mutex);
+    return _processing();
+  }
+
+  const size_t size_bytes(bool only_loaded=false) const {
+    size_t size = 0;
+    for(auto blk : blocks)
+      size += blk->size_bytes(only_loaded);
+    return size;
+  }
+
+  const size_t blocks_count() const {
+    return blocks.size();
+  }
+
+  const std::string to_string() {
+    std::shared_lock lock(m_mutex);
+
+    std::string s("Read(v=");
+    s.append(std::to_string(VERSION));
+    s.append(" id=");
+    s.append(std::to_string(id));
+    s.append(" ");
+    s.append(interval.to_string());
+
+    if(m_smartfd != nullptr){
+      s.append(" ");
+      s.append(m_smartfd->to_string());
+    }
+
+    s.append(" blocks=");
+    s.append(std::to_string(blocks_count()));
+    s.append(" blocks=[");
+    for(auto blk : blocks) {
+      s.append(blk->to_string());
+      s.append(", ");
+    }
+    s.append("]");
+
+    s.append(" queue=");
+    s.append(std::to_string(m_queue.size()));
+
+    s.append(" processing=");
+    s.append(std::to_string(_processing()));
+
+    s.append(" used/actual=");
+    s.append(std::to_string(size_bytes(true)));
+    s.append("/");
+    s.append(std::to_string(size_bytes()));
+
+    s.append(")");
+    return s;
+  } 
+
+  private:
+
+  const bool _processing() const {
+    if(m_queue.size())
+      return true;
+    for(auto blk : blocks)
+      if(blk->processing())
+        return true;
+    return false;
   }
 
   void _run_queued() {
     std::function<void()> call;
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         call = m_queue.front();
       }
 
       call();
       
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         m_queue.pop();
         if(m_queue.empty()) {
           m_q_runs = false;
@@ -442,7 +389,7 @@ class Read final {
 
     void processed(int err, Block::Read::Ptr blk) {
       { 
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex_await);
         m_count--;
         std::cout << " CellStore::AwaitingLoad count=" << m_count << "\n";
         m_pending.push(blk);
@@ -451,14 +398,14 @@ class Read final {
       }
       for(;;) {
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::lock_guard<std::mutex> lock(m_mutex_await);
           blk = m_pending.front();
         }
 
         blk->load_cells(cells_block);
 
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::lock_guard<std::mutex> lock(m_mutex_await);
           m_pending.pop();
           if(m_pending.empty()) {
             if(m_count)
@@ -471,17 +418,17 @@ class Read final {
       delete this;
     }
 
-    std::mutex                    m_mutex;
+    std::mutex                    m_mutex_await;
     int32_t                       m_count;
     DB::Cells::Block::Ptr         cells_block;
     const Cb_t                    cb;
     std::queue<Block::Read::Ptr>  m_pending;
   };
 
-  std::mutex                          m_mutex;
-  State                               m_state;
+  std::shared_mutex                   m_mutex;
   bool                                m_q_runs = false;
   std::queue<std::function<void()>>   m_queue;
+  FS::SmartFd::Ptr                    m_smartfd;
 
 };
 
@@ -543,11 +490,6 @@ class Write : public std::enable_shared_from_this<Write> {
   }
 
   uint32_t write_blocks_index(int& err) {
-    //if(completion > 0){ 
-    //  std::unique_lock<std::mutex> lock_wait(m_mutex);
-    //  m_cv.wait(lock_wait, [count=&completion]{return count == 0;});
-    //}
-
     uint32_t len_data = 0;
     interval.free();
     for(auto blk : m_blocks) {
@@ -673,10 +615,7 @@ class Write : public std::enable_shared_from_this<Write> {
 
   private:
 
-  std::mutex                     m_mutex;
   std::vector<Block::Write::Ptr> m_blocks;
-
-  std::condition_variable        m_cv;
 };
 
 typedef std::vector<Write::Ptr>   Writers;
@@ -700,9 +639,8 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      Read::Ptr cs = Read::make(1, range, interval);
-      cs->load_blocks_index(err, true);
-      if(!err)
+      auto cs = Read::make(err, 1, range, interval);
+      if(!err) 
         return cs;
     }
   }

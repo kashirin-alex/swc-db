@@ -112,36 +112,35 @@ int main(int argc, char** argv) {
 
   
   SWC::DB::Cells::Interval intval;
-  SWC::Files::CellStore::Read cs(1, range, intval);
-  std::cout << "cs-read-init:\n " << cs.to_string() << "\n";
+  auto cs = SWC::Files::CellStore::Read::make(err, 1, range, intval);
+  std::cout << "cs-read-init:\n " << cs->to_string() << "\n";
 
-  cs.load_blocks_index(err, true);
   hdlr_err(err);
-  std::cout << "cs-read-load_blocks_index:\n " << cs.to_string() << "\n";
-  if(cs.blocks_count() != expected_blocks) {
-    std::cerr << "ERROR: cs.blocks_count() != expected_blocks \n" 
+  std::cout << "cs-read-load_blocks_index:\n " << cs->to_string() << "\n";
+  if(cs->blocks_count() != expected_blocks) {
+    std::cerr << "ERROR: cs->blocks_count() != expected_blocks \n" 
               << " expected=" << expected_blocks << "\n"
-              << " counted=" << cs.blocks_count() << "\n";
+              << " counted=" << cs->blocks_count() << "\n";
     exit(1);
   }
-  //cs.close(err);
+  //cs->close(err);
   //if(err != EBADR){
   //  std::cerr << " FD should been closed after loading blocks-index err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n";
   //  exit(1);
   //}
-  err = SWC::Error::OK;
-  std::cout << "cs-closed:\n " << cs.smartfd->to_string() << "\n";
+
+
 
   std::cout << "\ncs-read-scan:\n";
-
-  
+  err = SWC::Error::OK;  
   
   SWC::DB::Cells::Interval intval_r;
   SWC::server::Rgr::IntervalBlocks blocks;
   blocks.init(range);
   blocks.cellstores.add(
-    SWC::Files::CellStore::Read::make(1, range, intval_r));
-
+    SWC::Files::CellStore::Read::make(err, 1, range, intval_r));
+  if(err)
+    exit(1);
   std::atomic<int> requests = 110;
   size_t id = 0;
   for(int n=1;n<=20;n++) {

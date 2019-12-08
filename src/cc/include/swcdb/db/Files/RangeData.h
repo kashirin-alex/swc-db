@@ -70,10 +70,11 @@ void save(int& err, CellStore::Readers& cellstores) {
 
 
 //  GET
-void read(const uint8_t **ptr, size_t* remain, CellStore::Readers& cellstores) {
+void read(int& err, const uint8_t **ptr, size_t* remain, 
+          CellStore::Readers& cellstores) {
   
   const uint8_t *ptr_end = *ptr+*remain;
-  cellstores.decode(ptr, remain);
+  cellstores.decode(err, ptr, remain);
 
   if(*ptr != ptr_end){
     SWC_LOGF(LOG_WARN, "decode overrun remain=%d", remain);
@@ -139,7 +140,7 @@ void load(int& err, CellStore::Readers& cellstores){
     if(!checksum_i32_chk(chksum_data, ptr, sz))
       break;
     
-    read(&ptr, &sz, cellstores);
+    read(err, &ptr, &sz, cellstores);
     break;
   } 
 
@@ -151,7 +152,6 @@ void load(int& err, CellStore::Readers& cellstores){
     cellstores.load_from_path(err);
     if(!err && !cellstores.empty())
       save(err, cellstores);
-    std::cout << cellstores.to_string() << "\n";
   }
 }
 

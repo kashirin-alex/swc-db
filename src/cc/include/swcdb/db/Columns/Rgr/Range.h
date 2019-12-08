@@ -357,9 +357,8 @@ class Range : public DB::RangeBase {
     else if(blocks.cellstores.empty()) {
       // init 1st cs(for log_cells)
       DB::Schema::Ptr schema = Env::Schemas::get()->get(cid);
-      Files::CellStore::Read::Ptr cs 
-        = Files::CellStore::create_init_read(
-          err, schema->blk_encoding, shared_from_this());
+      auto cs = Files::CellStore::create_init_read(
+        err, schema->blk_encoding, shared_from_this());
       if(!err) {
         blocks.cellstores.add(cs);
         is_initial_column_range = true;

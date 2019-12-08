@@ -68,7 +68,7 @@ class Read final {
   
   bool load(const std::function<void(int)>& cb) {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       m_processing++;
       if(m_state == State::NONE) {
         m_state = State::LOADING;
@@ -105,7 +105,7 @@ class Read final {
     }
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       m_processing--; 
     }
 
@@ -116,7 +116,7 @@ class Read final {
   
   const size_t release() {    
     size_t released = 0;
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::unique_lock lock(m_mutex);
 
     if(m_processing || m_state != State::LOADED)
       return released; 
@@ -129,24 +129,24 @@ class Read final {
   }
 
   const bool processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_processing;
   }
 
   const bool loaded() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     return m_state == State::LOADED;
   }
 
   const size_t size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     if(only_loaded && m_state != State::LOADED)
       return 0;
     return m_size;
   }
 
   const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     std::string s("Block(offset=");
     s.append(std::to_string(offset));
     s.append(" state=");
@@ -194,7 +194,7 @@ class Read final {
         m_size = Serialization::decode_i32(&ptr, &remain);
         if(!m_sz_enc) 
           m_sz_enc = m_size;
-        m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
+        m_cells_remain=m_cells_count= Serialization::decode_i32(&ptr, &remain);
 
         if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
@@ -241,13 +241,13 @@ class Read final {
       break;
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_state = !err ? State::LOADED : State::NONE;
   }
 
   void run_queued(int err) {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::unique_lock lock(m_mutex);
       if(m_q_runs || m_queue.empty()) 
         return;
       m_q_runs = true;
@@ -263,14 +263,14 @@ class Read final {
     std::function<void(int)> call;
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         call = m_queue.front();
       }
 
       call(err);
       
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
         m_queue.pop();
         if(m_queue.empty()) {
           m_q_runs = false;
@@ -280,7 +280,7 @@ class Read final {
     }
   }
 
-  std::mutex                            m_mutex;
+  std::shared_mutex                     m_mutex;
   State                                 m_state;
   size_t                                m_processing;
   bool                                  m_loaded_header;
