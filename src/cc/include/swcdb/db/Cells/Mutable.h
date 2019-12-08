@@ -474,6 +474,7 @@ class Mutable final {
     Cell* cell;
     size_t count = 0;
     DB::Cell::Key key_start;
+    bool rest;
 
 
     key_start.copy((*(m_cells + from))->key);
@@ -481,12 +482,15 @@ class Mutable final {
     for(uint32_t offset = _narrow(key_start, 0);
         offset < size; offset++) {
       cell = *(m_cells + offset);
-
-      if(cell->key.compare(key_start, 0) == Condition::GT) 
-        continue;
+      
+      if(!rest) {
+        if(cell->key.compare(key_start, 0) == Condition::GT)
+          continue;
+        rest = true;
+      }
       count++;
-
-      memset(m_cells + offset, 0, _cell_sz);
+      *(m_cells + offset) = 0;
+      
       if(cell->has_expired(m_ttl)){
         _remove(cell);
         continue;
