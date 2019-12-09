@@ -112,17 +112,17 @@ class Cell final {
                     value(0), vlen(0), own(false) { }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
-                : value(0) { 
+                : on_fraction(0), timestamp(0), revision(0), value(0) { 
     read(bufp, remainp, own);             
   }
 
-  explicit Cell(const Cell& other){
+  explicit Cell(const Cell& other) : value(0), own(true) {
     copy(other);
   }
 
   void copy(const Cell& other) {
+    free();
     own = true;
-    //std::cout << " copy(const Cell &other) " << other.to_string() << "\n";
     flag        = other.flag;
     key.copy(other.key);
     control     = other.control;
@@ -350,7 +350,9 @@ class Cell final {
     s.append(" rev=");
     s.append(std::to_string(revision));
 
-    s.append(" value=(");     
+    s.append(" value=(len="); 
+    s.append(std::to_string(vlen));  
+    s.append(" ");  
     if(typ == Types::Column::COUNTER_I64) {
       OP op;
       int64_t v = get_value(&op);
@@ -363,8 +365,6 @@ class Cell final {
         s.append(std::string(&c, 1));
       }
     }
-    s.append(", len=");
-    s.append(std::to_string(vlen));
     s.append(")");
     return s;
   }
