@@ -17,14 +17,13 @@ class Key {
 
   typedef std::shared_ptr<Key> Ptr;
 
-  explicit Key(bool own = true): own(own), count(0), size(0), data(0) {}
+  explicit Key(bool own = true): own(own), count(0), size(0), data(0) { }
 
   explicit Key(const Key &other): own(false), data(0) {
     copy(other);
   }
 
   void copy(const Key &other) {
-    //std::cout << " copy(const Key &other) " << other.to_string() << "\n";
     free(); 
     own   = true;
     count = other.count;
@@ -32,19 +31,17 @@ class Key {
     if(size > 0) {
       data = new uint8_t[size];
       memcpy(data, other.data, size);
-    } else 
-      data = 0;
+    }
   }
 
   virtual ~Key() {
     free();
   }
 
-  inline void free() {
-    if(own && data != 0) {
+  void free() {
+    if(own && data != 0)
       delete [] data;
-      data = 0;
-    }
+    data = 0;
     size = 0;
     count = 0;
   }
@@ -319,7 +316,8 @@ class Key {
   }
 
   void decode(const uint8_t **bufp, size_t* remainp, 
-              bool owner=false, int8_t reserved=0){
+              bool owner=false, int8_t reserved=0) {
+    free();
     own = owner;
     count = Serialization::decode_vi32(bufp, remainp);
     data = (uint8_t *)*bufp;
@@ -329,13 +327,11 @@ class Key {
     }
     size = *bufp - data;
     *remainp -= size;
-    
+
     if(size == 0) {
       data = 0;
       count = 0;
-      return;
-    }
-    if(own) {
+    } else if(own) {
       uint8_t* ptr = data;
       data = new uint8_t[size];
       memcpy(data, ptr, size);
