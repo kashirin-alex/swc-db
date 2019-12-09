@@ -124,7 +124,7 @@ class Mutable final {
     size_bytes += cell.encoded_length();
   }
 
-  void push_back(Cell* cell) {
+  void push_back_nocpy(Cell* cell) {
     ensure(1);
     *(m_cells + size) = cell;
     //new(*(m_cells + size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
@@ -190,8 +190,6 @@ class Mutable final {
           
       } else if(cell->removal()) {
         if(cell->is_removing(revision_new)) {
-          //std::cout << "               " << cell->to_string() << "\n";  
-          //std::cout << "  is_removing: " << e_cell.to_string() << "\n";
           return;
         }
         continue;
@@ -334,14 +332,11 @@ class Mutable final {
       if(cell->has_expired(m_ttl) || cell->on_fraction 
         || (cell->flag != INSERT && !specs.flags.return_deletes)) {
         skips++;
-        //std::cout << " " << cell->to_string() << "\n";
         continue;
       }
 
       if((!selector && specs.is_matching(*cell, m_type))
           || (selector && selector(*cell))) {
-        //std::cout << " " << cell->to_string() << "\n";
-        //std::cout << " " << specs.to_string() << "\n";
         if(cell_offset != 0){
           cell_offset--;
           skips++;  
@@ -353,8 +348,6 @@ class Mutable final {
       } else 
         skips++;
     }
-    //std::cout << "scan: " << to_string() 
-    //          << " skips="<< skips << " " << cell->to_string() << "\n";
   }
 
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
@@ -402,19 +395,31 @@ class Mutable final {
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval& intval, uint32_t threshold) {
     Cell* cell;
+    Cell* first = nullptr;
+    Cell* last = nullptr;
 
     cells.ensure(size_bytes < threshold? size_bytes: threshold);
     uint32_t offset = 0;
-    for(; offset < size && (!threshold || threshold > cells.fill()); 
-        offset++) {
+    for(;offset < size && (!threshold || threshold > cells.fill()); offset++) {
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
         continue;
-        
+      
       cell->write(cells);
       cell_count++;
-      intval.expand(*cell);
+
+      if(!first)
+        first = cell;
+      else 
+        last = cell;
+      intval.expand(cell->timestamp);
+      //intval.expand(*cell);
+    }
+    if(first) {
+      intval.expand(*first);
+      if(last)
+        intval.expand(*last);
     }
     
     if(offset > 0) {
@@ -440,9 +445,6 @@ class Mutable final {
     for(; offset < size; offset++) {
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl))
-        continue;
-
       cond = cell->key.compare(key_start, 0);
       if(cond == Condition::GT) 
         continue;
@@ -451,6 +453,9 @@ class Mutable final {
         break;
 
       count++;
+      if(cell->has_expired(m_ttl))
+        continue;
+
       if(offset_applied == -1)
         offset_applied = offset;
 
@@ -472,23 +477,19 @@ class Mutable final {
   
   void move_from_key_offset(uint32_t from, Mutable& cells) {
     Cell* cell;
-    size_t count = 0;
-    DB::Cell::Key key_start;
-    bool rest;
+    uint32_t rest = 0;
+    Cell* from_cell = *(m_cells + from);
 
-
-    key_start.copy((*(m_cells + from))->key);
-
-    for(uint32_t offset = _narrow(key_start, 0);
+    for(uint32_t offset = _narrow(from_cell->key, 0);
         offset < size; offset++) {
       cell = *(m_cells + offset);
       
       if(!rest) {
-        if(cell->key.compare(key_start, 0) == Condition::GT)
+        if(cell->key.compare(from_cell->key, 0) == Condition::GT)
           continue;
-        rest = true;
+        rest = offset;
       }
-      count++;
+
       *(m_cells + offset) = 0;
       
       if(cell->has_expired(m_ttl)){
@@ -496,9 +497,9 @@ class Mutable final {
         continue;
       }
       
-      cells.push_back(cell);
+      cells.push_back_nocpy(cell);
     }
-    size -= count;
+    size = rest;
   }
   
   void add(const DynamicBuffer& cells) {
@@ -536,7 +537,7 @@ class Mutable final {
     s.append(" ttl=");
     s.append(std::to_string(m_ttl));
     if(with_cells) {
-      s.append(" cells=[");
+      s.append(" cells=[\n");
       for(uint32_t offset=0; offset < size; offset++) {
         s.append((*(m_cells + offset))->to_string(m_type));
         s.append("\n");
@@ -561,7 +562,7 @@ class Mutable final {
       //  m_cells = (Cell**)cells_new;
       
       Cell** cells_old = m_cells;
-      m_cells = new Cell*[m_cap += size];
+      m_cells = new Cell*[m_cap += size];     
 
       memcpy(m_cells, cells_old, size*_cell_sz);
       //for(uint32_t n=size;n--;) 
@@ -635,13 +636,6 @@ class Mutable final {
       }
       offset -= sz;
     }
-  
-    //if(narrows > narrow_sz*2)
-    //  std::cout << " size=" << size << " offset=" << offset << " narrows=" << narrows << "\n";
-    //if(size < offset) {
-    //  std::cout << " size=" << size << " offset=" << offset << " narrows=" << narrows << "\n";
-    //  exit(1);
-    //}
     return offset;
   }
 
