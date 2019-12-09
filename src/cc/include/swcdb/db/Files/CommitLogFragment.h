@@ -49,7 +49,7 @@ class Fragment final {
       case State::WRITING:
         return std::string("WRITING");
       default:
-        return std::string("UKNONWN");
+        return std::string("UKNOWN");
     }
   }
 
@@ -61,23 +61,23 @@ class Fragment final {
   const int64_t         ts;
   DB::Cells::Interval   interval;
 
-  Fragment(const std::string& filepath, State state=State::NONE)
-          : ts(Time::now_ns()),
-            m_smartfd(
-              FS::SmartFd::make_ptr(
-                filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
-            ), 
-            m_state(state), 
-            m_size_enc(0), m_size(0), m_cells_count(0), m_cells_offset(0), 
-            m_data_checksum(0), m_processing(0), m_cells_remain(0) {
+  explicit Fragment(const std::string& filepath, State state=State::NONE)
+                    : ts(Time::now_ns()),
+                      m_smartfd(
+                      FS::SmartFd::make_ptr(
+                        filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
+                      ), 
+                      m_state(state), 
+                      m_size_enc(0), m_size(0), 
+                      m_cells_count(0), m_cells_offset(0), 
+                      m_data_checksum(0), m_processing(0), m_cells_remain(0) {
   }
   
   Ptr ptr() {
     return this;
   }
 
-  ~Fragment() {
-  }
+  ~Fragment() { }
 
   void write(int& err, int32_t replication, Types::Encoding encoder, 
              DynamicBuffer& cells, uint32_t cell_count) {
@@ -256,14 +256,7 @@ class Fragment final {
     return m_processing;
   }
 
-  void wait_processing() {
-    while(processing() > 0)  {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
   void remove(int &err) {
-    wait_processing();
     std::lock_guard<std::mutex> lock(m_mutex);
     Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
   }

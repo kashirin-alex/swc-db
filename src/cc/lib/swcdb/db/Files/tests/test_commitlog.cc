@@ -150,6 +150,7 @@ int main(int argc, char** argv) {
       && num_cells*schema->cell_versions != commitlog.cells_count()) {
     exit(1);
   }
+  commitlog.unload();
   std::cout << "\n FINISH CREATE LOG\n\n ";
   
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
@@ -198,11 +199,13 @@ int main(int argc, char** argv) {
   count_all_cells(schema, num_cells, blocks);
 
   std::cout << " scanned blocks: \n" << blocks.to_string() << "\n";
-  std::cerr << " scanned blocks, OK\n";
+  std::cout << " scanned blocks, OK\n";
 
 
   
-  std::cerr << "blocks.add_logged: \n";
+  std::cout << "blocks.add_logged: \n";
+
+  std::cout << " adding to blocks: \n" << blocks.to_string() << "\n";
 
   int added_num = 1000000;
   DB::Cells::Cell cell;
@@ -234,9 +237,10 @@ int main(int argc, char** argv) {
 
         blocks.add_logged(cell);
     }
+    std::cout << " add_logged ver=" << v 
+              << " : \n" << blocks.to_string() << "\n";
   }
 
-  std::cout << " scanned blocks (add_logged): \n" << blocks.to_string() << "\n";
 
   count_all_cells(schema, num_cells+added_num, blocks);
 

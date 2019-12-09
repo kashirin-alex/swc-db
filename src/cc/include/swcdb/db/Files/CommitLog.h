@@ -24,7 +24,8 @@ class Fragments final {
 
   DB::RangeBase::Ptr range;
 
-  Fragments() : m_commiting(false), m_deleting(false),
+  explicit Fragments() 
+              : m_commiting(false), m_deleting(false),
                 cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
                   "swc.rgr.Range.block.size")), 
                 cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
@@ -46,9 +47,7 @@ class Fragments final {
     );
   }
 
-  ~Fragments() {
-    _free();
-  }
+  ~Fragments() { }
 
   Ptr ptr() {
     return this;
@@ -57,7 +56,7 @@ class Fragments final {
   void add(const DB::Cells::Cell& cell) {
     size_t size_bytes;
     {
-      std::unique_lock lock(m_mutex_cells);
+      std::scoped_lock lock(m_mutex_cells);
       m_cells.add(cell);
       size_bytes = m_cells.size_bytes;
     }
@@ -101,10 +100,10 @@ class Fragments final {
         get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
       
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         for(;;) {
           {
-            std::unique_lock lock2(m_mutex_cells);
+            std::scoped_lock lock2(m_mutex_cells);
             m_cells.write_and_free(
               cells, cell_count, frag->interval, blk_size);
           }
@@ -144,7 +143,7 @@ class Fragments final {
     }
     
     {
-      std::unique_lock lock_wait(m_mutex);
+      std::scoped_lock lock_wait(m_mutex);
       m_commiting = false;
     }
     m_cv.notify_all();
@@ -166,7 +165,7 @@ class Fragments final {
   }
 
   void load(int &err) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     // fragments header OR log.data >> file.frag(intervals)
 
     err = Error::OK;
@@ -210,7 +209,7 @@ class Fragments final {
     {
       std::shared_lock lock(m_mutex);
       ts = Time::now_ns();
-      for(auto& frag : m_fragments) {  
+      for(auto frag : m_fragments) {  
         if(after_ts < frag->ts && cells_block->is_consist(frag->interval))
           fragments.push_back(frag);
       }
@@ -224,7 +223,7 @@ class Fragments final {
     //}
 
     auto waiter = new AwaitingLoad(ts, fragments.size(), cells_block, ptr());
-    for(auto& frag : fragments)
+    for(auto frag : fragments)
       frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
   }
 
@@ -239,7 +238,7 @@ class Fragments final {
     size_t released = 0;
     std::shared_lock lock(m_mutex);
 
-    for(auto& frag : m_fragments) {
+    for(auto frag : m_fragments) {
       released += frag->release();
       if(bytes && released >= bytes)
         break;
@@ -248,7 +247,7 @@ class Fragments final {
   }
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     for(auto old = fragments_old.begin(); old < fragments_old.end(); old++){
       for(auto it = m_fragments.begin(); it < m_fragments.end(); it++) {
@@ -269,14 +268,26 @@ class Fragments final {
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
-
-    wait_processing();
-    
-    {
-      std::shared_lock lock(m_mutex);
-      for(auto frag : m_fragments)
-        frag->remove(err);
+    std::scoped_lock lock(m_mutex);
+    for(auto frag : m_fragments) {
+      frag->remove(err);
+      delete frag;
     }
+    m_fragments.clear();
+    range = nullptr;
+  }
+
+  void unload() {
+    {
+      std::unique_lock lock_wait(m_mutex);
+      if(m_commiting)
+        m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+    }
+    std::scoped_lock lock(m_mutex);
+    for(auto frag : m_fragments)
+      delete frag;
+    m_fragments.clear();
+    range = nullptr;
   }
 
   const bool deleting() {
@@ -308,26 +319,6 @@ class Fragments final {
   const bool processing() {
     std::shared_lock lock(m_mutex);
     return _processing();
-  }
-
-  void wait_processing() {
-    while(processing() > 0)  {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  void free() {
-    wait_processing();
-    
-    {
-      std::unique_lock lock(m_mutex);
-      _free();
-    }
-    {
-      std::unique_lock lock(m_mutex_cells);
-      m_cells.free();
-    }
-    range = nullptr;
   }
 
   const std::string to_string() {
@@ -369,22 +360,11 @@ class Fragments final {
   const gEnumExtPtr           cfg_blk_enc;
 
   private:
-  
-  
-  void _free() {  
-    for(auto frag : m_fragments) {
-      frag->wait_processing();
-      delete frag;
-      std::cout << " Fragments::_free , delete frag;\n";
-    }
-    m_fragments.clear();
-    std::cout << " Fragments::_free , exit\n";
-  }
 
   const bool _processing() {
     if(m_commiting)
       return true;
-    for(auto& frag : m_fragments)
+    for(auto frag : m_fragments)
       if(frag->processing())
         return true;
     return false;
@@ -396,7 +376,7 @@ class Fragments final {
       std::shared_lock lock(m_mutex_cells);
       size += m_cells.size_bytes;
     }
-    for(auto& frag : m_fragments)
+    for(auto frag : m_fragments)
       size += frag->size_bytes(only_loaded);
     return size;
   }
@@ -413,7 +393,7 @@ class Fragments final {
 
     void processed(int err, Fragment::Ptr frag) {
       { 
-        std::unique_lock<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock(m_mutex);
         m_count--;
         std::cout << " Fragments::AwaitingLoad count=" << m_count << "\n";
         m_pending.push(frag);
@@ -422,14 +402,14 @@ class Fragments final {
       }
       for(;;) {
         {
-          std::unique_lock<std::mutex> lock(m_mutex);
+          std::scoped_lock<std::mutex> lock(m_mutex);
           frag = m_pending.front();
         }
 
         frag->load_cells(cells_block);
 
         {
-          std::unique_lock<std::mutex> lock(m_mutex);
+          std::scoped_lock<std::mutex> lock(m_mutex);
           m_pending.pop();
           if(m_pending.empty()) {
             if(m_count)

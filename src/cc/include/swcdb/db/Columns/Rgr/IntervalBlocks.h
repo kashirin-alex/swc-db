@@ -16,6 +16,7 @@ class IntervalBlocks final {
   public:
   typedef IntervalBlocks* Ptr;
 
+  // scan >> blk match >> load-cs + load+logs 
 
   DB::RangeBase::Ptr           range;
   Files::CommitLog::Fragments  commitlog;
@@ -59,8 +60,7 @@ class IntervalBlocks final {
       return this;
     }
 
-    virtual ~Block() {
-    }
+    virtual ~Block() { }
 
     const bool removed() {
       std::shared_lock lock(m_mutex);
@@ -85,7 +85,7 @@ class IntervalBlocks final {
             != Condition::GT : true;
       }
 
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_cells.add(cell);
 
       if(cell.on_fraction)
@@ -116,7 +116,7 @@ class IntervalBlocks final {
     bool scan(DB::Cells::ReqScan::Ptr req) {
       bool loaded;
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
 
         if(!(loaded = m_state == State::LOADED)) {
           m_queue.push(new Callback(req, ptr()));
@@ -165,7 +165,7 @@ class IntervalBlocks final {
         m_interval.key_begin.free();
       if(any_end)
         blk->m_interval.key_end.free();
-      
+    
       if(!loaded)
         blk->m_cells.free();
       
@@ -184,7 +184,7 @@ class IntervalBlocks final {
 
     /*
     void expand_next_and_release(DB::Cell::Key& key_begin) {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
 
       m_state = State::REMOVED;
       key_begin.copy(m_interval.key_begin);
@@ -193,7 +193,7 @@ class IntervalBlocks final {
     }
 
     void merge_and_release(Ptr blk) {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
 
       m_state = State::NONE;
       blk->expand_next_and_release(m_interval.key_begin);
@@ -203,7 +203,7 @@ class IntervalBlocks final {
 
     const size_t release() {
       size_t released = 0;
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
 
       if(m_processing || m_state != State::LOADED)
         return released;
@@ -215,12 +215,12 @@ class IntervalBlocks final {
     }
 
     void processing_increment() {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing++;
     }
 
     void processing_decrement() {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing--;
     }
 
@@ -280,13 +280,6 @@ class IntervalBlocks final {
         );  
         
       }
-      
-      //std::cout << to_string() << "\n";
-
-      //if(req->cells->size)
-      //  req->cells->get(
-      //    -1, req->spec->offset_key, req->spec->offset_rev);
-      
       processing_decrement();
     }
     
@@ -300,7 +293,7 @@ class IntervalBlocks final {
 
     void loaded_logs(int err) override {
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_state = State::LOADED;
       }
       run_queue(err);
@@ -311,7 +304,7 @@ class IntervalBlocks final {
     
       for(;;) {
         {
-          std::unique_lock lock(m_mutex);
+          std::scoped_lock lock(m_mutex);
           if(m_queue.empty())
             return;
           cb = m_queue.front();
@@ -321,7 +314,7 @@ class IntervalBlocks final {
         delete cb;
 
         {
-          std::unique_lock lock(m_mutex);
+          std::scoped_lock lock(m_mutex);
           m_queue.pop();
         }
       }
@@ -363,10 +356,8 @@ class IntervalBlocks final {
   }; // class Block
 
 
-  // scan >> blk match >> load-cs + load+logs 
 
-  IntervalBlocks(): m_block(nullptr), m_processing(0) {
-  }
+  explicit IntervalBlocks(): m_block(nullptr), m_processing(0) { }
   
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
@@ -378,17 +369,15 @@ class IntervalBlocks final {
     return this;
   }
 
-  ~IntervalBlocks(){ 
-    _free();
-  }
+  ~IntervalBlocks() {  }
   
   void processing_increment() {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_processing++;
   }
 
   void processing_decrement() {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_processing--;
   }
 
@@ -399,21 +388,23 @@ class IntervalBlocks final {
 
   void unload() {
     wait_processing();
-
     commitlog.commit_new_fragment(true);  
+    std::scoped_lock lock(m_mutex);
     
-    std::unique_lock lock(m_mutex);
-    _free();
+    commitlog.unload();
+    cellstores.unload();  
+    _clear();
+    range = nullptr;
   }
   
   void remove(int& err) {
     wait_processing();
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     commitlog.remove(err);
-    cellstores.remove(err);  
-
-    _free();
+    cellstores.remove(err);   
+    _clear();
+    range = nullptr;
   }
   
   void add_logged(const DB::Cells::Cell& cell) {
@@ -433,7 +424,7 @@ class IntervalBlocks final {
       }
     }
     if(to_split) {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       while(blk->size() >= 200000)
         blk = blk->split(100000, true);
     }
@@ -444,13 +435,11 @@ class IntervalBlocks final {
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
     int err = Error::OK;
     {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(!m_block) 
         init_blocks(err);
     }
     if(err) {
-      if(blk_ptr)
-        processing_decrement();
       req->response(err);
       return;
     }
@@ -555,7 +544,7 @@ class IntervalBlocks final {
 
   /*
   void release_and_merge(Block::Ptr ptr) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     bool state = false;
     for(size_t idx = 0; idx<m_blocks.size(); idx++) {
       if(ptr == m_blocks[idx]) {
@@ -597,7 +586,7 @@ class IntervalBlocks final {
       }
     }
     if(!bytes) {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(!m_processing)
         _clear();
     }
@@ -613,19 +602,17 @@ class IntervalBlocks final {
   }
 
   void wait_processing() {
-    while(processing()) {
+    while(processing() || commitlog.processing() || cellstores.processing()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      //std::cout << " wait_processing cid="<< range->cid 
+      //          << " processing()=" << processing() 
+      //          << " commitlog.processing()=" << commitlog.processing()
+      //          << " cellstores.processing()=" << cellstores.processing() << "\n";
     }
   }
 
-  void free() {
-    wait_processing();
-    std::unique_lock lock(m_mutex);
-    _free();
-  }
-
   const std::string to_string(){
-    std::shared_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     std::string s("IntervalBlocks(count=");
     s.append(std::to_string(_size()));
@@ -692,13 +679,6 @@ class IntervalBlocks final {
     m_block = nullptr;
   }
 
-  void _free() {
-    cellstores.free();
-    commitlog.free();
-    _clear();
-    range = nullptr;
-  }
-
   void init_blocks(int& err) {
     std::vector<Files::CellStore::Block::Read::Ptr> blocks;
     cellstores.get_blocks(err, blocks);
@@ -710,7 +690,7 @@ class IntervalBlocks final {
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     Block::Ptr blk = nullptr;
     Block::Ptr new_blk;
-    for(auto& cs_blk : blocks) {
+    for(auto cs_blk : blocks) {
       new_blk = Block::make(cs_blk->interval, schema, ptr());
       if(blk == nullptr)
         m_block = new_blk;

@@ -17,23 +17,23 @@ class Readers final {
 
   DB::RangeBase::Ptr range;
 
-  explicit Readers() {}
+  explicit Readers() { }
 
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
   }
 
-  ~Readers() {
-    _free();
-  }
+  ~Readers() { }
+
 
   void add(Read::Ptr cs) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
+    //std::cout << "add CS-PTR=" << (size_t)cs << "\n";
     m_cellstores.push_back(cs);
   }
 
   void load(int& err) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     if(m_cellstores.empty()) {
       err = Error::SERIALIZATION_INPUT_OVERRUN;
       return;
@@ -84,35 +84,36 @@ class Readers final {
     std::shared_lock lock(m_mutex);
     return _processing();
   }
-
-  void wait_processing() {
-    while(processing() > 0)  {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  void clear() {
-    wait_processing();
-    std::unique_lock lock(m_mutex);
-    _close();
-    _free();
-  }
   
   void remove(int &err) {
-    wait_processing();
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     _close();
     for(auto cs : m_cellstores)
       cs->remove(err);
     _free();
+    range = nullptr;
+  }
+
+  void unload() {
+    std::scoped_lock lock(m_mutex);
+    _close();
+    _free();
+    range = nullptr;
+  }
+
+  void clear() {
+    std::scoped_lock lock(m_mutex);
+    _close();
+    _free();
   }
   
   void load_cells(DB::Cells::Block::Ptr cells_block) {
-
+    
     std::vector<Files::CellStore::Read::Ptr> cellstores;
     {
       std::shared_lock lock(m_mutex);
       for(auto cs : m_cellstores) {
+        //std::cout << "load_cells CS-PTR=" << (size_t)cs << "\n";
         if(cells_block->is_consist(cs->interval))
           cellstores.push_back(cs);
       }
@@ -125,7 +126,7 @@ class Readers final {
     
     auto waiter = new AwaitingLoad(cellstores.size(), cells_block);
     for(auto cs : cellstores)
-      cs->load_cells(cells_block, [waiter](int err){ waiter->processed(err); });   
+      cs->load_cells(cells_block, [waiter](int err){ waiter->processed(err); }); 
   }
   
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) {
@@ -170,41 +171,44 @@ class Readers final {
   }
 
   void decode(int &err, const uint8_t** ptr, size_t* remain) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
+
+    _close();
+    _free();
     uint32_t id;
     uint32_t len = Serialization::decode_vi32(ptr, remain);
     for(size_t i=0;i<len;i++) {
       id = Serialization::decode_vi32(ptr, remain);
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval(ptr, remain)));
+        
+      //std::cout << "decode CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
   }
   
   void load_from_path(int &err) {
-    wait_processing();
-
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     FS::IdEntries_t entries;
     Env::FsInterface::interface()->get_structured_ids(
       err, range->get_path(DB::RangeBase::cellstores_dir), entries);
-  
+    
+    _close();
     _free();
     //sorted
     for(auto id : entries) {
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval())
       );
+      //std::cout << "load_from_path CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
-
   }
 
   void replace(int &err, Files::CellStore::Writers& w_cellstores) {
-    wait_processing();    
-
     auto fs = Env::FsInterface::interface();
-    std::unique_lock lock(m_mutex);
-    
+
+    std::scoped_lock lock(m_mutex);
+
     _close();
 
     fs->rename(
@@ -212,7 +216,7 @@ class Readers final {
       range->get_path(DB::RangeBase::cellstores_dir), 
       range->get_path(DB::RangeBase::cellstores_bak_dir)
     );
-    if(err)
+    if(err) 
       return;
 
     fs->rename(
@@ -237,26 +241,21 @@ class Readers final {
       m_cellstores.push_back(
         Files::CellStore::Read::make(err, cs->id, range, cs->interval)
       );
+      //std::cout << "replace CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
     err = Error::OK;
-  }
-  
-  void free() {
-    wait_processing();
-    std::unique_lock lock(m_mutex);
-    _close();
-    _free();
-    range = nullptr;
+
   }
 
   const std::string to_string() {
-    std::shared_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     std::string s("CellStores(count=");
     s.append(std::to_string(m_cellstores.size()));
 
     s.append(" cellstores=[");
     for(auto cs : m_cellstores) {
+      //std::cout << "to_string CS-PTR=" << (size_t)cs << "\n";
       s.append(cs->to_string());
       s.append(", ");
     }
@@ -278,8 +277,10 @@ class Readers final {
   
 
   void _free() {
-    for(auto cs : m_cellstores)
+    for(auto cs : m_cellstores) {
+      //std::cout << "_free CS-PTR=" << (size_t)cs << "\n";
       delete cs;
+    }
     m_cellstores.clear();
   }
 
