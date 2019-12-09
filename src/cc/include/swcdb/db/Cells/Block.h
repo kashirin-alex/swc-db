@@ -31,9 +31,7 @@ class Block {
     return this;
   }
 
-  virtual ~Block() {
-    //std::cout << " ~Block\n";
-  }
+  virtual ~Block() { }
 
   const bool is_next(const Specs::Interval::Ptr spec) {
     std::shared_lock lock(m_mutex);
@@ -66,7 +64,7 @@ class Block {
   }
   
   void load_cells(const Mutable& cells) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     auto ts = Time::now_ns();
     size_t added = m_cells.size;
 
@@ -81,7 +79,7 @@ class Block {
               << " skipped=" << cells.size-added
               << " avg=" << (added>0 ? took / added : 0)
               << " took=" << took
-              << " " << m_cells.to_string() << "\n";
+              << std::flush << " " << m_cells.to_string() << "\n";
     
   }
 
@@ -93,7 +91,7 @@ class Block {
     uint32_t sz = 0;
     
     auto ts = Time::now_ns();
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     bool synced = !m_cells.size;
     while(remain) {
@@ -141,18 +139,18 @@ class Block {
               << " skipped=" << avail-added
               << " avg=" << (added>0 ? took / added : 0)
               << " took=" << took
-              << " " << m_cells.to_string() << "\n";
+              << std::flush << " " << m_cells.to_string() << "\n";
              
     return added;
   }
 
   void free_key_begin() {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_interval.key_begin.free();
   }
 
   void free_key_end() {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_interval.key_end.free();
   }
 

@@ -33,21 +33,18 @@ elseif (USE_HOARD)
   endif ()
 
 
-else()  # TCMALLOC default if found
-  set(Tcmalloc_NAMES tcmalloc)
-  set(Tcmalloc_static_NAMES libtcmalloc.a)
+else()  # TCMALLOC_MINIMAL default if found
+  
   set(Tcmalloc_header_NAMES gperftools/tcmalloc.h )
-
-  if (NOT USE_TCMALLOC OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+  if (USE_TCMALLOC)
+    set(Tcmalloc_NAMES tcmalloc unwind)
+    set(Tcmalloc_static_NAMES libtcmalloc.a libunwind.a)
+  else () 
     set(Tcmalloc_NAMES tcmalloc_minimal)
     set(Tcmalloc_static_NAMES libtcmalloc_minimal.a)
-  elseif (CMAKE_SYSTEM_PROCESSOR_x86 AND ${CMAKE_SYSTEM_PROCESSOR_x86} EQUAL 64)
-    set(Tcmalloc_NAMES ${Tcmalloc_NAMES} unwind)
-    set(Tcmalloc_static_NAMES ${Tcmalloc_static_NAMES} libunwind.a)
-    set(Tcmalloc_header_NAMES ${Tcmalloc_header_NAMES} unwind.h)
   endif ()
 
-  SET_DEPS(NAME "TCMALLOC" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC ${Tcmalloc_static_NAMES} SHARED ${Tcmalloc_NAMES} INCLUDE ${Tcmalloc_header_NAMES})
+  SET_DEPS(NAME "TCMALLOC" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC ${Tcmalloc_static_NAMES} SHARED ${Tcmalloc_NAMES} INCLUDE ${Tcmalloc_header_NAMES})  
   if (TCMALLOC_FOUND)
     if (TCMALLOC_LIBRARIES_SHARED MATCHES "tcmalloc_minimal")
       SET (MALLOC_FLAGS ${MALLOC_FLAGS} -DTCMALLOC_MINIMAL)

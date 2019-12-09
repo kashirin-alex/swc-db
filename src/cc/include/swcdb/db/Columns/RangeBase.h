@@ -112,7 +112,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   void set(const Cells::Interval& interval){
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_interval.copy(interval);
   }
 

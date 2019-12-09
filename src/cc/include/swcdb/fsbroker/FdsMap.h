@@ -24,7 +24,7 @@ class Fds final {
   ~Fds(){}
 
   int32_t add(FS::SmartFd::Ptr fd) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     do{
       if(++m_next_fd < 0) m_next_fd=1;
@@ -33,7 +33,7 @@ class Fds final {
   }
 
   FS::SmartFd::Ptr remove(int32_t fd) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     auto it = m_fds.find(fd);
     if(it == m_fds.end())
@@ -53,7 +53,7 @@ class Fds final {
   }
 
   FS::SmartFd::Ptr pop_next() {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     auto it = m_fds.begin();
     if(it == m_fds.end())

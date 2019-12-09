@@ -53,22 +53,22 @@ class Read final {
   const size_t                          offset;
   const DB::Cells::Interval             interval;
 
-  Read(const size_t offset, const DB::Cells::Interval& interval)
-      : offset(offset), interval(interval), 
-        m_state(State::NONE), m_processing(0), m_loaded_header(false),
-        m_size(0), m_sz_enc(0) {
+  explicit Read(const size_t offset, const DB::Cells::Interval& interval)
+                : offset(offset), interval(interval), 
+                  m_state(State::NONE), m_processing(0), 
+                  m_loaded_header(false),
+                  m_size(0), m_sz_enc(0) {
   }
   
   Ptr ptr() {
     return this;
   }
 
-  ~Read() {
-  }
+  ~Read() { }
   
   bool load(const std::function<void(int)>& cb) {
     {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing++;
       if(m_state == State::NONE) {
         m_state = State::LOADING;
@@ -105,7 +105,7 @@ class Read final {
     }
 
     {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing--; 
     }
 
@@ -116,7 +116,7 @@ class Read final {
   
   const size_t release() {    
     size_t released = 0;
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     if(m_processing || m_state != State::LOADED)
       return released; 
@@ -241,13 +241,13 @@ class Read final {
       break;
     }
 
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_state = !err ? State::LOADED : State::NONE;
   }
 
   void run_queued(int err) {
     {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(m_q_runs || m_queue.empty()) 
         return;
       m_q_runs = true;
@@ -263,14 +263,14 @@ class Read final {
     std::function<void(int)> call;
     for(;;) {
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         call = m_queue.front();
       }
 
       call(err);
       
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_queue.pop();
         if(m_queue.empty()) {
           m_q_runs = false;
@@ -305,7 +305,7 @@ class Write final {
         : offset(offset), interval(interval), cell_count(cell_count) { 
   }
 
-  ~Write(){}
+  ~Write() { }
 
   void write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
              DynamicBuffer& output) {

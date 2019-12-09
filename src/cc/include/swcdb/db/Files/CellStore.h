@@ -49,7 +49,6 @@ class Read final {
         "CellStore load_blocks_index err=%d(%s) %s (id=%d %s %s", 
         err, Error::get_text(err), id, range->to_string().c_str(), 
         interval.to_string().c_str());
-
     return new Read(
       id, 
       interval_by_blks.was_set ? interval_by_blks : interval, 
@@ -205,14 +204,14 @@ class Read final {
   const DB::Cells::Interval           interval;
   const std::vector<Block::Read::Ptr> blocks;
   
-  Read(const uint32_t id,
-       const DB::Cells::Interval& interval, 
-       const std::vector<Block::Read::Ptr>& blocks,
-       FS::SmartFd::Ptr smartfd) 
-      : id(id), 
-        interval(interval), 
-        blocks(blocks), 
-        m_smartfd(smartfd) {   
+  explicit Read(const uint32_t id,
+                const DB::Cells::Interval& interval, 
+                const std::vector<Block::Read::Ptr>& blocks,
+                FS::SmartFd::Ptr smartfd) 
+                : id(id), 
+                  interval(interval), 
+                  blocks(blocks), 
+                  m_smartfd(smartfd) {       
   }
 
   Ptr ptr() {
@@ -226,7 +225,7 @@ class Read final {
 
   void load_cells(DB::Cells::Block::Ptr cells_block, 
                   const std::function<void(int)>& cb) {
-                    
+
     std::vector<Block::Read::Ptr>  applicable;
     for(auto blk : blocks) {  
       if(cells_block->is_consist(blk->interval))
@@ -242,7 +241,7 @@ class Read final {
     for(auto blk : applicable) {
       auto cb = [blk, waiter](int err){ waiter->processed(err, blk); };
       if(blk->load(cb)) {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
       }
     }
@@ -252,7 +251,7 @@ class Read final {
 
   void run_queued() {
     {
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(m_q_runs || m_queue.empty())
         return;
       m_q_runs = true;
@@ -304,18 +303,19 @@ class Read final {
   }
 
   const std::string to_string() {
-    std::shared_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     std::string s("Read(v=");
     s.append(std::to_string(VERSION));
     s.append(" id=");
     s.append(std::to_string(id));
     s.append(" ");
+    
     s.append(interval.to_string());
 
-    if(m_smartfd != nullptr){
-      s.append(" ");
-      s.append(m_smartfd->to_string());
+    if(m_smartfd != nullptr) {
+      s.append(" file=");
+      s.append(m_smartfd->filepath());
     }
 
     s.append(" blocks=");
@@ -357,14 +357,14 @@ class Read final {
     std::function<void()> call;
     for(;;) {
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         call = m_queue.front();
       }
 
       call();
       
       {
-        std::unique_lock lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_queue.pop();
         if(m_queue.empty()) {
           m_q_runs = false;
@@ -454,7 +454,7 @@ class Write : public std::enable_shared_from_this<Write> {
           encoder(encoder), size(0) { //, completion(0)
   }
 
-  virtual ~Write(){}
+  virtual ~Write() { }
 
   void create(int& err, 
               int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=-1) {
@@ -479,14 +479,12 @@ class Write : public std::enable_shared_from_this<Write> {
     StaticBuffer buff_write(buff_raw);
     size += buff_write.size;
 
-    //completion++; async(append)
     Env::FsInterface::fs()->append(
       err,
       smartfd, 
       buff_write, 
       FS::Flags::FLUSH
     );
-    //completion--;
   }
 
   uint32_t write_blocks_index(int& err) {
@@ -639,7 +637,7 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      auto cs = Read::make(err, 1, range, interval);
+      auto cs = Read::make(err, 1, range, writer.interval);
       if(!err) 
         return cs;
     }
