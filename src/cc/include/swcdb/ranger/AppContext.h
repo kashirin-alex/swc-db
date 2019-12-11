@@ -149,7 +149,7 @@ class AppContext : public SWC::AppContext {
           return;
         }
 
-        if(Env::RgrData::get()->id == 0) {
+        if(!Env::RgrData::get()->id) {
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
           return;
         }
@@ -205,7 +205,7 @@ class AppContext : public SWC::AppContext {
   }
 
   void stop() override {
-    while(Env::RgrData::in_process() > 0)
+    while(Env::RgrData::in_process())
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     Env::RgrColumns::get()->unload_all(true); //re-check
     

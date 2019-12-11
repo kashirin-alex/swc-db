@@ -42,10 +42,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       m_check_timer.cancel();
       m_io->stop();
     }
-    if(!running) 
-      return;
     std::unique_lock<std::mutex> lock_wait(m_mutex);
-    m_cv.wait(lock_wait, [&running=running](){return running == 0;});  
+    if(running) 
+      m_cv.wait(lock_wait, [&running=running](){return !running;});  
   }
 
   void schedule() {
@@ -373,7 +372,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       }
       selected_cells->write_and_free(buff, cell_count, blk_intval, 0);
 
-      if(buff.fill() > 0) {
+      if(buff.fill()) {
         cs_writer->block(err, blk_intval, buff, cell_count);
         if(err)
           return;
@@ -424,7 +423,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         cs_writer->block(err, blk_intval, buff, cell_count);
         empty_cs = true;
       }
-      if(err || cs_writer->size == 0)
+      if(err || !cs_writer->size)
         return quit();
 
       add_cs(err);
@@ -435,7 +434,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       //for(auto cs : cellstores)
       //  std::cout << " " << cs->to_string() << "\n";
 
-      if(cellstores.size() > 0) 
+      if(cellstores.size()) 
         range->apply_new(err, cellstores, fragments_old);
       if(err)
         return quit();

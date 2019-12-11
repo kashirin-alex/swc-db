@@ -81,7 +81,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
         Params::MngrActiveRsp params;
         params.decode(&ptr, &remain);
         
-        if(params.available && params.endpoints.size() > 0){
+        if(params.available && params.endpoints.size()){
           group_host.endpoints = params.endpoints; 
           Env::Clients::get()->mngrs_groups->add(group_host);
           hdlr->run();

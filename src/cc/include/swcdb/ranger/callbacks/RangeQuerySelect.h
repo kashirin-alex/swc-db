@@ -47,7 +47,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     );
 
     CommBuf::Ptr cbp;
-    if(cells->size > 0) {
+    if(cells->size) {
       DynamicBuffer buffer;
       cells->write(buffer);
       StaticBuffer sndbuf(buffer);

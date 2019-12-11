@@ -120,11 +120,8 @@ bool operator<(const StaticBuffer& sb1, const StaticBuffer& sb2) {
 bool operator==(const StaticBuffer& sb1, const StaticBuffer& sb2) {
   if (sb1.size != sb2.size)
     return false;
-  size_t len = (sb1.size < sb2.size) ? sb1.size : sb2.size;
-  int equal = memcmp(sb1.base, sb2.base, len);
-  if (equal == 0 )
-    return true;
-  return false;
+  return memcmp(
+    sb1.base, sb2.base, (sb1.size < sb2.size) ? sb1.size : sb2.size) == 0;
 }
 
 bool operator!=(const StaticBuffer& sb1, const StaticBuffer& sb2) {

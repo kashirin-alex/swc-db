@@ -69,7 +69,7 @@ class Value {
     own   = owner;
     comp = comp_n;
     size = size_n;
-    if(size > 0) {
+    if(size) {
       if (own) {
         data = new uint8_t[size];
         memcpy(data, data_n, size);
@@ -80,16 +80,14 @@ class Value {
   }
 
   virtual ~Value(){
-    //std::cout << " ~Value\n";
-    if(own && data != 0) 
+    if(own && data) 
       delete [] data;
   }
 
   void free(){
-    if(own && data != 0) {
+    if(own && data) 
       delete [] data;
-      data = 0;
-    }
+    data = 0;
     size = 0;
   }
 
@@ -99,8 +97,7 @@ class Value {
 
   const bool equal(const Value &other) const {
     return size == other.size 
-      && ((data == 0 && other.data == 0) || 
-          memcmp(data, other.data, size) == 0);
+      && ((!data && !other.data) || memcmp(data, other.data, size) == 0);
   }
 
   const size_t encoded_length() const {

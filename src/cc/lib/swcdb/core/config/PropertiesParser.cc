@@ -497,7 +497,7 @@ void Parser::make_options() {
       add_opt(kv.first, config.get_default(kv.first), kv.second);
   }
   for (const auto &kv : config.options) {
-    if(raw_opts.count(kv.first) > 0 || kv.second.value->is_skippable())
+    if(raw_opts.count(kv.first) || kv.second.value->is_skippable())
       continue;
     // add default kv
     add_opt(kv.first, kv.second.value, {});

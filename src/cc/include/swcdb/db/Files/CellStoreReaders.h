@@ -28,7 +28,6 @@ class Readers final {
 
   void add(Read::Ptr cs) {
     std::scoped_lock lock(m_mutex);
-    //std::cout << "add CS-PTR=" << (size_t)cs << "\n";
     m_cellstores.push_back(cs);
   }
 
@@ -113,7 +112,6 @@ class Readers final {
     {
       std::shared_lock lock(m_mutex);
       for(auto cs : m_cellstores) {
-        //std::cout << "load_cells CS-PTR=" << (size_t)cs << "\n";
         if(cells_block->is_consist(cs->interval))
           cellstores.push_back(cs);
       }
@@ -169,7 +167,7 @@ class Readers final {
       cs->interval.encode(ptr);
     }
   }
-
+  
   void decode(int &err, const uint8_t** ptr, size_t* remain) {
     std::scoped_lock lock(m_mutex);
 
@@ -181,8 +179,6 @@ class Readers final {
       id = Serialization::decode_vi32(ptr, remain);
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval(ptr, remain)));
-        
-      //std::cout << "decode CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
   }
   
@@ -200,7 +196,6 @@ class Readers final {
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval())
       );
-      //std::cout << "load_from_path CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
   }
 
@@ -241,7 +236,6 @@ class Readers final {
       m_cellstores.push_back(
         Files::CellStore::Read::make(err, cs->id, range, cs->interval)
       );
-      //std::cout << "replace CS-PTR=" << (size_t)m_cellstores.back() << "\n";
     }
     err = Error::OK;
 
@@ -255,7 +249,6 @@ class Readers final {
 
     s.append(" cellstores=[");
     for(auto cs : m_cellstores) {
-      //std::cout << "to_string CS-PTR=" << (size_t)cs << "\n";
       s.append(cs->to_string());
       s.append(", ");
     }
@@ -278,7 +271,6 @@ class Readers final {
 
   void _free() {
     for(auto cs : m_cellstores) {
-      //std::cout << "_free CS-PTR=" << (size_t)cs << "\n";
       delete cs;
     }
     m_cellstores.clear();

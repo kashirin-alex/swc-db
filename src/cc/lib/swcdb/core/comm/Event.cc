@@ -23,7 +23,7 @@ Event::Event(Type type_, int error_)
 Event::~Event() { }
 
 ClockT::time_point Event::deadline() {
-  HT_ASSERT(arrival_time.time_since_epoch().count() > 0);
+  HT_ASSERT(arrival_time.time_since_epoch().count());
   return arrival_time + std::chrono::milliseconds(header.timeout_ms);
 }
 

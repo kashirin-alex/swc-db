@@ -141,7 +141,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
       m_columns.erase(it);
     }
 
-    if(unloaded > 0) 
+    if(unloaded) 
       r_promise.get_future().wait();
   }
 

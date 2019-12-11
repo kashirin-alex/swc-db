@@ -256,7 +256,7 @@ void Interface::rmdir_incl_opt_subs(int &err, const std::string &name,
       break;
     DirentList entrs;
     readdir(err, base_path, entrs);
-    if(err == Error::OK && entrs.size() == 0)
+    if(!err && !entrs.size())
       rmdir(err, base_path);
       if(err == Error::OK)
         continue;

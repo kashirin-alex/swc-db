@@ -337,7 +337,7 @@ class Range : public DB::RangeBase {
     auto rs_data = Env::RgrData::get();
     Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
-    if(rs_last->endpoints.size() > 0 
+    if(rs_last->endpoints.size() 
       && !has_endpoint(rs_data->endpoints, rs_last->endpoints)){
       SWC_LOGF(LOG_DEBUG, "RANGER-LAST=%s RANGER-NEW=%s", 
                 rs_last->to_string().c_str(), rs_data->to_string().c_str());

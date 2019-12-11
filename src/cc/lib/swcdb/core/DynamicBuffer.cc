@@ -15,7 +15,7 @@ DynamicBuffer::DynamicBuffer(size_t initial_size, bool own_buffer)
 }
 
 DynamicBuffer::~DynamicBuffer() {
-  if (own && base != 0)
+  if (own && base)
     delete [] base;
 }
 
@@ -42,8 +42,8 @@ void DynamicBuffer::reserve(size_t len, bool nocopy) {
 }
 
 uint8_t* DynamicBuffer::add_unchecked(const void *data, size_t len) {
-  if (data == 0)
-    return 0;
+  if (!data)
+    return ptr;
   uint8_t *rptr = ptr;
   memcpy(ptr, data, len);
   ptr += len;

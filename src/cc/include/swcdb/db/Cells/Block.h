@@ -67,8 +67,9 @@ class Block {
     std::scoped_lock lock(m_mutex);
     auto ts = Time::now_ns();
     size_t added = m_cells.size;
-
-    cells.scan(m_interval, m_cells);
+    
+    if(m_cells.size)
+      cells.scan(m_interval, m_cells);
     
     added = m_cells.size - added;
     auto took = Time::now_ns()-ts;
@@ -83,7 +84,7 @@ class Block {
     
   }
 
-  size_t load_cells(const uint8_t* rbuf, size_t remain, 
+  size_t load_cells(const uint8_t* buf, size_t remain, 
                     size_t avail, bool& was_splitted) {
     Cell cell;
     size_t count = 0;
@@ -94,9 +95,11 @@ class Block {
     std::scoped_lock lock(m_mutex);
 
     bool synced = !m_cells.size;
+    const uint8_t** rbuf = &buf;
+    size_t* remainp = &remain;
     while(remain) {
       try {
-        cell.read(&rbuf, &remain);
+        cell.read(rbuf, remainp);
         count++;
       } catch(std::exception) {
         SWC_LOGF(LOG_ERROR, 

@@ -64,8 +64,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
-    if(err == Error::OK) {
-      if(cells->size > 0) {
+    if(!err) {
+      if(cells->size) {
 
         DB::Cells::Cell cell;
         cells->get(0, cell);

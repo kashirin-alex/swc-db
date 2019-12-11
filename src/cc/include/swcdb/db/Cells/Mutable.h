@@ -55,15 +55,13 @@ class Mutable final {
   }
 
   void free() {
-    if(m_cells != 0) {
-      if(size > 0) {
-        do { 
-          size--;
-          delete *(m_cells+size);
-          //(*(m_cells+size))->~Cell();
-          //std::free(*(m_cells+size));
-        } while(size);
-      }
+    if(m_cells) {
+      if(size) do { 
+        size--;
+        delete *(m_cells+size);
+        //(*(m_cells+size))->~Cell();
+        //std::free(*(m_cells+size));
+      } while(size);
 
       delete [] m_cells;
       //std::free(m_cells);
@@ -337,7 +335,7 @@ class Mutable final {
 
       if((!selector && specs.is_matching(*cell, m_type))
           || (selector && selector(*cell))) {
-        if(cell_offset != 0){
+        if(cell_offset){
           cell_offset--;
           skips++;  
           continue;
@@ -363,7 +361,7 @@ class Mutable final {
         continue;
 
       if(specs.is_matching(*cell, m_type)) {
-        if(cell_offset != 0){
+        if(cell_offset){
           cell_offset--;
           skips++;  
           continue;
@@ -422,7 +420,7 @@ class Mutable final {
         intval.expand(*last);
     }
     
-    if(offset > 0) {
+    if(offset) {
       if(size == offset)
         free();
       else 
@@ -464,7 +462,7 @@ class Mutable final {
         break;
     }
     
-    if(count > 0) {
+    if(count) {
       if(size == count) {
         free();
         return false;
@@ -520,7 +518,8 @@ class Mutable final {
 
   void expand(DB::Cells::Interval& interval) {
     interval.expand(**(m_cells)); // !on_fraction
-    interval.expand(**(m_cells + size-1));
+    if(size)
+      interval.expand(**(m_cells + size-1));
   }
 
   const std::string to_string(bool with_cells=false) const {
@@ -552,7 +551,7 @@ class Mutable final {
 
 
   void _allocate() {
-    if(m_cells == 0) {      
+    if(!m_cells) {      
       m_cells = new Cell*[m_cap];
       //m_cells = (Cell**)std::malloc(m_cap*_cell_sz);
 
@@ -592,7 +591,7 @@ class Mutable final {
     do {
       _remove(*ptr);
     } while(++ptr < offset_end_ptr);
-
+   
     size -= by;
     if(offset < size)
       memmove(offset_ptr, offset_end_ptr, (size-offset)*_cell_sz);

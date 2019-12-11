@@ -36,7 +36,7 @@ class RgrGetReq : public Serializable {
     s.append(std::to_string(cid));
     s.append(" rid=");
     s.append(std::to_string(rid));
-    if(rid == 0) {
+    if(!rid) {
       s.append(" ");
       s.append(interval.to_string());
     }
@@ -53,13 +53,13 @@ class RgrGetReq : public Serializable {
   size_t encoded_length_internal() const {
     return Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
-      + (rid == 0 ? interval.encoded_length() : 0);
+      + (!rid ? interval.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    if(rid == 0) 
+    if(!rid) 
       interval.encode(bufp);
   }
     
@@ -67,7 +67,7 @@ class RgrGetReq : public Serializable {
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    if(rid == 0)
+    if(!rid)
       interval.decode(bufp, remainp);
   }
 

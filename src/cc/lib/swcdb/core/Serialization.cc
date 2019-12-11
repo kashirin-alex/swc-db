@@ -44,7 +44,7 @@ void encode_bool(uint8_t** bufp, bool bval) {
 }
 
 bool decode_bool(const uint8_t** bufp, size_t* remainp) {
-  return decode_i8(bufp, remainp) != 0;
+  return decode_i8(bufp, remainp);
 }
 
 void encode_i16(uint8_t** bufp , uint16_t val) {
@@ -138,7 +138,7 @@ uint8_t* decode_bytes(const uint8_t** bufp, size_t* remainp, uint32_t len) {
 }
 
 size_t encoded_length_str16(const char* str) {
-  return 2 + ((str == 0) ? 0 : strlen(str)) + 1;
+  return 2 + (!str ? 0 : strlen(str)) + 1;
 }
 
 size_t encoded_length_str16(const std::string& str) {
@@ -150,7 +150,7 @@ void encode_str16(uint8_t** bufp, const void* str, uint16_t len) {
 }
 
 void encode_str16(uint8_t** bufp, const char* str) {
-  uint16_t len = (str == 0) ? 0 : strlen(str);
+  uint16_t len = !str ? 0 : strlen(str);
   encode_str16(bufp, str, len);
 }
 

@@ -111,7 +111,7 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
   std::vector<struct dirent> listing;
   errno = 0;
   FileUtils::readdir(abspath, "", listing);
-  if (errno > 0) {
+  if (errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "FileUtils::readdir('%s') failed - %s", 
               abspath.c_str(), strerror(errno));
@@ -123,7 +123,7 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
   struct stat statbuf;
 
   for(auto& result : listing){
-    if (result.d_name[0] == '.' || result.d_name[0] == 0)
+    if (result.d_name[0] == '.' || !result.d_name[0])
       continue;
 
     entry.name.clear();
@@ -193,7 +193,7 @@ void FileSystemLocal::write(int &err, SmartFd::Ptr &smartfd,
     goto finish;
   }
 
-  if(buffer.size > 0) {
+  if(buffer.size) {
     append(err, smartfd, buffer, Flags::FLUSH);
     if(err != Error::OK)
       goto finish;

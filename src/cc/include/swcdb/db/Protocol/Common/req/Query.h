@@ -209,7 +209,7 @@ class Select : public std::enable_shared_from_this<Select> {
           return false;
         }
       }
-      if(rsp.rid == 0) {
+      if(!rsp.rid) {
         //std::cout << "RETRYING " << rsp.to_string() << "\n";
         (parent_req == nullptr ? base_req : parent_req)->request_again();
         return false;
@@ -289,7 +289,7 @@ class Select : public std::enable_shared_from_this<Select> {
         parent_req->request_again();
         return false;
       }
-      if(rsp.rid == 0 
+      if(!rsp.rid
       ||(type == Types::Range::DATA && rsp.cid != cells_cid)) {
         //std::cout << "RETRYING " << rsp.to_string() << "\n";
         parent_req->request_again();
@@ -356,10 +356,10 @@ class Select : public std::enable_shared_from_this<Select> {
           }
           auto col = ptr->selector->result->columns[ptr->cells_cid]; 
           
-          if(rsp.data.size > 0)
+          if(rsp.data.size)
             col->add(rsp.data.base, rsp.data.size);
 
-          if(ptr->interval->flags.limit == 0 
+          if(!ptr->interval->flags.limit
             || col->cells.size() < ptr->interval->flags.limit) {
             if(rsp.reached_limit) {
               auto qreq = std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req_ptr);

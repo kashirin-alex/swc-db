@@ -40,23 +40,24 @@ uint32_t fletcher32(const void *data8, size_t len8) {
   uint32_t sum1 = 0xffff, sum2 = 0xffff;
   size_t len = len8 / 2; /* loop works on 16-bit words */
 
+  uint16_t tlen;
   while (len) {
     /* 360 is the largest number of sums that can be
      * performed without integer overflow
      */
-    unsigned tlen = len > 360 ? 360 : len;
+    tlen = len > 360 ? 360 : len;
     len -= tlen;
 
-    if (tlen >= 16) do {
+     while (tlen >= 16) {
       HT_F32_DO16(data, 0);
       data += 32;
       tlen -= 16;
-    } while (tlen >= 16);
+    }
 
-    if (tlen != 0) do {
+    while(tlen--) {
       HT_F32_DO1(data, 0);
       data += 2;
-    } while (--tlen);
+    }
 
     sum1 = (sum1 & 0xffff) + (sum1 >> 16);
     sum2 = (sum2 & 0xffff) + (sum2 >> 16);

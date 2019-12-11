@@ -101,7 +101,7 @@ class Column : public std::enable_shared_from_this<Column> {
     Range::Ptr found = nullptr;
     for(auto& range : m_ranges){
       if(range->includes(intval)) {
-        if(offset != 0) {
+        if(offset) {
           --offset;
           continue;
         }
@@ -239,7 +239,7 @@ class Column : public std::enable_shared_from_this<Column> {
     uint64_t id;
     for(auto range : m_ranges) {
       id = range->get_rgr_id();
-      if(id == 0)
+      if(!id)
         continue;
       if(std::find_if(rgr_ids.begin(), rgr_ids.end(), 
         [id](const uint64_t& rgr_id2){return id == rgr_id2;}) == rgr_ids.end())
@@ -264,13 +264,13 @@ class Column : public std::enable_shared_from_this<Column> {
   bool finalize_remove(int &err, uint64_t id=0) {
     std::scoped_lock lock(m_mutex);
     
-    if(id == 0) {
+    if(!id) {
       m_ranges.clear();
     } else {
       uint64_t eid;
       for(auto it=m_ranges.begin();it<m_ranges.end();){
         eid = (*it)->get_rgr_id();
-        if(eid == id || eid == 0)
+        if(eid == id || !eid)
           m_ranges.erase(it);
         else
           it++;

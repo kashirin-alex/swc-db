@@ -77,7 +77,7 @@ class MngrRole final {
 
   bool has_active_columns(){
     std::shared_lock lock(m_mutex);
-    return m_cols_active.size() > 0;
+    return m_cols_active.size();
   }
 
   void get_active_columns(std::vector<int64_t> &cols){
@@ -98,7 +98,7 @@ class MngrRole final {
     for(auto& host : m_states){
       if(host->state == Types::MngrState::ACTIVE 
         && host->col_begin <= begin 
-        && (host->col_end == 0 || host->col_end >= end)){
+        && (!host->col_end || host->col_end >= end)){
         return host;
       }
     }
@@ -119,7 +119,7 @@ class MngrRole final {
 
       bool local = has_endpoint(host->endpoints, m_local_endpoints);
 
-      if(local && token == 0 
+      if(local && !token
          && (int)host->state < (int)Types::MngrState::STANDBY){
         update_state(host->endpoints, Types::MngrState::STANDBY);
         continue;
@@ -201,8 +201,8 @@ class MngrRole final {
     {
       std::shared_lock lock(m_mutex);
 
-      if(token == 0 || !turn_around) {
-        if(token == 0)
+      if(!token || !turn_around) {
+        if(!token)
           token = m_local_token;
 
         req_mngr_inchain(std::make_shared<Protocol::Mngr::Req::MngrState>(
@@ -368,7 +368,7 @@ class MngrRole final {
   void managers_checker(int next, size_t total, bool flw){
     // set manager followed(in-chain) local manager, incl. last's is first
 
-    if(total == 0) {
+    if(!total) {
       m_checkin=0;
       timer_managers_checkin(cfg_check_interval->get());
       return;
@@ -504,10 +504,10 @@ class MngrRole final {
 
     std::vector<int64_t> cols_active;
     for(auto& group : groups){
-      int64_t cid =   group->col_begin == 0 ?  1  : group->col_begin;
-      int64_t cid_end = group->col_end == 0 ? cid : group->col_end;
+      int64_t cid =   !group->col_begin ?  1  : group->col_begin;
+      int64_t cid_end = !group->col_end ? cid : group->col_end;
 
-      if(group->col_end == 0 && is_active(cid)){
+      if(!group->col_end && is_active(cid)){
         cols_active.push_back(group->col_end);
       }
       

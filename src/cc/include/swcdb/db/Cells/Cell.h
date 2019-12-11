@@ -116,7 +116,7 @@ class Cell final {
     read(bufp, remainp, own);             
   }
 
-  explicit Cell(const Cell& other) : value(0), own(true) {
+  explicit Cell(const Cell& other): value(0) {
     copy(other);
   }
 
@@ -129,21 +129,20 @@ class Cell final {
     on_fraction = other.on_fraction;
     timestamp   = other.timestamp;
     revision    = other.revision;
-    vlen        = other.vlen;
-    if(vlen > 0) {
+    if(vlen = other.vlen) {
       value = new uint8_t[vlen];
       memcpy(value, other.value, vlen);
-    } else 
-      value = 0;
+    }
   }
 
-  ~Cell(){
-    free();
+  ~Cell() {
+    if(own && value)
+      delete [] value;
     key.free();
   }
 
   inline void free(){
-    if(own && value != 0)
+    if(own && value)
       delete [] value;
     vlen = 0;
     value = 0;
@@ -151,7 +150,7 @@ class Cell final {
 
   void set_flag(uint8_t nflag, uint32_t fraction = 0){
     flag = nflag;
-    if(fraction != 0 
+    if(fraction 
         && (flag == INSERT 
          || flag == DELETE_FRACTION 
          || flag == DELETE_FRACTION_VERSION)) {
@@ -195,7 +194,7 @@ class Cell final {
 
   void set_value(OP op, int64_t v){
     free();
-    if(v == 0 && op == OP::EQUAL) {
+    if(!v && op == OP::EQUAL) {
       vlen = 0;
       value = 0;
       return;
@@ -210,7 +209,7 @@ class Cell final {
   }
 
   int64_t get_value(OP *op) const {
-    if(vlen == 0) {
+    if(!vlen) {
       *op = OP::EQUAL;
       return vlen;
     }
@@ -220,7 +219,7 @@ class Cell final {
   }
 
   int64_t get_value() const {
-    if(vlen == 0) 
+    if(!vlen) 
       return vlen;
 
     const uint8_t *ptr = value;
@@ -251,7 +250,7 @@ class Cell final {
 
     free();
     own = owner;
-    if((vlen = Serialization::decode_vi32(bufp, remainp)) > 0) {
+    if(vlen = Serialization::decode_vi32(bufp, remainp)) {
       if(own) {
         value = new uint8_t[vlen];
         memcpy(value, *bufp, vlen);
@@ -259,6 +258,7 @@ class Cell final {
         value = (uint8_t *)*bufp;
       
       *bufp += vlen;
+      assert(*remainp >= vlen);
       *remainp -= vlen;
     }
   }
@@ -290,7 +290,7 @@ class Cell final {
       Serialization::encode_i64(&dst_buf.ptr, revision);
       
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
-    if(vlen > 0)
+    if(vlen)
       dst_buf.add_unchecked(value, vlen);
 
     assert(dst_buf.fill() <= dst_buf.size);

@@ -77,7 +77,7 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
         SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rs_had_id=%d > id=%d %s", 
                   req_params.id, id, req_params.to_string().c_str());
 
-        if(id != 0) {
+        if(id) {
           auto cbp = CommBuf::make(
             Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_REASSIGN)
           );

@@ -106,7 +106,7 @@ void encode(int& err, Types::Encoding encoder,
     default: {
       output.ensure(reserve + src_sz);
       output.ptr += reserve;
-      if(src_sz > 0)
+      if(src_sz)
         output.add_unchecked(src, src_sz);
     }
   }

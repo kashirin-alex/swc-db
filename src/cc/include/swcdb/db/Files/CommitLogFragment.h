@@ -152,7 +152,7 @@ class Fragment final {
     bool keep;
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      keep = !m_queue.empty() || m_processing > 0;
+      keep = !m_queue.empty() || m_processing;
       m_state = err ? State::ERROR : (keep ? State::LOADED : State::NONE);
       if(!err && keep)
         m_buffer.set(cells);

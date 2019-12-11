@@ -164,7 +164,7 @@ ConnHandlerPtr Serialized::get_connection(
       
     std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
 
-  } while (m_run.load() && (probes == 0 || --tries > 0));
+  } while (m_run.load() && (!probes || --tries));
 
   return conn;
 }
@@ -194,7 +194,7 @@ void Serialized::get_connection(
   ServerConnections::Ptr srv = get_srv(endpoints.at(next++));
   ConnHandlerPtr conn = nullptr;
   srv->reusable(conn, preserve);
-  if(conn != nullptr || (probes > 0 && tries == 0)) {
+  if(conn != nullptr || (probes && !tries)) {
     cb(conn);
     return;
   }

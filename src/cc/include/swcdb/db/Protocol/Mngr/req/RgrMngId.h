@@ -38,7 +38,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       m_timer.cancel();
 
       m_timer.expires_from_now(
-        std::chrono::milliseconds(ms == 0?cfg_check_interval->get():ms));
+        std::chrono::milliseconds(!ms?cfg_check_interval->get():ms));
 
       m_timer.async_wait(
         [this](const asio::error_code ec) {
@@ -162,7 +162,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
       SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN %s", 
                 Env::RgrData::get()->to_string().c_str());
-      if(cb_shutdown != 0)
+      if(cb_shutdown)
         cb_shutdown();
       else
         SWC_LOG(LOG_WARN, "Shutdown flag without Callback!");
@@ -195,7 +195,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     }
     
     Params::RgrMngId::Flag flag;
-    if(rs_data->id == 0 || rs_data->id == rsp_params.id || 
+    if(!rs_data->id || rs_data->id == rsp_params.id || 
       (rs_data->id != rsp_params.id 
        && rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)){
 

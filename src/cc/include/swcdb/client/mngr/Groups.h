@@ -302,7 +302,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
     for(auto& group : m_groups) {
       if(group->col_begin <= cid 
-        && (group->col_end == 0 || group->col_end >= cid)) {
+        && (!group->col_end || group->col_end >= cid)) {
           hosts = group->get_hosts();
           group_host.col_begin = group->col_begin;
           group_host.col_end = group->col_end;
@@ -330,14 +330,13 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
   EndPoints get_endpoints(size_t col_begin=0, size_t col_end=0){
     EndPoints endpoints;
-    if(col_end == 0)
+    if(!col_end)
       col_end = col_begin;
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for(auto& group : m_groups){
       if(group->col_begin <= col_begin
-        && (group->col_end == 0 
-            || (col_end > 0 && group->col_end >= col_end))) {
+        && (!group->col_end || (col_end && group->col_end >= col_end))) {
         group->apply_endpoints(endpoints);
       }
     }
@@ -383,8 +382,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
     std::lock_guard<std::mutex> lock(m_mutex);
     
     for(auto& host : m_active_g_host) {
-      if(host.col_begin <= cid
-       && (host.col_end == 0 || host.col_end >= cid)) {
+      if(host.col_begin <= cid && (!host.col_end || host.col_end >= cid)) {
         endpoints = host.endpoints;
         return;
       }

@@ -53,7 +53,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
         DB::Specs::Interval::make_ptr(params.interval),
         DB::Cells::Mutable::make(
           params.interval.flags.limit, 
-          params.interval.flags.max_versions != 0 ? 
+          params.interval.flags.max_versions ? 
           params.interval.flags.max_versions : schema->cell_versions, 
           schema->cell_ttl, 
           schema->col_type

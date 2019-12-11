@@ -53,7 +53,7 @@ class Pread : public Base {
       amount = ev->data_ext.size;
       smartfd->pos(params.offset+amount);
 
-      if(amount > 0) {
+      if(amount) {
         if(buffer == nullptr) {
           buf = std::make_shared<StaticBuffer>(ev->data_ext); 
         } else {

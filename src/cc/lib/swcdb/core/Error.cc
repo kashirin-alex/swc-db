@@ -168,7 +168,7 @@ std::map<const int, const char *> text_map {
 
 const char* Error::get_text(const int& err) {
   const char * text;
-  return (text = err < 2048 ? strerror(err) : text_map[err]) != 0
+  return (text = err < 2048 ? strerror(err) : text_map[err])
           ? text : "ERROR NOT REGISTERED";
 }
 

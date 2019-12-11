@@ -203,7 +203,7 @@ class Read final {
         }
         m_loaded_header = true;
       }
-      if(m_sz_enc == 0) // a zero cells type cs (initial of any to any block)
+      if(!m_sz_enc) // a zero cells type cs (initial of any to any block)
         break;
 
       for(;;) {

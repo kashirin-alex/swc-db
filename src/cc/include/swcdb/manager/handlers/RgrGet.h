@@ -36,7 +36,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
     
     server::Mngr::Range::Ptr range;
-    if(params.rid == 0) {
+    if(!params.rid) {
       range = col->get_range(
         rsp_params.err, params.interval, rsp_params.next_key);
       if(range != nullptr) {

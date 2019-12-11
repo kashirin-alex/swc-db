@@ -101,7 +101,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
     DB::Cells::MapMutable::ColumnCells pair;
     for(size_t idx=0;columns_cells->get(idx, pair);idx++) {
-      if(pair.second->size == 0) 
+      if(!pair.second->size) 
         continue;
       auto cid = pair.first;
       auto& cells = pair.second;
@@ -226,7 +226,7 @@ class Update : public std::enable_shared_from_this<Update> {
           return false;
         }
       }
-      if(rsp.rid == 0) {
+      if(!rsp.rid) {
         std::cout << "RETRYING " << rsp.to_string() << "\n";
         (parent_req == nullptr ? base_req : parent_req)->request_again();
         return false;
@@ -308,7 +308,7 @@ class Update : public std::enable_shared_from_this<Update> {
         parent_req->request_again();
         return false;
       }
-      if(rsp.rid == 0 
+      if(!rsp.rid 
       ||(type == Types::Range::DATA && rsp.cid != cells_cid)) {
         std::cout << "RETRYING " << rsp.to_string() << "\n";
         parent_req->request_again();

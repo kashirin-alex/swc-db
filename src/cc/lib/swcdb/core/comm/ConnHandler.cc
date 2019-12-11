@@ -99,7 +99,7 @@ const size_t ConnHandler::pending_write() {
 }
 
 const bool ConnHandler::due() {
-  return pending_read() > 0 || pending_write() > 0;
+  return pending_read() || pending_write();
 }
 
 void ConnHandler::run(Event::Ptr& ev) {
@@ -193,11 +193,11 @@ int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf,
 
 const int ConnHandler::send_request(CommBuf::Ptr &cbuf, 
                                     DispatchHandler::Ptr hdlr) {
-  if(m_err != Error::OK)
+  if(m_err)
     return m_err;
 
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-  if(cbuf->header.id == 0)
+  if(!cbuf->header.id)
     cbuf->header.id = next_req_id();
 
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
@@ -365,7 +365,7 @@ size_t ConnHandler::read_condition_hdlr(const Event::Ptr& ev, uint8_t* data,
     remain = 0;
     do_close();
   }
-  if(remain == 0) 
+  if(!remain) 
     delete [] data;
   return remain;
 }
@@ -483,7 +483,7 @@ void ConnHandler::disconnected() {
 }
 
 void ConnHandler::run_pending(Event::Ptr ev) {
-  if(ev->header.id == 0) {
+  if(!ev->header.id) {
     run(ev);
     return;
   }

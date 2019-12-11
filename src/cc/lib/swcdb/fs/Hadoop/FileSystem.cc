@@ -254,7 +254,7 @@ void FileSystemHadoop::readdir(int &err, const std::string &name,
   errno = 0;
   if (true) { // (fileInfo = hdfsListDirectory(
               //      m_filesystem, abspath.c_str(), &numEntries)) == 0) {
-    if(errno != 0) {
+    if(errno) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s", 
                 abspath.c_str(), strerror(errno)); 
@@ -331,7 +331,7 @@ void FileSystemHadoop::write(int &err, SmartFd::Ptr &smartfd,
     goto finish;
   }
     
-  if(buffer.size > 0) {
+  if(buffer.size) {
     append(err, smartfd, buffer, Flags::FLUSH);
     if(err != Error::OK)
       goto finish;
@@ -569,7 +569,7 @@ void FileSystemHadoop::close(int &err, SmartFd::Ptr &smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
-  if(hadoop_fd->file != 0) {
+  if(hadoop_fd->file) {
     if(true) { // hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 

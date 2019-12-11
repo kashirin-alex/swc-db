@@ -67,7 +67,7 @@ ssize_t read(int fd, void *vptr, size_t n) {
 
   ptr = (char *)vptr;
   nleft = n;
-  while (nleft > 0) {
+  while (nleft) {
     if ((nread = ::read(fd, ptr, nleft)) < 0) {
       if (errno == EINTR)
         nread = 0;/* and call read() again */
@@ -76,7 +76,7 @@ ssize_t read(int fd, void *vptr, size_t n) {
       else
         return -1;
     }
-    else if (nread == 0)
+    else if (!nread)
       break; /* EOF */
 
     nleft -= nread;
@@ -93,7 +93,7 @@ ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
 
   ptr = (char *)vptr;
   nleft = n;
-  while (nleft > 0) {
+  while (nleft) {
     if ((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
       if (errno == EINTR)
         nread = 0;/* and call read() again */
@@ -102,7 +102,7 @@ ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
       else
         return -1;
     }
-    else if (nread == 0)
+    else if (!nread)
       break; /* EOF */
 
     nleft -= nread;
@@ -135,7 +135,7 @@ ssize_t write(int fd, const void *vptr, size_t n) {
 
   ptr = (const char *)vptr;
   nleft = n;
-  while (nleft > 0) {
+  while (nleft) {
     if ((nwritten = ::write(fd, ptr, nleft)) <= 0) {
       if (errno == EINTR)
         nwritten = 0; /* and call write() again */
@@ -185,7 +185,7 @@ bool mkdirs(const std::string &dirname) {
 
   delete [] tmpdir;
   errno = saved_errno;
-  return saved_errno == 0;
+  return !saved_errno;
 }
 
 const bool exists(const std::string &fname) {
@@ -278,7 +278,7 @@ void readdir(const std::string &dirname,
   
 #endif
 
-  if(errno > 0)
+  if(errno)
     SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
               strerror(errno));
   (void)closedir(dirp);
@@ -338,7 +338,9 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
 std::string file_to_string(const std::string &fname) {
   off_t len;
   char *contents = file_to_buffer(fname, &len);
-  std::string str(contents == 0 ? "" : contents);
+  if(!contents)
+    return "";
+  std::string str(contents);
   delete [] contents;
   return str;
 }

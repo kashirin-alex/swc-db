@@ -111,17 +111,17 @@ class Fragments final {
             break;
           {
             std::shared_lock lock2(m_mutex_cells);
-            if(!finalize && m_cells.size == 0)
+            if(!finalize && !m_cells.size)
               break;
           }
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           {
             std::shared_lock lock2(m_mutex_cells);
-            if(m_cells.size == 0)
+            if(!m_cells.size)
               break;
           }
         }
-        if(m_deleting || cells.fill() == 0) {
+        if(m_deleting || !cells.fill()) {
           delete frag;
           break;
         }
@@ -137,7 +137,7 @@ class Fragments final {
 
       {
         std::shared_lock lock(m_mutex_cells);
-        if(m_cells.size == 0 || (m_cells.size_bytes < blk_size && !finalize))
+        if(!m_cells.size || (m_cells.size_bytes < blk_size && !finalize))
           break; 
       }   
     }

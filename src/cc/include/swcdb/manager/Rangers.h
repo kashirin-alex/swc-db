@@ -450,7 +450,7 @@ class Rangers final {
   bool manage(int64_t cid){
     std::vector<int64_t> cols;
     Env::MngrRole::get()->get_active_columns(cols);
-    if(cols.size() == 0){
+    if(!cols.size()){
       // if decommissioned
       if(m_columns_set){
         SWC_LOG(LOG_INFO, "Manager has been decommissioned");
@@ -516,7 +516,7 @@ class Rangers final {
 
     std::vector<int64_t> cols;
     Env::MngrRole::get()->get_active_columns(cols);
-    if(cols.size() == 0) {
+    if(!cols.size()) {
       m_columns_set = false;
       return false; 
     }
@@ -572,7 +572,7 @@ class Rangers final {
         );
       }
 
-      while(pending > 0) // keep_locking
+      while(pending) // keep_locking
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     m_columns_set = true;
@@ -639,7 +639,7 @@ class Rangers final {
   void next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set){
     std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
 
-    if(last_rgr->endpoints.size() > 0) {
+    if(last_rgr->endpoints.size()) {
        for(auto& rgr : m_rgr_status) {
           if(rgr->state == Ranger::State::ACK
             && rgr->failures < cfg_rgr_failures->get() 
@@ -656,7 +656,7 @@ class Rangers final {
     size_t avg_ranges;
     Ranger::Ptr rgr;
 
-    while(rs_set == nullptr && m_rgr_status.size() > 0){
+    while(rs_set == nullptr && m_rgr_status.size()){
       avg_ranges = 0;
       num_rgr = 0;
       // avg_resource_ratio = 0;
@@ -748,7 +748,7 @@ class Rangers final {
     uint64_t nxt;
     bool ok;
     do {
-      if(opt_id == 0) {
+      if(!opt_id) {
         nxt = ++next_id;
       } else {
         nxt = opt_id;
@@ -773,7 +773,7 @@ class Rangers final {
   void rs_changes(RangerList& hosts, bool sync_all=false){
     {
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
-      if(hosts.size() > 0){
+      if(hosts.size()){
         Env::MngrRole::get()->req_mngr_inchain(
           std::make_shared<Protocol::Mngr::Req::RgrUpdate>(
           hosts, sync_all));
@@ -843,7 +843,7 @@ class Rangers final {
       return;
 
     DB::Schema::Ptr schema_save = DB::Schema::make(
-      cid, schema, schema->revision != 0 ? schema->revision : Time::now_ns());
+      cid, schema, schema->revision ? schema->revision : Time::now_ns());
     HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
     
     Files::Schema::save_with_validation(err, schema_save);
@@ -868,8 +868,7 @@ class Rangers final {
     DB::Schema::Ptr schema_save = DB::Schema::make(
       schema->cid == DB::Schema::NO_CID? old->cid: schema->cid,
       schema, 
-      schema->revision != 0 ? 
-      schema->revision : Time::now_ns());
+      schema->revision ? schema->revision : Time::now_ns());
 
     HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
 
@@ -928,7 +927,7 @@ class Rangers final {
       else if(!m_columns_set)
         err = Error::MNGR_NOT_INITIALIZED;
 
-      else if(req.params.schema->col_name.length() == 0)
+      else if(!req.params.schema->col_name.length())
         err = Error::COLUMN_SCHEMA_NAME_EMPTY;
 
       else {

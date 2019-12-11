@@ -416,7 +416,7 @@
 #define HT_ENCODE_STR16(_op_, _s_, _len_) \
   uint16_t _s16tmp_ = _len_; /* just to be cautious */ \
   HT_ENCODE_I16(_op_, _s16tmp_); /* length */ \
-  if (_s16tmp_ > 0) { \
+  if (_s16tmp_) { \
     memcpy(_op_, _s_, _s16tmp_); /* data */ \
     _op_ += len; \
   } \

@@ -139,7 +139,7 @@ namespace SWC {
 
   void Properties::set(const std::string &name, Property::Value::Ptr p) {
     Property::Value::Ptr p_set;
-    if(m_map.count(name) == 0) {
+    if(!m_map.count(name)) {
       p_set = Property::Value::make_new(p);
       
       if(p->is_default())
