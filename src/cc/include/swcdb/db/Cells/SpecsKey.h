@@ -17,12 +17,12 @@ class Key : public DB::Cell::Key {
 
   explicit Key() {}
   
-  explicit Key(const Key &other){
+  explicit Key(const Key &other) {
     copy(other);
   }
 
   explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp, 
-               uint32_t offset=0){
+               uint32_t offset=0) {
     set(cell_key, comp, offset);
   }
 
@@ -32,11 +32,12 @@ class Key : public DB::Cell::Key {
 
   inline void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
                   uint32_t offset=0) {
+    assert(cell_key.sane());
     free();
     own   = true;
     count = cell_key.count;
     size  = cell_key.size+count;
-    if(size == 0) 
+    if(!size) 
       return;
     
     data = new uint8_t[size];
@@ -54,6 +55,7 @@ class Key : public DB::Cell::Key {
       data_ptr += len;
       ptr += len;
     }
+    assert(sane());
   }
 
   inline void add(const std::string fraction, Condition::Comp comp) {
@@ -75,14 +77,15 @@ class Key : public DB::Cell::Key {
   }
 
   inline void set(int32_t idx, Condition::Comp comp) {
-    if(count == 0)
+    assert(sane());
+    if(!count)
       return;
 
-    uint8_t* ptr = data;
+    const uint8_t* ptr = data;
     for(int32_t n=0; n<count;
-        n++, ptr += Serialization::decode_vi32((const uint8_t**)&++ptr)) {
+        n++, ptr += Serialization::decode_vi32(&++ptr)) {
       if(idx == -1 || n == idx) {
-        *ptr = (uint8_t)comp;
+        *(data+(ptr-data)) = (uint8_t)comp;
         if(idx > -1)
           break;
       }
@@ -115,19 +118,21 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::get_string(idx, 1);
   }
 
-  inline void get(uint32_t idx, char** ptr, uint32_t* length, Condition::Comp* comp) {
+  inline void get(uint32_t idx, char** fraction, uint32_t* length, 
+                  Condition::Comp* comp) {
     *length = 0;
-    *ptr = 0;
+    *fraction = 0;
     uint8_t* fraction_ptr = 0;
-    DB::Cell::Key::get(idx, ptr, length, &fraction_ptr, 1);
-    if(fraction_ptr != 0) 
-      *comp = (Condition::Comp)*(fraction_ptr);
+    DB::Cell::Key::get(idx, fraction, length, &fraction_ptr, 1);
+    if(fraction_ptr) 
+      *comp = (Condition::Comp)*fraction_ptr;
   }
 
   void get(DB::Cell::Key &cell_key) {
+    assert(sane());
     cell_key.free();
     
-    if(count > 0) {
+    if(count) {
       cell_key.own = true;
       cell_key.count = count;
       cell_key.size  = size-count;
@@ -143,6 +148,7 @@ class Key : public DB::Cell::Key {
         data_ptr += len;
       }
     }
+    assert(cell_key.sane());
   }
 
   inline void remove(uint32_t idx, bool recursive=false) {
@@ -150,18 +156,25 @@ class Key : public DB::Cell::Key {
   }
 
   const bool equal(const Key &other) const {
+    assert(sane());
+    assert(other.sane());
     return DB::Cell::Key::equal(other);
   }
-  
+  /*
   inline size_t fractions() {
     return DB::Cell::Key::fractions(1);
   }
+  */
   
   inline const bool is_matching(const DB::Cell::Key &other) const {
+    assert(sane());
+    assert(other.sane());
     return is_matching(other.data, other.data + other.size, 0);
   }
 
   inline const bool is_matching(const Key &other) const {
+    assert(sane());
+    assert(other.sane());
     return is_matching(other.data, other.data + other.size, 1);
   }
 
@@ -207,13 +220,13 @@ class Key : public DB::Cell::Key {
       } else {
         switch(comp) {
           case Condition::LT:
-            return count == 0 || idx > idx_other;
+            return !count || idx > idx_other;
           case Condition::LE:
-            return count == 0 || idx > idx_other;
+            return !count || idx > idx_other;
           case Condition::GT:
-            return count == 0 || idx < idx_other;
+            return !count || idx < idx_other;
           case Condition::GE:
-            return count == 0 || idx < idx_other;
+            return !count || idx < idx_other;
           case Condition::PF:
             return idx < idx_other;
           case Condition::RE:
@@ -237,6 +250,7 @@ class Key : public DB::Cell::Key {
   }
 
   const std::string to_string() const {
+    assert(sane());
     std::string s("Key(");
     s.append("sz=");
     s.append(std::to_string(count));
@@ -244,11 +258,11 @@ class Key : public DB::Cell::Key {
     s.append(std::to_string(size));
     s.append(" fractions=[");
     uint32_t len;
-    uint8_t* ptr = data;
+    const uint8_t* ptr = data;
     for(uint32_t n=0; n<count; n++) {
       s.append(Condition::to_string(*ptr++));
       s.append("(");
-      len = Serialization::decode_vi32((const uint8_t**)&ptr);
+      len = Serialization::decode_vi32(&ptr);
       s.append(std::string((const char*)ptr, len));
       s.append("),");
       ptr += len;
