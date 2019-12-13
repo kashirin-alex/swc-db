@@ -62,7 +62,7 @@ enum OP {
   PLUS   = 0x1,
   MINUS  = 0x2,
 };
-inline const std::string to_string(OP op){
+inline const std::string to_string(OP op) {
   switch(op) {
     case PLUS:
       return "+";
@@ -74,8 +74,8 @@ inline const std::string to_string(OP op){
 };
 
 
-static inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
-                                           uint8_t** base, size_t* remainp){
+inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
+                                    uint8_t** base, size_t* remainp) {
   const uint8_t* ptr = *base;
   ptr++;
   *remainp-=1;
@@ -141,14 +141,14 @@ class Cell final {
     key.free();
   }
 
-  inline void free(){
+  void free() {
     if(own && value)
       delete [] value;
     vlen = 0;
     value = 0;
   }
 
-  void set_flag(uint8_t nflag, uint32_t fraction = 0){
+  void set_flag(uint8_t nflag, uint32_t fraction = 0) {
     flag = nflag;
     if(fraction 
         && (flag == INSERT 
@@ -159,28 +159,28 @@ class Cell final {
     }
   }
 
-  void set_time_order_desc(bool desc){
+  void set_time_order_desc(bool desc) {
     if(desc)  control |= TS_DESC;
     else      control != TS_DESC;
   }
 
-  void set_timestamp(int64_t ts){
+  void set_timestamp(int64_t ts) {
     timestamp = ts;
     control |= HAVE_TIMESTAMP;
   }
 
-  void set_revision(uint64_t rev){
+  void set_revision(uint64_t rev) {
     revision = rev;
     control |= HAVE_REVISION;
   }
 
   // SET_VALUE
-  void set_value(uint8_t* v, uint32_t len){
+  void set_value(uint8_t* v, uint32_t len) {
     value = v;
     vlen = len;
   }
 
-  void set_value(const char* v, uint32_t len){
+  void set_value(const char* v, uint32_t len) {
     set_value((uint8_t *)v, len);
   }
 
@@ -188,11 +188,11 @@ class Cell final {
     set_value((uint8_t *)v, strlen(v));
   }
 
-  void set_value(const std::string& v){
+  void set_value(const std::string& v) {
     set_value((uint8_t *)v.data(), v.length());
   }
 
-  void set_value(OP op, int64_t v){
+  void set_value(OP op, int64_t v) {
     free();
     if(!v && op == OP::EQUAL) {
       vlen = 0;
@@ -208,7 +208,7 @@ class Cell final {
     Serialization::encode_vi64(&ptr, v);
   }
 
-  int64_t get_value(OP *op) const {
+  const int64_t get_value(OP *op) const {
     if(!vlen) {
       *op = OP::EQUAL;
       return vlen;
@@ -218,7 +218,7 @@ class Cell final {
     return Serialization::decode_vi64(&ptr);
   }
 
-  int64_t get_value() const {
+  const int64_t get_value() const {
     if(!vlen) 
       return vlen;
 

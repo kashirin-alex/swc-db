@@ -53,8 +53,8 @@ inline const std::string to_string(uint8_t comp) {
 
 // const char *
 
-inline static Comp condition(const uint8_t *p1, uint32_t p1_len, 
-                             const uint8_t *p2, uint32_t p2_len) {
+inline const Comp condition(const uint8_t *p1, uint32_t p1_len, 
+                            const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   if(p1_len == p2_len && diff == 0)
     return Comp::EQ;
@@ -64,58 +64,58 @@ inline static Comp condition(const uint8_t *p1, uint32_t p1_len,
     return Comp::LT;
 }
 
-inline static bool pf(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool pf(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   return p1_len <= p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
-inline static bool gt(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool gt(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff < 0 && p1_len <= p2_len) || (diff >= 0 && p1_len < p2_len);
 }
 
-inline static bool ge(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool ge(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff <= 0 && p1_len <= p2_len) || (diff > 0 && p1_len < p2_len);
 }
 
-inline static bool eq(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool eq(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
-inline static bool le(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool le(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff >= 0 && p1_len >= p2_len) || (diff < 0 && p1_len > p2_len);
 }
 
-inline static bool lt(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool lt(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff > 0 && p1_len >= p2_len) || (diff <= 0 && p1_len > p2_len);
 } 
 
-inline static bool ne(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+inline const bool ne(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   return p1_len != p2_len || memcmp(p1, p2, p1_len) != 0;
 }
 
-inline static bool re(const char *p1, uint32_t p1_len, 
-                      const char *p2, uint32_t p2_len) {
+inline const bool re(const char *p1, uint32_t p1_len, 
+                     const char *p2, uint32_t p2_len) {
   return RE2::PartialMatch(p2, RE2(std::string(p1, p1_len)));
 }
 
-inline static bool re(std::shared_ptr<RE2> regex, 
-                      const char *p2, uint32_t p2_len) {
+inline const bool re(std::shared_ptr<RE2> regex, 
+                     const char *p2, uint32_t p2_len) {
   return RE2::PartialMatch(p2, *regex);
 }
 
-inline static bool is_matching(uint8_t comp, 
-                               const uint8_t *p1, uint32_t p1_len, 
-                               const uint8_t *p2, uint32_t p2_len) {
+inline const bool is_matching(uint8_t comp, 
+                              const uint8_t *p1, uint32_t p1_len, 
+                              const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
     case Comp::PF:
@@ -147,41 +147,41 @@ inline static bool is_matching(uint8_t comp,
   }
 }
 
-inline static bool is_matching(uint8_t comp, 
-                               const char *p1, uint32_t p1_len, 
-                               const char *p2, uint32_t p2_len) {
+inline const bool is_matching(uint8_t comp, 
+                              const char *p1, uint32_t p1_len, 
+                              const char *p2, uint32_t p2_len) {
   return is_matching(comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
 
 // const int64_t
 
-inline static bool gt(const int64_t p1, const int64_t p2) {
+inline const bool gt(const int64_t p1, const int64_t p2) {
   return p1 < p2;
 }
 
-inline static bool ge(const int64_t p1, const int64_t p2) {
+inline const bool ge(const int64_t p1, const int64_t p2) {
   return p1 <= p2;
 }
 
-inline static bool eq(const int64_t p1, const int64_t p2) {
+inline const bool eq(const int64_t p1, const int64_t p2) {
   return p1 == p2;
 }
 
-inline static bool le(const int64_t p1, const int64_t p2) {
+inline const bool le(const int64_t p1, const int64_t p2) {
   return p1 >= p2;
 }
 
-inline static bool lt(const int64_t p1, const int64_t p2) {
+inline const bool lt(const int64_t p1, const int64_t p2) {
   return p1 > p2;
 }
 
-inline static bool ne(const int64_t p1, const int64_t p2) {
+inline const bool ne(const int64_t p1, const int64_t p2) {
   return p1 != p2;
 }
 
-inline static bool is_matching(uint8_t comp,   
-                               const int64_t p1, const int64_t p2) {
+inline const bool is_matching(uint8_t comp,   
+                              const int64_t p1, const int64_t p2) {
   switch (comp) {
 
     case Comp::GT:

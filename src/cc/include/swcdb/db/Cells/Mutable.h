@@ -623,8 +623,7 @@ class Mutable final {
       _remove(*ptr);
     } while(++ptr < offset_end_ptr);
    
-    m_size -= by;
-    if(offset < m_size)
+    if((m_size -= by) > offset)
       memmove(offset_ptr, offset_end_ptr, (m_size-offset)*_cell_sz);
     memset(m_cells+m_size, 0, by*_cell_sz);
   }
@@ -675,6 +674,9 @@ class Mutable final {
     for(; offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
+
+      if(cell->key.compare(key, 0) != Condition::EQ)
+        return;
       
       if(cell->flag != INSERT)
         continue;
@@ -683,9 +685,6 @@ class Mutable final {
          _move_bwd(offset--, 1);
         continue;
       }
-    
-      if(cell->key.compare(key, 0) != Condition::EQ)
-        return;
 
       if(++revs > m_max_revs)
         _move_bwd(offset--, 1);
