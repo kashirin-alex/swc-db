@@ -30,8 +30,8 @@ class Key : public DB::Cell::Key {
     free();
   }
 
-  inline void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
-                  uint32_t offset=0) {
+  void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
+           uint32_t offset=0) {
     assert(cell_key.sane());
     free();
     own   = true;
@@ -58,25 +58,25 @@ class Key : public DB::Cell::Key {
     assert(sane());
   }
 
-  inline void add(const std::string fraction, Condition::Comp comp) {
+  void add(const std::string fraction, Condition::Comp comp) {
     add((const uint8_t*)fraction.data(), fraction.length(), comp);
   }
 
-  inline void add(const char* fraction, Condition::Comp comp) {
+  void add(const char* fraction, Condition::Comp comp) {
     add((const uint8_t*)fraction, strlen(fraction), comp);
   }
 
-  inline void add(const char* fraction, uint32_t len, Condition::Comp comp) {
+  void add(const char* fraction, uint32_t len, Condition::Comp comp) {
     add((const uint8_t*)fraction, len, comp);
   }
   
-  inline void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
+  void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
     uint8_t* fraction_ptr = 0;
     DB::Cell::Key::add(fraction, len, &fraction_ptr, 1);
     *fraction_ptr = (uint8_t)comp;
   }
 
-  inline void set(int32_t idx, Condition::Comp comp) {
+  void set(int32_t idx, Condition::Comp comp) {
     assert(sane());
     if(!count)
       return;
@@ -92,34 +92,34 @@ class Key : public DB::Cell::Key {
     }
   }
   
-  inline void insert(uint32_t idx, const std::string& fraction,
-                     Condition::Comp comp) {
+  void insert(uint32_t idx, const std::string& fraction, 
+              Condition::Comp comp) {
     insert(idx, (const uint8_t*)fraction.data(), fraction.length(), comp);
   }
 
-  inline void insert(uint32_t idx, const char* fraction,
-                     Condition::Comp comp) {
+  void insert(uint32_t idx, const char* fraction,
+              Condition::Comp comp) {
     insert(idx, (const uint8_t*)fraction, strlen(fraction), comp);
   }
 
-  inline void insert(uint32_t idx, const char* fraction, uint32_t len,
-                     Condition::Comp comp) {
+  void insert(uint32_t idx, const char* fraction, uint32_t len,
+              Condition::Comp comp) {
     insert(idx, (const uint8_t*)fraction, len, comp);
   }
 
-  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
-                    Condition::Comp comp) {
+  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
+              Condition::Comp comp) {
     uint8_t* fraction_ptr = 0;
     DB::Cell::Key::insert(idx, fraction, len, &fraction_ptr, 1);
     *fraction_ptr = (uint8_t)comp;
   }
 
-  const std::string get_string(uint32_t idx) {    
+  const std::string get_string(uint32_t idx) const {    
     return DB::Cell::Key::get_string(idx, 1);
   }
 
-  inline void get(uint32_t idx, char** fraction, uint32_t* length, 
-                  Condition::Comp* comp) {
+  void get(uint32_t idx, char** fraction, uint32_t* length, 
+           Condition::Comp* comp) const {
     *length = 0;
     *fraction = 0;
     uint8_t* fraction_ptr = 0;
@@ -128,7 +128,7 @@ class Key : public DB::Cell::Key {
       *comp = (Condition::Comp)*fraction_ptr;
   }
 
-  void get(DB::Cell::Key &cell_key) {
+  void get(DB::Cell::Key &cell_key) const {
     assert(sane());
     cell_key.free();
     
@@ -151,69 +151,66 @@ class Key : public DB::Cell::Key {
     assert(cell_key.sane());
   }
 
-  inline void remove(uint32_t idx, bool recursive=false) {
+  void remove(uint32_t idx, bool recursive=false) {
     DB::Cell::Key::remove(idx, recursive, 1);
   }
 
-  const bool equal(const Key &other) const {
+  bool const equal(const Key &other) const {
     assert(sane());
     assert(other.sane());
     return DB::Cell::Key::equal(other);
   }
   /*
-  inline size_t fractions() {
+  size_t fractions() {
     return DB::Cell::Key::fractions(1);
   }
   */
   
-  inline const bool is_matching(const DB::Cell::Key &other) const {
+  const bool is_matching(const DB::Cell::Key &other) const {
     assert(sane());
     assert(other.sane());
     return is_matching(other.data, other.data + other.size, 0);
   }
 
-  inline const bool is_matching(const Key &other) const {
+  const bool is_matching(const Key &other) const {
     assert(sane());
     assert(other.sane());
     return is_matching(other.data, other.data + other.size, 1);
   }
 
-  inline const bool is_matching(const uint8_t* ptr_tmp_other, 
-                                const uint8_t* ptr_end_other,
-                                int8_t reserved) const {
+  const bool is_matching(const uint8_t* ptr_tmp_other, 
+                         const uint8_t* ptr_end_other, int8_t reserved) const {
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
 
     uint32_t idx = 0;
-    uint32_t len;
+    uint32_t len = 0;
     const uint8_t* ptr = 0;
 
     uint32_t idx_other = 0;
-    uint32_t len_other;
+    uint32_t len_other = 0;
     const uint8_t* ptr_other = 0;
 
     Condition::Comp comp = Condition::NONE;
     do {
 
-      while(ptr_tmp < ptr_end){
+      if(ptr_tmp < ptr_end) {
         comp = (Condition::Comp)*ptr_tmp++;
         len = Serialization::decode_vi32(&ptr_tmp);
         ptr = ptr_tmp;
         ptr_tmp += len;
         idx++;
-        break;
       }
 
-      while(ptr_tmp_other < ptr_end_other){
+      if(ptr_tmp_other < ptr_end_other) {
         ptr_tmp_other += reserved;
         len_other = Serialization::decode_vi32(&ptr_tmp_other);
         ptr_other = ptr_tmp_other;
         ptr_tmp_other += len_other;
         idx_other++;
-        break;
       }
       
-      if(idx == idx_other){
+      if(idx == idx_other) {
         if(!Condition::is_matching(comp, ptr, len, ptr_other, len_other))
           return false;
         
@@ -245,7 +242,7 @@ class Key : public DB::Cell::Key {
     return true;
   }
 
-  void decode(const uint8_t **bufp, size_t *remainp, bool owner=false){
+  void decode(const uint8_t **bufp, size_t *remainp, bool owner=false) {
     return DB::Cell::Key::decode(bufp, remainp, owner, 1); 
   }
 

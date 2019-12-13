@@ -193,81 +193,119 @@ void test_basic(){
   std::cout << "\ntest_basic OK! \n";
 }
 
-void load_check_key(int chks, int num_fractions, int chk_count){
+void load_check_key(int chks, int num_fractions, int chk_count) {
 
-  auto start_ts_1 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
+  char * fraction;
+  uint32_t length;
+  uint64_t took_add = 0, took_get = 0, took_remove = 0, took_insert = 0;
+
+  for(int n=0; n < chks; n++) {
     DB::Cell::Key key;
+
+    auto ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;b++)
       key.add(std::to_string(b+2^60));
-  }
-  auto took_add = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_1).count();
-        
-  DB::Cell::Key key;
-  for(auto b=0;b<num_fractions;b++)
-    key.add(std::to_string(b+2^60));    
+    took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
 
-  auto start_ts_2 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    char * fraction;
-    uint32_t length;
+    ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;b++) 
       key.get(b, &fraction, &length);
+    took_get += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.remove(0);
+    took_remove += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.insert(0, std::to_string(b+2^60));
+    took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
   }
-  auto took_get = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_2).count();
+        
 
-
-  size_t sz = sizeof(key)+key.size;//*(sizeof(DB::Cell::Key::Fraction));
+  
+  DB::Cell::Key key;
+  for(auto b=0; b<num_fractions; b++)
+    key.add(std::to_string(b+2^60));
+    
+  size_t sz = sizeof(key)+key.size;
 
   std::cout << "Cell::Key, sz=" << sz
                     << " add=" << took_add 
+                    << " remove=" << took_remove
+                    << " insert=" << took_insert
                     << " get=" << took_get
                     << " avg(add)=" << took_add/chks 
+                    << " avg(remove)=" << took_remove/chks 
+                    << " avg(insert)=" << took_insert/chks 
                     << " avg(get)=" << took_get/chks 
+                    << " total=" << took_add+took_remove+took_insert+took_get
                     <<  "\n";
   
 }
 
-void load_check_vec(int chks, int num_fractions, int chk_count){
+void load_check_vec(int chks, int num_fractions, int chk_count) {
 
-  auto start_ts_1 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    std::vector<std::string*> key;
+  std::string s;
+  char *      fraction;
+  uint32_t    length; 
+  uint64_t took_add = 0, took_get = 0, took_remove = 0, took_insert = 0;
+
+  for(int n=0; n < chks; n++) {
+    std::vector<std::string> key;
+
+    auto ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;b++)
-      key.push_back(new std::string(std::to_string(b+2^60)));
-  }
-  auto took_add = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_1).count();
-        
-  std::vector<std::string*> key;
-  for(auto b=0;b<num_fractions;b++){
-    key.push_back(new std::string(std::to_string(b+2^60)));
-  }
-  auto start_ts_2 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    char *      fraction;
-    uint32_t    length; 
+      key.push_back(std::to_string(b+2^60));
+    took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;b++) {
-      std::string* s = key.at(b);
-      length = s->length();
-      fraction = s->data();
+      s = key.at(b);
+      length = s.length();
+      fraction = s.data();
     }
+    took_get += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.erase(key.begin());
+    took_remove += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+    
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.insert(key.begin(), std::to_string(b+2^60));
+    took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
   }
-  auto took_get = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_2).count();
 
   
-  size_t sz = sizeof(key);
-  for(auto& s : key)
-    sz += sizeof(s)+sizeof(*s)+s->length();
+  std::vector<std::string> key;
+  size_t sz = 0;
+  for(auto b=0; b<num_fractions; b++) {
+    key.push_back(std::to_string(b+2^60));
+    sz += sizeof(key.back()) + key.back().length();
+  }
+  sz += sizeof(key);
 
-  std::cout << "vector,  sz=" << sz
+  std::cout << "vector,    sz=" << sz
                     << " add=" << took_add 
+                    << " remove=" << took_remove
+                    << " insert=" << took_insert
                     << " get=" << took_get
                     << " avg(add)=" << took_add/chks 
+                    << " avg(remove)=" << took_remove/chks 
+                    << " avg(insert)=" << took_insert/chks 
                     << " avg(get)=" << took_get/chks 
+                    << " total=" << took_add+took_remove+took_insert+took_get
                     <<  "\n";
 }
 

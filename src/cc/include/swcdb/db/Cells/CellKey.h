@@ -27,10 +27,10 @@ class Key {
     assert(other.sane());
     free(); 
     own   = true;
-    count = other.count;
     if(size = other.size) {
       data = new uint8_t[size];
       memcpy(data, other.data, size);
+      count = other.count;
     }
     assert(sane());
   }
@@ -52,25 +52,25 @@ class Key {
     return (count && size && data) || (!count && !size && !data);
   }
 
-  inline void add(const std::string fraction) {
+  void add(const std::string fraction) {
     add((const uint8_t*)fraction.data(), fraction.length());
   }
 
-  inline void add(const char* fraction) {
+  void add(const char* fraction) {
     add((const uint8_t*)fraction, strlen(fraction));
   }
 
-  inline void add(const char* fraction, uint32_t len) {
+  void add(const char* fraction, uint32_t len) {
     add((const uint8_t*)fraction, len);
   }
 
-  inline void add(const uint8_t* fraction, uint32_t len) {
+  void add(const uint8_t* fraction, uint32_t len) {
     uint8_t* fraction_ptr = 0;
     add(fraction, len, &fraction_ptr, 0);
   }
 
-  inline void add(const uint8_t* fraction, uint32_t len, 
-                  uint8_t** fraction_ptr, int8_t reserve) {
+  void add(const uint8_t* fraction, uint32_t len, 
+           uint8_t** fraction_ptr, int8_t reserve) {
     assert(sane());
     uint32_t prev_size = size;
     size += reserve + Serialization::encoded_length_vi32(len) + len;
@@ -93,25 +93,25 @@ class Key {
     assert(sane());
   }
 
-  inline void insert(uint32_t idx, const std::string& fraction) {
+  void insert(uint32_t idx, const std::string& fraction) {
     insert(idx, (const uint8_t*)fraction.data(), fraction.length());
   }
 
-  inline void insert(uint32_t idx, const char* fraction) {
+  void insert(uint32_t idx, const char* fraction) {
     insert(idx, (const uint8_t*)fraction, strlen(fraction));
   }
 
-  inline void insert(uint32_t idx, const char* fraction, uint32_t len) {
+  void insert(uint32_t idx, const char* fraction, uint32_t len) {
     insert(idx, (const uint8_t*)fraction, len);
   }
 
-  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
+  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
     uint8_t* fraction_ptr = 0;
     insert(idx, fraction, len, &fraction_ptr, 0);
   }
 
-  inline void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
-                     uint8_t** fraction_ptr, int8_t reserve) {
+  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
+              uint8_t** fraction_ptr, int8_t reserve) {
     assert(sane());
     if(!data || idx >= count) {
       add(fraction, len, fraction_ptr, reserve);
@@ -157,78 +157,88 @@ class Key {
     assert(sane());
   }
   
-  inline void remove(uint32_t idx, bool recursive=false, uint8_t reserved=0) {
+  void remove(uint32_t idx, bool recursive=false, uint8_t reserved=0) {
     assert(sane());
-    if(!data || idx >= count) {
+    if(!data || idx >= count)
       return;
-    }
-    const uint8_t* ptr_tmp;
-    ptr_tmp = data;
+
+    const uint8_t* ptr_tmp = data;
     if(!own) {
-      own   = true;
+      own = true;
       data = new uint8_t[size];      
       memcpy(data, ptr_tmp, size);
       ptr_tmp = data;
     }
 
     uint8_t* begin;
-    uint32_t len = 0;
     for(uint32_t offset = 0; offset < count; offset++) {
       begin = (uint8_t*)ptr_tmp;
       ptr_tmp += reserved;
       ptr_tmp += Serialization::decode_vi32(&ptr_tmp);
-      len = ptr_tmp-begin;
-      if(offset == idx) {
-        if(recursive) {
-          size = begin-data;
-          count = offset;
-        } else {
-          memmove(begin, ptr_tmp, size-(ptr_tmp-data)); 
-          size -= len;
-          count--;
-        }
-        ptr_tmp = data;
+      if(offset < idx) 
+        continue;
+      
+      if(recursive) {
+        count = offset;
+        size = begin-data;
+      } else if(--count) {
+        memmove(begin, ptr_tmp, size-(ptr_tmp-data)); 
+        size -= ptr_tmp-begin;
+      }
+      
+      ptr_tmp = data;
+      if(count) {
         data = new uint8_t[size];
         memcpy(data, ptr_tmp, size);
-        delete ptr_tmp;
-        break;
+      } else {
+        data = 0;
+        size = 0;
       }
+      delete ptr_tmp;
+      break;
     }
     assert(sane());
   }
 
-  const std::string get_string(uint32_t idx, uint8_t reserved=0) {    
+  const std::string get_string(uint32_t idx, uint8_t reserved=0) const {
     char* fraction;
     uint32_t length = 0;
     get(idx, &fraction, &length, reserved);
     return std::string(fraction, length);
   }
 
-  inline void get(uint32_t idx, char** fraction, uint32_t* length, 
-                  uint8_t reserved=0) {
+  void get(uint32_t idx, char** fraction, uint32_t* length, 
+           uint8_t reserved=0) const {
     uint8_t* fraction_ptr = 0;
     get(idx, fraction, length, &fraction_ptr, reserved);
   }
 
-  inline void get(uint32_t idx, char** fraction, uint32_t* length, 
-                  uint8_t** fraction_ptr, uint8_t reserved) { 
+  void get(uint32_t idx, char** fraction, uint32_t* length, 
+           uint8_t** fraction_ptr, uint8_t reserved) const { 
     assert(sane());
-    *fraction = 0;
-    *length = 0;
-    if(!data || idx > count)
+
+    if(!data || idx > count) {
+      *fraction = 0;
+      *fraction_ptr = 0;
+      *length = 0;
       return;
-   
-    const uint8_t* ptr_tmp = data;
-    do {
-      *fraction_ptr = (uint8_t*)ptr_tmp;
+    }
+    uint32_t len = 0;
+    const uint8_t* ptr = 0;
+    for(const uint8_t* ptr_tmp = data; ; ptr_tmp += len) {
+      ptr = ptr_tmp;
       ptr_tmp += reserved;
-      *length = Serialization::decode_vi32(&ptr_tmp);
-      ptr_tmp += *length;
-    } while(idx--);
-    *fraction = (char*)(ptr_tmp-*length);
+      len = Serialization::decode_vi32(&ptr_tmp);
+      if(!idx--) { 
+        *fraction = (char*)ptr_tmp;
+        *fraction_ptr = (uint8_t*)ptr;
+        *length = len;
+        return;
+      }
+    }
   }
 
-  bool const equal(const Key &other) const {
+  const bool equal(const Key &other) const {
     assert(sane());
     assert(other.sane());
     return size == other.size && count == other.count 
@@ -254,23 +264,21 @@ class Key {
     Condition::Comp comp = Condition::EQ;
     do {
 
-      while(ptr_tmp < ptr_end){
+      if(ptr_tmp < ptr_end) {
         len = Serialization::decode_vi32(&ptr_tmp);
         ptr = ptr_tmp;
         ptr_tmp += len;
         idx++;
-        break;
       }
 
-      while(ptr_tmp_other < ptr_end_other){
+      if(ptr_tmp_other < ptr_end_other) {
         len_other = Serialization::decode_vi32(&ptr_tmp_other);
         ptr_other = ptr_tmp_other;
         ptr_tmp_other += len_other;
         idx_other++;
-        break;
       }
       
-      if(idx == idx_other){
+      if(idx == idx_other) {
 
         comp = Condition::condition(ptr, len, ptr_other, len_other);
         if(comp != Condition::EQ) 
@@ -287,7 +295,7 @@ class Key {
     return comp;
   }
 /*
-  inline size_t fractions(uint8_t offset=0) {
+  size_t fractions(uint8_t offset=0) {
     uint32_t tmp_count = 0;
     const uint8_t* ptr = data + offset;
     const uint8_t* ptr_end = data + size;
