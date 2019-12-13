@@ -33,13 +33,13 @@ class Block {
 
   virtual ~Block() { }
 
-  const bool is_next(const Specs::Interval::Ptr spec) {
+  const bool is_next(const Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
-    return (spec->offset_key.empty() || m_interval.is_in_end(spec->offset_key))
+    return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
             && m_interval.includes(spec);
   }
 
-  const bool includes(const Specs::Interval::Ptr spec) {
+  const bool includes(const Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
     return m_interval.includes(spec);
   }
@@ -51,33 +51,33 @@ class Block {
 
   const size_t size() {
     std::shared_lock lock(m_mutex);
-    return m_cells.size;
+    return m_cells.size();
   }
 
   const size_t _size() {
-    return m_cells.size;
+    return m_cells.size();
   }
   
   const size_t size_bytes() {
     std::shared_lock lock(m_mutex);
-    return m_cells.size_bytes;
+    return m_cells.size_bytes();
   }
   
   void load_cells(const Mutable& cells) {
     std::scoped_lock lock(m_mutex);
     auto ts = Time::now_ns();
-    size_t added = m_cells.size;
+    size_t added = m_cells.size();
     
-    if(m_cells.size)
+    if(m_cells.size())
       cells.scan(m_interval, m_cells);
     
-    added = m_cells.size - added;
+    added = m_cells.size() - added;
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells(cells)"
               << " synced=0"
-              << " avail=" << cells.size 
+              << " avail=" << cells.size() 
               << " added=" << added 
-              << " skipped=" << cells.size-added
+              << " skipped=" << cells.size()-added
               << " avg=" << (added>0 ? took / added : 0)
               << " took=" << took
               << std::flush << " " << m_cells.to_string() << "\n";
@@ -94,7 +94,7 @@ class Block {
     auto ts = Time::now_ns();
     std::scoped_lock lock(m_mutex);
 
-    bool synced = !m_cells.size;
+    bool synced = !m_cells.size();
     const uint8_t** rbuf = &buf;
     size_t* remainp = &remain;
     while(remain) {
@@ -126,11 +126,11 @@ class Block {
       
       added++;
 
-      if((sz = m_cells.size) < 200000)
+      if((sz = m_cells.size()) < 200000)
         continue;
 
       splitter();
-      if(!was_splitted && sz != m_cells.size)
+      if(!was_splitted && sz != m_cells.size())
         was_splitted = true;
     }
     

@@ -29,9 +29,9 @@ class ReqScan  : public ResponseCallback {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          Specs::Interval::Ptr spec, Mutable::Ptr cells)
+          const Specs::Interval& spec, Mutable& cells)
           : ResponseCallback(conn, ev), spec(spec), cells(cells),
-            offset(spec->flags.offset), limit_buffer_sz(0), 
+            offset(spec.flags.offset), limit_buffer_sz(0), 
             has_selector(false), drop_caches(false), type(Type::QUERY) {
   }
 
@@ -52,20 +52,20 @@ class ReqScan  : public ResponseCallback {
   }
 
   virtual bool reached_limits() {
-    return (spec->flags.limit && spec->flags.limit == cells->size) 
+    return (spec.flags.limit && spec.flags.limit == cells.size()) 
            || 
-           (limit_buffer_sz && limit_buffer_sz <= cells->size_bytes);
+           (limit_buffer_sz && limit_buffer_sz <= cells.size_bytes());
   }
  
   virtual ~ReqScan() { }
 
   const std::string to_string() const {
     std::string s("ReqScan(");
-    s.append(spec->to_string());
+    s.append(spec.to_string());
     s.append(" has_selector=");
     s.append(has_selector?"true":"false");
     s.append(" ");
-    s.append(cells->to_string());
+    s.append(cells.to_string());
     s.append(" limit_buffer_sz=");
     s.append(std::to_string(limit_buffer_sz));
     s.append(" state-offset=");
@@ -73,18 +73,18 @@ class ReqScan  : public ResponseCallback {
     return s;
   }
 
-  Specs::Interval::Ptr    spec;
-  Mutable::Ptr            cells;
+  Specs::Interval   spec;
+  Mutable           cells;
 
-  uint32_t                limit_buffer_sz;
-  bool                    has_selector;
-  bool                    drop_caches;
+  uint32_t          limit_buffer_sz;
+  bool              has_selector;
+  bool              drop_caches;
 
-  NextCall_t              next_call = 0;
+  NextCall_t        next_call = 0;
   
   // state of a scan
-  size_t                  offset;
-  Type                    type;
+  size_t            offset;
+  Type              type;
 };
 
 class ReqScanTest : public ReqScan {

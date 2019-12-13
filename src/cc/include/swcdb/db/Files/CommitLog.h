@@ -58,7 +58,7 @@ class Fragments final {
     {
       std::scoped_lock lock(m_mutex_cells);
       m_cells.add(cell);
-      size_bytes = m_cells.size_bytes;
+      size_bytes = m_cells.size_bytes();
     }
 
     if(!m_mutex.try_lock())
@@ -111,13 +111,13 @@ class Fragments final {
             break;
           {
             std::shared_lock lock2(m_mutex_cells);
-            if(!finalize && !m_cells.size)
+            if(!finalize && !m_cells.size())
               break;
           }
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           {
             std::shared_lock lock2(m_mutex_cells);
-            if(!m_cells.size)
+            if(!m_cells.size())
               break;
           }
         }
@@ -137,7 +137,7 @@ class Fragments final {
 
       {
         std::shared_lock lock(m_mutex_cells);
-        if(!m_cells.size || (m_cells.size_bytes < blk_size && !finalize))
+        if(!m_cells.size() || (m_cells.size_bytes() < blk_size && !finalize))
           break; 
       }   
     }
@@ -299,7 +299,7 @@ class Fragments final {
     size_t count = 0;
     {
       std::shared_lock lock(m_mutex_cells);
-      count += m_cells.size;
+      count += m_cells.size();
     }
     std::shared_lock lock(m_mutex);
     for(auto frag : m_fragments)
@@ -374,7 +374,7 @@ class Fragments final {
     size_t size = 0;
     {
       std::shared_lock lock(m_mutex_cells);
-      size += m_cells.size_bytes;
+      size += m_cells.size_bytes();
     }
     for(auto frag : m_fragments)
       size += frag->size_bytes(only_loaded);

@@ -217,36 +217,16 @@ void load_check_key(int chks, int num_fractions, int chk_count){
   }
   auto took_get = std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - start_ts_2).count();
-  /*
-  auto start_ts_get22 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    char * fraction;
-    uint32_t length;
-    for(auto b=0;b<num_fractions;b++) 
-      key.get2(b, &fraction, &length);
-  }
-  auto took_get2 = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_get22).count();
-  */
 
-  auto start_ts_3 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    for(int n=0; n < chk_count;n++)
-      int count = key.count;
-  }
-  auto took_count = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_3).count();
 
-  size_t sz = sizeof(key)+sizeof(key.size)+sizeof(key.count);//*(sizeof(DB::Cell::Key::Fraction));
+  size_t sz = sizeof(key)+key.size;//*(sizeof(DB::Cell::Key::Fraction));
 
   std::cout << "Cell::Key, sz=" << sz
                     << " add=" << took_add 
                     << " get=" << took_get
-                    << " cnt=" << took_count 
                     << " avg(add)=" << took_add/chks 
                     << " avg(get)=" << took_get/chks 
-                    //<< " avg(get2)=" << took_get2/chks 
-                    << " avg(cnt)=" << took_count/chks <<  "\n";
+                    <<  "\n";
   
 }
 
@@ -278,25 +258,17 @@ void load_check_vec(int chks, int num_fractions, int chk_count){
   auto took_get = std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - start_ts_2).count();
 
-  auto start_ts_3 = std::chrono::system_clock::now();
-  for(int n=0; n < chks;n++) {
-    for(int n=0; n < chk_count;n++)
-      int count = key.size();
-  }
-  auto took_count = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now() - start_ts_3).count();
   
-  size_t sz = sizeof(key)+8;
+  size_t sz = sizeof(key);
   for(auto& s : key)
-    sz += 8+sizeof(s)+8;
+    sz += sizeof(s)+sizeof(*s)+s->length();
 
   std::cout << "vector,  sz=" << sz
                     << " add=" << took_add 
                     << " get=" << took_get
-                    << " cnt=" << took_count 
                     << " avg(add)=" << took_add/chks 
                     << " avg(get)=" << took_get/chks 
-                    << " avg(cnt)=" << took_count/chks <<  "\n";
+                    <<  "\n";
 }
 
 int main() {

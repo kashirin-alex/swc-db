@@ -24,23 +24,46 @@ class Mutable final {
   typedef std::shared_ptr<Mutable>          Ptr;
   typedef std::function<bool(const Cell&)>  Selector_t;
   
-  uint32_t          size;
-  uint32_t          size_bytes;
-  
-  inline static Ptr make(const uint32_t cap=1, 
+  inline static Ptr make(const uint32_t cap=0, 
                          const uint32_t max_revs=1, 
                          const uint64_t ttl=0, 
                          const Types::Column type=Types::Column::PLAIN) {
     return std::make_shared<Mutable>(cap, max_revs, ttl, type);
   }
 
-  explicit Mutable(const uint32_t cap=1, 
+  explicit Mutable(const uint32_t cap=0, 
                    const uint32_t max_revs=1, 
                    const uint64_t ttl=0, 
                    const Types::Column type=Types::Column::PLAIN)
-                  : m_cells(0), m_cap(cap==0?1:cap), size(0), size_bytes(0), 
+                  : m_cells(0), m_cap(cap), m_size(0), m_size_bytes(0), 
                     m_max_revs(max_revs), m_ttl(ttl), m_type(type){
-    _allocate();
+    if(m_cap)
+      _allocate();
+  }
+
+  explicit Mutable(Mutable& other)
+                  : m_cells(other.m_cells), m_cap(other.m_cap), 
+                    m_size(other.m_size), m_size_bytes(other.m_size_bytes), 
+                    m_max_revs(other.m_max_revs), m_ttl(other.m_ttl), 
+                    m_type(other.m_type) {
+    if(other.m_cells) {
+      other.m_cells = 0;
+      other.m_cap = 0;
+      other.m_size = 0;
+      other.m_size_bytes = 0;
+    }
+  }
+
+  void reset(const uint32_t cap=0, const uint32_t max_revs=1, 
+             const uint64_t ttl=0, 
+             const Types::Column type=Types::Column::PLAIN) {
+    free();
+    m_cap = cap;
+    m_max_revs = max_revs;
+    m_ttl = ttl;
+    m_type = type;
+    if(m_cap)
+      _allocate();
   }
 
   ~Mutable() {
@@ -48,7 +71,7 @@ class Mutable final {
   }
 
   void ensure(uint32_t sz) {
-    if(m_cap < size + sz){
+    if(m_cap < m_size + sz){
       m_cap += sz;
       _allocate();
     }
@@ -56,32 +79,40 @@ class Mutable final {
 
   void free() {
     if(m_cells) {
-      if(size) do { 
-        size--;
-        delete *(m_cells+size);
-        //(*(m_cells+size))->~Cell();
-        //std::free(*(m_cells+size));
-      } while(size);
+      if(m_size) do { 
+        m_size--;
+        delete *(m_cells+m_size);
+        //(*(m_cells+m_size))->~Cell();
+        //std::free(*(m_cells+m_size));
+      } while(m_size);
 
       delete [] m_cells;
       //std::free(m_cells);
 
       m_cap = 0;
       m_cells = 0;
-      size_bytes = 0;
+      m_size_bytes = 0;
     }
   }
-
+  
+  const uint32_t size() const {
+    return m_size;
+  }
+  
+  const uint32_t size_bytes() const {
+    return m_size_bytes;
+  }
+  
   void get(int32_t idx, Cell& cell) const {
-    cell.copy(**(m_cells+(idx < 0? size+idx: idx)));
+    cell.copy(**(m_cells+(idx < 0? m_size+idx: idx)));
   }
 
   void get(int32_t idx, DB::Cell::Key& key) const {
-    key.copy((*(m_cells+(idx < 0? size+idx: idx)))->key);
+    key.copy((*(m_cells+(idx < 0? m_size+idx: idx)))->key);
   }
 
   void get(int32_t idx, DB::Cell::Key& key, int64_t& ts) const {
-    Cell* cell = *(m_cells+(idx < 0? size+idx: idx));
+    Cell* cell = *(m_cells+(idx < 0? m_size+idx: idx));
     key.copy(cell->key);
     ts = cell->timestamp;
   }
@@ -90,7 +121,7 @@ class Mutable final {
     Cell* ptr;
     Condition::Comp chk;
 
-    for(uint32_t offset = _narrow(key, 0); offset < size; offset++) {
+    for(uint32_t offset = _narrow(key, 0); offset < m_size; offset++) {
       ptr = *(m_cells + offset);
       if((chk = key.compare(ptr->key, 0)) == Condition::GT 
         || (comp == Condition::GE && chk == Condition::EQ)){
@@ -104,7 +135,7 @@ class Mutable final {
   bool get(const Specs::Key& key, Cell& cell) const {
     Cell* ptr;
 
-    for(uint32_t offset = 0; offset < size; offset++){
+    for(uint32_t offset = 0; offset < m_size; offset++) {
       ptr = *(m_cells + offset);
       if(key.is_matching(ptr->key)) {
         cell.copy(*ptr);
@@ -115,27 +146,27 @@ class Mutable final {
   }
 
   void push_back(const Cell& cell) {
-    ensure(1);
-    *(m_cells + size) = new Cell(cell);
-    //new(*(m_cells + size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    size++;
-    size_bytes += cell.encoded_length();
+    ensure(1);    
+    *(m_cells + m_size) = new Cell(cell);
+    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell.encoded_length();
   }
 
   void push_back_nocpy(Cell* cell) {
     ensure(1);
-    *(m_cells + size) = cell;
-    //new(*(m_cells + size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    size++;
-    size_bytes += cell->encoded_length();
+    *(m_cells + m_size) = cell;
+    //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
+    m_size++;
+    m_size_bytes += cell->encoded_length();
   }
   
   void insert(uint32_t offset, const Cell& cell) {
     _move_fwd(offset, 1);
     *(m_cells + offset) = new Cell(cell);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    size++;
-    size_bytes += cell.encoded_length();
+    m_size++;
+    m_size_bytes += cell.encoded_length();
   }
 
   void add(const Cell& e_cell) {
@@ -152,7 +183,7 @@ class Mutable final {
     int64_t revision_new;
     
     for(uint32_t offset = _narrow(e_cell.key, e_cell.on_fraction);
-        offset < size; offset++) {
+        offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl)) {
@@ -286,18 +317,17 @@ class Mutable final {
   }
 
   void pop(int32_t idx, Cell& cell) {
-    uint32_t offset = idx < 0? size+idx: idx;
+    uint32_t offset = idx < 0? m_size+idx: idx;
     cell.copy(**(m_cells+offset));
     
     _move_bwd(offset, 1);
   }
 
-  void scan(const DB::Cells::Interval& interval, 
-                  DB::Cells::Mutable& cells) const {
+  void scan(const Interval& interval, Mutable& cells) const {
     Cell* cell;
 
     for(uint32_t offset = _narrow(interval.key_begin, 0);
-        offset < size; offset++){
+        offset < m_size; offset++){
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl) || !interval.is_in_begin(cell->key))
@@ -309,20 +339,20 @@ class Mutable final {
     }
   }
 
-  void scan(const Specs::Interval& specs, Mutable::Ptr cells, 
+  void scan(const Specs::Interval& specs, Mutable& cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t& selector=0) const {
     Cell* cell;
 
     uint32_t offset = 0; //(narrower over specs.key_start)
     
-    for(; offset < size; offset++){
+    for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
 
       if(cell->flag == NONE) {
         // temp checkup
         std::cerr << "FLAG::NONE, offset=" << offset 
-                  << " size=" << size << " " 
+                  << " m_size=" << m_size << " " 
                   << cell->to_string() << "\n";
         exit(1);
       }
@@ -340,7 +370,7 @@ class Mutable final {
           skips++;  
           continue;
         }
-        cells->add(*cell);
+        cells.add(*cell);
         if(reached_limits())
           break;
       } else 
@@ -351,9 +381,9 @@ class Mutable final {
   void scan(const Specs::Interval& specs, DynamicBuffer& result, 
             size_t& count, size_t& skips) const {
     Cell* cell;
-    uint32_t offset = 0; //specs.flags.offset; //(narrower over specs.key_start)
+    uint32_t offset = 0; //specs.flags.offset;(narrower over specs.key_start)
     uint cell_offset = specs.flags.offset;
-    for(; offset < size; offset++){
+    for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl) || cell->on_fraction 
@@ -376,11 +406,11 @@ class Mutable final {
     }
   }
 
-  void write(DynamicBuffer& cells) {
+  void write(DynamicBuffer& cells) const {
     Cell* cell;
-    cells.ensure(size_bytes);
+    cells.ensure(m_size_bytes);
 
-    for(uint32_t offset = 0; offset < size; offset++) {
+    for(uint32_t offset = 0; offset < m_size; offset++) {
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
@@ -396,9 +426,10 @@ class Mutable final {
     Cell* first = nullptr;
     Cell* last = nullptr;
 
-    cells.ensure(size_bytes < threshold? size_bytes: threshold);
+    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
     uint32_t offset = 0;
-    for(;offset < size && (!threshold || threshold > cells.fill()); offset++) {
+    for(;offset < m_size && (!threshold || threshold > cells.fill()); 
+        offset++) {
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
@@ -421,7 +452,7 @@ class Mutable final {
     }
     
     if(offset) {
-      if(size == offset)
+      if(m_size == offset)
         free();
       else 
         _move_bwd(0, offset);
@@ -436,11 +467,11 @@ class Mutable final {
     int32_t offset_applied = -1;
     Condition::Comp cond;
     
-    cells.ensure(size_bytes < threshold? size_bytes: threshold);
+    cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
     
     uint32_t offset = _narrow(key_start, 0);
 
-    for(; offset < size; offset++) {
+    for(; offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
       cond = cell->key.compare(key_start, 0);
@@ -463,7 +494,7 @@ class Mutable final {
     }
     
     if(count) {
-      if(size == count) {
+      if(m_size == count) {
         free();
         return false;
       }
@@ -478,8 +509,8 @@ class Mutable final {
     uint32_t rest = 0;
     Cell* from_cell = *(m_cells + from);
 
-    for(uint32_t offset = _narrow(from_cell->key, 0);
-        offset < size; offset++) {
+    for(uint32_t offset = _narrow(from_cell->key, 0); offset < m_size; 
+        offset++) {
       cell = *(m_cells + offset);
       
       if(!rest) {
@@ -497,7 +528,7 @@ class Mutable final {
       
       cells.push_back_nocpy(cell);
     }
-    size = rest;
+    m_size = rest;
   }
   
   void add(const DynamicBuffer& cells) {
@@ -511,24 +542,26 @@ class Mutable final {
     }
   }
 
-  void add_to(Ptr cells) {
-    for(uint32_t offset = 0; offset < size; offset++)
+  void add_to(Ptr cells, bool release=false) {
+    for(uint32_t offset = 0; offset < m_size; offset++)
       cells->add(**(m_cells + offset));
+    if(release)
+      free();
   }
 
-  void expand(DB::Cells::Interval& interval) {
+  void expand(Interval& interval) const {
     interval.expand(**(m_cells)); // !on_fraction
-    if(size)
-      interval.expand(**(m_cells + size-1));
+    if(m_size > 1)
+      interval.expand(**(m_cells + m_size-1));
   }
 
   const std::string to_string(bool with_cells=false) const {
     std::string s("CellsMutable(cap=");
     s.append(std::to_string(m_cap));
     s.append(" size=");
-    s.append(std::to_string(size));
+    s.append(std::to_string(m_size));
     s.append(" bytes=");
-    s.append(std::to_string(size_bytes));
+    s.append(std::to_string(m_size_bytes));
     s.append(" type=");
     s.append(Types::to_string(m_type));
     s.append(" max_revs=");
@@ -537,7 +570,7 @@ class Mutable final {
     s.append(std::to_string(m_ttl));
     if(with_cells) {
       s.append(" cells=[\n");
-      for(uint32_t offset=0; offset < size; offset++) {
+      for(uint32_t offset=0; offset < m_size; offset++) {
         s.append((*(m_cells + offset))->to_string(m_type));
         s.append("\n");
       }
@@ -556,31 +589,29 @@ class Mutable final {
       //m_cells = (Cell**)std::malloc(m_cap*_cell_sz);
 
     } else {
-      //void* cells_new = std::realloc(m_cells, (m_cap += size)*_cell_sz));
+      //void* cells_new = std::realloc(m_cells, (m_cap += m_size)*_cell_sz));
       //if(cells_new) 
       //  m_cells = (Cell**)cells_new;
       
       Cell** cells_old = m_cells;
-      m_cells = new Cell*[m_cap += size];     
-
-      memcpy(m_cells, cells_old, size*_cell_sz);
-      //for(uint32_t n=size;n--;) 
+      m_cells = new Cell*[m_cap += m_size];     
+      memcpy(m_cells, cells_old, m_size*_cell_sz);
+      //for(uint32_t n=m_size;n--;) 
       //  *(m_cells+n) = *(cells_old+n);
-     
       delete [] cells_old;
     }
 
-    memset(m_cells+size, 0, (m_cap-size)*_cell_sz);
-    //for(uint32_t n=m_cap-size; n--;) 
-    //  *(m_cells+size+n) = nullptr;
+    memset(m_cells+m_size, 0, (m_cap-m_size)*_cell_sz);
+    //for(uint32_t n=m_cap-m_size; n--;) 
+    //  *(m_cells+m_size+n) = nullptr;
   }
 
   void _move_fwd(uint32_t offset, int32_t by) {
     ensure(by);
     Cell** ptr = m_cells+offset;
-    memmove(ptr+by, ptr, (size-offset)*_cell_sz);
-    //Cell** end = m_cells+size+by-1;
-    //for(uint32_t n = size-offset;n--;)
+    memmove(ptr+by, ptr, (m_size-offset)*_cell_sz);
+    //Cell** end = m_cells+m_size+by-1;
+    //for(uint32_t n = m_size-offset;n--;)
       //*end-- = *(end-by); 
   }
 
@@ -592,14 +623,14 @@ class Mutable final {
       _remove(*ptr);
     } while(++ptr < offset_end_ptr);
    
-    size -= by;
-    if(offset < size)
-      memmove(offset_ptr, offset_end_ptr, (size-offset)*_cell_sz);
-    memset(m_cells+size, 0, by*_cell_sz);
+    m_size -= by;
+    if(offset < m_size)
+      memmove(offset_ptr, offset_end_ptr, (m_size-offset)*_cell_sz);
+    memset(m_cells+m_size, 0, by*_cell_sz);
   }
 
   void _remove(Cell* cell) {
-    size_bytes -= cell->encoded_length();
+    m_size_bytes -= cell->encoded_length();
     delete cell;
     //(*ptr)->~Cell();
     //std::free(*ptr);
@@ -608,11 +639,11 @@ class Mutable final {
   uint32_t _narrow(const DB::Cell::Key& key, uint32_t on_fraction=0) const {
     uint32_t offset = 0;
 
-    if(size < narrow_sz)
+    if(m_size < narrow_sz)
       return offset;
 
     uint32_t narrows = 0;
-    uint32_t sz = size/2;
+    uint32_t sz = m_size/2;
     offset = sz; 
     Condition::Comp cond;
 
@@ -641,7 +672,7 @@ class Mutable final {
   void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, 
                         uint32_t revs) {
     Cell* cell;
-    for(; offset < size; offset++) {
+    for(; offset < m_size; offset++) {
 
       cell = *(m_cells + offset);
       
@@ -663,6 +694,8 @@ class Mutable final {
 
   Cell**            m_cells;
   uint32_t          m_cap;
+  uint32_t          m_size;
+  uint32_t          m_size_bytes;
   uint32_t          m_max_revs;
   uint64_t          m_ttl;
   Types::Column     m_type;

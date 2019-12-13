@@ -153,6 +153,8 @@ class IntervalBlocks final {
       );
 
       m_cells.move_from_key_offset(keep, blk->m_cells);
+      assert(m_cells.size());
+      assert(blk->m_cells.size());
       
       bool any_begin = m_interval.key_begin.empty();
       bool any_end = m_interval.key_end.empty();
@@ -209,7 +211,7 @@ class IntervalBlocks final {
         return released;
       m_state = State::NONE;
 
-      released += m_cells.size;
+      released += m_cells.size();
       m_cells.free();
       return released;
     }
@@ -241,7 +243,7 @@ class IntervalBlocks final {
       s.append(" ");
       s.append(m_cells.to_string());
       s.append(" ");
-      if(m_cells.size) {
+      if(m_cells.size()) {
         DB::Cells::Cell cell;
         m_cells.get(0, cell);
         s.append(cell.key.to_string());
@@ -268,7 +270,7 @@ class IntervalBlocks final {
 
         size_t skips = 0; // Ranger::Stats
         m_cells.scan(
-          *(req->spec).get(), 
+          req->spec, 
           req->cells, 
           req->offset,
           [req]() { return req->reached_limits(); },
@@ -277,7 +279,7 @@ class IntervalBlocks final {
           ? [req](const DB::Cells::Cell& cell) 
                 { return req->selector(cell); }
           : (DB::Cells::Mutable::Selector_t)0 
-        );  
+        );
         
       }
       processing_decrement();
@@ -322,8 +324,6 @@ class IntervalBlocks final {
 
     struct Callback final {
       public:
-      DB::Cells::ReqScan::Ptr req;
-      Block::Ptr              ptr;
 
       Callback(DB::Cells::ReqScan::Ptr req, Block::Ptr ptr) 
                : req(req), ptr(ptr) { }
@@ -343,11 +343,19 @@ class IntervalBlocks final {
           ptr->m_blocks->processing_decrement();
           req->response(err);
 
-        } else
-          ptr->m_blocks->scan(req, ptr); 
+        } else {
+          asio::post(
+            *Env::IoCtx::io()->ptr(), 
+            [r=req, blk=ptr](){ blk->m_blocks->scan(r, blk); }
+          );
+        }
       }
+      
+      private:  
+      DB::Cells::ReqScan::Ptr   req;
+      Block::Ptr                ptr;
     };
-    
+
     State                     m_state;
     size_t                    m_processing;
     std::queue<Callback*>     m_queue;
@@ -462,7 +470,7 @@ class IntervalBlocks final {
           blk_ptr = blk;
           blk->processing_increment();
 
-          if((!req->spec->flags.limit || req->spec->flags.limit > 1) 
+          if((!req->spec.flags.limit || req->spec.flags.limit > 1) 
               && eval->next 
               && !eval->next->loaded() && !eval->next->removed()) {
             nxt_blk = eval->next;

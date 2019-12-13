@@ -19,19 +19,19 @@ using namespace SWC;
 
 void count_all_cells(DB::Schema::Ptr schema, size_t num_cells, 
                      SWC::server::Rgr::IntervalBlocks& blocks) {
+  std::cout << " count_all_cells: \n";
   std::atomic<int> chk = 1;
   
   auto req = DB::Cells::ReqScanTest::make();
-  req->cells = DB::Cells::Mutable::make(
+  req->cells.reset(
     schema->cid, schema->cell_versions, 0, SWC::Types::Column::PLAIN);
-  req->spec = SWC::DB::Specs::Interval::make_ptr();
-  req->spec->flags.limit = num_cells * schema->cell_versions;
+  req->spec.flags.limit = num_cells * schema->cell_versions;
     
   req->cb = [req, &chk, blocks=&blocks](int err){
     std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
-    if(req->cells->size != req->spec->flags.limit) {
-      std::cerr << "all-ver, req->cells->size() != req->spec->flags.limit  \n" 
-                << " " << req->cells->size << " != "  << req->spec->flags.limit <<"\n";
+    if(req->cells.size() != req->spec.flags.limit) {
+      std::cerr << "all-ver, req->cells.size() != req->spec.flags.limit  \n" 
+                << " " << req->cells.size() << " != "  << req->spec.flags.limit <<"\n";
       exit(1);
     }
     //std::cout << req->to_string() << "\n";
@@ -43,6 +43,7 @@ void count_all_cells(DB::Schema::Ptr schema, size_t num_cells,
 
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::cout << " count_all_cells, OK\n";
 }
 
 int main(int argc, char** argv) {
@@ -173,17 +174,15 @@ int main(int argc, char** argv) {
   for(int i = 1;i<=num_chks; i++){
     
     auto req = DB::Cells::ReqScanTest::make();
-    req->cells = DB::Cells::Mutable::make(
-      schema->cid, 1, 0, SWC::Types::Column::PLAIN);
-    req->spec = SWC::DB::Specs::Interval::make_ptr();
-    req->spec->flags.limit = num_cells;
+    req->cells.reset(schema->cid, 1, 0, SWC::Types::Column::PLAIN);
+    req->spec.flags.limit = num_cells;
     
     req->cb = [req, &chk, i, blocks=&blocks](int err){
       std::cout << " chk=" << i 
                 << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
-      if(req->cells->size != req->spec->flags.limit) {
-        std::cerr << "one-ver, req->cells->size() != req->spec->flags.limit  \n" 
-                  << " " << req->cells->size << " !="  << req->spec->flags.limit <<"\n";
+      if(req->cells.size() != req->spec.flags.limit) {
+        std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n" 
+                  << " " << req->cells.size() << " !="  << req->spec.flags.limit <<"\n";
         exit(1);
       }
       //std::cout << req->to_string() << "\n";
@@ -193,12 +192,13 @@ int main(int argc, char** argv) {
     blocks.scan(req);
   }
 
+  std::cout << " scanned blocks: \n" << blocks.to_string() << "\n";
+
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   
   count_all_cells(schema, num_cells, blocks);
 
-  std::cout << " scanned blocks: \n" << blocks.to_string() << "\n";
   std::cout << " scanned blocks, OK\n";
 
 

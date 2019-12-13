@@ -45,22 +45,17 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
       conn->send_error(err, "", ev);
       return;
     }
-
+    
+    auto cells = DB::Cells::Mutable(
+      params.interval.flags.limit, 
+      params.interval.flags.max_versions ? 
+      params.interval.flags.max_versions : schema->cell_versions, 
+      schema->cell_ttl, 
+      schema->col_type
+    );
     range->scan(
       std::make_shared<server::Rgr::Callback::RangeQuerySelect>(
-        conn, ev,
-
-        DB::Specs::Interval::make_ptr(params.interval),
-        DB::Cells::Mutable::make(
-          params.interval.flags.limit, 
-          params.interval.flags.max_versions ? 
-          params.interval.flags.max_versions : schema->cell_versions, 
-          schema->cell_ttl, 
-          schema->col_type
-        ), 
-        
-        range,
-        params.limit_buffer_sz
+        conn, ev, params.interval, cells, range, params.limit_buffer_sz
       )
     );
   } catch (Exception &e) {

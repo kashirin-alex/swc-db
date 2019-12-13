@@ -147,14 +147,13 @@ int main(int argc, char** argv) {
 
     for(int i=1; i<=(n>10?1:10);i++) {
       id++;
-      //std::cout << "cs-req->spec-scan:\n " << req->spec->to_string() << "\n";
+      //std::cout << "cs-req->spec-scan:\n " << req->spec.to_string() << "\n";
     auto t = std::thread([&blocks, &key_to_scan, id, &count=requests](){
 
       auto req = Cells::ReqScanTest::make();
-      req->cells = Cells::Mutable::make(2, 2, 0, SWC::Types::Column::PLAIN);
-      req->spec = SWC::DB::Specs::Interval::make_ptr();
-      req->spec->key_start.set(key_to_scan, SWC::Condition::GE);
-      req->spec->flags.limit = 2;
+      req->cells.reset(2, 2, 0, SWC::Types::Column::PLAIN);
+      req->spec.key_start.set(key_to_scan, SWC::Condition::GE);
+      req->spec.flags.limit = 2;
       req->cb = [req, id, key_to_scan, &requests=count, took=SWC::Time::now_ns()](int err){
         std::cout << " chk=" << id ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
@@ -163,13 +162,13 @@ int main(int argc, char** argv) {
           std::cout << req->to_string() << "\n";
         }
         requests--;
-        if(req->cells->size != 1) {
-          std::cerr << "ERROR: req->cells.size=" << req->cells->size 
+        if(req->cells.size() != 1) {
+          std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
                     << " expected=1\n";
           exit(1);
         }
         SWC::DB::Cells::Cell cell;
-        req->cells->get(0, cell);
+        req->cells.get(0, cell);
         if(!cell.key.equal(key_to_scan)) {
           std::cerr << "ERROR: !cell.key.equal(key_to_scan) " << cell.to_string() 
                     << " expected=" << key_to_scan.to_string()  << "\n";

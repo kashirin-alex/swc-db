@@ -18,8 +18,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   public:
 
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
-                  DB::Specs::Interval::Ptr spec, 
-                  DB::Cells::Mutable::Ptr cells,
+                  const DB::Specs::Interval& spec, 
+                  DB::Cells::Mutable& cells,
                   Range::Ptr range)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
                     range(range) {
@@ -30,9 +30,9 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
   bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
     //std::cout << " selector  checking: "<< cell.to_string() << "\n";
-    //std::cout << " vs spec->key_start: "<< spec->key_start.to_string() << "\n";
-    if(!spec->key_start.is_matching(cell.key)) 
-      return cells->size == 1; // next_key
+    //std::cout << " vs spec.key_start: "<< spec.key_start.to_string() << "\n";
+    if(!spec.key_start.is_matching(cell.key)) 
+      return cells.size() == 1; // next_key
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
@@ -41,12 +41,12 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     key_end.decode(&ptr, &remain);
     /*
     std::cout << "cell begin: "<< cell.key.to_string() << "\n";
-    std::cout << "spec begin: " << spec->key_start.to_string() << "\n";
+    std::cout << "spec begin: " << spec.key_start.to_string() << "\n";
     std::cout << "cell end:   "<< key_end.to_string() << "\n";
-    std::cout << "spec end:   " << spec->key_finish.to_string() << "\n";
+    std::cout << "spec end:   " << spec.key_finish.to_string() << "\n";
     */
     return key_end.empty() || 
-            spec->key_finish.is_matching(key_end);
+            spec.key_finish.is_matching(key_end);
   }
 
   void response(int &err) override {
@@ -60,15 +60,15 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         err = Error::COLUMN_MARKED_REMOVED;
     }
     if(err == Error::COLUMN_MARKED_REMOVED)
-      cells->free();
+      cells.free();
 
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(!err) {
-      if(cells->size) {
+      if(cells.size()) {
 
         DB::Cells::Cell cell;
-        cells->get(0, cell);
+        cells.get(0, cell);
         
         std::string id_name(cell.key.get_string(0));
         params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
@@ -84,17 +84,17 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         if(!params.key_end.empty())
           params.key_end.remove(0);
 
-        params.next_key = cells->size > 1;
+        params.next_key = cells.size() > 1;
         
       } else  {
         // range->cid == 1 || 2
-        if(spec->key_start.count > 1) {
-          spec->offset_key.free();
-          spec->key_finish.copy(spec->key_start);
-          spec->key_finish.set(-1, Condition::LE);
+        if(spec.key_start.count > 1) {
+          spec.offset_key.free();
+          spec.key_finish.copy(spec.key_start);
+          spec.key_finish.set(-1, Condition::LE);
           if(range->type != Types::Range::DATA)
-            spec->key_finish.set(0, Condition::EQ);
-          spec->key_start.remove(spec->key_start.count-1, true);
+            spec.key_finish.set(0, Condition::EQ);
+          spec.key_start.remove(spec.key_start.count-1, true);
           range->scan(get_req_scan());
           return;
         } else {

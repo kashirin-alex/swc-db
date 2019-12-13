@@ -47,26 +47,23 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
 
-    auto spec = DB::Specs::Interval::make_ptr(params.interval);
-    spec->key_finish.copy(spec->key_start);
-    spec->key_finish.set(-1, Condition::LE);
-    if(range->type != Types::Range::DATA) 
-      spec->key_finish.set(0, Condition::EQ);
-    spec->flags.limit = 2;
-
-    range->scan(
-      std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-        conn, ev, 
-        spec,  
-        DB::Cells::Mutable::make(
-          params.interval.flags.limit, 
-          schema->cell_versions, 
-          schema->cell_ttl, 
-          schema->col_type
-        ), 
-        range
-      )
+    auto cells = DB::Cells::Mutable(
+      params.interval.flags.limit, 
+      schema->cell_versions, 
+      schema->cell_ttl, 
+      schema->col_type
     );
+    auto req = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+      conn, ev, params.interval, cells, range
+    );
+    req->spec.key_finish.copy(req->spec.key_start);
+    req->spec.key_finish.set(-1, Condition::LE);
+    if(range->type != Types::Range::DATA) 
+      req->spec.key_finish.set(0, Condition::EQ);
+    req->spec.flags.limit = 2;
+
+    range->scan(req);
+    
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }

@@ -356,8 +356,8 @@ class Fragment final {
       m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
       m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
-      if(!checksum_i32_chk(
-        Serialization::decode_i32(&ptr, &remain), buf.base, header_extlen-4)){  
+      if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                           buf.base, header_extlen-4)) {  
         err = Error::CHECKSUM_MISMATCH;
         return;
       }

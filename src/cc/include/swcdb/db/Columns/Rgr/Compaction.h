@@ -180,7 +180,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                   cs_size(cs_size), blk_size(blk_size), 
                   blk_encoding(blk_encoding),
                   schema(schema) {
-      spec = DB::Specs::Interval::make_ptr();
       make_cells();
     }
 
@@ -191,7 +190,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     void make_cells() {
-      cells = DB::Cells::Mutable::make(
+      cells.reset(
         1000, 
         schema->cell_versions, 
         schema->cell_ttl, 
@@ -200,7 +199,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     bool reached_limits() override {
-      return m_stopped || cells->size_bytes >= blk_size;
+      return m_stopped || cells.size_bytes() >= blk_size;
     }
 
     void response(int &err) override {
@@ -208,15 +207,15 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         return;
       /*
       std::cout << "CompactScan::response: \n"
-                << "  spec=" << spec->to_string() << "\n"
-                << " cells="<< cells->size << " sz=" << cells->size_bytes << "\n";
+                << "  spec=" << spec.to_string() << "\n"
+                << " cells="<< cells.size() << " sz=" << cells.size_bytes() << "\n";
       */
-      total_cells+=cells->size;
+      total_cells += cells.size();
       std::cout << "CompactScan::response: total_cells=" << total_cells.load() << "\n";
 
       {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if(!cells->size) {
+        if(!cells.size()) {
           if(m_writing)
             m_queue.push(nullptr);
           else 
@@ -226,7 +225,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         m_getting = false;
       }
 
-      auto selected_cells = cells;
+      auto selected_cells = new DB::Cells::Mutable(cells);
       make_cells();
 
       DB::Cells::Cell first;
@@ -238,8 +237,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                 << " first=" << first.to_string() << "\n"
                 << "  last=" << last.to_string() << "\n";
       */
-      spec->offset_key.copy(last.key);
-      spec->offset_rev = last.timestamp;
+      spec.offset_key.copy(last.key);
+      spec.offset_rev = last.timestamp;
       
       { 
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -275,7 +274,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     void process() {
       int err = Error::OK;
-      DB::Cells::Mutable::Ptr selected_cells;
+      DB::Cells::Mutable* selected_cells;
       for(;;) {
         {
           std::lock_guard<std::mutex> lock(m_mutex);
@@ -291,6 +290,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         request_more();
 
         write_cells(err, selected_cells);
+        delete selected_cells;
 
         if(m_stopped)
           return;
@@ -332,7 +332,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     }
 
-    void write_cells(int& err, DB::Cells::Mutable::Ptr selected_cells) {
+    void write_cells(int& err, DB::Cells::Mutable* selected_cells) {
       
       if(cs_writer == nullptr) {
         uint32_t id = create_cs(err);
@@ -347,12 +347,12 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
-          if(range->is_any_end() && !selected_cells->size) // there was one cell
+          if(range->is_any_end() && !selected_cells->size()) // there was one cell
             blk_intval.key_end.free(); 
           
           cs_writer->block(err, blk_intval, buff, cell_count);
 
-          if(err || !selected_cells->size)
+          if(err || !selected_cells->size())
             return;
         }
       }
@@ -473,11 +473,11 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     Files::CellStore::Writers       cellstores;
     DB::Cells::Cell                 last_cell;
 
-    std::mutex                          m_mutex;
-    bool                                m_writing = false;
-    std::queue<DB::Cells::Mutable::Ptr> m_queue;
-    std::atomic<bool>                   m_stopped = false;
-    bool                                m_getting = false;
+    std::mutex                      m_mutex;
+    bool                            m_writing = false;
+    std::queue<DB::Cells::Mutable*> m_queue;
+    std::atomic<bool>               m_stopped = false;
+    bool                            m_getting = false;
   };
 
   IoContext::Ptr io() {

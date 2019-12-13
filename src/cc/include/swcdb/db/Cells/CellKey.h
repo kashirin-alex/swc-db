@@ -24,12 +24,11 @@ class Key {
   }
 
   void copy(const Key &other) {
-    free(); 
     assert(other.sane());
+    free(); 
     own   = true;
     count = other.count;
-    size  = other.size;
-    if(size) {
+    if(size = other.size) {
       data = new uint8_t[size];
       memcpy(data, other.data, size);
     }
@@ -357,6 +356,8 @@ class Key {
       s.append("),");
     }
     s.append("])");
+    
+    assert(sane());
     return s;
   }
 

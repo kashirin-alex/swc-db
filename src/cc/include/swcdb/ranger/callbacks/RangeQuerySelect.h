@@ -18,8 +18,8 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
   public:
 
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
-                   DB::Specs::Interval::Ptr spec, 
-                   DB::Cells::Mutable::Ptr cells, 
+                   const DB::Specs::Interval& spec, 
+                   DB::Cells::Mutable& cells, 
                    Range::Ptr range, uint32_t limit_buffer)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
                     range(range) {
@@ -39,17 +39,17 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
         err = Error::COLUMN_MARKED_REMOVED;
     }
     if(err == Error::COLUMN_MARKED_REMOVED)
-      cells->free();
+      cells.free();
     
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err,  
-      limit_buffer_sz <= cells->size_bytes
+      limit_buffer_sz <= cells.size_bytes()
     );
 
     CommBuf::Ptr cbp;
-    if(cells->size) {
+    if(cells.size()) {
       DynamicBuffer buffer;
-      cells->write(buffer);
+      cells.write(buffer);
       StaticBuffer sndbuf(buffer);
       cbp = CommBuf::make(params, sndbuf);
     } else {
