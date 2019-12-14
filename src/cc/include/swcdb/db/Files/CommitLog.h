@@ -39,8 +39,8 @@ class Fragments final {
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
     
-    m_cells = DB::Cells::Mutable(
-      1, 
+    m_cells.reset(
+      0, 
       schema->cell_versions, 
       schema->cell_ttl, 
       schema->col_type
