@@ -47,7 +47,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
 
-    auto cells = DB::Cells::Mutable(
+    DB::Cells::Mutable cells(
       params.interval.flags.limit, 
       schema->cell_versions, 
       schema->cell_ttl, 

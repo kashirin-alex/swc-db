@@ -46,7 +46,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
     
-    auto cells = DB::Cells::Mutable(
+    DB::Cells::Mutable cells(
       params.interval.flags.limit, 
       params.interval.flags.max_versions ? 
       params.interval.flags.max_versions : schema->cell_versions, 
