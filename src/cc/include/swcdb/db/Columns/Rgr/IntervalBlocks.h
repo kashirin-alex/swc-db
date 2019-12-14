@@ -101,7 +101,7 @@ class IntervalBlocks final {
     }
     
     void preload() {
-      //std::cout << " BLK_PRELOAD " << nxt_blk->to_string() << "\n";
+      //std::cout << " BLK_PRELOAD " << to_string() << "\n";
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [ptr=ptr()](){ 
@@ -155,18 +155,16 @@ class IntervalBlocks final {
       m_cells.move_from_key_offset(keep, blk->m_cells);
       assert(m_cells.size());
       assert(blk->m_cells.size());
+
+      blk->m_cells.expand(blk->m_interval);
+      blk->m_interval.set_key_end(m_interval.key_end);
+      blk->m_interval.set_ts_latest(m_interval.ts_latest);
       
       bool any_begin = m_interval.key_begin.empty();
-      bool any_end = m_interval.key_end.empty();
       m_interval.free();
-
       m_cells.expand(m_interval);
-      blk->m_cells.expand(blk->m_interval);
-
       if(any_begin)
         m_interval.key_begin.free();
-      if(any_end)
-        blk->m_interval.key_end.free();
     
       if(!loaded)
         blk->m_cells.free();
@@ -426,15 +424,15 @@ class IntervalBlocks final {
       std::shared_lock lock(m_mutex);
       for(blk=m_block; blk; blk=blk->next) {
         if(blk->add_logged(cell)) {
-          to_split = blk->loaded();
+          to_split = blk->loaded() && blk->size() >= 200000;
           break;
         }
       }
     }
-    if(to_split) {
-      std::scoped_lock lock(m_mutex);
-      while(blk->size() >= 200000)
-        blk = blk->split(100000, true);
+    if(to_split && m_mutex.try_lock()) {    
+      do blk = blk->split(100000, true);
+      while(blk->size() >= 200000);
+      m_mutex.unlock();
     }
 
     processing_decrement();
@@ -510,13 +508,11 @@ class IntervalBlocks final {
   }
 
   void _split(Block::Ptr blk, bool loaded=true) {
-    if(!m_mutex.try_lock())
-      return;
-
-    while(blk->_size() >= 200000)
-      blk = blk->_split(100000, loaded);
-
-    m_mutex.unlock();
+    if(m_mutex.try_lock()) {
+      while(blk->_size() >= 200000)
+        blk = blk->_split(100000, loaded);
+      m_mutex.unlock();
+    }
   }
 
   const size_t cells_count() {

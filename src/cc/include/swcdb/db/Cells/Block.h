@@ -60,7 +60,7 @@ class Block {
   
   const size_t size_bytes() {
     std::shared_lock lock(m_mutex);
-    return m_cells.size_bytes();
+    return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
   }
   
   void load_cells(const Mutable& cells) {
@@ -86,17 +86,18 @@ class Block {
 
   size_t load_cells(const uint8_t* buf, size_t remain, 
                     size_t avail, bool& was_splitted) {
+    auto ts = Time::now_ns();
     Cell cell;
     size_t count = 0;
     size_t added = 0;
     uint32_t sz = 0;
     
-    auto ts = Time::now_ns();
-    std::scoped_lock lock(m_mutex);
-
-    bool synced = !m_cells.size();
     const uint8_t** rbuf = &buf;
     size_t* remainp = &remain;
+
+    std::scoped_lock lock(m_mutex);
+    bool synced = !m_cells.size();
+    
     while(remain) {
       try {
         cell.read(rbuf, remainp);
