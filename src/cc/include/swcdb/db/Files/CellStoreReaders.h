@@ -185,13 +185,22 @@ class Readers final {
   void load_from_path(int &err) {
     std::scoped_lock lock(m_mutex);
 
+    FS::DirentList dirs;
+    Env::FsInterface::interface()->readdir(
+      err, range->get_path(DB::RangeBase::cellstores_dir), dirs);
+    
     FS::IdEntries_t entries;
-    Env::FsInterface::interface()->get_structured_ids(
-      err, range->get_path(DB::RangeBase::cellstores_dir), entries);
+    for(auto id : dirs) {
+      if(id.name.find(".cs", id.name.length()-3) != std::string::npos) {
+        auto idn = id.name.substr(0, id.name.length()-3);
+        entries.push_back( (int64_t)strtoll(idn.c_str(), NULL, 0) );
+      }
+    }
     
     _close();
     _free();
-    //sorted
+
+    std::sort(entries.begin(), entries.end());
     for(auto id : entries) {
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval())

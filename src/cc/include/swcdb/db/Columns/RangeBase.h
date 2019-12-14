@@ -91,7 +91,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     std::string s(m_path);
     s.append(cellstores_dir);
     s.append("/");
-    FS::set_structured_id(std::to_string(cs_id), s);
+    s.append(std::to_string(cs_id));
     s.append(".cs");
     return s;
   }
@@ -101,7 +101,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     std::string s(m_path);
     s.append(folder);
     s.append("/");
-    FS::set_structured_id(std::to_string(cs_id), s);
+    s.append(std::to_string(cs_id));
     s.append(".cs");
     return s;
   }
