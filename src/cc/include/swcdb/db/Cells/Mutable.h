@@ -24,6 +24,8 @@ class Mutable final {
   typedef std::shared_ptr<Mutable>          Ptr;
   typedef std::function<bool(const Cell&)>  Selector_t;
   
+  static const uint8_t  _cell_sz = sizeof(Cell*);
+  
   inline static Ptr make(const uint32_t cap=0, 
                          const uint32_t max_revs=1, 
                          const uint64_t ttl=0, 
@@ -66,6 +68,8 @@ class Mutable final {
       _allocate();
   }
 
+  Mutable& operator=(const Mutable& other) = delete;
+
   ~Mutable() {
     free();
   }
@@ -89,8 +93,8 @@ class Mutable final {
       delete [] m_cells;
       //std::free(m_cells);
 
-      m_cap = 0;
       m_cells = 0;
+      m_cap = 0;
       m_size_bytes = 0;
     }
   }
@@ -560,6 +564,10 @@ class Mutable final {
     s.append(std::to_string(m_cap));
     s.append(" size=");
     s.append(std::to_string(m_size));
+    s.append(" ptr=");
+    s.append(std::to_string((size_t)this));
+    s.append(" cells-ptr=");
+    s.append(std::to_string((size_t)m_cells));
     s.append(" bytes=");
     s.append(std::to_string(m_size_bytes));
     s.append(" type=");
@@ -699,7 +707,6 @@ class Mutable final {
   uint64_t          m_ttl;
   Types::Column     m_type;
 
-  static const uint8_t     _cell_sz = sizeof(Cell*);
 };
 
 
