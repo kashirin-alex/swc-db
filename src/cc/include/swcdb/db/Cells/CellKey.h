@@ -52,7 +52,7 @@ class Key {
     return (count && size && data) || (!count && !size && !data);
   }
 
-  void add(const std::string fraction) {
+  void add(const std::string& fraction) {
     add((const uint8_t*)fraction.data(), fraction.length());
   }
 
@@ -70,7 +70,7 @@ class Key {
   }
 
   void add(const uint8_t* fraction, uint32_t len, 
-           uint8_t** fraction_ptr, int8_t reserve) {
+           uint8_t** fraction_ptr, uint8_t reserve) {
     assert(sane());
     uint32_t prev_size = size;
     size += reserve + Serialization::encoded_length_vi32(len) + len;
@@ -80,13 +80,13 @@ class Key {
       memcpy(data_tmp, data, prev_size);
       if(own)
         delete [] data;
-      else
-        own = true;
     }
+    own = true;
     data = data_tmp;
-    *fraction_ptr = data + prev_size;
     
-    uint8_t* ptr_tmp = *fraction_ptr + reserve;
+    uint8_t* ptr_tmp = data + prev_size;
+    *fraction_ptr = ptr_tmp;
+    ptr_tmp += reserve;
     Serialization::encode_vi32(&ptr_tmp, len);
     memcpy(ptr_tmp, fraction, len);
     ++count;
@@ -219,8 +219,8 @@ class Key {
 
     if(!data || idx > count) {
       *fraction = 0;
-      *fraction_ptr = 0;
       *length = 0;
+      *fraction_ptr = 0;
       return;
     }
     uint32_t len = 0;
@@ -231,8 +231,8 @@ class Key {
       len = Serialization::decode_vi32(&ptr_tmp);
       if(!idx--) { 
         *fraction = (char*)ptr_tmp;
-        *fraction_ptr = (uint8_t*)ptr;
         *length = len;
+        *fraction_ptr = (uint8_t*)ptr;
         return;
       }
     }
@@ -356,11 +356,12 @@ class Key {
     s.append(" len=");
     s.append(std::to_string(size));
     s.append(" fractions=[");
-    uint32_t len;
+    uint32_t len = 0;
     const uint8_t* ptr = data;
     for(uint32_t n=0; n<count; n++,ptr+=len) {
       s.append("(");
-      s.append(std::string((char*)ptr, len= Serialization::decode_vi32(&ptr)));
+      len = Serialization::decode_vi32(&ptr);
+      s.append(std::string((const char*)ptr, len));
       s.append("),");
     }
     s.append("])");
