@@ -22,19 +22,16 @@ class MapMutable {
 
   virtual ~MapMutable() {}
 
-  bool create(Schema::Ptr schema) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool create(Schema::Ptr schema) {
+    return create(
+      schema->cid, schema->cell_versions, schema->cell_ttl, schema->col_type);
+  }
 
+  const bool create(int64_t cid, uint32_t versions, uint32_t ttl, 
+                    Types::Column type) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_map.insert(
-      ColumnCells(
-        schema->cid, 
-        Mutable::make(
-          1, 
-          schema->cell_versions,
-          schema->cell_ttl, 
-          schema->col_type
-        )
-      )
+      ColumnCells(cid, Mutable::make(0, versions, ttl, type))
     ).second;
   }
 

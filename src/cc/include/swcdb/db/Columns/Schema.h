@@ -113,6 +113,7 @@ class Schema final {
           && (!with_rev || revision == other->revision)
     ;
   }
+  
   const size_t encoded_length() const {
     return Serialization::encoded_length_vi64(cid)
          + Serialization::encoded_length_vstr(col_name.length())

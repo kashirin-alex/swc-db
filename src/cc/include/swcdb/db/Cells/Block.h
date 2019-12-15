@@ -21,6 +21,12 @@ class Block {
           m_cells(Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
+  Block(const Interval& interval, 
+        uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type)
+        : m_interval(interval),  
+          m_cells(Mutable(0, cell_versions, cell_ttl, col_type)) {
+  }
+
   virtual bool splitter(uint32_t sz) = 0;
 
   virtual void loaded_cellstores(int err) = 0;
