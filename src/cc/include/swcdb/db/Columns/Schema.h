@@ -30,11 +30,12 @@ class Schema final {
          uint8_t blk_replication=0, 
          Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
          uint32_t blk_size=0,
+         uint32_t blk_cells=0,
          int64_t revision=0){
     return std::make_shared<Schema>(
       NO_CID, col_name, col_type, 
       cell_versions, cell_ttl, 
-      blk_replication, blk_encoding, blk_size, revision);
+      blk_replication, blk_encoding, blk_size, blk_cells, revision);
   }
 
   inline static Ptr make(
@@ -43,19 +44,20 @@ class Schema final {
          int32_t cell_versions=1, uint32_t cell_ttl=0,
          uint8_t blk_replication=0, 
          Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
-         uint32_t blk_size=0,
+         uint32_t blk_size=0, uint32_t blk_cells=0,
          int64_t revision=0){
     return std::make_shared<Schema>(
       cid, col_name, col_type, 
       cell_versions, cell_ttl, 
-      blk_replication, blk_encoding, blk_size, revision);
+      blk_replication, blk_encoding, blk_size, blk_cells, revision);
   }
   
   inline static Ptr make(int64_t cid, Ptr other, int64_t revision){
     return std::make_shared<Schema>(
       cid, other->col_name, other->col_type, 
       other->cell_versions, other->cell_ttl, 
-      other->blk_replication, other->blk_encoding, other->blk_size,
+      other->blk_replication, other->blk_encoding, 
+      other->blk_size, other->blk_cells,
       revision);
   }
   
@@ -64,18 +66,20 @@ class Schema final {
     return std::make_shared<Schema>(
       other->cid, col_name, other->col_type, 
       other->cell_versions, other->cell_ttl, 
-      other->blk_replication, other->blk_encoding, other->blk_size,
+      other->blk_replication, other->blk_encoding,
+      other->blk_size, other->blk_cells,
       revision);
   }
 
   Schema(int64_t cid, std::string col_name, Types::Column col_type,
          int32_t cell_versions, uint32_t cell_ttl,
          uint8_t blk_replication, Types::Encoding blk_encoding, 
-         uint32_t blk_size, int64_t revision)
+         uint32_t blk_size, uint32_t blk_cells, int64_t revision)
         : cid(cid), col_name(col_name), col_type(col_type),
           cell_versions(cell_versions), cell_ttl(cell_ttl),
           blk_replication(blk_replication),
-          blk_encoding(blk_encoding), blk_size(blk_size), 
+          blk_encoding(blk_encoding), 
+          blk_size(blk_size), blk_cells(blk_cells), 
           revision(revision) {
   }
   
@@ -90,6 +94,7 @@ class Schema final {
       blk_replication(Serialization::decode_i8(bufp, remainp)),
       blk_encoding((Types::Encoding)Serialization::decode_i8(bufp, remainp)),
       blk_size(Serialization::decode_vi32(bufp, remainp)),
+      blk_cells(Serialization::decode_vi32(bufp, remainp)),
       revision(Serialization::decode_vi64(bufp, remainp)) {
   }
 
@@ -103,6 +108,7 @@ class Schema final {
           && blk_replication == other->blk_replication
           && blk_encoding == other->blk_encoding
           && blk_size == other->blk_size
+          && blk_cells == other->blk_cells
           && col_name.compare(other->col_name) == 0
           && (!with_rev || revision == other->revision)
     ;
@@ -116,6 +122,7 @@ class Schema final {
          + 1 
          + 1
          + Serialization::encoded_length_vi32(blk_size)
+         + Serialization::encoded_length_vi32(blk_cells)
          + Serialization::encoded_length_vi64(revision);
   } 
  
@@ -130,6 +137,7 @@ class Schema final {
     Serialization::encode_i8(bufp, blk_replication);
     Serialization::encode_i8(bufp, (uint8_t)blk_encoding);
     Serialization::encode_vi32(bufp, blk_size);
+    Serialization::encode_vi32(bufp, blk_cells);
     Serialization::encode_vi64(bufp, revision);
   }
 
@@ -144,6 +152,7 @@ class Schema final {
         << ", blk_replication=" << std::to_string(blk_replication)
         << ", blk_encoding=" << Types::to_string(blk_encoding)
         << ", blk_size=" << std::to_string(blk_size)
+        << ", blk_cells=" << std::to_string(blk_cells)
         << ", revision=" << std::to_string(revision)
         << ")"
        ;
@@ -161,6 +170,7 @@ class Schema final {
 	const uint8_t 		    blk_replication;
 	const Types::Encoding blk_encoding;
 	const uint32_t        blk_size;
+	const uint32_t        blk_cells;
 
 	const int64_t         revision;
 };

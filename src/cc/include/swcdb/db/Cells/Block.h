@@ -21,7 +21,7 @@ class Block {
           m_cells(Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
-  virtual void splitter() = 0;
+  virtual bool splitter(uint32_t sz) = 0;
 
   virtual void loaded_cellstores(int err) = 0;
 
@@ -127,11 +127,8 @@ class Block {
       
       added++;
 
-      if((sz = m_cells.size()) < 200000)
-        continue;
-
-      splitter();
-      if(!was_splitted && sz != m_cells.size())
+      if(splitter(sz = m_cells.size()) 
+        && !was_splitted && sz != m_cells.size())
         was_splitted = true;
     }
     

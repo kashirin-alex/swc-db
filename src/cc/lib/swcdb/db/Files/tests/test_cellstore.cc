@@ -96,7 +96,8 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
       if(num_cells == i && group_fractions == g)
         expected_key.copy(cell.key);
 
-      if(buff.fill() > schema->blk_size 
+      if(buff.fill() >= schema->blk_size 
+        || cell_count >= schema->blk_cells 
         || (num_cells == i && group_fractions == g)) {
 
         expected_blocks++;
@@ -219,7 +220,8 @@ int main(int argc, char** argv) {
       
       0, // replication
       SWC::Types::Encoding::SNAPPY,
-      60000000,
+      60000000, // block size
+      100000,   // block cells
       0 // schema's revision
     )
   );

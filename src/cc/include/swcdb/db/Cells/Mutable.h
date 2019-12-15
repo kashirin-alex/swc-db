@@ -425,14 +425,16 @@ class Mutable final {
   }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval& intval, uint32_t threshold) {
+                      Interval& intval, uint32_t threshold, uint32_t max_cells) {
     Cell* cell;
     Cell* first = nullptr;
     Cell* last = nullptr;
-
+    size_t count = 0;
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
     uint32_t offset = 0;
-    for(;offset < m_size && (!threshold || threshold > cells.fill()); 
+    for(;offset < m_size 
+          && ((!threshold || threshold > cells.fill()) 
+              && (!max_cells || max_cells > count) ); 
         offset++) {
       cell = *(m_cells + offset);
       
@@ -440,7 +442,7 @@ class Mutable final {
         continue;
       
       cell->write(cells);
-      cell_count++;
+      count++;
 
       if(!first)
         first = cell;
@@ -461,6 +463,7 @@ class Mutable final {
       else 
         _move_bwd(0, offset);
     }
+    cell_count += count;
   }
   
   bool write_and_free(const DB::Cell::Key& key_start, 

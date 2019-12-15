@@ -136,14 +136,14 @@ class Readers final {
     }
   }
 
-  const bool need_compaction(size_t cs_sz, size_t blk_sz) {
+  const bool need_compaction(size_t cs_sz, size_t blk_size) {
     std::shared_lock lock(m_mutex);
     size_t  sz;
     for(auto cs : m_cellstores) {
       sz = cs->size_bytes();
       if(!sz)
         continue;
-      if(sz >= cs_sz || sz/cs->blocks_count() >= blk_sz) //or by max_blk_sz
+      if(sz >= cs_sz || sz/cs->blocks_count() >= blk_size) //or by max_blk_sz
         return true;
     }
     return false;

@@ -47,7 +47,9 @@ void Settings::init_app_options(){
     ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
      "Default CellStore size")  
     ("swc.rgr.Range.block.size", g_i32(64000000), 
-     "Default Block Size")  
+     "Default Block Size in bytes")  
+    ("swc.rgr.Range.block.cells", g_i32(100000), 
+     "Default Block Cells count")  
     ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
      "Default Block encoding NONE/SNAPPY/ZLIB")  
     ("swc.rgr.Range.compaction.size.percent", g_i32(33), 

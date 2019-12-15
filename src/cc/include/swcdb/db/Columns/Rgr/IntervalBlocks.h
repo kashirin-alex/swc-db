@@ -52,8 +52,13 @@ class IntervalBlocks final {
                     next(nullptr), prev(nullptr) {
     }
 
-    void splitter() override {
-      m_blocks->_split(ptr(), false);
+    bool splitter(uint32_t sz) override {
+      uint32_t cells_limit = m_blocks->commitlog.cfg_blk_cells->get();
+      if(cells_limit * 2 < sz)
+        return false;
+      
+      m_blocks->_split(cells_limit, ptr(), false);
+      return true;
     }
     
     Ptr ptr() override {
@@ -135,7 +140,7 @@ class IntervalBlocks final {
       return true;
     }
 
-    Ptr split(size_t keep=100000, bool loaded=true) {
+    Ptr split(size_t keep, bool loaded=true) {
       Ptr blk = nullptr;
       if(!m_mutex.try_lock())
         return blk;
@@ -144,7 +149,7 @@ class IntervalBlocks final {
       return blk;
     }
     
-    Ptr _split(size_t keep=100000, bool loaded=true) {
+    Ptr _split(size_t keep, bool loaded=true) {
       Ptr blk = Block::make(
         DB::Cells::Interval(), 
         Env::Schemas::get()->get(m_blocks->range->cid), 
@@ -418,20 +423,21 @@ class IntervalBlocks final {
 
     commitlog.add(cell);
     
+    uint32_t cells_limit = commitlog.cfg_blk_cells->get();
     bool to_split=false;
     Block::Ptr blk;
     {
       std::shared_lock lock(m_mutex);
       for(blk=m_block; blk; blk=blk->next) {
         if(blk->add_logged(cell)) {
-          to_split = blk->loaded() && blk->size() >= 200000;
+          to_split = blk->loaded() && blk->size() >= cells_limit * 2;
           break;
         }
       }
     }
-    if(to_split && m_mutex.try_lock()) {    
-      do blk = blk->split(100000, true);
-      while(blk->size() >= 200000);
+    if(to_split && m_mutex.try_lock()) { 
+      do blk = blk->split(cells_limit, true);
+      while(blk->size() >= cells_limit * 2);
       m_mutex.unlock();
     }
 
@@ -481,14 +487,14 @@ class IntervalBlocks final {
         break;
 
       if(nxt_blk != nullptr) {
-        if(!Env::Resources.need_ram(commitlog.cfg_blk_sz->get() * 10)
+        if(!Env::Resources.need_ram(commitlog.cfg_blk_size->get() * 10)
             && nxt_blk->includes(req->spec))
           nxt_blk->preload();
         else 
           nxt_blk->processing_decrement();
       }
 
-      if(Env::Resources.need_ram(commitlog.cfg_blk_sz->get())) {
+      if(Env::Resources.need_ram(commitlog.cfg_blk_size->get())) {
         asio::post(*Env::IoCtx::io()->ptr(), 
           [blk, ptr=ptr()](){
             ptr->release_prior(blk); // release_and_merge(blk);
@@ -507,10 +513,10 @@ class IntervalBlocks final {
     processing_decrement();
   }
 
-  void _split(Block::Ptr blk, bool loaded=true) {
+  void _split(uint32_t cells_limit, Block::Ptr blk, bool loaded=true) {
     if(m_mutex.try_lock()) {
-      while(blk->_size() >= 200000)
-        blk = blk->_split(100000, loaded);
+      while(blk->_size() >= cells_limit * 2)
+        blk = blk->_split(cells_limit, loaded);
       m_mutex.unlock();
     }
   }

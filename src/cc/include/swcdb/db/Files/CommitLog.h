@@ -26,18 +26,24 @@ class Fragments final {
 
   explicit Fragments() 
               : m_commiting(false), m_deleting(false),
-                cfg_blk_sz(Env::Config::settings()->get_ptr<gInt32t>(
+                cfg_blk_size(Env::Config::settings()->get_ptr<gInt32t>(
                   "swc.rgr.Range.block.size")), 
+                cfg_blk_cells(Env::Config::settings()->get_ptr<gInt32t>(
+                  "swc.rgr.Range.block.cells")),
                 cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
                   "swc.rgr.Range.block.encoding")) {
   }
 
   void init(DB::RangeBase::Ptr for_range) {
+    HT_ASSERT(for_range != nullptr);
+    
     range = for_range;
 
-    HT_ASSERT(range != nullptr);
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
-    m_size_commit = schema->blk_size ? schema->blk_size : cfg_blk_sz->get();
+    m_size_commit = schema->blk_size ? 
+                    schema->blk_size : cfg_blk_size->get();
+    m_cells_commit = schema->blk_cells ? 
+                     schema->blk_cells : cfg_blk_cells->get();
     
     m_cells.reset(
       0, 
@@ -55,16 +61,19 @@ class Fragments final {
 
   void add(const DB::Cells::Cell& cell) {
     size_t size_bytes;
+    uint32_t cells_count;
     {
       std::scoped_lock lock(m_mutex_cells);
       m_cells.add(cell);
       size_bytes = m_cells.size_bytes();
+      cells_count = m_cells.size();
     }
 
     if(!m_mutex.try_lock())
       return;
 
-    if(!m_deleting && !m_commiting && size_bytes >= m_size_commit) {
+    if(!m_deleting && !m_commiting 
+      && (size_bytes >= m_size_commit || cells_count >= m_cells_commit)) {
       m_commiting = true;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
@@ -77,13 +86,16 @@ class Fragments final {
   void commit_new_fragment(bool finalize=false) {
     DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     uint32_t blk_size;
+    uint32_t blk_cells;
     {
       std::unique_lock lock_wait(m_mutex);
       if(finalize && m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]
                              {return !commiting && (commiting = true);});
       m_size_commit = blk_size = schema->blk_size ? 
-                      schema->blk_size : cfg_blk_sz->get();
+                      schema->blk_size : cfg_blk_size->get();
+      m_cells_commit = blk_cells = schema->blk_cells ? 
+                      schema->blk_cells : cfg_blk_cells->get();
     }
 
     auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
@@ -105,9 +117,9 @@ class Fragments final {
           {
             std::scoped_lock lock2(m_mutex_cells);
             m_cells.write_and_free(
-              cells, cell_count, frag->interval, blk_size);
+              cells, cell_count, frag->interval, blk_size, blk_cells);
           }
-          if(cells.fill() >= blk_size)
+          if(cells.fill() >= blk_size || cell_count >= blk_cells)
             break;
           {
             std::shared_lock lock2(m_mutex_cells);
@@ -137,7 +149,10 @@ class Fragments final {
 
       {
         std::shared_lock lock(m_mutex_cells);
-        if(!m_cells.size() || (m_cells.size_bytes() < blk_size && !finalize))
+        uint32_t cells_count = m_cells.size();
+        if(!cells_count
+          || ((m_cells.size_bytes() < blk_size && cells_count < blk_cells) 
+              && !finalize))
           break; 
       }   
     }
@@ -356,7 +371,8 @@ class Fragments final {
     return s;
   }
 
-  const gInt32tPtr            cfg_blk_sz;
+  const gInt32tPtr            cfg_blk_size;
+  const gInt32tPtr            cfg_blk_cells;
   const gEnumExtPtr           cfg_blk_enc;
 
   private:
@@ -435,6 +451,7 @@ class Fragments final {
 
   std::shared_mutex           m_mutex;
   uint32_t                    m_size_commit;
+  uint32_t                    m_cells_commit;
   bool                        m_commiting;
   bool                        m_deleting;
   std::condition_variable_any m_cv;

@@ -113,7 +113,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
 
     uint32_t cs_size = cfg_cs_sz->get(); 
     uint32_t blk_size = schema->blk_size ? 
-                        schema->blk_size : commitlog.cfg_blk_sz->get();
+                        schema->blk_size : commitlog.cfg_blk_size->get();
+    uint32_t blk_cells = schema->blk_cells ? 
+                         schema->blk_cells : commitlog.cfg_blk_cells->get();
     auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
                         schema->blk_encoding : 
                         (Types::Encoding)commitlog.cfg_blk_enc->get();
@@ -156,7 +158,8 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     range->blocks.wait_processing();
     
     auto req = std::make_shared<CompactScan>(
-      shared_from_this(), range, cs_size, blk_size, blk_encoding, schema
+      shared_from_this(), range, cs_size, blk_size, blk_cells, blk_encoding, 
+      schema
     );
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 
@@ -173,11 +176,12 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     std::atomic<size_t> total_cells = 0;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
-                const uint32_t cs_size, const uint32_t blk_size, 
+                const uint32_t cs_size, 
+                const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
                 DB::Schema::Ptr schema) 
                 : compactor(compactor), range(range),
-                  cs_size(cs_size), blk_size(blk_size), 
+                  cs_size(cs_size), blk_size(blk_size), blk_cells(blk_cells), 
                   blk_encoding(blk_encoding),
                   schema(schema) {
       make_cells();
@@ -199,7 +203,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     }
 
     bool reached_limits() override {
-      return m_stopped || cells.size_bytes() >= blk_size;
+      return m_stopped 
+          || cells.size_bytes() >= blk_size 
+          || cells.size() >= blk_cells;
     }
 
     void response(int &err) override {
@@ -343,7 +349,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           DB::Cells::Interval blk_intval;
           DynamicBuffer buff;
           uint32_t cell_count = 0;
-          selected_cells->write_and_free(buff, cell_count, blk_intval, 1);
+          selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 1);
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
@@ -370,7 +376,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         selected_cells->pop(-1, last_cell);
         //last block of end-any to be set with first key as last cell
       }
-      selected_cells->write_and_free(buff, cell_count, blk_intval, 0);
+      selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 0);
 
       if(buff.fill()) {
         cs_writer->block(err, blk_intval, buff, cell_count);
@@ -465,6 +471,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     Range::Ptr              range;
     const uint32_t          cs_size;
     const uint32_t          blk_size;
+    const uint32_t          blk_cells;
     const Types::Encoding   blk_encoding;
     DB::Schema::Ptr         schema;
     
