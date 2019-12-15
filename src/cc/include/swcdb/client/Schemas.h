@@ -6,7 +6,7 @@
 #define swc_client_Schemas_h
 
 #include "swcdb/core/Time.h"
-#include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 
 namespace SWC { namespace client {

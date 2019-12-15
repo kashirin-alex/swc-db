@@ -6,7 +6,6 @@
 #ifndef swcdb_db_Files_CellStore_h
 #define swcdb_db_Files_CellStore_h
 
-#include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Files/CellStoreBlock.h"
 
 

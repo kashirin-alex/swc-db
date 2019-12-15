@@ -17,7 +17,7 @@
 
 #include "swcdb/db/Protocol/Commands.h"
 
-#include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/db/Columns/Rgr/Columns.h"
 #include "swcdb/db/Columns/Rgr/Compaction.h"
 

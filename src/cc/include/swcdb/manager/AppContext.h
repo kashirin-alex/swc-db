@@ -15,7 +15,7 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 
-#include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/db/Columns/Mngr/Columns.h"
 
 #include "swcdb/manager/MngrRole.h"
