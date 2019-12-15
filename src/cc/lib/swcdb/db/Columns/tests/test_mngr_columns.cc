@@ -5,7 +5,6 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 #include "swcdb/core/Resources.h"
-#include "swcdb/db/Columns/Rgr/Columns.h"
 #include "swcdb/db/Columns/Mngr/Columns.h"
 
 #include <iostream>
@@ -18,44 +17,6 @@ void SWC::Config::Settings::init_post_cmd_args(){}
 
 using namespace SWC;
 
-void rgr(){
-    Env::RgrColumns::init();
-
-    Env::RgrData::init();
-    
-    int err = Error::OK;
-    auto cols = Env::RgrColumns::get();
-
-    for(int64_t c=10; c<=11; c++){
-        std::cout << "Loading cid:" << c << "\n";
-
-        for(int64_t r=1; r<=3; r++){
-
-            server::Rgr::Range::Ptr range = cols->get_range(err, c, r, true);
-            if(range == nullptr){
-                std::cerr << "ERROR, loading ! cid:" << c << ", rid:" << r << "\n";
-                exit(1);
-            }
-        }
-    }
-    for(int64_t c=10; c<=11; c++){
-        std::cout << "Getting cid:" << c << "\n";
-
-        for(int64_t r=1; r<=3; r++){
-
-            server::Rgr::Range::Ptr range = cols->get_range(err, c, r);
-            if(range == nullptr){
-                std::cerr << "ERROR, range-id does not exists! cid:" << c << ", rid:" << r << "\n";
-                exit(1);
-            }
-            if(range->rid != r){
-                std::cerr << "ERROR, range-id does not match! cid:" << c << ", rid:" << r << "\n";
-                exit(1);
-            }
-
-        }
-    }
-}
 void mngr(){
     Env::MngrColumns::init();
     auto cols = Env::MngrColumns::get();
@@ -99,7 +60,6 @@ int main(int argc, char** argv) {
         Env::Config::settings()->get<std::string>("swc.fs")));
     Env::Schemas::init();
 
-    rgr();
     mngr();
     exit(0);
 }

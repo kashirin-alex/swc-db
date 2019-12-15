@@ -31,7 +31,7 @@ class RangeLoaded : public ResponseCallback {
 
     Range::Ptr range;
     if(err == Error::OK) {
-      range =  Env::RgrColumns::get()->get_range(err, cid, rid, false);
+      range =  Env::RgrColumns::get()->get_range(err, cid, rid);
       if(err != Error::OK || range == nullptr || !range->is_loaded())
         err = Error::RS_NOT_LOADED_RANGE;
     }

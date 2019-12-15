@@ -19,7 +19,7 @@ class RangeUnload : public Common::Req::ConnQueue::ReqBase {
                 uint32_t timeout=60000) 
                : Common::Req::ConnQueue::ReqBase(false), 
                 range(range), cb(cb) {
-    cbp = CommBuf::make(Common::Params::ColRangeId(range->cid, range->rid));
+    cbp = CommBuf::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_UNLOAD, timeout);
   }
 

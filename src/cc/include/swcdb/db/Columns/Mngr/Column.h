@@ -36,7 +36,9 @@ class Column : public std::enable_shared_from_this<Column> {
     return true;
   }
 
-  Column(const int64_t id) : cid(id), m_state(State::LOADING) {
+  const DB::ColumnCfg  cfg;
+
+  Column(const int64_t cid) : cfg(cid), m_state(State::LOADING) {
   }
 
   virtual ~Column(){}
@@ -85,7 +87,7 @@ class Column : public std::enable_shared_from_this<Column> {
       return *it;
 
     if(initialize) {
-      Range::Ptr range = std::make_shared<Range>(cid, rid);
+      Range::Ptr range = std::make_shared<Range>(&cfg, rid);
       //range->init(err);
       m_ranges.push_back(range);
       return range;
@@ -277,7 +279,7 @@ class Column : public std::enable_shared_from_this<Column> {
       }
     }
     if(m_ranges.empty()) {
-      Env::FsInterface::interface()->rmdir(err, Range::get_path(cid));
+      Env::FsInterface::interface()->rmdir(err, Range::get_path(cfg.cid));
       SWC_LOGF(LOG_DEBUG, "FINALIZED REMOVE %s", _to_string().c_str());
       return true;
     }
@@ -293,27 +295,27 @@ class Column : public std::enable_shared_from_this<Column> {
   
   bool exists(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, Range::get_column_path(cid));
+      err, Range::get_column_path(cfg.cid));
   }
 
   bool exists_range_path(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, Range::get_path(cid));
+      err, Range::get_path(cfg.cid));
   }
 
   void create_range_path(int &err) {
     Env::FsInterface::interface()->mkdirs(
-      err, Range::get_path(cid));
+      err, Range::get_path(cfg.cid));
   }
 
   void ranges_by_fs(int &err, FS::IdEntries_t &entries){
     Env::FsInterface::interface()->get_structured_ids(
-      err, Range::get_path(cid), entries);
+      err, Range::get_path(cfg.cid), entries);
   }
 
   const std::string _to_string() {
-    std::string s("[cid=");
-    s.append(std::to_string(cid));
+    std::string s("[");
+    s.append(cfg.to_string());
     s.append(", next-rid=");
     s.append(std::to_string(_get_next_rid()));
     s.append(", ranges=(");
@@ -349,7 +351,6 @@ class Column : public std::enable_shared_from_this<Column> {
   }
 
   std::shared_mutex          m_mutex;
-  const int64_t              cid;
   std::atomic<State>         m_state;
 
   std::vector<Range::Ptr>    m_ranges;

@@ -37,10 +37,10 @@ void Settings::init_app_options(){
      "Memory RSS allowed without freeing/releasing")
 
     ("swc.rgr.id.validation.interval", g_i32(120000), 
-    "Validation of Ranger-ID against Mngr(root)")
+     "Validation of Ranger-ID against Mngr(root)")
 
     ("swc.rgr.compaction.check.interval", g_i32(300000), 
-    "Interval in ms for Compaction ")
+     "Interval in ms for Compaction ")
 
     ("swc.rgr.Range.CellStore.count.max", g_i32(10), 
      "Number of cellstores allowed in range before range-split")  
@@ -53,7 +53,7 @@ void Settings::init_app_options(){
     ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
      "Default Block encoding NONE/SNAPPY/ZLIB")  
     ("swc.rgr.Range.compaction.size.percent", g_i32(33), 
-    "Compaction threshold in % applied over size of either by cellstore or block")
+     "Compaction threshold in % applied over size of either by cellstore or block")
   ;
 
 }

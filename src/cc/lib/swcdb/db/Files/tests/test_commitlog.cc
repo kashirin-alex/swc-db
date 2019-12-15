@@ -7,35 +7,40 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
-#include "swcdb/db/Columns/RangeBase.h"
 #include "swcdb/core/Resources.h"
 
-#include "swcdb/db/Columns/Rgr/IntervalBlocks.h"
+#include "swcdb/db/Columns/Rgr/Columns.h"
 #include <iostream>
 
 
 using namespace SWC;
 
 
-void count_all_cells(DB::Schema::Ptr schema, size_t num_cells, 
+void count_all_cells(size_t num_cells, 
                      SWC::server::Rgr::IntervalBlocks& blocks) {
   std::cout << " count_all_cells: \n";
   std::atomic<int> chk = 1;
   
   auto req = DB::Cells::ReqScanTest::make();
   req->cells.reset(
-    schema->cid, schema->cell_versions, 0, SWC::Types::Column::PLAIN);
-  req->spec.flags.limit = num_cells * schema->cell_versions;
+    blocks.range->cfg->cid, 
+    blocks.range->cfg->cell_versions, 
+    0, 
+    SWC::Types::Column::PLAIN
+  );
+  req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions;
     
   req->cb = [req, &chk, blocks=&blocks](int err){
-    std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
+    std::cout << " err=" <<  err 
+              << "(" << SWC::Error::get_text(err) << ") \n" ;
     if(req->cells.size() != req->spec.flags.limit) {
       std::cerr << "all-ver, req->cells.size() != req->spec.flags.limit  \n" 
-                << " " << req->cells.size() << " != "  << req->spec.flags.limit <<"\n";
+                << " " << req->cells.size() 
+                << " != "  << req->spec.flags.limit <<"\n";
       exit(1);
     }
     //std::cout << req->to_string() << "\n";
-    //std::cout << blocks->to_string() << "\n";
+    //std::cout << blocks.to_string() << "\n";
     chk--;
   };
 
@@ -51,7 +56,6 @@ int main(int argc, char** argv) {
 
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get<std::string>("swc.fs")));
-  Env::Schemas::init();
   Env::IoCtx::init(8);
   Env::Resources.init(
     Env::IoCtx::io()->ptr(),
@@ -59,13 +63,11 @@ int main(int argc, char** argv) {
       "swc.rgr.ram.percent")
   );
 
-  int num_cells = 200000;
-  int versions = 3;
-  int err = Error::OK;
-  Env::Schemas::get()->add(
-    err, 
-    DB::Schema::make(
-      1, 
+  auto cid = 1;
+  DB::ColumnCfg col_cfg(cid);
+  col_cfg.update(
+    DB::Schema(
+      cid, 
       "col-test",
       Types::Column::PLAIN,
       2, //versions, 
@@ -74,13 +76,16 @@ int main(int argc, char** argv) {
       0, 
       Types::Encoding::PLAIN,
       6400000,
+      100000,   // block cells
       0
     )
   );
 
+  int err = Error::OK;
+  int num_cells = 200000;
+  int versions = 3;
 
-  auto range = std::make_shared<DB::RangeBase>(1, 1);
-  auto schema = Env::Schemas::get()->get(range->cid);
+  auto range = std::make_shared<DB::RangeBase>(&col_cfg, 1);
   Files::CommitLog::Fragments commitlog;
   commitlog.init(range);
 
@@ -98,7 +103,8 @@ int main(int argc, char** argv) {
 
   for(int t=0;t<num_threads;t++) {
     
-    std::thread([t, versions, commitlog = &commitlog, &threads_processing, num=num_cells/num_threads](){
+    std::thread([t, versions, commitlog = &commitlog, &threads_processing, 
+                 num=num_cells/num_threads]() {
       std::cout << "thread-adding=" << t 
                 << " offset=" << t*num 
                 << " until=" << t*num+num << "\n";
@@ -145,10 +151,11 @@ int main(int argc, char** argv) {
 
   commitlog.commit_new_fragment(true);
 
-  std::cout << " added cell=" << num_cells << ": \n" << commitlog.to_string() << "\n";
+  std::cout << " added cell=" << num_cells 
+            << ": \n" << commitlog.to_string() << "\n";
   std::cout << " cells_count=" << commitlog.cells_count() << "\n";
-  if((versions == 1 || versions == schema->cell_versions) 
-      && num_cells*schema->cell_versions != commitlog.cells_count()) {
+  if((versions == 1 || versions == col_cfg.cell_versions) 
+      && num_cells*col_cfg.cell_versions != commitlog.cells_count()) {
     exit(1);
   }
   commitlog.unload();
@@ -164,7 +171,7 @@ int main(int argc, char** argv) {
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores.add(
-    Files::CellStore::create_init_read(err, schema->blk_encoding, range));
+    Files::CellStore::create_init_read(err, col_cfg.blk_enc, range));
   blocks.load(err);
   std::cout << "loaded: \n" << blocks.to_string() << "\n";
 
@@ -174,19 +181,21 @@ int main(int argc, char** argv) {
   for(int i = 1;i<=num_chks; i++){
     
     auto req = DB::Cells::ReqScanTest::make();
-    req->cells.reset(schema->cid, 1, 0, SWC::Types::Column::PLAIN);
+    req->cells.reset(col_cfg.cid, 1, 0, SWC::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
     req->cb = [req, &chk, i, blocks=&blocks](int err){
       std::cout << " chk=" << i 
-                << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") \n" ;
+                << " err=" <<  err 
+                << "(" << SWC::Error::get_text(err) << ") \n" ;
       if(req->cells.size() != req->spec.flags.limit) {
         std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n" 
-                  << " " << req->cells.size() << " !="  << req->spec.flags.limit <<"\n";
+                  << " " << req->cells.size() 
+                  << " !="  << req->spec.flags.limit <<"\n";
         exit(1);
       }
       //std::cout << req->to_string() << "\n";
-      //std::cout << blocks->to_string() << "\n";
+      //std::cout << blocks.to_string() << "\n";
       chk--;
     };
     blocks.scan(req);
@@ -197,7 +206,7 @@ int main(int argc, char** argv) {
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   
-  count_all_cells(schema, num_cells, blocks);
+  count_all_cells(num_cells, blocks);
 
   std::cout << " scanned blocks, OK\n";
 
@@ -242,7 +251,7 @@ int main(int argc, char** argv) {
   }
 
 
-  count_all_cells(schema, num_cells+added_num, blocks);
+  count_all_cells(num_cells+added_num, blocks);
 
   std::cout << " scanned blocks (add_logged): \n" << blocks.to_string() << "\n";
   std::cerr << " scanned blocks (add_logged), OK\n";

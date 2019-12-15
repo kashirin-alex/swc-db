@@ -23,8 +23,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    range =  Env::RgrColumns::get()->get_range(
-      err, params.cid, params.rid, false);
+    range =  Env::RgrColumns::get()->get_range(err, params.cid, params.rid);
  
     if(!err && (range == nullptr || !range->is_loaded()))
       err = Error::RS_NOT_LOADED_RANGE;
@@ -36,11 +35,6 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
 
   try{
       
-    DB::Schema::Ptr schema = Env::Schemas::get()->get(params.cid);
-    if(!err && schema == nullptr) { 
-      // cannot be happening, range-loaded always with schema
-      err = Error::COLUMN_SCHEMA_MISSING;
-    }
     if(err) {
       conn->send_error(err, "", ev);
       return;
@@ -49,9 +43,9 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     DB::Cells::Mutable cells(
       params.interval.flags.limit, 
       params.interval.flags.max_versions ? 
-      params.interval.flags.max_versions : schema->cell_versions, 
-      schema->cell_ttl, 
-      schema->col_type
+      params.interval.flags.max_versions : (uint32_t)range->cfg->cell_versions,
+      range->cfg->cell_ttl, 
+      range->cfg->col_type
     );
     range->scan(
       std::make_shared<server::Rgr::Callback::RangeQuerySelect>(

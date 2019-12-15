@@ -21,16 +21,10 @@ void range_load(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::RangeLoad params;
     params.decode(&ptr, &remain);
 
-    if(params.schema != nullptr) {
-      Env::Schemas::get()->replace(params.schema);
-      if(!Env::RgrData::is_shuttingdown())
-        SWC_LOGF(LOG_DEBUG, "updated %s", params.schema->to_string().c_str());
-    }
-      
     int err = Error::OK;
     Env::RgrColumns::get()->load_range(
       err,
-      params.cid, params.rid, 
+      params.cid, params.rid, *params.schema.get(),
       std::make_shared<server::Rgr::Callback::RangeLoaded>(
         conn, ev, params.cid, params.rid)
     );

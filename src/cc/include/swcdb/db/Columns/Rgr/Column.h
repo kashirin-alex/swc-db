@@ -6,6 +6,7 @@
 #ifndef swcdb_lib_db_Columns_Rgr_Column_h
 #define swcdb_lib_db_Columns_Rgr_Column_h
 
+#include "swcdb/db/Columns/RangeBase.h"
 #include "swcdb/db/Columns/Rgr/Range.h"
 
 #include <memory>
@@ -23,13 +24,13 @@ class Column : public std::enable_shared_from_this<Column> {
   typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
   typedef std::pair<int64_t, Range::Ptr>          RangesMapPair;
 
-  Column(const int64_t cid) 
-        : cid(cid), m_deleting(false) { 
-  }
+  const DB::ColumnCfg  cfg;
+
+  Column(const int64_t cid) : cfg(cid), m_deleting(false) { }
 
   void init(int &err) { }
 
-  virtual ~Column(){}
+  virtual ~Column() { }
 
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
     Range::Ptr range = nullptr;
@@ -48,7 +49,7 @@ class Column : public std::enable_shared_from_this<Column> {
         if(err)
           return range;
           
-        range = std::make_shared<Range>(cid, rid);
+        range = std::make_shared<Range>(&cfg, rid);
         m_ranges.insert(RangesMapPair(rid, range));;
       }
     }
@@ -159,8 +160,8 @@ class Column : public std::enable_shared_from_this<Column> {
   const std::string to_string() {
     std::shared_lock lock(m_mutex);
 
-    std::string s("[cid=");
-    s.append(std::to_string(cid));
+    std::string s("[");
+    s.append(cfg.to_string());
 
     if(m_deleting){
       s.append(", DELETING");
@@ -179,7 +180,6 @@ class Column : public std::enable_shared_from_this<Column> {
   private:
 
   std::shared_mutex   m_mutex;
-  const int64_t       cid;
   RangesMap           m_ranges;
   bool                m_deleting;
 };

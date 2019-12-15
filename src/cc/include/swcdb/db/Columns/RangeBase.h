@@ -63,19 +63,21 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return s;
   }
 
-  const int64_t     cid;
+  const ColumnCfg*  cfg;
   const int64_t     rid;
+            
+  RangeBase(const ColumnCfg* cfg, const int64_t rid)
+            : cfg(cfg), rid(rid), 
+              m_path(get_path(cfg->cid, rid)) { 
+  }
 
-  RangeBase(const int64_t cid, const int64_t rid): 
-            cid(cid), rid(rid),
-            m_path(get_path(cid, rid))  { }
-
-  RangeBase(const int64_t cid, const int64_t rid, 
+  RangeBase(const ColumnCfg* cfg, const int64_t rid, 
             const Cells::Interval& intval)
-            : cid(cid), rid(rid), m_interval(intval),
-              m_path(get_path(cid, rid))  { }
+            : cfg(cfg), rid(rid), m_interval(intval),
+              m_path(get_path(cfg->cid, rid)) {
+  }
 
-  virtual ~RangeBase(){}
+  virtual ~RangeBase() { }
   
   Ptr shared() {
     return shared_from_this();
@@ -183,8 +185,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   const std::string to_string() const {
-    std::string s("cid=");
-    s.append(std::to_string(cid));
+    std::string s(cfg->to_string());
     s.append(" rid=");
     s.append(std::to_string(rid));
     s.append(" ");

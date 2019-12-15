@@ -19,11 +19,15 @@ void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
     Params::ColumnUpdate params;
     params.decode(&ptr, &remain);
+    
+    int err = Error::OK;
+    auto col = Env::RgrColumns::get()->get_column(err, params.schema->cid);
+    if(col != nullptr) {
+      col->cfg.update(*params.schema.get());
 
-    Env::Schemas::get()->replace(params.schema);
-    if(!Env::RgrData::is_shuttingdown())
-      SWC_LOGF(LOG_DEBUG, "updated %s", params.schema->to_string().c_str());
-      
+      if(!Env::RgrData::is_shuttingdown())
+        SWC_LOGF(LOG_DEBUG, "updated %s", col->cfg.to_string().c_str());
+    }
     conn->response_ok(ev);
   }
   catch (Exception &e) {

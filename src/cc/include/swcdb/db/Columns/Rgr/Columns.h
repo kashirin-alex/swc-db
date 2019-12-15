@@ -8,8 +8,9 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Columns/Schemas.h"
-
 #include "swcdb/core/comm/ResponseCallback.h"
+
+#include "swcdb/db/Columns/Rgr/ColumnCfg.h"
 #include "swcdb/db/Columns/Rgr/Callbacks.h"
 #include "swcdb/db/Columns/Rgr/Column.h"
 
@@ -35,30 +36,35 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   Columns() : m_state(State::OK) {}
 
-  virtual ~Columns(){}
+  virtual ~Columns() { }
 
-  Column::Ptr get_column(int &err, const int64_t cid, bool initialize){
+  
+  Column::Ptr initialize(int &err, const int64_t cid, 
+                         const DB::Schema& schema) {
+    if(Env::RgrData::is_shuttingdown()) {
+      err = Error::SERVER_SHUTTING_DOWN;
+      return nullptr;
+    }
+
     Column::Ptr col = nullptr;
     {
       std::scoped_lock lock(m_mutex);
-
       auto it = m_columns.find(cid);
-      if (it != m_columns.end())
+      if (it != m_columns.end()) {
         col = it->second;
-        
-      else if(initialize && !Env::RgrData::is_shuttingdown()) {
+      } else {
         col = std::make_shared<Column>(cid);
         m_columns.insert(ColumnsMapPair(cid, col));
       }
-    }
-
-    if(initialize) {
-      if(Env::RgrData::is_shuttingdown())
-        err = Error::SERVER_SHUTTING_DOWN;
-      else
-        col->init(err);
+      col->cfg.update(schema);
     }
     return col;
+  }
+
+  Column::Ptr get_column(int &err, const int64_t cid) {
+    std::shared_lock lock(m_mutex);
+    auto it = m_columns.find(cid);
+    return it == m_columns.end() ? nullptr : it->second;
   }
   
   Column::Ptr get_next(size_t& idx) {
@@ -73,36 +79,31 @@ class Columns : public std::enable_shared_from_this<Columns> {
     return nullptr;
   }
 
-  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid,
-                       bool initialize=false) {
-    Column::Ptr col = get_column(err, cid, initialize);
+  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid) {
+    Column::Ptr col = get_column(err, cid);
     if(col == nullptr) 
       return nullptr;
     if(col->removing()) 
       err = Error::COLUMN_MARKED_REMOVED;
-    if(err != Error::OK) 
-      return nullptr;
-
-    return col->get_range(err, rid, initialize);
+    return err ? nullptr : col->get_range(err, rid, false);
   }
-
+ 
   void load_range(int &err, const int64_t cid, const int64_t rid, 
-                  ResponseCallback::Ptr cb){
+                  const DB::Schema& schema, ResponseCallback::Ptr cb) {
     Range::Ptr range;
-    
-    if(Env::RgrData::is_shuttingdown())
-      err = Error::SERVER_SHUTTING_DOWN;
+    auto col = initialize(err, cid, schema);
+    if(!err) {
 
-    else if(Env::Schemas::get()->get(cid) == nullptr)
-      err = Error::COLUMN_SCHEMA_MISSING;
+      if(col->removing()) 
+        err = Error::COLUMN_MARKED_REMOVED;
 
-    else {
-      range = get_range(err, cid, rid, true);
-      if(Env::RgrData::is_shuttingdown())
+      else if(Env::RgrData::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
+      
+      if(!err)
+        range = col->get_range(err, rid, true);
     }
-
-    if(err != Error::OK)
+    if(err)
       cb->response(err);
     else 
       range->load(cb);
@@ -110,7 +111,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
 
   void unload_range(int &err, const int64_t cid, const int64_t rid,
                     Callback::RangeUnloaded_t cb){
-    Column::Ptr col = get_column(err, cid, false);
+    Column::Ptr col = get_column(err, cid);
     if(col != nullptr) {
       col->unload(rid, cb);
     } else {
@@ -146,7 +147,7 @@ class Columns : public std::enable_shared_from_this<Columns> {
   }
 
   void remove(int &err, const int64_t cid, Callback::ColumnDeleted_t cb) {
-    Column::Ptr col = get_column(err, cid, false);
+    Column::Ptr col = get_column(err, cid);
     if(col != nullptr) {
       col->remove_all(err);
       {

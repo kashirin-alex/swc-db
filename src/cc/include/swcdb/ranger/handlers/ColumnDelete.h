@@ -22,8 +22,7 @@ void column_delete(ConnHandlerPtr conn, Event::Ptr ev) {
 
     int err = Error::OK;
     Env::RgrColumns::get()->remove(err, params.cid,
-      [conn, ev, cid=params.cid](int err) {
-        Env::Schemas::get()->remove(cid);
+      [conn, ev](int err) {
         if(!err)
           conn->response_ok(ev); // cb->run();
         else

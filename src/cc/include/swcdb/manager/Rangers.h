@@ -399,7 +399,7 @@ class Rangers final {
         // ++ mng_inchain - req. MngrRsResource
       
         ColumnFunction pending;
-        while(column_load_pending(range->cid, pending))
+        while(column_load_pending(range->cfg->cid, pending))
           column_update(pending.func, Env::Schemas::get()->get(pending.cid));
       }
       if(verbose)
@@ -1165,7 +1165,7 @@ class Rangers final {
 void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure, 
                                            const DB::Cells::Interval& intval) {
   std::cout << " Protocol::Rgr::Req::RangeLoad::loaded" << "\n";
-  auto col = Env::MngrColumns::get()->get_column(err, range->cid, false);
+  auto col = Env::MngrColumns::get()->get_column(err, range->cfg->cid, false);
   if(col == nullptr){
     Env::Rangers::get()->range_loaded(
       rgr, range, Error::COLUMN_MARKED_REMOVED, failure);

@@ -107,18 +107,15 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     if(!range->is_loaded())
       return compacted(range);
 
-    auto schema     = Env::Schemas::get()->get(range->cid);
     auto& commitlog  = range->blocks.commitlog;
     auto& cellstores = range->blocks.cellstores;
 
     uint32_t cs_size = cfg_cs_sz->get(); 
-    uint32_t blk_size = schema->blk_size ? 
-                        schema->blk_size : commitlog.cfg_blk_size->get();
-    uint32_t blk_cells = schema->blk_cells ? 
-                         schema->blk_cells : commitlog.cfg_blk_cells->get();
-    auto blk_encoding = schema->blk_encoding != Types::Encoding::DEFAULT ?
-                        schema->blk_encoding : 
-                        (Types::Encoding)commitlog.cfg_blk_enc->get();
+
+    uint32_t blk_size = range->cfg->block_size();
+    uint32_t blk_cells = range->cfg->block_cells();
+    Types::Encoding blk_encoding = range->cfg->block_enc();
+
     uint32_t perc     = cfg_compact_percent->get(); 
     // % of size of either by cellstore or block
     
@@ -136,7 +133,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       "Compaction %s-range %d/%d allow=%dMB"
       " log=%d=%d/%dMB cs=%d=%d/%dMB blocks=%d=%dMB",
       do_compaction ? "started" : "skipped",
-      range->cid, range->rid, 
+      range->cfg->cid, range->rid, 
       allowed_sz_cs/1000000,
 
       commitlog.size(),
@@ -158,8 +155,13 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     range->blocks.wait_processing();
     
     auto req = std::make_shared<CompactScan>(
-      shared_from_this(), range, cs_size, blk_size, blk_cells, blk_encoding, 
-      schema
+      shared_from_this(),
+      range, 
+      cs_size, 
+      blk_size, blk_cells, blk_encoding, 
+      range->cfg->cell_versions, 
+      range->cfg->cell_ttl, 
+      range->cfg->col_type
     );
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 
@@ -179,11 +181,13 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
                 const uint32_t cs_size, 
                 const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
-                DB::Schema::Ptr schema) 
+                uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type) 
                 : compactor(compactor), range(range),
                   cs_size(cs_size), blk_size(blk_size), blk_cells(blk_cells), 
                   blk_encoding(blk_encoding),
-                  schema(schema) {
+                  cell_versions(cell_versions),
+                  cell_ttl(cell_ttl),
+                  col_type(col_type) {
       make_cells();
     }
 
@@ -196,9 +200,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     void make_cells() {
       cells.reset(
         1000, 
-        schema->cell_versions, 
-        schema->cell_ttl, 
-        schema->col_type
+        cell_versions, 
+        cell_ttl, 
+        col_type
       );
     }
 
@@ -473,7 +477,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     const uint32_t          blk_size;
     const uint32_t          blk_cells;
     const Types::Encoding   blk_encoding;
-    DB::Schema::Ptr         schema;
+    const uint32_t          cell_versions;
+    const uint32_t          cell_ttl; 
+    const Types::Column     col_type;
     
     bool                            tmp_dir = false;
     Files::CellStore::Write::Ptr    cs_writer = nullptr;

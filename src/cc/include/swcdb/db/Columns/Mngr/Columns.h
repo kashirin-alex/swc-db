@@ -8,6 +8,7 @@
 
 #include "swcdb/fs/Interface.h"
 
+#include "swcdb/db/Columns/Mngr/ColumnCfg.h"
 #include "swcdb/db/Columns/Mngr/Column.h"
 
 #include <memory>

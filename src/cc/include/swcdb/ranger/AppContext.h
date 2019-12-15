@@ -17,7 +17,6 @@
 
 #include "swcdb/db/Protocol/Commands.h"
 
-#include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/db/Columns/Rgr/Columns.h"
 #include "swcdb/db/Columns/Rgr/Compaction.h"
 
@@ -73,7 +72,6 @@ class AppContext : public SWC::AppContext {
       Env::Config::settings()->get<std::string>("swc.fs")));
       
     Env::RgrData::init();
-    Env::Schemas::init();
     Env::RgrColumns::init();
 
     Env::Resources.init(

@@ -6,7 +6,6 @@
 #ifndef swcdb_lib_db_Columns_Rgr_Range_h
 #define swcdb_lib_db_Columns_Rgr_Range_h
 
-#include "swcdb/db/Columns/RangeBase.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
 
 #include "swcdb/db/Types/Range.h"
@@ -52,11 +51,11 @@ class Range : public DB::RangeBase {
   const Types::Range   type;
   IntervalBlocks       blocks;
 
-  Range(const int64_t cid, const int64_t rid)
-        : RangeBase(cid, rid), 
+  Range(const DB::ColumnCfg* cfg, const int64_t rid)
+        : RangeBase(cfg, rid), 
           m_state(State::NOTLOADED), 
-          type(cid == 1 ? Types::Range::MASTER 
-               :(cid == 2 ? Types::Range::META : Types::Range::DATA)),
+          type(cfg->cid == 1 ? Types::Range::MASTER 
+               :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
           m_compacting(Compact::NONE) {
   }
 
@@ -73,7 +72,7 @@ class Range : public DB::RangeBase {
   }
 
   virtual ~Range() {
-    std::cout << " ~Range cid=" << cid << " rid=" << rid << "\n"; 
+    std::cout << " ~Range cid=" << cfg->cid << " rid=" << rid << "\n"; 
   }
   
   void set_state(State new_state) {
@@ -163,19 +162,21 @@ class Range : public DB::RangeBase {
       uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
       
       if(m_req_set_intval == nullptr) {
-        DB::Schema::Ptr schema = Env::Schemas::get()->get(cid_typ);
-        if(schema == nullptr) {
-          schema = Env::Clients::get()->schemas->get(err, cid_typ);
+        m_req_set_intval = std::make_shared<Query::Update>();
+        if(cid_typ != cfg->cid) {
+          auto schema = Env::Clients::get()->schemas->get(err, cid_typ);
           if(err)
             return;
+          m_req_set_intval->columns_cells->create(schema);
+        } else {
+          m_req_set_intval->columns_cells->create(
+            cfg->cid, cfg->cell_versions, cfg->cell_ttl, cfg->col_type);
         }
-        m_req_set_intval = std::make_shared<Query::Update>();
-        m_req_set_intval->columns_cells->create(schema);
       }
 
       DB::Cells::Cell cell;
       cell.key.copy(m_interval.key_begin);
-      cell.key.insert(0, std::to_string(cid));
+      cell.key.insert(0, std::to_string(cfg->cid));
 
       if(removal) {
         cell.flag = DB::Cells::DELETE;
@@ -184,7 +185,7 @@ class Range : public DB::RangeBase {
 
         cell.flag = DB::Cells::INSERT;
         DB::Cell::Key key_end(m_interval.key_end);
-        key_end.insert(0, std::to_string(cid));
+        key_end.insert(0, std::to_string(cfg->cid));
         
         cell.own = true;
         cell.vlen = Serialization::encoded_length_vi64(rid) 
@@ -199,7 +200,7 @@ class Range : public DB::RangeBase {
           cell.free();
           cell.flag = DB::Cells::DELETE;
           cell.key.copy(m_interval_old.key_begin);
-          cell.key.insert(0, std::to_string(cid));
+          cell.key.insert(0, std::to_string(cfg->cid));
           m_req_set_intval->columns_cells->add(cid_typ, cell);
         }
       }
@@ -235,7 +236,7 @@ class Range : public DB::RangeBase {
       Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
     
     SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
-              cid, rid, err, Error::get_text(err));
+              cfg->cid, rid, err, Error::get_text(err));
     cb(err);
   }
   
@@ -360,9 +361,8 @@ class Range : public DB::RangeBase {
 
     else if(blocks.cellstores.empty()) {
       // init 1st cs(for log_cells)
-      DB::Schema::Ptr schema = Env::Schemas::get()->get(cid);
       auto cs = Files::CellStore::create_init_read(
-        err, schema->blk_encoding, shared_from_this());
+        err, cfg->blk_enc, shared_from_this());
       if(!err) {
         blocks.cellstores.add(cs);
         is_initial_column_range = true;

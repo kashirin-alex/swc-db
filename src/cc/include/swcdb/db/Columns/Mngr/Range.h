@@ -28,8 +28,8 @@ class Range : public DB::RangeBase {
   };
 
 
-  Range(const int64_t cid, const int64_t rid)
-        : RangeBase(cid, rid), 
+  Range(const DB::ColumnCfg* cfg, const int64_t rid)
+        : RangeBase(cfg, rid), 
           m_state(State::NOTSET), rgr_id(0), m_last_rgr(nullptr) { 
   }
 

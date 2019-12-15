@@ -24,8 +24,7 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    range =  Env::RgrColumns::get()->get_range(
-      err, params.cid, params.rid, false);
+    range = Env::RgrColumns::get()->get_range(err, params.cid, params.rid);
       
     if(range == nullptr || !range->is_loaded()){
       if(err == Error::OK)

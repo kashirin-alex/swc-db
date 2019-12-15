@@ -48,10 +48,8 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
                 int num_cells, int group_fractions) {
   int err = SWC::Error::OK;
 
-  auto schema = SWC::Env::Schemas::get()->get(range->cid);
-
   SWC::Files::CellStore::Write cs_writer(
-    id, range->get_path_cs(id), schema->blk_encoding);
+    id, range->get_path_cs(id), range->cfg->block_enc());
   cs_writer.create(err);
   hdlr_err(err);
 
@@ -96,8 +94,8 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
       if(num_cells == i && group_fractions == g)
         expected_key.copy(cell.key);
 
-      if(buff.fill() >= schema->blk_size 
-        || cell_count >= schema->blk_cells 
+      if(buff.fill() >= range->cfg->block_size() 
+        || cell_count >= range->cfg->block_cells() 
         || (num_cells == i && group_fractions == g)) {
 
         expected_blocks++;
@@ -196,7 +194,6 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::FsInterface::init(SWC::FS::fs_type(
     SWC::Env::Config::settings()->get<std::string>("swc.fs")));
-  SWC::Env::Schemas::init();
 
   
   SWC::Env::IoCtx::init(8);
@@ -207,12 +204,11 @@ int main(int argc, char** argv) {
       "swc.rgr.ram.percent")
   );
 
-  int64_t cid = 11;
-  int err = SWC::Error::OK;
-  SWC::Env::Schemas::get()->add(
-    err, 
-    SWC::DB::Schema::make(
-      cid, 
+  auto cid = 11;
+  SWC::DB::ColumnCfg col_cfg(cid);
+  col_cfg.update(
+    SWC::DB::Schema(
+      cid,
       "col-test-cs",
       SWC::Types::Column::PLAIN,
       1, // versions, 
@@ -225,13 +221,13 @@ int main(int argc, char** argv) {
       0 // schema's revision
     )
   );
-
+  
+  int err = SWC::Error::OK;
   size_t num_cellstores = 10;
   size_t num_cells = 1000000;
   size_t group_fractions = 10; // Xnum_cells = total in a cs 
 
-
-  SWC::DB::RangeBase::Ptr range = std::make_shared<SWC::DB::RangeBase>(cid,1);
+  auto range = std::make_shared<SWC::DB::RangeBase>(&col_cfg, 1);
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
     err, range->get_path(SWC::DB::RangeBase::cellstores_dir));

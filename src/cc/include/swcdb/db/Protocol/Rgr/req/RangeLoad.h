@@ -17,13 +17,13 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
   RangeLoad(server::Mngr::Ranger::Ptr rgr, server::Mngr::Range::Ptr range) 
             : Common::Req::ConnQueue::ReqBase(false), 
               rgr(rgr), range(range), 
-              schema(Env::Schemas::get()->get(range->cid)) {
+              schema(Env::Schemas::get()->get(range->cfg->cid)) {
     int err = Error::OK;
-    if(!Env::MngrColumns::get()->get_column(err, range->cid, false)
+    if(!Env::MngrColumns::get()->get_column(err, range->cfg->cid, false)
                            ->need_schema_sync(rgr->id, schema->revision))
       schema = nullptr;
 
-    cbp = CommBuf::make(Params::RangeLoad(range->cid, range->rid, schema));
+    cbp = CommBuf::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
     cbp->header.set(RANGE_LOAD, 60000);
   }
   

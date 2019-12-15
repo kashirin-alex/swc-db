@@ -59,7 +59,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
     }
 
-    rsp_params.cid = range->cid;
+    rsp_params.cid = range->cfg->cid;
     rsp_params.rid = range->rid;
 
   } catch (Exception &e) {

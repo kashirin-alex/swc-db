@@ -22,7 +22,6 @@ class IntervalBlocks final {
   Files::CommitLog::Fragments  commitlog;
   Files::CellStore::Readers    cellstores;
 
-
   class Block : public DB::Cells::Block {
     public:
     typedef Block* Ptr;
@@ -37,23 +36,25 @@ class IntervalBlocks final {
     Block::Ptr  next;
     Block::Ptr  prev;
 
-    inline static Ptr make(const DB::Cells::Interval& interval, 
-                           const DB::Schema::Ptr s, 
+    inline static Ptr make(const DB::Cells::Interval& interval,
                            const IntervalBlocks::Ptr& blocks, 
                            State state=State::NONE) {
-      return new Block(interval, s, blocks, state);
+      return new Block(interval, blocks, state);
     }
 
-    explicit Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s, 
+    explicit Block(const DB::Cells::Interval& interval, 
                    const IntervalBlocks::Ptr& blocks, State state=State::NONE)
-                  : DB::Cells::Block(interval, s), 
+                  : DB::Cells::Block(interval, 
+                                     blocks->range->cfg->cell_versions, 
+                                     blocks->range->cfg->cell_ttl, 
+                                     blocks->range->cfg->col_type), 
                     m_blocks(blocks), 
                     m_state(state), m_processing(0), 
                     next(nullptr), prev(nullptr) {
     }
 
     bool splitter(uint32_t sz) override {
-      uint32_t cells_limit = m_blocks->commitlog.cfg_blk_cells->get();
+      uint32_t cells_limit = m_blocks->range->cfg->block_cells();
       if(cells_limit * 2 < sz)
         return false;
       
@@ -152,7 +153,6 @@ class IntervalBlocks final {
     Ptr _split(size_t keep, bool loaded=true) {
       Ptr blk = Block::make(
         DB::Cells::Interval(), 
-        Env::Schemas::get()->get(m_blocks->range->cid), 
         m_blocks,
         loaded ? State::LOADED : State::NONE
       );
@@ -368,7 +368,8 @@ class IntervalBlocks final {
 
 
 
-  explicit IntervalBlocks(): m_block(nullptr), m_processing(0) { }
+  explicit IntervalBlocks() : m_block(nullptr), m_processing(0) { 
+  }
   
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
@@ -423,21 +424,21 @@ class IntervalBlocks final {
 
     commitlog.add(cell);
     
-    uint32_t cells_limit = commitlog.cfg_blk_cells->get();
     bool to_split=false;
     Block::Ptr blk;
     {
       std::shared_lock lock(m_mutex);
       for(blk=m_block; blk; blk=blk->next) {
         if(blk->add_logged(cell)) {
-          to_split = blk->loaded() && blk->size() >= cells_limit * 2;
+          to_split = blk->loaded() 
+                     && blk->size() >= range->cfg->block_cells() * 2;
           break;
         }
       }
     }
     if(to_split && m_mutex.try_lock()) { 
-      do blk = blk->split(cells_limit, true);
-      while(blk->size() >= cells_limit * 2);
+      do blk = blk->split(range->cfg->block_cells(), true);
+      while(blk->size() >= range->cfg->block_cells() * 2);
       m_mutex.unlock();
     }
 
@@ -487,14 +488,14 @@ class IntervalBlocks final {
         break;
 
       if(nxt_blk != nullptr) {
-        if(!Env::Resources.need_ram(commitlog.cfg_blk_size->get() * 10)
+        if(!Env::Resources.need_ram(range->cfg->block_size() * 10)
             && nxt_blk->includes(req->spec))
           nxt_blk->preload();
         else 
           nxt_blk->processing_decrement();
       }
 
-      if(Env::Resources.need_ram(commitlog.cfg_blk_size->get())) {
+      if(Env::Resources.need_ram(range->cfg->block_size())) {
         asio::post(*Env::IoCtx::io()->ptr(), 
           [blk, ptr=ptr()](){
             ptr->release_prior(blk); // release_and_merge(blk);
@@ -614,7 +615,7 @@ class IntervalBlocks final {
   void wait_processing() {
     while(processing() || commitlog.processing() || cellstores.processing()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      //std::cout << " wait_processing cid="<< range->cid 
+      //std::cout << " wait_processing cid="<< range->cfg->cid 
       //          << " processing()=" << processing() 
       //          << " commitlog.processing()=" << commitlog.processing()
       //          << " cellstores.processing()=" << cellstores.processing() << "\n";
@@ -697,11 +698,10 @@ class IntervalBlocks final {
       return;
     }
 
-    DB::Schema::Ptr schema = Env::Schemas::get()->get(range->cid);
     Block::Ptr blk = nullptr;
     Block::Ptr new_blk;
     for(auto cs_blk : blocks) {
-      new_blk = Block::make(cs_blk->interval, schema, ptr());
+      new_blk = Block::make(cs_blk->interval, ptr());
       if(blk == nullptr)
         m_block = new_blk;
       else
@@ -717,6 +717,7 @@ class IntervalBlocks final {
       m_block->free_key_begin();
     if(range->is_any_end()) 
       blk->free_key_end();
+
   }
 
   std::shared_mutex   m_mutex;
