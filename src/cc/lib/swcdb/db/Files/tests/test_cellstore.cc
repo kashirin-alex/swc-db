@@ -21,6 +21,25 @@ void hdlr_err(int err){
   }
 }
 
+void apply_key(const std::string& idn, 
+               const std::string& n, 
+               const std::string& gn, 
+               SWC::DB::Cell::Key& key) {
+  key.free();
+  key.add("F1"); 
+  key.add("cs"+idn);
+  key.add(n);
+  key.add("F4");
+  key.add("F5");
+  key.add("F6");
+  key.add(gn);
+ 
+  if(key.get_string(0).compare("") == 0) {
+    std::cout << "BAD: " << key.to_string() << "\n";
+    exit(1);
+  }
+}
+
 void read_cs(int id, SWC::DB::RangeBase::Ptr range, 
              int num_cells, int group_fractions, int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key);
@@ -46,31 +65,22 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
   SWC::DB::Cell::Key expected_key;
 
   for(auto i=1; i<=num_cells; ++i) {
-    std::string n = std::to_string(i);
 
     for(int g=1; g<=group_fractions; g++) {
-      std::string gn = std::to_string(g);
-      rev = SWC::Time::now_ns();
+      
 
+      rev = SWC::Time::now_ns();
       cell.flag = Cells::INSERT;
       cell.set_timestamp(rev-1);
       cell.set_revision(rev);
       cell.set_time_order_desc(false);
 
-      cell.key.free();
-      cell.key.add("F1"); 
-      cell.key.add("F2");
-      cell.key.add(n);
-      cell.key.add("F3");
-      cell.key.add("F4");
-      cell.key.add("F5");
-      cell.key.add(gn);
- 
-      if(cell.key.get_string(0).compare("") == 0) {
-        std::cout << cell.to_string() << "\n";
-        exit(1);
-      }
-      std::string v("A-Data-Value-1234567890-"+n+":"+gn);
+      std::string idn = std::to_string(id);
+      std::string n = std::to_string(i);
+      std::string gn = std::to_string(g);
+      apply_key(idn, n, gn, cell.key);
+
+      std::string v("A-Data-Value-1234567890-"+idn+":"+n+":"+gn);
       cell.set_value(v);
 
       cell.write(buff);
@@ -215,8 +225,8 @@ int main(int argc, char** argv) {
   );
 
   size_t num_cellstores = 10;
-  size_t num_cells = 200000;
-  size_t group_fractions = 5; // Xnum_cells = total in a cs 
+  size_t num_cells = 1000000;
+  size_t group_fractions = 10; // Xnum_cells = total in a cs 
 
 
   SWC::DB::RangeBase::Ptr range = std::make_shared<SWC::DB::RangeBase>(cid,1);
@@ -250,63 +260,73 @@ int main(int argc, char** argv) {
   }
 
 
-  SWC::DB::Cell::Key key_to_scan;
-  /*
-  std::atomic<int> requests = 110;
-  size_t id = 0;
-  for(int n=1;n<=20;n++) {
+  size_t match_on_offset = num_cellstores * num_cells * group_fractions - 1;
+  SWC::DB::Cell::Key match_key;
+  apply_key(
+    std::to_string(num_cellstores), 
+    std::to_string(num_cells), 
+    std::to_string(group_fractions), 
+    match_key
+  );
 
-    for(int i=1; i<=(n>10?1:10);i++) {
-      id++;
-      //std::cout << "cs-req->spec-scan:\n " << req->spec.to_string() << "\n";
-    auto t = std::thread([&blocks, &key_to_scan, num_to_select, id, &count=requests](){
+  std::vector<std::thread*> threads;
+  size_t id = 0;
+  for(int n=1; n<=10; n++) {
+    id++;
+    
+    threads.push_back(new std::thread(
+      [&blocks, match_on_offset, &match_key, id] () {
 
       auto req = Cells::ReqScanTest::make();
-      req->cells.reset(2, 2, 0, SWC::Types::Column::PLAIN);
-      req->spec.key_start.set(key_to_scan, SWC::Condition::GE);
-      req->spec.flags.limit = num_to_select;
-      req->cb = [req, id, key_to_scan, &requests=count, took=SWC::Time::now_ns()](int err){
+      req->cells.reset(0, 2, 0, SWC::Types::Column::PLAIN);
+      req->spec.flags.offset = match_on_offset;
+      req->offset = req->spec.flags.offset;
+      req->spec.flags.limit = 1;
+      req->cb = [req, id, match_key, &blocks, took=SWC::Time::now_ns()](int err){
+
         std::cout << " chk=" << id ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
+
         if(err) {
-          std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-          std::cout << req->to_string() << "\n";
+          std::cout << " err=" <<  err 
+                    << "(" << SWC::Error::get_text(err) << ") "
+                    << req->to_string() << "\n";
         }
-        requests--;
+
         if(req->cells.size() != req->spec.flags.limit) {
+          std::cout << "\n" << blocks.to_string() << "\n";
+
           std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
-                    << " expected=" << req->spec.flags.limit << " \n";
+                    << " expected=" << req->spec.flags.limit << " \n"
+                    << req->spec.to_string() << "\n";
           exit(1);
         }
+
         SWC::DB::Cells::Cell cell;
         req->cells.get(0, cell);
-        if(!cell.key.equal(key_to_scan)) {
-          std::cerr << "ERROR: !cell.key.equal(key_to_scan) " << cell.to_string() 
-                    << " expected=" << key_to_scan.to_string()  << "\n";
+        if(!cell.key.equal(match_key)) {
+          std::cout << "\n" << blocks.to_string() << "\n";
+
+          std::cerr << "ERROR: !cell.key.equal(match_key) " << cell.to_string() 
+                    << " expected=" << match_key.to_string()  << "\n"
+                    << req->spec.to_string() << "\n";
           exit(1);
         }
+        req->cb = nullptr;
       };
-      blocks.scan(req);
-    });
-    if((n== 1 && i == 1) || (n== 3 && i == 10))
-      t.join();
-    else
-      t.detach();
-    
-      
-    }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      blocks.scan(req);
+    }));
   }
 
-
-  while(requests>0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-
-  std::cout << "cs-read-scan: OK\n";
-  */
-
+  while(!threads.empty()) {
+    threads.front()->join();
+    delete threads.front();
+    threads.erase(threads.begin());
+  }
+    
   blocks.remove(err);
+
   hdlr_err(err);
 
   std::cout << "\n-   OK   -\n\n";
