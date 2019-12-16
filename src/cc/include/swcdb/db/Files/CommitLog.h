@@ -141,6 +141,9 @@ class Fragments final {
       m_commiting = false;
     }
     m_cv.notify_all();
+
+    if(!finalize)
+      RangerEnv::compaction_schedule(1);
   }
 
   const std::string get_log_fragment(const int64_t frag) const {

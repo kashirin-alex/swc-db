@@ -56,6 +56,8 @@ class RangerEnv final {
     return m_env->_compaction;
   }
 
+  static void compaction_schedule(uint32_t ms);
+  
   static server::Rgr::Columns* columns() {
     return m_env->_columns;
   }
@@ -135,6 +137,12 @@ void RangerEnv::shuttingdown() {
   m_env->mnt_io->stop();
   
   m_env->_columns->unload_all(false);
+}
+
+
+void RangerEnv::compaction_schedule(uint32_t ms) {
+  if(m_env && m_env->_compaction)
+    m_env->_compaction->schedule(ms);
 }
 
 }
