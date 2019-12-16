@@ -7,7 +7,13 @@
 #include "swcdb/core/Error.h"
 
 namespace SWC {
-  
+
+IoContext::Ptr IoContext::make(const std::string name, int32_t size) {
+  auto ptr = std::make_shared<IoContext>(name, size);
+  ptr->run(ptr);
+  return ptr;
+}
+
 IoContext::IoContext(const std::string name, int32_t size) 
                     : m_name(name), running(true), m_size(size),
                       m_pool(asio::thread_pool(size)),

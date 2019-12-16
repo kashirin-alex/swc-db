@@ -18,6 +18,9 @@ class IoContext final {
   public:
 
   typedef std::shared_ptr<IoContext>  Ptr;
+
+  static Ptr make(const std::string name, int32_t size);
+
   std::atomic<bool>                   running;
 
   IoContext(const std::string name, int32_t size);
