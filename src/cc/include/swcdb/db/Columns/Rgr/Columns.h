@@ -25,7 +25,7 @@ typedef std::pair<int64_t, Column::Ptr>           ColumnsMapPair;
 
 
 
-class Columns : public std::enable_shared_from_this<Columns> {
+class Columns final {
 
   public:
 

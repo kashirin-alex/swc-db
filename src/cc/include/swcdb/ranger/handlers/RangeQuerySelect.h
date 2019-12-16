@@ -43,9 +43,9 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     DB::Cells::Mutable cells(
       params.interval.flags.limit, 
       params.interval.flags.max_versions ? 
-      params.interval.flags.max_versions : (uint32_t)range->cfg->cell_versions,
-      range->cfg->cell_ttl, 
-      range->cfg->col_type
+        params.interval.flags.max_versions : range->cfg->cell_versions(),
+      range->cfg->cell_ttl(), 
+      range->cfg->column_type()
     );
     range->scan(
       std::make_shared<server::Rgr::Callback::RangeQuerySelect>(

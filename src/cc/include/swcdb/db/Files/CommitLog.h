@@ -33,9 +33,9 @@ class Fragments final {
     
     m_cells.reset(
       0, 
-      range->cfg->cell_versions, 
-      range->cfg->cell_ttl, 
-      range->cfg->col_type
+      range->cfg->cell_versions(), 
+      range->cfg->cell_ttl(), 
+      range->cfg->column_type()
     );
   }
 
@@ -121,7 +121,7 @@ class Fragments final {
       
       frag->write(
         err, 
-        range->cfg->blk_replication, 
+        range->cfg->blk_replication(), 
         range->cfg->block_enc(), 
         cells, cell_count
       );

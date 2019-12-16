@@ -19,12 +19,14 @@ class RangeIsLoaded : public DispatchHandler {
 
   RangeIsLoaded(ConnHandlerPtr conn, DB::RangeBase::Ptr range, 
                 RangeIsLoaded_t cb)
-                : conn(conn), range(range), cb(cb), was_called(false) { }
+                : conn(conn), range(range), cb(cb), was_called(false) { 
+  }
   
   virtual ~RangeIsLoaded() { }
   
   bool run(uint32_t timeout=60000) override {
-    auto cbp = CommBuf::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
+    auto cbp = CommBuf::make(
+      Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
     return conn->send_request(cbp, shared_from_this()) == Error::OK;
   }

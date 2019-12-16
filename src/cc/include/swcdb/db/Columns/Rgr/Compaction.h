@@ -159,9 +159,9 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       range, 
       cs_size, 
       blk_size, blk_cells, blk_encoding, 
-      range->cfg->cell_versions, 
-      range->cfg->cell_ttl, 
-      range->cfg->col_type
+      range->cfg->cell_versions(), 
+      range->cfg->cell_ttl(), 
+      range->cfg->column_type()
     );
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 

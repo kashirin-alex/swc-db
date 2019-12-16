@@ -1171,8 +1171,8 @@ void Protocol::Rgr::Req::RangeLoad::loaded(int err, bool failure,
       rgr, range, Error::COLUMN_MARKED_REMOVED, failure);
     return;
   }
-  if(schema != nullptr && err == Error::OK)
-    col->change_rgr_schema(rgr->id, schema->revision);
+  if(!err)
+    col->change_rgr_schema(rgr->id, schema_revision);
                            
   else if(err == Error::COLUMN_SCHEMA_MISSING)
     col->remove_rgr_schema(rgr->id);

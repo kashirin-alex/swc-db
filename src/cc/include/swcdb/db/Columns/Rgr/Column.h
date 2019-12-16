@@ -16,7 +16,7 @@ namespace SWC { namespace server { namespace Rgr {
 
 
 
-class Column : public std::enable_shared_from_this<Column> {
+class Column final {
   
   public:
 
@@ -26,7 +26,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   const DB::ColumnCfg  cfg;
 
-  Column(const int64_t cid) : cfg(cid), m_deleting(false) { }
+  Column(const int64_t cid) : cfg(cid) { }
 
   void init(int &err) { }
 
@@ -44,7 +44,7 @@ class Column : public std::enable_shared_from_this<Column> {
       else if(initialize) {
         if(Env::RgrData::is_shuttingdown())
           err = Error::SERVER_SHUTTING_DOWN;
-        else if(m_deleting)
+        else if(cfg.deleting)
           err = Error::COLUMN_MARKED_REMOVED;
         if(err)
           return range;
@@ -95,12 +95,12 @@ class Column : public std::enable_shared_from_this<Column> {
   void remove_all(int &err) {
     {
       std::scoped_lock lock(m_mutex);
-      if(m_deleting)
+      if(cfg.deleting)
         return;
-      m_deleting = true;
+      cfg.deleting = true;
     }
       
-    for(;;){
+    for(;;) {
       std::scoped_lock lock(m_mutex);
       auto it = m_ranges.begin();
       if(it == m_ranges.end())
@@ -114,7 +114,7 @@ class Column : public std::enable_shared_from_this<Column> {
 
   bool removing() {
     std::shared_lock lock(m_mutex);
-    return m_deleting;
+    return cfg.deleting;
   }
 
   Range::Ptr get_next(size_t &idx) {
@@ -137,7 +137,7 @@ class Column : public std::enable_shared_from_this<Column> {
     for(;;) {
       {
         std::shared_lock lock(m_mutex);
-        if(m_deleting)
+        if(cfg.deleting)
           return released;
         if(!started) { 
           it = m_ranges.begin();
@@ -163,12 +163,7 @@ class Column : public std::enable_shared_from_this<Column> {
     std::string s("[");
     s.append(cfg.to_string());
 
-    if(m_deleting){
-      s.append(", DELETING");
-    }
-
-    s.append(", ranges=(");
-    
+    s.append(" ranges=(");
     for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it){
       s.append(it->second->to_string());
       s.append(",");
@@ -181,7 +176,6 @@ class Column : public std::enable_shared_from_this<Column> {
 
   std::shared_mutex   m_mutex;
   RangesMap           m_ranges;
-  bool                m_deleting;
 };
 
 }}}

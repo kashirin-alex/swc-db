@@ -27,7 +27,7 @@ class Block {
           m_cells(Mutable(0, cell_versions, cell_ttl, col_type)) {
   }
 
-  virtual bool splitter(uint32_t sz) = 0;
+  virtual const bool splitter() = 0;
 
   virtual void loaded_cellstores(int err) = 0;
 
@@ -96,7 +96,6 @@ class Block {
     Cell cell;
     size_t count = 0;
     size_t added = 0;
-    uint32_t sz = 0;
     
     const uint8_t** rbuf = &buf;
     size_t* remainp = &remain;
@@ -133,8 +132,7 @@ class Block {
       
       added++;
 
-      if(splitter(sz = m_cells.size()) 
-        && !was_splitted && sz != m_cells.size())
+      if(splitter() && !was_splitted)
         was_splitted = true;
     }
     
@@ -175,6 +173,7 @@ class Block {
   std::shared_mutex       m_mutex;
   Interval                m_interval;
   Mutable                 m_cells;
+
 };
 
 }}}

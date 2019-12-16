@@ -14,7 +14,7 @@
 namespace SWC { namespace server { namespace Mngr {
 
 
-class Column : public std::enable_shared_from_this<Column> {
+class Column final {
   
   public:
 

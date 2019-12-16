@@ -16,14 +16,12 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
 
   RangeLoad(server::Mngr::Ranger::Ptr rgr, server::Mngr::Range::Ptr range) 
             : Common::Req::ConnQueue::ReqBase(false), 
-              rgr(rgr), range(range), 
-              schema(Env::Schemas::get()->get(range->cfg->cid)) {
-    int err = Error::OK;
-    if(!Env::MngrColumns::get()->get_column(err, range->cfg->cid, false)
-                           ->need_schema_sync(rgr->id, schema->revision))
-      schema = nullptr;
-
-    cbp = CommBuf::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
+              rgr(rgr), range(range) {
+    auto schema = Env::Schemas::get()->get(range->cfg->cid);
+    schema_revision = schema->revision;
+    cbp = CommBuf::make(
+      Params::RangeLoad(range->cfg->cid, range->rid, schema)
+    );
     cbp->header.set(RANGE_LOAD, 60000);
   }
   
@@ -70,7 +68,7 @@ class RangeLoad : public Common::Req::ConnQueue::ReqBase {
 
   server::Mngr::Ranger::Ptr rgr;
   server::Mngr::Range::Ptr  range;
-  DB::Schema::Ptr           schema; 
+  int64_t                   schema_revision;
    
 };
 

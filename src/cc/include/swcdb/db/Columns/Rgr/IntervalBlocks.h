@@ -45,21 +45,16 @@ class IntervalBlocks final {
     explicit Block(const DB::Cells::Interval& interval, 
                    const IntervalBlocks::Ptr& blocks, State state=State::NONE)
                   : DB::Cells::Block(interval, 
-                                     blocks->range->cfg->cell_versions, 
-                                     blocks->range->cfg->cell_ttl, 
-                                     blocks->range->cfg->col_type), 
+                                     blocks->range->cfg->cell_versions(), 
+                                     blocks->range->cfg->cell_ttl(), 
+                                     blocks->range->cfg->column_type()), 
                     m_blocks(blocks), 
                     m_state(state), m_processing(0), 
                     next(nullptr), prev(nullptr) {
     }
 
-    bool splitter(uint32_t sz) override {
-      uint32_t cells_limit = m_blocks->range->cfg->block_cells();
-      if(cells_limit * 2 < sz)
-        return false;
-      
-      m_blocks->_split(cells_limit, ptr(), false);
-      return true;
+    const bool splitter() override {
+      return m_blocks->_split(ptr(), false);
     }
     
     Ptr ptr() override {
@@ -141,23 +136,26 @@ class IntervalBlocks final {
       return true;
     }
 
-    Ptr split(size_t keep, bool loaded=true) {
+    Ptr split(bool loaded) {
       Ptr blk = nullptr;
       if(!m_mutex.try_lock())
         return blk;
-      blk = _split(keep, loaded);
+      blk = _split(loaded);
       m_mutex.unlock();
       return blk;
     }
     
-    Ptr _split(size_t keep, bool loaded=true) {
+    Ptr _split(bool loaded) {
       Ptr blk = Block::make(
         DB::Cells::Interval(), 
         m_blocks,
         loaded ? State::LOADED : State::NONE
       );
 
-      m_cells.move_from_key_offset(keep, blk->m_cells);
+      m_cells.move_from_key_offset(
+        m_blocks->range->cfg->block_cells(), 
+        blk->m_cells
+      );
       assert(m_cells.size());
       assert(blk->m_cells.size());
 
@@ -368,8 +366,7 @@ class IntervalBlocks final {
 
 
 
-  explicit IntervalBlocks() : m_block(nullptr), m_processing(0) { 
-  }
+  explicit IntervalBlocks() : m_block(nullptr), m_processing(0) { }
   
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
@@ -419,6 +416,10 @@ class IntervalBlocks final {
     range = nullptr;
   }
   
+  const bool need_split(uint32_t sz) const {
+    return sz >= range->cfg->block_cells() * 2;
+  }
+
   void add_logged(const DB::Cells::Cell& cell) {
     processing_increment();
 
@@ -430,17 +431,13 @@ class IntervalBlocks final {
       std::shared_lock lock(m_mutex);
       for(blk=m_block; blk; blk=blk->next) {
         if(blk->add_logged(cell)) {
-          to_split = blk->loaded() 
-                     && blk->size() >= range->cfg->block_cells() * 2;
+          to_split = blk->loaded();
           break;
         }
       }
     }
-    if(to_split && m_mutex.try_lock()) { 
-      do blk = blk->split(range->cfg->block_cells(), true);
-      while(blk->size() >= range->cfg->block_cells() * 2);
-      m_mutex.unlock();
-    }
+    if(to_split)
+      split(blk, true);
 
     processing_decrement();
   }
@@ -514,12 +511,23 @@ class IntervalBlocks final {
     processing_decrement();
   }
 
-  void _split(uint32_t cells_limit, Block::Ptr blk, bool loaded=true) {
-    if(m_mutex.try_lock()) {
-      while(blk->_size() >= cells_limit * 2)
-        blk = blk->_split(cells_limit, loaded);
+  void split(Block::Ptr blk, bool loaded=true) {
+    if(need_split(blk->size()) && m_mutex.try_lock()) {
+      do blk = blk->split(loaded);
+      while(need_split(blk->size()));
       m_mutex.unlock();
     }
+  }
+
+  const bool _split(Block::Ptr blk, bool loaded=true) {
+    // blk(under lock)
+    if(need_split(blk->_size()) && m_mutex.try_lock()) {
+      do blk = blk->_split(loaded);
+      while(need_split(blk->_size()));
+      m_mutex.unlock();
+      return true;
+    }
+    return false;
   }
 
   const size_t cells_count() {

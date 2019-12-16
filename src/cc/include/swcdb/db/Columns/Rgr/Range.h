@@ -170,7 +170,7 @@ class Range : public DB::RangeBase {
           m_req_set_intval->columns_cells->create(schema);
         } else {
           m_req_set_intval->columns_cells->create(
-            cfg->cid, cfg->cell_versions, cfg->cell_ttl, cfg->col_type);
+            cfg->cid, cfg->cell_versions(), cfg->cell_ttl(), cfg->column_type());
         }
       }
 

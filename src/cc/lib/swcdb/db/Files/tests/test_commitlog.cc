@@ -24,11 +24,11 @@ void count_all_cells(size_t num_cells,
   auto req = DB::Cells::ReqScanTest::make();
   req->cells.reset(
     blocks.range->cfg->cid, 
-    blocks.range->cfg->cell_versions, 
+    blocks.range->cfg->cell_versions(), 
     0, 
     SWC::Types::Column::PLAIN
   );
-  req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions;
+  req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
     
   req->cb = [req, &chk, blocks=&blocks](int err){
     std::cout << " err=" <<  err 
@@ -154,8 +154,8 @@ int main(int argc, char** argv) {
   std::cout << " added cell=" << num_cells 
             << ": \n" << commitlog.to_string() << "\n";
   std::cout << " cells_count=" << commitlog.cells_count() << "\n";
-  if((versions == 1 || versions == col_cfg.cell_versions) 
-      && num_cells*col_cfg.cell_versions != commitlog.cells_count()) {
+  if((versions == 1 || versions == col_cfg.cell_versions()) 
+      && num_cells*col_cfg.cell_versions() != commitlog.cells_count()) {
     exit(1);
   }
   commitlog.unload();
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores.add(
-    Files::CellStore::create_init_read(err, col_cfg.blk_enc, range));
+    Files::CellStore::create_init_read(err, col_cfg.block_enc(), range));
   blocks.load(err);
   std::cout << "loaded: \n" << blocks.to_string() << "\n";
 

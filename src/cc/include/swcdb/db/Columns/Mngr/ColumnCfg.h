@@ -13,19 +13,14 @@ class ColumnCfg final {
   public:
   const int64_t cid;
 
-  ColumnCfg(const int64_t cid) : cid(cid) { 
-  }
+  ColumnCfg(const int64_t cid) : cid(cid) { }
 
-
-  virtual ~ColumnCfg() { }
+  ~ColumnCfg() { }
 
 
   const std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
-    s.append(" blk_size=");
-    //s.append(std::to_string(blk_size));
-    s.append(")");
     return s;
   }
 };
