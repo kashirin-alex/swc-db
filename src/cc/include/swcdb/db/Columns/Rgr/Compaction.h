@@ -54,7 +54,7 @@ class Compaction final {
   void run() {
     {
       std::lock_guard<std::mutex> lock(m_mutex); 
-      if(!m_run)
+      if(!m_run || m_scheduled)
         return;
       m_scheduled = true;
     }
