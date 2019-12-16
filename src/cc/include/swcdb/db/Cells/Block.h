@@ -74,7 +74,7 @@ class Block {
     auto ts = Time::now_ns();
     size_t added = m_cells.size();
     
-    if(m_cells.size())
+    if(cells.size())
       cells.scan(m_interval, m_cells);
     
     added = m_cells.size() - added;
@@ -121,9 +121,6 @@ class Block {
       if(!m_interval.key_end.empty() 
           && m_interval.key_end.compare(cell.key) == Condition::GT)
         break;
-      
-      //if(!m_interval.consist(cell.key))
-        //continue;
 
       if(synced)
         m_cells.push_back(cell);
