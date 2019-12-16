@@ -20,7 +20,7 @@ class AssignId : public AppHandler {
   void run() override {
 
     try {
-      if(Env::RgrData::is_shuttingdown()){
+      if(RangerEnv::is_shuttingdown()){
         m_conn->send_error(Error::SERVER_SHUTTING_DOWN, "", m_ev);
         return;
       }

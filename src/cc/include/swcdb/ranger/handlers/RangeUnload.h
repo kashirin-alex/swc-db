@@ -21,7 +21,7 @@ void range_unload(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     int err = Error::OK;
-    Env::RgrColumns::get()->unload_range(err, params.cid, params.rid, 
+    RangerEnv::columns()->unload_range(err, params.cid, params.rid, 
       [conn, ev](int err){
         if(err == Error::OK)
           conn->response_ok(ev); 

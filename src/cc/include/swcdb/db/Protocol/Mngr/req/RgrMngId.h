@@ -70,16 +70,17 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
   void static shutting_down(Scheduler* validator, 
                             std::function<void()> cb) {
-    auto rs_data = Env::RgrData::get();
-    SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  rs_data->to_string().c_str());
+    auto rgr_data = RangerEnv::rgr_data();
+    SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  
+             rgr_data->to_string().c_str());
 
     Ptr req = std::make_shared<RgrMngId>(
       validator, 
       create(
         Params::RgrMngId(
-          rs_data->id.load(), 
+          rgr_data->id.load(), 
           Params::RgrMngId::Flag::RS_SHUTTINGDOWN, 
-          rs_data->endpoints
+          rgr_data->endpoints
         )
       )
     );
@@ -101,14 +102,14 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   virtual ~RgrMngId(){}
 
   void assign() {
-    if(Env::RgrData::is_shuttingdown())
+    if(RangerEnv::is_shuttingdown())
       return;
 
     cbp = create(
       Params::RgrMngId(
         0, 
         Params::RgrMngId::Flag::RS_REQ, 
-        Env::RgrData::get()->endpoints
+        RangerEnv::rgr_data()->endpoints
       )
     );
     run();
@@ -161,7 +162,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
       SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN %s", 
-                Env::RgrData::get()->to_string().c_str());
+                RangerEnv::rgr_data()->to_string().c_str());
       if(cb_shutdown)
         cb_shutdown();
       else
@@ -178,7 +179,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       return;
     }
 
-    auto rs_data = Env::RgrData::get();
+    auto rgr_data = RangerEnv::rgr_data();
 
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()){
@@ -187,7 +188,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
                       "RS_SHUTTINGDOWN %s",
         Env::FsInterface::interface()->to_string().c_str(), 
         (int)rsp_params.fs, 
-        rs_data->to_string().c_str()
+        rgr_data->to_string().c_str()
       );
         
       std::raise(SIGTERM);
@@ -195,21 +196,21 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     }
     
     Params::RgrMngId::Flag flag;
-    if(!rs_data->id || rs_data->id == rsp_params.id || 
-      (rs_data->id != rsp_params.id 
+    if(!rgr_data->id || rgr_data->id == rsp_params.id || 
+      (rgr_data->id != rsp_params.id 
        && rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)){
 
-      rs_data->id = rsp_params.id;
+      rgr_data->id = rsp_params.id;
       flag = Params::RgrMngId::Flag::RS_ACK;
-      SWC_LOGF(LOG_DEBUG, "RS_ACK %s", rs_data->to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "RS_ACK %s", rgr_data->to_string().c_str());
     } else {
 
       flag = Params::RgrMngId::Flag::RS_DISAGREE;
-      SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rs_data->to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rgr_data->to_string().c_str());
     }
 
     cbp = create(
-      Params::RgrMngId(rs_data->id, flag, rs_data->endpoints)
+      Params::RgrMngId(rgr_data->id, flag, rgr_data->endpoints)
     );
     run();
   }

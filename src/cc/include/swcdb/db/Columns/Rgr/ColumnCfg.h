@@ -17,6 +17,10 @@ class ColumnCfg final {
 
   mutable std::atomic<Types::Column>    col_type;
 
+  mutable std::atomic<uint32_t>         compact_perc;
+  mutable std::atomic<uint32_t>         cs_size;
+  mutable std::atomic<uint32_t>         cs_max;
+
   mutable std::atomic<uint32_t>         blk_size;
   mutable std::atomic<uint32_t>         blk_cells;
   mutable std::atomic<Types::Encoding>  blk_enc;
@@ -27,22 +31,14 @@ class ColumnCfg final {
 
   mutable std::atomic<bool>             deleting;
 
-  const gInt32tPtr      cfg_blk_size;
-  const gInt32tPtr      cfg_blk_cells;
-  const gEnumExtPtr     cfg_blk_enc;
 
   ColumnCfg(const int64_t cid) 
             : cid(cid), col_type(Types::Column::PLAIN),
+              compact_perc(0), cs_size(0), cs_max(0), 
               blk_size(0), blk_cells(0), blk_enc(Types::Encoding::DEFAULT),
               blk_replica(0),
               c_versions(1), c_ttl(0), 
-              deleting(false),
-              cfg_blk_size(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.block.size")), 
-              cfg_blk_cells(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.block.cells")),
-              cfg_blk_enc(Env::Config::settings()->get_ptr<gEnumExt>(
-                "swc.rgr.Range.block.encoding")) {
+              deleting(false) {
   }
 
   ~ColumnCfg() { }
@@ -63,17 +59,40 @@ class ColumnCfg final {
     return col_type.load();
   }
 
+  const uint32_t compact_percent() const {
+    return compact_perc 
+            ? compact_perc.load() 
+            : RangerEnv::get()->cfg_compact_percent->get();
+  }
+
+  const uint32_t cellstore_size() const {
+    return cs_size 
+            ? cs_size.load() 
+            : RangerEnv::get()->cfg_cs_sz->get();
+  }
+
+  const uint32_t cellstore_max() const {
+    return cs_max 
+            ? cs_max.load() 
+            : RangerEnv::get()->cfg_cs_max->get();
+  }
+
   const uint32_t block_size() const {
-    return blk_size ? blk_size.load() : cfg_blk_size->get();
+    return blk_size 
+            ? blk_size.load() 
+            : RangerEnv::get()->cfg_blk_size->get();
   }
 
   const uint32_t block_cells() const {
-    return blk_cells ? blk_cells.load() : cfg_blk_cells->get();
+    return blk_cells 
+            ? blk_cells.load() 
+            : RangerEnv::get()->cfg_blk_cells->get();
   }
 
   const Types::Encoding block_enc() const {
-    return blk_enc != Types::Encoding::DEFAULT ? 
-            blk_enc.load() : (Types::Encoding)cfg_blk_enc->get();
+    return blk_enc != Types::Encoding::DEFAULT
+            ?  blk_enc.load() 
+            : (Types::Encoding)RangerEnv::get()->cfg_blk_enc->get();
   }
 
   const uint8_t blk_replication() const {

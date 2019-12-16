@@ -6,7 +6,6 @@
 #ifndef swcdb_lib_db_Rgr_Columns_Columns_h
 #define swcdb_lib_db_Rgr_Columns_Columns_h
 
-#include "swcdb/fs/Interface.h"
 #include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/core/comm/ResponseCallback.h"
 
@@ -41,7 +40,7 @@ class Columns final {
   
   Column::Ptr initialize(int &err, const int64_t cid, 
                          const DB::Schema& schema) {
-    if(Env::RgrData::is_shuttingdown()) {
+    if(RangerEnv::is_shuttingdown()) {
       err = Error::SERVER_SHUTTING_DOWN;
       return nullptr;
     }
@@ -97,7 +96,7 @@ class Columns final {
       if(col->removing()) 
         err = Error::COLUMN_MARKED_REMOVED;
 
-      else if(Env::RgrData::is_shuttingdown())
+      else if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       
       if(!err)
@@ -206,35 +205,6 @@ class Columns final {
 };
 
 }} // namespace server::Rgr
-
-
-
-namespace Env {
-class RgrColumns final {
-  public:
-
-  static void init() {
-    m_env = std::make_shared<RgrColumns>();
-  }
-
-  static server::Rgr::Columns::Ptr get(){
-    HT_ASSERT(m_env != nullptr);
-    return m_env->m_columns;
-  }
-
-  RgrColumns() : m_columns(new server::Rgr::Columns()) {}
-  
-  ~RgrColumns(){
-    if(m_columns != nullptr)
-      delete m_columns;
-  }
-
-  private:
-  server::Rgr::Columns::Ptr                 m_columns = nullptr;
-  inline static std::shared_ptr<RgrColumns> m_env = nullptr;
-};
-}
-
 
 }
 #endif

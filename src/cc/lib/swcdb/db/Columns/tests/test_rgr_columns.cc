@@ -5,7 +5,8 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 #include "swcdb/core/Resources.h"
-#include "swcdb/db/Columns/Rgr/Columns.h"
+
+#include "swcdb/ranger/RangerEnv.h"
 
 #include <iostream>
 
@@ -18,12 +19,11 @@ void SWC::Config::Settings::init_post_cmd_args(){}
 using namespace SWC;
 
 void rgr(){
-    Env::RgrColumns::init();
 
-    Env::RgrData::init();
+    RangerEnv::init();
     
     int err = Error::OK;
-    auto cols = Env::RgrColumns::get();
+    auto cols = RangerEnv::columns();
 
     for(int64_t c=10; c<=11; c++){
         std::cout << "Loading cid:" << c << "\n";

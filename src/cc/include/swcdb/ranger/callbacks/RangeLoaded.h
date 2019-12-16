@@ -20,18 +20,18 @@ class RangeLoaded : public ResponseCallback {
   RangeLoaded(ConnHandlerPtr conn, Event::Ptr ev, 
               const int64_t cid, const int64_t rid)
             : ResponseCallback(conn, ev), cid(cid), rid(rid) {
-    Env::RgrData::in_process(1);
+    RangerEnv::in_process(1);
   }
 
   virtual ~RangeLoaded() { }
 
   void response(int &err) override {
-    if(err == Error::OK && Env::RgrData::is_shuttingdown()) 
+    if(err == Error::OK && RangerEnv::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
     Range::Ptr range;
     if(err == Error::OK) {
-      range =  Env::RgrColumns::get()->get_range(err, cid, rid);
+      range =  RangerEnv::columns()->get_range(err, cid, rid);
       if(err != Error::OK || range == nullptr || !range->is_loaded())
         err = Error::RS_NOT_LOADED_RANGE;
     }
@@ -46,7 +46,7 @@ class RangeLoaded : public ResponseCallback {
       cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
-      Env::RgrData::in_process(-1);
+      RangerEnv::in_process(-1);
       return;
     }
     catch (Exception &e) {
@@ -55,11 +55,11 @@ class RangeLoaded : public ResponseCallback {
     }
     
     send_error:
-      Env::RgrColumns::get()->unload_range(err, cid, rid, 
+      RangerEnv::columns()->unload_range(err, cid, rid, 
         [berr=err, ptr=shared_from_this()]
         (int err){
           ptr->send_error(berr, "");
-          Env::RgrData::in_process(-1);
+          RangerEnv::in_process(-1);
         }
       );
     

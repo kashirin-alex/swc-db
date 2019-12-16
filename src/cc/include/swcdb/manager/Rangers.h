@@ -7,7 +7,6 @@
 #define swc_lib_manager_Rangers_h
 #include <memory>
 
-#include "swcdb/db/Files/RgrData.h"
 #include "swcdb/manager/Ranger.h"
 
 #include "swcdb/db/Files/Schema.h"

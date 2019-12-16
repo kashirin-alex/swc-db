@@ -22,7 +22,7 @@ void range_load(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     int err = Error::OK;
-    Env::RgrColumns::get()->load_range(
+    RangerEnv::columns()->load_range(
       err,
       params.cid, params.rid, *params.schema.get(),
       std::make_shared<server::Rgr::Callback::RangeLoaded>(

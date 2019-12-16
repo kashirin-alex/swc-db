@@ -14,11 +14,9 @@
 
 #include "swcdb/client/Clients.h"
 #include "swcdb/ranger/AppContextClient.h"
+#include "swcdb/ranger/RangerEnv.h"
 
 #include "swcdb/db/Protocol/Commands.h"
-
-#include "swcdb/db/Columns/Rgr/Columns.h"
-#include "swcdb/db/Columns/Rgr/Compaction.h"
 
 #include "swcdb/db/Protocol/Mngr/req/RgrMngId.h"
 
@@ -71,13 +69,12 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init(FS::fs_type(
       Env::Config::settings()->get<std::string>("swc.fs")));
       
-    Env::RgrData::init();
-    Env::RgrColumns::init();
+    RangerEnv::init();
 
     Env::Resources.init(
       Env::IoCtx::io()->ptr(),
       Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
-      [](size_t bytes) { Env::RgrColumns::get()->release(bytes); }
+      [](size_t bytes) { RangerEnv::columns()->release(bytes); }
     );
 
     return std::make_shared<AppContext>();
@@ -88,7 +85,7 @@ class AppContext : public SWC::AppContext {
   }
 
   void init(const EndPoints& endpoints) override {
-    Env::RgrData::get()->endpoints = endpoints;
+    RangerEnv::rgr_data()->endpoints = endpoints;
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -101,10 +98,8 @@ class AppContext : public SWC::AppContext {
       )
     );
 
+    RangerEnv::start();
     Protocol::Mngr::Req::RgrMngId::assign(&m_id_validator);
-
-    m_compaction = std::make_shared<Compaction>();
-    m_compaction->schedule();
   }
 
   void set_srv(SerializedServer::Ptr srv){
@@ -147,7 +142,7 @@ class AppContext : public SWC::AppContext {
           return;
         }
 
-        if(!Env::RgrData::get()->id) {
+        if(!RangerEnv::rgr_data()->id) {
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
           return;
         }
@@ -181,7 +176,6 @@ class AppContext : public SWC::AppContext {
               sig, ec.message().c_str());
       return;
     }
-    Env::RgrData::shuttingdown();
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
     
     if(m_srv == nullptr) {
@@ -191,8 +185,7 @@ class AppContext : public SWC::AppContext {
     
     m_srv->stop_accepting(); // no further requests accepted
 
-    m_compaction->stop();
-    Env::RgrColumns::get()->unload_all(false);
+    RangerEnv::shuttingdown();
 
     Protocol::Mngr::Req::RgrMngId::shutting_down(
       &m_id_validator,
@@ -203,9 +196,9 @@ class AppContext : public SWC::AppContext {
   }
 
   void stop() override {
-    while(Env::RgrData::in_process())
+    while(RangerEnv::in_process())
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    Env::RgrColumns::get()->unload_all(true); //re-check
+    RangerEnv::columns()->unload_all(true); //re-check
     
     m_id_validator.stop();
     Env::Resources.stop();
@@ -227,7 +220,6 @@ class AppContext : public SWC::AppContext {
   
   std::mutex                m_mutex;
   SerializedServer::Ptr     m_srv = nullptr;
-  Compaction::Ptr           m_compaction;
 
   Protocol::Mngr::Req::RgrMngId::Scheduler  m_id_validator;
   

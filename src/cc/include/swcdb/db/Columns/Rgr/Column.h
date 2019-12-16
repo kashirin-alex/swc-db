@@ -42,7 +42,7 @@ class Column final {
         return it->second;
 
       else if(initialize) {
-        if(Env::RgrData::is_shuttingdown())
+        if(RangerEnv::is_shuttingdown())
           err = Error::SERVER_SHUTTING_DOWN;
         else if(cfg.deleting)
           err = Error::COLUMN_MARKED_REMOVED;

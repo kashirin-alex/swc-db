@@ -189,55 +189,6 @@ class RgrData final {
 
 };
 
-} // Files namespace
+}} // SWC::Files namespace
 
-
-namespace Env {
-class RgrData final {  
-  public:
-
-
-  static void init() {
-    m_env = std::make_shared<RgrData>();
-  }
-
-  static Files::RgrData* get(){
-    HT_ASSERT(m_env != nullptr);
-    return m_env->m_rgr_data;
-  }
-
-  static bool is_shuttingdown(){
-    return m_env->m_shuttingdown;
-  }
-
-  static void shuttingdown(){
-    m_env->m_shuttingdown = true;
-  }
-
-  static int64_t in_process(){
-    return m_env->m_in_process;
-  }
-
-  static void in_process(int64_t count){
-    m_env->m_in_process += count;
-  }
-
-  RgrData() : m_rgr_data(new Files::RgrData()) {}
-
-  ~RgrData(){
-    if(m_rgr_data != nullptr)
-      delete m_rgr_data;
-  }
-
-
-  private:
-  inline static std::shared_ptr<RgrData>  m_env           = nullptr;
-  Files::RgrData*                         m_rgr_data      = nullptr;
-  std::atomic<bool>                       m_shuttingdown  = false;
-  std::atomic<int64_t>                    m_in_process    = 0;
-  
-};
-}
-
-}
 #endif

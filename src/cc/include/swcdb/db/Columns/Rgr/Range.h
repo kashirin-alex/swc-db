@@ -122,8 +122,8 @@ class Range : public DB::RangeBase {
       if(m_state == State::NOTLOADED)
         m_state = State::LOADING;
     }
-    int err = Env::RgrData::is_shuttingdown()
-              ?Error::SERVER_SHUTTING_DOWN:Error::OK;
+    int err = RangerEnv::is_shuttingdown() ?
+                Error::SERVER_SHUTTING_DOWN : Error::OK;
     if(is_loaded || err != Error::OK)
       return loaded(err, cb);
 
@@ -148,7 +148,7 @@ class Range : public DB::RangeBase {
     if(err == Error::RS_DELETED_RANGE)
       return loaded(err, cb);
 
-    Env::RgrData::get()->set_rgr(err, get_path(ranger_data_file));
+    RangerEnv::rgr_data()->set_rgr(err, get_path(ranger_data_file));
     if(err != Error::OK)
       return loaded(err, cb);
 
@@ -335,13 +335,13 @@ class Range : public DB::RangeBase {
 
   void last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
     // ranger.data
-    auto rs_data = Env::RgrData::get();
+    auto rgr_data = RangerEnv::rgr_data();
     Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
     if(rs_last->endpoints.size() 
-      && !has_endpoint(rs_data->endpoints, rs_last->endpoints)){
+      && !has_endpoint(rgr_data->endpoints, rs_last->endpoints)){
       SWC_LOGF(LOG_DEBUG, "RANGER-LAST=%s RANGER-NEW=%s", 
-                rs_last->to_string().c_str(), rs_data->to_string().c_str());
+                rs_last->to_string().c_str(), rgr_data->to_string().c_str());
                 
       Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
         std::make_shared<Protocol::Rgr::Req::RangeUnload>(

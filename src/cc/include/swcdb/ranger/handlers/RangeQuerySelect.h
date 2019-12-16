@@ -23,7 +23,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    range =  Env::RgrColumns::get()->get_range(err, params.cid, params.rid);
+    range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
  
     if(!err && (range == nullptr || !range->is_loaded()))
       err = Error::RS_NOT_LOADED_RANGE;

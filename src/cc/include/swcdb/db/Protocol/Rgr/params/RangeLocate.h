@@ -76,7 +76,7 @@ class RangeLocateRsp  : public Serializable {
   public:
 
   RangeLocateRsp(int err = 0, int64_t cid = 0, int64_t rid = 0) 
-                  : err(err), cid(cid), rid(rid) {  }
+                  : err(err), cid(cid), rid(rid), next_key(false) {  }
 
   RangeLocateRsp(int64_t cid, int64_t rid,
                  const DB::Cell::Key& key_end,

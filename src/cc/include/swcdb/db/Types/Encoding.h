@@ -20,6 +20,8 @@ enum class Encoding {
 
 const std::string to_string(Encoding typ) {
   switch(typ){
+    case Encoding::DEFAULT:
+      return std::string("DEFAULT");
     case Encoding::PLAIN:
       return std::string("PLAIN");
     case Encoding::ZLIB:

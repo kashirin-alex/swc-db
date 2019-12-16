@@ -21,7 +21,7 @@ void column_delete(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     int err = Error::OK;
-    Env::RgrColumns::get()->remove(err, params.cid,
+    RangerEnv::columns()->remove(err, params.cid,
       [conn, ev](int err) {
         if(!err)
           conn->response_ok(ev); // cb->run();

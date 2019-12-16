@@ -21,7 +21,7 @@ void range_is_loaded(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     int err = Error::OK;
-    auto range = Env::RgrColumns::get()->get_range(err, params.cid, params.rid);
+    auto range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
       
     if(range != nullptr && range->is_loaded()){
       conn->response_ok(ev);

@@ -33,7 +33,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
       return;
       
     if(err == Error::OK) {
-      if(Env::RgrData::is_shuttingdown())
+      if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       if(range->deleted())
         err = Error::COLUMN_MARKED_REMOVED;

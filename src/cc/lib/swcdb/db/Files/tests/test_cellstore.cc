@@ -7,7 +7,8 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 #include "swcdb/core/Resources.h"
-#include "swcdb/db/Columns/Rgr/Columns.h"
+
+#include "swcdb/ranger/RangerEnv.h"
 
 #include <iostream>
 
@@ -204,6 +205,8 @@ int main(int argc, char** argv) {
       "swc.rgr.ram.percent")
   );
 
+  SWC::RangerEnv::init();
+  
   auto cid = 11;
   SWC::DB::ColumnCfg col_cfg(cid);
   col_cfg.update(

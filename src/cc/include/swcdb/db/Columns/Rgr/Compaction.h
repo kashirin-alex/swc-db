@@ -6,41 +6,36 @@
 #ifndef swcdb_lib_db_Columns_Rgr_Compaction_h
 #define swcdb_lib_db_Columns_Rgr_Compaction_h
 
-#include "swcdb/db/Columns/Rgr/Columns.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
 
-class Compaction : public std::enable_shared_from_this<Compaction> {
+class Compaction final {
   public:
 
-  typedef std::shared_ptr<Compaction> Ptr;
+  typedef Compaction* Ptr;
 
-  Compaction(uint32_t workers=Env::Config::settings()->get<int32_t>(
-                                              "swc.rgr.maintenance.handlers"))
-            : m_io(std::make_shared<IoContext>("Maintenance", workers)), 
-              m_check_timer(asio::high_resolution_timer(*m_io->ptr())),
+  Compaction() 
+            : m_check_timer(
+                asio::high_resolution_timer(
+                  *RangerEnv::maintenance_io()->ptr())),
               m_run(true), running(0), m_scheduled(false),
               m_idx_cid(0), m_idx_rid(0), 
               cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.compaction.check.interval")), 
-              cfg_cs_max(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.CellStore.count.max")), 
-              cfg_cs_sz(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.CellStore.size.max")), 
-              cfg_compact_percent(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.Range.compaction.size.percent")) {
-    m_io->run(m_io);
+                "swc.rgr.compaction.check.interval")) {
   }
   
   virtual ~Compaction(){}
  
+  Ptr ptr() {
+    return this;
+  }
+
   void stop() {
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_run = false;
       m_check_timer.cancel();
-      m_io->stop();
     }
     std::unique_lock<std::mutex> lock_wait(m_mutex);
     if(running) 
@@ -69,7 +64,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     size_t ram = 0;
     for(;;) {
       
-      if((col = Env::RgrColumns::get()->get_next(m_idx_cid)) == nullptr)
+      if((col = RangerEnv::columns()->get_next(m_idx_cid)) == nullptr)
         break;
       if(col->removing()){
         m_idx_cid++;
@@ -89,12 +84,12 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
       range->compacting(Range::Compact::CHECKING);
       ++running;
       asio::post(
-        *m_io->ptr(), 
-        [range, ptr=shared_from_this()](){ 
+        *RangerEnv::maintenance_io()->ptr(), 
+        [range, ptr=ptr()](){ 
           ptr->compact(range); 
         }
       );
-      if(running == m_io->get_size())
+      if(running == RangerEnv::maintenance_io()->get_size())
         return;
     }
     
@@ -110,14 +105,13 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     auto& commitlog  = range->blocks.commitlog;
     auto& cellstores = range->blocks.cellstores;
 
-    uint32_t cs_size = cfg_cs_sz->get(); 
-
+    uint32_t perc = range->cfg->compact_percent(); 
+    // % of size of either by cellstore or block
+    uint32_t cs_size = range->cfg->cellstore_size(); 
     uint32_t blk_size = range->cfg->block_size();
     uint32_t blk_cells = range->cfg->block_cells();
     Types::Encoding blk_encoding = range->cfg->block_enc();
 
-    uint32_t perc     = cfg_compact_percent->get(); 
-    // % of size of either by cellstore or block
     
     uint32_t allow_sz = (cs_size  / 100) * perc; 
     uint32_t allowed_sz_cs  = cs_size + allow_sz;
@@ -155,7 +149,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     range->blocks.wait_processing();
     
     auto req = std::make_shared<CompactScan>(
-      shared_from_this(),
+      ptr(),
       range, 
       cs_size, 
       blk_size, blk_cells, blk_encoding, 
@@ -257,7 +251,10 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
           return;
         m_writing = true;
       }
-      asio::post(*compactor->io()->ptr(), [ptr=shared()](){ ptr->process(); });
+      asio::post(
+        *RangerEnv::maintenance_io()->ptr(), 
+        [ptr=shared()](){ ptr->process(); 
+      });
       request_more();
     }
 
@@ -268,14 +265,14 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
         std::lock_guard<std::mutex> lock(m_mutex);
         if(m_getting 
           || (!m_queue.empty() 
-              && (m_queue.size() >= compactor->io()->get_size()
+              && (m_queue.size() >= RangerEnv::maintenance_io()->get_size()
                   || m_queue.size() > Env::Resources.avail_ram()/blk_size )))
           return;
         m_getting = true;
       }
 
       asio::post(
-        *compactor->io()->ptr(), 
+        *RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){
           ptr->range->scan_internal(ptr->get_req_scan());
         }
@@ -493,10 +490,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     bool                            m_getting = false;
   };
 
-  IoContext::Ptr io() {
-    return m_io;
-  }
-
   private:
   
   void compacted(Range::Ptr range, bool all=false) {
@@ -512,7 +505,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   void compacted() {
     //std::cout << "Compaction::compacted running=" << running.load() << "\n";
 
-    if(running && running-- == m_io->get_size()) {
+    if(running && running-- == RangerEnv::maintenance_io()->get_size()) {
       run();
       
     } else if(!running) {
@@ -540,7 +533,7 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
     m_check_timer.expires_from_now(set_in);
 
     m_check_timer.async_wait(
-      [ptr=shared_from_this()](const asio::error_code ec) {
+      [ptr=ptr()](const asio::error_code ec) {
         if (ec != asio::error::operation_aborted){
           ptr->run();
         }
@@ -550,7 +543,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   }
 
   std::mutex                   m_mutex;
-  IoContext::Ptr               m_io;
   asio::high_resolution_timer  m_check_timer;
   bool                         m_run;
   std::atomic<uint32_t>        running;
@@ -561,9 +553,6 @@ class Compaction : public std::enable_shared_from_this<Compaction> {
   size_t                       m_idx_rid;
 
   const gInt32tPtr            cfg_check_interval;
-  const gInt32tPtr            cfg_cs_max;
-  const gInt32tPtr            cfg_cs_sz;
-  const gInt32tPtr            cfg_compact_percent;
 };
 
 
