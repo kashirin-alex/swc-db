@@ -143,7 +143,7 @@ class Fragments final {
     m_cv.notify_all();
 
     if(!finalize)
-      RangerEnv::compaction_schedule(1);
+      RangerEnv::compaction_schedule(10000);
   }
 
   const std::string get_log_fragment(const int64_t frag) const {
