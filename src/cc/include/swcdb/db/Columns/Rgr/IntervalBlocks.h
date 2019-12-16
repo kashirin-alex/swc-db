@@ -129,6 +129,7 @@ class IntervalBlocks final {
 
       if(loaded) {
         _scan(req);
+        processing_decrement();
         return false;
       }
 
@@ -218,17 +219,14 @@ class IntervalBlocks final {
     }
 
     void processing_increment() {
-      std::scoped_lock lock(m_mutex);
       m_processing++;
     }
 
     void processing_decrement() {
-      std::scoped_lock lock(m_mutex);
       m_processing--;
     }
 
-    const bool processing() {
-      std::shared_lock lock(m_mutex); 
+    const bool processing() const {
       return m_processing;
     }
 
@@ -265,25 +263,22 @@ class IntervalBlocks final {
     private:
 
     void _scan(DB::Cells::ReqScan::Ptr req) {
+      if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD)
+        return;
 
-      if(req->type != DB::Cells::ReqScan::Type::BLK_PRELOAD) {
-        std::shared_lock lock(m_mutex);
-
-        size_t skips = 0; // Ranger::Stats
-        m_cells.scan(
-          req->spec, 
-          req->cells, 
-          req->offset,
-          [req]() { return req->reached_limits(); },
-          skips, 
-          req->has_selector 
-          ? [req](const DB::Cells::Cell& cell) 
-                { return req->selector(cell); }
-          : (DB::Cells::Mutable::Selector_t)0 
-        );
-        
-      }
-      processing_decrement();
+      std::shared_lock lock(m_mutex);
+      size_t skips = 0; // Ranger::Stats
+      m_cells.scan(
+        req->spec, 
+        req->cells, 
+        req->offset,
+        [req]() { return req->reached_limits(); },
+        skips, 
+        req->has_selector 
+        ? [req](const DB::Cells::Cell& cell) 
+              { return req->selector(cell); }
+        : (DB::Cells::Mutable::Selector_t)0 
+      );
     }
     
     void loaded_cellstores(int err) override {
@@ -332,10 +327,9 @@ class IntervalBlocks final {
       ~Callback() { }
 
       void call(int err) {
-        if(!err)
-          ptr->_scan(req); 
-        else 
-          ptr->processing_decrement();
+        if(!err) 
+          ptr->_scan(req);
+        ptr->processing_decrement();
           
         if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) 
           return; 
@@ -358,7 +352,7 @@ class IntervalBlocks final {
     };
 
     State                     m_state;
-    size_t                    m_processing;
+    std::atomic<size_t>       m_processing;
     std::queue<Callback*>     m_queue;
     const IntervalBlocks::Ptr m_blocks;
   
@@ -381,12 +375,10 @@ class IntervalBlocks final {
   ~IntervalBlocks() {  }
   
   void processing_increment() {
-    std::scoped_lock lock(m_mutex);
     m_processing++;
   }
 
   void processing_decrement() {
-    std::scoped_lock lock(m_mutex);
     m_processing--;
   }
 
@@ -443,6 +435,10 @@ class IntervalBlocks final {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
+    bool finishing;
+    if(finishing = !blk_ptr)
+      processing_increment();
+
     int err = Error::OK;
     {
       std::scoped_lock lock(m_mutex);
@@ -450,12 +446,11 @@ class IntervalBlocks final {
         init_blocks(err);
     }
     if(err) {
+      processing_decrement();
       req->response(err);
       return;
     }
-
-    if(!blk_ptr)
-      processing_increment();
+    
 
     Block::Ptr eval;
     Block::Ptr blk;
@@ -481,9 +476,10 @@ class IntervalBlocks final {
           break;
         }
       }
-      if(blk == nullptr)  
+      if(blk == nullptr) {
+        finishing = true;
         break;
-
+      }
       if(nxt_blk != nullptr) {
         if(!Env::Resources.need_ram(range->cfg->block_size() * 10)
             && nxt_blk->includes(req->spec))
@@ -503,12 +499,16 @@ class IntervalBlocks final {
       if(blk->scan(req)) // true(queued)
         return;
       
-      if(req->reached_limits())
+      if(req->reached_limits()) {
+        finishing = true;
         break;
+      }
     }
 
+    if(finishing)
+      processing_decrement();
+
     req->response(err);
-    processing_decrement();
   }
 
   void split(Block::Ptr blk, bool loaded=true) {
@@ -604,14 +604,16 @@ class IntervalBlocks final {
         }
       }
     }
-    if(!bytes) {
+    if(!bytes && !processing()) {
       std::scoped_lock lock(m_mutex);
-      if(!m_processing)
-        _clear();
+      _clear();
+      bytes = 0;
     }
+    if(!bytes)
+      std::cout << to_string() << "\n";
     //else if(_size() > 1000)
     // merge in pairs down to 1000 blks
-
+    
     return released;
   }
 
@@ -621,13 +623,8 @@ class IntervalBlocks final {
   }
 
   void wait_processing() {
-    while(processing() || commitlog.processing() || cellstores.processing()) {
+    while(processing() || commitlog.processing() || cellstores.processing())
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      //std::cout << " wait_processing cid="<< range->cfg->cid 
-      //          << " processing()=" << processing() 
-      //          << " commitlog.processing()=" << commitlog.processing()
-      //          << " cellstores.processing()=" << cellstores.processing() << "\n";
-    }
   }
 
   const std::string to_string(){
@@ -675,7 +672,7 @@ class IntervalBlocks final {
     return sz;
   }
   
-  const bool _processing() {
+  const bool _processing() const {
     if(m_processing)
       return true;
     for(Block::Ptr blk=m_block; blk; blk=blk->next) {
@@ -730,7 +727,7 @@ class IntervalBlocks final {
 
   std::shared_mutex   m_mutex;
   Block::Ptr          m_block;
-  size_t              m_processing;
+  std::atomic<size_t> m_processing;
 
 };
 
