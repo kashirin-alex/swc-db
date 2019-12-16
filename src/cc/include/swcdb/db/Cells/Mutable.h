@@ -334,9 +334,11 @@ class Mutable final {
         offset < m_size; offset++){
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || !interval.is_in_begin(cell->key))
+      if(cell->has_expired(m_ttl) || (!interval.key_begin.empty() 
+          && interval.key_begin.compare(cell->key) == Condition::LT))
         continue;
-      if(!interval.is_in_end(cell->key))
+      if(!interval.key_end.empty() 
+          && interval.key_end.compare(cell->key) == Condition::GT)
         break; 
 
       cells.add(*cell);
@@ -649,7 +651,7 @@ class Mutable final {
   uint32_t _narrow(const DB::Cell::Key& key, uint32_t on_fraction=0) const {
     uint32_t offset = 0;
 
-    if(m_size < narrow_sz)
+    if(m_size < narrow_sz || key.empty())
       return offset;
 
     uint32_t narrows = 0;
