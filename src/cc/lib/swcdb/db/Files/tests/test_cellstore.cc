@@ -330,6 +330,9 @@ int main(int argc, char** argv) {
 
   hdlr_err(err);
 
+  SWC::Env::FsInterface::interface()->rmdir(
+    err, range->get_column_path(range->cfg->cid));
+
   std::cout << "\n-   OK   -\n\n";
   exit(0);
 }

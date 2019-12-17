@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
   RangerEnv::init();
   
-  auto cid = 1;
+  auto cid = 11;
   DB::ColumnCfg col_cfg(cid);
   col_cfg.update(
     DB::Schema(
@@ -77,14 +77,14 @@ int main(int argc, char** argv) {
       
       0, 
       Types::Encoding::PLAIN,
-      6400000,
+      64000000,
       100000,   // block cells
       0
     )
   );
 
   int err = Error::OK;
-  int num_cells = 200000;
+  int num_cells = 1000000;
   int versions = 3;
 
   auto range = std::make_shared<DB::RangeBase>(&col_cfg, 1);
@@ -255,8 +255,14 @@ int main(int argc, char** argv) {
 
   count_all_cells(num_cells+added_num, blocks);
 
-  std::cout << " scanned blocks (add_logged): \n" << blocks.to_string() << "\n";
+  std::cout << " scanned blocks (add_logged): \n" 
+            << blocks.to_string() << "\n";
   std::cerr << " scanned blocks (add_logged), OK\n";
+
+  Env::FsInterface::interface()->rmdir(
+    err, range->get_column_path(range->cfg->cid));
+  
+  std::cout << "\n-   OK   -\n\n";
 
   exit(0);
 }
