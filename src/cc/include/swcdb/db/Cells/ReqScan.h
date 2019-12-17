@@ -35,6 +35,8 @@ class ReqScan  : public ResponseCallback {
             has_selector(false), drop_caches(false), type(Type::QUERY) {
   }
 
+  virtual ~ReqScan() { }
+
   inline Ptr get_req_scan() {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
@@ -56,8 +58,10 @@ class ReqScan  : public ResponseCallback {
            || 
            (limit_buffer_sz && limit_buffer_sz <= cells.size_bytes());
   }
- 
-  virtual ~ReqScan() { }
+  
+  const bool expired() const {
+    return m_ev != nullptr && m_ev->expired();
+  }
 
   const std::string to_string() const {
     std::string s("ReqScan(");

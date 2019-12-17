@@ -449,8 +449,8 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code ec) {
     do_close();
     return;
   }
-    
-  ev->arrival_time = ClockT::now();
+  if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+    ev->received();
   bool more;
   {
     std::scoped_lock lock(m_mutex_reading);

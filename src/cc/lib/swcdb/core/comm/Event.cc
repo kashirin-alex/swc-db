@@ -16,15 +16,18 @@ Event::Ptr Event::make(Type type, int error) {
 }
 
 Event::Event(Type type_, int error_) 
-            : type(type_), error(error_), 
-              arrival_time(ClockT::now()) {
+            : type(type_), error(error_), expiry_ms(0) {
 }
 
 Event::~Event() { }
 
-ClockT::time_point Event::deadline() {
-  HT_ASSERT(arrival_time.time_since_epoch().count());
-  return arrival_time + std::chrono::milliseconds(header.timeout_ms);
+void Event::received() {
+  if(header.timeout_ms)
+    expiry_ms = Time::now_ms() + header.timeout_ms; 
+}
+
+const bool Event::expired() const {
+  return expiry_ms && Time::now_ms() > expiry_ms;
 }
 
 int32_t Event::response_code() {

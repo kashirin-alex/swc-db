@@ -35,7 +35,9 @@ class Event final {
 
   ~Event();
 
-  ClockT::time_point deadline();
+  void received();
+
+  const bool expired() const;
   
   int32_t response_code();
 
@@ -45,7 +47,7 @@ class Event final {
 
   Type                type;
   int                 error;
-  ClockT::time_point  arrival_time;
+  int64_t             expiry_ms;
   StaticBuffer        data;     //!< Primary data buffer
   StaticBuffer        data_ext; //!< Extended buffer
   CommHeader          header;
