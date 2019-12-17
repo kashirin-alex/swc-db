@@ -100,16 +100,16 @@ class FileSystem {
 
   // File(fd) Actions
   virtual void write(int &err, SmartFd::Ptr &smartfd,
-                     int32_t replication, int64_t blksz, 
+                     uint8_t replication, int64_t blksz, 
                      StaticBuffer &buffer) = 0;
   virtual void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
-                     int32_t replication, int64_t blksz, 
+                     uint8_t replication, int64_t blksz, 
                      StaticBuffer &buffer);
 
   virtual void create(int &err, SmartFd::Ptr &smartfd,
-                      int32_t bufsz, int32_t replication, int64_t blksz) = 0;
+                      int32_t bufsz, uint8_t replication, int64_t blksz) = 0;
   virtual void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
-                      int32_t bufsz, int32_t replication, int64_t blksz);
+                      int32_t bufsz, uint8_t replication, int64_t blksz);
 
   virtual void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz=0) = 0;
   virtual void open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, int32_t bufsz=0);

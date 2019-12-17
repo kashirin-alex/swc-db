@@ -85,13 +85,13 @@ class Interface {
   void rename(int &err, const std::string &from , const std::string &to);
 
   void write(int &err, SmartFd::Ptr smartfd,
-             int32_t replication, int64_t blksz, 
+             uint8_t replication, int64_t blksz, 
              StaticBuffer &buffer);
   
   bool open(int& err, SmartFd::Ptr smartfd);
   
   bool create(int& err, SmartFd::Ptr smartfd,
-              int32_t bufsz, int32_t replication, int64_t blksz);
+              int32_t bufsz, uint8_t replication, int64_t blksz);
               
   void close(int& err, SmartFd::Ptr smartfd);
  

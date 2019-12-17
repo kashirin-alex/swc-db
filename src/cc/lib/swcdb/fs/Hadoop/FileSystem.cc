@@ -320,7 +320,7 @@ SmartFdHadoop::Ptr FileSystemHadoop::get_fd(SmartFd::Ptr &smartfd){
 }
 
 void FileSystemHadoop::write(int &err, SmartFd::Ptr &smartfd,
-                             int32_t replication, int64_t blksz, 
+                             uint8_t replication, int64_t blksz, 
                              StaticBuffer &buffer) {
   SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
 
@@ -348,13 +348,13 @@ void FileSystemHadoop::write(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd, 
-                              int32_t bufsz, int32_t replication, 
+                              int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
 
   std::string abspath = get_abspath(smartfd->filepath());
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
-            bufsz, (int)replication, (Lld)blksz);
+            bufsz, replication, (Lld)blksz);
 
   int oflags = O_WRONLY;
   if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
@@ -362,8 +362,6 @@ void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd,
 
   if (bufsz == -1)
     bufsz = 0;
-  if (replication == -1)
-    replication = 0;
   if (blksz == -1)
     blksz = 0;
 
@@ -386,7 +384,7 @@ void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd,
   hadoop_fd->fd(++m_nxt_fd);
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
-            bufsz, (int)replication, (Lld)blksz);
+            bufsz, replication, (Lld)blksz);
 }
 
 void FileSystemHadoop::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {

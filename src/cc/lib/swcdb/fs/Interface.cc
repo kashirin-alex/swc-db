@@ -292,12 +292,12 @@ void Interface::rename(int &err, const std::string &from ,
 } 
 
 void Interface::write(int &err, SmartFd::Ptr smartfd,
-                      int32_t replication, int64_t blksz, 
+                      uint8_t replication, int64_t blksz, 
                       StaticBuffer &buffer) {
   buffer.own=false;
   for(;;) {
     err = Error::OK;
-    m_fs->write(err, smartfd, -1, -1, buffer);
+    m_fs->write(err, smartfd, replication, blksz, buffer);
     if (err == Error::OK
         || err == Error::FS_PATH_NOT_FOUND 
         || err == Error::FS_PERMISSION_DENIED
@@ -327,7 +327,7 @@ bool Interface::open(int& err, SmartFd::Ptr smartfd) {
 }
   
 bool Interface::create(int& err, SmartFd::Ptr smartfd,
-                       int32_t bufsz, int32_t replication, int64_t blksz) {
+                       int32_t bufsz, uint8_t replication, int64_t blksz) {
   m_fs->create(err, smartfd, bufsz, replication, blksz);
   if(err == Error::FS_PATH_NOT_FOUND ||
      err == Error::FS_PERMISSION_DENIED ||

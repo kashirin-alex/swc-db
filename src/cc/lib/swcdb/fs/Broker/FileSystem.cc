@@ -248,7 +248,7 @@ void FileSystemBroker::rename(Callback::RenameCb_t cb,
 /// SmartFd actions
 
 void FileSystemBroker::write(int &err, SmartFd::Ptr &smartfd,
-                             int32_t replication, int64_t blksz, 
+                             uint8_t replication, int64_t blksz, 
                              StaticBuffer &buffer) {
   auto hdlr = std::make_shared<Protocol::Req::Write>(
     cfg_timeout->get(), smartfd, replication, blksz, buffer);
@@ -258,7 +258,7 @@ void FileSystemBroker::write(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemBroker::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
-                             int32_t replication, int64_t blksz, 
+                             uint8_t replication, int64_t blksz, 
                              StaticBuffer &buffer) {
   auto hdlr = std::make_shared<Protocol::Req::Write>(
     cfg_timeout->get(), smartfd, replication, blksz, buffer, cb);
@@ -267,7 +267,7 @@ void FileSystemBroker::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemBroker::create(int &err, SmartFd::Ptr &smartfd,
-                              int32_t bufsz, int32_t replication, 
+                              int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
   auto hdlr = std::make_shared<Protocol::Req::Create>(
     cfg_timeout->get(), smartfd, bufsz, replication, blksz);
@@ -277,7 +277,7 @@ void FileSystemBroker::create(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemBroker::create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
-                              int32_t bufsz, int32_t replication, 
+                              int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
   auto hdlr = std::make_shared<Protocol::Req::Create>(
     cfg_timeout->get(), smartfd, bufsz, replication, blksz, cb);

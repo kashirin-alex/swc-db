@@ -150,7 +150,7 @@ void FileSystem::rename(Callback::RmdirCb_t cb, const std::string &from,
 }
 
 void FileSystem::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
-                       int32_t replication, int64_t blksz, 
+                       uint8_t replication, int64_t blksz, 
                        StaticBuffer &buffer) {
   int err = Error::OK;
   write(err, smartfd, replication, blksz, buffer);
@@ -158,7 +158,7 @@ void FileSystem::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
 }
 
 void FileSystem::create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
-                        int32_t bufsz, int32_t replication, int64_t blksz) {
+                        int32_t bufsz, uint8_t replication, int64_t blksz) {
   int err = Error::OK;
   create(err, smartfd, bufsz, replication, blksz);
   cb(err, smartfd);

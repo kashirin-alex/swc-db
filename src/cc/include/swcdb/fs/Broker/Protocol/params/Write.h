@@ -16,14 +16,14 @@ class WriteReq : public Serializable {
   WriteReq() {}
 
   WriteReq(const std::string& fname, uint32_t flags,
-	          int32_t replication, int64_t blksz)
+	          uint8_t replication, int64_t blksz)
             : fname(fname), flags(flags),
 	            replication(replication), blksz(blksz) {
   }
   
   std::string fname;
   uint32_t    flags;
-  int32_t     replication;
+  uint8_t     replication;
   int64_t     blksz;
 
   private:
@@ -33,12 +33,12 @@ class WriteReq : public Serializable {
   }
 
   size_t encoded_length_internal() const override {
-    return 16 + Serialization::encoded_length_vstr(fname);
+    return 13 + Serialization::encoded_length_vstr(fname);
   }
 
   void encode_internal(uint8_t **bufp) const override {
     Serialization::encode_i32(bufp, flags);
-    Serialization::encode_i32(bufp, replication);
+    Serialization::encode_i8(bufp, replication);
     Serialization::encode_i64(bufp, blksz);
     Serialization::encode_vstr(bufp, fname);
   }
@@ -47,7 +47,7 @@ class WriteReq : public Serializable {
 			     size_t *remainp) override {
     (void)version;
     flags = Serialization::decode_i32(bufp, remainp);
-    replication = (int32_t)Serialization::decode_i32(bufp, remainp);
+    replication = (uint8_t)Serialization::decode_i8(bufp, remainp);
     blksz = (int64_t)Serialization::decode_i64(bufp, remainp);
     fname.clear();
     fname.append(Serialization::decode_vstr(bufp, remainp));

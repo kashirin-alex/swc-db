@@ -75,18 +75,18 @@ class FileSystemBroker: public FileSystem {
   /// SmartFd actions
 
   void write(int &err, SmartFd::Ptr &smartfd,
-             int32_t replication, int64_t blksz, 
+             uint8_t replication, int64_t blksz, 
              StaticBuffer &buffer) override;
 
   void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
-             int32_t replication, int64_t blksz, 
+             uint8_t replication, int64_t blksz, 
              StaticBuffer &buffer) override;
 
   void create(int &err, SmartFd::Ptr &smartfd,
-              int32_t bufsz, int32_t replication, int64_t blksz) override;
+              int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
   void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
-              int32_t bufsz, int32_t replication, int64_t blksz) override;
+              int32_t bufsz, uint8_t replication, int64_t blksz) override;
   
   size_t append(int &err, SmartFd::Ptr &smartfd, 
                 StaticBuffer &buffer, Flags flags) override;

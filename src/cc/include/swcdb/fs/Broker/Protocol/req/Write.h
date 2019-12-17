@@ -14,10 +14,12 @@ class Write : public Base {
   public:
   
   Write(uint32_t timeout, SmartFd::Ptr &smartfd, 
-        int32_t replication, int64_t blksz, StaticBuffer &buffer,
+        uint8_t replication, int64_t blksz, StaticBuffer &buffer,
         Callback::WriteCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "write amount=%d %s", buffer.size, smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, 
+      "write amount=%d %s replication(%u) blksz(%d)", 
+      buffer.size, smartfd->to_string().c_str(), replication, blksz);
 
     cbp = CommBuf::make(
       Params::WriteReq(smartfd->filepath(), smartfd->flags(), 
@@ -49,7 +51,7 @@ class Write : public Base {
   }
 
   private:
-  SmartFd::Ptr           smartfd;
+  SmartFd::Ptr         smartfd;
   Callback::WriteCb_t  cb;
 };
 

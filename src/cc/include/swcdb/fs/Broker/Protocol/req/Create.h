@@ -16,10 +16,12 @@ class Create : public Base {
   public:
   
   Create(uint32_t timeout, SmartFd::Ptr &smartfd, 
-        int32_t bufsz, int32_t replication, int64_t blksz, 
+        int32_t bufsz, uint8_t replication, int64_t blksz, 
         Callback::CreateCb_t cb=0) 
         : smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "create %s", smartfd->to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, 
+      "create %s bufsz(%d) replication(%d) blksz(%d)", 
+      smartfd->to_string().c_str(), bufsz, replication, blksz);
     
     cbp = CommBuf::make(
       Params::CreateReq(smartfd->filepath(), smartfd->flags(), 

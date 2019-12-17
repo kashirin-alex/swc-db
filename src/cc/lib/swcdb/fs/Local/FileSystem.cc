@@ -182,7 +182,7 @@ void FileSystemLocal::rename(int &err, const std::string &from,
 }
   
 void FileSystemLocal::write(int &err, SmartFd::Ptr &smartfd,
-                            int32_t replication, int64_t blksz, 
+                            uint8_t replication, int64_t blksz, 
                             StaticBuffer &buffer) {
   SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
 
@@ -210,12 +210,12 @@ void FileSystemLocal::write(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd, 
-                             int32_t bufsz, int32_t replication, 
+                             int32_t bufsz, uint8_t replication, 
                              int64_t blksz) {
   std::string abspath = get_abspath(smartfd->filepath());
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
-            bufsz, (int)replication, (Lld)blksz);
+            bufsz, replication, (Lld)blksz);
 
   int oflags = O_WRONLY | O_CREAT
     | (smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE ? O_TRUNC : O_APPEND);
@@ -242,7 +242,7 @@ void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd,
     
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
-            bufsz, (int)replication, (Lld)blksz);
+            bufsz, replication, (Lld)blksz);
 
 #if defined(__APPLE__)
 #ifdef F_NOCACHE
