@@ -41,6 +41,8 @@ typedef std::chrono::fast_clock ClockT;
 
 namespace Time {
 
+const int64_t now_ms();
+
 const int64_t now_ns();
 
 std::ostream &hires_now_ns(std::ostream &out);
