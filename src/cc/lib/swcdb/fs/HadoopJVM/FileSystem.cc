@@ -335,8 +335,8 @@ void FileSystemHadoopJVM::write(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd, 
-                              int32_t bufsz, uint8_t replication, 
-                              int64_t blksz) {
+                                 int32_t bufsz, uint8_t replication, 
+                                 int64_t blksz) {
 
   std::string abspath = get_abspath(smartfd->filepath());
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
@@ -349,8 +349,7 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
 
   if (bufsz == -1)
     bufsz = 0;
-  if (blksz == -1)
-    blksz = 0;
+  blksz = blksz < 512 ? 0 : (blksz/512+1)*512;
 
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */

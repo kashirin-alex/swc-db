@@ -362,8 +362,7 @@ void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd,
 
   if (bufsz == -1)
     bufsz = 0;
-  if (blksz == -1)
-    blksz = 0;
+  blksz = blksz < 512 ? 0 : (blksz/512+1)*512;
 
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */
