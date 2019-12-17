@@ -79,7 +79,7 @@ class Fragment final {
 
   ~Fragment() { }
 
-  void write(int& err, int32_t replication, Types::Encoding encoder, 
+  void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
              DynamicBuffer& cells, uint32_t cell_count) {
     m_version = VERSION;
     
@@ -125,7 +125,7 @@ class Fragment final {
     Env::FsInterface::interface()->write(
       err,
       m_smartfd, 
-      replication, m_cells_offset+m_size_enc, 
+      blk_replicas, m_cells_offset+m_size_enc, 
       buff_write
     );
 

@@ -456,10 +456,10 @@ class Write : public std::enable_shared_from_this<Write> {
   virtual ~Write() { }
 
   void create(int& err, 
-              int32_t bufsz=-1, int32_t replication=-1, int64_t blksz=-1) {
+              int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1) {
     while(
       Env::FsInterface::interface()->create(
-        err, smartfd, bufsz, replication, blksz));
+        err, smartfd, bufsz, blk_replicas, blksz));
   }
 
   void block(int& err, const DB::Cells::Interval& blk_intval, 
@@ -624,7 +624,8 @@ typedef std::shared_ptr<Writers>  WritersPtr;
 inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding, 
                                          DB::RangeBase::Ptr range) {
   Write writer(1, range->get_path_cs(1), encoding);
-  writer.create(err);
+  writer.create(
+    err, -1, range->cfg->block_replication(), range->cfg->block_size());
   if(err)
     return nullptr;
     

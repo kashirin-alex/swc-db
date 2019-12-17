@@ -121,7 +121,7 @@ class Fragments final {
       
       frag->write(
         err, 
-        range->cfg->blk_replication(), 
+        range->cfg->block_replication(), 
         range->cfg->block_enc(), 
         cells, cell_count
       );

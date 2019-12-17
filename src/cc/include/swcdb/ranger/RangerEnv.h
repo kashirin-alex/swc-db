@@ -66,6 +66,7 @@ class RangerEnv final {
   const gInt32tPtr      cfg_cs_sz;
   const gInt32tPtr      cfg_compact_percent;
 
+  const gInt8tPtr       cfg_blk_replication;
   const gInt32tPtr      cfg_blk_size;
   const gInt32tPtr      cfg_blk_cells;
   const gEnumExtPtr     cfg_blk_enc;
@@ -104,6 +105,8 @@ RangerEnv::RangerEnv()
         "swc.rgr.Range.CellStore.size.max")), 
       cfg_compact_percent(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.rgr.Range.compaction.size.percent")),
+      cfg_blk_replication(Env::Config::settings()->get_ptr<gInt8t>(
+        "swc.rgr.Range.block.replication")), 
         cfg_blk_size(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.rgr.Range.block.size")), 
       cfg_blk_cells(Env::Config::settings()->get_ptr<gInt32t>(

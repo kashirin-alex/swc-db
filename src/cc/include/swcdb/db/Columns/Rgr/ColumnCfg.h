@@ -24,7 +24,7 @@ class ColumnCfg final {
   mutable std::atomic<uint32_t>         blk_size;
   mutable std::atomic<uint32_t>         blk_cells;
   mutable std::atomic<Types::Encoding>  blk_enc;
-  mutable std::atomic<uint8_t>          blk_replica;
+  mutable std::atomic<uint8_t>          blk_replication;
 
   mutable std::atomic<uint32_t>         c_versions; 
   mutable std::atomic<uint32_t>         c_ttl;
@@ -36,7 +36,7 @@ class ColumnCfg final {
             : cid(cid), col_type(Types::Column::PLAIN),
               compact_perc(0), cs_size(0), cs_max(0), 
               blk_size(0), blk_cells(0), blk_enc(Types::Encoding::DEFAULT),
-              blk_replica(0),
+              blk_replication(0),
               c_versions(1), c_ttl(0), 
               deleting(false) {
   }
@@ -49,7 +49,7 @@ class ColumnCfg final {
     blk_size = schema.blk_size;
     blk_cells = schema.blk_cells;
     blk_enc = schema.blk_encoding;
-    blk_replica = schema.blk_replication;
+    blk_replication = schema.blk_replication;
 
     c_versions = schema.cell_versions;
     c_ttl = schema.cell_ttl;
@@ -77,6 +77,12 @@ class ColumnCfg final {
             : RangerEnv::get()->cfg_cs_max->get();
   }
 
+  const uint8_t block_replication() const {
+    return blk_replication 
+            ? blk_replication.load() 
+            : RangerEnv::get()->cfg_blk_replication->get();
+  }
+
   const uint32_t block_size() const {
     return blk_size 
             ? blk_size.load() 
@@ -93,10 +99,6 @@ class ColumnCfg final {
     return blk_enc != Types::Encoding::DEFAULT
             ?  blk_enc.load() 
             : (Types::Encoding)RangerEnv::get()->cfg_blk_enc->get();
-  }
-
-  const uint8_t blk_replication() const {
-    return blk_replica.load();
   }
 
   const uint32_t cell_versions() const {

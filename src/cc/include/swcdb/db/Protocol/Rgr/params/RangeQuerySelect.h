@@ -86,7 +86,7 @@ class RangeQuerySelectRsp  : public Serializable {
   }
   
   RangeQuerySelectRsp(StaticBuffer& data)
-                      : data(data) {
+                      : data(data), err(0), reached_limit(false) {
   }
 
   int32_t         err;
