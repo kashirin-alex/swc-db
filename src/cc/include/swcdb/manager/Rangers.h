@@ -51,7 +51,9 @@ class Rangers final {
       cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.mngr.ranges.assign.interval.check")),
       cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.mngr.ranges.assign.due")) { 
+        "swc.mngr.ranges.assign.due")),
+      cfg_schema_replication(Env::Config::settings()->get_ptr<gInt8t>(
+        "swc.mngr.schema.replication")) { 
   }
 
   Ptr ptr() {
@@ -556,15 +558,17 @@ class Rangers final {
 
         pending++;
         asio::post(*Env::IoCtx::io()->ptr(), 
-          [&pending, entries=hdlr_entries]() { 
+          [&pending, entries=hdlr_entries, 
+           replicas=cfg_schema_replication->get()]() { 
             DB::Schema::Ptr schema;
             for(auto cid : entries) {
               int err = Error::OK;
-              schema = Files::Schema::load(err, cid);
+              schema = Files::Schema::load(err, cid, replicas);
               if(err == Error::OK)
                 Env::Schemas::get()->add(err, schema);
               if(err !=  Error::OK)
-                SWC_LOGF(LOG_WARN, "Schema cid=%d err=%d(%s)", cid, err, Error::get_text(err));
+                SWC_LOGF(LOG_WARN, "Schema cid=%d err=%d(%s)", 
+                         cid, err, Error::get_text(err));
             }
             pending--;
           }
@@ -845,7 +849,8 @@ class Rangers final {
       cid, schema, schema->revision ? schema->revision : Time::now_ns());
     HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
     
-    Files::Schema::save_with_validation(err, schema_save);
+    Files::Schema::save_with_validation(
+      err, schema_save, cfg_schema_replication->get());
     if(err == Error::OK) 
       Env::Schemas::get()->add(err, schema_save);
 
@@ -874,7 +879,8 @@ class Rangers final {
     if(schema->equal(schema_save, false))
       err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
 
-    Files::Schema::save_with_validation(err, schema_save);
+    Files::Schema::save_with_validation(
+      err, schema_save, cfg_schema_replication->get());
     if(err == Error::OK) {
       Env::Schemas::get()->replace(schema_save);
       schema = Env::Schemas::get()->get(schema_save->cid);
@@ -1126,6 +1132,7 @@ class Rangers final {
   const gInt32tPtr cfg_delay_cols_init;
   const gInt32tPtr cfg_chk_assign;
   const gInt32tPtr cfg_assign_due;
+  const gInt8tPtr  cfg_schema_replication;
   
 };
 

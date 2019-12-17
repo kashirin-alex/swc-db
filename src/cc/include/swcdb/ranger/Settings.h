@@ -48,7 +48,7 @@ void Settings::init_app_options(){
      "Default CellStore size")  
      
     ("swc.rgr.Range.block.replication", g_i8(3), 
-     "Default FS-Block replication") 
+     "Default Block replication (fs-dependent)") 
     ("swc.rgr.Range.block.size", g_i32(64000000), 
      "Default Block Size in bytes")  
     ("swc.rgr.Range.block.cells", g_i32(100000), 

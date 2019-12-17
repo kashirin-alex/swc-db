@@ -148,7 +148,8 @@ class Range : public DB::RangeBase {
     if(err == Error::RS_DELETED_RANGE)
       return loaded(err, cb);
 
-    RangerEnv::rgr_data()->set_rgr(err, get_path(ranger_data_file));
+    RangerEnv::rgr_data()->set_rgr(
+      err, get_path(ranger_data_file), cfg->block_replication());
     if(err != Error::OK)
       return loaded(err, cb);
 

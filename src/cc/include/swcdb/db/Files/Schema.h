@@ -58,7 +58,7 @@ void write(SWC::DynamicBuffer &dst_buf, DB::Schema::Ptr schema){
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, DB::Schema::Ptr schema){
+void save(int &err, DB::Schema::Ptr schema, uint8_t replication=0){
   DynamicBuffer input;
   write(input, schema);
   StaticBuffer send_buf(input);
@@ -67,7 +67,8 @@ void save(int &err, DB::Schema::Ptr schema){
     err,
     FS::SmartFd::make_ptr(filepath(schema->cid), 
                           FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
-    -1, -1, 
+    replication,
+    -1, 
     send_buf
   );
 }
@@ -141,7 +142,8 @@ void load(int &err, FS::SmartFd::Ptr smartfd, DB::Schema::Ptr &schema) {
     Env::FsInterface::fs()->close(err, smartfd);
 }
 
-DB::Schema::Ptr load(int &err, int64_t cid, bool recover=true) {
+DB::Schema::Ptr load(int &err, int64_t cid, 
+                     uint8_t replication, bool recover=true) {
 
   DB::Schema::Ptr schema = nullptr;
   try{
@@ -163,7 +165,7 @@ DB::Schema::Ptr load(int &err, int64_t cid, bool recover=true) {
           cid, name, Types::Column::COUNTER_I64, 1,
           Env::Config::settings()->get<int32_t>("swc.stats.ttl", 1036800));
       } else {
-        name.append(cid==1?"master":"meta");
+        name.append(cid==1? "master": "meta");
         schema = DB::Schema::make(cid, name);
       }
     } else {
@@ -175,20 +177,23 @@ DB::Schema::Ptr load(int &err, int64_t cid, bool recover=true) {
 
     SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema set to %s", 
               cid, schema->to_string().c_str());
-    save(err, schema);
+    save(err, schema, replication);
   }
   
   return schema;
 }
 
 
-void save_with_validation(int &err, DB::Schema::Ptr schema_save){
-  save(err, schema_save); // ?tmp-file 
+void save_with_validation(int &err, DB::Schema::Ptr schema_save,
+                          uint8_t replication) {
+  save(err, schema_save, replication); // ?tmp-file 
   if(err != Error::OK) 
     return;
-  DB::Schema::Ptr schema_new = load(err, schema_save->cid, false);
+
+  DB::Schema::Ptr schema_new = load(err, schema_save->cid, replication, false);
   if(err != Error::OK) 
     return;
+
   if(!schema_new->equal(schema_save)) {
     err = Error::COLUMN_SCHEMA_BAD_SAVE;
     return;
