@@ -224,8 +224,10 @@ class Properties {
   
   Strings get_strs(const std::string &name);
   
+  uint8_t get_i8(const std::string &name);
+
   uint16_t get_i16(const std::string &name);
-  
+
   int32_t get_i32(const std::string &name);
   
   int64_t get_i64(const std::string &name);
@@ -244,6 +246,8 @@ class Properties {
   
   Strings get_strs(const std::string &name, Strings default_value);
   
+  uint8_t get_i8(const std::string &name, uint8_t default_value);
+
   uint16_t get_i16(const std::string &name, uint16_t default_value);
   
   int32_t get_i32(const std::string &name, int32_t default_value);

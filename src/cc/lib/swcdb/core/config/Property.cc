@@ -62,12 +62,21 @@ int64_t int64_t_from_string(const std::string& s){
   return res;
 }
 
+uint8_t uint8_t_from_string(const std::string& s){
+  int64_t res = int64_t_from_string(s);
+
+  if (res > UINT8_MAX || res < 0) 
+    HT_THROWF(Error::CONFIG_GET_ERROR, 
+      "Bad Value %s, number out of range of 8-bit unsigned integer", s.c_str());
+  return (uint8_t)res;
+}
+
 uint16_t uint16_t_from_string(const std::string& s){
   int64_t res = int64_t_from_string(s);
 
-  if (res > UINT16_MAX || res < -UINT16_MAX) 
+  if (res > UINT16_MAX || res < 0) 
     HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, number out of range of 16-bit integer", s.c_str());
+      "Bad Value %s, number out of range of 16-bit unsigned integer", s.c_str());
   return (uint16_t)res;
 }
 
@@ -76,7 +85,7 @@ int32_t int32_t_from_string(const std::string& s){
 
   if (res > INT32_MAX || res < INT32_MIN) 
     HT_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, number out of range of 32-bit integer", s.c_str());
+        "Bad Value %s, number out of range of 32-bit integer", s.c_str());
   return (int32_t)res;
 }
 
@@ -136,6 +145,16 @@ void ValueDef<std::string>::from_strings(const Strings& values){
 template <>
 void ValueDef<double>::from_strings(const Strings& values) {
   set_value(double_from_string(values.back()));
+}
+
+template <>
+void ValueDef<uint8_t>::from_strings(const Strings& values) {
+  set_value(uint8_t_from_string(values.back()));
+}
+
+template <>
+void ValueDef<gInt8t>::from_strings(const Strings& values) {
+  set_value(uint8_t_from_string(values.back()));
 }
 
 template <>
@@ -202,6 +221,14 @@ const std::string ValueDef<double>::str(){
   return format("%g", get_value());
 }
 template <>
+const std::string ValueDef<uint8_t>::str(){
+  return format("%u", (unsigned)get_value());
+}
+template <>
+const std::string ValueDef<gInt8t>::str(){
+  return format("%d", (unsigned)get_value());
+}
+template <>
 const std::string ValueDef<uint16_t>::str(){
   return format("%u", (unsigned)get_value());
 }
@@ -260,6 +287,13 @@ Value::Ptr Value::make_new(Value::Ptr p, const Strings& values) {
       case ValueType::DOUBLE:
         return new Value(
           (TypeDef*)new ValueDef<double>(values, p->get<double>()));
+
+      case ValueType::UINT8_T:
+        return new Value(
+          (TypeDef*)new ValueDef<uint8_t>(values, p->get<uint8_t>()));
+      case ValueType::G_UINT8_T:
+        return new Value(
+          (TypeDef*)new ValueDef<gInt8t>(values, p->get<gInt8t>()));
 
       case ValueType::UINT16_T:
         return new Value(
@@ -328,6 +362,12 @@ void Value::set_value_from(Value::Ptr from) {
 
       case ValueType::DOUBLE:
         return set_value(from->get<double>());
+      
+      case ValueType::UINT8_T:
+        return set_value(from->get<uint8_t>());
+      case ValueType::G_UINT8_T: 
+        return set_value(from->get<gInt8t>());
+
       case ValueType::UINT16_T:
         return set_value(from->get<uint16_t>());
 
@@ -428,6 +468,11 @@ const std::string Value::str() {
 
       case ValueType::DOUBLE:
         return ((ValueDef<double>*)type_ptr)->str();
+
+      case ValueType::UINT8_T:
+        return ((ValueDef<uint8_t>*)type_ptr)->str();
+      case ValueType::G_UINT8_T: 
+        return ((ValueDef<gInt8t>*)type_ptr)->str();
 
       case ValueType::UINT16_T:
         return ((ValueDef<uint16_t>*)type_ptr)->str();

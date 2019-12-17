@@ -22,6 +22,7 @@ Property::Value::Ptr cfg(T v = 0, bool skippable=false, bool guarded=false);
 *  @param v The default Value and a Type
 */
 Property::Value::Ptr boo(bool v);
+Property::Value::Ptr i8(uint8_t v);
 Property::Value::Ptr i16(uint16_t v);
 Property::Value::Ptr i32(int32_t v);
 Property::Value::Ptr i64(int64_t v);
@@ -36,6 +37,7 @@ Property::Value::Ptr enum_ext(EnumExt v);
 *  @param v The default Value and a Type
 */
 Property::Value::Ptr g_boo(bool v);
+Property::Value::Ptr g_i8(uint8_t v);
 Property::Value::Ptr g_i32(int32_t v);
 Property::Value::Ptr g_strs(Strings v);
 Property::Value::Ptr g_enum_ext(gEnumExt v);
@@ -44,6 +46,7 @@ Property::Value::Ptr g_enum_ext(gEnumExt v);
 *  if no option parsed it is skipped
 */
 Property::Value::Ptr boo();
+Property::Value::Ptr i8();
 Property::Value::Ptr i16();
 Property::Value::Ptr i32();
 Property::Value::Ptr i64();

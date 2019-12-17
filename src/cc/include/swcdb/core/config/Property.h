@@ -38,6 +38,8 @@ double double_from_string(const std::string& s);
 
 int64_t int64_t_from_string(const std::string& s);
 
+uint8_t uint8_t_from_string(const std::string& s);
+
 uint16_t uint16_t_from_string(const std::string& s);
 
 int32_t int32_t_from_string(const std::string& s);
@@ -47,6 +49,7 @@ enum ValueType {
   DOUBLE,
   BOOL,
   STRING,
+  UINT8_T,
   UINT16_T,
   INT32_T,
   INT64_T,
@@ -57,6 +60,7 @@ enum ValueType {
   ENUM,
   
   G_BOOL,
+  G_UINT8_T,
   G_INT32_T,
   G_STRINGS,
   G_ENUMEXT
@@ -111,6 +115,12 @@ class  ValueDef : public TypeDef {
 
     if(v_type == typeid(std::string))
       return ValueType::STRING;  
+
+    if(v_type == typeid(uint8_t))
+      return ValueType::UINT8_T;  
+    if(v_type == typeid(gInt8t))
+      return ValueType::G_UINT8_T;
+
     if(v_type == typeid(uint16_t))
       return ValueType::UINT16_T;  
 
@@ -213,6 +223,12 @@ template <>
 void ValueDef<double>::from_strings(const Strings& values);
 
 template <>
+void ValueDef<uint8_t>::from_strings(const Strings& values);
+
+template <>
+void ValueDef<gInt8t>::from_strings(const Strings& values);
+
+template <>
 void ValueDef<uint16_t>::from_strings(const Strings& values);
 
 template <>
@@ -245,6 +261,10 @@ template <>
 const std::string ValueDef<std::string>::str();
 template <>
 const std::string ValueDef<double>::str();
+template <>
+const std::string ValueDef<uint8_t>::str();
+template <>
+const std::string ValueDef<gInt8t>::str();
 template <>
 const std::string ValueDef<uint16_t>::str();
 template <>

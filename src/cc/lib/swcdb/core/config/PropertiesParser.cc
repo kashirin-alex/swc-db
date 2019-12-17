@@ -24,6 +24,9 @@ Property::Value::Ptr cfg(T v, bool skippable, bool guarded) {
 Property::Value::Ptr boo(bool v) {
   return cfg(v);
 }
+Property::Value::Ptr i8(uint8_t v) {
+  return cfg(v);
+}
 Property::Value::Ptr i16(uint16_t v) {
   return cfg(v);
 }
@@ -58,6 +61,9 @@ Property::Value::Ptr enum_ext(EnumExt v) {
 Property::Value::Ptr g_boo(bool v) {
   return cfg((gBool)v, false, true);
 }
+Property::Value::Ptr g_i8(uint8_t v) {
+  return cfg((gInt8t)v, false, true);
+}
 Property::Value::Ptr g_i32(int32_t v) {
   return cfg((gInt32t)v, false, true);
 }
@@ -73,6 +79,9 @@ Property::Value::Ptr g_enum_ext(gEnumExt v) {
 */
 Property::Value::Ptr boo() {
   return cfg(true, true);
+}
+Property::Value::Ptr i8() {
+  return cfg((uint8_t)0, true);
 }
 Property::Value::Ptr i16() {
   return cfg((uint16_t)0, true);

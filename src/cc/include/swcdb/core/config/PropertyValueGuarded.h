@@ -86,8 +86,10 @@ class ValueGuardedAtomic final {
 }
 
 typedef Property::ValueGuardedAtomic<bool>      gBool;
+typedef Property::ValueGuardedAtomic<uint8_t>   gInt8t;
 typedef Property::ValueGuardedAtomic<int32_t>   gInt32t;
 typedef gBool*    gBoolPtr;
+typedef gInt8t*   gInt8tPtr;
 typedef gInt32t*  gInt32tPtr;
 
 

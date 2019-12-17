@@ -185,6 +185,9 @@ namespace SWC {
   Strings Properties::get_strs(const std::string &name) {
     return get<Strings>(name); 
   }
+  uint8_t Properties::get_i8(const std::string &name) {
+    return get<uint8_t>(name); 
+  }
   uint16_t Properties::get_i16(const std::string &name) {
     return get<uint16_t>(name); 
   }
@@ -214,6 +217,9 @@ namespace SWC {
   }
   Strings Properties::get_strs(const std::string &name, Strings default_value) {
     return get<Strings>(name, default_value); 
+  }
+  uint8_t Properties::get_i8(const std::string &name, uint8_t default_value) {
+    return get<uint8_t>(name, default_value); 
   }
   uint16_t Properties::get_i16(const std::string &name, uint16_t default_value) {
     return get<uint16_t>(name, default_value); 
