@@ -94,11 +94,23 @@ class Interval final {
   }
 
   void expand(const Cell& cell) {
+    expand_begin(cell);
+    expand_end(cell);
+
+    expand(cell.timestamp);
+    was_set = true;
+  }
+
+  void expand_begin(const Cell& cell) {
     if(key_begin.empty() || !is_in_begin(cell.key))
       key_begin.copy(cell.key);
+    expand(cell.timestamp);
+    was_set = true;
+  }
+
+  void expand_end(const Cell& cell) {
     if(key_end.empty() || !is_in_end(cell.key))
       key_end.copy(cell.key);
-    
     expand(cell.timestamp);
     was_set = true;
   }
@@ -119,26 +131,26 @@ class Interval final {
       ts_latest.equal(other.ts_latest);
   }
 
-  inline const bool is_in_begin(const DB::Cell::Key &key) const {
+  const bool is_in_begin(const DB::Cell::Key &key) const {
     return key_begin.empty() || 
           (!key.empty() && key_begin.compare(key) != Condition::LT);
   }
   
-  inline const bool is_in_end(const DB::Cell::Key &key) const {
+  const bool is_in_end(const DB::Cell::Key &key) const {
     return key_end.empty() || 
           (!key.empty() && key_end.compare(key) != Condition::GT);
   }
 
-  inline const bool consist(const Interval& other) const {
+  const bool consist(const Interval& other) const {
     return (other.key_end.empty()   || is_in_begin(other.key_end)) 
         && (other.key_begin.empty() || is_in_end(other.key_begin));
   }
 
-  inline const bool consist(const DB::Cell::Key& key) const {
+  const bool consist(const DB::Cell::Key& key) const {
     return is_in_begin(key) && is_in_end(key);
   }
 
-  inline const bool consist(const DB::Cell::Key& key, int64_t ts) const {
+  const bool consist(const DB::Cell::Key& key, int64_t ts) const {
     return is_in_begin(key) 
           && 
            is_in_end(key) 
