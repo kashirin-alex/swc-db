@@ -53,15 +53,24 @@ class IntervalBlocks final {
                     next(nullptr), prev(nullptr) {
     }
 
-    const bool splitter() override {
-      return m_blocks->_split(ptr(), false);
-    }
-    
     Ptr ptr() override {
       return this;
     }
 
     virtual ~Block() { }
+
+    const bool is_consist(const DB::Cells::Interval& intval) override {
+      std::shared_lock lock(m_mutex);
+      return m_interval.is_in_end(intval.key_begin) && (
+              (prev && prev->is_gt_end(intval.key_begin))
+               || 
+              m_interval.is_in_begin(intval.key_end)
+            );
+    }
+
+    const bool splitter() override {
+      return m_blocks->_split(ptr(), false);
+    }
 
     const bool removed() {
       std::shared_lock lock(m_mutex);
@@ -160,15 +169,13 @@ class IntervalBlocks final {
       assert(m_cells.size());
       assert(blk->m_cells.size());
 
-      blk->m_cells.expand(blk->m_interval);
+      blk->m_cells.expand_begin(blk->m_interval);
       blk->m_interval.set_key_end(m_interval.key_end);
       blk->m_interval.set_ts_latest(m_interval.ts_latest);
       
-      bool any_begin = m_interval.key_begin.empty();
-      m_interval.free();
-      m_cells.expand(m_interval);
-      if(any_begin)
-        m_interval.key_begin.free();
+      m_interval.key_end.free();
+      m_interval.ts_latest.free();
+      m_cells.expand_end(m_interval);
     
       if(!loaded)
         blk->m_cells.free();
@@ -450,7 +457,10 @@ class IntervalBlocks final {
       req->response(err);
       return;
     }
-    
+    if(req->expired()) {
+      processing_decrement();
+      return;
+    }    
 
     Block::Ptr eval;
     Block::Ptr blk;
@@ -609,8 +619,6 @@ class IntervalBlocks final {
       _clear();
       bytes = 0;
     }
-    if(!bytes)
-      std::cout << to_string() << "\n";
     //else if(_size() > 1000)
     // merge in pairs down to 1000 blks
     

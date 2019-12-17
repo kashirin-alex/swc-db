@@ -27,6 +27,10 @@ class Block {
           m_cells(Mutable(0, cell_versions, cell_ttl, col_type)) {
   }
 
+  virtual ~Block() { }
+
+  virtual const bool is_consist(const Interval& intval) = 0;
+
   virtual const bool splitter() = 0;
 
   virtual void loaded_cellstores(int err) = 0;
@@ -37,7 +41,10 @@ class Block {
     return this;
   }
 
-  virtual ~Block() { }
+  const bool is_gt_end(const DB::Cell::Key& key) {
+    std::shared_lock lock(m_mutex);
+    return m_interval.key_end.compare(key) == Condition::GT;
+  }
 
   const bool is_next(const Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
@@ -48,11 +55,6 @@ class Block {
   const bool includes(const Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
     return m_interval.includes(spec);
-  }
-  
-  const bool is_consist(const Interval& intval) {
-    std::shared_lock lock(m_mutex);
-    return intval.consist(m_interval);
   }
 
   const size_t size() {
@@ -77,6 +79,9 @@ class Block {
     if(cells.size())
       cells.scan(m_interval, m_cells);
     
+    if(m_cells.size() && !m_interval.key_begin.empty())
+      m_cells.expand_begin(m_interval);
+
     added = m_cells.size() - added;
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells(cells)"
@@ -90,8 +95,8 @@ class Block {
     
   }
 
-  size_t load_cells(const uint8_t* buf, size_t remain, 
-                    size_t avail, bool& was_splitted) {
+  const size_t load_cells(const uint8_t* buf, size_t remain, 
+                          size_t avail, bool& was_splitted) {
     auto ts = Time::now_ns();
     Cell cell;
     size_t count = 0;
@@ -132,6 +137,9 @@ class Block {
       if(splitter() && !was_splitted)
         was_splitted = true;
     }
+    
+    if(m_cells.size() && !m_interval.key_begin.empty())
+      m_cells.expand_begin(m_interval);
     
     auto took = Time::now_ns()-ts;
     std::cout << "Cells::Block::load_cells(rbuf)"
