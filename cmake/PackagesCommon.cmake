@@ -2,6 +2,8 @@
 # Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
 #
 
+SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC  SHARED  INCLUDE asio.hpp)
+
 SET_DEPS(NAME "ATOMIC"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libatomic.a SHARED atomic INCLUDE )
 
 SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHARED z INCLUDE zlib.h)
