@@ -559,10 +559,19 @@ class Mutable final {
   }
 
   void expand(Interval& interval) const {
-    interval.expand(**(m_cells)); // !on_fraction
+    expand_begin(interval); // !on_fraction
     if(m_size > 1)
-      interval.expand(**(m_cells + m_size-1));
+      expand_end(interval);
   }
+
+  void expand_begin(Interval& interval) const {
+    interval.expand_begin(**(m_cells));
+  }
+
+  void expand_end(Interval& interval) const {
+    interval.expand_end(**(m_cells + m_size-1));
+  }
+  
 
   const std::string to_string(bool with_cells=false) const {
     std::string s("CellsMutable(cap=");
