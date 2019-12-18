@@ -221,7 +221,10 @@ int main(int argc, char** argv) {
       SWC::Types::Encoding::SNAPPY,
       60000000, // block size
       100000,   // block cells
-      0 // schema's revision
+      0, // cs-size
+      0, // cs-max
+      0, // compaction %
+      0  // schema's revision
     )
   );
   

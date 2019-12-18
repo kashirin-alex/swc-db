@@ -105,13 +105,13 @@ class Compaction final {
     auto& commitlog  = range->blocks.commitlog;
     auto& cellstores = range->blocks.cellstores;
 
-    uint32_t perc = range->cfg->compact_percent(); 
-    // % of size of either by cellstore or block
     uint32_t cs_size = range->cfg->cellstore_size(); 
     uint32_t blk_size = range->cfg->block_size();
     uint32_t blk_cells = range->cfg->block_cells();
     Types::Encoding blk_encoding = range->cfg->block_enc();
 
+    uint8_t perc = range->cfg->compact_percent(); 
+    // % of size of either by cellstore or block
     
     uint32_t allow_sz = (cs_size  / 100) * perc; 
     uint32_t allowed_sz_cs  = cs_size + allow_sz;

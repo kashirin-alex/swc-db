@@ -42,7 +42,7 @@ void Settings::init_app_options(){
     ("swc.rgr.compaction.check.interval", g_i32(300000), 
      "Interval in ms for Compaction ")
 
-    ("swc.rgr.Range.CellStore.count.max", g_i32(10), 
+    ("swc.rgr.Range.CellStore.count.max", g_i8(10), 
      "Number of cellstores allowed in range before range-split")  
     ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
      "Default CellStore size")  
@@ -56,7 +56,7 @@ void Settings::init_app_options(){
     ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
      "Default Block encoding NONE/SNAPPY/ZLIB")  
      
-    ("swc.rgr.Range.compaction.size.percent", g_i32(33), 
+    ("swc.rgr.Range.compaction.percent", g_i8(33), 
      "Compaction threshold in % applied over size of either by cellstore or block")
   ;
 

@@ -62,9 +62,9 @@ class RangerEnv final {
     return m_env->_columns;
   }
 
-  const gInt32tPtr      cfg_cs_max;
+  const gInt8tPtr       cfg_cs_max;
   const gInt32tPtr      cfg_cs_sz;
-  const gInt32tPtr      cfg_compact_percent;
+  const gInt8tPtr       cfg_compact_percent;
 
   const gInt8tPtr       cfg_blk_replication;
   const gInt32tPtr      cfg_blk_size;
@@ -99,12 +99,12 @@ class RangerEnv final {
 namespace SWC {
 
 RangerEnv::RangerEnv() 
-    : cfg_cs_max(Env::Config::settings()->get_ptr<gInt32t>(
+    : cfg_cs_max(Env::Config::settings()->get_ptr<gInt8t>(
         "swc.rgr.Range.CellStore.count.max")), 
       cfg_cs_sz(Env::Config::settings()->get_ptr<gInt32t>(
         "swc.rgr.Range.CellStore.size.max")), 
-      cfg_compact_percent(Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.rgr.Range.compaction.size.percent")),
+      cfg_compact_percent(Env::Config::settings()->get_ptr<gInt8t>(
+        "swc.rgr.Range.compaction.percent")),
       cfg_blk_replication(Env::Config::settings()->get_ptr<gInt8t>(
         "swc.rgr.Range.block.replication")), 
         cfg_blk_size(Env::Config::settings()->get_ptr<gInt32t>(

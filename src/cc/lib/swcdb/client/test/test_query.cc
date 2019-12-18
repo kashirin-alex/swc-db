@@ -356,7 +356,11 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::ZLIB, 64000000
+    1, 0, 3, SWC::Types::Encoding::PLAIN, 10000000,
+    100000, // blk-cells
+    50000000, // cs-size
+    0, // cs-max
+    0 // compact-%
   );
 
   /*
