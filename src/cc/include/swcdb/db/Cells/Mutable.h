@@ -121,7 +121,24 @@ class Mutable final {
     ts = cell->timestamp;
   }
    
-  bool get(const DB::Cell::Key& key, Condition::Comp comp, Cell& cell) const {
+  const bool get(const DB::Cell::Key& key, Condition::Comp comp, 
+                 DB::Cell::Key& res) const {
+    Cell* ptr;
+    Condition::Comp chk;
+
+    for(uint32_t offset = _narrow(key, 0); offset < m_size; offset++) {
+      ptr = *(m_cells + offset);
+      if((chk = key.compare(ptr->key, 0)) == Condition::GT 
+        || (comp == Condition::GE && chk == Condition::EQ)){
+        res.copy(ptr->key);
+        return true;
+      }
+    }
+    return false;
+  }
+   
+  const bool get(const DB::Cell::Key& key, Condition::Comp comp, 
+                 Cell& cell) const {
     Cell* ptr;
     Condition::Comp chk;
 
