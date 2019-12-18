@@ -23,15 +23,15 @@ using ReqBase = Req::ConnQueue::ReqBase;
 
 /*
 range-master: 
-  req-mngr.   cid(1) + n(cid):Specs::Interval        
-              => cid(1) + rid + rgr(endpoints) + key_end + ?key_next	
+  req-mngr.   cid(1) + n(cid):range_begin+range_end     
+              => cid(1) + rid + rgr(endpoints) + key_end + ?range_next	
     req-rgr.  cid(1) + rid + cid(n):Specs::Interval  
-              => cid(2) + rid + key_end + ?key_next	
+              => cid(2) + rid + key_end + ?range_next	
 range-meta: 
   req-mngr.   cid(2) + rid                           
               => cid(2) + rid + rgr(endpoints)	
     req-rgr.  cid(2) + rid + cid(n):Specs::Interval  
-              => cid(n) + rid + key_end + ?key_next	
+              => cid(n) + rid + key_end + ?range_next	
 range-data: 
   req-mngr.   cid(n) + rid                           
               => cid(n) + rid + rgr(endpoints)	
@@ -162,15 +162,13 @@ class Update : public std::enable_shared_from_this<Update> {
     void locate_on_manager() {
 
       Mngr::Params::RgrGetReq params(1);
-      params.interval.key_start.set(*key_start.get(), Condition::GE);
-      if(cid > 2)
-        params.interval.key_start.insert(
-          0, std::to_string(cid), Condition::GE);
-      if(cid >= 2)
-        params.interval.key_start.insert(0, "2", Condition::EQ);
-      if(cid == 1) 
-        params.interval.key_start.set(0, Condition::EQ);
       
+      params.range_begin.copy(*key_start.get());
+      if(cid > 2)
+        params.range_begin.insert(0, std::to_string(cid));
+      if(cid >= 2)
+        params.range_begin.insert(0, "2");
+
       std::cout << "locate_on_manager:\n " 
                 << to_string() << "\n "
                 << params.to_string() << "\n";
@@ -239,7 +237,7 @@ class Update : public std::enable_shared_from_this<Update> {
           //updater->result->err = Error::NOT_ALLOWED;
           //updater->response();
         }
-        commit_data(rsp.endpoints, rsp.rid, rsp.key_end, base_req);
+        commit_data(rsp.endpoints, rsp.rid, rsp.range_end, base_req);
         if(type == Types::Range::DATA)
           return true;
       
@@ -249,14 +247,14 @@ class Update : public std::enable_shared_from_this<Update> {
           base_req, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
 
-      if(rsp.next_key && !rsp.key_end.empty()) {
+      if(rsp.next_range && !rsp.range_end.empty()) {
         std::cout << "located_on_manager, NEXT-KEY: " 
                   << Types::to_string(type) 
-                  << " " << rsp.key_end.to_string() << "\n";
-        auto key_next = get_key_next(rsp.key_end);
-        if(key_next != nullptr) {
+                  << " " << rsp.range_end.to_string() << "\n";
+        auto next_key_start = get_key_next(rsp.range_end);
+        if(next_key_start != nullptr) {
           std::make_shared<Locator>(
-            type, cid, cells, cells_cid, key_next, updater, 
+            type, cid, cells, cells_cid, next_key_start, updater, 
             parent_req == nullptr ? base_req : parent_req
           )->locate_on_manager();
         }
@@ -269,11 +267,10 @@ class Update : public std::enable_shared_from_this<Update> {
 
       Rgr::Params::RangeLocateReq params(cid, rid);
 
-      params.interval.key_start.set(*key_start.get(), Condition::GE);
-      params.interval.key_start.insert(0, std::to_string(cells_cid),
-        type == Types::Range::MASTER? Condition::GE : Condition::EQ);
+      params.range_begin.copy(*key_start.get());
+      params.range_begin.insert(0, std::to_string(cells_cid));
       if(type == Types::Range::MASTER && cells_cid > 2) 
-        params.interval.key_start.insert(0, "2", Condition::EQ);
+        params.range_begin.insert(0, "2");
 
       std::cout << "locate_on_ranger:\n "
                 << to_string() << "\n "
@@ -320,8 +317,8 @@ class Update : public std::enable_shared_from_this<Update> {
       }
 
       /*
-      auto key_next = get_key_next(key_start, true);
-      if(key_next == nullptr) 
+      auto range_next = get_key_next(key_start, true);
+      if(range_next == nullptr) 
         return true;
       */
 
@@ -331,15 +328,15 @@ class Update : public std::enable_shared_from_this<Update> {
         rsp.cid, cells, cells_cid, key_start, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
-      if(rsp.next_key && !rsp.key_end.empty()) {
+      if(rsp.next_range && !rsp.range_end.empty()) {
       std::cout << "located_on_ranger, NEXT-KEY: " 
         << Types::to_string(type) 
-        << " " << rsp.key_end.to_string() << "\n";
+        << " " << rsp.range_end.to_string() << "\n";
 
-        auto key_next = get_key_next(rsp.key_end);
-        if(key_next != nullptr) {
+        auto next_key_start = get_key_next(rsp.range_end);
+        if(next_key_start != nullptr) {
           std::make_shared<Locator>(
-            type, cid, cells, cells_cid, key_next, updater, parent_req
+            type, cid, cells, cells_cid, next_key_start, updater, parent_req
           )->locate_on_ranger(endpoints);
         }
       }
@@ -348,10 +345,12 @@ class Update : public std::enable_shared_from_this<Update> {
     
     DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key, 
                                     bool start_key=false) {
-      DB::Cells::Cell cell;
-      if(!cells->get(eval_key, start_key? Condition::GE : Condition::GT, cell))
+      auto key = std::make_shared<DB::Cell::Key>();
+      if(eval_key.empty() || 
+        !cells->get(
+          eval_key, start_key? Condition::GE : Condition::GT, *key.get()))
         return nullptr;
-      return std::make_shared<DB::Cell::Key>(cell.key);
+      return key;
     }
 
     void commit_data(EndPoints endpoints, uint64_t rid,

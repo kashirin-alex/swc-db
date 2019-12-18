@@ -38,11 +38,15 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
     server::Mngr::Range::Ptr range;
     if(!params.rid) {
       range = col->get_range(
-        rsp_params.err, params.interval, rsp_params.next_key);
+        rsp_params.err, 
+        params.range_begin, 
+        params.range_end.empty() ? params.range_begin : params.range_end,
+        rsp_params.next_range
+      );
       if(range != nullptr) {
-        range->get_key_end(rsp_params.key_end);
-        rsp_params.key_end.remove(0);
-        rsp_params.key_end.remove(0);
+        range->get_key_end(rsp_params.range_end);
+        rsp_params.range_end.remove(0);
+        rsp_params.range_end.remove(0);
       }
     } else 
       range = col->get_range(rsp_params.err, params.rid);

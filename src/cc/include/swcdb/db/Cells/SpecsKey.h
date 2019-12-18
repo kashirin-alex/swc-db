@@ -26,7 +26,7 @@ class Key : public DB::Cell::Key {
     set(cell_key, comp, offset);
   }
 
-  virtual ~Key(){
+  virtual ~Key() {
     free();
   }
 

@@ -141,11 +141,26 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     return m_interval.was_set;
   }
 
-  bool includes(const DB::Specs::Interval& intval) {
+  bool includes(const DB::Cell::Key& range_begin, 
+                const DB::Cell::Key& range_end, uint32_t fractions=0) {
     std::shared_lock lock(m_mutex);
-    return m_interval.includes(intval);
+    return 
+      (
+        (!fractions || (m_interval.key_begin.empty() && range_end.empty()) || 
+         range_end.compare(m_interval.key_begin, fractions) != Condition::GT
+        ) && (
+          m_interval.key_begin.empty() || range_end.empty() ||
+          range_end.compare(m_interval.key_begin) != Condition::GT
+        )
+      ) && (
+        (!fractions || (m_interval.key_end.empty() && range_begin.empty()) || 
+          range_begin.compare(m_interval.key_end, fractions) != Condition::LT
+        ) && (
+          m_interval.key_end.empty() || range_begin.empty() ||
+          range_begin.compare(m_interval.key_end) != Condition::LT
+        )      
+      );
   }
-
 
   void get_interval(Cells::Interval& interval) {
     std::shared_lock lock(m_mutex);

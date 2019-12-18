@@ -23,11 +23,12 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void()> Cb_no_conn_t;
 
   static void request(int64_t cid, int64_t rid, 
-                      const DB::Specs::Interval& interval, 
+                      const DB::Cell::Key& range_begin, 
+                      const DB::Cell::Key& range_end, 
                       const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(
-      Params::RangeLocateReq(cid, rid, interval), 
+      Params::RangeLocateReq(cid, rid, range_begin, range_end), 
       endpoints, cb_no_conn, cb, timeout
     );
   }

@@ -21,14 +21,17 @@ class RgrGetReq : public Serializable {
 
   RgrGetReq(int64_t cid=0, int64_t rid=0) : cid(cid), rid(rid) {}
 
-  RgrGetReq(int64_t cid, const DB::Specs::Interval& interval)
-            : cid(cid), rid(0), interval(interval) {}
+  RgrGetReq(int64_t cid, 
+            const DB::Cell::Key& range_begin, 
+            const DB::Cell::Key& range_end)
+            : cid(cid), rid(0), 
+              range_begin(range_begin), range_end(range_end) {}
 
   virtual ~RgrGetReq(){ }
   
-  int64_t              cid;
-  int64_t              rid;
-  DB::Specs::Interval  interval;
+  int64_t        cid;
+  int64_t        rid;
+  DB::Cell::Key  range_begin, range_end;
   
   const std::string to_string() {
     std::string s("Ranger(");
@@ -37,8 +40,10 @@ class RgrGetReq : public Serializable {
     s.append(" rid=");
     s.append(std::to_string(rid));
     if(!rid) {
-      s.append(" ");
-      s.append(interval.to_string());
+      s.append(" RangeBegin");
+      s.append(range_begin.to_string());
+      s.append(" RangeEnd");
+      s.append(range_end.to_string());
     }
     s.append(")");
     return s;
@@ -53,22 +58,26 @@ class RgrGetReq : public Serializable {
   size_t encoded_length_internal() const {
     return Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
-      + (!rid ? interval.encoded_length() : 0);
+      + (!rid ? range_begin.encoded_length() + range_end.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    if(!rid) 
-      interval.encode(bufp);
+    if(!rid) {
+      range_begin.encode(bufp);
+      range_end.encode(bufp);
+    }
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    if(!rid)
-      interval.decode(bufp, remainp);
+    if(!rid) {
+      range_begin.decode(bufp, remainp);
+      range_end.decode(bufp, remainp);
+    }
   }
 
 };
@@ -78,24 +87,24 @@ class RgrGetReq : public Serializable {
 class RgrGetRsp : public Common::Params::HostEndPoints {
   public:
 
-  RgrGetRsp(): err(0), cid(0), rid(0), next_key(false) {}
+  RgrGetRsp(): err(0), cid(0), rid(0), next_range(false) {}
 
   RgrGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints) 
             : Common::Params::HostEndPoints(endpoints), 
-              err(0), cid(cid), rid(rid), next_key(false) { }
+              err(0), cid(cid), rid(rid), next_range(false) { }
 
   RgrGetRsp(int64_t cid, int64_t rid, const EndPoints& endpoints, 
-            const DB::Cell::Key& key_end, 
-            bool next_key)  
+            const DB::Cell::Key& range_end, 
+            bool next_range)  
             : Common::Params::HostEndPoints(endpoints), 
               err(0), cid(cid), rid(rid), 
-              key_end(key_end), next_key(next_key) { }
+              range_end(range_end), next_range(next_range) { }
 
   int             err;         
   int64_t         cid; 
   int64_t         rid; 
-  DB::Cell::Key   key_end;
-  bool            next_key;
+  DB::Cell::Key   range_end;
+  bool            next_range;
 
   const std::string to_string() const {
     std::string s("Ranger(");
@@ -109,10 +118,10 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       s.append(" ");
       s.append(Common::Params::HostEndPoints::to_string());
       if(cid == 1) {
-        s.append(" End");
-        s.append(key_end.to_string());
-        s.append(" next_key=");
-        s.append(std::to_string(next_key));
+        s.append(" RangeEnd");
+        s.append(range_end.to_string());
+        s.append(" next_range=");
+        s.append(std::to_string(next_range));
       }
     } else {
       s.append("(");
@@ -135,7 +144,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
         (Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + Common::Params::HostEndPoints::encoded_length_internal()
-        + (cid==1 ? key_end.encoded_length()+1 : 0)
+        + (cid==1 ? range_end.encoded_length()+1 : 0)
         )
       );
   }
@@ -147,8 +156,8 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       Serialization::encode_vi64(bufp, rid);
       Common::Params::HostEndPoints::encode_internal(bufp);
       if(cid == 1) {
-        key_end.encode(bufp);
-        Serialization::encode_bool(bufp, next_key);
+        range_end.encode(bufp);
+        Serialization::encode_bool(bufp, next_range);
       }
     }
   }
@@ -161,8 +170,8 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
       rid = Serialization::decode_vi64(bufp, remainp);
       Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
       if(cid == 1) {
-        key_end.decode(bufp, remainp, true);
-        next_key = Serialization::decode_bool(bufp, remainp);
+        range_end.decode(bufp, remainp, true);
+        next_range = Serialization::decode_bool(bufp, remainp);
       }
     }
   }

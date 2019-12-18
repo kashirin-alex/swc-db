@@ -41,7 +41,7 @@ class Select : public std::enable_shared_from_this<Select> {
   Result::Ptr                 result;
 
   uint32_t buff_sz          = 8000000;
-  uint32_t timeout_commit   = 60000;
+  uint32_t timeout_select   = 600000;
 
   std::mutex                  m_mutex;
   std::condition_variable     cv;
@@ -144,18 +144,27 @@ class Select : public std::enable_shared_from_this<Select> {
     
     void locate_on_manager() {
 
-      Mngr::Params::RgrGetReq params(1);
-      params.interval.key_start.copy(interval->key_start);
-      params.interval.key_start.set(-1, Condition::GE);
+      Mngr::Params::RgrGetReq params(
+        1, 
+        interval->offset_key.empty() ? 
+          interval->range_begin : interval->offset_key,
+        interval->range_end
+      );
+
       if(cid > 2)
-        params.interval.key_start.insert(
-          0, std::to_string(cid), Condition::GE);
+        params.range_begin.insert(0, std::to_string(cid));
       if(cid >= 2)
-        params.interval.key_start.insert(0, "2", Condition::EQ);
-      if(cid == 1) 
-        params.interval.key_start.set(0, Condition::EQ);
+        params.range_begin.insert(0, "2");
       
-      params.interval.flags.offset = offset;
+      if(!params.range_end.empty()) {
+        if(cid > 2) 
+          params.range_end.insert(0, std::to_string(cid));
+        if(cid >= 2) 
+          params.range_end.insert(0, "2");
+      }
+        
+      //params.offset = offset;
+
       //std::cout << "locate_on_manager:\n " 
       //          << to_string() << "\n "
       //          << params.to_string() << "\n";
@@ -215,10 +224,11 @@ class Select : public std::enable_shared_from_this<Select> {
         return false;
       }
 
-      if(type != Types::Range::DATA && rsp.next_key && !rsp.key_end.empty()) {
+      if(type != Types::Range::DATA 
+         && rsp.next_range && !rsp.range_end.empty()) {
         //std::cout << "located_on_manager, NEXT-KEY: " 
         //          << Types::to_string(type) 
-        //          << " " << rsp.key_end.to_string() << "\n";
+        //          << " " << rsp.range_end.to_string() << "\n";
         next_calls->push_back([scanner=std::make_shared<Scanner>(
           type, cid, cells_cid, interval, selector, next_calls,
           parent_req == nullptr ? base_req : parent_req,
@@ -249,14 +259,22 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_ranger(const EndPoints& endpoints) {
       HT_ASSERT(type != Types::Range::DATA);
 
-      Rgr::Params::RangeLocateReq params(cid, rid);
+      Rgr::Params::RangeLocateReq params(
+        cid, rid, 
+        interval->offset_key.empty() ? 
+          interval->range_begin : interval->offset_key,
+        interval->range_end
+      );
 
-      params.interval.key_start.copy(interval->key_start);
-      params.interval.key_start.set(-1, Condition::GE);
-      params.interval.key_start.insert(0, std::to_string(cells_cid),
-        type == Types::Range::MASTER? Condition::GE : Condition::EQ);
-      if(type == Types::Range::MASTER && cells_cid > 2) 
-        params.interval.key_start.insert(0, "2", Condition::EQ);
+      params.range_begin.insert(0, std::to_string(cells_cid));
+      if(type == Types::Range::MASTER && cells_cid > 2)
+        params.range_begin.insert(0, "2");
+      
+      if(!params.range_end.empty()) {
+        params.range_end.insert(0, std::to_string(cells_cid));
+        if(type == Types::Range::MASTER && cells_cid > 2)
+          params.range_end.insert(0, "2");
+      }
 
       //std::cout << "locate_on_ranger:\n "
       //          << to_string() << "\n "
@@ -303,13 +321,13 @@ class Select : public std::enable_shared_from_this<Select> {
       }
 
       auto current_offset = offset;
-      if(rsp.next_key && !rsp.key_end.empty()
+      if(rsp.next_range && !rsp.range_end.empty()
         && type != Types::Range::DATA 
-        && interval->key_finish.is_matching(rsp.key_end)) {
+        && interval->key_finish.is_matching(rsp.range_end)) {
               
         //std::cout << "located_on_ranger, NEXT-KEY: " 
         //  << Types::to_string(type) 
-        //  << " " << rsp.key_end.to_string() << "\n";
+        //  << " " << rsp.range_end.to_string() << "\n";
           
         next_calls->push_back([endpoints, scanner=std::make_shared<Scanner>(
           type, cid, cells_cid, interval, selector, next_calls, parent_req, ++offset
@@ -389,7 +407,7 @@ class Select : public std::enable_shared_from_this<Select> {
             ptr->selector->response();
           }
         },
-        selector->timeout_commit
+        selector->timeout_select
       );
     }
 

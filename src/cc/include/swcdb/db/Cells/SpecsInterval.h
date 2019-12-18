@@ -27,12 +27,25 @@ class Interval {
   }
 
   inline static Ptr make_ptr(
-      const Key& key_start, const Key& key_finish, const Value& value, 
+      const Key& key_start, const Key& key_finish, const Value& value,
       const Timestamp& ts_start, const Timestamp& ts_finish, 
       const Flags& flags=Flags()) {
     return std::make_shared<Interval>(
       key_start, key_finish, value, ts_start, ts_finish, flags);
   }
+  
+  inline static Ptr make_ptr(
+      const Cell::Key& range_begin, const Cell::Key& range_end,
+      const Key& key_start, const Key& key_finish, 
+      const Value& value, 
+      const Timestamp& ts_start, const Timestamp& ts_finish, 
+      const Flags& flags=Flags()) {
+    return std::make_shared<Interval>(
+      range_begin, range_end, 
+      key_start, key_finish, value, ts_start, ts_finish, flags
+    );
+  }
+  
   
   inline static Ptr make_ptr(const uint8_t **bufp, size_t *remainp){
     return std::make_shared<Interval>(bufp, remainp);
@@ -48,6 +61,11 @@ class Interval {
   
   explicit Interval() : offset_rev(0) {}
 
+  explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
+                    : range_begin(range_begin), range_end(range_end), 
+                      offset_rev(0) {
+  }
+
   explicit Interval(const Key& key_start, const Key& key_finish, 
                     const Value& value, 
                     const Timestamp& ts_start, const Timestamp& ts_finish, 
@@ -55,7 +73,20 @@ class Interval {
                     : key_start(key_start), key_finish(key_finish), 
                       value(value),
                       ts_start(ts_start), ts_finish(ts_finish), 
-                      flags(flags), offset_rev(0) {}
+                      flags(flags), offset_rev(0) {
+  }
+
+  explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end, 
+                    const Key& key_start, const Key& key_finish, 
+                    const Value& value, 
+                    const Timestamp& ts_start, const Timestamp& ts_finish, 
+                    const Flags& flags=Flags())
+                    : range_begin(range_begin), range_end(range_end), 
+                      key_start(key_start), key_finish(key_finish), 
+                      value(value),
+                      ts_start(ts_start), ts_finish(ts_finish), 
+                      flags(flags), offset_rev(0) {
+  }
   
   explicit Interval(const uint8_t **bufp, size_t *remainp) {
     decode(bufp, remainp); 
@@ -67,6 +98,9 @@ class Interval {
 
   void copy(const Interval& other) {
     //std::cout  << " copy(const Interval& other)\n";
+
+    range_begin.copy(other.range_begin);
+    range_end.copy(other.range_end);
 
     key_start.copy(other.key_start);
     key_finish.copy(other.key_finish);
@@ -87,12 +121,14 @@ class Interval {
   }
   
   void free() {
+    range_begin.free();
+    range_end.free();
     key_start.free();
     key_finish.free();
     value.free();
     offset_key.free();
   }
-
+/*
   void expand(const Cells::Cell& cell) {
     if(key_start.empty() || !key_start.is_matching(cell.key)){
       key_start.set(cell.key, Condition::GE);
@@ -101,11 +137,13 @@ class Interval {
       key_finish.set(cell.key, Condition::LE);
     }
   }
-
+*/
   bool equal(const Interval& other) const {
     return  ts_start.equal(other.ts_start) &&
             ts_finish.equal(other.ts_finish) &&
             flags.equal(other.flags) &&
+            range_begin.equal(other.range_begin) &&
+            range_end.equal(other.range_end) &&
             key_start.equal(other.key_start) &&
             key_finish.equal(other.key_finish) &&
             value.equal(other.value) &&
@@ -154,7 +192,8 @@ class Interval {
   }
 
   const size_t encoded_length() const {
-    return key_start.encoded_length() + key_finish.encoded_length()
+    return range_begin.encoded_length() + range_end.encoded_length()
+          + key_start.encoded_length() + key_finish.encoded_length()
           + value.encoded_length()
           + ts_start.encoded_length() + ts_finish.encoded_length()
           + flags.encoded_length()
@@ -163,40 +202,63 @@ class Interval {
   }
 
   void encode(uint8_t **bufp) const {
+    range_begin.encode(bufp);
+    range_end.encode(bufp);
+
     key_start.encode(bufp);
     key_finish.encode(bufp);
+
     value.encode(bufp);
+
     ts_start.encode(bufp);
     ts_finish.encode(bufp);
+
     flags.encode(bufp);
+
     offset_key.encode(bufp);
     Serialization::encode_vi64(bufp, offset_rev);
   }
 
   void decode(const uint8_t **bufp, size_t *remainp){
+    range_begin.decode(bufp, remainp);
+    range_end.decode(bufp, remainp);
+
     key_start.decode(bufp, remainp);
     key_finish.decode(bufp, remainp);
+
     value.decode(bufp, remainp);
+
     ts_start.decode(bufp, remainp);
     ts_finish.decode(bufp, remainp);
+
     flags.decode(bufp, remainp);
+
     offset_key.decode(bufp, remainp);
     offset_rev = Serialization::decode_vi64(bufp, remainp);
   }
   
   const std::string to_string() const {
-    std::string s("Interval(Start");
+    std::string s("Interval(Begin");
+    s.append(range_begin.to_string());
+    s.append(" End");
+    s.append(range_end.to_string());
+
+    s.append(" Start");
     s.append(key_start.to_string());
     s.append(" Finish");
     s.append(key_finish.to_string());
     s.append(" ");
+
     s.append(value.to_string());
+
     s.append(" Start");
     s.append(ts_start.to_string());
     s.append(" Finish");
     s.append(ts_finish.to_string());
     s.append(" ");
+
     s.append(flags.to_string());
+
     s.append(" Offset");
     s.append(offset_key.to_string());
     s.append(" OffsetRev=");

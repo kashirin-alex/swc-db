@@ -95,25 +95,22 @@ class Column final {
     return nullptr;
   }
 
-  Range::Ptr get_range(int &err, const DB::Specs::Interval& intval, 
-                       bool &next_key) {
+  Range::Ptr get_range(int &err, 
+                       const DB::Cell::Key& range_begin, 
+                       const DB::Cell::Key& range_end, 
+                       bool &range_key) {
     std::shared_lock lock(m_mutex);
-    int64_t offset = intval.flags.offset;
-
     Range::Ptr found = nullptr;
+    uint32_t on_fractions = 0; //cfg.cid == 1 ? 2 : (cfg.cid == 2 ? 1 : 0);
     for(auto& range : m_ranges){
-      if(range->includes(intval)) {
-        if(offset) {
-          --offset;
-          continue;
-        }
-        if(found == nullptr){
-          found = range;
-          continue;
-        }
-        next_key = true;
-        break;
+      if(!range->includes(range_begin, range_end, on_fractions)) 
+        continue;
+      if(found == nullptr){
+        found = range;
+        continue;
       }
+      range_key = true;
+      break;
     }
     return found;
   }

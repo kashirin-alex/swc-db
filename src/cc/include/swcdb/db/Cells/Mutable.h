@@ -22,7 +22,7 @@ class Mutable final {
   public:
 
   typedef std::shared_ptr<Mutable>          Ptr;
-  typedef std::function<bool(const Cell&)>  Selector_t;
+  typedef std::function<bool(const Cell&, bool&)>  Selector_t;
   
   static const uint8_t  _cell_sz = sizeof(Cell*);
   
@@ -368,8 +368,8 @@ class Mutable final {
     Cell* cell;
 
     uint32_t offset = 0; //(narrower over specs.key_start)
-    
-    for(; offset < m_size; offset++){
+    bool stop = false;
+    for(; !stop && offset < m_size; offset++){
       cell = *(m_cells + offset);
 
       if(cell->flag == NONE) {
@@ -387,7 +387,7 @@ class Mutable final {
       }
 
       if((!selector && specs.is_matching(*cell, m_type))
-          || (selector && selector(*cell))) {
+          || (selector && selector(*cell, stop))) {
         if(cell_offset){
           cell_offset--;
           skips++;  

@@ -41,7 +41,9 @@ class ReqScan  : public ResponseCallback {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  virtual bool selector(const DB::Cells::Cell& cell) { return true; }
+  virtual const bool selector(const DB::Cells::Cell& cell, bool& stop) { 
+    return true; 
+  }
   
   bool ready(int& err) {
     auto call = next_call;

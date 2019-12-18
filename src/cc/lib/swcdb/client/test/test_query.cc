@@ -356,9 +356,9 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::PLAIN, 10000000,
-    100000, // blk-cells
-    50000000, // cs-size
+    1, 0, 3, SWC::Types::Encoding::ZLIB, 64000000,
+    0, // blk-cells
+    0, // cs-size
     0, // cs-max
     0 // compact-%
   );
@@ -390,7 +390,7 @@ int main(int argc, char** argv) {
         SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
         schema,
         [schema]
-        (SWC::Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
+        (SWC::Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err) {
           if(err != SWC::Error::OK 
             && err != SWC::Error::COLUMN_SCHEMA_NAME_EXISTS) {
             req_ptr->request_again();

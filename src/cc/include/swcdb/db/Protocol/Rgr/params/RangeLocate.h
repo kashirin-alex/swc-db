@@ -22,14 +22,18 @@ class RangeLocateReq : public Serializable {
   RangeLocateReq(int64_t cid, int64_t rid)
                 : cid(cid), rid(rid) {}
 
-  RangeLocateReq(int64_t cid, int64_t rid, const DB::Specs::Interval& interval)
-                : cid(cid), rid(rid) {}
+  RangeLocateReq(int64_t cid, int64_t rid,
+                 const DB::Cell::Key& range_begin, 
+                 const DB::Cell::Key& range_end)
+                : cid(cid), rid(rid), 
+                  range_begin(range_begin), range_end(range_end) {
+  }
 
   virtual ~RangeLocateReq(){ }
 
-  int64_t              cid;
-  int64_t              rid;
-  DB::Specs::Interval  interval;
+  int64_t        cid;
+  int64_t        rid;
+  DB::Cell::Key  range_begin, range_end;
   
   const std::string to_string() {
     std::string s("RangeLocateReq(");
@@ -37,8 +41,11 @@ class RangeLocateReq : public Serializable {
     s.append(std::to_string(cid));
     s.append(" rid=");
     s.append(std::to_string(rid));
-    s.append(" ");
-    s.append(interval.to_string());
+
+    s.append(" RangeBegin");
+    s.append(range_begin.to_string());
+    s.append(" RangeEnd");
+    s.append(range_end.to_string());
     s.append(")");
     return s;
   }
@@ -52,20 +59,22 @@ class RangeLocateReq : public Serializable {
   size_t encoded_length_internal() const {
     return  Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(rid)
-          + interval.encoded_length();
+          + range_begin.encoded_length() + range_end.encoded_length();
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    interval.encode(bufp);
+    range_begin.encode(bufp);
+    range_end.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    interval.decode(bufp, remainp);
+    range_begin.decode(bufp, remainp);
+    range_end.decode(bufp, remainp);
   }
 
 };
@@ -76,20 +85,20 @@ class RangeLocateRsp  : public Serializable {
   public:
 
   RangeLocateRsp(int err = 0, int64_t cid = 0, int64_t rid = 0) 
-                  : err(err), cid(cid), rid(rid), next_key(false) {  }
+                  : err(err), cid(cid), rid(rid), next_range(false) {  }
 
   RangeLocateRsp(int64_t cid, int64_t rid,
-                 const DB::Cell::Key& key_end,
-                 bool next_key)
+                 const DB::Cell::Key& range_end,
+                 bool next_range)
                  : err(0), cid(cid), rid(rid), 
-                  key_end(key_end), next_key(next_key) {
+                  range_end(range_end), next_range(next_range) {
   }
 
   int             err;         
   int64_t         cid; 
   int64_t         rid;
-  DB::Cell::Key   key_end;
-  bool            next_key;
+  DB::Cell::Key   range_end;
+  bool            next_range;
 
   const std::string to_string() const {
     std::string s("Range(");
@@ -101,10 +110,10 @@ class RangeLocateRsp  : public Serializable {
       s.append(" rid=");
       s.append(std::to_string(rid));
 
-      s.append(" End");
-      s.append(key_end.to_string());
-      s.append(" next_key=");
-      s.append(std::to_string(next_key));
+      s.append(" RangeEnd");
+      s.append(range_end.to_string());
+      s.append(" next_range=");
+      s.append(std::to_string(next_range));
       
     } else {
       s.append("(");
@@ -126,7 +135,7 @@ class RangeLocateRsp  : public Serializable {
       + (err != Error::OK ? 0 :
           (Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(rid)
-          + key_end.encoded_length()
+          + range_end.encoded_length()
           + 1
           )
         );
@@ -137,8 +146,8 @@ class RangeLocateRsp  : public Serializable {
     if(err == Error::OK) {
       Serialization::encode_vi64(bufp, cid);
       Serialization::encode_vi64(bufp, rid);
-      key_end.encode(bufp);
-      Serialization::encode_bool(bufp, next_key);
+      range_end.encode(bufp);
+      Serialization::encode_bool(bufp, next_range);
     }
   }
     
@@ -148,8 +157,8 @@ class RangeLocateRsp  : public Serializable {
     if(err == Error::OK) {
       cid = Serialization::decode_vi64(bufp, remainp);
       rid = Serialization::decode_vi64(bufp, remainp);
-      key_end.decode(bufp, remainp, true);
-      next_key = Serialization::decode_bool(bufp, remainp);
+      range_end.decode(bufp, remainp, true);
+      next_range = Serialization::decode_bool(bufp, remainp);
     }
   }
 

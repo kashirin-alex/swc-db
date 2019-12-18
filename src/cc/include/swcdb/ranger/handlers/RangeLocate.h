@@ -41,18 +41,20 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     }
 
     DB::Cells::Mutable cells(
-      params.interval.flags.limit, 
+      2, 
       range->cfg->cell_versions(), 
       range->cfg->cell_ttl(), 
       range->cfg->column_type()
     );
     auto req = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
-      conn, ev, params.interval, cells, range
+      conn, ev, 
+      DB::Specs::Interval(
+        params.range_begin, 
+        params.range_end.empty() ? params.range_begin : params.range_end
+      ), 
+      cells, 
+      range
     );
-    req->spec.key_finish.copy(req->spec.key_start);
-    req->spec.key_finish.set(-1, Condition::LE);
-    if(range->type != Types::Range::DATA) 
-      req->spec.key_finish.set(0, Condition::EQ);
     req->spec.flags.limit = 2;
 
     range->scan(req);

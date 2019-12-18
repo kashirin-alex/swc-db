@@ -28,11 +28,19 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
   virtual ~RangeLocateScan() { }
 
-  bool selector(const DB::Cells::Cell& cell) override {  // ref bool stop
-    //std::cout << " selector  checking: "<< cell.to_string() << "\n";
-    //std::cout << " vs spec.key_start: "<< spec.key_start.to_string() << "\n";
-    if(!spec.key_start.is_matching(cell.key)) 
-      return cells.size() == 1; // next_key
+  const bool selector(const DB::Cells::Cell& cell, bool& stop) override {
+    std::cout << " selector   : cid=" << range->cfg->cid << "\n"
+              << "    cell.key: "<< cell.key.to_string() << "\n"
+              << " range_begin: "<< spec.range_begin.to_string() << "\n";
+
+    if(!spec.range_end.empty() 
+        && spec.range_end.compare(cell.key) == Condition::GT) {
+      stop = true;
+      return false;
+    }
+    stop = cells.size() == 1;
+    if(spec.range_begin.compare(cell.key, cell.key.count) == Condition::LT)
+      return false;
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
@@ -41,12 +49,11 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     key_end.decode(&ptr, &remain);
     /*
     std::cout << "cell begin: "<< cell.key.to_string() << "\n";
-    std::cout << "spec begin: " << spec.key_start.to_string() << "\n";
+    std::cout << "spec begin: " << spec.range_begin.to_string() << "\n";
     std::cout << "cell end:   "<< key_end.to_string() << "\n";
-    std::cout << "spec end:   " << spec.key_finish.to_string() << "\n";
+    std::cout << "spec end:   " << spec.range_end.to_string() << "\n";
     */
-    return key_end.empty() || 
-            spec.key_finish.is_matching(key_end);
+    return key_end.empty() || spec.range_end.compare(key_end) != Condition::GT;
   }
 
   void response(int &err) override {
@@ -76,25 +83,22 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         const uint8_t* ptr = cell.value;
         size_t remain = cell.vlen;
         params.rid = Serialization::decode_vi64(&ptr, &remain);
-        params.key_end.decode(&ptr, &remain, true);
+        params.range_end.decode(&ptr, &remain, true);
         std::cout << params.to_string() << "\n";
 
-        if(range->type == Types::Range::MASTER) 
-          params.key_end.remove(0);
-        if(!params.key_end.empty())
-          params.key_end.remove(0);
+        if(range->type == Types::Range::MASTER)
+          params.range_end.remove(0);
+        if(!params.range_end.empty())
+          params.range_end.remove(0);
 
-        params.next_key = cells.size() > 1;
+        params.next_range = cells.size() > 1;
         
       } else  {
         // range->cfg->cid == 1 || 2
-        if(spec.key_start.count > 1) {
-          spec.offset_key.free();
-          spec.key_finish.copy(spec.key_start);
-          spec.key_finish.set(-1, Condition::LE);
-          if(range->type != Types::Range::DATA)
-            spec.key_finish.set(0, Condition::EQ);
-          spec.key_start.remove(spec.key_start.count-1, true);
+        if((range->cfg->cid == 1 && spec.range_begin.count > 2) || 
+           (range->cfg->cid == 2 && spec.range_begin.count > 1)) {
+          spec.range_end.copy(spec.range_begin);
+          spec.range_begin.remove(spec.range_begin.count-1, true);
           range->scan(get_req_scan());
           return;
         } else {
