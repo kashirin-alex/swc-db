@@ -172,10 +172,19 @@ class Interval {
     if(!match)
       return match;
 
-    return  ts_start.is_matching(cell.timestamp) &&
-            ts_finish.is_matching(cell.timestamp) &&
-            (key_start.empty()  || key_start.is_matching(cell.key)) &&
-            (key_finish.empty() || key_finish.is_matching(cell.key));
+    return  
+      ts_start.is_matching(cell.timestamp) 
+      &&
+      ts_finish.is_matching(cell.timestamp) 
+      &&
+      (range_begin.empty() || range_begin.compare(cell.key) != Condition::LT) 
+      &&
+      (range_end.empty()   || range_end.compare(cell.key) != Condition::GT) 
+      &&
+      (key_start.empty()   || key_start.is_matching(cell.key)) 
+      &&
+      (key_finish.empty()  || key_finish.is_matching(cell.key))
+      ;
   }
 
   const bool is_matching(const Cells::Cell& cell, Types::Column typ) const {

@@ -170,14 +170,27 @@ class Interval final {
   }
 
   const bool includes(const Specs::Interval& interval) const {
-    return  // (interval.offset_key.empty() || 
-            //  consist(interval.offset_key) ) && 
-            (interval.key_start.empty() || key_end.empty() 
-              || interval.key_start.is_matching(key_end) ) 
-          && 
-            (interval.key_finish.empty() || key_begin.empty() 
-              || interval.key_finish.is_matching(key_begin) )
-          ;
+    return 
+      (key_end.empty()  
+       ||
+        (interval.key_start.empty() || 
+         interval.key_start.is_matching(key_end))
+         &&
+        (interval.range_begin.empty() || 
+         interval.range_begin.compare(key_end) != Condition::LT)
+      ) 
+      && 
+      (key_begin.empty()
+       ||  
+        (interval.key_finish.empty() || 
+         interval.key_finish.is_matching(key_begin))
+         &&
+        (interval.range_end.empty() || 
+         interval.range_end.compare(key_end) != Condition::GT)
+      );
+
+    // (interval.offset_key.empty() || 
+    ///  consist(interval.offset_key) ) && 
   }
 
   const size_t encoded_length() const {
