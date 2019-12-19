@@ -179,7 +179,7 @@ extern LogWriter logger;
       std::cout << Logger::logger.seconds() \
                 << ' ' << Logger::logger.get_name(priority) << ": "; \
   std::cout 
-#define SWC_LOG_OUT_END ""; if(_priority_ == LOG_FATAL) HT_ABORT; }
+#define SWC_LOG_OUT_END '\n'; if(_priority_ == LOG_FATAL) HT_ABORT; }
 
 //
 
