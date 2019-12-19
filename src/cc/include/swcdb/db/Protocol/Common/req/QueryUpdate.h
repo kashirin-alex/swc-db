@@ -97,25 +97,30 @@ class Update : public std::enable_shared_from_this<Update> {
   }
 
   void commit() {
-    DB::Cells::Cell     cell;
-
     DB::Cells::MapMutable::ColumnCells pair;
-    for(size_t idx=0;columns_cells->get(idx, pair);idx++) {
-      if(!pair.second->size()) 
-        continue;
-      auto cid = pair.first;
-      auto& cells = pair.second;
-      
-      auto key_start = std::make_shared<DB::Cell::Key>();
-      cells->get(0, *key_start.get()); 
-  
-      std::make_shared<Locator>(
-        Types::Range::MASTER,
-        cid, cells, cid, 
-        key_start, 
-        shared_from_this()
-      )->locate_on_manager();
+    for(size_t idx=0; columns_cells->get(idx, pair); idx++) {
+      if(pair.second->size()) 
+        commit(pair.first, pair.second);
     }
+  }
+
+  void commit(const int64_t cid) {
+    DB::Cells::MapMutable::ColumnCells pair;
+    columns_cells->get(cid, pair);      
+    if(pair.second->size())
+      commit(pair.first, pair.second);
+  }
+
+  void commit(const int64_t cid, DB::Cells::Mutable::Ptr cells) {
+    auto key_start = std::make_shared<DB::Cell::Key>();
+    cells->get(0, *key_start.get()); 
+  
+    std::make_shared<Locator>(
+      Types::Range::MASTER,
+      cid, cells, cid, 
+      key_start, 
+      shared_from_this()
+    )->locate_on_manager();
   }
 
   class Locator : public std::enable_shared_from_this<Locator> {
@@ -399,6 +404,7 @@ class Update : public std::enable_shared_from_this<Update> {
               std::cout << "RETRYING " << rsp.to_string() << "\n";
               return;
             }        
+            // cb(col) at !cells 
             ptr->updater->result->err=rsp.err;
             if(!--ptr->updater->result->completion)
               ptr->updater->response();
