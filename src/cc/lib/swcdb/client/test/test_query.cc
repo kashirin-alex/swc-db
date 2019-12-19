@@ -91,6 +91,7 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
       std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
     }
     std::cerr << "\n BAD, on offset, select cells count: \n" 
+              << " err=" << select_req->result->err 
               << " " << spec->to_string() << "\n"
               << " expected_value=" << expected_sz << "\n"
               << "   result_value=" << res_sz << "\n";
@@ -128,7 +129,7 @@ void test_1(const std::string& col_name) {
   
   Cells::Cell cell;
   size_t added_count = 0;
-  for(int b=0;b<batches;b++) {
+  for(int b=0; b<batches; b++) {
     took =  SWC::Time::now_ns();
     for(int i=0;i<num_cells;i++) {
       std::string cell_number(std::to_string(b)+":"+std::to_string(i));

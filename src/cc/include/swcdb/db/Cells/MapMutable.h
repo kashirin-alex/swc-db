@@ -153,23 +153,22 @@ class MapMutable {
     it->second->add(cell);
   }
 
-  bool get(size_t offset, ColCells::Ptr& col) {
+  ColCells::Ptr get_idx(size_t offset) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if(offset < m_map.size()) {
       auto it = m_map.begin();
       for(it; offset--; it++);
-      col = it->second;
-      return true;
+      return it->second;
     }
-    return false;
+    return nullptr;
   }
 
-  void get(const int64_t cid, ColCells::Ptr& col) {
+  ColCells::Ptr get_col(const int64_t cid) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto it = m_map.find(cid);
-    col =  it != m_map.end() ? it->second : nullptr;
+    return it != m_map.end() ? it->second : nullptr;
   }
 
   void pop(ColCells::Ptr& col) {

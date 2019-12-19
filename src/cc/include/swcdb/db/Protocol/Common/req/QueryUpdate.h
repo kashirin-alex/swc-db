@@ -97,24 +97,22 @@ class Update : public std::enable_shared_from_this<Update> {
   }
 
   void commit() {
-    DB::Cells::ColCells::Ptr col_cells;
-    for(size_t idx=0; columns_cells->get(idx, col_cells); idx++)
-      commit(col_cells);
+    DB::Cells::ColCells::Ptr col;
+    for(size_t idx=0; (col=columns_cells->get_idx(idx)) != nullptr; idx++)
+      commit(col);
   }
 
-  void commit(const int64_t cid) {
-    DB::Cells::ColCells::Ptr col_cells;
-    columns_cells->get(cid, col_cells);      
-    commit(col_cells);
+  void commit(const int64_t cid) { 
+    commit(columns_cells->get_col(cid));
   }
 
-  void commit(DB::Cells::ColCells::Ptr& col_cells) {
-    if(!col_cells->size())
+  void commit(DB::Cells::ColCells::Ptr col) {
+    if(col != nullptr && !col->size())
       return;
     std::make_shared<Locator>(
       Types::Range::MASTER,
-      col_cells->cid, col_cells, 
-      col_cells->get_first_key(), 
+      col->cid, col, 
+      col->get_first_key(), 
       shared_from_this()
     )->locate_on_manager();
   }
