@@ -29,10 +29,13 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   virtual ~RangeLocateScan() { }
 
   const bool selector(const DB::Cells::Cell& cell, bool& stop) override {
-    std::cout << " selector   : cid=" << range->cfg->cid << "\n"
-              << "    cell.key: "<< cell.key.to_string() << "\n"
-              << " range_begin: "<< spec.range_begin.to_string() << "\n";
-
+    /*
+    SWC_LOG_OUT(LOG_INFO) 
+      << " selector   : cid=" << range->cfg->cid << "\n"
+      << "    cell.key: "<< cell.key.to_string() << "\n"
+      << " range_begin: "<< spec.range_begin.to_string() 
+      << SWC_LOG_OUT_END;
+    */
     if(!spec.range_end.empty() 
         && spec.range_end.compare(cell.key) == Condition::GT) {
       stop = true;
@@ -44,7 +47,6 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
-    Serialization::decode_vi64(&ptr, &remain); // rid(here-unused)
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
     /*
@@ -68,7 +70,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     }
     if(err == Error::COLUMN_MARKED_REMOVED)
       cells.free();
-
+    
+    //SWC_LOG_OUT(LOG_INFO) << spec.to_string() << SWC_LOG_OUT_END;
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(!err) {
@@ -82,9 +85,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
         const uint8_t* ptr = cell.value;
         size_t remain = cell.vlen;
-        params.rid = Serialization::decode_vi64(&ptr, &remain);
         params.range_end.decode(&ptr, &remain, true);
-        std::cout << params.to_string() << "\n";
+        params.rid = Serialization::decode_vi64(&ptr, &remain);
 
         if(range->type == Types::Range::MASTER)
           params.range_end.remove(0);
@@ -93,22 +95,18 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
         params.next_range = cells.size() > 1;
         
-      } else  {
-        // range->cfg->cid == 1 || 2
-        if((range->cfg->cid == 1 && spec.range_begin.count > 2) || 
-           (range->cfg->cid == 2 && spec.range_begin.count > 1)) {
-          spec.range_end.copy(spec.range_begin);
-          spec.range_begin.remove(spec.range_begin.count-1, true);
-          range->scan(get_req_scan());
-          return;
-        } else {
-          params.err = Error::RANGE_NOT_FOUND;
-        }
+      } else if(spec.range_begin.count > 1) {
+        spec.range_end.copy(spec.range_begin);
+        spec.range_begin.remove(spec.range_begin.count-1, true);
+        range->scan(get_req_scan());
+        return;
+
+      } else {
+        params.err = Error::RANGE_NOT_FOUND;
       }
     }
 
-    //std::cout << "RangeLocateScan, rsp " << to_string() << "\n";    
-    //std::cout << params.to_string() << "\n";
+    SWC_LOG_OUT(LOG_DEBUG) << params.to_string() << SWC_LOG_OUT_END;
     
     try {
       auto cbp = CommBuf::make(params);

@@ -9,7 +9,14 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Files/RgrData.h"
 
-namespace SWC { 
+#include "swcdb/db/Protocol/Common/req/Query.h"
+
+namespace {  
+namespace Query = SWC::Protocol::Common::Req::Query;
+}
+
+
+namespace SWC {
 
 namespace server { namespace Rgr {
 class Compaction;
@@ -62,6 +69,10 @@ class RangerEnv final {
     return m_env->_columns;
   }
 
+  static Query::Update* updater() {
+    return m_env->_updater.get();
+  }
+
   const gInt8tPtr       cfg_cs_max;
   const gInt32tPtr      cfg_cs_sz;
   const gInt8tPtr       cfg_compact_percent;
@@ -74,6 +85,7 @@ class RangerEnv final {
   IoContext::Ptr            mnt_io;
   server::Rgr::Compaction*  _compaction;
   server::Rgr::Columns*     _columns;
+  Query::Update::Ptr        _updater;
 
   explicit RangerEnv();
 
@@ -117,7 +129,8 @@ RangerEnv::RangerEnv()
         Env::Config::settings()->get<int32_t>(
           "swc.rgr.maintenance.handlers"))),
       _compaction(nullptr),
-      _columns(new server::Rgr::Columns()) {          
+      _columns(new server::Rgr::Columns()),
+      _updater(std::make_shared<Query::Update>()) {          
 }
 
 RangerEnv::~RangerEnv() {
@@ -140,6 +153,9 @@ void RangerEnv::shuttingdown() {
   m_env->mnt_io->stop();
   
   m_env->_columns->unload_all(false);
+
+  m_env->_updater->commit();
+  m_env->_updater->wait();
 }
 
 

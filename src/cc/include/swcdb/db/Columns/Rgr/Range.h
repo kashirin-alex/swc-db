@@ -72,7 +72,9 @@ class Range : public DB::RangeBase {
   }
 
   virtual ~Range() {
-    std::cout << " ~Range cid=" << cfg->cid << " rid=" << rid << "\n"; 
+    SWC_LOG_OUT(LOG_INFO) 
+      << " ~Range cid=" << cfg->cid << " rid=" << rid 
+      << SWC_LOG_OUT_END;
   }
   
   void set_state(State new_state) {
@@ -156,63 +158,54 @@ class Range : public DB::RangeBase {
     load(err, cb);
   }
 
-  void on_change(int &err, bool removal=false) { // change of range-interval
+  void on_change(int &err, bool removal, bool del_old=false) {
     std::scoped_lock lock(m_mutex);
     
-    if(type != Types::Range::MASTER) {
-      uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
-      
-      if(m_req_set_intval == nullptr) {
-        m_req_set_intval = std::make_shared<Query::Update>();
-        if(cid_typ != cfg->cid) {
-          auto schema = Env::Clients::get()->schemas->get(err, cid_typ);
-          if(err)
-            return;
-          m_req_set_intval->columns_cells->create(schema);
-        } else {
-          m_req_set_intval->columns_cells->create(
-            cfg->cid, cfg->cell_versions(), cfg->cell_ttl(), cfg->column_type());
-        }
-      }
-
-      DB::Cells::Cell cell;
-      cell.key.copy(m_interval.key_begin);
-      cell.key.insert(0, std::to_string(cfg->cid));
-
-      if(removal) {
-        cell.flag = DB::Cells::DELETE;
-        m_req_set_intval->columns_cells->add(cid_typ, cell);
-      } else {
-
-        cell.flag = DB::Cells::INSERT;
-        DB::Cell::Key key_end(m_interval.key_end);
-        key_end.insert(0, std::to_string(cfg->cid));
-        
-        cell.own = true;
-        cell.vlen = Serialization::encoded_length_vi64(rid) 
-                  + key_end.encoded_length();
-        cell.value = new uint8_t[cell.vlen];
-        uint8_t * ptr = cell.value;
-        Serialization::encode_vi64(&ptr, rid);
-        key_end.encode(&ptr);
-        m_req_set_intval->columns_cells->add(cid_typ, cell);
-
-        if(m_interval_old.was_set) {
-          cell.free();
-          cell.flag = DB::Cells::DELETE;
-          cell.key.copy(m_interval_old.key_begin);
-          cell.key.insert(0, std::to_string(cfg->cid));
-          m_req_set_intval->columns_cells->add(cid_typ, cell);
-        }
-      }
-      m_req_set_intval->commit();
-      m_req_set_intval->wait();
-      err = m_req_set_intval->result->err;
-      // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
-      // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
-    } else {
+    if(type == Types::Range::MASTER) {
       // update manager-root
+      return;
     }
+
+    auto updater = RangerEnv::updater();
+    uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
+
+    updater->columns_cells->create(cid_typ, 1, 0, Types::Column::PLAIN);
+
+    DB::Cells::Cell cell;
+    cell.key.copy(m_interval.key_begin);
+    cell.key.insert(0, std::to_string(cfg->cid));
+
+    if(removal) {
+      cell.flag = DB::Cells::DELETE;
+      updater->columns_cells->add(cid_typ, cell);
+    } else {
+
+      cell.flag = DB::Cells::INSERT;
+      DB::Cell::Key key_end(m_interval.key_end);
+      key_end.insert(0, std::to_string(cfg->cid));
+        
+      cell.own = true;
+      cell.vlen = key_end.encoded_length() 
+                + Serialization::encoded_length_vi64(rid);
+      cell.value = new uint8_t[cell.vlen];
+      uint8_t * ptr = cell.value;
+      key_end.encode(&ptr);
+      Serialization::encode_vi64(&ptr, rid);
+      updater->columns_cells->add(cid_typ, cell);
+
+      if(del_old) {
+        cell.free();
+        cell.flag = DB::Cells::DELETE;
+        cell.key.copy(m_old_key_begin);
+        cell.key.insert(0, std::to_string(cfg->cid));
+        updater->columns_cells->add(cid_typ, cell);
+        m_old_key_begin.free();
+      }
+    }
+    updater->commit(cid_typ);
+      
+    // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
+    // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
   }
 
   void unload(Callback::RangeUnloaded_t cb, bool completely) {
@@ -295,16 +288,15 @@ class Range : public DB::RangeBase {
       
       blocks.commitlog.remove(err, fragments_old);
 
-      m_interval_old.copy(m_interval);
+      m_old_key_begin.copy(m_interval.key_begin);
       m_interval.free();
       blocks.cellstores.expand(m_interval);
-
-      intval_changed = !m_interval.key_begin.equal(m_interval_old.key_begin)
-                    || !m_interval.key_end.equal(m_interval_old.key_end); 
+      
+      intval_changed = !m_interval.key_begin.equal(m_old_key_begin);
     }
 
     if(intval_changed)
-      on_change(err);
+      on_change(err, false, intval_changed);
     err = Error::OK;
   }
 
@@ -377,7 +369,7 @@ class Range : public DB::RangeBase {
         blocks.cellstores.expand(m_interval);
         if(is_initial_column_range) {
           Files::RangeData::save(err, blocks.cellstores);
-          on_change(err);
+          on_change(err, false);
         }
       }
     }
@@ -447,6 +439,9 @@ class Range : public DB::RangeBase {
 
         wait();
         blocks.add_logged(cell);
+        //SWC_LOG_OUT(LOG_INFO) 
+        //  << " range(added) "<< cell.to_string() 
+        //  << SWC_LOG_OUT_END;
         count++;
       }
       req->cb->response(err);
@@ -473,11 +468,8 @@ class Range : public DB::RangeBase {
   Compact                       m_compacting;
   std::queue<ReqAdd*>           m_q_adding;
 
-  
-  Query::Update::Ptr            m_req_set_intval;
-
   std::condition_variable_any   m_cv;
-  DB::Cells::Interval           m_interval_old;
+  DB::Cell::Key                 m_old_key_begin;
 };
 
 
