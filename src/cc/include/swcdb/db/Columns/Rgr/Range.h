@@ -279,22 +279,15 @@ class Range : public DB::RangeBase {
     bool intval_changed;
     {
       std::scoped_lock lock(m_mutex);
-      blocks.wait_processing();
-
-      blocks.cellstores.replace(err, w_cellstores);
+      blocks.apply_new(err, w_cellstores, fragments_old);
       if(err)
         return;
-      Files::RangeData::save(err, blocks.cellstores);
-      
-      blocks.commitlog.remove(err, fragments_old);
 
       m_old_key_begin.copy(m_interval.key_begin);
       m_interval.free();
       blocks.cellstores.expand(m_interval);
-      
       intval_changed = !m_interval.key_begin.equal(m_old_key_begin);
     }
-
     if(intval_changed)
       on_change(err, false, intval_changed);
     err = Error::OK;

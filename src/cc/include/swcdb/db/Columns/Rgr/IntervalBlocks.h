@@ -61,11 +61,15 @@ class IntervalBlocks final {
 
     const bool is_consist(const DB::Cells::Interval& intval) override {
       std::shared_lock lock(m_mutex);
-      return m_interval.is_in_end(intval.key_begin) && (
-              (prev && prev->is_gt_end(intval.key_begin))
-               || 
-              m_interval.is_in_begin(intval.key_end)
-            );
+      return (intval.key_begin.empty()
+              || m_interval.is_in_end(intval.key_begin))
+              && (
+                (!intval.key_begin.empty() 
+                  && prev && prev->is_gt_end(intval.key_begin))
+                || 
+                (intval.key_end.empty() 
+                  || m_interval.is_in_begin(intval.key_end))
+              );
     }
 
     const bool splitter() override {
@@ -415,6 +419,20 @@ class IntervalBlocks final {
     range = nullptr;
   }
   
+  void apply_new(int &err,
+                Files::CellStore::Writers& w_cellstores, 
+                std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
+    wait_processing();
+    std::scoped_lock lock(m_mutex);
+
+    cellstores.replace(err, w_cellstores);
+    if(err)
+      return;
+    Files::RangeData::save(err, cellstores);
+      
+    commitlog.remove(err, fragments_old);
+  }
+
   const bool need_split(uint32_t sz) const {
     return sz >= range->cfg->block_cells() * 2;
   }

@@ -46,7 +46,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
              const SWC::DB::Cell::Key& expected_key);
 
 size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, 
-                int num_cells, int group_fractions) {
+                int num_cells, int group_fractions, int any) {
   int err = SWC::Error::OK;
 
   SWC::Files::CellStore::Write cs_writer(
@@ -106,7 +106,12 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
                   << " cell_count=" << cell_count
                   << " num-blk=" << expected_blocks
                   << std::flush;
- 
+        if(any == -1 && expected_blocks == 1)
+          blk_intval.key_begin.free();
+
+        else if(any == 1 && i == num_cells && group_fractions == g)
+          blk_intval.key_end.free();
+
         cs_writer.block(err, blk_intval, buff, cell_count);
         blk_intval.free();
         buff.free();
@@ -117,6 +122,7 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
       }
     }
   }
+
   cs_writer.finalize(err);
   std::cout << "cs-wrote:    " << cs_writer.to_string() << "\n";
   hdlr_err(err);
@@ -240,7 +246,10 @@ int main(int argc, char** argv) {
 
   size_t expected_blocks = 0;
   for(auto i=1; i<=num_cellstores; ++i) {
-    expected_blocks += write_cs(i, range, num_cells, group_fractions);
+    expected_blocks += write_cs(
+      i, range, num_cells, group_fractions, 
+      i == 1 ? -1 : (i == num_cellstores ? 1 : 0) // -1:first 1:last
+    );
   }
 
 
