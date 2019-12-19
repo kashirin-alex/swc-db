@@ -174,7 +174,7 @@ class Interval final {
       (key_end.empty()  
        ||
         (interval.key_start.empty() || 
-         interval.key_start.is_matching(key_end))
+         interval.key_start.is_matching(key_end, Condition::GE))
          &&
         (interval.range_begin.empty() || 
          interval.range_begin.compare(key_end) != Condition::LT)
@@ -183,7 +183,7 @@ class Interval final {
       (key_begin.empty()
        ||  
         (interval.key_finish.empty() || 
-         interval.key_finish.is_matching(key_begin))
+         interval.key_finish.is_matching(key_begin, Condition::LE))
          &&
         (interval.range_end.empty() || 
          interval.range_end.compare(key_end) != Condition::GT)

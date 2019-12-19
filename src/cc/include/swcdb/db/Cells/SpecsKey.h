@@ -166,20 +166,23 @@ class Key : public DB::Cell::Key {
   }
   */
   
-  const bool is_matching(const DB::Cell::Key &other) const {
+  const bool is_matching(const DB::Cell::Key &other, 
+                         Condition::Comp on_side_for_eq=Condition::NONE) const {
     assert(sane());
     assert(other.sane());
-    return is_matching(other.data, other.data + other.size, 0);
+    return is_matching(other.data, other.data + other.size, 0, on_side_for_eq);
   }
 
-  const bool is_matching(const Key &other) const {
+  const bool is_matching(const Key &other, 
+                         Condition::Comp on_side_for_eq=Condition::NONE) const {
     assert(sane());
     assert(other.sane());
-    return is_matching(other.data, other.data + other.size, 1);
+    return is_matching(other.data, other.data + other.size, 1, on_side_for_eq);
   }
 
   const bool is_matching(const uint8_t* ptr_tmp_other, 
-                         const uint8_t* ptr_end_other, int8_t reserved) const {
+                         const uint8_t* ptr_end_other, int8_t reserved, 
+                         Condition::Comp on_side_for_eq=Condition::NONE) const {
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
 
@@ -196,6 +199,14 @@ class Key : public DB::Cell::Key {
 
       if(ptr_tmp < ptr_end) {
         comp = (Condition::Comp)*ptr_tmp++;
+        if(on_side_for_eq != Condition::NONE) {
+          if(comp == Condition::RE || comp == Condition::NE)
+            comp = Condition::NONE;
+          else if(comp == Condition::EQ)
+            comp = on_side_for_eq;
+          else if(comp == Condition::PF)
+            comp = Condition::GE;
+        }
         len = Serialization::decode_vi32(&ptr_tmp);
         ptr = ptr_tmp;
         ptr_tmp += len;
