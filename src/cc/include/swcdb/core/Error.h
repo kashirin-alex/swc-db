@@ -127,6 +127,8 @@ enum Code {
       
   RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
   RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
+  RANGE_CELLSTORES                             = CODE_START+0x7f+0x3,
+  RANGE_COMMITLOG                              = CODE_START+0x7f+0x4,
 
   COMM_NOT_CONNECTED                           = 0x00010001,
   COMM_BROKEN_CONNECTION                       = 0x00010002,

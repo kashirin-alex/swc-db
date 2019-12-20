@@ -83,6 +83,9 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_NOT_READY,              "Column is not ready"},
 
   { Error::RANGE_NOT_FOUND,               "No corresponding range"},
+  { Error::RANGE_CELLSTORES,              "Cellstores had Errors"},
+  { Error::RANGE_COMMITLOG,               "Commitlog had Errors"},
+
 
   { Error::SERIALIZATION_BAD_VINT,      "SERIALIZATION bad vint encoding" },
   { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
