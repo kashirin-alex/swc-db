@@ -385,10 +385,11 @@ class Fragment final {
   void load() {
     int err = Error::OK;
     {
-      std::scoped_lock lock(m_mutex);
-      if(m_err)
-        load_header(err, false);
+      std::shared_lock lock(m_mutex);
+      err = m_err;
     }
+    if(err) // on err load header again
+      load_header(err, false);
    
     if(!err) for(uint8_t tries = 0; ;err = Error::OK) {
     

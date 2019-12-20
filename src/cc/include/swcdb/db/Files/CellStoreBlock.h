@@ -285,7 +285,7 @@ class Read final {
     std::function<void()> call;
     for(;;) {
       {
-        std::scoped_lock lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         call = m_queue.front();
       }
 

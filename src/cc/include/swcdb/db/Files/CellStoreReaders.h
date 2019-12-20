@@ -251,7 +251,7 @@ class Readers final {
   }
 
   const std::string to_string() {
-    std::scoped_lock lock(m_mutex);
+    std::shared_lock lock(m_mutex);
 
     std::string s("CellStores(count=");
     s.append(std::to_string(m_cellstores.size()));
