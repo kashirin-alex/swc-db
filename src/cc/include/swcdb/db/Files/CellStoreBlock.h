@@ -57,7 +57,8 @@ class Read final {
                 : offset(offset), interval(interval), 
                   m_state(State::NONE), m_processing(0), 
                   m_loaded_header(false),
-                  m_size(0), m_sz_enc(0) {
+                  m_size(0), m_sz_enc(0), m_cells_remain(0), m_cells_count(0), 
+                  m_err(Error::OK) {
   }
   
   Ptr ptr() {
@@ -66,7 +67,7 @@ class Read final {
 
   ~Read() { }
   
-  bool load(const std::function<void(int)>& cb) {
+  bool load(const std::function<void()>& cb) {
     {
       std::scoped_lock lock(m_mutex);
       m_processing++;
@@ -79,29 +80,29 @@ class Read final {
         return false;
       }
     }
-    asio::post(*Env::IoCtx::io()->ptr(), [cb](){ cb(Error::OK); } );
+    cb();
     return false;
   }
 
-  void load(FS::SmartFd::Ptr smartfd, const std::function<void(int)>& cb) {
+  void load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb) {
     int err = Error::OK;
     load(err, smartfd);
     if(err)
-      SWC_LOGF(LOG_ERROR, "CellStore::Block load err=%d(%s) %s", 
-                err, Error::get_text(err), to_string().c_str());
-                
-    asio::post(*Env::IoCtx::io()->ptr(), [cb, err](){ cb(err); } );
-    run_queued(err);
+      SWC_LOGF(LOG_ERROR, "CellStore::Block load %s", to_string().c_str());
+
+    cb();
+    run_queued();
   }
 
-  void load_cells(DB::Cells::Block::Ptr cells_block) {
+  void load_cells(int& err, DB::Cells::Block::Ptr cells_block) {
     bool was_splitted = false;
-    if(loaded()) {
+    if(loaded(err)) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
           m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
     } else {
-      //err
+      SWC_LOGF(LOG_WARN, "CS-Block::load_cells at not loaded %s", 
+               to_string().c_str());
     }
 
     {
@@ -133,9 +134,20 @@ class Read final {
     return m_processing;
   }
 
+  const int error() {
+    std::shared_lock lock(m_mutex);
+    return m_err;
+  }
+
   const bool loaded() {
     std::shared_lock lock(m_mutex);
     return m_state == State::LOADED;
+  }
+  
+  const bool loaded(int& err) {
+    std::shared_lock lock(m_mutex);
+    err = m_err;
+    return !err && m_state == State::LOADED;
   }
 
   const size_t size_bytes(bool only_loaded=false) {
@@ -159,6 +171,13 @@ class Read final {
     s.append(std::to_string(m_queue.size()));
     s.append(" processing=");
     s.append(std::to_string(m_processing));
+    if(m_err) {
+      s.append(" m_err=");
+      s.append(std::to_string(m_err));
+      s.append("(");
+      s.append(Error::get_text(m_err));
+      s.append(")");
+    }
     s.append(")");
     return s;
   }
@@ -171,7 +190,9 @@ class Read final {
     for(;;) {
       err = Error::OK;
 
-      if(!smartfd->valid() && !Env::FsInterface::interface()->open(err, smartfd) && err)
+      if(!smartfd->valid() 
+        && !Env::FsInterface::interface()->open(err, smartfd) 
+        && err)
         break;
       if(err)
         continue;
@@ -242,10 +263,11 @@ class Read final {
     }
 
     std::scoped_lock lock(m_mutex);
-    m_state = !err ? State::LOADED : State::NONE;
+    m_err = err;
+    m_state = m_err ? State::NONE : State::LOADED;
   }
 
-  void run_queued(int err) {
+  void run_queued() {
     {
       std::scoped_lock lock(m_mutex);
       if(m_q_runs || m_queue.empty()) 
@@ -255,19 +277,19 @@ class Read final {
     
     asio::post(
       *Env::IoCtx::io()->ptr(), 
-      [err, ptr=ptr()](){ ptr->_run_queued(err); }
+      [ptr=ptr()](){ ptr->_run_queued(); }
     );
   }
 
-  void _run_queued(int err) {
-    std::function<void(int)> call;
+  void _run_queued() {
+    std::function<void()> call;
     for(;;) {
       {
         std::scoped_lock lock(m_mutex);
         call = m_queue.front();
       }
 
-      call(err);
+      call();
       
       {
         std::scoped_lock lock(m_mutex);
@@ -280,18 +302,19 @@ class Read final {
     }
   }
 
-  std::shared_mutex                     m_mutex;
-  State                                 m_state;
-  size_t                                m_processing;
-  bool                                  m_loaded_header;
-  Types::Encoding                       m_encoder;
-  size_t                                m_size;
-  size_t                                m_sz_enc;
-  uint32_t                              m_cells_count;
-  StaticBuffer                          m_buffer;
-  bool                                  m_q_runs = false;
-  std::queue<std::function<void(int)>>  m_queue;
-  std::atomic<uint32_t>                 m_cells_remain;
+  std::shared_mutex                  m_mutex;
+  State                              m_state;
+  size_t                             m_processing;
+  bool                               m_loaded_header;
+  Types::Encoding                    m_encoder;
+  size_t                             m_size;
+  size_t                             m_sz_enc;
+  uint32_t                           m_cells_count;
+  StaticBuffer                       m_buffer;
+  bool                               m_q_runs = false;
+  std::queue<std::function<void()>>  m_queue;
+  std::atomic<uint32_t>              m_cells_remain;
+  int                                m_err;
 };
 
 

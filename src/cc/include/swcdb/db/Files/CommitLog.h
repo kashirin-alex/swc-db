@@ -172,6 +172,12 @@ class Fragments final {
     if(err)
       return;
 
+    std::sort(
+      fragments.begin(), fragments.end(),
+      [](const FS::Dirent& f1, const FS::Dirent& f2) {
+        return f1.name.compare(f2.name) < 0; }
+    );
+
     Fragment::Ptr frag;
     for(auto entry : fragments) {
       frag = Fragment::make(get_log_fragment(entry.name));
@@ -182,11 +188,11 @@ class Fragments final {
   
   void load_current_cells(int err, DB::Cells::Block::Ptr cells_block, 
                           int64_t after_ts = 0) {
-    if(!err) {
-      if(after_ts) {// + ? whether a commit_new_fragment happened
-        load_cells(cells_block, after_ts);
-        return;
-      }
+    if(after_ts) {// + ? whether a commit_new_fragment happened
+      load_cells(cells_block, after_ts, err);
+      return;
+    }
+    {
       std::shared_lock lock(m_mutex_cells);
       cells_block->load_cells(m_cells);
     }
@@ -194,7 +200,8 @@ class Fragments final {
     cells_block->loaded_logs(err);
   }
   
-  void load_cells(DB::Cells::Block::Ptr cells_block, int64_t after_ts = 0) {
+  void load_cells(DB::Cells::Block::Ptr cells_block, 
+                  int64_t after_ts = 0, int err=Error::OK) {
     {
       std::unique_lock lock_wait(m_mutex);
       if(m_commiting)
@@ -212,16 +219,17 @@ class Fragments final {
       }
     }
     if(fragments.empty()) {
-      load_current_cells(Error::OK, cells_block);
+      load_current_cells(err, cells_block);
       return;
     }
     //if(after_ts) {
     //  std::cout << " LOG::after_ts sz=" << fragments.size() << "\n";
     //}
 
-    auto waiter = new AwaitingLoad(ts, fragments.size(), cells_block, ptr());
+    auto waiter = new AwaitingLoad(
+      ts, fragments.size(), cells_block, ptr(), err);
     for(auto frag : fragments)
-      frag->load([frag, waiter](int err){ waiter->processed(err, frag); });
+      frag->load([frag, waiter](){ waiter->processed(frag); });
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {
@@ -379,31 +387,45 @@ class Fragments final {
     public:
     
     AwaitingLoad(int64_t ts, int32_t count, DB::Cells::Block::Ptr cells_block, 
-                  Fragments::Ptr log) 
-                : ts(ts), m_count(count), cells_block(cells_block), log(log) {
+                  Fragments::Ptr log, int err=Error::OK) 
+                : ts(ts), m_count(count), cells_block(cells_block), log(log),
+                  m_err(err) {
     }
 
     ~AwaitingLoad() { }
 
-    void processed(int err, Fragment::Ptr frag) {
+    void processed(Fragment::Ptr frag) {
       { 
-        std::scoped_lock<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock(m_mutex_await);
         m_count--;
-        std::cout << " Fragments::AwaitingLoad count=" << m_count << "\n";
+        SWC_LOGF(LOG_DEBUG, " Fragments::AwaitingLoad count=%d", m_count);
         m_pending.push(frag);
         if(m_pending.size() > 1)
           return;
       }
-      for(;;) {
+      
+      asio::post(
+        *Env::IoCtx::io()->ptr(), 
+        [this](){ _processed(); }
+      );
+    }
+
+    void _processed() {
+      int err;
+      for(Fragment::Ptr frag; ; ) {
         {
-          std::scoped_lock<std::mutex> lock(m_mutex);
+          std::scoped_lock<std::mutex> lock(m_mutex_await);
           frag = m_pending.front();
         }
-
-        frag->load_cells(cells_block);
+        
+        frag->load_cells(err, cells_block);
+        if(err) {
+          std::scoped_lock<std::mutex> lock(m_mutex_await);
+          m_err = Error::RANGE_COMMITLOG;
+        }
 
         {
-          std::scoped_lock<std::mutex> lock(m_mutex);
+          std::scoped_lock<std::mutex> lock(m_mutex_await);
           m_pending.pop();
           if(m_pending.empty()) {
             if(m_count)
@@ -412,16 +434,18 @@ class Fragments final {
           }
         }
       }
-      log->load_current_cells(err, cells_block, ts);
+      
+      log->load_current_cells(m_err, cells_block, ts);
       delete this;
     }
 
     const int64_t                 ts;
-    std::mutex                    m_mutex;
+    std::mutex                    m_mutex_await;
     int32_t                       m_count;
     DB::Cells::Block::Ptr         cells_block;
     Fragments::Ptr                log;
     std::queue<Fragment::Ptr>     m_pending;
+    int                           m_err;
   };
 
   std::shared_mutex           m_mutex_cells;

@@ -231,14 +231,14 @@ class Read final {
         applicable.push_back(blk);
     }
 
-    if(applicable.empty()){
+    if(applicable.empty()) {
       cb(Error::OK);
       return;
     }
   
     auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
     for(auto blk : applicable) {
-      auto cb = [blk, waiter](int err){ waiter->processed(err, blk); };
+      auto cb = [blk, waiter](){ waiter->processed(blk); };
       if(blk->load(cb)) {
         std::scoped_lock lock(m_mutex);
         m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
@@ -381,27 +381,41 @@ class Read final {
     
     AwaitingLoad(int32_t count, DB::Cells::Block::Ptr cells_block, 
                   const Cb_t& cb) 
-                : m_count(count), cells_block(cells_block), cb(cb) {
+                : m_count(count), cells_block(cells_block), cb(cb), 
+                  m_err(Error::OK) {
     }
 
     ~AwaitingLoad() { }
 
-    void processed(int err, Block::Read::Ptr blk) {
+    void processed(Block::Read::Ptr blk) {
       { 
         std::lock_guard<std::mutex> lock(m_mutex_await);
         m_count--;
-        std::cout << " CellStore::AwaitingLoad count=" << m_count << "\n";
+        SWC_LOGF(LOG_DEBUG, " CellStore::AwaitingLoad count=%d", m_count);
         m_pending.push(blk);
         if(m_pending.size() > 1)
           return;
       }
-      for(;;) {
+      
+      asio::post(
+        *Env::IoCtx::io()->ptr(), 
+        [this](){ _processed(); }
+      );
+    }
+
+    void _processed() {
+      int err;
+      for(Block::Read::Ptr blk;;) {
         {
           std::lock_guard<std::mutex> lock(m_mutex_await);
           blk = m_pending.front();
         }
 
-        blk->load_cells(cells_block);
+        blk->load_cells(err, cells_block);
+        if(err) {
+          std::scoped_lock<std::mutex> lock(m_mutex_await);
+          m_err = err;
+        }
 
         {
           std::lock_guard<std::mutex> lock(m_mutex_await);
@@ -413,7 +427,7 @@ class Read final {
           }
         }
       }
-      cb(err);
+      cb(m_err);
       delete this;
     }
 
@@ -421,6 +435,7 @@ class Read final {
     int32_t                       m_count;
     DB::Cells::Block::Ptr         cells_block;
     const Cb_t                    cb;
+    int                           m_err;
     std::queue<Block::Read::Ptr>  m_pending;
   };
 

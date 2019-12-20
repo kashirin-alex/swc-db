@@ -308,10 +308,11 @@ int main(int argc, char** argv) {
 
         if(req->cells.size() != req->spec.flags.limit) {
           std::cout << "\n" << blocks.to_string() << "\n";
-
+          std::cout << " err=" <<  err 
+                    << "(" << SWC::Error::get_text(err) << ")\n";
           std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
                     << " expected=" << req->spec.flags.limit << " \n"
-                    << req->spec.to_string() << "\n";
+                    << req->to_string() << "\n";
           exit(1);
         }
 

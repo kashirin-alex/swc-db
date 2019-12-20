@@ -294,6 +294,9 @@ class IntervalBlocks final {
     
     void loaded_cellstores(int err) override {
       if(err) {
+        SWC_LOGF(LOG_ERROR, "cellstores-load_cells %s err=%d",
+                             m_blocks->cellstores.to_string().c_str(), err);
+        quick_exit(1); // temporary halt
         run_queue(err);
         return;
       }
@@ -304,6 +307,11 @@ class IntervalBlocks final {
       {
         std::scoped_lock lock(m_mutex);
         m_state = State::LOADED;
+      }
+      if(err) {
+        SWC_LOGF(LOG_ERROR, "commitlog-load_cells %s err=%d", 
+                             m_blocks->commitlog.to_string().c_str(), err)  
+        quick_exit(1); // temporary halt
       }
       run_queue(err);
     }
@@ -460,9 +468,13 @@ class IntervalBlocks final {
   }
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr) {
-    bool finishing;
-    if(finishing = !blk_ptr)
+    if(!blk_ptr)
       processing_increment();
+
+    if(req->expired()) {
+      processing_decrement();
+      return;
+    }    
 
     int err = Error::OK;
     {
@@ -475,10 +487,6 @@ class IntervalBlocks final {
       req->response(err);
       return;
     }
-    if(req->expired()) {
-      processing_decrement();
-      return;
-    }    
 
     Block::Ptr eval;
     Block::Ptr blk;
@@ -504,10 +512,9 @@ class IntervalBlocks final {
           break;
         }
       }
-      if(blk == nullptr) {
-        finishing = true;
+      if(blk == nullptr)
         break;
-      }
+      
       if(nxt_blk != nullptr) {
         if(!Env::Resources.need_ram(range->cfg->block_size() * 10)
             && nxt_blk->includes(req->spec))
@@ -527,14 +534,11 @@ class IntervalBlocks final {
       if(blk->scan(req)) // true(queued)
         return;
       
-      if(req->reached_limits()) {
-        finishing = true;
+      if(req->reached_limits())
         break;
-      }
     }
 
-    if(finishing)
-      processing_decrement();
+    processing_decrement();
 
     req->response(err);
   }

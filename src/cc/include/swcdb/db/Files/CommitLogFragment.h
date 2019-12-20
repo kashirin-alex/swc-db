@@ -33,7 +33,6 @@ class Fragment final {
     LOADING,
     LOADED,
     WRITING,
-    ERROR,
   };
 
   static const std::string to_string(State state) {
@@ -44,8 +43,6 @@ class Fragment final {
         return std::string("LOADING");
       case State::LOADED:
         return std::string("LOADED");
-      case State::ERROR:
-        return std::string("ERROR");
       case State::WRITING:
         return std::string("WRITING");
       default:
@@ -70,7 +67,8 @@ class Fragment final {
                       m_state(state), 
                       m_size_enc(0), m_size(0), 
                       m_cells_count(0), m_cells_offset(0), 
-                      m_data_checksum(0), m_processing(0), m_cells_remain(0) {
+                      m_data_checksum(0), m_processing(0), m_cells_remain(0),
+                      m_err(Error::OK) {
   }
   
   Ptr ptr() {
@@ -151,34 +149,33 @@ class Fragment final {
 
     bool keep;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       keep = !m_queue.empty() || m_processing;
-      m_state = err ? State::ERROR : (keep ? State::LOADED : State::NONE);
-      if(!err && keep)
+      m_err = err;
+      if((m_state = !m_err && keep ? State::LOADED : State::NONE)
+                  == State::LOADED)
         m_buffer.set(cells);
       else
         m_buffer.free();
     }
     if(keep)
-      run_queued(err);
+      run_queued();
     else if(Env::Resources.need_ram(m_size))
       release();
   }
 
   void load_header(bool close_after=true) {
-    int err = Error::OK;
-    load_header(err, close_after);
-    if(err) {
-      m_state = State::ERROR;
-      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load_header err=%d(%s) %s", 
-                err, Error::get_text(err), to_string().c_str());
-    }
+    m_err = Error::OK;
+    load_header(m_err, close_after);
+    if(m_err)
+      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load_header %s", 
+               to_string().c_str());
   }
 
-  void load(const std::function<void(int)>& cb) {
+  void load(const std::function<void()>& cb) {
     bool loaded;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing++;
       loaded = m_state == State::LOADED;
       if(!loaded) {
@@ -191,22 +188,23 @@ class Fragment final {
     }
 
     if(loaded)
-      asio::post(*Env::IoCtx::io()->ptr(), [cb](){ cb(Error::OK); } );
-    else 
+      cb();
+    else
       asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
   }
   
-  void load_cells(DB::Cells::Block::Ptr cells_block) {
+  void load_cells(int& err, DB::Cells::Block::Ptr cells_block) {
     bool was_splitted = false;
-    if(loaded()) {
+    if(loaded(err)) {
       if(m_buffer.size)
         m_cells_remain -= cells_block->load_cells(
           m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
     } else {
-      //err
+      SWC_LOGF(LOG_WARN, "Fragment::load_cells at not loaded %s", 
+               to_string().c_str());
     }
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_processing--; 
     }
 
@@ -217,7 +215,7 @@ class Fragment final {
   
   size_t release() {
     size_t released = 0;     
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     if(m_processing || m_state != State::LOADED)
       return released; 
@@ -229,40 +227,46 @@ class Fragment final {
     return released;
   }
 
-  bool loaded() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool loaded() {
+    std::shared_lock lock(m_mutex);
     return m_state == State::LOADED;
   }
 
-  bool errored() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_state == State::ERROR;
+  const int error() {
+    std::shared_lock lock(m_mutex);
+    return m_err;
   }
 
-  uint32_t cells_count() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool loaded(int& err) {
+    std::shared_lock lock(m_mutex);
+    err = m_err;
+    return !err && m_state == State::LOADED;
+  }
+
+  const uint32_t cells_count() {
+    std::shared_lock lock(m_mutex);
     return m_cells_count;
   }
 
-  size_t size_bytes(bool only_loaded=false) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const size_t size_bytes(bool only_loaded=false) {
+    std::shared_lock lock(m_mutex);
     if(only_loaded && m_state != State::LOADED)
       return 0;
     return m_size;
   }
 
-  bool processing() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool processing() {
+    std::shared_lock lock(m_mutex);
     return m_processing;
   }
 
   void remove(int &err) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
   }
 
   const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock lock(m_mutex);
     std::string s("Fragment(version=");
     s.append(std::to_string(m_version));
 
@@ -294,6 +298,13 @@ class Fragment final {
     s.append(" processing=");
     s.append(std::to_string(m_processing));
     
+    if(m_err) {
+      s.append(" m_err=");
+      s.append(std::to_string(m_err));
+      s.append("(");
+      s.append(Error::get_text(m_err));
+      s.append(")");
+    }
     s.append(")");
     return s;
   }
@@ -372,10 +383,14 @@ class Fragment final {
   }
 
   void load() {
-    int err;
-    uint8_t tries = 0;
-    for(;;) {
-      err = Error::OK;
+    int err = Error::OK;
+    {
+      std::scoped_lock lock(m_mutex);
+      if(m_err)
+        load_header(err, false);
+    }
+   
+    if(!err) for(uint8_t tries = 0; ;err = Error::OK) {
     
       if(!m_smartfd->valid() 
          && !Env::FsInterface::interface()->open(err, m_smartfd) && err)
@@ -424,20 +439,20 @@ class Fragment final {
     }
     
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_state = err ? State::ERROR : State::LOADED;
+      std::scoped_lock lock(m_mutex);
+      m_err = err;
+      m_state = m_err ? State::NONE : State::LOADED;
     }
     if(err)
-      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load err=%d(%s) %s", 
-                err, Error::get_text(err), to_string().c_str());
+      SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load %s", to_string().c_str());
 
-    run_queued(err);
+    run_queued();
   }
 
 
-  void run_queued(int err) {
+  void run_queued() {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(m_q_runs || m_queue.empty())
         return;
       m_q_runs = true;
@@ -445,22 +460,22 @@ class Fragment final {
     
     asio::post(
       *Env::IoCtx::io()->ptr(), 
-      [err, ptr=ptr()](){ ptr->_run_queued(err); }
+      [ptr=ptr()](){ ptr->_run_queued(); }
     );
   }
 
-  void _run_queued(int err) {
-    std::function<void(int)> cb;
+  void _run_queued() {
+    std::function<void()> cb;
     for(;;) {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_lock lock(m_mutex);
         cb = m_queue.front();
       }
 
-      cb(err);
+      cb();
       
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_queue.pop();
         if(m_queue.empty()) {
           m_q_runs = false;
@@ -470,7 +485,7 @@ class Fragment final {
     }
   }
   
-  std::mutex        m_mutex;
+  std::shared_mutex m_mutex;
   State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
   uint8_t           m_version;
@@ -482,11 +497,12 @@ class Fragment final {
   uint32_t          m_cells_offset;
   uint32_t          m_data_checksum;
   size_t            m_processing;
+  int               m_err;
 
   std::atomic<uint32_t> m_cells_remain;
 
-  bool                                 m_q_runs = false;
-  std::queue<std::function<void(int)>> m_queue;
+  bool                              m_q_runs = false;
+  std::queue<std::function<void()>> m_queue;
   
 
 };

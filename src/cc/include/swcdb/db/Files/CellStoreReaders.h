@@ -310,18 +310,22 @@ class Readers final {
     public:
     
     AwaitingLoad(int32_t count, const DB::Cells::Block::Ptr& cells_block) 
-                 : count(count), cells_block(cells_block) {
+                 : count(count), cells_block(cells_block), error(Error::OK) {
     }
 
     ~AwaitingLoad() { }
 
-    void processed(int err) {      
+    void processed(int err) {
+      if(err)
+        error = Error::RANGE_CELLSTORES;
+
       if(--count)
         return;
-      cells_block->loaded_cellstores(err);
+      cells_block->loaded_cellstores(error);
       delete this;
     }
-
+    
+    std::atomic<int>            error;
     std::atomic<int32_t>        count;
     const DB::Cells::Block::Ptr cells_block;
   };
