@@ -34,6 +34,9 @@ void close(ConnHandlerPtr conn, Event::Ptr ev) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 
+  if(ev->expired())
+    return;
+
   try {
     auto cbp = CommBuf::make(4);
     cbp->header.initialize_from_request_header(ev->header);

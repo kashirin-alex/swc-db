@@ -67,6 +67,7 @@ const std::string Event::to_str() const {
     dstr.append(Error::get_text(error));
     dstr.append(")");
   }
+  /*
   if(data.size) {
     dstr.append(" data=(");
     dstr.append(
@@ -80,6 +81,7 @@ const std::string Event::to_str() const {
         (const char*)data_ext.base, data_ext.size<256?data_ext.size:256));
     dstr.append(")");
   }
+  */
   return dstr;
 }
 

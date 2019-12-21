@@ -14,33 +14,37 @@ namespace SWC { namespace server { namespace FsBroker { namespace Handler {
 
 void length(ConnHandlerPtr conn, Event::Ptr ev) {
 
-    int err = Error::OK;
-    size_t length = 0;
-    try {
+  int err = Error::OK;
+  size_t length = 0;
+  try {
 
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-      FS::Protocol::Params::LengthReq params;
-      params.decode(&ptr, &remain);
+    FS::Protocol::Params::LengthReq params;
+    params.decode(&ptr, &remain);
 
-      length = Env::FsInterface::fs()->length(err, params.fname);
+    length = Env::FsInterface::fs()->length(err, params.fname);
       
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      err = e.code();
-    }
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
+  }
   
-    try {
-      auto cbp = CommBuf::make(FS::Protocol::Params::LengthRsp(length), 4);
-      cbp->header.initialize_from_request_header(ev->header);
-      cbp->append_i32(err);
-      conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+  if(ev->expired())
+    return;
+
+  try {
+    auto cbp = CommBuf::make(FS::Protocol::Params::LengthRsp(length), 4);
+    cbp->header.initialize_from_request_header(ev->header);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+
 }
   
 

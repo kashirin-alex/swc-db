@@ -14,31 +14,34 @@ namespace SWC { namespace server { namespace FsBroker { namespace Handler {
 
 void mkdirs(ConnHandlerPtr conn, Event::Ptr ev) {
 
-    int err = Error::OK;
-    try {
+  int err = Error::OK;
+  try {
 
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
+    const uint8_t *ptr = ev->data.base;
+    size_t remain = ev->data.size;
 
-      FS::Protocol::Params::MkdirsReq params;
-      params.decode(&ptr, &remain);
+    FS::Protocol::Params::MkdirsReq params;
+    params.decode(&ptr, &remain);
 
-      Env::FsInterface::fs()->mkdirs(err, params.dirname);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      err = e.code();
-    }
+    Env::FsInterface::fs()->mkdirs(err, params.dirname);
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
+  }
+  
+  if(ev->expired())
+    return;
 
-    try {
-      auto cbp = CommBuf::make(4);
-      cbp->header.initialize_from_request_header(ev->header);
-      cbp->append_i32(err);
-      conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+  try {
+    auto cbp = CommBuf::make(4);
+    cbp->header.initialize_from_request_header(ev->header);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+  }
+  catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
   
 }
   
