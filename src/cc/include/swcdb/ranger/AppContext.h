@@ -5,7 +5,7 @@
 #ifndef swc_app_ranger_AppContext_h
 #define swc_app_ranger_AppContext_h
 
-#include "swcdb/core/Resources.h"
+#include "swcdb/core/sys/Resources.h"
 
 #include "swcdb/core/comm/AppContext.h"
 #include "swcdb/core/comm/AppHandler.h"

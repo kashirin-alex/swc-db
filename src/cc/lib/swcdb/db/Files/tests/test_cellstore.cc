@@ -6,7 +6,7 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
-#include "swcdb/core/Resources.h"
+#include "swcdb/core/sys/Resources.h"
 
 #include "swcdb/ranger/RangerEnv.h"
 

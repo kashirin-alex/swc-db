@@ -76,6 +76,14 @@ ADD_LIB_TARGET(
 	SRCS 		${swcdb_core_comm_sources}
 )
 
+set(swcdb_core_sys_sources
+	sys/Resources.cc
+)
+ADD_LIB_TARGET(
+	NAME 		swcdb_core_sys
+	SRCS 		${swcdb_core_sys_sources}
+)
+
 
 ADD_TEST_TARGET(
 	NAME core-serialization

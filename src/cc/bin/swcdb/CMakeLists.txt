@@ -23,7 +23,7 @@ set(TARGETS )
 if(SWC_IMPL_SOURCE)
 	set(FLAGS "-DSWC_IMPL_SOURCE")
 else()
-	set(TARGETS "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_fs;${BUILTIN_FS_TARGETS}")
+	set(TARGETS "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;${BUILTIN_FS_TARGETS}")
 endif()
 
 
