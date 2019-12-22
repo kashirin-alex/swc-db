@@ -147,7 +147,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
   int err = SWC::Error::OK;  
   
   SWC::DB::Cells::Interval intval_r;
-  SWC::server::Rgr::IntervalBlocks blocks;
+  SWC::server::Rgr::RangeBlocks blocks;
   blocks.init(range);
   blocks.cellstores.add(
     SWC::Files::CellStore::Read::make(err, id, range, intval_r));
@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
   
   err = SWC::Error::OK;  
   
-  SWC::server::Rgr::IntervalBlocks blocks;
+  SWC::server::Rgr::RangeBlocks blocks;
   blocks.init(range);
   blocks.cellstores.load_from_path(err);
 

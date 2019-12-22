@@ -38,7 +38,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       m_timer.cancel();
 
       m_timer.expires_from_now(
-        std::chrono::milliseconds(!ms?cfg_check_interval->get():ms));
+        std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
 
       m_timer.async_wait(
         [this](const asio::error_code ec) {

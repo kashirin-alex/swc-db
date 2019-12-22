@@ -12,7 +12,7 @@
 #include "swcdb/db/Files/RangeData.h"
 #include "swcdb/db/Protocol/Common/req/Query.h"
 
-#include "swcdb/db/Columns/Rgr/IntervalBlocks.h"
+#include "swcdb/db/Columns/Rgr/RangeBlocks.h"
 
 
 namespace Query = SWC::Protocol::Common::Req::Query;
@@ -49,7 +49,7 @@ class Range : public DB::RangeBase {
   };
 
   const Types::Range   type;
-  IntervalBlocks       blocks;
+  RangeBlocks          blocks;
 
   Range(const DB::ColumnCfg* cfg, const int64_t rid)
         : RangeBase(cfg, rid), 

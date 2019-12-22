@@ -3,18 +3,19 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
-#define swcdb_lib_db_Columns_Rgr_IntervalBlocks_h
+#ifndef swcdb_lib_db_Columns_Rgr_RangeBlocks_h
+#define swcdb_lib_db_Columns_Rgr_RangeBlocks_h
 
 #include "swcdb/db/Cells/ReqScan.h"
+
 #include "swcdb/db/Files/CellStoreReaders.h"
 #include "swcdb/db/Files/CommitLog.h"
 
 namespace SWC { namespace server { namespace Rgr {
 
-class IntervalBlocks final {
+class RangeBlocks final {
   public:
-  typedef IntervalBlocks* Ptr;
+  typedef RangeBlocks* Ptr;
 
   // scan >> blk match >> load-cs + load+logs 
 
@@ -37,13 +38,13 @@ class IntervalBlocks final {
     Block::Ptr  prev;
 
     inline static Ptr make(const DB::Cells::Interval& interval,
-                           const IntervalBlocks::Ptr& blocks, 
+                           const RangeBlocks::Ptr& blocks, 
                            State state=State::NONE) {
       return new Block(interval, blocks, state);
     }
 
     explicit Block(const DB::Cells::Interval& interval, 
-                   const IntervalBlocks::Ptr& blocks, State state=State::NONE)
+                   const RangeBlocks::Ptr& blocks, State state=State::NONE)
                   : DB::Cells::Block(interval, 
                                      blocks->range->cfg->cell_versions(), 
                                      blocks->range->cfg->cell_ttl(), 
@@ -197,6 +198,7 @@ class IntervalBlocks final {
         next->prev = blk;
       }
       next = blk;
+      // blk->set_prev_end()
     }
 
     /*
@@ -364,13 +366,13 @@ class IntervalBlocks final {
     State                                m_state;
     std::atomic<size_t>                  m_processing;
     std::queue<DB::Cells::ReqScan::Ptr>  m_queue;
-    const IntervalBlocks::Ptr            m_blocks;
+    const RangeBlocks::Ptr               m_blocks;
   
   }; // class Block
 
 
 
-  explicit IntervalBlocks() : m_block(nullptr), m_processing(0) { }
+  explicit RangeBlocks() : m_block(nullptr), m_processing(0) { }
   
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
@@ -382,7 +384,7 @@ class IntervalBlocks final {
     return this;
   }
 
-  ~IntervalBlocks() {  }
+  ~RangeBlocks() {  }
   
   void processing_increment() {
     m_processing++;
@@ -643,7 +645,7 @@ class IntervalBlocks final {
   const std::string to_string(){
     std::scoped_lock lock(m_mutex);
 
-    std::string s("IntervalBlocks(count=");
+    std::string s("RangeBlocks(count=");
     s.append(std::to_string(_size()));
 
     s.append(" blocks=[");
