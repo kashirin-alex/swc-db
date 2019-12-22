@@ -186,7 +186,7 @@ class Fragments final {
     }
   }
   
-  void load_current_cells(int err, DB::Cells::RangeBlock::Ptr cells_block, 
+  void load_current_cells(int err, Range::RangeBlock::Ptr cells_block, 
                           int64_t after_ts = 0) {
     if(after_ts) {// + ? whether a commit_new_fragment happened
       load_cells(cells_block, after_ts, err);
@@ -200,7 +200,7 @@ class Fragments final {
     cells_block->loaded_logs(err);
   }
   
-  void load_cells(DB::Cells::RangeBlock::Ptr cells_block, 
+  void load_cells(Range::RangeBlock::Ptr cells_block, 
                   int64_t after_ts = 0, int err=Error::OK) {
     {
       std::unique_lock lock_wait(m_mutex);
@@ -386,7 +386,7 @@ class Fragments final {
   struct AwaitingLoad final {
     public:
     
-    AwaitingLoad(int64_t ts, int32_t count, DB::Cells::RangeBlock::Ptr cells_block, 
+    AwaitingLoad(int64_t ts, int32_t count, Range::RangeBlock::Ptr cells_block, 
                   Fragments::Ptr log, int err=Error::OK) 
                 : ts(ts), m_count(count), cells_block(cells_block), log(log),
                   m_err(err) {
@@ -442,7 +442,7 @@ class Fragments final {
     const int64_t                 ts;
     std::mutex                    m_mutex_await;
     int32_t                       m_count;
-    DB::Cells::RangeBlock::Ptr    cells_block;
+    Range::RangeBlock::Ptr    cells_block;
     Fragments::Ptr                log;
     std::queue<Fragment::Ptr>     m_pending;
     int                           m_err;

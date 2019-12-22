@@ -3,15 +3,16 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_RangeBlocks_h
-#define swcdb_lib_db_Columns_Rgr_RangeBlocks_h
+#ifndef swcdb_lib_db_Files_RangeBlocks_h
+#define swcdb_lib_db_Files_RangeBlocks_h
 
 #include "swcdb/db/Cells/ReqScan.h"
 
+#include "swcdb/db/Files/RangeBlock.h"
 #include "swcdb/db/Files/CellStoreReaders.h"
 #include "swcdb/db/Files/CommitLog.h"
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Files { namespace Range {
 
 class RangeBlocks final {
   public:
@@ -19,11 +20,11 @@ class RangeBlocks final {
 
   // scan >> blk match >> load-cs + load+logs 
 
-  DB::RangeBase::Ptr           range;
-  Files::CommitLog::Fragments  commitlog;
-  Files::CellStore::Readers    cellstores;
+  DB::RangeBase::Ptr    range;
+  CommitLog::Fragments  commitlog;
+  CellStore::Readers    cellstores;
 
-  class Block : public DB::Cells::RangeBlock {
+  class Block : public RangeBlock {
     public:
     typedef Block* Ptr;
 
@@ -45,7 +46,7 @@ class RangeBlocks final {
 
     explicit Block(const DB::Cells::Interval& interval, 
                    const RangeBlocks::Ptr& blocks, State state=State::NONE)
-                  : DB::Cells::RangeBlock(interval, 
+                  : RangeBlock(interval, 
                                      blocks->range->cfg->cell_versions(), 
                                      blocks->range->cfg->cell_ttl(), 
                                      blocks->range->cfg->column_type()), 
@@ -421,15 +422,15 @@ class RangeBlocks final {
   }
   
   void apply_new(int &err,
-                Files::CellStore::Writers& w_cellstores, 
-                std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
+                CellStore::Writers& w_cellstores, 
+                std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
     wait_processing();
     std::scoped_lock lock(m_mutex);
 
     cellstores.replace(err, w_cellstores);
     if(err)
       return;
-    Files::RangeData::save(err, cellstores);
+    RangeData::save(err, cellstores);
       
     commitlog.remove(err, fragments_old);
   }
@@ -711,7 +712,7 @@ class RangeBlocks final {
   }
 
   void init_blocks(int& err) {
-    std::vector<Files::CellStore::Block::Read::Ptr> blocks;
+    std::vector<CellStore::Block::Read::Ptr> blocks;
     cellstores.get_blocks(err, blocks);
     if(err) {
       _clear();

@@ -94,7 +94,7 @@ class Read final {
     run_queued();
   }
 
-  void load_cells(int& err, DB::Cells::RangeBlock::Ptr cells_block) {
+  void load_cells(int& err, Range::RangeBlock::Ptr cells_block) {
     bool was_splitted = false;
     if(loaded(err)) {
       if(m_buffer.size)

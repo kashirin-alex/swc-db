@@ -193,7 +193,7 @@ class Fragment final {
       asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
   }
   
-  void load_cells(int& err, DB::Cells::RangeBlock::Ptr cells_block) {
+  void load_cells(int& err, Range::RangeBlock::Ptr cells_block) {
     bool was_splitted = false;
     if(loaded(err)) {
       if(m_buffer.size)

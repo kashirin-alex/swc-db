@@ -3,28 +3,28 @@
  */
 
 
-#ifndef swcdb_db_Cells_RangeBlock_h
-#define swcdb_db_Cells_RangeBlock_h
+#ifndef swcdb_db_Files_RangeBlock_h
+#define swcdb_db_Files_RangeBlock_h
 
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/Cells/Interval.h"
 
 
-namespace SWC { namespace DB { namespace Cells {  
+namespace SWC { namespace Files { namespace Range {
 
 class RangeBlock {
   public:
   typedef RangeBlock* Ptr;
   
-  RangeBlock(const Interval& interval, const Schema::Ptr s) 
+  RangeBlock(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
         : m_interval(interval),  
-          m_cells(Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
+          m_cells(DB::Cells::Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
-  RangeBlock(const Interval& interval, 
+  RangeBlock(const DB::Cells::Interval& interval, 
         uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type)
         : m_interval(interval),  
-          m_cells(Mutable(0, cell_versions, cell_ttl, col_type)) {
+          m_cells(DB::Cells::Mutable(0, cell_versions, cell_ttl, col_type)) {
   }
 
   virtual ~RangeBlock() { }
@@ -35,7 +35,7 @@ class RangeBlock {
 
   virtual const bool _is_gt_prev_end(const DB::Cell::Key& key) = 0;
 
-  virtual const bool is_consist(const Interval& intval) = 0;
+  virtual const bool is_consist(const DB::Cells::Interval& intval) = 0;
   
   virtual const bool splitter() = 0;
 
@@ -53,13 +53,13 @@ class RangeBlock {
     return m_interval.key_end.compare(key) == Condition::GT;
   }
 
-  const bool is_next(const Specs::Interval& spec) {
+  const bool is_next(const DB::Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
     return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
             && m_interval.includes(spec);
   }
 
-  const bool includes(const Specs::Interval& spec) {
+  const bool includes(const DB::Specs::Interval& spec) {
     std::shared_lock lock(m_mutex);
     return m_interval.includes(spec);
   }
@@ -78,7 +78,7 @@ class RangeBlock {
     return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
   }
   
-  void load_cells(const Mutable& cells) {
+  void load_cells(const DB::Cells::Mutable& cells) {
     std::scoped_lock lock(m_mutex);
     auto ts = Time::now_ns();
     size_t added = m_cells.size();
@@ -105,7 +105,7 @@ class RangeBlock {
   const size_t load_cells(const uint8_t* buf, size_t remain, 
                           size_t avail, bool& was_splitted) {
     auto ts = Time::now_ns();
-    Cell cell;
+    DB::Cells::Cell cell;
     size_t count = 0;
     size_t added = 0;
     
@@ -182,8 +182,8 @@ class RangeBlock {
   
   protected:
   std::shared_mutex       m_mutex;
-  Interval                m_interval;
-  Mutable                 m_cells;
+  DB::Cells::Interval     m_interval;
+  DB::Cells::Mutable      m_cells;
 
 };
 
