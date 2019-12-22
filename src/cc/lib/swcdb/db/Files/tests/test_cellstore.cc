@@ -13,6 +13,11 @@
 #include <iostream>
 
 
+size_t num_cellstores = 9;
+size_t num_cells = 1000000;
+size_t num_len = 7;
+size_t group_fractions = 9; // Xnum_cells = total in a cs 
+
 namespace Cells = SWC::DB::Cells;
 
 void hdlr_err(int err){
@@ -23,12 +28,14 @@ void hdlr_err(int err){
 }
 
 void apply_key(const std::string& idn, 
-               const std::string& n, 
+               std::string n, 
                const std::string& gn, 
                SWC::DB::Cell::Key& key) {
   key.free();
   key.add("F1"); 
   key.add("cs"+idn);
+  if(num_len > n.size())
+    n.insert(0, num_len - n.size(), '0');
   key.add(n);
   key.add("F4");
   key.add("F5");
@@ -42,11 +49,10 @@ void apply_key(const std::string& idn,
 }
 
 void read_cs(int id, SWC::DB::RangeBase::Ptr range, 
-             int num_cells, int group_fractions, int expected_blocks, 
+             int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key);
 
-size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, 
-                int num_cells, int group_fractions, int any) {
+size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
   int err = SWC::Error::OK;
 
   SWC::Files::CellStore::Write cs_writer(
@@ -130,13 +136,13 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range,
   std::cout << "\n  OK-wrote cs-id=" << id << "\n\n";
 
   // CHECK SINGLE CS-READ
-  read_cs(id, range, num_cells, group_fractions, expected_blocks, expected_key);
+  read_cs(id, range, expected_blocks, expected_key);
   std::cout << "\n  OK-read  cs-id=" << id << "\n\n";
   return expected_blocks;
 }
 
 void read_cs(int id, SWC::DB::RangeBase::Ptr range, 
-             int num_cells, int group_fractions, int expected_blocks, 
+             int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
   
@@ -235,9 +241,6 @@ int main(int argc, char** argv) {
   );
   
   int err = SWC::Error::OK;
-  size_t num_cellstores = 10;
-  size_t num_cells = 1000000;
-  size_t group_fractions = 10; // Xnum_cells = total in a cs 
 
   auto range = std::make_shared<SWC::DB::RangeBase>(&col_cfg, 1);
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
@@ -247,7 +250,7 @@ int main(int argc, char** argv) {
   size_t expected_blocks = 0;
   for(auto i=1; i<=num_cellstores; ++i) {
     expected_blocks += write_cs(
-      i, range, num_cells, group_fractions, 
+      i, range, 
       i == 1 ? -1 : (i == num_cellstores ? 1 : 0) // -1:first 1:last
     );
   }
