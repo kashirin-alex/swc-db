@@ -49,7 +49,7 @@ class Range : public DB::RangeBase {
   };
 
   const Types::Range   type;
-  Files::Range::RangeBlocks   blocks;
+  Files::Range::Blocks blocks;
 
   Range(const DB::ColumnCfg* cfg, const int64_t rid)
         : RangeBase(cfg, rid), 

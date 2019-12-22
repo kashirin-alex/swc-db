@@ -17,7 +17,7 @@ using namespace SWC;
 
 
 void count_all_cells(size_t num_cells, 
-                     SWC::Files::Range::RangeBlocks& blocks) {
+                     SWC::Files::Range::Blocks& blocks) {
   std::cout << " count_all_cells: \n";
   std::atomic<int> chk = 1;
   
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
   ///
 
 
-  SWC::Files::Range::RangeBlocks blocks;
+  SWC::Files::Range::Blocks blocks;
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores.add(

@@ -12,22 +12,22 @@
 
 namespace SWC { namespace Files { namespace Range {
 
-class RangeBlock {
+class Block {
   public:
-  typedef RangeBlock* Ptr;
+  typedef Block* Ptr;
   
-  RangeBlock(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
+  Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
         : m_interval(interval),  
           m_cells(DB::Cells::Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
-  RangeBlock(const DB::Cells::Interval& interval, 
+  Block(const DB::Cells::Interval& interval, 
         uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type)
         : m_interval(interval),  
           m_cells(DB::Cells::Mutable(0, cell_versions, cell_ttl, col_type)) {
   }
 
-  virtual ~RangeBlock() { }
+  virtual ~Block() { }
 
   virtual Ptr ptr() {
     return this;
@@ -91,7 +91,7 @@ class RangeBlock {
 
     added = m_cells.size() - added;
     auto took = Time::now_ns()-ts;
-    std::cout << "RangeBlock::load_cells(cells)"
+    std::cout << "Block::load_cells(cells)"
               << " synced=0"
               << " avail=" << cells.size() 
               << " added=" << added 
@@ -148,7 +148,7 @@ class RangeBlock {
       m_cells.expand_begin(m_interval);
     
     auto took = Time::now_ns()-ts;
-    std::cout << "RangeBlock::load_cells(rbuf)"
+    std::cout << "Block::load_cells(rbuf)"
               << " synced=" << synced 
               << " avail=" << avail 
               << " added=" << added 
@@ -172,7 +172,7 @@ class RangeBlock {
 
   const std::string to_string() {
     std::shared_lock lock(m_mutex);
-    std::string s("RangeBlock(");
+    std::string s("Block(");
     s.append(m_interval.to_string());
     s.append(" ");
     s.append(m_cells.to_string());

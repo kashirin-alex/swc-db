@@ -14,9 +14,9 @@
 
 namespace SWC { namespace Files { namespace Range {
 
-class RangeBlocks final {
+class Blocks final {
   public:
-  typedef RangeBlocks* Ptr;
+  typedef Blocks* Ptr;
 
   // scan >> blk match >> load-cs + load+logs 
 
@@ -24,7 +24,7 @@ class RangeBlocks final {
   CommitLog::Fragments  commitlog;
   CellStore::Readers    cellstores;
 
-  class Block : public RangeBlock {
+  class Block : public Range::Block {
     public:
     typedef Block* Ptr;
 
@@ -39,14 +39,14 @@ class RangeBlocks final {
     Block::Ptr  prev;
 
     inline static Ptr make(const DB::Cells::Interval& interval,
-                           const RangeBlocks::Ptr& blocks, 
+                           const Blocks::Ptr& blocks, 
                            State state=State::NONE) {
       return new Block(interval, blocks, state);
     }
 
     explicit Block(const DB::Cells::Interval& interval, 
-                   const RangeBlocks::Ptr& blocks, State state=State::NONE)
-                  : RangeBlock(interval, 
+                   const Blocks::Ptr& blocks, State state=State::NONE)
+                  : Range::Block(interval, 
                                      blocks->range->cfg->cell_versions(), 
                                      blocks->range->cfg->cell_ttl(), 
                                      blocks->range->cfg->column_type()), 
@@ -367,13 +367,13 @@ class RangeBlocks final {
     State                                m_state;
     std::atomic<size_t>                  m_processing;
     std::queue<DB::Cells::ReqScan::Ptr>  m_queue;
-    const RangeBlocks::Ptr               m_blocks;
+    const Blocks::Ptr                    m_blocks;
   
   }; // class Block
 
 
 
-  explicit RangeBlocks() : m_block(nullptr), m_processing(0) { }
+  explicit Blocks() : m_block(nullptr), m_processing(0) { }
   
   void init(DB::RangeBase::Ptr for_range) {
     range = for_range;
@@ -385,7 +385,7 @@ class RangeBlocks final {
     return this;
   }
 
-  ~RangeBlocks() {  }
+  ~Blocks() {  }
   
   void processing_increment() {
     m_processing++;
@@ -646,7 +646,7 @@ class RangeBlocks final {
   const std::string to_string(){
     std::scoped_lock lock(m_mutex);
 
-    std::string s("RangeBlocks(count=");
+    std::string s("Range::Blocks(count=");
     s.append(std::to_string(_size()));
 
     s.append(" blocks=[");
