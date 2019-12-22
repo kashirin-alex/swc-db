@@ -12,7 +12,7 @@
 #include "swcdb/db/Files/RangeData.h"
 #include "swcdb/db/Protocol/Common/req/Query.h"
 
-#include "swcdb/db/Columns/Rgr/RangeBlocks.h"
+#include "swcdb/db/Files/RangeBlocks.h"
 
 
 namespace Query = SWC::Protocol::Common::Req::Query;

@@ -7,7 +7,7 @@
 #define swcdb_db_Files_CellStoreBlock_h
 
 #include "swcdb/core/Encoder.h"
-#include "swcdb/db/Cells/RangeBlock.h"
+#include "swcdb/db/Files/RangeBlock.h"
 
 
 namespace SWC { namespace Files { namespace CellStore {
