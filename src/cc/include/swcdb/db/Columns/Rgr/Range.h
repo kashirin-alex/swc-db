@@ -6,16 +6,10 @@
 #ifndef swcdb_lib_db_Columns_Rgr_Range_h
 #define swcdb_lib_db_Columns_Rgr_Range_h
 
+#include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
 
-#include "swcdb/db/Types/Range.h"
-#include "swcdb/db/Files/RangeData.h"
-#include "swcdb/db/Protocol/Common/req/Query.h"
-
 #include "swcdb/db/Files/RangeBlocks.h"
-
-
-namespace Query = SWC::Protocol::Common::Req::Query;
 
 namespace SWC { namespace server { namespace Rgr {
 

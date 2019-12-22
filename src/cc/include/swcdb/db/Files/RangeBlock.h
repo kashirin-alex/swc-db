@@ -12,180 +12,120 @@
 
 namespace SWC { namespace Files { namespace Range {
 
-class Block {
+class Block final {
   public:
+  
   typedef Block* Ptr;
   
-  Block(const DB::Cells::Interval& interval, const DB::Schema::Ptr s) 
-        : m_interval(interval),  
-          m_cells(DB::Cells::Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
-  }
-
-  Block(const DB::Cells::Interval& interval, 
-        uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type)
-        : m_interval(interval),  
-          m_cells(DB::Cells::Mutable(0, cell_versions, cell_ttl, col_type)) {
-  }
-
-  virtual ~Block() { }
-
-  virtual Ptr ptr() {
-    return this;
-  }
-
-  virtual const bool _is_gt_prev_end(const DB::Cell::Key& key) = 0;
-
-  virtual const bool is_consist(const DB::Cells::Interval& intval) = 0;
-  
-  virtual const bool splitter() = 0;
-
-  virtual void loaded_cellstores(int err) = 0;
-
-  virtual void loaded_logs(int err) = 0;
-  
-  const bool is_in_end(const DB::Cell::Key& key) {
-    std::shared_lock lock(m_mutex);
-    return m_interval.is_in_end(key);
-  }
-
-  const bool is_gt_end(const DB::Cell::Key& key) {
-    std::shared_lock lock(m_mutex);
-    return m_interval.key_end.compare(key) == Condition::GT;
-  }
-
-  const bool is_next(const DB::Specs::Interval& spec) {
-    std::shared_lock lock(m_mutex);
-    return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
-            && m_interval.includes(spec);
-  }
-
-  const bool includes(const DB::Specs::Interval& spec) {
-    std::shared_lock lock(m_mutex);
-    return m_interval.includes(spec);
-  }
-
-  const size_t size() {
-    std::shared_lock lock(m_mutex);
-    return m_cells.size();
-  }
-
-  const size_t _size() {
-    return m_cells.size();
-  }
-  
-  const size_t size_bytes() {
-    std::shared_lock lock(m_mutex);
-    return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
-  }
-  
-  void load_cells(const DB::Cells::Mutable& cells) {
-    std::scoped_lock lock(m_mutex);
-    auto ts = Time::now_ns();
-    size_t added = m_cells.size();
+  enum State {
+    NONE,
+    LOADING,
+    LOADED,
+    REMOVED
+  };
     
-    if(cells.size())
-      cells.scan(m_interval, m_cells);
-    
-    if(m_cells.size() && !m_interval.key_begin.empty())
-      m_cells.expand_begin(m_interval);
+  Block::Ptr  next;
+  Block::Ptr  prev;
 
-    added = m_cells.size() - added;
-    auto took = Time::now_ns()-ts;
-    std::cout << "Block::load_cells(cells)"
-              << " synced=0"
-              << " avail=" << cells.size() 
-              << " added=" << added 
-              << " skipped=" << cells.size()-added
-              << " avg=" << (added>0 ? took / added : 0)
-              << " took=" << took
-              << std::flush << " " << m_cells.to_string() << "\n";
+
+  static Ptr make(const DB::Cells::Interval& interval,
+                  Blocks* blocks, 
+                  State state=State::NONE);
+                  
+  explicit Block(const DB::Cells::Interval& interval, 
+                 Blocks* blocks, State state=State::NONE);
+
+  ~Block();
+
+  Ptr ptr();
+
+  const bool _is_gt_prev_end(const DB::Cell::Key& key);
+
+  const bool is_consist(const DB::Cells::Interval& intval);
+  
+  const bool is_in_end(const DB::Cell::Key& key);
+
+  const bool is_gt_end(const DB::Cell::Key& key);
+
+  const bool is_next(const DB::Specs::Interval& spec);
+
+  const bool includes(const DB::Specs::Interval& spec);
+  
+  void preload();
+
+  const bool add_logged(const DB::Cells::Cell& cell);
     
-  }
+  void load_cells(const DB::Cells::Mutable& cells);
 
   const size_t load_cells(const uint8_t* buf, size_t remain, 
-                          size_t avail, bool& was_splitted) {
-    auto ts = Time::now_ns();
-    DB::Cells::Cell cell;
-    size_t count = 0;
-    size_t added = 0;
+                          size_t avail, bool& was_splitted);
+
+  const bool splitter();
+
+  void loaded_cellstores(int err);
+
+  void loaded_logs(int err);
+
+  const bool scan(DB::Cells::ReqScan::Ptr req);
+
+  Ptr split(bool loaded);
     
-    const uint8_t** rbuf = &buf;
-    size_t* remainp = &remain;
+  Ptr _split(bool loaded);
 
-    std::scoped_lock lock(m_mutex);
-    bool synced = !m_cells.size();
-    
-    while(remain) {
-      try {
-        cell.read(rbuf, remainp);
-        count++;
-      } catch(std::exception) {
-        SWC_LOGF(LOG_ERROR, 
-          "Cell trunclated at count=%llu remain=%llu %s, %s", 
-          count, avail-count, 
-          cell.to_string().c_str(),  m_interval.to_string().c_str());
-        break;
-      }
-      
-      if(!_is_gt_prev_end(cell.key))
-        continue;
-      if(!m_interval.key_end.empty() 
-          && m_interval.key_end.compare(cell.key) == Condition::GT)
-        break;
+  void add(Ptr blk);
 
-      if(synced)
-        m_cells.push_back(cell);
-      else
-        m_cells.add(cell);
-      
-      added++;
+  /*
+  void expand_next_and_release(DB::Cell::Key& key_begin);
 
-      if(splitter() && !was_splitted)
-        was_splitted = true;
-    }
-    
-    if(m_cells.size() && !m_interval.key_begin.empty())
-      m_cells.expand_begin(m_interval);
-    
-    auto took = Time::now_ns()-ts;
-    std::cout << "Block::load_cells(rbuf)"
-              << " synced=" << synced 
-              << " avail=" << avail 
-              << " added=" << added 
-              << " skipped=" << avail-added
-              << " avg=" << (added>0 ? took / added : 0)
-              << " took=" << took
-              << std::flush << " " << m_cells.to_string() << "\n";
-             
-    return added;
-  }
+  void merge_and_release(Ptr blk);
+  */
 
-  void free_key_begin() {
-    std::scoped_lock lock(m_mutex);
-    m_interval.key_begin.free();
-  }
+  const size_t release();
 
-  void free_key_end() {
-    std::scoped_lock lock(m_mutex);
-    m_interval.key_end.free();
-  }
+  void processing_increment();
 
-  const std::string to_string() {
-    std::shared_lock lock(m_mutex);
-    std::string s("Block(");
-    s.append(m_interval.to_string());
-    s.append(" ");
-    s.append(m_cells.to_string());
-    s.append(")");
-    return s;
-  }
+  void processing_decrement();
+
+  const bool removed();
+
+  const bool loaded();
+
+  const bool processing() const;
+
+  const size_t size();
+
+  const size_t _size();
   
-  protected:
+  const size_t size_bytes();
+
+  void free_key_begin();
+
+  void free_key_end();
+
+  const std::string to_string();
+  
+  private:
+
+  const bool _scan(DB::Cells::ReqScan::Ptr req, bool synced=false);
+
+  void run_queue(int& err);
+
   std::shared_mutex       m_mutex;
   DB::Cells::Interval     m_interval;
   DB::Cells::Mutable      m_cells;
+  Blocks*                 m_blocks;
+
+  std::shared_mutex                    m_mutex_state;
+  State                                m_state;
+  std::atomic<size_t>                  m_processing;
+  std::queue<DB::Cells::ReqScan::Ptr>  m_queue;
 
 };
+
+
+
+
+
 
 }}}
 

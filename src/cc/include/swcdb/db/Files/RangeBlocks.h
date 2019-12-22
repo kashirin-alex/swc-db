@@ -8,11 +8,19 @@
 
 #include "swcdb/db/Cells/ReqScan.h"
 
+namespace SWC { namespace Files { namespace Range {
+//Forawrd Declaration
+class Blocks;
+}}}
+
 #include "swcdb/db/Files/RangeBlock.h"
+
 #include "swcdb/db/Files/CellStoreReaders.h"
 #include "swcdb/db/Files/CommitLog.h"
+#include "swcdb/db/Files/RangeData.h"
 
 namespace SWC { namespace Files { namespace Range {
+
 
 class Blocks final {
   public:
@@ -23,355 +31,6 @@ class Blocks final {
   DB::RangeBase::Ptr    range;
   CommitLog::Fragments  commitlog;
   CellStore::Readers    cellstores;
-
-  class Block : public Range::Block {
-    public:
-    typedef Block* Ptr;
-
-    enum State {
-      NONE,
-      LOADING,
-      LOADED,
-      REMOVED
-    };
-    
-    Block::Ptr  next;
-    Block::Ptr  prev;
-
-    inline static Ptr make(const DB::Cells::Interval& interval,
-                           const Blocks::Ptr& blocks, 
-                           State state=State::NONE) {
-      return new Block(interval, blocks, state);
-    }
-
-    explicit Block(const DB::Cells::Interval& interval, 
-                   const Blocks::Ptr& blocks, State state=State::NONE)
-                  : Range::Block(interval, 
-                                     blocks->range->cfg->cell_versions(), 
-                                     blocks->range->cfg->cell_ttl(), 
-                                     blocks->range->cfg->column_type()), 
-                    m_blocks(blocks), 
-                    m_state(state), m_processing(0), 
-                    next(nullptr), prev(nullptr) {
-    }
-
-    Ptr ptr() override {
-      return this;
-    }
-
-    virtual ~Block() { }
-
-    const bool _is_gt_prev_end(const DB::Cell::Key& key) override {
-      return !prev || prev->is_gt_end(key);
-    }
-
-    const bool is_consist(const DB::Cells::Interval& intval) override {
-      std::shared_lock lock(m_mutex);
-      return 
-        (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
-        && 
-        (intval.key_end.empty() || _is_gt_prev_end(intval.key_end));
-    }
-
-    const bool splitter() override {
-      return m_blocks->_split(ptr(), false);
-    }
-
-    const bool removed() {
-      std::shared_lock lock(m_mutex_state);
-      return m_state == State::REMOVED;
-    }
-
-    const bool loaded() {
-      std::shared_lock lock(m_mutex_state);
-      return m_state == State::LOADED;
-    }
-
-    const bool add_logged(const DB::Cells::Cell& cell) {
-      {
-        std::shared_lock lock(m_mutex);
-      
-        if(!m_interval.is_in_end(cell.key))
-          return false;
-
-        if(!loaded())
-          return cell.on_fraction ? 
-            m_interval.key_end.compare(cell.key, cell.on_fraction) 
-            != Condition::GT : true;
-      }
-
-      std::scoped_lock lock(m_mutex);
-      m_cells.add(cell);
-
-      if(cell.on_fraction)
-        // return added for fraction under current end
-        return m_interval.key_end.compare(
-          cell.key, cell.on_fraction) != Condition::GT;
-      
-      if(!m_interval.is_in_begin(cell.key)) {
-        m_interval.key_begin.copy(cell.key); 
-        m_interval.expand(cell.timestamp);
-      }
-      return true;
-    }
-    
-    void preload() {
-      //std::cout << " BLK_PRELOAD " << to_string() << "\n";
-      asio::post(
-        *Env::IoCtx::io()->ptr(), 
-        [ptr=ptr()](){ 
-          ptr->scan(
-            std::make_shared<DB::Cells::ReqScan>(
-              DB::Cells::ReqScan::Type::BLK_PRELOAD)
-          );
-        }
-      );
-    }
-
-    const bool scan(DB::Cells::ReqScan::Ptr req) {
-      bool loaded;
-      {
-        std::scoped_lock lock(m_mutex_state);
-
-        if(!(loaded = m_state == State::LOADED)) {
-          m_queue.push(req);
-          if(m_state != State::NONE)
-            return true;
-          m_state = State::LOADING;
-        }
-      }
-
-      if(loaded) {
-        if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) {
-          processing_decrement();
-          return false;
-        }
-        return _scan(req, true);
-      }
-
-      m_blocks->cellstores.load_cells(ptr());
-      return true;
-    }
-
-    Ptr split(bool loaded) {
-      Ptr blk = nullptr;
-      if(!m_mutex.try_lock())
-        return blk;
-      blk = _split(loaded);
-      m_mutex.unlock();
-      return blk;
-    }
-    
-    Ptr _split(bool loaded) {
-      Ptr blk = Block::make(
-        DB::Cells::Interval(), 
-        m_blocks,
-        loaded ? State::LOADED : State::NONE
-      );
-
-      m_cells.move_from_key_offset(
-        m_blocks->range->cfg->block_cells(), 
-        blk->m_cells
-      );
-      assert(m_cells.size());
-      assert(blk->m_cells.size());
-
-      blk->m_cells.expand_begin(blk->m_interval);
-      blk->m_interval.set_key_end(m_interval.key_end);
-      blk->m_interval.set_ts_latest(m_interval.ts_latest);
-      
-      m_interval.key_end.free();
-      m_interval.ts_latest.free();
-      m_cells.expand_end(m_interval);
-    
-      if(!loaded)
-        blk->m_cells.free();
-      
-      add(blk);
-      return blk;
-    }
-
-    void add(Ptr blk) {
-      //std::scoped_lock lock(m_mutex_state);
-      blk->prev = ptr();
-      if(next) {
-        blk->next = next;
-        next->prev = blk;
-      }
-      next = blk;
-      // blk->set_prev_end()
-    }
-
-    /*
-    void expand_next_and_release(DB::Cell::Key& key_begin) {
-      std::scoped_lock lock(m_mutex, m_mutex_state);
-
-      m_state = State::REMOVED;
-      key_begin.copy(m_interval.key_begin);
-      m_cells.free();
-      m_interval.free();
-    }
-
-    void merge_and_release(Ptr blk) {
-      std::scoped_lock lock(m_mutex, m_mutex_state);
-
-      m_state = State::NONE;
-      blk->expand_next_and_release(m_interval.key_begin);
-      m_cells.free();
-    }
-    */
-
-    const size_t release() {
-      size_t released = 0;
-      if(m_processing || !loaded())
-        return released;
-
-      std::scoped_lock lock(m_mutex, m_mutex_state);
-
-      m_state = State::NONE;
-      released += m_cells.size();
-      m_cells.free();
-      return released;
-    }
-
-    void processing_increment() {
-      m_processing++;
-    }
-
-    void processing_decrement() {
-      m_processing--;
-    }
-
-    const bool processing() const {
-      return m_processing;
-    }
-
-    const std::string to_string() {
-      std::shared_lock lock1(m_mutex_state);
-      std::shared_lock lock2(m_mutex);
-
-      std::string s("Block(state=");
-      s.append(std::to_string((uint8_t)m_state));
-      
-      s.append(" ");
-      s.append(m_interval.to_string());
-
-      s.append(" ");
-      s.append(m_cells.to_string());
-      s.append(" ");
-      if(m_cells.size()) {
-        DB::Cells::Cell cell;
-        m_cells.get(0, cell);
-        s.append(cell.key.to_string());
-        s.append(" <= range <= ");
-        m_cells.get(-1, cell);
-        s.append(cell.key.to_string());
-      }
-
-      s.append(" queue=");
-      s.append(std::to_string(m_queue.size()));
-
-      s.append(" processing=");
-      s.append(std::to_string(m_processing));
-      s.append(")");
-      return s;
-    }
-
-    private:
-
-    const bool _scan(DB::Cells::ReqScan::Ptr req, bool synced=false) {
-      {
-        size_t skips = 0; // Ranger::Stats
-        std::shared_lock lock(m_mutex);
-
-        m_cells.scan(
-          req->spec, 
-          req->cells, 
-          req->offset,
-          [req]() { return req->reached_limits(); },
-          skips, 
-          req->has_selector 
-          ? [req](const DB::Cells::Cell& cell, bool& stop) 
-                { return req->selector(cell, stop); }
-          : (DB::Cells::Mutable::Selector_t)0 
-        );
-      }
-
-      processing_decrement();
-
-      if(req->reached_limits()) {
-        m_blocks->processing_decrement();
-        int err = Error::OK;
-        req->response(err);
-        return true;
-      } else if(!synced) {
-        m_blocks->scan(req, ptr());
-      }
-      return false;
-    }
-    
-    void loaded_cellstores(int err) override {
-      if(err) {
-        SWC_LOGF(LOG_ERROR, "cellstores-load_cells %s err=%d",
-                             m_blocks->cellstores.to_string().c_str(), err);
-        quick_exit(1); // temporary halt
-        run_queue(err);
-        return;
-      }
-      m_blocks->commitlog.load_cells(ptr());
-    }
-
-    void loaded_logs(int err) override {
-      {
-        std::scoped_lock lock(m_mutex_state);
-        m_state = State::LOADED;
-      }
-      if(err) {
-        SWC_LOGF(LOG_ERROR, "commitlog-load_cells %s err=%d", 
-                             m_blocks->commitlog.to_string().c_str(), err)  
-        quick_exit(1); // temporary halt
-      }
-      run_queue(err);
-    }
-
-    void run_queue(int& err) {
-
-      for(DB::Cells::ReqScan::Ptr req; ; ) {
-        {
-          std::shared_lock lock(m_mutex_state);
-          req = m_queue.front();
-        }
-        
-        if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) {
-          processing_decrement();
-
-        } else if(err) {
-          m_blocks->processing_decrement();
-          processing_decrement();
-          req->response(err);
-          
-        } else {
-          asio::post(*Env::IoCtx::io()->ptr(), [this, req]() { _scan(req); } );
-        }
-
-        {
-          std::scoped_lock lock(m_mutex_state);
-          m_queue.pop();
-          if(m_queue.empty())
-            return;
-        }
-      }
-    }
-
-    std::shared_mutex                    m_mutex_state;
-    State                                m_state;
-    std::atomic<size_t>                  m_processing;
-    std::queue<DB::Cells::ReqScan::Ptr>  m_queue;
-    const Blocks::Ptr                    m_blocks;
-  
-  }; // class Block
-
-
 
   explicit Blocks() : m_block(nullptr), m_processing(0) { }
   
@@ -752,4 +411,11 @@ class Blocks final {
 
 
 }}}
+
+
+
+//#ifdef SWC_IMPL_SOURCE
+#include "../../../../lib/swcdb/db/Files/RangeBlock.cc"
+//#endif 
+
 #endif
