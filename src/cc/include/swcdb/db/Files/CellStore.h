@@ -222,7 +222,7 @@ class Read final {
       delete blk;
   }
 
-  void load_cells(DB::Cells::Block::Ptr cells_block, 
+  void load_cells(DB::Cells::RangeBlock::Ptr cells_block, 
                   const std::function<void(int)>& cb) {
 
     std::vector<Block::Read::Ptr>  applicable;
@@ -382,7 +382,7 @@ class Read final {
     public:
     typedef std::function<void(int)>  Cb_t;
     
-    AwaitingLoad(int32_t count, DB::Cells::Block::Ptr cells_block, 
+    AwaitingLoad(int32_t count, DB::Cells::RangeBlock::Ptr cells_block, 
                   const Cb_t& cb) 
                 : m_count(count), cells_block(cells_block), cb(cb), 
                   m_err(Error::OK) {
@@ -436,7 +436,7 @@ class Read final {
 
     std::mutex                    m_mutex_await;
     int32_t                       m_count;
-    DB::Cells::Block::Ptr         cells_block;
+    DB::Cells::RangeBlock::Ptr    cells_block;
     const Cb_t                    cb;
     int                           m_err;
     std::queue<Block::Read::Ptr>  m_pending;

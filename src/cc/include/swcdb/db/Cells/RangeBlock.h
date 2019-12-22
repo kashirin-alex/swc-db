@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Cells_Block_h
-#define swcdb_db_Cells_Block_h
+#ifndef swcdb_db_Cells_RangeBlock_h
+#define swcdb_db_Cells_RangeBlock_h
 
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/Cells/Interval.h"
@@ -12,22 +12,22 @@
 
 namespace SWC { namespace DB { namespace Cells {  
 
-class Block {
+class RangeBlock {
   public:
-  typedef Block* Ptr;
+  typedef RangeBlock* Ptr;
   
-  Block(const Interval& interval, const Schema::Ptr s) 
+  RangeBlock(const Interval& interval, const Schema::Ptr s) 
         : m_interval(interval),  
           m_cells(Mutable(0, s->cell_versions, s->cell_ttl, s->col_type)) {
   }
 
-  Block(const Interval& interval, 
+  RangeBlock(const Interval& interval, 
         uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type)
         : m_interval(interval),  
           m_cells(Mutable(0, cell_versions, cell_ttl, col_type)) {
   }
 
-  virtual ~Block() { }
+  virtual ~RangeBlock() { }
 
   virtual Ptr ptr() {
     return this;
@@ -91,7 +91,7 @@ class Block {
 
     added = m_cells.size() - added;
     auto took = Time::now_ns()-ts;
-    std::cout << "Cells::Block::load_cells(cells)"
+    std::cout << "RangeBlock::load_cells(cells)"
               << " synced=0"
               << " avail=" << cells.size() 
               << " added=" << added 
@@ -148,7 +148,7 @@ class Block {
       m_cells.expand_begin(m_interval);
     
     auto took = Time::now_ns()-ts;
-    std::cout << "Cells::Block::load_cells(rbuf)"
+    std::cout << "RangeBlock::load_cells(rbuf)"
               << " synced=" << synced 
               << " avail=" << avail 
               << " added=" << added 
@@ -172,7 +172,7 @@ class Block {
 
   const std::string to_string() {
     std::shared_lock lock(m_mutex);
-    std::string s("Cells::Block(");
+    std::string s("RangeBlock(");
     s.append(m_interval.to_string());
     s.append(" ");
     s.append(m_cells.to_string());

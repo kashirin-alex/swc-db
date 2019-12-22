@@ -23,7 +23,7 @@ class RangeBlocks final {
   Files::CommitLog::Fragments  commitlog;
   Files::CellStore::Readers    cellstores;
 
-  class Block : public DB::Cells::Block {
+  class Block : public DB::Cells::RangeBlock {
     public:
     typedef Block* Ptr;
 
@@ -45,7 +45,7 @@ class RangeBlocks final {
 
     explicit Block(const DB::Cells::Interval& interval, 
                    const RangeBlocks::Ptr& blocks, State state=State::NONE)
-                  : DB::Cells::Block(interval, 
+                  : DB::Cells::RangeBlock(interval, 
                                      blocks->range->cfg->cell_versions(), 
                                      blocks->range->cfg->cell_ttl(), 
                                      blocks->range->cfg->column_type()), 

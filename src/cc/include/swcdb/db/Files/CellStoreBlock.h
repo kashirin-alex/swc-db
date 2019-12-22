@@ -7,7 +7,7 @@
 #define swcdb_db_Files_CellStoreBlock_h
 
 #include "swcdb/core/Encoder.h"
-#include "swcdb/db/Cells/Block.h"
+#include "swcdb/db/Cells/RangeBlock.h"
 
 
 namespace SWC { namespace Files { namespace CellStore {
@@ -94,7 +94,7 @@ class Read final {
     run_queued();
   }
 
-  void load_cells(int& err, DB::Cells::Block::Ptr cells_block) {
+  void load_cells(int& err, DB::Cells::RangeBlock::Ptr cells_block) {
     bool was_splitted = false;
     if(loaded(err)) {
       if(m_buffer.size)

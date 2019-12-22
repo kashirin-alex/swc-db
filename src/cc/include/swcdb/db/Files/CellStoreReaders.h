@@ -106,7 +106,7 @@ class Readers final {
     _free();
   }
   
-  void load_cells(DB::Cells::Block::Ptr cells_block) {
+  void load_cells(DB::Cells::RangeBlock::Ptr cells_block) {
     
     std::vector<Files::CellStore::Read::Ptr> applicable;
     {
@@ -312,7 +312,7 @@ class Readers final {
   struct AwaitingLoad final {
     public:
     
-    AwaitingLoad(int32_t count, const DB::Cells::Block::Ptr& cells_block) 
+    AwaitingLoad(int32_t count, const DB::Cells::RangeBlock::Ptr& cells_block) 
                  : count(count), cells_block(cells_block), error(Error::OK) {
     }
 
@@ -328,9 +328,9 @@ class Readers final {
       delete this;
     }
     
-    std::atomic<int>            error;
-    std::atomic<int32_t>        count;
-    const DB::Cells::Block::Ptr cells_block;
+    std::atomic<int>                  error;
+    std::atomic<int32_t>              count;
+    const DB::Cells::RangeBlock::Ptr  cells_block;
   };
 
   std::shared_mutex       m_mutex;

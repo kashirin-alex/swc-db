@@ -381,8 +381,6 @@ class Cell final {
   bool            own;
 };
 
- 
-// (int ScanBlock::load()) ScanBlock::next(CellSerial)
 
 
 }}}
