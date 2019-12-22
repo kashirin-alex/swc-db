@@ -229,6 +229,9 @@ class Read final {
     for(auto blk : blocks) {  
       if(cells_block->is_consist(blk->interval))
         applicable.push_back(blk);
+      else if(!blk->interval.key_end.empty() && 
+              !cells_block->is_in_end(blk->interval.key_end))
+        break;
     }
 
     if(applicable.empty()) {

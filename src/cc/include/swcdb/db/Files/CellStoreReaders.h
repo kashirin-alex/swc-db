@@ -108,22 +108,25 @@ class Readers final {
   
   void load_cells(DB::Cells::Block::Ptr cells_block) {
     
-    std::vector<Files::CellStore::Read::Ptr> cellstores;
+    std::vector<Files::CellStore::Read::Ptr> applicable;
     {
       std::shared_lock lock(m_mutex);
       for(auto cs : m_cellstores) {
         if(cells_block->is_consist(cs->interval))
-          cellstores.push_back(cs);
+          applicable.push_back(cs);
+        else if(!cs->interval.key_end.empty() && 
+                !cells_block->is_in_end(cs->interval.key_end))
+          break;
       }
     }
 
-    if(cellstores.empty()) {
+    if(applicable.empty()) {
       cells_block->loaded_cellstores(Error::OK);
       return;
     }
     
-    auto waiter = new AwaitingLoad(cellstores.size(), cells_block);
-    for(auto cs : cellstores)
+    auto waiter = new AwaitingLoad(applicable.size(), cells_block);
+    for(auto cs : applicable)
       cs->load_cells(cells_block, [waiter](int err){ waiter->processed(err); }); 
   }
   

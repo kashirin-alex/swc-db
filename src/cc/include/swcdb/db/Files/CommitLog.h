@@ -209,26 +209,26 @@ class Fragments final {
     }
 
     int64_t ts;
-    std::vector<Fragment::Ptr>  fragments;
+    std::vector<Fragment::Ptr>  applicable;
     {
       std::shared_lock lock(m_mutex);
       ts = Time::now_ns();
       for(auto frag : m_fragments) {  
         if(after_ts < frag->ts && cells_block->is_consist(frag->interval))
-          fragments.push_back(frag);
+          applicable.push_back(frag);
       }
     }
-    if(fragments.empty()) {
+    if(applicable.empty()) {
       load_current_cells(err, cells_block);
       return;
     }
     //if(after_ts) {
-    //  std::cout << " LOG::after_ts sz=" << fragments.size() << "\n";
+    //  std::cout << " LOG::after_ts sz=" << applicable.size() << "\n";
     //}
 
     auto waiter = new AwaitingLoad(
-      ts, fragments.size(), cells_block, ptr(), err);
-    for(auto frag : fragments)
+      ts, applicable.size(), cells_block, ptr(), err);
+    for(auto frag : applicable)
       frag->load([frag, waiter](){ waiter->processed(frag); });
   }
 
