@@ -186,8 +186,9 @@ class Interval final {
          interval.key_finish.is_matching(key_begin, Condition::LE))
          &&
         (interval.range_end.empty() || 
-         interval.range_end.compare(key_end) != Condition::GT)
+         interval.range_end.compare(key_begin) != Condition::GT)
       );
+      // && timestamps 
 
     // (interval.offset_key.empty() || 
     ///  consist(interval.offset_key) ) && 

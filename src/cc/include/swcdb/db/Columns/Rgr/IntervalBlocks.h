@@ -59,17 +59,16 @@ class IntervalBlocks final {
 
     virtual ~Block() { }
 
+    const bool _is_gt_prev_end(const DB::Cell::Key& key) override {
+      return !prev || prev->is_gt_end(key);
+    }
+
     const bool is_consist(const DB::Cells::Interval& intval) override {
       std::shared_lock lock(m_mutex);
-      return (intval.key_begin.empty()
-              || m_interval.is_in_end(intval.key_begin))
-              && (
-                (!intval.key_begin.empty() 
-                  && prev && prev->is_gt_end(intval.key_begin))
-                || 
-                (intval.key_end.empty() 
-                  || m_interval.is_in_begin(intval.key_end))
-              );
+      return 
+        (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
+        && 
+        (intval.key_end.empty() || _is_gt_prev_end(intval.key_end));
     }
 
     const bool splitter() override {
@@ -281,7 +280,7 @@ class IntervalBlocks final {
       {
         size_t skips = 0; // Ranger::Stats
         std::shared_lock lock(m_mutex);
-        
+
         m_cells.scan(
           req->spec, 
           req->cells, 
@@ -479,13 +478,8 @@ class IntervalBlocks final {
       req->response(err);
       return;
     }
-
-    Block::Ptr eval;
-    Block::Ptr blk;
-    Block::Ptr nxt_blk;
-    for(;;) {
-      blk = nullptr;
-      nxt_blk = nullptr;
+    for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
+        blk = nullptr, nxt_blk = nullptr) {
       {
         std::shared_lock lock(m_mutex);
         for(eval=blk_ptr? blk_ptr->next : m_block; eval; eval=eval->next) {
@@ -497,6 +491,7 @@ class IntervalBlocks final {
 
           if((!req->spec.flags.limit || req->spec.flags.limit > 1) 
               && eval->next 
+              && !Env::Resources.need_ram(range->cfg->block_size() * 10)
               && !eval->next->loaded() && !eval->next->removed()) {
             nxt_blk = eval->next;
             nxt_blk->processing_increment();
@@ -508,8 +503,7 @@ class IntervalBlocks final {
         break;
       
       if(nxt_blk != nullptr) {
-        if(!Env::Resources.need_ram(range->cfg->block_size() * 10)
-            && nxt_blk->includes(req->spec))
+        if(nxt_blk->includes(req->spec))
           nxt_blk->preload();
         else 
           nxt_blk->processing_decrement();
@@ -541,7 +535,7 @@ class IntervalBlocks final {
   }
 
   const bool _split(Block::Ptr blk, bool loaded=true) {
-    // blk(under lock)
+    // blk is under lock
     if(need_split(blk->_size()) && m_mutex.try_lock()) {
       do blk = blk->_split(loaded);
       while(need_split(blk->_size()));

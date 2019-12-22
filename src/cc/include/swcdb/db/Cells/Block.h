@@ -29,16 +29,23 @@ class Block {
 
   virtual ~Block() { }
 
-  virtual const bool is_consist(const Interval& intval) = 0;
+  virtual Ptr ptr() {
+    return this;
+  }
 
+  virtual const bool _is_gt_prev_end(const DB::Cell::Key& key) = 0;
+
+  virtual const bool is_consist(const Interval& intval) = 0;
+  
   virtual const bool splitter() = 0;
 
   virtual void loaded_cellstores(int err) = 0;
 
   virtual void loaded_logs(int err) = 0;
   
-  virtual Ptr ptr() {
-    return this;
+  const bool is_in_end(const DB::Cell::Key& key) {
+    std::shared_lock lock(m_mutex);
+    return m_interval.is_in_end(key);
   }
 
   const bool is_gt_end(const DB::Cell::Key& key) {
@@ -119,9 +126,8 @@ class Block {
           cell.to_string().c_str(),  m_interval.to_string().c_str());
         break;
       }
-
-      if(!m_interval.key_begin.empty() 
-          && m_interval.key_begin.compare(cell.key) == Condition::LT)
+      
+      if(!_is_gt_prev_end(cell.key))
         continue;
       if(!m_interval.key_end.empty() 
           && m_interval.key_end.compare(cell.key) == Condition::GT)
