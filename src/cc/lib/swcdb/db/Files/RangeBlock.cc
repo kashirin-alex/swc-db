@@ -36,26 +36,18 @@ Block::Ptr Block::ptr() {
   return this;
 }
 
-const bool Block::_is_gt_prev_end(const DB::Cell::Key& key) {
-  return !prev || prev->is_gt_end(key);
-}
-
 const bool Block::is_consist(const DB::Cells::Interval& intval) {
   std::shared_lock lock(m_mutex);
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
-    (intval.key_end.empty() || _is_gt_prev_end(intval.key_end));
+    (intval.key_end.empty() || 
+      !prev || m_prev_key_end.compare(intval.key_end) == Condition::GT);
 }
 
 const bool Block::is_in_end(const DB::Cell::Key& key) {
   std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
-}
-
-const bool Block::is_gt_end(const DB::Cell::Key& key) {
-  std::shared_lock lock(m_mutex);
-  return m_interval.key_end.compare(key) == Condition::GT;
 }
 
 const bool Block::is_next(const DB::Specs::Interval& spec) {
@@ -158,7 +150,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       break;
     }
       
-    if(!_is_gt_prev_end(cell.key))
+    if(prev && m_prev_key_end.compare(cell.key) != Condition::GT)
       continue;
     if(!m_interval.key_end.empty() 
         && m_interval.key_end.compare(cell.key) == Condition::GT)
@@ -289,6 +281,7 @@ void Block::add(Block::Ptr blk) {
     blk->next = next;
     next->prev = blk;
   }
+  blk->m_prev_key_end.copy(m_interval.key_end);
   next = blk;
   // blk->set_prev_end()
 }

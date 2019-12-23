@@ -51,13 +51,9 @@ class Block final {
 
   Ptr ptr();
 
-  const bool _is_gt_prev_end(const DB::Cell::Key& key);
-
   const bool is_consist(const DB::Cells::Interval& intval);
   
   const bool is_in_end(const DB::Cell::Key& key);
-
-  const bool is_gt_end(const DB::Cell::Key& key);
 
   const bool is_next(const DB::Specs::Interval& spec);
 
@@ -126,6 +122,7 @@ class Block final {
   DB::Cells::Interval     m_interval;
   DB::Cells::Mutable      m_cells;
   Blocks*                 m_blocks;
+  DB::Cell::Key           m_prev_key_end;
 
   std::shared_mutex                    m_mutex_state;
   State                                m_state;
