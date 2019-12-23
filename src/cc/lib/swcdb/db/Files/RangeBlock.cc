@@ -386,10 +386,10 @@ const bool Block::need_split() {
 
 const bool Block::_need_split() const {
   auto sz = _size();
-  return sz >= 2 && 
+  return sz > 1 && 
     (sz >= m_blocks->range->cfg->block_cells() * 2 || 
-     _size_bytes() >= m_blocks->range->cfg->block_size() * 2);
-    //&& first != last;
+     _size_bytes() >= m_blocks->range->cfg->block_size() * 2) && 
+    !m_cells.has_one_key();
 }
 
 void Block::free_key_begin() {

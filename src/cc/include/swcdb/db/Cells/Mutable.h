@@ -166,6 +166,11 @@ class Mutable final {
     return false;
   }
 
+  const bool has_one_key() const {
+    return (*m_cells)->key.compare(
+      (*(m_cells+m_size-1))->key) == Condition::EQ;
+  }
+
   void push_back(const Cell& cell) {
     ensure(1);    
     *(m_cells + m_size) = new Cell(cell);
