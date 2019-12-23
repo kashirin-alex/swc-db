@@ -47,8 +47,6 @@ class Blocks final {
                 CellStore::Writers& w_cellstores, 
                 std::vector<CommitLog::Fragment::Ptr>& fragments_old);
 
-  const bool need_split(uint32_t sz) const;
-
   void add_logged(const DB::Cells::Cell& cell);
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);

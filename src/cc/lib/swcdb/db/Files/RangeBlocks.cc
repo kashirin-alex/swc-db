@@ -70,10 +70,6 @@ void Blocks::apply_new(int &err,
   commitlog.remove(err, fragments_old);
 }
 
-const bool Blocks::need_split(uint32_t sz) const {
-  return sz >= range->cfg->block_cells() * 2;
-}
-
 void Blocks::add_logged(const DB::Cells::Cell& cell) {
   processing_increment();
 
@@ -165,18 +161,18 @@ void Blocks::scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr) {
 }
 
 void Blocks::split(Block::Ptr blk, bool loaded) {
-  if(need_split(blk->size()) && m_mutex.try_lock()) {
+  if(blk->need_split() && m_mutex.try_lock()) {
     do blk = blk->split(loaded);
-    while(need_split(blk->size()));
+    while(blk->need_split());
     m_mutex.unlock();
   }
 }
 
 const bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // blk is under lock
-  if(need_split(blk->_size()) && m_mutex.try_lock()) {
+  if(blk->_need_split() && m_mutex.try_lock()) {
     do blk = blk->_split(loaded);
-    while(need_split(blk->_size()));
+    while(blk->_need_split());
     m_mutex.unlock();
     return true;
   }

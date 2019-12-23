@@ -273,7 +273,7 @@ Block::Ptr Block::_split(bool loaded) {
   );
 
   m_cells.move_from_key_offset(
-    m_blocks->range->cfg->block_cells(), 
+    m_cells.size()/2, //m_blocks->range->cfg->block_cells(), 
     blk->m_cells
   );
   assert(m_cells.size());
@@ -361,18 +361,35 @@ const bool Block::processing() const {
   return m_processing;
 }
 
-const size_t Block::size() {
+const uint32_t Block::size() {
   std::shared_lock lock(m_mutex);
-  return m_cells.size();
+  return _size();
 }
 
-const size_t Block::_size() {
+const uint32_t Block::_size() const {
   return m_cells.size();
 }
   
 const size_t Block::size_bytes() {
   std::shared_lock lock(m_mutex);
+  return _size_bytes();
+}
+  
+const size_t Block::_size_bytes() const {
   return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
+}
+
+const bool Block::need_split() {
+  std::shared_lock lock(m_mutex);
+  return _need_split();
+}
+
+const bool Block::_need_split() const {
+  auto sz = _size();
+  return sz >= 2 && 
+    (sz >= m_blocks->range->cfg->block_cells() * 2 || 
+     _size_bytes() >= m_blocks->range->cfg->block_size() * 2);
+    //&& first != last;
 }
 
 void Block::free_key_begin() {

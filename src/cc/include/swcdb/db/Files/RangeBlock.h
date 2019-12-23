@@ -100,11 +100,17 @@ class Block final {
 
   const bool processing() const;
 
-  const size_t size();
+  const uint32_t size();
 
-  const size_t _size();
+  const uint32_t _size() const;
   
   const size_t size_bytes();
+
+  const size_t _size_bytes() const;
+
+  const bool need_split();
+
+  const bool _need_split() const;
 
   void free_key_begin();
 
