@@ -38,7 +38,7 @@ class Resources final {
 
   void refresh_stats();
 
-  void schedule(uint32_t ms = 10000);
+  void schedule(uint32_t ms = 5000);
 
   struct Component final {
     std::atomic<size_t> total    = 0;

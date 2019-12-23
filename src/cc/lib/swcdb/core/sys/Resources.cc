@@ -80,7 +80,7 @@ void Resources::refresh_stats() {
   buffer >> sz >> rss;
   buffer.close();
   rss *= page_size;
-  ram.used    = ram.used ? (ram.used+rss)/2 : rss;
+  ram.used = rss; // ram.used ? (ram.used+rss)/2 : rss;
 }
 
 void Resources::schedule(uint32_t ms) {
