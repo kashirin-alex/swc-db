@@ -78,7 +78,7 @@ class Compaction final {
       m_idx_rid++;
       if(!range->is_loaded() 
         || range->compacting() 
-        || range->blocks.processing())
+        || range->blocks.processing()) // ? range->compact_required()
         continue;
         
       range->compacting(Range::Compact::CHECKING);

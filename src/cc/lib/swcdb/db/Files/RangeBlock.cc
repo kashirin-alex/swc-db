@@ -27,7 +27,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->column_type())),
               m_blocks(blocks), 
               m_state(state), m_processing(0), 
-              next(nullptr), prev(nullptr) {
+              next(nullptr), prev(nullptr), m_load_require(0) {
 }
 
 Block::~Block() { }
@@ -187,7 +187,13 @@ const bool Block::splitter() {
   return m_blocks->_split(ptr(), false);
 }
 
-void Block::loaded_cellstores(int err) {
+void Block::loaded_cellstores(int err) {  
+  bool loaded;
+  {
+    std::scoped_lock lock(m_mutex_state);
+    if(loaded = ++m_load_require == 2)
+      m_state = State::LOADED;
+  }
   if(err) {
     SWC_LOGF(LOG_ERROR, "cellstores-load_cells %s err=%d",
                         m_blocks->cellstores.to_string().c_str(), err);
@@ -195,20 +201,26 @@ void Block::loaded_cellstores(int err) {
     run_queue(err);
     return;
   }
-  m_blocks->commitlog.load_cells(ptr());
+  if(loaded)
+    run_queue(err);
+
+  //m_blocks->commitlog.load_cells(ptr());
 }
 
 void Block::loaded_logs(int err) {
+  bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
-    m_state = State::LOADED;
+    if(loaded = ++m_load_require == 2)
+      m_state = State::LOADED;
   }
   if(err) {
     SWC_LOGF(LOG_ERROR, "commitlog-load_cells %s err=%d", 
                          m_blocks->commitlog.to_string().c_str(), err)  
     quick_exit(1); // temporary halt
   }
-  run_queue(err);
+  if(loaded)
+    run_queue(err);
 }
 
 const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
@@ -231,8 +243,16 @@ const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
     }
     return _scan(req, true);
   }
-
-  m_blocks->cellstores.load_cells(ptr());
+  
+  asio::post(
+    *Env::IoCtx::io()->ptr(), 
+    [ptr=ptr()]() { ptr->m_blocks->cellstores.load_cells(ptr); } 
+  );
+  asio::post(
+    *Env::IoCtx::io()->ptr(), 
+    [ptr=ptr()]() { ptr->m_blocks->commitlog.load_cells(ptr); } 
+  );
+  
   return true;
 }
 
@@ -315,6 +335,7 @@ const size_t Block::release() {
   m_state = State::NONE;
   released += m_cells.size();
   m_cells.free();
+  m_load_require = 0;
   return released;
 }
 
