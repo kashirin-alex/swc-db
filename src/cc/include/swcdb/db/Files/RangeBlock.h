@@ -6,11 +6,23 @@
 #ifndef swcdb_db_Files_RangeBlock_h
 #define swcdb_db_Files_RangeBlock_h
 
+#include <shared_mutex>
+#include <queue>
+
+#include "swcdb/fs/Interface.h"
+
+#include "swcdb/db/Cells/ReqScan.h"
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/Cells/Interval.h"
 
+#include "swcdb/db/Columns/Rgr/ColumnCfg.h"
+#include "swcdb/db/Columns/RangeBase.h"
+
 
 namespace SWC { namespace Files { namespace Range {
+
+
+class Blocks; //Forawrd Declaration
 
 class Block final {
   public:

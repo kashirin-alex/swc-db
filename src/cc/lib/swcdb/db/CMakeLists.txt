@@ -2,6 +2,15 @@
 # Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
 #
 
+#set(swcdb_db_files_sources
+#	Files/RangeBlock.cc
+#	Files/RangeBlocks.cc
+#)
+#ADD_LIB_TARGET(
+#	NAME 		swcdb_db_files
+#	SRCS 		${swcdb_db_files_sources}
+#	TARGETS	swcdb_core swcdb_core_sys swcdb_core_fs
+#)
 
 ADD_TEST_TARGET(
 	NAME	comparators
@@ -49,7 +58,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	columns_ranger
 	SRCS	Columns/tests/test_rgr_columns.cc
-	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS}
+	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS} #  swcdb_db_files 
 	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}

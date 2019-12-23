@@ -3,7 +3,10 @@
  */
 
 
+#include "swcdb/core/Checksum.h"
+#include "swcdb/core/sys/Resources.h"
 #include "swcdb/db/Files/RangeBlock.h"
+#include "swcdb/db/Files/RangeBlocks.h"
 
 
 namespace SWC { namespace Files { namespace Range {

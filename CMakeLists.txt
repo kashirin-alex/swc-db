@@ -27,7 +27,9 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_REENTRANT")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffile-prefix-map=${CMAKE_SOURCE_DIR}/src/cc/include/=")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+                      -ffile-prefix-map=${CMAKE_SOURCE_DIR}/src/cc/include/= \
+                      -ffile-prefix-map=${CMAKE_SOURCE_DIR}/src/cc/lib/=")
 
 # -----------------  OPTIMIZATIONS and BUILD TYPE
 

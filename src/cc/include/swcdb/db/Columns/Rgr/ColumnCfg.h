@@ -6,6 +6,8 @@
 #ifndef swcdb_lib_db_Columns_Rgr_ColumnCfg_h
 #define swcdb_lib_db_Columns_Rgr_ColumnCfg_h
 
+#include "swcdb/db/Columns/Schema.h"
+
 namespace SWC { namespace DB { 
 
 
