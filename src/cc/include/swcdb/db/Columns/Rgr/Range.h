@@ -50,18 +50,18 @@ class Range : public DB::RangeBase {
           m_state(State::NOTLOADED), 
           type(cfg->cid == 1 ? Types::Range::MASTER 
                :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
-          m_compacting(Compact::NONE) {
+          m_compacting(Compact::NONE), m_require_compact(false) {
   }
 
   void init() {
     blocks.init(shared_from_this());
   }
 
-  inline Ptr shared() {
+  Ptr shared() {
     return std::dynamic_pointer_cast<Range>(shared_from_this());
   }
 
-  inline static Ptr shared(const DB::RangeBase::Ptr& other){
+  static Ptr shared(const DB::RangeBase::Ptr& other){
     return std::dynamic_pointer_cast<Range>(other);
   }
 
@@ -266,6 +266,25 @@ class Range : public DB::RangeBase {
     if(state == Compact::NONE)
       m_cv.notify_all();
   }
+  
+  const bool compact_possible() {
+    std::scoped_lock lock(m_mutex);
+    if(m_state != State::LOADED || m_compacting != Compact::NONE
+       || (!m_require_compact && blocks.processing()))
+      return false;
+    m_compacting = Range::Compact::CHECKING;
+    return true;
+  }
+
+  void compact_require(bool require) {
+    std::scoped_lock lock(m_mutex);
+    m_require_compact = require;
+  }
+
+  const bool compact_required() {
+    std::shared_lock lock(m_mutex);
+    return m_require_compact;
+  }
 
   void apply_new(int &err,
                 Files::CellStore::Writers& w_cellstores, 
@@ -442,6 +461,10 @@ class Range : public DB::RangeBase {
       }
     }
     
+    if(blocks.commitlog.size() > cfg->cellstore_size()/cfg->block_size()) {
+      compact_require(true);
+      RangerEnv::compaction_schedule(10000);
+    }
     
     //std::cout << " run_add_queue log-count=" << m_commit_log->cells_count() 
     //          << " blocks-count=" << blocks.cells_count()
@@ -453,6 +476,7 @@ class Range : public DB::RangeBase {
   std::atomic<State>            m_state;
    
   Compact                       m_compacting;
+  bool                          m_require_compact;
   std::queue<ReqAdd*>           m_q_adding;
 
   std::condition_variable_any   m_cv;

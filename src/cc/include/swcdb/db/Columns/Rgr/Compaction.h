@@ -76,12 +76,9 @@ class Compaction final {
         continue;
       }
       m_idx_rid++;
-      if(!range->is_loaded() 
-        || range->compacting() 
-        || range->blocks.processing()) // ? range->compact_required()
+      if(!range->compact_possible())
         continue;
         
-      range->compacting(Range::Compact::CHECKING);
       ++running;
       asio::post(
         *RangerEnv::maintenance_io()->ptr(), 
@@ -116,8 +113,9 @@ class Compaction final {
     uint32_t allow_sz = (cs_size  / 100) * perc; 
     uint32_t allowed_sz_cs  = cs_size + allow_sz;
     uint32_t log_sz = commitlog.size_bytes();
-
-    bool do_compaction = log_sz >= allowed_sz_cs
+  
+    bool do_compaction = range->compact_required()
+      || log_sz >= allowed_sz_cs
       || commitlog.size() > allowed_sz_cs/blk_size 
       || (log_sz > allow_sz && log_sz > (cellstores.size_bytes()/100) * perc)
       || cellstores.need_compaction(
@@ -448,7 +446,8 @@ class Compaction final {
         range->apply_new(err, cellstores, fragments_old);
       if(err)
         return quit();
-        
+
+      range->compact_require(false);
       compactor->compacted(range, empty_cs);
 
       std::cout << "Compact ::finalized\n"
