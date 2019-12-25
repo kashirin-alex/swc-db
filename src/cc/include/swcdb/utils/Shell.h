@@ -8,8 +8,9 @@
 #include "swcdb/core/config/Settings.h"
 
 #include <re2/re2.h>
-#include <termios.h>
-#include <editline.h>
+#include <editline.h> // github.com/troglobit/editline
+
+int el_hist_size = 4000;
 
 extern "C" {
 int   swc_utils_run();
@@ -21,94 +22,120 @@ namespace SWC { namespace Utils { namespace shell {
 int run();
 
 class Interface {
+
   public:
   Interface(const char* prompt="CLI>", 
             const char* history="/tmp/.swc-cli-history")
-            : prompt(prompt), history(history) {}
-
+            : prompt(prompt), history(history) {
+  }
+  
   virtual ~Interface() {
     for(auto o : options)
       delete o;
   }
 
   int run() {
-    std::cout << "Running SWC::Utils::shell " << prompt << "\n";  
   
-    char* line;
     read_history(history);
+    char* line;
+    char* ptr;
+    const char* prompt_state = prompt;
+    char c;
+    
+    bool stop = false;
+    bool cmd_end = false;;
+    bool comment = false;;
+    bool quoted_1 = false;
+    bool quoted_2 = false;
+    bool next_line = false;
+    std::string cmd;
 
-    while((line = readline(prompt)) && process_line(line));
+    while(!stop && (ptr = line = readline(prompt_state))) {
+      //std::cout << "line=" << line << "\n";
+      prompt_state = ""; // "-> ";
+      do {
+        c = *ptr++;
+        if(next_line = c == 0)
+          c = '\n';
+
+        //std::cout << " c=" << c << "(" << (int)c << ") \n";
+        if(c == '\n' && cmd_end) {
+          add_history(cmd.c_str());
+          write_history(history);
+          stop = !cmd_option(cmd);
+          cmd.clear();
+          cmd_end = false;
+          prompt_state = prompt;
+          break;
+
+        } else if(c == '\n' && cmd.empty()) {
+          prompt_state = prompt;
+          break;
+
+        } else if(c == ' ' && cmd.empty()) {
+          continue;
+
+        } else if(!quoted_1 && !quoted_2) {
+          if(c == '#') {
+            comment = true;
+            continue;
+          } else if(c == '\n' && comment) {
+            comment = false;
+            break;
+          } else if(comment)
+            continue;
+        }
+
+        cmd.append(std::string(&c, 1));
+
+        if(c == '\'')
+          quoted_1 = !quoted_1;
+        else if(c == '"')
+          quoted_2 = !quoted_2;
+        else if(c == ';' && !quoted_1 && !quoted_2)
+          cmd_end = true;
+
+      } while(!next_line);
+      
+	    free(line);
+    }
+
     return 0;
   }
   
-  private:
-  bool process_line(char* line) {
-    bool ok = line;
-    if(!ok)
-      return ok;
 
-    const char* end = line + strlen(line);
-    const char* ptr = line;
-    const char* begin = line;
-    std::string cmd;
-    int len = 0;
-    bool quoted_1 = false;
-    bool quoted_2 = false;
-    bool executed = true;
-    while(ptr < end) {
-      if(*ptr == '#')
-        break;
+  protected:
 
-      if(*ptr == '\'')
-        quoted_1 = !quoted_1;
-      else if(*ptr == '\"')
-        quoted_2 = !quoted_2;
+  struct Option final {
+    typedef std::function<bool(const std::string&)> Call_t;
 
-      len++;
-      if(*ptr++ == ';') {
-        if(quoted_1 || quoted_2)
-          continue;
-        cmd = std::string(begin, len);
-        add_history(cmd.c_str());
-        if(!(ok = cmd_option(cmd.c_str())))
-          break;
-        len = 0;
-        begin = ptr;
-      } else if(ptr == end) {
-        executed = false;
-      }
+    Option(const std::string& name, const std::string& desc, 
+            const Call_t& call, const re2::RE2* re) 
+          : name(name), desc(desc), call(call), re(re) { }
+    ~Option() {
+      if(re)
+        delete re;
     }
-    if(!executed)
-      std::cout << "Missing closing '\033[31m;\033[00m' for '\033[31m" 
-                <<  std::string(begin, len) << "\033[00m'\n";
+    const std::string name;
+    const std::string desc;
+    const Call_t      call;
+    const re2::RE2*   re;
+  };
 
-    //fdhgfg d; #gdfgsfdgdfgs(aaa="fdgsdg; fdgsfdg; "); gdgd; quit;
-	  
-    write_history(history);
-	  free(line);
-    
-    return ok;
-  }
-
-  bool cmd_option(const char* line) {
-    auto opt = std::find_if(options.begin(), options.end(), 
-                [line](const Option* opt){ 
-                  return RE2::PartialMatch(line, *opt->re); 
-                });
-    if(opt != options.end()) {
-	    printf("\t\t\tran|%s|\n", line);
-      return (*opt)->call(line);
-    } else {
-      std::cout << "Unknown command='\033[31m" << line << "\033[00m'\n";
-    }
-    return true;
-  }
+  std::vector<Option*> options {
+    new Option("quit", "Quit or Exit the Console", 
+                [ptr=this](const std::string& line){return ptr->quit(line);}, 
+                new re2::RE2("(?i)(^|\\s+)(quit|exit)(\\s+|);(\\s+|$)")),
+    new Option("help", "Commands help information", 
+                [ptr=this](const std::string& line){return ptr->help(line);}, 
+                new re2::RE2("(?i)(^|\\s+)help(\\s+|);(\\s+|$)"))
+  };
   
-  virtual bool quit(const char* line) {
+  virtual bool quit(const std::string& line) {
     return false;
   }
 
-  virtual bool help(const char* line) {
+  virtual bool help(const std::string& line) {
     std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
     size_t offset_name = 0;
     size_t offset_desc = 0;
@@ -128,35 +155,26 @@ class Interface {
     return true;
   }
 
-  const char* prompt;
-  const char* history;
 
-  protected:
+  private:
 
-  struct Option final {
-    typedef std::function<bool(const char*)> Call_t;
-    Option(const std::string& name, const std::string& desc, 
-            const Call_t& call, const re2::RE2* re) 
-          : name(name), desc(desc), call(call), re(re) { }
-    ~Option() {
-      if(re)
-        delete re;
-    }
-    const std::string name;
-    const std::string desc;
-    const Call_t      call;
-    const re2::RE2*   re;
-  };
+  bool cmd_option(const std::string& line) {
+    auto opt = std::find_if(options.begin(), options.end(), 
+                [line](const Option* opt){ 
+                  return RE2::PartialMatch(line.c_str(), *opt->re); 
+                });
+    if(opt != options.end())
+      return (*opt)->call(line);
+    std::cout << "Unknown command='\033[31m" << line << "\033[00m'\n";
+    return true;
+  }
 
-  std::vector<Option*> options {
-    new Option("quit", "Quit or Exit the Console", 
-                [ptr=this](const char* line){return ptr->quit(line);}, 
-                new re2::RE2("(^|\\s+)(quit|exit)(\\s+|);(\\s+|$)")),
-    new Option("help", "Commands help information", 
-                [ptr=this](const char* line){return ptr->help(line);}, 
-                new re2::RE2("(^|\\s+)help(\\s+|);(\\s+|$)"))
-  };
+  const char*  prompt;
+  const char*  history;
 }; 
+
+
+
 
 class Rgr : public Interface {
   public:
@@ -165,6 +183,7 @@ class Rgr : public Interface {
                 "/tmp/.swc-cli-ranger-history") {
   }
 };
+
 class Mngr : public Interface {
   public:
   Mngr() 
@@ -172,6 +191,7 @@ class Mngr : public Interface {
                 "/tmp/.swc-cli-manager-history") {
   }
 };
+
 class FsBroker : public Interface {
   public:
   FsBroker() 
@@ -179,70 +199,26 @@ class FsBroker : public Interface {
                 "/tmp/.swc-cli-fsbroker-history") {
   }
 };
+
 class DbClient : public Interface {
   public:
   DbClient() 
     : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-dbclient-history") {
+    options.push_back(
+      new Option("select", "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];", 
+                  [ptr=this](const std::string& line){return ptr->select(line);}, 
+                  new re2::RE2("(?i)(^|\\s+)select.*"))
+    );
+  }
+
+  bool select(const std::string& line) {
+    
+    std::cout << "select(cmd) '" << line << "'\n";
+    return true;
   }
 };
 
-
-
-/*
-tcflag_t old_lflag;
-cc_t     old_vtime;
-struct termios term;
-
-int quit() {
-  std::cout << std::endl;
-  term.c_lflag     = old_lflag;
-  term.c_cc[VTIME] = old_vtime;
-  if(tcsetattr(STDIN_FILENO, TCSANOW, &term) < 0 ) {
-    perror("tcsetattr");
-    return 1;
-  }
-  return 0;
-}
-
-int run_async() {
-  el_hist_size = 4096;
-  read_history(history);
-
-  if(tcgetattr(STDIN_FILENO, &term) < 0 ) {
-    perror("tcgetattr");
-    return 1;
-  }
-  
-  old_lflag = term.c_lflag;
-  old_vtime = term.c_cc[VTIME];
-  
-  term.c_lflag &= ~ICANON;
-  term.c_cc[VTIME] = 1;
-  if(tcsetattr(STDIN_FILENO, TCSANOW, &term) < 0 ) {
-    perror("tcsetattr");
-    return 1;
-  }
-
-  rl_callback_handler_install(get_prompt(), process_line);
-
-  fd_set fds;
-  do {
-    FD_ZERO(&fds);
-    FD_SET(fileno(stdin), &fds);
-
-    if(select(FD_SETSIZE, &fds, NULL, NULL, NULL) < 0) {
-      perror("select");
-      return quit();
-    }
-
-    if(FD_ISSET(fileno(stdin), &fds))
-      rl_callback_read_char();
-  } while(1);
-
-  return quit();
-}
-*/
 
 
 }}} // namespace SWC::Utils::shell

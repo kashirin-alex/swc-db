@@ -42,6 +42,7 @@ SET_DEPS(
 find_package(FileSystems REQUIRED)
 
 SET_DEPS(NAME "EDITLINE" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libeditline.a SHARED editline INCLUDE editline.h)
+#SET_DEPS(NAME "NCURSESW" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libncursesw.a SHARED ncursesw INCLUDE ncurses.h)
 
 
 
