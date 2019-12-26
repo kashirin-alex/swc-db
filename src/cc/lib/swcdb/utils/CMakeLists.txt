@@ -13,7 +13,7 @@ Shell.cc
 ADD_LIB_TARGET(
 	NAME	swcdb_utils_shell
 	SRCS	${swcdb_utils_shell_sources}
-  TARGETS	swcdb_core swcdb_core_config
+  TARGETS	swcdb_core swcdb_core_config swcdb_core_comm
   
 	SHARED	${EDITLINE_LIBRARIES_SHARED}
 	STATIC	${EDITLINE_LIBRARIES_STATIC}

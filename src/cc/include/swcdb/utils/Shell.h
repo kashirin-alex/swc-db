@@ -7,6 +7,16 @@
 
 #include "swcdb/core/config/Settings.h"
 
+#include "swcdb/core/comm/Settings.h"
+
+#include "swcdb/client/Clients.h"
+#include "swcdb/client/AppContext.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
+#include "swcdb/db/Protocol/Common/req/Query.h"
+
+#include "swcdb/db/Cells/SpecsBuilderSql.h"
+
 #include <re2/re2.h>
 #include <editline.h> // github.com/troglobit/editline
 
@@ -43,12 +53,14 @@ class Interface {
     char c;
     
     bool stop = false;
-    bool cmd_end = false;;
+    bool cmd_end = false;
+    bool escape = false;
     bool comment = false;;
     bool quoted_1 = false;
     bool quoted_2 = false;
     bool next_line = false;
     std::string cmd;
+    std::queue<std::string> queue;
 
     while(!stop && (ptr = line = readline(prompt_state))) {
       //std::cout << "line=" << line << "\n";
@@ -60,10 +72,15 @@ class Interface {
 
         //std::cout << " c=" << c << "(" << (int)c << ") \n";
         if(c == '\n' && cmd_end) {
-          add_history(cmd.c_str());
-          write_history(history);
-          stop = !cmd_option(cmd);
-          cmd.clear();
+          while(!queue.empty()) {
+            auto& run_cmd = queue.front();
+            add_history(run_cmd.c_str());
+            write_history(history);
+            run_cmd.pop_back();
+            if(stop = !cmd_option(run_cmd))
+              break;
+            queue.pop();
+          }
           cmd_end = false;
           prompt_state = prompt;
           break;
@@ -75,7 +92,7 @@ class Interface {
         } else if(c == ' ' && cmd.empty()) {
           continue;
 
-        } else if(!quoted_1 && !quoted_2) {
+        } else if(!quoted_1 && !quoted_2 && !escape) {
           if(c == '#') {
             comment = true;
             continue;
@@ -86,14 +103,25 @@ class Interface {
             continue;
         }
 
-        cmd.append(std::string(&c, 1));
+        cmd += c;
 
+        if(escape) {
+          escape = false;
+          continue;
+        } else if(c == '\\') {
+          escape = true;
+          continue;
+        }
+        
         if(c == '\'')
           quoted_1 = !quoted_1;
         else if(c == '"')
           quoted_2 = !quoted_2;
-        else if(c == ';' && !quoted_1 && !quoted_2)
+        else if(c == ';' && !quoted_1 && !quoted_2) {
           cmd_end = true;
+          queue.push(cmd);
+          cmd.clear();
+        }
 
       } while(!next_line);
       
@@ -107,7 +135,7 @@ class Interface {
   protected:
 
   struct Option final {
-    typedef std::function<bool(const std::string&)> Call_t;
+    typedef std::function<bool(std::string&)> Call_t;
 
     Option(const std::string& name, const std::string& desc, 
             const Call_t& call, const re2::RE2* re) 
@@ -123,19 +151,25 @@ class Interface {
   };
 
   std::vector<Option*> options {
-    new Option("quit", "Quit or Exit the Console", 
-                [ptr=this](const std::string& line){return ptr->quit(line);}, 
-                new re2::RE2("(?i)(^|\\s+)(quit|exit)(\\s+|);(\\s+|$)")),
-    new Option("help", "Commands help information", 
-                [ptr=this](const std::string& line){return ptr->help(line);}, 
-                new re2::RE2("(?i)(^|\\s+)help(\\s+|);(\\s+|$)"))
+    new Option(
+      "quit", 
+      "Quit or Exit the Console", 
+      [ptr=this](std::string& cmd){return ptr->quit(cmd);}, 
+      new re2::RE2("(?i)^(quit|exit)(\\s+|$)")
+    ),
+    new Option(
+      "help", 
+      "Commands help information", 
+      [ptr=this](std::string& cmd){return ptr->help(cmd);}, 
+      new re2::RE2("(?i)^(help)(\\s+|$)")
+    )
   };
   
-  virtual bool quit(const std::string& line) {
+  virtual bool quit(std::string& cmd) const {
     return false;
   }
 
-  virtual bool help(const std::string& line) {
+  virtual bool help(std::string& cmd) const {
     std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
     size_t offset_name = 0;
     size_t offset_desc = 0;
@@ -158,14 +192,14 @@ class Interface {
 
   private:
 
-  bool cmd_option(const std::string& line) {
+  const bool cmd_option(std::string& cmd) const {
     auto opt = std::find_if(options.begin(), options.end(), 
-                [line](const Option* opt){ 
-                  return RE2::PartialMatch(line.c_str(), *opt->re); 
+                [cmd](const Option* opt){ 
+                  return RE2::PartialMatch(cmd.c_str(), *opt->re); 
                 });
     if(opt != options.end())
-      return (*opt)->call(line);
-    std::cout << "Unknown command='\033[31m" << line << "\033[00m'\n";
+      return (*opt)->call(cmd);
+    std::cout << "Unknown command='\033[31m" << cmd << ";\033[00m'\n";
     return true;
   }
 
@@ -201,23 +235,59 @@ class FsBroker : public Interface {
 };
 
 class DbClient : public Interface {
+
   public:
   DbClient() 
     : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
                 "/tmp/.swc-cli-dbclient-history") {
     options.push_back(
-      new Option("select", "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];", 
-                  [ptr=this](const std::string& line){return ptr->select(line);}, 
-                  new re2::RE2("(?i)(^|\\s+)select.*"))
+      new Option(
+        "select", 
+        "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];",
+        [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
+        new re2::RE2("(?i)^(select)(\\s+|$)")
+      )
+    );
+  
+    SWC::Env::Clients::init(
+      std::make_shared<SWC::client::Clients>(
+        nullptr,
+        std::make_shared<SWC::client::AppContext>()
+      )
     );
   }
 
-  bool select(const std::string& line) {
-    
-    std::cout << "select(cmd) '" << line << "'\n";
+  static void display(Protocol::Common::Req::Query::Select::Result::Ptr result) {
+    std::cout << "CB completion=" << result->completion.load() << "\n";
+    for(auto col : result->columns) {
+      std::cout << " cid=" << col.first 
+                << ": sz=" << col.second->cells.size() << "\n";
+    int num=0;
+    for(auto cell : col.second->cells)
+      std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
+    }
+  }
+
+  const bool error(int err, const std::string& message) {
+    std::cout << "\033[31mERROR\033[00m: " << message;
+    return true;
+  }
+
+  const bool select(std::string& cmd) {
+    int err = Error::OK;
+    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(display);
+    std::string message;
+    DB::Specs::Builder::parse_sql_select(err, cmd, req->specs, message);
+    if(err) 
+      return error(err, message);
+
+    req->scan();
+    req->wait();
+    // time-took ?with
     return true;
   }
 };
+
 
 
 

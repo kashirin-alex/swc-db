@@ -6,6 +6,8 @@
 #define swc_app_utils_Settings_h
 
 #include "swcdb/core/config/Settings.h"
+#include "swcdb/core/comm/Settings.h"
+#include "swcdb/client/Settings.h"
 
 extern "C"{
 typedef int swc_utils_run_t();
@@ -16,6 +18,9 @@ namespace SWC{ namespace Config {
 
 
 void Settings::init_app_options() {
+
+  init_comm_options();
+  init_client_options();
 
   cmdline_desc
   .definition(

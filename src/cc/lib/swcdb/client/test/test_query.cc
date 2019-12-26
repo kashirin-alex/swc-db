@@ -105,8 +105,8 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
 }
 
 void test_1(const std::string& col_name) {
-  int num_cells = 1000000; // test require at least 12
-  int batches = 10;
+  int num_cells = 10000; // test require at least 12
+  int batches = 100;
   int64_t took;
 
   // Req::Query::Update
@@ -127,6 +127,10 @@ void test_1(const std::string& col_name) {
   std::cout << schema->to_string() << "\n";
   update_req->columns_cells->create(schema);
   
+  std::string zfill;
+  for(int n=0;n<16384;n++)
+    zfill.append("V");
+
   Cells::Cell cell;
   size_t added_count = 0;
   for(int b=0; b<batches; b++) {
@@ -139,7 +143,8 @@ void test_1(const std::string& col_name) {
       cell.key.free();
       for(uint8_t chr=97; chr<=122;chr++)
         cell.key.add(((char)chr)+cell_number);
-      cell.set_value("V_OF: "+cell_number);
+
+      cell.set_value("V_OF: "+cell_number+":"+zfill);
 
       update_req->columns_cells->add(schema->cid, cell);
       added_count++;
@@ -197,14 +202,13 @@ void test_1(const std::string& col_name) {
     exit(1);
   }
   Cells::Cell* cell_res = select_req->result->columns[schema->cid]->cells.front();
-  std::string value((const char*)cell_res->value, cell_res->vlen);
   
   std::string expected_value(
-    "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-1));
-  if(expected_value.compare(value) != 0) {
+    "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-1)+":"+zfill);
+  if(memcmp(cell_res->value, expected_value.data(), cell_res->vlen) != 0) {
     std::cerr << "BAD, selected cell's value doesn't match: \n" 
               << " expected_value=" << expected_value << "\n"
-              << "   result_value=" << value << "\n";
+              << "   result_value=" << std::string((const char*)cell_res->value, cell_res->vlen) << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;
@@ -233,11 +237,11 @@ void test_1(const std::string& col_name) {
       prev.copy(*c);
       
       std::string expected_value(
-        "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-spec->flags.limit-1+count));
-      if(expected_value.compare(value) != 0) {
+        "V_OF: "+std::to_string(batches-1)+":"+std::to_string(num_cells-spec->flags.limit-1+count)+":"+zfill);
+      if(memcmp(c->value, expected_value.data(), c->vlen) != 0) {
         std::cerr << "BAD, selected cell's value doesn't match: \n" 
                   << " expected_value=" << expected_value << "\n"
-                  << "   result_value=" << value << "\n";
+                  << "   result_value=" << std::string((const char*)c->value, c->vlen) << "\n";
          exit(1);
       }
     }
@@ -357,7 +361,7 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::ZLIB, 64000000,
+    1, 0, 3, SWC::Types::Encoding::PLAIN, 16000000,
     0, // blk-cells
     0, // cs-size
     0, // cs-max
@@ -402,7 +406,7 @@ int main(int argc, char** argv) {
             SWC::Env::Clients::get()->schemas->get(err, schema->col_name)->cid
           );
 
-          for(int i=0;i<10;i++) {
+          for(int i=0;i<2;i++) {
             test_1(schema->col_name);
             std::cout << "test_1 chk=" << i << "\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
