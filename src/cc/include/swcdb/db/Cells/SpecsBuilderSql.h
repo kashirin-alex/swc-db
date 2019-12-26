@@ -22,9 +22,30 @@ class SqlToSpecs final {
   static const uint8_t  LEN_COL = 3;
   static constexpr const char*    TOKEN_CELLS = "cells";
   static const uint8_t  LEN_CELLS = 5;
+
   static constexpr const char*    TOKEN_AND = "and";
   static const uint8_t  LEN_AND = 3;
   
+  static constexpr const char*    TOKEN_BOOL_FALSE = "false";
+  static const uint8_t  LEN_BOOL_FALSE = 5;
+  static constexpr const char*    TOKEN_BOOL_TRUE = "true";
+  static const uint8_t  LEN_BOOL_TRUE = 4;
+  
+  static constexpr const char*    TOKEN_LIMIT = "limit";
+  static const uint8_t  LEN_LIMIT = 5;
+  static constexpr const char*    TOKEN_OFFSET = "offset";
+  static const uint8_t  LEN_OFFSET = 6;
+  static constexpr const char*    TOKEN_MAX_VERS = "max_versions";
+  static const uint8_t  LEN_MAX_VERS = 12;
+  static constexpr const char*    TOKEN_LIMIT_BY = "limit_by";
+  static const uint8_t  LEN_LIMIT_BY = 8;
+  static constexpr const char*    TOKEN_OFFSET_BY = "offset_by";
+  static const uint8_t  LEN_OFFSET_BY = 9;
+  static constexpr const char*    TOKEN_RETURN_DELETES = "return_deletes";
+  static const uint8_t  LEN_RETURN_DELETES = 14;
+  static constexpr const char*    TOKEN_KEYS_ONLY = "keys_only";
+  static const uint8_t  LEN_KEYS_ONLY = 9;
+
   public:
   SqlToSpecs(const std::string& sql, 
               Specs::Scan& specs, std::string& message)
@@ -54,9 +75,19 @@ class SqlToSpecs final {
     if(remain && !err)
       read_columns_intervals();
 
-    if(remain && !err)
-      read_flags();
-    
+    if(remain && !err) {
+      read_flags(specs.flags);
+      if(specs.flags.was_set) {
+        // apply global-scope flags to cells_intervals
+        for(auto& col : specs.columns) {
+          for(auto& intval : col->intervals) {
+            if(!intval->flags.was_set)
+              intval->flags.copy(specs.flags);
+          }
+        }
+      }
+    }
+
     std::cout << "\n SQL='" << sql << "'"
               << "\n specs: " << specs.to_string() << "\n";    
     return err;
@@ -68,7 +99,7 @@ class SqlToSpecs final {
   
   void expect_token(const char* token, uint8_t token_len, bool& found) {
     if(remain >= token_len) {
-      if(is_space())
+      if(found_space())
         return;
 
       if(strncasecmp(ptr, token, token_len) == 0) {
@@ -81,7 +112,30 @@ class SqlToSpecs final {
     error_msg(Error::SQL_PARSE_ERROR, "missing '"+std::string(token)+"'");
   }
 
-  const bool token_found(const char* token, uint8_t token_len) {
+  void expected_boolean(bool& value) {
+    if(found_char('1') || found_token(TOKEN_BOOL_TRUE, LEN_BOOL_TRUE))
+      value = true;
+    else if(found_char('0') || found_token(TOKEN_BOOL_FALSE, LEN_BOOL_FALSE))
+      value = false;
+    else {
+      ptr++;
+      remain--;
+      error_msg(Error::SQL_PARSE_ERROR, "missing 'bool'");
+    }
+  }
+
+  void expect_digit() {
+    if(remain >= 1) {
+      if(std::isdigit((unsigned char)*ptr)) {
+        ptr++;
+        remain--;
+        return;
+      }
+    }
+    error_msg(Error::SQL_PARSE_ERROR, "missing 'digit'");
+  }
+
+  const bool found_token(const char* token, uint8_t token_len) {
     if(remain >= token_len && strncasecmp(ptr, token, token_len) == 0) {
       ptr += token_len;
       remain -= token_len;
@@ -90,8 +144,8 @@ class SqlToSpecs final {
     return false;
   }
   
-  const bool is_space() {
-    if(*ptr == ' ' || *ptr == '\t' || *ptr == '\n' || *ptr == '\r') {
+  const bool found_char(const char c) {
+    if(*ptr == c) {
       ptr++;
       remain--;
       return true;
@@ -99,6 +153,26 @@ class SqlToSpecs final {
     return false;
   }
   
+  const bool found_space() {
+    return found_char(' ') || found_char('\t') 
+        || found_char('\n') || found_char('\r');
+  }
+
+  const bool found_quote_single(bool& quote) {
+    if(found_char('\'')) {
+      quote = !quote;
+      return true;
+    }
+    return false;
+  }
+
+  const bool found_quote_double(bool& quote) {
+    if(found_char('"')) {
+      quote = !quote;
+      return true;
+    }
+    return false;
+  }
 
   void read_columns_intervals() {
     bool token_col = false;
@@ -114,15 +188,12 @@ class SqlToSpecs final {
     while(remain && !err) {
 
       if(possible_and) {        
-        if(is_space())
+        if(found_space())
           continue;
-        if(token_found(TOKEN_AND, LEN_AND))
+        if(found_token(TOKEN_AND, LEN_AND))
           possible_and = false;
-        else {
-          read_flags(); // to specs.flags 
-          // apply global-scope flags if no columns.cells.flag set
+        else
           break;
-        }
       }
 
       if(!token_col) {
@@ -132,7 +203,7 @@ class SqlToSpecs final {
 
       if(token_col && !col_names_set) {
         //"col(, 1 2, 3 4 ,)"  = >> ["12","34"]
-        if(is_space())
+        if(found_space())
           continue;
         
         if(!bracket_round) {
@@ -140,7 +211,7 @@ class SqlToSpecs final {
           continue;
         }
         
-        if(token_found(",", 1)) { 
+        if(found_char(',')) { 
           if(!col_name.empty()) {
             add_column(col_name);
             cols.push_back(specs.columns.back()->cid);
@@ -149,7 +220,7 @@ class SqlToSpecs final {
           continue;
         } 
 
-        if(token_found(")", 1)) {
+        if(found_char(')')) {
           if(col_name.empty() && cols.empty()) {
             error_msg(Error::SQL_PARSE_ERROR, "missing col 'name'");
             break;
@@ -236,10 +307,10 @@ class SqlToSpecs final {
     bool possible_and = false;
 
     while(remain && !err) {
-      if(possible_and) {        
-        if(is_space())
+      if(possible_and) {
+        if(found_space())
           continue;
-        if(token_found(TOKEN_AND, LEN_AND))
+        if(found_token(TOKEN_AND, LEN_AND))
           possible_and = false;
         else
           break;
@@ -259,13 +330,14 @@ class SqlToSpecs final {
           expect_token("(", 1, bracket_round);
           continue;
         }
-        // cells_interval();
+
         auto spec = Interval::make_ptr();
-        read_flags();
+        // + cells_interval();
+        read_flags(spec->flags);
         for(auto& col : specs.columns) {
           for(auto cid : cols) {
             if(col->cid == cid)
-              col->intervals.push_back(spec); // ?cpy
+              col->intervals.push_back(Interval::make_ptr(spec));
           }
         }
 
@@ -286,9 +358,117 @@ class SqlToSpecs final {
     }
 
   }
+  
+  void read_flags(Flags& flags) {
 
-  void read_flags() {
+    bool any = true;
+    while(any && remain && !err) {
+      if(found_space())
+        continue;    
 
+      if(any = found_token(TOKEN_LIMIT, LEN_LIMIT)) {
+        read_uint32_t(flags.limit, flags.was_set);
+        continue;
+      }
+      if(any = found_token(TOKEN_OFFSET, LEN_OFFSET)) {
+        read_uint32_t(flags.offset, flags.was_set);
+        continue;
+      }
+      if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {
+        read_uint32_t(flags.max_versions, flags.was_set);
+        continue;
+      }
+
+      if(any = found_token(TOKEN_RETURN_DELETES, LEN_RETURN_DELETES)) {
+        read_bool(flags.return_deletes, flags.was_set);
+        continue;
+      }
+      if(any = found_token(TOKEN_KEYS_ONLY, LEN_KEYS_ONLY)) {
+        read_bool(flags.keys_only, flags.was_set);
+        continue;
+      }
+      // + LimitType limit_by, offset_by;
+    }
+  }
+
+  void read_uint32_t(uint32_t& value, bool& was_set) {
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool found = false;   
+    //bool eq = false;
+    std::string v;
+
+    while(remain && !err) {
+
+      /*
+      if(!eq) {
+        expect_token("=", 1, eq);
+        continue;
+      }
+      */
+
+      if(v.empty() && (found_space() || found_char('=')))
+        continue;
+      
+      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
+        is_quoted = true;
+        continue;
+      }
+
+      if(!found && !v.empty() && !std::isdigit((unsigned char)*ptr)) {
+        value = std::stoul(v);
+        was_set = true;
+        found = true;
+      }
+
+      if(found) {
+        if(is_quoted && (quote_1 || quote_2)) {
+          is_quoted = false;
+          expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
+          if(is_quoted)
+            break;
+          continue;
+        }
+        break;
+      }
+      
+      v += *ptr;
+      expect_digit();
+    }
+  }
+
+  void read_bool(bool& value, bool& was_set) {
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool found = false;   
+
+    while(remain && !err) {
+
+      if(found_space() || found_char('='))
+        continue;
+
+      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
+        is_quoted = true;
+        continue;
+      }
+
+      if(!found) {
+        expected_boolean(value);
+        was_set = true;
+        found = true;
+      }
+
+      if(is_quoted && (quote_1 || quote_2)) {
+        is_quoted = false;
+        expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
+        if(is_quoted)
+          break;
+        continue;
+      }
+      break;
+    }
   }
 
   void error_msg(int error, const std::string& msg) {

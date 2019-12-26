@@ -22,7 +22,7 @@ class Flags {
 
   explicit Flags(): limit(0), offset(0), max_versions(0), 
                     limit_by(LimitType::KEY), offset_by(LimitType::KEY),
-                    return_deletes(false), keys_only(false) {}
+                    return_deletes(false), keys_only(false), was_set(false) {}
 
   explicit Flags(const Flags &other){
     copy(other);
@@ -37,6 +37,7 @@ class Flags {
     offset_by       = other.offset_by;
     return_deletes  = other.return_deletes;
     keys_only       = other.keys_only;
+    was_set         = other.was_set;
   }
 
   virtual ~Flags(){
@@ -50,7 +51,9 @@ class Flags {
             limit_by == other.limit_by  && 
             offset_by == other.offset_by  && 
             return_deletes == other.return_deletes  && 
-            keys_only == other.keys_only ;
+            keys_only == other.keys_only && 
+            was_set == other.was_set 
+            ;
   }
 
   const size_t encoded_length() const {
@@ -98,13 +101,15 @@ class Flags {
     s.append(std::to_string(return_deletes));
     s.append(" keys_only=");
     s.append(std::to_string(keys_only));
+    s.append(" was_set=");
+    s.append(was_set? "TRUE" : "FALSE");
     
     return s;
   }
 
   uint32_t 	limit, offset, max_versions;
   LimitType limit_by, offset_by;
-  bool 	 	  return_deletes, keys_only;
+  bool 	 	  return_deletes, keys_only, was_set;
 
 };
 
