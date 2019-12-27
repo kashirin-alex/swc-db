@@ -24,6 +24,52 @@ enum Comp {
   RE   = 0x8    // [ re ]  :   regexp   (regular-expression)
 };
 
+inline const Comp from(const char** buf, uint32_t* remainp) {
+  Comp comp = Comp::NONE;
+
+  if(*remainp > 1) {
+    if(strncasecmp(*buf, "=^", 2) == 0 || strncasecmp(*buf, "pf", 2) == 0)
+      comp = Comp::PF;
+    else if(strncasecmp(*buf, ">=", 2) == 0 || strncasecmp(*buf, "ge", 2) == 0)
+      comp = Comp::GE;
+    else if(strncasecmp(*buf, "<=", 2) == 0 || strncasecmp(*buf, "le", 2) == 0)
+      comp = Comp::LE;
+    else if(strncasecmp(*buf, "!=", 2) == 0 || strncasecmp(*buf, "ne", 2) == 0)
+      comp = Comp::NE;
+    else if(strncasecmp(*buf, "re", 2) == 0)
+      comp = Comp::RE;
+    else if(strncasecmp(*buf, "==", 2) == 0 || strncasecmp(*buf, "eq", 2) == 0)
+      comp = Comp::EQ;
+    else if(strncasecmp(*buf, "gt", 2) == 0)
+      comp = Comp::GT;
+    else if(strncasecmp(*buf, "lt", 2) == 0)
+      comp = Comp::LT;
+
+    if(comp != Comp::NONE) {
+      *buf += 2;
+      *remainp -= 2;
+      return comp;
+    }
+  }
+
+  if(*remainp > 0) {
+    if(**buf == '>') 
+      comp = Comp::GT;
+    else if(**buf == '<')
+      comp = Comp::LT;
+    else if(**buf == 'r' || **buf == 'R')
+      comp = Comp::RE;
+
+    if(comp != Comp::NONE) {
+      *buf += 1;
+      *remainp -= 1;
+      return comp;
+    }
+  }
+
+  return comp;
+};
+
 inline const std::string to_string(Comp comp) {
   switch (comp) {
     case Comp::NONE:
