@@ -57,6 +57,8 @@ inline const Comp from(const char** buf, uint32_t* remainp) {
       comp = Comp::GT;
     else if(**buf == '<')
       comp = Comp::LT;
+    else if(**buf == '=')
+      comp = Comp::EQ;
     else if(**buf == 'r' || **buf == 'R')
       comp = Comp::RE;
 
