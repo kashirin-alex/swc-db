@@ -380,6 +380,7 @@ class SqlToSpecs final {
     bool is_quoted = false;
     bool possible_and = false;
     bool found_any = false;
+    bool flw_and = false;
     uint32_t base_remain = remain;
     const char* base_rptr = ptr;
     
@@ -389,9 +390,10 @@ class SqlToSpecs final {
         found_any = true;
         if(found_space())
           continue;
-        if(found_token(TOKEN_AND, LEN_AND))
+        if(found_token(TOKEN_AND, LEN_AND)) {
           possible_and = false;
-        else
+          flw_and = true;
+        } else
           break;
       }
       
@@ -405,7 +407,7 @@ class SqlToSpecs final {
         if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
           is_quoted = true;
           continue;
-        }
+        } // if not in square brackets
         if(found_space())
           continue;
       }
@@ -422,24 +424,35 @@ class SqlToSpecs final {
       }
 
       if(found_token(TOKEN_TIMESTAMP, LEN_TIMESTAMP)) {
+        read_timestamp(spec.ts_start, spec.ts_finish, flw_and);
         possible_and = true;
         continue;
       }
 
       if(found_token(TOKEN_VALUE, LEN_VALUE)) {
-        possible_and = true;
         read_value(spec.value);
+        possible_and = true;
         continue;
       }
 
       if(found_token(TOKEN_OFFSET_KEY, LEN_OFFSET_KEY)) {
-        possible_and = true;
         read_key(spec.offset_key);
+        possible_and = true;
         continue;
       }
 
       if(found_token(TOKEN_OFFSET_REV, LEN_OFFSET_REV)) {
-        read_int64_t(spec.offset_rev, possible_and);
+        expect_eq();
+        std::string buf;
+        read_timestamp(buf);
+        if(err) 
+          return;
+        spec.offset_rev = Time::parse_ns(err, buf);
+        if(err) {
+          error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+          return;
+        }
+        //read_int64_t(spec.offset_rev, possible_and);
         possible_and = true; 
         continue;
       }
@@ -546,6 +559,7 @@ class SqlToSpecs final {
     while(remain && !err) {
       if(!escape && *ptr == '\\') {
         escape = remain-1;
+        // ?keep only for Comp::RE
       } else if(escape && escape != remain)
         escape = 0;
 
@@ -567,6 +581,131 @@ class SqlToSpecs final {
 
     if(!err)
       value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+  }
+  
+  void read_timestamp(Timestamp& start, Timestamp& finish, bool flw) {
+    uint32_t base_remain = remain;
+    const char* base_ptr = ptr;
+
+    Condition::Comp comp;
+    expect_comparator(comp);
+    if(comp != Condition::EQ && 
+       comp != Condition::GE && 
+       comp != Condition::GT && 
+       comp != Condition::LT && 
+       comp != Condition::LE) {
+      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator'");
+      return;
+    }
+
+    std::string buf;
+    read_timestamp(buf);
+    if(err) 
+      return;
+    int64_t ts = Time::parse_ns(err, buf);
+    if(err) {
+      error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+      return;
+    }
+
+    if(comp == Condition::EQ || comp == Condition::GE || comp == Condition::GT)
+      start.set(ts, comp);
+    else 
+      finish.set(ts, comp);
+
+    uint32_t mark_remain = remain;
+    const char* mark_ptr = ptr;
+
+    uint32_t end = sql.length()+1;
+    comp = Condition::NONE;
+
+    ptr = base_ptr - LEN_TIMESTAMP;
+    remain = 0;
+    while(remain++ < end) {
+      ptr--;
+      if(flw) {
+        if(found_token(TOKEN_AND, LEN_AND))
+          break;
+      } else if(found_char('('))
+        break;
+    }
+    
+    buf.clear();
+    read_timestamp(buf);
+    if(buf.empty()) {
+      remain = mark_remain;
+      ptr = mark_ptr;
+      return;
+    }
+    if(err) 
+      return;
+    ts = Time::parse_ns(err, buf);
+    if(err) {
+      error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+      return;
+    }
+
+    expect_comparator(comp);
+    remain += base_remain;
+    if(comp != Condition::EQ && 
+       comp != Condition::GE && 
+       comp != Condition::GT && 
+       comp != Condition::LT && 
+       comp != Condition::LE) {
+      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator'");
+      return;
+    }
+
+    comp = comp == Condition::GE ? Condition::LE 
+        : (comp == Condition::GT ? Condition::LT 
+        : (comp == Condition::LE ? Condition::GE 
+        : (comp == Condition::LT ? Condition::GT : comp)));
+
+    if((start.was_set && (comp == Condition::GE || comp == Condition::GT)) || 
+       (finish.was_set && (comp == Condition::LE || comp == Condition::LT))) {
+      error_msg(Error::SQL_PARSE_ERROR, "bad interval comparators pair");
+      return;
+    }
+
+    if(finish.was_set) {
+      start.set(ts, comp);
+    } else {      
+      finish.set(ts, comp);
+    }
+
+    remain = mark_remain;
+    ptr = mark_ptr;
+  }
+
+  void read_timestamp(std::string& buf) {
+    uint32_t escape = 0;
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool was_quoted = false;
+
+    while(remain && !err) {
+      if(!escape && found_char('\\')) {
+        escape = remain-1;
+        continue;
+      } else if(escape && escape != remain)
+        escape = 0;
+
+      if(!escape) {
+        if(!is_quoted && buf.empty() && found_space())
+          continue;
+        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
+          is_quoted = quote_1 || quote_2;
+          was_quoted = true;
+          continue;
+        }
+        if((!was_quoted && found_space()) || (was_quoted && !is_quoted))
+          break;
+      }
+      buf += *ptr;
+      ptr++;
+      remain--;
+    }
   }
 
   void read_flags(Flags& flags) {
