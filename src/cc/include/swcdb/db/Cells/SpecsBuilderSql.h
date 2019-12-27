@@ -31,6 +31,19 @@ class SqlToSpecs final {
   static constexpr const char*    TOKEN_BOOL_TRUE = "true";
   static const uint8_t  LEN_BOOL_TRUE = 4;
   
+  static constexpr const char*    TOKEN_RANGE = "range";
+  static const uint8_t  LEN_RANGE = 5;
+  static constexpr const char*    TOKEN_KEY = "key";
+  static const uint8_t  LEN_KEY = 3;
+  static constexpr const char*    TOKEN_VALUE = "value";
+  static const uint8_t  LEN_VALUE = 5;
+  static constexpr const char*    TOKEN_TIMESTAMP = "timestamp";
+  static const uint8_t  LEN_TIMESTAMP = 9;
+  static constexpr const char*    TOKEN_OFFSET_KEY = "offset_key";
+  static const uint8_t  LEN_OFFSET_KEY = 10;
+  static constexpr const char*    TOKEN_OFFSET_REV = "offset_rev";
+  static const uint8_t  LEN_OFFSET_REV = 10;
+
   static constexpr const char*    TOKEN_LIMIT = "limit";
   static const uint8_t  LEN_LIMIT = 5;
   static constexpr const char*    TOKEN_OFFSET = "offset";
@@ -332,8 +345,8 @@ class SqlToSpecs final {
         }
 
         auto spec = Interval::make_ptr();
-        // + cells_interval();
-        read_flags(spec->flags);
+        read_cells_interval(*spec.get());
+        
         for(auto& col : specs.columns) {
           for(auto cid : cols) {
             if(col->cid == cid)
@@ -359,6 +372,135 @@ class SqlToSpecs final {
 
   }
   
+  void read_cells_interval(Interval& spec) {
+
+    uint32_t escape = 0;
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool possible_and = false;
+    bool found_any = false;
+    uint32_t base_remain = remain;
+    const char* base_rptr = ptr;
+    
+    while(remain && !err) {
+
+      if(possible_and) {        
+        found_any = true;
+        if(found_space())
+          continue;
+        if(found_token(TOKEN_AND, LEN_AND))
+          possible_and = false;
+        else
+          break;
+      }
+      
+      if(!escape && found_char('\\')) {
+        escape = remain;
+        continue;
+      } else if(escape && escape != remain)
+        escape = 0;
+
+      if(!escape) {
+        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
+          is_quoted = true;
+          continue;
+        }
+        if(found_space())
+          continue;
+      }
+
+
+      if(found_token(TOKEN_RANGE, LEN_RANGE)) {
+        possible_and = true;
+        continue;
+      }
+
+      if(found_token(TOKEN_KEY, LEN_KEY)) {
+        possible_and = true;
+        continue;
+      }
+
+      if(found_token(TOKEN_TIMESTAMP, LEN_TIMESTAMP)) {
+        possible_and = true;
+        continue;
+      }
+
+      if(found_token(TOKEN_VALUE, LEN_VALUE)) {
+        possible_and = true;
+        read_value(spec.value);
+        continue;
+      }
+
+      if(found_token(TOKEN_OFFSET_KEY, LEN_OFFSET_KEY)) {
+        possible_and = true;
+        continue;
+      }
+
+      if(found_token(TOKEN_OFFSET_REV, LEN_OFFSET_REV)) {
+        possible_and = true;
+        continue;
+      }
+      ptr++;
+      remain--;
+    }
+
+    if(!found_any) {        
+      remain = base_remain;
+      ptr = base_rptr;
+    }
+    read_flags(spec.flags);
+  }
+
+  
+  void expect_comparator(Condition::Comp& comp) {
+    while(remain) {
+      if(found_space())
+        continue;
+      if((comp = Condition::from(&ptr, &remain)) != Condition::NONE)
+        return;
+      break;
+    }
+    error_msg(Error::SQL_PARSE_ERROR, "missing 'comparator'");
+  }
+
+  void read_value(Value& value) {
+    Condition::Comp comp;
+    expect_comparator(comp);
+
+    uint32_t escape = 0;
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool was_quoted = false;
+
+    std::string buf;
+    while(remain && !err) {
+      if(!escape && *ptr == '\\') {
+        escape = remain-1;
+      } else if(escape && escape != remain)
+        escape = 0;
+
+      if(!escape) {
+        if(!is_quoted && buf.empty() && found_space())
+          continue;
+        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
+          is_quoted = quote_1 || quote_2;
+          was_quoted = true;
+          continue;
+        }
+        if((!was_quoted && found_space()) || (was_quoted && !is_quoted))
+          break;
+      }
+      buf += *ptr;
+      ptr++;
+      remain--;
+    }
+
+    if(!err)
+      value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+  }
+
   void read_flags(Flags& flags) {
 
     bool any = true;
