@@ -45,6 +45,8 @@ const int64_t now_ms();
 
 const int64_t now_ns();
 
+const int64_t parse_ns(int& err, const std::string& buf);
+
 std::ostream &hires_now_ns(std::ostream &out);
 
 }}

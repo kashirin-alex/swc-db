@@ -74,6 +74,40 @@ const int64_t now_ns() {
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+const int64_t parse_ns(int& err, const std::string& buf) {
+  const char* ptr = buf.c_str();
+  if(buf.find("/") == std::string::npos) {  
+    while(*ptr != 0 && *ptr == '0') ptr++;
+    char *last;
+    int64_t ns = strtoll(ptr, &last, 0);
+    if(*ptr != 0 && ptr == last)
+      err = EINVAL;
+    return ns;
+  }
+
+  int64_t ns = 0;
+
+  struct tm info;
+  if(strptime(ptr, "%Y/%m/%d %H:%M:%S", &info) == NULL) {
+    err = EINVAL;
+    return ns;
+  } 
+  ns += mktime(&info) * 1000000000;
+
+  while(*ptr != 0 && *ptr++ != '.');
+
+  if(*ptr != 0) {
+    char *last;
+    uint32_t res = strtoul(ptr, &last, 0);
+    if(ptr == last || res > 999999999) {
+      err = EINVAL;
+      return ns;
+    }
+    ns += res;
+  }
+  return ns;
+}
+
 std::ostream &hires_now_ns(std::ostream &out) {
   auto now = std::chrono::system_clock::now();
   return out << std::chrono::duration_cast<std::chrono::seconds>(
