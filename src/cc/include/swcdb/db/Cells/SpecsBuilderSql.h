@@ -434,11 +434,13 @@ class SqlToSpecs final {
 
       if(found_token(TOKEN_OFFSET_KEY, LEN_OFFSET_KEY)) {
         possible_and = true;
+        read_key(spec.offset_key);
         continue;
       }
 
       if(found_token(TOKEN_OFFSET_REV, LEN_OFFSET_REV)) {
-        possible_and = true;
+        read_int64_t(spec.offset_rev, possible_and);
+        possible_and = true; 
         continue;
       }
       ptr++;
@@ -462,6 +464,72 @@ class SqlToSpecs final {
       break;
     }
     error_msg(Error::SQL_PARSE_ERROR, "missing 'comparator'");
+  }
+
+  void expect_eq() {
+    bool eq = false;
+    while(remain && !err) {
+      if(found_space())
+        continue;
+      if(!eq) {
+        expect_token("=", 1, eq);
+        return;
+      }
+    }
+  }
+
+  void read_key(Cell::Key& key) {
+    expect_eq();
+
+    uint32_t escape = 0;
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool was_quoted = false;
+    bool bracket_square = false;
+
+    std::string fraction;
+    while(remain && !err) {
+      if(!escape && found_char('\\')) {
+        escape = remain-1;
+        continue;
+      } else if(escape && escape != remain)
+        escape = 0;
+
+      if(!escape) {
+        if(!is_quoted && fraction.empty() && found_space())
+          continue;
+        if(!bracket_square) {
+          expect_token("[", 1, bracket_square);
+          continue;
+        } 
+        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
+          is_quoted = quote_1 || quote_2;
+          was_quoted = true;
+          continue;
+        }
+
+        if((!was_quoted && (found_space() || found_char(',') || *ptr == ']'))
+          || (was_quoted && !is_quoted)) {
+          if(!fraction.empty()) {
+            key.add(fraction);
+            fraction.clear();
+          } 
+          if(found_char(']')) {
+            bracket_square = true;
+            break;
+          } 
+          continue;
+        }
+      }
+      fraction += *ptr;
+      ptr++;
+      remain--;
+    }
+
+    if(bracket_square) {
+      expect_token("]", 1, bracket_square);
+    }
   }
 
   void read_value(Value& value) {
@@ -522,61 +590,16 @@ class SqlToSpecs final {
       }
 
       if(any = found_token(TOKEN_RETURN_DELETES, LEN_RETURN_DELETES)) {
-        read_bool(flags.return_deletes, flags.was_set);
+        flags.return_deletes = flags.was_set = true;
+        //read_bool(flags.return_deletes, flags.was_set);
         continue;
       }
       if(any = found_token(TOKEN_KEYS_ONLY, LEN_KEYS_ONLY)) {
-        read_bool(flags.keys_only, flags.was_set);
+        flags.keys_only = flags.was_set = true;
+        //read_bool(flags.keys_only, flags.was_set);
         continue;
       }
       // + LimitType limit_by, offset_by;
-    }
-  }
-
-  void read_uint32_t(uint32_t& value, bool& was_set) {
-    bool quote_1 = false;
-    bool quote_2 = false;
-    bool is_quoted = false;
-    bool found = false;   
-    //bool eq = false;
-    std::string v;
-
-    while(remain && !err) {
-
-      /*
-      if(!eq) {
-        expect_token("=", 1, eq);
-        continue;
-      }
-      */
-
-      if(v.empty() && (found_space() || found_char('=')))
-        continue;
-      
-      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
-        is_quoted = true;
-        continue;
-      }
-
-      if(!found && !v.empty() && !std::isdigit((unsigned char)*ptr)) {
-        value = std::stoul(v);
-        was_set = true;
-        found = true;
-      }
-
-      if(found) {
-        if(is_quoted && (quote_1 || quote_2)) {
-          is_quoted = false;
-          expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
-          if(is_quoted)
-            break;
-          continue;
-        }
-        break;
-      }
-      
-      v += *ptr;
-      expect_digit();
     }
   }
 
@@ -610,6 +633,66 @@ class SqlToSpecs final {
         continue;
       }
       break;
+    }
+  }
+
+  void read_uint32_t(uint32_t& value, bool& was_set) {
+    int64_t v;
+    read_int64_t(v, was_set);
+    if (v > INT32_MAX || v < INT32_MIN)
+      error_msg(Error::SQL_PARSE_ERROR, " unsigned 32-bit integer out of range");
+    else
+      value = (uint32_t)v;
+  }
+
+  void read_int64_t(int64_t& value, bool& was_set) {
+    bool quote_1 = false;
+    bool quote_2 = false;
+    bool is_quoted = false;
+    bool found = false;   
+    //bool eq = false;
+    std::string v;
+
+    while(remain && !err) {
+
+      /*
+      if(!eq) {
+        expect_token("=", 1, eq);
+        continue;
+      }
+      */
+
+      if(v.empty() && (found_space() || found_char('=')))
+        continue;
+      
+      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
+        is_quoted = true;
+        continue;
+      }
+
+      if(!found && !v.empty() && !std::isdigit((unsigned char)*ptr)) {
+        try {
+          value = std::stoll(v);
+        } catch(const std::exception& ex) {
+          error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+        }
+        was_set = true;
+        found = true;
+      }
+
+      if(found) {
+        if(is_quoted && (quote_1 || quote_2)) {
+          is_quoted = false;
+          expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
+          if(is_quoted)
+            break;
+          continue;
+        }
+        break;
+      }
+      
+      v += *ptr;
+      expect_digit();
     }
   }
 
