@@ -234,6 +234,14 @@ class DbClient : public Interface {
                 "/tmp/.swc-cli-dbclient-history") {
     options.push_back(
       new Option(
+        "list columns", 
+        "list|get column|s [NAME|ID,..];",
+        [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
+        new re2::RE2("(?i)^(get|list)\\s+(column(|s))(.*|$)")
+      )
+    );    
+    options.push_back(
+      new Option(
         "select", 
         "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];",
         [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
@@ -249,6 +257,24 @@ class DbClient : public Interface {
     );
   }
 
+  const bool error(int err, const std::string& message) {
+    std::cout << "\033[31mERROR\033[00m: " << message;
+    return true;
+  }
+
+  const bool list_columns(std::string& cmd) {
+    int err = Error::OK;
+    std::vector<DB::Schema::Ptr> schemas;  
+    std::string message;
+    client::SQL::parse_list_columns(err, cmd, schemas, message);
+    if(err) 
+      return error(err, message);
+
+    for(auto& schema : schemas)
+      std::cout << schema->to_string_min() << "\n";
+    return true;
+  }
+
   static void display(Protocol::Common::Req::Query::Select::Result::Ptr result) {
     std::cout << "CB completion=" << result->completion.load() << "\n";
     for(auto col : result->columns) {
@@ -258,11 +284,6 @@ class DbClient : public Interface {
     for(auto cell : col.second->cells)
       std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
     }
-  }
-
-  const bool error(int err, const std::string& message) {
-    std::cout << "\033[31mERROR\033[00m: " << message;
-    return true;
   }
 
   const bool select(std::string& cmd) {

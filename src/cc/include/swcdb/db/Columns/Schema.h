@@ -171,7 +171,7 @@ class Schema final {
     Serialization::encode_vi64(bufp, revision);
   }
 
-  const std::string to_string(){
+  const std::string to_string() const {
     std::stringstream ss;
     ss << "Schema(" 
         << "cid=" << std::to_string(cid)
@@ -190,6 +190,32 @@ class Schema final {
         << ")"
        ;
     return ss.str();
+  }
+
+  const std::string to_string_min() const {
+    std::stringstream s;
+    s << "[cid=" << std::to_string(cid)
+      << " name=\"" << col_name << "\""
+      << " type=" << Types::to_string(col_type) 
+      << " revision=" << std::to_string(revision)
+      << " compact=" << std::to_string(compact_percent) << "%"
+      
+      << " cell(versions=" << std::to_string(cell_versions)
+          << " ttl=" << std::to_string(cell_ttl)
+          << ")"
+      
+      << " blk(replicas=" << std::to_string(blk_replication)
+          << " enc=" << Types::to_string(blk_encoding)
+          << " sz=" << std::to_string(blk_size)
+          << " cells=" << std::to_string(blk_cells)
+          << ")"
+      
+      << " cs(sz=" << std::to_string(cs_size)
+         << " max=" << std::to_string(cs_max)
+          << ")"
+      << "]"
+    ;
+    return s.str();
   }
 
 

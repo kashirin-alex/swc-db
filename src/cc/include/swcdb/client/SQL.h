@@ -72,7 +72,7 @@ class Reader {
 
   Reader(const std::string& sql, std::string& message)
         : sql(sql), message(message),
-          ptr(sql.data()), remain(sql.length()+1), 
+          ptr(sql.data()), remain(sql.length()), 
           err(Error::OK) {
   }
   ~Reader() {}
@@ -188,7 +188,56 @@ class Reader {
     }
     error_msg(Error::SQL_PARSE_ERROR, "missing '"+std::string(token)+"'");
   }
+  void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop) {
+    std::string col_name;
+    while(remain && !err) {
+      if(found_char(',') || found_char(' '))
+        continue;
+      read(col_name, stop);
+      if(col_name.empty())
+        break;
+      cols.push_back(get_schema(col_name));
+      col_name.clear();
+    }
+  }
 
+  DB::Schema::Ptr get_schema(const std::string& col) {
+    DB::Schema::Ptr schema = 0;
+    if(std::find_if(col.begin(), col.end(), 
+        [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
+      schema = Env::Clients::get()->schemas->get(err, col);
+    } else {
+      errno = 0;
+      try { 
+        schema = Env::Clients::get()->schemas->get(err, std::stoll(col));
+      } catch(const std::exception& ex) {
+        err = errno;
+      }
+    }
+    if(err)
+      error_msg(err, "problem getting column '"+col+"' schema");
+    return schema;
+  }
+
+  int64_t get_cid(const std::string& col) {
+    int64_t cid = 0;
+    if(std::find_if(col.begin(), col.end(), 
+        [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
+      auto schema = Env::Clients::get()->schemas->get(err, col);
+      if(!err)
+        cid = schema->cid;
+    } else {
+      errno = 0;
+      try { 
+        cid = std::stoll(col);
+      } catch(const std::exception& ex) {
+        err = errno;
+      }
+    }
+    if(err)
+      error_msg(err, "problem getting column '"+col+"' schema");
+    return cid;
+  }
 
   void read(std::string& buf, const char* stop = 0, bool keep_escape=false) {
     uint32_t escape = 0;
@@ -210,7 +259,7 @@ class Reader {
 
       if(!escape) {
         if(!is_quoted && buf.empty() && found_space())
-            continue;
+          continue;
         if(((!is_quoted || quote_1) && found_quote_single(quote_1)) || 
            ((!is_quoted || quote_2) && found_quote_double(quote_2))) {
           is_quoted = quote_1 || quote_2;
@@ -304,6 +353,71 @@ class Reader {
   int                 err;
 
 };
+    
+class ListColumns : public Reader {
+
+  public:
+  ListColumns(const std::string& sql, std::vector<DB::Schema::Ptr>& schemas,
+              std::string& message)
+              : Reader(sql, message), schemas(schemas) {
+  }
+
+  const int parse_list_columns() {
+    bool token_cmd = false;
+    bool token_typ = false;
+    bool bracket = false;
+    char stop[3];
+    stop[0] = ',';
+    stop[1] = ' ';
+    stop[2] = 0;
+
+    while(remain && !err) {
+ 
+      if(found_space())
+        continue;
+
+      if(!token_cmd && (found_token("get", 3) || found_token("list", 4))) {   
+        token_cmd = true;
+        continue;
+      } 
+      if(!token_cmd) {
+        expect_token("list", 4, token_cmd);
+        break;
+      }
+      if(!token_typ && (found_token("columns", 7) || found_token("column", 6))) {   
+        token_typ = true;
+        continue;
+      }
+      if(!token_typ) {
+        expect_token("columns", 7, token_typ);
+        break;
+      }
+
+      if(found_char('[')) {
+        stop[1] = ']';
+        bracket = true;
+        continue;
+      } else if(found_char('(')) {
+        stop[1] = ')';
+        bracket = true;
+        continue;
+      }
+
+      read_columns(schemas, stop);
+
+      if(bracket)
+        expect_token(&stop[1], 1, bracket);
+      break;
+    }
+    return err;
+  }
+
+  ~ListColumns() {}
+
+  private:
+    std::vector<DB::Schema::Ptr>& schemas;
+};
+
 
 class SelectToSpecs : public Reader {
 
@@ -409,7 +523,7 @@ class SelectToSpecs : public Reader {
           error_msg(Error::SQL_PARSE_ERROR, "missing ')'");
           break;
         }
-        
+
         read(col_name, ",)");
         cols.push_back(add_column(col_name));
         col_name.clear();
@@ -457,22 +571,7 @@ class SelectToSpecs : public Reader {
   }
 
   int64_t add_column(const std::string& col) {
-    int64_t cid = 0;
-    if(std::find_if(col.begin(), col.end(), 
-        [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
-      auto schema = Env::Clients::get()->schemas->get(err, col);
-      if(err) {      
-        error_msg(
-          err, 
-          "problem getting column '"+col+"' schema"
-        );
-        return cid;
-      }
-      cid = schema->cid;
-    } else {
-      cid = std::stoll(col);
-    }
-    
+    int64_t cid = get_cid(col);
     for(auto& col : specs.columns) {
       if(cid == col->cid) 
         return cid;
@@ -959,13 +1058,23 @@ class SelectToSpecs : public Reader {
 };
 
 
+
+
 void parse_select(int& err, const std::string& sql, 
                   DB::Specs::Scan& specs, std::string& message) {
   SelectToSpecs parser(sql, specs, message);
   err = parser.parse_select();
 }
 
-/*
+
+void parse_list_columns(int& err, const std::string& sql, 
+                        std::vector<DB::Schema::Ptr>& schemas, 
+                        std::string& message) {
+  ListColumns parser(sql, schemas, message);
+  err = parser.parse_list_columns();
+}
+
+
 /*
 
 OK, select;
