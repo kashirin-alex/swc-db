@@ -226,8 +226,7 @@ class SqlToSpecs final {
         
         if(found_char(',')) { 
           if(!col_name.empty()) {
-            add_column(col_name);
-            cols.push_back(specs.columns.back()->cid);
+            cols.push_back(add_column(col_name));
             col_name.clear();
           }
           continue;
@@ -238,8 +237,7 @@ class SqlToSpecs final {
             error_msg(Error::SQL_PARSE_ERROR, "missing col 'name'");
             break;
           }
-          add_column(col_name);
-          cols.push_back(specs.columns.back()->cid);
+          cols.push_back(add_column(col_name));
           col_name.clear();
           bracket_round = false;
           col_names_set = true;
@@ -295,7 +293,7 @@ class SqlToSpecs final {
 
   }
 
-  void add_column(const std::string& col) {
+  int64_t add_column(const std::string& col) {
     int64_t cid = 0;
     if(std::find_if(col.begin(), col.end(), 
         [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
@@ -306,9 +304,10 @@ class SqlToSpecs final {
     
     for(auto& col : specs.columns) {
       if(cid == col->cid) 
-        return;
+        return cid;
     }
     specs.columns.push_back(Column::make_ptr(cid, {}));
+    return cid;
   }
 
   void read_cells_intervals(const std::vector<int64_t>& cols) {
@@ -412,13 +411,14 @@ class SqlToSpecs final {
           continue;
       }
 
-
-      if(found_token(TOKEN_RANGE, LEN_RANGE)) {
+      if(found_token(TOKEN_RANGE, LEN_RANGE)) {        
+        read_range(spec.range_begin, spec.range_end, flw_and);
         possible_and = true;
         continue;
       }
 
       if(found_token(TOKEN_KEY, LEN_KEY)) {
+        read_key(spec.key_start, spec.key_finish, flw_and);
         possible_and = true;
         continue;
       }
@@ -436,6 +436,7 @@ class SqlToSpecs final {
       }
 
       if(found_token(TOKEN_OFFSET_KEY, LEN_OFFSET_KEY)) {
+        expect_eq();
         read_key(spec.offset_key);
         possible_and = true;
         continue;
@@ -444,15 +445,14 @@ class SqlToSpecs final {
       if(found_token(TOKEN_OFFSET_REV, LEN_OFFSET_REV)) {
         expect_eq();
         std::string buf;
-        read_timestamp(buf);
+        read(buf);
         if(err) 
           return;
         spec.offset_rev = Time::parse_ns(err, buf);
         if(err) {
-          error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+          error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
           return;
         }
-        //read_int64_t(spec.offset_rev, possible_and);
         possible_and = true; 
         continue;
       }
@@ -484,101 +484,211 @@ class SqlToSpecs final {
     while(remain && !err) {
       if(found_space())
         continue;
-      if(!eq) {
+      if(!eq) { // break; (not space is eq)
         expect_token("=", 1, eq);
         return;
       }
     }
   }
+  
+  void read_range(Cell::Key& begin, Cell::Key& end, bool flw) {
+    uint32_t base_remain = remain;
+    const char* base_ptr = ptr;
+
+    Condition::Comp comp_right;
+    expect_comparator(comp_right);
+    if(comp_right != Condition::GE && comp_right != Condition::LE) {
+      error_msg(
+        Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed GE|LE");
+      return;
+    }
+
+    if(comp_right == Condition::GE)
+      read_key(begin);
+    else 
+      read_key(end);
+    if(err) 
+      return;
+
+    uint32_t mark_remain = remain;
+    const char* mark_ptr = ptr;
+
+    uint32_t remain_start = sql.length()+1;
+
+    ptr = base_ptr - LEN_RANGE;
+    remain = 0;
+    while(remain++ < remain_start) {
+      ptr--;
+      if(flw) {
+        if(found_token(TOKEN_AND, LEN_AND))
+          break;
+      } else if(found_char('('))
+        break;
+    }
+    
+    while(remain && !err && found_space());
+    if(*ptr != '[') {
+      remain = mark_remain;
+      ptr = mark_ptr;
+      return;
+    }
+
+    if(comp_right == Condition::GE)
+      read_key(end);
+    else 
+      read_key(begin);
+    if(err) {
+      remain = mark_remain;
+      ptr = mark_ptr;
+      return;
+    }
+   
+    Condition::Comp comp_left = Condition::NONE;
+    expect_comparator(comp_left);
+    remain += base_remain;
+    if(comp_left != Condition::GE && comp_left != Condition::LE) {
+      error_msg(
+        Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed GE|LE");
+      return;
+    }
+    comp_left = comp_left == Condition::GE ? Condition::LE : Condition::GE;
+    if(comp_left == comp_right) {
+      error_msg(Error::SQL_PARSE_ERROR, "bad comparators pair");
+      return;
+    }
+
+    remain = mark_remain;
+    ptr = mark_ptr;
+  }
+
+  void read_key(Key& start, Key& finish, bool flw) {
+    uint32_t base_remain = remain;
+    const char* base_ptr = ptr;
+
+    Condition::Comp comp_right;
+    expect_comparator(comp_right);
+    if(comp_right != Condition::EQ && 
+       comp_right != Condition::GE && comp_right != Condition::LE) {
+      error_msg(
+        Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed EQ|GE|LE");
+      return;
+    }
+
+    if(comp_right == Condition::GE || comp_right == Condition::EQ)
+      read_key(start);
+    else 
+      read_key(finish);
+
+    if(err || comp_right == Condition::EQ) 
+      return;
+
+    uint32_t mark_remain = remain;
+    const char* mark_ptr = ptr;
+
+    uint32_t remain_start = sql.length()+1;
+
+    ptr = base_ptr - LEN_KEY;
+    remain = 0;
+    while(remain++ < remain_start) {
+      ptr--;
+      if(flw) {
+        if(found_token(TOKEN_AND, LEN_AND))
+          break;
+      } else if(found_char('('))
+        break;
+    }
+    
+    while(remain && !err && found_space());
+    if(*ptr != '[') {
+      remain = mark_remain;
+      ptr = mark_ptr;
+      return;
+    }
+
+    if(comp_right == Condition::GE)
+      read_key(finish);
+    else 
+      read_key(start);
+    if(err) {
+      remain = mark_remain;
+      ptr = mark_ptr;
+      return;
+    }
+   
+    Condition::Comp comp_left = Condition::NONE;
+    expect_comparator(comp_left);
+    remain += base_remain;
+    if(comp_left != Condition::GE && comp_left != Condition::LE) {
+      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed GE|LE");
+      return;
+    }
+    comp_left = comp_left == Condition::GE ? Condition::LE : Condition::GE;
+    if(comp_right == comp_left) {
+      error_msg(Error::SQL_PARSE_ERROR, "bad comparators pair");
+      return;
+    }
+
+    remain = mark_remain;
+    ptr = mark_ptr;
+  }
 
   void read_key(Cell::Key& key) {
-    expect_eq();
 
-    uint32_t escape = 0;
-    bool quote_1 = false;
-    bool quote_2 = false;
-    bool is_quoted = false;
-    bool was_quoted = false;
     bool bracket_square = false;
+    std::string fraction;
+    
+    while(remain && !err && found_space());
+    expect_token("[", 1, bracket_square);
 
+    while(remain && !err) {
+      if(found_space())
+        continue;
+
+      read(fraction, ",]");
+      key.add(fraction);
+      fraction.clear();
+
+      while(remain && !err && found_space());
+      if(found_char(',')) 
+        continue;
+      break;
+    }
+    
+    expect_token("]", 1, bracket_square);
+  }
+
+  void read_key(Key& key) {
+
+    bool bracket_square = false;
+    
+    while(remain && !err && found_space());
+    expect_token("[", 1, bracket_square);
+
+    Condition::Comp comp = Condition::NONE;
     std::string fraction;
     while(remain && !err) {
-      if(!escape && found_char('\\')) {
-        escape = remain-1;
+      if(found_space())
         continue;
-      } else if(escape && escape != remain)
-        escape = 0;
 
-      if(!escape) {
-        if(!is_quoted && fraction.empty() && found_space())
-          continue;
-        if(!bracket_square) {
-          expect_token("[", 1, bracket_square);
-          continue;
-        } 
-        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
-          is_quoted = quote_1 || quote_2;
-          was_quoted = true;
-          continue;
-        }
+      expect_comparator(comp);
+      read(fraction, ",]");
+      key.add(fraction, comp);
+      fraction.clear();
 
-        if((!was_quoted && (found_space() || found_char(',') || *ptr == ']'))
-          || (was_quoted && !is_quoted)) {
-          if(!fraction.empty()) {
-            key.add(fraction);
-            fraction.clear();
-          } 
-          if(found_char(']')) {
-            bracket_square = true;
-            break;
-          } 
-          continue;
-        }
-      }
-      fraction += *ptr;
-      ptr++;
-      remain--;
+      while(remain && !err && found_space());
+      if(found_char(',')) 
+        continue;
+      break;
     }
-
-    if(bracket_square) {
-      expect_token("]", 1, bracket_square);
-    }
+    
+    expect_token("]", 1, bracket_square);
   }
 
   void read_value(Value& value) {
     Condition::Comp comp;
     expect_comparator(comp);
-
-    uint32_t escape = 0;
-    bool quote_1 = false;
-    bool quote_2 = false;
-    bool is_quoted = false;
-    bool was_quoted = false;
-
     std::string buf;
-    while(remain && !err) {
-      if(!escape && *ptr == '\\') {
-        escape = remain-1;
-        // ?keep only for Comp::RE
-      } else if(escape && escape != remain)
-        escape = 0;
-
-      if(!escape) {
-        if(!is_quoted && buf.empty() && found_space())
-          continue;
-        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
-          is_quoted = quote_1 || quote_2;
-          was_quoted = true;
-          continue;
-        }
-        if((!was_quoted && found_space()) || (was_quoted && !is_quoted))
-          break;
-      }
-      buf += *ptr;
-      ptr++;
-      remain--;
-    }
-
+    read(buf, 0, comp == Condition::RE);
     if(!err)
       value.set((uint8_t*)buf.data(), buf.length(), comp, true);
   }
@@ -587,37 +697,40 @@ class SqlToSpecs final {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
 
-    Condition::Comp comp;
-    expect_comparator(comp);
-    if(comp != Condition::EQ && 
-       comp != Condition::GE && 
-       comp != Condition::GT && 
-       comp != Condition::LT && 
-       comp != Condition::LE) {
-      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator'");
+    Condition::Comp comp_right;
+    expect_comparator(comp_right);
+    if(comp_right != Condition::EQ && 
+       comp_right != Condition::GE && 
+       comp_right != Condition::GT &&  
+       comp_right != Condition::LE && 
+       comp_right != Condition::LT) {
+      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed EQ|GE|GT|LE|LT");
       return;
     }
 
     std::string buf;
-    read_timestamp(buf);
+    read(buf);
     if(err) 
       return;
     int64_t ts = Time::parse_ns(err, buf);
     if(err) {
-      error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+      error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
       return;
     }
 
-    if(comp == Condition::EQ || comp == Condition::GE || comp == Condition::GT)
-      start.set(ts, comp);
+    if(comp_right == Condition::EQ || comp_right == Condition::GE || 
+       comp_right == Condition::GT)
+      start.set(ts, comp_right);
     else 
-      finish.set(ts, comp);
+      finish.set(ts, comp_right);
+
+    if(comp_right == Condition::EQ)
+      return;
 
     uint32_t mark_remain = remain;
     const char* mark_ptr = ptr;
 
     uint32_t end = sql.length()+1;
-    comp = Condition::NONE;
 
     ptr = base_ptr - LEN_TIMESTAMP;
     remain = 0;
@@ -631,7 +744,7 @@ class SqlToSpecs final {
     }
     
     buf.clear();
-    read_timestamp(buf);
+    read(buf);
     if(buf.empty()) {
       remain = mark_remain;
       ptr = mark_ptr;
@@ -641,43 +754,41 @@ class SqlToSpecs final {
       return;
     ts = Time::parse_ns(err, buf);
     if(err) {
-      error_msg(Error::SQL_PARSE_ERROR, "Bad datetime format");
+      error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
       return;
     }
 
-    expect_comparator(comp);
+    Condition::Comp comp_left = Condition::NONE;
+    expect_comparator(comp_left);
     remain += base_remain;
-    if(comp != Condition::EQ && 
-       comp != Condition::GE && 
-       comp != Condition::GT && 
-       comp != Condition::LT && 
-       comp != Condition::LE) {
-      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator'");
+    if(comp_left != Condition::GE && 
+       comp_left != Condition::GT && 
+       comp_left != Condition::LE && 
+       comp_left != Condition::LT) {
+      error_msg(Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed GE|GT|LE|LT");
       return;
     }
 
-    comp = comp == Condition::GE ? Condition::LE 
-        : (comp == Condition::GT ? Condition::LT 
-        : (comp == Condition::LE ? Condition::GE 
-        : (comp == Condition::LT ? Condition::GT : comp)));
+    comp_left = comp_left == Condition::GE ? Condition::LE 
+        : (comp_left == Condition::GT ? Condition::LT 
+        : (comp_left == Condition::LE ? Condition::GE 
+        : (comp_left == Condition::LT ? Condition::GT : comp_left)));
 
-    if((start.was_set && (comp == Condition::GE || comp == Condition::GT)) || 
-       (finish.was_set && (comp == Condition::LE || comp == Condition::LT))) {
-      error_msg(Error::SQL_PARSE_ERROR, "bad interval comparators pair");
+    if(comp_left == comp_right) {
+      error_msg(Error::SQL_PARSE_ERROR, "bad comparators pair");
       return;
     }
 
-    if(finish.was_set) {
-      start.set(ts, comp);
-    } else {      
-      finish.set(ts, comp);
-    }
+    if(finish.was_set)
+      start.set(ts, comp_left);
+    else  
+      finish.set(ts, comp_left);
 
     remain = mark_remain;
     ptr = mark_ptr;
   }
 
-  void read_timestamp(std::string& buf) {
+  void read(std::string& buf, const char* stop = 0,bool keep_escape=false) {
     uint32_t escape = 0;
     bool quote_1 = false;
     bool quote_2 = false;
@@ -685,27 +796,41 @@ class SqlToSpecs final {
     bool was_quoted = false;
 
     while(remain && !err) {
-      if(!escape && found_char('\\')) {
+      if(!escape && *ptr == '\\') {
         escape = remain-1;
-        continue;
+        if(!keep_escape) {
+          ptr++;
+          remain--;
+          continue;
+        }
       } else if(escape && escape != remain)
         escape = 0;
 
       if(!escape) {
         if(!is_quoted && buf.empty() && found_space())
-          continue;
-        if((found_quote_double(quote_1) || found_quote_single(quote_2))) {
+            continue;
+        if(((!is_quoted || quote_1) && found_quote_single(quote_1)) || 
+           ((!is_quoted || quote_2) && found_quote_double(quote_2))) {
           is_quoted = quote_1 || quote_2;
           was_quoted = true;
           continue;
         }
-        if((!was_quoted && found_space()) || (was_quoted && !is_quoted))
+        if((was_quoted && !is_quoted) || 
+           (!was_quoted && (found_space() || is_char(stop))))
           break;
       }
       buf += *ptr;
       ptr++;
       remain--;
     }
+  }
+
+  const bool is_char(const char* stop) const {
+    if(stop) do {
+      if(*stop++ == *ptr)
+        return true;
+    } while(*stop);
+    return false;
   }
 
   void read_flags(Flags& flags) {
@@ -716,64 +841,33 @@ class SqlToSpecs final {
         continue;    
 
       if(any = found_token(TOKEN_LIMIT, LEN_LIMIT)) {
+        expect_eq();
         read_uint32_t(flags.limit, flags.was_set);
         continue;
       }
       if(any = found_token(TOKEN_OFFSET, LEN_OFFSET)) {
+        expect_eq();
         read_uint32_t(flags.offset, flags.was_set);
         continue;
       }
       if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {
+        expect_eq();
         read_uint32_t(flags.max_versions, flags.was_set);
         continue;
       }
 
       if(any = found_token(TOKEN_RETURN_DELETES, LEN_RETURN_DELETES)) {
         flags.return_deletes = flags.was_set = true;
-        //read_bool(flags.return_deletes, flags.was_set);
         continue;
       }
       if(any = found_token(TOKEN_KEYS_ONLY, LEN_KEYS_ONLY)) {
         flags.keys_only = flags.was_set = true;
-        //read_bool(flags.keys_only, flags.was_set);
         continue;
       }
       // + LimitType limit_by, offset_by;
     }
   }
 
-  void read_bool(bool& value, bool& was_set) {
-    bool quote_1 = false;
-    bool quote_2 = false;
-    bool is_quoted = false;
-    bool found = false;   
-
-    while(remain && !err) {
-
-      if(found_space() || found_char('='))
-        continue;
-
-      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
-        is_quoted = true;
-        continue;
-      }
-
-      if(!found) {
-        expected_boolean(value);
-        was_set = true;
-        found = true;
-      }
-
-      if(is_quoted && (quote_1 || quote_2)) {
-        is_quoted = false;
-        expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
-        if(is_quoted)
-          break;
-        continue;
-      }
-      break;
-    }
-  }
 
   void read_uint32_t(uint32_t& value, bool& was_set) {
     int64_t v;
@@ -785,53 +879,15 @@ class SqlToSpecs final {
   }
 
   void read_int64_t(int64_t& value, bool& was_set) {
-    bool quote_1 = false;
-    bool quote_2 = false;
-    bool is_quoted = false;
-    bool found = false;   
-    //bool eq = false;
-    std::string v;
-
-    while(remain && !err) {
-
-      /*
-      if(!eq) {
-        expect_token("=", 1, eq);
-        continue;
-      }
-      */
-
-      if(v.empty() && (found_space() || found_char('=')))
-        continue;
-      
-      if(found_quote_double(quote_1) || found_quote_single(quote_2)) {
-        is_quoted = true;
-        continue;
-      }
-
-      if(!found && !v.empty() && !std::isdigit((unsigned char)*ptr)) {
-        try {
-          value = std::stoll(v);
-        } catch(const std::exception& ex) {
-          error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
-        }
-        was_set = true;
-        found = true;
-      }
-
-      if(found) {
-        if(is_quoted && (quote_1 || quote_2)) {
-          is_quoted = false;
-          expect_token(quote_1 ? "\"" : "'", 1, is_quoted);
-          if(is_quoted)
-            break;
-          continue;
-        }
-        break;
-      }
-      
-      v += *ptr;
-      expect_digit();
+    std::string buf;
+    read(buf);
+    if(err) 
+      return;
+    try {
+      value = std::stoll(buf);
+      was_set = true;
+    } catch(const std::exception& ex) {
+      error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
     }
   }
 
