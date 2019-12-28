@@ -6,16 +6,7 @@
 #define swc_lib_utils_Shell_h
 
 #include "swcdb/core/config/Settings.h"
-
-#include "swcdb/core/comm/Settings.h"
-
-#include "swcdb/client/Clients.h"
-#include "swcdb/client/AppContext.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Common/req/Query.h"
-
-#include "swcdb/db/Cells/SpecsBuilderSql.h"
+#include "swcdb/client/SQL.h"
 
 #include <re2/re2.h>
 #include <editline.h> // github.com/troglobit/editline
@@ -250,10 +241,10 @@ class DbClient : public Interface {
       )
     );
   
-    SWC::Env::Clients::init(
-      std::make_shared<SWC::client::Clients>(
+    Env::Clients::init(
+      std::make_shared<client::Clients>(
         nullptr,
-        std::make_shared<SWC::client::AppContext>()
+        std::make_shared<client::AppContext>()
       )
     );
   }
@@ -278,7 +269,7 @@ class DbClient : public Interface {
     int err = Error::OK;
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>(display);
     std::string message;
-    DB::Specs::Builder::parse_sql_select(err, cmd, req->specs, message);
+    client::SQL::parse_select(err, cmd, req->specs, message);
     if(err) 
       return error(err, message);
 
@@ -292,6 +283,6 @@ class DbClient : public Interface {
 
 
 
-}}} // namespace SWC::Utils::shell
+}}} // namespace Utils::shell
 
 #endif // swc_lib_utils_Shell_h
