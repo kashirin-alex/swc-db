@@ -393,21 +393,14 @@ class SelectToSpecs : public Reader {
           continue;
         }
         
-        if(found_char(',')) { 
-          if(!col_name.empty()) {
-            cols.push_back(add_column(col_name));
-            col_name.clear();
-          }
+        if(found_char(','))
           continue;
-        } 
 
         if(found_char(')')) {
-          if(col_name.empty() && cols.empty()) {
+          if(cols.empty()) {
             error_msg(Error::SQL_PARSE_ERROR, "missing col 'name'");
             break;
           }
-          cols.push_back(add_column(col_name));
-          col_name.clear();
           bracket_round = false;
           col_names_set = true;
           continue;
@@ -417,15 +410,16 @@ class SelectToSpecs : public Reader {
           break;
         }
         
-        col_name += *ptr;
-        ptr++;
-        remain--;
+        read(col_name, ",)");
+        cols.push_back(add_column(col_name));
+        col_name.clear();
         continue;
       }
       
       if(col_names_set) {
 
         if(!processed) {
+          
           if(!eq) {
             expect_token("=", 1, eq);
             continue;
@@ -467,8 +461,13 @@ class SelectToSpecs : public Reader {
     if(std::find_if(col.begin(), col.end(), 
         [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
       auto schema = Env::Clients::get()->schemas->get(err, col);
-      if(err)
+      if(err) {      
+        error_msg(
+          err, 
+          "problem getting column '"+col+"' schema"
+        );
         return cid;
+      }
       cid = schema->cid;
     } else {
       cid = std::stoll(col);
@@ -481,6 +480,7 @@ class SelectToSpecs : public Reader {
     specs.columns.push_back(DB::Specs::Column::make_ptr(cid, {}));
     return cid;
   }
+
 
   void read_cells_intervals(const std::vector<int64_t>& cols) {
 
