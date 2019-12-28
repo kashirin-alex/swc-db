@@ -58,6 +58,7 @@ class Interface {
     bool comment = false;;
     bool quoted_1 = false;
     bool quoted_2 = false;
+    bool is_quoted = false;
     bool next_line = false;
     std::string cmd;
     std::queue<std::string> queue;
@@ -92,7 +93,7 @@ class Interface {
         } else if(c == ' ' && cmd.empty()) {
           continue;
 
-        } else if(!quoted_1 && !quoted_2 && !escape) {
+        } else if(!is_quoted && !escape) {
           if(c == '#') {
             comment = true;
             continue;
@@ -113,11 +114,11 @@ class Interface {
           continue;
         }
         
-        if(c == '\'')
-          quoted_1 = !quoted_1;
-        else if(c == '"')
-          quoted_2 = !quoted_2;
-        else if(c == ';' && !quoted_1 && !quoted_2) {
+        if((!is_quoted || quoted_1) && c == '\'')
+          is_quoted = quoted_1 = !quoted_1;
+        else if((!is_quoted || quoted_2) && c == '"')
+          is_quoted = quoted_2 = !quoted_2;
+        else if(c == ';' && !is_quoted) {
           cmd_end = true;
           queue.push(cmd);
           cmd.clear();
