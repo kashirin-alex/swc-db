@@ -6,7 +6,7 @@
 #define swc_lib_utils_Shell_h
 
 #include "swcdb/core/config/Settings.h"
-#include "swcdb/client/SQL.h"
+#include "swcdb/client/sql/SQL.h"
 
 #include <re2/re2.h>
 #include <editline.h> // github.com/troglobit/editline
@@ -77,7 +77,7 @@ class Interface {
           prompt_state = prompt;
           break;
 
-        } else if(c == '\n' && cmd.empty()) {
+        } else if(!comment && c == '\n' && cmd.empty()) {
           prompt_state = prompt;
           break;
 
