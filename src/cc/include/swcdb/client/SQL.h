@@ -459,10 +459,7 @@ class SelectToSpecs : public Reader {
           }
         }
       }
-    }
-
-    std::cout << "\n SQL='" << sql << "'"
-              << "\n specs: " << specs.to_string() << "\n";    
+    } 
     return err;
   }
 

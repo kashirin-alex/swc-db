@@ -369,6 +369,43 @@ class Cell final {
     return s;
   }
 
+  void display(std::ostream& out, bool pretty=false, 
+               Types::Column typ = Types::Column::PLAIN, 
+               bool wtime=false) const {
+    if(wtime) 
+      out << Time::fmt_ns(timestamp) << "  ";
+      
+    key.display(out, pretty);
+    out << "  ";
+
+    if(flag != Flag::INSERT) {
+      out << "(" << Cells::to_string((Flag)flag) << ")";
+      return;
+    } 
+
+    if(!vlen) 
+      return;
+
+    if(typ == Types::Column::COUNTER_I64) {
+      OP op;
+      int64_t v = get_value(&op);
+      out << Cells::to_string(v==0?OP::EQUAL:op);
+      out << v;
+    } else {
+      const uint8_t* ptr = value;
+      char hex[2];
+
+      for(uint32_t i=vlen; i--; ptr++) {
+        if(pretty && (*ptr < 32 || *ptr > 126)) {
+          sprintf(hex, "%X", *ptr);
+          out << "0x" << hex;
+        } else
+          out << *ptr; 
+      }
+    }
+  }
+
+
   uint8_t         flag;
   DB::Cell::Key   key;
   uint8_t         control;

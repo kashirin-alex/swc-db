@@ -162,7 +162,6 @@ class Groups : public std::enable_shared_from_this<Groups>{
   }
 
   virtual ~Groups() {
-    std::cout << " ~Groups()\n";
   }
 
   Ptr init(){

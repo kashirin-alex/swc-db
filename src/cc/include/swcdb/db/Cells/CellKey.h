@@ -369,6 +369,31 @@ class Key {
     assert(sane());
     return s;
   }
+  
+  void display(std::ostream& out, bool pretty=false) const {
+    out << "["; 
+    if(!count) {
+      out << "]"; 
+      return;
+    }
+      
+    uint32_t len;
+    const uint8_t* ptr = data;
+    char hex[2];
+    for(uint32_t n=0; n<count; ) {
+      for(len = Serialization::decode_vi32(&ptr); len--;  ptr++) {
+        if(pretty && (*ptr < 32 || *ptr > 126)) {
+          sprintf(hex, "%X", *ptr);
+          out << "0x" << hex;
+        } else
+          out << *ptr; 
+      }
+      if(++n < count)
+        out << ", "; 
+    }
+    out << "]"; 
+    
+  }
 
   bool      own;
   uint32_t  count;

@@ -270,32 +270,48 @@ class DbClient : public Interface {
     if(err) 
       return error(err, message);
 
-    for(auto& schema : schemas)
-      std::cout << schema->to_string_min() << "\n";
+    for(auto& schema : schemas) {
+      schema->display(std::cout);
+      std::cout << std::endl;
+    }
     return true;
   }
 
-  static void display(Protocol::Common::Req::Query::Select::Result::Ptr result) {
-    std::cout << "CB completion=" << result->completion.load() << "\n";
+  void display(Protocol::Common::Req::Query::Select::Result::Ptr result,
+               bool display_time) const {
+    DB::Schema::Ptr schema = 0;
+    int err = Error::OK;
     for(auto col : result->columns) {
-      std::cout << " cid=" << col.first 
-                << ": sz=" << col.second->cells.size() << "\n";
-    int num=0;
-    for(auto cell : col.second->cells)
-      std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
+      schema = Env::Clients::get()->schemas->get(err, col.first);
+      for(auto cell : col.second->cells) {
+        cell->display(
+          std::cout, 
+          true,
+          err ? Types::Column::PLAIN: schema->col_type,
+          display_time
+        );
+        std::cout << "\n";  
+      }
     }
   }
 
   const bool select(std::string& cmd) {
     int err = Error::OK;
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(display);
+    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+      [this](Protocol::Common::Req::Query::Select::Result::Ptr result) {
+        display(result, true); // display_time
+      }
+    );
     std::string message;
     client::SQL::parse_select(err, cmd, req->specs, message);
     if(err) 
       return error(err, message);
 
+    // if display_specs
+    std::cout << req->specs.to_string() << "\n\n";
     req->scan();
     req->wait();
+
     // time-took ?with
     return true;
   }

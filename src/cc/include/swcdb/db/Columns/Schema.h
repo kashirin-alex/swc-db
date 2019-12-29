@@ -192,13 +192,12 @@ class Schema final {
     return ss.str();
   }
 
-  const std::string to_string_min() const {
-    std::stringstream s;
-    s << "[cid=" << std::to_string(cid)
+  void display(std::ostream& out) const {
+    out << "cid=" << std::to_string(cid)
       << " name=\"" << col_name << "\""
       << " type=" << Types::to_string(col_type) 
       << " revision=" << std::to_string(revision)
-      << " compact=" << std::to_string(compact_percent) << "%"
+      << " compact=" << std::to_string(compact_percent)
       
       << " cell(versions=" << std::to_string(cell_versions)
           << " ttl=" << std::to_string(cell_ttl)
@@ -213,9 +212,7 @@ class Schema final {
       << " cs(sz=" << std::to_string(cs_size)
          << " max=" << std::to_string(cs_max)
           << ")"
-      << "]"
     ;
-    return s.str();
   }
 
 
