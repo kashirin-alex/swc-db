@@ -14,6 +14,7 @@
 #include "swcdb/db/Protocol/Common/req/Query.h"
 
 #include "swcdb/client/sql/Reader.h"
+#include "swcdb/client/sql/ColumnSchema.h"
 #include "swcdb/client/sql/ColumnList.h"
 #include "swcdb/client/sql/QuerySelect.h"
 
@@ -34,6 +35,14 @@ void parse_list_columns(int& err, const std::string& sql,
   ColumnList parser(sql, schemas, message);
   err = parser.parse_list_columns();
 }
+
+void parse_column_schema(int& err, const std::string& sql, 
+                        ColumnSchema::Func func,
+                        DB::Schema::Ptr& schema, std::string& message) {
+  ColumnSchema parser(sql, schema, message);
+  err = parser.parse(func);
+}
+
 
 
 

@@ -40,7 +40,8 @@ class ColumnList : public Reader {
         expect_token("list", 4, token_cmd);
         break;
       }
-      if(!token_typ && (found_token("columns", 7) || found_token("column", 6))) {   
+      if(!token_typ && (found_token("columns", 7) || found_token("column", 6) || 
+                        found_token("schemas", 7) || found_token("schema", 6))) {   
         token_typ = true;
         continue;
       }
@@ -77,9 +78,9 @@ class ColumnList : public Reader {
 
 /*
 use options:
-get|list column|columns name|ID;
-get|list column|columns [name|ID,name|ID];
-get|list column|columns "name|ID" "name|ID]";
+get|list column|columns|schema|schemas name|ID;
+get|list column|columns|schema|schemas [name|ID,name|ID];
+get|list column|columns|schema|schemas "name|ID" "name|ID]";
 */
 
 }}} // SWC::client:SQL namespace

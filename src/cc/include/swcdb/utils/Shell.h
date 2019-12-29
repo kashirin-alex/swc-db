@@ -231,13 +231,22 @@ class DbClient : public Interface {
   public:
   DbClient() 
     : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
-                "/tmp/.swc-cli-dbclient-history") {
+                "/tmp/.swc-cli-dbclient-history") {    
+    
+    options.push_back(
+      new Option(
+        "add column", 
+        "add column|schema (schema definitions [name=value ]);",
+        [ptr=this](std::string& cmd){return ptr->add_column(cmd);}, 
+        new re2::RE2("(?i)^(add|create)\\s+((column(|s))|(schema|s))(.*|$)")
+      )
+    ); 
     options.push_back(
       new Option(
         "list columns", 
         "list|get column|s [NAME|ID,..];",
         [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
-        new re2::RE2("(?i)^(get|list)\\s+(column(|s))(.*|$)")
+        new re2::RE2("(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
       )
     );    
     options.push_back(
@@ -255,13 +264,45 @@ class DbClient : public Interface {
         std::make_shared<client::AppContext>()
       )
     );
+
   }
 
   const bool error(int err, const std::string& message) {
-    std::cout << "\033[31mERROR\033[00m: " << message;
+    std::cout << "\033[31mERROR\033[00m: " << message << std::flush;
     return true;
   }
 
+  const bool add_column(std::string& cmd) {
+    int err = Error::OK;
+    std::string message;
+    DB::Schema::Ptr schema;
+    client::SQL::parse_column_schema(
+      err, cmd, client::SQL::ColumnSchema::Func::CREATE, schema, message);
+    if(err)
+      return error(err, message);
+
+    std::promise<int> res;
+    Protocol::Mngr::Req::ColumnMng::create(
+      schema,
+      [await=&res]
+      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int err) {
+        /*if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
+          req->request_again();
+          return;
+        }*/
+        await->set_value(err);
+      },
+      300000
+    );
+    
+    if(err = res.get_future().get()) {
+      message.append(Error::get_text(err));
+      message.append("\n");
+      return error(err, message);
+    }
+    return true;
+  }
+  
   const bool list_columns(std::string& cmd) {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> schemas;  
