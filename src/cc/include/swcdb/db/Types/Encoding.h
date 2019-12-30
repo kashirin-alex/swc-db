@@ -33,23 +33,31 @@ const std::string to_string(Encoding typ) {
   }
 }
 
+const Encoding encoding_from(std::string typ) {
+
+  if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
+     typ.compare("1") == 0)
+    return Encoding::PLAIN;
+
+  if(strncasecmp(typ.data(), "ZLIB", typ.length()) == 0 ||
+     typ.compare("2") == 0)
+    return Encoding::ZLIB;
+
+  if(strncasecmp(typ.data(), "SNAPPY", typ.length()) == 0 ||
+     typ.compare("3") == 0)
+    return Encoding::SNAPPY;
+  
+  return Encoding::DEFAULT;
+}
+
 const std::string repr_encoding(int typ) {
   return to_string((Encoding)typ);
 }
 
 const int from_string_encoding(std::string typ) {
-  std::transform(typ.begin(), typ.end(), typ.begin(), 
-        [](unsigned char c){ return std::toupper(c); }
-  );
-
-  if(typ.compare("ZLIB") == 0)
-    return (int)Encoding::ZLIB;
-
-  if(typ.compare("SNAPPY") == 0)
-    return (int)Encoding::SNAPPY;
-  
-  return (int)Encoding::PLAIN;
+  return (int)encoding_from(typ);
 }
+
 
 }}
 
