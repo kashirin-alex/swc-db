@@ -20,6 +20,28 @@ class Schemas  {
 
   virtual ~Schemas(){ }
   
+  void remove(int64_t cid){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_track.find(cid);
+    if(it == m_track.end()) 
+      return; 
+    m_track.erase(it);
+    m_schemas->remove(cid);
+  }
+
+  void remove(const std::string &name){
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto schema = m_schemas->get(name);
+    if(schema == nullptr)
+      return;
+    auto it = m_track.find(schema->cid);
+    if(it != m_track.end()) 
+      m_track.erase(it);
+    m_schemas->remove(schema->cid);
+  }
+
   DB::Schema::Ptr get(int& err, int64_t cid){
     std::lock_guard<std::mutex> lock(m_mutex);
 
