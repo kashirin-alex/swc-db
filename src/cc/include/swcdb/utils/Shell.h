@@ -373,17 +373,19 @@ class DbClient : public Interface {
   }
 
   void display(Protocol::Common::Req::Query::Select::Result::Ptr result,
-               bool display_time) const {
+               uint8_t display_flags, 
+               size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
     int err = Error::OK;
     for(auto col : result->columns) {
       schema = Env::Clients::get()->schemas->get(err, col.first);
       for(auto cell : col.second->cells) {
+        cells_count++;
+        cells_bytes += cell->encoded_length();
         cell->display(
           std::cout, 
-          true,
           err ? Types::Column::PLAIN: schema->col_type,
-          display_time
+          display_flags
         );
         std::cout << "\n";  
       }
@@ -391,23 +393,66 @@ class DbClient : public Interface {
   }
 
   const bool select(std::string& cmd) {
+    int64_t ts = Time::now_ns();
     int err = Error::OK;
+    uint8_t display_flags = 0;
+    size_t cells_count = 0;
+    size_t cells_bytes = 0;
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
-      [this](Protocol::Common::Req::Query::Select::Result::Ptr result) {
-        display(result, true); // display_time
+      [this, &display_flags, &cells_count, &cells_bytes]
+      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+        display(result, display_flags, cells_count, cells_bytes);
       }
     );
     std::string message;
-    client::SQL::parse_select(err, cmd, req->specs, message);
+    client::SQL::parse_select(err, cmd, req->specs, display_flags, message);
     if(err) 
       return error(err, message);
 
-    // if display_specs
-    std::cout << req->specs.to_string() << "\n\n";
+    if(display_flags & DB::DisplayFlag::SPECS)
+      std::cout << req->specs.to_string() << "\n\n";
+
     req->scan();
     req->wait();
 
-    // time-took ?with
+    if(display_flags & DB::DisplayFlag::STATS) {
+      std::cout << "\n\nStatistics:\n";
+
+      ts = Time::now_ns() - ts;
+      double took = ts;
+      char time_base = 'n';
+      if(ts > 100000 && ts < 10000000) { 
+        took /= 1000;
+        time_base = 'u';
+      } else if(ts < 10000000000) { 
+        took /= 1000000;
+        time_base = 'm';
+      } else  if(ts > 10000000000) {
+        took /= 1000000000;
+        time_base = 0;
+      }
+
+      double bytes = cells_bytes;
+      char byte_base = 0;
+      if(cells_bytes > 1000000 && cells_bytes < 1000000000) {
+        bytes /= 1000;
+        byte_base = 'K';
+      } else if (cells_bytes > 1000000000) {
+        bytes /= 1000000;
+        byte_base = 'M';
+      }
+        
+      std::cout << " Total Time Took:   " << took << time_base  << "s\n"
+                << " Total Cells count: " << cells_count        << "\n"
+                << " Total Cells size:  " << bytes << byte_base << "B\n"
+                << " Average size:      " << bytes/took 
+                << byte_base << "B/" << time_base << "s\n" 
+                << " Average cells:     " << (cells_count?cells_count/took:0)
+                << "/" << time_base << "s\n"
+                
+                ;
+    }
+
     return true;
   }
 };

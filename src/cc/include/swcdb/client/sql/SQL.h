@@ -24,9 +24,11 @@ namespace SWC { namespace client { namespace SQL {
 
 
 void parse_select(int& err, const std::string& sql, 
-                  DB::Specs::Scan& specs, std::string& message) {
+                  DB::Specs::Scan& specs, 
+                  uint8_t& display_flags, std::string& message) {
   QuerySelect parser(sql, specs, message);
   err = parser.parse_select();
+  parser.parse_display_flags(display_flags);
 }
 
 

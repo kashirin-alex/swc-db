@@ -14,7 +14,17 @@
 #include "swcdb/db/Cells/CellKey.h"
 
 
-namespace SWC { namespace DB { namespace Cells {
+namespace SWC { namespace DB { 
+
+enum DisplayFlag {
+  TIMESTAMP     = 0x01,
+  DATETIME      = 0x04,
+  BINARY        = 0x08,
+  SPECS         = 0x10,
+  STATS         = 0x20
+};
+
+namespace Cells {
 
 enum Flag {
   NONE                      = 0x0, // empty instance
@@ -369,13 +379,17 @@ class Cell final {
     return s;
   }
 
-  void display(std::ostream& out, bool pretty=false, 
-               Types::Column typ = Types::Column::PLAIN, 
-               bool wtime=false) const {
-    if(wtime) 
+  void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN, 
+               uint8_t flags=0) const {
+
+    if(flags & DisplayFlag::DATETIME) 
       out << Time::fmt_ns(timestamp) << "  ";
-      
-    key.display(out, pretty);
+
+    if(flags & DisplayFlag::TIMESTAMP) 
+      out << timestamp << "  ";
+    
+    bool bin = flags & DisplayFlag::BINARY;
+    key.display(out, !bin);
     out << "  ";
 
     if(flag != Flag::INSERT) {
@@ -396,7 +410,7 @@ class Cell final {
       char hex[2];
 
       for(uint32_t i=vlen; i--; ptr++) {
-        if(pretty && (*ptr < 32 || *ptr > 126)) {
+        if(!bin && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;
         } else

@@ -96,6 +96,36 @@ class QuerySelect : public Reader {
     return err;
   }
 
+  void parse_display_flags(uint8_t& display_flags) {
+
+    bool any = true;
+    while(any && remain && !err) {
+      if(found_space())
+        continue;    
+
+      if(any = found_token("DISPLAY_TIMESTAMP", 17)) {
+        display_flags |= DB::DisplayFlag::TIMESTAMP;
+        continue;
+      }
+      if(any = found_token("DISPLAY_DATETIME", 16)) {
+        display_flags |= DB::DisplayFlag::DATETIME;
+        continue;
+      }
+      if(any = found_token("DISPLAY_BINARY", 14)) {
+        display_flags |= DB::DisplayFlag::BINARY;
+        continue;
+      }
+      if(any = found_token("DISPLAY_SPECS", 13)) {
+        display_flags |= DB::DisplayFlag::SPECS;
+        continue;
+      }
+      if(any = found_token("DISPLAY_STATS", 13)) {
+        display_flags |= DB::DisplayFlag::STATS;
+        continue;
+      }
+    }
+  }
+
   ~QuerySelect() {}
 
   private:
@@ -364,8 +394,12 @@ class QuerySelect : public Reader {
         possible_and = true; 
         continue;
       }
+      
+      if(*ptr == ')') 
+        break;
       ptr++;
       remain--;
+
     }
 
     if(!found_any) {        
