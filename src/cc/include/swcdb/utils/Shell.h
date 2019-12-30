@@ -237,8 +237,36 @@ class DbClient : public Interface {
       new Option(
         "add column", 
         "add column|schema (schema definitions [name=value ]);",
-        [ptr=this](std::string& cmd){return ptr->add_column(cmd);}, 
-        new re2::RE2("(?i)^(add|create)\\s+((column(|s))|(schema|s))(.*|$)")
+        [ptr=this](std::string& cmd){
+          return ptr->mng_column(
+            Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
+        }, 
+        new re2::RE2(
+          "(?i)^(add|create)\\s+(column|schema)(.*|$)")
+      )
+    ); 
+    options.push_back(
+      new Option(
+        "modify column", 
+        "modify column|schema (schema definitions [name=value ]);",
+        [ptr=this](std::string& cmd){
+          return ptr->mng_column(
+            Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
+        }, 
+        new re2::RE2(
+          "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)")
+      )
+    ); 
+    options.push_back(
+      new Option(
+        "delete column", 
+        "delete column|schema (schema definitions [name=value ]);",
+        [ptr=this](std::string& cmd){
+          return ptr->mng_column(
+            Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
+        }, 
+        new re2::RE2(
+          "(?i)^(delete|remove)\\s+(column|schema)(.*|$)")
       )
     ); 
     options.push_back(
@@ -246,7 +274,8 @@ class DbClient : public Interface {
         "list columns", 
         "list|get column|s [NAME|ID,..];",
         [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
-        new re2::RE2("(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
+        new re2::RE2(
+          "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
       )
     );    
     options.push_back(
@@ -254,7 +283,8 @@ class DbClient : public Interface {
         "select", 
         "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];",
         [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
-        new re2::RE2("(?i)^(select)(\\s+|$)")
+        new re2::RE2(
+          "(?i)^(select)(\\s+|$)")
       )
     );
   
@@ -272,21 +302,22 @@ class DbClient : public Interface {
     return true;
   }
 
-  const bool add_column(std::string& cmd) {
-    int err = Error::OK;
+  const bool mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+                        std::string& cmd) {
     std::string message;
     DB::Schema::Ptr schema;
-    client::SQL::parse_column_schema(
-      err, cmd, client::SQL::ColumnSchema::Func::CREATE, schema, message);
+    int err = Error::OK;
+    client::SQL::parse_column_schema(err, cmd, func, schema, message);
     if(err)
       return error(err, message);
 
     std::promise<int> res;
-    Protocol::Mngr::Req::ColumnMng::create(
+    Protocol::Mngr::Req::ColumnMng::request(
+      func,
       schema,
       [await=&res]
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int err) {
-        /*if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
+        /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           req->request_again();
           return;
         }*/
@@ -300,6 +331,10 @@ class DbClient : public Interface {
       message.append("\n");
       return error(err, message);
     }
+    if(schema->cid != DB::Schema::NO_CID)
+      Env::Clients::get()->schemas->remove(schema->cid);
+    else
+      Env::Clients::get()->schemas->remove(schema->col_name);
     return true;
   }
   

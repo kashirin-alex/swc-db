@@ -37,7 +37,7 @@ void parse_list_columns(int& err, const std::string& sql,
 }
 
 void parse_column_schema(int& err, const std::string& sql, 
-                        ColumnSchema::Func func,
+                        Protocol::Mngr::Req::ColumnMng::Func func,
                         DB::Schema::Ptr& schema, std::string& message) {
   ColumnSchema parser(sql, schema, message);
   err = parser.parse(func);

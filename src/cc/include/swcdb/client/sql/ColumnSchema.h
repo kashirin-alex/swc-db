@@ -13,11 +13,8 @@ namespace SWC { namespace client { namespace SQL {
 class ColumnSchema : public Reader {
 
   public:
-  enum Func {
-    CREATE,
-    MODIFY,
-    DELETE
-  };
+  
+  using Func = Protocol::Mngr::Req::ColumnMng::Func;
 
   ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
               std::string& message)
@@ -35,9 +32,13 @@ class ColumnSchema : public Reader {
         continue;
 
       if(!token_cmd && 
-         (func == CREATE && (found_token("add", 3)    || found_token("create", 6))) || 
-         (func == MODIFY && (found_token("modify", 6) || found_token("update", 6))) || 
-         (func == DELETE && (found_token("delete", 6) || found_token("remove", 6)))
+         (func == Func::CREATE && (found_token("add", 3)    || 
+                                   found_token("create", 6))) || 
+         (func == Func::MODIFY && (found_token("modify", 6) || 
+                                   found_token("update", 6) || 
+                                   found_token("change", 6))) || 
+         (func == Func::DELETE && (found_token("delete", 6) || 
+                                   found_token("remove", 6)))
         ) {   
         token_cmd = true;
         continue;
@@ -219,11 +220,22 @@ class ColumnSchema : public Reader {
       break;
     }
 
-    if(col_name.empty() && func == CREATE ) {
-      error_msg(Error::COLUMN_SCHEMA_NAME_EMPTY, "create action require column name");
+    if(col_name.empty()) {
+      error_msg(
+        Error::COLUMN_SCHEMA_NAME_EMPTY, 
+        "create|delete|modify action require column name"
+      );
       return;
     }
-
+    if((func == Func::MODIFY) && 
+        !col_name.empty() && cid == DB::Schema::NO_CID ) {
+      error_msg(
+        Error::COLUMN_SCHEMA_NAME_EMPTY, 
+        "modify action require column cid"
+      );
+      return;
+    }
+    
     if(cid == DB::Schema::NO_CID)
       schema = DB::Schema::make(
         col_name, col_type,
