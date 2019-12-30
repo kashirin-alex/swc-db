@@ -238,10 +238,19 @@ class Reader {
   }
 
 
+  void read_uint8_t(uint8_t& value, bool& was_set) {
+    int64_t v;
+    read_int64_t(v, was_set);
+    if (v > UINT8_MAX || v < INT8_MIN)
+      error_msg(Error::SQL_PARSE_ERROR, " unsigned 8-bit integer out of range");
+    else
+      value = (uint8_t)v;
+  }
+
   void read_uint32_t(uint32_t& value, bool& was_set) {
     int64_t v;
     read_int64_t(v, was_set);
-    if (v > INT32_MAX || v < INT32_MIN)
+    if (v > UINT32_MAX || v < INT32_MIN)
       error_msg(Error::SQL_PARSE_ERROR, " unsigned 32-bit integer out of range");
     else
       value = (uint32_t)v;
@@ -249,7 +258,7 @@ class Reader {
 
   void read_int64_t(int64_t& value, bool& was_set) {
     std::string buf;
-    read(buf);
+    read(buf, "),]");
     if(err) 
       return;
     try {
@@ -300,7 +309,8 @@ class Reader {
     message.append(sql);
     message.append("\n");
     message.insert(message.length(), at, ' ');
-    message.append("^");
+    message.append("^ at=");
+    message.append(std::to_string(at));
     message.append("\n");
     message.insert(message.end(), at, ' ');
     message.append(msg);

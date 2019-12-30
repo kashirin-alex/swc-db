@@ -80,12 +80,13 @@ class ColumnSchema : public Reader {
 
     int64_t cid = DB::Schema::NO_CID;
 	  std::string   col_name;
+
     // defaults
-    uint32_t col_type=(uint8_t)Types::Column::PLAIN;
+    Types::Column col_type=Types::Column::PLAIN;
     uint32_t cell_versions=1;
     uint32_t cell_ttl=0;
     uint8_t blk_replication=0;
-    uint32_t blk_encoding=(uint8_t)Types::Encoding::DEFAULT;
+    Types::Encoding blk_encoding=Types::Encoding::DEFAULT;
     uint32_t blk_size=0;
     uint32_t blk_cells=0;
     uint32_t cs_size=0;
@@ -93,7 +94,8 @@ class ColumnSchema : public Reader {
     uint8_t compact_percent=0;
     int64_t revision=0;
 
-    const char* stop = ", ";
+    const char* stop = ", )";
+	  std::string buff;
 
     while(any && remain && !err) {
       if(found_space())
@@ -106,20 +108,29 @@ class ColumnSchema : public Reader {
         read_int64_t(cid, was_set);
         continue;
       }
+
       if(any = found_token("name", 4)) {
         expect_eq();
         if(err)
           return;
+        col_name.clear();
         read(col_name, stop);
         continue;
       }
+
       if(any = found_token("type", 4)) {
         expect_eq();
         if(err)
           return;
-        read_uint32_t(col_type, was_set);
+        read(buff, stop);
+        if((col_type = Types::column_from(buff)) == Types::Column::UNKNOWN) {
+          error_msg(Error::SQL_PARSE_ERROR, " unknown column type");
+          return;
+        }
+        buff.clear();
         continue;
       }
+
       if(any = found_token("revision", 8)) {
         expect_eq();
         if(err)
@@ -127,6 +138,84 @@ class ColumnSchema : public Reader {
         read_int64_t(revision, was_set);
         continue;
       }
+
+      if(any = found_token("cell_versions", 13)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint32_t(cell_versions, was_set);
+        continue;
+      }
+
+      if(any = found_token("cell_ttl", 8)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint32_t(cell_ttl, was_set);
+        continue;
+      }
+
+      if(any = found_token("blk_replication", 15)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint8_t(blk_replication, was_set);
+        continue;
+      }
+
+      if(any = found_token("blk_encoding", 12)) {
+        expect_eq();
+        if(err)
+          return;
+        read(buff, stop);
+        if((blk_encoding = Types::encoding_from(buff)) == Types::Encoding::DEFAULT) {
+          error_msg(Error::SQL_PARSE_ERROR, " unknown blk_encoding");
+          return;
+        }
+        buff.clear();
+        continue;
+      }
+
+      if(any = found_token("blk_size", 8)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint32_t(blk_size, was_set);
+        continue;
+      }
+
+      if(any = found_token("blk_cells", 9)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint32_t(blk_cells, was_set);
+        continue;
+      }
+
+      if(any = found_token("cs_size", 7)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint32_t(cs_size, was_set);
+        continue;
+      }
+
+      if(any = found_token("cs_max", 6)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint8_t(cs_max, was_set);
+        continue;
+      }
+
+      if(any = found_token("compact", 7)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint8_t(compact_percent, was_set);
+        continue;
+      }
+
       break;
     }
 
@@ -137,18 +226,18 @@ class ColumnSchema : public Reader {
 
     if(cid == DB::Schema::NO_CID)
       schema = DB::Schema::make(
-        col_name, (Types::Column)col_type,
+        col_name, col_type,
         cell_versions, cell_ttl,
-        blk_replication, (Types::Encoding)blk_encoding, blk_size, blk_cells,
+        blk_replication, blk_encoding, blk_size, blk_cells,
         cs_size, cs_max, compact_percent, 
         revision
       );
     else
       schema = DB::Schema::make(
         cid,
-        col_name, (Types::Column)col_type,
+        col_name, col_type,
         cell_versions, cell_ttl,
-        blk_replication, (Types::Encoding)blk_encoding, blk_size, blk_cells,
+        blk_replication, blk_encoding, blk_size, blk_cells,
         cs_size, cs_max, compact_percent, 
         revision
       );

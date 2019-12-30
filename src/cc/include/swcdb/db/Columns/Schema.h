@@ -199,19 +199,16 @@ class Schema final {
       << " revision=" << std::to_string(revision)
       << " compact=" << std::to_string(compact_percent)
       
-      << " cell(versions=" << std::to_string(cell_versions)
-          << " ttl=" << std::to_string(cell_ttl)
-          << ")"
+      << " cell_versions=" << std::to_string(cell_versions)
+      << " cell_ttl=" << std::to_string(cell_ttl)
       
-      << " blk(replicas=" << std::to_string(blk_replication)
-          << " enc=" << Types::to_string(blk_encoding)
-          << " sz=" << std::to_string(blk_size)
-          << " cells=" << std::to_string(blk_cells)
-          << ")"
+      << " blk_replication=" << std::to_string(blk_replication)
+      << " blk_encoding=" << Types::to_string(blk_encoding)
+      << " blk_size=" << std::to_string(blk_size)
+      << " blk_cells=" << std::to_string(blk_cells)
       
-      << " cs(sz=" << std::to_string(cs_size)
-         << " max=" << std::to_string(cs_max)
-          << ")"
+      << " cs_size=" << std::to_string(cs_size)
+      << " cs_max=" << std::to_string(cs_max)
     ;
   }
 
