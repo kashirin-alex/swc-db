@@ -38,11 +38,12 @@ namespace Mngr {
     COLUMN_MNG           = 0x03,
     COLUMN_UPDATE        = 0x04,
     COLUMN_GET           = 0x05,
-    RGR_MNG_ID           = 0x06,
-    RGR_UPDATE           = 0x07,
-    RGR_GET              = 0x08,
-    DO_ECHO              = 0x09,
-    MAX_CMD              = 0x0A
+    COLUMN_LIST          = 0x06, 
+    RGR_MNG_ID           = 0x07,
+    RGR_UPDATE           = 0x08,
+    RGR_GET              = 0x09,
+    DO_ECHO              = 0x0A,
+    MAX_CMD              = 0x0B
   };
 
 }
