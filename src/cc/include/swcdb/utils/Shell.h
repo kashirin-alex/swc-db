@@ -445,15 +445,15 @@ class DbClient : public Interface {
         byte_base = 'M';
       }
         
-      std::cout << " Total Time Took:   " << took << time_base  << "s\n"
-                << " Total Cells count: " << cells_count        << "\n"
-                << " Total Cells size:  " << bytes << byte_base << "B\n"
-                << " Average size:      " << bytes/took 
-                << byte_base << "B/" << time_base << "s\n" 
-                << " Average cells:     " << (cells_count?cells_count/took:0)
-                << "/" << time_base << "s\n"
-                
-                ;
+      std::cout 
+        << " Total Time Took:        " << took << " " << time_base  << "s\n"
+        << " Total Cells Count:      " << cells_count                << "\n"
+        << " Total Cells Size:       " << bytes << " " << byte_base << "B\n"
+        << " Average Transfer Rate:  " << bytes/took 
+                           << " " << byte_base << "B/" << time_base << "s\n" 
+        << " Average Cells Rate:     " << (cells_count?cells_count/took:0)
+                                           << " cell/" << time_base << "s\n"
+        ;
     }
 
     return true;
