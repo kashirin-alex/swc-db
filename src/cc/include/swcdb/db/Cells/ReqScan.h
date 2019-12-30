@@ -62,7 +62,8 @@ class ReqScan  : public ResponseCallback {
   }
   
   const bool expired() const {
-    return m_ev != nullptr && m_ev->expired();
+    return (m_ev != nullptr && m_ev->expired()) || 
+           (m_conn != nullptr && !m_conn->is_open()) ;
   }
 
   const std::string to_string() const {
