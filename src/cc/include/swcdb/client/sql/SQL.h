@@ -11,6 +11,7 @@
 #include "swcdb/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
 #include "swcdb/db/Protocol/Common/req/Query.h"
 
 #include "swcdb/client/sql/Reader.h"

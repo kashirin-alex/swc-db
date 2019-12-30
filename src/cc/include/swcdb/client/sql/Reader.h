@@ -149,18 +149,6 @@ class Reader {
     }
     error_msg(Error::SQL_PARSE_ERROR, "missing '"+std::string(token)+"'");
   }
-  void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop) {
-    std::string col_name;
-    while(remain && !err) {
-      if(found_char(',') || found_char(' '))
-        continue;
-      read(col_name, stop);
-      if(col_name.empty())
-        break;
-      cols.push_back(get_schema(col_name));
-      col_name.clear();
-    }
-  }
 
   DB::Schema::Ptr get_schema(const std::string& col) {
     DB::Schema::Ptr schema = 0;

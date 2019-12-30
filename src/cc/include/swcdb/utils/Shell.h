@@ -346,6 +346,25 @@ class DbClient : public Interface {
     if(err) 
       return error(err, message);
 
+    if(schemas.empty()) { // get all schema
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&schemas, await=&res]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int err, 
+         Protocol::Mngr::Params::ColumnListRsp rsp) {
+          if(!err)
+            schemas = rsp.schemas;
+          await->set_value(err);
+        },
+        300000
+      );
+      if(err = res.get_future().get()) {
+        message.append(Error::get_text(err));
+        message.append("\n");
+        return error(err, message);
+      }
+    }
+
     for(auto& schema : schemas) {
       schema->display(std::cout);
       std::cout << std::endl;

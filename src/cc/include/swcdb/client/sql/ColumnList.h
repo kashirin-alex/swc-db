@@ -72,7 +72,21 @@ class ColumnList : public Reader {
   ~ColumnList() {}
 
   private:
-    std::vector<DB::Schema::Ptr>& schemas;
+  
+  void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop) {
+    std::string col_name;
+    while(remain && !err) {
+      if(found_char(',') || found_char(' '))
+        continue;
+      read(col_name, stop);
+      if(col_name.empty())
+        break;
+      cols.push_back(get_schema(col_name));
+      col_name.clear();
+    }
+  }
+  
+  std::vector<DB::Schema::Ptr>& schemas;
 };
 
 
