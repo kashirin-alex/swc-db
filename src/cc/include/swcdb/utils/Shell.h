@@ -409,11 +409,14 @@ class DbClient : public Interface {
     if(err) 
       return error(err, message);
 
-    if(display_flags & DB::DisplayFlag::SPECS)
-      std::cout << req->specs.to_string() << "\n\n";
 
     req->scan();
     req->wait();
+
+    if(display_flags & DB::DisplayFlag::SPECS) {
+      std::cout << "\n\n";
+      req->specs.display(std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+    }
 
     if(display_flags & DB::DisplayFlag::STATS) {
       std::cout << "\n\nStatistics:\n";

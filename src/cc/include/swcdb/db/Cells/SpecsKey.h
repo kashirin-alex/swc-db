@@ -279,6 +279,21 @@ class Key : public DB::Cell::Key {
     return s;
   }
 
+  void display(std::ostream& out) const {
+    out << "size=" << size << " count=" << count << " fractions=[";
+    uint32_t len;
+    const uint8_t* ptr = data;
+    for(uint32_t n=0; n<count;) {
+      out << Condition::to_string(*ptr++);
+      len = Serialization::decode_vi32(&ptr);
+      out << '"' << std::string((const char*)ptr, len) << '"';
+      ptr += len;
+      if(++n < count)
+        out << ", "; 
+    }
+    out << "]"; 
+  }
+
 };
 
 

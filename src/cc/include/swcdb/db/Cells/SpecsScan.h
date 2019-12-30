@@ -93,7 +93,7 @@ class Scan : public Serializable {
     flags.decode(bufp, remainp);
   }
   
-  const std::string to_string() {
+  const std::string to_string() {  
     std::string s("Scan(columns=[");
     for(auto& col : columns){
       s.append(col->to_string());
@@ -103,6 +103,20 @@ class Scan : public Serializable {
     s.append(flags.to_string());
     s.append(")");
     return s;
+  }
+  
+  void display(std::ostream& out, bool pretty=false, 
+               std::string offset = "") const {
+    out << offset << "SpecsScan(\n"
+        << offset << " columns=[\n"; 
+    for(auto& col : columns)
+      col->display(out, pretty, "  ");
+    out << offset << " ]\n";
+    
+    out << offset << " Flags(";
+    flags.display(out);
+    out << ")\n"; 
+    out << offset << ")\n"; 
   }
 
   Columns   columns;

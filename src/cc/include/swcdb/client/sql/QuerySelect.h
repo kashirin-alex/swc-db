@@ -825,7 +825,64 @@ select where
       limit=1
       offset=0
     )
+    
+    AND 
+    
+    cells=(
+        ["2 a", "start", "of", "range", "fractions"]
+      <= range <=
+        ["2 an", "end", "of", "range", "fractions"]
+      AND
+        [>="where",>="fractions", =^"start_with", >="this", >="", >="fractions", !="NOT_THIS", <="within"]
+      <= key <=
+        [<="where under and more", <="fractions incl.", =^"start_with", >="this", r"is it a \\re", >="fractions and above", <="UP TO 1000", <="within"]
+
+      AND
+        "2019/12/28 06:51:27.857347289"
+      <= timestamp <=
+        "1577508687857347289"
+      AND 
+      OFFSET_KEY=["an", "offset", "key", "fractions", "to", "start", "from", "the", "scan"]
+      AND 
+      OFFSET_REV="1577508700000000000"
+      AND 
+      value re "\"aRegExp\""
+      
+      KEYS_ONLY
+      RETURN_DELETES
+      limit=1
+      offset=0
+    )
+    
+    AND 
+    
+    cells=(
+        ["3 a", "start", "of", "range", "fractions"]
+      <= range <=
+        ["3 an", "end", "of", "range", "fractions"]
+      AND
+        [>="where",>="fractions", =^"start_with", >="this", >="", >="fractions", !="NOT_THIS", <="within"]
+      <= key <=
+        [<="where under and more", <="fractions incl.", =^"start_with", >="this", r"is it a \\re", >="fractions and above", <="UP TO 1000", <="within"]
+
+      AND
+        "2019/12/28 06:51:27.857347289"
+      <= timestamp <=
+        "1577508687857347289"
+      AND 
+      OFFSET_KEY=["an", "offset", "key", "fractions", "to", "start", "from", "the", "scan"]
+      AND 
+      OFFSET_REV="1577508700000000000"
+      AND 
+      value re "\"aRegExp\""
+      
+      KEYS_ONLY
+      RETURN_DELETES
+      limit=1
+      offset=0
+    )
   )
+  DISPLAY_TIMESTAMP DISPLAY_DATETIME DISPLAY_SPECS DISPLAY_STATS
 ;
 
 

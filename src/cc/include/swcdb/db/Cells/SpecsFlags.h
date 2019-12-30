@@ -88,11 +88,11 @@ class Flags {
     s.append("limit=");
     s.append(std::to_string(limit));
     s.append(" limit_by=");
-    s.append(std::to_string((uint8_t)limit_by));
+    s.append(std::to_string((int)limit_by));
     s.append(" offset=");
     s.append(std::to_string(offset));
     s.append(" offset_by=");
-    s.append(std::to_string((uint8_t)offset_by));
+    s.append(std::to_string((int)offset_by));
 
     s.append(" max_versions=");
     s.append(std::to_string(max_versions));
@@ -105,6 +105,17 @@ class Flags {
     s.append(was_set? "TRUE" : "FALSE");
     
     return s;
+  } 
+  
+  
+  void display(std::ostream& out) const {
+    out << "limit=" << limit  << " limit_by=" << (int)limit_by  
+        << " offset=" << offset  << " offset_by=" << (int)offset_by
+        << " max_versions=" << max_versions 
+        << " return_deletes=" << return_deletes 
+        << " keys_only=" << keys_only
+        << " was_set=" << (was_set? "TRUE" : "FALSE")
+        ; 
   }
 
   uint32_t 	limit, offset, max_versions;

@@ -133,6 +133,17 @@ class Column : public Serializable {
     s.append("])");
     return s;
   }
+
+  void display(std::ostream& out, bool pretty=false, 
+               std::string offset = "") const {
+    out << offset << "Column(\n"
+        << offset << " cid=" << cid << " size=" << intervals.size() << "\n"
+        << offset << " intervals=[\n"; 
+    for(auto& intval : intervals)
+      intval->display(out, pretty, offset+"  ");
+    out << offset << " ]\n"
+        << offset << ")\n"; 
+  }
   
   int64_t    cid;
   Intervals  intervals;

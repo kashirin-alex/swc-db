@@ -121,8 +121,8 @@ std::string apply_value(int b, int i) {
 }
 
 void test_1(const std::string& col_name) {
-  int num_cells = 100000; // test require at least 12
-  int batches = 1000;
+  int num_cells = 1000000; // test require at least 12
+  int batches = 100;
   int64_t took;
 
   // Req::Query::Update

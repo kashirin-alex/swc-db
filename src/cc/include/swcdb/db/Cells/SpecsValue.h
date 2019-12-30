@@ -148,6 +148,11 @@ class Value {
     return s;
   }
 
+  void display(std::ostream& out, bool pretty=false) const {
+    out << "size=" << size << " " << Condition::to_string(comp)
+        << '"' << std::string((const char*)data, size) << '"'; 
+  }
+
   bool            own;
   uint8_t*        data;
   uint32_t        size;    

@@ -258,21 +258,71 @@ class Interval {
     s.append(key_finish.to_string());
     s.append(" ");
 
-    s.append(value.to_string());
-
     s.append(" Start");
     s.append(ts_start.to_string());
     s.append(" Finish");
     s.append(ts_finish.to_string());
-    s.append(" ");
-
-    s.append(flags.to_string());
 
     s.append(" Offset");
     s.append(offset_key.to_string());
     s.append(" OffsetRev=");
     s.append(std::to_string(offset_rev));
+
+    s.append(value.to_string());
+
+    s.append(" ");
+    s.append(flags.to_string());
+
     return s;
+  }
+
+  void display(std::ostream& out, bool pretty=false, 
+               std::string offset = "") const {
+    out << offset << "Interval(\n"; 
+
+    out << offset << " Range(\n"
+        << offset << "   begin(";
+    range_begin.display_details(out);
+    out << ")\n"
+        << offset << "     end(";
+    range_end.display_details(out);
+    out << ")\n"
+        << offset << " )\n";
+
+    out << offset << " Key(\n"
+        << offset << "   start(";
+    key_start.display(out);
+    out << ")\n"
+        << offset << "  finish(";
+    key_finish.display(out);
+    out << ")\n"
+        << offset << " )\n";
+
+    out << offset << " Timestamp(\n"
+        << offset << "   start(";
+    ts_start.display(out);
+    out << ")\n"
+        << offset << "  finish(";
+    ts_finish.display(out);
+    out << ")\n"
+        << offset << " )\n";
+
+    out << offset << " Offset(\n"
+        << offset << "     key(";
+    offset_key.display_details(out);
+    out << ")\n"
+        << offset << "     rev(" << offset_rev << " )\n"
+        << offset << " )\n";
+
+    out << offset << " Value(";
+    value.display(out);
+    out << ")\n"; 
+
+    out << offset << " Flags(";
+    flags.display(out);
+    out << ")\n"; 
+
+    out << offset << ")\n"; 
   }
 
   Cell::Key  range_begin, range_end;

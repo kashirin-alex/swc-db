@@ -84,6 +84,10 @@ class Timestamp {
     return s;
   }
 
+  void display(std::ostream& out) const {
+    out << Condition::to_string(comp) << " \"" << value << "\"";
+  }
+
   int64_t          value; 
   Condition::Comp  comp;
   bool             was_set;

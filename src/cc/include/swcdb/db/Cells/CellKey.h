@@ -395,6 +395,27 @@ class Key {
     
   }
 
+  void display_details(std::ostream& out, bool pretty=false) const {
+    out << "size=" << size << " count=" << count << " fractions=[";
+    uint32_t len;
+    const uint8_t* ptr = data;
+    char hex[2];
+    for(uint32_t n=0; n<count; ) {
+      out << '"';
+      for(len = Serialization::decode_vi32(&ptr); len--;  ptr++) {
+        if(pretty && (*ptr < 32 || *ptr > 126)) {
+          sprintf(hex, "%X", *ptr);
+          out << "0x" << hex;
+        } else
+          out << *ptr; 
+      }
+      out << '"';
+      if(++n < count)
+        out << ", "; 
+    }
+    out << "]"; 
+  }
+
   bool      own;
   uint32_t  count;
   uint32_t  size;
