@@ -82,6 +82,17 @@ class Reader {
     return false;
   }
 
+  const bool found_comparator(Condition::Comp& comp) {
+    while(remain) {
+      if(found_space())
+        continue;
+      if((comp = Condition::from(&ptr, &remain)) != Condition::NONE)
+        return true;
+      break;
+    }
+    return false;
+  }
+
 
   void expect_eq() {
     bool eq = false;
@@ -96,13 +107,8 @@ class Reader {
   }
   
   void expect_comparator(Condition::Comp& comp) {
-    while(remain) {
-      if(found_space())
-        continue;
-      if((comp = Condition::from(&ptr, &remain)) != Condition::NONE)
-        return;
-      break;
-    }
+    if(found_comparator(comp) && comp != Condition::NONE)
+      return;
     error_msg(Error::SQL_PARSE_ERROR, "missing 'comparator'");
   }
 

@@ -530,8 +530,10 @@ class QuerySelect : public Reader {
     while(remain && !err) {
       if(found_space())
         continue;
-
-      expect_comparator(comp);
+      
+      found_comparator(comp);
+      if(comp == Condition::NONE)
+        comp = Condition::EQ;
       read(fraction, ",]");
       key.add(fraction, comp);
       fraction.clear();
@@ -742,7 +744,7 @@ select where
       <= range <=
         ["an", "end", "of", "range", "fractions"]
       AND
-      key = [="where",="fractions", ="equal", ="to"]
+      key = ["where","fractions", "equal", "to"]
       AND
         "2019/12/28 06:51:27.857347289"
       <= timestamp <=
