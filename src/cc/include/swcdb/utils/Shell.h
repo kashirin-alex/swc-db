@@ -129,15 +129,15 @@ class Interface {
   struct Option final {
     typedef std::function<bool(std::string&)> Call_t;
 
-    Option(const std::string& name, const std::string& desc, 
+    Option(const std::string& name, const std::vector<std::string>& desc, 
             const Call_t& call, const re2::RE2* re) 
           : name(name), desc(desc), call(call), re(re) { }
     ~Option() {
       if(re)
         delete re;
     }
-    const std::string name;
-    const std::string desc;
+    const std::string              name;
+    const std::vector<std::string> desc;
     const Call_t      call;
     const re2::RE2*   re;
   };
@@ -145,13 +145,13 @@ class Interface {
   std::vector<Option*> options {
     new Option(
       "quit", 
-      "Quit or Exit the Console", 
+      {"Quit or Exit the Console"}, 
       [ptr=this](std::string& cmd){return ptr->quit(cmd);}, 
       new re2::RE2("(?i)^(quit|exit)(\\s+|$)")
     ),
     new Option(
       "help", 
-      "Commands help information", 
+      {"Commands help information"}, 
       [ptr=this](std::string& cmd){return ptr->help(cmd);}, 
       new re2::RE2("(?i)^(help)(\\s+|$)")
     )
@@ -168,16 +168,27 @@ class Interface {
     for(auto opt : options) {
       if(offset_name < opt->name.length())
         offset_name = opt->name.length();
-      if(offset_desc < opt->desc.length())
-        offset_desc = opt->desc.length();
+      for(const auto& desc : opt->desc) {
+        if(offset_desc < desc.length())
+          offset_desc = desc.length();
+      }
     }
     offset_name += 4;
     offset_desc += 4;
-    for(auto opt : options)
+    bool first;
+    for(auto opt : options) {
       std::cout << std::left << std::setw(2) << " "
-                << std::left << std::setw(offset_name) << opt->name
-                << std::left << std::setw(offset_desc) << opt->desc
-                << std::endl;
+                << std::left << std::setw(offset_name) << opt->name;
+      first = true;
+      for(const auto& desc : opt->desc) {
+        if(!first)
+          std::cout << std::left << std::setw(2) << " "
+                    << std::left << std::setw(offset_name) << " ";
+        std::cout << std::setw(offset_desc) << desc << std::endl;
+        first = false;
+      }
+        
+    }
     return true;
   }
 
@@ -236,7 +247,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "add column", 
-        "add column|schema (schema definitions [name=value ]);",
+        {"add column|schema (schema definitions [name=value ]);"},
         [ptr=this](std::string& cmd){
           return ptr->mng_column(
             Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
@@ -248,7 +259,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "modify column", 
-        "modify column|schema (schema definitions [name=value ]);",
+        {"modify column|schema (schema definitions [name=value ]);"},
         [ptr=this](std::string& cmd){
           return ptr->mng_column(
             Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
@@ -260,7 +271,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "delete column", 
-        "delete column|schema (schema definitions [name=value ]);",
+        {"delete column|schema (schema definitions [name=value ]);"},
         [ptr=this](std::string& cmd){
           return ptr->mng_column(
             Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
@@ -272,7 +283,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "list columns", 
-        "list|get column|s [NAME|ID,..];",
+        {"list|get column|s [NAME|ID,..];"},
         [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
         new re2::RE2(
           "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
@@ -281,12 +292,36 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "select", 
-        "select [where_clause "
-        "[ Columns-Intervals [ Cells-Intervals [ Cells-Interval [Flags] ] ] ]"
-        " ] [Flags] [Display Flags];",
+        {"select where [Columns[Cells[Interval Flags]]] Flags Display-Flags;",
+        "-> select where COL(NAME|ID,) = ( cells=(Interval Flags) ) AND",
+        "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
+        "       [F-begin] <= range <= [F-end]                   AND", 
+        "       [COMP 'F-start'] <=  key  <= [COMP 'F-finish']  AND", 
+        "       'TS-begin' <= timestamp <= 'TS-finish'          AND", 
+        "       offset_key = [F] offset_rev='TS'                AND", 
+        "       value COMP 'DATA'                                  ",
+        "       LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )",
+        "     ) DISPLAY_* TIMESTAMP / DATETIME / SPECS / STATS / BINARY;"},
         [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
         new re2::RE2(
           "(?i)^(select)(\\s+|$)")
+      )
+    ); 
+    options.push_back(
+      new Option(
+        "update", 
+        {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE), CELL(..)      ;",
+        "-> update ",
+        "     cell(DELETE,                  CID, ['K','E','Y']             );",
+        "     cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );",
+        "     cell(DELETE_FRACTION,         CID, ['K','E','Y']             );",
+        "     cell(DELETE_FRACTION_VERSION, CID, ['K','E'],     TS         );",
+        "     cell(INSERT,                  CID, ['K','E','Y'], TS, 'DATA' ),",
+        "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' );"
+        },
+        [ptr=this](std::string& cmd){return ptr->update(cmd);}, 
+        new re2::RE2(
+          "(?i)^(update)(\\s+|$)")
       )
     );
   
@@ -466,6 +501,10 @@ class DbClient : public Interface {
         ;
     }
 
+    return true;
+  }
+  const bool update(std::string& cmd) {
+    std::cout << "CMD=" << cmd << "\n";
     return true;
   }
 };
