@@ -50,11 +50,11 @@ class Flags {
     return options & ONLY_DELETES;
   }
 
-  void set_only_keys() const {
+  void set_only_keys() {
     options |= ONLY_KEYS;
   }
 
-  void set_only_deletes() const {
+  void set_only_deletes() {
     options |= ONLY_DELETES;
   }
 
@@ -100,9 +100,9 @@ class Flags {
     s.append(std::to_string(max_versions));
 
     s.append(" only_deletes=");
-    s.append(std::to_string(options & ONLY_DELETES));
+    s.append(std::to_string(is_only_deletes()));
     s.append(" only_keys=");
-    s.append(std::to_string(options & ONLY_KEYS));
+    s.append(std::to_string(is_only_keys()));
     s.append(" was_set=");
     s.append(was_set? "TRUE" : "FALSE");
     
@@ -113,8 +113,8 @@ class Flags {
   void display(std::ostream& out) const {
     out << "limit=" << limit  << " offset=" << offset  
         << " max_versions=" << max_versions 
-        << " only_deletes=" << (options & ONLY_DELETES) 
-        << " only_keys=" << (options & ONLY_KEYS)
+        << " only_deletes=" << is_only_deletes() 
+        << " only_keys=" << is_only_keys()
         << " was_set=" << (was_set? "TRUE" : "FALSE")
         ; 
   }

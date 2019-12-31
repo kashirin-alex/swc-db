@@ -379,19 +379,26 @@ class DbClient : public Interface {
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
     int err = Error::OK;
-    for(auto col : result->columns) {
-      schema = Env::Clients::get()->schemas->get(err, col.first);
-      for(auto cell : col.second->cells) {
-        cells_count++;
-        cells_bytes += cell->encoded_length();
-        cell->display(
-          std::cout, 
-          err ? Types::Column::PLAIN: schema->col_type,
-          display_flags
-        );
-        std::cout << "\n";  
+    DB::Cells::Vector vec; 
+    do {
+      for(auto cid : result->get_cids()) {
+        schema = Env::Clients::get()->schemas->get(err, cid);
+        vec.free();
+        result->get_cells(cid, vec);
+        for(auto& cell : vec.cells) {
+          cells_count++;
+          cells_bytes += cell->encoded_length();
+          cell->display(
+            std::cout, 
+            err ? Types::Column::PLAIN: schema->col_type,
+            display_flags
+          );
+          std::cout << "\n";  
+          delete cell;
+          cell = nullptr;
+        }
       }
-    }
+    } while(!vec.cells.empty());
   }
 
   const bool select(std::string& cmd) {
@@ -404,7 +411,8 @@ class DbClient : public Interface {
       [this, &display_flags, &cells_count, &cells_bytes]
       (Protocol::Common::Req::Query::Select::Result::Ptr result) {
         display(result, display_flags, cells_count, cells_bytes);
-      }
+      },
+      true // cb on partial rsp
     );
     std::string message;
     client::SQL::parse_select(err, cmd, req->specs, display_flags, message);

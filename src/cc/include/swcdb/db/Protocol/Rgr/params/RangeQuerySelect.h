@@ -91,8 +91,8 @@ class RangeQuerySelectRsp  : public Serializable {
 
   int32_t         err;
   bool            reached_limit;
-  
   StaticBuffer    data;
+  
   const std::string to_string() const {
     std::string s("RangeQuerySelectRsp(");
     s.append("err=");

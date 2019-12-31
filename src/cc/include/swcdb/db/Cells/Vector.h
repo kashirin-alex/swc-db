@@ -20,7 +20,9 @@ class Vector  {
     return std::make_shared<Vector>(cap);
   }
 
-  Vector(const uint32_t cap=0) : cells(std::vector<Cell*>(cap)) {}
+  Vector(const uint32_t cap=0) 
+        : cells(std::vector<Cell*>(cap)) {
+  }
 
   virtual ~Vector() {
     free();
@@ -28,18 +30,28 @@ class Vector  {
 
   void free() {
     for(auto & cell : cells)
-      delete cell;
+      if(cell)
+        delete cell;
     cells.clear();
+  }
+
+  void add(Vector& other) {
+    for(auto cell : other.cells)
+      cells.push_back(cell);
   }
 
   void add(const Cell& cell) {
     cells.push_back(new Cell(cell));
   }  
   
-  void add(const uint8_t* ptr, size_t remain) {
+  const size_t add(const uint8_t* ptr, size_t remain) {
+    size_t count = 0;
     Cell* cell;
-    while(remain)
+    while(remain) {
       cells.push_back(new Cell(&ptr, &remain, true));
+      count++;
+    }
+    return count;
   }
 
   std::vector<Cell*>  cells;

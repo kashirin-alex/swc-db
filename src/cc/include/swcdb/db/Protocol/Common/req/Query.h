@@ -20,10 +20,84 @@ namespace Result{
 struct Select final {
   typedef std::shared_ptr<Select> Ptr;
 
-  std::atomic<uint32_t> completion = 0;
-  int err = Error::OK;
+  std::atomic<uint32_t>  completion = 0;
+  std::atomic<int>       err = Error::OK;
 
-  std::unordered_map<int64_t, DB::Cells::Vector::Ptr> columns;
+  struct Rsp final {
+    public:
+    typedef std::shared_ptr<Rsp> Ptr;
+
+    const bool add_cells(const StaticBuffer& buffer, bool more, 
+                         DB::Specs::Interval& interval) {
+      std::scoped_lock lock(m_mutex);
+      m_counted += m_vec.add(buffer.base, buffer.size);
+
+      if(more && (more = !interval.flags.limit  || 
+                          m_counted < interval.flags.limit)) {
+        auto last = m_vec.cells.back();
+        interval.flags.offset = 0;
+        interval.offset_key.copy(last->key);
+        interval.offset_rev = last->revision;
+      }
+      return more;
+    }  
+    
+    void get_cells(DB::Cells::Vector& vec) {
+      std::scoped_lock lock(m_mutex);
+      vec.add(m_vec);
+      m_vec.cells.clear();
+    }
+
+    const size_t get_size() {
+      std::scoped_lock lock(m_mutex);
+      return m_counted;
+    }
+
+    void free() {
+      std::scoped_lock lock(m_mutex);
+      m_vec.free();
+    }
+  
+    private:
+    std::mutex         m_mutex;
+    DB::Cells::Vector  m_vec;
+    size_t             m_counted = 0;
+  };
+
+  void add_column(const int64_t cid) {
+    m_columns.insert(std::make_pair(cid, std::make_shared<Rsp>()));
+  }
+  
+  const bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
+                       bool more, DB::Specs::Interval& interval) {
+    return m_columns[cid]->add_cells(buffer, more, interval);
+  }
+
+  void get_cells(const int64_t cid, DB::Cells::Vector& cells) {
+    return m_columns[cid]->get_cells(cells);
+  }
+
+  const size_t get_size(const int64_t cid) {
+    return m_columns[cid]->get_size();
+  }
+
+  const std::vector<int64_t> get_cids() const {
+    std::vector<int64_t> list;
+    for(const auto& col : m_columns)
+      list.push_back(col.first);
+    return list;
+  }
+
+  const void free(const int64_t cid) {
+    m_columns[cid]->free();
+  }
+
+  void remove(const int64_t cid) {
+    m_columns.erase(cid);
+  }
+  
+  private:
+  std::unordered_map<int64_t, Rsp::Ptr> m_columns;
 
 };
 }
@@ -44,14 +118,21 @@ class Select : public std::enable_shared_from_this<Select> {
   uint32_t timeout_select   = 600000;
 
   std::mutex                  m_mutex;
+  bool                        rsp_partials;
+  bool                        rsp_partial_runs = false;
   std::condition_variable     cv;
 
-  Select(Cb_t cb=0)
-        : cb(cb), result(std::make_shared<Result>()) { }
+  Select(Cb_t cb=0, bool rsp_partials=false)
+        : cb(cb), 
+          result(std::make_shared<Result>()), 
+          rsp_partials(cb && rsp_partials) { 
+  }
 
-  Select(const DB::Specs::Scan& specs, Cb_t cb=0)
+  Select(const DB::Specs::Scan& specs, Cb_t cb=0, bool rsp_partials=false)
         : cb(cb), specs(specs), 
-          result(std::make_shared<Result>()) { }
+          result(std::make_shared<Result>()), 
+          rsp_partials(cb && rsp_partials) {
+  }
 
   virtual ~Select(){ }
  
@@ -62,17 +143,37 @@ class Select : public std::enable_shared_from_this<Select> {
     cv.notify_all();
   }
 
+  void response_partial() {
+    if(!rsp_partials)
+      return;
+    {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      if(rsp_partial_runs)
+        return;
+      rsp_partial_runs = true;
+    }
+    
+    cb(result);
+
+    {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      rsp_partial_runs = false;
+    }
+  }
+
   void wait() {
-    std::unique_lock<std::mutex> lock_wait(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     cv.wait(
-      lock_wait, 
-      [ptr=shared_from_this()](){return ptr->result->completion==0;}
+      lock, 
+      [ptr=shared_from_this()] () {
+        return ptr->result->completion == 0 && !ptr->rsp_partial_runs;
+      }
     );  
   }
 
   void scan() {
     for(auto &col : specs.columns)
-      result->columns.insert(std::make_pair(col->cid, DB::Cells::Vector::make()));
+      result->add_column(col->cid);
     
     for(auto &col : specs.columns){
       //std::cout << "Select::scan, " << col->to_string() << "\n";
@@ -372,40 +473,39 @@ class Select : public std::enable_shared_from_this<Select> {
             }
             return;
           }
-          auto col = ptr->selector->result->columns[ptr->cells_cid]; 
-          
-          if(rsp.data.size)
-            col->add(rsp.data.base, rsp.data.size);
 
-          if(!ptr->interval->flags.limit
-            || col->cells.size() < ptr->interval->flags.limit) {
+          bool more = true;
+          
+          if(rsp.data.size) {
+            more = ptr->selector->result->add_cells(
+              ptr->cells_cid, 
+              rsp.data, rsp.reached_limit, *ptr->interval.get()
+            );
+          }
+
+          if(more) {
             if(rsp.reached_limit) {
               auto qreq = std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req_ptr);
-              auto last = col->cells.back();
-              //std::cout << "LAST cell, " << last->to_string() << "\n";
-              ptr->interval->flags.offset = 0;
-              ptr->interval->offset_key.copy(last->key);
-              ptr->interval->offset_rev = last->revision;
               ptr->select(qreq->endpoints, rid, base_req);
-              --ptr->selector->result->completion;
-              return;
-            }
-            if(!ptr->next_calls->empty()) {
+
+            } else if(!ptr->next_calls->empty()) {
               ptr->interval->offset_key.free();
               ptr->interval->offset_rev = 0;
               auto it = ptr->next_calls->begin();
               auto call = *it;
               ptr->next_calls->erase(it);
               call();
-              --ptr->selector->result->completion;
-              return;
             }
           }
 
-          ptr->selector->result->err=rsp.err;
-          if(!--ptr->selector->result->completion) {
+          ptr->selector->result->err = rsp.err;
+          
+          if(rsp.data.size)
+            ptr->selector->response_partial();
+
+          if(!--ptr->selector->result->completion)
             ptr->selector->response();
-          }
+
         },
         selector->timeout_select
       );
