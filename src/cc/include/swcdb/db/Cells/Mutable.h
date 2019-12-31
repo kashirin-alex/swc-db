@@ -171,9 +171,9 @@ class Mutable final {
       (*(m_cells+m_size-1))->key) == Condition::EQ;
   }
 
-  void push_back(const Cell& cell) {
+  void push_back(const Cell& cell, bool no_value=false) {
     ensure(1);    
-    *(m_cells + m_size) = new Cell(cell);
+    *(m_cells + m_size) = new Cell(cell, no_value);
     //new(*(m_cells + m_size) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     m_size++;
     m_size_bytes += cell.encoded_length();
@@ -187,15 +187,15 @@ class Mutable final {
     m_size_bytes += cell->encoded_length();
   }
   
-  void insert(uint32_t offset, const Cell& cell) {
+  void insert(uint32_t offset, const Cell& cell, bool no_value=false) {
     _move_fwd(offset, 1);
-    *(m_cells + offset) = new Cell(cell);
+    *(m_cells + offset) = new Cell(cell, no_value);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     m_size++;
     m_size_bytes += cell.encoded_length();
   }
 
-  void add(const Cell& e_cell) {
+  void add(const Cell& e_cell, bool no_value=false) {
     if(e_cell.has_expired(m_ttl))
       return;
 
@@ -228,7 +228,7 @@ class Mutable final {
       if(cond == Condition::LT){
         if(removing || updating)
           return;
-        insert(offset, e_cell);
+        insert(offset, e_cell, no_value);
         return;
       }
 
@@ -264,7 +264,7 @@ class Mutable final {
             
           if(!updating && e_cell.on_fraction) {
             updating = true;
-            insert(offset++, e_cell);
+            insert(offset++, e_cell, no_value);
             continue;
           }
           if(cell->on_fraction) {
@@ -285,7 +285,7 @@ class Mutable final {
             continue;
           } 
           if(op2 == OP::EQUAL) {
-            insert(offset++, e_cell);
+            insert(offset++, e_cell, no_value);
             v1 = 0;
           }
 
@@ -315,7 +315,7 @@ class Mutable final {
 
         default: { // PLAIN
           if(revision_exist == revision_new) {
-            cell->copy(e_cell);
+            cell->copy(e_cell, no_value);
             return;
           }
           ++revs;
@@ -327,9 +327,9 @@ class Mutable final {
             continue;
           }
           if(m_max_revs == revs) {
-            cell->copy(e_cell);
+            cell->copy(e_cell, no_value);
           } else {
-            insert(offset, e_cell);
+            insert(offset, e_cell, no_value);
             _remove_overhead(++offset, e_cell.key, revs);
           }
           return;
@@ -339,7 +339,7 @@ class Mutable final {
     
     if(removing || updating)
       return;
-    push_back(e_cell);
+    push_back(e_cell, no_value);
   }
 
   void pop(int32_t idx, Cell& cell) {
@@ -374,6 +374,9 @@ class Mutable final {
 
     uint32_t offset = 0; //(narrower over specs.key_start)
     bool stop = false;
+    bool only_deletes = specs.flags.is_only_deletes();
+    bool only_keys = specs.flags.is_only_keys();
+
     for(; !stop && offset < m_size; offset++){
       cell = *(m_cells + offset);
 
@@ -385,8 +388,8 @@ class Mutable final {
         exit(1);
       }
       
-      if(cell->has_expired(m_ttl) || cell->on_fraction 
-        || (cell->flag != INSERT && !specs.flags.return_deletes)) {
+      if(cell->has_expired(m_ttl) || cell->on_fraction || 
+         (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ) {
         skips++;
         continue;
       }
@@ -398,7 +401,7 @@ class Mutable final {
           skips++;  
           continue;
         }
-        cells.add(*cell);
+        cells.add(*cell, only_keys);
         if(reached_limits())
           break;
       } else 
@@ -411,11 +414,13 @@ class Mutable final {
     Cell* cell;
     uint32_t offset = 0; //specs.flags.offset;(narrower over specs.key_start)
     uint cell_offset = specs.flags.offset;
+    bool only_deletes = specs.flags.is_only_deletes();
+
     for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || cell->on_fraction 
-        || (cell->flag != INSERT && !specs.flags.return_deletes))
+      if(cell->has_expired(m_ttl) || cell->on_fraction ||
+         (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) )
         continue;
 
       if(specs.is_matching(*cell, m_type)) {

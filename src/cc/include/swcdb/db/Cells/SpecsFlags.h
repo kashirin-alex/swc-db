@@ -12,31 +12,29 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-enum LimitType{
-  KEY,
-};
-
 
 class Flags {
   public:
 
-  explicit Flags(): limit(0), offset(0), max_versions(0), 
-                    limit_by(LimitType::KEY), offset_by(LimitType::KEY),
-                    return_deletes(false), keys_only(false), was_set(false) {}
+  static const uint8_t NONE           = 0x00;
+  static const uint8_t LIMIT_BY_KEYS  = 0x01;
+  static const uint8_t OFFSET_BY_KEYS = 0x04;
+  static const uint8_t ONLY_KEYS      = 0x08;
+  static const uint8_t ONLY_DELETES   = 0x10;
 
-  explicit Flags(const Flags &other){
+  explicit Flags(): limit(0), offset(0), max_versions(0), 
+                    options(0), was_set(false) {
+  }
+
+  explicit Flags(const Flags &other) {
     copy(other);
   }
 
-  void copy(const Flags &other){
-    //std::cout << " copy(const Flags &other)\n";
+  void copy(const Flags &other) {
     limit           = other.limit;
     offset          = other.offset;
     max_versions    = other.max_versions;
-    limit_by        = other.limit_by;
-    offset_by       = other.offset_by;
-    return_deletes  = other.return_deletes;
-    keys_only       = other.keys_only;
+    options         = other.options;
     was_set         = other.was_set;
   }
 
@@ -44,42 +42,50 @@ class Flags {
     //std::cout << " ~Flags\n";
   }
 
+  const bool is_only_keys() const {
+    return options & ONLY_KEYS;
+  }
+
+  const bool is_only_deletes() const {
+    return options & ONLY_DELETES;
+  }
+
+  void set_only_keys() const {
+    options |= ONLY_KEYS;
+  }
+
+  void set_only_deletes() const {
+    options |= ONLY_DELETES;
+  }
+
   const bool equal(const Flags &other) const {
     return  limit == other.limit && 
             offset == other.offset  && 
             max_versions == other.max_versions  && 
-            limit_by == other.limit_by  && 
-            offset_by == other.offset_by  && 
-            return_deletes == other.return_deletes  && 
-            keys_only == other.keys_only && 
+            options == other.options  && 
             was_set == other.was_set 
             ;
   }
 
   const size_t encoded_length() const {
-    return 4+Serialization::encoded_length_vi32(limit)
-            +Serialization::encoded_length_vi32(offset)
-            +Serialization::encoded_length_vi32(max_versions);
+    return Serialization::encoded_length_vi32(limit)
+          +Serialization::encoded_length_vi32(offset)
+          +Serialization::encoded_length_vi32(max_versions)
+          +1;
   }
 
   void encode(uint8_t **bufp) const {
-    Serialization::encode_i8(bufp, (uint8_t)limit_by);
     Serialization::encode_vi32(bufp, limit);
-    Serialization::encode_i8(bufp, (uint8_t)offset_by);
     Serialization::encode_vi32(bufp, offset);
     Serialization::encode_vi32(bufp, max_versions);
-    Serialization::encode_bool(bufp, return_deletes);
-    Serialization::encode_bool(bufp, keys_only);
+    Serialization::encode_i8(bufp, options);
   }
   
   void decode(const uint8_t **bufp, size_t *remainp){
-    limit_by = (LimitType)Serialization::decode_i8(bufp, remainp);
     limit = Serialization::decode_vi32(bufp, remainp);
-    offset_by = (LimitType)Serialization::decode_i8(bufp, remainp);
     offset = Serialization::decode_vi32(bufp, remainp);
     max_versions = Serialization::decode_vi32(bufp, remainp);
-    return_deletes = Serialization::decode_bool(bufp, remainp);
-    keys_only = Serialization::decode_bool(bufp, remainp);
+    options = Serialization::decode_i8(bufp, remainp);
   }
   
   const std::string to_string() const {
@@ -87,40 +93,35 @@ class Flags {
     
     s.append("limit=");
     s.append(std::to_string(limit));
-    s.append(" limit_by=");
-    s.append(std::to_string((int)limit_by));
     s.append(" offset=");
     s.append(std::to_string(offset));
-    s.append(" offset_by=");
-    s.append(std::to_string((int)offset_by));
 
     s.append(" max_versions=");
     s.append(std::to_string(max_versions));
 
-    s.append(" return_deletes=");
-    s.append(std::to_string(return_deletes));
-    s.append(" keys_only=");
-    s.append(std::to_string(keys_only));
+    s.append(" only_deletes=");
+    s.append(std::to_string(options & ONLY_DELETES));
+    s.append(" only_keys=");
+    s.append(std::to_string(options & ONLY_KEYS));
     s.append(" was_set=");
     s.append(was_set? "TRUE" : "FALSE");
     
     return s;
-  } 
+  }
   
   
   void display(std::ostream& out) const {
-    out << "limit=" << limit  << " limit_by=" << (int)limit_by  
-        << " offset=" << offset  << " offset_by=" << (int)offset_by
+    out << "limit=" << limit  << " offset=" << offset  
         << " max_versions=" << max_versions 
-        << " return_deletes=" << return_deletes 
-        << " keys_only=" << keys_only
+        << " only_deletes=" << (options & ONLY_DELETES) 
+        << " only_keys=" << (options & ONLY_KEYS)
         << " was_set=" << (was_set? "TRUE" : "FALSE")
         ; 
   }
 
   uint32_t 	limit, offset, max_versions;
-  LimitType limit_by, offset_by;
-  bool 	 	  return_deletes, keys_only, was_set;
+  uint8_t 	options;
+  bool      was_set;
 
 };
 

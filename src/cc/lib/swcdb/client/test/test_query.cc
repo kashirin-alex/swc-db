@@ -51,7 +51,7 @@ void expect_empty_column(int64_t cid) {
   auto spec = SWC::DB::Specs::Interval::make_ptr();
   spec->flags.offset=0;
   spec->flags.limit=1;
-  // spec->flags.return_deletes = true;
+  // spec->flags.options |= flags.DELETES;
   select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {spec})};
   select_req->scan();
   select_req->wait();

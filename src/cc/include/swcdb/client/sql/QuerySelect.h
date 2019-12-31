@@ -45,10 +45,10 @@ namespace {
   static const uint8_t  LEN_LIMIT_BY = 8;
   static const char*    TOKEN_OFFSET_BY = "offset_by";
   static const uint8_t  LEN_OFFSET_BY = 9;
-  static const char*    TOKEN_RETURN_DELETES = "return_deletes";
-  static const uint8_t  LEN_RETURN_DELETES = 14;
-  static const char*    TOKEN_KEYS_ONLY = "keys_only";
-  static const uint8_t  LEN_KEYS_ONLY = 9;
+  static const char*    TOKEN_ONLY_DELETES = "only_deletes";
+  static const uint8_t  LEN_ONLY_DELETES = 12;
+  static const char*    TOKEN_ONLY_KEYS = "only_keys";
+  static const uint8_t  LEN_ONLY_KEYS = 9;
 
 }
 
@@ -355,7 +355,8 @@ class QuerySelect : public Reader {
         continue;
       }
 
-      if(found_token(TOKEN_KEY, LEN_KEY)) {
+      if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) && 
+          found_token(TOKEN_KEY, LEN_KEY)) {
         read_key(spec.key_start, spec.key_finish, flw_and);
         possible_and = true;
         continue;
@@ -715,12 +716,14 @@ class QuerySelect : public Reader {
         continue;
       }
 
-      if(any = found_token(TOKEN_RETURN_DELETES, LEN_RETURN_DELETES)) {
-        flags.return_deletes = flags.was_set = true;
+      if(any = found_token(TOKEN_ONLY_DELETES, LEN_ONLY_DELETES)) {
+        flags.set_only_deletes();
+        flags.was_set = true;
         continue;
       }
-      if(any = found_token(TOKEN_KEYS_ONLY, LEN_KEYS_ONLY)) {
-        flags.keys_only = flags.was_set = true;
+      if(any = found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS)) { 
+        flags.set_only_keys();
+        flags.was_set = true;
         continue;
       }
       // + LimitType limit_by, offset_by;
@@ -762,8 +765,8 @@ select where
       AND 
       value re "\"aRegExp\""
       
-      KEYS_ONLY
-      RETURN_DELETES
+      ONLY_KEYS
+      ONLY_DELETES
       limit=1
       offset=0
     )
@@ -790,8 +793,8 @@ select where
       AND 
       value re "\"aRegExp\""
       
-      KEYS_ONLY
-      RETURN_DELETES
+      ONLY_KEYS
+      ONLY_DELETES
       limit=1
       offset=0
     )
@@ -820,8 +823,8 @@ select where
       AND 
       value re "\"aRegExp\""
       
-      KEYS_ONLY
-      RETURN_DELETES
+      ONLY_KEYS
+      ONLY_DELETES
       limit=1
       offset=0
     )
@@ -848,8 +851,8 @@ select where
       AND 
       value re "\"aRegExp\""
       
-      KEYS_ONLY
-      RETURN_DELETES
+      ONLY_KEYS
+      ONLY_DELETES
       limit=1
       offset=0
     )
@@ -876,8 +879,8 @@ select where
       AND 
       value re "\"aRegExp\""
       
-      KEYS_ONLY
-      RETURN_DELETES
+      ONLY_KEYS
+      ONLY_DELETES
       limit=1
       offset=0
     )

@@ -122,15 +122,16 @@ class Cell final {
                     value(0), vlen(0), own(false) { }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
-                : on_fraction(0), timestamp(0), revision(0), value(0) { 
+                : on_fraction(0), timestamp(0), revision(0), 
+                  value(0), vlen(0) { 
     read(bufp, remainp, own);             
   }
 
-  explicit Cell(const Cell& other): value(0) {
-    copy(other);
+  explicit Cell(const Cell& other, bool no_value=false): value(0), vlen(0) {
+    copy(other, no_value);
   }
 
-  void copy(const Cell& other) {
+  void copy(const Cell& other, bool no_value=false) {
     free();
     own = true;
     flag        = other.flag;
@@ -139,7 +140,7 @@ class Cell final {
     on_fraction = other.on_fraction;
     timestamp   = other.timestamp;
     revision    = other.revision;
-    if(vlen = other.vlen) {
+    if(!no_value && (vlen = other.vlen)) {
       value = new uint8_t[vlen];
       memcpy(value, other.value, vlen);
     }

@@ -281,7 +281,9 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "select", 
-        "select [where_clause [Columns-Intervals or Cells-Intervals]] [Flags];",
+        "select [where_clause "
+        "[ Columns-Intervals [ Cells-Intervals [ Cells-Interval [Flags] ] ] ]"
+        " ] [Flags] [Display Flags];",
         [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
         new re2::RE2(
           "(?i)^(select)(\\s+|$)")

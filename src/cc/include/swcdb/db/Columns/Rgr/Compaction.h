@@ -112,7 +112,7 @@ class Compaction final {
     
     uint32_t allow_sz = (cs_size  / 100) * perc; 
     uint32_t allowed_sz_cs  = cs_size + allow_sz;
-    uint32_t log_sz = commitlog.size_bytes();
+    size_t log_sz = commitlog.size_bytes();
   
     bool do_compaction = range->compact_required()
       || log_sz >= allowed_sz_cs
