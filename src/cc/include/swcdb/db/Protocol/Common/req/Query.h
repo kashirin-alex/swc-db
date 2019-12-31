@@ -159,6 +159,7 @@ class Select : public std::enable_shared_from_this<Select> {
       std::unique_lock<std::mutex> lock(m_mutex);
       rsp_partial_runs = false;
     }
+    cv.notify_all();
   }
 
   void wait() {
