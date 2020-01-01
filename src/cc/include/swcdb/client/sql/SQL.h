@@ -18,6 +18,7 @@
 #include "swcdb/client/sql/ColumnSchema.h"
 #include "swcdb/client/sql/ColumnList.h"
 #include "swcdb/client/sql/QuerySelect.h"
+#include "swcdb/client/sql/QueryUpdate.h"
 
 
 namespace SWC { namespace client { namespace SQL {
@@ -31,6 +32,13 @@ void parse_select(int& err, const std::string& sql,
   parser.parse_display_flags(display_flags);
 }
 
+void parse_update(int& err, const std::string& sql, 
+                  DB::Cells::MapMutable& columns, 
+                  uint8_t& display_flags, std::string& message) {
+  QueryUpdate parser(sql, columns, message);
+  err = parser.parse_update();
+  parser.parse_display_flags(display_flags);
+}
 
 void parse_list_columns(int& err, const std::string& sql, 
                         std::vector<DB::Schema::Ptr>& schemas, 

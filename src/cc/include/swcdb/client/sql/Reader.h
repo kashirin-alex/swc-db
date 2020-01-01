@@ -105,6 +105,11 @@ class Reader {
       }
     }
   }
+
+  void expect_comma(bool& comma) {
+    while(remain && !err && found_space());
+    expect_token(",", 1, comma);
+  }
   
   void expect_comparator(Condition::Comp& comp) {
     if(found_comparator(comp) && comp != Condition::NONE)

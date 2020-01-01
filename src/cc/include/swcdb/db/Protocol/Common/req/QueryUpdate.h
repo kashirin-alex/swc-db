@@ -46,7 +46,7 @@ struct Update final {
   int err;
   std::atomic<uint32_t> completion = 0;
   
-  DB::Cells::MapMutable::Ptr  errored;
+  DB::Cells::MapMutable errored;
 };
 
 }
