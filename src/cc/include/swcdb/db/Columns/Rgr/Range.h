@@ -163,7 +163,7 @@ class Range : public DB::RangeBase {
     auto updater = RangerEnv::updater();
     uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
 
-    updater->columns_cells->create(cid_typ, 1, 0, Types::Column::PLAIN);
+    updater->columns->create(cid_typ, 1, 0, Types::Column::PLAIN);
 
     DB::Cells::Cell cell;
     cell.key.copy(m_interval.key_begin);
@@ -171,7 +171,7 @@ class Range : public DB::RangeBase {
 
     if(removal) {
       cell.flag = DB::Cells::DELETE;
-      updater->columns_cells->add(cid_typ, cell);
+      updater->columns->add(cid_typ, cell);
     } else {
 
       cell.flag = DB::Cells::INSERT;
@@ -185,14 +185,14 @@ class Range : public DB::RangeBase {
       uint8_t * ptr = cell.value;
       key_end.encode(&ptr);
       Serialization::encode_vi64(&ptr, rid);
-      updater->columns_cells->add(cid_typ, cell);
+      updater->columns->add(cid_typ, cell);
 
       if(del_old) {
         cell.free();
         cell.flag = DB::Cells::DELETE;
         cell.key.copy(m_old_key_begin);
         cell.key.insert(0, std::to_string(cfg->cid));
-        updater->columns_cells->add(cid_typ, cell);
+        updater->columns->add(cid_typ, cell);
         m_old_key_begin.free();
       }
     }

@@ -150,7 +150,7 @@ void test_1(const std::string& col_name) {
     exit(1);
   }
   std::cout << schema->to_string() << "\n";
-  update_req->columns_cells->create(schema);
+  update_req->columns->create(schema);
   
 
   Cells::Cell cell;
@@ -169,12 +169,12 @@ void test_1(const std::string& col_name) {
       std::string value = apply_value(b,i);
       cell.set_value(value);
 
-      update_req->columns_cells->add(schema->cid, cell);
+      update_req->columns->add(schema->cid, cell);
       added_count++;
     }
 
-    size_t bytes = update_req->columns_cells->size_bytes();
-    std::cout << update_req->columns_cells->to_string() << "\n";
+    size_t bytes = update_req->columns->size_bytes();
+    std::cout << update_req->columns->to_string() << "\n";
   
 
     update_req->timeout_commit = 10*num_cells;
@@ -337,27 +337,27 @@ void test_1(const std::string& col_name) {
     cell.key.free();
     for(uint8_t chr=97; chr<=122;chr++)
       cell.key.add(((char)chr)+cell_number);
-    update_req->columns_cells->add(schema->cid, cell);
+    update_req->columns->add(schema->cid, cell);
     //std::cout << " add: " << cell.to_string() << "\n";
   }
 
   
-  size_t bytes = update_req->columns_cells->size_bytes();
-  std::cout << update_req->columns_cells->to_string() << "\n";
+  size_t bytes = update_req->columns->size_bytes();
+  std::cout << update_req->columns->to_string() << "\n";
   
   took =  SWC::Time::now_ns();
   update_req->timeout_commit = 10*num_cells;
   update_req->commit();
   update_req->wait();
-  if(update_req->columns_cells->size_bytes() != 0) {
-    std::cerr << " ERROR, remain_bytes=" << update_req->columns_cells->size_bytes() << "\n";
+  if(update_req->columns->size_bytes() != 0) {
+    std::cerr << " ERROR, remain_bytes=" << update_req->columns->size_bytes() << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;
   std::cout << "UPDATE-DELETE-TOOK=" << took 
             << " cells=" << num_cells 
             << " bytes=" << bytes 
-            << " remain_bytes=" << update_req->columns_cells->size_bytes() 
+            << " remain_bytes=" << update_req->columns->size_bytes() 
             << " avg="<< took/num_cells << "\n";
   }
 

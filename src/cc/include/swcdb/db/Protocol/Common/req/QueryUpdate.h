@@ -61,7 +61,7 @@ class Update : public std::enable_shared_from_this<Update> {
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
   Cb_t                        cb;
-  DB::Cells::MapMutable::Ptr  columns_cells;
+  DB::Cells::MapMutable::Ptr  columns;
   Result::Ptr                 result;
 
   uint32_t buff_sz          = 8000000;
@@ -72,11 +72,11 @@ class Update : public std::enable_shared_from_this<Update> {
 
   Update(Cb_t cb=0)
         : cb(cb),
-          columns_cells(std::make_shared<DB::Cells::MapMutable>()),
+          columns(std::make_shared<DB::Cells::MapMutable>()),
           result(std::make_shared<Result>()) { }
 
-  Update(DB::Cells::MapMutable::Ptr columns_cells, Cb_t cb=0)
-        : cb(cb), columns_cells(columns_cells), 
+  Update(DB::Cells::MapMutable::Ptr columns, Cb_t cb=0)
+        : cb(cb), columns(columns), 
           result(std::make_shared<Result>()) { }
 
   virtual ~Update(){ }
@@ -98,12 +98,12 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void commit() {
     DB::Cells::ColCells::Ptr col;
-    for(size_t idx=0; (col=columns_cells->get_idx(idx)) != nullptr; idx++)
+    for(size_t idx=0; (col=columns->get_idx(idx)) != nullptr; idx++)
       commit(col);
   }
 
   void commit(const int64_t cid) { 
-    commit(columns_cells->get_col(cid));
+    commit(columns->get_col(cid));
   }
 
   void commit(DB::Cells::ColCells::Ptr col) {
