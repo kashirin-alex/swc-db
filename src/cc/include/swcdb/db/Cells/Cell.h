@@ -306,17 +306,16 @@ class Cell final {
   }
 
   const bool removal() const {
-    return flag > Flag::INSERT;
+    return flag > Flag::INSERT_FRACTION;
   }
   
   const bool is_removing(const int64_t& rev) const {
     return removal() && (
-      (get_revision() >= rev 
-        && (flag == DELETE || flag == DELETE_FRACTION ))
-       || // flag > 2
-      (get_revision() == rev 
-        && (flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ))
-    );
+      ((flag == DELETE || flag == DELETE_FRACTION) && get_revision() >= rev )
+      ||
+      ((flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ) && 
+        get_revision() == rev )
+      );
   }
 
   const int64_t get_revision() const {
@@ -332,7 +331,6 @@ class Cell final {
     return (flag == INSERT_FRACTION || 
             flag == DELETE_FRACTION || 
             flag == DELETE_FRACTION_VERSION) ? key.count : 0;
-
   }
 
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {

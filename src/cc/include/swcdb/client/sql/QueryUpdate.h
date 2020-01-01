@@ -20,9 +20,12 @@ namespace {
 class QueryUpdate : public Reader {
 
   public:
-  QueryUpdate(const std::string& sql, DB::Cells::MapMutable& columns, 
+  QueryUpdate(const std::string& sql, 
+              DB::Cells::MapMutable& columns, 
+              DB::Cells::MapMutable& columns_onfraction,
               std::string& message)
-              : Reader(sql, message), columns(columns) {
+              : Reader(sql, message), 
+                columns(columns), columns_onfraction(columns_onfraction) {
   }
 
   const int parse_update() {
@@ -95,8 +98,12 @@ class QueryUpdate : public Reader {
         expect_token(")", 1, bracket);
         if(err) 
           return;
-
-        columns.add(cid, cell);
+        if(cell.flag == DB::Cells::INSERT_FRACTION || 
+           cell.flag == DB::Cells::DELETE_FRACTION || 
+           cell.flag == DB::Cells::DELETE_FRACTION_VERSION)
+          columns_onfraction.add(cid, cell);
+        else 
+          columns.add(cid, cell);
       }
     }
   }
@@ -206,6 +213,7 @@ class QueryUpdate : public Reader {
   }
   
   DB::Cells::MapMutable& columns;
+  DB::Cells::MapMutable& columns_onfraction;
 };
 
 

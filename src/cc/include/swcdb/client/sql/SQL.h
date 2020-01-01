@@ -34,8 +34,9 @@ void parse_select(int& err, const std::string& sql,
 
 void parse_update(int& err, const std::string& sql, 
                   DB::Cells::MapMutable& columns, 
+                  DB::Cells::MapMutable& columns_onfraction, 
                   uint8_t& display_flags, std::string& message) {
-  QueryUpdate parser(sql, columns, message);
+  QueryUpdate parser(sql, columns, columns_onfraction, message);
   err = parser.parse_update();
   parser.parse_display_flags(display_flags);
 }

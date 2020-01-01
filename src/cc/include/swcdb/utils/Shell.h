@@ -476,19 +476,26 @@ class DbClient : public Interface {
     uint8_t display_flags = 0;
 
     auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
+    auto req_fraction = std::make_shared<Protocol::Common::Req::Query::Update>();
     int err = Error::OK;
     std::string message;
     client::SQL::parse_update(
-      err, cmd, *req->columns.get(), display_flags, message);
+      err, cmd, 
+      *req->columns.get(), *req_fraction->columns.get(), 
+      display_flags, message
+    );
     if(err) 
       return error(err, message);
     
-    size_t cells_count = req->columns->size();
-    size_t cells_bytes = req->columns->size_bytes();
+    size_t cells_count = req->columns->size() 
+                       + req_fraction->columns->size();
+    size_t cells_bytes = req->columns->size_bytes() 
+                       + req_fraction->columns->size_bytes();
 
     req->timeout_commit += 10*cells_count;
     req->commit();
     req->wait();
+
     // req->result->errored
     if(display_flags & DB::DisplayFlag::STATS) 
       display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
