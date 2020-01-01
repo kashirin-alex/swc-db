@@ -113,8 +113,10 @@ const std::string fmt_ns(int64_t ns) {
   time_t t_secs = (time_t)secs;
   char res[20];
   std::strftime(res, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
-  return std::string(res) 
-        + "." + std::to_string(ns - secs*1000000000);
+  std::string nanos = std::to_string(ns-secs*1000000000);
+  if(nanos.size() < 9)
+    nanos.insert(nanos.begin(), 9-nanos.size(), '0');
+  return std::string(res) + "." + nanos;
 }
 
 std::ostream &hires_now_ns(std::ostream &out) {
