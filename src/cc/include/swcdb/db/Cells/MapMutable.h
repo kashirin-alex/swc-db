@@ -202,6 +202,24 @@ class MapMutable {
       m_map.erase(it);
   }
 
+  const size_t size() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    size_t total = 0;
+    for(auto it = m_map.begin(); it != m_map.end(); ++it)
+      total += it->second->size();
+    return total;
+  }
+
+  const size_t size(const int64_t cid) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_map.find(cid);
+    if(it == m_map.end())
+      return (size_t)0;
+    return it->second->size();
+  }
+
   const size_t size_bytes() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
