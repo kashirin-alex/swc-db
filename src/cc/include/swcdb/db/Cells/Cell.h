@@ -29,15 +29,18 @@ namespace Cells {
 enum Flag {
   NONE                      = 0x0, // empty instance
   INSERT                    = 0x1,
-  DELETE                    = 0x2,
-  DELETE_VERSION            = 0x3,
-  DELETE_FRACTION           = 0x4,
-  DELETE_FRACTION_VERSION   = 0x5
+  INSERT_FRACTION           = 0x2,
+  DELETE                    = 0x3,
+  DELETE_VERSION            = 0x4,
+  DELETE_FRACTION           = 0x5,
+  DELETE_FRACTION_VERSION   = 0x6
 };
 const std::string to_string(Flag flag) {
   switch(flag){
     case Flag::INSERT:
       return std::string("INSERT");
+    case Flag::INSERT_FRACTION:
+      return std::string("INSERT_FRACTION");
     case Flag::DELETE:
       return std::string("DELETE");
     case Flag::DELETE_VERSION:
@@ -63,7 +66,6 @@ static const uint8_t HAVE_REVISION      =  0x80;
 static const uint8_t HAVE_TIMESTAMP     =  0x40;
 static const uint8_t AUTO_TIMESTAMP     =  0x20;
 static const uint8_t REV_IS_TS          =  0x10;
-static const uint8_t HAVE_ON_FRACTION   =  0x8;
 //static const uint8_t TYPE_DEFINED     =  0x2;
 static const uint8_t TS_DESC            =  0x1;
 
@@ -92,8 +94,6 @@ inline void get_key_fwd_to_cell_end(DB::Cell::Key& key,
   key.decode(&ptr, remainp);
   uint8_t control = *ptr++;
   *remainp-=1;
-  if(control & HAVE_ON_FRACTION)
-    Serialization::decode_vi32(&ptr, remainp);
 
   if(control & HAVE_TIMESTAMP) 
     Serialization::decode_vi64(&ptr, remainp);
@@ -118,11 +118,11 @@ class Cell final {
 
 
   explicit Cell():  flag(Flag::NONE), control(0), 
-                    on_fraction(0), timestamp(0), revision(0),
+                    timestamp(0), revision(0),
                     value(0), vlen(0), own(false) { }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
-                : on_fraction(0), timestamp(0), revision(0), 
+                : timestamp(0), revision(0), 
                   value(0), vlen(0) { 
     read(bufp, remainp, own);             
   }
@@ -132,18 +132,16 @@ class Cell final {
   }
 
   void copy(const Cell& other, bool no_value=false) {
-    free();
-    own = true;
+    if(no_value)
+      free();
+    else 
+      set_value(other.value, other.vlen, true);
+      
     flag        = other.flag;
     key.copy(other.key);
     control     = other.control;
-    on_fraction = other.on_fraction;
     timestamp   = other.timestamp;
     revision    = other.revision;
-    if(!no_value && (vlen = other.vlen)) {
-      value = new uint8_t[vlen];
-      memcpy(value, other.value, vlen);
-    }
   }
 
   ~Cell() {
@@ -157,17 +155,6 @@ class Cell final {
       delete [] value;
     vlen = 0;
     value = 0;
-  }
-
-  void set_flag(uint8_t nflag, uint32_t fraction = 0) {
-    flag = nflag;
-    if(fraction 
-        && (flag == INSERT 
-         || flag == DELETE_FRACTION 
-         || flag == DELETE_FRACTION_VERSION)) {
-      control |= HAVE_ON_FRACTION;
-      on_fraction = fraction;
-    }
   }
 
   void set_time_order_desc(bool desc) {
@@ -186,21 +173,29 @@ class Cell final {
   }
 
   // SET_VALUE
-  void set_value(uint8_t* v, uint32_t len) {
-    value = v;
+  void set_value(uint8_t* v, uint32_t len, bool cpy) {
+    free();
     vlen = len;
+    if(!cpy) {
+      value = v;
+      own = cpy;
+    } else if(vlen) {
+      value = new uint8_t[vlen];
+      memcpy(value, v, vlen);
+      own = cpy;
+    }
   }
 
-  void set_value(const char* v, uint32_t len) {
-    set_value((uint8_t *)v, len);
+  void set_value(const char* v, uint32_t len, bool cpy) {
+    set_value((uint8_t *)v, len, cpy);
   }
 
-  void set_value(const char* v){
-    set_value((uint8_t *)v, strlen(v));
+  void set_value(const char* v, bool cpy=false){
+    set_value((uint8_t *)v, strlen(v), cpy);
   }
 
-  void set_value(const std::string& v) {
-    set_value((uint8_t *)v.data(), v.length());
+  void set_value(const std::string& v, bool cpy=false) {
+    set_value((uint8_t *)v.data(), v.length(), cpy);
   }
 
   void set_value(OP op, int64_t v) {
@@ -246,9 +241,6 @@ class Cell final {
     key.decode(bufp, remainp, owner);
     control = Serialization::decode_i8(bufp, remainp);
 
-    if (control & HAVE_ON_FRACTION)
-      on_fraction = Serialization::decode_vi32(bufp, remainp);
-
     if (control & HAVE_TIMESTAMP)
       timestamp = Serialization::decode_i64(bufp, remainp);
     else if(control & AUTO_TIMESTAMP)
@@ -276,8 +268,6 @@ class Cell final {
 
   const uint32_t encoded_length() const {
     uint32_t len = 1+key.encoded_length()+1;
-    if(control & HAVE_ON_FRACTION)
-      len += Serialization::encoded_length_vi32(on_fraction);
     if(control & HAVE_TIMESTAMP)
       len += 8;
     if(control & HAVE_REVISION)
@@ -293,8 +283,6 @@ class Cell final {
     key.encode(&dst_buf.ptr);
 
     Serialization::encode_i8(&dst_buf.ptr, control);
-    if(control & HAVE_ON_FRACTION)
-      Serialization::encode_vi32(&dst_buf.ptr, on_fraction);
     if(control & HAVE_TIMESTAMP)
       Serialization::encode_i64(&dst_buf.ptr, timestamp);
     if(control & HAVE_REVISION)
@@ -310,7 +298,6 @@ class Cell final {
   const bool equal(Cell &other) const {
     return  flag == other.flag && 
             control == other.control &&
-            on_fraction == other.on_fraction && 
             timestamp == other.timestamp && 
             revision == other.revision && 
             vlen == other.vlen &&
@@ -326,7 +313,7 @@ class Cell final {
     return removal() && (
       (get_revision() >= rev 
         && (flag == DELETE || flag == DELETE_FRACTION ))
-       ||
+       || // flag > 2
       (get_revision() == rev 
         && (flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ))
     );
@@ -341,6 +328,13 @@ class Cell final {
     return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
   }
 
+  const uint32_t on_fraction() const {
+    return (flag == INSERT_FRACTION || 
+            flag == DELETE_FRACTION || 
+            flag == DELETE_FRACTION_VERSION) ? key.count : 0;
+
+  }
+
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
     std::string s("Cell(");
     s.append("flag=");
@@ -353,7 +347,7 @@ class Cell final {
     s.append(std::to_string(control));
     
     s.append(" on_fraction=");
-    s.append(std::to_string(on_fraction));
+    s.append(std::to_string((on_fraction())));
     
     s.append(" ts=");
     s.append(std::to_string(timestamp));
@@ -424,7 +418,6 @@ class Cell final {
   uint8_t         flag;
   DB::Cell::Key   key;
   uint8_t         control;
-  uint32_t        on_fraction;
   int64_t         timestamp;
   uint64_t        revision;
     

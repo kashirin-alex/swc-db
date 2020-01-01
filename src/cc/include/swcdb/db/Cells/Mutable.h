@@ -207,8 +207,9 @@ class Mutable final {
     uint32_t revs = 0;
     int64_t revision_exist;
     int64_t revision_new;
+    uint32_t on_fraction = e_cell.on_fraction();
     
-    for(uint32_t offset = _narrow(e_cell.key, e_cell.on_fraction);
+    for(uint32_t offset = _narrow(e_cell.key, on_fraction);
         offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
@@ -219,7 +220,7 @@ class Mutable final {
 
       cond = cell->key.compare(
         e_cell.key, 
-        (removing || updating) ?  e_cell.on_fraction : cell->on_fraction
+        (removing || updating) ?  on_fraction : cell->on_fraction()
       );
       
       if(cond == Condition::GT)
@@ -262,12 +263,12 @@ class Mutable final {
       switch(m_type) {
         case Types::Column::COUNTER_I64: {
             
-          if(!updating && e_cell.on_fraction) {
+          if(!updating && on_fraction) {
             updating = true;
             insert(offset++, e_cell, no_value);
             continue;
           }
-          if(cell->on_fraction) {
+          if(cell->on_fraction()) {
             if(!(cell_cpy.control & HAVE_REVISION) 
               || cell_cpy.get_revision() < revision_exist)
               cell_cpy.copy(*cell);
@@ -388,7 +389,7 @@ class Mutable final {
         exit(1);
       }
       
-      if(cell->has_expired(m_ttl) || cell->on_fraction || 
+      if(cell->has_expired(m_ttl) || cell->on_fraction() || 
          (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ) {
         skips++;
         continue;
@@ -419,7 +420,7 @@ class Mutable final {
     for(; offset < m_size; offset++){
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || cell->on_fraction ||
+      if(cell->has_expired(m_ttl) || cell->on_fraction() ||
          (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) )
         continue;
 

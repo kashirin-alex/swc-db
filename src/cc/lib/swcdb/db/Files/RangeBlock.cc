@@ -75,25 +75,25 @@ void Block::preload() {
 }
 
 const bool Block::add_logged(const DB::Cells::Cell& cell) {
+  uint32_t on_fraction = cell.on_fraction();
   {
     std::shared_lock lock(m_mutex);
       
     if(!m_interval.is_in_end(cell.key))
       return false;
 
-    if(!loaded())
-      return cell.on_fraction ? 
-        m_interval.key_end.compare(cell.key, cell.on_fraction) 
-        != Condition::GT : true;
+    if(!loaded()) 
+      return on_fraction ? 
+        m_interval.key_end.compare(cell.key, on_fraction) != Condition::GT 
+        : true;
   }
 
   std::scoped_lock lock(m_mutex);
   m_cells.add(cell);
 
-  if(cell.on_fraction)
+  if(on_fraction)
     // return added for fraction under current end
-    return m_interval.key_end.compare(
-      cell.key, cell.on_fraction) != Condition::GT;
+    return m_interval.key_end.compare(cell.key, on_fraction) != Condition::GT;
       
   if(!m_interval.is_in_begin(cell.key)) {
     m_interval.key_begin.copy(cell.key); 
