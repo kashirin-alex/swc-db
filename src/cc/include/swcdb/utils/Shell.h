@@ -311,7 +311,7 @@ class DbClient : public Interface {
       new Option(
         "update", 
         {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE), CELL(..)      ;",
-        "-> update ",
+        "-> UPDATE ",
         "     cell(DELETE,                  CID, ['K','E','Y']             );",
         "     cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );",
         "     cell(DELETE_FRACTION,         CID, ['K','E','Y']             );",
@@ -319,7 +319,9 @@ class DbClient : public Interface {
         "     cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, ''),",
         "     cell(INSERT,                  CID, ['K','E','Y'], DESC       ),",
         "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),",
-        "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );"
+        "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );",
+        " Flags: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
+        "        INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6"
         },
         [ptr=this](std::string& cmd){return ptr->update(cmd);}, 
         new re2::RE2(
@@ -327,6 +329,8 @@ class DbClient : public Interface {
       )
     );
   
+  
+
     Env::Clients::init(
       std::make_shared<client::Clients>(
         nullptr,

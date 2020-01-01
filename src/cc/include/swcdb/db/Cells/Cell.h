@@ -29,26 +29,18 @@ namespace Cells {
 enum Flag {
   NONE                      = 0x0, // empty instance
   INSERT                    = 0x1,
-  INSERT_FRACTION           = 0x2,
-  DELETE                    = 0x3,
-  DELETE_VERSION            = 0x4,
-  DELETE_FRACTION           = 0x5,
-  DELETE_FRACTION_VERSION   = 0x6
+  DELETE                    = 0x2,
+  DELETE_VERSION            = 0x3
 };
+
 const std::string to_string(Flag flag) {
   switch(flag){
     case Flag::INSERT:
       return std::string("INSERT");
-    case Flag::INSERT_FRACTION:
-      return std::string("INSERT_FRACTION");
     case Flag::DELETE:
       return std::string("DELETE");
     case Flag::DELETE_VERSION:
       return std::string("DELETE_VERSION");
-    case Flag::DELETE_FRACTION:
-      return std::string("DELETE_FRACTION");
-    case Flag::DELETE_FRACTION_VERSION:
-      return std::string("DELETE_FRACTION_VERSION");
     case Flag::NONE:
       return std::string("NONE");
     default:
@@ -306,15 +298,14 @@ class Cell final {
   }
 
   const bool removal() const {
-    return flag > Flag::INSERT_FRACTION;
+    return flag != Flag::INSERT;
   }
   
   const bool is_removing(const int64_t& rev) const {
     return removal() && (
-      ((flag == DELETE || flag == DELETE_FRACTION) && get_revision() >= rev )
+      (flag == DELETE  && get_revision() >= rev )
       ||
-      ((flag == DELETE_VERSION || flag == DELETE_FRACTION_VERSION ) && 
-        get_revision() == rev )
+      (flag == DELETE_VERSION && get_revision() == rev )
       );
   }
 
@@ -327,12 +318,6 @@ class Cell final {
     return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
   }
 
-  const uint32_t on_fraction() const {
-    return (flag == INSERT_FRACTION || 
-            flag == DELETE_FRACTION || 
-            flag == DELETE_FRACTION_VERSION) ? key.count : 0;
-  }
-
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
     std::string s("Cell(");
     s.append("flag=");
@@ -343,9 +328,6 @@ class Cell final {
 
     s.append(" control=");
     s.append(std::to_string(control));
-    
-    s.append(" on_fraction=");
-    s.append(std::to_string((on_fraction())));
     
     s.append(" ts=");
     s.append(std::to_string(timestamp));

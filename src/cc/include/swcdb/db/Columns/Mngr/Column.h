@@ -101,9 +101,9 @@ class Column final {
                        bool &range_key) {
     std::shared_lock lock(m_mutex);
     Range::Ptr found = nullptr;
-    uint32_t on_fractions = 0; //cfg.cid == 1 ? 2 : (cfg.cid == 2 ? 1 : 0);
+    uint32_t on_fraction = 0; //cfg.cid == 1 ? 2 : (cfg.cid == 2 ? 1 : 0);
     for(auto& range : m_ranges){
-      if(!range->includes(range_begin, range_end, on_fractions)) 
+      if(!range->includes(range_begin, range_end, on_fraction)) 
         continue;
       if(found == nullptr){
         found = range;

@@ -90,17 +90,16 @@ class QueryUpdate : public Reader {
         if(err) 
           return;
 
+        bool on_fraction;
         int64_t cid;
         DB::Cells::Cell cell;
-        read_cell(cid, cell);
+        read_cell(cid, cell, on_fraction);
 
         while(remain && !err && found_space());
         expect_token(")", 1, bracket);
         if(err) 
           return;
-        if(cell.flag == DB::Cells::INSERT_FRACTION || 
-           cell.flag == DB::Cells::DELETE_FRACTION || 
-           cell.flag == DB::Cells::DELETE_FRACTION_VERSION)
+        if(on_fraction)
           columns_onfraction.add(cid, cell);
         else 
           columns.add(cid, cell);
@@ -108,10 +107,10 @@ class QueryUpdate : public Reader {
     }
   }
 
-  void read_cell(int64_t& cid, DB::Cells::Cell& cell) {
+  void read_cell(int64_t& cid, DB::Cells::Cell& cell, bool& on_fraction) {
     bool comma = false;
     
-    read_flag(cell.flag);
+    read_flag(cell.flag, on_fraction);
     if(!err) 
       expect_comma(comma);
     if(err) 
@@ -134,8 +133,7 @@ class QueryUpdate : public Reader {
     read_key(cell.key);
 
     comma = false;
-    bool require_ts = cell.flag == DB::Cells::DELETE_VERSION || 
-                      cell.flag == DB::Cells::DELETE_FRACTION_VERSION;
+    bool require_ts = cell.flag == DB::Cells::DELETE_VERSION;
     if(!err && require_ts) 
       expect_comma(comma);
     if(err) 
@@ -147,8 +145,7 @@ class QueryUpdate : public Reader {
       return;
     }
 
-    if(cell.flag == DB::Cells::INSERT ||  
-       cell.flag == DB::Cells::INSERT_FRACTION ) {
+    if(cell.flag == DB::Cells::INSERT) {
       bool time_order;
       while(remain && !err && found_space());
       if((time_order = found_token("DESC", 4)) || 
@@ -184,32 +181,39 @@ class QueryUpdate : public Reader {
 
   }
 
-  void read_flag(uint8_t& flag) {
+  void read_flag(uint8_t& flag, bool& on_fraction) {
     std::string buf;
     read(buf, ",");
     if(err) 
       return;
 
     if(buf.compare("1") == 0 || 
-       strncasecmp(buf.data(), "INSERT", buf.length()) == 0)
+       strncasecmp(buf.data(), "INSERT", buf.length()) == 0) {
       flag = DB::Cells::INSERT;
-    else if(buf.compare("2") == 0 || 
-       strncasecmp(buf.data(), "INSERT_FRACTION", buf.length()) == 0)
-      flag = DB::Cells::INSERT;
-    else if(buf.compare("3") == 0 || 
-       strncasecmp(buf.data(), "DELETE", buf.length()) == 0)
+      on_fraction = false;
+    } else if(buf.compare("2") == 0 || 
+       strncasecmp(buf.data(), "DELETE", buf.length()) == 0) {
       flag = DB::Cells::DELETE;
-    else if(buf.compare("4") == 0 || 
-       strncasecmp(buf.data(), "DELETE_VERSION", buf.length()) == 0)
+      on_fraction = false;
+    } else if(buf.compare("3") == 0 || 
+       strncasecmp(buf.data(), "DELETE_VERSION", buf.length()) == 0) {
       flag = DB::Cells::DELETE_VERSION;
-    else if(buf.compare("5") == 0 || 
-       strncasecmp(buf.data(), "DELETE_FRACTION", buf.length()) == 0)
-      flag = DB::Cells::DELETE_FRACTION;
-    else if(buf.compare("6") == 0 || 
-       strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", buf.length()) == 0)
-      flag = DB::Cells::DELETE_FRACTION_VERSION;
-    else 
+      on_fraction = false;
+    } else if(buf.compare("4") == 0 || 
+       strncasecmp(buf.data(), "INSERT_FRACTION", buf.length()) == 0) {
+      flag = DB::Cells::INSERT;
+      on_fraction = true;
+    } else if(buf.compare("5") == 0 || 
+       strncasecmp(buf.data(), "DELETE_FRACTION", buf.length()) == 0) {
+      flag = DB::Cells::DELETE;
+      on_fraction = true;
+    } else if(buf.compare("6") == 0 || 
+       strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", buf.length()) == 0) {
+      flag = DB::Cells::DELETE_VERSION;
+      on_fraction = true;
+    } else {
       error_msg(Error::SQL_PARSE_ERROR, "unsupported cell flag='"+buf+"'");
+    }
   }
   
   DB::Cells::MapMutable& columns;
