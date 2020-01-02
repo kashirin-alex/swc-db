@@ -194,7 +194,7 @@ class Interval {
 
     switch(typ) {
       case Types::Column::COUNTER_I64: 
-        return value.is_matching(cell.get_value());
+        return value.is_matching(cell.get_counter());
       default:
         return value.is_matching(cell.value, cell.vlen);
     }

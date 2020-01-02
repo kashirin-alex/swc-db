@@ -41,10 +41,10 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
       if(cell.flag == Cells::INSERT) {
         if(counter) {
           if(r == num_revs-2) {
-            cell.set_value(Cells::OP::EQUAL, num_revs);
+            cell.set_counter(Cells::OP_EQUAL, num_revs);
             truclations++;
           } else
-            cell.set_value(Cells::OP::PLUS, 1);
+            cell.set_counter(0, 1);
       
         } else {
           cell.set_value("V_OF: "+cell_number);

@@ -306,11 +306,8 @@ class Mutable final {
 
   void add_counter(const Cell& e_cell, uint32_t& offset, bool no_value) {
     Condition::Comp cond;
-    int64_t revision_new = e_cell.get_revision();
-    OP op1;
-    OP op2;
-    int64_t v1;
-    int64_t v2;
+
+    int64_t revision = e_cell.get_revision();
 
     for(Cell* cell; cell=get_next(offset); offset++) {
 
@@ -324,42 +321,50 @@ class Mutable final {
       }
 
       if(cell->removal()) {
-        if(cell->is_removing(revision_new))
+        if(cell->is_removing(revision))
           return;
         continue;
       }
 
-      v1 = cell->get_value(&op1);
-      v2 = e_cell.get_value(&op2);
-
-      if(op1 == OP::EQUAL) {
-        if(cell->get_revision() > revision_new) 
+      uint8_t op_1;
+      int64_t eq_rev_1;
+      int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
+      if(op_1 == OP_EQUAL) {
+        if(eq_rev_1 == TIMESTAMP_NULL)
+          eq_rev_1 = cell->get_revision();
+        if(eq_rev_1 > revision)
           return;
-        if(op2 == OP::EQUAL)
-          cell->copy(e_cell);
-        continue;
-      } 
-      if(op2 == OP::EQUAL) {
-        insert(offset, e_cell, no_value);
-        continue;
       }
-
-      if((v2 += (op1 == OP::MINUS? -v1 : v1)) > 0) {
-        op2 = OP::PLUS;
-      } else {
-        op2 = OP::MINUS;
-        v2 *= -1;
+      
+      if(e_cell.get_counter_op() == OP_EQUAL)
+        cell->copy(e_cell);
+      else {
+        cell->set_counter(op_1, value_1 + e_cell.get_counter(), eq_rev_1);
+        if(cell->timestamp < e_cell.timestamp) {
+          cell->timestamp = e_cell.timestamp;
+          cell->revision = e_cell.revision;
+          cell->control = e_cell.control;
+        }
       }
-      cell->set_value(op2, v2);
-
-      if(cell->revision < e_cell.revision)
-        cell->revision = e_cell.revision;
-      if(cell->timestamp < e_cell.timestamp)
-        cell->timestamp = e_cell.timestamp;
       return;
     }
 
-    push_back(e_cell);
+    push_back(e_cell, no_value);
+  }
+
+  void add_new_counter(uint32_t offset, const Cell& e_cell, 
+                       uint8_t op, int64_t value) {
+    insert(offset, e_cell);
+    Cell* cell =  *(m_cells+offset);
+    if(op == OP_EQUAL) {
+      cell->set_counter(OP_EQUAL, value);
+      value = 0;
+    } else {
+      cell->set_counter(OP_EQUAL, 0);
+      cell->set_revision(TIMESTAMP_NULL);
+    }
+    insert(++offset, e_cell);
+    (*(m_cells+offset))->set_counter(0, value);
   }
 
 

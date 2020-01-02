@@ -61,20 +61,36 @@ static const uint8_t REV_IS_TS          =  0x10;
 //static const uint8_t TYPE_DEFINED     =  0x2;
 static const uint8_t TS_DESC            =  0x1;
 
-enum OP {
-  EQUAL  = 0x0,
-  PLUS   = 0x1,
-  MINUS  = 0x2,
-};
-inline const std::string to_string(OP op) {
-  switch(op) {
-    case PLUS:
-      return "+";
-    case MINUS:
-      return "-";
-    default:
-      return "=";
+static const uint8_t OP_EQUAL  = 0x1;
+
+inline void op_from(const uint8_t** ptr, size_t* remainp, 
+                    int& err, uint8_t& op, int64_t& value) {
+  if(!*remainp) {
+    op = OP_EQUAL;
+    value = 0;
+    return;
   }
+  if(**ptr == '=') {
+    op = OP_EQUAL;
+    ++*ptr;
+    if(!--*remainp) {
+      value = 0;
+      return;
+    }
+  } else 
+    op = 0;
+
+  char *last = (char*)*ptr + (*remainp > 30 ? 30 : *remainp);
+  errno = 0;
+  value = strtoll((const char*)*ptr, &last, 0);
+  if(errno) {
+    err = errno;
+  } else if((const uint8_t*)last > *ptr) {
+      *remainp -= (const uint8_t*)last - *ptr;
+      *ptr = (const uint8_t*)last;
+  } else 
+    err = EINVAL;
+
 };
 
 
@@ -159,7 +175,7 @@ class Cell final {
     control |= HAVE_TIMESTAMP;
   }
 
-  void set_revision(uint64_t rev) {
+  void set_revision(int64_t rev) {
     revision = rev;
     control |= HAVE_REVISION;
   }
@@ -190,41 +206,39 @@ class Cell final {
     set_value((uint8_t *)v.data(), v.length(), cpy);
   }
 
-  void set_value(OP op, int64_t v) {
+  void set_counter(uint8_t op, int64_t v, int64_t rev = TIMESTAMP_NULL) {
     free();
-    if(!v && op == OP::EQUAL) {
-      vlen = 0;
-      value = 0;
-      return;
-    }
     own = true;
-    vlen = 1+Serialization::encoded_length_vi64(v);
+
+    vlen = 1
+          + Serialization::encoded_length_vi64(rev)
+          + Serialization::encoded_length_vi64(v);
+
     value = new uint8_t[vlen];
     uint8_t* ptr = value;
-    *ptr++ = (uint8_t)op;
-    // +? i64's storing epochs 
+    *ptr++ = op;
+    Serialization::encode_vi64(&ptr, rev);
     Serialization::encode_vi64(&ptr, v);
+    // +? i64's storing epochs 
   }
 
-  const int64_t get_value(OP *op) const {
-    if(!vlen) {
-      *op = OP::EQUAL;
-      return vlen;
-    }
-    const uint8_t *ptr = value;
-    *op = (OP)*ptr++;
+  const uint8_t get_counter_op() const {
+    return *value;
+  }
+
+  const int64_t get_counter() const {
+    const uint8_t *ptr = value+1;
+    Serialization::decode_vi64(&ptr);
     return Serialization::decode_vi64(&ptr);
   }
 
-  const int64_t get_value() const {
-    if(!vlen) 
-      return vlen;
-
+  const int64_t get_counter(uint8_t& op, int64_t& rev) const {
     const uint8_t *ptr = value;
-    OP op = (OP)*ptr++;
-    int64_t v = Serialization::decode_vi64(&ptr);
-    return (op==OP::MINUS?-v:v);
+    op = *ptr++;
+    rev = Serialization::decode_vi64(&ptr);
+    return Serialization::decode_vi64(&ptr);
   }
+
     
   // READ
   void read(const uint8_t **bufp, size_t* remainp, bool owner=false) {
@@ -339,10 +353,7 @@ class Cell final {
     s.append(std::to_string(vlen));  
     s.append(" ");  
     if(typ == Types::Column::COUNTER_I64) {
-      OP op;
-      int64_t v = get_value(&op);
-      s.append(Cells::to_string(v==0?OP::EQUAL:op));
-      s.append(std::to_string(v));
+      s.append(std::to_string(get_counter()));
     } else {
       char c;
       for(int i=0; i<vlen;i++) {
@@ -376,10 +387,18 @@ class Cell final {
       return;
 
     if(typ == Types::Column::COUNTER_I64) {
-      OP op;
-      int64_t v = get_value(&op);
-      out << Cells::to_string(v==0?OP::EQUAL:op);
-      out << v;
+      if(bin) {
+        uint8_t op;
+        int64_t eq_rev;
+        int64_t value = get_counter(op, eq_rev);
+        if(eq_rev == TIMESTAMP_NULL)
+          eq_rev = get_revision();
+        out << value;
+        if(op == OP_EQUAL) 
+          out << " EQ-since(" << Time::fmt_ns(eq_rev) << ")";
+      } else
+        out << get_counter();
+        
     } else {
       const uint8_t* ptr = value;
       char hex[2];
@@ -399,7 +418,7 @@ class Cell final {
   DB::Cell::Key   key;
   uint8_t         control;
   int64_t         timestamp;
-  uint64_t        revision;
+  int64_t         revision;
     
   uint8_t*        value;
   uint32_t        vlen;

@@ -130,10 +130,10 @@ class Value {
   }
   
   const bool is_matching(int64_t other) const {
-    const uint8_t* counter = data;
-    size_t remain = size;
-    return Condition::is_matching(
-      comp, Serialization::decode_vi64(&counter, &remain), other);
+    errno = 0;    
+    char *last = (char*)data + size;
+    int64_t value = strtoll((const char*)data, &last, 0); // ?cls-storage
+    return Condition::is_matching(comp, value, other);
   }
 
   const std::string to_string() const {

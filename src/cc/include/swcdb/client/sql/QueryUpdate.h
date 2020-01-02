@@ -177,7 +177,22 @@ class QueryUpdate : public Reader {
     read(value, ")");
     if(err) 
       return;
-    cell.set_value(value, true);
+
+    if(schema->col_type == Types::Column::PLAIN)
+      cell.set_value(value, true);
+
+    else if(schema->col_type == Types::Column::COUNTER_I64) {
+      const uint8_t* buf = (const uint8_t*)value.data();
+      size_t remain = value.length();
+      uint8_t op;
+      int64_t v;
+      DB::Cells::op_from(&buf, &remain, err, op, v);
+      if(err) {
+        error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
+        return;
+      }
+      cell.set_counter(op, v);
+    }
 
   }
 
