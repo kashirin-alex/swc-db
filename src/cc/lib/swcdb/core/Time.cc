@@ -79,9 +79,10 @@ const int64_t parse_ns(int& err, const std::string& buf) {
   if(buf.find("/") == std::string::npos) {  
     while(*ptr != 0 && *ptr == '0') ptr++;
     char *last;
+    errno = 0;
     int64_t ns = strtoll(ptr, &last, 0);
-    if(*ptr != 0 && ptr == last)
-      err = EINVAL;
+    if(errno || (*ptr != 0 && ptr == last))
+      err = errno ? errno : EINVAL;
     return ns;
   }
 

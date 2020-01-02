@@ -38,12 +38,13 @@ double double_from_string(const std::string& s){
 
 int64_t int64_t_from_string(const std::string& s){
   char *last;
+  errno = 0;
   int64_t res = strtoll(s.c_str(), &last, 0);
 
   if (s.c_str() == last)
     HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
-
-  if (res > INT64_MAX || res < INT64_MIN) 
+  
+  if(errno) 
     HT_THROWF(Error::CONFIG_GET_ERROR, 
               "Bad Value %s, number out of range of 64-bit integer", s.c_str());
   
