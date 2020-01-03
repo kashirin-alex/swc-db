@@ -192,12 +192,10 @@ class Interval {
     if(!match || value.empty())
       return match;
 
-    switch(typ) {
-      case Types::Column::COUNTER_I64: 
-        return value.is_matching(cell.get_counter());
-      default:
-        return value.is_matching(cell.value, cell.vlen);
-    }
+    if(Types::is_counter(typ))
+      return value.is_matching(cell.get_counter());
+      
+    return value.is_matching(cell.value, cell.vlen);
   }
 
   const size_t encoded_length() const {

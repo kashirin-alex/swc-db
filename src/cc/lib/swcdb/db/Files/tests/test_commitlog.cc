@@ -134,9 +134,10 @@ int main(int argc, char** argv) {
         cell.key.add("aFraction4");
         cell.key.add("aFraction5");
         //if(num_revs == r)
-        //  cell.set_counter(Cells::OP_EQUAL, 0);
+        //  cell.set_counter(
+        //    SWC::Types::Column::COUNTER_I64, Cells::OP_EQUAL, 0);
         //else
-        //  cell.set_counter(0, 1);
+        //  cell.set_counter(SWC::Types::Column::COUNTER_I64, 0, 1);
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
 
@@ -243,9 +244,10 @@ int main(int argc, char** argv) {
         cell.key.add("aFraction4");
         cell.key.add("aFraction5");
         //if(num_revs == r)
-        //  cell.set_counter(Cells::OP_EQUAL, 0);
+        //  cell.set_counter(
+        //    SWC::Types::Column::COUNTER_I64, Cells::OP_EQUAL, 0);
         //else
-        //  cell.set_counter(0, 1);
+        //  cell.set_counter(SWC::Types::Column::COUNTER_I64, 0, 1);
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
 

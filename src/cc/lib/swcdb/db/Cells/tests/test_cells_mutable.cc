@@ -16,7 +16,7 @@
 namespace Cells = SWC::DB::Cells;
 
 void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, std::shared_ptr<SWC::Stats::Stat> latency_mutable,
-        int num_revs, bool reverse, int num_cells, bool gen_historic, Cells::Flag flag, bool counter, bool time_order_desc) {
+        int num_revs, bool reverse, int num_cells, bool gen_historic, Cells::Flag flag, SWC::Types::Column typ, bool time_order_desc) {
 
   Cells::Cell cell;
 
@@ -39,12 +39,12 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
         cell.key.add(((char)chr)+cell_number);
 
       if(cell.flag == Cells::INSERT) {
-        if(counter) {
+        if(SWC::Types::is_counter(typ)) {
           if(r == num_revs-2) {
-            cell.set_counter(Cells::OP_EQUAL, num_revs);
+            cell.set_counter(typ, Cells::OP_EQUAL, num_revs);
             truclations++;
           } else
-            cell.set_counter(0, 1);
+            cell.set_counter(typ, 0, 1);
       
         } else {
           cell.set_value("V_OF: "+cell_number);
@@ -82,7 +82,6 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
                            << " time_order_desc=" << time_order_desc 
                            << " gen_historic=" << gen_historic 
                            << "\n";
-  bool counter = typ == SWC::Types::Column::COUNTER_I64;
   int truclations = 0;
 
   std::shared_ptr<SWC::Stats::Stat> latency_mutable(std::make_shared<SWC::Stats::Stat>());
@@ -91,11 +90,11 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   Cells::Mutable::Ptr cells_mutable(Cells::Mutable::make(1, max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, Cells::INSERT, counter, time_order_desc);
+     num_revs, reverse, num_cells, gen_historic, Cells::INSERT, typ, time_order_desc);
   /// 
 
   int expected_sz = num_cells;
-  if(counter)
+  if(SWC::Types::is_counter(typ))
    expected_sz *= (truclations?2:1);
   else 
    expected_sz *= (max_versions > num_revs?num_revs:max_versions);
@@ -130,7 +129,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   */
   //specs.key_start.add(".*-2$", SWC::Condition::RE);
   //specs.key_start.add("", SWC::Condition::NONE);
-  if(counter)
+  if(SWC::Types::is_counter(typ))
     specs.value.set(10,  SWC::Condition::EQ);
   else
     specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::GE);
@@ -171,7 +170,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   ts_total = 0;
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, Cells::DELETE, counter, time_order_desc);
+     num_revs, reverse, num_cells, gen_historic, Cells::DELETE, typ, time_order_desc);
   /// 
 
   if(cells_mutable->size() != num_cells) {

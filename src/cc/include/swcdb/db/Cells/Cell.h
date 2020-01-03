@@ -206,9 +206,24 @@ class Cell final {
     set_value((uint8_t *)v.data(), v.length(), cpy);
   }
 
-  void set_counter(uint8_t op, int64_t v, int64_t rev = TIMESTAMP_NULL) {
+  void set_counter(Types::Column typ, uint8_t op, int64_t v,  
+                   int64_t rev = TIMESTAMP_NULL) {
     free();
     own = true;
+
+    switch(typ) {
+      case Types::Column::COUNTER_I8:
+        v = (int8_t)v;
+        break;
+      case Types::Column::COUNTER_I16:
+        v = (int16_t)v;
+        break;
+      case Types::Column::COUNTER_I32:
+        v = (int32_t)v;
+        break;
+      default:
+        break;
+    }
 
     vlen = 1 + Serialization::encoded_length_vi64(v);
     if(op & OP_EQUAL && rev != TIMESTAMP_NULL) {
@@ -357,7 +372,7 @@ class Cell final {
     s.append(" value=(len="); 
     s.append(std::to_string(vlen));  
     s.append(" ");  
-    if(typ == Types::Column::COUNTER_I64) {
+    if(Types::is_counter(typ)) {
       s.append(std::to_string(get_counter()));
     } else {
       char c;
@@ -391,7 +406,7 @@ class Cell final {
     if(!vlen) 
       return;
 
-    if(typ == Types::Column::COUNTER_I64) {
+    if(Types::is_counter(typ)) {
       if(bin) {
         uint8_t op;
         int64_t eq_rev = TIMESTAMP_NULL;

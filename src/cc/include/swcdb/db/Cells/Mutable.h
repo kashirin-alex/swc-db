@@ -206,16 +206,10 @@ class Mutable final {
       return;
     }
 
-    switch(m_type) {
-      case Types::Column::COUNTER_I64: {
-        add_counter(e_cell, offset, no_value);
-        return;
-      }
-      default: {
-        add_plain(e_cell, offset, no_value);
-        return;
-      }
-    }
+    if(Types::is_counter(m_type))
+      add_counter(e_cell, offset, no_value);
+    else
+      add_plain(e_cell, offset, no_value);
   }
 
   Cell* get_next(uint32_t offset) {
@@ -339,7 +333,8 @@ class Mutable final {
       if(e_cell.get_counter_op() & OP_EQUAL)
         cell->copy(e_cell);
       else {
-        cell->set_counter(op_1, value_1 + e_cell.get_counter(), eq_rev_1);
+        value_1 += e_cell.get_counter();
+        cell->set_counter(m_type, op_1, value_1, eq_rev_1);
         if(cell->timestamp < e_cell.timestamp) {
           cell->timestamp = e_cell.timestamp;
           cell->revision = e_cell.revision;

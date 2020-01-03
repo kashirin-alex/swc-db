@@ -181,7 +181,7 @@ class QueryUpdate : public Reader {
     if(schema->col_type == Types::Column::PLAIN)
       cell.set_value(value, true);
 
-    else if(schema->col_type == Types::Column::COUNTER_I64) {
+    else if(Types::is_counter(schema->col_type)) {
       const uint8_t* buf = (const uint8_t*)value.data();
       size_t remain = value.length();
       uint8_t op;
@@ -191,7 +191,7 @@ class QueryUpdate : public Reader {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;
       }
-      cell.set_counter(op, v);
+      cell.set_counter(schema->col_type, op, v);
     }
 
   }
