@@ -329,14 +329,14 @@ class Mutable final {
       uint8_t op_1;
       int64_t eq_rev_1;
       int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
-      if(op_1 == OP_EQUAL) {
-        if(eq_rev_1 == TIMESTAMP_NULL)
+      if(op_1 & OP_EQUAL) {
+        if(!(op_1 & HAVE_REVISION))
           eq_rev_1 = cell->get_revision();
         if(eq_rev_1 > revision)
           return;
       }
       
-      if(e_cell.get_counter_op() == OP_EQUAL)
+      if(e_cell.get_counter_op() & OP_EQUAL)
         cell->copy(e_cell);
       else {
         cell->set_counter(op_1, value_1 + e_cell.get_counter(), eq_rev_1);
@@ -350,21 +350,6 @@ class Mutable final {
     }
 
     push_back(e_cell, no_value);
-  }
-
-  void add_new_counter(uint32_t offset, const Cell& e_cell, 
-                       uint8_t op, int64_t value) {
-    insert(offset, e_cell);
-    Cell* cell =  *(m_cells+offset);
-    if(op == OP_EQUAL) {
-      cell->set_counter(OP_EQUAL, value);
-      value = 0;
-    } else {
-      cell->set_counter(OP_EQUAL, 0);
-      cell->set_revision(TIMESTAMP_NULL);
-    }
-    insert(++offset, e_cell);
-    (*(m_cells+offset))->set_counter(0, value);
   }
 
 
