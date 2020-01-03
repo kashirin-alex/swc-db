@@ -191,7 +191,13 @@ class QueryUpdate : public Reader {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;
       }
-      cell.set_counter(schema->col_type, op, v);
+      cell.set_counter(
+        op, 
+        v, 
+        op & DB::Cells::OP_EQUAL 
+          ? schema->col_type 
+          : Types::Column::COUNTER_I64
+      );
     }
 
   }

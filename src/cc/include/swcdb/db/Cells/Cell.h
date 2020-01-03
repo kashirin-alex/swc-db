@@ -206,8 +206,9 @@ class Cell final {
     set_value((uint8_t *)v.data(), v.length(), cpy);
   }
 
-  void set_counter(Types::Column typ, uint8_t op, int64_t v,  
-                   int64_t rev = TIMESTAMP_NULL) {
+  void set_counter(uint8_t op, int64_t v,  
+                  Types::Column typ = Types::Column::COUNTER_I64, 
+                  int64_t rev = TIMESTAMP_NULL) {
     free();
     own = true;
 
@@ -233,30 +234,31 @@ class Cell final {
 
     value = new uint8_t[vlen];
     uint8_t* ptr = value;
+    Serialization::encode_vi64(&ptr, v);
     *ptr++ = op;
     if(op & HAVE_REVISION)
       Serialization::encode_vi64(&ptr, rev);
-    Serialization::encode_vi64(&ptr, v);
     // +? i64's storing epochs 
   }
 
   const uint8_t get_counter_op() const {
-    return *value;
+    const uint8_t* ptr = value;
+    Serialization::decode_vi64(&ptr);
+    return *ptr++;
   }
 
   const int64_t get_counter() const {
     const uint8_t *ptr = value;
-    if(*ptr++ & HAVE_REVISION)
-      Serialization::decode_vi64(&ptr);
     return Serialization::decode_vi64(&ptr);
   }
 
   const int64_t get_counter(uint8_t& op, int64_t& rev) const {
     const uint8_t *ptr = value;
+    int64_t v = Serialization::decode_vi64(&ptr);
     rev = ((op = *ptr++) & HAVE_REVISION) 
           ? Serialization::decode_vi64(&ptr) 
           : TIMESTAMP_NULL;
-    return Serialization::decode_vi64(&ptr);
+    return v;
   }
 
     

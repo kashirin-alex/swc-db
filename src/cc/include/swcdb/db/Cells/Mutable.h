@@ -302,16 +302,17 @@ class Mutable final {
     Condition::Comp cond;
 
     int64_t revision = e_cell.get_revision();
-
-    for(Cell* cell; cell=get_next(offset); offset++) {
+    uint32_t add_offset = m_size;
+    Cell* cell;
+    for(; cell=get_next(offset); offset++) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
         continue;
 
       if(cond == Condition::LT) {
-        insert(offset, e_cell, no_value);
-        return;
+        add_offset = offset;
+        goto add_counter;
       }
 
       if(cell->removal()) {
@@ -334,7 +335,7 @@ class Mutable final {
         cell->copy(e_cell);
       else {
         value_1 += e_cell.get_counter();
-        cell->set_counter(m_type, op_1, value_1, eq_rev_1);
+        cell->set_counter(op_1, value_1, m_type, eq_rev_1);
         if(cell->timestamp < e_cell.timestamp) {
           cell->timestamp = e_cell.timestamp;
           cell->revision = e_cell.revision;
@@ -344,7 +345,15 @@ class Mutable final {
       return;
     }
 
-    push_back(e_cell, no_value);
+    add_counter:
+      insert(add_offset, e_cell, no_value);
+      if(m_type != Types::Column::COUNTER_I64) {
+        cell = *(m_cells+add_offset);
+        uint8_t op_1;
+        int64_t eq_rev_1;
+        int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
+        cell->set_counter(op_1, value_1, m_type, eq_rev_1);
+      }
   }
 
 
