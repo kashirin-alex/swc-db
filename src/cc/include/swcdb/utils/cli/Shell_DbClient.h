@@ -123,8 +123,6 @@ class DbClient : public Interface {
     );
   
   
-  
-
     Env::Clients::init(
       std::make_shared<client::Clients>(
         nullptr,
@@ -134,31 +132,26 @@ class DbClient : public Interface {
 
   }
 
-  const bool error(int err, const std::string& message) {
-    std::cout << "\033[31mERROR\033[00m: " << message << std::flush;
-    return true;
-  }
-
+  // CREATE/MODIFY/DELETE COLUMN
   const bool mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
                         std::string& cmd) {
     std::string message;
     DB::Schema::Ptr schema;
-    int err = Error::OK;
     client::SQL::parse_column_schema(err, cmd, func, schema, message);
     if(err)
-      return error(err, message);
+      return error(message);
 
     std::promise<int> res;
     Protocol::Mngr::Req::ColumnMng::request(
       func,
       schema,
       [await=&res]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int err) {
+      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error) {
         /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           req->request_again();
           return;
         }*/
-        await->set_value(err);
+        await->set_value(error);
       },
       300000
     );
@@ -166,7 +159,7 @@ class DbClient : public Interface {
     if(err = res.get_future().get()) {
       message.append(Error::get_text(err));
       message.append("\n");
-      return error(err, message);
+      return error(message);
     }
     if(schema->cid != DB::Schema::NO_CID)
       Env::Clients::get()->schemas->remove(schema->cid);
@@ -175,30 +168,30 @@ class DbClient : public Interface {
     return true;
   }
   
+  // LIST COLUMN/s
   const bool list_columns(std::string& cmd) {
-    int err = Error::OK;
     std::vector<DB::Schema::Ptr> schemas;  
     std::string message;
     client::SQL::parse_list_columns(err, cmd, schemas, message);
     if(err) 
-      return error(err, message);
+      return error(message);
 
     if(schemas.empty()) { // get all schema
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int err, 
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
          Protocol::Mngr::Params::ColumnListRsp rsp) {
-          if(!err)
+          if(!error)
             schemas = rsp.schemas;
-          await->set_value(err);
+          await->set_value(error);
         },
         300000
       );
       if(err = res.get_future().get()) {
         message.append(Error::get_text(err));
         message.append("\n");
-        return error(err, message);
+        return error(message);
       }
     }
 
@@ -209,11 +202,46 @@ class DbClient : public Interface {
     return true;
   }
 
+  // SELECT
+  const bool select(std::string& cmd) {
+    int64_t ts = Time::now_ns();
+    uint8_t display_flags = 0;
+    size_t cells_count = 0;
+    size_t cells_bytes = 0;
+    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+      [this, &display_flags, &cells_count, &cells_bytes]
+      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+        display(result, display_flags, cells_count, cells_bytes);
+      },
+      true // cb on partial rsp
+    );
+    std::string message;
+    client::SQL::parse_select(err, cmd, req->specs, display_flags, message);
+    if(err) 
+      return error(message);
+
+    if(display_flags & DB::DisplayFlag::SPECS) {
+      std::cout << "\n\n";
+      req->specs.display(
+        std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+    }
+
+    req->scan();
+    req->wait();
+    
+    if(err) 
+      return error(message);
+
+    if(display_flags & DB::DisplayFlag::STATS)
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+
+    return true;
+  }
+
   void display(Protocol::Common::Req::Query::Select::Result::Ptr result,
                uint8_t display_flags, 
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
-    int err = Error::OK;
     DB::Cells::Vector vec; 
     do {
       for(auto cid : result->get_cids()) {
@@ -236,46 +264,13 @@ class DbClient : public Interface {
     } while(!vec.cells.empty());
   }
 
-  const bool select(std::string& cmd) {
-    int64_t ts = Time::now_ns();
-    uint8_t display_flags = 0;
-    size_t cells_count = 0;
-    size_t cells_bytes = 0;
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
-      [this, &display_flags, &cells_count, &cells_bytes]
-      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
-        display(result, display_flags, cells_count, cells_bytes);
-      },
-      true // cb on partial rsp
-    );
-    int err = Error::OK;
-    std::string message;
-    client::SQL::parse_select(err, cmd, req->specs, display_flags, message);
-    if(err) 
-      return error(err, message);
-
-    if(display_flags & DB::DisplayFlag::SPECS) {
-      std::cout << "\n\n";
-      req->specs.display(
-        std::cout, !(display_flags & DB::DisplayFlag::BINARY));
-    }
-
-    req->scan();
-    req->wait();
-
-    if(display_flags & DB::DisplayFlag::STATS)
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
-
-    return true;
-  }
-
+  // UPDATE
   const bool update(std::string& cmd) {
     int64_t ts = Time::now_ns();
     uint8_t display_flags = 0;
 
     auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
     auto req_fraction = std::make_shared<Protocol::Common::Req::Query::Update>();
-    int err = Error::OK;
     std::string message;
     client::SQL::parse_update(
       err, cmd, 
@@ -283,7 +278,7 @@ class DbClient : public Interface {
       display_flags, message
     );
     if(err) 
-      return error(err, message);
+      return error(message);
     
     size_t cells_count = req->columns->size() 
                        + req_fraction->columns->size();
@@ -297,8 +292,145 @@ class DbClient : public Interface {
     // req->result->errored
     if(display_flags & DB::DisplayFlag::STATS) 
       display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+    if(err) 
+      return error(message);
     return true;
   }
+
+  // LOAD
+  const bool load(std::string& cmd) {
+    //
+    return true;
+  }
+
+  // DUMP
+  const bool dump(std::string& cmd) {
+    int64_t ts = Time::now_ns();
+    FS::SmartFd::Ptr smartfd = nullptr;
+    size_t cells_count = 0;
+    size_t cells_bytes = 0;
+    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+      [this, &smartfd, &cells_count, &cells_bytes]
+      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+        write_to_file(result, smartfd, cells_count, cells_bytes);
+      },
+      true // cb on partial rsp
+    );
+    
+    uint8_t display_flags = 0;
+    std::string message;
+    std::string filepath;
+    client::SQL::parse_dump(
+      err, cmd, filepath, req->specs, display_flags, message);
+    if(err) 
+      return error(message);
+      
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs")));
+      
+    auto at = filepath.find_last_of("/");
+    if(at != std::string::npos) {
+      std::string base_path = filepath.substr(0, at);
+      Env::FsInterface::interface()->mkdirs(err, base_path);
+      if(err) 
+        return error(Error::get_text(err));
+    }
+
+    smartfd = FS::SmartFd::make_ptr(
+      filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+    while(Env::FsInterface::interface()->create(err, smartfd, 0, 0, 0));
+    if(err) 
+      return error(Error::get_text(err));
+
+    if(display_flags & DB::DisplayFlag::SPECS) {
+      std::cout << "\n\n";
+      req->specs.display(
+        std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+    }
+
+    req->scan();
+    req->wait();
+    if(err) 
+      return error(Error::get_text(err));
+
+    Env::FsInterface::fs()->close(err, smartfd);
+    if(err) 
+      return error(Error::get_text(err));
+
+    if(display_flags & DB::DisplayFlag::STATS) {
+      size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
+      if(err) 
+        return error(Error::get_text(err));
+
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+      std::cout << " File Size:              " << len  << " bytes\n";
+    }
+
+    Env::FsInterface::reset();
+
+    return true;
+  }
+
+  void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
+                     FS::SmartFd::Ptr& smartfd, 
+                     size_t& cells_count, size_t& cells_bytes) const {
+    DB::Schema::Ptr schema = 0;
+    DB::Cells::Vector vec; 
+    DynamicBuffer buffer;
+    
+    do {
+      for(auto cid : result->get_cids()) {
+        schema = Env::Clients::get()->schemas->get(err, cid);
+        if(err)
+          break;
+        if(!cells_count) {
+          std::string header("TIMESTAMP\tFCOUNT\tFLEN\tKEY\t");
+          if(Types::is_counter(schema->col_type))
+            header.append("COUNT\tEQ\tSINCE");
+          else
+            header.append("VLEN\tVALUE");
+          header.append("\n");
+          buffer.add(header.data(), header.length());
+        }
+
+        vec.free();
+        result->get_cells(cid, vec);
+        for(auto& cell : vec.cells) {
+
+          cells_count++;
+          cells_bytes += cell->encoded_length();
+          cell->write_tsv(
+            buffer,
+            schema->col_type
+          ); // display_flags
+          
+          delete cell;
+          cell = nullptr;
+
+          if(buffer.fill() >= 8388608) {
+            write_cells(smartfd, buffer);
+            if(err)
+              break;
+          }
+        }
+      }
+    } while(!vec.cells.empty() || err);
+    
+    if(buffer.fill() && !err) 
+      write_cells(smartfd, buffer);
+  }
+
+  void write_cells(FS::SmartFd::Ptr& smartfd, DynamicBuffer& buffer) const {
+    StaticBuffer buff_write(buffer);
+
+    Env::FsInterface::fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+  }
+
 
   void display_stats(double took, double bytes, size_t cells_count) {      
     std::cout << "\n\nStatistics:\n";
@@ -335,141 +467,7 @@ class DbClient : public Interface {
     ;
 
   }
-
-  const bool load(std::string& cmd) {
-    //
-    return true;
-  }
-
-  void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
-                     FS::SmartFd::Ptr& smartfd, int& err, 
-                     size_t& cells_count, size_t& cells_bytes) const {
-    DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
-    DynamicBuffer buffer;
-    
-    do {
-      for(auto cid : result->get_cids()) {
-        schema = Env::Clients::get()->schemas->get(err, cid);
-        if(err)
-          break;
-        if(!cells_count) {
-          std::string header("TIMESTAMP\tFCOUNT\tFLEN\tKEY\t");
-          if(Types::is_counter(schema->col_type))
-            header.append("COUNT\tEQ\tSINCE");
-          else
-            header.append("VLEN\tVALUE");
-          header.append("\n");
-          buffer.add(header.data(), header.length());
-        }
-
-        vec.free();
-        result->get_cells(cid, vec);
-        for(auto& cell : vec.cells) {
-
-          cells_count++;
-          cells_bytes += cell->encoded_length();
-          cell->write_tsv(
-            buffer,
-            schema->col_type
-          ); // display_flags
-          
-          delete cell;
-          cell = nullptr;
-
-          if(buffer.fill() >= 8388608) {
-            write_cells(err, smartfd, buffer);
-            if(err)
-              break;
-          }
-        }
-      }
-    } while(!vec.cells.empty() || err);
-    
-    if(buffer.fill() && !err) 
-      write_cells(err, smartfd, buffer);
-  }
-
-  void write_cells(int& err, FS::SmartFd::Ptr& smartfd, 
-                   DynamicBuffer& buffer) const {
-    StaticBuffer buff_write(buffer);
-
-    Env::FsInterface::fs()->append(
-      err,
-      smartfd, 
-      buff_write, 
-      FS::Flags::FLUSH
-    );
-  }
-
-  const bool dump(std::string& cmd) {
-    int64_t ts = Time::now_ns();
-    FS::SmartFd::Ptr smartfd = nullptr;
-    int err = Error::OK;
-    size_t cells_count = 0;
-    size_t cells_bytes = 0;
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
-      [this, &err, &smartfd, &cells_count, &cells_bytes]
-      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
-        write_to_file(result, smartfd, err, cells_count, cells_bytes);
-      },
-      true // cb on partial rsp
-    );
-    
-    uint8_t display_flags = 0;
-    std::string message;
-    std::string filepath;
-    client::SQL::parse_dump(
-      err, cmd, filepath, req->specs, display_flags, message);
-    if(err) 
-      return error(err, message);
-      
-    Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
-      
-    auto at = filepath.find_last_of("/");
-    if(at != std::string::npos) {
-      std::string base_path = filepath.substr(0, at);
-      Env::FsInterface::interface()->mkdirs(err, base_path);
-      if(err) 
-        return error(err, Error::get_text(err));
-    }
-
-    smartfd = FS::SmartFd::make_ptr(
-      filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
-    while(Env::FsInterface::interface()->create(err, smartfd, 0, 0, 0));
-    if(err) 
-      return error(err, Error::get_text(err));
-
-    if(display_flags & DB::DisplayFlag::SPECS) {
-      std::cout << "\n\n";
-      req->specs.display(
-        std::cout, !(display_flags & DB::DisplayFlag::BINARY));
-    }
-
-    req->scan();
-    req->wait();
-    if(err) 
-      return error(err, Error::get_text(err));
-
-    Env::FsInterface::fs()->close(err, smartfd);
-    if(err) 
-      return error(err, Error::get_text(err));
-
-    if(display_flags & DB::DisplayFlag::STATS) {
-      size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
-      if(err) 
-        return error(err, Error::get_text(err));
-
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
-      std::cout << " File Size:              " << len  << " bytes\n";
-    }
-
-    Env::FsInterface::reset();
-
-    return true;
-  }
-
+  
 };
 
 

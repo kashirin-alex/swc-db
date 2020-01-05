@@ -38,7 +38,7 @@ int run() {
 }
 
 Interface::Interface(const char* prompt, const char* history)
-                    : prompt(prompt), history(history) {
+                    : prompt(prompt), history(history), err(Error::OK) {
   init();
 }
   
@@ -189,7 +189,13 @@ bool Interface::help(std::string& cmd) const {
   return true;
 }
 
+const bool Interface::error(const std::string& message) {
+  std::cout << "\033[31mERROR\033[00m: " << message << std::flush;
+  return true; /// ? err
+}
+
 const bool Interface::cmd_option(std::string& cmd) const {
+  err = Error::OK;
   auto opt = std::find_if(options.begin(), options.end(), 
               [cmd](const Option* opt){ 
                 return RE2::PartialMatch(cmd.c_str(), *opt->re); 

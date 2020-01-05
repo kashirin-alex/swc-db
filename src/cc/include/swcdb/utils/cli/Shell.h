@@ -49,8 +49,11 @@ class Interface {
     const re2::RE2*   re;
   };
 
+  mutable int          err;
   std::vector<Option*> options;
   
+  const bool error(const std::string& message);
+
   virtual bool quit(std::string& cmd) const;
 
   virtual bool help(std::string& cmd) const;
