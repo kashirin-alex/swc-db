@@ -8,7 +8,7 @@
 ########### SHELL UTILITY ###########
 
 set(swcdb_utils_shell_sources
-Shell.cc
+	cli/Shell.cc
 )
 ADD_LIB_TARGET(
 	NAME	swcdb_utils_shell

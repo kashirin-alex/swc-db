@@ -2,7 +2,11 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#include "swcdb/utils/Shell.h"
+#include "swcdb/utils/cli/Shell.h"
+#include "swcdb/utils/cli/Shell_DbClient.h"
+#include "swcdb/utils/cli/Shell_Manager.h"
+#include "swcdb/utils/cli/Shell_Ranger.h"
+#include "swcdb/utils/cli/Shell_FsBroker.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -29,9 +33,10 @@ int run() {
   return 1;
 }
 
+
+
+
 }}} // namespace SWC::Utils::shell
-
-
 
 extern "C" {
 int swc_utils_run() {
