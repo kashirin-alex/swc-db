@@ -7,6 +7,8 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
+#include "swcdb/fs/Settings.h"
+
 #include "swcdb/client/Settings.h"
 
 extern "C"{
@@ -21,6 +23,7 @@ void Settings::init_app_options() {
 
   init_comm_options();
   init_client_options();
+  init_fs_options();
 
   cmdline_desc
   .definition(

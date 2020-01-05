@@ -7,6 +7,7 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/client/sql/SQL.h"
+#include "swcdb/fs/Interface.h"
 
 #include <re2/re2.h>
 #include <editline.h> // github.com/troglobit/editline
@@ -328,6 +329,26 @@ class DbClient : public Interface {
           "(?i)^(update)(\\s+|$)")
       )
     );
+    options.push_back(
+      new Option(
+        "dump", 
+        {"dump col='ID|NAME' into 'filepath.ext' "
+         "where [cells=(Interval Flags) AND];"},
+        [ptr=this](std::string& cmd){return ptr->dump(cmd);}, 
+        new re2::RE2(
+          "(?i)^(dump)(\\s+|$)")
+      )
+    );
+    options.push_back(
+      new Option(
+        "load", 
+        {"load from 'filepath.ext' into col(ID|NAME);"},
+        [ptr=this](std::string& cmd){return ptr->load(cmd);}, 
+        new re2::RE2(
+          "(?i)^(load)(\\s+|$)")
+      )
+    );
+  
   
   
 
@@ -540,6 +561,154 @@ class DbClient : public Interface {
                                          << " cell/" << time_base << "s\n"
     ;
 
+  }
+
+  const bool load(std::string& cmd) {
+    //
+    return true;
+  }
+
+  void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
+                     FS::SmartFd::Ptr& smartfd,
+                     int& err, size_t& cells_count, size_t& cells_bytes) const {
+    DB::Schema::Ptr schema = 0;
+    DB::Cells::Vector vec; 
+    DynamicBuffer buffer;
+    
+
+    do {
+      for(auto cid : result->get_cids()) {
+        schema = Env::Clients::get()->schemas->get(err, cid);
+        if(err)
+          break;
+        if(!cells_count) {
+          std::string header("TIMESTAMP\tFCOUNT\tFLEN\tKEY\t");
+          if(Types::is_counter(schema->col_type))
+            header.append("COUNT\tEQ\tSINCE");
+          else
+            header.append("VLEN\tVALUE");
+          header.append("\n");
+          buffer.add(header.data(), header.length());
+        }
+
+        vec.free();
+        result->get_cells(cid, vec);
+        for(auto& cell : vec.cells) {
+
+          cells_count++;
+          cells_bytes += cell->encoded_length();
+          cell->write_tsv(
+            buffer,
+            schema->col_type
+          ); // display_flags
+          
+          delete cell;
+          cell = nullptr;
+
+          if(buffer.fill() >= 8388608) {
+            write_cells(err, smartfd, buffer);
+            if(err)
+              break;
+          }
+        }
+      }
+    } while(!vec.cells.empty() || err);
+    
+    if(buffer.fill() && !err) 
+      write_cells(err, smartfd, buffer);
+  }
+
+  void write_cells(int& err, FS::SmartFd::Ptr smartfd, 
+                   DynamicBuffer& buffer) const {
+    StaticBuffer buff_write(buffer);
+
+    Env::FsInterface::fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::FLUSH
+    );
+  }
+
+  const bool dump(std::string& cmd) {
+    int64_t ts = Time::now_ns();
+    FS::SmartFd::Ptr smartfd = nullptr;
+    int err = Error::OK;
+    size_t cells_count = 0;
+    size_t cells_bytes = 0;
+    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+      [this, &err, &smartfd, &cells_count, &cells_bytes]
+      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+        write_to_file(result, smartfd, err, cells_count, cells_bytes);
+      },
+      true // cb on partial rsp
+    );
+    
+    uint8_t display_flags = 0;
+    std::string message;
+    std::string filepath;
+    client::SQL::parse_dump(
+      err, cmd, filepath, req->specs, display_flags, message);
+    if(err) 
+      return error(err, message);
+      
+    std::string base_path;
+    auto at = filepath.find_last_of("/");
+    if(at != std::string::npos)
+      base_path = filepath.substr(0, at);
+    if(filepath.front() == '.' || filepath.front() == '/') {
+      filepath = filepath.substr(at+1, filepath.size());
+      if(base_path.front() == '.') {
+        base_path.erase(base_path.begin());
+        base_path = Env::Config::settings()->install_path + base_path;
+      }
+      Env::Config::settings()->properties.set("swc.fs.local.path.root", base_path);
+      Env::Config::settings()->properties.set("swc.fs.path.data", "");
+      Env::FsInterface::init(Types::Fs::LOCAL);
+    } else {
+      Env::FsInterface::init(FS::fs_type(
+        Env::Config::settings()->get<std::string>("swc.fs")));
+    }
+    if(!base_path.empty()) {
+      Env::FsInterface::interface()->mkdirs(err, base_path);
+      if(err) 
+        return error(err, Error::get_text(err));
+    }
+
+    smartfd = FS::SmartFd::make_ptr(
+      filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+    while(Env::FsInterface::interface()->create(err, smartfd, 0, 0, 0));
+    if(err) 
+      return error(err, Error::get_text(err));
+
+    if(display_flags & DB::DisplayFlag::SPECS) {
+      std::cout << "\n\n";
+      req->specs.display(
+        std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+    }
+
+    req->scan();
+    req->wait();
+    if(err) 
+      return error(err, Error::get_text(err));
+
+    Env::FsInterface::fs()->close(err, smartfd);
+    if(err) 
+      return error(err, Error::get_text(err));
+
+    if(display_flags & DB::DisplayFlag::STATS) {
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+
+      size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
+      if(err) 
+        return error(err, Error::get_text(err));
+
+      std::cout << " File Size:              " << len  << " bytes\n";
+    }
+
+    Env::FsInterface::reset();
+
+    return true;
   }
 
 };

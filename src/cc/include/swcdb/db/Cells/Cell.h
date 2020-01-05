@@ -354,6 +354,63 @@ class Cell final {
     return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
   }
 
+  void write_tsv(DynamicBuffer& buffer, Types::Column typ) {
+    buffer.ensure(1024);
+
+    std::string ts = std::to_string(timestamp);
+    buffer.add(ts.data(), ts.length());
+    buffer.add("\t", 1); //
+
+    std::string f_len = std::to_string(key.count);
+    buffer.add(f_len.data(), f_len.length());
+    buffer.add("\t", 1); //
+
+    uint32_t len = 0;
+    const uint8_t* ptr = key.data;
+    for(uint32_t n=1; n<=key.count; n++,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      f_len = std::to_string(len);
+      buffer.add(f_len.data(), f_len.length());
+      if(n < key.count)
+        buffer.add(",", 1);
+    }
+    buffer.add("\t", 1); //
+    ptr = key.data;
+    for(uint32_t n=1; n<=key.count; n++,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      buffer.add(ptr, len);
+      if(n < key.count)
+        buffer.add(",", 1);
+    }
+    buffer.add("\t", 1); //
+
+    if(Types::is_counter(typ)) {
+      uint8_t op;
+      int64_t eq_rev = TIMESTAMP_NULL;
+      int64_t v = get_counter(op, eq_rev);
+      std::string counter = (v > 0 ? "+" : "") + std::to_string(v);
+      buffer.add(counter.data(), counter.length());
+
+      if(op & OP_EQUAL) {
+        buffer.add("\t", 1); //
+        buffer.add("=", 1);
+        ts = std::to_string(
+          eq_rev == TIMESTAMP_NULL ? get_revision() : eq_rev
+        );
+        buffer.add("\t", 1); //
+        buffer.add(ts.data(), ts.length());
+      }
+    } else {
+
+      std::string value_length = std::to_string(vlen);
+      buffer.add(value_length.data(), value_length.length());
+      buffer.add("\t", 1);
+      buffer.add(value, vlen);
+    }
+
+    buffer.add("\n", 1);
+  }
+
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
     std::string s("Cell(");
     s.append("flag=");

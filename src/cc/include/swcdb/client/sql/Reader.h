@@ -95,15 +95,9 @@ class Reader {
 
 
   void expect_eq() {
+    while(remain && !err && found_space());
     bool eq = false;
-    while(remain && !err) {
-      if(found_space())
-        continue;
-      if(!eq) { // break; (not space is eq)
-        expect_token("=", 1, eq);
-        return;
-      }
-    }
+    expect_token("=", 1, eq); // ? (not space is eq)
   }
 
   void expect_comma(bool& comma) {

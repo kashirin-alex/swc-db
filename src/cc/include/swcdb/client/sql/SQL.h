@@ -55,6 +55,13 @@ void parse_column_schema(int& err, const std::string& sql,
   err = parser.parse(func);
 }
 
+void parse_dump(int& err, const std::string& sql, 
+                std::string& filepath, DB::Specs::Scan& specs, 
+                uint8_t& display_flags, std::string& message) {
+  QuerySelect parser(sql, specs, message);
+  err = parser.parse_dump(filepath);
+  parser.parse_display_flags(display_flags);
+}
 
 
 

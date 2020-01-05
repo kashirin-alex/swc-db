@@ -14,6 +14,8 @@ namespace {
     
   static const char*    TOKEN_SELECT = "select";
   static const uint8_t  LEN_SELECT = 6;
+  static const char*    TOKEN_DUMP = "dump";
+  static const uint8_t  LEN_DUMP = 4;
   static const char*    TOKEN_WHERE = "where";
   static const uint8_t  LEN_WHERE = 5;
   static const char*    TOKEN_COL = "col";
@@ -95,6 +97,65 @@ class QuerySelect : public Reader {
     } 
     return err;
   }
+  const int parse_dump(std::string& filepath) {
+
+    "dump col='ID|NAME' into 'filepath.ext' where [cells=(Interval Flags) AND];";
+    bool token_cmd = false;
+    bool token_col = false;
+
+    while(remain && !err && found_space());
+    expect_token(TOKEN_DUMP, LEN_DUMP, token_cmd);
+    if(err) 
+      return err;
+    while(remain && !err && found_space());
+    expect_token(TOKEN_COL, LEN_COL, token_col);
+    if(err) 
+      return err;
+
+    expect_eq();
+    if(err) 
+      return err;
+    std::string col;
+    read(col);
+    if(!err && col.empty())
+      error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
+    if(err) 
+      return err;
+    int64_t cid = add_column(col);
+    if(err) 
+      return err;
+
+    bool into = false;
+    while(remain && !err && found_space());
+    expect_token("into", 4, into);
+    if(err) 
+      return err;  
+      
+    read(filepath);
+    if(!err && filepath.empty())
+      error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
+    if(err) 
+      return err;  
+
+
+    while(remain && !err && found_space());
+    if(found_token(TOKEN_WHERE, LEN_WHERE)) {
+      std::vector<int64_t> cols = {cid};
+      read_cells_intervals(cols);
+      
+      for(auto& col : specs.columns)
+        if(!col->intervals.size()) {
+          error_msg(Error::SQL_PARSE_ERROR, "missing cells-intervals");
+          return err;
+        }
+
+    } else {
+      for(auto& col : specs.columns)
+        col->intervals.push_back(DB::Specs::Interval::make_ptr());
+    }
+
+    return err;
+  }
 
   void parse_display_flags(uint8_t& display_flags) {
 
@@ -158,7 +219,7 @@ class QuerySelect : public Reader {
       }
 
       if(token_col && !col_names_set) {
-        //"col(, 1 2, 3 4 ,)"  = >> ["12","34"]
+        //"col(, 1 2, "3 4" ,)"  = >> ["1","2","3 4"]
         if(found_space())
           continue;
         
@@ -172,7 +233,7 @@ class QuerySelect : public Reader {
 
         if(found_char(')')) {
           if(cols.empty()) {
-            error_msg(Error::SQL_PARSE_ERROR, "missing col 'name'");
+            error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
             break;
           }
           bracket_round = false;
@@ -232,6 +293,8 @@ class QuerySelect : public Reader {
 
   int64_t add_column(const std::string& col) {
     int64_t cid = get_cid(col);
+    if(err)
+      return DB::Schema::NO_CID;
     for(auto& col : specs.columns) {
       if(cid == col->cid) 
         return cid;
