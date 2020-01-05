@@ -398,10 +398,6 @@ FS::FileSystem::Ptr FsInterface::fs(){
 }
 
 void FsInterface::reset() {
-  if(m_env == nullptr)
-    return;
-  if(m_env->m_interface)
-    m_env->m_interface->stop();
   m_env = nullptr;
 }
 
