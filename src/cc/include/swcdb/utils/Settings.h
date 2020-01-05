@@ -19,6 +19,8 @@ namespace SWC{ namespace Config {
 
 
 void Settings::init_app_options() {
+  cmdline_desc.get_default("logging-level") 
+    ->get_ptr<gEnumExt>()->set_value(LOG_ERROR); // default level for utils
 
   init_comm_options();
   init_client_options();
