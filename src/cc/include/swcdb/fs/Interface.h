@@ -130,6 +130,8 @@ class FsInterface {
 
   static FS::FileSystem::Ptr fs();
 
+  static void reset();
+
   FsInterface(Types::Fs typ);
 
   virtual ~FsInterface();

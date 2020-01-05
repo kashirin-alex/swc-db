@@ -397,6 +397,14 @@ FS::FileSystem::Ptr FsInterface::fs(){
   return m_env->m_interface->get_fs();
 }
 
+void FsInterface::reset() {
+  if(m_env == nullptr)
+    return;
+  if(m_env->m_interface)
+    m_env->m_interface->stop();
+  m_env = nullptr;
+}
+
 FsInterface::FsInterface(Types::Fs typ) 
                         : m_interface(new FS::Interface(typ)) {}
 

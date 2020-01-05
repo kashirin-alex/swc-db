@@ -71,9 +71,7 @@ FileSystem::FileSystem(std::string root, bool setting_applied)
           Env::Config::settings()->get<std::string>("swc.fs.path.data"))) { 
 }
 
-FileSystem::~FileSystem() { 
-  std::cout << " ~FileSystem() \n"; 
-}
+FileSystem::~FileSystem() { }
 
 void FileSystem::stop() {}
 
