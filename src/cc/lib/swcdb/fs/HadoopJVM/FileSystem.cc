@@ -151,9 +151,7 @@ bool FileSystemHadoopJVM::initialize() {
   return m_filesystem != nullptr;
 }
 
-FileSystemHadoopJVM::~FileSystemHadoopJVM() { 
-  std::cout << " ~FileSystemHadoopJVM() \n"; 
-}
+FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
 
 void FileSystemHadoopJVM::stop() {
   m_run.store(false);

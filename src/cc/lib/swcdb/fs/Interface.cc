@@ -309,7 +309,7 @@ void Interface::write(int &err, SmartFd::Ptr smartfd,
   buffer.own=true;
 }
   
-bool Interface::open(int& err, SmartFd::Ptr smartfd) {
+bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
   m_fs->open(err, smartfd);
   if(err == Error::FS_PATH_NOT_FOUND ||
      err == Error::FS_PERMISSION_DENIED ||
@@ -326,7 +326,7 @@ bool Interface::open(int& err, SmartFd::Ptr smartfd) {
   return false;
 }
   
-bool Interface::create(int& err, SmartFd::Ptr smartfd,
+bool Interface::create(int& err, SmartFd::Ptr& smartfd,
                        int32_t bufsz, uint8_t replication, int64_t blksz) {
   m_fs->create(err, smartfd, bufsz, replication, blksz);
   if(err == Error::FS_PATH_NOT_FOUND ||

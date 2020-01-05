@@ -88,9 +88,9 @@ class Interface {
              uint8_t replication, int64_t blksz, 
              StaticBuffer &buffer);
   
-  bool open(int& err, SmartFd::Ptr smartfd);
+  bool open(int& err, SmartFd::Ptr& smartfd);
   
-  bool create(int& err, SmartFd::Ptr smartfd,
+  bool create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz);
               
   void close(int& err, SmartFd::Ptr smartfd);

@@ -569,13 +569,12 @@ class DbClient : public Interface {
   }
 
   void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
-                     FS::SmartFd::Ptr& smartfd,
-                     int& err, size_t& cells_count, size_t& cells_bytes) const {
+                     FS::SmartFd::Ptr& smartfd, int& err, 
+                     size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
     DynamicBuffer buffer;
     
-
     do {
       for(auto cid : result->get_cids()) {
         schema = Env::Clients::get()->schemas->get(err, cid);
@@ -618,7 +617,7 @@ class DbClient : public Interface {
       write_cells(err, smartfd, buffer);
   }
 
-  void write_cells(int& err, FS::SmartFd::Ptr smartfd, 
+  void write_cells(int& err, FS::SmartFd::Ptr& smartfd, 
                    DynamicBuffer& buffer) const {
     StaticBuffer buff_write(buffer);
 
@@ -652,24 +651,12 @@ class DbClient : public Interface {
     if(err) 
       return error(err, message);
       
-    std::string base_path;
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs")));
+      
     auto at = filepath.find_last_of("/");
-    if(at != std::string::npos)
-      base_path = filepath.substr(0, at);
-    if(filepath.front() == '.' || filepath.front() == '/') {
-      filepath = filepath.substr(at+1, filepath.size());
-      if(base_path.front() == '.') {
-        base_path.erase(base_path.begin());
-        base_path = Env::Config::settings()->install_path + base_path;
-      }
-      Env::Config::settings()->properties.set("swc.fs.local.path.root", base_path);
-      Env::Config::settings()->properties.set("swc.fs.path.data", "");
-      Env::FsInterface::init(Types::Fs::LOCAL);
-    } else {
-      Env::FsInterface::init(FS::fs_type(
-        Env::Config::settings()->get<std::string>("swc.fs")));
-    }
-    if(!base_path.empty()) {
+    if(at != std::string::npos) {
+      std::string base_path = filepath.substr(0, at);
       Env::FsInterface::interface()->mkdirs(err, base_path);
       if(err) 
         return error(err, Error::get_text(err));
@@ -697,12 +684,11 @@ class DbClient : public Interface {
       return error(err, Error::get_text(err));
 
     if(display_flags & DB::DisplayFlag::STATS) {
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
-
       size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
       if(err) 
         return error(err, Error::get_text(err));
 
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
       std::cout << " File Size:              " << len  << " bytes\n";
     }
 
