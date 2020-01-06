@@ -30,16 +30,19 @@ struct Select final {
     const bool add_cells(const StaticBuffer& buffer, bool more, 
                          DB::Specs::Interval& interval) {
       std::scoped_lock lock(m_mutex);
-      m_counted += m_vec.add(buffer.base, buffer.size);
+      size_t recved = m_vec.add(buffer.base, buffer.size);
+      m_counted += recved;
 
-      if(more && (more = !interval.flags.limit  || 
-                          m_counted < interval.flags.limit)) {
-        auto last = m_vec.cells.back();
-        interval.flags.offset = 0;
-        interval.offset_key.copy(last->key);
-        interval.offset_rev = last->revision;
-      }
-      return more;
+      if(interval.flags.limit && (interval.flags.limit -= recved) <= 0 )
+        return false;
+      
+      interval.flags.offset = 0;
+      //if(more) {
+      auto last = m_vec.cells.back();
+      interval.offset_key.copy(last->key);
+      interval.offset_rev = last->revision;
+      //}
+      return true;
     }  
     
     void get_cells(DB::Cells::Vector& vec) {
@@ -476,7 +479,6 @@ class Select : public std::enable_shared_from_this<Select> {
           }
 
           bool more = true;
-          
           if(rsp.data.size) {
             more = ptr->selector->result->add_cells(
               ptr->cells_cid, 
@@ -490,8 +492,8 @@ class Select : public std::enable_shared_from_this<Select> {
               ptr->select(qreq->endpoints, rid, base_req);
 
             } else if(!ptr->next_calls->empty()) {
-              ptr->interval->offset_key.free();
-              ptr->interval->offset_rev = 0;
+              //ptr->interval->offset_key.free();
+              //ptr->interval->offset_rev = 0;
               auto it = ptr->next_calls->begin();
               auto call = *it;
               ptr->next_calls->erase(it);
