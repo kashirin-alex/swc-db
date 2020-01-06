@@ -416,18 +416,13 @@ class Cell final {
     const uint8_t* ptr = *bufp;
     size_t remain = *remainp;
     const uint8_t* s = ptr;
-    bool tab;
+
     if(has_ts) {
-      tab = false;
-      while(remain) {
-        if(*ptr == '\t') {
-          tab = true;
-          break;
-        }
+      while(remain && *ptr != '\t') {
         remain--;
         ++ptr;
       }
-      if(!remain || !tab)
+      if(!remain)
         return false;
       set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
       s = ++ptr; // tab
@@ -465,19 +460,36 @@ class Cell final {
       
 
     s = ptr;
-    tab = false;
-    while(remain) {
-      if(*ptr == '\t') {
-        tab = true;
-        break;
-      }
+    while(remain && (*ptr != '\t' && *ptr != '\n')) {
       remain--;
       ++ptr;
     }
-    if(!remain || !tab)
+    if(!remain)
       return false;
 
     if(Types::is_counter(typ)) {
+      int64_t counter = std::stol(std::string((const char*)s, ptr-s));      
+      int64_t eq_rev = TIMESTAMP_NULL;
+      uint8_t op = 0;
+      if(*ptr == '\t') {
+        remain--;
+        ++ptr; 
+        if(!remain || *ptr != '=')
+          return false; 
+        op = OP_EQUAL;
+        remain--;
+        ++ptr;
+        s = ptr;
+        while(remain && *ptr != '\n') {
+          remain--;
+          ++ptr;
+        }
+        if(!remain)
+          return false; 
+        eq_rev = std::stol(std::string((const char*)s, ptr-s));      
+      }
+      set_counter(op, counter, typ, eq_rev);
+
     } else {
       vlen = std::stol(std::string((const char*)s, ptr-s));
       ++ptr; // tab
@@ -487,11 +499,12 @@ class Cell final {
       value = (uint8_t*)ptr;
       ptr += vlen;
       remain -= vlen;
-      if(!remain || *ptr != '\n')
-        return false;
-      ++ptr; // newline
-      remain--;
     }
+
+    if(!remain || *ptr != '\n')
+      return false;
+    ++ptr; // newline
+    remain--;
 
     flag = INSERT;
     
