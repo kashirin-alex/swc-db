@@ -32,6 +32,7 @@ struct Select final {
       std::scoped_lock lock(m_mutex);
       size_t recved = m_vec.add(buffer.base, buffer.size);
       m_counted += recved;
+      m_size_bytes += buffer.size;
 
       if(interval.flags.limit && (interval.flags.limit -= recved) <= 0 )
         return false;
@@ -49,6 +50,7 @@ struct Select final {
       std::scoped_lock lock(m_mutex);
       vec.add(m_vec);
       m_vec.cells.clear();
+      m_size_bytes = 0;
     }
 
     const size_t get_size() {
@@ -56,15 +58,22 @@ struct Select final {
       return m_counted;
     }
 
+    const size_t get_size_bytes() {
+      std::scoped_lock lock(m_mutex);
+      return m_size_bytes;
+    }
+
     void free() {
       std::scoped_lock lock(m_mutex);
       m_vec.free();
+      m_size_bytes = 0;
     }
   
     private:
     std::mutex         m_mutex;
     DB::Cells::Vector  m_vec;
     size_t             m_counted = 0;
+    size_t             m_size_bytes = 0;
   };
 
   void add_column(const int64_t cid) {
@@ -82,6 +91,13 @@ struct Select final {
 
   const size_t get_size(const int64_t cid) {
     return m_columns[cid]->get_size();
+  }
+
+  const size_t get_size_bytes() {
+    size_t sz = 0;
+    for(const auto& col : m_columns)
+      sz += col.second->get_size_bytes();
+    return sz;
   }
 
   const std::vector<int64_t> get_cids() const {
@@ -172,6 +188,19 @@ class Select : public std::enable_shared_from_this<Select> {
       [ptr=shared_from_this()] () {
         return ptr->result->completion == 0 && !ptr->rsp_partial_runs;
       }
+    );  
+  }
+
+  void wait_on_partials_run() {
+    if(!rsp_partials || result->get_size_bytes() < buff_sz * 3)
+      return;
+
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if(!rsp_partial_runs)
+      return;
+    cv.wait(
+      lock, 
+      [ptr=shared_from_this()] () { return !ptr->rsp_partial_runs; }
     );  
   }
 
@@ -487,6 +516,8 @@ class Select : public std::enable_shared_from_this<Select> {
           }
 
           if(more) {
+            ptr->selector->wait_on_partials_run();
+
             if(rsp.reached_limit) {
               auto qreq = std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req_ptr);
               ptr->select(qreq->endpoints, rid, base_req);
@@ -502,7 +533,6 @@ class Select : public std::enable_shared_from_this<Select> {
           }
 
           ptr->selector->result->err = rsp.err;
-          
           if(rsp.data.size)
             ptr->selector->response_partial();
 
