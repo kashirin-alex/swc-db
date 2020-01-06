@@ -11,10 +11,13 @@
 namespace SWC { namespace client { namespace SQL {
 
 namespace {
+  
   static const char*    TOKEN_CELL = "cell";
   static const uint8_t  LEN_CELL = 4;
   static const char*    TOKEN_UPDATE = "update";
   static const uint8_t  LEN_UPDATE = 6;
+  static const char*    TOKEN_LOAD = "load";
+  static const uint8_t  LEN_LOAD = 4;
 }
 
 class QueryUpdate : public Reader {
@@ -44,6 +47,49 @@ class QueryUpdate : public Reader {
     return err;
   }
 
+  const int parse_load(std::string& filepath, int64_t& cid) {
+    bool token = false;
+
+    while(remain && !err && found_space());
+    expect_token(TOKEN_LOAD, LEN_LOAD, token);
+    if(err) 
+      return err;
+
+    while(remain && !err && found_space());
+    expect_token("from", 4, token);
+    if(err) 
+      return err;
+
+    read(filepath);
+    if(!err && filepath.empty())
+      error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
+    if(err) 
+      return err;  
+
+    while(remain && !err && found_space());
+    expect_token("into", 4, token);
+    if(err) 
+      return err;
+
+    while(remain && !err && found_space());
+    expect_token("col", 3, token);
+    if(err) 
+      return err;
+    expect_eq();
+    if(err) 
+      return err;
+
+    std::string col;
+    read(col);
+    if(!err && col.empty())
+      error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
+    if(err) 
+      return err;
+
+    cid = get_cid(col);
+    return err;
+  }
+  
   void parse_display_flags(uint8_t& display_flags) {
 
     bool any = true;

@@ -90,9 +90,13 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void wait() {
     std::unique_lock<std::mutex> lock_wait(m_mutex);
+    if(result->completion == 0)
+      return;
     cv.wait(
       lock_wait, 
-      [ptr=shared_from_this()](){return ptr->result->completion==0;}
+      [ptr=shared_from_this()]() {
+        return ptr->result->completion==0;
+      }
     );  
   }
 

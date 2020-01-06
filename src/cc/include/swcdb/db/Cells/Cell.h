@@ -7,6 +7,8 @@
 #define swcdb_db_cells_Cell_h
 
 #include <cassert>
+#include <vector>
+
 #include "swcdb/core/Time.h"
 #include "swcdb/core/DynamicBuffer.h"
 
@@ -361,11 +363,8 @@ class Cell final {
     buffer.add(ts.data(), ts.length());
     buffer.add("\t", 1); //
 
-    std::string f_len = std::to_string(key.count);
-    buffer.add(f_len.data(), f_len.length());
-    buffer.add("\t", 1); //
-
     uint32_t len = 0;
+    std::string f_len;
     const uint8_t* ptr = key.data;
     for(uint32_t n=1; n<=key.count; n++,ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
@@ -378,7 +377,8 @@ class Cell final {
     ptr = key.data;
     for(uint32_t n=1; n<=key.count; n++,ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
-      buffer.add(ptr, len);
+      if(len)
+        buffer.add(ptr, len);
       if(n < key.count)
         buffer.add(",", 1);
     }
@@ -409,6 +409,97 @@ class Cell final {
     }
 
     buffer.add("\n", 1);
+  }
+
+  const bool read_tsv(const uint8_t **bufp, size_t* remainp, 
+                      bool has_ts, Types::Column typ) {
+    const uint8_t* ptr = *bufp;
+    size_t remain = *remainp;
+    const uint8_t* s = ptr;
+    bool tab;
+    if(has_ts) {
+      tab = false;
+      while(remain) {
+        if(*ptr == '\t') {
+          tab = true;
+          break;
+        }
+        remain--;
+        ++ptr;
+      }
+      if(!remain || !tab)
+        return false;
+      set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
+      s = ++ptr; // tab
+      remain--;
+    }
+
+    std::vector<uint32_t> flen;
+    while(remain) {
+      if(*ptr == ',' || *ptr == '\t') {
+        flen.push_back(std::stol(std::string((const char*)s, ptr-s)));
+        if(*ptr == '\t')
+          break;
+        s = ++ptr; // comma
+        remain--;
+        if(!remain)
+          return false;
+      }
+      ++ptr;
+      remain--;
+    }
+    if(!remain)
+      return false;
+    
+    s = ++ptr; // tab
+    remain--;
+    for(auto len : flen) {
+      if(remain <= len+1) 
+        return false;
+      key.add(ptr, len);
+      ptr += len+1;
+      remain -= (len+1);
+    };
+    if(!remain)
+      return false;
+      
+
+    s = ptr;
+    tab = false;
+    while(remain) {
+      if(*ptr == '\t') {
+        tab = true;
+        break;
+      }
+      remain--;
+      ++ptr;
+    }
+    if(!remain || !tab)
+      return false;
+
+    if(Types::is_counter(typ)) {
+    } else {
+      vlen = std::stol(std::string((const char*)s, ptr-s));
+      ++ptr; // tab
+      remain--;
+      if(remain < vlen+1) 
+        return false;
+      value = (uint8_t*)ptr;
+      ptr += vlen;
+      remain -= vlen;
+      if(!remain || *ptr != '\n')
+        return false;
+      ++ptr; // newline
+      remain--;
+    }
+
+    flag = INSERT;
+    
+    //display(std::cout); std::cout << "\n";
+
+    *bufp = ptr;
+    *remainp = remain;
+    return true;
   }
 
   const std::string to_string(Types::Column typ = Types::Column::PLAIN) const {

@@ -29,7 +29,8 @@ void parse_select(int& err, const std::string& sql,
                   uint8_t& display_flags, std::string& message) {
   QuerySelect parser(sql, specs, message);
   err = parser.parse_select();
-  parser.parse_display_flags(display_flags);
+  if(!err)
+    parser.parse_display_flags(display_flags);
 }
 
 void parse_update(int& err, const std::string& sql, 
@@ -38,7 +39,8 @@ void parse_update(int& err, const std::string& sql,
                   uint8_t& display_flags, std::string& message) {
   QueryUpdate parser(sql, columns, columns_onfraction, message);
   err = parser.parse_update();
-  parser.parse_display_flags(display_flags);
+  if(!err)
+    parser.parse_display_flags(display_flags);
 }
 
 void parse_list_columns(int& err, const std::string& sql, 
@@ -60,8 +62,21 @@ void parse_dump(int& err, const std::string& sql,
                 uint8_t& display_flags, std::string& message) {
   QuerySelect parser(sql, specs, message);
   err = parser.parse_dump(filepath);
-  parser.parse_display_flags(display_flags);
+  if(!err)
+    parser.parse_display_flags(display_flags);
 }
+
+void parse_load(int& err, const std::string& sql, 
+                std::string& filepath, int64_t& cid,  
+                uint8_t& display_flags, std::string& message) {
+  DB::Cells::MapMutable columns;
+  DB::Cells::MapMutable columns_onfraction;
+  QueryUpdate parser(sql, columns, columns_onfraction, message);
+  err = parser.parse_load(filepath, cid);
+  if(!err)
+    parser.parse_display_flags(display_flags);
+}
+
 
 
 

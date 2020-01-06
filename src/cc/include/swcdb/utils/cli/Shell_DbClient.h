@@ -115,7 +115,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "load", 
-        {"load from 'filepath.ext' into col(ID|NAME);"},
+        {"load from 'filepath.ext' into col='ID|NAME';"},
         [ptr=this](std::string& cmd){return ptr->load(cmd);}, 
         new re2::RE2(
           "(?i)^(load)(\\s+|$)")
@@ -299,8 +299,168 @@ class DbClient : public Interface {
 
   // LOAD
   const bool load(std::string& cmd) {
-    //
+    int64_t ts = Time::now_ns();
+    uint8_t display_flags = 0;
+    
+    std::string filepath;    
+    int64_t cid = DB::Schema::NO_CID;
+    std::string message;
+    client::SQL::parse_load(err, cmd, filepath, cid, display_flags, message);
+    if(err) 
+      return error(message);
+                   
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs")));
+
+    auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
+    size_t cells_count = 0;
+    size_t cells_bytes = 0;
+    read_and_load(smartfd, cid, cells_count, cells_bytes, message);
+
+    if(display_flags & DB::DisplayFlag::STATS) 
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+    if(err) 
+      return error(message);
+
+    Env::FsInterface::reset();
     return true;
+  }
+
+  void read_and_load(FS::SmartFd::Ptr smartfd, int64_t cid,
+                     size_t& cells_count, size_t& cells_bytes,
+                     std::string& message) {
+    auto update_req = std::make_shared<Protocol::Common::Req::Query::Update>();
+    
+    auto schema = Env::Clients::get()->schemas->get(err, cid);
+    if(err)
+      return;
+    size_t length = Env::FsInterface::fs()->length(err, smartfd->filepath());
+    if(err)
+      return;
+
+    update_req->columns->create(schema);
+    size_t offset = 0;
+    size_t r_sz;
+    
+    auto col = update_req->columns->get_col(schema->cid);
+    StaticBuffer buffer;
+    DynamicBuffer buffer_remain;
+    DynamicBuffer buffer_write;
+    std::vector<std::string> header;
+    bool has_ts;
+    bool ok;
+    size_t s_sz;
+    size_t cell_pos = 0;
+    size_t cell_mark = 0;
+
+    do {
+      err = Error::OK;
+      if(!smartfd->valid() 
+        && !Env::FsInterface::interface()->open(err, smartfd) 
+        && err)
+        break;
+      if(err)
+        continue;
+      
+      r_sz = length - offset > 8388608 ? 8388608 : length - offset;
+      for(;;) {
+        buffer.free();
+        err = Error::OK;
+
+        if(Env::FsInterface::fs()->pread(
+            err, smartfd, offset, &buffer, r_sz) != r_sz) {
+          int tmperr = Error::OK;
+          Env::FsInterface::fs()->close(tmperr, smartfd);
+          if(err != Error::FS_EOF){
+            if(!Env::FsInterface::interface()->open(err, smartfd))
+              break;
+            continue;
+          }
+        }
+        break;
+      }
+      if(err)
+        break;
+
+      offset += r_sz;
+      
+      if(buffer_remain.fill()) {
+        buffer_write.add(buffer_remain.base, buffer_remain.fill());
+        buffer_write.add(buffer.base, buffer.size);
+        buffer_remain.free();
+      } else {
+        buffer_write.set(buffer.base, buffer.size);
+      }
+
+      const uint8_t* ptr = buffer_write.base;
+      size_t remain = buffer_write.fill();
+      
+      if(header.empty()) {
+        const uint8_t* s = ptr;
+        while(remain && *ptr != '\n') {
+          ptr++;
+          remain--;
+          if(*ptr == '\t' || *ptr == '\n') {
+            header.push_back(std::string((const char*)s, ptr-s));
+            s = ptr+1;
+          }
+        }
+        if(header.empty()) {
+          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
+          message.append("TSV file missing columns defintion header");
+          break;
+        }
+        ptr++; // header's newline
+        remain--;
+        has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
+      }
+
+      while(remain) {
+        DB::Cells::Cell cell;
+        try {
+          cell_mark = remain;
+          ok = cell.read_tsv(&ptr, &remain, has_ts, schema->col_type);
+          cell_pos += cell_mark-remain;
+        } catch(const std::exception& ex) {
+          message.append(ex.what());
+          message.append(", no throw should happen, '");
+          message.append(smartfd->filepath());
+          message.append("' at-offset=");
+          message.append(std::to_string(cell_pos));
+          offset = length;
+          break;
+        }
+        if(ok) {
+          col->add(cell);
+          cells_count++;
+          //if((cells_count % 100) == 0)
+          //  std::cout << cells_count << " : " << cell_pos << "\n";
+          cells_bytes += cell.encoded_length();
+          
+          s_sz = col->size_bytes();
+          if(update_req->result->completion && s_sz > update_req->buff_sz*3)
+            update_req->wait();
+          if(!update_req->result->completion && s_sz >= update_req->buff_sz)
+            update_req->commit(col);
+          
+        } else  {
+          buffer_remain.add(ptr, remain);
+          break;
+        }
+      }
+      
+      buffer_write.free();
+      buffer.free();
+
+    } while(offset < length);
+
+    if(smartfd->valid())
+      Env::FsInterface::fs()->close(err, smartfd);
+    
+    if(col->size_bytes() && !update_req->result->completion)
+      update_req->commit(col);
+    
+    update_req->wait();
   }
 
   // DUMP
@@ -350,6 +510,7 @@ class DbClient : public Interface {
 
     req->scan();
     req->wait();
+
     if(err) 
       return error(Error::get_text(err));
 
@@ -367,7 +528,6 @@ class DbClient : public Interface {
     }
 
     Env::FsInterface::reset();
-
     return true;
   }
 
@@ -384,7 +544,7 @@ class DbClient : public Interface {
         if(err)
           break;
         if(!cells_count) {
-          std::string header("TIMESTAMP\tFCOUNT\tFLEN\tKEY\t");
+          std::string header("TIMESTAMP\tFLEN\tKEY\t");
           if(Types::is_counter(schema->col_type))
             header.append("COUNT\tEQ\tSINCE");
           else
@@ -420,7 +580,7 @@ class DbClient : public Interface {
       write_cells(smartfd, buffer);
   }
 
-  void write_cells(FS::SmartFd::Ptr& smartfd, DynamicBuffer& buffer) const {
+  void write_cells(FS::SmartFd::Ptr& smartfd, DynamicBuffer& buffer) const {    
     StaticBuffer buff_write(buffer);
 
     Env::FsInterface::fs()->append(
