@@ -420,6 +420,7 @@ class DbClient : public Interface {
           message.append("' starting at-offset=");
           message.append(std::to_string(cell_pos));
           offset = length;
+          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
           break;
         }
         if(ok) {
@@ -453,6 +454,16 @@ class DbClient : public Interface {
       update_req->commit(col);
     
     update_req->wait();
+
+    if(buffer_remain.fill()) {
+      message.append("early file end");
+      message.append(", corrupted '");
+      message.append(smartfd->filepath());
+      message.append("' starting at-offset=");
+      message.append(std::to_string(cell_pos));
+      message.append("\n");
+      err = Error::SQL_BAD_LOAD_FILE_FORMAT;
+    }
   }
 
   // DUMP

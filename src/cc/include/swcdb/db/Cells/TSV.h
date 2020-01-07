@@ -183,7 +183,7 @@ const bool read(const uint8_t **bufp, size_t* remainp,
     int64_t eq_rev = TIMESTAMP_NULL;
     uint8_t op = 0;
     if(*ptr == '\t') {
-      remain--;
+      remain--; // tab
       ++ptr; 
       if(!remain)
         return false; 
