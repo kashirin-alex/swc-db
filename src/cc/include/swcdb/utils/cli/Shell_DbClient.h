@@ -8,6 +8,8 @@
 #include "swcdb/client/sql/SQL.h"
 #include "swcdb/fs/Interface.h"
 
+#include "swcdb/db/Cells/TSV.h"
+
 namespace SWC { namespace Utils { namespace shell {
 
 
@@ -396,36 +398,26 @@ class DbClient : public Interface {
       size_t remain = buffer_write.fill();
       
       if(header.empty()) {
-        const uint8_t* s = ptr;
-        while(remain && *ptr != '\n') {
-          ptr++;
-          remain--;
-          if(*ptr == '\t' || *ptr == '\n') {
-            header.push_back(std::string((const char*)s, ptr-s));
-            s = ptr+1;
-          }
-        }
+        DB::Cells::TSV::header_read(&ptr, &remain, has_ts, header);
         if(header.empty()) {
           err = Error::SQL_BAD_LOAD_FILE_FORMAT;
           message.append("TSV file missing columns defintion header");
           break;
         }
-        ptr++; // header's newline
-        remain--;
-        has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
       }
 
       while(remain) {
         DB::Cells::Cell cell;
         try {
           cell_mark = remain;
-          ok = cell.read_tsv(&ptr, &remain, has_ts, schema->col_type);
+          ok = DB::Cells::TSV::read(
+            &ptr, &remain, has_ts, schema->col_type, cell);
           cell_pos += cell_mark-remain;
         } catch(const std::exception& ex) {
           message.append(ex.what());
-          message.append(", no throw should happen, '");
+          message.append(", corrupted '");
           message.append(smartfd->filepath());
-          message.append("' at-offset=");
+          message.append("' starting at-offset=");
           message.append(std::to_string(cell_pos));
           offset = length;
           break;
@@ -543,15 +535,8 @@ class DbClient : public Interface {
         schema = Env::Clients::get()->schemas->get(err, cid);
         if(err)
           break;
-        if(!cells_count) {
-          std::string header("TIMESTAMP\tFLEN\tKEY\t");
-          if(Types::is_counter(schema->col_type))
-            header.append("COUNT\tEQ\tSINCE");
-          else
-            header.append("VLEN\tVALUE");
-          header.append("\n");
-          buffer.add(header.data(), header.length());
-        }
+        if(!cells_count)
+          DB::Cells::TSV::header_write(schema->col_type, buffer); // OUT_FLAGS
 
         vec.free();
         result->get_cells(cid, vec);
@@ -559,10 +544,9 @@ class DbClient : public Interface {
 
           cells_count++;
           cells_bytes += cell->encoded_length();
-          cell->write_tsv(
-            buffer,
-            schema->col_type
-          ); // display_flags
+          
+          DB::Cells::TSV::write(
+            *cell, schema->col_type, buffer); // OUT_FLAGS
           
           delete cell;
           cell = nullptr;
