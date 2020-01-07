@@ -231,7 +231,6 @@ class Select : public std::enable_shared_from_this<Select> {
     Select::Ptr               selector;
     ReqBase::Ptr              parent_req;
     const int64_t             rid;
-    uint64_t                  offset;
 
     typedef std::shared_ptr<std::vector<std::function<void()>>> NextCalls;
     NextCalls next_calls;
@@ -242,7 +241,7 @@ class Select : public std::enable_shared_from_this<Select> {
             Select::Ptr selector,
             NextCalls next_calls=nullptr, 
             ReqBase::Ptr parent_req=nullptr, 
-            const uint64_t offset=0, const int64_t rid=0)
+            const int64_t rid=0)
           : type(type), cid(cid), cells_cid(cells_cid), 
             interval(interval), selector(selector),
             next_calls(
@@ -250,7 +249,7 @@ class Select : public std::enable_shared_from_this<Select> {
               std::make_shared<std::vector<std::function<void()>>>() : 
               next_calls
             ),
-            parent_req(parent_req), rid(rid), offset(offset)  {
+            parent_req(parent_req), rid(rid) {
     }
 
     virtual ~Scanner() {}
@@ -266,8 +265,6 @@ class Select : public std::enable_shared_from_this<Select> {
       s.append(std::to_string(selector->result->completion.load()));
       s.append(" cells_cid=");
       s.append(std::to_string(cells_cid));
-      s.append(" offset=");
-      s.append(std::to_string(offset));
       s.append(" next_calls=");
       s.append(std::to_string(next_calls->size()));
       
@@ -297,8 +294,6 @@ class Select : public std::enable_shared_from_this<Select> {
           params.range_end.insert(0, "2");
       }
         
-      //params.offset = offset;
-
       //std::cout << "locate_on_manager:\n " 
       //          << to_string() << "\n "
       //          << params.to_string() << "\n";
@@ -365,8 +360,10 @@ class Select : public std::enable_shared_from_this<Select> {
         //          << " " << rsp.range_end.to_string() << "\n";
         next_calls->push_back([scanner=std::make_shared<Scanner>(
           type, cid, cells_cid, interval, selector, next_calls,
-          parent_req == nullptr ? base_req : parent_req,
-          ++offset)] () { scanner->locate_on_manager(); });
+          parent_req == nullptr ? base_req : parent_req)] () { 
+            scanner->locate_on_manager(); 
+          }
+        );
       }
 
 
@@ -384,7 +381,7 @@ class Select : public std::enable_shared_from_this<Select> {
       } else 
         std::make_shared<Scanner>(
           type, rsp.cid, cells_cid, interval, selector, next_calls,
-          base_req, 0, rsp.rid
+          base_req, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
 
       return true;
@@ -393,6 +390,7 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_ranger(const EndPoints& endpoints) {
       HT_ASSERT(type != Types::Range::DATA);
 
+      // applicable(! LT/E RE) Specs::Key at ranges empty
       Rgr::Params::RangeLocateReq params(
         cid, rid, 
         interval->offset_key.empty() ? 
@@ -454,7 +452,6 @@ class Select : public std::enable_shared_from_this<Select> {
         return true;
       }
 
-      auto current_offset = offset;
       if(rsp.next_range && !rsp.range_end.empty()
         && type != Types::Range::DATA 
         && interval->key_finish.is_matching(rsp.range_end)) {
@@ -464,15 +461,15 @@ class Select : public std::enable_shared_from_this<Select> {
         //  << " " << rsp.range_end.to_string() << "\n";
           
         next_calls->push_back([endpoints, scanner=std::make_shared<Scanner>(
-          type, cid, cells_cid, interval, selector, next_calls, parent_req, ++offset
-        )] () { scanner->locate_on_ranger(endpoints); });
+          type, cid, cells_cid, interval, selector, next_calls, parent_req)]
+          () { scanner->locate_on_ranger(endpoints); });
       }
 
       std::make_shared<Scanner>(
         type == Types::Range::MASTER
         ? Types::Range::META : Types::Range::DATA,
         rsp.cid, cells_cid, interval, selector, next_calls, 
-        parent_req, current_offset, rsp.rid
+        parent_req, rsp.rid
       )->resolve_on_manager();
 
       return true;
