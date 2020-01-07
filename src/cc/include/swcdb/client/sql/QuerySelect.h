@@ -157,6 +157,23 @@ class QuerySelect : public Reader {
     return err;
   }
 
+  void parse_output_flags(uint8_t& output_flags) {
+    bool any = true;
+    while(any && remain && !err) {
+      if(found_space())
+        continue;    
+
+      if(any = found_token("OUTPUT_NO_TS", 12)) {
+        output_flags |= DB::OutputFlag::NO_TS;
+        continue;
+      }
+      if(any = found_token("OUTPUT_NO_VALUE", 15)) {
+        output_flags |= DB::OutputFlag::NO_VALUE;
+        continue;
+      }
+    }
+  }
+
   void parse_display_flags(uint8_t& display_flags) {
 
     bool any = true;

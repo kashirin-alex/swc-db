@@ -397,13 +397,14 @@ class DbClient : public Interface {
       const uint8_t* ptr = buffer_write.base;
       size_t remain = buffer_write.fill();
       
-      if(header.empty()) {
-        DB::Cells::TSV::header_read(&ptr, &remain, has_ts, header);
-        if(header.empty()) {
-          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
-          message.append("TSV file missing columns defintion header");
-          break;
-        }
+      if(header.empty() &&
+         !DB::Cells::TSV::header_read(&ptr, &remain, 
+                                      schema->col_type, has_ts, header)) {
+        message.append("TSV file missing ");
+        message.append(
+          header.empty() ? "columns defintion" : "value columns");
+        message.append(" in header\n");
+        break;
       }
 
       while(remain) {
@@ -419,6 +420,7 @@ class DbClient : public Interface {
           message.append(smartfd->filepath());
           message.append("' starting at-offset=");
           message.append(std::to_string(cell_pos));
+          message.append("\n");
           offset = length;
           err = Error::SQL_BAD_LOAD_FILE_FORMAT;
           break;
@@ -462,20 +464,22 @@ class DbClient : public Interface {
       message.append("' starting at-offset=");
       message.append(std::to_string(cell_pos));
       message.append("\n");
-      err = Error::SQL_BAD_LOAD_FILE_FORMAT;
     }
+    if(!message.empty())
+      err = Error::SQL_BAD_LOAD_FILE_FORMAT;
   }
 
   // DUMP
   const bool dump(std::string& cmd) {
     int64_t ts = Time::now_ns();
     FS::SmartFd::Ptr smartfd = nullptr;
+    uint8_t output_flags = 0;
     size_t cells_count = 0;
     size_t cells_bytes = 0;
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
-      [this, &smartfd, &cells_count, &cells_bytes]
+      [this, &smartfd, &output_flags, &cells_count, &cells_bytes]
       (Protocol::Common::Req::Query::Select::Result::Ptr result) {
-        write_to_file(result, smartfd, cells_count, cells_bytes);
+        write_to_file(result, smartfd, output_flags, cells_count, cells_bytes);
       },
       true // cb on partial rsp
     );
@@ -484,7 +488,7 @@ class DbClient : public Interface {
     std::string message;
     std::string filepath;
     client::SQL::parse_dump(
-      err, cmd, filepath, req->specs, display_flags, message);
+      err, cmd, filepath, req->specs, output_flags, display_flags, message);
     if(err) 
       return error(message);
       
@@ -535,7 +539,7 @@ class DbClient : public Interface {
   }
 
   void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
-                     FS::SmartFd::Ptr& smartfd, 
+                     FS::SmartFd::Ptr& smartfd, uint8_t output_flags, 
                      size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
@@ -547,7 +551,7 @@ class DbClient : public Interface {
         if(err)
           break;
         if(!cells_count)
-          DB::Cells::TSV::header_write(schema->col_type, buffer); // OUT_FLAGS
+          DB::Cells::TSV::header_write(schema->col_type, output_flags, buffer);
 
         vec.free();
         result->get_cells(cid, vec);
@@ -556,8 +560,7 @@ class DbClient : public Interface {
           cells_count++;
           cells_bytes += cell->encoded_length();
           
-          DB::Cells::TSV::write(
-            *cell, schema->col_type, buffer); // OUT_FLAGS
+          DB::Cells::TSV::write(*cell, schema->col_type, output_flags, buffer);
           
           delete cell;
           cell = nullptr;

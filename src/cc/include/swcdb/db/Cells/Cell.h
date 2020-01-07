@@ -25,6 +25,11 @@ enum DisplayFlag {
   STATS         = 0x20
 };
 
+enum OutputFlag {
+  NO_TS     = 0x01,
+  NO_VALUE  = 0x04
+};
+
 namespace Cells {
 
 enum Flag {
@@ -48,6 +53,23 @@ const std::string to_string(Flag flag) {
       return std::string("UKNONWN");
   }
 }
+
+const Flag flag_from(const uint8_t* rptr, uint32_t len) {
+  const char* ptr = (const char*)rptr;
+  if(len >= 14) {
+    if(strncasecmp(ptr, "delete_version", 14) == 0)
+      return Flag::DELETE_VERSION;
+  }
+  if(len >= 6) {
+    if(strncasecmp(ptr, "insert", 6) == 0)
+      return Flag::INSERT;
+    if(strncasecmp(ptr, "delete", 6) == 0)
+      return Flag::DELETE;
+  }
+  return Flag::NONE;
+}
+
+
 
 static const int64_t TIMESTAMP_MIN  = INT64_MIN;
 static const int64_t TIMESTAMP_MAX  = INT64_MAX;

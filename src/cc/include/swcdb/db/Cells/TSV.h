@@ -17,25 +17,26 @@ namespace SWC { namespace DB { namespace Cells {
 
 namespace TSV {
 
-void header_write(Types::Column typ, DynamicBuffer& buffer) {
+void header_write(Types::Column typ, uint8_t output_flags, 
+                  DynamicBuffer& buffer) {
   std::string header;
 
-  // if(!(out_flag & OUT_NO_TS))
-  header.append("TIMESTAMP\t");
+  if(!(output_flags & OutputFlag::NO_TS))
+    header.append("TIMESTAMP\t");
 
-  header.append("FLEN\tKEY\t");
-  // if(!(out_flag & OUT_NO_VALUE)) {
-  if(Types::is_counter(typ))
-    header.append("COUNT\tEQ\tSINCE");
-  else
-    header.append("VLEN\tVALUE");
-  // }
+  header.append("FLEN\tKEY\tFLAG\t");
+
+  if(!(output_flags & OutputFlag::NO_VALUE))
+    header.append(Types::is_counter(typ) 
+      ? "COUNT\tEQ\tSINCE"
+      : "VLEN\tVALUE");
+
   header.append("\n");
   buffer.add(header.data(), header.length());
 }
 
-void header_read(const uint8_t **bufp, size_t* remainp, 
-                 bool& has_ts, std::vector<std::string>& header) {
+const bool header_read(const uint8_t **bufp, size_t* remainp, Types::Column typ, 
+                       bool& has_ts, std::vector<std::string>& header) {
   const uint8_t* ptr = *bufp;
   size_t remain = *remainp;
 
@@ -49,29 +50,33 @@ void header_read(const uint8_t **bufp, size_t* remainp,
     }
   }
     
-  if(header.empty())
-    return;
-  if(!remain || *ptr != '\n') {
-    header.clear();
-    return;
-  }
+  if(header.empty() || !remain || *ptr != '\n')
+    return false;
 
   has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
+  if(header.size() < 5 + has_ts + Types::is_counter(typ))
+    return false;
 
   ptr++; // header's newline
   remain--;
 
   *bufp = ptr;
   *remainp = remain;
+  return true;
 }
 
 
-void write(const Cell &cell, Types::Column typ, DynamicBuffer& buffer) {
+void write(const Cell &cell, Types::Column typ, uint8_t output_flags, 
+           DynamicBuffer& buffer) {
   buffer.ensure(1024);
 
-  std::string ts = std::to_string(cell.timestamp);
-  buffer.add(ts.data(), ts.length());
-  buffer.add("\t", 1); //
+  std::string ts;
+  
+  if(!(output_flags & OutputFlag::NO_TS)) {
+    ts = std::to_string(cell.timestamp);
+    buffer.add(ts.data(), ts.length());
+    buffer.add("\t", 1); //
+  }
 
   uint32_t len = 0;
   std::string f_len;
@@ -92,6 +97,16 @@ void write(const Cell &cell, Types::Column typ, DynamicBuffer& buffer) {
       buffer.add(ptr, len);
     if(n < cell.key.count)
       buffer.add(",", 1);
+  }
+  buffer.add("\t", 1); //
+
+  std::string flag = DB::Cells::to_string((DB::Cells::Flag)cell.flag);
+  buffer.add(flag.data(), flag.length());
+
+  if(output_flags & OutputFlag::NO_VALUE || 
+     cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+    buffer.add("\n", 1);
+    return;
   }
   buffer.add("\t", 1); //
 
@@ -168,9 +183,27 @@ const bool read(const uint8_t **bufp, size_t* remainp,
   };
   if(!remain)
     return false;
-      
-
+     
   s = ptr;
+  while(remain && (*ptr != '\t' && *ptr != '\n')) {
+    remain--;
+    ++ptr;
+  }
+  if(!remain)
+    return false; 
+  if((cell.flag = DB::Cells::flag_from(s, ptr-s)) == Flag::NONE)
+    throw std::runtime_error("Bad cell Flag");
+  
+  if(cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+    if(*ptr == '\t')
+      throw std::runtime_error("Expected end of line");
+    goto cell_filled;
+  }
+  if(*ptr == '\n')
+    throw std::runtime_error("Expected a tab");
+
+  s = ++ptr; // tab
+  remain--;
   while(remain && (*ptr != '\t' && *ptr != '\n')) {
     remain--;
     ++ptr;
@@ -187,8 +220,9 @@ const bool read(const uint8_t **bufp, size_t* remainp,
       ++ptr; 
       if(!remain)
         return false; 
-      if(*ptr == '=')
-        op = OP_EQUAL;
+      if(*ptr != '=')
+        throw std::runtime_error("Expected EQ symbol");
+      op = OP_EQUAL;
       remain--;
       ++ptr;
       
@@ -219,18 +253,19 @@ const bool read(const uint8_t **bufp, size_t* remainp,
     remain -= cell.vlen;
   }
 
-  if(!remain || *ptr != '\n')
-    return false;
+  cell_filled:
+    if(!remain || *ptr != '\n')
+      return false;
       
-  ++ptr; // newline
-  remain--;
+    ++ptr; // newline
+    remain--;
 
-  cell.flag = INSERT;
     
-  //display(std::cout); std::cout << "\n";
+    //display(std::cout); std::cout << "\n";
 
-  *bufp = ptr;
-  *remainp = remain;
+    *bufp = ptr;
+    *remainp = remain;
+
   return true;
 }
 
