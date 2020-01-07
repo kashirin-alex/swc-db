@@ -62,6 +62,8 @@ class Update : public std::enable_shared_from_this<Update> {
   
   Cb_t                        cb;
   DB::Cells::MapMutable::Ptr  columns;
+  DB::Cells::MapMutable::Ptr  columns_onfractions;
+
   Result::Ptr                 result;
 
   uint32_t buff_sz          = 8000000;
@@ -73,10 +75,15 @@ class Update : public std::enable_shared_from_this<Update> {
   Update(Cb_t cb=0)
         : cb(cb),
           columns(std::make_shared<DB::Cells::MapMutable>()),
+          columns_onfractions(std::make_shared<DB::Cells::MapMutable>()),
           result(std::make_shared<Result>()) { }
 
-  Update(DB::Cells::MapMutable::Ptr columns, Cb_t cb=0)
-        : cb(cb), columns(columns), 
+  Update(DB::Cells::MapMutable::Ptr columns, 
+         DB::Cells::MapMutable::Ptr columns_onfractions, 
+         Cb_t cb=0)
+        : cb(cb), 
+          columns(columns), 
+          columns_onfractions(columns_onfractions), 
           result(std::make_shared<Result>()) { }
 
   virtual ~Update(){ }
@@ -104,10 +111,13 @@ class Update : public std::enable_shared_from_this<Update> {
     DB::Cells::ColCells::Ptr col;
     for(size_t idx=0; (col=columns->get_idx(idx)) != nullptr; idx++)
       commit(col);
+    for(size_t idx=0; (col=columns_onfractions->get_idx(idx)) != nullptr; idx++)
+      commit_onfractions(col);
   }
 
   void commit(const int64_t cid) { 
     commit(columns->get_col(cid));
+    commit_onfractions(columns_onfractions->get_col(cid));
   }
 
   void commit(DB::Cells::ColCells::Ptr col) {
@@ -119,6 +129,13 @@ class Update : public std::enable_shared_from_this<Update> {
       col->get_first_key(), 
       shared_from_this()
     )->locate_on_manager();
+  }
+
+  void commit_onfractions(DB::Cells::ColCells::Ptr col) {
+    if(col != nullptr && !col->size())
+      return;
+    // query cells on fractions -EQ && rest(NONE-true)
+    // update cell with + ts,flag,value and add cell to 'columns'
   }
 
   class Locator : public std::enable_shared_from_this<Locator> {

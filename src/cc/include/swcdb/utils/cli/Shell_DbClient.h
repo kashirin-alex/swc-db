@@ -108,7 +108,9 @@ class DbClient : public Interface {
       new Option(
         "dump", 
         {"dump col='ID|NAME' into 'filepath.ext' "
-         "where [cells=(Interval Flags) AND];"},
+        "where [cells=(Interval Flags) AND] Output-Flags Display-Flags;",
+        "-> dump col='ColName' into 'ColName.tsv' OUTPUT_NO_* TS / VALUE;"
+        },
         [ptr=this](std::string& cmd){return ptr->dump(cmd);}, 
         new re2::RE2(
           "(?i)^(dump)(\\s+|$)")
@@ -117,7 +119,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "load", 
-        {"load from 'filepath.ext' into col='ID|NAME';"},
+        {"load from 'filepath.ext' into col='ID|NAME' Display-Flags;"},
         [ptr=this](std::string& cmd){return ptr->load(cmd);}, 
         new re2::RE2(
           "(?i)^(load)(\\s+|$)")
@@ -270,22 +272,21 @@ class DbClient : public Interface {
   const bool update(std::string& cmd) {
     int64_t ts = Time::now_ns();
     uint8_t display_flags = 0;
-
+ 
     auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
-    auto req_fraction = std::make_shared<Protocol::Common::Req::Query::Update>();
     std::string message;
     client::SQL::parse_update(
       err, cmd, 
-      *req->columns.get(), *req_fraction->columns.get(), 
+      *req->columns.get(), *req->columns_onfractions.get(), 
       display_flags, message
     );
     if(err) 
       return error(message);
     
     size_t cells_count = req->columns->size() 
-                       + req_fraction->columns->size();
+                       + req->columns_onfractions->size();
     size_t cells_bytes = req->columns->size_bytes() 
-                       + req_fraction->columns->size_bytes();
+                       + req->columns_onfractions->size_bytes();
 
     req->timeout_commit += 10*cells_count;
     req->commit();

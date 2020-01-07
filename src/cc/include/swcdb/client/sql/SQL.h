@@ -35,9 +35,9 @@ void parse_select(int& err, const std::string& sql,
 
 void parse_update(int& err, const std::string& sql, 
                   DB::Cells::MapMutable& columns, 
-                  DB::Cells::MapMutable& columns_onfraction, 
+                  DB::Cells::MapMutable& columns_onfractions, 
                   uint8_t& display_flags, std::string& message) {
-  QueryUpdate parser(sql, columns, columns_onfraction, message);
+  QueryUpdate parser(sql, columns, columns_onfractions, message);
   err = parser.parse_update();
   if(!err)
     parser.parse_display_flags(display_flags);
@@ -73,8 +73,8 @@ void parse_load(int& err, const std::string& sql,
                 std::string& filepath, int64_t& cid,  
                 uint8_t& display_flags, std::string& message) {
   DB::Cells::MapMutable columns;
-  DB::Cells::MapMutable columns_onfraction;
-  QueryUpdate parser(sql, columns, columns_onfraction, message);
+  DB::Cells::MapMutable columns_onfractions;
+  QueryUpdate parser(sql, columns, columns_onfractions, message);
   err = parser.parse_load(filepath, cid);
   if(!err)
     parser.parse_display_flags(display_flags);

@@ -25,10 +25,10 @@ class QueryUpdate : public Reader {
   public:
   QueryUpdate(const std::string& sql, 
               DB::Cells::MapMutable& columns, 
-              DB::Cells::MapMutable& columns_onfraction,
+              DB::Cells::MapMutable& columns_onfractions,
               std::string& message)
               : Reader(sql, message), 
-                columns(columns), columns_onfraction(columns_onfraction) {
+                columns(columns), columns_onfractions(columns_onfractions) {
   }
 
   const int parse_update() {
@@ -146,7 +146,7 @@ class QueryUpdate : public Reader {
         if(err) 
           return;
         if(on_fraction)
-          columns_onfraction.add(cid, cell);
+          columns_onfractions.add(cid, cell);
         else 
           columns.add(cid, cell);
       }
@@ -284,7 +284,7 @@ class QueryUpdate : public Reader {
   }
   
   DB::Cells::MapMutable& columns;
-  DB::Cells::MapMutable& columns_onfraction;
+  DB::Cells::MapMutable& columns_onfractions;
 };
 
 
