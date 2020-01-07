@@ -89,12 +89,15 @@ class Update : public std::enable_shared_from_this<Update> {
   virtual ~Update(){ }
  
   void response() {
-    // if cells not empty commit-again
+    if(columns->size() || columns_onfractions->size()) {
+      commit();
+      return;
+    }
+
     if(cb)
       cb(result);
     cv.notify_all();
   }
-
   void wait() {
     std::unique_lock<std::mutex> lock_wait(m_mutex);
     if(result->completion == 0)
