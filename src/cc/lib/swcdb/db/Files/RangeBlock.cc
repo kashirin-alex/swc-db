@@ -264,25 +264,30 @@ Block::Ptr Block::_split(bool loaded) {
     m_blocks,
     loaded ? State::LOADED : State::NONE
   );
+  if(loaded) {
+    m_cells.move_from_key_offset(
+      m_cells.size()/2, //m_blocks->range->cfg->block_cells(), 
+      blk->m_cells
+    );
+    assert(blk->m_cells.size());
+    blk->m_cells.expand_begin(blk->m_interval);
 
-  m_cells.move_from_key_offset(
-    m_cells.size()/2, //m_blocks->range->cfg->block_cells(), 
-    blk->m_cells
-  );
-  assert(m_cells.size());
-  assert(blk->m_cells.size());
+  } else {
+    m_cells.remove_from_key_offset(
+      m_cells.size()/2, 
+      blk->m_interval
+    );
+  }
 
-  blk->m_cells.expand_begin(blk->m_interval);
+
   blk->m_interval.set_key_end(m_interval.key_end);
   blk->m_interval.set_ts_latest(m_interval.ts_latest);
       
   m_interval.key_end.free();
   m_interval.ts_latest.free();
+  assert(m_cells.size());
   m_cells.expand_end(m_interval);
     
-  if(!loaded)
-    blk->m_cells.free();
-      
   add(blk);
   return blk;
 }

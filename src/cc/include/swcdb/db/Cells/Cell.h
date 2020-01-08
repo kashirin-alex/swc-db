@@ -158,7 +158,13 @@ class Cell final {
     read(bufp, remainp, own);             
   }
 
-  explicit Cell(const Cell& other, bool no_value=false): value(0), vlen(0) {
+  explicit Cell(const Cell& other)
+                : value(0), vlen(0) {
+    copy(other);
+  }
+
+  explicit Cell(const Cell& other, bool no_value)
+                : value(0), vlen(0) {
     copy(other, no_value);
   }
 

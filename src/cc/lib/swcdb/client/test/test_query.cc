@@ -403,7 +403,11 @@ int main(int argc, char** argv) {
     0, 
     "col-test-1", 
     SWC::Types::Column::PLAIN, 
-    1, 0, 3, SWC::Types::Encoding::SNAPPY, 50000000,
+    1, // cell_versions
+    0, // cell_ttl
+    3, // blk_replication
+    SWC::Types::Encoding::SNAPPY,
+    50000000,
     0, // blk-cells
     0, // cs-size
     0, // cs-max

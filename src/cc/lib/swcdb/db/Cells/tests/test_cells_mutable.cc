@@ -141,7 +141,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   size_t skips = 0;
       
   int64_t took = SWC::Time::now_ns();
-  cells_mutable->scan(specs, result, count, skips);
+  cells_mutable->scan_test_use(specs, result, count, skips);
   took = SWC::Time::now_ns()-took;
 
   size_t remain = result.fill();
