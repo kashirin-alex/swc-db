@@ -189,9 +189,9 @@ class Update : public std::enable_shared_from_this<Update> {
       if(cid >= 2)
         params.range_begin.insert(0, "2");
 
-      std::cout << "locate_on_manager:\n " 
-                << to_string() << "\n "
-                << params.to_string() << "\n";
+      //std::cout << "locate_on_manager:\n " 
+      //          << to_string() << "\n "
+      //          << params.to_string() << "\n";
 
       updater->result->completion++;
 
@@ -206,7 +206,7 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     void resolve_on_manager() {
-      std::cout << "resolve_on_manager:\n " << to_string() << "\n";
+      //std::cout << "resolve_on_manager:\n " << to_string() << "\n";
       // if cid, rid >> cache rsp
 
       updater->result->completion++;
@@ -224,8 +224,8 @@ class Update : public std::enable_shared_from_this<Update> {
     bool located_on_manager(const ReqBase::Ptr& base_req, 
                             const Mngr::Params::RgrGetRsp& rsp) {
 
-      std::cout << "located_on_manager:\n " << to_string() 
-                << "\n " << rsp.to_string() << "\n";
+      //std::cout << "located_on_manager:\n " << to_string() 
+      //          << "\n " << rsp.to_string() << "\n";
       
       if(rsp.err != Error::OK){
         // err type? ~| parent_req->request_again();
@@ -233,17 +233,17 @@ class Update : public std::enable_shared_from_this<Update> {
           //std::cout << "NO-RETRY \n";
           return true;
         } else if(rsp.err == Error::RANGE_NOT_FOUND) {
-          std::cout << "RETRYING " << rsp.to_string() << "\n";
+          //std::cout << "RETRYING " << rsp.to_string() << "\n";
           (parent_req == nullptr ? base_req : parent_req)->request_again();
           return false;
         } else {
-          std::cout << "RETRYING " << rsp.to_string() << "\n";
+          //std::cout << "RETRYING " << rsp.to_string() << "\n";
           base_req->request_again();
           return false;
         }
       }
       if(!rsp.rid) {
-        std::cout << "RETRYING " << rsp.to_string() << "\n";
+        //std::cout << "RETRYING " << rsp.to_string() << "\n";
         (parent_req == nullptr ? base_req : parent_req)->request_again();
         return false;
       }
@@ -268,9 +268,9 @@ class Update : public std::enable_shared_from_this<Update> {
         )->locate_on_ranger(rsp.endpoints);
 
       if(rsp.next_range && !rsp.range_end.empty()) {
-        std::cout << "located_on_manager, NEXT-KEY: " 
-                  << Types::to_string(type) 
-                  << " " << rsp.range_end.to_string() << "\n";
+        //std::cout << "located_on_manager, NEXT-KEY: " 
+        //          << Types::to_string(type) 
+        //          << " " << rsp.range_end.to_string() << "\n";
 
         auto next_key_start = col_cells->get_key_next(rsp.range_end);
         if(next_key_start != nullptr) {
@@ -293,9 +293,9 @@ class Update : public std::enable_shared_from_this<Update> {
       if(type == Types::Range::MASTER && col_cells->cid > 2) 
         params.range_begin.insert(0, "2");
 
-      std::cout << "locate_on_ranger:\n "
-                << to_string() << "\n "
-                << params.to_string() << "\n";
+      //std::cout << "locate_on_ranger:\n "
+      //          << to_string() << "\n "
+      //          << params.to_string() << "\n";
       
       updater->result->completion++;
 
@@ -316,8 +316,8 @@ class Update : public std::enable_shared_from_this<Update> {
     bool located_on_ranger(const EndPoints& endpoints, 
                            const ReqBase::Ptr& base_req, 
                            const Rgr::Params::RangeLocateRsp& rsp) {
-      std::cout << "located_on_ranger:\n " << to_string() 
-                << "\n " << rsp.to_string() << "\n";
+      //std::cout << "located_on_ranger:\n " << to_string() 
+      //          << "\n " << rsp.to_string() << "\n";
 
       if(rsp.err == Error::RS_NOT_LOADED_RANGE
       || rsp.err == Error::RANGE_NOT_FOUND) {
@@ -326,7 +326,7 @@ class Update : public std::enable_shared_from_this<Update> {
       }
       if(!rsp.rid 
       ||(type == Types::Range::DATA && rsp.cid != col_cells->cid)) {
-        std::cout << "RETRYING " << rsp.to_string() << "\n";
+        //std::cout << "RETRYING " << rsp.to_string() << "\n";
         parent_req->request_again();
         return false;
       }
@@ -350,9 +350,9 @@ class Update : public std::enable_shared_from_this<Update> {
       )->resolve_on_manager();
 
       if(rsp.next_range && !rsp.range_end.empty()) {
-      std::cout << "located_on_ranger, NEXT-KEY: " 
-        << Types::to_string(type) 
-        << " " << rsp.range_end.to_string() << "\n";
+        //std::cout << "located_on_ranger, NEXT-KEY: " 
+        //  << Types::to_string(type) 
+        //   << " " << rsp.range_end.to_string() << "\n";
 
         auto next_key_start = col_cells->get_key_next(rsp.range_end);
         if(next_key_start != nullptr) {
@@ -367,8 +367,8 @@ class Update : public std::enable_shared_from_this<Update> {
     void commit_data(EndPoints endpoints, uint64_t rid,
                      const DB::Cell::Key& key_end,
                      const ReqBase::Ptr& base_req) {
-      std::cout << "Query::Update commit_data " 
-                << col_cells->to_string() << " rid=" << rid << "\n"; 
+      //std::cout << "Query::Update commit_data " 
+      //          << col_cells->to_string() << " rid=" << rid << "\n"; 
               
       bool more = true;
       DynamicBuffer::Ptr cells_buff;
@@ -377,14 +377,14 @@ class Update : public std::enable_shared_from_this<Update> {
              *key_start.get(), key_end, updater->buff_sz, more)) != nullptr) {
         
         updater->result->completion++;
-
+        /*
         std::cout << "Query::Update commit_data:\n sz=" << cells_buff->fill() 
                   << " more=" << more 
                   << " " << col_cells->to_string() << " rid=" << rid
                   << " key_start=" << key_start->to_string() 
                   << " key_end=" << key_end.to_string() 
                   << "\n"; 
-    
+        */
         Rgr::Req::RangeQueryUpdate::request(
           Rgr::Params::RangeQueryUpdateReq(col_cells->cid, rid), 
           cells_buff, 
@@ -393,21 +393,21 @@ class Update : public std::enable_shared_from_this<Update> {
             ptr->col_cells->add(*cells_buff.get());
             base_req->request_again();
             --ptr->updater->result->completion;
-              std::cout << "RETRYING NO-CONN\n";
+            //std::cout << "RETRYING NO-CONN\n";
           },
           [cells_buff, base_req, ptr=shared_from_this()] 
           (ReqBase::Ptr req_ptr, Rgr::Params::RangeQueryUpdateRsp rsp) {
 
-            std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: "
-              << rsp.to_string() 
-              << " completion=" 
-              << ptr->updater->result->completion.load() << "\n";
+            //std::cout << "commit_data, Rgr::Req::RangeQueryUpdate: "
+            //  << rsp.to_string() 
+            //  << " completion=" 
+            //  << ptr->updater->result->completion.load() << "\n";
 
             if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
               ptr->col_cells->add(*cells_buff.get());
               base_req->request_again();
               --ptr->updater->result->completion;
-              std::cout << "RETRYING " << rsp.to_string() << "\n";
+              //std::cout << "RETRYING " << rsp.to_string() << "\n";
               return;
             }        
             // cb(col) at !cells 

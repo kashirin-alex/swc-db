@@ -22,10 +22,20 @@ struct Select final {
 
   std::atomic<uint32_t>  completion = 0;
   std::atomic<int>       err = Error::OK;
+  std::atomic<bool>      notify;
+
+  Select(std::condition_variable& cv, bool notify) 
+        : notify(notify), m_cv(cv) { }
+
+  ~Select() { }
 
   struct Rsp final {
     public:
     typedef std::shared_ptr<Rsp> Ptr;
+
+    Rsp() { }
+
+    ~Rsp() { }
 
     const bool add_cells(const StaticBuffer& buffer, bool more, 
                          DB::Specs::Interval& interval) {
@@ -76,6 +86,7 @@ struct Select final {
     size_t             m_size_bytes = 0;
   };
 
+
   void add_column(const int64_t cid) {
     m_columns.insert(std::make_pair(cid, std::make_shared<Rsp>()));
   }
@@ -86,7 +97,9 @@ struct Select final {
   }
 
   void get_cells(const int64_t cid, DB::Cells::Vector& cells) {
-    return m_columns[cid]->get_cells(cells);
+    m_columns[cid]->get_cells(cells);
+    if(notify)
+      m_cv.notify_all();
   }
 
   const size_t get_size(const int64_t cid) {
@@ -109,6 +122,8 @@ struct Select final {
 
   const void free(const int64_t cid) {
     m_columns[cid]->free();
+    if(notify)
+      m_cv.notify_all();
   }
 
   void remove(const int64_t cid) {
@@ -116,9 +131,12 @@ struct Select final {
   }
   
   private:
+
   std::unordered_map<int64_t, Rsp::Ptr> m_columns;
+  std::condition_variable&              m_cv;
 
 };
+
 }
 
 class Select : public std::enable_shared_from_this<Select> {
@@ -129,37 +147,34 @@ class Select : public std::enable_shared_from_this<Select> {
   typedef std::shared_ptr<Select>           Ptr;
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
+  uint32_t buff_sz          = 8000000;
+  uint32_t timeout_select   = 600000;
+
   Cb_t                        cb;
   DB::Specs::Scan             specs;
   Result::Ptr                 result;
 
-  uint32_t buff_sz          = 8000000;
-  uint32_t timeout_select   = 600000;
-
-  std::mutex                  m_mutex;
-  bool                        rsp_partials;
-  bool                        rsp_partial_runs = false;
-  std::condition_variable     cv;
-
   Select(Cb_t cb=0, bool rsp_partials=false)
         : cb(cb), 
-          result(std::make_shared<Result>()), 
-          rsp_partials(cb && rsp_partials) { 
+          rsp_partials(cb && rsp_partials), 
+          result(std::make_shared<Result>(m_cv, rsp_partials)) { 
   }
 
   Select(const DB::Specs::Scan& specs, Cb_t cb=0, bool rsp_partials=false)
         : cb(cb), specs(specs), 
-          result(std::make_shared<Result>()), 
-          rsp_partials(cb && rsp_partials) {
+          rsp_partials(cb && rsp_partials),
+          result(std::make_shared<Result>(m_cv, rsp_partials)) {
   }
 
-  virtual ~Select(){ }
+  virtual ~Select() { 
+    result->notify.store(false);
+  }
  
   void response() {
     // if cells not empty commit-again
     if(cb)
       cb(result);
-    cv.notify_all();
+    m_cv.notify_all();
   }
 
   void response_partial() {
@@ -167,26 +182,27 @@ class Select : public std::enable_shared_from_this<Select> {
       return;
     {
       std::unique_lock<std::mutex> lock(m_mutex);
-      if(rsp_partial_runs)
+      if(m_rsp_partial_runs)
         return;
-      rsp_partial_runs = true;
+      m_rsp_partial_runs = true;
     }
     
     cb(result);
 
     {
       std::unique_lock<std::mutex> lock(m_mutex);
-      rsp_partial_runs = false;
+      m_rsp_partial_runs = false;
     }
-    cv.notify_all();
+    m_cv.notify_all();
   }
 
   void wait() {
     std::unique_lock<std::mutex> lock(m_mutex);
-    cv.wait(
+    m_cv.wait(
       lock, 
       [ptr=shared_from_this()] () {
-        return ptr->result->completion == 0 && !ptr->rsp_partial_runs;
+        return ptr->result->completion == 0 && 
+              !ptr->m_rsp_partial_runs;
       }
     );  
   }
@@ -196,11 +212,14 @@ class Select : public std::enable_shared_from_this<Select> {
       return;
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    if(!rsp_partial_runs)
+    if(!m_rsp_partial_runs)
       return;
-    cv.wait(
+    m_cv.wait(
       lock, 
-      [ptr=shared_from_this()] () { return !ptr->rsp_partial_runs; }
+      [ptr=shared_from_this()] () { 
+        return !ptr->m_rsp_partial_runs || 
+                ptr->result->get_size_bytes() < ptr->buff_sz * 3; 
+      }
     );  
   }
 
@@ -220,6 +239,12 @@ class Select : public std::enable_shared_from_this<Select> {
       }
     }
   }
+  private:
+  
+  const bool                  rsp_partials;
+  std::mutex                  m_mutex;
+  bool                        m_rsp_partial_runs = false;
+  std::condition_variable     m_cv;
 
 
   class Scanner: public std::enable_shared_from_this<Scanner> {
@@ -498,7 +523,7 @@ class Select : public std::enable_shared_from_this<Select> {
               --ptr->selector->result->completion;
               //std::cout << "RETRYING " << rsp.to_string() << "\n";
             } else {
-              std::cout << "RETRYING " << rsp.to_string() << "\n";
+              //std::cout << "RETRYING " << rsp.to_string() << "\n";
               req_ptr->request_again();
             }
             return;
