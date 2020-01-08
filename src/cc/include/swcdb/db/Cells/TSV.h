@@ -248,7 +248,8 @@ const bool read(const uint8_t **bufp, size_t* remainp,
     remain--;
     if(remain < cell.vlen+1) 
       return false;
-    cell.value = (uint8_t*)ptr;
+    if(cell.vlen)
+      cell.value = (uint8_t*)ptr;
     ptr += cell.vlen;
     remain -= cell.vlen;
   }
