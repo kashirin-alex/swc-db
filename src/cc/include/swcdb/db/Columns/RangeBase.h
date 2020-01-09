@@ -142,23 +142,18 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   }
 
   bool includes(const DB::Cell::Key& range_begin, 
-                const DB::Cell::Key& range_end, uint32_t fractions=0) {
+                const DB::Cell::Key& range_end, uint32_t any_is=0) {
     std::shared_lock lock(m_mutex);
-    return 
-      (
-        (!fractions || (m_interval.key_begin.empty() && range_end.empty()) || 
-         range_end.compare(m_interval.key_begin, fractions) != Condition::GT
-        ) && (
-          m_interval.key_begin.empty() || range_end.empty() ||
-          range_end.compare(m_interval.key_begin) != Condition::GT
-        )
+    return (
+        m_interval.key_begin.empty() || 
+        m_interval.key_begin.count == any_is ||
+        range_end.empty() || 
+        range_end.compare(m_interval.key_begin) != Condition::GT
       ) && (
-        (!fractions || (m_interval.key_end.empty() && range_begin.empty()) || 
-          range_begin.compare(m_interval.key_end, fractions) != Condition::LT
-        ) && (
-          m_interval.key_end.empty() || range_begin.empty() ||
-          range_begin.compare(m_interval.key_end) != Condition::LT
-        )      
+        m_interval.key_end.empty() || 
+        m_interval.key_end.count == any_is ||
+        range_begin.empty() || 
+        range_begin.compare(m_interval.key_end) != Condition::LT
       );
   }
 
