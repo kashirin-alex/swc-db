@@ -616,7 +616,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
             if(rsp.reached_limit) {
               auto qreq = std::dynamic_pointer_cast<
-                Rgr::Req::RangeQerySelect>(req_ptr);
+                Rgr::Req::RangeQuerySelect>(req_ptr);
               ptr->select(qreq->endpoints, rid, base_req);
 
             } else if(!ptr->next_calls->empty()) {
