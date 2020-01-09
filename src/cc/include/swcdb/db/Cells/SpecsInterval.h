@@ -177,9 +177,11 @@ class Interval {
       &&
       ts_finish.is_matching(cell.timestamp) 
       &&
-      (range_begin.empty() || range_begin.compare(cell.key) != Condition::LT) 
+      (range_begin.empty() || range_begin.compare(cell.key, range_begin.count)
+                                                            != Condition::LT) 
       &&
-      (range_end.empty()   || range_end.compare(cell.key) != Condition::GT) 
+      (range_end.empty()   || range_end.compare(cell.key, range_end.count) 
+                                                            != Condition::GT) 
       &&
       (key_start.empty()   || key_start.is_matching(cell.key)) 
       &&
@@ -265,9 +267,10 @@ class Interval {
     s.append(offset_key.to_string());
     s.append(" OffsetRev=");
     s.append(std::to_string(offset_rev));
-
+    
+    s.append(" ");
     s.append(value.to_string());
-
+    
     s.append(" ");
     s.append(flags.to_string());
 
