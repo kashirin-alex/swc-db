@@ -14,8 +14,8 @@ namespace DB = SWC::DB;
 namespace Condition = SWC::Condition;
 
 void test_basic(){
-  char * fraction;
-  uint32_t length;
+  const char* fraction;
+  uint32_t    length;
   Condition::Comp comp;
 
   std::cout << "\ntest_basic start! \n";
@@ -195,8 +195,8 @@ void test_basic(){
 
 void load_check_key(int chks, int num_fractions, int chk_count) {
 
-  char * fraction;
-  uint32_t length;
+  const char* fraction;
+  uint32_t    length;
   uint64_t took_add = 0, took_get = 0, took_remove = 0, took_insert = 0;
 
   for(int n=0; n < chks; n++) {
@@ -252,7 +252,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
 void load_check_vec(int chks, int num_fractions, int chk_count) {
 
   std::string s;
-  char *      fraction;
+  const char* fraction;
   uint32_t    length; 
   uint64_t took_add = 0, took_get = 0, took_remove = 0, took_insert = 0;
 

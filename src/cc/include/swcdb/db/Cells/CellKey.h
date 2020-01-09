@@ -201,20 +201,20 @@ class Key {
   }
 
   const std::string get_string(uint32_t idx, uint8_t reserved=0) const {
-    char* fraction;
+    const char* fraction;
     uint32_t length = 0;
     get(idx, &fraction, &length, reserved);
     return std::string(fraction, length);
   }
 
-  void get(uint32_t idx, char** fraction, uint32_t* length, 
+  void get(uint32_t idx, const char** fraction, uint32_t* length, 
            uint8_t reserved=0) const {
-    uint8_t* fraction_ptr = 0;
+    const uint8_t* fraction_ptr = 0;
     get(idx, fraction, length, &fraction_ptr, reserved);
   }
 
-  void get(uint32_t idx, char** fraction, uint32_t* length, 
-           uint8_t** fraction_ptr, uint8_t reserved) const { 
+  void get(uint32_t idx, const char** fraction, uint32_t* length, 
+           const uint8_t** fraction_ptr, uint8_t reserved) const { 
     assert(sane());
 
     if(!data || idx > count) {
@@ -230,9 +230,9 @@ class Key {
       ptr_tmp += reserved;
       len = Serialization::decode_vi32(&ptr_tmp);
       if(!idx--) { 
-        *fraction = (char*)ptr_tmp;
+        *fraction = (const char*)ptr_tmp;
         *length = len;
-        *fraction_ptr = (uint8_t*)ptr;
+        *fraction_ptr = ptr;
         return;
       }
     }

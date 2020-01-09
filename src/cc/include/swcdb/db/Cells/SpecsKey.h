@@ -118,11 +118,11 @@ class Key : public DB::Cell::Key {
     return DB::Cell::Key::get_string(idx, 1);
   }
 
-  void get(uint32_t idx, char** fraction, uint32_t* length, 
+  void get(uint32_t idx, const char** fraction, uint32_t* length, 
            Condition::Comp* comp) const {
     *length = 0;
     *fraction = 0;
-    uint8_t* fraction_ptr = 0;
+    const uint8_t* fraction_ptr = 0;
     DB::Cell::Key::get(idx, fraction, length, &fraction_ptr, 1);
     if(fraction_ptr) 
       *comp = (Condition::Comp)*fraction_ptr;
