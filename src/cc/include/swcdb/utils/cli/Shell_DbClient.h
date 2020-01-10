@@ -591,38 +591,44 @@ class DbClient : public Interface {
   }
 
 
-  void display_stats(double took, double bytes, size_t cells_count) {      
+  void display_stats(size_t took, size_t bytes, size_t cells_count) {      
     std::cout << "\n\nStatistics:\n";
+    double took_base;
+    double bytes_base;
 
     char time_base = 'n';
-    if(took > 100000 && took < 10000000) { 
-      took /= 1000;
+    if(took < 100000) {
+      took_base = took;
+    } else if(took < 10000000) { 
+      took_base = (double)took/1000;
       time_base = 'u';
-    } else if(took < 10000000000) { 
-      took /= 1000000;
+    } else if(took <= 10000000000) { 
+      took_base = (double)(took/1000)/1000;
       time_base = 'm';
-    } else  if(took > 10000000000) {
-      took /= 1000000000;
+    } else if(took > 10000000000) {
+      took_base = (double)(took/1000000)/1000;
       time_base = 0;
     }
 
     char byte_base = 0;
-    if(bytes > 1000000 && bytes < 1000000000) {
-      bytes /= 1000;
+    if(bytes < 1000000) {
+      bytes_base = bytes;
+    } else if(bytes <= 1000000000) {
+      bytes_base = (double)bytes/1000;
       byte_base = 'K';
-    } else if (bytes > 1000000000) {
-      bytes /= 1000000;
+    } else if(bytes > 1000000000) {
+      bytes_base = (double)(bytes/1000)/1000;
       byte_base = 'M';
     }
         
     std::cout 
-      << " Total Time Took:        " << took << " " << time_base  << "s\n"
-      << " Total Cells Count:      " << cells_count                << "\n"
-      << " Total Cells Size:       " << bytes << " " << byte_base << "B\n"
-      << " Average Transfer Rate:  " << bytes/took 
-                         << " " << byte_base << "B/" << time_base << "s\n" 
-      << " Average Cells Rate:     " << (cells_count?cells_count/took:0)
-                                         << " cell/" << time_base << "s\n"
+      << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
+      << " Total Cells Count:      " << cells_count                    << "\n"
+      << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n"
+      << " Average Transfer Rate:  " << bytes_base/took_base 
+                              << " " << byte_base << "B/" << time_base << "s\n" 
+      << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)
+                                              << " cell/" << time_base << "s\n"
     ;
 
   }
