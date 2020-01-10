@@ -78,7 +78,9 @@ class Fragment final {
   ~Fragment() { }
 
   void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
-             DynamicBuffer& cells, uint32_t cell_count) {
+             DynamicBuffer& cells, uint32_t cell_count, 
+             std::atomic<int>& writing, std::condition_variable_any& cv) {
+
     m_version = VERSION;
     
     uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
@@ -117,51 +119,67 @@ class Fragment final {
                  &bufp, m_data_checksum);
     checksum_i32(header_extptr, bufp, &bufp);
 
-    StaticBuffer buff_write(output);
-
-    do_again:
-    Env::FsInterface::interface()->write(
-      err,
-      m_smartfd, 
-      blk_replicas, m_cells_offset+m_size_enc, 
-      buff_write
+    auto buff_write = std::make_shared<StaticBuffer>(output);
+    buff_write->own = false;
+    m_buffer.set(cells);
+    writing++;
+    
+    write(
+      Error::UNPOSSIBLE, 
+      m_smartfd, blk_replicas, m_cells_offset+m_size_enc, 
+      buff_write,
+      writing,
+      cv
     );
+  }
 
+  void write(int err, FS::SmartFd::Ptr smartfd, 
+             uint8_t blk_replicas, int64_t blksz, StaticBuffer::Ptr buff_write,
+             std::atomic<int>& writing, std::condition_variable_any& cv) {
+    
     int tmperr = Error::OK;
     if(!err && Env::FsInterface::fs()->length(
-        tmperr, m_smartfd->filepath()) != buff_write.size)
+        tmperr, m_smartfd->filepath()) != buff_write->size)
       err = Error::FS_EOF;
 
-    if(err) {
-      if(err == Error::FS_PATH_NOT_FOUND 
-        //|| err == Error::FS_PERMISSION_DENIED
-          || err == Error::SERVER_SHUTTING_DOWN) {
-    
-        // err == ? 
-        // server already shutting down or major fs issue (PATH NOT FOUND)
-        // write temp(local) file for recovery
-        return;
-      }
-      // if not overwriteflag:
-      //   Env::FsInterface::fs()->remove(tmperr, m_smartfd->filepath()) 
-      goto do_again;
+    if(err & err != Error::FS_PATH_NOT_FOUND &&
+             err != Error::FS_PERMISSION_DENIED &&
+             err != Error::SERVER_SHUTTING_DOWN) {
+      
+      if(err != Error::UNPOSSIBLE)
+        SWC_LOGF(LOG_DEBUG, "write, retrying to err=%d(%s)", 
+                 err, Error::get_text(err));
+
+      Env::FsInterface::fs()->write(
+        [this, blk_replicas, blksz, buff_write, &writing, &cv]
+        (int err, FS::SmartFd::Ptr smartfd) {
+          write(err, smartfd, blk_replicas, blksz, buff_write, writing, cv);
+        }, 
+        smartfd, blk_replicas, blksz, *buff_write.get()
+      );
+      return;
     }
+
+    //if(err) write local dump
+    
+    buff_write->own = true;
 
     bool keep;
     {
       std::scoped_lock lock(m_mutex);
       keep = !m_queue.empty() || m_processing;
       m_err = err;
-      if((m_state = !m_err && keep ? State::LOADED : State::NONE)
-                  == State::LOADED)
-        m_buffer.set(cells);
-      else
+      if((m_state = !m_err && keep ? State::LOADED : State::NONE) 
+                                                != State::LOADED)
         m_buffer.free();
     }
     if(keep)
       run_queued();
     else if(Env::Resources.need_ram(m_size))
       release();
+    
+    writing--;
+    cv.notify_all();
   }
 
   void load_header(bool close_after=true) {

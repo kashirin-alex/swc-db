@@ -81,6 +81,7 @@ class Fragments final {
     Fragment::Ptr frag; 
     uint32_t cell_count;
     int err;
+    std::atomic<int> writing = 0;
     for(;;) {
       err = Error::OK;
       DynamicBuffer cells;
@@ -123,11 +124,15 @@ class Fragments final {
         err, 
         range->cfg->block_replication(), 
         range->cfg->block_enc(), 
-        cells, cell_count
+        cells, cell_count,
+        writing, m_cv
       );
 
       {
-        std::shared_lock lock(m_mutex_cells);
+        std::unique_lock lock_wait(m_mutex);
+        if(writing >= 5)
+          m_cv.wait(lock_wait, [&writing] {return writing < 5;});
+
         uint32_t cells_count = m_cells.size();
         if(!cells_count || (!finalize && 
             (m_cells.size_bytes() < range->cfg->block_size()
@@ -137,7 +142,9 @@ class Fragments final {
     }
     
     {
-      std::scoped_lock lock_wait(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
+      if(writing)
+        m_cv.wait(lock_wait, [&writing] {return !writing;});
       m_commiting = false;
     }
     m_cv.notify_all();
