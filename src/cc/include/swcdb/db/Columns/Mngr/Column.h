@@ -153,6 +153,15 @@ class Column final {
       m_state = State::OK;
   }
 
+  Range::Ptr create_new_range(int64_t rgr_id) {
+    std::scoped_lock lock(m_mutex);
+
+    Range::Ptr range = std::make_shared<Range>(&cfg, _get_next_rid());
+    m_ranges.push_back(range);
+    range->set_state(Range::State::CREATED, rgr_id);
+    return range;
+  }
+
   int64_t get_next_rid() {
     std::shared_lock lock(m_mutex);
     return _get_next_rid();

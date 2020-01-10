@@ -31,6 +31,7 @@
 #include "swcdb/manager/handlers/RgrMngId.h"
 #include "swcdb/manager/handlers/RgrUpdate.h"
 #include "swcdb/manager/handlers/RgrGet.h"
+#include "swcdb/manager/handlers/RangeCreate.h"
 #include "swcdb/manager/handlers/Echo.h"
 
 
@@ -51,6 +52,7 @@ class AppContext : public SWC::AppContext {
     &Protocol::Mngr::Handler::rgr_mng_id,
     &Protocol::Mngr::Handler::rgr_update,
     &Protocol::Mngr::Handler::rgr_get,
+    &Protocol::Mngr::Handler::range_create,
     &Protocol::Mngr::Handler::do_echo,
     //&Handler::debug,
     //&Handler::status,

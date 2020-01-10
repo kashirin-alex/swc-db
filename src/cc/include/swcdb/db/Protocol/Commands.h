@@ -42,8 +42,9 @@ namespace Mngr {
     RGR_MNG_ID           = 0x07,
     RGR_UPDATE           = 0x08,
     RGR_GET              = 0x09,
-    DO_ECHO              = 0x0A,
-    MAX_CMD              = 0x0B
+    RANGE_CREATE         = 0x0A,
+    DO_ECHO              = 0x0B,
+    MAX_CMD              = 0x0C
   };
 
 }

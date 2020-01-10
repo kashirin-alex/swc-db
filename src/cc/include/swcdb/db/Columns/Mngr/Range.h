@@ -24,6 +24,7 @@ class Range : public DB::RangeBase {
     NOTSET,
     DELETED,
     ASSIGNED,
+    CREATED,
     QUEUED
   };
 
