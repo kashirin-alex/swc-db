@@ -415,7 +415,7 @@ size_t FileSystemHadoopJVM::read(int &err, SmartFd::Ptr &smartfd,
   if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
                 == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%d", 
+    SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%llu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nread;
   }
@@ -478,7 +478,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
   if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
           == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%d", 
+    SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%llu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nwritten;
   }
@@ -510,7 +510,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
 void FileSystemHadoopJVM::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
 
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%d", 
+  SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
             hadoop_fd->to_string().c_str(), offset);
     
   errno = 0;

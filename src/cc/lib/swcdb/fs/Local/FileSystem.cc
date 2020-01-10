@@ -302,7 +302,7 @@ size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd,
   uint64_t offset;
   if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%d", 
+    SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%llu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nread;
   }
@@ -327,7 +327,7 @@ size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd,
 size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd, 
                               uint64_t offset, void *dst, 
                               size_t amount) {
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%d amount=%d", 
+  SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%d", 
             smartfd->to_string().c_str(), offset, amount);
 
   errno = 0;
@@ -388,8 +388,8 @@ size_t FileSystemLocal::append(int &err, SmartFd::Ptr &smartfd,
   return nwritten;
 }
 
-void FileSystemLocal::seek(int &err, SmartFd::Ptr &smartfd,  size_t offset) {
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%d", 
+void FileSystemLocal::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
+  SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
             smartfd->to_string().c_str(), offset);
     
   errno = 0;
