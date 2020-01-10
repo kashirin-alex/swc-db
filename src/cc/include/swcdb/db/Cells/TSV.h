@@ -28,8 +28,8 @@ void header_write(Types::Column typ, uint8_t output_flags,
 
   if(!(output_flags & OutputFlag::NO_VALUE))
     header.append(Types::is_counter(typ) 
-      ? "COUNT\tEQ\tSINCE"
-      : "VLEN\tVALUE");
+      ? "COUNT\tEQ\tSINCE" 
+      : "ORDER\tVLEN\tVALUE");
 
   header.append("\n");
   buffer.add(header.data(), header.length());
@@ -54,7 +54,7 @@ const bool header_read(const uint8_t **bufp, size_t* remainp, Types::Column typ,
     return false;
 
   has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
-  if(header.size() < 5 + has_ts + Types::is_counter(typ))
+  if(header.size() < 6 + has_ts)
     return false;
 
   ptr++; // header's newline
@@ -127,6 +127,10 @@ void write(const Cell &cell, Types::Column typ, uint8_t output_flags,
       }
     }
   } else {
+  
+    buffer.add(cell.control & TS_DESC ? "D" : "A", 1);
+    buffer.add("\t", 1); //
+
     std::string value_length = std::to_string(cell.vlen);
     buffer.add(value_length.data(), value_length.length());
     buffer.add("\t", 1);
@@ -161,10 +165,9 @@ const bool read(const uint8_t **bufp, size_t* remainp,
       flen.push_back(std::stol(std::string((const char*)s, ptr-s)));
       if(*ptr == '\t')
         break;
-      s = ++ptr; // comma
-      remain--;
-      if(!remain)
+      if(!--remain)
         return false;
+      s = ++ptr; // comma
     }
     ++ptr;
     remain--;
@@ -216,21 +219,20 @@ const bool read(const uint8_t **bufp, size_t* remainp,
     int64_t eq_rev = TIMESTAMP_NULL;
     uint8_t op = 0;
     if(*ptr == '\t') {
-      remain--; // tab
-      ++ptr; 
-      if(!remain)
+      if(!--remain)
         return false; 
+      ++ptr;  // tab
       if(*ptr != '=')
         throw std::runtime_error("Expected EQ symbol");
       op = OP_EQUAL;
-      remain--;
+      if(!--remain)
+        return false;
       ++ptr;
       
       if(*ptr == '\t') {
-        if(!remain)
+        if(!--remain)
           return false; 
         s = ++ptr; // tab
-        remain--;        
         while(remain && *ptr != '\n') {
           remain--;
           ++ptr;
@@ -243,11 +245,22 @@ const bool read(const uint8_t **bufp, size_t* remainp,
     cell.set_counter(op, counter, typ, eq_rev);
 
   } else {
-    cell.vlen = std::stol(std::string((const char*)s, ptr-s));
-    ++ptr; // tab
-    remain--;
-    if(remain < cell.vlen+1) 
+    
+    cell.set_time_order_desc(*s == 'D' || *s == 'd');
+    if(!--remain)
       return false;
+    s = ++ptr; // tab
+    while(remain && *ptr != '\t') {
+      remain--;
+      ++ptr;
+    }
+    if(!remain)
+      return false;
+
+    cell.vlen = std::stol(std::string((const char*)s, ptr-s));
+    if(--remain < cell.vlen+1) 
+      return false;
+    ++ptr; // tab
     if(cell.vlen)
       cell.value = (uint8_t*)ptr;
     ptr += cell.vlen;
