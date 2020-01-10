@@ -231,8 +231,7 @@ class Fragments final {
     //  std::cout << " LOG::after_ts sz=" << applicable.size() << "\n";
     //}
 
-    auto waiter = new AwaitingLoad(
-      ts, applicable.size(), cells_block, ptr(), err);
+    auto waiter = new AwaitingLoad(ts, applicable, cells_block, ptr(), err);
     for(auto frag : applicable)
       frag->load([frag, waiter](){ waiter->processed(frag); });
   }
@@ -391,10 +390,11 @@ class Fragments final {
   struct AwaitingLoad final {
     public:
     
-    AwaitingLoad(int64_t ts, int32_t count, Range::Block::Ptr cells_block, 
-                  Fragments::Ptr log, int err=Error::OK) 
-                : ts(ts), m_count(count), cells_block(cells_block), log(log),
-                  m_err(err) {
+    AwaitingLoad(int64_t ts, std::vector<Fragment::Ptr>& fragments, 
+                  Range::Block::Ptr cells_block, Fragments::Ptr log, 
+                  int err=Error::OK) 
+                : ts(ts), m_fragments(fragments), m_processing(false), 
+                  cells_block(cells_block), log(log), m_err(err) {
     }
 
     ~AwaitingLoad() { }
@@ -402,11 +402,11 @@ class Fragments final {
     void processed(Fragment::Ptr frag) {
       { 
         std::scoped_lock<std::mutex> lock(m_mutex_await);
-        m_count--;
-        SWC_LOGF(LOG_DEBUG, " Fragments::AwaitingLoad count=%d", m_count);
-        m_pending.push(frag);
-        if(m_pending.size() > 1)
+        SWC_LOGF(LOG_DEBUG, " Fragments::AwaitingLoad count=%d", 
+                 m_fragments.size());
+        if(m_processing)
           return;
+        m_processing = true;
       }
       
       asio::post(
@@ -420,23 +420,27 @@ class Fragments final {
       for(Fragment::Ptr frag; ; ) {
         {
           std::scoped_lock<std::mutex> lock(m_mutex_await);
-          frag = m_pending.front();
+          frag = m_fragments.front();
         }
+
+        if(frag->loaded(err)) {
+          frag->load_cells(err, cells_block);
         
-        frag->load_cells(err, cells_block);
-        if(err) {
+        } else if(err) {
           std::scoped_lock<std::mutex> lock(m_mutex_await);
           m_err = Error::RANGE_COMMITLOG;
+        
+        } else {
+          std::scoped_lock<std::mutex> lock(m_mutex_await);
+          m_processing = false;
+          return;
         }
 
         {
           std::scoped_lock<std::mutex> lock(m_mutex_await);
-          m_pending.pop();
-          if(m_pending.empty()) {
-            if(m_count)
-              return;
+          m_fragments.erase(m_fragments.begin());
+          if(m_fragments.empty())
             break;
-          }
         }
       }
       
@@ -444,13 +448,13 @@ class Fragments final {
       delete this;
     }
 
-    const int64_t             ts;
-    std::mutex                m_mutex_await;
-    int32_t                   m_count;
-    Range::Block::Ptr         cells_block;
-    Fragments::Ptr            log;
-    std::queue<Fragment::Ptr> m_pending;
-    int                       m_err;
+    const int64_t               ts;
+    std::mutex                  m_mutex_await;
+    std::vector<Fragment::Ptr>  m_fragments;
+    bool                        m_processing;
+    Range::Block::Ptr           cells_block;
+    Fragments::Ptr              log;
+    int                         m_err;
   };
 
   std::shared_mutex           m_mutex_cells;

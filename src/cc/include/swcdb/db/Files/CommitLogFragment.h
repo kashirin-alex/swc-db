@@ -213,12 +213,11 @@ class Fragment final {
   
   void load_cells(int& err, Range::Block::Ptr cells_block) {
     bool was_splitted = false;
-    if(loaded(err)) {
-      if(m_buffer.size)
-        m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
+    if(m_buffer.size) {
+      m_cells_remain -= cells_block->load_cells(
+        m_buffer.base, m_buffer.size, m_cells_count, was_splitted);   
     } else {
-      SWC_LOGF(LOG_WARN, "Fragment::load_cells at not loaded %s", 
+      SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
                to_string().c_str());
     }
     {

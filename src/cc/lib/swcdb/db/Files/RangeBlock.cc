@@ -181,12 +181,14 @@ const bool Block::splitter() {
 }
 
 void Block::loaded_cellstores(int err) {  
+  /*
   bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
     if(loaded = ++m_load_require == 2)
       m_state = State::LOADED;
   }
+  */
   if(err) {
     SWC_LOGF(LOG_ERROR, "cellstores-load_cells %s err=%d",
                         m_blocks->cellstores.to_string().c_str(), err);
@@ -194,26 +196,26 @@ void Block::loaded_cellstores(int err) {
     run_queue(err);
     return;
   }
-  if(loaded)
-    run_queue(err);
+  //if(loaded)
+  //  run_queue(err);
 
-  //m_blocks->commitlog.load_cells(ptr());
+  m_blocks->commitlog.load_cells(ptr());
 }
 
 void Block::loaded_logs(int err) {
-  bool loaded;
+  //bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
-    if(loaded = ++m_load_require == 2)
-      m_state = State::LOADED;
+    //if(loaded = ++m_load_require == 2)
+    m_state = State::LOADED;
   }
   if(err) {
     SWC_LOGF(LOG_ERROR, "commitlog-load_cells %s err=%d", 
                          m_blocks->commitlog.to_string().c_str(), err)  
     quick_exit(1); // temporary halt
   }
-  if(loaded)
-    run_queue(err);
+  //if(loaded)
+  run_queue(err);
 }
 
 const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
@@ -236,7 +238,9 @@ const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
     }
     return _scan(req, true);
   }
-  
+
+  m_blocks->cellstores.load_cells(ptr());
+  /*
   asio::post(
     *Env::IoCtx::io()->ptr(), 
     [ptr=ptr()]() { ptr->m_blocks->cellstores.load_cells(ptr); } 
@@ -245,7 +249,7 @@ const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
     *Env::IoCtx::io()->ptr(), 
     [ptr=ptr()]() { ptr->m_blocks->commitlog.load_cells(ptr); } 
   );
-  
+  */
   return true;
 }
 
