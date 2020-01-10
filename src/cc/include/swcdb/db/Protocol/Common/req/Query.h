@@ -298,91 +298,11 @@ class Select : public std::enable_shared_from_this<Select> {
       return s;
     }
     
-    void set_range_interval(DB::Cell::Key& begin, DB::Cell::Key& end) {
-      
-      // range begin
-      if(!interval->offset_key.empty()) {
-        begin.copy(interval->offset_key);
-      
-      } else if(!interval->range_begin.empty()) {
-        begin.copy(interval->range_begin);
-      
-      } else if(!interval->key_start.empty()) {
-        
-        //SWC_LOGF(LOG_DEBUG, "LocateRange begin by key_start %s", 
-        //         interval->key_start.to_string().c_str());
-
-        const char* fraction;
-        uint32_t len;
-        Condition::Comp comp;
-        for(int idx=0; idx<interval->key_start.count; idx++) {
-          interval->key_start.get(idx, &fraction, &len, &comp);
-          if(comp == Condition::EQ || comp == Condition::PF || 
-             comp == Condition::GT || comp == Condition::GE) {
-            begin.add(fraction, len);
-            continue;
-          }
-          break;
-        }
-      } else if(!interval->key_finish.empty()) {
-        //SWC_LOGF(LOG_DEBUG, "LocateRange begin by key_finish %s", 
-        //         interval->key_finish.to_string().c_str());
-        const char* fraction;
-        uint32_t len;
-        Condition::Comp comp;
-        for(int idx=0; idx<interval->key_finish.count; idx++) {
-          interval->key_finish.get(idx, &fraction, &len, &comp);
-          if(comp == Condition::EQ || 
-             comp == Condition::GT || comp == Condition::GE) {
-            begin.add(fraction, len);
-            continue;
-          }
-          break;
-        }
-      }
-      
-      // range end
-      if(!interval->range_end.empty()) {
-        end.copy(interval->range_end);
-
-      } else if(!interval->key_finish.empty()) {
-        //SWC_LOGF(LOG_DEBUG, "LocateRange end by key_finish %s", 
-        //         interval->key_finish.to_string().c_str());
-        const char* fraction;
-        uint32_t len;
-        Condition::Comp comp;
-        for(int idx=0; idx<interval->key_finish.count; idx++) {
-          interval->key_finish.get(idx, &fraction, &len, &comp);
-          if(comp == Condition::EQ || 
-             comp == Condition::LT || comp == Condition::LE) {
-            end.add(fraction, len);
-            continue;
-          }
-          break;
-        }
-
-      } else if(!interval->key_start.empty()) {
-        //SWC_LOGF(LOG_DEBUG, "LocateRange end by key_start %s", 
-        //         interval->key_start.to_string().c_str());
-        const char* fraction;
-        uint32_t len;
-        Condition::Comp comp;
-        for(int idx=0; idx<interval->key_start.count; idx++) {
-          interval->key_start.get(idx, &fraction, &len, &comp);
-          if(comp == Condition::EQ || 
-             comp == Condition::LT || comp == Condition::LE) {
-            end.add(fraction, len);
-            continue;
-          }
-          break;
-        }
-      }
-    }
     
     void locate_on_manager() {
 
       Mngr::Params::RgrGetReq params(1);
-      set_range_interval(params.range_begin, params.range_end);
+      interval->apply_possible_range(params.range_begin, params.range_end);
 
       if(cid > 2)
         params.range_begin.insert(0, std::to_string(cid));
@@ -491,7 +411,7 @@ class Select : public std::enable_shared_from_this<Select> {
       HT_ASSERT(type != Types::Range::DATA);
 
       Rgr::Params::RangeLocateReq params(cid, rid);
-      set_range_interval(params.range_begin, params.range_end);
+      interval->apply_possible_range(params.range_begin, params.range_end);
 
       params.range_begin.insert(0, std::to_string(cells_cid));
       if(type == Types::Range::MASTER && cells_cid > 2)
@@ -574,13 +494,9 @@ class Select : public std::enable_shared_from_this<Select> {
       //          << " rid=" << rid << ""  << interval->to_string() << "\n"; 
       selector->result->completion++;
       
-      DB::Specs::Interval intval(*interval.get());
-      set_range_interval(intval.range_begin, intval.range_end);
-      SWC_LOGF(LOG_DEBUG, "Select %s", intval.to_string().c_str());
-
       Rgr::Req::RangeQuerySelect::request(
         Rgr::Params::RangeQuerySelectReq(
-          cells_cid, rid, intval, selector->buff_sz
+          cells_cid, rid, *interval.get(), selector->buff_sz
         ), 
         endpoints, 
         [base_req, ptr=shared_from_this()]() {

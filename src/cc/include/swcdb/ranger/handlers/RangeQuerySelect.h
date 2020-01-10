@@ -40,6 +40,9 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
     
+    params.interval.apply_possible_range(
+      params.interval.range_begin, params.interval.range_end);
+
     DB::Cells::Mutable cells(
       params.interval.flags.limit, 
       params.interval.flags.max_versions ? 

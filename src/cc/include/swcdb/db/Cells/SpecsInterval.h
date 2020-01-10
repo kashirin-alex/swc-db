@@ -246,6 +246,89 @@ class Interval {
     offset_rev = Serialization::decode_vi64(bufp, remainp);
   }
   
+  void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) {
+      
+    // range begin
+    if(!offset_key.empty()) {
+      begin.copy(offset_key);
+      
+    } else if(!range_begin.empty()) {
+      if(&begin != &range_begin)
+        begin.copy(range_begin);
+      
+    } else if(!key_start.empty()) {
+        
+      //SWC_LOGF(LOG_DEBUG, "PossibleRange begin by key_start %s", 
+      //         key_start.to_string().c_str());
+
+      const char* fraction;
+      uint32_t len;
+      Condition::Comp comp;
+      for(int idx=0; idx < key_start.count; idx++) {
+        key_start.get(idx, &fraction, &len, &comp);
+        if(comp == Condition::EQ || comp == Condition::PF || 
+           comp == Condition::GT || comp == Condition::GE) {
+          begin.add(fraction, len);
+          continue;
+        }
+        break;
+      }
+    } else if(!key_finish.empty()) {
+      //SWC_LOGF(LOG_DEBUG, "PossibleRange begin by key_finish %s", 
+      //         key_finish.to_string().c_str());
+      const char* fraction;
+      uint32_t len;
+      Condition::Comp comp;
+      for(int idx=0; idx < key_finish.count; idx++) {
+        key_finish.get(idx, &fraction, &len, &comp);
+        if(comp == Condition::EQ || 
+           comp == Condition::GT || comp == Condition::GE) {
+          begin.add(fraction, len);
+          continue;
+        }
+        break;
+      }
+    }
+      
+    // range end
+    if(!range_end.empty()) {
+      if(&end != &range_end)
+        end.copy(range_end);
+
+    } else if(!key_finish.empty()) {
+      //SWC_LOGF(LOG_DEBUG, "PossibleRange end by key_finish %s", 
+      //         key_finish.to_string().c_str());
+      const char* fraction;
+      uint32_t len;
+      Condition::Comp comp;
+      for(int idx=0; idx < key_finish.count; idx++) {
+        key_finish.get(idx, &fraction, &len, &comp);
+        if(comp == Condition::EQ || 
+           comp == Condition::LT || comp == Condition::LE) {
+          end.add(fraction, len);
+          continue;
+        }
+        break;
+      }
+
+    } else if(!key_start.empty()) {
+      //SWC_LOGF(LOG_DEBUG, "PossibleRange end by key_start %s", 
+      //         key_start.to_string().c_str());
+      const char* fraction;
+      uint32_t len;
+      Condition::Comp comp;
+      for(int idx=0; idx < key_start.count; idx++) {
+        key_start.get(idx, &fraction, &len, &comp);
+        if(comp == Condition::EQ || 
+           comp == Condition::LT || comp == Condition::LE) {
+          end.add(fraction, len);
+          continue;
+        }
+        break;
+      }
+    }
+  }
+
   const std::string to_string() const {
     std::string s("Interval(Begin");
     s.append(range_begin.to_string());
