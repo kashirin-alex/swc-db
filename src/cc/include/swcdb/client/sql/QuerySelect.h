@@ -309,15 +309,15 @@ class QuerySelect : public Reader {
   }
 
   int64_t add_column(const std::string& col) {
-    int64_t cid = get_cid(col);
+    auto schema = get_schema(col);
     if(err)
       return DB::Schema::NO_CID;
     for(auto& col : specs.columns) {
-      if(cid == col->cid) 
-        return cid;
+      if(schema->cid == col->cid) 
+        return schema->cid;
     }
-    specs.columns.push_back(DB::Specs::Column::make_ptr(cid, {}));
-    return cid;
+    specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
+    return schema->cid;
   }
 
 

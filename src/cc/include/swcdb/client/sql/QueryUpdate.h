@@ -86,7 +86,9 @@ class QueryUpdate : public Reader {
     if(err) 
       return err;
 
-    cid = get_cid(col);
+    auto schema = get_schema(col);    
+    if(!err) 
+      cid = schema->cid;
     return err;
   }
   

@@ -167,26 +167,6 @@ class Reader {
     return schema;
   }
 
-  int64_t get_cid(const std::string& col) {
-    int64_t cid = 0;
-    if(std::find_if(col.begin(), col.end(), 
-        [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
-      auto schema = Env::Clients::get()->schemas->get(err, col);
-      if(!err)
-        cid = schema->cid;
-    } else {
-      errno = 0;
-      try { 
-        cid = std::stoll(col);
-      } catch(const std::exception& ex) {
-        err = errno;
-      }
-    }
-    if(err)
-      error_msg(err, "problem getting column '"+col+"' schema");
-    return cid;
-  }
-
   void read(std::string& buf, const char* stop = 0, bool keep_escape=false) {
     uint32_t escape = 0;
     bool quote_1 = false;
