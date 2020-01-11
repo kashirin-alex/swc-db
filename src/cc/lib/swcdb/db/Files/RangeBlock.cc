@@ -25,7 +25,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   0, blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
-              m_blocks(blocks), 
+              blocks(blocks), 
               m_state(state), m_processing(0), 
               next(nullptr), prev(nullptr), m_load_require(0) {
 }
@@ -177,45 +177,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
 }
 
 const bool Block::splitter() {
-  return m_blocks->_split(ptr(), false);
-}
-
-void Block::loaded_cellstores(int err) {  
-  /*
-  bool loaded;
-  {
-    std::scoped_lock lock(m_mutex_state);
-    if(loaded = ++m_load_require == 2)
-      m_state = State::LOADED;
-  }
-  */
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "cellstores-load_cells %s err=%d",
-                        m_blocks->cellstores.to_string().c_str(), err);
-    quick_exit(1); // temporary halt
-    run_queue(err);
-    return;
-  }
-  //if(loaded)
-  //  run_queue(err);
-
-  m_blocks->commitlog.load_cells(ptr());
-}
-
-void Block::loaded_logs(int err) {
-  //bool loaded;
-  {
-    std::scoped_lock lock(m_mutex_state);
-    //if(loaded = ++m_load_require == 2)
-    m_state = State::LOADED;
-  }
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "commitlog-load_cells %s err=%d", 
-                         m_blocks->commitlog.to_string().c_str(), err)  
-    quick_exit(1); // temporary halt
-  }
-  //if(loaded)
-  run_queue(err);
+  return blocks->_split(ptr(), false);
 }
 
 const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
@@ -239,18 +201,25 @@ const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
     return _scan(req, true);
   }
 
-  m_blocks->cellstores.load_cells(ptr());
-  /*
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()]() { ptr->m_blocks->cellstores.load_cells(ptr); } 
-  );
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()]() { ptr->m_blocks->commitlog.load_cells(ptr); } 
-  );
-  */
+  
+  auto loader = new BlockLoader(ptr());
+  loader->run();
   return true;
+}
+
+void Block::loaded(int err) {
+  {
+    std::scoped_lock lock(m_mutex_state);
+    m_state = State::LOADED;
+  }
+  
+  if(err) {
+    SWC_LOGF(LOG_ERROR, "Block::loaded err=%d(%s)", err, Error::get_text(err));
+    quick_exit(1); // temporary halt
+    run_queue(err);
+    return;
+  }
+  run_queue(err);
 }
 
 Block::Ptr Block::split(bool loaded) {
@@ -265,12 +234,12 @@ Block::Ptr Block::split(bool loaded) {
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
     DB::Cells::Interval(), 
-    m_blocks,
+    blocks,
     loaded ? State::LOADED : State::NONE
   );
   if(loaded) {
     m_cells.move_from_key_offset(
-      m_cells.size()/2, //m_blocks->range->cfg->block_cells(), 
+      m_cells.size()/2, //blocks->range->cfg->block_cells(), 
       blk->m_cells
     );
     assert(blk->m_cells.size());
@@ -389,8 +358,8 @@ const bool Block::need_split() {
 const bool Block::_need_split() const {
   auto sz = _size();
   return sz > 1 && 
-    (sz >= m_blocks->range->cfg->block_cells() * 2 || 
-     _size_bytes() >= m_blocks->range->cfg->block_size() * 2) && 
+    (sz >= blocks->range->cfg->block_cells() * 2 || 
+     _size_bytes() >= blocks->range->cfg->block_size() * 2) && 
     !m_cells.has_one_key();
 }
 
@@ -456,12 +425,12 @@ const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
   processing_decrement();
 
   if(req->reached_limits()) {
-    m_blocks->processing_decrement();
+    blocks->processing_decrement();
     int err = Error::OK;
     req->response(err);
     return true;
   } else if(!synced) {
-    m_blocks->scan(req, ptr());
+    blocks->scan(req, ptr());
   }
   return false;
 }
@@ -478,7 +447,7 @@ void Block::run_queue(int& err) {
       processing_decrement();
 
     } else if(err) {
-      m_blocks->processing_decrement();
+      blocks->processing_decrement();
       processing_decrement();
       req->response(err);
           

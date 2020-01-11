@@ -106,28 +106,16 @@ class Readers final {
     _free();
   }
   
-  void load_cells(Range::Block::Ptr cells_block) {
-    
-    std::vector<Files::CellStore::Read::Ptr> applicable;
-    {
-      std::shared_lock lock(m_mutex);
-      for(auto cs : m_cellstores) {
-        if(cells_block->is_consist(cs->interval))
-          applicable.push_back(cs);
-        else if(!cs->interval.key_end.empty() && 
-                !cells_block->is_in_end(cs->interval.key_end))
-          break;
+  void load_cells(Range::BlockLoader* loader) {
+    std::shared_lock lock(m_mutex);
+    for(auto cs : m_cellstores) {
+      if(loader->block->is_consist(cs->interval)) {
+        cs->load_cells(loader);
+      } else if(!cs->interval.key_end.empty() && 
+                !loader->block->is_in_end(cs->interval.key_end)) {
+        break;
       }
     }
-
-    if(applicable.empty()) {
-      cells_block->loaded_cellstores(Error::OK);
-      return;
-    }
-    
-    auto waiter = new AwaitingLoad(applicable.size(), cells_block);
-    for(auto cs : applicable)
-      cs->load_cells(cells_block, [waiter](int err){ waiter->processed(err); }); 
   }
   
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) {
@@ -307,31 +295,6 @@ class Readers final {
       sz += cs->size_bytes(only_loaded);
     return sz;
   }
-
-
-  struct AwaitingLoad final {
-    public:
-    
-    AwaitingLoad(int32_t count, const Range::Block::Ptr& cells_block) 
-                 : count(count), cells_block(cells_block), error(Error::OK) {
-    }
-
-    ~AwaitingLoad() { }
-
-    void processed(int err) {
-      if(err)
-        error = Error::RANGE_CELLSTORES;
-
-      if(--count)
-        return;
-      cells_block->loaded_cellstores(error);
-      delete this;
-    }
-    
-    std::atomic<int>         error;
-    std::atomic<int32_t>     count;
-    const Range::Block::Ptr  cells_block;
-  };
 
   std::shared_mutex       m_mutex;
   std::vector<Read::Ptr>  m_cellstores;

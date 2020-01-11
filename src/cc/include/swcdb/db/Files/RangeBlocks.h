@@ -6,7 +6,7 @@
 #ifndef swcdb_db_Files_RangeBlocks_h
 #define swcdb_db_Files_RangeBlocks_h
 
-#include "swcdb/db/Files/RangeBlock.h"
+#include "swcdb/db/Files/RangeBlockLoader.h"
 
 #include "swcdb/db/Files/CellStoreReaders.h"
 #include "swcdb/db/Files/CommitLog.h"
@@ -106,6 +106,7 @@ class Blocks final {
 //#ifdef SWC_IMPL_SOURCE
 #include "../../../../lib/swcdb/db/Files/RangeBlock.cc"
 #include "../../../../lib/swcdb/db/Files/RangeBlocks.cc"
+#include "../../../../lib/swcdb/db/Files/RangeBlockLoader.cc"
 //#endif 
 
 #endif // swcdb_db_Files_RangeBlocks_h

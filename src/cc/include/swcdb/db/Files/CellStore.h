@@ -222,26 +222,20 @@ class Read final {
       delete blk;
   }
 
-  void load_cells(Range::Block::Ptr cells_block, 
-                  const std::function<void(int)>& cb) {
+  void load_cells(Range::BlockLoader* loader) {
 
     std::vector<Block::Read::Ptr>  applicable;
     for(auto blk : blocks) {  
-      if(cells_block->is_consist(blk->interval))
+      if(loader->block->is_consist(blk->interval)) {
+        loader->add(blk);
         applicable.push_back(blk);
-      else if(!blk->interval.key_end.empty() && 
-              !cells_block->is_in_end(blk->interval.key_end))
+      } else if(!blk->interval.key_end.empty() && 
+              !loader->block->is_in_end(blk->interval.key_end))
         break;
     }
-
-    if(applicable.empty()) {
-      cb(Error::OK);
-      return;
-    }
-  
-    auto waiter = new AwaitingLoad(applicable.size(), cells_block, cb);
+    
     for(auto blk : applicable) {
-      auto cb = [blk, waiter](){ waiter->processed(blk); };
+      auto cb = [loader](){ loader->loaded_blk(); };
       if(blk->load(cb)) {
         std::scoped_lock lock(m_mutex);
         m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
@@ -377,70 +371,6 @@ class Read final {
       }
     }
   }
-
-  struct AwaitingLoad final {
-    public:
-    typedef std::function<void(int)>  Cb_t;
-    
-    AwaitingLoad(int32_t count, Range::Block::Ptr cells_block, 
-                  const Cb_t& cb) 
-                : m_count(count), cells_block(cells_block), cb(cb), 
-                  m_err(Error::OK) {
-    }
-
-    ~AwaitingLoad() { }
-
-    void processed(Block::Read::Ptr blk) {
-      { 
-        std::lock_guard<std::mutex> lock(m_mutex_await);
-        m_count--;
-        SWC_LOGF(LOG_DEBUG, " CellStore::AwaitingLoad count=%d", m_count);
-        m_pending.push(blk);
-        if(m_pending.size() > 1)
-          return;
-      }
-      
-      asio::post(
-        *Env::IoCtx::io()->ptr(), 
-        [this](){ _processed(); }
-      );
-    }
-
-    void _processed() {
-      int err;
-      for(Block::Read::Ptr blk;;) {
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_await);
-          blk = m_pending.front();
-        }
-
-        blk->load_cells(err, cells_block);
-        if(err) {
-          std::scoped_lock<std::mutex> lock(m_mutex_await);
-          m_err = err;
-        }
-
-        {
-          std::lock_guard<std::mutex> lock(m_mutex_await);
-          m_pending.pop();
-          if(m_pending.empty()) {
-            if(m_count)
-              return;
-            break;
-          }
-        }
-      }
-      cb(m_err);
-      delete this;
-    }
-
-    std::mutex                    m_mutex_await;
-    int32_t                       m_count;
-    Range::Block::Ptr             cells_block;
-    const Cb_t                    cb;
-    int                           m_err;
-    std::queue<Block::Read::Ptr>  m_pending;
-  };
 
   std::shared_mutex                   m_mutex;
   bool                                m_q_runs = false;

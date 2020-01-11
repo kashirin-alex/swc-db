@@ -19,10 +19,13 @@
 #include "swcdb/db/Columns/RangeBase.h"
 
 
+
 namespace SWC { namespace Files { namespace Range {
 
+ //Forawrd Declaration
+class Blocks;
+class BlockLoader;
 
-class Blocks; //Forawrd Declaration
 
 class Block final {
   public:
@@ -38,6 +41,7 @@ class Block final {
     
   Block::Ptr  next;
   Block::Ptr  prev;
+  Blocks*     blocks;
 
 
   static Ptr make(const DB::Cells::Interval& interval,
@@ -70,12 +74,10 @@ class Block final {
 
   const bool splitter();
 
-  void loaded_cellstores(int err);
-
-  void loaded_logs(int err);
-
   const bool scan(DB::Cells::ReqScan::Ptr req);
-
+  
+  void loaded(int err);
+  
   Ptr split(bool loaded);
     
   Ptr _split(bool loaded);
@@ -127,7 +129,6 @@ class Block final {
   std::shared_mutex       m_mutex;
   DB::Cells::Interval     m_interval;
   DB::Cells::Mutable      m_cells;
-  Blocks*                 m_blocks;
   DB::Cell::Key           m_prev_key_end;
 
   std::shared_mutex                    m_mutex_state;

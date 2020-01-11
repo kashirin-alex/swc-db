@@ -95,25 +95,22 @@ class Read final {
 
   void load_cells(int& err, Range::Block::Ptr cells_block) {
     bool was_splitted = false;
-    if(loaded(err)) {
-      if(m_buffer.size)
-        m_cells_remain -= cells_block->load_cells(
-          m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
-    } else {
-      SWC_LOGF(LOG_WARN, "CS-Block::load_cells at not loaded %s", 
-               to_string().c_str());
-    }
+    if(m_buffer.size)
+      m_cells_remain -= cells_block->load_cells(
+        m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
 
-    {
-      std::scoped_lock lock(m_mutex);
-      m_processing--; 
-    }
+    processing_decrement();
 
     if(!was_splitted 
        && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
       release();
   }
-  
+
+  void processing_decrement() {
+    std::scoped_lock lock(m_mutex);
+    m_processing--; 
+  }
+
   const size_t release() {    
     size_t released = 0;
     std::scoped_lock lock(m_mutex);

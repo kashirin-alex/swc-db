@@ -191,49 +191,33 @@ class Fragments final {
     }
   }
   
-  void load_current_cells(int err, Range::Block::Ptr cells_block, 
-                          int64_t after_ts = 0) {
-    if(after_ts) {// + ? whether a commit_new_fragment happened
-      load_cells(cells_block, after_ts, err);
-      return;
-    }
-    {
-      std::shared_lock lock(m_mutex_cells);
-      cells_block->load_cells(m_cells);
-    }
-    
-    cells_block->loaded_logs(err);
-  }
-  
-  void load_cells(Range::Block::Ptr cells_block, 
-                  int64_t after_ts = 0, int err=Error::OK) {
-    {
+  const bool load_cells(Range::BlockLoader* loader, bool final, 
+                        int64_t after_ts = 0) {         
+    if(final) {
       std::unique_lock lock_wait(m_mutex);
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
 
-    int64_t ts;
     std::vector<Fragment::Ptr>  applicable;
     {
       std::shared_lock lock(m_mutex);
-      ts = Time::now_ns();
+      loader->ts = Time::now_ns();
       for(auto frag : m_fragments) {  
-        if(after_ts < frag->ts && cells_block->is_consist(frag->interval))
+        if(after_ts < frag->ts && loader->block->is_consist(frag->interval)) {
+          loader->add(frag);
           applicable.push_back(frag);
+        }
       }
     }
-    if(applicable.empty()) {
-      load_current_cells(err, cells_block);
-      return;
-    }
-    //if(after_ts) {
-    //  std::cout << " LOG::after_ts sz=" << applicable.size() << "\n";
-    //}
 
-    auto waiter = new AwaitingLoad(ts, applicable, cells_block, ptr(), err);
-    for(auto frag : applicable)
-      frag->load([frag, waiter](){ waiter->processed(frag); });
+    if(final && applicable.empty()) {
+      loader->block->load_cells(m_cells);
+    } else {
+      for(auto frag : applicable)
+        frag->load([loader](){ loader->loaded_frag(); });
+    }
+    return applicable.empty();
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {
@@ -386,76 +370,6 @@ class Fragments final {
       size += frag->size_bytes(only_loaded);
     return size;
   }
-
-  struct AwaitingLoad final {
-    public:
-    
-    AwaitingLoad(int64_t ts, std::vector<Fragment::Ptr>& fragments, 
-                  Range::Block::Ptr cells_block, Fragments::Ptr log, 
-                  int err=Error::OK) 
-                : ts(ts), m_fragments(fragments), m_processing(false), 
-                  cells_block(cells_block), log(log), m_err(err) {
-    }
-
-    ~AwaitingLoad() { }
-
-    void processed(Fragment::Ptr frag) {
-      { 
-        std::scoped_lock<std::mutex> lock(m_mutex_await);
-        SWC_LOGF(LOG_DEBUG, " Fragments::AwaitingLoad count=%d", 
-                 m_fragments.size());
-        if(m_processing)
-          return;
-        m_processing = true;
-      }
-      
-      asio::post(
-        *Env::IoCtx::io()->ptr(), 
-        [this](){ _processed(); }
-      );
-    }
-
-    void _processed() {
-      int err;
-      for(Fragment::Ptr frag; ; ) {
-        {
-          std::scoped_lock<std::mutex> lock(m_mutex_await);
-          frag = m_fragments.front();
-        }
-
-        if(frag->loaded(err)) {
-          frag->load_cells(err, cells_block);
-        
-        } else if(err) {
-          std::scoped_lock<std::mutex> lock(m_mutex_await);
-          m_err = Error::RANGE_COMMITLOG;
-        
-        } else {
-          std::scoped_lock<std::mutex> lock(m_mutex_await);
-          m_processing = false;
-          return;
-        }
-
-        {
-          std::scoped_lock<std::mutex> lock(m_mutex_await);
-          m_fragments.erase(m_fragments.begin());
-          if(m_fragments.empty())
-            break;
-        }
-      }
-      
-      log->load_current_cells(m_err, cells_block, ts);
-      delete this;
-    }
-
-    const int64_t               ts;
-    std::mutex                  m_mutex_await;
-    std::vector<Fragment::Ptr>  m_fragments;
-    bool                        m_processing;
-    Range::Block::Ptr           cells_block;
-    Fragments::Ptr              log;
-    int                         m_err;
-  };
 
   std::shared_mutex           m_mutex_cells;
   DB::Cells::Mutable          m_cells;

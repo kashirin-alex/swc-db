@@ -220,14 +220,17 @@ class Fragment final {
       SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
                to_string().c_str());
     }
-    {
-      std::scoped_lock lock(m_mutex);
-      m_processing--; 
-    }
+    
+    processing_decrement();
 
     if(!was_splitted 
        && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
       release();
+  }
+
+  void processing_decrement() {
+    std::scoped_lock lock(m_mutex);
+    m_processing--; 
   }
   
   size_t release() {
