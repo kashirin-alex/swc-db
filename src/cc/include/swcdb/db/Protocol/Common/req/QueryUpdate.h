@@ -410,6 +410,8 @@ class Update : public std::enable_shared_from_this<Update> {
               //std::cout << "RETRYING " << rsp.to_string() << "\n";
               return;
             }        
+             // ? if(rsp.range_split) 
+
             // cb(col) at !cells 
             ptr->updater->result->err=rsp.err;
             if(!--ptr->updater->result->completion)

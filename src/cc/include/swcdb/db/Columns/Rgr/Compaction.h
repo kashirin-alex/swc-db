@@ -449,7 +449,7 @@ class Compaction final {
         if(cellstores.size() > 1 && cellstores.size() >= max) {
           create_range();
         } else {
-          apply_new();
+          apply_new(empty_cs);
         }
       } else {
         range->compact_require(false);
@@ -555,17 +555,17 @@ class Compaction final {
         }
       );
 
-      apply_new();
+      apply_new(true);
     }
 
-    void apply_new() {
+    void apply_new(bool clear = false) {
       int err = Error::OK;
       range->apply_new(err, cellstores, fragments_old);
       if(err)
         return quit();
 
       range->compact_require(false);
-      compactor->compacted(range, false);
+      compactor->compacted(range, clear);
 
       std::cout << "Compact ::finalized\n"
                 << " " << range->blocks.to_string() << "\n";
