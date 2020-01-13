@@ -367,6 +367,8 @@ class Mutable final {
   }
 
   void scan(const Interval& interval, Mutable& cells) const {
+    if(!m_size)
+      return;
     Cell* cell;
 
     for(uint32_t offset = _narrow(interval.key_begin);
@@ -387,6 +389,8 @@ class Mutable final {
   void scan(const Specs::Interval& specs, Mutable& cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t& selector=0) const {
+    if(!m_size)
+      return;
     if(m_max_revs == 1) 
       scan_version_single(
         specs, cells, cell_offset, reached_limits, skips, selector);
@@ -566,6 +570,8 @@ class Mutable final {
   bool write_and_free(const DB::Cell::Key& key_start, 
                       const DB::Cell::Key& key_finish,
                       DynamicBuffer& cells, uint32_t threshold) {
+    if(!m_size)
+      return true;
     uint32_t count = 0;
     int32_t offset_applied = -1;
     
