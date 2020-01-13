@@ -92,6 +92,20 @@ class Column final {
     cb(Error::OK);
   }
   
+  void remove(int &err, const int64_t rid) {
+    Range::Ptr range = nullptr;
+    {
+      std::scoped_lock lock(m_mutex);
+      auto it = m_ranges.find(rid);
+      if (it != m_ranges.end()){
+        range = it->second;
+        m_ranges.erase(it);
+      }
+    }
+    if(range != nullptr)
+      range->remove(err);
+  }
+
   void remove_all(int &err) {
     {
       std::scoped_lock lock(m_mutex);
