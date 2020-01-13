@@ -318,18 +318,23 @@ class DbClient : public Interface {
     auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
     size_t cells_count = 0;
     size_t cells_bytes = 0;
-    read_and_load(smartfd, cid, cells_count, cells_bytes, message);
+    read_and_load(err, smartfd, cid, cells_count, cells_bytes, message);
 
     if(display_flags & DB::DisplayFlag::STATS) 
       display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
-    if(err) 
+    if(err) {
+      if(message.empty()) {
+        message.append(Error::get_text(err));
+        message.append("\n");
+      }
       return error(message);
+    }
 
     Env::FsInterface::reset();
     return true;
   }
 
-  void read_and_load(FS::SmartFd::Ptr smartfd, int64_t cid,
+  void read_and_load(int& err, FS::SmartFd::Ptr smartfd, int64_t cid,
                      size_t& cells_count, size_t& cells_bytes,
                      std::string& message) {
     auto update_req = std::make_shared<Protocol::Common::Req::Query::Update>();
