@@ -110,6 +110,11 @@ class Range : public DB::RangeBase {
     blocks.scan(req);
   }
 
+  void create_folders(int& err) {
+    Env::FsInterface::interface()->mkdirs(err, get_path(log_dir));
+    Env::FsInterface::interface()->mkdirs(err, get_path(cellstores_dir));
+  }
+
   void load(ResponseCallback::Ptr cb) {
     bool is_loaded;
     {
@@ -128,8 +133,7 @@ class Range : public DB::RangeBase {
     if(!Env::FsInterface::interface()->exists(err, get_path(cellstores_dir))) {
       if(err != Error::OK)
         return loaded(err, cb);
-      Env::FsInterface::interface()->mkdirs(err, get_path(log_dir));
-      Env::FsInterface::interface()->mkdirs(err, get_path(cellstores_dir));
+      create_folders(err);
       if(err != Error::OK)
         return loaded(err, cb);
       
@@ -152,7 +156,8 @@ class Range : public DB::RangeBase {
     load(err, cb);
   }
 
-  void on_change(int &err, bool removal, bool del_old=false) {
+  void on_change(int &err, bool removal, 
+                 const DB::Cell::Key* old_key_begin=nullptr) {
     std::scoped_lock lock(m_mutex);
     
     if(type == Types::Range::MASTER) {
@@ -185,15 +190,15 @@ class Range : public DB::RangeBase {
       uint8_t * ptr = cell.value;
       key_end.encode(&ptr);
       Serialization::encode_vi64(&ptr, rid);
+      cell.set_time_order_desc(true);
       updater->columns->add(cid_typ, cell);
 
-      if(del_old) {
+      if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
         cell.free();
         cell.flag = DB::Cells::DELETE;
-        cell.key.copy(m_old_key_begin);
+        cell.key.copy(*old_key_begin);
         cell.key.insert(0, std::to_string(cfg->cid));
         updater->columns->add(cid_typ, cell);
-        m_old_key_begin.free();
       }
     }
     updater->commit(cid_typ);
@@ -290,20 +295,59 @@ class Range : public DB::RangeBase {
                 Files::CellStore::Writers& w_cellstores, 
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
     bool intval_changed;
+    DB::Cell::Key old_key_begin;
     {
       std::scoped_lock lock(m_mutex);
       blocks.apply_new(err, w_cellstores, fragments_old);
       if(err)
         return;
 
-      m_old_key_begin.copy(m_interval.key_begin);
+      old_key_begin.copy(m_interval.key_begin);
+      DB::Cell::Key old_key_end(m_interval.key_end);
       m_interval.free();
       blocks.cellstores.expand(m_interval);
-      intval_changed = !m_interval.key_begin.equal(m_old_key_begin);
+      intval_changed = !m_interval.key_begin.equal(old_key_begin) ||
+                       !m_interval.key_end.equal(old_key_end);
     }
     if(intval_changed)
-      on_change(err, false, intval_changed);
+      on_change(err, false, &old_key_begin);
     err = Error::OK;
+  }
+  
+  void create(int &err, const Files::CellStore::Writers& w_cellstores) {
+    
+    create_folders(err);
+    if(err)
+      return;
+    RangerEnv::rgr_data()->set_rgr(
+      err, get_path(ranger_data_file), cfg->block_replication());
+    if(err)
+      return;
+
+    auto fs = Env::FsInterface::interface();
+    for(auto& cs : w_cellstores) {
+      fs->rename(
+        err, 
+        cs->smartfd->filepath(), 
+        get_path_cs(cs->id)
+      );
+      if(err)
+        return;
+        
+      blocks.cellstores.add(
+        Files::CellStore::Read::make(
+          err, cs->id, shared_from_this(), cs->interval)
+      );
+      if(err)
+        return;
+    }
+
+    m_interval.free();
+    blocks.cellstores.expand(m_interval);
+    Files::RangeData::save(err, blocks.cellstores);
+    on_change(err, false);
+    
+    fs->remove(err, get_path(ranger_data_file));
   }
 
   const std::string to_string() {
@@ -480,7 +524,6 @@ class Range : public DB::RangeBase {
   std::queue<ReqAdd*>           m_q_adding;
 
   std::condition_variable_any   m_cv;
-  DB::Cell::Key                 m_old_key_begin;
 };
 
 
