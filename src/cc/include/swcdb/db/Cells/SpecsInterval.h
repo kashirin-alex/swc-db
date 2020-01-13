@@ -228,7 +228,7 @@ class Interval {
     Serialization::encode_vi64(bufp, offset_rev);
   }
 
-  void decode(const uint8_t **bufp, size_t *remainp){
+  void decode(const uint8_t **bufp, size_t *remainp) {
     range_begin.decode(bufp, remainp);
     range_end.decode(bufp, remainp);
 
@@ -246,9 +246,12 @@ class Interval {
     offset_rev = Serialization::decode_vi64(bufp, remainp);
   }
   
-  void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) {
-      
-    // range begin
+  void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) const {   
+    apply_possible_range_begin(begin);
+    apply_possible_range_end(end);
+  }
+
+  void apply_possible_range_begin(DB::Cell::Key& begin) const {
     if(!offset_key.empty()) {
       begin.copy(offset_key);
       
@@ -289,8 +292,9 @@ class Interval {
         break;
       }
     }
-      
-    // range end
+  }
+
+  void apply_possible_range_end(DB::Cell::Key& end) const {
     if(!range_end.empty()) {
       if(&end != &range_end)
         end.copy(range_end);
