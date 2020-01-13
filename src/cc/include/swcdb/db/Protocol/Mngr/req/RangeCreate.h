@@ -35,7 +35,8 @@ class RangeCreate: public Common::Req::ConnQueue::ReqBase {
 
   RangeCreate(const Params::RangeCreateReq& params, const Cb_t cb, 
               const uint32_t timeout) 
-              : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
+              : Common::Req::ConnQueue::ReqBase(false), 
+                cb(cb), cid(params.cid) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_CREATE, timeout);
   }
@@ -49,9 +50,9 @@ class RangeCreate: public Common::Req::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()){
-      Env::Clients::get()->mngrs_groups->select(1, endpoints); 
+      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
       if(endpoints.empty()){
-        std::make_shared<MngrActive>(1, shared_from_this())->run();
+        std::make_shared<MngrActive>(cid, shared_from_this())->run();
         return false;
       }
     } 
@@ -91,8 +92,9 @@ class RangeCreate: public Common::Req::ConnQueue::ReqBase {
     endpoints.clear();
   }
 
-  const Cb_t  cb;
-  EndPoints   endpoints;
+  const Cb_t      cb;
+  const int64_t   cid;
+  EndPoints       endpoints;
 };
 
 
