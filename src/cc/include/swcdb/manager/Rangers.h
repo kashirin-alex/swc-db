@@ -66,7 +66,33 @@ class Rangers final {
     m_columns_set = false;
     check_assignment_timer(500);
   }
-  
+
+  void check_assignment_timer(uint32_t t_ms = 10000) {
+    if(!m_run)
+      return;
+
+    std::lock_guard<std::mutex> lock(m_mutex_timer);
+
+    auto set_in = std::chrono::milliseconds(t_ms);
+    auto set_on = m_assign_timer.expires_from_now();
+    if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
+      return;
+    m_assign_timer.cancel();
+    m_assign_timer.expires_from_now(set_in);
+
+    m_assign_timer.async_wait(
+      [ptr=ptr()](const asio::error_code ec) {
+        if (ec != asio::error::operation_aborted){
+          ptr->check_assignment();
+        }
+    }); 
+
+    if(t_ms > 10000) {
+      std::cout << to_string() << "\n";
+    }
+    SWC_LOGF(LOG_DEBUG, "Rangers ranges check_assignment scheduled in ms=%d", t_ms);
+  }
+
   void require_sync() {
     rs_changes(m_rgr_status, true);
     
@@ -76,8 +102,7 @@ class Rangers final {
       column_update(
         Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL, 
         DB::Schema::make(-1, "")
-      );
-        
+      ); 
   }
 
   void is_active(int& err, int64_t cid, bool for_schema=false) {
@@ -467,32 +492,6 @@ class Rangers final {
 
     return std::find_if(cols.begin(), cols.end(),  
           [cid](const int64_t& cid_set){return cid_set == cid;}) != cols.end();
-  }
-
-  void check_assignment_timer(uint32_t t_ms = 10000) {
-    if(!m_run)
-      return;
-
-    std::lock_guard<std::mutex> lock(m_mutex_timer);
-
-    auto set_in = std::chrono::milliseconds(t_ms);
-    auto set_on = m_assign_timer.expires_from_now();
-    if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
-      return;
-    m_assign_timer.cancel();
-    m_assign_timer.expires_from_now(set_in);
-
-    m_assign_timer.async_wait(
-      [ptr=ptr()](const asio::error_code ec) {
-        if (ec != asio::error::operation_aborted){
-          ptr->check_assignment();
-        }
-    }); 
-
-    if(t_ms > 10000) {
-      std::cout << to_string() << "\n";
-    }
-    SWC_LOGF(LOG_DEBUG, "Rangers ranges check_assignment scheduled in ms=%d", t_ms);
   }
 
   void check_assignment(){
