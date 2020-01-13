@@ -581,9 +581,11 @@ class Mutable final {
     for(Cell* cell; offset < m_size; offset++) {
       cell = *(m_cells + offset);
 
-      if(cell->key.compare(key_start, 0) == Condition::GT) 
+      if(!key_start.empty() && 
+          key_start.compare(cell->key, 0) == Condition::LT) 
         continue;
-      if(cell->key.compare(key_finish, 0) == Condition::GT)
+      if(!key_finish.empty() && 
+          key_finish.compare(cell->key, 0) == Condition::GT)
         break;
 
       count++;
