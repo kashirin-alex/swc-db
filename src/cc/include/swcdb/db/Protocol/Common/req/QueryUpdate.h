@@ -267,7 +267,7 @@ class Update : public std::enable_shared_from_this<Update> {
           base_req, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
 
-      if(rsp.next_range && !rsp.range_end.empty()) {
+      if(!rsp.range_end.empty() && !rsp.next_range_begin.empty()) {
         //std::cout << "located_on_manager, NEXT-KEY: " 
         //          << Types::to_string(type) 
         //          << " " << rsp.range_end.to_string() << "\n";
@@ -349,7 +349,7 @@ class Update : public std::enable_shared_from_this<Update> {
         rsp.cid, col_cells, key_start, updater, parent_req, rsp.rid
       )->resolve_on_manager();
 
-      if(rsp.next_range && !rsp.range_end.empty()) {
+      if(!rsp.range_end.empty() && !rsp.next_range_begin.empty()) {
         //std::cout << "located_on_ranger, NEXT-KEY: " 
         //  << Types::to_string(type) 
         //   << " " << rsp.range_end.to_string() << "\n";

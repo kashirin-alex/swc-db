@@ -84,27 +84,21 @@ class RangeLocateReq : public Serializable {
 class RangeLocateRsp  : public Serializable {
   public:
 
-  RangeLocateRsp(int err = 0, int64_t cid = 0, int64_t rid = 0) 
-                  : err(err), cid(cid), rid(rid), next_range(false) {  }
+  RangeLocateRsp() : err(Error::OK), cid(0), rid(0) { }
 
-  RangeLocateRsp(int64_t cid, int64_t rid,
-                 const DB::Cell::Key& range_end,
-                 bool next_range)
-                 : err(0), cid(cid), rid(rid), 
-                  range_end(range_end), next_range(next_range) {
-  }
+  virtual ~RangeLocateRsp() { }
 
   int             err;         
   int64_t         cid; 
   int64_t         rid;
   DB::Cell::Key   range_end;
-  bool            next_range;
+  DB::Cell::Key   next_range_begin;
 
   const std::string to_string() const {
     std::string s("Range(");
     s.append("err=");
     s.append(std::to_string(err));
-    if(err == Error::OK) {
+    if(!err) {
       s.append(" cid=");
       s.append(std::to_string(cid));
       s.append(" rid=");
@@ -112,8 +106,8 @@ class RangeLocateRsp  : public Serializable {
 
       s.append(" RangeEnd");
       s.append(range_end.to_string());
-      s.append(" next_range=");
-      s.append(std::to_string(next_range));
+      s.append(" next_range_begin=");
+      s.append(next_range_begin.to_string());
       
     } else {
       s.append("(");
@@ -131,34 +125,33 @@ class RangeLocateRsp  : public Serializable {
   }
     
   size_t encoded_length_internal() const {
-    return  Serialization::encoded_length_vi32(err) 
-      + (err != Error::OK ? 0 :
-          (Serialization::encoded_length_vi64(cid)
-          + Serialization::encoded_length_vi64(rid)
-          + range_end.encoded_length()
-          + 1
-          )
-        );
+    return Serialization::encoded_length_vi32(err) 
+      + (err ? 0 : (
+          Serialization::encoded_length_vi64(cid)
+        + Serialization::encoded_length_vi64(rid)
+        + range_end.encoded_length()
+        + next_range_begin.encoded_length()
+        ) );
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
-    if(err == Error::OK) {
+    if(!err) {
       Serialization::encode_vi64(bufp, cid);
       Serialization::encode_vi64(bufp, rid);
       range_end.encode(bufp);
-      Serialization::encode_bool(bufp, next_range);
+      next_range_begin.encode(bufp);
     }
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     err = Serialization::decode_vi32(bufp, remainp);
-    if(err == Error::OK) {
+    if(!err) {
       cid = Serialization::decode_vi64(bufp, remainp);
       rid = Serialization::decode_vi64(bufp, remainp);
       range_end.decode(bufp, remainp, true);
-      next_range = Serialization::decode_bool(bufp, remainp);
+      next_range_begin.decode(bufp, remainp, true);
     }
   }
 

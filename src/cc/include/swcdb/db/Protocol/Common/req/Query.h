@@ -37,7 +37,7 @@ struct Select final {
 
     ~Rsp() { }
 
-    const bool add_cells(const StaticBuffer& buffer, bool more, 
+    const bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
                          DB::Specs::Interval& interval) {
       std::scoped_lock lock(m_mutex);
       size_t recved = m_vec.add(buffer.base, buffer.size);
@@ -48,11 +48,11 @@ struct Select final {
         return false;
       
       interval.flags.offset = 0;
-      //if(more) {
-      auto last = m_vec.cells.back();
-      interval.offset_key.copy(last->key);
-      interval.offset_rev = last->revision;
-      //}
+      if(reached_limit) {
+        auto last = m_vec.cells.back();
+        interval.offset_key.copy(last->key);
+        interval.offset_rev = last->revision;
+      }
       return true;
     }  
     
@@ -256,6 +256,7 @@ class Select : public std::enable_shared_from_this<Select> {
     Select::Ptr               selector;
     ReqBase::Ptr              parent_req;
     const int64_t             rid;
+    DB::Cell::Key             range_begin;
 
     typedef std::shared_ptr<std::vector<std::function<void()>>> NextCalls;
     NextCalls next_calls;
@@ -266,6 +267,7 @@ class Select : public std::enable_shared_from_this<Select> {
             Select::Ptr selector,
             NextCalls next_calls=nullptr, 
             ReqBase::Ptr parent_req=nullptr, 
+            const DB::Cell::Key* range_begin=nullptr,
             const int64_t rid=0)
           : type(type), cid(cid), cells_cid(cells_cid), 
             interval(interval), selector(selector),
@@ -274,7 +276,9 @@ class Select : public std::enable_shared_from_this<Select> {
               std::make_shared<std::vector<std::function<void()>>>() : 
               next_calls
             ),
-            parent_req(parent_req), rid(rid) {
+            parent_req(parent_req), 
+            range_begin(range_begin ? *range_begin : DB::Cell::Key()),
+            rid(rid) {
     }
 
     virtual ~Scanner() {}
@@ -286,15 +290,16 @@ class Select : public std::enable_shared_from_this<Select> {
       s.append(std::to_string(cid));
       s.append(" rid=");
       s.append(std::to_string(rid));
-      s.append(" completion=");
-      s.append(std::to_string(selector->result->completion.load()));
       s.append(" cells_cid=");
       s.append(std::to_string(cells_cid));
-      s.append(" next_calls=");
-      s.append(std::to_string(next_calls->size()));
-      
+      s.append(" range_begin=");
+      s.append(range_begin.to_string());
       s.append(" ");
       s.append(interval->to_string());
+      s.append(" next_calls=");
+      s.append(std::to_string(next_calls->size()));
+      s.append(" completion=");
+      s.append(std::to_string(selector->result->completion.load()));
       return s;
     }
     
@@ -302,19 +307,22 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_manager() {
 
       Mngr::Params::RgrGetReq params(1);
-      interval->apply_possible_range(params.range_begin, params.range_end);
+      if(!range_begin.empty()) {
+        interval->range_begin.copy(range_begin);
+        interval->apply_possible_range_end(params.range_end); 
+      } else {
+        interval->apply_possible_range(params.range_begin, params.range_end); 
+      }
 
       if(cid > 2)
         params.range_begin.insert(0, std::to_string(cid));
       if(cid >= 2)
         params.range_begin.insert(0, "2");
       
-      if(!params.range_end.empty()) {
-        if(cid > 2) 
-          params.range_end.insert(0, std::to_string(cid));
-        if(cid >= 2) 
-          params.range_end.insert(0, "2");
-      }
+      if(cid > 2) 
+        params.range_end.insert(0, std::to_string(cid));
+      if(cid >= 2) 
+        params.range_end.insert(0, "2");
 
       SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
 
@@ -373,14 +381,15 @@ class Select : public std::enable_shared_from_this<Select> {
         return false;
       }
 
-      if(type != Types::Range::DATA 
-         && rsp.next_range && !rsp.range_end.empty()) {
-        //std::cout << "located_on_manager, NEXT-KEY: " 
+      if(type != Types::Range::DATA && 
+         !rsp.range_end.empty() && !rsp.next_range_begin.empty()) {
+        //std::cout << "located_on_manager, NEXT-RANGE: " 
         //          << Types::to_string(type) 
-        //          << " " << rsp.range_end.to_string() << "\n";
+        //          << " " << rsp.next_range_begin.to_string() << "\n";
         next_calls->push_back([scanner=std::make_shared<Scanner>(
           type, cid, cells_cid, interval, selector, next_calls,
-          parent_req == nullptr ? base_req : parent_req)] () { 
+          parent_req == nullptr ? base_req : parent_req, 
+          &rsp.next_range_begin)] () { 
             scanner->locate_on_manager(); 
           }
         );
@@ -401,7 +410,7 @@ class Select : public std::enable_shared_from_this<Select> {
       } else 
         std::make_shared<Scanner>(
           type, rsp.cid, cells_cid, interval, selector, next_calls,
-          base_req, rsp.rid
+          base_req, &range_begin, rsp.rid
         )->locate_on_ranger(rsp.endpoints);
 
       return true;
@@ -411,17 +420,21 @@ class Select : public std::enable_shared_from_this<Select> {
       HT_ASSERT(type != Types::Range::DATA);
 
       Rgr::Params::RangeLocateReq params(cid, rid);
-      interval->apply_possible_range(params.range_begin, params.range_end);
+      if(!range_begin.empty()) {
+        interval->range_begin.copy(range_begin);
+        interval->apply_possible_range_end(params.range_end); 
+      } else {
+        interval->apply_possible_range(params.range_begin, params.range_end); 
+      }
 
       params.range_begin.insert(0, std::to_string(cells_cid));
       if(type == Types::Range::MASTER && cells_cid > 2)
         params.range_begin.insert(0, "2");
       
-      if(!params.range_end.empty()) {
-        params.range_end.insert(0, std::to_string(cells_cid));
-        if(type == Types::Range::MASTER && cells_cid > 2)
-          params.range_end.insert(0, "2");
-      }
+      params.range_end.insert(0, std::to_string(cells_cid));
+      if(type == Types::Range::MASTER && cells_cid > 2)
+        params.range_end.insert(0, "2");
+      
 
       SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
       
@@ -460,21 +473,22 @@ class Select : public std::enable_shared_from_this<Select> {
       }
 
       selector->result->err=rsp.err;
-      if(rsp.err){
+      if(rsp.err) {
 
         return true;
       }
 
-      if(rsp.next_range && !rsp.range_end.empty()
-        && type != Types::Range::DATA 
-        && interval->key_finish.is_matching(rsp.range_end)) {
+      if(!rsp.range_end.empty() && !rsp.next_range_begin.empty() && 
+          type != Types::Range::DATA && 
+          interval->key_finish.is_matching(rsp.range_end)) {
               
-        //std::cout << "located_on_ranger, NEXT-KEY: " 
+        //std::cout << "located_on_ranger, NEXT-RANGE: " 
         //  << Types::to_string(type) 
-        //  << " " << rsp.range_end.to_string() << "\n";
+        //  << " " << rsp.next_range_begin.to_string() << "\n";
           
         next_calls->push_back([endpoints, scanner=std::make_shared<Scanner>(
-          type, cid, cells_cid, interval, selector, next_calls, parent_req)]
+          type, cid, cells_cid, interval, selector, next_calls, parent_req,
+          &rsp.next_range_begin)]
           () { scanner->locate_on_ranger(endpoints); });
       }
 
@@ -482,7 +496,7 @@ class Select : public std::enable_shared_from_this<Select> {
         type == Types::Range::MASTER
         ? Types::Range::META : Types::Range::DATA,
         rsp.cid, cells_cid, interval, selector, next_calls, 
-        parent_req, rsp.rid
+        parent_req, &range_begin, rsp.rid
       )->resolve_on_manager();
 
       return true;
@@ -536,8 +550,9 @@ class Select : public std::enable_shared_from_this<Select> {
               ptr->select(qreq->endpoints, rid, base_req);
 
             } else if(!ptr->next_calls->empty()) {
-              //ptr->interval->offset_key.free();
-              //ptr->interval->offset_rev = 0;
+              ptr->interval->offset_key.free();
+              ptr->interval->offset_rev = 0;
+
               auto it = ptr->next_calls->begin();
               auto call = *it;
               ptr->next_calls->erase(it);

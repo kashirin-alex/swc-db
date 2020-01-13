@@ -98,7 +98,7 @@ class Column final {
   Range::Ptr get_range(int &err, 
                        const DB::Cell::Key& range_begin, 
                        const DB::Cell::Key& range_end, 
-                       bool &range_key) {
+                       DB::Cell::Key& next_range_begin) {
     std::shared_lock lock(m_mutex);
     Range::Ptr found = nullptr;
     uint32_t any_is = cfg.cid == 1 ? 2 : (cfg.cid == 2 ? 1 : 0);
@@ -109,7 +109,7 @@ class Column final {
         found = range;
         continue;
       }
-      range_key = true;
+      range->get_key_begin(next_range_begin);
       break;
     }
     return found;

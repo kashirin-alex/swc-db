@@ -22,7 +22,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
                   DB::Cells::Mutable& cells,
                   Range::Ptr range)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
-                    range(range) {
+                    range(range),
+                    any_is(range->type != Types::Range::DATA) {
     has_selector = true;
   }
 
@@ -31,18 +32,21 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   const bool selector(const DB::Cells::Cell& cell, bool& stop) override {
     /*
     SWC_LOG_OUT(LOG_INFO) 
-      << " selector   : cid=" << range->cfg->cid << "\n"
-      << "    cell.key: "<< cell.key.to_string() << "\n"
-      << " range_begin: "<< spec.range_begin.to_string() 
+      << " selector   : cid=" << range->cfg->cid          << "\n"
+      << "    cell.key: " << cell.key.to_string()         << "\n"
+      << " range_begin: " << spec.range_begin.to_string() << "\n"
+      << "   range_end: " << spec.range_begin.to_string() 
       << SWC_LOG_OUT_END;
     */
-    if(!spec.range_end.empty() 
-        && spec.range_end.compare(cell.key) == Condition::GT) {
+
+    if(spec.range_end.count > any_is
+        && spec.range_end.compare(cell.key, spec.range_end.count) 
+                                                == Condition::GT) {
       stop = true;
       return false;
     }
     stop = cells.size() == 1;
-    if(spec.range_begin.compare(cell.key, cell.key.count) == Condition::LT)
+    if(spec.range_begin.compare(cell.key) == Condition::LT)
       return false;
 
     size_t remain = cell.vlen;
@@ -50,12 +54,15 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
     /*
-    std::cout << "cell begin: "<< cell.key.to_string() << "\n";
-    std::cout << "spec begin: " << spec.range_begin.to_string() << "\n";
-    std::cout << "cell end:   "<< key_end.to_string() << "\n";
-    std::cout << "spec end:   " << spec.range_end.to_string() << "\n";
+    std::cout << "key___begin: " << cell.key.to_string() << "\n";
+    std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
+    std::cout << "key_____end: " << key_end.to_string() << "\n";
+    std::cout << "range___end: " << spec.range_end.to_string() << "\n";
     */
-    return key_end.empty() || spec.range_end.compare(key_end) != Condition::GT;
+    return  key_end.count == any_is ||
+            spec.range_end.count == any_is ||
+            spec.range_end.compare(key_end) != Condition::GT
+          ;
   }
 
   void response(int &err) override {
@@ -73,7 +80,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     
     //SWC_LOG_OUT(LOG_INFO) << spec.to_string() << SWC_LOG_OUT_END;
 
-    Protocol::Rgr::Params::RangeLocateRsp params(err);
+    Protocol::Rgr::Params::RangeLocateRsp params;
+    params.err = err;
     if(!err) {
       if(cells.size()) {
 
@@ -93,10 +101,15 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         if(!params.range_end.empty())
           params.range_end.remove(0);
 
-        params.next_range = cells.size() > 1;
+        if(cells.size() > 1) {
+          cells.get(1, params.next_range_begin);
+          if(range->type == Types::Range::MASTER)
+            params.next_range_begin.remove(0);
+          if(!params.next_range_begin.empty())
+            params.next_range_begin.remove(0);
+        }
         
       } else if(spec.range_begin.count > 1) {
-        spec.range_end.copy(spec.range_begin);
         spec.range_begin.remove(spec.range_begin.count-1, true);
         range->scan(get_req_scan());
         return;
@@ -119,7 +132,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     
   }
 
-  Range::Ptr              range;
+  Range::Ptr  range;  
+  uint32_t    any_is;
 
 };
 

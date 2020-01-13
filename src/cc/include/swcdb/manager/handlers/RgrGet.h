@@ -41,7 +41,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
         rsp_params.err, 
         params.range_begin, 
         params.range_end.empty() ? params.range_begin : params.range_end,
-        rsp_params.next_range
+        rsp_params.next_range_begin
       );
       if(range != nullptr) {
         range->get_key_end(rsp_params.range_end);

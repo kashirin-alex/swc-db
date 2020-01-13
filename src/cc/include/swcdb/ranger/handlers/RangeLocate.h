@@ -48,10 +48,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     );
     auto req = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
       conn, ev, 
-      DB::Specs::Interval(
-        params.range_begin, 
-        params.range_end.empty() ? params.range_begin : params.range_end
-      ), 
+      DB::Specs::Interval(params.range_begin, params.range_end), 
       cells, 
       range
     );
