@@ -6,6 +6,8 @@
 #ifndef swcdb_lib_db_Columns_Rgr_Compaction_h
 #define swcdb_lib_db_Columns_Rgr_Compaction_h
 
+#include "swcdb/db/Protocol/Mngr/req/RangeCreate.h"
+#include "swcdb/db/Protocol/Mngr/req/RangeUnloaded.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
@@ -442,13 +444,128 @@ class Compaction final {
       //for(auto cs : cellstores)
       //  std::cout << " " << cs->to_string() << "\n";
 
-      if(cellstores.size()) 
-        range->apply_new(err, cellstores, fragments_old);
+      if(cellstores.size()) {
+        auto max = range->cfg->cellstore_max();
+        if(cellstores.size() > 1 && cellstores.size() >= max) {
+          create_range();
+        } else {
+          apply_new();
+        }
+      } else {
+        range->compact_require(false);
+        compactor->compacted(range, empty_cs);
+      }
+    }
+
+    void create_range() {
+      Protocol::Mngr::Req::RangeCreate::request(
+        range->cfg->cid,
+        RangerEnv::rgr_data()->id,
+        [ptr=shared()]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+         Protocol::Mngr::Params::RangeCreateRsp rsp) {
+          
+          SWC_LOGF(LOG_DEBUG, "Compact::Mngr::Req::RangeCreate err=%d(%s) rid=%d", 
+                   rsp.err, Error::get_text(rsp.err), rsp.rid);
+
+          if(rsp.err || !rsp.rid) {
+            if(!rsp.rid || 
+                rsp.err == Error::COLUMN_NOT_READY) {
+              req->request_again();
+            } else {
+              ptr->apply_new();
+            }
+            return;
+          }
+          ptr->split(rsp.rid);
+        }
+      );
+    }
+
+    void remove_new_range(Range::Ptr new_range) {
+      /*
+      Protocol::Mngr::Req::RangeRemove::request(
+        new_range->cfg->cid,
+        new_range->rid,
+        []
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+         Protocol::Mngr::Params::RangeRemoveRsp rsp) {
+          
+          SWC_LOGF(LOG_DEBUG, "Compact::Mngr::Req::RangeRemove err=%d(%s) rid=%d", 
+                   rsp.err, Error::get_text(rsp.err));
+
+          if(rsp.err == Error::COLUMN_NOT_READY) {
+            req->request_again();
+          }
+        }
+      );
+      */
+    }
+
+    void split(int64_t new_rid) {
+      int err = Error::OK;
+      Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
+      if(col == nullptr || col->removing())
+        return quit();
+
+      auto new_range = col->get_range(err, new_rid, true);
+      if(err)
+        return apply_new();
+
+      new_range->create_folders(err);
+      if(err) {
+        err = Error::OK;
+        col->remove(err, new_rid);
+        remove_new_range(new_range);
+        return apply_new();
+      }
+      
+      uint8_t keep = cellstores.size()/2;
+      Files::CellStore::Writers new_cellstores;
+      new_cellstores.assign(cellstores.begin()+keep, cellstores.end());
+      cellstores.erase(cellstores.begin()+keep, cellstores.end());
+
+      new_range->create(err, new_cellstores);
+      if(err) {
+        err = Error::OK;
+        col->remove(err, new_rid);
+        remove_new_range(new_range);
+        return quit();
+      }
+
+      new_range = nullptr;
+      col->unload(
+        new_rid, 
+        [cid=range->cfg->cid, rid=new_rid](int err) { 
+          Protocol::Mngr::Req::RangeUnloaded::request(
+            cid, rid,
+            [](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+             Protocol::Mngr::Params::RangeUnloadedRsp rsp) {
+          
+              SWC_LOGF(
+                LOG_DEBUG, 
+                "Compact::Mngr::Req::RangeUnloaded err=%d(%s) rid=%d", 
+                rsp.err, Error::get_text(rsp.err));
+
+              if(rsp.err == Error::COLUMN_NOT_READY) {
+                req->request_again();
+              }
+            }
+          );
+        }
+      );
+
+      apply_new();
+    }
+
+    void apply_new() {
+      int err = Error::OK;
+      range->apply_new(err, cellstores, fragments_old);
       if(err)
         return quit();
 
       range->compact_require(false);
-      compactor->compacted(range, empty_cs);
+      compactor->compacted(range, false);
 
       std::cout << "Compact ::finalized\n"
                 << " " << range->blocks.to_string() << "\n";
