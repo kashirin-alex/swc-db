@@ -21,10 +21,10 @@ class Range : public DB::RangeBase {
 
   struct ReqAdd final {
     public:
-    ReqAdd(const StaticBuffer::Ptr& input, const ResponseCallback::Ptr& cb) 
+    ReqAdd(StaticBuffer& input, const ResponseCallback::Ptr& cb) 
           : input(input), cb(cb) {}
     ~ReqAdd() {}
-    const StaticBuffer::Ptr     input;
+    StaticBuffer                input;
     const ResponseCallback::Ptr cb;
   };
 
@@ -266,8 +266,10 @@ class Range : public DB::RangeBase {
   }
 
   void compacting(Compact state) {
-    std::scoped_lock lock(m_mutex);
-    m_compacting = state;
+    {
+      std::scoped_lock lock(m_mutex);
+      m_compacting = state;
+    }
     if(state == Compact::NONE)
       m_cv.notify_all();
   }
@@ -455,20 +457,45 @@ class Range : public DB::RangeBase {
     const uint8_t* ptr;
     size_t remain;
 
+    DB::Cell::Key key_end;
+    {
+      std::shared_lock lock(m_mutex);
+      key_end.copy(m_interval.key_end);
+    }
+    DB::Cells::Mutable fwd_cells(
+      0, 
+      cfg->cell_versions(), 
+      cfg->cell_ttl(),  
+      cfg->column_type()
+    );
+
     for(;;) {
       err = Error::OK;
       {
         std::shared_lock lock(m_mutex);
         req = m_q_adding.front();
       }
-      uint32_t count = 0;
-      ptr = req->input->base;
-      remain = req->input->size; 
+      //uint32_t count = 0;
+      ptr = req->input.base;
+      remain = req->input.size; 
 
       while(!err && remain) {
         cell.read(&ptr, &remain);
-        if(!m_interval.is_in_end(cell.key)) {
-          // skip( with error)
+        
+        if(wait()) {
+          std::shared_lock lock(m_mutex);
+          key_end.copy(m_interval.key_end);
+        }
+
+        if(m_state != State::LOADED && m_state != State::UNLOADING) {
+          err = m_state == State::DELETED ? 
+                Error::COLUMN_MARKED_REMOVED 
+                : Error::RS_NOT_LOADED_RANGE;
+          break;
+        } 
+
+        if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
+          fwd_cells.add(cell);
           continue;
         }
         
@@ -480,21 +507,26 @@ class Range : public DB::RangeBase {
         if(!(cell.control & DB::Cells::HAVE_REVISION))
           cell.control |= DB::Cells::REV_IS_TS;
         
-        if(m_state != State::LOADED && m_state != State::UNLOADING) {
-          err = m_state == State::DELETED ? 
-                Error::COLUMN_MARKED_REMOVED 
-                : Error::RS_NOT_LOADED_RANGE;
-          break;
-        } 
-
-        wait();
         blocks.add_logged(cell);
         //SWC_LOG_OUT(LOG_INFO) 
         //  << " range(added) "<< cell.to_string() 
         //  << SWC_LOG_OUT_END;
-        count++;
+        //count++;
       }
-      req->cb->response(err);
+
+      if(fwd_cells.size()) {
+        auto fwd_req = std::make_shared<Protocol::Common::Req::Query::Update>(
+          [cb=req->cb]
+          (Protocol::Common::Req::Query::Update::Result::Ptr result) {
+            cb->response(result->err);
+          }
+        );
+        fwd_req->timeout_commit = 10*fwd_cells.size();
+        fwd_req->columns->create(cfg->cid, fwd_cells);
+        fwd_req->commit();
+      } else {
+        req->cb->response(err);
+      }
 
       delete req;
       {

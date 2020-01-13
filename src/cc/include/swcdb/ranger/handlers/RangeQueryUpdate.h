@@ -17,7 +17,7 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeQueryUpdateReq params;
   server::Rgr::Range::Ptr range;
-  StaticBuffer::Ptr buffer;
+  //StaticBuffer::Ptr buffer;
 
   try {      
     const uint8_t *ptr = ev->data.base;
@@ -32,9 +32,9 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
     }
     if(err == Error::OK && !ev->data_ext.size) {
       err = Error::INVALID_ARGUMENT;
-    } else {
-      buffer = std::make_shared<StaticBuffer>(ev->data_ext);
-    }
+    }// else {
+    //  buffer = std::make_shared<StaticBuffer>(ev->data_ext);
+    //}
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
@@ -48,7 +48,7 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
       
-    range->add(new server::Rgr::Range::ReqAdd(buffer, cb));
+    range->add(new server::Rgr::Range::ReqAdd(ev->data_ext, cb));
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
