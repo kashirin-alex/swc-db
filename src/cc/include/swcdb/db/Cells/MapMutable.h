@@ -20,12 +20,19 @@ class ColCells final {
     return std::make_shared<ColCells>(cid, versions, ttl, type);
   }
 
+  static Ptr make(const int64_t cid, Mutable& cells) {
+    return std::make_shared<ColCells>(cid, cells);
+  }
+
   const int64_t cid;
 
   ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
            Types::Column type)
           : cid(cid), m_cells(0, versions, ttl, type) { 
+  }
 
+  ColCells(const int64_t cid, Mutable& cells)
+          : cid(cid), m_cells(cells) { 
   }
 
   ~ColCells() {}
@@ -123,6 +130,12 @@ class MapMutable {
     return m_map.insert(
       std::make_pair(cid, ColCells::make(cid, versions, ttl, type))
     ).second;
+  }
+
+  const bool create(const int64_t cid, Mutable& cells) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_map.insert(
+      std::make_pair(cid, ColCells::make(cid, cells))).second;
   }
 
   const bool exists(int64_t cid) {
