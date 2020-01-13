@@ -571,7 +571,7 @@ class Mutable final {
                       const DB::Cell::Key& key_finish,
                       DynamicBuffer& cells, uint32_t threshold) {
     if(!m_size)
-      return true;
+      return false;
     uint32_t count = 0;
     int32_t offset_applied = -1;
     
