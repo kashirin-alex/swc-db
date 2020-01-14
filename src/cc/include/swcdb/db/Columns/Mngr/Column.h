@@ -98,21 +98,23 @@ class Column final {
   Range::Ptr get_range(int &err, 
                        const DB::Cell::Key& range_begin, 
                        const DB::Cell::Key& range_end, 
-                       DB::Cell::Key& next_range_begin) {
-    std::shared_lock lock(m_mutex);
-    Range::Ptr found = nullptr;
+                       bool next_range) {
+    bool found = false;
     uint32_t any_is = cfg.cid == 1 ? 2 : (cfg.cid == 2 ? 1 : 0);
-    for(auto& range : m_ranges){
+
+    std::shared_lock lock(m_mutex);
+    for(auto& range : m_ranges) {
       if(!range->includes(range_begin, range_end, any_is)) 
         continue;
-      if(found == nullptr){
-        found = range;
+      if(!next_range)
+        return range;
+      if(!found) {
+        found = true;
         continue;
       }
-      range->get_key_begin(next_range_begin);
-      break;
+      return range;
     }
-    return found;
+    return nullptr;
   }
 
   void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {

@@ -13,14 +13,12 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
+  Params::RgrGetReq params;
   Params::RgrGetRsp rsp_params;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
-
-    Params::RgrGetReq params;
     params.decode(&ptr, &remain);
-    std::cout << "RgrGet: " << params.to_string() << "\n";
 
     Env::Rangers::get()->is_active(rsp_params.err, params.cid); 
     if(rsp_params.err != Error::OK)
@@ -40,11 +38,13 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
       range = col->get_range(
         rsp_params.err, 
         params.range_begin, 
-        params.range_end.empty() ? params.range_begin : params.range_end,
-        rsp_params.next_range_begin
+        params.range_end,
+        params.next_range
       );
       if(range != nullptr) {
-        range->get_key_end(rsp_params.range_end);
+        range->get_interval(rsp_params.range_begin, rsp_params.range_end);
+        rsp_params.range_begin.remove(0);
+        rsp_params.range_begin.remove(0);
         rsp_params.range_end.remove(0);
         rsp_params.range_end.remove(0);
       }
@@ -72,8 +72,12 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
   }
   
   send_response:
+
+    SWC_LOG_OUT(LOG_DEBUG) 
+      << rsp_params.to_string() << " next_range=" << params.next_range
+      << SWC_LOG_OUT_END;
+
     try {
-      std::cout << "RgrGet(RSP): " << rsp_params.to_string() << "\n";
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);

@@ -20,9 +20,9 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Specs::Interval& spec, 
                   DB::Cells::Mutable& cells,
-                  Range::Ptr range)
+                  Range::Ptr range, bool next_range)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
-                    range(range),
+                    range(range), next_range(next_range),
                     any_is(range->type != Types::Range::DATA) {
     has_selector = true;
   }
@@ -53,23 +53,27 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
-    /*
+    
     std::cout << "key___begin: " << cell.key.to_string() << "\n";
     std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
+    std::cout << "range____id: " << Serialization::decode_vi64(&ptr, &remain) << "\n";
     std::cout << "key_____end: " << key_end.to_string() << "\n";
     std::cout << "range___end: " << spec.range_end.to_string() << "\n";
-    */
-    return  key_end.count == any_is ||
+    
+    bool match = key_end.count == any_is ||
             spec.range_end.count == any_is ||
             spec.range_end.compare(key_end) != Condition::GT
           ;
+    if(match && !next_range)
+      stop = true;
+    return match;
   }
 
   void response(int &err) override {
     if(!DB::Cells::ReqScan::ready(err))
       return;
       
-    if(err == Error::OK) {
+    if(!err) {
       if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       if(range->deleted())
@@ -80,33 +84,33 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     
     //SWC_LOG_OUT(LOG_INFO) << spec.to_string() << SWC_LOG_OUT_END;
 
-    Protocol::Rgr::Params::RangeLocateRsp params;
-    params.err = err;
+    Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(!err) {
       if(cells.size()) {
 
-        DB::Cells::Cell cell;
-        cells.get(0, cell);
+        if(next_range && cells.size() != 2) {        
+          params.err = Error::RANGE_NOT_FOUND;
+        } else {
+
+          DB::Cells::Cell cell;
+          cells.get(next_range ? 1 : 0, cell);
         
-        std::string id_name(cell.key.get_string(0));
-        params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+          params.range_begin.copy(cell.key);
+        
+          std::string id_name(params.range_begin.get_string(0));
+          params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
 
-        const uint8_t* ptr = cell.value;
-        size_t remain = cell.vlen;
-        params.range_end.decode(&ptr, &remain, true);
-        params.rid = Serialization::decode_vi64(&ptr, &remain);
+          const uint8_t* ptr = cell.value;
+          size_t remain = cell.vlen;
+          params.range_end.decode(&ptr, &remain, true);
+          params.rid = Serialization::decode_vi64(&ptr, &remain);
 
-        if(range->type == Types::Range::MASTER)
+          if(range->type == Types::Range::MASTER) {
+            params.range_begin.remove(0);
+            params.range_end.remove(0);
+          }
+          params.range_begin.remove(0);
           params.range_end.remove(0);
-        if(!params.range_end.empty())
-          params.range_end.remove(0);
-
-        if(cells.size() > 1) {
-          cells.get(1, params.next_range_begin);
-          if(range->type == Types::Range::MASTER)
-            params.next_range_begin.remove(0);
-          if(!params.next_range_begin.empty())
-            params.next_range_begin.remove(0);
         }
         
       } else if(spec.range_begin.count > 1) {
@@ -119,7 +123,9 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       }
     }
 
-    SWC_LOG_OUT(LOG_DEBUG) << params.to_string() << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_DEBUG) 
+      << params.to_string() << " next_range=" << next_range 
+      << SWC_LOG_OUT_END;
     
     try {
       auto cbp = CommBuf::make(params);
@@ -132,7 +138,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     
   }
 
-  Range::Ptr  range;  
+  Range::Ptr  range;
+  bool        next_range;
   uint32_t    any_is;
 
 };

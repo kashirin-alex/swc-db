@@ -36,7 +36,15 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
   try{
 
     if(err) {
-      conn->send_error(err, "", ev);
+      Protocol::Rgr::Params::RangeLocateRsp rsp_params(err);
+      
+      SWC_LOG_OUT(LOG_DEBUG) 
+        << rsp_params.to_string() << " " << params.to_string() << SWC_LOG_OUT_END;
+
+      auto cbp = CommBuf::make(rsp_params);
+      cbp->header.initialize_from_request_header(ev->header);
+      conn->send_response(cbp);
+
       return;
     }
 
@@ -50,7 +58,8 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       conn, ev, 
       DB::Specs::Interval(params.range_begin, params.range_end), 
       cells, 
-      range
+      range,
+      params.next_range
     );
     req->spec.flags.limit = 2;
 

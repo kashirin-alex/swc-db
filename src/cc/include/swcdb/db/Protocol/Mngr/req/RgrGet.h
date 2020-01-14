@@ -22,16 +22,9 @@ class RgrGet: public Common::Req::ConnQueue::ReqBase {
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
                               Params::RgrGetRsp)> Cb_t;
  
-  static void request(int64_t cid, int64_t rid, 
+  static void request(int64_t cid, int64_t rid, bool next_range,
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Params::RgrGetReq(cid, rid), cb, timeout);
-  }
-
-  static void request(int64_t cid, 
-                      const DB::Cell::Key& range_begin, 
-                      const DB::Cell::Key& range_end, 
-                      const Cb_t cb, const uint32_t timeout = 10000){
-    request(Params::RgrGetReq(cid, range_begin, range_end), cb, timeout);
+    request(Params::RgrGetReq(cid, rid, next_range), cb, timeout);
   }
 
   static inline void request(const Params::RgrGetReq params,
