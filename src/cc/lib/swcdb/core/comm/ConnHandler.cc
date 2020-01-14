@@ -197,8 +197,8 @@ const int ConnHandler::send_request(CommBuf::Ptr &cbuf,
     return m_err;
 
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-  if(!cbuf->header.id)
-    cbuf->header.id = next_req_id();
+  //if(!cbuf->header.id) update id in-case cbuf switched over conns
+  cbuf->header.id = next_req_id();
 
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
   return m_err;
