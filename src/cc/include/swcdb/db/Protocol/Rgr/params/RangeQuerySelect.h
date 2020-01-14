@@ -81,7 +81,7 @@ class RangeQuerySelectReq : public Serializable {
 class RangeQuerySelectRsp  : public Serializable {
   public:
 
-  RangeQuerySelectRsp(int err = 0, bool reached_limit=false) 
+  RangeQuerySelectRsp(int err=Error::OK, bool reached_limit=false)
                       : err(err), reached_limit(reached_limit) {  
   }
   
@@ -102,6 +102,8 @@ class RangeQuerySelectRsp  : public Serializable {
     s.append(")");
     s.append(" reached_limit=");
     s.append(std::to_string(reached_limit));
+    s.append(" data.size=");
+    s.append(std::to_string(data.size));
     s.append(")");
     return s;
   }
@@ -113,8 +115,7 @@ class RangeQuerySelectRsp  : public Serializable {
   }
     
   size_t encoded_length_internal() const {
-    return  Serialization::encoded_length_vi32(err)
-          + 1;
+    return Serialization::encoded_length_vi32(err) + 1;
   }
     
   void encode_internal(uint8_t **bufp) const {

@@ -22,10 +22,11 @@ class ReqScan  : public ResponseCallback {
   typedef std::shared_ptr<ReqScan>  Ptr;
   typedef std::function<void()>     NextCall_t;
 
-  ReqScan(Type type=Type::QUERY) : ResponseCallback(nullptr, nullptr), 
-              limit_buffer_sz(0), offset(0), 
-              has_selector(false), drop_caches(false), 
-              type(type) {          
+  ReqScan(Type type=Type::QUERY) 
+          : ResponseCallback(nullptr, nullptr), 
+            limit_buffer_sz(0), offset(0), 
+            has_selector(false), drop_caches(false), 
+            type(type) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 

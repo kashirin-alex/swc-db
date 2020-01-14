@@ -36,7 +36,10 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
   try{
       
     if(err) {
-      conn->send_error(err, "", ev);
+      Protocol::Rgr::Params::RangeQuerySelectRsp rsp_params(err);
+      auto cbp = CommBuf::make(rsp_params);
+      cbp->header.initialize_from_request_header(ev->header);
+      conn->send_response(cbp);
       return;
     }
     
