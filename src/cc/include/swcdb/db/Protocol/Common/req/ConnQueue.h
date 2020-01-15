@@ -25,7 +25,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
               was_called(false), queue(nullptr){
     }
 
-    inline Ptr req() {
+    Ptr req() {
       return std::dynamic_pointer_cast<ReqBase>(shared_from_this());
     }
 

@@ -161,8 +161,8 @@ class Compaction final {
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 
 
-    std::cout << "Compact ::Started\n"
-              << " " << range->blocks.to_string() << "\n";
+    //std::cout << "Compact ::Started\n"
+    //          << " " << range->blocks.to_string() << "\n";
     range->scan_internal(req);
   }
 
@@ -567,8 +567,8 @@ class Compaction final {
       range->compact_require(false);
       compactor->compacted(range, clear);
 
-      std::cout << "Compact ::finalized\n"
-                << " " << range->blocks.to_string() << "\n";
+      //std::cout << "Compact ::finalized\n"
+      //          << " " << range->blocks.to_string() << "\n";
     }
 
     void quit() {
