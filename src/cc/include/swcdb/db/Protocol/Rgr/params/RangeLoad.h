@@ -45,12 +45,16 @@ class RangeLoad : public Common::Params::ColRangeId {
   
 class RangeLoaded : public Serializable {
   public:
-  RangeLoaded() {}
-  RangeLoaded(const DB::Cells::Interval& interval): interval(interval) {}
+  
+  RangeLoaded(): intval(false) {}
+
+  //RangeLoaded(const DB::Cells::Interval& interval): interval(interval) {}
+
   virtual ~RangeLoaded(){}
   
+  bool                intval;
   DB::Cells::Interval interval;
-  
+
   private:
 
   uint8_t encoding_version() const  {
@@ -58,16 +62,19 @@ class RangeLoaded : public Serializable {
   }
 
   size_t encoded_length_internal() const {
-    return interval.encoded_length();
+    return 1 + (intval ? interval.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
-    interval.encode(bufp);
+    Serialization::encode_bool(bufp, intval);
+    if(intval)
+      interval.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
-    interval.decode(bufp, remainp);
+    if(intval = Serialization::decode_bool(bufp, remainp))
+      interval.decode(bufp, remainp);
   }
 
 };
