@@ -25,7 +25,8 @@ struct Select final {
   std::atomic<bool>      notify;
 
   Select(std::condition_variable& cv, bool notify) 
-        : notify(notify), m_cv(cv) { }
+        : notify(notify), m_cv(cv) { 
+  }
 
   ~Select() { }
 
@@ -44,8 +45,13 @@ struct Select final {
       m_counted += recved;
       m_size_bytes += buffer.size;
 
-      if(interval.flags.limit && (interval.flags.limit -= recved) <= 0 )
-        return false;
+      if(interval.flags.limit) {
+        if(interval.flags.limit <= recved) {
+          interval.flags.limit = 0;
+          return false;
+        } 
+        interval.flags.limit -= recved;
+      }
       
       //if(interval.flags.offset >= recved)
       //  interval.flags.offset -= recved;
@@ -206,9 +212,9 @@ class Select : public std::enable_shared_from_this<Select> {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_cv.wait(
       lock, 
-      [ptr=shared_from_this()] () {
-        return ptr->result->completion == 0 && 
-              !ptr->m_rsp_partial_runs;
+      [selector=shared_from_this()] () {
+        return selector->result->completion == 0 && 
+              !selector->m_rsp_partial_runs;
       }
     );  
   }
@@ -222,9 +228,9 @@ class Select : public std::enable_shared_from_this<Select> {
       return;
     m_cv.wait(
       lock, 
-      [ptr=shared_from_this()] () { 
-        return !ptr->m_rsp_partial_runs || 
-                ptr->result->get_size_bytes() < ptr->buff_sz * 3; 
+      [selector=shared_from_this()] () { 
+        return !selector->m_rsp_partial_runs || 
+                selector->result->get_size_bytes() < selector->buff_sz * 3; 
       }
     );  
   }
@@ -241,6 +247,7 @@ class Select : public std::enable_shared_from_this<Select> {
       }
     }
   }
+
   private:
   
   const bool                  rsp_partials;
@@ -276,7 +283,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
     void next_call(bool final=false) {
       if(next_calls.empty()) {
-        if(final)
+        if(final && !selector->result->completion)
           selector->response(Error::OK);
         return;
       }
@@ -318,15 +325,15 @@ class Select : public std::enable_shared_from_this<Select> {
     const int64_t             cid;
     ScannerColumn::Ptr        col;
 
-    ReqBase::Ptr              parent_req;
+    ReqBase::Ptr              parent;
     const int64_t             rid;
     DB::Cell::Key             range_begin;
 
     Scanner(const Types::Range type, const int64_t cid, ScannerColumn::Ptr col,
-            ReqBase::Ptr parent_req=nullptr, 
+            ReqBase::Ptr parent=nullptr, 
             const DB::Cell::Key* range_begin=nullptr, const int64_t rid=0)
           : type(type), cid(cid), col(col), 
-            parent_req(parent_req), 
+            parent(parent), 
             range_begin(range_begin ? *range_begin : DB::Cell::Key()), 
             rid(rid) {
     }
@@ -374,10 +381,10 @@ class Select : public std::enable_shared_from_this<Select> {
 
       Mngr::Req::RgrGet::request(
         params,
-        [next_range, ptr=shared_from_this()]
-        (ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
-          if(ptr->located_on_manager(req_ptr, rsp, next_range))
-            ptr->col->selector->result->completion--;
+        [next_range, scanner=shared_from_this()]
+        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+          if(scanner->located_on_manager(req, rsp, next_range))
+            scanner->col->selector->result->completion--;
         }
       );
     }
@@ -387,42 +394,44 @@ class Select : public std::enable_shared_from_this<Select> {
 
       Mngr::Req::RgrGet::request(
         Mngr::Params::RgrGetReq(cid, rid),
-        [ptr=shared_from_this()]
-        (ReqBase::Ptr req_ptr, Mngr::Params::RgrGetRsp rsp) {
-          if(ptr->located_on_manager(req_ptr, rsp))
-            ptr->col->selector->result->completion--;
+        [scanner=shared_from_this()]
+        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+          if(scanner->located_on_manager(req, rsp))
+            scanner->col->selector->result->completion--;
         }
       );
     }
 
-    bool located_on_manager(const ReqBase::Ptr& base_req, 
+    bool located_on_manager(const ReqBase::Ptr& base, 
                             const Mngr::Params::RgrGetRsp& rsp, 
                             bool next_range=false) {
       if(rsp.cid == 1)
         SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+
       if(rsp.err) {
         if(rsp.err == Error::COLUMN_NOT_EXISTS) {
-          //std::cout << "NO-RETRY \n";
           col->selector->response(rsp.err);
           return true;
-
-        } else if(rsp.err == Error::RANGE_NOT_FOUND) {
-          if(next_range) {
-            col->next_call(true);
-            return true;
-          }
-          //std::cout << "RETRYING " << rsp.to_string() << "\n";
-          (parent_req == nullptr ? base_req : parent_req)->request_again();
-          return false;
-        } else {
-          //std::cout << "RETRYING " << rsp.to_string() << "\n";
-          base_req->request_again();
+        }
+        if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
+          col->selector->result->completion--;
+          col->next_call(true);
           return false;
         }
+
+        SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING %s", 
+                              rsp.to_string().c_str());
+        if(rsp.err == Error::RANGE_NOT_FOUND) {
+          (parent == nullptr ? base : parent)->request_again();
+        } else {
+          base->request_again();
+        }
+        return false;
       }
       if(!rsp.rid) {
-        //std::cout << "RETRYING " << rsp.to_string() << "\n";
-        (parent_req == nullptr ? base_req : parent_req)->request_again();
+        SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(no rid) %s", 
+                            rsp.to_string().c_str());
+        (parent == nullptr ? base : parent)->request_again();
         return false;
       }
 
@@ -430,8 +439,7 @@ class Select : public std::enable_shared_from_this<Select> {
         col->add_call(
           [scanner=std::make_shared<Scanner>(
             type, cid, col,
-            parent_req == nullptr ? base_req : parent_req,
-            &rsp.range_begin
+            parent == nullptr ? base : parent, &rsp.range_begin
           )] () { scanner->locate_on_manager(true); }
         );
       }
@@ -439,23 +447,23 @@ class Select : public std::enable_shared_from_this<Select> {
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && col->cid == 1) ||
         (type == Types::Range::META   && col->cid == 2 )) {
+
         if(cid != rsp.cid || col->cid != cid) {
-          (parent_req == nullptr ? base_req : parent_req)->request_again();
+          SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(cid no match) %s", 
+                                rsp.to_string().c_str());
+          (parent == nullptr ? base : parent)->request_again();
           return false;
           //col->selector->response(Error::NOT_ALLOWED);
           //return true;
         }
-        select(rsp.endpoints, rsp.rid, base_req);
+        select(rsp.endpoints, rsp.rid, base);
 
       } else {
         std::make_shared<Scanner>(
           type, rsp.cid, col,
-          base_req, 
-          &rsp.range_begin, 
-          rsp.rid
+          base, &rsp.range_begin, rsp.rid
         )->locate_on_ranger(rsp.endpoints, false);
       }
-
       return true;
     }
 
@@ -482,57 +490,57 @@ class Select : public std::enable_shared_from_this<Select> {
 
       Rgr::Req::RangeLocate::request(
         params, endpoints, 
-        [ptr=shared_from_this()]() {
-          ptr->parent_req->request_again();
+        [scanner=shared_from_this()]() {
+          SWC_LOG(LOG_DEBUG, "LocateRange RETRYING no-conn");
+          scanner->parent->request_again();
         },
-        [endpoints, next_range, ptr=shared_from_this()] 
-        (ReqBase::Ptr req_ptr, Rgr::Params::RangeLocateRsp rsp) {
-          if(ptr->located_on_ranger(endpoints, req_ptr, rsp, next_range))
-            ptr->col->selector->result->completion--;
+        [endpoints, next_range, scanner=shared_from_this()] 
+        (ReqBase::Ptr req, Rgr::Params::RangeLocateRsp rsp) {
+          if(scanner->located_on_ranger(endpoints, req, rsp, next_range))
+            scanner->col->selector->result->completion--;
         }
       );
     }
 
     bool located_on_ranger(const EndPoints& endpoints, 
-                           const ReqBase::Ptr& base_req, 
+                           const ReqBase::Ptr& base, 
                            const Rgr::Params::RangeLocateRsp& rsp, 
                            bool next_range=false) {
-      SWC_LOGF(LOG_INFO, "LocatedRange-onRgr %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_INFO, "Located-onRgr %s", rsp.to_string().c_str());
       if(rsp.err) {
-        if(rsp.err == Error::RANGE_NOT_FOUND) {
-          if(next_range) {
-            col->next_call(true);
-            return true;
-          }
-          parent_req->request_again();
+        if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
+          col->selector->result->completion--;
+          col->next_call(true);
           return false;
         }
-        if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
-          parent_req->request_again();
-          return false;
-        } // err conn - parent_req
-        base_req->request_again();
+
+        SWC_LOGF(LOG_DEBUG, "Located-oRgr RETRYING %s", 
+                            rsp.to_string().c_str());                      
+        if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
+           rsp.err == Error::RANGE_NOT_FOUND ) {
+          parent->request_again();
+        } else {
+          base->request_again();
+        }
         return false;
       }
-
-      if(!rsp.rid || (type == Types::Range::DATA && rsp.cid != col->cid)) {
-        //std::cout << "RETRYING " << rsp.to_string() << "\n";
-        parent_req->request_again();
+      if(!rsp.rid) {
+        SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(no rid) %s", 
+                            rsp.to_string().c_str());    
+        parent->request_again();
         return false;
       }
-
-      if(rsp.err) {
-        col->selector->response(rsp.err);
-        return true;
+      if(type == Types::Range::DATA && rsp.cid != col->cid) {
+        SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(cid no match) %s",
+                 rsp.to_string().c_str());        
+        parent->request_again();
+        return false;
       }
 
       if(type != Types::Range::DATA) {
-        col->add_call(
-          [endpoints, scanner=std::make_shared<Scanner>(
-            type, cid, col,
-            parent_req,
-            &rsp.range_begin,
-            rid
+        col->add_call([endpoints, scanner=std::make_shared<Scanner>(
+          type, cid, col,
+          parent, &rsp.range_begin, rid
           )] () { scanner->locate_on_ranger(endpoints, true); }
         );
       }
@@ -540,69 +548,60 @@ class Select : public std::enable_shared_from_this<Select> {
       std::make_shared<Scanner>(
         type == Types::Range::MASTER ? Types::Range::META : Types::Range::DATA,
         rsp.cid, col, 
-        parent_req, 
-        &rsp.range_begin, 
-        rsp.rid
+        parent, &rsp.range_begin, rsp.rid
       )->resolve_on_manager();
 
       return true;
     }
 
-    void select(EndPoints endpoints, uint64_t rid, 
-                const ReqBase::Ptr& base_req) {
+    void select(EndPoints endpoints, uint64_t rid, const ReqBase::Ptr& base) {
       col->selector->result->completion++;
 
-      //std::cout << "Query::Select select, cid=" << col->cid 
-      //          << " rid=" << rid << ""  << col->interval.to_string() << "\n"; 
-      
       Rgr::Req::RangeQuerySelect::request(
         Rgr::Params::RangeQuerySelectReq(
           col->cid, rid, col->interval, col->selector->buff_sz
         ), 
         endpoints, 
-        [base_req, ptr=shared_from_this()]() {
-          base_req->request_again();
-          //std::cout << "RETRYING NO-CONN\n";
-        },
-        [rid, base_req, ptr=shared_from_this()] 
-        (ReqBase::Ptr req_ptr, const Rgr::Params::RangeQuerySelectRsp& rsp) {
 
+        [base]() {
+          SWC_LOG(LOG_DEBUG, "Select RETRYING no-conn");
+          base->request_again();
+        },
+
+        [rid, base, scanner=shared_from_this()] 
+        (ReqBase::Ptr req, const Rgr::Params::RangeQuerySelectRsp& rsp) {
           if(rsp.err) {
+            SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
             if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
-              base_req->request_again();
-              //std::cout << "RETRYING " << rsp.to_string() << "\n";
+              base->request_again();
             } else {
-              //std::cout << "RETRYING " << rsp.to_string() << "\n";
-              req_ptr->request_again();
+              req->request_again();
             }
             return;
           }
-          ptr->col->selector->result->err = rsp.err;
+          auto& col = scanner->col;
+          if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
+            col->selector->wait_on_partials_run();
 
-          bool more = true;
-          if(rsp.data.size) {
-            more = ptr->col->add_cells(rsp.data, rsp.reached_limit);
-          }
-
-          if(more) {
-            ptr->col->selector->wait_on_partials_run();
-
-            if(rsp.reached_limit) {
-              auto qreq = std::dynamic_pointer_cast<
-                Rgr::Req::RangeQuerySelect>(req_ptr);
-              ptr->select(qreq->endpoints, rid, base_req);
-            } else {
-              ptr->col->next_call();
+            if(!rsp.reached_limit) {
+              if(rsp.data.size)
+                col->selector->response_partial();
+              col->selector->result->completion--;
+              col->next_call();
+              return;
             }
+            scanner->select(
+              std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req)
+                ->endpoints, 
+              rid, base
+            );
           }
-
           if(rsp.data.size)
-            ptr->col->selector->response_partial();
-
-          if(!--ptr->col->selector->result->completion)
-            ptr->col->selector->response();
-
+            col->selector->response_partial();
+          if(!--col->selector->result->completion)
+            col->selector->response();
         },
+
         col->selector->timeout_select
       );
     }

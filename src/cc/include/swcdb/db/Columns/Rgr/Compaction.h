@@ -539,14 +539,12 @@ class Compaction final {
         [cid=range->cfg->cid, rid=new_rid](int err) { 
           Protocol::Mngr::Req::RangeUnloaded::request(
             cid, rid,
-            [](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+            [rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
              Protocol::Mngr::Params::RangeUnloadedRsp rsp) {
           
-              SWC_LOGF(
-                LOG_DEBUG, 
-                "Compact::Mngr::Req::RangeUnloaded err=%d(%s) rid=%d", 
-                rsp.err, Error::get_text(rsp.err));
-
+              SWC_LOGF(LOG_DEBUG, 
+                      "Compact::Mngr::Req::RangeUnloaded err=%d(%s) rid=%d", 
+                       rsp.err, Error::get_text(rsp.err), rid);
               if(rsp.err == Error::COLUMN_NOT_READY) {
                 req->request_again();
               }
