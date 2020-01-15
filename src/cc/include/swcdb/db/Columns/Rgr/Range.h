@@ -455,7 +455,8 @@ class Range : public DB::RangeBase {
     int err;
     DB::Cells::Cell cell;
     const uint8_t* ptr;
-    size_t remain;
+    size_t remain; 
+    ResponseCallback::Ptr cb;
 
     DB::Cell::Key key_end;
     {
@@ -471,22 +472,27 @@ class Range : public DB::RangeBase {
 
     for(;;) {
       err = Error::OK;
+      if(wait()) {
+        std::shared_lock lock(m_mutex);
+        key_end.copy(m_interval.key_end);
+      }
+      blocks.processing_increment();
       {
         std::shared_lock lock(m_mutex);
         req = m_q_adding.front();
       }
-      //uint32_t count = 0;
       ptr = req->input.base;
       remain = req->input.size; 
+      cb = req->cb;
+      // if(req no ack) {
+      //  cb->response(err);
+      //  cb = nullptr;
+      // } else if(req expiry (estimated required time before expired)) {
+      //  err = Error::REQUEST_TIMEOUT;
+      // )
 
       while(!err && remain) {
         cell.read(&ptr, &remain);
-        
-        if(wait()) {
-          std::shared_lock lock(m_mutex);
-          key_end.copy(m_interval.key_end);
-        }
-
         if(m_state != State::LOADED && m_state != State::UNLOADING) {
           err = m_state == State::DELETED ? 
                 Error::COLUMN_MARKED_REMOVED 
@@ -508,24 +514,22 @@ class Range : public DB::RangeBase {
           cell.control |= DB::Cells::REV_IS_TS;
         
         blocks.add_logged(cell);
-        //SWC_LOG_OUT(LOG_INFO) 
-        //  << " range(added) "<< cell.to_string() 
-        //  << SWC_LOG_OUT_END;
-        //count++;
       }
+      blocks.processing_decrement();
 
       if(fwd_cells.size()) {
         auto fwd_req = std::make_shared<Protocol::Common::Req::Query::Update>(
-          [cb=req->cb]
-          (Protocol::Common::Req::Query::Update::Result::Ptr result) {
-            cb->response(result->err);
+          [cb] (Protocol::Common::Req::Query::Update::Result::Ptr result) {
+            if(cb != nullptr)
+              cb->response(result->err);
           }
         );
         fwd_req->timeout_commit = 10*fwd_cells.size();
         fwd_req->columns->create(cfg->cid, fwd_cells);
         fwd_req->commit();
-      } else {
-        req->cb->response(err);
+
+      } else if(cb != nullptr) {
+        cb->response(err);
       }
 
       delete req;
