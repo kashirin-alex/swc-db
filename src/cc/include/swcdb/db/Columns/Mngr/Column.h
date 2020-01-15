@@ -121,7 +121,7 @@ class Column final {
     std::scoped_lock lock(m_mutex);
     
     // std::sort(m_ranges.begin(), m_ranges.end(), Range); 
-    if(interval.was_set != range->interval() || !range->equal(interval)) {
+    if(!range->equal(interval)) {
       range->set(interval);
       
       if(m_ranges.size() > 1) {
@@ -131,7 +131,7 @@ class Column final {
             {return range->rid == rid;})
         );
         bool added = false;
-        for(auto it=m_ranges.begin();it<m_ranges.end();it++){
+        for(auto it=m_ranges.begin(); it<m_ranges.end(); it++){
           if((*it)->after(range)) {
             m_ranges.insert(it, range);
             added = true;

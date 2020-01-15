@@ -125,6 +125,7 @@ class Interval final {
 
   const bool equal(const Interval& other) const {
     return
+      was_set == other.was_set &&
       key_begin.equal(other.key_begin) && 
       key_end.equal(other.key_end) && 
       ts_earliest.equal(other.ts_earliest) && 

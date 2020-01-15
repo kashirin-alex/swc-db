@@ -118,27 +118,22 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     m_interval.copy(interval);
   }
 
-  bool after(const Ptr& range) { 
+  bool after(const Ptr& range) {
     std::shared_lock lock(m_mutex);
     return range->before(m_interval);
-  }   
+  }
 
   bool const before(const Cells::Interval& intval) {
     std::shared_lock lock(m_mutex);
     return (!intval.was_set && m_interval.was_set) 
             ||
            (intval.was_set && m_interval.was_set 
-            && !intval.is_in_end(m_interval.key_begin));
+            && intval.is_in_end(m_interval.key_end));
   }
 
   bool const equal(const Cells::Interval& intval) {
     std::shared_lock lock(m_mutex);
     return m_interval.equal(intval);
-  }
-
-  bool const interval() {
-    std::shared_lock lock(m_mutex);
-    return m_interval.was_set;
   }
 
   bool includes(const DB::Cell::Key& range_begin, 
