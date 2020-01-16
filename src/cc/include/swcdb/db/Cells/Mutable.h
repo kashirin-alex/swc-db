@@ -668,6 +668,18 @@ class Mutable final {
     }
   }
 
+  void add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
+    Cell cell;
+
+    const uint8_t* ptr = cells.base;
+    size_t remain = cells.fill();
+    while(remain) {
+      cell.read(&ptr, &remain);
+      if(from_key.compare(cell.key) == Condition::GT)
+        add(cell);
+    }
+  }
+
   void add_to(Ptr cells, bool release=false) {
     uint32_t offset = 0;
     for(Cell* cell; cell=get_next(offset); offset++) 

@@ -56,7 +56,7 @@ class ColCells final {
   }
 
   DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start, 
-                              const DB::Cell::Key&  key_end, 
+                              const DB::Cell::Key& key_end, 
                               size_t buff_sz, bool& more) {
     auto cells_buff = std::make_shared<DynamicBuffer>();
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -67,7 +67,7 @@ class ColCells final {
     return nullptr;
   }
 
-  void add(const SWC::DB::Cells::Cell& cell) {
+  void add(const DB::Cells::Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_cells.add(cell);
   }
@@ -75,6 +75,11 @@ class ColCells final {
   void add(const DynamicBuffer& cells) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_cells.add(cells);
+  }
+
+  void add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_cells.add(cells, from_key);
   }
 
   const size_t size() {
