@@ -183,9 +183,10 @@ class AppContext : public SWC::AppContext {
       std::quick_exit(0);
     }
     
-    m_srv->stop_accepting(); // no further requests accepted
 
     RangerEnv::shuttingdown();
+    
+    m_srv->stop_accepting(); // no further requests accepted
 
     Protocol::Mngr::Req::RgrMngId::shutting_down(
       &m_id_validator,
