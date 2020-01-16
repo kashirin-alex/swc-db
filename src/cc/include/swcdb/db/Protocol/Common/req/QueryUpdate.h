@@ -380,17 +380,29 @@ class Update : public std::enable_shared_from_this<Update> {
               SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s", rsp.to_string().c_str());
 
               if(rsp.err == Error::REQUEST_TIMEOUT) {
+                SWC_LOGF(LOG_DEBUG, " %s", req->to_string().c_str());
                 req->request_again();
                 return;
               }
 
-              locator->col_cells->add(*cells_buff.get());
-              base->request_again();
-              --locator->updater->result->completion;
-
-            } else if(!--locator->updater->result->completion) {
-              locator->updater->response();
+              if(rsp.err == Error::RANGE_END_EARLIER) {
+                locator->col_cells->add(*cells_buff.get(), rsp.range_end);
+                auto next_key_start = locator->col_cells->get_key_next(rsp.range_end);
+                if(next_key_start != nullptr) {
+                  std::make_shared<Locator>(
+                    locator->type, locator->cid, locator->col_cells, 
+                    next_key_start, 
+                    locator->updater, locator->parent
+                  )->locate_on_manager();
+                 }
+              } else {
+                locator->col_cells->add(*cells_buff.get());
+                base->request_again();
+              }
             }
+            
+            if(!--locator->updater->result->completion)
+              locator->updater->response();
           },
 
           updater->timeout_commit += 

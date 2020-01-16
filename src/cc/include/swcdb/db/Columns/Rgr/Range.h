@@ -8,6 +8,7 @@
 
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
+#include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 
 #include "swcdb/db/Files/RangeBlocks.h"
 
@@ -21,11 +22,11 @@ class Range : public DB::RangeBase {
 
   struct ReqAdd final {
     public:
-    ReqAdd(StaticBuffer& input, const ResponseCallback::Ptr& cb) 
+    ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb) 
           : input(input), cb(cb) {}
     ~ReqAdd() {}
-    StaticBuffer                input;
-    const ResponseCallback::Ptr cb;
+    StaticBuffer                          input;
+    const Callback::RangeQueryUpdate::Ptr cb;
   };
 
   enum State{
@@ -162,10 +163,12 @@ class Range : public DB::RangeBase {
     
     if(type == Types::Range::MASTER) {
       // update manager-root
+      // Mngr::RangeUpdated
       return;
     }
 
-    auto updater = RangerEnv::updater();
+    auto updater = std::make_shared<Protocol::Common::Req::Query::Update>();
+    // RangerEnv::updater();
     uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
 
     updater->columns->create(cid_typ, 1, 0, Types::Column::PLAIN);
@@ -202,6 +205,8 @@ class Range : public DB::RangeBase {
       }
     }
     updater->commit(cid_typ);
+    updater->wait();
+    err = updater->result->err;
       
     // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
     // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
@@ -456,52 +461,53 @@ class Range : public DB::RangeBase {
     DB::Cells::Cell cell;
     const uint8_t* ptr;
     size_t remain; 
-    ResponseCallback::Ptr cb;
+    //Callback::RangeQueryUpdate::Ptr cb;
+    bool early_range_end;
 
     DB::Cell::Key key_end;
     {
       std::shared_lock lock(m_mutex);
       key_end.copy(m_interval.key_end);
     }
+    /*
     DB::Cells::Mutable fwd_cells(
       0, 
       cfg->cell_versions(), 
       cfg->cell_ttl(),  
       cfg->column_type()
     );
+    */
 
     for(;;) {
       err = Error::OK;
+      early_range_end = false;
       if(wait()) {
         std::shared_lock lock(m_mutex);
         key_end.copy(m_interval.key_end);
       }
       blocks.processing_increment();
+      
       {
         std::shared_lock lock(m_mutex);
         req = m_q_adding.front();
       }
       ptr = req->input.base;
       remain = req->input.size; 
-      cb = req->cb;
-      // if(req no ack) {
-      //  cb->response(err);
-      //  cb = nullptr;
-      // } else if(req expiry (estimated required time before expired)) {
+      //cb = req->cb;
+      //if(req expiry (estimated required time before expired)) {
       //  err = Error::REQUEST_TIMEOUT;
       // )
+      if(m_state != State::LOADED && m_state != State::UNLOADING) {
+        err = m_state == State::DELETED ? 
+              Error::COLUMN_MARKED_REMOVED 
+              : Error::RS_NOT_LOADED_RANGE;
+      }
 
       while(!err && remain) {
         cell.read(&ptr, &remain);
-        if(m_state != State::LOADED && m_state != State::UNLOADING) {
-          err = m_state == State::DELETED ? 
-                Error::COLUMN_MARKED_REMOVED 
-                : Error::RS_NOT_LOADED_RANGE;
-          break;
-        } 
 
         if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
-          fwd_cells.add(cell);
+          early_range_end = true;
           continue;
         }
         
@@ -517,6 +523,7 @@ class Range : public DB::RangeBase {
       }
       blocks.processing_decrement();
 
+      /*
       if(fwd_cells.size()) {
         auto fwd_req = std::make_shared<Protocol::Common::Req::Query::Update>(
           [cb] (Protocol::Common::Req::Query::Update::Result::Ptr result) {
@@ -529,9 +536,14 @@ class Range : public DB::RangeBase {
         fwd_req->commit();
 
       } else if(cb != nullptr) {
-        cb->response(err);
+        
       }
-
+      */
+      if(early_range_end)
+        req->cb->response(Error::RANGE_END_EARLIER, key_end);
+      else
+        req->cb->response(err);
+      
       delete req;
       {
         std::scoped_lock lock(m_mutex);

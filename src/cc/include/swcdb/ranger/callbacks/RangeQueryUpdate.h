@@ -15,6 +15,7 @@ namespace Callback {
 
 class RangeQueryUpdate : public ResponseCallback {
   public:
+  typedef std::shared_ptr<RangeQueryUpdate> Ptr;
 
   RangeQueryUpdate(ConnHandlerPtr conn, Event::Ptr ev)
                   : ResponseCallback(conn, ev) {
@@ -23,18 +24,23 @@ class RangeQueryUpdate : public ResponseCallback {
   virtual ~RangeQueryUpdate() { }
 
   void response(int &err) override {
+    response(Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
+  }
 
+  void response(const int& err, const DB::Cell::Key& range_end) {
+    response(Protocol::Rgr::Params::RangeQueryUpdateRsp(err, range_end));
+  }
+  
+  void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp &params) {
     try {
-      auto cbp = CommBuf::make(
-        Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
+      auto cbp = CommBuf::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
-    }
-    catch (Exception &e) {
+    } catch (Exception &e) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
-    
   }
+
 
 };
 

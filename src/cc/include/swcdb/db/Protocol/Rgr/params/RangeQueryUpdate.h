@@ -68,7 +68,12 @@ class RangeQueryUpdateRsp  : public Serializable {
 
   RangeQueryUpdateRsp(int err = 0) : err(err) {  }
 
-  int32_t   err;
+  RangeQueryUpdateRsp(int err, const DB::Cell::Key& range_end) 
+                      : err(err), range_end(range_end) {  
+  }
+
+  int32_t       err;
+  DB::Cell::Key range_end;
 
   const std::string to_string() {
     std::string s("RangeQueryUpdateRsp(");
@@ -76,7 +81,12 @@ class RangeQueryUpdateRsp  : public Serializable {
     s.append(std::to_string(err));
     s.append("(");
     s.append(Error::get_text(err));
-    s.append("))");
+    s.append(")");
+    if(err == Error::RANGE_END_EARLIER) {
+      s.append(" range_end=");
+      s.append(range_end.to_string());
+    }
+    s.append(")");
     return s;
   }
 
@@ -87,16 +97,21 @@ class RangeQueryUpdateRsp  : public Serializable {
   }
     
   size_t encoded_length_internal() const {
-    return  Serialization::encoded_length_vi32(err);
+    return  Serialization::encoded_length_vi32(err)
+          + (err == Error::RANGE_END_EARLIER ? range_end.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
+    if(err == Error::RANGE_END_EARLIER) 
+      range_end.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     err = Serialization::decode_vi32(bufp, remainp);
+    if(err == Error::RANGE_END_EARLIER) 
+      range_end.decode(bufp, remainp, true);
   }
 
 };
