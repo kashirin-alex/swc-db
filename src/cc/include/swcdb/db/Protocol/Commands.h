@@ -22,8 +22,9 @@ namespace Rgr {
     RANGE_LOCATE         = 0x06,
     RANGE_QUERY_UPDATE   = 0x07,
     RANGE_QUERY_SELECT   = 0x08,
-    ASSIGN_ID_NEEDED     = 0x09,
-    MAX_CMD              = 0x0A
+    REPORT               = 0x09,
+    ASSIGN_ID_NEEDED     = 0x0A, // always last
+    MAX_CMD              = 0x0B
   };
 
 }

@@ -30,6 +30,7 @@
 #include "swcdb/ranger/handlers/RangeQuerySelect.h"
 #include "swcdb/ranger/handlers/ColumnUpdate.h"
 #include "swcdb/ranger/handlers/ColumnDelete.h"
+#include "swcdb/ranger/handlers/Report.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
@@ -49,11 +50,11 @@ class AppContext : public SWC::AppContext {
     &Protocol::Rgr::Handler::range_locate,
     &Protocol::Rgr::Handler::range_query_update,
     &Protocol::Rgr::Handler::range_query_select,
+    &Protocol::Rgr::Handler::report,
     //&Handler::debug,
     //&Handler::status,
     //&Handler::shutdown
   }; 
-
   
   public:
 
