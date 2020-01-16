@@ -57,7 +57,7 @@ class ReportRsp  : public Serializable {
     }
 
     int64_t             rid;
-    DB::Cells::Interval  interval;
+    DB::Cells::Interval interval;
 
     const size_t encoded_length () const {
       return Serialization::encoded_length_vi64(rid)
@@ -78,6 +78,7 @@ class ReportRsp  : public Serializable {
 
     void display(std::ostream& out, bool pretty=false, 
                  std::string offset = "") const {
+      out << offset << "-------------------------------------" << std::endl;
       out << offset << "rid(" << rid << "):" << std::endl;
       out << offset << " begin";
       interval.key_begin.display(out, pretty);
@@ -88,7 +89,6 @@ class ReportRsp  : public Serializable {
       out << offset << " " << interval.ts_earliest.value 
           << "<=TS<=" << interval.ts_latest.value ;
       out << std::endl;
-      out << offset << "_____________________________________" << std::endl;
     }
   };
 
@@ -134,7 +134,7 @@ class ReportRsp  : public Serializable {
     
     void display(std::ostream& out, bool pretty=false, 
                  std::string offset = "") const {  
-      out << offset << "--------------------------------------" << std::endl;
+      out << offset << "**************************************" << std::endl;
       out << offset << "cid(" << cid << ")" 
           << " ranges(" << ranges.size() << "):" << std::endl;
       for(auto& r : ranges)
@@ -142,7 +142,7 @@ class ReportRsp  : public Serializable {
     }
   };
 
-  explicit ReportRsp(int err=Error::OK) : err(err) { }
+  explicit ReportRsp(int err=Error::OK) : err(err), rgr_id(0) { }
 
   ReportRsp& operator=(const ReportRsp& other) = delete;
 
@@ -153,10 +153,18 @@ class ReportRsp  : public Serializable {
   }
 
   int                  err; 
+  int64_t              rgr_id; 
+  EndPoints            endpoints;
   std::vector<Column*> columns;
 
   void display(std::ostream& out, bool pretty=false, 
                std::string offset = "") const {
+    out << offset << "Ranger: id("<< rgr_id << ")" 
+        << " endpoints(";
+    for(auto& endpoint : endpoints)
+      out << endpoint << ", ";
+    out << ")" << std::endl;
+
     out << offset << "Columns(" << columns.size() << "):" << std::endl;
     for(auto& c : columns)
       c->display(out, pretty, offset+" ");
@@ -171,6 +179,12 @@ class ReportRsp  : public Serializable {
   size_t encoded_length_internal() const {
     size_t sz = Serialization::encoded_length_vi32(err);
     if(!err) {
+      sz += Serialization::encoded_length_vi64(rgr_id);  
+
+      sz += Serialization::encoded_length_vi32(endpoints.size()); 
+      for(auto& endpoint : endpoints)
+        sz += Serialization::encoded_length(endpoint);
+
       sz += Serialization::encoded_length_vi64(columns.size());      
       for(auto c : columns)
         sz += c->encoded_length();
@@ -181,6 +195,12 @@ class ReportRsp  : public Serializable {
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
     if(!err) {
+      Serialization::encode_vi64(bufp, rgr_id);
+
+      Serialization::encode_vi32(bufp, endpoints.size());
+      for(auto& endpoint : endpoints)
+        Serialization::encode(endpoint, bufp);
+
       Serialization::encode_vi64(bufp, columns.size());
       for(auto c : columns)
         c->encode(bufp);
@@ -190,6 +210,12 @@ class ReportRsp  : public Serializable {
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     if(!(err = Serialization::decode_vi32(bufp, remainp))) {
+      rgr_id = Serialization::decode_vi64(bufp, remainp);
+      
+      size_t len = Serialization::decode_vi32(bufp, remainp);
+      endpoints.clear();
+      for(size_t i=0;i<len;i++)
+        endpoints.push_back(Serialization::decode(bufp, remainp));
 
       for(int64_t n = Serialization::decode_vi64(bufp, remainp);n--;) {
         auto c = new Column();

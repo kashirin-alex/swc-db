@@ -21,6 +21,11 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
+    auto rgr_data = RangerEnv::rgr_data();
+    rsp_params.rgr_id = rgr_data->id;
+    rsp_params.endpoints.assign(
+      rgr_data->endpoints.begin(), rgr_data->endpoints.end());
+
     if(params.flags & Params::ReportReq::RANGES) {
       server::Rgr::Column::Ptr col;
       server::Rgr::Range::Ptr range;

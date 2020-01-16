@@ -98,12 +98,8 @@ class Rgr : public Interface {
     }
     if(err)
       return error(message);
-
-    for(auto& point : endpoints)
-      std::cout << point << "\n";
     
     std::promise<void>  r_promise;
-
     Protocol::Rgr::Req::Report::request(
       Protocol::Rgr::Params::ReportReq(), 
       endpoints, 
@@ -114,10 +110,8 @@ class Rgr : public Interface {
       [this, await=&r_promise] 
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
        const Protocol::Rgr::Params::ReportRsp& rsp) {
-        if(!(err = rsp.err)) {
+        if(!(err = rsp.err))
           rsp.display(std::cout);
-          std::cout << "\n";
-        }
         await->set_value();
       }
     );
