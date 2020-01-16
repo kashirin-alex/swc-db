@@ -52,6 +52,11 @@ class Compaction final {
     std::lock_guard<std::mutex> lock(m_mutex);
     _schedule(t_ms);
   }
+
+  const bool stopped() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return !m_run;
+  }
   
   void run() {
     {
@@ -80,7 +85,10 @@ class Compaction final {
       m_idx_rid++;
       if(!range->compact_possible())
         continue;
-        
+
+      if(!m_run)
+        break;
+
       ++running;
       asio::post(
         *RangerEnv::maintenance_io()->ptr(), 
@@ -98,7 +106,7 @@ class Compaction final {
 
   void compact(Range::Ptr range) {
 
-    if(!range->is_loaded())
+    if(!range->is_loaded() || !m_run)
       return compacted(range);
 
     auto& commitlog  = range->blocks.commitlog;
@@ -142,7 +150,7 @@ class Compaction final {
       range->blocks.size_bytes()/1000000
     );
 
-    if(!do_compaction)
+    if(!do_compaction || !m_run)
       return compacted(range);
       
     range->compacting(Range::Compact::COMPACTING);
@@ -305,7 +313,7 @@ class Compaction final {
 
         if(m_stopped)
           return;
-        if(err || !range->is_loaded())
+        if(err || !range->is_loaded() || compactor->stopped())
           return quit();
 
         {
