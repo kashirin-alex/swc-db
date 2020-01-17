@@ -167,10 +167,12 @@ class Compaction final {
       range->cfg->column_type()
     );
     commitlog.commit_new_fragment(true);
-    commitlog.get(req->fragments_old); // fragments for deletion at finalize-compaction 
+    commitlog.get(req->fragments_old); 
+    // fragments for deletion at finalize-compaction 
 
-    //std::cout << "Compact ::Started\n"
-    //          << " " << range->blocks.to_string() << "\n";
+    SWC_LOGF(LOG_INFO, "COMPACT-STARTED cid=%d rid=%d",  
+             range->cfg->cid, range->rid);
+
     range->scan_internal(req);
   }
 
@@ -185,7 +187,8 @@ class Compaction final {
                 const uint32_t cs_size, const uint8_t blk_replication,
                 const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
-                uint32_t cell_versions, uint32_t cell_ttl, Types::Column col_type) 
+                uint32_t cell_versions, uint32_t cell_ttl, 
+                Types::Column col_type) 
                 : compactor(compactor), range(range),
                   cs_size(cs_size), 
                   blk_replication(blk_replication), 
@@ -221,13 +224,10 @@ class Compaction final {
     void response(int &err) override {
       if(m_stopped || !ready(err))
         return;
-      /*
-      std::cout << "CompactScan::response: \n"
-                << "  spec=" << spec.to_string() << "\n"
-                << " cells="<< cells.size() << " sz=" << cells.size_bytes() << "\n";
-      */
+
       total_cells += cells.size();
-      std::cout << "CompactScan::response: total_cells=" << total_cells.load() << "\n";
+      SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS cid=%d rid=%d cells=%lld",  
+               range->cfg->cid, range->rid, total_cells.load());
 
       {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -248,11 +248,6 @@ class Compaction final {
       selected_cells->get(0, first);
       DB::Cells::Cell last;
       selected_cells->get(-1, last);
-      /*
-      std::cout << "CompactScan::response : \n" 
-                << " first=" << first.to_string() << "\n"
-                << "  last=" << last.to_string() << "\n";
-      */
       spec.offset_key.copy(last.key);
       spec.offset_rev = last.timestamp;
       
@@ -365,8 +360,10 @@ class Compaction final {
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
-          if(range->is_any_end() && !selected_cells->size()) // there was one cell
+          if(range->is_any_end() && !selected_cells->size()) {
+            // there was one cell
             blk_intval.key_end.free(); 
+          }
           
           cs_writer->block(err, blk_intval, buff, cell_count);
 
@@ -414,67 +411,70 @@ class Compaction final {
         return quit();
 
       int err = Error::OK;
-
       bool empty_cs = false;
-      if(cs_writer != nullptr) {
-        if(range->is_any_end() && !last_cell.key.empty()) {
-          DB::Cells::Interval blk_intval;
-          blk_intval.expand(last_cell);
-          blk_intval.key_end.free();
 
-          uint32_t cell_count = 1;
-          DynamicBuffer buff;
-          last_cell.write(buff);
-          last_cell.free();
-          // last block of end-any set with key_begin as last cell
-          cs_writer->block(err, blk_intval, buff, cell_count);
+      if(range->is_any_end() && !last_cell.key.empty()) {
+        // last block of end-any set with key_begin as last cell
+        if(cs_writer == nullptr) {       
+          uint32_t id = create_cs(err);
+          if(err)
+            return quit();
         }
-      } else {
+        DB::Cells::Interval blk_intval;
+        blk_intval.expand(last_cell);
+        blk_intval.key_end.free();
+
+        uint32_t cell_count = 1;
+        DynamicBuffer buff;
+        last_cell.write(buff);
+        last_cell.free();
+        cs_writer->block(err, blk_intval, buff, cell_count);
+     
+      } else if(!cellstores.size()) {
+        // as an initial empty range cs with range intervals
+        empty_cs = true;
         uint32_t id = create_cs(err);
         if(err)
-          return;
-        // as an initial empty range cs
+          return quit();
         uint32_t cell_count = 0;
         DB::Cells::Interval blk_intval;
         range->get_interval(blk_intval.key_begin, blk_intval.key_end);
         DynamicBuffer buff;
         cs_writer->block(err, blk_intval, buff, cell_count);
-        empty_cs = true;
       }
-      if(err || !cs_writer->size)
-        return quit();
-
-      add_cs(err);
       if(err)
         return quit();
-      
-      //std::cout << "CellStore::Writers: \n";
-      //for(auto cs : cellstores)
-      //  std::cout << " " << cs->to_string() << "\n";
 
-      if(cellstores.size()) {
-        auto max = range->cfg->cellstore_max();
-        if(cellstores.size() > 1 && cellstores.size() >= max) {
-          create_range();
-        } else {
-          apply_new(empty_cs);
-        }
-      } else {
-        range->compact_require(false);
-        compactor->compacted(range, empty_cs);
+      if(cs_writer != nullptr) {
+        if(!cs_writer->size)
+          return quit();
+        add_cs(err);
+        if(err)
+          return quit();
       }
+
+      auto max = range->cfg->cellstore_max();
+      if(cellstores.size() > 1 && cellstores.size() >= max) {
+        create_range();
+      } else {
+        apply_new(empty_cs);
+      }
+
     }
 
     void create_range() {
       Protocol::Mngr::Req::RangeCreate::request(
         range->cfg->cid,
         RangerEnv::rgr_data()->id,
-        [ptr=shared()]
+        [cid=range->cfg->cid, ptr=shared()]
         (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeCreateRsp rsp) {
           
-          SWC_LOGF(LOG_DEBUG, "Compact::Mngr::Req::RangeCreate err=%d(%s) rid=%d", 
-                   rsp.err, Error::get_text(rsp.err), rsp.rid);
+          SWC_LOGF(
+            LOG_DEBUG, 
+            "Compact::Mngr::Req::RangeCreate err=%d(%s) cid=%d rid=%d", 
+            rsp.err, Error::get_text(rsp.err), cid, rsp.rid
+          );
 
           if(rsp.err || !rsp.rid) {
             if(!rsp.rid || 
@@ -495,12 +495,15 @@ class Compaction final {
       Protocol::Mngr::Req::RangeRemove::request(
         new_range->cfg->cid,
         new_range->rid,
-        []
+        [cid=new_range->cfg->cid, rid=new_range->rid]
         (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeRemoveRsp rsp) {
           
-          SWC_LOGF(LOG_DEBUG, "Compact::Mngr::Req::RangeRemove err=%d(%s) rid=%d", 
-                   rsp.err, Error::get_text(rsp.err));
+          SWC_LOGF(
+            LOG_DEBUG, 
+            "Compact::Mngr::Req::RangeRemove err=%d(%s) cid=%d rid=%d", 
+            rsp.err, Error::get_text(rsp.err), cid, rid
+          );
 
           if(rsp.err == Error::COLUMN_NOT_READY) {
             req->request_again();
@@ -511,6 +514,9 @@ class Compaction final {
     }
 
     void split(int64_t new_rid) {
+      SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cid=%d rid=%d new-rid=%d", 
+               range->cfg->cid, range->rid, new_rid);
+
       int err = Error::OK;
       Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
       if(col == nullptr || col->removing())
@@ -541,18 +547,28 @@ class Compaction final {
         return quit();
       }
 
+      range->apply_new(err, cellstores, fragments_old);
+      if(err) {
+        err = Error::OK;
+        col->remove(err, new_rid);
+        remove_new_range(new_range);
+        return quit();
+      }
+
       new_range = nullptr;
       col->unload(
         new_rid, 
         [cid=range->cfg->cid, rid=new_rid](int err) { 
           Protocol::Mngr::Req::RangeUnloaded::request(
             cid, rid,
-            [rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+            [cid, rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
              Protocol::Mngr::Params::RangeUnloadedRsp rsp) {
           
-              SWC_LOGF(LOG_DEBUG, 
-                      "Compact::Mngr::Req::RangeUnloaded err=%d(%s) rid=%d", 
-                       rsp.err, Error::get_text(rsp.err), rid);
+              SWC_LOGF(
+                LOG_DEBUG, 
+                "Compact::Mngr::Req::RangeUnloaded err=%d(%s) cid=%d rid=%d", 
+                rsp.err, Error::get_text(rsp.err), cid, rid
+              );
               if(rsp.err == Error::COLUMN_NOT_READY) {
                 req->request_again();
               }
@@ -561,7 +577,8 @@ class Compaction final {
         }
       );
 
-      apply_new(true);
+      range->compact_require(range->cfg->cellstore_max() > cellstores.size());
+      compactor->compacted(range, true);
     }
 
     void apply_new(bool clear = false) {
@@ -572,9 +589,6 @@ class Compaction final {
 
       range->compact_require(false);
       compactor->compacted(range, clear);
-
-      //std::cout << "Compact ::finalized\n"
-      //          << " " << range->blocks.to_string() << "\n";
     }
 
     void quit() {
@@ -590,6 +604,8 @@ class Compaction final {
           err, range->get_path(Range::cellstores_tmp_dir));
       }
 
+      SWC_LOGF(LOG_INFO, "COMPACT-ERROR cid=%d rid=%d", 
+               range->cfg->cid, range->rid);
       compactor->compacted(range);
     }
 
@@ -620,17 +636,25 @@ class Compaction final {
   private:
   
   void compacted(Range::Ptr range, bool all=false) {
-    if(all)
+    if(all) {
       range->blocks.release(0);
-    else if(size_t bytes = Env::Resources.need_ram())
+      if(range->blocks.size())
+        SWC_LOGF(LOG_ERROR, "%s", range->to_string().c_str());
+      HT_ASSERT(!range->blocks.size());
+
+    } else if(size_t bytes = Env::Resources.need_ram()) {
       range->blocks.release(bytes);
+    }
     
     range->compacting(Range::Compact::NONE);
+    
+    SWC_LOGF(LOG_INFO, "COMPACT-FINISHED cid=%d rid=%d", 
+             range->cfg->cid, range->rid);
+
     compacted();
   }
 
   void compacted() {
-    //std::cout << "Compaction::compacted running=" << running.load() << "\n";
 
     if(running && running-- == RangerEnv::maintenance_io()->get_size()) {
       run();
