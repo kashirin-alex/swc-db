@@ -22,7 +22,10 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     auto rgr_data = RangerEnv::rgr_data();
-    rsp_params.rgr_id = rgr_data->id;
+    if(!(rsp_params.rgr_id = rgr_data->id)) {
+      rsp_params.err = Error::RS_NOT_READY;
+      goto send_response;
+    }
     rsp_params.endpoints.assign(
       rgr_data->endpoints.begin(), rgr_data->endpoints.end());
 
@@ -49,6 +52,7 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
     rsp_params.err = e.code();
   }
 
+  send_response:
   try{
     auto cbp = CommBuf::make(rsp_params);
     cbp->header.initialize_from_request_header(ev->header);
