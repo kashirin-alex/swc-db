@@ -135,9 +135,8 @@ class Update : public std::enable_shared_from_this<Update> {
     if(col != nullptr && !col->size())
       return;
     std::make_shared<Locator>(
-      Types::Range::MASTER,
-      col->cid, col, 
-      col->get_first_key(), 
+      Types::Range::MASTER, 
+      col->cid, col, col->get_first_key(), 
       shared_from_this()
     )->locate_on_manager();
   }
@@ -153,20 +152,21 @@ class Update : public std::enable_shared_from_this<Update> {
     public:
     const Types::Range        type;
     const int64_t             cid;
-    DB::Cells::ColCells::Ptr  col_cells;
+    DB::Cells::ColCells::Ptr  col;
     DB::Cell::Key::Ptr        key_start;
     Update::Ptr               updater;
     ReqBase::Ptr              parent;
     const int64_t             rid;
+    const DB::Cell::Key       key_finish;
     
     Locator(const Types::Range type, const int64_t cid, 
-            DB::Cells::ColCells::Ptr col_cells,
-            DB::Cell::Key::Ptr key_start,
-            Update::Ptr updater,
-            ReqBase::Ptr parent=nullptr, const int64_t rid=0) 
-            : type(type), cid(cid), col_cells(col_cells), 
-              key_start(key_start), 
-              updater(updater), parent(parent), rid(rid) {
+            DB::Cells::ColCells::Ptr col, DB::Cell::Key::Ptr key_start,
+            Update::Ptr updater, ReqBase::Ptr parent=nullptr, 
+            const int64_t rid=0, const DB::Cell::Key* key_finish=nullptr) 
+            : type(type), cid(cid), col(col), key_start(key_start), 
+              updater(updater), parent(parent), 
+              rid(rid), 
+              key_finish(key_finish ? *key_finish : DB::Cell::Key()) {
     }
 
     virtual ~Locator() { }
@@ -180,10 +180,12 @@ class Update : public std::enable_shared_from_this<Update> {
       s.append(std::to_string(rid));
       s.append(" completion=");
       s.append(std::to_string(updater->result->completion.load()));
-      s.append(" ");
-      s.append(col_cells->to_string());
-      s.append(" ");
+      s.append(" Start");
       s.append(key_start->to_string());
+      s.append(" Finish");
+      s.append(key_finish.to_string());
+      s.append(" ");
+      s.append(col->to_string());
       return s;
     }
 
@@ -191,12 +193,13 @@ class Update : public std::enable_shared_from_this<Update> {
       updater->result->completion++;
 
       Mngr::Params::RgrGetReq params(1);
-      
       params.range_begin.copy(*key_start.get());
       if(cid > 2)
         params.range_begin.insert(0, std::to_string(cid));
       if(cid >= 2)
         params.range_begin.insert(0, "2");
+
+      SWC_LOGF(LOG_INFO, "LocateRange-onMngr %s", params.to_string().c_str());
 
       Mngr::Req::RgrGet::request(
         params,
@@ -208,72 +211,41 @@ class Update : public std::enable_shared_from_this<Update> {
       );
     }
 
-    void resolve_on_manager() {
-      updater->result->completion++;
-      //std::cout << "resolve_on_manager:\n " << to_string() << "\n";
-      // if cid, rid >> cache rsp
-
-      Mngr::Req::RgrGet::request(
-        Mngr::Params::RgrGetReq(cid, rid),
-        [locator=shared_from_this()]
-        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
-          if(locator->located_on_manager(req, rsp))
-            locator->updater->result->completion--;
-        }
-      );
-    }
+    private:
 
     bool located_on_manager(const ReqBase::Ptr& base, 
-                            const Mngr::Params::RgrGetRsp& rsp) {
-      if(rsp.err) {
-        if(rsp.err == Error::COLUMN_NOT_EXISTS) {
-          updater->response(rsp.err);
-          return true;
-        }
+                            const Mngr::Params::RgrGetRsp& rsp) {  
+      SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+      
+      if(rsp.err == Error::COLUMN_NOT_EXISTS) {
+        updater->response(rsp.err);
+        return true;
+      }
+      if(rsp.err || !rsp.rid) {
         SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING %s", 
                               rsp.to_string().c_str());
-        if(rsp.err == Error::RANGE_NOT_FOUND) {
-          (parent == nullptr ? base : parent)->request_again();
-        } else {
-          base->request_again();
-        }
+        base->request_again();
         return false;
       }
-      if(!rsp.rid) {
-        SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(no rid) %s", 
-                            rsp.to_string().c_str());
-        (parent == nullptr ? base : parent)->request_again();
-        return false;
-      }
-
-      if(type == Types::Range::DATA || 
-        (type == Types::Range::MASTER && col_cells->cid == 1) ||
-        (type == Types::Range::META   && col_cells->cid == 2 )) {
-        if(cid != rsp.cid || col_cells->cid != cid) {
-          SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(cid no match) %s", 
-                                rsp.to_string().c_str());
-          (parent == nullptr ? base : parent)->request_again();
-          return false;
-          //updater->response(Error::NOT_ALLOWED);
-        }
-
-        commit_data(rsp.endpoints, rsp.rid, rsp.range_end, base);
-        if(type == Types::Range::DATA)
-          return true;
       
-      } else {
-        std::make_shared<Locator>(
-          type, rsp.cid, col_cells, key_start, updater, 
-          base, rsp.rid
-        )->locate_on_ranger(rsp.endpoints);
-      }
+      auto locator = std::make_shared<Locator>(
+        Types::Range::MASTER, 
+        rsp.cid, col, key_start, 
+        updater, base, 
+        rsp.rid
+      );
+      if(col->cid == 1)
+        locator->commit_data(rsp.endpoints, base);
+      else 
+        locator->locate_on_ranger(rsp.endpoints);
 
       if(!rsp.range_end.empty()) {
-        auto next_key_start = col_cells->get_key_next(rsp.range_end);
+        auto next_key_start = col->get_key_next(rsp.range_end);
         if(next_key_start != nullptr) {
           std::make_shared<Locator>(
-            type, cid, col_cells, next_key_start, updater, 
-            parent == nullptr ? base : parent
+            Types::Range::MASTER, 
+            col->cid, col, next_key_start, 
+            updater
           )->locate_on_manager();
         }
       }
@@ -284,15 +256,19 @@ class Update : public std::enable_shared_from_this<Update> {
       updater->result->completion++;
 
       Rgr::Params::RangeLocateReq params(cid, rid);
+      params.flags |= Rgr::Params::RangeLocateReq::COMMIT;
 
       params.range_begin.copy(*key_start.get());
-      params.range_begin.insert(0, std::to_string(col_cells->cid));
-      if(type == Types::Range::MASTER && col_cells->cid > 2) 
-        params.range_begin.insert(0, "2");
+      if(col->cid >= 2) {
+        params.range_begin.insert(0, std::to_string(col->cid));
+        if(type == Types::Range::MASTER && col->cid > 2) 
+          params.range_begin.insert(0, "2");
+      }
+      
+      SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
 
       Rgr::Req::RangeLocate::request(
-        params, 
-        endpoints, 
+        params, endpoints, 
         [locator=shared_from_this()]() {
           locator->parent->request_again();
         },
@@ -307,6 +283,8 @@ class Update : public std::enable_shared_from_this<Update> {
     bool located_on_ranger(const EndPoints& endpoints, 
                            const ReqBase::Ptr& base, 
                            const Rgr::Params::RangeLocateRsp& rsp) {
+      SWC_LOGF(LOG_INFO, "LocatedRange-onRgr %s", rsp.to_string().c_str());
+
       if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
          rsp.err == Error::RANGE_NOT_FOUND) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
@@ -314,14 +292,7 @@ class Update : public std::enable_shared_from_this<Update> {
         parent->request_again();
         return false;
       }
-      if(!rsp.rid || 
-         (type == Types::Range::DATA && rsp.cid != col_cells->cid)) {
-        SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(cid no match) %s", 
-                              rsp.to_string().c_str());
-        parent->request_again();
-        return false;
-      }
-      if(rsp.err) {
+      if(!rsp.rid || rsp.err) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr HALT %s", 
                               rsp.to_string().c_str());
         quick_exit(1);
@@ -329,46 +300,106 @@ class Update : public std::enable_shared_from_this<Update> {
         return false;
       }
 
-      /*
-      auto range_next = get_key_next(rsp.range_end, true);
-      if(range_next == nullptr) 
-        return true;
-      */
-
       std::make_shared<Locator>(
         type == Types::Range::MASTER ? Types::Range::META : Types::Range::DATA,
-        rsp.cid, col_cells, key_start, updater, parent, rsp.rid
+        rsp.cid, col, key_start, 
+        updater, base, 
+        rsp.rid, &rsp.range_end
       )->resolve_on_manager();
 
       if(!rsp.range_end.empty()) {
-        auto next_key_start = col_cells->get_key_next(rsp.range_end);
+        auto next_key_start = col->get_key_next(rsp.range_end);
         if(next_key_start != nullptr) {
           std::make_shared<Locator>(
-            type, cid, col_cells, next_key_start, updater, 
-            parent == nullptr ? base : parent
+            type, 
+            cid, col, next_key_start, 
+            updater, base, 
+            rid//, &key_finish
           )->locate_on_ranger(endpoints);
         }
       }
       return true;
     }
 
-    void commit_data(EndPoints endpoints, uint64_t rid,
-                     const DB::Cell::Key& key_end,
-                     const ReqBase::Ptr& base) {
+    void resolve_on_manager() {
+      updater->result->completion++;
+
+      Mngr::Req::RgrGet::request(
+        Mngr::Params::RgrGetReq(cid, rid),
+        [locator=shared_from_this()]
+        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+          if(locator->located_ranger(req, rsp))
+            locator->updater->result->completion--;
+        }
+      );
+    }
+
+    bool located_ranger(const ReqBase::Ptr& base, 
+                        const Mngr::Params::RgrGetRsp& rsp) {  
+      SWC_LOGF(LOG_INFO, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
+
+      if(rsp.err) {
+        if(rsp.err == Error::COLUMN_NOT_EXISTS) {
+          updater->response(rsp.err);
+          return true;
+        }
+        SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING %s", 
+                              rsp.to_string().c_str());
+        SWC_LOGF(LOG_DEBUG, " %s", to_string().c_str());
+        if(rsp.err == Error::RANGE_NOT_FOUND) {
+          (parent == nullptr ? base : parent)->request_again();
+        } else {
+          base->request_again();
+        }
+        return false;
+      }
+
+      if(!rsp.rid || rsp.endpoints.empty()) {
+        SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING(no rid) %s", 
+                            rsp.to_string().c_str());
+        (parent == nullptr ? base : parent)->request_again();
+        return false;
+      }
+
+      if(type == Types::Range::DATA || 
+        (type == Types::Range::MASTER && col->cid == 1) ||
+        (type == Types::Range::META   && col->cid == 2 )) {
+        if(cid != rsp.cid || col->cid != cid) {
+          SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING(cid no match) %s", 
+                                rsp.to_string().c_str());
+          (parent == nullptr ? base : parent)->request_again();          
+          //updater->response(Error::NOT_ALLOWED);
+          return false;
+        }
+        commit_data(rsp.endpoints, base);
+
+      } else {
+        std::make_shared<Locator>(
+          type, 
+          rsp.cid, col, key_start, 
+          updater, base, 
+          rsp.rid, &rsp.range_end
+        )->locate_on_ranger(rsp.endpoints);
+      }
+      return true;
+    }
+
+    void commit_data(EndPoints endpoints, const ReqBase::Ptr& base) {
       bool more = true;
       DynamicBuffer::Ptr cells_buff;
       while(more && 
-           (cells_buff = col_cells->get_buff(
-             *key_start.get(), key_end, updater->buff_sz, more)) != nullptr) {
+           (cells_buff = col->get_buff(
+             *key_start.get(), key_finish, updater->buff_sz, more)) 
+                                                            != nullptr) {
         updater->result->completion++;
-        
+
         Rgr::Req::RangeQueryUpdate::request(
-          Rgr::Params::RangeQueryUpdateReq(col_cells->cid, rid), 
+          Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
           cells_buff, 
           endpoints, 
 
           [cells_buff, base, locator=shared_from_this()]() {
-            locator->col_cells->add(*cells_buff.get());
+            locator->col->add(*cells_buff.get());
             SWC_LOG(LOG_DEBUG, "Commit RETRYING no-conn");
             base->request_again();
             --locator->updater->result->completion;
@@ -386,17 +417,17 @@ class Update : public std::enable_shared_from_this<Update> {
               }
 
               if(rsp.err == Error::RANGE_END_EARLIER) {
-                locator->col_cells->add(*cells_buff.get(), rsp.range_end);
-                auto next_key_start = locator->col_cells->get_key_next(rsp.range_end);
+                locator->col->add(*cells_buff.get(), rsp.range_end);
+                auto next_key_start = locator->col->get_key_next(rsp.range_end);
                 if(next_key_start != nullptr) {
                   std::make_shared<Locator>(
-                    locator->type, locator->cid, locator->col_cells, 
-                    next_key_start, 
-                    locator->updater, locator->parent
+                    Types::Range::MASTER, 
+                    locator->col->cid, locator->col, next_key_start, 
+                    locator->updater
                   )->locate_on_manager();
                  }
               } else {
-                locator->col_cells->add(*cells_buff.get());
+                locator->col->add(*cells_buff.get());
                 base->request_again();
               }
             }

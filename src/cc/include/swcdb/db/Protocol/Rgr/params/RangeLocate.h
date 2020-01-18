@@ -17,8 +17,11 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 class RangeLocateReq : public Serializable {
   public:
 
-  RangeLocateReq(int64_t cid=0, int64_t rid=0, bool next_range=false)
-                : cid(cid), rid(rid), next_range(next_range) {}
+  static const uint8_t NEXT_RANGE  = 0x01;
+  static const uint8_t COMMIT      = 0x02;
+
+  RangeLocateReq(int64_t cid=0, int64_t rid=0)
+                : cid(cid), rid(rid), flags(0) {}
 
   virtual ~RangeLocateReq(){ }
 
@@ -26,7 +29,7 @@ class RangeLocateReq : public Serializable {
   int64_t        rid;
   DB::Cell::Key  range_begin;
   DB::Cell::Key  range_end;
-  bool           next_range;
+  uint8_t        flags;
   
   const std::string to_string() {
     std::string s("RangeLocateReq(");
@@ -35,8 +38,8 @@ class RangeLocateReq : public Serializable {
     s.append(" rid=");
     s.append(std::to_string(rid));
 
-    s.append(" next_range=");
-    s.append(std::to_string(next_range));
+    s.append(" flags=");
+    s.append(std::to_string((int)flags));
     s.append(" RangeBegin");
     s.append(range_begin.to_string());
     s.append(" RangeEnd");
@@ -64,7 +67,7 @@ class RangeLocateReq : public Serializable {
     Serialization::encode_vi64(bufp, rid);
     range_begin.encode(bufp);
     range_end.encode(bufp);
-    Serialization::encode_bool(bufp, next_range);
+    Serialization::encode_i8(bufp, flags);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -73,7 +76,7 @@ class RangeLocateReq : public Serializable {
     rid = Serialization::decode_vi64(bufp, remainp);
     range_begin.decode(bufp, remainp);
     range_end.decode(bufp, remainp);
-    next_range = Serialization::decode_bool(bufp, remainp);
+    flags = Serialization::decode_i8(bufp, remainp);
   }
 
 };

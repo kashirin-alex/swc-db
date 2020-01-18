@@ -32,7 +32,7 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
 
     col->state(rsp_params.err);
-    if(rsp_params.err)
+    if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
       goto send_response;
 
 

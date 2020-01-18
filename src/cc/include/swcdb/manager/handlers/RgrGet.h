@@ -74,7 +74,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
   send_response:
 
     SWC_LOG_OUT(LOG_DEBUG) 
-      << rsp_params.to_string() << " next_range=" << params.next_range
+      << params.to_string() << " " << rsp_params.to_string() 
       << SWC_LOG_OUT_END;
 
     try {

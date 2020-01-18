@@ -470,7 +470,9 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_ranger(const EndPoints& endpoints, bool next_range=false) {
       col->selector->result->completion++;
 
-      Rgr::Params::RangeLocateReq params(cid, rid, next_range);
+      Rgr::Params::RangeLocateReq params(cid, rid);
+      if(next_range)
+        params.flags |= Rgr::Params::RangeLocateReq::NEXT_RANGE;
       if(!range_begin.empty()) {
         params.range_begin.copy(range_begin);
         col->interval.apply_possible_range_end(params.range_end); 

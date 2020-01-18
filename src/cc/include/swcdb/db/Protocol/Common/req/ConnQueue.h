@@ -64,13 +64,14 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     virtual void handle_no_conn() {}
 
     const std::string to_string(){
-      std::string s("ReqBase ");
+      std::string s("ReqBase(");
       s.append(" called=");
       s.append(std::to_string(was_called.load()));
       s.append(" insistent=");
       s.append(std::to_string(insistent));
-      s.append(" command=");
-      s.append(std::to_string((int64_t)cbp->header.command));
+      s.append(" ");
+      s.append(cbp->header.to_string());
+      s.append(")");
       return s;
     }
     

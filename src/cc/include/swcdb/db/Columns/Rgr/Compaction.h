@@ -476,16 +476,16 @@ class Compaction final {
             rsp.err, Error::get_text(rsp.err), cid, rsp.rid
           );
 
-          if(rsp.err || !rsp.rid) {
-            if(!rsp.rid || 
-                rsp.err == Error::COLUMN_NOT_READY) {
-              req->request_again();
-            } else {
-              ptr->apply_new();
-            }
+          if(rsp.err && 
+             rsp.err != Error::COLUMN_NOT_EXISTS &&
+             rsp.err != Error::COLUMN_MARKED_REMOVED) {
+            req->request_again();
             return;
           }
-          ptr->split(rsp.rid);
+          if(!rsp.err && rsp.rid)
+            ptr->split(rsp.rid);
+          else 
+            ptr->apply_new();
         }
       );
     }
@@ -504,9 +504,11 @@ class Compaction final {
             "Compact::Mngr::Req::RangeRemove err=%d(%s) cid=%d rid=%d", 
             rsp.err, Error::get_text(rsp.err), cid, rid
           );
-
-          if(rsp.err == Error::COLUMN_NOT_READY) {
-            req->request_again();
+          
+          if(rsp.err && 
+             rsp.err != Error::COLUMN_NOT_EXISTS &&
+             rsp.err != Error::COLUMN_MARKED_REMOVED) {
+             req->request_again();
           }
         }
       );
@@ -569,7 +571,9 @@ class Compaction final {
                 "Compact::Mngr::Req::RangeUnloaded err=%d(%s) cid=%d rid=%d", 
                 rsp.err, Error::get_text(rsp.err), cid, rid
               );
-              if(rsp.err == Error::COLUMN_NOT_READY) {
+              if(rsp.err && 
+                 rsp.err != Error::COLUMN_NOT_EXISTS &&
+                 rsp.err != Error::COLUMN_MARKED_REMOVED) {
                 req->request_again();
               }
             }

@@ -20,9 +20,9 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Specs::Interval& spec, 
                   DB::Cells::Mutable& cells,
-                  Range::Ptr range, bool next_range)
+                  Range::Ptr range, uint8_t flags)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
-                    range(range), next_range(next_range),
+                    range(range), flags(flags),
                     any_is(range->type != Types::Range::DATA) {
     has_selector = true;
   }
@@ -31,41 +31,47 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
   const bool selector(const DB::Cells::Cell& cell, bool& stop) override {
     /*
-    SWC_LOG_OUT(LOG_INFO) 
-      << " selector   : cid=" << range->cfg->cid          << "\n"
-      << "    cell.key: " << cell.key.to_string()         << "\n"
-      << " range_begin: " << spec.range_begin.to_string() << "\n"
-      << "   range_end: " << spec.range_begin.to_string() 
-      << SWC_LOG_OUT_END;
+    std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
+    std::cout << "range___end: " << spec.range_end.to_string() << "\n";
+    std::cout << "key___begin: " << cell.key.to_string() << "\n";
     */
-
-    if(spec.range_end.count > any_is
-        && spec.range_end.compare(cell.key, spec.range_end.count) 
-                                                == Condition::GT) {
-      stop = true;
-      return false;
+    if(flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
+      if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
+        return false;
+    } else {
+      if(spec.range_end.count > any_is
+          && spec.range_end.compare(cell.key, spec.range_end.count) 
+                                                    == Condition::GT) {
+        stop = true;
+        return false;
+      }
+      stop = cells.size() == 1;
+      if(spec.range_begin.compare(cell.key) == Condition::LT)
+        return false;
     }
-    stop = cells.size() == 1;
-    if(spec.range_begin.compare(cell.key) == Condition::LT)
-      return false;
 
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
     
-    std::cout << "key___begin: " << cell.key.to_string() << "\n";
-    std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
-    std::cout << "range____id: " << Serialization::decode_vi64(&ptr, &remain) << "\n";
-    std::cout << "key_____end: " << key_end.to_string() << "\n";
-    std::cout << "range___end: " << spec.range_end.to_string() << "\n";
-    
-    bool match = key_end.count == any_is ||
-            spec.range_end.count == any_is ||
-            spec.range_end.compare(key_end) != Condition::GT
-          ;
-    if(match && !next_range)
-      stop = true;
+    //std::cout << "key_____end: " << key_end.to_string() << "\n";
+    //std::cout << "range____id: " 
+    //          << Serialization::decode_vi64(&ptr, &remain) << "\n";
+
+    bool match;
+    if(flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
+      match = key_end.count == any_is ||
+        key_end.compare(spec.range_begin, key_end.count) != Condition::GT;
+      if(match)
+        stop = true;
+    } else {
+      match = key_end.count == any_is ||
+              spec.range_end.count == any_is ||
+              spec.range_end.compare(key_end) != Condition::GT;
+      if(match && !(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE))
+        stop = true;
+    }
     return match;
   }
 
@@ -88,13 +94,17 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     if(!err) {
       if(cells.size()) {
 
-        if(next_range && cells.size() != 2) {        
+        if(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
+           cells.size() != 2) {        
           params.err = Error::RANGE_NOT_FOUND;
         } else {
 
           DB::Cells::Cell cell;
-          cells.get(next_range ? 1 : 0, cell);
-        
+          cells.get(
+            flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE ? 1 : 0,
+            cell
+          );
+  
           params.range_begin.copy(cell.key);
         
           std::string id_name(params.range_begin.get_string(0));
@@ -124,7 +134,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     }
 
     SWC_LOG_OUT(LOG_DEBUG) 
-      << params.to_string() << " next_range=" << next_range 
+      << params.to_string() << " flags=" << (int)flags 
       << SWC_LOG_OUT_END;
     
     try {
@@ -139,7 +149,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   }
 
   Range::Ptr  range;
-  bool        next_range;
+  uint8_t     flags;
   uint32_t    any_is;
 
 };

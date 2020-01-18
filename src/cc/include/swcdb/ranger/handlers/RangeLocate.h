@@ -32,7 +32,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
-
+  
   try{
 
     if(err) {
@@ -59,7 +59,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       DB::Specs::Interval(params.range_begin, params.range_end), 
       cells, 
       range,
-      params.next_range
+      params.flags
     );
     req->spec.flags.limit = 2;
 
