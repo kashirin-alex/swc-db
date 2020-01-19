@@ -92,7 +92,7 @@ class Column final {
     cb(Error::OK);
   }
   
-  void remove(int &err, const int64_t rid) {
+  void remove(int &err, const int64_t rid, bool meta=true) {
     Range::Ptr range = nullptr;
     {
       std::scoped_lock lock(m_mutex);
@@ -103,7 +103,7 @@ class Column final {
       }
     }
     if(range != nullptr)
-      range->remove(err);
+      range->remove(err, meta);
   }
 
   void remove_all(int &err) {

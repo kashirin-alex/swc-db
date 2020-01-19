@@ -197,6 +197,9 @@ class Range : public DB::RangeBase {
       updater->columns->add(cid_typ, cell);
 
       if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
+        SWC_ASSERT(!old_key_begin->empty()); 
+        // remove begin-any should not happen
+
         cell.free();
         cell.flag = DB::Cells::DELETE;
         cell.key.copy(*old_key_begin);
@@ -238,12 +241,13 @@ class Range : public DB::RangeBase {
     cb(err);
   }
   
-  void remove(int &err) {
+  void remove(int &err, bool meta=true) {
     {
       std::scoped_lock lock(m_mutex);
       m_state = State::DELETED;
     }
-    on_change(err, true);
+    if(meta)
+      on_change(err, true);
 
     wait();
     wait_queue();

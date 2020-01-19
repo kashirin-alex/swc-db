@@ -8,6 +8,7 @@
 
 #include "swcdb/db/Protocol/Mngr/req/RangeCreate.h"
 #include "swcdb/db/Protocol/Mngr/req/RangeUnloaded.h"
+#include "swcdb/db/Protocol/Mngr/req/RangeRemove.h"
 
 
 namespace SWC { namespace server { namespace Rgr {
@@ -170,7 +171,7 @@ class Compaction final {
     commitlog.get(req->fragments_old); 
     // fragments for deletion at finalize-compaction 
 
-    SWC_LOGF(LOG_INFO, "COMPACT-STARTED cid=%d rid=%d",  
+    SWC_LOGF(LOG_INFO, "COMPACT-STARTED %d/%d",  
              range->cfg->cid, range->rid);
 
     range->scan_internal(req);
@@ -226,7 +227,7 @@ class Compaction final {
         return;
 
       total_cells += cells.size();
-      SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS cid=%d rid=%d cells=%lld",  
+      SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld",  
                range->cfg->cid, range->rid, total_cells.load());
 
       {
@@ -455,125 +456,139 @@ class Compaction final {
 
       auto max = range->cfg->cellstore_max();
       if(cellstores.size() > 1 && cellstores.size() >= max) {
-        create_range();
-      } else {
-        apply_new(empty_cs);
+        
+        auto it = cellstores.begin()+(cellstores.size()/2);
+        do {
+          if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
+            break;
+        } while(++it < cellstores.end());
+
+        if(it != cellstores.end()) {
+          mngr_create_range(it-cellstores.begin());
+          return;
+        }
       }
+      
+      apply_new(empty_cs);
 
     }
 
-    void create_range() {
+    void mngr_create_range(uint32_t split_at) {
       Protocol::Mngr::Req::RangeCreate::request(
         range->cfg->cid,
         RangerEnv::rgr_data()->id,
-        [cid=range->cfg->cid, ptr=shared()]
+        [split_at, cid=range->cfg->cid, ptr=shared()]
         (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeCreateRsp rsp) {
           
           SWC_LOGF(
             LOG_DEBUG, 
-            "Compact::Mngr::Req::RangeCreate err=%d(%s) cid=%d rid=%d", 
+            "Compact::Mngr::Req::RangeCreate err=%d(%s) %d/%d", 
             rsp.err, Error::get_text(rsp.err), cid, rsp.rid
           );
 
           if(rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
-             rsp.err != Error::COLUMN_MARKED_REMOVED) {
+             rsp.err != Error::COLUMN_MARKED_REMOVED &&
+             rsp.err != Error::COLUMN_NOT_READY) {
             req->request_again();
             return;
           }
-          if(!rsp.err && rsp.rid)
-            ptr->split(rsp.rid);
+          if(rsp.rid && (!rsp.err || rsp.err == Error::COLUMN_NOT_READY))
+            ptr->split(rsp.rid, split_at);
           else 
             ptr->apply_new();
         }
       );
     }
 
-    void remove_new_range(Range::Ptr new_range) {
-      /*
+    void mngr_remove_range(Range::Ptr new_range) {
+      std::promise<void> res;
       Protocol::Mngr::Req::RangeRemove::request(
         new_range->cfg->cid,
         new_range->rid,
-        [cid=new_range->cfg->cid, rid=new_range->rid]
+        [new_range, await=&res]
         (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeRemoveRsp rsp) {
           
           SWC_LOGF(
             LOG_DEBUG, 
-            "Compact::Mngr::Req::RangeRemove err=%d(%s) cid=%d rid=%d", 
-            rsp.err, Error::get_text(rsp.err), cid, rid
+            "Compact::Mngr::Req::RangeRemove err=%d(%s) %d/%d", 
+            rsp.err, Error::get_text(rsp.err), 
+            new_range->cfg->cid, new_range->rid
           );
           
           if(rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
-             rsp.err != Error::COLUMN_MARKED_REMOVED) {
+             rsp.err != Error::COLUMN_MARKED_REMOVED &&
+             rsp.err != Error::COLUMN_NOT_READY) {
              req->request_again();
+          } else {
+            await->set_value();
           }
         }
       );
-      */
+      res.get_future().get();
     }
 
-    void split(int64_t new_rid) {
-      SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cid=%d rid=%d new-rid=%d", 
-               range->cfg->cid, range->rid, new_rid);
-
+    void split(int64_t new_rid, uint32_t split_at) {
       int err = Error::OK;
       Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
       if(col == nullptr || col->removing())
         return quit();
 
-      auto new_range = col->get_range(err, new_rid, true);
-      if(err)
-        return apply_new();
+      SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %d/%d new-rid=%d", 
+               range->cfg->cid, range->rid, new_rid);
 
-      new_range->create_folders(err);
+      auto new_range = col->get_range(err, new_rid, true);
+      if(!err)
+        new_range->create_folders(err);
       if(err) {
+        SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %d/%d new-rid=%d", 
+                err, range->cfg->cid, range->rid, new_rid);
         err = Error::OK;
-        col->remove(err, new_rid);
-        remove_new_range(new_range);
+        col->remove(err, new_rid, false);
+        mngr_remove_range(new_range);
         return apply_new();
       }
       
-      uint8_t keep = cellstores.size()/2;
       Files::CellStore::Writers new_cellstores;
-      new_cellstores.assign(cellstores.begin()+keep, cellstores.end());
-      cellstores.erase(cellstores.begin()+keep, cellstores.end());
+      auto it = cellstores.begin()+split_at;
+      new_cellstores.assign(it, cellstores.end());
+      cellstores.erase(it, cellstores.end());
+      
+      SWC_ASSERT(cellstores.size());
+      SWC_ASSERT(new_cellstores.size());
 
       new_range->create(err, new_cellstores);
-      if(err) {
-        err = Error::OK;
-        col->remove(err, new_rid);
-        remove_new_range(new_range);
-        return quit();
-      }
+      if(!err)
+        range->apply_new(err, cellstores, fragments_old);
 
-      range->apply_new(err, cellstores, fragments_old);
       if(err) {
         err = Error::OK;
         col->remove(err, new_rid);
-        remove_new_range(new_range);
+        mngr_remove_range(new_range);
         return quit();
       }
 
       new_range = nullptr;
       col->unload(
         new_rid, 
-        [cid=range->cfg->cid, rid=new_rid](int err) { 
+        [new_rid, cid=range->cfg->cid](int err) { 
           Protocol::Mngr::Req::RangeUnloaded::request(
-            cid, rid,
-            [cid, rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+            cid, new_rid,
+            [cid, new_rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
              Protocol::Mngr::Params::RangeUnloadedRsp rsp) {
           
               SWC_LOGF(
                 LOG_DEBUG, 
-                "Compact::Mngr::Req::RangeUnloaded err=%d(%s) cid=%d rid=%d", 
-                rsp.err, Error::get_text(rsp.err), cid, rid
+                "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %d/%d", 
+                rsp.err, Error::get_text(rsp.err), cid, new_rid
               );
               if(rsp.err && 
                  rsp.err != Error::COLUMN_NOT_EXISTS &&
-                 rsp.err != Error::COLUMN_MARKED_REMOVED) {
+                 rsp.err != Error::COLUMN_MARKED_REMOVED &&
+                 rsp.err != Error::COLUMN_NOT_READY) {
                 req->request_again();
               }
             }
@@ -608,7 +623,7 @@ class Compaction final {
           err, range->get_path(Range::cellstores_tmp_dir));
       }
 
-      SWC_LOGF(LOG_INFO, "COMPACT-ERROR cid=%d rid=%d", 
+      SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
                range->cfg->cid, range->rid);
       compactor->compacted(range);
     }
@@ -652,7 +667,7 @@ class Compaction final {
     
     range->compacting(Range::Compact::NONE);
     
-    SWC_LOGF(LOG_INFO, "COMPACT-FINISHED cid=%d rid=%d", 
+    SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
              range->cfg->cid, range->rid);
 
     compacted();
