@@ -26,8 +26,8 @@ void Event::received() {
     expiry_ms = Time::now_ms() + header.timeout_ms; 
 }
 
-const bool Event::expired() const {
-  return expiry_ms && Time::now_ms() > expiry_ms;
+const bool Event::expired(int64_t within) const {
+  return expiry_ms && Time::now_ms() > expiry_ms-within;
 }
 
 int32_t Event::response_code() {

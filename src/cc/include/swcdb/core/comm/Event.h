@@ -37,7 +37,7 @@ class Event final {
 
   void received();
 
-  const bool expired() const;
+  const bool expired(int64_t within=0) const;
   
   int32_t response_code();
 
