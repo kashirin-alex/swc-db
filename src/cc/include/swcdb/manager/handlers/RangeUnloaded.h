@@ -32,9 +32,11 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
 
     col->state(rsp_params.err);
-    if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
-      goto send_response;
-
+    if(rsp_params.err) {
+      if(rsp_params.err == Error::COLUMN_MARKED_REMOVED)
+        goto send_response;
+      rsp_params.err = Error::OK;
+    }
 
     auto range = col->get_range(rsp_params.err, params.rid);
     if(rsp_params.err || range == nullptr)
