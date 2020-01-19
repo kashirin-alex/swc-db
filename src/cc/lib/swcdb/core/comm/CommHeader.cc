@@ -63,7 +63,7 @@ void CommHeader::encode(uint8_t **bufp) const {
 
 void CommHeader::decode_prefix(const uint8_t **bufp, size_t *remainp) {
   if (*remainp < 2)
-    HT_THROWF(Error::COMM_BAD_HEADER,
+    SWC_THROWF(Error::COMM_BAD_HEADER,
               "Header size %d is less than the fixed length %d",
               (int)*remainp, 2);
 
@@ -91,7 +91,7 @@ void CommHeader::decode(const uint8_t **bufp, size_t *remainp) {
 
   checksum = Serialization::decode_i32(bufp, remainp);
   if(!checksum_i32_chk(checksum, base, header_len-4))
-    HT_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
+    SWC_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
               "header-checksum decoded-len=%d", *bufp-base);
 }
 

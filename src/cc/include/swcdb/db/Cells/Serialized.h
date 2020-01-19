@@ -106,7 +106,7 @@ class Serialized final {
       data.interval->expand(cell);
     } catch(...){
       data.buffer->ptr = data.buffer->mark;
-      HT_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
+      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
                 "bad-%s", cell.to_string().c_str());
     }
   }

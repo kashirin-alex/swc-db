@@ -107,7 +107,7 @@ class Config final {
   }
 
   static SWC::Config::Settings* settings() {
-    HT_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env != nullptr);
     return m_env->m_settings;
   }
 

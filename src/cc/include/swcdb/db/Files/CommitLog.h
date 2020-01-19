@@ -27,7 +27,7 @@ class Fragments final {
   explicit Fragments()  : m_commiting(false), m_deleting(false) { }
 
   void init(DB::RangeBase::Ptr for_range) {
-    HT_ASSERT(for_range != nullptr);
+    SWC_ASSERT(for_range != nullptr);
     
     range = for_range;
     

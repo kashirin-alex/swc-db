@@ -19,7 +19,7 @@ IoContext::IoContext(const std::string name, int32_t size)
                       m_pool(asio::thread_pool(size)),
                       m_ioctx(std::make_shared<asio::io_context>(size)),
                       m_wrk(asio::make_work_guard(*m_ioctx.get())) { 
-    HT_ASSERT(size>0);
+    SWC_ASSERT(size>0);
 }
   
 IoContext::~IoContext() { }
@@ -89,7 +89,7 @@ const bool IoCtx::ok() {
 }
   
 IoContext::Ptr IoCtx::io() {
-  HT_ASSERT(ok());
+  SWC_ASSERT(ok());
   return m_env->m_io;
 }
   

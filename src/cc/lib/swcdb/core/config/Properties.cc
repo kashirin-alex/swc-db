@@ -101,7 +101,7 @@ namespace SWC {
         return it->second;
     }
     
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
               "getting value of '%s' - missing",
               name.c_str());
   }

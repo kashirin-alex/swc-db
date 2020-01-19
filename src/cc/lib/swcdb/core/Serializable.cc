@@ -41,14 +41,14 @@ void Serializable::encode(uint8_t **bufp) const {
 void Serializable::decode(const uint8_t **bufp, size_t *remainp) {
   uint8_t version = Serialization::decode_i8(bufp, remainp);
   if(version > encoding_version())
-    HT_THROWF(Error::PROTOCOL_ERROR, "Unsupported version %d", (int)version);
+    SWC_THROWF(Error::PROTOCOL_ERROR, "Unsupported version %d", (int)version);
 
   size_t encoding_length = Serialization::decode_vi32(bufp, remainp);
   const uint8_t *end = *bufp + encoding_length;
   size_t tmp_remain = encoding_length;
   decode_internal(version, bufp, &tmp_remain);
 
-  HT_ASSERT(*bufp <= end);
+  SWC_ASSERT(*bufp <= end);
 
   *remainp -= encoding_length;
   // If encoding is longer than we expect, that means we're decoding a newer

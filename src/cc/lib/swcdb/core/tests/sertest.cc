@@ -36,9 +36,9 @@ void test_i8() {
   const uint8_t *p = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding i8",
-    HT_ASSERT(decode_i8(&p, &len) == input);
-    HT_ASSERT(p - buf == 1);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_i8(&p, &len) == input);
+    SWC_ASSERT(p - buf == 1);
+    SWC_ASSERT(len == 0));
 }
 
 void test_i16() {
@@ -48,9 +48,9 @@ void test_i16() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding i16",
-    HT_ASSERT(decode_i16(&p2, &len) == input);
-    HT_ASSERT(p2 - buf == 2);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_i16(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 2);
+    SWC_ASSERT(len == 0));
 }
 
 void test_i32() {
@@ -60,9 +60,9 @@ void test_i32() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding i32",
-    HT_ASSERT(decode_i32(&p2, &len) == input);
-    HT_ASSERT(p2 - buf == 4);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_i32(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 4);
+    SWC_ASSERT(len == 0));
 }
 
 void test_i64() {
@@ -72,9 +72,9 @@ void test_i64() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding i64",
-    HT_ASSERT(decode_i64(&p2, &len) == input);
-    HT_ASSERT(p2 - buf == 8);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_i64(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 8);
+    SWC_ASSERT(len == 0));
 }
 
 void test_vi32() {
@@ -85,9 +85,9 @@ void test_vi32() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding vint32",
-    HT_ASSERT(decode_vi32(&p2, &len) == input);
-    HT_ASSERT(p2 - buf == 5);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_vi32(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 5);
+    SWC_ASSERT(len == 0));
   }
   /* 
   for(uint32_t n=0; n<0xffffffff;n++){
@@ -96,8 +96,8 @@ void test_vi32() {
     size_t len = 5;
     encode_vi32(&p, n);
     HT_TRY("decoding vint32",
-      HT_ASSERT(decode_vi32(&p2, &len) == n);
-      HT_ASSERT(p2-buf == encoded_length_vi32(n)));
+      SWC_ASSERT(decode_vi32(&p2, &len) == n);
+      SWC_ASSERT(p2-buf == encoded_length_vi32(n)));
   }
   */
 }
@@ -109,9 +109,9 @@ void test_vi64() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("decoding vint64",
-    HT_ASSERT(decode_vi64(&p2, &len) == input);
-    HT_ASSERT(p2 - buf == 10);
-    HT_ASSERT(len == 0));
+    SWC_ASSERT(decode_vi64(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 10);
+    SWC_ASSERT(len == 0));
 }
 
 void test_str16() {
@@ -121,9 +121,9 @@ void test_str16() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("testing str16",
-    HT_ASSERT(!strcmp(decode_str16(&p2, &len), input));
-    HT_ASSERT(p2 - buf == (int)(encoded_length_str16(input)));
-    HT_ASSERT(len == sizeof(buf) - (p2 - buf)));
+    SWC_ASSERT(!strcmp(decode_str16(&p2, &len), input));
+    SWC_ASSERT(p2 - buf == (int)(encoded_length_str16(input)));
+    SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
 }
 
 void test_vstr() {
@@ -133,9 +133,9 @@ void test_vstr() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   HT_TRY("testing vstr",
-    HT_ASSERT(!strcmp(decode_vstr(&p2, &len), input));
-    HT_ASSERT(p2 - buf == (int)(encoded_length_vstr(input)));
-    HT_ASSERT(len == sizeof(buf) - (p2 - buf)));
+    SWC_ASSERT(!strcmp(decode_vstr(&p2, &len), input));
+    SWC_ASSERT(p2 - buf == (int)(encoded_length_vstr(input)));
+    SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
 }
 
 void test_bad_vi32() {
@@ -147,7 +147,7 @@ void test_bad_vi32() {
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    HT_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
+    SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
 
@@ -161,7 +161,7 @@ void test_bad_vi64() {
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    HT_ASSERT(e.code() == Error::SERIALIZATION_BAD_VINT);
+    SWC_ASSERT(e.code() == Error::SERIALIZATION_BAD_VINT);
   }
 }
 
@@ -175,7 +175,7 @@ void test_bad_vstr() {
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    HT_ASSERT(e.code() == Error::SERIALIZATION_BAD_VSTR);
+    SWC_ASSERT(e.code() == Error::SERIALIZATION_BAD_VSTR);
   }
 }
 

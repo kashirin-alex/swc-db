@@ -66,7 +66,7 @@ int ValueEnumExtBase::from_string(const std::string& opt) {
     set_value(nv);
   else {
     if(get() == -1)
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
                 "Bad Value %s, no corresponding enum", opt.c_str());
     else
       SWC_LOGF(LOG_WARN, "Bad cfg Value %s, no corresponding enum", opt.c_str());
@@ -76,7 +76,7 @@ int ValueEnumExtBase::from_string(const std::string& opt) {
     
 void ValueEnumExtBase::set_default_calls() {
   call_from_string = [](const std::string& opt) {
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
               "Bad Value %s, no from_string cb set", opt.c_str());
     return -1;
   };

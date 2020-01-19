@@ -19,7 +19,7 @@ double double_from_string(const std::string& s){
   double res = strtod(s.c_str(), &last);
 
   if (s.c_str() == last)
-    HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
 
   switch (*last) {
     case 'k':
@@ -30,7 +30,7 @@ double double_from_string(const std::string& s){
     case 'G': res *= 1000000000LL;   break;
     case '\0':                          break;
     default: 
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
                 "Bad Value %s unknown suffix %s", s.c_str(), last);
   }
   return res;
@@ -42,10 +42,10 @@ int64_t int64_t_from_string(const std::string& s){
   int64_t res = strtoll(s.c_str(), &last, 0);
 
   if (s.c_str() == last)
-    HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
   
   if(errno) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
               "Bad Value %s, number out of range of 64-bit integer", s.c_str());
   
   switch (*last) {
@@ -57,7 +57,7 @@ int64_t int64_t_from_string(const std::string& s){
     case 'G': res *= 1000000000LL;   break;
     case '\0':                          break;
     default: 
-      HT_THROWF(Error::CONFIG_GET_ERROR, 
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
                 "Bad Value %s unknown suffix %s", s.c_str(), last);
   }
   return res;
@@ -67,7 +67,7 @@ uint8_t uint8_t_from_string(const std::string& s){
   int64_t res = int64_t_from_string(s);
 
   if (res > UINT8_MAX || res < 0) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
       "Bad Value %s, number out of range of 8-bit unsigned integer", s.c_str());
   return (uint8_t)res;
 }
@@ -76,7 +76,7 @@ uint16_t uint16_t_from_string(const std::string& s){
   int64_t res = int64_t_from_string(s);
 
   if (res > UINT16_MAX || res < 0) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
       "Bad Value %s, number out of range of 16-bit unsigned integer", s.c_str());
   return (uint16_t)res;
 }
@@ -85,7 +85,7 @@ int32_t int32_t_from_string(const std::string& s){
   int64_t res = int64_t_from_string(s);
 
   if (res > INT32_MAX || res < INT32_MIN) 
-    HT_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
         "Bad Value %s, number out of range of 32-bit integer", s.c_str());
   return (int32_t)res;
 }
@@ -335,7 +335,7 @@ Value::Ptr Value::make_new(Value::Ptr p, const Strings& values) {
       
       case ValueType::ENUM:
       default:
-        HT_THROWF(Error::CONFIG_GET_ERROR, 
+        SWC_THROWF(Error::CONFIG_GET_ERROR, 
                   "Bad Type for values %s", format_list(values).c_str());
   }
 }  
@@ -397,7 +397,7 @@ void Value::set_value_from(Value::Ptr from) {
 
       case ValueType::ENUM:
       default:
-        HT_THROWF(Error::CONFIG_GET_ERROR, "Bad Type %s", str().c_str());
+        SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Type %s", str().c_str());
   }
 }
 
@@ -410,7 +410,7 @@ const ValueType Value::get_type() const {
 }
     
 void Value::getting_error(const char* tname) const {
-  HT_THROWF(Error::CONFIG_GET_ERROR, 
+  SWC_THROWF(Error::CONFIG_GET_ERROR, 
             "T get(): type=%s (UNKNOWN VALUE TYPE)", tname);
 }
 

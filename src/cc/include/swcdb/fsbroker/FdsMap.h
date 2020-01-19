@@ -81,7 +81,7 @@ class Fds final {
   }
 
   static server::FsBroker::Fds::Ptr get(){
-    HT_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env != nullptr);
     return m_env->m_fds;
   }
 

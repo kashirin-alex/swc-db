@@ -92,7 +92,7 @@ class Schemas final {
   }
 
   static DB::Schemas::Ptr get(){
-    HT_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env != nullptr);
     return m_env->m_schemas;
   }
 

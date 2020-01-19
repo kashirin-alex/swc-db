@@ -253,7 +253,7 @@ Property::Value::Ptr ParserConfig::get_default(const std::string& name){
       if(name.compare(alias) == 0)
         return info.second.value;
   }
-  HT_THROWF(Error::CONFIG_GET_ERROR, "ParserConfig, getting value of '%s'",
+  SWC_THROWF(Error::CONFIG_GET_ERROR, "ParserConfig, getting value of '%s'",
             name.c_str());
 }
 
@@ -421,7 +421,8 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
         set_pos_parse(name, raw_opt);
       else if(!m_unregistered) 
         // if no pos -1  if(n!=0) ignore app-file, unregistered arg-positions
-        HT_THROWF(Error::CONFIG_GET_ERROR, "unknown cfg  with %s", raw_opt.c_str());
+        SWC_THROWF(Error::CONFIG_GET_ERROR, 
+                    "unknown cfg  with %s", raw_opt.c_str());
     }
 
     opt.clear();

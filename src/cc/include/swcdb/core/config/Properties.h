@@ -116,7 +116,7 @@ class Properties {
     try {
       return get_value_ptr(name)->get<T>();
     } catch (std::exception &e) {
-      HT_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
+      SWC_THROWF(Error::CONFIG_GET_ERROR, "getting value of '%s': %s",
                 name.c_str(), e.what());
     }
   }
@@ -132,7 +132,7 @@ class Properties {
     for(const std::string& name : names)
       if (has(name))
         return get<T>(name);
-    HT_THROWF(Error::CONFIG_GET_ERROR, "getting pref value by '%s'",
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "getting pref value by '%s'",
                                         format_list(names).c_str());
   }
 

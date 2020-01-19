@@ -336,10 +336,10 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
   Exception(_code_, _msg_, _ex_, __LINE__, HT_FUNC, __FILE__)
 
 /* Convenience macro to throw an exception */
-#define HT_THROW(_code_, _msg_) throw HT_EXCEPTION(_code_, _msg_)
+#define SWC_THROW(_code_, _msg_) throw HT_EXCEPTION(_code_, _msg_)
 
 /* Convenience macro to throw an exception */
-#define HT_THROW_(_code_) HT_THROW(_code_, "")
+#define HT_THROW_(_code_) SWC_THROW(_code_, "")
 
 /* Convenience macro to throw a chained exception */
 #define HT_THROW2(_code_, _ex_, _msg_) throw HT_EXCEPTION2(_code_, _ex_, _msg_)
@@ -348,7 +348,7 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 #define HT_THROW2_(_code_, _ex_) HT_THROW2(_code_, _ex_, "")
 
 /* Convenience macro to throw an exception with a printf-like message */
-#define HT_THROWF(_code_, _fmt_, ...) \
+#define SWC_THROWF(_code_, _fmt_, ...) \
   throw HT_EXCEPTION(_code_, SWC::format(_fmt_, __VA_ARGS__))
 
 /* Convenience macro to throw a chained exception with a printf-like message */
@@ -360,10 +360,10 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 #define HT_RETHROWF(_fmt_, ...) \
   catch (Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
   catch (std::bad_alloc& e) { \
-    HT_THROWF(Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
+    SWC_THROWF(Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
   } \
   catch (std::exception& e) { \
-    HT_THROWF(Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
+    SWC_THROWF(Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
               __VA_ARGS__); \
   } \
   catch (...) { \
@@ -398,15 +398,15 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 
 // Probably should be in its own file, but...
-#define HT_EXPECT(_e_, _code_) do { if (_e_); else { \
+#define SWC_EXPECT(_e_, _code_) do { if (_e_); else { \
     if (_code_ == Error::FAILED_EXPECTATION) \
       SWC_LOG_FATAL("failed expectation: " #_e_); \
-    HT_THROW(_code_, "failed expectation: " #_e_); } \
+    SWC_THROW(_code_, "failed expectation: " #_e_); } \
 } while (0)
 
-// A short cut for HT_EXPECT(expr, Error::FAILED_EXPECTATION)
+// A short cut for SWC_EXPECT(expr, Error::FAILED_EXPECTATION)
 // unlike assert, it cannot be turned off
-#define HT_ASSERT(_e_) HT_EXPECT(_e_, Error::FAILED_EXPECTATION)
+#define SWC_ASSERT(_e_) SWC_EXPECT(_e_, Error::FAILED_EXPECTATION)
 
 
 

@@ -44,20 +44,20 @@
 # include "Error.h"
 # ifndef HT_THROW_INPUT_OVERRUN
 #   define HT_THROW_INPUT_OVERRUN(_r_, _l_) \
-      HT_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, \
+      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, \
                 "Need %lu bytes but only %lu remain", (Lu)(_l_), (Lu)(_r_))
 # endif
 # ifndef HT_THROW_BAD_VSTR
 #   define HT_THROW_BAD_VSTR(_s_) \
-      HT_THROWF(Error::SERIALIZATION_BAD_VSTR, "Error decoding %s", _s_)
+      SWC_THROWF(Error::SERIALIZATION_BAD_VSTR, "Error decoding %s", _s_)
 # endif
 # ifndef HT_THROW_BAD_VINT
 #   define HT_THROW_BAD_VINT(_s_) \
-      HT_THROWF(Error::SERIALIZATION_BAD_VINT, "Error decoding %s", _s_)
+      SWC_THROWF(Error::SERIALIZATION_BAD_VINT, "Error decoding %s", _s_)
 # endif
 # ifndef HT_THROW_UNPOSSIBLE
 #   define HT_THROW_UNPOSSIBLE(_s_) \
-      HT_THROWF(Error::UNPOSSIBLE, "%s", _s_)
+      SWC_THROWF(Error::UNPOSSIBLE, "%s", _s_)
 # endif
 #else
 # include <cstdio>

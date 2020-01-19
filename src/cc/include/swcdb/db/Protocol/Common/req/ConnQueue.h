@@ -195,7 +195,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
         conn = m_conn;
       }
       
-      HT_ASSERT(req->cbp != nullptr);
+      SWC_ASSERT(req->cbp != nullptr);
 
       if(!req->valid())
         goto processed;

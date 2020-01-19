@@ -138,7 +138,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
 
     int x =  getaddrinfo(hostname.c_str(), NULL, &hints, &result);
     if(x != 0){
-      HT_THROWF(Error::COMM_SOCKET_ERROR, 
+      SWC_THROWF(Error::COMM_SOCKET_ERROR, 
                 "Bad addr-info for host: %s", hostname.c_str());
     }
       
@@ -162,7 +162,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
          break;
       }
       if(s == NULL) 
-        HT_THROWF(Error::COMM_SOCKET_ERROR, 
+        SWC_THROWF(Error::COMM_SOCKET_ERROR, 
                   "Bad IP for host: %s, address-info: ", 
                   hostname.c_str(), rp->ai_addr);
         

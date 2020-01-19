@@ -644,7 +644,7 @@ class Compaction final {
       range->blocks.release(0);
       if(range->blocks.size())
         SWC_LOGF(LOG_ERROR, "%s", range->to_string().c_str());
-      HT_ASSERT(!range->blocks.size());
+      SWC_ASSERT(!range->blocks.size());
 
     } else if(size_t bytes = Env::Resources.need_ram()) {
       range->blocks.release(bytes);

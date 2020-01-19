@@ -159,7 +159,7 @@ class MngrColumns final {
   }
 
   static server::Mngr::Columns::Ptr get(){
-    HT_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env != nullptr);
     return m_env->m_columns;
   }
 

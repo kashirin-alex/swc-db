@@ -64,7 +64,7 @@ FileSystem::Ptr Interface::use_filesystem(){
     }
 
     default:
-      HT_THROWF(Error::CONFIG_BAD_VALUE, 
+      SWC_THROWF(Error::CONFIG_BAD_VALUE, 
         "Unimplemented FileSystem name=%s type=%d", 
         fs_name.c_str(), (int)m_type);
   }
@@ -83,7 +83,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   const char* err = dlerror();
   void* handle = dlopen(fs_lib.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
   if (handle == NULL || err != NULL)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, open fail: %s\n", 
               fs_lib.c_str(), err);
 
@@ -91,7 +91,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   std::string handler_name =  "fs_apply_cfg_"+fs_name;
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_cfg_ptr == nullptr)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
   ((fs_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
@@ -100,7 +100,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   handler_name =  "fs_make_new_"+fs_name;
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_new_ptr == nullptr)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
     
@@ -388,12 +388,12 @@ FsInterface::Ptr FsInterface::get(){
 }
 
 FS::Interface::Ptr FsInterface::interface(){
-  HT_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env != nullptr);
   return m_env->m_interface;
 }
 
 FS::FileSystem::Ptr FsInterface::fs(){
-  HT_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env != nullptr);
   return m_env->m_interface->get_fs();
 }
 

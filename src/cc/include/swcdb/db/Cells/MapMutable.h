@@ -166,7 +166,7 @@ class MapMutable {
 
     auto it = m_map.find(cid);
     if(it == m_map.end()){
-      HT_THROWF(ENOKEY, "Map Missing column=%d (1st do create)", cid);
+      SWC_THROWF(ENOKEY, "Map Missing column=%d (1st do create)", cid);
     }
     it->second->add(cell);
   }

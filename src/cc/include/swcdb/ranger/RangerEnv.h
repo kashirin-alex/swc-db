@@ -27,7 +27,7 @@ class RangerEnv final {
   public:
 
   static void init() {
-    HT_ASSERT(m_env == nullptr);
+    SWC_ASSERT(m_env == nullptr);
     m_env = std::make_shared<RangerEnv>();
   }
 
@@ -140,7 +140,7 @@ RangerEnv::~RangerEnv() {
 }
 
 void RangerEnv::start() {
-  HT_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env != nullptr);
 
   m_env->_compaction = new server::Rgr::Compaction();
   m_env->_compaction->schedule();

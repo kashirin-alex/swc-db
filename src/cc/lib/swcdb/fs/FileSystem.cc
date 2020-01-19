@@ -37,7 +37,7 @@ Types::Fs fs_type(std::string fs_name) {
   if(fs_name.compare("custom") == 0)
     return Types::Fs::CUSTOM;
   else
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Unknown FileSystem name=%s", fs_name.c_str());
   return Types::Fs::NONE;
 }
@@ -55,7 +55,7 @@ std::string type_to_string(Types::Fs typ) {
     return "Ceph";
   if(typ == Types::Fs::CUSTOM)
     return "Custom";
-  HT_THROWF(Error::CONFIG_BAD_VALUE, 
+  SWC_THROWF(Error::CONFIG_BAD_VALUE, 
             "Unknown FileSystem type=%d", (int)typ);
 }
 

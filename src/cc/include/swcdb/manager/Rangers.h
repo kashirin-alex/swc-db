@@ -143,7 +143,7 @@ class Rangers final {
 
   void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr schema, int err, bool initial=false) {
-    HT_ASSERT(schema->cid != DB::Schema::NO_CID);
+    SWC_ASSERT(schema->cid != DB::Schema::NO_CID);
 
     if(!initial && m_root_mngr) {
       update_status_ack(func, schema, err);
@@ -287,6 +287,18 @@ class Rangers final {
       }
     }
   }
+
+  void rgr_list(const uint64_t rgr_id, RangerList& rangers){
+    std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
+    for(auto& rgr : m_rgr_status) {
+      if(!rgr_id || rgr->id == rgr_id) {
+        rangers.push_back(rgr);
+        if(rgr_id)
+          break;
+      }
+    }
+  }
+
 
   uint64_t rs_set_id(const EndPoints& endpoints, uint64_t opt_id=0){
     std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
@@ -794,7 +806,7 @@ class Rangers final {
     std::vector<DB::Schema::Ptr> entries;
     Env::Schemas::get()->all(entries);
     for(auto& schema : entries) {
-      HT_ASSERT(schema->cid != DB::Schema::NO_CID);
+      SWC_ASSERT(schema->cid != DB::Schema::NO_CID);
       update_status(Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD, schema,
                     Error::OK, true);
     }
@@ -846,7 +858,7 @@ class Rangers final {
 
     DB::Schema::Ptr schema_save = DB::Schema::make(
       cid, schema, schema->revision ? schema->revision : Time::now_ns());
-    HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
+    SWC_ASSERT(schema_save->cid != DB::Schema::NO_CID);
     
     Files::Schema::save_with_validation(
       err, schema_save, cfg_schema_replication->get());
@@ -873,7 +885,7 @@ class Rangers final {
       schema, 
       schema->revision ? schema->revision : Time::now_ns());
 
-    HT_ASSERT(schema_save->cid != DB::Schema::NO_CID);
+    SWC_ASSERT(schema_save->cid != DB::Schema::NO_CID);
 
     if(schema->equal(schema_save, false))
       err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
@@ -975,7 +987,7 @@ class Rangers final {
           std::lock_guard<std::mutex> lock(m_mutex_columns);
           m_cid_pending.push_back(req);
         }
-        HT_ASSERT(req.params.schema->cid != DB::Schema::NO_CID);
+        SWC_ASSERT(req.params.schema->cid != DB::Schema::NO_CID);
         update_status(req.params.function, req.params.schema, err, true);
 
       } else {
@@ -1148,7 +1160,7 @@ class Rangers final {
   }
 
   static server::Mngr::Rangers::Ptr get(){
-    HT_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env != nullptr);
     return m_env->m_rangers;
   }
 

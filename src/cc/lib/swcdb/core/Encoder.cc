@@ -49,7 +49,7 @@ void decode(int& err, Types::Encoding encoder,
     }
 
     default: {
-      //HT_ASSERT(encoder==Types::Encoding::PLAIN);
+      //SWC_ASSERT(encoder==Types::Encoding::PLAIN);
       break;
     }
   }

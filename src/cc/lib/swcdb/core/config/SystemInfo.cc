@@ -247,7 +247,7 @@ sigar_t *_sigar = NULL;
 
 sigar_t *sigar() {
   if (!_sigar)
-    HT_ASSERT(sigar_open(&_sigar) == SIGAR_OK);
+    SWC_ASSERT(sigar_open(&_sigar) == SIGAR_OK);
 
   return _sigar;
 }
@@ -257,7 +257,7 @@ sigar_file_system_list_t _fs_list, *_fs_listp = NULL;
 
 sigar_file_system_list_t &fs_list() {
   if (!_fs_listp) {
-    HT_ASSERT(sigar_file_system_list_get(sigar(), &_fs_list) == SIGAR_OK);
+    SWC_ASSERT(sigar_file_system_list_get(sigar(), &_fs_list) == SIGAR_OK);
     _fs_listp = &_fs_list;
   }
   return _fs_list;
@@ -400,7 +400,7 @@ CpuInfo &CpuInfo::init() {
   lock_guard<recursive_mutex> lock(_mutex);
   sigar_cpu_info_list_t l;
 
-  HT_ASSERT(sigar_cpu_info_list_get(sigar(), &l) == SIGAR_OK);
+  SWC_ASSERT(sigar_cpu_info_list_get(sigar(), &l) == SIGAR_OK);
   sigar_cpu_info_t &s = l.data[0];
 
   vendor = s.vendor;
@@ -423,7 +423,7 @@ CpuStat &CpuStat::refresh() {
     lock_guard<recursive_mutex> lock(_mutex); // needed for sigar object
 
     if (!_prev_cpup) {
-      HT_ASSERT(sigar_cpu_get(sigar(), &_prev_cpu) == SIGAR_OK);
+      SWC_ASSERT(sigar_cpu_get(sigar(), &_prev_cpu) == SIGAR_OK);
       _prev_cpup = &_prev_cpu;
       need_pause = true;
     }
@@ -435,10 +435,10 @@ CpuStat &CpuStat::refresh() {
   {
     lock_guard<recursive_mutex> lock(_mutex);
     sigar_cpu_t curr;
-    HT_ASSERT(sigar_cpu_get(sigar(), &curr) == SIGAR_OK);
+    SWC_ASSERT(sigar_cpu_get(sigar(), &curr) == SIGAR_OK);
 
     sigar_cpu_perc_t p;
-    HT_ASSERT(sigar_cpu_perc_calculate(&_prev_cpu, &curr, &p) == SIGAR_OK);
+    SWC_ASSERT(sigar_cpu_perc_calculate(&_prev_cpu, &curr, &p) == SIGAR_OK);
 
     user = p.user * 100.;
     sys = p.sys * 100.;
@@ -458,7 +458,7 @@ CpuStat &CpuStat::refresh() {
 LoadAvgStat &LoadAvgStat::refresh() {
   lock_guard<recursive_mutex> lock(_mutex);
   sigar_loadavg_t m;
-  HT_ASSERT(sigar_loadavg_get(sigar(), &m) == SIGAR_OK);
+  SWC_ASSERT(sigar_loadavg_get(sigar(), &m) == SIGAR_OK);
 
   loadavg[0] = m.loadavg[0];
   loadavg[1] = m.loadavg[1];
@@ -471,7 +471,7 @@ MemStat &MemStat::refresh() {
   lock_guard<recursive_mutex> lock(_mutex);
   sigar_mem_t m;
 
-  HT_ASSERT(sigar_mem_get(sigar(), &m) == SIGAR_OK);
+  SWC_ASSERT(sigar_mem_get(sigar(), &m) == SIGAR_OK);
 
   ram = m.ram;
   total = m.total / MiB;
@@ -569,7 +569,7 @@ SwapStat &SwapStat::refresh() {
   lock_guard<recursive_mutex> lock(_mutex);
   sigar_swap_t s;
 
-  HT_ASSERT(sigar_swap_get(sigar(), &s) == SIGAR_OK);
+  SWC_ASSERT(sigar_swap_get(sigar(), &s) == SIGAR_OK);
 
   total = s.total / MiB;
   used = s.used / MiB;
@@ -594,7 +594,7 @@ OsInfo &OsInfo::init() {
   lock_guard<recursive_mutex> lock(_mutex);
   sigar_sys_info_t s;
 
-  HT_ASSERT(sigar_sys_info_get(sigar(), &s) == SIGAR_OK);
+  SWC_ASSERT(sigar_sys_info_get(sigar(), &s) == SIGAR_OK);
 
   name = s.name;
   version = s.version;
@@ -624,7 +624,7 @@ NetInfo &NetInfo::init() {
   char addrbuf[SIGAR_INET6_ADDRSTRLEN];
   String ifname;
 
-  HT_ASSERT(sigar_net_info_get(sigar(), &ni) == SIGAR_OK);
+  SWC_ASSERT(sigar_net_info_get(sigar(), &ni) == SIGAR_OK);
   host_name = ni.host_name;
   default_gw = ni.default_gateway;
 
@@ -634,7 +634,7 @@ NetInfo &NetInfo::init() {
   if (ifname != "") {
     if (sigar_net_interface_config_get(sigar(), ifname.c_str(), &ifc) == SIGAR_OK) {
       primary_if = ifc.name;
-      HT_ASSERT(sigar_net_address_to_string(sigar(), &ifc.address, addrbuf)
+      SWC_ASSERT(sigar_net_address_to_string(sigar(), &ifc.address, addrbuf)
 		== SIGAR_OK);
       primary_addr = addrbuf;
     }
@@ -643,7 +643,7 @@ NetInfo &NetInfo::init() {
   }
   else if (sigar_net_interface_config_primary_get(sigar(), &ifc) == SIGAR_OK) {
     primary_if = ifc.name;
-    HT_ASSERT(sigar_net_address_to_string(sigar(), &ifc.address, addrbuf)
+    SWC_ASSERT(sigar_net_address_to_string(sigar(), &ifc.address, addrbuf)
               == SIGAR_OK);
     primary_addr = addrbuf;
   }
@@ -724,12 +724,12 @@ ProcInfo &ProcInfo::init() {
 
   memset(&exeinfo, 0, sizeof(exeinfo));
   pid = sigar_pid_get(sigar());
-  HT_ASSERT(sigar_proc_exe_get(sigar(), pid, &exeinfo) == SIGAR_OK);
-  HT_ASSERT(sigar_proc_args_get(sigar(), pid, &arginfo) == SIGAR_OK);
+  SWC_ASSERT(sigar_proc_exe_get(sigar(), pid, &exeinfo) == SIGAR_OK);
+  SWC_ASSERT(sigar_proc_args_get(sigar(), pid, &arginfo) == SIGAR_OK);
 
   /**
   sigar_proc_cred_name_t name;
-  HT_ASSERT(sigar_proc_cred_name_get(sigar(), pid, &name) == SIGAR_OK);
+  SWC_ASSERT(sigar_proc_cred_name_get(sigar(), pid, &name) == SIGAR_OK);
   user = name.user;
   */
 
@@ -752,8 +752,8 @@ ProcStat &ProcStat::refresh() {
   sigar_proc_mem_t m;
 
   sigar_pid_t pid = sigar_pid_get(sigar());
-  HT_ASSERT(sigar_proc_cpu_get(sigar(), pid, &c) == SIGAR_OK);
-  HT_ASSERT(sigar_proc_mem_get(sigar(), pid, &m) == SIGAR_OK);
+  SWC_ASSERT(sigar_proc_cpu_get(sigar(), pid, &c) == SIGAR_OK);
+  SWC_ASSERT(sigar_proc_mem_get(sigar(), pid, &m) == SIGAR_OK);
 
   cpu_user = c.user;
   cpu_sys = c.sys;

@@ -129,7 +129,7 @@ void Settings::parse_args(int argc, char *argv[]) {
     parse_file(cfg_filename, "swc.OnFileChange.cfg");  
     
   else if (!defaulted("config"))
-    HT_THROWF(Error::FS_FILE_NOT_FOUND, 
+    SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
               "cfg file=%s not found", cfg_filename.c_str());
 }
 
@@ -137,7 +137,7 @@ void Settings::parse_file(const std::string &fname, const std::string &onchg) {
   if(fname.empty())
     return;
   if(!FileUtils::exists(fname))
-    HT_THROWF(Error::FS_FILE_NOT_FOUND, 
+    SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
               "cfg file=%s not found", fname.c_str());
     
   properties.load(fname, file_desc, cmdline_desc, false);

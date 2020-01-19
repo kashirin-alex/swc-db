@@ -23,14 +23,14 @@ int run(const std::string& cmd, bool custom=false) {
   const char* err = dlerror();
   void* handle = dlopen(lib_path.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
   if (handle == NULL || err != NULL)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, open fail: %s\n", lib_path.c_str(), err);
 
   err = dlerror();
   std::string handler_name =  "swc_utils_apply_cfg";
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_cfg_ptr == nullptr)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
   ((swc_utils_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
@@ -39,7 +39,7 @@ int run(const std::string& cmd, bool custom=false) {
   handler_name =  "swc_utils_run";
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_new_ptr == nullptr)
-    HT_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
   return ((swc_utils_run_t*)f_new_ptr)();
