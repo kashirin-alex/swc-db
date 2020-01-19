@@ -62,7 +62,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     bool match;
     if(flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
       match = key_end.count == any_is ||
-        key_end.compare(spec.range_begin, key_end.count) != Condition::GT;
+              key_end.compare(spec.range_begin) != Condition::GT;
       if(match)
         stop = true;
     } else {
