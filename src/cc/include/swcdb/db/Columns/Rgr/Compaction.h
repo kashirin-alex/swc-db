@@ -415,7 +415,7 @@ class Compaction final {
       bool empty_cs = false;
 
       if(range->is_any_end() && !last_cell.key.empty()) {
-        // last block of end-any set with key_begin as last cell
+        // last block of end-any set with key_begin with last cell
         if(cs_writer == nullptr) {       
           uint32_t id = create_cs(err);
           if(err)
@@ -431,7 +431,7 @@ class Compaction final {
         last_cell.free();
         cs_writer->block(err, blk_intval, buff, cell_count);
      
-      } else if(!cellstores.size()) {
+      } else if(!cellstores.size() && cs_writer == nullptr) {
         // as an initial empty range cs with range intervals
         empty_cs = true;
         uint32_t id = create_cs(err);
