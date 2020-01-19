@@ -497,10 +497,9 @@ class Range : public DB::RangeBase {
       }
       ptr = req->input.base;
       remain = req->input.size; 
-      //cb = req->cb;
-      //if(req expiry (estimated required time before expired)) {
-      //  err = Error::REQUEST_TIMEOUT;
-      // )
+      if(req->cb->expired(remain/100000))
+        err = Error::REQUEST_TIMEOUT;
+      
       if(m_state != State::LOADED && m_state != State::UNLOADING) {
         err = m_state == State::DELETED ? 
               Error::COLUMN_MARKED_REMOVED 
