@@ -142,17 +142,8 @@ class Column final {
           m_ranges.push_back(range);
       }
     }
-
-
-    if(m_state != State::LOADING)
-      return;
-
-    for(auto& range : m_ranges){
-      if(!range->assigned())
-        return;
-    }
-    if(m_state == State::LOADING)
-      m_state = State::OK;
+    
+    apply_loaded_state();
   }
 
   Range::Ptr create_new_range(int64_t rgr_id) {
@@ -257,6 +248,21 @@ class Column final {
     }
   }
   
+  void remove_range(int64_t rid) {
+    std::scoped_lock lock(m_mutex);
+
+    if(!m_ranges.size()) 
+      return;
+    auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
+                          [rid](const Range::Ptr& range) 
+                          {return range->rid == rid;});
+    if(it == m_ranges.end())
+      return;
+    (*it)->set_deleted();
+    m_ranges.erase(it);
+    apply_loaded_state();
+  }
+
   bool do_remove() {
     std::scoped_lock lock(m_mutex);
 
@@ -336,7 +342,7 @@ class Column final {
     return s;
   }
 
-  inline void _set_loading() {
+  void _set_loading() {
     if(m_state == State::OK)
       m_state = State::LOADING;
   }
@@ -352,10 +358,22 @@ class Column final {
     return rid;
   }
 
-  inline void _remove_rgr_schema(const uint64_t id) {
+  void _remove_rgr_schema(const uint64_t id) {
     auto it = m_schemas_rev.find(id);
     if(it != m_schemas_rev.end())
        m_schemas_rev.erase(it);
+  }
+
+  void apply_loaded_state() {
+    if(m_state != State::LOADING)
+      return;
+
+    for(auto& range : m_ranges){
+      if(!range->assigned())
+        return;
+    }
+    if(m_state == State::LOADING)
+      m_state = State::OK;
   }
 
   std::shared_mutex          m_mutex;

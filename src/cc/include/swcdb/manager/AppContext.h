@@ -33,6 +33,7 @@
 #include "swcdb/manager/handlers/RgrGet.h"
 #include "swcdb/manager/handlers/RangeCreate.h"
 #include "swcdb/manager/handlers/RangeUnloaded.h"
+#include "swcdb/manager/handlers/RangeRemove.h"
 #include "swcdb/manager/handlers/Echo.h"
 
 
@@ -55,6 +56,7 @@ class AppContext : public SWC::AppContext {
     &Protocol::Mngr::Handler::rgr_get,
     &Protocol::Mngr::Handler::range_create,
     &Protocol::Mngr::Handler::range_unloaded,
+    &Protocol::Mngr::Handler::range_remove,
     &Protocol::Mngr::Handler::do_echo,
     //&Handler::debug,
     //&Handler::status,

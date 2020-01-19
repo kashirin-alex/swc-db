@@ -45,8 +45,9 @@ namespace Mngr {
     RGR_GET              = 0x09,
     RANGE_CREATE         = 0x0A,
     RANGE_UNLOADED       = 0x0B,
-    DO_ECHO              = 0x0C,
-    MAX_CMD              = 0x0D
+    RANGE_REMOVE         = 0x0C,
+    DO_ECHO              = 0x0D,
+    MAX_CMD              = 0x0E
   };
 
 }
