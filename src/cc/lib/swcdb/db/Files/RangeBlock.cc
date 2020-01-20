@@ -53,12 +53,13 @@ const bool Block::is_in_end(const DB::Cell::Key& key) {
 const bool Block::is_next(const DB::Specs::Interval& spec) {
   std::shared_lock lock(m_mutex);
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
-          && m_interval.includes(spec);
+          && m_interval.includes(spec); // , m_state == State::LOADED
 }
 
 const bool Block::includes(const DB::Specs::Interval& spec) {
   std::shared_lock lock(m_mutex);
-  return m_interval.includes(spec);
+  return m_interval.includes(spec); // , m_state == State::LOADED
+  // if spec with ts >> && blocks->{cellstores, commitlog}->matching(spec); 
 }
     
 void Block::preload() {
@@ -88,10 +89,9 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
   std::scoped_lock lock(m_mutex);
   m_cells.add(cell);
 
-  if(!m_interval.is_in_begin(cell.key)) {
+  if(!m_interval.is_in_begin(cell.key))
     m_interval.key_begin.copy(cell.key); 
-    m_interval.expand(cell.timestamp);
-  }
+  //m_interval.expand(cell.timestamp);
   return true;
 }
   
@@ -153,7 +153,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       m_cells.push_back(cell);
     else
       m_cells.add(cell);
-      
+    //m_interval.expand(cell.timestamp);
     added++;
 
     if(splitter() && !was_splitted)
@@ -408,7 +408,7 @@ const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
   {
     size_t skips = 0; // Ranger::Stats
     std::shared_lock lock(m_mutex);
-
+    //if(m_interval.includes(req->spec, true)) {
     m_cells.scan(
       req->spec, 
       req->cells, 
@@ -420,6 +420,7 @@ const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
             { return req->selector(cell, stop); }
       : (DB::Cells::Mutable::Selector_t)0 
     );
+    //}
   }
 
   processing_decrement();

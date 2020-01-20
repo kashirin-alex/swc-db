@@ -383,6 +383,7 @@ class Mutable final {
         break; 
 
       cells.add(*cell);
+      //interval.expand(cell->timestamp);
     }
   }
 

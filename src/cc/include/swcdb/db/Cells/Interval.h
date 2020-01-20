@@ -170,8 +170,15 @@ class Interval final {
     return includes(*interval.get());
   }
 
-  const bool includes(const Specs::Interval& interval) const {
+  const bool includes(const Specs::Interval& interval) const { // , bool ts=false
     return 
+      /*
+      (!ts || (
+        (ts_latest.empty() || interval.ts_start.is_matching(ts_latest.value) )
+        && 
+        (ts_earliest.empty() || interval.ts_finish.is_matching(ts_earliest.value) )
+      ) )
+      && */
       (key_end.empty() || (
         (interval.range_begin.empty() || 
          interval.range_begin.compare(
@@ -193,7 +200,6 @@ class Interval final {
           interval.key_finish.is_matching(key_end, Condition::GE) 
         ) )
       ) );
-      // && timestamps 
   }
 
   const size_t encoded_length() const {
