@@ -31,9 +31,10 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
   const bool selector(const DB::Cells::Cell& cell, bool& stop) override {
     /*
+    std::cout << "---------------------\n";
     std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
-    std::cout << "range___end: " << spec.range_end.to_string() << "\n";
-    std::cout << "key___begin: " << cell.key.to_string() << "\n";
+    std::cout << "  range_end: " << spec.range_end.to_string() << "\n";
+    std::cout << "  key_begin: " << cell.key.to_string() << "\n";
     */
     if(flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
       if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
@@ -46,7 +47,11 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         return false;
       }
       stop = cells.size() == 1;
-      if(spec.range_begin.compare(cell.key) == Condition::LT)
+      if(spec.range_begin.compare(cell.key, any_is) != Condition::EQ ||
+         (cell.key.count > any_is && spec.range_begin.count > any_is && (
+          spec.range_begin.compare(
+           cell.key, spec.range_begin.count) == Condition::LT ||
+          spec.range_begin.compare(cell.key) == Condition::LT) ))
         return false;
     }
 
@@ -55,8 +60,8 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
     
-    //std::cout << "key_____end: " << key_end.to_string() << "\n";
-    //std::cout << "range____id: " 
+    //std::cout << "    key_end: " << key_end.to_string() << "\n";
+    //std::cout << "        rid: " 
     //          << Serialization::decode_vi64(&ptr, &remain) << "\n";
 
     bool match;
@@ -66,9 +71,15 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       if(match)
         stop = true;
     } else {
-      match = key_end.count == any_is ||
-              spec.range_end.count == any_is ||
-              spec.range_end.compare(key_end) != Condition::GT;
+      match = 
+        key_end.count == any_is || (
+        (spec.range_begin.count <= any_is || 
+          key_end.compare(
+            spec.range_begin, spec.range_begin.count) != Condition::GT) 
+        &&
+        (spec.range_end.count == any_is || 
+          spec.range_end.compare(key_end) != Condition::LT)
+        );
       if(match && !(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE))
         stop = true;
     }
