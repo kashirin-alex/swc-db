@@ -49,23 +49,23 @@ class Rgr : public Interface {
       host_or_ips.end()
     );
     
-    at = host_or_ips.find_first_of("|");
-    if(at == std::string::npos) {
-      message.append("missing port\n");
-      return error(message);
-    }
-    std::string port_str = host_or_ips.substr(at+1);
-    host_or_ips = host_or_ips.substr(0, at);
     uint32_t port;
-    try {
-      if((port = std::stol(port_str)) > UINT16_MAX )
+    at = host_or_ips.find_first_of("|");
+    if(at != std::string::npos) {
+      std::string port_str = host_or_ips.substr(at+1);
+      host_or_ips = host_or_ips.substr(0, at);
+      try {
+        if((port = std::stol(port_str)) > UINT16_MAX )
+          err = ERANGE;
+      } catch(std::exception e ) {
         err = ERANGE;
-    } catch(std::exception e ) {
-      err = ERANGE;
-    }
-    if(err) {
-      message.append("port '"+port_str+ "' overflow uint16\n");
-      return error(message);
+      }
+      if(err) {
+        message.append("Bad value='"+port_str+ "' for port\n");
+        return error(message);
+      }
+    } else {
+      port = Env::Config::settings()->get<int16_t>("swc.rgr.port");
     }
     
     std::vector<std::string> ips;

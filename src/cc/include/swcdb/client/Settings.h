@@ -16,6 +16,7 @@ void Settings::init_client_options() {
      "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i16(15000), 
      "Manager default port if not defined in swc.mngr.host")
+    ("swc.rgr.port", i16(16000), "Ranger port")
      
     ("swc.client.Rgr.connection.timeout", g_i32(10000), 
      "Ranger client connect timeout")
