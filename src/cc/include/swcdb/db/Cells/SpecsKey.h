@@ -228,19 +228,15 @@ class Key : public DB::Cell::Key {
       } else {
         switch(comp) {
           case Condition::LT:
-            return !count || idx > idx_other;
           case Condition::LE:
             return !count || idx > idx_other;
           case Condition::GT:
-            return !count || idx < idx_other;
           case Condition::GE:
             return !count || idx < idx_other;
           case Condition::PF:
-            return idx < idx_other;
           case Condition::RE:
             return idx < idx_other;
           case Condition::NE:
-            return true;
           case Condition::NONE:
             return true;
           default: // Condition::EQ:
