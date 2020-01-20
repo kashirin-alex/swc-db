@@ -90,7 +90,7 @@ size_t FileSystemLocal::length(int &err, const std::string &name) {
     len = 0;
     return len;
   }
-  SWC_LOGF(LOG_DEBUG, "length len='%d' path='%s'", len, abspath.c_str());
+  SWC_LOGF(LOG_DEBUG, "length len='%lld' path='%s'", len, abspath.c_str());
   return len;
 }
 
@@ -293,7 +293,7 @@ void FileSystemLocal::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
   
 size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd, 
                              void *dst, size_t amount) {
-  SWC_LOGF(LOG_DEBUG, "read %s amount=%d", 
+  SWC_LOGF(LOG_DEBUG, "read %s amount=%lld", 
             smartfd->to_string().c_str(), amount);
   ssize_t nread = 0;
   errno = 0;
@@ -318,7 +318,7 @@ size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     smartfd->pos(smartfd->pos()+nread);
-    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%d eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%llu eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -327,7 +327,7 @@ size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd,
 size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd, 
                               uint64_t offset, void *dst, 
                               size_t amount) {
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%d", 
+  SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%lld", 
             smartfd->to_string().c_str(), offset, amount);
 
   errno = 0;
@@ -341,7 +341,7 @@ size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     smartfd->pos(offset+nread);
-    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%d  eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%llu  eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -349,7 +349,7 @@ size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd,
 
 size_t FileSystemLocal::append(int &err, SmartFd::Ptr &smartfd, 
                                StaticBuffer &buffer, Flags flags) {
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%d flags=%d", 
+  SWC_LOGF(LOG_DEBUG, "append %s amount=%lld flags=%d", 
             smartfd->to_string().c_str(), buffer.size, flags);
     
   ssize_t nwritten = 0;
@@ -383,7 +383,7 @@ size_t FileSystemLocal::append(int &err, SmartFd::Ptr &smartfd,
     }
   }
     
-  SWC_LOGF(LOG_DEBUG, "appended %s written=%d", 
+  SWC_LOGF(LOG_DEBUG, "appended %s written=%llu", 
             smartfd->to_string().c_str(), nwritten);
   return nwritten;
 }
