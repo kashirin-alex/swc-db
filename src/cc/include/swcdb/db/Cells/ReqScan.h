@@ -25,15 +25,17 @@ class ReqScan  : public ResponseCallback {
   ReqScan(Type type=Type::QUERY) 
           : ResponseCallback(nullptr, nullptr), 
             limit_buffer_sz(0), offset(0), 
-            has_selector(false), drop_caches(false), 
-            type(type) {
+            drop_caches(false), type(type) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const Specs::Interval& spec, Mutable& cells)
-          : ResponseCallback(conn, ev), spec(spec), cells(cells),
+          : ResponseCallback(conn, ev), spec(spec), 
+            range_start(spec.range_begin, Condition::GE),
+            range_finish(spec.range_end, Condition::LE),
+            cells(cells),
             offset(spec.flags.offset), limit_buffer_sz(0), 
-            has_selector(false), drop_caches(false), type(Type::QUERY) {
+            drop_caches(false), type(Type::QUERY) {
   }
 
   virtual ~ReqScan() { }
@@ -42,8 +44,8 @@ class ReqScan  : public ResponseCallback {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  virtual const bool selector(const DB::Cells::Cell& cell, bool& stop) { 
-    return true; 
+  virtual const Mutable::Selector_t selector() {
+    return (Mutable::Selector_t)0; 
   }
   
   bool ready(int& err) {
@@ -70,8 +72,6 @@ class ReqScan  : public ResponseCallback {
   const std::string to_string() const {
     std::string s("ReqScan(");
     s.append(spec.to_string());
-    s.append(" has_selector=");
-    s.append(has_selector?"true":"false");
     s.append(" ");
     s.append(cells.to_string());
     s.append(" limit_buffer_sz=");
@@ -82,10 +82,11 @@ class ReqScan  : public ResponseCallback {
   }
 
   Specs::Interval   spec;
+  Specs::Key        range_start;
+  Specs::Key        range_finish;
   Mutable           cells;
 
   uint32_t          limit_buffer_sz;
-  bool              has_selector;
   bool              drop_caches;
 
   NextCall_t        next_call = 0;

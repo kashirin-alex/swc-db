@@ -415,10 +415,7 @@ const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
       req->offset,
       [req]() { return req->reached_limits(); },
       skips, 
-      req->has_selector 
-      ? [req](const DB::Cells::Cell& cell, bool& stop) 
-            { return req->selector(cell, stop); }
-      : (DB::Cells::Mutable::Selector_t)0 
+      req->selector()
     );
     //}
   }
