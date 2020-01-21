@@ -151,14 +151,19 @@ inline const bool ne(const uint8_t *p1, uint32_t p1_len,
   return p1_len != p2_len || memcmp(p1, p2, p1_len) != 0;
 }
 
-inline const bool re(const char *p1, uint32_t p1_len, 
-                     const char *p2, uint32_t p2_len) {
-  return RE2::PartialMatch(p2, RE2(std::string(p1, p1_len)));
+inline const bool re(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
+  return re2::RE2::PartialMatch(
+    re2::StringPiece((const char *)p2, p2_len), 
+    re2::RE2(re2::StringPiece((const char *)p1, p1_len))
+  );
 }
 
-inline const bool re(std::shared_ptr<RE2> regex, 
-                     const char *p2, uint32_t p2_len) {
-  return RE2::PartialMatch(p2, *regex);
+inline const bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
+  return RE2::PartialMatch(
+    re2::StringPiece((const char *)p2, p2_len), 
+    *regex
+  );
 }
 
 inline const bool is_matching(uint8_t comp, 
@@ -188,7 +193,7 @@ inline const bool is_matching(uint8_t comp,
       return ne(p1, p1_len, p2, p2_len);
 
     case Comp::RE:
-      return re((const char *)p1, p1_len, (const char *)p2, p2_len);
+      return re(p1, p1_len, p2, p2_len);
 
     default:
       return true;
