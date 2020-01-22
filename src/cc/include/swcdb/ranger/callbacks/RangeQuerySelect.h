@@ -43,7 +43,8 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err,  
-      limit_buffer_sz <= cells.size_bytes()
+      limit_buffer_sz <= cells.size_bytes(),
+      offset
     );
 
     CommBuf::Ptr cbp;

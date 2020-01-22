@@ -52,11 +52,6 @@ struct Select final {
         } 
         interval.flags.limit -= recved;
       }
-      
-      //if(interval.flags.offset >= recved)
-      //  interval.flags.offset -= recved;
-      //else
-      interval.flags.offset = 0;
 
       if(reached_limit) {
         auto last = m_vec.cells.back();
@@ -582,6 +577,10 @@ class Select : public std::enable_shared_from_this<Select> {
             return;
           }
           auto& col = scanner->col;
+
+          if(col->interval.flags.offset)
+            col->interval.flags.offset = rsp.offset;
+
           if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
             col->selector->wait_on_partials_run();
 

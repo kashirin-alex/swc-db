@@ -81,16 +81,19 @@ class RangeQuerySelectReq : public Serializable {
 class RangeQuerySelectRsp  : public Serializable {
   public:
 
-  RangeQuerySelectRsp(int err=Error::OK, bool reached_limit=false)
-                      : err(err), reached_limit(reached_limit) {  
+  RangeQuerySelectRsp(int err=Error::OK, bool reached_limit=false, 
+                      size_t offset=0)
+                      : err(err), reached_limit(reached_limit), 
+                        offset(offset) {  
   }
   
   RangeQuerySelectRsp(StaticBuffer& data)
-                      : data(data), err(0), reached_limit(false) {
+                      : data(data), err(0), reached_limit(false), offset(0) {
   }
 
   int32_t         err;
   bool            reached_limit;
+  size_t          offset;
   StaticBuffer    data;
   
   const std::string to_string() const {
@@ -102,6 +105,8 @@ class RangeQuerySelectRsp  : public Serializable {
     s.append(")");
     s.append(" reached_limit=");
     s.append(std::to_string(reached_limit));
+    s.append(" offset=");
+    s.append(std::to_string(offset));
     s.append(" data.size=");
     s.append(std::to_string(data.size));
     s.append(")");
@@ -115,18 +120,22 @@ class RangeQuerySelectRsp  : public Serializable {
   }
     
   size_t encoded_length_internal() const {
-    return Serialization::encoded_length_vi32(err) + 1;
+    return Serialization::encoded_length_vi32(err) 
+          + 1 
+          + Serialization::encoded_length_vi64(offset);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi32(bufp, err);
     Serialization::encode_bool(bufp, reached_limit);
+    Serialization::encode_vi64(bufp, offset);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     err = Serialization::decode_vi32(bufp, remainp);
     reached_limit = Serialization::decode_bool(bufp, remainp);
+    offset = Serialization::decode_vi64(bufp, remainp);
   }
 
 };
