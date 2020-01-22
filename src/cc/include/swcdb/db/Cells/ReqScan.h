@@ -31,8 +31,6 @@ class ReqScan  : public ResponseCallback {
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const Specs::Interval& spec, Mutable& cells)
           : ResponseCallback(conn, ev), spec(spec), 
-            range_start(spec.range_begin, Condition::GE),
-            range_finish(spec.range_end, Condition::LE),
             cells(cells),
             offset(spec.flags.offset), limit_buffer_sz(0), 
             drop_caches(false), type(Type::QUERY) {
@@ -82,8 +80,6 @@ class ReqScan  : public ResponseCallback {
   }
 
   Specs::Interval   spec;
-  Specs::Key        range_start;
-  Specs::Key        range_finish;
   Mutable           cells;
 
   uint32_t          limit_buffer_sz;

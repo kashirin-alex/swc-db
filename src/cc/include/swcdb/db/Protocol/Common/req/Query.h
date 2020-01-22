@@ -327,14 +327,14 @@ class Select : public std::enable_shared_from_this<Select> {
 
     ReqBase::Ptr              parent;
     const int64_t             rid;
-    DB::Cell::Key             range_begin;
+    DB::Cell::Key             range_offset;
 
     Scanner(const Types::Range type, const int64_t cid, ScannerColumn::Ptr col,
             ReqBase::Ptr parent=nullptr, 
-            const DB::Cell::Key* range_begin=nullptr, const int64_t rid=0)
+            const DB::Cell::Key* range_offset=nullptr, const int64_t rid=0)
           : type(type), cid(cid), col(col), 
             parent(parent), 
-            range_begin(range_begin ? *range_begin : DB::Cell::Key()), 
+            range_offset(range_offset ? *range_offset : DB::Cell::Key()), 
             rid(rid) {
     }
 
@@ -347,8 +347,8 @@ class Select : public std::enable_shared_from_this<Select> {
       s.append(std::to_string(cid));
       s.append(" rid=");
       s.append(std::to_string(rid));
-      s.append(" RangeBegin");
-      s.append(range_begin.to_string());
+      s.append(" RangeOffset");
+      s.append(range_offset.to_string());
       s.append(" ");
       s.append(col->to_string());
       s.append(")");
@@ -360,11 +360,12 @@ class Select : public std::enable_shared_from_this<Select> {
 
       Mngr::Params::RgrGetReq params(1, 0, next_range);
 
-      if(!range_begin.empty()) {
-        params.range_begin.copy(range_begin);
+      if(!range_offset.empty()) {
+        params.range_begin.copy(range_offset);
         col->interval.apply_possible_range_end(params.range_end); 
       } else {
-        col->interval.apply_possible_range(params.range_begin, params.range_end); 
+        col->interval.apply_possible_range(
+          params.range_begin, params.range_end);
       }
 
       if(cid > 2)
@@ -435,7 +436,7 @@ class Select : public std::enable_shared_from_this<Select> {
         return false;
       }
 
-      if(type != Types::Range::DATA) {
+      if(type == Types::Range::MASTER) {
         col->add_call(
           [scanner=std::make_shared<Scanner>(
             type, cid, col,
@@ -461,7 +462,7 @@ class Select : public std::enable_shared_from_this<Select> {
       } else {
         std::make_shared<Scanner>(
           type, rsp.cid, col,
-          base, &rsp.range_begin, rsp.rid
+          base, nullptr, rsp.rid
         )->locate_on_ranger(rsp.endpoints, false);
       }
       return true;
@@ -471,19 +472,18 @@ class Select : public std::enable_shared_from_this<Select> {
       col->selector->result->completion++;
 
       Rgr::Params::RangeLocateReq params(cid, rid);
-      if(next_range)
+      if(next_range) {
         params.flags |= Rgr::Params::RangeLocateReq::NEXT_RANGE;
-      if(!range_begin.empty()) {
-        params.range_begin.copy(range_begin);
-        col->interval.apply_possible_range_end(params.range_end); 
-      } else {
-        col->interval.apply_possible_range(params.range_begin, params.range_end); 
+        params.range_offset.copy(range_offset);
+        params.range_offset.insert(0, std::to_string(col->cid));
+        if(type == Types::Range::MASTER && col->cid > 2)
+          params.range_offset.insert(0, "2");
       }
 
+      col->interval.apply_possible_range(params.range_begin, parms.range_end);
       params.range_begin.insert(0, std::to_string(col->cid));
       if(type == Types::Range::MASTER && col->cid > 2)
         params.range_begin.insert(0, "2");
-      
       params.range_end.insert(0, std::to_string(col->cid));
       if(type == Types::Range::MASTER && col->cid > 2)
         params.range_end.insert(0, "2");
@@ -550,7 +550,7 @@ class Select : public std::enable_shared_from_this<Select> {
       std::make_shared<Scanner>(
         type == Types::Range::MASTER ? Types::Range::META : Types::Range::DATA,
         rsp.cid, col, 
-        parent, &rsp.range_begin, rsp.rid
+        parent, nullptr, rsp.rid
       )->resolve_on_manager();
 
       return true;

@@ -27,8 +27,7 @@ class RangeLocateReq : public Serializable {
 
   int64_t        cid;
   int64_t        rid;
-  DB::Cell::Key  range_begin;
-  DB::Cell::Key  range_end;
+  DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
   
   const std::string to_string() {
@@ -44,6 +43,10 @@ class RangeLocateReq : public Serializable {
     s.append(range_begin.to_string());
     s.append(" RangeEnd");
     s.append(range_end.to_string());
+    if(flags & NEXT_RANGE) {
+      s.append(" RangeOffset");
+      s.append(range_offset.to_string());
+    }
     s.append(")");
     return s;
   }
@@ -59,7 +62,8 @@ class RangeLocateReq : public Serializable {
           + Serialization::encoded_length_vi64(rid)
           + range_begin.encoded_length() 
           + range_end.encoded_length()
-          + 1;
+          + 1
+          + (flags & NEXT_RANGE ? range_offset.encoded_length() : 0);
   }
     
   void encode_internal(uint8_t **bufp) const {
@@ -68,6 +72,8 @@ class RangeLocateReq : public Serializable {
     range_begin.encode(bufp);
     range_end.encode(bufp);
     Serialization::encode_i8(bufp, flags);
+    if(flags & NEXT_RANGE)
+      range_offset.encode(bufp);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
@@ -77,6 +83,8 @@ class RangeLocateReq : public Serializable {
     range_begin.decode(bufp, remainp);
     range_end.decode(bufp, remainp);
     flags = Serialization::decode_i8(bufp, remainp);
+    if(flags & NEXT_RANGE)
+      range_offset.decode(bufp, remainp);
   }
 
 };

@@ -39,7 +39,8 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       Protocol::Rgr::Params::RangeLocateRsp rsp_params(err);
       
       SWC_LOG_OUT(LOG_DEBUG) 
-        << rsp_params.to_string() << " " << params.to_string() << SWC_LOG_OUT_END;
+        << rsp_params.to_string() << " " << params.to_string() 
+        << SWC_LOG_OUT_END;
 
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
@@ -61,7 +62,10 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       range,
       params.flags
     );
-    req->spec.flags.limit = 2;
+    req->spec.flags.limit = 1;
+
+    if(params.flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE)
+      req->spec.range_offset.copy(params.range_offset);
 
     range->scan(req);
     
