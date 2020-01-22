@@ -524,24 +524,25 @@ class DbClient : public Interface {
     req->scan();
     req->wait();
 
-    if(err) 
-      return error(Error::get_text(err));
-
-    Env::FsInterface::fs()->close(err, smartfd);
-    if(err) 
-      return error(Error::get_text(err));
+    if(smartfd->valid()) {
+      int tmperr = Error::OK;
+      Env::FsInterface::fs()->flush(tmperr, smartfd);
+      Env::FsInterface::fs()->close(tmperr, smartfd);
+      if(tmperr && !err)
+        err = tmperr;
+    }
 
     if(display_flags & DB::DisplayFlag::STATS) {
+      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+
       size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
       if(err) 
         return error(Error::get_text(err));
-
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
       std::cout << " File Size:              " << len  << " bytes\n";
     }
 
     Env::FsInterface::reset();
-    return true;
+    return err ? error(Error::get_text(err)) : true;
   }
 
   void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
@@ -591,7 +592,7 @@ class DbClient : public Interface {
       err,
       smartfd, 
       buff_write, 
-      FS::Flags::FLUSH
+      FS::Flags::NONE
     );
   }
 
