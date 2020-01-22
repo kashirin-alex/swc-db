@@ -33,21 +33,24 @@ class Mutable final {
     return std::make_shared<Mutable>(cap, max_revs, ttl, type);
   }
 
+  Types::Column     type;
+  
   explicit Mutable(const uint32_t cap=0, 
                    const uint32_t max_revs=1, 
                    const uint64_t ttl=0, 
                    const Types::Column type=Types::Column::PLAIN)
-                  : m_cells(0), m_cap(cap), m_size(0), m_size_bytes(0), 
-                    m_max_revs(max_revs), m_ttl(ttl), m_type(type){
+                  : type(type), 
+                    m_cells(0), m_cap(cap), m_size(0), m_size_bytes(0), 
+                    m_max_revs(max_revs), m_ttl(ttl) {
     if(m_cap)
       _allocate();
   }
 
   explicit Mutable(Mutable& other)
-                  : m_cells(other.m_cells), m_cap(other.m_cap), 
+                  : type(other.type),
+                    m_cells(other.m_cells), m_cap(other.m_cap), 
                     m_size(other.m_size), m_size_bytes(other.m_size_bytes), 
-                    m_max_revs(other.m_max_revs), m_ttl(other.m_ttl), 
-                    m_type(other.m_type) {
+                    m_max_revs(other.m_max_revs), m_ttl(other.m_ttl) {
     if(other.m_cells) {
       other.m_cells = 0;
       other.m_cap = 0;
@@ -58,12 +61,12 @@ class Mutable final {
 
   void reset(const uint32_t cap=0, const uint32_t max_revs=1, 
              const uint64_t ttl=0, 
-             const Types::Column type=Types::Column::PLAIN) {
+             const Types::Column typ=Types::Column::PLAIN) {
     free();
     m_cap = cap;
     m_max_revs = max_revs;
     m_ttl = ttl;
-    m_type = type;
+    type = typ;
     if(m_cap)
       _allocate();
   }
@@ -208,7 +211,7 @@ class Mutable final {
       return;
     }
 
-    if(Types::is_counter(m_type))
+    if(Types::is_counter(type))
       add_counter(e_cell, offset);
     else
       add_plain(e_cell, offset);
@@ -337,7 +340,7 @@ class Mutable final {
         cell->copy(e_cell);
       else {
         value_1 += e_cell.get_counter();
-        cell->set_counter(op_1, value_1, m_type, eq_rev_1);
+        cell->set_counter(op_1, value_1, type, eq_rev_1);
         if(cell->timestamp < e_cell.timestamp) {
           cell->timestamp = e_cell.timestamp;
           cell->revision = e_cell.revision;
@@ -349,12 +352,12 @@ class Mutable final {
 
     add_counter:
       insert(add_offset, e_cell);
-      if(m_type != Types::Column::COUNTER_I64) {
+      if(type != Types::Column::COUNTER_I64) {
         cell = *(m_cells+add_offset);
         uint8_t op_1;
         int64_t eq_rev_1;
         int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
-        cell->set_counter(op_1, value_1, m_type, eq_rev_1);
+        cell->set_counter(op_1, value_1, type, eq_rev_1);
       }
   }
 
@@ -389,7 +392,7 @@ class Mutable final {
 
   void scan(const Specs::Interval& specs, Mutable& cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
-            size_t& skips, const Selector_t& selector=0) const {
+            size_t& skips, const Selector_t& selector) const {
     if(!m_size)
       return;
     if(m_max_revs == 1) 
@@ -403,7 +406,7 @@ class Mutable final {
   void scan_version_single(const Specs::Interval& specs, Mutable& cells, 
                            size_t& cell_offset, 
                            const std::function<bool()>& reached_limits, 
-                           size_t& skips, const Selector_t& selector=0) const {
+                           size_t& skips, const Selector_t& selector) const {
     bool stop = false;
     bool only_deletes = specs.flags.is_only_deletes();
     bool only_keys = specs.flags.is_only_keys();
@@ -418,8 +421,7 @@ class Mutable final {
         continue;
       }
 
-      if((!selector && specs.is_matching(*cell, m_type))
-          || (selector && selector(*cell, stop))) {
+      if(selector(*cell, stop)) {
         if(cell_offset) {
           cell_offset--;
           skips++;  
@@ -437,7 +439,7 @@ class Mutable final {
   void scan_version_multi(const Specs::Interval& specs, Mutable& cells, 
                           size_t& cell_offset, 
                           const std::function<bool()>& reached_limits, 
-                          size_t& skips, const Selector_t& selector=0) const {
+                          size_t& skips, const Selector_t& selector) const {
     bool stop = false;
     bool only_deletes = specs.flags.is_only_deletes();
     bool only_keys = specs.flags.is_only_keys();
@@ -453,8 +455,7 @@ class Mutable final {
         continue;
       }
 
-      if((!selector && specs.is_matching(*cell, m_type))
-          || (selector && selector(*cell, stop))) {
+      if(selector(*cell, stop)) {
         if(cell_offset) {
           cell_offset--;
           skips++;  
@@ -494,7 +495,7 @@ class Mutable final {
          (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) )
         continue;
 
-      if(specs.is_matching(*cell, m_type)) {
+      if(specs.is_matching(*cell, type)) {
         if(cell_offset){
           cell_offset--;
           skips++;  
@@ -715,7 +716,7 @@ class Mutable final {
     s.append(" bytes=");
     s.append(std::to_string(m_size_bytes));
     s.append(" type=");
-    s.append(Types::to_string(m_type));
+    s.append(Types::to_string(type));
     s.append(" max_revs=");
     s.append(std::to_string(m_max_revs));
     s.append(" ttl=");
@@ -723,7 +724,7 @@ class Mutable final {
     if(with_cells) {
       s.append(" cells=[\n");
       for(uint32_t offset=0; offset < m_size; offset++) {
-        s.append((*(m_cells + offset))->to_string(m_type));
+        s.append((*(m_cells + offset))->to_string(type));
         s.append("\n");
       }
       s.append("]");
@@ -841,7 +842,6 @@ class Mutable final {
   uint32_t          m_size_bytes;
   uint32_t          m_max_revs;
   uint64_t          m_ttl;
-  Types::Column     m_type;
 
 };
 

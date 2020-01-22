@@ -38,12 +38,18 @@ class ReqScan  : public ResponseCallback {
 
   virtual ~ReqScan() { }
 
-  inline Ptr get_req_scan() {
+  Ptr get_req_scan() {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
   virtual const Mutable::Selector_t selector() {
-    return (Mutable::Selector_t)0; 
+    return [req=get_req_scan()] 
+            (const DB::Cells::Cell& cell, bool& stop) 
+            { return req->selector(cell, stop); };
+  }
+
+  const bool selector(const DB::Cells::Cell& cell, bool& stop) const {
+    return spec.is_matching(cell, cells.type);
   }
   
   bool ready(int& err) {

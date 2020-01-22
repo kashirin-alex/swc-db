@@ -183,7 +183,15 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   Cells::Mutable results(1, max_versions, 0, typ);
   size_t cell_offset = 0;
   size_t cell_skips = 0;
-  cells_mutable->scan(SWC::DB::Specs::Interval(), results, cell_offset, [](){return false;}, cell_skips);
+  auto spec = SWC::DB::Specs::Interval();
+  cells_mutable->scan(
+    spec, 
+    results, cell_offset, 
+    [](){return false;}, 
+    cell_skips, 
+    [spec, typ](const SWC::DB::Cells::Cell& cell, bool& stop) {
+                return spec.is_matching(cell, typ);}
+    );
 
   if(results.size() != 0) {
     std::cerr << "SIZE NOT AS EXPECTED, "
