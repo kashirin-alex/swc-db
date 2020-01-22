@@ -96,22 +96,18 @@ class Interval final {
   void expand(const Cell& cell) {
     expand_begin(cell);
     expand_end(cell);
-
-    expand(cell.timestamp);
     was_set = true;
   }
 
   void expand_begin(const Cell& cell) {
     if(key_begin.empty() || !is_in_begin(cell.key))
       key_begin.copy(cell.key);
-    expand(cell.timestamp);
     was_set = true;
   }
 
   void expand_end(const Cell& cell) {
     if(key_end.empty() || !is_in_end(cell.key))
       key_end.copy(cell.key);
-    expand(cell.timestamp);
     was_set = true;
   }
 

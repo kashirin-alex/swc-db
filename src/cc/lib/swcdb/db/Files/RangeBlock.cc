@@ -254,10 +254,10 @@ Block::Ptr Block::_split(bool loaded) {
 
 
   blk->m_interval.set_key_end(m_interval.key_end);
-  blk->m_interval.set_ts_latest(m_interval.ts_latest);
+  //blk->m_interval.set_ts_latest(m_interval.ts_latest);
       
   m_interval.key_end.free();
-  m_interval.ts_latest.free();
+  //m_interval.ts_latest.free();
   assert(m_cells.size());
   m_cells.expand_end(m_interval);
     

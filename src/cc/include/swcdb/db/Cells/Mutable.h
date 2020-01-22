@@ -366,7 +366,7 @@ class Mutable final {
     _move_bwd(offset, 1);
   }
 
-  void scan(const Interval& interval, Mutable& cells) const {
+  void scan(Interval& interval, Mutable& cells) const {
     if(!m_size)
       return;
     Cell* cell;
@@ -552,7 +552,6 @@ class Mutable final {
       else 
         last = cell;
       intval.expand(cell->timestamp);
-      //intval.expand(*cell);
     }
     if(first) {
       intval.expand(*first);
