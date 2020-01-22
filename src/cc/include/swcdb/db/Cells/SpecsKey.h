@@ -32,7 +32,6 @@ class Key : public DB::Cell::Key {
 
   void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
            uint32_t offset=0) {
-    assert(cell_key.sane());
     free();
     own   = true;
     count = cell_key.count;
@@ -55,7 +54,6 @@ class Key : public DB::Cell::Key {
       data_ptr += len;
       ptr += len;
     }
-    assert(sane());
   }
 
   void add(const std::string fraction, Condition::Comp comp) {
@@ -77,7 +75,6 @@ class Key : public DB::Cell::Key {
   }
 
   void set(int32_t idx, Condition::Comp comp) {
-    assert(sane());
     if(!count)
       return;
 
@@ -129,7 +126,6 @@ class Key : public DB::Cell::Key {
   }
 
   void get(DB::Cell::Key &cell_key) const {
-    assert(sane());
     cell_key.free();
     
     if(count) {
@@ -148,7 +144,6 @@ class Key : public DB::Cell::Key {
         data_ptr += len;
       }
     }
-    assert(cell_key.sane());
   }
 
   void remove(uint32_t idx, bool recursive=false) {
@@ -156,8 +151,6 @@ class Key : public DB::Cell::Key {
   }
 
   bool const equal(const Key &other) const {
-    assert(sane());
-    assert(other.sane());
     return DB::Cell::Key::equal(other);
   }
   /*
@@ -240,7 +233,6 @@ class Key : public DB::Cell::Key {
   }
 
   const std::string to_string() const {
-    assert(sane());
     std::string s("Key(");
     s.append("sz=");
     s.append(std::to_string(count));

@@ -480,7 +480,7 @@ class Select : public std::enable_shared_from_this<Select> {
           params.range_offset.insert(0, "2");
       }
 
-      col->interval.apply_possible_range(params.range_begin, parms.range_end);
+      col->interval.apply_possible_range(params.range_begin, params.range_end);
       params.range_begin.insert(0, std::to_string(col->cid));
       if(type == Types::Range::MASTER && col->cid > 2)
         params.range_begin.insert(0, "2");

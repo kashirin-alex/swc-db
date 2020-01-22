@@ -8,7 +8,6 @@
 
 #include "swcdb/core/Serialization.h"
 #include "swcdb/db/Cells/Comparators.h"
-#include <cassert>
 
 namespace SWC { namespace DB { namespace Cell {
 
@@ -24,7 +23,6 @@ class Key {
   }
 
   void copy(const Key &other) {
-    assert(other.sane());
     free(); 
     own   = true;
     if(size = other.size) {
@@ -32,7 +30,6 @@ class Key {
       memcpy(data, other.data, size);
       count = other.count;
     }
-    assert(sane());
   }
 
   virtual ~Key() {
@@ -71,7 +68,6 @@ class Key {
 
   void add(const uint8_t* fraction, uint32_t len, 
            uint8_t** fraction_ptr, uint8_t reserve) {
-    assert(sane());
     uint32_t prev_size = size;
     size += reserve + Serialization::encoded_length_vi32(len) + len;
 
@@ -90,7 +86,6 @@ class Key {
     Serialization::encode_vi32(&ptr_tmp, len);
     memcpy(ptr_tmp, fraction, len);
     ++count;
-    assert(sane());
   }
 
   void insert(uint32_t idx, const std::string& fraction) {
@@ -112,7 +107,6 @@ class Key {
 
   void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
               uint8_t** fraction_ptr, int8_t reserve) {
-    assert(sane());
     if(!data || idx >= count) {
       add(fraction, len, fraction_ptr, reserve);
       return;
@@ -153,12 +147,9 @@ class Key {
       own = true;
     data = data_tmp;
     ++count;
-    
-    assert(sane());
   }
   
   void remove(uint32_t idx, bool recursive=false, uint8_t reserved=0) {
-    assert(sane());
     if(!data || idx >= count)
       return;
 
@@ -197,7 +188,6 @@ class Key {
       delete ptr_tmp;
       break;
     }
-    assert(sane());
   }
 
   const std::string get_string(uint32_t idx, uint8_t reserved=0) const {
@@ -215,8 +205,6 @@ class Key {
 
   void get(uint32_t idx, const char** fraction, uint32_t* length, 
            const uint8_t** fraction_ptr, uint8_t reserved) const { 
-    assert(sane());
-
     if(!data || idx > count) {
       *fraction = 0;
       *length = 0;
@@ -239,17 +227,12 @@ class Key {
   }
 
   const bool equal(const Key &other) const {
-    assert(sane());
-    assert(other.sane());
     return size == other.size && count == other.count 
       && ((!data && !other.data) || memcmp(data, other.data, size) == 0);
   }
 
   const Condition::Comp compare(const Key &other, uint32_t fractions=0, 
                                 bool empty_ok=false) const {
-    assert(sane());
-    assert(other.sane());
-
     const uint8_t* ptr_tmp = data;
     const uint8_t* ptr_end = data + size;
     uint32_t idx = 0;
@@ -313,13 +296,10 @@ class Key {
   }
   
   const uint32_t encoded_length() const {
-    assert(sane());
     return Serialization::encoded_length_vi32(count) + size;;
   }
   
   void encode(uint8_t **bufp) const {
-    assert(sane());
-
     Serialization::encode_vi32(bufp, count);
     if(size) {
       memcpy(*bufp, data, size);
@@ -346,12 +326,9 @@ class Key {
         data = (uint8_t*)ptr_start;
       }
     }
-    assert(sane());
   }
 
   const std::string to_string() const {
-    assert(sane());
-    
     std::string s("Key(");
     s.append("sz=");
     s.append(std::to_string(count));
@@ -367,8 +344,6 @@ class Key {
       s.append("),");
     }
     s.append("])");
-    
-    assert(sane());
     return s;
   }
   
