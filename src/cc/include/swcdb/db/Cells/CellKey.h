@@ -245,7 +245,8 @@ class Key {
       && ((!data && !other.data) || memcmp(data, other.data, size) == 0);
   }
 
-  const Condition::Comp compare(const Key &other, uint32_t fractions=0) const {
+  const Condition::Comp compare(const Key &other, uint32_t fractions=0, 
+                                bool empty_ok=false) const {
     assert(sane());
     assert(other.sane());
 
@@ -279,8 +280,9 @@ class Key {
       }
       
       if(idx == idx_other) {
-
-        comp = Condition::condition(ptr, len, ptr_other, len_other);
+        comp = empty_ok && !len
+          ? Condition::EQ
+          : Condition::condition(ptr, len, ptr_other, len_other);
         if(comp != Condition::EQ) 
           return comp;
 
