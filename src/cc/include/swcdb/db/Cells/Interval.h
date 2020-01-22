@@ -170,36 +170,21 @@ class Interval final {
     return includes(*interval.get());
   }
 
-  const bool includes(const Specs::Interval& interval) const { // , bool ts=false
-    return 
-      /*
-      (!ts || (
-        (ts_latest.empty() || interval.ts_start.is_matching(ts_latest.value) )
-        && 
-        (ts_earliest.empty() || interval.ts_finish.is_matching(ts_earliest.value) )
-      ) )
-      && */
-      (key_end.empty() || (
-        (interval.range_begin.empty() || 
-         interval.range_begin.compare(
-           key_end, interval.range_begin.count) != Condition::LT)
-        &&
-        (interval.key_start.empty() || key_begin.empty() || (
-          interval.key_start.is_matching(key_end, Condition::GE) ||
-          interval.key_start.is_matching(key_begin, Condition::LE) 
-        ) )
-      ) ) 
+  const bool includes(const Specs::Interval& interval) const { 
+    return  (key_end.empty() || interval.is_matching_begin(key_end))
+            && 
+            (key_begin.empty() || interval.is_matching_end(key_begin))
+          ;
+      /* // , bool ts=false
       && 
-      (key_begin.empty() || (  
-        (interval.range_end.empty() || 
-         interval.range_end.compare(
-           key_begin, interval.range_end.count) != Condition::GT)
-        &&
-        (interval.key_finish.empty() || key_end.empty() || (
-          interval.key_finish.is_matching(key_begin, Condition::LE) ||
-          interval.key_finish.is_matching(key_end, Condition::GE) 
-        ) )
-      ) );
+      (!ts || (
+        (ts_latest.empty() || 
+         interval.ts_start.is_matching(ts_latest.value) )
+        && 
+        (ts_earliest.empty() || 
+         interval.ts_finish.is_matching(ts_earliest.value) )
+      ) )
+      */
   }
 
   const size_t encoded_length() const {

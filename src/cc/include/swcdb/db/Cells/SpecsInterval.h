@@ -177,11 +177,9 @@ class Interval {
       &&
       ts_finish.is_matching(cell.timestamp) 
       &&
-      (range_begin.empty() || range_begin.compare(cell.key, range_begin.count)
-                                                            != Condition::LT) 
+      is_matching_begin(cell.key)
       &&
-      (range_end.empty()   || range_end.compare(cell.key, range_end.count) 
-                                                            != Condition::GT) 
+      is_matching_end(cell.key)
       &&
       (key_start.empty()   || key_start.is_matching(cell.key)) 
       &&
@@ -198,6 +196,16 @@ class Interval {
       return value.is_matching(cell.get_counter());
       
     return value.is_matching(cell.value, cell.vlen);
+  }
+
+  const bool is_matching_begin(const DB::Cell::Key& key) const {
+    return range_begin.empty() || 
+           range_begin.compare(key, range_begin.count, true) != Condition::LT;
+  }
+
+  const bool is_matching_end(const DB::Cell::Key& key) const {
+    return range_end.empty() || 
+           range_end.compare(key, range_end.count, true) != Condition::GT;
   }
 
   const size_t encoded_length() const {
@@ -260,37 +268,45 @@ class Interval {
         begin.copy(range_begin);
       
     } else if(!key_start.empty()) {
-        
-      //SWC_LOGF(LOG_DEBUG, "PossibleRange begin by key_start %s", 
-      //         key_start.to_string().c_str());
 
       const char* fraction;
       uint32_t len;
       Condition::Comp comp;
+      int32_t ok = -1;
       for(int idx=0; idx < key_start.count; idx++) {
         key_start.get(idx, &fraction, &len, &comp);
-        if(comp == Condition::EQ || comp == Condition::PF || 
-           comp == Condition::GT || comp == Condition::GE) {
+        if(len && 
+          (comp == Condition::EQ || comp == Condition::PF || 
+           comp == Condition::GT || comp == Condition::GE)) {
           begin.add(fraction, len);
-          continue;
-        }
-        break;
+          ok = idx;
+        } else
+          begin.add("", 0);
       }
+      if(!++ok)
+        begin.free();
+      else if(ok != key_start.count && ok != begin.count)
+        begin.remove(ok, true);
+
     } else if(!key_finish.empty()) {
-      //SWC_LOGF(LOG_DEBUG, "PossibleRange begin by key_finish %s", 
-      //         key_finish.to_string().c_str());
       const char* fraction;
       uint32_t len;
       Condition::Comp comp;
+      int32_t ok = -1;
       for(int idx=0; idx < key_finish.count; idx++) {
         key_finish.get(idx, &fraction, &len, &comp);
-        if(comp == Condition::EQ || 
-           comp == Condition::GT || comp == Condition::GE) {
+        if(len && 
+          (comp == Condition::EQ || 
+           comp == Condition::GT || comp == Condition::GE)) {
           begin.add(fraction, len);
-          continue;
-        }
-        break;
+          ok = idx;
+        } else
+          begin.add("", 0);
       }
+      if(!++ok)
+        begin.free();
+      else if(ok != key_finish.count && ok != begin.count)
+        begin.remove(ok, true);
     }
   }
 
@@ -299,37 +315,47 @@ class Interval {
       if(&end != &range_end)
         end.copy(range_end);
 
+    /* NOT POSSIBLE
     } else if(!key_finish.empty()) {
-      //SWC_LOGF(LOG_DEBUG, "PossibleRange end by key_finish %s", 
-      //         key_finish.to_string().c_str());
       const char* fraction;
       uint32_t len;
       Condition::Comp comp;
+      int32_t ok = -1;
       for(int idx=0; idx < key_finish.count; idx++) {
         key_finish.get(idx, &fraction, &len, &comp);
-        if(comp == Condition::EQ || 
-           comp == Condition::LT || comp == Condition::LE) {
+        if(len && 
+          (comp == Condition::LT || comp == Condition::LE)) {
           end.add(fraction, len);
-          continue;
-        }
-        break;
+          ok = idx;
+        } else 
+          end.add("", 0);
       }
-
+      if(!++ok)
+        end.free();
+      else if(++ok < key_finish.count && ok != end.count)
+        end.remove(ok, true);
+        
     } else if(!key_start.empty()) {
-      //SWC_LOGF(LOG_DEBUG, "PossibleRange end by key_start %s", 
-      //         key_start.to_string().c_str());
       const char* fraction;
       uint32_t len;
       Condition::Comp comp;
+      int32_t ok = -1;
       for(int idx=0; idx < key_start.count; idx++) {
         key_start.get(idx, &fraction, &len, &comp);
-        if(comp == Condition::EQ || 
-           comp == Condition::LT || comp == Condition::LE) {
+        if(len && 
+          (comp == Condition::LT || comp == Condition::LE)) {
           end.add(fraction, len);
-          continue;
-        }
-        break;
+          ok = idx;
+        } else
+          end.add("", 0);
       }
+      if(!++ok)
+        end.free();
+      else if(ok == key_start.count)
+        end.add("", 0);
+      else if(++ok < key_start.count && ok != end.count)
+        end.remove(ok, true);
+      */
     }
   }
 
@@ -413,7 +439,7 @@ class Interval {
     out << offset << ")\n"; 
   }
 
-  Cell::Key  range_begin, range_end;
+  Cell::Key  range_begin, range_end, range_offset;
   Key        key_start, key_finish;
   Value      value;
   Timestamp  ts_start, ts_finish;
