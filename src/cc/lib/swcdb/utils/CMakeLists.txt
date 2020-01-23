@@ -13,7 +13,7 @@ set(swcdb_utils_shell_sources
 ADD_LIB_TARGET(
 	NAME	swcdb_utils_shell
 	SRCS	${swcdb_utils_shell_sources}
-  TARGETS	swcdb_core swcdb_core_config swcdb_core_comm
+  TARGETS 
   
 	SHARED	${EDITLINE_LIBRARIES_SHARED}
 	STATIC	${EDITLINE_LIBRARIES_STATIC}

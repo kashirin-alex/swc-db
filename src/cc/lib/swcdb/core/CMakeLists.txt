@@ -5,8 +5,17 @@
 
 
 
+set(SWC_LIB_CORE_SHARED ${ATOMIC_LIBRARIES_SHARED} ${RE2_LIBRARIES_SHARED} 
+												${ZLIB_LIBRARIES_SHARED} ${LZMA_LIBRARIES_SHARED} 
+												${BZIP2_LIBRARIES_SHARED} ${SNAPPY_LIBRARIES_SHARED})
+set(SWC_LIB_CORE_STATIC ${ATOMIC_LIBRARIES_STATIC} ${RE2_LIBRARIES_STATIC} 
+												${ZLIB_LIBRARIES_STATIC} ${LZMA_LIBRARIES_STATIC} 
+												${BZIP2_LIBRARIES_STATIC} ${SNAPPY_LIBRARIES_STATIC})
 
-# lib-swcdb_core,  #ifndef swc_core_common_FileName_h
+set_property(GLOBAL PROPERTY SWC_LIB_CORE_SHARED ${SWC_LIB_CORE_SHARED})
+set_property(GLOBAL PROPERTY SWC_LIB_CORE_STATIC ${SWC_LIB_CORE_STATIC})
+
+
 set(swcdb_core_sources
 	Time.cc
 	String.cc
@@ -21,17 +30,6 @@ set(swcdb_core_sources
 	Serializable.cc
 	Serialization.cc
 )
-
-set(SWC_LIB_CORE_SHARED ${ATOMIC_LIBRARIES_SHARED} ${RE2_LIBRARIES_SHARED} 
-												${ZLIB_LIBRARIES_SHARED} ${LZMA_LIBRARIES_SHARED} 
-												${BZIP2_LIBRARIES_SHARED} ${SNAPPY_LIBRARIES_SHARED})
-set(SWC_LIB_CORE_STATIC ${ATOMIC_LIBRARIES_STATIC} ${RE2_LIBRARIES_STATIC} 
-												${ZLIB_LIBRARIES_STATIC} ${LZMA_LIBRARIES_STATIC} 
-												${BZIP2_LIBRARIES_STATIC} ${SNAPPY_LIBRARIES_STATIC})
-
-set_property(GLOBAL PROPERTY SWC_LIB_CORE_SHARED ${SWC_LIB_CORE_SHARED})
-set_property(GLOBAL PROPERTY SWC_LIB_CORE_STATIC ${SWC_LIB_CORE_STATIC})
-
 ADD_LIB_TARGET(
 	NAME 		swcdb_core
 	SRCS 		${swcdb_core_sources}
@@ -40,7 +38,6 @@ ADD_LIB_TARGET(
 )
 
 
-# lib-swcdb_core_config, #ifndef swc_core_config_FileName_h
 set(swcdb_core_config_sources
 	config/Settings.cc
 	config/Properties.cc
@@ -50,10 +47,10 @@ set(swcdb_core_config_sources
 	# config/System.cc
 	# config/SystemInfo.cc
 )
-
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_config
 	SRCS 		${swcdb_core_config_sources}
+	TARGETS swcdb_core
 )
 
 
@@ -74,7 +71,9 @@ set(swcdb_core_comm_sources
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_comm
 	SRCS 		${swcdb_core_comm_sources}
+	TARGETS swcdb_core swcdb_core_config
 )
+
 
 set(swcdb_core_sys_sources
 	sys/Resources.cc
@@ -82,7 +81,9 @@ set(swcdb_core_sys_sources
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_sys
 	SRCS 		${swcdb_core_sys_sources}
+	TARGETS swcdb_core swcdb_core_config swcdb_core_comm
 )
+
 
 
 ADD_TEST_TARGET(
@@ -106,5 +107,5 @@ add_test(properties_parser_test ${TEST_DIFF}
 ADD_TEST_TARGET(
 	NAME      check_mutex
 	SRCS      tests/mutex.cc
-	TARGETS swcdb_core
+	TARGETS 	swcdb_core
 )

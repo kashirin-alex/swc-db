@@ -109,6 +109,8 @@ ADD_LIB_TARGET(
 ADD_TEST_TARGET(
 	NAME	fs_client
 	SRCS	tests/test_fs_client.cc
-	TARGETS swcdb_fs swcdb_core swcdb_core_config swcdb_core_comm ${BUILTIN_FS_TARGETS}
+	TARGETS swcdb_core swcdb_core_config swcdb_core_comm swcdb_fs ${BUILTIN_FS_TARGETS}
+
 	ARGS	" "
+	ONLY_DYN TRUE
 )
