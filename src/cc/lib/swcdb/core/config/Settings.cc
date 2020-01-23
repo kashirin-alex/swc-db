@@ -137,7 +137,7 @@ void Settings::parse_file(const std::string &name, const std::string &onchg) {
     return;
 
   std::string fname;
-  if(name.front() != '/') 
+  if(name.front() != '/' && name.front() != '.') 
     fname.append(properties.get_str("swc.cfg.path"));
   fname.append(name);
   
@@ -161,7 +161,7 @@ void Settings::load_files_by(const std::string &fileprop,
     Strings files = properties.get_strs(fileprop);
     for (auto it=files.begin(); it<files.end(); it++) {
       fname.clear();
-      if(it->front() != '/') 
+      if(it->front() != '/' && it->front() != '.') 
         fname.append(properties.get_str("swc.cfg.path"));
       fname.append(*it);
 

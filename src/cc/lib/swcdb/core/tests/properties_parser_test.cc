@@ -44,6 +44,11 @@ using namespace SWC;
 int main(int argc, char *argv[]) {
   Env::Config::init(argc, argv);
   auto settings = Env::Config::settings();
+  
+  // remove env-dynamic configs
+  settings->cmdline_desc.remove("swc.logging.path");
+  settings->cmdline_desc.remove("swc.cfg.path");
+  
 
   std::cout << std::string("\nConfig::cmdline_desc");
   std::cout << settings->cmdline_desc;

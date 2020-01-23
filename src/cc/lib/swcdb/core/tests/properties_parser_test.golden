@@ -5,7 +5,6 @@ Options
   --arg-1               argument one                                                    
   --args                rest of arguments                                             []
   --boo -[b]            a boolean arg                                                 false
-  --config              Configuration file.                                           ./conf/swc.cfg
   --daemon              Start process in background mode                              true
   --debug               Shortcut to --logging-level debug                             false
   --f64s                a list of doubles                                             []
@@ -24,13 +23,12 @@ Options
   --skip2               a skipped token                                               true
   --string -[str, s]    a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
-  --swc.logging.path    Path of log files                                             ./log/
+  --swc.cfg             Main configuration file                                       swc.cfg
   --true                token defaults to true                                        true
   --verbose             Show more verbose output                                      false
   --version -[v]        Show version information and exit                             true
 arg-1=argOne
 boo=true
-config=properties_parser_test.cfg
 f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
 float64=1.1234
 i16=1000
@@ -40,6 +38,7 @@ int64s=[1000000000, 2000000000, 3000000000]
 is_true=true
 string=aStringNoSpaces
 strs=[1, 2, 3, 4, 5, 6]
+swc.cfg=./properties_parser_test.cfg
 
 Config::file_desc
   --aGroupOne.arg.1    a group arg                                                   0 
@@ -99,7 +98,6 @@ Options
   --arg-1               argument one                                                    
   --args                rest of arguments                                             []
   --boo                 a boolean arg                                                 false
-  --config              Configuration file.                                           ./conf/swc.cfg
   --daemon              Start process in background mode                              true
   --debug               Shortcut to --logging-level debug                             false
   --f64s                a list of doubles                                             []
@@ -125,8 +123,8 @@ Options
   --string              a string arg                                                  A Default std::string Value
   --string.qouted       a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
+  --swc.cfg             Main configuration file                                       swc.cfg
   --swc.logging.level   Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
-  --swc.logging.path    Path of log files                                             ./log/
   --true                token defaults to true                                        true
   --verbose             Show more verbose output                                      false
   --version -[v]        Show version information and exit                             true
@@ -158,7 +156,6 @@ aGroupOne.arg.3=3
 aGroupOne.arg.4=4
 aGroupOne.arg.5=5
 boo=true
-config=./conf/swc.cfg
 debug=false
 f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
 false=false
@@ -179,8 +176,8 @@ quiet=false
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
+swc.cfg=swc.cfg
 swc.logging.level=INFO  # (6)
-swc.logging.path=./log/
 true=true
 verbose=false
 true
@@ -190,7 +187,6 @@ aGroupOne.arg.3=3
 aGroupOne.arg.4=4
 aGroupOne.arg.5=5
 boo=true
-config=./conf/swc.cfg (default)
 debug=false (default)
 dummy=true
 f64s=[1.123, 1123, 1.123e+06, 1.123e+09]
@@ -212,7 +208,7 @@ quiet=false (default)
 string=aStringNoSpaces
 string.qouted=a   S t r i n g   W i t h    S p a c e s
 strs=[StringOne, StringTwo, StringThree]
+swc.cfg=swc.cfg (default)
 swc.logging.level=INFO  # (6) (default)
-swc.logging.path=./log/ (default)
 true=true (default)
 verbose=false (default)
