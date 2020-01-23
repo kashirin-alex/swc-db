@@ -257,6 +257,12 @@ Property::Value::Ptr ParserConfig::get_default(const std::string& name){
             name.c_str());
 }
 
+void ParserConfig::remove(const std::string& name) {
+  auto it = options.find(name);
+  if(it != options.end())
+    options.erase(it);
+}
+
 void ParserConfig::print(std::ostream& os) const {
   os << usage << "\n";
   

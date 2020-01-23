@@ -126,6 +126,8 @@ class ParserConfig final {
 
   Property::Value::Ptr get_default(const std::string& name);
 
+  void remove(const std::string& name);
+  
   void print(std::ostream& os) const;
 
 };
