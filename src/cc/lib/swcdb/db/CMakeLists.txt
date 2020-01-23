@@ -50,7 +50,7 @@ ADD_TEST_TARGET(
 	NAME	columns_manager
 	SRCS	Columns/tests/test_mngr_columns.cc
 	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_fs ${BUILTIN_FS_TARGETS}
-	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+	ARGS	 "--swc.fs=local"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
 	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
@@ -59,7 +59,7 @@ ADD_TEST_TARGET(
 	NAME	columns_ranger
 	SRCS	Columns/tests/test_rgr_columns.cc
 	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS} #  swcdb_db_files 
-	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local"
+	ARGS	 "--swc.fs=local"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
 	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
@@ -69,7 +69,7 @@ ADD_TEST_TARGET(
 	NAME	cellstore
 	SRCS	Files/tests/test_cellstore.cc
 	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS}
-	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local" "--swc.rgr.ram.percent=2"
+	ARGS	 "--swc.fs=local" "--swc.rgr.ram.percent=2"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
 	STATIC  ${SNAPPY_LIBRARIES_STATIC} 
@@ -79,7 +79,7 @@ ADD_TEST_TARGET(
 	NAME	commitlog
 	SRCS	Files/tests/test_commitlog.cc
 	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS}
-	ARGS	"--config=/root/swc-db/conf/swc.cfg" "--swc.fs=local" "--swc.rgr.ram.percent=2"
+	ARGS 	"--swc.fs=local" "--swc.rgr.ram.percent=2"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
 	STATIC  ${SNAPPY_LIBRARIES_STATIC} 

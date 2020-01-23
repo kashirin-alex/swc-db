@@ -37,6 +37,6 @@ SET(CORE_LIBS ${CORE_LIBS} dl pthread stdc++fs)
 
 
 find_package(Mallocs)
-find_package(Boost REQUIRED)
+# find_package(Boost REQUIRED)
 
 

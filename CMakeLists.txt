@@ -67,7 +67,9 @@ else()
     
       if(O_LEVEL MATCHES "[5-7]")
         set(BUILD_LINKING "STATIC")
-        set(TEST_LINKING "DUAL")
+        if(NOT TEST_LINKING)
+          set(TEST_LINKING "DUAL")
+        endif ()
       endif ()
 
       if(O_LEVEL MATCHES "[6-7]")
