@@ -8,6 +8,7 @@ set(TEST_DIFF ${CMAKE_SOURCE_DIR}/src/testutils/testdiff)
 
 include_directories(
   cc/include
+  cc/lib
   ${CMAKE_CURRENT_BINARY_DIR}/cc
 )
 
@@ -21,5 +22,7 @@ add_subdirectory(cc/lib/swcdb)
 add_subdirectory(cc/bin/swcdb)
 
 
+install(DIRECTORY cc/etc/swcdb      DESTINATION etc)
+install(DIRECTORY cc/include/swcdb  DESTINATION include)
 
 
