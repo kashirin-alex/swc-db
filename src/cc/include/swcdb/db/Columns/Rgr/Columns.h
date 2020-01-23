@@ -126,7 +126,6 @@ class Columns final {
       = [&unloaded, await=&r_promise](int err){
         if(--unloaded == 0)
           await->set_value();
-        std::cout << "unloaded= " << unloaded.load() << " err=" << err << "\n";
     };
 
     for(;;){

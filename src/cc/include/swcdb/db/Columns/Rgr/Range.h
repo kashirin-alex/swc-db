@@ -67,9 +67,11 @@ class Range : public DB::RangeBase {
   }
 
   virtual ~Range() {
+    /*
     SWC_LOG_OUT(LOG_INFO) 
       << " ~Range cid=" << cfg->cid << " rid=" << rid 
       << SWC_LOG_OUT_END;
+    */
   }
   
   void set_state(State new_state) {
@@ -560,10 +562,6 @@ class Range : public DB::RangeBase {
       compact_require(true);
       RangerEnv::compaction_schedule(10000);
     }
-    
-    //std::cout << " run_add_queue log-count=" << m_commit_log->cells_count() 
-    //          << " blocks-count=" << blocks.cells_count()
-    //          << " " << blocks.to_string() << "\n";
 
   }
 
