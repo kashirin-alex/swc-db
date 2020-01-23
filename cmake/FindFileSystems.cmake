@@ -51,15 +51,15 @@ SET_DEPS(
 
 
 set(BUILTIN_FS_TARGETS "")
-if(BUILTIN_FS)
+if(SWC_BUILTIN_FS)
 
-	if (BUILTIN_FS STREQUAL "all")
+	if (SWC_BUILTIN_FS STREQUAL "all")
 		SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBUILTIN_FS_ALL")
 	else()
 	
-		string(REPLACE "," ";" BUILTIN_FS "${BUILTIN_FS}")
-		list(REMOVE_DUPLICATES BUILTIN_FS)
-		foreach(fs ${BUILTIN_FS})
+		string(REPLACE "," ";" SWC_BUILTIN_FS "${SWC_BUILTIN_FS}")
+		list(REMOVE_DUPLICATES SWC_BUILTIN_FS)
+		foreach(fs ${SWC_BUILTIN_FS})
 			string(TOLOWER ${fs} fs)
 			set(BUILTIN_FS_TARGETS ${BUILTIN_FS_TARGETS} swcdb_fs_${fs})
 			string(TOUPPER ${fs} fs)
@@ -69,9 +69,9 @@ if(BUILTIN_FS)
 	endif()
 
 
-	# if (BUILTIN_FS STREQUAL "all" OR BUILTIN_FS STREQUAL "broker")
+	# if (SWC_BUILTIN_FS STREQUAL "all" OR SWC_BUILTIN_FS STREQUAL "broker")
 	#	set(BUILTIN_FS_TARGETS ${BUILTIN_FS_TARGETS} swcdb_fs_broker)
-	#	if (NOT BUILTIN_FS STREQUAL "all")
+	#	if (NOT SWC_BUILTIN_FS STREQUAL "all")
 	#		SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBUILTIN_FS_BROKER")
 	#	endif()
 	# endif()
