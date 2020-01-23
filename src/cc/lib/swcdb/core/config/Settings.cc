@@ -18,7 +18,14 @@ Settings::~Settings() { }
 
 void Settings::init(int argc, char *argv[]) {
   
-  install_path = std::string(argv[0]);
+  char path[1024];
+  errno = 0;
+  ssize_t r = readlink("/proc/self/exe", path, 1024);
+  if(r == -1 || errno)
+    throw;
+
+  install_path = std::string(path, r); // install_path = std::string(argv[0]);
+ 
   auto at = install_path.find_last_of("/");
   if(at == std::string::npos) {
     executable = install_path;
@@ -75,8 +82,8 @@ void Settings::init_options() {
     ("logging-level,l", g_enum_ext(logging_level), 
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     
-    ("config", str(install_path + "/conf/swc.cfg"), "Configuration file.")
-    ("swc.logging.path", str(install_path + "/log/"), "Path of log files")
+    ("config", str(install_path + "/etc/swcdb/swc.cfg"), "Configuration file.")
+    ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
 
     //("induce-failure", str(), "Arguments for inducing failure")
     /* Interactive-Shell options
