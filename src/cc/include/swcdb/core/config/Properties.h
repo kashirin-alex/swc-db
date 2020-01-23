@@ -56,11 +56,6 @@ class Properties {
             const Config::ParserConfig &cmddesc,
             bool allow_unregistered=false, bool only_guarded=false);
   
-  void load_files_by(const std::string &fileprop, 
-                     const Config::ParserConfig &filedesc,
-                     const Config::ParserConfig &cmddesc,
-	                   bool allow_unregistered = false);
-    
   std::string reload(const std::string &fname, 
                      const Config::ParserConfig &filedesc,
                      const Config::ParserConfig &cmddesc,

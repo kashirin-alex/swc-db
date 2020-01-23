@@ -18,7 +18,7 @@ enum class Encoding {
   SNAPPY  = 0x03
 };
 
-const std::string to_string(Encoding typ) {
+inline const std::string to_string(Encoding typ) {
   switch(typ){
     case Encoding::DEFAULT:
       return std::string("DEFAULT");
@@ -33,7 +33,7 @@ const std::string to_string(Encoding typ) {
   }
 }
 
-const Encoding encoding_from(std::string typ) {
+inline const Encoding encoding_from(std::string typ) {
 
   if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
      typ.compare("1") == 0)
@@ -50,11 +50,11 @@ const Encoding encoding_from(std::string typ) {
   return Encoding::DEFAULT;
 }
 
-const std::string repr_encoding(int typ) {
+inline const std::string repr_encoding(int typ) {
   return to_string((Encoding)typ);
 }
 
-const int from_string_encoding(std::string typ) {
+inline const int from_string_encoding(std::string typ) {
   return (int)encoding_from(typ);
 }
 

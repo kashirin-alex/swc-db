@@ -25,12 +25,12 @@
 namespace SWC {
 
  
-#define HT_F32_DO1(buf,i) \
+#define SWC_F32_DO1(buf,i) \
   sum1 += ((uint16_t)buf[i] << 8) | buf[i + 1]; sum2 += sum1
-#define HT_F32_DO2(buf, i)  HT_F32_DO1(buf, i); HT_F32_DO1(buf, i + 2);
-#define HT_F32_DO4(buf, i)  HT_F32_DO2(buf, i); HT_F32_DO2(buf, i + 4);
-#define HT_F32_DO8(buf, i)  HT_F32_DO4(buf, i); HT_F32_DO4(buf, i + 8);
-#define HT_F32_DO16(buf, i) HT_F32_DO8(buf, i); HT_F32_DO8(buf, i + 16);
+#define SWC_F32_DO2(buf, i)  SWC_F32_DO1(buf, i); SWC_F32_DO1(buf, i + 2);
+#define SWC_F32_DO4(buf, i)  SWC_F32_DO2(buf, i); SWC_F32_DO2(buf, i + 4);
+#define SWC_F32_DO8(buf, i)  SWC_F32_DO4(buf, i); SWC_F32_DO4(buf, i + 8);
+#define SWC_F32_DO16(buf, i) SWC_F32_DO8(buf, i); SWC_F32_DO8(buf, i + 16);
 
 uint32_t fletcher32(const void *data8, size_t len8) {
   /* data may not be aligned properly and would segfault on
@@ -49,13 +49,13 @@ uint32_t fletcher32(const void *data8, size_t len8) {
     len -= tlen;
 
      while (tlen >= 16) {
-      HT_F32_DO16(data, 0);
+      SWC_F32_DO16(data, 0);
       data += 32;
       tlen -= 16;
     }
 
     while(tlen--) {
-      HT_F32_DO1(data, 0);
+      SWC_F32_DO1(data, 0);
       data += 2;
     }
 

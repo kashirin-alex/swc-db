@@ -82,7 +82,9 @@ void Settings::init_options() {
     ("logging-level,l", g_enum_ext(logging_level), 
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     
-    ("config", str(install_path + "/etc/swcdb/swc.cfg"), "Configuration file.")
+    ("swc.cfg.path", str(install_path+"/etc/swcdb/"), "Path of configuration files")
+    ("swc.cfg", str("swc.cfg"), "Main configuration file")
+
     ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
 
     //("induce-failure", str(), "Arguments for inducing failure")
@@ -126,34 +128,51 @@ void Settings::parse_args(int argc, char *argv[]) {
     std::quick_exit(EXIT_SUCCESS);
   }
 
-  if (!has("config")) 
-    return;
-
-  cfg_filename = properties.get_str("config");
-
-  // Only try to parse config file if it exists or not default
-  if (FileUtils::exists(cfg_filename)) 
-    parse_file(cfg_filename, "swc.OnFileChange.cfg");  
-    
-  else if (!defaulted("config"))
-    SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
-              "cfg file=%s not found", cfg_filename.c_str());
+  if(has("swc.cfg")) 
+    parse_file(properties.get_str("swc.cfg"), "swc.OnFileChange.cfg");
 }
 
-void Settings::parse_file(const std::string &fname, const std::string &onchg) {
-  if(fname.empty())
+void Settings::parse_file(const std::string &name, const std::string &onchg) {
+  if(name.empty())
     return;
+
+  std::string fname;
+  if(name.front() != '/') 
+    fname.append(properties.get_str("swc.cfg.path"));
+  fname.append(name);
+  
   if(!FileUtils::exists(fname))
     SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
               "cfg file=%s not found", fname.c_str());
     
   properties.load(fname, file_desc, cmdline_desc, false);
   if(!onchg.empty())
-    properties.load_files_by(onchg, file_desc, cmdline_desc, false);
+    load_files_by(onchg, false);
     
   properties.load_from(m_cmd_args);  // Inforce cmdline properties 
 }
 
+void Settings::load_files_by(const std::string &fileprop,  
+                             bool allow_unregistered) {
+    if(fileprop.empty() || !has(fileprop)) 
+      return;
+
+    std::string fname;
+    Strings files = properties.get_strs(fileprop);
+    for (auto it=files.begin(); it<files.end(); it++) {
+      fname.clear();
+      if(it->front() != '/') 
+        fname.append(properties.get_str("swc.cfg.path"));
+      fname.append(*it);
+
+	    try {
+        properties.load(fname, file_desc, cmdline_desc, allow_unregistered);
+      } catch (std::exception &e) {
+		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
+                  fileprop.c_str(), it->c_str(), e.what());
+      }
+    }
+  }
 
 void Settings::init_process() {
   bool daemon = properties.has("daemon");

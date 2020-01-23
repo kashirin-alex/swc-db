@@ -43,24 +43,6 @@ namespace SWC {
     load_from(prs.get_options(), only_guarded);
   } 
   
-  void Properties::load_files_by(const std::string &fileprop, 
-                                 const Config::ParserConfig &filedesc,
-                                 const Config::ParserConfig &cmddesc,
-	                               bool allow_unregistered) {
-    if(fileprop.empty() || !has(fileprop)) 
-      return;
-
-    Strings files = get_strs(fileprop);
-    for (auto it=files.begin(); it<files.end(); it++){
-	    try {
-        load(*it, filedesc, cmddesc, allow_unregistered);
-      } catch (std::exception &e) {
-		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
-                  fileprop.c_str(), it->c_str(), e.what());
-      }
-    }
-  }
-    
   std::string Properties::reload(const std::string &fname, 
                                  const Config::ParserConfig &filedesc,
                                  const Config::ParserConfig &cmddesc,

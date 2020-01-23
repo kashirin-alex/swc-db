@@ -46,6 +46,9 @@ class Settings {
  
   void parse_args(int argc, char *argv[]);
 
+  void load_files_by(const std::string &fileprop, 
+                     bool allow_unregistered);
+
   void parse_file(const std::string &fname, const std::string &onchg);
 
   void init_process();
@@ -75,8 +78,6 @@ class Settings {
 
   private:
 
-
-  std::string          cfg_filename;
   Parser::Options      m_cmd_args;
 };
 
