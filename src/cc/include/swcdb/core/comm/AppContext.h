@@ -41,7 +41,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/AppContext.cc"
+#include "swcdb/core/comm/AppContext.cc"
 #endif 
 
 #endif // swc_core_comm_AppContext_h

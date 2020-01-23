@@ -149,7 +149,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/ConnHandler.cc"
+#include "swcdb/core/comm/ConnHandler.cc"
 #endif 
 
 #endif // swc_core_comm_ConnHandler_h

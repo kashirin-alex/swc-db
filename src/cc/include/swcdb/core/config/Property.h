@@ -383,7 +383,7 @@ class Value final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/config/Property.cc"
+#include "swcdb/core/config/Property.cc"
 #endif 
 
 #endif // swc_core_config_Property_h

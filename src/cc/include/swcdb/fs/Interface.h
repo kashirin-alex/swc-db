@@ -146,7 +146,7 @@ class FsInterface {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/fs/Interface.cc"
+#include "swcdb/fs/Interface.cc"
 #endif 
 
 

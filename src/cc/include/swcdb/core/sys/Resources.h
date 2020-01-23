@@ -73,7 +73,7 @@ extern SWC::Resources Resources;
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/sys/Resources.cc"
+#include "swcdb/core/sys/Resources.cc"
 #endif 
 
 #endif // swc_core_sys_Resources_h

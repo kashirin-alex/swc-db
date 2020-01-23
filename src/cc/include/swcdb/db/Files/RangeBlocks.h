@@ -104,9 +104,9 @@ class Blocks final {
 
 
 //#ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/db/Files/RangeBlock.cc"
-#include "../../../../lib/swcdb/db/Files/RangeBlocks.cc"
-#include "../../../../lib/swcdb/db/Files/RangeBlockLoader.cc"
+#include "swcdb/db/Files/RangeBlock.cc"
+#include "swcdb/db/Files/RangeBlocks.cc"
+#include "swcdb/db/Files/RangeBlockLoader.cc"
 //#endif 
 
 #endif // swcdb_db_Files_RangeBlocks_h

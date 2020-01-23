@@ -281,7 +281,7 @@ class Properties {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/config/Properties.cc"
+#include "swcdb/core/config/Properties.cc"
 #endif 
 
 #endif // swc_core_config_Properties_h

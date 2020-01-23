@@ -80,7 +80,7 @@ class IoCtx final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/IoContext.cc"
+#include "swcdb/core/comm/IoContext.cc"
 #endif 
 
 #endif // swc_core_comm_IoContext_h

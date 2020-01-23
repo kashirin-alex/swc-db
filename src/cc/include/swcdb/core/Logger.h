@@ -235,7 +235,7 @@ extern LogWriter logger;
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Logger.cc"
+#include "swcdb/core/Logger.cc"
 #endif 
 
 #endif

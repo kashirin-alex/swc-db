@@ -124,7 +124,7 @@ class Serializable {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Serializable.cc"
+#include "swcdb/core/Serializable.cc"
 #endif 
 
 

@@ -53,7 +53,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/DispatchHandler.cc"
+#include "swcdb/core/comm/DispatchHandler.cc"
 #endif 
 
 #endif // swc_core_comm_DispatchHandler_h

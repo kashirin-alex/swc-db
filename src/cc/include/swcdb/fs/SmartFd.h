@@ -57,7 +57,7 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/fs/SmartFd.cc"
+#include "swcdb/fs/SmartFd.cc"
 #endif 
 
 #endif  // swc_lib_fs_SmartFd_h

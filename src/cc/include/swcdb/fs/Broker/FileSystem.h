@@ -156,7 +156,7 @@ void fs_apply_cfg_broker(SWC::Env::Config::Ptr env);
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/fs/Broker/FileSystem.cc"
+#include "swcdb/fs/Broker/FileSystem.cc"
 #endif 
 
 

@@ -480,7 +480,7 @@ bool equal(double a, double b);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Serialization.cc"
+#include "swcdb/core/Serialization.cc"
 #endif 
 
 #endif

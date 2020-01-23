@@ -39,7 +39,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/ResponseCallback.cc"
+#include "swcdb/core/comm/ResponseCallback.cc"
 #endif 
 
 #endif // swc_core_comm_ResponseCallback_h

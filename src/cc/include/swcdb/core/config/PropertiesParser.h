@@ -203,7 +203,7 @@ std::ostream& operator<<(std::ostream& os, const Parser& prs);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/config/PropertiesParser.cc"
+#include "swcdb/core/config/PropertiesParser.cc"
 #endif 
 
 #endif // swc_core_config_PropertiesParser_h

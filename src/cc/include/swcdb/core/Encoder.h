@@ -23,7 +23,7 @@ void encode(int& err, Types::Encoding encoder,
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Encoder.cc"
+#include "swcdb/core/Encoder.cc"
 #endif 
 
 

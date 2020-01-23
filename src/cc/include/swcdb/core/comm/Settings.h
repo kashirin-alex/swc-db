@@ -15,7 +15,7 @@ namespace SWC{ namespace Config {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/Settings.cc"
+#include "swcdb/core/comm/Settings.cc"
 #endif 
 
 #endif // swc_core_comm_Settings_h

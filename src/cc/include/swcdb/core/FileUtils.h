@@ -273,7 +273,7 @@ namespace SWC {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/FileUtils.cc"
+#include "swcdb/core/FileUtils.cc"
 #endif 
 
 #endif // swc_core_FileUtils_h

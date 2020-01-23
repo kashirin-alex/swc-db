@@ -114,7 +114,7 @@ void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env);
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/fs/HadoopJVM/FileSystem.cc"
+#include "swcdb/fs/HadoopJVM/FileSystem.cc"
 #endif 
 
 

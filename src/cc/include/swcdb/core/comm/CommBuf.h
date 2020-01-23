@@ -198,7 +198,7 @@ class CommBuf final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/CommBuf.cc"
+#include "swcdb/core/comm/CommBuf.cc"
 #endif 
 
 #endif // swc_core_comm_CommBuf_h

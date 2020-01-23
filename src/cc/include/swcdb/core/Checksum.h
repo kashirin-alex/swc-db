@@ -29,7 +29,7 @@ void checksum_i32(const uint8_t *start, const uint8_t *end, uint8_t **ptr,
 } // namespace SWC
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Checksum.cc"
+#include "swcdb/core/Checksum.cc"
 #endif 
 
 #endif /* swc_core_Checksum_h */

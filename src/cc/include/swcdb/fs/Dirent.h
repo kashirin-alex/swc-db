@@ -46,7 +46,7 @@ typedef std::vector<Dirent> DirentList;
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/fs/Dirent.cc"
+#include "swcdb/fs/Dirent.cc"
 #endif 
 
 

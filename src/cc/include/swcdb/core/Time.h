@@ -55,7 +55,7 @@ std::ostream &hires_now_ns(std::ostream &out);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Time.cc"
+#include "swcdb/core/Time.cc"
 #endif 
 
 #endif // swc_core_Time_h

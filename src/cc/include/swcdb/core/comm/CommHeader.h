@@ -68,7 +68,7 @@ class CommHeader final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/CommHeader.cc"
+#include "swcdb/core/comm/CommHeader.cc"
 #endif 
 
 #endif // swc_core_comm_CommHeader_h

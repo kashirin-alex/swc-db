@@ -128,7 +128,7 @@ class Config final {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/config/Settings.cc"
+#include "swcdb/core/config/Settings.cc"
 #endif 
 
 #endif // swc_core_config_Config_h

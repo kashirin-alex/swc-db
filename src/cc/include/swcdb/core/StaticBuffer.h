@@ -122,7 +122,7 @@ bool operator!=(const StaticBuffer& sb1, const StaticBuffer& sb2);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/StaticBuffer.cc"
+#include "swcdb/core/StaticBuffer.cc"
 #endif 
 
 #endif // swc_core_StaticBuffer_h

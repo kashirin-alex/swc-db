@@ -107,7 +107,7 @@ typedef Property::ValueGuardedEnumExt*  gEnumExtPtr;
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/config/PropertyValueEnumExt.cc"
+#include "swcdb/core/config/PropertyValueEnumExt.cc"
 #endif 
 
 #endif // swc_core_config_PropertyValueEnumExt_h

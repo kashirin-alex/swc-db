@@ -65,7 +65,7 @@ namespace SWC {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../lib/swcdb/core/Random.cc"
+#include "swcdb/core/Random.cc"
 #endif 
 
 #endif // swc_core_Random_h

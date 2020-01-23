@@ -83,7 +83,7 @@ class SerializedServer final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/SerializedServer.cc"
+#include "swcdb/core/comm/SerializedServer.cc"
 #endif 
 
 #endif // swc_core_comm_SerializedServer_h

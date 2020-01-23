@@ -70,7 +70,7 @@ void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/fs/Ceph/FileSystem.cc"
+#include "swcdb/fs/Ceph/FileSystem.cc"
 #endif 
 
 #endif  // swc_lib_fs_Ceph_FileSystem_h

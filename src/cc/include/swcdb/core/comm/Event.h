@@ -57,7 +57,7 @@ class Event final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/Event.cc"
+#include "swcdb/core/comm/Event.cc"
 #endif 
 
 #endif // swc_core_comm_Event_h

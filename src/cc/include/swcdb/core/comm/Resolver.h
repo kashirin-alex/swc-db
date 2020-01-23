@@ -55,7 +55,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/Resolver.cc"
+#include "swcdb/core/comm/Resolver.cc"
 #endif 
 
 #endif // swc_core_comm_Resolver_h

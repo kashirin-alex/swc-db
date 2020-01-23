@@ -117,7 +117,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "../../../../lib/swcdb/core/comm/SerializedClient.cc"
+#include "swcdb/core/comm/SerializedClient.cc"
 #endif 
 
 #endif // swc_core_comm_SerializedClient_h
