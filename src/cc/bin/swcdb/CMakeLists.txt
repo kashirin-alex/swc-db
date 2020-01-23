@@ -20,16 +20,19 @@ set(STATIC ${SWC_LIB_CORE_STATIC} ${SWC_LIB_FS_STATIC})
 set(FLAGS )
 set(TARGETS )
 
+set(SHARED_TARGETS 
+	"swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;${BUILTIN_FS_TARGETS}")
+
 if(SWC_IMPL_SOURCE)
 	set(FLAGS "-DSWC_IMPL_SOURCE")
 else()
-	set(TARGETS "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;${BUILTIN_FS_TARGETS}")
+	set(TARGETS ${SHARED_TARGETS})
 endif()
 
 
-# dbRanger
+# swcdbRanger
 ADD_EXEC_TARGET(
-	NAME dbRanger
+	NAME swcdbRanger
 	SRCS  ranger/main.cc
 	TARGETS ${TARGETS}
 
@@ -38,9 +41,9 @@ ADD_EXEC_TARGET(
 	FLAGS 	${FLAGS}
 )
 
-# dbManager
+# swcdbManager
 ADD_EXEC_TARGET(
-	NAME dbManager
+	NAME swcdbManager
 	SRCS  manager/main.cc
 	TARGETS ${TARGETS}
 
@@ -51,9 +54,9 @@ ADD_EXEC_TARGET(
 
 
 
-# dbFsBroker
+# swcdbFsBroker
 ADD_EXEC_TARGET(
-	NAME dbFsBroker
+	NAME swcdbFsBroker
 	SRCS  fsbroker/main.cc
 	TARGETS ${TARGETS}
 
@@ -70,11 +73,11 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
 	NAME swcdb
 	SRCS  utils/main.cc
-	TARGETS ${TARGETS}
+	TARGETS ${SHARED_TARGETS}
 
 	SHARED  ${SHARED}
 	STATIC  ${STATIC}
-	FLAGS 	${FLAGS}
+	# FLAGS 	${FLAGS}
 
 	ONLY_DYN TRUE
 )
