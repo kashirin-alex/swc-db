@@ -133,7 +133,7 @@ class Compaction final {
           allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
     
     SWC_LOGF(LOG_INFO, 
-      "Compaction %s-range %d/%d allow=%dMB"
+      "COMPACT-CHECK %s-range %d/%d allow=%dMB"
       " log=%d=%d/%dMB cs=%d=%d/%dMB blocks=%d=%dMB",
       do_compaction ? "started" : "skipped",
       range->cfg->cid, range->rid, 
@@ -597,6 +597,9 @@ class Compaction final {
       );
 
       range->compact_require(range->cfg->cellstore_max() > cellstores.size());
+      
+      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
+               range->cfg->cid, range->rid);
       compactor->compacted(range, true);
     }
 
@@ -607,6 +610,9 @@ class Compaction final {
         return quit();
 
       range->compact_require(false);
+      
+      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
+               range->cfg->cid, range->rid);
       compactor->compacted(range, clear);
     }
 
@@ -666,10 +672,6 @@ class Compaction final {
     }
     
     range->compacting(Range::Compact::NONE);
-    
-    SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
-             range->cfg->cid, range->rid);
-
     compacted();
   }
 
