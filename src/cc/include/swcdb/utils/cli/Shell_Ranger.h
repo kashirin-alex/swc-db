@@ -73,9 +73,9 @@ class Rgr : public Interface {
     do{
       auto addr = host_or_ips;
       at = addr.find_first_of(",");
-      if(at != std::string::npos){
-        addr = host_or_ips.substr(at+1);
-        host_or_ips = host_or_ips.substr(0, at);
+      if(at != std::string::npos) { 
+        addr = host_or_ips.substr(0, at);
+        host_or_ips = host_or_ips.substr(at+1, host_or_ips.length());
       }
       if(Resolver::is_ipv4_address(addr) || Resolver::is_ipv6_address(addr))
         ips.push_back(addr);
