@@ -9,6 +9,23 @@ https://alex.kashirin.family/swc-DB.pdf
 
 ### BUILD & INSTALL
 
+* Prerequisites 
+  * [GCC c++17+](https://gcc.gnu.org/)
+  * [ASIO 1.14+](https://github.com/chriskohlhoff/asio)
+  * [libtcmalloc](https://github.com/gperftools/gperftools) - optional
+  * [libre2](https://github.com/google/re2)
+  * [libsnappy](https://github.com/google/snappy)
+  * [libzlib](https://www.zlib.net/)
+  * [libeditline](https://github.com/troglobit/editline) 
+  * Hadoop-JVM FsBroker requires:
+    * [Apache-Hadoop + libhdfs](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfs)
+    * [Java(openjdk 12.0.1) - libjvm, libjava, libverify](https://jdk.java.net/java-se-ri/12)
+  * Hadoop FsBroker requires:
+    * [Apache-Hadoop + libhdfspp](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp)
+    * [libprotobuf](https://github.com/protocolbuffers/protobuf)
+  * (static version libraries required for -DO_LEVEL > 4)
+
+
 ```bash
 git clone https://github.com/kashirin-alex/swc-db.git
 mkdir swcdb; cd swcdb;
