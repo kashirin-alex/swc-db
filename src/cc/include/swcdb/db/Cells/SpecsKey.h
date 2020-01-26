@@ -200,11 +200,7 @@ class Key : public DB::Cell::Key {
         idx_other++;
       }
       
-      if(idx == idx_other) {
-        if(!Condition::is_matching(comp, ptr, len, ptr_other, len_other))
-          return false;
-        
-      } else {
+      if(idx != idx_other) {
         switch(comp) {
           case Condition::LT:
           case Condition::LE:
@@ -222,6 +218,8 @@ class Key : public DB::Cell::Key {
             return false;
         }
       }
+      if(!Condition::is_matching(comp, ptr, len, ptr_other, len_other))
+        return false;
 
     } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
 

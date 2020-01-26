@@ -233,52 +233,33 @@ class Key {
 
   const Condition::Comp compare(const Key &other, uint32_t fractions=0, 
                                 bool empty_ok=false) const {
-    const uint8_t* ptr_tmp = data;
-    const uint8_t* ptr_end = data + size;
-    uint32_t idx = 0;
-    uint32_t len = 0;
-    const uint8_t* ptr = 0;
-
-    const uint8_t* ptr_tmp_other = other.data;
-    const uint8_t* ptr_end_other = other.data + other.size;
-    uint32_t idx_other = 0;
-    uint32_t len_other = 0;
-    const uint8_t* ptr_other = 0;
-    
     Condition::Comp comp = Condition::EQ;
-    do {
+    const uint8_t* ptr = data;
+    uint32_t len = 0;
 
-      if(ptr_tmp < ptr_end) {
-        len = Serialization::decode_vi32(&ptr_tmp);
-        ptr = ptr_tmp;
-        ptr_tmp += len;
-        idx++;
-      }
+    const uint8_t* ptr_other = other.data;
+    uint32_t len_other = 0;
+    
+    uint32_t max = fractions ? fractions 
+                  : (count > other.count ? count : other.count);
+    for(uint32_t c = 0; c<max; c++, ptr += len, ptr_other += len_other) {
 
-      if(ptr_tmp_other < ptr_end_other) {
-        len_other = Serialization::decode_vi32(&ptr_tmp_other);
-        ptr_other = ptr_tmp_other;
-        ptr_tmp_other += len_other;
-        idx_other++;
-      }
-      
-      if(idx == idx_other) {
-        comp = empty_ok && !len
-          ? Condition::EQ
-          : Condition::condition(ptr, len, ptr_other, len_other);
-        if(comp != Condition::EQ) 
-          return comp;
+      if(c == count || c == other.count) {
+        comp = count > other.count ? Condition::LT : Condition::GT;
+        break;
+      } 
 
-        if(fractions && fractions == idx)
-          break;
-
-      } else 
-        return idx > idx_other? Condition::LT : Condition::GT;
-      
-    } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
-
+      len = Serialization::decode_vi32(&ptr);
+      len_other = Serialization::decode_vi32(&ptr_other);
+      if((comp = empty_ok && !len
+                ? Condition::EQ
+                : Condition::condition(ptr, len, ptr_other, len_other))
+          != Condition::EQ)
+        break;
+    }
     return comp;
   }
+  
 /*
   size_t fractions(uint8_t offset=0) {
     uint32_t tmp_count = 0;
