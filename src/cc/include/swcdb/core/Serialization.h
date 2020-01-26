@@ -24,8 +24,7 @@
 #define swc_core_Serialization_h
 
 #include "swcdb/core/Compat.h"
-
-#include "swcdb/core/serialization-c.h"
+#include "swcdb/core/Error.h"
 
 
 namespace SWC { namespace Serialization {
@@ -341,9 +340,8 @@ char* decode_str16(const uint8_t** bufp, size_t* remainp, uint16_t *lenp);
  */
 template <class StringT>
 inline StringT decode_str16(const uint8_t** bufp, size_t* remainp) {
-  char* str;
   uint16_t len;
-  HT_DECODE_STR16(*bufp, *remainp, str, len);
+  char* str = decode_str16(bufp, remainp, &len);
   return StringT(str, len); // RVO hopeful
 }
 
@@ -417,25 +415,24 @@ char* decode_vstr(const uint8_t** bufp, size_t* remainp);
  *
  * @param bufp Pointer to pointer of the source buffer
  * @param remainp Pointer to the remaining size variable
- * @return The decoded string
+ * @param lenp Pointer to the string length
+ * @return Pointer to the decoded string
  */
-template <class StringT>
-inline std::string decode_vstr(const uint8_t** bufp, size_t* remainp) {
-  char* buf;
-  size_t len;
-  HT_DECODE_VSTR(*bufp, *remainp, buf, len);
-  return StringT(buf, len); // RVO
-}
+char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp);
 
 /**
  * Decode a vstr (vint64, data, null)
  *
  * @param bufp Pointer to pointer of the source buffer
  * @param remainp Pointer to the remaining size variable
- * @param lenp Pointer to the string length
- * @return Pointer to the decoded string
+ * @return The decoded string
  */
-char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp);
+template <class StringT>
+inline std::string decode_vstr(const uint8_t** bufp, size_t* remainp) {
+  uint32_t len;
+  char* buf = decode_vstr(bufp, remainp, &len);
+  return StringT(buf, len); // RVO
+}
 
 /**
  * Encodes a double with 18 decimal digits of precision as 64-bit
@@ -479,8 +476,8 @@ bool equal(double a, double b);
 }} // namespace SWC::Serialization
 
 
-#ifdef SWC_IMPL_SOURCE
+//#ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Serialization.cc"
-#endif 
+//#endif 
 
 #endif

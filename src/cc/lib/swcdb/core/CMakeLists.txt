@@ -29,7 +29,7 @@ set(swcdb_core_sources
 	FileUtils.cc
 	Random.cc
 	Serializable.cc
-	Serialization.cc
+	#Serialization.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_core

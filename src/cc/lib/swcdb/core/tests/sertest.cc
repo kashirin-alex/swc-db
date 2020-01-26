@@ -23,6 +23,7 @@
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Logger.h"
 #include "swcdb/core/Serialization.h"
+#include "swcdb/core/Time.h"
 
 using namespace SWC;
 using namespace Serialization;
@@ -51,6 +52,19 @@ void test_i16() {
     SWC_ASSERT(decode_i16(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 2);
     SWC_ASSERT(len == 0));
+
+  auto ns = Time::now_ns();
+  for(uint16_t n=0; n<UINT16_MAX;n++){
+    uint8_t buf[2], *p = buf;
+    const uint8_t *p2 = buf;
+    size_t len = 2;
+    encode_i16(&p, n);
+    HT_TRY("decoding i32",
+      SWC_ASSERT(decode_i16(&p2, &len) == n);
+      SWC_ASSERT(len == 0));
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "i16 took=" << ns << " avg=" << ns / UINT16_MAX << "\n";
 }
 
 void test_i32() {
@@ -63,6 +77,19 @@ void test_i32() {
     SWC_ASSERT(decode_i32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
     SWC_ASSERT(len == 0));
+
+  auto ns = Time::now_ns();
+  for(uint32_t n=0; n<UINT32_MAX;n++){
+    uint8_t buf[4], *p = buf;
+    const uint8_t *p2 = buf;
+    size_t len = 4;
+    encode_i32(&p, n);
+    HT_TRY("decoding i32",
+      SWC_ASSERT(decode_i32(&p2, &len) == n);
+      SWC_ASSERT(len == 0));
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "i32 took=" << ns << " avg=" << ns / UINT32_MAX << "\n";
 }
 
 void test_i64() {
@@ -75,8 +102,31 @@ void test_i64() {
     SWC_ASSERT(decode_i64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 8);
     SWC_ASSERT(len == 0));
+
+  auto ns = Time::now_ns();
+  for(uint64_t n=0; n<UINT64_MAX;n++){
+    uint8_t buf[8], *p = buf;
+    const uint8_t *p2 = buf;
+    size_t len = 8;
+    encode_i64(&p, n);
+    HT_TRY("decoding i64",
+      SWC_ASSERT(decode_i64(&p2, &len) == n);
+      SWC_ASSERT(len == 0));
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "i64 took=" << ns << " avg=" << ns / UINT64_MAX << "\n";
 }
 
+void chk_vi32(uint32_t n) {
+  uint8_t buf[5], *p = buf;
+  const uint8_t *p2 = buf;
+  encode_vi32(&p, n);
+  HT_TRY("decoding vint32",
+    SWC_ASSERT(decode_vi32(&p2) == n);
+    SWC_ASSERT(p2-buf == encoded_length_vi32(n)));
+}
+
+const uint32_t MAX_CHECKS = 500000000;//UINT32_MAX/8;
 void test_vi32() {
   {
   uint8_t buf[5], *p = buf;
@@ -89,20 +139,38 @@ void test_vi32() {
     SWC_ASSERT(p2 - buf == 5);
     SWC_ASSERT(len == 0));
   }
-  /* 
-  for(uint32_t n=0; n<0xffffffff;n++){
-    uint8_t buf[5], *p = buf;
-    const uint8_t *p2 = buf;
-    size_t len = 5;
-    encode_vi32(&p, n);
-    HT_TRY("decoding vint32",
-      SWC_ASSERT(decode_vi32(&p2, &len) == n);
-      SWC_ASSERT(p2-buf == encoded_length_vi32(n)));
+
+  uint64_t c = 0;
+  auto ns = Time::now_ns();
+  for(uint32_t n=0; n<MAX_CHECKS;n++) {
+    chk_vi32(n);
+    c++;
   }
-  */
+  ns = Time::now_ns() - ns;
+  std::cout << "vi32 lower took=" << ns << " avg=" << ns / c << " c=" << c << "\n";
+  c = 0;
+  ns = Time::now_ns();
+  for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;n++) {
+    chk_vi32(n);  
+    c++;
+    if(n == UINT32_MAX)
+      break;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "vi32 upper took=" << ns << " avg=" << ns / c << " c=" << c << "\n";
+}
+
+void chk_vi64(uint64_t n) {
+  uint8_t buf[10], *p = buf;
+  const uint8_t *p2 = buf;
+  encode_vi64(&p, n);
+  HT_TRY("decoding vint32",
+    SWC_ASSERT(decode_vi64(&p2) == n);
+    SWC_ASSERT(p2-buf == encoded_length_vi64(n)));
 }
 
 void test_vi64() {
+  {
   uint8_t buf[10], *p = buf;
   uint64_t input = 0xcafebabeabadbabeull;
   encode_vi64(&p, input);
@@ -112,6 +180,26 @@ void test_vi64() {
     SWC_ASSERT(decode_vi64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 10);
     SWC_ASSERT(len == 0));
+  }
+  
+  uint64_t c = 0;
+  auto ns = Time::now_ns();
+  for(uint64_t n=0; n<MAX_CHECKS;n++) {
+    chk_vi64(n);
+    c++;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "vi64 lower took=" << ns << " avg=" << ns / c << " c=" << c << "\n";
+  c = 0;
+  ns = Time::now_ns();
+  for(uint64_t n=UINT64_MAX-MAX_CHECKS+1; n<=UINT64_MAX;n++) {
+    chk_vi64(n);
+    c++;
+    if(n == UINT64_MAX)
+      break;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "vi64 upper took=" << ns << " avg=" << ns / c << " c=" << c << "\n";
 }
 
 void test_str16() {
@@ -154,14 +242,14 @@ void test_bad_vi32() {
 void test_bad_vi64() {
   try {
     uint8_t buf[14] = {0xab, 0xad, 0xba, 0xbe, 0xde, 0xad, 0xbe, 0xef,
-                      0xca, 0xfe, 0xba, 0xbe, 0xbe, 0xef};
+                       0xca, 0xfe, 0xba, 0xbe, 0xbe, 0xef};
     const uint8_t *p = buf;
     size_t len = sizeof(buf);
     decode_vi64(&p, &len);
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    SWC_ASSERT(e.code() == Error::SERIALIZATION_BAD_VINT);
+    SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
 
@@ -188,6 +276,7 @@ void test_ser() {
   test_vi64();
   test_str16();
   test_vstr();
+  
   test_bad_vi32();
   test_bad_vi64();
   test_bad_vstr();
