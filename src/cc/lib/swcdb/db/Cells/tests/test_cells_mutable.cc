@@ -31,7 +31,7 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
       rev = SWC::Time::now_ns()-(gen_historic?r*1000000:0);
       cell.flag = flag;
       cell.set_timestamp(rev-1);
-      cell.set_revision(rev);
+      //cell.set_revision(rev);
       cell.set_time_order_desc(time_order_desc);
 
       cell.key.free();

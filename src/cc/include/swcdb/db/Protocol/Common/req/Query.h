@@ -56,7 +56,7 @@ struct Select final {
       if(reached_limit) {
         auto last = m_vec.cells.back();
         interval.offset_key.copy(last->key);
-        interval.offset_rev = last->revision;
+        interval.offset_rev = last->get_revision();
       }
       return true;
     }  

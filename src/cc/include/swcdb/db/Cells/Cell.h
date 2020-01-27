@@ -80,7 +80,7 @@ static const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
 static const uint8_t HAVE_REVISION      =  0x80;
 static const uint8_t HAVE_TIMESTAMP     =  0x40;
 static const uint8_t AUTO_TIMESTAMP     =  0x20;
-static const uint8_t REV_IS_TS          =  0x10;
+//static const uint8_t REV_IS_TS        =  0x10;
 //static const uint8_t TYPE_DEFINED     =  0x2;
 static const uint8_t TS_DESC            =  0x1;
 
@@ -91,11 +91,11 @@ class Cell final {
   typedef std::shared_ptr<Cell> Ptr;
 
   explicit Cell():  flag(Flag::NONE), control(0), 
-                    timestamp(0), revision(0),
+                    timestamp(0), //revision(0),
                     value(0), vlen(0), own(false) { }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
-                : timestamp(0), revision(0), 
+                : timestamp(0), //revision(0), 
                   value(0), vlen(0) { 
     read(bufp, remainp, own);             
   }
@@ -120,7 +120,7 @@ class Cell final {
     key.copy(other.key);
     control     = other.control;
     timestamp   = other.timestamp;
-    revision    = other.revision;
+    //revision    = other.revision;
   }
 
   ~Cell() {
@@ -146,10 +146,12 @@ class Cell final {
     control |= HAVE_TIMESTAMP;
   }
 
+  /*
   void set_revision(int64_t rev) {
     revision = rev;
     control |= HAVE_REVISION;
   }
+  */
 
   // SET_VALUE
   void set_value(uint8_t* v, uint32_t len, bool cpy) {
@@ -245,11 +247,12 @@ class Cell final {
     else if(control & AUTO_TIMESTAMP)
       timestamp = AUTO_ASSIGN;
 
+    /*
     if (control & HAVE_REVISION)
       revision = Serialization::decode_i64(bufp, remainp);
     else if (control & REV_IS_TS)
       revision = timestamp;
-
+    */
     free();
     own = owner;
     if(vlen = Serialization::decode_vi32(bufp, remainp)) {
@@ -269,8 +272,8 @@ class Cell final {
     uint32_t len = 1+key.encoded_length()+1;
     if(control & HAVE_TIMESTAMP)
       len += 8;
-    if(control & HAVE_REVISION)
-      len += 8;
+    //if(control & HAVE_REVISION)
+    //  len += 8;
     return len + Serialization::encoded_length_vi32(vlen) + vlen;
   }
 
@@ -284,8 +287,8 @@ class Cell final {
     Serialization::encode_i8(&dst_buf.ptr, control);
     if(control & HAVE_TIMESTAMP)
       Serialization::encode_i64(&dst_buf.ptr, timestamp);
-    if(control & HAVE_REVISION)
-      Serialization::encode_i64(&dst_buf.ptr, revision);
+    //if(control & HAVE_REVISION)
+    //  Serialization::encode_i64(&dst_buf.ptr, revision);
       
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
     if(vlen)
@@ -298,7 +301,7 @@ class Cell final {
     return  flag == other.flag && 
             control == other.control &&
             timestamp == other.timestamp && 
-            revision == other.revision && 
+            //revision == other.revision && 
             vlen == other.vlen &&
             key.equal(other.key) &&
             memcmp(value, other.value, vlen) == 0;
@@ -317,8 +320,9 @@ class Cell final {
   }
 
   const int64_t get_revision() const {
-    return control & HAVE_REVISION ? revision 
-          : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
+    //return control & HAVE_REVISION ? revision 
+    //        : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
+    return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
   }
 
   const bool has_expired(const uint64_t ttl) const {
@@ -339,8 +343,8 @@ class Cell final {
     s.append(" ts=");
     s.append(std::to_string(timestamp));
 
-    s.append(" rev=");
-    s.append(std::to_string(revision));
+    //s.append(" rev=");
+    //s.append(std::to_string(revision));
 
     s.append(" value=(len="); 
     s.append(std::to_string(vlen));  
@@ -411,7 +415,7 @@ class Cell final {
   DB::Cell::Key   key;
   uint8_t         control;
   int64_t         timestamp;
-  int64_t         revision;
+  //int64_t         revision;
     
   uint8_t*        value;
   uint32_t        vlen;

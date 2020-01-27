@@ -28,7 +28,7 @@ int main() {
       
       cell->flag = Cells::INSERT;
       cell->set_timestamp(111);
-      cell->set_revision(222);
+      //cell->set_revision(222);
       cell->set_time_order_desc(true);
 
       cell->key.add("aKey1");

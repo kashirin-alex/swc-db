@@ -349,7 +349,7 @@ class Mutable final {
         cell->set_counter(op_1, value_1, type, eq_rev_1);
         if(cell->timestamp < e_cell.timestamp) {
           cell->timestamp = e_cell.timestamp;
-          cell->revision = e_cell.revision;
+          //cell->revision = e_cell.revision;
           cell->control = e_cell.control;
         }
       }

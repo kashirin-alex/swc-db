@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
         rev = SWC::Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
-        cell.set_revision(rev);
+        //cell.set_revision(rev);
         cell.set_time_order_desc(false);
 
         cell.key.free();
@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
         rev = SWC::Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
-        cell.set_revision(rev);
+        //cell.set_revision(rev);
         cell.set_time_order_desc(false);
 
         cell.key.free();

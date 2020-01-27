@@ -430,7 +430,7 @@ class Range : public DB::RangeBase {
       if(!err) {
         m_interval.free();
         blocks.cellstores.expand(m_interval);
-        if(is_initial_column_range) {
+        if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
           Files::RangeData::save(err, blocks.cellstores);
           on_change(err, false);
         }
@@ -521,8 +521,8 @@ class Range : public DB::RangeBase {
           if(cell.control & DB::Cells::AUTO_TIMESTAMP)
             cell.control ^= DB::Cells::AUTO_TIMESTAMP;
         }
-        if(!(cell.control & DB::Cells::HAVE_REVISION))
-          cell.control |= DB::Cells::REV_IS_TS;
+        //if(!(cell.control & DB::Cells::HAVE_REVISION))
+        //  cell.control |= DB::Cells::REV_IS_TS;
         
         blocks.add_logged(cell);
       }

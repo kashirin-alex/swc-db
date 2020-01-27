@@ -77,7 +77,7 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
       rev = SWC::Time::now_ns();
       cell.flag = Cells::INSERT;
       cell.set_timestamp(rev-1);
-      cell.set_revision(rev);
+      //cell.set_revision(rev);
       cell.set_time_order_desc(false);
 
       std::string idn = std::to_string(id);
