@@ -113,6 +113,7 @@ class QueryUpdate : public Reader {
   ~QueryUpdate() {}
 
   private:
+
   void read_cells() {
     bool possible_and = false;
     bool bracket = false;
@@ -234,7 +235,7 @@ class QueryUpdate : public Reader {
       size_t remain = value.length();
       uint8_t op;
       int64_t v;
-      DB::Cells::op_from(&buf, &remain, err, op, v);
+      op_from(&buf, &remain, op, v);
       if(err) {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;
@@ -247,7 +248,35 @@ class QueryUpdate : public Reader {
           : Types::Column::COUNTER_I64
       );
     }
+  }
+  
+  void op_from(const uint8_t** ptr, size_t* remainp, 
+               uint8_t& op, int64_t& value) {
+    if(!*remainp) {
+      op = DB::Cells::OP_EQUAL;
+      value = 0;
+      return;
+    }
+    if(**ptr == '=') {
+      op = DB::Cells::OP_EQUAL;
+      ++*ptr;
+      if(!--*remainp) {
+        value = 0;
+        return;
+      }
+    } else 
+      op = 0;
 
+    char *last = (char*)*ptr + (*remainp > 30 ? 30 : *remainp);
+    errno = 0;
+    value = strtoll((const char*)*ptr, &last, 0);
+    if(errno) {
+      err = errno;
+    } else if((const uint8_t*)last > *ptr) {
+      *remainp -= (const uint8_t*)last - *ptr;
+      *ptr = (const uint8_t*)last;
+    } else 
+      err = EINVAL;
   }
 
   void read_flag(uint8_t& flag, bool& on_fraction) {

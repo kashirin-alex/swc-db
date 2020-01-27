@@ -86,67 +86,9 @@ static const uint8_t TS_DESC            =  0x1;
 
 static const uint8_t OP_EQUAL  = 0x1;
 
-inline void op_from(const uint8_t** ptr, size_t* remainp, 
-                    int& err, uint8_t& op, int64_t& value) {
-  if(!*remainp) {
-    op = OP_EQUAL;
-    value = 0;
-    return;
-  }
-  if(**ptr == '=') {
-    op = OP_EQUAL;
-    ++*ptr;
-    if(!--*remainp) {
-      value = 0;
-      return;
-    }
-  } else 
-    op = 0;
-
-  char *last = (char*)*ptr + (*remainp > 30 ? 30 : *remainp);
-  errno = 0;
-  value = strtoll((const char*)*ptr, &last, 0);
-  if(errno) {
-    err = errno;
-  } else if((const uint8_t*)last > *ptr) {
-      *remainp -= (const uint8_t*)last - *ptr;
-      *ptr = (const uint8_t*)last;
-  } else 
-    err = EINVAL;
-
-};
-
-
-inline void get_key_fwd_to_cell_end(DB::Cell::Key& key, 
-                                    uint8_t** base, size_t* remainp) {
-  const uint8_t* ptr = *base;
-  ptr++;
-  *remainp-=1;
-  key.decode(&ptr, remainp);
-  uint8_t control = *ptr++;
-  *remainp-=1;
-
-  if(control & HAVE_TIMESTAMP) 
-    Serialization::decode_vi64(&ptr, remainp);
-
-  if(control & HAVE_REVISION) 
-    Serialization::decode_vi64(&ptr, remainp);
-
-  uint32_t vlen = Serialization::decode_vi32(&ptr, remainp);
-  ptr += vlen;
-  *remainp -= vlen;
-  *base = (uint8_t*)ptr;
-}
-
-  
 class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
-
-  static bool is_next(uint8_t flag, SWC::DynamicBuffer &src_buf) {
-    return *src_buf.ptr == flag;
-  }
-
 
   explicit Cell():  flag(Flag::NONE), control(0), 
                     timestamp(0), revision(0),
