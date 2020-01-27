@@ -150,7 +150,6 @@ enum Code {
 
 
   SERIALIZATION_INPUT_OVERRUN                  = 0x00080001,
-  SERIALIZATION_BAD_VSTR                       = 0x00080003,
   SERIALIZATION_VERSION_MISMATCH               = 0x00080004,
 
   FS_BAD_FILE_HANDLE                    = 0x00020001,

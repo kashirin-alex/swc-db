@@ -263,7 +263,7 @@ void test_bad_vstr() {
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    SWC_ASSERT(e.code() == Error::SERIALIZATION_BAD_VSTR);
+    SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
 

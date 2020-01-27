@@ -261,6 +261,21 @@ uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
     SWC_THROW_OVERRUN("vint64");
   return n; 
 }
+/* 2% perf degredation
+SWC_CAN_INLINE 
+uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
+  uint64_t n = 0;
+  uint8_t shift = 0;
+  more:
+    decode_needed(remainp, 1);
+    n |= (uint64_t)((**bufp) & 0x7f) << shift;
+    if(*(*bufp)++ & 0x80 && (shift += 7) <= 63)
+      goto more;
+  if(shift > 63)
+    SWC_THROW_OVERRUN("vint64");
+  return n; 
+}
+*/
 
 SWC_CAN_INLINE 
 uint64_t decode_vi64(const uint8_t** bufp) {

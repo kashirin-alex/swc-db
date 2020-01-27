@@ -88,7 +88,6 @@ std::map<const int, const char *> text_map {
   { Error::RANGE_END_EARLIER,             "Partial Write, range end earlier"},
 
 
-  { Error::SERIALIZATION_BAD_VSTR,      "SERIALIZATION bad vstr encoding" },
   { Error::SERIALIZATION_VERSION_MISMATCH, "SERIALIZATION version mismatch" },
   { Error::SERIALIZATION_INPUT_OVERRUN,  "SERIALIZATION input overrun" },
 
