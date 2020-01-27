@@ -29,11 +29,11 @@ const size_t CommHeader::encoded_length() {
   header_len = FIXED_LENGTH;
   buffers = 0;
   if(data_size) {
-    buffers++;
+    ++buffers;
     header_len += Serialization::encoded_length_vi32(data_size) + 4;
   }
   if(data_ext_size) {
-    buffers++;
+    ++buffers;
     header_len += Serialization::encoded_length_vi32(data_ext_size) + 4;
   }
   return header_len;

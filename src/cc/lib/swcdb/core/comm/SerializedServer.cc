@@ -90,7 +90,7 @@ SerializedServer::SerializedServer(
 
   EndPoints endpoints_final;
 
-  for(uint32_t reactor=0; reactor<reactors; reactor++) {
+  for(uint32_t reactor=0; reactor<reactors; ++reactor) {
 
     auto io_ctx = std::make_shared<asio::io_context>(workers);
     m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
@@ -116,7 +116,7 @@ SerializedServer::SerializedServer(
       app_ctx->init(endpoints_final);
 
     asio::thread_pool* pool = new asio::thread_pool(workers);
-    for(int n=0; n<workers; n++)
+    for(int n=0; n<workers; ++n)
       asio::post(*pool, [d=io_ctx, run=&m_run]{
         // SWC_LOGF(LOG_INFO, "START DELAY: %s 3secs",  m_appname.c_str());
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
@@ -178,7 +178,7 @@ void SerializedServer::connection_add(ConnHandlerPtr conn) {
 
 void SerializedServer::connection_del(ConnHandlerPtr conn) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  for(auto it=m_conns.begin(); it<m_conns.end(); it++) {
+  for(auto it=m_conns.begin(); it<m_conns.end(); ++it) {
     if(conn->endpoint_remote == (*it)->endpoint_remote){
       m_conns.erase(it);
       break;

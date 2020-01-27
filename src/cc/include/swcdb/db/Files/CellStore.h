@@ -175,7 +175,7 @@ class Read final {
     const uint8_t* chk_ptr;
 
     Block::Read::Ptr blk;
-    for(int n = 0; n < blks_count; n++) {
+    for(int n = 0; n < blks_count; ++n) {
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);

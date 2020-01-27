@@ -486,6 +486,7 @@ class DbClient : public Interface {
       [this, &smartfd, &output_flags, &cells_count, &cells_bytes]
       (Protocol::Common::Req::Query::Select::Result::Ptr result) {
         write_to_file(result, smartfd, output_flags, cells_count, cells_bytes);
+        // err ? req->stop();
       },
       true // cb on partial rsp
     );

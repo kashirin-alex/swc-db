@@ -383,7 +383,7 @@ size_t ConnHandler::read_condition(const Event::Ptr& ev, uint8_t* data,
     uint8_t buf_header[ev->header.header_len];
     bufp = buf_header;
     ptr = data;
-    for(uint8_t n=0; n<CommHeader::PREFIX_LENGTH; n++)
+    for(uint8_t n=0; n<CommHeader::PREFIX_LENGTH; ++n)
       *bufp++ = *ptr++;
 
     remain = ev->header.header_len - CommHeader::PREFIX_LENGTH;
@@ -409,7 +409,7 @@ size_t ConnHandler::read_condition(const Event::Ptr& ev, uint8_t* data,
     return (size_t)0;
 
   uint32_t checksum;
-  for(uint8_t n=0; n < ev->header.buffers; n++) {
+  for(uint8_t n=0; n < ev->header.buffers; ++n) {
     StaticBuffer& buffer = n == 0 ? ev->data :  ev->data_ext;
     if(n == 0) {
       remain = ev->header.data_size;

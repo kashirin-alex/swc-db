@@ -134,7 +134,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   while(remain) {
     try {
       cell.read(rbuf, remainp);
-      count++;
+      ++count;
     } catch(std::exception) {
       SWC_LOGF(LOG_ERROR, 
         "Cell trunclated at count=%llu remain=%llu %s, %s", 
@@ -154,7 +154,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add(cell);
     //m_interval.expand(cell.timestamp);
-    added++;
+    ++added;
 
     if(splitter() && !was_splitted)
       was_splitted = true;
@@ -311,11 +311,11 @@ const size_t Block::release() {
 }
 
 void Block::processing_increment() {
-  m_processing++;
+  ++m_processing;
 }
 
 void Block::processing_decrement() {
-  m_processing--;
+  --m_processing;
 }
 
 const bool Block::removed() {

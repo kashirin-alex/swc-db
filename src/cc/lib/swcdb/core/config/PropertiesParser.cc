@@ -304,7 +304,7 @@ std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg) {
 
 Strings Parser::args_to_strings(int argc, char *argv[]) {
   Strings raw_strings;
-  for(int n=1; n<argc; n++)  
+  for(int n=1; n<argc; ++n)  
     raw_strings.push_back(std::string(argv[n]));
   return raw_strings;
 }
@@ -388,7 +388,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
 
   int n = 0;
   for(const std::string& raw_opt: raw_strings) {
-    n++;
+    ++n;
 
     // if arg is a --name / -name
     if(!fill && raw_opt.find_first_of("-", 0, 1) != std::string::npos) {

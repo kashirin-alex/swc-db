@@ -26,7 +26,7 @@ IoContext::~IoContext() { }
 
 void IoContext::run(IoContext::Ptr ptr){
   SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s)", m_name.c_str());
-  for(int n=0;n<m_size;n++)
+  for(int n=0;n<m_size;++n)
     asio::post(m_pool, [ptr](){ptr->do_run();});
 }
 
@@ -60,7 +60,7 @@ void IoContext::stop() {
   m_wrk.reset();
     
   // hold on for IO to finish
-  for(int i=0;i<10;i++){
+  for(int i=0;i<10;++i){
     if(m_ioctx->stopped())
       break;
     SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", m_name.c_str());

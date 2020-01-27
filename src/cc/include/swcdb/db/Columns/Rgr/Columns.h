@@ -71,7 +71,7 @@ class Columns final {
 
     if(m_columns.size() > idx){
       auto it = m_columns.begin();
-      for(int i=idx;i--;it++);
+      for(int i=idx;i--;++it);
       return it->second;
     }
     idx = 0;
@@ -135,7 +135,7 @@ class Columns final {
         break;
       if(validation)
         SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
-      unloaded++;
+      ++unloaded;
       it->second->unload_all(unloaded, cb);
       m_columns.erase(it);
     }
@@ -170,7 +170,7 @@ class Columns final {
           it = m_columns.begin();
           started = true;
         } else
-          it++;
+          ++it;
         if(it == m_columns.end())
           break;
         if(it->first < 3)

@@ -93,7 +93,7 @@ class Mutable final {
   void free() {
     if(m_cells) {
       if(m_size) do { 
-        m_size--;
+        --m_size;
         delete *(m_cells+m_size);
         //(*(m_cells+m_size))->~Cell();
         //std::free(*(m_cells+m_size));
@@ -135,7 +135,7 @@ class Mutable final {
     Cell* ptr;
     Condition::Comp chk;
 
-    for(uint32_t offset = _narrow(key); offset < m_size; offset++) {
+    for(uint32_t offset = _narrow(key); offset < m_size; ++offset) {
       ptr = *(m_cells + offset);
       if((chk = key.compare(ptr->key, 0)) == Condition::GT 
         || (comp == Condition::GE && chk == Condition::EQ)){
@@ -151,7 +151,7 @@ class Mutable final {
     Cell* ptr;
     Condition::Comp chk;
 
-    for(uint32_t offset = _narrow(key); offset < m_size; offset++) {
+    for(uint32_t offset = _narrow(key); offset < m_size; ++offset) {
       ptr = *(m_cells + offset);
       if((chk = key.compare(ptr->key, 0)) == Condition::GT 
         || (comp == Condition::GE && chk == Condition::EQ)){
@@ -165,7 +165,7 @@ class Mutable final {
   bool get(const Specs::Key& key, Cell& cell) const {
     Cell* ptr;
 
-    for(uint32_t offset = 0; offset < m_size; offset++) {
+    for(uint32_t offset = 0; offset < m_size; ++offset) {
       ptr = *(m_cells + offset);
       if(key.is_matching(ptr->key)) {
         cell.copy(*ptr);
@@ -187,14 +187,14 @@ class Mutable final {
   void push_back(const Cell& cell, bool no_value=false) {
     ensure(1);    
     *(m_cells + m_size) = new Cell(cell, no_value);
-    m_size++;
+    ++m_size;
     m_size_bytes += cell.encoded_length();
   }
 
   void push_back_nocpy(Cell* cell) {
     ensure(1);
     *(m_cells + m_size) = cell;
-    m_size++;
+    ++m_size;
     m_size_bytes += cell->encoded_length();
   }
   
@@ -202,7 +202,7 @@ class Mutable final {
     _move_fwd(offset, 1);
     *(m_cells + offset) = new Cell(cell);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
-    m_size++;
+    ++m_size;
     m_size_bytes += cell.encoded_length();
   }
 
@@ -240,7 +240,7 @@ class Mutable final {
     Condition::Comp cond;
     int64_t revision_new = e_cell.get_revision();
 
-    for(Cell* cell; cell=get_next(offset); offset++) {
+    for(Cell* cell; cell=get_next(offset); ++offset) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
@@ -266,7 +266,7 @@ class Mutable final {
     int64_t revision_new = e_cell.get_revision();
     uint32_t revs = 0;
 
-    for(Cell* cell; cell=get_next(offset); offset++) {
+    for(Cell* cell; cell=get_next(offset); ++offset) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
@@ -315,7 +315,7 @@ class Mutable final {
     int64_t revision = e_cell.get_revision();
     uint32_t add_offset = m_size;
     Cell* cell;
-    for(; cell=get_next(offset); offset++) {
+    for(; cell=get_next(offset); ++offset) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
@@ -380,7 +380,7 @@ class Mutable final {
     Cell* cell;
 
     for(uint32_t offset = _narrow(interval.key_begin);
-        offset < m_size; offset++){
+        offset < m_size; ++offset){
       cell = *(m_cells + offset);
 
       if(cell->has_expired(m_ttl) || (!interval.key_begin.empty() 
@@ -417,19 +417,16 @@ class Mutable final {
     bool only_keys = specs.flags.is_only_keys();
 
     uint32_t offset = 0; //(narrower over specs.key_start)
-    for(Cell* cell; !stop && offset < m_size; offset++){
+    for(Cell* cell; !stop && offset < m_size; ++offset){
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || 
-         (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ) {
-        skips++;
-        continue;
-      }
-
-      if(selector(*cell, stop)) {
+      if(!cell->has_expired(m_ttl) &&
+         (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
+         selector(*cell, stop)) {
+        
         if(cell_offset) {
-          cell_offset--;
-          skips++;  
+          --cell_offset;
+          ++skips;  
           continue;
         }
 
@@ -437,7 +434,7 @@ class Mutable final {
         if(reached_limits())
           break;
       } else 
-        skips++;
+        ++skips;
     }
   }
 
@@ -451,25 +448,22 @@ class Mutable final {
     
     uint32_t rev = 0;
     uint32_t offset = 0; //(narrower over specs.key_start)
-    for(Cell* cell; !stop && offset < m_size; offset++) {
+    for(Cell* cell; !stop && offset < m_size; ++offset) {
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || 
-         (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ) {
-        skips++;
-        continue;
-      }
-
-      if(selector(*cell, stop)) {
+      if(!cell->has_expired(m_ttl) &&
+         (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
+         selector(*cell, stop)) {
+        
         if(cell_offset) {
-          cell_offset--;
-          skips++;  
+          --cell_offset;
+          ++skips;
           continue;
         }
 
         if(cells.size() && cells.compare(-1, cell->key) == Condition::EQ) {
           if(!rev) {
-            skips++;
+            ++skips;
             continue;
           }
         } else {
@@ -479,9 +473,9 @@ class Mutable final {
         cells.push_back(*cell, only_keys);
         if(reached_limits())
           break;
-        rev--;
+        --rev;
       } else 
-        skips++;
+        ++skips;
     }
   }
   
@@ -493,17 +487,16 @@ class Mutable final {
     uint cell_offset = specs.flags.offset;
     bool only_deletes = specs.flags.is_only_deletes();
 
-    for(; offset < m_size; offset++){
+    for(; offset < m_size; ++offset) {
       cell = *(m_cells + offset);
 
-      if(cell->has_expired(m_ttl) || 
-         (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) )
-        continue;
+      if(!cell->has_expired(m_ttl) && 
+         (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
+         specs.is_matching(*cell, type)) {
 
-      if(specs.is_matching(*cell, type)) {
-        if(cell_offset){
-          cell_offset--;
-          skips++;  
+        if(cell_offset) {
+          --cell_offset;
+          ++skips;
           continue;
         }
         
@@ -512,7 +505,7 @@ class Mutable final {
           // specs.flags.limit_by && specs.flags.max_versions
           break;
       } else 
-        skips++;
+        ++skips;
     }
   }
 
@@ -520,7 +513,7 @@ class Mutable final {
     Cell* cell;
     cells.ensure(m_size_bytes);
 
-    for(uint32_t offset = 0; offset < m_size; offset++) {
+    for(uint32_t offset = 0; offset < m_size; ++offset) {
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
@@ -544,14 +537,14 @@ class Mutable final {
     for(;offset < m_size 
           && ((!threshold || threshold > cells.fill()) 
               && (!max_cells || max_cells > count) ); 
-        offset++) {
+        ++offset) {
       cell = *(m_cells + offset);
       
       if(cell->has_expired(m_ttl))
         continue;
       
       cell->write(cells);
-      count++;
+      ++count;
 
       if(!first)
         first = cell;
@@ -584,7 +577,7 @@ class Mutable final {
     cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
     
     uint32_t offset = _narrow(key_start);
-    for(Cell* cell; offset < m_size; offset++) {
+    for(Cell* cell; offset < m_size; ++offset) {
       cell = *(m_cells + offset);
 
       if(!key_start.empty() && 
@@ -594,7 +587,7 @@ class Mutable final {
           key_finish.compare(cell->key, 0) == Condition::GT)
         break;
 
-      count++;
+      ++count;
       if(offset_applied == -1)
         offset_applied = offset;
 
@@ -622,7 +615,7 @@ class Mutable final {
     uint32_t rest = 0;
     Cell* from_cell = *(m_cells + from);
 
-    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; offset++) {
+    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
       cell = *(m_cells + offset);
       
       if(!rest) {
@@ -648,7 +641,7 @@ class Mutable final {
     Cell* from_cell = *(m_cells + from);
     uint32_t rest = 0;
 
-    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; offset++) {
+    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
       cell = *(m_cells + offset);
  
       if(!rest) {
@@ -688,7 +681,7 @@ class Mutable final {
 
   void add_to(Ptr cells, bool release=false) {
     uint32_t offset = 0;
-    for(Cell* cell; cell=get_next(offset); offset++) 
+    for(Cell* cell; cell=get_next(offset); ++offset) 
       cells->add(*cell);
     if(release)
       free();
@@ -728,7 +721,7 @@ class Mutable final {
     s.append(std::to_string(m_ttl));
     if(with_cells) {
       s.append(" cells=[\n");
-      for(uint32_t offset=0; offset < m_size; offset++) {
+      for(uint32_t offset=0; offset < m_size; ++offset) {
         s.append((*(m_cells + offset))->to_string(type));
         s.append("\n");
       }
@@ -754,13 +747,13 @@ class Mutable final {
       Cell** cells_old = m_cells;
       m_cells = new Cell*[m_cap += m_size];     
       memcpy(m_cells, cells_old, m_size*_cell_sz);
-      //for(uint32_t n=m_size;n--;) 
+      //for(uint32_t n=m_size;--n;) 
       //  *(m_cells+n) = *(cells_old+n);
       delete [] cells_old;
     }
 
     memset(m_cells+m_size, 0, (m_cap-m_size)*_cell_sz);
-    //for(uint32_t n=m_cap-m_size; n--;) 
+    //for(uint32_t n=m_cap-m_size; --n;) 
     //  *(m_cells+m_size+n) = nullptr;
   }
 
@@ -769,7 +762,7 @@ class Mutable final {
     Cell** ptr = m_cells+offset;
     memmove(ptr+by, ptr, (m_size-offset)*_cell_sz);
     //Cell** end = m_cells+m_size+by-1;
-    //for(uint32_t n = m_size-offset;n--;)
+    //for(uint32_t n = m_size-offset;--n;)
       //*end-- = *(end-by); 
   }
 
@@ -799,16 +792,11 @@ class Mutable final {
     if(m_size < narrow_sz || key.empty())
       return offset;
 
-    uint32_t narrows = 0;
     uint32_t sz = m_size/2;
     offset = sz; 
-    Condition::Comp cond;
 
     for(;;) {
-      cond = (*(m_cells + offset))->key.compare(key, 0); 
-      narrows++;
-
-      if(cond == Condition::GT){
+      if((*(m_cells + offset))->key.compare(key, 0) == Condition::GT) {
         if(sz < narrow_sz)
           break;
         offset += sz /= 2; 
@@ -829,7 +817,7 @@ class Mutable final {
   void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, 
                         uint32_t revs) {
     
-    for(Cell* cell; cell=get_next(offset); offset++) {
+    for(Cell* cell; cell=get_next(offset); ++offset) {
       if(cell->key.compare(key, 0) != Condition::EQ)
         return;
 

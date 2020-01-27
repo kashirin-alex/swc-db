@@ -166,7 +166,7 @@ class Readers final {
     _free();
     uint32_t id;
     uint32_t len = Serialization::decode_vi32(ptr, remain);
-    for(size_t i=0;i<len;i++) {
+    for(size_t i=0;i<len;++i) {
       id = Serialization::decode_vi32(ptr, remain);
       m_cellstores.push_back(
         Read::make(err, id, range, DB::Cells::Interval(ptr, remain)));

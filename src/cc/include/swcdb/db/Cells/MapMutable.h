@@ -176,7 +176,7 @@ class MapMutable {
 
     if(offset < m_map.size()) {
       auto it = m_map.begin();
-      for(it; offset--; it++);
+      for(it; offset--; ++it);
       return it->second;
     }
     return nullptr;

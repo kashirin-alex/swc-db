@@ -49,7 +49,7 @@ class Vector  {
     Cell* cell;
     while(remain) {
       cells.push_back(new Cell(&ptr, &remain, true));
-      count++;
+      ++count;
     }
     return count;
   }

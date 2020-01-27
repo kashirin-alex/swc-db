@@ -23,11 +23,11 @@ Blocks::Ptr Blocks::ptr() {
 Blocks::~Blocks() {  }
   
 void Blocks::processing_increment() {
-  m_processing++;
+  ++m_processing;
 }
 
 void Blocks::processing_decrement() {
-  m_processing--;
+  --m_processing;
 }
 
 void Blocks::load(int& err) {
@@ -214,7 +214,7 @@ void Blocks::release_prior(Block::Ptr ptr) {
 void Blocks::release_and_merge(Block::Ptr ptr) {
   std::scoped_lock lock(m_mutex);
   bool state = false;
-  for(size_t idx = 0; idx<m_blocks.size(); idx++) {
+  for(size_t idx = 0; idx<m_blocks.size(); ++idx) {
     if(ptr == m_blocks[idx]) {
       if(idx < 2)
         return;
@@ -306,7 +306,7 @@ const std::string Blocks::to_string(){
 const size_t Blocks::_size() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
-    sz++;
+    ++sz;
   return sz;
 }
 

@@ -107,7 +107,7 @@ namespace SWC {
   }
   
   void Properties::get_names(std::vector<std::string> &names) const {
-    for(auto it = m_map.begin(); it != m_map.end(); it++)
+    for(auto it = m_map.begin(); it != m_map.end(); ++it)
       names.push_back(it->first);
   }
 

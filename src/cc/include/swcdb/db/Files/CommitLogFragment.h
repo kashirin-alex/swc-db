@@ -122,7 +122,7 @@ class Fragment final {
     auto buff_write = std::make_shared<StaticBuffer>(output);
     buff_write->own = false;
     m_buffer.set(cells);
-    writing++;
+    ++writing;
     
     write(
       Error::UNPOSSIBLE, 
@@ -178,7 +178,7 @@ class Fragment final {
     else if(Env::Resources.need_ram(m_size))
       release();
     
-    writing--;
+    --writing;
     cv.notify_all();
   }
 
@@ -194,7 +194,7 @@ class Fragment final {
     bool loaded;
     {
       std::scoped_lock lock(m_mutex);
-      m_processing++;
+      ++m_processing;
       loaded = m_state == State::LOADED;
       if(!loaded) {
         m_queue.push(cb);
@@ -230,7 +230,7 @@ class Fragment final {
 
   void processing_decrement() {
     std::scoped_lock lock(m_mutex);
-    m_processing--; 
+    --m_processing; 
   }
   
   size_t release() {

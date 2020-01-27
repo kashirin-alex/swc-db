@@ -162,7 +162,7 @@ class Key {
     }
 
     uint8_t* begin;
-    for(uint32_t offset = 0; offset < count; offset++) {
+    for(uint32_t offset = 0; offset < count; ++offset) {
       begin = (uint8_t*)ptr_tmp;
       ptr_tmp += reserved;
       ptr_tmp += Serialization::decode_vi32(&ptr_tmp);
@@ -242,7 +242,7 @@ class Key {
     
     uint32_t max = fractions ? fractions 
                   : (count > other.count ? count : other.count);
-    for(uint32_t c = 0; c<max; c++, ptr += len, ptr_other += len_other) {
+    for(uint32_t c = 0; c<max; ++c, ptr += len, ptr_other += len_other) {
 
       if(c == count || c == other.count) {
         comp = count > other.count ? Condition::LT : Condition::GT;
@@ -267,7 +267,7 @@ class Key {
     const uint8_t* ptr_end = data + size;
 
     for(; ptr<ptr_end; ptr += Serialization::decode_vi32(&ptr) + offset)
-      tmp_count++;
+      ++tmp_count;
     count = tmp_count;
     return tmp_count;
   }
@@ -294,7 +294,7 @@ class Key {
     own = owner;
     if(count = Serialization::decode_vi32(bufp, remainp)) {
       const uint8_t* ptr_start = *bufp;
-      for(uint32_t n=0; n<count; n++) {
+      for(uint32_t n=0; n<count; ++n) {
         *bufp += reserved;
         *bufp += Serialization::decode_vi32(bufp);
       }
@@ -318,7 +318,7 @@ class Key {
     s.append(" fractions=[");
     uint32_t len = 0;
     const uint8_t* ptr = data;
-    for(uint32_t n=0; n<count; n++,ptr+=len) {
+    for(uint32_t n=0; n<count; ++n,ptr+=len) {
       s.append("(");
       len = Serialization::decode_vi32(&ptr);
       s.append(std::string((const char*)ptr, len));
@@ -339,7 +339,7 @@ class Key {
     const uint8_t* ptr = data;
     char hex[2];
     for(uint32_t n=0; n<count; ) {
-      for(len = Serialization::decode_vi32(&ptr); len--;  ptr++) {
+      for(len = Serialization::decode_vi32(&ptr); len--; ++ptr) {
         if(pretty && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;
@@ -360,7 +360,7 @@ class Key {
     char hex[2];
     for(uint32_t n=0; n<count; ) {
       out << '"';
-      for(len = Serialization::decode_vi32(&ptr); len--;  ptr++) {
+      for(len = Serialization::decode_vi32(&ptr); len--; ++ptr) {
         if(pretty && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;

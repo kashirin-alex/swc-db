@@ -75,15 +75,15 @@ class Compaction final {
       if((col = RangerEnv::columns()->get_next(m_idx_cid)) == nullptr)
         break;
       if(col->removing()){
-        m_idx_cid++;
+        ++m_idx_cid;
         continue;
       }
 
       if((range = col->get_next(m_idx_rid)) == nullptr) {
-        m_idx_cid++;
+        ++m_idx_cid;
         continue;
       }
-      m_idx_rid++;
+      ++m_idx_rid;
       if(!range->compact_possible())
         continue;
 
@@ -379,7 +379,7 @@ class Compaction final {
 
       if(range->is_any_end()){
         if(!last_cell.key.empty()) {
-          cell_count++;
+          ++cell_count;
           last_cell.write(buff);
           blk_intval.expand(last_cell);
         }

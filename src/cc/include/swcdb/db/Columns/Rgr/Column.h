@@ -81,7 +81,7 @@ class Column final {
       auto it = m_ranges.begin();
       if(it == m_ranges.end())
         break;
-      unloaded++;
+      ++unloaded;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [cb, range=it->second](){range->unload(cb, false);}
@@ -136,7 +136,7 @@ class Column final {
 
     if(m_ranges.size() > idx){
       auto it = m_ranges.begin();
-      for(int i=idx;i--;it++);
+      for(int i=idx;i--;++it);
       return it->second;
     }
     idx = 0;
@@ -157,7 +157,7 @@ class Column final {
           it = m_ranges.begin();
           started = true;
         } else
-          it++;
+          ++it;
         if(it == m_ranges.end())
           break;
         range = it->second;

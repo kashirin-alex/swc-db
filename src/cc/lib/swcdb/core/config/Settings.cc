@@ -159,7 +159,7 @@ void Settings::load_files_by(const std::string &fileprop,
 
     std::string fname;
     Strings files = properties.get_strs(fileprop);
-    for (auto it=files.begin(); it<files.end(); it++) {
+    for (auto it=files.begin(); it<files.end(); ++it) {
       fname.clear();
       if(it->front() != '/' && it->front() != '.') 
         fname.append(properties.get_str("swc.cfg.path"));

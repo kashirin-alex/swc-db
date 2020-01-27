@@ -217,7 +217,7 @@ class Cell final {
   const uint8_t get_counter_op() const {
     const uint8_t* ptr = value;
     Serialization::decode_vi64(&ptr);
-    return *ptr++;
+    return *ptr;
   }
 
   const int64_t get_counter() const {
@@ -353,7 +353,7 @@ class Cell final {
       s.append(std::to_string(get_counter()));
     } else {
       char c;
-      for(int i=0; i<vlen;i++) {
+      for(int i=0; i<vlen;++i) {
         c = *(value+i);
         s.append(std::string(&c, 1));
       }
@@ -400,7 +400,7 @@ class Cell final {
       const uint8_t* ptr = value;
       char hex[2];
 
-      for(uint32_t i=vlen; i--; ptr++) {
+      for(uint32_t i=vlen; i--; ++ptr) {
         if(!bin && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;

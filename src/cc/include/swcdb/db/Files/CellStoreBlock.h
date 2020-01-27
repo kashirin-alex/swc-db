@@ -69,7 +69,7 @@ class Read final {
   bool load(const std::function<void()>& cb) {
     {
       std::scoped_lock lock(m_mutex);
-      m_processing++;
+      ++m_processing;
       if(m_state == State::NONE) {
         m_state = State::LOADING;
         return true;
@@ -108,7 +108,7 @@ class Read final {
 
   void processing_decrement() {
     std::scoped_lock lock(m_mutex);
-    m_processing--; 
+    --m_processing; 
   }
 
   const size_t release() {    

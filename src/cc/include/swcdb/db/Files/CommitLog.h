@@ -242,8 +242,8 @@ class Fragments final {
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
     std::scoped_lock lock(m_mutex);
 
-    for(auto old = fragments_old.begin(); old < fragments_old.end(); old++){
-      for(auto it = m_fragments.begin(); it < m_fragments.end(); it++) {
+    for(auto old = fragments_old.begin(); old < fragments_old.end(); ++old){
+      for(auto it = m_fragments.begin(); it < m_fragments.end(); ++it) {
         if(*it == *old) {
           (*it)->remove(err);
           delete *it;

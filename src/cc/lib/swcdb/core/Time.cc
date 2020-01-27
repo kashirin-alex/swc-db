@@ -77,7 +77,7 @@ const int64_t now_ns() {
 const int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
   if(buf.find("/") == std::string::npos) {  
-    while(*ptr != 0 && *ptr == '0') ptr++;
+    while(*ptr != 0 && *ptr == '0') ++ptr;
     char *last;
     errno = 0;
     int64_t ns = strtoll(ptr, &last, 0);
