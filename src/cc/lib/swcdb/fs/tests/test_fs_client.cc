@@ -242,8 +242,10 @@ void run(size_t thread_id){
     uint8_t buf[data_start.length()];
     if (Env::FsInterface::fs()->read(err, smartfd, buf,  data_start.length()) != data_start.length() 
         || err != Error::OK 
-        || strcmp((char*)buf, data_start.c_str()) != 0) { 
-     std::cerr << "ERROR(read) err=" << err << " buf=" << buf << " " << smartfd->to_string() <<"\n";
+        || strncmp((char*)buf, data_start.c_str(), data_start.length()) != 0) { 
+     std::cerr << "ERROR(read) err=" << err 
+               << " buf=" << std::string((char*)buf, data_start.length()) 
+                << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
     std::cout << "read-data='" << std::string((char*)buf, data_start.length()) << "'\n";
@@ -262,7 +264,7 @@ void run(size_t thread_id){
     uint8_t bufsuf[data_end.length()];
     if (Env::FsInterface::fs()->read(err, smartfd, bufsuf,  data_end.length()) != data_end.length() 
         || err != Error::OK 
-        || strcmp((char*)bufsuf, data_end.c_str()) != 0) { 
+        || strncmp((char*)bufsuf, data_end.c_str(), data_end.length()) != 0) { 
      std::cerr << "ERROR(read(suff)) err=" << err << " buf=" << bufsuf << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
@@ -298,7 +300,7 @@ void run(size_t thread_id){
           != data_start.length() 
           || err != Error::OK 
           || smartfd->pos() != pread_offset+data_start.length() 
-          || strcmp((char*)buf_start, data_start.c_str()) != 0) { 
+          || strncmp((char*)buf_start, data_start.c_str(), data_start.length()) != 0) { 
         std::cerr << "ERROR(pread) err=" << err << " buf=" << buf_start << " " << smartfd->to_string() <<"\n";
         exit(1);
       }
