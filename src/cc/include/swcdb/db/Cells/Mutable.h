@@ -64,9 +64,7 @@ class Mutable final {
              const Types::Column typ=Types::Column::PLAIN) {
     free();
     m_cap = cap;
-    m_max_revs = max_revs;
-    m_ttl = ttl;
-    type = typ;
+    configure(max_revs, ttl, typ);
     if(m_cap)
       _allocate();
   }
@@ -75,6 +73,14 @@ class Mutable final {
 
   ~Mutable() {
     free();
+  }
+
+  void configure(const uint32_t max_revs=1, 
+                 const uint64_t ttl=0, 
+                 const Types::Column typ=Types::Column::PLAIN) {
+    m_max_revs = max_revs;
+    m_ttl = ttl;
+    type = typ;
   }
 
   void ensure(uint32_t sz) {
@@ -230,7 +236,7 @@ class Mutable final {
     return nullptr;
   }
 
-  void add_remove(const Cell& e_cell, uint32_t& offset) {
+  void add_remove(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
     int64_t revision_new = e_cell.get_revision();
 
@@ -255,7 +261,7 @@ class Mutable final {
     push_back(e_cell);
   }
 
-  void add_plain(const Cell& e_cell, uint32_t& offset) {
+  void add_plain(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
     int64_t revision_new = e_cell.get_revision();
     uint32_t revs = 0;
@@ -303,7 +309,7 @@ class Mutable final {
     push_back(e_cell);
   }
 
-  void add_counter(const Cell& e_cell, uint32_t& offset) {
+  void add_counter(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
 
     int64_t revision = e_cell.get_revision();
@@ -360,7 +366,6 @@ class Mutable final {
         cell->set_counter(op_1, value_1, type, eq_rev_1);
       }
   }
-
 
   void pop(int32_t idx, Cell& cell) {
     uint32_t offset = idx < 0? m_size+idx: idx;
