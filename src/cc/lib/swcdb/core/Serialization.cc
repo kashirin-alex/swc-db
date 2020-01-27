@@ -7,7 +7,9 @@
 
 
 //#ifdef SWC_IMPL_SOURCE
-# define SWC_CAN_INLINE inline
+# define SWC_CAN_INLINE  \
+  __attribute__((__always_inline__, __artificial__)) \
+  extern inline
 //#else 
 //# define SWC_CAN_INLINE 
 //#endif
@@ -17,6 +19,7 @@
 #define SWC_THROW_UNPOSSIBLE(_s_) \
   SWC_THROWF(Error::UNPOSSIBLE, "%s", _s_)
 
+extern "C" { }
 
 namespace SWC { namespace Serialization {
 
@@ -314,7 +317,7 @@ void encode_str16(uint8_t** bufp, const void* str, uint16_t len) {
   encode_i16(bufp, len);
   if(len) 
     memcopy(bufp, (const uint8_t*)str, len);
-  *(*bufp++) = 0;
+  *(*bufp)++ = 0;
 }
 
 SWC_CAN_INLINE 
@@ -334,7 +337,9 @@ char* decode_str16(const uint8_t** bufp, size_t* remainp, uint16_t *lenp) {
   *lenp = decode_i16(bufp, remainp);
   decode_needed(remainp, *lenp+1);
   char* str = (char *)*bufp;
-  *bufp += *lenp + 1;
+  *bufp += *lenp;
+  if(*(*bufp)++ != 0)
+    SWC_THROW_OVERRUN("str16");
   return str;
 }
 
@@ -358,7 +363,7 @@ void encode_vstr(uint8_t** bufp, const void* buf, size_t len) {
   encode_vi64(bufp, len);
   if(len) 
     memcopy(bufp, (const uint8_t*)buf, len);
-  *(*bufp++) = 0;
+  *(*bufp)++ = 0;
 }
 
 SWC_CAN_INLINE 
@@ -377,7 +382,9 @@ char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp) {
   *lenp = decode_vi64(bufp, remainp);
   decode_needed(remainp, *lenp+1);
   char* buf = (char *)*bufp;
-  *bufp += *lenp + 1;
+  *bufp += *lenp;
+  if(*(*bufp)++ != 0)
+    SWC_THROW_OVERRUN("vstr");
   return buf;
 }
 
