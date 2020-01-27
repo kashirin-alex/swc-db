@@ -171,10 +171,10 @@ uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp) {
   do {
     decode_needed(remainp, 1);
     n |= (uint32_t)((**bufp) & 0x7f) << shift;
-  } while(*(*bufp)++ & 0x80 && (shift += 7) <= 28);
-  if(shift > 28)
-    SWC_THROW_OVERRUN("vint32");
-  return n; 
+    if(!(*(*bufp)++ & 0x80))
+      return n;
+  } while((shift+=7) <= 28);
+  SWC_THROW_OVERRUN("vint32");
 }
 /* 10% perf degredation
 SWC_CAN_INLINE 
@@ -256,10 +256,10 @@ uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
   do {
     decode_needed(remainp, 1);
     n |= (uint64_t)((**bufp) & 0x7f) << shift;
-  } while(*(*bufp)++ & 0x80 && (shift += 7) <= 63);
-  if(shift > 63)
-    SWC_THROW_OVERRUN("vint64");
-  return n; 
+    if(!(*(*bufp)++ & 0x80))
+      return n;
+  } while((shift+=7) <= 63);
+  SWC_THROW_OVERRUN("vint64");
 }
 /* 2% perf degredation
 SWC_CAN_INLINE 
