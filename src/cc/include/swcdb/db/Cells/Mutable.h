@@ -185,7 +185,7 @@ class Mutable final {
   }
 
   void push_back(const Cell& cell, bool no_value=false) {
-    ensure(1);    
+    ensure(1);
     *(m_cells + m_size) = new Cell(cell, no_value);
     ++m_size;
     m_size_bytes += cell.encoded_length();

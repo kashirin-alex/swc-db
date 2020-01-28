@@ -4,11 +4,50 @@
 
 #include <iostream>
 
+#include "swcdb/core/Time.h"
 #include "swcdb/db/Cells/Cell.h"
 #include <vector>
 
 
 namespace Cells = SWC::DB::Cells;
+
+void check_load() {
+  Cells::Cell cell;
+
+  cell.flag = Cells::INSERT;
+  cell.set_timestamp(SWC::Time::now_ns());
+  cell.set_time_order_desc(true);
+
+  cell.key.add("aKey1");
+  cell.key.add("aKey2");
+  cell.key.add("aKey3");
+  cell.key.add("aKey4");
+  cell.key.add("aKey5");
+
+  std::string value = "(";
+  for(uint32_t chr=0; chr<=255; chr++)
+    value += (char)chr;
+  value += ")END";
+  cell.set_value(value);
+
+  auto ts = SWC::Time::now_ns();
+  auto chks = 1000000;
+  for(auto n = chks; --n;) {
+    auto c = new Cells::Cell(cell);
+    delete c;
+  }
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Constructor took=" << ts << " avg=" << ts/chks << "\n";
+
+  ts = SWC::Time::now_ns();
+  for(auto n = chks; --n;) {
+    auto c = new Cells::Cell();
+    c->copy(cell);
+    delete c;
+  }
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Copy took=" << ts << " avg=" << ts/chks << "\n";
+}
 
 int main() {
    
@@ -158,6 +197,11 @@ int main() {
          exit(1);
    }
    delete []last_skey;
-   
+
+
+   std::cout << " sizeof(SWC::DB::Cells::Cell)=" << sizeof(SWC::DB::Cells::Cell) << "\n";
+   std::cout << " sizeof(SWC::DB::Cell::Key)=" << sizeof(SWC::DB::Cell::Key) << "\n";
+   check_load();;
    std::cout << "\n-------------------------------\n";
+
 }

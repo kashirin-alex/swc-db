@@ -18,8 +18,9 @@ class Key {
 
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) { }
 
-  explicit Key(const Key &other): own(false), data(0) {
-    copy(other);
+  explicit Key(const Key &other)
+      : own(other.size), count(other.count), size(other.size), 
+        data(own ? (uint8_t*)memcpy(new uint8_t[size], other.data, size) : 0) {
   }
 
   void copy(const Key &other) {
