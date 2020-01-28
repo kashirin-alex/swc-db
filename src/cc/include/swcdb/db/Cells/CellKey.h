@@ -20,17 +20,15 @@ class Key {
 
   explicit Key(const Key &other)
       : own(other.size), count(other.count), size(other.size), 
-        data(own ? (uint8_t*)memcpy(new uint8_t[size], other.data, size) : 0) {
+        data(_data(other.data)) {
   }
 
   void copy(const Key &other) {
     free(); 
-    own   = true;
-    if(size = other.size) {
-      data = new uint8_t[size];
-      memcpy(data, other.data, size);
-      count = other.count;
-    }
+    own = true;
+    size = other.size;
+    count = other.count;
+    data = _data(other.data);
   }
 
   virtual ~Key() {
@@ -157,9 +155,7 @@ class Key {
     const uint8_t* ptr_tmp = data;
     if(!own) {
       own = true;
-      data = new uint8_t[size];      
-      memcpy(data, ptr_tmp, size);
-      ptr_tmp = data;
+      ptr_tmp = (data = _data(data));
     }
 
     uint8_t* begin;
@@ -180,8 +176,7 @@ class Key {
       
       ptr_tmp = data;
       if(count) {
-        data = new uint8_t[size];
-        memcpy(data, ptr_tmp, size);
+        data = _data(ptr_tmp);
       } else {
         data = 0;
         size = 0;
@@ -237,7 +232,6 @@ class Key {
     Condition::Comp comp = Condition::EQ;
     const uint8_t* ptr = data;
     uint32_t len = 0;
-
     const uint8_t* ptr_other = other.data;
     uint32_t len_other = 0;
     
@@ -245,18 +239,16 @@ class Key {
                   : (count > other.count ? count : other.count);
     for(uint32_t c = 0; c<max; ++c, ptr += len, ptr_other += len_other) {
 
-      if(c == count || c == other.count) {
-        comp = count > other.count ? Condition::LT : Condition::GT;
-        break;
-      } 
+      if(c == count || c == other.count)
+        return count > other.count ? Condition::LT : Condition::GT;
 
-      len = Serialization::decode_vi32(&ptr);
+      if(!(len = Serialization::decode_vi32(&ptr)) && empty_ok)
+        continue;
+
       len_other = Serialization::decode_vi32(&ptr_other);
-      if((comp = empty_ok && !len
-                ? Condition::EQ
-                : Condition::condition(ptr, len, ptr_other, len_other))
-          != Condition::EQ)
-        break;
+      if((comp = Condition::condition(ptr, len, ptr_other, len_other)) 
+                  != Condition::EQ)
+        return comp;
     }
     return comp;
   }
@@ -301,12 +293,7 @@ class Key {
       }
       size = *bufp - ptr_start;
       *remainp -= size;
-      if(own) {
-        data = new uint8_t[size];
-        memcpy(data, ptr_start, size);
-      } else {
-        data = (uint8_t*)ptr_start;
-      }
+      data = own ? _data(ptr_start) : (uint8_t*)ptr_start;
     }
   }
 
@@ -379,6 +366,13 @@ class Key {
   uint32_t  count;
   uint32_t  size;
   uint8_t*  data;
+
+  private:
+  
+  uint8_t* _data(const uint8_t* ptr) {
+    return size ? (uint8_t*)memcpy(new uint8_t[size], ptr, size) : 0;
+  }
+  
 };
 
 }}}

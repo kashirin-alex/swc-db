@@ -95,15 +95,14 @@ class Cell final {
 
   explicit Cell(const Cell& other)
     : key(other.key), own(other.vlen), flag(other.flag), 
-      control(other.control), timestamp(other.timestamp), vlen(other.vlen), 
-      value(own? (uint8_t*)memcpy(new uint8_t[vlen], other.value, vlen) : 0) {
+      control(other.control), timestamp(other.timestamp), 
+      vlen(other.vlen), value(_value(other.value)) {
   }
 
   explicit Cell(const Cell& other, bool no_value)
     : key(other.key), own(!no_value && other.vlen), flag(other.flag), 
       control(other.control), timestamp(other.timestamp), 
-      vlen(own ? other.vlen : 0), 
-      value(own? (uint8_t*)memcpy(new uint8_t[vlen], other.value, vlen) : 0) {
+      vlen(own ? other.vlen : 0), value(_value(other.value)) {
   }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
@@ -126,7 +125,6 @@ class Cell final {
   ~Cell() {
     if(own && value)
       delete [] value;
-    key.free();
   }
 
   void free() {
@@ -147,27 +145,22 @@ class Cell final {
   }
 
   // SET_VALUE
-  void set_value(uint8_t* v, uint32_t len, bool cpy) {
+  void set_value(uint8_t* v, uint32_t len, bool owner) {
     free();
     vlen = len;
-    if(!(own = cpy)) {
-      value = v;
-    } else if(vlen) {
-      value = new uint8_t[vlen];
-      memcpy(value, v, vlen);
-    }
+    value = (own = owner) ? _value(v) : v;
   }
 
-  void set_value(const char* v, uint32_t len, bool cpy) {
-    set_value((uint8_t *)v, len, cpy);
+  void set_value(const char* v, uint32_t len, bool owner) {
+    set_value((uint8_t *)v, len, owner);
   }
 
-  void set_value(const char* v, bool cpy=false){
-    set_value((uint8_t *)v, strlen(v), cpy);
+  void set_value(const char* v, bool owner=false) {
+    set_value((uint8_t *)v, strlen(v), owner);
   }
 
-  void set_value(const std::string& v, bool cpy=false) {
-    set_value((uint8_t *)v.data(), v.length(), cpy);
+  void set_value(const std::string& v, bool owner=false) {
+    set_value((uint8_t *)v.data(), v.length(), owner);
   }
 
   void set_counter(uint8_t op, int64_t v,  
@@ -196,8 +189,7 @@ class Cell final {
       vlen += Serialization::encoded_length_vi64(rev);
     }
 
-    value = new uint8_t[vlen];
-    uint8_t* ptr = value;
+    uint8_t* ptr = (value = new uint8_t[vlen]);
     Serialization::encode_vi64(&ptr, v);
     *ptr++ = op;
     if(op & HAVE_REVISION)
@@ -239,14 +231,8 @@ class Cell final {
       timestamp = AUTO_ASSIGN;
 
     free();
-    own = owner;
     if(vlen = Serialization::decode_vi32(bufp, remainp)) {
-      if(own) {
-        value = new uint8_t[vlen];
-        memcpy(value, *bufp, vlen);
-      } else
-        value = (uint8_t *)*bufp;
-      
+      value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
       *bufp += vlen;
       assert(*remainp >= vlen);
       *remainp -= vlen;
@@ -395,7 +381,13 @@ class Cell final {
   int64_t         timestamp;
   uint32_t        vlen;
   uint8_t*        value;
-    
+
+  private:
+
+  uint8_t* _value(const uint8_t* v) {
+    return vlen ? (uint8_t*)memcpy(new uint8_t[vlen], v, vlen) : 0;
+  }
+
 };
 
 
