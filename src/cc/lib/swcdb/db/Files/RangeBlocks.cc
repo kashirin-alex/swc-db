@@ -21,7 +21,15 @@ Blocks::Ptr Blocks::ptr() {
 }
 
 Blocks::~Blocks() {  }
-  
+
+void Blocks::schema_update() {
+  commitlog.schema_update();
+
+  std::shared_lock lock(m_mutex);
+  for(Block::Ptr blk=m_block; blk; blk=blk->next)
+    blk->schema_update();
+}
+
 void Blocks::processing_increment() {
   ++m_processing;
 }

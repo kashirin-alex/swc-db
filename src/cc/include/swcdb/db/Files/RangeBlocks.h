@@ -33,6 +33,8 @@ class Blocks final {
 
   ~Blocks();
   
+  void schema_update();
+
   void processing_increment();
 
   void processing_decrement();

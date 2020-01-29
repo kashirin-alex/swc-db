@@ -23,7 +23,7 @@ void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
     int err = Error::OK;
     auto col = RangerEnv::columns()->get_column(err, params.schema->cid);
     if(col != nullptr) {
-      col->cfg.update(*params.schema.get());
+      col->schema_update(*params.schema.get());
 
       if(!RangerEnv::is_shuttingdown())
         SWC_LOGF(LOG_DEBUG, "updated %s", col->cfg.to_string().c_str());

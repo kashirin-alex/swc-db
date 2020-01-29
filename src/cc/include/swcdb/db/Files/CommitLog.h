@@ -45,6 +45,15 @@ class Fragments final {
     return this;
   }
 
+  void schema_update() {
+    std::scoped_lock lock(m_mutex_cells);
+    m_cells.configure(
+      range->cfg->cell_versions(), 
+      range->cfg->cell_ttl(), 
+      range->cfg->column_type()
+    );
+  }
+
   void add(const DB::Cells::Cell& cell) {
     size_t size_bytes;
     uint32_t cells_count;

@@ -32,6 +32,20 @@ class Column final {
 
   virtual ~Column() { }
 
+  void schema_update(const DB::Schema& schema) {
+    bool compact = cfg.c_versions > schema.cell_versions || 
+                   (schema.cell_ttl && cfg.c_ttl > schema.cell_ttl);
+    bool and_cells =  cfg.c_versions != schema.cell_versions ||
+                      cfg.c_ttl != schema.cell_ttl ||
+                      cfg.col_type != schema.col_type;
+    cfg.update(schema);
+    if(and_cells) {
+      std::shared_lock lock(m_mutex);
+      for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
+        it->second->schema_update(compact);
+    }
+  }
+
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
     Range::Ptr range = nullptr;
     {

@@ -55,6 +55,8 @@ class Block final {
 
   Ptr ptr();
 
+  void schema_update();
+
   const bool is_consist(const DB::Cells::Interval& intval);
   
   const bool is_in_end(const DB::Cell::Key& key);
