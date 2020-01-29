@@ -94,10 +94,7 @@ class Compaction final {
         ++m_running;
       }
       asio::post(
-        *RangerEnv::maintenance_io()->ptr(), 
-        [range, ptr=ptr()](){ 
-          ptr->compact(range); 
-        }
+        *RangerEnv::maintenance_io()->ptr(), [this, range](){ compact(range); }
       );
       
       {
@@ -121,50 +118,40 @@ class Compaction final {
       return compacted(range);
 
     auto& commitlog  = range->blocks.commitlog;
-    auto& cellstores = range->blocks.cellstores;
 
     uint32_t cs_size = range->cfg->cellstore_size(); 
     uint32_t blk_size = range->cfg->block_size();
-    uint32_t blk_cells = range->cfg->block_cells();
-    Types::Encoding blk_encoding = range->cfg->block_enc();
-
     uint8_t perc = range->cfg->compact_percent(); 
-    // % of size of either by cellstore or block
-    
     uint32_t allow_sz = (cs_size  / 100) * perc; 
-    uint32_t allowed_sz_cs  = cs_size + allow_sz;
-    size_t log_sz = commitlog.size_bytes();
-  
-    bool do_compaction = range->compact_required()
-      || log_sz >= allowed_sz_cs
-      || commitlog.size() > allowed_sz_cs/blk_size 
-      || (log_sz > allow_sz && log_sz > (cellstores.size_bytes()/100) * perc)
-      || cellstores.need_compaction(
-          allowed_sz_cs,  blk_size + (blk_size / 100) * perc);
-    
-    SWC_LOGF(LOG_INFO, 
-      "COMPACT-CHECK %s-range %d/%d allow=%dMB"
-      " log=%d=%d/%dMB cs=%d=%d/%dMB blocks=%d=%dMB",
-      do_compaction ? "started" : "skipped",
-      range->cfg->cid, range->rid, 
-      allowed_sz_cs/1000000,
 
-      commitlog.size(),
-      commitlog.size_bytes(true)/1000000,
-      log_sz/1000000,
-
-      cellstores.size(),
-      cellstores.size_bytes(true)/1000000,
-      cellstores.size_bytes()/1000000,
-      
-      range->blocks.size(),
-      range->blocks.size_bytes()/1000000
-    );
+    size_t value;
+    bool do_compaction;
+    std::string need;
+    if(do_compaction = range->compact_required())
+      need.append("Required");
+    else if(do_compaction = (value = commitlog.size_bytes(true)) >= allow_sz) {
+      need.append("LogBytes=");
+      need.append(std::to_string(value-allow_sz));
+    } else if(do_compaction = (value = commitlog.size()) >= cs_size/blk_size) {
+      need.append("LogCount=");
+      need.append(std::to_string(value-cs_size/blk_size));
+    } else if(do_compaction = range->blocks.cellstores.need_compaction(
+          cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
+      need.append("CsResize");
+    }
 
     if(!do_compaction || !m_run)
       return compacted(range);
       
     range->compacting(Range::Compact::COMPACTING);
+    
+    SWC_LOGF(
+      LOG_INFO, 
+      "COMPACT-STARTED %d/%d %s", 
+      range->cfg->cid, range->rid,
+      need.c_str()
+    );
+
     range->blocks.wait_processing();
     
     auto req = std::make_shared<CompactScan>(
@@ -172,7 +159,9 @@ class Compaction final {
       range, 
       cs_size, 
       range->cfg->block_replication(), 
-      blk_size, blk_cells, blk_encoding, 
+      blk_size, 
+      range->cfg->block_cells(), 
+      range->cfg->block_enc(), 
       range->cfg->cell_versions(), 
       range->cfg->cell_ttl(), 
       range->cfg->column_type()
@@ -180,9 +169,6 @@ class Compaction final {
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); 
     // fragments for deletion at finalize-compaction 
-
-    SWC_LOGF(LOG_INFO, "COMPACT-STARTED %d/%d",  
-             range->cfg->cid, range->rid);
 
     range->scan_internal(req);
   }
@@ -690,10 +676,7 @@ class Compaction final {
     std::scoped_lock lock(m_mutex);
 
     if(m_running && m_running-- == RangerEnv::maintenance_io()->get_size()) {
-      asio::post(
-        *RangerEnv::maintenance_io()->ptr(), 
-        [ptr=ptr()](){ ptr->run(true); }
-      );
+      asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
       return;
     } 
     if(!m_running) {
@@ -719,9 +702,9 @@ class Compaction final {
     m_check_timer.expires_from_now(set_in);
 
     m_check_timer.async_wait(
-      [ptr=ptr()](const asio::error_code ec) {
-        if (ec != asio::error::operation_aborted){
-          ptr->run();
+      [this](const asio::error_code ec) {
+        if(ec != asio::error::operation_aborted){
+          run();
         }
     }); 
 

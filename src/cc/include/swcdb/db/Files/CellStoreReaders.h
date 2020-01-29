@@ -131,10 +131,10 @@ class Readers final {
     std::shared_lock lock(m_mutex);
     size_t  sz;
     for(auto cs : m_cellstores) {
-      sz = cs->size_bytes();
+      sz = cs->size_bytes(true);
       if(!sz)
         continue;
-      if(sz >= cs_sz || sz/cs->blocks_count() >= blk_size) //or by max_blk_sz
+      if(sz > cs_sz || sz/cs->blocks_count() > blk_size)
         return true;
     }
     return false;
