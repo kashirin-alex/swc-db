@@ -22,7 +22,7 @@ class Compaction final {
             : m_check_timer(
                 asio::high_resolution_timer(
                   *RangerEnv::maintenance_io()->ptr())),
-              m_run(true), running(0), m_scheduled(false),
+              m_run(true), m_running(0), m_scheduled(false),
               m_idx_cid(0), m_idx_rid(0), 
               cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
                 "swc.rgr.compaction.check.interval")) {
@@ -36,13 +36,13 @@ class Compaction final {
 
   void stop() {
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_run = false;
       m_check_timer.cancel();
     }
     std::unique_lock<std::mutex> lock_wait(m_mutex);
-    if(running) 
-      m_cv.wait(lock_wait, [&running=running](){return !running;});  
+    if(m_running) 
+      m_cv.wait(lock_wait, [&running=m_running](){return !running;});  
   }
 
   void schedule() {
@@ -50,19 +50,19 @@ class Compaction final {
   }
   
   void schedule(uint32_t t_ms) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     _schedule(t_ms);
   }
 
   const bool stopped() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     return !m_run;
   }
   
-  void run() {
+  void run(bool continuing=false) {
     {
-      std::lock_guard<std::mutex> lock(m_mutex); 
-      if(!m_run || m_scheduled)
+      std::scoped_lock lock(m_mutex); 
+      if(!m_run || (!continuing && m_scheduled))
         return;
       m_scheduled = true;
     }
@@ -89,20 +89,30 @@ class Compaction final {
 
       if(!m_run)
         break;
-
-      ++running;
+      {
+        std::scoped_lock lock(m_mutex); 
+        ++m_running;
+      }
       asio::post(
         *RangerEnv::maintenance_io()->ptr(), 
         [range, ptr=ptr()](){ 
           ptr->compact(range); 
         }
       );
-      if(running == RangerEnv::maintenance_io()->get_size())
-        return;
+      
+      {
+        std::scoped_lock lock(m_mutex); 
+        if(m_running == RangerEnv::maintenance_io()->get_size())
+          return;
+      }
     }
     
-    if(!running)
-      compacted();
+    {
+      std::scoped_lock lock(m_mutex); 
+      if(m_running)
+        return;
+    }
+    compacted();
   }
 
   void compact(Range::Ptr range) {
@@ -231,7 +241,7 @@ class Compaction final {
                range->cfg->cid, range->rid, total_cells.load());
 
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         if(!cells.size()) {
           if(m_writing)
             m_queue.push(nullptr);
@@ -253,7 +263,7 @@ class Compaction final {
       spec.offset_rev = last.timestamp;
       
       { 
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         m_queue.push(selected_cells);
         if(m_writing) 
           return;
@@ -270,7 +280,7 @@ class Compaction final {
 
     void request_more() {
       {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         if(m_getting 
           || (!m_queue.empty() 
               && (m_queue.size() >= RangerEnv::maintenance_io()->get_size()
@@ -292,7 +302,7 @@ class Compaction final {
       DB::Cells::Mutable* selected_cells;
       for(;;) {
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::scoped_lock lock(m_mutex);
           selected_cells = m_queue.front();
         }
         if(selected_cells == nullptr) {
@@ -313,7 +323,7 @@ class Compaction final {
           return quit();
 
         {
-          std::lock_guard<std::mutex> lock(m_mutex);
+          std::scoped_lock lock(m_mutex);
           m_queue.pop();
           m_writing = !m_queue.empty();
           if(!m_writing)
@@ -676,24 +686,27 @@ class Compaction final {
   }
 
   void compacted() {
+    std::scoped_lock lock(m_mutex);
 
-    if(running && running-- == RangerEnv::maintenance_io()->get_size()) {
-      run();
-      
-    } else if(!running) {
-      std::lock_guard<std::mutex> lock(m_mutex); 
+    if(m_running && m_running-- == RangerEnv::maintenance_io()->get_size()) {
+      asio::post(
+        *RangerEnv::maintenance_io()->ptr(), 
+        [ptr=ptr()](){ ptr->run(true); }
+      );
+      return;
+    } 
+    if(!m_running) {
       m_scheduled = false;
       _schedule(cfg_check_interval->get());
-    }
-
-    if(!m_run) {
-      m_cv.notify_all();
       return;
     }
+
+    if(!m_run)
+      m_cv.notify_all();
   }
 
   void _schedule(uint32_t t_ms = 300000) {
-    if(!m_run || running || m_scheduled)
+    if(!m_run || m_running || m_scheduled)
       return;
 
     auto set_in = std::chrono::milliseconds(t_ms);
@@ -717,7 +730,7 @@ class Compaction final {
   std::mutex                   m_mutex;
   asio::high_resolution_timer  m_check_timer;
   bool                         m_run;
-  std::atomic<uint32_t>        running;
+  uint32_t                     m_running;
   bool                         m_scheduled;
   std::condition_variable      m_cv;
   
