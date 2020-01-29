@@ -72,7 +72,8 @@ class Block final {
   void load_cells(const DB::Cells::Mutable& cells);
 
   const size_t load_cells(const uint8_t* buf, size_t remain, 
-                          size_t avail, bool& was_splitted);
+                          uint32_t revs, size_t avail, 
+                          bool& was_splitted);
 
   const bool splitter();
 

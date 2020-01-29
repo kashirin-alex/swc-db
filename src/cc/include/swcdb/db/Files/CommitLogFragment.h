@@ -15,7 +15,8 @@ class Fragment final {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
-        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), i32(cells), 
+        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), 
+                     i32(cell_revs), i32(cells), 
                      i32(data-checksum), i32(checksum)
         data:        [cell]
   */
@@ -26,7 +27,7 @@ class Fragment final {
   
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
-  static const uint8_t     HEADER_EXT_FIXED_SIZE = 21;
+  static const uint8_t     HEADER_EXT_FIXED_SIZE = 25;
   
   enum State {
     NONE,
@@ -66,7 +67,7 @@ class Fragment final {
                       ), 
                       m_state(state), 
                       m_size_enc(0), m_size(0), 
-                      m_cells_count(0), m_cells_offset(0), 
+                      m_cell_revs(0), m_cells_count(0), m_cells_offset(0), 
                       m_data_checksum(0), m_processing(0), m_cells_remain(0),
                       m_err(Error::OK) {
   }
@@ -78,12 +79,13 @@ class Fragment final {
   ~Fragment() { }
 
   void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
-             DynamicBuffer& cells, uint32_t cell_count, 
+             DynamicBuffer& cells, uint32_t cell_revs, uint32_t cell_count, 
              std::atomic<int>& writing, std::condition_variable_any& cv) {
 
     m_version = VERSION;
     
     uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
+    m_cell_revs = cell_revs;
     m_cells_remain = m_cells_count = cell_count;
     m_size = cells.fill();
     m_cells_offset = HEADER_SIZE+header_extlen;
@@ -113,6 +115,7 @@ class Fragment final {
     Serialization::encode_i8(&bufp, (uint8_t)m_encoder);
     Serialization::encode_i32(&bufp, m_size_enc);
     Serialization::encode_i32(&bufp, m_size);
+    Serialization::encode_i32(&bufp, m_cell_revs);
     Serialization::encode_i32(&bufp, m_cells_count);
     
     checksum_i32(output.base+m_cells_offset, output.base+output.fill(), 
@@ -215,7 +218,10 @@ class Fragment final {
     bool was_splitted = false;
     if(m_buffer.size) {
       m_cells_remain -= cells_block->load_cells(
-        m_buffer.base, m_buffer.size, m_cells_count, was_splitted);   
+        m_buffer.base, m_buffer.size, 
+        m_cell_revs, m_cells_count, 
+        was_splitted
+      ); 
     } else {
       SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
                to_string().c_str());
@@ -384,6 +390,7 @@ class Fragment final {
       m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
       m_size_enc = Serialization::decode_i32(&ptr, &remain);
       m_size = Serialization::decode_i32(&ptr, &remain);
+      m_cell_revs = Serialization::decode_i32(&ptr, &remain);
       m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
       m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
@@ -514,6 +521,7 @@ class Fragment final {
   size_t            m_size_enc;
   size_t            m_size;
   StaticBuffer      m_buffer;
+  uint32_t          m_cell_revs;
   uint32_t          m_cells_count;
   uint32_t          m_cells_offset;
   uint32_t          m_data_checksum;

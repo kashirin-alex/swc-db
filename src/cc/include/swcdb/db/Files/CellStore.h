@@ -20,13 +20,13 @@ namespace CellStore {
     blocks-index:
       header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
       data:   [vi32(offset), interval, i32(checksum)]
-    trailer : i8(version), i32(blocks-index-len), i32(checksum)
+    trailer : i8(version), i32(blocks-index-len), i32(cell-revs), i32(checksum)
       (trailer-offset) = fileLength - TRAILER_SIZE
       (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
 */
 
 
-static const uint8_t  TRAILER_SIZE=9;
+static const uint8_t  TRAILER_SIZE=13;
 static const int8_t   VERSION=1;
 
 
@@ -57,6 +57,7 @@ class Read final {
 
   static bool load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
                            size_t& blks_idx_size, 
+                           uint32_t& cell_revs, 
                            size_t& blks_idx_offset, 
                            bool close_after=false) {
     bool loaded;
@@ -98,6 +99,7 @@ class Read final {
       size_t remain = TRAILER_SIZE;
       int8_t version = Serialization::decode_i8(&ptr, &remain);
       blks_idx_size = Serialization::decode_i32(&ptr, &remain);
+      cell_revs = Serialization::decode_i32(&ptr, &remain);
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf, TRAILER_SIZE-4)){  
         err = Error::CHECKSUM_MISMATCH;
@@ -119,8 +121,9 @@ class Read final {
                                 std::vector<Block::Read::Ptr>& blocks) {
 
     size_t blks_idx_size = 0;
+    uint32_t cell_revs = 0;
     size_t offset = 0;
-    if(!load_trailer(err, smartfd, blks_idx_size, offset, false))
+    if(!load_trailer(err, smartfd, blks_idx_size, cell_revs, offset, false))
       return;
 
     StaticBuffer read_buf;
@@ -181,7 +184,8 @@ class Read final {
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
       blk = Block::Read::make(
         offset, 
-        DB::Cells::Interval(&ptr, &remain)
+        DB::Cells::Interval(&ptr, &remain),
+        cell_revs
       );  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
@@ -388,17 +392,18 @@ class Write : public std::enable_shared_from_this<Write> {
   const uint32_t            id;
   FS::SmartFd::Ptr          smartfd;
   Types::Encoding           encoder;
+  uint32_t                  cell_revs;
   size_t                    size;
   DB::Cells::Interval       interval;
   //std::atomic<uint32_t>     completion;
  
-  Write(const uint32_t id, const std::string& filepath, 
+  Write(const uint32_t id, const std::string& filepath, uint32_t cell_revs,
         Types::Encoding encoder=Types::Encoding::PLAIN)
         : id(id), 
           smartfd(
             FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
           ), 
-          encoder(encoder), size(0) { //, completion(0)
+          encoder(encoder), cell_revs(cell_revs), size(0) { //, completion(0)
   }
 
   virtual ~Write() { }
@@ -497,6 +502,7 @@ class Write : public std::enable_shared_from_this<Write> {
 
     *ptr++ = VERSION;
     Serialization::encode_i32(&ptr, blk_idx_sz);
+    Serialization::encode_i32(&ptr, cell_revs);
     checksum_i32(buff_write.base, ptr, &ptr);
     
     Env::FsInterface::fs()->append(
@@ -541,6 +547,8 @@ class Write : public std::enable_shared_from_this<Write> {
     s.append(std::to_string(size));
     s.append(" encoder=");
     s.append(Types::to_string(encoder));
+    s.append(" cell_revs=");
+    s.append(std::to_string(cell_revs));
     s.append(" ");
     s.append(interval.to_string());
     s.append(" ");
@@ -571,7 +579,8 @@ typedef std::shared_ptr<Writers>  WritersPtr;
 
 inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding, 
                                          DB::RangeBase::Ptr range) {
-  Write writer(1, range->get_path_cs(1), encoding);
+  Write writer(
+    1, range->get_path_cs(1), range->cfg->cell_versions(), encoding);
   writer.create(
     err, -1, range->cfg->block_replication(), range->cfg->block_size());
   if(err)

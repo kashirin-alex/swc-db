@@ -56,7 +56,9 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
   int err = SWC::Error::OK;
 
   SWC::Files::CellStore::Write cs_writer(
-    id, range->get_path_cs(id), range->cfg->block_enc());
+    id, range->get_path_cs(id), 
+    range->cfg->cell_versions(), range->cfg->block_enc()
+  );
   cs_writer.create(err);
   hdlr_err(err);
 

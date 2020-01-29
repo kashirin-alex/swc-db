@@ -133,7 +133,8 @@ class Fragments final {
         err, 
         range->cfg->block_replication(), 
         range->cfg->block_enc(), 
-        cells, cell_count,
+        cells, 
+        range->cfg->cell_versions(), cell_count,
         writing, m_cv
       );
 

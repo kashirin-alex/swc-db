@@ -128,8 +128,8 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
 }
 
 const size_t Block::load_cells(const uint8_t* buf, size_t remain, 
-                               //uint32_t revs,
-                               size_t avail, bool& was_splitted) {
+                               uint32_t revs, size_t avail, 
+                               bool& was_splitted) {
   DB::Cells::Cell cell;
   size_t count = 0;
   size_t added = 0;
@@ -142,7 +142,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   uint64_t tts = Time::now_ns();
 
   std::scoped_lock lock(m_mutex);
-  bool synced = !m_cells.size();// && revs <= blocks->range->cfg->cell_versions();
+  bool synced = !m_cells.size() && revs <= blocks->range->cfg->cell_versions();
                             // schema change from more to less results in dups
   while(remain) {
     try {

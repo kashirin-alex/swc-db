@@ -45,15 +45,18 @@ class Read final {
   }
   
   inline static Ptr make(const size_t offset, 
-                         const DB::Cells::Interval& interval) {
-    return new Read(offset, interval);
+                         const DB::Cells::Interval& interval, 
+                         uint32_t cell_revs) {
+    return new Read(offset, interval, cell_revs);
   }
 
-  const size_t                          offset;
-  const DB::Cells::Interval             interval;
+  const size_t               offset;
+  const DB::Cells::Interval  interval;
+  const uint32_t             cell_revs;
 
-  explicit Read(const size_t offset, const DB::Cells::Interval& interval)
-                : offset(offset), interval(interval), 
+  explicit Read(const size_t offset, const DB::Cells::Interval& interval, 
+                uint32_t cell_revs)
+                : offset(offset), interval(interval), cell_revs(cell_revs),
                   m_state(State::NONE), m_processing(0), 
                   m_loaded_header(false),
                   m_size(0), m_sz_enc(0), m_cells_remain(0), m_cells_count(0), 
@@ -97,7 +100,10 @@ class Read final {
     bool was_splitted = false;
     if(m_buffer.size)
       m_cells_remain -= cells_block->load_cells(
-        m_buffer.base, m_buffer.size, m_cells_count, was_splitted);
+        m_buffer.base, m_buffer.size, 
+        cell_revs, m_cells_count, 
+        was_splitted
+      );
 
     processing_decrement();
 

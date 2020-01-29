@@ -349,6 +349,7 @@ class Compaction final {
       cs_writer = std::make_shared<Files::CellStore::Write>(
         id, 
         range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
+        cell_versions,
         blk_encoding
       );
       cs_writer->create(err, -1, blk_replication, blk_size);
