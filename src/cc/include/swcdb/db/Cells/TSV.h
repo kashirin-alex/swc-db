@@ -282,7 +282,304 @@ const bool read(const uint8_t **bufp, size_t* remainp,
 
   return true;
 }
+  
+std::string get_filepath(const std::string& base_path, size_t& file_num) {
+  std::string filepath(base_path);
+  filepath.append(std::to_string(++file_num));
+  filepath.append(file_num == 1 ? ".tsv" : ".tsv.part");
+  return filepath;
+}
 
+class FileWriter {
+  public:
+  
+  int         err = Error::OK;
+  std::string base_path;
+  uint8_t     output_flags = 0;
+  size_t      cells_count = 0;
+  size_t      cells_bytes = 0;
+  size_t      file_num = 0;
+
+  FileWriter(FS::Interface::Ptr interface) : interface(interface) {}
+
+  virtual ~FileWriter() { }
+
+  void initialize() {
+    if(base_path.back() != '/')
+      base_path.append("/");
+    interface->get_fs()->mkdirs(err, base_path);
+  }
+
+  void finalize() {
+    if(smartfd != nullptr && smartfd->valid()) {
+      interface->get_fs()->flush(err, smartfd);
+      interface->close(err, smartfd);
+    }
+  }
+
+  void write(Protocol::Common::Req::Query::Select::Result::Ptr result) {
+    DB::Schema::Ptr schema = 0;
+    DB::Cells::Vector vec; 
+    DynamicBuffer buffer;
+    
+    do {
+      for(auto cid : result->get_cids()) {
+        schema = Env::Clients::get()->schemas->get(err, cid);
+        if(err)
+          break;
+        if(!cells_count)
+          DB::Cells::TSV::header_write(schema->col_type, output_flags, buffer);
+
+        vec.free();
+        result->get_cells(cid, vec);
+        for(auto& cell : vec.cells) {
+
+          cells_count++;
+          cells_bytes += cell->encoded_length();
+          
+          DB::Cells::TSV::write(*cell, schema->col_type, output_flags, buffer);
+          
+          delete cell;
+          cell = nullptr;
+
+          if(buffer.fill() >= 8388608) {
+            write(buffer);
+            if(err)
+              break;
+          }
+        }
+      }
+    } while(!vec.cells.empty() || err);
+    
+    if(buffer.fill() && !err) 
+      write(buffer);
+  }
+
+  void write(DynamicBuffer& buffer) {
+    StaticBuffer buff_write(buffer);
+
+    if(smartfd == nullptr || smartfd->pos() + buff_write.size > 4294967296) {
+      finalize();
+
+      smartfd = FS::SmartFd::make_ptr(
+        get_filepath(base_path, file_num), 
+        FS::OpenFlags::OPEN_FLAG_OVERWRITE
+      );
+      while(interface->create(err, smartfd, 0, 0, 0));
+      if(err) 
+        return;
+      fds.push_back(smartfd);
+    }
+
+    interface->get_fs()->append(
+      err,
+      smartfd, 
+      buff_write, 
+      FS::Flags::NONE
+    );
+  }
+  
+  void get_length(std::vector<FS::SmartFd::Ptr>& files) {
+    for(auto fd : fds) {
+      fd->pos(interface->get_fs()->length(err, fd->filepath()));
+      files.push_back(fd);
+      if(err)
+        break;
+    }
+  }
+
+  private:
+  FS::Interface::Ptr             interface;
+  FS::SmartFd::Ptr               smartfd = nullptr;
+  std::vector<FS::SmartFd::Ptr>  fds;
+
+};
+
+class FileReader {
+  public:
+  
+  int             err = Error::OK;
+  int64_t         cid = DB::Schema::NO_CID;
+  std::string     base_path;
+  std::string     message;
+  DB::Schema::Ptr schema;
+  size_t          cells_count = 0;
+  size_t          cells_bytes = 0;
+
+  FileReader(FS::Interface::Ptr interface) : interface(interface) {}
+
+  virtual ~FileReader() { }
+
+  void initialize() {
+    if(base_path.back() != '/')
+      base_path.append("/");
+
+    size_t file_num = 0;
+    std::string filepath;
+    do {
+      filepath = get_filepath(base_path, file_num);
+      if(!interface->exists(err, filepath))
+        break;
+      fds.push_back(FS::SmartFd::make_ptr(filepath, 0));
+    } while(!err);
+
+    if(fds.empty())
+      err = ENOENT;
+    else
+      schema = Env::Clients::get()->schemas->get(err, cid);
+  }
+
+  void read_and_load() {
+    initialize();
+    if(err)
+      return;
+
+    auto updater = std::make_shared<Protocol::Common::Req::Query::Update>();
+    updater->columns->create(schema);
+    
+    for(auto& fd : fds) {
+      read(updater, fd);
+      if(err)
+        break;
+    }
+
+    auto col = updater->columns->get_col(cid);
+    if(col->size_bytes() && !updater->result->completion)
+      updater->commit(col);
+    
+    updater->wait();
+  }
+
+  void read(Protocol::Common::Req::Query::Update::Ptr updater, 
+            FS::SmartFd::Ptr smartfd) {
+    size_t length = interface->get_fs()->length(err, smartfd->filepath());
+    if(err)
+      return;
+
+    size_t offset = 0;
+    size_t r_sz;
+    
+    auto col = updater->columns->get_col(cid);
+    StaticBuffer  buffer;
+    DynamicBuffer buffer_remain;
+    DynamicBuffer buffer_write;
+    bool ok;
+    size_t s_sz;
+    size_t cell_pos = 0;
+    size_t cell_mark = 0;
+
+    do {
+      err = Error::OK;
+      if(!smartfd->valid() && !interface->open(err, smartfd) && err)
+        break;
+      if(err)
+        continue;
+      
+      r_sz = length - offset > 8388608 ? 8388608 : length - offset;
+      for(;;) {
+        buffer.free();
+        err = Error::OK;
+
+        if(interface->get_fs()->pread(
+            err, smartfd, offset, &buffer, r_sz) != r_sz) {
+          int tmperr = Error::OK;
+          interface->close(tmperr, smartfd);
+          if(err != Error::FS_EOF){
+            if(!interface->open(err, smartfd))
+              break;
+            continue;
+          }
+        }
+        break;
+      }
+      if(err)
+        break;
+
+      offset += r_sz;
+      
+      if(buffer_remain.fill()) {
+        buffer_write.add(buffer_remain.base, buffer_remain.fill());
+        buffer_write.add(buffer.base, buffer.size);
+        buffer_remain.free();
+      } else {
+        buffer_write.set(buffer.base, buffer.size);
+      }
+
+      const uint8_t* ptr = buffer_write.base;
+      size_t remain = buffer_write.fill();
+      
+      if(header.empty() &&
+         !DB::Cells::TSV::header_read(&ptr, &remain, 
+                                      schema->col_type, has_ts, header)) {
+        message.append("TSV file missing ");
+        message.append(
+          header.empty() ? "columns defintion" : "value columns");
+        message.append(" in header\n");
+        break;
+      }
+
+      while(remain) {
+        DB::Cells::Cell cell;
+        try {
+          cell_mark = remain;
+          ok = DB::Cells::TSV::read(
+            &ptr, &remain, has_ts, schema->col_type, cell);
+          cell_pos += cell_mark-remain;
+        } catch(const std::exception& ex) {
+          message.append(ex.what());
+          message.append(", corrupted '");
+          message.append(smartfd->filepath());
+          message.append("' starting at-offset=");
+          message.append(std::to_string(cell_pos));
+          message.append("\n");
+          offset = length;
+          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
+          break;
+        }
+        if(ok) {
+          col->add(cell);
+          cells_count++;
+          cells_bytes += cell.encoded_length();
+          
+          s_sz = col->size_bytes();
+          if(updater->result->completion && s_sz > updater->buff_sz*3)
+            updater->wait();
+          if(!updater->result->completion && s_sz >= updater->buff_sz)
+            updater->commit(col);
+          
+        } else  {
+          buffer_remain.add(ptr, remain);
+          break;
+        }
+      }
+      
+      buffer_write.free();
+      buffer.free();
+
+    } while(offset < length);
+
+    if(smartfd->valid())
+      interface->close(err, smartfd);
+    
+    if(buffer_remain.fill()) {
+      message.append("early file end");
+      message.append(", corrupted '");
+      message.append(smartfd->filepath());
+      message.append("' starting at-offset=");
+      message.append(std::to_string(cell_pos));
+      message.append("\n");
+    }
+    if(!message.empty())
+      err = Error::SQL_BAD_LOAD_FILE_FORMAT;
+  }
+
+  private:
+  FS::Interface::Ptr              interface;
+  std::vector<FS::SmartFd::Ptr>   fds;
+  std::vector<std::string>        header;
+  bool                            has_ts;
+
+};
 
 } // namespace TSV
 }}} // namespace SWC::DB::Cells

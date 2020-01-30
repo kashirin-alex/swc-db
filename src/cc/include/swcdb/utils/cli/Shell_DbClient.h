@@ -68,7 +68,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "select", 
-        {"select where [Columns[Cells[Interval Flags]]] Flags Display-Flags;",
+        {"select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;",
         "-> select where COL(NAME|ID,) = ( cells=(Interval Flags) ) AND",
         "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
         "       [F-begin] <= range <= [F-end]                   AND", 
@@ -107,9 +107,9 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "dump", 
-        {"dump col='ID|NAME' into 'filepath.ext' "
-        "where [cells=(Interval Flags) AND] Output-Flags Display-Flags;",
-        "-> dump col='ColName' into 'ColName.tsv' OUTPUT_NO_* TS / VALUE;"
+        {"dump col='ID|NAME' into 'folder/path/' "
+        "where [cells=(Interval Flags) AND] OutputFlags DisplayFlags;",
+        "-> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS / VALUE;"
         },
         [ptr=this](std::string& cmd){return ptr->dump(cmd);}, 
         new re2::RE2(
@@ -119,7 +119,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "load", 
-        {"load from 'filepath.ext' into col='ID|NAME' Display-Flags;"},
+        {"load from 'folder/path/' into col='ID|NAME' DisplayFlags;"},
         [ptr=this](std::string& cmd){return ptr->load(cmd);}, 
         new re2::RE2(
           "(?i)^(load)(\\s+|$)")
@@ -303,217 +303,64 @@ class DbClient : public Interface {
   // LOAD
   const bool load(std::string& cmd) {
     int64_t ts = Time::now_ns();
-    uint8_t display_flags = 0;
     
-    std::string filepath;    
-    int64_t cid = DB::Schema::NO_CID;
-    std::string message;
-    client::SQL::parse_load(err, cmd, filepath, cid, display_flags, message);
-    if(err) 
-      return error(message);
-                   
     Env::FsInterface::init(FS::fs_type(
       Env::Config::settings()->get<std::string>("swc.fs")));
+    DB::Cells::TSV::FileReader reader(Env::FsInterface::interface());
 
-    auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
-    size_t cells_count = 0;
-    size_t cells_bytes = 0;
-    read_and_load(err, smartfd, cid, cells_count, cells_bytes, message);
+    uint8_t display_flags = 0;
+    client::SQL::parse_load(
+      err, cmd, reader.base_path, reader.cid, display_flags, reader.message);
+    if(err) 
+      return error(reader.message);
+              
+    reader.read_and_load();
 
     if(display_flags & DB::DisplayFlag::STATS) 
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
-    if(err) {
-      if(message.empty()) {
-        message.append(Error::get_text(err));
-        message.append("\n");
+      display_stats(
+        SWC::Time::now_ns() - ts, reader.cells_bytes, reader.cells_count);
+    if(err || (err = reader.err)) {
+      if(reader.message.empty()) {
+        reader.message.append(Error::get_text(err));
+        reader.message.append("\n");
       }
-      return error(message);
+      return error(reader.message);
     }
 
     Env::FsInterface::reset();
     return true;
   }
 
-  void read_and_load(int& err, FS::SmartFd::Ptr smartfd, int64_t cid,
-                     size_t& cells_count, size_t& cells_bytes,
-                     std::string& message) {
-    auto update_req = std::make_shared<Protocol::Common::Req::Query::Update>();
-    
-    auto schema = Env::Clients::get()->schemas->get(err, cid);
-    if(err)
-      return;
-    size_t length = Env::FsInterface::fs()->length(err, smartfd->filepath());
-    if(err)
-      return;
-
-    update_req->columns->create(schema);
-    size_t offset = 0;
-    size_t r_sz;
-    
-    auto col = update_req->columns->get_col(schema->cid);
-    StaticBuffer buffer;
-    DynamicBuffer buffer_remain;
-    DynamicBuffer buffer_write;
-    std::vector<std::string> header;
-    bool has_ts;
-    bool ok;
-    size_t s_sz;
-    size_t cell_pos = 0;
-    size_t cell_mark = 0;
-
-    do {
-      err = Error::OK;
-      if(!smartfd->valid() 
-        && !Env::FsInterface::interface()->open(err, smartfd) 
-        && err)
-        break;
-      if(err)
-        continue;
-      
-      r_sz = length - offset > 8388608 ? 8388608 : length - offset;
-      for(;;) {
-        buffer.free();
-        err = Error::OK;
-
-        if(Env::FsInterface::fs()->pread(
-            err, smartfd, offset, &buffer, r_sz) != r_sz) {
-          int tmperr = Error::OK;
-          Env::FsInterface::fs()->close(tmperr, smartfd);
-          if(err != Error::FS_EOF){
-            if(!Env::FsInterface::interface()->open(err, smartfd))
-              break;
-            continue;
-          }
-        }
-        break;
-      }
-      if(err)
-        break;
-
-      offset += r_sz;
-      
-      if(buffer_remain.fill()) {
-        buffer_write.add(buffer_remain.base, buffer_remain.fill());
-        buffer_write.add(buffer.base, buffer.size);
-        buffer_remain.free();
-      } else {
-        buffer_write.set(buffer.base, buffer.size);
-      }
-
-      const uint8_t* ptr = buffer_write.base;
-      size_t remain = buffer_write.fill();
-      
-      if(header.empty() &&
-         !DB::Cells::TSV::header_read(&ptr, &remain, 
-                                      schema->col_type, has_ts, header)) {
-        message.append("TSV file missing ");
-        message.append(
-          header.empty() ? "columns defintion" : "value columns");
-        message.append(" in header\n");
-        break;
-      }
-
-      while(remain) {
-        DB::Cells::Cell cell;
-        try {
-          cell_mark = remain;
-          ok = DB::Cells::TSV::read(
-            &ptr, &remain, has_ts, schema->col_type, cell);
-          cell_pos += cell_mark-remain;
-        } catch(const std::exception& ex) {
-          message.append(ex.what());
-          message.append(", corrupted '");
-          message.append(smartfd->filepath());
-          message.append("' starting at-offset=");
-          message.append(std::to_string(cell_pos));
-          message.append("\n");
-          offset = length;
-          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
-          break;
-        }
-        if(ok) {
-          col->add(cell);
-          cells_count++;
-          //if((cells_count % 100) == 0)
-          //  std::cout << cells_count << " : " << cell_pos << "\n";
-          cells_bytes += cell.encoded_length();
-          
-          s_sz = col->size_bytes();
-          if(update_req->result->completion && s_sz > update_req->buff_sz*3)
-            update_req->wait();
-          if(!update_req->result->completion && s_sz >= update_req->buff_sz)
-            update_req->commit(col);
-          
-        } else  {
-          buffer_remain.add(ptr, remain);
-          break;
-        }
-      }
-      
-      buffer_write.free();
-      buffer.free();
-
-    } while(offset < length);
-
-    if(smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd);
-    
-    if(col->size_bytes() && !update_req->result->completion)
-      update_req->commit(col);
-    
-    update_req->wait();
-
-    if(buffer_remain.fill()) {
-      message.append("early file end");
-      message.append(", corrupted '");
-      message.append(smartfd->filepath());
-      message.append("' starting at-offset=");
-      message.append(std::to_string(cell_pos));
-      message.append("\n");
-    }
-    if(!message.empty())
-      err = Error::SQL_BAD_LOAD_FILE_FORMAT;
-  }
-
   // DUMP
   const bool dump(std::string& cmd) {
     int64_t ts = Time::now_ns();
-    FS::SmartFd::Ptr smartfd = nullptr;
-    uint8_t output_flags = 0;
-    size_t cells_count = 0;
-    size_t cells_bytes = 0;
+
+    Env::FsInterface::init(FS::fs_type(
+      Env::Config::settings()->get<std::string>("swc.fs")));
+    DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
+    
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
-      [this, &smartfd, &output_flags, &cells_count, &cells_bytes]
+      [this, &writer] 
       (Protocol::Common::Req::Query::Select::Result::Ptr result) {
-        write_to_file(result, smartfd, output_flags, cells_count, cells_bytes);
-        // err ? req->stop();
+        writer.write(result);   
+        // writer.err ? req->stop();
       },
       true // cb on partial rsp
     );
     
     uint8_t display_flags = 0;
     std::string message;
-    std::string filepath;
     client::SQL::parse_dump(
-      err, cmd, filepath, req->specs, output_flags, display_flags, message);
+      err, cmd, 
+      writer.base_path, req->specs, 
+      writer.output_flags, display_flags, 
+      message
+    );
     if(err) 
       return error(message);
-      
-    Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
-      
-    auto at = filepath.find_last_of("/");
-    if(at != std::string::npos) {
-      std::string base_path = filepath.substr(0, at);
-      Env::FsInterface::interface()->mkdirs(err, base_path);
-      if(err) 
-        return error(Error::get_text(err));
-    }
-
-    smartfd = FS::SmartFd::make_ptr(
-      filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
-    while(Env::FsInterface::interface()->create(err, smartfd, 0, 0, 0));
-    if(err) 
+    
+    writer.initialize();
+    if(err = writer.err)
       return error(Error::get_text(err));
 
     if(display_flags & DB::DisplayFlag::SPECS) {
@@ -525,78 +372,28 @@ class DbClient : public Interface {
     req->scan();
     req->wait();
 
-    if(smartfd->valid()) {
-      int tmperr = Error::OK;
-      Env::FsInterface::fs()->flush(tmperr, smartfd);
-      Env::FsInterface::fs()->close(tmperr, smartfd);
-      if(tmperr && !err)
-        err = tmperr;
-    }
+    writer.finalize();
+    if(writer.err && !err)
+      err = writer.err;
 
     if(display_flags & DB::DisplayFlag::STATS) {
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+      display_stats(
+        SWC::Time::now_ns() - ts, writer.cells_bytes, writer.cells_count);
 
-      size_t len = Env::FsInterface::fs()->length(err, smartfd->filepath());
+      std::vector<FS::SmartFd::Ptr> files;
+      writer.get_length(files);
       if(err) 
         return error(Error::get_text(err));
-      std::cout << " File Size:              " << len  << " bytes\n";
+
+      std::cout << " Files Count:            " << files.size() << "\n";
+      for(auto& file : files)
+        std::cout << " File:                   " << file->filepath() 
+                  << " (" << file->pos()  << " bytes)\n";
     }
 
     Env::FsInterface::reset();
     return err ? error(Error::get_text(err)) : true;
   }
-
-  void write_to_file(Protocol::Common::Req::Query::Select::Result::Ptr result,
-                     FS::SmartFd::Ptr& smartfd, uint8_t output_flags, 
-                     size_t& cells_count, size_t& cells_bytes) const {
-    DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
-    DynamicBuffer buffer;
-    
-    do {
-      for(auto cid : result->get_cids()) {
-        schema = Env::Clients::get()->schemas->get(err, cid);
-        if(err)
-          break;
-        if(!cells_count)
-          DB::Cells::TSV::header_write(schema->col_type, output_flags, buffer);
-
-        vec.free();
-        result->get_cells(cid, vec);
-        for(auto& cell : vec.cells) {
-
-          cells_count++;
-          cells_bytes += cell->encoded_length();
-          
-          DB::Cells::TSV::write(*cell, schema->col_type, output_flags, buffer);
-          
-          delete cell;
-          cell = nullptr;
-
-          if(buffer.fill() >= 8388608) {
-            write_cells(smartfd, buffer);
-            if(err)
-              break;
-          }
-        }
-      }
-    } while(!vec.cells.empty() || err);
-    
-    if(buffer.fill() && !err) 
-      write_cells(smartfd, buffer);
-  }
-
-  void write_cells(FS::SmartFd::Ptr& smartfd, DynamicBuffer& buffer) const {    
-    StaticBuffer buff_write(buffer);
-
-    Env::FsInterface::fs()->append(
-      err,
-      smartfd, 
-      buff_write, 
-      FS::Flags::NONE
-    );
-  }
-
 
   void display_stats(size_t took, size_t bytes, size_t cells_count) {      
     std::cout << "\n\nStatistics:\n";
