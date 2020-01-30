@@ -12,6 +12,7 @@
 #include "swcdb/client/mngr/Groups.h"
 #include "swcdb/core/comm/SerializedClient.h"
 #include "swcdb/db/Protocol/Common/req/ConnQueue.h"
+#include "swcdb/client/rgr/Rangers.h"
 
 namespace SWC { namespace client {
 
@@ -28,7 +29,9 @@ class Clients final {
 
   Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx)
           : m_app_ctx(app_ctx),
-            mngrs_groups(std::make_shared<Mngr::Groups>()->init()) {
+            mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
+            rangers(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.Rgr.range.res.expiry")) {
 
     if(ioctx == nullptr){
       if(!Env::IoCtx::ok())
@@ -79,6 +82,7 @@ class Clients final {
   ConnQueuesPtr           rgr = nullptr;
 
   SchemasPtr              schemas = nullptr;
+  Rangers                 rangers;
 
   private:
   const AppContext::Ptr   m_app_ctx = nullptr;

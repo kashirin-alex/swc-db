@@ -24,6 +24,8 @@ void Settings::init_client_options() {
      "Ranger client connect probes")
     ("swc.client.Rgr.connection.keepalive", g_i32(30000), 
      "Ranger client connection keepalive for ms since last action")
+    ("swc.client.Rgr.range.res.expiry", g_i32(1800000), 
+     "Range Ranger resolution expiry in ms")
 
     ("swc.client.Mngr.connection.timeout", g_i32(10000), 
      "Manager client connect timeout")

@@ -32,6 +32,10 @@ class RgrGet: public Common::Req::ConnQueue::ReqBase {
     std::make_shared<RgrGet>(params, cb, timeout)->run();
   }
 
+  static inline Ptr make(const Params::RgrGetReq params,
+                         const Cb_t cb, const uint32_t timeout = 10000){
+    return std::make_shared<RgrGet>(params, cb, timeout);
+  }
 
   RgrGet(const Params::RgrGetReq& params, const Cb_t cb, 
             const uint32_t timeout) 

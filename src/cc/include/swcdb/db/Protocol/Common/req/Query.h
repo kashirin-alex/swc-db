@@ -386,9 +386,8 @@ class Select : public std::enable_shared_from_this<Select> {
     }
 
     void resolve_on_manager() {
-      col->selector->result->completion++;
 
-      Mngr::Req::RgrGet::request(
+      auto req = Mngr::Req::RgrGet::make(
         Mngr::Params::RgrGetReq(cid, rid),
         [scanner=shared_from_this()]
         (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
@@ -396,6 +395,18 @@ class Select : public std::enable_shared_from_this<Select> {
             scanner->col->selector->result->completion--;
         }
       );
+      if(cid != 1) {
+        Mngr::Params::RgrGetRsp rsp;
+        if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
+          rsp.cid = cid;
+          rsp.rid = rid;
+          if(proceed_on_ranger(req, rsp))
+            return; 
+          Env::Clients::get()->rangers.remove(cid, rid);
+        }
+      }
+      col->selector->result->completion++;
+      req->run();
     }
 
     bool located_on_manager(const ReqBase::Ptr& base, 
@@ -438,8 +449,15 @@ class Select : public std::enable_shared_from_this<Select> {
             parent == nullptr ? base : parent, &rsp.range_begin
           )] () { scanner->locate_on_manager(true); }
         );
+      } else if(rsp.cid != 1) {
+        Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
       }
 
+      return proceed_on_ranger(base, rsp);
+    }
+    
+    bool proceed_on_ranger(const ReqBase::Ptr& base, 
+                           const Mngr::Params::RgrGetRsp& rsp) {
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && col->cid == 1) ||
         (type == Types::Range::META   && col->cid == 2 )) {
@@ -515,6 +533,7 @@ class Select : public std::enable_shared_from_this<Select> {
                             rsp.to_string().c_str());                      
         if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
            rsp.err == Error::RANGE_NOT_FOUND ) {
+          Env::Clients::get()->rangers.remove(cid, rid);
           parent->request_again();
         } else {
           base->request_again();
@@ -523,13 +542,15 @@ class Select : public std::enable_shared_from_this<Select> {
       }
       if(!rsp.rid) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(no rid) %s", 
-                            rsp.to_string().c_str());    
+                            rsp.to_string().c_str());
+        Env::Clients::get()->rangers.remove(cid, rid);
         parent->request_again();
         return false;
       }
       if(type == Types::Range::DATA && rsp.cid != col->cid) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(cid no match) %s",
                  rsp.to_string().c_str());        
+        Env::Clients::get()->rangers.remove(cid, rid);
         parent->request_again();
         return false;
       }
@@ -570,6 +591,7 @@ class Select : public std::enable_shared_from_this<Select> {
           if(rsp.err) {
             SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
             if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+              Env::Clients::get()->rangers.remove(scanner->col->cid, rid);
               base->request_again();
             } else {
               req->request_again();
