@@ -397,13 +397,15 @@ class Select : public std::enable_shared_from_this<Select> {
       );
       if(cid != 1) {
         Mngr::Params::RgrGetRsp rsp;
+        rsp.cid = cid;
+        rsp.rid = rid;
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-          rsp.cid = cid;
-          rsp.rid = rid;
+          SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
             return; 
           Env::Clients::get()->rangers.remove(cid, rid);
-        }
+        } else
+          SWC_LOGF(LOG_INFO, "Cache miss %s", rsp.to_string().c_str());
       }
       col->selector->result->completion++;
       req->run();

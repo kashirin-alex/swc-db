@@ -51,20 +51,33 @@ class Rangers  {
   }
 
   void set(const int64_t cid, const int64_t rid, const EndPoints& endpoints) {
-    Range range = {Time::now_ms(), endpoints};
-
     std::scoped_lock lock(m_mutex);
     auto c = m_map.find(cid);
-    if(c == m_map.end()) 
-      m_map.insert(std::make_pair(cid, (Ranges){{rid, range }} ));
-    else
-      c->second.insert(std::make_pair(rid, range ));
+    if(c == m_map.end()) {
+      m_map.insert(
+        std::make_pair(
+          cid, 
+          (Ranges){{rid, Range(Time::now_ms(), endpoints) }} ));
+    } else {
+      auto r = c->second.find(rid);
+      if(r == c->second.end()) {
+        c->second.insert(
+          std::make_pair(
+            rid, 
+            Range(Time::now_ms(), endpoints) ));
+      } else {
+        r->second = Range(Time::now_ms(), endpoints);
+      }
+    }
   }
 
   private:
   struct Range final {
-    const int64_t   ts;
-    const EndPoints endpoints;
+    int64_t   ts;
+    EndPoints endpoints;
+    Range(const int64_t ts, const EndPoints endpoints)
+          : ts(ts), endpoints(endpoints) {
+    }
   };
   typedef std::unordered_map<int64_t, Range>  Ranges;
   std::mutex                                  m_mutex;

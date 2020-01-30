@@ -289,12 +289,14 @@ class Update : public std::enable_shared_from_this<Update> {
          rsp.err == Error::RANGE_NOT_FOUND) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
                               rsp.to_string().c_str());
+        Env::Clients::get()->rangers.remove(cid, rid);
         parent->request_again();
         return false;
       }
       if(!rsp.rid || rsp.err) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr HALT %s", 
                               rsp.to_string().c_str());
+        Env::Clients::get()->rangers.remove(cid, rid);
         quick_exit(1);
         base->request_again();
         return false;
@@ -322,9 +324,8 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     void resolve_on_manager() {
-      updater->result->completion++;
 
-      Mngr::Req::RgrGet::request(
+      auto req = Mngr::Req::RgrGet::make(
         Mngr::Params::RgrGetReq(cid, rid),
         [locator=shared_from_this()]
         (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
@@ -332,6 +333,20 @@ class Update : public std::enable_shared_from_this<Update> {
             locator->updater->result->completion--;
         }
       );
+      if(cid != 1) {
+        Mngr::Params::RgrGetRsp rsp;
+        rsp.cid = cid;
+        rsp.rid = rid;
+        if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
+          SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
+          if(proceed_on_ranger(req, rsp))
+            return; 
+          Env::Clients::get()->rangers.remove(cid, rid);
+        } else
+          SWC_LOGF(LOG_INFO, "Cache miss %s", rsp.to_string().c_str());
+      }
+      updater->result->completion++;
+      req->run();
     }
 
     bool located_ranger(const ReqBase::Ptr& base, 
@@ -361,6 +376,14 @@ class Update : public std::enable_shared_from_this<Update> {
         return false;
       }
 
+      if(rsp.cid != 1)
+        Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
+
+      return proceed_on_ranger(base, rsp);
+    }
+
+    bool proceed_on_ranger(const ReqBase::Ptr& base, 
+                           const Mngr::Params::RgrGetRsp& rsp) {
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && col->cid == 1) ||
         (type == Types::Range::META   && col->cid == 2 )) {
@@ -378,7 +401,8 @@ class Update : public std::enable_shared_from_this<Update> {
           type, 
           rsp.cid, col, key_start, 
           updater, base, 
-          rsp.rid, &rsp.range_end
+          rsp.rid, 
+          cid == 1 ? &rsp.range_end : nullptr
         )->locate_on_ranger(rsp.endpoints);
       }
       return true;
