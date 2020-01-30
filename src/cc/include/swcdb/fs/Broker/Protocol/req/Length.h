@@ -44,8 +44,8 @@ class Length : public Base {
       length = params.length;
     }
 
-    SWC_LOGF(LOG_DEBUG, "length path='%s' error='%d' length='%d'",
-               name.c_str(), error, length);
+    SWC_LOGF(LOG_DEBUG, "length path='%s' error='%d' length='%lld'",
+             name.c_str(), error, length);
     
     cb(error, length);
   }
