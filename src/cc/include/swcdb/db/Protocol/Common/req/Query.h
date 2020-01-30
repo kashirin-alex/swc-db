@@ -181,6 +181,7 @@ class Select : public std::enable_shared_from_this<Select> {
     // if cells not empty commit-again
     if(cb)
       cb(result);
+
     m_cv.notify_all();
   }
 
@@ -396,9 +397,7 @@ class Select : public std::enable_shared_from_this<Select> {
         }
       );
       if(cid != 1) {
-        Mngr::Params::RgrGetRsp rsp;
-        rsp.cid = cid;
-        rsp.rid = rid;
+        Mngr::Params::RgrGetRsp rsp(cid, rid);
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
           SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
@@ -414,8 +413,7 @@ class Select : public std::enable_shared_from_this<Select> {
     bool located_on_manager(const ReqBase::Ptr& base, 
                             const Mngr::Params::RgrGetRsp& rsp, 
                             bool next_range=false) {
-      if(rsp.cid == 1)
-        SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
 
       if(rsp.err) {
         if(rsp.err == Error::COLUMN_NOT_EXISTS) {

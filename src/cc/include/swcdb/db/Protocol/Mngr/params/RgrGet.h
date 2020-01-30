@@ -92,7 +92,7 @@ class RgrGetReq : public Serializable {
 class RgrGetRsp : public Common::Params::HostEndPoints {
   public:
 
-  RgrGetRsp(): err(0), cid(0), rid(0) { }
+  RgrGetRsp(int64_t cid=0, int64_t rid=0): err(0), cid(cid), rid(rid) { }
 
   virtual ~RgrGetRsp() { }
 

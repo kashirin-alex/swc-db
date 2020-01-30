@@ -103,6 +103,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
     if(cb)
       cb(result);
+
     cv.notify_all();
   }
 
@@ -334,9 +335,7 @@ class Update : public std::enable_shared_from_this<Update> {
         }
       );
       if(cid != 1) {
-        Mngr::Params::RgrGetRsp rsp;
-        rsp.cid = cid;
-        rsp.rid = rid;
+        Mngr::Params::RgrGetRsp rsp(cid, rid);
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
           SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
