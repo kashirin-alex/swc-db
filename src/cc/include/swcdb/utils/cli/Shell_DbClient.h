@@ -400,29 +400,29 @@ class DbClient : public Interface {
     double took_base;
     double bytes_base;
 
-    char time_base = 'n';
+    std::string time_base("n");
     if(took < 100000) {
       took_base = took;
     } else if(took < 10000000) { 
       took_base = (double)took/1000;
-      time_base = 'u';
+      time_base = "u";
     } else if(took <= 10000000000) { 
       took_base = (double)(took/1000)/1000;
-      time_base = 'm';
+      time_base = "m";
     } else if(took > 10000000000) {
       took_base = (double)(took/1000000)/1000;
-      time_base = 0;
+      time_base = "";
     }
 
-    char byte_base = 0;
+    std::string byte_base;
     if(bytes < 1000000) {
       bytes_base = bytes;
     } else if(bytes <= 1000000000) {
       bytes_base = (double)bytes/1000;
-      byte_base = 'K';
+      byte_base = "K";
     } else if(bytes > 1000000000) {
       bytes_base = (double)(bytes/1000)/1000;
-      byte_base = 'M';
+      byte_base = "M";
     }
         
     std::cout 
