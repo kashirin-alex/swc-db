@@ -158,22 +158,14 @@ class Interval {
       case Condition::LT:
         return false;
       case Condition::EQ:
-        return desc ? offset_rev > timestamp : offset_rev < timestamp;
+        return is_matching(timestamp, desc);
       default:
         return true;
     }
   }
 
-  const bool is_matching(const Cell::Key& key, 
-                         int64_t timestamp, bool desc, Condition::Comp& cond) const {
-    switch(cond = offset_key.compare(key)) {
-      case Condition::LT:
-        return false;
-      case Condition::EQ:
-        return desc ? offset_rev > timestamp : offset_rev < timestamp;
-      default:
-        return true;
-    }
+  const bool is_matching(int64_t timestamp, bool desc) const {
+    return desc ? offset_rev > timestamp : offset_rev < timestamp;
   }
 
   const bool is_matching(const Cells::Cell& cell) const {

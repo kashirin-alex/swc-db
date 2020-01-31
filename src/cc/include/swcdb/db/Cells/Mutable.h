@@ -467,18 +467,14 @@ class Mutable final {
         continue;
       }
 
-      if(chk_align) {
-        Condition::Comp cond;
-        bool match = specs.is_matching(
-          cell->key, cell->timestamp, cell->control & TS_DESC, cond);
-        switch(cond) {
-          case Condition::LT: {
-            ++skips;
-            continue;
-          }
-          case Condition::EQ: {
-            if(match && rev) 
-              break;
+      if(chk_align) switch(specs.offset_key.compare(cell->key)) {
+        case Condition::LT: {
+          ++skips;
+          continue;
+        }
+        case Condition::EQ: {
+          if(!rev ||
+             !specs.is_matching(cell->timestamp, cell->control & TS_DESC)) {
             if(rev)
               --rev;
             //if(cell_offset && selector(*cell, stop))
@@ -486,10 +482,10 @@ class Mutable final {
             ++skips;
             continue;
           }
-          default:
-            break;
         }
-        chk_align = false;
+        default:
+          chk_align = false;
+          break;
       }
 
       if(!selector(*cell, stop)) {
