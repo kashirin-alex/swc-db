@@ -191,11 +191,19 @@ class FileWriter {
       if(err) 
         return;
       fds.push_back(smartfd);
+      flush_vol = 0;
     }
     
     if(buffer.fill()) {
+      if((flush_vol += buffer.fill()) > 1073741824) {
+        flush_vol = 0;
+      }
+
       StaticBuffer buff_write(buffer);
-      interface->get_fs()->append(err, smartfd, buff_write, FS::Flags::NONE);
+      interface->get_fs()->append(
+        err, smartfd, buff_write, 
+        flush_vol ? FS::Flags::NONE : FS::Flags::FLUSH
+      );
     }
   }
   
@@ -223,6 +231,7 @@ class FileWriter {
   DynamicBuffer                  buffer;
   DB::Cells::Vector              cells; 
   std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
+  size_t                         flush_vol = 0;
 
 };
 
