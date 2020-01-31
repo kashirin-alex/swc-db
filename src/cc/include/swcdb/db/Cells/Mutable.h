@@ -446,36 +446,67 @@ class Mutable final {
     bool only_deletes = specs.flags.is_only_deletes();
     bool only_keys = specs.flags.is_only_keys();
     
-    uint32_t rev = 0;
+    bool chk_align = !specs.offset_key.empty();
+    uint32_t rev = chk_align ? cells.m_max_revs : 0;
+
     uint32_t offset = 0; //(narrower over specs.key_start)
     for(Cell* cell; !stop && offset < m_size; ++offset) {
       cell = *(m_cells + offset);
 
-      if(!cell->has_expired(m_ttl) &&
-         (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
-         selector(*cell, stop)) {
-        
-        if(cell_offset) {
-          --cell_offset;
-          ++skips;
-          continue;
-        }
+      if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) || 
+         cell->has_expired(m_ttl)) {
+        ++skips;
+        continue;
+      }
 
-        if(cells.size() && cells.compare(-1, cell->key) == Condition::EQ) {
-          if(!rev) {
+      if(chk_align) {
+        Condition::Comp cond;
+        bool match = specs.is_matching(
+          cell->key, cell->timestamp, cell->control & TS_DESC, cond);
+        switch(cond) {
+          case Condition::LT: {
             ++skips;
             continue;
           }
-        } else {
-          rev = cells.m_max_revs;
+          case Condition::EQ: {
+            if(match && rev) 
+              break;
+            if(rev)
+              --rev;
+            //if(cell_offset && selector(*cell, stop))
+            //  --cell_offset;
+            ++skips;
+            continue;
+          }
+          default:
+            break;
         }
+        chk_align = false;
+      }
 
-        cells.push_back(*cell, only_keys);
-        if(reached_limits())
-          break;
-        --rev;
-      } else 
+      if(!selector(*cell, stop)) {
         ++skips;
+        continue;
+      }
+      if(cells.size() && cells.compare(-1, cell->key) == Condition::EQ) {
+        if(!rev) {
+          ++skips;
+          continue;
+        }
+      } else {
+        rev = cells.m_max_revs;
+      }
+
+      if(cell_offset) {
+        --cell_offset;
+        ++skips;
+        continue;
+      }
+
+      cells.push_back(*cell, only_keys);
+      if(reached_limits())
+        break;
+      --rev;
     }
   }
   
