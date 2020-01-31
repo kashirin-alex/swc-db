@@ -16,272 +16,6 @@
 namespace SWC { namespace DB { namespace Cells {
 
 namespace TSV {
-
-void header_write(Types::Column typ, uint8_t output_flags, 
-                  DynamicBuffer& buffer) {
-  std::string header;
-
-  if(!(output_flags & OutputFlag::NO_TS))
-    header.append("TIMESTAMP\t");
-
-  header.append("FLEN\tKEY\tFLAG\t");
-
-  if(!(output_flags & OutputFlag::NO_VALUE))
-    header.append(Types::is_counter(typ) 
-      ? "COUNT\tEQ\tSINCE" 
-      : "ORDER\tVLEN\tVALUE");
-
-  header.append("\n");
-  buffer.add(header.data(), header.length());
-}
-
-const bool header_read(const uint8_t **bufp, size_t* remainp, Types::Column typ, 
-                       bool& has_ts, std::vector<std::string>& header) {
-  const uint8_t* ptr = *bufp;
-  size_t remain = *remainp;
-
-  const uint8_t* s = *bufp;
-  while(remain && *ptr != '\n') {
-    ptr++;
-    remain--;
-    if(*ptr == '\t' || *ptr == '\n') {
-      header.push_back(std::string((const char*)s, ptr-s));
-      s = ptr+1;
-    }
-  }
-    
-  if(header.empty() || !remain || *ptr != '\n')
-    return false;
-
-  has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
-  if(header.size() < 6 + has_ts)
-    return false;
-
-  ptr++; // header's newline
-  remain--;
-
-  *bufp = ptr;
-  *remainp = remain;
-  return true;
-}
-
-
-void write(const Cell &cell, Types::Column typ, uint8_t output_flags, 
-           DynamicBuffer& buffer) {
-  buffer.ensure(1024);
-
-  std::string ts;
-  
-  if(!(output_flags & OutputFlag::NO_TS)) {
-    ts = std::to_string(cell.timestamp);
-    buffer.add(ts.data(), ts.length());
-    buffer.add("\t", 1); //
-  }
-
-  uint32_t len = 0;
-  std::string f_len;
-  const uint8_t* ptr = cell.key.data;
-  for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
-    len = Serialization::decode_vi32(&ptr);
-    f_len = std::to_string(len);
-    buffer.add(f_len.data(), f_len.length());
-    if(n < cell.key.count)
-      buffer.add(",", 1);
-  }
-  buffer.add("\t", 1); //
-  
-  ptr = cell.key.data;
-  for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
-    len = Serialization::decode_vi32(&ptr);
-    if(len)
-      buffer.add(ptr, len);
-    if(n < cell.key.count)
-      buffer.add(",", 1);
-  }
-  buffer.add("\t", 1); //
-
-  std::string flag = DB::Cells::to_string((DB::Cells::Flag)cell.flag);
-  buffer.add(flag.data(), flag.length());
-
-  if(output_flags & OutputFlag::NO_VALUE || 
-     cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
-    buffer.add("\n", 1);
-    return;
-  }
-  buffer.add("\t", 1); //
-
-  if(Types::is_counter(typ)) {
-    uint8_t op;
-    int64_t eq_rev = TIMESTAMP_NULL;
-    int64_t v = cell.get_counter(op, eq_rev);
-    std::string counter = (v > 0 ? "+" : "") + std::to_string(v);
-    buffer.add(counter.data(), counter.length());
-
-    if(op & OP_EQUAL) {
-      buffer.add("\t", 1); //
-      buffer.add("=", 1);
-      if(eq_rev != TIMESTAMP_NULL) {
-        ts = std::to_string(eq_rev);
-        buffer.add("\t", 1); //
-        buffer.add(ts.data(), ts.length());
-      }
-    }
-  } else {
-  
-    buffer.add(cell.control & TS_DESC ? "D" : "A", 1);
-    buffer.add("\t", 1); //
-
-    std::string value_length = std::to_string(cell.vlen);
-    buffer.add(value_length.data(), value_length.length());
-    buffer.add("\t", 1);
-    buffer.add(cell.value, cell.vlen);
-  }
-
-  buffer.add("\n", 1);
-}
-
-const bool read(const uint8_t **bufp, size_t* remainp, 
-                bool has_ts, Types::Column typ, Cell &cell) {
-
-  const uint8_t* ptr = *bufp;
-  size_t remain = *remainp;
-  const uint8_t* s = ptr;
-
-  if(has_ts) {
-    while(remain && *ptr != '\t') {
-      remain--;
-      ++ptr;
-    }
-    if(!remain)
-      return false;
-    cell.set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
-    s = ++ptr; // tab
-    remain--;
-  }
-
-  std::vector<uint32_t> flen;
-  while(remain) {
-    if(*ptr == ',' || *ptr == '\t') {
-      flen.push_back(std::stol(std::string((const char*)s, ptr-s)));
-      if(*ptr == '\t')
-        break;
-      if(!--remain)
-        return false;
-      s = ++ptr; // comma
-    }
-    ++ptr;
-    remain--;
-  }
-  if(!remain)
-    return false;
-    
-  s = ++ptr; // tab
-  remain--;
-  for(auto len : flen) {
-    if(remain <= len+1) 
-      return false;
-    cell.key.add(ptr, len);
-    ptr += len+1;
-    remain -= (len+1);
-  };
-  if(!remain)
-    return false;
-     
-  s = ptr;
-  while(remain && (*ptr != '\t' && *ptr != '\n')) {
-    remain--;
-    ++ptr;
-  }
-  if(!remain)
-    return false; 
-  if((cell.flag = DB::Cells::flag_from(s, ptr-s)) == Flag::NONE)
-    throw std::runtime_error("Bad cell Flag");
-  
-  if(cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
-    if(*ptr == '\t')
-      throw std::runtime_error("Expected end of line");
-    goto cell_filled;
-  }
-  if(*ptr == '\n')
-    throw std::runtime_error("Expected a tab");
-
-  s = ++ptr; // tab
-  remain--;
-  while(remain && (*ptr != '\t' && *ptr != '\n')) {
-    remain--;
-    ++ptr;
-  }
-  if(!remain)
-    return false;
-
-  if(Types::is_counter(typ)) {
-    int64_t counter = std::stol(std::string((const char*)s, ptr-s));      
-    int64_t eq_rev = TIMESTAMP_NULL;
-    uint8_t op = 0;
-    if(*ptr == '\t') {
-      if(!--remain)
-        return false; 
-      ++ptr;  // tab
-      if(*ptr != '=')
-        throw std::runtime_error("Expected EQ symbol");
-      op = OP_EQUAL;
-      if(!--remain)
-        return false;
-      ++ptr;
-      
-      if(*ptr == '\t') {
-        if(!--remain)
-          return false; 
-        s = ++ptr; // tab
-        while(remain && *ptr != '\n') {
-          remain--;
-          ++ptr;
-        }
-        if(!remain)
-          return false; 
-        eq_rev = std::stol(std::string((const char*)s, ptr-s));
-      }
-    }
-    cell.set_counter(op, counter, typ, eq_rev);
-
-  } else {
-    
-    cell.set_time_order_desc(*s == 'D' || *s == 'd');
-    if(!--remain)
-      return false;
-    s = ++ptr; // tab
-    while(remain && *ptr != '\t') {
-      remain--;
-      ++ptr;
-    }
-    if(!remain)
-      return false;
-
-    cell.vlen = std::stol(std::string((const char*)s, ptr-s));
-    if(--remain < cell.vlen+1) 
-      return false;
-    ++ptr; // tab
-    if(cell.vlen)
-      cell.value = (uint8_t*)ptr;
-    ptr += cell.vlen;
-    remain -= cell.vlen;
-  }
-
-  cell_filled:
-    if(!remain || *ptr != '\n')
-      return false;
-      
-    ++ptr; // newline
-    remain--;
-
-    
-    //display(std::cout); std::cout << "\n";
-
-    *bufp = ptr;
-    *remainp = remain;
-
-  return true;
-}
   
 std::string get_filepath(const std::string& base_path, size_t& file_num) {
   std::string filepath(base_path);
@@ -292,7 +26,6 @@ std::string get_filepath(const std::string& base_path, size_t& file_num) {
 
 class FileWriter {
   public:
-  
   int         err = Error::OK;
   std::string base_path;
   uint8_t     output_flags = 0;
@@ -311,72 +44,159 @@ class FileWriter {
   }
 
   void finalize() {
-    if(smartfd != nullptr && smartfd->valid()) {
-      interface->get_fs()->flush(err, smartfd);
-      interface->close(err, smartfd);
-    }
+    for(auto s : schemas)
+      write(s.second->col_type);
+    close();
   }
 
   void write(Protocol::Common::Req::Query::Select::Result::Ptr result) {
-    DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
-    DynamicBuffer buffer;
-    
+    for(auto cid : result->get_cids()) {
+      schemas.insert(
+        std::make_pair(cid, Env::Clients::get()->schemas->get(err, cid)));
+      if(err)
+        break;
+    }
+
+    Types::Column col_type;
     do {
       for(auto cid : result->get_cids()) {
-        schema = Env::Clients::get()->schemas->get(err, cid);
-        if(err)
-          break;
-        if(!cells_count)
-          DB::Cells::TSV::header_write(schema->col_type, output_flags, buffer);
+        col_type = schemas[cid]->col_type;
 
-        vec.free();
-        result->get_cells(cid, vec);
-        for(auto& cell : vec.cells) {
+        cells.free();
+        result->get_cells(cid, cells);
+        for(auto& cell : cells.cells) {
 
           cells_count++;
           cells_bytes += cell->encoded_length();
           
-          DB::Cells::TSV::write(*cell, schema->col_type, output_flags, buffer);
+          write(*cell, col_type);
           
           delete cell;
           cell = nullptr;
 
           if(buffer.fill() >= 8388608) {
-            write(buffer);
+            write(col_type);
             if(err)
               break;
           }
         }
       }
-    } while(!vec.cells.empty() || err);
-    
-    if(buffer.fill() && !err) 
-      write(buffer);
+    } while(!cells.cells.empty() && !err);
   }
 
-  void write(DynamicBuffer& buffer) {
-    StaticBuffer buff_write(buffer);
+  void write(const Cell &cell, Types::Column typ) {
+    buffer.ensure(1024);
 
-    if(smartfd == nullptr || smartfd->pos() + buff_write.size > 4294967296) {
-      finalize();
+    std::string ts;
+    if(!(output_flags & OutputFlag::NO_TS)) {
+      ts = std::to_string(cell.timestamp);
+      buffer.add(ts.data(), ts.length());
+      buffer.add("\t", 1); //
+    }
+
+    uint32_t len = 0;
+    std::string f_len;
+    const uint8_t* ptr = cell.key.data;
+    for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      f_len = std::to_string(len);
+      buffer.add(f_len.data(), f_len.length());
+      if(n < cell.key.count)
+        buffer.add(",", 1);
+    }
+    buffer.add("\t", 1); //
+  
+    ptr = cell.key.data;
+    for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      if(len)
+        buffer.add(ptr, len);
+      if(n < cell.key.count)
+        buffer.add(",", 1);
+    }
+    buffer.add("\t", 1); //
+
+    std::string flag = DB::Cells::to_string((DB::Cells::Flag)cell.flag);
+    buffer.add(flag.data(), flag.length());
+
+    if(output_flags & OutputFlag::NO_VALUE || 
+      cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+      buffer.add("\n", 1);
+      return;
+    }
+    buffer.add("\t", 1); //
+
+    if(Types::is_counter(typ)) {
+      uint8_t op;
+      int64_t eq_rev = TIMESTAMP_NULL;
+      int64_t v = cell.get_counter(op, eq_rev);
+      std::string counter = (v > 0 ? "+" : "") + std::to_string(v);
+      buffer.add(counter.data(), counter.length());
+
+      if(op & OP_EQUAL) {
+        buffer.add("\t", 1); //
+        buffer.add("=", 1);
+        if(eq_rev != TIMESTAMP_NULL) {
+          ts = std::to_string(eq_rev);
+          buffer.add("\t", 1); //
+          buffer.add(ts.data(), ts.length());
+        }
+      }
+    } else {
+  
+      buffer.add(cell.control & TS_DESC ? "D" : "A", 1);
+      buffer.add("\t", 1); //
+
+      std::string value_length = std::to_string(cell.vlen);
+      buffer.add(value_length.data(), value_length.length());
+      buffer.add("\t", 1);
+      buffer.add(cell.value, cell.vlen);
+    }
+
+    buffer.add("\n", 1);
+  }
+
+  void write_header(Types::Column typ, DynamicBuffer& header_buffer) {
+    std::string header;
+
+    if(!(output_flags & OutputFlag::NO_TS))
+      header.append("TIMESTAMP\t");
+
+    header.append("FLEN\tKEY\tFLAG\t");
+
+    if(!(output_flags & OutputFlag::NO_VALUE))
+      header.append(Types::is_counter(typ) 
+        ? "COUNT\tEQ\tSINCE" 
+        : "ORDER\tVLEN\tVALUE");
+
+    header.append("\n");
+    header_buffer.add(header.data(), header.length());
+  }
+
+  void write(Types::Column typ) {
+
+    if(smartfd == nullptr || smartfd->pos() + buffer.fill() > 4294967296) {
+      close();
 
       smartfd = FS::SmartFd::make_ptr(
-        get_filepath(base_path, file_num), 
-        FS::OpenFlags::OPEN_FLAG_OVERWRITE
-      );
+        get_filepath(base_path, file_num), FS::OpenFlags::OPEN_FLAG_OVERWRITE);
       while(interface->create(err, smartfd, 0, 0, 0));
+      if(err) 
+        return;
+
+      DynamicBuffer header_buffer;
+      write_header(typ, header_buffer);
+      StaticBuffer buff_write(header_buffer);
+      interface->get_fs()->append(err, smartfd, buff_write, FS::Flags::NONE);
       if(err) 
         return;
       fds.push_back(smartfd);
     }
-
-    interface->get_fs()->append(
-      err,
-      smartfd, 
-      buff_write, 
-      FS::Flags::NONE
-    );
+    
+    if(buffer.fill()) {
+      StaticBuffer buff_write(buffer);
+      interface->get_fs()->append(err, smartfd, buff_write, FS::Flags::NONE);
+    }
   }
   
   void get_length(std::vector<FS::SmartFd::Ptr>& files) {
@@ -389,11 +209,24 @@ class FileWriter {
   }
 
   private:
+
+  void close() {
+    if(smartfd != nullptr && smartfd->valid()) {
+      interface->get_fs()->flush(err, smartfd);
+      interface->close(err, smartfd);
+    }
+  }
+
   FS::Interface::Ptr             interface;
   FS::SmartFd::Ptr               smartfd = nullptr;
   std::vector<FS::SmartFd::Ptr>  fds;
+  DynamicBuffer                  buffer;
+  DB::Cells::Vector              cells; 
+  std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
 
 };
+
+
 
 class FileReader {
   public:
@@ -467,6 +300,8 @@ class FileReader {
     size_t s_sz;
     size_t cell_pos = 0;
     size_t cell_mark = 0;
+    std::vector<std::string> header;
+    bool                     has_ts;
 
     do {
       err = Error::OK;
@@ -494,7 +329,6 @@ class FileReader {
       }
       if(err)
         break;
-
       offset += r_sz;
       
       if(buffer_remain.fill()) {
@@ -508,10 +342,11 @@ class FileReader {
       const uint8_t* ptr = buffer_write.base;
       size_t remain = buffer_write.fill();
       
-      if(header.empty() &&
-         !DB::Cells::TSV::header_read(&ptr, &remain, 
-                                      schema->col_type, has_ts, header)) {
-        message.append("TSV file missing ");
+      if(header.empty() && 
+         !header_read(&ptr, &remain,  schema->col_type, has_ts, header)) {
+        message.append("TSV file '");
+        message.append(smartfd->filepath());
+        message.append("' missing ");
         message.append(
           header.empty() ? "columns defintion" : "value columns");
         message.append(" in header\n");
@@ -522,8 +357,7 @@ class FileReader {
         DB::Cells::Cell cell;
         try {
           cell_mark = remain;
-          ok = DB::Cells::TSV::read(
-            &ptr, &remain, has_ts, schema->col_type, cell);
+          ok = read(&ptr, &remain, has_ts, schema->col_type, cell);
           cell_pos += cell_mark-remain;
         } catch(const std::exception& ex) {
           message.append(ex.what());
@@ -533,7 +367,6 @@ class FileReader {
           message.append(std::to_string(cell_pos));
           message.append("\n");
           offset = length;
-          err = Error::SQL_BAD_LOAD_FILE_FORMAT;
           break;
         }
         if(ok) {
@@ -573,11 +406,183 @@ class FileReader {
       err = Error::SQL_BAD_LOAD_FILE_FORMAT;
   }
 
+  const bool header_read(const uint8_t **bufp, size_t* remainp, 
+                         Types::Column typ, 
+                         bool& has_ts, std::vector<std::string>& header) {
+    const uint8_t* ptr = *bufp;
+    size_t remain = *remainp;
+
+    const uint8_t* s = *bufp;
+    while(remain && *ptr != '\n') {
+      ptr++;
+      remain--;
+      if(*ptr == '\t' || *ptr == '\n') {
+        header.push_back(std::string((const char*)s, ptr-s));
+        s = ptr+1;
+      }
+    }
+    
+    if(header.empty() || !remain || *ptr != '\n')
+      return false;
+
+    has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
+    if(header.size() < 6 + has_ts)
+      return false;
+
+    ptr++; // header's newline
+    remain--;
+
+    *bufp = ptr;
+    *remainp = remain;
+    return true;
+  }
+  
+  const bool read(const uint8_t **bufp, size_t* remainp, 
+                  bool has_ts, Types::Column typ, 
+                  Cell &cell) {
+    const uint8_t* ptr = *bufp;
+    size_t remain = *remainp;
+    const uint8_t* s = ptr;
+
+    if(has_ts) {
+      while(remain && *ptr != '\t') {
+        remain--;
+        ++ptr;
+      }
+      if(!remain)
+        return false;
+      cell.set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
+      s = ++ptr; // tab
+      remain--;
+    }
+
+    std::vector<uint32_t> flen;
+    while(remain) {
+      if(*ptr == ',' || *ptr == '\t') {
+        flen.push_back(std::stol(std::string((const char*)s, ptr-s)));
+        if(*ptr == '\t')
+          break;
+        if(!--remain)
+          return false;
+        s = ++ptr; // comma
+      }
+      ++ptr;
+      remain--;
+    }
+    if(!remain)
+      return false;
+    
+    s = ++ptr; // tab
+    remain--;
+    for(auto len : flen) {
+      if(remain <= len+1) 
+        return false;
+      cell.key.add(ptr, len);
+      ptr += len+1;
+      remain -= (len+1);
+    };
+    if(!remain)
+      return false;
+     
+    s = ptr;
+    while(remain && (*ptr != '\t' && *ptr != '\n')) {
+      remain--;
+      ++ptr;
+    }
+    if(!remain)
+      return false; 
+    if((cell.flag = DB::Cells::flag_from(s, ptr-s)) == Flag::NONE)
+      throw std::runtime_error("Bad cell Flag");
+  
+    if(cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+      if(*ptr == '\t')
+        throw std::runtime_error("Expected end of line");
+      goto cell_filled;
+    }
+    if(*ptr == '\n')
+      throw std::runtime_error("Expected a tab");
+
+    s = ++ptr; // tab
+    remain--;
+    while(remain && (*ptr != '\t' && *ptr != '\n')) {
+      remain--;
+      ++ptr;
+    }
+    if(!remain)
+      return false;
+
+    if(Types::is_counter(typ)) {
+      int64_t counter = std::stol(std::string((const char*)s, ptr-s));      
+      int64_t eq_rev = TIMESTAMP_NULL;
+      uint8_t op = 0;
+      if(*ptr == '\t') {
+        if(!--remain)
+          return false; 
+        ++ptr;  // tab
+        if(*ptr != '=')
+          throw std::runtime_error("Expected EQ symbol");
+        op = OP_EQUAL;
+        if(!--remain)
+          return false;
+        ++ptr;
+      
+        if(*ptr == '\t') {
+          if(!--remain)
+            return false; 
+          s = ++ptr; // tab
+          while(remain && *ptr != '\n') {
+            remain--;
+            ++ptr;
+          }
+          if(!remain)
+            return false; 
+          eq_rev = std::stol(std::string((const char*)s, ptr-s));
+        }
+      }
+      cell.set_counter(op, counter, typ, eq_rev);
+
+    } else {
+    
+      cell.set_time_order_desc(*s == 'D' || *s == 'd');
+      if(!--remain)
+        return false;
+      s = ++ptr; // tab
+      while(remain && *ptr != '\t') {
+        remain--;
+        ++ptr;
+      }
+      if(!remain)
+        return false;
+
+      cell.vlen = std::stol(std::string((const char*)s, ptr-s));
+      if(--remain < cell.vlen+1) 
+        return false;
+      ++ptr; // tab
+      if(cell.vlen)
+        cell.value = (uint8_t*)ptr;
+      ptr += cell.vlen;
+      remain -= cell.vlen;
+    }
+
+    cell_filled:
+      if(!remain || *ptr != '\n')
+        return false;
+      
+      ++ptr; // newline
+      remain--;
+
+    
+      //display(std::cout); std::cout << "\n";
+
+      *bufp = ptr;
+      *remainp = remain;
+
+    return true;
+  }
+
   private:
   FS::Interface::Ptr              interface;
   std::vector<FS::SmartFd::Ptr>   fds;
-  std::vector<std::string>        header;
-  bool                            has_ts;
 
 };
 
