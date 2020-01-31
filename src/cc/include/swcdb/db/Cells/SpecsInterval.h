@@ -97,7 +97,6 @@ class Interval {
   }
 
   void copy(const Interval& other) {
-    //std::cout  << " copy(const Interval& other)\n";
 
     range_begin.copy(other.range_begin);
     range_end.copy(other.range_end);
@@ -116,7 +115,6 @@ class Interval {
   }
 
   virtual ~Interval(){
-    //std::cout << " ~Interval\n";
     free();
   }
   
@@ -157,6 +155,18 @@ class Interval {
       return true;
 
     switch(offset_key.compare(key)) {
+      case Condition::LT:
+        return false;
+      case Condition::EQ:
+        return desc ? offset_rev > timestamp : offset_rev < timestamp;
+      default:
+        return true;
+    }
+  }
+
+  const bool is_matching(const Cell::Key& key, 
+                         int64_t timestamp, bool desc, Condition::Comp& cond) const {
+    switch(cond = offset_key.compare(key)) {
       case Condition::LT:
         return false;
       case Condition::EQ:
