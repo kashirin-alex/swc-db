@@ -25,18 +25,15 @@ ConnHandler::Outgoing::Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr)
                                 : cbuf(cbuf), hdlr(hdlr) { }
 ConnHandler::Outgoing::~Outgoing() { }
 
-ConnHandler::ConnHandler(AppContext::Ptr app_ctx, Socket& socket) 
-                        : app_ctx(app_ctx), m_sock(std::move(socket)), 
-                          m_next_req_id(0) {
+ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
+                        : app_ctx(app_ctx), m_next_req_id(0) {
 }
 
 ConnHandlerPtr ConnHandler::ptr() {
   return shared_from_this();
 }
 
-ConnHandler::~ConnHandler() { 
-  do_close();
-}
+ConnHandler::~ConnHandler() { }
 
 
 const std::string ConnHandler::endpoint_local_str() {
@@ -62,32 +59,9 @@ const size_t ConnHandler::endpoint_local_hash() {
 }
   
 void ConnHandler::new_connection() {
-  {
-    std::scoped_lock lock(m_mutex);
-
-    endpoint_remote = m_sock.remote_endpoint();
-    endpoint_local = m_sock.local_endpoint();
-    SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%d",
-            endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
-            (size_t)&m_sock.get_executor().context());
-  }         
   auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
   run(ev); 
 }
-
-const bool ConnHandler::is_open() {
-  return m_err == Error::OK && m_sock.is_open();
-}
-
-void ConnHandler::close() {
-  if(is_open()) {
-    std::scoped_lock lock(m_mutex);
-    try{m_sock.close();}catch(...){}
-  }
-  m_err = Error::COMM_NOT_CONNECTED;
-  disconnected();
-}
-
 const size_t ConnHandler::pending_read() {
   std::scoped_lock lock(m_mutex_reading);
   return m_pending.size();
@@ -153,43 +127,6 @@ const int ConnHandler::send_response(CommBuf::Ptr &cbuf,
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
   return m_err;
 }
-
-/*
-int ConnHandler::send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms){
-    if(m_err != Error::OK)
-      return m_err;
-
-    int e = Error::OK;
-    cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-
-    std::vector<asio::const_buffer> buffers;
-    cbuf->get(buffers);
-
-    std::future<size_t> f = asio::async_write(
-      m_sock, buffers, asio::use_future);
-
-    std::future_status status = f.wait_for(
-      std::chrono::milliseconds(timeout_ms));
-
-    if (status == std::future_status::ready){
-      try {
-        f.get();
-      } catch (const std::exception& ex) {
-        e = (m_err != Error::OK? m_err.load() : Error::COMM_BROKEN_CONNECTION);
-      }
-    } else {
-      e = Error::REQUEST_TIMEOUT;
-    }
-    read_pending();
-    return e;
-}
-
-int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
-                          DispatchHandler::Ptr hdlr) {
-    cbuf->header.timeout_ms = timeout_ms;
-    return send_request(cbuf, hdlr);  
-}
-*/
 
 const int ConnHandler::send_request(CommBuf::Ptr &cbuf, 
                                     DispatchHandler::Ptr hdlr) {
@@ -259,8 +196,7 @@ asio::high_resolution_timer* ConnHandler::get_timer(const CommHeader& header) {
   if(!header.timeout_ms)
     return nullptr;
 
-  auto tm = new asio::high_resolution_timer(
-    m_sock.get_executor(), std::chrono::milliseconds(header.timeout_ms));
+  auto tm = get_timer(header.timeout_ms); 
 
   auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
   ev->header.initialize_from_request_header(header);
@@ -312,9 +248,8 @@ void ConnHandler::write(ConnHandler::Outgoing* data) {
     
   std::vector<asio::const_buffer> buffers;
   data->cbuf->get(buffers);
-    
-  asio::async_write(
-    m_sock, 
+  
+  do_async_write(
     buffers,
     [data, ptr=ptr()]
     (const asio::error_code ec, uint32_t len) {
@@ -338,11 +273,11 @@ void ConnHandler::read_pending() {
   }
 
   Event::Ptr ev = Event::make(Event::Type::MESSAGE, Error::OK);
-  uint8_t* data = new uint8_t[CommHeader::PREFIX_LENGTH+1];
+  uint32_t sz;
+  uint8_t* data = new uint8_t[sz = CommHeader::PREFIX_LENGTH+1];
 
-  asio::async_read(
-    m_sock, 
-    asio::mutable_buffer(data, CommHeader::PREFIX_LENGTH+1),
+  do_async_read(
+    data, sz,
     [ev, data, ptr=ptr()](const asio::error_code e, size_t filled) {
       return ptr->read_condition_hdlr(ev, data, e, filled);
     },
@@ -374,7 +309,6 @@ size_t ConnHandler::read_condition(const Event::Ptr& ev, uint8_t* data,
                                    asio::error_code &ec) {
   size_t remain = CommHeader::PREFIX_LENGTH;
   const uint8_t* ptr = data;
-  size_t  read = 0;
   uint8_t* bufp;
     
   try {
@@ -387,9 +321,7 @@ size_t ConnHandler::read_condition(const Event::Ptr& ev, uint8_t* data,
       *bufp++ = *ptr++;
 
     remain = ev->header.header_len - CommHeader::PREFIX_LENGTH;
-    do {
-      read = m_sock.read_some(asio::mutable_buffer(bufp+=read, remain), ec);
-    } while(!ec && (remain -= read));  
+    read(&bufp, &remain, ec);
       
     ptr = buf_header;
     remain = ev->header.header_len;
@@ -421,10 +353,7 @@ size_t ConnHandler::read_condition(const Event::Ptr& ev, uint8_t* data,
     buffer.reallocate(remain);
 
     bufp = buffer.base;
-    read = 0;
-    do {
-      read = m_sock.read_some(asio::mutable_buffer(bufp+=read, remain), ec);
-    } while(!ec && (remain -= read));
+    read(&bufp, &remain, ec);
     if(ec) 
       break;
     if(!checksum_i32_chk(checksum, buffer.base, buffer.size)) {
@@ -507,6 +436,74 @@ void ConnHandler::run_pending(Event::Ptr ev) {
     run(ev);
   }
 }
+
+
+
+
+ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr app_ctx, 
+                                   SocketPlain& socket)
+                                  : ConnHandler(app_ctx), 
+                                    m_sock(std::move(socket)) {
+}
+
+ConnHandlerPlain::~ConnHandlerPlain() { 
+  do_close();
+}
+
+void ConnHandlerPlain::new_connection() {
+  {
+    std::scoped_lock lock(m_mutex);
+
+    endpoint_remote = m_sock.remote_endpoint();
+    endpoint_local = m_sock.local_endpoint();
+    SWC_LOGF(
+      LOG_DEBUG, 
+      "new_connection local=%s, remote=%s, executor=%d",
+      endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
+      (size_t)&m_sock.get_executor().context());
+  }
+  ConnHandler::new_connection();
+}
+
+const bool ConnHandlerPlain::is_open() {
+  return m_err == Error::OK && m_sock.is_open();
+}
+
+void ConnHandlerPlain::close() {
+  if(is_open()) {
+    std::scoped_lock lock(m_mutex);
+    try{m_sock.close();}catch(...){}
+  }
+  m_err = Error::COMM_NOT_CONNECTED;
+  ConnHandler::disconnected();
+}
+
+asio::high_resolution_timer* ConnHandlerPlain::get_timer(uint32_t timeout_ms) {
+  return new asio::high_resolution_timer(
+    m_sock.get_executor(), std::chrono::milliseconds(timeout_ms));
+}
+  
+void ConnHandlerPlain::do_async_write(
+        const std::vector<asio::const_buffer>& buffers,
+        const std::function<void(const asio::error_code, uint32_t)>& hdlr) {
+  asio::async_write(m_sock, buffers, hdlr);
+}
+
+void ConnHandlerPlain::do_async_read(
+        uint8_t* data, uint32_t sz,
+        const std::function<size_t(const asio::error_code, size_t)>& cond,
+        const std::function<void(const asio::error_code, size_t)>& hdlr) {
+  asio::async_read(m_sock, asio::mutable_buffer(data, sz), cond, hdlr);
+}
+
+void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp, 
+                            asio::error_code &ec) {
+  size_t read = 0;
+  do {
+    read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
+  } while(!ec && (*remainp -= read));
+}
+
 
 
 }

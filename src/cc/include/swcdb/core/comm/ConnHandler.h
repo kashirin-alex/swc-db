@@ -7,6 +7,7 @@
 #define swc_core_comm_ConnHandler_h
 
 #include <asio.hpp>
+//#include "asio/ssl.hpp"
 #include <queue>
 #include <memory>
 #include <mutex>
@@ -21,7 +22,9 @@
 
 namespace SWC { 
 
-using Socket = asio::ip::tcp::socket;
+using SocketPlain = asio::ip::tcp::socket;
+//using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
+
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
@@ -47,7 +50,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  ConnHandler(AppContext::Ptr app_ctx, Socket& socket);
+  ConnHandler(AppContext::Ptr app_ctx);
 
   ConnHandlerPtr ptr();
 
@@ -63,9 +66,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
   virtual void new_connection();
 
-  const bool is_open();
+  virtual const bool is_open() = 0;
 
-  void close();
+  virtual void close() = 0;
 
   const size_t pending_read();
 
@@ -85,21 +88,35 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   const int send_response(CommBuf::Ptr &cbuf, 
                           DispatchHandler::Ptr hdlr=nullptr);
 
-  /*
-  int send_response(CommBuf::Ptr &cbuf, uint32_t timeout_ms);
-
-  int send_request(uint32_t timeout_ms, CommBuf::Ptr &cbuf, 
-                          DispatchHandler::Ptr hdlr);
-  */
-
   const int send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr);
 
   void accept_requests();
+
   /* 
   void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
   */
 
   const std::string to_string();
+
+  protected:
+
+  virtual asio::high_resolution_timer* get_timer(uint32_t timeout_ms) = 0;
+
+  virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) = 0;
+
+  virtual void do_async_write(
+      const std::vector<asio::const_buffer>& buffers,
+      const std::function<void(const asio::error_code, uint32_t)>&) = 0;
+
+  virtual void do_async_read(
+      uint8_t* data, uint32_t sz,
+      const std::function<size_t(const asio::error_code, size_t)>& cond,
+      const std::function<void(const asio::error_code, size_t)>& hdlr) = 0;
+
+  void disconnected();
+
+  std::mutex                m_mutex;
+  std::atomic<Error::Code>  m_err = Error::OK;
 
   private:
 
@@ -123,14 +140,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void received(const Event::Ptr& ev, const asio::error_code ec);
 
-  void disconnected();
-
   void run_pending(Event::Ptr ev);
 
-  Socket                    m_sock;
   uint32_t                  m_next_req_id;
 
-  std::mutex                m_mutex;
   std::queue<Outgoing*>     m_outgoing;
   bool                      m_writing = 0;
 
@@ -139,9 +152,43 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   bool                      m_reading = 0;
   std::unordered_map<uint32_t, PendingRsp*>  m_pending;
 
-  std::atomic<Error::Code>  m_err = Error::OK;
+};
+
+
+
+
+class ConnHandlerPlain : public ConnHandler {
+  public:
+
+  ConnHandlerPlain(AppContext::Ptr app_ctx, SocketPlain& socket);
+  
+  virtual ~ConnHandlerPlain();
+
+  void new_connection() override;
+
+  const bool is_open() override;
+
+  void close() override;
+
+  asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
+
+  void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
+
+  void do_async_write(
+    const std::vector<asio::const_buffer>& buffers,
+    const std::function<void(const asio::error_code, uint32_t)>& hdlr) override;
+
+  void do_async_read(
+    uint8_t* data, uint32_t sz,
+    const std::function<size_t(const asio::error_code, size_t)>& cond,
+    const std::function<void(const asio::error_code, size_t)>& hdlr) override;
+
+  private:
+  SocketPlain  m_sock;
 
 };
+
+
 
 
 } // namespace SWC

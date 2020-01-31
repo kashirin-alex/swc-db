@@ -48,7 +48,11 @@ void Acceptor::do_accept() {
                     ec.value(), ec.message().c_str());
         return;
       }
-      auto conn = std::make_shared<ConnHandler>(m_app_ctx, new_sock);
+      /*
+      asio::ssl::context& context
+      asio::ssl::stream<tcp::socket> socket_(std::move(new_sock), context);
+      */
+      auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
       conn->new_connection();
       conn->accept_requests();
 

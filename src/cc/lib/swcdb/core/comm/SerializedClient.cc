@@ -60,7 +60,7 @@ void ServerConnections::connection(ConnHandlerPtr &conn,
   if(ec || !sock.is_open())
     return;
 
-  conn = std::make_shared<ConnHandler>(m_ctx, sock);
+  conn = std::make_shared<ConnHandlerPlain>(m_ctx, sock);
   conn->new_connection();
   if(preserve)
     put_back(conn);
@@ -81,7 +81,8 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
       if(ec || !sock->is_open()){
         cb(nullptr);
       } else {
-        auto conn = std::make_shared<ConnHandler>(ptr->m_ctx, *sock.get());
+        ConnHandlerPtr conn = 
+          std::make_shared<ConnHandlerPlain>(ptr->m_ctx, *sock.get());
         conn->new_connection();
         if(preserve)
           ptr->put_back(conn);
