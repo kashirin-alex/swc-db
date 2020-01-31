@@ -416,7 +416,8 @@ class Mutable final {
     bool only_deletes = specs.flags.is_only_deletes();
     bool only_keys = specs.flags.is_only_keys();
 
-    uint32_t offset = 0; //(narrower over specs.key_start)
+    uint32_t offset = specs.offset_key.empty()? 0 : _narrow(specs.offset_key);
+                                               // ?specs.key_start
     for(Cell* cell; !stop && offset < m_size; ++offset){
       cell = *(m_cells + offset);
 
@@ -446,10 +447,17 @@ class Mutable final {
     bool only_deletes = specs.flags.is_only_deletes();
     bool only_keys = specs.flags.is_only_keys();
     
-    bool chk_align = !specs.offset_key.empty();
-    uint32_t rev = chk_align ? cells.m_max_revs : 0;
-
-    uint32_t offset = 0; //(narrower over specs.key_start)
+    bool chk_align;
+    uint32_t rev;
+    uint32_t offset;
+    if((chk_align = !specs.offset_key.empty())) {
+      rev = cells.m_max_revs;
+      offset = _narrow(specs.offset_key);// ?specs.key_start
+    } else {
+      rev = 0;
+      offset = 0;
+    }
+    
     for(Cell* cell; !stop && offset < m_size; ++offset) {
       cell = *(m_cells + offset);
 
@@ -514,7 +522,7 @@ class Mutable final {
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
             size_t& count, size_t& skips) const {
     Cell* cell;
-    uint32_t offset = 0; //specs.flags.offset;(narrower over specs.key_start)
+    uint32_t offset = 0;
     uint cell_offset = specs.flags.offset;
     bool only_deletes = specs.flags.is_only_deletes();
 
