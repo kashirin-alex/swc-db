@@ -59,11 +59,11 @@ class Interval {
     return std::make_shared<Interval>(*other.get());
   }
   
-  explicit Interval() : offset_rev(0) {}
+  explicit Interval() : key_eq(false), offset_rev(0) {}
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                     : range_begin(range_begin), range_end(range_end), 
-                      offset_rev(0) {
+                      key_eq(false), offset_rev(0) {
   }
 
   explicit Interval(const Key& key_start, const Key& key_finish, 
@@ -73,7 +73,7 @@ class Interval {
                     : key_start(key_start), key_finish(key_finish), 
                       value(value),
                       ts_start(ts_start), ts_finish(ts_finish), 
-                      flags(flags), offset_rev(0) {
+                      flags(flags), key_eq(false), offset_rev(0) {
   }
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end, 
@@ -85,10 +85,11 @@ class Interval {
                       key_start(key_start), key_finish(key_finish), 
                       value(value),
                       ts_start(ts_start), ts_finish(ts_finish), 
-                      flags(flags), offset_rev(0) {
+                      flags(flags), key_eq(false), offset_rev(0) {
   }
   
-  explicit Interval(const uint8_t **bufp, size_t *remainp) {
+  explicit Interval(const uint8_t **bufp, size_t *remainp) 
+                    : key_eq(false) {
     decode(bufp, remainp); 
   }
 
@@ -110,6 +111,9 @@ class Interval {
     ts_finish.copy(other.ts_finish);
 
     flags.copy(other.flags);
+
+    key_eq = other.key_eq;
+
     offset_key.copy(other.offset_key);
     offset_rev = other.offset_rev;
   }
@@ -317,6 +321,31 @@ class Interval {
       if(&end != &range_end)
         end.copy(range_end);
 
+    } else if(key_eq && !key_start.empty()) {
+      const char* fraction;
+      uint32_t len;
+      Condition::Comp comp;
+      int32_t ok = -1;
+      for(int idx=0; idx < key_start.count; idx++) {
+        key_start.get(idx, &fraction, &len, &comp);
+        if(len && 
+          (comp == Condition::LT || 
+           comp == Condition::LE || 
+           comp == Condition::EQ)) {
+          end.add(fraction, len);
+          ok = idx;
+        } else
+          end.add("", 0);
+      }
+      if(!++ok)
+        end.free();
+      else if(ok == key_start.count)
+        end.add("", 0);
+      else if(++ok < key_start.count && ok != end.count)
+        end.remove(ok, true);
+    }
+
+
     /* NOT POSSIBLE
     } else if(!key_finish.empty()) {
       const char* fraction;
@@ -357,8 +386,8 @@ class Interval {
         end.add("", 0);
       else if(++ok < key_start.count && ok != end.count)
         end.remove(ok, true);
-      */
     }
+    */
   }
 
   const std::string to_string() const {
@@ -446,6 +475,8 @@ class Interval {
   Value      value;
   Timestamp  ts_start, ts_finish;
   Flags      flags;
+
+  bool       key_eq;
 
   Cell::Key  offset_key;
   int64_t    offset_rev;

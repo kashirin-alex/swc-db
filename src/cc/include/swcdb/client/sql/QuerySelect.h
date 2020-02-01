@@ -437,7 +437,7 @@ class QuerySelect : public Reader {
 
       if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) && 
           found_token(TOKEN_KEY, LEN_KEY)) {
-        read_key(spec.key_start, spec.key_finish, flw_and);
+        read_key(spec.key_start, spec.key_finish, flw_and, spec.key_eq);
         possible_and = true;
         continue;
       }
@@ -561,7 +561,8 @@ class QuerySelect : public Reader {
     ptr = mark_ptr;
   }
 
-  void read_key(DB::Specs::Key& start, DB::Specs::Key& finish, bool flw) {
+  void read_key(DB::Specs::Key& start, DB::Specs::Key& finish, bool flw, 
+                bool& eq) {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
 
@@ -574,7 +575,7 @@ class QuerySelect : public Reader {
       return;
     }
 
-    if(comp_right == Condition::GE || comp_right == Condition::EQ)
+    if((eq = comp_right == Condition::EQ) || comp_right == Condition::GE)
       read_key(start);
     else 
       read_key(finish);
