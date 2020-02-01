@@ -112,12 +112,10 @@ SWC_CAN_INLINE
 const Comp condition(const uint8_t *p1, uint32_t p1_len, 
                      const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  if(p1_len == p2_len && diff == 0)
-    return Comp::EQ;
-  if((diff < 0 && p1_len <= p2_len) || (diff >= 0 && p1_len < p2_len))
-    return Comp::GT;
-  else
-    return Comp::LT;
+  return diff == 0 
+    ? (p1_len == p2_len ? Comp::EQ : (p1_len < p2_len ? Comp::GT : Comp::LT) )
+    : (diff < 0 ? (p1_len <= p2_len ? Comp::GT : Comp::LT)
+                : (p1_len <  p2_len ? Comp::GT : Comp::LT));
 }
 
 SWC_CAN_INLINE 
