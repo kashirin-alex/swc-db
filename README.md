@@ -16,6 +16,7 @@ https://alex.kashirin.family/swc-DB.pdf
   * [libre2](https://github.com/google/re2)
   * [libsnappy](https://github.com/google/snappy)
   * [libzlib](https://www.zlib.net/)
+  * [libopenssl tls1.2+](https://www.openssl.org/)
   * [libeditline](https://github.com/troglobit/editline) 
   * Hadoop-JVM FsBroker requires - optional:
     * [Apache-Hadoop + libhdfs](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfs)

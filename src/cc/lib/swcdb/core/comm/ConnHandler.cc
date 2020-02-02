@@ -506,4 +506,122 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
 
 
 
+
+ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr app_ctx, 
+                               asio::ssl::context& ssl_ctx,
+                               SocketPlain& socket)
+                              : ConnHandler(app_ctx), 
+                                m_sock(std::move(socket), ssl_ctx) {
+}
+
+ConnHandlerSSL::~ConnHandlerSSL() { 
+  do_close();
+}
+
+void ConnHandlerSSL::new_connection() {
+  {
+    std::scoped_lock lock(m_mutex);
+
+    endpoint_remote = m_sock.lowest_layer().remote_endpoint();
+    endpoint_local = m_sock.lowest_layer().local_endpoint();
+    SWC_LOGF(
+      LOG_DEBUG, 
+      "new_connection local=%s, remote=%s, executor=%d",
+      endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
+      (size_t)&m_sock.get_executor().context());
+  }
+  ConnHandler::new_connection();
+}
+
+void ConnHandlerSSL::handshake() {
+  m_sock.async_handshake(
+    asio::ssl::stream_base::server,
+    [ptr=ptr()](const asio::error_code ec) {
+      if(!ec) {
+        ptr->accept_requests();
+      } else {
+        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)", 
+                ec.value(), ec.message().c_str());
+        ptr->close();
+      }
+    }
+  );
+}
+
+namespace { //local
+void set_verify(ConnHandlerPtr conn, SocketSSL& sock, const std::string& name) {
+  sock.set_verify_mode(asio::ssl::verify_peer);
+  sock.set_verify_callback(
+    [conn, name]
+    (bool preverified, asio::ssl::verify_context& ctx) {   
+      if(preverified)
+        return false;
+      char subject_name[256];
+      X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+      X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
+      preverified = strcmp(((const char*)subject_name)+4, name.c_str()) == 0;
+      SWC_LOGF(LOG_DEBUG, "verify state=%d crt(%s)==%s ", 
+               preverified, ((const char*)subject_name)+4, name.c_str());
+      return preverified; 
+    } // OR asio::ssl::rfc2818_verification(name)
+  );
+}
+}
+
+void ConnHandlerSSL::handshake_client(
+            const std::function<void(const asio::error_code&)> cb, 
+            const std::string& name) {
+  if(!name.empty())
+    set_verify(ptr(), m_sock, name);
+  m_sock.async_handshake(asio::ssl::stream_base::client, cb);
+}
+
+void ConnHandlerSSL::handshake_client(asio::error_code& ec, 
+                                      const std::string& name) {
+  if(!name.empty())
+    set_verify(ptr(), m_sock, name);
+  m_sock.handshake(asio::ssl::stream_base::client, ec);
+}
+
+
+const bool ConnHandlerSSL::is_open() {
+  return m_err == Error::OK && m_sock.lowest_layer().is_open();
+}
+
+void ConnHandlerSSL::close() {
+  if(is_open()) {
+    std::scoped_lock lock(m_mutex);
+    try{m_sock.lowest_layer().close();}catch(...){}
+  }
+  m_err = Error::COMM_NOT_CONNECTED;
+  ConnHandler::disconnected();
+}
+
+asio::high_resolution_timer* ConnHandlerSSL::get_timer(uint32_t timeout_ms) {
+  return new asio::high_resolution_timer(
+    m_sock.get_executor(), std::chrono::milliseconds(timeout_ms));
+}
+  
+void ConnHandlerSSL::do_async_write(
+        const std::vector<asio::const_buffer>& buffers,
+        const std::function<void(const asio::error_code, uint32_t)>& hdlr) {
+  asio::async_write(m_sock, buffers, hdlr);
+}
+
+void ConnHandlerSSL::do_async_read(
+        uint8_t* data, uint32_t sz,
+        const std::function<size_t(const asio::error_code, size_t)>& cond,
+        const std::function<void(const asio::error_code, size_t)>& hdlr) {
+  asio::async_read(m_sock, asio::mutable_buffer(data, sz), cond, hdlr);
+}
+
+void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp, 
+                            asio::error_code &ec) {
+  size_t read = 0;
+  do {
+    read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
+  } while(!ec && (*remainp -= read));
+}
+ 
+
 }

@@ -7,7 +7,7 @@
 #define swc_core_comm_ConnHandler_h
 
 #include <asio.hpp>
-//#include "asio/ssl.hpp"
+#include "asio/ssl.hpp"
 #include <queue>
 #include <memory>
 #include <mutex>
@@ -23,7 +23,7 @@
 namespace SWC { 
 
 using SocketPlain = asio::ip::tcp::socket;
-//using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
+using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
@@ -189,6 +189,45 @@ class ConnHandlerPlain : public ConnHandler {
 };
 
 
+class ConnHandlerSSL : public ConnHandler {
+  public:
+
+  ConnHandlerSSL(AppContext::Ptr app_ctx, asio::ssl::context& ssl_ctx, 
+                 SocketPlain& socket);
+  
+  virtual ~ConnHandlerSSL();
+
+  void handshake();
+
+  void handshake_client(const std::function<void(const asio::error_code&)> cb,
+                        const std::string& name);
+
+  void handshake_client(asio::error_code& ec, 
+                        const std::string& name);
+
+  void new_connection() override;
+
+  const bool is_open() override;
+
+  void close() override;
+
+  asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
+
+  void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
+
+  void do_async_write(
+    const std::vector<asio::const_buffer>& buffers,
+    const std::function<void(const asio::error_code, uint32_t)>& hdlr) override;
+
+  void do_async_read(
+    uint8_t* data, uint32_t sz,
+    const std::function<size_t(const asio::error_code, size_t)>& cond,
+    const std::function<void(const asio::error_code, size_t)>& hdlr) override;
+
+  private:
+  SocketSSL  m_sock;
+
+};
 
 
 } // namespace SWC

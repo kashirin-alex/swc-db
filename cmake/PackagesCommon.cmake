@@ -36,15 +36,15 @@ find_package(FileSystems REQUIRED)
 #INSTALL_LIBS(lib ${LZ4_LIBRARIES_SHARED})
 
 
-#SET_DEPS(
-#	NAME "SSL" 
-#	REQUIRED TRUE 
-#	LIB_PATHS /usr/local/ssl/lib
-#	INC_PATHS /usr/local/ssl/include
-#	STATIC libssl.a libcrypto.a 
-#	SHARED ssl crypto
-#	INCLUDE openssl/ssl.h openssl/crypto.h
-#)
+SET_DEPS(
+	NAME "SSL" 
+	REQUIRED TRUE 
+	LIB_PATHS /usr/local/ssl/lib
+	INC_PATHS /usr/local/ssl/include
+	STATIC libssl.a libcrypto.a 
+	SHARED ssl crypto
+	INCLUDE openssl/ssl.h openssl/crypto.h
+)
 #INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
 
 
