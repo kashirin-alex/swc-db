@@ -17,14 +17,26 @@
 
 namespace SWC { namespace client {
 
+struct SSL_Context final {
+  std::string     subject_name;
+  std::string     ca;
+  std::vector<asio::ip::network_v4> nets_v4;
+  std::vector<asio::ip::network_v6> nets_v6;
+  
+  asio::ssl::context create();
+
+  void load_ca(const std::string& ca_filepath);
+
+};
+
 
 class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
   public:
   typedef std::shared_ptr<ServerConnections>    Ptr;
   typedef std::function<void(ConnHandlerPtr)> NewCb_t;
 
-  ServerConnections(std::string srv_name, const EndPoint& endpoint,
-                    IOCtxPtr ioctx, AppContext::Ptr ctx);
+  ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
+                    IOCtxPtr ioctx, AppContext::Ptr ctx, SSL_Context* ssl_ctx);
   
   virtual ~ServerConnections();
 
@@ -50,7 +62,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   AppContext::Ptr               m_ctx;
   std::mutex                    m_mutex;
   std::queue<ConnHandlerPtr>    m_conns;
-
+  SSL_Context*                  m_ssl_ctx;
 };
 
 
@@ -61,7 +73,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   typedef std::shared_ptr<Serialized>                  Ptr;
   typedef std::unordered_map<size_t, ServerConnections::Ptr> Map;
 
-  Serialized(std::string srv_name, IOCtxPtr ioctx, AppContext::Ptr ctx);
+  Serialized(const std::string& srv_name, IOCtxPtr ioctx, AppContext::Ptr ctx);
 
   ServerConnections::Ptr get_srv(EndPoint endpoint);
 
@@ -105,6 +117,9 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   const std::string     m_srv_name;
   IOCtxPtr              m_ioctx;
   AppContext::Ptr       m_ctx;
+
+  const bool            m_use_ssl;
+  SSL_Context*          m_ssl_ctx;
 
   std::mutex            m_mutex;
   Map                   m_srv_conns;
