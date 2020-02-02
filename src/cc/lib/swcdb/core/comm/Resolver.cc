@@ -181,5 +181,38 @@ EndPoints get_endpoints(uint16_t defaul_port,
 }
 
 
+void get_networks(const Strings networks, 
+                  std::vector<asio::ip::network_v4>& nets_v4, 
+                  std::vector<asio::ip::network_v6>& nets_v6,
+                  asio::error_code& ec) {
+  for(auto& net : networks) {
+    if(net.find_first_of(":") == std::string::npos)
+      nets_v4.push_back(asio::ip::make_network_v4(net, ec));      
+    else
+      nets_v6.push_back(asio::ip::make_network_v6(net, ec));
+  }
+}
+
+const bool is_network(const EndPoint& endpoint,
+                      const std::vector<asio::ip::network_v4>& nets_v4, 
+                      const std::vector<asio::ip::network_v6>& nets_v6) {
+  if(endpoint.address().is_v4()) {
+    for(auto& net : nets_v4)
+      if(endpoint.address().to_v4() == net.address() || 
+         asio::ip::make_network_v4(endpoint.address().to_v4(), 32).is_subnet_of(net))
+        return true;
+    return false;
+  }
+  if(endpoint.address().is_v6()) {
+    for(auto& net : nets_v6) {
+      if(endpoint.address().to_v6() == net.address() || 
+         asio::ip::make_network_v6(endpoint.address().to_v6(), 128).is_subnet_of(net))
+        return true;
+    }
+    return false;
+  }
+  return false;
+}
+
 
 }}

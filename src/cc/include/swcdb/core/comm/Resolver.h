@@ -51,7 +51,19 @@ EndPoints get_endpoints(uint16_t defaul_port,
                         const std::string &host, 
                         bool srv=false);
 
-}}
+
+void get_networks(const Strings networks, 
+                  std::vector<asio::ip::network_v4>& nets_v4, 
+                  std::vector<asio::ip::network_v6>& nets_v6,
+                  asio::error_code& ec);
+
+const bool is_network(const EndPoint& endpoint,
+                      const std::vector<asio::ip::network_v4>& nets_v4, 
+                      const std::vector<asio::ip::network_v6>& nets_v6);
+
+
+
+} } // namespace SWC::Resolver
 
 
 #ifdef SWC_IMPL_SOURCE
