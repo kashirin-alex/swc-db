@@ -18,28 +18,48 @@
 namespace SWC { namespace server {
 
 
-class Acceptor final {
+class Acceptor {
   public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
   Acceptor(asio::ip::tcp::acceptor& acceptor, 
-           AppContext::Ptr app_ctx, IOCtxPtr io_ctx);
+           AppContext::Ptr app_ctx, IOCtxPtr io_ctx, 
+           bool is_plain=true);
 
   void stop();
 
-  ~Acceptor();
+  virtual ~Acceptor();
 
   asio::ip::tcp::acceptor* sock();
 
-  private:
-  
-  void do_accept();
-
+  protected:
   asio::ip::tcp::acceptor m_acceptor;
   AppContext::Ptr         m_app_ctx;
+
+  private:
+  virtual void do_accept();
+
   IOCtxPtr                m_io_ctx;
 };
 
+
+class AcceptorSSL : public Acceptor {
+  public:
+
+  AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
+              AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
+              const std::string& ssl_pem,
+              const std::string& ssl_ciphers);
+
+  ~AcceptorSSL();
+
+  private:
+  
+  void do_accept() override;
+
+  const std::string ssl_pem;
+  const std::string ssl_ciphers;
+};
 
 
 class SerializedServer final {

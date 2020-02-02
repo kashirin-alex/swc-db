@@ -10,17 +10,20 @@
 
 namespace SWC { namespace server {
 
-
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor, 
-                  AppContext::Ptr app_ctx, IOCtxPtr io_ctx)
+                  AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
+                  bool is_plain)
                   : m_acceptor(std::move(acceptor)), 
                     m_app_ctx(app_ctx), m_io_ctx(io_ctx) {
-  do_accept();
-    
-  SWC_LOGF(LOG_INFO, "Listening On: [%s]:%d fd=%d", 
-           m_acceptor.local_endpoint().address().to_string().c_str(), 
-           m_acceptor.local_endpoint().port(), 
-           (ssize_t)m_acceptor.native_handle());
+  SWC_LOGF(
+    LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
+    m_acceptor.local_endpoint().address().to_string().c_str(), 
+    m_acceptor.local_endpoint().port(), 
+    (ssize_t)m_acceptor.native_handle(),
+    is_plain ? "PLAIN" : "SECURE"
+  );
+  if(is_plain)
+    do_accept();
 }
 
 void Acceptor::stop() {
@@ -48,10 +51,7 @@ void Acceptor::do_accept() {
                     ec.value(), ec.message().c_str());
         return;
       }
-      /*
-      asio::ssl::context& context
-      asio::ssl::stream<tcp::socket> socket_(std::move(new_sock), context);
-      */
+      
       auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
       conn->new_connection();
       conn->accept_requests();
@@ -60,6 +60,61 @@ void Acceptor::do_accept() {
     }
   );
 }
+
+
+
+
+AcceptorSSL::AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
+                        AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
+                        const std::string& ssl_pem,
+                        const std::string& ssl_ciphers)
+                        : Acceptor(acceptor, app_ctx, io_ctx, false),
+                          ssl_pem(ssl_pem), ssl_ciphers(ssl_ciphers) {
+  do_accept();
+}
+
+void AcceptorSSL::do_accept() {
+  m_acceptor.async_accept(
+    [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
+      if(ec) {
+        if(ec.value() != 125) 
+          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
+                    ec.value(), ec.message().c_str());
+        return;
+      }
+
+      asio::ssl::context ssl_ctx(asio::ssl::context::tlsv12_server);
+      ssl_ctx.set_options(
+          asio::ssl::context::default_workarounds
+        | asio::ssl::context::no_compression
+        | asio::ssl::context::no_sslv2
+        | asio::ssl::context::no_sslv3
+        | asio::ssl::context::no_tlsv1
+        | asio::ssl::context::no_tlsv1_1
+        | SSL_OP_NO_TICKET
+        | SSL_OP_EPHEMERAL_RSA
+        | SSL_OP_SINGLE_ECDH_USE
+        //| asio::ssl::context::no_tlsv1_2
+        | asio::ssl::context::single_dh_use
+      );
+      ssl_ctx.use_certificate_chain_file(ssl_pem);
+      ssl_ctx.use_private_key_file(ssl_pem, asio::ssl::context::pem);
+      //ssl_ctx.use_tmp_dh_file("dh2048.pem");
+      //ssl_ctx.set_password_callback(..);
+  
+      if(!ssl_ciphers.empty())
+        SSL_CTX_set_cipher_list(ssl_ctx.native_handle(), ssl_ciphers.c_str());
+      
+      auto conn = std::make_shared<ConnHandlerSSL>(m_app_ctx, ssl_ctx, new_sock);
+      conn->new_connection();
+      conn->handshake();
+
+      do_accept();
+    }
+  );
+}
+
+AcceptorSSL::~AcceptorSSL(){ }
 
 
 
@@ -92,6 +147,30 @@ SerializedServer::SerializedServer(
     true
   );
 
+  bool use_ssl = props.get<bool>("swc.comm.ssl");
+  std::vector<asio::ip::network_v4> nets_v4;
+  std::vector<asio::ip::network_v6> nets_v6;
+
+  std::string ssl_pem = props.get<std::string>("swc.comm.ssl.pem");
+  if(ssl_pem.front() != '.' && ssl_pem.front() != '/')
+    ssl_pem = props.get<std::string>("swc.cfg.path") + ssl_pem;
+  std::string ssl_ciphers = props.has("swc.comm.ssl.ciphers") 
+        ? props.get<std::string>("swc.comm.ssl.ciphers") : "";
+
+  if(use_ssl) {
+    asio::error_code ec;
+    Resolver::get_networks(
+      props.get<Strings>("swc.comm.ssl.secure.network"),
+      nets_v4,
+      nets_v6,
+      ec
+    );
+    if(ec)
+      SWC_THROWF(Error::CONFIG_BAD_VALUE,
+                "Bad Network in swc.comm.ssl.secure.network error(%s)",
+                 ec.message().c_str());
+  }
+  
   EndPoints endpoints_final;
 
   for(uint32_t reactor=0; reactor<reactors; ++reactor) {
@@ -101,18 +180,30 @@ SerializedServer::SerializedServer(
 
     for (std::size_t i = 0; i < endpoints.size(); ++i) {
       auto& endpoint = endpoints[i];
+      bool ssl_conn = use_ssl && 
+                      !Resolver::is_network(endpoint, nets_v4, nets_v6);
 
       if(reactor == 0) { 
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
-        m_acceptors.push_back(
-          std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+        if(ssl_conn)
+          m_acceptors.push_back(
+            std::make_shared<AcceptorSSL>(
+              acceptor, app_ctx, io_ctx, ssl_pem, ssl_ciphers));
+        else
+          m_acceptors.push_back(
+            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
         endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
       } else {
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), 
           endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle()));
-        m_acceptors.push_back(
-          std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+        if(ssl_conn)
+          m_acceptors.push_back(
+            std::make_shared<AcceptorSSL>(
+              acceptor, app_ctx, io_ctx, ssl_pem, ssl_ciphers));
+        else
+          m_acceptors.push_back(
+            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
       }
     }
 
