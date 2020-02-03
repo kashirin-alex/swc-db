@@ -74,7 +74,9 @@ void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
 
   ctx.use_private_key(
     asio::const_buffer(pem.c_str(), pem.length()), asio::ssl::context::pem);
-
+  
+  SSL_CTX_set_ecdh_auto(ctx.native_handle(), 1);
+  //SSL_CTX_set_tmp_dh(ctx.native_handle(), EC_KEY_new_by_curve_name (NID_X9_62_prime256v1));
   //ctx.use_tmp_dh_file("dh2048.pem");
   
   ctx.set_verify_mode(
