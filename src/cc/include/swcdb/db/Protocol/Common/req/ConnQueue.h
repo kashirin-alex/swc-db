@@ -56,7 +56,10 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     }
 
     void request_again() {
-      queue->put(req());
+      if(queue == nullptr)
+        run();
+      else
+        queue->put(req());
     }
 
     virtual bool valid() { return true; }
@@ -188,7 +191,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
           break;
         } 
         req = m_queue.front();
-          if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
+        if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
           m_queue_running = false;
           break;
         }
