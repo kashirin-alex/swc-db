@@ -78,7 +78,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual void run(Event::Ptr& ev);
 
-  void do_close();
+  virtual void do_close();
 
   const int send_error(int error, const std::string &msg, 
                        const Event::Ptr& ev=nullptr);
@@ -164,6 +164,8 @@ class ConnHandlerPlain : public ConnHandler {
   
   virtual ~ConnHandlerPlain();
 
+  void do_close() override;
+
   void new_connection() override;
 
   const bool is_open() override;
@@ -197,15 +199,18 @@ class ConnHandlerSSL : public ConnHandler {
   
   virtual ~ConnHandlerSSL();
 
-  void handshake();
-
-  void handshake_client(const std::function<void(const asio::error_code&)> cb,
-                        const std::string& name);
-
-  void handshake_client(asio::error_code& ec, 
-                        const std::string& name);
+  void do_close() override;
 
   void new_connection() override;
+
+  void handshake();
+
+  void set_verify(
+    const std::function<bool(bool, asio::ssl::verify_context&)>& cb);
+
+  void handshake_client(const std::function<void(const asio::error_code&)> cb);
+
+  void handshake_client(asio::error_code& ec);
 
   const bool is_open() override;
 

@@ -84,7 +84,6 @@ void ConnHandler::run(Event::Ptr& ev) {
 
 void ConnHandler::do_close() {
   if(m_err == Error::OK) {
-    close();
     auto ev = Event::make(Event::Type::DISCONNECT, m_err);
     run(ev);
   }
@@ -450,6 +449,13 @@ ConnHandlerPlain::~ConnHandlerPlain() {
   do_close();
 }
 
+void ConnHandlerPlain::do_close() {
+  if(m_err == Error::OK) {
+    close();
+    ConnHandler::do_close();
+  }
+}
+
 void ConnHandlerPlain::new_connection() {
   {
     std::scoped_lock lock(m_mutex);
@@ -518,6 +524,13 @@ ConnHandlerSSL::~ConnHandlerSSL() {
   do_close();
 }
 
+void ConnHandlerSSL::do_close() {
+  if(m_err == Error::OK) {
+    close();
+    ConnHandler::do_close();
+  }
+}
+
 void ConnHandlerSSL::new_connection() {
   {
     std::scoped_lock lock(m_mutex);
@@ -548,38 +561,17 @@ void ConnHandlerSSL::handshake() {
   );
 }
 
-namespace { //local
-void set_verify(ConnHandlerPtr conn, SocketSSL& sock, const std::string& name) {
-  sock.set_verify_mode(asio::ssl::verify_peer);
-  sock.set_verify_callback(
-    [conn, name]
-    (bool preverified, asio::ssl::verify_context& ctx) {   
-      if(preverified)
-        return false;
-      char subject_name[256];
-      X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
-      X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-      preverified = strcmp(((const char*)subject_name)+4, name.c_str()) == 0;
-      SWC_LOGF(LOG_DEBUG, "verify state=%d crt(%s)==%s ", 
-               preverified, ((const char*)subject_name)+4, name.c_str());
-      return preverified; 
-    } // OR asio::ssl::rfc2818_verification(name)
-  );
-}
+void ConnHandlerSSL::set_verify(
+    const std::function<bool(bool, asio::ssl::verify_context&)>& cb) {
+  m_sock.set_verify_callback(cb);
 }
 
 void ConnHandlerSSL::handshake_client(
-            const std::function<void(const asio::error_code&)> cb, 
-            const std::string& name) {
-  if(!name.empty())
-    set_verify(ptr(), m_sock, name);
+            const std::function<void(const asio::error_code&)> cb) {
   m_sock.async_handshake(asio::ssl::stream_base::client, cb);
 }
 
-void ConnHandlerSSL::handshake_client(asio::error_code& ec, 
-                                      const std::string& name) {
-  if(!name.empty())
-    set_verify(ptr(), m_sock, name);
+void ConnHandlerSSL::handshake_client(asio::error_code& ec) {
   m_sock.handshake(asio::ssl::stream_base::client, ec);
 }
 
