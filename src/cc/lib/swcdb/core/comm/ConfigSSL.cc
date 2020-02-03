@@ -3,6 +3,7 @@
  */
 
 
+#include "swcdb/core/FileUtils.h"
 #include "swcdb/core/comm/ConfigSSL.h"
 #include "swcdb/core/comm/Settings.h"
 
@@ -18,18 +19,19 @@ ConfigSSL::ConfigSSL(bool is_client) {
     subject_name = props.get<std::string>("swc.comm.ssl.subject_name");
 
   if(props.has("swc.comm.ssl.ca")) {
-    auto ca = props.get<std::string>("swc.comm.ssl.ca");
-    if(ca.front() != '.' && ca.front() != '/')
-      ca = props.get<std::string>("swc.cfg.path") + ca;
-    //load_ca(ca);
+    auto ca_file = props.get<std::string>("swc.comm.ssl.ca");
+    if(ca_file.front() != '.' && ca_file.front() != '/')
+      ca_file = props.get<std::string>("swc.cfg.path") + ca_file;
+    load_file(ca_file, ca);
   }
   
-  ssl_pem = props.get<std::string>("swc.comm.ssl.pem");
-  if(ssl_pem.front() != '.' && ssl_pem.front() != '/')
-    ssl_pem = props.get<std::string>("swc.cfg.path") + ssl_pem;
+  auto pem_file = props.get<std::string>("swc.comm.ssl.pem");
+  if(pem_file.front() != '.' && pem_file.front() != '/')
+    pem_file = props.get<std::string>("swc.cfg.path") + pem_file;
+  load_file(pem_file, pem);
     
-  ssl_ciphers = props.has("swc.comm.ssl.ciphers") 
-                ? props.get<std::string>("swc.comm.ssl.ciphers") : "";
+  ciphers = props.has("swc.comm.ssl.ciphers") 
+            ? props.get<std::string>("swc.comm.ssl.ciphers") : "";
 }
 
 ConfigSSL::~ConfigSSL() { }
@@ -42,16 +44,6 @@ void ConfigSSL::set_networks(const Strings& networks) {
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Bad Network in swc.comm.ssl.secure.network error(%s)",
               ec.message().c_str());
-}
-
-void ConfigSSL::load_ca(const std::string& ca_filepath) {
-  std::ifstream ifs(ca_filepath, std::ifstream::in);
-  std::string line;
-  ca.clear();
-  while(getline(ifs, line))
-    ca.append(line);
-  ifs.close();
-  ca_file = ca_filepath;
 }
 
 
@@ -74,23 +66,28 @@ void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
     //| asio::ssl::context::no_tlsv1_2
     | asio::ssl::context::single_dh_use
   );
-  if(!ssl_ciphers.empty())
-    SSL_CTX_set_cipher_list(ctx.native_handle(), ssl_ciphers.c_str());
+  if(!ciphers.empty())
+    SSL_CTX_set_cipher_list(ctx.native_handle(), ciphers.c_str());
 
-  ctx.use_certificate_chain_file(ssl_pem);
-  ctx.use_private_key_file(ssl_pem, asio::ssl::context::pem);
+  ctx.use_certificate_chain(
+    asio::const_buffer(pem.c_str(), pem.length()));
+
+  ctx.use_private_key(
+    asio::const_buffer(pem.c_str(), pem.length()), asio::ssl::context::pem);
+
   //ctx.use_tmp_dh_file("dh2048.pem");
   
   ctx.set_verify_mode(
     asio::ssl::verify_peer
   );
+  /*
   if(ca.empty()) {
     ctx.set_default_verify_paths();
   } else {
-    ctx.load_verify_file(ca); 
-    //ctx.add_certificate_authority(
-    //  asio::const_buffer(ca.c_str(), ca.length()));
+    ctx.add_certificate_authority(
+      asio::const_buffer(ca.c_str(), ca.length()));
   }
+  */
 }
 
 void ConfigSSL::make_server(AppContext::Ptr& app_ctx, SocketPlain& socket) {
@@ -113,9 +110,8 @@ void ConfigSSL::configure_client(asio::ssl::context& ctx) const {
   if(ca.empty()) {
     ctx.set_default_verify_paths();
   } else {
-    ctx.load_verify_file(ca);
-    //ctx.add_certificate_authority(
-    //  asio::const_buffer(ca.c_str(), ca.length()));
+    ctx.add_certificate_authority(
+      asio::const_buffer(ca.c_str(), ca.length()));
   }
 }
 
@@ -165,6 +161,17 @@ bool ConfigSSL::verify(bool preverified, asio::ssl::verify_context& ctx) {
   SWC_LOGF(LOG_DEBUG, "verify state=%d crt(%s)==%s ", 
             preverified, ((const char*)name)+4, subject_name.c_str());
   return preverified; 
+}
+
+
+void ConfigSSL::load_file(const std::string& filepath, std::string& to) const {
+  to.clear();
+  errno = 0;
+  FileUtils::read(filepath, to);
+  if(errno) {
+    SWC_THROWF(Error::CONFIG_BAD_VALUE, "Bad File '%s' error=%d(%s)",
+              filepath.c_str(), errno, Error::get_text(errno));
+  }
 }
 
 }

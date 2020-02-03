@@ -50,8 +50,10 @@ class ConfigSSL final {
 
   private:
   
-  std::string   ssl_pem;
-  std::string   ssl_ciphers;
+  void load_file(const std::string& filepath, std::string& to) const;
+  
+  std::string   pem;
+  std::string   ciphers;
   std::string   subject_name;
   std::string   ca;
   std::string   ca_file;
