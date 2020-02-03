@@ -59,6 +59,7 @@ set(swcdb_core_comm_sources
 	comm/Settings.cc
 	comm/SerializedServer.cc
 	comm/SerializedClient.cc
+	comm/ConfigSSL.cc
 	comm/Resolver.cc
 	comm/Event.cc
 	comm/CommHeader.cc

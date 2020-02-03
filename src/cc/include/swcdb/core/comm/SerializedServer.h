@@ -13,6 +13,7 @@
 
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
+#include "swcdb/core/comm/ConfigSSL.h"
 
 
 namespace SWC { namespace server {
@@ -47,9 +48,8 @@ class AcceptorSSL : public Acceptor {
   public:
 
   AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
-              AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
-              const std::string& ssl_pem,
-              const std::string& ssl_ciphers);
+              AppContext::Ptr app_ctx, IOCtxPtr io_ctx, 
+              ConfigSSL* ssl_cfg);
 
   ~AcceptorSSL();
 
@@ -57,8 +57,7 @@ class AcceptorSSL : public Acceptor {
   
   void do_accept() override;
 
-  const std::string ssl_pem;
-  const std::string ssl_ciphers;
+  ConfigSSL* m_ssl_cfg;
 };
 
 
@@ -89,13 +88,14 @@ class SerializedServer final {
   private:
   
   std::vector<asio::thread_pool*> m_thread_pools;
-  std::atomic<bool>               m_run;
   std::string                     m_appname;
+  std::atomic<bool>               m_run;
   std::vector<Acceptor::Ptr>      m_acceptors;
   std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
 
   std::mutex                  m_mutex;
   std::vector<ConnHandlerPtr> m_conns;
+  ConfigSSL*                  m_ssl_cfg;
 };
 
 }}

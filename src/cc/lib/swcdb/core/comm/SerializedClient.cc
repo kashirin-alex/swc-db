@@ -13,49 +13,15 @@
 
 namespace SWC { namespace client {
 
-  
-asio::ssl::context SSL_Context::create() {
-  asio::ssl::context ssl_ctx(asio::ssl::context::tlsv12_client);
-  ssl_ctx.set_options(
-      asio::ssl::context::default_workarounds
-    | asio::ssl::context::no_compression
-    | asio::ssl::context::no_sslv2
-    | asio::ssl::context::no_sslv3
-    | asio::ssl::context::no_tlsv1
-    | asio::ssl::context::no_tlsv1_1
-  );
-  ssl_ctx.set_verify_mode(
-    asio::ssl::verify_peer | asio::ssl::verify_fail_if_no_peer_cert);
-
-  if(ca.empty()) {
-    ssl_ctx.set_default_verify_paths();
-  } else {
-    //ssl_ctx.load_verify_file(ca); problems
-    ssl_ctx.add_certificate_authority(
-      asio::const_buffer(ca.c_str(), ca.length()));
-  }
-  return ssl_ctx;
-
-}
-void SSL_Context::load_ca(const std::string& ca_filepath) {
-  std::ifstream ifs(ca_filepath, std::ifstream::in);
-  std::string line;
-  ca.clear();
-  while(getline(ifs, line))
-    ca.append(line);
-  ifs.close();
-}
-
-
 
 ServerConnections::ServerConnections(const std::string& srv_name, 
                                      const EndPoint& endpoint,
                                      IOCtxPtr ioctx, AppContext::Ptr ctx,
-                                     SSL_Context* ssl_ctx)
+                                     ConfigSSL* ssl_cfg)
                                     : m_srv_name(srv_name), 
                                       m_endpoint(endpoint), 
                                       m_ioctx(ioctx), m_ctx(ctx), 
-                                      m_ssl_ctx(ssl_ctx) {
+                                      m_ssl_cfg(ssl_cfg) {
 }
 
 ServerConnections::~ServerConnections() { }
@@ -86,7 +52,7 @@ void ServerConnections::connection(ConnHandlerPtr &conn,
   SWC_LOGF(LOG_DEBUG, "Connecting Sync: %s, addr=[%s]:%d %s", 
            m_srv_name.c_str(),  
            m_endpoint.address().to_string().c_str(), m_endpoint.port(),
-           m_ssl_ctx ? "SECURE" : "PLAIN");
+           m_ssl_cfg ? "SECURE" : "PLAIN");
     
   asio::ip::tcp::socket sock(*m_ioctx.get());
   asio::error_code ec;
@@ -98,17 +64,14 @@ void ServerConnections::connection(ConnHandlerPtr &conn,
   if(ec || !sock.is_open())
     return;
 
-  if(m_ssl_ctx) {
-    auto ssl_ctx = m_ssl_ctx->create();
-    auto ssl_conn = std::make_shared<ConnHandlerSSL>(m_ctx, ssl_ctx, sock);
-    conn = ssl_conn;
-    ssl_conn->handshake_client(ec, m_ssl_ctx->subject_name);
-    if(ec || !ssl_conn->is_open())
+  if(m_ssl_cfg) {
+    conn = m_ssl_cfg->make_client(m_ctx, sock, ec);
+    if(ec || !conn->is_open())
       return;
-  } else
+  } else {
     conn = std::make_shared<ConnHandlerPlain>(m_ctx, sock);
-
-  conn->new_connection();
+    conn->new_connection();
+  }
   if(preserve)
     put_back(conn);
   // SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
@@ -121,7 +84,7 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
   SWC_LOGF(LOG_DEBUG, "Connecting Async: %s, addr=[%s]:%d %s", 
            m_srv_name.c_str(), 
            m_endpoint.address().to_string().c_str(), m_endpoint.port(),
-           m_ssl_ctx ? "SECURE" : "PLAIN");
+           m_ssl_cfg ? "SECURE" : "PLAIN");
     
   auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
   sock->async_connect(m_endpoint, 
@@ -131,13 +94,11 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
         cb(nullptr);
         return;
       }
-      if(ptr->m_ssl_ctx) {
-        auto ssl_ctx =  ptr->m_ssl_ctx->create();
-        auto conn = 
-          std::make_shared<ConnHandlerSSL>(ptr->m_ctx, ssl_ctx, *sock.get());
-        conn->new_connection();
-        conn->handshake_client(
-          [conn, cb, preserve, ptr](const std::error_code& ec) {
+      if(ptr->m_ssl_cfg) {
+        ptr->m_ssl_cfg->make_client(
+          ptr->m_ctx, *sock.get(),
+          [cb, preserve, ptr]
+          (ConnHandlerPtr conn, const std::error_code& ec) {
             if(ec || !conn->is_open()) {
               cb(nullptr);
             } else {
@@ -145,8 +106,7 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
                 ptr->put_back(conn);
               cb(conn);
             }
-          },
-          ptr->m_ssl_ctx->subject_name
+          }
         );
         return;
       }
@@ -183,35 +143,8 @@ Serialized::Serialized(const std::string& srv_name, IOCtxPtr ioctx,
                        AppContext::Ptr ctx)
             : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx),
               m_use_ssl(Env::Config::settings()->get<bool>("swc.comm.ssl")),
-              m_ssl_ctx(m_use_ssl ? new SSL_Context() : nullptr), 
+              m_ssl_cfg(m_use_ssl ? new ConfigSSL() : nullptr), 
               m_run(true) {
-
-  if(m_use_ssl) {
-    asio::error_code ec;
-    Resolver::get_networks(
-      Env::Config::settings()->get<Strings>("swc.comm.ssl.secure.network"),
-      m_ssl_ctx->nets_v4,
-      m_ssl_ctx->nets_v6,
-      ec
-    );
-    if(ec)
-      SWC_THROWF(Error::CONFIG_BAD_VALUE,
-                "Bad Network in swc.comm.ssl.secure.network error(%s)",
-                ec.message().c_str());
-    
-    m_ssl_ctx->subject_name = 
-      Env::Config::settings()->has("swc.comm.ssl.subject_name")
-      ? Env::Config::settings()->get<std::string>("swc.comm.ssl.subject_name")
-      : "";
-
-    if(Env::Config::settings()->has("swc.comm.ssl.ca")) {
-      auto ca = Env::Config::settings()->get<std::string>("swc.comm.ssl.ca");
-      if(ca.front() != '.' && ca.front() != '/')
-        ca = Env::Config::settings()->get<std::string>("swc.cfg.path") + ca;
-      m_ssl_ctx->load_ca(ca);
-    }
-  }
-
   SWC_LOGF(LOG_INFO, "Init: %s", m_srv_name.c_str());
 }
 
@@ -223,12 +156,9 @@ ServerConnections::Ptr Serialized::get_srv(EndPoint endpoint) {
   if(it != m_srv_conns.end())
     return (*it).second;
 
-  bool use_ssl = m_use_ssl &&
-    !Resolver::is_network(endpoint, m_ssl_ctx->nets_v4, m_ssl_ctx->nets_v6);
-
   auto srv = std::make_shared<ServerConnections>(
     m_srv_name, endpoint, m_ioctx, m_ctx, 
-    use_ssl ? m_ssl_ctx : nullptr
+    m_use_ssl && m_ssl_cfg->need_ssl(endpoint) ? m_ssl_cfg : nullptr
   );
   m_srv_conns.insert(std::make_pair(hash, srv));
   return srv;
@@ -364,8 +294,8 @@ void Serialized::stop() {
 }
 
 Serialized::~Serialized() { 
-  if(m_ssl_ctx)
-    delete m_ssl_ctx;
+  if(m_ssl_cfg)
+    delete m_ssl_cfg;
 }
 
 

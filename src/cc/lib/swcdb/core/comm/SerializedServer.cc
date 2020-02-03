@@ -66,10 +66,9 @@ void Acceptor::do_accept() {
 
 AcceptorSSL::AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
                         AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
-                        const std::string& ssl_pem,
-                        const std::string& ssl_ciphers)
+                        ConfigSSL* ssl_cfg)
                         : Acceptor(acceptor, app_ctx, io_ctx, false),
-                          ssl_pem(ssl_pem), ssl_ciphers(ssl_ciphers) {
+                          m_ssl_cfg(ssl_cfg) {
   do_accept();
 }
 
@@ -83,32 +82,7 @@ void AcceptorSSL::do_accept() {
         return;
       }
 
-      asio::ssl::context ssl_ctx(asio::ssl::context::tlsv12_server);
-      ssl_ctx.set_options(
-          asio::ssl::context::default_workarounds
-        | asio::ssl::context::no_compression
-        | asio::ssl::context::no_sslv2
-        | asio::ssl::context::no_sslv3
-        | asio::ssl::context::no_tlsv1
-        | asio::ssl::context::no_tlsv1_1
-        | SSL_OP_NO_TICKET
-        | SSL_OP_EPHEMERAL_RSA
-        | SSL_OP_SINGLE_ECDH_USE
-        //| asio::ssl::context::no_tlsv1_2
-        | asio::ssl::context::single_dh_use
-      );
-      ssl_ctx.use_certificate_chain_file(ssl_pem);
-      ssl_ctx.use_private_key_file(ssl_pem, asio::ssl::context::pem);
-      //ssl_ctx.use_tmp_dh_file("dh2048.pem");
-      //ssl_ctx.set_password_callback(..);
-  
-      if(!ssl_ciphers.empty())
-        SSL_CTX_set_cipher_list(ssl_ctx.native_handle(), ssl_ciphers.c_str());
-      
-      auto conn = std::make_shared<ConnHandlerSSL>(m_app_ctx, ssl_ctx, new_sock);
-      conn->new_connection();
-      conn->handshake();
-
+      m_ssl_cfg->make_server(m_app_ctx, new_sock);
       do_accept();
     }
   );
@@ -123,7 +97,9 @@ SerializedServer::SerializedServer(
     uint32_t reactors, uint32_t workers,
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
-  ): m_appname(name), m_run(true) {
+  ) : m_appname(name), m_run(true),
+      m_ssl_cfg(Env::Config::settings()->get<bool>("swc.comm.ssl")
+                ? new ConfigSSL(false) : nullptr) {
     
   SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d", 
            m_appname.c_str(), reactors, workers);
@@ -146,31 +122,6 @@ SerializedServer::SerializedServer(
     host,
     true
   );
-
-  bool use_ssl = props.get<bool>("swc.comm.ssl");
-  std::vector<asio::ip::network_v4> nets_v4;
-  std::vector<asio::ip::network_v6> nets_v6;
-
-  std::string ssl_pem = props.get<std::string>("swc.comm.ssl.pem");
-  if(ssl_pem.front() != '.' && ssl_pem.front() != '/')
-    ssl_pem = props.get<std::string>("swc.cfg.path") + ssl_pem;
-  std::string ssl_ciphers = props.has("swc.comm.ssl.ciphers") 
-        ? props.get<std::string>("swc.comm.ssl.ciphers") : "";
-
-  if(use_ssl) {
-    asio::error_code ec;
-    Resolver::get_networks(
-      props.get<Strings>("swc.comm.ssl.secure.network"),
-      nets_v4,
-      nets_v6,
-      ec
-    );
-    if(ec)
-      SWC_THROWF(Error::CONFIG_BAD_VALUE,
-                "Bad Network in swc.comm.ssl.secure.network error(%s)",
-                 ec.message().c_str());
-  }
-  
   EndPoints endpoints_final;
 
   for(uint32_t reactor=0; reactor<reactors; ++reactor) {
@@ -180,15 +131,14 @@ SerializedServer::SerializedServer(
 
     for (std::size_t i = 0; i < endpoints.size(); ++i) {
       auto& endpoint = endpoints[i];
-      bool ssl_conn = use_ssl && 
-                      !Resolver::is_network(endpoint, nets_v4, nets_v6);
+      bool ssl_conn = m_ssl_cfg && m_ssl_cfg->need_ssl(endpoint);
 
       if(reactor == 0) { 
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
         if(ssl_conn)
           m_acceptors.push_back(
             std::make_shared<AcceptorSSL>(
-              acceptor, app_ctx, io_ctx, ssl_pem, ssl_ciphers));
+              acceptor, app_ctx, io_ctx, m_ssl_cfg));
         else
           m_acceptors.push_back(
             std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
@@ -200,7 +150,7 @@ SerializedServer::SerializedServer(
         if(ssl_conn)
           m_acceptors.push_back(
             std::make_shared<AcceptorSSL>(
-              acceptor, app_ctx, io_ctx, ssl_pem, ssl_ciphers));
+              acceptor, app_ctx, io_ctx, m_ssl_cfg));
         else
           m_acceptors.push_back(
             std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
@@ -282,6 +232,9 @@ void SerializedServer::connection_del(ConnHandlerPtr conn) {
   //SWC_LOGF(LOG_DEBUG, "%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
 }
 
-SerializedServer::~SerializedServer() {}
+SerializedServer::~SerializedServer() {
+  if(m_ssl_cfg)
+    delete m_ssl_cfg;
+}
 
 }}

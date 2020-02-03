@@ -13,21 +13,10 @@
 
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
+#include "swcdb/core/comm/ConfigSSL.h"
 
 
 namespace SWC { namespace client {
-
-struct SSL_Context final {
-  std::string     subject_name;
-  std::string     ca;
-  std::vector<asio::ip::network_v4> nets_v4;
-  std::vector<asio::ip::network_v6> nets_v6;
-  
-  asio::ssl::context create();
-
-  void load_ca(const std::string& ca_filepath);
-
-};
 
 
 class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
@@ -36,7 +25,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   typedef std::function<void(ConnHandlerPtr)> NewCb_t;
 
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
-                    IOCtxPtr ioctx, AppContext::Ptr ctx, SSL_Context* ssl_ctx);
+                    IOCtxPtr ioctx, AppContext::Ptr ctx, ConfigSSL* ssl_cfg);
   
   virtual ~ServerConnections();
 
@@ -62,7 +51,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   AppContext::Ptr               m_ctx;
   std::mutex                    m_mutex;
   std::queue<ConnHandlerPtr>    m_conns;
-  SSL_Context*                  m_ssl_ctx;
+  ConfigSSL*                    m_ssl_cfg;
 };
 
 
@@ -119,7 +108,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   AppContext::Ptr       m_ctx;
 
   const bool            m_use_ssl;
-  SSL_Context*          m_ssl_ctx;
+  ConfigSSL*            m_ssl_cfg;
 
   std::mutex            m_mutex;
   Map                   m_srv_conns;

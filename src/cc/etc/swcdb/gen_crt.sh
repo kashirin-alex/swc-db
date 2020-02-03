@@ -8,7 +8,7 @@ CONFIG_FILE=/opt/swcdb/etc/swcdb/openssl.cnf;
 # CA -- keep rootCA.key safe or delete it.
 openssl req -x509 -new \
   -nodes -newkey rsa:4096 -keyout rootCA.key \
-  -sha256 -days 3650 -subj "/CN=rootCA.crt" \
+  -sha256 -days 3650 -subj "/CN=${DOMAIN_NAME}-CA" \
   -reqexts v3_req -extensions v3_ca \
   -out rootCA.crt -config ${CONFIG_FILE};
 
@@ -26,7 +26,9 @@ openssl x509 -req \
     -days 3650 -in server.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial \
     -out server.crt -sha256;
 
-cat server.key server.crt > ${CONFIG_PATH}/server.pem;
+cat server.key server.crt > ${CONFIG_PATH}/server.pem; # rootCA.crt(no-nned to send, added as ca)  
 cat rootCA.crt > ${CONFIG_PATH}/ca.pem;
 
 rm rootCA.key rootCA.crt server.key server.crt rootCA.srl server.csr;
+
+openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/server.pem
