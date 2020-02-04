@@ -24,6 +24,9 @@ https://alex.kashirin.family/swc-DB.pdf
   * Hadoop FsBroker requires - optional:
     * [Apache-Hadoop + libhdfspp](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp)
     * [libprotobuf](https://github.com/protocolbuffers/protobuf)
+  * Thrift Broker requires - optional:
+    * [Apache Thrift 0.13.0+](https://github.com/apache/thrift)
+    * [libevent 2.1.11+](http://github.com/libevent/libevent)
   * (static version libraries required for -DO_LEVEL > 4)
 
 
