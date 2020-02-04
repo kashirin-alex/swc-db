@@ -22,7 +22,7 @@ int run() {
     "swc.fs.broker.port",
     app_ctx
   );
-  ((server::FsBroker::AppContext*)app_ctx.get())->set_srv(srv);
+  app_ctx->set_srv(srv);
   srv->run();
 
   return 0);

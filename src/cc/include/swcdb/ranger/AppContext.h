@@ -58,7 +58,7 @@ class AppContext : public SWC::AppContext {
   
   public:
 
-  static AppContext::Ptr make() {
+  static std::shared_ptr<AppContext> make() {
     Env::Config::settings()->parse_file(
       Env::Config::settings()->get<std::string>("swc.rgr.cfg", ""),
       Env::Config::settings()->get<std::string>("swc.rgr.OnFileChange.cfg", "")

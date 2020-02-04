@@ -22,7 +22,7 @@ int run() {
     "swc.rgr.port",
     app_ctx
   );
-  ((server::Rgr::AppContext*)app_ctx.get())->set_srv(srv);
+  app_ctx->set_srv(srv);
   srv->run();
 
   return 0);

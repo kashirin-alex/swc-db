@@ -22,7 +22,7 @@ int run() {
     "swc.mngr.port",
     app_ctx
   );
-  ((server::Mngr::AppContext*)app_ctx.get())->set_srv(srv);
+  app_ctx->set_srv(srv);
   srv->run();
 
   return 0);
