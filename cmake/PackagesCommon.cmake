@@ -13,11 +13,28 @@ SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHAR
 SET_DEPS(NAME "SNAPPY" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libsnappy.a SHARED snappy INCLUDE snappy.h)
 #INSTALL_LIBS(lib ${SNAPPY_LIBRARIES_SHARED})
 
+SET_DEPS(
+	NAME "SSL" 
+	REQUIRED TRUE 
+	LIB_PATHS /usr/local/ssl/lib
+	INC_PATHS /usr/local/ssl/include
+	STATIC libssl.a libcrypto.a 
+	SHARED ssl crypto
+	INCLUDE openssl/ssl.h openssl/crypto.h
+)
+#INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
+
 SET_DEPS(NAME "EDITLINE" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libeditline.a SHARED editline INCLUDE editline.h)
 
 
 
 find_package(FileSystems REQUIRED)
+
+find_package(Thrift REQUIRED)
+
+
+
+
 
 
 
@@ -36,26 +53,10 @@ find_package(FileSystems REQUIRED)
 #INSTALL_LIBS(lib ${LZ4_LIBRARIES_SHARED})
 
 
-SET_DEPS(
-	NAME "SSL" 
-	REQUIRED TRUE 
-	LIB_PATHS /usr/local/ssl/lib
-	INC_PATHS /usr/local/ssl/include
-	STATIC libssl.a libcrypto.a 
-	SHARED ssl crypto
-	INCLUDE openssl/ssl.h openssl/crypto.h
-)
-#INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
-
-
-
-
-
-
 #SET_DEPS(NAME "EXPAT" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libexpat.a SHARED expat INCLUDE expat.h)
 # INSTALL_LIBS(lib ${EXPAT_LIBRARIES_SHARED})
 
-#SET_DEPS(NAME "EVENT" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libevent.a SHARED event INCLUDE event.h)
+#
 #INSTALL_LIBS(lib ${EVENT_LIBRARIES_SHARED})
 #SET_DEPS(NAME "SSP" REQUIRED TRUE LIB_PATHS "" INC_PATHS "/usr/local/lib/gcc/x86_64-ubuntu-linux-gnu/8.3.0/include" STATIC libssp.a SHARED ssp INCLUDE ssp/ssp.h)
 
@@ -65,6 +66,5 @@ SET_DEPS(
 
 # find_package(Doxygen)
 
-# find_package(Thrift REQUIRED)
 
 # find_package(Libssh REQUIRED)

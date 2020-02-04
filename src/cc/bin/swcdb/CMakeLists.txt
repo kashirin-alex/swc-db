@@ -32,19 +32,20 @@ endif()
 
 # swcdbRanger
 ADD_EXEC_TARGET(
-	NAME swcdbRanger
-	SRCS  ranger/main.cc
+	NAME 		swcdbRanger
+	SRCS  	ranger/main.cc
 	TARGETS ${TARGETS}
 
 	SHARED  ${SHARED}
 	STATIC  ${STATIC}
 	FLAGS 	${FLAGS}
 )
+
 
 # swcdbManager
 ADD_EXEC_TARGET(
-	NAME swcdbManager
-	SRCS  manager/main.cc
+	NAME 		swcdbManager
+	SRCS  	manager/main.cc
 	TARGETS ${TARGETS}
 
 	SHARED  ${SHARED}
@@ -52,12 +53,25 @@ ADD_EXEC_TARGET(
 	FLAGS 	${FLAGS}
 )
 
+
+# swcdbThriftBroker
+if(THRIFT_FOUND)
+ADD_EXEC_TARGET(
+	NAME 		swcdbThriftBroker
+	SRCS  	thriftbroker/main.cc
+	TARGETS ${TARGETS}
+
+	SHARED ${SHARED} ${THRIFT_LIBRARIES_SHARED}
+	STATIC ${STATIC} ${THRIFT_LIBRARIES_STATIC}
+	FLAGS  ${FLAGS}
+)
+endif()
 
 
 # swcdbFsBroker
 ADD_EXEC_TARGET(
-	NAME swcdbFsBroker
-	SRCS  fsbroker/main.cc
+	NAME 		swcdbFsBroker
+	SRCS  	fsbroker/main.cc
 	TARGETS ${SHARED_TARGETS}
 
 	SHARED  ${SHARED}
@@ -68,11 +82,10 @@ ADD_EXEC_TARGET(
 )
 
 
-
 # swcdb
 ADD_EXEC_TARGET(
-	NAME swcdb
-	SRCS  utils/main.cc
+	NAME 		swcdb
+	SRCS  	utils/main.cc
 	TARGETS ${SHARED_TARGETS}
 
 	SHARED  ${SHARED}

@@ -19,7 +19,7 @@ add_subdirectory(ranger)        #ifndef swc_ranger_FileName_h
 
 add_subdirectory(fsbroker)      #ifndef swc_fsbroker_FileName_h
 
-#add_subdirectory(thrift)       #ifndef swc_thrift_FileName_h
+add_subdirectory(thrift)        #ifndef swc_thrift_FileName_h
 
 
 
