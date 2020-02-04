@@ -555,7 +555,7 @@ void ConnHandlerSSL::handshake() {
       } else {
         SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)", 
                 ec.value(), ec.message().c_str());
-        ptr->close();
+        ptr->do_close();
       }
     }
   );
