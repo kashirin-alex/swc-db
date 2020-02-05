@@ -24,8 +24,8 @@ int run() {
 
   auto& props = Env::Config::settings()->properties;
 
+  uint32_t reactors = 1; // props.get<int32_t>("swc.ThriftBroker.reactors");
   int workers = props.get<int32_t>("swc.ThriftBroker.workers");
-  uint16_t port = props.get<int16_t>("swc.ThriftBroker.port");
   uint32_t timeout_ms = props.get<int16_t>("swc.ThriftBroker.timeout");
   std::string transport = props.get<std::string>("swc.ThriftBroker.transport");
 
@@ -42,31 +42,78 @@ int run() {
 		return 1;
 	}
 
-	
-
-	std::shared_ptr<thrift::concurrency::ThreadManager> threadManager(
-		thrift::concurrency::ThreadManager::newSimpleThreadManager(workers));
-	threadManager->threadFactory(
-    std::make_shared<thrift::concurrency::ThreadFactory>());
-	threadManager->start();
+  Strings addrs = props.has("addr") ? props.get<Strings>("addr") : Strings();
+  std::string host;
+  if(props.has("host"))
+    host = host.append(props.get<std::string>("host"));
+  else {
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    host.append(hostname);
+  }
     
-  auto app_ctx = std::make_shared<Thrift::AppContext>();
-
-	thrift::server::TThreadPoolServer server(
-    std::make_shared<Thrift::BrokerProcessorFactory>(app_ctx),
-		std::make_shared<thrift::transport::TServerSocket>(
-      port, timeout_ms, timeout_ms
-    ),
-		transportFactory,
-		std::make_shared<thrift::protocol::TBinaryProtocolFactory>(),
-	  threadManager
+  EndPoints endpoints = Resolver::get_endpoints(
+    props.get<int16_t>("swc.ThriftBroker.port"),
+    addrs,
+    host,
+    true
   );
-  
-  SWC_LOGF(LOG_INFO, "STARTING SERVER: THRIFT-BROKER, workers=%d transport=%s", 
-           workers, transport.c_str());
 
-	server.serve();
-  
+  SWC_LOGF(LOG_INFO, "STARTING SERVER: THRIFT-BROKER, reactors=%d workers=%d transport=%s", 
+           reactors, workers, transport.c_str());
+
+
+  auto app_ctx = std::make_shared<Thrift::AppContext>();
+  std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
+
+  for(uint32_t reactor=0; reactor < reactors; ++reactor) {
+
+	  std::shared_ptr<thrift::concurrency::ThreadManager> threadManager(
+		  thrift::concurrency::ThreadManager::newSimpleThreadManager(workers));
+	  threadManager->threadFactory(
+      std::make_shared<thrift::concurrency::ThreadFactory>());
+  	threadManager->start();
+
+	  for(auto& endpoint : endpoints) {
+      bool is_plain = true; // if use_ssl && need ssl.. transportFactory.reset(..)
+      std::shared_ptr<thrift::transport::TServerSocket> socket;
+      if(reactor == 0) { 
+        socket = std::make_shared<thrift::transport::TServerSocket>(
+          endpoint.address().to_string(), endpoint.port());
+      } else {
+        continue;
+        //1st socket->getSocketFD dup >> init socket from fd (per reactor)
+      }
+      socket->setSendTimeout(timeout_ms);
+      socket->setRecvTimeout(timeout_ms);
+
+      app_ctx->add_host(endpoint.address().to_string());
+
+      auto server = std::make_shared<thrift::server::TThreadPoolServer>(
+        std::make_shared<Thrift::BrokerProcessorFactory>(app_ctx),
+		    socket,
+	      transportFactory,
+  	    std::make_shared<thrift::protocol::TBinaryProtocolFactory>(),
+	      threadManager
+      );
+      servers.push_back(server);
+
+      SWC_LOGF(
+        LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
+        endpoint.address().to_string().c_str(), endpoint.port(), 
+        (ssize_t)server->getServerTransport()->getSocketFD(),
+        is_plain ? "PLAIN" : "SECURE"
+      );
+    }
+  } 
+
+  for(auto& server : servers)
+    std::thread([server]{ server->serve(); }).detach();
+
+  app_ctx->wait_while_run();
+
+  for(auto& server : servers)
+    server->getThreadManager()->stop();
 
   return 0);
 

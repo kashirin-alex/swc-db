@@ -2,19 +2,18 @@
 # Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
 #
 
+if(THRIFT_FOUND)
+
 set(thrift_ver_gen_path ${CMAKE_CURRENT_SOURCE_DIR}/thriftgen-${THRIFT_VERSION})
 set(thrift_incl_path ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/swcdb/thrift)
-
-if(THRIFT_FOUND)
 
 # IF .thirft instruction change with version it is prefered .thrift by versions
 if(NOT EXISTS ${thrift_ver_gen_path}/gen-cpp)
 	file(MAKE_DIRECTORY ${thrift_ver_gen_path} )
-	execute_process(COMMAND  thrift -r --gen cpp 
-									-o ${thrift_ver_gen_path}/
-							 	  ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)		 
+  execute_process(COMMAND  thrift -r --gen cpp 
+                  -o ${thrift_ver_gen_path}/
+                  ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
 endif ()
-
 
 # set current gen-cpp/ included path	
 execute_process(COMMAND cmake -E remove ${thrift_incl_path}/gen-cpp )
@@ -26,10 +25,10 @@ execute_process(COMMAND cp -r ${thrift_ver_gen_path}/gen-cpp ${thrift_incl_path}
 ADD_LIB_TARGET(
 	NAME 	swcdb_thrift
 	SRCS 	${thrift_incl_path}/gen-cpp/Service_constants.cpp 
-				${thrift_incl_path}/gen-cpp/Service_types.cpp
-				${thrift_incl_path}/gen-cpp/Service.cpp 
-				# Converters.cc 
-				# Client.cc
+        ${thrift_incl_path}/gen-cpp/Service_types.cpp
+        ${thrift_incl_path}/gen-cpp/Service.cpp 
+        # Converters.cc 
+        # Client.cc
 	SHARED ${THRIFT_LIBRARIES_SHARED}
 	STATIC ${THRIFT_LIBRARIES_STATIC}
 )
