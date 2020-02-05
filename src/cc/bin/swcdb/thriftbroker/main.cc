@@ -87,8 +87,6 @@ int run() {
       socket->setSendTimeout(timeout_ms);
       socket->setRecvTimeout(timeout_ms);
 
-      app_ctx->add_host(endpoint.address().to_string());
-
       auto server = std::make_shared<thrift::server::TThreadPoolServer>(
         std::make_shared<Thrift::BrokerProcessorFactory>(app_ctx),
 		    socket,
@@ -97,6 +95,7 @@ int run() {
 	      threadManager
       );
       servers.push_back(server);
+      std::thread([server]{ server->serve(); }).detach();
 
       SWC_LOGF(
         LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
@@ -105,10 +104,7 @@ int run() {
         is_plain ? "PLAIN" : "SECURE"
       );
     }
-  } 
-
-  for(auto& server : servers)
-    std::thread([server]{ server->serve(); }).detach();
+  }
 
   app_ctx->wait_while_run();
 

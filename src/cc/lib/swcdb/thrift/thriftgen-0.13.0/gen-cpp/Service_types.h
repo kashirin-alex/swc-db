@@ -25,6 +25,8 @@ typedef int64_t Cid;
 
 typedef std::string Column;
 
+typedef std::string Result;
+
 class Exception;
 
 typedef struct _Exception__isset {

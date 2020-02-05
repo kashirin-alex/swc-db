@@ -5,39 +5,14 @@
 #ifndef swc_app_thriftbroker_AppContext_h
 #define swc_app_thriftbroker_AppContext_h
 
-#include "swcdb/client/Clients.h"
-#include "swcdb/thrift/broker/AppContextClient.h"
-
 #include "swcdb/thrift/gen-cpp/Broker.h"
 
-namespace SWC { 
-namespace thrift = apache::thrift;
-namespace Thrift {
+#include "swcdb/client/Clients.h"
+#include "swcdb/thrift/broker/AppContextClient.h"
+#include "swcdb/thrift/broker/AppHandler.h"
 
 
-
-
-
-class AppHandler : virtual public BrokerIf {
-  public:
-
-  const std::string host;
-  const std::string addr;
-  
-  AppHandler(const std::string& host, const std::string& addr) 
-            : host(host), addr(addr) {
-  }
-
-  virtual ~AppHandler() { }
-
-
-
-};
-
-
-
-
-
+namespace SWC { namespace Thrift {
 
 
 class AppContext : virtual public BrokerIfFactory {
@@ -69,35 +44,12 @@ class AppContext : virtual public BrokerIfFactory {
     m_cv.wait(lock_wait, [this]{return !m_run;});
   }
 
-  void add_host(const std::string& addr) {
-    m_hosts.insert(std::make_pair(addr, Clients()));
-  }
-
   BrokerIf* getHandler(const thrift::TConnectionInfo& connInfo) {
-    auto sock = std::dynamic_pointer_cast<thrift::transport::TSocket>(connInfo.transport);
-    
-    auto& clients = m_hosts[sock->getHost()];
-    const std::string addr = sock->getPeerAddress(); // +port
-
-    std::scoped_lock lock(m_mutex);
-    auto it = clients.find(addr);
-    if(it != clients.end())
-      return it->second;
-
-    AppHandler* handler = new AppHandler(sock->getHost(), addr);
-    clients.insert(std::make_pair(addr, handler));
-    return handler;
+    return new AppHandler;
   }
 
   void releaseHandler(ServiceIf* hdlr) override {
-    AppHandler* handler = dynamic_cast<AppHandler*>(hdlr);
-    auto& clients = m_hosts[handler->host];
-
-    std::scoped_lock lock(m_mutex);
-    auto it = clients.find(handler->addr);
-    if(it != clients.end())
-      clients.erase(it);
-    delete handler;
+    delete hdlr;
   }
 
   private:
@@ -126,36 +78,26 @@ class AppContext : virtual public BrokerIfFactory {
     Env::Clients::get()->rgr_service->stop();
     Env::Clients::get()->mngr_service->stop();
     
-    Env::IoCtx::io()->stop();
     //Env::FsInterface::interface()->stop();
-    //m_srv->shutdown();
+    Env::IoCtx::io()->stop();
 
     SWC_LOG(LOG_INFO, "Exit");
-    //std::quick_exit(0);
     {
       std::scoped_lock lock(m_mutex);
       m_run = false;
     }
     m_cv.notify_all();
+    //std::quick_exit(0);
   }
 
   std::mutex                                    m_mutex;
   bool                                          m_run;
-  typedef std::unordered_map<std::string, AppHandler*> Clients;
-  std::unordered_map<std::string, Clients>      m_hosts;
   std::condition_variable                       m_cv;
 };
 
 
 
-
-
-
-
 }}
-
-
-
 
 
 //#ifdef SWC_IMPL_SOURCE

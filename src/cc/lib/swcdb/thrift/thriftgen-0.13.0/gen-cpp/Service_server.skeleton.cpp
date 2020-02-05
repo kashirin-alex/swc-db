@@ -20,6 +20,11 @@ class ServiceHandler : virtual public ServiceIf {
     // Your initialization goes here
   }
 
+  void select_sql(Result& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("select_sql\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

@@ -31,6 +31,8 @@ namespace rb    SWC.ThriftGen
 typedef i64 Cid
 typedef string Column
 
+typedef string Result
+
 
 exception Exception {
   1: i32 code
@@ -38,4 +40,5 @@ exception Exception {
 }
 
 service Service {
+  Result select_sql(1:string sql) throws (1:Exception e),
 }
