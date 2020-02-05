@@ -21,13 +21,26 @@
 
 namespace SWC { namespace Thrift {
 
-typedef int64_t Cid;
+struct Flag {
+  enum type {
+    NONE = 0,
+    INSERT = 1,
+    DELETE = 2,
+    DELETE_VERSION = 3
+  };
+};
 
-typedef std::string Column;
+extern const std::map<int, const char*> _Flag_VALUES_TO_NAMES;
 
-typedef std::string Result;
+std::ostream& operator<<(std::ostream& out, const Flag::type& val);
+
+std::string to_string(const Flag::type& val);
+
+typedef std::vector<class Cell>  Cells;
 
 class Exception;
+
+class Cell;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -78,6 +91,62 @@ class Exception : public ::apache::thrift::TException {
 void swap(Exception &a, Exception &b);
 
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
+
+typedef struct _Cell__isset {
+  _Cell__isset() : k(false), ts(false), v(false) {}
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+} _Cell__isset;
+
+class Cell : public virtual ::apache::thrift::TBase {
+ public:
+
+  Cell(const Cell&);
+  Cell& operator=(const Cell&);
+  Cell() : ts(0), v() {
+  }
+
+  virtual ~Cell() noexcept;
+  std::vector<std::string>  k;
+  int64_t ts;
+  std::string v;
+
+  _Cell__isset __isset;
+
+  void __set_k(const std::vector<std::string> & val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const Cell & rhs) const
+  {
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (__isset.v != rhs.__isset.v)
+      return false;
+    else if (__isset.v && !(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const Cell &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Cell & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Cell &a, Cell &b);
+
+std::ostream& operator<<(std::ostream& out, const Cell& obj);
 
 }} // namespace
 

@@ -28,17 +28,26 @@ namespace rb    SWC.ThriftGen
 */
 
 
-typedef i64 Cid
-typedef string Column
-
-typedef string Result
-
-
 exception Exception {
   1: i32 code
   2: string message
 }
 
+enum Flag {
+  NONE            = 0,
+  INSERT          = 1,
+  DELETE          = 2,
+  DELETE_VERSION  = 3
+}
+
+struct Cell {
+  1: list<binary>     k
+  2: i64              ts
+  3: optional binary  v
+}
+typedef list<Cell> Cells
+
+
 service Service {
-  Result select_sql(1:string sql) throws (1:Exception e),
+  Cells select_sql(1:string sql) throws (1:Exception e),
 }

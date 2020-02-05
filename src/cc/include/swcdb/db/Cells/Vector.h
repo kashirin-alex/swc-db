@@ -53,6 +53,10 @@ class Vector  {
     }
     return count;
   }
+  
+  const size_t size() {
+    return cells.size();
+  }
 
   std::vector<Cell*>  cells;
 };

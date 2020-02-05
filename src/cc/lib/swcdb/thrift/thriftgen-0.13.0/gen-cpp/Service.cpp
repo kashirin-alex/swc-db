@@ -114,8 +114,20 @@ uint32_t Service_select_sql_result::read(::apache::thrift::protocol::TProtocol* 
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->success);
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size10;
+            ::apache::thrift::protocol::TType _etype13;
+            xfer += iprot->readListBegin(_etype13, _size10);
+            this->success.resize(_size10);
+            uint32_t _i14;
+            for (_i14 = 0; _i14 < _size10; ++_i14)
+            {
+              xfer += this->success[_i14].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -148,8 +160,16 @@ uint32_t Service_select_sql_result::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeStructBegin("Service_select_sql_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
-    xfer += oprot->writeString(this->success);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+      std::vector<Cell> ::const_iterator _iter15;
+      for (_iter15 = this->success.begin(); _iter15 != this->success.end(); ++_iter15)
+      {
+        xfer += (*_iter15).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.e) {
     xfer += oprot->writeFieldBegin("e", ::apache::thrift::protocol::T_STRUCT, 1);
@@ -188,8 +208,20 @@ uint32_t Service_select_sql_presult::read(::apache::thrift::protocol::TProtocol*
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString((*(this->success)));
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size16;
+            ::apache::thrift::protocol::TType _etype19;
+            xfer += iprot->readListBegin(_etype19, _size16);
+            (*(this->success)).resize(_size16);
+            uint32_t _i20;
+            for (_i20 = 0; _i20 < _size16; ++_i20)
+            {
+              xfer += (*(this->success))[_i20].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -215,7 +247,7 @@ uint32_t Service_select_sql_presult::read(::apache::thrift::protocol::TProtocol*
   return xfer;
 }
 
-void ServiceClient::select_sql(Result& _return, const std::string& sql)
+void ServiceClient::select_sql(Cells& _return, const std::string& sql)
 {
   send_select_sql(sql);
   recv_select_sql(_return);
@@ -235,7 +267,7 @@ void ServiceClient::send_select_sql(const std::string& sql)
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_select_sql(Result& _return)
+void ServiceClient::recv_select_sql(Cells& _return)
 {
 
   int32_t rseqid = 0;
@@ -359,7 +391,7 @@ void ServiceProcessor::process_select_sql(int32_t seqid, ::apache::thrift::proto
   return processor;
 }
 
-void ServiceConcurrentClient::select_sql(Result& _return, const std::string& sql)
+void ServiceConcurrentClient::select_sql(Cells& _return, const std::string& sql)
 {
   int32_t seqid = send_select_sql(sql);
   recv_select_sql(_return, seqid);
@@ -383,7 +415,7 @@ int32_t ServiceConcurrentClient::send_select_sql(const std::string& sql)
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_select_sql(Result& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_select_sql(Cells& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;

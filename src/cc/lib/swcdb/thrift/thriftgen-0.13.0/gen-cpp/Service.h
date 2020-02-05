@@ -22,7 +22,7 @@ namespace SWC { namespace Thrift {
 class ServiceIf {
  public:
   virtual ~ServiceIf() {}
-  virtual void select_sql(Result& _return, const std::string& sql) = 0;
+  virtual void select_sql(Cells& _return, const std::string& sql) = 0;
 };
 
 class ServiceIfFactory {
@@ -52,7 +52,7 @@ class ServiceIfSingletonFactory : virtual public ServiceIfFactory {
 class ServiceNull : virtual public ServiceIf {
  public:
   virtual ~ServiceNull() {}
-  void select_sql(Result& /* _return */, const std::string& /* sql */) {
+  void select_sql(Cells& /* _return */, const std::string& /* sql */) {
     return;
   }
 };
@@ -117,16 +117,16 @@ class Service_select_sql_result {
 
   Service_select_sql_result(const Service_select_sql_result&);
   Service_select_sql_result& operator=(const Service_select_sql_result&);
-  Service_select_sql_result() : success() {
+  Service_select_sql_result() {
   }
 
   virtual ~Service_select_sql_result() noexcept;
-  Result success;
+  Cells success;
   Exception e;
 
   _Service_select_sql_result__isset __isset;
 
-  void __set_success(const Result& val);
+  void __set_success(const Cells& val);
 
   void __set_e(const Exception& val);
 
@@ -160,7 +160,7 @@ class Service_select_sql_presult {
 
 
   virtual ~Service_select_sql_presult() noexcept;
-  Result* success;
+  Cells* success;
   Exception e;
 
   _Service_select_sql_presult__isset __isset;
@@ -194,9 +194,9 @@ class ServiceClient : virtual public ServiceIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  void select_sql(Result& _return, const std::string& sql);
+  void select_sql(Cells& _return, const std::string& sql);
   void send_select_sql(const std::string& sql);
-  void recv_select_sql(Result& _return);
+  void recv_select_sql(Cells& _return);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -245,7 +245,7 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_.push_back(iface);
   }
  public:
-  void select_sql(Result& _return, const std::string& sql) {
+  void select_sql(Cells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -287,9 +287,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  void select_sql(Result& _return, const std::string& sql);
+  void select_sql(Cells& _return, const std::string& sql);
   int32_t send_select_sql(const std::string& sql);
-  void recv_select_sql(Result& _return, const int32_t seqid);
+  void recv_select_sql(Cells& _return, const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

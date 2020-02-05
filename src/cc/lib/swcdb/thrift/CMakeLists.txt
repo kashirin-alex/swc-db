@@ -9,17 +9,18 @@ set(thrift_incl_path ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/swcdb/thrift)
 
 # IF .thirft instruction change with version it is prefered .thrift by versions
 
-execute_process(COMMAND cmake -E remove ${thrift_ver_gen_path}/gen-cpp ) ## temporary
+execute_process(COMMAND rm -rf ${thrift_ver_gen_path}/gen-cpp ) ## temporary
+
 if(NOT EXISTS ${thrift_ver_gen_path}/gen-cpp)
-	file(MAKE_DIRECTORY ${thrift_ver_gen_path} )
-  execute_process(COMMAND  thrift -r --gen cpp 
+	execute_process(COMMAND mkdir -p ${thrift_ver_gen_path}/gen-cpp ) ## temporary
+  execute_process(COMMAND thrift -r --gen cpp 
                   -o ${thrift_ver_gen_path}/
                   ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
 endif ()
 
 # set current gen-cpp/ included path	
-execute_process(COMMAND cmake -E remove ${thrift_incl_path}/gen-cpp )
-execute_process(COMMAND cp -r ${thrift_ver_gen_path}/gen-cpp ${thrift_incl_path}/)
+execute_process(COMMAND rm -rf 	${thrift_incl_path}/gen-cpp )
+execute_process(COMMAND cp -r 	${thrift_ver_gen_path}/gen-cpp ${thrift_incl_path}/)
 
 
 

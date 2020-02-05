@@ -13,6 +13,39 @@
 
 namespace SWC { namespace Thrift {
 
+int _kFlagValues[] = {
+  Flag::NONE,
+  Flag::INSERT,
+  Flag::DELETE,
+  Flag::DELETE_VERSION
+};
+const char* _kFlagNames[] = {
+  "NONE",
+  "INSERT",
+  "DELETE",
+  "DELETE_VERSION"
+};
+const std::map<int, const char*> _Flag_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kFlagValues, _kFlagNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+std::ostream& operator<<(std::ostream& out, const Flag::type& val) {
+  std::map<int, const char*>::const_iterator it = _Flag_VALUES_TO_NAMES.find(val);
+  if (it != _Flag_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const Flag::type& val) {
+  std::map<int, const char*>::const_iterator it = _Flag_VALUES_TO_NAMES.find(val);
+  if (it != _Flag_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
 
 Exception::~Exception() noexcept {
 }
@@ -134,6 +167,160 @@ const char* Exception::what() const noexcept {
   } catch (const std::exception&) {
     return "TException - service has thrown: Exception";
   }
+}
+
+
+Cell::~Cell() noexcept {
+}
+
+
+void Cell::__set_k(const std::vector<std::string> & val) {
+  this->k = val;
+}
+
+void Cell::__set_ts(const int64_t val) {
+  this->ts = val;
+}
+
+void Cell::__set_v(const std::string& val) {
+  this->v = val;
+__isset.v = true;
+}
+std::ostream& operator<<(std::ostream& out, const Cell& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t Cell::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->k.clear();
+            uint32_t _size2;
+            ::apache::thrift::protocol::TType _etype5;
+            xfer += iprot->readListBegin(_etype5, _size2);
+            this->k.resize(_size2);
+            uint32_t _i6;
+            for (_i6 = 0; _i6 < _size2; ++_i6)
+            {
+              xfer += iprot->readBinary(this->k[_i6]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.k = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->ts);
+          this->__isset.ts = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->v);
+          this->__isset.v = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Cell::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Cell");
+
+  xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->k.size()));
+    std::vector<std::string> ::const_iterator _iter7;
+    for (_iter7 = this->k.begin(); _iter7 != this->k.end(); ++_iter7)
+    {
+      xfer += oprot->writeBinary((*_iter7));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ts", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->ts);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.v) {
+    xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeBinary(this->v);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Cell &a, Cell &b) {
+  using ::std::swap;
+  swap(a.k, b.k);
+  swap(a.ts, b.ts);
+  swap(a.v, b.v);
+  swap(a.__isset, b.__isset);
+}
+
+Cell::Cell(const Cell& other8) {
+  k = other8.k;
+  ts = other8.ts;
+  v = other8.v;
+  __isset = other8.__isset;
+}
+Cell& Cell::operator=(const Cell& other9) {
+  k = other9.k;
+  ts = other9.ts;
+  v = other9.v;
+  __isset = other9.__isset;
+  return *this;
+}
+void Cell::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "Cell(";
+  out << "k=" << to_string(k);
+  out << ", " << "ts=" << to_string(ts);
+  out << ", " << "v="; (__isset.v ? (out << to_string(v)) : (out << "<null>"));
+  out << ")";
 }
 
 }} // namespace
