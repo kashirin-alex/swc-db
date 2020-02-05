@@ -18,16 +18,24 @@ void Settings::init_app_options() {
   init_client_options();
 
   file_desc.add_options()
+    ("swc.ThriftBroker.cfg", str(), "Specific cfg-file for ThriftBroker")
+    ("swc.ThriftBroker.OnFileChange.cfg", str(), 
+      "Specific dyn. cfg-file for ThriftBroker")
+
     ("swc.ThriftBroker.port", i16(18000), "ThriftBroker port")
-    ("swc.ThriftBroker.workers", i32(32), "Number of Comm-Workers")
-    ("swc.ThriftBroker.timeout", i32(900000), "ThriftBroker timeout")
     ("swc.ThriftBroker.transport", str("framed"), "ThriftBroker timeout")
 
+    ("swc.ThriftBroker.workers", i32(32), "Number of Comm-Workers")
+    ("swc.ThriftBroker.timeout", i32(900000), "ThriftBroker timeout")
     ("swc.ThriftBroker.handlers", i32(8), "Number of App Handlers")
   ;
 }
 
 void Settings::init_post_cmd_args(){
+  parse_file(
+    get<std::string>("swc.ThriftBroker.cfg", ""),
+    get<std::string>("swc.ThriftBroker.OnFileChange.cfg", "")
+  );
 }
 
 
