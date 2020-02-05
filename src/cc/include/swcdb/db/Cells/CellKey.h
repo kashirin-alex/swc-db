@@ -6,6 +6,7 @@
 #ifndef swcdb_db_cells_CellKey_h
 #define swcdb_db_cells_CellKey_h
 
+#include <vector>
 #include "swcdb/core/Serialization.h"
 #include "swcdb/db/Cells/Comparators.h"
 
@@ -294,6 +295,15 @@ class Key {
       size = *bufp - ptr_start;
       *remainp -= size;
       data = own ? _data(ptr_start) : (uint8_t*)ptr_start;
+    }
+  }
+
+  void convert_to(std::vector<std::string>& key) {
+    uint32_t len = 0;
+    const uint8_t* ptr = data;
+    for(uint32_t n=0; n<count; ++n,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      key.push_back(std::string((const char*)ptr, len));
     }
   }
 
