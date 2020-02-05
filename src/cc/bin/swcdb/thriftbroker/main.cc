@@ -13,8 +13,8 @@
 #include <thrift/transport/TZlibTransport.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 
-#include "swcdb/thriftbroker/Settings.h"
-#include "swcdb/thriftbroker/AppContext.h"
+#include "swcdb/thrift/broker/Settings.h"
+#include "swcdb/thrift/broker/AppContext.h"
 
 
 namespace SWC {

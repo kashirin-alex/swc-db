@@ -6,7 +6,7 @@
 #define swc_app_thriftbroker_AppContext_h
 
 #include "swcdb/client/Clients.h"
-#include "swcdb/thriftbroker/AppContextClient.h"
+#include "swcdb/thrift/broker/AppContextClient.h"
 
 #include "swcdb/thrift/gen-cpp/Broker.h"
 
