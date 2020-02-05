@@ -8,6 +8,8 @@ set(thrift_ver_gen_path ${CMAKE_CURRENT_SOURCE_DIR}/thriftgen-${THRIFT_VERSION})
 set(thrift_incl_path ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/swcdb/thrift)
 
 # IF .thirft instruction change with version it is prefered .thrift by versions
+
+execute_process(COMMAND cmake -E remove ${thrift_ver_gen_path}/gen-cpp ) ## temporary
 if(NOT EXISTS ${thrift_ver_gen_path}/gen-cpp)
 	file(MAKE_DIRECTORY ${thrift_ver_gen_path} )
   execute_process(COMMAND  thrift -r --gen cpp 
@@ -32,5 +34,12 @@ ADD_LIB_TARGET(
 	SHARED ${THRIFT_LIBRARIES_SHARED}
 	STATIC ${THRIFT_LIBRARIES_STATIC}
 )
+
+ADD_TEST_TARGET(
+	NAME thrift_client
+	SRCS client/tests/client.cc
+	TARGETS swcdb_thrift 
+)
+
 
 endif()
