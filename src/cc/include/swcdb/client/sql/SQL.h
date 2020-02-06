@@ -57,6 +57,13 @@ void parse_column_schema(int& err, const std::string& sql,
   err = parser.parse(func);
 }
 
+void parse_column_schema(int& err, const std::string& sql,
+                        Protocol::Mngr::Req::ColumnMng::Func* func,
+                        DB::Schema::Ptr& schema, std::string& message) {
+  ColumnSchema parser(sql, schema, message);
+  err = parser.parse(func);
+}
+
 void parse_dump(int& err, const std::string& sql, 
                 std::string& filepath, DB::Specs::Scan& specs, 
                 uint8_t& output_flags, uint8_t& display_flags, 

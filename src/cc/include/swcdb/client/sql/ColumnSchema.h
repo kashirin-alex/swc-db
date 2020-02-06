@@ -21,8 +21,35 @@ class ColumnSchema : public Reader {
               : Reader(sql, message), schema(schema) {
   }
 
-  const int parse(Func func) {
+  const int parse(Func* func) {
     bool token_cmd = false;
+
+    while(remain && !err) {
+ 
+      if(found_space())
+        continue;
+
+      if(!token_cmd) {
+        if(token_cmd = (found_token("add", 3)    || 
+                        found_token("create", 6))) {
+          *func = Func::CREATE;
+        } else if(token_cmd = (found_token("modify", 6) || 
+                                found_token("update", 6) || 
+                                found_token("change", 6))) {
+          *func = Func::MODIFY;
+        } else if(token_cmd = (found_token("delete", 6) || 
+                               found_token("remove", 6))) {
+          *func = Func::DELETE;
+        }
+      }
+      if(!token_cmd)
+        expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
+      break;
+    }
+    return parse(*func, true);
+  }
+
+  const int parse(Func func, bool token_cmd = false) {
     bool token_typ = false;
     bool bracket = false;
 
