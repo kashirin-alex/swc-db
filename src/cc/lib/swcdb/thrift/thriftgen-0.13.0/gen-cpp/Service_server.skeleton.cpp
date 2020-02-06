@@ -30,24 +30,24 @@ class ServiceHandler : virtual public ServiceIf {
     printf("sql_list_columns\n");
   }
 
-  void sql_select_list(Cells& _return, const std::string& sql) {
+  void sql_select(Cells& _return, const std::string& sql) {
     // Your implementation goes here
-    printf("sql_select_list\n");
+    printf("sql_select\n");
   }
 
-  void sql_select_map(ColumnsMapCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
     // Your implementation goes here
-    printf("sql_select_map\n");
+    printf("sql_select_rslt_on_column\n");
   }
 
-  void sql_select_keys(KeysCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
     // Your implementation goes here
-    printf("sql_select_keys\n");
+    printf("sql_select_rslt_on_key\n");
   }
 
-  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
     // Your implementation goes here
-    printf("sql_select_fraction\n");
+    printf("sql_select_rslt_on_fraction\n");
   }
 
 };

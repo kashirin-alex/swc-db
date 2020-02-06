@@ -89,11 +89,11 @@ typedef std::vector<std::string>  Key;
 
 typedef std::vector<class Cell>  Cells;
 
-typedef std::vector<class ColumnMapCell>  ColumnMapCells;
+typedef std::vector<class CCell>  ColCells;
 
-typedef std::map<std::string, ColumnMapCells>  ColumnsMapCells;
+typedef std::map<std::string, ColCells>  CCells;
 
-typedef std::vector<class KeyCells>  KeysCells;
+typedef std::vector<class kCells>  KCells;
 
 class Exception;
 
@@ -101,15 +101,15 @@ class Schema;
 
 class Cell;
 
-class ColumnMapCell;
+class CCell;
 
-class KeyCell;
+class KCell;
 
-class KeyCells;
+class kCells;
 
-class FractionCell;
+class FCell;
 
-class FractionCells;
+class FCells;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -363,27 +363,27 @@ void swap(Cell &a, Cell &b);
 
 std::ostream& operator<<(std::ostream& out, const Cell& obj);
 
-typedef struct _ColumnMapCell__isset {
-  _ColumnMapCell__isset() : k(false), ts(false), v(false) {}
+typedef struct _CCell__isset {
+  _CCell__isset() : k(false), ts(false), v(false) {}
   bool k :1;
   bool ts :1;
   bool v :1;
-} _ColumnMapCell__isset;
+} _CCell__isset;
 
-class ColumnMapCell : public virtual ::apache::thrift::TBase {
+class CCell : public virtual ::apache::thrift::TBase {
  public:
 
-  ColumnMapCell(const ColumnMapCell&);
-  ColumnMapCell& operator=(const ColumnMapCell&);
-  ColumnMapCell() : ts(0), v() {
+  CCell(const CCell&);
+  CCell& operator=(const CCell&);
+  CCell() : ts(0), v() {
   }
 
-  virtual ~ColumnMapCell() noexcept;
+  virtual ~CCell() noexcept;
   Key k;
   int64_t ts;
   std::string v;
 
-  _ColumnMapCell__isset __isset;
+  _CCell__isset __isset;
 
   void __set_k(const Key& val);
 
@@ -391,7 +391,7 @@ class ColumnMapCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const ColumnMapCell & rhs) const
+  bool operator == (const CCell & rhs) const
   {
     if (!(k == rhs.k))
       return false;
@@ -403,11 +403,11 @@ class ColumnMapCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const ColumnMapCell &rhs) const {
+  bool operator != (const CCell &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const ColumnMapCell & ) const;
+  bool operator < (const CCell & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -415,31 +415,31 @@ class ColumnMapCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(ColumnMapCell &a, ColumnMapCell &b);
+void swap(CCell &a, CCell &b);
 
-std::ostream& operator<<(std::ostream& out, const ColumnMapCell& obj);
+std::ostream& operator<<(std::ostream& out, const CCell& obj);
 
-typedef struct _KeyCell__isset {
-  _KeyCell__isset() : c(false), ts(false), v(false) {}
+typedef struct _KCell__isset {
+  _KCell__isset() : c(false), ts(false), v(false) {}
   bool c :1;
   bool ts :1;
   bool v :1;
-} _KeyCell__isset;
+} _KCell__isset;
 
-class KeyCell : public virtual ::apache::thrift::TBase {
+class KCell : public virtual ::apache::thrift::TBase {
  public:
 
-  KeyCell(const KeyCell&);
-  KeyCell& operator=(const KeyCell&);
-  KeyCell() : c(), ts(0), v() {
+  KCell(const KCell&);
+  KCell& operator=(const KCell&);
+  KCell() : c(), ts(0), v() {
   }
 
-  virtual ~KeyCell() noexcept;
+  virtual ~KCell() noexcept;
   std::string c;
   int64_t ts;
   std::string v;
 
-  _KeyCell__isset __isset;
+  _KCell__isset __isset;
 
   void __set_c(const std::string& val);
 
@@ -447,7 +447,7 @@ class KeyCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const KeyCell & rhs) const
+  bool operator == (const KCell & rhs) const
   {
     if (!(c == rhs.c))
       return false;
@@ -459,11 +459,11 @@ class KeyCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const KeyCell &rhs) const {
+  bool operator != (const KCell &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const KeyCell & ) const;
+  bool operator < (const KCell & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -471,35 +471,35 @@ class KeyCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(KeyCell &a, KeyCell &b);
+void swap(KCell &a, KCell &b);
 
-std::ostream& operator<<(std::ostream& out, const KeyCell& obj);
+std::ostream& operator<<(std::ostream& out, const KCell& obj);
 
-typedef struct _KeyCells__isset {
-  _KeyCells__isset() : k(false), cells(false) {}
+typedef struct _kCells__isset {
+  _kCells__isset() : k(false), cells(false) {}
   bool k :1;
   bool cells :1;
-} _KeyCells__isset;
+} _kCells__isset;
 
-class KeyCells : public virtual ::apache::thrift::TBase {
+class kCells : public virtual ::apache::thrift::TBase {
  public:
 
-  KeyCells(const KeyCells&);
-  KeyCells& operator=(const KeyCells&);
-  KeyCells() {
+  kCells(const kCells&);
+  kCells& operator=(const kCells&);
+  kCells() {
   }
 
-  virtual ~KeyCells() noexcept;
+  virtual ~kCells() noexcept;
   Key k;
-  std::vector<KeyCell>  cells;
+  std::vector<KCell>  cells;
 
-  _KeyCells__isset __isset;
+  _kCells__isset __isset;
 
   void __set_k(const Key& val);
 
-  void __set_cells(const std::vector<KeyCell> & val);
+  void __set_cells(const std::vector<KCell> & val);
 
-  bool operator == (const KeyCells & rhs) const
+  bool operator == (const kCells & rhs) const
   {
     if (!(k == rhs.k))
       return false;
@@ -507,11 +507,11 @@ class KeyCells : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const KeyCells &rhs) const {
+  bool operator != (const kCells &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const KeyCells & ) const;
+  bool operator < (const kCells & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -519,31 +519,31 @@ class KeyCells : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(KeyCells &a, KeyCells &b);
+void swap(kCells &a, kCells &b);
 
-std::ostream& operator<<(std::ostream& out, const KeyCells& obj);
+std::ostream& operator<<(std::ostream& out, const kCells& obj);
 
-typedef struct _FractionCell__isset {
-  _FractionCell__isset() : c(false), ts(false), v(false) {}
+typedef struct _FCell__isset {
+  _FCell__isset() : c(false), ts(false), v(false) {}
   bool c :1;
   bool ts :1;
   bool v :1;
-} _FractionCell__isset;
+} _FCell__isset;
 
-class FractionCell : public virtual ::apache::thrift::TBase {
+class FCell : public virtual ::apache::thrift::TBase {
  public:
 
-  FractionCell(const FractionCell&);
-  FractionCell& operator=(const FractionCell&);
-  FractionCell() : c(), ts(0), v() {
+  FCell(const FCell&);
+  FCell& operator=(const FCell&);
+  FCell() : c(), ts(0), v() {
   }
 
-  virtual ~FractionCell() noexcept;
+  virtual ~FCell() noexcept;
   std::string c;
   int64_t ts;
   std::string v;
 
-  _FractionCell__isset __isset;
+  _FCell__isset __isset;
 
   void __set_c(const std::string& val);
 
@@ -551,7 +551,7 @@ class FractionCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const FractionCell & rhs) const
+  bool operator == (const FCell & rhs) const
   {
     if (!(c == rhs.c))
       return false;
@@ -563,11 +563,11 @@ class FractionCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const FractionCell &rhs) const {
+  bool operator != (const FCell &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const FractionCell & ) const;
+  bool operator < (const FCell & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -575,35 +575,35 @@ class FractionCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(FractionCell &a, FractionCell &b);
+void swap(FCell &a, FCell &b);
 
-std::ostream& operator<<(std::ostream& out, const FractionCell& obj);
+std::ostream& operator<<(std::ostream& out, const FCell& obj);
 
-typedef struct _FractionCells__isset {
-  _FractionCells__isset() : f(false), cells(false) {}
+typedef struct _FCells__isset {
+  _FCells__isset() : f(false), cells(false) {}
   bool f :1;
   bool cells :1;
-} _FractionCells__isset;
+} _FCells__isset;
 
-class FractionCells : public virtual ::apache::thrift::TBase {
+class FCells : public virtual ::apache::thrift::TBase {
  public:
 
-  FractionCells(const FractionCells&);
-  FractionCells& operator=(const FractionCells&);
-  FractionCells() {
+  FCells(const FCells&);
+  FCells& operator=(const FCells&);
+  FCells() {
   }
 
-  virtual ~FractionCells() noexcept;
-  std::map<std::string, FractionCells>  f;
-  std::vector<FractionCell>  cells;
+  virtual ~FCells() noexcept;
+  std::map<std::string, FCells>  f;
+  std::vector<FCell>  cells;
 
-  _FractionCells__isset __isset;
+  _FCells__isset __isset;
 
-  void __set_f(const std::map<std::string, FractionCells> & val);
+  void __set_f(const std::map<std::string, FCells> & val);
 
-  void __set_cells(const std::vector<FractionCell> & val);
+  void __set_cells(const std::vector<FCell> & val);
 
-  bool operator == (const FractionCells & rhs) const
+  bool operator == (const FCells & rhs) const
   {
     if (!(f == rhs.f))
       return false;
@@ -613,11 +613,11 @@ class FractionCells : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const FractionCells &rhs) const {
+  bool operator != (const FCells &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const FractionCells & ) const;
+  bool operator < (const FCells & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -625,9 +625,9 @@ class FractionCells : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(FractionCells &a, FractionCells &b);
+void swap(FCells &a, FCells &b);
 
-std::ostream& operator<<(std::ostream& out, const FractionCells& obj);
+std::ostream& operator<<(std::ostream& out, const FCells& obj);
 
 }} // namespace
 

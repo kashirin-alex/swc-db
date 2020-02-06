@@ -24,10 +24,10 @@ class ServiceIf {
   virtual ~ServiceIf() {}
   virtual void sql_mng_column(const std::string& sql) = 0;
   virtual void sql_list_columns(Schemas& _return, const std::string& sql) = 0;
-  virtual void sql_select_list(Cells& _return, const std::string& sql) = 0;
-  virtual void sql_select_map(ColumnsMapCells& _return, const std::string& sql) = 0;
-  virtual void sql_select_keys(KeysCells& _return, const std::string& sql) = 0;
-  virtual void sql_select_fraction(FractionCells& _return, const std::string& sql) = 0;
+  virtual void sql_select(Cells& _return, const std::string& sql) = 0;
+  virtual void sql_select_rslt_on_column(CCells& _return, const std::string& sql) = 0;
+  virtual void sql_select_rslt_on_key(KCells& _return, const std::string& sql) = 0;
+  virtual void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) = 0;
 };
 
 class ServiceIfFactory {
@@ -63,16 +63,16 @@ class ServiceNull : virtual public ServiceIf {
   void sql_list_columns(Schemas& /* _return */, const std::string& /* sql */) {
     return;
   }
-  void sql_select_list(Cells& /* _return */, const std::string& /* sql */) {
+  void sql_select(Cells& /* _return */, const std::string& /* sql */) {
     return;
   }
-  void sql_select_map(ColumnsMapCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_column(CCells& /* _return */, const std::string& /* sql */) {
     return;
   }
-  void sql_select_keys(KeysCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_key(KCells& /* _return */, const std::string& /* sql */) {
     return;
   }
-  void sql_select_fraction(FractionCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_fraction(FCells& /* _return */, const std::string& /* sql */) {
     return;
   }
 };
@@ -293,37 +293,37 @@ class Service_sql_list_columns_presult {
 
 };
 
-typedef struct _Service_sql_select_list_args__isset {
-  _Service_sql_select_list_args__isset() : sql(false) {}
+typedef struct _Service_sql_select_args__isset {
+  _Service_sql_select_args__isset() : sql(false) {}
   bool sql :1;
-} _Service_sql_select_list_args__isset;
+} _Service_sql_select_args__isset;
 
-class Service_sql_select_list_args {
+class Service_sql_select_args {
  public:
 
-  Service_sql_select_list_args(const Service_sql_select_list_args&);
-  Service_sql_select_list_args& operator=(const Service_sql_select_list_args&);
-  Service_sql_select_list_args() : sql() {
+  Service_sql_select_args(const Service_sql_select_args&);
+  Service_sql_select_args& operator=(const Service_sql_select_args&);
+  Service_sql_select_args() : sql() {
   }
 
-  virtual ~Service_sql_select_list_args() noexcept;
+  virtual ~Service_sql_select_args() noexcept;
   std::string sql;
 
-  _Service_sql_select_list_args__isset __isset;
+  _Service_sql_select_args__isset __isset;
 
   void __set_sql(const std::string& val);
 
-  bool operator == (const Service_sql_select_list_args & rhs) const
+  bool operator == (const Service_sql_select_args & rhs) const
   {
     if (!(sql == rhs.sql))
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_list_args &rhs) const {
+  bool operator != (const Service_sql_select_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_list_args & ) const;
+  bool operator < (const Service_sql_select_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -331,42 +331,42 @@ class Service_sql_select_list_args {
 };
 
 
-class Service_sql_select_list_pargs {
+class Service_sql_select_pargs {
  public:
 
 
-  virtual ~Service_sql_select_list_pargs() noexcept;
+  virtual ~Service_sql_select_pargs() noexcept;
   const std::string* sql;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_list_result__isset {
-  _Service_sql_select_list_result__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_result__isset {
+  _Service_sql_select_result__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_list_result__isset;
+} _Service_sql_select_result__isset;
 
-class Service_sql_select_list_result {
+class Service_sql_select_result {
  public:
 
-  Service_sql_select_list_result(const Service_sql_select_list_result&);
-  Service_sql_select_list_result& operator=(const Service_sql_select_list_result&);
-  Service_sql_select_list_result() {
+  Service_sql_select_result(const Service_sql_select_result&);
+  Service_sql_select_result& operator=(const Service_sql_select_result&);
+  Service_sql_select_result() {
   }
 
-  virtual ~Service_sql_select_list_result() noexcept;
+  virtual ~Service_sql_select_result() noexcept;
   Cells success;
   Exception e;
 
-  _Service_sql_select_list_result__isset __isset;
+  _Service_sql_select_result__isset __isset;
 
   void __set_success(const Cells& val);
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_sql_select_list_result & rhs) const
+  bool operator == (const Service_sql_select_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -374,68 +374,68 @@ class Service_sql_select_list_result {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_list_result &rhs) const {
+  bool operator != (const Service_sql_select_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_list_result & ) const;
+  bool operator < (const Service_sql_select_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_list_presult__isset {
-  _Service_sql_select_list_presult__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_presult__isset {
+  _Service_sql_select_presult__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_list_presult__isset;
+} _Service_sql_select_presult__isset;
 
-class Service_sql_select_list_presult {
+class Service_sql_select_presult {
  public:
 
 
-  virtual ~Service_sql_select_list_presult() noexcept;
+  virtual ~Service_sql_select_presult() noexcept;
   Cells* success;
   Exception e;
 
-  _Service_sql_select_list_presult__isset __isset;
+  _Service_sql_select_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
-typedef struct _Service_sql_select_map_args__isset {
-  _Service_sql_select_map_args__isset() : sql(false) {}
+typedef struct _Service_sql_select_rslt_on_column_args__isset {
+  _Service_sql_select_rslt_on_column_args__isset() : sql(false) {}
   bool sql :1;
-} _Service_sql_select_map_args__isset;
+} _Service_sql_select_rslt_on_column_args__isset;
 
-class Service_sql_select_map_args {
+class Service_sql_select_rslt_on_column_args {
  public:
 
-  Service_sql_select_map_args(const Service_sql_select_map_args&);
-  Service_sql_select_map_args& operator=(const Service_sql_select_map_args&);
-  Service_sql_select_map_args() : sql() {
+  Service_sql_select_rslt_on_column_args(const Service_sql_select_rslt_on_column_args&);
+  Service_sql_select_rslt_on_column_args& operator=(const Service_sql_select_rslt_on_column_args&);
+  Service_sql_select_rslt_on_column_args() : sql() {
   }
 
-  virtual ~Service_sql_select_map_args() noexcept;
+  virtual ~Service_sql_select_rslt_on_column_args() noexcept;
   std::string sql;
 
-  _Service_sql_select_map_args__isset __isset;
+  _Service_sql_select_rslt_on_column_args__isset __isset;
 
   void __set_sql(const std::string& val);
 
-  bool operator == (const Service_sql_select_map_args & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_column_args & rhs) const
   {
     if (!(sql == rhs.sql))
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_map_args &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_column_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_map_args & ) const;
+  bool operator < (const Service_sql_select_rslt_on_column_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -443,42 +443,42 @@ class Service_sql_select_map_args {
 };
 
 
-class Service_sql_select_map_pargs {
+class Service_sql_select_rslt_on_column_pargs {
  public:
 
 
-  virtual ~Service_sql_select_map_pargs() noexcept;
+  virtual ~Service_sql_select_rslt_on_column_pargs() noexcept;
   const std::string* sql;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_map_result__isset {
-  _Service_sql_select_map_result__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_column_result__isset {
+  _Service_sql_select_rslt_on_column_result__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_map_result__isset;
+} _Service_sql_select_rslt_on_column_result__isset;
 
-class Service_sql_select_map_result {
+class Service_sql_select_rslt_on_column_result {
  public:
 
-  Service_sql_select_map_result(const Service_sql_select_map_result&);
-  Service_sql_select_map_result& operator=(const Service_sql_select_map_result&);
-  Service_sql_select_map_result() {
+  Service_sql_select_rslt_on_column_result(const Service_sql_select_rslt_on_column_result&);
+  Service_sql_select_rslt_on_column_result& operator=(const Service_sql_select_rslt_on_column_result&);
+  Service_sql_select_rslt_on_column_result() {
   }
 
-  virtual ~Service_sql_select_map_result() noexcept;
-  ColumnsMapCells success;
+  virtual ~Service_sql_select_rslt_on_column_result() noexcept;
+  CCells success;
   Exception e;
 
-  _Service_sql_select_map_result__isset __isset;
+  _Service_sql_select_rslt_on_column_result__isset __isset;
 
-  void __set_success(const ColumnsMapCells& val);
+  void __set_success(const CCells& val);
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_sql_select_map_result & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_column_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -486,68 +486,68 @@ class Service_sql_select_map_result {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_map_result &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_column_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_map_result & ) const;
+  bool operator < (const Service_sql_select_rslt_on_column_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_map_presult__isset {
-  _Service_sql_select_map_presult__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_column_presult__isset {
+  _Service_sql_select_rslt_on_column_presult__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_map_presult__isset;
+} _Service_sql_select_rslt_on_column_presult__isset;
 
-class Service_sql_select_map_presult {
+class Service_sql_select_rslt_on_column_presult {
  public:
 
 
-  virtual ~Service_sql_select_map_presult() noexcept;
-  ColumnsMapCells* success;
+  virtual ~Service_sql_select_rslt_on_column_presult() noexcept;
+  CCells* success;
   Exception e;
 
-  _Service_sql_select_map_presult__isset __isset;
+  _Service_sql_select_rslt_on_column_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
-typedef struct _Service_sql_select_keys_args__isset {
-  _Service_sql_select_keys_args__isset() : sql(false) {}
+typedef struct _Service_sql_select_rslt_on_key_args__isset {
+  _Service_sql_select_rslt_on_key_args__isset() : sql(false) {}
   bool sql :1;
-} _Service_sql_select_keys_args__isset;
+} _Service_sql_select_rslt_on_key_args__isset;
 
-class Service_sql_select_keys_args {
+class Service_sql_select_rslt_on_key_args {
  public:
 
-  Service_sql_select_keys_args(const Service_sql_select_keys_args&);
-  Service_sql_select_keys_args& operator=(const Service_sql_select_keys_args&);
-  Service_sql_select_keys_args() : sql() {
+  Service_sql_select_rslt_on_key_args(const Service_sql_select_rslt_on_key_args&);
+  Service_sql_select_rslt_on_key_args& operator=(const Service_sql_select_rslt_on_key_args&);
+  Service_sql_select_rslt_on_key_args() : sql() {
   }
 
-  virtual ~Service_sql_select_keys_args() noexcept;
+  virtual ~Service_sql_select_rslt_on_key_args() noexcept;
   std::string sql;
 
-  _Service_sql_select_keys_args__isset __isset;
+  _Service_sql_select_rslt_on_key_args__isset __isset;
 
   void __set_sql(const std::string& val);
 
-  bool operator == (const Service_sql_select_keys_args & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_key_args & rhs) const
   {
     if (!(sql == rhs.sql))
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_keys_args &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_key_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_keys_args & ) const;
+  bool operator < (const Service_sql_select_rslt_on_key_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -555,42 +555,42 @@ class Service_sql_select_keys_args {
 };
 
 
-class Service_sql_select_keys_pargs {
+class Service_sql_select_rslt_on_key_pargs {
  public:
 
 
-  virtual ~Service_sql_select_keys_pargs() noexcept;
+  virtual ~Service_sql_select_rslt_on_key_pargs() noexcept;
   const std::string* sql;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_keys_result__isset {
-  _Service_sql_select_keys_result__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_key_result__isset {
+  _Service_sql_select_rslt_on_key_result__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_keys_result__isset;
+} _Service_sql_select_rslt_on_key_result__isset;
 
-class Service_sql_select_keys_result {
+class Service_sql_select_rslt_on_key_result {
  public:
 
-  Service_sql_select_keys_result(const Service_sql_select_keys_result&);
-  Service_sql_select_keys_result& operator=(const Service_sql_select_keys_result&);
-  Service_sql_select_keys_result() {
+  Service_sql_select_rslt_on_key_result(const Service_sql_select_rslt_on_key_result&);
+  Service_sql_select_rslt_on_key_result& operator=(const Service_sql_select_rslt_on_key_result&);
+  Service_sql_select_rslt_on_key_result() {
   }
 
-  virtual ~Service_sql_select_keys_result() noexcept;
-  KeysCells success;
+  virtual ~Service_sql_select_rslt_on_key_result() noexcept;
+  KCells success;
   Exception e;
 
-  _Service_sql_select_keys_result__isset __isset;
+  _Service_sql_select_rslt_on_key_result__isset __isset;
 
-  void __set_success(const KeysCells& val);
+  void __set_success(const KCells& val);
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_sql_select_keys_result & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_key_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -598,68 +598,68 @@ class Service_sql_select_keys_result {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_keys_result &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_key_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_keys_result & ) const;
+  bool operator < (const Service_sql_select_rslt_on_key_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_keys_presult__isset {
-  _Service_sql_select_keys_presult__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_key_presult__isset {
+  _Service_sql_select_rslt_on_key_presult__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_keys_presult__isset;
+} _Service_sql_select_rslt_on_key_presult__isset;
 
-class Service_sql_select_keys_presult {
+class Service_sql_select_rslt_on_key_presult {
  public:
 
 
-  virtual ~Service_sql_select_keys_presult() noexcept;
-  KeysCells* success;
+  virtual ~Service_sql_select_rslt_on_key_presult() noexcept;
+  KCells* success;
   Exception e;
 
-  _Service_sql_select_keys_presult__isset __isset;
+  _Service_sql_select_rslt_on_key_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
-typedef struct _Service_sql_select_fraction_args__isset {
-  _Service_sql_select_fraction_args__isset() : sql(false) {}
+typedef struct _Service_sql_select_rslt_on_fraction_args__isset {
+  _Service_sql_select_rslt_on_fraction_args__isset() : sql(false) {}
   bool sql :1;
-} _Service_sql_select_fraction_args__isset;
+} _Service_sql_select_rslt_on_fraction_args__isset;
 
-class Service_sql_select_fraction_args {
+class Service_sql_select_rslt_on_fraction_args {
  public:
 
-  Service_sql_select_fraction_args(const Service_sql_select_fraction_args&);
-  Service_sql_select_fraction_args& operator=(const Service_sql_select_fraction_args&);
-  Service_sql_select_fraction_args() : sql() {
+  Service_sql_select_rslt_on_fraction_args(const Service_sql_select_rslt_on_fraction_args&);
+  Service_sql_select_rslt_on_fraction_args& operator=(const Service_sql_select_rslt_on_fraction_args&);
+  Service_sql_select_rslt_on_fraction_args() : sql() {
   }
 
-  virtual ~Service_sql_select_fraction_args() noexcept;
+  virtual ~Service_sql_select_rslt_on_fraction_args() noexcept;
   std::string sql;
 
-  _Service_sql_select_fraction_args__isset __isset;
+  _Service_sql_select_rslt_on_fraction_args__isset __isset;
 
   void __set_sql(const std::string& val);
 
-  bool operator == (const Service_sql_select_fraction_args & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_fraction_args & rhs) const
   {
     if (!(sql == rhs.sql))
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_fraction_args &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_fraction_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_fraction_args & ) const;
+  bool operator < (const Service_sql_select_rslt_on_fraction_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -667,42 +667,42 @@ class Service_sql_select_fraction_args {
 };
 
 
-class Service_sql_select_fraction_pargs {
+class Service_sql_select_rslt_on_fraction_pargs {
  public:
 
 
-  virtual ~Service_sql_select_fraction_pargs() noexcept;
+  virtual ~Service_sql_select_rslt_on_fraction_pargs() noexcept;
   const std::string* sql;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_fraction_result__isset {
-  _Service_sql_select_fraction_result__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_fraction_result__isset {
+  _Service_sql_select_rslt_on_fraction_result__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_fraction_result__isset;
+} _Service_sql_select_rslt_on_fraction_result__isset;
 
-class Service_sql_select_fraction_result {
+class Service_sql_select_rslt_on_fraction_result {
  public:
 
-  Service_sql_select_fraction_result(const Service_sql_select_fraction_result&);
-  Service_sql_select_fraction_result& operator=(const Service_sql_select_fraction_result&);
-  Service_sql_select_fraction_result() {
+  Service_sql_select_rslt_on_fraction_result(const Service_sql_select_rslt_on_fraction_result&);
+  Service_sql_select_rslt_on_fraction_result& operator=(const Service_sql_select_rslt_on_fraction_result&);
+  Service_sql_select_rslt_on_fraction_result() {
   }
 
-  virtual ~Service_sql_select_fraction_result() noexcept;
-  FractionCells success;
+  virtual ~Service_sql_select_rslt_on_fraction_result() noexcept;
+  FCells success;
   Exception e;
 
-  _Service_sql_select_fraction_result__isset __isset;
+  _Service_sql_select_rslt_on_fraction_result__isset __isset;
 
-  void __set_success(const FractionCells& val);
+  void __set_success(const FCells& val);
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_sql_select_fraction_result & rhs) const
+  bool operator == (const Service_sql_select_rslt_on_fraction_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -710,32 +710,32 @@ class Service_sql_select_fraction_result {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_select_fraction_result &rhs) const {
+  bool operator != (const Service_sql_select_rslt_on_fraction_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_select_fraction_result & ) const;
+  bool operator < (const Service_sql_select_rslt_on_fraction_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_select_fraction_presult__isset {
-  _Service_sql_select_fraction_presult__isset() : success(false), e(false) {}
+typedef struct _Service_sql_select_rslt_on_fraction_presult__isset {
+  _Service_sql_select_rslt_on_fraction_presult__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_select_fraction_presult__isset;
+} _Service_sql_select_rslt_on_fraction_presult__isset;
 
-class Service_sql_select_fraction_presult {
+class Service_sql_select_rslt_on_fraction_presult {
  public:
 
 
-  virtual ~Service_sql_select_fraction_presult() noexcept;
-  FractionCells* success;
+  virtual ~Service_sql_select_rslt_on_fraction_presult() noexcept;
+  FCells* success;
   Exception e;
 
-  _Service_sql_select_fraction_presult__isset __isset;
+  _Service_sql_select_rslt_on_fraction_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -772,18 +772,18 @@ class ServiceClient : virtual public ServiceIf {
   void sql_list_columns(Schemas& _return, const std::string& sql);
   void send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return);
-  void sql_select_list(Cells& _return, const std::string& sql);
-  void send_sql_select_list(const std::string& sql);
-  void recv_sql_select_list(Cells& _return);
-  void sql_select_map(ColumnsMapCells& _return, const std::string& sql);
-  void send_sql_select_map(const std::string& sql);
-  void recv_sql_select_map(ColumnsMapCells& _return);
-  void sql_select_keys(KeysCells& _return, const std::string& sql);
-  void send_sql_select_keys(const std::string& sql);
-  void recv_sql_select_keys(KeysCells& _return);
-  void sql_select_fraction(FractionCells& _return, const std::string& sql);
-  void send_sql_select_fraction(const std::string& sql);
-  void recv_sql_select_fraction(FractionCells& _return);
+  void sql_select(Cells& _return, const std::string& sql);
+  void send_sql_select(const std::string& sql);
+  void recv_sql_select(Cells& _return);
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql);
+  void send_sql_select_rslt_on_column(const std::string& sql);
+  void recv_sql_select_rslt_on_column(CCells& _return);
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql);
+  void send_sql_select_rslt_on_key(const std::string& sql);
+  void recv_sql_select_rslt_on_key(KCells& _return);
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
+  void send_sql_select_rslt_on_fraction(const std::string& sql);
+  void recv_sql_select_rslt_on_fraction(FCells& _return);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -801,19 +801,19 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   ProcessMap processMap_;
   void process_sql_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_select_list(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_select_map(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_select_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_select_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
     processMap_["sql_mng_column"] = &ServiceProcessor::process_sql_mng_column;
     processMap_["sql_list_columns"] = &ServiceProcessor::process_sql_list_columns;
-    processMap_["sql_select_list"] = &ServiceProcessor::process_sql_select_list;
-    processMap_["sql_select_map"] = &ServiceProcessor::process_sql_select_map;
-    processMap_["sql_select_keys"] = &ServiceProcessor::process_sql_select_keys;
-    processMap_["sql_select_fraction"] = &ServiceProcessor::process_sql_select_fraction;
+    processMap_["sql_select"] = &ServiceProcessor::process_sql_select;
+    processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
+    processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
+    processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
   }
 
   virtual ~ServiceProcessor() {}
@@ -861,43 +861,43 @@ class ServiceMultiface : virtual public ServiceIf {
     return;
   }
 
-  void sql_select_list(Cells& _return, const std::string& sql) {
+  void sql_select(Cells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_select_list(_return, sql);
+      ifaces_[i]->sql_select(_return, sql);
     }
-    ifaces_[i]->sql_select_list(_return, sql);
+    ifaces_[i]->sql_select(_return, sql);
     return;
   }
 
-  void sql_select_map(ColumnsMapCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_select_map(_return, sql);
+      ifaces_[i]->sql_select_rslt_on_column(_return, sql);
     }
-    ifaces_[i]->sql_select_map(_return, sql);
+    ifaces_[i]->sql_select_rslt_on_column(_return, sql);
     return;
   }
 
-  void sql_select_keys(KeysCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_select_keys(_return, sql);
+      ifaces_[i]->sql_select_rslt_on_key(_return, sql);
     }
-    ifaces_[i]->sql_select_keys(_return, sql);
+    ifaces_[i]->sql_select_rslt_on_key(_return, sql);
     return;
   }
 
-  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_select_fraction(_return, sql);
+      ifaces_[i]->sql_select_rslt_on_fraction(_return, sql);
     }
-    ifaces_[i]->sql_select_fraction(_return, sql);
+    ifaces_[i]->sql_select_rslt_on_fraction(_return, sql);
     return;
   }
 
@@ -939,18 +939,18 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_list_columns(Schemas& _return, const std::string& sql);
   int32_t send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return, const int32_t seqid);
-  void sql_select_list(Cells& _return, const std::string& sql);
-  int32_t send_sql_select_list(const std::string& sql);
-  void recv_sql_select_list(Cells& _return, const int32_t seqid);
-  void sql_select_map(ColumnsMapCells& _return, const std::string& sql);
-  int32_t send_sql_select_map(const std::string& sql);
-  void recv_sql_select_map(ColumnsMapCells& _return, const int32_t seqid);
-  void sql_select_keys(KeysCells& _return, const std::string& sql);
-  int32_t send_sql_select_keys(const std::string& sql);
-  void recv_sql_select_keys(KeysCells& _return, const int32_t seqid);
-  void sql_select_fraction(FractionCells& _return, const std::string& sql);
-  int32_t send_sql_select_fraction(const std::string& sql);
-  void recv_sql_select_fraction(FractionCells& _return, const int32_t seqid);
+  void sql_select(Cells& _return, const std::string& sql);
+  int32_t send_sql_select(const std::string& sql);
+  void recv_sql_select(Cells& _return, const int32_t seqid);
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql);
+  int32_t send_sql_select_rslt_on_column(const std::string& sql);
+  void recv_sql_select_rslt_on_column(CCells& _return, const int32_t seqid);
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql);
+  int32_t send_sql_select_rslt_on_key(const std::string& sql);
+  void recv_sql_select_rslt_on_key(KCells& _return, const int32_t seqid);
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
+  int32_t send_sql_select_rslt_on_fraction(const std::string& sql);
+  void recv_sql_select_rslt_on_fraction(FCells& _return, const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

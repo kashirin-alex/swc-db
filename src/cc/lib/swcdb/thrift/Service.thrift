@@ -88,35 +88,35 @@ struct Cell {
 typedef list<Cell> Cells
 
 
-struct ColumnMapCell {
+struct CCell {
   1: Key              k
   2: i64              ts
   3: optional binary  v
 }
-typedef list<ColumnMapCell> ColumnMapCells
-typedef map<string, ColumnMapCells> ColumnsMapCells
+typedef list<CCell> ColCells
+typedef map<string, ColCells> CCells
 
 
-struct KeyCell {
+struct KCell {
   1: string           c
   2: i64              ts
   3: optional binary  v
 }
-struct KeyCells {
-  1: Key              k
-  2: list<KeyCell>    cells
+struct kCells {
+  1: Key            k
+  2: list<KCell>    cells
 }
-typedef list<KeyCells> KeysCells
+typedef list<kCells> KCells
 
 
-struct FractionCell {
+struct FCell {
   1: string           c
   2: i64              ts
   3: optional binary  v
 }
-struct FractionCells {
-  1: map<binary, FractionCells>   f
-  2: optional list<FractionCell>  cells
+struct FCells {
+  1: map<binary, FCells>   f
+  2: optional list<FCell>  cells
 }
 
 
@@ -126,12 +126,13 @@ service Service {
 
   Schemas          sql_list_columns(1:string sql) throws (1:Exception e),
 
-  Cells            sql_select_list(1:string sql)  throws (1:Exception e),
 
-  ColumnsMapCells  sql_select_map(1:string sql)   throws (1:Exception e),
+  Cells   sql_select(1:string sql)                   throws (1:Exception e),
+
+  CCells  sql_select_rslt_on_column(1:string sql)    throws (1:Exception e),
   
-  KeysCells        sql_select_keys(1:string sql)  throws (1:Exception e),
+  KCells  sql_select_rslt_on_key(1:string sql)       throws (1:Exception e),
 
-  FractionCells    sql_select_fraction(1:string sql)  throws (1:Exception e),
+  FCells  sql_select_rslt_on_fraction(1:string sql)  throws (1:Exception e),
 
 }

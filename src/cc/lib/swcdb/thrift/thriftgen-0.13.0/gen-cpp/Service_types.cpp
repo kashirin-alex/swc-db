@@ -809,30 +809,30 @@ void Cell::printTo(std::ostream& out) const {
 }
 
 
-ColumnMapCell::~ColumnMapCell() noexcept {
+CCell::~CCell() noexcept {
 }
 
 
-void ColumnMapCell::__set_k(const Key& val) {
+void CCell::__set_k(const Key& val) {
   this->k = val;
 }
 
-void ColumnMapCell::__set_ts(const int64_t val) {
+void CCell::__set_ts(const int64_t val) {
   this->ts = val;
 }
 
-void ColumnMapCell::__set_v(const std::string& val) {
+void CCell::__set_v(const std::string& val) {
   this->v = val;
 __isset.v = true;
 }
-std::ostream& operator<<(std::ostream& out, const ColumnMapCell& obj)
+std::ostream& operator<<(std::ostream& out, const CCell& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t ColumnMapCell::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t CCell::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -901,10 +901,10 @@ uint32_t ColumnMapCell::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t ColumnMapCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t CCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ColumnMapCell");
+  xfer += oprot->writeStructBegin("CCell");
 
   xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -932,7 +932,7 @@ uint32_t ColumnMapCell::write(::apache::thrift::protocol::TProtocol* oprot) cons
   return xfer;
 }
 
-void swap(ColumnMapCell &a, ColumnMapCell &b) {
+void swap(CCell &a, CCell &b) {
   using ::std::swap;
   swap(a.k, b.k);
   swap(a.ts, b.ts);
@@ -940,22 +940,22 @@ void swap(ColumnMapCell &a, ColumnMapCell &b) {
   swap(a.__isset, b.__isset);
 }
 
-ColumnMapCell::ColumnMapCell(const ColumnMapCell& other20) {
+CCell::CCell(const CCell& other20) {
   k = other20.k;
   ts = other20.ts;
   v = other20.v;
   __isset = other20.__isset;
 }
-ColumnMapCell& ColumnMapCell::operator=(const ColumnMapCell& other21) {
+CCell& CCell::operator=(const CCell& other21) {
   k = other21.k;
   ts = other21.ts;
   v = other21.v;
   __isset = other21.__isset;
   return *this;
 }
-void ColumnMapCell::printTo(std::ostream& out) const {
+void CCell::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "ColumnMapCell(";
+  out << "CCell(";
   out << "k=" << to_string(k);
   out << ", " << "ts=" << to_string(ts);
   out << ", " << "v="; (__isset.v ? (out << to_string(v)) : (out << "<null>"));
@@ -963,30 +963,30 @@ void ColumnMapCell::printTo(std::ostream& out) const {
 }
 
 
-KeyCell::~KeyCell() noexcept {
+KCell::~KCell() noexcept {
 }
 
 
-void KeyCell::__set_c(const std::string& val) {
+void KCell::__set_c(const std::string& val) {
   this->c = val;
 }
 
-void KeyCell::__set_ts(const int64_t val) {
+void KCell::__set_ts(const int64_t val) {
   this->ts = val;
 }
 
-void KeyCell::__set_v(const std::string& val) {
+void KCell::__set_v(const std::string& val) {
   this->v = val;
 __isset.v = true;
 }
-std::ostream& operator<<(std::ostream& out, const KeyCell& obj)
+std::ostream& operator<<(std::ostream& out, const KCell& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t KeyCell::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t KCell::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1043,10 +1043,10 @@ uint32_t KeyCell::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t KeyCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t KCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("KeyCell");
+  xfer += oprot->writeStructBegin("KCell");
 
   xfer += oprot->writeFieldBegin("c", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->c);
@@ -1066,7 +1066,7 @@ uint32_t KeyCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-void swap(KeyCell &a, KeyCell &b) {
+void swap(KCell &a, KCell &b) {
   using ::std::swap;
   swap(a.c, b.c);
   swap(a.ts, b.ts);
@@ -1074,22 +1074,22 @@ void swap(KeyCell &a, KeyCell &b) {
   swap(a.__isset, b.__isset);
 }
 
-KeyCell::KeyCell(const KeyCell& other22) {
+KCell::KCell(const KCell& other22) {
   c = other22.c;
   ts = other22.ts;
   v = other22.v;
   __isset = other22.__isset;
 }
-KeyCell& KeyCell::operator=(const KeyCell& other23) {
+KCell& KCell::operator=(const KCell& other23) {
   c = other23.c;
   ts = other23.ts;
   v = other23.v;
   __isset = other23.__isset;
   return *this;
 }
-void KeyCell::printTo(std::ostream& out) const {
+void KCell::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "KeyCell(";
+  out << "KCell(";
   out << "c=" << to_string(c);
   out << ", " << "ts=" << to_string(ts);
   out << ", " << "v="; (__isset.v ? (out << to_string(v)) : (out << "<null>"));
@@ -1097,25 +1097,25 @@ void KeyCell::printTo(std::ostream& out) const {
 }
 
 
-KeyCells::~KeyCells() noexcept {
+kCells::~kCells() noexcept {
 }
 
 
-void KeyCells::__set_k(const Key& val) {
+void kCells::__set_k(const Key& val) {
   this->k = val;
 }
 
-void KeyCells::__set_cells(const std::vector<KeyCell> & val) {
+void kCells::__set_cells(const std::vector<KCell> & val) {
   this->cells = val;
 }
-std::ostream& operator<<(std::ostream& out, const KeyCells& obj)
+std::ostream& operator<<(std::ostream& out, const kCells& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t KeyCells::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t kCells::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1188,10 +1188,10 @@ uint32_t KeyCells::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t KeyCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t kCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("KeyCells");
+  xfer += oprot->writeStructBegin("kCells");
 
   xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -1208,7 +1208,7 @@ uint32_t KeyCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cells.size()));
-    std::vector<KeyCell> ::const_iterator _iter35;
+    std::vector<KCell> ::const_iterator _iter35;
     for (_iter35 = this->cells.begin(); _iter35 != this->cells.end(); ++_iter35)
     {
       xfer += (*_iter35).write(oprot);
@@ -1222,57 +1222,57 @@ uint32_t KeyCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-void swap(KeyCells &a, KeyCells &b) {
+void swap(kCells &a, kCells &b) {
   using ::std::swap;
   swap(a.k, b.k);
   swap(a.cells, b.cells);
   swap(a.__isset, b.__isset);
 }
 
-KeyCells::KeyCells(const KeyCells& other36) {
+kCells::kCells(const kCells& other36) {
   k = other36.k;
   cells = other36.cells;
   __isset = other36.__isset;
 }
-KeyCells& KeyCells::operator=(const KeyCells& other37) {
+kCells& kCells::operator=(const kCells& other37) {
   k = other37.k;
   cells = other37.cells;
   __isset = other37.__isset;
   return *this;
 }
-void KeyCells::printTo(std::ostream& out) const {
+void kCells::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "KeyCells(";
+  out << "kCells(";
   out << "k=" << to_string(k);
   out << ", " << "cells=" << to_string(cells);
   out << ")";
 }
 
 
-FractionCell::~FractionCell() noexcept {
+FCell::~FCell() noexcept {
 }
 
 
-void FractionCell::__set_c(const std::string& val) {
+void FCell::__set_c(const std::string& val) {
   this->c = val;
 }
 
-void FractionCell::__set_ts(const int64_t val) {
+void FCell::__set_ts(const int64_t val) {
   this->ts = val;
 }
 
-void FractionCell::__set_v(const std::string& val) {
+void FCell::__set_v(const std::string& val) {
   this->v = val;
 __isset.v = true;
 }
-std::ostream& operator<<(std::ostream& out, const FractionCell& obj)
+std::ostream& operator<<(std::ostream& out, const FCell& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t FractionCell::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t FCell::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1329,10 +1329,10 @@ uint32_t FractionCell::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t FractionCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t FCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("FractionCell");
+  xfer += oprot->writeStructBegin("FCell");
 
   xfer += oprot->writeFieldBegin("c", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->c);
@@ -1352,7 +1352,7 @@ uint32_t FractionCell::write(::apache::thrift::protocol::TProtocol* oprot) const
   return xfer;
 }
 
-void swap(FractionCell &a, FractionCell &b) {
+void swap(FCell &a, FCell &b) {
   using ::std::swap;
   swap(a.c, b.c);
   swap(a.ts, b.ts);
@@ -1360,22 +1360,22 @@ void swap(FractionCell &a, FractionCell &b) {
   swap(a.__isset, b.__isset);
 }
 
-FractionCell::FractionCell(const FractionCell& other38) {
+FCell::FCell(const FCell& other38) {
   c = other38.c;
   ts = other38.ts;
   v = other38.v;
   __isset = other38.__isset;
 }
-FractionCell& FractionCell::operator=(const FractionCell& other39) {
+FCell& FCell::operator=(const FCell& other39) {
   c = other39.c;
   ts = other39.ts;
   v = other39.v;
   __isset = other39.__isset;
   return *this;
 }
-void FractionCell::printTo(std::ostream& out) const {
+void FCell::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "FractionCell(";
+  out << "FCell(";
   out << "c=" << to_string(c);
   out << ", " << "ts=" << to_string(ts);
   out << ", " << "v="; (__isset.v ? (out << to_string(v)) : (out << "<null>"));
@@ -1383,26 +1383,26 @@ void FractionCell::printTo(std::ostream& out) const {
 }
 
 
-FractionCells::~FractionCells() noexcept {
+FCells::~FCells() noexcept {
 }
 
 
-void FractionCells::__set_f(const std::map<std::string, FractionCells> & val) {
+void FCells::__set_f(const std::map<std::string, FCells> & val) {
   this->f = val;
 }
 
-void FractionCells::__set_cells(const std::vector<FractionCell> & val) {
+void FCells::__set_cells(const std::vector<FCell> & val) {
   this->cells = val;
 __isset.cells = true;
 }
-std::ostream& operator<<(std::ostream& out, const FractionCells& obj)
+std::ostream& operator<<(std::ostream& out, const FCells& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t FractionCells::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t FCells::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1436,7 +1436,7 @@ uint32_t FractionCells::read(::apache::thrift::protocol::TProtocol* iprot) {
             {
               std::string _key45;
               xfer += iprot->readBinary(_key45);
-              FractionCells& _val46 = this->f[_key45];
+              FCells& _val46 = this->f[_key45];
               xfer += _val46.read(iprot);
             }
             xfer += iprot->readMapEnd();
@@ -1478,15 +1478,15 @@ uint32_t FractionCells::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t FractionCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t FCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("FractionCells");
+  xfer += oprot->writeStructBegin("FCells");
 
   xfer += oprot->writeFieldBegin("f", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->f.size()));
-    std::map<std::string, FractionCells> ::const_iterator _iter52;
+    std::map<std::string, FCells> ::const_iterator _iter52;
     for (_iter52 = this->f.begin(); _iter52 != this->f.end(); ++_iter52)
     {
       xfer += oprot->writeBinary(_iter52->first);
@@ -1500,7 +1500,7 @@ uint32_t FractionCells::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cells.size()));
-      std::vector<FractionCell> ::const_iterator _iter53;
+      std::vector<FCell> ::const_iterator _iter53;
       for (_iter53 = this->cells.begin(); _iter53 != this->cells.end(); ++_iter53)
       {
         xfer += (*_iter53).write(oprot);
@@ -1514,27 +1514,27 @@ uint32_t FractionCells::write(::apache::thrift::protocol::TProtocol* oprot) cons
   return xfer;
 }
 
-void swap(FractionCells &a, FractionCells &b) {
+void swap(FCells &a, FCells &b) {
   using ::std::swap;
   swap(a.f, b.f);
   swap(a.cells, b.cells);
   swap(a.__isset, b.__isset);
 }
 
-FractionCells::FractionCells(const FractionCells& other54) {
+FCells::FCells(const FCells& other54) {
   f = other54.f;
   cells = other54.cells;
   __isset = other54.__isset;
 }
-FractionCells& FractionCells::operator=(const FractionCells& other55) {
+FCells& FCells::operator=(const FCells& other55) {
   f = other55.f;
   cells = other55.cells;
   __isset = other55.__isset;
   return *this;
 }
-void FractionCells::printTo(std::ostream& out) const {
+void FCells::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "FractionCells(";
+  out << "FCells(";
   out << "f=" << to_string(f);
   out << ", " << "cells="; (__isset.cells ? (out << to_string(cells)) : (out << "<null>"));
   out << ")";

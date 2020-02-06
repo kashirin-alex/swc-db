@@ -91,7 +91,7 @@ int run() {
       /* 
       protocol->setRecurisionLimit(...);  
       set the DEFAULT_RECURSION_LIMIT
-        FractionCells in sql_select_fraction 
+        FCells in sql_select_rslt_on_fraction 
           requirment depends on the length/depth of key-fractions
       */
       auto server = std::make_shared<thrift::server::TThreadPoolServer>(

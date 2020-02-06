@@ -70,11 +70,11 @@ void sql_list_columns_all(Client& client) {
   }
 }
 
-void sql_select_map(Client& client) {
-  std::cout << std::endl << "test: sql_select_map: " << std::endl;
+void sql_select_rslt_on_column(Client& client) {
+  std::cout << std::endl << "test: sql_select_rslt_on_column: " << std::endl;
 
-  ColumnsMapCells columns;
-  client.sql_select_map(
+  CCells columns;
+  client.sql_select_rslt_on_column(
     columns, 
     "select where col(col-test-1)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
   );
@@ -90,11 +90,11 @@ void sql_select_map(Client& client) {
   }
 }
 
-void sql_select_list(Client& client) {
-  std::cout << std::endl << "test: sql_select_list: " << std::endl;
+void sql_select(Client& client) {
+  std::cout << std::endl << "test: sql_select: " << std::endl;
 
   Cells cells;
-  client.sql_select_list(
+  client.sql_select(
     cells, 
     "select where col(col-test-1)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
   );
@@ -106,11 +106,11 @@ void sql_select_list(Client& client) {
   }
 }
 
-void sql_select_keys(Client& client) {
-  std::cout << std::endl << "test: sql_select_keys: " << std::endl;
+void sql_select_rslt_on_key(Client& client) {
+  std::cout << std::endl << "test: sql_select_rslt_on_key: " << std::endl;
 
-  KeysCells keys_cells;
-  client.sql_select_keys(
+  KCells keys_cells;
+  client.sql_select_rslt_on_key(
     keys_cells, 
     "select where" 
     "col(col-test-1)=(cells=(offset=200000 max_versions=1 limit=10 ONLY_KEYS))"
@@ -125,7 +125,7 @@ void sql_select_keys(Client& client) {
   }
 }
 
-void printOut(FractionCells* fcells, Key& key) {
+void printOut(FCells* fcells, Key& key) {
   for(auto& f : fcells->f) {
     key.emplace_back(f.first);
     std::cout << "fraction='" << f.first << "'"
@@ -142,11 +142,11 @@ void printOut(FractionCells* fcells, Key& key) {
   }
 }
 
-void sql_select_fraction(Client& client) {
-  std::cout << std::endl << "test: sql_select_fraction: " << std::endl;
+void sql_select_rslt_on_fraction(Client& client) {
+  std::cout << std::endl << "test: sql_select_rslt_on_fraction: " << std::endl;
 
-  FractionCells fraction_cells;
-  client.sql_select_fraction(
+  FCells fraction_cells;
+  client.sql_select_rslt_on_fraction(
     fraction_cells, 
     "select where" 
     "col(col-test-1)=(cells=(offset=20280 max_versions=1 limit=52 ONLY_KEYS))"
@@ -176,10 +176,10 @@ int main() {
   Test::sql_list_columns_all(client);
   Test::sql_mng_and_list_column(client);
 
-  Test::sql_select_map(client);
-  Test::sql_select_list(client);
-  Test::sql_select_keys(client);
-  Test::sql_select_fraction(client);
+  Test::sql_select(client);
+  Test::sql_select_rslt_on_column(client);
+  Test::sql_select_rslt_on_key(client);
+  Test::sql_select_rslt_on_fraction(client);
 
   client.close();
 

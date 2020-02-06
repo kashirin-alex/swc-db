@@ -435,11 +435,11 @@ uint32_t Service_sql_list_columns_presult::read(::apache::thrift::protocol::TPro
 }
 
 
-Service_sql_select_list_args::~Service_sql_select_list_args() noexcept {
+Service_sql_select_args::~Service_sql_select_args() noexcept {
 }
 
 
-uint32_t Service_sql_select_list_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -480,10 +480,10 @@ uint32_t Service_sql_select_list_args::read(::apache::thrift::protocol::TProtoco
   return xfer;
 }
 
-uint32_t Service_sql_select_list_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_list_args");
+  xfer += oprot->writeStructBegin("Service_sql_select_args");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sql);
@@ -495,14 +495,14 @@ uint32_t Service_sql_select_list_args::write(::apache::thrift::protocol::TProtoc
 }
 
 
-Service_sql_select_list_pargs::~Service_sql_select_list_pargs() noexcept {
+Service_sql_select_pargs::~Service_sql_select_pargs() noexcept {
 }
 
 
-uint32_t Service_sql_select_list_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_list_pargs");
+  xfer += oprot->writeStructBegin("Service_sql_select_pargs");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sql)));
@@ -514,11 +514,11 @@ uint32_t Service_sql_select_list_pargs::write(::apache::thrift::protocol::TProto
 }
 
 
-Service_sql_select_list_result::~Service_sql_select_list_result() noexcept {
+Service_sql_select_result::~Service_sql_select_result() noexcept {
 }
 
 
-uint32_t Service_sql_select_list_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -579,11 +579,11 @@ uint32_t Service_sql_select_list_result::read(::apache::thrift::protocol::TProto
   return xfer;
 }
 
-uint32_t Service_sql_select_list_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("Service_sql_select_list_result");
+  xfer += oprot->writeStructBegin("Service_sql_select_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
@@ -608,11 +608,11 @@ uint32_t Service_sql_select_list_result::write(::apache::thrift::protocol::TProt
 }
 
 
-Service_sql_select_list_presult::~Service_sql_select_list_presult() noexcept {
+Service_sql_select_presult::~Service_sql_select_presult() noexcept {
 }
 
 
-uint32_t Service_sql_select_list_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -674,11 +674,11 @@ uint32_t Service_sql_select_list_presult::read(::apache::thrift::protocol::TProt
 }
 
 
-Service_sql_select_map_args::~Service_sql_select_map_args() noexcept {
+Service_sql_select_rslt_on_column_args::~Service_sql_select_rslt_on_column_args() noexcept {
 }
 
 
-uint32_t Service_sql_select_map_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_column_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -719,10 +719,10 @@ uint32_t Service_sql_select_map_args::read(::apache::thrift::protocol::TProtocol
   return xfer;
 }
 
-uint32_t Service_sql_select_map_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_column_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_map_args");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_column_args");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sql);
@@ -734,14 +734,14 @@ uint32_t Service_sql_select_map_args::write(::apache::thrift::protocol::TProtoco
 }
 
 
-Service_sql_select_map_pargs::~Service_sql_select_map_pargs() noexcept {
+Service_sql_select_rslt_on_column_pargs::~Service_sql_select_rslt_on_column_pargs() noexcept {
 }
 
 
-uint32_t Service_sql_select_map_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_column_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_map_pargs");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_column_pargs");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sql)));
@@ -753,11 +753,11 @@ uint32_t Service_sql_select_map_pargs::write(::apache::thrift::protocol::TProtoc
 }
 
 
-Service_sql_select_map_result::~Service_sql_select_map_result() noexcept {
+Service_sql_select_rslt_on_column_result::~Service_sql_select_rslt_on_column_result() noexcept {
 }
 
 
-uint32_t Service_sql_select_map_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_column_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -791,7 +791,7 @@ uint32_t Service_sql_select_map_result::read(::apache::thrift::protocol::TProtoc
             {
               std::string _key83;
               xfer += iprot->readString(_key83);
-              ColumnMapCells& _val84 = this->success[_key83];
+              ColCells& _val84 = this->success[_key83];
               {
                 _val84.clear();
                 uint32_t _size85;
@@ -833,23 +833,23 @@ uint32_t Service_sql_select_map_result::read(::apache::thrift::protocol::TProtoc
   return xfer;
 }
 
-uint32_t Service_sql_select_map_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_column_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("Service_sql_select_map_result");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_column_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, ColumnMapCells> ::const_iterator _iter90;
+      std::map<std::string, ColCells> ::const_iterator _iter90;
       for (_iter90 = this->success.begin(); _iter90 != this->success.end(); ++_iter90)
       {
         xfer += oprot->writeString(_iter90->first);
         {
           xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter90->second.size()));
-          std::vector<ColumnMapCell> ::const_iterator _iter91;
+          std::vector<CCell> ::const_iterator _iter91;
           for (_iter91 = _iter90->second.begin(); _iter91 != _iter90->second.end(); ++_iter91)
           {
             xfer += (*_iter91).write(oprot);
@@ -871,11 +871,11 @@ uint32_t Service_sql_select_map_result::write(::apache::thrift::protocol::TProto
 }
 
 
-Service_sql_select_map_presult::~Service_sql_select_map_presult() noexcept {
+Service_sql_select_rslt_on_column_presult::~Service_sql_select_rslt_on_column_presult() noexcept {
 }
 
 
-uint32_t Service_sql_select_map_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_column_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -909,7 +909,7 @@ uint32_t Service_sql_select_map_presult::read(::apache::thrift::protocol::TProto
             {
               std::string _key97;
               xfer += iprot->readString(_key97);
-              ColumnMapCells& _val98 = (*(this->success))[_key97];
+              ColCells& _val98 = (*(this->success))[_key97];
               {
                 _val98.clear();
                 uint32_t _size99;
@@ -952,11 +952,11 @@ uint32_t Service_sql_select_map_presult::read(::apache::thrift::protocol::TProto
 }
 
 
-Service_sql_select_keys_args::~Service_sql_select_keys_args() noexcept {
+Service_sql_select_rslt_on_key_args::~Service_sql_select_rslt_on_key_args() noexcept {
 }
 
 
-uint32_t Service_sql_select_keys_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_key_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -997,10 +997,10 @@ uint32_t Service_sql_select_keys_args::read(::apache::thrift::protocol::TProtoco
   return xfer;
 }
 
-uint32_t Service_sql_select_keys_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_key_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_keys_args");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_key_args");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sql);
@@ -1012,14 +1012,14 @@ uint32_t Service_sql_select_keys_args::write(::apache::thrift::protocol::TProtoc
 }
 
 
-Service_sql_select_keys_pargs::~Service_sql_select_keys_pargs() noexcept {
+Service_sql_select_rslt_on_key_pargs::~Service_sql_select_rslt_on_key_pargs() noexcept {
 }
 
 
-uint32_t Service_sql_select_keys_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_key_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_keys_pargs");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_key_pargs");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sql)));
@@ -1031,11 +1031,11 @@ uint32_t Service_sql_select_keys_pargs::write(::apache::thrift::protocol::TProto
 }
 
 
-Service_sql_select_keys_result::~Service_sql_select_keys_result() noexcept {
+Service_sql_select_rslt_on_key_result::~Service_sql_select_rslt_on_key_result() noexcept {
 }
 
 
-uint32_t Service_sql_select_keys_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_key_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1096,17 +1096,17 @@ uint32_t Service_sql_select_keys_result::read(::apache::thrift::protocol::TProto
   return xfer;
 }
 
-uint32_t Service_sql_select_keys_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_key_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("Service_sql_select_keys_result");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_key_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<KeyCells> ::const_iterator _iter109;
+      std::vector<kCells> ::const_iterator _iter109;
       for (_iter109 = this->success.begin(); _iter109 != this->success.end(); ++_iter109)
       {
         xfer += (*_iter109).write(oprot);
@@ -1125,11 +1125,11 @@ uint32_t Service_sql_select_keys_result::write(::apache::thrift::protocol::TProt
 }
 
 
-Service_sql_select_keys_presult::~Service_sql_select_keys_presult() noexcept {
+Service_sql_select_rslt_on_key_presult::~Service_sql_select_rslt_on_key_presult() noexcept {
 }
 
 
-uint32_t Service_sql_select_keys_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_key_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1191,11 +1191,11 @@ uint32_t Service_sql_select_keys_presult::read(::apache::thrift::protocol::TProt
 }
 
 
-Service_sql_select_fraction_args::~Service_sql_select_fraction_args() noexcept {
+Service_sql_select_rslt_on_fraction_args::~Service_sql_select_rslt_on_fraction_args() noexcept {
 }
 
 
-uint32_t Service_sql_select_fraction_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_fraction_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1236,10 +1236,10 @@ uint32_t Service_sql_select_fraction_args::read(::apache::thrift::protocol::TPro
   return xfer;
 }
 
-uint32_t Service_sql_select_fraction_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_fraction_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_fraction_args");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_fraction_args");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sql);
@@ -1251,14 +1251,14 @@ uint32_t Service_sql_select_fraction_args::write(::apache::thrift::protocol::TPr
 }
 
 
-Service_sql_select_fraction_pargs::~Service_sql_select_fraction_pargs() noexcept {
+Service_sql_select_rslt_on_fraction_pargs::~Service_sql_select_rslt_on_fraction_pargs() noexcept {
 }
 
 
-uint32_t Service_sql_select_fraction_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_fraction_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_select_fraction_pargs");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_fraction_pargs");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sql)));
@@ -1270,11 +1270,11 @@ uint32_t Service_sql_select_fraction_pargs::write(::apache::thrift::protocol::TP
 }
 
 
-Service_sql_select_fraction_result::~Service_sql_select_fraction_result() noexcept {
+Service_sql_select_rslt_on_fraction_result::~Service_sql_select_rslt_on_fraction_result() noexcept {
 }
 
 
-uint32_t Service_sql_select_fraction_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_fraction_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1323,11 +1323,11 @@ uint32_t Service_sql_select_fraction_result::read(::apache::thrift::protocol::TP
   return xfer;
 }
 
-uint32_t Service_sql_select_fraction_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_select_rslt_on_fraction_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("Service_sql_select_fraction_result");
+  xfer += oprot->writeStructBegin("Service_sql_select_rslt_on_fraction_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -1344,11 +1344,11 @@ uint32_t Service_sql_select_fraction_result::write(::apache::thrift::protocol::T
 }
 
 
-Service_sql_select_fraction_presult::~Service_sql_select_fraction_presult() noexcept {
+Service_sql_select_rslt_on_fraction_presult::~Service_sql_select_rslt_on_fraction_presult() noexcept {
 }
 
 
-uint32_t Service_sql_select_fraction_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_select_rslt_on_fraction_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1514,18 +1514,18 @@ void ServiceClient::recv_sql_list_columns(Schemas& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_list_columns failed: unknown result");
 }
 
-void ServiceClient::sql_select_list(Cells& _return, const std::string& sql)
+void ServiceClient::sql_select(Cells& _return, const std::string& sql)
 {
-  send_sql_select_list(sql);
-  recv_sql_select_list(_return);
+  send_sql_select(sql);
+  recv_sql_select(_return);
 }
 
-void ServiceClient::send_sql_select_list(const std::string& sql)
+void ServiceClient::send_sql_select(const std::string& sql)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("sql_select_list", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_list_pargs args;
+  Service_sql_select_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -1534,7 +1534,7 @@ void ServiceClient::send_sql_select_list(const std::string& sql)
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_sql_select_list(Cells& _return)
+void ServiceClient::recv_sql_select(Cells& _return)
 {
 
   int32_t rseqid = 0;
@@ -1554,12 +1554,12 @@ void ServiceClient::recv_sql_select_list(Cells& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("sql_select_list") != 0) {
+  if (fname.compare("sql_select") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  Service_sql_select_list_presult result;
+  Service_sql_select_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -1572,21 +1572,21 @@ void ServiceClient::recv_sql_select_list(Cells& _return)
   if (result.__isset.e) {
     throw result.e;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_list failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select failed: unknown result");
 }
 
-void ServiceClient::sql_select_map(ColumnsMapCells& _return, const std::string& sql)
+void ServiceClient::sql_select_rslt_on_column(CCells& _return, const std::string& sql)
 {
-  send_sql_select_map(sql);
-  recv_sql_select_map(_return);
+  send_sql_select_rslt_on_column(sql);
+  recv_sql_select_rslt_on_column(_return);
 }
 
-void ServiceClient::send_sql_select_map(const std::string& sql)
+void ServiceClient::send_sql_select_rslt_on_column(const std::string& sql)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("sql_select_map", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_column", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_map_pargs args;
+  Service_sql_select_rslt_on_column_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -1595,7 +1595,7 @@ void ServiceClient::send_sql_select_map(const std::string& sql)
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_sql_select_map(ColumnsMapCells& _return)
+void ServiceClient::recv_sql_select_rslt_on_column(CCells& _return)
 {
 
   int32_t rseqid = 0;
@@ -1615,12 +1615,12 @@ void ServiceClient::recv_sql_select_map(ColumnsMapCells& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("sql_select_map") != 0) {
+  if (fname.compare("sql_select_rslt_on_column") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  Service_sql_select_map_presult result;
+  Service_sql_select_rslt_on_column_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -1633,21 +1633,21 @@ void ServiceClient::recv_sql_select_map(ColumnsMapCells& _return)
   if (result.__isset.e) {
     throw result.e;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_map failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_column failed: unknown result");
 }
 
-void ServiceClient::sql_select_keys(KeysCells& _return, const std::string& sql)
+void ServiceClient::sql_select_rslt_on_key(KCells& _return, const std::string& sql)
 {
-  send_sql_select_keys(sql);
-  recv_sql_select_keys(_return);
+  send_sql_select_rslt_on_key(sql);
+  recv_sql_select_rslt_on_key(_return);
 }
 
-void ServiceClient::send_sql_select_keys(const std::string& sql)
+void ServiceClient::send_sql_select_rslt_on_key(const std::string& sql)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("sql_select_keys", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_key", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_keys_pargs args;
+  Service_sql_select_rslt_on_key_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -1656,7 +1656,7 @@ void ServiceClient::send_sql_select_keys(const std::string& sql)
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_sql_select_keys(KeysCells& _return)
+void ServiceClient::recv_sql_select_rslt_on_key(KCells& _return)
 {
 
   int32_t rseqid = 0;
@@ -1676,12 +1676,12 @@ void ServiceClient::recv_sql_select_keys(KeysCells& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("sql_select_keys") != 0) {
+  if (fname.compare("sql_select_rslt_on_key") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  Service_sql_select_keys_presult result;
+  Service_sql_select_rslt_on_key_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -1694,21 +1694,21 @@ void ServiceClient::recv_sql_select_keys(KeysCells& _return)
   if (result.__isset.e) {
     throw result.e;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_keys failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_key failed: unknown result");
 }
 
-void ServiceClient::sql_select_fraction(FractionCells& _return, const std::string& sql)
+void ServiceClient::sql_select_rslt_on_fraction(FCells& _return, const std::string& sql)
 {
-  send_sql_select_fraction(sql);
-  recv_sql_select_fraction(_return);
+  send_sql_select_rslt_on_fraction(sql);
+  recv_sql_select_rslt_on_fraction(_return);
 }
 
-void ServiceClient::send_sql_select_fraction(const std::string& sql)
+void ServiceClient::send_sql_select_rslt_on_fraction(const std::string& sql)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("sql_select_fraction", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_fraction", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_fraction_pargs args;
+  Service_sql_select_rslt_on_fraction_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -1717,7 +1717,7 @@ void ServiceClient::send_sql_select_fraction(const std::string& sql)
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_sql_select_fraction(FractionCells& _return)
+void ServiceClient::recv_sql_select_rslt_on_fraction(FCells& _return)
 {
 
   int32_t rseqid = 0;
@@ -1737,12 +1737,12 @@ void ServiceClient::recv_sql_select_fraction(FractionCells& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("sql_select_fraction") != 0) {
+  if (fname.compare("sql_select_rslt_on_fraction") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  Service_sql_select_fraction_presult result;
+  Service_sql_select_rslt_on_fraction_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -1755,7 +1755,7 @@ void ServiceClient::recv_sql_select_fraction(FractionCells& _return)
   if (result.__isset.e) {
     throw result.e;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_fraction failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_fraction failed: unknown result");
 }
 
 bool ServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -1890,41 +1890,41 @@ void ServiceProcessor::process_sql_list_columns(int32_t seqid, ::apache::thrift:
   }
 }
 
-void ServiceProcessor::process_sql_select_list(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ServiceProcessor::process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("Service.sql_select_list", callContext);
+    ctx = this->eventHandler_->getContext("Service.sql_select", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_list");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "Service.sql_select_list");
+    this->eventHandler_->preRead(ctx, "Service.sql_select");
   }
 
-  Service_sql_select_list_args args;
+  Service_sql_select_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "Service.sql_select_list", bytes);
+    this->eventHandler_->postRead(ctx, "Service.sql_select", bytes);
   }
 
-  Service_sql_select_list_result result;
+  Service_sql_select_result result;
   try {
-    iface_->sql_select_list(result.success, args.sql);
+    iface_->sql_select(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
     result.e = e;
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "Service.sql_select_list");
+      this->eventHandler_->handlerError(ctx, "Service.sql_select");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("sql_select_list", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("sql_select", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -1933,55 +1933,55 @@ void ServiceProcessor::process_sql_select_list(int32_t seqid, ::apache::thrift::
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "Service.sql_select_list");
+    this->eventHandler_->preWrite(ctx, "Service.sql_select");
   }
 
-  oprot->writeMessageBegin("sql_select_list", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("sql_select", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "Service.sql_select_list", bytes);
+    this->eventHandler_->postWrite(ctx, "Service.sql_select", bytes);
   }
 }
 
-void ServiceProcessor::process_sql_select_map(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ServiceProcessor::process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("Service.sql_select_map", callContext);
+    ctx = this->eventHandler_->getContext("Service.sql_select_rslt_on_column", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_map");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_rslt_on_column");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "Service.sql_select_map");
+    this->eventHandler_->preRead(ctx, "Service.sql_select_rslt_on_column");
   }
 
-  Service_sql_select_map_args args;
+  Service_sql_select_rslt_on_column_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "Service.sql_select_map", bytes);
+    this->eventHandler_->postRead(ctx, "Service.sql_select_rslt_on_column", bytes);
   }
 
-  Service_sql_select_map_result result;
+  Service_sql_select_rslt_on_column_result result;
   try {
-    iface_->sql_select_map(result.success, args.sql);
+    iface_->sql_select_rslt_on_column(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
     result.e = e;
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "Service.sql_select_map");
+      this->eventHandler_->handlerError(ctx, "Service.sql_select_rslt_on_column");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("sql_select_map", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("sql_select_rslt_on_column", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -1990,55 +1990,55 @@ void ServiceProcessor::process_sql_select_map(int32_t seqid, ::apache::thrift::p
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "Service.sql_select_map");
+    this->eventHandler_->preWrite(ctx, "Service.sql_select_rslt_on_column");
   }
 
-  oprot->writeMessageBegin("sql_select_map", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("sql_select_rslt_on_column", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "Service.sql_select_map", bytes);
+    this->eventHandler_->postWrite(ctx, "Service.sql_select_rslt_on_column", bytes);
   }
 }
 
-void ServiceProcessor::process_sql_select_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ServiceProcessor::process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("Service.sql_select_keys", callContext);
+    ctx = this->eventHandler_->getContext("Service.sql_select_rslt_on_key", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_keys");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_rslt_on_key");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "Service.sql_select_keys");
+    this->eventHandler_->preRead(ctx, "Service.sql_select_rslt_on_key");
   }
 
-  Service_sql_select_keys_args args;
+  Service_sql_select_rslt_on_key_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "Service.sql_select_keys", bytes);
+    this->eventHandler_->postRead(ctx, "Service.sql_select_rslt_on_key", bytes);
   }
 
-  Service_sql_select_keys_result result;
+  Service_sql_select_rslt_on_key_result result;
   try {
-    iface_->sql_select_keys(result.success, args.sql);
+    iface_->sql_select_rslt_on_key(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
     result.e = e;
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "Service.sql_select_keys");
+      this->eventHandler_->handlerError(ctx, "Service.sql_select_rslt_on_key");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("sql_select_keys", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("sql_select_rslt_on_key", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -2047,55 +2047,55 @@ void ServiceProcessor::process_sql_select_keys(int32_t seqid, ::apache::thrift::
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "Service.sql_select_keys");
+    this->eventHandler_->preWrite(ctx, "Service.sql_select_rslt_on_key");
   }
 
-  oprot->writeMessageBegin("sql_select_keys", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("sql_select_rslt_on_key", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "Service.sql_select_keys", bytes);
+    this->eventHandler_->postWrite(ctx, "Service.sql_select_rslt_on_key", bytes);
   }
 }
 
-void ServiceProcessor::process_sql_select_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ServiceProcessor::process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("Service.sql_select_fraction", callContext);
+    ctx = this->eventHandler_->getContext("Service.sql_select_rslt_on_fraction", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_fraction");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_select_rslt_on_fraction");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "Service.sql_select_fraction");
+    this->eventHandler_->preRead(ctx, "Service.sql_select_rslt_on_fraction");
   }
 
-  Service_sql_select_fraction_args args;
+  Service_sql_select_rslt_on_fraction_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "Service.sql_select_fraction", bytes);
+    this->eventHandler_->postRead(ctx, "Service.sql_select_rslt_on_fraction", bytes);
   }
 
-  Service_sql_select_fraction_result result;
+  Service_sql_select_rslt_on_fraction_result result;
   try {
-    iface_->sql_select_fraction(result.success, args.sql);
+    iface_->sql_select_rslt_on_fraction(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
     result.e = e;
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "Service.sql_select_fraction");
+      this->eventHandler_->handlerError(ctx, "Service.sql_select_rslt_on_fraction");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("sql_select_fraction", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("sql_select_rslt_on_fraction", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -2104,17 +2104,17 @@ void ServiceProcessor::process_sql_select_fraction(int32_t seqid, ::apache::thri
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "Service.sql_select_fraction");
+    this->eventHandler_->preWrite(ctx, "Service.sql_select_rslt_on_fraction");
   }
 
-  oprot->writeMessageBegin("sql_select_fraction", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("sql_select_rslt_on_fraction", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "Service.sql_select_fraction", bytes);
+    this->eventHandler_->postWrite(ctx, "Service.sql_select_rslt_on_fraction", bytes);
   }
 }
 
@@ -2295,19 +2295,19 @@ void ServiceConcurrentClient::recv_sql_list_columns(Schemas& _return, const int3
   } // end while(true)
 }
 
-void ServiceConcurrentClient::sql_select_list(Cells& _return, const std::string& sql)
+void ServiceConcurrentClient::sql_select(Cells& _return, const std::string& sql)
 {
-  int32_t seqid = send_sql_select_list(sql);
-  recv_sql_select_list(_return, seqid);
+  int32_t seqid = send_sql_select(sql);
+  recv_sql_select(_return, seqid);
 }
 
-int32_t ServiceConcurrentClient::send_sql_select_list(const std::string& sql)
+int32_t ServiceConcurrentClient::send_sql_select(const std::string& sql)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("sql_select_list", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_list_pargs args;
+  Service_sql_select_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -2319,7 +2319,7 @@ int32_t ServiceConcurrentClient::send_sql_select_list(const std::string& sql)
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_sql_select_list(Cells& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_sql_select(Cells& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -2348,7 +2348,7 @@ void ServiceConcurrentClient::recv_sql_select_list(Cells& _return, const int32_t
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("sql_select_list") != 0) {
+      if (fname.compare("sql_select") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -2357,7 +2357,7 @@ void ServiceConcurrentClient::recv_sql_select_list(Cells& _return, const int32_t
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      Service_sql_select_list_presult result;
+      Service_sql_select_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -2373,7 +2373,7 @@ void ServiceConcurrentClient::recv_sql_select_list(Cells& _return, const int32_t
         throw result.e;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_list failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);
@@ -2383,19 +2383,19 @@ void ServiceConcurrentClient::recv_sql_select_list(Cells& _return, const int32_t
   } // end while(true)
 }
 
-void ServiceConcurrentClient::sql_select_map(ColumnsMapCells& _return, const std::string& sql)
+void ServiceConcurrentClient::sql_select_rslt_on_column(CCells& _return, const std::string& sql)
 {
-  int32_t seqid = send_sql_select_map(sql);
-  recv_sql_select_map(_return, seqid);
+  int32_t seqid = send_sql_select_rslt_on_column(sql);
+  recv_sql_select_rslt_on_column(_return, seqid);
 }
 
-int32_t ServiceConcurrentClient::send_sql_select_map(const std::string& sql)
+int32_t ServiceConcurrentClient::send_sql_select_rslt_on_column(const std::string& sql)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("sql_select_map", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_column", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_map_pargs args;
+  Service_sql_select_rslt_on_column_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -2407,7 +2407,7 @@ int32_t ServiceConcurrentClient::send_sql_select_map(const std::string& sql)
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_sql_select_map(ColumnsMapCells& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_sql_select_rslt_on_column(CCells& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -2436,7 +2436,7 @@ void ServiceConcurrentClient::recv_sql_select_map(ColumnsMapCells& _return, cons
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("sql_select_map") != 0) {
+      if (fname.compare("sql_select_rslt_on_column") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -2445,7 +2445,7 @@ void ServiceConcurrentClient::recv_sql_select_map(ColumnsMapCells& _return, cons
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      Service_sql_select_map_presult result;
+      Service_sql_select_rslt_on_column_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -2461,7 +2461,7 @@ void ServiceConcurrentClient::recv_sql_select_map(ColumnsMapCells& _return, cons
         throw result.e;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_map failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_column failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);
@@ -2471,19 +2471,19 @@ void ServiceConcurrentClient::recv_sql_select_map(ColumnsMapCells& _return, cons
   } // end while(true)
 }
 
-void ServiceConcurrentClient::sql_select_keys(KeysCells& _return, const std::string& sql)
+void ServiceConcurrentClient::sql_select_rslt_on_key(KCells& _return, const std::string& sql)
 {
-  int32_t seqid = send_sql_select_keys(sql);
-  recv_sql_select_keys(_return, seqid);
+  int32_t seqid = send_sql_select_rslt_on_key(sql);
+  recv_sql_select_rslt_on_key(_return, seqid);
 }
 
-int32_t ServiceConcurrentClient::send_sql_select_keys(const std::string& sql)
+int32_t ServiceConcurrentClient::send_sql_select_rslt_on_key(const std::string& sql)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("sql_select_keys", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_key", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_keys_pargs args;
+  Service_sql_select_rslt_on_key_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -2495,7 +2495,7 @@ int32_t ServiceConcurrentClient::send_sql_select_keys(const std::string& sql)
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_sql_select_keys(KeysCells& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_sql_select_rslt_on_key(KCells& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -2524,7 +2524,7 @@ void ServiceConcurrentClient::recv_sql_select_keys(KeysCells& _return, const int
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("sql_select_keys") != 0) {
+      if (fname.compare("sql_select_rslt_on_key") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -2533,7 +2533,7 @@ void ServiceConcurrentClient::recv_sql_select_keys(KeysCells& _return, const int
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      Service_sql_select_keys_presult result;
+      Service_sql_select_rslt_on_key_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -2549,7 +2549,7 @@ void ServiceConcurrentClient::recv_sql_select_keys(KeysCells& _return, const int
         throw result.e;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_keys failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_key failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);
@@ -2559,19 +2559,19 @@ void ServiceConcurrentClient::recv_sql_select_keys(KeysCells& _return, const int
   } // end while(true)
 }
 
-void ServiceConcurrentClient::sql_select_fraction(FractionCells& _return, const std::string& sql)
+void ServiceConcurrentClient::sql_select_rslt_on_fraction(FCells& _return, const std::string& sql)
 {
-  int32_t seqid = send_sql_select_fraction(sql);
-  recv_sql_select_fraction(_return, seqid);
+  int32_t seqid = send_sql_select_rslt_on_fraction(sql);
+  recv_sql_select_rslt_on_fraction(_return, seqid);
 }
 
-int32_t ServiceConcurrentClient::send_sql_select_fraction(const std::string& sql)
+int32_t ServiceConcurrentClient::send_sql_select_rslt_on_fraction(const std::string& sql)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("sql_select_fraction", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_select_rslt_on_fraction", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_select_fraction_pargs args;
+  Service_sql_select_rslt_on_fraction_pargs args;
   args.sql = &sql;
   args.write(oprot_);
 
@@ -2583,7 +2583,7 @@ int32_t ServiceConcurrentClient::send_sql_select_fraction(const std::string& sql
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_sql_select_fraction(FractionCells& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_sql_select_rslt_on_fraction(FCells& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -2612,7 +2612,7 @@ void ServiceConcurrentClient::recv_sql_select_fraction(FractionCells& _return, c
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("sql_select_fraction") != 0) {
+      if (fname.compare("sql_select_rslt_on_fraction") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -2621,7 +2621,7 @@ void ServiceConcurrentClient::recv_sql_select_fraction(FractionCells& _return, c
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      Service_sql_select_fraction_presult result;
+      Service_sql_select_rslt_on_fraction_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -2637,7 +2637,7 @@ void ServiceConcurrentClient::recv_sql_select_fraction(FractionCells& _return, c
         throw result.e;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_fraction failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_fraction failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

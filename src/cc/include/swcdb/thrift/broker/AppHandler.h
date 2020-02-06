@@ -128,7 +128,7 @@ class AppHandler : virtual public BrokerIf {
     return req;
   }
 
-  void sql_select_list(Cells& _return, const std::string& sql) {
+  void sql_select(Cells& _return, const std::string& sql) {
     auto req = sync_select(sql);
     
     int err = Error::OK;
@@ -169,7 +169,7 @@ class AppHandler : virtual public BrokerIf {
     }                            
   }
 
-  void sql_select_map(ColumnsMapCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
     auto req = sync_select(sql);
 
     int err = Error::OK;
@@ -185,7 +185,7 @@ class AppHandler : virtual public BrokerIf {
 
   static void process_results(
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
-          bool with_value, ColumnsMapCells& _return) {
+          bool with_value, CCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
     for(auto cid : result->get_cids()) {
@@ -212,7 +212,7 @@ class AppHandler : virtual public BrokerIf {
     }
   }
 
-  void sql_select_keys(KeysCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
     auto req = sync_select(sql);
     
     int err = Error::OK;
@@ -228,7 +228,7 @@ class AppHandler : virtual public BrokerIf {
 
   static void process_results(
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
-          bool with_value, KeysCells& _return) {
+          bool with_value, KCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
     for(auto cid : result->get_cids()) {
@@ -241,7 +241,7 @@ class AppHandler : virtual public BrokerIf {
         return;
       for(auto& dbcell : vec.cells) {
         auto it = std::find_if(_return.begin(), _return.end(), 
-                              [dbcell](const KeyCells& key_cells)
+                              [dbcell](const kCells& key_cells)
                               {return dbcell->key.equal(key_cells.k);});
         if(it == _return.end()) {
           _return.emplace_back();
@@ -260,7 +260,7 @@ class AppHandler : virtual public BrokerIf {
     }
   }
 
-  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
     auto req = sync_select(sql);
     
     int err = Error::OK;
@@ -276,7 +276,7 @@ class AppHandler : virtual public BrokerIf {
 
   static void process_results(
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
-          bool with_value, FractionCells& _return) {
+          bool with_value, FCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
     std::vector<std::string> key;
@@ -289,7 +289,7 @@ class AppHandler : virtual public BrokerIf {
       if(err)
         return;
       
-      FractionCells* fraction_cells;
+      FCells* fraction_cells;
       for(auto& dbcell : vec.cells) {
         fraction_cells = &_return;
         key.clear();
