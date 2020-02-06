@@ -20,6 +20,11 @@ class ServiceHandler : virtual public ServiceIf {
     // Your initialization goes here
   }
 
+  void sql_list_columns(Schemas& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_list_columns\n");
+  }
+
   void sql_select_list(Cells& _return, const std::string& sql) {
     // Your implementation goes here
     printf("sql_select_list\n");

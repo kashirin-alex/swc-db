@@ -21,6 +21,39 @@
 
 namespace SWC { namespace Thrift {
 
+struct ColumnType {
+  enum type {
+    UNKNOWN = 0,
+    PLAIN = 1,
+    COUNTER_I64 = 2,
+    COUNTER_I32 = 3,
+    COUNTER_I16 = 4,
+    COUNTER_I8 = 5,
+    CELL_DEFINED = 15
+  };
+};
+
+extern const std::map<int, const char*> _ColumnType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const ColumnType::type& val);
+
+std::string to_string(const ColumnType::type& val);
+
+struct EncodingType {
+  enum type {
+    DEFAULT = 0,
+    PLAIN = 1,
+    ZLIB = 2,
+    SNAPPY = 3
+  };
+};
+
+extern const std::map<int, const char*> _EncodingType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const EncodingType::type& val);
+
+std::string to_string(const EncodingType::type& val);
+
 struct Flag {
   enum type {
     NONE = 0,
@@ -36,6 +69,8 @@ std::ostream& operator<<(std::ostream& out, const Flag::type& val);
 
 std::string to_string(const Flag::type& val);
 
+typedef std::vector<class Schema>  Schemas;
+
 typedef std::vector<class Cell>  Cells;
 
 typedef std::vector<class ColumnMapCell>  ColumnMapCells;
@@ -45,6 +80,8 @@ typedef std::map<std::string, ColumnMapCells>  ColumnsMapCells;
 typedef std::vector<class KeyCells>  KeysCells;
 
 class Exception;
+
+class Schema;
 
 class Cell;
 
@@ -103,6 +140,146 @@ class Exception : public ::apache::thrift::TException {
 void swap(Exception &a, Exception &b);
 
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
+
+typedef struct _Schema__isset {
+  _Schema__isset() : cid(false), col_name(false), col_type(false), cell_versions(false), cell_ttl(false), blk_replication(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_size(false), cs_max(false), compact_percent(false), revision(false) {}
+  bool cid :1;
+  bool col_name :1;
+  bool col_type :1;
+  bool cell_versions :1;
+  bool cell_ttl :1;
+  bool blk_replication :1;
+  bool blk_encoding :1;
+  bool blk_size :1;
+  bool blk_cells :1;
+  bool cs_size :1;
+  bool cs_max :1;
+  bool compact_percent :1;
+  bool revision :1;
+} _Schema__isset;
+
+class Schema : public virtual ::apache::thrift::TBase {
+ public:
+
+  Schema(const Schema&);
+  Schema& operator=(const Schema&);
+  Schema() : cid(0), col_name(), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_replication(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_size(0), cs_max(0), compact_percent(0), revision(0) {
+  }
+
+  virtual ~Schema() noexcept;
+  int64_t cid;
+  std::string col_name;
+  ColumnType::type col_type;
+  int32_t cell_versions;
+  int32_t cell_ttl;
+  int8_t blk_replication;
+  EncodingType::type blk_encoding;
+  int32_t blk_size;
+  int32_t blk_cells;
+  int32_t cs_size;
+  int8_t cs_max;
+  int8_t compact_percent;
+  int64_t revision;
+
+  _Schema__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_col_name(const std::string& val);
+
+  void __set_col_type(const ColumnType::type val);
+
+  void __set_cell_versions(const int32_t val);
+
+  void __set_cell_ttl(const int32_t val);
+
+  void __set_blk_replication(const int8_t val);
+
+  void __set_blk_encoding(const EncodingType::type val);
+
+  void __set_blk_size(const int32_t val);
+
+  void __set_blk_cells(const int32_t val);
+
+  void __set_cs_size(const int32_t val);
+
+  void __set_cs_max(const int8_t val);
+
+  void __set_compact_percent(const int8_t val);
+
+  void __set_revision(const int64_t val);
+
+  bool operator == (const Schema & rhs) const
+  {
+    if (__isset.cid != rhs.__isset.cid)
+      return false;
+    else if (__isset.cid && !(cid == rhs.cid))
+      return false;
+    if (__isset.col_name != rhs.__isset.col_name)
+      return false;
+    else if (__isset.col_name && !(col_name == rhs.col_name))
+      return false;
+    if (__isset.col_type != rhs.__isset.col_type)
+      return false;
+    else if (__isset.col_type && !(col_type == rhs.col_type))
+      return false;
+    if (__isset.cell_versions != rhs.__isset.cell_versions)
+      return false;
+    else if (__isset.cell_versions && !(cell_versions == rhs.cell_versions))
+      return false;
+    if (__isset.cell_ttl != rhs.__isset.cell_ttl)
+      return false;
+    else if (__isset.cell_ttl && !(cell_ttl == rhs.cell_ttl))
+      return false;
+    if (__isset.blk_replication != rhs.__isset.blk_replication)
+      return false;
+    else if (__isset.blk_replication && !(blk_replication == rhs.blk_replication))
+      return false;
+    if (__isset.blk_encoding != rhs.__isset.blk_encoding)
+      return false;
+    else if (__isset.blk_encoding && !(blk_encoding == rhs.blk_encoding))
+      return false;
+    if (__isset.blk_size != rhs.__isset.blk_size)
+      return false;
+    else if (__isset.blk_size && !(blk_size == rhs.blk_size))
+      return false;
+    if (__isset.blk_cells != rhs.__isset.blk_cells)
+      return false;
+    else if (__isset.blk_cells && !(blk_cells == rhs.blk_cells))
+      return false;
+    if (__isset.cs_size != rhs.__isset.cs_size)
+      return false;
+    else if (__isset.cs_size && !(cs_size == rhs.cs_size))
+      return false;
+    if (__isset.cs_max != rhs.__isset.cs_max)
+      return false;
+    else if (__isset.cs_max && !(cs_max == rhs.cs_max))
+      return false;
+    if (__isset.compact_percent != rhs.__isset.compact_percent)
+      return false;
+    else if (__isset.compact_percent && !(compact_percent == rhs.compact_percent))
+      return false;
+    if (__isset.revision != rhs.__isset.revision)
+      return false;
+    else if (__isset.revision && !(revision == rhs.revision))
+      return false;
+    return true;
+  }
+  bool operator != (const Schema &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Schema & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Schema &a, Schema &b);
+
+std::ostream& operator<<(std::ostream& out, const Schema& obj);
 
 typedef struct _Cell__isset {
   _Cell__isset() : c(false), k(false), ts(false), v(false) {}

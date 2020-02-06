@@ -27,6 +27,58 @@ class AppHandler : virtual public BrokerIf {
     throw e;
   }
 
+  void sql_list_columns(Schemas& _return, const std::string& sql) {
+
+    int err = Error::OK;
+    std::vector<DB::Schema::Ptr> dbschemas;  
+    std::string message;
+    client::SQL::parse_list_columns(err, sql, dbschemas, message);
+    if(err) 
+      exception(err, message);
+
+    if(dbschemas.empty()) { // get all schema
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+         Protocol::Mngr::Params::ColumnListRsp rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if(err = res.get_future().get()) {
+        message.append(Error::get_text(err));
+        message.append("\n");
+        exception(err, message);
+      }
+    }
+    
+    _return.resize(dbschemas.size());
+    uint32_t c = 0;
+    for(auto& dbschema : dbschemas) {
+      auto& schema = _return[c++];
+      schema.__set_cid(dbschema->cid);
+      schema.__set_col_name(dbschema->col_name);
+      schema.__set_col_type((ColumnType::type)dbschema->col_type);
+
+      schema.__set_cell_versions(dbschema->cell_versions);
+      schema.__set_cell_ttl(dbschema->cell_ttl);
+
+      schema.__set_blk_replication(dbschema->blk_replication);
+      schema.__set_blk_encoding((EncodingType::type)dbschema->blk_encoding);
+      schema.__set_blk_size(dbschema->blk_size);
+      schema.__set_blk_cells(dbschema->blk_cells);
+
+      schema.__set_cs_size(dbschema->cs_size);
+      schema.__set_cs_max(dbschema->cs_max);
+      schema.__set_compact_percent(dbschema->compact_percent);
+
+      schema.__set_revision(dbschema->revision);
+    }
+  }
+
   void sql_select_list(Cells& _return, const std::string& sql) {
     
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>();

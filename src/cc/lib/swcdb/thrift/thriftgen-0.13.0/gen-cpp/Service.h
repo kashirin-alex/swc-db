@@ -22,6 +22,7 @@ namespace SWC { namespace Thrift {
 class ServiceIf {
  public:
   virtual ~ServiceIf() {}
+  virtual void sql_list_columns(Schemas& _return, const std::string& sql) = 0;
   virtual void sql_select_list(Cells& _return, const std::string& sql) = 0;
   virtual void sql_select_map(ColumnsMapCells& _return, const std::string& sql) = 0;
   virtual void sql_select_keys(KeysCells& _return, const std::string& sql) = 0;
@@ -54,6 +55,9 @@ class ServiceIfSingletonFactory : virtual public ServiceIfFactory {
 class ServiceNull : virtual public ServiceIf {
  public:
   virtual ~ServiceNull() {}
+  void sql_list_columns(Schemas& /* _return */, const std::string& /* sql */) {
+    return;
+  }
   void sql_select_list(Cells& /* _return */, const std::string& /* sql */) {
     return;
   }
@@ -63,6 +67,118 @@ class ServiceNull : virtual public ServiceIf {
   void sql_select_keys(KeysCells& /* _return */, const std::string& /* sql */) {
     return;
   }
+};
+
+typedef struct _Service_sql_list_columns_args__isset {
+  _Service_sql_list_columns_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_list_columns_args__isset;
+
+class Service_sql_list_columns_args {
+ public:
+
+  Service_sql_list_columns_args(const Service_sql_list_columns_args&);
+  Service_sql_list_columns_args& operator=(const Service_sql_list_columns_args&);
+  Service_sql_list_columns_args() : sql() {
+  }
+
+  virtual ~Service_sql_list_columns_args() noexcept;
+  std::string sql;
+
+  _Service_sql_list_columns_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_list_columns_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_list_columns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_list_columns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_list_columns_pargs {
+ public:
+
+
+  virtual ~Service_sql_list_columns_pargs() noexcept;
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_list_columns_result__isset {
+  _Service_sql_list_columns_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_list_columns_result__isset;
+
+class Service_sql_list_columns_result {
+ public:
+
+  Service_sql_list_columns_result(const Service_sql_list_columns_result&);
+  Service_sql_list_columns_result& operator=(const Service_sql_list_columns_result&);
+  Service_sql_list_columns_result() {
+  }
+
+  virtual ~Service_sql_list_columns_result() noexcept;
+  Schemas success;
+  Exception e;
+
+  _Service_sql_list_columns_result__isset __isset;
+
+  void __set_success(const Schemas& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_list_columns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_list_columns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_list_columns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_list_columns_presult__isset {
+  _Service_sql_list_columns_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_list_columns_presult__isset;
+
+class Service_sql_list_columns_presult {
+ public:
+
+
+  virtual ~Service_sql_list_columns_presult() noexcept;
+  Schemas* success;
+  Exception e;
+
+  _Service_sql_list_columns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
 };
 
 typedef struct _Service_sql_select_list_args__isset {
@@ -426,6 +542,9 @@ class ServiceClient : virtual public ServiceIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void sql_list_columns(Schemas& _return, const std::string& sql);
+  void send_sql_list_columns(const std::string& sql);
+  void recv_sql_list_columns(Schemas& _return);
   void sql_select_list(Cells& _return, const std::string& sql);
   void send_sql_select_list(const std::string& sql);
   void recv_sql_select_list(Cells& _return);
@@ -450,12 +569,14 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   typedef  void (ServiceProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
+  void process_sql_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_list(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_map(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
+    processMap_["sql_list_columns"] = &ServiceProcessor::process_sql_list_columns;
     processMap_["sql_select_list"] = &ServiceProcessor::process_sql_select_list;
     processMap_["sql_select_map"] = &ServiceProcessor::process_sql_select_map;
     processMap_["sql_select_keys"] = &ServiceProcessor::process_sql_select_keys;
@@ -487,6 +608,16 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_.push_back(iface);
   }
  public:
+  void sql_list_columns(Schemas& _return, const std::string& sql) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_list_columns(_return, sql);
+    }
+    ifaces_[i]->sql_list_columns(_return, sql);
+    return;
+  }
+
   void sql_select_list(Cells& _return, const std::string& sql) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -549,6 +680,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void sql_list_columns(Schemas& _return, const std::string& sql);
+  int32_t send_sql_list_columns(const std::string& sql);
+  void recv_sql_list_columns(Schemas& _return, const int32_t seqid);
   void sql_select_list(Cells& _return, const std::string& sql);
   int32_t send_sql_select_list(const std::string& sql);
   void recv_sql_select_list(Cells& _return, const int32_t seqid);

@@ -8,6 +8,35 @@
 namespace  SWC { namespace Thrift {
 namespace Test {
 
+
+
+
+void sql_list_columns(Client& client) {
+  std::cout << std::endl << "test: sql_list_columns: " << std::endl;
+
+  Schemas schemas;
+  client.sql_list_columns(
+    schemas, 
+    "list columns col-test-1, col-test-2"
+  );
+      
+  std::cout << "schemas.size=" << schemas.size() << std::endl;
+  for(auto& schema : schemas) {
+    schema.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+  
+  client.sql_list_columns(
+    schemas, 
+    "list columns"
+  );
+  std::cout << std::endl << "list all, schemas.size=" << schemas.size() << std::endl;
+  for(auto& schema : schemas) {
+    schema.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+}
+
 void sql_select_map(Client& client) {
   std::cout << std::endl << "test: sql_select_map: " << std::endl;
 
@@ -74,7 +103,8 @@ int main() {
 
   SWC::Thrift::Client client("localhost", 18000);
   
-  
+  Test::sql_list_columns(client);
+
   Test::sql_select_map(client);
   Test::sql_select_list(client);
   Test::sql_select_keys(client);
