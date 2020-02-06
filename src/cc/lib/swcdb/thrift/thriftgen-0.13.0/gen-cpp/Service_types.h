@@ -38,9 +38,21 @@ std::string to_string(const Flag::type& val);
 
 typedef std::vector<class Cell>  Cells;
 
+typedef std::vector<class ColumnMapCell>  ColumnMapCells;
+
+typedef std::map<std::string, ColumnMapCells>  ColumnsMapCells;
+
+typedef std::vector<class KeyCells>  KeysCells;
+
 class Exception;
 
 class Cell;
+
+class ColumnMapCell;
+
+class KeyCell;
+
+class KeyCells;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -93,7 +105,8 @@ void swap(Exception &a, Exception &b);
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
 
 typedef struct _Cell__isset {
-  _Cell__isset() : k(false), ts(false), v(false) {}
+  _Cell__isset() : c(false), k(false), ts(false), v(false) {}
+  bool c :1;
   bool k :1;
   bool ts :1;
   bool v :1;
@@ -104,15 +117,18 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   Cell(const Cell&);
   Cell& operator=(const Cell&);
-  Cell() : ts(0), v() {
+  Cell() : c(), ts(0), v() {
   }
 
   virtual ~Cell() noexcept;
+  std::string c;
   std::vector<std::string>  k;
   int64_t ts;
   std::string v;
 
   _Cell__isset __isset;
+
+  void __set_c(const std::string& val);
 
   void __set_k(const std::vector<std::string> & val);
 
@@ -122,6 +138,8 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   bool operator == (const Cell & rhs) const
   {
+    if (!(c == rhs.c))
+      return false;
     if (!(k == rhs.k))
       return false;
     if (!(ts == rhs.ts))
@@ -147,6 +165,166 @@ class Cell : public virtual ::apache::thrift::TBase {
 void swap(Cell &a, Cell &b);
 
 std::ostream& operator<<(std::ostream& out, const Cell& obj);
+
+typedef struct _ColumnMapCell__isset {
+  _ColumnMapCell__isset() : k(false), ts(false), v(false) {}
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+} _ColumnMapCell__isset;
+
+class ColumnMapCell : public virtual ::apache::thrift::TBase {
+ public:
+
+  ColumnMapCell(const ColumnMapCell&);
+  ColumnMapCell& operator=(const ColumnMapCell&);
+  ColumnMapCell() : ts(0), v() {
+  }
+
+  virtual ~ColumnMapCell() noexcept;
+  std::vector<std::string>  k;
+  int64_t ts;
+  std::string v;
+
+  _ColumnMapCell__isset __isset;
+
+  void __set_k(const std::vector<std::string> & val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const ColumnMapCell & rhs) const
+  {
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (__isset.v != rhs.__isset.v)
+      return false;
+    else if (__isset.v && !(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const ColumnMapCell &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColumnMapCell & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ColumnMapCell &a, ColumnMapCell &b);
+
+std::ostream& operator<<(std::ostream& out, const ColumnMapCell& obj);
+
+typedef struct _KeyCell__isset {
+  _KeyCell__isset() : c(false), ts(false), v(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+} _KeyCell__isset;
+
+class KeyCell : public virtual ::apache::thrift::TBase {
+ public:
+
+  KeyCell(const KeyCell&);
+  KeyCell& operator=(const KeyCell&);
+  KeyCell() : c(), ts(0), v() {
+  }
+
+  virtual ~KeyCell() noexcept;
+  std::string c;
+  int64_t ts;
+  std::string v;
+
+  _KeyCell__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const KeyCell & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (__isset.v != rhs.__isset.v)
+      return false;
+    else if (__isset.v && !(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const KeyCell &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const KeyCell & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(KeyCell &a, KeyCell &b);
+
+std::ostream& operator<<(std::ostream& out, const KeyCell& obj);
+
+typedef struct _KeyCells__isset {
+  _KeyCells__isset() : k(false), cells(false) {}
+  bool k :1;
+  bool cells :1;
+} _KeyCells__isset;
+
+class KeyCells : public virtual ::apache::thrift::TBase {
+ public:
+
+  KeyCells(const KeyCells&);
+  KeyCells& operator=(const KeyCells&);
+  KeyCells() {
+  }
+
+  virtual ~KeyCells() noexcept;
+  std::vector<std::string>  k;
+  std::vector<KeyCell>  cells;
+
+  _KeyCells__isset __isset;
+
+  void __set_k(const std::vector<std::string> & val);
+
+  void __set_cells(const std::vector<KeyCell> & val);
+
+  bool operator == (const KeyCells & rhs) const
+  {
+    if (!(k == rhs.k))
+      return false;
+    if (!(cells == rhs.cells))
+      return false;
+    return true;
+  }
+  bool operator != (const KeyCells &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const KeyCells & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(KeyCells &a, KeyCells &b);
+
+std::ostream& operator<<(std::ostream& out, const KeyCells& obj);
 
 }} // namespace
 
