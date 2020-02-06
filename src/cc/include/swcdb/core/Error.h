@@ -327,11 +327,11 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 /* Convenience macro to create an exception stack trace */
 #define HT_EXCEPTION(_code_, _msg_) \
-  Exception(_code_, _msg_, __LINE__, HT_FUNC, __FILE__)
+  ::SWC::Exception(_code_, _msg_, __LINE__, HT_FUNC, __FILE__)
 
 /* Convenience macro to create an chained exception */
 #define HT_EXCEPTION2(_code_, _ex_, _msg_) \
-  Exception(_code_, _msg_, _ex_, __LINE__, HT_FUNC, __FILE__)
+  ::SWC::Exception(_code_, _msg_, _ex_, __LINE__, HT_FUNC, __FILE__)
 
 /* Convenience macro to throw an exception */
 #define SWC_THROW(_code_, _msg_) throw HT_EXCEPTION(_code_, _msg_)
@@ -356,7 +356,7 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 /* Convenience macro to catch and rethrow exceptions with a printf-like
  * message */
 #define HT_RETHROWF(_fmt_, ...) \
-  catch (Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
+  catch (::SWC::Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
   catch (std::bad_alloc& e) { \
     SWC_THROWF(Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
   } \
@@ -380,7 +380,7 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 /* Convenience macros for catching and logging exceptions in destructors */
 #define SWC_LOG_EXCEPTION(_s_) \
-  catch (Exception& e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
+  catch (::SWC::Exception& e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (std::bad_alloc& e) { \
     SWC_LOG_OUT(LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
   catch (std::exception& e) { \
