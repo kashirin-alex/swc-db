@@ -3,34 +3,67 @@
  */
 
 #include <iostream>
+#include <cassert>
 #include "swcdb/thrift/client/Client.h"
 
 namespace  SWC { namespace Thrift {
 namespace Test {
 
+void sql_mng_and_list_column(Client& client) {
+  std::cout << std::endl << "test: sql_mng_column: " << std::endl;
 
-
-
-void sql_list_columns(Client& client) {
-  std::cout << std::endl << "test: sql_list_columns: " << std::endl;
+  client.sql_mng_column(
+    "create column(name='col-test-create-1' cell_ttl=123456)"
+  );
 
   Schemas schemas;
   client.sql_list_columns(
     schemas, 
-    "list columns col-test-1, col-test-2"
+    "get schema col-test-create-1"
   );
-      
-  std::cout << "schemas.size=" << schemas.size() << std::endl;
-  for(auto& schema : schemas) {
-    schema.printTo(std::cout << " ");
+  assert(schemas.size() == 1);
+
+  std::string sql("modify column(cid=");
+  sql.append(std::to_string(schemas.back().cid));
+  sql.append(" name='col-test-create-1' cell_ttl=123456789)");
+  client.sql_mng_column(sql);
+  
+  schemas.clear();
+  client.sql_list_columns(
+    schemas, 
+    "get schema col-test-create-1"
+  );
+  assert(schemas.size() == 1);
+  assert(schemas.back().cell_ttl == 123456789);
+
+  std::string sql_delete("delete column(name='col-test-create-1' cid=");
+  sql_delete.append(std::to_string(schemas.front().cid));
+  sql_delete.append(")");
+  client.sql_mng_column(sql_delete);
+
+  try {
+    client.sql_list_columns(
+      schemas, 
+      "get schema col-test-create-1"
+    );
+    assert(false);
+  } catch(Exception& e) {
+    e.printTo(std::cout << "OK: ");
     std::cout << std::endl;
   }
-  
+}
+
+
+void sql_list_columns_all(Client& client) {
+  std::cout << std::endl << "test: sql_list_columns_all: " << std::endl;
+
+  Schemas schemas;
   client.sql_list_columns(
     schemas, 
     "list columns"
   );
-  std::cout << std::endl << "list all, schemas.size=" << schemas.size() << std::endl;
+  assert(schemas.size() >= 3);
+  std::cout << std::endl << "schemas.size=" << schemas.size() << std::endl;
   for(auto& schema : schemas) {
     schema.printTo(std::cout << " ");
     std::cout << std::endl;
@@ -103,7 +136,8 @@ int main() {
 
   SWC::Thrift::Client client("localhost", 18000);
   
-  Test::sql_list_columns(client);
+  Test::sql_list_columns_all(client);
+  Test::sql_mng_and_list_column(client);
 
   Test::sql_select_map(client);
   Test::sql_select_list(client);

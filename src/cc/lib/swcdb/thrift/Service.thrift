@@ -23,6 +23,12 @@ exception Exception {
 }
 
 /* SCHEMAS */
+enum ColumnMng {
+  CREATE                = 3,
+  DELETE                = 5,
+  MODIFY                = 7
+}
+
 enum ColumnType {
   UNKNOWN       = 0,
   PLAIN         = 1,
@@ -102,7 +108,9 @@ typedef list<KeyCells> KeysCells
 
 
 service Service {
-  
+
+  void             sql_mng_column(1:string sql)   throws (1:Exception e),
+
   Schemas          sql_list_columns(1:string sql) throws (1:Exception e),
 
   Cells            sql_select_list(1:string sql)  throws (1:Exception e),

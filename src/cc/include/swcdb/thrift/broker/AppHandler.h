@@ -79,6 +79,38 @@ class AppHandler : virtual public BrokerIf {
     }
   }
 
+  void sql_mng_column(const std::string& sql) {
+    int err = Error::OK;
+    std::string message;
+    DB::Schema::Ptr schema;
+    Protocol::Mngr::Req::ColumnMng::Func func;
+    client::SQL::parse_column_schema(
+      err, sql, 
+      &func, 
+      schema, message);
+    if(err)
+      exception(err, message);
+
+    std::promise<int> res;
+    Protocol::Mngr::Req::ColumnMng::request(
+      func,
+      schema,
+      [await=&res]
+      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error) {
+        await->set_value(error);
+      },
+      300000
+    );
+    
+    if(err = res.get_future().get()) 
+      exception(err, message);
+
+    if(schema->cid != DB::Schema::NO_CID)
+      Env::Clients::get()->schemas->remove(schema->cid);
+    else
+      Env::Clients::get()->schemas->remove(schema->col_name);
+  }
+  
   void sql_select_list(Cells& _return, const std::string& sql) {
     
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
