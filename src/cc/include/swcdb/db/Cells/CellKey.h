@@ -298,13 +298,27 @@ class Key {
     }
   }
 
-  void convert_to(std::vector<std::string>& key) {
+  void convert_to(std::vector<std::string>& key) const {
     uint32_t len = 0;
     const uint8_t* ptr = data;
     for(uint32_t n=0; n<count; ++n,ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
       key.push_back(std::string((const char*)ptr, len));
     }
+  }
+
+  const bool equal(const std::vector<std::string>& key) const {
+    if(key.size() != count)
+      return false;
+      
+    uint32_t len = 0;
+    const uint8_t* ptr = data;
+    for(uint32_t n=0; n<count; ++n,ptr+=len) {
+      len = Serialization::decode_vi32(&ptr);
+      if(len != key[n].length() || memcmp(ptr, key[n].data(), len) != 0)
+        return false;
+    }
+    return true;
   }
 
   const std::string to_string() const {
