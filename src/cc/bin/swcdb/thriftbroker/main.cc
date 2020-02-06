@@ -87,11 +87,18 @@ int run() {
       socket->setSendTimeout(timeout_ms);
       socket->setRecvTimeout(timeout_ms);
 
+      auto protocol = std::make_shared<thrift::protocol::TBinaryProtocolFactory>();
+      /* 
+      protocol->setRecurisionLimit(...);  
+      set the DEFAULT_RECURSION_LIMIT
+        FractionCells in sql_select_fraction 
+          requirment depends on the length/depth of key-fractions
+      */
       auto server = std::make_shared<thrift::server::TThreadPoolServer>(
         std::make_shared<Thrift::BrokerProcessorFactory>(app_ctx),
 		    socket,
 	      transportFactory,
-  	    std::make_shared<thrift::protocol::TBinaryProtocolFactory>(),
+  	    protocol,
 	      threadManager
       );
       servers.push_back(server);

@@ -45,6 +45,11 @@ class ServiceHandler : virtual public ServiceIf {
     printf("sql_select_keys\n");
   }
 
+  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_select_fraction\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

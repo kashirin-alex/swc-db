@@ -77,9 +77,11 @@ enum Flag {
   DELETE_VERSION  = 3
 }
 
+typedef list<binary> Key
+
 struct Cell {
   1: string           c
-  2: list<binary>     k
+  2: Key              k
   3: i64              ts
   4: optional binary  v
 }
@@ -87,7 +89,7 @@ typedef list<Cell> Cells
 
 
 struct ColumnMapCell {
-  1: list<binary>     k
+  1: Key              k
   2: i64              ts
   3: optional binary  v
 }
@@ -101,10 +103,21 @@ struct KeyCell {
   3: optional binary  v
 }
 struct KeyCells {
-  1: list<binary>     k
+  1: Key              k
   2: list<KeyCell>    cells
 }
 typedef list<KeyCells> KeysCells
+
+
+struct FractionCell {
+  1: string           c
+  2: i64              ts
+  3: optional binary  v
+}
+struct FractionCells {
+  1: map<binary, FractionCells>   f
+  2: optional list<FractionCell>  cells
+}
 
 
 service Service {
@@ -118,5 +131,7 @@ service Service {
   ColumnsMapCells  sql_select_map(1:string sql)   throws (1:Exception e),
   
   KeysCells        sql_select_keys(1:string sql)  throws (1:Exception e),
+
+  FractionCells    sql_select_fraction(1:string sql)  throws (1:Exception e),
 
 }

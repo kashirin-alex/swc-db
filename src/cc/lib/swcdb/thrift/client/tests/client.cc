@@ -114,16 +114,53 @@ void sql_select_keys(Client& client) {
     keys_cells, 
     "select where" 
     "col(col-test-1)=(cells=(offset=200000 max_versions=1 limit=10 ONLY_KEYS))"
-      "and" 
+      " and " 
     "col(col-test-2)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
   );
-      
+
   std::cout << "keys_cells.size=" << keys_cells.size() << std::endl;
   for(auto& key_cells : keys_cells) {
     key_cells.printTo(std::cout << " ");
     std::cout << std::endl;
   }
 }
+
+void printOut(FractionCells* fcells, Key& key) {
+  for(auto& f : fcells->f) {
+    key.emplace_back(f.first);
+    std::cout << "fraction='" << f.first << "'"
+              << " cells.size=" << f.second.cells.size() 
+              << " key.size=" << key.size() << " ";
+    for(auto& fraction : key)
+      std::cout << "/" << fraction;
+    std::cout << std::endl;
+    for(auto& cell : f.second.cells) {
+      std::cout << " " << cell << "\n";
+    }
+    printOut(&f.second, key);
+    key.clear();
+  }
+}
+
+void sql_select_fraction(Client& client) {
+  std::cout << std::endl << "test: sql_select_fraction: " << std::endl;
+
+  FractionCells fraction_cells;
+  client.sql_select_fraction(
+    fraction_cells, 
+    "select where" 
+    "col(col-test-1)=(cells=(offset=20280 max_versions=1 limit=52 ONLY_KEYS))"
+      " and " 
+    "col(col-test-2)=(cells=(offset=1014 limit=52 ONLY_KEYS))"
+  );
+
+  fraction_cells.printTo(std::cout);
+  std::cout << std::endl;
+  
+  Key key;
+  printOut(&fraction_cells, key);
+}
+
 
 
 }
@@ -142,6 +179,7 @@ int main() {
   Test::sql_select_map(client);
   Test::sql_select_list(client);
   Test::sql_select_keys(client);
+  Test::sql_select_fraction(client);
 
   client.close();
 

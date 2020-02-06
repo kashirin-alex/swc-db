@@ -643,7 +643,7 @@ void Cell::__set_c(const std::string& val) {
   this->c = val;
 }
 
-void Cell::__set_k(const std::vector<std::string> & val) {
+void Cell::__set_k(const Key& val) {
   this->k = val;
 }
 
@@ -813,7 +813,7 @@ ColumnMapCell::~ColumnMapCell() noexcept {
 }
 
 
-void ColumnMapCell::__set_k(const std::vector<std::string> & val) {
+void ColumnMapCell::__set_k(const Key& val) {
   this->k = val;
 }
 
@@ -1101,7 +1101,7 @@ KeyCells::~KeyCells() noexcept {
 }
 
 
-void KeyCells::__set_k(const std::vector<std::string> & val) {
+void KeyCells::__set_k(const Key& val) {
   this->k = val;
 }
 
@@ -1245,6 +1245,298 @@ void KeyCells::printTo(std::ostream& out) const {
   out << "KeyCells(";
   out << "k=" << to_string(k);
   out << ", " << "cells=" << to_string(cells);
+  out << ")";
+}
+
+
+FractionCell::~FractionCell() noexcept {
+}
+
+
+void FractionCell::__set_c(const std::string& val) {
+  this->c = val;
+}
+
+void FractionCell::__set_ts(const int64_t val) {
+  this->ts = val;
+}
+
+void FractionCell::__set_v(const std::string& val) {
+  this->v = val;
+__isset.v = true;
+}
+std::ostream& operator<<(std::ostream& out, const FractionCell& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t FractionCell::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->c);
+          this->__isset.c = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->ts);
+          this->__isset.ts = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->v);
+          this->__isset.v = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t FractionCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("FractionCell");
+
+  xfer += oprot->writeFieldBegin("c", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->c);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ts", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->ts);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.v) {
+    xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeBinary(this->v);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(FractionCell &a, FractionCell &b) {
+  using ::std::swap;
+  swap(a.c, b.c);
+  swap(a.ts, b.ts);
+  swap(a.v, b.v);
+  swap(a.__isset, b.__isset);
+}
+
+FractionCell::FractionCell(const FractionCell& other38) {
+  c = other38.c;
+  ts = other38.ts;
+  v = other38.v;
+  __isset = other38.__isset;
+}
+FractionCell& FractionCell::operator=(const FractionCell& other39) {
+  c = other39.c;
+  ts = other39.ts;
+  v = other39.v;
+  __isset = other39.__isset;
+  return *this;
+}
+void FractionCell::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "FractionCell(";
+  out << "c=" << to_string(c);
+  out << ", " << "ts=" << to_string(ts);
+  out << ", " << "v="; (__isset.v ? (out << to_string(v)) : (out << "<null>"));
+  out << ")";
+}
+
+
+FractionCells::~FractionCells() noexcept {
+}
+
+
+void FractionCells::__set_f(const std::map<std::string, FractionCells> & val) {
+  this->f = val;
+}
+
+void FractionCells::__set_cells(const std::vector<FractionCell> & val) {
+  this->cells = val;
+__isset.cells = true;
+}
+std::ostream& operator<<(std::ostream& out, const FractionCells& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t FractionCells::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_MAP) {
+          {
+            this->f.clear();
+            uint32_t _size40;
+            ::apache::thrift::protocol::TType _ktype41;
+            ::apache::thrift::protocol::TType _vtype42;
+            xfer += iprot->readMapBegin(_ktype41, _vtype42, _size40);
+            uint32_t _i44;
+            for (_i44 = 0; _i44 < _size40; ++_i44)
+            {
+              std::string _key45;
+              xfer += iprot->readBinary(_key45);
+              FractionCells& _val46 = this->f[_key45];
+              xfer += _val46.read(iprot);
+            }
+            xfer += iprot->readMapEnd();
+          }
+          this->__isset.f = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->cells.clear();
+            uint32_t _size47;
+            ::apache::thrift::protocol::TType _etype50;
+            xfer += iprot->readListBegin(_etype50, _size47);
+            this->cells.resize(_size47);
+            uint32_t _i51;
+            for (_i51 = 0; _i51 < _size47; ++_i51)
+            {
+              xfer += this->cells[_i51].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.cells = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t FractionCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("FractionCells");
+
+  xfer += oprot->writeFieldBegin("f", ::apache::thrift::protocol::T_MAP, 1);
+  {
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->f.size()));
+    std::map<std::string, FractionCells> ::const_iterator _iter52;
+    for (_iter52 = this->f.begin(); _iter52 != this->f.end(); ++_iter52)
+    {
+      xfer += oprot->writeBinary(_iter52->first);
+      xfer += _iter52->second.write(oprot);
+    }
+    xfer += oprot->writeMapEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.cells) {
+    xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_LIST, 2);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cells.size()));
+      std::vector<FractionCell> ::const_iterator _iter53;
+      for (_iter53 = this->cells.begin(); _iter53 != this->cells.end(); ++_iter53)
+      {
+        xfer += (*_iter53).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(FractionCells &a, FractionCells &b) {
+  using ::std::swap;
+  swap(a.f, b.f);
+  swap(a.cells, b.cells);
+  swap(a.__isset, b.__isset);
+}
+
+FractionCells::FractionCells(const FractionCells& other54) {
+  f = other54.f;
+  cells = other54.cells;
+  __isset = other54.__isset;
+}
+FractionCells& FractionCells::operator=(const FractionCells& other55) {
+  f = other55.f;
+  cells = other55.cells;
+  __isset = other55.__isset;
+  return *this;
+}
+void FractionCells::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "FractionCells(";
+  out << "f=" << to_string(f);
+  out << ", " << "cells="; (__isset.cells ? (out << to_string(cells)) : (out << "<null>"));
   out << ")";
 }
 

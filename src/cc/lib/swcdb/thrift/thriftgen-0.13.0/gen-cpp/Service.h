@@ -27,6 +27,7 @@ class ServiceIf {
   virtual void sql_select_list(Cells& _return, const std::string& sql) = 0;
   virtual void sql_select_map(ColumnsMapCells& _return, const std::string& sql) = 0;
   virtual void sql_select_keys(KeysCells& _return, const std::string& sql) = 0;
+  virtual void sql_select_fraction(FractionCells& _return, const std::string& sql) = 0;
 };
 
 class ServiceIfFactory {
@@ -69,6 +70,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void sql_select_keys(KeysCells& /* _return */, const std::string& /* sql */) {
+    return;
+  }
+  void sql_select_fraction(FractionCells& /* _return */, const std::string& /* sql */) {
     return;
   }
 };
@@ -625,6 +629,118 @@ class Service_sql_select_keys_presult {
 
 };
 
+typedef struct _Service_sql_select_fraction_args__isset {
+  _Service_sql_select_fraction_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_select_fraction_args__isset;
+
+class Service_sql_select_fraction_args {
+ public:
+
+  Service_sql_select_fraction_args(const Service_sql_select_fraction_args&);
+  Service_sql_select_fraction_args& operator=(const Service_sql_select_fraction_args&);
+  Service_sql_select_fraction_args() : sql() {
+  }
+
+  virtual ~Service_sql_select_fraction_args() noexcept;
+  std::string sql;
+
+  _Service_sql_select_fraction_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_select_fraction_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_fraction_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_fraction_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_select_fraction_pargs {
+ public:
+
+
+  virtual ~Service_sql_select_fraction_pargs() noexcept;
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_fraction_result__isset {
+  _Service_sql_select_fraction_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_fraction_result__isset;
+
+class Service_sql_select_fraction_result {
+ public:
+
+  Service_sql_select_fraction_result(const Service_sql_select_fraction_result&);
+  Service_sql_select_fraction_result& operator=(const Service_sql_select_fraction_result&);
+  Service_sql_select_fraction_result() {
+  }
+
+  virtual ~Service_sql_select_fraction_result() noexcept;
+  FractionCells success;
+  Exception e;
+
+  _Service_sql_select_fraction_result__isset __isset;
+
+  void __set_success(const FractionCells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_select_fraction_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_fraction_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_fraction_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_fraction_presult__isset {
+  _Service_sql_select_fraction_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_fraction_presult__isset;
+
+class Service_sql_select_fraction_presult {
+ public:
+
+
+  virtual ~Service_sql_select_fraction_presult() noexcept;
+  FractionCells* success;
+  Exception e;
+
+  _Service_sql_select_fraction_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServiceClient : virtual public ServiceIf {
  public:
   ServiceClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -665,6 +781,9 @@ class ServiceClient : virtual public ServiceIf {
   void sql_select_keys(KeysCells& _return, const std::string& sql);
   void send_sql_select_keys(const std::string& sql);
   void recv_sql_select_keys(KeysCells& _return);
+  void sql_select_fraction(FractionCells& _return, const std::string& sql);
+  void send_sql_select_fraction(const std::string& sql);
+  void recv_sql_select_fraction(FractionCells& _return);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -685,6 +804,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_select_list(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_map(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
@@ -693,6 +813,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_select_list"] = &ServiceProcessor::process_sql_select_list;
     processMap_["sql_select_map"] = &ServiceProcessor::process_sql_select_map;
     processMap_["sql_select_keys"] = &ServiceProcessor::process_sql_select_keys;
+    processMap_["sql_select_fraction"] = &ServiceProcessor::process_sql_select_fraction;
   }
 
   virtual ~ServiceProcessor() {}
@@ -770,6 +891,16 @@ class ServiceMultiface : virtual public ServiceIf {
     return;
   }
 
+  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_select_fraction(_return, sql);
+    }
+    ifaces_[i]->sql_select_fraction(_return, sql);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -817,6 +948,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_select_keys(KeysCells& _return, const std::string& sql);
   int32_t send_sql_select_keys(const std::string& sql);
   void recv_sql_select_keys(KeysCells& _return, const int32_t seqid);
+  void sql_select_fraction(FractionCells& _return, const std::string& sql);
+  int32_t send_sql_select_fraction(const std::string& sql);
+  void recv_sql_select_fraction(FractionCells& _return, const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

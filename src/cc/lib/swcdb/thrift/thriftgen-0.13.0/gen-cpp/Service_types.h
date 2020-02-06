@@ -85,6 +85,8 @@ std::string to_string(const Flag::type& val);
 
 typedef std::vector<class Schema>  Schemas;
 
+typedef std::vector<std::string>  Key;
+
 typedef std::vector<class Cell>  Cells;
 
 typedef std::vector<class ColumnMapCell>  ColumnMapCells;
@@ -104,6 +106,10 @@ class ColumnMapCell;
 class KeyCell;
 
 class KeyCells;
+
+class FractionCell;
+
+class FractionCells;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -313,7 +319,7 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   virtual ~Cell() noexcept;
   std::string c;
-  std::vector<std::string>  k;
+  Key k;
   int64_t ts;
   std::string v;
 
@@ -321,7 +327,7 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   void __set_c(const std::string& val);
 
-  void __set_k(const std::vector<std::string> & val);
+  void __set_k(const Key& val);
 
   void __set_ts(const int64_t val);
 
@@ -373,13 +379,13 @@ class ColumnMapCell : public virtual ::apache::thrift::TBase {
   }
 
   virtual ~ColumnMapCell() noexcept;
-  std::vector<std::string>  k;
+  Key k;
   int64_t ts;
   std::string v;
 
   _ColumnMapCell__isset __isset;
 
-  void __set_k(const std::vector<std::string> & val);
+  void __set_k(const Key& val);
 
   void __set_ts(const int64_t val);
 
@@ -484,12 +490,12 @@ class KeyCells : public virtual ::apache::thrift::TBase {
   }
 
   virtual ~KeyCells() noexcept;
-  std::vector<std::string>  k;
+  Key k;
   std::vector<KeyCell>  cells;
 
   _KeyCells__isset __isset;
 
-  void __set_k(const std::vector<std::string> & val);
+  void __set_k(const Key& val);
 
   void __set_cells(const std::vector<KeyCell> & val);
 
@@ -516,6 +522,112 @@ class KeyCells : public virtual ::apache::thrift::TBase {
 void swap(KeyCells &a, KeyCells &b);
 
 std::ostream& operator<<(std::ostream& out, const KeyCells& obj);
+
+typedef struct _FractionCell__isset {
+  _FractionCell__isset() : c(false), ts(false), v(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+} _FractionCell__isset;
+
+class FractionCell : public virtual ::apache::thrift::TBase {
+ public:
+
+  FractionCell(const FractionCell&);
+  FractionCell& operator=(const FractionCell&);
+  FractionCell() : c(), ts(0), v() {
+  }
+
+  virtual ~FractionCell() noexcept;
+  std::string c;
+  int64_t ts;
+  std::string v;
+
+  _FractionCell__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const FractionCell & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (__isset.v != rhs.__isset.v)
+      return false;
+    else if (__isset.v && !(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FractionCell &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FractionCell & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FractionCell &a, FractionCell &b);
+
+std::ostream& operator<<(std::ostream& out, const FractionCell& obj);
+
+typedef struct _FractionCells__isset {
+  _FractionCells__isset() : f(false), cells(false) {}
+  bool f :1;
+  bool cells :1;
+} _FractionCells__isset;
+
+class FractionCells : public virtual ::apache::thrift::TBase {
+ public:
+
+  FractionCells(const FractionCells&);
+  FractionCells& operator=(const FractionCells&);
+  FractionCells() {
+  }
+
+  virtual ~FractionCells() noexcept;
+  std::map<std::string, FractionCells>  f;
+  std::vector<FractionCell>  cells;
+
+  _FractionCells__isset __isset;
+
+  void __set_f(const std::map<std::string, FractionCells> & val);
+
+  void __set_cells(const std::vector<FractionCell> & val);
+
+  bool operator == (const FractionCells & rhs) const
+  {
+    if (!(f == rhs.f))
+      return false;
+    if (__isset.cells != rhs.__isset.cells)
+      return false;
+    else if (__isset.cells && !(cells == rhs.cells))
+      return false;
+    return true;
+  }
+  bool operator != (const FractionCells &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FractionCells & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FractionCells &a, FractionCells &b);
+
+std::ostream& operator<<(std::ostream& out, const FractionCells& obj);
 
 }} // namespace
 

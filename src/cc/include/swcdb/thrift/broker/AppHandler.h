@@ -111,8 +111,7 @@ class AppHandler : virtual public BrokerIf {
       Env::Clients::get()->schemas->remove(schema->col_name);
   }
   
-  void sql_select_list(Cells& _return, const std::string& sql) {
-    
+  Protocol::Common::Req::Query::Select::Ptr sync_select(const std::string& sql) {
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
     int err = Error::OK;
     std::string message;
@@ -126,7 +125,13 @@ class AppHandler : virtual public BrokerIf {
     
     if(err) 
       exception(err, message);
+    return req;
+  }
 
+  void sql_select_list(Cells& _return, const std::string& sql) {
+    auto req = sync_select(sql);
+    
+    int err = Error::OK;
     process_results(
       err, 
       req->result, 
@@ -134,7 +139,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, message);
+      exception(err, "");
   }
 
   static void process_results(
@@ -165,20 +170,9 @@ class AppHandler : virtual public BrokerIf {
   }
 
   void sql_select_map(ColumnsMapCells& _return, const std::string& sql) {
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
-    int err = Error::OK;
-    std::string message;
-    uint8_t display_flags = 0;
-    client::SQL::parse_select(err, sql, req->specs, display_flags, message);
-    if(err) 
-      exception(err, message);
-    
-    req->scan();
-    req->wait();
-    
-    if(err) 
-      exception(err, message);
+    auto req = sync_select(sql);
 
+    int err = Error::OK;
     process_results(
       err, 
       req->result, 
@@ -186,7 +180,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, message);
+      exception(err, "");
   }
 
   static void process_results(
@@ -219,20 +213,9 @@ class AppHandler : virtual public BrokerIf {
   }
 
   void sql_select_keys(KeysCells& _return, const std::string& sql) {
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
+    auto req = sync_select(sql);
+    
     int err = Error::OK;
-    std::string message;
-    uint8_t display_flags = 0;
-    client::SQL::parse_select(err, sql, req->specs, display_flags, message);
-    if(err) 
-      exception(err, message);
-    
-    req->scan();
-    req->wait();
-    
-    if(err) 
-      exception(err, message);
-
     process_results(
       err, 
       req->result, 
@@ -240,7 +223,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, message);
+      exception(err, "");
   }
 
   static void process_results(
@@ -277,7 +260,54 @@ class AppHandler : virtual public BrokerIf {
     }
   }
 
+  void sql_select_fraction(FractionCells& _return, const std::string& sql) {
+    auto req = sync_select(sql);
+    
+    int err = Error::OK;
+    process_results(
+      err, 
+      req->result, 
+      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
+      _return
+    );
+    if(err) 
+      exception(err, "");
+  }
 
+  static void process_results(
+          int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
+          bool with_value, FractionCells& _return) {
+    DB::Schema::Ptr schema = 0;
+    DB::Cells::Vector vec; 
+    std::vector<std::string> key;
+
+    for(auto cid : result->get_cids()) {
+      vec.free();
+      result->get_cells(cid, vec); 
+
+      schema = Env::Clients::get()->schemas->get(err, cid);
+      if(err)
+        return;
+      
+      FractionCells* fraction_cells;
+      for(auto& dbcell : vec.cells) {
+        fraction_cells = &_return;
+        key.clear();
+        dbcell->key.convert_to(key);
+        for(auto& f : key) 
+          fraction_cells = &fraction_cells->f[f];
+        
+        fraction_cells->__isset.cells = true;
+        auto& cell = fraction_cells->cells.emplace_back();
+        cell.c = schema->col_name;
+        cell.ts = dbcell->timestamp;
+        if(cell.__isset.v = with_value) {
+          if(dbcell->vlen)
+            cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
+        }
+      }
+    }
+  }
 };
 
 
