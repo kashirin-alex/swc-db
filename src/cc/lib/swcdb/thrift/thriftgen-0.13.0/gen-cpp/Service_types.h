@@ -21,6 +21,20 @@
 
 namespace SWC { namespace Thrift {
 
+struct ColumnMng {
+  enum type {
+    CREATE = 3,
+    DELETE = 5,
+    MODIFY = 7
+  };
+};
+
+extern const std::map<int, const char*> _ColumnMng_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const ColumnMng::type& val);
+
+std::string to_string(const ColumnMng::type& val);
+
 struct ColumnType {
   enum type {
     UNKNOWN = 0,

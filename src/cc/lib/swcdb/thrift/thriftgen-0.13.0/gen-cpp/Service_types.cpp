@@ -13,6 +13,37 @@
 
 namespace SWC { namespace Thrift {
 
+int _kColumnMngValues[] = {
+  ColumnMng::CREATE,
+  ColumnMng::DELETE,
+  ColumnMng::MODIFY
+};
+const char* _kColumnMngNames[] = {
+  "CREATE",
+  "DELETE",
+  "MODIFY"
+};
+const std::map<int, const char*> _ColumnMng_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kColumnMngValues, _kColumnMngNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+std::ostream& operator<<(std::ostream& out, const ColumnMng::type& val) {
+  std::map<int, const char*>::const_iterator it = _ColumnMng_VALUES_TO_NAMES.find(val);
+  if (it != _ColumnMng_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const ColumnMng::type& val) {
+  std::map<int, const char*>::const_iterator it = _ColumnMng_VALUES_TO_NAMES.find(val);
+  if (it != _ColumnMng_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
 int _kColumnTypeValues[] = {
   ColumnType::UNKNOWN,
   ColumnType::PLAIN,
