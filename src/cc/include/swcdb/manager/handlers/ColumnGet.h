@@ -61,12 +61,12 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
     flag = req_params.flag;
       
     DB::Schema::Ptr schema = get_schema(err, req_params);
-    if(schema != nullptr || err){
+    if(schema != nullptr || err) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;
     }
     Env::Rangers::get()->is_active(err, 1, true);
-    if(err) {
+    if(!err) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;
     }
