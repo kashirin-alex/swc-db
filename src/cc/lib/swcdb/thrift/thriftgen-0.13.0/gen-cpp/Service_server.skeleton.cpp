@@ -70,6 +70,11 @@ class ServiceHandler : virtual public ServiceIf {
     printf("updater_close\n");
   }
 
+  void update(const UCCells& cells, const int64_t updater_id) {
+    // Your implementation goes here
+    printf("update\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

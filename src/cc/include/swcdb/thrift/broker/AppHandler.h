@@ -340,7 +340,42 @@ class AppHandler : virtual public BrokerIf {
     }
   }
   
-  /* UPDATE */
+  /* SQL UPDATE */
+  void sql_update(const std::string& sql, const int64_t updater_id){
+    
+    Protocol::Common::Req::Query::Update::Ptr req = nullptr;
+    if(updater_id)
+      updater(updater_id, req);
+    else
+      req = std::make_shared<Protocol::Common::Req::Query::Update>();
+
+    std::string message;
+    uint8_t display_flags = 0;
+    int err = Error::OK;
+    client::SQL::parse_update(
+      err, sql, 
+      *req->columns.get(), *req->columns_onfractions.get(), 
+      display_flags, message
+    );
+    if(err) 
+      exception(err, message);
+      
+    if(updater_id) {
+      size_t cells_bytes = req->columns->size_bytes() 
+                         + req->columns_onfractions->size_bytes();
+      if(req->result->completion && cells_bytes > req->buff_sz*3)
+        req->wait();
+      if(!req->result->completion && cells_bytes >= req->buff_sz)
+        req->commit();
+    } else {
+      req->commit();
+      req->wait();
+    }
+    if(req->result->err)
+      exception(req->result->err);
+  }
+
+  /* UPDATER */
   int64_t updater_create(const int32_t buffer_size) {
     std::scoped_lock lock(m_mutex);
 
@@ -369,25 +404,44 @@ class AppHandler : virtual public BrokerIf {
     updater_close(req);
   }
 
-  void sql_update(const std::string& sql, const int64_t updater_id){
-    
+  /* UPDATE */
+  void update(const UCCells& cells, const int64_t updater_id) {
     Protocol::Common::Req::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
     else
       req = std::make_shared<Protocol::Common::Req::Query::Update>();
 
-    std::string message;
-    uint8_t display_flags = 0;
     int err = Error::OK;
-    client::SQL::parse_update(
-      err, sql, 
-      *req->columns.get(), *req->columns_onfractions.get(), 
-      display_flags, message
-    );
-    if(err) 
-      exception(err, message);
-      
+    size_t cells_bytes;
+    DB::Cells::Cell dbcell;
+
+    // req->columns_onfractions
+    for(auto& col_cells : cells) {
+      auto& cid = col_cells.first;
+              // req->columns_onfractions
+      auto col = req->columns->get_col(cid);
+      if(col == nullptr) {
+        auto schema = Env::Clients::get()->schemas->get(err, cid);
+        if(err) 
+          exception(err);
+        req->columns->create(schema);
+        col = req->columns->get_col(cid);
+      }
+      for(auto& cell : col_cells.second) {
+        dbcell.flag = (uint8_t)cell.f;
+        dbcell.key.read(cell.k);
+        dbcell.control = 0;
+        if(cell.__isset.ts) 
+          dbcell.set_timestamp(cell.ts);
+        dbcell.set_value(cell.v);
+
+        col->add(dbcell);
+        if(col->size_bytes() >= req->buff_sz)
+          req->commit();
+      }
+    }
+
     if(updater_id) {
       size_t cells_bytes = req->columns->size_bytes() 
                          + req->columns_onfractions->size_bytes();

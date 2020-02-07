@@ -102,6 +102,10 @@ typedef std::vector<class Schema>  Schemas;
 
 typedef std::vector<std::string>  Key;
 
+typedef std::vector<class UCell>  UCells;
+
+typedef std::map<int64_t, UCells>  UCCells;
+
 typedef std::vector<class Cell>  Cells;
 
 typedef std::vector<class CCell>  ColCells;
@@ -113,6 +117,8 @@ typedef std::vector<class kCells>  KCells;
 class Exception;
 
 class Schema;
+
+class UCell;
 
 class Cell;
 
@@ -317,6 +323,70 @@ class Schema : public virtual ::apache::thrift::TBase {
 void swap(Schema &a, Schema &b);
 
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
+
+typedef struct _UCell__isset {
+  _UCell__isset() : f(false), k(false), ts(false), v(false) {}
+  bool f :1;
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+} _UCell__isset;
+
+class UCell : public virtual ::apache::thrift::TBase {
+ public:
+
+  UCell(const UCell&);
+  UCell& operator=(const UCell&);
+  UCell() : f((Flag::type)0), ts(0), v() {
+  }
+
+  virtual ~UCell() noexcept;
+  Flag::type f;
+  Key k;
+  int64_t ts;
+  std::string v;
+
+  _UCell__isset __isset;
+
+  void __set_f(const Flag::type val);
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const UCell & rhs) const
+  {
+    if (!(f == rhs.f))
+      return false;
+    if (!(k == rhs.k))
+      return false;
+    if (__isset.ts != rhs.__isset.ts)
+      return false;
+    else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.v != rhs.__isset.v)
+      return false;
+    else if (__isset.v && !(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const UCell &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UCell & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(UCell &a, UCell &b);
+
+std::ostream& operator<<(std::ostream& out, const UCell& obj);
 
 typedef struct _Cell__isset {
   _Cell__isset() : c(false), k(false), ts(false), v(false) {}

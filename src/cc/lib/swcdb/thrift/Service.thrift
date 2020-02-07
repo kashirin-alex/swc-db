@@ -79,6 +79,18 @@ enum Flag {
 
 typedef list<binary> Key
 
+/* UPDATE CELLS */
+struct UCell {
+  1: Flag             f
+  2: Key              k
+  3: optional i64     ts
+  4: optional binary  v
+}
+typedef list<UCell> UCells
+typedef map<i64, UCells> UCCells
+
+
+/* RESULTS CELLS */
 struct Cell {
   1: string           c
   2: Key              k
@@ -157,5 +169,7 @@ service Service {
 
   i64    updater_create(1:i32 buffer_size)  throws (1:Exception e),
   void   updater_close(1:i64 id)            throws (1:Exception e),
+
+  void   update(1:UCCells cells, 2:i64 updater_id = 0)  throws (1:Exception e),
 
 }

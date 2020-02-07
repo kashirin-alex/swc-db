@@ -36,6 +36,15 @@ std::string key(int i, int f) {
   }
   return key;
 }
+void key(int i, int f, Key& key) {
+  std::string fraction;
+  for(uint8_t n=97;n<97+f;++n) {
+    fraction += (char)n;
+    fraction.append(std::to_string(i));
+    key.emplace_back(fraction);
+    fraction.clear();
+  }
+}
 
 std::string cell_value(int c, int i, int f, int batch) {
   return "DATAOF:"
@@ -347,6 +356,40 @@ void sql_query(Client& client, CellsResult::type rslt) {
 }
 
 
+void update(Client& client, size_t updater_id=0, int batch=0) {
+  std::cout << std::endl << "test: update";
+  if(updater_id)
+    std::cout << " updater_id=" << updater_id;
+  std::cout << ": " << std::endl;
+  
+  Schemas schemas;
+  std::string sql("get schema ");
+  for(auto c=1; c <= num_columns; ++c) {
+    sql.append(column_name(c));
+    if(c != num_columns)
+      sql += ',';
+  }
+  client.sql_list_columns(schemas, sql);
+
+  UCCells cells;
+  auto c=0;
+  for(auto& schema : schemas) {
+    ++c;
+    auto& col = cells[schema.cid];
+    for(auto i=1; i <= num_cells; ++i) {
+      for(auto f=1; f <= num_fractions; ++f) {
+        auto& cell = col.emplace_back();
+        cell.f = Flag::INSERT;
+        key(i, f, cell.k);
+        cell.__set_ts(i*f*c);//now_ns());
+        cell.__set_v(cell_value(c, i, f, batch));
+      }
+    }
+  }
+  //std::cout << cells << "\n";
+  client.update(cells, updater_id);
+}
+
 }
 }}
 
@@ -382,6 +425,12 @@ int main() {
   Test::sql_select(client);
   Test::sql_delete_test_column(client);
 
+  batches = 1;
+  
+  Test::sql_create_test_column(client);
+  Test::update(client);
+  Test::sql_select(client);
+  Test::sql_delete_test_column(client);
 
   /** SPECS **/
 

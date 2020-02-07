@@ -32,6 +32,7 @@ class ServiceIf {
   virtual void sql_update(const std::string& sql, const int64_t updater_id) = 0;
   virtual int64_t updater_create(const int32_t buffer_size) = 0;
   virtual void updater_close(const int64_t id) = 0;
+  virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
 };
 
 class ServiceIfFactory {
@@ -90,6 +91,9 @@ class ServiceNull : virtual public ServiceIf {
     return _return;
   }
   void updater_close(const int64_t /* id */) {
+    return;
+  }
+  void update(const UCCells& /* cells */, const int64_t /* updater_id */) {
     return;
   }
 };
@@ -1204,6 +1208,117 @@ class Service_updater_close_presult {
 
 };
 
+typedef struct _Service_update_args__isset {
+  _Service_update_args__isset() : cells(false), updater_id(true) {}
+  bool cells :1;
+  bool updater_id :1;
+} _Service_update_args__isset;
+
+class Service_update_args {
+ public:
+
+  Service_update_args(const Service_update_args&);
+  Service_update_args& operator=(const Service_update_args&);
+  Service_update_args() : updater_id(0LL) {
+  }
+
+  virtual ~Service_update_args() noexcept;
+  UCCells cells;
+  int64_t updater_id;
+
+  _Service_update_args__isset __isset;
+
+  void __set_cells(const UCCells& val);
+
+  void __set_updater_id(const int64_t val);
+
+  bool operator == (const Service_update_args & rhs) const
+  {
+    if (!(cells == rhs.cells))
+      return false;
+    if (!(updater_id == rhs.updater_id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_update_pargs {
+ public:
+
+
+  virtual ~Service_update_pargs() noexcept;
+  const UCCells* cells;
+  const int64_t* updater_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_result__isset {
+  _Service_update_result__isset() : e(false) {}
+  bool e :1;
+} _Service_update_result__isset;
+
+class Service_update_result {
+ public:
+
+  Service_update_result(const Service_update_result&);
+  Service_update_result& operator=(const Service_update_result&);
+  Service_update_result() {
+  }
+
+  virtual ~Service_update_result() noexcept;
+  Exception e;
+
+  _Service_update_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_update_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_presult__isset {
+  _Service_update_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_update_presult__isset;
+
+class Service_update_presult {
+ public:
+
+
+  virtual ~Service_update_presult() noexcept;
+  Exception e;
+
+  _Service_update_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServiceClient : virtual public ServiceIf {
  public:
   ServiceClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -1259,6 +1374,9 @@ class ServiceClient : virtual public ServiceIf {
   void updater_close(const int64_t id);
   void send_updater_close(const int64_t id);
   void recv_updater_close();
+  void update(const UCCells& cells, const int64_t updater_id);
+  void send_update(const UCCells& cells, const int64_t updater_id);
+  void recv_update();
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -1284,6 +1402,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
@@ -1297,6 +1416,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_update"] = &ServiceProcessor::process_sql_update;
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
+    processMap_["update"] = &ServiceProcessor::process_update;
   }
 
   virtual ~ServiceProcessor() {}
@@ -1421,6 +1541,15 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_[i]->updater_close(id);
   }
 
+  void update(const UCCells& cells, const int64_t updater_id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update(cells, updater_id);
+    }
+    ifaces_[i]->update(cells, updater_id);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1483,6 +1612,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void updater_close(const int64_t id);
   int32_t send_updater_close(const int64_t id);
   void recv_updater_close(const int32_t seqid);
+  void update(const UCCells& cells, const int64_t updater_id);
+  int32_t send_update(const UCCells& cells, const int64_t updater_id);
+  void recv_update(const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
