@@ -83,6 +83,21 @@ std::ostream& operator<<(std::ostream& out, const Flag::type& val);
 
 std::string to_string(const Flag::type& val);
 
+struct CellsResult {
+  enum type {
+    IN_LIST = 0,
+    ON_COLUMN = 1,
+    ON_KEY = 2,
+    ON_FRACTION = 3
+  };
+};
+
+extern const std::map<int, const char*> _CellsResult_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const CellsResult::type& val);
+
+std::string to_string(const CellsResult::type& val);
+
 typedef std::vector<class Schema>  Schemas;
 
 typedef std::vector<std::string>  Key;
@@ -110,6 +125,8 @@ class kCells;
 class FCell;
 
 class FCells;
+
+class CellsGroup;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -628,6 +645,74 @@ class FCells : public virtual ::apache::thrift::TBase {
 void swap(FCells &a, FCells &b);
 
 std::ostream& operator<<(std::ostream& out, const FCells& obj);
+
+typedef struct _CellsGroup__isset {
+  _CellsGroup__isset() : cells(false), ccells(false), kcells(false), fcells(false) {}
+  bool cells :1;
+  bool ccells :1;
+  bool kcells :1;
+  bool fcells :1;
+} _CellsGroup__isset;
+
+class CellsGroup : public virtual ::apache::thrift::TBase {
+ public:
+
+  CellsGroup(const CellsGroup&);
+  CellsGroup& operator=(const CellsGroup&);
+  CellsGroup() {
+  }
+
+  virtual ~CellsGroup() noexcept;
+  Cells cells;
+  CCells ccells;
+  KCells kcells;
+  FCells fcells;
+
+  _CellsGroup__isset __isset;
+
+  void __set_cells(const Cells& val);
+
+  void __set_ccells(const CCells& val);
+
+  void __set_kcells(const KCells& val);
+
+  void __set_fcells(const FCells& val);
+
+  bool operator == (const CellsGroup & rhs) const
+  {
+    if (__isset.cells != rhs.__isset.cells)
+      return false;
+    else if (__isset.cells && !(cells == rhs.cells))
+      return false;
+    if (__isset.ccells != rhs.__isset.ccells)
+      return false;
+    else if (__isset.ccells && !(ccells == rhs.ccells))
+      return false;
+    if (__isset.kcells != rhs.__isset.kcells)
+      return false;
+    else if (__isset.kcells && !(kcells == rhs.kcells))
+      return false;
+    if (__isset.fcells != rhs.__isset.fcells)
+      return false;
+    else if (__isset.fcells && !(fcells == rhs.fcells))
+      return false;
+    return true;
+  }
+  bool operator != (const CellsGroup &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CellsGroup & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CellsGroup &a, CellsGroup &b);
+
+std::ostream& operator<<(std::ostream& out, const CellsGroup& obj);
 
 }} // namespace
 

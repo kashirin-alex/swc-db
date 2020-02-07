@@ -127,6 +127,32 @@ class AppHandler : virtual public BrokerIf {
       exception(err, message);
     return req;
   }
+  
+  void sql_exec_query(CellsGroup& _return, const std::string& sql, 
+                      const CellsResult::type rslt) {
+    switch(rslt) {
+      case CellsResult::ON_COLUMN : {
+        sql_select_rslt_on_column(_return.ccells, sql);
+        _return.__isset.ccells = true;
+        break;
+      }
+      case CellsResult::ON_KEY : {
+        sql_select_rslt_on_key(_return.kcells, sql);
+        _return.__isset.kcells = true;
+        break;
+      }
+      case CellsResult::ON_FRACTION : {
+        sql_select_rslt_on_fraction(_return.fcells, sql);
+        _return.__isset.fcells = true;
+        break;
+      }
+      default : {
+        sql_select(_return.cells, sql);
+        _return.__isset.cells = true;
+        break;
+      }
+    }
+  }
 
   void sql_select(Cells& _return, const std::string& sql) {
     auto req = sync_select(sql);

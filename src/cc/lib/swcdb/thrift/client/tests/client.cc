@@ -70,23 +70,11 @@ void sql_list_columns_all(Client& client) {
   }
 }
 
-void sql_select_rslt_on_column(Client& client) {
-  std::cout << std::endl << "test: sql_select_rslt_on_column: " << std::endl;
-
-  CCells columns;
-  client.sql_select_rslt_on_column(
-    columns, 
-    "select where col(col-test-1)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
-  );
-      
-  std::cout << "columns.size=" << columns.size() << std::endl;
-  for(auto& col : columns) {
-    std::cout << "column=" << col.first 
-              << " cells.size=" << col.second.size() << std::endl;
-    for(auto& cell : col.second) {
-      cell.printTo(std::cout << " ");
-      std::cout << std::endl;
-    }
+void print(const Cells& cells) {
+  std::cout << "cells.size=" << cells.size() << std::endl;
+  for(auto& cell : cells) {
+    cell.printTo(std::cout << " ");
+    std::cout << std::endl;
   }
 }
 
@@ -98,10 +86,36 @@ void sql_select(Client& client) {
     cells, 
     "select where col(col-test-1)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
   );
-      
-  std::cout << "cells.size=" << cells.size() << std::endl;
-  for(auto& cell : cells) {
-    cell.printTo(std::cout << " ");
+  print(cells);
+}
+
+void print(const CCells& cells) {
+  std::cout << "columns.size=" << cells.size() << std::endl;
+  for(auto& col : cells) {
+    std::cout << "column=" << col.first 
+              << " cells.size=" << col.second.size() << std::endl;
+    for(auto& cell : col.second) {
+      cell.printTo(std::cout << " ");
+      std::cout << std::endl;
+    }
+  }
+}
+
+void sql_select_rslt_on_column(Client& client) {
+  std::cout << std::endl << "test: sql_select_rslt_on_column: " << std::endl;
+
+  CCells cells;
+  client.sql_select_rslt_on_column(
+    cells, 
+    "select where col(col-test-1)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
+  );
+  print(cells);
+}
+
+void print(const KCells& cells) {
+  std::cout << "keys.size=" << cells.size() << std::endl;
+  for(auto& key_cells : cells) {
+    key_cells.printTo(std::cout << " ");
     std::cout << std::endl;
   }
 }
@@ -109,23 +123,18 @@ void sql_select(Client& client) {
 void sql_select_rslt_on_key(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_key: " << std::endl;
 
-  KCells keys_cells;
+  KCells cells;
   client.sql_select_rslt_on_key(
-    keys_cells, 
+    cells, 
     "select where" 
     "col(col-test-1)=(cells=(offset=200000 max_versions=1 limit=10 ONLY_KEYS))"
       " and " 
     "col(col-test-2)=(cells=(offset=10000 limit=10 ONLY_KEYS))"
   );
-
-  std::cout << "keys_cells.size=" << keys_cells.size() << std::endl;
-  for(auto& key_cells : keys_cells) {
-    key_cells.printTo(std::cout << " ");
-    std::cout << std::endl;
-  }
+  print(cells);
 }
 
-void printOut(FCells* fcells, Key& key) {
+void print(FCells* fcells, Key& key) {
   for(auto& f : fcells->f) {
     key.emplace_back(f.first);
     std::cout << "fraction='" << f.first << "'"
@@ -137,30 +146,71 @@ void printOut(FCells* fcells, Key& key) {
     for(auto& cell : f.second.cells) {
       std::cout << " " << cell << "\n";
     }
-    printOut(&f.second, key);
+    print(&f.second, key);
     key.clear();
   }
+}
+
+void print(FCells& cells) {
+  cells.printTo(std::cout);
+  std::cout << std::endl;
+  
+  Key key;
+  print(&cells, key);
 }
 
 void sql_select_rslt_on_fraction(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_fraction: " << std::endl;
 
-  FCells fraction_cells;
+  FCells cells;
   client.sql_select_rslt_on_fraction(
-    fraction_cells, 
+    cells, 
     "select where" 
     "col(col-test-1)=(cells=(offset=20280 max_versions=1 limit=52 ONLY_KEYS))"
       " and " 
     "col(col-test-2)=(cells=(offset=1014 limit=52 ONLY_KEYS))"
   );
 
-  fraction_cells.printTo(std::cout);
-  std::cout << std::endl;
-  
-  Key key;
-  printOut(&fraction_cells, key);
+  print(cells);
 }
 
+
+void sql_exec_query(Client& client, CellsResult::type rslt) {
+  std::cout << std::endl << "test: sql_exec_query, " << rslt << ": " << std::endl;
+
+  CellsGroup group;
+  client.sql_exec_query(
+    group, 
+    "select where" 
+    "col(col-test-1)=(cells=(offset=200000 max_versions=1 limit=10 ONLY_KEYS))"
+      " and " 
+    "col(col-test-2)=(cells=(offset=10000 limit=10 ONLY_KEYS))",
+    rslt
+  );
+
+  std::cout << std::endl;
+  group.printTo(std::cout);
+  std::cout << std::endl;
+
+  switch(rslt) {
+    case CellsResult::ON_COLUMN : {
+      print(group.ccells);
+      break;
+    }
+    case CellsResult::ON_KEY : {
+      print(group.kcells);
+      break;
+    }
+    case CellsResult::ON_FRACTION : {
+      print(group.fcells);
+      break;
+    }
+    default : {
+      print(group.cells);
+      break;
+    }
+  }
+}
 
 
 }
@@ -180,6 +230,11 @@ int main() {
   Test::sql_select_rslt_on_column(client);
   Test::sql_select_rslt_on_key(client);
   Test::sql_select_rslt_on_fraction(client);
+
+  Test::sql_exec_query(client, SWC::Thrift::CellsResult::IN_LIST);
+  Test::sql_exec_query(client, SWC::Thrift::CellsResult::ON_COLUMN);
+  Test::sql_exec_query(client, SWC::Thrift::CellsResult::ON_KEY);
+  Test::sql_exec_query(client, SWC::Thrift::CellsResult::ON_FRACTION);
 
   client.close();
 

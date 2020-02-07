@@ -28,6 +28,7 @@ class ServiceIf {
   virtual void sql_select_rslt_on_column(CCells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_key(KCells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) = 0;
+  virtual void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) = 0;
 };
 
 class ServiceIfFactory {
@@ -73,6 +74,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void sql_select_rslt_on_fraction(FCells& /* _return */, const std::string& /* sql */) {
+    return;
+  }
+  void sql_exec_query(CellsGroup& /* _return */, const std::string& /* sql */, const CellsResult::type /* rslt */) {
     return;
   }
 };
@@ -741,6 +745,125 @@ class Service_sql_select_rslt_on_fraction_presult {
 
 };
 
+typedef struct _Service_sql_exec_query_args__isset {
+  _Service_sql_exec_query_args__isset() : sql(false), rslt(false) {}
+  bool sql :1;
+  bool rslt :1;
+} _Service_sql_exec_query_args__isset;
+
+class Service_sql_exec_query_args {
+ public:
+
+  Service_sql_exec_query_args(const Service_sql_exec_query_args&);
+  Service_sql_exec_query_args& operator=(const Service_sql_exec_query_args&);
+  Service_sql_exec_query_args() : sql(), rslt((CellsResult::type)0) {
+  }
+
+  virtual ~Service_sql_exec_query_args() noexcept;
+  std::string sql;
+  CellsResult::type rslt;
+
+  _Service_sql_exec_query_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  void __set_rslt(const CellsResult::type val);
+
+  bool operator == (const Service_sql_exec_query_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    if (!(rslt == rhs.rslt))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_exec_query_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_exec_query_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_exec_query_pargs {
+ public:
+
+
+  virtual ~Service_sql_exec_query_pargs() noexcept;
+  const std::string* sql;
+  const CellsResult::type* rslt;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_exec_query_result__isset {
+  _Service_sql_exec_query_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_exec_query_result__isset;
+
+class Service_sql_exec_query_result {
+ public:
+
+  Service_sql_exec_query_result(const Service_sql_exec_query_result&);
+  Service_sql_exec_query_result& operator=(const Service_sql_exec_query_result&);
+  Service_sql_exec_query_result() {
+  }
+
+  virtual ~Service_sql_exec_query_result() noexcept;
+  CellsGroup success;
+  Exception e;
+
+  _Service_sql_exec_query_result__isset __isset;
+
+  void __set_success(const CellsGroup& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_exec_query_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_exec_query_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_exec_query_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_exec_query_presult__isset {
+  _Service_sql_exec_query_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_exec_query_presult__isset;
+
+class Service_sql_exec_query_presult {
+ public:
+
+
+  virtual ~Service_sql_exec_query_presult() noexcept;
+  CellsGroup* success;
+  Exception e;
+
+  _Service_sql_exec_query_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServiceClient : virtual public ServiceIf {
  public:
   ServiceClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -784,6 +907,9 @@ class ServiceClient : virtual public ServiceIf {
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
   void send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return);
+  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  void send_sql_exec_query(const std::string& sql, const CellsResult::type rslt);
+  void recv_sql_exec_query(CellsGroup& _return);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -805,6 +931,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_exec_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
@@ -814,6 +941,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
     processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
     processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
+    processMap_["sql_exec_query"] = &ServiceProcessor::process_sql_exec_query;
   }
 
   virtual ~ServiceProcessor() {}
@@ -901,6 +1029,16 @@ class ServiceMultiface : virtual public ServiceIf {
     return;
   }
 
+  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_exec_query(_return, sql, rslt);
+    }
+    ifaces_[i]->sql_exec_query(_return, sql, rslt);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -951,6 +1089,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
   int32_t send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return, const int32_t seqid);
+  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  int32_t send_sql_exec_query(const std::string& sql, const CellsResult::type rslt);
+  void recv_sql_exec_query(CellsGroup& _return, const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

@@ -119,12 +119,26 @@ struct FCells {
   2: optional list<FCell>  cells
 }
 
+struct CellsGroup {
+  1: optional Cells   cells
+  2: optional CCells  ccells
+  3: optional KCells  kcells
+  4: optional FCells  fcells
+}
+enum CellsResult {
+  IN_LIST     = 0,
+  ON_COLUMN   = 1,
+  ON_KEY      = 2,
+  ON_FRACTION = 3
+}
+
+
 
 service Service {
 
-  void             sql_mng_column(1:string sql)   throws (1:Exception e),
+  void     sql_mng_column(1:string sql)   throws (1:Exception e),
 
-  Schemas          sql_list_columns(1:string sql) throws (1:Exception e),
+  Schemas  sql_list_columns(1:string sql) throws (1:Exception e),
 
 
   Cells   sql_select(1:string sql)                   throws (1:Exception e),
@@ -134,5 +148,7 @@ service Service {
   KCells  sql_select_rslt_on_key(1:string sql)       throws (1:Exception e),
 
   FCells  sql_select_rslt_on_fraction(1:string sql)  throws (1:Exception e),
+
+  CellsGroup   sql_exec_query(1:string sql, 2:CellsResult rslt)  throws (1:Exception e),
 
 }
