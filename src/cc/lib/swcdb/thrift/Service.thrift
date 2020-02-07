@@ -149,6 +149,13 @@ service Service {
 
   FCells  sql_select_rslt_on_fraction(1:string sql)  throws (1:Exception e),
 
-  CellsGroup   sql_exec_query(1:string sql, 2:CellsResult rslt)  throws (1:Exception e),
+  CellsGroup   sql_query(1:string sql, 2:CellsResult rslt)  throws (1:Exception e),
+
+
+  void   sql_update(1:string sql, 2:i64 updater_id = 0)  throws (1:Exception e),
+
+
+  i64    updater_create(1:i32 buffer_size)  throws (1:Exception e),
+  void   updater_close(1:i64 id)            throws (1:Exception e),
 
 }

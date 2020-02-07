@@ -28,7 +28,10 @@ class ServiceIf {
   virtual void sql_select_rslt_on_column(CCells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_key(KCells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) = 0;
-  virtual void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) = 0;
+  virtual void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) = 0;
+  virtual void sql_update(const std::string& sql, const int64_t updater_id) = 0;
+  virtual int64_t updater_create(const int32_t buffer_size) = 0;
+  virtual void updater_close(const int64_t id) = 0;
 };
 
 class ServiceIfFactory {
@@ -76,7 +79,17 @@ class ServiceNull : virtual public ServiceIf {
   void sql_select_rslt_on_fraction(FCells& /* _return */, const std::string& /* sql */) {
     return;
   }
-  void sql_exec_query(CellsGroup& /* _return */, const std::string& /* sql */, const CellsResult::type /* rslt */) {
+  void sql_query(CellsGroup& /* _return */, const std::string& /* sql */, const CellsResult::type /* rslt */) {
+    return;
+  }
+  void sql_update(const std::string& /* sql */, const int64_t /* updater_id */) {
+    return;
+  }
+  int64_t updater_create(const int32_t /* buffer_size */) {
+    int64_t _return = 0;
+    return _return;
+  }
+  void updater_close(const int64_t /* id */) {
     return;
   }
 };
@@ -745,31 +758,31 @@ class Service_sql_select_rslt_on_fraction_presult {
 
 };
 
-typedef struct _Service_sql_exec_query_args__isset {
-  _Service_sql_exec_query_args__isset() : sql(false), rslt(false) {}
+typedef struct _Service_sql_query_args__isset {
+  _Service_sql_query_args__isset() : sql(false), rslt(false) {}
   bool sql :1;
   bool rslt :1;
-} _Service_sql_exec_query_args__isset;
+} _Service_sql_query_args__isset;
 
-class Service_sql_exec_query_args {
+class Service_sql_query_args {
  public:
 
-  Service_sql_exec_query_args(const Service_sql_exec_query_args&);
-  Service_sql_exec_query_args& operator=(const Service_sql_exec_query_args&);
-  Service_sql_exec_query_args() : sql(), rslt((CellsResult::type)0) {
+  Service_sql_query_args(const Service_sql_query_args&);
+  Service_sql_query_args& operator=(const Service_sql_query_args&);
+  Service_sql_query_args() : sql(), rslt((CellsResult::type)0) {
   }
 
-  virtual ~Service_sql_exec_query_args() noexcept;
+  virtual ~Service_sql_query_args() noexcept;
   std::string sql;
   CellsResult::type rslt;
 
-  _Service_sql_exec_query_args__isset __isset;
+  _Service_sql_query_args__isset __isset;
 
   void __set_sql(const std::string& val);
 
   void __set_rslt(const CellsResult::type val);
 
-  bool operator == (const Service_sql_exec_query_args & rhs) const
+  bool operator == (const Service_sql_query_args & rhs) const
   {
     if (!(sql == rhs.sql))
       return false;
@@ -777,11 +790,11 @@ class Service_sql_exec_query_args {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_exec_query_args &rhs) const {
+  bool operator != (const Service_sql_query_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_exec_query_args & ) const;
+  bool operator < (const Service_sql_query_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -789,11 +802,11 @@ class Service_sql_exec_query_args {
 };
 
 
-class Service_sql_exec_query_pargs {
+class Service_sql_query_pargs {
  public:
 
 
-  virtual ~Service_sql_exec_query_pargs() noexcept;
+  virtual ~Service_sql_query_pargs() noexcept;
   const std::string* sql;
   const CellsResult::type* rslt;
 
@@ -801,31 +814,31 @@ class Service_sql_exec_query_pargs {
 
 };
 
-typedef struct _Service_sql_exec_query_result__isset {
-  _Service_sql_exec_query_result__isset() : success(false), e(false) {}
+typedef struct _Service_sql_query_result__isset {
+  _Service_sql_query_result__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_exec_query_result__isset;
+} _Service_sql_query_result__isset;
 
-class Service_sql_exec_query_result {
+class Service_sql_query_result {
  public:
 
-  Service_sql_exec_query_result(const Service_sql_exec_query_result&);
-  Service_sql_exec_query_result& operator=(const Service_sql_exec_query_result&);
-  Service_sql_exec_query_result() {
+  Service_sql_query_result(const Service_sql_query_result&);
+  Service_sql_query_result& operator=(const Service_sql_query_result&);
+  Service_sql_query_result() {
   }
 
-  virtual ~Service_sql_exec_query_result() noexcept;
+  virtual ~Service_sql_query_result() noexcept;
   CellsGroup success;
   Exception e;
 
-  _Service_sql_exec_query_result__isset __isset;
+  _Service_sql_query_result__isset __isset;
 
   void __set_success(const CellsGroup& val);
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_sql_exec_query_result & rhs) const
+  bool operator == (const Service_sql_query_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -833,32 +846,359 @@ class Service_sql_exec_query_result {
       return false;
     return true;
   }
-  bool operator != (const Service_sql_exec_query_result &rhs) const {
+  bool operator != (const Service_sql_query_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_sql_exec_query_result & ) const;
+  bool operator < (const Service_sql_query_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_sql_exec_query_presult__isset {
-  _Service_sql_exec_query_presult__isset() : success(false), e(false) {}
+typedef struct _Service_sql_query_presult__isset {
+  _Service_sql_query_presult__isset() : success(false), e(false) {}
   bool success :1;
   bool e :1;
-} _Service_sql_exec_query_presult__isset;
+} _Service_sql_query_presult__isset;
 
-class Service_sql_exec_query_presult {
+class Service_sql_query_presult {
  public:
 
 
-  virtual ~Service_sql_exec_query_presult() noexcept;
+  virtual ~Service_sql_query_presult() noexcept;
   CellsGroup* success;
   Exception e;
 
-  _Service_sql_exec_query_presult__isset __isset;
+  _Service_sql_query_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_update_args__isset {
+  _Service_sql_update_args__isset() : sql(false), updater_id(true) {}
+  bool sql :1;
+  bool updater_id :1;
+} _Service_sql_update_args__isset;
+
+class Service_sql_update_args {
+ public:
+
+  Service_sql_update_args(const Service_sql_update_args&);
+  Service_sql_update_args& operator=(const Service_sql_update_args&);
+  Service_sql_update_args() : sql(), updater_id(0LL) {
+  }
+
+  virtual ~Service_sql_update_args() noexcept;
+  std::string sql;
+  int64_t updater_id;
+
+  _Service_sql_update_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  void __set_updater_id(const int64_t val);
+
+  bool operator == (const Service_sql_update_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    if (!(updater_id == rhs.updater_id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_update_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_update_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_update_pargs {
+ public:
+
+
+  virtual ~Service_sql_update_pargs() noexcept;
+  const std::string* sql;
+  const int64_t* updater_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_update_result__isset {
+  _Service_sql_update_result__isset() : e(false) {}
+  bool e :1;
+} _Service_sql_update_result__isset;
+
+class Service_sql_update_result {
+ public:
+
+  Service_sql_update_result(const Service_sql_update_result&);
+  Service_sql_update_result& operator=(const Service_sql_update_result&);
+  Service_sql_update_result() {
+  }
+
+  virtual ~Service_sql_update_result() noexcept;
+  Exception e;
+
+  _Service_sql_update_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_update_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_update_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_update_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_update_presult__isset {
+  _Service_sql_update_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_sql_update_presult__isset;
+
+class Service_sql_update_presult {
+ public:
+
+
+  virtual ~Service_sql_update_presult() noexcept;
+  Exception e;
+
+  _Service_sql_update_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_updater_create_args__isset {
+  _Service_updater_create_args__isset() : buffer_size(false) {}
+  bool buffer_size :1;
+} _Service_updater_create_args__isset;
+
+class Service_updater_create_args {
+ public:
+
+  Service_updater_create_args(const Service_updater_create_args&);
+  Service_updater_create_args& operator=(const Service_updater_create_args&);
+  Service_updater_create_args() : buffer_size(0) {
+  }
+
+  virtual ~Service_updater_create_args() noexcept;
+  int32_t buffer_size;
+
+  _Service_updater_create_args__isset __isset;
+
+  void __set_buffer_size(const int32_t val);
+
+  bool operator == (const Service_updater_create_args & rhs) const
+  {
+    if (!(buffer_size == rhs.buffer_size))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_updater_create_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_updater_create_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_updater_create_pargs {
+ public:
+
+
+  virtual ~Service_updater_create_pargs() noexcept;
+  const int32_t* buffer_size;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_updater_create_result__isset {
+  _Service_updater_create_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_updater_create_result__isset;
+
+class Service_updater_create_result {
+ public:
+
+  Service_updater_create_result(const Service_updater_create_result&);
+  Service_updater_create_result& operator=(const Service_updater_create_result&);
+  Service_updater_create_result() : success(0) {
+  }
+
+  virtual ~Service_updater_create_result() noexcept;
+  int64_t success;
+  Exception e;
+
+  _Service_updater_create_result__isset __isset;
+
+  void __set_success(const int64_t val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_updater_create_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_updater_create_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_updater_create_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_updater_create_presult__isset {
+  _Service_updater_create_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_updater_create_presult__isset;
+
+class Service_updater_create_presult {
+ public:
+
+
+  virtual ~Service_updater_create_presult() noexcept;
+  int64_t* success;
+  Exception e;
+
+  _Service_updater_create_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_updater_close_args__isset {
+  _Service_updater_close_args__isset() : id(false) {}
+  bool id :1;
+} _Service_updater_close_args__isset;
+
+class Service_updater_close_args {
+ public:
+
+  Service_updater_close_args(const Service_updater_close_args&);
+  Service_updater_close_args& operator=(const Service_updater_close_args&);
+  Service_updater_close_args() : id(0) {
+  }
+
+  virtual ~Service_updater_close_args() noexcept;
+  int64_t id;
+
+  _Service_updater_close_args__isset __isset;
+
+  void __set_id(const int64_t val);
+
+  bool operator == (const Service_updater_close_args & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_updater_close_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_updater_close_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_updater_close_pargs {
+ public:
+
+
+  virtual ~Service_updater_close_pargs() noexcept;
+  const int64_t* id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_updater_close_result__isset {
+  _Service_updater_close_result__isset() : e(false) {}
+  bool e :1;
+} _Service_updater_close_result__isset;
+
+class Service_updater_close_result {
+ public:
+
+  Service_updater_close_result(const Service_updater_close_result&);
+  Service_updater_close_result& operator=(const Service_updater_close_result&);
+  Service_updater_close_result() {
+  }
+
+  virtual ~Service_updater_close_result() noexcept;
+  Exception e;
+
+  _Service_updater_close_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_updater_close_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_updater_close_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_updater_close_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_updater_close_presult__isset {
+  _Service_updater_close_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_updater_close_presult__isset;
+
+class Service_updater_close_presult {
+ public:
+
+
+  virtual ~Service_updater_close_presult() noexcept;
+  Exception e;
+
+  _Service_updater_close_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -907,9 +1247,18 @@ class ServiceClient : virtual public ServiceIf {
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
   void send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return);
-  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
-  void send_sql_exec_query(const std::string& sql, const CellsResult::type rslt);
-  void recv_sql_exec_query(CellsGroup& _return);
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  void send_sql_query(const std::string& sql, const CellsResult::type rslt);
+  void recv_sql_query(CellsGroup& _return);
+  void sql_update(const std::string& sql, const int64_t updater_id);
+  void send_sql_update(const std::string& sql, const int64_t updater_id);
+  void recv_sql_update();
+  int64_t updater_create(const int32_t buffer_size);
+  void send_updater_create(const int32_t buffer_size);
+  int64_t recv_updater_create();
+  void updater_close(const int64_t id);
+  void send_updater_close(const int64_t id);
+  void recv_updater_close();
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -931,7 +1280,10 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_exec_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
@@ -941,7 +1293,10 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
     processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
     processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
-    processMap_["sql_exec_query"] = &ServiceProcessor::process_sql_exec_query;
+    processMap_["sql_query"] = &ServiceProcessor::process_sql_query;
+    processMap_["sql_update"] = &ServiceProcessor::process_sql_update;
+    processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
+    processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
   }
 
   virtual ~ServiceProcessor() {}
@@ -1029,14 +1384,41 @@ class ServiceMultiface : virtual public ServiceIf {
     return;
   }
 
-  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_exec_query(_return, sql, rslt);
+      ifaces_[i]->sql_query(_return, sql, rslt);
     }
-    ifaces_[i]->sql_exec_query(_return, sql, rslt);
+    ifaces_[i]->sql_query(_return, sql, rslt);
     return;
+  }
+
+  void sql_update(const std::string& sql, const int64_t updater_id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_update(sql, updater_id);
+    }
+    ifaces_[i]->sql_update(sql, updater_id);
+  }
+
+  int64_t updater_create(const int32_t buffer_size) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->updater_create(buffer_size);
+    }
+    return ifaces_[i]->updater_create(buffer_size);
+  }
+
+  void updater_close(const int64_t id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->updater_close(id);
+    }
+    ifaces_[i]->updater_close(id);
   }
 
 };
@@ -1089,9 +1471,18 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
   int32_t send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return, const int32_t seqid);
-  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
-  int32_t send_sql_exec_query(const std::string& sql, const CellsResult::type rslt);
-  void recv_sql_exec_query(CellsGroup& _return, const int32_t seqid);
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  int32_t send_sql_query(const std::string& sql, const CellsResult::type rslt);
+  void recv_sql_query(CellsGroup& _return, const int32_t seqid);
+  void sql_update(const std::string& sql, const int64_t updater_id);
+  int32_t send_sql_update(const std::string& sql, const int64_t updater_id);
+  void recv_sql_update(const int32_t seqid);
+  int64_t updater_create(const int32_t buffer_size);
+  int32_t send_updater_create(const int32_t buffer_size);
+  int64_t recv_updater_create(const int32_t seqid);
+  void updater_close(const int64_t id);
+  int32_t send_updater_close(const int64_t id);
+  void recv_updater_close(const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

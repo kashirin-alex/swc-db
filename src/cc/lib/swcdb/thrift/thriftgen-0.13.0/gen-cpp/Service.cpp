@@ -1398,11 +1398,11 @@ uint32_t Service_sql_select_rslt_on_fraction_presult::read(::apache::thrift::pro
 }
 
 
-Service_sql_exec_query_args::~Service_sql_exec_query_args() noexcept {
+Service_sql_query_args::~Service_sql_query_args() noexcept {
 }
 
 
-uint32_t Service_sql_exec_query_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_query_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1453,10 +1453,10 @@ uint32_t Service_sql_exec_query_args::read(::apache::thrift::protocol::TProtocol
   return xfer;
 }
 
-uint32_t Service_sql_exec_query_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_query_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_exec_query_args");
+  xfer += oprot->writeStructBegin("Service_sql_query_args");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sql);
@@ -1472,14 +1472,14 @@ uint32_t Service_sql_exec_query_args::write(::apache::thrift::protocol::TProtoco
 }
 
 
-Service_sql_exec_query_pargs::~Service_sql_exec_query_pargs() noexcept {
+Service_sql_query_pargs::~Service_sql_query_pargs() noexcept {
 }
 
 
-uint32_t Service_sql_exec_query_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_query_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("Service_sql_exec_query_pargs");
+  xfer += oprot->writeStructBegin("Service_sql_query_pargs");
 
   xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sql)));
@@ -1495,11 +1495,11 @@ uint32_t Service_sql_exec_query_pargs::write(::apache::thrift::protocol::TProtoc
 }
 
 
-Service_sql_exec_query_result::~Service_sql_exec_query_result() noexcept {
+Service_sql_query_result::~Service_sql_query_result() noexcept {
 }
 
 
-uint32_t Service_sql_exec_query_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_query_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1548,11 +1548,11 @@ uint32_t Service_sql_exec_query_result::read(::apache::thrift::protocol::TProtoc
   return xfer;
 }
 
-uint32_t Service_sql_exec_query_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Service_sql_query_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("Service_sql_exec_query_result");
+  xfer += oprot->writeStructBegin("Service_sql_query_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -1569,11 +1569,11 @@ uint32_t Service_sql_exec_query_result::write(::apache::thrift::protocol::TProto
 }
 
 
-Service_sql_exec_query_presult::~Service_sql_exec_query_presult() noexcept {
+Service_sql_query_presult::~Service_sql_query_presult() noexcept {
 }
 
 
-uint32_t Service_sql_exec_query_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Service_sql_query_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -1602,6 +1602,603 @@ uint32_t Service_sql_exec_query_presult::read(::apache::thrift::protocol::TProto
           xfer += iprot->skip(ftype);
         }
         break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+Service_sql_update_args::~Service_sql_update_args() noexcept {
+}
+
+
+uint32_t Service_sql_update_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sql);
+          this->__isset.sql = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->updater_id);
+          this->__isset.updater_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_sql_update_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_sql_update_args");
+
+  xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->sql);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("updater_id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->updater_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_sql_update_pargs::~Service_sql_update_pargs() noexcept {
+}
+
+
+uint32_t Service_sql_update_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_sql_update_pargs");
+
+  xfer += oprot->writeFieldBegin("sql", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->sql)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("updater_id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->updater_id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_sql_update_result::~Service_sql_update_result() noexcept {
+}
+
+
+uint32_t Service_sql_update_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_sql_update_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("Service_sql_update_result");
+
+  if (this->__isset.e) {
+    xfer += oprot->writeFieldBegin("e", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->e.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_sql_update_presult::~Service_sql_update_presult() noexcept {
+}
+
+
+uint32_t Service_sql_update_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+Service_updater_create_args::~Service_updater_create_args() noexcept {
+}
+
+
+uint32_t Service_updater_create_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->buffer_size);
+          this->__isset.buffer_size = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_updater_create_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_updater_create_args");
+
+  xfer += oprot->writeFieldBegin("buffer_size", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->buffer_size);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_create_pargs::~Service_updater_create_pargs() noexcept {
+}
+
+
+uint32_t Service_updater_create_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_updater_create_pargs");
+
+  xfer += oprot->writeFieldBegin("buffer_size", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((*(this->buffer_size)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_create_result::~Service_updater_create_result() noexcept {
+}
+
+
+uint32_t Service_updater_create_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_updater_create_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("Service_updater_create_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I64, 0);
+    xfer += oprot->writeI64(this->success);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.e) {
+    xfer += oprot->writeFieldBegin("e", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->e.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_create_presult::~Service_updater_create_presult() noexcept {
+}
+
+
+uint32_t Service_updater_create_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+Service_updater_close_args::~Service_updater_close_args() noexcept {
+}
+
+
+uint32_t Service_updater_close_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_updater_close_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_updater_close_args");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_close_pargs::~Service_updater_close_pargs() noexcept {
+}
+
+
+uint32_t Service_updater_close_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Service_updater_close_pargs");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64((*(this->id)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_close_result::~Service_updater_close_result() noexcept {
+}
+
+
+uint32_t Service_updater_close_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->e.read(iprot);
+          this->__isset.e = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Service_updater_close_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("Service_updater_close_result");
+
+  if (this->__isset.e) {
+    xfer += oprot->writeFieldBegin("e", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->e.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+Service_updater_close_presult::~Service_updater_close_presult() noexcept {
+}
+
+
+uint32_t Service_updater_close_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->e.read(iprot);
@@ -1983,18 +2580,18 @@ void ServiceClient::recv_sql_select_rslt_on_fraction(FCells& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_select_rslt_on_fraction failed: unknown result");
 }
 
-void ServiceClient::sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt)
+void ServiceClient::sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt)
 {
-  send_sql_exec_query(sql, rslt);
-  recv_sql_exec_query(_return);
+  send_sql_query(sql, rslt);
+  recv_sql_query(_return);
 }
 
-void ServiceClient::send_sql_exec_query(const std::string& sql, const CellsResult::type rslt)
+void ServiceClient::send_sql_query(const std::string& sql, const CellsResult::type rslt)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("sql_exec_query", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_query", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_exec_query_pargs args;
+  Service_sql_query_pargs args;
   args.sql = &sql;
   args.rslt = &rslt;
   args.write(oprot_);
@@ -2004,7 +2601,7 @@ void ServiceClient::send_sql_exec_query(const std::string& sql, const CellsResul
   oprot_->getTransport()->flush();
 }
 
-void ServiceClient::recv_sql_exec_query(CellsGroup& _return)
+void ServiceClient::recv_sql_query(CellsGroup& _return)
 {
 
   int32_t rseqid = 0;
@@ -2024,12 +2621,12 @@ void ServiceClient::recv_sql_exec_query(CellsGroup& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("sql_exec_query") != 0) {
+  if (fname.compare("sql_query") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  Service_sql_exec_query_presult result;
+  Service_sql_query_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -2042,7 +2639,181 @@ void ServiceClient::recv_sql_exec_query(CellsGroup& _return)
   if (result.__isset.e) {
     throw result.e;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_exec_query failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_query failed: unknown result");
+}
+
+void ServiceClient::sql_update(const std::string& sql, const int64_t updater_id)
+{
+  send_sql_update(sql, updater_id);
+  recv_sql_update();
+}
+
+void ServiceClient::send_sql_update(const std::string& sql, const int64_t updater_id)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("sql_update", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_sql_update_pargs args;
+  args.sql = &sql;
+  args.updater_id = &updater_id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void ServiceClient::recv_sql_update()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("sql_update") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  Service_sql_update_presult result;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.e) {
+    throw result.e;
+  }
+  return;
+}
+
+int64_t ServiceClient::updater_create(const int32_t buffer_size)
+{
+  send_updater_create(buffer_size);
+  return recv_updater_create();
+}
+
+void ServiceClient::send_updater_create(const int32_t buffer_size)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("updater_create", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_updater_create_pargs args;
+  args.buffer_size = &buffer_size;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+int64_t ServiceClient::recv_updater_create()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("updater_create") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  int64_t _return;
+  Service_updater_create_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    return _return;
+  }
+  if (result.__isset.e) {
+    throw result.e;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "updater_create failed: unknown result");
+}
+
+void ServiceClient::updater_close(const int64_t id)
+{
+  send_updater_close(id);
+  recv_updater_close();
+}
+
+void ServiceClient::send_updater_close(const int64_t id)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("updater_close", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_updater_close_pargs args;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void ServiceClient::recv_updater_close()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("updater_close") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  Service_updater_close_presult result;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.e) {
+    throw result.e;
+  }
+  return;
 }
 
 bool ServiceProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -2405,41 +3176,41 @@ void ServiceProcessor::process_sql_select_rslt_on_fraction(int32_t seqid, ::apac
   }
 }
 
-void ServiceProcessor::process_sql_exec_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ServiceProcessor::process_sql_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("Service.sql_exec_query", callContext);
+    ctx = this->eventHandler_->getContext("Service.sql_query", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_exec_query");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_query");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "Service.sql_exec_query");
+    this->eventHandler_->preRead(ctx, "Service.sql_query");
   }
 
-  Service_sql_exec_query_args args;
+  Service_sql_query_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "Service.sql_exec_query", bytes);
+    this->eventHandler_->postRead(ctx, "Service.sql_query", bytes);
   }
 
-  Service_sql_exec_query_result result;
+  Service_sql_query_result result;
   try {
-    iface_->sql_exec_query(result.success, args.sql, args.rslt);
+    iface_->sql_query(result.success, args.sql, args.rslt);
     result.__isset.success = true;
   } catch (Exception &e) {
     result.e = e;
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "Service.sql_exec_query");
+      this->eventHandler_->handlerError(ctx, "Service.sql_query");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("sql_exec_query", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("sql_query", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -2448,17 +3219,186 @@ void ServiceProcessor::process_sql_exec_query(int32_t seqid, ::apache::thrift::p
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "Service.sql_exec_query");
+    this->eventHandler_->preWrite(ctx, "Service.sql_query");
   }
 
-  oprot->writeMessageBegin("sql_exec_query", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("sql_query", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "Service.sql_exec_query", bytes);
+    this->eventHandler_->postWrite(ctx, "Service.sql_query", bytes);
+  }
+}
+
+void ServiceProcessor::process_sql_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("Service.sql_update", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.sql_update");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "Service.sql_update");
+  }
+
+  Service_sql_update_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "Service.sql_update", bytes);
+  }
+
+  Service_sql_update_result result;
+  try {
+    iface_->sql_update(args.sql, args.updater_id);
+  } catch (Exception &e) {
+    result.e = e;
+    result.__isset.e = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "Service.sql_update");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("sql_update", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "Service.sql_update");
+  }
+
+  oprot->writeMessageBegin("sql_update", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "Service.sql_update", bytes);
+  }
+}
+
+void ServiceProcessor::process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("Service.updater_create", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.updater_create");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "Service.updater_create");
+  }
+
+  Service_updater_create_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "Service.updater_create", bytes);
+  }
+
+  Service_updater_create_result result;
+  try {
+    result.success = iface_->updater_create(args.buffer_size);
+    result.__isset.success = true;
+  } catch (Exception &e) {
+    result.e = e;
+    result.__isset.e = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "Service.updater_create");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("updater_create", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "Service.updater_create");
+  }
+
+  oprot->writeMessageBegin("updater_create", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "Service.updater_create", bytes);
+  }
+}
+
+void ServiceProcessor::process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("Service.updater_close", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "Service.updater_close");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "Service.updater_close");
+  }
+
+  Service_updater_close_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "Service.updater_close", bytes);
+  }
+
+  Service_updater_close_result result;
+  try {
+    iface_->updater_close(args.id);
+  } catch (Exception &e) {
+    result.e = e;
+    result.__isset.e = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "Service.updater_close");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("updater_close", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "Service.updater_close");
+  }
+
+  oprot->writeMessageBegin("updater_close", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "Service.updater_close", bytes);
   }
 }
 
@@ -2991,19 +3931,19 @@ void ServiceConcurrentClient::recv_sql_select_rslt_on_fraction(FCells& _return, 
   } // end while(true)
 }
 
-void ServiceConcurrentClient::sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt)
+void ServiceConcurrentClient::sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt)
 {
-  int32_t seqid = send_sql_exec_query(sql, rslt);
-  recv_sql_exec_query(_return, seqid);
+  int32_t seqid = send_sql_query(sql, rslt);
+  recv_sql_query(_return, seqid);
 }
 
-int32_t ServiceConcurrentClient::send_sql_exec_query(const std::string& sql, const CellsResult::type rslt)
+int32_t ServiceConcurrentClient::send_sql_query(const std::string& sql, const CellsResult::type rslt)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("sql_exec_query", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("sql_query", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  Service_sql_exec_query_pargs args;
+  Service_sql_query_pargs args;
   args.sql = &sql;
   args.rslt = &rslt;
   args.write(oprot_);
@@ -3016,7 +3956,7 @@ int32_t ServiceConcurrentClient::send_sql_exec_query(const std::string& sql, con
   return cseqid;
 }
 
-void ServiceConcurrentClient::recv_sql_exec_query(CellsGroup& _return, const int32_t seqid)
+void ServiceConcurrentClient::recv_sql_query(CellsGroup& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -3045,7 +3985,7 @@ void ServiceConcurrentClient::recv_sql_exec_query(CellsGroup& _return, const int
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("sql_exec_query") != 0) {
+      if (fname.compare("sql_query") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -3054,7 +3994,7 @@ void ServiceConcurrentClient::recv_sql_exec_query(CellsGroup& _return, const int
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      Service_sql_exec_query_presult result;
+      Service_sql_query_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -3070,7 +4010,260 @@ void ServiceConcurrentClient::recv_sql_exec_query(CellsGroup& _return, const int
         throw result.e;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_exec_query failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "sql_query failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_->updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_->waitForWork(seqid);
+  } // end while(true)
+}
+
+void ServiceConcurrentClient::sql_update(const std::string& sql, const int64_t updater_id)
+{
+  int32_t seqid = send_sql_update(sql, updater_id);
+  recv_sql_update(seqid);
+}
+
+int32_t ServiceConcurrentClient::send_sql_update(const std::string& sql, const int64_t updater_id)
+{
+  int32_t cseqid = this->sync_->generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
+  oprot_->writeMessageBegin("sql_update", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_sql_update_pargs args;
+  args.sql = &sql;
+  args.updater_id = &updater_id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void ServiceConcurrentClient::recv_sql_update(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(this->sync_.get(), seqid);
+
+  while(true) {
+    if(!this->sync_->getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("sql_update") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      Service_sql_update_presult result;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.e) {
+        sentry.commit();
+        throw result.e;
+      }
+      sentry.commit();
+      return;
+    }
+    // seqid != rseqid
+    this->sync_->updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_->waitForWork(seqid);
+  } // end while(true)
+}
+
+int64_t ServiceConcurrentClient::updater_create(const int32_t buffer_size)
+{
+  int32_t seqid = send_updater_create(buffer_size);
+  return recv_updater_create(seqid);
+}
+
+int32_t ServiceConcurrentClient::send_updater_create(const int32_t buffer_size)
+{
+  int32_t cseqid = this->sync_->generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
+  oprot_->writeMessageBegin("updater_create", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_updater_create_pargs args;
+  args.buffer_size = &buffer_size;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+int64_t ServiceConcurrentClient::recv_updater_create(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(this->sync_.get(), seqid);
+
+  while(true) {
+    if(!this->sync_->getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("updater_create") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      int64_t _return;
+      Service_updater_create_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        sentry.commit();
+        return _return;
+      }
+      if (result.__isset.e) {
+        sentry.commit();
+        throw result.e;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "updater_create failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_->updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_->waitForWork(seqid);
+  } // end while(true)
+}
+
+void ServiceConcurrentClient::updater_close(const int64_t id)
+{
+  int32_t seqid = send_updater_close(id);
+  recv_updater_close(seqid);
+}
+
+int32_t ServiceConcurrentClient::send_updater_close(const int64_t id)
+{
+  int32_t cseqid = this->sync_->generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
+  oprot_->writeMessageBegin("updater_close", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  Service_updater_close_pargs args;
+  args.id = &id;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void ServiceConcurrentClient::recv_updater_close(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(this->sync_.get(), seqid);
+
+  while(true) {
+    if(!this->sync_->getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("updater_close") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      Service_updater_close_presult result;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.e) {
+        sentry.commit();
+        throw result.e;
+      }
+      sentry.commit();
+      return;
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

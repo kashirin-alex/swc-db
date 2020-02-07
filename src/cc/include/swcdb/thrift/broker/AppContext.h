@@ -49,6 +49,9 @@ class AppContext : virtual public BrokerIfFactory {
   }
 
   void releaseHandler(ServiceIf* hdlr) override {
+    AppHandler* handler = dynamic_cast<AppHandler*>(hdlr);
+    handler->disconnected();
+    
     delete hdlr;
   }
 

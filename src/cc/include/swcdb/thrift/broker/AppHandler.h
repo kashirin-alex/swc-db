@@ -17,7 +17,7 @@ class AppHandler : virtual public BrokerIf {
 
   virtual ~AppHandler() { }
 
-  void exception(int err, const std::string& msg) {
+  void exception(int err, const std::string& msg = "") {
     Exception e;
     e.__set_code(err);
     e.__set_message(msg.empty() ? Error::get_text(err) : msg);
@@ -27,6 +27,7 @@ class AppHandler : virtual public BrokerIf {
     throw e;
   }
 
+  /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) {
 
     int err = Error::OK;
@@ -61,13 +62,15 @@ class AppHandler : virtual public BrokerIf {
       auto& schema = _return[c++];
       schema.__set_cid(dbschema->cid);
       schema.__set_col_name(dbschema->col_name);
-      schema.__set_col_type((ColumnType::type)dbschema->col_type);
+      schema.__set_col_type(
+        (ColumnType::type)(uint8_t)dbschema->col_type);
 
       schema.__set_cell_versions(dbschema->cell_versions);
       schema.__set_cell_ttl(dbschema->cell_ttl);
 
       schema.__set_blk_replication(dbschema->blk_replication);
-      schema.__set_blk_encoding((EncodingType::type)dbschema->blk_encoding);
+      schema.__set_blk_encoding(
+        (EncodingType::type)(uint8_t)dbschema->blk_encoding);
       schema.__set_blk_size(dbschema->blk_size);
       schema.__set_blk_cells(dbschema->blk_cells);
 
@@ -111,6 +114,7 @@ class AppHandler : virtual public BrokerIf {
       Env::Clients::get()->schemas->remove(schema->col_name);
   }
   
+  /* SQL QUERY */
   Protocol::Common::Req::Query::Select::Ptr sync_select(const std::string& sql) {
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
     int err = Error::OK;
@@ -128,8 +132,8 @@ class AppHandler : virtual public BrokerIf {
     return req;
   }
   
-  void sql_exec_query(CellsGroup& _return, const std::string& sql, 
-                      const CellsResult::type rslt) {
+  void sql_query(CellsGroup& _return, const std::string& sql, 
+                 const CellsResult::type rslt) {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         sql_select_rslt_on_column(_return.ccells, sql);
@@ -165,7 +169,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, "");
+      exception(err);
   }
 
   static void process_results(
@@ -173,14 +177,15 @@ class AppHandler : virtual public BrokerIf {
           bool with_value, Cells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector vec; 
+    size_t c;
     for(auto cid : result->get_cids()) {
       vec.free();
       result->get_cells(cid, vec);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
-      _return.resize(vec.cells.size());
+      c = _return.size();
+      _return.resize(c+vec.cells.size());
 
-      uint32_t c = 0;
       for(auto& dbcell : vec.cells) {
         auto& cell = _return[c++];
         
@@ -206,7 +211,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, "");
+      exception(err);
   }
 
   static void process_results(
@@ -249,7 +254,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, "");
+      exception(err);
   }
 
   static void process_results(
@@ -297,7 +302,7 @@ class AppHandler : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err, "");
+      exception(err);
   }
 
   static void process_results(
@@ -334,6 +339,113 @@ class AppHandler : virtual public BrokerIf {
       }
     }
   }
+  
+  /* UPDATE */
+  int64_t updater_create(const int32_t buffer_size) {
+    std::scoped_lock lock(m_mutex);
+
+    int64_t id = 1;
+    for(auto it = m_updaters.begin();
+        it != m_updaters.end();
+        it = m_updaters.find(++id)
+    );
+    m_updaters[id] = std::make_shared<Protocol::Common::Req::Query::Update>();
+    if(buffer_size)
+      m_updaters[id]->buff_sz = buffer_size;
+    return id;
+  }
+
+  void updater_close(const int64_t id) {
+    Protocol::Common::Req::Query::Update:: Ptr req;
+    {
+      std::scoped_lock lock(m_mutex);
+    
+      auto it = m_updaters.find(id);
+      if(it == m_updaters.end())
+        exception(ERANGE, "Updater ID not found");
+      req = it->second;
+      m_updaters.erase(it);
+    }
+    updater_close(req);
+  }
+
+  void sql_update(const std::string& sql, const int64_t updater_id){
+    
+    Protocol::Common::Req::Query::Update::Ptr req = nullptr;
+    if(updater_id)
+      updater(updater_id, req);
+    else
+      req = std::make_shared<Protocol::Common::Req::Query::Update>();
+
+    std::string message;
+    uint8_t display_flags = 0;
+    int err = Error::OK;
+    client::SQL::parse_update(
+      err, sql, 
+      *req->columns.get(), *req->columns_onfractions.get(), 
+      display_flags, message
+    );
+    if(err) 
+      exception(err, message);
+      
+    if(updater_id) {
+      size_t cells_bytes = req->columns->size_bytes() 
+                         + req->columns_onfractions->size_bytes();
+      if(req->result->completion && cells_bytes > req->buff_sz*3)
+        req->wait();
+      if(!req->result->completion && cells_bytes >= req->buff_sz)
+        req->commit();
+    } else {
+      req->commit();
+      req->wait();
+    }
+    if(req->result->err)
+      exception(req->result->err);
+  }
+
+  void disconnected() {
+    updater_close();
+  }
+
+  private:
+
+  void updater_close() {
+    Protocol::Common::Req::Query::Update:: Ptr req;
+    for(;;) {
+      {
+        std::scoped_lock lock(m_mutex);
+        auto it = m_updaters.begin();
+        if(it == m_updaters.end()) 
+          break;
+        m_updaters.erase(it);
+        req = it->second;
+      }
+      try { updater_close(req); } catch(...) {}
+    }
+  }
+
+  void updater(const int64_t id, Protocol::Common::Req::Query::Update::Ptr& req) {
+    std::scoped_lock lock(m_mutex);
+
+    auto it = m_updaters.find(id);
+    if(it == m_updaters.end())
+      exception(ERANGE, "Updater ID not found");
+    req = it->second;
+  }
+
+  void updater_close(Protocol::Common::Req::Query::Update:: Ptr req) {
+    size_t cells_bytes = req->columns->size_bytes() 
+                       + req->columns_onfractions->size_bytes();
+    if(!req->result->completion && cells_bytes)
+      req->commit();
+    if(req->result->completion)
+      req->wait();
+    if(req->result->err)
+      exception(req->result->err);
+  }
+
+  std::mutex m_mutex;
+  std::unordered_map<int64_t, Protocol::Common::Req::Query::Update::Ptr> m_updaters;
 };
 
 

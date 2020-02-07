@@ -50,9 +50,24 @@ class ServiceHandler : virtual public ServiceIf {
     printf("sql_select_rslt_on_fraction\n");
   }
 
-  void sql_exec_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
     // Your implementation goes here
-    printf("sql_exec_query\n");
+    printf("sql_query\n");
+  }
+
+  void sql_update(const std::string& sql, const int64_t updater_id) {
+    // Your implementation goes here
+    printf("sql_update\n");
+  }
+
+  int64_t updater_create(const int32_t buffer_size) {
+    // Your implementation goes here
+    printf("updater_create\n");
+  }
+
+  void updater_close(const int64_t id) {
+    // Your implementation goes here
+    printf("updater_close\n");
   }
 
 };
