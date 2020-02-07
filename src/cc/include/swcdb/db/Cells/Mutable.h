@@ -283,7 +283,7 @@ class Mutable final {
         continue;
       }
 
-      if(cell->get_revision() == revision_new) {
+      if(revision_new != AUTO_ASSIGN && cell->get_revision() == revision_new) {
         cell->copy(e_cell);
         return;
       }
