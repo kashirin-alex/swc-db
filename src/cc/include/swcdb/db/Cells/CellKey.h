@@ -307,6 +307,12 @@ class Key {
     }
   }
 
+  void read(const std::vector<std::string>& key)  {
+    free();
+    for(auto& f : key)
+      add(f);
+  }
+
   const bool equal(const std::vector<std::string>& key) const {
     if(key.size() != count)
       return false;
