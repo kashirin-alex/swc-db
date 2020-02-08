@@ -93,7 +93,7 @@ struct Select final {
 
 
   void add_column(const int64_t cid) {
-    m_columns.insert(std::make_pair(cid, std::make_shared<Rsp>()));
+    m_columns.emplace(cid, std::make_shared<Rsp>());
   }
   
   const bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
@@ -119,9 +119,10 @@ struct Select final {
   }
 
   const std::vector<int64_t> get_cids() const {
-    std::vector<int64_t> list;
+    std::vector<int64_t> list(m_columns.size());
+    int i = 0;
     for(const auto& col : m_columns)
-      list.push_back(col.first);
+      list[i++] = col.first;
     return list;
   }
 

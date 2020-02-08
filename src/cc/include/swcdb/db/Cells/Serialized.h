@@ -82,7 +82,7 @@ class Serialized final {
 
     auto it = m_map.find(cid);
     if(it == m_map.end()){
-      m_map.insert(Pair(cid, buff));
+      m_map.emplace(cid, buff);
     } else {
       it->second->add(buff->base, buff->fill());
     }
@@ -96,7 +96,7 @@ class Serialized final {
     if(it == m_map.end()){
       data.interval = Specs::Interval::make_ptr();
       data.buffer = std::make_shared<DynamicBuffer>();
-      m_map.insert(Pair(cid, data));
+      m_map.emplace(cid, data);
     } else
       data = it->second;
 

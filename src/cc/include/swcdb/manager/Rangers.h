@@ -32,6 +32,10 @@ class Rangers final {
     std::function<void(int)>          cb;
   };
   struct ColumnFunction final {
+    ColumnFunction() { }
+    ColumnFunction(Protocol::Mngr::Params::ColumnMng::Function func, 
+                   int64_t cid) :  func(func), cid(cid) { 
+    }
     Protocol::Mngr::Params::ColumnMng::Function func;
     int64_t cid;
   };
@@ -166,7 +170,7 @@ class Rangers final {
                                      && err == Error::OK) {
           {
             std::lock_guard<std::mutex> lock(m_mutex_columns);
-            m_cid_pending_load.push_back({.func=co_func, .cid=schema->cid});
+            m_cid_pending_load.emplace_back(co_func, schema->cid);
           }
           if(!m_root_mngr)
             Env::Schemas::get()->replace(schema);;
@@ -725,11 +729,10 @@ class Rangers final {
       }
     }
     if(rs_last == nullptr){
-      rs_last = std::make_shared<Ranger>(0, last_rgr->endpoints);
-      rs_last->init_queue();
       std::lock_guard<std::mutex> lock(m_mutex_rgr_status);
+      rs_last = m_rgr_status.emplace_back(new Ranger(0, last_rgr->endpoints));
+      rs_last->init_queue();
       std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
-      m_rgr_status.push_back(rs_last);
       rs_last->state = Ranger::State::AWAIT;
       id_due = false;
     }
@@ -778,9 +781,8 @@ class Rangers final {
       }
     } while(!ok);
 
-    Ranger::Ptr h = std::make_shared<Ranger>(nxt, endpoints);
+    Ranger::Ptr& h = m_rgr_status.emplace_back(new Ranger(nxt, endpoints));
     h->init_queue();
-    m_rgr_status.push_back(h);
     return h;
   }
   

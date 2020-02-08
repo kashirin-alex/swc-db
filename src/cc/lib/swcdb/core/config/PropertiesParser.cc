@@ -147,7 +147,7 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
     add_pos(pos.second, pos.first);
 
   for(const auto &kv : other_cfg.options)
-    options.insert(MapPair(kv.first, kv.second));
+    options.emplace(kv.first, kv.second);
     //auto r= if(r.second && !kv.second.aliases.empty()) { } // ?merge alias
   return *this;
 }
@@ -156,23 +156,18 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
 ParserConfig& ParserConfig::add(const std::string& names, 
                                 Property::Value::Ptr vptr, 
                                 const std::string& description) {
-  ParserOpt opt;
-  opt.value = vptr;
-  opt.desc = description;
-  
+  Strings aliases;
   std::istringstream f(names);
   std::string s;    
   while (getline(f, s, ',')) {
     s.erase(std::remove_if(s.begin(), s.end(),
     [](unsigned char x){return std::isspace(x);}), s.end());
-    opt.aliases.push_back(s);
-  }
-  std::string name = opt.aliases.front();
-  opt.aliases.erase(opt.aliases.begin());
-
-  auto r = options.insert(MapPair(name, opt));
-  if (r.second) // overwrite previous
-    (*r.first).second = opt;
+    aliases.push_back(s);
+  }  
+  ParserOpt& opt = options[aliases.front()];
+  opt.value = vptr;
+  opt.desc = description;
+  opt.aliases.assign(aliases.begin()+1, aliases.end());
   return *this;
 }
 
@@ -204,7 +199,7 @@ ParserConfig& ParserConfig::operator()(const std::string &name,
     
 /* Method to add_pos option */
 ParserConfig& ParserConfig::add_pos(const std::string s, int pos){
-  positions.push_back(std::make_pair(pos, s));
+  positions.emplace_back(pos, s);
   return *this;
 }
 
@@ -305,7 +300,7 @@ std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg) {
 Strings Parser::args_to_strings(int argc, char *argv[]) {
   Strings raw_strings;
   for(int n=1; n<argc; ++n)  
-    raw_strings.push_back(std::string(argv[n]));
+    raw_strings.emplace_back(argv[n]);
   return raw_strings;
 }
 
@@ -479,8 +474,7 @@ void Parser::parse_line(const std::string& line) {
 }
 
 void Parser::set_pos_parse(const std::string& name, const std::string& value) {
-  auto r = raw_opts.insert(Pair(name, Strings()));
-  (*r.first).second.push_back(value);
+  raw_opts[name].push_back(value);
 }
 
 const bool Parser::parse_opt(const std::string& s){
@@ -494,14 +488,12 @@ const bool Parser::parse_opt(const std::string& s){
   if(!config.has(name, alias_to) && !m_unregistered)
     return false;
     
-  auto r = raw_opts.insert(
-    Pair(alias_to.length() ? alias_to : name, Strings()));
-
+  auto& r = raw_opts[alias_to.length() ? alias_to : name];
   std::string value = s.substr(at+1);
   // SWC_LOGF(LOG_INFO, "value: %s", value.c_str());
   if(value.empty()) 
     return true;
-  (*r.first).second.push_back(value);
+  r.push_back(value);
   return true;
 }
 
@@ -524,7 +516,8 @@ void Parser::make_options() {
 void Parser::add_opt(const std::string& name, Property::Value::Ptr p, 
                      const Strings& raw_opt) {
   auto tmp = p ? p : str();
-  auto p_set = Property::Value::make_new(tmp, raw_opt);
+  auto& p_set = m_opts.map.emplace(
+    name, Property::Value::make_new(tmp, raw_opt)).first->second;
   if(!p) {
     delete tmp;
   }
@@ -532,7 +525,6 @@ void Parser::add_opt(const std::string& name, Property::Value::Ptr p,
     p_set->default_value();
   if(p->is_guarded())
     p_set->guarded(true);
-  m_opts.map.insert(std::make_pair(name, p_set));
 }
       
 void Parser::own_options(Parser::Options& opts) {

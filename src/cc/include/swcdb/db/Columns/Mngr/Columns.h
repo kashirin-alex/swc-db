@@ -18,7 +18,6 @@
 namespace SWC { namespace server { namespace Mngr {
 
 typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
-typedef std::pair<int64_t, Column::Ptr>           ColumnsMapPair;
 
 
 class Columns final {
@@ -50,8 +49,7 @@ class Columns final {
       if (it != m_columns.end())
         return false;
 
-      col = std::make_shared<Column>(cid);
-      m_columns.insert(ColumnsMapPair(cid, col));
+      m_columns.emplace(cid, col = std::make_shared<Column>(cid));
     }
 
     col->init(err);
@@ -68,8 +66,7 @@ class Columns final {
         return it->second;
         
       else if(initialize) {
-        col = std::make_shared<Column>(cid);
-        m_columns.insert(ColumnsMapPair(cid, col));
+        m_columns.emplace(cid, col = std::make_shared<Column>(cid));
       }
     }
     if(initialize) 

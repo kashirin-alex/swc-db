@@ -68,11 +68,8 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
       if(has_endpoint(host->endpoints, endpoints))
         return host;
     }
-
-    auto host = std::make_shared<Host>(
-      shared_from_this(), endpoints, cfg_keepalive_ms);
-    m_hosts.push_back(host);
-    return host;
+    return m_hosts.emplace_back(
+      new Host(shared_from_this(), endpoints, cfg_keepalive_ms));
   }
 
   void remove(const EndPoints& endpoints) {

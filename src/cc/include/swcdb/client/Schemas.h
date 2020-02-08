@@ -51,7 +51,7 @@ class Schemas  {
       request(err, cid);
       schema = m_schemas->get(cid);
       if(schema != nullptr)
-        m_track.insert(std::make_pair(cid, Time::now_ms()));
+        m_track.emplace(cid, Time::now_ms());
     } else 
       schema = m_schemas->get(cid);
 
@@ -71,7 +71,7 @@ class Schemas  {
       err = Error::COLUMN_SCHEMA_MISSING;
     else {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_track.insert(std::make_pair(schema->cid, Time::now_ms()));
+      m_track.emplace(schema->cid, Time::now_ms());
     }
     return schema;
   }

@@ -61,9 +61,10 @@ class Column : public Serializable {
     //std::cout  << " copy(const Column &other)\n";
     cid = other.cid;
     free();
-    intervals.reserve(other.intervals.size());
+    intervals.resize(other.intervals.size());
+    int i = 0;
     for(const auto& intval : other.intervals)
-      intervals.push_back(Interval::make_ptr(intval));
+      intervals[i++] = Interval::make_ptr(intval);
   }
 
   virtual ~Column(){
@@ -117,9 +118,9 @@ class Column : public Serializable {
     cid = Serialization::decode_vi64(bufp, remainp);
     uint32_t sz = Serialization::decode_vi32(bufp, remainp);
     free();
-    intervals.reserve(sz);
-    for (auto i=sz;i--;)
-      intervals.push_back(Interval::make_ptr(bufp, remainp));
+    intervals.resize(sz);
+    for (auto i=0;i<sz;++i)
+      intervals[i] = Interval::make_ptr(bufp, remainp);
   }
   
   const std::string to_string() {

@@ -239,10 +239,10 @@ void ConnHandler::write(ConnHandler::Outgoing* data) {
 
   if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
     std::scoped_lock lock(m_mutex_reading);
-    m_pending.insert(std::make_pair(
-      data->cbuf->header.id, 
+    m_pending.emplace(
+      data->cbuf->header.id,
       new ConnHandler::PendingRsp(data->hdlr, get_timer(data->cbuf->header))
-    ));
+    );
   }
     
   std::vector<asio::const_buffer> buffers;

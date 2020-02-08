@@ -28,7 +28,7 @@ class Fds final {
     
     do{
       if(++m_next_fd < 0) m_next_fd=1;
-    } while(!m_fds.insert(FdpPair(m_next_fd, fd)).second);
+    } while(!m_fds.emplace(m_next_fd, fd).second);
     return m_next_fd;
   }
 

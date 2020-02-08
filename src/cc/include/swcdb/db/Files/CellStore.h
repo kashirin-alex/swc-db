@@ -177,16 +177,17 @@ class Read final {
 
     const uint8_t* chk_ptr;
 
-    Block::Read::Ptr blk;
+    blocks.clear();
+    blocks.resize(blks_count);
     for(int n = 0; n < blks_count; ++n) {
       chk_ptr = ptr;
 
       uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
-      blk = Block::Read::make(
+      auto& blk = (blocks[n] = Block::Read::make(
         offset, 
         DB::Cells::Interval(&ptr, &remain),
         cell_revs
-      );  
+      ));  
       if(!checksum_i32_chk(
           Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
         Env::FsInterface::interface()->close(err, smartfd); 
@@ -194,7 +195,6 @@ class Read final {
         return;
       }
 
-      blocks.push_back(blk);
       interval.expand(blk->interval);
     }
 
@@ -264,8 +264,7 @@ class Read final {
   }
 
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
-    for(auto blk : blocks)
-      to.push_back(blk);
+    to.assign(blocks.begin(), blocks.end());
   }
 
   size_t release(size_t bytes) {   
@@ -418,15 +417,13 @@ class Write : public std::enable_shared_from_this<Write> {
   void block(int& err, const DB::Cells::Interval& blk_intval, 
              DynamicBuffer& cells_buff, uint32_t cell_count) {
 
-    Block::Write::Ptr blk = std::make_shared<Block::Write>(
-      size, blk_intval, cell_count);
+    Block::Write::Ptr& blk = m_blocks.emplace_back(
+      new Block::Write(size, blk_intval, cell_count));
     
     DynamicBuffer buff_raw;
     blk->write(err, encoder, cells_buff, buff_raw);
     if(err)
       return;
-    
-    m_blocks.push_back(blk);
     
     StaticBuffer buff_write(buff_raw);
     size += buff_write.size;

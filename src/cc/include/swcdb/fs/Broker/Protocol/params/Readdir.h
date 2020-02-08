@@ -76,13 +76,11 @@ class ReaddirRsp : public Serializable {
   void decode_internal(uint8_t version, const uint8_t **bufp,
 	                     size_t *remainp) override {
     (void)version;
-    int32_t count = (int32_t)Serialization::decode_i32(bufp, remainp);
-    m_listing.reserve(count);
-    Dirent entry;
-    for (int32_t i=0; i<count; i++) {
-      entry.decode(bufp, remainp);
-      m_listing.push_back(entry);
-    }
+    int32_t count = Serialization::decode_i32(bufp, remainp);
+    m_listing.clear();
+    m_listing.resize(count);
+    for (int32_t i=0; i<count; i++)
+      m_listing[i].decode(bufp, remainp);
   }
   
   DirentList m_listing;

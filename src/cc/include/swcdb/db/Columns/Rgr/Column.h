@@ -22,7 +22,6 @@ class Column final {
 
   typedef std::shared_ptr<Column>                 Ptr;
   typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
-  typedef std::pair<int64_t, Range::Ptr>          RangesMapPair;
 
   const DB::ColumnCfg  cfg;
 
@@ -63,8 +62,7 @@ class Column final {
         if(err)
           return range;
           
-        range = std::make_shared<Range>(&cfg, rid);
-        m_ranges.insert(RangesMapPair(rid, range));;
+        m_ranges.emplace(rid, range = std::make_shared<Range>(&cfg, rid));
       }
     }
     if(initialize)

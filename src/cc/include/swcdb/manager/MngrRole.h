@@ -228,7 +228,7 @@ class MngrRole final {
   void update_manager_addr(uint64_t hash, const EndPoint& mngr_host){
     std::scoped_lock lock(m_mutex);
 
-    bool new_srv = m_mngrs_client_srv.insert(std::make_pair(hash, mngr_host)).second;
+    bool new_srv = m_mngrs_client_srv.emplace(hash, mngr_host).second;
     if(new_srv) {
       //m_major_updates = true;
       timer_managers_checkin(500);
@@ -243,7 +243,7 @@ class MngrRole final {
     
       auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
       if(it != m_mngrs_client_srv.end()) {
-        endpoints.push_back((*it).second);
+        endpoints.push_back(it->second);
         m_mngrs_client_srv.erase(it);
       } else 
         endpoints.push_back(endpoint_server);
@@ -333,8 +333,8 @@ class MngrRole final {
         }
         if(found)continue;
 
-        m_states.push_back(std::make_shared<MngrStatus>(
-          g->col_begin, g->col_end, endpoints, nullptr, ++pr)); 
+        m_states.emplace_back(
+          new MngrStatus(g->col_begin, g->col_end, endpoints, nullptr, ++pr));
       }
     }
     

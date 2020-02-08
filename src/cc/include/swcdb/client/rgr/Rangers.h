@@ -74,17 +74,11 @@ class Rangers  {
     std::scoped_lock lock(m_mutex);
     auto c = m_map.find(cid);
     if(c == m_map.end()) {
-      m_map.insert(
-        std::make_pair(
-          cid, 
-          (Ranges){{rid, Range(Time::now_ms(), endpoints) }} ));
+      m_map[cid].emplace(rid, Range(Time::now_ms(), endpoints));
     } else {
       auto r = c->second.find(rid);
       if(r == c->second.end()) {
-        c->second.insert(
-          std::make_pair(
-            rid, 
-            Range(Time::now_ms(), endpoints) ));
+        c->second.emplace(rid, Range(Time::now_ms(), endpoints));
       } else {
         r->second = Range(Time::now_ms(), endpoints);
       }

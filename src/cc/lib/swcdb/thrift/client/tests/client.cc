@@ -37,12 +37,10 @@ std::string key(int i, int f) {
   return key;
 }
 void key(int i, int f, Key& key) {
-  std::string fraction;
   for(uint8_t n=97;n<97+f;++n) {
+    std::string& fraction = key.emplace_back();
     fraction += (char)n;
     fraction.append(std::to_string(i));
-    key.emplace_back(fraction);
-    fraction.clear();
   }
 }
 

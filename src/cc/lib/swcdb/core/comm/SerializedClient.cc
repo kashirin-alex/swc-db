@@ -153,15 +153,16 @@ ServerConnections::Ptr Serialized::get_srv(EndPoint endpoint) {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   auto it = m_srv_conns.find(hash);
-  if(it != m_srv_conns.end())
-    return (*it).second;
-
-  auto srv = std::make_shared<ServerConnections>(
-    m_srv_name, endpoint, m_ioctx, m_ctx, 
-    m_use_ssl && m_ssl_cfg->need_ssl(endpoint) ? m_ssl_cfg : nullptr
-  );
-  m_srv_conns.insert(std::make_pair(hash, srv));
-  return srv;
+  if(it == m_srv_conns.end())
+    it = m_srv_conns.emplace(
+      hash, 
+      std::make_shared<ServerConnections>(
+        m_srv_name, endpoint, m_ioctx, m_ctx,
+        m_use_ssl && m_ssl_cfg->need_ssl(endpoint) ? m_ssl_cfg : nullptr
+      )
+    ).first;
+    
+  return it->second;
 }
 
 ConnHandlerPtr Serialized::get_connection(

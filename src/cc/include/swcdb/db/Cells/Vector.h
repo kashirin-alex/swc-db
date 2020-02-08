@@ -36,8 +36,10 @@ class Vector  {
   }
 
   void add(Vector& other) {
+    size_t offset = cells.size();
+    cells.resize(offset+other.cells.size());
     for(auto cell : other.cells)
-      cells.push_back(cell);
+      cells[offset++] = cell;
   }
 
   void add(const Cell& cell) {

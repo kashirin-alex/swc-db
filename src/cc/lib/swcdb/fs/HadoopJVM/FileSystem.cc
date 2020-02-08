@@ -233,7 +233,6 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
   std::string abspath = get_abspath(name);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
-  Dirent entry;
   hdfsFileInfo *fileInfo;
   int numEntries;
 
@@ -251,6 +250,7 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
   for (int i=0; i<numEntries; i++) {
     if (fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
       continue;
+    auto& entry = results.emplace_back();
     const char *ptr;
     if ((ptr = strrchr(fileInfo[i].mName, '/')))
       entry.name = (std::string)(ptr+1);
@@ -260,7 +260,6 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
     entry.length = fileInfo[i].mSize;
     entry.last_modification_time = fileInfo[i].mLastMod;
     entry.is_dir = fileInfo[i].mKind == kObjectKindDirectory;
-    results.push_back(entry);      
   }
 
   hdfsFreeFileInfo(fileInfo, numEntries);

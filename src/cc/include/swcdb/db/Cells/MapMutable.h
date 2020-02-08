@@ -132,15 +132,12 @@ class MapMutable {
     if(m_map.find(cid) != m_map.end())
       return false;
 
-    return m_map.insert(
-      std::make_pair(cid, ColCells::make(cid, versions, ttl, type))
-    ).second;
+    return m_map.emplace(cid, ColCells::make(cid, versions, ttl, type)).second;
   }
 
   const bool create(const int64_t cid, Mutable& cells) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_map.insert(
-      std::make_pair(cid, ColCells::make(cid, cells))).second;
+    return m_map.emplace(cid, ColCells::make(cid, cells)).second;
   }
 
   const bool exists(int64_t cid) {
@@ -155,7 +152,7 @@ class MapMutable {
 
     auto it = m_map.find(cid);
     if(it == m_map.end())
-      m_map.insert(ColumnCells(cid, cells));
+      m_map.emplace(cid, cells);
     else
       cells->add_to(it->second);
   }

@@ -159,7 +159,7 @@ class Properties {
    */
   template<typename T>
   InsRet add(const std::string &name, T v) {
-    return m_map.insert(MapPair(name, new Property::Value(v)));
+    return m_map.emplace(name, new Property::Value(v));
   }
   /**
    * Add property to the map
@@ -169,7 +169,7 @@ class Properties {
    * @return An iterator to the new item
    */
   InsRet add(const std::string &name, Property::Value::Ptr v) {
-    return m_map.insert(MapPair(name, v));
+    return m_map.emplace(name, v);
   }
 
   /**

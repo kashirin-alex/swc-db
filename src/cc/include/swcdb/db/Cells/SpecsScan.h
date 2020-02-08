@@ -31,9 +31,10 @@ class Scan : public Serializable {
   void copy(const Scan &other) {
     //std::cout  << " copy(const Scan &other)\n";
     free();
-    columns.reserve(other.columns.size());
+    columns.resize(other.columns.size());
+    int i = 0;
     for(const auto& col : other.columns)
-      columns.push_back(Column::make_ptr(col));
+      columns[i++] = Column::make_ptr(col);
     flags.copy(other.flags);
   }
   
@@ -87,9 +88,9 @@ class Scan : public Serializable {
 	                		size_t *remainp){
     uint32_t sz = Serialization::decode_vi32(bufp, remainp);
     free();
-    columns.reserve(sz);
-    for (auto i=sz;i--;)
-      columns.push_back(Column::make_ptr(bufp, remainp));
+    columns.resize(sz);
+    for(auto i=0;i<sz;++i)
+      columns[i] = Column::make_ptr(bufp, remainp);
     flags.decode(bufp, remainp);
   }
   

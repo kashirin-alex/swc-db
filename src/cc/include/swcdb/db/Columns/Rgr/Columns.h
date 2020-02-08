@@ -20,7 +20,6 @@
 namespace SWC { namespace server { namespace Rgr {
 
 typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
-typedef std::pair<int64_t, Column::Ptr>           ColumnsMapPair;
 
 
 
@@ -52,8 +51,7 @@ class Columns final {
       if (it != m_columns.end()) {
         col = it->second;
       } else {
-        col = std::make_shared<Column>(cid);
-        m_columns.insert(ColumnsMapPair(cid, col));
+        m_columns.emplace(cid, col = std::make_shared<Column>(cid));
       }
       col->cfg.update(schema);
     }

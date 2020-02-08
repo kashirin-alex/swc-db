@@ -51,8 +51,7 @@ class FileWriter {
 
   void write(Protocol::Common::Req::Query::Select::Result::Ptr result) {
     for(auto cid : result->get_cids()) {
-      schemas.insert(
-        std::make_pair(cid, Env::Clients::get()->schemas->get(err, cid)));
+      schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
       if(err)
         break;
     }
@@ -178,8 +177,10 @@ class FileWriter {
     if(smartfd == nullptr || smartfd->pos() + buffer.fill() > 4294967296) {
       close();
 
-      smartfd = FS::SmartFd::make_ptr(
-        get_filepath(base_path, file_num), FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+      smartfd = fds.emplace_back(new FS::SmartFd(
+        get_filepath(base_path, file_num), 
+        FS::OpenFlags::OPEN_FLAG_OVERWRITE)
+      );
       while(interface->create(err, smartfd, 0, 0, 0));
       if(err) 
         return;
@@ -190,7 +191,6 @@ class FileWriter {
       interface->get_fs()->append(err, smartfd, buff_write, FS::Flags::NONE);
       if(err) 
         return;
-      fds.push_back(smartfd);
       flush_vol = 0;
     }
     
@@ -262,7 +262,7 @@ class FileReader {
       filepath = get_filepath(base_path, file_num);
       if(!interface->exists(err, filepath))
         break;
-      fds.push_back(FS::SmartFd::make_ptr(filepath, 0));
+      fds.emplace_back(new FS::SmartFd(filepath, 0));
     } while(!err);
 
     if(fds.empty())
@@ -426,7 +426,7 @@ class FileReader {
       ptr++;
       remain--;
       if(*ptr == '\t' || *ptr == '\n') {
-        header.push_back(std::string((const char*)s, ptr-s));
+        header.emplace_back((const char*)s, ptr-s);
         s = ptr+1;
       }
     }

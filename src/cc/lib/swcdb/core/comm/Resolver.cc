@@ -113,8 +113,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
         ip = addr;  
         port = defaul_port;
       }
-      endpoints.push_back(
-        asio::ip::tcp::endpoint(asio::ip::make_address(ip.c_str()), port ));
+      endpoints.emplace_back(asio::ip::make_address(ip.c_str()), port );
     }
 
   } else if(!host.empty()) {
@@ -166,16 +165,12 @@ EndPoints get_endpoints(uint16_t defaul_port,
                   "Bad IP for host: %s, address-info: ", 
                   hostname.c_str(), rp->ai_addr);
         
-      endpoints.push_back(
-        asio::ip::tcp::endpoint(asio::ip::make_address(c_addr), port
-      ));
+      endpoints.emplace_back(asio::ip::make_address(c_addr), port);
     }
   }
   
   if(srv && endpoints.empty()){
-    endpoints.push_back(
-      asio::ip::tcp::endpoint(asio::ip::make_address("::"), defaul_port
-    ));
+    endpoints.emplace_back(asio::ip::make_address("::"), defaul_port);
   }
   return endpoints;
 }

@@ -49,11 +49,11 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
       size_t len = Serialization::decode_i32(bufp, remainp);
       token = Serialization::decode_i64(bufp, remainp);
       mngr_host = Serialization::decode(bufp, remainp);
-      for(size_t i =0; i<len; i++){
-        auto host = std::make_shared<server::Mngr::MngrStatus>();
-        host->decode(bufp, remainp);
-        states.push_back(host);
-      }
+      states.clear();
+      states.resize(len);
+      for(size_t i =0; i<len; i++)
+        (states[i] = std::make_shared<server::Mngr::MngrStatus>())
+          ->decode(bufp, remainp);
     }
 
   };

@@ -118,7 +118,6 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
     return;
   }
     
-  Dirent entry;
   std::string full_entry_path;
   struct stat statbuf;
 
@@ -126,8 +125,8 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
     if (result.d_name[0] == '.' || !result.d_name[0])
       continue;
 
-    entry.name.clear();
-    entry.name.append(result.d_name);
+    auto& entry = results.emplace_back();
+    entry.name = result.d_name;
     entry.is_dir = result.d_type == DT_DIR;
 
     full_entry_path.clear();
@@ -148,7 +147,6 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
     }
     entry.length = (uint64_t)statbuf.st_size;
     entry.last_modification_time = statbuf.st_mtime;
-    results.push_back(entry);
   }
 }
 

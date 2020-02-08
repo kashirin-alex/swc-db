@@ -67,9 +67,11 @@ class ColumnListRsp  : public Serializable {
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
-    for(size_t sz = Serialization::decode_vi64(bufp, remainp); sz--;) {
-      schemas.push_back(std::make_shared<DB::Schema>(bufp, remainp));
-    }
+    size_t sz = Serialization::decode_vi64(bufp, remainp);
+    schemas.clear();
+    schemas.resize(sz);
+    for(auto i=0;i<sz;++i) 
+      schemas[i].reset(new DB::Schema(bufp, remainp));
   }
 
 };

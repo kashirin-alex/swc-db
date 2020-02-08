@@ -80,12 +80,12 @@ void CommBuf::write_header() {
 
 void CommBuf::get(std::vector<asio::const_buffer>& buffers) {
   write_header();
-  buffers.push_back(asio::buffer(buf_header.base, buf_header.size));
+  buffers.emplace_back(buf_header.base, buf_header.size);
 
   if(buf_data.size) 
-    buffers.push_back(asio::buffer(buf_data.base, buf_data.size));
+    buffers.emplace_back(buf_data.base, buf_data.size);
   if(buf_ext.size) 
-    buffers.push_back(asio::buffer(buf_ext.base, buf_ext.size));
+    buffers.emplace_back(buf_ext.base, buf_ext.size);
 }
 
 void* CommBuf::get_data_ptr() { 

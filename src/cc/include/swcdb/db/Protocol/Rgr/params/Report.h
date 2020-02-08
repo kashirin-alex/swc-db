@@ -214,8 +214,9 @@ class ReportRsp  : public Serializable {
       
       size_t len = Serialization::decode_vi32(bufp, remainp);
       endpoints.clear();
+      endpoints.resize(len);
       for(size_t i=0;i<len;i++)
-        endpoints.push_back(Serialization::decode(bufp, remainp));
+        endpoints[i] = Serialization::decode(bufp, remainp);
 
       for(int64_t n = Serialization::decode_vi64(bufp, remainp);n--;) {
         auto c = new Column();

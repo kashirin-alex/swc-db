@@ -46,8 +46,9 @@ class HostEndPoints: public Serializable {
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) {
     size_t len = Serialization::decode_vi32(bufp, remainp);
     endpoints.clear();
-    for(size_t i=0;i<len;i++)
-      endpoints.push_back(Serialization::decode(bufp, remainp));
+    endpoints.resize(len);
+    for(size_t i=0;i<len;++i)
+      endpoints[i] = Serialization::decode(bufp, remainp);
   }
 
   std::string to_string() const {

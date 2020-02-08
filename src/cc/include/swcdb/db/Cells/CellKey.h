@@ -301,9 +301,11 @@ class Key {
   void convert_to(std::vector<std::string>& key) const {
     uint32_t len = 0;
     const uint8_t* ptr = data;
+    key.clear();
+    key.resize(count);
     for(uint32_t n=0; n<count; ++n,ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
-      key.push_back(std::string((const char*)ptr, len));
+      key[n].append((const char*)ptr, len);
     }
   }
 

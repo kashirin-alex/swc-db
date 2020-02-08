@@ -109,8 +109,10 @@ class RgrData final {
     id = Serialization::decode_vi64(ptr, remain);
 
     uint32_t len = Serialization::decode_i32(ptr, remain);
+    endpoints.clear();
+    endpoints.resize(len);
     for(size_t i=0;i<len;++i)
-      endpoints.push_back(Serialization::decode(ptr, remain));
+      endpoints[i] = Serialization::decode(ptr, remain);
   }
   
   // SET 

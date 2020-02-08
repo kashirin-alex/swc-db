@@ -22,8 +22,7 @@ class Schemas final {
   
   void add(int &err, Schema::Ptr schema){
     std::scoped_lock lock(m_mutex);
-    if(!m_map.insert(
-        std::pair<int64_t, Schema::Ptr>(schema->cid, schema)).second) {
+    if(!m_map.emplace(schema->cid, schema).second) {
       SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
                 schema->to_string().c_str());
       err = Error::COLUMN_SCHEMA_NAME_EXISTS;
@@ -43,7 +42,7 @@ class Schemas final {
 
     auto it = m_map.find(schema->cid);
     if(it == m_map.end())
-       m_map.insert(std::pair<int64_t, Schema::Ptr>(schema->cid, schema));
+       m_map.emplace(schema->cid, schema);
     else
       it->second = schema;
   }
@@ -54,7 +53,7 @@ class Schemas final {
     auto it = m_map.find(cid);
     if(it == m_map.end())
       return nullptr;
-    return  it->second;
+    return it->second;
   }
   
   Schema::Ptr get(const std::string &name){
@@ -68,10 +67,11 @@ class Schemas final {
   }
 
   void all(std::vector<Schema::Ptr> &entries){
+    size_t i = entries.size();
     std::shared_lock lock(m_mutex);
-
-    for( const auto& it : m_map) 
-      entries.push_back(it.second);
+    entries.resize(i+m_map.size());
+    for(const auto& it : m_map) 
+      entries[i++] = it.second;
   }
 
   private:

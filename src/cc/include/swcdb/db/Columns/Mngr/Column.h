@@ -86,12 +86,9 @@ class Column final {
     if(it != m_ranges.end())
       return *it;
 
-    if(initialize) {
-      Range::Ptr range = std::make_shared<Range>(&cfg, rid);
-      //range->init(err);
-      m_ranges.push_back(range);
-      return range;
-    } 
+    if(initialize)
+      return m_ranges.emplace_back(new Range(&cfg, rid));
+      
     return nullptr;
   }
 
@@ -149,8 +146,7 @@ class Column final {
   Range::Ptr create_new_range(int64_t rgr_id) {
     std::scoped_lock lock(m_mutex);
 
-    Range::Ptr range = std::make_shared<Range>(&cfg, _get_next_rid());
-    m_ranges.push_back(range);
+    auto& range = m_ranges.emplace_back(new Range(&cfg, _get_next_rid()));
     range->set_state(Range::State::CREATED, rgr_id);
     return range;
   }
@@ -194,7 +190,7 @@ class Column final {
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
       if(it->first == rgr_id_old) {
-        m_schemas_rev.insert(RsSchemaRev(id, it->second));;
+        m_schemas_rev.emplace(id, it->second);
         m_schemas_rev.erase(it);
         break;
       }
@@ -206,7 +202,7 @@ class Column final {
 
     auto it = m_schemas_rev.find(id);
     if(it == m_schemas_rev.end())
-       m_schemas_rev.insert(RsSchemaRev(id, rev));
+       m_schemas_rev.emplace(id, rev);
     else
       it->second = rev;
   }
