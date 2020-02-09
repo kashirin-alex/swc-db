@@ -31,10 +31,10 @@ class RgrData final {
   
   static const int8_t VERSION=1;
 
-  static Ptr get_rgr(int &err, std::string filepath){
+  static Ptr get_rgr(int &err, const std::string& filepath) {
     Ptr data = std::make_shared<RgrData>();
     try{
-      data->read(err, FS::SmartFd::make_ptr(filepath, 0));
+      data->read(err, filepath);
     } catch(...){
       data = std::make_shared<RgrData>();
     }
@@ -43,76 +43,35 @@ class RgrData final {
 
   RgrData(): version(VERSION), id(0), timestamp(0) { }
 
-  void read(int &err, FS::SmartFd::Ptr smartfd) {
-    for(;;) {
-      err = Error::OK;
-    
-      if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-        if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
-          continue;
-        return;
-      }
+  void read(int &err, const std::string& filepath) {
 
-      Env::FsInterface::fs()->open(err, smartfd);
-      if(!smartfd->valid())
-        continue;
-      if(err != Error::OK){
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
-      }
+    StaticBuffer read_buf;
+    Env::FsInterface::interface()->read(err, filepath, &read_buf);
+    if(err) 
+      return;
+  
+    const uint8_t *ptr = read_buf.base;
+    size_t remain = read_buf.size;
 
-      uint8_t buf[HEADER_SIZE];
-      const uint8_t *ptr = buf;
-      if(Env::FsInterface::fs()->read(err, smartfd, buf, 
-                                      HEADER_SIZE) != HEADER_SIZE){
-        if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
-          continue;
-        }
-        break;
-      }
-
-      size_t remain = HEADER_SIZE;
-      version = Serialization::decode_i8(&ptr, &remain);
-      size_t sz = Serialization::decode_i32(&ptr, &remain);
-      size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
+    version = Serialization::decode_i8(&ptr, &remain);
+    size_t sz = Serialization::decode_i32(&ptr, &remain);
+    size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
       
-      if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                           buf, HEADER_SIZE, HEADER_OFFSET_CHKSUM))
-        break;
-
-
-      StaticBuffer read_buf;
-      if(Env::FsInterface::fs()->read(err, smartfd, &read_buf, sz) != sz){
-        if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
-          continue;
-        }
-        break;
-      }
-      ptr = read_buf.base;
-
-      if(!checksum_i32_chk(chksum_data, ptr, sz))
-        break;
-
-      read(&ptr, &sz);
-      break;
+    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                         read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) ||
+       !checksum_i32_chk(chksum_data, ptr, sz) ) {
+      err = Error::CHECKSUM_MISMATCH;
+      return;
     }
-    
-    if(smartfd->valid())
-      Env::FsInterface::fs()->close(err, smartfd);
-  }
 
-  void read(const uint8_t **ptr, size_t* remain) {
+    timestamp = Serialization::decode_i64(&ptr, &remain);
+    id = Serialization::decode_vi64(&ptr, &remain);
 
-    timestamp = Serialization::decode_i64(ptr, remain);
-    id = Serialization::decode_vi64(ptr, remain);
-
-    uint32_t len = Serialization::decode_i32(ptr, remain);
+    uint32_t len = Serialization::decode_i32(&ptr, &remain);
     endpoints.clear();
     endpoints.resize(len);
     for(size_t i=0;i<len;++i)
-      endpoints[i] = Serialization::decode(ptr, remain);
+      endpoints[i] = Serialization::decode(&ptr, &remain);
   }
   
   // SET 

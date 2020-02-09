@@ -63,7 +63,7 @@ void Resources::checker() {
     if(release)
       release(bytes);
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-      MallocExtension::instance()->ReleaseFreeMemory();
+    MallocExtension::instance()->ReleaseFreeMemory();
 #endif
   }
 
