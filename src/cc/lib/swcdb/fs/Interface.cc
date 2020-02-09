@@ -318,7 +318,8 @@ void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
   } while(err && 
           err != Error::FS_EOF &&
           err != Error::SERVER_SHUTTING_DOWN &&
-          err != Error::FS_PATH_NOT_FOUND);
+          err != Error::FS_PATH_NOT_FOUND &&
+          err != Error::FS_PERMISSION_DENIED);
 }
 
 bool Interface::open(int& err, SmartFd::Ptr& smartfd) {

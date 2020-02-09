@@ -76,70 +76,28 @@ void save(int &err, DB::Schema::Ptr schema, uint8_t replication=0){
 
 //  GET
 
-void load(int &err, FS::SmartFd::Ptr smartfd, DB::Schema::Ptr &schema) {
-
-  for(;;) {
-    if(err != Error::OK)
-      SWC_LOGF(LOG_DEBUG, "load, retrying to err=%d(%s)", err, Error::get_text(err));
-
-    err = Error::OK;
-    
-    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
-        continue;
-      return;
-    }
-
-    Env::FsInterface::fs()->open(err, smartfd);
-    if(err == Error::FS_PATH_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
-      break;
-    if(!smartfd->valid())
-      continue;
-    if(err != Error::OK) {
-      Env::FsInterface::fs()->close(err, smartfd);
-      continue;
-    }
-
-    uint8_t buf[HEADER_SIZE];
-    const uint8_t *ptr = buf;
-    if(Env::FsInterface::fs()->read(err, smartfd, buf, 
-                                    HEADER_SIZE) != HEADER_SIZE){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
-      }
-      break;
-    }
+void load(int &err, const std::string& filepath, DB::Schema::Ptr &schema) {
   
-    size_t remain = HEADER_SIZE;
-    int8_t version = Serialization::decode_i8(&ptr, &remain);
-    size_t sz = Serialization::decode_i32(&ptr, &remain);
+  StaticBuffer read_buf;
+  Env::FsInterface::interface()->read(err, filepath, &read_buf);
+  if(err) 
+    return;
+  
+  const uint8_t *ptr = read_buf.base;
+  size_t remain = read_buf.size;
+  
+  int8_t version = Serialization::decode_i8(&ptr, &remain);
+  size_t sz = Serialization::decode_i32(&ptr, &remain);
 
-    size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
+  size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
       
-    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                         buf, HEADER_SIZE, HEADER_OFFSET_CHKSUM))
-      break;
-
-    StaticBuffer read_buf;
-    if(Env::FsInterface::fs()->read(err, smartfd, &read_buf, sz) != sz){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
-      }
-      break;
-    }
-    ptr = read_buf.base;
-
-    if(!checksum_i32_chk(chksum_data, ptr, sz))
-      break;
-    
+  if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                        read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) || 
+     !checksum_i32_chk(chksum_data, ptr, sz)) {
+    err = Error::CHECKSUM_MISMATCH;
+  } else {
     schema = std::make_shared<DB::Schema>(&ptr, &sz);
-    break;
   }
-
-  if(smartfd->valid())
-    Env::FsInterface::fs()->close(err, smartfd);
 }
 
 DB::Schema::Ptr load(int &err, int64_t cid, 
@@ -147,13 +105,13 @@ DB::Schema::Ptr load(int &err, int64_t cid,
 
   DB::Schema::Ptr schema = nullptr;
   try{
-    load(err, FS::SmartFd::make_ptr(filepath(cid), 0), schema);
+    load(err, filepath(cid), schema);
   } catch (const std::exception& e) {
     SWC_LOGF(LOG_ERROR, "schema load exception (%s)", e.what());
     schema = nullptr;
   }
 
-  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){ 
+  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){
     SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema", cid);
     std::string name;
     if(cid < 4) {
