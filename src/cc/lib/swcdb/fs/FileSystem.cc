@@ -215,7 +215,7 @@ void FileSystem::read(int &err, const std::string& name,
   
   finish:
     int errtmp;
-    if(smartfd->valid())
+    if(smartfd != nullptr && smartfd->valid())
       close(!err ? err : errtmp, smartfd);
     
   if(err)
