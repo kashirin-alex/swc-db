@@ -28,7 +28,7 @@ class Mutable final {
   
   inline static Ptr make(const uint32_t cap=0, 
                          const uint32_t max_revs=1, 
-                         const uint64_t ttl=0, 
+                         const uint32_t ttl=0, 
                          const Types::Column type=Types::Column::PLAIN) {
     return std::make_shared<Mutable>(cap, max_revs, ttl, type);
   }
@@ -37,11 +37,11 @@ class Mutable final {
   
   explicit Mutable(const uint32_t cap=0, 
                    const uint32_t max_revs=1, 
-                   const uint64_t ttl=0, 
+                   const uint32_t ttl=0, 
                    const Types::Column type=Types::Column::PLAIN)
                   : type(type), 
                     m_cells(0), m_cap(cap), m_size(0), m_size_bytes(0), 
-                    m_max_revs(max_revs), m_ttl(ttl) {
+                    m_max_revs(max_revs), m_ttl(ttl*1000000000) {
     if(m_cap)
       _allocate();
   }
@@ -60,7 +60,7 @@ class Mutable final {
   }
 
   void reset(const uint32_t cap=0, const uint32_t max_revs=1, 
-             const uint64_t ttl=0, 
+             const uint32_t ttl=0, 
              const Types::Column typ=Types::Column::PLAIN) {
     free();
     m_cap = cap;
@@ -76,10 +76,10 @@ class Mutable final {
   }
 
   void configure(const uint32_t max_revs=1, 
-                 const uint64_t ttl=0, 
+                 const uint32_t ttl=0, 
                  const Types::Column typ=Types::Column::PLAIN) {
     m_max_revs = max_revs;
-    m_ttl = ttl;
+    m_ttl = ttl*1000000000;
     type = typ;
   }
 
