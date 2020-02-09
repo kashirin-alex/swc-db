@@ -147,12 +147,87 @@ void FileSystem::rename(Callback::RmdirCb_t cb, const std::string &from,
   cb(err);
 }
 
+void FileSystem::write(int &err, SmartFd::Ptr &smartfd,
+                       uint8_t replication, int64_t blksz, 
+                       StaticBuffer &buffer) {
+  SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
+
+  create(err, smartfd, 0, replication, blksz);
+  if(!smartfd->valid() || err) {
+    if(!err) 
+      err = EBADF;
+    goto finish;
+  }
+
+  if(buffer.size) {
+    append(err, smartfd, buffer, Flags::FLUSH);
+    if(err)
+      goto finish;
+  }
+  
+  finish:
+    int errtmp;
+    if(smartfd->valid())
+      close(err ? errtmp : err, smartfd);
+    
+  if(err)
+    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
+              errno, strerror(errno), smartfd->to_string().c_str());
+}
+
 void FileSystem::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
                        uint8_t replication, int64_t blksz, 
                        StaticBuffer &buffer) {
   int err = Error::OK;
   write(err, smartfd, replication, blksz, buffer);
   cb(err, smartfd);
+}
+
+void FileSystem::read(int &err, const std::string& name, 
+                      StaticBuffer* buffer) {
+  SWC_LOGF(LOG_DEBUG, "read-all %s", name.c_str());
+
+  size_t len;
+  FS::SmartFd::Ptr smartfd;
+
+  if(!exists(err, name)) {
+    if(!err)
+      err = Error::FS_PATH_NOT_FOUND;
+    goto finish;
+  } 
+  len = length(err, name);
+  if(err)
+    goto finish;
+
+  smartfd = FS::SmartFd::make_ptr(name, 0);
+
+  open(err, smartfd);
+  if(!err && !smartfd->valid())
+    err = EBADR;
+  if(err)
+    goto finish;
+
+  buffer->free();
+  if(read(err, smartfd, buffer, len) != len)
+    err = Error::FS_EOF;
+  if(err)
+    goto finish;
+  
+  finish:
+    int errtmp;
+    if(smartfd->valid())
+      close(!err ? err : errtmp, smartfd);
+    
+  if(err)
+    SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s", 
+              errno, strerror(errno), name.c_str());
+}
+
+void FileSystem::read(Callback::ReadAllCb_t cb, const std::string &name) {
+  int err = Error::OK;
+  auto dst = std::make_shared<StaticBuffer>();
+  read(err, name, dst.get());
+  cb(err, name, dst);
 }
 
 void FileSystem::create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,

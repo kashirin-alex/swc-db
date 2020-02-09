@@ -41,10 +41,6 @@ class FileSystemLocal: public FileSystem {
   void rename(int &err, const std::string &from, 
                         const std::string &to) override;
   
-  void write(int &err, SmartFd::Ptr &smartfd,
-             uint8_t replication, int64_t blksz, 
-             StaticBuffer &buffer);
-
   void create(int &err, SmartFd::Ptr &smartfd, 
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 

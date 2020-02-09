@@ -319,34 +319,6 @@ SmartFdHadoop::Ptr FileSystemHadoop::get_fd(SmartFd::Ptr &smartfd){
   return hd_fd;
 }
 
-void FileSystemHadoop::write(int &err, SmartFd::Ptr &smartfd,
-                             uint8_t replication, int64_t blksz, 
-                             StaticBuffer &buffer) {
-  SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
-
-  create(err, smartfd, 0, replication, blksz);
-  if(!smartfd->valid() || err != Error::OK){
-    if(err == Error::OK) 
-      err = EBADF;
-    goto finish;
-  }
-    
-  if(buffer.size) {
-    append(err, smartfd, buffer, Flags::FLUSH);
-    if(err != Error::OK)
-      goto finish;
-  }
-
-  finish:
-    int errtmp;
-    if(smartfd->valid())
-      close(err == Error::OK ? err : errtmp, smartfd);
-        
-  if(err != Error::OK)
-    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
-}
-
 void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd, 
                               int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {

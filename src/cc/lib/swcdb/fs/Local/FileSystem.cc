@@ -178,34 +178,6 @@ void FileSystemLocal::rename(int &err, const std::string &from,
   SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
             abspath_from.c_str(), abspath_to.c_str());
 }
-  
-void FileSystemLocal::write(int &err, SmartFd::Ptr &smartfd,
-                            uint8_t replication, int64_t blksz, 
-                            StaticBuffer &buffer) {
-  SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
-
-  create(err, smartfd, 0, replication, blksz);
-  if(!smartfd->valid() || err != Error::OK) {
-    if(err == Error::OK) 
-      err = EBADF;
-    goto finish;
-  }
-
-  if(buffer.size) {
-    append(err, smartfd, buffer, Flags::FLUSH);
-    if(err != Error::OK)
-      goto finish;
-  }
-  
-  finish:
-    int errtmp;
-    if(smartfd->valid())
-      close(err == Error::OK ? err : errtmp, smartfd);
-    
-  if(err != Error::OK)
-    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
-}
 
 void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd, 
                              int32_t bufsz, uint8_t replication, 

@@ -17,6 +17,7 @@
 #include "swcdb/fs/Broker/Protocol/req/Rmdir.h"
 #include "swcdb/fs/Broker/Protocol/req/Rename.h"
 #include "swcdb/fs/Broker/Protocol/req/Write.h"
+#include "swcdb/fs/Broker/Protocol/req/ReadAll.h"
 #include "swcdb/fs/Broker/Protocol/req/Create.h"
 #include "swcdb/fs/Broker/Protocol/req/Append.h"
 #include "swcdb/fs/Broker/Protocol/req/Open.h"
@@ -263,6 +264,22 @@ void FileSystemBroker::write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
   auto hdlr = std::make_shared<Protocol::Req::Write>(
     cfg_timeout->get(), smartfd, replication, blksz, buffer, cb);
       
+  while(!send_request(hdlr));
+}
+
+void FileSystemBroker::read(int &err, const std::string& name, 
+                            StaticBuffer* dst) {
+  auto hdlr = std::make_shared<Protocol::Req::ReadAll>(
+    cfg_timeout->get(), name, dst);
+
+  send_request_sync(hdlr, hdlr->promise());
+  err = hdlr->error;
+}
+
+void FileSystemBroker::read(Callback::ReadAllCb_t cb, 
+                            const std::string& name) {
+  auto hdlr = std::make_shared<Protocol::Req::ReadAll>(
+    cfg_timeout->get(), name, nullptr, cb);
   while(!send_request(hdlr));
 }
 

@@ -71,10 +71,6 @@ class FileSystemHadoopJVM: public FileSystem {
 
   SmartFdHadoopJVM::Ptr get_fd(SmartFd::Ptr &smartfd);
 
-  void write(int &err, SmartFd::Ptr &smartfd,
-             uint8_t replication, int64_t blksz, 
-             StaticBuffer &buffer) override;
-
   void create(int &err, SmartFd::Ptr &smartfd, 
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 

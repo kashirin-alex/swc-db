@@ -101,10 +101,13 @@ class FileSystem {
   // File(fd) Actions
   virtual void write(int &err, SmartFd::Ptr &smartfd,
                      uint8_t replication, int64_t blksz, 
-                     StaticBuffer &buffer) = 0;
+                     StaticBuffer &buffer);
   virtual void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
                      uint8_t replication, int64_t blksz, 
                      StaticBuffer &buffer);
+
+  virtual void read(int &err, const std::string &name, StaticBuffer* dst);
+  virtual void read(Callback::ReadAllCb_t cb, const std::string &name);
 
   virtual void create(int &err, SmartFd::Ptr &smartfd,
                       int32_t bufsz, uint8_t replication, int64_t blksz) = 0;

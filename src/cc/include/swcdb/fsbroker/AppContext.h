@@ -23,6 +23,7 @@
 #include "swcdb/fsbroker/handlers/Rmdir.h"
 #include "swcdb/fsbroker/handlers/Rename.h"
 #include "swcdb/fsbroker/handlers/Write.h"
+#include "swcdb/fsbroker/handlers/ReadAll.h"
 #include "swcdb/fsbroker/handlers/Create.h"
 #include "swcdb/fsbroker/handlers/Append.h"
 #include "swcdb/fsbroker/handlers/Open.h"
@@ -58,7 +59,9 @@ class AppContext : public SWC::AppContext {
     &Handler::exists,
     &Handler::rename,
     &Handler::sync,
-    &Handler::write
+    &Handler::write,
+    &Handler::read_all
+
     //&Handler::debug,
     //&Handler::status,
     //&Handler::shutdown

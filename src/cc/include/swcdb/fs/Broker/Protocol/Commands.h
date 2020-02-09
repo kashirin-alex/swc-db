@@ -26,11 +26,12 @@ namespace SWC{ namespace FS { namespace Protocol {
     FUNCTION_RENAME   = 0x0f,   ///< Rename
     FUNCTION_SYNC     = 0x10,   ///< Sync
     FUNCTION_WRITE    = 0x11,   ///< Write
+    FUNCTION_READ_ALL = 0x12,   ///< ReadAll
     
-    FUNCTION_DEBUG    = 0x12,   ///< Debug
-    FUNCTION_STATUS   = 0x12,   ///< Status
-    FUNCTION_SHUTDOWN = 0x12,   ///< Shutdown
-    FUNCTION_MAX      = 0x12 ///< Maximum code marker
+    FUNCTION_DEBUG    = 0x13,   ///< Debug
+    FUNCTION_STATUS   = 0x13,   ///< Status
+    FUNCTION_SHUTDOWN = 0x13,   ///< Shutdown
+    FUNCTION_MAX      = 0x13 ///< Maximum code marker
   };
 }
 
