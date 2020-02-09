@@ -84,70 +84,30 @@ void read(int& err, const uint8_t **ptr, size_t* remain,
 }
 
 void load(int& err, CellStore::Readers& cellstores){
-  
-  auto smartfd = FS::SmartFd::make_ptr(
-    cellstores.range->get_path(DB::RangeBase::range_data_file), 0);
+  StaticBuffer read_buf;
+  Env::FsInterface::interface()->read(
+    err, 
+    cellstores.range->get_path(DB::RangeBase::range_data_file), 
+    &read_buf
+  );
+  if(!err) {
+    const uint8_t *ptr = read_buf.base;
+    size_t remain = read_buf.size;
 
-  for(;;) {
-    err = Error::OK;
-    
-    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())){
-      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
-        continue;
-      break;
-    }
-
-    Env::FsInterface::fs()->open(err, smartfd);
-    if(err == Error::FS_PATH_NOT_FOUND || err == Error::FS_PERMISSION_DENIED)
-      break;
-    if(!smartfd->valid())
-      continue;
-    if(err != Error::OK) {
-      Env::FsInterface::fs()->close(err, smartfd);
-      continue;
-    }
-
-    uint8_t buf[HEADER_SIZE];
-    const uint8_t *ptr = buf;
-    if (Env::FsInterface::fs()->read(err, smartfd, buf, 
-                                    HEADER_SIZE) != HEADER_SIZE){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
-      }
-      break;
-    }
-
-    size_t remain = HEADER_SIZE;
     int8_t version = Serialization::decode_i8(&ptr, &remain);
     size_t sz = Serialization::decode_i32(&ptr, &remain);
 
     size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
       
     if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                         buf, HEADER_SIZE, HEADER_OFFSET_CHKSUM))
-      break;
-
-    StaticBuffer read_buf;
-    if(Env::FsInterface::fs()->read(err, smartfd, &read_buf, sz) != sz){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, smartfd);
-        continue;
-      }
-      break;
+                         read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) || 
+       !checksum_i32_chk(chksum_data, ptr, sz)) {
+      err = Error::CHECKSUM_MISMATCH;
+    } else {
+      read(err, &ptr, &sz, cellstores);
     }
-    ptr = read_buf.base;
+  }
 
-    if(!checksum_i32_chk(chksum_data, ptr, sz))
-      break;
-    
-    read(err, &ptr, &sz, cellstores);
-    break;
-  } 
-
-  if(smartfd->valid())
-    Env::FsInterface::fs()->close(err, smartfd);
-  
   if(err || cellstores.empty()) {
     err = Error::OK;
     cellstores.load_from_path(err);
