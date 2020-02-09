@@ -7,13 +7,16 @@
 #include <fstream>
 #include "swcdb/core/sys/Resources.h"
 
+#if defined TCMALLOC_MINIMAL || defined TCMALLOC
+#include <gperftools/malloc_extension.h>
+#endif
 
 namespace SWC { 
 
 Resources::Resources() {}
 
 Resources::~Resources() {
-  if(m_timer != nullptr)
+  if(m_timer)
     delete m_timer;
 }
 
@@ -56,11 +59,12 @@ void Resources::checker() {
   refresh_stats();
 
   //std::cout << to_string() << "\n";
-
-  if(release) {
-    size_t bytes = need_ram();
-    if(bytes)
+  if(size_t bytes = need_ram()) {
+    if(release)
       release(bytes);
+#if defined TCMALLOC_MINIMAL || defined TCMALLOC
+      MallocExtension::instance()->ReleaseFreeMemory();
+#endif
   }
 
   schedule();
@@ -86,9 +90,9 @@ void Resources::refresh_stats() {
 void Resources::schedule(uint32_t ms) {
   m_timer->expires_from_now(std::chrono::milliseconds(ms));
   m_timer->async_wait(
-    [ptr=this](const asio::error_code ec) {
-      if (ec != asio::error::operation_aborted){
-        ptr->checker();
+    [this](const asio::error_code ec) {
+      if(ec != asio::error::operation_aborted) {
+        checker();
       }
   }); 
 }
