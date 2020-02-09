@@ -22,8 +22,8 @@ CommBuf::Ptr CommBuf::make(const Serializable& params, StaticBuffer& buffer,
   return std::make_shared<CommBuf>(params, buffer, reserve);
 }
 
-CommBuf::Ptr CommBuf::make(StaticBuffer& buffer) {
-  return std::make_shared<CommBuf>(buffer);
+CommBuf::Ptr CommBuf::make(StaticBuffer& buffer, uint32_t reserve) {
+  return std::make_shared<CommBuf>(buffer, reserve);
 }
 
 CommBuf::Ptr CommBuf::create_error_message(int error, const char *msg) {
@@ -44,10 +44,14 @@ CommBuf::CommBuf(const Serializable& params, uint32_t reserve) {
 
 CommBuf::CommBuf(const Serializable& params, StaticBuffer& buffer, 
                 uint32_t reserve) : buf_ext(buffer) {
-    set_data(params, reserve);
+  set_data(params, reserve);
 }
 
-CommBuf::CommBuf(StaticBuffer& buffer) : buf_ext(buffer) { }
+CommBuf::CommBuf(StaticBuffer& buffer, uint32_t reserve) 
+                : buf_ext(buffer) {
+  if(reserve)
+    set_data(reserve);
+}
 
 CommBuf::~CommBuf() { }
 

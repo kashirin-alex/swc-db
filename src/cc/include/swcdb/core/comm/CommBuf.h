@@ -53,7 +53,7 @@ class CommBuf final {
   static Ptr make(const Serializable& params, StaticBuffer& buffer, 
                   uint32_t reserve=0);
 
-  static Ptr make(StaticBuffer& buffer);
+  static Ptr make(StaticBuffer& buffer, uint32_t reserve=0);
 
   static Ptr create_error_message(int error, const char *msg);
 
@@ -65,7 +65,7 @@ class CommBuf final {
   CommBuf(const Serializable& params, StaticBuffer& buffer, 
           uint32_t reserve=0);
 
-  CommBuf(StaticBuffer& buffer);
+  CommBuf(StaticBuffer& buffer, uint32_t reserve=0);
 
   ~CommBuf();
 
