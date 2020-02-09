@@ -58,6 +58,8 @@ cd bin;
 ./swcdbManager --debug --host=localhost --daemon;
 # START SWCDB-RANGER
 ./swcdbRanger --swc.rgr.ram.percent=3 --daemon;
+# START SWCDB-THRIFT-BROKER
+./swcdbThriftBroker --host=localhost --daemon;
 ```
 
 
@@ -151,7 +153,7 @@ SWC-DB(client)>
 ```bash
 ps aux | grep swcdbRanger
 kill pid; # -9 for instant/ungracefull shutdown
-the same for swcdbManager and swcdbFsBroker 
+the same for swcdbManager, swcdbFsBroker and swcdbThriftBroker
 ```
 
 
