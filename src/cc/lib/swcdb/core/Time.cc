@@ -57,6 +57,15 @@ fast_clock::time_point fast_clock::from_time_t(time_t __t) noexcept {
 
 namespace SWC { namespace Time {
 
+void checkings() { // no need runtime checks, call at app start 
+  assert((
+    std::ratio_less_equal<
+      std::chrono::system_clock::duration::period, 
+      std::chrono::nanoseconds::period
+    >::value
+  ));
+}
+
 const int64_t now_ms() {
   return (int64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
@@ -64,12 +73,6 @@ const int64_t now_ms() {
 
 
 const int64_t now_ns() {
-  assert((
-    std::ratio_less_equal<
-      std::chrono::system_clock::duration::period, 
-      std::chrono::nanoseconds::period
-    >::value
-  ));
   return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }

@@ -9,8 +9,6 @@
 #include "swcdb/core/Compat.h"
 
 #include <iostream>
-
-
 #include <chrono>
 
 
@@ -40,6 +38,8 @@ namespace SWC {
 typedef std::chrono::fast_clock ClockT;
 
 namespace Time {
+
+void checkings();
 
 const int64_t now_ms();
 
