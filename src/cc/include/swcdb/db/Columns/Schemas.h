@@ -72,6 +72,7 @@ class Schemas final {
     entries.resize(i+m_map.size());
     for(const auto& it : m_map) 
       entries[i++] = it.second;
+    sort(entries.begin(), entries.end()); 
   }
 
   private:
