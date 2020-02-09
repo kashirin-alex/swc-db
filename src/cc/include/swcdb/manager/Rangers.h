@@ -576,13 +576,13 @@ class Rangers final {
           [&pending, entries=hdlr_entries, 
            replicas=cfg_schema_replication->get()]() { 
             DB::Schema::Ptr schema;
+            int err;
             for(auto cid : entries) {
-              int err = Error::OK;
-              schema = Files::Schema::load(err, cid, replicas);
-              if(err == Error::OK)
+              schema = Files::Schema::load(err = Error::OK, cid, replicas);
+              if(!err)
                 Env::Schemas::get()->add(err, schema);
-              if(err !=  Error::OK)
-                SWC_LOGF(LOG_WARN, "Schema cid=%d err=%d(%s)", 
+              else
+                SWC_LOGF(LOG_ERROR, "Schema cid=%d err=%d(%s)", 
                          cid, err, Error::get_text(err));
             }
             pending--;
