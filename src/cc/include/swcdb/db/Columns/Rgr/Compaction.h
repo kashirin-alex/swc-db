@@ -158,7 +158,7 @@ class Compaction final {
       ptr(),
       range, 
       cs_size, 
-      range->cfg->block_replication(), 
+      range->cfg->file_replication(), 
       blk_size, 
       range->cfg->block_cells(), 
       range->cfg->block_enc(), 
@@ -181,14 +181,14 @@ class Compaction final {
     std::atomic<size_t> total_cells = 0;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
-                const uint32_t cs_size, const uint8_t blk_replication,
+                const uint32_t cs_size, const uint8_t cs_replication,
                 const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
                 uint32_t cell_versions, uint32_t cell_ttl, 
                 Types::Column col_type) 
                 : compactor(compactor), range(range),
                   cs_size(cs_size), 
-                  blk_replication(blk_replication), 
+                  cs_replication(cs_replication), 
                   blk_size(blk_size), blk_cells(blk_cells), 
                   blk_encoding(blk_encoding),
                   cell_versions(cell_versions),
@@ -338,7 +338,7 @@ class Compaction final {
         cell_versions,
         blk_encoding
       );
-      cs_writer->create(err, -1, blk_replication, blk_size);
+      cs_writer->create(err, -1, cs_replication, blk_size);
       return id;
 
     }
@@ -635,7 +635,7 @@ class Compaction final {
     Compaction::Ptr         compactor;
     Range::Ptr              range;
     const uint32_t          cs_size;
-    const uint8_t           blk_replication;
+    const uint8_t           cs_replication;
     const uint32_t          blk_size;
     const uint32_t          blk_cells;
     const Types::Encoding   blk_encoding;

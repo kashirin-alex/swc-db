@@ -231,10 +231,11 @@ int main(int argc, char** argv) {
       1, // versions, 
       0, // ttl
       
-      0, // replication
       SWC::Types::Encoding::SNAPPY,
       60000000, // block size
       100000,   // block cells
+      
+      0, // replication
       0, // cs-size
       0, // cs-max
       0, // compaction %

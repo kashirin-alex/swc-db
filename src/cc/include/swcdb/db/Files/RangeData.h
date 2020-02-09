@@ -63,7 +63,7 @@ void save(int& err, CellStore::Readers& cellstores) {
       cellstores.range->get_path(DB::RangeBase::range_data_file), 
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ), 
-    cellstores.range->cfg->block_replication(), 
+    cellstores.range->cfg->file_replication(), 
     -1, 
     send_buf
   );

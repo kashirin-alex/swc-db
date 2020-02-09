@@ -160,7 +160,7 @@ class Range : public DB::RangeBase {
       return loaded(err, cb);
 
     RangerEnv::rgr_data()->set_rgr(
-      err, get_path(ranger_data_file), cfg->block_replication());
+      err, get_path(ranger_data_file), cfg->file_replication());
     if(err != Error::OK)
       return loaded(err, cb);
 
@@ -341,7 +341,7 @@ class Range : public DB::RangeBase {
     if(err)
       return;
     RangerEnv::rgr_data()->set_rgr(
-      err, get_path(ranger_data_file), cfg->block_replication());
+      err, get_path(ranger_data_file), cfg->file_replication());
     if(err)
       return;
 
@@ -442,6 +442,9 @@ class Range : public DB::RangeBase {
           Files::RangeData::save(err, blocks.cellstores);
           on_change(err, false);
         }
+        //else if(cfg->cid > 2) { // meta-recovery, meta need pre-delete >=[cfg->cid]
+        //  on_change(err, false);
+        //}
       }
     }
   

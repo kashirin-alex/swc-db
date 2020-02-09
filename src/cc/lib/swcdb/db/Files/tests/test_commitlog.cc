@@ -75,10 +75,11 @@ int main(int argc, char** argv) {
       2, //versions, 
       0,
       
-      0, 
       Types::Encoding::PLAIN,
       64000000,
       100000,   // block cells
+
+      0, // cs-replication
       0, // cs-size
       0, // cs-max
       0, // compaction %

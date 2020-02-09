@@ -30,6 +30,9 @@ namespace Query = SWC::Protocol::Common::Req::Query;
 
 bool quite = true;
 std::atomic<bool> finished = false;
+int fraction_start = 0;
+int fraction_finish = 26;
+int num_fractions = fraction_finish-fraction_start;
 
 
 void expect_empty_column(int64_t cid) {
@@ -41,7 +44,8 @@ void expect_empty_column(int64_t cid) {
       /*
       std::cout << "CB completion=" << result->completion.load() << "\n";
       for(auto col : result->columns) {
-        std::cout << " cid=" << col.first << ": sz=" << col.second->cells.size() << "\n";
+        std::cout << " cid=" << col.first 
+                  << ": sz=" << col.second->cells.size() << "\n";
         int num=0;
         for(auto cell : col.second->cells)
           std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
@@ -97,7 +101,8 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   if(sz != expected_sz) {
     size_t num=0;
     for(auto cell : holder.cells) {
-      std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
+      if( ++num == 1 || num == sz)
+        std::cout << "  " << num << ":" << cell->to_string() << "\n";  
     }
     std::cerr << "\n BAD, on offset, select cells count: \n" 
               << " err=" << select_req->result->err 
@@ -113,14 +118,15 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   }
 }
 
-std::string apply_value(int b, int i) {
+std::string apply_value(int f, int b, int i) {
   /*
   
   std::string zfill;
   for(int n=0;n<16384;n++)
     zfill.append("V");
   */
-  std::string value = "V_OF:"+std::to_string(b)+":"+std::to_string(i);
+  std::string value = 
+    "V_OF:"+std::to_string(f)+":"+std::to_string(b)+":"+std::to_string(i);
   value += "(";
   for(uint32_t chr=0; chr<=255; chr++) {
     value += (char)chr;
@@ -130,8 +136,8 @@ std::string apply_value(int b, int i) {
 }
 
 void test_1(const std::string& col_name) {
-  int num_cells = 1000000; // test require at least 12
-  int batches = 10;
+  int num_cells = 10000; // test require at least 12
+  int batches = 100;
   int64_t took;
 
   // Req::Query::Update
@@ -158,35 +164,38 @@ void test_1(const std::string& col_name) {
   for(int b=0; b<batches; b++) {
     took =  SWC::Time::now_ns();
     for(int i=0;i<num_cells;i++) {
+    for(int f=97+fraction_start;f<=96+fraction_finish;f++) {
+
       std::string cell_number(std::to_string(b)+":"+std::to_string(i));
       cell.flag = Cells::INSERT;
       cell.set_time_order_desc(true);
 
       cell.key.free();
-      for(uint8_t chr=97; chr<=122;chr++)
+      for(uint8_t chr=97; chr<=f;chr++)
         cell.key.add(((char)chr)+cell_number);
       
-      std::string value = apply_value(b,i);
+      std::string value = apply_value(f, b, i);
       cell.set_value(value);
 
       update_req->columns->add(schema->cid, cell);
       added_count++;
-    }
+    }}
 
     size_t bytes = update_req->columns->size_bytes();
     std::cout << update_req->columns->to_string() << "\n";
   
 
-    update_req->timeout_commit = 10*num_cells;
+    update_req->timeout_commit = 10*num_fractions*num_cells;
     update_req->commit();
     update_req->wait();
     took = SWC::Time::now_ns() - took;
     std::cout << "UPDATE-INSERT-TOOK=" << took 
-              << " cells=" << num_cells 
+              << " cells=" << num_fractions*num_cells 
               << " bytes=" << bytes 
-              << " avg="<< took/num_cells << "\n";
+              << " avg="<< took/(num_fractions*num_cells) << "\n";
 
-    select_all(schema->cid, num_cells, b*num_cells);
+    select_all(
+      schema->cid, num_fractions*num_cells, num_fractions*b*num_cells);
   }
   
 
@@ -202,7 +211,8 @@ void test_1(const std::string& col_name) {
       /*
       std::cout << "CB completion=" << result->completion.load() << "\n";
       for(auto col : result->columns) {
-        std::cout << " cid=" << col.first << ": sz=" << col.second->cells.size() << "\n";
+        std::cout << " cid=" << col.first 
+                  << ": sz=" << col.second->cells.size() << "\n";
         int num=0;
         for(auto cell : col.second->cells)
           std::cout << "  " << ++num << ":" << cell->to_string() << "\n";  
@@ -213,9 +223,10 @@ void test_1(const std::string& col_name) {
 
   took =  SWC::Time::now_ns();
   auto spec = SWC::DB::Specs::Interval::make_ptr();
-  spec->flags.offset=batches*num_cells-1;
+  spec->flags.offset=num_fractions*batches*num_cells-1;
   spec->flags.limit=1;
-  select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(schema->cid, {spec})};
+  select_req->specs.columns = {
+    SWC::DB::Specs::Column::make_ptr(schema->cid, {spec})};
   select_req->scan();
   select_req->wait();
 
@@ -232,11 +243,14 @@ void test_1(const std::string& col_name) {
   select_req->result->get_cells(schema->cid, holder);
   Cells::Cell* cell_res = holder.cells.front();
   
-  std::string expected_value = apply_value(batches-1, num_cells-1);
+  std::string expected_value = apply_value(
+    num_fractions+97, batches-1, num_cells-1);
   if(memcmp(cell_res->value, expected_value.data(), cell_res->vlen) != 0) {
     std::cerr << "BAD, selected cell's value doesn't match: \n" 
               << " expected_value=" << expected_value << "\n"
-              << "   result_value=" << std::string((const char*)cell_res->value, cell_res->vlen) << "\n";
+              << "   result_value=" 
+              << std::string((const char*)cell_res->value, cell_res->vlen) 
+              << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;
@@ -245,8 +259,8 @@ void test_1(const std::string& col_name) {
   for(int tmp=1;tmp <=3;tmp++) {
   select_req->result->remove(schema->cid);
   spec =  select_req->specs.columns[0]->intervals[0];
-  spec->flags.offset=batches*num_cells-1000;
-  spec->flags.limit=1000; //batches*num_cells-spec->flags.offset;
+  spec->flags.offset=num_fractions*batches*num_cells-num_fractions;
+  spec->flags.limit=num_fractions; //batches*num_cells-spec->flags.offset;
 
   took =  SWC::Time::now_ns();
   select_req->scan();
@@ -278,12 +292,13 @@ void test_1(const std::string& col_name) {
         }
       }
       prev.copy(*c);
-      
-      std::string expected_value = apply_value(batches-1, num_cells-spec->flags.limit-1+count);
+      std::string expected_value = apply_value(
+        97+count, batches-1, num_cells-spec->flags.limit-1+count);
       if(memcmp(c->value, expected_value.data(), c->vlen) != 0) {
         std::cerr << "BAD, selected cell's value doesn't match: \n" 
                   << " expected_value=" << expected_value << "\n"
-                  << "   result_value=" << std::string((const char*)c->value, c->vlen) << "\n";
+                  << "   result_value=" 
+                  << std::string((const char*)c->value, c->vlen) << "\n";
          exit(1);
       }
     }
@@ -331,34 +346,36 @@ void test_1(const std::string& col_name) {
   for(int b=0;b<batches;b++) {
   took =  SWC::Time::now_ns();
   for(int i=0;i<num_cells;i++) {
+  for(int f=97+fraction_start;f<=96+fraction_finish;f++) {
+
     cell.free();
     std::string cell_number(std::to_string(b)+":"+std::to_string(i));
     cell.flag = Cells::DELETE;
     cell.key.free();
-    for(uint8_t chr=97; chr<=122;chr++)
+    for(uint8_t chr=97; chr<=f;chr++)
       cell.key.add(((char)chr)+cell_number);
     update_req->columns->add(schema->cid, cell);
-    //std::cout << " add: " << cell.to_string() << "\n";
-  }
+  }}
 
   
   size_t bytes = update_req->columns->size_bytes();
   std::cout << update_req->columns->to_string() << "\n";
   
   took =  SWC::Time::now_ns();
-  update_req->timeout_commit = 10*num_cells;
+  update_req->timeout_commit = 10*num_fractions*num_cells;
   update_req->commit();
   update_req->wait();
   if(update_req->columns->size_bytes() != 0) {
-    std::cerr << " ERROR, remain_bytes=" << update_req->columns->size_bytes() << "\n";
+    std::cerr << " ERROR, remain_bytes=" 
+              << update_req->columns->size_bytes() << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;
   std::cout << "UPDATE-DELETE-TOOK=" << took 
-            << " cells=" << num_cells 
+            << " cells=" << num_fractions*num_cells 
             << " bytes=" << bytes 
             << " remain_bytes=" << update_req->columns->size_bytes() 
-            << " avg="<< took/num_cells << "\n";
+            << " avg="<< took/(num_fractions*num_cells) << "\n";
   }
 
   std::cout << "\n";
@@ -405,12 +422,12 @@ int main(int argc, char** argv) {
     SWC::Types::Column::PLAIN, 
     1, // cell_versions
     0, // cell_ttl
-    3, // blk_replication
-    SWC::Types::Encoding::SNAPPY,
+    SWC::Types::Encoding::ZLIB,
     50000000,
     0, // blk-cells
-    0, // cs-size
-    0, // cs-max
+    3, // cs_replication
+    1000000000, // cs-size
+    10, // cs-max
     0 // compact-%
   );
 

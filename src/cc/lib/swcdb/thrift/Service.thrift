@@ -54,11 +54,11 @@ struct Schema {
   4: optional i32           cell_versions
   5: optional i32           cell_ttl
   
-  6: optional i8            blk_replication
-  7: optional EncodingType  blk_encoding
-  8: optional i32           blk_size
-  9: optional i32           blk_cells
+  6: optional EncodingType  blk_encoding
+  7: optional i32           blk_size
+  8: optional i32           blk_cells
   
+  9: optional i8            cs_replication
   10: optional i32          cs_size
   11: optional i8           cs_max
   12: optional i8           compact_percent

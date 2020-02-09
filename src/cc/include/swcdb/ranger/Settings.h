@@ -45,9 +45,9 @@ void Settings::init_app_options(){
      "Number of cellstores allowed in range before range-split")  
     ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
      "Default CellStore size")  
+    ("swc.rgr.Range.CellStore.replication", g_i8(3), 
+     "Default CellStore replication (fs-dependent)") 
      
-    ("swc.rgr.Range.block.replication", g_i8(3), 
-     "Default Block replication (fs-dependent)") 
     ("swc.rgr.Range.block.size", g_i32(64000000), 
      "Default Block Size in bytes")  
     ("swc.rgr.Range.block.cells", g_i32(100000), 

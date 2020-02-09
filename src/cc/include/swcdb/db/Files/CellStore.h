@@ -579,7 +579,7 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   Write writer(
     1, range->get_path_cs(1), range->cfg->cell_versions(), encoding);
   writer.create(
-    err, -1, range->cfg->block_replication(), range->cfg->block_size());
+    err, -1, range->cfg->file_replication(), range->cfg->block_size());
   if(err)
     return nullptr;
     

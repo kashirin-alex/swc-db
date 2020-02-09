@@ -335,11 +335,6 @@ void Schema::__set_cell_ttl(const int32_t val) {
 __isset.cell_ttl = true;
 }
 
-void Schema::__set_blk_replication(const int8_t val) {
-  this->blk_replication = val;
-__isset.blk_replication = true;
-}
-
 void Schema::__set_blk_encoding(const EncodingType::type val) {
   this->blk_encoding = val;
 __isset.blk_encoding = true;
@@ -353,6 +348,11 @@ __isset.blk_size = true;
 void Schema::__set_blk_cells(const int32_t val) {
   this->blk_cells = val;
 __isset.blk_cells = true;
+}
+
+void Schema::__set_cs_replication(const int8_t val) {
+  this->cs_replication = val;
+__isset.cs_replication = true;
 }
 
 void Schema::__set_cs_size(const int32_t val) {
@@ -445,14 +445,6 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 6:
-        if (ftype == ::apache::thrift::protocol::T_BYTE) {
-          xfer += iprot->readByte(this->blk_replication);
-          this->__isset.blk_replication = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast3;
           xfer += iprot->readI32(ecast3);
@@ -462,7 +454,7 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 8:
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           xfer += iprot->readI32(this->blk_size);
           this->__isset.blk_size = true;
@@ -470,10 +462,18 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 9:
+      case 8:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           xfer += iprot->readI32(this->blk_cells);
           this->__isset.blk_cells = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BYTE) {
+          xfer += iprot->readByte(this->cs_replication);
+          this->__isset.cs_replication = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -552,24 +552,24 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI32(this->cell_ttl);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.blk_replication) {
-    xfer += oprot->writeFieldBegin("blk_replication", ::apache::thrift::protocol::T_BYTE, 6);
-    xfer += oprot->writeByte(this->blk_replication);
-    xfer += oprot->writeFieldEnd();
-  }
   if (this->__isset.blk_encoding) {
-    xfer += oprot->writeFieldBegin("blk_encoding", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeFieldBegin("blk_encoding", ::apache::thrift::protocol::T_I32, 6);
     xfer += oprot->writeI32((int32_t)this->blk_encoding);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.blk_size) {
-    xfer += oprot->writeFieldBegin("blk_size", ::apache::thrift::protocol::T_I32, 8);
+    xfer += oprot->writeFieldBegin("blk_size", ::apache::thrift::protocol::T_I32, 7);
     xfer += oprot->writeI32(this->blk_size);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.blk_cells) {
-    xfer += oprot->writeFieldBegin("blk_cells", ::apache::thrift::protocol::T_I32, 9);
+    xfer += oprot->writeFieldBegin("blk_cells", ::apache::thrift::protocol::T_I32, 8);
     xfer += oprot->writeI32(this->blk_cells);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.cs_replication) {
+    xfer += oprot->writeFieldBegin("cs_replication", ::apache::thrift::protocol::T_BYTE, 9);
+    xfer += oprot->writeByte(this->cs_replication);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.cs_size) {
@@ -604,10 +604,10 @@ void swap(Schema &a, Schema &b) {
   swap(a.col_type, b.col_type);
   swap(a.cell_versions, b.cell_versions);
   swap(a.cell_ttl, b.cell_ttl);
-  swap(a.blk_replication, b.blk_replication);
   swap(a.blk_encoding, b.blk_encoding);
   swap(a.blk_size, b.blk_size);
   swap(a.blk_cells, b.blk_cells);
+  swap(a.cs_replication, b.cs_replication);
   swap(a.cs_size, b.cs_size);
   swap(a.cs_max, b.cs_max);
   swap(a.compact_percent, b.compact_percent);
@@ -621,10 +621,10 @@ Schema::Schema(const Schema& other4) {
   col_type = other4.col_type;
   cell_versions = other4.cell_versions;
   cell_ttl = other4.cell_ttl;
-  blk_replication = other4.blk_replication;
   blk_encoding = other4.blk_encoding;
   blk_size = other4.blk_size;
   blk_cells = other4.blk_cells;
+  cs_replication = other4.cs_replication;
   cs_size = other4.cs_size;
   cs_max = other4.cs_max;
   compact_percent = other4.compact_percent;
@@ -637,10 +637,10 @@ Schema& Schema::operator=(const Schema& other5) {
   col_type = other5.col_type;
   cell_versions = other5.cell_versions;
   cell_ttl = other5.cell_ttl;
-  blk_replication = other5.blk_replication;
   blk_encoding = other5.blk_encoding;
   blk_size = other5.blk_size;
   blk_cells = other5.blk_cells;
+  cs_replication = other5.cs_replication;
   cs_size = other5.cs_size;
   cs_max = other5.cs_max;
   compact_percent = other5.compact_percent;
@@ -656,10 +656,10 @@ void Schema::printTo(std::ostream& out) const {
   out << ", " << "col_type="; (__isset.col_type ? (out << to_string(col_type)) : (out << "<null>"));
   out << ", " << "cell_versions="; (__isset.cell_versions ? (out << to_string(cell_versions)) : (out << "<null>"));
   out << ", " << "cell_ttl="; (__isset.cell_ttl ? (out << to_string(cell_ttl)) : (out << "<null>"));
-  out << ", " << "blk_replication="; (__isset.blk_replication ? (out << to_string(blk_replication)) : (out << "<null>"));
   out << ", " << "blk_encoding="; (__isset.blk_encoding ? (out << to_string(blk_encoding)) : (out << "<null>"));
   out << ", " << "blk_size="; (__isset.blk_size ? (out << to_string(blk_size)) : (out << "<null>"));
   out << ", " << "blk_cells="; (__isset.blk_cells ? (out << to_string(blk_cells)) : (out << "<null>"));
+  out << ", " << "cs_replication="; (__isset.cs_replication ? (out << to_string(cs_replication)) : (out << "<null>"));
   out << ", " << "cs_size="; (__isset.cs_size ? (out << to_string(cs_size)) : (out << "<null>"));
   out << ", " << "cs_max="; (__isset.cs_max ? (out << to_string(cs_max)) : (out << "<null>"));
   out << ", " << "compact_percent="; (__isset.compact_percent ? (out << to_string(compact_percent)) : (out << "<null>"));

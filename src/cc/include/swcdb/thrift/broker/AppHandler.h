@@ -68,12 +68,12 @@ class AppHandler : virtual public BrokerIf {
       schema.__set_cell_versions(dbschema->cell_versions);
       schema.__set_cell_ttl(dbschema->cell_ttl);
 
-      schema.__set_blk_replication(dbschema->blk_replication);
       schema.__set_blk_encoding(
         (EncodingType::type)(uint8_t)dbschema->blk_encoding);
       schema.__set_blk_size(dbschema->blk_size);
       schema.__set_blk_cells(dbschema->blk_cells);
 
+      schema.__set_cs_replication(dbschema->cs_replication);
       schema.__set_cs_size(dbschema->cs_size);
       schema.__set_cs_max(dbschema->cs_max);
       schema.__set_compact_percent(dbschema->compact_percent);

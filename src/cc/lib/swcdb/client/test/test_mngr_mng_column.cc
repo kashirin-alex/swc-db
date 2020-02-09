@@ -197,7 +197,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols,
         0, 
         get_name(n, modified), 
         Types::Column::COUNTER_I64, 
-        10, 1234, 3, blk_encoding, 9876543),
+        10, 1234, blk_encoding, 3, 9876543),
 
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){

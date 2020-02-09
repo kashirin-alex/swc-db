@@ -22,11 +22,11 @@ class ColumnCfg final {
   mutable std::atomic<uint32_t>         c_versions; 
   mutable std::atomic<uint32_t>         c_ttl;
 
-  mutable std::atomic<uint8_t>          blk_replication;
   mutable std::atomic<Types::Encoding>  blk_enc;
   mutable std::atomic<uint32_t>         blk_size;
   mutable std::atomic<uint32_t>         blk_cells;
 
+  mutable std::atomic<uint8_t>          cs_replication;
   mutable std::atomic<uint32_t>         cs_size;
   mutable std::atomic<uint8_t>          cs_max;
   mutable std::atomic<uint8_t>          compact_perc;
@@ -37,9 +37,8 @@ class ColumnCfg final {
   ColumnCfg(const int64_t cid) 
             : cid(cid), col_type(Types::Column::PLAIN),
               c_versions(1), c_ttl(0), 
-              blk_replication(0), blk_enc(Types::Encoding::DEFAULT),
-              blk_size(0), blk_cells(0),
-              cs_size(0), cs_max(0), compact_perc(0), 
+              blk_enc(Types::Encoding::DEFAULT), blk_size(0), blk_cells(0),
+              cs_replication(0), cs_size(0), cs_max(0), compact_perc(0), 
               deleting(false) {
   }
 
@@ -51,11 +50,11 @@ class ColumnCfg final {
     c_versions = schema.cell_versions;
     c_ttl = schema.cell_ttl;
 
-    blk_replication = schema.blk_replication;
     blk_enc = schema.blk_encoding;
     blk_size = schema.blk_size;
     blk_cells = schema.blk_cells;
     
+    cs_replication = schema.cs_replication;
     cs_size = schema.cs_size;
     cs_max = schema.cs_max;
     compact_perc = schema.compact_percent;
@@ -73,12 +72,6 @@ class ColumnCfg final {
     return c_ttl.load();
   }
 
-
-  const uint8_t block_replication() const {
-    return blk_replication 
-            ? blk_replication.load() 
-            : RangerEnv::get()->cfg_blk_replication->get();
-  }
 
   const Types::Encoding block_enc() const {
     return blk_enc != Types::Encoding::DEFAULT
@@ -98,6 +91,12 @@ class ColumnCfg final {
             : RangerEnv::get()->cfg_blk_cells->get();
   }
 
+
+  const uint8_t file_replication() const {
+    return cs_replication 
+            ? cs_replication.load() 
+            : RangerEnv::get()->cfg_cs_replication->get();
+  }
 
   const uint32_t cellstore_size() const {
     return cs_size 
@@ -137,8 +136,6 @@ class ColumnCfg final {
     s.append(") ");
 
     s.append("blk(");
-    s.append("replication=");
-    s.append(std::to_string(blk_replication));
     s.append(" enc=");
     s.append(Types::to_string(blk_enc));
     s.append(" size=");
@@ -148,6 +145,8 @@ class ColumnCfg final {
     s.append(") ");
 
     s.append("cs(");
+    s.append("replication=");
+    s.append(std::to_string(cs_replication));
     s.append("size=");
     s.append(std::to_string(cs_size));
     s.append(" max=");

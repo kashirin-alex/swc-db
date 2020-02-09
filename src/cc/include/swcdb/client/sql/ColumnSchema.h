@@ -113,10 +113,10 @@ class ColumnSchema : public Reader {
     Types::Column col_type=Types::Column::PLAIN;
     uint32_t cell_versions=1;
     uint32_t cell_ttl=0;
-    uint8_t blk_replication=0;
     Types::Encoding blk_encoding=Types::Encoding::DEFAULT;
     uint32_t blk_size=0;
     uint32_t blk_cells=0;
+    uint8_t cs_replication=0;
     uint32_t cs_size=0;
     uint8_t cs_max=0;
     uint8_t compact_percent=0;
@@ -183,14 +183,6 @@ class ColumnSchema : public Reader {
         continue;
       }
 
-      if(any = found_token("blk_replication", 15)) {
-        expect_eq();
-        if(err)
-          return;
-        read_uint8_t(blk_replication, was_set);
-        continue;
-      }
-
       if(any = found_token("blk_encoding", 12)) {
         expect_eq();
         if(err)
@@ -217,6 +209,14 @@ class ColumnSchema : public Reader {
         if(err)
           return;
         read_uint32_t(blk_cells, was_set);
+        continue;
+      }
+
+      if(any = found_token("cs_replication", 14)) {
+        expect_eq();
+        if(err)
+          return;
+        read_uint8_t(cs_replication, was_set);
         continue;
       }
 
@@ -267,8 +267,8 @@ class ColumnSchema : public Reader {
       schema = DB::Schema::make(
         col_name, col_type,
         cell_versions, cell_ttl,
-        blk_replication, blk_encoding, blk_size, blk_cells,
-        cs_size, cs_max, compact_percent, 
+        blk_encoding, blk_size, blk_cells,
+        cs_replication, cs_size, cs_max, compact_percent, 
         revision
       );
     else
@@ -276,8 +276,8 @@ class ColumnSchema : public Reader {
         cid,
         col_name, col_type,
         cell_versions, cell_ttl,
-        blk_replication, blk_encoding, blk_size, blk_cells,
-        cs_size, cs_max, compact_percent, 
+        blk_encoding, blk_size, blk_cells,
+        cs_replication, cs_size, cs_max, compact_percent, 
         revision
       );
   }

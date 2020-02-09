@@ -185,16 +185,16 @@ void swap(Exception &a, Exception &b);
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
 
 typedef struct _Schema__isset {
-  _Schema__isset() : cid(false), col_name(false), col_type(false), cell_versions(false), cell_ttl(false), blk_replication(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_size(false), cs_max(false), compact_percent(false), revision(false) {}
+  _Schema__isset() : cid(false), col_name(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), compact_percent(false), revision(false) {}
   bool cid :1;
   bool col_name :1;
   bool col_type :1;
   bool cell_versions :1;
   bool cell_ttl :1;
-  bool blk_replication :1;
   bool blk_encoding :1;
   bool blk_size :1;
   bool blk_cells :1;
+  bool cs_replication :1;
   bool cs_size :1;
   bool cs_max :1;
   bool compact_percent :1;
@@ -206,7 +206,7 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   Schema(const Schema&);
   Schema& operator=(const Schema&);
-  Schema() : cid(0), col_name(), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_replication(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_size(0), cs_max(0), compact_percent(0), revision(0) {
+  Schema() : cid(0), col_name(), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), compact_percent(0), revision(0) {
   }
 
   virtual ~Schema() noexcept;
@@ -215,10 +215,10 @@ class Schema : public virtual ::apache::thrift::TBase {
   ColumnType::type col_type;
   int32_t cell_versions;
   int32_t cell_ttl;
-  int8_t blk_replication;
   EncodingType::type blk_encoding;
   int32_t blk_size;
   int32_t blk_cells;
+  int8_t cs_replication;
   int32_t cs_size;
   int8_t cs_max;
   int8_t compact_percent;
@@ -236,13 +236,13 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   void __set_cell_ttl(const int32_t val);
 
-  void __set_blk_replication(const int8_t val);
-
   void __set_blk_encoding(const EncodingType::type val);
 
   void __set_blk_size(const int32_t val);
 
   void __set_blk_cells(const int32_t val);
+
+  void __set_cs_replication(const int8_t val);
 
   void __set_cs_size(const int32_t val);
 
@@ -274,10 +274,6 @@ class Schema : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.cell_ttl && !(cell_ttl == rhs.cell_ttl))
       return false;
-    if (__isset.blk_replication != rhs.__isset.blk_replication)
-      return false;
-    else if (__isset.blk_replication && !(blk_replication == rhs.blk_replication))
-      return false;
     if (__isset.blk_encoding != rhs.__isset.blk_encoding)
       return false;
     else if (__isset.blk_encoding && !(blk_encoding == rhs.blk_encoding))
@@ -289,6 +285,10 @@ class Schema : public virtual ::apache::thrift::TBase {
     if (__isset.blk_cells != rhs.__isset.blk_cells)
       return false;
     else if (__isset.blk_cells && !(blk_cells == rhs.blk_cells))
+      return false;
+    if (__isset.cs_replication != rhs.__isset.cs_replication)
+      return false;
+    else if (__isset.cs_replication && !(cs_replication == rhs.cs_replication))
       return false;
     if (__isset.cs_size != rhs.__isset.cs_size)
       return false;
