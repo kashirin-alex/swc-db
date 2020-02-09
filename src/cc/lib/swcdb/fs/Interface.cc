@@ -308,7 +308,19 @@ void Interface::write(int &err, SmartFd::Ptr smartfd,
   }
   buffer.own=true;
 }
-  
+    
+void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
+  do {
+    if(err)
+      SWC_LOGF(LOG_DEBUG, "read-all, retrying to err=%d(%s)", 
+               err, Error::get_text(err));
+    m_fs->read(err = Error::OK, name, dst);
+  } while(err && 
+          err != Error::FS_EOF &&
+          err != Error::SERVER_SHUTTING_DOWN &&
+          err != Error::FS_PATH_NOT_FOUND);
+}
+
 bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
   m_fs->open(err, smartfd);
   if(err == Error::FS_PATH_NOT_FOUND ||
