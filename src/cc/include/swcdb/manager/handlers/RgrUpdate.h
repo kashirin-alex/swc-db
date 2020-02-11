@@ -22,7 +22,7 @@ void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
       
     // std::cout << params.to_string() << "\n";
     conn->response_ok(ev);
-    Env::Rangers::get()->update_status(params.hosts, params.sync_all);
+    Env::Mngr::rangers()->update_status(params.hosts, params.sync_all);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

@@ -20,11 +20,11 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    Env::Rangers::get()->is_active(rsp_params.err, params.cid); 
+    Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
     if(rsp_params.err != Error::OK)
       goto send_response;
 
-    auto col = Env::MngrColumns::get()->get_column(
+    auto col = Env::Mngr::columns()->get_column(
       rsp_params.err, params.cid, false);
     if(rsp_params.err != Error::OK)
       goto send_response;
@@ -56,7 +56,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
     }
 
-    Env::Rangers::get()->rs_get(
+    Env::Mngr::rangers()->rgr_get(
       range->get_rgr_id(), rsp_params.endpoints);
     if(rsp_params.endpoints.empty()) {
       rsp_params.err = Error::RS_NOT_READY;

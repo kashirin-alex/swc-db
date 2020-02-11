@@ -20,7 +20,7 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::MngrActiveReq params;
     params.decode(&ptr, &remain);
 
-    server::Mngr::MngrStatus::Ptr h = Env::MngrRole::get()->active_mngr(
+    server::Mngr::MngrStatus::Ptr h = Env::Mngr::role()->active_mngr(
       params.begin, params.end);
 
     auto cbp = CommBuf::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );

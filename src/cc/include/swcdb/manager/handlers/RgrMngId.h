@@ -23,7 +23,7 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
     // ResponseCallback::Ptr cb = 
     //  std::make_shared<ResponseCallback>(conn, ev);
           
-    if(!Env::MngrRole::get()->is_active(1)){
+    if(!Env::Mngr::role()->is_active(1)){
       SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d id=%d %s",
                 req_params.flag, req_params.id, 
                 req_params.to_string().c_str());
@@ -36,11 +36,11 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
 
-    server::Mngr::Rangers::Ptr rangers = Env::Rangers::get();
+    auto rangers = Env::Mngr::rangers();
     switch(req_params.flag) {
 
       case Params::RgrMngId::Flag::RS_REQ: {
-        uint64_t id = rangers->rs_set_id(req_params.endpoints);
+        uint64_t id = rangers->rgr_set_id(req_params.endpoints);
 
         SWC_LOGF(LOG_DEBUG, "RS_REQ, id=%d %s",
                   req_params.id, req_params.to_string().c_str());
@@ -54,7 +54,7 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_ACK: {
-        if(rangers->rs_ack_id(req_params.id, req_params.endpoints)){
+        if(rangers->rgr_ack_id(req_params.id, req_params.endpoints)){
           SWC_LOGF(LOG_DEBUG, "RS_ACK, id=%d %s",
                     req_params.id, req_params.to_string().c_str());
           conn->response_ok(ev);
@@ -73,8 +73,8 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_DISAGREE: {
-        uint64_t id = rangers->rs_had_id(req_params.id, req_params.endpoints);
-        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rs_had_id=%d > id=%d %s", 
+        uint64_t id = rangers->rgr_had_id(req_params.id, req_params.endpoints);
+        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rgr_had_id=%d > id=%d %s", 
                   req_params.id, id, req_params.to_string().c_str());
 
         if(id) {
@@ -90,7 +90,7 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
-        rangers->rs_shutdown(req_params.id, req_params.endpoints);
+        rangers->rgr_shutdown(req_params.id, req_params.endpoints);
 
         SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, id=%d %s",
                   req_params.id, req_params.to_string().c_str());

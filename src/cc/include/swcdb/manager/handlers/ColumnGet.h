@@ -15,13 +15,13 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 DB::Schema::Ptr get_schema(int &err, Params::ColumnGetReq params) {
   switch(params.flag) {
     case Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
-      return Env::Schemas::get()->get(params.cid);
+      return Env::Mngr::schemas()->get(params.cid);
 
     case Params::ColumnGetReq::Flag::SCHEMA_BY_NAME:
-      return Env::Schemas::get()->get(params.name);
+      return Env::Mngr::schemas()->get(params.name);
 
     case Params::ColumnGetReq::Flag::ID_BY_NAME:
-      return Env::Schemas::get()->get(params.name);
+      return Env::Mngr::schemas()->get(params.name);
 
     default:
       err = Error::COLUMN_UNKNOWN_GET_FLAG;
@@ -65,7 +65,7 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;
     }
-    Env::Rangers::get()->is_active(err, 1, true);
+    Env::Mngr::mngd_columns()->is_active(err, 1, true);
     if(!err) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;
@@ -74,13 +74,13 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
     if(flag == Params::ColumnGetReq::Flag::ID_BY_NAME)
       req_params.flag = Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
 
-    Env::MngrRole::get()->req_mngr_inchain(
+    Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Req::MngrColumnGet>(
         req_params,
         [conn, ev](int err, Params::ColumnGetRsp params){
           if(err == Error::OK && params.schema != nullptr){
             int tmperr;
-            Env::Schemas::get()->add(tmperr, params.schema);
+            Env::Mngr::schemas()->add(tmperr, params.schema);
           }
           mngr_update_response(conn, ev, err, params.flag, params.schema);
         }

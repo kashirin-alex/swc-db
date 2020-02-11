@@ -22,7 +22,7 @@ void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
       
     conn->response_ok(ev);
       
-    Env::Rangers::get()->update_status(
+    Env::Mngr::mngd_columns()->update_status(
       params.function, params.schema, params.err);
 
   } catch (Exception &e) {

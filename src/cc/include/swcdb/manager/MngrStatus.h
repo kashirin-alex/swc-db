@@ -77,8 +77,8 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   uint64_t          col_begin;
   uint64_t          col_end;
 
-  ConnHandlerPtr  conn; // mngr-inchain
-  int                       failures;
+  ConnHandlerPtr    conn; // mngr-inchain
+  int               failures;
 };
 
 typedef std::vector<MngrStatus::Ptr> MngrsStatus;

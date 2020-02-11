@@ -13,12 +13,10 @@ namespace SWC { namespace DB {
 
 class Schemas final {
   public:
-  
-  typedef Schemas* Ptr;
 
-  Schemas(){}
+  Schemas() {}
 
-  ~Schemas(){}
+  ~Schemas() {}
   
   void add(int &err, Schema::Ptr schema){
     std::scoped_lock lock(m_mutex);
@@ -82,33 +80,5 @@ class Schemas final {
 
 
 
-} // DB namespace
-
-namespace Env {
-class Schemas final {
-  public:
-
-  static void init() {
-    m_env = std::make_shared<Schemas>();
-  }
-
-  static DB::Schemas::Ptr get(){
-    SWC_ASSERT(m_env != nullptr);
-    return m_env->m_schemas;
-  }
-
-  Schemas() : m_schemas(new DB::Schemas()) {}
-  
-  ~Schemas(){
-    if(m_schemas != nullptr)
-      delete m_schemas;
-  }
-
-  private:
-  DB::Schemas::Ptr                       m_schemas = nullptr;
-  inline static std::shared_ptr<Schemas> m_env = nullptr;
-};
-}
-
-}
+}}
 #endif

@@ -143,35 +143,6 @@ class Columns final {
 
 };
 
-}} // namespace server::Mngr
+}}} // namespace SWC::server::Mngr
 
-
-
-namespace Env {
-class MngrColumns final {
-  public:
-
-  static void init() {
-    m_env = std::make_shared<MngrColumns>();
-  }
-
-  static server::Mngr::Columns::Ptr get(){
-    SWC_ASSERT(m_env != nullptr);
-    return m_env->m_columns;
-  }
-
-  MngrColumns() : m_columns(new server::Mngr::Columns()) {}
-
-  ~MngrColumns() {
-    if(m_columns != nullptr)
-      delete m_columns;
-  }
-
-  private:
-  server::Mngr::Columns::Ptr                 m_columns = nullptr;
-  inline static std::shared_ptr<MngrColumns> m_env = nullptr;
-};
-}
-
-}
 #endif

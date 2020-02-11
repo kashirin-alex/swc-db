@@ -21,10 +21,10 @@ void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::ColumnMng req_params;
     req_params.decode(&ptr, &remain);
 
-    Env::Rangers::get()->is_active(err, 1, true);
+    Env::Mngr::mngd_columns()->is_active(err, 1, true);
       
     if(err == Error::OK) {
-      Env::Rangers::get()->column_action({
+      Env::Mngr::mngd_columns()->action({
         .params=req_params, 
         .cb=[conn, ev](int err){
           if(err == Error::OK)

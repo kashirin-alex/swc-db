@@ -6,6 +6,7 @@
 #ifndef swc_lib_db_protocol_mngr_req_ColumnUpdate_h
 #define swc_lib_db_protocol_mngr_req_ColumnUpdate_h
 
+#include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/params/ColumnUpdate.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {

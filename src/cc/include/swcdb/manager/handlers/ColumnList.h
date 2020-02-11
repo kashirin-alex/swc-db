@@ -22,9 +22,9 @@ void column_list(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::ColumnListReq req_params;
     req_params.decode(&ptr, &remain); // opt for list cid range
 
-    Env::Rangers::get()->is_active(err, 1, true);
+    Env::Mngr::mngd_columns()->is_active(err, 1, true);
     if(!err)
-      Env::Schemas::get()->all(rsp.schemas);
+      Env::Mngr::schemas()->all(rsp.schemas);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

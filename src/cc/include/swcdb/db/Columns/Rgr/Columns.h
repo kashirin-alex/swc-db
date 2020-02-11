@@ -6,7 +6,7 @@
 #ifndef swcdb_lib_db_Rgr_Columns_Columns_h
 #define swcdb_lib_db_Rgr_Columns_Columns_h
 
-#include "swcdb/db/Columns/Schemas.h"
+#include "swcdb/db/Columns/Schema.h"
 #include "swcdb/core/comm/ResponseCallback.h"
 
 #include "swcdb/db/Columns/Rgr/ColumnCfg.h"

@@ -22,11 +22,11 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
     std::cout << "RangeUnloaded: " << params.to_string() << "\n";
 
-    Env::Rangers::get()->is_active(rsp_params.err, 1); 
+    Env::Mngr::mngd_columns()->is_active(rsp_params.err, 1); 
     if(rsp_params.err)
       goto send_response;
 
-    auto col = Env::MngrColumns::get()->get_column(
+    auto col = Env::Mngr::columns()->get_column(
       rsp_params.err, params.cid, false);
     if(rsp_params.err)
       goto send_response;
@@ -43,7 +43,7 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
       goto send_response;
     range->set_state(server::Mngr::Range::State::NOTSET, 0);
     
-    Env::Rangers::get()->check_assignment_timer(1);
+    Env::Mngr::rangers()->schedule_assignment_check(1);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

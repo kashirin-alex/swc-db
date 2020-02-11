@@ -18,21 +18,18 @@ void mngr_state(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::MngrState req_params;
     req_params.decode(&ptr, &remain);
 
-    bool new_active_columns = Env::MngrRole::get()->fill_states(
+    Env::Mngr::role()->fill_states(
       req_params.states, req_params.token, 
       nullptr // std::make_shared<ResponseCallback>(conn, ev)
     ); 
 
-    Env::MngrRole::get()->update_manager_addr(
+    Env::Mngr::role()->update_manager_addr(
       conn->endpoint_remote_hash(), req_params.mngr_host);
 
     conn->response_ok(ev);
 
-    if(Env::MngrRole::get()->require_sync())
-      Env::Rangers::get()->require_sync();
-
-    if(new_active_columns)
-      Env::Rangers::get()->new_columns();
+    if(Env::Mngr::role()->require_sync())
+      Env::Mngr::mngd_columns()->require_sync();
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

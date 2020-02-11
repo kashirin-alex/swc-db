@@ -15,11 +15,8 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/client/Clients.h"
 
-#include "swcdb/db/Columns/Schemas.h"
-#include "swcdb/db/Columns/Mngr/Columns.h"
-
-#include "swcdb/manager/MngrRole.h"
-#include "swcdb/manager/Rangers.h"
+#include "swcdb/manager/AppContextClient.h"
+#include "swcdb/manager/MngrEnv.h"
 
 #include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
 #include "swcdb/manager/handlers/MngrState.h"
@@ -77,21 +74,17 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init(FS::fs_type(
       Env::Config::settings()->get<std::string>("swc.fs")));
       
-    Env::MngrRole::init();
-    
-    Env::Schemas::init();
-    Env::MngrColumns::init();
     Env::Clients::init(
       std::make_shared<client::Clients>(
         Env::IoCtx::io()->shared(),
         std::make_shared<client::Mngr::AppContext>()
       )
     );
-    Env::Rangers::init();
+
   }
   
   void init(const EndPoints& endpoints) override {
-    Env::MngrRole::get()->init(endpoints);
+    Env::Mngr::init(endpoints);
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -116,8 +109,8 @@ class AppContext : public SWC::AppContext {
         
       case Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        if(Env::MngrRole::get()->disconnection(
-                          conn->endpoint_remote, conn->endpoint_local, true))
+        if(Env::Mngr::role()->disconnection(
+          conn->endpoint_remote, conn->endpoint_local, true))
           return;
         return;
 
@@ -172,8 +165,7 @@ class AppContext : public SWC::AppContext {
     
     m_srv->stop_accepting(); // no further requests accepted
     
-    Env::Rangers::get()->stop();
-    Env::MngrRole::get()->stop();
+    Env::Mngr::stop();
 
     Env::Clients::get()->rgr_service->stop();
     Env::Clients::get()->mngr_service->stop();
