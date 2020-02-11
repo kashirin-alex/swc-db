@@ -1,2 +1,2 @@
 
-thrift>=@THRIFT_VERSION@ # git+git://github.com/apache/thrift/tree/v@THRIFT_VERSION@
+thrift>=@THRIFT_VERSION@ # https://github.com/apache/thrift/tree/v@THRIFT_VERSION@/lib/py
