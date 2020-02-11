@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright (C) 2019-2020 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
 
@@ -8,7 +8,7 @@
  */
 
 namespace cpp   SWC.Thrift
-namespace py    SWC.client.thrift
+namespace py    swcdb.thrift.gen
 /*
 namespace java  org.swcdb.thrift
 namespace perl  SWC.thrift

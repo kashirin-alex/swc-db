@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+from distutils.core import setup, Extension
+from distutils import sysconfig
+
+README_RST = os.path.join(os.path.dirname(__file__), 'README.txt')
+with open(README_RST) as readme:
+    long_description = readme.read()
+
+
+install_path = '@CMAKE_INSTALL_PREFIX@'
+include_dirs = [install_path+'/include',
+                sysconfig.get_python_inc(plat_specific=True),
+                '/usr/local/include', '/usr/include'] + \
+                '@THRIFT_INCLUDE_PATHS@'.split(';') + \
+                '@PYBIND11_INCLUDE_PATHS@'.split(';') + \
+                '@MALLOC_INCLUDE_PATHS@'.split(';')
+include_dirs = list(set(include_dirs))
+
+extra_compile_args = [a for a in set([a.strip() 
+                      for a in "@CMAKE_CXX_FLAGS@ @CMAKE_C_FLAGS@".split(' ')]) if a]
+
+libraries=[l.split('/')[-1].split('.')[0][3:] 
+           for l in '@MALLOC_LIBRARIES_SHARED@'.split(';') 
+           if '/' in l]
+
+extensions = []
+
+
+setup(
+    name='swcdb',
+    version='@SWC_VERSION@',
+    description='Python Extension for SWC-DB',
+    long_description=long_description,
+
+    # install_requires=['thrift==@THRIFT_VERSION@'],  # # OR pack with the PACKAGE
+
+    url='https://github.com/kashirin-alex/swc-db',
+    license='GPLv3',
+    package_dir={'swcdb': 'pkg'},
+    packages=[
+        'swcdb',
+        'swcdb.thrift',
+        'swcdb.thrift.gen'
+    ],
+    maintainer='Kashirin Alex',
+    maintainer_email='kashirin.alex@gmail.com',
+    ext_modules=extensions
+)
+
+
+# /
+# setup.py
+# swcdb/
+#    __init__.py
+#    thrift/
+#         __init__.py
+#         client.py
+#         gen/
+#

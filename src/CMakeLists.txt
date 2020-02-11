@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+# Copyright (C) 2019-2020 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
 #
 
 
@@ -26,3 +26,4 @@ install(DIRECTORY cc/etc/swcdb      DESTINATION etc)
 install(DIRECTORY cc/include/swcdb  DESTINATION include)
 
 
+add_subdirectory(py)

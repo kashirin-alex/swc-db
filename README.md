@@ -37,7 +37,8 @@ mkdir swcdb; cd swcdb;
 
 ```cmake
 cmake ../swc-db \
-  -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON -DSWC_BUILTIN_FS=local,broker \
+  -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON \
+  -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
   -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
   -DCMAKE_BUILD_TYPE=Release
 ```
