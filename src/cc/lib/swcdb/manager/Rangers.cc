@@ -36,7 +36,7 @@ Rangers::Rangers()
 Rangers::~Rangers() { }
 
 void Rangers::stop(bool shuttingdown) {
-  if(shuttindown)
+  if(shuttingdown)
     m_run = false;
   {
     std::scoped_lock lock(m_mutex_timer);
