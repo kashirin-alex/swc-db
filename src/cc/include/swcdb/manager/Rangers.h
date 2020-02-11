@@ -20,7 +20,7 @@ class Rangers final {
 
   ~Rangers();
 
-  void stop();
+  void stop(bool shuttingdown=true);
 
   void schedule_assignment_check(uint32_t t_ms = 10000);
 

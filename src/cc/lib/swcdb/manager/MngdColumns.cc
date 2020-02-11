@@ -44,6 +44,7 @@ void MngdColumns::active(const std::vector<int64_t>& cols) {
       SWC_LOG(LOG_INFO, "Manager has been decommissioned");
       m_columns_set = false;
       m_root_mngr = false;
+      Env::Mngr::rangers()->stop(false);
       Env::Mngr::columns()->reset();
     }
     return; 
@@ -53,7 +54,6 @@ void MngdColumns::active(const std::vector<int64_t>& cols) {
     initialize() ? 500 : cfg_delay_cols_init->get());
 
   // if(m_root_mngr) (scheduled on column changes ) + chk(cid) LOAD_ACK
-
   return;
 }
 
