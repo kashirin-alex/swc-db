@@ -5,7 +5,7 @@
 #ifndef swc_core_Version_h
 #define swc_core_Version_h
 
-inline const char* SWC_VERSION  = "@VERSION_STRING@";
+inline const char* SWC_VERSION  = "@SWC_VERSION@";
 
 namespace SWC {
 inline const char* VERSION = SWC_VERSION;
