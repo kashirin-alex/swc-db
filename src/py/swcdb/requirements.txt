@@ -1,2 +1,2 @@
 
-thrift>=0.13.0 # @THRIFT_VERSION@
+thrift>=@THRIFT_VERSION@ # git+git://github.com/apache/thrift/tree/v@THRIFT_VERSION@
