@@ -298,6 +298,30 @@ class Key {
     return chg;
   }
 
+  const Condition::Comp compare(const KeyVec& other, 
+                                bool empty_ok=false) const {
+    Condition::Comp comp = Condition::EQ;
+    const uint8_t* ptr = data;
+    uint32_t len = 0;
+    
+    uint32_t max = count > other.size() ? count : other.size();
+    for(uint32_t c = 0; c<max; ++c, ptr += len) {
+
+      if(c == count || c == other.size())
+        return count > other.size() ? Condition::LT : Condition::GT;
+
+      if(!(len = Serialization::decode_vi32(&ptr)) && empty_ok)
+        continue;
+
+      if((comp = Condition::condition(
+                    ptr, len, 
+                    (const uint8_t*)other.key[c].data(), other.key[c].length()))
+                  != Condition::EQ)
+        return comp;
+    }
+    return comp;
+  }
+
 /*
   size_t fractions(uint8_t offset=0) {
     uint32_t tmp_count = 0;
