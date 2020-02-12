@@ -6,9 +6,11 @@
 #ifndef swcdb_db_cells_CellKey_h
 #define swcdb_db_cells_CellKey_h
 
+#include <cassert>
 #include <vector>
 #include "swcdb/core/Serialization.h"
 #include "swcdb/db/Cells/Comparators.h"
+#include "swcdb/db/Cells/CellKeyVec.h"
 
 namespace SWC { namespace DB { namespace Cell {
 
@@ -253,7 +255,49 @@ class Key {
     }
     return comp;
   }
-  
+
+  const bool align(KeyVec& start, KeyVec& finish) const {
+    const uint8_t* ptr = data;
+    uint32_t len = 0;
+    bool chg = false;
+    for(uint32_t c = 0; c < count; ++c) {
+      len = Serialization::decode_vi32(&ptr);
+
+      if(c >= start.size()) {
+        start.insert(c, ptr, len);
+        chg = true;
+      } else if(Condition::condition(
+                  ptr, len, 
+                  (const uint8_t*)start.key[c].data(), start.key[c].length()
+              ) == Condition::GT) {
+        start.set(c, ptr, len);
+        chg = true;
+      }
+
+      if(c >= finish.size()) {
+        finish.insert(c, ptr, len);
+        chg = true;
+      } else if(Condition::condition(
+                  ptr, len, 
+                  (const uint8_t*)finish.key[c].data(), finish.key[c].length()
+                ) == Condition::LT) {
+        finish.set(c, ptr, len);
+        chg = true;
+      }
+      ptr += len;
+    }
+
+    if(count < start.size()) {
+      for(uint32_t c = count; c < start.size(); ++c)
+        if(!start.key[c].empty()) {
+          start.set(c, "", 0);
+          chg = true;
+        }
+    }
+
+    return chg;
+  }
+
 /*
   size_t fractions(uint8_t offset=0) {
     uint32_t tmp_count = 0;
