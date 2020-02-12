@@ -134,6 +134,12 @@ class Interval final {
     was_set = true;
   }
 
+  const bool align(const Interval &other) {
+    bool start = aligned_start.align_start(other.aligned_start);
+    bool finish = aligned_finish.align_finish(other.aligned_finish);
+    return start || finish;
+  }
+
   const bool equal(const Interval& other) const {
     return
       was_set == other.was_set &&
