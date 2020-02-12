@@ -14,6 +14,8 @@ class KeyVec {
 
   KeyVec() { }
 
+  KeyVec(const KeyVec &other) : key(other.key) { }
+
   virtual ~KeyVec() { }
 
   void free() {
@@ -77,6 +79,11 @@ class KeyVec {
     set(idx, (const char*) fraction, len);
   }
 
+  void set(const uint32_t idx, const std::string& fraction) {
+    set(idx, fraction.data(), fraction.length());
+  }
+
+
   void remove(const uint32_t idx) {
     if(idx >= key.size())
       return;
@@ -91,6 +98,49 @@ class KeyVec {
   void get(const uint32_t idx, std::string& fraction) const {
     fraction.clear();
     fraction.append(idx >= key.size() ? std::string() : key[idx]);
+  }
+
+
+  const bool align_start(const KeyVec& other) {
+    bool chg = false;
+    uint32_t min = size() < other.size() ? size() : other.size();
+    for(uint32_t c = 0; c < min; ++c) {
+      if(Condition::condition(
+                  (const uint8_t*)other.key[c].data(), other.key[c].length(),
+                  (const uint8_t*)key[c].data(), key[c].length()
+              ) == Condition::GT) {
+        set(c, other.key[c]);
+        chg = true;
+      }
+    }
+    if(size() < other.size()) {
+      for(uint32_t c = size(); c < other.size(); ++c) {
+        add("", 0);
+        chg = true;
+      }
+    }
+    return chg;
+  }
+ 
+  const bool align_finish(const KeyVec& other) {
+    bool chg = false;
+    uint32_t min = size() < other.size() ? size() : other.size();
+    for(uint32_t c = 0; c < min; ++c) {
+      if(Condition::condition(
+                  (const uint8_t*)other.key[c].data(), other.key[c].length(),
+                  (const uint8_t*)key[c].data(), key[c].length()
+              ) == Condition::LT) {
+        set(c, other.key[c]);
+        chg = true;
+      }
+    }
+    if(size() < other.size()) {
+      for(uint32_t c = size(); c < other.size(); ++c) {
+        add(other.key[c]);
+        chg = true;
+      }
+    }
+    return chg;
   }
 
 
