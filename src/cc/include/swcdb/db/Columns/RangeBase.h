@@ -189,7 +189,13 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     key_end.set(m_interval.key_end, Condition::LE);
   }
 
-  const std::string to_string() const {
+  const bool align(const Cells::Interval& interval) {
+    std::scoped_lock lock(m_mutex);
+    return m_interval.align(interval);
+  }
+
+  const std::string to_string() {
+    std::shared_lock lock(m_mutex);
     std::string s(cfg->to_string());
     s.append(" rid=");
     s.append(std::to_string(rid));
