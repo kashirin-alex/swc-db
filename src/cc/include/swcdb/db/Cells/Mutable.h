@@ -391,6 +391,8 @@ class Mutable final {
         break; 
 
       cells.add(*cell);
+      
+      cell->key.align(interval.aligned_start, interval.aligned_finish);
       //interval.expand(cell->timestamp);
     }
   }
@@ -585,7 +587,9 @@ class Mutable final {
         first = cell;
       else 
         last = cell;
+
       intval.expand(cell->timestamp);
+      cell->key.align(intval.aligned_start, intval.aligned_finish);
     }
     if(first) {
       intval.expand(*first);
@@ -675,11 +679,16 @@ class Mutable final {
     Cell* cell;
     Cell* from_cell = *(m_cells + from);
     uint32_t rest = 0;
+    
+    interval.aligned_start.free();
+    interval.aligned_finish.free();
 
     for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
       cell = *(m_cells + offset);
  
       if(!rest) {
+        cell->key.align(interval.aligned_start, interval.aligned_finish);
+
         if(cell->key.compare(from_cell->key, 0) == Condition::GT)
           continue;
         interval.expand_begin(*cell);
