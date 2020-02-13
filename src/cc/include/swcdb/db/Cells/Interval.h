@@ -135,8 +135,8 @@ class Interval final {
   }
 
   const bool align(const Interval &other) {
-    bool start = aligned_start.align_start(other.aligned_start);
-    bool finish = aligned_finish.align_finish(other.aligned_finish);
+    bool start = aligned_start.align(other.aligned_start, Condition::LT);
+    bool finish = aligned_finish.align(other.aligned_finish, Condition::GT);
     return start || finish;
   }
 

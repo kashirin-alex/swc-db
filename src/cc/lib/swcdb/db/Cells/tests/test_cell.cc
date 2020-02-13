@@ -201,6 +201,7 @@ int main() {
 
    std::cout << " sizeof(SWC::DB::Cells::Cell)=" << sizeof(SWC::DB::Cells::Cell) << "\n";
    std::cout << " sizeof(SWC::DB::Cell::Key)=" << sizeof(SWC::DB::Cell::Key) << "\n";
+   std::cout << " sizeof(SWC::DB::Cell::KeyVec)=" << sizeof(SWC::DB::Cell::KeyVec) << "\n";
    check_load();;
    std::cout << "\n-------------------------------\n";
 

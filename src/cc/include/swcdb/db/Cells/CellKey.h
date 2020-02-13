@@ -263,63 +263,54 @@ class Key {
     for(uint32_t c = 0; c < count; ++c) {
       len = Serialization::decode_vi32(&ptr);
 
-      if(c >= start.size()) {
-        start.insert(c, ptr, len);
+      if(c == start.size()) {
+        start.add(ptr, len);
         chg = true;
       } else if(Condition::condition(
-                  ptr, len, 
-                  (const uint8_t*)start.key[c].data(), start.key[c].length()
-              ) == Condition::GT) {
+                  (const uint8_t*)start[c].data(), start[c].length(),
+                  ptr, len
+              ) == Condition::LT) {
         start.set(c, ptr, len);
         chg = true;
       }
 
-      if(c >= finish.size()) {
-        finish.insert(c, ptr, len);
+      if(c == finish.size()) {
+        finish.add(ptr, len);
         chg = true;
       } else if(Condition::condition(
-                  ptr, len, 
-                  (const uint8_t*)finish.key[c].data(), finish.key[c].length()
-                ) == Condition::LT) {
+                  (const uint8_t*)finish[c].data(), finish[c].length(),
+                  ptr, len
+                ) == Condition::GT) {
         finish.set(c, ptr, len);
         chg = true;
       }
       ptr += len;
     }
-
-    if(count < start.size()) {
-      for(uint32_t c = count; c < start.size(); ++c)
-        if(!start.key[c].empty()) {
-          start.set(c, "", 0);
-          chg = true;
-        }
-    }
-
     return chg;
   }
 
-  const Condition::Comp compare(const KeyVec& other, 
-                                bool empty_ok=false) const {
-    Condition::Comp comp = Condition::EQ;
+  const bool compare(const KeyVec& other, Condition::Comp break_if,
+                     uint32_t max = 0, bool empty_ok=false) const {
     const uint8_t* ptr = data;
     uint32_t len = 0;
-    
-    uint32_t max = count > other.size() ? count : other.size();
+    if(!max)
+      max = count > other.size() ? count : other.size();
     for(uint32_t c = 0; c<max; ++c, ptr += len) {
 
       if(c == count || c == other.size())
-        return count > other.size() ? Condition::LT : Condition::GT;
+        return count > other.size() 
+              ? break_if != Condition::LT 
+              : break_if != Condition::GT;
 
       if(!(len = Serialization::decode_vi32(&ptr)) && empty_ok)
         continue;
 
-      if((comp = Condition::condition(
-                    ptr, len, 
-                    (const uint8_t*)other.key[c].data(), other.key[c].length()))
-                  != Condition::EQ)
-        return comp;
+      auto& r = other[c];
+      if(Condition::condition(ptr, len, (const uint8_t*)r.data(), r.length())
+                                                              == break_if)
+        return false;
     }
-    return comp;
+    return true;
   }
 
 /*
@@ -371,9 +362,9 @@ class Key {
     const uint8_t* ptr = data;
     key.clear();
     key.resize(count);
-    for(uint32_t n=0; n<count; ++n,ptr+=len) {
+    for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
-      key[n].append((const char*)ptr, len);
+      it->append((const char*)ptr, len);
     }
   }
 
@@ -389,9 +380,9 @@ class Key {
       
     uint32_t len = 0;
     const uint8_t* ptr = data;
-    for(uint32_t n=0; n<count; ++n,ptr+=len) {
+    for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
-      if(len != key[n].length() || memcmp(ptr, key[n].data(), len) != 0)
+      if(len != it->length() || memcmp(ptr, it->data(), len) != 0)
         return false;
     }
     return true;
@@ -409,7 +400,7 @@ class Key {
     for(uint32_t n=0; n<count; ++n,ptr+=len) {
       s.append("(");
       len = Serialization::decode_vi32(&ptr);
-      s.append(std::string((const char*)ptr, len));
+      s.append((const char*)ptr, len);
       s.append("),");
     }
     s.append("])");

@@ -235,7 +235,64 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
     
   size_t sz = sizeof(key)+key.size;
 
-  std::cout << "Cell::Key, sz=" << sz
+  std::cout << "Cell::Key,    sz=" << sz
+                    << " add=" << took_add 
+                    << " remove=" << took_remove
+                    << " insert=" << took_insert
+                    << " get=" << took_get
+                    << " avg(add)=" << took_add/chks 
+                    << " avg(remove)=" << took_remove/chks 
+                    << " avg(insert)=" << took_insert/chks 
+                    << " avg(get)=" << took_get/chks 
+                    << " total=" << took_add+took_remove+took_insert+took_get
+                    <<  "\n";
+  
+}
+
+
+void load_check_key_vec(int chks, int num_fractions, int chk_count) {
+
+  std::string fraction;
+  uint64_t took_add = 0, took_get = 0, took_remove = 0, took_insert = 0;
+
+  for(int n=0; n < chks; n++) {
+    DB::Cell::KeyVec key;
+
+    auto ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.add(std::to_string(b+2^60));
+    took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++) 
+      key.get(b, fraction);
+    took_get += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.remove(0);
+    took_remove += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+
+    ts = std::chrono::system_clock::now();
+    for(auto b=0;b<num_fractions;b++)
+      key.insert(0, std::to_string(b+2^60));
+    took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now() - ts).count();
+  }
+        
+
+  
+  DB::Cell::KeyVec key;
+  size_t sz = sizeof(key);
+  for(auto b=0; b<num_fractions; b++) {
+    key.add(std::to_string(b+2^60));
+    sz += sizeof(key.back()) + key.back().length();
+  }
+
+  std::cout << "Cell::KeyVec, sz=" << sz
                     << " add=" << took_add 
                     << " remove=" << took_remove
                     << " insert=" << took_insert
@@ -296,7 +353,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
   }
   sz += sizeof(key);
 
-  std::cout << "vector,    sz=" << sz
+  std::cout << "vector,       sz=" << sz
                     << " add=" << took_add 
                     << " remove=" << took_remove
                     << " insert=" << took_insert
@@ -321,6 +378,7 @@ int main() {
   for(int fractions = 0;fractions<=500;fractions+=10){
     std::cout << "fractions=" << fractions << "\n";
     load_check_key(chks, fractions, chk_count);
+    load_check_key_vec(chks, fractions, chk_count);
     load_check_vec(chks, fractions, chk_count);
   }
 
