@@ -41,8 +41,8 @@ class Interval final {
     set_ts_earliest(other.ts_earliest);
     set_ts_latest(other.ts_latest);
 
-    set_aligned_start(other.aligned_start);
-    set_aligned_finish(other.aligned_finish);
+    set_aligned_min(other.aligned_min);
+    set_aligned_max(other.aligned_max);
     was_set = true;
   }
 
@@ -52,8 +52,8 @@ class Interval final {
     ts_earliest.free();
     ts_latest.free();
     was_set = false;
-    aligned_start.free();
-    aligned_finish.free();
+    aligned_min.free();
+    aligned_max.free();
   }
   
   void set_key_begin(const DB::Cell::Key& key) {
@@ -76,13 +76,13 @@ class Interval final {
     was_set = true;
   }
 
-  void set_aligned_start(const DB::Cell::KeyVec& key) {
-    aligned_start = key;
+  void set_aligned_min(const DB::Cell::KeyVec& key) {
+    aligned_min = key;
     was_set = true;
   }
 
-  void set_aligned_finish(const DB::Cell::KeyVec& key) {
-    aligned_finish = key;
+  void set_aligned_max(const DB::Cell::KeyVec& key) {
+    aligned_max = key;
     was_set = true;
   }
 
@@ -135,8 +135,8 @@ class Interval final {
   }
 
   const bool align(const Interval &other) {
-    bool start = aligned_start.align(other.aligned_start, Condition::LT);
-    bool finish = aligned_finish.align(other.aligned_finish, Condition::GT);
+    bool start = aligned_min.align(other.aligned_min, Condition::LT);
+    bool finish = aligned_max.align(other.aligned_max, Condition::GT);
     return start || finish;
   }
 
@@ -150,8 +150,8 @@ class Interval final {
       ts_earliest.equal(other.ts_earliest) && 
       ts_latest.equal(other.ts_latest) &&
 
-      aligned_start.equal(other.aligned_start) && 
-      aligned_finish.equal(other.aligned_finish);
+      aligned_min.equal(other.aligned_min) && 
+      aligned_max.equal(other.aligned_max);
   }
 
   const bool is_in_begin(const DB::Cell::Key &key) const {
@@ -214,8 +214,8 @@ class Interval final {
           + key_end.encoded_length()
           + ts_earliest.encoded_length()
           + ts_latest.encoded_length()
-          + aligned_start.encoded_length()
-          + aligned_finish.encoded_length();
+          + aligned_min.encoded_length()
+          + aligned_max.encoded_length();
   }
 
   void encode(uint8_t **ptr) const {
@@ -223,8 +223,8 @@ class Interval final {
     key_end.encode(ptr);
     ts_earliest.encode(ptr);
     ts_latest.encode(ptr);
-    aligned_start.encode(ptr);
-    aligned_finish.encode(ptr);
+    aligned_min.encode(ptr);
+    aligned_max.encode(ptr);
   }
 
   void decode(const uint8_t **ptr, size_t *remain, bool owner=false){
@@ -232,8 +232,8 @@ class Interval final {
     key_end.decode(ptr, remain, owner);
     ts_earliest.decode(ptr, remain);
     ts_latest.decode(ptr, remain);
-    aligned_start.decode(ptr, remain);
-    aligned_finish.decode(ptr, remain);
+    aligned_min.decode(ptr, remain);
+    aligned_max.decode(ptr, remain);
     
     was_set = true;
   }
@@ -247,10 +247,10 @@ class Interval final {
     s.append(ts_earliest.to_string());
     s.append( " latest=");
     s.append(ts_latest.to_string());
-    s.append( " start=");
-    s.append(aligned_start.to_string());
-    s.append( " finish=");
-    s.append(aligned_finish.to_string());
+    s.append( " min=");
+    s.append(aligned_min.to_string());
+    s.append( " max=");
+    s.append(aligned_max.to_string());
     s.append( " was_set=");
     s.append(was_set?"true":"false");
     
@@ -262,8 +262,8 @@ class Interval final {
   DB::Cell::Key     key_end;  
   Specs::Timestamp  ts_earliest;
   Specs::Timestamp  ts_latest;
-  DB::Cell::KeyVec  aligned_start;
-  DB::Cell::KeyVec  aligned_finish;  
+  DB::Cell::KeyVec  aligned_min;
+  DB::Cell::KeyVec  aligned_max;  
   bool              was_set = false;
 };
 

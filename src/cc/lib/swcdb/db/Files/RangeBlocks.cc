@@ -78,7 +78,7 @@ void Blocks::apply_new(int &err,
   commitlog.remove(err, fragments_old);
 }
 
-void Blocks::add_logged(const DB::Cells::Cell& cell) {
+void Blocks::add_logged(const DB::Cells::Cell& cell, bool& intval_chg) {
   processing_increment();
 
   commitlog.add(cell);
@@ -88,7 +88,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   {
     std::shared_lock lock(m_mutex);
     for(blk=m_block; blk; blk=blk->next) {
-      if(blk->add_logged(cell)) {
+      if(blk->add_logged(cell, intval_chg)) {
         to_split = blk->loaded();
         break;
       }

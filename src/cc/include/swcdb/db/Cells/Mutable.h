@@ -392,8 +392,8 @@ class Mutable final {
 
       cells.add(*cell);
       
-      cell->key.align(interval.aligned_start, interval.aligned_finish);
-      //interval.expand(cell->timestamp);
+      cell->key.align(interval.aligned_min, interval.aligned_max);
+      //intval.expand(cell->timestamp);
     }
   }
 
@@ -589,12 +589,11 @@ class Mutable final {
         last = cell;
 
       intval.expand(cell->timestamp);
-      cell->key.align(intval.aligned_start, intval.aligned_finish);
+      cell->key.align(intval.aligned_min, intval.aligned_max);
     }
     if(first) {
-      intval.expand(*first);
-      if(last)
-        intval.expand(*last);
+      intval.expand_begin(*first);
+      intval.expand_end(*(last ? last : first));
     }
     
     if(m_size == offset)
@@ -649,57 +648,44 @@ class Mutable final {
     return false;
   }
   
-  void move_from_key_offset(uint32_t from, Mutable& cells) {
+  void split(uint32_t from, Mutable& cells, 
+             Interval& intval_1st, Interval& intval_2nd, 
+             bool loaded) {
     Cell* cell;
     uint32_t rest = 0;
     Cell* from_cell = *(m_cells + from);
 
-    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
+    intval_1st.aligned_min.free();
+    intval_1st.aligned_max.free();
+
+    for(uint32_t offset = 0; offset < m_size; ++offset) {
       cell = *(m_cells + offset);
       
       if(!rest) {
-        if(cell->key.compare(from_cell->key, 0) == Condition::GT)
+        if(cell->key.compare(from_cell->key, 0) == Condition::GT) {
+          cell->key.align(intval_1st.aligned_min, intval_1st.aligned_max);
           continue;
+        }
         rest = offset;
+        intval_2nd.expand_begin(*cell);
       }
 
       *(m_cells + offset) = 0;
-      
-      if(cell->has_expired(m_ttl)){
+      if(!loaded || cell->has_expired(m_ttl)){
         _remove(cell);
         continue;
       }
       
       cells.push_back_nocpy(cell);
+      cell->key.align(intval_2nd.aligned_min, intval_2nd.aligned_max);
     }
     m_size = rest;
+
+    intval_2nd.set_key_end(intval_1st.key_end);      
+    intval_1st.key_end.free();
+    expand_end(intval_1st);
   }
 
-  void remove_from_key_offset(uint32_t from, Interval& interval) {
-    Cell* cell;
-    Cell* from_cell = *(m_cells + from);
-    uint32_t rest = 0;
-    
-    interval.aligned_start.free();
-    interval.aligned_finish.free();
-
-    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
-      cell = *(m_cells + offset);
- 
-      if(!rest) {
-        cell->key.align(interval.aligned_start, interval.aligned_finish);
-
-        if(cell->key.compare(from_cell->key, 0) == Condition::GT)
-          continue;
-        interval.expand_begin(*cell);
-        rest = offset;
-      } 
-      *(m_cells + offset) = 0;
-      _remove(cell);
-    }
-    m_size = rest;
-  }
-  
   void add(const DynamicBuffer& cells) {
     Cell cell;
 
@@ -721,14 +707,6 @@ class Mutable final {
       if(from_key.compare(cell.key) == Condition::GT)
         add(cell);
     }
-  }
-
-  void add_to(Ptr cells, bool release=false) {
-    uint32_t offset = 0;
-    for(Cell* cell; cell=get_next(offset); ++offset) 
-      cells->add(*cell);
-    if(release)
-      free();
   }
 
   void expand(Interval& interval) const {

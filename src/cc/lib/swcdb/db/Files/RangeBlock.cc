@@ -84,23 +84,24 @@ void Block::preload() {
   );
 }
 
-const bool Block::add_logged(const DB::Cells::Cell& cell) {
-  {
-    std::shared_lock lock(m_mutex);
-      
-    if(!m_interval.is_in_end(cell.key))
-      return false;
-
-    if(m_state != State::LOADED) 
-      return true;
-  }
-
+const bool Block::add_logged(const DB::Cells::Cell& cell, bool& intval_chg) {
   std::scoped_lock lock(m_mutex);
-  m_cells.add(cell);
 
-  if(!m_interval.is_in_begin(cell.key))
+  if(!m_interval.is_in_end(cell.key))
+    return false;
+
+  if(cell.key.align(m_interval.aligned_min, m_interval.aligned_max))
+    intval_chg = blocks->range->align(m_interval);
+  
+  if(!m_interval.is_in_begin(cell.key)) {
     m_interval.key_begin.copy(cell.key); 
   //m_interval.expand(cell.timestamp);
+  }
+
+  if(m_state != State::LOADED) 
+    return true;
+
+  m_cells.add(cell);
   return true;
 }
   
@@ -109,9 +110,14 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
   auto ts = Time::now_ns();
   size_t added = m_cells.size();
     
+  if(!m_cells.size()) {
+    m_interval.aligned_min.free();
+    m_interval.aligned_max.free();
+  }
+
   if(cells.size())
     cells.scan(m_interval, m_cells);
-    
+
   if(m_cells.size() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
 
@@ -144,6 +150,12 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   std::scoped_lock lock(m_mutex);
   bool synced = !m_cells.size() && revs <= blocks->range->cfg->cell_versions();
                             // schema change from more to less results in dups
+   
+  if(!m_cells.size()) {
+    m_interval.aligned_min.free();
+    m_interval.aligned_max.free();
+  }
+
   while(remain) {
     try {
       //ts = Time::now_ns();
@@ -173,6 +185,8 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       m_cells.push_back(cell);
     else
       m_cells.add(cell);
+      
+    cell.key.align(m_interval.aligned_min, m_interval.aligned_max);
     //ts_add += Time::now_ns()-ts;
     //m_interval.expand(cell.timestamp);
     ++added;
@@ -254,37 +268,22 @@ Block::Ptr Block::split(bool loaded) {
   m_mutex.unlock();
   return blk;
 }
-    
+
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
     DB::Cells::Interval(), 
     blocks,
     loaded ? State::LOADED : State::NONE
   );
-  if(loaded) {
-    m_cells.move_from_key_offset(
-      m_cells.size()/2, //blocks->range->cfg->block_cells(), 
-      blk->m_cells
-    );
-    assert(blk->m_cells.size());
-    blk->m_cells.expand_begin(blk->m_interval);
 
-  } else {
-    m_cells.remove_from_key_offset(
-      m_cells.size()/2, 
-      blk->m_interval
-    );
-  }
+  m_cells.split(
+    m_cells.size()/2, //blocks->range->cfg->block_cells(), 
+    blk->m_cells,
+    m_interval,
+    blk->m_interval,
+    loaded
+  );
 
-
-  blk->m_interval.set_key_end(m_interval.key_end);
-  //blk->m_interval.set_ts_latest(m_interval.ts_latest);
-      
-  m_interval.key_end.free();
-  //m_interval.ts_latest.free();
-  assert(m_cells.size());
-  m_cells.expand_end(m_interval);
-    
   add(blk);
   return blk;
 }

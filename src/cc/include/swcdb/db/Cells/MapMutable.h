@@ -145,18 +145,6 @@ class MapMutable {
   
     return m_map.find(cid) != m_map.end();
   }
-  /*
-  void add(const int64_t cid, Mutable::Ptr cells) {
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    auto it = m_map.find(cid);
-    if(it == m_map.end())
-      m_map.emplace(cid, cells);
-    else
-      cells->add_to(it->second);
-  }
-  */
   
   void add(const int64_t cid, const Cell& cell) {
     std::lock_guard<std::mutex> lock(m_mutex);

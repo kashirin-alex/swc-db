@@ -41,8 +41,10 @@ class Readers final {
 
   void expand(DB::Cells::Interval& interval) {
     std::shared_lock lock(m_mutex);
-    for(auto cs : m_cellstores)
+    for(auto cs : m_cellstores) {
       interval.expand(cs->interval);
+      interval.align(cs->interval);
+    }
   }
 
   const bool empty() {

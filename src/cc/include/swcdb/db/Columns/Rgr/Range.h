@@ -195,14 +195,25 @@ class Range : public DB::RangeBase {
       cell.flag = DB::Cells::INSERT;
       DB::Cell::Key key_end(m_interval.key_end);
       key_end.insert(0, std::to_string(cfg->cid));
+
+      auto aligned_min(m_interval.aligned_min);
+      auto aligned_max(m_interval.aligned_max);
+      aligned_min.insert(0, std::to_string(cfg->cid));
+      aligned_max.insert(0, std::to_string(cfg->cid));
         
       cell.own = true;
       cell.vlen = key_end.encoded_length() 
-                + Serialization::encoded_length_vi64(rid);
+                + Serialization::encoded_length_vi64(rid)
+                + aligned_min.encoded_length()
+                + aligned_max.encoded_length() ;
+
       cell.value = new uint8_t[cell.vlen];
       uint8_t * ptr = cell.value;
       key_end.encode(&ptr);
       Serialization::encode_vi64(&ptr, rid);
+      aligned_min.encode(&ptr);
+      aligned_max.encode(&ptr);
+
       cell.set_time_order_desc(true);
       updater->columns->add(cid_typ, cell);
 
@@ -315,7 +326,7 @@ class Range : public DB::RangeBase {
   void apply_new(int &err,
                 Files::CellStore::Writers& w_cellstores, 
                 std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
-    bool intval_changed;
+    bool intval_chg;
     DB::Cell::Key old_key_begin;
     {
       std::scoped_lock lock(m_mutex);
@@ -324,13 +335,19 @@ class Range : public DB::RangeBase {
         return;
 
       old_key_begin.copy(m_interval.key_begin);
-      DB::Cell::Key old_key_end(m_interval.key_end);
+      auto old_key_end(m_interval.key_end);
+      auto old_aligned_min(m_interval.aligned_min);
+      auto old_aligned_max(m_interval.aligned_max);
+
       m_interval.free();
       blocks.cellstores.expand(m_interval);
-      intval_changed = !m_interval.key_begin.equal(old_key_begin) ||
-                       !m_interval.key_end.equal(old_key_end);
+
+      intval_chg = !m_interval.key_begin.equal(old_key_begin) ||
+                   !m_interval.key_end.equal(old_key_end) ||
+                   !m_interval.aligned_min.equal(old_aligned_min) ||
+                   !m_interval.aligned_max.equal(old_aligned_max);
     }
-    if(intval_changed)
+    if(intval_chg)
       on_change(err, false, &old_key_begin);
     err = Error::OK;
   }
@@ -480,6 +497,7 @@ class Range : public DB::RangeBase {
     size_t remain; 
     //Callback::RangeQueryUpdate::Ptr cb;
     bool early_range_end;
+    bool intval_chg;
 
     DB::Cell::Key key_end;
     {
@@ -504,6 +522,7 @@ class Range : public DB::RangeBase {
       }
       blocks.processing_increment();
       
+      intval_chg = false;
       {
         std::shared_lock lock(m_mutex);
         req = m_q_adding.front();
@@ -535,7 +554,7 @@ class Range : public DB::RangeBase {
         //if(!(cell.control & DB::Cells::HAVE_REVISION))
         //  cell.control |= DB::Cells::REV_IS_TS;
         
-        blocks.add_logged(cell);
+        blocks.add_logged(cell, intval_chg);
       }
       blocks.processing_decrement();
 
@@ -555,10 +574,18 @@ class Range : public DB::RangeBase {
         
       }
       */
-      if(early_range_end)
+
+      if(intval_chg) {
+        //std::cout << "INTVAL-CHG " << m_interval.to_string() << "\n";
+        intval_chg = false;
+        on_change(err, false);
+      }
+
+      if(early_range_end) {
         req->cb->response(Error::RANGE_END_EARLIER, key_end);
-      else
+      } else {
         req->cb->response(err);
+      }
       
       delete req;
       {

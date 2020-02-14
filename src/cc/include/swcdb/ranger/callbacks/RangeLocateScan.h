@@ -64,18 +64,15 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   const bool selector_query(const DB::Cells::Cell& cell, bool& stop) const {
     if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
       return false;
+
     if(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
        spec.range_offset.compare(cell.key) != Condition::GT)
       return false;
-    /*
-    std::cout << "---------------------\n";
-    std::cout << " range_begin: " << spec.range_begin.to_string() << "\n";
-    std::cout << "   range_end: " << spec.range_end.to_string() << "\n";
-    std::cout << "   key_begin: " << cell.key.to_string() << "\n";
-    */
+
     if(cell.key.count > any_is && spec.range_end.count > any_is && 
        !spec.is_matching_end(cell.key)) {
       stop = true;
+      //std::cout << "-- KEY-BEGIN NO MATCH STOP --\n";
       return false;
     }
 
@@ -83,14 +80,42 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
+
+    if(key_end.count > any_is && spec.range_begin.count > any_is && 
+       !spec.is_matching_begin(key_end)) {
+      //std::cout << "-- KEY-END NO MATCH --\n";
+      return false;
+    }
+    //return true;
+
+    int64_t rid = Serialization::decode_vi64(&ptr, &remain); // rid
+
+    DB::Cell::KeyVec aligned_min;
+    aligned_min.decode(&ptr, &remain);
+    DB::Cell::KeyVec aligned_max;
+    aligned_max.decode(&ptr, &remain);
     /*
-    std::cout << "     key_end: " << key_end.to_string() << "\n";
-    std::cout << "         rid: " 
-              << Serialization::decode_vi64(&ptr, &remain) << "\n";
+    std::cout << "---------------------\n";
+    std::cout << "range_begin: " << spec.range_begin.to_string() << "\n";
+    std::cout << "  key_begin: " << cell.key.to_string() << "\n";
+    std::cout << "aligned_min: " << aligned_min.to_string() << "\n";
+    std::cout << "  range_end: " << spec.range_end.to_string() << "\n";
+    std::cout << "    key_end: " << key_end.to_string() << "\n";
+    std::cout << "aligned_max: " << aligned_max.to_string() << "\n";
+    std::cout << "        rid: " << rid << "\n";
     */
-    return  key_end.count == any_is || 
-            spec.range_begin.count == any_is || 
-            spec.is_matching_begin(key_end);
+    if(spec.range_begin.count == any_is ||
+       spec.range_begin.compare(
+         aligned_max, Condition::LT, spec.range_begin.count, true)) {
+      if(spec.range_end.count == any_is ||
+         spec.range_end.compare(
+           aligned_min, Condition::GT, spec.range_end.count, true)) {
+        //std::cout << "-- ALIGNED MATCH  --\n";
+        return true;
+      }
+    }
+    //std::cout << "-- ALIGNED NO MATCH -------\n";
+    return false;
   }
 
   void response(int &err) override {
@@ -131,12 +156,12 @@ class RangeLocateScan : public DB::Cells::ReqScan {
         }
         params.range_begin.remove(0);
         params.range_end.remove(0);
-
+      /*
       } else if(spec.range_begin.count > 1) {
         spec.range_begin.remove(spec.range_begin.count-1, true);
         range->scan(get_req_scan());
         return;
-      
+      */
       } else {
         params.err = Error::RANGE_NOT_FOUND;
       }

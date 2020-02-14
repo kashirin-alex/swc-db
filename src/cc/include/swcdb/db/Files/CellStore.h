@@ -196,6 +196,7 @@ class Read final {
       }
 
       interval.expand(blk->interval);
+      interval.align(blk->interval);
     }
 
     Env::FsInterface::interface()->close(err, smartfd); 
@@ -445,6 +446,7 @@ class Write : public std::enable_shared_from_this<Write> {
                 + 4;
                 
       interval.expand(blk->interval);
+      interval.align(blk->interval);
     }
 
     StaticBuffer raw_buffer(len_data);

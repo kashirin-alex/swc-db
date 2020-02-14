@@ -379,6 +379,8 @@ class Compaction final {
           ++cell_count;
           last_cell.write(buff);
           blk_intval.expand(last_cell);
+          last_cell.key.align(
+            blk_intval.aligned_min, blk_intval.aligned_max);
         }
         selected_cells->pop(-1, last_cell);
         //last block of end-any to be set with first key as last cell
@@ -421,6 +423,7 @@ class Compaction final {
         DB::Cells::Interval blk_intval;
         blk_intval.expand(last_cell);
         blk_intval.key_end.free();
+        last_cell.key.align(blk_intval.aligned_min, blk_intval.aligned_max);
 
         uint32_t cell_count = 1;
         DynamicBuffer buff;
