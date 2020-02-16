@@ -6,6 +6,7 @@
 #define swc_core_LockAtomicUnique_h
 
 #include <atomic>
+#include <thread>
 
 namespace SWC { namespace LockAtomic {
 

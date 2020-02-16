@@ -97,6 +97,12 @@ ADD_TEST_TARGET(
 )
 
 
+ADD_TEST_TARGET(
+	NAME page-arena
+	SRCS tests/pagearena.cc
+	TARGETS swcdb_core 
+)
+
 ADD_TEST_EXEC(
 	NAME properties_parser_test
 	SRCS tests/properties_parser_test.cc
