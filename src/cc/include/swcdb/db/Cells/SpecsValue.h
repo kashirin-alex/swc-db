@@ -16,28 +16,34 @@ class Value {
   public:
 
   explicit Value(bool own=true)
-        : own(own), data(0), size(0), comp(Condition::NONE) {}
+                : own(own), data(0), size(0), comp(Condition::NONE) {
+  }
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
-                 bool owner=false) {
+                 bool owner=false) 
+                 : own(false) {
     set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
   }
 
   explicit Value(const char* data_n, const uint32_t size_n, 
-                 Condition::Comp comp_n, bool owner=false) {
+                 Condition::Comp comp_n, bool owner=false) 
+                 : own(false) {
     set((uint8_t*)data_n, size_n, comp_n, owner);
   }
 
   explicit Value(const uint8_t* data_n, const uint32_t size_n, 
-                 Condition::Comp comp_n, bool owner=false) {
+                 Condition::Comp comp_n, bool owner=false) 
+                 : own(false) {
     set(data_n, size_n, comp_n, owner);
   }
 
-  explicit Value(int64_t count, Condition::Comp comp_n) {
+  explicit Value(int64_t count, Condition::Comp comp_n) 
+                 : own(false) {
     set(count, comp_n);
   }
 
-  explicit Value(const Value &other){
+  explicit Value(const Value &other) 
+                 : own(false) {
     copy(other);
   }
 
@@ -65,26 +71,19 @@ class Value {
   void set(const uint8_t* data_n, const uint32_t size_n, 
            Condition::Comp comp_n, bool owner=false) {
     free();
-
     own   = owner;
     comp = comp_n;
-    size = size_n;
-    if(size) {
-      if (own) {
-        data = new uint8_t[size];
-        memcpy(data, data_n, size);
-      } else {
-        data = (uint8_t*)data_n;
-      }
-    }
+    if(size = size_n)
+      data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size) 
+                 : (uint8_t*)data_n;
   }
 
-  virtual ~Value(){
+  virtual ~Value() {
     if(own && data) 
       delete [] data;
   }
 
-  void free(){
+  void free() {
     if(own && data) 
       delete [] data;
     data = 0;
