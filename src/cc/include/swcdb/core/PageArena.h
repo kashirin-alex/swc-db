@@ -35,10 +35,10 @@ struct Item final {
   Item operator=(const Item& other) = delete;
 
 
-  static Item::Ptr make(const uint8_t* buf, uint32_t length);
+  static Item::Ptr make(const uint8_t* buf, uint32_t size);
 
-  Item(const uint8_t* ptr, uint32_t length)
-      : count(0), size_(length), data_(ptr), hash_(_hash()) {
+  Item(const uint8_t* ptr, uint32_t size)
+      : count(0), size_(size), data_(ptr), hash_(_hash()) {
   }
 
   size_t _hash() {
@@ -116,16 +116,16 @@ struct Item final {
 
 
 
-class Arena : 
+class Page : 
   public std::unordered_set<Item::Ptr, Item::Hash, Item::Equal> {
   //public std::set<Item::Ptr, Item::Less> {
   public:
   
-  Item::Ptr use(const uint8_t* buf, uint32_t length) {
+  Item::Ptr use(const uint8_t* buf, uint32_t size) {
     LockAtomic::Unique::Scope lock(m_mutex);
     //std::scoped_lock lock(m_mutex);
 
-    auto tmp = new Item(buf, length);
+    auto tmp = new Item(buf, size);
     auto r = insert(tmp);
     if(r.second) {
       (*r.first)->allocate(buf);
@@ -147,13 +147,64 @@ class Arena :
     }
   }
 
+  const size_t count() const {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
+
+    size_t sz = size();
+    //for(Page* nxt = m_page; nxt ; nxt->next_page(nxt))
+    //  sz += nxt->count();
+    return sz;
+  }
+  /*
+  void next_page(Page*& page) const {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
+    page = m_page;
+  }
+  */
   private:
-  LockAtomic::Unique m_mutex;
-  //std::mutex m_mutex;
-  Arena*             m_next = nullptr;
+  mutable LockAtomic::Unique    m_mutex;
+  //mutable std::mutex            m_mutex;
+  //Page*                         m_page = nullptr; // upper ranges
 
 };
 
+
+
+class Arena final {
+  
+  public:
+  Item::Ptr use(const uint8_t* buf, uint32_t size) {
+    return page_by_sz(size).use(buf, size);
+  }
+  
+  void free(Item::Ptr ptr) {
+    page_by_sz(ptr->size()).free(ptr);
+  }
+
+  Page& page_by_sz(uint32_t sz) {
+    return _pages[(sz > 1022 ? 1023 : (sz ? sz-1 : 0) ) >> 2];
+  } 
+
+  const size_t count() const {
+    size_t sz = 0;
+    for(uint16_t i=0;i<256;++i)
+      sz += _pages[i].count();
+    return sz;
+  }
+
+  const size_t pages() const {
+    return 256;
+  }
+
+  const Page& page(uint8_t idx) const {
+    return _pages[idx];
+  }
+
+  private:
+  Page  _pages[256];
+};
 
 } }
 
@@ -167,8 +218,8 @@ namespace SWC { namespace Mem {
 
 
 
-Item::Ptr Item::make(const uint8_t* buf, uint32_t length) { 
-  return Env::PageArena.use(buf, length);
+Item::Ptr Item::make(const uint8_t* buf, uint32_t size) { 
+  return Env::PageArena.use(buf, size);
 }
 
 void Item::release() { 
@@ -188,8 +239,8 @@ struct ItemPtr final { // Item as SmartPtr
           : ptr(other.ptr ? other.ptr->use() : nullptr) { 
   }
 
-  ItemPtr(const uint8_t* buf, uint32_t length) 
-          : ptr(Item::make(buf, length)) {
+  ItemPtr(const uint8_t* buf, uint32_t size) 
+          : ptr(Item::make(buf, size)) {
   }
 
   ItemPtr operator=(const ItemPtr& other) {
@@ -211,9 +262,9 @@ struct ItemPtr final { // Item as SmartPtr
     ptr = other.ptr->use();
   }
 
-  void use(const uint8_t* buf, uint32_t length) { 
+  void use(const uint8_t* buf, uint32_t size) { 
     release();
-    ptr = Item::make(buf, length);
+    ptr = Item::make(buf, size);
   }
 
   const uint8_t* data() const {

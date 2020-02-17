@@ -11,11 +11,12 @@
 int main() {
   size_t num_items = 1000;
   size_t num_uses = 1000;
-  auto& page = SWC::Env::PageArena;
+  auto& arena = SWC::Env::PageArena;
+  
     
   std::cout << "sizeof:" << "\n";
   std::cout << " Arena=" << sizeof(SWC::Mem::Arena) << "\n";
-  std::cout << " page=" << sizeof(page) << "\n";
+  std::cout << " arena=" << sizeof(arena) << "\n";
   std::cout << " Item=" << sizeof(SWC::Mem::Item) << "\n";
   std::cout << " ItemPtr=" << sizeof(SWC::Mem::ItemPtr) << "\n";
     
@@ -30,18 +31,30 @@ int main() {
     std::cout << " set-"<< n << " end\n";
   }
 
-  std::cout << " num_items="<< num_items  
-            << " page.size()= " << page.size()
+  std::cout << " num_items="<< num_items  << std::flush
+            << " arena.count()= " << arena.count()  << std::flush
             << " data.size()= " << data.size() << "\n";
     
-  assert(page.size() == num_items);
-
-  for(const auto& p : page) {
-    std::cout << p->to_string() << "=" << p->count << "\n";
-    std::cout << "num_uses=" << num_uses << " p->count=" << p->count << "\n";
-    assert(p->count == num_uses);
+  assert(arena.count() == num_items);
+  
+  for(auto idx=arena.pages() ; idx;) {
+    for(auto item : arena.page(--idx)) {
+      std::cout << item->to_string() << "=" << item->count << "\n";
+      std::cout << "num_uses=" << num_uses << " p->count=" << item->count << "\n";
+      assert(item->count == num_uses);
+    }
   }
+  assert(arena.count() == num_items);
+  std::cout << " arena.count="<< arena.count() << "\n";
+  std::cout << "\n";
 
+
+  for(auto idx=arena.pages() ;idx;) {
+    auto c = arena.page(--idx).count();
+    if(c)
+      std::cout << "set on page-idx=" << idx << " count="<< arena.page(idx).count() << "\n";
+  }
+  
   std::cout << " release  begin\n";
   for(auto arr : data) {
     arr.release();
@@ -49,7 +62,8 @@ int main() {
   std::cout << " release  end\n";
         
         
-  assert(page.empty());
+  assert(!arena.count());
 
+  std::cout << " OK! \n";
   return 0;
 }
