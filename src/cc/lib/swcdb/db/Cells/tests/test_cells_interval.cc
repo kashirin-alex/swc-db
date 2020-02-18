@@ -27,15 +27,23 @@ int main() {
       cell.key.add(std::string("d")+s);
       cell.timestamp = n;
 
-      interval.expand(cell);
+      interval.expand(cell);      
+      cell.key.align(interval.aligned_min, interval.aligned_max);
+
 
       if(n == 0) {
         expected_expanded.set_key_end(cell.key);
         expected_expanded.set_ts_earliest(DB::Specs::Timestamp(n, Condition::GE));
+        DB::Cell::KeyVec k;
+        cell.key.convert_to(k);
+        expected_expanded.set_aligned_max(k);
       }
       if(n == num_keys) {
         expected_expanded.set_key_begin(cell.key);
         expected_expanded.set_ts_latest(DB::Specs::Timestamp(n, Condition::LE));
+        DB::Cell::KeyVec k;
+        cell.key.convert_to(k);
+        expected_expanded.set_aligned_min(k);
       }
   }
   std::cout << " init OK\n";

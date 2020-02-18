@@ -67,7 +67,7 @@ class Block final {
   
   void preload();
 
-  const bool add_logged(const DB::Cells::Cell& cell, bool& intval_chg);
+  const bool add_logged(const DB::Cells::Cell& cell);
     
   void load_cells(const DB::Cells::Mutable& cells);
 

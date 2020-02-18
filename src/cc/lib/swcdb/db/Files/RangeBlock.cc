@@ -84,24 +84,24 @@ void Block::preload() {
   );
 }
 
-const bool Block::add_logged(const DB::Cells::Cell& cell, bool& intval_chg) {
+const bool Block::add_logged(const DB::Cells::Cell& cell) {
+  {
+    std::shared_lock lock(m_mutex);
+
+    if(!m_interval.is_in_end(cell.key))
+      return false;
+
+    if(m_state != State::LOADED) 
+      return true;
+  }
+
   std::scoped_lock lock(m_mutex);
 
-  if(!m_interval.is_in_end(cell.key))
-    return false;
-
-  if(cell.key.align(m_interval.aligned_min, m_interval.aligned_max))
-    intval_chg = blocks->range->align(m_interval);
-  
+  m_cells.add(cell);
   if(!m_interval.is_in_begin(cell.key)) {
     m_interval.key_begin.copy(cell.key); 
   //m_interval.expand(cell.timestamp);
   }
-
-  if(m_state != State::LOADED) 
-    return true;
-
-  m_cells.add(cell);
   return true;
 }
   
@@ -110,11 +110,6 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
   auto ts = Time::now_ns();
   size_t added = m_cells.size();
     
-  if(!m_cells.size()) {
-    m_interval.aligned_min.free();
-    m_interval.aligned_max.free();
-  }
-
   if(cells.size())
     cells.scan(m_interval, m_cells);
 
@@ -150,12 +145,6 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   std::scoped_lock lock(m_mutex);
   bool synced = !m_cells.size() && revs <= blocks->range->cfg->cell_versions();
                             // schema change from more to less results in dups
-   
-  if(!m_cells.size()) {
-    m_interval.aligned_min.free();
-    m_interval.aligned_max.free();
-  }
-
   while(remain) {
     try {
       //ts = Time::now_ns();
@@ -186,7 +175,6 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add(cell);
       
-    cell.key.align(m_interval.aligned_min, m_interval.aligned_max);
     //ts_add += Time::now_ns()-ts;
     //m_interval.expand(cell.timestamp);
     ++added;

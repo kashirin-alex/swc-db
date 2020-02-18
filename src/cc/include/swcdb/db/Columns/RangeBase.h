@@ -193,6 +193,11 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     std::scoped_lock lock(m_mutex);
     return m_interval.align(interval);
   }
+  
+  const bool align(const Cell::Key& key) {
+    std::scoped_lock lock(m_mutex);
+    return key.align(m_interval.aligned_min, m_interval.aligned_max);
+  }
 
   const std::string to_string() {
     std::shared_lock lock(m_mutex);

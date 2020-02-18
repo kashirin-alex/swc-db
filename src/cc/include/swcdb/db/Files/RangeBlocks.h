@@ -49,7 +49,7 @@ class Blocks final {
                 CellStore::Writers& w_cellstores, 
                 std::vector<CommitLog::Fragment::Ptr>& fragments_old);
 
-  void add_logged(const DB::Cells::Cell& cell, bool& intval_chg);
+  void add_logged(const DB::Cells::Cell& cell);
 
   void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 

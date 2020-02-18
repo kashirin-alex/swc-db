@@ -225,7 +225,6 @@ int main(int argc, char** argv) {
   int added_num = 1000000;
   DB::Cells::Cell cell;
   int64_t rev;
-  bool intval_chg = false;
   for(int v=0;v<versions;v++) {
     for(auto i=0;i<added_num;i++){
 
@@ -251,7 +250,7 @@ int main(int argc, char** argv) {
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
         
-        blocks.add_logged(cell, intval_chg);
+        blocks.add_logged(cell);
     }
     std::cout << " add_logged ver=" << v 
               << " : \n" << blocks.to_string() << "\n";

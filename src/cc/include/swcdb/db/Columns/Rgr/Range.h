@@ -554,7 +554,8 @@ class Range : public DB::RangeBase {
         //if(!(cell.control & DB::Cells::HAVE_REVISION))
         //  cell.control |= DB::Cells::REV_IS_TS;
         
-        blocks.add_logged(cell, intval_chg);
+        blocks.add_logged(cell);
+        intval_chg = align(cell.key);
       }
       blocks.processing_decrement();
 
