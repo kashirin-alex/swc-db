@@ -9,7 +9,7 @@
 #include <cassert>
 #include <vector>
 #include "swcdb/core/Serialization.h"
-#include "swcdb/db/Cells/Comparators.h"
+#include "swcdb/core/Comparators.h"
 #include "swcdb/db/Cells/CellKeyVec.h"
 
 namespace SWC { namespace DB { namespace Cell {

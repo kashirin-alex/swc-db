@@ -7,7 +7,7 @@
 #define swcdb_db_cells_SpecsFlags_h
 
 #include "swcdb/core/Serializable.h"
-#include "swcdb/db/Cells/Comparators.h"
+#include "swcdb/core/Comparators.h"
 
 
 namespace SWC { namespace DB { namespace Specs {

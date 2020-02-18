@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Comparators_h
-#define swcdb_db_Comparators_h
+#ifndef swcdb_core_Comparators_h
+#define swcdb_core_Comparators_h
 
 #include <memory>
 #include <cstring>
@@ -141,7 +141,13 @@ const bool ge(const uint8_t *p1, uint32_t p1_len,
 SWC_CAN_INLINE 
 const bool eq(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) {
-  return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
+  if(p1_len != p2_len)
+    return false;
+  for(auto end = p1+p1_len; p1 < end;)
+    if(*p1++ != *p2++)
+      return false;
+   return true;
+  //return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 SWC_CAN_INLINE 
