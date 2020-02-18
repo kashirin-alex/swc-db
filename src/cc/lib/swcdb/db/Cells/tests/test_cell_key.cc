@@ -103,15 +103,16 @@ void test_basic(){
   spec_key.add(std::string("ghi"), Condition::GE);
   spec_key.add("jkl", Condition::GT);
 
-  spec_key.get(0, &fraction, &length, &comp);
-  std::cout << std::string(fraction, length) << "(" << length <<"),"  << " " << comp << ",";
-  spec_key.get(1, &fraction, &length, &comp);
-  std::cout << std::string(fraction, length) << "(" << length <<"),"  << " " << comp << ",";
-  spec_key.get(2, &fraction, &length, &comp);
-  std::cout << std::string(fraction, length) << "(" << length <<"),"  << " " << comp << ",";
-  spec_key.get(3, &fraction, &length, &comp);
-  std::cout << std::string(fraction, length) << "(" << length <<"),"  << " " << comp << ",";
-  std::cout << "\nfractions-count=" <<  spec_key.count <<"\n";
+  std::string_view vw;
+  vw = spec_key.get(0, comp);
+  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  vw = spec_key.get(1, comp);
+  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  vw = spec_key.get(2, comp);
+  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  vw = spec_key.get(3, comp);
+  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  std::cout << "\nfractions-count=" <<  spec_key.size() <<"\n";
   std::cout <<  spec_key.to_string() <<"\n";
 
   std::cout << "spec_key.is_matching(key) \n";

@@ -14,7 +14,7 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-class Key {
+class Key final {
   public:
 
   typedef std::shared_ptr<Key> Ptr;
@@ -49,6 +49,10 @@ class Key {
   
   const bool sane() const {
     return (count && size && data) || (!count && !size && !data);
+  }
+  
+  void add(const std::string_view& fraction) {
+    add((const uint8_t*)fraction.data(), fraction.length());
   }
 
   void add(const std::string& fraction) {

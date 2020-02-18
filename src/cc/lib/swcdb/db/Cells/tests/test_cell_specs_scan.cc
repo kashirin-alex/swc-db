@@ -184,8 +184,8 @@ void test(int chk) {
     	std::cout << " new - " << ss_copy.to_string() << "\n";
       exit(1);
     }
-    if(		  			 ss.columns[0]->intervals[0]->key_start.data 
-				== ss_copy.columns[0]->intervals[0]->key_start.data) {
+    if(&ss.columns[0]->intervals[0]->key_start 
+				== &ss_copy.columns[0]->intervals[0]->key_start) {
       std::cout << "\ncopy key.data ptr equal: ERROR\n";
       exit(1);
     }
@@ -193,7 +193,7 @@ void test(int chk) {
 
 
     Specs::Scan passed_ss2;
-    passed_ss2 = ss;
+    passed_ss2 = ss; // the same ptr instances
 
     if(!ss.equal(passed_ss2)) {
     	std::cout << "\nAssign from\n";
@@ -202,8 +202,8 @@ void test(int chk) {
       std::cout << "!ss.equal(passed_ss2): ERROR\n";
       exit(1);
     }
-    if(		  			 ss.columns[0]->intervals[0]->key_start.data 
-				!= passed_ss2.columns[0]->intervals[0]->key_start.data) {
+    if(&ss.columns[0]->intervals[0]->key_start
+				!= &passed_ss2.columns[0]->intervals[0]->key_start) {
       std::cout << "\nassign key.data ptr not equal: ERROR\n";
       exit(1);
     }

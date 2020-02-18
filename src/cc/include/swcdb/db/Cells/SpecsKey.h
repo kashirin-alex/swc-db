@@ -10,257 +10,239 @@
 
 namespace SWC { namespace DB { namespace Specs {
       
-class Key : public DB::Cell::Key {
+
+struct Fraction final {
+  Condition::Comp comp;
+  std::string     value;
+
+  bool operator==(const Fraction &other) const {
+    return other.comp == comp && value.length() == other.value.length() && 
+           memcmp(value.data(), other.value.data(), value.length()) == 0;
+  }
+  
+  const uint32_t encoded_length() const {
+    return 1 + Serialization::encoded_length_vi32(value.size()) + value.size();
+  }
+  
+  void encode(uint8_t **bufp) const {
+    Serialization::encode_i8(bufp, (uint8_t)comp);
+    Serialization::encode_vi32(bufp, value.size());
+    memcpy(*bufp, value.data(), value.size());
+    *bufp += value.size();
+  }
+
+  void decode(const uint8_t **bufp, size_t* remainp) {
+    value.clear();
+    comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
+    uint32_t len = Serialization::decode_vi32(bufp, remainp);
+    value.append((const char*)*bufp, len);
+    *bufp += len;
+    *remainp -= len;
+  }
+};
+
+
+class Key : public std::vector<Fraction> {
   public:
+
+  using std::vector<Fraction>::vector;
+  using std::vector<Fraction>::insert;
 
   typedef std::shared_ptr<Key> Ptr;
 
-  explicit Key() {}
-  
-  explicit Key(const Key &other) {
-    copy(other);
+  explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp) {
+    set(cell_key, comp);
   }
 
-  explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp, 
-               uint32_t offset=0) {
-    set(cell_key, comp, offset);
+  void free() {
+    clear();
   }
 
-  virtual ~Key() {
-    free();
+  void copy(const Key &other) {
+    clear();
+    assign(other.begin(), other.end());
   }
 
-  void set(const DB::Cell::Key &cell_key, Condition::Comp comp,
-           uint32_t offset=0) {
-    free();
-    own   = true;
-    count = cell_key.count;
-    size  = cell_key.size+count;
-    if(!size) 
-      return;
-    
-    data = new uint8_t[size];
-    uint8_t* data_ptr = data;
+  const bool equal(const Key &other) const {
+    return *this == other;
+  }
+
+  void set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
+    clear();
+    resize(cell_key.count);
     
     uint32_t len;
-    const uint8_t* ptr = (const uint8_t*)cell_key.data;
-    const uint8_t* ptr_len;
-    for(offset; offset<count; offset++) {
-      *data_ptr++ = (uint8_t)comp;
-      ptr_len = ptr; 
-      len = Serialization::decode_vi32(&ptr_len);
-      len += ptr_len-ptr;
-      memcpy(data_ptr, ptr, len);
-      data_ptr += len;
+    const uint8_t* ptr = cell_key.data;
+    for(auto it=begin(); it < end(); ++it) {
+      it->comp = comp;
+      len = Serialization::decode_vi32(&ptr);
+      it->value.append((const char*)ptr, len);
       ptr += len;
     }
-  }
-
-  void add(const std::string fraction, Condition::Comp comp) {
-    add((const uint8_t*)fraction.data(), fraction.length(), comp);
-  }
-
-  void add(const char* fraction, Condition::Comp comp) {
-    add((const uint8_t*)fraction, strlen(fraction), comp);
-  }
-
-  void add(const char* fraction, uint32_t len, Condition::Comp comp) {
-    add((const uint8_t*)fraction, len, comp);
-  }
-  
-  void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
-    uint8_t* fraction_ptr = 0;
-    DB::Cell::Key::add(fraction, len, &fraction_ptr, 1);
-    *fraction_ptr = (uint8_t)comp;
   }
 
   void set(int32_t idx, Condition::Comp comp) {
-    if(!count)
+    if(empty())
       return;
+    (begin()+idx)->comp = comp;
+  }
 
-    const uint8_t* ptr = data;
-    for(int32_t n=0; n<count;
-        n++, ptr += Serialization::decode_vi32(&++ptr)) {
-      if(idx == -1 || n == idx) {
-        *(data+(ptr-data)) = (uint8_t)comp;
-        if(idx > -1)
-          break;
-      }
-    }
+  void add(const char* buf, uint32_t len, Condition::Comp comp) {
+    Fraction& f = emplace_back();
+    f.comp = comp;
+    f.value.append(buf, len);
+  }
+
+  void add(const std::string& fraction, Condition::Comp comp) {
+    add(fraction.data(), fraction.length(), comp);
+  }
+
+  void add(const std::string_view& fraction, Condition::Comp comp) {
+    add(fraction.data(), fraction.length(), comp);
+  }
+
+  void add(const char* fraction, Condition::Comp comp) {
+    add(fraction, strlen(fraction), comp);
+  }
+
+  void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
+    add((const char*)fraction, len, comp);
   }
   
+
+  void insert(uint32_t idx, const char* buf, uint32_t len, 
+              Condition::Comp comp) {
+    auto it = emplace(begin()+idx);
+    it->comp = comp;
+    it->value.append(buf, len);
+  }
+
   void insert(uint32_t idx, const std::string& fraction, 
               Condition::Comp comp) {
-    insert(idx, (const uint8_t*)fraction.data(), fraction.length(), comp);
+    insert(idx, fraction.data(), fraction.length(), comp);
   }
 
-  void insert(uint32_t idx, const char* fraction,
+  void insert(uint32_t idx, const std::string_view& fraction, 
               Condition::Comp comp) {
-    insert(idx, (const uint8_t*)fraction, strlen(fraction), comp);
+    insert(idx, fraction.data(), fraction.length(), comp);
   }
 
-  void insert(uint32_t idx, const char* fraction, uint32_t len,
+  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
               Condition::Comp comp) {
-    insert(idx, (const uint8_t*)fraction, len, comp);
+    insert(idx, (const char*)fraction, len, comp);
   }
 
-  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len, 
-              Condition::Comp comp) {
-    uint8_t* fraction_ptr = 0;
-    DB::Cell::Key::insert(idx, fraction, len, &fraction_ptr, 1);
-    *fraction_ptr = (uint8_t)comp;
+  void insert(uint32_t idx, const char* fraction, Condition::Comp comp) {
+    insert(idx, fraction, strlen(fraction), comp);
   }
 
-  const std::string get_string(uint32_t idx) const {    
-    return DB::Cell::Key::get_string(idx, 1);
+
+  const std::string_view get(const uint32_t idx, Condition::Comp& comp) const {
+    auto& f = (*this)[idx];
+    comp = f.comp;
+    return f.value;
   }
 
-  void get(uint32_t idx, const char** fraction, uint32_t* length, 
-           Condition::Comp* comp) const {
-    *length = 0;
-    *fraction = 0;
-    const uint8_t* fraction_ptr = 0;
-    DB::Cell::Key::get(idx, fraction, length, &fraction_ptr, 1);
-    if(fraction_ptr) 
-      *comp = (Condition::Comp)*fraction_ptr;
+  const std::string_view get(const uint32_t idx) const {
+    return (*this)[idx].value;
   }
 
-  void get(DB::Cell::Key &cell_key) const {
-    cell_key.free();
-    
-    if(count) {
-      cell_key.own = true;
-      cell_key.count = count;
-      cell_key.size  = size-count;
-      cell_key.data = new uint8_t[cell_key.size];
-      const uint8_t* ptr = data;
-      const uint8_t* ptr_len;
-      uint8_t* data_ptr = cell_key.data;
-      uint32_t len;
-      for(uint8_t i=0; i<count; i++) {
-        ptr_len = ++ptr;
-        ptr += Serialization::decode_vi32(&ptr);
-        memcpy(data_ptr, ptr_len, len = ptr-ptr_len);
-        data_ptr += len;
-      }
-    }
+  void get(DB::Cell::Key& key) const {
+    key.free();
+    if(!empty()) 
+      for(auto it=begin(); it < end(); ++it)
+        key.add(it->value);
   }
 
   void remove(uint32_t idx, bool recursive=false) {
-    DB::Cell::Key::remove(idx, recursive, 1);
+    if(recursive)
+      erase(begin()+idx, end());
+    else
+      erase(begin()+idx);
   }
-
-  bool const equal(const Key &other) const {
-    return DB::Cell::Key::equal(other);
-  }
-  /*
-  size_t fractions() {
-    return DB::Cell::Key::fractions(1);
-  }
-  */
   
   const bool is_matching(const DB::Cell::Key &other) const {
-    return is_matching(other.data, other.data + other.size, 0);
-  }
-
-  const bool is_matching(const Key &other) const {
-    return is_matching(other.data, other.data + other.size, 1);
-  }
-
-  const bool is_matching(const uint8_t* ptr_tmp_other, 
-                         const uint8_t* ptr_end_other, 
-                         int8_t reserved) const {
-    const uint8_t* ptr_tmp = data;
-    const uint8_t* ptr_end = data + size;
-
-    uint32_t idx = 0;
-    uint32_t len = 0;
-    const uint8_t* ptr = 0;
-
-    uint32_t idx_other = 0;
-    uint32_t len_other = 0;
-    const uint8_t* ptr_other = 0;
-
     Condition::Comp comp = Condition::NONE;
-    do {
 
-      if(ptr_tmp < ptr_end) {
-        comp = (Condition::Comp)*ptr_tmp++;
-        len = Serialization::decode_vi32(&ptr_tmp);
-        ptr = ptr_tmp;
-        ptr_tmp += len;
-        idx++;
-      }
+    const uint8_t* ptr = other.data;
+    uint32_t c = other.count;
+    uint32_t len;
 
-      if(ptr_tmp_other < ptr_end_other) {
-        ptr_tmp_other += reserved;
-        len_other = Serialization::decode_vi32(&ptr_tmp_other);
-        ptr_other = ptr_tmp_other;
-        ptr_tmp_other += len_other;
-        idx_other++;
-      }
-      
-      if(idx != idx_other) {
-        switch(comp) {
-          case Condition::LT:
-          case Condition::LE:
-            return !count || idx > idx_other;
-          case Condition::GT:
-          case Condition::GE:
-            return !count || idx < idx_other;
-          case Condition::PF:
-          case Condition::RE:
-            return idx < idx_other;
-          case Condition::NE:
-          case Condition::NONE:
-            return true;
-          default: // Condition::EQ:
-            return false;
-        }
-      }
-      if(!Condition::is_matching(comp, ptr, len, ptr_other, len_other))
+    for(auto it = begin(); c && it < end(); ++it, --c) {
+      len = Serialization::decode_vi32(&ptr);
+      if(!Condition::is_matching(
+          comp = it->comp, 
+          (const uint8_t*)it->value.data(), it->value.size(),
+          ptr, len
+        ))
         return false;
+      ptr += len;
+    }
 
-    } while(ptr_tmp < ptr_end || ptr_tmp_other < ptr_end_other);
+    if(size() == other.count) 
+      return true;
 
-    return true;
+    switch(comp) {
+      case Condition::LT:
+      case Condition::LE:
+        return empty() || size() > other.count;
+      case Condition::GT:
+      case Condition::GE:
+        return empty() || size() < other.count;
+      case Condition::PF:
+      case Condition::RE:
+        return size() < other.count;
+      case Condition::NE:
+      case Condition::NONE:
+        return true;
+      default: // Condition::EQ:
+        return false;
+    }
   }
 
-  void decode(const uint8_t **bufp, size_t *remainp, bool owner=false) {
-    return DB::Cell::Key::decode(bufp, remainp, owner, 1); 
+  const uint32_t encoded_length() const {
+    uint32_t len = Serialization::encoded_length_vi32(size());
+    for(auto it = begin(); it < end(); ++it)
+      len += it->encoded_length();
+    return len;
+  }
+  
+  void encode(uint8_t **bufp) const {
+    Serialization::encode_vi32(bufp, size());
+    for(auto it = begin(); it < end(); ++it) 
+      it->encode(bufp);
+  }
+
+  void decode(const uint8_t **bufp, size_t* remainp, bool owner = true) {
+    clear();
+    resize(Serialization::decode_vi32(bufp, remainp));
+    for(auto it = begin(); it < end(); ++it)
+      it->decode(bufp, remainp);
   }
 
   const std::string to_string() const {
-    std::string s("Key(");
-    s.append("sz=");
-    s.append(std::to_string(count));
-    s.append(" len=");
-    s.append(std::to_string(size));
+    std::string s("Key(size=");
+    s.append(std::to_string(size()));
     s.append(" fractions=[");
-    uint32_t len;
-    const uint8_t* ptr = data;
-    for(uint32_t n=0; n<count; n++) {
-      s.append(Condition::to_string(*ptr++));
+
+    for(auto it = begin(); it < end();) {
+      s.append(Condition::to_string(it->comp));
       s.append("(");
-      len = Serialization::decode_vi32(&ptr);
-      s.append(std::string((const char*)ptr, len));
-      s.append("),");
-      ptr += len;
+      s.append(it->value);
+      s.append(")");
+      if(++it < end())
+        s.append(",");
     }
     s.append("])");
     return s;
   }
 
   void display(std::ostream& out) const {
-    out << "size=" << size << " count=" << count << " fractions=[";
-    uint32_t len;
-    const uint8_t* ptr = data;
-    for(uint32_t n=0; n<count;) {
-      out << Condition::to_string(*ptr++);
-      len = Serialization::decode_vi32(&ptr);
-      out << '"' << std::string((const char*)ptr, len) << '"';
-      ptr += len;
-      if(++n < count)
+    out << "size=" << size() << " fractions=[";
+    for(auto it = begin(); it < end();) {
+      out << Condition::to_string(it->comp);
+      out << '"' << it->value << '"';
+      if(++it < end())
         out << ", "; 
     }
     out << "]"; 

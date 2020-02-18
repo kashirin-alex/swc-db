@@ -335,7 +335,7 @@ void test_1(const std::string& col_name) {
   }
   if(holder.cells[0]->key.get_string(1).compare(fraction) != 0) {
     std::cerr << "BAD, select cell by key fraction: \n" 
-              << "  expected_value=" << spec->key_start.get_string(1) << "\n"
+              << "  expected_value=" << spec->key_start.get(1) << "\n"
               << " (1)result_value=" << holder.cells[0]->to_string() << "\n";
     exit(1);
   }

@@ -130,6 +130,7 @@ class Interval {
     value.free();
     offset_key.free();
   }
+
 /*
   void expand(const Cells::Cell& cell) {
     if(key_start.empty() || !key_start.is_matching(cell.key)){
@@ -140,6 +141,7 @@ class Interval {
     }
   }
 */
+
   bool equal(const Interval& other) const {
     return  ts_start.equal(other.ts_start) &&
             ts_finish.equal(other.ts_finish) &&
@@ -274,44 +276,41 @@ class Interval {
         begin.copy(range_begin);
       
     } else if(!key_start.empty()) {
-
-      const char* fraction;
-      uint32_t len;
+      std::string_view fraction;
       Condition::Comp comp;
       int32_t ok = -1;
-      for(int idx=0; idx < key_start.count; idx++) {
-        key_start.get(idx, &fraction, &len, &comp);
-        if(len && 
+      for(int idx=0; idx < key_start.size(); idx++) {
+        fraction = key_start.get(idx, comp);
+        if(fraction.size() && 
           (comp == Condition::EQ || comp == Condition::PF || 
            comp == Condition::GT || comp == Condition::GE)) {
-          begin.add(fraction, len);
+          begin.add(fraction);
           ok = idx;
         } else
           begin.add("", 0);
       }
       if(!++ok)
         begin.free();
-      else if(ok != key_start.count && ok != begin.count)
+      else if(ok != key_start.size() && ok != begin.count)
         begin.remove(ok, true);
 
     } else if(!key_finish.empty()) {
-      const char* fraction;
-      uint32_t len;
+      std::string_view fraction;
       Condition::Comp comp;
       int32_t ok = -1;
-      for(int idx=0; idx < key_finish.count; idx++) {
-        key_finish.get(idx, &fraction, &len, &comp);
-        if(len && 
+      for(int idx=0; idx < key_finish.size(); idx++) {
+        fraction = key_finish.get(idx, comp);
+        if(fraction.size() && 
           (comp == Condition::EQ || 
            comp == Condition::GT || comp == Condition::GE)) {
-          begin.add(fraction, len);
+          begin.add(fraction);
           ok = idx;
         } else
           begin.add("", 0);
       }
       if(!++ok)
         begin.free();
-      else if(ok != key_finish.count && ok != begin.count)
+      else if(ok != key_finish.size() && ok != begin.count)
         begin.remove(ok, true);
     }
   }
@@ -322,26 +321,25 @@ class Interval {
         end.copy(range_end);
 
     } else if(key_eq && !key_start.empty()) {
-      const char* fraction;
-      uint32_t len;
+      std::string_view fraction;
       Condition::Comp comp;
       int32_t ok = -1;
-      for(int idx=0; idx < key_start.count; idx++) {
-        key_start.get(idx, &fraction, &len, &comp);
-        if(len && 
+      for(int idx=0; idx < key_start.size(); idx++) {
+        fraction = key_start.get(idx, comp);
+        if(fraction.length() && 
           (comp == Condition::LT || 
            comp == Condition::LE || 
            comp == Condition::EQ)) {
-          end.add(fraction, len);
+          end.add(fraction);
           ok = idx;
         } else
           end.add("", 0);
       }
       if(!++ok)
         end.free();
-      else if(ok == key_start.count)
+      else if(ok == key_start.size())
         end.add("", 0);
-      else if(++ok < key_start.count && ok != end.count)
+      else if(++ok < key_start.size() && ok != end.count)
         end.remove(ok, true);
     }
 
@@ -352,7 +350,7 @@ class Interval {
       uint32_t len;
       Condition::Comp comp;
       int32_t ok = -1;
-      for(int idx=0; idx < key_finish.count; idx++) {
+      for(int idx=0; idx < key_finish.size(); idx++) {
         key_finish.get(idx, &fraction, &len, &comp);
         if(len && 
           (comp == Condition::LT || comp == Condition::LE)) {
@@ -363,7 +361,7 @@ class Interval {
       }
       if(!++ok)
         end.free();
-      else if(++ok < key_finish.count && ok != end.count)
+      else if(++ok < key_finish.size() && ok != end.count)
         end.remove(ok, true);
         
     } else if(!key_start.empty()) {
@@ -371,7 +369,7 @@ class Interval {
       uint32_t len;
       Condition::Comp comp;
       int32_t ok = -1;
-      for(int idx=0; idx < key_start.count; idx++) {
+      for(int idx=0; idx < key_start.size(); idx++) {
         key_start.get(idx, &fraction, &len, &comp);
         if(len && 
           (comp == Condition::LT || comp == Condition::LE)) {
@@ -382,9 +380,9 @@ class Interval {
       }
       if(!++ok)
         end.free();
-      else if(ok == key_start.count)
+      else if(ok == key_start.size())
         end.add("", 0);
-      else if(++ok < key_start.count && ok != end.count)
+      else if(++ok < key_start.size() && ok != end.count)
         end.remove(ok, true);
     }
     */
