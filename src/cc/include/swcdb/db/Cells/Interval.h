@@ -77,12 +77,12 @@ class Interval final {
   }
 
   void set_aligned_min(const DB::Cell::KeyVec& key) {
-    aligned_min = key;
+    aligned_min.copy(key);
     was_set = true;
   }
 
   void set_aligned_max(const DB::Cell::KeyVec& key) {
-    aligned_max = key;
+    aligned_max.copy(key);
     was_set = true;
   }
 
@@ -111,6 +111,7 @@ class Interval final {
   void expand(const Cell& cell) {
     expand_begin(cell);
     expand_end(cell);
+    //expand(cell.timestamp);
     was_set = true;
   }
 

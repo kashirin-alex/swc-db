@@ -18,6 +18,13 @@ class KeyVec : public std::vector<std::string> {
     clear();
   }
 
+  KeyVec operator=(const KeyVec &other) = delete;
+  
+  void copy(const KeyVec &other) {
+    free();
+    assign(other.begin(), other.end());
+  }
+
   const bool equal(const KeyVec &other) const {
     return *this == other;
   }
