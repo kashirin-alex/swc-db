@@ -104,10 +104,10 @@ class RangeLocateScan : public DB::Cells::ReqScan {
     std::cout << "aligned_max: " << aligned_max.to_string() << "\n";
     std::cout << "        rid: " << rid << "\n";
     */
-    if(spec.range_begin.count == any_is ||
+    if(spec.range_begin.count == any_is || aligned_max.empty() || 
        spec.range_begin.compare(
          aligned_max, Condition::LT, spec.range_begin.count, true)) {
-      if(spec.range_end.count == any_is ||
+      if(spec.range_end.count == any_is || aligned_min.empty() || 
          spec.range_end.compare(
            aligned_min, Condition::GT, spec.range_end.count, true)) {
         //std::cout << "-- ALIGNED MATCH  --\n";
