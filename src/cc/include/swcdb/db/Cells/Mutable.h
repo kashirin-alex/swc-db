@@ -391,9 +391,6 @@ class Mutable final {
         break; 
 
       cells.add(*cell);
-      
-      //cell->key.align(interval.aligned_min, interval.aligned_max);
-      //intval.expand(cell->timestamp);
     }
   }
 
@@ -655,17 +652,12 @@ class Mutable final {
     uint32_t rest = 0;
     Cell* from_cell = *(m_cells + from);
 
-    //intval_1st.aligned_min.free();
-    //intval_1st.aligned_max.free();
-
-    for(uint32_t offset = 0; offset < m_size; ++offset) {
+    for(uint32_t offset = _narrow(from_cell->key); offset < m_size; ++offset) {
       cell = *(m_cells + offset);
       
       if(!rest) {
-        if(cell->key.compare(from_cell->key, 0) == Condition::GT) {
-          //cell->key.align(intval_1st.aligned_min, intval_1st.aligned_max);
+        if(cell->key.compare(from_cell->key, 0) == Condition::GT)
           continue;
-        }
         rest = offset;
         intval_2nd.expand_begin(*cell);
       }
@@ -677,7 +669,6 @@ class Mutable final {
       }
       
       cells.push_back_nocpy(cell);
-      //cell->key.align(intval_2nd.aligned_min, intval_2nd.aligned_max);
     }
     m_size = rest;
 

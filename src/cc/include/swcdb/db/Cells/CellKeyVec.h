@@ -98,7 +98,8 @@ class KeyVec : public std::vector<std::string> {
   const bool align(const KeyVec& other, Condition::Comp comp) {
     bool chg;
     if(chg = empty()) {
-      assign(other.begin(), other.end());
+      if(chg = !other.empty())
+        assign(other.begin(), other.end());
       return chg;
     }
     bool smaller = size() < other.size();

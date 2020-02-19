@@ -196,11 +196,16 @@ class Range : public DB::RangeBase {
       DB::Cell::Key key_end(m_interval.key_end);
       key_end.insert(0, std::to_string(cfg->cid));
 
-      auto aligned_min(m_interval.aligned_min);
-      auto aligned_max(m_interval.aligned_max);
-      aligned_min.insert(0, std::to_string(cfg->cid));
-      aligned_max.insert(0, std::to_string(cfg->cid));
-        
+      DB::Cell::KeyVec aligned_min;
+      DB::Cell::KeyVec aligned_max;
+      if(type == Types::Range::DATA) { 
+        // only DATA until MASTER/META aligned on cells value min/max
+        aligned_min.copy(m_interval.aligned_min);
+        aligned_min.insert(0, std::to_string(cfg->cid));
+        aligned_max.copy(m_interval.aligned_max);
+        aligned_max.insert(0, std::to_string(cfg->cid));
+      }
+
       cell.own = true;
       cell.vlen = key_end.encoded_length() 
                 + Serialization::encoded_length_vi64(rid)
@@ -340,7 +345,10 @@ class Range : public DB::RangeBase {
       auto old_aligned_max(m_interval.aligned_max);
 
       m_interval.free();
-      blocks.cellstores.expand(m_interval);
+      if(type == Types::Range::DATA)
+        blocks.expand_and_align(m_interval);
+      else
+        blocks.expand(m_interval);
 
       intval_chg = !m_interval.key_begin.equal(old_key_begin) ||
                    !m_interval.key_end.equal(old_key_end) ||
@@ -381,7 +389,11 @@ class Range : public DB::RangeBase {
     }
 
     m_interval.free();
-    blocks.cellstores.expand(m_interval);
+    if(type == Types::Range::DATA)
+      blocks.expand_and_align(m_interval);
+    else
+      blocks.expand(m_interval);
+
     Files::RangeData::save(err, blocks.cellstores);
     on_change(err, false);
     
@@ -454,7 +466,11 @@ class Range : public DB::RangeBase {
       blocks.load(err);
       if(!err) {
         m_interval.free();
-        blocks.cellstores.expand(m_interval);
+        if(type == Types::Range::DATA)
+          blocks.expand_and_align(m_interval);
+        else
+          blocks.expand(m_interval);
+
         if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
           Files::RangeData::save(err, blocks.cellstores);
           on_change(err, false);
@@ -555,7 +571,28 @@ class Range : public DB::RangeBase {
         //  cell.control |= DB::Cells::REV_IS_TS;
         
         blocks.add_logged(cell);
-        intval_chg = align(cell.key);
+        
+        if(type == Types::Range::DATA) {
+          intval_chg = align(cell.key);
+        } else {
+          /* MASTER/META need aligned interval 
+               over cells value +plus (cs+logs) at compact
+          if(cell.flag == DB::Cells::INSERT) {
+            size_t remain = cell.vlen;
+            const uint8_t * ptr = cell.value;
+            DB::Cell::Key key_end;
+            key_end.decode(&ptr, &remain);
+            Serialization::decode_vi64(&ptr, &remain);//rid
+            DB::Cell::Key aligned_min;
+            aligned_min.decode(&ptr, &remain);
+            DB::Cell::Key aligned_max;
+            aligned_max.decode(&ptr, &remain);
+            intval_chg = align(aligned_min);
+            if(align(aligned_max))
+              intval_chg = true;
+          }
+          */
+        }
       }
       blocks.processing_decrement();
 
@@ -577,7 +614,6 @@ class Range : public DB::RangeBase {
       */
 
       if(intval_chg) {
-        //std::cout << "INTVAL-CHG " << m_interval.to_string() << "\n";
         intval_chg = false;
         on_change(err, false);
       }

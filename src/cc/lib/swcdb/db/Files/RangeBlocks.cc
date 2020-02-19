@@ -63,7 +63,17 @@ void Blocks::remove(int& err) {
   _clear();
   range = nullptr;
 }
-  
+
+void Blocks::expand(DB::Cells::Interval& intval) {
+  cellstores.expand(intval);
+  commitlog.expand(intval);
+}
+
+void Blocks::expand_and_align(DB::Cells::Interval& intval) {
+  cellstores.expand_and_align(intval);
+  commitlog.expand_and_align(intval);
+}
+
 void Blocks::apply_new(int &err,
                        CellStore::Writers& w_cellstores, 
                        std::vector<CommitLog::Fragment::Ptr>& fragments_old) {

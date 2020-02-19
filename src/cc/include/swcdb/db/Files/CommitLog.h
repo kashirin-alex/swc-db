@@ -201,6 +201,20 @@ class Fragments final {
     }
   }
   
+  void expand(DB::Cells::Interval& intval) {
+    std::shared_lock lock(m_mutex);
+    for(auto frag : m_fragments)
+      intval.expand(frag->interval);
+  }
+  
+  void expand_and_align(DB::Cells::Interval& intval) {
+    std::shared_lock lock(m_mutex);
+    for(auto frag : m_fragments) {
+      intval.expand(frag->interval);
+      intval.align(frag->interval);
+    }
+  }
+
   const bool load_cells(Range::BlockLoader* loader, bool final, 
                         int64_t after_ts = 0) {         
     if(final) {

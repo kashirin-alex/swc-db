@@ -39,11 +39,17 @@ class Readers final {
     }
   }
 
-  void expand(DB::Cells::Interval& interval) {
+  void expand(DB::Cells::Interval& intval) {
+    std::shared_lock lock(m_mutex);
+    for(auto cs : m_cellstores)
+      intval.expand(cs->interval);
+  }
+
+  void expand_and_align(DB::Cells::Interval& intval) {
     std::shared_lock lock(m_mutex);
     for(auto cs : m_cellstores) {
-      interval.expand(cs->interval);
-      interval.align(cs->interval);
+      intval.expand(cs->interval);
+      intval.align(cs->interval);
     }
   }
 

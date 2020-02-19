@@ -47,6 +47,25 @@ void check_load() {
   }
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Copy took=" << ts << " avg=" << ts/chks << "\n";
+
+  
+  
+  ts = SWC::Time::now_ns();
+  for(auto n = chks; --n;) {
+    auto c = new SWC::DB::Cell::Key(cell.key);
+    delete c;
+  }
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Key Constructor took=" << ts << " avg=" << ts/chks << "\n";
+
+  ts = SWC::Time::now_ns();
+  for(auto n = chks; --n;) {
+    auto c = new SWC::DB::Cell::Key();
+    c->copy(cell.key);
+    delete c;
+  }
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Key Copy took=" << ts << " avg=" << ts/chks << "\n";
 }
 
 int main() {

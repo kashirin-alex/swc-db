@@ -374,7 +374,7 @@ class Compaction final {
       DynamicBuffer buff;
       uint32_t cell_count = 0;
 
-      if(range->is_any_end()){
+      if(range->is_any_end()) {
         if(!last_cell.key.empty()) {
           ++cell_count;
           last_cell.write(buff);

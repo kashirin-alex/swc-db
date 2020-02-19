@@ -45,6 +45,10 @@ class Blocks final {
   
   void remove(int& err);
   
+  void expand(DB::Cells::Interval& intval);
+
+  void expand_and_align(DB::Cells::Interval& intval);
+
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
                 std::vector<CommitLog::Fragment::Ptr>& fragments_old);
