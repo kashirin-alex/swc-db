@@ -90,23 +90,27 @@ class Cell final {
   typedef std::shared_ptr<Cell> Ptr;
 
   explicit Cell():  own(false), flag(Flag::NONE), control(0), 
-                    timestamp(0), vlen(0), value(0) { 
+                    vlen(0), value(0) { 
   }
 
   explicit Cell(const Cell& other)
     : key(other.key), own(other.vlen), flag(other.flag), 
-      control(other.control), timestamp(other.timestamp), 
-      vlen(other.vlen), value(_value(other.value)) {
+      control(other.control), 
+      vlen(other.vlen), 
+      timestamp(other.timestamp), 
+      value(_value(other.value)) {
   }
 
   explicit Cell(const Cell& other, bool no_value)
     : key(other.key), own(!no_value && other.vlen), flag(other.flag), 
-      control(other.control), timestamp(other.timestamp), 
-      vlen(own ? other.vlen : 0), value(_value(other.value)) {
+      control(other.control), 
+      vlen(own ? other.vlen : 0), 
+      timestamp(other.timestamp), 
+      value(_value(other.value)) {
   }
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false)
-                : timestamp(), value(0) { 
+                : value(0) { 
     read(bufp, remainp, own);
   }
 
@@ -378,8 +382,8 @@ class Cell final {
   bool            own;
   uint8_t         flag;
   uint8_t         control;
-  int64_t         timestamp;
   uint32_t        vlen;
+  int64_t         timestamp;
   uint8_t*        value;
 
   private:
