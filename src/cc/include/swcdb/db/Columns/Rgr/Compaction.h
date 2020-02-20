@@ -456,17 +456,29 @@ class Compaction final {
 
       auto max = range->cfg->cellstore_max();
       if(cellstores.size() > 1 && cellstores.size() >= max) {
-        
-        auto it = cellstores.begin()+(cellstores.size()/2);
-        do {
-          if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
-            break;
-        } while(++it < cellstores.end());
+        auto c = cellstores.size()/2;
+        if(c > 1)
+          --c;
+        split_option: 
+          auto it = cellstores.begin()+c;
+          do {
+            if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
+              break;
+          } while(++it < cellstores.end());
 
+        if(it == cellstores.end() && c > 1) {
+          c = 1; 
+          goto split_option;
+        }
         if(it != cellstores.end()) {
           mngr_create_range(it-cellstores.begin());
           return;
         }
+        SWC_LOGF(
+          LOG_WARN, 
+          "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d", 
+          range->cfg->cid, range->rid, cellstores.size()
+        );
       }
       
       apply_new(empty_cs);
