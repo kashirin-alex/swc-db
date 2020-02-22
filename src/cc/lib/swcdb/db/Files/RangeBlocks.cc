@@ -373,16 +373,16 @@ void Blocks::init_blocks(int& err) {
   }
 
   Block::Ptr blk = nullptr;
-  Block::Ptr new_blk;
   for(auto cs_blk : blocks) {
-    new_blk = Block::make(cs_blk->interval, ptr());
     if(blk == nullptr) {
-      m_block = new_blk;
+      m_block = blk = Block::make(cs_blk->interval, ptr());
       m_block->_set_prev_key_end(prev_key_end);
+    } else if(blk->_cond_key_end(cs_blk->interval.key_begin) != Condition::EQ) {
+      blk->_add(Block::make(cs_blk->interval, ptr()));
+      blk = blk->next;
     } else {
-      blk->_add(new_blk);
+      blk->_set_key_end(cs_blk->interval.key_end);
     }
-    blk = new_blk;
   }
   if(!m_block) {
     err = Error::RS_NOT_LOADED_RANGE;

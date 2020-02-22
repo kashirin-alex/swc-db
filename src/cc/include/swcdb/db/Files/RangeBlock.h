@@ -89,6 +89,10 @@ class Block final {
 
   void _set_prev_key_end(const DB::Cell::Key& key);
   
+  const Condition::Comp _cond_key_end(const DB::Cell::Key& key) const;
+
+  void _set_key_end(const DB::Cell::Key& key);
+  
   /*
   void expand_next_and_release(DB::Cell::Key& key_begin);
 

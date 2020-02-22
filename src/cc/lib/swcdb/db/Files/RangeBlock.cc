@@ -289,6 +289,14 @@ void Block::_set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
+const Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
+  return m_interval.key_end.compare(key);
+}
+
+void Block::_set_key_end(const DB::Cell::Key& key) {
+  m_interval.key_end.copy(key);
+}
+
 /*
 void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
   std::scoped_lock lock(m_mutex, m_mutex_state);
