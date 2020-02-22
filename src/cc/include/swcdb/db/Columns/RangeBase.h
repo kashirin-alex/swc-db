@@ -189,6 +189,16 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     key_end.set(m_interval.key_end, Condition::LE);
   }
 
+  void get_prev_key_end(Cell::Key& key) {
+    std::shared_lock lock(m_mutex);
+    key.copy(m_prev_key_end);
+  }
+
+  void set_prev_key_end(const Cell::Key& key){
+    std::scoped_lock lock(m_mutex);
+    m_prev_key_end.copy(key);
+  }
+
   const bool align(const Cells::Interval& interval) {
     std::scoped_lock lock(m_mutex);
     return m_interval.align(interval);
@@ -204,6 +214,8 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
     std::string s(cfg->to_string());
     s.append(" rid=");
     s.append(std::to_string(rid));
+    s.append(" prev=");
+    s.append(m_prev_key_end.to_string());
     s.append(" ");
     s.append(m_interval.to_string());
     return s;
@@ -216,6 +228,7 @@ class RangeBase : public std::enable_shared_from_this<RangeBase> {
   protected:
   std::shared_mutex         m_mutex;
   Cells::Interval           m_interval;
+  DB::Cell::Key             m_prev_key_end;
 };
 
 }}

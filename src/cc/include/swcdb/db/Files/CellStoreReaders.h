@@ -135,6 +135,11 @@ class Readers final {
     }
   }
 
+  void get_prev_key_end(uint32_t idx, DB::Cell::Key& key) {
+    std::shared_lock lock(m_mutex);
+    key.copy((*(m_cellstores.begin()+idx))->prev_key_end);
+  }
+
   const bool need_compaction(size_t cs_sz, size_t blk_size) {
     std::shared_lock lock(m_mutex);
     size_t  sz;

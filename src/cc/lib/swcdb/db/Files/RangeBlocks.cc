@@ -366,14 +366,22 @@ void Blocks::init_blocks(int& err) {
     return;
   }
 
+  DB::Cell::Key prev_key_end;
+  if(!range->is_any_begin()) {
+    cellstores.get_prev_key_end(0, prev_key_end);
+    range->set_prev_key_end(prev_key_end);
+  }
+
   Block::Ptr blk = nullptr;
   Block::Ptr new_blk;
   for(auto cs_blk : blocks) {
     new_blk = Block::make(cs_blk->interval, ptr());
-    if(blk == nullptr)
+    if(blk == nullptr) {
       m_block = new_blk;
-    else
-      blk->add(new_blk);
+      m_block->_set_prev_key_end(prev_key_end);
+    } else {
+      blk->_add(new_blk);
+    }
     blk = new_blk;
   }
   if(!m_block) {

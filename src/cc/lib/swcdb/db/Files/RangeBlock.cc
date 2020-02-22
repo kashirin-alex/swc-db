@@ -50,10 +50,9 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) {
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
-    (intval.key_end.empty() || 
-      !prev || m_prev_key_end.compare(intval.key_end) == Condition::GT);
+    (intval.key_end.empty() || m_prev_key_end.empty() ||
+     m_prev_key_end.compare(intval.key_end) == Condition::GT);
 }
-
 const bool Block::is_in_end(const DB::Cell::Key& key) {
   std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
@@ -272,20 +271,22 @@ Block::Ptr Block::_split(bool loaded) {
     loaded
   );
 
-  add(blk);
+  _add(blk);
   return blk;
 }
 
-void Block::add(Block::Ptr blk) {
-  //std::scoped_lock lock(m_mutex_state);
+void Block::_add(Block::Ptr blk) {
   blk->prev = ptr();
   if(next) {
     blk->next = next;
     next->prev = blk;
   }
-  blk->m_prev_key_end.copy(m_interval.key_end);
+  blk->_set_prev_key_end(m_interval.key_end);
   next = blk;
-  // blk->set_prev_end()
+}
+
+void Block::_set_prev_key_end(const DB::Cell::Key& key) {
+  m_prev_key_end.copy(key);
 }
 
 /*

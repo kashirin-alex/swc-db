@@ -560,7 +560,10 @@ class Range : public DB::RangeBase {
         if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
           early_range_end = true;
           continue;
-        }
+        } // + checking prev_key_end.compare(cell.key) != Condition::GT) {
+          // late_range_begin = true;
+          // continue;
+          // }
         
         if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
           cell.set_timestamp(Time::now_ns());

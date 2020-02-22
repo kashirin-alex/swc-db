@@ -19,7 +19,7 @@ namespace CellStore {
       data:   [cell]
     blocks-index:
       header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
-      data:   [vi32(offset), interval, i32(checksum)]
+      data:   prev_key_end, [vi32(offset), interval, i32(checksum)]
     trailer : i8(version), i32(blocks-index-len), i32(cell-revs), i32(checksum)
       (trailer-offset) = fileLength - TRAILER_SIZE
       (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
@@ -39,10 +39,11 @@ class Read final {
                          const DB::RangeBase::Ptr& range, 
                          const DB::Cells::Interval& interval) {
     auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(id), 0);
+    DB::Cell::Key prev_key_end;
     DB::Cells::Interval interval_by_blks;
     std::vector<Block::Read::Ptr> blocks;
     
-    load_blocks_index(err, smartfd, interval_by_blks, blocks);
+    load_blocks_index(err, smartfd, prev_key_end, interval_by_blks, blocks);
     if(err)
       SWC_LOGF(LOG_ERROR, 
         "CellStore load_blocks_index err=%d(%s) id=%d %s %s", 
@@ -50,6 +51,7 @@ class Read final {
         interval.to_string().c_str());
     return new Read(
       id, 
+      prev_key_end,
       interval_by_blks.was_set ? interval_by_blks : interval, 
       blocks, 
       smartfd);
@@ -117,7 +119,8 @@ class Read final {
   }
 
   static void load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
-                                DB::Cells::Interval& interval,
+                                DB::Cell::Key& prev_key_end,
+                                DB::Cells::Interval& interval, 
                                 std::vector<Block::Read::Ptr>& blocks) {
 
     size_t blks_idx_size = 0;
@@ -175,8 +178,9 @@ class Read final {
       remain = sz;
     }
 
-    const uint8_t* chk_ptr;
+    prev_key_end.decode(&ptr, &remain, true);
 
+    const uint8_t* chk_ptr;
     blocks.clear();
     blocks.resize(blks_count);
     for(int n = 0; n < blks_count; ++n) {
@@ -205,14 +209,17 @@ class Read final {
   // 
   
   const uint32_t                      id;
+  const DB::Cell::Key                 prev_key_end;
   const DB::Cells::Interval           interval;
   const std::vector<Block::Read::Ptr> blocks;
-  
+
   explicit Read(const uint32_t id,
+                const DB::Cell::Key& prev_key_end,
                 const DB::Cells::Interval& interval, 
                 const std::vector<Block::Read::Ptr>& blocks,
                 FS::SmartFd::Ptr smartfd) 
                 : id(id), 
+                  prev_key_end(prev_key_end), 
                   interval(interval), 
                   blocks(blocks), 
                   m_smartfd(smartfd) {       
@@ -309,6 +316,8 @@ class Read final {
     s.append(std::to_string(VERSION));
     s.append(" id=");
     s.append(std::to_string(id));
+    s.append(" prev=");
+    s.append(prev_key_end.to_string());
     s.append(" ");
     
     s.append(interval.to_string());
@@ -395,6 +404,8 @@ class Write : public std::enable_shared_from_this<Write> {
   uint32_t                  cell_revs;
   size_t                    size;
   DB::Cells::Interval       interval;
+  DB::Cell::Key             prev_key_end;
+  
   //std::atomic<uint32_t>     completion;
  
   Write(const uint32_t id, const std::string& filepath, uint32_t cell_revs,
@@ -438,7 +449,7 @@ class Write : public std::enable_shared_from_this<Write> {
   }
 
   uint32_t write_blocks_index(int& err) {
-    uint32_t len_data = 0;
+    uint32_t len_data = prev_key_end.encoded_length();
     interval.free();
     for(auto blk : m_blocks) {
       len_data += Serialization::encoded_length_vi32(blk->offset) 
@@ -450,7 +461,9 @@ class Write : public std::enable_shared_from_this<Write> {
     }
 
     StaticBuffer raw_buffer(len_data);
-    uint8_t * ptr = raw_buffer.base;
+    uint8_t* ptr = raw_buffer.base;
+    prev_key_end.encode(&ptr);
+
     uint8_t * chk_ptr;
     for(auto blk : m_blocks) {
       chk_ptr = ptr;
@@ -548,6 +561,8 @@ class Write : public std::enable_shared_from_this<Write> {
     s.append(Types::to_string(encoder));
     s.append(" cell_revs=");
     s.append(std::to_string(cell_revs));
+    s.append(" prev=");
+    s.append(prev_key_end.to_string());
     s.append(" ");
     s.append(interval.to_string());
     s.append(" ");

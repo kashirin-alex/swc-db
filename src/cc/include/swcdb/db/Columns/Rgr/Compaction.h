@@ -400,6 +400,11 @@ class Compaction final {
     }
 
     void add_cs(int& err) {
+      if(cellstores.empty())
+        range->get_prev_key_end(cs_writer->prev_key_end);
+      else
+        cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
+
       cs_writer->finalize(err);
       cellstores.push_back(cs_writer);
       cs_writer = nullptr;

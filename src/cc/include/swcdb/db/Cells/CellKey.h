@@ -21,12 +21,12 @@ class Key final {
 
   explicit Key(bool own = true): own(own), count(0), size(0), data(0) { }
 
-  explicit Key(const Key &other)
+  explicit Key(const Key& other)
               : own(other.size), count(other.count), size(other.size),
                 data(_data(other.data)) {
   }
 
-  void copy(const Key &other) {
+  void copy(const Key& other) {
     free(); 
     own = true;
     size = other.size;
