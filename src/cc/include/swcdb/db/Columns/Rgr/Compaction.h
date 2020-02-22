@@ -700,13 +700,13 @@ class Compaction final {
       return;
     } 
     if(!m_running) {
+      if(!m_run) {
+        m_cv.notify_all();
+        return;
+      }
       m_scheduled = false;
       _schedule(cfg_check_interval->get());
-      return;
     }
-
-    if(!m_run)
-      m_cv.notify_all();
   }
 
   void _schedule(uint32_t t_ms = 300000) {
