@@ -223,24 +223,23 @@ class Mutable final {
       add_plain(e_cell, offset);
   }
 
-  Cell* get_next(uint32_t offset) {
-    Cell* cell;
+  const bool get_next(uint32_t offset, Cell*& cell) {
     while(m_size > offset) {
       cell = *(m_cells + offset);
       if(cell->has_expired(m_ttl)) {
          _move_bwd(offset, 1);
         continue;
       }
-      return cell;
+      return true;
     }
-    return nullptr;
+    return false;
   }
 
   void add_remove(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
     int64_t revision_new = e_cell.get_revision();
 
-    for(Cell* cell; cell=get_next(offset); ++offset) {
+    for(Cell* cell; get_next(offset, cell); ++offset) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
@@ -266,10 +265,9 @@ class Mutable final {
     int64_t revision_new = e_cell.get_revision();
     uint32_t revs = 0;
 
-    for(Cell* cell; cell=get_next(offset); ++offset) {
+    for(Cell* cell; get_next(offset, cell); ++offset) {
 
-      cond = cell->key.compare(e_cell.key, 0);
-      if(cond == Condition::GT)
+      if((cond = cell->key.compare(e_cell.key, 0)) == Condition::GT)
         continue;
 
       if(cond == Condition::LT) {
@@ -315,7 +313,7 @@ class Mutable final {
     int64_t revision = e_cell.get_revision();
     uint32_t add_offset = m_size;
     Cell* cell;
-    for(; cell=get_next(offset); ++offset) {
+    for(; get_next(offset, cell); ++offset) {
 
       cond = cell->key.compare(e_cell.key, 0);
       if(cond == Condition::GT)
@@ -800,37 +798,31 @@ class Mutable final {
   }
 
   uint32_t _narrow(const DB::Cell::Key& key) const {
-    uint32_t offset = 0;
+    if(key.empty() || m_size <= narrow_sz) 
+      return 0;
+    uint32_t sz;
+    uint32_t offset = sz = m_size >> 1;
 
-    if(m_size < narrow_sz || key.empty())
-      return offset;
-
-    uint32_t sz = m_size/2;
-    offset = sz; 
-
-    for(;;) {
+    try_narrow:
       if((*(m_cells + offset))->key.compare(key, 0) == Condition::GT) {
         if(sz < narrow_sz)
-          break;
-        offset += sz /= 2; 
-        continue;
+          return offset;
+        offset += sz >>= 1; 
+        goto try_narrow;
       }
-      if((sz /= 2) == 0)
+      if((sz >>= 1) == 0)
         ++sz;  
 
-      if(offset < sz) {
-        offset = 0;
-        break;
-      }
+      if(offset < sz)
+        return 0;
       offset -= sz;
-    }
-    return offset;
+    goto try_narrow;
   }
 
   void _remove_overhead(uint32_t offset, const DB::Cell::Key& key, 
                         uint32_t revs) {
     
-    for(Cell* cell; cell=get_next(offset); ++offset) {
+    for(Cell* cell; get_next(offset, cell); ++offset) {
       if(cell->key.compare(key, 0) != Condition::EQ)
         return;
 

@@ -203,29 +203,26 @@ class Key final {
            Condition::eq(data, size, other.data, other.size));
   }
 
-  const Condition::Comp compare(const Key &other, uint32_t fractions=0, 
+  const Condition::Comp compare(const Key &other, uint32_t max=0, 
                                 bool empty_ok=false) const {
-    Condition::Comp comp = Condition::EQ;
-    const uint8_t* ptr = data;
-    uint32_t len;
-    const uint8_t* ptr_other = other.data;
-    uint32_t len_other;
-    
-    uint32_t max = fractions ? fractions 
-                  : (count > other.count ? count : other.count);
-    for(uint32_t c = 0; c<max; ++c, ptr += len, ptr_other += len_other) {
-
-      if(c == count || c == other.count)
-        return count > other.count ? Condition::LT : Condition::GT;
-
-      len_other = Serialization::decode_vi32(&ptr_other);
-      if(!(len = Serialization::decode_vi32(&ptr)) && empty_ok)
-        continue;
-      if((comp = Condition::condition(ptr, len, ptr_other, len_other)) 
-                  != Condition::EQ)
-        return comp;
+    if(uint32_t min = count < other.count ? count : other.count) {
+      if(max && min > max)
+        min = max;  
+      const uint8_t* p1 = data;
+      const uint8_t* p2 = other.data;
+      uint32_t sz1;
+      uint32_t sz2;
+      for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
+        sz2 = Serialization::decode_vi32(&p2);
+        if(!(sz1 = Serialization::decode_vi32(&p1)) && empty_ok)
+          continue;
+        if((comp = Condition::condition(p1, sz1, p2, sz2)) != Condition::EQ)
+          return comp;
+      }
     }
-    return comp;
+    return count != other.count && (!max || max > count || max > other.count)
+          ? count > other.count ? Condition::LT : Condition::GT
+          : Condition::EQ;
   }
 
   const bool align(KeyVec& start, KeyVec& finish) const {
@@ -303,14 +300,13 @@ class Key final {
 
   void decode(const uint8_t **bufp, size_t* remainp, bool owner=false) {
     free();
-    own = owner;
     if(count = Serialization::decode_vi32(bufp, remainp)) {
+      uint32_t n=count;
       const uint8_t* ptr_start = *bufp;
-      for(uint32_t n=0; n<count; ++n) 
-        *bufp += Serialization::decode_vi32(bufp);
-      size = *bufp - ptr_start;
-      *remainp -= size;
-      data = own ? _data(ptr_start) : (uint8_t*)ptr_start;
+      do *bufp += Serialization::decode_vi32(bufp); 
+      while(--n);
+      *remainp -= (size = *bufp - ptr_start);
+      data = (own = owner) ? _data(ptr_start) : (uint8_t*)ptr_start;
     }
   }
 

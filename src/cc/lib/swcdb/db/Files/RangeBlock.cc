@@ -53,6 +53,7 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) {
     (intval.key_end.empty() || m_prev_key_end.empty() ||
      m_prev_key_end.compare(intval.key_end) == Condition::GT);
 }
+
 const bool Block::is_in_end(const DB::Cell::Key& key) {
   std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
@@ -159,12 +160,13 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     }
       
     //ts = Time::now_ns();
-    if(prev && m_prev_key_end.compare(cell.key) != Condition::GT) {
+    if(!m_prev_key_end.empty() && 
+        m_prev_key_end.compare(cell.key) != Condition::GT) {
       //ts_cmp += Time::now_ns()-ts;
       continue;
     }
-    if(!m_interval.key_end.empty() 
-        && m_interval.key_end.compare(cell.key) == Condition::GT)
+    if(!m_interval.key_end.empty() && 
+        m_interval.key_end.compare(cell.key) == Condition::GT)
       break;
     //ts_cmp += Time::now_ns()-ts;
 
@@ -175,7 +177,6 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       m_cells.add(cell);
       
     //ts_add += Time::now_ns()-ts;
-    //m_interval.expand(cell.timestamp);
     ++added;
 
     if(splitter())
@@ -197,7 +198,6 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
             //<< "  ts_cmp=" << ts_cmp
             //<< "  ts_add=" << ts_add
             << "\n";
-             
   return added;
 }
 
@@ -399,21 +399,14 @@ const std::string Block::to_string() {
 
   std::string s("Block(state=");
   s.append(std::to_string((uint8_t)m_state));
-      
+
+  s.append(" prev=");
+  s.append(m_prev_key_end.to_string());
   s.append(" ");
   s.append(m_interval.to_string());
 
   s.append(" ");
   s.append(m_cells.to_string());
-  s.append(" ");
-  if(m_cells.size()) {
-    DB::Cells::Cell cell;
-    m_cells.get(0, cell);
-    s.append(cell.key.to_string());
-    s.append(" <= range <= ");
-    m_cells.get(-1, cell);
-    s.append(cell.key.to_string());
-  }
 
   s.append(" queue=");
   s.append(std::to_string(m_queue.size()));
