@@ -272,7 +272,7 @@ class Read final {
   }
 
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
-    to.assign(blocks.begin(), blocks.end());
+    to.insert(to.end(), blocks.begin(), blocks.end());
   }
 
   size_t release(size_t bytes) {   
