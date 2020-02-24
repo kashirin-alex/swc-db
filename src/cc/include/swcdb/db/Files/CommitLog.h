@@ -215,33 +215,25 @@ class Fragments final {
     }
   }
 
-  const bool load_cells(Range::BlockLoader* loader, bool final, 
-                        int64_t after_ts = 0) {         
+  void load_cells(Range::BlockLoader* loader, bool final, int64_t after_ts=0) {  
     if(final) {
       std::unique_lock lock_wait(m_mutex);
       if(m_commiting)
         m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
     }
 
-    std::vector<Fragment::Ptr>  applicable;
-    {
-      std::shared_lock lock(m_mutex);
-      loader->ts = Time::now_ns();
-      for(auto frag : m_fragments) {  
-        if(after_ts < frag->ts && loader->block->is_consist(frag->interval)) {
-          loader->add(frag);
-          applicable.push_back(frag);
-        }
-      }
+    std::shared_lock lock(m_mutex);
+    for(auto frag : m_fragments) {  
+      if(after_ts < frag->ts && 
+         loader->block->is_consist(frag->interval) &&
+         loader->add(frag))
+        return;
     }
+  }
 
-    if(final && applicable.empty()) {
-      loader->block->load_cells(m_cells);
-    } else {
-      for(auto frag : applicable)
-        frag->load([loader](){ loader->loaded_frag(); });
-    }
-    return applicable.empty();
+  void load_cells(Range::BlockLoader* loader) {
+    std::shared_lock lock(m_mutex);
+    loader->block->load_cells(m_cells);
   }
 
   void get(std::vector<Fragment::Ptr>& fragments) {

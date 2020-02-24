@@ -14,9 +14,9 @@ namespace SWC { namespace Files { namespace Range {
 
 
 class BlockLoader final {
+  static const uint8_t MAX_FRAGMENTS = 3;
   public:
 
-  int64_t               ts;
   Range::Block::Ptr     block;
 
   BlockLoader(Range::Block::Ptr block);
@@ -27,9 +27,9 @@ class BlockLoader final {
 
   void add(CellStore::Block::Read::Ptr blk);
 
-  void add(CommitLog::Fragment::Ptr frag);
-
   void loaded_blk();
+
+  bool add(CommitLog::Fragment::Ptr frag);
 
   void loaded_frag();
 
@@ -37,9 +37,9 @@ class BlockLoader final {
 
   void load_cellstores();
 
-  void load_log();
-
   void loaded_cellstores();
+
+  void load_log(bool final);
 
   void loaded_log();
 
@@ -52,7 +52,8 @@ class BlockLoader final {
   std::vector<CellStore::Block::Read::Ptr>  m_cs_blocks;
   std::vector<CommitLog::Fragment::Ptr>     m_fragments;
   bool                                      m_chk_cs;
-  bool                                      m_chk_log;
+  bool                                      m_checking_log;
+  int64_t                                   m_frag_ts;
 };
 
 

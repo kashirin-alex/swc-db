@@ -12,31 +12,47 @@ namespace SWC { namespace Files { namespace Range {
 BlockLoader::BlockLoader(Range::Block::Ptr block) 
                         : block(block),  
                           m_processing(false), m_err(Error::OK), 
-                          m_chk_cs(false), m_chk_log(false) {
+                          m_chk_cs(false), m_checking_log(false), m_frag_ts(0) {
 }
 
 BlockLoader::~BlockLoader() { }
 
 void BlockLoader::run() {
   asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_cellstores(); });
-  load_log();//asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(); });
+  load_log(false);
+}
+
+//CellStores
+void BlockLoader::load_cellstores() {
+  block->blocks->cellstores.load_cells(this);
+
+  {
+    std::scoped_lock lock(m_mutex);
+    m_chk_cs = true;
+  }
+  
+  loaded_frag();
 }
 
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
-  std::scoped_lock<std::mutex> lock(m_mutex);
+  std::scoped_lock lock(m_mutex);
   m_cs_blocks.push_back(blk);
-}
-
-void BlockLoader::add(CommitLog::Fragment::Ptr frag) {
-  std::scoped_lock<std::mutex> lock(m_mutex);
-  m_fragments.push_back(frag);
+  /*
+  if(m_cs_blocks.size() > 4) {
+    SWC_LOG_OUT(LOG_DEBUG);
+    std::cout << " BlockLoader c=" << m_cs_blocks.size() << " CS\n";
+    std::cout << " block :" << block->to_string() << "\n";
+    int n = 0;
+    for(auto b  : m_cs_blocks)
+      std::cout << " csblk "<< ++n << "=" << b->to_string() << "\n";
+    std::cout << SWC_LOG_OUT_END;
+  }
+  */
 }
 
 void BlockLoader::loaded_blk() {
   { 
-    std::scoped_lock<std::mutex> lock(m_mutex);
-    //SWC_LOGF(LOG_DEBUG, " BlockLoader, CellStore::Block count=%d", 
-    //         m_cs_blocks.size());
+    std::scoped_lock lock(m_mutex);
     if(m_processing) 
       return;
     m_processing = true;
@@ -44,42 +60,12 @@ void BlockLoader::loaded_blk() {
   asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_cellstores(); });
 }
 
-void BlockLoader::loaded_frag() {
-  { 
-    std::scoped_lock<std::mutex> lock(m_mutex);
-    //SWC_LOGF(LOG_DEBUG, " BlockLoader, Fragment count=%d", 
-    //         m_fragments.size());
-    if(m_processing || !m_chk_cs || !m_cs_blocks.empty()) 
-      return;
-    m_processing = true;
-  }
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_log(); });
-}
-
-void BlockLoader::load_cellstores() {
-  block->blocks->cellstores.load_cells(this);
-  {
-    std::scoped_lock<std::mutex> lock(m_mutex);
-    m_chk_cs = true;
-  }
-  completion();
-}
-
-void BlockLoader::load_log() {
-  block->blocks->commitlog.load_cells(this, false);
-  {
-    std::scoped_lock<std::mutex> lock(m_mutex);
-    m_chk_log = true;
-  }
-  completion();
-}
-
 void BlockLoader::loaded_cellstores() {
   int err;
   bool loaded;
   for(CellStore::Block::Read::Ptr blk; ; ) {
     {
-      std::scoped_lock<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       if(m_cs_blocks.empty()) {
         m_processing = false;
         break;
@@ -90,7 +76,7 @@ void BlockLoader::loaded_cellstores() {
     if(loaded = blk->loaded(err))
       blk->load_cells(err, block);
       
-    std::scoped_lock<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     if(!err && !loaded) {
       m_processing = false;
       return;
@@ -104,15 +90,69 @@ void BlockLoader::loaded_cellstores() {
     m_cs_blocks.erase(m_cs_blocks.begin());
   }
 
-  completion();
+  loaded_frag();
+}
+
+//CommitLog
+void BlockLoader::load_log(bool final) {
+  int64_t last;
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_checking_log || m_fragments.size() == MAX_FRAGMENTS)
+      return;
+    m_checking_log = true;
+    last = m_frag_ts;
+  }
+
+  block->blocks->commitlog.load_cells(this, final, last);
+  
+  bool no_more;
+  std::vector<CommitLog::Fragment::Ptr> for_loading;
+  {
+    std::scoped_lock lock(m_mutex);
+    no_more = final && m_fragments.empty() && m_chk_cs;
+    for(auto frag : m_fragments)
+      if(frag->ts > last)
+        for_loading.push_back(frag);
+    /*
+    std::cout << " fragments=" << m_fragments.size() 
+              << " for_loading=" << for_loading.size() 
+              << " no_more=" << no_more << " last=" << last << "\n";
+    */
+    m_checking_log = false;
+  }
+  
+  for(auto frag : for_loading)
+    frag->load([this](){ loaded_frag(); });
+
+  if(no_more)
+    completion();
+}
+
+bool BlockLoader::add(CommitLog::Fragment::Ptr frag) {
+  std::scoped_lock lock(m_mutex);
+  m_fragments.push_back(frag);
+  m_frag_ts = frag->ts;
+  return m_fragments.size() == MAX_FRAGMENTS;
+}
+
+void BlockLoader::loaded_frag() {
+  { 
+    std::scoped_lock lock(m_mutex);
+    if(m_processing || !m_chk_cs || !m_cs_blocks.empty()) 
+      return;
+    m_processing = true;
+  }
+  asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_log(); });
 }
 
 void BlockLoader::loaded_log() {
   int err;
   bool loaded;
+  bool load_more;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {          
-      std::scoped_lock<std::mutex> lock(m_mutex);        
+      std::scoped_lock lock(m_mutex);        
       if(m_fragments.empty()) {
         m_processing = false;
         break;
@@ -122,41 +162,33 @@ void BlockLoader::loaded_log() {
 
     if(loaded = frag->loaded(err))
       frag->load_cells(err, block);
-        
-    std::scoped_lock<std::mutex> lock(m_mutex);
-    if(!err && !loaded) {
-      m_processing = false;
-      return;
-    }
+    {   
+      std::scoped_lock lock(m_mutex);
+      if(!err && !loaded) {
+        m_processing = false;
+        return;
+      }
 
-    if(err) {
-      frag->processing_decrement();
-      if(!m_err)
-        m_err = Error::RANGE_COMMITLOG;
+      if(err) {
+        frag->processing_decrement();
+        if(!m_err)
+          m_err = Error::RANGE_COMMITLOG;
+      }
+      load_more = m_fragments.size() == 3;
+      m_fragments.erase(m_fragments.begin());
     }
-    m_fragments.erase(m_fragments.begin());
+    
+    if(load_more)
+      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false) });
   }
-  
-  completion();
+
+  load_log(true);
 }
 
-void BlockLoader::completion() { 
-  bool more_log;   
-  {
-    std::scoped_lock<std::mutex> lock(m_mutex);   
-    if(m_processing || !m_chk_cs || !m_chk_log || !m_cs_blocks.empty()) 
-      return;
-    more_log = !m_fragments.empty();
-    m_processing = more_log;
-  }
-
-  if(more_log) {
-    asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_log(); } );
-
-  } else if(block->blocks->commitlog.load_cells(this, true, ts)) {
-    block->loaded(m_err);
-    delete this;
-  }
+void BlockLoader::completion() {
+  block->blocks->commitlog.load_cells(this);
+  block->loaded(m_err);
+  delete this;
 }
 
 
