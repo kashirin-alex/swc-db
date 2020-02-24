@@ -143,12 +143,13 @@ class Fragments final {
         if(writing >= 5)
           m_cv.wait(lock_wait, [&writing] {return writing < 5;});
 
+        std::shared_lock lock2(m_mutex_cells);
         uint32_t cells_count = m_cells.size();
         if(!cells_count || (!finalize && 
             (m_cells.size_bytes() < range->cfg->block_size()
              && cells_count < range->cfg->block_cells()) ) )
           break; 
-      }   
+      }
     }
     
     {
@@ -232,7 +233,7 @@ class Fragments final {
   }
 
   void load_cells(Range::BlockLoader* loader) {
-    std::shared_lock lock(m_mutex);
+    std::shared_lock lock(m_mutex_cells);
     loader->block->load_cells(m_cells);
   }
 
