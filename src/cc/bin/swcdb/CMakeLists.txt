@@ -93,3 +93,15 @@ ADD_EXEC_TARGET(
 
 	ONLY_DYN TRUE
 )
+
+
+# swcdb_load_generator
+ADD_EXEC_TARGET(
+	NAME	swcdb_load_generator
+	SRCS	utils/load_generator.cc
+	TARGETS ${TARGETS}
+
+	SHARED  ${SHARED}
+	STATIC  ${STATIC}
+	FLAGS 	${FLAGS}
+)
