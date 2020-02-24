@@ -39,7 +39,7 @@ class BlockLoader final {
 
   void loaded_cellstores();
 
-  void load_log(bool final);
+  void load_log(bool is_final);
 
   void loaded_log();
 

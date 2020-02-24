@@ -94,7 +94,7 @@ void BlockLoader::loaded_cellstores() {
 }
 
 //CommitLog
-void BlockLoader::load_log(bool final) {
+void BlockLoader::load_log(bool is_final) {
   int64_t last;
   {
     std::scoped_lock lock(m_mutex);
@@ -104,29 +104,33 @@ void BlockLoader::load_log(bool final) {
     last = m_frag_ts;
   }
 
-  block->blocks->commitlog.load_cells(this, final, last);
-  
-  bool no_more;
-  std::vector<CommitLog::Fragment::Ptr> for_loading;
+  block->blocks->commitlog.load_cells(this, is_final, last);
+
+  std::vector<CommitLog::Fragment::Ptr> need_load;
   {
     std::scoped_lock lock(m_mutex);
-    no_more = final && m_fragments.empty() && m_chk_cs;
-    for(auto frag : m_fragments)
+    for(auto frag : m_fragments) {
       if(frag->ts > last)
-        for_loading.push_back(frag);
-    /*
-    std::cout << " fragments=" << m_fragments.size() 
-              << " for_loading=" << for_loading.size() 
-              << " no_more=" << no_more << " last=" << last << "\n";
-    */
-    m_checking_log = false;
+        need_load.push_back(frag);
+    }
   }
   
-  for(auto frag : for_loading)
+  for(auto frag : need_load)
     frag->load([this](){ loaded_frag(); });
 
-  if(no_more)
-    completion();
+  bool no_more;
+  {
+    std::scoped_lock lock(m_mutex);
+    no_more = !m_processing && m_fragments.empty() && m_chk_cs;
+    m_checking_log = false;
+  }
+
+  if(no_more) {
+    if(is_final)
+      completion();
+    else
+      loaded_frag();
+  }
 }
 
 bool BlockLoader::add(CommitLog::Fragment::Ptr frag) {
@@ -174,7 +178,7 @@ void BlockLoader::loaded_log() {
         if(!m_err)
           m_err = Error::RANGE_COMMITLOG;
       }
-      load_more = m_fragments.size() == 3;
+      load_more = m_fragments.size() == MAX_FRAGMENTS;
       m_fragments.erase(m_fragments.begin());
     }
     
@@ -188,6 +192,7 @@ void BlockLoader::loaded_log() {
 void BlockLoader::completion() {
   block->blocks->commitlog.load_cells(this);
   block->loaded(m_err);
+  assert(m_fragments.empty());
   delete this;
 }
 
