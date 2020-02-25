@@ -42,7 +42,7 @@ void expect_empty_column(int64_t cid) {
     {
       if(quite)return;
       /*
-      std::cout << "CB completion=" << result->completion.load() << "\n";
+      std::cout << "CB completion=" << result->completion() << "\n";
       for(auto col : result->columns) {
         std::cout << " cid=" << col.first 
                   << ": sz=" << col.second->cells.size() << "\n";
@@ -144,8 +144,8 @@ void test_1(const std::string& col_name) {
   Query::Update::Ptr update_req = std::make_shared<Query::Update>(
     [](Query::Update::Result::Ptr result)
     {
-      std::cout << "CB completion=" << result->completion.load() 
-                << "err=" << result->err << "\n";
+      std::cout << "CB completion=" << result->completion() 
+                << "err=" << result->error() << "\n";
     }
   );
   
@@ -209,7 +209,7 @@ void test_1(const std::string& col_name) {
     {
       if(quite)return;
       /*
-      std::cout << "CB completion=" << result->completion.load() << "\n";
+      std::cout << "CB completion=" << result->completion() << "\n";
       for(auto col : result->columns) {
         std::cout << " cid=" << col.first 
                   << ": sz=" << col.second->cells.size() << "\n";

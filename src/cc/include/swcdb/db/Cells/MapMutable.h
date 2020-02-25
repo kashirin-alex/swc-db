@@ -40,6 +40,7 @@ class ColCells final {
   DB::Cell::Key::Ptr get_first_key() {
     auto key = std::make_shared<DB::Cell::Key>();
     std::lock_guard<std::mutex> lock(m_mutex);
+    assert(m_cells.size()); // bad call , assure size pre-check
     m_cells.get(0, *key.get()); 
     return key;
   }

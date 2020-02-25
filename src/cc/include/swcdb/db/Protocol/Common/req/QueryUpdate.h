@@ -6,6 +6,8 @@
 #ifndef swc_lib_db_protocol_common_req_QueryUpdate_h
 #define swc_lib_db_protocol_common_req_QueryUpdate_h
 
+#include "swcdb/core/LockAtomicUnique.h"
+
 #include "swcdb/db/Cells/SpecsScan.h"
 #include "swcdb/db/Cells/MapMutable.h" 
 
@@ -42,11 +44,39 @@ range-data:
 namespace Result{
 
 struct Update final {
+  public:
   typedef std::shared_ptr<Update> Ptr;
-  int err;
-  std::atomic<uint32_t> completion = 0;
-  
   DB::Cells::MapMutable errored;
+  
+  uint32_t completion() {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    return m_completion;
+  }
+
+  void completion_incr() {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    ++m_completion;
+  }
+
+  void completion_decr() {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    --m_completion;
+  }
+
+  int error() {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    return m_err;
+  }
+
+  void error(int err) {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    m_err = err;
+  }
+
+  private:
+  LockAtomic::Unique    m_mutex;
+  uint32_t              m_completion = 0;
+  int                   m_err = Error::OK;
 };
 
 }
@@ -93,13 +123,21 @@ class Update : public std::enable_shared_from_this<Update> {
   virtual ~Update() { }
  
   void response(int err=Error::OK) {
-    if(columns->size() || columns_onfractions->size()) {
-      commit();
+    if(result->completion() > 1) {
+      result->completion_decr();
       return;
     }
 
+    if(!err && (columns->size() || columns_onfractions->size())) {
+      commit();
+      result->completion_decr();
+      return;
+    }
+
+    result->completion_decr();
+
     if(err)
-      result->err=err;
+      result->error(err);
 
     if(cb)
       cb(result);
@@ -109,14 +147,14 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void wait() {
     std::unique_lock<std::mutex> lock_wait(m_mutex);
-    if(result->completion == 0)
-      return;
-    cv.wait(
-      lock_wait, 
-      [updater=shared_from_this()]() {
-        return updater->result->completion==0;
-      }
-    );  
+    if(result->completion()) {
+      cv.wait(
+        lock_wait, 
+        [updater=shared_from_this()]() {
+          return !updater->result->completion();
+        }
+      );
+    }
   }
 
   void commit() {
@@ -180,7 +218,7 @@ class Update : public std::enable_shared_from_this<Update> {
       s.append(" rid=");
       s.append(std::to_string(rid));
       s.append(" completion=");
-      s.append(std::to_string(updater->result->completion.load()));
+      s.append(std::to_string(updater->result->completion()));
       s.append(" Start");
       s.append(key_start->to_string());
       s.append(" Finish");
@@ -191,7 +229,7 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     void locate_on_manager() {
-      updater->result->completion++;
+      updater->result->completion_incr();
 
       Mngr::Params::RgrGetReq params(1);
       params.range_begin.copy(*key_start.get());
@@ -207,7 +245,7 @@ class Update : public std::enable_shared_from_this<Update> {
         [locator=shared_from_this()]
         (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
           if(locator->located_on_manager(req, rsp))
-            locator->updater->result->completion--;
+            locator->updater->result->completion_decr();
         }
       );
     }
@@ -220,7 +258,7 @@ class Update : public std::enable_shared_from_this<Update> {
       
       if(rsp.err == Error::COLUMN_NOT_EXISTS) {
         updater->response(rsp.err);
-        return true;
+        return false;
       }
       if(rsp.err || !rsp.rid) {
         SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING %s", 
@@ -254,7 +292,7 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     void locate_on_ranger(const EndPoints& endpoints) {
-      updater->result->completion++;
+      updater->result->completion_incr();
 
       Rgr::Params::RangeLocateReq params(cid, rid);
       params.flags |= Rgr::Params::RangeLocateReq::COMMIT;
@@ -276,7 +314,7 @@ class Update : public std::enable_shared_from_this<Update> {
         [endpoints, locator=shared_from_this()] 
         (ReqBase::Ptr req, Rgr::Params::RangeLocateRsp rsp) {
           if(locator->located_on_ranger(endpoints, req, rsp))
-            locator->updater->result->completion--;
+            locator->updater->result->completion_decr();
         }
       );
     }
@@ -331,7 +369,7 @@ class Update : public std::enable_shared_from_this<Update> {
         [locator=shared_from_this()]
         (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
           if(locator->located_ranger(req, rsp))
-            locator->updater->result->completion--;
+            locator->updater->result->completion_decr();
         }
       );
       if(cid != 1) {
@@ -344,7 +382,7 @@ class Update : public std::enable_shared_from_this<Update> {
         } else
           SWC_LOGF(LOG_INFO, "Cache miss %s", rsp.to_string().c_str());
       }
-      updater->result->completion++;
+      updater->result->completion_incr();
       req->run();
     }
 
@@ -355,7 +393,7 @@ class Update : public std::enable_shared_from_this<Update> {
       if(rsp.err) {
         if(rsp.err == Error::COLUMN_NOT_EXISTS) {
           updater->response(rsp.err);
-          return true;
+          return false;
         }
         SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING %s", 
                               rsp.to_string().c_str());
@@ -414,7 +452,7 @@ class Update : public std::enable_shared_from_this<Update> {
            (cells_buff = col->get_buff(
              *key_start.get(), key_finish, updater->buff_sz, more)) 
                                                             != nullptr) {
-        updater->result->completion++;
+        updater->result->completion_incr();
 
         Rgr::Req::RangeQueryUpdate::request(
           Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
@@ -425,7 +463,7 @@ class Update : public std::enable_shared_from_this<Update> {
             locator->col->add(*cells_buff.get());
             SWC_LOG(LOG_DEBUG, "Commit RETRYING no-conn");
             base->request_again();
-            --locator->updater->result->completion;
+            locator->updater->result->completion_decr();
           },
 
           [cells_buff, base, locator=shared_from_this()] 
@@ -454,9 +492,8 @@ class Update : public std::enable_shared_from_this<Update> {
                 base->request_again();
               }
             }
-            
-            if(!--locator->updater->result->completion)
-              locator->updater->response();
+
+            locator->updater->response();
           },
 
           updater->timeout_commit += 

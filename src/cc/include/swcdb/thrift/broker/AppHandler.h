@@ -363,16 +363,16 @@ class AppHandler : virtual public BrokerIf {
     if(updater_id) {
       size_t cells_bytes = req->columns->size_bytes() 
                          + req->columns_onfractions->size_bytes();
-      if(req->result->completion && cells_bytes > req->buff_sz*3)
+      if(req->result->completion() && cells_bytes > req->buff_sz*3)
         req->wait();
-      if(!req->result->completion && cells_bytes >= req->buff_sz)
+      if(!req->result->completion() && cells_bytes >= req->buff_sz)
         req->commit();
     } else {
       req->commit();
       req->wait();
     }
-    if(req->result->err)
-      exception(req->result->err);
+    if(err = req->result->error())
+      exception(err);
   }
 
   /* UPDATER */
@@ -445,16 +445,16 @@ class AppHandler : virtual public BrokerIf {
     if(updater_id) {
       size_t cells_bytes = req->columns->size_bytes() 
                          + req->columns_onfractions->size_bytes();
-      if(req->result->completion && cells_bytes > req->buff_sz*3)
+      if(req->result->completion() && cells_bytes > req->buff_sz*3)
         req->wait();
-      if(!req->result->completion && cells_bytes >= req->buff_sz)
+      if(!req->result->completion() && cells_bytes >= req->buff_sz)
         req->commit();
     } else {
       req->commit();
       req->wait();
     }
-    if(req->result->err)
-      exception(req->result->err);
+    if(err = req->result->error())
+      exception(err);
   }
 
   void disconnected() {
@@ -490,12 +490,13 @@ class AppHandler : virtual public BrokerIf {
   void updater_close(Protocol::Common::Req::Query::Update:: Ptr req) {
     size_t cells_bytes = req->columns->size_bytes() 
                        + req->columns_onfractions->size_bytes();
-    if(!req->result->completion && cells_bytes)
+    if(!req->result->completion() && cells_bytes)
       req->commit();
-    if(req->result->completion)
+    if(req->result->completion())
       req->wait();
-    if(req->result->err)
-      exception(req->result->err);
+    int err;
+    if(err = req->result->error())
+      exception(err);
   }
 
   std::mutex m_mutex;

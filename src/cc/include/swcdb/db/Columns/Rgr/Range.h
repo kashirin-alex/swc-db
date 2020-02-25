@@ -235,7 +235,7 @@ class Range : public DB::RangeBase {
     }
     updater->commit(cid_typ);
     updater->wait();
-    err = updater->result->err;
+    err = updater->result->error();
       
     // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
     // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
@@ -605,7 +605,7 @@ class Range : public DB::RangeBase {
         auto fwd_req = std::make_shared<Protocol::Common::Req::Query::Update>(
           [cb] (Protocol::Common::Req::Query::Update::Result::Ptr result) {
             if(cb != nullptr)
-              cb->response(result->err);
+              cb->response(result->error());
           }
         );
         fwd_req->timeout_commit = 10*fwd_cells.size();
