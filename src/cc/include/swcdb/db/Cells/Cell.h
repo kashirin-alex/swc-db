@@ -282,7 +282,7 @@ class Cell final {
   }
   
   const bool is_removing(const int64_t& rev) const {
-    return removal() && (
+    return rev != AUTO_ASSIGN && removal() && (
       (flag == DELETE  && get_revision() >= rev )
       ||
       (flag == DELETE_VERSION && get_revision() == rev )

@@ -237,7 +237,7 @@ class Mutable final {
 
   void add_remove(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
-    int64_t revision_new = e_cell.get_revision();
+    int64_t revision = e_cell.get_revision();
 
     for(Cell* cell; get_next(offset, cell); ++offset) {
 
@@ -250,7 +250,7 @@ class Mutable final {
         return;
       }
 
-      if(cell->removal() && cell->is_removing(revision_new))
+      if(cell->removal() && cell->is_removing(revision))
         return;
       
       if(e_cell.is_removing(cell->get_revision()))
@@ -262,7 +262,7 @@ class Mutable final {
 
   void add_plain(const Cell& e_cell, uint32_t offset) {
     Condition::Comp cond;
-    int64_t revision_new = e_cell.get_revision();
+    int64_t revision = e_cell.get_revision();
     uint32_t revs = 0;
 
     for(Cell* cell; get_next(offset, cell); ++offset) {
@@ -276,12 +276,12 @@ class Mutable final {
       }
 
       if(cell->removal()) {
-        if(cell->is_removing(revision_new))
+        if(cell->is_removing(revision))
           return;
         continue;
       }
 
-      if(revision_new != AUTO_ASSIGN && cell->get_revision() == revision_new) {
+      if(revision != AUTO_ASSIGN && cell->get_revision() == revision) {
         cell->copy(e_cell);
         return;
       }
@@ -319,7 +319,7 @@ class Mutable final {
       if(cond == Condition::GT)
         continue;
 
-      if(cond == Condition::LT) {
+      if(cond == Condition::LT) { //without aggregate|| revision == AUTO_ASSIGN
         add_offset = offset;
         goto add_counter;
       }
