@@ -576,7 +576,8 @@ class Range : public DB::RangeBase {
         blocks.add_logged(cell);
         
         if(type == Types::Range::DATA) {
-          intval_chg = align(cell.key);
+          if(align(cell.key))
+            intval_chg = true;
         } else {
           /* MASTER/META need aligned interval 
                over cells value +plus (cs+logs) at compact

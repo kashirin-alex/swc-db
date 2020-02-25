@@ -524,7 +524,8 @@ class Select : public std::enable_shared_from_this<Select> {
                            bool next_range=false) {
       SWC_LOGF(LOG_INFO, "Located-onRgr %s", rsp.to_string().c_str());
       if(rsp.err) {
-        if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
+        if(rsp.err == Error::RANGE_NOT_FOUND && 
+           (next_range || type == Types::Range::META)) {
           col->selector->result->completion--;
           col->next_call(true);
           return false;

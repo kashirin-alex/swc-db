@@ -86,7 +86,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
       //std::cout << "-- KEY-END NO MATCH --\n";
       return false;
     }
-    //return true;
+    //return true; // without aligned min-max
 
     int64_t rid = Serialization::decode_vi64(&ptr, &remain); // rid
 
