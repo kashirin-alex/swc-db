@@ -45,7 +45,7 @@ const std::string to_string(Column typ) {
   }
 }
 
-const Column column_from(std::string typ) {
+const Column column_type_from(const std::string& typ) {
 
   if(typ.compare("1") == 0 || 
      strncasecmp(typ.data(), "PLAIN", typ.length()) == 0)
@@ -71,6 +71,14 @@ const Column column_from(std::string typ) {
   return Column::UNKNOWN;
 }
 
+
+inline const std::string repr_col_type(int typ) {
+  return to_string((Column)typ);
+}
+
+inline const int from_string_col_type(const std::string& typ) {
+  return (int)column_type_from(typ);
+}
 }}
 
 #endif // swc_lib_db_types_Column_h

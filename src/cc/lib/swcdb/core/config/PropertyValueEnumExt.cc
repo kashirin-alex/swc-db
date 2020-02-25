@@ -48,7 +48,7 @@ void ValueEnumExtBase::set_from(ValueEnumExtBase &other){
   set_from_string(other.get_call_from_string());
 }
 
-ValueEnumExtBase& ValueEnumExtBase::set_from_string(std::function<int(std::string)> cb) {
+ValueEnumExtBase& ValueEnumExtBase::set_from_string(std::function<int(const std::string&)> cb) {
   call_from_string = cb;
   cb_set = true;
   return *this;
@@ -83,7 +83,7 @@ void ValueEnumExtBase::set_default_calls() {
   call_repr = [](int v){ return "No repr cb defined!"; };
 }
 
-std::function<int(std::string)> ValueEnumExtBase::get_call_from_string(){
+std::function<int(const std::string&)> ValueEnumExtBase::get_call_from_string(){
   if(!cb_set) set_default_calls();
   return call_from_string;
 }

@@ -151,7 +151,7 @@ class ColumnSchema : public Reader {
         if(err)
           return;
         read(buff, stop);
-        if((col_type = Types::column_from(buff)) == Types::Column::UNKNOWN) {
+        if((col_type = Types::column_type_from(buff)) == Types::Column::UNKNOWN) {
           error_msg(Error::SQL_PARSE_ERROR, " unknown column type");
           return;
         }

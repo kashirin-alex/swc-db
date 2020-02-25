@@ -32,7 +32,7 @@ class ValueEnumExtBase {
 
   void set_from(ValueEnumExtBase &other);
 
-  ValueEnumExtBase& set_from_string(std::function<int(std::string)> cb);
+  ValueEnumExtBase& set_from_string(std::function<int(const std::string&)> cb);
     
   ValueEnumExtBase& set_repr(std::function<std::string(int)> cb);
 
@@ -40,7 +40,7 @@ class ValueEnumExtBase {
     
   void set_default_calls();
 
-  std::function<int(std::string)> get_call_from_string();
+  std::function<int(const std::string&)> get_call_from_string();
 
   std::function<std::string(int)> get_call_repr();
 
@@ -52,7 +52,7 @@ class ValueEnumExtBase {
 
   private:
   bool cb_set = false; 
-  std::function<int(std::string)> call_from_string;
+  std::function<int(const std::string&)> call_from_string;
   std::function<std::string(int)> call_repr;
 };
 
