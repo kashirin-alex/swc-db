@@ -154,6 +154,7 @@ class Select : public std::enable_shared_from_this<Select> {
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
   uint32_t buff_sz          = 8000000;
+  uint32_t partial_rate     = 3;
   uint32_t timeout_select   = 600000;
 
   Cb_t                        cb;
@@ -186,9 +187,31 @@ class Select : public std::enable_shared_from_this<Select> {
     m_cv.notify_all();
   }
 
-  void response_partial() {
+  void response_partials() {
     if(!rsp_partials)
       return;
+    
+    response_partial();
+    
+    if(!wait_on_partials())
+      return;
+
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if(!m_rsp_partial_runs)
+      return;
+    m_cv.wait(
+      lock, 
+      [selector=shared_from_this()] () { 
+        return !selector->m_rsp_partial_runs || !selector->wait_on_partials();
+      }
+    );  
+  }
+
+  const bool wait_on_partials() const {
+    return result->get_size_bytes() > buff_sz * partial_rate;
+  } 
+
+  void response_partial() {
     {
       std::unique_lock<std::mutex> lock(m_mutex);
       if(m_rsp_partial_runs)
@@ -212,22 +235,6 @@ class Select : public std::enable_shared_from_this<Select> {
       [selector=shared_from_this()] () {
         return selector->result->completion == 0 && 
               !selector->m_rsp_partial_runs;
-      }
-    );  
-  }
-
-  void wait_on_partials_run() {
-    if(!rsp_partials || result->get_size_bytes() < buff_sz * 3)
-      return;
-
-    std::unique_lock<std::mutex> lock(m_mutex);
-    if(!m_rsp_partial_runs)
-      return;
-    m_cv.wait(
-      lock, 
-      [selector=shared_from_this()] () { 
-        return !selector->m_rsp_partial_runs || 
-                selector->result->get_size_bytes() < selector->buff_sz * 3; 
       }
     );  
   }
@@ -606,23 +613,20 @@ class Select : public std::enable_shared_from_this<Select> {
             col->interval.flags.offset = rsp.offset;
 
           if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
-            col->selector->wait_on_partials_run();
-
-            if(!rsp.reached_limit) {
-              if(rsp.data.size)
-                col->selector->response_partial();
-              col->selector->result->completion--;
+            if(rsp.reached_limit) {
+              scanner->select(
+                std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req)
+                  ->endpoints, 
+                rid, base
+              );
+            } else {
               col->next_call();
-              return;
             }
-            scanner->select(
-              std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req)
-                ->endpoints, 
-              rid, base
-            );
           }
+
           if(rsp.data.size)
-            col->selector->response_partial();
+            col->selector->response_partials();
+          
           if(!--col->selector->result->completion)
             col->selector->response();
         },
