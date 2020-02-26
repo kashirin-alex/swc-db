@@ -176,17 +176,17 @@ class AppHandler : virtual public BrokerIf {
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
           bool with_value, Cells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
+    DB::Cells::Vector cells; 
     size_t c;
     for(auto cid : result->get_cids()) {
-      vec.free();
-      result->get_cells(cid, vec);
+      cells.free();
+      result->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       c = _return.size();
-      _return.resize(c+vec.cells.size());
+      _return.resize(c+cells.size());
 
-      for(auto& dbcell : vec.cells) {
+      for(auto& dbcell : cells) {
         auto& cell = _return[c++];
         
         cell.c = schema->col_name;
@@ -218,19 +218,19 @@ class AppHandler : virtual public BrokerIf {
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
           bool with_value, CCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
+    DB::Cells::Vector cells; 
     for(auto cid : result->get_cids()) {
-      vec.free();
-      result->get_cells(cid, vec); 
+      cells.free();
+      result->get_cells(cid, cells); 
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
         return;
       auto& list = _return[schema->col_name];     
-      list.resize(vec.cells.size());
+      list.resize(cells.size());
 
       uint32_t c = 0;
-      for(auto& dbcell : vec.cells) {
+      for(auto& dbcell : cells) {
         auto& cell = list[c++];
         
         dbcell->key.convert_to(cell.k);
@@ -261,16 +261,16 @@ class AppHandler : virtual public BrokerIf {
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
           bool with_value, KCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
+    DB::Cells::Vector cells; 
     for(auto cid : result->get_cids()) {
-      vec.free();
-      result->get_cells(cid, vec); 
+      cells.free();
+      result->get_cells(cid, cells); 
 
       schema = Env::Clients::get()->schemas->get(err, cid);
 
       if(err)
         return;
-      for(auto& dbcell : vec.cells) {
+      for(auto& dbcell : cells) {
         auto it = std::find_if(_return.begin(), _return.end(), 
                               [dbcell](const kCells& key_cells)
                               {return dbcell->key.equal(key_cells.k);});
@@ -309,19 +309,19 @@ class AppHandler : virtual public BrokerIf {
           int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
           bool with_value, FCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
+    DB::Cells::Vector cells; 
     std::vector<std::string> key;
 
     for(auto cid : result->get_cids()) {
-      vec.free();
-      result->get_cells(cid, vec); 
+      cells.free();
+      result->get_cells(cid, cells); 
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
         return;
       
       FCells* fraction_cells;
-      for(auto& dbcell : vec.cells) {
+      for(auto& dbcell : cells) {
         fraction_cells = &_return;
         key.clear();
         dbcell->key.convert_to(key);

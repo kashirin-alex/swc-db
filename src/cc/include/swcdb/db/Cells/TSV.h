@@ -63,7 +63,7 @@ class FileWriter {
 
         cells.free();
         result->get_cells(cid, cells);
-        for(auto& cell : cells.cells) {
+        for(auto& cell : cells) {
 
           cells_count++;
           cells_bytes += cell->encoded_length();
@@ -80,7 +80,7 @@ class FileWriter {
           }
         }
       }
-    } while(!cells.cells.empty() && !err);
+    } while(!cells.empty() && !err);
   }
 
   void write(const Cell &cell, Types::Column typ) {

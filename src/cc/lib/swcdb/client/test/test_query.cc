@@ -64,13 +64,13 @@ void expect_empty_column(int64_t cid) {
 
   size_t sz = select_req->result->get_size(cid);
   if(sz > 0) {
-    SWC::DB::Cells::Vector holder;
-    select_req->result->get_cells(cid, holder);
+    SWC::DB::Cells::Vector cells;
+    select_req->result->get_cells(cid, cells);
     std::cerr << "BAD, column not empty: \n" 
               << " " << spec->to_string() << "\n"
               << " expected_value=0\n"
               << "  result_value=" << sz << "\n"
-              << " " << holder.cells[0]->to_string() << "\n";
+              << " " << cells[0]->to_string() << "\n";
     exit(1);
   }
 }
@@ -89,8 +89,8 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   took = SWC::Time::now_ns() - took;
 
   auto sz = select_req->result->get_size(cid);
-  SWC::DB::Cells::Vector holder;
-  select_req->result->get_cells(cid, holder);
+  SWC::DB::Cells::Vector cells;
+  select_req->result->get_cells(cid, cells);
     
   std::cout << "SELECT-ALL offset=" << offset 
             << " expected=" << expected_sz 
@@ -100,7 +100,7 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   
   if(sz != expected_sz) {
     size_t num=0;
-    for(auto cell : holder.cells) {
+    for(auto cell : cells) {
       if( ++num == 1 || num == sz)
         std::cout << "  " << num << ":" << cell->to_string() << "\n";  
     }
@@ -239,9 +239,9 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << sz << "\n";
     exit(1);
   }
-  SWC::DB::Cells::Vector holder;
-  select_req->result->get_cells(schema->cid, holder);
-  Cells::Cell* cell_res = holder.cells.front();
+  SWC::DB::Cells::Vector cells;
+  select_req->result->get_cells(schema->cid, cells);
+  Cells::Cell* cell_res = cells.front();
   
   std::string expected_value = apply_value(
     num_fractions+97, batches-1, num_cells-1);
@@ -267,12 +267,12 @@ void test_1(const std::string& col_name) {
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);
-  holder.free();
-  select_req->result->get_cells(schema->cid, holder);
+  cells.free();
+  select_req->result->get_cells(schema->cid, cells);
 
   if(sz != spec->flags.limit) {
-    std::cerr << "\n first: " << holder.cells.front()->to_string() << "\n";
-    std::cerr <<   "  last: " << holder.cells.back()->to_string() << "\n";
+    std::cerr << "\n first: " << cells.front()->to_string() << "\n";
+    std::cerr <<   "  last: " << cells.back()->to_string() << "\n";
     std::cerr << "\nBAD probe, select cells count: \n" 
               << " " << spec->to_string() << "\n"
               << " expected_value=" << spec->flags.limit << "\n"
@@ -282,7 +282,7 @@ void test_1(const std::string& col_name) {
   {
     Cells::Cell prev;
     int count = 0;
-    for(auto c : holder.cells) {
+    for(auto c : cells) {
       count++;
       if(prev.flag != Cells::NONE) {
         if(c->key.equal(prev.key)) {
@@ -324,8 +324,8 @@ void test_1(const std::string& col_name) {
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);
-  holder.free();
-  select_req->result->get_cells(schema->cid, holder);
+  cells.free();
+  select_req->result->get_cells(schema->cid, cells);
 
   if(sz != spec->flags.limit) {
     std::cerr << "BAD, match key fraction, select cells count: \n" 
@@ -333,10 +333,10 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << sz << "\n";
     exit(1);
   }
-  if(holder.cells[0]->key.get_string(1).compare(fraction) != 0) {
+  if(cells[0]->key.get_string(1).compare(fraction) != 0) {
     std::cerr << "BAD, select cell by key fraction: \n" 
               << "  expected_value=" << spec->key_start.get(1) << "\n"
-              << " (1)result_value=" << holder.cells[0]->to_string() << "\n";
+              << " (1)result_value=" << cells[0]->to_string() << "\n";
     exit(1);
   }
   took = SWC::Time::now_ns() - took;

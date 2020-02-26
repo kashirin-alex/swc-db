@@ -41,7 +41,7 @@ struct Select final {
     const bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
                          DB::Specs::Interval& interval) {
       std::scoped_lock lock(m_mutex);
-      size_t recved = m_vec.add(buffer.base, buffer.size);
+      size_t recved = m_cells.add(buffer.base, buffer.size);
       m_counted += recved;
       m_size_bytes += buffer.size;
 
@@ -54,17 +54,16 @@ struct Select final {
       }
 
       if(reached_limit) {
-        auto last = m_vec.cells.back();
+        auto last = m_cells.back();
         interval.offset_key.copy(last->key);
         interval.offset_rev = last->get_revision();
       }
       return true;
     }  
     
-    void get_cells(DB::Cells::Vector& vec) {
+    void get_cells(DB::Cells::Vector& cells) {
       std::scoped_lock lock(m_mutex);
-      vec.add(m_vec);
-      m_vec.cells.clear();
+      m_cells.take(cells);
       m_size_bytes = 0;
     }
 
@@ -80,13 +79,13 @@ struct Select final {
 
     void free() {
       std::scoped_lock lock(m_mutex);
-      m_vec.free();
+      m_cells.free();
       m_size_bytes = 0;
     }
   
     private:
     std::mutex         m_mutex;
-    DB::Cells::Vector  m_vec;
+    DB::Cells::Vector  m_cells;
     size_t             m_counted = 0;
     size_t             m_size_bytes = 0;
   };

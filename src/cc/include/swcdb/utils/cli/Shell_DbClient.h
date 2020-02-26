@@ -246,13 +246,13 @@ class DbClient : public Interface {
                uint8_t display_flags, 
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector vec; 
+    DB::Cells::Vector cells; 
     do {
       for(auto cid : result->get_cids()) {
         schema = Env::Clients::get()->schemas->get(err, cid);
-        vec.free();
-        result->get_cells(cid, vec);
-        for(auto& cell : vec.cells) {
+        cells.free();
+        result->get_cells(cid, cells);
+        for(auto& cell : cells) {
           cells_count++;
           cells_bytes += cell->encoded_length();
           cell->display(
@@ -265,7 +265,7 @@ class DbClient : public Interface {
           cell = nullptr;
         }
       }
-    } while(!vec.cells.empty());
+    } while(!cells.empty());
   }
 
   // UPDATE
