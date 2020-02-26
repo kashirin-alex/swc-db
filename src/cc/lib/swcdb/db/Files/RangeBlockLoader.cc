@@ -183,7 +183,7 @@ void BlockLoader::loaded_log() {
     }
     
     if(load_more)
-      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false) });
+      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false); });
   }
 
   load_log(true);
