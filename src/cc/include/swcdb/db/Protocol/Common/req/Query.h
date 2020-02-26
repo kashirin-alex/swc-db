@@ -63,7 +63,7 @@ struct Select final {
     
     void get_cells(DB::Cells::Vector& cells) {
       std::scoped_lock lock(m_mutex);
-      m_cells.take(cells);
+      cells.take(m_cells);
       m_size_bytes = 0;
     }
 
