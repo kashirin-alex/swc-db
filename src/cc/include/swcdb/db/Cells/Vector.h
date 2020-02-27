@@ -112,42 +112,45 @@ class Vector : private std::vector<Cell*> {
                       uint32_t max_cells) {
     if(empty())
       return;
-    Cell* cell;
+    cells.ensure(bytes < threshold? bytes: threshold);
     Cell* first = nullptr;
     Cell* last = nullptr;
     size_t count = 0;
-    cells.ensure(bytes < threshold? bytes: threshold);
     auto it = begin();
-    for(; it < end() && ((!threshold || threshold > cells.fill()) && 
-          (!max_cells || max_cells > count) ); ++it) {
-      cell = *it;
+    for(Cell* cell; it < end() && ((!threshold || threshold > cells.fill()) && 
+                    (!max_cells || max_cells > count) ); ++it) {
       
-      if(cell->has_expired(ttl))
+      if((cell = *it)->has_expired(ttl))
         continue;
-      
-      cell->write(cells);
-      ++count;
-      bytes -= cell->encoded_length();
 
+      cell->write(cells);
+      intval.expand(cell->timestamp);
+      cell->key.align(intval.aligned_min, intval.aligned_max);
       if(!first)
         first = cell;
       else 
         last = cell;
-
-      intval.expand(cell->timestamp);
-      cell->key.align(intval.aligned_min, intval.aligned_max);
+      ++count;
     }
     if(first) {
       intval.expand_begin(*first);
       intval.expand_end(*(last ? last : first));
     }
-    
-    if(it == end())
-      free();
-    else
-      erase(begin(), it);
-
     cell_count += count;
+    
+    if(it == end()) {
+      free();
+      return;
+    }
+    auto it_begin = it;
+    do {
+      --it;
+      bytes -= (*it)->encoded_length();
+      delete *it; 
+    } while(it > begin());
+    std::vector<Cell*> tmp(it_begin, end());
+    clear();
+    assign(tmp.begin(), tmp.end());
   }
 
   void write(DynamicBuffer& cells) const {
