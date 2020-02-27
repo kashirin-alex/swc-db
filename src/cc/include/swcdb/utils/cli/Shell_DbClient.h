@@ -247,8 +247,10 @@ class DbClient : public Interface {
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector cells; 
+    bool meta;
     do {
       for(auto cid : result->get_cids()) {
+        meta = cid <= 2;
         schema = Env::Clients::get()->schemas->get(err, cid);
         cells.free();
         result->get_cells(cid, cells);
@@ -258,7 +260,8 @@ class DbClient : public Interface {
           cell->display(
             std::cout, 
             err ? Types::Column::PLAIN: schema->col_type,
-            display_flags
+            display_flags,
+            meta
           );
           std::cout << "\n";  
           delete cell;

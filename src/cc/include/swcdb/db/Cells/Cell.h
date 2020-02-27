@@ -331,7 +331,7 @@ class Cell final {
   }
 
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN, 
-               uint8_t flags=0) const {
+               uint8_t flags=0, bool meta=false) const {
 
     if(flags & DisplayFlag::DATETIME) 
       out << Time::fmt_ns(timestamp) << "  ";
@@ -363,6 +363,21 @@ class Cell final {
           out << " EQ-SINCE(" << Time::fmt_ns(eq_rev) << ")";
       } else
         out << get_counter();
+
+    } else if(meta && !bin) {    
+      const uint8_t* ptr = value;
+      size_t remain = vlen;
+      DB::Cell::Key de_key;
+      de_key.decode(&ptr, &remain);
+      out << "end=";
+      de_key.display(out);
+      out << " rid=" << Serialization::decode_vi64(&ptr, &remain);
+      de_key.decode(&ptr, &remain);
+      out << " min=";
+      de_key.display(out);
+      de_key.decode(&ptr, &remain);
+      out << " max=";
+      de_key.display(out);
 
     } else {
       const uint8_t* ptr = value;
