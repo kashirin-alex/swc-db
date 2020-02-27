@@ -216,7 +216,8 @@ class Fragments final {
     }
   }
 
-  void load_cells(Range::BlockLoader* loader, bool final, int64_t after_ts=0) {  
+  void load_cells(Range::BlockLoader* loader, bool final, int64_t after_ts,
+                  std::vector<Fragment::Ptr>& fragments) {  
     if(final) {
       std::unique_lock lock_wait(m_mutex);
       if(m_commiting)
@@ -224,11 +225,12 @@ class Fragments final {
     }
 
     std::shared_lock lock(m_mutex);
-    for(auto frag : m_fragments) {  
-      if(after_ts < frag->ts && 
-         loader->block->is_consist(frag->interval) &&
-         loader->add(frag))
-        return;
+    for(auto frag : m_fragments) {
+      if(after_ts < frag->ts && loader->block->is_consist(frag->interval)) {
+        fragments.push_back(frag);
+        if(fragments.size() == Range::BlockLoader::MAX_FRAGMENTS)
+          return;
+      }
     }
   }
 

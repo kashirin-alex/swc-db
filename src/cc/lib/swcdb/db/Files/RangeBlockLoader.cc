@@ -12,7 +12,7 @@ namespace SWC { namespace Files { namespace Range {
 BlockLoader::BlockLoader(Range::Block::Ptr block) 
                         : block(block),  
                           m_processing(false), m_err(Error::OK), 
-                          m_chk_cs(false), m_checking_log(false), m_frag_ts(0) {
+                          m_chk_cs(false), m_checking_log(true), m_frag_ts(0) {
 }
 
 BlockLoader::~BlockLoader() { }
@@ -57,10 +57,10 @@ void BlockLoader::loaded_blk() {
       return;
     m_processing = true;
   }
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_cellstores(); });
+  asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_cellstores_cells(); });
 }
 
-void BlockLoader::loaded_cellstores() {
+void BlockLoader::load_cellstores_cells() {
   int err;
   bool loaded;
   for(CellStore::Block::Read::Ptr blk; ; ) {
@@ -94,29 +94,27 @@ void BlockLoader::loaded_cellstores() {
 }
 
 //CommitLog
+bool BlockLoader::check_log() {
+  std::scoped_lock lock(m_mutex);
+  if(m_checking_log)
+    return false;
+  m_checking_log = true;
+  return true;
+}
+
 void BlockLoader::load_log(bool is_final) {
-  int64_t last;
-  {
-    std::scoped_lock lock(m_mutex);
-    if(m_checking_log || m_fragments.size() == MAX_FRAGMENTS)
-      return;
-    m_checking_log = true;
-    last = m_frag_ts;
-  }
-
-  block->blocks->commitlog.load_cells(this, is_final, last);
-
   std::vector<CommitLog::Fragment::Ptr> need_load;
-  {
-    std::scoped_lock lock(m_mutex);
-    for(auto frag : m_fragments) {
-      if(frag->ts > last)
-        need_load.push_back(frag);
+  block->blocks->commitlog.load_cells(this, is_final, m_frag_ts, need_load);
+  if(!need_load.empty()) {
+    m_frag_ts = need_load.back()->ts;
+    {
+      std::scoped_lock lock(m_mutex);
+      m_fragments.insert(
+        m_fragments.end(), need_load.begin(), need_load.end());
     }
+    for(auto frag : need_load)
+      frag->load([this](){ loaded_frag(); });
   }
-  
-  for(auto frag : need_load)
-    frag->load([this](){ loaded_frag(); });
 
   bool no_more;
   {
@@ -124,7 +122,6 @@ void BlockLoader::load_log(bool is_final) {
     no_more = !m_processing && m_fragments.empty() && m_chk_cs;
     m_checking_log = false;
   }
-
   if(no_more) {
     if(is_final)
       completion();
@@ -133,31 +130,24 @@ void BlockLoader::load_log(bool is_final) {
   }
 }
 
-bool BlockLoader::add(CommitLog::Fragment::Ptr frag) {
-  std::scoped_lock lock(m_mutex);
-  m_fragments.push_back(frag);
-  m_frag_ts = frag->ts;
-  return m_fragments.size() == MAX_FRAGMENTS;
-}
-
 void BlockLoader::loaded_frag() {
-  { 
+  {
     std::scoped_lock lock(m_mutex);
     if(m_processing || !m_chk_cs || !m_cs_blocks.empty()) 
       return;
     m_processing = true;
   }
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ loaded_log(); });
+  asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log_cells(); });
 }
 
-void BlockLoader::loaded_log() {
+void BlockLoader::load_log_cells() {
   int err;
   bool loaded;
-  bool load_more;
+  size_t sz;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {          
-      std::scoped_lock lock(m_mutex);        
-      if(m_fragments.empty()) {
+      std::scoped_lock lock(m_mutex);
+      if(!(sz = m_fragments.size())) {
         m_processing = false;
         break;
       }
@@ -166,7 +156,7 @@ void BlockLoader::loaded_log() {
 
     if(loaded = frag->loaded(err))
       frag->load_cells(err, block);
-    {   
+    {
       std::scoped_lock lock(m_mutex);
       if(!err && !loaded) {
         m_processing = false;
@@ -178,21 +168,24 @@ void BlockLoader::loaded_log() {
         if(!m_err)
           m_err = Error::RANGE_COMMITLOG;
       }
-      load_more = m_fragments.size() == MAX_FRAGMENTS;
       m_fragments.erase(m_fragments.begin());
     }
-    
-    if(load_more)
+
+    if(sz == MAX_FRAGMENTS && check_log())
       asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false); });
   }
 
-  load_log(true);
+  if(check_log())
+    load_log(true);
 }
 
 void BlockLoader::completion() {
   block->blocks->commitlog.load_cells(this);
   block->loaded(m_err);
+  
   assert(m_fragments.empty());
+  assert(m_cs_blocks.empty());
+  
   delete this;
 }
 
