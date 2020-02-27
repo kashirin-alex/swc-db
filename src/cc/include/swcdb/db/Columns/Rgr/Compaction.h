@@ -197,7 +197,10 @@ class Compaction final {
       make_cells();
     }
 
-    virtual ~CompactScan() { }
+    virtual ~CompactScan() { 
+      if(last_cell)
+        delete last_cell;
+    }
 
     Ptr shared() {
       return std::dynamic_pointer_cast<CompactScan>(shared_from_this());
@@ -205,11 +208,11 @@ class Compaction final {
 
     void make_cells() {
       cells.reset(
-        1000, 
         cell_versions, 
         cell_ttl, 
         col_type
       );
+      cells.reserve(blk_cells);
     }
 
     bool reached_limits() override {
@@ -228,7 +231,7 @@ class Compaction final {
 
       {
         std::scoped_lock lock(m_mutex);
-        if(!cells.size()) {
+        if(cells.empty()) {
           if(m_writing)
             m_queue.push(nullptr);
           else 
@@ -238,15 +241,12 @@ class Compaction final {
         m_getting = false;
       }
 
-      auto selected_cells = new DB::Cells::Mutable(cells);
+      auto selected_cells = new DB::Cells::Vector(cells);
       make_cells();
 
-      DB::Cells::Cell first;
-      selected_cells->get(0, first);
-      DB::Cells::Cell last;
-      selected_cells->get(-1, last);
-      spec.offset_key.copy(last.key);
-      spec.offset_rev = last.timestamp;
+      auto last = selected_cells->back();
+      spec.offset_key.copy(last->key);
+      spec.offset_rev = last->timestamp;
       
       { 
         std::scoped_lock lock(m_mutex);
@@ -285,7 +285,7 @@ class Compaction final {
 
     void process() {
       int err = Error::OK;
-      DB::Cells::Mutable* selected_cells;
+      DB::Cells::Vector* selected_cells;
       for(;;) {
         {
           std::scoped_lock lock(m_mutex);
@@ -343,7 +343,7 @@ class Compaction final {
 
     }
 
-    void write_cells(int& err, DB::Cells::Mutable* selected_cells) {
+    void write_cells(int& err, DB::Cells::Vector* selected_cells) {
       
       if(cs_writer == nullptr) {
         uint32_t id = create_cs(err);
@@ -358,14 +358,14 @@ class Compaction final {
           // 1st block of begin-any set with key_end as first cell
           blk_intval.key_begin.free();
 
-          if(range->is_any_end() && !selected_cells->size()) {
+          if(range->is_any_end() && selected_cells->empty()) {
             // there was one cell
             blk_intval.key_end.free(); 
           }
           
           cs_writer->block(err, blk_intval, buff, cell_count);
 
-          if(err || !selected_cells->size())
+          if(err || selected_cells->empty())
             return;
         }
       }
@@ -375,14 +375,15 @@ class Compaction final {
       uint32_t cell_count = 0;
 
       if(range->is_any_end()) {
-        if(!last_cell.key.empty()) {
+        if(last_cell) {
           ++cell_count;
-          last_cell.write(buff);
-          blk_intval.expand(last_cell);
-          last_cell.key.align(
+          last_cell->write(buff);
+          blk_intval.expand(*last_cell);
+          last_cell->key.align(
             blk_intval.aligned_min, blk_intval.aligned_max);
+          delete last_cell;
         }
-        selected_cells->pop(-1, last_cell);
+        selected_cells->pop_back(last_cell);
         //last block of end-any to be set with first key as last cell
       }
       selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 0);
@@ -418,7 +419,7 @@ class Compaction final {
       int err = Error::OK;
       bool empty_cs = false;
 
-      if(range->is_any_end() && !last_cell.key.empty()) {
+      if(range->is_any_end() && last_cell) {
         // last block of end-any set with key_begin with last cell
         if(cs_writer == nullptr) {       
           uint32_t id = create_cs(err);
@@ -426,14 +427,15 @@ class Compaction final {
             return quit();
         }
         DB::Cells::Interval blk_intval;
-        blk_intval.expand(last_cell);
+        blk_intval.expand(*last_cell);
         blk_intval.key_end.free();
-        last_cell.key.align(blk_intval.aligned_min, blk_intval.aligned_max);
+        last_cell->key.align(blk_intval.aligned_min, blk_intval.aligned_max);
 
         uint32_t cell_count = 1;
         DynamicBuffer buff;
-        last_cell.write(buff);
-        last_cell.free();
+        last_cell->write(buff);
+        delete last_cell;
+        last_cell = nullptr;
         cs_writer->block(err, blk_intval, buff, cell_count);
      
       } else if(!cellstores.size() && cs_writer == nullptr) {
@@ -666,11 +668,11 @@ class Compaction final {
     bool                            tmp_dir = false;
     Files::CellStore::Write::Ptr    cs_writer = nullptr;
     Files::CellStore::Writers       cellstores;
-    DB::Cells::Cell                 last_cell;
+    DB::Cells::Cell*                last_cell = nullptr;
 
     std::mutex                      m_mutex;
     bool                            m_writing = false;
-    std::queue<DB::Cells::Mutable*> m_queue;
+    std::queue<DB::Cells::Vector*>  m_queue;
     std::atomic<bool>               m_stopped = false;
     bool                            m_getting = false;
   };

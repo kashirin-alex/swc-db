@@ -23,7 +23,6 @@ void count_all_cells(size_t num_cells,
   
   auto req = DB::Cells::ReqScanTest::make();
   req->cells.reset(
-    blocks.range->cfg->cid, 
     blocks.range->cfg->cell_versions(), 
     0, 
     SWC::Types::Column::PLAIN
@@ -187,7 +186,7 @@ int main(int argc, char** argv) {
   for(int i = 1;i<=num_chks; i++){
     
     auto req = DB::Cells::ReqScanTest::make();
-    req->cells.reset(col_cfg.cid, 1, 0, SWC::Types::Column::PLAIN);
+    req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
     req->cb = [req, &chk, i, blocks=&blocks](int err){

@@ -180,7 +180,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     exit(1);
   }
   
-  Cells::Mutable results(1, max_versions, 0, typ);
+  Cells::Vector results(max_versions, 0, typ);
   size_t cell_offset = 0;
   size_t cell_skips = 0;
   auto spec = SWC::DB::Specs::Interval();

@@ -19,7 +19,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
 
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
                    const DB::Specs::Interval& spec, 
-                   DB::Cells::Mutable& cells, 
+                   DB::Cells::Vector& cells, 
                    Range::Ptr range, uint32_t limit_buffer)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
                     range(range) {
@@ -48,7 +48,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
     );
 
     CommBuf::Ptr cbp;
-    if(cells.size()) {
+    if(!cells.empty()) {
       DynamicBuffer buffer;
       cells.write(buffer);
       StaticBuffer sndbuf(buffer);

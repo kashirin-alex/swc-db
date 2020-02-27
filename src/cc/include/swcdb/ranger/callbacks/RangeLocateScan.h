@@ -21,7 +21,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Specs::Interval& spec, 
-                  DB::Cells::Mutable& cells,
+                  DB::Cells::Vector& cells,
                   Range::Ptr range, uint8_t flags)
                   : DB::Cells::ReqScan(conn, ev, spec, cells), 
                     range(range), flags(flags),
@@ -135,18 +135,17 @@ class RangeLocateScan : public DB::Cells::ReqScan {
 
     Protocol::Rgr::Params::RangeLocateRsp params(err);
     if(!err) {
-      if(cells.size()) {
+      if(!cells.empty()) {
 
-        DB::Cells::Cell cell;
-        cells.get(0, cell);
+        auto cell = cells.front();
   
-        params.range_begin.copy(cell.key);
+        params.range_begin.copy(cell->key);
         
         std::string id_name(params.range_begin.get_string(0));
         params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
 
-        const uint8_t* ptr = cell.value;
-        size_t remain = cell.vlen;
+        const uint8_t* ptr = cell->value;
+        size_t remain = cell->vlen;
         params.range_end.decode(&ptr, &remain, true);
         params.rid = Serialization::decode_vi64(&ptr, &remain);
 

@@ -166,7 +166,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
   std::cout << blocks.to_string() << "\n";
 
   auto req = Cells::ReqScanTest::make();
-  req->cells.reset(0, 2, 0, SWC::Types::Column::PLAIN);
+  req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
   req->spec.flags.limit = num_cells*group_fractions;
   
   std::promise<void> r_promise;
@@ -186,10 +186,9 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
       exit(1);
     }
     
-    SWC::DB::Cells::Cell cell;
-    req->cells.get(-1, cell);
-    if(!cell.key.equal(expected_key)) {
-      std::cerr << "ERROR: !cell.key.equal(expected_key) " << cell.to_string() 
+    auto cell = req->cells.back();
+    if(!cell->key.equal(expected_key)) {
+      std::cerr << "ERROR: !cell.key.equal(expected_key) " << cell->to_string() 
                 << " expected=" << expected_key.to_string()  << "\n";
       exit(1);
     }
@@ -297,7 +296,7 @@ int main(int argc, char** argv) {
       [&blocks, match_on_offset, &match_key, id] () {
 
       auto req = Cells::ReqScanTest::make();
-      req->cells.reset(0, 2, 0, SWC::Types::Column::PLAIN);
+      req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;
       req->spec.flags.limit = 1;
@@ -322,12 +321,11 @@ int main(int argc, char** argv) {
           exit(1);
         }
 
-        SWC::DB::Cells::Cell cell;
-        req->cells.get(0, cell);
-        if(!cell.key.equal(match_key)) {
+        auto cell = req->cells.back();
+        if(!cell->key.equal(match_key)) {
           std::cout << "\n" << blocks.to_string() << "\n";
 
-          std::cerr << "ERROR: !cell.key.equal(match_key) " << cell.to_string() 
+          std::cerr << "ERROR: !cell.key.equal(match_key) " << cell->to_string() 
                     << " expected=" << match_key.to_string()  << "\n"
                     << req->spec.to_string() << "\n";
           exit(1);

@@ -8,7 +8,7 @@
 
 
 #include "swcdb/core/comm/ResponseCallback.h"
-#include "swcdb/db/Cells/Mutable.h"
+#include "swcdb/db/Cells/Vector.h"
 
 namespace SWC { namespace DB { namespace Cells {
   
@@ -29,7 +29,7 @@ class ReqScan  : public ResponseCallback {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const Specs::Interval& spec, Mutable& cells)
+          const Specs::Interval& spec, Vector& cells)
           : ResponseCallback(conn, ev), spec(spec), 
             cells(cells),
             offset(spec.flags.offset), limit_buffer_sz(0), 
@@ -86,7 +86,7 @@ class ReqScan  : public ResponseCallback {
   }
 
   Specs::Interval   spec;
-  Mutable           cells;
+  Vector            cells;
 
   uint32_t          limit_buffer_sz;
   bool              drop_caches;

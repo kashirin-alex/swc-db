@@ -46,8 +46,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     params.interval.apply_possible_range(
       params.interval.range_begin, params.interval.range_end);
 
-    DB::Cells::Mutable cells(
-      params.interval.flags.limit, 
+    DB::Cells::Vector cells(
       params.interval.flags.max_versions ? 
         params.interval.flags.max_versions : range->cfg->cell_versions(),
       range->cfg->cell_ttl(), 

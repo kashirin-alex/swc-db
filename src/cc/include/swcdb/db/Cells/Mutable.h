@@ -11,6 +11,7 @@
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 #include "swcdb/db/Cells/Interval.h"
+#include "swcdb/db/Cells/Vector.h"
 
 namespace SWC { namespace DB { namespace Cells {
 
@@ -186,9 +187,10 @@ class Mutable final {
 
   void push_back(const Cell& cell, bool no_value=false) {
     ensure(1);
-    *(m_cells + m_size) = new Cell(cell, no_value);
+    Cell* adding;
+    *(m_cells + m_size) = adding = new Cell(cell, no_value);
     ++m_size;
-    m_size_bytes += cell.encoded_length();
+    m_size_bytes += adding->encoded_length();
   }
 
   void push_back_nocpy(Cell* cell) {
@@ -200,10 +202,11 @@ class Mutable final {
   
   void insert(uint32_t offset, const Cell& cell) {
     _move_fwd(offset, 1);
-    *(m_cells + offset) = new Cell(cell);
+    Cell* adding;
+    *(m_cells + offset) = adding = new Cell(cell);
     //new(*(m_cells + offset) = (Cell*)std::malloc(sizeof(Cell))) Cell(cell);
     ++m_size;
-    m_size_bytes += cell.encoded_length();
+    m_size_bytes += adding->encoded_length();
   }
 
   void add(const Cell& e_cell) {
@@ -392,7 +395,7 @@ class Mutable final {
     }
   }
 
-  void scan(const Specs::Interval& specs, Mutable& cells, 
+  void scan(const Specs::Interval& specs, Vector& cells, 
             size_t& cell_offset, const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t& selector) const {
     if(!m_size)
@@ -405,7 +408,7 @@ class Mutable final {
         specs, cells, cell_offset, reached_limits, skips, selector);
   }
 
-  void scan_version_single(const Specs::Interval& specs, Mutable& cells, 
+  void scan_version_single(const Specs::Interval& specs, Vector& cells, 
                            size_t& cell_offset, 
                            const std::function<bool()>& reached_limits, 
                            size_t& skips, const Selector_t& selector) const {
@@ -428,7 +431,7 @@ class Mutable final {
           continue;
         }
 
-        cells.push_back(*cell, only_keys);
+        cells.add(*cell, only_keys);
         if(reached_limits())
           break;
       } else 
@@ -436,7 +439,7 @@ class Mutable final {
     }
   }
 
-  void scan_version_multi(const Specs::Interval& specs, Mutable& cells, 
+  void scan_version_multi(const Specs::Interval& specs, Vector& cells, 
                           size_t& cell_offset, 
                           const std::function<bool()>& reached_limits, 
                           size_t& skips, const Selector_t& selector) const {
@@ -448,7 +451,7 @@ class Mutable final {
     uint32_t rev;
     uint32_t offset;
     if((chk_align = !specs.offset_key.empty())) {
-      rev = cells.m_max_revs;
+      rev = cells.max_revs;
       offset = _narrow(specs.offset_key);// ?specs.key_start
     } else {
       rev = 0;
@@ -489,13 +492,14 @@ class Mutable final {
         ++skips;
         continue;
       }
-      if(cells.size() && cells.compare(-1, cell->key) == Condition::EQ) {
+      if(!cells.empty() && 
+         cells.back()->key.compare(cell->key) == Condition::EQ) {
         if(!rev) {
           ++skips;
           continue;
         }
       } else {
-        rev = cells.m_max_revs;
+        rev = cells.max_revs;
       }
 
       if(cell_offset) {
@@ -504,7 +508,7 @@ class Mutable final {
         continue;
       }
 
-      cells.push_back(*cell, only_keys);
+      cells.add(*cell, only_keys);
       if(reached_limits())
         break;
       --rev;
