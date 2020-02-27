@@ -36,13 +36,11 @@ class Vector : private std::vector<Cell*> {
   }
 
   explicit Vector(Vector& other)
-                  : bytes(other.bytes), type(other.type), 
+                  : std::vector<Cell*>(other), bytes(other.bytes), 
+                    type(other.type), 
                     max_revs(other.max_revs), ttl(other.ttl) {
-    if(!other.empty()) {
-      assign(other.begin(), other.end());
-      other.clear();
-      other.bytes = 0;
-    }
+    other.clear();
+    other.bytes = 0;
   }
 
   Vector& operator=(const Vector& other) = delete;
