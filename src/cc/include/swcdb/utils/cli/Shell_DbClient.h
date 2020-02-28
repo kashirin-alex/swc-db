@@ -64,7 +64,18 @@ class DbClient : public Interface {
         new re2::RE2(
           "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
       )
-    );    
+    );   
+    options.push_back(
+      new Option(
+        "compact column", 
+        {"compact column|s [NAME|ID,..];"},
+        [ptr=this](std::string& cmd) {
+          return ptr->compact_column(cmd);
+        }, 
+        new re2::RE2(
+          "(?i)^(compact)\\s+(column(|s))(.*|$)")
+      )
+    );  
     options.push_back(
       new Option(
         "select", 
@@ -172,11 +183,59 @@ class DbClient : public Interface {
     return true;
   }
   
+  // COMPACT COLUMN
+  const bool compact_column(std::string& cmd) {
+    std::vector<DB::Schema::Ptr> schemas;  
+    std::string message;
+    client::SQL::parse_list_columns(err, cmd, schemas, message, "compact");
+    if(err) 
+      return error(message);
+
+    if(schemas.empty()) {
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&schemas, await=&res]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+         Protocol::Mngr::Params::ColumnListRsp rsp) {
+          if(!error)
+            schemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if(err = res.get_future().get()) {
+        message.append(Error::get_text(err));
+        message.append("\n");
+        return error(message);
+      }
+    }
+
+    std::promise<void> res;
+    std::atomic<size_t> proccessing = schemas.size();
+    for(auto schema : schemas) {
+      Protocol::Mngr::Req::ColumnCompact::request(
+        schema->cid,
+        [schema, &proccessing, await=&res]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+         Protocol::Mngr::Params::ColumnCompactRsp rsp) {
+          std::cout << "Compactig Column cid=" << schema->cid 
+                    << " '" << schema->col_name << "' err=" << rsp.err 
+                    << "(" << Error::get_text(rsp.err) << ")\n";
+          if(!--proccessing)
+            await->set_value();
+        },
+        300000
+      );
+    }
+    res.get_future().wait();
+    return true;
+  }
+  
   // LIST COLUMN/s
   const bool list_columns(std::string& cmd) {
     std::vector<DB::Schema::Ptr> schemas;  
     std::string message;
-    client::SQL::parse_list_columns(err, cmd, schemas, message);
+    client::SQL::parse_list_columns(err, cmd, schemas, message, "list");
     if(err) 
       return error(message);
 

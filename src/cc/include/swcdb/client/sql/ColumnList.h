@@ -18,7 +18,7 @@ class ColumnList : public Reader {
               : Reader(sql, message), schemas(schemas) {
   }
 
-  const int parse_list_columns() {
+  const int parse_list_columns(const char* expect_cmd) {
     bool token_cmd = false;
     bool token_typ = false;
     bool bracket = false;
@@ -32,12 +32,13 @@ class ColumnList : public Reader {
       if(found_space())
         continue;
 
-      if(!token_cmd && (found_token("get", 3) || found_token("list", 4))) {   
+      if(!token_cmd && (found_token("get", 3) || found_token("list", 4) || 
+                        found_token("compact", 7))) {   
         token_cmd = true;
         continue;
       } 
       if(!token_cmd) {
-        expect_token("list", 4, token_cmd);
+        expect_token(expect_cmd, strlen(expect_cmd), token_cmd);
         break;
       }
       if(!token_typ && (found_token("columns", 7) || found_token("column", 6) || 

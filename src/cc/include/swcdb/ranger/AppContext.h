@@ -30,6 +30,7 @@
 #include "swcdb/ranger/handlers/RangeQuerySelect.h"
 #include "swcdb/ranger/handlers/ColumnUpdate.h"
 #include "swcdb/ranger/handlers/ColumnDelete.h"
+#include "swcdb/ranger/handlers/ColumnCompact.h"
 #include "swcdb/ranger/handlers/Report.h"
 
 
@@ -43,6 +44,7 @@ class AppContext : public SWC::AppContext {
   static constexpr const AppHandler_t handlers[] = { 
     &Protocol::Common::Handler::not_implemented,
     &Protocol::Rgr::Handler::column_delete,
+    &Protocol::Rgr::Handler::column_compact,
     &Protocol::Rgr::Handler::column_update,
     &Protocol::Rgr::Handler::range_is_loaded,
     &Protocol::Rgr::Handler::range_load,

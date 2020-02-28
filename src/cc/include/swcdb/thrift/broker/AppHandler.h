@@ -33,7 +33,7 @@ class AppHandler : virtual public BrokerIf {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;  
     std::string message;
-    client::SQL::parse_list_columns(err, sql, dbschemas, message);
+    client::SQL::parse_list_columns(err, sql, dbschemas, message, "list");
     if(err) 
       exception(err, message);
 

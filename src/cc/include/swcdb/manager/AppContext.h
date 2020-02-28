@@ -25,6 +25,7 @@
 #include "swcdb/manager/handlers/ColumnUpdate.h"
 #include "swcdb/manager/handlers/ColumnGet.h"
 #include "swcdb/manager/handlers/ColumnList.h"
+#include "swcdb/manager/handlers/ColumnCompact.h"
 #include "swcdb/manager/handlers/RgrMngId.h"
 #include "swcdb/manager/handlers/RgrUpdate.h"
 #include "swcdb/manager/handlers/RgrGet.h"
@@ -48,6 +49,7 @@ class AppContext : public SWC::AppContext {
     &Protocol::Mngr::Handler::column_update,
     &Protocol::Mngr::Handler::column_get,
     &Protocol::Mngr::Handler::column_list,
+    &Protocol::Mngr::Handler::column_compact,
     &Protocol::Mngr::Handler::rgr_mng_id,
     &Protocol::Mngr::Handler::rgr_update,
     &Protocol::Mngr::Handler::rgr_get,

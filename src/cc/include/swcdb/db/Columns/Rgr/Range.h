@@ -76,10 +76,8 @@ class Range : public DB::RangeBase {
   
   void schema_update(bool compact) {
     blocks.schema_update();
-    if(compact) {
+    if(compact)
       compact_require(compact);
-      RangerEnv::compaction_schedule(100);
-    }
   }
 
   void set_state(State new_state) {

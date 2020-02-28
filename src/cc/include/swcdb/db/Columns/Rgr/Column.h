@@ -43,6 +43,15 @@ class Column final {
       for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
         it->second->schema_update(compact);
     }
+    if(compact)
+      RangerEnv::compaction_schedule(100);
+  }
+
+  void compact() {
+    std::shared_lock lock(m_mutex);
+    for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
+      it->second->compact_require(true);
+    RangerEnv::compaction_schedule(100);
   }
 
   Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {

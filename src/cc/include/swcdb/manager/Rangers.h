@@ -56,6 +56,8 @@ class Rangers final {
   
   void column_delete(const int64_t cid, const std::vector<uint64_t>& rgr_ids);
   
+  void column_compact(int& err, const int64_t cid);
+
   std::string to_string();
 
   private:

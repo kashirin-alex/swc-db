@@ -15,16 +15,17 @@ namespace Rgr {
   enum Command {
     NOT_IMPLEMENTED      = 0x00,
     COLUMN_DELETE        = 0x01,
-    SCHEMA_UPDATE        = 0x02,
-    RANGE_IS_LOADED      = 0x03,
-    RANGE_LOAD           = 0x04,
-    RANGE_UNLOAD         = 0x05,
-    RANGE_LOCATE         = 0x06,
-    RANGE_QUERY_UPDATE   = 0x07,
-    RANGE_QUERY_SELECT   = 0x08,
-    REPORT               = 0x09,
-    ASSIGN_ID_NEEDED     = 0x0A, // always last
-    MAX_CMD              = 0x0B
+    COLUMN_COMPACT       = 0x02,
+    SCHEMA_UPDATE        = 0x03,
+    RANGE_IS_LOADED      = 0x04,
+    RANGE_LOAD           = 0x05,
+    RANGE_UNLOAD         = 0x06,
+    RANGE_LOCATE         = 0x07,
+    RANGE_QUERY_UPDATE   = 0x08,
+    RANGE_QUERY_SELECT   = 0x09,
+    REPORT               = 0x0A,
+    ASSIGN_ID_NEEDED     = 0x0B, // always last
+    MAX_CMD              = 0x0C
   };
 
 }
@@ -40,14 +41,15 @@ namespace Mngr {
     COLUMN_UPDATE        = 0x04,
     COLUMN_GET           = 0x05,
     COLUMN_LIST          = 0x06, 
-    RGR_MNG_ID           = 0x07,
-    RGR_UPDATE           = 0x08,
-    RGR_GET              = 0x09,
-    RANGE_CREATE         = 0x0A,
-    RANGE_UNLOADED       = 0x0B,
-    RANGE_REMOVE         = 0x0C,
-    DO_ECHO              = 0x0D,
-    MAX_CMD              = 0x0E
+    COLUMN_COMPACT       = 0x07,
+    RGR_MNG_ID           = 0x08,
+    RGR_UPDATE           = 0x09,
+    RGR_GET              = 0x0A,
+    RANGE_CREATE         = 0x0B,
+    RANGE_UNLOADED       = 0x0C,
+    RANGE_REMOVE         = 0x0D,
+    DO_ECHO              = 0x0E,
+    MAX_CMD              = 0x0F
   };
 
 }

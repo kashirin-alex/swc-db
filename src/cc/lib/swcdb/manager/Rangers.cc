@@ -10,6 +10,7 @@
 #include "swcdb/db/Protocol/Rgr/req/AssignIdNeeded.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnDelete.h"
+#include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrUpdate.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
@@ -344,6 +345,27 @@ void Rangers::column_delete(const int64_t cid,
         continue;
       rgr->total_ranges--; // reduce all ranges-count of cid
       rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
+    }
+  }
+}
+
+void Rangers::column_compact(int& err, const int64_t cid) {
+  auto col = Env::Mngr::columns()->get_column(err, cid, false);
+  if(!err)  
+    col->state(err);
+  if(err)
+    return;
+
+  std::vector<uint64_t> rgr_ids;
+  col->assigned(rgr_ids);
+  for(auto& id : rgr_ids) {
+    std::scoped_lock lock(m_mutex);
+
+    for(auto& rgr : m_rangers) {
+      if(rgr->failures < cfg_rgr_failures->get() 
+        && rgr->state == Ranger::State::ACK && rgr->id == id) {
+        rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnCompact>(cid));
+      }
     }
   }
 }

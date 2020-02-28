@@ -12,6 +12,8 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
+
 #include "swcdb/db/Protocol/Common/req/Query.h"
 
 #include "swcdb/client/sql/Reader.h"
@@ -45,9 +47,9 @@ void parse_update(int& err, const std::string& sql,
 
 void parse_list_columns(int& err, const std::string& sql, 
                         std::vector<DB::Schema::Ptr>& schemas, 
-                        std::string& message) {
+                        std::string& message, const char* expect_cmd) {
   ColumnList parser(sql, schemas, message);
-  err = parser.parse_list_columns();
+  err = parser.parse_list_columns(expect_cmd);
 }
 
 void parse_column_schema(int& err, const std::string& sql, 
