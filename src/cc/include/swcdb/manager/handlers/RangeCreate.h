@@ -22,7 +22,7 @@ void range_create(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
     std::cout << "RangeCreate: " << params.to_string() << "\n";
 
-    Env::Mngr::mngd_columns()->is_active(rsp_params.err, 1); 
+    Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
     if(rsp_params.err)
       goto send_response;
 
