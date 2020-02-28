@@ -99,10 +99,20 @@ class Vector : private std::vector<Cell*> {
     return bytes;
   }
 
-  void pop_back(Cell*& cell) {
-    cell = back();
-    pop_back();
+  Cell* takeout_begin(size_t idx) {
+    auto it = begin() + idx;
+    Cell* cell = *it;
+    erase(it);
     bytes -= cell->encoded_length();
+    return cell;
+  }
+
+  Cell* takeout_end(size_t idx) {
+    auto it = end() - idx;
+    Cell* cell = *it;
+    erase(it);
+    bytes -= cell->encoded_length();
+    return cell;
   }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
@@ -140,15 +150,13 @@ class Vector : private std::vector<Cell*> {
       free();
       return;
     }
-    auto it_begin = it;
+    auto it_end = it;
     do {
       --it;
       bytes -= (*it)->encoded_length();
       delete *it; 
     } while(it > begin());
-    std::vector<Cell*> tmp(it_begin, end());
-    clear();
-    assign(tmp.begin(), tmp.end());
+    erase(begin(), it_end);
   }
 
   void write(DynamicBuffer& cells) const {

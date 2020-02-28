@@ -268,7 +268,7 @@ class Cell final {
     assert(dst_buf.fill() <= dst_buf.size);
   }
 
-  const bool equal(Cell &other) const {
+  const bool equal(const Cell& other) const {
     return  flag == other.flag && 
             control == other.control &&
             timestamp == other.timestamp && 

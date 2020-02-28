@@ -194,7 +194,12 @@ class Compaction final {
                   cell_versions(cell_versions),
                   cell_ttl(cell_ttl),
                   col_type(col_type) {
-      make_cells();
+      cells.configure(
+        cell_versions, 
+        cell_ttl, 
+        col_type
+      );
+      cells.reserve(blk_cells);
     }
 
     virtual ~CompactScan() { 
@@ -204,15 +209,6 @@ class Compaction final {
 
     Ptr shared() {
       return std::dynamic_pointer_cast<CompactScan>(shared_from_this());
-    }
-
-    void make_cells() {
-      cells.reset(
-        cell_versions, 
-        cell_ttl, 
-        col_type
-      );
-      cells.reserve(blk_cells);
     }
 
     bool reached_limits() override {
@@ -229,36 +225,33 @@ class Compaction final {
       SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld",  
                range->cfg->cid, range->rid, total_cells.load());
 
+      auto selected_cells = cells.empty() 
+                            ? nullptr : new DB::Cells::Vector(cells);
       {
         std::scoped_lock lock(m_mutex);
-        if(cells.empty()) {
-          if(m_writing)
-            m_queue.push(nullptr);
-          else 
+        if(!selected_cells) {
+          if(!m_writing) {
             finalize();
-          return;
+            return;
+          }
+        } else {
+          auto& last = selected_cells->back();
+          spec.offset_key.copy(last->key);
+          spec.offset_rev = last->timestamp;
+          m_getting = false;
         }
-        m_getting = false;
-      }
 
-      auto selected_cells = new DB::Cells::Vector(cells);
-      make_cells();
-
-      auto last = selected_cells->back();
-      spec.offset_key.copy(last->key);
-      spec.offset_rev = last->timestamp;
-      
-      { 
-        std::scoped_lock lock(m_mutex);
         m_queue.push(selected_cells);
         if(m_writing) 
           return;
         m_writing = true;
       }
+
       asio::post(
         *RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){ ptr->process(); 
       });
+
       request_more();
     }
 
@@ -383,7 +376,7 @@ class Compaction final {
             blk_intval.aligned_min, blk_intval.aligned_max);
           delete last_cell;
         }
-        selected_cells->pop_back(last_cell);
+       last_cell = selected_cells->takeout_end(1);
         //last block of end-any to be set with first key as last cell
       }
       selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 0);
