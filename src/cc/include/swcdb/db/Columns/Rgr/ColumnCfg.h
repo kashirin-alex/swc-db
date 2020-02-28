@@ -20,7 +20,7 @@ class ColumnCfg final {
   mutable std::atomic<Types::Column>    col_type;
 
   mutable std::atomic<uint32_t>         c_versions; 
-  mutable std::atomic<uint32_t>         c_ttl;
+  mutable std::atomic<uint64_t>         c_ttl;
 
   mutable std::atomic<Types::Encoding>  blk_enc;
   mutable std::atomic<uint32_t>         blk_size;
@@ -48,7 +48,7 @@ class ColumnCfg final {
     col_type = schema.col_type;
 
     c_versions = schema.cell_versions;
-    c_ttl = schema.cell_ttl;
+    c_ttl = schema.cell_ttl*1000000000;
 
     blk_enc = schema.blk_encoding;
     blk_size = schema.blk_size;
@@ -68,7 +68,7 @@ class ColumnCfg final {
     return c_versions.load();
   }
 
-  const uint32_t cell_ttl() const {
+  const uint64_t cell_ttl() const {
     return c_ttl.load();
   }
 

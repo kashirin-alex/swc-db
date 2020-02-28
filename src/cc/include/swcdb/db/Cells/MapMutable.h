@@ -28,7 +28,7 @@ class ColCells final {
 
   ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
            Types::Column type)
-          : cid(cid), m_cells(0, versions, ttl, type) { 
+          : cid(cid), m_cells(0, versions, ttl*1000000000, type) { 
   }
 
   ColCells(const int64_t cid, Mutable& cells)

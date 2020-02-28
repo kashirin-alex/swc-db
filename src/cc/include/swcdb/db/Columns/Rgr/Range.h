@@ -511,7 +511,6 @@ class Range : public DB::RangeBase {
     DB::Cells::Cell cell;
     const uint8_t* ptr;
     size_t remain; 
-    //Callback::RangeQueryUpdate::Ptr cb;
     bool early_range_end;
     bool intval_chg;
 
@@ -520,14 +519,7 @@ class Range : public DB::RangeBase {
       std::shared_lock lock(m_mutex);
       key_end.copy(m_interval.key_end);
     }
-    /*
-    DB::Cells::Mutable fwd_cells(
-      0, 
-      cfg->cell_versions(), 
-      cfg->cell_ttl(),  
-      cfg->column_type()
-    );
-    */
+    uint64_t ttl = cfg->cell_ttl();
 
     for(;;) {
       err = Error::OK;
@@ -557,6 +549,9 @@ class Range : public DB::RangeBase {
       while(!err && remain) {
         cell.read(&ptr, &remain);
 
+        if(cell.has_expired(ttl))
+          continue;
+
         if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
           early_range_end = true;
           continue;
@@ -570,9 +565,7 @@ class Range : public DB::RangeBase {
           if(cell.control & DB::Cells::AUTO_TIMESTAMP)
             cell.control ^= DB::Cells::AUTO_TIMESTAMP;
         }
-        //if(!(cell.control & DB::Cells::HAVE_REVISION))
-        //  cell.control |= DB::Cells::REV_IS_TS;
-        
+
         blocks.add_logged(cell);
         
         if(type == Types::Range::DATA) {
@@ -599,23 +592,6 @@ class Range : public DB::RangeBase {
         }
       }
       blocks.processing_decrement();
-
-      /*
-      if(fwd_cells.size()) {
-        auto fwd_req = std::make_shared<Protocol::Common::Req::Query::Update>(
-          [cb] (Protocol::Common::Req::Query::Update::Result::Ptr result) {
-            if(cb != nullptr)
-              cb->response(result->error());
-          }
-        );
-        fwd_req->timeout_commit = 10*fwd_cells.size();
-        fwd_req->columns->create(cfg->cid, fwd_cells);
-        fwd_req->commit();
-
-      } else if(cb != nullptr) {
-        
-      }
-      */
 
       if(intval_chg) {
         intval_chg = false;

@@ -184,7 +184,7 @@ class Compaction final {
                 const uint32_t cs_size, const uint8_t cs_replication,
                 const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
-                uint32_t cell_versions, uint32_t cell_ttl, 
+                uint32_t cell_versions, uint64_t cell_ttl, 
                 Types::Column col_type) 
                 : compactor(compactor), range(range),
                   cs_size(cs_size), 

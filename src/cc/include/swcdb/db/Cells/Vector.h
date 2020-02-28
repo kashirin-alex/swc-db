@@ -29,10 +29,10 @@ class Vector : private std::vector<Cell*> {
   using std::vector<Cell*>::end;
   using std::vector<Cell*>::operator[];
 
-  explicit Vector(const uint32_t max_revs=1, const uint32_t ttl_sec=0, 
+  explicit Vector(const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
                   const Types::Column type=Types::Column::PLAIN)
                   : bytes(0), type(type), max_revs(max_revs), 
-                    ttl(ttl_sec*1000000000) {
+                    ttl(ttl_ns) {
   }
 
   explicit Vector(Vector& other)
@@ -57,18 +57,18 @@ class Vector : private std::vector<Cell*> {
     bytes = 0;
   }
 
-  void reset(const uint32_t revs=1, const uint32_t ttl_sec=0, 
+  void reset(const uint32_t revs=1, const uint64_t ttl_ns=0, 
              const Types::Column typ=Types::Column::PLAIN) {
     free();
-    configure(revs, ttl_sec, typ);
+    configure(revs, ttl_ns, typ);
   }
 
   void configure(const uint32_t revs=1, 
-                 const uint32_t ttl_sec=0, 
+                 const uint64_t ttl_ns=0, 
                  const Types::Column typ=Types::Column::PLAIN) {
     type = typ;
     max_revs = revs;
-    ttl = ttl_sec*1000000000;
+    ttl = ttl_ns;
   }
 
   void take(Vector& other) {
