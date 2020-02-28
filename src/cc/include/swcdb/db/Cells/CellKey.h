@@ -204,7 +204,7 @@ class Key final {
   }
 
   const Condition::Comp compare(const Key &other, uint32_t max=0, 
-                                bool empty_ok=false) const {
+                                bool empty_ok=false, bool empty_eq=false) const {
     if(uint32_t min = count < other.count ? count : other.count) {
       if(max && min > max)
         min = max;  
@@ -214,8 +214,11 @@ class Key final {
       uint32_t sz2;
       for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
         sz2 = Serialization::decode_vi32(&p2);
-        if(!(sz1 = Serialization::decode_vi32(&p1)) && empty_ok)
+        if(!(sz1 = Serialization::decode_vi32(&p1)) && empty_ok) {
+          if(empty_eq)
+            return Condition::EQ;
           continue;
+        }
         if((comp = Condition::condition(p1, sz1, p2, sz2)) != Condition::EQ)
           return comp;
       }

@@ -208,12 +208,12 @@ class Interval {
 
   const bool is_matching_begin(const DB::Cell::Key& key) const {
     return range_begin.empty() || 
-           range_begin.compare(key, range_begin.count, true) != Condition::LT;
+           range_begin.compare(key, range_begin.count, true, true) != Condition::LT;
   }
 
   const bool is_matching_end(const DB::Cell::Key& key) const {
     return range_end.empty() || 
-           range_end.compare(key, range_end.count, true) != Condition::GT;
+           range_end.compare(key, range_end.count, true, true) != Condition::GT;
   }
 
   const size_t encoded_length() const {
