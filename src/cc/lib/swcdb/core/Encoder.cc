@@ -18,9 +18,9 @@ namespace SWC { namespace Encoder {
 
 void decode(int& err, Types::Encoding encoder, 
             const uint8_t* src, size_t sz_enc, 
-            uint8_t *dst, size_t sz){
+            uint8_t *dst, size_t sz) {
 
-  switch(encoder){
+  switch(encoder) {
     case Types::Encoding::ZLIB: {
       z_stream strm;
       memset(&strm, 0, sizeof(z_stream));
@@ -65,9 +65,9 @@ void decode(int& err, Types::Encoding encoder,
 void encode(int& err, Types::Encoding encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
-            uint32_t reserve){
+            uint32_t reserve) {
   
-  switch(encoder){
+  switch(encoder) {
     case Types::Encoding::ZLIB: {
 
       z_stream strm;
@@ -93,8 +93,7 @@ void encode(int& err, Types::Encoding encoder,
         output.ptr += *sz_enc;
         return;
       }
-      *sz_enc = 0; 
-      output.free();
+      break;
     }
 
     case Types::Encoding::SNAPPY: {
@@ -106,36 +105,37 @@ void encode(int& err, Types::Encoding encoder,
         output.ptr += *sz_enc;
         return;
       }
-      *sz_enc = 0; 
-      output.free();
+      break;
     }
 
     case Types::Encoding::ZSTD: {
-	    size_t const avail_out = ZSTD_compressBound(src_sz);
+      size_t const avail_out = ZSTD_compressBound(src_sz);
       output.ensure(reserve + avail_out);
       output.ptr += reserve;
       
-	    *sz_enc = ZSTD_compress(
-		    (void *)output.ptr, avail_out,
-		    (void *)src, src_sz,
+      *sz_enc = ZSTD_compress(
+        (void *)output.ptr, avail_out,
+        (void *)src, src_sz,
         ZSTD_CLEVEL_DEFAULT
       );
-      if(*sz_enc && !ZSTD_isError(*sz_enc) && *sz_enc < src_sz){
+      if(*sz_enc && !ZSTD_isError(*sz_enc) && *sz_enc < src_sz) {
         output.ptr += *sz_enc;
         return;
       }
-      *sz_enc = 0; 
-      output.free();
+      break;
     }
 
-    default: {
-      output.ensure(reserve + src_sz);
-      output.ptr += reserve;
-      if(src_sz)
-        output.add_unchecked(src, src_sz);
-    }
+    default: 
+      break;
   }
-  
+
+  *sz_enc = 0; 
+  output.free();
+
+  output.ensure(reserve + src_sz);
+  output.ptr += reserve;
+  if(src_sz)
+    output.add_unchecked(src, src_sz);
 }
 
 }}
