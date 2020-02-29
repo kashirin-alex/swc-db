@@ -165,8 +165,14 @@ class Read final {
     s.append(std::to_string(offset));
     s.append(" state=");
     s.append(to_string(m_state));
-    s.append(" size=");
-    s.append(std::to_string(m_size));
+    if(m_size) {
+      s.append(" encoder=");
+      s.append(Types::to_string(m_encoder));
+      s.append(" enc/size=");
+      s.append(std::to_string(m_sz_enc));
+      s.append("/");
+      s.append(std::to_string(m_size));
+    }
     s.append(" ");
     s.append(interval.to_string());
     s.append(" queue=");

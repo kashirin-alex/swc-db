@@ -46,8 +46,8 @@ class Read final {
     load_blocks_index(err, smartfd, prev_key_end, interval_by_blks, blocks);
     if(err)
       SWC_LOGF(LOG_ERROR, 
-        "CellStore load_blocks_index err=%d(%s) id=%d %s %s", 
-        err, Error::get_text(err), id, range->to_string().c_str(), 
+        "CellStore load_blocks_index err=%d(%s) id=%d range(%d/%d) %s", 
+        err, Error::get_text(err), id, range->cfg->cid, range->rid, 
         interval.to_string().c_str());
     return new Read(
       id, 
