@@ -15,7 +15,8 @@ enum class Encoding {
   DEFAULT = 0x00,
   PLAIN   = 0x01,
   ZLIB    = 0x02,
-  SNAPPY  = 0x03
+  SNAPPY  = 0x03,
+  ZSTD    = 0x04
 };
 
 inline const std::string to_string(Encoding typ) {
@@ -28,6 +29,8 @@ inline const std::string to_string(Encoding typ) {
       return std::string("ZLIB");
     case Encoding::SNAPPY:
       return std::string("SNAPPY");
+    case Encoding::ZSTD:
+      return std::string("ZSTD");
     default:
       return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
   }
@@ -47,6 +50,10 @@ inline const Encoding encoding_from(const std::string& typ) {
      typ.compare("3") == 0)
     return Encoding::SNAPPY;
   
+  if(strncasecmp(typ.data(), "ZSTD", typ.length()) == 0 ||
+     typ.compare("4") == 0)
+    return Encoding::ZSTD;
+
   return Encoding::DEFAULT;
 }
 

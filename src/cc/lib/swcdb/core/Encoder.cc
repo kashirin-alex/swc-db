@@ -11,6 +11,7 @@
 
 #include <snappy.h>
 #include <zlib.h>
+#include <zstd.h>
 
 namespace SWC { namespace Encoder {
 
@@ -48,6 +49,12 @@ void decode(int& err, Types::Encoding encoder,
       return;
     }
 
+    case Types::Encoding::ZSTD: {
+      if(ZSTD_decompress((void *)dst, sz, (void *)src, sz_enc) != sz)
+        err = Error::ENCODER_DECODE;
+      return;
+    }
+
     default: {
       //SWC_ASSERT(encoder==Types::Encoding::PLAIN);
       break;
@@ -68,7 +75,7 @@ void encode(int& err, Types::Encoding encoder,
       strm.zalloc = Z_NULL;
       strm.zfree = Z_NULL;
       strm.opaque = Z_NULL;
-      if(::deflateInit(&strm, 7) == Z_OK) {
+      if(::deflateInit(&strm, Z_DEFAULT_COMPRESSION) == Z_OK) {
 
         uint32_t avail_out = src_sz + 6 + (((src_sz / 16000) + 1) * 5);
         output.ensure(reserve + avail_out);
@@ -96,6 +103,24 @@ void encode(int& err, Types::Encoding encoder,
       snappy::RawCompress((const char *)src, src_sz, 
                           (char *)output.ptr, sz_enc);
       if(*sz_enc && *sz_enc < src_sz) {
+        output.ptr += *sz_enc;
+        return;
+      }
+      *sz_enc = 0; 
+      output.free();
+    }
+
+    case Types::Encoding::ZSTD: {
+	    size_t const avail_out = ZSTD_compressBound(src_sz);
+      output.ensure(reserve + avail_out);
+      output.ptr += reserve;
+      
+	    *sz_enc = ZSTD_compress(
+		    (void *)output.ptr, avail_out,
+		    (void *)src, src_sz,
+        ZSTD_CLEVEL_DEFAULT
+      );
+      if(*sz_enc && !ZSTD_isError(*sz_enc) && *sz_enc < src_sz){
         output.ptr += *sz_enc;
         return;
       }
