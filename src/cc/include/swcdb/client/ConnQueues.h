@@ -62,7 +62,7 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
     return s;
   }
 
-  Host::Ptr get(EndPoints& endpoints){
+  Host::Ptr get(const EndPoints& endpoints){
     std::lock_guard<std::mutex> lock(m_mutex);
     for(auto& host : m_hosts){
       if(has_endpoint(host->endpoints, endpoints))

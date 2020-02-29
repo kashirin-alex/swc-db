@@ -511,14 +511,12 @@ class Select : public std::enable_shared_from_this<Select> {
       SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
 
       Rgr::Req::RangeLocate::request(
-        params, endpoints, 
-        [scanner=shared_from_this()]() {
-          SWC_LOG(LOG_DEBUG, "LocateRange RETRYING no-conn");
-          scanner->parent->request_again();
-        },
-        [endpoints, next_range, scanner=shared_from_this()] 
-        (ReqBase::Ptr req, Rgr::Params::RangeLocateRsp rsp) {
-          if(scanner->located_on_ranger(endpoints, req, rsp, next_range))
+        params, endpoints,
+        [next_range, scanner=shared_from_this()]
+        (ReqBase::Ptr req, const Rgr::Params::RangeLocateRsp& rsp) {
+          if(scanner->located_on_ranger(
+              std::dynamic_pointer_cast<Rgr::Req::RangeLocate>(req)->endpoints,
+              req, rsp, next_range))
             scanner->col->selector->result->completion--;
         }
       );
@@ -540,7 +538,9 @@ class Select : public std::enable_shared_from_this<Select> {
         SWC_LOGF(LOG_DEBUG, "Located-oRgr RETRYING %s", 
                             rsp.to_string().c_str());                      
         if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
-           rsp.err == Error::RANGE_NOT_FOUND ) {
+           rsp.err == Error::RANGE_NOT_FOUND  || 
+           rsp.err == Error::SERVER_SHUTTING_DOWN ||
+           rsp.err == Error::COMM_NOT_CONNECTED) {
           Env::Clients::get()->rangers.remove(cid, rid);
           parent->request_again();
         } else {
@@ -588,17 +588,13 @@ class Select : public std::enable_shared_from_this<Select> {
           col->cid, rid, col->interval, col->selector->buff_sz
         ), 
         endpoints, 
-
-        [base]() {
-          SWC_LOG(LOG_DEBUG, "Select RETRYING no-conn");
-          base->request_again();
-        },
-
         [rid, base, scanner=shared_from_this()] 
         (ReqBase::Ptr req, const Rgr::Params::RangeQuerySelectRsp& rsp) {
           if(rsp.err) {
             SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
-            if(rsp.err == Error::RS_NOT_LOADED_RANGE) {
+            if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
+               rsp.err == Error::SERVER_SHUTTING_DOWN ||
+               rsp.err == Error::COMM_NOT_CONNECTED) {
               Env::Clients::get()->rangers.remove(scanner->col->cid, rid);
               base->request_again();
             } else {

@@ -27,7 +27,7 @@ class RangeQueryUpdateReq : public Serializable {
   int64_t           cid;
   int64_t           rid;
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("RangeQueryUpdateReq(");
     s.append(" cid=");
     s.append(std::to_string(cid));
@@ -75,7 +75,7 @@ class RangeQueryUpdateRsp  : public Serializable {
   int32_t       err;
   DB::Cell::Key range_end;
 
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("RangeQueryUpdateRsp(");
     s.append("err=");
     s.append(std::to_string(err));

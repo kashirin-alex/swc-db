@@ -30,7 +30,7 @@ class RangeLocateReq : public Serializable {
   DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("RangeLocateReq(");
     s.append("cid=");
     s.append(std::to_string(cid));

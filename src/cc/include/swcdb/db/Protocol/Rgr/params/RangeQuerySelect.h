@@ -32,7 +32,7 @@ class RangeQuerySelectReq : public Serializable {
   DB::Specs::Interval  interval;
   uint32_t             limit_buffer_sz;
   
-  const std::string to_string() {
+  const std::string to_string() const {
     std::string s("RangeQuerySelectReq(");
     s.append(" cid=");
     s.append(std::to_string(cid));

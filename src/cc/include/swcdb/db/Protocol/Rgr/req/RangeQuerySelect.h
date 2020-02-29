@@ -20,25 +20,21 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
   
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeQuerySelectRsp&)> Cb_t;
-  typedef std::function<void()> Cb_no_conn_t;
 
   static inline void 
   request(const Params::RangeQuerySelectReq& params,
-          const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, const Cb_t cb,
+          const EndPoints& endpoints, const Cb_t cb,
           const uint32_t timeout = 10000){
-    std::make_shared<RangeQuerySelect>(
-      params, endpoints, cb_no_conn, cb, timeout)
-      ->run();
+    std::make_shared<RangeQuerySelect>(params, endpoints, cb, timeout)->run();
   }
   
   EndPoints     endpoints;
 
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
-                   const EndPoints& endpoints, 
-                   Cb_no_conn_t cb_no_conn, const Cb_t cb, 
+                   const EndPoints& endpoints, const Cb_t cb, 
                    const uint32_t timeout) 
                   : Common::Req::ConnQueue::ReqBase(false), 
-                    endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
+                    endpoints(endpoints), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_QUERY_SELECT, timeout);
   }
@@ -46,7 +42,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
   virtual ~RangeQuerySelect(){}
 
   void handle_no_conn() override {
-    cb_no_conn();
+    cb(req(), Params::RangeQuerySelectRsp(Error::COMM_NOT_CONNECTED));
   }
 
   bool run(uint32_t timeout=0) override {
@@ -57,13 +53,13 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     //std::cout << "RangeQuerySelectRsp " << ev->to_str() << "\n";
-    if(ev->type == Event::Type::DISCONNECT){
+    if(ev->type == Event::Type::DISCONNECT) {
       handle_no_conn();
       return;
     }
 
     Params::RangeQuerySelectRsp rsp_params(ev->data_ext);
-    if(ev->type == Event::Type::ERROR){
+    if(ev->type == Event::Type::ERROR) {
       rsp_params.err = ev->error;
       cb(req(), rsp_params);
       return;
@@ -82,7 +78,6 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
 
   private:
 
-  Cb_no_conn_t  cb_no_conn;
   const Cb_t    cb;
 };
 

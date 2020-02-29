@@ -19,21 +19,18 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
-                              Params::RangeLocateRsp)> Cb_t;
-  typedef std::function<void()> Cb_no_conn_t;
+                             const Params::RangeLocateRsp&)> Cb_t;
 
   static inline void request(const Params::RangeLocateReq& params,
-                             const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
-                             const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<RangeLocate>(params, endpoints, cb_no_conn, cb, timeout)
-      ->run();
+                             const EndPoints& endpoints, 
+                             const Cb_t cb, const uint32_t timeout = 10000) {
+    std::make_shared<RangeLocate>(params, endpoints, cb, timeout)->run();
   }
 
-  RangeLocate(const Params::RangeLocateReq& params, 
-                const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
-                const Cb_t cb, const uint32_t timeout) 
+  RangeLocate(const Params::RangeLocateReq& params, const EndPoints& endpoints,
+              const Cb_t cb, const uint32_t timeout) 
               : Common::Req::ConnQueue::ReqBase(false), 
-                endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
+                endpoints(endpoints), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_LOCATE, timeout);
   }
@@ -41,7 +38,7 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
   virtual ~RangeLocate(){}
 
   void handle_no_conn() override {
-    cb_no_conn();
+    cb(req(), Params::RangeLocateRsp(Error::COMM_NOT_CONNECTED));
   }
 
   bool run(uint32_t timeout=0) override {
@@ -51,13 +48,13 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
-    if(ev->type == Event::Type::DISCONNECT){
+    if(ev->type == Event::Type::DISCONNECT) {
       handle_no_conn();
       return;
     }
 
     Params::RangeLocateRsp rsp_params;
-    if(ev->type == Event::Type::ERROR){
+    if(ev->type == Event::Type::ERROR) {
       rsp_params.err = ev->error;
       cb(req(), rsp_params);
       return;
@@ -74,11 +71,9 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
     cb(req(), rsp_params);
   }
 
-  private:
+  const EndPoints  endpoints;
+  const Cb_t       cb;
 
-  EndPoints     endpoints;
-  Cb_no_conn_t  cb_no_conn;
-  const Cb_t    cb;
 };
 
 

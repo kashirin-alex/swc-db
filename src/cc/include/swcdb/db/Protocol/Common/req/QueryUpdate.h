@@ -307,13 +307,12 @@ class Update : public std::enable_shared_from_this<Update> {
       SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
 
       Rgr::Req::RangeLocate::request(
-        params, endpoints, 
-        [locator=shared_from_this()]() {
-          locator->parent->request_again();
-        },
-        [endpoints, locator=shared_from_this()] 
-        (ReqBase::Ptr req, Rgr::Params::RangeLocateRsp rsp) {
-          if(locator->located_on_ranger(endpoints, req, rsp))
+        params, endpoints,
+        [locator=shared_from_this()]
+        (ReqBase::Ptr req, const Rgr::Params::RangeLocateRsp& rsp) {
+          if(locator->located_on_ranger(
+              std::dynamic_pointer_cast<Rgr::Req::RangeLocate>(req)->endpoints,
+              req, rsp))
             locator->updater->result->completion_decr();
         }
       );
@@ -325,7 +324,9 @@ class Update : public std::enable_shared_from_this<Update> {
       SWC_LOGF(LOG_INFO, "LocatedRange-onRgr %s", rsp.to_string().c_str());
 
       if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
-         rsp.err == Error::RANGE_NOT_FOUND) {
+         rsp.err == Error::RANGE_NOT_FOUND || //onMngr can be COLUMN_NOT_EXISTS
+         rsp.err == Error::SERVER_SHUTTING_DOWN ||
+         rsp.err == Error::COMM_NOT_CONNECTED) {
         SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
                               rsp.to_string().c_str());
         Env::Clients::get()->rangers.remove(cid, rid);
@@ -448,6 +449,7 @@ class Update : public std::enable_shared_from_this<Update> {
     void commit_data(EndPoints endpoints, const ReqBase::Ptr& base) {
       bool more = true;
       DynamicBuffer::Ptr cells_buff;
+      auto workload = std::make_shared<bool>();
       while(more && 
            (cells_buff = col->get_buff(
              *key_start.get(), key_finish, updater->buff_sz, more)) 
@@ -458,18 +460,11 @@ class Update : public std::enable_shared_from_this<Update> {
           Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
           cells_buff, 
           endpoints, 
-
-          [cells_buff, base, locator=shared_from_this()]() {
-            locator->col->add(*cells_buff.get());
-            SWC_LOG(LOG_DEBUG, "Commit RETRYING no-conn");
-            base->request_again();
-            locator->updater->result->completion_decr();
-          },
-
-          [cells_buff, base, locator=shared_from_this()] 
-          (ReqBase::Ptr req, Rgr::Params::RangeQueryUpdateRsp rsp) {
+          [workload, cells_buff, base, locator=shared_from_this()] 
+          (ReqBase::Ptr req, const Rgr::Params::RangeQueryUpdateRsp& rsp) {
             if(rsp.err) {
-              SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s", rsp.to_string().c_str());
+              SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%d", 
+                       rsp.to_string().c_str(), workload.use_count());
 
               if(rsp.err == Error::REQUEST_TIMEOUT) {
                 SWC_LOGF(LOG_DEBUG, " %s", req->to_string().c_str());
@@ -479,17 +474,22 @@ class Update : public std::enable_shared_from_this<Update> {
 
               if(rsp.err == Error::RANGE_END_EARLIER) {
                 locator->col->add(*cells_buff.get(), rsp.range_end);
-                auto next_key_start = locator->col->get_key_next(rsp.range_end);
-                if(next_key_start != nullptr) {
-                  std::make_shared<Locator>(
-                    Types::Range::MASTER, 
-                    locator->col->cid, locator->col, next_key_start, 
-                    locator->updater
-                  )->locate_on_manager();
-                 }
+                if(workload.use_count() == 1) {
+                  auto next_key_start = locator->col->get_key_next(rsp.range_end);
+                  if(next_key_start != nullptr) {
+                    std::make_shared<Locator>(
+                      Types::Range::MASTER, 
+                      locator->col->cid, locator->col, next_key_start, 
+                      locator->updater
+                    )->locate_on_manager();
+                   }
+                }
               } else {
                 locator->col->add(*cells_buff.get());
-                base->request_again();
+                if(workload.use_count() == 1) {
+                  base->request_again();
+                  return;
+                }
               }
             }
 

@@ -19,25 +19,23 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
-                             Params::RangeQueryUpdateRsp)> Cb_t;
-  typedef std::function<void()> Cb_no_conn_t;
+                             const Params::RangeQueryUpdateRsp&)> Cb_t;
 
   static inline void 
   request(const Params::RangeQueryUpdateReq& params, DynamicBuffer::Ptr buffer,
-          const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, const Cb_t cb, 
-          const uint32_t timeout = 10000){
+          const EndPoints& endpoints, const Cb_t cb, 
+          const uint32_t timeout = 10000) {
     std::make_shared<RangeQueryUpdate>(
-      params, buffer, endpoints, cb_no_conn, cb, timeout)
+      params, buffer, endpoints, cb, timeout)
       ->run();
   }
 
 
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
                    DynamicBuffer::Ptr buffer, const EndPoints& endpoints,
-                   Cb_no_conn_t cb_no_conn, const Cb_t cb, 
-                   const uint32_t timeout) 
+                   const Cb_t cb, const uint32_t timeout) 
                   : Common::Req::ConnQueue::ReqBase(false), 
-                    endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
+                    endpoints(endpoints), cb(cb) {
     // timeout by buffer->fill() bytes ratio
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
     cbp = CommBuf::make(params, snd_buf);
@@ -47,7 +45,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   virtual ~RangeQueryUpdate(){}
 
   void handle_no_conn() override {
-    cb_no_conn();
+    cb(req(), Params::RangeQueryUpdateRsp(Error::COMM_NOT_CONNECTED));
   }
 
   bool run(uint32_t timeout=0) override {
@@ -58,13 +56,13 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     
     //std::cout << "RangeQueryUpdateRsp " << ev->to_str() << "\n";
-    if(ev->type == Event::Type::DISCONNECT){
+    if(ev->type == Event::Type::DISCONNECT) {
       handle_no_conn();
       return;
     }
 
     Params::RangeQueryUpdateRsp rsp_params;
-    if(ev->type == Event::Type::ERROR){
+    if(ev->type == Event::Type::ERROR) {
       rsp_params.err = ev->error;
       cb(req(), rsp_params);
       return;
@@ -84,7 +82,6 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   private:
 
   EndPoints     endpoints;
-  Cb_no_conn_t  cb_no_conn;
   const Cb_t    cb;
 };
 
