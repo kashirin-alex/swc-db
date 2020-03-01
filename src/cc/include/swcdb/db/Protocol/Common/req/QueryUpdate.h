@@ -334,10 +334,10 @@ class Update : public std::enable_shared_from_this<Update> {
         return false;
       }
       if(!rsp.rid || rsp.err) {
-        SWC_LOGF(LOG_DEBUG, "Located-onRgr HALT %s", 
+        SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
                               rsp.to_string().c_str());
-        Env::Clients::get()->rangers.remove(cid, rid);
-        quick_exit(1);
+        if(rsp.err != Error::REQUEST_TIMEOUT)
+          Env::Clients::get()->rangers.remove(cid, rid);
         base->request_again();
         return false;
       }
