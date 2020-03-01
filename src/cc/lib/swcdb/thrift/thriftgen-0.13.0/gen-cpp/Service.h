@@ -24,6 +24,7 @@ class ServiceIf {
   virtual ~ServiceIf() {}
   virtual void sql_mng_column(const std::string& sql) = 0;
   virtual void sql_list_columns(Schemas& _return, const std::string& sql) = 0;
+  virtual void sql_compact_columns(CompactResults& _return, const std::string& sql) = 0;
   virtual void sql_select(Cells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_column(CCells& _return, const std::string& sql) = 0;
   virtual void sql_select_rslt_on_key(KCells& _return, const std::string& sql) = 0;
@@ -66,6 +67,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void sql_list_columns(Schemas& /* _return */, const std::string& /* sql */) {
+    return;
+  }
+  void sql_compact_columns(CompactResults& /* _return */, const std::string& /* sql */) {
     return;
   }
   void sql_select(Cells& /* _return */, const std::string& /* sql */) {
@@ -309,6 +313,118 @@ class Service_sql_list_columns_presult {
   Exception e;
 
   _Service_sql_list_columns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_compact_columns_args__isset {
+  _Service_sql_compact_columns_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_compact_columns_args__isset;
+
+class Service_sql_compact_columns_args {
+ public:
+
+  Service_sql_compact_columns_args(const Service_sql_compact_columns_args&);
+  Service_sql_compact_columns_args& operator=(const Service_sql_compact_columns_args&);
+  Service_sql_compact_columns_args() : sql() {
+  }
+
+  virtual ~Service_sql_compact_columns_args() noexcept;
+  std::string sql;
+
+  _Service_sql_compact_columns_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_compact_columns_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_compact_columns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_compact_columns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_compact_columns_pargs {
+ public:
+
+
+  virtual ~Service_sql_compact_columns_pargs() noexcept;
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_compact_columns_result__isset {
+  _Service_sql_compact_columns_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_compact_columns_result__isset;
+
+class Service_sql_compact_columns_result {
+ public:
+
+  Service_sql_compact_columns_result(const Service_sql_compact_columns_result&);
+  Service_sql_compact_columns_result& operator=(const Service_sql_compact_columns_result&);
+  Service_sql_compact_columns_result() {
+  }
+
+  virtual ~Service_sql_compact_columns_result() noexcept;
+  CompactResults success;
+  Exception e;
+
+  _Service_sql_compact_columns_result__isset __isset;
+
+  void __set_success(const CompactResults& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_compact_columns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_compact_columns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_compact_columns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_compact_columns_presult__isset {
+  _Service_sql_compact_columns_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_compact_columns_presult__isset;
+
+class Service_sql_compact_columns_presult {
+ public:
+
+
+  virtual ~Service_sql_compact_columns_presult() noexcept;
+  CompactResults* success;
+  Exception e;
+
+  _Service_sql_compact_columns_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -1350,6 +1466,9 @@ class ServiceClient : virtual public ServiceIf {
   void sql_list_columns(Schemas& _return, const std::string& sql);
   void send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return);
+  void sql_compact_columns(CompactResults& _return, const std::string& sql);
+  void send_sql_compact_columns(const std::string& sql);
+  void recv_sql_compact_columns(CompactResults& _return);
   void sql_select(Cells& _return, const std::string& sql);
   void send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return);
@@ -1394,6 +1513,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   ProcessMap processMap_;
   void process_sql_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -1408,6 +1528,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     iface_(iface) {
     processMap_["sql_mng_column"] = &ServiceProcessor::process_sql_mng_column;
     processMap_["sql_list_columns"] = &ServiceProcessor::process_sql_list_columns;
+    processMap_["sql_compact_columns"] = &ServiceProcessor::process_sql_compact_columns;
     processMap_["sql_select"] = &ServiceProcessor::process_sql_select;
     processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
     processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
@@ -1461,6 +1582,16 @@ class ServiceMultiface : virtual public ServiceIf {
       ifaces_[i]->sql_list_columns(_return, sql);
     }
     ifaces_[i]->sql_list_columns(_return, sql);
+    return;
+  }
+
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_compact_columns(_return, sql);
+    }
+    ifaces_[i]->sql_compact_columns(_return, sql);
     return;
   }
 
@@ -1588,6 +1719,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_list_columns(Schemas& _return, const std::string& sql);
   int32_t send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return, const int32_t seqid);
+  void sql_compact_columns(CompactResults& _return, const std::string& sql);
+  int32_t send_sql_compact_columns(const std::string& sql);
+  void recv_sql_compact_columns(CompactResults& _return, const int32_t seqid);
   void sql_select(Cells& _return, const std::string& sql);
   int32_t send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return, const int32_t seqid);

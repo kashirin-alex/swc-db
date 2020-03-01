@@ -114,6 +114,8 @@ typedef std::map<std::string, ColCells>  CCells;
 
 typedef std::vector<class kCells>  KCells;
 
+typedef std::vector<class CompactResult>  CompactResults;
+
 class Exception;
 
 class Schema;
@@ -133,6 +135,8 @@ class FCell;
 class FCells;
 
 class CellsGroup;
+
+class CompactResult;
 
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
@@ -783,6 +787,54 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
 void swap(CellsGroup &a, CellsGroup &b);
 
 std::ostream& operator<<(std::ostream& out, const CellsGroup& obj);
+
+typedef struct _CompactResult__isset {
+  _CompactResult__isset() : cid(false), err(false) {}
+  bool cid :1;
+  bool err :1;
+} _CompactResult__isset;
+
+class CompactResult : public virtual ::apache::thrift::TBase {
+ public:
+
+  CompactResult(const CompactResult&);
+  CompactResult& operator=(const CompactResult&);
+  CompactResult() : cid(0), err(0) {
+  }
+
+  virtual ~CompactResult() noexcept;
+  int64_t cid;
+  int32_t err;
+
+  _CompactResult__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_err(const int32_t val);
+
+  bool operator == (const CompactResult & rhs) const
+  {
+    if (!(cid == rhs.cid))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactResult &a, CompactResult &b);
+
+std::ostream& operator<<(std::ostream& out, const CompactResult& obj);
 
 }} // namespace
 

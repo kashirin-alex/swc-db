@@ -1995,4 +1995,116 @@ void CellsGroup::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+CompactResult::~CompactResult() noexcept {
+}
+
+
+void CompactResult::__set_cid(const int64_t val) {
+  this->cid = val;
+}
+
+void CompactResult::__set_err(const int32_t val) {
+  this->err = val;
+}
+std::ostream& operator<<(std::ostream& out, const CompactResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t CompactResult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->cid);
+          this->__isset.cid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->err);
+          this->__isset.err = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t CompactResult::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("CompactResult");
+
+  xfer += oprot->writeFieldBegin("cid", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->cid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("err", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->err);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(CompactResult &a, CompactResult &b) {
+  using ::std::swap;
+  swap(a.cid, b.cid);
+  swap(a.err, b.err);
+  swap(a.__isset, b.__isset);
+}
+
+CompactResult::CompactResult(const CompactResult& other93) {
+  cid = other93.cid;
+  err = other93.err;
+  __isset = other93.__isset;
+}
+CompactResult& CompactResult::operator=(const CompactResult& other94) {
+  cid = other94.cid;
+  err = other94.err;
+  __isset = other94.__isset;
+  return *this;
+}
+void CompactResult::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "CompactResult(";
+  out << "cid=" << to_string(cid);
+  out << ", " << "err=" << to_string(err);
+  out << ")";
+}
+
 }} // namespace

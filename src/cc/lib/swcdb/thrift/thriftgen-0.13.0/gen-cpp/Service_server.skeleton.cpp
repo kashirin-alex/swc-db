@@ -30,6 +30,11 @@ class ServiceHandler : virtual public ServiceIf {
     printf("sql_list_columns\n");
   }
 
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_compact_columns\n");
+  }
+
   void sql_select(Cells& _return, const std::string& sql) {
     // Your implementation goes here
     printf("sql_select\n");
