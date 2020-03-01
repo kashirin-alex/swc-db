@@ -144,13 +144,20 @@ enum CellsResult {
   ON_FRACTION = 3
 }
 
+struct CompactResult {
+  1: i64 cid
+  2: i32 err
+}
+typedef list<CompactResult> CompactResults
 
 
 service Service {
 
-  void     sql_mng_column(1:string sql)   throws (1:Exception e),
+  void            sql_mng_column(1:string sql)       throws (1:Exception e),
 
-  Schemas  sql_list_columns(1:string sql) throws (1:Exception e),
+  Schemas         sql_list_columns(1:string sql)     throws (1:Exception e),
+
+  CompactResults  sql_compact_columns(1:string sql)  throws (1:Exception e),
 
 
   Cells   sql_select(1:string sql)                   throws (1:Exception e),

@@ -117,6 +117,40 @@ void sql_list_columns_all(Client& client) {
   }
 }
 
+void sql_compact_columns(Client& client) {
+  std::cout << std::endl << "test: sql_compact_columns all: " << std::endl;
+  CompactResults res;
+  client.sql_compact_columns(
+    res, 
+    "compact columns "
+  );
+  assert(res.size() >= 2);
+  std::cout << std::endl << "CompactResults.size=" << res.size() << std::endl;
+  for(auto& r : res) {
+    assert(!r.err);
+    r.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+
+  std::cout << std::endl << "test: sql_compact_columns test-columns: " << std::endl;
+  res.clear();
+  std::string sql("compact columns [");
+  for(auto c=1; c <= num_columns; ++c) {
+    sql.append(column_name(c));
+    if(c != num_columns)
+       sql += ',';
+  }
+  sql += ']';
+  client.sql_compact_columns(res, sql);
+  assert(res.size() == num_columns);
+
+  std::cout << std::endl << "CompactResults.size=" << res.size() << std::endl;
+  for(auto& r : res) {
+    assert(!r.err);
+    r.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+}
 
 
 void sql_delete_test_column(Client& client) {
@@ -132,6 +166,7 @@ void sql_delete_test_column(Client& client) {
         client.sql_mng_column(
           "delete column(cid="+std::to_string(schemas.back().cid)+" name='"+schemas.back().col_name+"')");
     } catch (...) {}
+
   }
 }
 
@@ -403,6 +438,8 @@ int main() {
   Test::sql_mng_and_list_column(client);
 
   Test::sql_create_test_column(client);
+  Test::sql_compact_columns(client);
+
   Test::sql_update(client);
 
   Test::sql_select(client);
@@ -435,4 +472,5 @@ int main() {
 
   client.close();
 
+  std::cout << std::endl << " # OK! #" << std::endl;
 }

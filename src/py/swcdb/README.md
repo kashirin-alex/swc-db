@@ -29,6 +29,9 @@ print(schemas_added)
 schema = client.sql_list_columns("get column py-thrift-test-2")
 client.sql_mng_column("modify column(cid=" + str(schema[0].cid) + " name='py-thrift-test-2' cell_versions=3)")
 
+column_results = client.sql_compact_columns("compact column py-thrift-test-2")
+print(column_results)
+
 client.sql_update("update cell(INSERT, py-thrift-test-1, [1], '', 'VALUE-DATA-1-0')", 0);
 client.sql_update("update cell(INSERT, py-thrift-test-2, [1], '', 'VALUE-DATA-1-1')", 0);
 client.sql_update("update cell(INSERT, py-thrift-test-2, [1], '', 'VALUE-DATA-1-2')", 0);

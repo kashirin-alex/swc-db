@@ -113,6 +113,55 @@ class AppHandler : virtual public BrokerIf {
     else
       Env::Clients::get()->schemas->remove(schema->col_name);
   }
+
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) {
+    
+    int err = Error::OK;
+    std::vector<DB::Schema::Ptr> dbschemas;  
+    std::string message;
+    client::SQL::parse_list_columns(err, sql, dbschemas, message, "compact");
+    if(err) 
+      exception(err, message);
+
+    if(dbschemas.empty()) { // get all schema
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+         Protocol::Mngr::Params::ColumnListRsp rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if(err = res.get_future().get()) {
+        message.append(Error::get_text(err));
+        message.append("\n");
+        exception(err, message);
+      }
+    }
+    
+    std::mutex mutex;
+    std::promise<void> res;
+    for(auto schema : dbschemas) {
+      Protocol::Mngr::Req::ColumnCompact::request(
+        schema->cid,
+        [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
+        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+         Protocol::Mngr::Params::ColumnCompactRsp rsp) {
+          std::scoped_lock lock(mutex);
+          auto& r = _return.emplace_back();
+          r.cid=cid;
+          r.err=rsp.err;
+          if(_return.size() == sz)
+            await->set_value();
+        },
+        300000
+      );
+    }
+    res.get_future().wait();
+  }
   
   /* SQL QUERY */
   Protocol::Common::Req::Query::Select::Ptr sync_select(const std::string& sql) {
