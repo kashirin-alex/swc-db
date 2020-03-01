@@ -361,12 +361,7 @@ class AppHandler : virtual public BrokerIf {
       exception(err, message);
       
     if(updater_id) {
-      size_t cells_bytes = req->columns->size_bytes() 
-                         + req->columns_onfractions->size_bytes();
-      if(req->result->completion() && cells_bytes > req->buff_sz*3)
-        req->wait();
-      if(!req->result->completion() && cells_bytes >= req->buff_sz)
-        req->commit();
+      req->commit_or_wait();
     } else {
       req->commit();
       req->wait();
@@ -437,18 +432,12 @@ class AppHandler : virtual public BrokerIf {
         dbcell.set_value(cell.v);
 
         col->add(dbcell);
-        if(col->size_bytes() >= req->buff_sz)
-          req->commit();
+        req->commit_or_wait(col);
       }
     }
 
     if(updater_id) {
-      size_t cells_bytes = req->columns->size_bytes() 
-                         + req->columns_onfractions->size_bytes();
-      if(req->result->completion() && cells_bytes > req->buff_sz*3)
-        req->wait();
-      if(!req->result->completion() && cells_bytes >= req->buff_sz)
-        req->commit();
+      req->commit_or_wait();
     } else {
       req->commit();
       req->wait();
@@ -488,12 +477,8 @@ class AppHandler : virtual public BrokerIf {
   }
 
   void updater_close(Protocol::Common::Req::Query::Update:: Ptr req) {
-    size_t cells_bytes = req->columns->size_bytes() 
-                       + req->columns_onfractions->size_bytes();
-    if(!req->result->completion() && cells_bytes)
-      req->commit();
-    if(req->result->completion())
-      req->wait();
+    req->commit_if_need();
+    req->wait();
     int err;
     if(err = req->result->error())
       exception(err);

@@ -72,6 +72,12 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init(FS::fs_type(
       Env::Config::settings()->get<std::string>("swc.fs")));
       
+    Env::Clients::init(
+      std::make_shared<client::Clients>(
+        Env::IoCtx::io()->shared(),
+        std::make_shared<client::Rgr::AppContext>()
+      )
+    );
     RangerEnv::init();
 
     Env::Resources.init(
@@ -93,13 +99,6 @@ class AppContext : public SWC::AppContext {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
-
-    Env::Clients::init(
-      std::make_shared<client::Clients>(
-        Env::IoCtx::io()->shared(),
-        std::make_shared<client::Rgr::AppContext>()
-      )
-    );
 
     RangerEnv::start();
     Protocol::Mngr::Req::RgrMngId::assign(&m_id_validator);

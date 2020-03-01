@@ -185,7 +185,6 @@ void test_1(const std::string& col_name) {
     std::cout << update_req->columns->to_string() << "\n";
   
 
-    update_req->timeout_commit = 10*num_fractions*num_cells;
     update_req->commit();
     update_req->wait();
     took = SWC::Time::now_ns() - took;
@@ -362,7 +361,6 @@ void test_1(const std::string& col_name) {
   std::cout << update_req->columns->to_string() << "\n";
   
   took =  SWC::Time::now_ns();
-  update_req->timeout_commit = 10*num_fractions*num_cells;
   update_req->commit();
   update_req->wait();
   if(update_req->columns->size_bytes() != 0) {

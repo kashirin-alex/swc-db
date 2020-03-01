@@ -90,22 +90,26 @@ class Update : public std::enable_shared_from_this<Update> {
   typedef std::shared_ptr<Update>           Ptr;
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
+  uint32_t                    buff_sz;
+  uint8_t                     buff_ahead;
+  uint32_t                    timeout;
+  uint32_t                    timeout_ratio;
+  
   Cb_t                        cb;
   DB::Cells::MapMutable::Ptr  columns;
   DB::Cells::MapMutable::Ptr  columns_onfractions;
 
   Result::Ptr                 result;
 
-  uint32_t buff_sz          = 8000000;
-  uint32_t timeout_commit   = 60000;
-  uint32_t timeout_commit_bytes_ratio = 750;
-  
-
   std::mutex                  m_mutex;
   std::condition_variable     cv;
 
   Update(Cb_t cb=0)
-        : cb(cb),
+        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
+          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
+          timeout(Env::Clients::ref().cfg_send_timeout->get()), 
+          timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
+          cb(cb),
           columns(std::make_shared<DB::Cells::MapMutable>()),
           columns_onfractions(std::make_shared<DB::Cells::MapMutable>()),
           result(std::make_shared<Result>()) { 
@@ -114,7 +118,11 @@ class Update : public std::enable_shared_from_this<Update> {
   Update(DB::Cells::MapMutable::Ptr columns, 
          DB::Cells::MapMutable::Ptr columns_onfractions, 
          Cb_t cb=0)
-        : cb(cb), 
+        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
+          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
+          timeout(Env::Clients::ref().cfg_send_timeout->get()), 
+          timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
+          cb(cb), 
           columns(columns), 
           columns_onfractions(columns_onfractions), 
           result(std::make_shared<Result>()) { 
@@ -156,6 +164,34 @@ class Update : public std::enable_shared_from_this<Update> {
       );
     }
   }
+
+
+  void commit_or_wait() {
+    size_t bytes = columns->size_bytes() 
+                  + columns_onfractions->size_bytes();
+
+    if(result->completion() && bytes >= buff_sz * buff_ahead)
+      wait();
+    if(!result->completion() && bytes >= buff_sz)
+      commit();
+  }
+
+  void commit_or_wait(DB::Cells::ColCells::Ptr& col) {
+    size_t bytes = col->size_bytes();
+
+    if(result->completion() && bytes >= buff_sz * buff_ahead)
+      wait();
+    if(!result->completion() && bytes >= buff_sz)
+      commit(col);
+  }
+
+  void commit_if_need() {
+    size_t bytes = columns->size_bytes() 
+                  + columns_onfractions->size_bytes();
+    if(!result->completion() && bytes)
+      commit();
+  }
+  
 
   void commit() {
     DB::Cells::ColCells::Ptr col;
@@ -496,8 +532,7 @@ class Update : public std::enable_shared_from_this<Update> {
             locator->updater->response();
           },
 
-          updater->timeout_commit += 
-            cells_buff->fill()/updater->timeout_commit_bytes_ratio
+          updater->timeout + cells_buff->fill()/updater->timeout_ratio
         );
 
       } while(more);

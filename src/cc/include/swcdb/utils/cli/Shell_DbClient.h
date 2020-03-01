@@ -350,7 +350,6 @@ class DbClient : public Interface {
     size_t cells_bytes = req->columns->size_bytes() 
                        + req->columns_onfractions->size_bytes();
 
-    req->timeout_commit += 10*cells_count;
     req->commit();
     req->wait();
 

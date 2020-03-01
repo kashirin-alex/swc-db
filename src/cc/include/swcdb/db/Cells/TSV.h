@@ -285,10 +285,7 @@ class FileReader {
         break;
     }
 
-    auto col = updater->columns->get_col(cid);
-    if(col->size_bytes() && !updater->result->completion())
-      updater->commit(col);
-    
+    updater->commit_if_need();  
     updater->wait();
   }
 
@@ -382,12 +379,7 @@ class FileReader {
           col->add(cell);
           cells_count++;
           cells_bytes += cell.encoded_length();
-          
-          s_sz = col->size_bytes();
-          if(updater->result->completion() && s_sz > updater->buff_sz*3)
-            updater->wait();
-          if(!updater->result->completion() && s_sz >= updater->buff_sz)
-            updater->commit(col);
+          updater->commit_or_wait(col);  
           
         } else  {
           buffer_remain.add(ptr, remain);

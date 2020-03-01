@@ -152,23 +152,27 @@ class Select : public std::enable_shared_from_this<Select> {
   typedef std::shared_ptr<Select>           Ptr;
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
-  uint32_t buff_sz          = 8000000;
-  uint32_t partial_rate     = 3;
-  uint32_t timeout_select   = 600000;
+  uint32_t          buff_sz;
+  uint8_t           buff_ahead;
+  uint32_t          timeout;
 
-  Cb_t                        cb;
-  DB::Specs::Scan             specs;
-  Result::Ptr                 result;
+  Cb_t              cb;
+  DB::Specs::Scan   specs;
+  Result::Ptr       result;
 
   Select(Cb_t cb=0, bool rsp_partials=false)
-        : cb(cb), 
-          rsp_partials(cb && rsp_partials), 
+        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
+          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
+          timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
+          cb(cb), rsp_partials(cb && rsp_partials), 
           result(std::make_shared<Result>(m_cv, rsp_partials)) { 
   }
 
   Select(const DB::Specs::Scan& specs, Cb_t cb=0, bool rsp_partials=false)
-        : cb(cb), specs(specs), 
-          rsp_partials(cb && rsp_partials),
+        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
+          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
+          timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
+          cb(cb), specs(specs), rsp_partials(cb && rsp_partials),
           result(std::make_shared<Result>(m_cv, rsp_partials)) {
   }
 
@@ -207,7 +211,7 @@ class Select : public std::enable_shared_from_this<Select> {
   }
 
   const bool wait_on_partials() const {
-    return result->get_size_bytes() > buff_sz * partial_rate;
+    return result->get_size_bytes() > buff_sz * buff_ahead;
   } 
 
   void response_partial() {
@@ -626,7 +630,7 @@ class Select : public std::enable_shared_from_this<Select> {
             col->selector->response();
         },
 
-        col->selector->timeout_select
+        col->selector->timeout
       );
     }
 

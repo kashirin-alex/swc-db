@@ -99,12 +99,44 @@ class Clients final {
     m_env = std::make_shared<Clients>(clients);
   }
 
-  static client::Clients::Ptr get(){
+  static client::Clients::Ptr get() {
     SWC_ASSERT(m_env != nullptr);
     return m_env->m_clients;
   }
 
-  Clients(client::Clients::Ptr clients) : m_clients(clients) {}
+  static const Clients& ref() {
+    return *m_env.get();
+  }
+
+  const gInt32tPtr      cfg_send_buff_sz;
+  const gInt8tPtr       cfg_send_ahead;
+  const gInt32tPtr      cfg_send_timeout;
+  const gInt32tPtr      cfg_send_timeout_ratio;
+
+  const gInt32tPtr      cfg_recv_buff_sz;
+  const gInt8tPtr       cfg_recv_ahead;
+  const gInt32tPtr      cfg_recv_timeout;
+
+  Clients(client::Clients::Ptr clients) 
+          : m_clients(clients),
+
+            cfg_send_buff_sz(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.send.buffer")), 
+            cfg_send_ahead(Env::Config::settings()->get_ptr<gInt8t>(
+              "swc.client.send.ahead")), 
+            cfg_send_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.send.timeout")),
+            cfg_send_timeout_ratio(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.send.timeout.bytes.ratio")),
+
+            cfg_recv_buff_sz(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.recv.buffer")), 
+            cfg_recv_ahead(Env::Config::settings()->get_ptr<gInt8t>(
+              "swc.client.recv.ahead")),
+            cfg_recv_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+              "swc.client.recv.timeout")) {
+  }
+
   ~Clients(){}
 
   private:

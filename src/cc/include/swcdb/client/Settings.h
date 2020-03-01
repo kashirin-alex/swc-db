@@ -35,8 +35,26 @@ void Settings::init_client_options() {
      "Manager client connection keepalive for ms since last action")
     ("swc.client.schema.expiry", g_i32(1800000), 
      "Schemas expiry in ms")
-    ;
-} 
-}}
+
+    ("swc.client.send.buffer", g_i32(8388608), 
+     "Client send buffer size in bytes")
+    ("swc.client.send.ahead", g_i8(3), 
+     "Client send number of buffers ahead")
+    ("swc.client.send.timeout", g_i32(800000), 
+     "Client send timeout in ms")
+    ("swc.client.send.timeout.bytes.ratio", g_i32(1000), 
+     "Timeout ratio to bytes, bytes/ratio=ms added to send timeout")
+
+    ("swc.client.recv.buffer", g_i32(8388608), 
+     "Client receive buffer size in bytes")
+    ("swc.client.recv.ahead", g_i8(3), 
+     "Client receive number of buffers ahead")
+    ("swc.client.recv.timeout", g_i32(800000), 
+     "Client receive timeout in ms")
+  ;
+}
+
+
+}} // namespcae SWC::Config
 
 #endif // swc_app_manager_Settings_h

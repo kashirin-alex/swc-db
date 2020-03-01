@@ -187,11 +187,7 @@ void load_data(DB::Schema::Ptr schema) {
           added_count++;
           added_bytes += cell.encoded_length();
 
-          col_sz = col->size_bytes();
-          if(req->result->completion() && col_sz > req->buff_sz*3)
-            req->wait();
-          if(!req->result->completion() && col_sz >= req->buff_sz)
-            req->commit(col);
+          req->commit_or_wait(col);
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;
@@ -206,8 +202,7 @@ void load_data(DB::Schema::Ptr schema) {
     }
   }
 
-  if(col->size_bytes() && !req->result->completion())
-    req->commit(col);  
+  req->commit_if_need();
   req->wait();
 
   assert(added_count && added_bytes);
