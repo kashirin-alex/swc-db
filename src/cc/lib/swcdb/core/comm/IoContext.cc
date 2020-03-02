@@ -54,9 +54,18 @@ IO_SignalsPtr IoContext::signals() {
   return m_signals;
 }
 
+void IoContext::set_periodic_timer(const gInt32tPtr ms, 
+                                   PeriodicTimer::Call_t call) {
+  m_periodic_timers.set(ms, call, ptr());
+}
+
 void IoContext::stop() {
   SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", m_name.c_str());
+  
+  m_periodic_timers.stop();
+
   running.store(false);
+
   m_wrk.reset();
     
   // hold on for IO to finish

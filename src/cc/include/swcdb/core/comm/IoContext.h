@@ -8,6 +8,7 @@
 
 #include <asio.hpp>
 #include "swcdb/core/Logger.h"
+#include "swcdb/core/comm/PeriodicTimer.h"
 
 namespace SWC {
   
@@ -37,6 +38,8 @@ class IoContext final {
 
   IO_SignalsPtr signals();
 
+  void set_periodic_timer(const gInt32tPtr ms, PeriodicTimer::Call_t call);
+
   void stop();
 
   const int32_t get_size() const;
@@ -50,6 +53,9 @@ class IoContext final {
   asio::thread_pool   m_pool;
   asio::executor_work_guard<asio::io_context::executor_type> m_wrk;
   int32_t             m_size;
+  PeriodicTimers      m_periodic_timers;
+
+
 };
 
 
