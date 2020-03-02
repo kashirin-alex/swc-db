@@ -49,7 +49,9 @@ class Clients final {
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.client.Mngr.connection.probes"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.Mngr.connection.keepalive")
+        "swc.client.Mngr.connection.keepalive"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.request.again.delay")
     );
 
     rgr_service = std::make_shared<Serialized>(
@@ -62,7 +64,9 @@ class Clients final {
       Env::Config::settings()->get_ptr<gInt32t>(
         "swc.client.Rgr.connection.probes"),
       Env::Config::settings()->get_ptr<gInt32t>(
-        "swc.client.Rgr.connection.keepalive")
+        "swc.client.Rgr.connection.keepalive"),
+      Env::Config::settings()->get_ptr<gInt32t>(
+        "swc.client.request.again.delay")
     );
 
     schemas = std::make_shared<Schemas>(

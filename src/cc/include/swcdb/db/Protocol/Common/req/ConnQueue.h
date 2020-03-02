@@ -59,7 +59,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
       if(queue == nullptr)
         run();
       else
-        queue->put(req());
+        queue->delay(req());
     }
 
     virtual bool valid() { return true; }
@@ -85,9 +85,12 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   };
 
 
-  ConnQueue(const gInt32tPtr keepalive_ms=nullptr) 
+  ConnQueue(const gInt32tPtr keepalive_ms=nullptr, 
+            const gInt32tPtr again_delay_ms=nullptr) 
             : m_conn(nullptr),  m_queue_running(false), m_connecting(false),
-              cfg_keepalive_ms(keepalive_ms), m_timer(nullptr) { 
+              cfg_keepalive_ms(keepalive_ms),
+              cfg_again_delay_ms(again_delay_ms), 
+              m_timer(nullptr) { 
   }
 
   virtual ~ConnQueue() {
@@ -102,6 +105,17 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   virtual void close_issued() { }
 
   void stop() {
+    for(;;) {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      auto it = m_delayed.begin();
+      if(it == m_delayed.end()) {
+        break;
+      } else {
+        (*it)->cancel();
+        std::this_thread::yield();
+      }
+    }
+
     ReqBase::Ptr req;
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -122,7 +136,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
     }
   }
 
-  void put(ReqBase::Ptr req){
+  void put(ReqBase::Ptr req) {
     if(req->queue == nullptr) 
       req->queue = shared_from_this();
     {
@@ -145,6 +159,34 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
       m_connecting = false;
     }
     exec_queue();
+  }
+
+  void delay(ReqBase::Ptr req) {
+    if(cfg_again_delay_ms == nullptr) {
+      put(req);
+      return;
+    }
+    auto tm = new asio::high_resolution_timer(*Env::IoCtx::io()->ptr());
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      m_delayed.push_back(tm);
+    }
+    tm->expires_from_now(std::chrono::milliseconds(cfg_again_delay_ms->get()));
+    tm->async_wait(
+      [tm, req, queue=shared_from_this()](const asio::error_code ec) {
+        queue->delay_proceed(req, tm);
+      }
+    );
+  }
+
+  void delay_proceed(ReqBase::Ptr req, asio::high_resolution_timer* tm) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    auto it = std::find(m_delayed.begin(), m_delayed.end(), tm);
+    if(it != m_delayed.end()) {
+      m_delayed.erase(it);
+      delete tm;
+      put(req);
+    }
   }
 
   const std::string to_string() {
@@ -264,9 +306,12 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   bool                          m_queue_running;
   bool                          m_connecting;
   asio::high_resolution_timer*  m_timer; 
+  std::vector<asio::high_resolution_timer*>  m_delayed;
 
   protected:
   const gInt32tPtr          cfg_keepalive_ms;
+  const gInt32tPtr          cfg_again_delay_ms;
+
 };
 
 

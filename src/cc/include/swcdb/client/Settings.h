@@ -45,6 +45,9 @@ void Settings::init_client_options() {
     ("swc.client.send.timeout.bytes.ratio", g_i32(1000), 
      "Timeout ratio to bytes, bytes/ratio=ms added to send timeout")
 
+    ("swc.client.request.again.delay", g_i32(500), 
+     "Client request again delay size in ms")
+
     ("swc.client.recv.buffer", g_i32(8388608), 
      "Client receive buffer size in bytes")
     ("swc.client.recv.ahead", g_i8(3), 
