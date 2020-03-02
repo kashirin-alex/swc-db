@@ -15,7 +15,7 @@ add_custom_command(
 )
 
 configure_file(swcdb/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
-configure_file(swcdb/requirements.txt ${PY_PKG_PATH}/requirements.txt @ONLY)
+configure_file(swcdb/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
 configure_file(swcdb/README.md ${PY_PKG_PATH}/README.txt @ONLY)
 #configure_file(swcdb/MANIFEST ${PY_PKG_PATH}/MANIFEST @ONLY)
 
