@@ -13,7 +13,13 @@
 
 namespace SWC { 
 
-Resources::Resources() {}
+Resources::Resources() : release(0) {
+#if defined TCMALLOC_MINIMAL || defined TCMALLOC
+  release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
+  if(release_rate_default < 0)
+    release_rate_default = 0;
+#endif
+}
 
 Resources::~Resources() {
   if(m_timer)
@@ -26,7 +32,8 @@ void Resources::init(asio::io_context* io, gInt32tPtr percent_ram,
     m_timer = new asio::high_resolution_timer(*io);
     
   cfg_percent_ram = percent_ram;
-  release = release_call;
+  if(release_call)
+    release = release_call;
 
   checker();
 }
@@ -36,11 +43,11 @@ const size_t Resources::need_ram() const {
 }
 
 const size_t Resources::avail_ram() const {
-  return ram.allowed - ram.used  ? ram.allowed - ram.used : 0;
+  return ram.allowed > ram.used  ? ram.allowed - ram.used : 0;
 }
 
 const bool Resources::need_ram(const uint32_t& sz) const {
-  return ram.free - sz*2 < 0 || ram.used + sz > ram.allowed;
+  return ram.free < sz*2 || ram.used + sz > ram.allowed;
 }
 
 void Resources::stop() {
@@ -63,7 +70,12 @@ void Resources::checker() {
     if(release)
       release(bytes);
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-    MallocExtension::instance()->ReleaseFreeMemory();
+    if(!avail_ram()) {
+      auto inst = MallocExtension::instance();
+      inst->SetMemoryReleaseRate(1000);
+      inst->ReleaseFreeMemory();
+      inst->SetMemoryReleaseRate(release_rate_default);
+    }
 #endif
   }
 

@@ -58,6 +58,10 @@ class Resources final {
   Component                     ram;
   uint32_t                      page_size;
   // Component                     storage;
+  
+#if defined TCMALLOC_MINIMAL || defined TCMALLOC
+  double release_rate_default;
+#endif
 
 };
 
