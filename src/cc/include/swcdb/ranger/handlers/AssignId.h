@@ -10,33 +10,22 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-class AssignId : public AppHandler {
-  public:
+void assign_id(ConnHandlerPtr conn, Event::Ptr ev, 
+               Protocol::Mngr::Req::RgrMngId::Ptr id_mngr) {
+  try {
 
-  AssignId(ConnHandlerPtr conn, Event::Ptr ev, 
-          Mngr::Req::RgrMngId::Scheduler* validator)
-          : AppHandler(conn, ev), validator(validator) { }
+    if(RangerEnv::is_shuttingdown())
+      conn->send_error(Error::SERVER_SHUTTING_DOWN, "", ev);
+    else 
+      conn->response_ok(ev);
 
-  void run() override {
+    id_mngr->request();
 
-    try {
-      if(RangerEnv::is_shuttingdown()){
-        m_conn->send_error(Error::SERVER_SHUTTING_DOWN, "", m_ev);
-        return;
-      }
-      m_conn->response_ok(m_ev);
-      Mngr::Req::RgrMngId::assign(validator);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
-  
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
+}
 
-  private:
-  Mngr::Req::RgrMngId::Scheduler* validator;
-};
-  
 
 }}}}
 

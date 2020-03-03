@@ -17,114 +17,61 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<RgrMngId> Ptr;
 
-  class Scheduler final {
-
-    public:
-
-    Scheduler() :
-      m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
-      cfg_check_interval(
-        Env::Config::settings()->get_ptr<gInt32t>(
-           "swc.rgr.id.validation.interval")) {
-    }
-
-    ~Scheduler(){}
-
-    void set(uint32_t ms) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(!m_run)
-        return;
-        
-      m_timer.cancel();
-
-      m_timer.expires_from_now(
-        std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
-
-      m_timer.async_wait(
-        [this](const asio::error_code ec) {
-          if (ec != asio::error::operation_aborted){
-            assign(this);
-          }
-        }
-      );
-    }
-
-    void stop() {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      if(m_run) 
-        m_timer.cancel();
-      m_run = false;
-    }
-
-    private:
-    const gInt32tPtr             cfg_check_interval;
-    
-    std::mutex                   m_mutex;
-    asio::high_resolution_timer  m_timer;
-    bool                         m_run;
-  };
+  RgrMngId(asio::io_context* io, const std::function<void()>& cb = 0) 
+          : Common::Req::ConnQueue::ReqBase(false, nullptr),
+            m_timer(asio::high_resolution_timer(*io)),
+            cfg_check_interval(
+              Env::Config::settings()->get_ptr<gInt32t>(
+                "swc.rgr.id.validation.interval")), 
+            cb_shutdown(cb),
+            m_run(true) {
+  }
   
-  void static assign(Scheduler* validator) {
-    std::make_shared<RgrMngId>(validator)->assign();
+  virtual ~RgrMngId() { }
+
+  void create(const Params::RgrMngId& params) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    cbp = CommBuf::make(params);
+    cbp->header.set(RGR_MNG_ID, 60000);
   }
 
-  void static shutting_down(Scheduler* validator, 
-                            std::function<void()> cb) {
-    auto rgr_data = RangerEnv::rgr_data();
-    SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  
-             rgr_data->to_string().c_str());
+  void request() {
+    cancel();
 
-    Ptr req = std::make_shared<RgrMngId>(
-      validator, 
+    if(RangerEnv::is_shuttingdown()) {
+      auto rgr_data = RangerEnv::rgr_data();
+      SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  
+               rgr_data->to_string().c_str());
       create(
         Params::RgrMngId(
           rgr_data->id.load(), 
           Params::RgrMngId::Flag::RS_SHUTTINGDOWN, 
           rgr_data->endpoints
         )
-      )
-    );
-    req->cb_shutdown = cb;
-    req->run();
-  }
-  
-  static CommBuf::Ptr create(const Params::RgrMngId& params) {
-    auto cbp = CommBuf::make(params);
-    cbp->header.set(RGR_MNG_ID, 60000);
-    return cbp;
-  }
+      );
 
-  RgrMngId(Scheduler* validator, CommBuf::Ptr cbp=nullptr) 
-          : Common::Req::ConnQueue::ReqBase(false, cbp),
-            validator(validator) {
-  }
-  
-  virtual ~RgrMngId(){}
+    } else {
+      create(
+        Params::RgrMngId(
+          0, 
+          Params::RgrMngId::Flag::RS_REQ, 
+          RangerEnv::rgr_data()->endpoints
+        )
+      );
+    }
 
-  void assign() {
-    if(RangerEnv::is_shuttingdown())
-      return;
-
-    cbp = create(
-      Params::RgrMngId(
-        0, 
-        Params::RgrMngId::Flag::RS_REQ, 
-        RangerEnv::rgr_data()->endpoints
-      )
-    );
     run();
   }
 
-
   void handle_no_conn() override {
     clear_endpoints();
-    validator->set(200);
+    set(200);
   }
 
   bool run(uint32_t timeout=0) override {
-    if(endpoints.empty()){
+    if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(1, endpoints);
-      if(endpoints.empty()){
+      if(endpoints.empty()) {
         std::make_shared<MngrActive>(1, shared_from_this())->run();
         return false;
       }
@@ -136,12 +83,12 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
 
     if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
-      validator->set(1000);
+      set(1000);
       return;
     }
 
-    if(ev->response_code() == Error::OK){
-      validator->set(0);
+    if(ev->response_code() == Error::OK) {
+      set(0);
       return;
     }      
     
@@ -155,14 +102,15 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
         
-    if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_REREQ){
-      assign();
+    if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_REREQ) {
+      request();
       return;
     }
     
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
       SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN %s", 
                 RangerEnv::rgr_data()->to_string().c_str());
+      stop();
       if(cb_shutdown)
         cb_shutdown();
       else
@@ -172,10 +120,10 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
 
     if(rsp_params.flag != Params::RgrMngId::Flag::MNGR_ASSIGNED
         &&
-       rsp_params.flag != Params::RgrMngId::Flag::MNGR_REASSIGN){
+       rsp_params.flag != Params::RgrMngId::Flag::MNGR_REASSIGN) {
       clear_endpoints();
       // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
-      validator->set(1000);
+      set(1000);
       return;
     }
 
@@ -209,13 +157,9 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
       SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rgr_data->to_string().c_str());
     }
 
-    cbp = create(
-      Params::RgrMngId(rgr_data->id, flag, rgr_data->endpoints)
-    );
+    create(Params::RgrMngId(rgr_data->id, flag, rgr_data->endpoints));
     run();
   }
-   
-  std::function<void()> cb_shutdown = 0;
   
   private:
 
@@ -224,8 +168,43 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     endpoints.clear();
   }
 
-  Scheduler*  validator;
-  EndPoints   endpoints;
+  void stop() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_run) 
+      m_timer.cancel();
+    m_run = false;
+  }
+
+  void set(uint32_t ms) {
+    cancel();
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(!m_run)
+      return;
+
+    m_timer.expires_from_now(
+      std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
+
+    m_timer.async_wait(
+      [this](const asio::error_code ec) {
+        if(ec != asio::error::operation_aborted)
+          request();
+      }
+    );
+  }
+
+  void cancel() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_timer.cancel();
+  }
+
+  const gInt32tPtr              cfg_check_interval;
+  const std::function<void()>   cb_shutdown;
+  EndPoints                     endpoints;
+  
+  std::mutex                    m_mutex;
+  asio::high_resolution_timer   m_timer;
+  bool                          m_run;
 
 };
 

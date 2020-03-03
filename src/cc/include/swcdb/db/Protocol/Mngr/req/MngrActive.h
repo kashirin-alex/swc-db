@@ -72,7 +72,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
     
     // SWC_LOGF(LOG_DEBUG, " handle: %s", ev->to_str().c_str());
 
-    if(ev->error == Error::OK && ev->header.command == MNGR_ACTIVE){
+    if(ev->error == Error::OK && ev->header.command == MNGR_ACTIVE) {
 
       try {
         const uint8_t *ptr = ev->data.base;
@@ -81,7 +81,7 @@ class MngrActive : public Common::Req::ConnQueue::ReqBase {
         Params::MngrActiveRsp params;
         params.decode(&ptr, &remain);
         
-        if(params.available && params.endpoints.size()){
+        if(params.available && params.endpoints.size()) {
           group_host.endpoints = params.endpoints; 
           Env::Clients::get()->mngrs_groups->add(group_host);
           hdlr->run();

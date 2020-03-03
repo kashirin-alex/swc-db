@@ -94,12 +94,15 @@ class AppContext : public SWC::AppContext {
       );
     }
 
-    return std::make_shared<AppContext>();
+    auto app = std::make_shared<AppContext>();
+    app->id_mngr = std::make_shared<Protocol::Mngr::Req::RgrMngId>(
+      Env::IoCtx::io()->ptr(), 
+      [app]() { (new std::thread([app]{ app->stop(); }))->detach(); }
+    );
+    return app;
   }
 
-  AppContext() { 
-
-  }
+  AppContext() { }
 
   void init(const EndPoints& endpoints) override {
     RangerEnv::rgr_data()->endpoints = endpoints;
@@ -109,7 +112,7 @@ class AppContext : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
 
     RangerEnv::start();
-    Protocol::Mngr::Req::RgrMngId::assign(&m_id_validator);
+    id_mngr->request();
   }
 
   void set_srv(SerializedServer::Ptr srv){
@@ -127,43 +130,34 @@ class AppContext : public SWC::AppContext {
 
       case Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
-        return; 
+        break; 
         
       case Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        return;
+        break;
 
       case Event::Type::ERROR:
-        return;
+        break;
 
       case Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Protocol::Rgr::MAX_CMD
                     ? Protocol::Rgr::NOT_IMPLEMENTED : ev->header.command;
         
         if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
+          Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
+        
+        } else if(!RangerEnv::rgr_data()->id) {
+          try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
+
+        } else {
           asio::post(
             *Env::IoCtx::io()->ptr(), 
-            [handler = new Protocol::Rgr::Handler::AssignId(
-              conn, ev, &m_id_validator)]() { 
-              handler->run(); 
-              delete handler;
+            [cmd, conn, ev]() { 
+              handlers[cmd](conn, ev); 
             }
           );
-          return;
         }
-
-        if(!RangerEnv::rgr_data()->id) {
-          try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
-          return;
-        }
-        
-        asio::post(
-          *Env::IoCtx::io()->ptr(), 
-          [cmd, conn, ev]() { 
-            handlers[cmd](conn, ev); 
-          }
-        );
-        return;
+        break;
       }
 
       default:
@@ -175,18 +169,20 @@ class AppContext : public SWC::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
 
-    if(sig==0){ // set signals listener
+    if(sig==0) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
-        [ptr=this](const std::error_code &ec, const int &sig){
-          SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
-          ptr->shutting_down(ec, sig); 
+        [this](const std::error_code &ec, const int &sig) {
+          SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
+                   sig, ec.message().c_str());
+          shutting_down(ec, sig); 
         }
       ); 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
               sig, ec.message().c_str());
       return;
     }
-    SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
+    SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", 
+             sig, ec.message().c_str());
     
     if(m_srv == nullptr) {
       SWC_LOG(LOG_INFO, "Exit");
@@ -195,23 +191,18 @@ class AppContext : public SWC::AppContext {
     
 
     RangerEnv::shuttingdown();
-    
+
     m_srv->stop_accepting(); // no further requests accepted
 
-    Protocol::Mngr::Req::RgrMngId::shutting_down(
-      &m_id_validator,
-      [ptr=shared_from_this()](){
-        (new std::thread([ptr]{ ptr->stop(); }))->detach();
-      }
-    );
+    id_mngr->request();
   }
 
   void stop() override {
+    
     while(RangerEnv::in_process())
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     RangerEnv::columns()->unload_all(true); //re-check
     
-    m_id_validator.stop();
     Env::Resources.stop();
     
     Env::Clients::get()->rgr_service->stop();
@@ -226,13 +217,10 @@ class AppContext : public SWC::AppContext {
     std::quick_exit(0);
   }
 
-
   private:
   
-  std::mutex                m_mutex;
-  SerializedServer::Ptr     m_srv = nullptr;
-
-  Protocol::Mngr::Req::RgrMngId::Scheduler  m_id_validator;
+  Protocol::Mngr::Req::RgrMngId::Ptr id_mngr = nullptr;
+  SerializedServer::Ptr              m_srv = nullptr;
   
 };
 
