@@ -26,12 +26,14 @@ Resources::~Resources() {
     delete m_timer;
 }
 
-void Resources::init(asio::io_context* io, gInt32tPtr percent_ram, 
+void Resources::init(asio::io_context* io, 
+                     gInt32tPtr ram_percent, gInt32tPtr ram_release_rate, 
                      std::function<void(size_t)> release_call) {
   if(m_timer == nullptr)
     m_timer = new asio::high_resolution_timer(*io);
     
-  cfg_percent_ram = percent_ram;
+  cfg_ram_percent = ram_percent;
+  cfg_ram_release_rate = ram_release_rate;
   if(release_call)
     release = release_call;
 
@@ -71,7 +73,7 @@ void Resources::checker() {
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     if(!avail_ram()) {
       auto inst = MallocExtension::instance();
-      inst->SetMemoryReleaseRate(1000);
+      inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
       inst->ReleaseFreeMemory();
       inst->SetMemoryReleaseRate(release_rate_default);
     }
@@ -87,7 +89,7 @@ void Resources::refresh_stats() {
     
     ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
     ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
-    ram.allowed = (ram.total/100) * cfg_percent_ram->get();
+    ram.allowed = (ram.total/100) * cfg_ram_percent->get();
   }
 
   size_t sz = 0, rss = 0;

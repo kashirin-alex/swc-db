@@ -19,7 +19,8 @@ class Resources final {
 
   ~Resources();
 
-  void init(asio::io_context* io, gInt32tPtr percent_ram, 
+  void init(asio::io_context* io, 
+            gInt32tPtr ram_percent, gInt32tPtr ram_release_rate,
             std::function<void(size_t)> release_call=0);
 
   const size_t need_ram() const;
@@ -51,7 +52,9 @@ class Resources final {
 
 
   asio::high_resolution_timer*  m_timer; 
-  gInt32tPtr                    cfg_percent_ram;
+  gInt32tPtr                    cfg_ram_percent;
+  gInt32tPtr                    cfg_ram_release_rate;
+  
   std::function<void(size_t)>   release;
 
   int8_t                        next_major_chk = 0;

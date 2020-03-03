@@ -59,7 +59,9 @@ int main(int argc, char** argv) {
   Env::Resources.init(
     Env::IoCtx::io()->ptr(),
     Env::Config::settings()->get_ptr<SWC::gInt32t>(
-      "swc.rgr.ram.percent")
+      "swc.rgr.ram.percent"),
+    Env::Config::settings()->get_ptr<gInt32t>(
+      "swc.rgr.ram.release.rate")
   );
 
   RangerEnv::init();

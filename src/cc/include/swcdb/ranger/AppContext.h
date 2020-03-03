@@ -83,6 +83,7 @@ class AppContext : public SWC::AppContext {
     Env::Resources.init(
       Env::IoCtx::io()->ptr(),
       Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
+      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.release.rate"),
       [](size_t bytes) { RangerEnv::columns()->release(bytes); }
     );
 

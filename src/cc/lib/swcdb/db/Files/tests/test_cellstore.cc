@@ -215,7 +215,9 @@ int main(int argc, char** argv) {
   SWC::Env::Resources.init(
     SWC::Env::IoCtx::io()->ptr(),
     SWC::Env::Config::settings()->get_ptr<SWC::gInt32t>(
-      "swc.rgr.ram.percent")
+      "swc.rgr.ram.percent"),
+    SWC::Env::Config::settings()->get_ptr<SWC::gInt32t>(
+      "swc.rgr.ram.release.rate")
   );
 
   SWC::RangerEnv::init();
