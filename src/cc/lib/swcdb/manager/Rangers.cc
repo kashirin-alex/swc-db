@@ -70,9 +70,9 @@ void Rangers::schedule_assignment_check(uint32_t t_ms) {
       }
   }); 
 
-  if(t_ms > 10000) {
-    std::cout << to_string() << "\n";
-  }
+  if(t_ms > 10000)
+    SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
+
   SWC_LOGF(LOG_DEBUG, "Rangers assign_ranges scheduled in ms=%d", t_ms);
 }
 
@@ -517,7 +517,6 @@ void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range,
     std::scoped_lock lock(m_mutex);
     rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
     rs_last->init_queue();
-    std::cout <<  " assign_range, rs_last " << rs_last->to_string() << "\n";
     rs_last->state = Ranger::State::AWAIT;
     id_due = false;
   }
@@ -597,7 +596,6 @@ namespace Protocol { namespace Rgr { namespace Req {
 
 void RangeLoad::loaded(int err, bool failure, 
                                            const DB::Cells::Interval& intval) {
-  std::cout << " Protocol::Rgr::Req::RangeLoad::loaded" << "\n";
   auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid, false);
   if(col == nullptr) {
     Env::Mngr::rangers()->range_loaded(
@@ -617,8 +615,6 @@ void RangeLoad::loaded(int err, bool failure,
 }
 
 void ColumnUpdate::updated(int err, bool failure) {
-  std::cout << " Protocol::Rgr::Req::ColumnUpdate::updated" << "\n";   
-
   if(!err) {
     Env::Mngr::columns()->get_column(err, schema->cid, false)
                              ->change_rgr_schema(rgr->id, schema->revision);
@@ -636,8 +632,6 @@ void ColumnUpdate::updated(int err, bool failure) {
 }
 
 void AssignIdNeeded::rsp(int err) {
-  std::cout << " Protocol::Rgr::Req::AssignIdNeeded::rsp" << "\n";
-  
   if(!err) 
     // RsId assignment on the way, put range back as not assigned 
     Env::Mngr::rangers()->range_loaded(

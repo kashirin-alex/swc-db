@@ -72,7 +72,7 @@ const bool Block::includes(const DB::Specs::Interval& spec) {
 }
     
 void Block::preload() {
-  //std::cout << " BLK_PRELOAD " << to_string() << "\n";
+  //SWC_PRINT << " BLK_PRELOAD " << to_string() << SWC_PRINT_CLOSE;
   asio::post(
     *Env::IoCtx::io()->ptr(), 
     [ptr=ptr()](){ 
@@ -116,14 +116,15 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
 
   added = m_cells.size() - added;
   auto took = Time::now_ns()-ts;
-  std::cout << "Block::load_cells(cells)"
+  SWC_PRINT << "Block::load_cells(cells)"
             << " synced=0"
             << " avail=" << cells.size() 
             << " added=" << added 
             << " skipped=" << cells.size()-added
             << " avg=" << (added>0 ? took / added : 0)
             << " took=" << took
-            << std::flush << " " << m_cells.to_string() << "\n";
+            << std::flush << " " << m_cells.to_string() 
+            << SWC_PRINT_CLOSE;
 }
 
 const size_t Block::load_cells(const uint8_t* buf, size_t remain, 
@@ -185,7 +186,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     m_cells.expand_begin(m_interval);
     
   auto took = Time::now_ns()-tts;
-  std::cout << "Block::load_cells(rbuf)"
+  SWC_PRINT << "Block::load_cells(rbuf)"
             << " synced=" << synced 
             << " avail=" << avail 
             << " added=" << added 
@@ -195,7 +196,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
             //<< " ts_read=" << ts_read
             //<< "  ts_cmp=" << ts_cmp
             //<< "  ts_add=" << ts_add
-            << "\n";
+            << SWC_PRINT_CLOSE;
   return added;
 }
 

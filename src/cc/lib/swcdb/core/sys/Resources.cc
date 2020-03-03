@@ -65,7 +65,6 @@ const std::string Resources::to_string() const {
 void Resources::checker() {
   refresh_stats();
 
-  //std::cout << to_string() << "\n";
   if(size_t bytes = need_ram()) {
     if(release)
       release(bytes);

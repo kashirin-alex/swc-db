@@ -218,9 +218,10 @@ class DbClient : public Interface {
         [schema, &proccessing, await=&res]
         (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::ColumnCompactRsp rsp) {
-          std::cout << "Compactig Column cid=" << schema->cid 
+          SWC_PRINT << "Compactig Column cid=" << schema->cid 
                     << " '" << schema->col_name << "' err=" << rsp.err 
-                    << "(" << Error::get_text(rsp.err) << ")\n";
+                    << "(" << Error::get_text(rsp.err) << ")" 
+                    << SWC_PRINT_CLOSE;
           if(!--proccessing)
             await->set_value();
         },
@@ -258,6 +259,7 @@ class DbClient : public Interface {
       }
     }
 
+    std::scoped_lock lock(Logger::logger.mutex);
     for(auto& schema : schemas) {
       schema->display(std::cout);
       std::cout << std::endl;
@@ -284,6 +286,7 @@ class DbClient : public Interface {
       return error(message);
 
     if(display_flags & DB::DisplayFlag::SPECS) {
+      std::scoped_lock lock(Logger::logger.mutex);
       std::cout << "\n\n";
       req->specs.display(
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
@@ -313,6 +316,8 @@ class DbClient : public Interface {
         schema = Env::Clients::get()->schemas->get(err, cid);
         cells.free();
         result->get_cells(cid, cells);
+
+        std::scoped_lock lock(Logger::logger.mutex);
         for(auto& cell : cells) {
           cells_count++;
           cells_bytes += cell->encoded_length();
@@ -425,6 +430,7 @@ class DbClient : public Interface {
       return error(Error::get_text(err));
 
     if(display_flags & DB::DisplayFlag::SPECS) {
+      std::scoped_lock lock(Logger::logger.mutex);
       std::cout << "\n\n";
       req->specs.display(
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
@@ -445,7 +451,8 @@ class DbClient : public Interface {
       writer.get_length(files);
       if(err) 
         return error(Error::get_text(err));
-
+      
+      std::scoped_lock lock(Logger::logger.mutex);
       std::cout << " Files Count:            " << files.size() << "\n";
       for(auto& file : files)
         std::cout << " File:                   " << file->filepath() 
@@ -457,7 +464,6 @@ class DbClient : public Interface {
   }
 
   void display_stats(size_t took, size_t bytes, size_t cells_count) {      
-    std::cout << "\n\nStatistics:\n";
     double took_base;
     double bytes_base;
 
@@ -486,14 +492,16 @@ class DbClient : public Interface {
       byte_base = "M";
     }
         
-    std::cout 
+    SWC_PRINT 
+      << "\n\nStatistics:\n"
       << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
       << " Total Cells Count:      " << cells_count                    << "\n"
       << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n"
       << " Average Transfer Rate:  " << bytes_base/took_base 
                               << " " << byte_base << "B/" << time_base << "s\n" 
       << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)
-                                              << " cell/" << time_base << "s\n"
+                                              << " cell/" << time_base << "s"
+      << SWC_PRINT_CLOSE;
     ;
 
   }

@@ -569,14 +569,8 @@ class FileReader {
       if(!remain || *ptr != '\n')
         return false;
       
-      ++ptr; // newline
-      remain--;
-
-    
-      //display(std::cout); std::cout << "\n";
-
-      *bufp = ptr;
-      *remainp = remain;
+      *bufp =  ++ptr; // newline
+      *remainp = --remain;
 
     return true;
   }

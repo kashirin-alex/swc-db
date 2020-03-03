@@ -66,14 +66,14 @@ class LogWriter final {
 
   template<typename T>
   void log(uint8_t priority, const T& msg) {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
               << ": " << msg << std::endl;
   }
 
   template<typename T>
   void log(uint8_t priority, const char* filen, int fline, const T& msg) {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
               << ": (" << filen << ':' << fline << ") "
               << msg << std::endl;
@@ -82,7 +82,7 @@ class LogWriter final {
   template<typename... Args> 
   void log(uint8_t priority, const char *format, 
            Args... args) {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) << ": ";
     std::printf(format, args...);
     std::cout << std::endl;
@@ -91,7 +91,7 @@ class LogWriter final {
   template<typename... Args> 
   void log(uint8_t priority, const char* filen, int fline, const char *format,
            Args... args) {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority)
               << ": (" << filen << ':' << fline << ") ";
     std::printf(format, args...);
@@ -170,7 +170,7 @@ extern LogWriter logger;
 #define SWC_LOG_OUT(priority) \
   if(Logger::logger.is_enabled(priority)) { \
     uint8_t _priority_ = priority; \
-    std::lock_guard<std::mutex> lock(Logger::logger.mutex); \
+    std::scoped_lock lock(Logger::logger.mutex); \
     if(Logger::logger.show_line_numbers()) \
       std::cout << Logger::logger.seconds() \
                 << ' ' << Logger::logger.get_name(priority)  \
@@ -179,8 +179,14 @@ extern LogWriter logger;
       std::cout << Logger::logger.seconds() \
                 << ' ' << Logger::logger.get_name(priority) << ": "; \
   std::cout 
+
 #define SWC_LOG_OUT_END '\n'; if(_priority_ == LOG_FATAL) HT_ABORT; }
 
+#define SWC_PRINT \
+  { \
+    std::scoped_lock lock(Logger::logger.mutex); \
+    std::cout 
+#define SWC_PRINT_CLOSE '\n'; }
 //
 
 /*

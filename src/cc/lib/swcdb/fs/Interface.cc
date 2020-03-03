@@ -149,7 +149,6 @@ void Interface::get_structured_ids(int &err, std::string base_path,
     return;
 
   for(auto& entry : dirs) {
-    // std::cout << entry.to_string();
     if(!entry.is_dir) continue;
 
     std::string id_name = base_id;

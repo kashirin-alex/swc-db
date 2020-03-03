@@ -27,7 +27,6 @@ class Timestamp {
   }
 
   void copy(const Timestamp &other) {
-    //std::cout << " copy(const Timestamp &other)\n";
     set(other.value, other.comp);
   }
 
@@ -43,8 +42,7 @@ class Timestamp {
     was_set = false;
   }
 
-  virtual ~Timestamp(){
-    //std::cout << " ~Timestamp\n";
+  virtual ~Timestamp() {
   }
 
   const bool empty() const {

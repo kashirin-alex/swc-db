@@ -38,8 +38,7 @@ class Flags {
     was_set         = other.was_set;
   }
 
-  virtual ~Flags(){
-    //std::cout << " ~Flags\n";
+  virtual ~Flags() {
   }
 
   const bool is_only_keys() const {

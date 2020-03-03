@@ -110,8 +110,10 @@ class Rgr : public Interface {
       [this, await=&r_promise] 
       (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
        const Protocol::Rgr::Params::ReportRsp& rsp) {
-        if(!(err = rsp.err))
+        if(!(err = rsp.err)) {
+          std::scoped_lock lock(Logger::logger.mutex);
           rsp.display(std::cout);
+        }
         await->set_value();
       }
     );

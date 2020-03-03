@@ -29,7 +29,6 @@ class Scan : public Serializable {
   }
 
   void copy(const Scan &other) {
-    //std::cout  << " copy(const Scan &other)\n";
     free();
     columns.resize(other.columns.size());
     int i = 0;
@@ -38,8 +37,7 @@ class Scan : public Serializable {
     flags.copy(other.flags);
   }
   
-  virtual ~Scan(){
-    //std::cout << " ~Scan \n";
+  virtual ~Scan() {
     free();
   }
 

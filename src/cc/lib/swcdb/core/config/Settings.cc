@@ -115,17 +115,17 @@ void Settings::parse_args(int argc, char *argv[]) {
     
   // some built-in behavior
   if (has("help")) {
-    std::cout << cmdline_desc << std::flush;
+    SWC_PRINT << cmdline_desc << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 
   if (has("help-config")) {
-    std::cout << file_desc << std::flush;
+    SWC_PRINT << file_desc << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 
   if (has("version")) {
-    std::cout << "Version: " << SWC::VERSION << std::endl;
+    SWC_PRINT << "Version: " << SWC::VERSION << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 

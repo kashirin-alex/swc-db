@@ -187,7 +187,7 @@ void MngrRole::fill_states(MngrsStatus states, uint64_t token,
   schedule_checkin(
     new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
     
-  std::cout << to_string() << "\n";
+  SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
   set_active_columns();
 }
 

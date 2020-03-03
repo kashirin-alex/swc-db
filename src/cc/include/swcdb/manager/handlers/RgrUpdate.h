@@ -20,7 +20,6 @@ void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::RgrUpdate params;
     params.decode(&ptr, &remain);
       
-    // std::cout << params.to_string() << "\n";
     conn->response_ok(ev);
     Env::Mngr::rangers()->update_status(params.hosts, params.sync_all);
 

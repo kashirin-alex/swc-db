@@ -31,7 +31,7 @@ int run() {
   try {
     return DbClient().run();
   } catch (std::exception& e) {
-    std::cout << e.what() << '\n';
+    SWC_PRINT << e.what() << SWC_PRINT_CLOSE;
   }
 
   return 1;
@@ -67,14 +67,13 @@ int Interface::run() {
   std::queue<std::string> queue;
 
   while(!stop && (ptr = line = readline(prompt_state))) {
-    //std::cout << "line=" << line << "\n";
+
     prompt_state = ""; // "-> ";
     do {
       c = *ptr++;
       if(next_line = c == 0)
         c = '\n';
 
-      //std::cout << " c=" << c << "(" << (int)c << ") \n";
       if(c == '\n' && cmd_end) {
         while(!queue.empty()) {
           auto& run_cmd = queue.front();
@@ -159,6 +158,7 @@ bool Interface::quit(std::string& cmd) const {
 }
 
 bool Interface::help(std::string& cmd) const {
+  std::scoped_lock lock(Logger::logger.mutex);
   std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
   size_t offset_name = 0;
   size_t offset_desc = 0;
@@ -190,7 +190,8 @@ bool Interface::help(std::string& cmd) const {
 }
 
 const bool Interface::error(const std::string& message) {
-  std::cout << "\033[31mERROR\033[00m: " << message << std::flush;
+  SWC_PRINT << "\033[31mERROR\033[00m: " << message 
+            << SWC_PRINT_CLOSE;
   return true; /// ? err
 }
 
@@ -202,7 +203,8 @@ const bool Interface::cmd_option(std::string& cmd) const {
               });
   if(opt != options.end())
     return (*opt)->call(cmd);
-  std::cout << "Unknown command='\033[31m" << cmd << ";\033[00m'\n";
+  SWC_PRINT << "Unknown command='\033[31m" << cmd << ";\033[00m'" 
+            << SWC_PRINT_CLOSE;
   return true;
 }
 

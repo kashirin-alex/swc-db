@@ -58,7 +58,6 @@ class Column : public Serializable {
   }
 
   void copy(const Column &other) {
-    //std::cout  << " copy(const Column &other)\n";
     cid = other.cid;
     free();
     intervals.resize(other.intervals.size());
@@ -69,7 +68,6 @@ class Column : public Serializable {
 
   virtual ~Column(){
     free();
-    //std::cout << " ~Column\n";
   }
   void free() {
     intervals.clear();

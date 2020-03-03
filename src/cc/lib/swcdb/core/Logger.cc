@@ -67,7 +67,7 @@ void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name 
   //          << " ptr=" << (size_t)this << "\n";
 
-  std::lock_guard<std::mutex> lock(mutex);
+  std::scoped_lock lock(mutex);
   m_name.clear();
   m_name.append(name);
 }
@@ -77,7 +77,7 @@ void LogWriter::daemon(const std::string& logs_path) {
   //          << " ptr=" << (size_t)this << "\n";
   errno = 0;
 
-  std::lock_guard<std::mutex> lock(mutex);
+  std::scoped_lock lock(mutex);
   m_logs_path = logs_path;
   if(m_logs_path.back() != '/')
     m_logs_path.append("/");
@@ -140,7 +140,7 @@ void LogWriter::renew_files() {
   filepath.append(m_name);
 
   std::string filepath_out(filepath+".log");
-  std::string filepath_err(filepath+".err");
+  //std::string filepath_err(filepath+".err");
 
   if(!errno) {
     std::cout << "Changing Standard Output File to=" << filepath_out << "\n";
