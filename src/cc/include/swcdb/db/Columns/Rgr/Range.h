@@ -611,7 +611,8 @@ class Range : public DB::RangeBase {
       }
     }
     
-    if(blocks.commitlog.size() > cfg->cellstore_size()/cfg->block_size()) {
+    if(blocks.commitlog.size_bytes_encoded() > 
+        (cfg->cellstore_size()/100) * cfg->compact_percent()) {
       compact_require(true);
       RangerEnv::compaction_schedule(10000);
     }

@@ -328,6 +328,14 @@ class Fragments final {
     return _size_bytes(only_loaded);
   }
 
+  const size_t size_bytes_encoded() {
+    std::shared_lock lock(m_mutex);
+    size_t size = 0;
+    for(auto frag : m_fragments)
+      size += frag->size_bytes_encoded();
+    return size;
+  }
+
   const bool processing() {
     std::shared_lock lock(m_mutex);
     return _processing();

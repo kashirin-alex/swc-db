@@ -281,6 +281,11 @@ class Fragment final {
     return m_size;
   }
 
+  const size_t size_bytes_encoded() {
+    std::shared_lock lock(m_mutex);
+    return m_size_enc;
+  }
+
   const bool processing() {
     std::shared_lock lock(m_mutex);
     return m_processing;
