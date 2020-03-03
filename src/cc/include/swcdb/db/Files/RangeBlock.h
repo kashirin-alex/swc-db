@@ -73,7 +73,7 @@ class Block final {
 
   const size_t load_cells(const uint8_t* buf, size_t remain, 
                           uint32_t revs, size_t avail, 
-                          bool& was_splitted);
+                          bool& was_splitted, bool synced=false);
 
   const bool splitter();
 

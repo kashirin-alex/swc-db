@@ -102,7 +102,8 @@ class Read final {
       m_cells_remain -= cells_block->load_cells(
         m_buffer.base, m_buffer.size, 
         cell_revs, m_cells_count, 
-        was_splitted
+        was_splitted,
+        true
       );
 
     processing_decrement();
