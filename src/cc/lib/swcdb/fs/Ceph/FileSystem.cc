@@ -11,11 +11,11 @@ namespace SWC{ namespace FS {
 bool apply_ceph() {
   settings->file_desc.add_options()
     ("swc.fs.ceph.path.root", str(""), "Ceph FileSystem's base root path")
-    ("swc.fs.ceph.OnFileChange.cfg", str(), "Dyn-config file")
+    ("swc.fs.ceph.cfg.dyn", strs(), "Dyn-config file")
   ;
   settings->parse_file(
     settings->get<std::string>("swc.fs.ceph.cfg", ""),
-    settings->get<std::string>("swc.fs.ceph.OnFileChange.cfg", "")
+    "swc.fs.ceph.cfg.dyn"
   );
   return;
 }

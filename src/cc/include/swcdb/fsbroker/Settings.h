@@ -19,11 +19,17 @@ void Settings::init_app_options() {
   init_fs_options();
   
   file_desc.add_options()
-    ("swc.fs.broker.host", str(), "FsBroker host (default resolve by hostname)") 
-    ("swc.fs.broker.port", i16(17000), "FsBroker port")
+    ("swc.fs.broker.host", str(), 
+      "FsBroker host (default resolve by hostname)")
+    ("swc.fs.broker.port", i16(17000), 
+      "FsBroker port")
     
-    ("swc.FsBroker.cfg", str(), "Specific cfg-file for FsBroker")
-    ("swc.FsBroker.OnFileChange.cfg", str(), "Specific dyn. cfg-file for FsBroker")
+    ("swc.FsBroker.cfg", str(), 
+      "Specific cfg-file for FsBroker")
+    ("swc.FsBroker.cfg.dyn", strs(), 
+      "Specific dyn. cfg-file for FsBroker")
+    ("swc.cfg.dyn.period", g_i32(60000), 
+     "Dynamic cfg-file check interval in ms, zero without")
 
     ("swc.FsBroker.reactors", i32(8), "Number of Communication Reactors")
     ("swc.FsBroker.workers", i32(32), "Number of Workers a Reactor")
@@ -34,8 +40,7 @@ void Settings::init_app_options() {
 
 void Settings::init_post_cmd_args(){
   parse_file(get<std::string>("swc.fs.broker.cfg", ""), "");
-  parse_file(get<std::string>("swc.FsBroker.cfg", ""), 
-             get<std::string>("swc.FsBroker.OnFileChange.cfg", ""));
+  parse_file(get<std::string>("swc.FsBroker.cfg", ""), "swc.FsBroker.cfg.dyn");
 }
 
 

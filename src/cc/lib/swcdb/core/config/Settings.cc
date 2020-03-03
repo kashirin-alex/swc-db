@@ -84,6 +84,7 @@ void Settings::init_options() {
     
     ("swc.cfg.path", str(install_path+"/etc/swcdb/"), "Path of configuration files")
     ("swc.cfg", str("swc.cfg"), "Main configuration file")
+    ("swc.cfg.dyn", strs(), "Main dynamic configuration file")
 
     ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
 
@@ -129,10 +130,10 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if(has("swc.cfg")) 
-    parse_file(properties.get_str("swc.cfg"), "swc.OnFileChange.cfg");
+    parse_file(properties.get_str("swc.cfg"), "swc.cfg.dyn");
 }
 
-void Settings::parse_file(const std::string &name, const std::string &onchg) {
+void Settings::parse_file(const std::string& name, const std::string& onchg) {
   if(name.empty())
     return;
 
@@ -146,9 +147,7 @@ void Settings::parse_file(const std::string &name, const std::string &onchg) {
               "cfg file=%s not found", fname.c_str());
     
   properties.load(fname, file_desc, cmdline_desc, false);
-  if(!onchg.empty())
-    load_files_by(onchg, false);
-    
+  load_files_by(onchg, false);
   properties.load_from(m_cmd_args);  // Inforce cmdline properties 
 }
 
@@ -167,6 +166,11 @@ void Settings::load_files_by(const std::string &fileprop,
 
 	    try {
         properties.load(fname, file_desc, cmdline_desc, allow_unregistered);
+
+        std::scoped_lock lock(properties.mutex);
+        auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
+        if(it == m_dyn_files.end())
+          m_dyn_files.push_back({.filename=fname, .modified=0});
       } catch (std::exception &e) {
 		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
                   fileprop.c_str(), it->c_str(), e.what());
@@ -218,5 +222,33 @@ std::string Settings::usage_str(const char *usage) {
 
   return usage;
 }
+
+
+void Settings::check_dynamic_files() {
+  time_t ts;
+  std::scoped_lock lock(properties.mutex);
+  for(auto& dyn : m_dyn_files) {
+    errno = 0;
+    ts = FileUtils::modification(dyn.filename);
+    if(errno > 0) {
+      SWC_LOGF(LOG_WARN, "cfg-file '%s' err(%s)", 
+               dyn.filename.c_str(), Error::get_text(errno));
+      continue;
+    }
+    if(ts == dyn.modified)
+      continue;
+    dyn.modified = ts;
+    properties.reload(dyn.filename, file_desc, cmdline_desc);
+    SWC_LOGF(LOG_DEBUG, "dyn-cfg-file '%s' checked", dyn.filename.c_str());
+  }
+}
+
+bool Settings::DynFile::operator==(const DynFile& other) const {
+  return other == filename;
+}
+bool Settings::DynFile::operator==(const std::string& other) const {
+  return filename.compare(other) == 0;
+}
+
 
 }} // namespace SWC::Config

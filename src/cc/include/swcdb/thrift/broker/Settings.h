@@ -19,7 +19,7 @@ void Settings::init_app_options() {
 
   file_desc.add_options()
     ("swc.ThriftBroker.cfg", str(), "Specific cfg-file for ThriftBroker")
-    ("swc.ThriftBroker.OnFileChange.cfg", str(), 
+    ("swc.ThriftBroker.cfg.dyn", strs(), 
       "Specific dyn. cfg-file for ThriftBroker")
 
     ("swc.ThriftBroker.port", i16(18000), "ThriftBroker port")
@@ -33,8 +33,8 @@ void Settings::init_app_options() {
 
 void Settings::init_post_cmd_args(){
   parse_file(
-    get<std::string>("swc.ThriftBroker.cfg", ""),
-    get<std::string>("swc.ThriftBroker.OnFileChange.cfg", "")
+    get<std::string>("swc.ThriftBroker.cfg", ""), 
+    "swc.ThriftBroker.cfg.dyn"
   );
 }
 

@@ -12,6 +12,9 @@ namespace SWC{ namespace Config {
 
 void Settings::init_client_options() {
   file_desc.add_options()
+    ("swc.cfg.dyn.period", g_i32(60000), 
+     "Dynamic cfg-file check interval in ms, zero without")
+    
     ("swc.mngr.host", g_strs(gStrings()), 
      "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i16(15000), 

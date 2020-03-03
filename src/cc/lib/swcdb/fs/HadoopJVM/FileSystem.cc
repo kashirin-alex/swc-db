@@ -14,7 +14,7 @@ bool apply_hadoop_jvm() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop_jvm.path.root", str(""), 
       "HadoopJVM FileSystem's base root path")
-    ("swc.fs.hadoop_jvm.OnFileChange.cfg", str(), 
+    ("swc.fs.hadoop_jvm.cfg.dyn", strs(), 
       "Dyn-config file")
 
     ("swc.fs.hadoop_jvm.namenode", strs(), 
@@ -26,10 +26,8 @@ bool apply_hadoop_jvm() {
   ;
 
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>(
-      "swc.fs.hadoop_jvm.cfg", ""),
-    Env::Config::settings()->get<std::string>(
-      "swc.fs.hadoop_jvm.OnFileChange.cfg", "")
+    Env::Config::settings()->get<std::string>("swc.fs.hadoop_jvm.cfg", ""),
+    "swc.fs.hadoop_jvm.cfg.dyn"
   );
   return true;
 }

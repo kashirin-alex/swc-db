@@ -34,7 +34,7 @@ namespace SWC{ namespace FS {
 
 bool apply_broker() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.broker.OnFileChange.cfg", str(), "Dyn-config file")
+    ("swc.fs.broker.cfg.dyn", strs(), "Dyn-config file")
     ("swc.fs.broker.host", str(), "FsBroker host (default by hostname)") 
     ("swc.fs.broker.port", i16(17000), "FsBroker port")
     ("swc.fs.broker.handlers", i32(48), "Handlers for broker tasks")
@@ -44,7 +44,7 @@ bool apply_broker() {
   ;
   Env::Config::settings()->parse_file(
     Env::Config::settings()->get<std::string>("swc.fs.broker.cfg", ""),
-    Env::Config::settings()->get<std::string>("swc.fs.broker.OnFileChange.cfg", "")
+    "swc.fs.broker.cfg.dyn"
   );
   return true;
 }

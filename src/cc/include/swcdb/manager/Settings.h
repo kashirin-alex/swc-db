@@ -20,7 +20,7 @@ void Settings::init_app_options(){
   
   file_desc.add_options()
     ("swc.mngr.cfg", str(), "Specific cfg-file for Manager")
-    ("swc.mngr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Manager")
+    ("swc.mngr.cfg.dyn", strs(), "Specific dyn. cfg-file for Manager")
 
     ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")

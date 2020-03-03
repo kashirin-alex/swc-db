@@ -67,7 +67,7 @@ class AppContext : public SWC::AppContext {
   AppContext() {
     Env::Config::settings()->parse_file(
       Env::Config::settings()->get<std::string>("swc.mngr.cfg", ""),
-      Env::Config::settings()->get<std::string>("swc.mngr.OnFileChange.cfg", "")
+      "swc.mngr.cfg.dyn"
     );
 
     Env::IoCtx::init(
@@ -83,6 +83,12 @@ class AppContext : public SWC::AppContext {
       )
     );
 
+    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+      Env::IoCtx::io()->set_periodic_timer(
+        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        [](){Env::Config::settings()->check_dynamic_files();}
+      );
+    }
   }
   
   void init(const EndPoints& endpoints) override {

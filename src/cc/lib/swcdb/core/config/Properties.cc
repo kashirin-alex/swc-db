@@ -43,25 +43,18 @@ namespace SWC {
     load_from(prs.get_options(), only_guarded);
   } 
   
-  std::string Properties::reload(const std::string &fname, 
-                                 const Config::ParserConfig &filedesc,
-                                 const Config::ParserConfig &cmddesc,
-	                               bool allow_unregistered) {
-    std::string out;
+  void Properties::reload(const std::string &fname, 
+                          const Config::ParserConfig &filedesc,
+                          const Config::ParserConfig &cmddesc) {
 	  try {
-      out.append("\n\nCurrent Configurations:\n");
-      out.append(to_string());
+      load(fname, filedesc, cmddesc, true);
 
-      load(fname, filedesc, cmddesc, allow_unregistered, true);
-
-      out.append("\n\nNew Configurations:\n");
-      out.append(to_string());
-      return out;
-	  }
-	  catch (std::exception &e) {
-		  SWC_LOGF(LOG_WARN, "Error::CONFIG_BAD_CFG_FILE %s: %s", fname.c_str(), e.what());
-      return format("Error::CONFIG_BAD_CFG_FILE %s: %s \noutput:\n%s", 
-                      fname.c_str(), e.what(), out.c_str());
+	  } catch (std::exception &e) {
+		  SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: %s", 
+               fname.c_str(), e.what());
+	  } catch (...) {
+		  SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: err(UNKNOWN)",
+               fname.c_str());
 	  }
   }
 

@@ -17,7 +17,7 @@ bool apply_hadoop() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop.path.root", str(""), 
       "Hadoop FileSystem's base root path")
-    ("swc.fs.hadoop.OnFileChange.cfg", str(), 
+    ("swc.fs.hadoop.cfg.dyn", strs(), 
       "Dyn-config file")
 
     ("swc.fs.hadoop.namenode", strs(), 
@@ -30,10 +30,8 @@ bool apply_hadoop() {
   ;
 
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>(
-      "swc.fs.hadoop.cfg", ""),
-    Env::Config::settings()->get<std::string>(
-      "swc.fs.hadoop.OnFileChange.cfg", "")
+    Env::Config::settings()->get<std::string>("swc.fs.hadoop.cfg", ""),
+    "swc.fs.hadoop.cfg.dyn"
   );
   return true;
 }

@@ -63,7 +63,7 @@ class AppContext : public SWC::AppContext {
   static std::shared_ptr<AppContext> make() {
     Env::Config::settings()->parse_file(
       Env::Config::settings()->get<std::string>("swc.rgr.cfg", ""),
-      Env::Config::settings()->get<std::string>("swc.rgr.OnFileChange.cfg", "")
+      "swc.rgr.cfg.dyn"
     );
 
     Env::IoCtx::init(
@@ -85,6 +85,13 @@ class AppContext : public SWC::AppContext {
       Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
       [](size_t bytes) { RangerEnv::columns()->release(bytes); }
     );
+
+    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+      Env::IoCtx::io()->set_periodic_timer(
+        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        [](){Env::Config::settings()->check_dynamic_files();}
+      );
+    }
 
     return std::make_shared<AppContext>();
   }

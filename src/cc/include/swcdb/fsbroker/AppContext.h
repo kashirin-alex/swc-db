@@ -75,6 +75,13 @@ class AppContext : public SWC::AppContext {
     Env::FsInterface::init(FS::fs_type(
       Env::Config::settings()->get<std::string>("swc.fs.broker.underlying")));
     Env::Fds::init();
+    
+    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+      Env::IoCtx::io()->set_periodic_timer(
+        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        [](){Env::Config::settings()->check_dynamic_files();}
+      );
+    }
   }
   
   void init(const EndPoints& endpoints) override {

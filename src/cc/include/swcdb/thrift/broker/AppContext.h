@@ -35,6 +35,13 @@ class AppContext : virtual public BrokerIfFactory {
     
     //Env::FsInterface::init(FS::fs_type(
     //  Env::Config::settings()->get<std::string>("swc.fs")));
+    
+    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+      Env::IoCtx::io()->set_periodic_timer(
+        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        [](){Env::Config::settings()->check_dynamic_files();}
+      );
+    }
   }
 
   virtual ~AppContext() { }

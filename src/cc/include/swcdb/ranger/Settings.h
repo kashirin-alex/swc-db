@@ -26,7 +26,7 @@ void Settings::init_app_options(){
 
   file_desc.add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
-    ("swc.rgr.OnFileChange.cfg", str(), "Specific dyn. cfg-file for Ranger")
+    ("swc.rgr.cfg.dyn", strs(), "Specific dyn. cfg-file for Ranger")
 
     ("swc.rgr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")

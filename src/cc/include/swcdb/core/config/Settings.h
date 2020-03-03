@@ -76,9 +76,19 @@ class Settings {
   
   std::string usage_str(const char *usage = 0);
 
+  void check_dynamic_files();
+
   private:
 
   Parser::Options      m_cmd_args;
+
+  struct DynFile {
+    const std::string filename;
+    time_t            modified;
+    bool operator==(const DynFile& other) const;
+    bool operator==(const std::string& other) const;
+  };
+  std::vector<DynFile> m_dyn_files;
 };
 
 
