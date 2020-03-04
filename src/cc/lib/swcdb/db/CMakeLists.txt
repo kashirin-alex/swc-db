@@ -49,7 +49,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	cellstore
 	SRCS	Files/tests/test_cellstore.cc
-	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS}
+	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs swcdb_client ${BUILTIN_FS_TARGETS}
 	ARGS	 "--swc.fs=local" "--swc.rgr.ram.percent=2"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
@@ -59,7 +59,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	commitlog
 	SRCS	Files/tests/test_commitlog.cc
-	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs ${BUILTIN_FS_TARGETS}
+	TARGETS	swcdb_core swcdb_core_config swcdb_core_comm swcdb_core_sys swcdb_fs swcdb_client ${BUILTIN_FS_TARGETS}
 	ARGS 	"--swc.fs=local" "--swc.rgr.ram.percent=2"
 
 	SHARED  ${SNAPPY_LIBRARIES_SHARED}
