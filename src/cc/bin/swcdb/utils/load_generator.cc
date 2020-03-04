@@ -79,12 +79,12 @@ void Settings::init_post_cmd_args() { }
 void quit_error(int err) {
   if(!err)
     return;
-  std::cout << "Error " << err << "(" << Error::get_text(err) << ")\n";
+  SWC_PRINT << "Error " << err << "(" << Error::get_text(err) << ")" 
+            << SWC_PRINT_CLOSE;
   exit(1);
 }
 
 void display_stats(size_t took, size_t bytes, size_t cells_count) {      
-  std::cout << "\n\nStatistics:\n";
   double took_base;
   double bytes_base;
 
@@ -112,15 +112,16 @@ void display_stats(size_t took, size_t bytes, size_t cells_count) {
     bytes_base = (double)(bytes/1000)/1000;
     byte_base = "M";
   }
-        
-  std::cout 
+  
+  SWC_PRINT << "\n\nStatistics:\n"
     << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
     << " Total Cells Count:      " << cells_count                    << "\n"
     << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n"
     << " Average Transfer Rate:  " << bytes_base/took_base 
                             << " " << byte_base << "B/" << time_base << "s\n" 
     << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)
-                                            << " cell/" << time_base << "s\n"
+                                            << " cell/" << time_base << "s" 
+    << SWC_PRINT_CLOSE;
   ;
 
 }
@@ -181,7 +182,7 @@ void load_data(DB::Schema::Ptr schema) {
             cell.set_counter(0, 1, schema->col_type);
           else
             cell.set_value(value_data);
-          //std::cout << cell.to_string() << "\n";
+          
           col->add(cell);
 
           added_count++;
@@ -191,10 +192,10 @@ void load_data(DB::Schema::Ptr schema) {
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;
-            std::cout << " progress(cells=" << added_count 
+            SWC_PRINT << " progress(cells=" << added_count 
                       << " bytes=" << added_bytes 
                       << " cell/ns=" << ts_progress/progress
-                      << ")\n";
+                      << ")" << SWC_PRINT_CLOSE;
             ts_progress = Time::now_ns();
           }
         }

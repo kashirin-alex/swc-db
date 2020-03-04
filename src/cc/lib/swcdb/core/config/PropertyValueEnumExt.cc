@@ -16,45 +16,21 @@
 namespace SWC { namespace Property {
 
 
-void ValueEnumExtBase::set_value(int nv){}
-
-int ValueEnumExtBase::get() { return -1; }
-
-ValueEnumExtBase* ValueEnumExtBase::operator =(int nv){
-  set_value(nv);
-  return *this;
+ValueEnumExtBase::operator int() { 
+  return get(); 
 }
 
-bool ValueEnumExtBase::operator==(ValueEnumExtBase a) { return get() == a.get(); }
-bool ValueEnumExtBase::operator!=(ValueEnumExtBase a) { return get() != a.get(); }
-
-ValueEnumExtBase::operator ValueEnumExtBase*()  { return this;  }
-ValueEnumExtBase::operator int()                { return get(); }
-ValueEnumExtBase::operator std::string()        { return str(); }
-    
-
-ValueEnumExtBase* ValueEnumExtBase::operator =(ValueEnumExtBase other){
-  set_from(other);
-  return *this;
+ValueEnumExtBase::operator std::string() { 
+  return str(); 
 }
 
-void ValueEnumExtBase::set_from(ValueEnumExtBase &other){
-  if((int)other != -1)
-    set_value((int)other);
-  if(!other.cb_set) 
-    return;
-      
-  set_repr(other.get_call_repr());
-  set_from_string(other.get_call_from_string());
-}
-
-ValueEnumExtBase& ValueEnumExtBase::set_from_string(std::function<int(const std::string&)> cb) {
+ValueEnumExtBase& ValueEnumExtBase::set_from_string(const FromString_t& cb) {
   call_from_string = cb;
   cb_set = true;
   return *this;
 }
     
-ValueEnumExtBase& ValueEnumExtBase::set_repr(std::function<std::string(int)> cb) {
+ValueEnumExtBase& ValueEnumExtBase::set_repr(const Repr_t& cb) {
   call_repr = cb;
   cb_set = true;
   return *this;
@@ -83,13 +59,17 @@ void ValueEnumExtBase::set_default_calls() {
   call_repr = [](int v){ return "No repr cb defined!"; };
 }
 
-std::function<int(const std::string&)> ValueEnumExtBase::get_call_from_string(){
-  if(!cb_set) set_default_calls();
+const ValueEnumExtBase::FromString_t& 
+ValueEnumExtBase::get_call_from_string() {
+  if(!cb_set) 
+    set_default_calls();
   return call_from_string;
 }
 
-std::function<std::string(int)> ValueEnumExtBase::get_call_repr(){
-  if(!cb_set) set_default_calls();
+const ValueEnumExtBase::Repr_t& 
+ValueEnumExtBase::get_call_repr() {
+  if(!cb_set) 
+    set_default_calls();
   return call_repr;
 }
 
@@ -101,12 +81,36 @@ const std::string ValueEnumExtBase::to_str() {
   return format("%s  # (%d)", get_call_repr()(get()).c_str(), get());
 }
 
-ValueEnumExtBase::~ValueEnumExtBase() {};
 
+//
+ValueEnumExt::ValueEnumExt(int nv)
+                           : value(nv) { 
+}
 
+ValueEnumExt::ValueEnumExt(int nv, 
+                           const FromString_t& from_string, 
+                           const Repr_t& repr)
+                          : value(nv) {
+  set_from_string(from_string);
+  set_repr(repr);
+}
 
-ValueEnumExt::ValueEnumExt(int nv) { 
-  set_value(nv);
+ValueEnumExt::ValueEnumExt(ValueEnumExt& other) 
+                          : value(other.get()) {
+  set_from(other); 
+}
+
+ValueEnumExt& ValueEnumExt::operator=(ValueEnumExt& other) {
+  set_from(other); 
+  set_value(other.get());
+  return *this; 
+}
+
+void ValueEnumExt::set_from(ValueEnumExt &other) {
+  if(other.cb_set) {
+    set_repr(other.get_call_repr());
+    set_from_string(other.get_call_from_string());
+  }
 }
 
 void ValueEnumExt::set_value(int nv) {
@@ -117,24 +121,44 @@ int ValueEnumExt::get() {
   return value; 
 }
 
-ValueEnumExt::~ValueEnumExt () {};
+ValueEnumExt::~ValueEnumExt() {};
 
 
-ValueGuardedEnumExt::ValueGuardedEnumExt(int nv) {
-  set_value(nv);
+//
+ValueGuardedEnumExt::ValueGuardedEnumExt(int nv) : value(nv) { }
+
+ValueGuardedEnumExt::ValueGuardedEnumExt(int nv, 
+                                         const OnChg_t& cb,
+                                         const FromString_t& from_string, 
+                                         const Repr_t& repr)
+                                         : value(nv), on_chg_cb(cb) {
+  set_from_string(from_string);
+  set_repr(repr);
 }
 
-ValueGuardedEnumExt::ValueGuardedEnumExt(ValueGuardedEnumExt& other) {
-  set_from(other);
+ValueGuardedEnumExt::ValueGuardedEnumExt(ValueGuardedEnumExt& other) 
+                                        : value(other.get()) {
+  set_from(other); 
 }
-    
+
 ValueGuardedEnumExt& ValueGuardedEnumExt::operator=(ValueGuardedEnumExt& other) {
   set_from(other); 
+  set_value(other.get());
   return *this; 
 }
 
+void ValueGuardedEnumExt::set_from(ValueGuardedEnumExt& other) {
+  if(other.on_chg_cb)
+    set_cb_on_chg(other.on_chg_cb);
+  if(other.cb_set) {
+    set_repr(other.get_call_repr());
+    set_from_string(other.get_call_from_string());
+  }
+  set_value(other.get());
+}
+
 void ValueGuardedEnumExt::set_value(int nv) {
-  if(nv == get()) 
+  if(nv == -1 || nv == get()) 
     return;
         
   value.store(nv);
@@ -146,7 +170,7 @@ int ValueGuardedEnumExt::get() {
   return value.load(); 
 }
 
-void ValueGuardedEnumExt::set_cb_on_chg(std::function<void(int)> cb) {
+void ValueGuardedEnumExt::set_cb_on_chg(const OnChg_t& cb) {
   on_chg_cb = cb;
 }
 

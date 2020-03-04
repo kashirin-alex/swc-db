@@ -24,6 +24,7 @@ Options
   --string -[str, s]    a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
   --swc.cfg             Main configuration file                                       swc.cfg
+  --swc.cfg.dyn         Main dynamic configuration file                               []
   --true                token defaults to true                                        true
   --verbose             Show more verbose output                                      false
   --version -[v]        Show version information and exit                             true
@@ -124,6 +125,7 @@ Options
   --string.qouted       a string arg                                                  A Default std::string Value
   --strs                a list of strings                                             []
   --swc.cfg             Main configuration file                                       swc.cfg
+  --swc.cfg.dyn         Main dynamic configuration file                               []
   --swc.logging.level   Logging level: debug|info|notice|warn|error|crit|alert|fatal  INFO  # (6)
   --true                token defaults to true                                        true
   --verbose             Show more verbose output                                      false

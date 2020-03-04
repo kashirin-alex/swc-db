@@ -52,22 +52,22 @@ void Settings::init(int argc, char *argv[]) {
   }
 
   gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
-  if(properties.get_bool("debug"))
+  if(properties.get_bool("debug")) {
     loglevel->set_value(LOG_DEBUG);
 
-  if(loglevel->get() == -1){
+  } else if(loglevel->get() == -1) {
     SWC_LOG_OUT(LOG_ERROR) << "unknown logging level: "<< loglevel->str() << SWC_LOG_OUT_END;
     std::quick_exit(EXIT_SUCCESS);
   }
-
-  Logger::logger.set_level(loglevel->get());
-  loglevel->set_cb_on_chg([](int value){Logger::logger.set_level(value);});
 }
 
 void Settings::init_options() {
-  gEnumExt logging_level(LOG_INFO);
-  logging_level.set_from_string(Logger::logger.from_string)
-               .set_repr(Logger::logger.repr);
+  gEnumExt logging_level(
+    LOG_INFO,
+    [](int value){ Logger::logger.set_level(value); },
+    Logger::logger.from_string,
+    Logger::logger.repr
+  );
 
   cmdline_desc.add_options()
     ("help,h", "Show this help message and exit")

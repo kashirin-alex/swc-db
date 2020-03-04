@@ -20,9 +20,12 @@ void Settings::init_app_options(){
   init_fs_options();
   init_client_options();
 
-  gEnumExt blk_enc((int)Types::Encoding::SNAPPY);
-  blk_enc.set_from_string(Types::from_string_encoding);
-  blk_enc.set_repr(Types::repr_encoding);
+  gEnumExt blk_enc(
+    (int)Types::Encoding::SNAPPY,
+    0,
+    Types::from_string_encoding,
+    Types::repr_encoding
+  );
 
   file_desc.add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
