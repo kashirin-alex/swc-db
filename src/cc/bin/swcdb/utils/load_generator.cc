@@ -16,8 +16,8 @@ namespace SWC{
   
 namespace Config {
 void Settings::init_app_options() {
-  cmdline_desc.get_default("logging-level") 
-    ->get_ptr<gEnumExt>()->set_value(LOG_ERROR); // default level
+  ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level") 
+    )->set(LOG_ERROR); // default level
 
   init_comm_options();
   init_client_options();
@@ -25,14 +25,6 @@ void Settings::init_app_options() {
   cmdline_desc.definition(usage_str(
     "SWC-DB(load_generator) Usage: swcdb_load_generator [options]\n\nOptions:")
   );
-
-  gEnumExt blk_enc((int)Types::Encoding::DEFAULT);
-  blk_enc.set_from_string(Types::from_string_encoding);
-  blk_enc.set_repr(Types::repr_encoding);
-
-  gEnumExt col_typ((int)Types::Column::PLAIN);
-  col_typ.set_from_string(Types::from_string_col_type);
-  col_typ.set_repr(Types::repr_col_type);
 
   cmdline_desc.add_options()
     ("gen-progress", i32(100000), 
@@ -52,7 +44,13 @@ void Settings::init_app_options() {
       "cell value in bytes or counts for a col-counter")
 
     ("gen-col-name", str("load_generator"), "Gen. load column name") 
-    ("gen-col-type", g_enum_ext(col_typ), 
+    ("gen-col-type", 
+      g_enum(
+        (int)Types::Column::PLAIN,
+        0,
+        Types::from_string_col_type,
+        Types::repr_col_type
+      ), 
      "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")  
     
     ("gen-cell-versions", i32(1), "cell key versions") 
@@ -63,7 +61,13 @@ void Settings::init_app_options() {
      
     ("gen-blk-size", i32(0), "Schema blk-size")    
     ("gen-blk-cells", i32(0), "Schema blk-cells")    
-    ("gen-blk-encoding", g_enum_ext(blk_enc), 
+    ("gen-blk-encoding", 
+      g_enum(
+        (int)Types::Encoding::DEFAULT,
+        0,
+        Types::from_string_encoding,
+        Types::repr_encoding
+      ), 
      "Schema blk-encoding NONE/SNAPPY/ZLIB")  
 
     ("gen-compaction-percent", i8(0), 
@@ -127,16 +131,16 @@ void display_stats(size_t took, size_t bytes, size_t cells_count) {
 }
 
 void load_data(DB::Schema::Ptr schema) {
-  auto& props = Env::Config::settings()->properties;
+  auto settings = Env::Config::settings();
 
-  uint32_t versions = props.get<int32_t>("gen-cell-versions");
-  uint32_t fractions = props.get<int32_t>("gen-key-fractions");
-  uint32_t fraction_size = props.get<int32_t>("gen-fraction-size");
+  uint32_t versions = settings->get_i32("gen-cell-versions");
+  uint32_t fractions = settings->get_i32("gen-key-fractions");
+  uint32_t fraction_size = settings->get_i32("gen-fraction-size");
   
-  bool tree = props.get<bool>("gen-key-tree");
-  uint32_t cells = props.get<int32_t>("gen-cells");
-  uint32_t value = props.get<int32_t>("gen-value-size");
-  uint32_t progress = props.get<int32_t>("gen-progress");
+  bool tree = settings->get_bool("gen-key-tree");
+  uint32_t cells = settings->get_i32("gen-cells");
+  uint32_t value = settings->get_i32("gen-value-size");
+  uint32_t progress = settings->get_i32("gen-progress");
 
   auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
   req->columns->create(schema);
@@ -213,9 +217,9 @@ void load_data(DB::Schema::Ptr schema) {
 
 
 void load_generator() {
-  auto& props = Env::Config::settings()->properties;
+  auto settings = Env::Config::settings();
 
-  std::string col_name(props.get<std::string>("gen-col-name"));
+  std::string col_name(settings->get_str("gen-col-name"));
   
   int err = Error::OK;
   auto schema = Env::Clients::get()->schemas->get(err, col_name);
@@ -229,16 +233,16 @@ void load_generator() {
   schema = SWC::DB::Schema::make(
     0, 
     col_name, 
-    (Types::Column)props.get<gEnumExt>("gen-col-type").get(),
-    props.get<int32_t>("gen-cell-versions"),
+    (Types::Column)settings->get_genum("gen-col-type"),
+    settings->get_i32("gen-cell-versions"),
     0, // cell_ttl
-    (Types::Encoding)props.get<gEnumExt>("gen-blk-encoding").get(),
-    props.get<int32_t>("gen-blk-size"), 
-    props.get<int32_t>("gen-blk-cells"),
-    props.get<int8_t>("gen-cs-replication"), 
-    props.get<int32_t>("gen-cs-size"), 
-    props.get<int8_t>("gen-cs-count"),
-    props.get<int8_t>("gen-compaction-percent") 
+    (Types::Encoding)settings->get_genum("gen-blk-encoding"),
+    settings->get_i32("gen-blk-size"), 
+    settings->get_i32("gen-blk-cells"),
+    settings->get_i8("gen-cs-replication"), 
+    settings->get_i32("gen-cs-size"), 
+    settings->get_i8("gen-cs-count"),
+    settings->get_i8("gen-compaction-percent") 
   );
 
   // CREATE COLUMN

@@ -27,7 +27,8 @@ Resources::~Resources() {
 }
 
 void Resources::init(asio::io_context* io, 
-                     gInt32tPtr ram_percent, gInt32tPtr ram_release_rate, 
+                     Property::V_GINT32::Ptr ram_percent, 
+                     Property::V_GINT32::Ptr ram_release_rate, 
                      std::function<void(size_t)> release_call) {
   if(m_timer == nullptr)
     m_timer = new asio::high_resolution_timer(*io);

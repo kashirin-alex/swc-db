@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Columns/Schema.h"
+#include <shared_mutex>
 
 namespace SWC { namespace DB {
 

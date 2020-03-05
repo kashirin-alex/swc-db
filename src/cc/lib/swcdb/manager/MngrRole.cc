@@ -12,19 +12,19 @@ MngrRole::MngrRole(const EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(endpoints_hash(m_local_endpoints)),
       m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
-      cfg_conn_probes(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_conn_probes(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.connection.probes")),
-      cfg_conn_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_conn_timeout(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.connection.timeout")),
-      cfg_conn_fb_failures(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_conn_fb_failures(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.connection.fallback.failures")),
-      cfg_req_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_req_timeout(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.request.timeout")),
-      cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_check_interval(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.interval")),
-      cfg_delay_updated(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_delay_updated(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.delay.updated")),
-      cfg_delay_fallback(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_delay_fallback(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
       m_mngr_inchain(std::make_shared<Protocol::Common::Req::ConnQueue>()) {

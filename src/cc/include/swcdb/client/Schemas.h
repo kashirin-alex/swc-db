@@ -14,7 +14,7 @@ namespace SWC { namespace client {
 class Schemas  {
   public:
 
-  Schemas(const gInt32tPtr expiry_ms) 
+  Schemas(const Property::V_GINT32::Ptr expiry_ms) 
           : m_expiry_ms(expiry_ms),
             m_schemas(std::make_shared<DB::Schemas>()) { }
 
@@ -126,7 +126,7 @@ class Schemas  {
   std::mutex                            m_mutex;
   std::unordered_map<int64_t, uint64_t> m_track; // .second {time,queue(promises)}
   std::shared_ptr<DB::Schemas>          m_schemas = nullptr;
-  gInt32tPtr                            m_expiry_ms;
+  Property::V_GINT32::Ptr               m_expiry_ms;
   
 };
 

@@ -146,8 +146,8 @@ class FileSystemBroker: public FileSystem {
   const EndPoints         m_endpoints;
   std::atomic<bool>       m_run;
 
-  const gInt32tPtr cfg_timeout;
-  const gInt32tPtr cfg_timeout_ratio;
+  const Property::V_GINT32::Ptr cfg_timeout;
+  const Property::V_GINT32::Ptr cfg_timeout_ratio;
 };
 
 

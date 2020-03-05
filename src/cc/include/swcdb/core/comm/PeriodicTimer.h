@@ -15,7 +15,8 @@ class PeriodicTimer final {
   public:
   typedef const std::function<void()> Call_t; 
 
-  PeriodicTimer(const gInt32tPtr cfg_ms, Call_t call, asio::io_context* io);
+  PeriodicTimer(const Property::V_GINT32::Ptr cfg_ms, 
+                Call_t call, asio::io_context* io);
   
   ~PeriodicTimer();
 
@@ -23,9 +24,9 @@ class PeriodicTimer final {
 
   void schedule();
 
-  const gInt32tPtr            m_ms;
-  Call_t                      m_call;
-  asio::high_resolution_timer m_timer; 
+  const Property::V_GINT32::Ptr   m_ms;
+  Call_t                          m_call;
+  asio::high_resolution_timer     m_timer; 
 };
 
 
@@ -34,7 +35,7 @@ class PeriodicTimers : public std::vector<PeriodicTimer*> {
   
   void stop();
 
-  void set(const gInt32tPtr ms, PeriodicTimer::Call_t call, 
+  void set(const Property::V_GINT32::Ptr ms, PeriodicTimer::Call_t call, 
            asio::io_context* io);
 
   private:

@@ -65,16 +65,16 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() {
-    Env::Config::settings()->parse_file(
-      Env::Config::settings()->get<std::string>("swc.mngr.cfg", ""),
+    auto settings = Env::Config::settings();
+
+    settings->parse_file(
+      settings->get_str("swc.mngr.cfg", ""), 
       "swc.mngr.cfg.dyn"
     );
 
-    Env::IoCtx::init(
-      Env::Config::settings()->get<int32_t>("swc.mngr.handlers"));
+    Env::IoCtx::init(settings->get_i32("swc.mngr.handlers"));
 
-    Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
+    Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
       
     Env::Clients::init(
       std::make_shared<client::Clients>(
@@ -83,9 +83,10 @@ class AppContext : public SWC::AppContext {
       )
     );
 
-    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+    auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
+    if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
-        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
     }

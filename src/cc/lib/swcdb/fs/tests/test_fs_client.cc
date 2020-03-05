@@ -358,7 +358,7 @@ int main(int argc, char** argv) {
 
   Env::IoCtx::init(8);
   Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get<std::string>("swc.fs")));
+    Env::Config::settings()->get_str("swc.fs")));
   
   for(size_t chk=1;chk<=2;chk++) {
     int err = Error::OK;

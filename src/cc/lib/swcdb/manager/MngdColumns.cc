@@ -13,9 +13,9 @@ namespace SWC { namespace server { namespace Mngr {
 
 MngdColumns::MngdColumns()
     : m_run(true), m_root_mngr(false), m_columns_set(false), 
-      cfg_schema_replication(Env::Config::settings()->get_ptr<gInt8t>(
+      cfg_schema_replication(Env::Config::settings()->get<Property::V_GUINT8>(
         "swc.mngr.schema.replication")),
-      cfg_delay_cols_init(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_delay_cols_init(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.delay.afterColumnsInit")) { 
 }
 

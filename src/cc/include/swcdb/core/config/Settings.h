@@ -14,7 +14,7 @@
 
 namespace SWC { namespace Config {
 
-class Settings {
+class Settings : public Properties {
 
   public:
 
@@ -23,8 +23,6 @@ class Settings {
 
   std::string     install_path;
   std::string     executable;
-
-  Properties      properties;
 
   Settings();
 
@@ -53,27 +51,6 @@ class Settings {
 
   void init_process();
 
-  const bool has(const std::string &name) const;
-
-  const bool defaulted(const std::string &name);
-
-  template <typename T>
-  T get(const std::string &name) {
-    return properties.get<T>(name);
-  }
-
-  template <typename T>
-  T* get_ptr(const std::string &name) {
-    return properties.get_ptr<T>(name);
-  }
-
-  template <typename T>
-  T get(const std::string &name, T default_value) {
-    return properties.get<T>(name, default_value);
-  }
-
-  void alias(const std::string &minor, const std::string &major);
-  
   std::string usage_str(const char *usage = 0);
 
   void check_dynamic_files();

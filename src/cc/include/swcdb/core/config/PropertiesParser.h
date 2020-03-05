@@ -14,47 +14,46 @@
 
 namespace SWC {
 
-// Config::cfg(Int32tSafe default_value, true)
-template<typename T>
-Property::Value::Ptr cfg(T v = 0, bool skippable=false, bool guarded=false);
 
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Property::Value::Ptr boo(bool v);
-Property::Value::Ptr i8(uint8_t v);
-Property::Value::Ptr i16(uint16_t v);
-Property::Value::Ptr i32(int32_t v);
-Property::Value::Ptr i64(int64_t v);
-Property::Value::Ptr f64(double v);
-Property::Value::Ptr str(std::string v);
-Property::Value::Ptr strs(Strings v);
-Property::Value::Ptr i64s(Int64s v);
-Property::Value::Ptr f64s(Doubles v);
-Property::Value::Ptr enum_ext(EnumExt v);
+Property::V_BOOL::Ptr boo(const bool& v);
+Property::V_UINT8::Ptr i8(const uint8_t& v);
+Property::V_UINT16::Ptr i16(const uint16_t& v);
+Property::V_INT32::Ptr i32(const int32_t& v);
+Property::V_INT64::Ptr i64(const int64_t& v);
+Property::V_DOUBLE::Ptr f64(const double& v);
+Property::V_STRING::Ptr str(const std::string& v);
+Property::V_STRINGS::Ptr strs(const Strings& v);
+Property::V_INT64S::Ptr i64s(const Int64s& v);
+Property::V_DOUBLES::Ptr f64s(const Doubles& v);
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Property::Value::Ptr g_boo(bool v);
-Property::Value::Ptr g_i8(uint8_t v);
-Property::Value::Ptr g_i32(int32_t v);
-Property::Value::Ptr g_strs(Strings v);
-Property::Value::Ptr g_enum_ext(gEnumExt v);
+Property::V_GBOOL::Ptr g_boo(const bool& v);
+Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
+Property::V_GINT32::Ptr g_i32(const int32_t& v);
+Property::V_GSTRINGS::Ptr g_strs(const Strings& v);
+Property::V_GENUM::Ptr g_enum(const int32_t& v, 
+                              const Property::V_GENUM::OnChg_t& cb, 
+                              const Property::V_GENUM::FromString_t& from_string, 
+                              const Property::V_GENUM::Repr_t& repr);
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped
 */
-Property::Value::Ptr boo();
-Property::Value::Ptr i8();
-Property::Value::Ptr i16();
-Property::Value::Ptr i32();
-Property::Value::Ptr i64();
-Property::Value::Ptr f64();
-Property::Value::Ptr str();
-Property::Value::Ptr strs();
-Property::Value::Ptr i64s();
-Property::Value::Ptr f64s();
+Property::V_BOOL::Ptr boo();
+Property::V_UINT8::Ptr i8();
+Property::V_UINT16::Ptr i16();
+Property::V_INT32::Ptr i32();
+Property::V_INT64::Ptr i64();
+Property::V_DOUBLE::Ptr f64();
+Property::V_STRING::Ptr str();
+Property::V_STRINGS::Ptr strs();
+Property::V_INT64S::Ptr i64s();
+Property::V_DOUBLES::Ptr f64s();
 
 
 

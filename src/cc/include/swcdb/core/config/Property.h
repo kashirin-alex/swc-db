@@ -10,13 +10,13 @@
 #include <atomic>
 #include <functional>
 #include <vector>
-
-#include "swcdb/core/config/PropertyValueEnumExt.h"
-#include "swcdb/core/config/PropertyValueGuarded.h"
-
-
+#include "swcdb/core/Error.h"
 
 namespace SWC {
+
+typedef std::vector<std::string>  Strings;
+typedef std::vector<int64_t>      Int64s;
+typedef std::vector<double>       Doubles;
 
 const uint64_t K = 1000;
 const uint64_t KiB = 1024;
@@ -26,7 +26,6 @@ const uint64_t G = M * 1000;
 const uint64_t GiB = MiB * 1024;
 
 
-
 namespace Property {
 
 
@@ -34,346 +33,959 @@ namespace Property {
  * Convertors & Validators from std::string
 */
 
-double double_from_string(const std::string& s);
+void from_string(const std::string& s, double* value);
 
-int64_t int64_t_from_string(const std::string& s);
+void from_string(const std::string& s, int64_t* value);
 
-uint8_t uint8_t_from_string(const std::string& s);
+void from_string(const std::string& s, uint8_t* value);
 
-uint16_t uint16_t_from_string(const std::string& s);
+void from_string(const std::string& s, uint16_t* value);
 
-int32_t int32_t_from_string(const std::string& s);
+void from_string(const std::string& s, int32_t* value);
 
-enum ValueType {
-  UNKNOWN,
-  DOUBLE,
-  BOOL,
-  STRING,
-  UINT8_T,
-  UINT16_T,
-  INT32_T,
-  INT64_T,
-  STRINGS,
-  INT64S,
-  DOUBLES,
-  ENUMEXT,
-  ENUM,
+
+class Value {
+  public:
+
+  enum Type {
+    BOOL,
+    UINT8,
+    UINT16,
+    INT32,
+    INT64,
+    DOUBLE,
+
+    STRING,
+    ENUM,
+
+    STRINGS,
+    INT64S,
+    DOUBLES,
   
-  G_BOOL,
-  G_UINT8_T,
-  G_INT32_T,
-  G_STRINGS,
-  G_ENUMEXT
-};
-
-/**
-* Property::TypeDef
-* a Helper class for casting ValueDef<T> on a single type Pointer
-* with a hold for corresponding ValueType enum
- */
-class TypeDef {
-  public:
-  TypeDef(ValueType typ) : typ(typ) {}
-
-  virtual ~TypeDef() {}
-
-  ValueType get_type() { 
-    return typ; 
-  }
-
-  void set_type(const ValueType t){ 
-    if(typ != t)
-      typ = t;  
-  }
-
-  private:
-  ValueType typ;
-};
- 
-/**
-* Property::ValueDef
-* the Class handle the specific requirments to the 
-* value type
- */
-template <class T>
-class  ValueDef : public TypeDef {
-  public:
-
-  static constexpr ValueType get_value_type() {
-    if(std::is_enum<T>::value) 
-      return ValueType::ENUM;
-    
-    const std::type_info &v_type = typeid(T);
-
-    if(v_type == typeid(double))
-      return ValueType::DOUBLE;
-
-    if(v_type == typeid(bool))
-      return ValueType::BOOL;  
-    if(v_type == typeid(gBool))
-      return ValueType::G_BOOL;
-
-    if(v_type == typeid(std::string))
-      return ValueType::STRING;  
-
-    if(v_type == typeid(uint8_t))
-      return ValueType::UINT8_T;  
-    if(v_type == typeid(gInt8t))
-      return ValueType::G_UINT8_T;
-
-    if(v_type == typeid(uint16_t))
-      return ValueType::UINT16_T;  
-
-    if(v_type == typeid(int32_t))
-      return ValueType::INT32_T; 
-    if(v_type == typeid(gInt32t))
-      return ValueType::G_INT32_T;
-
-    if(v_type == typeid(int64_t))
-      return ValueType::INT64_T;  
-
-    if(v_type == typeid(Strings))
-      return ValueType::STRINGS;  
-    if(v_type == typeid(gStrings))
-      return ValueType::G_STRINGS;
-
-    if(v_type == typeid(Int64s))
-      return ValueType::INT64S;  
-    if(v_type == typeid(Doubles))
-      return ValueType::DOUBLES;
-
-    if(v_type == typeid(EnumExt))
-      return ValueType::ENUMEXT;
-    if(v_type == typeid(gEnumExt))
-      return ValueType::G_ENUMEXT;
-    
-    return ValueType::UNKNOWN;
-  }
-
-  ValueDef(T nv) : TypeDef(get_value_type()) { 
-    set_value(nv);  
-  }
-
-  ValueDef(const Strings& values, T defaulted) : TypeDef(get_value_type()) { 
-    if(!values.empty())
-      from_strings(values);
-    else
-      set_value(defaulted);
-  }
-
-  void set_value(T nv) {
-    v = nv; 
-  }
-
-  void from_strings(const Strings& values) {};
-
-  T get_value() {
-    return v;       
-  }
-
-  T* get_ptr() { 
-    return &v;      
-  }
-
-  const std::string str(){
-    return "invalid option type";
-  }
-
-  std::ostream& operator<<(std::ostream& ostream) {
-    return ostream << str();
-  }
-
-  operator TypeDef*() { 
-    return this;
-  }
-
-  // ValueDef<T> operator *()   { return this;    }
-  virtual ~ValueDef()   {}
-
-  private:
-  T v;
-};
-
-
-template <>
-void ValueDef<EnumExt>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<gEnumExt>::from_strings(const Strings& values);
-
-template <>
-ValueDef<EnumExt>::ValueDef(const Strings& values, EnumExt defaulted);
-
-template <>
-ValueDef<gEnumExt>::ValueDef(const Strings& values, gEnumExt defaulted);
-
-
-/* set_value from_strings */
-
-template <>
-void ValueDef<bool>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<gBool>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<std::string>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<double>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<uint8_t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<gInt8t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<uint16_t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<int32_t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<gInt32t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<int64_t>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<Doubles>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<Int64s>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<Strings>::from_strings(const Strings& values);
-
-template <>
-void ValueDef<gStrings>::from_strings(const Strings& values);
-
-/* return string representation */
-template <>
-const std::string ValueDef<bool>::str();
-template <>
-const std::string ValueDef<gBool>::str();
-template <>
-const std::string ValueDef<std::string>::str();
-template <>
-const std::string ValueDef<double>::str();
-template <>
-const std::string ValueDef<uint8_t>::str();
-template <>
-const std::string ValueDef<gInt8t>::str();
-template <>
-const std::string ValueDef<uint16_t>::str();
-template <>
-const std::string ValueDef<int32_t>::str();
-template <>
-const std::string ValueDef<gInt32t>::str();
-template <>
-const std::string ValueDef<int64_t>::str();
-template <>
-const std::string ValueDef<Doubles>::str();
-template <>
-const std::string ValueDef<Int64s>::str();
-template <>
-const std::string ValueDef<Strings>::str();
-template <>
-const std::string ValueDef<gStrings>::str();
-template <>
-const std::string ValueDef<EnumExt>::str();
-template <>
-const std::string ValueDef<gEnumExt>::str();
-
-    
-/**
-* Property::Value 
-* holds:
-*   * the pointer to TypeDef and short forms to ValueDef operations
-*   * the whether the value is a default value or skippable
- */
-
-class Value final {
-  public:
+    G_BOOL,
+    G_UINT8,
+    G_INT32,
+    G_ENUM,
+    G_STRINGS
+  };
 
   typedef Value* Ptr;
 
-  static Ptr make_new(Value::Ptr p, const Strings& values = Strings());
+  Value(bool skippable=false, bool guarded=false);
   
-  template<typename T>
-  Value(T v, bool skippable=false, bool guarded=false)
-        : m_skippable(skippable), m_guarded(guarded) {
-    set_value(v);
-  }
-    
-    /* init from (TypeDef*)ValueDef<T> */
-  Value(TypeDef* v);
+  Value(Value* ptr);
 
-  ~Value();
-    
-  // update/set the new value to the ValueDef<T>
-  template<typename T>
-  void set_value(T v) {
-    if(type_ptr == nullptr){
-      type_ptr = new ValueDef<T>(v);
-      return;
-    } 
-    ((ValueDef<T>*)type_ptr)->set_value(v);
-  }
+  virtual ~Value();
 
-  /* set value from from other Value::Ptr */
-  void set_value_from(Value::Ptr from);
+  virtual Ptr make_new(const Strings& values = Strings()) = 0;
+  
+  virtual const Type type() const = 0;
 
-  template<typename T>
-  T get() const {
-    if (type_ptr == nullptr)
-      getting_error(typeid(T).name());
+  virtual void set_from(Ptr ptr) = 0;
 
-    return ((ValueDef<T>*)type_ptr)->get_value();
-  }
+  virtual void set_from(const Strings& values) = 0;
 
-  template<typename T>
-  T* get_ptr() const {
-    return ((ValueDef<T>*)type_ptr)->get_ptr();
-  }
+  virtual const std::string to_string() const = 0;
 
-  TypeDef* get_type_ptr();
-
-  const ValueType get_type() const;
-
-  void getting_error(const char* tname) const;
-
-  /* a Default Value */
-  Ptr default_value(bool defaulted=true);
-
-  const bool is_default() const;
-
-  /* a Skippable property (no default value) */
+  std::ostream& operator<<(std::ostream& ostream);
+  
   const bool is_skippable() const;
-    
-  /* a Zero Token Type */
-  Ptr zero_token();
-  
-  const bool is_zero_token() const;
 
-  /* a Guarded Type */
   const bool is_guarded() const;
 
   void guarded(bool guarded);
 
-  operator Value*();
+  Ptr default_value(bool defaulted);
 
-  /* represent value in string */
-  const std::string str();
+  const bool is_default() const;
+  
+  Ptr zero_token();
+
+  const bool is_zero_token() const;
+
   private:
-
-  TypeDef* type_ptr = nullptr;
-
-  std::atomic<bool> m_defaulted = false;
-  std::atomic<bool> m_no_token = false;
   std::atomic<bool> m_skippable = false;
-  std::atomic<bool> m_guarded = false;
+  std::atomic<bool> m_guarded   = false;
+  std::atomic<bool> m_defaulted = false;
+  std::atomic<bool> m_no_token  = false;
+
+};
+
+
+
+class V_BOOL : public Value {
+  public:
+  static const Type value_type = BOOL;
+  
+  V_BOOL(const bool& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_BOOL(V_BOOL* ptr) : Value(ptr), value(ptr->get()) { }
+  
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_BOOL(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+
+  void set_from(Ptr ptr) override {
+    auto from = ((V_BOOL*)ptr);
+    value = from->value;
+  }
+  
+  void set_from(const Strings& values) override {
+    auto& str = values.back();
+    value = str.compare("1") == 0 ||
+            strncasecmp(str.data(), "true", 4) == 0 ||
+            strncasecmp(str.data(), "yes", 3) == 0;
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return value ? "true" : "false";
+  }
+
+  bool get() const {
+    return value;
+  }
+
+  bool value;
+};
+
+
+class V_UINT8 : public Value {
+  public:
+  static const Type value_type = UINT8;
+
+  V_UINT8(const uint8_t& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_UINT8(V_UINT8* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_UINT8(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_UINT8*)ptr);
+    value = from->value;
+  }
+  
+  void set_from(const Strings& values) override {
+    from_string(values.back(), &value);
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string((int16_t)value);
+  }
+
+  uint8_t get() const {
+    return value;
+  }
+
+  uint8_t value;
+};
+
+
+class V_UINT16 : public Value {
+  public:
+  static const Type value_type = UINT16;
+  
+  V_UINT16(const uint16_t& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_UINT16(V_UINT16* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_UINT16(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_UINT16*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    from_string(values.back(), &value);
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string(value);
+  }
+
+  uint16_t get() const {
+    return value;
+  }
+
+  uint16_t value;
+};
+
+
+class V_INT32 : public Value {
+  public:
+  static const Type value_type = INT32;
+  
+  V_INT32(const int32_t& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+
+  V_INT32(V_INT32* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_INT32(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_INT32*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    from_string(values.back(), &value);
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string(value);
+  }
+
+  int32_t get() const {
+    return value;
+  }
+
+  int32_t value;
+};
+
+
+class V_INT64 : public Value {
+  public:
+  static const Type value_type = INT64;
+  
+  V_INT64(const int64_t& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+
+  V_INT64(V_INT64* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_INT64(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_INT64*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    from_string(values.back(), &value);
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string(value);
+  }
+
+  int64_t get() const {
+    return value;
+  }
+
+  int64_t value;
+};
+
+
+class V_DOUBLE : public Value {
+  public:
+  static const Type value_type = DOUBLE;
+
+  V_DOUBLE(const double& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_DOUBLE(V_DOUBLE* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_DOUBLE(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_DOUBLE*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    from_string(values.back(), &value);
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format("%g", value);
+  }
+
+  double get() const {
+    return value;
+  }
+
+  double value;
+};
+
+
+class V_STRING : public Value {
+  public:
+  static const Type value_type = STRING;
+
+  V_STRING(const std::string& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_STRING(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_STRING*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    value = values.back();
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return value;
+  }
+
+  std::string get() const {
+    return value;
+  }
+
+  std::string value;
+};
+
+
+class V_ENUM : public Value {
+  public:
+  static const Type value_type = ENUM;
+
+  typedef std::function<int(const std::string&)>  FromString_t; 
+  typedef std::function<std::string(int)>         Repr_t; 
+
+  V_ENUM(const int32_t& v, 
+         const FromString_t& from_string, 
+         const Repr_t& repr,
+         bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), 
+           value(v), call_from_string(from_string), call_repr(repr) {
+  }
+
+  V_ENUM(V_ENUM* ptr) 
+        : Value(ptr), value(ptr->get()),
+          call_from_string(ptr->call_from_string), call_repr(ptr->call_repr) { 
+  }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_ENUM(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_ENUM*)ptr);
+    value = from->value;
+    call_from_string = from->call_from_string;
+    call_repr = from->call_repr;
+  }
+
+  void set_from(const Strings& values) override {
+    if(!call_from_string)
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+                "Bad Value %s, no from_string cb set", values.back().c_str());
+    
+    int nv = call_from_string(values.back());
+    if(nv < 0) 
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+                "Bad Value %s, no corresponding enum", values.back().c_str());
+    value = nv;
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format(
+      "%s  # (%d)", 
+      (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
+  }
+
+  int32_t get() const {
+    return value;
+  }
+
+  int32_t       value;
+  FromString_t  call_from_string = 0;
+  Repr_t        call_repr = 0;
+};
+
+// lists
+class V_STRINGS : public Value {
+  public:
+  static const Type value_type = STRINGS;
+
+  V_STRINGS(const Strings& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_STRINGS(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_STRINGS*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    value = values;
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format_list(value);
+  }
+
+  Strings get() const {
+    return value;
+  }
+
+  Strings value;
+};
+
+
+class V_INT64S : public Value {
+  public:
+  static const Type value_type = INT64S;
+
+  V_INT64S(const Int64s& v, bool skippable=false, bool guarded=false)
+         : Value(skippable, guarded), value(v) {
+  }
+  
+  V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_INT64S(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_INT64S*)ptr);
+    value = from->value;
+  }
+
+  void set_from(const Strings& values) override {
+    value.clear();
+    int64_t v;
+    for(const std::string& s: values) {
+      from_string(s, &v);
+      value.push_back(v);
+    }
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format_list(value);
+  }
+
+  Int64s get() const {
+    return value;
+  }
+
+  Int64s value;
+};
+
+
+class V_DOUBLES : public Value {
+  public:
+  static const Type value_type = DOUBLES;
+
+  V_DOUBLES(const Doubles& v, bool skippable=false, bool guarded=false)
+            : Value(skippable, guarded), value(v) {
+  }
+  
+  V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
+
+  Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_DOUBLES(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Ptr ptr) override {
+    auto from = ((V_DOUBLES*)ptr);
+    value = from->get();
+  }
+
+  void set_from(const Strings& values) override {
+    value.clear();
+    double v;
+    for(const std::string& s: values) {
+      from_string(s, &v);
+      value.push_back(v);
+    }
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format_list(value);
+  }
+
+  Doubles get() const {
+    return value;
+  }
+
+  Doubles value;
+};
+
+
+// Guarded Atomic
+class V_GBOOL : public Value {
+  public:
+  static const Type value_type = G_BOOL;
+
+  typedef V_GBOOL*                   Ptr;
+  typedef std::function<void(bool)>  OnChg_t;
+  
+  V_GBOOL(const bool& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
+         : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  }
+
+  V_GBOOL(V_GBOOL* ptr) 
+          : Value(ptr), 
+            value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+  }
+  
+  Value::Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_GBOOL(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+
+  void set_from(Value::Ptr ptr) override {
+    auto from = ((V_GBOOL*)ptr);
+    value.store(from->value.load());
+    on_chg_cb = from->on_chg_cb;
+  }
+  
+  void set_from(const Strings& values) override {
+    auto& str = values.back();
+    bool nv = str.compare("1") == 0 ||
+              strncasecmp(str.data(), "true", 4) == 0 ||
+              strncasecmp(str.data(), "yes", 3) == 0;
+    bool chg = nv != value;
+    value = nv;
+    if(chg) 
+      on_change();
+  }
+
+  const Type type() const {
+    return value_type;
+  }
+
+  bool get() const {
+    return value;
+  }
+
+  void set(bool v) {
+    value.store(v);
+  }
+
+  const std::string to_string() const override {
+    return value ? "true" : "false";
+  }
+
+
+  void on_change() const {
+    if(on_chg_cb)
+      on_chg_cb(get());
+  }
+
+  void set_cb_on_chg(const OnChg_t& cb) {
+    on_chg_cb = cb;
+  }
+
+  std::atomic<bool> value;
+  OnChg_t           on_chg_cb;
+};
+
+
+class V_GUINT8 : public Value {
+  public:
+  static const Type value_type = G_UINT8;
+  
+  typedef V_GUINT8*                     Ptr;
+  typedef std::function<void(uint8_t)>  OnChg_t;
+
+  V_GUINT8(const uint8_t& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
+          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  }
+
+  V_GUINT8(V_GUINT8* ptr) 
+          : Value(ptr), 
+            value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+  }
+
+  Value::Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_GUINT8(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Value::Ptr ptr) override {
+    auto from = ((V_GUINT8*)ptr);
+    value.store(from->value.load());
+    on_chg_cb = from->on_chg_cb;
+  }
+  
+  void set_from(const Strings& values) override {
+    uint8_t nv;
+    from_string(values.back(), &nv);
+    bool chg = nv != value;
+    value = nv;
+    if(chg) 
+      on_change();
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string((int16_t)value);
+  }
+
+  uint8_t get() const {
+    return value;
+  }
+
+  void on_change() const {
+    if(on_chg_cb)
+      on_chg_cb(get());
+  }
+
+  void set_cb_on_chg(const OnChg_t& cb) {
+    on_chg_cb = cb;
+  }
+
+  std::atomic<uint8_t>  value;
+  OnChg_t               on_chg_cb;
+};
+
+
+class V_GINT32 : public Value {
+  public:
+  static const Type value_type = G_INT32;
+  
+  typedef V_GINT32*                     Ptr;
+  typedef std::function<void(int32_t)>  OnChg_t;
+
+  V_GINT32(const int32_t& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
+          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  }
+
+  V_GINT32(V_GINT32* ptr) 
+          : Value(ptr), 
+            value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+  }
+
+
+  Value::Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_GINT32(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Value::Ptr ptr) override {
+    auto from = ((V_GINT32*)ptr);
+    value.store(from->value.load());
+    on_chg_cb = from->on_chg_cb;
+  }
+
+  void set_from(const Strings& values) override {
+    int32_t nv;
+    from_string(values.back(), &nv);
+    bool chg = nv != value;
+    value = nv;
+    if(chg) 
+      on_change();
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return std::to_string(value);
+  }
+
+  int32_t get() const {
+    return value;
+  }
+
+  void on_change() const {
+    if(on_chg_cb)
+      on_chg_cb(get());
+  }
+
+  void set_cb_on_chg(const OnChg_t& cb) {
+    on_chg_cb = cb;
+  }
+
+  std::atomic<int32_t>  value;
+  OnChg_t               on_chg_cb;
+
+};
+
+
+class V_GENUM : public Value {
+  public:
+  static const Type value_type = G_ENUM;
+  
+  typedef V_GENUM*                      Ptr;
+  typedef std::function<void(int32_t)>  OnChg_t;
+  typedef V_ENUM::FromString_t          FromString_t; 
+  typedef V_ENUM::Repr_t                Repr_t; 
+
+  V_GENUM(const int32_t& v, 
+          const OnChg_t& cb, 
+          const FromString_t& from_string, 
+          const Repr_t& repr,
+          bool skippable=false, bool guarded=false)
+          : Value(skippable, guarded), value(v), on_chg_cb(cb), 
+            call_from_string(from_string), call_repr(repr) {
+  }
+
+  V_GENUM(V_GENUM* ptr) 
+        : Value(ptr), value(ptr->get()), on_chg_cb(ptr->on_chg_cb),
+          call_from_string(ptr->call_from_string), call_repr(ptr->call_repr) { 
+  }
+
+  Value::Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_GENUM(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Value::Ptr ptr) override {
+    auto from = ((V_GENUM*)ptr);
+    value.store(from->get());
+    on_chg_cb = from->on_chg_cb;
+    call_from_string = from->call_from_string;
+    call_repr = from->call_repr;
+  }
+
+  void set_from(const Strings& values) override {
+    if(!call_from_string)
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+                "Bad Value %s, no from_string cb set", values.back().c_str());
+    
+    int nv = call_from_string(values.back());
+    if(nv < 0) 
+      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+                "Bad Value %s, no corresponding enum", values.back().c_str());
+
+    bool chg = nv != get();
+    value.store(nv);
+    if(chg) 
+      on_change();
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    return format(
+      "%s  # (%d)", 
+      (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
+  }
+
+  int32_t get() const {
+    return value;
+  }
+
+  void set(int32_t nv) {
+    bool chg = nv != get();
+    value.store(nv);
+    if(chg) 
+      on_change();
+  }
+
+  void on_change() const {
+    if(on_chg_cb)
+      on_chg_cb(get());
+  }
+
+  void set_cb_on_chg(const OnChg_t& cb) {
+    on_chg_cb = cb;
+  }
+
+  std::atomic<int32_t>  value;
+  OnChg_t               on_chg_cb;
+  FromString_t          call_from_string = 0;
+  Repr_t                call_repr = 0;
+};
+
+
+// Guarded Mutex
+class V_GSTRINGS : public Value {
+  public:
+  static const Type value_type = G_STRINGS;
+  
+  typedef V_GSTRINGS*            Ptr;
+  typedef std::function<void()>  OnChg_t;
+
+  V_GSTRINGS(const Strings& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
+          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  }
+
+  V_GSTRINGS(V_GSTRINGS* ptr) 
+          : Value(ptr), 
+            value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+  }
+
+
+  Value::Ptr make_new(const Strings& values = Strings()) override {
+    auto ptr = new V_GSTRINGS(this);
+    if(!values.empty())
+      ptr->set_from(values);
+    return ptr;
+  }
+  
+  void set_from(Value::Ptr ptr) override {
+    auto from = ((V_GSTRINGS*)ptr);
+    
+    std::scoped_lock lock(mutex);
+    value = from->get();
+    on_chg_cb = from->on_chg_cb;
+  }
+
+  void set_from(const Strings& values) override {
+    bool chg;
+    {
+      std::scoped_lock lock(mutex);
+      chg = values != value;
+      value = values;
+    }
+    if(chg) 
+      on_change();
+  }
+
+  const Type type() const override {
+    return value_type;
+  }
+
+  const std::string to_string() const override {
+    std::scoped_lock lock(mutex);
+    return format_list(value);
+  }
+
+  Strings get() const {
+    std::scoped_lock lock(mutex);
+    return value;
+  }
+
+  size_t size() {
+    std::scoped_lock lock(mutex);	
+    return value.size();
+  }
+
+  std::string get_item(size_t n) {
+    std::scoped_lock lock(mutex);
+    return value[n];
+  }
+
+  void on_change() const {
+    if(on_chg_cb)
+      on_chg_cb();
+  }
+
+  void set_cb_on_chg(const OnChg_t& cb) {
+    std::scoped_lock lock(mutex);
+    on_chg_cb = cb;
+  }
+
+  mutable std::mutex mutex;
+  Strings            value;
+  OnChg_t            on_chg_cb;
 
 };
 

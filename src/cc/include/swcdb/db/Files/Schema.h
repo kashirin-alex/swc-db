@@ -121,7 +121,7 @@ DB::Schema::Ptr load(int &err, int64_t cid,
         name.append("stats");
         schema = DB::Schema::make(
           cid, name, Types::Column::COUNTER_I64, 1,
-          Env::Config::settings()->get<int32_t>("swc.stats.ttl", 1036800));
+          Env::Config::settings()->get_i32("swc.stats.ttl", 1036800));
       } else {
         name.append(cid==1? "master": "meta");
         schema = DB::Schema::make(cid, name);

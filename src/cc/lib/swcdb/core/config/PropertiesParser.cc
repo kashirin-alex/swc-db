@@ -12,100 +12,95 @@
 
 namespace SWC {
 
-// Config::cfg(Int32tSafe default_value, true)
-template<typename T>
-Property::Value::Ptr cfg(T v, bool skippable, bool guarded) {
-  return new Property::Value(v, skippable, guarded);
-}
 
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Property::Value::Ptr boo(bool v) {
-  return cfg(v);
+Property::V_BOOL::Ptr boo(const bool& v) {
+  return new Property::V_BOOL(v);
 }
-Property::Value::Ptr i8(uint8_t v) {
-  return cfg(v);
+Property::V_UINT8::Ptr i8(const uint8_t& v) {
+  return new Property::V_UINT8(v);
 }
-Property::Value::Ptr i16(uint16_t v) {
-  return cfg(v);
+Property::V_UINT16::Ptr i16(const uint16_t& v) {
+  return new Property::V_UINT16(v);
 }
-Property::Value::Ptr i32(int32_t v) {
-  return cfg(v);
+Property::V_INT32::Ptr i32(const int32_t& v) {
+  return new Property::V_INT32(v);
 }
-Property::Value::Ptr i64(int64_t v) {
-  return cfg(v);
+Property::V_INT64::Ptr i64(const int64_t& v) {
+  return new Property::V_INT64(v);
 }
-Property::Value::Ptr f64(double v) {
-  return cfg(v);
+Property::V_DOUBLE::Ptr f64(const double& v) {
+  return new Property::V_DOUBLE(v);
 }
-Property::Value::Ptr str(std::string v) {
-  return cfg(v);
+Property::V_STRING::Ptr str(const std::string& v) {
+  return new Property::V_STRING(v);
 }
-Property::Value::Ptr strs(Strings v) {
-  return cfg(v);
+Property::V_STRINGS::Ptr strs(const Strings& v) {
+  return new Property::V_STRINGS(v);
 }
-Property::Value::Ptr i64s(Int64s v) {
-  return cfg(v);
+Property::V_INT64S::Ptr i64s(const Int64s& v) {
+  return new Property::V_INT64S(v);
 }
-Property::Value::Ptr f64s(Doubles v) {
-  return cfg(v);
-}
-Property::Value::Ptr enum_ext(EnumExt v) {
-  return cfg(v);
+Property::V_DOUBLES::Ptr f64s(const Doubles& v) {
+  return new Property::V_DOUBLES(v);
 }
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Property::Value::Ptr g_boo(bool v) {
-  return cfg((gBool)v, false, true);
+Property::V_GBOOL::Ptr g_boo(const bool& v) {
+  return new Property::V_GBOOL(v, 0, false, true);
 }
-Property::Value::Ptr g_i8(uint8_t v) {
-  return cfg((gInt8t)v, false, true);
+Property::V_GUINT8::Ptr g_i8(const uint8_t& v) {
+  return new Property::V_GUINT8(v, 0, false, true);
 }
-Property::Value::Ptr g_i32(int32_t v) {
-  return cfg((gInt32t)v, false, true);
+Property::V_GINT32::Ptr g_i32(const int32_t& v) {
+  return new Property::V_GINT32(v, 0, false, true);
 }
-Property::Value::Ptr g_strs(Strings v) {
-  return cfg((gStrings)v, false, true);
+Property::V_GSTRINGS::Ptr g_strs(const Strings& v) {
+  return new Property::V_GSTRINGS(v, 0, false, true);
 }
-Property::Value::Ptr g_enum_ext(gEnumExt v) {
-  return cfg(v, false, true);
+Property::V_GENUM::Ptr g_enum(const int32_t& v, 
+                            const Property::V_GENUM::OnChg_t& cb, 
+                            const Property::V_GENUM::FromString_t& from_string, 
+                            const Property::V_GENUM::Repr_t& repr) {
+  return new Property::V_GENUM(v, cb, from_string, repr);
 }
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped
 */
-Property::Value::Ptr boo() {
-  return cfg(true, true);
+Property::V_BOOL::Ptr boo() {
+  return new Property::V_BOOL(true, true);
 }
-Property::Value::Ptr i8() {
-  return cfg((uint8_t)0, true);
+Property::V_UINT8::Ptr i8() {
+  return new Property::V_UINT8(0, true);
 }
-Property::Value::Ptr i16() {
-  return cfg((uint16_t)0, true);
+Property::V_UINT16::Ptr i16() {
+  return new Property::V_UINT16(0, true);
 }
-Property::Value::Ptr i32() {
-  return cfg((int32_t)0, true);
+Property::V_INT32::Ptr i32() {
+  return new Property::V_INT32(0, true);
 }
-Property::Value::Ptr i64() {
-  return cfg((int64_t)0, true);
+Property::V_INT64::Ptr i64() {
+  return new Property::V_INT64(0, true);
 }
-Property::Value::Ptr f64() {
-  return cfg((double)0, true);
+Property::V_DOUBLE::Ptr f64() {
+  return new Property::V_DOUBLE(0, true);
 }
-Property::Value::Ptr str() {
-  return cfg(std::string(), true);
+Property::V_STRING::Ptr str() {
+  return new Property::V_STRING(std::string(), true);
 }
-Property::Value::Ptr strs() {
-  return cfg(Strings(), true);
+Property::V_STRINGS::Ptr strs() {
+  return new Property::V_STRINGS(Strings(), true);
 }
-Property::Value::Ptr i64s() {
-  return cfg(Int64s(), true);
+Property::V_INT64S::Ptr i64s() {
+  return new Property::V_INT64S(Int64s(), true);
 }
-Property::Value::Ptr f64s() {
-  return cfg(Doubles(), true);
+Property::V_DOUBLES::Ptr f64s() {
+  return new Property::V_DOUBLES(Doubles(), true);
 }
 
 
@@ -189,7 +184,7 @@ ParserConfig& ParserConfig::add_options(const std::string &name,
 
 ParserConfig& ParserConfig::add(const std::string &name, 
                                 const std::string& description){
-   return add(name, cfg(true, true)->zero_token(), description);
+   return add(name, boo()->zero_token(), description);
 }
 
 ParserConfig& ParserConfig::operator()(const std::string &name, 
@@ -283,7 +278,7 @@ void ParserConfig::print(std::ostream& os) const {
                   format("-%s",format_list(kv.second.aliases).c_str()).c_str()
                   : ""))
         << std::left << std::setw(offset_desc+2) << kv.second.desc
-        << std::left << std::setw(2) << kv.second.value->str()
+        << std::left << std::setw(2) << kv.second.value->to_string()
         << "\n";
   }
 }
@@ -516,15 +511,12 @@ void Parser::make_options() {
 void Parser::add_opt(const std::string& name, Property::Value::Ptr p, 
                      const Strings& raw_opt) {
   auto tmp = p ? p : str();
-  auto& p_set = m_opts.map.emplace(
-    name, Property::Value::make_new(tmp, raw_opt)).first->second;
-  if(!p) {
+  auto& p_set = m_opts.map.emplace(name, tmp->make_new(raw_opt)).first->second;
+  if(!p)
     delete tmp;
-  }
+  
   if(raw_opt.empty())
-    p_set->default_value();
-  if(p->is_guarded())
-    p_set->guarded(true);
+    p_set->default_value(true);
 }
       
 void Parser::own_options(Parser::Options& opts) {
@@ -545,7 +537,7 @@ void Parser::print(std::ostream& os) const {
 void Parser::print_options(std::ostream& os) const {
   os << std::string("*** Parsed Options:") << "\n";
   for(const auto &kv : m_opts.map)
-    os << kv.first << "=" << kv.second->str() << "\n";
+    os << kv.first << "=" << kv.second->to_string() << "\n";
 }
 
 std::ostream& operator<<(std::ostream& os, const Parser& prs) {

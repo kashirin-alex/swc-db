@@ -371,7 +371,7 @@ class DbClient : public Interface {
     int64_t ts = Time::now_ns();
     
     Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
+      Env::Config::settings()->get_str("swc.fs")));
     DB::Cells::TSV::FileReader reader(Env::FsInterface::interface());
 
     uint8_t display_flags = 0;
@@ -402,7 +402,7 @@ class DbClient : public Interface {
     int64_t ts = Time::now_ns();
 
     Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
+      Env::Config::settings()->get_str("swc.fs")));
     DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
     
     auto req = std::make_shared<Protocol::Common::Req::Query::Select>(

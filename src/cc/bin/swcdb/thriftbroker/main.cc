@@ -22,12 +22,12 @@ namespace SWC {
 int run() {
   SWC_TRY_OR_LOG("", 
 
-  auto& props = Env::Config::settings()->properties;
+  auto settings = Env::Config::settings();
 
-  uint32_t reactors = 1; // props.get<int32_t>("swc.ThriftBroker.reactors");
-  int workers = props.get<int32_t>("swc.ThriftBroker.workers");
-  uint32_t timeout_ms = props.get<int16_t>("swc.ThriftBroker.timeout");
-  std::string transport = props.get<std::string>("swc.ThriftBroker.transport");
+  uint32_t reactors = 1; // settings->get_i32("swc.ThriftBroker.reactors");
+  int workers = settings->get_i32("swc.ThriftBroker.workers");
+  uint32_t timeout_ms = settings->get_i16("swc.ThriftBroker.timeout");
+  std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
 	std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
 	if (transport.compare("framed") == 0) {
@@ -42,10 +42,10 @@ int run() {
 		return 1;
 	}
 
-  Strings addrs = props.has("addr") ? props.get<Strings>("addr") : Strings();
+  Strings addrs = settings->has("addr") ? settings->get_strs("addr") : Strings();
   std::string host;
-  if(props.has("host"))
-    host = host.append(props.get<std::string>("host"));
+  if(settings->has("host"))
+    host = host.append(settings->get_str("host"));
   else {
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
@@ -53,7 +53,7 @@ int run() {
   }
     
   EndPoints endpoints = Resolver::get_endpoints(
-    props.get<int16_t>("swc.ThriftBroker.port"),
+    settings->get_i16("swc.ThriftBroker.port"),
     addrs,
     host,
     true

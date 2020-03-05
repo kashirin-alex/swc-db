@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
   std::cout << std::string("\nConfig::cmdline_desc");
   std::cout << settings->cmdline_desc;
-  settings->properties.print(std::cout);
+  settings->print(std::cout);
 
   
   // cfg file parse test definitions
@@ -98,8 +98,8 @@ int main(int argc, char *argv[]) {
   prs_file.print_options(std::cout);
   
   Properties props;
-  props.set("dummy", true);
-  std::cout << props.str("dummy") << "\n";
+  props.set("dummy", boo(true));
+  std::cout << props.to_string("dummy") << "\n";
 
   props.load_from(prs_file.get_options());
 

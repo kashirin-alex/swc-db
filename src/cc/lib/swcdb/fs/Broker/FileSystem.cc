@@ -43,7 +43,7 @@ bool apply_broker() {
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
   ;
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>("swc.fs.broker.cfg", ""),
+    Env::Config::settings()->get_str("swc.fs.broker.cfg", ""),
     "swc.fs.broker.cfg.dyn"
   );
   return true;
@@ -52,7 +52,7 @@ bool apply_broker() {
 
 
 const EndPoints FileSystemBroker::get_endpoints() {
-  std::string host = Env::Config::settings()->get<std::string>(
+  std::string host = Env::Config::settings()->get_str(
     "swc.fs.broker.host", "");
   if(host.empty()) {
     char hostname[256];
@@ -61,7 +61,7 @@ const EndPoints FileSystemBroker::get_endpoints() {
   }
   Strings addr;
   return Resolver::get_endpoints(
-    Env::Config::settings()->get<int16_t>("swc.fs.broker.port"),
+    Env::Config::settings()->get_i16("swc.fs.broker.port"),
     addr, host, true
   );
 }
@@ -69,14 +69,14 @@ const EndPoints FileSystemBroker::get_endpoints() {
 FileSystemBroker::FileSystemBroker()
   : FileSystem(apply_broker()),
     m_io(std::make_shared<IoContext>("FsBroker",
-      Env::Config::settings()->get<int32_t>("swc.fs.broker.handlers"))),
+      Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
     m_service(std::make_shared<client::Serialized>(
       "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
     m_type_underlying(fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs.broker.underlying"))),
-    cfg_timeout(Env::Config::settings()->get_ptr<gInt32t>(
+      Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
+    cfg_timeout(Env::Config::settings()->get<Property::V_GINT32>(
       "swc.fs.broker.timeout")),
-    cfg_timeout_ratio(Env::Config::settings()->get_ptr<gInt32t>(
+    cfg_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>(
       "swc.fs.broker.timeout.bytes.ratio")),
     m_endpoints(get_endpoints()),
     m_run(true) {

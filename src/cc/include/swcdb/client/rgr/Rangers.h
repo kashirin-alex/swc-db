@@ -12,7 +12,7 @@ namespace SWC { namespace client {
 class Rangers  {
   public:
 
-  Rangers(const gInt32tPtr expiry_ms) : m_expiry_ms(expiry_ms) { }
+  Rangers(const Property::V_GINT32::Ptr expiry_ms) : m_expiry_ms(expiry_ms) { }
 
   virtual ~Rangers(){ }
   
@@ -96,7 +96,7 @@ class Rangers  {
   typedef std::unordered_map<int64_t, Range>  Ranges;
   std::mutex                                  m_mutex;
   std::unordered_map<int64_t, Ranges>         m_map;
-  gInt32tPtr                                  m_expiry_ms;
+  Property::V_GINT32::Ptr                     m_expiry_ms;
   
 };
 

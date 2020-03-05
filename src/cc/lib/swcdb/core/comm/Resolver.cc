@@ -108,7 +108,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
       auto at = addr.find_first_of("-");
       if(at != std::string::npos) {
         ip = addr.substr(0, at);  
-        port = SWC::Property::uint16_t_from_string(addr.substr(at+1));
+        Property::from_string(addr.substr(at+1), &port);
       } else {
         ip = addr;  
         port = defaul_port;
@@ -122,7 +122,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
     auto at = host.find_first_of(":");
     if(at != std::string::npos) {
         hostname = host.substr(0, at);  
-        port = SWC::Property::uint16_t_from_string(host.substr(at+1));
+        Property::from_string(host.substr(at+1), &port);
       } else {
         port = defaul_port;
         hostname = host;  

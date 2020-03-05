@@ -207,16 +207,16 @@ int main(int argc, char** argv) {
 
   SWC::Env::Config::init(argc, argv);
   SWC::Env::FsInterface::init(SWC::FS::fs_type(
-    SWC::Env::Config::settings()->get<std::string>("swc.fs")));
+    SWC::Env::Config::settings()->get_str("swc.fs")));
 
   
   SWC::Env::IoCtx::init(8);
 
   SWC::Env::Resources.init(
     SWC::Env::IoCtx::io()->ptr(),
-    SWC::Env::Config::settings()->get_ptr<SWC::gInt32t>(
+    SWC::Env::Config::settings()->get<SWC::Property::V_GINT32>(
       "swc.rgr.ram.percent"),
-    SWC::Env::Config::settings()->get_ptr<SWC::gInt32t>(
+    SWC::Env::Config::settings()->get<SWC::Property::V_GINT32>(
       "swc.rgr.ram.release.rate")
   );
 

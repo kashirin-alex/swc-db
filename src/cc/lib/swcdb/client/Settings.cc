@@ -11,7 +11,7 @@ void Settings::init_client_options() {
     ("swc.cfg.dyn.period", g_i32(600000), 
      "Dynamic cfg-file check interval in ms, zero without")
     
-    ("swc.mngr.host", g_strs(gStrings()), 
+    ("swc.mngr.host", g_strs(Strings()), 
      "Manager Host: \"[cols range]|(hostname or ips-csv)|port\"")
     ("swc.mngr.port", i16(15000), 
      "Manager default port if not defined in swc.mngr.host")

@@ -14,7 +14,7 @@ bool apply_ceph() {
     ("swc.fs.ceph.cfg.dyn", strs(), "Dyn-config file")
   ;
   settings->parse_file(
-    settings->get<std::string>("swc.fs.ceph.cfg", ""),
+    settings->get_str("swc.fs.ceph.cfg", ""),
     "swc.fs.ceph.cfg.dyn"
   );
   return;

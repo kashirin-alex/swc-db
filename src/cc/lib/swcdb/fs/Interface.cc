@@ -72,7 +72,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   std::string fs_lib;
   if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
     fs_lib.append(
-      Env::Config::settings()->get<std::string>("swc.fs.lib."+fs_name));
+      Env::Config::settings()->get_str("swc.fs.lib."+fs_name));
   } else {
     fs_lib.append(Env::Config::settings()->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)

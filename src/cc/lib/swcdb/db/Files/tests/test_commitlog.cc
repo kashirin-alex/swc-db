@@ -54,13 +54,13 @@ int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
 
   Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get<std::string>("swc.fs")));
+    Env::Config::settings()->get_str("swc.fs")));
   Env::IoCtx::init(8);
   Env::Resources.init(
     Env::IoCtx::io()->ptr(),
-    Env::Config::settings()->get_ptr<SWC::gInt32t>(
+    Env::Config::settings()->get<Property::V_GINT32>(
       "swc.rgr.ram.percent"),
-    Env::Config::settings()->get_ptr<gInt32t>(
+    Env::Config::settings()->get<Property::V_GINT32>(
       "swc.rgr.ram.release.rate")
   );
 

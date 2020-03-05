@@ -64,23 +64,16 @@ namespace SWC {
     m_alias_map[secondary] = primary;
   }
 
-  Property::Value::Ptr Properties::get_value_ptr(const std::string &name) {
-    auto it = m_map.find(name);
-    if (it != m_map.end())
-      return it->second;
+  void Properties::set(const std::string &name, Property::Value::Ptr p) {
+    auto ptr = get_ptr(name, true);
+    if(!ptr) {
+      m_map.emplace(name, p->make_new());
 
-    auto alias = m_alias_map.find(name);
-    if(alias != m_alias_map.end()) {
-      it = m_map.find(alias->second);
-      if (it != m_map.end())
-        return it->second;
+    } else if(!p->is_default()) {
+      ptr->set_from(p);
+      ptr->default_value(false);
     }
-    
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
-              "getting value of '%s' - missing",
-              name.c_str());
   }
-
   const bool Properties::has(const std::string &name) const {
     if(m_map.count(name))
       return true;
@@ -92,11 +85,11 @@ namespace SWC {
   }
 
   const bool Properties::defaulted(const std::string &name) {
-    return get_value_ptr(name)->is_default();
+    return get_ptr(name)->is_default();
   }
 
-  const std::string Properties::str(const std::string &name) {
-    return get_value_ptr(name)->str();
+  const std::string Properties::to_string(const std::string &name) {
+    return get_ptr(name)->to_string();
   }
   
   void Properties::get_names(std::vector<std::string> &names) const {
@@ -112,107 +105,45 @@ namespace SWC {
     }
   }
 
-  void Properties::set(const std::string &name, Property::Value::Ptr p) {
-    Property::Value::Ptr p_set;
-    if(!m_map.count(name)) {
-      p_set = Property::Value::make_new(p);
-      
-      if(p->is_default())
-        p_set->default_value();
-      
-      if(p->is_guarded())
-        p_set->guarded(true);
-        
-      add(name, p_set);
 
-    } else if(!p->is_default()) {
-      p_set = get_value_ptr(name);
-      p_set->set_value_from(p);
-      p_set->default_value(false);
+  Property::Value::Ptr Properties::get_ptr(const std::string &name, 
+                                           bool null_ok) {
+    auto it = m_map.find(name);
+    if (it != m_map.end())
+      return it->second;
+
+    auto alias = m_alias_map.find(name);
+    if(alias != m_alias_map.end()) {
+      it = m_map.find(alias->second);
+      if (it != m_map.end())
+        return it->second;
     }
+    if(null_ok)
+      return nullptr;
+    
+    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+              "getting value of '%s' - missing",
+              name.c_str());
   }
 
   void Properties::print(std::ostream &out, bool include_default) const {
-    out << to_string(include_default);
+    out << to_string_all(include_default);
   }
 
-  const std::string Properties::to_string(bool include_default) const {
+  const std::string Properties::to_string_all(bool include_default) const {
     std::string out;
     bool isdefault;
     for(const auto &kv : m_map) {
       isdefault = kv.second->is_default();
       if(include_default || !isdefault) {
-        out.append(format("%s=%s", kv.first.c_str(), kv.second->str().c_str()));
+        out.append(
+          format("%s=%s", kv.first.c_str(), kv.second->to_string().c_str()));
         if(isdefault)
           out.append(" (default)");
         out.append("\n");
       }
     }
     return out;
-  }
-
-  bool Properties::get_bool(const std::string &name) {
-    return get<bool>(name); 
-  }
-  std::string Properties::get_str(const std::string &name) {
-    return get<std::string>(name); 
-  }
-  Strings Properties::get_strs(const std::string &name) {
-    return get<Strings>(name); 
-  }
-  uint8_t Properties::get_i8(const std::string &name) {
-    return get<uint8_t>(name); 
-  }
-  uint16_t Properties::get_i16(const std::string &name) {
-    return get<uint16_t>(name); 
-  }
-  int32_t Properties::get_i32(const std::string &name) {
-    return get<int32_t>(name); 
-  }
-  int64_t Properties::get_i64(const std::string &name) {
-    return get<int64_t>(name); 
-  }
-  Int64s Properties::get_i64s(const std::string &name) {
-    return get<Int64s>(name); 
-  }
-  double Properties::get_f64(const std::string &name) {
-    return get<double>(name); 
-  }
-  Doubles Properties::get_f64s(const std::string &name) {
-    return get<Doubles>(name); 
-  }
-  bool Properties::get_bool(const std::string &name, bool default_value) {
-    return get<bool>(name, default_value); 
-  }
-  std::string Properties::get_str(const std::string &name, std::string &default_value) {
-    return get<std::string>(name, static_cast<std::string>(default_value)); 
-  }
-  std::string Properties::get_str(const std::string &name, std::string default_value) {
-    return get<std::string>(name, default_value); 
-  }
-  Strings Properties::get_strs(const std::string &name, Strings default_value) {
-    return get<Strings>(name, default_value); 
-  }
-  uint8_t Properties::get_i8(const std::string &name, uint8_t default_value) {
-    return get<uint8_t>(name, default_value); 
-  }
-  uint16_t Properties::get_i16(const std::string &name, uint16_t default_value) {
-    return get<uint16_t>(name, default_value); 
-  }
-  int32_t Properties::get_i32(const std::string &name, int32_t default_value) {
-    return get<int32_t>(name, default_value); 
-  }
-  int64_t Properties::get_i64(const std::string &name, int64_t default_value) {
-    return get<int64_t>(name, default_value); 
-  }
-  Int64s Properties::get_i64s(const std::string &name, Int64s &default_value) {
-    return get<Int64s>(name, default_value); 
-  }
-  double Properties::get_f64(const std::string &name, double default_value) {
-    return get<double>(name, default_value); 
-  }
-  Doubles Properties::get_f64s(const std::string &name, Doubles default_value) {
-    return get<Doubles>(name, default_value); 
   }
 
 

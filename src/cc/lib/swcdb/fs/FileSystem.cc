@@ -68,7 +68,7 @@ FileSystem::FileSystem(std::string root, bool setting_applied)
     : path_root(normalize_pathname(root)),
       path_data(
         normalize_pathname(
-          Env::Config::settings()->get<std::string>("swc.fs.path.data"))) { 
+          Env::Config::settings()->get_str("swc.fs.path.data"))) { 
 }
 
 FileSystem::~FileSystem() { }

@@ -165,7 +165,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
   }
 
   Ptr init(){
-    Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host")
+    Env::Config::settings()->get<Property::V_GSTRINGS>("swc.mngr.host")
       ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
     
     on_cfg_update();
@@ -187,11 +187,10 @@ class Groups : public std::enable_shared_from_this<Groups>{
   void on_cfg_update() {
     SWC_LOG(LOG_DEBUG, "update_cfg()");
 
-    gStringsPtr cfg_mngr_hosts
-     = Env::Config::settings()->get_ptr<gStrings>("swc.mngr.host");
-    uint16_t default_port
-     = Env::Config::settings()->get<int16_t>("swc.mngr.port");
-
+    Property::V_GSTRINGS::Ptr cfg_mngr_hosts
+     = Env::Config::settings()->get<Property::V_GSTRINGS>("swc.mngr.host");
+    uint16_t default_port = Env::Config::settings()->get_i16("swc.mngr.port");
+    uint16_t port;
 
     int c = cfg_mngr_hosts->size();
     for(int n=0; n<c;n++){
@@ -207,9 +206,8 @@ class Groups : public std::enable_shared_from_this<Groups>{
       auto cols = cfg.substr(0, at);
       auto col_at = cols.find_first_of("[");
       if(col_at == std::string::npos) {
-        add_host(0, 0, 
-          Property::int32_t_from_string(cfg.substr(at+1)), 
-          cfg.substr(0, at));
+        Property::from_string(cfg.substr(at+1), &port);
+        add_host(0, 0, port, cfg.substr(0, at));
         continue;
       }
 
@@ -217,17 +215,16 @@ class Groups : public std::enable_shared_from_this<Groups>{
           
       auto host_and_ip = cfg.substr(at+1);
       std::string host_or_ips;
-      uint16_t port;
       auto addr_at = host_and_ip.find_first_of("|");
       if(addr_at == std::string::npos) {
         host_or_ips = host_and_ip;
         port = default_port;
       } else {
         host_or_ips = host_and_ip.substr(0, addr_at);
-        port = Property::uint16_t_from_string(host_and_ip.substr(addr_at+1));
+        Property::from_string(host_and_ip.substr(addr_at+1), &port);
       }
 
-      size_t col_begin, col_end;
+      int64_t col_begin, col_end;
       do{
         auto col_range = cols;
         col_at = cols.find_first_of(",");
@@ -239,8 +236,12 @@ class Groups : public std::enable_shared_from_this<Groups>{
         auto col_range_at = col_range.substr(0, col_at).find_first_of("-");
         auto b = col_range.substr(0, col_range_at);
         auto e = col_range.substr(col_range_at+1);
-        col_begin = b.empty()?(size_t)0:Property::int64_t_from_string(b);
-        col_end   = e.empty()?(size_t)0:Property::int64_t_from_string(e);
+        col_begin = 0;
+        col_end = 0;
+        if(!b.empty())
+          Property::from_string(b, &col_begin);
+        if(!e.empty())
+          Property::from_string(e, &col_end);
 
         add_host(col_begin, col_end, port, host_or_ips);
 

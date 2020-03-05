@@ -24,8 +24,9 @@ class Compaction final {
                   *RangerEnv::maintenance_io()->ptr())),
               m_run(true), m_running(0), m_scheduled(false),
               m_idx_cid(0), m_idx_rid(0), 
-              cfg_check_interval(Env::Config::settings()->get_ptr<gInt32t>(
-                "swc.rgr.compaction.check.interval")) {
+              cfg_check_interval(
+                Env::Config::settings()->get<Property::V_GINT32>(
+                  "swc.rgr.compaction.check.interval")) {
   }
   
   virtual ~Compaction(){}
@@ -726,17 +727,17 @@ class Compaction final {
     SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%d", t_ms);
   }
 
-  std::mutex                   m_mutex;
-  asio::high_resolution_timer  m_check_timer;
-  bool                         m_run;
-  uint32_t                     m_running;
-  bool                         m_scheduled;
-  std::condition_variable      m_cv;
+  std::mutex                      m_mutex;
+  asio::high_resolution_timer     m_check_timer;
+  bool                            m_run;
+  uint32_t                        m_running;
+  bool                            m_scheduled;
+  std::condition_variable         m_cv;
   
-  size_t                       m_idx_cid;
-  size_t                       m_idx_rid;
+  size_t                          m_idx_cid;
+  size_t                          m_idx_rid;
 
-  const gInt32tPtr            cfg_check_interval;
+  const Property::V_GINT32::Ptr   cfg_check_interval;
 };
 
 

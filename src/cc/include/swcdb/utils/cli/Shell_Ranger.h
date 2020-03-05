@@ -65,7 +65,7 @@ class Rgr : public Interface {
         return error(message);
       }
     } else {
-      port = Env::Config::settings()->get<int16_t>("swc.rgr.port");
+      port = Env::Config::settings()->get_i16("swc.rgr.port");
     }
     
     std::vector<std::string> ips;

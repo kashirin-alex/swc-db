@@ -14,7 +14,8 @@ class Host : public Protocol::Common::Req::ConnQueue  {
   const EndPoints   endpoints;
 
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-       const gInt32tPtr keepalive_ms, const gInt32tPtr again_delay_ms)
+       const Property::V_GINT32::Ptr keepalive_ms, 
+       const Property::V_GINT32::Ptr again_delay_ms)
       : queues(queues), endpoints(endpoints), 
         Protocol::Common::Req::ConnQueue(keepalive_ms, again_delay_ms) {
   }
@@ -36,18 +37,18 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   public:
 
-  const Serialized::Ptr     service;
-  const gInt32tPtr    cfg_conn_timeout;
-  const gInt32tPtr    cfg_conn_probes;
-  const gInt32tPtr    cfg_keepalive_ms;
-  const gInt32tPtr    cfg_again_delay_ms;
+  const Serialized::Ptr            service;
+  const Property::V_GINT32::Ptr    cfg_conn_timeout;
+  const Property::V_GINT32::Ptr    cfg_conn_probes;
+  const Property::V_GINT32::Ptr    cfg_keepalive_ms;
+  const Property::V_GINT32::Ptr    cfg_again_delay_ms;
   
   
   ConnQueues(const Serialized::Ptr service, 
-             const gInt32tPtr timeout, 
-             const gInt32tPtr probes, 
-             const gInt32tPtr keepalive_ms,
-             const gInt32tPtr again_delay_ms)
+             const Property::V_GINT32::Ptr timeout, 
+             const Property::V_GINT32::Ptr probes, 
+             const Property::V_GINT32::Ptr keepalive_ms,
+             const Property::V_GINT32::Ptr again_delay_ms)
             : service(service),
               cfg_conn_timeout(timeout),
               cfg_conn_probes(probes), 

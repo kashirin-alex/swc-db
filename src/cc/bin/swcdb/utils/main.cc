@@ -11,9 +11,9 @@ namespace SWC { namespace Utils {
 
 int run(const std::string& cmd, bool custom=false) {
 
-  std::string lib_path(Env::Config::settings()->get<std::string>("lib-path"));
+  std::string lib_path(Env::Config::settings()->get_str("lib-path"));
   if(custom) {
-    lib_path.append(Env::Config::settings()->get<std::string>("lib"));
+    lib_path.append(Env::Config::settings()->get_str("lib"));
   } else {
     lib_path.append("libswcdb_utils_"); 
     lib_path.append(cmd);
@@ -58,8 +58,8 @@ int not_implemented(const std::string& cmd) {
 
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
-  //std::cout << SWC::Env::Config::settings()->properties.to_string(true) << "\n";
-  const auto& command = SWC::Env::Config::settings()->get<std::string>("command");
+
+  const auto& command = SWC::Env::Config::settings()->get_str("command");
   
   if(command.compare("shell") == 0)
     return SWC::Utils::run(command);

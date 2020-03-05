@@ -98,18 +98,18 @@ SerializedServer::SerializedServer(
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
   ) : m_appname(name), m_run(true),
-      m_ssl_cfg(Env::Config::settings()->get<bool>("swc.comm.ssl")
+      m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")
                 ? new ConfigSSL(false) : nullptr) {
     
   SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d", 
            m_appname.c_str(), reactors, workers);
 
-  auto& props = Env::Config::settings()->properties;
+  auto settings = Env::Config::settings();
 
-  Strings addrs = props.has("addr") ? props.get<Strings>("addr") : Strings();
+  Strings addrs = settings->has("addr") ? settings->get_strs("addr") : Strings();
   std::string host;
-  if(props.has("host"))
-    host = host.append(props.get<std::string>("host"));
+  if(settings->has("host"))
+    host = host.append(settings->get_str("host"));
   else {
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
@@ -117,7 +117,7 @@ SerializedServer::SerializedServer(
   }
     
   EndPoints endpoints = Resolver::get_endpoints(
-    props.get<int16_t>(port_cfg_name),
+    settings->get_i16(port_cfg_name),
     addrs,
     host,
     true

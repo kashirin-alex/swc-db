@@ -17,8 +17,8 @@ int run() {
 
   auto srv = std::make_shared<server::SerializedServer>(
     "MANAGER", 
-    Env::Config::settings()->get<int32_t>("swc.mngr.reactors"), 
-    Env::Config::settings()->get<int32_t>("swc.mngr.workers"), 
+    Env::Config::settings()->get_i32("swc.mngr.reactors"), 
+    Env::Config::settings()->get_i32("swc.mngr.workers"), 
     "swc.mngr.port",
     app_ctx
   );

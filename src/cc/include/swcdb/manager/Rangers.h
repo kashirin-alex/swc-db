@@ -87,10 +87,10 @@ class Rangers final {
   bool                          m_runs_assign;
   std::atomic<int>              m_assignments; 
   
-  const gInt32tPtr cfg_rgr_failures;
-  const gInt32tPtr cfg_delay_rgr_chg;
-  const gInt32tPtr cfg_chk_assign;
-  const gInt32tPtr cfg_assign_due;
+  const Property::V_GINT32::Ptr cfg_rgr_failures;
+  const Property::V_GINT32::Ptr cfg_delay_rgr_chg;
+  const Property::V_GINT32::Ptr cfg_chk_assign;
+  const Property::V_GINT32::Ptr cfg_assign_due;
   
 };
 

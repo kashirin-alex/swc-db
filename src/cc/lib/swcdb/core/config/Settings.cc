@@ -44,48 +44,47 @@ void Settings::init(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   init_post_cmd_args();
-
-  bool verbose = properties.get<gBool>("verbose");
-  if(verbose && properties.get_bool("quiet")) {
-    verbose = false;
-    properties.set("verbose", (gBool)false);
+  
+  auto verbose = get<Property::V_GBOOL>("verbose");
+  if(verbose->get() && get_bool("quiet")) {
+    verbose->set(false);
   }
 
-  gEnumExtPtr loglevel = properties.get_ptr<gEnumExt>("logging-level");
-  if(properties.get_bool("debug")) {
-    loglevel->set_value(LOG_DEBUG);
+  auto loglevel = get<Property::V_GENUM>("swc.logging.level");
+  if(get_bool("debug")) {
+    loglevel->set(LOG_DEBUG);
 
   } else if(loglevel->get() == -1) {
-    SWC_LOG_OUT(LOG_ERROR) << "unknown logging level: "<< loglevel->str() << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR) 
+      << "unknown logging level: "<< loglevel->to_string() << SWC_LOG_OUT_END;
     std::quick_exit(EXIT_SUCCESS);
   }
 }
 
 void Settings::init_options() {
-  gEnumExt logging_level(
-    LOG_INFO,
-    [](int value){ Logger::logger.set_level(value); },
-    Logger::logger.from_string,
-    Logger::logger.repr
-  );
 
   cmdline_desc.add_options()
     ("help,h", "Show this help message and exit")
     ("help-config", "Show help message for config properties")
     ("version,v", "Show version information and exit")
 
-    ("daemon ", boo()->zero_token(), "Start process in background mode")
     ("verbose", g_boo(false)->zero_token(), "Show more verbose output")
-    ("debug", boo(false)->zero_token(), "Shortcut to --logging-level debug")
+    ("debug", boo(false)->zero_token(), "Shortcut to --swc.logging.level debug")
     ("quiet", boo(false)->zero_token(), "Negate verbose")
+    ("daemon ", boo()->zero_token(), "Start process in background mode")
 
-    ("logging-level,l", g_enum_ext(logging_level), 
-     "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
-    
     ("swc.cfg.path", str(install_path+"/etc/swcdb/"), "Path of configuration files")
     ("swc.cfg", str("swc.cfg"), "Main configuration file")
     ("swc.cfg.dyn", strs(), "Main dynamic configuration file")
 
+    ("swc.logging.level,l", 
+      g_enum(
+        LOG_INFO,
+        [](int value){ Logger::logger.set_level(value); },
+        Logger::logger.from_string,
+        Logger::logger.repr
+      ), 
+     "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
 
     //("induce-failure", str(), "Arguments for inducing failure")
@@ -94,12 +93,6 @@ void Settings::init_options() {
      "as Not Interactive or Show as little output as possible") 
     */
     ;
-    
-  alias("logging-level", "swc.logging.level");
-
-  file_desc.add_options()
-    ("swc.logging.level", g_enum_ext(logging_level), 
-     "Logging level: debug|info|notice|warn|error|crit|alert|fatal");
 }
 
 void Settings::parse_args(int argc, char *argv[]) {
@@ -111,7 +104,7 @@ void Settings::parse_args(int argc, char *argv[]) {
  
   prs.own_options(m_cmd_args);
   
-  properties.load_from(prs.get_options());
+  load_from(prs.get_options());
     
   // some built-in behavior
   if (has("help")) {
@@ -130,7 +123,7 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if(has("swc.cfg")) 
-    parse_file(properties.get_str("swc.cfg"), "swc.cfg.dyn");
+    parse_file(get_str("swc.cfg"), "swc.cfg.dyn");
 }
 
 void Settings::parse_file(const std::string& name, const std::string& onchg) {
@@ -139,16 +132,16 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
 
   std::string fname;
   if(name.front() != '/' && name.front() != '.') 
-    fname.append(properties.get_str("swc.cfg.path"));
+    fname.append(get_str("swc.cfg.path"));
   fname.append(name);
   
   if(!FileUtils::exists(fname))
     SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
               "cfg file=%s not found", fname.c_str());
     
-  properties.load(fname, file_desc, cmdline_desc, false);
+  load(fname, file_desc, cmdline_desc, false);
   load_files_by(onchg, false);
-  properties.load_from(m_cmd_args);  // Inforce cmdline properties 
+  load_from(m_cmd_args);  // Inforce cmdline properties 
 }
 
 void Settings::load_files_by(const std::string &fileprop,  
@@ -157,17 +150,17 @@ void Settings::load_files_by(const std::string &fileprop,
       return;
 
     std::string fname;
-    Strings files = properties.get_strs(fileprop);
+    Strings files = get<Property::V_STRINGS>(fileprop)->get();
     for (auto it=files.begin(); it<files.end(); ++it) {
       fname.clear();
       if(it->front() != '/' && it->front() != '.') 
-        fname.append(properties.get_str("swc.cfg.path"));
+        fname.append(get_str("swc.cfg.path"));
       fname.append(*it);
 
 	    try {
-        properties.load(fname, file_desc, cmdline_desc, allow_unregistered);
+        load(fname, file_desc, cmdline_desc, allow_unregistered);
 
-        std::scoped_lock lock(properties.mutex);
+        std::scoped_lock lock(mutex);
         auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
         if(it == m_dyn_files.end())
           m_dyn_files.push_back({.filename=fname, .modified=0});
@@ -179,7 +172,7 @@ void Settings::load_files_by(const std::string &fileprop,
   }
 
 void Settings::init_process() {
-  bool daemon = properties.has("daemon");
+  bool daemon = has("daemon");
 
   if(daemon) {
     if(pid_t p = fork())
@@ -192,26 +185,14 @@ void Settings::init_process() {
 
   Logger::logger.initialize(executable);
   if(daemon)
-    Logger::logger.daemon(properties.get_str("swc.logging.path"));
+    Logger::logger.daemon(get_str("swc.logging.path"));
     
-  if(properties.get<gBool>("verbose")) {
+  if(get_gbool("verbose")) {
     SWC_LOG_OUT(LOG_NOTICE) 
       << "Initialized " << executable << " (" << SWC::VERSION << ")\n"
-      << "Process Settings: \n" << properties.to_string() << SWC_LOG_OUT_END;
+      << "Process Settings: \n" << to_string_all() << SWC_LOG_OUT_END;
   }
 }
-
-const bool Settings::has(const std::string &name) const {
-  return properties.has(name);
-}
-
-const bool Settings::defaulted(const std::string &name) {
-  return properties.defaulted(name);
-}
-
-void Settings::alias(const std::string &minor, const std::string &major) {
-  properties.alias(minor, major);
-} 
 
 std::string Settings::usage_str(const char *usage) {
   if (!usage)
@@ -226,7 +207,7 @@ std::string Settings::usage_str(const char *usage) {
 
 void Settings::check_dynamic_files() {
   time_t ts;
-  std::scoped_lock lock(properties.mutex);
+  std::scoped_lock lock(mutex);
   for(auto& dyn : m_dyn_files) {
     errno = 0;
     ts = FileUtils::modification(dyn.filename);
@@ -238,7 +219,7 @@ void Settings::check_dynamic_files() {
     if(ts == dyn.modified)
       continue;
     dyn.modified = ts;
-    properties.reload(dyn.filename, file_desc, cmdline_desc);
+    reload(dyn.filename, file_desc, cmdline_desc);
     SWC_LOGF(LOG_DEBUG, "dyn-cfg-file '%s' checked", dyn.filename.c_str());
   }
 }

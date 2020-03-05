@@ -17,8 +17,8 @@ int run() {
 
   auto srv = std::make_shared<server::SerializedServer>(
     "FS-BROKER", 
-    Env::Config::settings()->get<int32_t>("swc.FsBroker.reactors"), 
-    Env::Config::settings()->get<int32_t>("swc.FsBroker.workers"), 
+    Env::Config::settings()->get_i32("swc.FsBroker.reactors"), 
+    Env::Config::settings()->get_i32("swc.FsBroker.workers"), 
     "swc.fs.broker.port",
     app_ctx
   );

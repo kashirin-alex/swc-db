@@ -61,16 +61,16 @@ class AppContext : public SWC::AppContext {
   public:
 
   static std::shared_ptr<AppContext> make() {
-    Env::Config::settings()->parse_file(
-      Env::Config::settings()->get<std::string>("swc.rgr.cfg", ""),
+    auto settings = Env::Config::settings();
+    
+    settings->parse_file(
+      settings->get_str("swc.rgr.cfg", ""),
       "swc.rgr.cfg.dyn"
     );
 
-    Env::IoCtx::init(
-      Env::Config::settings()->get<int32_t>("swc.rgr.handlers"));
+    Env::IoCtx::init(settings->get_i32("swc.rgr.handlers"));
     
-    Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs")));
+    Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
       
     Env::Clients::init(
       std::make_shared<client::Clients>(
@@ -82,14 +82,15 @@ class AppContext : public SWC::AppContext {
 
     Env::Resources.init(
       Env::IoCtx::io()->ptr(),
-      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.percent"),
-      Env::Config::settings()->get_ptr<gInt32t>("swc.rgr.ram.release.rate"),
+      settings->get<Property::V_GINT32>("swc.rgr.ram.percent"),
+      settings->get<Property::V_GINT32>("swc.rgr.ram.release.rate"),
       [](size_t bytes) { RangerEnv::columns()->release(bytes); }
     );
 
-    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+    auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
+    if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
-        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
     }

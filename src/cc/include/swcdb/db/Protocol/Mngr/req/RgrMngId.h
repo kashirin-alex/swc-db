@@ -21,7 +21,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
           : Common::Req::ConnQueue::ReqBase(false, nullptr),
             m_timer(asio::high_resolution_timer(*io)),
             cfg_check_interval(
-              Env::Config::settings()->get_ptr<gInt32t>(
+              Env::Config::settings()->get<Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")), 
             cb_shutdown(cb),
             m_run(true) {
@@ -198,7 +198,7 @@ class RgrMngId: public Common::Req::ConnQueue::ReqBase {
     m_timer.cancel();
   }
 
-  const gInt32tPtr              cfg_check_interval;
+  const Property::V_GINT32::Ptr cfg_check_interval;
   const std::function<void()>   cb_shutdown;
   EndPoints                     endpoints;
   

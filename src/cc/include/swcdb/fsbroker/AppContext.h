@@ -70,15 +70,19 @@ class AppContext : public SWC::AppContext {
   public:
 
   AppContext() {
-    Env::IoCtx::init(
-      Env::Config::settings()->get<int32_t>("swc.FsBroker.handlers"));
+    auto settings = Env::Config::settings();
+
+    Env::IoCtx::init(settings->get_i32("swc.FsBroker.handlers"));
+
     Env::FsInterface::init(FS::fs_type(
-      Env::Config::settings()->get<std::string>("swc.fs.broker.underlying")));
+      settings->get_str("swc.fs.broker.underlying")));
+
     Env::Fds::init();
     
-    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+    auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
+    if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
-        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
     }

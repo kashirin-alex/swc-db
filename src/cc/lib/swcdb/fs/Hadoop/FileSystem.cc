@@ -30,7 +30,7 @@ bool apply_hadoop() {
   ;
 
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>("swc.fs.hadoop.cfg", ""),
+    Env::Config::settings()->get_str("swc.fs.hadoop.cfg", ""),
     "swc.fs.hadoop.cfg.dyn"
   );
   return true;
@@ -59,7 +59,7 @@ SmartFdHadoop::~SmartFdHadoop() { }
 
 FileSystemHadoop::FileSystemHadoop() 
     : FileSystem(
-        Env::Config::settings()->get<std::string>("swc.fs.hadoop.path.root"),
+        Env::Config::settings()->get_str("swc.fs.hadoop.path.root"),
         apply_hadoop()
       ),
       m_run(true), m_nxt_fd(0) {
@@ -91,7 +91,8 @@ void FileSystemHadoop::setup_connection() {
 }
 
 bool FileSystemHadoop::initialize() {
-
+  auto settings = Env::Config::settings();
+  
   hdfs::ConfigParser parser;
   if(!parser.LoadDefaultResources()){
     std::cerr << "hdfs::ConfigParser could not load default resources. " << std::endl;
@@ -112,22 +113,20 @@ bool FileSystemHadoop::initialize() {
   }
 
   hdfs::IoService* io_service = hdfs::IoService::New();
-  io_service->InitWorkers(
-    Env::Config::settings()->get<int32_t>("swc.fs.hadoop.handlers"));
+  io_service->InitWorkers(settings->get_i32("swc.fs.hadoop.handlers"));
 
   m_filesystem = hdfs::FileSystem::New(
     io_service, 
-    Env::Config::settings()->get<std::string>("swc.fs.hadoop.user", ""), 
+    settings->get_str("swc.fs.hadoop.user", ""), 
     options
   );
   std::cout << "hdfs::FileSystem Initialized" << std::endl;
 
   hdfs::Status status;
   std::string port;
-  if(Env::Config::settings()->has("swc.fs.hadoop.namenode")) {
-    for(auto& h : Env::Config::settings()->get<Strings>(
-                                  "swc.fs.hadoop.namenode")) {
-      port = std::to_string((uint16_t)Env::Config::settings()->get<int16_t>(
+  if(settings->has("swc.fs.hadoop.namenode")) {
+    for(auto& h : settings->get_strs("swc.fs.hadoop.namenode")) {
+      port = std::to_string(settings->get_i16(
         "swc.fs.hadoop.namenode.port", 0));
 
       SWC_LOGF(LOG_DEBUG, "FS-Hadoop, Connecting to namenode=[%s]:%s", 

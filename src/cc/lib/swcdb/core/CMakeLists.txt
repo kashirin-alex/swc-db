@@ -43,10 +43,7 @@ set(swcdb_core_config_sources
 	config/Settings.cc
 	config/Properties.cc
 	config/Property.cc
-	config/PropertyValueEnumExt.cc
 	config/PropertiesParser.cc
-	# config/System.cc
-	# config/SystemInfo.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_config

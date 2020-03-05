@@ -26,7 +26,7 @@ bool apply_hadoop_jvm() {
   ;
 
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>("swc.fs.hadoop_jvm.cfg", ""),
+    Env::Config::settings()->get_str("swc.fs.hadoop_jvm.cfg", ""),
     "swc.fs.hadoop_jvm.cfg.dyn"
   );
   return true;
@@ -55,7 +55,7 @@ SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
 FileSystemHadoopJVM::FileSystemHadoopJVM() 
     : FileSystem(
-        Env::Config::settings()->get<std::string>("swc.fs.hadoop_jvm.path.root"),
+        Env::Config::settings()->get_str("swc.fs.hadoop_jvm.path.root"),
         apply_hadoop_jvm()
       ),
       m_run(true), m_nxt_fd(0) { 
@@ -89,23 +89,21 @@ void FileSystemHadoopJVM::setup_connection() {
 }
 
 bool FileSystemHadoopJVM::initialize() {
+  auto settings = Env::Config::settings();
 
-  if (Env::Config::settings()->has("swc.fs.hadoop_jvm.namenode")) {
-    for(auto& h : Env::Config::settings()->get<Strings>(
-                                  "swc.fs.hadoop_jvm.namenode")){
+  if (settings->has("swc.fs.hadoop_jvm.namenode")) {
+    for(auto& h : settings->get_strs("swc.fs.hadoop_jvm.namenode")){
 	    hdfsBuilder* bld = hdfsNewBuilder();
       hdfsBuilderSetNameNode(bld, h.c_str());
 
-      if (Env::Config::settings()->has("swc.fs.hadoop_jvm.namenode.port")) 
+      if (settings->has("swc.fs.hadoop_jvm.namenode.port")) 
         hdfsBuilderSetNameNodePort(
-          bld, (uint16_t)Env::Config::settings()->get<int16_t>(
-            "swc.fs.hadoop_jvm.namenode.port"));
+          bld, settings->get_i16("swc.fs.hadoop_jvm.namenode.port"));
 
-      if (Env::Config::settings()->has("swc.fs.hadoop_jvm.user")) 
+      if (settings->has("swc.fs.hadoop_jvm.user")) 
         hdfsBuilderSetUserName(
           bld, 
-          Env::Config::settings()->get<std::string>(
-            "swc.fs.hadoop_jvm.user").c_str()
+          settings->get_str("swc.fs.hadoop_jvm.user").c_str()
         );
         
       m_filesystem = hdfsBuilderConnect(bld);

@@ -85,8 +85,8 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   };
 
 
-  ConnQueue(const gInt32tPtr keepalive_ms=nullptr, 
-            const gInt32tPtr again_delay_ms=nullptr) 
+  ConnQueue(const Property::V_GINT32::Ptr keepalive_ms=nullptr, 
+            const Property::V_GINT32::Ptr again_delay_ms=nullptr) 
             : m_conn(nullptr),  m_queue_running(false), m_connecting(false),
               cfg_keepalive_ms(keepalive_ms),
               cfg_again_delay_ms(again_delay_ms), 
@@ -309,8 +309,8 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   std::vector<asio::high_resolution_timer*>  m_delayed;
 
   protected:
-  const gInt32tPtr          cfg_keepalive_ms;
-  const gInt32tPtr          cfg_again_delay_ms;
+  const Property::V_GINT32::Ptr  cfg_keepalive_ms;
+  const Property::V_GINT32::Ptr  cfg_again_delay_ms;
 
 };
 

@@ -20,7 +20,7 @@ bool apply_local() {
     ("swc.fs.local.cfg.dyn", strs(), "Dyn-config file")
   ;
   Env::Config::settings()->parse_file(
-    Env::Config::settings()->get<std::string>("swc.fs.local.cfg", ""),
+    Env::Config::settings()->get_str("swc.fs.local.cfg", ""),
     "swc.fs.local.cfg.dyn"
   );
   return true;
@@ -29,11 +29,11 @@ bool apply_local() {
 
 FileSystemLocal::FileSystemLocal()
     : FileSystem(
-        Env::Config::settings()->get<std::string>("swc.fs.local.path.root"),
+        Env::Config::settings()->get_str("swc.fs.local.path.root"),
         apply_local()
       ),
-      m_directio(Env::Config::settings()->get<bool>(
-        "swc.fs.local.DirectIO", false)) { 
+      m_directio(
+        Env::Config::settings()->get_bool("swc.fs.local.DirectIO", false)) {
 }
 
 FileSystemLocal::~FileSystemLocal() { }

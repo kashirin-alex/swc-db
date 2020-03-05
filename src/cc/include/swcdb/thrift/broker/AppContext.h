@@ -19,8 +19,8 @@ class AppContext : virtual public BrokerIfFactory {
  public:
   
   AppContext() : m_run(true) { 
-    Env::IoCtx::init(
-      Env::Config::settings()->get<int32_t>("swc.ThriftBroker.handlers"));
+    auto settings = Env::Config::settings();
+    Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.handlers"));
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -33,12 +33,12 @@ class AppContext : virtual public BrokerIfFactory {
       )
     );
     
-    //Env::FsInterface::init(FS::fs_type(
-    //  Env::Config::settings()->get<std::string>("swc.fs")));
+    //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
     
-    if(Env::Config::settings()->get<gInt32t>("swc.cfg.dyn.period")) {
+    auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
+    if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
-        Env::Config::settings()->get_ptr<gInt32t>("swc.cfg.dyn.period"),
+        period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
     }

@@ -24,13 +24,13 @@ Rangers::Rangers()
     : m_run(true),
       m_assign_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       m_runs_assign(false), m_assignments(0),
-      cfg_rgr_failures(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_rgr_failures(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.Rgr.remove.failures")),
-      cfg_delay_rgr_chg(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_delay_rgr_chg(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.delay.onRangerChange")),
-      cfg_chk_assign(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_chk_assign(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.interval.check")),
-      cfg_assign_due(Env::Config::settings()->get_ptr<gInt32t>(
+      cfg_assign_due(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.due")) { 
 }
 

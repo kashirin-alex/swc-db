@@ -20,13 +20,6 @@ void Settings::init_app_options(){
   init_fs_options();
   init_client_options();
 
-  gEnumExt blk_enc(
-    (int)Types::Encoding::SNAPPY,
-    0,
-    Types::from_string_encoding,
-    Types::repr_encoding
-  );
-
   file_desc.add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
     ("swc.rgr.cfg.dyn", strs(), "Specific dyn. cfg-file for Ranger")
@@ -57,7 +50,12 @@ void Settings::init_app_options(){
      "Default Block Size in bytes")  
     ("swc.rgr.Range.block.cells", g_i32(100000), 
      "Default Block Cells count")  
-    ("swc.rgr.Range.block.encoding", g_enum_ext(blk_enc), 
+    ("swc.rgr.Range.block.encoding", 
+      g_enum(
+        (int)Types::Encoding::SNAPPY,
+        0,
+        Types::from_string_encoding,
+        Types::repr_encoding), 
      "Default Block encoding NONE/SNAPPY/ZLIB")  
      
     ("swc.rgr.Range.compaction.percent", g_i8(33), 

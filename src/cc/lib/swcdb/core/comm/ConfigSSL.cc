@@ -11,27 +11,25 @@ namespace SWC {
 
   
 ConfigSSL::ConfigSSL(bool is_client) {
-  auto& props = Env::Config::settings()->properties;
+  auto settings = Env::Config::settings();
 
-  set_networks(props.get<Strings>("swc.comm.ssl.secure.network"));
+  set_networks(settings->get_strs("swc.comm.ssl.secure.network"));
 
-  if(props.has("swc.comm.ssl.subject_name"))
-    subject_name = props.get<std::string>("swc.comm.ssl.subject_name");
+  subject_name = settings->get_str("swc.comm.ssl.subject_name", "");
 
-  if(props.has("swc.comm.ssl.ca")) {
-    auto ca_file = props.get<std::string>("swc.comm.ssl.ca");
+  if(settings->has("swc.comm.ssl.ca")) {
+    auto ca_file = settings->get_str("swc.comm.ssl.ca");
     if(ca_file.front() != '.' && ca_file.front() != '/')
-      ca_file = props.get<std::string>("swc.cfg.path") + ca_file;
+      ca_file = settings->get_str("swc.cfg.path") + ca_file;
     load_file(ca_file, ca);
   }
   
-  auto pem_file = props.get<std::string>("swc.comm.ssl.pem");
+  auto pem_file = settings->get_str("swc.comm.ssl.pem");
   if(pem_file.front() != '.' && pem_file.front() != '/')
-    pem_file = props.get<std::string>("swc.cfg.path") + pem_file;
+    pem_file = settings->get_str("swc.cfg.path") + pem_file;
   load_file(pem_file, pem);
     
-  ciphers = props.has("swc.comm.ssl.ciphers") 
-            ? props.get<std::string>("swc.comm.ssl.ciphers") : "";
+  ciphers = settings->get_str("swc.comm.ssl.ciphers", "");
 }
 
 ConfigSSL::~ConfigSSL() { }

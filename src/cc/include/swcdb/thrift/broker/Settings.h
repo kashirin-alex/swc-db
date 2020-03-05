@@ -33,7 +33,7 @@ void Settings::init_app_options() {
 
 void Settings::init_post_cmd_args(){
   parse_file(
-    get<std::string>("swc.ThriftBroker.cfg", ""), 
+    get_str("swc.ThriftBroker.cfg", ""), 
     "swc.ThriftBroker.cfg.dyn"
   );
 }

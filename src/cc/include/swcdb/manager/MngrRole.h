@@ -88,14 +88,14 @@ class MngrRole final {
   Protocol::Common::Req::ConnQueue::Ptr  m_mngr_inchain;
 
 
-  const gInt32tPtr cfg_conn_probes;
-  const gInt32tPtr cfg_conn_timeout;
-  const gInt32tPtr cfg_conn_fb_failures;
+  const Property::V_GINT32::Ptr cfg_conn_probes;
+  const Property::V_GINT32::Ptr cfg_conn_timeout;
+  const Property::V_GINT32::Ptr cfg_conn_fb_failures;
   
-  const gInt32tPtr cfg_req_timeout;
-  const gInt32tPtr cfg_delay_updated;
-  const gInt32tPtr cfg_check_interval;
-  const gInt32tPtr cfg_delay_fallback;
+  const Property::V_GINT32::Ptr cfg_req_timeout;
+  const Property::V_GINT32::Ptr cfg_delay_updated;
+  const Property::V_GINT32::Ptr cfg_check_interval;
+  const Property::V_GINT32::Ptr cfg_delay_fallback;
 };
 
 

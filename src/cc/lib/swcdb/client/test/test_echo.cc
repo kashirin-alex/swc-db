@@ -151,14 +151,14 @@ int main(int argc, char** argv) {
     )
   );
 
-  buffer_sz = Env::Config::settings()->get<int64_t>("buffer");
+  buffer_sz = Env::Config::settings()->get_i64("buffer");
 
   Checker(
-    Env::Config::settings()->get<int32_t>("requests"), 
-    Env::Config::settings()->get<int32_t>("batch"),
-    Env::Config::settings()->get<int32_t>("threads_conn")
+    Env::Config::settings()->get_i32("requests"), 
+    Env::Config::settings()->get_i32("batch"),
+    Env::Config::settings()->get_i32("threads_conn")
   ).run(
-    Env::Config::settings()->get<int32_t>("threads")
+    Env::Config::settings()->get_i32("threads")
   );
 
   Env::IoCtx::io()->stop();

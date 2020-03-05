@@ -142,7 +142,7 @@ void ServerConnections::close_all(){
 Serialized::Serialized(const std::string& srv_name, IOCtxPtr ioctx, 
                        AppContext::Ptr ctx)
             : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx),
-              m_use_ssl(Env::Config::settings()->get<bool>("swc.comm.ssl")),
+              m_use_ssl(Env::Config::settings()->get_bool("swc.comm.ssl")),
               m_ssl_cfg(m_use_ssl ? new ConfigSSL() : nullptr), 
               m_run(true) {
   SWC_LOGF(LOG_INFO, "Init: %s", m_srv_name.c_str());

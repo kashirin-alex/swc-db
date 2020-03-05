@@ -7,8 +7,8 @@
 
 namespace SWC {
   
-PeriodicTimer::PeriodicTimer(const gInt32tPtr cfg_ms, Call_t call, 
-                             asio::io_context* io)
+PeriodicTimer::PeriodicTimer(const Property::V_GINT32::Ptr cfg_ms, 
+                             Call_t call, asio::io_context* io)
                              : m_ms(cfg_ms), m_call(call), m_timer(*io) {
   schedule();
 }
@@ -38,7 +38,8 @@ void PeriodicTimers::stop() {
   }
 }
 
-void PeriodicTimers::set(const gInt32tPtr ms, PeriodicTimer::Call_t call,
+void PeriodicTimers::set(const Property::V_GINT32::Ptr ms, 
+                         PeriodicTimer::Call_t call,
                          asio::io_context* io) {
   std::scoped_lock lock(m_mutex);
   push_back(new PeriodicTimer(ms, call, io));
