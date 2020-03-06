@@ -69,9 +69,14 @@ class Value {
     G_STRINGS
   };
 
+  static const uint8_t SKIPPABLE   = 0x01;
+  static const uint8_t GUARDED     = 0x02;
+  static const uint8_t DEFAULT     = 0x04;
+  static const uint8_t NO_TOKEN    = 0x08;
+
   typedef Value* Ptr;
 
-  Value(bool skippable=false, bool guarded=false);
+  Value(uint8_t flags=0);
   
   Value(Value* ptr);
 
@@ -93,8 +98,6 @@ class Value {
 
   const bool is_guarded() const;
 
-  void guarded(bool guarded);
-
   Ptr default_value(bool defaulted);
 
   const bool is_default() const;
@@ -103,12 +106,7 @@ class Value {
 
   const bool is_zero_token() const;
 
-  private:
-  std::atomic<bool> m_skippable = false;
-  std::atomic<bool> m_guarded   = false;
-  std::atomic<bool> m_defaulted = false;
-  std::atomic<bool> m_no_token  = false;
-
+  std::atomic<uint8_t> flags;
 };
 
 
@@ -117,8 +115,8 @@ class V_BOOL : public Value {
   public:
   static const Type value_type = BOOL;
   
-  V_BOOL(const bool& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_BOOL(const bool& v, uint8_t flags=0) 
+        : Value(flags), value(v) {
   }
   
   V_BOOL(V_BOOL* ptr) : Value(ptr), value(ptr->get()) { }
@@ -132,6 +130,7 @@ class V_BOOL : public Value {
 
   void set_from(Ptr ptr) override {
     auto from = ((V_BOOL*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
   
@@ -162,8 +161,8 @@ class V_UINT8 : public Value {
   public:
   static const Type value_type = UINT8;
 
-  V_UINT8(const uint8_t& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_UINT8(const uint8_t& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_UINT8(V_UINT8* ptr) : Value(ptr), value(ptr->get()) { }
@@ -177,6 +176,7 @@ class V_UINT8 : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_UINT8*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
   
@@ -204,8 +204,8 @@ class V_UINT16 : public Value {
   public:
   static const Type value_type = UINT16;
   
-  V_UINT16(const uint16_t& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_UINT16(const uint16_t& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_UINT16(V_UINT16* ptr) : Value(ptr), value(ptr->get()) { }
@@ -219,6 +219,7 @@ class V_UINT16 : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_UINT16*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -246,8 +247,8 @@ class V_INT32 : public Value {
   public:
   static const Type value_type = INT32;
   
-  V_INT32(const int32_t& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_INT32(const int32_t& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
 
   V_INT32(V_INT32* ptr) : Value(ptr), value(ptr->get()) { }
@@ -261,6 +262,7 @@ class V_INT32 : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_INT32*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -288,8 +290,8 @@ class V_INT64 : public Value {
   public:
   static const Type value_type = INT64;
   
-  V_INT64(const int64_t& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_INT64(const int64_t& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
 
   V_INT64(V_INT64* ptr) : Value(ptr), value(ptr->get()) { }
@@ -303,6 +305,7 @@ class V_INT64 : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_INT64*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -330,8 +333,8 @@ class V_DOUBLE : public Value {
   public:
   static const Type value_type = DOUBLE;
 
-  V_DOUBLE(const double& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_DOUBLE(const double& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_DOUBLE(V_DOUBLE* ptr) : Value(ptr), value(ptr->get()) { }
@@ -345,6 +348,7 @@ class V_DOUBLE : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_DOUBLE*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -372,8 +376,8 @@ class V_STRING : public Value {
   public:
   static const Type value_type = STRING;
 
-  V_STRING(const std::string& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_STRING(const std::string& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
@@ -387,6 +391,7 @@ class V_STRING : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_STRING*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -420,8 +425,8 @@ class V_ENUM : public Value {
   V_ENUM(const int32_t& v, 
          const FromString_t& from_string, 
          const Repr_t& repr,
-         bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), 
+         uint8_t flags=0)
+         : Value(flags), 
            value(v), call_from_string(from_string), call_repr(repr) {
   }
 
@@ -439,6 +444,7 @@ class V_ENUM : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_ENUM*)ptr);
+    flags.store(from->flags);
     value = from->value;
     call_from_string = from->call_from_string;
     call_repr = from->call_repr;
@@ -480,8 +486,8 @@ class V_STRINGS : public Value {
   public:
   static const Type value_type = STRINGS;
 
-  V_STRINGS(const Strings& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_STRINGS(const Strings& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
@@ -495,6 +501,7 @@ class V_STRINGS : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_STRINGS*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -522,8 +529,8 @@ class V_INT64S : public Value {
   public:
   static const Type value_type = INT64S;
 
-  V_INT64S(const Int64s& v, bool skippable=false, bool guarded=false)
-         : Value(skippable, guarded), value(v) {
+  V_INT64S(const Int64s& v, uint8_t flags=0)
+         : Value(flags), value(v) {
   }
   
   V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
@@ -537,6 +544,7 @@ class V_INT64S : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_INT64S*)ptr);
+    flags.store(from->flags);
     value = from->value;
   }
 
@@ -569,8 +577,8 @@ class V_DOUBLES : public Value {
   public:
   static const Type value_type = DOUBLES;
 
-  V_DOUBLES(const Doubles& v, bool skippable=false, bool guarded=false)
-            : Value(skippable, guarded), value(v) {
+  V_DOUBLES(const Doubles& v, uint8_t flags=0)
+            : Value(flags), value(v) {
   }
   
   V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
@@ -584,6 +592,7 @@ class V_DOUBLES : public Value {
   
   void set_from(Ptr ptr) override {
     auto from = ((V_DOUBLES*)ptr);
+    flags.store(from->flags);
     value = from->get();
   }
 
@@ -620,8 +629,8 @@ class V_GBOOL : public Value {
   typedef V_GBOOL*                   Ptr;
   typedef std::function<void(bool)>  OnChg_t;
   
-  V_GBOOL(const bool& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
-         : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  V_GBOOL(const bool& v, const OnChg_t& cb, uint8_t flags=GUARDED)
+         : Value(flags), value(v), on_chg_cb(cb) {
   }
 
   V_GBOOL(V_GBOOL* ptr) 
@@ -638,19 +647,20 @@ class V_GBOOL : public Value {
 
   void set_from(Value::Ptr ptr) override {
     auto from = ((V_GBOOL*)ptr);
+    flags.store(from->flags);
+    
+    bool chg = value == from->value;
     value.store(from->value.load());
     on_chg_cb = from->on_chg_cb;
+    if(chg)
+      on_change();
   }
   
   void set_from(const Strings& values) override {
     auto& str = values.back();
-    bool nv = str.compare("1") == 0 ||
-              strncasecmp(str.data(), "true", 4) == 0 ||
-              strncasecmp(str.data(), "yes", 3) == 0;
-    bool chg = nv != value;
-    value = nv;
-    if(chg) 
-      on_change();
+    value = str.compare("1") == 0 ||
+            strncasecmp(str.data(), "true", 4) == 0 ||
+            strncasecmp(str.data(), "yes", 3) == 0;
   }
 
   const Type type() const {
@@ -691,8 +701,8 @@ class V_GUINT8 : public Value {
   typedef V_GUINT8*                     Ptr;
   typedef std::function<void(uint8_t)>  OnChg_t;
 
-  V_GUINT8(const uint8_t& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
-          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  V_GUINT8(const uint8_t& v, const OnChg_t& cb, uint8_t flags=GUARDED)
+          : Value(flags), value(v), on_chg_cb(cb) {
   }
 
   V_GUINT8(V_GUINT8* ptr) 
@@ -709,17 +719,18 @@ class V_GUINT8 : public Value {
   
   void set_from(Value::Ptr ptr) override {
     auto from = ((V_GUINT8*)ptr);
+    flags.store(from->flags);
+    bool chg = value == from->value;
     value.store(from->value.load());
     on_chg_cb = from->on_chg_cb;
+    if(chg)
+      on_change();
   }
   
   void set_from(const Strings& values) override {
-    uint8_t nv;
-    from_string(values.back(), &nv);
-    bool chg = nv != value;
-    value = nv;
-    if(chg) 
-      on_change();
+    uint8_t v;
+    from_string(values.back(), &v);
+    value.store(v);
   }
 
   const Type type() const override {
@@ -755,8 +766,8 @@ class V_GINT32 : public Value {
   typedef V_GINT32*                     Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
 
-  V_GINT32(const int32_t& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
-          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  V_GINT32(const int32_t& v, const OnChg_t& cb, uint8_t flags=GUARDED)
+          : Value(flags), value(v), on_chg_cb(cb) {
   }
 
   V_GINT32(V_GINT32* ptr) 
@@ -774,17 +785,18 @@ class V_GINT32 : public Value {
   
   void set_from(Value::Ptr ptr) override {
     auto from = ((V_GINT32*)ptr);
+    flags.store(from->flags);
+    bool chg = value == from->value;
     value.store(from->value.load());
     on_chg_cb = from->on_chg_cb;
+    if(chg)
+      on_change();
   }
 
   void set_from(const Strings& values) override {
-    int32_t nv;
-    from_string(values.back(), &nv);
-    bool chg = nv != value;
-    value = nv;
-    if(chg) 
-      on_change();
+    int32_t v;
+    from_string(values.back(), &v);
+    value.store(v);
   }
 
   const Type type() const override {
@@ -827,8 +839,8 @@ class V_GENUM : public Value {
           const OnChg_t& cb, 
           const FromString_t& from_string, 
           const Repr_t& repr,
-          bool skippable=false, bool guarded=false)
-          : Value(skippable, guarded), value(v), on_chg_cb(cb), 
+          uint8_t flags=GUARDED)
+          : Value(flags), value(v), on_chg_cb(cb), 
             call_from_string(from_string), call_repr(repr) {
   }
 
@@ -846,10 +858,14 @@ class V_GENUM : public Value {
   
   void set_from(Value::Ptr ptr) override {
     auto from = ((V_GENUM*)ptr);
+    flags.store(from->flags);
+    bool chg = value == from->value;
     value.store(from->get());
     on_chg_cb = from->on_chg_cb;
     call_from_string = from->call_from_string;
     call_repr = from->call_repr;
+    if(chg)
+      on_change();
   }
 
   void set_from(const Strings& values) override {
@@ -862,10 +878,7 @@ class V_GENUM : public Value {
       SWC_THROWF(Error::CONFIG_GET_ERROR, 
                 "Bad Value %s, no corresponding enum", values.back().c_str());
 
-    bool chg = nv != get();
     value.store(nv);
-    if(chg) 
-      on_change();
   }
 
   const Type type() const override {
@@ -883,10 +896,8 @@ class V_GENUM : public Value {
   }
 
   void set(int32_t nv) {
-    bool chg = nv != get();
     value.store(nv);
-    if(chg) 
-      on_change();
+    on_change();
   }
 
   void on_change() const {
@@ -913,8 +924,8 @@ class V_GSTRINGS : public Value {
   typedef V_GSTRINGS*            Ptr;
   typedef std::function<void()>  OnChg_t;
 
-  V_GSTRINGS(const Strings& v, const OnChg_t& cb, bool skippable=false, bool guarded=true)
-          : Value(skippable, guarded), value(v), on_chg_cb(cb) {
+  V_GSTRINGS(const Strings& v, const OnChg_t& cb, uint8_t flags=GUARDED)
+          : Value(flags), value(v), on_chg_cb(cb) {
   }
 
   V_GSTRINGS(V_GSTRINGS* ptr) 
@@ -932,21 +943,20 @@ class V_GSTRINGS : public Value {
   
   void set_from(Value::Ptr ptr) override {
     auto from = ((V_GSTRINGS*)ptr);
-    
-    std::scoped_lock lock(mutex);
-    value = from->get();
-    on_chg_cb = from->on_chg_cb;
-  }
-
-  void set_from(const Strings& values) override {
+    flags.store(from->flags);
     bool chg;
     {
       std::scoped_lock lock(mutex);
-      chg = values != value;
-      value = values;
+      chg = value == from->get();
+      value = from->get();
+      on_chg_cb = from->on_chg_cb;
     }
-    if(chg) 
-      on_change();
+    on_change();
+  }
+
+  void set_from(const Strings& values) override {
+    std::scoped_lock lock(mutex);
+    value = values;
   }
 
   const Type type() const override {

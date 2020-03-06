@@ -51,21 +51,21 @@ Property::V_DOUBLES::Ptr f64s(const Doubles& v) {
 *  @param v The default Value and a Type
 */
 Property::V_GBOOL::Ptr g_boo(const bool& v) {
-  return new Property::V_GBOOL(v, 0, false, true);
+  return new Property::V_GBOOL(v, 0);
 }
 Property::V_GUINT8::Ptr g_i8(const uint8_t& v) {
-  return new Property::V_GUINT8(v, 0, false, true);
+  return new Property::V_GUINT8(v, 0);
 }
 Property::V_GINT32::Ptr g_i32(const int32_t& v) {
-  return new Property::V_GINT32(v, 0, false, true);
+  return new Property::V_GINT32(v, 0);
 }
 Property::V_GSTRINGS::Ptr g_strs(const Strings& v) {
-  return new Property::V_GSTRINGS(v, 0, false, true);
+  return new Property::V_GSTRINGS(v, 0);
 }
 Property::V_GENUM::Ptr g_enum(const int32_t& v, 
-                            const Property::V_GENUM::OnChg_t& cb, 
-                            const Property::V_GENUM::FromString_t& from_string, 
-                            const Property::V_GENUM::Repr_t& repr) {
+                              const Property::V_GENUM::OnChg_t& cb, 
+                              const Property::V_GENUM::FromString_t& from_string,
+                              const Property::V_GENUM::Repr_t& repr) {
   return new Property::V_GENUM(v, cb, from_string, repr);
 }
 
@@ -73,34 +73,34 @@ Property::V_GENUM::Ptr g_enum(const int32_t& v,
 *  if no option parsed it is skipped
 */
 Property::V_BOOL::Ptr boo() {
-  return new Property::V_BOOL(true, true);
+  return new Property::V_BOOL(true, Property::Value::SKIPPABLE);
 }
 Property::V_UINT8::Ptr i8() {
-  return new Property::V_UINT8(0, true);
+  return new Property::V_UINT8(0, Property::Value::SKIPPABLE);
 }
 Property::V_UINT16::Ptr i16() {
-  return new Property::V_UINT16(0, true);
+  return new Property::V_UINT16(0, Property::Value::SKIPPABLE);
 }
 Property::V_INT32::Ptr i32() {
-  return new Property::V_INT32(0, true);
+  return new Property::V_INT32(0, Property::Value::SKIPPABLE);
 }
 Property::V_INT64::Ptr i64() {
-  return new Property::V_INT64(0, true);
+  return new Property::V_INT64(0, Property::Value::SKIPPABLE);
 }
 Property::V_DOUBLE::Ptr f64() {
-  return new Property::V_DOUBLE(0, true);
+  return new Property::V_DOUBLE(0, Property::Value::SKIPPABLE);
 }
 Property::V_STRING::Ptr str() {
-  return new Property::V_STRING(std::string(), true);
+  return new Property::V_STRING(std::string(), Property::Value::SKIPPABLE);
 }
 Property::V_STRINGS::Ptr strs() {
-  return new Property::V_STRINGS(Strings(), true);
+  return new Property::V_STRINGS(Strings(), Property::Value::SKIPPABLE);
 }
 Property::V_INT64S::Ptr i64s() {
-  return new Property::V_INT64S(Int64s(), true);
+  return new Property::V_INT64S(Int64s(), Property::Value::SKIPPABLE);
 }
 Property::V_DOUBLES::Ptr f64s() {
-  return new Property::V_DOUBLES(Doubles(), true);
+  return new Property::V_DOUBLES(Doubles(), Property::Value::SKIPPABLE);
 }
 
 

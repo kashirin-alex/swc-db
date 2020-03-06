@@ -92,15 +92,12 @@ void from_string(const std::string& s, int32_t* value) {
 
 
 
-Value::Value(bool skippable, bool guarded)
-            : m_skippable(skippable), m_guarded(guarded) {
+Value::Value(uint8_t flags) 
+            : flags(flags) { 
 }
   
 Value::Value(Value::Ptr ptr) 
-            : m_skippable(ptr->is_skippable()),
-              m_guarded(ptr->is_guarded()),
-              m_defaulted(ptr->is_default()),
-              m_no_token(ptr->is_zero_token()) {
+            : flags(ptr->flags.load()) { 
 }
 
 Value::~Value() { }
@@ -110,33 +107,32 @@ std::ostream& Value::operator<<(std::ostream& ostream) {
 }
   
 const bool Value::is_skippable() const {
-  return m_skippable;
+  return flags & Value::SKIPPABLE;
 }
 
 const bool Value::is_guarded() const {
-  return m_guarded;
-}
-
-void Value::guarded(bool guarded) {
-  m_guarded = guarded;
+  return flags & Value::GUARDED;
 }
 
 Value::Ptr Value::default_value(bool defaulted) {
-  m_defaulted = defaulted;
+  if(defaulted)
+    flags ^= Value::DEFAULT;
+  else
+    flags &= Value::DEFAULT;
   return this;
 }
 
 const bool Value::is_default() const {
-  return m_defaulted;
+  return flags & Value::DEFAULT;
 }
   
 Value::Ptr Value::zero_token() {
-  m_no_token = true;
+  flags ^= Value::NO_TOKEN;
   return this;
 }
 
 const bool Value::is_zero_token() const {
-  return m_no_token;
+  return flags & Value::NO_TOKEN;
 }
 
 
