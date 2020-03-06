@@ -5,14 +5,14 @@
 #ifndef swc_lib_fs_Broker_AppContext_h
 #define swc_lib_fs_Broker_AppContext_h
 
-#include "swcdb/client/AppContext.h"
+#include "swcdb/core/comm/AppContext.h"
 
 namespace SWC{ namespace FS {
 
-class FsClientAppCtx : public client::AppContext {
+class AppContext : public SWC::AppContext {
   public:
-  FsClientAppCtx(){}
-  virtual ~FsClientAppCtx(){}
+  AppContext(){}
+  virtual ~AppContext(){}
     
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
     

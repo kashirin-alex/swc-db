@@ -71,7 +71,7 @@ FileSystemBroker::FileSystemBroker()
     m_io(std::make_shared<IoContext>("FsBroker",
       Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
     m_service(std::make_shared<client::Serialized>(
-      "FS-BROKER", m_io->shared(), std::make_shared<FsClientAppCtx>())),
+      "FS-BROKER", m_io->shared(), std::make_shared<AppContext>())),
     m_type_underlying(fs_type(
       Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
     cfg_timeout(Env::Config::settings()->get<Property::V_GINT32>(
