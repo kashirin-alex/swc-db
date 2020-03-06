@@ -15,7 +15,7 @@ enum Range{
   DATA    = 3
 };
 
-const std::string to_string(Range typ) {
+inline const std::string to_string(Range typ) {
   switch(typ){
     case Range::MASTER:
       return std::string("MASTER");

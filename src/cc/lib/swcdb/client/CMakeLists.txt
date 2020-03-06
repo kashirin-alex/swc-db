@@ -11,6 +11,12 @@ set(swcdb_client_sources
 	AppContext.cc
 	rgr/Rangers.cc
 	mngr/Groups.cc
+	sql/SQL.cc
+	sql/Reader.cc
+	sql/ColumnList.cc
+	sql/ColumnSchema.cc
+	sql/QuerySelect.cc
+	sql/QueryUpdate.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_client

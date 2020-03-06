@@ -103,7 +103,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 }}}
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/client/Groups.cc"
+#include "swcdb/client/mngr/Groups.cc"
 #endif 
 
 

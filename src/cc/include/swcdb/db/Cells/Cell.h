@@ -39,7 +39,7 @@ enum Flag {
   DELETE_VERSION            = 0x3
 };
 
-const std::string to_string(Flag flag) {
+inline const std::string to_string(Flag flag) {
   switch(flag){
     case Flag::INSERT:
       return std::string("INSERT");
@@ -54,7 +54,7 @@ const std::string to_string(Flag flag) {
   }
 }
 
-const Flag flag_from(const uint8_t* rptr, uint32_t len) {
+inline const Flag flag_from(const uint8_t* rptr, uint32_t len) {
   const char* ptr = (const char*)rptr;
   if(len >= 14) {
     if(strncasecmp(ptr, "delete_version", 14) == 0)

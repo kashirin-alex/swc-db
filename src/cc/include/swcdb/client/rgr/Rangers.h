@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_client_Rangers_h
-#define swc_client_Rangers_h
+#ifndef swc_client_rgr_Rangers_h
+#define swc_client_rgr_Rangers_h
 
 #include <mutex>
 #include <unordered_map>
@@ -50,7 +50,7 @@ class Rangers  {
 }}
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/client/Rangers.cc"
+#include "swcdb/client/rgr/Rangers.cc"
 #endif 
 
-#endif // swc_client_Rangers_h
+#endif // swc_client_rgr_Rangers_h
