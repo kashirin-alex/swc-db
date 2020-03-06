@@ -5,6 +5,12 @@
 
 set(swcdb_client_sources
 	Settings.cc
+	Clients.cc
+	Schemas.cc
+	ConnQueues.cc
+	AppContext.cc
+	rgr/Rangers.cc
+	mngr/Groups.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_client

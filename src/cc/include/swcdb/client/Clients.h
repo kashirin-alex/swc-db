@@ -9,75 +9,22 @@
 
 #include "swcdb/client/Settings.h"
 #include "swcdb/client/AppContext.h"
+#include "swcdb/client/ConnQueues.h"
+#include "swcdb/client/Schemas.h"
 #include "swcdb/client/mngr/Groups.h"
-#include "swcdb/core/comm/SerializedClient.h"
-#include "swcdb/db/Protocol/Common/req/ConnQueue.h"
 #include "swcdb/client/rgr/Rangers.h"
 
 namespace SWC { namespace client {
-
-class Schemas;
-typedef std::shared_ptr<Schemas> SchemasPtr;
-
-class ConnQueues;
-typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
 class Clients final {
   public:
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx)
-          : m_app_ctx(app_ctx),
-            mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
-            rangers(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.Rgr.range.res.expiry")) {
+  Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx);
 
-    if(ioctx == nullptr){
-      if(!Env::IoCtx::ok())
-        Env::IoCtx::init(8);
-      ioctx = Env::IoCtx::io()->shared();
-    }
-
-    mngr_service = std::make_shared<Serialized>(
-      "MANAGER", ioctx, m_app_ctx
-    );
-    mngr = std::make_shared<ConnQueues>(
-      mngr_service,
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.timeout"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.probes"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.keepalive"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.request.again.delay")
-    );
-
-    rgr_service = std::make_shared<Serialized>(
-      "RANGER", ioctx, m_app_ctx
-    );
-    rgr = std::make_shared<ConnQueues>(
-      rgr_service,
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.timeout"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.probes"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.keepalive"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.request.again.delay")
-    );
-
-    schemas = std::make_shared<Schemas>(
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.schema.expiry")
-    );
-  } 
-
-  ~Clients(){}
+  ~Clients();
   
-
   const Mngr::Groups::Ptr mngrs_groups;
   Serialized::Ptr         mngr_service = nullptr;
   ConnQueuesPtr           mngr = nullptr;
@@ -85,7 +32,7 @@ class Clients final {
   Serialized::Ptr         rgr_service   = nullptr;
   ConnQueuesPtr           rgr = nullptr;
 
-  SchemasPtr              schemas = nullptr;
+  Schemas::Ptr            schemas = nullptr;
   Rangers                 rangers;
 
   private:
@@ -99,18 +46,11 @@ namespace Env {
 class Clients final {
   public:
 
-  static void init(client::Clients::Ptr clients) {
-    m_env = std::make_shared<Clients>(clients);
-  }
+  static void init(client::Clients::Ptr clients);
 
-  static client::Clients::Ptr get() {
-    SWC_ASSERT(m_env != nullptr);
-    return m_env->m_clients;
-  }
+  static client::Clients::Ptr get();
 
-  static const Clients& ref() {
-    return *m_env.get();
-  }
+  static const Clients& ref();
 
   const Property::V_GINT32::Ptr      cfg_send_buff_sz;
   const Property::V_GUINT8::Ptr      cfg_send_ahead;
@@ -121,27 +61,9 @@ class Clients final {
   const Property::V_GUINT8::Ptr      cfg_recv_ahead;
   const Property::V_GINT32::Ptr      cfg_recv_timeout;
 
-  Clients(client::Clients::Ptr clients) 
-          : m_clients(clients),
+  Clients(client::Clients::Ptr clients) ;
 
-            cfg_send_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.buffer")), 
-            cfg_send_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
-              "swc.client.send.ahead")), 
-            cfg_send_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.timeout")),
-            cfg_send_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.timeout.bytes.ratio")),
-
-            cfg_recv_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.recv.buffer")), 
-            cfg_recv_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
-              "swc.client.recv.ahead")),
-            cfg_recv_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.recv.timeout")) {
-  }
-
-  ~Clients(){}
+  ~Clients();
 
   private:
   client::Clients::Ptr                    m_clients = nullptr;
@@ -151,7 +73,12 @@ class Clients final {
 
 }
 
-#include "swcdb/client/ConnQueues.h"
-#include "swcdb/client/Schemas.h"
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/client/ConnQueues.cc"
+#include "swcdb/client/Clients.cc"
+#include "swcdb/client/Schemas.cc"
+#endif 
+
 
 #endif // swc_lib_client_Clients_h

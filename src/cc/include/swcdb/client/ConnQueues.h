@@ -5,7 +5,14 @@
 #ifndef swc_client_ConnQueues_h
 #define swc_client_ConnQueues_h
 
+#include <memory>
+#include "swcdb/core/comm/SerializedClient.h"
+#include "swcdb/db/Protocol/Common/req/ConnQueue.h"
+
 namespace SWC { namespace client {
+
+class ConnQueues;
+typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
 class Host : public Protocol::Common::Req::ConnQueue  {
   public:
@@ -15,14 +22,9 @@ class Host : public Protocol::Common::Req::ConnQueue  {
 
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
        const Property::V_GINT32::Ptr keepalive_ms, 
-       const Property::V_GINT32::Ptr again_delay_ms)
-      : queues(queues), endpoints(endpoints), 
-        Protocol::Common::Req::ConnQueue(keepalive_ms, again_delay_ms) {
-  }
+       const Property::V_GINT32::Ptr again_delay_ms);
 
-  virtual ~Host(){
-    stop();  
-  }
+  virtual ~Host();
   
   bool connect() override;
 
@@ -48,48 +50,15 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
              const Property::V_GINT32::Ptr timeout, 
              const Property::V_GINT32::Ptr probes, 
              const Property::V_GINT32::Ptr keepalive_ms,
-             const Property::V_GINT32::Ptr again_delay_ms)
-            : service(service),
-              cfg_conn_timeout(timeout),
-              cfg_conn_probes(probes), 
-              cfg_keepalive_ms(keepalive_ms),
-              cfg_again_delay_ms(again_delay_ms) {
-  }
+             const Property::V_GINT32::Ptr again_delay_ms);
 
-  virtual ~ConnQueues() { }
+  virtual ~ConnQueues();
 
-  std::string to_string(){
-    std::string s("ConnQueues: ");
-    std::lock_guard<std::mutex> lock(m_mutex);
+  std::string to_string();
 
-    for(auto& host : m_hosts){
-      s.append(host->to_string());
-      s.append("\n");
-    }
-    return s;
-  }
+  Host::Ptr get(const EndPoints& endpoints);
 
-  Host::Ptr get(const EndPoints& endpoints){
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto& host : m_hosts){
-      if(has_endpoint(host->endpoints, endpoints))
-        return host;
-    }
-    return m_hosts.emplace_back(
-      new Host(
-        shared_from_this(), endpoints, cfg_keepalive_ms, cfg_again_delay_ms));
-  }
-
-  void remove(const EndPoints& endpoints) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for(auto it=m_hosts.begin(); it<m_hosts.end(); it++){
-
-      if(has_endpoint((*it)->endpoints, endpoints)) {
-        m_hosts.erase(it);
-        break;
-      }
-    }
-  }
+  void remove(const EndPoints& endpoints);
 
   private:
 
@@ -100,22 +69,6 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
 
 
-void Host::close_issued() {
-  queues->remove(endpoints);
-}
-
-bool Host::connect() {
-  queues->service->get_connection(
-    endpoints, 
-    [ptr=shared_from_this()] (ConnHandlerPtr conn){ptr->set(conn);},
-    std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
-    queues->cfg_conn_probes->get(),
-    cfg_keepalive_ms != nullptr
-  );
-  return true;  
-}
-
-
 }}
-
+// 
 #endif // swc_client_ConnQueues_h

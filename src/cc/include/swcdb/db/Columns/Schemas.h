@@ -6,9 +6,12 @@
 #ifndef swcdb_lib_db_Columns_Schemas_h
 #define swcdb_lib_db_Columns_Schemas_h
 
+#include <algorithm>
+#include <vector>
+#include <unordered_map>
+#include <shared_mutex>
 
 #include "swcdb/db/Columns/Schema.h"
-#include <shared_mutex>
 
 namespace SWC { namespace DB {
 
@@ -71,7 +74,7 @@ class Schemas final {
     entries.resize(i+m_map.size());
     for(const auto& it : m_map) 
       entries[i++] = it.second;
-    sort(entries.begin(), entries.end()); 
+    std::sort(entries.begin(), entries.end()); 
   }
 
   private:

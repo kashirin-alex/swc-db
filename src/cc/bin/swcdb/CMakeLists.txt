@@ -72,7 +72,12 @@ endif()
 ADD_EXEC_TARGET(
 	NAME 		swcdbFsBroker
 	SRCS  	fsbroker/main.cc
-	TARGETS ${SHARED_TARGETS}
+	TARGETS swcdb_core 
+					swcdb_core_config 
+					swcdb_core_comm 
+					swcdb_core_sys 
+					swcdb_fs 
+					${BUILTIN_FS_TARGETS}
 
 	SHARED  ${SHARED}
 	STATIC  ${STATIC}

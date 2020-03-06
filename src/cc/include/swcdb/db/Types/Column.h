@@ -21,12 +21,12 @@ enum class Column {
   CELL_DEFINED  = 0xf
 };
 
-const bool is_counter(const Column typ) {
+inline const bool is_counter(const Column typ) {
   return typ >= Types::Column::COUNTER_I64 &&
          typ <= Types::Column::COUNTER_I8;
 }
 
-const std::string to_string(Column typ) {
+inline const std::string to_string(Column typ) {
   switch(typ){
     case Column::PLAIN:
       return std::string("PLAIN");
@@ -45,7 +45,7 @@ const std::string to_string(Column typ) {
   }
 }
 
-const Column column_type_from(const std::string& typ) {
+inline const Column column_type_from(const std::string& typ) {
 
   if(typ.compare("1") == 0 || 
      strncasecmp(typ.data(), "PLAIN", typ.length()) == 0)

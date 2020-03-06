@@ -5,85 +5,30 @@
 #ifndef swc_client_Rangers_h
 #define swc_client_Rangers_h
 
-#include "swcdb/core/Time.h"
+#include <mutex>
+#include <unordered_map>
+
+#include "swcdb/client/Settings.h"
+#include "swcdb/core/comm/Resolver.h"
 
 namespace SWC { namespace client {
 
 class Rangers  {
   public:
 
-  Rangers(const Property::V_GINT32::Ptr expiry_ms) : m_expiry_ms(expiry_ms) { }
+  Rangers(const Property::V_GINT32::Ptr expiry_ms);
 
-  virtual ~Rangers(){ }
+  virtual ~Rangers();
   
-  void clear() {
-    std::scoped_lock lock(m_mutex); 
-    m_map.clear();
-  }
+  void clear();
   
-  void clear_expired() {
-    auto ms = Time::now_ms();
+  void clear_expired();
 
-    std::scoped_lock lock(m_mutex);     
-    for(auto c = m_map.begin(); c != m_map.end(); ) {
-      for(auto r = c->second.begin(); r != c->second.end(); ) {
-        if(ms - r->second.ts > m_expiry_ms->get())
-          r = c->second.erase(r);
-        else
-          ++r;
-      }
-      if(c->second.empty())
-        c = m_map.erase(c);
-      else
-        ++c;
-    }
-  }
+  void remove(const int64_t cid, const int64_t rid);
 
-  void remove(const int64_t cid, const int64_t rid) {
-    std::scoped_lock lock(m_mutex);
+  const bool get(const int64_t cid, const int64_t rid, EndPoints& endpoints);
 
-    auto c = m_map.find(cid);
-    if(c == m_map.end()) 
-      return; 
-    auto r = c->second.find(rid);
-    if(r == c->second.end()) 
-      return; 
-    c->second.erase(r);
-    if(c->second.empty())
-      m_map.erase(c);
-  }
-
-  const bool get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
-    bool found = false;
-
-    std::scoped_lock lock(m_mutex);
-    auto c = m_map.find(cid);
-    if(c != m_map.end()) {
-      auto r = c->second.find(rid);
-      if(r != c->second.end() && 
-         Time::now_ms() - r->second.ts < m_expiry_ms->get()) {
-        found = true;
-        endpoints.assign(
-          r->second.endpoints.begin(), r->second.endpoints.end());
-      }
-    }
-    return found;
-  }
-
-  void set(const int64_t cid, const int64_t rid, const EndPoints& endpoints) {
-    std::scoped_lock lock(m_mutex);
-    auto c = m_map.find(cid);
-    if(c == m_map.end()) {
-      m_map[cid].emplace(rid, Range(Time::now_ms(), endpoints));
-    } else {
-      auto r = c->second.find(rid);
-      if(r == c->second.end()) {
-        c->second.emplace(rid, Range(Time::now_ms(), endpoints));
-      } else {
-        r->second = Range(Time::now_ms(), endpoints);
-      }
-    }
-  }
+  void set(const int64_t cid, const int64_t rid, const EndPoints& endpoints);
 
   private:
   struct Range final {
@@ -103,5 +48,9 @@ class Rangers  {
 
 
 }}
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/client/Rangers.cc"
+#endif 
 
 #endif // swc_client_Rangers_h
