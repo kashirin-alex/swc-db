@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
-class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
+class RangeQuerySelect: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeQuerySelectRsp&)> Cb_t;
 
   static inline void 
@@ -33,7 +33,7 @@ class RangeQuerySelect: public Common::Req::ConnQueue::ReqBase {
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                    const EndPoints& endpoints, const Cb_t cb, 
                    const uint32_t timeout) 
-                  : Common::Req::ConnQueue::ReqBase(false), 
+                  : client::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_QUERY_SELECT, timeout);

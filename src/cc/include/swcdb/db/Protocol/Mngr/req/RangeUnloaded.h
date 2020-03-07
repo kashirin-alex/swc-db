@@ -16,10 +16,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class RangeUnloaded: public Common::Req::ConnQueue::ReqBase {
+class RangeUnloaded: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                               Params::RangeUnloadedRsp)> Cb_t;
  
   static void request(int64_t cid, int64_t rid, 
@@ -35,7 +35,7 @@ class RangeUnloaded: public Common::Req::ConnQueue::ReqBase {
 
   RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t cb, 
               const uint32_t timeout) 
-              : Common::Req::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(false), 
                 cb(cb), cid(params.cid) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_UNLOADED, timeout);

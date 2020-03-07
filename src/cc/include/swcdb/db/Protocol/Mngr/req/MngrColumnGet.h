@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
-class MngrColumnGet : public Common::Req::ConnQueue::ReqBase {
+class MngrColumnGet : public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(int, Params::ColumnGetRsp)> Cb_t;

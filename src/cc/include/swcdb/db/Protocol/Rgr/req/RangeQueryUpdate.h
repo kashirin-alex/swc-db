@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
-class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
+class RangeQueryUpdate: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeQueryUpdateRsp&)> Cb_t;
 
   static inline void 
@@ -34,7 +34,7 @@ class RangeQueryUpdate: public Common::Req::ConnQueue::ReqBase {
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
                    DynamicBuffer::Ptr buffer, const EndPoints& endpoints,
                    const Cb_t cb, const uint32_t timeout) 
-                  : Common::Req::ConnQueue::ReqBase(false), 
+                  : client::ConnQueue::ReqBase(false), 
                     endpoints(endpoints), cb(cb) {
     // timeout by buffer->fill() bytes ratio
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);

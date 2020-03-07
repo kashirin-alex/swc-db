@@ -11,12 +11,12 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-class RangeLoad : public Common::Req::ConnQueue::ReqBase {
+class RangeLoad : public client::ConnQueue::ReqBase {
   public:
 
   RangeLoad(server::Mngr::Ranger::Ptr rgr, server::Mngr::Range::Ptr range,
             DB::Schema::Ptr schema) 
-            : Common::Req::ConnQueue::ReqBase(false), 
+            : client::ConnQueue::ReqBase(false), 
               rgr(rgr), range(range), schema_revision(schema->revision) {
     cbp = CommBuf::make(
       Params::RangeLoad(range->cfg->cid, range->rid, schema)

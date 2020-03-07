@@ -16,11 +16,11 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class ColumnGet: public Common::Req::ConnQueue::ReqBase {
+class ColumnGet: public client::ConnQueue::ReqBase {
   public:
   
   using Flag = Params::ColumnGetReq::Flag;
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                             int, Params::ColumnGetRsp)> Cb_t;
 
 
@@ -56,7 +56,7 @@ class ColumnGet: public Common::Req::ConnQueue::ReqBase {
 
   ColumnGet(const Params::ColumnGetReq& params, const Cb_t cb, 
             const uint32_t timeout) 
-            : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
+            : client::ConnQueue::ReqBase(false), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(COLUMN_GET, timeout);
   }

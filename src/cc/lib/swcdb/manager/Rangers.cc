@@ -253,7 +253,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
 
 void Rangers::assign_range_chk_last(int err, Ranger::Ptr rs_chk) {
-  Protocol::Common::Req::ConnQueue::ReqBase::Ptr req;
+  client::ConnQueue::ReqBase::Ptr req;
   for(;;) {
     {
       std::scoped_lock lock(m_mutex);

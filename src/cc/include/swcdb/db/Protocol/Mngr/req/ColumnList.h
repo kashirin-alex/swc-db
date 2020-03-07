@@ -16,10 +16,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class ColumnList: public Common::Req::ConnQueue::ReqBase {
+class ColumnList: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              int, Params::ColumnListRsp)> Cb_t;
 
   static void request(const Cb_t cb, const uint32_t timeout = 10000){
@@ -30,7 +30,7 @@ class ColumnList: public Common::Req::ConnQueue::ReqBase {
 
   ColumnList(const Params::ColumnListReq& params, const Cb_t cb, 
              const uint32_t timeout) 
-            : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
+            : client::ConnQueue::ReqBase(false), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(COLUMN_LIST, timeout);
   }

@@ -67,7 +67,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
     Protocol::Mngr::Req::ColumnGet::schema(
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, 
+      (client::ConnQueue::ReqBase::Ptr req_ptr, 
         int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
@@ -126,7 +126,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
     Protocol::Mngr::Req::ColumnGet::cid(
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr,
+      (client::ConnQueue::ReqBase::Ptr req_ptr,
        int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
         
         if(err == Error::REQUEST_TIMEOUT) {
@@ -200,7 +200,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols,
         10, 1234, blk_encoding, 3, 9876543),
 
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
+      (client::ConnQueue::ReqBase::Ptr req_ptr, int err){
 
         uint64_t took 
           = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -262,7 +262,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
     Protocol::Mngr::Req::ColumnGet::schema(
       name, 
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, 
+      (client::ConnQueue::ReqBase::Ptr req_ptr, 
        int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
@@ -282,7 +282,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
         Protocol::Mngr::Req::ColumnMng::request(
           Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
           new_schema,
-          [latency, start_ts](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
+          [latency, start_ts](client::ConnQueue::ReqBase::Ptr req_ptr, int err){
             if(err != Error::OK 
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){

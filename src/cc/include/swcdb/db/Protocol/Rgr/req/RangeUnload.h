@@ -12,12 +12,12 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-class RangeUnload : public Common::Req::ConnQueue::ReqBase {
+class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
   RangeUnload(DB::RangeBase::Ptr range, ResponseCallback::Ptr cb,
                 uint32_t timeout=60000) 
-               : Common::Req::ConnQueue::ReqBase(false), 
+               : client::ConnQueue::ReqBase(false), 
                 range(range), cb(cb) {
     cbp = CommBuf::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_UNLOAD, timeout);

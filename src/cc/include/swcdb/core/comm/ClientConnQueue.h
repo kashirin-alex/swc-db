@@ -2,12 +2,12 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_commmon_req_ConnQueue_h
-#define swc_lib_db_protocol_commmon_req_ConnQueue_h
+#ifndef swc_core_comm_ClientConnQueue_h
+#define swc_core_comm_ClientConnQueue_h
 
 #include <queue>
 
-namespace SWC { namespace Protocol { namespace Common { namespace Req {
+namespace SWC { namespace client {
 
 
 class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
@@ -315,6 +315,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 };
 
 
-}}}}
+}}
 
-#endif // swc_lib_db_protocol_commmon_req_ConnQueue_h
+#endif // swc_core_comm_ClientConnQueue_h

@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 
 
-class MngrState : public Common::Req::ConnQueue::ReqBase {
+class MngrState : public client::ConnQueue::ReqBase {
   public:
 
   MngrState(ResponseCallback::Ptr cb, server::Mngr::MngrsStatus &states, 
@@ -33,7 +33,7 @@ class MngrState : public Common::Req::ConnQueue::ReqBase {
       disconnected(conn);
       return;
     }
-    if(Common::Req::ConnQueue::ReqBase::is_timeout(conn, ev))
+    if(client::ConnQueue::ReqBase::is_timeout(conn, ev))
       return;
 
     if(ev->header.command == MNGR_STATE && ev->response_code() == Error::OK){

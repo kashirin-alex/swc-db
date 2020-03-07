@@ -27,7 +27,7 @@ MngrRole::MngrRole(const EndPoints& endpoints)
       cfg_delay_fallback(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
-      m_mngr_inchain(std::make_shared<Protocol::Common::Req::ConnQueue>()) {
+      m_mngr_inchain(std::make_shared<client::ConnQueue>()) {
   schedule_checkin(3000);
 }
 
@@ -73,8 +73,7 @@ MngrStatus::Ptr MngrRole::active_mngr(size_t begin, size_t end) {
   return nullptr;
 }
 
-void MngrRole::req_mngr_inchain(
-                          Protocol::Common::Req::ConnQueue::ReqBase::Ptr req) {
+void MngrRole::req_mngr_inchain(client::ConnQueue::ReqBase::Ptr req) {
   m_mngr_inchain->put(req);
 }
 

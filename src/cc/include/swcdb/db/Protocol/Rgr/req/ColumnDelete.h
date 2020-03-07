@@ -11,11 +11,11 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-class ColumnDelete : public Common::Req::ConnQueue::ReqBase  {
+class ColumnDelete : public client::ConnQueue::ReqBase  {
   public:
 
   ColumnDelete(server::Mngr::Ranger::Ptr rgr, int64_t cid) 
-              : Common::Req::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(false), 
                 rgr(rgr), cid(cid) {
     cbp = CommBuf::make(Common::Params::ColumnId(cid));
     cbp->header.set(COLUMN_DELETE, 60000);

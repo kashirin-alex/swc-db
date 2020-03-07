@@ -16,10 +16,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class RgrGet: public Common::Req::ConnQueue::ReqBase {
+class RgrGet: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                               Params::RgrGetRsp)> Cb_t;
  
   static void request(int64_t cid, int64_t rid, bool next_range,
@@ -39,7 +39,7 @@ class RgrGet: public Common::Req::ConnQueue::ReqBase {
 
   RgrGet(const Params::RgrGetReq& params, const Cb_t cb, 
             const uint32_t timeout) 
-            : Common::Req::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
+            : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
     cbp = CommBuf::make(params);
     cbp->header.set(RGR_GET, timeout);
   }

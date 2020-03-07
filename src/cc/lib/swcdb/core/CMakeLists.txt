@@ -67,6 +67,7 @@ set(swcdb_core_comm_sources
 	comm/ResponseCallback.cc
 	comm/IoContext.cc
 	comm/PeriodicTimer.cc
+	comm/ClientConnQueues.cc
 )
 ADD_LIB_TARGET(
 	NAME 		swcdb_core_comm

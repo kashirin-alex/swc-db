@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
-class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
+class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 

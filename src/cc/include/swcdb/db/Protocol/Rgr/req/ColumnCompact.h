@@ -11,11 +11,11 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-class ColumnCompact : public Common::Req::ConnQueue::ReqBase  {
+class ColumnCompact : public client::ConnQueue::ReqBase  {
   public:
 
   ColumnCompact(int64_t cid) 
-                : Common::Req::ConnQueue::ReqBase(false) {
+                : client::ConnQueue::ReqBase(false) {
     cbp = CommBuf::make(Params::ColumnCompactReq(cid));
     cbp->header.set(COLUMN_COMPACT, 60000);
   }

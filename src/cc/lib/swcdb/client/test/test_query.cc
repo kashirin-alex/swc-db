@@ -444,7 +444,7 @@ int main(int argc, char** argv) {
     SWC::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
     schema,
     [schema]
-    (SWC::Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err){
+    (SWC::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
       if(err != SWC::Error::OK 
         && err != SWC::Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
         req_ptr->request_again();
@@ -456,7 +456,7 @@ int main(int argc, char** argv) {
         SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
         schema,
         [schema]
-        (SWC::Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+        (SWC::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
           if(err != SWC::Error::OK 
             && err != SWC::Error::COLUMN_SCHEMA_NAME_EXISTS) {
             req_ptr->request_again();

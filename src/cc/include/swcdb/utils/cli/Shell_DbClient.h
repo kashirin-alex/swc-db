@@ -161,7 +161,7 @@ class DbClient : public Interface {
       func,
       schema,
       [await=&res]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error) {
+      (client::ConnQueue::ReqBase::Ptr req, int error) {
         /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           req->request_again();
           return;
@@ -195,7 +195,7 @@ class DbClient : public Interface {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+        (client::ConnQueue::ReqBase::Ptr req, int error, 
          Protocol::Mngr::Params::ColumnListRsp rsp) {
           if(!error)
             schemas = rsp.schemas;
@@ -216,7 +216,7 @@ class DbClient : public Interface {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [schema, &proccessing, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+        (client::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::ColumnCompactRsp rsp) {
           SWC_PRINT << "Compactig Column cid=" << schema->cid 
                     << " '" << schema->col_name << "' err=" << rsp.err 
@@ -244,7 +244,7 @@ class DbClient : public Interface {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+        (client::ConnQueue::ReqBase::Ptr req, int error, 
          Protocol::Mngr::Params::ColumnListRsp rsp) {
           if(!error)
             schemas = rsp.schemas;

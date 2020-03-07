@@ -11,11 +11,11 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
-class ColumnUpdate : public Common::Req::ConnQueue::ReqBase {
+class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(server::Mngr::Ranger::Ptr rgr, DB::Schema::Ptr schema) 
-              : Common::Req::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(false), 
                 rgr(rgr), schema(schema) {
     cbp = CommBuf::make(Params::ColumnUpdate(schema));
     cbp->header.set(SCHEMA_UPDATE, 60000);

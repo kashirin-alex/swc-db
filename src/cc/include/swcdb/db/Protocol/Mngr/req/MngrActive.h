@@ -12,14 +12,14 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class MngrActive : public Common::Req::ConnQueue::ReqBase {
+class MngrActive : public client::ConnQueue::ReqBase {
   public:
 
   const int64_t cid;
 
   MngrActive(int64_t cid, DispatchHandler::Ptr hdlr, 
              uint32_t timeout_ms=60000)
-            : Common::Req::ConnQueue::ReqBase(false), 
+            : client::ConnQueue::ReqBase(false), 
               cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),
               timer(asio::high_resolution_timer(
                 *Env::Clients::get()->mngr_service->io().get())) {

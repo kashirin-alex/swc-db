@@ -491,7 +491,7 @@ class Compaction final {
         range->cfg->cid,
         RangerEnv::rgr_data()->id,
         [split_at, cid=range->cfg->cid, ptr=shared()]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+        (client::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeCreateRsp rsp) {
           
           SWC_LOGF(
@@ -521,7 +521,7 @@ class Compaction final {
         new_range->cfg->cid,
         new_range->rid,
         [new_range, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+        (client::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::RangeRemoveRsp rsp) {
           
           SWC_LOGF(
@@ -590,7 +590,7 @@ class Compaction final {
         [new_rid, cid=range->cfg->cid](int err) { 
           Protocol::Mngr::Req::RangeUnloaded::request(
             cid, new_rid,
-            [cid, new_rid](Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+            [cid, new_rid](client::ConnQueue::ReqBase::Ptr req, 
              Protocol::Mngr::Params::RangeUnloadedRsp rsp) {
           
               SWC_LOGF(

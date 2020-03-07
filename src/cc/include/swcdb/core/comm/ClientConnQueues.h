@@ -2,19 +2,18 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_client_ConnQueues_h
-#define swc_client_ConnQueues_h
+#ifndef swc_core_comm_ClientConnQueues_h
+#define swc_core_comm_ClientConnQueues_h
 
-#include <memory>
 #include "swcdb/core/comm/SerializedClient.h"
-#include "swcdb/db/Protocol/Common/req/ConnQueue.h"
+#include "swcdb/core/comm/ClientConnQueue.h"
 
 namespace SWC { namespace client {
 
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
-class Host : public Protocol::Common::Req::ConnQueue  {
+class Host : public ConnQueue  {
   public:
   typedef std::shared_ptr<Host> Ptr;
 
@@ -70,5 +69,12 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
 
 }}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/core/comm/ClientConnQueues.cc"
+#endif 
+
+
 // 
-#endif // swc_client_ConnQueues_h
+#endif // swc_core_comm_ClientConnQueues_h

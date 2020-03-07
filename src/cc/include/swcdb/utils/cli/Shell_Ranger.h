@@ -108,7 +108,7 @@ class Rgr : public Interface {
         err = Error::COMM_CONNECT_ERROR;
       },
       [this, await=&r_promise] 
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+      (client::ConnQueue::ReqBase::Ptr req, 
        const Protocol::Rgr::Params::ReportRsp& rsp) {
         if(!(err = rsp.err)) {
           std::scoped_lock lock(Logger::logger.mutex);

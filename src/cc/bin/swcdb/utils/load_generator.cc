@@ -251,7 +251,7 @@ void load_generator() {
     Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res]
-    (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+    (client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
       await->set_value(err);
     },
     10000

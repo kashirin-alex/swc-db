@@ -2,7 +2,7 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#include "swcdb/client/ConnQueues.h"
+#include "swcdb/core/comm/ClientConnQueues.h"
 
 namespace SWC { namespace client {
 
@@ -10,7 +10,7 @@ Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
            const Property::V_GINT32::Ptr keepalive_ms, 
            const Property::V_GINT32::Ptr again_delay_ms)
           : queues(queues), endpoints(endpoints), 
-            Protocol::Common::Req::ConnQueue(keepalive_ms, again_delay_ms) {
+            ConnQueue(keepalive_ms, again_delay_ms) {
 }
 
 Host::~Host() {

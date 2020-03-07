@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
-class RangeLocate: public Common::Req::ConnQueue::ReqBase {
+class RangeLocate: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeLocateRsp&)> Cb_t;
 
   static inline void request(const Params::RangeLocateReq& params,
@@ -29,7 +29,7 @@ class RangeLocate: public Common::Req::ConnQueue::ReqBase {
 
   RangeLocate(const Params::RangeLocateReq& params, const EndPoints& endpoints,
               const Cb_t cb, const uint32_t timeout) 
-              : Common::Req::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(false), 
                 endpoints(endpoints), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_LOCATE, timeout);

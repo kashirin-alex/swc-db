@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "swcdb/core/comm/ClientConnQueues.h"
 #include "swcdb/client/Settings.h"
 #include "swcdb/client/AppContext.h"
-#include "swcdb/client/ConnQueues.h"
 #include "swcdb/client/Schemas.h"
 #include "swcdb/client/mngr/Groups.h"
 #include "swcdb/client/rgr/Rangers.h"
@@ -75,7 +75,6 @@ class Clients final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/client/ConnQueues.cc"
 #include "swcdb/client/Clients.cc"
 #include "swcdb/client/Schemas.cc"
 #endif 

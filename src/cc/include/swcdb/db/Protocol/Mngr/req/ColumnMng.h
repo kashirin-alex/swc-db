@@ -16,11 +16,11 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class ColumnMng: public Common::Req::ConnQueue::ReqBase {
+class ColumnMng: public client::ConnQueue::ReqBase {
   public:
 
   using Func = Params::ColumnMng::Function;
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, int)> Cb_t;
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, int)> Cb_t;
 
 
   static void create(DB::Schema::Ptr schema, const Cb_t cb, 
@@ -49,7 +49,7 @@ class ColumnMng: public Common::Req::ConnQueue::ReqBase {
 
 
   ColumnMng(const Params::ColumnMng& params, const Cb_t cb, const uint32_t timeout)
-            : Common::Req::ConnQueue::ReqBase(false), cb(cb) {
+            : client::ConnQueue::ReqBase(false), cb(cb) {
     cbp = CommBuf::make(params);    
     cbp->header.set(COLUMN_MNG, timeout);
   }

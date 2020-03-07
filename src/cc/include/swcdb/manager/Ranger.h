@@ -78,7 +78,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue = Env::Clients::get()->rgr->get(endpoints);
   }
 
-  void put(Protocol::Common::Req::ConnQueue::ReqBase::Ptr req){
+  void put(client::ConnQueue::ReqBase::Ptr req){
     m_queue->put(req);
   }
 
@@ -86,11 +86,11 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue->stop();
   }
 
-  void pending_id(Protocol::Common::Req::ConnQueue::ReqBase::Ptr req){
+  void pending_id(client::ConnQueue::ReqBase::Ptr req){
     m_pending_id.push(req);
   }
 
-  bool pending_id_pop(Protocol::Common::Req::ConnQueue::ReqBase::Ptr& req){
+  bool pending_id_pop(client::ConnQueue::ReqBase::Ptr& req){
     if(m_pending_id.empty())
       return false;
     req = m_pending_id.front();
@@ -107,7 +107,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   
   private:
   client::Host::Ptr m_queue = nullptr;
-  std::queue<Protocol::Common::Req::ConnQueue::ReqBase::Ptr> m_pending_id;
+  std::queue<client::ConnQueue::ReqBase::Ptr> m_pending_id;
 
 };
 typedef std::vector<Ranger::Ptr>  RangerList;

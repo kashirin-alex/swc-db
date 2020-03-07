@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
-class Report: public Common::Req::ConnQueue::ReqBase {
+class Report: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(Common::Req::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::ReportRsp&)> Cb_t;
   typedef std::function<void()> Cb_no_conn_t;
 
@@ -34,7 +34,7 @@ class Report: public Common::Req::ConnQueue::ReqBase {
   Report(const Params::ReportReq& params, 
          const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
          const Cb_t cb, const uint32_t timeout) 
-        : Common::Req::ConnQueue::ReqBase(false), 
+        : client::ConnQueue::ReqBase(false), 
           endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(REPORT, timeout);

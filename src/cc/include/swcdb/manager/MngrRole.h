@@ -26,7 +26,7 @@ class MngrRole final {
 
   MngrStatus::Ptr active_mngr(size_t begin, size_t end);
 
-  void req_mngr_inchain(Protocol::Common::Req::ConnQueue::ReqBase::Ptr req);
+  void req_mngr_inchain(client::ConnQueue::ReqBase::Ptr req);
 
   void fill_states(MngrsStatus states, uint64_t token, 
                    ResponseCallback::Ptr cb);
@@ -85,7 +85,7 @@ class MngrRole final {
   asio::high_resolution_timer     m_check_timer; 
   bool                            m_run = true; 
   
-  Protocol::Common::Req::ConnQueue::Ptr  m_mngr_inchain;
+  client::ConnQueue::Ptr          m_mngr_inchain;
 
 
   const Property::V_GINT32::Ptr cfg_conn_probes;

@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class RgrUpdate : public Common::Req::ConnQueue::ReqBase {
+class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
 
   RgrUpdate(server::Mngr::RangerList &hosts, bool sync_all) {

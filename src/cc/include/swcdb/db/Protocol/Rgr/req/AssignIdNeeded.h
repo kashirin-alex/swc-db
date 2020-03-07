@@ -9,13 +9,13 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-class AssignIdNeeded : public Common::Req::ConnQueue::ReqBase {
+class AssignIdNeeded : public client::ConnQueue::ReqBase {
   public:
 
   AssignIdNeeded(server::Mngr::Ranger::Ptr rs_chk, 
                  server::Mngr::Ranger::Ptr rs_nxt, 
                  server::Mngr::Range::Ptr range) 
-                : Common::Req::ConnQueue::ReqBase(false), 
+                : client::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
     cbp = CommBuf::make();
     cbp->header.set(ASSIGN_ID_NEEDED, 60000);

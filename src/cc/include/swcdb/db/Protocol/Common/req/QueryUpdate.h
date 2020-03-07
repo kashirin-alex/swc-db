@@ -21,7 +21,7 @@ namespace SWC { namespace Protocol { namespace Common { namespace Req {
   
 namespace Query {
 
-using ReqBase = Req::ConnQueue::ReqBase;
+using ReqBase = client::ConnQueue::ReqBase;
 
 /*
 range-master: 

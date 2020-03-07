@@ -41,7 +41,7 @@ class AppHandler : virtual public BrokerIf {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+        (client::ConnQueue::ReqBase::Ptr req, int error, 
          Protocol::Mngr::Params::ColumnListRsp rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -99,7 +99,7 @@ class AppHandler : virtual public BrokerIf {
       func,
       schema,
       [await=&res]
-      (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error) {
+      (client::ConnQueue::ReqBase::Ptr req, int error) {
         await->set_value(error);
       },
       300000
@@ -127,7 +127,7 @@ class AppHandler : virtual public BrokerIf {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, int error, 
+        (client::ConnQueue::ReqBase::Ptr req, int error, 
          Protocol::Mngr::Params::ColumnListRsp rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -148,7 +148,7 @@ class AppHandler : virtual public BrokerIf {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
-        (Protocol::Common::Req::ConnQueue::ReqBase::Ptr req, 
+        (client::ConnQueue::ReqBase::Ptr req, 
          Protocol::Mngr::Params::ColumnCompactRsp rsp) {
           std::scoped_lock lock(mutex);
           auto& r = _return.emplace_back();

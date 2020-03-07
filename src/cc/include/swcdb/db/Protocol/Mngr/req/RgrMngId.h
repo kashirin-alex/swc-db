@@ -12,13 +12,13 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class RgrMngId: public Common::Req::ConnQueue::ReqBase {
+class RgrMngId: public client::ConnQueue::ReqBase {
 
   public:
   typedef std::shared_ptr<RgrMngId> Ptr;
 
   RgrMngId(asio::io_context* io, const std::function<void()>& cb = 0) 
-          : Common::Req::ConnQueue::ReqBase(false, nullptr),
+          : client::ConnQueue::ReqBase(false, nullptr),
             m_timer(asio::high_resolution_timer(*io)),
             cfg_check_interval(
               Env::Config::settings()->get<Property::V_GINT32>(
