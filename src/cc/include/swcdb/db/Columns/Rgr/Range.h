@@ -175,7 +175,7 @@ class Range : public DB::RangeBase {
       return;
     }
 
-    auto updater = std::make_shared<Protocol::Common::Req::Query::Update>();
+    auto updater = std::make_shared<client::Query::Update>();
     // RangerEnv::updater();
     uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
 

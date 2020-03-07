@@ -3,17 +3,16 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_common_req_Query_h
-#define swc_lib_db_protocol_common_req_Query_h
+#ifndef swc_client_requests_Query_Select_h
+#define swc_client_requests_Query_Select_h
 
 #include "swcdb/db/Cells/Vector.h"
 
-#include "swcdb/db/Protocol/Common/req/QueryUpdate.h"
+#include "swcdb/client/requests/Query/Update.h"
+
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
-namespace SWC { namespace Protocol { namespace Common { namespace Req { 
-  
-namespace Query {
+namespace SWC { namespace client { namespace Query {
  
 namespace Result{
 
@@ -365,7 +364,7 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_manager(bool next_range=false) {
       col->selector->result->completion++;
 
-      Mngr::Params::RgrGetReq params(1, 0, next_range);
+      Protocol::Mngr::Params::RgrGetReq params(1, 0, next_range);
 
       if(!range_offset.empty()) {
         params.range_begin.copy(range_offset);
@@ -387,10 +386,10 @@ class Select : public std::enable_shared_from_this<Select> {
 
       SWC_LOGF(LOG_INFO, "LocateRange-onMngr %s", params.to_string().c_str());
 
-      Mngr::Req::RgrGet::request(
+      Protocol::Mngr::Req::RgrGet::request(
         params,
         [next_range, scanner=shared_from_this()]
-        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
           if(scanner->located_on_manager(req, rsp, next_range))
             scanner->col->selector->result->completion--;
         }
@@ -399,16 +398,16 @@ class Select : public std::enable_shared_from_this<Select> {
 
     void resolve_on_manager() {
 
-      auto req = Mngr::Req::RgrGet::make(
-        Mngr::Params::RgrGetReq(cid, rid),
+      auto req = Protocol::Mngr::Req::RgrGet::make(
+        Protocol::Mngr::Params::RgrGetReq(cid, rid),
         [scanner=shared_from_this()]
-        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
           if(scanner->located_on_manager(req, rsp))
             scanner->col->selector->result->completion--;
         }
       );
       if(cid != 1) {
-        Mngr::Params::RgrGetRsp rsp(cid, rid);
+        Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
           SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
@@ -422,7 +421,7 @@ class Select : public std::enable_shared_from_this<Select> {
     }
 
     bool located_on_manager(const ReqBase::Ptr& base, 
-                            const Mngr::Params::RgrGetRsp& rsp, 
+                            const Protocol::Mngr::Params::RgrGetRsp& rsp, 
                             bool next_range=false) {
       SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
 
@@ -468,7 +467,7 @@ class Select : public std::enable_shared_from_this<Select> {
     }
     
     bool proceed_on_ranger(const ReqBase::Ptr& base, 
-                           const Mngr::Params::RgrGetRsp& rsp) {
+                           const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && col->cid == 1) ||
         (type == Types::Range::META   && col->cid == 2 )) {
@@ -495,9 +494,9 @@ class Select : public std::enable_shared_from_this<Select> {
     void locate_on_ranger(const EndPoints& endpoints, bool next_range=false) {
       col->selector->result->completion++;
 
-      Rgr::Params::RangeLocateReq params(cid, rid);
+      Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
       if(next_range) {
-        params.flags |= Rgr::Params::RangeLocateReq::NEXT_RANGE;
+        params.flags |= Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
         params.range_offset.copy(range_offset);
         params.range_offset.insert(0, std::to_string(col->cid));
         if(type == Types::Range::MASTER && col->cid > 2)
@@ -514,12 +513,12 @@ class Select : public std::enable_shared_from_this<Select> {
       
       SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
 
-      Rgr::Req::RangeLocate::request(
+      Protocol::Rgr::Req::RangeLocate::request(
         params, endpoints,
         [next_range, scanner=shared_from_this()]
-        (ReqBase::Ptr req, const Rgr::Params::RangeLocateRsp& rsp) {
+        (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
           if(scanner->located_on_ranger(
-              std::dynamic_pointer_cast<Rgr::Req::RangeLocate>(req)->endpoints,
+              std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
               req, rsp, next_range))
             scanner->col->selector->result->completion--;
         }
@@ -528,7 +527,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
     bool located_on_ranger(const EndPoints& endpoints, 
                            const ReqBase::Ptr& base, 
-                           const Rgr::Params::RangeLocateRsp& rsp, 
+                           const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
                            bool next_range=false) {
       SWC_LOGF(LOG_INFO, "Located-onRgr %s", rsp.to_string().c_str());
       if(rsp.err) {
@@ -587,13 +586,13 @@ class Select : public std::enable_shared_from_this<Select> {
     void select(EndPoints endpoints, uint64_t rid, const ReqBase::Ptr& base) {
       col->selector->result->completion++;
 
-      Rgr::Req::RangeQuerySelect::request(
-        Rgr::Params::RangeQuerySelectReq(
+      Protocol::Rgr::Req::RangeQuerySelect::request(
+        Protocol::Rgr::Params::RangeQuerySelectReq(
           col->cid, rid, col->interval, col->selector->buff_sz
         ), 
         endpoints, 
         [rid, base, scanner=shared_from_this()] 
-        (ReqBase::Ptr req, const Rgr::Params::RangeQuerySelectRsp& rsp) {
+        (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
           if(rsp.err) {
             SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
             if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
@@ -614,7 +613,7 @@ class Select : public std::enable_shared_from_this<Select> {
           if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
             if(rsp.reached_limit) {
               scanner->select(
-                std::dynamic_pointer_cast<Rgr::Req::RangeQuerySelect>(req)
+                std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeQuerySelect>(req)
                   ->endpoints, 
                 rid, base
               );
@@ -638,6 +637,6 @@ class Select : public std::enable_shared_from_this<Select> {
   
 };
 
-}}}}}
+}}}
 
-#endif // swc_lib_db_protocol_common_req_Query_h
+#endif // swc_client_requests_Query_Select_h

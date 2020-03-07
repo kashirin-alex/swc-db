@@ -9,11 +9,7 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Files/RgrData.h"
 
-#include "swcdb/db/Protocol/Common/req/Query.h"
-
-namespace {  
-namespace Query = SWC::Protocol::Common::Req::Query;
-}
+#include "swcdb/client/requests/Query/Select.h"
 
 
 namespace SWC {
@@ -69,7 +65,7 @@ class RangerEnv final {
     return m_env->_columns;
   }
 
-  static Query::Update* updater() {
+  static client::Query::Update* updater() {
     return m_env->_updater.get();
   }
 
@@ -82,10 +78,10 @@ class RangerEnv final {
   const Property::V_GINT32::Ptr      cfg_blk_cells;
   const Property::V_GENUM::Ptr       cfg_blk_enc;
   
-  IoContext::Ptr            mnt_io;
-  server::Rgr::Compaction*  _compaction;
-  server::Rgr::Columns*     _columns;
-  Query::Update::Ptr        _updater;
+  IoContext::Ptr              mnt_io;
+  server::Rgr::Compaction*    _compaction;
+  server::Rgr::Columns*       _columns;
+  client::Query::Update::Ptr  _updater;
 
   explicit RangerEnv();
 
@@ -130,7 +126,7 @@ RangerEnv::RangerEnv()
           "swc.rgr.maintenance.handlers"))),
       _compaction(nullptr),
       _columns(new server::Rgr::Columns()),
-      _updater(std::make_shared<Query::Update>()) {          
+      _updater(std::make_shared<client::Query::Update>()) {          
 }
 
 RangerEnv::~RangerEnv() {

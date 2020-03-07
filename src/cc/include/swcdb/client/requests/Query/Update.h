@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_common_req_QueryUpdate_h
-#define swc_lib_db_protocol_common_req_QueryUpdate_h
+#ifndef swc_client_requests_Query_Update_h
+#define swc_client_requests_Query_Update_h
 
 #include "swcdb/core/LockAtomicUnique.h"
 
@@ -17,9 +17,7 @@
 #include "swcdb/db/Types/Range.h"
 
 
-namespace SWC { namespace Protocol { namespace Common { namespace Req { 
-  
-namespace Query {
+namespace SWC { namespace client { namespace Query {
 
 using ReqBase = client::ConnQueue::ReqBase;
 
@@ -267,7 +265,7 @@ class Update : public std::enable_shared_from_this<Update> {
     void locate_on_manager() {
       updater->result->completion_incr();
 
-      Mngr::Params::RgrGetReq params(1);
+      Protocol::Mngr::Params::RgrGetReq params(1);
       params.range_begin.copy(*key_start.get());
       if(cid > 2)
         params.range_begin.insert(0, std::to_string(cid));
@@ -276,10 +274,10 @@ class Update : public std::enable_shared_from_this<Update> {
 
       SWC_LOGF(LOG_INFO, "LocateRange-onMngr %s", params.to_string().c_str());
 
-      Mngr::Req::RgrGet::request(
+      Protocol::Mngr::Req::RgrGet::request(
         params,
         [locator=shared_from_this()]
-        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
           if(locator->located_on_manager(req, rsp))
             locator->updater->result->completion_decr();
         }
@@ -289,7 +287,7 @@ class Update : public std::enable_shared_from_this<Update> {
     private:
 
     bool located_on_manager(const ReqBase::Ptr& base, 
-                            const Mngr::Params::RgrGetRsp& rsp) {  
+                            const Protocol::Mngr::Params::RgrGetRsp& rsp) {  
       SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
       
       if(rsp.err == Error::COLUMN_NOT_EXISTS) {
@@ -330,8 +328,8 @@ class Update : public std::enable_shared_from_this<Update> {
     void locate_on_ranger(const EndPoints& endpoints) {
       updater->result->completion_incr();
 
-      Rgr::Params::RangeLocateReq params(cid, rid);
-      params.flags |= Rgr::Params::RangeLocateReq::COMMIT;
+      Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
+      params.flags |= Protocol::Rgr::Params::RangeLocateReq::COMMIT;
 
       params.range_begin.copy(*key_start.get());
       if(col->cid >= 2) {
@@ -342,12 +340,12 @@ class Update : public std::enable_shared_from_this<Update> {
       
       SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
 
-      Rgr::Req::RangeLocate::request(
+      Protocol::Rgr::Req::RangeLocate::request(
         params, endpoints,
         [locator=shared_from_this()]
-        (ReqBase::Ptr req, const Rgr::Params::RangeLocateRsp& rsp) {
+        (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
           if(locator->located_on_ranger(
-              std::dynamic_pointer_cast<Rgr::Req::RangeLocate>(req)->endpoints,
+              std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
               req, rsp))
             locator->updater->result->completion_decr();
         }
@@ -356,7 +354,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
     bool located_on_ranger(const EndPoints& endpoints, 
                            const ReqBase::Ptr& base, 
-                           const Rgr::Params::RangeLocateRsp& rsp) {
+                           const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       SWC_LOGF(LOG_INFO, "LocatedRange-onRgr %s", rsp.to_string().c_str());
 
       if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
@@ -401,16 +399,16 @@ class Update : public std::enable_shared_from_this<Update> {
 
     void resolve_on_manager() {
 
-      auto req = Mngr::Req::RgrGet::make(
-        Mngr::Params::RgrGetReq(cid, rid),
+      auto req = Protocol::Mngr::Req::RgrGet::make(
+        Protocol::Mngr::Params::RgrGetReq(cid, rid),
         [locator=shared_from_this()]
-        (ReqBase::Ptr req, Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
           if(locator->located_ranger(req, rsp))
             locator->updater->result->completion_decr();
         }
       );
       if(cid != 1) {
-        Mngr::Params::RgrGetRsp rsp(cid, rid);
+        Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
           SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
@@ -424,7 +422,7 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     bool located_ranger(const ReqBase::Ptr& base, 
-                        const Mngr::Params::RgrGetRsp& rsp) {  
+                        const Protocol::Mngr::Params::RgrGetRsp& rsp) {  
       SWC_LOGF(LOG_INFO, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
 
       if(rsp.err) {
@@ -457,7 +455,7 @@ class Update : public std::enable_shared_from_this<Update> {
     }
 
     bool proceed_on_ranger(const ReqBase::Ptr& base, 
-                           const Mngr::Params::RgrGetRsp& rsp) {
+                           const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(type == Types::Range::DATA || 
         (type == Types::Range::MASTER && col->cid == 1) ||
         (type == Types::Range::META   && col->cid == 2 )) {
@@ -492,12 +490,12 @@ class Update : public std::enable_shared_from_this<Update> {
                                                             != nullptr) {
         updater->result->completion_incr();
 
-        Rgr::Req::RangeQueryUpdate::request(
-          Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
+        Protocol::Rgr::Req::RangeQueryUpdate::request(
+          Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
           cells_buff, 
           endpoints, 
           [workload, cells_buff, base, locator=shared_from_this()] 
-          (ReqBase::Ptr req, const Rgr::Params::RangeQueryUpdateRsp& rsp) {
+          (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
             if(rsp.err) {
               SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%d", 
                        rsp.to_string().c_str(), workload.use_count());
@@ -543,6 +541,6 @@ class Update : public std::enable_shared_from_this<Update> {
 };
 
 
-}}}}}
+}}}
 
-#endif // swc_lib_db_protocol_common_req_QueryUpdate_h
+#endif // swc_client_requests_Query_Update_h

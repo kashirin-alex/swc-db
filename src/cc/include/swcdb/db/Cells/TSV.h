@@ -49,7 +49,7 @@ class FileWriter {
     close();
   }
 
-  void write(Protocol::Common::Req::Query::Select::Result::Ptr result) {
+  void write(client::Query::Select::Result::Ptr result) {
     for(auto cid : result->get_cids()) {
       schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
       if(err)
@@ -276,7 +276,7 @@ class FileReader {
     if(err)
       return;
 
-    auto updater = std::make_shared<Protocol::Common::Req::Query::Update>();
+    auto updater = std::make_shared<client::Query::Update>();
     updater->columns->create(schema);
     
     for(auto& fd : fds) {
@@ -289,7 +289,7 @@ class FileReader {
     updater->wait();
   }
 
-  void read(Protocol::Common::Req::Query::Update::Ptr updater, 
+  void read(client::Query::Update::Ptr updater, 
             FS::SmartFd::Ptr smartfd) {
     size_t length = interface->get_fs()->length(err, smartfd->filepath());
     if(err)

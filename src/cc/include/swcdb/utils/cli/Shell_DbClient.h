@@ -273,9 +273,9 @@ class DbClient : public Interface {
     uint8_t display_flags = 0;
     size_t cells_count = 0;
     size_t cells_bytes = 0;
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+    auto req = std::make_shared<client::Query::Select>(
       [this, &display_flags, &cells_count, &cells_bytes]
-      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+      (client::Query::Select::Result::Ptr result) {
         display(result, display_flags, cells_count, cells_bytes);
       },
       true // cb on partial rsp
@@ -304,7 +304,7 @@ class DbClient : public Interface {
     return true;
   }
 
-  void display(Protocol::Common::Req::Query::Select::Result::Ptr result,
+  void display(client::Query::Select::Result::Ptr result,
                uint8_t display_flags, 
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
@@ -340,7 +340,7 @@ class DbClient : public Interface {
     int64_t ts = Time::now_ns();
     uint8_t display_flags = 0;
  
-    auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
+    auto req = std::make_shared<client::Query::Update>();
     std::string message;
     client::SQL::parse_update(
       err, cmd, 
@@ -405,9 +405,9 @@ class DbClient : public Interface {
       Env::Config::settings()->get_str("swc.fs")));
     DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
     
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>(
+    auto req = std::make_shared<client::Query::Select>(
       [this, &writer] 
-      (Protocol::Common::Req::Query::Select::Result::Ptr result) {
+      (client::Query::Select::Result::Ptr result) {
         writer.write(result);   
         // writer.err ? req->stop();
       },

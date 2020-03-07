@@ -9,7 +9,7 @@
 #include "swcdb/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Common/req/Query.h"
+#include "swcdb/client/requests/Query/Select.h"
 
 
 #include "swcdb/db/Stats/Stat.h"
@@ -26,7 +26,7 @@ void Settings::init_post_cmd_args(){ }
 }}
 
 namespace Cells = SWC::DB::Cells;
-namespace Query = SWC::Protocol::Common::Req::Query;
+namespace Query = SWC::client::Query;
 
 bool quite = true;
 std::atomic<bool> finished = false;

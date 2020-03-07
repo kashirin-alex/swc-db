@@ -164,8 +164,8 @@ class AppHandler : virtual public BrokerIf {
   }
   
   /* SQL QUERY */
-  Protocol::Common::Req::Query::Select::Ptr sync_select(const std::string& sql) {
-    auto req = std::make_shared<Protocol::Common::Req::Query::Select>();
+  client::Query::Select::Ptr sync_select(const std::string& sql) {
+    auto req = std::make_shared<client::Query::Select>();
     int err = Error::OK;
     std::string message;
     uint8_t display_flags = 0;
@@ -222,7 +222,7 @@ class AppHandler : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
+          int& err, client::Query::Select::Result::Ptr result,
           bool with_value, Cells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector cells; 
@@ -264,7 +264,7 @@ class AppHandler : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
+          int& err, client::Query::Select::Result::Ptr result,
           bool with_value, CCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector cells; 
@@ -307,7 +307,7 @@ class AppHandler : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
+          int& err, client::Query::Select::Result::Ptr result,
           bool with_value, KCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector cells; 
@@ -355,7 +355,7 @@ class AppHandler : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, Protocol::Common::Req::Query::Select::Result::Ptr result,
+          int& err, client::Query::Select::Result::Ptr result,
           bool with_value, FCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Vector cells; 
@@ -392,11 +392,11 @@ class AppHandler : virtual public BrokerIf {
   /* SQL UPDATE */
   void sql_update(const std::string& sql, const int64_t updater_id){
     
-    Protocol::Common::Req::Query::Update::Ptr req = nullptr;
+    client::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
     else
-      req = std::make_shared<Protocol::Common::Req::Query::Update>();
+      req = std::make_shared<client::Query::Update>();
 
     std::string message;
     uint8_t display_flags = 0;
@@ -428,14 +428,14 @@ class AppHandler : virtual public BrokerIf {
         it != m_updaters.end();
         it = m_updaters.find(++id)
     );
-    m_updaters[id] = std::make_shared<Protocol::Common::Req::Query::Update>();
+    m_updaters[id] = std::make_shared<client::Query::Update>();
     if(buffer_size)
       m_updaters[id]->buff_sz = buffer_size;
     return id;
   }
 
   void updater_close(const int64_t id) {
-    Protocol::Common::Req::Query::Update:: Ptr req;
+    client::Query::Update:: Ptr req;
     {
       std::scoped_lock lock(m_mutex);
     
@@ -450,11 +450,11 @@ class AppHandler : virtual public BrokerIf {
 
   /* UPDATE */
   void update(const UCCells& cells, const int64_t updater_id) {
-    Protocol::Common::Req::Query::Update::Ptr req = nullptr;
+    client::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
     else
-      req = std::make_shared<Protocol::Common::Req::Query::Update>();
+      req = std::make_shared<client::Query::Update>();
 
     int err = Error::OK;
     size_t cells_bytes;
@@ -502,7 +502,7 @@ class AppHandler : virtual public BrokerIf {
   private:
 
   void updater_close() {
-    Protocol::Common::Req::Query::Update:: Ptr req;
+    client::Query::Update:: Ptr req;
     for(;;) {
       {
         std::scoped_lock lock(m_mutex);
@@ -516,7 +516,7 @@ class AppHandler : virtual public BrokerIf {
     }
   }
 
-  void updater(const int64_t id, Protocol::Common::Req::Query::Update::Ptr& req) {
+  void updater(const int64_t id, client::Query::Update::Ptr& req) {
     std::scoped_lock lock(m_mutex);
 
     auto it = m_updaters.find(id);
@@ -525,7 +525,7 @@ class AppHandler : virtual public BrokerIf {
     req = it->second;
   }
 
-  void updater_close(Protocol::Common::Req::Query::Update:: Ptr req) {
+  void updater_close(client::Query::Update:: Ptr req) {
     req->commit_if_need();
     req->wait();
     int err;
@@ -534,7 +534,7 @@ class AppHandler : virtual public BrokerIf {
   }
 
   std::mutex m_mutex;
-  std::unordered_map<int64_t, Protocol::Common::Req::Query::Update::Ptr> m_updaters;
+  std::unordered_map<int64_t, client::Query::Update::Ptr> m_updaters;
 };
 
 

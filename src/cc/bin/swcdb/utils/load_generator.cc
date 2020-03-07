@@ -9,7 +9,7 @@
 #include "swcdb/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Common/req/Query.h"
+#include "swcdb/client/requests/Query/Select.h"
 
 
 namespace SWC{ 
@@ -142,7 +142,7 @@ void load_data(DB::Schema::Ptr schema) {
   uint32_t value = settings->get_i32("gen-value-size");
   uint32_t progress = settings->get_i32("gen-progress");
 
-  auto req = std::make_shared<Protocol::Common::Req::Query::Update>();
+  auto req = std::make_shared<client::Query::Update>();
   req->columns->create(schema);
 
   auto col = req->columns->get_col(schema->cid);
