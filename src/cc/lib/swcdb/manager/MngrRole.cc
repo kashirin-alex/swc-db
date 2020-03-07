@@ -27,7 +27,8 @@ MngrRole::MngrRole(const EndPoints& endpoints)
       cfg_delay_fallback(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.delay.fallback")),
       m_checkin(false),
-      m_mngr_inchain(std::make_shared<client::ConnQueue>()) {
+      m_mngr_inchain(
+        std::make_shared<client::ConnQueue>(Env::IoCtx::io()->shared())) {
   schedule_checkin(3000);
 }
 
