@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_manager_handlers_Echo_h
-#define swc_manager_handlers_Echo_h
+#ifndef swc_manager_Protocol_handlers_Echo_h
+#define swc_manager_Protocol_handlers_Echo_h
 
 
 
@@ -25,4 +25,4 @@ void do_echo(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_manager_handlers_Echo_h
+#endif // swc_manager_Protocol_handlers_Echo_h

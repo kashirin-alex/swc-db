@@ -3,35 +3,32 @@
  */
 
 
-#ifndef swc_manager_handlers_ColumnUpdate_h
-#define swc_manager_handlers_ColumnUpdate_h
+#ifndef swc_manager_Protocol_handlers_RgrUpdate_h
+#define swc_manager_Protocol_handlers_RgrUpdate_h
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnUpdate.h"
+#include "swcdb/manager/Protocol/Mngr/params/RgrUpdate.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
+void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Params::ColumnUpdate params;
+    Params::RgrUpdate params;
     params.decode(&ptr, &remain);
       
     conn->response_ok(ev);
-      
-    Env::Mngr::mngd_columns()->update_status(
-      params.function, params.schema, params.err);
+    Env::Mngr::rangers()->update_status(params.hosts, params.sync_all);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 }
-
   
 
 }}}}
 
-#endif // swc_manager_handlers_ColumnUpdate_h
+#endif // swc_manager_Protocol_handlers_RgrUpdate_h

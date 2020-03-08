@@ -6,7 +6,7 @@
 #define swc_manager_MngrRole_h
 
 #include "swcdb/manager/MngrStatus.h"
-#include "swcdb/db/Protocol/Mngr/req/MngrState.h"
+#include "swcdb/manager/Protocol/Mngr/req/MngrState.h"
 
 
 namespace SWC { namespace Manager {

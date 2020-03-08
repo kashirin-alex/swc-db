@@ -3,10 +3,10 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_RgrUpdate_h
-#define swc_lib_db_protocol_req_RgrUpdate_h
+#ifndef swc_manager_Protocol_mngr_req_RgrUpdate_h
+#define swc_manager_Protocol_mngr_req_RgrUpdate_h
 
-#include "swcdb/db/Protocol/Mngr/params/RgrUpdate.h"
+#include "swcdb/manager/Protocol/Mngr/params/RgrUpdate.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
@@ -38,4 +38,4 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_mngr_req_RgrUpdate_h
+#endif // swc_manager_Protocol_mngr_req_RgrUpdate_h

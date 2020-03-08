@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_mngr_params_RgrUpdate_h
-#define swc_db_protocol_mngr_params_RgrUpdate_h
+#ifndef swc_manager_Protocol_mngr_params_RgrUpdate_h
+#define swc_manager_Protocol_mngr_params_RgrUpdate_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -67,4 +67,4 @@ class RgrUpdate : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_rgr_params_rgrUpdate_h
+#endif // swc_manager_Protocol_mngr_params_RgrUpdate_h

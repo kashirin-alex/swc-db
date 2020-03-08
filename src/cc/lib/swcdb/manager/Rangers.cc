@@ -4,6 +4,7 @@
  */
 
 #include "swcdb/manager/Rangers.h"
+#include "swcdb/manager/Protocol/Mngr/req/RgrUpdate.h"
 
 #include "swcdb/db/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeIsLoaded.h"
@@ -11,7 +12,6 @@
 #include "swcdb/db/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnDelete.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrUpdate.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 

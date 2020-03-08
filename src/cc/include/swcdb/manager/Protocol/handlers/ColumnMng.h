@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_manager_handlers_ColumnMng_h
-#define swc_manager_handlers_ColumnMng_h
+#ifndef swc_manager_Protocol_handlers_ColumnMng_h
+#define swc_manager_Protocol_handlers_ColumnMng_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 
@@ -51,4 +51,4 @@ void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_manager_handlers_ColumnMng_h
+#endif // swc_manager_Protocol_handlers_ColumnMng_h

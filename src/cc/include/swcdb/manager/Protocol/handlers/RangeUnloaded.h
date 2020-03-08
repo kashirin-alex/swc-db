@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_manager_handlers_RangeUnloaded_h
-#define swc_manager_handlers_RangeUnloaded_h
+#ifndef swc_manager_Protocol_handlers_RangeUnloaded_h
+#define swc_manager_Protocol_handlers_RangeUnloaded_h
 
 #include "swcdb/db/Protocol/Mngr/params/RangeUnloaded.h"
 
@@ -64,4 +64,4 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_manager_handlers_RangeUnloaded_h
+#endif // swc_manager_Protocol_handlers_RangeUnloaded_h

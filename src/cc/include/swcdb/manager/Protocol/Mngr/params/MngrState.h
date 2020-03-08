@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_Protocol_Mngr_Params_MngrState_h
-#define swc_db_Protocol_Mngr_Params_MngrState_h
+#ifndef swc_manager_Protocol_mngr_params_MngrState_h
+#define swc_manager_Protocol_mngr_params_MngrState_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -61,4 +61,4 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 }}}}
 
-#endif // swc_db_Protocol_Mngr_Params_MngrState_h
+#endif // swc_manager_Protocol_mngr_params_MngrState_h

@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_manager_handlers_MngrActive_h
-#define swc_manager_handlers_MngrActive_h
+#ifndef swc_manager_Protocol_handlers_MngrActive_h
+#define swc_manager_Protocol_handlers_MngrActive_h
 
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.h"
 
@@ -36,4 +36,4 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_manager_handlers_MngrActive_h
+#endif // swc_manager_Protocol_handlers_MngrActive_h
