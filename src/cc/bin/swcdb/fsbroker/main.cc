@@ -13,7 +13,7 @@ namespace SWC {
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx = std::make_shared<server::FsBroker::AppContext>();
+  auto app_ctx = std::make_shared<FsBroker::AppContext>();
 
   auto srv = std::make_shared<server::SerializedServer>(
     "FS-BROKER", 

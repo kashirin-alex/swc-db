@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Open_h
-#define swc_app_fsbroker_handlers_Open_h
+#ifndef swc_fsbroker_handlers_Open_h
+#define swc_fsbroker_handlers_Open_h
 
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void open(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -52,6 +52,6 @@ void open(ConnHandlerPtr conn, Event::Ptr ev) {
 }
   
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Open_h
+#endif // swc_fsbroker_handlers_Open_h

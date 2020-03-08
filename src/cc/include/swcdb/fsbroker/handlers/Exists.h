@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Exists_h
-#define swc_app_fsbroker_handlers_Exists_h
+#ifndef swc_fsbroker_handlers_Exists_h
+#define swc_fsbroker_handlers_Exists_h
 
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void exists(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -48,6 +48,6 @@ void exists(ConnHandlerPtr conn, Event::Ptr ev) {
 }
   
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Exists_h
+#endif // swc_fsbroker_handlers_Exists_h

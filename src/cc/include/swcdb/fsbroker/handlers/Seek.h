@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Seek_h
-#define swc_app_fsbroker_handlers_Seek_h
+#ifndef swc_fsbroker_handlers_Seek_h
+#define swc_fsbroker_handlers_Seek_h
 
 #include "swcdb/fs/Broker/Protocol/params/Seek.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void seek(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -54,6 +54,6 @@ void seek(ConnHandlerPtr conn, Event::Ptr ev) {
 }
   
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Seek_h
+#endif // swc_fsbroker_handlers_Seek_h

@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_fsbroker_AppContext_h
-#define swc_app_fsbroker_AppContext_h
+#ifndef swc_fsbroker_AppContext_h
+#define swc_fsbroker_AppContext_h
 
 #include "swcdb/core/Serialization.h"
 
@@ -35,7 +35,7 @@
 #include "swcdb/fsbroker/handlers/Close.h"
 
 
-namespace SWC { namespace server { namespace FsBroker {
+namespace SWC { namespace FsBroker {
 
 
 class AppContext : public SWC::AppContext {
@@ -94,7 +94,7 @@ class AppContext : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(SerializedServer::Ptr srv){
+  void set_srv(server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -176,9 +176,9 @@ class AppContext : public SWC::AppContext {
   }
 
   private:
-  SerializedServer::Ptr m_srv = nullptr;
+  server::SerializedServer::Ptr m_srv = nullptr;
 };
 
-}}}
+}}
 
-#endif // swc_app_fsbroker_AppContext_h
+#endif // swc_fsbroker_AppContext_h

@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Readdir_h
-#define swc_app_fsbroker_handlers_Readdir_h
+#ifndef swc_fsbroker_handlers_Readdir_h
+#define swc_fsbroker_handlers_Readdir_h
 
 #include "swcdb/fs/Broker/Protocol/params/Readdir.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void readdir(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -47,6 +47,6 @@ void readdir(ConnHandlerPtr conn, Event::Ptr ev) {
 }
 
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Readdir_h
+#endif // swc_fsbroker_handlers_Readdir_h

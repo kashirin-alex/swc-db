@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Sync_h
-#define swc_app_fsbroker_handlers_Sync_h
+#ifndef swc_fsbroker_handlers_Sync_h
+#define swc_fsbroker_handlers_Sync_h
 
 #include "swcdb/fs/Broker/Protocol/params/Sync.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void sync(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -51,6 +51,6 @@ void sync(ConnHandlerPtr conn, Event::Ptr ev) {
 }
   
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Sync_h
+#endif // swc_fsbroker_handlers_Sync_h

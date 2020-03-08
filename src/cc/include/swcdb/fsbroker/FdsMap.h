@@ -2,13 +2,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_fsbroker_FdsMap_h
-#define swc_app_fsbroker_FdsMap_h
+#ifndef swc_fsbroker_FdsMap_h
+#define swc_fsbroker_FdsMap_h
 
 #include <unordered_map>
 #include <shared_mutex>
 
-namespace SWC { namespace server { namespace FsBroker {
+namespace SWC { namespace FsBroker {
 
 class Fds final {
 
@@ -69,7 +69,7 @@ class Fds final {
   std::unordered_map<int32_t, FS::SmartFd::Ptr> m_fds;
 };
 
-}}
+} // namespace FsBroker
 
 
 namespace Env {
@@ -80,12 +80,12 @@ class Fds final {
     m_env = std::make_shared<Fds>();
   }
 
-  static server::FsBroker::Fds::Ptr get(){
+  static FsBroker::Fds::Ptr get(){
     SWC_ASSERT(m_env != nullptr);
     return m_env->m_fds;
   }
 
-  Fds() : m_fds(new server::FsBroker::Fds()) {}
+  Fds() : m_fds(new FsBroker::Fds()) {}
 
   ~Fds(){
     if(m_fds != nullptr)  
@@ -93,11 +93,11 @@ class Fds final {
   }
 
   private:
-  server::FsBroker::Fds::Ptr         m_fds = nullptr;
+  FsBroker::Fds::Ptr         m_fds = nullptr;
   inline static std::shared_ptr<Fds> m_env = nullptr;
 };
-}
 
-}
 
-#endif // swc_app_fsbroker_FdsMap_h
+}}
+
+#endif // swc_fsbroker_FdsMap_h

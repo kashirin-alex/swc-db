@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swc_app_fsbroker_handlers_Length_h
-#define swc_app_fsbroker_handlers_Length_h
+#ifndef swc_fsbroker_handlers_Length_h
+#define swc_fsbroker_handlers_Length_h
 
 #include "swcdb/fs/Broker/Protocol/params/Length.h"
 
 
-namespace SWC { namespace server { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Handler {
 
 
 void length(ConnHandlerPtr conn, Event::Ptr ev) {
@@ -48,6 +48,6 @@ void length(ConnHandlerPtr conn, Event::Ptr ev) {
 }
   
 
-}}}}
+}}}
 
-#endif // swc_app_fsbroker_handlers_Length_h
+#endif // swc_fsbroker_handlers_Length_h
