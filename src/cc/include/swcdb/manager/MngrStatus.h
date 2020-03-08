@@ -2,13 +2,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_MngrStatus_h
-#define swc_app_manager_MngrStatus_h
+#ifndef swc_manager_MngrStatus_h
+#define swc_manager_MngrStatus_h
 
 #include "swcdb/db/Types/MngrState.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class MngrStatus : public Protocol::Common::Params::HostEndPoints {
@@ -86,6 +86,6 @@ typedef std::vector<MngrStatus::Ptr> MngrsStatus;
 
 
 
-}}}
+}}
 
-#endif // swc_app_manager_MngrStatus_h
+#endif // swc_manager_MngrStatus_h

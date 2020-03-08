@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RangeRemove_h
-#define swc_app_manager_handlers_RangeRemove_h
+#ifndef swc_manager_handlers_RangeRemove_h
+#define swc_manager_handlers_RangeRemove_h
 
 #include "swcdb/db/Protocol/Mngr/params/RangeRemove.h"
 
@@ -56,4 +56,4 @@ void range_remove(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RangeRemove_h
+#endif // swc_manager_handlers_RangeRemove_h

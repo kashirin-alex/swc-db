@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RgrGet_h
-#define swc_app_manager_handlers_RgrGet_h
+#ifndef swc_manager_handlers_RgrGet_h
+#define swc_manager_handlers_RgrGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 
@@ -33,7 +33,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
     if(rsp_params.err != Error::OK)
       goto send_response;
     
-    server::Mngr::Range::Ptr range;
+    Manager::Range::Ptr range;
     if(!params.rid) {
       range = col->get_range(
         rsp_params.err, 
@@ -94,4 +94,4 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RgrGet_h
+#endif // swc_manager_handlers_RgrGet_h

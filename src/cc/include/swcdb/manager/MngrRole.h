@@ -2,14 +2,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_MngrRole_h
-#define swc_app_manager_MngrRole_h
+#ifndef swc_manager_MngrRole_h
+#define swc_manager_MngrRole_h
 
 #include "swcdb/manager/MngrStatus.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrState.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class MngrRole final {
@@ -100,5 +100,5 @@ class MngrRole final {
 
 
 
-}}}
-#endif // swc_app_manager_MngrRole_h
+}}
+#endif // swc_manager_MngrRole_h

@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_MngrActive_h
-#define swc_app_manager_handlers_MngrActive_h
+#ifndef swc_manager_handlers_MngrActive_h
+#define swc_manager_handlers_MngrActive_h
 
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.h"
 
@@ -20,7 +20,7 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::MngrActiveReq params;
     params.decode(&ptr, &remain);
 
-    server::Mngr::MngrStatus::Ptr h = Env::Mngr::role()->active_mngr(
+    Manager::MngrStatus::Ptr h = Env::Mngr::role()->active_mngr(
       params.begin, params.end);
 
     auto cbp = CommBuf::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
@@ -36,4 +36,4 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_MngrActive_h
+#endif // swc_manager_handlers_MngrActive_h

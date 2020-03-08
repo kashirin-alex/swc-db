@@ -3,13 +3,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_Rangers_h
-#define swc_lib_manager_Rangers_h
+#ifndef swc_manager_Rangers_h
+#define swc_manager_Rangers_h
 
 #include "swcdb/manager/Ranger.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 
@@ -94,6 +94,6 @@ class Rangers final {
   
 };
 
-}}}
+}}
 
-#endif // swc_lib_manager_Rangers_h
+#endif // swc_manager_Rangers_h

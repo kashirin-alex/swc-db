@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_ColumnUpdate_h
-#define swc_app_manager_handlers_ColumnUpdate_h
+#ifndef swc_manager_handlers_ColumnUpdate_h
+#define swc_manager_handlers_ColumnUpdate_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnUpdate.h"
 
@@ -34,4 +34,4 @@ void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_ColumnUpdate_h
+#endif // swc_manager_handlers_ColumnUpdate_h

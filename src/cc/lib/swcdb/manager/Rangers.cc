@@ -17,7 +17,7 @@
 
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 Rangers::Rangers()
@@ -589,7 +589,7 @@ void Rangers::changes(RangerList& hosts, bool sync_all) {
 
 
 
-}} // namespace server
+} // namespace Manager
 
 
 namespace Protocol { namespace Rgr { namespace Req { 

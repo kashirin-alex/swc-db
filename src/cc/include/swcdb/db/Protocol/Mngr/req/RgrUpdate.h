@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
 
-  RgrUpdate(server::Mngr::RangerList &hosts, bool sync_all) {
+  RgrUpdate(Manager::RangerList &hosts, bool sync_all) {
     cbp = CommBuf::make(Params::RgrUpdate(hosts, sync_all));
     cbp->header.set(RGR_UPDATE, 60000);
   }

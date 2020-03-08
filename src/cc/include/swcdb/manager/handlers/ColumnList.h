@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_ColumnList_h
-#define swc_app_manager_handlers_ColumnList_h
+#ifndef swc_manager_handlers_ColumnList_h
+#define swc_manager_handlers_ColumnList_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
 
@@ -46,4 +46,4 @@ void column_list(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_ColumnList_h
+#endif // swc_manager_handlers_ColumnList_h

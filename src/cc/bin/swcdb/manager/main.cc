@@ -13,7 +13,7 @@ namespace SWC {
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx  = std::make_shared<server::Mngr::AppContext>();
+  auto app_ctx  = std::make_shared<Manager::AppContext>();
 
   auto srv = std::make_shared<server::SerializedServer>(
     "MANAGER", 

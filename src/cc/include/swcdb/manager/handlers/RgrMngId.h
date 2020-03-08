@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RgrMngId_h
-#define swc_app_manager_handlers_RgrMngId_h
+#ifndef swc_manager_handlers_RgrMngId_h
+#define swc_manager_handlers_RgrMngId_h
 
 #include "swcdb/db/Protocol/Mngr/params/RgrMngId.h"
 
@@ -116,4 +116,4 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RgrMngId
+#endif // swc_manager_handlers_RgrMngId

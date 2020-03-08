@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RangeCreate_h
-#define swc_app_manager_handlers_RangeCreate_h
+#ifndef swc_manager_handlers_RangeCreate_h
+#define swc_manager_handlers_RangeCreate_h
 
 #include "swcdb/db/Protocol/Mngr/params/RangeCreate.h"
 
@@ -57,4 +57,4 @@ void range_create(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RangeCreate_h
+#endif // swc_manager_handlers_RangeCreate_h

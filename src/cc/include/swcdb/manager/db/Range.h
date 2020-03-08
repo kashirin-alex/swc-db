@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_MNGR_Range_h
-#define swcdb_lib_db_Columns_MNGR_Range_h
+#ifndef swc_manager_db_Range_h
+#define swc_manager_db_Range_h
 
 #include <random>
 
@@ -12,7 +12,7 @@
 
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class Range : public DB::RangeBase {
@@ -123,5 +123,5 @@ class Range : public DB::RangeBase {
 
 
 
-}}}
-#endif
+}}
+#endif // swc_manager_db_Range_h

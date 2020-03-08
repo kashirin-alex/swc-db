@@ -3,19 +3,19 @@
  */
 
 
-#ifndef swcdb_lib_db_Mngr_Columns_Columns_h
-#define swcdb_lib_db_Mngr_Columns_Columns_h
+#ifndef swc_manager_db_Columns_h
+#define swc_manager_db_Columns_h
 
 #include "swcdb/fs/Interface.h"
 
-#include "swcdb/db/Columns/Mngr/ColumnCfg.h"
-#include "swcdb/db/Columns/Mngr/Column.h"
+#include "swcdb/manager/db/ColumnCfg.h"
+#include "swcdb/manager/db/Column.h"
 
 #include <memory>
 #include <unordered_map>
 #include <iostream>
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
 
@@ -143,6 +143,6 @@ class Columns final {
 
 };
 
-}}} // namespace SWC::server::Mngr
+}} // namespace SWC::Manager
 
-#endif
+#endif // swc_manager_db_Columns_h

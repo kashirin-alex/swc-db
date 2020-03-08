@@ -16,7 +16,7 @@ class RgrUpdate : public Serializable {
 
     RgrUpdate() {}
 
-    RgrUpdate(server::Mngr::RangerList hosts, bool sync_all) 
+    RgrUpdate(Manager::RangerList hosts, bool sync_all) 
               : hosts(hosts), sync_all(sync_all) {}
 
     std::string to_string() const {
@@ -28,7 +28,7 @@ class RgrUpdate : public Serializable {
       return s;
     }
 
-    server::Mngr::RangerList hosts;
+    Manager::RangerList hosts;
     bool sync_all;
 
   private:
@@ -58,7 +58,7 @@ class RgrUpdate : public Serializable {
       hosts.clear();
       hosts.resize(len);
       for(size_t i =0; i<len; i++)
-        (hosts[i] = std::make_shared<server::Mngr::Ranger>())
+        (hosts[i] = std::make_shared<Manager::Ranger>())
           ->decode(bufp, remainp);
     }
 

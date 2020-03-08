@@ -15,11 +15,11 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
     MngrState() {}
 
-    MngrState(server::Mngr::MngrsStatus states, 
+    MngrState(Manager::MngrsStatus states, 
               uint64_t token, const EndPoint& mngr_host) 
               : states(states), token(token), mngr_host(mngr_host){}
 
-    server::Mngr::MngrsStatus states;
+    Manager::MngrsStatus states;
     uint64_t token;
     EndPoint mngr_host;
 
@@ -52,7 +52,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
       states.clear();
       states.resize(len);
       for(size_t i =0; i<len; i++)
-        (states[i] = std::make_shared<server::Mngr::MngrStatus>())
+        (states[i] = std::make_shared<Manager::MngrStatus>())
           ->decode(bufp, remainp);
     }
 

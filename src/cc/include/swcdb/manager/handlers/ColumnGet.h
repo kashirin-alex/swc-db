@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_ColumnGet_h
-#define swc_app_manager_handlers_ColumnGet_h
+#ifndef swc_manager_handlers_ColumnGet_h
+#define swc_manager_handlers_ColumnGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrColumnGet.h"
@@ -100,4 +100,4 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_ColumnGet_h
+#endif // swc_manager_handlers_ColumnGet_h

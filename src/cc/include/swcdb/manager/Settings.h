@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_Settings_h
-#define swc_app_manager_Settings_h
+#ifndef swc_manager_Settings_h
+#define swc_manager_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -70,4 +70,4 @@ void Settings::init_post_cmd_args(){ }
 
 }}
 
-#endif // swc_app_manager_Settings_h
+#endif // swc_manager_Settings_h

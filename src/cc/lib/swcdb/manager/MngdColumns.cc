@@ -7,7 +7,7 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnUpdate.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 
@@ -569,4 +569,4 @@ void MngdColumns::actions_run() {
 
 
 
-}}} // namespace server
+}} // namespace Manager

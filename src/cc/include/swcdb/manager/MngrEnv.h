@@ -2,11 +2,11 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_MngrEnv_h
-#define swc_app_manager_MngrEnv_h
+#ifndef swc_manager_MngrEnv_h
+#define swc_manager_MngrEnv_h
 
 #include "swcdb/db/Columns/Schemas.h"
-#include "swcdb/db/Columns/Mngr/Columns.h"
+#include "swcdb/manager/db/Columns.h"
 
 #include "swcdb/manager/MngrRole.h"
 #include "swcdb/manager/Rangers.h"
@@ -26,19 +26,19 @@ class Mngr final {
     return &m_env->m_schemas;
   }
 
-  static server::Mngr::Columns* columns() {
+  static Manager::Columns* columns() {
     return &m_env->m_columns;
   }
 
-  static server::Mngr::MngrRole* role() {
+  static Manager::MngrRole* role() {
     return &m_env->m_role;
   }
 
-  static server::Mngr::Rangers* rangers() {
+  static Manager::Rangers* rangers() {
     return &m_env->m_rangers;
   }
   
-  static server::Mngr::MngdColumns* mngd_columns() {
+  static Manager::MngdColumns* mngd_columns() {
     return &m_env->m_mngd_columns;
   }
 
@@ -55,10 +55,10 @@ class Mngr final {
 
   inline static std::shared_ptr<Mngr> m_env = nullptr;
   DB::Schemas                         m_schemas;
-  server::Mngr::Columns               m_columns;
-  server::Mngr::MngrRole              m_role;
-  server::Mngr::Rangers               m_rangers;
-  server::Mngr::MngdColumns           m_mngd_columns;
+  Manager::Columns                    m_columns;
+  Manager::MngrRole                   m_role;
+  Manager::Rangers                    m_rangers;
+  Manager::MngdColumns                m_mngd_columns;
   
 };
 
@@ -81,4 +81,4 @@ void Mngr::stop() {
 
 }} 
 
-#endif // swc_app_manager_MngrEnv_h
+#endif // swc_manager_MngrEnv_h

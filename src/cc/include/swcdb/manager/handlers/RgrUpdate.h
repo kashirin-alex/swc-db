@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RgrUpdate_h
-#define swc_app_manager_handlers_RgrUpdate_h
+#ifndef swc_manager_handlers_RgrUpdate_h
+#define swc_manager_handlers_RgrUpdate_h
 
 #include "swcdb/db/Protocol/Mngr/params/RgrUpdate.h"
 
@@ -31,4 +31,4 @@ void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RgrUpdate_h
+#endif // swc_manager_handlers_RgrUpdate_h

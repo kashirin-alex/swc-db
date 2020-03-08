@@ -3,14 +3,14 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_MngdColumns_h
-#define swc_lib_manager_MngdColumns_h
+#ifndef swc_manager_MngdColumns_h
+#define swc_manager_MngdColumns_h
 
-#include "swcdb/db/Files/Schema.h"
+#include "swcdb/manager/db/Schema.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 
@@ -112,6 +112,6 @@ class MngdColumns final {
 };
 
 
-}}} // namespace server
+}} // namespace SWC::Manager
 
-#endif // swc_lib_manager_MngdColumns_h
+#endif // swc_manager_MngdColumns_h

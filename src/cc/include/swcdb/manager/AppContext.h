@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_manager_AppContext_h
-#define swc_app_manager_AppContext_h
+#ifndef swc_manager_AppContext_h
+#define swc_manager_AppContext_h
 
 #include "swcdb/db/Protocol/Commands.h"
 
@@ -35,7 +35,7 @@
 #include "swcdb/manager/handlers/Echo.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class AppContext : public SWC::AppContext {
@@ -100,7 +100,7 @@ class AppContext : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(SerializedServer::Ptr srv){
+  void set_srv(server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -189,12 +189,12 @@ class AppContext : public SWC::AppContext {
   }
 
   private:
-  SerializedServer::Ptr m_srv = nullptr;
+  server::SerializedServer::Ptr m_srv = nullptr;
   //ColmNameToIDMap columns;       // column-name > CID
 
 
 };
 
-}}}
+}}
 
-#endif // swc_app_manager_AppContext_h
+#endif // swc_manager_AppContext_h

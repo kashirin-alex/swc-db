@@ -5,7 +5,7 @@
 #include "swcdb/manager/MngrRole.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 MngrRole::MngrRole(const EndPoints& endpoints)
@@ -494,7 +494,7 @@ void MngrRole::set_mngr_inchain(ConnHandlerPtr mngr) {
 }
 
 
-}} // server namespace
+} // namespace Manager
 
 
 namespace Protocol { namespace Mngr {namespace Req {

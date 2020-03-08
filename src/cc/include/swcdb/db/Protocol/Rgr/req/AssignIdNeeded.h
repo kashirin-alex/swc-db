@@ -12,9 +12,9 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class AssignIdNeeded : public client::ConnQueue::ReqBase {
   public:
 
-  AssignIdNeeded(server::Mngr::Ranger::Ptr rs_chk, 
-                 server::Mngr::Ranger::Ptr rs_nxt, 
-                 server::Mngr::Range::Ptr range) 
+  AssignIdNeeded(Manager::Ranger::Ptr rs_chk, 
+                 Manager::Ranger::Ptr rs_nxt, 
+                 Manager::Range::Ptr range) 
                 : client::ConnQueue::ReqBase(false), 
                   rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
     cbp = CommBuf::make();
@@ -51,11 +51,11 @@ class AssignIdNeeded : public client::ConnQueue::ReqBase {
   void rsp(int err);
 
 
-  server::Mngr::Ranger::Ptr rs_nxt;
-  server::Mngr::Range::Ptr  range;
+  Manager::Ranger::Ptr rs_nxt;
+  Manager::Range::Ptr  range;
   private:
 
-  server::Mngr::Ranger::Ptr rs_chk;
+  Manager::Ranger::Ptr rs_chk;
 };
 
 }}}}

@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Files_Schema_h
-#define swcdb_db_Files_Schema_h
+#ifndef swc_manager_db_Schema_h
+#define swc_manager_db_Schema_h
 
 #include "swcdb/core/Checksum.h"
 
@@ -160,4 +160,4 @@ void save_with_validation(int &err, DB::Schema::Ptr schema_save,
 
 }}}
 
-#endif
+#endif // swc_manager_db_Schema_h

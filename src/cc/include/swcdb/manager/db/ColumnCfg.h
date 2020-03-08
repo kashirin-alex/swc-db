@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_ColumnCfg_h
-#define swcdb_lib_db_Columns_Rgr_ColumnCfg_h
+#ifndef swc_manager_db_ColumnCfg_h
+#define swc_manager_db_ColumnCfg_h
 
 namespace SWC { namespace DB { 
 
@@ -27,4 +27,4 @@ class ColumnCfg final {
 
 }}
 
-#endif
+#endif // swc_manager_db_ColumnCfg_h

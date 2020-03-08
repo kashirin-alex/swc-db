@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_manager_handlers_RangeUnloaded_h
-#define swc_app_manager_handlers_RangeUnloaded_h
+#ifndef swc_manager_handlers_RangeUnloaded_h
+#define swc_manager_handlers_RangeUnloaded_h
 
 #include "swcdb/db/Protocol/Mngr/params/RangeUnloaded.h"
 
@@ -41,7 +41,7 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
     auto range = col->get_range(rsp_params.err, params.rid);
     if(rsp_params.err || range == nullptr)
       goto send_response;
-    range->set_state(server::Mngr::Range::State::NOTSET, 0);
+    range->set_state(Manager::Range::State::NOTSET, 0);
     
     Env::Mngr::rangers()->schedule_assignment_check(1);
 
@@ -64,4 +64,4 @@ void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_manager_handlers_RangeUnloaded_h
+#endif // swc_manager_handlers_RangeUnloaded_h

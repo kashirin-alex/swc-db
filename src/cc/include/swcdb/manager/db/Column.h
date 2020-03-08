@@ -3,15 +3,15 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_MNGR_Column_h
-#define swcdb_lib_db_Columns_MNGR_Column_h
+#ifndef swc_manager_db_Column_h
+#define swc_manager_db_Column_h
 
-#include "swcdb/db/Columns/Mngr/Range.h"
+#include "swcdb/manager/db/Range.h"
 
 #include <memory>
 #include <unordered_map>
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class Column final {
@@ -383,6 +383,6 @@ class Column final {
 
 };
 
-}}}
+}}
 
-#endif
+#endif // swc_manager_db_Column_h

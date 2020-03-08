@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 class MngrState : public client::ConnQueue::ReqBase {
   public:
 
-  MngrState(ResponseCallback::Ptr cb, server::Mngr::MngrsStatus &states, 
+  MngrState(ResponseCallback::Ptr cb, Manager::MngrsStatus &states, 
             uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
             : cb(cb) {
     cbp = CommBuf::make(Params::MngrState(states, token, mngr_host));

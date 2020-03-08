@@ -3,13 +3,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_manager_Ranger_h
-#define swc_lib_manager_Ranger_h
+#ifndef swc_manager_Ranger_h
+#define swc_manager_Ranger_h
 
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 
-namespace SWC { namespace server { namespace Mngr {
+namespace SWC { namespace Manager {
 
 
 class Ranger : public Protocol::Common::Params::HostEndPoints {
@@ -112,6 +112,6 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 };
 typedef std::vector<Ranger::Ptr>  RangerList;
 
-}}}
+}}
 
-#endif // swc_lib_manager_Ranger_h
+#endif // swc_manager_Ranger_h
