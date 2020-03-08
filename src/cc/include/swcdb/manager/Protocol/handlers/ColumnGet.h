@@ -7,7 +7,7 @@
 #define swc_manager_Protocol_handlers_ColumnGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
-#include "swcdb/db/Protocol/Mngr/req/MngrColumnGet.h"
+#include "swcdb/manager/Protocol/Mngr/req/MngrColumnGet.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 

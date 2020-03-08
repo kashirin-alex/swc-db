@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_req_MngrColumnGet_h
-#define swc_lib_db_protocol_req_MngrColumnGet_h
+#ifndef swc_manager_Protocol_mngr_req_MngrColumnGet_h
+#define swc_manager_Protocol_mngr_req_MngrColumnGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 
@@ -54,4 +54,4 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_req_MngrColumnGet_h
+#endif // swc_manager_Protocol_mngr_req_MngrColumnGet_h
