@@ -6,7 +6,6 @@
 #define swc_lib_ranger_callbacks_RangeLocateScan_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
-#include "swcdb/db/Cells/ReqScan.h"
 
 namespace SWC {
 namespace server {
@@ -14,7 +13,7 @@ namespace Rgr {
 namespace Callback {
 
 
-class RangeLocateScan : public DB::Cells::ReqScan {
+class RangeLocateScan : public ReqScan {
   public:
 
   typedef std::shared_ptr<RangeLocateScan> Ptr;
@@ -23,7 +22,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
                   const DB::Specs::Interval& spec, 
                   DB::Cells::Vector& cells,
                   Range::Ptr range, uint8_t flags)
-                  : DB::Cells::ReqScan(conn, ev, spec, cells), 
+                  : ReqScan(conn, ev, spec, cells), 
                     range(range), flags(flags),
                     any_is(range->type != Types::Range::DATA) {                
     //std::cout << "************************************************\n";    
@@ -119,7 +118,7 @@ class RangeLocateScan : public DB::Cells::ReqScan {
   }
 
   void response(int &err) override {
-    if(!DB::Cells::ReqScan::ready(err))
+    if(!ReqScan::ready(err))
       return;
       
     if(!err) {

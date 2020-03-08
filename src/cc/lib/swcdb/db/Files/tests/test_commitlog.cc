@@ -21,7 +21,7 @@ void count_all_cells(size_t num_cells,
   std::cout << " count_all_cells: \n";
   std::atomic<int> chk = 1;
   
-  auto req = DB::Cells::ReqScanTest::make();
+  auto req = server::Rgr::ReqScanTest::make();
   req->cells.reset(
     blocks.range->cfg->cell_versions(), 
     0, 
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
   std::atomic<int> chk = num_chks;
   for(int i = 1;i<=num_chks; i++){
     
-    auto req = DB::Cells::ReqScanTest::make();
+    auto req = server::Rgr::ReqScanTest::make();
     req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     

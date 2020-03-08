@@ -55,7 +55,7 @@ class Blocks final {
 
   void add_logged(const DB::Cells::Cell& cell);
 
-  void scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
+  void scan(server::Rgr::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 
   void split(Block::Ptr blk, bool loaded=true);
 

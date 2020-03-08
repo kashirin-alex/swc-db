@@ -11,12 +11,11 @@
 
 #include "swcdb/fs/Interface.h"
 
-#include "swcdb/db/Cells/ReqScan.h"
 #include "swcdb/db/Cells/Mutable.h"
-#include "swcdb/db/Cells/Interval.h"
 
 #include "swcdb/db/Columns/Rgr/ColumnCfg.h"
 #include "swcdb/db/Columns/RangeBase.h"
+#include "swcdb/db/Columns/Rgr/ReqScan.h"
 
 
 
@@ -77,7 +76,7 @@ class Block final {
 
   const bool splitter();
 
-  const bool scan(DB::Cells::ReqScan::Ptr req);
+  const bool scan(server::Rgr::ReqScan::Ptr req);
   
   void loaded(int err);
   
@@ -131,7 +130,7 @@ class Block final {
   
   private:
 
-  const bool _scan(DB::Cells::ReqScan::Ptr req, bool synced=false);
+  const bool _scan(server::Rgr::ReqScan::Ptr req, bool synced=false);
 
   void run_queue(int& err);
 
@@ -144,7 +143,7 @@ class Block final {
   State                                m_state;
   uint8_t                              m_load_require;
   std::atomic<size_t>                  m_processing;
-  std::queue<DB::Cells::ReqScan::Ptr>  m_queue;
+  std::queue<server::Rgr::ReqScan::Ptr>  m_queue;
 
 };
 

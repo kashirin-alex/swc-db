@@ -165,7 +165,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
 
   std::cout << blocks.to_string() << "\n";
 
-  auto req = Cells::ReqScanTest::make();
+  auto req = SWC::server::Rgr::ReqScanTest::make();
   req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
   req->spec.flags.limit = num_cells*group_fractions;
   
@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
     threads.push_back(new std::thread(
       [&blocks, match_on_offset, &match_key, id] () {
 
-      auto req = Cells::ReqScanTest::make();
+      auto req = SWC::server::Rgr::ReqScanTest::make();
       req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;

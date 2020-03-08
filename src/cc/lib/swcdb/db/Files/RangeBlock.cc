@@ -77,8 +77,8 @@ void Block::preload() {
     *Env::IoCtx::io()->ptr(), 
     [ptr=ptr()](){ 
       ptr->scan(
-        std::make_shared<DB::Cells::ReqScan>(
-          DB::Cells::ReqScan::Type::BLK_PRELOAD)
+        std::make_shared<server::Rgr::ReqScan>(
+          server::Rgr::ReqScan::Type::BLK_PRELOAD)
       );
     }
   );
@@ -208,7 +208,7 @@ const bool Block::splitter() {
   return blocks->_split(ptr(), false);
 }
 
-const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
+const bool Block::scan(server::Rgr::ReqScan::Ptr req) {
   bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
@@ -222,7 +222,7 @@ const bool Block::scan(DB::Cells::ReqScan::Ptr req) {
   }
 
   if(loaded) {
-    if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) {
+    if(req->type == server::Rgr::ReqScan::Type::BLK_PRELOAD) {
       processing_decrement();
       return false;
     }
@@ -420,7 +420,7 @@ const std::string Block::to_string() {
   return s;
 }
 
-const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
+const bool Block::_scan(server::Rgr::ReqScan::Ptr req, bool synced) {
   {
     size_t skips = 0; // Ranger::Stats
     std::shared_lock lock(m_mutex);
@@ -451,13 +451,13 @@ const bool Block::_scan(DB::Cells::ReqScan::Ptr req, bool synced) {
 
 void Block::run_queue(int& err) {
 
-  for(DB::Cells::ReqScan::Ptr req; ; ) {
+  for(server::Rgr::ReqScan::Ptr req; ; ) {
     {
       std::shared_lock lock(m_mutex_state);
       req = m_queue.front();
     }
         
-    if(req->type == DB::Cells::ReqScan::Type::BLK_PRELOAD) {
+    if(req->type == server::Rgr::ReqScan::Type::BLK_PRELOAD) {
       processing_decrement();
 
     } else if(err) {

@@ -174,7 +174,7 @@ class Compaction final {
     range->scan_internal(req);
   }
 
-  class CompactScan : public DB::Cells::ReqScan {
+  class CompactScan : public ReqScan {
     public:
   
     typedef std::shared_ptr<CompactScan>          Ptr;

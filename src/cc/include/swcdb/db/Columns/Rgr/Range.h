@@ -106,7 +106,7 @@ class Range : public DB::RangeBase {
     }
   }
 
-  void scan(DB::Cells::ReqScan::Ptr req) {
+  void scan(ReqScan::Ptr req) {
     if(wait() && !is_loaded()) {
       int err = Error::RS_NOT_LOADED_RANGE;
       req->response(err);
@@ -115,7 +115,7 @@ class Range : public DB::RangeBase {
     blocks.scan(req);
   }
 
-  void scan_internal(DB::Cells::ReqScan::Ptr req) {
+  void scan_internal(ReqScan::Ptr req) {
     blocks.scan(req);
   }
 

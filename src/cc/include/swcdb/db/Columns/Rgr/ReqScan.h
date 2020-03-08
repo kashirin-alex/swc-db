@@ -3,14 +3,14 @@
  */
 
 
-#ifndef swcdb_db_Cells_ReqScan_h
-#define swcdb_db_Cells_ReqScan_h
+#ifndef swcdb_lib_db_Columns_Rgr_ReqScan_h
+#define swcdb_lib_db_Columns_Rgr_ReqScan_h
 
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Cells/Vector.h"
 
-namespace SWC { namespace DB { namespace Cells {
+namespace SWC { namespace server { namespace Rgr {
   
 class ReqScan  : public ResponseCallback {
 
@@ -29,7 +29,7 @@ class ReqScan  : public ResponseCallback {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const Specs::Interval& spec, Vector& cells)
+          const DB::Specs::Interval& spec, DB::Cells::Vector& cells)
           : ResponseCallback(conn, ev), spec(spec), 
             cells(cells),
             offset(spec.flags.offset), limit_buffer_sz(0), 
@@ -42,7 +42,7 @@ class ReqScan  : public ResponseCallback {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  virtual const Mutable::Selector_t selector() {
+  virtual const DB::Cells::Mutable::Selector_t selector() {
     return [req=get_req_scan()] 
             (const DB::Cells::Cell& cell, bool& stop) 
             { return req->selector(cell, stop); };
@@ -85,8 +85,8 @@ class ReqScan  : public ResponseCallback {
     return s;
   }
 
-  Specs::Interval   spec;
-  Vector            cells;
+  DB::Specs::Interval   spec;
+  DB::Cells::Vector     cells;
 
   uint32_t          limit_buffer_sz;
   bool              drop_caches;
@@ -109,7 +109,7 @@ class ReqScanTest : public ReqScan {
   virtual ~ReqScanTest() { }
 
   void response(int &err) override {
-    if(!DB::Cells::ReqScan::ready(err))
+    if(!ReqScan::ready(err))
       return;
     cb(err);
   }

@@ -110,7 +110,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   processing_decrement();
 }
 
-void Blocks::scan(DB::Cells::ReqScan::Ptr req, Block::Ptr blk_ptr) {
+void Blocks::scan(server::Rgr::ReqScan::Ptr req, Block::Ptr blk_ptr) {
   if(!blk_ptr)
     processing_increment();
 

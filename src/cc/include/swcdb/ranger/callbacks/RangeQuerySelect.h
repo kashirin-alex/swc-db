@@ -6,7 +6,6 @@
 #define swc_lib_ranger_callbacks_RangeQuerySelect_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
-#include "swcdb/db/Cells/ReqScan.h"
 
 namespace SWC {
 namespace server {
@@ -14,14 +13,14 @@ namespace Rgr {
 namespace Callback {
 
 
-class RangeQuerySelect : public DB::Cells::ReqScan {
+class RangeQuerySelect : public ReqScan {
   public:
 
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
                    const DB::Specs::Interval& spec, 
                    DB::Cells::Vector& cells, 
                    Range::Ptr range, uint32_t limit_buffer)
-                  : DB::Cells::ReqScan(conn, ev, spec, cells), 
+                  : ReqScan(conn, ev, spec, cells), 
                     range(range) {
     limit_buffer_sz = limit_buffer;
   }
@@ -29,7 +28,7 @@ class RangeQuerySelect : public DB::Cells::ReqScan {
   virtual ~RangeQuerySelect() { }
 
   void response(int &err) override {
-    if(!DB::Cells::ReqScan::ready(err))
+    if(!ReqScan::ready(err))
       return;
       
     if(err == Error::OK) {
