@@ -101,7 +101,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/core/comm/ClientConnQueues.cc"
+#include "swcdb/core/comm/ClientConnQueue.cc"
 #endif 
 
 

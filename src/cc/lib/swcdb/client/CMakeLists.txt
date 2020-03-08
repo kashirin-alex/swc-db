@@ -10,6 +10,8 @@ set(swcdb_client_sources
 	AppContext.cc
 	rgr/Rangers.cc
 	mngr/Groups.cc
+	requests/Query/Update.cc
+	requests/Query/Select.cc
 	sql/SQL.cc
 	sql/Reader.cc
 	sql/ColumnList.cc

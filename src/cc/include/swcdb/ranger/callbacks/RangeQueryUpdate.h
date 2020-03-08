@@ -6,6 +6,7 @@
 #define swc_lib_ranger_callbacks_RangeQueryUpdate_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
+#include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 
 namespace SWC {
 namespace server {
