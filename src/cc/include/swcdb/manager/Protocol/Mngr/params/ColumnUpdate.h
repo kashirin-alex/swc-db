@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_mngr_params_ColumnUpdate_h
-#define swc_lib_db_protocol_mngr_params_ColumnUpdate_h
+#ifndef swc_manager_Protocol_mngr_params_ColumnUpdate_h
+#define swc_manager_Protocol_mngr_params_ColumnUpdate_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -66,4 +66,4 @@ class ColumnUpdate : public Serializable {
 
 }}}}
 
-#endif // swc_lib_db_protocol_mngr_params_ColumnUpdate_h
+#endif // swc_manager_Protocol_mngr_params_ColumnUpdate_h

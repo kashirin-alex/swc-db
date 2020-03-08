@@ -6,7 +6,7 @@
 #ifndef swc_manager_Protocol_handlers_ColumnUpdate_h
 #define swc_manager_Protocol_handlers_ColumnUpdate_h
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnUpdate.h"
+#include "swcdb/manager/Protocol/Mngr/params/ColumnUpdate.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {

@@ -4,7 +4,7 @@
  */
 
 #include "swcdb/manager/MngdColumns.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnUpdate.h"
+#include "swcdb/manager/Protocol/Mngr/req/ColumnUpdate.h"
 
 
 namespace SWC { namespace Manager {
