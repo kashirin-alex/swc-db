@@ -3,13 +3,13 @@
  */
 
 
-#include "swcdb/db/Files/RangeBlockLoader.h"
+#include "swcdb/ranger/db/RangeBlockLoader.h"
 
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger {
 
 
-BlockLoader::BlockLoader(Range::Block::Ptr block) 
+BlockLoader::BlockLoader(Block::Ptr block) 
                         : block(block),  
                           m_processing(false), m_err(Error::OK), 
                           m_chk_cs(false), m_checking_log(true), m_frag_ts(0) {
@@ -191,4 +191,4 @@ void BlockLoader::completion() {
 
 
 
-}}}
+}}

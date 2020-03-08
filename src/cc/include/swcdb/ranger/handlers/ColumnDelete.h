@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_ColumnDelete_h
-#define swc_app_ranger_handlers_ColumnDelete_h
+#ifndef swc_ranger_handlers_ColumnDelete_h
+#define swc_ranger_handlers_ColumnDelete_h
 
 #include "swcdb/db/Protocol/Common/params/ColumnId.h"
 
@@ -38,4 +38,4 @@ void column_delete(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_ColumnDelete_h
+#endif // swc_ranger_handlers_ColumnDelete_h

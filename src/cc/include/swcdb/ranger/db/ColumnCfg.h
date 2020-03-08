@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_ColumnCfg_h
-#define swcdb_lib_db_Columns_Rgr_ColumnCfg_h
+#ifndef swc_ranger_db_ColumnCfg_h
+#define swc_ranger_db_ColumnCfg_h
 
 #include "swcdb/db/Columns/Schema.h"
 
@@ -162,4 +162,4 @@ class ColumnCfg final {
 
 }}
 
-#endif
+#endif // swc_ranger_db_ColumnCfg_h

@@ -3,23 +3,23 @@
  */
 
 
-#ifndef swcdb_db_Files_BlockLoader_h
-#define swcdb_db_Files_BlockLoader_h
+#ifndef swc_ranger_db_BlockLoader_h
+#define swc_ranger_db_BlockLoader_h
 
-#include "swcdb/db/Files/RangeBlock.h"
-#include "swcdb/db/Files/CellStoreBlock.h"
-#include "swcdb/db/Files/CommitLogFragment.h"
+#include "swcdb/ranger/db/RangeBlock.h"
+#include "swcdb/ranger/db/CellStoreBlock.h"
+#include "swcdb/ranger/db/CommitLogFragment.h"
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger { 
 
 
 class BlockLoader final {
   public:
   static const uint8_t MAX_FRAGMENTS = 3;
 
-  Range::Block::Ptr     block;
+  Block::Ptr     block;
 
-  BlockLoader(Range::Block::Ptr block);
+  BlockLoader(Block::Ptr block);
 
   ~BlockLoader();
 
@@ -58,6 +58,6 @@ class BlockLoader final {
 
 
 
-}}}
+}}
 
-#endif
+#endif // swc_ranger_db_BlockLoader_h

@@ -3,9 +3,9 @@
  */
 
 
-#include "swcdb/db/Files/RangeBlocks.h"
+#include "swcdb/ranger/db/RangeBlocks.h"
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger {
 
 
 Blocks::Blocks() : m_block(nullptr), m_processing(0) { }
@@ -110,7 +110,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   processing_decrement();
 }
 
-void Blocks::scan(server::Rgr::ReqScan::Ptr req, Block::Ptr blk_ptr) {
+void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   if(!blk_ptr)
     processing_increment();
 
@@ -295,7 +295,7 @@ void Blocks::wait_processing() {
 const std::string Blocks::to_string(){
   std::scoped_lock lock(m_mutex);
 
-  std::string s("Range::Blocks(count=");
+  std::string s("Blocks(count=");
   s.append(std::to_string(_size()));
 
   s.append(" blocks=[");
@@ -397,4 +397,4 @@ void Blocks::init_blocks(int& err) {
 
 
 
-}}}
+}}

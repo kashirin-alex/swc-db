@@ -9,15 +9,15 @@
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/core/comm/ResponseCallback.h"
 
-#include "swcdb/db/Columns/Rgr/ColumnCfg.h"
-#include "swcdb/db/Columns/Rgr/Callbacks.h"
-#include "swcdb/db/Columns/Rgr/Column.h"
+#include "swcdb/ranger/db/ColumnCfg.h"
+#include "swcdb/ranger/db/Callbacks.h"
+#include "swcdb/ranger/db/Column.h"
 
 #include <memory>
 #include <unordered_map>
 #include <iostream>
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
 
 typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
 
@@ -201,7 +201,6 @@ class Columns final {
 
 };
 
-}} // namespace server::Rgr
+}} // namespace SWC::Ranger
 
-}
 #endif

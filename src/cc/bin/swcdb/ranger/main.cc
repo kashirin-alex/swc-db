@@ -13,7 +13,7 @@ namespace SWC {
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx = server::Rgr::AppContext::make();
+  auto app_ctx = Ranger::AppContext::make();
 
   auto srv = std::make_shared<server::SerializedServer>(
     "RANGER", 

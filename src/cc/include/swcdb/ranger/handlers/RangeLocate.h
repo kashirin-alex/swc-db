@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_RangeLocate_h
-#define swc_app_ranger_handlers_RangeLocate_h
+#ifndef swc_ranger_handlers_RangeLocate_h
+#define swc_ranger_handlers_RangeLocate_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
 #include "swcdb/ranger/callbacks/RangeLocateScan.h"
@@ -16,7 +16,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeLocateReq params;
-  server::Rgr::Range::Ptr range;
+  Ranger::Range::Ptr range;
 
   try {
     const uint8_t *ptr = ev->data.base;
@@ -54,7 +54,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       range->cfg->cell_ttl(), 
       range->cfg->column_type()
     );
-    auto req = std::make_shared<server::Rgr::Callback::RangeLocateScan>(
+    auto req = std::make_shared<Ranger::Callback::RangeLocateScan>(
       conn, ev, 
       DB::Specs::Interval(params.range_begin, params.range_end), 
       cells, 
@@ -77,4 +77,4 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_RangeLocate_h
+#endif // swc_ranger_handlers_RangeLocate_h

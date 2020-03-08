@@ -2,16 +2,13 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_ranger_callbacks_RangeLoaded_h
-#define swc_lib_ranger_callbacks_RangeLoaded_h
+#ifndef swc_ranger_callbacks_RangeLoaded_h
+#define swc_ranger_callbacks_RangeLoaded_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
 
-namespace SWC {
-namespace server {
-namespace Rgr {
-namespace Callback {
+namespace SWC { namespace Ranger { namespace Callback {
 
 
 class RangeLoaded : public ResponseCallback {
@@ -75,5 +72,5 @@ class RangeLoaded : public ResponseCallback {
 
 
 }
-}}}
-#endif // swc_lib_ranger_callbacks_RangeLoaded_h
+}}
+#endif // swc_ranger_callbacks_RangeLoaded_h

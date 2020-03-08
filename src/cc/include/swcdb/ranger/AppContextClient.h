@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_ranger_AppContextClient_h
-#define swc_lib_ranger_AppContextClient_h
+#ifndef swc_ranger_AppContextClient_h
+#define swc_ranger_AppContextClient_h
 
 
 namespace SWC { namespace client { namespace Rgr {
@@ -52,4 +52,4 @@ class AppContext : public SWC::AppContext {
 
 }}}
 
-#endif // swc_lib_ranger_AppContextClient_h
+#endif // swc_ranger_AppContextClient_h

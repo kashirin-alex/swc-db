@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swcdb_db_Files_CommitLog_h
-#define swcdb_db_Files_CommitLog_h
+#ifndef swc_ranger_db_CommitLog_h
+#define swc_ranger_db_CommitLog_h
 
 #include "swcdb/core/Time.h"
-#include "swcdb/db/Files/CommitLogFragment.h"
+#include "swcdb/ranger/db/CommitLogFragment.h"
 
-namespace SWC { namespace Files { namespace CommitLog {
+namespace SWC { namespace Ranger { namespace CommitLog {
 
 
 class Fragments final {
@@ -216,7 +216,7 @@ class Fragments final {
     }
   }
 
-  void load_cells(Range::BlockLoader* loader, bool final, int64_t after_ts,
+  void load_cells(BlockLoader* loader, bool final, int64_t after_ts,
                   std::vector<Fragment::Ptr>& fragments) {  
     if(final) {
       std::unique_lock lock_wait(m_mutex);
@@ -228,13 +228,13 @@ class Fragments final {
     for(auto frag : m_fragments) {
       if(after_ts < frag->ts && loader->block->is_consist(frag->interval)) {
         fragments.push_back(frag);
-        if(fragments.size() == Range::BlockLoader::MAX_FRAGMENTS)
+        if(fragments.size() == BlockLoader::MAX_FRAGMENTS)
           return;
       }
     }
   }
 
-  void load_cells(Range::BlockLoader* loader) {
+  void load_cells(BlockLoader* loader) {
     std::shared_lock lock(m_mutex_cells);
     loader->block->load_cells(m_cells);
   }
@@ -411,4 +411,4 @@ class Fragments final {
 
 
 }}}
-#endif
+#endif // swc_ranger_db_CommitLog_h

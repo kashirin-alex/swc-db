@@ -3,12 +3,12 @@
  */
 
 
-#ifndef swc_lib_db_Columns_Callbacks_h
-#define swc_lib_db_Columns_Callbacks_h
+#ifndef swc_ranger_db_Callbacks_h
+#define swc_ranger_db_Callbacks_h
 
 #include <functional>
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
   
 namespace Callback {
 
@@ -17,6 +17,6 @@ typedef std::function<void(int)> ColumnDeleted_t;
 
 }
 
-}}}
+}}
 
-#endif // swc_lib_db_Columns_Callbacks_h
+#endif // swc_ranger_db_Callbacks_h

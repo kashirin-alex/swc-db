@@ -14,10 +14,10 @@
 
 namespace SWC {
 
-namespace server { namespace Rgr {
+namespace Ranger {
 class Compaction;
 class Columns;
-}}
+}
 
 class RangerEnv final {  
   public:
@@ -55,13 +55,13 @@ class RangerEnv final {
     return m_env->mnt_io.get();
   }
 
-  static server::Rgr::Compaction* compaction() {
+  static Ranger::Compaction* compaction() {
     return m_env->_compaction;
   }
 
   static void compaction_schedule(uint32_t ms);
   
-  static server::Rgr::Columns* columns() {
+  static Ranger::Columns* columns() {
     return m_env->_columns;
   }
 
@@ -79,8 +79,8 @@ class RangerEnv final {
   const Property::V_GENUM::Ptr       cfg_blk_enc;
   
   IoContext::Ptr              mnt_io;
-  server::Rgr::Compaction*    _compaction;
-  server::Rgr::Columns*       _columns;
+  Ranger::Compaction*         _compaction;
+  Ranger::Columns*            _columns;
   client::Query::Update::Ptr  _updater;
 
   explicit RangerEnv();
@@ -99,8 +99,8 @@ class RangerEnv final {
 }
 
 
-#include "swcdb/db/Columns/Rgr/Columns.h"
-#include "swcdb/db/Columns/Rgr/Compaction.h"
+#include "swcdb/ranger/db/Columns.h"
+#include "swcdb/ranger/db/Compaction.h"
 
 
 
@@ -125,7 +125,7 @@ RangerEnv::RangerEnv()
         Env::Config::settings()->get_i32(
           "swc.rgr.maintenance.handlers"))),
       _compaction(nullptr),
-      _columns(new server::Rgr::Columns()),
+      _columns(new Ranger::Columns()),
       _updater(std::make_shared<client::Query::Update>()) {          
 }
 
@@ -138,7 +138,7 @@ RangerEnv::~RangerEnv() {
 void RangerEnv::start() {
   SWC_ASSERT(m_env != nullptr);
 
-  m_env->_compaction = new server::Rgr::Compaction();
+  m_env->_compaction = new Ranger::Compaction();
   m_env->_compaction->schedule();
 }
 
@@ -162,4 +162,4 @@ void RangerEnv::compaction_schedule(uint32_t ms) {
 
 }
 
-#endif
+#endif // swcdb_ranger_RangerEnv_h

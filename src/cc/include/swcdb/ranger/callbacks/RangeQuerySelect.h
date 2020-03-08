@@ -2,15 +2,12 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_ranger_callbacks_RangeQuerySelect_h
-#define swc_lib_ranger_callbacks_RangeQuerySelect_h
+#ifndef swc_ranger_callbacks_RangeQuerySelect_h
+#define swc_ranger_callbacks_RangeQuerySelect_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
 
-namespace SWC {
-namespace server {
-namespace Rgr {
-namespace Callback {
+namespace SWC { namespace Ranger { namespace Callback {
 
 
 class RangeQuerySelect : public ReqScan {
@@ -71,6 +68,5 @@ class RangeQuerySelect : public ReqScan {
 };
 
 
-}
 }}}
-#endif // swc_lib_ranger_callbacks_RangeLocateScan_h
+#endif // swc_ranger_callbacks_RangeLocateScan_h

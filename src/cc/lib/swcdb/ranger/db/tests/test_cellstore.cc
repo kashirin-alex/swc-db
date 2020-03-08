@@ -55,7 +55,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
 size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
   int err = SWC::Error::OK;
 
-  SWC::Files::CellStore::Write cs_writer(
+  SWC::Ranger::CellStore::Write cs_writer(
     id, range->get_path_cs(id), 
     range->cfg->cell_versions(), range->cfg->block_enc()
   );
@@ -149,10 +149,10 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
   int err = SWC::Error::OK;  
   
   SWC::DB::Cells::Interval intval_r;
-  SWC::Files::Range::Blocks blocks;
+  SWC::Ranger::Blocks blocks;
   blocks.init(range);
   blocks.cellstores.add(
-    SWC::Files::CellStore::Read::make(err, id, range, intval_r));
+    SWC::Ranger::CellStore::Read::make(err, id, range, intval_r));
 
   hdlr_err(err);
 
@@ -165,7 +165,7 @@ void read_cs(int id, SWC::DB::RangeBase::Ptr range,
 
   std::cout << blocks.to_string() << "\n";
 
-  auto req = SWC::server::Rgr::ReqScanTest::make();
+  auto req = SWC::Ranger::ReqScanTest::make();
   req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
   req->spec.flags.limit = num_cells*group_fractions;
   
@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
   
   err = SWC::Error::OK;  
   
-  SWC::Files::Range::Blocks blocks;
+  SWC::Ranger::Blocks blocks;
   blocks.init(range);
   blocks.cellstores.load_from_path(err);
 
@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
     threads.push_back(new std::thread(
       [&blocks, match_on_offset, &match_key, id] () {
 
-      auto req = SWC::server::Rgr::ReqScanTest::make();
+      auto req = SWC::Ranger::ReqScanTest::make();
       req->cells.reset(2, 0, SWC::Types::Column::PLAIN);
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;

@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swcdb_db_Files_CellStoreReaders_h
-#define swcdb_db_Files_CellStoreReaders_h
+#ifndef swc_ranger_db_CellStoreReaders_h
+#define swc_ranger_db_CellStoreReaders_h
 
-#include "swcdb/db/Files/CellStore.h"
+#include "swcdb/ranger/db/CellStore.h"
 
 
-namespace SWC { namespace Files { namespace CellStore {
+namespace SWC { namespace Ranger { namespace CellStore {
 
 class Readers final {
   public:
@@ -114,7 +114,7 @@ class Readers final {
     _free();
   }
   
-  void load_cells(Range::BlockLoader* loader) {
+  void load_cells(BlockLoader* loader) {
     std::shared_lock lock(m_mutex);
     for(auto cs : m_cellstores) {
       if(loader->block->is_consist(cs->interval)) {
@@ -212,7 +212,7 @@ class Readers final {
     }
   }
 
-  void replace(int &err, Files::CellStore::Writers& w_cellstores) {
+  void replace(int &err, CellStore::Writers& w_cellstores) {
     auto fs = Env::FsInterface::interface();
 
     std::scoped_lock lock(m_mutex);
@@ -247,7 +247,7 @@ class Readers final {
     _free();
     for(auto cs : w_cellstores) {
       m_cellstores.push_back(
-        Files::CellStore::Read::make(err, cs->id, range, cs->interval)
+        CellStore::Read::make(err, cs->id, range, cs->interval)
       );
     }
     err = Error::OK;
@@ -315,4 +315,4 @@ class Readers final {
 
 }}}
 
-#endif
+#endif // swc_ranger_db_CellStoreReaders_h

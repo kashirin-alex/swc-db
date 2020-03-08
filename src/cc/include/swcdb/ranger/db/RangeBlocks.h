@@ -3,16 +3,16 @@
  */
 
 
-#ifndef swcdb_db_Files_RangeBlocks_h
-#define swcdb_db_Files_RangeBlocks_h
+#ifndef swc_ranger_db_RangeBlocks_h
+#define swc_ranger_db_RangeBlocks_h
 
-#include "swcdb/db/Files/RangeBlockLoader.h"
+#include "swcdb/ranger/db/RangeBlockLoader.h"
 
-#include "swcdb/db/Files/CellStoreReaders.h"
-#include "swcdb/db/Files/CommitLog.h"
-#include "swcdb/db/Files/RangeData.h"
+#include "swcdb/ranger/db/CellStoreReaders.h"
+#include "swcdb/ranger/db/CommitLog.h"
+#include "swcdb/ranger/db/RangeData.h"
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger { 
 
 
 class Blocks final {
@@ -55,7 +55,7 @@ class Blocks final {
 
   void add_logged(const DB::Cells::Cell& cell);
 
-  void scan(server::Rgr::ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
+  void scan(ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 
   void split(Block::Ptr blk, bool loaded=true);
 
@@ -105,14 +105,14 @@ class Blocks final {
 
 
 
-}}}
+}}
 
 
 
 //#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Files/RangeBlock.cc"
-#include "swcdb/db/Files/RangeBlocks.cc"
-#include "swcdb/db/Files/RangeBlockLoader.cc"
+#include "swcdb/ranger/db/RangeBlock.cc"
+#include "swcdb/ranger/db/RangeBlocks.cc"
+#include "swcdb/ranger/db/RangeBlockLoader.cc"
 //#endif 
 
-#endif // swcdb_db_Files_RangeBlocks_h
+#endif // swc_ranger_db_RangeBlocks_h

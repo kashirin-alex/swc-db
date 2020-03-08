@@ -3,16 +3,17 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_Range_h
-#define swcdb_lib_db_Columns_Rgr_Range_h
+#ifndef swcdb_ranger_db_Range_h
+#define swcdb_ranger_db_Range_h
 
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 
-#include "swcdb/db/Files/RangeBlocks.h"
+#include "swcdb/ranger/db/RangeBlocks.h"
 
-namespace SWC { namespace server { namespace Rgr {
+
+namespace SWC { namespace Ranger {
 
 class Range : public DB::RangeBase {
 
@@ -44,7 +45,7 @@ class Range : public DB::RangeBase {
   };
 
   const Types::Range   type;
-  Files::Range::Blocks blocks;
+  Blocks blocks;
 
   Range(const DB::ColumnCfg* cfg, const int64_t rid)
         : RangeBase(cfg, rid), 
@@ -327,8 +328,8 @@ class Range : public DB::RangeBase {
   }
 
   void apply_new(int &err,
-                Files::CellStore::Writers& w_cellstores, 
-                std::vector<Files::CommitLog::Fragment::Ptr>& fragments_old) {
+                CellStore::Writers& w_cellstores, 
+                std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
     bool intval_chg;
     DB::Cell::Key old_key_begin;
     {
@@ -358,7 +359,7 @@ class Range : public DB::RangeBase {
     err = Error::OK;
   }
   
-  void create(int &err, const Files::CellStore::Writers& w_cellstores) {
+  void create(int &err, const CellStore::Writers& w_cellstores) {
     
     create_folders(err);
     if(err)
@@ -379,7 +380,7 @@ class Range : public DB::RangeBase {
         return;
         
       blocks.cellstores.add(
-        Files::CellStore::Read::make(
+        CellStore::Read::make(
           err, cs->id, shared_from_this(), cs->interval)
       );
       if(err)
@@ -392,7 +393,7 @@ class Range : public DB::RangeBase {
     else
       blocks.expand(m_interval);
 
-    Files::RangeData::save(err, blocks.cellstores);
+    RangeData::save(err, blocks.cellstores);
     on_change(err, false);
     
     fs->remove(err, get_path(ranger_data_file));
@@ -445,14 +446,14 @@ class Range : public DB::RangeBase {
 
   void load(int &err, ResponseCallback::Ptr cb) {
     bool is_initial_column_range = false;
-    Files::RangeData::load(err, blocks.cellstores);
+    RangeData::load(err, blocks.cellstores);
     if(err) 
       (void)err;
       //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
     else if(blocks.cellstores.empty()) {
       // init 1st cs(for log_cells)
-      auto cs = Files::CellStore::create_init_read(
+      auto cs = CellStore::create_init_read(
         err, cfg->blk_enc, shared_from_this());
       if(!err) {
         blocks.cellstores.add(cs);
@@ -470,7 +471,7 @@ class Range : public DB::RangeBase {
           blocks.expand(m_interval);
 
         if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
-          Files::RangeData::save(err, blocks.cellstores);
+          RangeData::save(err, blocks.cellstores);
           on_change(err, false);
         }
         //else if(cfg->cid > 2) { // meta-recovery, meta need pre-delete >=[cfg->cid]
@@ -631,16 +632,16 @@ class Range : public DB::RangeBase {
 
 
 
-}} // server namespace
+} // Ranger namespace
 
 
 void Protocol::Rgr::Req::RangeUnload::unloaded(
                             int err, ResponseCallback::Ptr cb) {
-  server::Rgr::Range::shared(range)->take_ownership(err, cb);
+  Ranger::Range::shared(range)->take_ownership(err, cb);
 }
 bool Protocol::Rgr::Req::RangeUnload::valid() {
-  return !server::Rgr::Range::shared(range)->deleted();
+  return !Ranger::Range::shared(range)->deleted();
 }
 
 }
-#endif
+#endif //swcdb_ranger_db_Range_h

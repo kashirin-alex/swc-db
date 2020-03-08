@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_ColumnUpdate_h
-#define swc_app_ranger_handlers_ColumnUpdate_h
+#ifndef swc_ranger_handlers_ColumnUpdate_h
+#define swc_ranger_handlers_ColumnUpdate_h
 
 #include "swcdb/db/Protocol/Rgr/params/ColumnUpdate.h"
 
@@ -39,4 +39,4 @@ void column_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_ColumnUpdate_h
+#endif // swc_ranger_handlers_ColumnUpdate_h

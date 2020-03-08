@@ -3,15 +3,15 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_Compaction_h
-#define swcdb_lib_db_Columns_Rgr_Compaction_h
+#ifndef swcdb_ranger_db_Compaction_h
+#define swcdb_ranger_db_Compaction_h
 
 #include "swcdb/db/Protocol/Mngr/req/RangeCreate.h"
 #include "swcdb/db/Protocol/Mngr/req/RangeUnloaded.h"
 #include "swcdb/db/Protocol/Mngr/req/RangeRemove.h"
 
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
 
 class Compaction final {
   public:
@@ -177,8 +177,8 @@ class Compaction final {
   class CompactScan : public ReqScan {
     public:
   
-    typedef std::shared_ptr<CompactScan>          Ptr;
-    std::vector<Files::CommitLog::Fragment::Ptr>  fragments_old;
+    typedef std::shared_ptr<CompactScan>  Ptr;
+    std::vector<CommitLog::Fragment::Ptr> fragments_old;
     std::atomic<size_t> total_cells = 0;
 
     CompactScan(Compaction::Ptr compactor, Range::Ptr range,
@@ -326,7 +326,7 @@ class Compaction final {
       }
 
       uint32_t id = cellstores.size()+1;
-      cs_writer = std::make_shared<Files::CellStore::Write>(
+      cs_writer = std::make_shared<CellStore::Write>(
         id, 
         range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
         cell_versions,
@@ -565,7 +565,7 @@ class Compaction final {
         return apply_new();
       }
       
-      Files::CellStore::Writers new_cellstores;
+      CellStore::Writers new_cellstores;
       auto it = cellstores.begin()+split_at;
       new_cellstores.assign(it, cellstores.end());
       cellstores.erase(it, cellstores.end());
@@ -660,8 +660,8 @@ class Compaction final {
     const Types::Column     col_type;
     
     bool                            tmp_dir = false;
-    Files::CellStore::Write::Ptr    cs_writer = nullptr;
-    Files::CellStore::Writers       cellstores;
+    CellStore::Write::Ptr           cs_writer = nullptr;
+    CellStore::Writers              cellstores;
     DB::Cells::Cell*                last_cell = nullptr;
 
     std::mutex                      m_mutex;
@@ -744,5 +744,5 @@ class Compaction final {
 
 
 
-}}}
-#endif
+}}
+#endif // swcdb_ranger_db_Compaction_h

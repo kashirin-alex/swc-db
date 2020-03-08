@@ -2,8 +2,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_app_ranger_AppContext_h
-#define swc_app_ranger_AppContext_h
+#ifndef swc_ranger_AppContext_h
+#define swc_ranger_AppContext_h
 
 #include "swcdb/core/sys/Resources.h"
 
@@ -34,7 +34,7 @@
 #include "swcdb/ranger/handlers/Report.h"
 
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
 
 
 
@@ -116,7 +116,7 @@ class AppContext : public SWC::AppContext {
     id_mngr->request();
   }
 
-  void set_srv(SerializedServer::Ptr srv){
+  void set_srv(server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
@@ -221,10 +221,10 @@ class AppContext : public SWC::AppContext {
   private:
   
   Protocol::Mngr::Req::RgrMngId::Ptr id_mngr = nullptr;
-  SerializedServer::Ptr              m_srv = nullptr;
+  server::SerializedServer::Ptr      m_srv = nullptr;
   
 };
 
-}}}
+}}
 
-#endif // swc_app_ranger_AppContext_h
+#endif // swc_ranger_AppContext_h

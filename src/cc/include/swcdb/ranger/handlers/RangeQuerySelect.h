@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_RangeQuerySelect_h
-#define swc_app_ranger_handlers_RangeQuerySelect_h
+#ifndef swc_ranger_handlers_RangeQuerySelect_h
+#define swc_ranger_handlers_RangeQuerySelect_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelect.h"
@@ -16,7 +16,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeQuerySelectReq params;
-  server::Rgr::Range::Ptr range;
+  Ranger::Range::Ptr range;
 
   try {
     const uint8_t *ptr = ev->data.base;
@@ -53,7 +53,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
       range->cfg->column_type()
     );
     range->scan(
-      std::make_shared<server::Rgr::Callback::RangeQuerySelect>(
+      std::make_shared<Ranger::Callback::RangeQuerySelect>(
         conn, ev, params.interval, cells, range, params.limit_buffer_sz
       )
     );
@@ -66,4 +66,4 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_RangeQuerySelect_h
+#endif // swc_ranger_handlers_RangeQuerySelect_h

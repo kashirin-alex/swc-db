@@ -5,11 +5,11 @@
 
 #include "swcdb/core/Checksum.h"
 #include "swcdb/core/sys/Resources.h"
-#include "swcdb/db/Files/RangeBlock.h"
-#include "swcdb/db/Files/RangeBlocks.h"
+#include "swcdb/ranger/db/RangeBlock.h"
+#include "swcdb/ranger/db/RangeBlocks.h"
 
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger {
 
 
 Block::Ptr Block::make(const DB::Cells::Interval& interval,
@@ -76,10 +76,7 @@ void Block::preload() {
   asio::post(
     *Env::IoCtx::io()->ptr(), 
     [ptr=ptr()](){ 
-      ptr->scan(
-        std::make_shared<server::Rgr::ReqScan>(
-          server::Rgr::ReqScan::Type::BLK_PRELOAD)
-      );
+      ptr->scan(std::make_shared<ReqScan>(ReqScan::Type::BLK_PRELOAD));
     }
   );
 }
@@ -208,7 +205,7 @@ const bool Block::splitter() {
   return blocks->_split(ptr(), false);
 }
 
-const bool Block::scan(server::Rgr::ReqScan::Ptr req) {
+const bool Block::scan(ReqScan::Ptr req) {
   bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
@@ -222,7 +219,7 @@ const bool Block::scan(server::Rgr::ReqScan::Ptr req) {
   }
 
   if(loaded) {
-    if(req->type == server::Rgr::ReqScan::Type::BLK_PRELOAD) {
+    if(req->type == ReqScan::Type::BLK_PRELOAD) {
       processing_decrement();
       return false;
     }
@@ -420,7 +417,7 @@ const std::string Block::to_string() {
   return s;
 }
 
-const bool Block::_scan(server::Rgr::ReqScan::Ptr req, bool synced) {
+const bool Block::_scan(ReqScan::Ptr req, bool synced) {
   {
     size_t skips = 0; // Ranger::Stats
     std::shared_lock lock(m_mutex);
@@ -451,13 +448,13 @@ const bool Block::_scan(server::Rgr::ReqScan::Ptr req, bool synced) {
 
 void Block::run_queue(int& err) {
 
-  for(server::Rgr::ReqScan::Ptr req; ; ) {
+  for(ReqScan::Ptr req; ; ) {
     {
       std::shared_lock lock(m_mutex_state);
       req = m_queue.front();
     }
         
-    if(req->type == server::Rgr::ReqScan::Type::BLK_PRELOAD) {
+    if(req->type == ReqScan::Type::BLK_PRELOAD) {
       processing_decrement();
 
     } else if(err) {
@@ -480,4 +477,4 @@ void Block::run_queue(int& err) {
 
 
 
-}}}
+}}

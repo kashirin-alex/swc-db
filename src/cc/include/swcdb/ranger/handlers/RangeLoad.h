@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_RangeLoad_h
-#define swc_app_ranger_handlers_RangeLoad_h
+#ifndef swc_ranger_handlers_RangeLoad_h
+#define swc_ranger_handlers_RangeLoad_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
 #include "swcdb/ranger/callbacks/RangeLoaded.h"
@@ -25,7 +25,7 @@ void range_load(ConnHandlerPtr conn, Event::Ptr ev) {
     RangerEnv::columns()->load_range(
       err,
       params.cid, params.rid, *params.schema.get(),
-      std::make_shared<server::Rgr::Callback::RangeLoaded>(
+      std::make_shared<Ranger::Callback::RangeLoaded>(
         conn, ev, params.cid, params.rid)
     );
        
@@ -38,4 +38,4 @@ void range_load(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_RangeLoad_h
+#endif // swc_ranger_handlers_RangeLoad_h

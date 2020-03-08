@@ -3,16 +3,16 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_Column_h
-#define swcdb_lib_db_Columns_Rgr_Column_h
+#ifndef swc_ranger_db_Column_h
+#define swc_ranger_db_Column_h
 
 #include "swcdb/db/Columns/RangeBase.h"
-#include "swcdb/db/Columns/Rgr/Range.h"
+#include "swcdb/ranger/db/Range.h"
 
 #include <memory>
 #include <unordered_map>
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
 
 
 
@@ -213,6 +213,6 @@ class Column final {
   RangesMap           m_ranges;
 };
 
-}}}
+}}
 
-#endif
+#endif // swc_ranger_db_Column_h

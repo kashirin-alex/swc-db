@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_RangeQueryUpdate_h
-#define swc_app_ranger_handlers_RangeQueryUpdate_h
+#ifndef swc_ranger_handlers_RangeQueryUpdate_h
+#define swc_ranger_handlers_RangeQueryUpdate_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
@@ -16,7 +16,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeQueryUpdateReq params;
-  server::Rgr::Range::Ptr range;
+  Ranger::Range::Ptr range;
   //StaticBuffer::Ptr buffer;
 
   try {      
@@ -41,14 +41,14 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
   }
 
   try{
-    auto cb = std::make_shared<server::Rgr::Callback::RangeQueryUpdate>(
+    auto cb = std::make_shared<Ranger::Callback::RangeQueryUpdate>(
       conn, ev);
     if(err) {
       cb->response(err);
       return;
     }
       
-    range->add(new server::Rgr::Range::ReqAdd(ev->data_ext, cb));
+    range->add(new Ranger::Range::ReqAdd(ev->data_ext, cb));
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
@@ -59,4 +59,4 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_RangeQueryUpdate_h
+#endif // swc_ranger_handlers_RangeQueryUpdate_h

@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_app_ranger_handlers_Report_h
-#define swc_app_ranger_handlers_Report_h
+#ifndef swc_ranger_handlers_Report_h
+#define swc_ranger_handlers_Report_h
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
 
@@ -30,8 +30,8 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
       rgr_data->endpoints.begin(), rgr_data->endpoints.end());
 
     if(params.flags & Params::ReportReq::RANGES) {
-      server::Rgr::Column::Ptr col;
-      server::Rgr::Range::Ptr range;
+      Ranger::Column::Ptr col;
+      Ranger::Range::Ptr range;
       auto columns = RangerEnv::columns();
       for(size_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; cidx++) {
         auto c = new Protocol::Rgr::Params::ReportRsp::Column();
@@ -66,4 +66,4 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_app_ranger_handlers_Report_h
+#endif // swc_ranger_handlers_Report_h

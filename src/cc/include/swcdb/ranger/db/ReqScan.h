@@ -3,14 +3,14 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Rgr_ReqScan_h
-#define swcdb_lib_db_Columns_Rgr_ReqScan_h
+#ifndef swcdb_ranger_db_ReqScan_h
+#define swcdb_ranger_db_ReqScan_h
 
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Cells/Vector.h"
 
-namespace SWC { namespace server { namespace Rgr {
+namespace SWC { namespace Ranger {
   
 class ReqScan  : public ResponseCallback {
 
@@ -117,6 +117,6 @@ class ReqScanTest : public ReqScan {
   std::function<void(int)> cb;
 };
 
-}}}
+}}
 
-#endif
+#endif // swcdb_ranger_db_ReqScan_h

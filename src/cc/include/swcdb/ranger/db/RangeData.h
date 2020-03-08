@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Files_RangeData_h
-#define swcdb_db_Files_RangeData_h
+#ifndef swc_ranger_db_RangeData_h
+#define swc_ranger_db_RangeData_h
 
 
 #include "swcdb/core/DynamicBuffer.h"
@@ -12,10 +12,10 @@
 #include "swcdb/core/Time.h"
 
 #include "swcdb/db/Cells/Interval.h"
-#include "swcdb/db/Files/CellStoreReaders.h"
+#include "swcdb/ranger/db/CellStoreReaders.h"
 
 
-namespace SWC { namespace Files { namespace RangeData {
+namespace SWC { namespace Ranger { namespace RangeData {
 
 const int HEADER_SIZE=13;
 const int HEADER_OFFSET_CHKSUM=9;
@@ -117,4 +117,4 @@ void load(int& err, CellStore::Readers& cellstores){
 }
 
 }}}
-#endif
+#endif //swc_ranger_db_RangeData_h

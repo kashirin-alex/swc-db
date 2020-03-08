@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swcdb_db_Files_CellStore_h
-#define swcdb_db_Files_CellStore_h
+#ifndef swc_ranger_db_CellStore_h
+#define swc_ranger_db_CellStore_h
 
-#include "swcdb/db/Files/CellStoreBlock.h"
+#include "swcdb/ranger/db/CellStoreBlock.h"
 
 
-namespace SWC { namespace Files {
+namespace SWC { namespace Ranger {
 
 namespace CellStore {
 
@@ -234,7 +234,7 @@ class Read final {
       delete blk;
   }
 
-  void load_cells(Range::BlockLoader* loader) {
+  void load_cells(BlockLoader* loader) {
 
     std::vector<Block::Read::Ptr>  applicable;
     for(auto blk : blocks) {  
@@ -623,4 +623,4 @@ inline static Read::Ptr create_init_read(int& err, Types::Encoding encoding,
 
 }}
 
-#endif
+#endif // swc_ranger_db_CellStore_h

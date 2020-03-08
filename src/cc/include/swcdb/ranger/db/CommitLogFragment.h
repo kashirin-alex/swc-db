@@ -3,12 +3,12 @@
  */
 
 
-#ifndef swcdb_db_Files_CommitLogFragment_h
-#define swcdb_db_Files_CommitLogFragment_h
+#ifndef swc_ranger_db_CommitLogFragment_h
+#define swc_ranger_db_CommitLogFragment_h
 
-#include "swcdb/db/Files/CellStoreBlock.h"
+#include "swcdb/ranger/db/CellStoreBlock.h"
 
-namespace SWC { namespace Files { namespace CommitLog {
+namespace SWC { namespace Ranger { namespace CommitLog {
 
   
 class Fragment final {
@@ -214,7 +214,7 @@ class Fragment final {
       asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
   }
   
-  void load_cells(int& err, Range::Block::Ptr cells_block) {
+  void load_cells(int& err, Ranger::Block::Ptr cells_block) {
     bool was_splitted = false;
     if(m_buffer.size) {
       m_cells_remain -= cells_block->load_cells(
@@ -545,4 +545,4 @@ class Fragment final {
 
 }}
 
-#endif
+#endif // swc_ranger_db_CommitLogFragment_h

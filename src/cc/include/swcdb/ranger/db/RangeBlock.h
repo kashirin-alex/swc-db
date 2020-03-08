@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_Files_RangeBlock_h
-#define swcdb_db_Files_RangeBlock_h
+#ifndef swc_ranger_db_RangeBlock_h
+#define swc_ranger_db_RangeBlock_h
 
 #include <shared_mutex>
 #include <queue>
@@ -13,13 +13,13 @@
 
 #include "swcdb/db/Cells/Mutable.h"
 
-#include "swcdb/db/Columns/Rgr/ColumnCfg.h"
+#include "swcdb/ranger/db/ColumnCfg.h"
 #include "swcdb/db/Columns/RangeBase.h"
-#include "swcdb/db/Columns/Rgr/ReqScan.h"
+#include "swcdb/ranger/db/ReqScan.h"
 
 
 
-namespace SWC { namespace Files { namespace Range {
+namespace SWC { namespace Ranger { 
 
  //Forawrd Declaration
 class Blocks;
@@ -76,7 +76,7 @@ class Block final {
 
   const bool splitter();
 
-  const bool scan(server::Rgr::ReqScan::Ptr req);
+  const bool scan(ReqScan::Ptr req);
   
   void loaded(int err);
   
@@ -130,20 +130,20 @@ class Block final {
   
   private:
 
-  const bool _scan(server::Rgr::ReqScan::Ptr req, bool synced=false);
+  const bool _scan(ReqScan::Ptr req, bool synced=false);
 
   void run_queue(int& err);
 
-  std::shared_mutex       m_mutex;
-  DB::Cells::Interval     m_interval;
-  DB::Cells::Mutable      m_cells;
-  DB::Cell::Key           m_prev_key_end;
+  std::shared_mutex         m_mutex;
+  DB::Cells::Interval       m_interval;
+  DB::Cells::Mutable        m_cells;
+  DB::Cell::Key             m_prev_key_end;
 
-  std::shared_mutex                    m_mutex_state;
-  State                                m_state;
-  uint8_t                              m_load_require;
-  std::atomic<size_t>                  m_processing;
-  std::queue<server::Rgr::ReqScan::Ptr>  m_queue;
+  std::shared_mutex         m_mutex_state;
+  State                     m_state;
+  uint8_t                   m_load_require;
+  std::atomic<size_t>       m_processing;
+  std::queue<ReqScan::Ptr>  m_queue;
 
 };
 
@@ -152,6 +152,6 @@ class Block final {
 
 
 
-}}}
+}}
 
-#endif
+#endif // swc_ranger_db_RangeBlock_h

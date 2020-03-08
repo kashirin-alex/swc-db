@@ -3,13 +3,13 @@
  */
 
 
-#ifndef swcdb_db_Files_CellStoreBlock_h
-#define swcdb_db_Files_CellStoreBlock_h
+#ifndef swc_ranger_db_CellStoreBlock_h
+#define swc_ranger_db_CellStoreBlock_h
 
 #include "swcdb/core/Encoder.h"
 
 
-namespace SWC { namespace Files { namespace CellStore {
+namespace SWC { namespace Ranger { namespace CellStore {
 
 
 namespace Block {
@@ -96,7 +96,7 @@ class Read final {
     run_queued();
   }
 
-  void load_cells(int& err, Range::Block::Ptr cells_block) {
+  void load_cells(int& err, Ranger::Block::Ptr cells_block) {
     bool was_splitted = false;
     if(m_buffer.size)
       m_cells_remain -= cells_block->load_cells(
@@ -381,4 +381,4 @@ class Write final {
 
 }}}
 
-#endif
+#endif // swc_ranger_db_CellStoreBlock_h

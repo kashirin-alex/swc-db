@@ -17,11 +17,11 @@ using namespace SWC;
 
 
 void count_all_cells(size_t num_cells, 
-                     SWC::Files::Range::Blocks& blocks) {
+                     SWC::Ranger::Blocks& blocks) {
   std::cout << " count_all_cells: \n";
   std::atomic<int> chk = 1;
   
-  auto req = server::Rgr::ReqScanTest::make();
+  auto req = Ranger::ReqScanTest::make();
   req->cells.reset(
     blocks.range->cfg->cell_versions(), 
     0, 
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
   int versions = 3;
 
   auto range = std::make_shared<DB::RangeBase>(&col_cfg, 1);
-  Files::CommitLog::Fragments commitlog;
+  Ranger::CommitLog::Fragments commitlog;
   commitlog.init(range);
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
@@ -174,11 +174,11 @@ int main(int argc, char** argv) {
   ///
 
 
-  SWC::Files::Range::Blocks blocks;
+  SWC::Ranger::Blocks blocks;
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores.add(
-    Files::CellStore::create_init_read(err, col_cfg.block_enc(), range));
+    Ranger::CellStore::create_init_read(err, col_cfg.block_enc(), range));
   blocks.load(err);
   std::cout << "loaded: \n" << blocks.to_string() << "\n";
 
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
   std::atomic<int> chk = num_chks;
   for(int i = 1;i<=num_chks; i++){
     
-    auto req = server::Rgr::ReqScanTest::make();
+    auto req = Ranger::ReqScanTest::make();
     req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
