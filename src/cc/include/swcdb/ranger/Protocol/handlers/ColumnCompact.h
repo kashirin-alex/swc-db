@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_ColumnCompact_h
-#define swc_ranger_handlers_ColumnCompact_h
+#ifndef swc_ranger_Protocol_handlers_ColumnCompact_h
+#define swc_ranger_Protocol_handlers_ColumnCompact_h
 
 #include "swcdb/db/Protocol/Rgr/params/ColumnCompact.h"
 
@@ -45,4 +45,4 @@ void column_compact(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_ranger_handlers_ColumnCompact_h
+#endif // swc_ranger_Protocol_handlers_ColumnCompact_h

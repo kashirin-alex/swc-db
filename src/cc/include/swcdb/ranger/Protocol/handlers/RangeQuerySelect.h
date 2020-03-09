@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_RangeQuerySelect_h
-#define swc_ranger_handlers_RangeQuerySelect_h
+#ifndef swc_ranger_Protocol_handlers_RangeQuerySelect_h
+#define swc_ranger_Protocol_handlers_RangeQuerySelect_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelect.h"
@@ -66,4 +66,4 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_ranger_handlers_RangeQuerySelect_h
+#endif // swc_ranger_Protocol_handlers_RangeQuerySelect_h

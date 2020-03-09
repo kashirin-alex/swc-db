@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_AssignId_h
-#define swc_ranger_handlers_AssignId_h
+#ifndef swc_ranger_Protocol_handlers_AssignId_h
+#define swc_ranger_Protocol_handlers_AssignId_h
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
@@ -29,4 +29,4 @@ void assign_id(ConnHandlerPtr conn, Event::Ptr ev,
 
 }}}}
 
-#endif // swc_ranger_handlers_AssignId_h
+#endif // swc_ranger_Protocol_handlers_AssignId_h

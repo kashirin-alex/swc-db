@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_Report_h
-#define swc_ranger_handlers_Report_h
+#ifndef swc_ranger_Protocol_handlers_Report_h
+#define swc_ranger_Protocol_handlers_Report_h
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
 
@@ -66,4 +66,4 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_ranger_handlers_Report_h
+#endif // swc_ranger_Protocol_handlers_Report_h

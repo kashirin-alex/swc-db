@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_mngr_req_RgrMngId_h
-#define swc_lib_db_protocol_mngr_req_RgrMngId_h
+#ifndef swc_ranger_Protocol_mngr_req_RgrMngId_h
+#define swc_ranger_Protocol_mngr_req_RgrMngId_h
 
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/params/RgrMngId.h"
@@ -210,4 +210,4 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_mngr_req_RgrMngId_h
+#endif // swc_ranger_Protocol_mngr_req_RgrMngId_h

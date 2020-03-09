@@ -18,20 +18,20 @@
 
 #include "swcdb/db/Protocol/Commands.h"
 
-#include "swcdb/db/Protocol/Mngr/req/RgrMngId.h"
-
 #include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
-#include "swcdb/ranger/handlers/AssignId.h"
-#include "swcdb/ranger/handlers/RangeLoad.h"
-#include "swcdb/ranger/handlers/RangeUnload.h"
-#include "swcdb/ranger/handlers/RangeIsLoaded.h"
-#include "swcdb/ranger/handlers/RangeLocate.h"
-#include "swcdb/ranger/handlers/RangeQueryUpdate.h"
-#include "swcdb/ranger/handlers/RangeQuerySelect.h"
-#include "swcdb/ranger/handlers/ColumnUpdate.h"
-#include "swcdb/ranger/handlers/ColumnDelete.h"
-#include "swcdb/ranger/handlers/ColumnCompact.h"
-#include "swcdb/ranger/handlers/Report.h"
+#include "swcdb/ranger/Protocol/Mngr/req/RgrMngId.h"
+
+#include "swcdb/ranger/Protocol/handlers/AssignId.h"
+#include "swcdb/ranger/Protocol/handlers/RangeLoad.h"
+#include "swcdb/ranger/Protocol/handlers/RangeUnload.h"
+#include "swcdb/ranger/Protocol/handlers/RangeIsLoaded.h"
+#include "swcdb/ranger/Protocol/handlers/RangeLocate.h"
+#include "swcdb/ranger/Protocol/handlers/RangeQueryUpdate.h"
+#include "swcdb/ranger/Protocol/handlers/RangeQuerySelect.h"
+#include "swcdb/ranger/Protocol/handlers/ColumnUpdate.h"
+#include "swcdb/ranger/Protocol/handlers/ColumnDelete.h"
+#include "swcdb/ranger/Protocol/handlers/ColumnCompact.h"
+#include "swcdb/ranger/Protocol/handlers/Report.h"
 
 
 namespace SWC { namespace Ranger {

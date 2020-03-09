@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_RangeUnload_h
-#define swc_ranger_handlers_RangeUnload_h
+#ifndef swc_ranger_Protocol_handlers_RangeUnload_h
+#define swc_ranger_Protocol_handlers_RangeUnload_h
 
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
@@ -38,4 +38,4 @@ void range_unload(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_ranger_handlers_RangeUnload_h
+#endif // swc_ranger_Protocol_handlers_RangeUnload_h

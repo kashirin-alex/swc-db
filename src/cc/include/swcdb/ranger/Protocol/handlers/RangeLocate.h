@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swc_ranger_handlers_RangeLocate_h
-#define swc_ranger_handlers_RangeLocate_h
+#ifndef swc_ranger_Protocol_handlers_RangeLocate_h
+#define swc_ranger_Protocol_handlers_RangeLocate_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
 #include "swcdb/ranger/callbacks/RangeLocateScan.h"
@@ -77,4 +77,4 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
 
 }}}}
 
-#endif // swc_ranger_handlers_RangeLocate_h
+#endif // swc_ranger_Protocol_handlers_RangeLocate_h
