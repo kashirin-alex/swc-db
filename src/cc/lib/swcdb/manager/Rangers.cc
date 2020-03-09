@@ -5,10 +5,10 @@
 
 #include "swcdb/manager/Rangers.h"
 #include "swcdb/manager/Protocol/Mngr/req/RgrUpdate.h"
+#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.h"
 
 #include "swcdb/db/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeIsLoaded.h"
-#include "swcdb/db/Protocol/Rgr/req/AssignIdNeeded.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnDelete.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"

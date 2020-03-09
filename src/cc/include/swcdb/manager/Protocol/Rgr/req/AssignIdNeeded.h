@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_Rgr_req_AssignIdNeeded_h
-#define swc_lib_db_protocol_Rgr_req_AssignIdNeeded_h
+#ifndef swc_manager_Protocol_rgr_req_AssignIdNeeded_h
+#define swc_manager_Protocol_rgr_req_AssignIdNeeded_h
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
@@ -60,4 +60,4 @@ class AssignIdNeeded : public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_Rgr_req_AssignIdNeeded_h
+#endif // swc_manager_Protocol_rgr_req_AssignIdNeeded_h
