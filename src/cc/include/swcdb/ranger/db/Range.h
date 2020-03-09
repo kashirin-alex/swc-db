@@ -632,16 +632,9 @@ class Range : public DB::RangeBase {
 
 
 
-} // Ranger namespace
+}}
 
 
-void Protocol::Rgr::Req::RangeUnload::unloaded(
-                            int err, ResponseCallback::Ptr cb) {
-  Ranger::Range::shared(range)->take_ownership(err, cb);
-}
-bool Protocol::Rgr::Req::RangeUnload::valid() {
-  return !Ranger::Range::shared(range)->deleted();
-}
+#include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.cc"
 
-}
 #endif //swcdb_ranger_db_Range_h
