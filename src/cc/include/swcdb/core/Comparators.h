@@ -105,8 +105,14 @@ const std::string to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
 
-
-// const char *
+SWC_CAN_INLINE 
+const Comp _condition(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
+  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  return diff == 0 && p1_len == p2_len 
+        ? Comp::EQ 
+        : (diff < 0 || diff == 0 && p1_len < p2_len ? Comp::GT : Comp::LT );
+}
 
 SWC_CAN_INLINE 
 const Comp condition(const uint8_t *p1, uint32_t p1_len, 
@@ -125,10 +131,24 @@ const bool pf(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
+const bool _gt(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
+  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  return diff < 0 || (diff == 0 && p1_len < p2_len);
+}
+
+SWC_CAN_INLINE 
 const bool gt(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff < 0 && p1_len <= p2_len) || (diff >= 0 && p1_len < p2_len);
+}
+
+SWC_CAN_INLINE 
+const bool _ge(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
+  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
 
 SWC_CAN_INLINE 
@@ -151,11 +171,25 @@ const bool eq(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
+const bool _le(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
+  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  return diff > 0 || (diff == 0 && p1_len >= p2_len);
+}
+
+SWC_CAN_INLINE 
 const bool le(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff >= 0 && p1_len >= p2_len) || (diff < 0 && p1_len > p2_len);
 }
+
+SWC_CAN_INLINE 
+const bool _lt(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
+  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  return diff > 0 || (diff == 0 && p1_len > p2_len);
+} 
 
 SWC_CAN_INLINE 
 const bool lt(const uint8_t *p1, uint32_t p1_len, 
