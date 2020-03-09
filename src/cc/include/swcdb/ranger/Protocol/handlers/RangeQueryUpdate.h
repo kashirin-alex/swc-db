@@ -16,7 +16,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeQueryUpdateReq params;
-  Ranger::Range::Ptr range;
+  Ranger::RangePtr range;
   //StaticBuffer::Ptr buffer;
 
   try {      

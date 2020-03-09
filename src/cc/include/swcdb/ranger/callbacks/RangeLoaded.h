@@ -26,7 +26,7 @@ class RangeLoaded : public ResponseCallback {
     if(err == Error::OK && RangerEnv::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
-    Range::Ptr range;
+    RangePtr range;
     if(err == Error::OK) {
       range =  RangerEnv::columns()->get_range(err, cid, rid);
       if(err != Error::OK || range == nullptr || !range->is_loaded())

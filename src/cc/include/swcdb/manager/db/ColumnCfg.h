@@ -6,7 +6,7 @@
 #ifndef swc_manager_db_ColumnCfg_h
 #define swc_manager_db_ColumnCfg_h
 
-namespace SWC { namespace DB { 
+namespace SWC { namespace Manager { 
 
 class ColumnCfg final {
   

@@ -68,8 +68,8 @@ class Compaction final {
       m_scheduled = true;
     }
 
-    Column::Ptr col     = nullptr;
-    Range::Ptr range  = nullptr;
+    Column::Ptr col = nullptr;
+    RangePtr range  = nullptr;
     size_t ram = 0;
     for(;;) {
       
@@ -113,7 +113,7 @@ class Compaction final {
     compacted();
   }
 
-  void compact(Range::Ptr range) {
+  void compact(RangePtr range) {
 
     if(!range->is_loaded() || !m_run)
       return compacted(range);
@@ -181,7 +181,7 @@ class Compaction final {
     std::vector<CommitLog::Fragment::Ptr> fragments_old;
     std::atomic<size_t> total_cells = 0;
 
-    CompactScan(Compaction::Ptr compactor, Range::Ptr range,
+    CompactScan(Compaction::Ptr compactor, RangePtr range,
                 const uint32_t cs_size, const uint8_t cs_replication,
                 const uint32_t blk_size, const uint32_t blk_cells, 
                 const Types::Encoding blk_encoding,
@@ -316,10 +316,10 @@ class Compaction final {
     uint32_t create_cs(int& err) { 
       if(!tmp_dir) { 
         Env::FsInterface::interface()->rmdir(
-          err, range->get_path(Range::cellstores_tmp_dir));
+          err, range->get_path(Range::CELLSTORES_TMP_DIR));
         err = Error::OK;
         Env::FsInterface::interface()->mkdirs(
-          err, range->get_path(Range::cellstores_tmp_dir));
+          err, range->get_path(Range::CELLSTORES_TMP_DIR));
         tmp_dir = true;
         if(err)
           return 0;
@@ -328,7 +328,7 @@ class Compaction final {
       uint32_t id = cellstores.size()+1;
       cs_writer = std::make_shared<CellStore::Write>(
         id, 
-        range->get_path_cs_on(Range::cellstores_tmp_dir, id), 
+        range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, id), 
         cell_versions,
         blk_encoding
       );
@@ -515,7 +515,7 @@ class Compaction final {
       );
     }
 
-    void mngr_remove_range(Range::Ptr new_range) {
+    void mngr_remove_range(RangePtr new_range) {
       std::promise<void> res;
       Protocol::Mngr::Req::RangeRemove::request(
         new_range->cfg->cid,
@@ -639,7 +639,7 @@ class Compaction final {
       if(tmp_dir) {
         tmp_dir = false;
         Env::FsInterface::interface()->rmdir(
-          err, range->get_path(Range::cellstores_tmp_dir));
+          err, range->get_path(Range::CELLSTORES_TMP_DIR));
       }
 
       SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
@@ -649,7 +649,7 @@ class Compaction final {
 
 
     Compaction::Ptr         compactor;
-    Range::Ptr              range;
+    RangePtr                range;
     const uint32_t          cs_size;
     const uint8_t           cs_replication;
     const uint32_t          blk_size;
@@ -673,7 +673,7 @@ class Compaction final {
 
   private:
   
-  void compacted(Range::Ptr range, bool all=false) {
+  void compacted(RangePtr range, bool all=false) {
     if(all) {
       range->blocks.release(0);
       if(range->blocks.size())

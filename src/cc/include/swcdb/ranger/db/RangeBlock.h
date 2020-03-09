@@ -13,10 +13,6 @@
 
 #include "swcdb/db/Cells/Mutable.h"
 
-#include "swcdb/ranger/db/ColumnCfg.h"
-#include "swcdb/db/Columns/RangeBase.h"
-#include "swcdb/ranger/db/ReqScan.h"
-
 
 
 namespace SWC { namespace Ranger { 

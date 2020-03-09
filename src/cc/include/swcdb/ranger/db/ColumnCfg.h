@@ -8,7 +8,7 @@
 
 #include "swcdb/db/Columns/Schema.h"
 
-namespace SWC { namespace DB { 
+namespace SWC { namespace Ranger {
 
 
 class ColumnCfg final {
@@ -44,7 +44,7 @@ class ColumnCfg final {
 
   ~ColumnCfg() { }
 
-  void update(const Schema& schema) const {
+  void update(const DB::Schema& schema) const {
     col_type = schema.col_type;
 
     c_versions = schema.cell_versions;

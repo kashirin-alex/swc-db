@@ -31,7 +31,7 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
 
     if(params.flags & Params::ReportReq::RANGES) {
       Ranger::Column::Ptr col;
-      Ranger::Range::Ptr range;
+      Ranger::RangePtr range;
       auto columns = RangerEnv::columns();
       for(size_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; cidx++) {
         auto c = new Protocol::Rgr::Params::ReportRsp::Column();

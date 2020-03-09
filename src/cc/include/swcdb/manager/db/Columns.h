@@ -26,7 +26,7 @@ class Columns final {
 
   static void columns_by_fs(int &err, FS::IdEntries_t &entries) {
     Env::FsInterface::interface()->get_structured_ids(
-      err, Range::get_column_path(), entries);
+      err, DB::RangeBase::get_column_path(), entries);
   }
 
   typedef Columns* Ptr;

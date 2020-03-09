@@ -16,7 +16,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeLocateReq params;
-  Ranger::Range::Ptr range;
+  Ranger::RangePtr range;
 
   try {
     const uint8_t *ptr = ev->data.base;

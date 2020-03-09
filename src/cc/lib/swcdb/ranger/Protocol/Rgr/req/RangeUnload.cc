@@ -4,13 +4,13 @@
  */ 
 
 
-#include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
+#include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.h"
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-RangeUnload::RangeUnload(DB::RangeBase::Ptr range, ResponseCallback::Ptr cb,
+RangeUnload::RangeUnload(Ranger::RangePtr range, ResponseCallback::Ptr cb,
                          uint32_t timeout) 
                         : client::ConnQueue::ReqBase(false), 
                           range(range), cb(cb) {
@@ -36,7 +36,7 @@ void RangeUnload::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
 
 
 bool RangeUnload::valid() {
-  return !Ranger::Range::shared(range)->deleted();
+  return !range->deleted();
 }
 
 void RangeUnload::handle_no_conn() {
@@ -44,7 +44,7 @@ void RangeUnload::handle_no_conn() {
 }
 
 void RangeUnload::unloaded(int err, ResponseCallback::Ptr cb) {
-  Ranger::Range::shared(range)->take_ownership(err, cb);
+  range->take_ownership(err, cb);
 }
 
 }}}}

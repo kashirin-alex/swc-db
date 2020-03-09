@@ -10,7 +10,7 @@ namespace SWC { namespace Ranger {
 
 Blocks::Blocks() : m_block(nullptr), m_processing(0) { }
   
-void Blocks::init(DB::RangeBase::Ptr for_range) {
+void Blocks::init(RangePtr for_range) {
   range = for_range;
   commitlog.init(range);
   cellstores.init(range);
@@ -292,7 +292,7 @@ void Blocks::wait_processing() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-const std::string Blocks::to_string(){
+const std::string Blocks::to_string() {
   std::scoped_lock lock(m_mutex);
 
   std::string s("Blocks(count=");

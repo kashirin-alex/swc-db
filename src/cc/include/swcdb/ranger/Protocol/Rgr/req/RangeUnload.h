@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_rgr_req_RangeUnload_h
-#define swc_lib_db_protocol_rgr_req_RangeUnload_h
+#ifndef swc_ranger_protocol_rgr_req_RangeUnload_h
+#define swc_ranger_protocol_rgr_req_RangeUnload_h
 
 
 
@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
-  RangeUnload(DB::RangeBase::Ptr range, ResponseCallback::Ptr cb,
+  RangeUnload(Ranger::RangePtr range, ResponseCallback::Ptr cb,
               uint32_t timeout=60000);
 
   virtual ~RangeUnload();
@@ -30,10 +30,10 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   private:
 
   ResponseCallback::Ptr cb;
-  DB::RangeBase::Ptr    range;
+  Ranger::RangePtr      range;
    
 };
 
 }}}}
 
-#endif // swc_lib_db_protocol_rgr_req_RangeUnload_h
+#endif // swc_ranger_protocol_rgr_req_RangeUnload_h

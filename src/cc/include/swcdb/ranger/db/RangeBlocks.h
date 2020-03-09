@@ -21,13 +21,13 @@ class Blocks final {
 
   // scan >> blk match >> load-cs + load+logs 
 
-  DB::RangeBase::Ptr    range;
+  RangePtr              range;
   CommitLog::Fragments  commitlog;
   CellStore::Readers    cellstores;
 
   explicit Blocks();
   
-  void init(DB::RangeBase::Ptr for_range);
+  void init(RangePtr for_range);
 
   Ptr ptr();
 
@@ -108,11 +108,5 @@ class Blocks final {
 }}
 
 
-
-//#ifdef SWC_IMPL_SOURCE
-#include "swcdb/ranger/db/RangeBlock.cc"
-#include "swcdb/ranger/db/RangeBlocks.cc"
-#include "swcdb/ranger/db/RangeBlockLoader.cc"
-//#endif 
 
 #endif // swc_ranger_db_RangeBlocks_h

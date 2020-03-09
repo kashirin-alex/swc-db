@@ -3,8 +3,8 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swc_lib_db_protocol_rgr_req_RangeIsLoaded_h
-#define swc_lib_db_protocol_rgr_req_RangeIsLoaded_h
+#ifndef swc_manager_Protocol_rgr_req_RangeIsLoaded_h
+#define swc_manager_Protocol_rgr_req_RangeIsLoaded_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeIsLoaded.h"
 
@@ -17,7 +17,7 @@ class RangeIsLoaded : public DispatchHandler {
   
   typedef std::function<void(bool)> RangeIsLoaded_t;
 
-  RangeIsLoaded(ConnHandlerPtr conn, DB::RangeBase::Ptr range, 
+  RangeIsLoaded(ConnHandlerPtr conn, Manager::Range::Ptr range, 
                 RangeIsLoaded_t cb)
                 : conn(conn), range(range), cb(cb), was_called(false) { 
   }
@@ -52,11 +52,11 @@ class RangeIsLoaded : public DispatchHandler {
 
   private:
   ConnHandlerPtr            conn;
-  DB::RangeBase::Ptr        range;
+  Manager::Range::Ptr       range;
   RangeIsLoaded_t           cb;
   std::atomic<bool>         was_called;
 };
 
 }}}}
 
-#endif // swc_lib_db_protocol_rgr_req_RangeIsLoaded_h
+#endif // swc_manager_Protocol_rgr_req_RangeIsLoaded_h

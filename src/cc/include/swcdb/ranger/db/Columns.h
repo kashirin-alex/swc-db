@@ -76,7 +76,7 @@ class Columns final {
     return nullptr;
   }
 
-  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid) {
+  RangePtr get_range(int &err, const int64_t cid, const int64_t rid) {
     Column::Ptr col = get_column(err, cid);
     if(col == nullptr) 
       return nullptr;
@@ -87,7 +87,7 @@ class Columns final {
  
   void load_range(int &err, const int64_t cid, const int64_t rid, 
                   const DB::Schema& schema, ResponseCallback::Ptr cb) {
-    Range::Ptr range;
+    RangePtr range;
     auto col = initialize(err, cid, schema);
     if(!err) {
 

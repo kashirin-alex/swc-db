@@ -6,20 +6,31 @@
 #ifndef swcdb_ranger_db_Range_h
 #define swcdb_ranger_db_Range_h
 
-#include "swcdb/db/Types/Range.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeUnload.h"
-#include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
+namespace SWC { namespace Ranger {
+class Range;
+typedef std::shared_ptr<Range> RangePtr;
+}}
 
+#include "swcdb/db/Types/Range.h"
+#include "swcdb/db/Columns/RangeBase.h"
+
+#include "swcdb/ranger/db/ColumnCfg.h"
+#include "swcdb/ranger/db/ReqScan.h"
 #include "swcdb/ranger/db/RangeBlocks.h"
+#include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 
 
 namespace SWC { namespace Ranger {
 
-class Range : public DB::RangeBase {
+class Range : public std::enable_shared_from_this<Range> {
 
   public:
-  
-  typedef std::shared_ptr<Range>                    Ptr;
+
+  static constexpr const char* RANGE_FILE = "range.data";
+  static constexpr const char* CELLSTORES_DIR = "cs";
+  static constexpr const char* CELLSTORES_BAK_DIR = "cs_bak";
+  static constexpr const char* CELLSTORES_TMP_DIR = "cs_tmp";
+  static constexpr const char* LOG_DIR = "log"; 
 
   struct ReqAdd final {
     public:
@@ -43,586 +54,110 @@ class Range : public DB::RangeBase {
     CHECKING,
     COMPACTING,
   };
-
-  const Types::Range   type;
-  Blocks blocks;
-
-  Range(const DB::ColumnCfg* cfg, const int64_t rid)
-        : RangeBase(cfg, rid), 
-          m_state(State::NOTLOADED), 
-          type(cfg->cid == 1 ? Types::Range::MASTER 
-               :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
-          m_compacting(Compact::NONE), m_require_compact(false) {
-  }
-
-  void init() {
-    blocks.init(shared_from_this());
-  }
-
-  Ptr shared() {
-    return std::dynamic_pointer_cast<Range>(shared_from_this());
-  }
-
-  static Ptr shared(const DB::RangeBase::Ptr& other){
-    return std::dynamic_pointer_cast<Range>(other);
-  }
-
-  virtual ~Range() {
-    /*
-    SWC_LOG_OUT(LOG_INFO) 
-      << " ~Range cid=" << cfg->cid << " rid=" << rid 
-      << SWC_LOG_OUT_END;
-    */
-  }
   
-  void schema_update(bool compact) {
-    blocks.schema_update();
-    if(compact)
-      compact_require(compact);
-  }
+  const ColumnCfg*    cfg;
+  const int64_t       rid;
+  const Types::Range  type;
+  Blocks              blocks;
 
-  void set_state(State new_state) {
-    std::scoped_lock lock(m_mutex);
-    m_state = new_state;
-  }
+  Range(const ColumnCfg* cfg, const int64_t rid);
 
-  bool is_loaded() {
-    std::shared_lock lock(m_mutex);
-    return m_state == State::LOADED;
-  }
+  void init();
 
-  bool deleted() { 
-    std::shared_lock lock(m_mutex);
-    return m_state == State::DELETED;
-  }
+  virtual ~Range();
+  
+  const std::string get_path(const std::string suff) const;
 
-  void add(ReqAdd* req) {
-    std::scoped_lock lock(m_mutex);
-    m_q_adding.push(req);
-    
-    if(m_q_adding.size() == 1) { 
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [ptr=shared()](){ ptr->run_add_queue(); }
-      );
-    }
-  }
+  const std::string get_path_cs(const int64_t cs_id) const;
 
-  void scan(ReqScan::Ptr req) {
-    if(wait() && !is_loaded()) {
-      int err = Error::RS_NOT_LOADED_RANGE;
-      req->response(err);
-      return;
-    }
-    blocks.scan(req);
-  }
+  const std::string get_path_cs_on(const std::string folder, 
+                                  const int64_t cs_id) const;
 
-  void scan_internal(ReqScan::Ptr req) {
-    blocks.scan(req);
-  }
+  Files::RgrData::Ptr get_last_rgr(int &err);
 
-  void create_folders(int& err) {
-    Env::FsInterface::interface()->mkdirs(err, get_path(log_dir));
-    Env::FsInterface::interface()->mkdirs(err, get_path(cellstores_dir));
-  }
+  void get_interval(DB::Cells::Interval& interval);
 
-  void load(ResponseCallback::Ptr cb) {
-    bool is_loaded;
-    {
-      std::scoped_lock lock(m_mutex);
-      is_loaded = m_state != State::NOTLOADED;
-      if(m_state == State::NOTLOADED)
-        m_state = State::LOADING;
-    }
-    int err = RangerEnv::is_shuttingdown() ?
-                Error::SERVER_SHUTTING_DOWN : Error::OK;
-    if(is_loaded || err != Error::OK)
-      return loaded(err, cb);
+  void get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end);
+  
+  const bool is_any_begin();
 
-    SWC_LOGF(LOG_DEBUG, "LOADING RANGE %s", to_string().c_str());
+  const bool is_any_end();
 
-    if(!Env::FsInterface::interface()->exists(err, get_path(cellstores_dir))) {
-      if(err != Error::OK)
-        return loaded(err, cb);
-      create_folders(err);
-      if(err != Error::OK)
-        return loaded(err, cb);
-      
-      take_ownership(err, cb);
-    } else {
-      last_rgr_chk(err, cb);
-    }
+  void get_prev_key_end(DB::Cell::Key& key);
+  
+  void set_prev_key_end(const DB::Cell::Key& key);
 
-  }
+  const bool align(const DB::Cells::Interval& interval);
+  
+  const bool align(const DB::Cell::Key& key);
 
-  void take_ownership(int &err, ResponseCallback::Ptr cb) {
-    if(err == Error::RS_DELETED_RANGE)
-      return loaded(err, cb);
+  void schema_update(bool compact);
 
-    RangerEnv::rgr_data()->set_rgr(
-      err, get_path(ranger_data_file), cfg->file_replication());
-    if(err != Error::OK)
-      return loaded(err, cb);
+  void set_state(State new_state);
 
-    load(err, cb);
-  }
+  bool is_loaded();
+
+  bool deleted();
+
+  void add(ReqAdd* req);
+
+  void scan(ReqScan::Ptr req);
+
+  void scan_internal(ReqScan::Ptr req);
+
+  void create_folders(int& err);
+
+  void load(ResponseCallback::Ptr cb);
+
+  void take_ownership(int &err, ResponseCallback::Ptr cb);
 
   void on_change(int &err, bool removal, 
-                 const DB::Cell::Key* old_key_begin=nullptr) {
-    std::scoped_lock lock(m_mutex);
-    
-    if(type == Types::Range::MASTER) {
-      // update manager-root
-      // Mngr::RangeUpdated
-      return;
-    }
+                 const DB::Cell::Key* old_key_begin=nullptr);
 
-    auto updater = std::make_shared<client::Query::Update>();
-    // RangerEnv::updater();
-    uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
-
-    updater->columns->create(cid_typ, 1, 0, Types::Column::PLAIN);
-
-    DB::Cells::Cell cell;
-    cell.key.copy(m_interval.key_begin);
-    cell.key.insert(0, std::to_string(cfg->cid));
-
-    if(removal) {
-      cell.flag = DB::Cells::DELETE;
-      updater->columns->add(cid_typ, cell);
-    } else {
-
-      cell.flag = DB::Cells::INSERT;
-      DB::Cell::Key key_end(m_interval.key_end);
-      key_end.insert(0, std::to_string(cfg->cid));
-
-      DB::Cell::KeyVec aligned_min;
-      DB::Cell::KeyVec aligned_max;
-      if(type == Types::Range::DATA) { 
-        // only DATA until MASTER/META aligned on cells value min/max
-        aligned_min.copy(m_interval.aligned_min);
-        aligned_min.insert(0, std::to_string(cfg->cid));
-        aligned_max.copy(m_interval.aligned_max);
-        aligned_max.insert(0, std::to_string(cfg->cid));
-      }
-
-      cell.own = true;
-      cell.vlen = key_end.encoded_length() 
-                + Serialization::encoded_length_vi64(rid)
-                + aligned_min.encoded_length()
-                + aligned_max.encoded_length() ;
-
-      cell.value = new uint8_t[cell.vlen];
-      uint8_t * ptr = cell.value;
-      key_end.encode(&ptr);
-      Serialization::encode_vi64(&ptr, rid);
-      aligned_min.encode(&ptr);
-      aligned_max.encode(&ptr);
-
-      cell.set_time_order_desc(true);
-      updater->columns->add(cid_typ, cell);
-
-      if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
-        SWC_ASSERT(!old_key_begin->empty()); 
-        // remove begin-any should not happen
-
-        cell.free();
-        cell.flag = DB::Cells::DELETE;
-        cell.key.copy(*old_key_begin);
-        cell.key.insert(0, std::to_string(cfg->cid));
-        updater->columns->add(cid_typ, cell);
-      }
-    }
-    updater->commit(cid_typ);
-    updater->wait();
-    err = updater->result->error();
-      
-    // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
-    // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
-  }
-
-  void unload(Callback::RangeUnloaded_t cb, bool completely) {
-    int err = Error::OK;
-    {
-      std::scoped_lock lock(m_mutex);
-      if(m_state == State::DELETED){
-        cb(err);
-        return;
-      }
-      m_state = State::UNLOADING;
-    }
-
-    wait();
-    wait_queue();
-
-    set_state(State::NOTLOADED);
-
-    blocks.unload();
-
-    if(completely) // whether to keep ranger_data_file
-      Env::FsInterface::interface()->remove(err, get_path(ranger_data_file));
-    
-    SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
-              cfg->cid, rid, err, Error::get_text(err));
-    cb(err);
-  }
+  void unload(Callback::RangeUnloaded_t cb, bool completely);
   
-  void remove(int &err, bool meta=true) {
-    {
-      std::scoped_lock lock(m_mutex);
-      m_state = State::DELETED;
-    }
-    if(meta)
-      on_change(err, true);
+  void remove(int &err, bool meta=true);
 
-    wait();
-    wait_queue();
-    blocks.remove(err);
+  void wait_queue();
 
-    Env::FsInterface::interface()->rmdir(err, get_path(""));  
+  const bool compacting();
 
-    SWC_LOGF(LOG_INFO, "REMOVED RANGE %s", to_string().c_str());
-  }
-
-  void wait_queue() {
-    for(;;) {
-      {
-        std::shared_lock lock(m_mutex);
-        if(m_q_adding.empty())
-          break;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  const bool compacting() {
-    std::shared_lock lock(m_mutex);
-    return m_compacting != Compact::NONE;
-  }
-
-  void compacting(Compact state) {
-    {
-      std::scoped_lock lock(m_mutex);
-      m_compacting = state;
-    }
-    if(state == Compact::NONE)
-      m_cv.notify_all();
-  }
+  void compacting(Compact state);
   
-  const bool compact_possible() {
-    std::scoped_lock lock(m_mutex);
-    if(m_state != State::LOADED || m_compacting != Compact::NONE
-       || (!m_require_compact && blocks.processing()))
-      return false;
-    m_compacting = Range::Compact::CHECKING;
-    return true;
-  }
+  const bool compact_possible();
 
-  void compact_require(bool require) {
-    std::scoped_lock lock(m_mutex);
-    m_require_compact = require;
-  }
+  void compact_require(bool require);
 
-  const bool compact_required() {
-    std::shared_lock lock(m_mutex);
-    return m_require_compact;
-  }
+  const bool compact_required();
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
-                std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
-    bool intval_chg;
-    DB::Cell::Key old_key_begin;
-    {
-      std::scoped_lock lock(m_mutex);
-      blocks.apply_new(err, w_cellstores, fragments_old);
-      if(err)
-        return;
-
-      old_key_begin.copy(m_interval.key_begin);
-      auto old_key_end(m_interval.key_end);
-      auto old_aligned_min(m_interval.aligned_min);
-      auto old_aligned_max(m_interval.aligned_max);
-
-      m_interval.free();
-      if(type == Types::Range::DATA)
-        blocks.expand_and_align(m_interval);
-      else
-        blocks.expand(m_interval);
-
-      intval_chg = !m_interval.key_begin.equal(old_key_begin) ||
-                   !m_interval.key_end.equal(old_key_end) ||
-                   !m_interval.aligned_min.equal(old_aligned_min) ||
-                   !m_interval.aligned_max.equal(old_aligned_max);
-    }
-    if(intval_chg)
-      on_change(err, false, &old_key_begin);
-    err = Error::OK;
-  }
+                std::vector<CommitLog::Fragment::Ptr>& fragments_old);
   
-  void create(int &err, const CellStore::Writers& w_cellstores) {
-    
-    create_folders(err);
-    if(err)
-      return;
-    RangerEnv::rgr_data()->set_rgr(
-      err, get_path(ranger_data_file), cfg->file_replication());
-    if(err)
-      return;
+  void create(int &err, const CellStore::Writers& w_cellstores);
 
-    auto fs = Env::FsInterface::interface();
-    for(auto& cs : w_cellstores) {
-      fs->rename(
-        err, 
-        cs->smartfd->filepath(), 
-        get_path_cs(cs->id)
-      );
-      if(err)
-        return;
-        
-      blocks.cellstores.add(
-        CellStore::Read::make(
-          err, cs->id, shared_from_this(), cs->interval)
-      );
-      if(err)
-        return;
-    }
-
-    m_interval.free();
-    if(type == Types::Range::DATA)
-      blocks.expand_and_align(m_interval);
-    else
-      blocks.expand(m_interval);
-
-    RangeData::save(err, blocks.cellstores);
-    on_change(err, false);
-    
-    fs->remove(err, get_path(ranger_data_file));
-  }
-
-  const std::string to_string() {
-    std::shared_lock lock(m_mutex);
-    
-    std::string s("(");
-    s.append(DB::RangeBase::to_string());
-    s.append(" state=");
-    s.append(std::to_string(m_state));
-    s.append(" type=");
-    s.append(Types::to_string(type));
-    s.append(" ");
-    s.append(blocks.to_string());
-    s.append(")");
-    return s;
-  }
+  const std::string to_string();
 
   private:
 
-  void loaded(int &err, ResponseCallback::Ptr cb) {
-    {
-      std::shared_lock lock(m_mutex);
-      if(m_state == State::DELETED)
-        err = Error::RS_DELETED_RANGE;
-    }
-    cb->response(err);
-  }
+  void loaded(int &err, ResponseCallback::Ptr cb);
 
-  void last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
-    // ranger.data
-    auto rgr_data = RangerEnv::rgr_data();
-    Files::RgrData::Ptr rs_last = get_last_rgr(err);
+  void last_rgr_chk(int &err, ResponseCallback::Ptr cb);
 
-    if(rs_last->endpoints.size() 
-      && !has_endpoint(rgr_data->endpoints, rs_last->endpoints)){
-      SWC_LOGF(LOG_DEBUG, "RANGER-LAST=%s RANGER-NEW=%s", 
-                rs_last->to_string().c_str(), rgr_data->to_string().c_str());
-                
-      Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
-        std::make_shared<Protocol::Rgr::Req::RangeUnload>(
-          shared_from_this(), cb));
-      return;
-    }
+  void load(int &err, ResponseCallback::Ptr cb);
 
-    take_ownership(err, cb);
-  }
+  const bool wait();
 
-  void load(int &err, ResponseCallback::Ptr cb) {
-    bool is_initial_column_range = false;
-    RangeData::load(err, blocks.cellstores);
-    if(err) 
-      (void)err;
-      //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
+  void run_add_queue();
 
-    else if(blocks.cellstores.empty()) {
-      // init 1st cs(for log_cells)
-      auto cs = CellStore::create_init_read(
-        err, cfg->blk_enc, shared_from_this());
-      if(!err) {
-        blocks.cellstores.add(cs);
-        is_initial_column_range = true;
-      }
-    }
- 
-    if(!err) {
-      blocks.load(err);
-      if(!err) {
-        m_interval.free();
-        if(type == Types::Range::DATA)
-          blocks.expand_and_align(m_interval);
-        else
-          blocks.expand(m_interval);
 
-        if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
-          RangeData::save(err, blocks.cellstores);
-          on_change(err, false);
-        }
-        //else if(cfg->cid > 2) { // meta-recovery, meta need pre-delete >=[cfg->cid]
-        //  on_change(err, false);
-        //}
-      }
-    }
-  
-    if(!err) 
-      set_state(State::LOADED);
-      
-    loaded(err, cb);   // RSP-LOAD-ACK
-
-    if(is_loaded()) {
-      SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
-    } else 
-      SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
-               err, Error::get_text(err), to_string().c_str());
-  }
-
-  const bool wait() {
-    bool waited;
-    std::unique_lock lock_wait(m_mutex);
-    if(waited = (m_compacting == Compact::COMPACTING))
-      m_cv.wait(
-        lock_wait, 
-        [&compacting=m_compacting](){return compacting == Compact::NONE;}
-      );  
-    return waited;
-  }
-
-  void run_add_queue() {
-    ReqAdd* req;
-
-    int err;
-    DB::Cells::Cell cell;
-    const uint8_t* ptr;
-    size_t remain; 
-    bool early_range_end;
-    bool intval_chg;
-
-    DB::Cell::Key key_end;
-    {
-      std::shared_lock lock(m_mutex);
-      key_end.copy(m_interval.key_end);
-    }
-    uint64_t ttl = cfg->cell_ttl();
-
-    for(;;) {
-      err = Error::OK;
-      early_range_end = false;
-      if(wait()) {
-        std::shared_lock lock(m_mutex);
-        key_end.copy(m_interval.key_end);
-      }
-      blocks.processing_increment();
-      
-      intval_chg = false;
-      {
-        std::shared_lock lock(m_mutex);
-        req = m_q_adding.front();
-      }
-      ptr = req->input.base;
-      remain = req->input.size; 
-      if(req->cb->expired(remain/100000))
-        err = Error::REQUEST_TIMEOUT;
-      
-      if(m_state != State::LOADED && m_state != State::UNLOADING) {
-        err = m_state == State::DELETED ? 
-              Error::COLUMN_MARKED_REMOVED 
-              : Error::RS_NOT_LOADED_RANGE;
-      }
-
-      while(!err && remain) {
-        cell.read(&ptr, &remain);
-
-        if(cell.has_expired(ttl))
-          continue;
-
-        if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
-          early_range_end = true;
-          continue;
-        } // + checking prev_key_end.compare(cell.key) != Condition::GT) {
-          // late_range_begin = true;
-          // continue;
-          // }
-        
-        if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
-          cell.set_timestamp(Time::now_ns());
-          if(cell.control & DB::Cells::AUTO_TIMESTAMP)
-            cell.control ^= DB::Cells::AUTO_TIMESTAMP;
-        }
-
-        blocks.add_logged(cell);
-        
-        if(type == Types::Range::DATA) {
-          if(align(cell.key))
-            intval_chg = true;
-        } else {
-          /* MASTER/META need aligned interval 
-               over cells value +plus (cs+logs) at compact
-          if(cell.flag == DB::Cells::INSERT) {
-            size_t remain = cell.vlen;
-            const uint8_t * ptr = cell.value;
-            DB::Cell::Key key_end;
-            key_end.decode(&ptr, &remain);
-            Serialization::decode_vi64(&ptr, &remain);//rid
-            DB::Cell::Key aligned_min;
-            aligned_min.decode(&ptr, &remain);
-            DB::Cell::Key aligned_max;
-            aligned_max.decode(&ptr, &remain);
-            intval_chg = align(aligned_min);
-            if(align(aligned_max))
-              intval_chg = true;
-          }
-          */
-        }
-      }
-      blocks.processing_decrement();
-
-      if(intval_chg) {
-        intval_chg = false;
-        on_change(err, false);
-      }
-
-      if(early_range_end) {
-        req->cb->response(Error::RANGE_END_EARLIER, key_end);
-      } else {
-        req->cb->response(err);
-      }
-      
-      delete req;
-      {
-        std::scoped_lock lock(m_mutex);
-        m_q_adding.pop();
-        if(m_q_adding.empty())
-          break;
-      }
-    }
-    
-    if(blocks.commitlog.size_bytes_encoded() > 
-        (cfg->cellstore_size()/100) * cfg->compact_percent()) {
-      compact_require(true);
-      RangerEnv::compaction_schedule(10000);
-    }
-
-  }
-
+  private:
+  const std::string             m_path;
+  std::shared_mutex             m_mutex;
+  DB::Cells::Interval           m_interval;
+  DB::Cell::Key                 m_prev_key_end;
 
   std::atomic<State>            m_state;
-   
   Compact                       m_compacting;
   bool                          m_require_compact;
   std::queue<ReqAdd*>           m_q_adding;
@@ -635,6 +170,25 @@ class Range : public DB::RangeBase {
 }}
 
 
-#include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.cc"
+
+
+//#ifdef SWC_IMPL_SOURCE
+#include "swcdb/ranger/db/Range.cc"
+
+#include "swcdb/ranger/db/RangeBlock.cc"
+#include "swcdb/ranger/db/RangeBlocks.cc"
+#include "swcdb/ranger/db/RangeBlockLoader.cc"
+
+#include "swcdb/ranger/db/CellStoreReaders.cc"
+#include "swcdb/ranger/db/CellStore.cc"
+#include "swcdb/ranger/db/CellStoreBlock.cc"
+
+#include "swcdb/ranger/db/CommitLog.cc"
+#include "swcdb/ranger/db/CommitLogFragment.cc"
+
+#include "swcdb/ranger/db/RangeData.cc"
+
+//#endif 
+
 
 #endif //swcdb_ranger_db_Range_h

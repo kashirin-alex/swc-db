@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
   RangerEnv::init();
   
   auto cid = 11;
-  DB::ColumnCfg col_cfg(cid);
+  Ranger::ColumnCfg col_cfg(cid);
   col_cfg.update(
     DB::Schema(
       cid, 
@@ -92,15 +92,15 @@ int main(int argc, char** argv) {
   int num_cells = 1000000;
   int versions = 3;
 
-  auto range = std::make_shared<DB::RangeBase>(&col_cfg, 1);
+  auto range = std::make_shared<Ranger::Range>(&col_cfg, 1);
   Ranger::CommitLog::Fragments commitlog;
   commitlog.init(range);
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(DB::RangeBase::log_dir));
+    err, range->get_path(range->LOG_DIR));
   Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(DB::RangeBase::cellstores_dir));
+    err, range->get_path(range->CELLSTORES_DIR));
 
   std::cout << " init:  \n" << commitlog.to_string() << "\n";
   
@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
   std::cerr << " scanned blocks (add_logged), OK\n";
 
   Env::FsInterface::interface()->rmdir(
-    err, range->get_column_path(range->cfg->cid));
+    err, DB::RangeBase::get_column_path(range->cfg->cid));
   
   std::cout << "\n-   OK   -\n\n";
 

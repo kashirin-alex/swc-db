@@ -16,7 +16,7 @@ class RangeQuerySelect : public ReqScan {
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
                    const DB::Specs::Interval& spec, 
                    DB::Cells::Vector& cells, 
-                   Range::Ptr range, uint32_t limit_buffer)
+                   RangePtr range, uint32_t limit_buffer)
                   : ReqScan(conn, ev, spec, cells), 
                     range(range) {
     limit_buffer_sz = limit_buffer;
@@ -63,7 +63,7 @@ class RangeQuerySelect : public ReqScan {
     
   }
 
-  Range::Ptr  range;
+  RangePtr  range;
 
 };
 

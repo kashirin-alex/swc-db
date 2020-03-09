@@ -48,11 +48,11 @@ void apply_key(const std::string& idn,
   }
 }
 
-void read_cs(int id, SWC::DB::RangeBase::Ptr range, 
+void read_cs(int id, SWC::Ranger::RangePtr range, 
              int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key);
 
-size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
+size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
   int err = SWC::Error::OK;
 
   SWC::Ranger::CellStore::Write cs_writer(
@@ -143,7 +143,7 @@ size_t write_cs(int id, SWC::DB::RangeBase::Ptr range, int any) {
   return expected_blocks;
 }
 
-void read_cs(int id, SWC::DB::RangeBase::Ptr range, 
+void read_cs(int id, SWC::Ranger::RangePtr range, 
              int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
   SWC::RangerEnv::init();
   
   auto cid = 11;
-  SWC::DB::ColumnCfg col_cfg(cid);
+  SWC::Ranger::ColumnCfg col_cfg(cid);
   col_cfg.update(
     SWC::DB::Schema(
       cid,
@@ -246,10 +246,10 @@ int main(int argc, char** argv) {
   
   int err = SWC::Error::OK;
 
-  auto range = std::make_shared<SWC::DB::RangeBase>(&col_cfg, 1);
+  auto range = std::make_shared<SWC::Ranger::Range>(&col_cfg, 1);
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(SWC::DB::RangeBase::cellstores_dir));
+    err, range->get_path(range->CELLSTORES_DIR));
 
   size_t expected_blocks = 0;
   for(auto i=1; i<=num_cellstores; ++i) {
@@ -350,7 +350,7 @@ int main(int argc, char** argv) {
   hdlr_err(err);
 
   SWC::Env::FsInterface::interface()->rmdir(
-    err, range->get_column_path(range->cfg->cid));
+    err, SWC::DB::RangeBase::get_column_path(range->cfg->cid));
 
   std::cout << "\n-   OK   -\n\n";
   exit(0);

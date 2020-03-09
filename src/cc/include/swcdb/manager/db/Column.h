@@ -26,19 +26,24 @@ class Column final {
   typedef std::shared_ptr<Column> Ptr;
   
   static bool create(int &err, const int64_t id) {
-    Env::FsInterface::interface()->mkdirs(err, Range::get_column_path(id));
+    Env::FsInterface::interface()->mkdirs(
+      err, DB::RangeBase::get_column_path(id));
     return true;
   }
 
   static bool remove(int &err, const int64_t id) {
     Env::FsInterface::interface()->rmdir_incl_opt_subs(
-      err, Range::get_column_path(id), Range::get_column_path());
+      err, 
+      DB::RangeBase::get_column_path(id), 
+      DB::RangeBase::get_column_path()
+    );
     return true;
   }
 
-  const DB::ColumnCfg  cfg;
+  const ColumnCfg  cfg;
 
-  Column(const int64_t cid) : cfg(cid), m_state(State::LOADING) {
+  Column(const int64_t cid) 
+        : cfg(cid), m_state(State::LOADING) {
   }
 
   virtual ~Column(){}
@@ -289,7 +294,8 @@ class Column final {
       }
     }
     if(m_ranges.empty()) {
-      Env::FsInterface::interface()->rmdir(err, Range::get_path(cfg.cid));
+      Env::FsInterface::interface()->rmdir(
+        err, DB::RangeBase::get_path(cfg.cid));
       SWC_LOGF(LOG_DEBUG, "FINALIZED REMOVE %s", _to_string().c_str());
       return true;
     }
@@ -305,22 +311,22 @@ class Column final {
   
   bool exists(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, Range::get_column_path(cfg.cid));
+      err, DB::RangeBase::get_column_path(cfg.cid));
   }
 
   bool exists_range_path(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, Range::get_path(cfg.cid));
+      err, DB::RangeBase::get_path(cfg.cid));
   }
 
   void create_range_path(int &err) {
     Env::FsInterface::interface()->mkdirs(
-      err, Range::get_path(cfg.cid));
+      err, DB::RangeBase::get_path(cfg.cid));
   }
 
   void ranges_by_fs(int &err, FS::IdEntries_t &entries){
     Env::FsInterface::interface()->get_structured_ids(
-      err, Range::get_path(cfg.cid), entries);
+      err, DB::RangeBase::get_path(cfg.cid), entries);
   }
 
   const std::string _to_string() {
@@ -372,13 +378,10 @@ class Column final {
       m_state = State::OK;
   }
 
-  std::shared_mutex          m_mutex;
-  std::atomic<State>         m_state;
+  std::shared_mutex         m_mutex;
+  std::atomic<State>        m_state;
+  std::vector<Range::Ptr>   m_ranges;
 
-  std::vector<Range::Ptr>    m_ranges;
-
-
-  typedef std::pair<uint64_t, int64_t>    RsSchemaRev;
   std::unordered_map<uint64_t, int64_t>   m_schemas_rev;
 
 };

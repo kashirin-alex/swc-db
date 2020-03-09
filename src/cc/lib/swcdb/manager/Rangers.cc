@@ -11,7 +11,6 @@
 #include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
 
-#include "swcdb/db/Protocol/Rgr/req/RangeIsLoaded.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"

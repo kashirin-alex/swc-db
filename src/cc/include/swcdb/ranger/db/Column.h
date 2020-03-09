@@ -6,7 +6,7 @@
 #ifndef swc_ranger_db_Column_h
 #define swc_ranger_db_Column_h
 
-#include "swcdb/db/Columns/RangeBase.h"
+
 #include "swcdb/ranger/db/Range.h"
 
 #include <memory>
@@ -20,10 +20,10 @@ class Column final {
   
   public:
 
-  typedef std::shared_ptr<Column>                 Ptr;
-  typedef std::unordered_map<int64_t, Range::Ptr> RangesMap;
+  typedef std::shared_ptr<Column>               Ptr;
+  typedef std::unordered_map<int64_t, RangePtr> RangesMap;
 
-  const DB::ColumnCfg  cfg;
+  const ColumnCfg  cfg;
 
   Column(const int64_t cid) : cfg(cid) { }
 
@@ -54,8 +54,8 @@ class Column final {
     RangerEnv::compaction_schedule(100);
   }
 
-  Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
-    Range::Ptr range = nullptr;
+  RangePtr get_range(int &err, const int64_t rid, bool initialize=false) {
+    RangePtr range = nullptr;
     {
       std::scoped_lock lock(m_mutex);
 
@@ -80,7 +80,7 @@ class Column final {
   }
 
   void unload(const int64_t rid, Callback::RangeUnloaded_t cb) {
-    Range::Ptr range = nullptr;
+    RangePtr range = nullptr;
     {
       std::scoped_lock lock(m_mutex);
       auto it = m_ranges.find(rid);
@@ -114,7 +114,7 @@ class Column final {
   }
   
   void remove(int &err, const int64_t rid, bool meta=true) {
-    Range::Ptr range = nullptr;
+    RangePtr range = nullptr;
     {
       std::scoped_lock lock(m_mutex);
       auto it = m_ranges.find(rid);
@@ -152,7 +152,7 @@ class Column final {
     return cfg.deleting;
   }
 
-  Range::Ptr get_next(size_t &idx) {
+  RangePtr get_next(size_t &idx) {
     std::shared_lock lock(m_mutex);
 
     if(m_ranges.size() > idx){
@@ -166,7 +166,7 @@ class Column final {
 
   const size_t release(size_t bytes=0) {
     size_t released = 0;
-    Range::Ptr range;
+    RangePtr range;
     RangesMap::iterator it;
     bool started = false;
     for(;;) {
