@@ -14,7 +14,7 @@
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fsbroker/FdsMap.h"
 
-#include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
+#include "swcdb/common/Protocol/handlers/NotImplemented.h"
 #include "swcdb/fsbroker/handlers/Exists.h"
 #include "swcdb/fsbroker/handlers/Remove.h"
 #include "swcdb/fsbroker/handlers/Length.h"

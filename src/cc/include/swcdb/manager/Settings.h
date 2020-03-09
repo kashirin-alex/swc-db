@@ -8,7 +8,7 @@
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/fs/Settings.h"
-#include "swcdb/client/Settings.h"
+#include "swcdb/db/client/Settings.h"
 
 namespace SWC{ namespace Config {
 

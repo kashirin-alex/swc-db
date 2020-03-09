@@ -6,8 +6,8 @@
 #define swc_lib_utils_ShellRanger_h
 
 
-#include "swcdb/client/Clients.h"
-#include "swcdb/client/AppContext.h"
+#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
 
 namespace SWC { namespace Utils { namespace shell {

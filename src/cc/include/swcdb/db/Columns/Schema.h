@@ -7,10 +7,11 @@
 #define swcdb_lib_db_Columns_Schema_h
 
 #include "swcdb/core/Serialization.h"
+
+#include "swcdb/db/Types/RangeSeq.h"
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoding.h"
 
-#include <shared_mutex>
 
 namespace SWC { namespace DB {
 
@@ -208,6 +209,7 @@ class Schema final {
     ;
   }
 
+	Types::RangeSeq range_seq;
 
 	const int64_t 		    cid;
 	const std::string 		col_name;

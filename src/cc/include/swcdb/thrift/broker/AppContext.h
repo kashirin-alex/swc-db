@@ -7,7 +7,7 @@
 
 #include "swcdb/thrift/gen-cpp/Broker.h"
 
-#include "swcdb/client/Clients.h"
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/thrift/broker/AppContextClient.h"
 #include "swcdb/thrift/broker/AppHandler.h"
 

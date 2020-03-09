@@ -8,7 +8,7 @@
 
 #include <shared_mutex>
 
-#include "swcdb/db/Files/RgrData.h"
+#include "swcdb/common/Files/RgrData.h"
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Cells/Interval.h"
 

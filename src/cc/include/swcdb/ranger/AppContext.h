@@ -12,13 +12,13 @@
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/core/comm/DispatchHandler.h"
 
-#include "swcdb/client/Clients.h"
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/ranger/AppContextClient.h"
 #include "swcdb/ranger/RangerEnv.h"
 
 #include "swcdb/db/Protocol/Commands.h"
 
-#include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
+#include "swcdb/common/Protocol/handlers/NotImplemented.h"
 #include "swcdb/ranger/Protocol/Mngr/req/RgrMngId.h"
 
 #include "swcdb/ranger/Protocol/handlers/AssignId.h"

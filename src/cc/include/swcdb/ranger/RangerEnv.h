@@ -7,9 +7,9 @@
 #define swcdb_ranger_RangerEnv_h
 
 #include "swcdb/fs/Interface.h"
-#include "swcdb/db/Files/RgrData.h"
+#include "swcdb/common/Files/RgrData.h"
 
-#include "swcdb/client/requests/Query/Select.h"
+#include "swcdb/db/client/Query/Select.h"
 
 
 namespace SWC {

@@ -5,11 +5,11 @@
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 
-#include "swcdb/client/Clients.h"
-#include "swcdb/client/AppContext.h"
+#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/client/requests/Query/Select.h"
+#include "swcdb/db/client/Query/Select.h"
 
 
 namespace SWC{ 

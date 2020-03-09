@@ -5,10 +5,10 @@
 #ifndef swc_lib_utils_ShellDbClient_h
 #define swc_lib_utils_ShellDbClient_h
 
-#include "swcdb/client/sql/SQL.h"
+#include "swcdb/db/client/sql/SQL.h"
 #include "swcdb/fs/Interface.h"
 
-#include "swcdb/db/Cells/TSV.h"
+#include "swcdb/common/Files/TSV.h"
 
 namespace SWC { namespace Utils { namespace shell {
 

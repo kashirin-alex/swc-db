@@ -10,7 +10,7 @@
 
 #include "swcdb/core/Time.h"
 #include "swcdb/db/Cells/Mutable.h"
-#include "swcdb/db/Stats/Stat.h"
+#include "swcdb/db/client/Stats/Stat.h"
 
 
 namespace Cells = SWC::DB::Cells;

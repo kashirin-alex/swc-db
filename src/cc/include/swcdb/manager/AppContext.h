@@ -13,12 +13,12 @@
 #include "swcdb/core/comm/DispatchHandler.h"
 
 #include "swcdb/fs/Interface.h"
-#include "swcdb/client/Clients.h"
+#include "swcdb/db/client/Clients.h"
 
 #include "swcdb/manager/AppContextClient.h"
 #include "swcdb/manager/MngrEnv.h"
 
-#include "swcdb/db/Protocol/Common/handlers/NotImplemented.h"
+#include "swcdb/common/Protocol/handlers/NotImplemented.h"
 #include "swcdb/manager/Protocol/handlers/MngrState.h"
 #include "swcdb/manager/Protocol/handlers/MngrActive.h"
 #include "swcdb/manager/Protocol/handlers/ColumnMng.h"
