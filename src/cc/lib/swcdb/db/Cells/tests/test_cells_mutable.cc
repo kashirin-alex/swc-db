@@ -12,6 +12,12 @@
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/client/Stats/Stat.h"
 
+#include "swcdb/core/config/Settings.h"
+namespace SWC { namespace Config {
+void Settings::init_app_options() {}
+void Settings::init_post_cmd_args() {}
+}}
+
 
 namespace Cells = SWC::DB::Cells;
 
