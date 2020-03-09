@@ -497,20 +497,8 @@ void MngrRole::set_mngr_inchain(ConnHandlerPtr mngr) {
 } // namespace Manager
 
 
-namespace Protocol { namespace Mngr {namespace Req {
-  void MngrState::disconnected(ConnHandlerPtr conn) {
-    Env::Mngr::role()->disconnection(
-      conn->endpoint_remote, conn->endpoint_local);
-  }
-}}}
-
-
-namespace client { namespace Mngr {
-  void AppContext::disconnected(ConnHandlerPtr conn) {
-    Env::Mngr::role()->disconnection(
-      conn->endpoint_remote, conn->endpoint_local);
-  }
-}}
-
-
 }
+
+
+#include "swcdb/manager/AppContextClient.cc"
+#include "swcdb/manager/Protocol/Mngr/req/MngrState.cc"

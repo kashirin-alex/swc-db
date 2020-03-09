@@ -15,39 +15,13 @@ class MngrState : public client::ConnQueue::ReqBase {
   public:
 
   MngrState(ResponseCallback::Ptr cb, Manager::MngrsStatus &states, 
-            uint64_t token, const EndPoint& mngr_host, uint32_t timeout) 
-            : cb(cb) {
-    cbp = CommBuf::make(Params::MngrState(states, token, mngr_host));
-    cbp->header.set(MNGR_STATE, timeout);
-  }
+            uint64_t token, const EndPoint& mngr_host, uint32_t timeout);
   
-  virtual ~MngrState() { }
+  virtual ~MngrState();
 
   void disconnected(ConnHandlerPtr conn);
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
-    if(was_called)
-      return;
-
-    if(ev->type == Event::Type::DISCONNECT){
-      disconnected(conn);
-      return;
-    }
-    if(client::ConnQueue::ReqBase::is_timeout(conn, ev))
-      return;
-
-    if(ev->header.command == MNGR_STATE && ev->response_code() == Error::OK){
-      if(cb != nullptr){
-        //std::cout << "response_ok, cb=" << (size_t)cb.get() 
-        //          << " rsp, err=" << ev->to_str() << "\n";
-        cb->response_ok();
-      }
-      was_called = true;
-      return;
-    }
-
-    conn->do_close();
-  }
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
   private:
   ResponseCallback::Ptr   cb;

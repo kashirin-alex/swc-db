@@ -10,42 +10,14 @@ namespace SWC { namespace client { namespace Mngr {
 class AppContext : public SWC::AppContext {
   public:
 
-  AppContext() {}
-  virtual ~AppContext(){}
+  AppContext();
+
+  virtual ~AppContext();
 
   void disconnected(ConnHandlerPtr conn);
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
-    switch (ev->type) {
-
-      case Event::Type::ESTABLISHED: {
-        break;
-      }
-      
-      case Event::Type::DISCONNECT: {
-        disconnected(conn);
-        return;
-      }
-
-      case Event::Type::ERROR: {
-        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
-        break;
-      }
-
-      case Event::Type::MESSAGE: {
-        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
-        break;
-      }
-
-      default: {
-        break;
-      }
-
-    }
-    
-  }
-  
 };
 
 }}}
