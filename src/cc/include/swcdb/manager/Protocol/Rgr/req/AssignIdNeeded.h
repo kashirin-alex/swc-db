@@ -14,47 +14,22 @@ class AssignIdNeeded : public client::ConnQueue::ReqBase {
 
   AssignIdNeeded(Manager::Ranger::Ptr rs_chk, 
                  Manager::Ranger::Ptr rs_nxt, 
-                 Manager::Range::Ptr range) 
-                : client::ConnQueue::ReqBase(false), 
-                  rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
-    cbp = CommBuf::make();
-    cbp->header.set(ASSIGN_ID_NEEDED, 60000);
-  }
+                 Manager::Range::Ptr range) ;
   
-  virtual ~AssignIdNeeded() { }
+  virtual ~AssignIdNeeded();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
-    if(was_called)
-      return;
-    was_called = true;
+  bool valid() override;
 
-    if(!valid() || ev->type == Event::Type::DISCONNECT) {
-      handle_no_conn();
-      return;
-    }
-
-    if(ev->header.command == ASSIGN_ID_NEEDED){
-      rsp(ev->error != Error::OK ? ev->error : ev->response_code());
-      return;
-    }
-  }
-
-  bool valid() override {
-    return !range->deleted();
-  }
-
-  void handle_no_conn() override {
-    rsp(Error::COMM_NOT_CONNECTED);
-  };
+  void handle_no_conn() override;
 
   void rsp(int err);
 
-
   Manager::Ranger::Ptr rs_nxt;
   Manager::Range::Ptr  range;
-  private:
 
+  private:
   Manager::Ranger::Ptr rs_chk;
 };
 

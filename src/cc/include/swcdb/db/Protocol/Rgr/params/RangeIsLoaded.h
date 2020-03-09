@@ -6,7 +6,7 @@
 #ifndef swc_db_protocol_rgr_params_RangeIsLoaded_h
 #define swc_db_protocol_rgr_params_RangeIsLoaded_h
 
-#include "swcdb/db/Protocol/Common/params/ColumnId.h"
+#include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 

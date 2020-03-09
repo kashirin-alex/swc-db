@@ -5,12 +5,13 @@
 
 #include "swcdb/manager/Rangers.h"
 #include "swcdb/manager/Protocol/Mngr/req/RgrUpdate.h"
-#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.h"
 
-#include "swcdb/db/Protocol/Rgr/req/RangeLoad.h"
+#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.h"
+#include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
+#include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.h"
+#include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
+
 #include "swcdb/db/Protocol/Rgr/req/RangeIsLoaded.h"
-#include "swcdb/db/Protocol/Rgr/req/ColumnUpdate.h"
-#include "swcdb/db/Protocol/Rgr/req/ColumnDelete.h"
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
@@ -589,64 +590,12 @@ void Rangers::changes(RangerList& hosts, bool sync_all) {
 
 
 
-} // namespace Manager
+}} // namespace SWC::Manager
 
 
-namespace Protocol { namespace Rgr { namespace Req { 
 
-void RangeLoad::loaded(int err, bool failure, 
-                                           const DB::Cells::Interval& intval) {
-  auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid, false);
-  if(col == nullptr) {
-    Env::Mngr::rangers()->range_loaded(
-      rgr, range, Error::COLUMN_MARKED_REMOVED, failure);
-    return;
-  }
-  if(!err)
-    col->change_rgr_schema(rgr->id, schema_revision);
-                           
-  else if(err == Error::COLUMN_SCHEMA_MISSING)
-    col->remove_rgr_schema(rgr->id);
 
-  Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
-  col->sort(range, intval);
-  SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
-            err, Error::get_text(err), range->to_string().c_str());
-}
-
-void ColumnUpdate::updated(int err, bool failure) {
-  if(!err) {
-    Env::Mngr::columns()->get_column(err, schema->cid, false)
-                             ->change_rgr_schema(rgr->id, schema->revision);
-    if(!Env::Mngr::rangers()->update(schema, false)) {
-      Env::Mngr::mngd_columns()->update(
-        Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
-        schema,
-        err
-      );
-    }
-  } else if(failure) {
-    ++rgr->failures;
-    request_again();
-  } 
-}
-
-void AssignIdNeeded::rsp(int err) {
-  if(!err) 
-    // RsId assignment on the way, put range back as not assigned 
-    Env::Mngr::rangers()->range_loaded(
-      rs_nxt, range, Error::RS_NOT_READY);
-  else
-    Env::Mngr::rangers()->assign_range(rs_nxt, range);
-
-    // the same cond to reqs pending_id
-  Env::Mngr::rangers()->assign_range_chk_last(err, rs_chk);
-}
-
-void ColumnDelete::remove(int err) {
-  Env::Mngr::mngd_columns()->remove(err, cid, rgr->id);  
-}
-
-}}}
-
-}
+#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.cc"
+#include "swcdb/manager/Protocol/Rgr/req/RangeLoad.cc"
+#include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.cc"
+#include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.cc"
