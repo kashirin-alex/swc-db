@@ -4,7 +4,12 @@
 
 set(swcdb_sources
 	Cells/Vector.cc
-	
+
+	Types/Column.cc
+	Types/Encoding.cc
+	Types/Range.cc
+	Types/RangeSeq.cc
+
 	Protocol/Common/params/HostEndPoints.cc
 
 	Protocol/Rgr/params/Report.cc
@@ -67,7 +72,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	cell
 	SRCS	Cells/tests/test_cell.cc
-	TARGETS	swcdb_core
+	TARGETS	swcdb_core swcdb
 )
 
 ADD_TEST_TARGET(
