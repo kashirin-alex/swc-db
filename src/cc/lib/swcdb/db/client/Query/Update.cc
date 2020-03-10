@@ -206,7 +206,7 @@ void Update::Locator::locate_on_manager() {
       Protocol::Mngr::Req::RgrGet::request(
         params,
         [locator=shared_from_this()]
-        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
           if(locator->located_on_manager(req, rsp))
             locator->updater->result->completion_decr();
         }
@@ -332,7 +332,7 @@ void Update::Locator::resolve_on_manager() {
       auto req = Protocol::Mngr::Req::RgrGet::make(
         Protocol::Mngr::Params::RgrGetReq(cid, rid),
         [locator=shared_from_this()]
-        (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
+        (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
           if(locator->located_ranger(req, rsp))
             locator->updater->result->completion_decr();
         }

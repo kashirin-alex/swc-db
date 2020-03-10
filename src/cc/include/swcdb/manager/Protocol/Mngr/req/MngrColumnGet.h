@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class MngrColumnGet : public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(int, Params::ColumnGetRsp)> Cb_t;
+  typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, Cb_t cb) : cb(cb) {
     cbp = CommBuf::make(params);

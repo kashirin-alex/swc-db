@@ -196,7 +196,7 @@ class DbClient : public Interface {
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
         (client::ConnQueue::ReqBase::Ptr req, int error, 
-         Protocol::Mngr::Params::ColumnListRsp rsp) {
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             schemas = rsp.schemas;
           await->set_value(error);
@@ -217,7 +217,7 @@ class DbClient : public Interface {
         schema->cid,
         [schema, &proccessing, await=&res]
         (client::ConnQueue::ReqBase::Ptr req, 
-         Protocol::Mngr::Params::ColumnCompactRsp rsp) {
+         const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           SWC_PRINT << "Compactig Column cid=" << schema->cid 
                     << " '" << schema->col_name << "' err=" << rsp.err 
                     << "(" << Error::get_text(rsp.err) << ")" 
@@ -245,7 +245,7 @@ class DbClient : public Interface {
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
         (client::ConnQueue::ReqBase::Ptr req, int error, 
-         Protocol::Mngr::Params::ColumnListRsp rsp) {
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             schemas = rsp.schemas;
           await->set_value(error);

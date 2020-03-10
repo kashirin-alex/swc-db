@@ -68,7 +68,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (client::ConnQueue::ReqBase::Ptr req_ptr, 
-        int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
+        int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
           std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
@@ -127,7 +127,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (client::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
+       int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
         
         if(err == Error::REQUEST_TIMEOUT) {
           std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
@@ -263,7 +263,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
       name, 
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (client::ConnQueue::ReqBase::Ptr req_ptr, 
-       int err, Protocol::Mngr::Params::ColumnGetRsp rsp) {
+       int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
           std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";

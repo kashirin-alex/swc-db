@@ -75,7 +75,7 @@ void Schemas::request(int& err, int64_t cid) {
     cid, 
     [await=&res, schemas=m_schemas] 
     (client::ConnQueue::ReqBase::Ptr req_ptr,
-      int error, Protocol::Mngr::Params::ColumnGetRsp rsp) {
+      int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         std::cout << " error=" << error << "(" << Error::get_text(error) << ") \n";
         req_ptr->request_again();
@@ -98,7 +98,7 @@ void Schemas::request(int& err, const std::string &name) {
     name, 
     [await=&res, schemas=m_schemas] 
     (client::ConnQueue::ReqBase::Ptr req_ptr,
-      int error, Protocol::Mngr::Params::ColumnGetRsp rsp) {
+      int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         std::cout << " error=" << error << "(" << Error::get_text(error) << ") \n";
         req_ptr->request_again();

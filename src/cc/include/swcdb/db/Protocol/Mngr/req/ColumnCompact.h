@@ -18,7 +18,7 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
-                              Params::ColumnCompactRsp)> Cb_t;
+                             const Params::ColumnCompactRsp&)> Cb_t;
  
   static void request(int64_t cid, const Cb_t cb, 
                       const uint32_t timeout = 10000);

@@ -42,7 +42,7 @@ class AppHandler : virtual public BrokerIf {
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
         (client::ConnQueue::ReqBase::Ptr req, int error, 
-         Protocol::Mngr::Params::ColumnListRsp rsp) {
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
           await->set_value(error);
@@ -128,7 +128,7 @@ class AppHandler : virtual public BrokerIf {
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
         (client::ConnQueue::ReqBase::Ptr req, int error, 
-         Protocol::Mngr::Params::ColumnListRsp rsp) {
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
           await->set_value(error);
@@ -149,7 +149,7 @@ class AppHandler : virtual public BrokerIf {
         schema->cid,
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
         (client::ConnQueue::ReqBase::Ptr req, 
-         Protocol::Mngr::Params::ColumnCompactRsp rsp) {
+         const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           std::scoped_lock lock(mutex);
           auto& r = _return.emplace_back();
           r.cid=cid;
@@ -534,7 +534,8 @@ class AppHandler : virtual public BrokerIf {
   }
 
   std::mutex m_mutex;
-  std::unordered_map<int64_t, client::Query::Update::Ptr> m_updaters;
+  std::unordered_map<
+    int64_t, client::Query::Update::Ptr> m_updaters;
 };
 
 

@@ -77,7 +77,7 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
     Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Req::MngrColumnGet>(
         req_params,
-        [conn, ev](int err, Params::ColumnGetRsp params){
+        [conn, ev](int err, const Params::ColumnGetRsp& params){
           if(err == Error::OK && params.schema != nullptr){
             int tmperr;
             Env::Mngr::schemas()->add(tmperr, params.schema);

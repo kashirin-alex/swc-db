@@ -321,7 +321,7 @@ void Select::Scanner::locate_on_manager(bool next_range) {
   Protocol::Mngr::Req::RgrGet::request(
     params,
     [next_range, scanner=shared_from_this()]
-    (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
+    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(scanner->located_on_manager(req, rsp, next_range))
         scanner->col->selector->result->completion--;
     }
@@ -333,7 +333,7 @@ void Select::Scanner::resolve_on_manager() {
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
     [scanner=shared_from_this()]
-    (ReqBase::Ptr req, Protocol::Mngr::Params::RgrGetRsp rsp) {
+    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(scanner->located_on_manager(req, rsp))
         scanner->col->selector->result->completion--;
     }

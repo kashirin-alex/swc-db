@@ -18,7 +18,7 @@ class ColumnList: public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
-                             int, Params::ColumnListRsp)> Cb_t;
+                             int, const Params::ColumnListRsp&)> Cb_t;
 
   static void request(const Cb_t cb, const uint32_t timeout = 10000);
 

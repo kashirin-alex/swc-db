@@ -20,7 +20,7 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
-                              Params::RangeRemoveRsp)> Cb_t;
+                             const Params::RangeRemoveRsp&)> Cb_t;
  
   static void request(int64_t cid, int64_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){

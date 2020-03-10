@@ -20,7 +20,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
-                              Params::RangeCreateRsp)> Cb_t;
+                             const Params::RangeCreateRsp&)> Cb_t;
  
   static void request(int64_t cid, int64_t rgr_id, 
                       const Cb_t cb, const uint32_t timeout = 10000){
