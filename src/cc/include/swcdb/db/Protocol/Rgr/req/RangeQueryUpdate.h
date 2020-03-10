@@ -3,12 +3,12 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_rgr_req_RangeQueryUpdate_h
-#define swc_lib_db_protocol_rgr_req_RangeQueryUpdate_h
+#ifndef swc_db_protocol_rgr_req_RangeQueryUpdate_h
+#define swc_db_protocol_rgr_req_RangeQueryUpdate_h
 
 
-#include "swcdb/db/Protocol/Commands.h"
 
+#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 
 
@@ -21,62 +21,23 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeQueryUpdateRsp&)> Cb_t;
 
-  static inline void 
+  static void 
   request(const Params::RangeQueryUpdateReq& params, DynamicBuffer::Ptr buffer,
           const EndPoints& endpoints, const Cb_t cb, 
-          const uint32_t timeout = 10000) {
-    std::make_shared<RangeQueryUpdate>(
-      params, buffer, endpoints, cb, timeout)
-      ->run();
-  }
+          const uint32_t timeout = 10000);
 
 
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
                    DynamicBuffer::Ptr buffer, const EndPoints& endpoints,
-                   const Cb_t cb, const uint32_t timeout) 
-                  : client::ConnQueue::ReqBase(false), 
-                    endpoints(endpoints), cb(cb) {
-    // timeout by buffer->fill() bytes ratio
-    StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-    cbp = CommBuf::make(params, snd_buf);
-    cbp->header.set(RANGE_QUERY_UPDATE, timeout);
-  }
+                   const Cb_t cb, const uint32_t timeout);
 
-  virtual ~RangeQueryUpdate(){}
+  virtual ~RangeQueryUpdate();
 
-  void handle_no_conn() override {
-    cb(req(), Params::RangeQueryUpdateRsp(Error::COMM_NOT_CONNECTED));
-  }
+  void handle_no_conn() override;
 
-  bool run(uint32_t timeout=0) override {
-    Env::Clients::get()->rgr->get(endpoints)->put(req());
-    return true;
-  }
+  bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
-    
-    if(ev->type == Event::Type::DISCONNECT) {
-      handle_no_conn();
-      return;
-    }
-
-    Params::RangeQueryUpdateRsp rsp_params;
-    if(ev->type == Event::Type::ERROR) {
-      rsp_params.err = ev->error;
-      cb(req(), rsp_params);
-      return;
-    }
-
-    try{
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      rsp_params.err = e.code();
-    }
-    cb(req(), rsp_params);
-  }
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
   private:
 
@@ -87,4 +48,9 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_req_RangeLocate_h
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.cc"
+#endif 
+
+#endif // swc_db_protocol_rgr_req_RangeQueryUpdate_h

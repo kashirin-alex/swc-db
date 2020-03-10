@@ -6,6 +6,15 @@ set(swcdb_sources
 	Cells/Vector.cc
 	Protocol/Rgr/params/Report.cc
 	Protocol/Rgr/req/Report.cc
+	Protocol/Rgr/params/ColumnCompact.cc
+	Protocol/Rgr/req/ColumnCompact.cc
+	Protocol/Rgr/params/RangeLocate.cc
+	Protocol/Rgr/req/RangeLocate.cc
+	Protocol/Rgr/params/RangeQueryUpdate.cc
+	Protocol/Rgr/req/RangeQueryUpdate.cc
+	Protocol/Rgr/params/RangeQuerySelect.cc
+	Protocol/Rgr/req/RangeQuerySelect.cc
+	
 	client/Settings.cc
 	client/Clients.cc
 	client/Schemas.cc
