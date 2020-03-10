@@ -7,6 +7,7 @@
 
 
 #include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Resolver.h"
 
 namespace SWC { namespace Protocol { namespace Common { namespace Params {
  
@@ -14,60 +15,34 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
 class HostEndPoints: public Serializable {
   public:
 
-  HostEndPoints() {}
+  HostEndPoints();
 
-  HostEndPoints(const EndPoints& points) 
-               : endpoints(points) { }
+  HostEndPoints(const EndPoints& points);
   
-  virtual ~HostEndPoints(){ }
+  virtual ~HostEndPoints();
 
-  void set(const EndPoints& points){
-    endpoints.clear();
-    endpoints.assign(points.begin(), points.end());
-  }
+  void set(const EndPoints& points);
 
-  uint8_t encoding_version() const {
-    return 1;
-  }
+  uint8_t encoding_version() const;
 
-  size_t encoded_length_internal() const {
-    size_t len = Serialization::encoded_length_vi32(endpoints.size());
-    for(auto& endpoint : endpoints)
-      len += Serialization::encoded_length(endpoint);
-    return len;
-  }
+  size_t encoded_length_internal() const;
 
-  void encode_internal(uint8_t **bufp) const {
-    Serialization::encode_vi32(bufp, endpoints.size());
-    for(auto& endpoint : endpoints)
-      Serialization::encode(endpoint, bufp);
-  }
+  void encode_internal(uint8_t **bufp) const;
 
-  void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp) {
-    size_t len = Serialization::decode_vi32(bufp, remainp);
-    endpoints.clear();
-    endpoints.resize(len);
-    for(size_t i=0;i<len;++i)
-      endpoints[i] = Serialization::decode(bufp, remainp);
-  }
+  void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp);
 
-  std::string to_string() const {
-    std::string s("endpoints=(");
-    for(auto& endpoint : endpoints){
-      s.append("[");
-      s.append(endpoint.address().to_string());
-      s.append("]:");
-      s.append(std::to_string(endpoint.port()));
-      s.append(",");
-    }
-    s.append(")");
-    return s;
-  }
+  std::string to_string() const;
   
   EndPoints    endpoints;
 };
 
 }}}}
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Common/params/HostEndPoints.cc"
+#endif 
 
 #endif // swc_db_protocol_params_HostEndPoints_h
 

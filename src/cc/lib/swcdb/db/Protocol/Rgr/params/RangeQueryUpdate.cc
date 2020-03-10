@@ -57,6 +57,8 @@ RangeQueryUpdateRsp::RangeQueryUpdateRsp(
                     : err(err), range_end(range_end) {  
 }
 
+RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }
+
 const std::string RangeQueryUpdateRsp::to_string() const {
   std::string s("RangeQueryUpdateRsp(");
   s.append("err=");

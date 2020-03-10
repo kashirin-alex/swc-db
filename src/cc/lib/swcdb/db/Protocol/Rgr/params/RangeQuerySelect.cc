@@ -75,6 +75,8 @@ RangeQuerySelectRsp::RangeQuerySelectRsp(StaticBuffer& data)
                     : data(data), err(0), reached_limit(false), offset(0) {
 }
 
+RangeQuerySelectRsp::~RangeQuerySelectRsp() { }
+
 const std::string RangeQuerySelectRsp::to_string() const {
   std::string s("RangeQuerySelectRsp(");
   s.append("err=");

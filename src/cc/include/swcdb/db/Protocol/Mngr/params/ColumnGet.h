@@ -6,6 +6,7 @@
 #ifndef swc_db_protocol_mngr_params_ColumnGet_h
 #define swc_db_protocol_mngr_params_ColumnGet_h
 
+
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
 
@@ -22,13 +23,13 @@ class ColumnGetReq  : public Serializable {
     ID_BY_NAME      = 0x2
   };
 
-  ColumnGetReq() {}
+  ColumnGetReq();
 
-  ColumnGetReq(Flag flag, const std::string& name)
-              : flag(flag), name(name) {}
+  ColumnGetReq(Flag flag, const std::string& name);
 
-  ColumnGetReq(Flag flag, int64_t cid)
-              : flag(flag), cid(cid) {}
+  ColumnGetReq(Flag flag, int64_t cid);
+
+  virtual ~ColumnGetReq();
 
   Flag        flag;
   std::string name;
@@ -36,35 +37,14 @@ class ColumnGetReq  : public Serializable {
 
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
+  uint8_t encoding_version() const;
     
-    size_t encoded_length_internal() const {
-      return 1 +  
-            (flag == Flag::SCHEMA_BY_ID 
-            ? Serialization::encoded_length_vi64(cid)
-            : Serialization::encoded_length_vstr(name.length()));
-    }
+  size_t encoded_length_internal() const;
     
-    void encode_internal(uint8_t **bufp) const {
-      Serialization::encode_i8(bufp, (uint8_t)flag);
-
-      if(flag == Flag::SCHEMA_BY_ID)
-        Serialization::encode_vi64(bufp, cid);
-      else
-        Serialization::encode_vstr(bufp, name.data(), name.length());
-    }
+  void encode_internal(uint8_t **bufp) const;
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
-      flag = (Flag)Serialization::decode_i8(bufp, remainp);
-
-      if(flag == Flag::SCHEMA_BY_ID)
-        cid = Serialization::decode_vi64(bufp, remainp);
-      else
-        name = Serialization::decode_vstr(bufp, remainp);
-    }
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp);
 
 };
 
@@ -73,11 +53,11 @@ class ColumnGetReq  : public Serializable {
 class ColumnGetRsp  : public Serializable {
   public:
 
-  ColumnGetRsp() {}
+  ColumnGetRsp();
 
-  ColumnGetRsp(ColumnGetReq::Flag flag, DB::Schema::Ptr schema)
-              : flag(flag), schema(schema) {     
-  }
+  ColumnGetRsp(ColumnGetReq::Flag flag, DB::Schema::Ptr schema);
+
+  virtual ~ColumnGetRsp();
 
   ColumnGetReq::Flag  flag;
   DB::Schema::Ptr     schema = nullptr;
@@ -85,36 +65,23 @@ class ColumnGetRsp  : public Serializable {
 
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
+  uint8_t encoding_version() const;
     
-    size_t encoded_length_internal() const {
-      return 1 + 
-            (flag == ColumnGetReq::Flag::ID_BY_NAME
-            ? Serialization::encoded_length_vi64(schema->cid)
-            : schema->encoded_length());
-    }
+  size_t encoded_length_internal() const;
     
-    void encode_internal(uint8_t **bufp) const {
-      Serialization::encode_i8(bufp, (uint8_t)flag);
-      if(flag == ColumnGetReq::Flag::ID_BY_NAME)
-        Serialization::encode_vi64(bufp, schema->cid);
-      else
-        schema->encode(bufp);
-    }
+  void encode_internal(uint8_t **bufp) const;
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
-      flag = (ColumnGetReq::Flag)Serialization::decode_i8(bufp, remainp);
-       if(flag == ColumnGetReq::Flag::ID_BY_NAME)
-        cid = Serialization::decode_vi64(bufp, remainp);
-      else
-        schema = std::make_shared<DB::Schema>(bufp, remainp);
-    }
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp);
 
 };
 
 }}}}
+
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/params/ColumnGet.cc"
+#endif 
 
 #endif // swc_db_protocol_params_ColumnGetRsp_h

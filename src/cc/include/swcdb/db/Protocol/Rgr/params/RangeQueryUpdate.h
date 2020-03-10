@@ -48,6 +48,8 @@ class RangeQueryUpdateRsp  : public Serializable {
 
   RangeQueryUpdateRsp(int err, const DB::Cell::Key& range_end);
 
+  virtual ~RangeQueryUpdateRsp();
+
   int32_t       err;
   DB::Cell::Key range_end;
 

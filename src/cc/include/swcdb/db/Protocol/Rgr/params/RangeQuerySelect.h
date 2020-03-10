@@ -55,6 +55,8 @@ class RangeQuerySelectRsp  : public Serializable {
   
   RangeQuerySelectRsp(StaticBuffer& data);
 
+  virtual ~RangeQuerySelectRsp();
+
   int32_t         err;
   bool            reached_limit;
   size_t          offset;

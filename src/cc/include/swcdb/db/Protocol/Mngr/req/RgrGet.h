@@ -3,13 +3,11 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_RgrGet_h
-#define swc_lib_db_protocol_req_RgrGet_h
+#ifndef swc_db_protocol_req_RgrGet_h
+#define swc_db_protocol_req_RgrGet_h
 
 
-#include "swcdb/db/Protocol/Commands.h"
-
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
+#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 
 
@@ -23,77 +21,28 @@ class RgrGet: public client::ConnQueue::ReqBase {
                               Params::RgrGetRsp)> Cb_t;
  
   static void request(int64_t cid, int64_t rid, bool next_range,
-                      const Cb_t cb, const uint32_t timeout = 10000){
-    request(Params::RgrGetReq(cid, rid, next_range), cb, timeout);
-  }
+                      const Cb_t cb, const uint32_t timeout = 10000);
 
-  static inline void request(const Params::RgrGetReq params,
-                             const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<RgrGet>(params, cb, timeout)->run();
-  }
+  static void request(const Params::RgrGetReq params,
+                             const Cb_t cb, const uint32_t timeout = 10000);
 
-  static inline Ptr make(const Params::RgrGetReq params,
-                         const Cb_t cb, const uint32_t timeout = 10000){
-    return std::make_shared<RgrGet>(params, cb, timeout);
-  }
+  static Ptr make(const Params::RgrGetReq params,
+                  const Cb_t cb, const uint32_t timeout = 10000);
 
   RgrGet(const Params::RgrGetReq& params, const Cb_t cb, 
-            const uint32_t timeout) 
-            : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-    cbp = CommBuf::make(params);
-    cbp->header.set(RGR_GET, timeout);
-  }
+            const uint32_t timeout);
 
-  virtual ~RgrGet(){}
+  virtual ~RgrGet();
 
-  void handle_no_conn() override {
-    clear_endpoints();
-    run();
-  }
+  void handle_no_conn() override;
 
-  bool run(uint32_t timeout=0) override {
-    if(endpoints.empty()){
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
-      if(endpoints.empty()){
-        std::make_shared<MngrActive>(cid, shared_from_this())->run();
-        return false;
-      }
-    } 
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
-    return true;
-  }
+  bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
-
-    if(ev->type == Event::Type::DISCONNECT){
-      handle_no_conn();
-      return;
-    }
-
-    Params::RgrGetRsp rsp_params;
-    if(ev->type == Event::Type::ERROR){
-      rsp_params.err = ev->error;
-      cb(req(), rsp_params);
-      return;
-    }
-
-    try{
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      rsp_params.err = e.code();
-    }
-    cb(req(), rsp_params);
-  }
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
   private:
   
-  void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
-    endpoints.clear();
-  }
+  void clear_endpoints();
 
   const Cb_t  cb;
   EndPoints   endpoints;
@@ -103,4 +52,9 @@ class RgrGet: public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_req_RgrGet_h
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/req/RgrGet.cc"
+#endif 
+
+#endif // swc_db_protocol_req_RgrGet_h

@@ -43,6 +43,8 @@ class ColumnCompactRsp : public Serializable {
 
   ColumnCompactRsp();
 
+  virtual ~ColumnCompactRsp();
+
   int err;        
 
   const std::string to_string() const;

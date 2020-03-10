@@ -62,6 +62,8 @@ class RangeCreateRsp : public Serializable {
 
   RangeCreateRsp(): err(0), rid(0) {}
 
+  virtual ~RangeCreateRsp() {}
+
   int             err;        
   int64_t         rid; 
 

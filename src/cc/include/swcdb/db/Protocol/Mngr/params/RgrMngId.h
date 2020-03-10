@@ -36,6 +36,8 @@ class RgrMngId  : public Common::Params::HostEndPoints {
               Common::Params::HostEndPoints(endpoints){     
     }
 
+    virtual ~RgrMngId() {}
+    
     uint64_t        id; 
     Flag            flag;
     Types::Fs       fs;

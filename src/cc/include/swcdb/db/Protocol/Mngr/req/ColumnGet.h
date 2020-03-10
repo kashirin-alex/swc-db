@@ -7,10 +7,8 @@
 #define swc_db_protocol_mngr_req_ColumnGet_h
 
 
-#include "swcdb/db/Protocol/Commands.h"
-
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
+#include "swcdb/core/comm/ClientConnQueue.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
@@ -21,96 +19,39 @@ class ColumnGet: public client::ConnQueue::ReqBase {
   
   using Flag = Params::ColumnGetReq::Flag;
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
-                            int, Params::ColumnGetRsp)> Cb_t;
+                             int, const Params::ColumnGetRsp&)> Cb_t;
 
 
   static void schema(const std::string& name, const Cb_t cb, 
-                     const uint32_t timeout = 10000) {
-    request(Flag::SCHEMA_BY_NAME, name, cb, timeout);
-  }
+                     const uint32_t timeout = 10000);
   
   static void schema(int64_t cid, const Cb_t cb, 
-                     const uint32_t timeout = 10000) {
-    request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
-  }
+                     const uint32_t timeout = 10000);
 
   static void cid(const std::string& name, const Cb_t cb, 
-                  const uint32_t timeout = 10000) {
-    request(Flag::ID_BY_NAME, name, cb, timeout);
-  }
+                  const uint32_t timeout = 10000);
 
   static void request(Flag flag, const std::string& name, const Cb_t cb, 
-                      const uint32_t timeout = 10000){
-    std::make_shared<ColumnGet>(
-      Params::ColumnGetReq(flag, name), cb, timeout
-    )->run();
-  }
+                      const uint32_t timeout = 10000);
 
   static void request(Flag flag, int64_t cid, const Cb_t cb, 
-                      const uint32_t timeout = 10000){
-    std::make_shared<ColumnGet>(
-      Params::ColumnGetReq(flag, cid), cb, timeout
-    )->run();
-  }
+                      const uint32_t timeout = 10000);
 
 
   ColumnGet(const Params::ColumnGetReq& params, const Cb_t cb, 
-            const uint32_t timeout) 
-            : client::ConnQueue::ReqBase(false), cb(cb) {
-    cbp = CommBuf::make(params);
-    cbp->header.set(COLUMN_GET, timeout);
-  }
+            const uint32_t timeout);
 
-  virtual ~ColumnGet(){}
+  virtual ~ColumnGet();
 
-  void handle_no_conn() override {
-    clear_endpoints();
-    run();
-  }
+  void handle_no_conn() override;
 
-  bool run(uint32_t timeout=0) override {
-    if(endpoints.empty()){
-      // columns-get (can be any mngr)
-      Env::Clients::get()->mngrs_groups->select(1, endpoints); 
-      if(endpoints.empty()){
-        std::make_shared<MngrActive>(1, shared_from_this())->run();
-        return false;
-      }
-    } 
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
-    return true;
-  }
+  bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
-
-    if(ev->type == Event::Type::DISCONNECT){
-      handle_no_conn();
-      return;
-    }
-
-    Params::ColumnGetRsp rsp_params;
-    int err = ev->error != Error::OK? ev->error: ev->response_code();
-
-    if(err == Error::OK){
-      try{
-        const uint8_t *ptr = ev->data.base+4;
-        size_t remain = ev->data.size-4;
-        rsp_params.decode(&ptr, &remain);
-      } catch (Exception &e) {
-        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-        err = e.code();
-      }
-    }
-
-    cb(req(), err, rsp_params);
-  }
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
   private:
   
-  void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
-    endpoints.clear();
-  }
+  void clear_endpoints();
 
   const Cb_t  cb;
   EndPoints   endpoints;
@@ -119,5 +60,10 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.cc"
+#endif 
 
 #endif // swc_db_protocol_mngr_req_ColumnGet_h

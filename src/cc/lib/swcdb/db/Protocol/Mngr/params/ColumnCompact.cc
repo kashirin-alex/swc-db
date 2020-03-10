@@ -3,12 +3,11 @@
  * Copyright (C) 2020 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-
-#include "swcdb/db/Protocol/Rgr/params/ColumnCompact.h"
+#include "swcdb/db/Protocol/Mngr/params/ColumnCompact.h"
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
 ColumnCompactReq::ColumnCompactReq(int64_t cid) : cid(cid) {}
@@ -23,7 +22,7 @@ const std::string ColumnCompactReq::to_string() const {
   return s;
 }
 
-uint8_t ColumnCompactReq::encoding_version() const  {
+uint8_t ColumnCompactReq::encoding_version() const {
   return 1; 
 }
 
@@ -71,11 +70,10 @@ void ColumnCompactRsp::encode_internal(uint8_t **bufp) const {
   Serialization::encode_vi32(bufp, err);
 }
   
-void ColumnCompactRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
+void ColumnCompactRsp::decode_internal(uint8_t version, const uint8_t **bufp,
                                        size_t *remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
 }
-
 
 
 }}}}

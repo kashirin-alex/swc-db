@@ -62,6 +62,8 @@ class RangeRemoveRsp : public Serializable {
 
   RangeRemoveRsp(): err(Error::OK) {}
 
+  virtual ~RangeRemoveRsp() {}
+  
   int             err;        
 
   const std::string to_string() const {

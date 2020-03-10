@@ -36,6 +36,8 @@ void ReportReq::decode_internal(uint8_t version, const uint8_t **bufp,
 
 
 
+ReportRsp::Range::~Range() { }
+
 bool ReportRsp::Range::before(ReportRsp::Range* r1, ReportRsp::Range* r2) {
   return r2->interval.is_in_end(r1->interval.key_end);
 }

@@ -62,6 +62,8 @@ class RangeUnloadedRsp : public Serializable {
 
   RangeUnloadedRsp(): err(0) {}
 
+  virtual ~RangeUnloadedRsp() {}
+  
   int  err;        
 
   const std::string to_string() const {

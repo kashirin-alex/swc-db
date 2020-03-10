@@ -6,6 +6,7 @@
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.h"
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 

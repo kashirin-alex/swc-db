@@ -6,9 +6,10 @@
 #ifndef swc_db_protocol_mngr_params_ColumnList_h
 #define swc_db_protocol_mngr_params_ColumnList_h
 
+
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
-
+#include <vector>
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
@@ -16,24 +17,20 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class ColumnListReq  : public Serializable {
   public:
 
-  ColumnListReq() {}
+  ColumnListReq();
+
+  virtual ~ColumnListReq();
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1;
-  }
+  uint8_t encoding_version() const;
     
-  size_t encoded_length_internal() const {
-    return 0;
-  }
+  size_t encoded_length_internal() const;
     
-  void encode_internal(uint8_t **bufp) const {
-  }
+  void encode_internal(uint8_t **bufp) const;
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
-                       size_t *remainp) {
-  }
+                       size_t *remainp);
 
 };
 
@@ -42,40 +39,30 @@ class ColumnListReq  : public Serializable {
 class ColumnListRsp  : public Serializable {
   public:
 
-  ColumnListRsp() {}
+  ColumnListRsp();
+
+  virtual ~ColumnListRsp();
 
   std::vector<DB::Schema::Ptr> schemas;
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1;
-  }
+  uint8_t encoding_version() const;
     
-  size_t encoded_length_internal() const {
-    size_t sz = Serialization::encoded_length_vi64(schemas.size());
-    for (auto schema : schemas)
-      sz += schema->encoded_length();
-    return sz;
-  }
+  size_t encoded_length_internal() const;
     
-  void encode_internal(uint8_t **bufp) const {
-    Serialization::encode_vi64(bufp, schemas.size());
-    for(auto schema : schemas)
-      schema->encode(bufp);
-  }
+  void encode_internal(uint8_t **bufp) const;
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
-                       size_t *remainp) {
-    size_t sz = Serialization::decode_vi64(bufp, remainp);
-    schemas.clear();
-    schemas.resize(sz);
-    for(auto i=0;i<sz;++i) 
-      schemas[i].reset(new DB::Schema(bufp, remainp));
-  }
+                       size_t *remainp);
 
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/params/ColumnList.cc"
+#endif 
 
 #endif // swc_db_protocol_params_ColumnListRsp_h

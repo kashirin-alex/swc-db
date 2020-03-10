@@ -3,10 +3,12 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_db_protocol_mngr_params_MngrActive_h
-#define swc_db_protocol_mngr_params_MngrActive_h
+#ifndef swc_protocol_mngr_params_MngrActive_h
+#define swc_protocol_mngr_params_MngrActive_h
+
 
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
+
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
@@ -14,34 +16,23 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class MngrActiveReq : public Serializable {
   public:
 
-    MngrActiveReq(size_t begin=0, size_t end=0) 
-                  : begin(begin), end(end){
-    }
+  MngrActiveReq(size_t begin=0, size_t end=0);
 
-    size_t begin; 
-    size_t end;
+  virtual ~MngrActiveReq();
+  
+  size_t begin; 
+  size_t end;
 
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
+  uint8_t encoding_version() const;
     
-    size_t encoded_length_internal() const {
-      return Serialization::encoded_length_vi64(begin)
-           + Serialization::encoded_length_vi64(end);
-    }
+  size_t encoded_length_internal() const;
     
-    void encode_internal(uint8_t **bufp) const {
-      Serialization::encode_vi64(bufp, begin);
-      Serialization::encode_vi64(bufp, end);
-    }
+  void encode_internal(uint8_t **bufp) const;
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                         size_t *remainp) {
-      begin = (size_t)Serialization::decode_vi64(bufp, remainp);
-      end = (size_t)Serialization::decode_vi64(bufp, remainp);
-    }
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp);
 
 };
   
@@ -50,36 +41,22 @@ class MngrActiveReq : public Serializable {
 class MngrActiveRsp : public Common::Params::HostEndPoints {
   public:
 
-    MngrActiveRsp() {}
+  MngrActiveRsp();
 
-    MngrActiveRsp(const EndPoints& endpoints) 
-                 : Common::Params::HostEndPoints(endpoints), 
-                  available(endpoints.size()>0) { }
-    bool available;
+  MngrActiveRsp(const EndPoints& endpoints);
+  
+  virtual ~MngrActiveRsp();
+
+  bool available;
   
   private:
 
-    size_t encoded_length_internal() const {
-      size_t len = 1;
-      if(available)
-        len += Common::Params::HostEndPoints::encoded_length_internal();
-      return len;
-    }
+  size_t encoded_length_internal() const;
 
-    void encode_internal(uint8_t **bufp) const {
-      Serialization::encode_bool(bufp, available);
-      if(available) {
-        Common::Params::HostEndPoints::encode_internal(bufp);
-      }
-    }
+  void encode_internal(uint8_t **bufp) const;
 
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
-      available = Serialization::decode_bool(bufp, remainp);
-      if(available) {
-        Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
-      }
-    }
+  void decode_internal(uint8_t version, const uint8_t **bufp, 
+                       size_t *remainp);
 
 };
   
@@ -87,4 +64,10 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
 
 }}}}
 
-#endif // swc_db_protocol_params_MngrActive_h
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/params/MngrActive.cc"
+#endif 
+
+#endif // swc_protocol_mngr_params_MngrActive_h

@@ -3,13 +3,11 @@
  * Copyright (C) 2020 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */
 
-#ifndef swc_lib_db_protocol_req_ColumnCompact_h
-#define swc_lib_db_protocol_req_ColumnCompact_h
+#ifndef swc_db_protocol_req_ColumnCompact_h
+#define swc_db_protocol_req_ColumnCompact_h
 
 
-#include "swcdb/db/Protocol/Commands.h"
-
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
+#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Mngr/params/ColumnCompact.h"
 
 
@@ -23,74 +21,25 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
                               Params::ColumnCompactRsp)> Cb_t;
  
   static void request(int64_t cid, const Cb_t cb, 
-                      const uint32_t timeout = 10000) {
-    request(Params::ColumnCompactReq(cid), cb, timeout);
-  }
+                      const uint32_t timeout = 10000);
 
-  static inline void request(const Params::ColumnCompactReq params,
-                             const Cb_t cb, const uint32_t timeout = 10000){
-    std::make_shared<ColumnCompact>(params, cb, timeout)->run();
-  }
-
+  static void request(const Params::ColumnCompactReq params,
+                             const Cb_t cb, const uint32_t timeout = 10000);
 
   ColumnCompact(const Params::ColumnCompactReq& params, const Cb_t cb, 
-                const uint32_t timeout) 
-                : client::ConnQueue::ReqBase(false), 
-                  cb(cb), cid(params.cid) {
-    cbp = CommBuf::make(params);
-    cbp->header.set(COLUMN_COMPACT, timeout);
-  }
+                const uint32_t timeout);
 
-  virtual ~ColumnCompact(){}
+  virtual ~ColumnCompact();
 
-  void handle_no_conn() override {
-    clear_endpoints();
-    run();
-  }
+  void handle_no_conn() override;
 
-  bool run(uint32_t timeout=0) override {
-    if(endpoints.empty()){
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
-      if(endpoints.empty()){
-        std::make_shared<MngrActive>(cid, shared_from_this())->run();
-        return false;
-      }
-    } 
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
-    return true;
-  }
+  bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
-
-    if(ev->type == Event::Type::DISCONNECT){
-      handle_no_conn();
-      return;
-    }
-
-    Params::ColumnCompactRsp rsp_params;
-    if(ev->type == Event::Type::ERROR){
-      rsp_params.err = ev->error;
-      cb(req(), rsp_params);
-      return;
-    }
-
-    try{
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      rsp_params.err = e.code();
-    }
-    cb(req(), rsp_params);
-  }
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
   private:
   
-  void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
-    endpoints.clear();
-  }
+  void clear_endpoints();
 
   const Cb_t      cb;
   const int64_t   cid;
@@ -100,4 +49,9 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_req_ColumnCompact_h
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.cc"
+#endif 
+
+#endif // swc_db_protocol_req_ColumnCompact_h

@@ -50,6 +50,8 @@ class ReportRsp  : public Serializable {
     int64_t             rid;
     DB::Cells::Interval interval;
 
+    ~Range();
+
     const size_t encoded_length () const;
 
     void encode(uint8_t **bufp) const;

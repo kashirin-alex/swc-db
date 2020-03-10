@@ -4,6 +4,9 @@
 
 set(swcdb_sources
 	Cells/Vector.cc
+	
+	Protocol/Common/params/HostEndPoints.cc
+
 	Protocol/Rgr/params/Report.cc
 	Protocol/Rgr/req/Report.cc
 	Protocol/Rgr/params/ColumnCompact.cc
@@ -14,6 +17,19 @@ set(swcdb_sources
 	Protocol/Rgr/req/RangeQueryUpdate.cc
 	Protocol/Rgr/params/RangeQuerySelect.cc
 	Protocol/Rgr/req/RangeQuerySelect.cc
+	
+	Protocol/Mngr/params/MngrActive.cc
+	Protocol/Mngr/req/MngrActive.cc
+	Protocol/Mngr/params/RgrGet.cc
+	Protocol/Mngr/req/RgrGet.cc
+	Protocol/Mngr/params/ColumnCompact.cc
+	Protocol/Mngr/req/ColumnCompact.cc
+	Protocol/Mngr/params/ColumnGet.cc
+	Protocol/Mngr/req/ColumnGet.cc
+	Protocol/Mngr/params/ColumnList.cc
+	Protocol/Mngr/req/ColumnList.cc
+	Protocol/Mngr/params/ColumnMng.cc
+	Protocol/Mngr/req/ColumnMng.cc
 	
 	client/Settings.cc
 	client/Clients.cc
