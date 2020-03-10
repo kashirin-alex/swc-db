@@ -7,6 +7,7 @@
 #define swcdb_db_Files_RgrData_h
 
 
+#include "swcdb/core/Serialization.h"
 #include "swcdb/core/DynamicBuffer.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Checksum.h"

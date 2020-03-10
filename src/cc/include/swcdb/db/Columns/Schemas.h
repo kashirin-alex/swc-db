@@ -3,79 +3,35 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_Schemas_h
-#define swcdb_lib_db_Columns_Schemas_h
+#ifndef swcdb_db_Columns_Schemas_h
+#define swcdb_db_Columns_Schemas_h
 
-#include <algorithm>
+#include "swcdb/db/Columns/Schema.h"
+
 #include <vector>
 #include <unordered_map>
 #include <shared_mutex>
-
-#include "swcdb/db/Columns/Schema.h"
 
 namespace SWC { namespace DB {
 
 class Schemas final {
   public:
 
-  Schemas() {}
+  Schemas();
 
-  ~Schemas() {}
+  ~Schemas();
   
-  void add(int &err, Schema::Ptr schema){
-    std::scoped_lock lock(m_mutex);
-    if(!m_map.emplace(schema->cid, schema).second) {
-      SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
-                schema->to_string().c_str());
-      err = Error::COLUMN_SCHEMA_NAME_EXISTS;
-    }
-  }
+  void add(int &err, Schema::Ptr schema);
 
-  void remove(int64_t cid){
-    std::scoped_lock lock(m_mutex);
+  void remove(int64_t cid);
 
-    auto it = m_map.find(cid);
-    if(it != m_map.end())
-      m_map.erase(it);
-  }
+  void replace(Schema::Ptr schema);
 
-  void replace(Schema::Ptr schema){
-    std::scoped_lock lock(m_mutex);
-
-    auto it = m_map.find(schema->cid);
-    if(it == m_map.end())
-       m_map.emplace(schema->cid, schema);
-    else
-      it->second = schema;
-  }
-
-  Schema::Ptr get(int64_t cid){
-    std::shared_lock lock(m_mutex);
-
-    auto it = m_map.find(cid);
-    if(it == m_map.end())
-      return nullptr;
-    return it->second;
-  }
+  Schema::Ptr get(int64_t cid);
   
-  Schema::Ptr get(const std::string &name){
-    std::shared_lock lock(m_mutex);
-    
-    for( const auto& it : m_map ) {
-      if(name.compare(it.second->col_name) == 0)
-        return it.second;
-    }
-    return nullptr;
-  }
+  Schema::Ptr get(const std::string &name);
 
-  void all(std::vector<Schema::Ptr> &entries){
-    size_t i = entries.size();
-    std::shared_lock lock(m_mutex);
-    entries.resize(i+m_map.size());
-    for(const auto& it : m_map) 
-      entries[i++] = it.second;
-    std::sort(entries.begin(), entries.end()); 
-  }
+  void all(std::vector<Schema::Ptr> &entries);
 
   private:
   std::shared_mutex                         m_mutex;
@@ -85,4 +41,10 @@ class Schemas final {
 
 
 }}
-#endif
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Columns/Schemas.cc"
+#endif 
+
+#endif // swcdb_db_Columns_Schemas_h

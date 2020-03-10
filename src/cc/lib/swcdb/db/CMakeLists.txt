@@ -5,6 +5,9 @@
 set(swcdb_sources
 	Cells/Vector.cc
 
+	Columns/Schema.cc
+	Columns/Schemas.cc
+
 	Types/Column.cc
 	Types/Encoding.cc
 	Types/Range.cc
