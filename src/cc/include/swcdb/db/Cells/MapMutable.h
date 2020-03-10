@@ -2,108 +2,58 @@
  * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
  */ 
 
-#ifndef swcdb_lib_db_Cells_MapMutable_h
-#define swcdb_lib_db_Cells_MapMutable_h
+#ifndef swcdb_db_Cells_MapMutable_h
+#define swcdb_db_Cells_MapMutable_h
 
-#include "swcdb/db/Cells/Mutable.h"
+#include <mutex>
 #include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Cells/Mutable.h"
+
 
 namespace SWC { namespace DB { namespace Cells {
+
 
 class ColCells final {
 
   public:
+
   typedef std::shared_ptr<ColCells> Ptr;
-
-  static Ptr make(const int64_t cid, uint32_t versions, uint32_t ttl, 
-                  Types::Column type) {
-    return std::make_shared<ColCells>(cid, versions, ttl, type);
-  }
-
-  static Ptr make(const int64_t cid, Mutable& cells) {
-    return std::make_shared<ColCells>(cid, cells);
-  }
 
   const int64_t cid;
 
+  static Ptr make(const int64_t cid, uint32_t versions, uint32_t ttl, 
+                  Types::Column type);
+
+  static Ptr make(const int64_t cid, Mutable& cells);
+
+
   ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
-           Types::Column type)
-          : cid(cid), m_cells(0, versions, ttl*1000000000, type) { 
-  }
+           Types::Column type);
 
-  ColCells(const int64_t cid, Mutable& cells)
-          : cid(cid), m_cells(cells) { 
-  }
+  ColCells(const int64_t cid, Mutable& cells);
 
-  ~ColCells() {}
+  ~ColCells();
 
-  DB::Cell::Key::Ptr get_first_key() {
-    auto key = std::make_shared<DB::Cell::Key>();
-    std::lock_guard<std::mutex> lock(m_mutex);
-    assert(m_cells.size()); // bad call , assure size pre-check
-    m_cells.get(0, *key.get()); 
-    return key;
-  }
+  DB::Cell::Key::Ptr get_first_key();
   
   DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key, 
-                                  bool start_key=false) {
-    auto key = std::make_shared<DB::Cell::Key>();
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if(eval_key.empty() || 
-      !m_cells.get(
-        eval_key, start_key? Condition::GE : Condition::GT, *key.get()))
-      return nullptr;
-    return key;
-  }
+                                  bool start_key=false);
 
   DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start, 
                               const DB::Cell::Key& key_end, 
-                              size_t buff_sz, bool& more) {
-    auto cells_buff = std::make_shared<DynamicBuffer>();
-    std::lock_guard<std::mutex> lock(m_mutex);
-    more = m_cells.write_and_free(
-      key_start, key_end, *cells_buff.get(), buff_sz);
-    if(cells_buff->fill())
-      return cells_buff;
-    return nullptr;
-  }
+                              size_t buff_sz, bool& more);
 
-  void add(const DB::Cells::Cell& cell) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_cells.add(cell);
-  }
+  void add(const DB::Cells::Cell& cell);
 
-  void add(const DynamicBuffer& cells) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_cells.add(cells);
-  }
+  void add(const DynamicBuffer& cells);
 
-  void add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_cells.add(cells, from_key);
-  }
+  void add(const DynamicBuffer& cells, const DB::Cell::Key& from_key);
 
-  const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_cells.size();
-  }
+  const size_t size();
 
-  const size_t size_bytes() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_cells.size_bytes();
-  }
+  const size_t size_bytes();
 
-  const std::string to_string() {
-    std::string s("(cid=");
-    s.append(std::to_string(cid));
-    s.append(" ");
-    {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      s.append(m_cells.to_string());
-    }
-    s.append(")");
-    return s;
-  }
+  const std::string to_string();
 
   private:
   std::mutex   m_mutex;
@@ -111,155 +61,59 @@ class ColCells final {
 
 };
 
+
+
 class MapMutable {
   public:
   
   typedef std::shared_ptr<MapMutable>                 Ptr;
   typedef std::unordered_map<int64_t, ColCells::Ptr>  Columns;
   
-  MapMutable() { }
+  MapMutable();
 
-  virtual ~MapMutable() {}
+  virtual ~MapMutable();
 
-  const bool create(Schema::Ptr schema) {
-    return create(
-      schema->cid, schema->cell_versions, schema->cell_ttl, schema->col_type);
-  }
+  const bool create(Schema::Ptr schema);
 
   const bool create(int64_t cid, uint32_t versions, uint32_t ttl, 
-                    Types::Column type) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
-    if(m_map.find(cid) != m_map.end())
-      return false;
+                    Types::Column type);
 
-    return m_map.emplace(cid, ColCells::make(cid, versions, ttl, type)).second;
-  }
+  const bool create(const int64_t cid, Mutable& cells);
 
-  const bool create(const int64_t cid, Mutable& cells) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_map.emplace(cid, ColCells::make(cid, cells)).second;
-  }
-
-  const bool exists(int64_t cid) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const bool exists(int64_t cid);
   
-    return m_map.find(cid) != m_map.end();
-  }
-  
-  void add(const int64_t cid, const Cell& cell) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  void add(const int64_t cid, const Cell& cell);
 
-    auto it = m_map.find(cid);
-    if(it == m_map.end()){
-      SWC_THROWF(ENOKEY, "Map Missing column=%d (1st do create)", cid);
-    }
-    it->second->add(cell);
-  }
+  ColCells::Ptr get_idx(size_t offset);
 
-  ColCells::Ptr get_idx(size_t offset) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  ColCells::Ptr get_col(const int64_t cid);
 
-    if(offset < m_map.size()) {
-      auto it = m_map.begin();
-      for(it; offset--; ++it);
-      return it->second;
-    }
-    return nullptr;
-  }
+  void pop(ColCells::Ptr& col);
 
-  ColCells::Ptr get_col(const int64_t cid) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  void pop(const int64_t cid, ColCells::Ptr& col);
 
-    auto it = m_map.find(cid);
-    return it != m_map.end() ? it->second : nullptr;
-  }
+  void remove(const int64_t cid);
 
-  void pop(ColCells::Ptr& col) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const size_t size();
 
-    auto it = m_map.begin();
-    if(it != m_map.end()) {
-      col = it->second;
-      m_map.erase(it);
-    } else {
-      col = nullptr;
-    }
-  }
+  const size_t size(const int64_t cid);
 
-  void pop(const int64_t cid, ColCells::Ptr& col) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+  const size_t size_bytes();
 
-    auto it = m_map.find(cid);
-    if(it != m_map.end()){
-      col = it->second;
-      m_map.erase(it);
-    } else {
-      col = nullptr;
-    }
-  }
+  const size_t size_bytes(const int64_t cid);
 
-  void remove(const int64_t cid) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    auto it = m_map.find(cid);
-    if(it != m_map.end())
-      m_map.erase(it);
-  }
-
-  const size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    size_t total = 0;
-    for(auto it = m_map.begin(); it != m_map.end(); ++it)
-      total += it->second->size();
-    return total;
-  }
-
-  const size_t size(const int64_t cid) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    auto it = m_map.find(cid);
-    if(it == m_map.end())
-      return (size_t)0;
-    return it->second->size();
-  }
-
-  const size_t size_bytes() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    size_t total = 0;
-    for(auto it = m_map.begin(); it != m_map.end(); ++it)
-      total += it->second->size_bytes();
-    return total;
-  }
-
-  const size_t size_bytes(const int64_t cid) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    auto it = m_map.find(cid);
-    if(it == m_map.end())
-      return (size_t)0;
-    return it->second->size_bytes();
-  }
-
-  const std::string to_string() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string s("MapMutable(size=");
-    s.append(std::to_string(m_map.size()));
-
-    s.append(" map=[");
-    for(auto it = m_map.begin(); it != m_map.end(); ++it){
-      s.append("\n");
-      s.append(it->second->to_string());
-    }
-    s.append("\n])");
-    return s;
-  }
+  const std::string to_string();
 
   private:
   std::mutex   m_mutex;
   Columns      m_map;
+
 };
 
 }}}
-#endif
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Cells/MapMutable.cc"
+#endif 
+
+#endif // swcdb_db_Cells_MapMutable_h

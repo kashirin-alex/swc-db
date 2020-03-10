@@ -4,6 +4,8 @@
 
 set(swcdb_sources
 	Cells/Vector.cc
+	Cells/Mutable.cc
+	Cells/MapMutable.cc
 
 	Cells/SpecsScan.cc
 	Cells/SpecsColumn.cc
