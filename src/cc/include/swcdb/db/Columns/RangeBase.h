@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Columns_RangeBase_h
-#define swcdb_lib_db_Columns_RangeBase_h
+#ifndef swcdb_db_Columns_RangeBase_h
+#define swcdb_db_Columns_RangeBase_h
 
 
 namespace SWC { namespace DB {
@@ -55,4 +55,4 @@ class RangeBase final {
 };
 
 }}
-#endif
+#endif // swcdb_db_Columns_RangeBase_h

@@ -22,7 +22,7 @@ const std::string to_string(Range typ);
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Types/Encoding.cc"
+#include "swcdb/db/Types/Range.cc"
 #endif 
 
 #endif // swc_db_types_Range_h

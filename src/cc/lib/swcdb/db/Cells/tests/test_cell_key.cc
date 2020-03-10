@@ -10,6 +10,13 @@
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Cells/SpecsKey.h"
 
+#include "swcdb/core/config/Settings.h"
+namespace SWC { namespace Config {
+void Settings::init_app_options() {}
+void Settings::init_post_cmd_args() {}
+}}
+
+
 namespace DB = SWC::DB;
 namespace Condition = SWC::Condition;
 

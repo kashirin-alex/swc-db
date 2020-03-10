@@ -6,7 +6,7 @@
 #ifndef swcdb_db_cells_SpecsTimestamp_h
 #define swcdb_db_cells_SpecsTimestamp_h
 
-#include "swcdb/core/Serializable.h"
+#include <string>
 #include "swcdb/core/Comparators.h"
 
 
@@ -16,81 +16,47 @@ namespace SWC { namespace DB { namespace Specs {
 class Timestamp {
   public:
 
-  explicit Timestamp(): value(0), comp(Condition::NONE), was_set(false) {}
+  explicit Timestamp();
 
-  explicit Timestamp(int64_t timestamp, Condition::Comp comp) {
-    set(timestamp, comp);
-  }
+  explicit Timestamp(int64_t timestamp, Condition::Comp comp);
   
-  explicit Timestamp(const Timestamp &other){
-    copy(other);
-  }
+  explicit Timestamp(const Timestamp &other);
 
-  void copy(const Timestamp &other) {
-    set(other.value, other.comp);
-  }
+  void copy(const Timestamp &other);
 
-  void set(int64_t timestamp, Condition::Comp comperator) {
-    value = timestamp;
-    comp  = comperator;
-    was_set = true;
-  }
+  void set(int64_t timestamp, Condition::Comp comperator);
 
-  void free() {
-    value  = 0;
-    comp  = Condition::NONE;
-    was_set = false;
-  }
+  void free();
 
-  virtual ~Timestamp() {
-  }
+  virtual ~Timestamp();
 
-  const bool empty() const {
-    return !was_set;
-  }
+  const bool empty() const;
 
-  const bool equal(const Timestamp &other) const {
-    return value == other.value && comp == other.comp;
-  }
+  const bool equal(const Timestamp &other) const;
 
-  const size_t encoded_length() const {
-    return 1+(comp != Condition::NONE? 8: 0);
-  }
+  const size_t encoded_length() const;
 
-  void encode(uint8_t **bufp) const {
-    Serialization::encode_i8(bufp, (uint8_t)comp);
-    if(comp != Condition::NONE)
-      Serialization::encode_i64(bufp, value);
-  }
+  void encode(uint8_t **bufp) const;
 
-  void decode(const uint8_t **bufp, size_t *remainp){
-    comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
-    if(comp != Condition::NONE)
-      value = Serialization::decode_i64(bufp, remainp);
-  }
+  void decode(const uint8_t **bufp, size_t *remainp);
 
-  const bool is_matching(int64_t other) const {
-    return Condition::is_matching(comp, value, other);
-  }
+  const bool is_matching(int64_t other) const;
 
-  const std::string to_string() const {
-    std::string s("Timestamp(");
-    s.append(Condition::to_string(comp));
-    if(comp != Condition::NONE)
-      s.append(std::to_string(value));
-    s.append(")");
-    return s;
-  }
+  const std::string to_string() const;
 
-  void display(std::ostream& out) const {
-    out << Condition::to_string(comp) << " \"" << value << "\"";
-  }
+  void display(std::ostream& out) const;
 
   int64_t          value; 
   Condition::Comp  comp;
   bool             was_set;
+  
 };
 
+
 }}}
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Cells/SpecsTimestamp.cc"
+#endif 
 
 #endif

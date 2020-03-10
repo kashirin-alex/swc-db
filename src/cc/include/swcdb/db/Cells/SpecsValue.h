@@ -6,7 +6,7 @@
 #ifndef swcdb_db_cells_SpecsValue_h
 #define swcdb_db_cells_SpecsValue_h
 
-#include "swcdb/core/Serializable.h"
+
 #include "swcdb/core/Comparators.h"
 
 
@@ -15,142 +15,53 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  explicit Value(bool own=true)
-                : own(own), data(0), size(0), comp(Condition::NONE) {
-  }
+  explicit Value(bool own=true);
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
-                 bool owner=false) 
-                 : own(false) {
-    set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
-  }
+                 bool owner=false);
 
   explicit Value(const char* data_n, const uint32_t size_n, 
-                 Condition::Comp comp_n, bool owner=false) 
-                 : own(false) {
-    set((uint8_t*)data_n, size_n, comp_n, owner);
-  }
+                 Condition::Comp comp_n, bool owner=false);
 
   explicit Value(const uint8_t* data_n, const uint32_t size_n, 
-                 Condition::Comp comp_n, bool owner=false) 
-                 : own(false) {
-    set(data_n, size_n, comp_n, owner);
-  }
+                 Condition::Comp comp_n, bool owner=false);
 
-  explicit Value(int64_t count, Condition::Comp comp_n) 
-                 : own(false) {
-    set(count, comp_n);
-  }
+  explicit Value(int64_t count, Condition::Comp comp_n);
 
-  explicit Value(const Value &other) 
-                 : own(false) {
-    copy(other);
-  }
+  explicit Value(const Value &other);
 
-  void set(int64_t count, Condition::Comp comp_n) {
-    uint32_t len = Serialization::encoded_length_vi64(count);
-    uint8_t data_n[len];
-    uint8_t* ptr = data_n;
-    Serialization::encode_vi64(&ptr, count);
-    set(data_n, len, comp_n, true);
-  }
+  void set(int64_t count, Condition::Comp comp_n);
 
-  void set(const char* data_n, Condition::Comp comp_n, bool owner=true) {
-    set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
-  }
+  void set(const char* data_n, Condition::Comp comp_n, bool owner=true);
   
-  void set(const std::string& data_n, Condition::Comp comp_n) {
-    set((uint8_t*)data_n.data(), data_n.length(), comp_n, true);
-  }
+  void set(const std::string& data_n, Condition::Comp comp_n);
 
-  void copy(const Value &other) {
-    free(); 
-    set(other.data, other.size, other.comp, true);
-  }
+  void copy(const Value &other);
   
   void set(const uint8_t* data_n, const uint32_t size_n, 
-           Condition::Comp comp_n, bool owner=false) {
-    free();
-    own   = owner;
-    comp = comp_n;
-    if(size = size_n)
-      data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size) 
-                 : (uint8_t*)data_n;
-  }
+           Condition::Comp comp_n, bool owner=false);
 
-  virtual ~Value() {
-    if(own && data) 
-      delete [] data;
-  }
+  virtual ~Value();
+  void free();
 
-  void free() {
-    if(own && data) 
-      delete [] data;
-    data = 0;
-    size = 0;
-  }
+  const bool empty() const;
 
-  const bool empty() const {
-    return comp == Condition::NONE;
-  }
+  const bool equal(const Value &other) const;
 
-  const bool equal(const Value &other) const {
-    return size == other.size 
-      && ((!data && !other.data) || memcmp(data, other.data, size) == 0);
-  }
-
-  const size_t encoded_length() const {
-    return 1+(
-      comp==Condition::NONE? 0: Serialization::encoded_length_vi32(size)+size);
-  }
+  const size_t encoded_length() const;
   
-  void encode(uint8_t **bufp) const {
-    Serialization::encode_i8(bufp, (uint8_t)comp);
-    if(comp != Condition::NONE) {
-      Serialization::encode_vi32(bufp, size);
-      memcpy(*bufp, data, size);
-      *bufp+=size;
-    }
-  }
+  void encode(uint8_t **bufp) const;
 
-  void decode(const uint8_t **bufp, size_t *remainp) {
-    own = false;
-    comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
-    if(comp != Condition::NONE){
-      size = Serialization::decode_vi32(bufp, remainp);
-      data = (uint8_t*)*bufp;
-      *remainp -= size;
-      *bufp += size;
-    }
-  }
+  void decode(const uint8_t **bufp, size_t *remainp);
 
-  const bool is_matching(const uint8_t *other_data, const uint32_t other_size) const {
-    return Condition::is_matching(comp, data, size, other_data, other_size);
-  }
+  const bool is_matching(const uint8_t *other_data, 
+                         const uint32_t other_size) const;
   
-  const bool is_matching(int64_t other) const {
-    errno = 0;    
-    char *last = (char*)data + size;
-    int64_t value = strtoll((const char*)data, &last, 0); // ?cls-storage
-    return Condition::is_matching(comp, value, other);
-  }
+  const bool is_matching(int64_t other) const;
 
-  const std::string to_string() const {
-    std::string s("Value(");
-    s.append("size=");
-    s.append(std::to_string(size));
-    s.append(" ");
-    s.append(Condition::to_string(comp));
-    s.append("(");
-    s.append(std::string((const char*)data, size));
-    s.append("))");
-    return s;
-  }
+  const std::string to_string() const;
 
-  void display(std::ostream& out, bool pretty=false) const {
-    out << "size=" << size << " " << Condition::to_string(comp)
-        << '"' << std::string((const char*)data, size) << '"'; 
-  }
+  void display(std::ostream& out, bool pretty=false) const;
 
   bool            own;
   uint8_t*        data;
@@ -161,4 +72,9 @@ class Value {
 
 
 }}}
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Cells/SpecsValue.cc"
+#endif 
+
 #endif

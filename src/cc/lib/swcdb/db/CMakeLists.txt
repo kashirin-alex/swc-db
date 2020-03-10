@@ -5,6 +5,14 @@
 set(swcdb_sources
 	Cells/Vector.cc
 
+	Cells/SpecsScan.cc
+	Cells/SpecsColumn.cc
+	Cells/SpecsInterval.cc
+	Cells/SpecsKey.cc
+	Cells/SpecsTimestamp.cc
+	Cells/SpecsValue.cc
+	Cells/SpecsFlags.cc
+	
 	Columns/Schema.cc
 	Columns/Schemas.cc
 
@@ -70,7 +78,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	cell_key
 	SRCS	Cells/tests/test_cell_key.cc
-	TARGETS	swcdb_core
+	TARGETS	swcdb_core swcdb
 )
 ADD_TEST_TARGET(
 	NAME	cell
@@ -81,12 +89,12 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	cell_specs_scan
 	SRCS	Cells/tests/test_cell_specs_scan.cc
-	TARGETS	swcdb_core
+	TARGETS	swcdb_core swcdb
 )
 ADD_TEST_TARGET(
 	NAME	cells_interval
 	SRCS	Cells/tests/test_cells_interval.cc
-	TARGETS	swcdb_core
+	TARGETS	swcdb_core swcdb
 )
 
 ADD_TEST_TARGET(

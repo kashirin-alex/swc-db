@@ -5,6 +5,12 @@
 
 #include "swcdb/db/Cells/SpecsScan.h"
 
+#include "swcdb/core/config/Settings.h"
+namespace SWC { namespace Config {
+void Settings::init_app_options() {}
+void Settings::init_post_cmd_args() {}
+}}
+
 
 namespace Specs = SWC::DB::Specs;
 namespace Condition = SWC::Condition;
