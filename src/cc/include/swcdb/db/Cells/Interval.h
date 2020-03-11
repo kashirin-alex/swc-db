@@ -20,243 +20,67 @@ class Interval final {
 
   public:
 
-  explicit Interval() { }
+  explicit Interval();
 
-  explicit Interval(const uint8_t **ptr, size_t *remain) {
-    decode(ptr, remain, true); 
-  }
+  explicit Interval(const uint8_t **ptr, size_t *remain);
 
-  explicit Interval(const Interval& other) {
-    copy(other); 
-  }
+  explicit Interval(const Interval& other);
 
-  ~Interval(){ 
-    free();
-  }
+  ~Interval();
 
-  void copy(const Interval& other) {
-    set_key_begin(other.key_begin);
-    set_key_end(other.key_end);
+  void copy(const Interval& other);
 
-    set_ts_earliest(other.ts_earliest);
-    set_ts_latest(other.ts_latest);
-
-    set_aligned_min(other.aligned_min);
-    set_aligned_max(other.aligned_max);
-    was_set = true;
-  }
-
-  void free() {
-    key_begin.free();
-    key_end.free();
-    ts_earliest.free();
-    ts_latest.free();
-    was_set = false;
-    aligned_min.free();
-    aligned_max.free();
-  }
+  void free();
   
-  void set_key_begin(const DB::Cell::Key& key) {
-    key_begin.copy(key);
-    was_set = true;
-  }
+  void set_key_begin(const DB::Cell::Key& key);
 
-  void set_key_end(const DB::Cell::Key& key) {
-    key_end.copy(key);
-    was_set = true;
-  }
+  void set_key_end(const DB::Cell::Key& key);
 
-  void set_ts_earliest(const Specs::Timestamp& ts) {
-    ts_earliest.copy(ts);
-    was_set = true;
-  }
+  void set_ts_earliest(const Specs::Timestamp& ts);
 
-  void set_ts_latest(const Specs::Timestamp& ts) {
-    ts_latest.copy(ts);
-    was_set = true;
-  }
+  void set_ts_latest(const Specs::Timestamp& ts);
 
-  void set_aligned_min(const DB::Cell::KeyVec& key) {
-    aligned_min.copy(key);
-    was_set = true;
-  }
+  void set_aligned_min(const DB::Cell::KeyVec& key);
 
-  void set_aligned_max(const DB::Cell::KeyVec& key) {
-    aligned_max.copy(key);
-    was_set = true;
-  }
+  void set_aligned_max(const DB::Cell::KeyVec& key);
 
-  void expand(const Interval& other) {
-    bool initiated = was_set;
-    
-    if(!initiated || !is_in_begin(other.key_begin))
-      set_key_begin(other.key_begin);
+  void expand(const Interval& other);
+
+  void expand(const Cell& cell);
+
+  void expand_begin(const Cell& cell);
+
+  void expand_end(const Cell& cell);
+
+  void expand(const int64_t& ts);
+
+  const bool align(const Interval &other);
+
+  const bool equal(const Interval& other) const;
+
+  const bool is_in_begin(const DB::Cell::Key &key) const;
   
-    if(!initiated || !is_in_end(other.key_end))
-      set_key_end(other.key_end);
+  const bool is_in_end(const DB::Cell::Key &key) const;
 
-    if(!initiated 
-       || (!other.ts_earliest.empty() 
-            && other.ts_earliest.comp == Condition::NONE)
-       || !ts_earliest.is_matching(other.ts_earliest.value))
-      set_ts_earliest(other.ts_earliest);
+  const bool consist(const Interval& other) const;
 
-    if(!initiated
-       || (!other.ts_latest.empty() 
-            && other.ts_latest.comp == Condition::NONE)
-       || !ts_latest.is_matching(other.ts_latest.value))
-      set_ts_latest(other.ts_latest);
-  }
+  const bool consist(const DB::Cell::Key& key) const;
 
-  void expand(const Cell& cell) {
-    expand_begin(cell);
-    expand_end(cell);
-    //expand(cell.timestamp);
-    was_set = true;
-  }
+  const bool consist(const DB::Cell::Key& key, int64_t ts) const;
 
-  void expand_begin(const Cell& cell) {
-    if(key_begin.empty() || !is_in_begin(cell.key))
-      key_begin.copy(cell.key);
-    was_set = true;
-  }
+  const bool includes(const Interval& other) const;
 
-  void expand_end(const Cell& cell) {
-    if(key_end.empty() || !is_in_end(cell.key))
-      key_end.copy(cell.key);
-    was_set = true;
-  }
+  const bool includes(const Specs::Interval::Ptr interval) const;
 
-  void expand(const int64_t& ts) {
-    if(ts_earliest.empty() || !ts_earliest.is_matching(ts))
-      ts_earliest.set(ts, Condition::GE);
-    if(ts_latest.empty() || !ts_latest.is_matching(ts))
-      ts_latest.set(ts, Condition::LE);
-    was_set = true;
-  }
+  const bool includes(const Specs::Interval& interval) const;
 
-  const bool align(const Interval &other) {
-    bool start = aligned_min.align(other.aligned_min, Condition::LT);
-    bool finish = aligned_max.align(other.aligned_max, Condition::GT);
-    return start || finish;
-  }
+  const size_t encoded_length() const;
 
-  const bool equal(const Interval& other) const {
-    return
-      was_set == other.was_set &&
+  void encode(uint8_t **ptr) const;
 
-      key_begin.equal(other.key_begin) && 
-      key_end.equal(other.key_end) && 
+  void decode(const uint8_t **ptr, size_t *remain, bool owner=false);
 
-      ts_earliest.equal(other.ts_earliest) && 
-      ts_latest.equal(other.ts_latest) &&
-
-      aligned_min.equal(other.aligned_min) && 
-      aligned_max.equal(other.aligned_max);
-  }
-
-  const bool is_in_begin(const DB::Cell::Key &key) const {
-    return key_begin.empty() || 
-          (!key.empty() && key_begin.compare(key) != Condition::LT);
-  }
-  
-  const bool is_in_end(const DB::Cell::Key &key) const {
-    return key_end.empty() || 
-          (!key.empty() && key_end.compare(key) != Condition::GT);
-  }
-
-  const bool consist(const Interval& other) const {
-    return (other.key_end.empty()   || is_in_begin(other.key_end)) 
-        && (other.key_begin.empty() || is_in_end(other.key_begin));
-  }
-
-  const bool consist(const DB::Cell::Key& key) const {
-    return is_in_begin(key) && is_in_end(key);
-  }
-
-  const bool consist(const DB::Cell::Key& key, int64_t ts) const {
-    return is_in_begin(key) 
-          && 
-           is_in_end(key) 
-          &&
-           (ts_earliest.empty() || ts_earliest.is_matching(ts))
-          &&    
-           (ts_latest.empty() || ts_latest.is_matching(ts));
-  }
-
-  const bool includes(const Interval& other) const {
-    return other.key_begin.empty() || other.key_end.empty() ||
-           consist(other);           
-  }
-
-  const bool includes(const Specs::Interval::Ptr interval) const {
-    return includes(*interval.get());
-  }
-
-  const bool includes(const Specs::Interval& interval) const { 
-    return  (key_end.empty() || interval.is_matching_begin(key_end))
-            && 
-            (key_begin.empty() || interval.is_matching_end(key_begin))
-          ;
-      /* // , bool ts=false
-      && 
-      (!ts || (
-        (ts_latest.empty() || 
-         interval.ts_start.is_matching(ts_latest.value) )
-        && 
-        (ts_earliest.empty() || 
-         interval.ts_finish.is_matching(ts_earliest.value) )
-      ) )
-      */
-  }
-
-  const size_t encoded_length() const {
-    return  key_begin.encoded_length()
-          + key_end.encoded_length()
-          + ts_earliest.encoded_length()
-          + ts_latest.encoded_length()
-          + aligned_min.encoded_length()
-          + aligned_max.encoded_length();
-  }
-
-  void encode(uint8_t **ptr) const {
-    key_begin.encode(ptr);
-    key_end.encode(ptr);
-    ts_earliest.encode(ptr);
-    ts_latest.encode(ptr);
-    aligned_min.encode(ptr);
-    aligned_max.encode(ptr);
-  }
-
-  void decode(const uint8_t **ptr, size_t *remain, bool owner=false){
-    key_begin.decode(ptr, remain, owner);
-    key_end.decode(ptr, remain, owner);
-    ts_earliest.decode(ptr, remain);
-    ts_latest.decode(ptr, remain);
-    aligned_min.decode(ptr, remain);
-    aligned_max.decode(ptr, remain);
-    
-    was_set = true;
-  }
-
-  const std::string to_string() const {
-    std::string s("Interval(begin=");
-    s.append(key_begin.to_string());
-    s.append( " end=");
-    s.append(key_end.to_string());
-    s.append( " earliest=");
-    s.append(ts_earliest.to_string());
-    s.append( " latest=");
-    s.append(ts_latest.to_string());
-    s.append( " min=");
-    s.append(aligned_min.to_string());
-    s.append( " max=");
-    s.append(aligned_max.to_string());
-    s.append( " was_set=");
-    s.append(was_set?"true":"false");
-    
-    return s;
-  }
+  const std::string to_string() const;
 
 
   DB::Cell::Key     key_begin;
@@ -266,7 +90,13 @@ class Interval final {
   DB::Cell::KeyVec  aligned_min;
   DB::Cell::KeyVec  aligned_max;  
   bool              was_set = false;
+  
 };
 
 }}}
-#endif
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Cells/Interval.cc"
+#endif 
+
+#endif // swcdb_db_Cells_Interval_h

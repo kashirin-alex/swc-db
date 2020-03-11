@@ -4,6 +4,7 @@
 
 
 #include "swcdb/db/Cells/MapMutable.h"
+#include <cassert>
 
 
 namespace SWC { namespace DB { namespace Cells {

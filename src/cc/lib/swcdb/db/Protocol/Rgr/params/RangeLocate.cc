@@ -5,6 +5,7 @@
 
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
+#include "swcdb/core/Serialization.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {

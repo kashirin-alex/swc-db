@@ -4,6 +4,7 @@
 
 
 #include "swcdb/db/client/sql/ColumnSchema.h"
+#include "swcdb/core/Error.h"
 
 
 namespace SWC { namespace client { namespace SQL {

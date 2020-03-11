@@ -4,6 +4,7 @@
 
 
 #include "swcdb/db/client/sql/QuerySelect.h"
+#include "swcdb/core/Time.h"
 
 
 namespace SWC { namespace client { namespace SQL {

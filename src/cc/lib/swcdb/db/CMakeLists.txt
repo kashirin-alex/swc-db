@@ -6,6 +6,10 @@ set(swcdb_sources
 	Cells/Vector.cc
 	Cells/Mutable.cc
 	Cells/MapMutable.cc
+	Cells/Interval.cc
+	Cells/CellKeyVec.cc
+	Cells/CellKey.cc
+	Cells/Cell.cc
 
 	Cells/SpecsScan.cc
 	Cells/SpecsColumn.cc

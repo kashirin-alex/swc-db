@@ -7,6 +7,7 @@
 #define swc_db_protocol_rgr_params_RangeLocate_h
 
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
 
