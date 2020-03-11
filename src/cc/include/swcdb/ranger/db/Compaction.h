@@ -205,7 +205,8 @@ class Compaction final {
                   blk_encoding(blk_encoding),
                   cell_versions(cell_versions),
                   cell_ttl(cell_ttl),
-                  col_type(col_type) {
+                  col_type(col_type),
+                  m_ts_start(Time::now_ns()) {
       cells.configure(
         cell_versions, 
         cell_ttl, 
@@ -234,8 +235,9 @@ class Compaction final {
         return;
 
       total_cells += cells.size();
-      SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld",  
-               range->cfg->cid, range->rid, total_cells.load());
+      SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
+               range->cfg->cid, range->rid, 
+               total_cells.load(), (Time::now_ns() - m_ts_start)/total_cells);
 
       auto selected_cells = cells.empty() 
                             ? nullptr : new DB::Cells::Vector(cells);
@@ -627,8 +629,9 @@ class Compaction final {
 
       range->compact_require(range->cfg->cellstore_max() > cellstores.size());
       
-      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
-               range->cfg->cid, range->rid);
+      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d cells=%lld took=%lldns", 
+               range->cfg->cid, range->rid, 
+               total_cells.load(), Time::now_ns() - m_ts_start);
       compactor->compacted(range, true);
     }
 
@@ -640,8 +643,9 @@ class Compaction final {
 
       range->compact_require(false);
       
-      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d", 
-               range->cfg->cid, range->rid);
+      SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d cells=%lld took=%lldns", 
+               range->cfg->cid, range->rid, 
+               total_cells.load(), Time::now_ns() - m_ts_start);
       compactor->compacted(range, clear);
     }
 
@@ -685,6 +689,7 @@ class Compaction final {
     std::queue<DB::Cells::Vector*>  m_queue;
     std::atomic<bool>               m_stopped = false;
     bool                            m_getting = false;
+    int64_t                         m_ts_start;
   };
 
   private:
