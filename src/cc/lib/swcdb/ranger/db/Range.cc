@@ -519,19 +519,15 @@ void Range::load(int &err, ResponseCallback::Ptr cb) {
 }
 
 const bool Range::wait(uint8_t from_state) {
-  blocks.processing_increment();
   bool waited;
   std::unique_lock lock_wait(m_mutex);
   if(waited = (m_compacting >= from_state)) {
-    blocks.processing_decrement();
     m_cv.wait(
       lock_wait, 
-      [from_state, &compacting=m_compacting](){
+      [from_state, &compacting=m_compacting]() {
         return compacting < from_state;
       }
-    );  
-  } else {
-    blocks.processing_decrement();
+    );
   }
   return waited;
 }
