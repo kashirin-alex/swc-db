@@ -18,7 +18,7 @@ Range::Range(const ColumnCfg* cfg, const int64_t rid)
               m_state(State::NOTLOADED), 
               type(cfg->cid == 1 ? Types::Range::MASTER 
                   :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
-              m_compacting(Compact::NONE), m_require_compact(false) {
+              m_compacting(COMPACT_NONE), m_require_compact(false) {
 }
 
 void Range::init() {
@@ -130,7 +130,7 @@ void Range::add(Range::ReqAdd* req) {
 }
 
 void Range::scan(ReqScan::Ptr req) {
-  if(wait() && !is_loaded()) {
+  if(wait(COMPACT_APPLYING) && !is_loaded()) {
     int err = Error::RS_NOT_LOADED_RANGE;
     req->response(err);
     return;
@@ -266,7 +266,7 @@ void Range::unload(Callback::RangeUnloaded_t cb, bool completely) {
   int err = Error::OK;
   {
     std::scoped_lock lock(m_mutex);
-    if(m_state == State::DELETED){
+    if(m_state == State::DELETED) {
       cb(err);
       return;
     }
@@ -319,24 +319,23 @@ void Range::wait_queue() {
 
 const bool Range::compacting() {
   std::shared_lock lock(m_mutex);
-  return m_compacting != Compact::NONE;
+  return m_compacting != COMPACT_NONE;
 }
 
-void Range::compacting(Range::Compact state) {
+void Range::compacting(uint8_t state) {
   {
     std::scoped_lock lock(m_mutex);
     m_compacting = state;
   }
-  if(state == Compact::NONE)
-    m_cv.notify_all();
+  m_cv.notify_all();
 }
   
 const bool Range::compact_possible() {
   std::scoped_lock lock(m_mutex);
-  if(m_state != State::LOADED || m_compacting != Compact::NONE
+  if(m_state != State::LOADED || m_compacting != COMPACT_NONE
       || (!m_require_compact && blocks.processing()))
     return false;
-  m_compacting = Range::Compact::CHECKING;
+  m_compacting = COMPACT_CHECKING;
   return true;
 }
 
@@ -519,14 +518,21 @@ void Range::load(int &err, ResponseCallback::Ptr cb) {
               err, Error::get_text(err), to_string().c_str());
 }
 
-const bool Range::wait() {
+const bool Range::wait(uint8_t from_state) {
+  blocks.processing_increment();
   bool waited;
   std::unique_lock lock_wait(m_mutex);
-  if(waited = (m_compacting == Compact::COMPACTING))
+  if(waited = (m_compacting >= from_state)) {
+    blocks.processing_decrement();
     m_cv.wait(
       lock_wait, 
-      [&compacting=m_compacting](){return compacting == Compact::NONE;}
+      [from_state, &compacting=m_compacting](){
+        return compacting < from_state;
+      }
     );  
+  } else {
+    blocks.processing_decrement();
+  }
   return waited;
 }
 
@@ -550,7 +556,8 @@ void Range::run_add_queue() {
   for(;;) {
     err = Error::OK;
     early_range_end = false;
-    if(wait()) {
+    if(wait(COMPACT_COMPACTING)) { 
+      // to wait only on COMPACT_APPLYING will require transfer-log
       std::shared_lock lock(m_mutex);
       key_end.copy(m_interval.key_end);
     }

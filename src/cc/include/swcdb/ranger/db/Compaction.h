@@ -144,7 +144,7 @@ class Compaction final {
     if(!do_compaction || !m_run)
       return compacted(range);
       
-    range->compacting(Range::Compact::COMPACTING);
+    range->compacting(Range::COMPACT_APPLYING); // sync processing state
     
     SWC_LOGF(
       LOG_INFO, 
@@ -154,7 +154,8 @@ class Compaction final {
     );
 
     range->blocks.wait_processing();
-    
+    range->compacting(Range::COMPACT_COMPACTING); // range scans can continue
+
     auto req = std::make_shared<CompactScan>(
       ptr(),
       range, 
@@ -170,7 +171,17 @@ class Compaction final {
     commitlog.commit_new_fragment(true);
     commitlog.get(req->fragments_old); 
     // fragments for deletion at finalize-compaction 
-
+    /* if range add_logged wait on COMPACT_APPLYING
+    int64_t ts = 0;
+    if(req->fragments_old.empty()) {
+      ts = Time::now_ns();
+    } else {
+      for(auto frag : req->fragments_old)
+        if(ts < frag->interval.ts_latest.value)
+          ts = frag->interval.ts_latest.value;
+    }
+    req->spec.ts_finish.set(ts, Condition::LE);
+    */
     range->scan_internal(req);
   }
 
@@ -455,6 +466,9 @@ class Compaction final {
           return quit();
       }
 
+      range->compacting(Range::COMPACT_APPLYING);
+      range->blocks.wait_processing();
+
       auto max = range->cfg->cellstore_max();
       if(cellstores.size() > 1 && cellstores.size() >= max) {
         auto c = cellstores.size()/2;
@@ -576,7 +590,9 @@ class Compaction final {
       new_range->create(err, new_cellstores);
       if(!err)
         range->apply_new(err, cellstores, fragments_old);
-
+        /* if range add_logged wait on COMPACT_APPLYING (transfer-log)
+          split latest fragments to new_range from new interval key_end
+        */
       if(err) {
         err = Error::OK;
         col->remove(err, new_rid);
@@ -684,7 +700,7 @@ class Compaction final {
       range->blocks.release(bytes);
     }
     
-    range->compacting(Range::Compact::NONE);
+    range->compacting(Range::COMPACT_NONE);
     compacted();
   }
 

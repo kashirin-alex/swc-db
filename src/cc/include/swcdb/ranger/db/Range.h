@@ -41,19 +41,20 @@ class Range : public std::enable_shared_from_this<Range> {
     const Callback::RangeQueryUpdate::Ptr cb;
   };
 
-  enum State{
+  enum State {
     NOTLOADED,
     LOADING,
     LOADED,
     UNLOADING,
     DELETED,
   };
-  
-  enum Compact{
-    NONE,
-    CHECKING,
-    COMPACTING,
-  };
+
+  // Compact states by process weight 
+  static const uint8_t COMPACT_NONE        = 0x00;
+  static const uint8_t COMPACT_CHECKING    = 0x01;
+  static const uint8_t COMPACT_COMPACTING  = 0x02;
+  static const uint8_t COMPACT_APPLYING    = 0x04;
+
   
   const ColumnCfg*    cfg;
   const int64_t       rid;
@@ -122,7 +123,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   const bool compacting();
 
-  void compacting(Compact state);
+  void compacting(uint8_t state);
   
   const bool compact_possible();
 
@@ -146,7 +147,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void load(int &err, ResponseCallback::Ptr cb);
 
-  const bool wait();
+  const bool wait(uint8_t from_state=COMPACT_CHECKING);
 
   void run_add_queue();
 
@@ -158,7 +159,7 @@ class Range : public std::enable_shared_from_this<Range> {
   DB::Cell::Key                 m_prev_key_end;
 
   std::atomic<State>            m_state;
-  Compact                       m_compacting;
+  uint8_t                       m_compacting;
   bool                          m_require_compact;
   std::queue<ReqAdd*>           m_q_adding;
 
