@@ -125,11 +125,21 @@ class Columns final {
         if(--unloaded == 0)
           await->set_value();
     };
-
-    for(;;){
+    
+    uint8_t meta = 0;
+    for(;;) {
       std::scoped_lock lock(m_mutex);
       auto it = m_columns.begin();
+      for(uint8_t n=0; n<meta;++n)
+        ++it;
       if(it == m_columns.end())
+        break;
+      while(it->first <= 2) {
+        if(m_columns.size() == ++meta)
+          break;
+        ++it;
+      }
+      if(m_columns.size() == meta)
         break;
       if(validation)
         SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
@@ -137,9 +147,23 @@ class Columns final {
       it->second->unload_all(unloaded, cb);
       m_columns.erase(it);
     }
-
     if(unloaded) 
       r_promise.get_future().wait();
+
+    for(uint8_t n=0; n<meta; ++n) {
+      auto it = m_columns.begin();
+      if(m_columns.size() == 2 && it->first == 1)
+        ++it;
+      if(validation)
+        SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
+      std::promise<void> promise;
+      r_promise.swap(promise);
+      ++unloaded;
+      it->second->unload_all(unloaded, cb);
+      m_columns.erase(it);
+      if(unloaded) 
+        r_promise.get_future().wait();
+    }
   }
 
   void remove(int &err, const int64_t cid, Callback::ColumnDeleted_t cb) {

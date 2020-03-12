@@ -143,15 +143,16 @@ void RangerEnv::start() {
 }
 
 void RangerEnv::shuttingdown() {
-  m_env->m_shuttingdown = true;
   
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
   
-  m_env->_columns->unload_all(false);
-
   m_env->_updater->commit();
   m_env->_updater->wait();
+  
+  m_env->_columns->unload_all(false);
+
+  m_env->m_shuttingdown = true;
 }
 
 
