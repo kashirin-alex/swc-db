@@ -97,10 +97,12 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   Block::Ptr blk;
   {
     std::shared_lock lock(m_mutex);
-    for(blk=m_block; blk; blk=blk->next) {
-      if(blk->add_logged(cell)) {
-        to_split = blk->loaded();
-        break;
+    if(m_block) {
+      for(blk=*(m_blocks_idx.begin()+_narrow(cell.key)); blk; blk=blk->next) { 
+        if(blk->add_logged(cell)) {
+          to_split = blk->loaded();
+          break;
+        }
       }
     }
   }
@@ -134,7 +136,11 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       blk = nullptr, nxt_blk = nullptr) {
     {
       std::shared_lock lock(m_mutex);
-      for(eval=blk_ptr? blk_ptr->next : m_block; eval; eval=eval->next) {
+      eval = blk_ptr ? blk_ptr->next 
+             : (req->spec.offset_key.empty() 
+                ? m_block 
+                : *(m_blocks_idx.begin()+_narrow(req->spec.offset_key)));
+      for(; eval; eval=eval->next) {
         if(eval->removed() || !eval->is_next(req->spec)) 
           continue;
         blk = eval;
@@ -180,8 +186,11 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
 void Blocks::split(Block::Ptr blk, bool loaded) {
   if(blk->need_split() && m_mutex.try_lock()) {
-    do blk = blk->split(loaded);
-    while(blk->need_split());
+    auto offset = _get_block_idx(blk);
+    do {
+      blk = blk->split(loaded);
+      m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
+    } while(blk->need_split());
     m_mutex.unlock();
   }
 }
@@ -189,8 +198,11 @@ void Blocks::split(Block::Ptr blk, bool loaded) {
 const bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // blk is under lock
   if(blk->_need_split() && m_mutex.try_lock()) {
-    do blk = blk->_split(loaded);
-    while(blk->_need_split());
+    auto offset = _get_block_idx(blk);
+    do {
+      blk = blk->_split(loaded);
+      m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
+    } while(blk->_need_split());
     m_mutex.unlock();
     return true;
   }
@@ -346,6 +358,7 @@ const bool Blocks::_processing() const {
 }
 
 void Blocks::_clear() {
+  m_blocks_idx.clear();
   Block::Ptr blk = m_block;
   for(; blk; blk=blk->next) {
     if(blk->prev)
@@ -377,9 +390,11 @@ void Blocks::init_blocks(int& err) {
     if(blk == nullptr) {
       m_block = blk = Block::make(cs_blk->interval, ptr());
       m_block->_set_prev_key_end(prev_key_end);
+      m_blocks_idx.push_back(blk);
     } else if(blk->_cond_key_end(cs_blk->interval.key_begin) != Condition::EQ) {
       blk->_add(Block::make(cs_blk->interval, ptr()));
       blk = blk->next;
+      m_blocks_idx.push_back(blk);
     } else {
       blk->_set_key_end(cs_blk->interval.key_end);
     }
@@ -395,6 +410,37 @@ void Blocks::init_blocks(int& err) {
     blk->free_key_end();
 }
 
+size_t Blocks::_get_block_idx(Block::Ptr blk) const {
+  for(auto it=m_blocks_idx.begin(); it < m_blocks_idx.end();++it)
+    if(*it == blk)
+      return it - m_blocks_idx.begin();
+  return 0; // eq m_block;
+}
+
+size_t Blocks::_narrow(const DB::Cell::Key& key) const {
+    size_t offset = 0;
+    if(m_blocks_idx.size() < MAX_IDX_NARROW || key.empty())
+      return offset;
+      
+    size_t sz = m_blocks_idx.size() >> 1;
+    offset = sz; 
+    for(;;) {
+      if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {
+        if(sz < MAX_IDX_NARROW)
+          break;
+        offset += sz >>= 1; 
+        continue;
+      }
+      if((sz >>= 1) == 0)
+        ++sz;  
+      if(offset < sz) {
+        offset = 0;
+        break;
+      }
+      offset -= sz;
+    }
+    return offset;
+}
 
 
 }}

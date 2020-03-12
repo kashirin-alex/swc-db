@@ -82,11 +82,9 @@ void Block::preload() {
 }
 
 const bool Block::add_logged(const DB::Cells::Cell& cell) {
-  {
-    std::shared_lock lock(m_mutex);
-    if(!m_interval.is_in_end(cell.key))
-      return false;
-  }
+  if(!is_in_end(cell.key))
+    return false;
+  
   if(!loaded()) 
     return true;
 
