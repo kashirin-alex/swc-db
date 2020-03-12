@@ -778,12 +778,16 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
 
       if(any = found_token(TOKEN_LIMIT, LEN_LIMIT)) {
         expect_eq();
-        read_uint32_t(flags.limit, flags.was_set);
+        int64_t v;
+        read_int64_t(v, flags.was_set);
+        flags.limit = v;
         continue;
       }
       if(any = found_token(TOKEN_OFFSET, LEN_OFFSET)) {
         expect_eq();
-        read_uint32_t(flags.offset, flags.was_set);
+        int64_t v;
+        read_int64_t(v, flags.was_set);
+        flags.offset = v;
         continue;
       }
       if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {

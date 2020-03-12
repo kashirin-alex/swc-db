@@ -55,22 +55,22 @@ const bool Flags::equal(const Flags &other) const {
 }
 
 const size_t Flags::encoded_length() const {
-  return Serialization::encoded_length_vi32(limit)
-        +Serialization::encoded_length_vi32(offset)
+  return Serialization::encoded_length_vi64(limit)
+        +Serialization::encoded_length_vi64(offset)
         +Serialization::encoded_length_vi32(max_versions)
         +1;
 }
 
 void Flags::encode(uint8_t **bufp) const {
-  Serialization::encode_vi32(bufp, limit);
-  Serialization::encode_vi32(bufp, offset);
+  Serialization::encode_vi64(bufp, limit);
+  Serialization::encode_vi64(bufp, offset);
   Serialization::encode_vi32(bufp, max_versions);
   Serialization::encode_i8(bufp, options);
 }
 
 void Flags::decode(const uint8_t **bufp, size_t *remainp){
-  limit = Serialization::decode_vi32(bufp, remainp);
-  offset = Serialization::decode_vi32(bufp, remainp);
+  limit = Serialization::decode_vi64(bufp, remainp);
+  offset = Serialization::decode_vi64(bufp, remainp);
   max_versions = Serialization::decode_vi32(bufp, remainp);
   options = Serialization::decode_i8(bufp, remainp);
 }
