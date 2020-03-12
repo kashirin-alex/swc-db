@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
 
@@ -9,35 +9,10 @@
 #include "swcdb/core/Compat.h"
 
 #include <iostream>
-#include <chrono>
 
 
-namespace std { namespace chrono {
+namespace SWC { namespace Time {
 
-class fast_clock final {
-  public:
-  typedef microseconds      duration;
-  typedef duration::rep     rep;
-  typedef duration::period  period;
-  typedef chrono::time_point<fast_clock> time_point;
-  static constexpr bool is_steady = false;
-
-  static time_point now() noexcept;
-
-  static time_t to_time_t (const time_point& __t) noexcept;
-
-  static time_point from_time_t(time_t __t) noexcept;
-};
-
-}} // namespace std::chrono
-
-
-
-namespace SWC { 
-  
-typedef std::chrono::fast_clock ClockT;
-
-namespace Time {
 
 void checkings();
 
@@ -50,6 +25,7 @@ const int64_t parse_ns(int& err, const std::string& buf);
 const std::string fmt_ns(int64_t ns);
 
 std::ostream &hires_now_ns(std::ostream &out);
+
 
 }}
 

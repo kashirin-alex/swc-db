@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
 // https://coliru.stacked-crooked.com/a/ca4fdaae820e15ed

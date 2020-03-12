@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
 #ifndef swc_manager_Protocol_mngr_req_MngrColumnGet_h

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
 #ifndef swc_core_comm_CommHeader_h

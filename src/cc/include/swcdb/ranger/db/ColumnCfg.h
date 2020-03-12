@@ -1,7 +1,6 @@
 /*
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
- */
-
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+*/
 
 #ifndef swc_ranger_db_ColumnCfg_h
 #define swc_ranger_db_ColumnCfg_h

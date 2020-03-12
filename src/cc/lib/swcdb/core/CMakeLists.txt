@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 #
 
 
@@ -27,7 +27,6 @@ set(swcdb_core_sources
 	DynamicBuffer.cc
 	Encoder.cc
 	FileUtils.cc
-	Random.cc
 	Serializable.cc
 	#Serialization.cc
 )

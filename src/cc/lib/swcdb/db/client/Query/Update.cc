@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) 2019 SWC-DB (author: Kashirin Alex (kashirin.alex@gmail.com))
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
 #include "swcdb/db/client/Clients.h"
