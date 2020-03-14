@@ -28,8 +28,8 @@ https://alex.kashirin.family/swc-DB.pdf
   * Thrift Broker requires - optional:
     * [Apache Thrift 0.13.0+](https://github.com/apache/thrift)
     * [libevent 2.1.11+](http://github.com/libevent/libevent)
-  * (static version libraries required for -DO_LEVEL > 4)
-
+  * [doxygen](https://github.com/doxygen/doxygen) - optional
+  * *-DO_LEVEL > 4 require static libraries*
 
 ```bash
 git clone https://github.com/kashirin-alex/swc-db.git
@@ -38,10 +38,11 @@ mkdir swcdb; cd swcdb;
 
 ```cmake
 cmake ../swc-db \
-  -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON \
-  -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
-  -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
-  -DCMAKE_BUILD_TYPE=Release
+ -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON \
+ -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
+ -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+ -DSWC_DOCUMENTATION=OFF \
+ -DCMAKE_BUILD_TYPE=Release
 ```
 ```bash
 make -j8 install

@@ -28,12 +28,6 @@
 #ifndef swc_core_compact_c_h
 #define swc_core_compact_c_h
 
-/** @defgroup Common Common
- * General purpose utility library.
- * The %Common library contains general purpose utility classes used by all
- * other modules within Hypertable.  It is not dependent on any other library
- * defined in %Hypertable.
- */
 
 /* Portability macros for C code. */
 #ifdef __cplusplus
@@ -87,6 +81,5 @@
 #define USE_READDIR_R 1
 #endif
 
-/** @}*/
 
 #endif

@@ -152,15 +152,15 @@ enum Code {
   SERIALIZATION_INPUT_OVERRUN                  = 0x00080001,
   SERIALIZATION_VERSION_MISMATCH               = 0x00080004,
 
-  FS_BAD_FILE_HANDLE                    = 0x00020001,
-  FS_IO_ERROR                           = 0x00020002,
-  FS_FILE_NOT_FOUND                     = 0x00020003,
-  FS_BAD_FILENAME                       = 0x00020004,
-  FS_PERMISSION_DENIED                  = 0x00020005,
-  FS_INVALID_ARGUMENT                   = 0x00020006,
-  FS_INVALID_CONFIG                     = 0x00020007,
-  FS_EOF                                = 0x00020008,
-  FS_PATH_NOT_FOUND                     = 0x00020009,
+  FS_BAD_FILE_HANDLE                           = 0x00020001,
+  FS_IO_ERROR                                  = 0x00020002,
+  FS_FILE_NOT_FOUND                            = 0x00020003,
+  FS_BAD_FILENAME                              = 0x00020004,
+  FS_PERMISSION_DENIED                         = 0x00020005,
+  FS_INVALID_ARGUMENT                          = 0x00020006,
+  FS_INVALID_CONFIG                            = 0x00020007,
+  FS_EOF                                       = 0x00020008,
+  FS_PATH_NOT_FOUND                            = 0x00020009,
       
   SQL_PARSE_ERROR                              = 0x00060001,
   SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
@@ -170,7 +170,7 @@ enum Code {
 
 /** Returns a descriptive error message
 *
-* @param error The error code
+* @param err The error code
 * @return The descriptive error message of this code
 */
 const char* get_text(const int& err);

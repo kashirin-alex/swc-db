@@ -35,7 +35,7 @@ endif ()
 
 
 # C++ flags
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_REENTRANT")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
@@ -123,6 +123,8 @@ include(PackagesCore)
 # Packages Common
 include(PackagesCommon)
 
+# Packages Common
+include(Doc)
 
 
 add_subdirectory("src")

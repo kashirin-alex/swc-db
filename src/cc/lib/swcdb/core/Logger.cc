@@ -5,9 +5,10 @@
 #include "swcdb/core/Logger.h"
 
 
-/** INITIATE SINGLETONE LOGGER INSTANCE. */
+
 namespace SWC { namespace Logger {
 
+/** INITIATE SINGLETONE LOGGER INSTANCE. **/
 LogWriter logger;
  
 const char* priority_name[] = {

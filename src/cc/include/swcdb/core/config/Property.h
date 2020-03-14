@@ -62,7 +62,7 @@ class Value {
 
   Value(uint8_t flags=0);
   
-  Value(Value* ptr);
+  Value(Ptr ptr);
 
   virtual ~Value();
 

@@ -39,13 +39,7 @@
 #include <memory>
 
 // C++ specific stuff
-#define HT_UNUSED(x) static_cast<void>(x)
 
-#if defined(__APPLE__) || !defined(_GLIBCXX_HAVE_QUICK_EXIT)
-namespace std {
-  inline void quick_exit(int status) { _exit(status); }
-}
-#endif
 
 /* The HT_ABORT macro terminates the application and generates a core dump */
 #ifdef HT_USE_ABORT
