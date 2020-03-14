@@ -21,7 +21,7 @@ class Schema final {
   
   typedef std::shared_ptr<Schema> Ptr;
 
-  static const int64_t NO_CID = 0;
+  static constexpr const int64_t NO_CID = 0;
 
   static Ptr make(
          const std::string& col_name, 

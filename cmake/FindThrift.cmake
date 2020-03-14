@@ -8,7 +8,7 @@ SET_DEPS(NAME "EVENT" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libevent.a 
 	 
 SET_DEPS(
 	NAME "THRIFT" 
-	REQUIRED TRUE 
+	REQUIRED FALSE 
 	LIB_PATHS /usr/local/lib
 	INC_PATHS /usr/local/include
 			      /usr/include
