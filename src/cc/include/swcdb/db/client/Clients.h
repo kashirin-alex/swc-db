@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_client_Clients_h
-#define swc_lib_client_Clients_h
+#ifndef swc_db_client_Clients_h
+#define swc_db_client_Clients_h
 
 #include <memory>
 
@@ -80,4 +80,4 @@ class Clients final {
 #endif 
 
 
-#endif // swc_lib_client_Clients_h
+#endif // swc_db_client_Clients_h

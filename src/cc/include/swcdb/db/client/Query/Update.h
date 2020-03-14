@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
-#ifndef swc_client_requests_Query_Update_h
-#define swc_client_requests_Query_Update_h
+#ifndef swc_db_client_Query_Update_h
+#define swc_db_client_Query_Update_h
 
 #include "swcdb/core/LockAtomicUnique.h"
 #include "swcdb/db/Cells/MapMutable.h" 
@@ -167,4 +167,4 @@ class Update : public std::enable_shared_from_this<Update> {
 #endif 
 
 
-#endif // swc_client_requests_Query_Update_h
+#endif // swc_db_client_Query_Update_h

@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Dirent_h
-#define swc_lib_fs_Dirent_h
+#ifndef swc_fs_Dirent_h
+#define swc_fs_Dirent_h
 
 #include <memory>
 #include <vector>
@@ -50,4 +50,4 @@ typedef std::vector<Dirent> DirentList;
 #endif 
 
 
-#endif  // swc_lib_fs_Dirent_h
+#endif  // swc_fs_Dirent_h

@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_db_Stats_Stat_h
-#define swc_lib_db_Stats_Stat_h
+#ifndef swc_db_Stats_Stat_h
+#define swc_db_Stats_Stat_h
 
 
 
@@ -54,4 +54,4 @@ class Stat {
 
 }}
 
-#endif // swc_lib_db_Stats_Stat_h
+#endif // swc_db_Stats_Stat_h

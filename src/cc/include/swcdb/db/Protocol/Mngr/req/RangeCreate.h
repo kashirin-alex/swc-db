@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_db_protocol_req_RangeCreate_h
-#define swc_lib_db_protocol_req_RangeCreate_h
+#ifndef swc_db_protocol_req_RangeCreate_h
+#define swc_db_protocol_req_RangeCreate_h
 
 
 #include "swcdb/db/Protocol/Commands.h"
@@ -100,4 +100,4 @@ class RangeCreate: public client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_lib_db_protocol_req_RangeCreate_h
+#endif // swc_db_protocol_req_RangeCreate_h

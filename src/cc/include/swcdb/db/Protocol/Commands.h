@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_db_Protocol_Commands_h
-#define swc_lib_db_Protocol_Commands_h
+#ifndef swc_db_Protocol_Commands_h
+#define swc_db_Protocol_Commands_h
 
 
 namespace SWC { namespace Protocol {
@@ -57,4 +57,4 @@ namespace Mngr {
 
 }}
 
-#endif // swc_lib_db_Protocol_Commands_h
+#endif // swc_db_Protocol_Commands_h

@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_utils_ShellRanger_h
-#define swc_lib_utils_ShellRanger_h
+#ifndef swc_utils_ShellRanger_h
+#define swc_utils_ShellRanger_h
 
 
 #include "swcdb/db/client/Clients.h"
@@ -131,4 +131,4 @@ class Rgr : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_lib_utils_ShellRanger_h
+#endif // swc_utils_ShellRanger_h

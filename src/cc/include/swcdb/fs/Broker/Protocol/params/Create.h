@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Broker_Protocol_params_Create_h
-#define swc_lib_fs_Broker_Protocol_params_Create_h
+#ifndef swc_fs_Broker_Protocol_params_Create_h
+#define swc_fs_Broker_Protocol_params_Create_h
 
 
 
@@ -59,4 +59,4 @@ class CreateReq : public Serializable {
 
 }}}}
 
-#endif // swc_lib_fs_Broker_Protocol_params_Create_h
+#endif // swc_fs_Broker_Protocol_params_Create_h

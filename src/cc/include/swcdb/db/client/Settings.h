@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_client_Settings_h
-#define swc_client_Settings_h
+#ifndef swc_db_client_Settings_h
+#define swc_db_client_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -20,4 +20,4 @@ namespace SWC{ namespace Config {
 #include "swcdb/db/client/Settings.cc"
 #endif 
 
-#endif // swc_client_Settings_h
+#endif // swc_db_client_Settings_h

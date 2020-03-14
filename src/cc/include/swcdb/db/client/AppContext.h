@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_client_AppContext_h
-#define swc_lib_client_AppContext_h
+#ifndef swc_db_client_AppContext_h
+#define swc_db_client_AppContext_h
 
 #include "swcdb/core/comm/ConnHandler.h"
 
@@ -28,4 +28,4 @@ class AppContext : public SWC::AppContext {
 #include "swcdb/db/client/AppContext.cc"
 #endif 
 
-#endif // swc_lib_client_AppContext_h
+#endif // swc_db_client_AppContext_h

@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Interface_h
-#define swc_lib_fs_Interface_h
+#ifndef swc_fs_Interface_h
+#define swc_fs_Interface_h
 
 
 #include "swcdb/fs/FileSystem.h"
@@ -152,4 +152,4 @@ class FsInterface {
 #endif 
 
 
-#endif  // swc_lib_fs_Interface_h
+#endif  // swc_fs_Interface_h

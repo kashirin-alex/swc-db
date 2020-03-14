@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_db_types_MngrState_h
-#define swc_lib_db_types_MngrState_h
+#ifndef swc_db_types_MngrState_h
+#define swc_db_types_MngrState_h
 
 
 namespace SWC { namespace Types { 
@@ -20,4 +20,4 @@ enum MngrState {
 
 }}
 
-#endif // swc_lib_db_types_MngrState_h
+#endif // swc_db_types_MngrState_h

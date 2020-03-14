@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_utils_ShellDbClient_h
-#define swc_lib_utils_ShellDbClient_h
+#ifndef swc_utils_ShellDbClient_h
+#define swc_utils_ShellDbClient_h
 
 #include "swcdb/db/client/sql/SQL.h"
 #include "swcdb/fs/Interface.h"
@@ -512,4 +512,4 @@ class DbClient : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_lib_utils_ShellDbClient_h
+#endif // swc_utils_ShellDbClient_h

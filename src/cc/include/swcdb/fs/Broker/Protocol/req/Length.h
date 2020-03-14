@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Broker_Protocol_req_Length_h
-#define swc_lib_fs_Broker_Protocol_req_Length_h
+#ifndef swc_fs_Broker_Protocol_req_Length_h
+#define swc_fs_Broker_Protocol_req_Length_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Length.h"
@@ -59,4 +59,4 @@ class Length : public Base {
 
 }}}}
 
-#endif  // swc_lib_fs_Broker_Protocol_req_Length_h
+#endif  // swc_fs_Broker_Protocol_req_Length_h

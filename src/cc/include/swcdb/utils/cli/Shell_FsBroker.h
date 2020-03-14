@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_utils_ShellFsBroker_h
-#define swc_lib_utils_ShellFsBroker_h
+#ifndef swc_utils_ShellFsBroker_h
+#define swc_utils_ShellFsBroker_h
 
 
 
@@ -22,4 +22,4 @@ class FsBroker : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_lib_utils_ShellFsBroker_h
+#endif // swc_utils_ShellFsBroker_h

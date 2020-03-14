@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Broker_Protocol_req_Exists_h
-#define swc_lib_fs_Broker_Protocol_req_Exists_h
+#ifndef swc_fs_Broker_Protocol_req_Exists_h
+#define swc_fs_Broker_Protocol_req_Exists_h
 
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
@@ -60,4 +60,4 @@ class Exists : public Base {
 
 }}}}
 
-#endif  // swc_lib_fs_Broker_Protocol_req_Exists_h
+#endif  // swc_fs_Broker_Protocol_req_Exists_h

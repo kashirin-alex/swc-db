@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_db_protocol_mngr_req_ColumnMng_h
-#define swc_lib_db_protocol_mngr_req_ColumnMng_h
+#ifndef swc_db_protocol_mngr_req_ColumnMng_h
+#define swc_db_protocol_mngr_req_ColumnMng_h
 
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
@@ -60,4 +60,4 @@ class ColumnMng: public client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.cc"
 #endif 
 
-#endif // swc_lib_db_protocol_mngr_req_ColumnMng_h
+#endif // swc_db_protocol_mngr_req_ColumnMng_h

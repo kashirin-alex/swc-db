@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Broker_Protocol_Commands_h
-#define swc_lib_fs_Broker_Protocol_Commands_h
+#ifndef swc_fs_Broker_Protocol_Commands_h
+#define swc_fs_Broker_Protocol_Commands_h
 
 namespace SWC{ namespace FS { namespace Protocol {
   
@@ -37,4 +37,4 @@ namespace SWC{ namespace FS { namespace Protocol {
 
 }}
 
-#endif  // swc_lib_fs_Broker_Protocol_Commands_h
+#endif  // swc_fs_Broker_Protocol_Commands_h

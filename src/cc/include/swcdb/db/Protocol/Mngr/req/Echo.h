@@ -3,8 +3,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
-#ifndef swc_lib_db_protocol_mngr_req_Echo_h
-#define swc_lib_db_protocol_mngr_req_Echo_h
+#ifndef swc_db_protocol_mngr_req_Echo_h
+#define swc_db_protocol_mngr_req_Echo_h
 
 #include "swcdb/db/Protocol/Commands.h"
 
@@ -72,4 +72,4 @@ class Echo : public DispatchHandler {
 
 }}}}
 
-#endif // swc_lib_db_protocol_mngr_req_Echo_h
+#endif // swc_db_protocol_mngr_req_Echo_h

@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Hadoop_FileSystem_h
-#define swc_lib_fs_Hadoop_FileSystem_h
+#ifndef swc_fs_Hadoop_FileSystem_h
+#define swc_fs_Hadoop_FileSystem_h
 
 #include <asio.hpp>
 #include "swcdb/fs/FileSystem.h"
@@ -115,4 +115,4 @@ void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env);
 #endif 
 
 
-#endif  // swc_lib_fs_Hadoop_FileSystem_h
+#endif  // swc_fs_Hadoop_FileSystem_h

@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_lib_fs_Callbacks_h
-#define swc_lib_fs_Callbacks_h
+#ifndef swc_fs_Callbacks_h
+#define swc_fs_Callbacks_h
 
 #include <functional>
 #include "swcdb/core/StaticBuffer.h"
@@ -39,4 +39,4 @@ namespace Callback {
 
 }}
 
-#endif  // swc_lib_fs_Callbacks_h
+#endif  // swc_fs_Callbacks_h

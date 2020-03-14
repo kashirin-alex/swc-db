@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_client_Schemas_h
-#define swc_client_Schemas_h
+#ifndef swc_db_client_Schemas_h
+#define swc_db_client_Schemas_h
 
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/db/Columns/Schemas.h"
@@ -43,4 +43,4 @@ class Schemas  {
 
 }}
 
-#endif // swc_client_Schemas_h
+#endif // swc_db_client_Schemas_h
