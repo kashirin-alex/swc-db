@@ -24,11 +24,13 @@ openssl req -new -sha256 -newkey rsa:4096 -nodes \
 openssl x509 -req \
     -extfile <(printf "\n[v3_req]\nsubjectAltName=DNS:${DOMAIN_NAME}") \
     -days 3650 -in server.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial \
-    -out server.crt -sha256;
+    -out cluster.crt -sha256;
 
-cat server.key server.crt > ${CONFIG_PATH}/server.pem; # rootCA.crt(no-nned to send, added as ca)  
+# PUT IN CONFIG PATH
+mv cluster.crt ${CONFIG_PATH}/;
+mv server.key ${CONFIG_PATH}/;
 cat rootCA.crt > ${CONFIG_PATH}/ca.pem;
 
-rm rootCA.key rootCA.crt server.key server.crt rootCA.srl server.csr;
+rm rootCA.crt rootCA.key server.csr;
 
-openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/server.pem
+openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/cluster.crt

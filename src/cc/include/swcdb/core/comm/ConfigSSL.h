@@ -26,9 +26,6 @@ class ConfigSSL final {
 
   void set_networks(const Strings& networks);
 
-  void load_ca(const std::string& ca_filepath);
-
-
   const bool need_ssl(const EndPoint& endpoint) const;
 
 
@@ -50,13 +47,13 @@ class ConfigSSL final {
 
   private:
   
-  void load_file(const std::string& filepath, std::string& to) const;
+  void load_file(std::string filepath, std::string& to) const;
   
-  std::string   pem;
   std::string   ciphers;
   std::string   subject_name;
+  std::string   crt;
+  std::string   key;
   std::string   ca;
-  std::string   ca_file;
   std::vector<asio::ip::network_v4> nets_v4;
   std::vector<asio::ip::network_v6> nets_v6;
 };

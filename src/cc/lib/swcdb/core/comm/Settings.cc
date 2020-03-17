@@ -15,13 +15,14 @@ void Settings::init_comm_options() {
      "host:port to listen on IPv4+6, swc.ServiceName.port applied if port not specified")
     
     ("swc.comm.ssl", boo(false), "Use SSL in comm layer")
-    ("swc.comm.ssl.secure.network", strs({"127.0.0.0/8"}),
+    ("swc.comm.ssl.secure.network", strs({}),
      "Networks that do not require SSL")
     ("swc.comm.ssl.ciphers", str(), "Ciphers to use")
-    ("swc.comm.ssl.ca", str(), "CA, used if set")
-    ("swc.comm.ssl.pem", str("server.pem"), "Servers PEM file")
     ("swc.comm.ssl.subject_name", str(), 
       "CRT/Cluster's domain-name, if set SRV-CRT is verified")
+    ("swc.comm.ssl.crt", str("cluster.crt"), "Cluster Certificate file")
+    ("swc.comm.ssl.key", str("server.key"), "Server Private-Key file")
+    ("swc.comm.ssl.ca", str(), "CA, used if set")
      
   ;
 }
