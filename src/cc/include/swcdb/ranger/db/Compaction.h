@@ -237,7 +237,9 @@ class Compaction final {
       total_cells += cells.size();
       SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
                range->cfg->cid, range->rid, 
-               total_cells.load(), (Time::now_ns() - m_ts_start)/total_cells);
+               total_cells.load(), 
+               (Time::now_ns() - m_ts_start) 
+                / (total_cells ? total_cells.load() : (size_t)1));
 
       auto selected_cells = cells.empty() 
                             ? nullptr : new DB::Cells::Vector(cells);
