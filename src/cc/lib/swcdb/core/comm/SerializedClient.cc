@@ -87,7 +87,8 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
            m_ssl_cfg ? "SECURE" : "PLAIN");
     
   auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
-  sock->async_connect(m_endpoint, 
+  sock->async_connect(
+    m_endpoint, 
     [sock, cb, preserve, ptr=shared_from_this()]
     (const std::error_code& ec) {
       if(ec || !sock->is_open()){

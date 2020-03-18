@@ -17,7 +17,7 @@ namespace SWC{ namespace Config {
 void Settings::init_app_options(){
   init_comm_options();
   init_client_options();
-  file_desc.add_options()
+  cmdline_desc.add_options()
     ("requests", i32(1), "number of requests") 
     ("batch", i32(1), "batch size of each request")
     ("threads", i32(1), "number of threads x (requests x batch)")

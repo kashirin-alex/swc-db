@@ -110,7 +110,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual void do_async_read(
       uint8_t* data, uint32_t sz,
-      const std::function<size_t(const asio::error_code, size_t)>& cond,
       const std::function<void(const asio::error_code, size_t)>& hdlr) = 0;
 
   void disconnected();
@@ -131,14 +130,19 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void write(Outgoing* data);
 
   void read_pending();
-  
-  size_t read_condition_hdlr(const Event::Ptr& ev, uint8_t* data,
-                             const asio::error_code e, size_t filled);
-  
-  size_t read_condition(const Event::Ptr& ev, uint8_t* data, 
-                        asio::error_code &ec);
 
-  void received(const Event::Ptr& ev, const asio::error_code ec);
+  void recved_header_pre(asio::error_code ec, 
+                         const uint8_t* data, size_t filled);
+
+  void recved_header(const Event::Ptr& ev, asio::error_code ec, 
+                     const uint8_t* data, size_t filled);
+
+  void recv_buffers(const Event::Ptr& ev, uint8_t n);
+
+  void recved_buffer(const Event::Ptr& ev, asio::error_code ec, 
+                     uint8_t n, size_t filled);
+
+  void received(const Event::Ptr& ev, const asio::error_code& ec);
 
   void run_pending(Event::Ptr ev);
 
@@ -182,7 +186,6 @@ class ConnHandlerPlain : public ConnHandler {
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<size_t(const asio::error_code, size_t)>& cond,
     const std::function<void(const asio::error_code, size_t)>& hdlr) override;
 
   private:
@@ -226,7 +229,6 @@ class ConnHandlerSSL : public ConnHandler {
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<size_t(const asio::error_code, size_t)>& cond,
     const std::function<void(const asio::error_code, size_t)>& hdlr) override;
 
   private:
