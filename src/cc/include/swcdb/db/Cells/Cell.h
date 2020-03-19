@@ -53,6 +53,7 @@ static const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
 static const uint8_t HAVE_REVISION      =  0x80;
 static const uint8_t HAVE_TIMESTAMP     =  0x40;
 static const uint8_t AUTO_TIMESTAMP     =  0x20;
+static const uint8_t REV_IS_TS          =  0x10;
 //static const uint8_t TYPE_DEFINED     =  0x2;
 static const uint8_t TS_DESC            =  0x1;
 
@@ -111,6 +112,8 @@ class Cell final {
   
   const bool is_removing(const int64_t& rev) const;
 
+  const int64_t get_timestamp() const;
+
   const int64_t get_revision() const;
 
   const bool has_expired(const uint64_t ttl) const;
@@ -126,6 +129,7 @@ class Cell final {
   uint8_t         control;
   uint32_t        vlen;
   int64_t         timestamp;
+  int64_t         revision;
   uint8_t*        value;
 
   private:

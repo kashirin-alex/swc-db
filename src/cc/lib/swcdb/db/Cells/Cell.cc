@@ -54,6 +54,7 @@ Cell::Cell(const Cell& other)
     control(other.control), 
     vlen(other.vlen), 
     timestamp(other.timestamp), 
+    revision(other.revision), 
     value(_value(other.value)) {
 }
 
@@ -62,6 +63,7 @@ Cell::Cell(const Cell& other, bool no_value)
     control(other.control), 
     vlen(own ? other.vlen : 0), 
     timestamp(other.timestamp), 
+    revision(other.revision), 
     value(_value(other.value)) {
 }
 
@@ -75,6 +77,7 @@ void Cell::copy(const Cell& other, bool no_value) {
   flag      = other.flag;
   control   = other.control;
   timestamp = other.timestamp;
+  revision  = other.revision;
   
   if(no_value)
     free();
@@ -102,6 +105,11 @@ void Cell::set_time_order_desc(bool desc) {
 void Cell::set_timestamp(int64_t ts) {
   timestamp = ts;
   control |= HAVE_TIMESTAMP;
+}
+
+void Cell::set_revision(int64_t ts) {
+  revision = ts;
+  control |= HAVE_REVISION;
 }
 
 void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
@@ -180,10 +188,15 @@ void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
   key.decode(bufp, remainp, owner);
   control = Serialization::decode_i8(bufp, remainp);
 
-  if (control & HAVE_TIMESTAMP)
+  if(control & HAVE_TIMESTAMP)
     timestamp = Serialization::decode_i64(bufp, remainp);
   else if(control & AUTO_TIMESTAMP)
     timestamp = AUTO_ASSIGN;
+ 
+  if(control & HAVE_REVISION)
+    revision = Serialization::decode_i64(bufp, remainp);
+  else if(control & REV_IS_TS)
+    revision = timestamp;
 
   free();
   if(vlen = Serialization::decode_vi32(bufp, remainp)) {
@@ -198,6 +211,8 @@ const uint32_t Cell::encoded_length() const {
   uint32_t len = 1+key.encoded_length()+1;
   if(control & HAVE_TIMESTAMP)
     len += 8;
+  if(control & HAVE_REVISION)
+    len += 8;
   return len + Serialization::encoded_length_vi32(vlen) + vlen;
 }
 
@@ -210,6 +225,8 @@ void Cell::write(SWC::DynamicBuffer &dst_buf) const {
   Serialization::encode_i8(&dst_buf.ptr, control);
   if(control & HAVE_TIMESTAMP)
     Serialization::encode_i64(&dst_buf.ptr, timestamp);
+  if(control & HAVE_REVISION)
+    Serialization::encode_i64(&dst_buf.ptr, revision);
     
   Serialization::encode_vi32(&dst_buf.ptr, vlen);
   if(vlen)
@@ -222,6 +239,7 @@ const bool Cell::equal(const Cell& other) const {
   return  flag == other.flag && 
           control == other.control &&
           timestamp == other.timestamp && 
+          revision == other.revision && 
           vlen == other.vlen &&
           key.equal(other.key) &&
           memcmp(value, other.value, vlen) == 0;
@@ -233,14 +251,19 @@ const bool Cell::removal() const {
 
 const bool Cell::is_removing(const int64_t& rev) const {
   return rev != AUTO_ASSIGN && removal() && (
-    (flag == DELETE  && get_revision() >= rev )
+    (flag == DELETE  && get_timestamp() >= rev )
     ||
-    (flag == DELETE_VERSION && get_revision() == rev )
+    (flag == DELETE_VERSION && get_timestamp() == rev )
     );
 }
 
-const int64_t Cell::get_revision() const {
+const int64_t Cell::get_timestamp() const {
   return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
+}
+
+const int64_t Cell::get_revision() const {
+  return control & HAVE_REVISION ? revision 
+        : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
 }
 
 const bool Cell::has_expired(const uint64_t ttl) const {
@@ -259,10 +282,10 @@ const std::string Cell::to_string(Types::Column typ) const {
   s.append(std::to_string(control));
   
   s.append(" ts=");
-  s.append(std::to_string(timestamp));
+  s.append(std::to_string(get_timestamp()));
 
-  //s.append(" rev=");
-  //s.append(std::to_string(revision));
+  s.append(" rev=");
+  s.append(std::to_string(get_revision()));
 
   s.append(" value=(len="); 
   s.append(std::to_string(vlen));  
@@ -307,7 +330,7 @@ void Cell::display(std::ostream& out,
       int64_t eq_rev = TIMESTAMP_NULL;
       int64_t value = get_counter(op, eq_rev);
       if(op & OP_EQUAL && !(op & HAVE_REVISION))
-        eq_rev = get_revision();
+        eq_rev = get_timestamp();
       out << value;
       if(eq_rev != TIMESTAMP_NULL)
         out << " EQ-SINCE(" << Time::fmt_ns(eq_rev) << ")";

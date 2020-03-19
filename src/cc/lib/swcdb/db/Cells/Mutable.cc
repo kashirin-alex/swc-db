@@ -218,7 +218,7 @@ const bool Mutable::get_next(uint32_t offset, Cell*& cell) {
 
 void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
-  int64_t revision = e_cell.get_revision();
+  int64_t ts = e_cell.get_timestamp();
 
   for(Cell* cell; get_next(offset, cell); ++offset) {
 
@@ -231,10 +231,10 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
       return;
     }
 
-    if(cell->removal() && cell->is_removing(revision))
+    if(cell->removal() && cell->is_removing(ts))
       return;
     
-    if(e_cell.is_removing(cell->get_revision()))
+    if(e_cell.is_removing(cell->get_timestamp()))
       _move_bwd(offset--, 1);
   }
   
@@ -243,7 +243,7 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
 
 void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
-  int64_t revision = e_cell.get_revision();
+  int64_t ts = e_cell.get_timestamp();
   uint32_t revs = 0;
 
   for(Cell* cell; get_next(offset, cell); ++offset) {
@@ -257,12 +257,12 @@ void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
     }
 
     if(cell->removal()) {
-      if(cell->is_removing(revision))
+      if(cell->is_removing(ts))
         return;
       continue;
     }
 
-    if(revision != AUTO_ASSIGN && cell->get_revision() == revision) {
+    if(ts != AUTO_ASSIGN && cell->get_timestamp() == ts) {
       cell->copy(e_cell);
       return;
     }
@@ -291,7 +291,7 @@ void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
 void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
 
-  int64_t revision = e_cell.get_revision();
+  int64_t ts = e_cell.get_timestamp();
   uint32_t add_offset = m_size;
   Cell* cell;
   for(; get_next(offset, cell); ++offset) {
@@ -300,13 +300,13 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
     if(cond == Condition::GT)
       continue;
 
-    if(cond == Condition::LT) { //without aggregate|| revision == AUTO_ASSIGN
+    if(cond == Condition::LT) { //without aggregate|| ts == AUTO_ASSIGN
         add_offset = offset;
       goto add_counter;
     }
 
     if(cell->removal()) {
-      if(cell->is_removing(revision))
+      if(cell->is_removing(ts))
         return;
       continue;
     }
@@ -316,8 +316,8 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
     int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
     if(op_1 & OP_EQUAL) {
       if(!(op_1 & HAVE_REVISION))
-        eq_rev_1 = cell->get_revision();
-      if(eq_rev_1 > revision)
+        eq_rev_1 = cell->get_timestamp();
+      if(eq_rev_1 > ts)
         return;
     }
     

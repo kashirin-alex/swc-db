@@ -35,7 +35,7 @@ const bool Select::Rsp::add_cells(const StaticBuffer& buffer,
   if(reached_limit) {
     auto last = m_cells.back();
     interval.offset_key.copy(last->key);
-    interval.offset_rev = last->get_revision();
+    interval.offset_rev = last->get_timestamp();
   }
   return true;
 }  
