@@ -598,6 +598,9 @@ void Range::run_add_queue() {
         cell.set_timestamp(Time::now_ns());
         if(cell.control & DB::Cells::AUTO_TIMESTAMP)
           cell.control ^= DB::Cells::AUTO_TIMESTAMP;
+        cell.control |= DB::Cells::REV_IS_TS;
+      } else {
+        cell.set_revision(Time::now_ns());
       }
 
       blocks.add_logged(cell);

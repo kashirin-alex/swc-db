@@ -81,7 +81,9 @@ class Cell final {
   void set_time_order_desc(bool desc);
 
   void set_timestamp(int64_t ts);
-
+  
+  void set_revision(int64_t ts);
+  
   void set_value(uint8_t* v, uint32_t len, bool owner);
 
   void set_value(const char* v, uint32_t len, bool owner);
