@@ -66,6 +66,11 @@ void Range::get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) {
   key_begin.copy(m_interval.key_begin);
   key_end.copy(m_interval.key_end);
 }
+
+void Range::get_key_end(DB::Cell::Key& key) {
+  std::shared_lock lock(m_mutex);
+  key.copy(m_interval.key_end);
+}
   
 const bool Range::is_any_begin() {
   std::shared_lock lock(m_mutex);

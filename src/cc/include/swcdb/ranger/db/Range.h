@@ -79,6 +79,8 @@ class Range : public std::enable_shared_from_this<Range> {
   void get_interval(DB::Cells::Interval& interval);
 
   void get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end);
+
+  void get_key_end(DB::Cell::Key& key);
   
   const bool is_any_begin();
 
