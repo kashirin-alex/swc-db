@@ -164,17 +164,7 @@ void Compaction::compact(RangePtr range) {
   commitlog.commit_new_fragment(true);
   commitlog.get(req->fragments_old); 
   // fragments for deletion at finalize-compaction 
-  /* if range add_logged wait on COMPACT_APPLYING
-  int64_t ts = 0;
-  if(req->fragments_old.empty()) {
-    ts = Time::now_ns();
-  } else {
-    for(auto frag : req->fragments_old)
-      if(ts < frag->interval.ts_latest.value)
-        ts = frag->interval.ts_latest.value;
-  }
-  req->spec.ts_finish.set(ts, Condition::LE);
-  */
+  
   range->scan_internal(req);
 }
 

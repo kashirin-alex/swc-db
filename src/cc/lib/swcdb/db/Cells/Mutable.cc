@@ -553,8 +553,7 @@ void Mutable::write(DynamicBuffer& cells) const {
 }
 
 void Mutable::write_and_free(DynamicBuffer& cells, 
-                             uint32_t& cell_count, int64_t& revision,
-                             Interval& intval, 
+                             uint32_t& cell_count, Interval& intval, 
                              uint32_t threshold, uint32_t max_cells) {
   if(!m_size)
     return;
@@ -562,7 +561,6 @@ void Mutable::write_and_free(DynamicBuffer& cells,
   Cell* first = nullptr;
   Cell* last = nullptr;
   size_t count = 0;
-  int64_t rev;
   cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
   uint32_t offset = 0;
   for(;offset < m_size 
@@ -584,9 +582,6 @@ void Mutable::write_and_free(DynamicBuffer& cells,
 
     intval.expand(cell->timestamp);
     cell->key.align(intval.aligned_min, intval.aligned_max);
-
-    if(revision < (rev = cell->get_revision()))
-      revision = rev;
   }
   if(first) {
     intval.expand_begin(*first);

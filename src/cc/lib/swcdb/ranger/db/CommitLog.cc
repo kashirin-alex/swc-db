@@ -90,7 +90,8 @@ void Fragments::commit_new_fragment(bool finalize) {
         {
           std::scoped_lock lock2(m_mutex_cells);
           m_cells.write_and_free(
-            cells, frag->cells_count, frag->revision, frag->interval, 
+            cells, 
+            frag->cells_count, frag->interval, 
             range->cfg->block_size(), range->cfg->block_cells());
         }
         if(cells.fill() >= range->cfg->block_size() 

@@ -30,8 +30,7 @@ Fragment::Ptr Fragment::make(const std::string& filepath, Fragment::State state)
 
 
 Fragment::Fragment(const std::string& filepath, Fragment::State state)
-                  : ts(Time::now_ns()),
-                    revision(DB::Cells::TIMESTAMP_AUTO), cells_count(0),
+                  : ts(Time::now_ns()), cells_count(0),
                     m_smartfd(
                     FS::SmartFd::make_ptr(
                       filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
@@ -79,7 +78,6 @@ void Fragment::write(int& err, uint8_t blk_replicas,
                   
   uint8_t * bufp = output.base;
   Serialization::encode_i8(&bufp, m_version);
-  Serialization::encode_i64(&bufp, revision);
   Serialization::encode_i32(&bufp, header_extlen);
   checksum_i32(output.base, bufp, &bufp);
 
@@ -274,9 +272,6 @@ const std::string Fragment::to_string() {
   s.append(" state=");
   s.append(to_string(m_state));
 
-  s.append(" revision=");
-  s.append(std::to_string(revision));
-
   s.append(" count=");
   s.append(std::to_string(cells_count));
   s.append(" offset=");
@@ -343,7 +338,6 @@ void Fragment::load_header(int& err, bool close_after) {
 
     size_t remain = HEADER_SIZE;
     m_version = Serialization::decode_i8(&ptr, &remain);
-    revision = Serialization::decode_i64(&ptr, &remain);
     uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
     if(!checksum_i32_chk(
       Serialization::decode_i32(&ptr, &remain), buf.base, HEADER_SIZE-4)){  

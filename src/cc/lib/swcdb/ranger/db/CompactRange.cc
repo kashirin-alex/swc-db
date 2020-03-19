@@ -413,22 +413,24 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
   if(!err) {
     range->apply_new(err, cellstores, fragments_old);
 
-    /* if range add_logged wait on COMPACT_APPLYING (transfer-log)
-      split latest fragments to new_range from new interval key_end
     if(range->blocks.commitlog.cells_count()) {
-      fragments_old.claer();
+    /* if range add_logged wait on COMPACT_APPLYING (transfer-log)
+       split latest fragments to new_range from new interval key_end */
+
+      fragments_old.clear();
       range->blocks.commitlog.commit_new_fragment(true);
       range->blocks.commitlog.get(fragments_old); 
-      range->blocks.release(0);
+      
       DB::Cell::Key key;
       range->get_key_end(key);
-      
-      new_range | range  commitlog->add(cell);
+
+        //(frags_new)load_cells(key, left, right);
+        //new_range | range  ->blocks.commitlog->add(cell);
       
       range->blocks.commitlog.remove(err, fragments_old);
     }
-    */
   }
+
   if(err) {
     err = Error::OK;
     col->remove(err, new_rid);

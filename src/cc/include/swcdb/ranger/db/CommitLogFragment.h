@@ -13,7 +13,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 class Fragment final {
 
   /* file-format: 
-        header:      i8(version), i64(revision), i32(header_ext-len), i32(checksum)
+        header:      i8(version), i32(header_ext-len), i32(checksum)
         header_ext:  interval, i8(encoder), i32(enc-len), i32(len), 
                      i32(cell_revs), i32(cells), 
                      i32(data-checksum), i32(checksum)
@@ -24,7 +24,7 @@ class Fragment final {
 
   typedef Fragment* Ptr;
   
-  static const uint8_t     HEADER_SIZE = 17;
+  static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
   static const uint8_t     HEADER_EXT_FIXED_SIZE = 25;
   
@@ -41,7 +41,6 @@ class Fragment final {
 
   const int64_t         ts;
   DB::Cells::Interval   interval;
-  int64_t               revision;
   uint32_t              cells_count;
 
   explicit Fragment(const std::string& filepath, State state=State::NONE);
