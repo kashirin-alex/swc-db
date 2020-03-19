@@ -219,6 +219,7 @@ const bool Mutable::get_next(uint32_t offset, Cell*& cell) {
 void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
   int64_t ts = e_cell.get_timestamp();
+  int64_t rev = e_cell.get_revision();
 
   for(Cell* cell; get_next(offset, cell); ++offset) {
 
@@ -230,6 +231,9 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
       insert(offset, e_cell);
       return;
     }
+
+    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+      return;
 
     if(cell->removal() && cell->is_removing(ts))
       return;
@@ -244,8 +248,9 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
 void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
   int64_t ts = e_cell.get_timestamp();
-  uint32_t revs = 0;
+  int64_t rev = e_cell.get_revision();
 
+  uint32_t revs = 0;
   for(Cell* cell; get_next(offset, cell); ++offset) {
 
     if((cond = cell->key.compare(e_cell.key, 0)) == Condition::GT)
@@ -255,6 +260,9 @@ void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
       insert(offset, e_cell);
       return;
     }
+
+    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+      return;
 
     if(cell->removal()) {
       if(cell->is_removing(ts))
@@ -292,6 +300,8 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
 
   int64_t ts = e_cell.get_timestamp();
+  int64_t rev = e_cell.get_revision();
+
   uint32_t add_offset = m_size;
   Cell* cell;
   for(; get_next(offset, cell); ++offset) {
@@ -304,6 +314,9 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
         add_offset = offset;
       goto add_counter;
     }
+
+    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+      return;
 
     if(cell->removal()) {
       if(cell->is_removing(ts))
@@ -328,7 +341,6 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
       cell->set_counter(op_1, value_1, type, eq_rev_1);
       if(cell->timestamp < e_cell.timestamp) {
         cell->timestamp = e_cell.timestamp;
-        //cell->revision = e_cell.revision;
         cell->control = e_cell.control;
       }
     }
@@ -540,15 +552,17 @@ void Mutable::write(DynamicBuffer& cells) const {
   }
 }
 
-void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                             Interval& intval, uint32_t threshold, 
-                             uint32_t max_cells) {
+void Mutable::write_and_free(DynamicBuffer& cells, 
+                             uint32_t& cell_count, int64_t& revision,
+                             Interval& intval, 
+                             uint32_t threshold, uint32_t max_cells) {
   if(!m_size)
     return;
   Cell* cell;
   Cell* first = nullptr;
   Cell* last = nullptr;
   size_t count = 0;
+  int64_t rev;
   cells.ensure(m_size_bytes < threshold? m_size_bytes: threshold);
   uint32_t offset = 0;
   for(;offset < m_size 
@@ -570,6 +584,9 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
 
     intval.expand(cell->timestamp);
     cell->key.align(intval.aligned_min, intval.aligned_max);
+
+    if(revision < (rev = cell->get_revision()))
+      revision = rev;
   }
   if(first) {
     intval.expand_begin(*first);

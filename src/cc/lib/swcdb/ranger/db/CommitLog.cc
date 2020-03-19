@@ -76,13 +76,11 @@ void Fragments::commit_new_fragment(bool finalize) {
   }
   
   Fragment::Ptr frag; 
-  uint32_t cell_count;
   int err;
   std::atomic<int> writing = 0;
   for(;;) {
     err = Error::OK;
     DynamicBuffer cells;
-    cell_count = 0;
     frag = Fragment::make(
       get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
     
@@ -92,11 +90,11 @@ void Fragments::commit_new_fragment(bool finalize) {
         {
           std::scoped_lock lock2(m_mutex_cells);
           m_cells.write_and_free(
-            cells, cell_count, frag->interval, 
+            cells, frag->cells_count, frag->revision, frag->interval, 
             range->cfg->block_size(), range->cfg->block_cells());
         }
         if(cells.fill() >= range->cfg->block_size() 
-          || cell_count >= range->cfg->block_cells())
+          || frag->cells_count >= range->cfg->block_cells())
           break;
         {
           std::shared_lock lock2(m_mutex_cells);
@@ -122,7 +120,7 @@ void Fragments::commit_new_fragment(bool finalize) {
       range->cfg->file_replication(), 
       range->cfg->block_enc(), 
       cells, 
-      range->cfg->cell_versions(), cell_count,
+      range->cfg->cell_versions(),
       writing, m_cv
       );
 
@@ -303,7 +301,7 @@ const size_t Fragments::cells_count() {
   }
   std::shared_lock lock(m_mutex);
   for(auto frag : m_fragments)
-    count += frag->cells_count();
+    count += frag->cells_count;
   return count;
 }
 

@@ -31,13 +31,13 @@ Fragment::Ptr Fragment::make(const std::string& filepath, Fragment::State state)
 
 Fragment::Fragment(const std::string& filepath, Fragment::State state)
                   : ts(Time::now_ns()),
+                    revision(DB::Cells::TIMESTAMP_AUTO), cells_count(0),
                     m_smartfd(
                     FS::SmartFd::make_ptr(
                       filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
                     ), 
                     m_state(state), 
-                    m_size_enc(0), m_size(0), 
-                    m_cell_revs(0), m_cells_count(0), m_cells_offset(0), 
+                    m_size_enc(0), m_size(0), m_cell_revs(0), m_cells_offset(0), 
                     m_data_checksum(0), m_processing(0), m_cells_remain(0),
                     m_err(Error::OK) {
 }
@@ -50,8 +50,7 @@ Fragment::~Fragment() { }
 
 void Fragment::write(int& err, uint8_t blk_replicas, 
                      Types::Encoding encoder, 
-                     DynamicBuffer& cells, 
-                     uint32_t cell_revs, uint32_t cell_count, 
+                     DynamicBuffer& cells, uint32_t cell_revs,
                      std::atomic<int>& writing, 
                      std::condition_variable_any& cv) {
 
@@ -59,7 +58,7 @@ void Fragment::write(int& err, uint8_t blk_replicas,
   
   uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
   m_cell_revs = cell_revs;
-  m_cells_remain = m_cells_count = cell_count;
+  m_cells_remain = cells_count;
   m_size = cells.fill();
   m_cells_offset = HEADER_SIZE+header_extlen;
 
@@ -80,6 +79,7 @@ void Fragment::write(int& err, uint8_t blk_replicas,
                   
   uint8_t * bufp = output.base;
   Serialization::encode_i8(&bufp, m_version);
+  Serialization::encode_i64(&bufp, revision);
   Serialization::encode_i32(&bufp, header_extlen);
   checksum_i32(output.base, bufp, &bufp);
 
@@ -89,7 +89,7 @@ void Fragment::write(int& err, uint8_t blk_replicas,
   Serialization::encode_i32(&bufp, m_size_enc);
   Serialization::encode_i32(&bufp, m_size);
   Serialization::encode_i32(&bufp, m_cell_revs);
-  Serialization::encode_i32(&bufp, m_cells_count);
+  Serialization::encode_i32(&bufp, cells_count);
   
   checksum_i32(output.base+m_cells_offset, output.base+output.fill(), 
                &bufp, m_data_checksum);
@@ -194,7 +194,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(
       m_buffer.base, m_buffer.size, 
-      m_cell_revs, m_cells_count, 
+      m_cell_revs, cells_count, 
       was_splitted
       ); 
   } else {
@@ -224,7 +224,7 @@ size_t Fragment::release() {
   m_state = State::NONE;
   released += m_buffer.size;   
   m_buffer.free();
-  m_cells_remain = m_cells_count;
+  m_cells_remain = cells_count;
   return released;
 }
 
@@ -242,11 +242,6 @@ const bool Fragment::loaded(int& err) {
   std::shared_lock lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
-}
-
-const uint32_t Fragment::cells_count() {
-  std::shared_lock lock(m_mutex);
-  return m_cells_count;
 }
 
 const size_t Fragment::size_bytes(bool only_loaded) {
@@ -279,8 +274,11 @@ const std::string Fragment::to_string() {
   s.append(" state=");
   s.append(to_string(m_state));
 
+  s.append(" revision=");
+  s.append(std::to_string(revision));
+
   s.append(" count=");
-  s.append(std::to_string(m_cells_count));
+  s.append(std::to_string(cells_count));
   s.append(" offset=");
   s.append(std::to_string(m_cells_offset));
 
@@ -345,6 +343,7 @@ void Fragment::load_header(int& err, bool close_after) {
 
     size_t remain = HEADER_SIZE;
     m_version = Serialization::decode_i8(&ptr, &remain);
+    revision = Serialization::decode_i64(&ptr, &remain);
     uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
     if(!checksum_i32_chk(
       Serialization::decode_i32(&ptr, &remain), buf.base, HEADER_SIZE-4)){  
@@ -369,7 +368,7 @@ void Fragment::load_header(int& err, bool close_after) {
     m_size_enc = Serialization::decode_i32(&ptr, &remain);
     m_size = Serialization::decode_i32(&ptr, &remain);
     m_cell_revs = Serialization::decode_i32(&ptr, &remain);
-    m_cells_remain=m_cells_count = Serialization::decode_i32(&ptr, &remain);
+    m_cells_remain = cells_count = Serialization::decode_i32(&ptr, &remain);
     m_data_checksum = Serialization::decode_i32(&ptr, &remain);
 
     if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 

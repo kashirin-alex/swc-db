@@ -121,9 +121,10 @@ class Mutable final {
 
   void write(DynamicBuffer& cells) const;
 
-  void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval& intval, uint32_t threshold, 
-                      uint32_t max_cells);
+  void write_and_free(DynamicBuffer& cells, 
+                      uint32_t& cell_count, int64_t& revision,
+                      Interval& intval, 
+                      uint32_t threshold, uint32_t max_cells);
   
   bool write_and_free(const DB::Cell::Key& key_start, 
                       const DB::Cell::Key& key_finish,
