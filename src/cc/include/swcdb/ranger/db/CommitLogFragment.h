@@ -62,6 +62,10 @@ class Fragment final {
   void load(const std::function<void()>& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
+  
+  void split(int& err, const DB::Cell::Key& key, 
+             const std::function<void(const DB::Cells::Cell&)>& left, 
+             const std::function<void(const DB::Cells::Cell&)>& right);
 
   void processing_decrement();
   

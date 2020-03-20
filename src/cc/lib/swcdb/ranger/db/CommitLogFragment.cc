@@ -184,7 +184,7 @@ void Fragment::load(const std::function<void()>& cb) {
   if(loaded)
     cb();
   else
-      asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
+    asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
 }
 
 void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
@@ -205,6 +205,50 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   if(!was_splitted 
      && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
     release();
+}
+
+void Fragment::split(int& err, const DB::Cell::Key& key, 
+                    const std::function<void(const DB::Cells::Cell&)>& left, 
+                    const std::function<void(const DB::Cells::Cell&)>& right) {
+  uint64_t tts = Time::now_ns();
+  size_t count = 0;
+  if(m_buffer.size) {
+    DB::Cells::Cell cell;
+    const uint8_t* buf = m_buffer.base;
+    size_t remain = m_buffer.size;
+
+    while(remain) {
+      try {
+        cell.read(&buf, &remain);
+        ++count;
+
+      } catch(std::exception) {
+        err = Error::SERIALIZATION_INPUT_OVERRUN;
+        SWC_LOGF(LOG_ERROR, 
+                  "Cell trunclated at remain=%llu %s, %s", 
+                  remain, cell.to_string().c_str(), to_string().c_str());
+        break;
+      }
+
+      if(cell.key.compare(key) != Condition::GT)
+        left(cell);
+      else  
+        right(cell);
+    }
+  } else {
+    SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
+             to_string().c_str());
+  }
+  
+  auto took = Time::now_ns()-tts;
+  SWC_PRINT << "Fragment::split"
+            << " added=" << count 
+            << " avg=" << (count>0 ? took / count : 0)
+            << " took=" << took
+            << SWC_PRINT_CLOSE;
+  
+  processing_decrement();
+  release();
 }
 
 void Fragment::processing_decrement() {
