@@ -208,8 +208,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
 }
 
 void Fragment::split(int& err, const DB::Cell::Key& key, 
-                    const std::function<void(const DB::Cells::Cell&)>& left, 
-                    const std::function<void(const DB::Cells::Cell&)>& right) {
+                     AddCell_t& left, AddCell_t& right) {
   uint64_t tts = Time::now_ns();
   size_t count = 0;
   if(m_buffer.size) {

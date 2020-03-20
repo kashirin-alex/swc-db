@@ -7,6 +7,7 @@
 #include "swcdb/db/Protocol/Mngr/req/RangeUnloaded.h"
 #include "swcdb/db/Protocol/Mngr/req/RangeRemove.h"
 
+#include "swcdb/ranger/db/CommitLogSplitter.h"
 
 namespace SWC { namespace Ranger {
 
@@ -70,6 +71,9 @@ void CompactRange::response(int &err) {
            total_cells.load(), 
            (Time::now_ns() - m_ts_start) 
             / (total_cells ? total_cells.load() : (size_t)1));
+                        
+  if(!reached_limits()) 
+    range->compacting(Range::COMPACT_APPLYING);
 
   auto selected_cells = cells.empty() 
                         ? nullptr : new DB::Cells::Vector(cells);
@@ -177,6 +181,9 @@ uint32_t CompactRange::create_cs(int& err) {
     blk_encoding
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
+
+  if(id == range->cfg->cellstore_max()) 
+    range->compacting(Range::COMPACT_APPLYING);
   return id;
 
 }
@@ -242,7 +249,7 @@ void CompactRange::add_cs(int& err) {
   if(cellstores.empty())
     range->get_prev_key_end(cs_writer->prev_key_end);
   else
-      cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
+    cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
 
   cs_writer->finalize(err);
   cellstores.push_back(cs_writer);
@@ -431,56 +438,18 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
       range->blocks.commitlog.commit_new_fragment(true);
       range->blocks.commitlog.get(fragments_old); // fragments for removal
       
-      DB::Cell::Key key;
-      range->get_key_end(key);
-
-      std::mutex completion_mutex;
-      std::condition_variable cv;
-      uint32_t completion = 0;
-
-      for(auto frag : fragments_old) {
-        {
-          std::unique_lock lock_wait(completion_mutex);
-          ++completion;
+      CommitLog::Splitter splitter(
+        fragments_old,
+        [log=&range->blocks.commitlog] (const DB::Cells::Cell& cell) { 
+          log->add(cell); 
+        },
+        [log=&new_range->blocks.commitlog](const DB::Cells::Cell& cell) { 
+          log->add(cell); 
         }
-        frag->load(
-          [frag, &key, &completion, &cv, &completion_mutex,
-           left=&range->blocks.commitlog, 
-           right=&new_range->blocks.commitlog]() { 
+      );
+      range->get_key_end(splitter.key);
+      splitter.run();
 
-            int err = Error::OK;
-            frag->split(
-              err, key,
-              [left] (const DB::Cells::Cell& cell) { left->add(cell);  },
-              [right](const DB::Cells::Cell& cell) { right->add(cell); }
-            ); 
-            if(err)
-              SWC_LOGF(LOG_ERROR, 
-                "COMPACT fragment-split err=%d(%s) %s", 
-                err, Error::get_text(err), frag->to_string().c_str()
-              );
-              
-            {
-              std::unique_lock lock_wait(completion_mutex);
-              --completion;
-            }
-            cv.notify_one();
-          }
-        );
-  
-        {
-          std::unique_lock lock_wait(completion_mutex);
-          if(completion == 3) 
-            cv.wait(lock_wait, [&completion]() { return completion < 3; });
-        }
-      }
-
-      {
-        std::unique_lock lock_wait(completion_mutex);
-        if(completion)
-          cv.wait(lock_wait, [&completion]() { return completion == 0; });
-      }
-      
       range->blocks.commitlog.remove(err, fragments_old);
     }
   }

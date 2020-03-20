@@ -23,7 +23,8 @@ class Fragment final {
   public:
 
   typedef Fragment* Ptr;
-  
+  typedef const std::function<void(const DB::Cells::Cell&)> AddCell_t;
+
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
   static const uint8_t     HEADER_EXT_FIXED_SIZE = 25;
@@ -64,8 +65,7 @@ class Fragment final {
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
   void split(int& err, const DB::Cell::Key& key, 
-             const std::function<void(const DB::Cells::Cell&)>& left, 
-             const std::function<void(const DB::Cells::Cell&)>& right);
+             AddCell_t& left, AddCell_t& right);
 
   void processing_decrement();
   
