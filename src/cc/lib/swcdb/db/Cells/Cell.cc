@@ -238,8 +238,8 @@ void Cell::write(SWC::DynamicBuffer &dst_buf) const {
 const bool Cell::equal(const Cell& other) const {
   return  flag == other.flag && 
           control == other.control &&
-          timestamp == other.timestamp && 
-          revision == other.revision && 
+          (!(control & HAVE_TIMESTAMP) || timestamp == other.timestamp) &&
+          (!(control & HAVE_REVISION) || revision == other.revision) && 
           vlen == other.vlen &&
           key.equal(other.key) &&
           memcmp(value, other.value, vlen) == 0;
