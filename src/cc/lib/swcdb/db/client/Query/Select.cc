@@ -316,7 +316,7 @@ void Select::Scanner::locate_on_manager(bool next_range) {
   if(cid >= 2) 
     params.range_end.insert(0, "2");
 
-  SWC_LOGF(LOG_INFO, "LocateRange-onMngr %s", params.to_string().c_str());
+  SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
 
   Protocol::Mngr::Req::RgrGet::request(
     params,
@@ -341,12 +341,12 @@ void Select::Scanner::resolve_on_manager() {
   if(cid != 1) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-      SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
       if(proceed_on_ranger(req, rsp))
         return; 
       Env::Clients::get()->rangers.remove(cid, rid);
     } else
-      SWC_LOGF(LOG_INFO, "Cache miss %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
   }
   col->selector->result->completion++;
   req->run();
@@ -356,7 +356,7 @@ bool Select::Scanner::located_on_manager(
         const ReqBase::Ptr& base, 
         const Protocol::Mngr::Params::RgrGetRsp& rsp, 
         bool next_range) {
-  SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+  SWC_LOGF(LOG_DEBUG, "LocatedRange-onMngr %s", rsp.to_string().c_str());
 
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
@@ -446,7 +446,7 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
   if(type == Types::Range::MASTER && col->cid > 2)
     params.range_end.insert(0, "2");
       
-  SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
+  SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
 
   Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
@@ -466,7 +466,7 @@ bool Select::Scanner::located_on_ranger(
           const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
           bool next_range) {
 
-  SWC_LOGF(LOG_INFO, "Located-onRgr %s", rsp.to_string().c_str());
+  SWC_LOGF(LOG_DEBUG, "Located-onRgr %s", rsp.to_string().c_str());
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
        (next_range || type == Types::Range::META)) {

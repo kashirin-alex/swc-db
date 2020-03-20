@@ -201,7 +201,7 @@ void Update::Locator::locate_on_manager() {
       if(cid >= 2)
         params.range_begin.insert(0, "2");
 
-      SWC_LOGF(LOG_INFO, "LocateRange-onMngr %s", params.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
 
       Protocol::Mngr::Req::RgrGet::request(
         params,
@@ -217,7 +217,7 @@ void Update::Locator::locate_on_manager() {
 bool Update::Locator::located_on_manager(
           const ReqBase::Ptr& base, 
           const Protocol::Mngr::Params::RgrGetRsp& rsp) {  
-      SWC_LOGF(LOG_INFO, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "LocatedRange-onMngr %s", rsp.to_string().c_str());
       
       if(rsp.err == Error::COLUMN_NOT_EXISTS) {
         updater->response(rsp.err);
@@ -267,7 +267,7 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
           params.range_begin.insert(0, "2");
       }
       
-      SWC_LOGF(LOG_INFO, "LocateRange-onRgr %s", params.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
 
       Protocol::Rgr::Req::RangeLocate::request(
         params, endpoints,
@@ -285,7 +285,7 @@ bool Update::Locator::located_on_ranger(
           const EndPoints& endpoints, 
           const ReqBase::Ptr& base, 
           const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      SWC_LOGF(LOG_INFO, "LocatedRange-onRgr %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "LocatedRange-onRgr %s", rsp.to_string().c_str());
 
       if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
          rsp.err == Error::RANGE_NOT_FOUND || //onMngr can be COLUMN_NOT_EXISTS
@@ -340,12 +340,12 @@ void Update::Locator::resolve_on_manager() {
       if(cid != 1) {
         Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
         if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-          SWC_LOGF(LOG_INFO, "Cache hit %s", rsp.to_string().c_str());
+          SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
           if(proceed_on_ranger(req, rsp))
             return; 
           Env::Clients::get()->rangers.remove(cid, rid);
         } else
-          SWC_LOGF(LOG_INFO, "Cache miss %s", rsp.to_string().c_str());
+          SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
       }
       updater->result->completion_incr();
       req->run();
@@ -354,7 +354,7 @@ void Update::Locator::resolve_on_manager() {
  bool Update::Locator::located_ranger(
           const ReqBase::Ptr& base, 
           const Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      SWC_LOGF(LOG_INFO, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
+      SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
 
       if(rsp.err) {
         if(rsp.err == Error::COLUMN_NOT_EXISTS) {
