@@ -137,17 +137,12 @@ void Compaction::compact(RangePtr range) {
   if(!do_compaction || !m_run)
     return compacted(range);
     
-  range->compacting(Range::COMPACT_APPLYING); // sync processing state
-  
   SWC_LOGF(
     LOG_INFO, 
     "COMPACT-STARTED %d/%d %s", 
     range->cfg->cid, range->rid,
     need.c_str()
   );
-
-  range->blocks.wait_processing();
-  range->compacting(Range::COMPACT_COMPACTING); // range scans can continue
 
   auto req = std::make_shared<CompactRange>(
     ptr(),
@@ -161,10 +156,15 @@ void Compaction::compact(RangePtr range) {
     range->cfg->cell_ttl(), 
     range->cfg->column_type()
   );
+
+  range->compacting(Range::COMPACT_APPLYING); // sync processing state
+  range->blocks.wait_processing();
+
   commitlog.commit_new_fragment(true);
-  commitlog.get(req->fragments_old); 
-  // fragments for deletion at finalize-compaction 
+  commitlog.get(req->fragments_old); // fragments for removal
   
+  range->compacting(Range::COMPACT_COMPACTING); //range add & scan can continue
+
   range->scan_internal(req);
 }
 

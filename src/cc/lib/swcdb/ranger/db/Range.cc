@@ -557,8 +557,7 @@ void Range::run_add_queue() {
   for(;;) {
     err = Error::OK;
     early_range_end = false;
-    if(wait(COMPACT_COMPACTING)) { 
-      // to wait only on COMPACT_APPLYING will require transfer-log
+    if(wait(COMPACT_APPLYING)) {
       std::shared_lock lock(m_mutex);
       key_end.copy(m_interval.key_end);
     }

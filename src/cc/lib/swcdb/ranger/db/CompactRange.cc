@@ -49,6 +49,17 @@ bool CompactRange::reached_limits() {
       || cells.size() >= blk_cells;
 }
 
+const DB::Cells::Mutable::Selector_t CompactRange::selector() {
+  return 
+    [revision=m_ts_start, req=get_req_scan()] 
+    (const DB::Cells::Cell& cell, bool& stop) { 
+      return 
+        // cell.get_revision() < revision && , not compatible for COUNTER
+        req->spec.is_matching(
+          cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
+    };
+}
+
 void CompactRange::response(int &err) {
   if(m_stopped || !ready(err))
     return;
@@ -365,7 +376,7 @@ void CompactRange::mngr_remove_range(RangePtr new_range) {
         "Compact::Mngr::Req::RangeRemove err=%d(%s) %d/%d", 
         rsp.err, Error::get_text(rsp.err), 
         new_range->cfg->cid, new_range->rid
-        );
+      );
       
       if(rsp.err && 
          rsp.err != Error::COLUMN_NOT_EXISTS &&
@@ -414,18 +425,61 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     range->apply_new(err, cellstores, fragments_old);
 
     if(range->blocks.commitlog.cells_count()) {
-    /* if range add_logged wait on COMPACT_APPLYING (transfer-log)
-       split latest fragments to new_range from new interval key_end */
+    /* split latest fragments to new_range from new interval key_end */
 
       fragments_old.clear();
       range->blocks.commitlog.commit_new_fragment(true);
-      range->blocks.commitlog.get(fragments_old); 
+      range->blocks.commitlog.get(fragments_old); // fragments for removal
       
       DB::Cell::Key key;
       range->get_key_end(key);
 
-        //(frags_new)load_cells(key, left, right);
-        //new_range | range  ->blocks.commitlog->add(cell);
+      std::mutex completion_mutex;
+      std::condition_variable cv;
+      uint32_t completion = 0;
+
+      for(auto frag : fragments_old) {
+        {
+          std::unique_lock lock_wait(completion_mutex);
+          ++completion;
+        }
+        frag->load(
+          [frag, &key, &completion, &cv, &completion_mutex,
+           left=&range->blocks.commitlog, 
+           right=&new_range->blocks.commitlog]() { 
+
+            int err = Error::OK;
+            frag->split(
+              err, key,
+              [left] (const DB::Cells::Cell& cell) { left->add(cell);  },
+              [right](const DB::Cells::Cell& cell) { right->add(cell); }
+            ); 
+            if(err)
+              SWC_LOGF(LOG_ERROR, 
+                "COMPACT fragment-split err=%d(%s) %s", 
+                err, Error::get_text(err), frag->to_string().c_str()
+              );
+              
+            {
+              std::unique_lock lock_wait(completion_mutex);
+              --completion;
+            }
+            cv.notify_one();
+          }
+        );
+  
+        {
+          std::unique_lock lock_wait(completion_mutex);
+          if(completion == 3) 
+            cv.wait(lock_wait, [&completion]() { return completion < 3; });
+        }
+      }
+
+      {
+        std::unique_lock lock_wait(completion_mutex);
+        if(completion)
+          cv.wait(lock_wait, [&completion]() { return completion == 0; });
+      }
       
       range->blocks.commitlog.remove(err, fragments_old);
     }
@@ -451,7 +505,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
             LOG_DEBUG, 
             "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %d/%d", 
             rsp.err, Error::get_text(rsp.err), cid, new_rid
-            );
+          );
           if(rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
              rsp.err != Error::COLUMN_MARKED_REMOVED &&
