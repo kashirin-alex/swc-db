@@ -369,8 +369,12 @@ const size_t Block::_size_bytes() const {
 }
 
 const bool Block::need_split() {
-  std::shared_lock lock(m_mutex);
-  return _need_split();
+  bool ok;
+  if(ok = m_mutex.try_lock()) {
+    ok = _need_split();
+    m_mutex.unlock();
+  }
+  return ok;
 }
 
 const bool Block::_need_split() const {
