@@ -219,7 +219,8 @@ const bool Mutable::get_next(uint32_t offset, Cell*& cell) {
 void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
   int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
+  int64_t rev;
+  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
 
   for(Cell* cell; get_next(offset, cell); ++offset) {
 
@@ -232,7 +233,7 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
       return;
     }
 
-    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+    if(chk_rev && cell->get_revision() >= rev)
       return;
 
     if(cell->removal() && cell->is_removing(ts))
@@ -248,7 +249,8 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
 void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
   int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
+  int64_t rev;
+  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
 
   uint32_t revs = 0;
   for(Cell* cell; get_next(offset, cell); ++offset) {
@@ -261,7 +263,7 @@ void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
       return;
     }
 
-    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+    if(chk_rev && cell->get_revision() >= rev)
       return;
 
     if(cell->removal()) {
@@ -300,7 +302,8 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
   Condition::Comp cond;
 
   int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
+  int64_t rev;
+  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
 
   uint32_t add_offset = m_size;
   Cell* cell;
@@ -315,7 +318,7 @@ void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
       goto add_counter;
     }
 
-    if(rev != AUTO_ASSIGN && cell->get_revision() == rev)
+    if(chk_rev && cell->get_revision() >= rev)
       return;
 
     if(cell->removal()) {
