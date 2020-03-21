@@ -50,8 +50,7 @@ Fragment::~Fragment() { }
 void Fragment::write(int& err, uint8_t blk_replicas, 
                      Types::Encoding encoder, 
                      DynamicBuffer& cells, uint32_t cell_revs,
-                     std::atomic<int>& writing, 
-                     std::condition_variable_any& cv) {
+                     Semaphore* sem) {
 
   m_version = VERSION;
   
@@ -96,22 +95,20 @@ void Fragment::write(int& err, uint8_t blk_replicas,
   auto buff_write = std::make_shared<StaticBuffer>(output);
   buff_write->own = false;
   m_buffer.set(cells);
-  ++writing;
+  sem->acquire();
   
   write(
     Error::UNPOSSIBLE, 
     m_smartfd, blk_replicas, m_cells_offset+m_size_enc, 
     buff_write,
-    writing,
-    cv
-    );
+    sem
+  );
 }
 
 void Fragment::write(int err, FS::SmartFd::Ptr smartfd, 
                      uint8_t blk_replicas, int64_t blksz, 
                      StaticBuffer::Ptr buff_write,
-                     std::atomic<int>& writing, 
-                     std::condition_variable_any& cv) {
+                     Semaphore* sem) {
   
   int tmperr = Error::OK;
   if(!err && Env::FsInterface::fs()->length(
@@ -127,9 +124,9 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
                err, Error::get_text(err));
 
     Env::FsInterface::fs()->write(
-      [this, blk_replicas, blksz, buff_write, &writing, &cv]
+      [this, blk_replicas, blksz, buff_write, sem]
       (int err, FS::SmartFd::Ptr smartfd) {
-        write(err, smartfd, blk_replicas, blksz, buff_write, writing, cv);
+        write(err, smartfd, blk_replicas, blksz, buff_write, sem);
       }, 
       smartfd, blk_replicas, blksz, *buff_write.get()
     );
@@ -138,6 +135,8 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
 
   //if(err) write local dump
     
+  sem->release();
+
   buff_write->own = true;
 
   bool keep;
@@ -154,8 +153,6 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
   else if(Env::Resources.need_ram(m_size))
     release();
   
-  --writing;
-  cv.notify_all();
 }
 
 void Fragment::load_header(bool close_after) {

@@ -6,6 +6,7 @@
 #include "swcdb/ranger/db/CommitLog.h"
 #include "swcdb/core/Encoder.h"
 #include "swcdb/core/Time.h"
+#include "swcdb/core/Semaphore.h"
 
 
 namespace SWC { namespace Ranger { namespace CommitLog {
@@ -77,7 +78,7 @@ void Fragments::commit_new_fragment(bool finalize) {
   
   Fragment::Ptr frag; 
   int err;
-  std::atomic<int> writing = 0;
+  Semaphore sem(5);
   for(;;) {
     err = Error::OK;
     DynamicBuffer cells;
@@ -122,31 +123,25 @@ void Fragments::commit_new_fragment(bool finalize) {
       range->cfg->block_enc(), 
       cells, 
       range->cfg->cell_versions(),
-      writing, m_cv
-      );
+      &sem
+    );
 
-    {
-      std::unique_lock lock_wait(m_mutex);
-      if(writing >= 5)
-        m_cv.wait(lock_wait, [&writing] {return writing < 5;});
+    sem.wait_until_under(5);
 
-      std::shared_lock lock2(m_mutex_cells);
-      uint32_t cells_count = m_cells.size();
-      if(!cells_count || (!finalize && 
-          (m_cells.size_bytes() < range->cfg->block_size()
-           && cells_count < range->cfg->block_cells()) ) )
-        break; 
-    }
+    std::shared_lock lock2(m_mutex_cells);
+    uint32_t cells_count = m_cells.size();
+    if(!cells_count || (!finalize && 
+       (m_cells.size_bytes() < range->cfg->block_size() && 
+       cells_count < range->cfg->block_cells()) ) )
+      break; 
   }
-  
+
+  sem.wait_all();
   {
     std::unique_lock lock_wait(m_mutex);
-    if(writing)
-      m_cv.wait(lock_wait, [&writing] {return !writing;});
     m_commiting = false;
   }
   m_cv.notify_all();
-
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {

@@ -6,6 +6,7 @@
 #ifndef swc_ranger_db_CommitLogFragment_h
 #define swc_ranger_db_CommitLogFragment_h
 
+#include "swcdb/core/Semaphore.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
@@ -52,11 +53,11 @@ class Fragment final {
 
   void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
              DynamicBuffer& cells, uint32_t cell_revs, 
-             std::atomic<int>& writing, std::condition_variable_any& cv);
+             Semaphore* sem);
 
   void write(int err, FS::SmartFd::Ptr smartfd, 
              uint8_t blk_replicas, int64_t blksz, StaticBuffer::Ptr buff_write,
-             std::atomic<int>& writing, std::condition_variable_any& cv);
+             Semaphore* sem);
 
   void load_header(bool close_after=true);
 
