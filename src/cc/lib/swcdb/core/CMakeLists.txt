@@ -28,6 +28,7 @@ set(swcdb_core_sources
 	Encoder.cc
 	FileUtils.cc
 	Serializable.cc
+	Semaphore.cc
 	#Serialization.cc
 )
 ADD_LIB_TARGET(
