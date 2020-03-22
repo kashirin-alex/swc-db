@@ -99,13 +99,13 @@ void Fragments::commit_new_fragment(bool finalize) {
           break;
         {
           std::shared_lock lock2(m_mutex_cells);
-          if(!finalize && !m_cells.size())
+          if(!finalize && m_cells.empty())
             break;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         {
           std::shared_lock lock2(m_mutex_cells);
-          if(!m_cells.size())
+          if(m_cells.empty())
             break;
         }
       }

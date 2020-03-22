@@ -106,7 +106,7 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
   if(cells.size())
     cells.scan(m_interval, m_cells);
 
-  if(m_cells.size() && !m_interval.key_begin.empty())
+  if(!m_cells.empty() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
 
   added = m_cells.size() - added;
@@ -140,7 +140,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   if(revs > blocks->range->cfg->cell_versions())
     // schema change from more to less results in dups
     synced = false;
-  else if(!synced && !m_cells.size())
+  else if(!synced && m_cells.empty())
     synced = true;
 
   while(remain) {
@@ -181,7 +181,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       was_splitted = true;
   }
     
-  if(m_cells.size() && !m_interval.key_begin.empty())
+  if(!m_cells.empty() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
     
   auto took = Time::now_ns()-tts;
@@ -322,7 +322,7 @@ const size_t Block::release() {
   std::scoped_lock lock(m_mutex, m_mutex_state);
 
   m_state = State::NONE;
-  released += m_cells.size();
+  released += _size_bytes();
   m_cells.free();
   m_load_require = 0;
   return released;
