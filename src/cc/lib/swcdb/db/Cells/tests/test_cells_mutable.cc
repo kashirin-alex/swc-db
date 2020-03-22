@@ -61,7 +61,7 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
       took = SWC::Time::now_ns();
 
       //cells_mutable->insert(0, cell);
-      cells_mutable->add(cell);
+      cells_mutable->add_raw(cell);
       //cells_mutable->push_back(cell);
 
       took = SWC::Time::now_ns()-took;
@@ -93,7 +93,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   std::shared_ptr<SWC::Stats::Stat> latency_mutable(std::make_shared<SWC::Stats::Stat>());
   int64_t ts_total = 0;
 
-  Cells::Mutable::Ptr cells_mutable(Cells::Mutable::make(1, max_versions, 0, typ));
+  Cells::Mutable::Ptr cells_mutable(Cells::Mutable::make(max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
      num_revs, reverse, num_cells, gen_historic, Cells::INSERT, typ, time_order_desc);
@@ -232,12 +232,18 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
 
 int main(int argc, char** argv) {
-  
+  /*
   check(SWC::Types::Column::PLAIN, 10, 1);
   check(SWC::Types::Column::PLAIN, 10, 3, 2);
 
   check(SWC::Types::Column::PLAIN, 100000, 1);
   check(SWC::Types::Column::PLAIN, 100000, 3, 2);
+  */
+  check(SWC::Types::Column::PLAIN, 200000, 1);
+  check(SWC::Types::Column::PLAIN, 200000, 3, 2);
+
+  check(SWC::Types::Column::PLAIN, 200000, 1);
+  check(SWC::Types::Column::PLAIN, 200000, 3, 2);
 
   check(SWC::Types::Column::PLAIN, 200000, 1);
   check(SWC::Types::Column::PLAIN, 200000, 3, 2);

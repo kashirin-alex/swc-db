@@ -17,7 +17,9 @@
 
 namespace SWC { namespace DB { namespace Cells {
 
+typedef Vector Mutable;
 
+/*
 class Mutable final {
 
   static const uint32_t narrow_sz = 20;
@@ -31,20 +33,17 @@ class Mutable final {
   
   Types::Column     type;
 
-  static Ptr make(const uint32_t cap=0, 
-                  const uint32_t max_revs=1, 
+  static Ptr make(const uint32_t max_revs=1, 
                   const uint64_t ttl_ns=0, 
                   const Types::Column type=Types::Column::PLAIN);
 
-  explicit Mutable(const uint32_t cap=0, 
-                   const uint32_t max_revs=1, 
+  explicit Mutable(const uint32_t max_revs=1, 
                    const uint64_t ttl_ns=0, 
                    const Types::Column type=Types::Column::PLAIN);
 
   explicit Mutable(Mutable& other);
 
-  void reset(const uint32_t cap=0, const uint32_t max_revs=1, 
-             const uint32_t ttl=0, 
+  void reset(const uint32_t max_revs=1, const uint32_t ttl=0, 
              const Types::Column typ=Types::Column::PLAIN);
 
   Mutable& operator=(const Mutable& other) = delete;
@@ -56,6 +55,8 @@ class Mutable final {
                  const Types::Column typ=Types::Column::PLAIN);
 
   void ensure(uint32_t sz);
+
+  void reserve(uint32_t sz);
 
   void free();
   
@@ -81,13 +82,13 @@ class Mutable final {
 
   const bool has_one_key() const;
 
-  void push_back(const Cell& cell, bool no_value=false);
+  void add_sorted(const Cell& cell, bool no_value=false);
 
-  void push_back_nocpy(Cell* cell);
+  void add_sorted_nocpy(Cell* cell);
   
   void insert(uint32_t offset, const Cell& cell);
 
-  void add(const Cell& e_cell);
+  void add_raw(const Cell& e_cell);
 
   const bool get_next(uint32_t offset, Cell*& cell);
 
@@ -133,9 +134,9 @@ class Mutable final {
              Interval& intval_1st, Interval& intval_2nd, 
              bool loaded);
 
-  void add(const DynamicBuffer& cells);
+  void add_raw(const DynamicBuffer& cells);
 
-  void add(const DynamicBuffer& cells, const DB::Cell::Key& from_key);
+  void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& from_key);
 
   void expand(Interval& interval) const;
 
@@ -170,11 +171,13 @@ class Mutable final {
 
 };
 
+*/
 
 }}}
 
+/*
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Mutable.cc"
 #endif 
-
+*/
 #endif // swcdb_db_Cells_Mutable_h

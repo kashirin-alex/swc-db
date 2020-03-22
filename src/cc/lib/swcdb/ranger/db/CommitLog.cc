@@ -21,7 +21,6 @@ void Fragments::init(RangePtr for_range) {
   range = for_range;
   
   m_cells.reset(
-    0, 
     range->cfg->cell_versions(), 
     range->cfg->cell_ttl(), 
     range->cfg->column_type()
@@ -48,7 +47,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
   uint32_t cells_count;
   {
     std::scoped_lock lock(m_mutex_cells);
-    m_cells.add(cell);
+    m_cells.add_raw(cell);
     size_bytes = m_cells.size_bytes();
     cells_count = m_cells.size();
   }

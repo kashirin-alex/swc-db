@@ -21,7 +21,7 @@ ColCells::Ptr ColCells::make(const int64_t cid, Mutable& cells) {
 
 ColCells::ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
                    Types::Column type)
-        : cid(cid), m_cells(0, versions, ttl*1000000000, type) { 
+                  : cid(cid), m_cells(versions, ttl*1000000000, type) { 
 }
 
 ColCells::ColCells(const int64_t cid, Mutable& cells)
@@ -34,7 +34,7 @@ DB::Cell::Key::Ptr ColCells::get_first_key() {
   auto key = std::make_shared<DB::Cell::Key>();
   std::lock_guard<std::mutex> lock(m_mutex);
   assert(m_cells.size()); // bad call , assure size pre-check
-    m_cells.get(0, *key.get()); 
+  m_cells.get(0, *key.get()); 
   return key;
 }
 
@@ -63,17 +63,17 @@ DynamicBuffer::Ptr ColCells::get_buff(const DB::Cell::Key& key_start,
 
 void ColCells::add(const DB::Cells::Cell& cell) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_cells.add(cell);
+  m_cells.add_raw(cell);
 }
 
 void ColCells::add(const DynamicBuffer& cells) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_cells.add(cells);
+  m_cells.add_raw(cells);
 }
 
 void ColCells::add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_cells.add(cells, from_key);
+  m_cells.add_raw(cells, from_key);
 }
 
 const size_t ColCells::size() {

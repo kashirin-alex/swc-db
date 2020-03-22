@@ -67,7 +67,7 @@ void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
   ctx.use_certificate(
     asio::const_buffer(crt.data(), crt.length()), asio::ssl::context::pem);
 
-  ctx.use_private_key(
+  ctx.use_rsa_private_key(
     asio::const_buffer(key.data(), key.length()), asio::ssl::context::pem);
   
   if(ca.empty()) {

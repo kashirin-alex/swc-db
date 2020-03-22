@@ -22,7 +22,7 @@ Block::Block(const DB::Cells::Interval& interval,
             : m_interval(interval),  
               m_cells(
                 DB::Cells::Mutable(
-                  0, blocks->range->cfg->cell_versions(), 
+                  blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
               blocks(blocks), 
@@ -90,7 +90,7 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
 
   std::scoped_lock lock(m_mutex);
 
-  m_cells.add(cell);
+  m_cells.add_raw(cell);
   if(!m_interval.is_in_begin(cell.key)) {
     m_interval.key_begin.copy(cell.key); 
   //m_interval.expand(cell.timestamp);
@@ -170,9 +170,9 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
 
     //ts = Time::now_ns();
     if(synced)
-      m_cells.push_back(cell);
+      m_cells.add_sorted(cell);
     else
-      m_cells.add(cell);
+      m_cells.add_raw(cell);
       
     //ts_add += Time::now_ns()-ts;
     ++added;

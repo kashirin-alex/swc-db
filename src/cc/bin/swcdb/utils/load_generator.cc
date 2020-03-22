@@ -30,7 +30,7 @@ void Settings::init_app_options() {
     ("gen-progress", i32(100000), 
       "display progress every N cells or 0 for quite") 
 
-    ("gen-cells", i32(1000), 
+    ("gen-cells", i64(1000), 
       "number of cells, total=cells*versions*(key-tree? key-fractions : 1)")
 
     ("gen-key-fractions", i32(10), 
@@ -39,6 +39,8 @@ void Settings::init_app_options() {
       "Key Fractions in a tree form [1], [1, 2] ") 
     ("gen-fraction-size", i32(10), 
       "fraction size in bytes at least") 
+    ("gen-reverse", boo(false), 
+      "Generate in reverse, always writes to 1st range") 
 
     ("gen-value-size", i32(256), 
       "cell value in bytes or counts for a col-counter")
@@ -130,6 +132,55 @@ void display_stats(size_t took, size_t bytes, size_t cells_count) {
 
 }
 
+class CountIt {
+  public:
+
+  enum SEQ {
+    REGULAR,
+    REVERSE
+  };
+
+  CountIt(SEQ seq, ssize_t min, ssize_t max) 
+          : min(min), max(max), seq(seq) {
+    reset();
+  }
+  
+  bool next(ssize_t* nxt) {
+    switch(seq) {
+      case REVERSE: {
+        if(pos == min)
+          return false;
+        *nxt = pos--;
+        return true;
+      }
+      default: {
+        if(pos == max)
+          return false;
+        *nxt = pos++;
+        return true;
+      }
+    }
+  }
+
+  void reset() {
+    switch(seq) {
+      case REVERSE: {
+        pos = max;
+        break;
+      } 
+      default: {
+        pos = min;
+        break;
+      }
+    }
+  }
+
+  SEQ     seq;
+  ssize_t min; 
+  ssize_t max;
+  ssize_t pos; 
+};
+
 void load_data(DB::Schema::Ptr schema) {
   auto settings = Env::Config::settings();
 
@@ -138,7 +189,10 @@ void load_data(DB::Schema::Ptr schema) {
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
   
   bool tree = settings->get_bool("gen-key-tree");
-  uint32_t cells = settings->get_i32("gen-cells");
+  uint64_t cells = settings->get_i64("gen-cells");
+  bool reverse = settings->get_bool("gen-reverse");
+  auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
+  
   uint32_t value = settings->get_i32("gen-value-size");
   uint32_t progress = settings->get_i32("gen-progress");
 
@@ -167,13 +221,19 @@ void load_data(DB::Schema::Ptr schema) {
   uint64_t ts_progress = ts;
   size_t col_sz;
   //uint64_t key_count = 0;
+  CountIt cell_num(seq, 0, cells);
+  CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
+  ssize_t i;
+  ssize_t f;
 
   for(uint32_t v=0; v<versions; ++v) {
     for(uint32_t count=is_counter ? value : 1; count > 0; --count) {
-      for(uint32_t i=0; i<cells; ++i) { 
-        for(uint32_t f=(tree ? 1 : fractions); f<=fractions; ++f) {
-          cell.key.free();
+      cell_num.reset();
+      while(cell_num.next(&i)) {
+        f_num.reset();
+        while(f_num.next(&f)) {
 
+          cell.key.free();
           for(uint32_t fn=0; fn<f; ++fn) {
             fraction_value = std::to_string(fn ? fn : i);
             for(uint32_t len = fraction_value.length(); 

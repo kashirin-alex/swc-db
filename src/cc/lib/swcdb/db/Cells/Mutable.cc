@@ -10,22 +10,18 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-Mutable::Ptr Mutable::make(const uint32_t cap, 
-                           const uint32_t max_revs, 
+Mutable::Ptr Mutable::make(const uint32_t max_revs, 
                            const uint64_t ttl_ns, 
                            const Types::Column type) {
-  return std::make_shared<Mutable>(cap, max_revs, ttl_ns, type);
+  return std::make_shared<Mutable>(max_revs, ttl_ns, type);
 }
 
-Mutable::Mutable(const uint32_t cap, 
-                 const uint32_t max_revs, 
+Mutable::Mutable(const uint32_t max_revs, 
                  const uint64_t ttl_ns, 
                  const Types::Column type)
                 : type(type), 
-                  m_cells(0), m_cap(cap), m_size(0), m_size_bytes(0), 
+                  m_cells(0), m_cap(0), m_size(0), m_size_bytes(0), 
                   m_max_revs(max_revs), m_ttl(ttl_ns) {
-  if(m_cap)
-    _allocate();
 }
 
 Mutable::Mutable(Mutable& other)
@@ -41,13 +37,10 @@ Mutable::Mutable(Mutable& other)
   }
 }
 
-void Mutable::reset(const uint32_t cap, const uint32_t max_revs, 
-                    const uint32_t ttl, const Types::Column typ) {
+void Mutable::reset(const uint32_t max_revs, const uint32_t ttl, 
+                    const Types::Column typ) {
   free();
-  m_cap = cap;
   configure(max_revs, ttl, typ);
-  if(m_cap)
-    _allocate();
 }
 
 Mutable::~Mutable() {
@@ -64,6 +57,13 @@ void Mutable::configure(const uint32_t max_revs, const uint64_t ttl,
 void Mutable::ensure(uint32_t sz) {
   if(m_cap < m_size + sz){
     m_cap += sz;
+    _allocate();
+  }
+}
+
+void Mutable::reserve(uint32_t sz) {
+  if(sz > m_cap) {
+    m_cap = sz - m_size;
     _allocate();
   }
 }
@@ -109,7 +109,7 @@ void Mutable::get(int32_t idx, DB::Cell::Key& key, int64_t& ts) const {
 }
  
 const bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
-               DB::Cell::Key& res) const {
+                        DB::Cell::Key& res) const {
   Cell* ptr;
   Condition::Comp chk;
 
@@ -125,7 +125,7 @@ const bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
 }
  
 const bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
-               Cell& cell) const {
+                        Cell& cell) const {
   Cell* ptr;
   Condition::Comp chk;
 
@@ -163,7 +163,7 @@ const bool Mutable::has_one_key() const {
     (*(m_cells+m_size-1))->key) == Condition::EQ;
 }
 
-void Mutable::push_back(const Cell& cell, bool no_value) {
+void Mutable::add_sorted(const Cell& cell, bool no_value) {
   ensure(1);
   Cell* adding;
   *(m_cells + m_size) = adding = new Cell(cell, no_value);
@@ -171,7 +171,7 @@ void Mutable::push_back(const Cell& cell, bool no_value) {
   m_size_bytes += adding->encoded_length();
 }
 
-void Mutable::push_back_nocpy(Cell* cell) {
+void Mutable::add_sorted_nocpy(Cell* cell) {
   ensure(1);
   *(m_cells + m_size) = cell;
   ++m_size;
@@ -187,7 +187,7 @@ void Mutable::insert(uint32_t offset, const Cell& cell) {
   m_size_bytes += adding->encoded_length();
 }
 
-void Mutable::add(const Cell& e_cell) {
+void Mutable::add_raw(const Cell& e_cell) {
   if(e_cell.has_expired(m_ttl))
     return;
 
@@ -243,7 +243,7 @@ void Mutable::add_remove(const Cell& e_cell, uint32_t offset) {
       _move_bwd(offset--, 1);
   }
   
-  push_back(e_cell);
+  add_sorted(e_cell);
 }
 
 void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
@@ -295,7 +295,7 @@ void Mutable::add_plain(const Cell& e_cell, uint32_t offset) {
     return;
   }
 
-  push_back(e_cell);
+  add_sorted(e_cell);
 }
 
 void Mutable::add_counter(const Cell& e_cell, uint32_t offset) {
@@ -384,7 +384,7 @@ void Mutable::scan(Interval& interval, Mutable& cells) const {
         && interval.key_end.compare(cell->key) == Condition::GT)
       break; 
 
-    cells.add(*cell);
+    cells.add_raw(*cell);
   }
 }
 
@@ -426,7 +426,7 @@ void Mutable::scan_version_single(const Specs::Interval& specs, Vector& cells,
         continue;
       }
 
-      cells.add(*cell, only_keys);
+      cells.add_sorted(*cell, only_keys);
       if(reached_limits())
         break;
     } else 
@@ -504,7 +504,7 @@ void Mutable::scan_version_multi(const Specs::Interval& specs, Vector& cells,
       continue;
     }
 
-    cells.add(*cell, only_keys);
+    cells.add_sorted(*cell, only_keys);
     if(reached_limits())
       break;
     --rev;
@@ -666,7 +666,7 @@ void Mutable::split(uint32_t from, Mutable& cells,
       continue;
     }
     
-    cells.push_back_nocpy(cell);
+    cells.add_sorted_nocpy(cell);
   }
   m_size = rest;
 
@@ -675,18 +675,19 @@ void Mutable::split(uint32_t from, Mutable& cells,
   expand_end(intval_1st);
 }
 
-void Mutable::add(const DynamicBuffer& cells) {
+void Mutable::add_raw(const DynamicBuffer& cells) {
   Cell cell;
 
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
   while(remain) {
     cell.read(&ptr, &remain);
-    add(cell);
+    add_raw(cell);
   }
 }
 
-void Mutable::add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
+void Mutable::add_raw(const DynamicBuffer& cells, 
+                      const DB::Cell::Key& from_key) {
   Cell cell;
 
   const uint8_t* ptr = cells.base;
@@ -694,7 +695,7 @@ void Mutable::add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
   while(remain) {
     cell.read(&ptr, &remain);
     if(from_key.compare(cell.key) == Condition::GT)
-      add(cell);
+      add_raw(cell);
   }
 }
 
