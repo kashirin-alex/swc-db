@@ -9,7 +9,6 @@
 #include <shared_mutex>
 #include <queue>
 
-#include "swcdb/core/StatefullSharedMutex.h"
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Cells/Mutable.h"
 
@@ -130,7 +129,7 @@ class Block final {
 
   void run_queue(int& err);
 
-  StatefullSharedMutex      m_mutex; 
+  std::shared_mutex         m_mutex;
   DB::Cells::Interval       m_interval;
   DB::Cells::Mutable        m_cells;
   DB::Cell::Key             m_prev_key_end;
