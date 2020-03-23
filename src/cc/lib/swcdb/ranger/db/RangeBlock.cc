@@ -177,7 +177,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     //ts_add += Time::now_ns()-ts;
     ++added;
 
-    if(splitter())
+    if(_need_split() && splitter())
       was_splitted = true;
   }
     
@@ -247,10 +247,10 @@ void Block::loaded(int err) {
 
 Block::Ptr Block::split(bool loaded) {
   Block::Ptr blk = nullptr;
-  if(!m_mutex.try_lock())
-    return blk;
-  blk = _split(loaded);
-  m_mutex.unlock();
+  if(m_mutex.try_lock()) {
+    blk = _split(loaded);
+    m_mutex.unlock();
+  }
   return blk;
 }
 
@@ -351,12 +351,12 @@ const bool Block::processing() const {
   return m_processing;
 }
 
-const uint32_t Block::size() {
+const size_t Block::size() {
   StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size();
 }
 
-const uint32_t Block::_size() const {
+const size_t Block::_size() const {
   return m_cells.size();
 }
   

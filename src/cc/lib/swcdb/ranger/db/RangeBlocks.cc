@@ -188,7 +188,8 @@ void Blocks::split(Block::Ptr blk, bool loaded) {
   if(blk->need_split() && m_mutex.try_lock()) {
     auto offset = _get_block_idx(blk);
     do {
-      blk = blk->split(loaded);
+      if((blk = blk->split(loaded)) == nullptr)
+        break;
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
     } while(blk->need_split());
     m_mutex.unlock();

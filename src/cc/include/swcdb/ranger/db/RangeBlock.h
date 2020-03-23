@@ -106,9 +106,9 @@ class Block final {
 
   const bool processing() const;
 
-  const uint32_t size();
+  const size_t size();
 
-  const uint32_t _size() const;
+  const size_t _size() const;
   
   const size_t size_bytes();
 
