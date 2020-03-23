@@ -69,12 +69,12 @@ void Vector::take_sorted(Vector& other) {
 
 void Vector::add_sorted(const Cell& cell, bool no_value) {
   Cell* adding;
-  push_back(adding = new Cell(cell, no_value));
+  _push_back(adding = new Cell(cell, no_value));
   bytes += adding->encoded_length();
 }
 
 void Vector::add_sorted_no_cpy(Cell* cell) {
-  push_back(cell);
+  _push_back(cell);
   bytes += cell->encoded_length();
 }
 
@@ -82,7 +82,7 @@ const size_t Vector::add_sorted(const uint8_t* ptr, size_t remain) {
   size_t count = 0;
   bytes += remain;
   while(remain) {
-    push_back(new Cell(&ptr, &remain, true));
+    _push_back(new Cell(&ptr, &remain, true));
     ++count;
   }
   return count;
@@ -672,10 +672,23 @@ size_t Vector::_narrow(const DB::Cell::Key& key) const {
 }
 
 
-void Vector::_insert(iterator it, const Cell& cell) {
-  Cell* adding;
-  insert(it, adding = new Cell(cell));
-  bytes += adding->encoded_length();
+void Vector::_push_back(Cell* cell) {
+  if(capacity() == size())
+    reserve(capacity() + (capacity() >> 1) + 1000);
+  push_back(cell);
+}
+
+void Vector::_insert(iterator at, const Cell& cell) {
+  if(capacity() == size()) {
+    size_t offset = at - begin();
+    reserve(capacity() + (capacity() >> 1) + 1000);
+    at = begin() + offset;
+  }
+  push_back(nullptr);
+  auto it = end();
+  while(--it > at)
+    *it = *(it-1);
+  bytes += (*it = new Cell(cell))->encoded_length();
 }
 
 void Vector::_remove(iterator it) {

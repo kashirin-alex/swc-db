@@ -150,7 +150,7 @@ class CountIt {
       case REVERSE: {
         if(pos == min)
           return false;
-        *nxt = pos--;
+        *nxt = --pos;
         return true;
       }
       default: {

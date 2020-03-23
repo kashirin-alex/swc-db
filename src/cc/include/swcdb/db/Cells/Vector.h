@@ -22,6 +22,7 @@ class Vector : private std::vector<Cell*> {
 
   using std::vector<Cell*>::vector;
   using std::vector<Cell*>::empty;
+  using std::vector<Cell*>::capacity;
   using std::vector<Cell*>::reserve;
   using std::vector<Cell*>::size;
   using std::vector<Cell*>::back;
@@ -146,6 +147,7 @@ class Vector : private std::vector<Cell*> {
 
   size_t _narrow(const DB::Cell::Key& key) const;
 
+  void _push_back(Cell* cell);
 
   void _insert(iterator it, const Cell& cell);
 
