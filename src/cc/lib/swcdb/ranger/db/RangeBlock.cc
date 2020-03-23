@@ -37,7 +37,7 @@ Block::Ptr Block::ptr() {
 }
 
 void Block::schema_update() {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   m_cells.configure(
     blocks->range->cfg->cell_versions(), 
     blocks->range->cfg->cell_ttl(), 
@@ -46,7 +46,7 @@ void Block::schema_update() {
 }
 
 const bool Block::is_consist(const DB::Cells::Interval& intval) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
@@ -55,18 +55,18 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) {
 }
 
 const bool Block::is_in_end(const DB::Cell::Key& key) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
 }
 
 const bool Block::is_next(const DB::Specs::Interval& spec) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
           && m_interval.includes(spec); // , m_state == State::LOADED
 }
 
 const bool Block::includes(const DB::Specs::Interval& spec) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return m_interval.includes(spec); // , m_state == State::LOADED
   // if spec with ts >> && blocks->{cellstores, commitlog}->matching(spec); 
 }
@@ -88,7 +88,7 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!loaded()) 
     return true;
 
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
 
   m_cells.add_raw(cell);
   if(!m_interval.is_in_begin(cell.key)) {
@@ -99,7 +99,7 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
 }
   
 void Block::load_cells(const DB::Cells::Mutable& cells) {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   auto ts = Time::now_ns();
   size_t added = m_cells.size();
     
@@ -136,7 +136,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
 
   uint64_t tts = Time::now_ns();
 
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   if(revs > blocks->range->cfg->cell_versions())
     // schema change from more to less results in dups
     synced = false;
@@ -319,7 +319,8 @@ const size_t Block::release() {
   if(m_processing || !loaded())
     return released;
 
-  std::scoped_lock lock(m_mutex, m_mutex_state);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
+  std::scoped_lock lock2(m_mutex_state);
 
   m_state = State::NONE;
   released += _size_bytes();
@@ -351,7 +352,7 @@ const bool Block::processing() const {
 }
 
 const uint32_t Block::size() {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size();
 }
 
@@ -360,7 +361,7 @@ const uint32_t Block::_size() const {
 }
   
 const size_t Block::size_bytes() {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size_bytes();
 }
   
@@ -370,9 +371,9 @@ const size_t Block::_size_bytes() const {
 
 const bool Block::need_split() {
   bool ok;
-  if(ok = m_mutex.try_lock()) {
+  if(ok = m_mutex.try_lock_shared()) {
     ok = _need_split();
-    m_mutex.unlock();
+    m_mutex.unlock_shared();
   }
   return ok;
 }
@@ -386,18 +387,18 @@ const bool Block::_need_split() const {
 }
 
 void Block::free_key_begin() {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   m_interval.key_begin.free();
 }
 
 void Block::free_key_end() {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   m_interval.key_end.free();
 }
 
 const std::string Block::to_string() {
   std::shared_lock lock1(m_mutex_state);
-  std::shared_lock lock2(m_mutex);
+  StatefullSharedMutex::shared_lock lock2(m_mutex);
 
   std::string s("Block(state=");
   s.append(std::to_string((uint8_t)m_state));
@@ -422,7 +423,7 @@ const std::string Block::to_string() {
 const bool Block::_scan(ReqScan::Ptr req, bool synced) {
   {
     size_t skips = 0; // Ranger::Stats
-    std::shared_lock lock(m_mutex);
+    StatefullSharedMutex::shared_lock lock(m_mutex);
     //if(m_interval.includes(req->spec, true)) {
     m_cells.scan(
       req->spec, 

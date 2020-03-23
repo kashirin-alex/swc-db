@@ -25,7 +25,7 @@ Blocks::~Blocks() {  }
 void Blocks::schema_update() {
   commitlog.schema_update();
 
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     blk->schema_update();
 }
@@ -46,7 +46,7 @@ void Blocks::load(int& err) {
 void Blocks::unload() {
   wait_processing();
   commitlog.commit_new_fragment(true);  
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
     
   commitlog.unload();
   cellstores.unload();  
@@ -56,7 +56,7 @@ void Blocks::unload() {
   
 void Blocks::remove(int& err) {
   wait_processing();
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
 
   commitlog.remove(err);
   cellstores.remove(err);   
@@ -78,7 +78,7 @@ void Blocks::apply_new(int &err,
                        CellStore::Writers& w_cellstores, 
                        std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
   wait_processing();
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
 
   cellstores.replace(err, w_cellstores);
   if(err)
@@ -96,7 +96,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   bool to_split=false;
   Block::Ptr blk;
   {
-    std::shared_lock lock(m_mutex);
+    StatefullSharedMutex::shared_lock lock(m_mutex);
     if(m_block) {
       for(blk=*(m_blocks_idx.begin()+_narrow(cell.key)); blk; blk=blk->next) { 
         if(blk->add_logged(cell)) {
@@ -123,7 +123,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
   int err = Error::OK;
   {
-    std::scoped_lock lock(m_mutex);
+    StatefullSharedMutex::scoped_lock lock(m_mutex);
     if(!m_block) 
       init_blocks(err);
   }
@@ -135,7 +135,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
       blk = nullptr, nxt_blk = nullptr) {
     {
-      std::shared_lock lock(m_mutex);
+      StatefullSharedMutex::shared_lock lock(m_mutex);
       eval = blk_ptr ? blk_ptr->next 
              : (req->spec.offset_key.empty() 
                 ? m_block 
@@ -211,38 +211,38 @@ const bool Blocks::_split(Block::Ptr blk, bool loaded) {
 
 const size_t Blocks::cells_count() {
   size_t sz = 0;
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     sz += blk->size();
   return sz;
 }
 
 const size_t Blocks::size() {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size();
 }
 
 const size_t Blocks::size_bytes() {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size_bytes();
 }
 
 const size_t Blocks::size_bytes_total(bool only_loaded) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _size_bytes() 
         + cellstores.size_bytes(only_loaded) 
         + commitlog.size_bytes(only_loaded);  
 }
 
 void Blocks::release_prior(Block::Ptr ptr) {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   if(ptr->prev)
     ptr->prev->release();
 }
 
 /*
 void Blocks::release_and_merge(Block::Ptr ptr) {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::scoped_lock lock(m_mutex);
   bool state = false;
   for(size_t idx = 0; idx<m_blocks.size(); ++idx) {
     if(ptr == m_blocks[idx]) {
@@ -275,7 +275,7 @@ const size_t Blocks::release(size_t bytes) {
     released += commitlog.release(bytes ? bytes-released : bytes);
     if(!bytes || released < bytes) {
 
-      std::shared_lock lock(m_mutex);
+      StatefullSharedMutex::shared_lock lock(m_mutex);
       for(Block::Ptr blk=m_block; blk; blk=blk->next) {
         released += blk->release();
         if(bytes && released >= bytes)
@@ -284,7 +284,7 @@ const size_t Blocks::release(size_t bytes) {
     }
   }
   if(!bytes && !processing()) {
-    std::scoped_lock lock(m_mutex);
+    StatefullSharedMutex::scoped_lock lock(m_mutex);
     _clear();
     bytes = 0;
   }
@@ -295,7 +295,7 @@ const size_t Blocks::release(size_t bytes) {
 }
 
 const bool Blocks::processing() {
-  std::shared_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
   return _processing();
 }
 
@@ -305,7 +305,7 @@ void Blocks::wait_processing() {
 }
 
 const std::string Blocks::to_string() {
-  std::scoped_lock lock(m_mutex);
+  StatefullSharedMutex::shared_lock lock(m_mutex);
 
   std::string s("Blocks(count=");
   s.append(std::to_string(_size()));

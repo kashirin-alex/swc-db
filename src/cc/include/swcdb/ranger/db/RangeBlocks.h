@@ -101,7 +101,7 @@ class Blocks final {
 
   static const uint8_t MAX_IDX_NARROW = 20;
 
-  std::shared_mutex         m_mutex;
+  StatefullSharedMutex      m_mutex;
   Block::Ptr                m_block;
   std::vector<Block::Ptr>   m_blocks_idx;
   std::atomic<size_t>       m_processing;
