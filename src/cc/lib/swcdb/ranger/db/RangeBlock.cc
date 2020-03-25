@@ -95,6 +95,7 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
     m_interval.key_begin.copy(cell.key); 
   //m_interval.expand(cell.timestamp);
   }
+  splitter();
   return true;
 }
   
@@ -175,9 +176,8 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
       m_cells.add_raw(cell);
       
     //ts_add += Time::now_ns()-ts;
-    ++added;
 
-    if(_need_split() && splitter())
+    if(++added % 100 == 0 && splitter())
       was_splitted = true;
   }
     
@@ -193,14 +193,17 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
             << " avg=" << (added>0 ? took / added : 0)
             << " took=" << took
             //<< " ts_read=" << ts_read
-            //<< "  ts_cmp=" << ts_cmp
-            //<< "  ts_add=" << ts_add
+            //<< " ts_cmp=" << ts_cmp
+            //<< " ts_add=" << ts_add
+            << " " << m_cells.to_string()
+            //<< " _need_split=" << _need_split()
+            << " splitted=" << was_splitted
             << SWC_PRINT_CLOSE;
   return added;
 }
 
 const bool Block::splitter() {
-  return blocks->_split(ptr(), false);
+  return _need_split() && blocks->_split(ptr(), false);
 }
 
 const bool Block::scan(ReqScan::Ptr req) {
@@ -368,14 +371,16 @@ const size_t Block::_size_bytes() const {
   return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
 }
 
+/*
 const bool Block::need_split() {
   bool ok;
-  if(ok = m_mutex.try_lock_shared()) {
+  if(ok = loaded() && ok = m_mutex.try_lock_shared()) {
     ok = _need_split();
     m_mutex.unlock_shared();
   }
   return ok;
 }
+*/
 
 const bool Block::_need_split() const {
   auto sz = _size();

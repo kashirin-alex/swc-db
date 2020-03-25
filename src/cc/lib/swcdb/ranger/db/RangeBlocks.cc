@@ -93,21 +93,15 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
 
   commitlog.add(cell);
     
-  bool to_split=false;
   Block::Ptr blk;
   {
     std::shared_lock lock(m_mutex);
-    if(m_block) {
-      for(blk=*(m_blocks_idx.begin()+_narrow(cell.key)); blk; blk=blk->next) { 
-        if(blk->add_logged(cell)) {
-          to_split = blk->loaded();
-          break;
-        }
-      }
-    }
+    blk = m_block ? *(m_blocks_idx.begin()+_narrow(cell.key)) : nullptr;
   }
-  if(to_split)
-    split(blk, true);
+  while(blk && !blk->add_logged(cell)) {
+    std::shared_lock lock(m_mutex);
+    blk = blk->next;
+  }
 
   processing_decrement();
 }
@@ -183,7 +177,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
   req->response(err);
 }
-
+/*
 void Blocks::split(Block::Ptr blk, bool loaded) {
   if(blk->need_split() && m_mutex.try_lock()) {
     auto offset = _get_block_idx(blk);
@@ -195,9 +189,10 @@ void Blocks::split(Block::Ptr blk, bool loaded) {
     m_mutex.unlock();
   }
 }
+*/
 
 const bool Blocks::_split(Block::Ptr blk, bool loaded) {
-  // blk is under lock
+  // call is under blk lock
   if(blk->_need_split() && m_mutex.try_lock()) {
     auto offset = _get_block_idx(blk);
     do {
@@ -235,18 +230,21 @@ const size_t Blocks::size_bytes_total(bool only_loaded) {
         + commitlog.size_bytes(only_loaded);  
 }
 
-void Blocks::release_prior(Block::Ptr ptr) {
-  std::shared_lock lock(m_mutex);
-  if(ptr->prev)
-    ptr->prev->release();
+void Blocks::release_prior(Block::Ptr blk) {
+  {
+    std::shared_lock lock(m_mutex);
+    blk = blk->prev;
+  }
+  if(blk)
+    blk->release();
 }
 
 /*
-void Blocks::release_and_merge(Block::Ptr ptr) {
+void Blocks::release_and_merge(Block::Ptr blk) {
   std::scoped_lock lock(m_mutex);
   bool state = false;
   for(size_t idx = 0; idx<m_blocks.size(); ++idx) {
-    if(ptr == m_blocks[idx]) {
+    if(blk == m_blocks[idx]) {
       if(idx < 2)
         return;
       auto ptr1 = m_blocks[idx-2];

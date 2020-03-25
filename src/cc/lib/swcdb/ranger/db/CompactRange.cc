@@ -31,8 +31,7 @@ CompactRange::CompactRange(
     cell_versions, 
     cell_ttl, 
     col_type
-    );
-  cells.reserve(blk_cells);
+  );
 }
 
 CompactRange::~CompactRange() { 

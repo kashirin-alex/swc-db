@@ -57,7 +57,7 @@ class Blocks final {
 
   void scan(ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 
-  void split(Block::Ptr blk, bool loaded=true);
+  //void split(Block::Ptr blk, bool loaded=true);
 
   const bool _split(Block::Ptr blk, bool loaded=true);
 
