@@ -13,11 +13,12 @@
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/db/Cells/Interval.h"
 #include "swcdb/db/Cells/Vector.h"
+#include "swcdb/db/Cells/VectorBig.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
 
-typedef Vector Mutable;
+typedef VectorBig Mutable;
 
 /*
 class Mutable final {

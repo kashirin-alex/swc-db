@@ -100,9 +100,9 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   
   if(sz != expected_sz) {
     size_t num=0;
-    for(auto cell : cells) {
+    for(auto it = cells.ConstIt(); it; ++it) {
       if( ++num == 1 || num == sz)
-        std::cout << "  " << num << ":" << cell->to_string() << "\n";  
+        std::cout << "  " << num << ":" << (*it.item)->to_string() << "\n";  
     }
     std::cerr << "\n BAD, on offset, select cells count: \n" 
               << " err=" << select_req->result->err 
@@ -281,7 +281,9 @@ void test_1(const std::string& col_name) {
   {
     Cells::Cell prev;
     int count = 0;
-    for(auto c : cells) {
+    Cells::Cell* c;
+    for(auto it = cells.ConstIt(); it; ++it) {
+      c = (*it.item);
       count++;
       if(prev.flag != Cells::NONE) {
         if(c->key.equal(prev.key)) {

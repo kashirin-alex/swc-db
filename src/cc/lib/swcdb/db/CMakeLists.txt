@@ -3,7 +3,8 @@
 #
 
 set(swcdb_sources
-	Cells/Vector.cc
+	Cells/VectorBig.cc
+	#Cells/Vector.cc
 	#Cells/Mutable.cc
 	Cells/MapMutable.cc
 	Cells/Interval.cc

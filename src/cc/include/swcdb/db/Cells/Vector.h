@@ -8,10 +8,13 @@
 
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/db/Cells/Interval.h"
+#include "swcdb/db/Cells/VectorBig.h"
 
 namespace SWC { namespace DB { namespace Cells {
 
+typedef VectorBig Vector;
 
+/*
 class Vector : private std::vector<Cell*> {
   public:
 
@@ -158,12 +161,14 @@ class Vector : private std::vector<Cell*> {
   void _remove_overhead(iterator it, const DB::Cell::Key& key, uint32_t revs);
 
 };
-
+*/
 
 }}}
 
+/*
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Vector.cc"
 #endif 
+*/
 
 #endif // swcdb_db_Cells_Vector_h

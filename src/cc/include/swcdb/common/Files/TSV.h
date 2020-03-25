@@ -63,15 +63,12 @@ class FileWriter {
 
         cells.free();
         result->get_cells(cid, cells);
-        for(auto& cell : cells) {
+        
+        for(auto it = cells.ConstIt(); it; ++it) {
 
           cells_count++;
-          cells_bytes += cell->encoded_length();
-          
-          write(*cell, col_type);
-          
-          delete cell;
-          cell = nullptr;
+          cells_bytes += (*it.item)->encoded_length();
+          write(**it.item, col_type);
 
           if(buffer.fill() >= 8388608) {
             write(col_type);

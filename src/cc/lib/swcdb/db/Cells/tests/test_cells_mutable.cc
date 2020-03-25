@@ -107,7 +107,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
 
   if(cells_mutable->size() != expected_sz) {
-    std::cerr << "SIZE NOT AS EXPECTED, "
+    std::cerr << "INSERT SIZE NOT AS EXPECTED, "
               << "expected(" << expected_sz << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
@@ -181,7 +181,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   if(cells_mutable->size() != num_cells) {
     std::cerr << "\n" << cells_mutable->to_string(true);
-    std::cerr << "\nSIZE NOT AS EXPECTED, "
+    std::cerr << "\nDELETE SIZE NOT AS EXPECTED, "
               << "expected(" << num_cells << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
@@ -200,7 +200,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     );
 
   if(results.size() != 0) {
-    std::cerr << "SIZE NOT AS EXPECTED, "
+    std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
               << "expected(" << 0 << ") != result(" << results.size()  << ")\n";
     exit(1);
   }
