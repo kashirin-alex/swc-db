@@ -440,14 +440,15 @@ void Update::Locator::commit_data(
                 return;
               }
 
-              if(rsp.err == Error::RANGE_END_EARLIER) {
-                locator->col->add(*cells_buff.get(), rsp.range_end);
+              if(rsp.err == Error::RANGE_BAD_INTERVAL) {
+                locator->col->add(
+                  *cells_buff.get(), rsp.range_prev_end, rsp.range_end);
                 if(workload.use_count() == 1) {
-                  auto next_key_start = locator->col->get_key_next(rsp.range_end);
-                  if(next_key_start != nullptr) {
+                  auto nxt_start = locator->col->get_key_next(rsp.range_end);
+                  if(nxt_start != nullptr) {
                     std::make_shared<Locator>(
                       Types::Range::MASTER, 
-                      locator->col->cid, locator->col, next_key_start, 
+                      locator->col->cid, locator->col, nxt_start, 
                       locator->updater
                     )->locate_on_manager();
                    }

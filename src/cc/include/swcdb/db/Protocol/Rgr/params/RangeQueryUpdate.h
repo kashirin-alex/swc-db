@@ -46,11 +46,13 @@ class RangeQueryUpdateRsp  : public Serializable {
 
   RangeQueryUpdateRsp(int err = 0);
 
-  RangeQueryUpdateRsp(int err, const DB::Cell::Key& range_end);
+  RangeQueryUpdateRsp(int err, const DB::Cell::Key& range_prev_end,
+                               const DB::Cell::Key& range_end);
 
   virtual ~RangeQueryUpdateRsp();
 
   int32_t       err;
+  DB::Cell::Key range_prev_end;
   DB::Cell::Key range_end;
 
   const std::string to_string() const;

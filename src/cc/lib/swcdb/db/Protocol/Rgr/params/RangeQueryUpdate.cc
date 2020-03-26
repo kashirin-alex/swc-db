@@ -54,9 +54,11 @@ void RangeQueryUpdateReq::decode_internal(uint8_t version, const uint8_t **bufp,
 
 RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err) : err(err) {  }
 
-RangeQueryUpdateRsp::RangeQueryUpdateRsp(
-                      int err, const DB::Cell::Key& range_end) 
-                    : err(err), range_end(range_end) {  
+RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err, 
+                      const DB::Cell::Key& range_prev_end, 
+                      const DB::Cell::Key& range_end) 
+                    : err(err), 
+                      range_prev_end(range_prev_end), range_end(range_end) {
 }
 
 RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }
@@ -68,9 +70,14 @@ const std::string RangeQueryUpdateRsp::to_string() const {
   s.append("(");
   s.append(Error::get_text(err));
   s.append(")");
-  if(err == Error::RANGE_END_EARLIER) {
-    s.append(" range_end=");
-    s.append(range_end.to_string());
+  if(err == Error::RANGE_BAD_INTERVAL) {
+    if(!range_prev_end.empty()) {
+      s.append(" range_prev_end=");
+      s.append(range_prev_end.to_string());
+    }if(!range_end.empty()) {
+      s.append(" range_end=");
+      s.append(range_end.to_string());
+    }
   }
   s.append(")");
   return s;
@@ -82,20 +89,26 @@ uint8_t RangeQueryUpdateRsp::encoding_version() const {
   
 size_t RangeQueryUpdateRsp::encoded_length_internal() const {
   return  Serialization::encoded_length_vi32(err)
-        + (err == Error::RANGE_END_EARLIER ? range_end.encoded_length() : 0);
+        + (err == Error::RANGE_BAD_INTERVAL 
+          ? range_prev_end.encoded_length() + range_end.encoded_length() 
+          : 0);
 }
   
 void RangeQueryUpdateRsp::encode_internal(uint8_t **bufp) const {
   Serialization::encode_vi32(bufp, err);
-  if(err == Error::RANGE_END_EARLIER) 
+  if(err == Error::RANGE_BAD_INTERVAL) {
+    range_prev_end.encode(bufp);
     range_end.encode(bufp);
+  }
 }
   
 void RangeQueryUpdateRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
                      size_t *remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
-  if(err == Error::RANGE_END_EARLIER) 
+  if(err == Error::RANGE_BAD_INTERVAL) {
+    range_prev_end.decode(bufp, remainp, true);
     range_end.decode(bufp, remainp, true);
+  }
 }
 
 

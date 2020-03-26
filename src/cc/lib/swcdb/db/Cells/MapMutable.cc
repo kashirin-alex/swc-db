@@ -71,9 +71,10 @@ void ColCells::add(const DynamicBuffer& cells) {
   m_cells.add_raw(cells);
 }
 
-void ColCells::add(const DynamicBuffer& cells, const DB::Cell::Key& from_key) {
+void ColCells::add(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
+                                               const DB::Cell::Key& from_key) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_cells.add_raw(cells, from_key);
+  m_cells.add_raw(cells, upto_key, from_key);
 }
 
 const size_t ColCells::size() {

@@ -85,7 +85,7 @@ std::map<const int, const char *> text_map {
   { Error::RANGE_NOT_FOUND,               "No corresponding range"},
   { Error::RANGE_CELLSTORES,              "Cellstores had Errors"},
   { Error::RANGE_COMMITLOG,               "Commitlog had Errors"},
-  { Error::RANGE_END_EARLIER,             "Partial Write, range end earlier"},
+  { Error::RANGE_BAD_INTERVAL,            "Partial Write, bad range interval negin /& end"},
 
 
   { Error::SERIALIZATION_VERSION_MISMATCH, "SERIALIZATION version mismatch" },

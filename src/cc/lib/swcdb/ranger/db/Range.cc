@@ -545,11 +545,14 @@ void Range::run_add_queue() {
   const uint8_t* ptr;
   size_t remain; 
   bool early_range_end;
+  bool late_range_begin;
   bool intval_chg;
 
+  DB::Cell::Key key_prev_end;
   DB::Cell::Key key_end;
   {
     std::shared_lock lock(m_mutex);
+    key_prev_end.copy(m_prev_key_end);
     key_end.copy(m_interval.key_end);
   }
   uint64_t ttl = cfg->cell_ttl();
@@ -557,8 +560,10 @@ void Range::run_add_queue() {
   for(;;) {
     err = Error::OK;
     early_range_end = false;
-    if(wait(COMPACT_APPLYING)) {
+    late_range_begin = false;
+    if(wait(COMPACT_COMPACTING)) { // COMPACT_APPLYING
       std::shared_lock lock(m_mutex);
+      key_prev_end.copy(m_prev_key_end);
       key_end.copy(m_interval.key_end);
     }
     blocks.processing_increment();
@@ -585,13 +590,17 @@ void Range::run_add_queue() {
       if(cell.has_expired(ttl))
         continue;
 
-      if(!key_end.empty() && key_end.compare(cell.key) == Condition::GT) {
+      if(!key_end.empty() && 
+          key_end.compare(cell.key) == Condition::GT) {
         early_range_end = true;
         continue;
-      } // + checking prev_key_end.compare(cell.key) != Condition::GT) {
-        // late_range_begin = true;
-        // continue;
-        // }
+      } 
+
+      if(!key_prev_end.empty() && 
+          key_prev_end.compare(cell.key) != Condition::GT) {
+        late_range_begin = true;
+        continue;
+      }
         
       if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
         cell.set_timestamp(Time::now_ns());
@@ -634,8 +643,12 @@ void Range::run_add_queue() {
       on_change(err, false);
     }
 
-    if(early_range_end) {
-      req->cb->response(Error::RANGE_END_EARLIER, key_end);
+    if(late_range_begin || early_range_end) {
+      req->cb->response(
+        Error::RANGE_BAD_INTERVAL, 
+        late_range_begin ? key_prev_end : DB::Cell::Key(),
+        early_range_end ? key_end : DB::Cell::Key()
+      );
     } else {
       req->cb->response(err);
     }

@@ -450,6 +450,9 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
       splitter.run();
 
       range->blocks.commitlog.remove(err, fragments_old);
+
+      // range->blocks.commitlog.expand_and_align()
+      // new_range->blocks.commitlog.expand_and_align()
     }
   }
 

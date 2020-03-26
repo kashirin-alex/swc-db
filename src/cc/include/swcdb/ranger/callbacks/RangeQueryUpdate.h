@@ -25,8 +25,11 @@ class RangeQueryUpdate : public ResponseCallback {
     response(Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
   }
 
-  void response(const int& err, const DB::Cell::Key& range_end) {
-    response(Protocol::Rgr::Params::RangeQueryUpdateRsp(err, range_end));
+  void response(const int& err, const DB::Cell::Key& range_prev_end, 
+                                const DB::Cell::Key& range_end) {
+    response(
+      Protocol::Rgr::Params::RangeQueryUpdateRsp(
+        err, range_prev_end, range_end));
   }
 
   const bool expired(const int64_t within=0) const {

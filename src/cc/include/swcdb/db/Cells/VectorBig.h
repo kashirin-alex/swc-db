@@ -153,7 +153,8 @@ class VectorBig final {
 
   void add_raw(const DynamicBuffer& cells);
   
-  void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& from_key);
+  void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
+                                           const DB::Cell::Key& from_key);
   
   void add_raw(const Cell& e_cell);
   

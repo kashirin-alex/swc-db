@@ -160,13 +160,15 @@ void VectorBig::add_raw(const DynamicBuffer& cells) {
 }
 
 void VectorBig::add_raw(const DynamicBuffer& cells, 
+                        const DB::Cell::Key& upto_key,
                         const DB::Cell::Key& from_key) {
   Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
   while(remain) {
     cell.read(&ptr, &remain);
-    if(from_key.compare(cell.key) == Condition::GT)
+    if((!upto_key.empty() && upto_key.compare(cell.key) != Condition::GT) ||
+       from_key.compare(cell.key) == Condition::GT)
       add_raw(cell);
   }
 }

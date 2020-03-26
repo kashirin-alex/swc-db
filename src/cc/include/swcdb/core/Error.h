@@ -129,7 +129,7 @@ enum Code {
   RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
   RANGE_CELLSTORES                             = CODE_START+0x7f+0x3,
   RANGE_COMMITLOG                              = CODE_START+0x7f+0x4,
-  RANGE_END_EARLIER                            = CODE_START+0x7f+0x5,
+  RANGE_BAD_INTERVAL                           = CODE_START+0x7f+0x5,
 
   COMM_NOT_CONNECTED                           = 0x00010001,
   COMM_BROKEN_CONNECTION                       = 0x00010002,
