@@ -9,6 +9,12 @@
 namespace SWC { namespace DB { namespace Cells { 
 
 
+VectorBig::Bucket* VectorBig::make_bucket(uint16_t reserve) {
+  auto bucket = new Bucket;
+  if(reserve)
+    bucket->reserve(reserve);
+  return bucket;
+}
 
 VectorBig::Ptr VectorBig::make(const uint32_t max_revs, const uint64_t ttl_ns, 
                                const Types::Column type) {
@@ -18,7 +24,7 @@ VectorBig::Ptr VectorBig::make(const uint32_t max_revs, const uint64_t ttl_ns,
 VectorBig::VectorBig(const uint32_t max_revs, const uint64_t ttl_ns, 
                      const Types::Column type)
                     : type(type), max_revs(max_revs), ttl(ttl_ns),
-                      buckets({new Bucket}), _bytes(0), _size(0) {
+                      buckets({make_bucket(0)}), _bytes(0), _size(0) {
 }
 
 VectorBig::VectorBig(VectorBig& other)
@@ -32,12 +38,12 @@ VectorBig::VectorBig(VectorBig& other)
 
 void VectorBig::take_sorted(VectorBig& other) {
   if(!other.empty()) {
-    _bytes += other.size_bytes();
-    _size += other.size();
-    if((*buckets.begin())->empty()) {
+    if(empty()) {
       delete *buckets.begin();
       buckets.clear();
     }
+    _bytes += other.size_bytes();
+    _size += other.size();
     buckets.insert(buckets.end(), other.buckets.begin(), other.buckets.end());
     other.buckets.clear();
     other.free();
@@ -57,8 +63,8 @@ void VectorBig::free() {
   _bytes = 0;
   _size = 0;
   buckets.clear();
+  buckets.push_back(make_bucket(0));
   buckets.shrink_to_fit();
-  buckets.push_back(new Bucket);
 }
 
 void VectorBig::reset(const uint32_t revs, const uint64_t ttl_ns, 
@@ -122,14 +128,12 @@ const bool VectorBig::has_one_key() const {
 
 void VectorBig::add_sorted(const Cell& cell, bool no_value) {
   Cell* adding;
-  _bytes += (adding = new Cell(cell, no_value))->encoded_length();
-  ++_size;
+  _add(adding = new Cell(cell, no_value));
   _push_back(adding);
 }
 
 void VectorBig::add_sorted_no_cpy(Cell* cell) {
-  _bytes += cell->encoded_length();
-  ++_size;
+  _add(cell);
   _push_back(cell);
 }
 
@@ -196,8 +200,7 @@ Cell* VectorBig::takeout_end(size_t idx) {
 Cell* VectorBig::takeout(size_t idx) {
   auto it = It(idx);
   Cell* cell;
-  _bytes -= (cell = *it.item)->encoded_length();
-  --_size;
+  _remove(cell = *it.item);
   it.remove();
   return cell;
 }
@@ -214,10 +217,9 @@ void VectorBig::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   Cell* last = nullptr;
   Cell* cell;
   size_t count = 0;
-  auto it = It();
-  auto it_start = it;
-  for(; it && (!threshold || threshold > cells.fill()) && 
-              (!max_cells || max_cells > cell_count); ++it) {
+  auto it_start = It();
+  for(auto it = it_start; it && (!threshold || threshold > cells.fill()) && 
+                                (!max_cells || max_cells > cell_count); ++it) {
     ++count;
     if((cell=*it.item)->has_expired(ttl))
       continue;
@@ -234,41 +236,52 @@ void VectorBig::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
     intval.expand_end(*(last ? last : first));
   }
   
-  if(!it)
+  if(_size == count)
     free();
   else
-    for(; it_start && count; --count) 
-      _remove(it_start);
+    _remove(it_start, count);
 }
 
 bool VectorBig::write_and_free(const DB::Cell::Key& key_start, 
-                              const DB::Cell::Key& key_finish,
-                              DynamicBuffer& cells, uint32_t threshold) {
-  if(!_size)
-    return false;
+                               const DB::Cell::Key& key_finish,
+                               DynamicBuffer& cells, uint32_t threshold) {
+  bool more = _size;
+  if(!more)
+    return more;
 
   cells.ensure(_bytes < threshold? _bytes: threshold);
 
   auto it = It(_narrow(key_start));
-  for(Cell* cell; it && (!threshold || threshold > cells.fill()); ) {
+  size_t count = 0;
+  Iterator it_start;
+  for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
     cell=*it.item;
 
     if(!key_start.empty() && 
-        key_start.compare(cell->key, 0) == Condition::LT) {
-      ++it;
+        key_start.compare(cell->key, 0) == Condition::LT) 
       continue;
-    }
     if(!key_finish.empty() && 
-        key_finish.compare(cell->key, 0) == Condition::GT)
-      return false;
+        key_finish.compare(cell->key, 0) == Condition::GT) {
+      more = false;
+      break;
+    }
 
+    if(!count++)
+      it_start = it;
+  
     if(!cell->has_expired(ttl)) 
       cell->write(cells);
-
-    _remove(it);
   }
-  
-  return it;
+
+  if(count) {
+    if(count == _size) {
+      free();
+    } else {
+      _remove(it_start, count);
+      return more && it;
+    }
+  }
+  return false;
 }
 
 
@@ -520,36 +533,34 @@ void VectorBig::expand_end(Interval& interval) const {
 void VectorBig::split(size_t from, VectorBig& cells, 
                       Interval& intval_1st, Interval& intval_2nd,
                       bool loaded) {
-  bool from_set = false;
   Cell* from_cell = *ConstIt(from).item;
+  size_t count = _size;
+  bool from_set = false;
+  Iterator it_start;
   Cell* cell;
-  for(auto it = It(_narrow(from_cell->key)); it; ) {
+  for(auto it = It(_narrow(from_cell->key)); it; ++it) {
     cell=*it.item;
 
     if(!from_set) {
       if(cell->key.compare(from_cell->key, 0) == Condition::GT) {
-        ++it;
+       --count;
         continue;
       }
 
+      it_start = it;
       intval_2nd.expand_begin(*cell);
-      if(!loaded) {
-        while(it) _remove(it);
+      if(!loaded)
         break;
-      }
       from_set = true;
     }
-
-    _bytes -= cell->encoded_length();
-    --_size;
+    _remove(cell);
     if(cell->has_expired(ttl))
       delete cell;
     else
       cells.add_sorted_no_cpy(cell);
-
-    it.remove();
   }
 
+  _remove(it_start, count, !loaded);
 
   intval_2nd.set_key_end(intval_1st.key_end);      
   intval_1st.key_end.free();
@@ -744,19 +755,27 @@ size_t VectorBig::_narrow(const DB::Cell::Key& key) const {
 }
 
 
+void VectorBig::_add(Cell* cell) {
+  _bytes += cell->encoded_length();
+  ++_size;
+}
+
+void VectorBig::_remove(Cell* cell) {
+  _bytes -= cell->encoded_length();
+  --_size;
+}
+
+
 void VectorBig::_push_back(Cell* cell) {
-  if(buckets.empty() || buckets.back()->size() >= bucket_size) {
-    buckets.push_back(new Bucket);
-    buckets.back()->reserve(bucket_size);
-  }
+  if(buckets.back()->size() >= bucket_size)
+    buckets.push_back(make_bucket());
   buckets.back()->push_back(cell);
 }
 
 Cell* VectorBig::_insert(VectorBig::Iterator& it, const Cell& cell) {
   Cell* adding;
-  _bytes += (adding = new Cell(cell))->encoded_length();
-  ++_size;
-  if(buckets.empty()) 
+  _add(adding = new Cell(cell));
+  if(!it) 
     _push_back(adding);
   else 
     it.insert(adding);
@@ -764,10 +783,20 @@ Cell* VectorBig::_insert(VectorBig::Iterator& it, const Cell& cell) {
 }
 
 void VectorBig::_remove(VectorBig::Iterator& it) {
-  _bytes -= (*it.item)->encoded_length();
-  --_size;
-  delete *it.item; 
+  _remove(*it.item); 
+  delete *it.item;
   it.remove();
+}
+
+void VectorBig::_remove(VectorBig::Iterator& it, size_t number, bool wdel) { 
+  if(wdel) {
+    auto it_del = Iterator(it);
+    for(auto c = number; c && it_del; ++it_del,--c) {
+      _remove(*it_del.item);
+      delete *it_del.item;
+    }
+  }
+  it.remove(number);
 }
 
 void VectorBig::_remove_overhead(VectorBig::Iterator& it, 
@@ -785,8 +814,6 @@ void VectorBig::_remove_overhead(VectorBig::Iterator& it,
 VectorBig::ConstIterator::ConstIterator(const VectorBig::Buckets* buckets, 
                                         size_t offset) 
                                         : buckets(buckets) {
-  assert(!buckets->empty());
-
   bucket = buckets->begin();
   if(offset) {
     for(; bucket < buckets->end(); ++bucket) {
@@ -825,10 +852,10 @@ void VectorBig::ConstIterator::operator++() {
 
 
 
+VectorBig::Iterator::Iterator() : buckets(nullptr) { }
+
 VectorBig::Iterator::Iterator(VectorBig::Buckets* buckets, size_t offset) 
                               : buckets(buckets) {
-  assert(!buckets->empty());
-
   bucket = buckets->begin();
   if(offset) {
     for(; bucket < buckets->end(); ++bucket) {
@@ -846,6 +873,14 @@ VectorBig::Iterator::Iterator(VectorBig::Buckets* buckets, size_t offset)
 VectorBig::Iterator::Iterator(const VectorBig::Iterator& other) 
                               : buckets(other.buckets), 
                                 bucket(other.bucket), item(other.item) {
+}
+
+VectorBig::Iterator& 
+VectorBig::Iterator::operator=(const VectorBig::Iterator& other) {
+  buckets = other.buckets;
+  bucket = other.bucket;
+  item = other.item;
+  return *this;
 }
 
 VectorBig::Iterator::~Iterator() { }
@@ -873,10 +908,9 @@ void VectorBig::Iterator::operator--() {
 }
 
 void VectorBig::Iterator::push_back(Cell*& value) {
-  if(buckets->empty() || (*bucket)->size() >= bucket_max) {
-    buckets->push_back(new Bucket);
-    (*(bucket = buckets->end() - 1))->reserve(bucket_size);
-  }
+  if((*bucket)->size() >= bucket_max)
+    buckets->push_back(make_bucket());
+
   (*bucket)->push_back(value);
   item = (*bucket)->end() - 1;
 }
@@ -887,17 +921,15 @@ void VectorBig::Iterator::insert(Cell*& value) {
   if((*bucket)->size() >= bucket_max) {
     auto offset = item - (*bucket)->begin();
 
-    auto nbucket = buckets->insert(++bucket, new Bucket);
-    (*nbucket)->reserve(bucket_size);
-    bucket = nbucket-1;
-    
-    (*nbucket)->assign((*bucket)->begin()+bucket_split, (*bucket)->end());
-    (*bucket)->erase  ((*bucket)->begin()+bucket_split, (*bucket)->end());
+    auto nbucket = buckets->insert(++bucket, make_bucket());
 
-    if(offset >= bucket_split) {
-      bucket = nbucket;
-      item = (*bucket)->begin() + offset - bucket_split;
-    }
+    auto it_b = (*(bucket = nbucket-1))->begin() + bucket_split;
+    auto it_e = (*bucket)->end();
+    (*nbucket)->assign(it_b, it_e);
+    (*bucket)->erase  (it_b, it_e);
+
+    if(offset >= bucket_split)
+      item = (*(bucket = nbucket))->begin() + offset - bucket_split;
   }
 }
 
@@ -905,10 +937,39 @@ void VectorBig::Iterator::remove() {
   (*bucket)->erase(item);
   if((*bucket)->empty() && buckets->size() > 1) {
     delete *bucket; 
-    buckets->erase(bucket);
-    if(bucket != buckets->end())
+    if((bucket = buckets->erase(bucket)) != buckets->end())
       item = (*bucket)->begin();
   } else if(item == (*bucket)->end() && ++bucket < buckets->end()) {
+    item = (*bucket)->begin();
+  }
+}
+
+void VectorBig::Iterator::remove(size_t number) {
+  while(number) {
+
+    if(item == (*bucket)->begin() && number >= (*bucket)->size()) {
+      if(buckets->size() == 1) {
+        (*bucket)->clear();
+        item = (*bucket)->end();
+        return;
+      }
+      number -= (*bucket)->size();
+      delete *bucket;
+      bucket = buckets->erase(bucket);
+
+    } else {
+      size_t avail;
+      if((avail = (*bucket)->end() - item) > number) {
+        item = (*bucket)->erase(item, item + number);
+        return;
+      }
+      number -= avail;
+      (*bucket)->erase(item, item + avail);
+      ++bucket;
+    }
+    
+    if(bucket == buckets->end())
+      return;
     item = (*bucket)->begin();
   }
 }

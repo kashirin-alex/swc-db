@@ -239,14 +239,21 @@ int main(int argc, char** argv) {
   check(SWC::Types::Column::PLAIN, 100000, 1);
   check(SWC::Types::Column::PLAIN, 100000, 3, 2);
   */
-  check(SWC::Types::Column::PLAIN, 200000, 1);
-  check(SWC::Types::Column::PLAIN, 200000, 3, 2);
+  check(SWC::Types::Column::PLAIN, 1000, 1);
+  check(SWC::Types::Column::PLAIN, 1000, 3, 2);
+  check(SWC::Types::Column::PLAIN, 1000, 10, 8);
+
+  check(SWC::Types::Column::PLAIN, 10000, 1);
+  check(SWC::Types::Column::PLAIN, 10000, 3, 2);
+  check(SWC::Types::Column::PLAIN, 10000, 10, 8);
+
+  check(SWC::Types::Column::PLAIN, 100000, 1);
+  check(SWC::Types::Column::PLAIN, 100000, 3, 2);
+  check(SWC::Types::Column::PLAIN, 100000, 10, 8);
 
   check(SWC::Types::Column::PLAIN, 200000, 1);
   check(SWC::Types::Column::PLAIN, 200000, 3, 2);
-
-  check(SWC::Types::Column::PLAIN, 200000, 1);
-  check(SWC::Types::Column::PLAIN, 200000, 3, 2);
+  check(SWC::Types::Column::PLAIN, 200000, 10, 8);
   
   //check(SWC::Types::Column::PLAIN, 1000000, 1);
   //check(SWC::Types::Column::PLAIN, 1000000, 3, 2);

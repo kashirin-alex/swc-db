@@ -26,13 +26,16 @@ class VectorBig final {
   static const uint8_t  _cell_sz      = sizeof(Cell*);
   static const uint8_t  _bucket_sz    = sizeof(Bucket*);
 
-  static const uint16_t bucket_size   = 1024;
-  static const uint16_t bucket_max    = 1536;
-  static const uint16_t bucket_split  = 512;
+  static const uint16_t bucket_size   = 4096;
+  static const uint16_t bucket_max    = 6144;
+  static const uint16_t bucket_split  = 2048;
 
   Types::Column         type;
   uint32_t              max_revs;
   uint64_t              ttl;
+
+
+  static Bucket* make_bucket(uint16_t reserve = bucket_size);
 
 
   class ConstIterator final {
@@ -64,9 +67,13 @@ class VectorBig final {
     Buckets::iterator   bucket;
     Bucket::iterator    item;
 
+    Iterator();
+
     Iterator(Buckets* buckets, size_t offset = 0);
 
     Iterator(const Iterator& other);
+
+    Iterator& operator=(const Iterator& other);
 
     ~Iterator();
 
@@ -85,6 +92,8 @@ class VectorBig final {
     void insert(Cell*& value);
 
     void remove();
+
+    void remove(size_t number);
 
   };
 
@@ -218,11 +227,17 @@ class VectorBig final {
 
   size_t _narrow(const DB::Cell::Key& key) const;
 
+  void _add(Cell* cell);
+
+  void _remove(Cell* cell);
+
   void _push_back(Cell* cell);
 
   Cell* _insert(Iterator& it, const Cell& cell);
   
   void _remove(Iterator& it);
+
+  void _remove(Iterator& it, size_t number, bool wdel = true);
 
   void _remove_overhead(Iterator& it, const DB::Cell::Key& key, uint32_t revs);
 
