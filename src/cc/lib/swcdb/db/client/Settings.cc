@@ -7,7 +7,7 @@
 namespace SWC{ namespace Config {
 
 void Settings::init_client_options() {
-  file_desc.add_options()
+  cmdline_desc.add_options()
     ("swc.cfg.dyn.period", g_i32(600000), 
      "Dynamic cfg-file check interval in ms, zero without")
     
