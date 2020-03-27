@@ -48,9 +48,10 @@ cmake ../swc-db \
 make -j8 install
 ```
 
-#### RUNNING - STANDALONE
+#### STARING-UP
 Edit the necessary configuration in /opt/swcdb/etc/swcdb/*.cfg
 
+###### STANDALONE
 ```bash
 cd /opt/swcdb;
 mkdir -p var/log/swcdb; # re-config "swc.logging.path" for other path
@@ -65,6 +66,24 @@ cd bin;
 ./swcdbThriftBroker --host=localhost --daemon;
 ```
 
+###### DISTRIBUTED CLUSTER
+On each server:
+```bash
+cd /opt/swcdb;
+mkdir -p var/log/swcdb; # re-config "swc.logging.path" for other path
+cd bin;
+# START SWCDB-FS-BROKER 
+./swcdbFsBroker --daemon;
+# START SWCDB-MANAGER
+./swcdbManager --debug --daemon; # (on the corresponing hosts of "swc.mngr.host" in cfg)
+# START SWCDB-RANGER
+./swcdbRanger --daemon;
+# START SWCDB-THRIFT-BROKER
+./swcdbThriftBroker --host=localhost --daemon;
+```
+
+
+#### RUNNING & USING
 
 ##### ENTER SWC-DB(client) CLI:
 ```bash
@@ -107,7 +126,7 @@ Usage Help:  'command' [options];
   dump             dump col='ID|NAME' into 'file.ext' where [cells=(Interval Flags) AND] OutputFlags DisplayFlags;
                    -> dump col='ColName' into 'ColName.tsv' OUTPUT_NO_* TS / VALUE;
   load             load from 'file.ext' into col='ID|NAME' DisplayFlags;
-SWC-DB(client)>
+SWC-DB(client)> quit;
 
 ```
 
@@ -118,7 +137,7 @@ SWC-DB(client)> add column(name=FirstColumn);
 SWC-DB(client)> get column FirstColumn;
 cid=N name="FirstColumn" type=PLAIN revision=N compact=0 cell_versions=1 cell_ttl=0 
 blk_replication=0 blk_encoding=DEFAULT blk_size=0 blk_cells=0 cs_size=0 cs_max=0
-SWC-DB(client)> 
+SWC-DB(client)> quit;
 ```
 
 
@@ -133,7 +152,7 @@ Statistics:
  Total Cells Size:       64 B
  Average Transfer Rate:  0.0729032 B/us
  Average Cells Rate:     0.00113911 cell/us
-SWC-DB(client)>
+SWC-DB(client)> quit;
 ```
 
 
@@ -149,7 +168,7 @@ Statistics:
  Total Cells Size:       72 B
  Average Transfer Rate:  0.0414021 B/us
  Average Cells Rate:     0.000575029 cell/us
-SWC-DB(client)>
+SWC-DB(client)> quit;
 ```
 
 
@@ -234,6 +253,7 @@ Statistics:
  Total Cells Size:       122 B
  Average Transfer Rate:  2.77759 B/ms
  Average Cells Rate:     0.0227671 cell/ms
+SWC-DB(client)> quit;
 ```
 
 
@@ -246,3 +266,9 @@ the same for swcdbManager, swcdbFsBroker and swcdbThriftBroker
 
 
 ### THAT IS ALL THE GUIDE FOR NOW - [WIKI TO COME](https://github.com/kashirin-alex/swc-db/wiki)
+
+##### SUPPORT & DISUCSSIONS
+Google Group is available at [groups.google.com/forum/#!forum/swc-db](https://groups.google.com/forum/#!forum/swc-db) for open discussions and help on SWC-DB
+
+##### ISSUES
+open an issue at [github.com/kashirin-alex/swc-db/issues](https://github.com/kashirin-alex/swc-db/issues) in case there is an issue(bug/feature) that can be fully described.
