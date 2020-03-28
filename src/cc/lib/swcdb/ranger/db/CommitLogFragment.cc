@@ -226,10 +226,10 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
         break;
       }
 
-      if(cell.key.compare(key) != Condition::GT)
-        left(cell);
-      else  
+      if(key.compare(cell.key) == Condition::GT)
         right(cell);
+      else
+        left(cell);
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 

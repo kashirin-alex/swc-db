@@ -14,13 +14,13 @@ class Splitter : public std::vector<Fragment::Ptr> {
   public:
   using std::vector<Fragment::Ptr>::vector;
 
-  DB::Cell::Key key;
 
-  Splitter(const std::vector<Fragment::Ptr>& fragments, 
+  Splitter(const DB::Cell::Key& key, 
+           const std::vector<Fragment::Ptr>& fragments, 
            Fragment::AddCell_t& left, Fragment::AddCell_t& right) 
           : std::vector<Fragment::Ptr>(fragments),
             m_processing(false), m_completion(0), m_it(begin()),
-            left(left), right(right) { 
+            key(key), left(left), right(right) { 
   }
 
   ~Splitter() { }
@@ -90,6 +90,7 @@ class Splitter : public std::vector<Fragment::Ptr> {
   uint32_t                          m_completion;
   iterator                          m_it;
 
+  const DB::Cell::Key key;
   Fragment::AddCell_t left;
   Fragment::AddCell_t right;
 };

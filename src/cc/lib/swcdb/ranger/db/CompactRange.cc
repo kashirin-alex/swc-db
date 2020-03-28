@@ -422,46 +422,47 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
   auto it = cellstores.begin()+split_at;
   new_cellstores.assign(it, cellstores.end());
   cellstores.erase(it, cellstores.end());
-  
-  SWC_ASSERT(cellstores.size());
-  SWC_ASSERT(new_cellstores.size());
 
   new_range->create(err, new_cellstores);
-  if(!err) {
-    range->apply_new(err, cellstores, fragments_old);
-
-    if(range->blocks.commitlog.cells_count()) {
-    /* split latest fragments to new_range from new interval key_end */
-
-      fragments_old.clear();
-      range->blocks.commitlog.commit_new_fragment(true);
-      range->blocks.commitlog.get(fragments_old); // fragments for removal
-      
-      CommitLog::Splitter splitter(
-        fragments_old,
-        [log=&range->blocks.commitlog] (const DB::Cells::Cell& cell) { 
-          log->add(cell); 
-        },
-        [log=&new_range->blocks.commitlog](const DB::Cells::Cell& cell) { 
-          log->add(cell); 
-        }
-      );
-      range->get_key_end(splitter.key);
-      splitter.run();
-
-      range->blocks.commitlog.remove(err, fragments_old);
-
-      // range->blocks.commitlog.expand_and_align()
-      // new_range->blocks.commitlog.expand_and_align()
-    }
-  }
-
   if(err) {
     err = Error::OK;
     col->remove(err, new_rid);
     mngr_remove_range(new_range);
     return quit();
   }
+
+  range->apply_new(err, cellstores, fragments_old, false);
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %d/%d new-end=%s", 
+            range->cfg->cid, range->rid, 
+            cellstores.back()->interval.key_end.to_string().c_str());
+
+  if(range->blocks.commitlog.cells_count()) {
+    /* split latest fragments to new_range from new interval key_end */
+
+    fragments_old.clear();
+    range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.get(fragments_old); // fragments for removal
+      
+    CommitLog::Splitter splitter(
+      cellstores.back()->interval.key_end,
+      fragments_old,
+      [log=&range->blocks.commitlog] (const DB::Cells::Cell& cell) { 
+        log->add(cell);
+      },
+      [log=&new_range->blocks.commitlog](const DB::Cells::Cell& cell) { 
+        log->add(cell);
+      }
+    );
+
+    splitter.run();
+    range->blocks.commitlog.remove(err, fragments_old);
+
+    range->blocks.commitlog.commit_new_fragment(true);
+    new_range->blocks.commitlog.commit_new_fragment(true);
+  }
+  range->expand_and_align(err, true);
+  new_range->expand_and_align(err, false);
+  //err = Error::OK;
 
   new_range = nullptr;
   col->unload(
@@ -498,7 +499,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
 
 void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
-  range->apply_new(err, cellstores, fragments_old);
+  range->apply_new(err, cellstores, fragments_old, true);
   if(err)
     return quit();
 

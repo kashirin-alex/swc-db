@@ -356,19 +356,35 @@ const bool Range::compact_required() {
 
 void Range::apply_new(int &err,
                       CellStore::Writers& w_cellstores, 
-                      std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
-  bool intval_chg;
-  DB::Cell::Key old_key_begin;
+                      std::vector<CommitLog::Fragment::Ptr>& fragments_old,
+                      bool w_update) {
   {
     std::scoped_lock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
     if(err)
       return;
+  }
+  if(w_update) {
+    expand_and_align(err, true);
+    err = Error::OK;
+  }
+}
 
-    old_key_begin.copy(m_interval.key_begin);
-    auto old_key_end(m_interval.key_end);
-    auto old_aligned_min(m_interval.aligned_min);
-    auto old_aligned_max(m_interval.aligned_max);
+void Range::expand_and_align(int &err, bool w_chg_chk) {
+  bool intval_chg;
+  DB::Cell::Key     old_key_begin;
+  DB::Cell::Key     key_end;
+  DB::Cell::KeyVec  aligned_min;
+  DB::Cell::KeyVec  aligned_max; 
+  {
+    std::scoped_lock lock(m_mutex);
+
+    if(w_chg_chk) {
+      old_key_begin.copy(m_interval.key_begin);
+      key_end.copy(m_interval.key_end);
+      aligned_min.copy(m_interval.aligned_min);
+      aligned_max.copy(m_interval.aligned_max);
+    }
 
     m_interval.free();
     if(type == Types::Range::DATA)
@@ -376,14 +392,14 @@ void Range::apply_new(int &err,
     else
       blocks.expand(m_interval);
 
-    intval_chg = !m_interval.key_begin.equal(old_key_begin) ||
-                 !m_interval.key_end.equal(old_key_end) ||
-                 !m_interval.aligned_min.equal(old_aligned_min) ||
-                 !m_interval.aligned_max.equal(old_aligned_max);
+    intval_chg = !w_chg_chk || 
+                 !m_interval.key_begin.equal(old_key_begin) ||
+                 !m_interval.key_end.equal(key_end) ||
+                 !m_interval.aligned_min.equal(aligned_min) ||
+                 !m_interval.aligned_max.equal(aligned_max);
   }
   if(intval_chg)
-    on_change(err, false, &old_key_begin);
-  err = Error::OK;
+    on_change(err, false, w_chg_chk ? &old_key_begin : nullptr);
 }
   
 void Range::create(int &err, const CellStore::Writers& w_cellstores) {
@@ -414,15 +430,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
       return;
   }
 
-  m_interval.free();
-  if(type == Types::Range::DATA)
-    blocks.expand_and_align(m_interval);
-  else
-    blocks.expand(m_interval);
-
   RangeData::save(err, blocks.cellstores);
-  on_change(err, false);
-    
   fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
 }
 
@@ -561,7 +569,7 @@ void Range::run_add_queue() {
     err = Error::OK;
     early_range_end = false;
     late_range_begin = false;
-    if(wait(COMPACT_COMPACTING)) { // COMPACT_APPLYING
+    if(wait(COMPACT_APPLYING)) { // COMPACT_COMPACTING
       std::shared_lock lock(m_mutex);
       key_prev_end.copy(m_prev_key_end);
       key_end.copy(m_interval.key_end);
