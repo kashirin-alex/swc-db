@@ -383,7 +383,9 @@ class DbClient : public Interface {
 
     if(display_flags & DB::DisplayFlag::STATS) 
       display_stats(
-        SWC::Time::now_ns() - ts, reader.cells_bytes, reader.cells_count);
+        SWC::Time::now_ns() - ts, reader.cells_bytes, 
+        reader.cells_count, reader.resend_cells
+      );
     if(err || (err = reader.err)) {
       if(reader.message.empty()) {
         reader.message.append(Error::get_text(err));
@@ -462,7 +464,8 @@ class DbClient : public Interface {
     return err ? error(Error::get_text(err)) : true;
   }
 
-  void display_stats(size_t took, size_t bytes, size_t cells_count) {      
+  void display_stats(size_t took, size_t bytes, 
+                     size_t cells_count, size_t resend_cells = 0) {      
     double took_base;
     double bytes_base;
 
@@ -486,16 +489,24 @@ class DbClient : public Interface {
     } else if(bytes <= 1000000000) {
       bytes_base = (double)bytes/1000;
       byte_base = "K";
-    } else if(bytes > 1000000000) {
+    } else if(bytes <= 1000000000000) {
       bytes_base = (double)(bytes/1000)/1000;
       byte_base = "M";
+    } else if(bytes > 1000000000000) {
+      bytes_base = (double)(bytes/1000)/1000;
+      byte_base = "G";
     }
-        
+    
     SWC_PRINT 
       << "\n\nStatistics:\n"
       << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
       << " Total Cells Count:      " << cells_count                    << "\n"
-      << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n"
+      << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n";
+    if(resend_cells) {
+      std::cout 
+      << " Resend Cells Count:     " << resend_cells                   << "\n";
+    }
+    std::cout 
       << " Average Transfer Rate:  " << bytes_base/took_base 
                               << " " << byte_base << "B/" << time_base << "s\n" 
       << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)

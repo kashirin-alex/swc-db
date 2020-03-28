@@ -52,10 +52,15 @@ struct Update final {
 
   void error(int err);
 
+  void add_resend_count(size_t count);
+
+  size_t get_resend_count(bool reset = true);
+
   private:
   LockAtomic::Unique    m_mutex;
   uint32_t              m_completion = 0;
   int                   m_err = Error::OK;
+  size_t                m_resend_cells = 0;
 };
 
 }

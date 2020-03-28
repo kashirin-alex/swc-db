@@ -243,6 +243,7 @@ class FileReader {
   std::string     message;
   DB::Schema::Ptr schema;
   size_t          cells_count = 0;
+  size_t          resend_cells = 0;
   size_t          cells_bytes = 0;
 
   FileReader(FS::Interface::Ptr interface) : interface(interface) {}
@@ -284,6 +285,7 @@ class FileReader {
 
     updater->commit_if_need();  
     updater->wait();
+    resend_cells += updater->result->get_resend_count();
   }
 
   void read(client::Query::Update::Ptr updater, 
@@ -376,13 +378,13 @@ class FileReader {
           col->add(cell);
           cells_count++;
           cells_bytes += cell.encoded_length();
-          updater->commit_or_wait(col);  
-          
+          updater->commit_or_wait(col);
         } else  {
           buffer_remain.add(ptr, remain);
           break;
         }
       }
+      resend_cells += updater->result->get_resend_count();
       
       buffer_write.free();
       buffer.free();

@@ -45,10 +45,10 @@ class ColCells final {
 
   void add(const DB::Cells::Cell& cell);
 
-  void add(const DynamicBuffer& cells);
+  size_t add(const DynamicBuffer& cells);
 
-  void add(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
-                                       const DB::Cell::Key& from_key);
+  size_t add(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
+                                         const DB::Cell::Key& from_key);
 
   const size_t size();
 

@@ -90,7 +90,8 @@ void quit_error(int err) {
   exit(1);
 }
 
-void display_stats(size_t took, size_t bytes, size_t cells_count) {      
+void display_stats(size_t took, size_t bytes, 
+                   size_t cells_count, size_t resend_cells) {      
   double took_base;
   double bytes_base;
 
@@ -114,15 +115,23 @@ void display_stats(size_t took, size_t bytes, size_t cells_count) {
   } else if(bytes <= 1000000000) {
     bytes_base = (double)bytes/1000;
     byte_base = "K";
-  } else if(bytes > 1000000000) {
+  } else if(bytes <= 1000000000000) {
     bytes_base = (double)(bytes/1000)/1000;
     byte_base = "M";
-  }
+  } else if(bytes > 1000000000000) {
+    bytes_base = (double)(bytes/1000)/1000;
+    byte_base = "G";
+    }
   
   SWC_PRINT << "\n\nStatistics:\n"
     << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
     << " Total Cells Count:      " << cells_count                    << "\n"
-    << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n"
+    << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n";
+    if(resend_cells) {
+      std::cout 
+      << " Resend Cells Count:     " << resend_cells                   << "\n";
+    }
+    std::cout 
     << " Average Transfer Rate:  " << bytes_base/took_base 
                             << " " << byte_base << "B/" << time_base << "s\n" 
     << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)
@@ -202,6 +211,7 @@ void load_data(DB::Schema::Ptr schema) {
   auto col = req->columns->get_col(schema->cid);
   
   size_t added_count = 0;
+  size_t resend_cells = 0;
   size_t added_bytes = 0;
   DB::Cells::Cell cell;
   cell.flag = DB::Cells::INSERT;
@@ -251,7 +261,6 @@ void load_data(DB::Schema::Ptr schema) {
 
           added_count++;
           added_bytes += cell.encoded_length();
-
           req->commit_or_wait(col);
 
           if(progress && (added_count % progress) == 0) {
@@ -263,6 +272,7 @@ void load_data(DB::Schema::Ptr schema) {
             ts_progress = Time::now_ns();
           }
         }
+        resend_cells += req->result->get_resend_count();
       }
     }
   }
@@ -270,9 +280,10 @@ void load_data(DB::Schema::Ptr schema) {
   req->commit_if_need();
   req->wait();
 
+  resend_cells += req->result->get_resend_count();
   assert(added_count && added_bytes);
   
-  display_stats(Time::now_ns() - ts, added_bytes, added_count);
+  display_stats(Time::now_ns() - ts, added_bytes, added_count, resend_cells);
 }
 
 

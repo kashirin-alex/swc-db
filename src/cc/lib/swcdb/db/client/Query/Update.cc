@@ -37,8 +37,23 @@ void Update::error(int err) {
   m_err = err;
 }
 
+void Update::add_resend_count(size_t count) {
+  LockAtomic::Unique::Scope lock(m_mutex);
+  m_resend_cells += count;
 }
-  
+
+size_t Update::get_resend_count(bool reset) {
+  size_t sz;
+  LockAtomic::Unique::Scope lock(m_mutex);
+  sz = m_resend_cells;
+  if(reset)
+    m_resend_cells = 0;
+  return sz;
+}
+
+}
+
+
 
 Update::Update(Cb_t cb)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
@@ -441,8 +456,10 @@ void Update::Locator::commit_data(
               }
 
               if(rsp.err == Error::RANGE_BAD_INTERVAL) {
-                locator->col->add(
+                size_t resend = locator->col->add(
                   *cells_buff.get(), rsp.range_prev_end, rsp.range_end);
+                locator->updater->result->add_resend_count(resend);
+
                 if(workload.use_count() == 1) {
                   auto nxt_start = locator->col->get_key_next(rsp.range_end);
                   if(nxt_start != nullptr) {
@@ -454,7 +471,9 @@ void Update::Locator::commit_data(
                    }
                 }
               } else {
-                locator->col->add(*cells_buff.get());
+                locator->updater->result->add_resend_count(
+                  locator->col->add(*cells_buff.get())
+                );
                 if(workload.use_count() == 1) {
                   base->request_again();
                   return;
