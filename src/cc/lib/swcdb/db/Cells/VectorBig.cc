@@ -575,7 +575,7 @@ void VectorBig::_add_remove(const Cell& e_cell, size_t offset) {
   int64_t rev;
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
   Condition::Comp cond;
-
+  int64_t e_ts;
   Cell* cell;
   for(auto it = It(offset); it; ) {
 
@@ -594,12 +594,14 @@ void VectorBig::_add_remove(const Cell& e_cell, size_t offset) {
       return;
     }
 
-    if((chk_rev && cell->get_revision() >= rev) ||
-       (cell->removal() && cell->is_removing(ts)) )
+    if(cell->is_removing(ts) || 
+      (chk_rev && (e_ts = cell->get_revision()) != AUTO_ASSIGN && e_ts >= rev))
       return;
     
     if(e_cell.is_removing(cell->get_timestamp()))
       _remove(it);
+    else
+      ++it;
   }
   
   add_sorted(e_cell);
