@@ -50,8 +50,8 @@ DB::Cell::Key::Ptr ColCells::get_key_next(const DB::Cell::Key& eval_key,
 }
 
 DynamicBuffer::Ptr ColCells::get_buff(const DB::Cell::Key& key_start, 
-                            const DB::Cell::Key& key_end, 
-                            size_t buff_sz, bool& more) {
+                                      const DB::Cell::Key& key_end, 
+                                      size_t buff_sz, bool& more) {
   auto cells_buff = std::make_shared<DynamicBuffer>();
   std::lock_guard<std::mutex> lock(m_mutex);
   more = m_cells.write_and_free(

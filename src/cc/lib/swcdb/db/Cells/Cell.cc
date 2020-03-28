@@ -289,16 +289,18 @@ const std::string Cell::to_string(Types::Column typ) const {
 
   s.append(" value=(len="); 
   s.append(std::to_string(vlen));  
-  s.append(" ");  
   if(Types::is_counter(typ)) {
+    s.append(" count=");  
     s.append(std::to_string(get_counter()));
-  } else {
+  }
+  /* else {
     char c;
     for(int i=0; i<vlen;++i) {
       c = *(value+i);
       s.append(std::string(&c, 1));
     }
   }
+  */
   s.append(")");
   return s;
 }

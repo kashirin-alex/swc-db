@@ -371,7 +371,7 @@ void VectorBig::scan_version_single(const Specs::Interval& specs,
   bool only_deletes = specs.flags.is_only_deletes();
   bool only_keys = specs.flags.is_only_keys();
 
-  size_t offset = specs.offset_key.empty()? 0 : _narrow(specs.offset_key);
+  size_t offset = specs.offset_key.empty() ? 0 : _narrow(specs.offset_key);
                                              // ?specs.key_start
   Cell* cell;
   for(auto it = ConstIt(offset); !stop && it; ++it) {
@@ -406,7 +406,7 @@ void VectorBig::scan_version_multi(const Specs::Interval& specs,
   bool chk_align;
   uint32_t rev;
   size_t offset;
-  if((chk_align = !specs.offset_key.empty())) {
+  if(chk_align = !specs.offset_key.empty()) {
     rev = cells.max_revs;
     offset = _narrow(specs.offset_key);// ?specs.key_start
    } else {
@@ -606,7 +606,8 @@ void VectorBig::_add_remove(const Cell& e_cell, size_t offset) {
 }
 
 void VectorBig::_add_plain(const Cell& e_cell, size_t offset) {
-  int64_t ts = e_cell.get_timestamp();
+  int64_t ts;
+  bool chk_ts = (ts = e_cell.get_timestamp()) != AUTO_ASSIGN;
   int64_t rev;
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
 
@@ -630,23 +631,26 @@ void VectorBig::_add_plain(const Cell& e_cell, size_t offset) {
       return;
     }
 
-    if(chk_rev && cell->get_revision() >= rev)
+    if(chk_rev && cell->get_revision() == rev)
       return;
 
     if(cell->removal()) {
-      if(cell->is_removing(ts))
+      if(chk_ts && cell->is_removing(ts))
         return;
       ++it;
       continue;
     }
 
-    if(ts != AUTO_ASSIGN && cell->get_timestamp() == ts)
-      return cell->copy(e_cell);
+    if(chk_ts && cell->get_timestamp() == ts) {
+      if(!chk_rev || rev > cell->get_revision())
+        return cell->copy(e_cell);
+      return;
+    }
     
     ++revs;
     if(e_cell.control & TS_DESC 
-        ? e_cell.timestamp < cell->timestamp
-          : e_cell.timestamp > cell->timestamp) {
+        ? (chk_ts && ts < cell->get_timestamp())
+        : (!chk_ts || ts > cell->get_timestamp()) ) {
       if(max_revs == revs)
         return;
       ++it;
@@ -654,7 +658,8 @@ void VectorBig::_add_plain(const Cell& e_cell, size_t offset) {
     }
     
     if(max_revs == revs) {
-      cell->copy(e_cell);
+      if(!chk_rev || rev > cell->get_revision())
+        cell->copy(e_cell);
     } else {
       _insert(it, e_cell);
       ++it;

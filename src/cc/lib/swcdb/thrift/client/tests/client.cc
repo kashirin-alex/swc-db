@@ -60,11 +60,27 @@ std::string cell_value(int c, int i, int f, int batch) {
 void sql_mng_and_list_column(Client& client) {
   std::cout << std::endl << "test: sql_mng_column: " << std::endl;
 
+  Schemas schemas;
+  try {
+    client.sql_list_columns(
+      schemas, 
+      "get schema col-test-create-1"
+    );
+    if(schemas.size()) {
+      std::string sql_delete("delete column(name='col-test-create-1' cid=");
+      sql_delete.append(std::to_string(schemas.front().cid));
+      sql_delete.append(")");
+      client.sql_mng_column(sql_delete);
+    }
+  } catch(Exception& e) {
+    e.printTo(std::cout << "OK: ");
+    std::cout << std::endl;
+  }
+
   client.sql_mng_column(
     "create column(name='col-test-create-1' cell_ttl=123456)"
   );
-
-  Schemas schemas;
+  schemas.clear();
   client.sql_list_columns(
     schemas, 
     "get schema col-test-create-1"
@@ -187,7 +203,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
     std::cout << " updater_id=" << updater_id;
   std::cout << ": " << std::endl;
   
-  // UPDATE cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE), cell(..)
+  // UPDATE cell(FLAG, CID|NAME, KEY, TS_ORDER, TIMESTAMP, VALUE), cell(..)
   std::string cells("UPDATE ");
   for(auto c=1; c <= num_columns; ++c) {
     for(auto i=1; i <= num_cells; ++i) {
@@ -202,6 +218,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
         cells.append("],");
 
         cells.append("''");
+        //cells.append("'DESC or ASC',");
         //cells.append(std::to_string(now_ns()));
         cells.append(", ");
 
@@ -212,7 +229,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
       }
     }
   }
-  //std::cout << cells << "\n";
+  //std::cout << cells << " (" << batch << ")\n";
   client.sql_update(cells, updater_id);
 }
 
