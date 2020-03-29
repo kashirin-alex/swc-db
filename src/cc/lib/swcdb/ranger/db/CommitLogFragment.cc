@@ -191,7 +191,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
       m_buffer.base, m_buffer.size, 
       m_cell_revs, cells_count, 
       was_splitted
-      ); 
+    );
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
              to_string().c_str());

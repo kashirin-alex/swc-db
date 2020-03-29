@@ -100,18 +100,21 @@ const bool Block::add_logged(const DB::Cells::Cell& cell) {
 }
   
 void Block::load_cells(const DB::Cells::Mutable& cells) {
-  std::scoped_lock lock(m_mutex);
+  if(cells.empty())
+    return;
+
   auto ts = Time::now_ns();
+
+  std::scoped_lock lock(m_mutex);
   size_t added = m_cells.size();
     
-  if(cells.size())
-    cells.scan(m_interval, m_cells);
+  cells.scan(m_interval, m_cells);
 
   if(!m_cells.empty() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
 
   added = m_cells.size() - added;
-  auto took = Time::now_ns()-ts;
+  auto took = Time::now_ns() - ts;
   SWC_PRINT << "Block::load_cells(cells)"
             << " synced=0"
             << " avail=" << cells.size() 
@@ -130,12 +133,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   size_t count = 0;
   size_t added = 0;
     
-  //uint64_t ts;
-  //uint64_t ts_read = 0;
-  //uint64_t ts_cmp = 0;
-  //uint64_t ts_add = 0;
-
-  uint64_t tts = Time::now_ns();
+  uint64_t ts = Time::now_ns();
 
   std::scoped_lock lock(m_mutex);
   if(revs > blocks->range->cfg->cell_versions())
@@ -146,9 +144,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
 
   while(remain) {
     try {
-      //ts = Time::now_ns();
       cell.read(&buf, &remain);
-      //ts_read += Time::now_ns()-ts;
       ++count;
     } catch(std::exception) {
       SWC_LOGF(LOG_ERROR, 
@@ -157,35 +153,32 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
         cell.to_string().c_str(),  m_interval.to_string().c_str());
       break;
     }
-      
-    //ts = Time::now_ns();
-    if(cell.has_expired(m_cells.ttl) || 
-       (!m_prev_key_end.empty() && 
-        m_prev_key_end.compare(cell.key) != Condition::GT)) {
-      //ts_cmp += Time::now_ns()-ts;
+    
+    if(!m_prev_key_end.empty() &&  
+        m_prev_key_end.compare(cell.key) != Condition::GT)
       continue;
-    }
+    
     if(!m_interval.key_end.empty() && 
         m_interval.key_end.compare(cell.key) == Condition::GT)
       break;
-    //ts_cmp += Time::now_ns()-ts;
 
-    //ts = Time::now_ns();
+    ++added;
+    if(cell.has_expired(m_cells.ttl))
+      continue;
+
     if(synced)
       m_cells.add_sorted(cell);
     else
       m_cells.add_raw(cell);
       
-    //ts_add += Time::now_ns()-ts;
-
-    if(++added % 100 == 0 && splitter())
+    if(added % 100 == 0 && splitter())
       was_splitted = true;
   }
     
   if(!m_cells.empty() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
     
-  auto took = Time::now_ns()-tts;
+  auto took = Time::now_ns() - ts;
   SWC_PRINT << "Block::load_cells(rbuf)"
             << " synced=" << synced 
             << " avail=" << avail 
@@ -193,11 +186,7 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
             << " skipped=" << avail-added
             << " avg=" << (added>0 ? took / added : 0)
             << " took=" << took
-            //<< " ts_read=" << ts_read
-            //<< " ts_cmp=" << ts_cmp
-            //<< " ts_add=" << ts_add
             << " " << m_cells.to_string()
-            //<< " _need_split=" << _need_split()
             << " splitted=" << was_splitted
             << SWC_PRINT_CLOSE;
   return added;

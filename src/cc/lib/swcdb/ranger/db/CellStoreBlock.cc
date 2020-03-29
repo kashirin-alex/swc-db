@@ -73,13 +73,14 @@ void Read::load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb) {
 
 void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
-  if(m_buffer.size)
+  if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(
       m_buffer.base, m_buffer.size, 
       cell_revs, m_cells_count, 
       was_splitted,
       true
-      );
+    );
+  }
 
   processing_decrement();
 
