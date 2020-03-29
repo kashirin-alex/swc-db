@@ -174,20 +174,16 @@ void Mutable::add_raw(const DynamicBuffer& cells,
 }
 
 void Mutable::add_raw(const Cell& e_cell) {
-  if(e_cell.has_expired(ttl))
-    return;
-
   size_t offset = _narrow(e_cell.key);
 
-  if(e_cell.removal()) {
+  if(e_cell.removal())
     _add_remove(e_cell, offset);
 
-  } else {
-    if(Types::is_counter(type))
-      _add_counter(e_cell, offset);
-    else
-      _add_plain(e_cell, offset);
-  }
+  else if(Types::is_counter(type))
+    _add_counter(e_cell, offset);
+    
+  else
+    _add_plain(e_cell, offset);
 }
 
 

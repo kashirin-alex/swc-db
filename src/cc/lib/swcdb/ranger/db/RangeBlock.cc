@@ -159,8 +159,9 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     }
       
     //ts = Time::now_ns();
-    if(!m_prev_key_end.empty() && 
-        m_prev_key_end.compare(cell.key) != Condition::GT) {
+    if(cell.has_expired(m_cells.ttl) || 
+       (!m_prev_key_end.empty() && 
+        m_prev_key_end.compare(cell.key) != Condition::GT)) {
       //ts_cmp += Time::now_ns()-ts;
       continue;
     }
