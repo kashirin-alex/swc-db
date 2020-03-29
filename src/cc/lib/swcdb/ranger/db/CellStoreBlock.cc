@@ -180,12 +180,12 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       continue;
     
     if(!m_loaded_header) { // load header once
-        uint8_t buf[HEADER_SIZE];
+      uint8_t buf[HEADER_SIZE];
       const uint8_t *ptr = buf;
       if(Env::FsInterface::fs()->pread(err, smartfd, offset, buf, HEADER_SIZE)
               != HEADER_SIZE) {
-        if(err != Error::FS_EOF){
-          Env::FsInterface::fs()->close(err, smartfd);
+        if(err != Error::FS_EOF) {
+          Env::FsInterface::interface()->close(err, smartfd);
           continue;
         }
         break;
@@ -197,36 +197,31 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       m_size = Serialization::decode_i32(&ptr, &remain);
       if(!m_sz_enc) 
         m_sz_enc = m_size;
-      m_cells_remain=m_cells_count= Serialization::decode_i32(&ptr, &remain);
-
+      m_cells_remain = m_cells_count= Serialization::decode_i32(&ptr, &remain);
+      // + checksum_data
       if(!checksum_i32_chk(
-        Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)){  
+        Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)) {
         err = Error::CHECKSUM_MISMATCH;
-        break;
+        SWC_LOGF(LOG_WARN, "Block-Header checksum-mismatch(retrying) %s", 
+                 to_string().c_str());
+        Env::FsInterface::interface()->close(err, smartfd);
+        continue; //break;
       }
       m_loaded_header = true;
     }
     if(!m_sz_enc) // a zero cells type cs (initial of any to any block)
       break;
 
-    for(;;) {
-      m_buffer.free();
-      err = Error::OK;
-      if(Env::FsInterface::fs()->pread(
-            err, smartfd, offset+HEADER_SIZE, &m_buffer, m_sz_enc)
-          != m_sz_enc){
-        int tmperr = Error::OK;
-        Env::FsInterface::fs()->close(tmperr, smartfd);
-        if(err != Error::FS_EOF){
-          if(!Env::FsInterface::interface()->open(err, smartfd))
-            break;
-          continue;
-        }
+
+    m_buffer.free();
+    if(Env::FsInterface::fs()->pread(err, smartfd, offset+HEADER_SIZE, 
+                                     &m_buffer, m_sz_enc) != m_sz_enc) {
+      if(err != Error::FS_EOF) {
+        Env::FsInterface::interface()->close(err, smartfd);
+        continue;
       }
       break;
     }
-    if(err)
-      break;
 
     
     if(m_encoder != Types::Encoding::PLAIN) {
@@ -234,9 +229,12 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       Encoder::decode(
         err, m_encoder, m_buffer.base, m_sz_enc, decoded_buf.base, m_size);
       if(err) {
-        int tmperr = Error::OK;
-        Env::FsInterface::fs()->close(tmperr, smartfd);
-        break;
+        SWC_LOGF(LOG_WARN, "Block-Encoder error(retrying) %s", 
+                 to_string().c_str());
+        m_loaded_header = false;
+        m_buffer.free();
+        Env::FsInterface::interface()->close(err, smartfd);
+        continue; //break;
       }
       m_buffer.set(decoded_buf);
     }
