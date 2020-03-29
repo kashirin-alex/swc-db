@@ -64,7 +64,7 @@ void expect_empty_column(int64_t cid) {
 
   size_t sz = select_req->result->get_size(cid);
   if(sz > 0) {
-    SWC::DB::Cells::Vector cells;
+    SWC::DB::Cells::Result cells;
     select_req->result->get_cells(cid, cells);
     std::cerr << "BAD, column not empty: \n" 
               << " " << spec->to_string() << "\n"
@@ -89,7 +89,7 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   took = SWC::Time::now_ns() - took;
 
   auto sz = select_req->result->get_size(cid);
-  SWC::DB::Cells::Vector cells;
+  SWC::DB::Cells::Result cells;
   select_req->result->get_cells(cid, cells);
     
   std::cout << "SELECT-ALL offset=" << offset 
@@ -100,9 +100,9 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   
   if(sz != expected_sz) {
     size_t num=0;
-    for(auto it = cells.ConstIt(); it; ++it) {
+    for(auto cell : cells) {
       if( ++num == 1 || num == sz)
-        std::cout << "  " << num << ":" << (*it.item)->to_string() << "\n";  
+        std::cout << "  " << num << ":" << cell->to_string() << "\n";  
     }
     std::cerr << "\n BAD, on offset, select cells count: \n" 
               << " err=" << select_req->result->err 
@@ -238,7 +238,7 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << sz << "\n";
     exit(1);
   }
-  SWC::DB::Cells::Vector cells;
+  SWC::DB::Cells::Result cells;
   select_req->result->get_cells(schema->cid, cells);
   Cells::Cell* cell_res = cells.front();
   
@@ -282,8 +282,7 @@ void test_1(const std::string& col_name) {
     Cells::Cell prev;
     int count = 0;
     Cells::Cell* c;
-    for(auto it = cells.ConstIt(); it; ++it) {
-      c = (*it.item);
+    for(auto c : cells) {
       count++;
       if(prev.flag != Cells::NONE) {
         if(c->key.equal(prev.key)) {

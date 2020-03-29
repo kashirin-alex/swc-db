@@ -17,7 +17,7 @@ class RangeLocateScan : public ReqScan {
 
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Specs::Interval& spec, 
-                  DB::Cells::Vector& cells,
+                  DB::Cells::Result& cells,
                   RangePtr range, uint8_t flags)
                   : ReqScan(conn, ev, spec, cells), 
                     range(range), flags(flags),
@@ -42,6 +42,10 @@ class RangeLocateScan : public ReqScan {
   }
   
   const bool selector_commit(const DB::Cells::Cell& cell, bool& stop) const {
+
+    //std::cout << "---------------------\n";
+    //std::cout << "  spec: " << spec.to_string() << "\n";
+    //std::cout << "  key_begin: " << cell.key.to_string() << "\n";
     if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
       return false;
 
@@ -49,11 +53,13 @@ class RangeLocateScan : public ReqScan {
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
+    //std::cout << "    key_end: " << key_end.to_string() << "\n";
 
     bool match;
     if(match = key_end.count == any_is ||
                key_end.compare(spec.range_begin) != Condition::GT)
       stop = true;
+    //std::cout << "      match: " << match << "\n";
     return match;
   }
 

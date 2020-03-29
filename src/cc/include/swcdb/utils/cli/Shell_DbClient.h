@@ -308,8 +308,7 @@ class DbClient : public Interface {
                uint8_t display_flags, 
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector cells; 
-    DB::Cells::Cell*  cell; 
+    DB::Cells::Result cells; 
     bool meta;
     do {
       for(auto cid : result->get_cids()) {
@@ -319,10 +318,10 @@ class DbClient : public Interface {
         result->get_cells(cid, cells);
 
         std::scoped_lock lock(Logger::logger.mutex);
-        for(auto it = cells.ConstIt(); it; ++it) {
+        for(auto cell : cells) {
           cells_count++;
-          cells_bytes += (*it.item)->encoded_length();
-          (*it.item)->display(
+          cells_bytes += cell->encoded_length();
+          cell->display(
             std::cout, 
             err ? Types::Column::PLAIN: schema->col_type,
             display_flags,

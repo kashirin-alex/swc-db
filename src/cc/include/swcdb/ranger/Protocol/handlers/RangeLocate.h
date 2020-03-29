@@ -49,7 +49,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
 
-    DB::Cells::Vector cells(
+    DB::Cells::Result cells(
       range->cfg->cell_versions(), 
       range->cfg->cell_ttl(), 
       range->cfg->column_type()

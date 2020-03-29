@@ -225,8 +225,7 @@ class AppHandler : virtual public BrokerIf {
           int& err, client::Query::Select::Result::Ptr result,
           bool with_value, Cells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector cells;
-    DB::Cells::Cell*  dbcell;
+    DB::Cells::Result cells;
 
     size_t c;
     for(auto cid : result->get_cids()) {
@@ -237,8 +236,7 @@ class AppHandler : virtual public BrokerIf {
       c = _return.size();
       _return.resize(c+cells.size());
 
-      for(auto it = cells.ConstIt(); it; ++it) {
-        dbcell = *it.item;
+      for(auto dbcell : cells) {
         auto& cell = _return[c++];
         
         cell.c = schema->col_name;
@@ -270,8 +268,7 @@ class AppHandler : virtual public BrokerIf {
           int& err, client::Query::Select::Result::Ptr result,
           bool with_value, CCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector cells; 
-    DB::Cells::Cell*  dbcell;
+    DB::Cells::Result cells; 
 
     for(auto cid : result->get_cids()) {
       cells.free();
@@ -284,8 +281,7 @@ class AppHandler : virtual public BrokerIf {
       list.resize(cells.size());
 
       uint32_t c = 0;
-      for(auto it = cells.ConstIt(); it; ++it) {
-        dbcell = *it.item;
+      for(auto dbcell : cells) {
         auto& cell = list[c++];
         
         dbcell->key.convert_to(cell.k);
@@ -316,8 +312,7 @@ class AppHandler : virtual public BrokerIf {
           int& err, client::Query::Select::Result::Ptr result,
           bool with_value, KCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector cells;
-    DB::Cells::Cell*  dbcell;
+    DB::Cells::Result cells;
 
     for(auto cid : result->get_cids()) {
       cells.free();
@@ -327,8 +322,7 @@ class AppHandler : virtual public BrokerIf {
       if(err)
         return;
 
-      for(auto itr = cells.ConstIt(); itr; ++itr) {
-        dbcell = *itr.item;
+      for(auto dbcell : cells) {
         auto it = std::find_if(_return.begin(), _return.end(), 
                               [dbcell](const kCells& key_cells)
                               {return dbcell->key.equal(key_cells.k);});
@@ -367,8 +361,7 @@ class AppHandler : virtual public BrokerIf {
           int& err, client::Query::Select::Result::Ptr result,
           bool with_value, FCells& _return) {
     DB::Schema::Ptr schema = 0;
-    DB::Cells::Vector cells; 
-    DB::Cells::Cell*  dbcell; 
+    DB::Cells::Result cells;
     
     std::vector<std::string> key;
 
@@ -382,8 +375,7 @@ class AppHandler : virtual public BrokerIf {
       
       FCells* fraction_cells;
       
-      for(auto it = cells.ConstIt(); it; ++it) {
-        dbcell = *it.item;
+      for(auto dbcell : cells) {
         fraction_cells = &_return;
         key.clear();
         dbcell->key.convert_to(key);

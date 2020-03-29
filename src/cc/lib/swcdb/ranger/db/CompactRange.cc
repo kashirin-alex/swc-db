@@ -32,6 +32,7 @@ CompactRange::CompactRange(
     cell_ttl, 
     col_type
   );
+  cells.reserve(blk_cells);
 }
 
 CompactRange::~CompactRange() { 
@@ -75,7 +76,7 @@ void CompactRange::response(int &err) {
     range->compacting(Range::COMPACT_APPLYING);
 
   auto selected_cells = cells.empty() 
-                        ? nullptr : new DB::Cells::Vector(cells);
+                        ? nullptr : new DB::Cells::Result(cells);
   {
     std::scoped_lock lock(m_mutex);
     if(!selected_cells) {
@@ -126,7 +127,7 @@ void CompactRange::request_more() {
 
 void CompactRange::process() {
   int err = Error::OK;
-  DB::Cells::Vector* selected_cells;
+  DB::Cells::Result* selected_cells;
   for(;;) {
     {
       std::scoped_lock lock(m_mutex);
@@ -187,7 +188,7 @@ uint32_t CompactRange::create_cs(int& err) {
 
 }
 
-void CompactRange::write_cells(int& err, DB::Cells::Vector* selected_cells) {
+void CompactRange::write_cells(int& err, DB::Cells::Result* selected_cells) {
 
   if(cs_writer == nullptr) {
     uint32_t id = create_cs(err);
@@ -227,9 +228,9 @@ void CompactRange::write_cells(int& err, DB::Cells::Vector* selected_cells) {
         blk_intval.aligned_min, blk_intval.aligned_max);
       delete last_cell;
     }
-   last_cell = selected_cells->takeout_end(1);
+    last_cell = selected_cells->takeout_end(1);
     //last block of end-any to be set with first key as last cell
-    }
+  }
   selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 0);
 
   if(buff.fill()) {

@@ -6,7 +6,7 @@
 #ifndef swc_db_client_Query_Select_h
 #define swc_db_client_Query_Select_h
 
-#include "swcdb/db/Cells/Vector.h"
+#include "swcdb/db/Cells/Result.h"
 #include "swcdb/db/Cells/SpecsScan.h"
 
 #include "swcdb/db/client/Query/Update.h"
@@ -39,7 +39,7 @@ struct Select final {
     const bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
                          DB::Specs::Interval& interval); 
     
-    void get_cells(DB::Cells::Vector& cells);
+    void get_cells(DB::Cells::Result& cells);
 
     const size_t get_size();
 
@@ -49,7 +49,7 @@ struct Select final {
   
     private:
     std::mutex         m_mutex;
-    DB::Cells::Vector  m_cells;
+    DB::Cells::Result  m_cells;
     size_t             m_counted = 0;
     size_t             m_size_bytes = 0;
   };
@@ -60,7 +60,7 @@ struct Select final {
   const bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
                        bool reached_limit, DB::Specs::Interval& interval);
 
-  void get_cells(const int64_t cid, DB::Cells::Vector& cells);
+  void get_cells(const int64_t cid, DB::Cells::Result& cells);
 
   const size_t get_size(const int64_t cid);
 

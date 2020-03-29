@@ -8,7 +8,7 @@
 
 
 #include "swcdb/core/comm/ResponseCallback.h"
-#include "swcdb/db/Cells/Vector.h"
+#include "swcdb/db/Cells/Result.h"
 
 namespace SWC { namespace Ranger {
   
@@ -29,7 +29,7 @@ class ReqScan  : public ResponseCallback {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const DB::Specs::Interval& spec, DB::Cells::Vector& cells)
+          const DB::Specs::Interval& spec, DB::Cells::Result& cells)
           : ResponseCallback(conn, ev), spec(spec), 
             cells(cells),
             offset(spec.flags.offset), limit_buffer_sz(0), 
@@ -86,7 +86,7 @@ class ReqScan  : public ResponseCallback {
   }
 
   DB::Specs::Interval   spec;
-  DB::Cells::Vector     cells;
+  DB::Cells::Result     cells;
 
   uint32_t          limit_buffer_sz;
   bool              drop_caches;

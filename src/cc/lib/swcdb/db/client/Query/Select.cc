@@ -20,7 +20,7 @@ const bool Select::Rsp::add_cells(const StaticBuffer& buffer,
                                   bool reached_limit, 
                                   DB::Specs::Interval& interval) {
   std::scoped_lock lock(m_mutex);
-  size_t recved = m_cells.add_sorted(buffer.base, buffer.size);
+  size_t recved = m_cells.add(buffer.base, buffer.size);
   m_counted += recved;
   m_size_bytes += buffer.size;
 
@@ -40,9 +40,9 @@ const bool Select::Rsp::add_cells(const StaticBuffer& buffer,
   return true;
 }  
     
-void Select::Rsp::get_cells(DB::Cells::Vector& cells) {
+void Select::Rsp::get_cells(DB::Cells::Result& cells) {
   std::scoped_lock lock(m_mutex);
-  cells.take_sorted(m_cells);
+  cells.take(m_cells);
   m_size_bytes = 0;
 }
 
@@ -79,7 +79,7 @@ const bool Select::add_cells(const int64_t cid, const StaticBuffer& buffer,
   return m_columns[cid]->add_cells(buffer, reached_limit, interval);
 }
 
-void Select::get_cells(const int64_t cid, DB::Cells::Vector& cells) {
+void Select::get_cells(const int64_t cid, DB::Cells::Result& cells) {
   m_columns[cid]->get_cells(cells);
   if(notify)
     m_cv.notify_all();

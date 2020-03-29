@@ -42,7 +42,7 @@ class CompactRange : public ReqScan {
 
   uint32_t create_cs(int& err);
 
-  void write_cells(int& err, DB::Cells::Vector* selected_cells);
+  void write_cells(int& err, DB::Cells::Result* selected_cells);
 
   void add_cs(int& err);
 
@@ -77,7 +77,7 @@ class CompactRange : public ReqScan {
 
   std::mutex                      m_mutex;
   bool                            m_writing = false;
-  std::queue<DB::Cells::Vector*>  m_queue;
+  std::queue<DB::Cells::Result*>  m_queue;
   std::atomic<bool>               m_stopped = false;
   bool                            m_getting = false;
   int64_t                         m_ts_start;

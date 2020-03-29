@@ -3,22 +3,20 @@
  */
 
 
-#ifndef swcdb_db_Cells_VectorBig_h
-#define swcdb_db_Cells_VectorBig_h
+#ifndef swcdb_db_Cells_Mutable_h
+#define swcdb_db_Cells_Mutable_h
 
-#include "swcdb/db/Cells/Cell.h"
-#include "swcdb/db/Cells/Interval.h"
-#include <cassert>
+#include "swcdb/db/Cells/Result.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
 
 
-class VectorBig final {
+class Mutable final {
   
   public:
 
-  typedef std::shared_ptr<VectorBig>               Ptr;
+  typedef std::shared_ptr<Mutable>                 Ptr;
   typedef std::vector<Cell*>                       Bucket;
   typedef std::vector<Bucket*>                     Buckets;
   typedef std::function<bool(const Cell&, bool&)>  Selector_t;
@@ -102,16 +100,16 @@ class VectorBig final {
                   const uint64_t ttl_ns=0, 
                   const Types::Column type=Types::Column::PLAIN);
 
-  explicit VectorBig(const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
-                     const Types::Column type=Types::Column::PLAIN);
+  explicit Mutable(const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
+                   const Types::Column type=Types::Column::PLAIN);
 
-  explicit VectorBig(VectorBig& other);
+  explicit Mutable(Mutable& other);
 
-  VectorBig& operator=(const VectorBig& other) = delete;
+  Mutable& operator=(const Mutable& other) = delete;
 
-  void take_sorted(VectorBig& other);
+  void take_sorted(Mutable& other);
 
-  virtual ~VectorBig();
+  virtual ~Mutable();
 
   void free();
 
@@ -186,17 +184,17 @@ class VectorBig final {
   void write(DynamicBuffer& cells) const;
 
 
-  void scan(const Specs::Interval& specs, VectorBig& cells, 
+  void scan(const Specs::Interval& specs, Result& cells, 
             size_t& cell_offset, 
             const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t& selector) const;
 
-  void scan_version_single(const Specs::Interval& specs, VectorBig& cells, 
+  void scan_version_single(const Specs::Interval& specs, Result& cells, 
                            size_t& cell_offset, 
                            const std::function<bool()>& reached_limits, 
                            size_t& skips, const Selector_t& selector) const;
 
-  void scan_version_multi(const Specs::Interval& specs, VectorBig& cells, 
+  void scan_version_multi(const Specs::Interval& specs, Result& cells, 
                           size_t& cell_offset, 
                           const std::function<bool()>& reached_limits, 
                           size_t& skips, const Selector_t& selector) const;
@@ -204,7 +202,7 @@ class VectorBig final {
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
                      size_t& count, size_t& skips) const;
 
-  void scan(Interval& interval, VectorBig& cells) const;
+  void scan(Interval& interval, Mutable& cells) const;
 
 
   void expand(Interval& interval) const;
@@ -214,7 +212,7 @@ class VectorBig final {
   void expand_end(Interval& interval) const;
   
 
-  void split(size_t from, VectorBig& cells, 
+  void split(size_t from, Mutable& cells, 
              Interval& intval_1st, Interval& intval_2nd, bool loaded);
 
   private:
@@ -254,7 +252,7 @@ class VectorBig final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Cells/VectorBig.cc"
+#include "swcdb/db/Cells/Mutable.cc"
 #endif 
 
-#endif // swcdb_db_Cells_VectorBig_h
+#endif // swcdb_db_Cells_Mutable_h

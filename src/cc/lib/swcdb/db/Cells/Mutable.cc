@@ -3,40 +3,40 @@
  */
 
 
-#include "swcdb/db/Cells/VectorBig.h"
+#include "swcdb/db/Cells/Mutable.h"
 
 
 namespace SWC { namespace DB { namespace Cells { 
 
 
-VectorBig::Bucket* VectorBig::make_bucket(uint16_t reserve) {
+Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
   auto bucket = new Bucket;
   if(reserve)
     bucket->reserve(reserve);
   return bucket;
 }
 
-VectorBig::Ptr VectorBig::make(const uint32_t max_revs, const uint64_t ttl_ns, 
-                               const Types::Column type) {
-  return std::make_shared<VectorBig>(max_revs, ttl_ns, type);
+Mutable::Ptr Mutable::make(const uint32_t max_revs, const uint64_t ttl_ns, 
+                           const Types::Column type) {
+  return std::make_shared<Mutable>(max_revs, ttl_ns, type);
 }
 
-VectorBig::VectorBig(const uint32_t max_revs, const uint64_t ttl_ns, 
-                     const Types::Column type)
-                    : type(type), max_revs(max_revs), ttl(ttl_ns),
-                      buckets({make_bucket(0)}), _bytes(0), _size(0) {
+Mutable::Mutable(const uint32_t max_revs, const uint64_t ttl_ns, 
+                 const Types::Column type)
+                : type(type), max_revs(max_revs), ttl(ttl_ns),
+                  buckets({make_bucket(0)}), _bytes(0), _size(0) {
 }
 
-VectorBig::VectorBig(VectorBig& other)
-                    : buckets(other.buckets), 
-                      _bytes(other.size_bytes()), _size(other.size()), 
-                      type(other.type), max_revs(other.max_revs), 
-                      ttl(other.ttl) {
+Mutable::Mutable(Mutable& other)
+                : buckets(other.buckets), 
+                  _bytes(other.size_bytes()), _size(other.size()), 
+                  type(other.type), max_revs(other.max_revs), 
+                  ttl(other.ttl) {
   other.buckets.clear();
   other.free();
 }
 
-void VectorBig::take_sorted(VectorBig& other) {
+void Mutable::take_sorted(Mutable& other) {
   if(!other.empty()) {
     if(empty()) {
       delete *buckets.begin();
@@ -50,11 +50,11 @@ void VectorBig::take_sorted(VectorBig& other) {
   }
 }
 
-VectorBig::~VectorBig() {
+Mutable::~Mutable() {
   free();
 }
 
-void VectorBig::free() {
+void Mutable::free() {
   for(auto bucket : buckets) {
     for(auto cell : *bucket)
       delete cell;
@@ -67,77 +67,77 @@ void VectorBig::free() {
   buckets.shrink_to_fit();
 }
 
-void VectorBig::reset(const uint32_t revs, const uint64_t ttl_ns, 
-                      const Types::Column typ) {
+void Mutable::reset(const uint32_t revs, const uint64_t ttl_ns, 
+                    const Types::Column typ) {
   free();
   configure(revs, ttl_ns, typ);
 }
 
-void VectorBig::configure(const uint32_t revs, const uint64_t ttl_ns, 
-                          const Types::Column typ) {
+void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns, 
+                        const Types::Column typ) {
   type = typ;
   max_revs = revs;
   ttl = ttl_ns;
 }
 
-VectorBig::ConstIterator VectorBig::ConstIt(size_t offset) const {
+Mutable::ConstIterator Mutable::ConstIt(size_t offset) const {
   return ConstIterator(&buckets, offset);
 }
 
-VectorBig::Iterator VectorBig::It(size_t offset) {
+Mutable::Iterator Mutable::It(size_t offset) {
   return Iterator(&buckets, offset);
 }
 
-const size_t VectorBig::size() const {
+const size_t Mutable::size() const {
   return _size;
 }
 
-const size_t VectorBig::size_bytes() const {
+const size_t Mutable::size_bytes() const {
   return _bytes;
 }
 
-bool VectorBig::empty() const {
+bool Mutable::empty() const {
   return !_size;
   //return buckets.empty() || buckets.front()->empty();
 }
 
-Cell*& VectorBig::front() {
+Cell*& Mutable::front() {
   return buckets.front()->front();
 }
 
-Cell*& VectorBig::back() {
+Cell*& Mutable::back() {
   return buckets.back()->back();
 }
 
-Cell*& VectorBig::front() const {
+Cell*& Mutable::front() const {
   return buckets.front()->front();
 }
 
-Cell*& VectorBig::back() const {
+Cell*& Mutable::back() const {
   return buckets.back()->back();
 }
 
-Cell*& VectorBig::operator[](size_t idx) {
+Cell*& Mutable::operator[](size_t idx) {
   return *It(idx).item;
 }
 
-const bool VectorBig::has_one_key() const {
+const bool Mutable::has_one_key() const {
   return front()->key.compare(back()->key) == Condition::EQ;
 }
 
 
-void VectorBig::add_sorted(const Cell& cell, bool no_value) {
+void Mutable::add_sorted(const Cell& cell, bool no_value) {
   Cell* adding;
   _add(adding = new Cell(cell, no_value));
   _push_back(adding);
 }
 
-void VectorBig::add_sorted_no_cpy(Cell* cell) {
+void Mutable::add_sorted_no_cpy(Cell* cell) {
   _add(cell);
   _push_back(cell);
 }
 
-const size_t VectorBig::add_sorted(const uint8_t* ptr, size_t remain) {
+const size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
   size_t count = 0;
   _bytes += remain;
   while(remain) {
@@ -149,7 +149,7 @@ const size_t VectorBig::add_sorted(const uint8_t* ptr, size_t remain) {
 }
 
 
-void VectorBig::add_raw(const DynamicBuffer& cells) {
+void Mutable::add_raw(const DynamicBuffer& cells) {
   Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
@@ -159,9 +159,9 @@ void VectorBig::add_raw(const DynamicBuffer& cells) {
   }
 }
 
-void VectorBig::add_raw(const DynamicBuffer& cells, 
-                        const DB::Cell::Key& upto_key,
-                        const DB::Cell::Key& from_key) {
+void Mutable::add_raw(const DynamicBuffer& cells, 
+                      const DB::Cell::Key& upto_key,
+                      const DB::Cell::Key& from_key) {
   Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
@@ -173,7 +173,7 @@ void VectorBig::add_raw(const DynamicBuffer& cells,
   }
 }
 
-void VectorBig::add_raw(const Cell& e_cell) {
+void Mutable::add_raw(const Cell& e_cell) {
   if(e_cell.has_expired(ttl))
     return;
 
@@ -191,15 +191,15 @@ void VectorBig::add_raw(const Cell& e_cell) {
 }
 
 
-Cell* VectorBig::takeout_begin(size_t idx) {
+Cell* Mutable::takeout_begin(size_t idx) {
   return takeout(idx);
 }
 
-Cell* VectorBig::takeout_end(size_t idx) {
+Cell* Mutable::takeout_end(size_t idx) {
   return takeout(size() - idx);
 }
 
-Cell* VectorBig::takeout(size_t idx) {
+Cell* Mutable::takeout(size_t idx) {
   auto it = It(idx);
   Cell* cell;
   _remove(cell = *it.item);
@@ -208,9 +208,9 @@ Cell* VectorBig::takeout(size_t idx) {
 }
 
 
-void VectorBig::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                               Interval& intval, uint32_t threshold, 
-                               uint32_t max_cells) {
+void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
+                             Interval& intval, uint32_t threshold, 
+                             uint32_t max_cells) {
   if(!_size)
     return;
     
@@ -244,9 +244,9 @@ void VectorBig::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
     _remove(it_start, count);
 }
 
-bool VectorBig::write_and_free(const DB::Cell::Key& key_start, 
-                               const DB::Cell::Key& key_finish,
-                               DynamicBuffer& cells, uint32_t threshold) {
+bool Mutable::write_and_free(const DB::Cell::Key& key_start, 
+                             const DB::Cell::Key& key_finish,
+                             DynamicBuffer& cells, uint32_t threshold) {
   bool more = _size;
   if(!more)
     return more;
@@ -287,7 +287,7 @@ bool VectorBig::write_and_free(const DB::Cell::Key& key_start,
 }
 
 
-const std::string VectorBig::to_string(bool with_cells) const {
+const std::string Mutable::to_string(bool with_cells) const {
   std::string s("Cells(size=");
   s.append(std::to_string(size()));
   s.append("/");
@@ -323,12 +323,12 @@ const std::string VectorBig::to_string(bool with_cells) const {
 }
 
 
-void VectorBig::get(int32_t idx, DB::Cell::Key& key) const {
+void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
   key.copy((*ConstIt(idx < 0 ? size()+idx : idx).item)->key);
 }
  
-const bool VectorBig::get(const DB::Cell::Key& key, Condition::Comp comp, 
-                          DB::Cell::Key& res) const {
+const bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
+                        DB::Cell::Key& res) const {
   Condition::Comp chk;  
   for(auto it = ConstIt(_narrow(key)); it; ++it) {
     if((chk = key.compare((*it.item)->key, 0)) == Condition::GT 
@@ -340,7 +340,7 @@ const bool VectorBig::get(const DB::Cell::Key& key, Condition::Comp comp,
   return false;
 }
 
-void VectorBig::write(DynamicBuffer& cells) const {
+void Mutable::write(DynamicBuffer& cells) const {
   cells.ensure(_bytes);
   for(auto it = ConstIt(); it; ++it) {
     if(!(*it.item)->has_expired(ttl))
@@ -349,10 +349,10 @@ void VectorBig::write(DynamicBuffer& cells) const {
 }
 
 
-void VectorBig::scan(const Specs::Interval& specs, VectorBig& cells, 
-                     size_t& cell_offset, 
-                     const std::function<bool()>& reached_limits, 
-                     size_t& skips, const Selector_t& selector) const {
+void Mutable::scan(const Specs::Interval& specs, Result& cells, 
+                   size_t& cell_offset, 
+                   const std::function<bool()>& reached_limits, 
+                   size_t& skips, const Selector_t& selector) const {
   if(!_size)
     return;
   if(max_revs == 1) 
@@ -363,10 +363,10 @@ void VectorBig::scan(const Specs::Interval& specs, VectorBig& cells,
       specs, cells, cell_offset, reached_limits, skips, selector);
 }
 
-void VectorBig::scan_version_single(const Specs::Interval& specs, 
-                                    VectorBig& cells, size_t& cell_offset, 
-                                    const std::function<bool()>& reached_limits,
-                                    size_t& skips, const Selector_t& selector) const {
+void Mutable::scan_version_single(const Specs::Interval& specs, 
+                                  Result& cells, size_t& cell_offset, 
+                                  const std::function<bool()>& reached_limits,
+                                  size_t& skips, const Selector_t& selector) const {
   bool stop = false;
   bool only_deletes = specs.flags.is_only_deletes();
   bool only_keys = specs.flags.is_only_keys();
@@ -375,7 +375,7 @@ void VectorBig::scan_version_single(const Specs::Interval& specs,
                                              // ?specs.key_start
   Cell* cell;
   for(auto it = ConstIt(offset); !stop && it; ++it) {
-
+    //std::cout << " offset=" << offset << " " << (*it.item)->key.to_string() << "\n";
     if(!(cell=*it.item)->has_expired(ttl) &&
        (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
        selector(*cell, stop)) {
@@ -386,7 +386,7 @@ void VectorBig::scan_version_single(const Specs::Interval& specs,
         continue;
       }
 
-      cells.add_sorted(*cell, only_keys);
+      cells.add(*cell, only_keys);
       if(reached_limits())
         break;
     } else 
@@ -394,11 +394,11 @@ void VectorBig::scan_version_single(const Specs::Interval& specs,
   }
 }
 
-void VectorBig::scan_version_multi(const Specs::Interval& specs, 
-                                   VectorBig& cells, size_t& cell_offset, 
-                                   const std::function<bool()>& reached_limits,
-                                   size_t& skips, 
-                                   const Selector_t& selector) const {
+void Mutable::scan_version_multi(const Specs::Interval& specs, 
+                                 Result& cells, size_t& cell_offset, 
+                                 const std::function<bool()>& reached_limits,
+                                 size_t& skips, 
+                                 const Selector_t& selector) const {
   bool stop = false;
   bool only_deletes = specs.flags.is_only_deletes();
   bool only_keys = specs.flags.is_only_keys();
@@ -464,16 +464,16 @@ void VectorBig::scan_version_multi(const Specs::Interval& specs,
       continue;
     }
 
-    cells.add_sorted(*cell, only_keys);
+    cells.add(*cell, only_keys);
     if(reached_limits())
       break;
     --rev;
   }
 }
 
-void VectorBig::scan_test_use(const Specs::Interval& specs, 
-                              DynamicBuffer& result,
-                              size_t& count, size_t& skips) const {
+void Mutable::scan_test_use(const Specs::Interval& specs, 
+                            DynamicBuffer& result,
+                            size_t& count, size_t& skips) const {
   uint cell_offset = specs.flags.offset;
   bool only_deletes = specs.flags.is_only_deletes();
 
@@ -499,7 +499,7 @@ void VectorBig::scan_test_use(const Specs::Interval& specs,
   }
 }
 
-void VectorBig::scan(Interval& interval, VectorBig& cells) const {
+void Mutable::scan(Interval& interval, Mutable& cells) const {
   if(!_size)
     return;
 
@@ -517,24 +517,24 @@ void VectorBig::scan(Interval& interval, VectorBig& cells) const {
 }
 
 
-void VectorBig::expand(Interval& interval) const {
+void Mutable::expand(Interval& interval) const {
   expand_begin(interval);
   if(size() > 1)
     expand_end(interval);
 }
 
-void VectorBig::expand_begin(Interval& interval) const {
+void Mutable::expand_begin(Interval& interval) const {
   interval.expand_begin(*front());
 }
 
-void VectorBig::expand_end(Interval& interval) const {
+void Mutable::expand_end(Interval& interval) const {
   interval.expand_end(*back());
 }
 
 
-void VectorBig::split(size_t from, VectorBig& cells, 
-                      Interval& intval_1st, Interval& intval_2nd,
-                      bool loaded) {
+void Mutable::split(size_t from, Mutable& cells, 
+                    Interval& intval_1st, Interval& intval_2nd,
+                    bool loaded) {
   Cell* from_cell = *ConstIt(from).item;
   size_t count = _size;
   bool from_set = false;
@@ -570,7 +570,7 @@ void VectorBig::split(size_t from, VectorBig& cells,
 }
 
 
-void VectorBig::_add_remove(const Cell& e_cell, size_t offset) {
+void Mutable::_add_remove(const Cell& e_cell, size_t offset) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev;
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
@@ -607,7 +607,7 @@ void VectorBig::_add_remove(const Cell& e_cell, size_t offset) {
   add_sorted(e_cell);
 }
 
-void VectorBig::_add_plain(const Cell& e_cell, size_t offset) {
+void Mutable::_add_plain(const Cell& e_cell, size_t offset) {
   int64_t ts;
   bool chk_ts = (ts = e_cell.get_timestamp()) != AUTO_ASSIGN;
   int64_t rev;
@@ -673,7 +673,7 @@ void VectorBig::_add_plain(const Cell& e_cell, size_t offset) {
   add_sorted(e_cell);
 }
 
-void VectorBig::_add_counter(const Cell& e_cell, size_t offset) {
+void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
   Condition::Comp cond;
 
   int64_t ts = e_cell.get_timestamp();
@@ -741,7 +741,7 @@ void VectorBig::_add_counter(const Cell& e_cell, size_t offset) {
 }
 
 
-size_t VectorBig::_narrow(const DB::Cell::Key& key) const {
+size_t Mutable::_narrow(const DB::Cell::Key& key) const {
   if(key.empty() || _size <= narrow_sz) 
     return 0;
   size_t sz;
@@ -764,24 +764,24 @@ size_t VectorBig::_narrow(const DB::Cell::Key& key) const {
 }
 
 
-void VectorBig::_add(Cell* cell) {
+void Mutable::_add(Cell* cell) {
   _bytes += cell->encoded_length();
   ++_size;
 }
 
-void VectorBig::_remove(Cell* cell) {
+void Mutable::_remove(Cell* cell) {
   _bytes -= cell->encoded_length();
   --_size;
 }
 
 
-void VectorBig::_push_back(Cell* cell) {
+void Mutable::_push_back(Cell* cell) {
   if(buckets.back()->size() >= bucket_size)
     buckets.push_back(make_bucket());
   buckets.back()->push_back(cell);
 }
 
-Cell* VectorBig::_insert(VectorBig::Iterator& it, const Cell& cell) {
+Cell* Mutable::_insert(Mutable::Iterator& it, const Cell& cell) {
   Cell* adding;
   _add(adding = new Cell(cell));
   if(!it) 
@@ -791,13 +791,13 @@ Cell* VectorBig::_insert(VectorBig::Iterator& it, const Cell& cell) {
   return adding;
 }
 
-void VectorBig::_remove(VectorBig::Iterator& it) {
+void Mutable::_remove(Mutable::Iterator& it) {
   _remove(*it.item); 
   delete *it.item;
   it.remove();
 }
 
-void VectorBig::_remove(VectorBig::Iterator& it, size_t number, bool wdel) { 
+void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) { 
   if(wdel) {
     auto it_del = Iterator(it);
     for(auto c = number; c && it_del; ++it_del,--c) {
@@ -808,8 +808,8 @@ void VectorBig::_remove(VectorBig::Iterator& it, size_t number, bool wdel) {
   it.remove(number);
 }
 
-void VectorBig::_remove_overhead(VectorBig::Iterator& it, 
-                                 const DB::Cell::Key& key, uint32_t revs) {
+void Mutable::_remove_overhead(Mutable::Iterator& it, const DB::Cell::Key& key,
+                               uint32_t revs) {
   while(it && (*it.item)->key.compare(key, 0) == Condition::EQ) {
     if((*it.item)->flag == INSERT && ++revs > max_revs)
       _remove(it);
@@ -820,9 +820,8 @@ void VectorBig::_remove_overhead(VectorBig::Iterator& it,
 
 
 
-VectorBig::ConstIterator::ConstIterator(const VectorBig::Buckets* buckets, 
-                                        size_t offset) 
-                                        : buckets(buckets) {
+Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets, 
+                                      size_t offset) : buckets(buckets) {
   bucket = buckets->begin();
   if(offset) {
     for(; bucket < buckets->end(); ++bucket) {
@@ -837,23 +836,23 @@ VectorBig::ConstIterator::ConstIterator(const VectorBig::Buckets* buckets,
   }
 }
 
-VectorBig::ConstIterator::ConstIterator(const VectorBig::ConstIterator& other) 
-                                        : buckets(other.buckets), 
-                                          bucket(other.bucket), 
-                                          item(other.item) {
+Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
+                                      : buckets(other.buckets), 
+                                        bucket(other.bucket), 
+                                        item(other.item) {
 }
 
-VectorBig::ConstIterator::~ConstIterator() { }
+Mutable::ConstIterator::~ConstIterator() { }
 
-const bool VectorBig::ConstIterator::avail() const {
+const bool Mutable::ConstIterator::avail() const {
   return bucket < buckets->end() && item < (*bucket)->end();
 }
 
-VectorBig::ConstIterator::operator bool() const {
+Mutable::ConstIterator::operator bool() const {
   return avail();
 }
 
-void VectorBig::ConstIterator::operator++() {
+void Mutable::ConstIterator::operator++() {
   if(++item == (*bucket)->end() && ++bucket < buckets->end())
     item = (*bucket)->begin();
 }
@@ -861,10 +860,10 @@ void VectorBig::ConstIterator::operator++() {
 
 
 
-VectorBig::Iterator::Iterator() : buckets(nullptr) { }
+Mutable::Iterator::Iterator() : buckets(nullptr) { }
 
-VectorBig::Iterator::Iterator(VectorBig::Buckets* buckets, size_t offset) 
-                              : buckets(buckets) {
+Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset) 
+                            : buckets(buckets) {
   bucket = buckets->begin();
   if(offset) {
     for(; bucket < buckets->end(); ++bucket) {
@@ -879,44 +878,44 @@ VectorBig::Iterator::Iterator(VectorBig::Buckets* buckets, size_t offset)
   }
 }
 
-VectorBig::Iterator::Iterator(const VectorBig::Iterator& other) 
-                              : buckets(other.buckets), 
-                                bucket(other.bucket), item(other.item) {
+Mutable::Iterator::Iterator(const Mutable::Iterator& other) 
+                            : buckets(other.buckets), 
+                              bucket(other.bucket), item(other.item) {
 }
 
-VectorBig::Iterator& 
-VectorBig::Iterator::operator=(const VectorBig::Iterator& other) {
+Mutable::Iterator& 
+Mutable::Iterator::operator=(const Mutable::Iterator& other) {
   buckets = other.buckets;
   bucket = other.bucket;
   item = other.item;
   return *this;
 }
 
-VectorBig::Iterator::~Iterator() { }
+Mutable::Iterator::~Iterator() { }
 
-VectorBig::Iterator::operator bool() const {
+Mutable::Iterator::operator bool() const {
   return avail();
 }
 
-const bool VectorBig::Iterator::avail() const {
+const bool Mutable::Iterator::avail() const {
   return bucket < buckets->end() && item < (*bucket)->end();
 }
 
-void VectorBig::Iterator::operator++() {
+void Mutable::Iterator::operator++() {
   if(++item == (*bucket)->end() && ++bucket < buckets->end())
     item = (*bucket)->begin();
 }
 
-const bool VectorBig::Iterator::avail_begin() const {
+const bool Mutable::Iterator::avail_begin() const {
   return bucket != buckets->begin() && item >= (*bucket)->begin();
 }
 
-void VectorBig::Iterator::operator--() {
+void Mutable::Iterator::operator--() {
   if(--item == (*bucket)->begin() && --bucket >= buckets->begin())
     item = (*bucket)->end() - 1;
 }
 
-void VectorBig::Iterator::push_back(Cell*& value) {
+void Mutable::Iterator::push_back(Cell*& value) {
   if((*bucket)->size() >= bucket_max)
     buckets->push_back(make_bucket());
 
@@ -924,7 +923,7 @@ void VectorBig::Iterator::push_back(Cell*& value) {
   item = (*bucket)->end() - 1;
 }
 
-void VectorBig::Iterator::insert(Cell*& value) {
+void Mutable::Iterator::insert(Cell*& value) {
   item = (*bucket)->insert(item, value);
 
   if((*bucket)->size() >= bucket_max) {
@@ -942,7 +941,7 @@ void VectorBig::Iterator::insert(Cell*& value) {
   }
 }
 
-void VectorBig::Iterator::remove() {
+void Mutable::Iterator::remove() {
   (*bucket)->erase(item);
   if((*bucket)->empty() && buckets->size() > 1) {
     delete *bucket; 
@@ -953,7 +952,7 @@ void VectorBig::Iterator::remove() {
   }
 }
 
-void VectorBig::Iterator::remove(size_t number) {
+void Mutable::Iterator::remove(size_t number) {
   while(number) {
 
     if(item == (*bucket)->begin() && number >= (*bucket)->size()) {
