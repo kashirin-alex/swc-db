@@ -10,17 +10,11 @@
 #include <functional>
 
 #include "swcdb/db/Cells/SpecsInterval.h"
-#include "swcdb/db/Cells/Cell.h"
-#include "swcdb/db/Cells/Interval.h"
-#include "swcdb/db/Cells/Vector.h"
-#include "swcdb/db/Cells/VectorBig.h"
+#include "swcdb/db/Cells/Result.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
 
-typedef VectorBig Mutable;
-
-/*
 class Mutable final {
 
   static const uint32_t narrow_sz = 20;
@@ -172,13 +166,12 @@ class Mutable final {
 
 };
 
-*/
 
 }}}
 
-/*
+
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Mutable.cc"
 #endif 
-*/
+
 #endif // swcdb_db_Cells_Mutable_h
