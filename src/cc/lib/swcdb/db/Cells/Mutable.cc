@@ -181,7 +181,7 @@ void Mutable::add_raw(const Cell& e_cell) {
 
   else if(Types::is_counter(type))
     _add_counter(e_cell, offset);
-    
+
   else
     _add_plain(e_cell, offset);
 }
@@ -369,24 +369,23 @@ void Mutable::scan_version_single(const Specs::Interval& specs,
 
   size_t offset = specs.offset_key.empty() ? 0 : _narrow(specs.offset_key);
                                              // ?specs.key_start
-  Cell* cell;
   for(auto it = ConstIt(offset); !stop && it; ++it) {
-    //std::cout << " offset=" << offset << " " << (*it.item)->key.to_string() << "\n";
-    if(!(cell=*it.item)->has_expired(ttl) &&
-       (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
-       selector(*cell, stop)) {
-      
-      if(cell_offset) {
-        --cell_offset;
-        ++skips;  
-        continue;
-      }
+    const Cell& cell = **it.item;
+    //std::cout << " offset=" << offset << " " << cell.key.to_string() << "\n";
+    if(cell.has_expired(ttl) ||
+       (only_deletes ? cell.flag == INSERT : cell.flag != INSERT) ||
+       !selector(cell, stop) ) {
+      ++skips;
 
-      cells.add(*cell, only_keys);
+    } else if(cell_offset) {
+      --cell_offset;
+      ++skips;  
+
+    } else {
+      cells.add(cell, only_keys);
       if(reached_limits())
         break;
-    } else 
-      ++skips;
+    }
   }
 }
 
@@ -409,27 +408,27 @@ void Mutable::scan_version_multi(const Specs::Interval& specs,
     rev = 0;
     offset = 0;
   }  
-  Cell* cell;
-  for(auto it = ConstIt(offset); !stop && it; ++it) {
-    cell = *it.item;
 
-    if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) || 
-       cell->has_expired(ttl)) {
+  for(auto it = ConstIt(offset); !stop && it; ++it) {
+    const Cell& cell = **it.item;
+
+    if((only_deletes ? cell.flag == INSERT : cell.flag != INSERT) || 
+       cell.has_expired(ttl)) {
       ++skips;
       continue;
     }
 
-    if(chk_align) switch(specs.offset_key.compare(cell->key)) {
+    if(chk_align) switch(specs.offset_key.compare(cell.key)) {
       case Condition::LT: {
         ++skips;
         continue;
       }
       case Condition::EQ: {
         if(!rev ||
-           !specs.is_matching(cell->timestamp, cell->control & TS_DESC)) {
+           !specs.is_matching(cell.timestamp, cell.control & TS_DESC)) {
           if(rev)
             --rev;
-          //if(cell_offset && selector(*cell, stop))
+          //if(cell_offset && selector(cell, stop))
           //  --cell_offset;
           ++skips;
           continue;
@@ -440,12 +439,12 @@ void Mutable::scan_version_multi(const Specs::Interval& specs,
         break;
     }
 
-    if(!selector(*cell, stop)) {
+    if(!selector(cell, stop)) {
       ++skips;
       continue;
     }
     if(!cells.empty() && 
-       cells.back()->key.compare(cell->key) == Condition::EQ) {
+       cells.back()->key.compare(cell.key) == Condition::EQ) {
       if(!rev) {
         ++skips;
         continue;
@@ -460,7 +459,7 @@ void Mutable::scan_version_multi(const Specs::Interval& specs,
       continue;
     }
 
-    cells.add(*cell, only_keys);
+    cells.add(cell, only_keys);
     if(reached_limits())
       break;
     --rev;
@@ -499,16 +498,16 @@ void Mutable::scan(Interval& interval, Mutable& cells) const {
   if(!_size)
     return;
 
-  Cell* cell;
   for(auto it = ConstIt(_narrow(interval.key_begin)); it; ++it) {
-    if((cell = *it.item)->has_expired(ttl) || (!interval.key_begin.empty() 
-        && interval.key_begin.compare(cell->key) == Condition::LT))
+    const Cell& cell = **it.item;
+    if(cell.has_expired(ttl) || (!interval.key_begin.empty() 
+        && interval.key_begin.compare(cell.key) == Condition::LT))
       continue;
     if(!interval.key_end.empty() 
-        && interval.key_end.compare(cell->key) == Condition::GT)
+        && interval.key_end.compare(cell.key) == Condition::GT)
       break; 
 
-    cells.add_raw(*cell);
+    cells.add_raw(cell);
   }
 }
 
@@ -678,7 +677,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
   
   Cell* cell;
   auto it = It(offset); 
-  for(; it; ) {
+  while(it) {
 
     if((cell=*it.item)->has_expired(ttl)) {
       _remove(it);
