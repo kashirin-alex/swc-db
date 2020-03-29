@@ -425,6 +425,9 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
   cellstores.erase(it, cellstores.end());
 
   new_range->create(err, new_cellstores);
+  if(!err) 
+    range->apply_new(err, cellstores, fragments_old, false);
+
   if(err) {
     err = Error::OK;
     col->remove(err, new_rid);
@@ -432,7 +435,6 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     return quit();
   }
 
-  range->apply_new(err, cellstores, fragments_old, false);
   SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %d/%d new-end=%s", 
             range->cfg->cid, range->rid, 
             cellstores.back()->interval.key_end.to_string().c_str());

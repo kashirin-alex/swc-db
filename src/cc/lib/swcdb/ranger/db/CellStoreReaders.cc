@@ -224,6 +224,24 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
     range->get_path(Range::CELLSTORES_DIR)
   );
 
+  if(!err) {
+    std::vector<Read::Ptr> cellstores;
+    for(auto cs : w_cellstores) {
+      cellstores.push_back(
+        CellStore::Read::make(err, cs->id, range, cs->interval)
+      );
+      if(err)
+        break;
+    }
+    if(err) {
+      for(auto cs : cellstores)
+        delete cs;
+    } else {
+      _free();
+      m_cellstores = cellstores;
+    }
+  }
+
   if(err) {
     fs->rmdir(err, range->get_path(Range::CELLSTORES_DIR));
     fs->rename(
@@ -233,14 +251,9 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
     );
     return;
   }
+  
   fs->rmdir(err, range->get_path(Range::CELLSTORES_BAK_DIR));
 
-  _free();
-  for(auto cs : w_cellstores) {
-    m_cellstores.push_back(
-      CellStore::Read::make(err, cs->id, range, cs->interval)
-    );
-  }
   err = Error::OK;
 
 }
