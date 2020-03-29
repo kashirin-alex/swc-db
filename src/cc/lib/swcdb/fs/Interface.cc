@@ -134,6 +134,10 @@ const std::string Interface::to_string() {
                 (int)m_type, m_fs==nullptr?"NULL":m_fs->to_string().c_str());
 }
 
+bool Interface::need_fds() const {
+  return m_fs->need_fds();
+}
+
 void Interface::stop() { 
   m_fs->stop();
 }
@@ -359,7 +363,7 @@ bool Interface::create(int& err, SmartFd::Ptr& smartfd,
 void Interface::close(int& err, SmartFd::Ptr smartfd) {
   for(;smartfd->valid();err = Error::OK) {
     m_fs->close(err, smartfd);
-    if(err == Error::OK || err == EACCES || err == ENOENT 
+    if(err == Error::OK || err == EACCES || err == ENOENT || err == EBADR
       || err == Error::SERVER_SHUTTING_DOWN)
       break;
     SWC_LOGF(LOG_DEBUG, "close, retrying to err=%d(%s)", 

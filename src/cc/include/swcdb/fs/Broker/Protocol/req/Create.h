@@ -15,10 +15,10 @@ class Create : public Base {
 
   public:
   
-  Create(uint32_t timeout, SmartFd::Ptr &smartfd, 
+  Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, 
         int32_t bufsz, uint8_t replication, int64_t blksz, 
         Callback::CreateCb_t cb=0) 
-        : smartfd(smartfd), cb(cb) {
+        : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, 
       "create %s bufsz(%d) replication(%d) blksz(%d)", 
       smartfd->to_string().c_str(), bufsz, replication, blksz);
@@ -49,14 +49,17 @@ class Create : public Base {
       params.decode(&ptr, &remain);
       smartfd->fd(params.fd);
       smartfd->pos(0);
+      fs->fd_open_incr();
     }
 
-    SWC_LOGF(LOG_DEBUG, "create %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "create %s error='%d' fds-open=%lld", 
+             smartfd->to_string().c_str(), error, fs->fds_open());
     
     cb(error, smartfd);
   }
 
   private:
+  FileSystem::Ptr       fs;
   SmartFd::Ptr          smartfd;
   Callback::CreateCb_t  cb;
 };

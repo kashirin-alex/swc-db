@@ -60,6 +60,8 @@ class Interface {
 
   const std::string to_string();
 
+  bool need_fds() const;
+  
   void stop();
 
   void get_structured_ids(int &err, std::string base_path, 

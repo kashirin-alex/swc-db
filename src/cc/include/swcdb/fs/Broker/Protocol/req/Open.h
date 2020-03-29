@@ -14,9 +14,9 @@ class Open : public Base {
 
   public:
 
-  Open(uint32_t timeout, SmartFd::Ptr &smartfd, int32_t bufsz, 
+  Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, int32_t bufsz, 
        Callback::OpenCb_t cb=0) 
-      : smartfd(smartfd), cb(cb) {
+      : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "open %s", smartfd->to_string().c_str());
 
     cbp = CommBuf::make(
@@ -43,14 +43,17 @@ class Open : public Base {
       params.decode(&ptr, &remain);
       smartfd->fd(params.fd);
       smartfd->pos(0);
+      fs->fd_open_incr();
     }
 
-    SWC_LOGF(LOG_DEBUG, "open %s error='%d'", smartfd->to_string().c_str(), error);
+    SWC_LOGF(LOG_DEBUG, "open %s error='%d' fds-open=%lld", 
+             smartfd->to_string().c_str(), error, fs->fds_open());
     
     cb(error, smartfd);
   }
 
   private:
+  FileSystem::Ptr     fs;
   SmartFd::Ptr        smartfd;
   Callback::OpenCb_t  cb;
 };

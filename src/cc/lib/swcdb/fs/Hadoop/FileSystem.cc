@@ -27,6 +27,8 @@ bool apply_hadoop() {
     ("swc.fs.hadoop.user", str(), 
       "Hadoop user")
     ("swc.fs.hadoop.handlers", i32(48), "Handlers for hadoop tasks")
+    ("swc.fs.hadoop.fds.max", g_i32(256), 
+      "Max Open Fds for opt. without closing")
   ;
 
   Env::Config::settings()->parse_file(
@@ -60,6 +62,8 @@ SmartFdHadoop::~SmartFdHadoop() { }
 FileSystemHadoop::FileSystemHadoop() 
     : FileSystem(
         Env::Config::settings()->get_str("swc.fs.hadoop.path.root"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.fs.hadoop.fds.max"),
         apply_hadoop()
       ),
       m_run(true), m_nxt_fd(0) {
@@ -170,6 +174,7 @@ void FileSystemHadoop::stop() {
     //hdfsDisconnect(m_filesystem);
     delete m_filesystem;
   }
+  FileSystem::stop();
 }
 
 Types::Fs FileSystemHadoop::get_type() {
@@ -349,6 +354,7 @@ void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd,
     return;
   }
 
+  fd_open_incr();
   hadoop_fd->fd(++m_nxt_fd);
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
@@ -379,6 +385,7 @@ void FileSystemHadoop::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
     return;
   }
 
+  fd_open_incr();
   hadoop_fd->fd(++m_nxt_fd);
   SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
 }
@@ -536,15 +543,17 @@ void FileSystemHadoop::close(int &err, SmartFd::Ptr &smartfd) {
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
   if(hadoop_fd->file) {
+    fd_open_decr();
     if(true) { // hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
                  errno, strerror(errno), smartfd->to_string().c_str());
     }
+    hadoop_fd->file = 0;
   } else 
     err = EBADR;
-  smartfd->fd(-1);
-  smartfd->pos(0);
+  hadoop_fd->fd(-1);
+  hadoop_fd->pos(0);
 }
 
 

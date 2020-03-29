@@ -23,6 +23,8 @@ bool apply_hadoop_jvm() {
       "Namenode Port")
     ("swc.fs.hadoop_jvm.user", str(), 
       "HadoopJVM user")
+    ("swc.fs.hadoop_jvm.fds.max", g_i32(256), 
+      "Max Open Fds for opt. without closing")
   ;
 
   Env::Config::settings()->parse_file(
@@ -56,6 +58,8 @@ SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 FileSystemHadoopJVM::FileSystemHadoopJVM() 
     : FileSystem(
         Env::Config::settings()->get_str("swc.fs.hadoop_jvm.path.root"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.fs.hadoop_jvm.fds.max"),
         apply_hadoop_jvm()
       ),
       m_run(true), m_nxt_fd(0) { 
@@ -153,6 +157,7 @@ void FileSystemHadoopJVM::stop() {
   m_run.store(false);
   if(m_filesystem != nullptr)
     hdfsDisconnect(m_filesystem);
+  FileSystem::stop();
 }
 
 Types::Fs FileSystemHadoopJVM::get_type() {
@@ -333,6 +338,7 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
   }
 
   hadoop_fd->fd(++m_nxt_fd);
+  fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
             bufsz, replication, (Lld)blksz);
@@ -363,6 +369,7 @@ void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
   }
 
   hadoop_fd->fd(++m_nxt_fd);
+  fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
 }
   
@@ -519,14 +526,16 @@ void FileSystemHadoopJVM::close(int &err, SmartFd::Ptr &smartfd) {
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
   if(hadoop_fd->file) {
+    fd_open_decr();
     if(hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
                  errno, strerror(errno), smartfd->to_string().c_str());
     }
+    hadoop_fd->file = 0;
   } else 
     err = EBADR;
-  smartfd->fd(-1);
+  hadoop_fd->fd(-1);
   smartfd->pos(0);
 }
 

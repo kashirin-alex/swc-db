@@ -60,20 +60,29 @@ std::string type_to_string(Types::Fs typ) {
 }
 
 
-FileSystem::FileSystem() { }
+FileSystem::FileSystem(const Property::V_GINT32::Ptr cfg_fds_max,
+                       bool setting_applied) 
+                      : cfg_fds_max(cfg_fds_max), fds_count(0) { 
+}
   
-FileSystem::FileSystem(bool setting_applied) { }
-  
-FileSystem::FileSystem(std::string root, bool setting_applied)
+FileSystem::FileSystem(const std::string& root, 
+                       const Property::V_GINT32::Ptr cfg_fds_max, 
+                       bool setting_applied)
     : path_root(normalize_pathname(root)),
       path_data(
         normalize_pathname(
-          Env::Config::settings()->get_str("swc.fs.path.data"))) { 
+          Env::Config::settings()->get_str("swc.fs.path.data"))),
+      cfg_fds_max(cfg_fds_max), fds_count(0) { 
 }
 
-FileSystem::~FileSystem() { }
+FileSystem::~FileSystem() { 
+}
 
-void FileSystem::stop() {}
+void FileSystem::stop() {
+  if(fds_count.load())
+    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lld", 
+             to_string().c_str(), fds_count.load());  
+}
 
 Types::Fs FileSystem::get_type() {
   return Types::Fs::NONE;
@@ -98,6 +107,23 @@ const std::string FileSystem::get_abspath(const std::string &name) {
   }
   return abspath;
 }
+
+void FileSystem::fd_open_incr() {
+  ++fds_count;
+}
+
+void FileSystem::fd_open_decr() {
+  --fds_count;
+}
+
+bool FileSystem::need_fds() const {
+  return fds_count >= cfg_fds_max->get();
+}
+
+const size_t FileSystem::fds_open() const {
+  return fds_count.load();
+}
+
 
 /* Default functions of an async call, 
  * used if a FileSystem(typ) does not implement 

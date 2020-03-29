@@ -14,8 +14,8 @@ class Close : public Base {
 
   public:
 
-  Close(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::CloseCb_t cb=0)
-        : smartfd(smartfd), cb(cb) {
+  Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, Callback::CloseCb_t cb=0)
+        : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
  
     cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
@@ -38,12 +38,16 @@ class Close : public Base {
 
     smartfd->fd(-1);
     smartfd->pos(0);
-    SWC_LOGF(LOG_DEBUG, "close %s error='%d'", smartfd->to_string().c_str(), error);
-    
+    fs->fd_open_decr();
+
+    SWC_LOGF(LOG_DEBUG, "close %s error='%d' fds-open=%lld", 
+             smartfd->to_string().c_str(), error, fs->fds_open());
+
     cb(error, smartfd);
   }
 
   private:
+  FileSystem::Ptr      fs;
   SmartFd::Ptr         smartfd;
   Callback::CloseCb_t  cb;
 };

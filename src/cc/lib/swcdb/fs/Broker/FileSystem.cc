@@ -41,6 +41,8 @@ bool apply_broker() {
     ("swc.fs.broker.timeout", g_i32(120000), "Default request timeout in ms")
     ("swc.fs.broker.timeout.bytes.ratio", g_i32(1000), 
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
+    ("swc.fs.broker.fds.max", g_i32(256), 
+      "Max Open Fds for opt. without closing")
   ;
   Env::Config::settings()->parse_file(
     Env::Config::settings()->get_str("swc.fs.broker.cfg", ""),
@@ -67,7 +69,11 @@ const EndPoints FileSystemBroker::get_endpoints() {
 }
 
 FileSystemBroker::FileSystemBroker()
-  : FileSystem(apply_broker()),
+  : FileSystem(
+      Env::Config::settings()->get<Property::V_GINT32>(
+        "swc.fs.broker.fds.max"),
+      apply_broker()
+    ),
     m_io(std::make_shared<IoContext>("FsBroker",
       Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
     m_service(std::make_shared<client::Serialized>(
@@ -89,6 +95,7 @@ void FileSystemBroker::stop() {
   m_run = false;
   m_service->stop();
   m_io->stop();
+  FileSystem::stop();
 }
 
 Types::Fs FileSystemBroker::get_type() {
@@ -287,6 +294,7 @@ void FileSystemBroker::create(int &err, SmartFd::Ptr &smartfd,
                               int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
   auto hdlr = std::make_shared<Protocol::Req::Create>(
+    shared_from_this(), 
     cfg_timeout->get(), smartfd, bufsz, replication, blksz);
 
   send_request_sync(hdlr, hdlr->promise());
@@ -297,6 +305,7 @@ void FileSystemBroker::create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
                               int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
   auto hdlr = std::make_shared<Protocol::Req::Create>(
+    shared_from_this(), 
     cfg_timeout->get(), smartfd, bufsz, replication, blksz, cb);
       
   while(!send_request(hdlr));
@@ -324,7 +333,7 @@ void FileSystemBroker::append(Callback::AppendCb_t cb, SmartFd::Ptr &smartfd,
 
 void FileSystemBroker::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
   auto hdlr = std::make_shared<Protocol::Req::Open>(
-    cfg_timeout->get(), smartfd, bufsz);
+    shared_from_this(), cfg_timeout->get(), smartfd, bufsz);
 
   send_request_sync(hdlr, hdlr->promise());
   err = hdlr->error;
@@ -333,7 +342,7 @@ void FileSystemBroker::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
 void FileSystemBroker::open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, 
                             int32_t bufsz) {
   auto hdlr = std::make_shared<Protocol::Req::Open>(
-    cfg_timeout->get(), smartfd, bufsz, cb);
+    shared_from_this(), cfg_timeout->get(), smartfd, bufsz, cb);
       
   while(!send_request(hdlr));
 }
@@ -449,7 +458,7 @@ void FileSystemBroker::sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) {
 
 void FileSystemBroker::close(int &err, SmartFd::Ptr &smartfd) {
   auto hdlr = std::make_shared<Protocol::Req::Close>(
-    cfg_timeout->get(), smartfd);
+    shared_from_this(), cfg_timeout->get(), smartfd);
 
   send_request_sync(hdlr, hdlr->promise());
   err = hdlr->error;
@@ -457,7 +466,7 @@ void FileSystemBroker::close(int &err, SmartFd::Ptr &smartfd) {
 
 void FileSystemBroker::close(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd) {
   auto hdlr = std::make_shared<Protocol::Req::Close>(
-    cfg_timeout->get(), smartfd, cb);
+    shared_from_this(), cfg_timeout->get(), smartfd, cb);
       
   while(!send_request(hdlr));
 }

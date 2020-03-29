@@ -18,6 +18,8 @@ bool apply_local() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
     ("swc.fs.local.cfg.dyn", strs(), "Dyn-config file")
+    ("swc.fs.local.fds.max", g_i32(1024), 
+      "Max Open Fds for opt. without closing")
   ;
   Env::Config::settings()->parse_file(
     Env::Config::settings()->get_str("swc.fs.local.cfg", ""),
@@ -30,6 +32,8 @@ bool apply_local() {
 FileSystemLocal::FileSystemLocal()
     : FileSystem(
         Env::Config::settings()->get_str("swc.fs.local.path.root"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.fs.local.fds.max"),
         apply_local()
       ),
       m_directio(
@@ -207,7 +211,7 @@ void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd,
       err == Error::FS_PERMISSION_DENIED;
     return;
   }
-    
+  fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
             bufsz, replication, (Lld)blksz);
@@ -249,7 +253,7 @@ void FileSystemLocal::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
       err == Error::FS_PERMISSION_DENIED;
     return;
   }
-    
+  fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
 
 #if defined(__sun__)
@@ -393,6 +397,7 @@ void FileSystemLocal::close(int &err, SmartFd::Ptr &smartfd) {
   errno = 0;
   if(smartfd->valid()) { 
     ::close(smartfd->fd());
+    fd_open_decr();
     err = errno;
   } else 
     err = EBADR;

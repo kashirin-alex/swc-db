@@ -12,6 +12,8 @@ bool apply_ceph() {
   settings->file_desc.add_options()
     ("swc.fs.ceph.path.root", str(""), "Ceph FileSystem's base root path")
     ("swc.fs.ceph.cfg.dyn", strs(), "Dyn-config file")
+    ("swc.fs.ceph.fds.max", g_i32(256), 
+      "Max Open Fds for opt. without closing")
   ;
   settings->parse_file(
     settings->get_str("swc.fs.ceph.cfg", ""),

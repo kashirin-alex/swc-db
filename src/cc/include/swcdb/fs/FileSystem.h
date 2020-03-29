@@ -47,7 +47,7 @@ Types::Fs fs_type(std::string fs_name);
 std::string type_to_string(Types::Fs typ);
 
 
-class FileSystem {
+class FileSystem : public std::enable_shared_from_this<FileSystem> {
   public:
 
   typedef std::shared_ptr<FileSystem> Ptr;
@@ -55,11 +55,16 @@ class FileSystem {
   const std::string path_root;
   const std::string path_data;
 
-  FileSystem();
+  const Property::V_GINT32::Ptr cfg_fds_max;
+
+  std::atomic<size_t> fds_count;
   
-  FileSystem(bool setting_applied);
+  FileSystem(const Property::V_GINT32::Ptr cfg_fds_max, 
+              bool setting_applied);
   
-  FileSystem(std::string root, bool setting_applied);
+  FileSystem(const std::string& root,  
+             const Property::V_GINT32::Ptr cfg_fds_max, 
+             bool setting_applied);
 
   virtual ~FileSystem();
 
@@ -71,6 +76,13 @@ class FileSystem {
 
   virtual const std::string get_abspath(const std::string &name);
 
+  void fd_open_incr();
+
+  void fd_open_decr();
+  
+  bool need_fds() const;
+
+  const size_t fds_open() const;
   
   virtual bool exists(int &err, const std::string &name) = 0;
   virtual void exists(Callback::ExistsCb_t cb, const std::string &name);

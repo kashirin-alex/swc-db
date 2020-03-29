@@ -252,11 +252,22 @@ size_t Read::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
+  
+  if(Env::FsInterface::interface()->need_fds()) {
+    {
+      std::shared_lock lock(m_mutex);
+      if(!m_queue.empty()) 
+        return released;
+    }
+    int err = Error::OK;
+    close(err); 
+  }
   return released;
 }
 
 void Read::close(int &err) {
-  Env::FsInterface::interface()->close(err, m_smartfd); 
+  if(m_smartfd->valid())
+    Env::FsInterface::interface()->close(err, m_smartfd); 
 }
 
 void Read::remove(int &err) {
@@ -347,8 +358,10 @@ void Read::_run_queued() {
       m_queue.pop();
       if(m_queue.empty()) {
         m_q_runs = false;
-        int tmperr = Error::OK;
-        close(tmperr);
+        if(Env::FsInterface::interface()->need_fds()) {
+          int tmperr = Error::OK;
+          close(tmperr);
+        }
         return;
       }
     }
@@ -396,7 +409,7 @@ void Write::block(int& err, const DB::Cells::Interval& blk_intval,
     smartfd, 
     buff_write, 
     FS::Flags::FLUSH
-    );
+  );
 }
 
 uint32_t Write::write_blocks_index(int& err) {
@@ -447,7 +460,7 @@ uint32_t Write::write_blocks_index(int& err) {
     smartfd, 
     buff_write, 
     FS::Flags::FLUSH
-    );
+  );
   if(err)
     return buff_write.size;
 
@@ -473,13 +486,13 @@ void Write::write_trailer(int& err) {
     smartfd, 
     buff_write, 
     FS::Flags::FLUSH
-    );
+  );
   
   size += buff_write.size;
 }
 
 void Write::close_and_validate(int& err) {
-  Env::FsInterface::fs()->close(err, smartfd);
+  Env::FsInterface::interface()->close(err, smartfd);
 
   if(Env::FsInterface::fs()->length(err, smartfd->filepath()) != size)
     err = Error::FS_EOF;
@@ -499,8 +512,8 @@ void Write::finalize(int& err) {
 
 void Write::remove(int &err) {
   if(smartfd->valid())
-    Env::FsInterface::fs()->close(err, smartfd); 
-  Env::FsInterface::fs()->remove(err, smartfd->filepath()); 
+    Env::FsInterface::interface()->close(err, smartfd); 
+  Env::FsInterface::interface()->remove(err, smartfd->filepath()); 
 }
 
 const std::string Write::to_string() {
