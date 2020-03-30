@@ -194,7 +194,7 @@ bool FileSystemHadoop::exists(int &err, const std::string &name) {
   std::string abspath = get_abspath(name);
   errno = 0;
   bool state = false;//hdfsExists(m_filesystem, abspath.c_str()) == 0;
-  err = errno==2 ? 0 : errno;
+  err = errno == ENOENT ? Error::OK : errno;
   SWC_LOGF(LOG_DEBUG, "exists state='%d' err='%d' path='%s'", 
             (int)state, err, abspath.c_str());
   return state;
@@ -204,8 +204,8 @@ void FileSystemHadoop::remove(int &err, const std::string &name) {
   std::string abspath = get_abspath(name);
   errno = 0;
   if (true) { // hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
-    int tmperr = errno == 5 ? 2: errno;
-    if(tmperr != 2) {
+    int tmperr = errno == EIO ? ENOENT: errno;
+    if(tmperr != ENOENT) {
       err = tmperr;
       SWC_LOGF(LOG_ERROR, "remove('%s') failed - %s",
                            abspath.c_str(), strerror(err));
@@ -287,8 +287,8 @@ void FileSystemHadoop::rmdir(int &err, const std::string &name) {
   std::string abspath = get_abspath(name);
   errno = 0;
   if (true) { // hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
-    err = errno == 5? 2: errno; // io error(not-exists)
-    if(err != 2) {
+    err = errno == EIO? ENOENT: errno; // io error(not-exists)
+    if(err != ENOENT) {
       SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s", 
                 abspath.c_str(), strerror(errno));
       return;
@@ -506,10 +506,12 @@ void FileSystemHadoop::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
     
   errno = 0;
   uint64_t at = -1; // hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
-  if (at == (uint64_t)-1 || at != Error::OK || errno != Error::OK) {
+  if (at == (uint64_t)-1 || at != offset || errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "seek failed - at=%llu %d(%s) %s", 
               at, err, strerror(errno), smartfd->to_string().c_str());
+    if(!errno)
+      hadoop_fd->pos(at);
     return;
   }
   hadoop_fd->pos(offset);

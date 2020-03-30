@@ -60,7 +60,7 @@ bool FileSystemLocal::exists(int &err, const std::string &name) {
   std::string abspath = get_abspath(name);
   errno = 0;
   bool state = FileUtils::exists(abspath);
-  err = errno==2 ? 0 : errno;
+  err = errno == ENOENT ? Error::OK : errno;
   SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'", 
             (int)state, abspath.c_str());
   return state;
@@ -70,7 +70,7 @@ void FileSystemLocal::remove(int &err, const std::string &name) {
   std::string abspath = get_abspath(name);
   errno = 0;
   if(!FileUtils::unlink(abspath)) {
-    if(errno != 2) {
+    if(errno != ENOENT) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "remove('%s') failed - %d(%s)", 
                 abspath.c_str(), errno, strerror(errno));
@@ -136,7 +136,7 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
     full_entry_path.append("/");
     full_entry_path.append(entry.name);
     if (stat(full_entry_path.c_str(), &statbuf) == -1) {
-      if(errno == 2) { 
+      if(errno == ENOENT) { 
         // and do all again directory changed
         results.clear();
         readdir(err, name, results);
@@ -366,11 +366,11 @@ void FileSystemLocal::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
     
   errno = 0;
   uint64_t at = lseek(smartfd->fd(), offset, SEEK_SET); 
-  if (at == (uint64_t)-1 || at != offset || errno != Error::OK) {
+  if (at == (uint64_t)-1 || at != offset || errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
               err, strerror(errno), smartfd->to_string().c_str());
-    if(at > 0)
+    if(!errno)
       smartfd->pos(at);
     return;
   }

@@ -148,8 +148,7 @@ void Interface::get_structured_ids(int &err, std::string base_path,
     
   DirentList dirs;
   readdir(err, base_path, dirs);
-
-  if(err != Error::OK)
+  if(err)
     return;
 
   for(auto& entry : dirs) {
@@ -171,7 +170,7 @@ void Interface::get_structured_ids(int &err, std::string base_path,
     new_base_path.append(entry.name);
     id_name.append(entry.name);
     get_structured_ids(err, new_base_path, entries, id_name);
-    if(err != Error::OK)
+    if(err)
       return;
   }
 }
@@ -181,37 +180,42 @@ void Interface::get_structured_ids(int &err, std::string base_path,
 void Interface::readdir(int &err, const std::string& base_path, 
                         DirentList& dirs) {
   for(;;) {
-    err = Error::OK;
     DirentList found_dirs;
-    m_fs->readdir(err, base_path, found_dirs);
-    if(err == Error::OK || err == EACCES || err == ENOENT
-      || err == Error::SERVER_SHUTTING_DOWN){
-      dirs = found_dirs;
-      return;
+    m_fs->readdir(err = Error::OK, base_path, found_dirs);
+    switch(err) {
+      case Error::OK:
+      case EACCES:
+      case ENOENT:
+      case Error::SERVER_SHUTTING_DOWN: {
+        dirs = found_dirs;
+        return;
+      }
+      default:
+        SWC_LOGF(LOG_WARN, "readdir, retrying to err=%d(%s)",
+                  err, Error::get_text(err));
     }
-    SWC_LOGF(LOG_DEBUG, "readdir, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
   }
 }
 
 bool Interface::exists(int &err, const std::string& name) {
-  bool state;
-  for(;;) {
-    err = Error::OK;
-    state = m_fs->exists(err, name);
-    if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN)
-      break;
-    SWC_LOGF(LOG_DEBUG, "exists, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+  for(bool state;;) {
+    state = m_fs->exists(err = Error::OK, name);
+    switch(err) {
+      case Error::OK:
+      case Error::SERVER_SHUTTING_DOWN:
+        return state;
+      default:
+        SWC_LOGF(LOG_WARN, "exists, retrying to err=%d(%s)",
+                  err, Error::get_text(err));
+    }
   }
-  return state;
 }
 
 void Interface::exists(Callback::ExistsCb_t cb, const std::string &name) {
   Callback::ExistsCb_t cb_wrapper; 
   cb_wrapper = [cb, name, &cb_wrapper, ptr=ptr()]
-    (int err, bool state){ 
-      if(err == Error::OK || err == Error::SERVER_SHUTTING_DOWN) 
+    (int err, bool state) { 
+      if(!err || err == Error::SERVER_SHUTTING_DOWN) 
         cb(err, state);
       else 
         ptr->get_fs()->exists(cb_wrapper, name);
@@ -221,153 +225,182 @@ void Interface::exists(Callback::ExistsCb_t cb, const std::string &name) {
 
 void Interface::mkdirs(int &err, const std::string &name) {
   for(;;) {
-    err = Error::OK;
-    m_fs->mkdirs(err, name);
-    if(err == Error::OK || err == EEXIST 
-      || err == Error::SERVER_SHUTTING_DOWN)
-      return;
-    SWC_LOGF(LOG_DEBUG, "mkdirs, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+    m_fs->mkdirs(err = Error::OK, name);
+    switch(err) {
+      case Error::OK:
+      case EEXIST:
+      case Error::SERVER_SHUTTING_DOWN:
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "mkdirs, retrying to err=%d(%s)",
+                  err, Error::get_text(err));
+    }
   }
-} 
+}
 
 void Interface::rmdir(int &err, const std::string &name) {
   for(;;) {
-    err = Error::OK;
-    m_fs->rmdir(err, name);
-    if(err == Error::OK || err == EACCES || err == ENOENT
-      || err == Error::SERVER_SHUTTING_DOWN)
-      return;
-    SWC_LOGF(LOG_DEBUG, "rmdir, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+    m_fs->rmdir(err = Error::OK, name);
+    switch(err) {
+      case Error::OK:
+      case EACCES:
+      case ENOENT:
+      case Error::SERVER_SHUTTING_DOWN:
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "rmdir, retrying to err=%d(%s)",
+                  err, Error::get_text(err));
+    }
   }
 }
 
 void Interface::rmdir_incl_opt_subs(int &err, const std::string &name, 
                                     const std::string &up_to) {
   rmdir(err, name);
-  if(err != Error::OK)
+  if(err)
     return;
 
   const char* p=name.data();
   std::string base_path;
-  for(const char* c=p+name.length();c>p;c--){
+  for(const char* c=p+name.length(); c>p; c--) {
     if(*c != '/')
       continue;
     base_path = std::string(p, c-p);
     if(up_to.compare(base_path) == 0)
       break;
+
     DirentList entrs;
     readdir(err, base_path, entrs);
-    if(!err && !entrs.size())
+    if(!err && !entrs.size()) {
       rmdir(err, base_path);
-      if(err == Error::OK)
+      if(!err)
         continue;
+    }
     break;
   }
-  if(err != Error::OK)
+  if(err)
     err = Error::OK;
 }
 
 void Interface::remove(int &err, const std::string &name) {
   for(;;) {
-    err = Error::OK;
-    m_fs->remove(err, name);
-    if(err == Error::OK || err == EACCES || err == ENOENT 
-      || err == Error::SERVER_SHUTTING_DOWN)
-      return;
-    SWC_LOGF(LOG_DEBUG, "remove, retrying to err=%d(%s)",
-              err, Error::get_text(err));
+    m_fs->remove(err = Error::OK, name);
+    switch(err) {
+      case Error::OK:
+      case EACCES:
+      case ENOENT:
+      case Error::SERVER_SHUTTING_DOWN:
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s)",
+                  err, Error::get_text(err));
+    }
   }
-} 
+}
   
 void Interface::rename(int &err, const std::string &from , 
                        const std::string &to) {
   for(;;) {
-    err = Error::OK;
-    m_fs->rename(err, from, to);
-    if(err == Error::OK || err == EACCES || err == ENOENT 
-      || err == Error::SERVER_SHUTTING_DOWN)
-      return;
-    SWC_LOGF(LOG_DEBUG, "rename, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+    m_fs->rename(err = Error::OK, from, to);
+    switch(err) {
+      case Error::OK:
+      case EACCES:
+      case ENOENT:
+      case Error::SERVER_SHUTTING_DOWN:
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s)", 
+                  err, Error::get_text(err));
+    }
   }
 } 
 
 void Interface::write(int &err, SmartFd::Ptr smartfd,
                       uint8_t replication, int64_t blksz, 
                       StaticBuffer &buffer) {
-  buffer.own=false;
-  for(;;) {
-    err = Error::OK;
-    m_fs->write(err, smartfd, replication, blksz, buffer);
-    if (err == Error::OK
-        || err == Error::FS_PATH_NOT_FOUND 
-        || err == Error::FS_PERMISSION_DENIED
-        || err == Error::SERVER_SHUTTING_DOWN)
-      break;
-    SWC_LOGF(LOG_DEBUG, "write, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+  for(buffer.own=false;;) {
+    m_fs->write(err = Error::OK, smartfd, replication, blksz, buffer);
+    switch(err) {
+      case Error::OK:
+      case Error::FS_PATH_NOT_FOUND:
+      case Error::FS_PERMISSION_DENIED:
+      case Error::SERVER_SHUTTING_DOWN: {
+        buffer.own=true;
+        return;
+      }
+      default:
+        SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s)", 
+                err, Error::get_text(err));
+    }
   }
-  buffer.own=true;
 }
     
 void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
-  do {
-    if(err)
-      SWC_LOGF(LOG_DEBUG, "read-all, retrying to err=%d(%s)", 
-               err, Error::get_text(err));
+  for(;;) {
     m_fs->read(err = Error::OK, name, dst);
-  } while(err && 
-          err != Error::FS_EOF &&
-          err != Error::SERVER_SHUTTING_DOWN &&
-          err != Error::FS_PATH_NOT_FOUND &&
-          err != Error::FS_PERMISSION_DENIED);
+    switch(err) {
+      case Error::OK:
+      case Error::FS_EOF:
+      case Error::FS_PATH_NOT_FOUND:
+      case Error::FS_PERMISSION_DENIED:
+      case Error::SERVER_SHUTTING_DOWN: 
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "read-all, retrying to err=%d(%s)", 
+                err, Error::get_text(err));
+    }
+  }
 }
 
 bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
-  m_fs->open(err, smartfd);
-  if(err == Error::FS_PATH_NOT_FOUND ||
-     err == Error::FS_PERMISSION_DENIED ||
-     err == Error::SERVER_SHUTTING_DOWN)
-    return false;
-  if(!smartfd->valid())
-    return true;
-      
-  if(err != Error::OK) {
-    int tmperr = Error::OK;
-    m_fs->close(tmperr, smartfd);
+  m_fs->open(err = Error::OK, smartfd);
+  switch(err) {
+    case Error::OK:
+    case Error::FS_PATH_NOT_FOUND:
+    case Error::FS_PERMISSION_DENIED:
+    case Error::SERVER_SHUTTING_DOWN:
+      return false;
+    default:
+      if(smartfd->valid()) {
+        int tmperr = Error::OK;
+        m_fs->close(tmperr, smartfd);
+      }
     return true;
   }
-  return false;
 }
   
 bool Interface::create(int& err, SmartFd::Ptr& smartfd,
                        int32_t bufsz, uint8_t replication, int64_t blksz) {
-  m_fs->create(err, smartfd, bufsz, replication, blksz);
-  if(err == Error::FS_PATH_NOT_FOUND ||
-     err == Error::FS_PERMISSION_DENIED ||
-     err == Error::SERVER_SHUTTING_DOWN)
-    return false;
-  if(!smartfd->valid())
-    return true;
-      
-  if(err != Error::OK) {
-    int tmperr = Error::OK;
-    m_fs->close(tmperr, smartfd);
+  m_fs->create(err = Error::OK, smartfd, bufsz, replication, blksz);
+  switch(err) {
+    case Error::OK:
+    case Error::FS_PATH_NOT_FOUND:
+    case Error::FS_PERMISSION_DENIED:
+    case Error::SERVER_SHUTTING_DOWN:
+      return false;
+    default:
+      if(smartfd->valid()) {
+        int tmperr = Error::OK;
+        m_fs->close(tmperr, smartfd);
+      }
     return true;
   }
-  return false;
 }
 
 void Interface::close(int& err, SmartFd::Ptr smartfd) {
-  for(;smartfd->valid();err = Error::OK) {
-    m_fs->close(err, smartfd);
-    if(err == Error::OK || err == EACCES || err == ENOENT || err == EBADR
-      || err == Error::SERVER_SHUTTING_DOWN)
-      break;
-    SWC_LOGF(LOG_DEBUG, "close, retrying to err=%d(%s)", 
-              err, Error::get_text(err));
+  while(smartfd->valid()) {
+    m_fs->close(err = Error::OK, smartfd);
+    switch(err) {
+      case Error::OK:
+      case EACCES:
+      case ENOENT:
+      case EBADR:
+      case Error::SERVER_SHUTTING_DOWN:
+        return;
+      default:
+        SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s)", 
+                 err, Error::get_text(err));
+    }
   }
 }
 

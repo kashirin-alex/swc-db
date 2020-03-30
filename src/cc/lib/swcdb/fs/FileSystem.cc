@@ -246,7 +246,7 @@ void FileSystem::read(int &err, const std::string& name,
     
   if(err)
     SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s", 
-              errno, strerror(errno), name.c_str());
+              err, Error::get_text(err), name.c_str());
 }
 
 void FileSystem::read(Callback::ReadAllCb_t cb, const std::string &name) {
