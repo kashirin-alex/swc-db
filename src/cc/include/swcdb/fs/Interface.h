@@ -86,6 +86,8 @@ class Interface {
   
   void rename(int &err, const std::string &from , const std::string &to);
 
+  size_t length(int &err, const std::string &name);
+  
   void read(int& err, const std::string& name, StaticBuffer* dst);
 
   void write(int &err, SmartFd::Ptr smartfd,

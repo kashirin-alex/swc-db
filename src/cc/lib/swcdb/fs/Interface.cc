@@ -315,6 +315,23 @@ void Interface::rename(int &err, const std::string &from ,
   }
 } 
 
+size_t Interface::length(int &err, const std::string &name) {
+  for(size_t length;;) {
+    length = m_fs->length(err = Error::OK, name);
+    switch(err) {
+      case Error::OK:
+      case Error::FS_PATH_NOT_FOUND:
+      case Error::FS_PERMISSION_DENIED:
+      case Error::SERVER_SHUTTING_DOWN:
+        return length;
+      default:
+        SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s)", 
+                  err, Error::get_text(err));
+    }
+  }
+}
+
+
 void Interface::write(int &err, SmartFd::Ptr smartfd,
                       uint8_t replication, int64_t blksz, 
                       StaticBuffer &buffer) {
