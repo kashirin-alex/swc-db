@@ -19,7 +19,7 @@ namespace CellStore {
       data:   [cell]
     blocks-index:
       header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
-      data:   prev_key_end, [vi32(offset), interval, i32(checksum)]
+      data:   prev_key_end, [vi64(offset), interval, i32(checksum)]
     trailer : i8(version), i32(blocks-index-len), i32(cell-revs), i32(checksum)
       (trailer-offset) = fileLength - TRAILER_SIZE
       (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
@@ -42,7 +42,7 @@ class Read final {
   static bool load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
                            size_t& blks_idx_size, 
                            uint32_t& cell_revs, 
-                           size_t& blks_idx_offset, 
+                           uint64_t& blks_idx_offset, 
                            bool close_after=false);
 
   static void load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 

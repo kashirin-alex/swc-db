@@ -14,11 +14,12 @@ namespace SWC { namespace Ranger { namespace CellStore {
 namespace Block {
 
 /* file-format: 
-      header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+      header: i8(encoder), i32(enc-len), i32(len), 
+              i32(cells), i32(checksum-data), i32(checksum)
       data:   [cell]
 */
 
-static const uint8_t HEADER_SIZE=17;
+static const uint8_t HEADER_SIZE=21;
 
 
 
@@ -34,15 +35,15 @@ class Read final {
 
   static const std::string to_string(const State state);
   
-  static Ptr make(const size_t offset, 
+  static Ptr make(const uint64_t offset, 
                   const DB::Cells::Interval& interval, 
                   uint32_t cell_revs);
 
-  const size_t               offset;
+  const uint64_t             offset;
   const DB::Cells::Interval  interval;
   const uint32_t             cell_revs;
 
-  explicit Read(const size_t offset, const DB::Cells::Interval& interval, 
+  explicit Read(const uint64_t offset, const DB::Cells::Interval& interval, 
                 uint32_t cell_revs);
   
   Ptr ptr();
@@ -88,6 +89,7 @@ class Read final {
   size_t                             m_size;
   size_t                             m_sz_enc;
   uint32_t                           m_cells_count;
+  uint32_t                           m_checksum_data;
   StaticBuffer                       m_buffer;
   bool                               m_q_runs = false;
   std::queue<std::function<void()>>  m_queue;
@@ -101,7 +103,7 @@ class Write final {
   public:
   typedef std::shared_ptr<Write> Ptr;
 
-  Write(const size_t offset, const DB::Cells::Interval& interval, 
+  Write(const uint64_t offset, const DB::Cells::Interval& interval, 
         const uint32_t cell_count);
 
   ~Write();
@@ -111,7 +113,7 @@ class Write final {
 
   const std::string to_string();
 
-  const size_t              offset;
+  const uint64_t            offset;
   const DB::Cells::Interval interval;
   const uint32_t            cell_count;
 

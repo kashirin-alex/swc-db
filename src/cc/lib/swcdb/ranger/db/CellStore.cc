@@ -35,7 +35,7 @@ Read::Ptr Read::make(int& err, const uint32_t id,
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
                          size_t& blks_idx_size, 
                          uint32_t& cell_revs, 
-                         size_t& blks_idx_offset, 
+                         uint64_t& blks_idx_offset, 
                          bool close_after) {
   bool loaded;
   for(;;) {
@@ -100,7 +100,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr smartfd,
 
   size_t blks_idx_size = 0;
   uint32_t cell_revs = 0;
-  size_t offset = 0;
+  uint64_t offset = 0;
   if(!load_trailer(err, smartfd, blks_idx_size, cell_revs, offset, false))
     return;
 
@@ -161,7 +161,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr smartfd,
   for(int n = 0; n < blks_count; ++n) {
     chk_ptr = ptr;
 
-    uint32_t offset = Serialization::decode_vi32(&ptr, &remain);
+    uint64_t offset = Serialization::decode_vi64(&ptr, &remain);
     auto& blk = (blocks[n] = Block::Read::make(
       offset, 
       DB::Cells::Interval(&ptr, &remain),
@@ -416,7 +416,7 @@ uint32_t Write::write_blocks_index(int& err) {
   uint32_t len_data = prev_key_end.encoded_length();
   interval.free();
   for(auto blk : m_blocks) {
-    len_data += Serialization::encoded_length_vi32(blk->offset) 
+    len_data += Serialization::encoded_length_vi64(blk->offset) 
               + blk->interval.encoded_length()
               + 4;
               
@@ -431,7 +431,7 @@ uint32_t Write::write_blocks_index(int& err) {
   uint8_t * chk_ptr;
   for(auto blk : m_blocks) {
     chk_ptr = ptr;
-    Serialization::encode_vi32(&ptr, blk->offset);
+    Serialization::encode_vi64(&ptr, blk->offset);
     blk->interval.encode(&ptr);
     checksum_i32(chk_ptr, ptr, &ptr);
   }

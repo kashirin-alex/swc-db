@@ -22,18 +22,20 @@ const std::string Read::to_string(const Read::State state) {
   }
 }
 
-Read::Ptr Read::make(const size_t offset, 
+Read::Ptr Read::make(const uint64_t offset, 
                      const DB::Cells::Interval& interval, 
                      uint32_t cell_revs) {
   return new Read(offset, interval, cell_revs);
 }
 
-Read::Read(const size_t offset, const DB::Cells::Interval& interval, 
+Read::Read(const uint64_t offset, const DB::Cells::Interval& interval, 
            uint32_t cell_revs)
           : offset(offset), interval(interval), cell_revs(cell_revs),
             m_state(State::NONE), m_processing(0), 
             m_loaded_header(false),
-            m_size(0), m_sz_enc(0), m_cells_remain(0), m_cells_count(0), 
+            m_size(0), m_sz_enc(0), 
+            m_cells_remain(0), m_cells_count(0), 
+            m_checksum_data(0),
             m_err(Error::OK) {
 }
 
@@ -168,13 +170,19 @@ const std::string Read::to_string() {
 }
 
 void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
+  auto fs_if = Env::FsInterface::interface();
+  auto fs = Env::FsInterface::fs();
+  err = Error::OK;
+  while(err != Error::FS_EOF) {
+    if(err) {
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s %s", 
+               err, Error::get_text(err), 
+               smartfd->to_string().c_str(), to_string().c_str());
+      fs_if->close(err, smartfd);
+    }
 
-  for(;;) {
     err = Error::OK;
-
-    if(!smartfd->valid() 
-      && !Env::FsInterface::interface()->open(err, smartfd) 
-      && err)
+    if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
       break;
     if(err)
       continue;
@@ -182,14 +190,8 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
     if(!m_loaded_header) { // load header once
       uint8_t buf[HEADER_SIZE];
       const uint8_t *ptr = buf;
-      if(Env::FsInterface::fs()->pread(err, smartfd, offset, buf, HEADER_SIZE)
-              != HEADER_SIZE) {
-        if(err != Error::FS_EOF) {
-          Env::FsInterface::interface()->close(err, smartfd);
-          continue;
-        }
-        break;
-      }
+      if(fs->pread(err, smartfd, offset, buf, HEADER_SIZE) != HEADER_SIZE)
+        continue;
 
       size_t remain = HEADER_SIZE;
       m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
@@ -198,14 +200,11 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       if(!m_sz_enc) 
         m_sz_enc = m_size;
       m_cells_remain = m_cells_count= Serialization::decode_i32(&ptr, &remain);
-      // + checksum_data
+      m_checksum_data = Serialization::decode_i32(&ptr, &remain);
       if(!checksum_i32_chk(
         Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)) {
         err = Error::CHECKSUM_MISMATCH;
-        SWC_LOGF(LOG_WARN, "Block-Header checksum-mismatch(retrying) %s", 
-                 to_string().c_str());
-        Env::FsInterface::interface()->close(err, smartfd);
-        continue; //break;
+        continue;
       }
       m_loaded_header = true;
     }
@@ -214,37 +213,37 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 
 
     m_buffer.free();
-    if(Env::FsInterface::fs()->pread(err, smartfd, offset+HEADER_SIZE, 
-                                     &m_buffer, m_sz_enc) != m_sz_enc) {
-      if(err != Error::FS_EOF) {
-        Env::FsInterface::interface()->close(err, smartfd);
-        continue;
-      }
-      break;
+    if(fs->pread(err, smartfd, offset+HEADER_SIZE, &m_buffer, m_sz_enc) 
+        != m_sz_enc)
+      continue;
+    
+    if(!checksum_i32_chk(m_checksum_data, m_buffer.base, m_sz_enc)) {
+      err = Error::CHECKSUM_MISMATCH;
+      m_loaded_header = false;
+      continue;
     }
 
-    
     if(m_encoder != Types::Encoding::PLAIN) {
       StaticBuffer decoded_buf(m_size);
       Encoder::decode(
         err, m_encoder, m_buffer.base, m_sz_enc, decoded_buf.base, m_size);
       if(err) {
-        SWC_LOGF(LOG_WARN, "Block-Encoder error(retrying) %s", 
-                 to_string().c_str());
         m_loaded_header = false;
-        m_buffer.free();
-        Env::FsInterface::interface()->close(err, smartfd);
-        continue; //break;
+        continue;
       }
       m_buffer.set(decoded_buf);
     }
-
     break;
   }
 
   std::scoped_lock lock(m_mutex);
-  m_err = err;
-  m_state = m_err ? State::NONE : State::LOADED;
+  if(m_err = err) {
+    m_state = State::NONE;
+    m_loaded_header = false;
+    m_buffer.free();
+  } else {
+    m_state = State::LOADED;
+  }
 }
 
 void Read::run_queued() {
@@ -284,7 +283,7 @@ void Read::_run_queued() {
 
 
 
-Write::Write(const size_t offset, const DB::Cells::Interval& interval, 
+Write::Write(const uint64_t offset, const DB::Cells::Interval& interval, 
              const uint32_t cell_count)
             : offset(offset), interval(interval), cell_count(cell_count) { 
 }
@@ -307,6 +306,11 @@ void Write::write(int& err, Types::Encoding encoder, DynamicBuffer& cells,
   Serialization::encode_i32(&ptr, len_enc);
   Serialization::encode_i32(&ptr, cells.fill());
   Serialization::encode_i32(&ptr, cell_count);
+  if(len_enc || (len_enc = cells.fill()))
+    checksum_i32(output.base+HEADER_SIZE, len_enc, &ptr);
+  else
+    Serialization::encode_i32(&ptr, 0);
+
   checksum_i32(output.mark, ptr, &ptr);
 }
 
