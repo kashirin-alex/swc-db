@@ -179,7 +179,14 @@ void Fragments::load(int &err) {
   for(auto entry : fragments) {
     frag = Fragment::make(get_log_fragment(entry.name));
     frag->load_header(true);
+    if((err = frag->error()) == Error::FS_PATH_NOT_FOUND) {
+      delete frag;
+      err = Error::OK;
+      continue;
+    }
     m_fragments.push_back(frag);
+    if(err)
+      return;
   }
 }
 

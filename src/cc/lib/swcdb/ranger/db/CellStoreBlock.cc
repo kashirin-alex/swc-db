@@ -237,7 +237,11 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
   }
 
   std::scoped_lock lock(m_mutex);
-  if(m_err = err) {
+  if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
+    m_err = Error::OK;
+    m_buffer.free();
+  }
+  if(m_err) {
     m_state = State::NONE;
     m_loaded_header = false;
     m_buffer.free();

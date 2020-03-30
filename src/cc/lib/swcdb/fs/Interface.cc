@@ -321,7 +321,7 @@ size_t Interface::length(int &err, const std::string &name) {
     switch(err) {
       case Error::OK:
       case Error::FS_PATH_NOT_FOUND:
-      case Error::FS_PERMISSION_DENIED:
+      //case Error::FS_PERMISSION_DENIED:
       case Error::SERVER_SHUTTING_DOWN:
         return length;
       default:
@@ -340,7 +340,7 @@ void Interface::write(int &err, SmartFd::Ptr smartfd,
     switch(err) {
       case Error::OK:
       case Error::FS_PATH_NOT_FOUND:
-      case Error::FS_PERMISSION_DENIED:
+      //case Error::FS_PERMISSION_DENIED:
       case Error::SERVER_SHUTTING_DOWN: {
         buffer.own=true;
         return;
@@ -359,7 +359,7 @@ void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
       case Error::OK:
       case Error::FS_EOF:
       case Error::FS_PATH_NOT_FOUND:
-      case Error::FS_PERMISSION_DENIED:
+      //case Error::FS_PERMISSION_DENIED:
       case Error::SERVER_SHUTTING_DOWN: 
         return;
       default:
@@ -374,7 +374,7 @@ bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
   switch(err) {
     case Error::OK:
     case Error::FS_PATH_NOT_FOUND:
-    case Error::FS_PERMISSION_DENIED:
+    //case Error::FS_PERMISSION_DENIED:
     case Error::SERVER_SHUTTING_DOWN:
       return false;
     default:
@@ -392,7 +392,7 @@ bool Interface::create(int& err, SmartFd::Ptr& smartfd,
   switch(err) {
     case Error::OK:
     case Error::FS_PATH_NOT_FOUND:
-    case Error::FS_PERMISSION_DENIED:
+    //case Error::FS_PERMISSION_DENIED:
     case Error::SERVER_SHUTTING_DOWN:
       return false;
     default:

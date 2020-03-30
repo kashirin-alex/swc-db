@@ -174,6 +174,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
     id = Serialization::decode_vi32(ptr, remain);
     m_cellstores.push_back(
       Read::make(err, id, range, DB::Cells::Interval(ptr, remain)));
+    //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
 }
 

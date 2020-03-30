@@ -109,19 +109,15 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
                      uint8_t blk_replicas, int64_t blksz, 
                      StaticBuffer::Ptr buff_write,
                      Semaphore* sem) {
-  
-  int tmperr = Error::OK;
-  if(!err && Env::FsInterface::fs()->length(
-      tmperr, m_smartfd->filepath()) != buff_write->size)
-    err = Error::FS_EOF;
+  if(!err && (Env::FsInterface::interface()->length(err, m_smartfd->filepath())
+              != buff_write->size || err))
+    if(err != Error::SERVER_SHUTTING_DOWN)
+      err = Error::FS_EOF;
 
-  if(err & err != Error::FS_PATH_NOT_FOUND &&
-           err != Error::FS_PERMISSION_DENIED &&
-           err != Error::SERVER_SHUTTING_DOWN) {
-    
+  if(err && err != Error::SERVER_SHUTTING_DOWN) {
     if(err != Error::UNPOSSIBLE)
-      SWC_LOGF(LOG_DEBUG, "write, retrying to err=%d(%s)", 
-               err, Error::get_text(err));
+      SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s) %s", 
+               err, Error::get_text(err), to_string().c_str());
 
     Env::FsInterface::fs()->write(
       [this, blk_replicas, blksz, buff_write, sem]
@@ -133,7 +129,7 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
     return;
   }
 
-  //if(err) write local dump
+  //if(err) remains Error::SERVER_SHUTTING_DOWN -- write local dump
     
   sem->release();
 
@@ -301,7 +297,7 @@ const bool Fragment::processing() {
 
 void Fragment::remove(int &err) {
   std::scoped_lock lock(m_mutex);
-  Env::FsInterface::fs()->remove(err, m_smartfd->filepath()); 
+  Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
 const std::string Fragment::to_string() {
@@ -350,53 +346,50 @@ const std::string Fragment::to_string() {
 
 
 void Fragment::load_header(int& err, bool close_after) {
-  
-  for(;;) {
-    err = Error::OK;
-  
-    if(!Env::FsInterface::fs()->exists(err, m_smartfd->filepath())) {
-      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
-        continue;
+  auto fs_if = Env::FsInterface::interface();
+  auto fs = Env::FsInterface::fs();
+
+  while(err != Error::FS_EOF) {
+    if(err) {
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
+               err, Error::get_text(err), to_string().c_str());
+      fs_if->close(err, m_smartfd);
+      err = Error::OK;
+    }
+
+    if(!fs_if->exists(err, m_smartfd->filepath())) {
+      err = Error::FS_PATH_NOT_FOUND;
       return;
     }
-    
-    if(!Env::FsInterface::interface()->open(err, m_smartfd) && err)
+
+    if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       return;
     if(err)
       continue;
     
     StaticBuffer buf;
-    if(Env::FsInterface::fs()->pread(
-        err, m_smartfd, 0, &buf, HEADER_SIZE) != HEADER_SIZE){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, m_smartfd);
-        continue;
-      }
-      return;
-    }
+    if(fs->pread(err, m_smartfd, 0, &buf, HEADER_SIZE) != HEADER_SIZE)
+      continue;
+    
     const uint8_t *ptr = buf.base;
 
     size_t remain = HEADER_SIZE;
     m_version = Serialization::decode_i8(&ptr, &remain);
     uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
-    if(!checksum_i32_chk(
-      Serialization::decode_i32(&ptr, &remain), buf.base, HEADER_SIZE-4)){  
+    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                         buf.base, HEADER_SIZE-4)) {  
       err = Error::CHECKSUM_MISMATCH;
-      return;
+      continue;
     }
     buf.free();
     
-    if(Env::FsInterface::fs()->pread(err, m_smartfd, HEADER_SIZE, 
-                                     &buf, header_extlen) != header_extlen) {
-      if(err != Error::FS_EOF){
-        Env::FsInterface::fs()->close(err, m_smartfd);
-        continue;
-      }
-      return;
-    }
-    ptr = buf.base;
+    if(fs->pread(err, m_smartfd, HEADER_SIZE, &buf, header_extlen) 
+        != header_extlen)
+      continue;
 
+    ptr = buf.base;
     remain = header_extlen;
+
     interval.decode(&ptr, &remain, true);
     m_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
     m_size_enc = Serialization::decode_i32(&ptr, &remain);
@@ -408,58 +401,56 @@ void Fragment::load_header(int& err, bool close_after) {
     if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
                          buf.base, header_extlen-4)) {  
       err = Error::CHECKSUM_MISMATCH;
-      return;
+      continue;
     }
     m_cells_offset = HEADER_SIZE+header_extlen;
     break;
   }
 
-  if(close_after && m_smartfd->valid()) {
+  if(close_after) {
     int tmperr = Error::OK;
-    Env::FsInterface::fs()->close(tmperr, m_smartfd);
+    fs_if->close(tmperr, m_smartfd);
   }
 }
 
 void Fragment::load() {
-  int err = Error::OK;
+  auto fs_if = Env::FsInterface::interface();
+  auto fs = Env::FsInterface::fs();
+
+  bool header_again;
   {
     std::shared_lock lock(m_mutex);
-    err = m_err;
+    header_again = m_err;
   }
-  if(err) // on err load header again
+  int err = Error::OK;
+  while(err != Error::FS_EOF) {
+    if(err) {
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
+               err, Error::get_text(err), to_string().c_str());
+      fs_if->close(err, m_smartfd);
+      err = Error::OK;
+    }
+
+    if(header_again)
       load_header(err, false);
+    else if(!fs_if->exists(err, m_smartfd->filepath()))
+      err = Error::FS_PATH_NOT_FOUND;
+    if(err)
+      break;
  
-  if(!err) for(uint8_t tries = 0; ;err = Error::OK) {
-  
-    if(!m_smartfd->valid() 
-       && !Env::FsInterface::interface()->open(err, m_smartfd) && err)
+    if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       break;
     if(err)
       continue;
     
     m_buffer.free();
-    if(Env::FsInterface::fs()->pread(
-          err, m_smartfd, m_cells_offset, &m_buffer, m_size_enc) 
-        != m_size_enc) {
-      err = Error::FS_IO_ERROR;
-    }
-    if(m_smartfd->valid()) {
-      int tmperr = Error::OK;
-      Env::FsInterface::fs()->close(tmperr, m_smartfd);
-    }
-    if(err) {
-      if(err == Error::FS_EOF)
-        break;
+    if(fs->pread(err, m_smartfd, m_cells_offset, &m_buffer, m_size_enc) 
+        != m_size_enc)
       continue;
-    }
     
-    if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)){  
-      if(++tries == 3) {
-        SWC_LOGF(LOG_WARN, "CHECKSUM_MISMATCH try=%d %s", 
-                  tries, m_smartfd->to_string().c_str());
-        err = Error::CHECKSUM_MISMATCH;
-        break;
-      }
+    if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)) {
+      err = Error::CHECKSUM_MISMATCH;
+      header_again = true;
       continue;
     }
 
@@ -468,18 +459,22 @@ void Fragment::load() {
       Encoder::decode(
         err, m_encoder, m_buffer.base, m_size_enc, decoded_buf.base, m_size);
       if(err) {
-        int tmperr = Error::OK;
-        Env::FsInterface::fs()->close(tmperr, m_smartfd);
-        break;
+        header_again = true;
+        continue;
       }
       m_buffer.set(decoded_buf);
     }
     break;
   }
-  
+
+  if(m_smartfd->valid()) {
+    int tmperr = Error::OK;
+    fs_if->close(tmperr, m_smartfd);
+  }
+
   {
     std::scoped_lock lock(m_mutex);
-    m_err = err;
+    m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
   }
   if(err)
