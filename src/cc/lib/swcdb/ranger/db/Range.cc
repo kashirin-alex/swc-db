@@ -424,7 +424,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
         
     blocks.cellstores.add(
       CellStore::Read::make(
-        err, cs->id, shared_from_this(), cs->interval)
+        err, cs->id, shared_from_this(), cs->interval, true)
     );
     if(err)
       return;

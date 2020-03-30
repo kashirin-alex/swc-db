@@ -228,7 +228,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
     std::vector<Read::Ptr> cellstores;
     for(auto cs : w_cellstores) {
       cellstores.push_back(
-        CellStore::Read::make(err, cs->id, range, cs->interval)
+        CellStore::Read::make(err, cs->id, range, cs->interval, true)
       );
       if(err)
         break;

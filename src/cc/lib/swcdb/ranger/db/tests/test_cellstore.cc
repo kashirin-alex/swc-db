@@ -152,7 +152,7 @@ void read_cs(int id, SWC::Ranger::RangePtr range,
   SWC::Ranger::Blocks blocks;
   blocks.init(range);
   blocks.cellstores.add(
-    SWC::Ranger::CellStore::Read::make(err, id, range, intval_r));
+    SWC::Ranger::CellStore::Read::make(err, id, range, intval_r, true));
 
   hdlr_err(err);
 

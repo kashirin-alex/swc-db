@@ -37,18 +37,20 @@ class Read final {
 
   inline static Ptr make(int& err, const uint32_t id, 
                          const RangePtr& range, 
-                         const DB::Cells::Interval& interval);
+                         const DB::Cells::Interval& interval, 
+                         bool chk_base=false);
 
   static bool load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
                            size_t& blks_idx_size, 
                            uint32_t& cell_revs, 
                            uint64_t& blks_idx_offset, 
-                           bool close_after=false);
+                           bool close_after=false, bool chk_base=false);
 
   static void load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
                                 DB::Cell::Key& prev_key_end,
                                 DB::Cells::Interval& interval, 
-                                std::vector<Block::Read::Ptr>& blocks);
+                                std::vector<Block::Read::Ptr>& blocks, 
+                                bool chk_base=false);
 
   // 
   

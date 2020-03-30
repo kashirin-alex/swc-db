@@ -12,75 +12,84 @@ namespace SWC { namespace Ranger { namespace CellStore {
 
 Read::Ptr Read::make(int& err, const uint32_t id, 
                      const RangePtr& range, 
-                     const DB::Cells::Interval& interval) {
+                     const DB::Cells::Interval& interval, bool chk_base) {
   auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(id), 0);
   DB::Cell::Key prev_key_end;
   DB::Cells::Interval interval_by_blks;
   std::vector<Block::Read::Ptr> blocks;
-  
-  load_blocks_index(err, smartfd, prev_key_end, interval_by_blks, blocks);
+  try {
+    load_blocks_index(
+      err, smartfd, prev_key_end, interval_by_blks, blocks, chk_base);
+  } catch(Exception& e) {
+    err = e.code();
+  }
   if(err)
     SWC_LOGF(LOG_ERROR, 
       "CellStore load_blocks_index err=%d(%s) id=%d range(%d/%d) %s", 
       err, Error::get_text(err), id, range->cfg->cid, range->rid, 
       interval.to_string().c_str());
+
   return new Read(
     id, 
     prev_key_end,
     interval_by_blks.was_set ? interval_by_blks : interval, 
     blocks, 
-    smartfd);
+    smartfd
+  );
 }
 
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
                          size_t& blks_idx_size, 
                          uint32_t& cell_revs, 
                          uint64_t& blks_idx_offset, 
-                         bool close_after) {
-  bool loaded;
-  for(;;) {
-    err = Error::OK;
-    loaded = false;
+                         bool close_after, bool chk_base) {
+  auto fs_if = Env::FsInterface::interface();
+  auto fs = Env::FsInterface::fs();
+
+  bool loaded = false;
+  err = Error::OK;
+  while(err != Error::FS_EOF) {
+    if(err) {
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
+               err, Error::get_text(err), smartfd->to_string().c_str());
+      fs_if->close(err, smartfd);
+      err = Error::OK;
+    }
   
-    if(!Env::FsInterface::fs()->exists(err, smartfd->filepath())) {
-      if(err != Error::OK && err != Error::SERVER_SHUTTING_DOWN)
-        continue;
+    if(!fs_if->exists(err, smartfd->filepath())) {
+      if(!err)
+        err = Error::FS_PATH_NOT_FOUND;
       return loaded;
     }
-    size_t length = Env::FsInterface::fs()->length(err, smartfd->filepath());
-    if(err) {
-      if(err == Error::FS_PATH_NOT_FOUND ||
-         err == Error::FS_PERMISSION_DENIED ||
-         err == Error::SERVER_SHUTTING_DOWN)
-        return loaded;
-      continue;
-    }
+
+    size_t length = fs_if->length(err, smartfd->filepath());
+    if(err)
+      return loaded;
     
-    if(!Env::FsInterface::interface()->open(err, smartfd) && err)
+    if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
       return loaded;
     if(err)
       continue;
     
     uint8_t buf[TRAILER_SIZE];
     const uint8_t *ptr = buf;
-    if(Env::FsInterface::fs()->pread(
-              err, smartfd, length-TRAILER_SIZE, buf, TRAILER_SIZE)
-            != TRAILER_SIZE){
-      if(err != Error::FS_EOF){
-        Env::FsInterface::interface()->close(err, smartfd); 
-        continue;
-      }
-      return loaded;
+    if(fs->pread(err, smartfd, length-TRAILER_SIZE, buf, TRAILER_SIZE)
+        != TRAILER_SIZE) {
+      if(chk_base)
+        break;
+      continue;
     }
 
     size_t remain = TRAILER_SIZE;
     int8_t version = Serialization::decode_i8(&ptr, &remain);
     blks_idx_size = Serialization::decode_i32(&ptr, &remain);
     cell_revs = Serialization::decode_i32(&ptr, &remain);
-    if(!checksum_i32_chk(
-      Serialization::decode_i32(&ptr, &remain), buf, TRAILER_SIZE-4)){  
+    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                         buf, TRAILER_SIZE-4)) {
       err = Error::CHECKSUM_MISMATCH;
-      break;
+      if(chk_base)
+        break;
+      continue;
     }
     
     blks_idx_offset = length-blks_idx_size-TRAILER_SIZE;      
@@ -89,96 +98,118 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr smartfd,
   }
 
   if(close_after)
-    Env::FsInterface::interface()->close(err, smartfd); 
+    fs_if->close(err, smartfd); 
   return loaded;
 }
 
 void Read::load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
                               DB::Cell::Key& prev_key_end,
                               DB::Cells::Interval& interval, 
-                              std::vector<Block::Read::Ptr>& blocks) {
-
+                              std::vector<Block::Read::Ptr>& blocks, 
+                              bool chk_base) {
   size_t blks_idx_size = 0;
   uint32_t cell_revs = 0;
   uint64_t offset = 0;
-  if(!load_trailer(err, smartfd, blks_idx_size, cell_revs, offset, false))
-    return;
+
+  auto fs_if = Env::FsInterface::interface();
+  auto fs = Env::FsInterface::fs();
 
   StaticBuffer read_buf;
-  for(;;) {
+  bool trailer = false;
+  err = Error::OK;
+
+  while(err != Error::FS_EOF) {
+    if(err) {
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
+               err, Error::get_text(err), smartfd->to_string().c_str());
+      fs_if->close(err, smartfd);
+      err = Error::OK;
+    }
+    
+    if(!trailer) {
+      if(!load_trailer(
+          err, smartfd, blks_idx_size, cell_revs, offset, false, chk_base))
+        break;
+      trailer = true;
+    }
+
+    if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
+      return;
+    if(err)
+      continue;
+
     read_buf.free();
-    err = Error::OK;
-    if(Env::FsInterface::fs()->pread(
-                        err, smartfd, offset, &read_buf, blks_idx_size)
-              != blks_idx_size){
-      int tmperr = Error::OK;
-      Env::FsInterface::interface()->close(tmperr, smartfd); 
-      if(err != Error::FS_EOF){
-        if(!Env::FsInterface::interface()->open(err, smartfd))
-          return;
+    if(fs->pread(err, smartfd, offset, &read_buf, blks_idx_size) 
+        != blks_idx_size)  {
+      if(chk_base)
+        break;
+      trailer = false;
+      continue;
+    }
+
+    const uint8_t *ptr = read_buf.base;
+    size_t remain = blks_idx_size;
+
+    Types::Encoding encoder 
+      = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+    uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
+    uint32_t sz = Serialization::decode_vi32(&ptr, &remain);
+    uint32_t blks_count = Serialization::decode_vi32(&ptr, &remain);
+  
+    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain),
+                         read_buf.base, ptr-read_buf.base) ) {
+      err = Error::CHECKSUM_MISMATCH;
+      if(chk_base)
+        break;
+      trailer = false;
+      continue;
+    }
+  
+    if(encoder != Types::Encoding::PLAIN) {
+      StaticBuffer decoded_buf(sz);
+      Encoder::decode(err, encoder, ptr, sz_enc, decoded_buf.base, sz);
+      if(err) {
+        if(chk_base)
+          break;
+        trailer = false;
         continue;
       }
-      return;
+      read_buf.set(decoded_buf);
+      ptr = read_buf.base;
+      remain = sz;
+    }
+
+    prev_key_end.decode(&ptr, &remain, true);
+
+    const uint8_t* chk_ptr;
+    for(auto blk : blocks)
+      delete blk;
+    blocks.clear();
+    blocks.resize(blks_count);
+    for(int n = 0; n < blks_count; ++n) {
+      chk_ptr = ptr;
+
+      uint64_t offset = Serialization::decode_vi64(&ptr, &remain);
+      auto& blk = (blocks[n] = Block::Read::make(
+        offset, 
+        DB::Cells::Interval(&ptr, &remain),
+        cell_revs
+      ));  
+      if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                           chk_ptr, ptr-chk_ptr)) {
+        err = Error::CHECKSUM_MISMATCH;   
+        if(chk_base)
+          break;
+        trailer = false;
+        continue;
+      }
+      interval.expand(blk->interval);
+      interval.align(blk->interval);
     }
     break;
   }
-  const uint8_t *ptr = read_buf.base;
-
-  size_t remain = blks_idx_size;
-  Types::Encoding encoder 
-    = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
-  uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
-  uint32_t sz = Serialization::decode_vi32(&ptr, &remain);
-  uint32_t blks_count = Serialization::decode_vi32(&ptr, &remain);
   
-  if(!checksum_i32_chk(
-      Serialization::decode_i32(&ptr, &remain), 
-      read_buf.base, ptr-read_buf.base)
-    ) {
-    Env::FsInterface::interface()->close(err, smartfd); 
-    err = Error::CHECKSUM_MISMATCH;
-    return;
-  }
-  
-  if(encoder != Types::Encoding::PLAIN) {
-    StaticBuffer decoded_buf(sz);
-    Encoder::decode(err, encoder, ptr, sz_enc, decoded_buf.base, sz);
-    if(err) {
-      int tmperr = Error::OK;
-      Env::FsInterface::interface()->close(tmperr, smartfd); 
-      return;
-    }
-    read_buf.set(decoded_buf);
-    ptr = read_buf.base;
-    remain = sz;
-  }
-
-  prev_key_end.decode(&ptr, &remain, true);
-
-  const uint8_t* chk_ptr;
-  blocks.clear();
-  blocks.resize(blks_count);
-  for(int n = 0; n < blks_count; ++n) {
-    chk_ptr = ptr;
-
-    uint64_t offset = Serialization::decode_vi64(&ptr, &remain);
-    auto& blk = (blocks[n] = Block::Read::make(
-      offset, 
-      DB::Cells::Interval(&ptr, &remain),
-      cell_revs
-      ));  
-    if(!checksum_i32_chk(
-        Serialization::decode_i32(&ptr, &remain), chk_ptr, ptr-chk_ptr)) {
-      Env::FsInterface::interface()->close(err, smartfd); 
-      err = Error::CHECKSUM_MISMATCH;
-      return;
-    }
-
-    interval.expand(blk->interval);
-    interval.align(blk->interval);
-  }
-
-  Env::FsInterface::interface()->close(err, smartfd); 
+  fs_if->close(err, smartfd); 
 }
 
 // 
@@ -266,8 +297,7 @@ size_t Read::release(size_t bytes) {
 }
 
 void Read::close(int &err) {
-  if(m_smartfd->valid())
-    Env::FsInterface::interface()->close(err, m_smartfd); 
+  Env::FsInterface::interface()->close(err, m_smartfd); 
 }
 
 void Read::remove(int &err) {
@@ -494,7 +524,8 @@ void Write::write_trailer(int& err) {
 void Write::close_and_validate(int& err) {
   Env::FsInterface::interface()->close(err, smartfd);
 
-  if(Env::FsInterface::fs()->length(err, smartfd->filepath()) != size)
+  if(Env::FsInterface::interface()->length(err, smartfd->filepath()) 
+      != size || err)
     err = Error::FS_EOF;
   // + trailer-checksum
 }
@@ -511,8 +542,7 @@ void Write::finalize(int& err) {
 } 
 
 void Write::remove(int &err) {
-  if(smartfd->valid())
-    Env::FsInterface::interface()->close(err, smartfd); 
+  Env::FsInterface::interface()->close(err, smartfd); 
   Env::FsInterface::interface()->remove(err, smartfd->filepath()); 
 }
 
@@ -562,9 +592,10 @@ Read::Ptr create_init_read(int& err, Types::Encoding encoding,
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      auto cs = Read::make(err, 1, range, writer.interval);
+      auto cs = Read::make(err, 1, range, writer.interval, true);
       if(!err) 
         return cs;
+      delete cs;
     }
   }
   int errtmp;

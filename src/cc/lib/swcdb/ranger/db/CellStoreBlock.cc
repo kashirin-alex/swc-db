@@ -179,9 +179,9 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
                err, Error::get_text(err), 
                smartfd->to_string().c_str(), to_string().c_str());
       fs_if->close(err, smartfd);
+      err = Error::OK;
     }
 
-    err = Error::OK;
     if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
       break;
     if(err)
