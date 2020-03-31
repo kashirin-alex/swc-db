@@ -7,6 +7,7 @@
 #define swc_ranger_db_CommitLogFragment_h
 
 #include "swcdb/core/Semaphore.h"
+#include "swcdb/core/QueueRunnable.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
@@ -61,7 +62,7 @@ class Fragment final {
 
   void load_header(bool close_after=true);
 
-  void load(const std::function<void()>& cb);
+  void load(const QueueRunnable::Call_t& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
@@ -114,9 +115,7 @@ class Fragment final {
   int               m_err;
 
   std::atomic<uint32_t> m_cells_remain;
-
-  bool                              m_q_runs = false;
-  std::queue<std::function<void()>> m_queue;
+  QueueRunnable         m_queue;
   
 
 };

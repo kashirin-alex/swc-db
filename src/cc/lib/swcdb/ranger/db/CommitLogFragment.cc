@@ -160,14 +160,13 @@ void Fragment::load_header(bool close_after) {
              to_string().c_str());
 }
 
-void Fragment::load(const std::function<void()>& cb) {
+void Fragment::load(const QueueRunnable::Call_t& cb) {
   bool loaded;
   {
     LockAtomic::Unique::Scope lock(m_mutex);
     //std::scoped_lock lock(m_mutex);
     ++m_processing;
-    loaded = m_state == State::LOADED;
-    if(!loaded) {
+    if(!(loaded = m_state == State::LOADED)) {
       m_queue.push(cb);
 
       if(m_state == State::LOADING || m_state == State::WRITING)
@@ -495,42 +494,13 @@ void Fragment::load() {
 
 
 void Fragment::run_queued() {
-  {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
-    if(m_q_runs || m_queue.empty())
-      return;
-    m_q_runs = true;
-  }
-  
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()](){ ptr->_run_queued(); }
-  );
+  if(m_queue.need_run())
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [this](){ m_queue.run(); }
+    );
 }
 
-void Fragment::_run_queued() {
-  std::function<void()> cb;
-  for(;;) {
-    {
-      LockAtomic::Unique::Scope lock(m_mutex);
-      //std::shared_lock lock(m_mutex);
-      cb = m_queue.front();
-    }
-
-    cb();
-    
-    {
-      LockAtomic::Unique::Scope lock(m_mutex);
-      //std::scoped_lock lock(m_mutex);
-      m_queue.pop();
-      if(m_queue.empty()) {
-        m_q_runs = false;
-        return;
-      }
-    }
-  }
-}
 
 
 }}} // namespace SWC::Ranger::CommitLog
