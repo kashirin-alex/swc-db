@@ -179,15 +179,16 @@ const bool Interval::includes(const Interval& other) const {
          consist(other);           
 }
 
-const bool Interval::includes(const Specs::Interval::Ptr interval) const {
-  return includes(*interval.get());
+const bool Interval::includes_begin(const Specs::Interval& interval) const {
+  return key_begin.empty() || interval.is_matching_end(key_begin);
 }
 
-const bool Interval::includes(const Specs::Interval& interval) const { 
-  return  (key_end.empty() || interval.is_matching_begin(key_end))
-          && 
-          (key_begin.empty() || interval.is_matching_end(key_begin))
-        ;
+const bool Interval::includes_end(const Specs::Interval& interval) const {
+  return key_end.empty() || interval.is_matching_begin(key_end);
+}
+
+const bool Interval::includes(const Specs::Interval& interval) const {
+  return  includes_begin(interval) && includes_end(interval);
     /* // , bool ts=false
       && 
     (!ts || (

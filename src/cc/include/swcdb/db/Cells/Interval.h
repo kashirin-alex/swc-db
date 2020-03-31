@@ -70,7 +70,9 @@ class Interval final {
 
   const bool includes(const Interval& other) const;
 
-  const bool includes(const Specs::Interval::Ptr interval) const;
+  const bool includes_begin(const Specs::Interval& interval) const;
+
+  const bool includes_end(const Specs::Interval& interval) const;
 
   const bool includes(const Specs::Interval& interval) const;
 
