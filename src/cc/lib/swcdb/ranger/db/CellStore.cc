@@ -250,11 +250,11 @@ void Read::load_cells(BlockLoader* loader) {
   
   QueueRunnable::Call_t cb;
   for(auto blk : applicable) {
-    if(blk->load(cb = [loader](){ loader->loaded_blk(); }))
+    if(blk->load(cb = [loader](){ loader->loaded_blk(); })) {
       m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
+      run_queued();
+    }
   }
-
-  run_queued();
 }
 
 void Read::run_queued() {
