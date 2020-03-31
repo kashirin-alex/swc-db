@@ -6,7 +6,7 @@
 #ifndef swc_ranger_db_CellStoreBlock_h
 #define swc_ranger_db_CellStoreBlock_h
 
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/QueueRunnable.h"
 
 
 namespace SWC { namespace Ranger { namespace CellStore {
@@ -51,9 +51,9 @@ class Read final {
 
   ~Read();
   
-  bool load(const std::function<void()>& cb);
+  bool load(const QueueRunnable::Call_t& cb);
 
-  void load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb);
+  void load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb);
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
@@ -80,8 +80,6 @@ class Read final {
 
   void run_queued();
 
-  void _run_queued();
-
   //std::shared_mutex                  m_mutex;
   LockAtomic::Unique                 m_mutex;
   State                              m_state;
@@ -93,10 +91,9 @@ class Read final {
   uint32_t                           m_cells_count;
   uint32_t                           m_checksum_data;
   StaticBuffer                       m_buffer;
-  bool                               m_q_runs = false;
-  std::queue<std::function<void()>>  m_queue;
   std::atomic<uint32_t>              m_cells_remain;
   int                                m_err;
+  QueueRunnable                      m_queue;
 };
 
 

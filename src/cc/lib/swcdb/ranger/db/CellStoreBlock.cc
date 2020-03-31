@@ -46,7 +46,7 @@ Read::Ptr Read::ptr() {
 Read::~Read() { 
 }
 
-bool Read::load(const std::function<void()>& cb) {
+bool Read::load(const QueueRunnable::Call_t& cb) {
   {
     LockAtomic::Unique::Scope lock(m_mutex);
     //std::scoped_lock lock(m_mutex);
@@ -64,7 +64,7 @@ bool Read::load(const std::function<void()>& cb) {
   return false;
 }
 
-void Read::load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb) {
+void Read::load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb) {
   int err = Error::OK;
   load(err, smartfd);
   if(err)
@@ -261,41 +261,11 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 }
 
 void Read::run_queued() {
-  {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
-    if(m_q_runs || m_queue.empty()) 
-      return;
-    m_q_runs = true;
-  }
-  
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()](){ ptr->_run_queued(); }
-  );
-}
-
-void Read::_run_queued() {
-  std::function<void()> call;
-  for(;;) {
-    {
-      LockAtomic::Unique::Scope lock(m_mutex);
-      //std::shared_lock lock(m_mutex);
-      call = m_queue.front();
-    }
-
-    call();
-    
-    {
-      LockAtomic::Unique::Scope lock(m_mutex);
-      //std::scoped_lock lock(m_mutex);
-      m_queue.pop();
-      if(m_queue.empty()) {
-        m_q_runs = false;
-        return;
-      }
-    }
-  }
+  if(m_queue.need_run())
+    asio::post(
+      *Env::IoCtx::io()->ptr(), 
+      [this](){ m_queue.run(); }
+    );
 }
 
 
