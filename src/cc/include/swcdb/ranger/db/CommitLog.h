@@ -78,7 +78,9 @@ class Fragments final {
 
   private:
 
-  const bool _processing();
+  const bool _need_roll() const;
+
+  const bool _processing() const;
 
   const size_t _size_bytes(bool only_loaded=false);
 

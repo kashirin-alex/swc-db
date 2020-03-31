@@ -43,34 +43,29 @@ void Fragments::schema_update() {
 }
 
 void Fragments::add(const DB::Cells::Cell& cell) {
-  size_t size_bytes;
-  uint32_t cells_count;
+  bool roll;
   {
     std::scoped_lock lock(m_mutex_cells);
     m_cells.add_raw(cell);
-    size_bytes = m_cells.size_bytes();
-    cells_count = m_cells.size();
+    roll = _need_roll();
   }
 
-  if(!m_mutex.try_lock())
-    return;
-
-  if(!m_deleting && !m_commiting 
-    && (size_bytes >= range->cfg->block_size() || 
-        cells_count >= range->cfg->block_cells())) {
-    m_commiting = true;
-    asio::post(
-      *Env::IoCtx::io()->ptr(), 
-      [ptr=ptr()](){ ptr->commit_new_fragment(); }
-    );
+  if(roll && m_mutex.try_lock()) {
+    if(!m_deleting && !m_commiting) {
+      m_commiting = true;
+      asio::post(
+        *Env::IoCtx::io()->ptr(), 
+        [ptr=ptr()](){ ptr->commit_new_fragment(); }
+      );
+    }
+    m_mutex.unlock();
   }
-  m_mutex.unlock();
 }
 
 void Fragments::commit_new_fragment(bool finalize) {
-  {
+  if(finalize) {
     std::unique_lock lock_wait(m_mutex);
-    if(finalize && m_commiting)
+    if(m_commiting)
       m_cv.wait(lock_wait, [&commiting=m_commiting]
                            {return !commiting && (commiting = true);});
   }
@@ -94,8 +89,8 @@ void Fragments::commit_new_fragment(bool finalize) {
             frag->cells_count, frag->interval, 
             range->cfg->block_size(), range->cfg->block_cells());
         }
-        if(cells.fill() >= range->cfg->block_size() 
-          || frag->cells_count >= range->cfg->block_cells())
+        if(cells.fill() >= range->cfg->block_size() || 
+           frag->cells_count >= range->cfg->block_cells())
           break;
         {
           std::shared_lock lock2(m_mutex_cells);
@@ -128,11 +123,8 @@ void Fragments::commit_new_fragment(bool finalize) {
     sem.wait_until_under(5);
 
     std::shared_lock lock2(m_mutex_cells);
-    uint32_t cells_count = m_cells.size();
-    if(!cells_count || (!finalize && 
-       (m_cells.size_bytes() < range->cfg->block_size() && 
-       cells_count < range->cfg->block_cells()) ) )
-      break; 
+    if(!m_cells.size() || (!finalize && !_need_roll()))
+      break;
   }
 
   sem.wait_all();
@@ -364,7 +356,13 @@ const std::string Fragments::to_string() {
   return s;
 }
 
-const bool Fragments::_processing() {
+
+const bool Fragments::_need_roll() const {
+  return m_cells.size_bytes() >= range->cfg->block_size() || 
+         m_cells.size() >= range->cfg->block_cells();
+}
+
+const bool Fragments::_processing() const {
   if(m_commiting)
     return true;
   for(auto frag : m_fragments)
