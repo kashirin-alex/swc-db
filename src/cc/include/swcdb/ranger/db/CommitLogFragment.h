@@ -98,7 +98,8 @@ class Fragment final {
 
   void _run_queued();
   
-  std::shared_mutex m_mutex;
+  LockAtomic::Unique m_mutex;
+  //std::shared_mutex m_mutex;
   State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
   uint8_t           m_version;

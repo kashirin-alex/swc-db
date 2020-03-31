@@ -6,6 +6,7 @@
 #ifndef swc_ranger_db_CellStoreBlock_h
 #define swc_ranger_db_CellStoreBlock_h
 
+#include "swcdb/core/LockAtomicUnique.h"
 
 
 namespace SWC { namespace Ranger { namespace CellStore {
@@ -81,7 +82,8 @@ class Read final {
 
   void _run_queued();
 
-  std::shared_mutex                  m_mutex;
+  //std::shared_mutex                  m_mutex;
+  LockAtomic::Unique                 m_mutex;
   State                              m_state;
   size_t                             m_processing;
   bool                               m_loaded_header;

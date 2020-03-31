@@ -137,7 +137,8 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
 
   bool keep;
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     keep = !m_queue.empty() || m_processing;
     m_err = err;
     if((m_state = !m_err && keep ? State::LOADED : State::NONE) 
@@ -162,7 +163,8 @@ void Fragment::load_header(bool close_after) {
 void Fragment::load(const std::function<void()>& cb) {
   bool loaded;
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     ++m_processing;
     loaded = m_state == State::LOADED;
     if(!loaded) {
@@ -242,13 +244,15 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
 }
 
 void Fragment::processing_decrement() {
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
   --m_processing; 
 }
 
 size_t Fragment::release() {
   size_t released = 0;     
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
 
   if(m_processing || m_state != State::LOADED)
     return released; 
@@ -261,45 +265,51 @@ size_t Fragment::release() {
 }
 
 const bool Fragment::loaded() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 const int Fragment::error() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_err;
 }
 
 const bool Fragment::loaded(int& err) {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
 const size_t Fragment::size_bytes(bool only_loaded) {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
   return m_size;
 }
 
 const size_t Fragment::size_bytes_encoded() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_size_enc;
 }
 
 const bool Fragment::processing() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_processing;
 }
 
 void Fragment::remove(int &err) {
-  std::scoped_lock lock(m_mutex);
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
 const std::string Fragment::to_string() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   std::string s("Fragment(version=");
   s.append(std::to_string(m_version));
 
@@ -417,7 +427,8 @@ void Fragment::load() {
 
   bool header_again;
   {
-    std::shared_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::shared_lock lock(m_mutex);
     header_again = m_err;
   }
   int err = Error::OK;
@@ -471,7 +482,8 @@ void Fragment::load() {
   }
 
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
   }
@@ -484,7 +496,8 @@ void Fragment::load() {
 
 void Fragment::run_queued() {
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     if(m_q_runs || m_queue.empty())
       return;
     m_q_runs = true;
@@ -500,14 +513,16 @@ void Fragment::_run_queued() {
   std::function<void()> cb;
   for(;;) {
     {
-      std::shared_lock lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
+      //std::shared_lock lock(m_mutex);
       cb = m_queue.front();
     }
 
     cb();
     
     {
-      std::scoped_lock lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
+      //std::scoped_lock lock(m_mutex);
       m_queue.pop();
       if(m_queue.empty()) {
         m_q_runs = false;

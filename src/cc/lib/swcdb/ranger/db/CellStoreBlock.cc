@@ -48,7 +48,8 @@ Read::~Read() {
 
 bool Read::load(const std::function<void()>& cb) {
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
       m_state = State::LOADING;
@@ -92,13 +93,15 @@ void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
 }
 
 void Read::processing_decrement() {
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
   --m_processing; 
 }
 
 const size_t Read::release() {    
   size_t released = 0;
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
 
   if(m_processing || m_state != State::LOADED)
     return released; 
@@ -111,35 +114,41 @@ const size_t Read::release() {
 }
 
 const bool Read::processing() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_processing;
 }
 
 const int Read::error() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_err;
 }
 
 const bool Read::loaded() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 const bool Read::loaded(int& err) {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
 const size_t Read::size_bytes(bool only_loaded) {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
   return m_size;
 }
 
 const std::string Read::to_string() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::shared_lock lock(m_mutex);
   std::string s("Block(offset=");
   s.append(std::to_string(offset));
   s.append(" state=");
@@ -236,7 +245,8 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
     break;
   }
 
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::Scope lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();
@@ -252,7 +262,8 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 
 void Read::run_queued() {
   {
-    std::scoped_lock lock(m_mutex);
+    LockAtomic::Unique::Scope lock(m_mutex);
+    //std::scoped_lock lock(m_mutex);
     if(m_q_runs || m_queue.empty()) 
       return;
     m_q_runs = true;
@@ -268,14 +279,16 @@ void Read::_run_queued() {
   std::function<void()> call;
   for(;;) {
     {
-      std::shared_lock lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
+      //std::shared_lock lock(m_mutex);
       call = m_queue.front();
     }
 
     call();
     
     {
-      std::scoped_lock lock(m_mutex);
+      LockAtomic::Unique::Scope lock(m_mutex);
+      //std::scoped_lock lock(m_mutex);
       m_queue.pop();
       if(m_queue.empty()) {
         m_q_runs = false;
