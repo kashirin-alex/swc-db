@@ -77,6 +77,8 @@ class Read final {
 
   size_t release(size_t bytes);
 
+  void release_fd();
+
   void close(int &err);
 
   void remove(int &err);
@@ -95,10 +97,10 @@ class Read final {
 
   void _run_queued();
 
-  std::shared_mutex                   m_mutex;
-  bool                                m_q_runs = false;
-  std::queue<std::function<void()>>   m_queue;
-  FS::SmartFd::Ptr                    m_smartfd;
+  //std::shared_mutex    m_mutex;
+  FS::SmartFd::Ptr     m_smartfd;
+  QueueRunnable        m_queue;
+
 
 };
 

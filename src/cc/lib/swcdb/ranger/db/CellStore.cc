@@ -248,29 +248,20 @@ void Read::load_cells(BlockLoader* loader) {
       break;
   }
   
+  QueueRunnable::Call_t cb;
   for(auto blk : applicable) {
-    auto cb = [loader](){ loader->loaded_blk(); };
-    if(blk->load(cb)) {
-      std::scoped_lock lock(m_mutex);
+    if(blk->load(cb = [loader](){ loader->loaded_blk(); }))
       m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
-    }
   }
 
   run_queued();
 }
 
 void Read::run_queued() {
-  {
-    std::scoped_lock lock(m_mutex);
-    if(m_q_runs || m_queue.empty())
-      return;
-    m_q_runs = true;
-  }
-  
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()](){ ptr->_run_queued(); }
-  );
+  if(m_queue.need_run())
+    asio::post(*Env::IoCtx::io()->ptr(), [this]() {
+      m_queue.run([this]() { release_fd(); });
+    });
 }
 
 void Read::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
@@ -284,17 +275,15 @@ size_t Read::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
-  
-  if(Env::FsInterface::interface()->need_fds()) {
-    {
-      std::shared_lock lock(m_mutex);
-      if(!m_queue.empty()) 
-        return released;
-    }
+  //release_fd(); - queue a call
+  return released;
+}
+
+void Read::release_fd() { 
+  if(Env::FsInterface::interface()->need_fds() && !_processing()) {
     int err = Error::OK;
     close(err); 
   }
-  return released;
 }
 
 void Read::close(int &err) {
@@ -306,8 +295,8 @@ void Read::remove(int &err) {
 } 
 
 const bool Read::processing() {
-  std::shared_lock lock(m_mutex);
-  return _processing();
+  //std::shared_lock lock(m_mutex);
+  return m_queue.running() || _processing();
 }
 
 const size_t Read::size_bytes(bool only_loaded) const {
@@ -322,7 +311,7 @@ const size_t Read::blocks_count() const {
 }
 
 const std::string Read::to_string() {
-  std::scoped_lock lock(m_mutex);
+  //std::scoped_lock lock(m_mutex);
 
   std::string s("Read(v=");
   s.append(std::to_string(VERSION));
@@ -334,10 +323,8 @@ const std::string Read::to_string() {
   
   s.append(interval.to_string());
 
-  if(m_smartfd != nullptr) {
-    s.append(" file=");
-    s.append(m_smartfd->filepath());
-  }
+  s.append(" file=");
+  s.append(m_smartfd->filepath());
 
   s.append(" blocks=");
   s.append(std::to_string(blocks_count()));
@@ -366,38 +353,12 @@ const std::string Read::to_string() {
 
 
 const bool Read::_processing() const {
-  if(m_queue.size())
-    return true;
   for(auto blk : blocks)
     if(blk->processing())
       return true;
   return false;
 }
 
-void Read::_run_queued() {
-  std::function<void()> call;
-  for(;;) {
-    {
-      std::shared_lock lock(m_mutex);
-      call = m_queue.front();
-    }
-
-    call();
-    
-    {
-      std::scoped_lock lock(m_mutex);
-      m_queue.pop();
-      if(m_queue.empty()) {
-        m_q_runs = false;
-        if(Env::FsInterface::interface()->need_fds()) {
-          int tmperr = Error::OK;
-          close(tmperr);
-        }
-        return;
-      }
-    }
-  }
-}
 
 
 
