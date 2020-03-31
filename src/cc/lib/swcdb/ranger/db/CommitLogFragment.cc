@@ -210,15 +210,13 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
     size_t remain = m_buffer.size;
 
     while(remain) {
+      ++count;
       try {
         cell.read(&buf, &remain);
-        ++count;
 
       } catch(std::exception) {
-        err = Error::SERIALIZATION_INPUT_OVERRUN;
-        SWC_LOGF(LOG_ERROR, 
-                  "Cell trunclated at remain=%llu %s, %s", 
-                  remain, cell.to_string().c_str(), to_string().c_str());
+        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+                count, cells_count, remain, to_string().c_str());
         break;
       }
 

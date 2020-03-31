@@ -51,9 +51,9 @@ class Block final {
 
   void schema_update();
 
-  const bool is_consist(const DB::Cells::Interval& intval);
+  const bool is_consist(const DB::Cells::Interval& intval) const;
   
-  const bool is_in_end(const DB::Cell::Key& key);
+  const bool is_in_end(const DB::Cell::Key& key) const;
 
   const bool is_next(const DB::Specs::Interval& spec);
 

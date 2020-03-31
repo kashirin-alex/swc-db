@@ -45,8 +45,9 @@ void Block::schema_update() {
   );
 }
 
-const bool Block::is_consist(const DB::Cells::Interval& intval) {
-  std::shared_lock lock(m_mutex);
+const bool Block::is_consist(const DB::Cells::Interval& intval) const {
+  //std::shared_lock lock(m_mutex); 
+  // m_prev_key_end && m_interval.key_end behave as const
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
@@ -54,21 +55,24 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) {
      m_prev_key_end.compare(intval.key_end) == Condition::GT);
 }
 
-const bool Block::is_in_end(const DB::Cell::Key& key) {
-  std::shared_lock lock(m_mutex);
+const bool Block::is_in_end(const DB::Cell::Key& key) const {
+  //std::shared_lock lock(m_mutex); 
   return m_interval.is_in_end(key);
 }
 
 const bool Block::is_next(const DB::Specs::Interval& spec) {
-  std::shared_lock lock(m_mutex);
+  //std::shared_lock lock(m_mutex); 
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
-          && m_interval.includes(spec); // , m_state == State::LOADED
+          && includes(spec);
 }
 
 const bool Block::includes(const DB::Specs::Interval& spec) {
-  std::shared_lock lock(m_mutex);
-  return m_interval.includes(spec); // , m_state == State::LOADED
-  // if spec with ts >> && blocks->{cellstores, commitlog}->matching(spec); 
+  bool ok;
+  if(ok = m_interval.includes_end(spec)) {
+    std::shared_lock lock(m_mutex);
+    ok = m_interval.includes_begin(spec);
+  }
+  return ok; 
 }
     
 void Block::preload() {
@@ -143,14 +147,13 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
     synced = true;
 
   while(remain) {
+    ++count;
     try {
       cell.read(&buf, &remain);
-      ++count;
+      
     } catch(std::exception) {
-      SWC_LOGF(LOG_ERROR, 
-        "Cell trunclated at count=%llu remain=%llu %s, %s", 
-        count, avail-count, 
-        cell.to_string().c_str(),  m_interval.to_string().c_str());
+      SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+               count, avail, remain, m_interval.to_string().c_str());
       break;
     }
     
