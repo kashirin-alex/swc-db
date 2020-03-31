@@ -79,7 +79,7 @@ class Readers final {
   
   const size_t _size_bytes(bool only_loaded=false);
 
-  std::shared_mutex       m_mutex;
+  //std::shared_mutex       m_mutex;
   std::vector<Read::Ptr>  m_cellstores;
 };
 
