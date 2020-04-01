@@ -151,7 +151,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void last_rgr_chk(int &err, ResponseCallback::Ptr cb);
 
-  void load(int &err, ResponseCallback::Ptr cb);
+  void load(int &err);
 
   const bool wait(uint8_t from_state=COMPACT_CHECKING);
 

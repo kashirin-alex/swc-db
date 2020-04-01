@@ -45,6 +45,7 @@ void Blocks::load(int& err) {
 
 void Blocks::unload() {
   wait_processing();
+  processing_increment();
   commitlog.commit_new_fragment(true);  
   std::scoped_lock lock(m_mutex);
     
@@ -52,16 +53,19 @@ void Blocks::unload() {
   cellstores.unload();  
   _clear();
   range = nullptr;
+  processing_decrement();
 }
   
 void Blocks::remove(int& err) {
   wait_processing();
+  processing_increment();
   std::scoped_lock lock(m_mutex);
 
   commitlog.remove(err);
   cellstores.remove(err);   
   _clear();
   range = nullptr;
+  processing_decrement();
 }
 
 void Blocks::expand(DB::Cells::Interval& intval) {

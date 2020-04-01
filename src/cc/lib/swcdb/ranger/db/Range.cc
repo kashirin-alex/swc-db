@@ -150,6 +150,8 @@ void Range::create_folders(int& err) {
 }
 
 void Range::load(ResponseCallback::Ptr cb) {
+  blocks.processing_increment();
+
   bool is_loaded;
   {
     std::scoped_lock lock(m_mutex);
@@ -159,16 +161,15 @@ void Range::load(ResponseCallback::Ptr cb) {
   }
   int err = RangerEnv::is_shuttingdown() ?
             Error::SERVER_SHUTTING_DOWN : Error::OK;
-  if(is_loaded || err != Error::OK)
+  if(is_loaded || err)
     return loaded(err, cb);
 
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE %s", to_string().c_str());
 
   if(!Env::FsInterface::interface()->exists(err, get_path(CELLSTORES_DIR))) {
-    if(err != Error::OK)
-      return loaded(err, cb);
-    create_folders(err);
-    if(err != Error::OK)
+    if(!err)
+      create_folders(err);
+    if(err)
       return loaded(err, cb);
       
     take_ownership(err, cb);
@@ -184,10 +185,10 @@ void Range::take_ownership(int &err, ResponseCallback::Ptr cb) {
 
   RangerEnv::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
-  if(err != Error::OK)
-    return loaded(err, cb);
+  if(!err)
+    load(err);
 
-  load(err, cb);
+  loaded(err, cb); // RSP-LOAD-ACK
 }
 
 void Range::on_change(int &err, bool removal, 
@@ -452,6 +453,7 @@ void Range::loaded(int &err, ResponseCallback::Ptr cb) {
     if(m_state == State::DELETED)
       err = Error::RS_DELETED_RANGE;
   }
+  blocks.processing_decrement();
   cb->response(err);
 }
 
@@ -474,7 +476,16 @@ void Range::last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
   take_ownership(err, cb);
 }
 
-void Range::load(int &err, ResponseCallback::Ptr cb) {
+void Range::load(int &err) {
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_state != State::LOADING) { 
+      // state has changed since load request
+      err = Error::RS_NOT_LOADED_RANGE;
+      return;
+    }
+  }
+
   bool is_initial_column_range = false;
   RangeData::load(err, blocks.cellstores);
   if(err) 
@@ -510,11 +521,9 @@ void Range::load(int &err, ResponseCallback::Ptr cb) {
     }
   }
   
-  if(!err) 
+  if(!err)
     set_state(State::LOADED);
       
-  loaded(err, cb);   // RSP-LOAD-ACK
-
   if(is_loaded()) {
     SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
   } else 
