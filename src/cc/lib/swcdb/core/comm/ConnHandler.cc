@@ -230,8 +230,7 @@ void ConnHandler::next_outgoing() {
   ConnHandler::Outgoing* data;
   {
     std::scoped_lock lock(m_mutex);
-    m_writing = !m_outgoing.empty();
-    if(!m_writing) 
+    if(!(m_writing = !m_outgoing.empty())) 
       return;
     data = m_outgoing.front();
     m_outgoing.pop();

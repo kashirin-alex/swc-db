@@ -101,9 +101,12 @@ void ConnQueue::stop() {
   }
 
   ReqBase::Ptr req;
+  if(!m_queue.empty()) do {
+    if(!(req = m_queue.front())->was_called)
+      req->handle_no_conn();
+  } while(m_queue.pop_and_more());
 
   std::lock_guard<std::recursive_mutex> lock(m_mutex);
-
   if(m_conn != nullptr && m_conn->is_open())
     m_conn->do_close();
 
@@ -111,21 +114,14 @@ void ConnQueue::stop() {
     m_timer->cancel();
     m_timer = nullptr;
   }
-
-  while(!m_queue.empty()) {
-    req = m_queue.front();
-    m_queue.pop();
-    if(!req->was_called)
-      req->handle_no_conn();
-  }
 }
 
 void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
   if(req->queue == nullptr) 
     req->queue = shared_from_this();
+  m_queue.push(req);
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    m_queue.push(req);
     if(m_conn == nullptr || !m_conn->is_open())
       if(m_connecting)
         return;
@@ -206,15 +202,15 @@ void ConnQueue::run_queue() {
   }
   ReqBase::Ptr    req;
   ConnHandlerPtr  conn;
-  bool sent;
   for(;;) {
+    if(m_queue.empty()) {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      m_queue_running = false;
+      break;
+    }
+    req = m_queue.front();
     {
       std::lock_guard<std::recursive_mutex> lock(m_mutex);
-      if(m_queue.empty()){
-        m_queue_running = false;
-        break;
-      } 
-      req = m_queue.front();
       if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
         m_queue_running = false;
         break;
@@ -224,10 +220,8 @@ void ConnQueue::run_queue() {
       
     SWC_ASSERT(req->cbp != nullptr);
 
-    if(!req->valid())
-      goto processed;
-        
-    if(sent = (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK))
+    if(!req->valid() ||
+       (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK))
       goto processed;
 
     req->handle_no_conn();
@@ -235,14 +229,9 @@ void ConnQueue::run_queue() {
       continue;
         
     processed: {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex);
-      m_queue.pop();
-      m_queue_running = !m_queue.empty();
-      if(m_queue_running) 
+      if(m_queue.pop_and_more())
         continue;
-      break;
     }
-  
   }
 
   schedule_close();
@@ -253,17 +242,18 @@ void ConnQueue::schedule_close() {
     return;
   // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
 
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    
-  if(m_queue.empty() && (m_conn == nullptr || !m_conn->due())) {
-    if(m_conn != nullptr)
-      m_conn->do_close(); 
-    if(m_timer != nullptr) {
-      m_timer->cancel();
-      m_timer = nullptr;
+  if(m_queue.empty()) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if(m_conn == nullptr || !m_conn->due()) {
+      if(m_conn != nullptr)
+        m_conn->do_close(); 
+      if(m_timer != nullptr) {
+        m_timer->cancel();
+        m_timer = nullptr;
+      }
+      close_issued();
+      return;
     }
-    close_issued();
-    return;
   }
     
   if(m_timer == nullptr)
@@ -279,7 +269,7 @@ void ConnQueue::schedule_close() {
         ptr->schedule_close();
       }
     }
-  );   
+  );
 }
 
 }}

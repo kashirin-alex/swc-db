@@ -7,7 +7,6 @@
 #define swc_ranger_db_RangeBlock_h
 
 #include <shared_mutex>
-#include <queue>
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Cells/Mutable.h"
