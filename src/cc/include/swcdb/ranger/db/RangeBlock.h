@@ -136,9 +136,8 @@ class Block final {
 
   std::shared_mutex         m_mutex_state;
   State                     m_state;
-  uint8_t                   m_load_require;
   std::atomic<size_t>       m_processing;
-  std::queue<ReqScan::Ptr>  m_queue;
+  QueueSafe<ReqScan::Ptr>   m_queue;
 
 };
 

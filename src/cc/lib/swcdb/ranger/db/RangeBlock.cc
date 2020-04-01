@@ -27,7 +27,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->column_type())),
               blocks(blocks), 
               m_state(state), m_processing(0), 
-              next(nullptr), prev(nullptr), m_load_require(0) {
+              next(nullptr), prev(nullptr) {
 }
 
 Block::~Block() { }
@@ -46,7 +46,7 @@ void Block::schema_update() {
 }
 
 const bool Block::is_consist(const DB::Cells::Interval& intval) const {
-  //std::shared_lock lock(m_mutex); 
+  //std::shared_lock lock(m_mutex);
   // m_prev_key_end && m_interval.key_end behave as const
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
@@ -56,12 +56,12 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) const {
 }
 
 const bool Block::is_in_end(const DB::Cell::Key& key) const {
-  //std::shared_lock lock(m_mutex); 
+  //std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
 }
 
 const bool Block::is_next(const DB::Specs::Interval& spec) {
-  //std::shared_lock lock(m_mutex); 
+  //std::shared_lock lock(m_mutex);
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
           && includes(spec);
 }
@@ -312,15 +312,15 @@ void Block::merge_and_release(Block::Ptr blk) {
 
 const size_t Block::release() {
   size_t released = 0;
-  if(m_processing || !loaded())
-    return released;
-
-  std::scoped_lock lock(m_mutex, m_mutex_state);
-
-  m_state = State::NONE;
-  released += _size_bytes();
-  m_cells.free();
-  m_load_require = 0;
+  if(!m_processing && m_mutex.try_lock()) {
+    std::scoped_lock lock(m_mutex_state);
+    if(!m_processing && m_state == State::LOADED) {
+      m_state = State::NONE;
+      released += _size_bytes();
+      m_cells.free();
+    }
+    m_mutex.unlock();
+  }
   return released;
 }
 
@@ -394,8 +394,8 @@ void Block::free_key_end() {
 }
 
 const std::string Block::to_string() {
-  std::shared_lock lock1(m_mutex_state);
-  std::shared_lock lock2(m_mutex);
+  std::shared_lock lock1(m_mutex);
+  std::shared_lock lock2(m_mutex_state);
 
   std::string s("Block(state=");
   s.append(std::to_string((uint8_t)m_state));
@@ -447,14 +447,10 @@ const bool Block::_scan(ReqScan::Ptr req, bool synced) {
 }
 
 void Block::run_queue(int& err) {
+  ReqScan::Ptr req;
+  do {
 
-  for(ReqScan::Ptr req; ; ) {
-    {
-      std::shared_lock lock(m_mutex_state);
-      req = m_queue.front();
-    }
-        
-    if(req->type == ReqScan::Type::BLK_PRELOAD) {
+    if((req = m_queue.front())->type == ReqScan::Type::BLK_PRELOAD) {
       processing_decrement();
 
     } else if(err) {
@@ -466,13 +462,7 @@ void Block::run_queue(int& err) {
       asio::post(*Env::IoCtx::io()->ptr(), [this, req]() { _scan(req); } );
     }
 
-    {
-      std::scoped_lock lock(m_mutex_state);
-      m_queue.pop();
-      if(m_queue.empty())
-        return;
-    }
-  }
+  } while(m_queue.pop_and_more());
 }
 
 
