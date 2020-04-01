@@ -124,10 +124,7 @@ bool Range::deleted() {
 }
 
 void Range::add(Range::ReqAdd* req) {
-  std::scoped_lock lock(m_mutex);
-  m_q_adding.push(req);
-    
-  if(m_q_adding.size() == 1) { 
+  if(m_q_adding.push_and_is_1st(req)) { 
     asio::post(*Env::IoCtx::io()->ptr(), 
       [ptr=shared_from_this()](){ ptr->run_add_queue(); }
     );
@@ -312,14 +309,8 @@ void Range::remove(int &err, bool meta) {
 }
 
 void Range::wait_queue() {
-  for(;;) {
-    {
-      std::shared_lock lock(m_mutex);
-      if(m_q_adding.empty())
-        break;
-    }
+  while(!m_q_adding.empty())
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
 }
 
 const bool Range::compacting() {
@@ -565,10 +556,7 @@ void Range::run_add_queue() {
   }
   uint64_t ttl = cfg->cell_ttl();
 
-  for(;;) {
-    err = Error::OK;
-    early_range_end = false;
-    late_range_begin = false;
+  do {
     if(wait(COMPACT_APPLYING)) { // COMPACT_COMPACTING
       std::shared_lock lock(m_mutex);
       key_prev_end.copy(m_prev_key_end);
@@ -576,13 +564,13 @@ void Range::run_add_queue() {
     }
     blocks.processing_increment();
   
-    intval_chg = false;
-    {
-      std::shared_lock lock(m_mutex);
-      req = m_q_adding.front();
-    }
+    req = m_q_adding.front();
     ptr = req->input.base;
-    remain = req->input.size; 
+    remain = req->input.size;
+    early_range_end = false;
+    late_range_begin = false;
+    intval_chg = false;
+    err = Error::OK;
     if(req->cb->expired(remain/100000))
       err = Error::REQUEST_TIMEOUT;
       
@@ -660,15 +648,9 @@ void Range::run_add_queue() {
     } else {
       req->cb->response(err);
     }
-      
     delete req;
-    {
-      std::scoped_lock lock(m_mutex);
-      m_q_adding.pop();
-      if(m_q_adding.empty())
-        break;
-    }
-  }
+
+  } while(m_q_adding.pop_and_more());
     
   if(blocks.commitlog.size_bytes_encoded() > 
       (cfg->cellstore_size()/100) * cfg->compact_percent()) {

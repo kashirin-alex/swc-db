@@ -11,6 +11,7 @@ class Range;
 typedef std::shared_ptr<Range> RangePtr;
 }}
 
+#include "swcdb/core/QueueSafe.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Columns/RangeBase.h"
 
@@ -166,7 +167,7 @@ class Range : public std::enable_shared_from_this<Range> {
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
   bool                          m_require_compact;
-  std::queue<ReqAdd*>           m_q_adding;
+  QueueSafe<ReqAdd*>            m_q_adding;
 
   std::condition_variable_any   m_cv;
 };
