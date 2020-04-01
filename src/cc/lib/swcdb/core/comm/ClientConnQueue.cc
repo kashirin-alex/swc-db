@@ -69,9 +69,7 @@ const std::string ConnQueue::ReqBase::to_string() {
 ConnQueue::ConnQueue(IOCtxPtr ioctx,
                      const Property::V_GINT32::Ptr keepalive_ms, 
                      const Property::V_GINT32::Ptr again_delay_ms) 
-                    : m_ioctx(ioctx),
-                      m_conn(nullptr), m_queue_running(false), 
-                      m_connecting(false),
+                    : m_ioctx(ioctx), m_conn(nullptr), m_connecting(false),
                       cfg_keepalive_ms(keepalive_ms),
                       cfg_again_delay_ms(again_delay_ms), 
                       m_timer(nullptr) { 
@@ -99,21 +97,23 @@ void ConnQueue::stop() {
       std::this_thread::yield();
     }
   }
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if(m_conn != nullptr && m_conn->is_open())
+      m_conn->do_close();
 
+    if(m_timer != nullptr) {
+      m_timer->cancel();
+      m_timer = nullptr;
+    }
+  }
   ReqBase::Ptr req;
+  while(!m_queue.empty() && !m_queue.activating()) 
+    std::this_thread::yield();
   if(!m_queue.empty()) do {
     if(!(req = m_queue.front())->was_called)
       req->handle_no_conn();
-  } while(m_queue.pop_and_more());
-
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
-  if(m_conn != nullptr && m_conn->is_open())
-    m_conn->do_close();
-
-  if(m_timer != nullptr) {
-    m_timer->cancel();
-    m_timer = nullptr;
-  }
+  } while(!m_queue.deactivating());
 }
 
 void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
@@ -182,14 +182,8 @@ const std::string ConnQueue::to_string() {
 }
 
 void ConnQueue::exec_queue() {
-  {
-    std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if(m_queue_running)
-      return;
-    m_queue_running = true;
-  }
-
-  asio::post(*m_ioctx.get(), [ptr=shared_from_this()](){ ptr->run_queue(); });
+  if(m_queue.activating())
+    asio::post(*m_ioctx.get(), [ptr=shared_from_this()](){ptr->run_queue();});
 }
 
 void ConnQueue::run_queue() {
@@ -202,38 +196,23 @@ void ConnQueue::run_queue() {
   }
   ReqBase::Ptr    req;
   ConnHandlerPtr  conn;
-  for(;;) {
-    if(m_queue.empty()) {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex);
-      m_queue_running = false;
-      break;
-    }
-    req = m_queue.front();
-    {
-      std::lock_guard<std::recursive_mutex> lock(m_mutex);
-      if((m_conn == nullptr || !m_conn->is_open()) && req->insistent) {
-        m_queue_running = false;
-        break;
+  do {
+    SWC_ASSERT((req = m_queue.front())->cbp != nullptr);
+    if(req->valid()) {
+      {
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
+        conn = (m_conn != nullptr && m_conn->is_open()) ? m_conn : nullptr;
       }
-      conn = m_conn;
+      if(conn == nullptr || conn->send_request(req->cbp, req)) {
+        req->handle_no_conn();
+        if(req->insistent) {
+          m_queue.deactivate();
+          break;
+        }
+      }
     }
-      
-    SWC_ASSERT(req->cbp != nullptr);
-
-    if(!req->valid() ||
-       (conn != nullptr && conn->send_request(req->cbp, req) == Error::OK))
-      goto processed;
-
-    req->handle_no_conn();
-    if(req->insistent)
-      continue;
-        
-    processed: {
-      if(m_queue.pop_and_more())
-        continue;
-    }
-  }
-
+  } while(!m_queue.deactivating());
+  
   schedule_close();
 }
 
@@ -256,6 +235,7 @@ void ConnQueue::schedule_close() {
     }
   }
     
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   if(m_timer == nullptr)
     m_timer = new asio::high_resolution_timer(*m_ioctx.get());
   else
