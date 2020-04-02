@@ -123,9 +123,7 @@ bool FileSystemBroker::send_request(Protocol::Req::Base::Ptr hdlr) {
   } while(conn == nullptr);
   m_service->preserve(conn);
 
-  if(conn->send_request(hdlr->cbp, hdlr) != Error::OK) 
-    return false;
-  return true;
+  return conn->send_request(hdlr->cbp, hdlr);
 }
 
 void FileSystemBroker::send_request_sync(Protocol::Req::Base::Ptr hdlr, 

@@ -40,25 +40,25 @@ ConnHandlerPtr ConnHandler::ptr() {
 ConnHandler::~ConnHandler() { }
 
 
-const std::string ConnHandler::endpoint_local_str() {
+std::string ConnHandler::endpoint_local_str() {
   std::string s(endpoint_local.address().to_string());
   s.append(":");
   s.append(std::to_string(endpoint_local.port()));
   return s;
 }
   
-const std::string ConnHandler::endpoint_remote_str() {
+std::string ConnHandler::endpoint_remote_str() {
   std::string s(endpoint_remote.address().to_string());
   s.append(":");
   s.append(std::to_string(endpoint_remote.port()));
   return s;
 }
   
-const size_t ConnHandler::endpoint_remote_hash() {
+size_t ConnHandler::endpoint_remote_hash() {
   return endpoint_hash(endpoint_remote);
 }
   
-const size_t ConnHandler::endpoint_local_hash() {
+size_t ConnHandler::endpoint_local_hash() {
   return endpoint_hash(endpoint_local);
 }
   
@@ -68,16 +68,16 @@ void ConnHandler::new_connection() {
   run(ev); 
 }
 
-const size_t ConnHandler::pending_read() {
+size_t ConnHandler::pending_read() {
   std::scoped_lock lock(m_mutex);
   return m_pending.size();
 }
 
-const size_t ConnHandler::pending_write() {
+size_t ConnHandler::pending_write() {
   return m_outgoing.size() + m_outgoing.is_active();
 }
 
-const bool ConnHandler::due() {
+bool ConnHandler::due() {
   return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
@@ -92,10 +92,10 @@ void ConnHandler::do_close() {
   run(ev);
 }
 
-const int ConnHandler::send_error(int error, const std::string &msg, 
-                                  const Event::Ptr& ev) {
+bool ConnHandler::send_error(int error, const std::string& msg, 
+                             const Event::Ptr& ev) {
   if(!connected)
-    return Error::COMM_NOT_CONNECTED;
+    return false;
 
   size_t max_msg_size = std::numeric_limits<int16_t>::max();
   auto cbp = CommBuf::create_error_message(
@@ -108,9 +108,9 @@ const int ConnHandler::send_error(int error, const std::string &msg,
   return send_response(cbp);
 }
 
-const int ConnHandler::response_ok(const Event::Ptr& ev) {
+bool ConnHandler::response_ok(const Event::Ptr& ev) {
   if(!connected)
-    return Error::COMM_NOT_CONNECTED;
+    return false;
       
   auto cbp = CommBuf::make(4);
   if(ev != nullptr)
@@ -119,26 +119,25 @@ const int ConnHandler::response_ok(const Event::Ptr& ev) {
   return send_response(cbp);
 }
 
-const int ConnHandler::send_response(CommBuf::Ptr &cbuf, 
-                                     DispatchHandler::Ptr hdlr) {
+bool ConnHandler::send_response(CommBuf::Ptr& cbuf, 
+                                DispatchHandler::Ptr hdlr) {
   if(!connected)
-    return Error::COMM_NOT_CONNECTED;
+    return false;
 
   cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
-  return Error::OK;
+  return true;
 }
 
-const int ConnHandler::send_request(CommBuf::Ptr &cbuf, 
-                                    DispatchHandler::Ptr hdlr) {
+bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
   if(!connected)
-    return Error::COMM_NOT_CONNECTED;
+    return false;
     
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
   //if(!cbuf->header.id) update id in-case cbuf switched over conns
   cbuf->header.id = next_req_id();
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
-  return Error::OK;
+  return true;
 }
 
 void ConnHandler::accept_requests() {
@@ -154,7 +153,7 @@ void ConnHandler::accept_requests(DispatchHandler::Ptr hdlr,
 }
 */
 
-const std::string ConnHandler::to_string() {
+std::string ConnHandler::to_string() {
   std::string s("Connection");
 
   if(!is_open()) {
@@ -183,7 +182,7 @@ const std::string ConnHandler::to_string() {
   return s;
 }
 
-const uint32_t ConnHandler::next_req_id() {
+uint32_t ConnHandler::next_req_id() {
   std::scoped_lock lock(m_mutex);  
   while(m_pending.find(
     ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
@@ -523,7 +522,7 @@ void ConnHandlerPlain::new_connection() {
   ConnHandler::new_connection();
 }
 
-const bool ConnHandlerPlain::is_open() {
+bool ConnHandlerPlain::is_open() {
   return connected && m_sock.is_open();
 }
 
@@ -602,7 +601,7 @@ void ConnHandlerSSL::new_connection() {
   ConnHandler::new_connection();
 }
 
-const bool ConnHandlerSSL::is_open() {
+bool ConnHandlerSSL::is_open() {
   return connected && m_sock.lowest_layer().is_open();
 }
 

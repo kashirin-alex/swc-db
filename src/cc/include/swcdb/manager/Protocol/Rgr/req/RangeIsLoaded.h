@@ -28,7 +28,7 @@ class RangeIsLoaded : public DispatchHandler {
     auto cbp = CommBuf::make(
       Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
+    return conn->send_request(cbp, shared_from_this());
   }
 
   void disconnected() {};

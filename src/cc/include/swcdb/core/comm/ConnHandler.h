@@ -57,39 +57,38 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual ~ConnHandler();
 
-  const std::string endpoint_local_str();
+  std::string endpoint_local_str();
   
-  const std::string endpoint_remote_str();
+  std::string endpoint_remote_str();
   
-  const size_t endpoint_remote_hash();
+  size_t endpoint_remote_hash();
   
-  const size_t endpoint_local_hash();
+  size_t endpoint_local_hash();
   
   virtual void new_connection();
 
-  virtual const bool is_open() = 0;
+  virtual bool is_open() = 0;
 
   virtual void close() = 0;
 
-  const size_t pending_read();
+  size_t pending_read();
 
-  const size_t pending_write();
+  size_t pending_write();
 
-  const bool due();
+  bool due();
 
   virtual void run(Event::Ptr& ev);
 
   virtual void do_close();
 
-  const int send_error(int error, const std::string &msg, 
-                       const Event::Ptr& ev=nullptr);
+  bool send_error(int error, const std::string &msg, 
+                  const Event::Ptr& ev=nullptr);
 
-  const int response_ok(const Event::Ptr& ev=nullptr);
+  bool response_ok(const Event::Ptr& ev=nullptr);
 
-  const int send_response(CommBuf::Ptr &cbuf, 
-                          DispatchHandler::Ptr hdlr=nullptr);
+  bool send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr);
 
-  const int send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr);
+  bool send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr);
 
   void accept_requests();
 
@@ -97,7 +96,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
   */
 
-  const std::string to_string();
+  std::string to_string();
 
   protected:
 
@@ -119,7 +118,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  const uint32_t next_req_id();
+  uint32_t next_req_id();
 
   asio::high_resolution_timer* get_timer(const CommHeader& header);
     
@@ -175,7 +174,7 @@ class ConnHandlerPlain : public ConnHandler {
 
   void new_connection() override;
 
-  const bool is_open() override;
+  bool is_open() override;
 
   asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
 
@@ -209,7 +208,7 @@ class ConnHandlerSSL : public ConnHandler {
 
   void new_connection() override;
 
-  const bool is_open() override;
+  bool is_open() override;
 
   void handshake();
 

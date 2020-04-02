@@ -203,7 +203,7 @@ void ConnQueue::run_queue() {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         conn = (m_conn != nullptr && m_conn->is_open()) ? m_conn : nullptr;
       }
-      if(conn == nullptr || conn->send_request(req->cbp, req)) {
+      if(conn == nullptr || !conn->send_request(req->cbp, req)) {
         req->handle_no_conn();
         if(req->insistent) {
           m_queue.deactivate();

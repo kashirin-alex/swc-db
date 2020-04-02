@@ -44,7 +44,7 @@ class Echo : public DispatchHandler {
   virtual ~Echo() { }
   
   bool run(uint32_t timeout=60000) override {
-    return conn->send_request(cbp, shared_from_this()) == Error::OK;
+    return conn->send_request(cbp, shared_from_this());
   }
 
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
