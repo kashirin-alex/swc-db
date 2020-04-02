@@ -29,7 +29,8 @@ ConnHandler::Outgoing::Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr)
 ConnHandler::Outgoing::~Outgoing() { }
 
 ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
-                        : app_ctx(app_ctx), m_next_req_id(0) {
+                        : connected(false), 
+                          app_ctx(app_ctx), m_next_req_id(0) {
 }
 
 ConnHandlerPtr ConnHandler::ptr() {
@@ -62,22 +63,22 @@ const size_t ConnHandler::endpoint_local_hash() {
 }
   
 void ConnHandler::new_connection() {
+  connected = true;
   auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
   run(ev); 
 }
 
 const size_t ConnHandler::pending_read() {
-  std::scoped_lock lock(m_mutex_reading);
+  std::scoped_lock lock(m_mutex);
   return m_pending.size();
 }
 
 const size_t ConnHandler::pending_write() {
-  std::scoped_lock lock(m_mutex);
-  return m_outgoing.size();
+  return m_outgoing.size() + m_outgoing.is_active();
 }
 
 const bool ConnHandler::due() {
-  return pending_read() || pending_write();
+  return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
 void ConnHandler::run(Event::Ptr& ev) {
@@ -87,16 +88,14 @@ void ConnHandler::run(Event::Ptr& ev) {
 }
 
 void ConnHandler::do_close() {
-  if(m_err == Error::OK) {
-    auto ev = Event::make(Event::Type::DISCONNECT, m_err);
-    run(ev);
-  }
+  auto ev = Event::make(Event::Type::DISCONNECT, Error::OK);
+  run(ev);
 }
 
 const int ConnHandler::send_error(int error, const std::string &msg, 
                                   const Event::Ptr& ev) {
-  if(m_err != Error::OK)
-    return m_err;
+  if(!connected)
+    return Error::COMM_NOT_CONNECTED;
 
   size_t max_msg_size = std::numeric_limits<int16_t>::max();
   auto cbp = CommBuf::create_error_message(
@@ -110,8 +109,8 @@ const int ConnHandler::send_error(int error, const std::string &msg,
 }
 
 const int ConnHandler::response_ok(const Event::Ptr& ev) {
-  if(m_err != Error::OK)
-    return m_err;
+  if(!connected)
+    return Error::COMM_NOT_CONNECTED;
       
   auto cbp = CommBuf::make(4);
   if(ev != nullptr)
@@ -122,26 +121,24 @@ const int ConnHandler::response_ok(const Event::Ptr& ev) {
 
 const int ConnHandler::send_response(CommBuf::Ptr &cbuf, 
                                      DispatchHandler::Ptr hdlr) {
-  if(m_err != Error::OK)
-    return m_err;
+  if(!connected)
+    return Error::COMM_NOT_CONNECTED;
 
   cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
-  return m_err;
+  return Error::OK;
 }
 
 const int ConnHandler::send_request(CommBuf::Ptr &cbuf, 
                                     DispatchHandler::Ptr hdlr) {
-  if(m_err)
-    return m_err;
-
+  if(!connected)
+    return Error::COMM_NOT_CONNECTED;
+    
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
   //if(!cbuf->header.id) update id in-case cbuf switched over conns
   cbuf->header.id = next_req_id();
-
   write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
-  return m_err;
+  return Error::OK;
 }
 
 void ConnHandler::accept_requests() {
@@ -187,7 +184,7 @@ const std::string ConnHandler::to_string() {
 }
 
 const uint32_t ConnHandler::next_req_id() {
-  std::scoped_lock lock(m_mutex_reading);  
+  std::scoped_lock lock(m_mutex);  
   while(m_pending.find(
     ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
     ) != m_pending.end()
@@ -215,39 +212,39 @@ asio::high_resolution_timer* ConnHandler::get_timer(const CommHeader& header) {
 }
     
 void ConnHandler::write_or_queue(ConnHandler::Outgoing* data) { 
-  {
-    std::scoped_lock lock(m_mutex);  
-    if(m_writing) {
-      m_outgoing.push(data);
-      return;
-    }
-    m_writing = true;
-  }
-  write(data);
+  if(m_outgoing.activating(data))
+    write(data);
 }
-  
+
+void ConnHandler::pending(ConnHandler::Outgoing* data, 
+                          asio::high_resolution_timer* tm) {
+  std::scoped_lock lock(m_mutex);
+  m_pending.emplace(
+    data->cbuf->header.id,
+    new ConnHandler::PendingRsp(data->hdlr, tm)
+  );
+}
+
+void ConnHandler::clear_outgoing() {
+  ConnHandler::Outgoing* data;
+  while(!m_outgoing.deactivating(&data)) {
+    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      pending(data, nullptr);
+    delete data;
+  }
+}
+
 void ConnHandler::next_outgoing() {
   ConnHandler::Outgoing* data;
-  {
-    std::scoped_lock lock(m_mutex);
-    if(!(m_writing = !m_outgoing.empty())) 
-      return;
-    data = m_outgoing.front();
-    m_outgoing.pop();
-  }
-  write(data); 
+  if(!m_outgoing.deactivating(&data)) 
+    write(data);
 }
-  
+
 void ConnHandler::write(ConnHandler::Outgoing* data) {
 
-  if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
-    std::scoped_lock lock(m_mutex_reading);
-    m_pending.emplace(
-      data->cbuf->header.id,
-      new ConnHandler::PendingRsp(data->hdlr, get_timer(data->cbuf->header))
-    );
-  }
-    
+  if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) 
+    pending(data, get_timer(data->cbuf->header));
+
   std::vector<asio::const_buffer> buffers;
   data->cbuf->get(buffers);
   
@@ -268,8 +265,8 @@ void ConnHandler::write(ConnHandler::Outgoing* data) {
 
 void ConnHandler::read_pending() {
   {
-    std::scoped_lock lock(m_mutex_reading);
-    if(m_err || m_reading)
+    std::scoped_lock lock(m_mutex);
+    if(!connected || m_reading)
       return;
     m_reading = true;
   }
@@ -420,7 +417,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 
   bool more;
   {
-    std::scoped_lock lock(m_mutex_reading);
+    std::scoped_lock lock(m_mutex);
     m_reading = false;
     more = m_accepting || !m_pending.empty();
   }
@@ -431,11 +428,13 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 }
 
 void ConnHandler::disconnected() {
+  clear_outgoing();
+
   ConnHandler::PendingRsp* pending;
   Event::Ptr ev;
   for(;;) {
     {
-      std::scoped_lock lock(m_mutex_reading);
+      std::scoped_lock lock(m_mutex);
       if(m_pending.empty())
         return;
       pending = m_pending.begin()->second;
@@ -443,7 +442,7 @@ void ConnHandler::disconnected() {
     }
     if(pending->tm != nullptr) 
       pending->tm->cancel();
-    ev = Event::make(Event::Type::DISCONNECT, m_err);
+    ev = Event::make(Event::Type::DISCONNECT, Error::OK);
     pending->hdlr->handle(ptr(), ev);
     delete pending;
   }
@@ -457,7 +456,7 @@ void ConnHandler::run_pending(Event::Ptr ev) {
 
   ConnHandler::PendingRsp* pending = nullptr;
   {
-    std::scoped_lock lock(m_mutex_reading);
+    std::scoped_lock lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
     if(it != m_pending.end()) {
       pending = it->second;
@@ -489,9 +488,23 @@ ConnHandlerPlain::~ConnHandlerPlain() {
 }
 
 void ConnHandlerPlain::do_close() {
-  if(m_err == Error::OK) {
+  if(connected) {
     close();
     ConnHandler::do_close();
+  }
+}
+
+void ConnHandlerPlain::close() {
+  bool once;
+  {
+    std::scoped_lock lock(m_mutex);
+    if(once = connected)
+      connected = false;
+  }
+  if(once) {
+    if(m_sock.is_open())
+      try{ m_sock.close(); } catch(...) { }
+    disconnected();
   }
 }
 
@@ -511,16 +524,7 @@ void ConnHandlerPlain::new_connection() {
 }
 
 const bool ConnHandlerPlain::is_open() {
-  return m_err == Error::OK && m_sock.is_open();
-}
-
-void ConnHandlerPlain::close() {
-  if(is_open()) {
-    std::scoped_lock lock(m_mutex);
-    try{m_sock.close();}catch(...){}
-  }
-  m_err = Error::COMM_NOT_CONNECTED;
-  ConnHandler::disconnected();
+  return connected && m_sock.is_open();
 }
 
 asio::high_resolution_timer* ConnHandlerPlain::get_timer(uint32_t timeout_ms) {
@@ -563,9 +567,23 @@ ConnHandlerSSL::~ConnHandlerSSL() {
 }
 
 void ConnHandlerSSL::do_close() {
-  if(m_err == Error::OK) {
+  if(connected) {
     close();
     ConnHandler::do_close();
+  }
+}
+
+void ConnHandlerSSL::close() {
+  bool once;
+  {
+    std::scoped_lock lock(m_mutex);
+    if(once = connected)
+      connected = false;
+  }
+  if(once) {
+    if(m_sock.lowest_layer().is_open())
+      try{ m_sock.lowest_layer().close(); } catch(...) { }
+    disconnected();
   }
 }
 
@@ -582,6 +600,10 @@ void ConnHandlerSSL::new_connection() {
       (size_t)&m_sock.get_executor().context());
   }
   ConnHandler::new_connection();
+}
+
+const bool ConnHandlerSSL::is_open() {
+  return connected && m_sock.lowest_layer().is_open();
 }
 
 void ConnHandlerSSL::handshake() {
@@ -613,19 +635,6 @@ void ConnHandlerSSL::handshake_client(asio::error_code& ec) {
   m_sock.handshake(asio::ssl::stream_base::client, ec);
 }
 
-
-const bool ConnHandlerSSL::is_open() {
-  return m_err == Error::OK && m_sock.lowest_layer().is_open();
-}
-
-void ConnHandlerSSL::close() {
-  if(is_open()) {
-    std::scoped_lock lock(m_mutex);
-    try{m_sock.lowest_layer().close();}catch(...){}
-  }
-  m_err = Error::COMM_NOT_CONNECTED;
-  ConnHandler::disconnected();
-}
 
 asio::high_resolution_timer* ConnHandlerSSL::get_timer(uint32_t timeout_ms) {
   return new asio::high_resolution_timer(

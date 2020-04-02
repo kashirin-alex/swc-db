@@ -35,6 +35,11 @@ class QueueSafeStated : private std::queue<ItemT> {
     return QBase::size();
   }
 
+  bool is_active() {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    return m_state;
+  }
+
   bool activating() {
     LockAtomic::Unique::Scope lock(m_mutex);
     if(m_state || QBase::empty()) 
@@ -53,6 +58,26 @@ class QueueSafeStated : private std::queue<ItemT> {
   void deactivate() {
     LockAtomic::Unique::Scope lock(m_mutex);
     m_state = false;
+  }
+
+  bool activating(const ItemT& item) {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    if(m_state) {
+      QBase::push(item);
+      return false;
+    }
+    return m_state = true;
+  }
+
+  bool deactivating(ItemT* item) {
+    LockAtomic::Unique::Scope lock(m_mutex);
+    if(QBase::empty()) {
+      m_state = false;
+    } else {
+      *item = QBase::front();
+      pop();
+    }
+    return !m_state;
   }
 
   private:

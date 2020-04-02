@@ -8,10 +8,10 @@
 
 #include <asio.hpp>
 #include "asio/ssl.hpp"
-#include <queue>
 #include <memory>
 #include <mutex>
 #include "swcdb/core/Error.h"
+#include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/CommBuf.h"
 #include "swcdb/core/comm/Resolver.h"
@@ -46,6 +46,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
   
+  std::atomic<bool>     connected;
   const AppContext::Ptr app_ctx;
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
@@ -114,8 +115,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void disconnected();
 
-  std::mutex                m_mutex;
-  std::atomic<Error::Code>  m_err = Error::OK;
+  std::mutex  m_mutex;
 
   private:
 
@@ -125,8 +125,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     
   void write_or_queue(Outgoing* data);
   
+  void pending(ConnHandler::Outgoing* data, asio::high_resolution_timer* tm);
+
   void next_outgoing();
-  
+
+  void clear_outgoing();
+
   void write(Outgoing* data);
 
   void read_pending();
@@ -146,14 +150,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void run_pending(Event::Ptr ev);
 
-  uint32_t                  m_next_req_id;
+  uint32_t                    m_next_req_id;
+  QueueSafeStated<Outgoing*>  m_outgoing;
 
-  std::queue<Outgoing*>     m_outgoing;
-  bool                      m_writing = 0;
-
-  std::mutex                m_mutex_reading;
-  bool                      m_accepting = 0;
-  bool                      m_reading = 0;
+  bool                        m_accepting = 0;
+  bool                        m_reading = 0;
   std::unordered_map<uint32_t, PendingRsp*>  m_pending;
 
 };
@@ -170,11 +171,11 @@ class ConnHandlerPlain : public ConnHandler {
 
   void do_close() override;
 
+  void close() override;
+
   void new_connection() override;
 
   const bool is_open() override;
-
-  void close() override;
 
   asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
 
@@ -204,7 +205,11 @@ class ConnHandlerSSL : public ConnHandler {
 
   void do_close() override;
 
+  void close() override;
+
   void new_connection() override;
+
+  const bool is_open() override;
 
   void handshake();
 
@@ -214,10 +219,6 @@ class ConnHandlerSSL : public ConnHandler {
   void handshake_client(const std::function<void(const asio::error_code&)> cb);
 
   void handshake_client(asio::error_code& ec);
-
-  const bool is_open() override;
-
-  void close() override;
 
   asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
 
