@@ -8,6 +8,12 @@
 
 namespace SWC{ namespace FS {
 
+namespace  { // local ns
+void hold_delay() {
+  std::this_thread::sleep_for(std::chrono::microseconds(10000));
+}
+}
+
 Interface::Interface(Types::Fs typ) : m_type(typ), m_fs(use_filesystem()) {
 
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
@@ -191,6 +197,7 @@ void Interface::readdir(int &err, const std::string& base_path,
         return;
       }
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "readdir, retrying to err=%d(%s)",
                   err, Error::get_text(err));
     }
@@ -205,6 +212,7 @@ bool Interface::exists(int &err, const std::string& name) {
       case Error::SERVER_SHUTTING_DOWN:
         return state;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "exists, retrying to err=%d(%s)",
                   err, Error::get_text(err));
     }
@@ -232,6 +240,7 @@ void Interface::mkdirs(int &err, const std::string &name) {
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "mkdirs, retrying to err=%d(%s)",
                   err, Error::get_text(err));
     }
@@ -248,6 +257,7 @@ void Interface::rmdir(int &err, const std::string &name) {
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "rmdir, retrying to err=%d(%s)",
                   err, Error::get_text(err));
     }
@@ -292,6 +302,7 @@ void Interface::remove(int &err, const std::string &name) {
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s)",
                   err, Error::get_text(err));
     }
@@ -309,6 +320,7 @@ void Interface::rename(int &err, const std::string &from ,
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s)", 
                   err, Error::get_text(err));
     }
@@ -325,6 +337,7 @@ size_t Interface::length(int &err, const std::string &name) {
       case Error::SERVER_SHUTTING_DOWN:
         return length;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s)", 
                   err, Error::get_text(err));
     }
@@ -346,6 +359,7 @@ void Interface::write(int &err, SmartFd::Ptr smartfd,
         return;
       }
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s)", 
                 err, Error::get_text(err));
     }
@@ -363,6 +377,7 @@ void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
       case Error::SERVER_SHUTTING_DOWN: 
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "read-all, retrying to err=%d(%s)", 
                 err, Error::get_text(err));
     }
@@ -415,6 +430,7 @@ void Interface::close(int& err, SmartFd::Ptr smartfd) {
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
+        hold_delay();
         SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s)", 
                  err, Error::get_text(err));
     }
