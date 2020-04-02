@@ -48,7 +48,7 @@ void Compaction::schedule(uint32_t t_ms) {
   _schedule(t_ms);
 }
 
-const bool Compaction::stopped() {
+bool Compaction::stopped() {
   std::scoped_lock lock(m_mutex);
   return !m_run;
 }

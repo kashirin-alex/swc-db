@@ -48,7 +48,7 @@ class KeyArena : public std::vector<Fraction> {
       (*it)->use();
   }
 
-  const bool equal(const KeyArena &other) const {
+  bool equal(const KeyArena &other) const {
     return *this == other;
   }
 
@@ -142,7 +142,7 @@ class KeyArena : public std::vector<Fraction> {
   }
 
   //get fraction
-  const std::string_view get(const uint32_t idx) const {
+  std::string_view get(const uint32_t idx) const {
     return (*(begin() + idx))->to_string();
   }
 
@@ -161,8 +161,8 @@ class KeyArena : public std::vector<Fraction> {
   }
   
   //compare fraction
-  const Condition::Comp compare(const KeyArena& other, uint32_t max=0, 
-                                bool empty_ok=false) const {
+  Condition::Comp compare(const KeyArena& other, uint32_t max=0, 
+                          bool empty_ok=false) const {
     Condition::Comp comp = Condition::EQ;
     bool on_fraction = max;
     auto f2 = other.begin();
@@ -180,8 +180,8 @@ class KeyArena : public std::vector<Fraction> {
           : (size() > other.size() ? Condition::LT : Condition::GT);
   }
 
-  const bool compare(const KeyArena& other, Condition::Comp break_if,
-                     uint32_t max=0, bool empty_ok=false) const {
+  bool compare(const KeyArena& other, Condition::Comp break_if,
+               uint32_t max=0, bool empty_ok=false) const {
     bool on_fraction = max;
     auto f1 = begin();
     auto f2 = other.begin();
@@ -203,7 +203,7 @@ class KeyArena : public std::vector<Fraction> {
   }
 
   //align other KeyArena
-  const bool align(const KeyArena& other, Condition::Comp comp) {
+  bool align(const KeyArena& other, Condition::Comp comp) {
     bool chg;
     if(chg = empty()) {
       if(chg = !other.empty())
@@ -227,7 +227,7 @@ class KeyArena : public std::vector<Fraction> {
     return chg;
   }
 
-  const bool align(KeyArena& start, KeyArena& finish) const {
+  bool align(KeyArena& start, KeyArena& finish) const {
     bool chg = false;
     uint32_t c = 0;
     for(auto it = begin(); it < end(); ++it, ++c) {
@@ -258,7 +258,7 @@ class KeyArena : public std::vector<Fraction> {
   }
 
   //Serialization
-  const uint32_t encoded_length() const {
+  uint32_t encoded_length() const {
     uint32_t len = Serialization::encoded_length_vi32(size());
     for(auto it = begin(); it < end(); ++it)
       len += Serialization::encoded_length_vi32((*it)->size()) + (*it)->size();
@@ -304,7 +304,7 @@ class KeyArena : public std::vector<Fraction> {
       *it = Mem::Item::make((const uint8_t *)it_k->data(), it_k->length());
   }
 
-  const bool equal(const std::vector<std::string>& key) const {
+  bool equal(const std::vector<std::string>& key) const {
     if(key.size() != size())
       return false;
     auto f = key.begin(); 
@@ -317,7 +317,7 @@ class KeyArena : public std::vector<Fraction> {
   }
 
   //Output
-  const std::string to_string() const {
+  std::string to_string() const {
     std::string s("KeyArena(");
     s.append("sz=");
     s.append(std::to_string(size()));

@@ -26,7 +26,7 @@ class Rangers  {
 
   void remove(const int64_t cid, const int64_t rid);
 
-  const bool get(const int64_t cid, const int64_t rid, EndPoints& endpoints);
+  bool get(const int64_t cid, const int64_t rid, EndPoints& endpoints);
 
   void set(const int64_t cid, const int64_t rid, const EndPoints& endpoints);
 

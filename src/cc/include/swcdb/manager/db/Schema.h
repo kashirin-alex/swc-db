@@ -21,7 +21,7 @@ const std::string schema_file = "schema.data";
     data:   schema-encoded
 */
 
-const std::string filepath(int64_t cid){
+std::string filepath(int64_t cid){
   std::string path = DB::RangeBase::get_column_path(cid);
   path.append("/");
   path.append(schema_file);

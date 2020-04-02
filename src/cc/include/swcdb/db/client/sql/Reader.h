@@ -33,19 +33,19 @@ class Reader {
 
   protected:
 
-  const bool is_char(const char* stop) const;
+  bool is_char(const char* stop) const;
 
-  const bool found_char(const char c);
+  bool found_char(const char c);
 
-  const bool found_space();
+  bool found_space();
 
-  const bool found_quote_single(bool& quote);
+  bool found_quote_single(bool& quote);
 
-  const bool found_quote_double(bool& quote);
+  bool found_quote_double(bool& quote);
 
-  const bool found_token(const char* token, uint8_t token_len);
+  bool found_token(const char* token, uint8_t token_len);
 
-  const bool found_comparator(Condition::Comp& comp);
+  bool found_comparator(Condition::Comp& comp);
 
   void expect_eq();
 

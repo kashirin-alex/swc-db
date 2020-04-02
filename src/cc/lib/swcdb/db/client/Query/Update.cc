@@ -188,7 +188,7 @@ Update::Locator::Locator(const Types::Range type, const int64_t cid,
 
 Update::Locator::~Locator() { }
 
-const std::string Update::Locator::to_string() {
+std::string Update::Locator::to_string() {
       std::string s("Locator(type=");
       s.append(Types::to_string(type));
       s.append(" cid=");

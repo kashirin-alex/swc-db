@@ -53,7 +53,7 @@ bool apply_broker() {
 
 
 
-const EndPoints FileSystemBroker::get_endpoints() {
+EndPoints FileSystemBroker::get_endpoints() {
   std::string host = Env::Config::settings()->get_str(
     "swc.fs.broker.host", "");
   if(host.empty()) {
@@ -102,7 +102,7 @@ Types::Fs FileSystemBroker::get_type() {
   return m_type_underlying;
 }
 
-const std::string FileSystemBroker::to_string() {
+std::string FileSystemBroker::to_string() {
   return format(
     "(type=BROKER underlying-type=%s)",
     type_to_string(m_type_underlying).c_str()

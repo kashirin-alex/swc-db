@@ -19,7 +19,7 @@ RangeQueryUpdateReq::RangeQueryUpdateReq(int64_t cid, int64_t rid)
 
 RangeQueryUpdateReq::~RangeQueryUpdateReq() { }
 
-const std::string RangeQueryUpdateReq::to_string() const {
+std::string RangeQueryUpdateReq::to_string() const {
   std::string s("RangeQueryUpdateReq(");
   s.append(" cid=");
   s.append(std::to_string(cid));
@@ -63,7 +63,7 @@ RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err,
 
 RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }
 
-const std::string RangeQueryUpdateRsp::to_string() const {
+std::string RangeQueryUpdateRsp::to_string() const {
   std::string s("RangeQueryUpdateRsp(");
   s.append("err=");
   s.append(std::to_string(err));

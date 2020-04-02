@@ -18,7 +18,7 @@ typedef std::vector<EndPoint> EndPoints;
 
 namespace Serialization {
   
-const size_t encoded_length(const EndPoint& endpoint);
+size_t encoded_length(const EndPoint& endpoint);
 
 void encode(const EndPoint& endpoint, uint8_t **bufp);
 
@@ -27,24 +27,22 @@ EndPoint decode(const uint8_t **bufp, size_t *remainp);
 }
 
 
-const bool has_endpoint(const EndPoint& e1, 
-                        const EndPoints& endpoints_in);
+bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in);
 
-const bool has_endpoint(const EndPoints& endpoints, 
-                        const EndPoints& endpoints_in);
+bool has_endpoint(const EndPoints& endpoints, const EndPoints& endpoints_in);
 
 
-const size_t endpoints_hash(const EndPoints& endpoints);
+size_t endpoints_hash(const EndPoints& endpoints);
 
-const size_t endpoint_hash(const EndPoint& endpoint);
+size_t endpoint_hash(const EndPoint& endpoint);
 
 
 
 namespace Resolver {
 
-const bool is_ipv4_address(const std::string& str);
+bool is_ipv4_address(const std::string& str);
 
-const bool is_ipv6_address(const std::string& str);
+bool is_ipv6_address(const std::string& str);
 
 EndPoints get_endpoints(uint16_t defaul_port, 
                         const Strings &addrs, 
@@ -57,9 +55,9 @@ void get_networks(const Strings networks,
                   std::vector<asio::ip::network_v6>& nets_v6,
                   asio::error_code& ec);
 
-const bool is_network(const EndPoint& endpoint,
-                      const std::vector<asio::ip::network_v4>& nets_v4, 
-                      const std::vector<asio::ip::network_v6>& nets_v6);
+bool is_network(const EndPoint& endpoint,
+                const std::vector<asio::ip::network_v4>& nets_v4, 
+                const std::vector<asio::ip::network_v6>& nets_v6);
 
 
 

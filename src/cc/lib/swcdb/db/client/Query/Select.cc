@@ -16,9 +16,8 @@ Select::Rsp::Rsp() { }
 
 Select::Rsp::~Rsp() { }
 
-const bool Select::Rsp::add_cells(const StaticBuffer& buffer, 
-                                  bool reached_limit, 
-                                  DB::Specs::Interval& interval) {
+bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit, 
+                            DB::Specs::Interval& interval) {
   std::scoped_lock lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
   m_counted += recved;
@@ -46,12 +45,12 @@ void Select::Rsp::get_cells(DB::Cells::Result& cells) {
   m_size_bytes = 0;
 }
 
-const size_t Select::Rsp::get_size() {
+size_t Select::Rsp::get_size() {
   std::scoped_lock lock(m_mutex);
   return m_counted;
 }
 
-const size_t Select::Rsp::get_size_bytes() {
+size_t Select::Rsp::get_size_bytes() {
   std::scoped_lock lock(m_mutex);
   return m_size_bytes;
 }
@@ -73,9 +72,8 @@ void Select::add_column(const int64_t cid) {
   m_columns.emplace(cid, std::make_shared<Rsp>());
 }
   
-const bool Select::add_cells(const int64_t cid, const StaticBuffer& buffer, 
-                             bool reached_limit, 
-                             DB::Specs::Interval& interval) {
+bool Select::add_cells(const int64_t cid, const StaticBuffer& buffer, 
+                       bool reached_limit, DB::Specs::Interval& interval) {
   return m_columns[cid]->add_cells(buffer, reached_limit, interval);
 }
 
@@ -85,18 +83,18 @@ void Select::get_cells(const int64_t cid, DB::Cells::Result& cells) {
     m_cv.notify_all();
 }
 
-const size_t Select::get_size(const int64_t cid) {
+size_t Select::get_size(const int64_t cid) {
   return m_columns[cid]->get_size();
 }
 
-const size_t Select::get_size_bytes() {
+size_t Select::get_size_bytes() {
   size_t sz = 0;
   for(const auto& col : m_columns)
     sz += col.second->get_size_bytes();
   return sz;
 }
 
-const std::vector<int64_t> Select::get_cids() const {
+std::vector<int64_t> Select::get_cids() const {
   std::vector<int64_t> list(m_columns.size());
   int i = 0;
   for(const auto& col : m_columns)
@@ -104,7 +102,7 @@ const std::vector<int64_t> Select::get_cids() const {
   return list;
 }
 
-const void Select::free(const int64_t cid) {
+void Select::free(const int64_t cid) {
   m_columns[cid]->free();
   if(notify)
     m_cv.notify_all();
@@ -168,7 +166,7 @@ void Select::response_partials() {
   );  
 }
 
-const bool Select::wait_on_partials() const {
+bool Select::wait_on_partials() const {
   return result->get_size_bytes() > buff_sz * buff_ahead;
 }
 
@@ -229,8 +227,8 @@ void Select::ScannerColumn::run() {
   )->locate_on_manager(false);
 }
 
-const bool Select::ScannerColumn::add_cells(const StaticBuffer& buffer, 
-                                            bool reached_limit) {
+bool Select::ScannerColumn::add_cells(const StaticBuffer& buffer, 
+                                      bool reached_limit) {
   return selector->result->add_cells(cid, buffer, reached_limit, interval);
 }
 
@@ -252,7 +250,7 @@ void Select::ScannerColumn::add_call(const std::function<void()>& call) {
   next_calls.push_back(call);
 }
 
-const std::string Select::ScannerColumn::to_string() {
+std::string Select::ScannerColumn::to_string() {
   std::string s("ScannerColumn(");
   s.append("cid=");
   s.append(std::to_string(cid));
@@ -278,7 +276,7 @@ Select::Scanner::Scanner(
 
 Select::Scanner::~Scanner() {}
 
-const std::string Select::Scanner::to_string() {
+std::string Select::Scanner::to_string() {
   std::string s("Scanner(type=");
   s.append(Types::to_string(type));
   s.append(" cid=");

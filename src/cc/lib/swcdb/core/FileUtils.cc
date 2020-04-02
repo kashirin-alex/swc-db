@@ -188,7 +188,7 @@ bool mkdirs(const std::string &dirname) {
   return !saved_errno;
 }
 
-const bool exists(const std::string &fname) {
+bool exists(const std::string &fname) {
   struct stat statbuf;
   if(stat(fname.c_str(), &statbuf) != 0)
     return false;

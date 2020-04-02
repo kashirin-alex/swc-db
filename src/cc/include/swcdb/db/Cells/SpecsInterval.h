@@ -73,20 +73,20 @@ class Interval {
 
   bool equal(const Interval& other) const;
 
-  const bool is_matching(const Cell::Key& key, 
+  bool is_matching(const Cell::Key& key, 
                          int64_t timestamp, bool desc) const;
 
-  const bool is_matching(int64_t timestamp, bool desc) const;
+  bool is_matching(int64_t timestamp, bool desc) const;
 
-  const bool is_matching(const Cells::Cell& cell) const;
+  bool is_matching(const Cells::Cell& cell) const;
 
-  const bool is_matching(const Cells::Cell& cell, Types::Column typ) const;
+  bool is_matching(const Cells::Cell& cell, Types::Column typ) const;
 
-  const bool is_matching_begin(const DB::Cell::Key& key) const;
+  bool is_matching_begin(const DB::Cell::Key& key) const;
 
-  const bool is_matching_end(const DB::Cell::Key& key) const;
+  bool is_matching_end(const DB::Cell::Key& key) const;
 
-  const size_t encoded_length() const;
+  size_t encoded_length() const;
 
   void encode(uint8_t **bufp) const;
 
@@ -98,7 +98,7 @@ class Interval {
 
   void apply_possible_range_end(DB::Cell::Key& end) const;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   void display(std::ostream& out, bool pretty=false, 
                std::string offset = "") const;

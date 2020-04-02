@@ -40,7 +40,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
     virtual void handle_no_conn();
 
-    const std::string to_string();
+    std::string to_string();
     
     const bool            insistent;
     CommBuf::Ptr          cbp;
@@ -69,7 +69,7 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   void delay_proceed(ReqBase::Ptr req, asio::high_resolution_timer* tm);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
   

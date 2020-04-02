@@ -382,7 +382,7 @@ std::string Rangers::to_string() {
 }
 
 
-const bool Rangers::runs_assign(bool stop) {
+bool Rangers::runs_assign(bool stop) {
   std::scoped_lock lock(m_mutex_assign);
   if(stop) 
     return (m_runs_assign = false);

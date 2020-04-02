@@ -32,7 +32,7 @@ class RangeQueryUpdate : public ResponseCallback {
         err, range_prev_end, range_end));
   }
 
-  const bool expired(const int64_t within=0) const {
+  bool expired(const int64_t within=0) const {
     return (m_ev != nullptr && m_ev->expired(within)) || 
            (m_conn != nullptr && !m_conn->is_open()) ;
   }

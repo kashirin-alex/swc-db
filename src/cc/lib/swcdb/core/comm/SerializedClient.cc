@@ -126,7 +126,7 @@ void ServerConnections::put_back(ConnHandlerPtr conn){
   m_conns.push(conn);
 }
   
-const bool ServerConnections::empty() {
+bool ServerConnections::empty() {
   std::lock_guard<std::mutex> lock(m_mutex);
   return m_conns.empty();
 }
@@ -276,7 +276,7 @@ IOCtxPtr Serialized::io() {
   return m_ioctx; 
 }             
   
-const std::string Serialized::to_str(ConnHandlerPtr conn) {
+std::string Serialized::to_str(ConnHandlerPtr conn) {
   std::string s(m_srv_name);
   s.append(" ");
   s.append(conn->to_string());

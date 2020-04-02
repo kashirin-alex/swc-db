@@ -36,14 +36,14 @@ struct Select final {
 
     ~Rsp();
 
-    const bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
-                         DB::Specs::Interval& interval); 
+    bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
+                   DB::Specs::Interval& interval); 
     
     void get_cells(DB::Cells::Result& cells);
 
-    const size_t get_size();
+    size_t get_size();
 
-    const size_t get_size_bytes();
+    size_t get_size_bytes();
 
     void free();
   
@@ -57,18 +57,18 @@ struct Select final {
 
   void add_column(const int64_t cid);
   
-  const bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
-                       bool reached_limit, DB::Specs::Interval& interval);
+  bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
+                 bool reached_limit, DB::Specs::Interval& interval);
 
   void get_cells(const int64_t cid, DB::Cells::Result& cells);
 
-  const size_t get_size(const int64_t cid);
+  size_t get_size(const int64_t cid);
 
-  const size_t get_size_bytes();
+  size_t get_size_bytes();
 
-  const std::vector<int64_t> get_cids() const;
+  std::vector<int64_t> get_cids() const;
 
-  const void free(const int64_t cid);
+  void free(const int64_t cid);
 
   void remove(const int64_t cid);
   
@@ -107,7 +107,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
   void response_partials();
 
-  const bool wait_on_partials() const;
+  bool wait_on_partials() const;
 
   void response_partial();
 
@@ -138,13 +138,13 @@ class Select : public std::enable_shared_from_this<Select> {
 
     void run();
 
-    const bool add_cells(const StaticBuffer& buffer, bool reached_limit);
+    bool add_cells(const StaticBuffer& buffer, bool reached_limit);
 
     void next_call(bool final=false);
 
     void add_call(const std::function<void()>& call);
 
-    const std::string to_string();
+    std::string to_string();
 
     private:
 
@@ -168,7 +168,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
     virtual ~Scanner();
 
-    const std::string to_string();
+    std::string to_string();
     
     void locate_on_manager(bool next_range=false);
 

@@ -48,7 +48,7 @@ class ReqScan  : public ResponseCallback {
             { return req->selector(cell, stop); };
   }
 
-  const bool selector(const DB::Cells::Cell& cell, bool& stop) const {
+  bool selector(const DB::Cells::Cell& cell, bool& stop) const {
     return spec.is_matching(cell, cells.type);
   }
   
@@ -68,12 +68,12 @@ class ReqScan  : public ResponseCallback {
            (limit_buffer_sz && limit_buffer_sz <= cells.size_bytes());
   }
   
-  const bool expired() const {
+  bool expired() const {
     return (m_ev != nullptr && m_ev->expired()) || 
            (m_conn != nullptr && !m_conn->is_open()) ;
   }
 
-  const std::string to_string() const {
+  std::string to_string() const {
     std::string s("ReqScan(");
     s.append(spec.to_string());
     s.append(" ");

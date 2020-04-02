@@ -68,27 +68,27 @@ class Value {
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;
   
-  virtual const Type type() const = 0;
+  virtual Type type() const = 0;
 
   virtual void set_from(Ptr ptr) = 0;
 
   virtual void set_from(const Strings& values) = 0;
 
-  virtual const std::string to_string() const = 0;
+  virtual std::string to_string() const = 0;
 
   std::ostream& operator<<(std::ostream& ostream);
   
-  const bool is_skippable() const;
+  bool is_skippable() const;
 
-  const bool is_guarded() const;
+  bool is_guarded() const;
 
   Ptr default_value(bool defaulted);
 
-  const bool is_default() const;
+  bool is_default() const;
   
   Ptr zero_token();
 
-  const bool is_zero_token() const;
+  bool is_zero_token() const;
 
   std::atomic<uint8_t> flags;
 };
@@ -124,9 +124,9 @@ class V_BOOL : public Value {
   
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   bool get() const;
 
@@ -148,9 +148,9 @@ class V_UINT8 : public Value {
   
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   uint8_t get() const;
 
@@ -172,9 +172,9 @@ class V_UINT16 : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   uint16_t get() const;
 
@@ -196,9 +196,9 @@ class V_INT32 : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   int32_t get() const;
 
@@ -220,9 +220,9 @@ class V_INT64 : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   int64_t get() const;
 
@@ -244,9 +244,9 @@ class V_DOUBLE : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   double get() const;
 
@@ -268,9 +268,9 @@ class V_STRING : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   std::string get() const;
 
@@ -298,9 +298,9 @@ class V_ENUM : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   int32_t get() const;
 
@@ -324,9 +324,9 @@ class V_STRINGS : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   Strings get() const;
 
@@ -348,9 +348,9 @@ class V_INT64S : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   Int64s get() const;
 
@@ -372,9 +372,9 @@ class V_DOUBLES : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   Doubles get() const;
 
@@ -401,9 +401,9 @@ class V_GBOOL : public Value {
   
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   bool get() const;
 
@@ -435,9 +435,9 @@ class V_GUINT8 : public Value {
   
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   uint8_t get() const;
 
@@ -468,9 +468,9 @@ class V_GINT32 : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   int32_t get() const;
 
@@ -507,8 +507,9 @@ class V_GENUM : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
-  const std::string to_string() const override;
+  Type type() const override;
+
+  std::string to_string() const override;
 
   int32_t get() const;
 
@@ -544,9 +545,9 @@ class V_GSTRINGS : public Value {
 
   void set_from(const Strings& values) override;
 
-  const Type type() const override;
+  Type type() const override;
 
-  const std::string to_string() const override;
+  std::string to_string() const override;
 
   Strings get() const;
 

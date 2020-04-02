@@ -19,15 +19,15 @@ DynamicBuffer::~DynamicBuffer() {
     delete [] base;
 }
 
-const size_t DynamicBuffer::remaining() const { 
+size_t DynamicBuffer::remaining() const { 
   return size - (ptr - base); 
 }
 
-const size_t DynamicBuffer::fill() const { 
+size_t DynamicBuffer::fill() const { 
   return ptr - base; 
 }
 
-const bool DynamicBuffer::empty() const { 
+bool DynamicBuffer::empty() const { 
   return ptr == base; 
 }
 

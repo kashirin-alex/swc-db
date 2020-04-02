@@ -25,7 +25,7 @@ void CommHeader::set(uint64_t cmd, uint32_t timeout) {
   timeout_ms  = timeout;
 }
 
-const size_t CommHeader::encoded_length() { 
+size_t CommHeader::encoded_length() { 
   header_len = FIXED_LENGTH;
   buffers = 0;
   if(data_size) {
@@ -106,7 +106,7 @@ void CommHeader::initialize_from_request_header(const CommHeader &req_header) {
   data_ext_chksum = 0;
 }
 
-const std::string CommHeader::to_string() const {
+std::string CommHeader::to_string() const {
   std::string s = " version=" + std::to_string((int)version);
   s += " header_len=" + std::to_string((int)header_len);
   s += " flags=" + std::to_string((int)flags);

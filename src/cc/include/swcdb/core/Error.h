@@ -268,12 +268,12 @@ class Exception : public std::runtime_error {
     * @return The error code of this exception.
     * @sa Error::get_text to retrieve a descriptive error string
     */
-  const int code() const;
+  int code() const;
 
   /** Returns the source code line number where the exception was thrown
     * @return The line number
     */
-  const int line() const;
+  int line() const;
 
   /** Returns the name of the function which threw the Exception
     * @return The function name

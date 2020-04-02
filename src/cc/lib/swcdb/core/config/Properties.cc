@@ -74,7 +74,7 @@ namespace SWC {
       ptr->default_value(false);
     }
   }
-  const bool Properties::has(const std::string &name) const {
+  bool Properties::has(const std::string &name) const {
     if(m_map.count(name))
       return true;
       
@@ -84,11 +84,11 @@ namespace SWC {
     return m_map.count(alias->second);
   }
 
-  const bool Properties::defaulted(const std::string &name) {
+  bool Properties::defaulted(const std::string &name) {
     return get_ptr(name)->is_default();
   }
 
-  const std::string Properties::to_string(const std::string &name) {
+  std::string Properties::to_string(const std::string &name) {
     return get_ptr(name)->to_string();
   }
   
@@ -130,7 +130,7 @@ namespace SWC {
     out << to_string_all(include_default);
   }
 
-  const std::string Properties::to_string_all(bool include_default) const {
+  std::string Properties::to_string_all(bool include_default) const {
     std::string out;
     bool isdefault;
     for(const auto &kv : m_map) {

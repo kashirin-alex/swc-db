@@ -23,9 +23,9 @@ class ColumnSchema : public Reader {
 
   ~ColumnSchema();
 
-  const int parse(Func* func);
+  int parse(Func* func);
 
-  const int parse(Func func, bool token_cmd = false);
+  int parse(Func func, bool token_cmd = false);
 
   void read_schema_options(Func func);
 

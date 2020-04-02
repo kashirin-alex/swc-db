@@ -88,11 +88,11 @@ Mutable::Iterator Mutable::It(size_t offset) {
   return Iterator(&buckets, offset);
 }
 
-const size_t Mutable::size() const {
+size_t Mutable::size() const {
   return _size;
 }
 
-const size_t Mutable::size_bytes() const {
+size_t Mutable::size_bytes() const {
   return _bytes;
 }
 
@@ -121,7 +121,7 @@ Cell*& Mutable::operator[](size_t idx) {
   return *It(idx).item;
 }
 
-const bool Mutable::has_one_key() const {
+bool Mutable::has_one_key() const {
   return front()->key.compare(back()->key) == Condition::EQ;
 }
 
@@ -137,7 +137,7 @@ void Mutable::add_sorted_no_cpy(Cell* cell) {
   _push_back(cell);
 }
 
-const size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
+size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
   size_t count = 0;
   _bytes += remain;
   while(remain) {
@@ -283,7 +283,7 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
 }
 
 
-const std::string Mutable::to_string(bool with_cells) const {
+std::string Mutable::to_string(bool with_cells) const {
   std::string s("Cells(size=");
   s.append(std::to_string(size()));
   s.append("/");
@@ -323,8 +323,8 @@ void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
   key.copy((*ConstIt(idx < 0 ? size()+idx : idx).item)->key);
 }
  
-const bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
-                        DB::Cell::Key& res) const {
+bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
+                  DB::Cell::Key& res) const {
   Condition::Comp chk;  
   for(auto it = ConstIt(_narrow(key)); it; ++it) {
     if((chk = key.compare((*it.item)->key, 0)) == Condition::GT 
@@ -839,7 +839,7 @@ Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
 
 Mutable::ConstIterator::~ConstIterator() { }
 
-const bool Mutable::ConstIterator::avail() const {
+bool Mutable::ConstIterator::avail() const {
   return bucket < buckets->end() && item < (*bucket)->end();
 }
 
@@ -892,7 +892,7 @@ Mutable::Iterator::operator bool() const {
   return avail();
 }
 
-const bool Mutable::Iterator::avail() const {
+bool Mutable::Iterator::avail() const {
   return bucket < buckets->end() && item < (*bucket)->end();
 }
 
@@ -901,7 +901,7 @@ void Mutable::Iterator::operator++() {
     item = (*bucket)->begin();
 }
 
-const bool Mutable::Iterator::avail_begin() const {
+bool Mutable::Iterator::avail_begin() const {
   return bucket != buckets->begin() && item >= (*bucket)->begin();
 }
 

@@ -82,7 +82,7 @@ void Scan::decode_internal(uint8_t version, const uint8_t **bufp,
   flags.decode(bufp, remainp);
 }
 
-const std::string Scan::to_string() {  
+std::string Scan::to_string() {  
   std::string s("Scan(columns=[");
   for(auto& col : columns){
     s.append(col->to_string());

@@ -26,7 +26,7 @@ class ConfigSSL final {
 
   void set_networks(const Strings& networks);
 
-  const bool need_ssl(const EndPoint& endpoint) const;
+  bool need_ssl(const EndPoint& endpoint) const;
 
 
   void configure_server(asio::ssl::context& ctx) const;

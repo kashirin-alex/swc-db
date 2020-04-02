@@ -25,7 +25,7 @@ void MngdColumns::stop() {
   m_run = false;
 }
 
-const bool MngdColumns::is_root_mngr() {
+bool MngdColumns::is_root_mngr() {
   return m_root_mngr;
 }
 

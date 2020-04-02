@@ -117,11 +117,11 @@ class ParserConfig final {
 
   ParserConfig& operator()(const std::string s, int pos);
 
-  const std::string position_name(int n);
+  std::string position_name(int n);
 
-  const bool has(const std::string& name) const;
+  bool has(const std::string& name) const;
 
-  const bool has(const std::string& name, std::string& alias_to) const;
+  bool has(const std::string& name, std::string& alias_to) const;
 
   Property::Value::Ptr get_default(const std::string& name);
 
@@ -171,7 +171,7 @@ class Parser final {
 
   void set_pos_parse(const std::string& name, const std::string& value);
 
-  const bool parse_opt(const std::string& s);
+  bool parse_opt(const std::string& s);
 
   void make_options();
 

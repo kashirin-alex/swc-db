@@ -29,11 +29,11 @@ void Flags::copy(const Flags &other) {
 
 Flags::~Flags() { }
 
-const bool Flags::is_only_keys() const {
+bool Flags::is_only_keys() const {
   return options & ONLY_KEYS;
 }
 
-const bool Flags::is_only_deletes() const {
+bool Flags::is_only_deletes() const {
   return options & ONLY_DELETES;
 }
 
@@ -45,7 +45,7 @@ void Flags::set_only_deletes() {
   options |= ONLY_DELETES;
 }
 
-const bool Flags::equal(const Flags &other) const {
+bool Flags::equal(const Flags &other) const {
   return  limit == other.limit && 
           offset == other.offset  && 
           max_versions == other.max_versions  && 
@@ -54,7 +54,7 @@ const bool Flags::equal(const Flags &other) const {
           ;
 }
 
-const size_t Flags::encoded_length() const {
+size_t Flags::encoded_length() const {
   return Serialization::encoded_length_vi64(limit)
         +Serialization::encoded_length_vi64(offset)
         +Serialization::encoded_length_vi32(max_versions)
@@ -75,7 +75,7 @@ void Flags::decode(const uint8_t **bufp, size_t *remainp){
   options = Serialization::decode_i8(bufp, remainp);
 }
 
-const std::string Flags::to_string() const {
+std::string Flags::to_string() const {
   std::string s("Flags(");
   
   s.append("limit=");

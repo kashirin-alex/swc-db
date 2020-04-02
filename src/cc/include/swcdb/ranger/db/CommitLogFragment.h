@@ -38,7 +38,7 @@ class Fragment final {
     WRITING,
   };
 
-  static const std::string to_string(State state);
+  static std::string to_string(State state);
 
   static Ptr make(const std::string& filepath, State state=State::NONE);
 
@@ -73,21 +73,21 @@ class Fragment final {
   
   size_t release();
 
-  const bool loaded();
+  bool loaded();
 
-  const int error();
+  int error();
 
-  const bool loaded(int& err);
+  bool loaded(int& err);
 
-  const size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false);
 
-  const size_t size_bytes_encoded();
+  size_t size_bytes_encoded();
 
-  const bool processing();
+  bool processing();
 
   void remove(int &err);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 

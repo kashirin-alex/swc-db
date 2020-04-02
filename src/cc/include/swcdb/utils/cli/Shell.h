@@ -52,7 +52,7 @@ class Interface {
   mutable int          err;
   std::vector<Option*> options;
   
-  const bool error(const std::string& message);
+  bool error(const std::string& message);
 
   virtual bool quit(std::string& cmd) const;
 
@@ -62,7 +62,7 @@ class Interface {
 
   void init();
 
-  const bool cmd_option(std::string& cmd) const;
+  bool cmd_option(std::string& cmd) const;
 
   const char*  prompt;
   const char*  history;

@@ -49,7 +49,7 @@ class Mutable final {
 
     ~ConstIterator();
 
-    const bool avail() const;
+    bool avail() const;
 
     operator bool() const;
 
@@ -77,11 +77,11 @@ class Mutable final {
 
     operator bool() const;
 
-    const bool avail() const;
+    bool avail() const;
 
     void operator++();
 
-    const bool avail_begin() const;
+    bool avail_begin() const;
 
     void operator--();
 
@@ -123,9 +123,9 @@ class Mutable final {
 
   Iterator It(size_t offset = 0);
 
-  const size_t size() const;
+  size_t size() const;
   
-  const size_t size_bytes() const;
+  size_t size_bytes() const;
 
   bool empty() const;
 
@@ -139,14 +139,14 @@ class Mutable final {
 
   Cell*& operator[](size_t idx);
 
-  const bool has_one_key() const;
+  bool has_one_key() const;
 
 
   void add_sorted(const Cell& cell, bool no_value=false);
   
   void add_sorted_no_cpy(Cell* cell);
   
-  const size_t add_sorted(const uint8_t* ptr, size_t remain);
+  size_t add_sorted(const uint8_t* ptr, size_t remain);
 
 
   void add_raw(const DynamicBuffer& cells);
@@ -173,13 +173,13 @@ class Mutable final {
                       DynamicBuffer& cells, uint32_t threshold);
 
 
-  const std::string to_string(bool with_cells=false) const;
+  std::string to_string(bool with_cells=false) const;
   
 
   void get(int32_t idx, DB::Cell::Key& key) const;
   
-  const bool get(const DB::Cell::Key& key, Condition::Comp comp, 
-                 DB::Cell::Key& res) const;
+  bool get(const DB::Cell::Key& key, Condition::Comp comp, 
+           DB::Cell::Key& res) const;
 
   void write(DynamicBuffer& cells) const;
 

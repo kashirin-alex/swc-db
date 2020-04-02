@@ -18,7 +18,7 @@ Reader::Reader(const std::string& sql, std::string& message)
 
 Reader::~Reader() {}
 
-const bool Reader::is_char(const char* stop) const {
+bool Reader::is_char(const char* stop) const {
   if(stop) do {
     if(*stop++ == *ptr)
       return true;
@@ -26,7 +26,7 @@ const bool Reader::is_char(const char* stop) const {
   return false;
 }
 
-const bool Reader::found_char(const char c) {
+bool Reader::found_char(const char c) {
   if(*ptr == c) {
     ptr++;
     remain--;
@@ -35,12 +35,12 @@ const bool Reader::found_char(const char c) {
   return false;
 }
 
-const bool Reader::found_space() {
+bool Reader::found_space() {
   return found_char(' ') || found_char('\t') 
       || found_char('\n') || found_char('\r');
 }
 
-const bool Reader::found_quote_single(bool& quote) {
+bool Reader::found_quote_single(bool& quote) {
   if(found_char('\'')) {
     quote = !quote;
     return true;
@@ -48,7 +48,7 @@ const bool Reader::found_quote_single(bool& quote) {
   return false;
 }
 
-const bool Reader::found_quote_double(bool& quote) {
+bool Reader::found_quote_double(bool& quote) {
   if(found_char('"')) {
     quote = !quote;
     return true;
@@ -56,7 +56,7 @@ const bool Reader::found_quote_double(bool& quote) {
   return false;
 }
 
-const bool Reader::found_token(const char* token, uint8_t token_len) {
+bool Reader::found_token(const char* token, uint8_t token_len) {
   if(remain >= token_len && strncasecmp(ptr, token, token_len) == 0) {
     ptr += token_len;
     remain -= token_len;
@@ -65,7 +65,7 @@ const bool Reader::found_token(const char* token, uint8_t token_len) {
   return false;
 }
 
-const bool Reader::found_comparator(Condition::Comp& comp) {
+bool Reader::found_comparator(Condition::Comp& comp) {
   while(remain) {
     if(found_space())
       continue;

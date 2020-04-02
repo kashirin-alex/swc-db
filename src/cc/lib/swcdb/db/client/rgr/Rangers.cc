@@ -51,8 +51,7 @@ void Rangers::remove(const int64_t cid, const int64_t rid) {
     m_map.erase(c);
 }
 
-const bool Rangers::get(const int64_t cid, const int64_t rid, 
-                        EndPoints& endpoints) {
+bool Rangers::get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
   bool found = false;
 
   std::scoped_lock lock(m_mutex);

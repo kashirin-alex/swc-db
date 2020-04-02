@@ -20,7 +20,7 @@ struct Fraction final {
 
   bool operator==(const Fraction &other) const;
   
-  const uint32_t encoded_length() const;
+  uint32_t encoded_length() const;
   
   void encode(uint8_t **bufp) const;
 
@@ -42,7 +42,7 @@ class Key : public std::vector<Fraction> {
 
   void copy(const Key &other);
 
-  const bool equal(const Key &other) const;
+  bool equal(const Key &other) const;
 
   void set(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
@@ -73,23 +73,23 @@ class Key : public std::vector<Fraction> {
 
   void insert(uint32_t idx, const char* fraction, Condition::Comp comp);
 
-  const std::string_view get(const uint32_t idx, Condition::Comp& comp) const;
+  std::string_view get(const uint32_t idx, Condition::Comp& comp) const;
 
-  const std::string_view get(const uint32_t idx) const;
+  std::string_view get(const uint32_t idx) const;
 
   void get(DB::Cell::Key& key) const;
 
   void remove(uint32_t idx, bool recursive=false);
   
-  const bool is_matching(const DB::Cell::Key &other) const;
+  bool is_matching(const DB::Cell::Key &other) const;
 
-  const uint32_t encoded_length() const;
+  uint32_t encoded_length() const;
   
   void encode(uint8_t **bufp) const;
 
   void decode(const uint8_t **bufp, size_t* remainp, bool owner = true);
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   void display(std::ostream& out) const;
 

@@ -17,7 +17,7 @@ RgrGetReq::RgrGetReq(int64_t cid, int64_t rid, bool next_range)
 
 RgrGetReq::~RgrGetReq() { }
 
-const std::string RgrGetReq::to_string() {
+std::string RgrGetReq::to_string() {
   std::string s("Ranger(");
   s.append("cid=");
   s.append(std::to_string(cid));
@@ -77,7 +77,7 @@ RgrGetRsp::RgrGetRsp(int64_t cid, int64_t rid)
 
 RgrGetRsp::~RgrGetRsp() { }
 
-const std::string RgrGetRsp::to_string() const {
+std::string RgrGetRsp::to_string() const {
   std::string s("Ranger(");
   s.append("err=");
   s.append(std::to_string(err));

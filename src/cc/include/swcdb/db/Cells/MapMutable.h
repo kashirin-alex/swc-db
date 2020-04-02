@@ -50,11 +50,11 @@ class ColCells final {
   size_t add(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
                                          const DB::Cell::Key& from_key);
 
-  const size_t size();
+  size_t size();
 
-  const size_t size_bytes();
+  size_t size_bytes();
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
   std::mutex   m_mutex;
@@ -74,14 +74,14 @@ class MapMutable {
 
   virtual ~MapMutable();
 
-  const bool create(Schema::Ptr schema);
+  bool create(Schema::Ptr schema);
 
-  const bool create(int64_t cid, uint32_t versions, uint32_t ttl, 
-                    Types::Column type);
+  bool create(const int64_t cid, uint32_t versions, uint32_t ttl, 
+              Types::Column type);
 
-  const bool create(const int64_t cid, Mutable& cells);
+  bool create(const int64_t cid, Mutable& cells);
 
-  const bool exists(int64_t cid);
+  bool exists(const int64_t cid);
   
   void add(const int64_t cid, const Cell& cell);
 
@@ -95,15 +95,15 @@ class MapMutable {
 
   void remove(const int64_t cid);
 
-  const size_t size();
+  size_t size();
 
-  const size_t size(const int64_t cid);
+  size_t size(const int64_t cid);
 
-  const size_t size_bytes();
+  size_t size_bytes();
 
-  const size_t size_bytes(const int64_t cid);
+  size_t size_bytes(const int64_t cid);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
   std::mutex   m_mutex;

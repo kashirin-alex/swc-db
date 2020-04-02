@@ -27,7 +27,7 @@ class FileSystemCeph: public FileSystem {
   
   Types::Fs get_type() override;
 
-  const std::string to_string() override {
+  std::string to_string() override {
     return format(
       "(type=CEPH, path_root=%s, path_data=%s)", 
       path_root.c_str(),
@@ -38,7 +38,8 @@ class FileSystemCeph: public FileSystem {
 
   
   bool exists(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
+    std::string abspath;
+    get_abspath(name, abspath);
     SWC_LOGF(LOG_DEBUG, "exists file='%s'", abspath);
 
     errno = 0;
@@ -48,7 +49,8 @@ class FileSystemCeph: public FileSystem {
   }
 
   void mkdirs(int &err, const std::string &name) override {
-    std::string abspath = get_abspath(name);
+    std::string abspath;
+    get_abspath(name, abspath);
     SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath);
     
     errno = 0;

@@ -29,7 +29,7 @@ class Key final {
 
   void free();
 
-  const bool sane() const;
+  bool sane() const;
   
   void add(const std::string_view& fraction);
 
@@ -51,24 +51,23 @@ class Key final {
   
   void remove(uint32_t idx, bool recursive=false);
 
-  const std::string get_string(uint32_t idx) const;
+  std::string get_string(uint32_t idx) const;
 
   void get(uint32_t idx, const char** fraction, uint32_t* length) const;
 
-  const bool equal(const Key& other) const;
+  bool equal(const Key& other) const;
 
-  const Condition::Comp compare(const Key& other, uint32_t max=0, 
-                                bool empty_ok=false, 
-                                bool empty_eq=false) const;
+  Condition::Comp compare(const Key& other, uint32_t max=0, 
+                          bool empty_ok=false, bool empty_eq=false) const;
 
-  const bool align(KeyVec& start, KeyVec& finish) const;
+  bool align(KeyVec& start, KeyVec& finish) const;
 
-  const bool compare(const KeyVec& other, Condition::Comp break_if,
-                     uint32_t max = 0, bool empty_ok=false) const;
+  bool compare(const KeyVec& other, Condition::Comp break_if,
+               uint32_t max = 0, bool empty_ok=false) const;
 
-  const bool empty() const;
+  bool empty() const;
   
-  const uint32_t encoded_length() const;
+  uint32_t encoded_length() const;
 
   void encode(uint8_t **bufp) const;
 
@@ -78,9 +77,9 @@ class Key final {
 
   void read(const std::vector<std::string>& key);
 
-  const bool equal(const std::vector<std::string>& key) const;
+  bool equal(const std::vector<std::string>& key) const;
 
-  const std::string to_string() const;
+  std::string to_string() const;
   
   void display(std::ostream& out, bool pretty=false) const;
 

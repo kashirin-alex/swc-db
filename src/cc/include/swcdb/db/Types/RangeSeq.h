@@ -17,7 +17,7 @@ enum RangeSeq{
   BITWISE_VOL_FCOUNT  = 4
 };
 
-const std::string to_string(RangeSeq typ);
+std::string to_string(RangeSeq typ);
 
 }}
 

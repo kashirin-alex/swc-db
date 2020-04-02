@@ -20,16 +20,16 @@ enum class Column {
   CELL_DEFINED  = 0xf
 };
 
-const bool is_counter(const Column typ);
+bool is_counter(const Column typ);
 
-const std::string to_string(Column typ);
+std::string to_string(Column typ);
 
-const Column column_type_from(const std::string& typ);
+Column column_type_from(const std::string& typ);
 
 
-const std::string repr_col_type(int typ);
+std::string repr_col_type(int typ);
 
-const int from_string_col_type(const std::string& typ);
+int from_string_col_type(const std::string& typ);
 
 }}
 

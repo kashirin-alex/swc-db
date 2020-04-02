@@ -45,7 +45,7 @@ void Block::schema_update() {
   );
 }
 
-const bool Block::is_consist(const DB::Cells::Interval& intval) const {
+bool Block::is_consist(const DB::Cells::Interval& intval) const {
   //std::shared_lock lock(m_mutex);
   // m_prev_key_end && m_interval.key_end behave as const
   return 
@@ -55,18 +55,18 @@ const bool Block::is_consist(const DB::Cells::Interval& intval) const {
      m_prev_key_end.compare(intval.key_end) == Condition::GT);
 }
 
-const bool Block::is_in_end(const DB::Cell::Key& key) const {
+bool Block::is_in_end(const DB::Cell::Key& key) const {
   //std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
 }
 
-const bool Block::is_next(const DB::Specs::Interval& spec) {
+bool Block::is_next(const DB::Specs::Interval& spec) {
   //std::shared_lock lock(m_mutex);
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
           && includes(spec);
 }
 
-const bool Block::includes(const DB::Specs::Interval& spec) {
+bool Block::includes(const DB::Specs::Interval& spec) {
   bool ok;
   if(ok = m_interval.includes_end(spec)) {
     std::shared_lock lock(m_mutex);
@@ -85,7 +85,7 @@ void Block::preload() {
   );
 }
 
-const bool Block::add_logged(const DB::Cells::Cell& cell) {
+bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!is_in_end(cell.key))
     return false;
   
@@ -130,9 +130,9 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
             << SWC_PRINT_CLOSE;
 }
 
-const size_t Block::load_cells(const uint8_t* buf, size_t remain, 
-                               uint32_t revs, size_t avail,
-                               bool& was_splitted, bool synced) {
+size_t Block::load_cells(const uint8_t* buf, size_t remain, 
+                         uint32_t revs, size_t avail,
+                         bool& was_splitted, bool synced) {
   DB::Cells::Cell cell;
   size_t count = 0;
   size_t added = 0;
@@ -195,11 +195,11 @@ const size_t Block::load_cells(const uint8_t* buf, size_t remain,
   return added;
 }
 
-const bool Block::splitter() {
+bool Block::splitter() {
   return _need_split() && blocks->_split(ptr(), false);
 }
 
-const bool Block::scan(ReqScan::Ptr req) {
+bool Block::scan(ReqScan::Ptr req) {
   bool loaded;
   {
     std::scoped_lock lock(m_mutex_state);
@@ -283,7 +283,7 @@ void Block::_set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
-const Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
+Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
   return m_interval.key_end.compare(key);
 }
 
@@ -310,7 +310,7 @@ void Block::merge_and_release(Block::Ptr blk) {
 }
 */
 
-const size_t Block::release() {
+size_t Block::release() {
   size_t released = 0;
   if(!m_processing && m_mutex.try_lock()) {
     std::scoped_lock lock(m_mutex_state);
@@ -332,40 +332,40 @@ void Block::processing_decrement() {
   --m_processing;
 }
 
-const bool Block::removed() {
+bool Block::removed() {
   std::shared_lock lock(m_mutex_state);
   return m_state == State::REMOVED;
 }
 
-const bool Block::loaded() {
+bool Block::loaded() {
   std::shared_lock lock(m_mutex_state);
   return m_state == State::LOADED;
 }
 
-const bool Block::processing() const {
+bool Block::processing() const {
   return m_processing;
 }
 
-const size_t Block::size() {
+size_t Block::size() {
   std::shared_lock lock(m_mutex);
   return _size();
 }
 
-const size_t Block::_size() const {
+size_t Block::_size() const {
   return m_cells.size();
 }
   
-const size_t Block::size_bytes() {
+size_t Block::size_bytes() {
   std::shared_lock lock(m_mutex);
   return _size_bytes();
 }
   
-const size_t Block::_size_bytes() const {
+size_t Block::_size_bytes() const {
   return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
 }
 
 /*
-const bool Block::need_split() {
+bool Block::need_split() {
   bool ok;
   if(ok = loaded() && ok = m_mutex.try_lock_shared()) {
     ok = _need_split();
@@ -375,7 +375,7 @@ const bool Block::need_split() {
 }
 */
 
-const bool Block::_need_split() const {
+bool Block::_need_split() const {
   auto sz = _size();
   return sz > 1 && 
     (sz >= blocks->range->cfg->block_cells() * 2 || 
@@ -393,7 +393,7 @@ void Block::free_key_end() {
   m_interval.key_end.free();
 }
 
-const std::string Block::to_string() {
+std::string Block::to_string() {
   std::shared_lock lock1(m_mutex);
   std::shared_lock lock2(m_mutex_state);
 
@@ -417,7 +417,7 @@ const std::string Block::to_string() {
   return s;
 }
 
-const bool Block::_scan(ReqScan::Ptr req, bool synced) {
+bool Block::_scan(ReqScan::Ptr req, bool synced) {
   {
     size_t skips = 0; // Ranger::Stats
     std::shared_lock lock(m_mutex);

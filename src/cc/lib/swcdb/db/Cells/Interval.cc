@@ -125,13 +125,13 @@ void Interval::expand(const int64_t& ts) {
   was_set = true;
 }
 
-const bool Interval::align(const Interval &other) {
+bool Interval::align(const Interval &other) {
   bool start = aligned_min.align(other.aligned_min, Condition::LT);
   bool finish = aligned_max.align(other.aligned_max, Condition::GT);
   return start || finish;
 }
 
-const bool Interval::equal(const Interval& other) const {
+bool Interval::equal(const Interval& other) const {
   return
       was_set == other.was_set &&
 
@@ -145,26 +145,26 @@ const bool Interval::equal(const Interval& other) const {
     aligned_max.equal(other.aligned_max);
 }
 
-const bool Interval::is_in_begin(const DB::Cell::Key &key) const {
+bool Interval::is_in_begin(const DB::Cell::Key &key) const {
   return key_begin.empty() || 
         (!key.empty() && key_begin.compare(key) != Condition::LT);
 }
 
-const bool Interval::is_in_end(const DB::Cell::Key &key) const {
+bool Interval::is_in_end(const DB::Cell::Key &key) const {
   return key_end.empty() || 
         (!key.empty() && key_end.compare(key) != Condition::GT);
 }
 
-const bool Interval::consist(const Interval& other) const {
+bool Interval::consist(const Interval& other) const {
   return (other.key_end.empty()   || is_in_begin(other.key_end)) 
       && (other.key_begin.empty() || is_in_end(other.key_begin));
 }
 
-const bool Interval::consist(const DB::Cell::Key& key) const {
+bool Interval::consist(const DB::Cell::Key& key) const {
   return is_in_begin(key) && is_in_end(key);
 }
 
-const bool Interval::consist(const DB::Cell::Key& key, int64_t ts) const {
+bool Interval::consist(const DB::Cell::Key& key, int64_t ts) const {
   return is_in_begin(key) 
         && 
          is_in_end(key) 
@@ -174,20 +174,20 @@ const bool Interval::consist(const DB::Cell::Key& key, int64_t ts) const {
          (ts_latest.empty() || ts_latest.is_matching(ts));
 }
 
-const bool Interval::includes(const Interval& other) const {
+bool Interval::includes(const Interval& other) const {
   return other.key_begin.empty() || other.key_end.empty() ||
          consist(other);           
 }
 
-const bool Interval::includes_begin(const Specs::Interval& interval) const {
+bool Interval::includes_begin(const Specs::Interval& interval) const {
   return key_begin.empty() || interval.is_matching_end(key_begin);
 }
 
-const bool Interval::includes_end(const Specs::Interval& interval) const {
+bool Interval::includes_end(const Specs::Interval& interval) const {
   return key_end.empty() || interval.is_matching_begin(key_end);
 }
 
-const bool Interval::includes(const Specs::Interval& interval) const {
+bool Interval::includes(const Specs::Interval& interval) const {
   return  includes_begin(interval) && includes_end(interval);
     /* // , bool ts=false
       && 
@@ -201,7 +201,7 @@ const bool Interval::includes(const Specs::Interval& interval) const {
     */
 }
 
-const size_t Interval::encoded_length() const {
+size_t Interval::encoded_length() const {
   return  key_begin.encoded_length()
         + key_end.encoded_length()
         + ts_earliest.encoded_length()
@@ -230,7 +230,7 @@ void Interval::decode(const uint8_t **ptr, size_t *remain, bool owner){
   was_set = true;
 }
 
-const std::string Interval::to_string() const {
+std::string Interval::to_string() const {
   std::string s("Interval(begin=");
   s.append(key_begin.to_string());
   s.append( " end=");

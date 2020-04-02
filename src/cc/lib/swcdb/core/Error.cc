@@ -225,11 +225,11 @@ Exception::~Exception() throw() {
   } 
 }
 
-const int Exception::code() const { 
+int Exception::code() const { 
   return m_error; 
 }
 
-const int Exception::line() const { 
+int Exception::line() const { 
   return m_line; 
 }
 

@@ -54,11 +54,11 @@ class Interface {
 
   virtual ~Interface();
 
-  const Types::Fs get_type();
+  Types::Fs get_type();
 
   FileSystem::Ptr get_fs();
 
-  const std::string to_string();
+  std::string to_string();
 
   bool need_fds() const;
   

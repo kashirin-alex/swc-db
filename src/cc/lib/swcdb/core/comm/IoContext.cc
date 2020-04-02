@@ -82,7 +82,7 @@ void IoContext::stop() {
     m_ioctx->stop();
 }
 
-const int32_t IoContext::get_size() const {
+int32_t IoContext::get_size() const {
   return m_size;
 }
 
@@ -93,7 +93,7 @@ void IoCtx::init(int32_t size) {
   m_env = std::make_shared<IoCtx>(size);
 }
 
-const bool IoCtx::ok() {
+bool IoCtx::ok() {
   return m_env != nullptr;
 }
   
@@ -102,7 +102,7 @@ IoContext::Ptr IoCtx::io() {
   return m_env->m_io;
 }
   
-const bool IoCtx::stopping(){
+bool IoCtx::stopping(){
   return !m_env->m_io->running;
 }
 

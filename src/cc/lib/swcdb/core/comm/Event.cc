@@ -26,7 +26,7 @@ void Event::received() {
     expiry_ms = Time::now_ms() + header.timeout_ms; 
 }
 
-const bool Event::expired(int64_t within) const {
+bool Event::expired(int64_t within) const {
   return expiry_ms && Time::now_ms() > expiry_ms-within;
 }
 
@@ -41,7 +41,7 @@ int32_t Event::response_code() {
   catch (Exception &e) { return e.code(); }
 }
 
-const std::string Event::to_str() const {
+std::string Event::to_str() const {
   std::string dstr("Event: type=");
   switch(type){
   case ESTABLISHED:

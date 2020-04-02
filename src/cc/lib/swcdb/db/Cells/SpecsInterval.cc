@@ -143,8 +143,8 @@ bool Interval::equal(const Interval& other) const {
           offset_rev == offset_rev ;
 }
 
-const bool Interval::is_matching(const Cell::Key& key, 
-                                 int64_t timestamp, bool desc) const {
+bool Interval::is_matching(const Cell::Key& key, int64_t timestamp, 
+                           bool desc) const {
   if(offset_key.empty()) 
     return true;
 
@@ -158,11 +158,11 @@ const bool Interval::is_matching(const Cell::Key& key,
   }
 }
 
-const bool Interval::is_matching(int64_t timestamp, bool desc) const {
+bool Interval::is_matching(int64_t timestamp, bool desc) const {
   return desc ? offset_rev > timestamp : offset_rev < timestamp;
 }
 
-const bool Interval::is_matching(const Cells::Cell& cell) const {
+bool Interval::is_matching(const Cells::Cell& cell) const {
   bool match = is_matching(
     cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
   if(!match)
@@ -183,8 +183,7 @@ const bool Interval::is_matching(const Cells::Cell& cell) const {
     ;
 }
 
-const bool Interval::is_matching(const Cells::Cell& cell, 
-                                 Types::Column typ) const {
+bool Interval::is_matching(const Cells::Cell& cell, Types::Column typ) const {
   bool match = is_matching(cell);
   if(!match || value.empty())
     return match;
@@ -195,17 +194,17 @@ const bool Interval::is_matching(const Cells::Cell& cell,
   return value.is_matching(cell.value, cell.vlen);
 }
 
-const bool Interval::is_matching_begin(const DB::Cell::Key& key) const {
+bool Interval::is_matching_begin(const DB::Cell::Key& key) const {
   return range_begin.empty() || 
          range_begin.compare(key, range_begin.count, true, true) != Condition::LT;
 }
 
-const bool Interval::is_matching_end(const DB::Cell::Key& key) const {
+bool Interval::is_matching_end(const DB::Cell::Key& key) const {
   return range_end.empty() || 
          range_end.compare(key, range_end.count, true, true) != Condition::GT;
 }
 
-const size_t Interval::encoded_length() const {
+size_t Interval::encoded_length() const {
   return range_begin.encoded_length() + range_end.encoded_length()
         + key_start.encoded_length() + key_finish.encoded_length()
         + value.encoded_length()
@@ -378,7 +377,7 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
   */
 }
 
-const std::string Interval::to_string() const {
+std::string Interval::to_string() const {
   std::string s("Interval(Begin");
   s.append(range_begin.to_string());
   s.append(" End");

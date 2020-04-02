@@ -43,7 +43,7 @@ struct Item final {
       : count(0), size_(size), data_(ptr), hash_(_hash()) {
   }
 
-  const size_t _hash() {
+  size_t _hash() {
     size_t ret = 0;
     const uint8_t* dp = data_;
     for(uint32_t sz = size_; sz; --sz)
@@ -62,7 +62,7 @@ struct Item final {
       delete data_;
   } 
 
-  const uint32_t size() const {
+  uint32_t size() const {
     return size_;
   }
   
@@ -70,7 +70,7 @@ struct Item final {
     return data_;
   }
 
-  const size_t hash() const {
+  size_t hash() const {
     return hash_;
   }
   
@@ -79,13 +79,13 @@ struct Item final {
     return this;
   }
 
-  const bool unused() {
+  bool unused() {
     return !--count;
   }
 
   void release();
 
-  const std::string_view to_string() const {
+  std::string_view to_string() const {
     return std::string_view((const char*)data_, size_);
   }
 
@@ -94,7 +94,7 @@ struct Item final {
            (size_ == other.size() && memcmp(data_, other.data(), size_) < 0);
   }
 
-  const bool equal(const Item& other) const {
+  bool equal(const Item& other) const {
     return Condition::eq(data_, size_, other.data(), other.size());
   }
 
@@ -153,7 +153,7 @@ class Page : public PageBase {
     }
   }
 
-  const size_t count() const {
+  size_t count() const {
     LockAtomic::Unique::Scope lock(m_mutex);
     //std::scoped_lock lock(m_mutex);
 
@@ -216,7 +216,7 @@ class Page : public PageBase {
     assert(!ptr);
   }
 
-  const size_t count() const {
+  size_t count() const {
     LockAtomic::Unique::Scope lock(m_mutex);
     return size();
   }
@@ -270,14 +270,14 @@ class Arena final {
     return _pages[(sz > 1022 ? 1023 : (sz ? sz-1 : 0) ) >> 2];
   } 
 
-  const size_t count() const {
+  size_t count() const {
     size_t sz = 0;
     for(uint16_t i=0;i<256;++i)
       sz += _pages[i].count();
     return sz;
   }
 
-  const size_t pages() const {
+  size_t pages() const {
     return 256;
   }
 
@@ -354,18 +354,18 @@ struct ItemPtr final { // Item as SmartPtr
     return ptr->data();
   }
 
-  const uint32_t size() const {
+  uint32_t size() const {
     return ptr->size();
   }
 
-  const std::string_view to_string() const {
+  std::string_view to_string() const {
     return ptr->to_string();
   }
   
   mutable Item::Ptr ptr = nullptr;
 };
 
-const bool operator==(ItemPtr l, ItemPtr r) {
+bool operator==(ItemPtr l, ItemPtr r) {
   return l.ptr == r.ptr;
 }
 

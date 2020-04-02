@@ -49,7 +49,7 @@ void Result::configure(const uint32_t revs, const uint64_t ttl_ns,
 }
 
 
-const size_t Result::size_bytes() const {
+size_t Result::size_bytes() const {
   return bytes;
 }
 
@@ -67,7 +67,7 @@ void Result::add(const Cell& cell, bool no_value) {
   bytes += adding->encoded_length();
 }
 
-const size_t Result::add(const uint8_t* ptr, size_t remain) {
+size_t Result::add(const uint8_t* ptr, size_t remain) {
   size_t count = 0;
   bytes += remain;
   while(remain) {
@@ -144,7 +144,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   erase(begin(), it_end);
 }
 
-const std::string Result::to_string(bool with_cells) const {
+std::string Result::to_string(bool with_cells) const {
   std::string s("CellsResult(size=");
   s.append(std::to_string(size()));
   s.append(" bytes=");

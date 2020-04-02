@@ -37,7 +37,7 @@ class Rgr : public Interface {
     );
   }
 
-  const bool report(std::string& cmd) {
+  bool report(std::string& cmd) {
     std::string message;
     
     size_t at = cmd.find_first_of(" ");

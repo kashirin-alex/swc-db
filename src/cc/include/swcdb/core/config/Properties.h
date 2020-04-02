@@ -49,11 +49,11 @@ class Properties {
 
   void set(const std::string &name, Property::Value::Ptr p);
 
-  const bool has(const std::string &name) const;
+  bool has(const std::string &name) const;
 
-  const bool defaulted(const std::string &name);
+  bool defaulted(const std::string &name);
 
-  const std::string to_string(const std::string &name);
+  std::string to_string(const std::string &name);
   
   void get_names(std::vector<std::string> &names) const;
 
@@ -126,7 +126,7 @@ class Properties {
 
   void print(std::ostream &out, bool include_default = false) const;
   
-  const std::string to_string_all(bool include_default = false) const;
+  std::string to_string_all(bool include_default = false) const;
   
   private:
 

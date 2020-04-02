@@ -21,7 +21,7 @@ RangeQuerySelectReq::RangeQuerySelectReq(int64_t cid, int64_t rid,
 
 RangeQuerySelectReq::~RangeQuerySelectReq() { }
 
-const std::string RangeQuerySelectReq::to_string() const {
+std::string RangeQuerySelectReq::to_string() const {
   std::string s("RangeQuerySelectReq(");
   s.append(" cid=");
   s.append(std::to_string(cid));
@@ -77,7 +77,7 @@ RangeQuerySelectRsp::RangeQuerySelectRsp(StaticBuffer& data)
 
 RangeQuerySelectRsp::~RangeQuerySelectRsp() { }
 
-const std::string RangeQuerySelectRsp::to_string() const {
+std::string RangeQuerySelectRsp::to_string() const {
   std::string s("RangeQuerySelectRsp(");
   s.append("err=");
   s.append(std::to_string(err));

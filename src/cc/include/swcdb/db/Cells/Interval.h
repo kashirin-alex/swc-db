@@ -54,35 +54,35 @@ class Interval final {
 
   void expand(const int64_t& ts);
 
-  const bool align(const Interval &other);
+  bool align(const Interval &other);
 
-  const bool equal(const Interval& other) const;
+  bool equal(const Interval& other) const;
 
-  const bool is_in_begin(const DB::Cell::Key &key) const;
+  bool is_in_begin(const DB::Cell::Key &key) const;
   
-  const bool is_in_end(const DB::Cell::Key &key) const;
+  bool is_in_end(const DB::Cell::Key &key) const;
 
-  const bool consist(const Interval& other) const;
+  bool consist(const Interval& other) const;
 
-  const bool consist(const DB::Cell::Key& key) const;
+  bool consist(const DB::Cell::Key& key) const;
 
-  const bool consist(const DB::Cell::Key& key, int64_t ts) const;
+  bool consist(const DB::Cell::Key& key, int64_t ts) const;
 
-  const bool includes(const Interval& other) const;
+  bool includes(const Interval& other) const;
 
-  const bool includes_begin(const Specs::Interval& interval) const;
+  bool includes_begin(const Specs::Interval& interval) const;
 
-  const bool includes_end(const Specs::Interval& interval) const;
+  bool includes_end(const Specs::Interval& interval) const;
 
-  const bool includes(const Specs::Interval& interval) const;
+  bool includes(const Specs::Interval& interval) const;
 
-  const size_t encoded_length() const;
+  size_t encoded_length() const;
 
   void encode(uint8_t **ptr) const;
 
   void decode(const uint8_t **ptr, size_t *remain, bool owner=false);
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
 
   DB::Cell::Key     key_begin;

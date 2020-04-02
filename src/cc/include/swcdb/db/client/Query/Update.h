@@ -134,7 +134,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
     virtual ~Locator();
 
-    const std::string to_string();
+    std::string to_string();
 
     void locate_on_manager();
 

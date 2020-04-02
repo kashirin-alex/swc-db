@@ -22,7 +22,7 @@ class ColumnCompactReq : public Serializable {
   
   int64_t cid;
   
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 
@@ -48,7 +48,7 @@ class ColumnCompactRsp : public Serializable {
 
   int err;        
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 

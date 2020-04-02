@@ -10,7 +10,7 @@
 namespace SWC { namespace Types { 
 
 
-const std::string to_string(Range typ) {
+std::string to_string(Range typ) {
   switch(typ){
     case Range::MASTER:
       return std::string("MASTER");

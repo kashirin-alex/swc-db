@@ -18,7 +18,7 @@ ColumnSchema::ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
 
 ColumnSchema::~ColumnSchema() {}
 
-const int ColumnSchema::parse(ColumnSchema::Func* func) {
+int ColumnSchema::parse(ColumnSchema::Func* func) {
     bool token_cmd = false;
 
     while(remain && !err) {
@@ -46,7 +46,7 @@ const int ColumnSchema::parse(ColumnSchema::Func* func) {
     return parse(*func, true);
 }
 
-const int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
+int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
     bool token_typ = false;
     bool bracket = false;
 

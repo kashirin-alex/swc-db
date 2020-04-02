@@ -31,17 +31,17 @@ class Readers final {
 
   void expand_and_align(DB::Cells::Interval& intval);
 
-  const bool empty();
+  bool empty();
 
-  const size_t size();
+  size_t size();
 
-  const size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false);
 
-  const size_t blocks_count();
+  size_t blocks_count();
 
-  const size_t release(size_t bytes);
+  size_t release(size_t bytes);
 
-  const bool processing();
+  bool processing();
   
   void remove(int &err);
 
@@ -55,9 +55,9 @@ class Readers final {
 
   void get_prev_key_end(uint32_t idx, DB::Cell::Key& key);
 
-  const bool need_compaction(size_t cs_sz, size_t blk_size);
+  bool need_compaction(size_t cs_sz, size_t blk_size);
 
-  const size_t encoded_length();
+  size_t encoded_length();
 
   void encode(uint8_t** ptr);
   
@@ -67,7 +67,7 @@ class Readers final {
 
   void replace(int &err, CellStore::Writers& w_cellstores);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
   
@@ -75,9 +75,9 @@ class Readers final {
 
   void _close();
 
-  const bool _processing();
+  bool _processing();
   
-  const size_t _size_bytes(bool only_loaded=false);
+  size_t _size_bytes(bool only_loaded=false);
 
   //std::shared_mutex       m_mutex;
   std::vector<Read::Ptr>  m_cellstores;

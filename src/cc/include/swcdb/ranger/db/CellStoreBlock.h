@@ -34,7 +34,7 @@ class Read final {
     LOADED
   };
 
-  static const std::string to_string(const State state);
+  static std::string to_string(const State state);
   
   static Ptr make(const uint64_t offset, 
                   const DB::Cells::Interval& interval, 
@@ -59,19 +59,19 @@ class Read final {
 
   void processing_decrement();
 
-  const size_t release();
+  size_t release();
 
-  const bool processing();
+  bool processing();
 
-  const int error();
+  int error();
 
-  const bool loaded();
+  bool loaded();
   
-  const bool loaded(int& err);
+  bool loaded(int& err);
 
-  const size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false);
 
-  const std::string to_string();
+  std::string to_string();
 
   
   private:
@@ -110,7 +110,7 @@ class Write final {
   void write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
              DynamicBuffer& output);
 
-  const std::string to_string();
+  std::string to_string();
 
   const uint64_t            offset;
   const DB::Cells::Interval interval;

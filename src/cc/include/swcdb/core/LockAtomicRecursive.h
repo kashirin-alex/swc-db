@@ -10,7 +10,7 @@
 
 namespace SWC { namespace LockAtomic {
 
-inline const size_t get_thread_id() {
+inline size_t get_thread_id() {
   return std::hash<std::thread::id>{}(std::this_thread::get_id());
 }
 

@@ -189,13 +189,13 @@ bool Interface::help(std::string& cmd) const {
   return true;
 }
 
-const bool Interface::error(const std::string& message) {
+bool Interface::error(const std::string& message) {
   SWC_PRINT << "\033[31mERROR\033[00m: " << message 
             << SWC_PRINT_CLOSE;
   return true; /// ? err
 }
 
-const bool Interface::cmd_option(std::string& cmd) const {
+bool Interface::cmd_option(std::string& cmd) const {
   err = Error::OK;
   auto opt = std::find_if(options.begin(), options.end(), 
               [cmd](const Option* opt){ 

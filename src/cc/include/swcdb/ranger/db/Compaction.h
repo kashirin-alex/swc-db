@@ -27,7 +27,7 @@ class Compaction final {
   
   void schedule(uint32_t t_ms);
 
-  const bool stopped();
+  bool stopped();
   
   void run(bool continuing=false);
 

@@ -45,8 +45,7 @@ uint32_t fletcher32(const void *data8, size_t len8) {
     /* 360 is the largest number of sums that can be
      * performed without integer overflow
      */
-    tlen = len > 360 ? 360 : len;
-    len -= tlen;
+    len -= (tlen = len > 360 ? 360 : len);
 
      while (tlen >= 16) {
       SWC_F32_DO16(data, 0);

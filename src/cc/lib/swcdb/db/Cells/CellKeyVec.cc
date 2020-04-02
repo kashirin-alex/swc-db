@@ -17,7 +17,7 @@ void KeyVec::copy(const KeyVec &other) {
   assign(other.begin(), other.end());
 }
 
-const bool KeyVec::equal(const KeyVec &other) const {
+bool KeyVec::equal(const KeyVec &other) const {
   return *this == other;
 }
 
@@ -80,7 +80,7 @@ void KeyVec::remove(const uint32_t idx) {
 }
 
 
-const std::string KeyVec::get(const uint32_t idx) const {
+std::string KeyVec::get(const uint32_t idx) const {
   return (*this)[idx];
 }
 
@@ -89,7 +89,7 @@ void KeyVec::get(const uint32_t idx, std::string& fraction) const {
 }
 
 
-const bool KeyVec::align(const KeyVec& other, Condition::Comp comp) {
+bool KeyVec::align(const KeyVec& other, Condition::Comp comp) {
   bool chg;
   if(chg = empty()) {
     if(chg = !other.empty())
@@ -118,7 +118,7 @@ const bool KeyVec::align(const KeyVec& other, Condition::Comp comp) {
 }
 
 
-const uint32_t KeyVec::encoded_length() const {
+uint32_t KeyVec::encoded_length() const {
   uint32_t len = Serialization::encoded_length_vi32(size());
   for(auto it = begin(); it < end(); ++it)
     len += Serialization::encoded_length_vi32(it->length()) + it->length();
@@ -146,7 +146,7 @@ void KeyVec::decode(const uint8_t **bufp, size_t* remainp) {
   }
 }
 
-const std::string KeyVec::to_string() const {
+std::string KeyVec::to_string() const {
   std::string s("Key(");
   s.append("sz=");
   s.append(std::to_string(size()));

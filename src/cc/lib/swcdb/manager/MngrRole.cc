@@ -261,7 +261,7 @@ void MngrRole::stop() {
   }
 }
 
-const std::string MngrRole::to_string() {
+std::string MngrRole::to_string() {
   std::string s("Mngrs Role:");
     
   for(auto& h : m_states) {

@@ -37,11 +37,11 @@ class Event final {
 
   void received();
 
-  const bool expired(int64_t within=0) const;
+  bool expired(int64_t within=0) const;
   
   int32_t response_code();
 
-  const std::string to_str() const;
+  std::string to_str() const;
 
   void display();
 

@@ -39,7 +39,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
 
   void put_back(ConnHandlerPtr conn);
   
-  const bool empty();
+  bool empty();
 
   void close_all();
 
@@ -96,7 +96,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
 
   IOCtxPtr io();        
   
-  const std::string to_str(ConnHandlerPtr conn);
+  std::string to_str(ConnHandlerPtr conn);
   
   void stop();
 

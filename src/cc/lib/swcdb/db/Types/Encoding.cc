@@ -12,7 +12,7 @@
 namespace SWC { namespace Types { 
 
 
-const std::string to_string(Encoding typ) {
+std::string to_string(Encoding typ) {
   switch(typ){
     case Encoding::DEFAULT:
       return std::string("DEFAULT");
@@ -29,7 +29,7 @@ const std::string to_string(Encoding typ) {
   }
 }
 
-const Encoding encoding_from(const std::string& typ) {
+Encoding encoding_from(const std::string& typ) {
 
   if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
      typ.compare("1") == 0)
@@ -50,11 +50,11 @@ const Encoding encoding_from(const std::string& typ) {
   return Encoding::DEFAULT;
 }
 
-const std::string repr_encoding(int typ) {
+std::string repr_encoding(int typ) {
   return to_string((Encoding)typ);
 }
 
-const int from_string_encoding(const std::string& typ) {
+int from_string_encoding(const std::string& typ) {
   return (int)encoding_from(typ);
 }
 

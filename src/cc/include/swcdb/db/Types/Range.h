@@ -16,7 +16,7 @@ enum Range {
   DATA    = 3
 };
 
-const std::string to_string(Range typ);
+std::string to_string(Range typ);
 
 }}
 

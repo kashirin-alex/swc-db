@@ -43,7 +43,7 @@ class IoContext final {
 
   void stop();
 
-  const int32_t get_size() const;
+  int32_t get_size() const;
   
   ~IoContext();
 
@@ -66,11 +66,11 @@ class IoCtx final {
 
   static void init(int32_t size);
 
-  static const bool ok();
+  static bool ok();
   
   static IoContext::Ptr io();
   
-  static const bool stopping();
+  static bool stopping();
 
   IoCtx(int32_t size);
 

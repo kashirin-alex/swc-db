@@ -38,7 +38,7 @@ void Key::free() {
   count = 0;
 }
 
-const bool Key::sane() const {
+bool Key::sane() const {
   return (count && size && data) || (!count && !size && !data);
 }
 
@@ -167,7 +167,7 @@ void Key::remove(uint32_t idx, bool recursive) {
   }
 }
 
-const std::string Key::get_string(uint32_t idx) const {
+std::string Key::get_string(uint32_t idx) const {
   const char* fraction;
   uint32_t length;
   get(idx, &fraction, &length);
@@ -188,14 +188,14 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
   *length = 0;
 }
 
-const bool Key::equal(const Key& other) const {
+bool Key::equal(const Key& other) const {
   return count == other.count && 
         ((!data && !other.data) || 
          Condition::eq(data, size, other.data, other.size));
 }
 
-const Condition::Comp Key::compare(const Key& other, uint32_t max, 
-                                   bool empty_ok, bool empty_eq) const {
+Condition::Comp Key::compare(const Key& other, uint32_t max, 
+                             bool empty_ok, bool empty_eq) const {
   if(uint32_t min = count < other.count ? count : other.count) {
     if(max && min > max)
       min = max;  
@@ -219,7 +219,7 @@ const Condition::Comp Key::compare(const Key& other, uint32_t max,
           : Condition::EQ;
 }
 
-const bool Key::align(KeyVec& start, KeyVec& finish) const {
+bool Key::align(KeyVec& start, KeyVec& finish) const {
   const uint8_t* ptr = data;
   uint32_t len;
   bool chg = false;
@@ -252,8 +252,8 @@ const bool Key::align(KeyVec& start, KeyVec& finish) const {
   return chg;
 }
 
-const bool Key::compare(const KeyVec& other, Condition::Comp break_if,
-                        uint32_t max, bool empty_ok) const {
+bool Key::compare(const KeyVec& other, Condition::Comp break_if,
+                  uint32_t max, bool empty_ok) const {
   const uint8_t* ptr = data;
   uint32_t len = 0;
   if(!max)
@@ -276,11 +276,11 @@ const bool Key::compare(const KeyVec& other, Condition::Comp break_if,
   return true;
 }
 
-const bool Key::empty() const {
+bool Key::empty() const {
   return !count;
 }
 
-const uint32_t Key::encoded_length() const {
+uint32_t Key::encoded_length() const {
   return Serialization::encoded_length_vi32(count) + size;;
 }
 
@@ -321,7 +321,7 @@ void Key::read(const std::vector<std::string>& key)  {
     add(f);
 }
 
-const bool Key::equal(const std::vector<std::string>& key) const {
+bool Key::equal(const std::vector<std::string>& key) const {
   if(key.size() != count)
     return false;
     
@@ -335,7 +335,7 @@ const bool Key::equal(const std::vector<std::string>& key) const {
   return true;
 }
 
-const std::string Key::to_string() const {
+std::string Key::to_string() const {
   std::string s("Key(");
   s.append("sz=");
   s.append(std::to_string(count));

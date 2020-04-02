@@ -226,7 +226,7 @@ void Fragments::get(std::vector<Fragment::Ptr>& fragments) {
   fragments.assign(m_fragments.begin(), m_fragments.end());
 }
 
-const size_t Fragments::release(size_t bytes) {   
+size_t Fragments::release(size_t bytes) {   
   size_t released = 0;
   std::shared_lock lock(m_mutex);
 
@@ -282,12 +282,12 @@ void Fragments::unload() {
   range = nullptr;
 }
 
-const bool Fragments::deleting() {
+bool Fragments::deleting() {
   std::shared_lock lock(m_mutex);
   return m_deleting;
 }
 
-const size_t Fragments::cells_count() {
+size_t Fragments::cells_count() {
   size_t count = 0;
   {
     std::shared_lock lock(m_mutex_cells);
@@ -299,16 +299,16 @@ const size_t Fragments::cells_count() {
   return count;
 }
 
-const size_t Fragments::size() {
+size_t Fragments::size() {
   std::shared_lock lock(m_mutex);
   return m_fragments.size()+1;
 }
 
-const size_t Fragments::size_bytes(bool only_loaded) {
+size_t Fragments::size_bytes(bool only_loaded) {
   return _size_bytes(only_loaded);
 }
 
-const size_t Fragments::size_bytes_encoded() {
+size_t Fragments::size_bytes_encoded() {
   std::shared_lock lock(m_mutex);
   size_t size = 0;
   for(auto frag : m_fragments)
@@ -316,12 +316,12 @@ const size_t Fragments::size_bytes_encoded() {
   return size;
 }
 
-const bool Fragments::processing() {
+bool Fragments::processing() {
   std::shared_lock lock(m_mutex);
   return _processing();
 }
 
-const std::string Fragments::to_string() {
+std::string Fragments::to_string() {
   size_t count = cells_count();
   std::shared_lock lock(m_mutex);
 
@@ -357,12 +357,12 @@ const std::string Fragments::to_string() {
 }
 
 
-const bool Fragments::_need_roll() const {
+bool Fragments::_need_roll() const {
   return m_cells.size_bytes() >= range->cfg->block_size() || 
          m_cells.size() >= range->cfg->block_cells();
 }
 
-const bool Fragments::_processing() const {
+bool Fragments::_processing() const {
   if(m_commiting)
     return true;
   for(auto frag : m_fragments)
@@ -371,7 +371,7 @@ const bool Fragments::_processing() const {
   return false;
 }
 
-const size_t Fragments::_size_bytes(bool only_loaded) {
+size_t Fragments::_size_bytes(bool only_loaded) {
   size_t size = 0;
   {
     std::shared_lock lock(m_mutex_cells);

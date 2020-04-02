@@ -82,17 +82,17 @@ size_t ColCells::add(const DynamicBuffer& cells,
   return m_cells.size() - sz;
 }
 
-const size_t ColCells::size() {
+size_t ColCells::size() {
   std::lock_guard<std::mutex> lock(m_mutex);
   return m_cells.size();
 }
 
-const size_t ColCells::size_bytes() {
+size_t ColCells::size_bytes() {
   std::lock_guard<std::mutex> lock(m_mutex);
   return m_cells.size_bytes();
 }
 
-const std::string ColCells::to_string() {
+std::string ColCells::to_string() {
   std::string s("(cid=");
   s.append(std::to_string(cid));
   s.append(" ");
@@ -112,12 +112,12 @@ MapMutable::MapMutable() { }
 
 MapMutable::~MapMutable() {}
 
-const bool MapMutable::create(Schema::Ptr schema) {
+bool MapMutable::create(Schema::Ptr schema) {
   return create(
     schema->cid, schema->cell_versions, schema->cell_ttl, schema->col_type);
 }
 
-const bool MapMutable::create(int64_t cid, uint32_t versions, uint32_t ttl, 
+bool MapMutable::create(const int64_t cid, uint32_t versions, uint32_t ttl, 
                               Types::Column type) {
   std::lock_guard<std::mutex> lock(m_mutex);
   
@@ -127,12 +127,12 @@ const bool MapMutable::create(int64_t cid, uint32_t versions, uint32_t ttl,
   return m_map.emplace(cid, ColCells::make(cid, versions, ttl, type)).second;
 }
 
-const bool MapMutable::create(const int64_t cid, Mutable& cells) {
+bool MapMutable::create(const int64_t cid, Mutable& cells) {
   std::lock_guard<std::mutex> lock(m_mutex);
   return m_map.emplace(cid, ColCells::make(cid, cells)).second;
 }
 
-const bool MapMutable::exists(int64_t cid) {
+bool MapMutable::exists(const int64_t cid) {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   return m_map.find(cid) != m_map.end();
@@ -197,7 +197,7 @@ void MapMutable::remove(const int64_t cid) {
     m_map.erase(it);
 }
 
-const size_t MapMutable::size() {
+size_t MapMutable::size() {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   size_t total = 0;
@@ -206,7 +206,7 @@ const size_t MapMutable::size() {
   return total;
 }
 
-const size_t MapMutable::size(const int64_t cid) {
+size_t MapMutable::size(const int64_t cid) {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -215,7 +215,7 @@ const size_t MapMutable::size(const int64_t cid) {
   return it->second->size();
 }
 
-const size_t MapMutable::size_bytes() {
+size_t MapMutable::size_bytes() {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   size_t total = 0;
@@ -224,7 +224,7 @@ const size_t MapMutable::size_bytes() {
   return total;
 }
 
-const size_t MapMutable::size_bytes(const int64_t cid) {
+size_t MapMutable::size_bytes(const int64_t cid) {
   std::lock_guard<std::mutex> lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -233,7 +233,7 @@ const size_t MapMutable::size_bytes(const int64_t cid) {
   return it->second->size_bytes();
 }
 
-const std::string MapMutable::to_string() {
+std::string MapMutable::to_string() {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::string s("MapMutable(size=");
   s.append(std::to_string(m_map.size()));

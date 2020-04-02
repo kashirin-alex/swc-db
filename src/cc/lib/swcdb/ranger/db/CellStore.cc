@@ -294,23 +294,23 @@ void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
 } 
 
-const bool Read::processing() {
+bool Read::processing() {
   //std::shared_lock lock(m_mutex);
   return m_queue.running() || _processing();
 }
 
-const size_t Read::size_bytes(bool only_loaded) const {
+size_t Read::size_bytes(bool only_loaded) const {
   size_t size = 0;
   for(auto blk : blocks)
     size += blk->size_bytes(only_loaded);
   return size;
 }
 
-const size_t Read::blocks_count() const {
+size_t Read::blocks_count() const {
   return blocks.size();
 }
 
-const std::string Read::to_string() {
+std::string Read::to_string() {
   //std::scoped_lock lock(m_mutex);
 
   std::string s("Read(v=");
@@ -352,7 +352,7 @@ const std::string Read::to_string() {
 
 
 
-const bool Read::_processing() const {
+bool Read::_processing() const {
   for(auto blk : blocks)
     if(blk->processing())
       return true;
@@ -508,7 +508,7 @@ void Write::remove(int &err) {
   Env::FsInterface::interface()->remove(err, smartfd->filepath()); 
 }
 
-const std::string Write::to_string() {
+std::string Write::to_string() {
   std::string s("Write(v=");
   s.append(std::to_string(CellStore::VERSION));
   s.append(" size=");

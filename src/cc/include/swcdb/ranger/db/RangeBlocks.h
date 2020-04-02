@@ -59,15 +59,15 @@ class Blocks final {
 
   //void split(Block::Ptr blk, bool loaded=true);
 
-  const bool _split(Block::Ptr blk, bool loaded=true);
+  bool _split(Block::Ptr blk, bool loaded=true);
 
-  const size_t cells_count();
+  size_t cells_count();
 
-  const size_t size();
+  size_t size();
 
-  const size_t size_bytes();
+  size_t size_bytes();
 
-  const size_t size_bytes_total(bool only_loaded=false);
+  size_t size_bytes_total(bool only_loaded=false);
 
   void release_prior(Block::Ptr ptr);
 
@@ -75,21 +75,21 @@ class Blocks final {
   void release_and_merge(Block::Ptr ptr);
   */
 
-  const size_t release(size_t bytes=0);
+  size_t release(size_t bytes=0);
 
-  const bool processing();
+  bool processing();
 
   void wait_processing();
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 
-  const size_t _size();
+  size_t _size();
 
-  const size_t _size_bytes();
+  size_t _size_bytes();
   
-  const bool _processing() const ;
+  bool _processing() const ;
 
   void _clear();
 

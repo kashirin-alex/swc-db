@@ -40,7 +40,7 @@ class MngrRole final {
 
   void stop();
 
-  const std::string to_string();
+  std::string to_string();
 
 
   private:

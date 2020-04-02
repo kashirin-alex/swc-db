@@ -30,19 +30,19 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 
   void flags(uint32_t flags);
 
-  const uint32_t flags() const;
+  uint32_t flags() const;
 
   void fd(int32_t fd);
 
-  const int32_t fd() const;
+  int32_t fd() const;
 
   void pos(uint64_t pos);
   
-  const uint64_t pos() const;
+  uint64_t pos() const;
 
-  const bool valid() const;
+  bool valid() const;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
   

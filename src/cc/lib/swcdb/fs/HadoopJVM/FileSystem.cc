@@ -75,7 +75,9 @@ void FileSystemHadoopJVM::setup_connection() {
       ++tries);
   }
   
-  hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
+  std::string abspath;
+  get_abspath("", abspath);
+  hdfsSetWorkingDirectory(m_filesystem, abspath.c_str());
     
   /* 
   char* host;    
@@ -164,7 +166,7 @@ Types::Fs FileSystemHadoopJVM::get_type() {
   return Types::Fs::HADOOP_JVM;
 };
 
-const std::string FileSystemHadoopJVM::to_string() {
+std::string FileSystemHadoopJVM::to_string() {
   return format(
     "(type=HADOOP_JVM path_root=%s path_data=%s)", 
     path_root.c_str(),
@@ -176,7 +178,8 @@ const std::string FileSystemHadoopJVM::to_string() {
 
 bool FileSystemHadoopJVM::exists(int &err, const std::string &name) {
   // org.apache.hadoop.ipc.StandbyException
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   bool state = hdfsExists(m_filesystem, abspath.c_str()) == 0;
   err = errno == ENOENT ? Error::OK : errno;
@@ -186,7 +189,8 @@ bool FileSystemHadoopJVM::exists(int &err, const std::string &name) {
 }
   
 void FileSystemHadoopJVM::remove(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   if (hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
     int tmperr = errno == EIO ? ENOENT: errno;
@@ -201,7 +205,8 @@ void FileSystemHadoopJVM::remove(int &err, const std::string &name) {
 }
 
 size_t FileSystemHadoopJVM::length(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
     
   size_t len = 0; 
@@ -221,7 +226,8 @@ size_t FileSystemHadoopJVM::length(int &err, const std::string &name) {
 }
 
 void FileSystemHadoopJVM::mkdirs(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
   
   errno = 0;
@@ -231,7 +237,8 @@ void FileSystemHadoopJVM::mkdirs(int &err, const std::string &name) {
 
 void FileSystemHadoopJVM::readdir(int &err, const std::string &name, 
                                DirentList &results) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
   hdfsFileInfo *fileInfo;
@@ -267,7 +274,8 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
 }
 
 void FileSystemHadoopJVM::rmdir(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   if (hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
     err = errno == EIO ? ENOENT: errno; // io error(not-exists)
@@ -281,9 +289,11 @@ void FileSystemHadoopJVM::rmdir(int &err, const std::string &name) {
 }
 
 void FileSystemHadoopJVM::rename(int &err, const std::string &from, 
-                              const std::string &to)  {
-  std::string abspath_from = get_abspath(from);
-  std::string abspath_to = get_abspath(to);
+                                 const std::string &to)  {
+  std::string abspath_from;
+  get_abspath(from, abspath_from);
+  std::string abspath_to;
+  get_abspath(to, abspath_to);
   errno = 0;
   if (hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str())
        == -1) {
@@ -307,8 +317,8 @@ SmartFdHadoopJVM::Ptr FileSystemHadoopJVM::get_fd(SmartFd::Ptr &smartfd){
 void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd, 
                                  int32_t bufsz, uint8_t replication, 
                                  int64_t blksz) {
-
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
             bufsz, replication, (Lld)blksz);
@@ -345,8 +355,8 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
-
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
             smartfd->to_string().c_str(), bufsz);
 

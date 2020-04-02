@@ -53,7 +53,7 @@ bool ConnQueue::ReqBase::valid() { return true; }
 
 void ConnQueue::ReqBase::handle_no_conn() {}
 
-const std::string ConnQueue::ReqBase::to_string() {
+std::string ConnQueue::ReqBase::to_string() {
   std::string s("ReqBase(");
   s.append(" called=");
   s.append(std::to_string(was_called.load()));
@@ -170,7 +170,7 @@ void ConnQueue::delay_proceed(ConnQueue::ReqBase::Ptr req,
   }
 }
 
-const std::string ConnQueue::to_string() {
+std::string ConnQueue::to_string() {
   std::string s("ConnQueue:");
   std::lock_guard<std::recursive_mutex> lock(m_mutex);
 

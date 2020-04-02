@@ -30,19 +30,19 @@ class Timestamp {
 
   virtual ~Timestamp();
 
-  const bool empty() const;
+  bool empty() const;
 
-  const bool equal(const Timestamp &other) const;
+  bool equal(const Timestamp &other) const;
 
-  const size_t encoded_length() const;
+  size_t encoded_length() const;
 
   void encode(uint8_t **bufp) const;
 
   void decode(const uint8_t **bufp, size_t *remainp);
 
-  const bool is_matching(int64_t other) const;
+  bool is_matching(int64_t other) const;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   void display(std::ostream& out) const;
 

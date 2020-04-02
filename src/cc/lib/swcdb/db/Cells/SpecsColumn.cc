@@ -111,7 +111,7 @@ void Column::decode_internal(uint8_t version, const uint8_t **bufp,
     intervals[i] = Interval::make_ptr(bufp, remainp);
 }
 
-const std::string Column::to_string() {
+std::string Column::to_string() {
   std::string s("Column(cid=");
   s.append(std::to_string(cid));
   s.append(" intervals=[");

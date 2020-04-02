@@ -195,7 +195,7 @@ void Blocks::split(Block::Ptr blk, bool loaded) {
 }
 */
 
-const bool Blocks::_split(Block::Ptr blk, bool loaded) {
+bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock
   if(blk->_need_split() && m_mutex.try_lock()) {
     auto offset = _get_block_idx(blk);
@@ -209,7 +209,7 @@ const bool Blocks::_split(Block::Ptr blk, bool loaded) {
   return false;
 }
 
-const size_t Blocks::cells_count() {
+size_t Blocks::cells_count() {
   size_t sz = 0;
   std::shared_lock lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
@@ -217,17 +217,17 @@ const size_t Blocks::cells_count() {
   return sz;
 }
 
-const size_t Blocks::size() {
+size_t Blocks::size() {
   std::shared_lock lock(m_mutex);
   return _size();
 }
 
-const size_t Blocks::size_bytes() {
+size_t Blocks::size_bytes() {
   std::shared_lock lock(m_mutex);
   return _size_bytes();
 }
 
-const size_t Blocks::size_bytes_total(bool only_loaded) {
+size_t Blocks::size_bytes_total(bool only_loaded) {
   std::shared_lock lock(m_mutex);
   return _size_bytes() 
         + cellstores.size_bytes(only_loaded) 
@@ -271,7 +271,7 @@ void Blocks::release_and_merge(Block::Ptr blk) {
 }
 */
 
-const size_t Blocks::release(size_t bytes) {
+size_t Blocks::release(size_t bytes) {
   size_t released = cellstores.release(bytes);
   if(!bytes || released < bytes) {
 
@@ -297,7 +297,7 @@ const size_t Blocks::release(size_t bytes) {
   return released;
 }
 
-const bool Blocks::processing() {
+bool Blocks::processing() {
   std::shared_lock lock(m_mutex);
   return _processing();
 }
@@ -307,7 +307,7 @@ void Blocks::wait_processing() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-const std::string Blocks::to_string() {
+std::string Blocks::to_string() {
   std::shared_lock lock(m_mutex);
 
   std::string s("Blocks(count=");
@@ -336,21 +336,21 @@ const std::string Blocks::to_string() {
   return s;
 } 
 
-const size_t Blocks::_size() {
+size_t Blocks::_size() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     ++sz;
   return sz;
 }
 
-const size_t Blocks::_size_bytes() {
+size_t Blocks::_size_bytes() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     sz += blk->size_bytes();
   return sz;
 }
   
-const bool Blocks::_processing() const {
+bool Blocks::_processing() const {
   if(m_processing)
     return true;
   for(Block::Ptr blk=m_block; blk; blk=blk->next) {

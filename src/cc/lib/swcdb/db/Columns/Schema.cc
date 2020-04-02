@@ -121,7 +121,7 @@ bool Schema::equal(const Ptr &other, bool with_rev) {
   ;
 }
 
-const size_t Schema::encoded_length() const {
+size_t Schema::encoded_length() const {
   return Serialization::encoded_length_vi64(cid)
        + Serialization::encoded_length_vstr(col_name.length())
        + 1
@@ -156,7 +156,7 @@ void Schema::encode(uint8_t **bufp) const {
   Serialization::encode_vi64(bufp, revision);
 }
 
-const std::string Schema::to_string() const {
+std::string Schema::to_string() const {
   std::stringstream ss;
   ss << "Schema(" 
       << "cid=" << std::to_string(cid)

@@ -16,7 +16,7 @@ RangeLocateReq::RangeLocateReq(int64_t cid, int64_t rid)
 
 RangeLocateReq::~RangeLocateReq() { }
 
-const std::string RangeLocateReq::to_string() const {
+std::string RangeLocateReq::to_string() const {
   std::string s("RangeLocateReq(");
   s.append("cid=");
   s.append(std::to_string(cid));
@@ -78,7 +78,7 @@ RangeLocateRsp::RangeLocateRsp(int err)
 
 RangeLocateRsp::~RangeLocateRsp() { }
 
-const std::string RangeLocateRsp::to_string() const {
+std::string RangeLocateRsp::to_string() const {
   std::string s("Range(");
   s.append("err=");
   s.append(std::to_string(err));

@@ -54,7 +54,7 @@ Schema::Ptr Schemas::get(int64_t cid) {
 Schema::Ptr Schemas::get(const std::string &name) {
   std::shared_lock lock(m_mutex);
   
-  for( const auto& it : m_map ) {
+  for(const auto& it : m_map ) {
     if(name.compare(it.second->col_name) == 0)
       return it.second;
   }

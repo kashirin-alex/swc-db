@@ -148,8 +148,8 @@ class DbClient : public Interface {
   }
 
   // CREATE/MODIFY/DELETE COLUMN
-  const bool mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
-                        std::string& cmd) {
+  bool mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+                  std::string& cmd) {
     std::string message;
     DB::Schema::Ptr schema;
     client::SQL::parse_column_schema(err, cmd, func, schema, message);
@@ -184,7 +184,7 @@ class DbClient : public Interface {
   }
   
   // COMPACT COLUMN
-  const bool compact_column(std::string& cmd) {
+  bool compact_column(std::string& cmd) {
     std::vector<DB::Schema::Ptr> schemas;  
     std::string message;
     client::SQL::parse_list_columns(err, cmd, schemas, message, "compact");
@@ -233,7 +233,7 @@ class DbClient : public Interface {
   }
   
   // LIST COLUMN/s
-  const bool list_columns(std::string& cmd) {
+  bool list_columns(std::string& cmd) {
     std::vector<DB::Schema::Ptr> schemas;  
     std::string message;
     client::SQL::parse_list_columns(err, cmd, schemas, message, "list");
@@ -268,7 +268,7 @@ class DbClient : public Interface {
   }
 
   // SELECT
-  const bool select(std::string& cmd) {
+  bool select(std::string& cmd) {
     int64_t ts = Time::now_ns();
     uint8_t display_flags = 0;
     size_t cells_count = 0;
@@ -334,7 +334,7 @@ class DbClient : public Interface {
   }
 
   // UPDATE
-  const bool update(std::string& cmd) {
+  bool update(std::string& cmd) {
     int64_t ts = Time::now_ns();
     uint8_t display_flags = 0;
  
@@ -365,7 +365,7 @@ class DbClient : public Interface {
   }
 
   // LOAD
-  const bool load(std::string& cmd) {
+  bool load(std::string& cmd) {
     int64_t ts = Time::now_ns();
     
     Env::FsInterface::init(FS::fs_type(
@@ -398,7 +398,7 @@ class DbClient : public Interface {
   }
 
   // DUMP
-  const bool dump(std::string& cmd) {
+  bool dump(std::string& cmd) {
     int64_t ts = Time::now_ns();
 
     Env::FsInterface::init(FS::fs_type(

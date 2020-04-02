@@ -48,7 +48,7 @@ class FileSystemHadoopJVM: public FileSystem {
 
   Types::Fs get_type() override;
 
-  const std::string to_string() override;
+  std::string to_string() override;
 
 
 

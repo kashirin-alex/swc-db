@@ -39,9 +39,9 @@ enum Flag {
   DELETE_VERSION            = 0x3
 };
 
-const std::string to_string(Flag flag);
+std::string to_string(Flag flag);
 
-const Flag flag_from(const uint8_t* rptr, uint32_t len);
+Flag flag_from(const uint8_t* rptr, uint32_t len);
 
 
 static const int64_t TIMESTAMP_MIN  = INT64_MIN;
@@ -96,31 +96,31 @@ class Cell final {
                   Types::Column typ = Types::Column::COUNTER_I64, 
                   int64_t rev = TIMESTAMP_NULL);
 
-  const uint8_t get_counter_op() const;
+  uint8_t get_counter_op() const;
 
-  const int64_t get_counter() const;
+  int64_t get_counter() const;
 
-  const int64_t get_counter(uint8_t& op, int64_t& rev) const;
+  int64_t get_counter(uint8_t& op, int64_t& rev) const;
 
   void read(const uint8_t **bufp, size_t* remainp, bool owner=false);
 
-  const uint32_t encoded_length() const;
+  uint32_t encoded_length() const;
 
   void write(SWC::DynamicBuffer &dst_buf) const;
 
-  const bool equal(const Cell& other) const;
+  bool equal(const Cell& other) const;
 
-  const bool removal() const;
+  bool removal() const;
   
-  const bool is_removing(const int64_t& rev) const;
+  bool is_removing(const int64_t& rev) const;
 
-  const int64_t get_timestamp() const;
+  int64_t get_timestamp() const;
 
-  const int64_t get_revision() const;
+  int64_t get_revision() const;
 
-  const bool has_expired(const uint64_t ttl) const;
+  bool has_expired(const uint64_t ttl) const;
 
-  const std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
+  std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
 
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN, 
                uint8_t flags=0, bool meta=false) const;

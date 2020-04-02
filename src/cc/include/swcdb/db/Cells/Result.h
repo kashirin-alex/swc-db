@@ -48,14 +48,14 @@ class Result : private std::vector<Cell*> {
   void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
                  const Types::Column typ=Types::Column::PLAIN);
 
-  const size_t size_bytes() const;
+  size_t size_bytes() const;
 
 
   void take(Result& other);
 
   void add(const Cell& cell, bool no_value=false);
   
-  const size_t add(const uint8_t* ptr, size_t remain);
+  size_t add(const uint8_t* ptr, size_t remain);
 
 
   Cell* takeout_begin(size_t idx);
@@ -70,7 +70,7 @@ class Result : private std::vector<Cell*> {
                       uint32_t max_cells);
 
 
-  const std::string to_string(bool with_cells=false) const;
+  std::string to_string(bool with_cells=false) const;
 
 };
 

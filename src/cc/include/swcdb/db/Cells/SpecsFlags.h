@@ -29,23 +29,23 @@ class Flags {
 
   virtual ~Flags();
 
-  const bool is_only_keys() const;
+  bool is_only_keys() const;
 
-  const bool is_only_deletes() const;
+  bool is_only_deletes() const;
 
   void set_only_keys();
 
   void set_only_deletes();
 
-  const bool equal(const Flags &other) const;
+  bool equal(const Flags &other) const;
 
-  const size_t encoded_length() const;
+  size_t encoded_length() const;
 
   void encode(uint8_t **bufp) const;
   
   void decode(const uint8_t **bufp, size_t *remainp);
   
-  const std::string to_string() const;
+  std::string to_string() const;
   
   
   void display(std::ostream& out) const;

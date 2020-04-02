@@ -53,13 +53,13 @@ namespace SWC {
     ~DynamicBuffer();
 
     /** Returns the size of the unused portion */
-    const size_t remaining() const;
+    size_t remaining() const;
 
     /** Returns the size of the used portion */
-    const size_t fill() const;
+    size_t fill() const;
 
     /** Returns true if the buffer is empty */
-    const bool empty() const;
+    bool empty() const;
 
     /**
      * Ensure space for additional data

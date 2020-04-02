@@ -20,7 +20,7 @@ class ColumnUpdate : public Serializable {
               : function(function), schema(schema), err(err) {
   }
 
-  const std::string to_string() {
+  std::string to_string() {
     std::string s("Update-params:\n");
     s.append(" func=");
     s.append(std::to_string(function));

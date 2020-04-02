@@ -202,7 +202,7 @@ ParserConfig& ParserConfig::operator()(const std::string s, int pos) {
   return add_pos(s, pos);
 }
 
-const std::string ParserConfig::position_name(int n){
+std::string ParserConfig::position_name(int n){
   for (auto & pos : positions) {
     if(pos.first == n) 
       return pos.second;
@@ -210,7 +210,7 @@ const std::string ParserConfig::position_name(int n){
   return "";
 }
 
-const bool ParserConfig::has(const std::string& name) const {
+bool ParserConfig::has(const std::string& name) const {
   for(const MapPair& info : options) {
     if(name.compare(info.first) == 0)
       return true;
@@ -221,8 +221,7 @@ const bool ParserConfig::has(const std::string& name) const {
   return false;
 }
 
-const bool ParserConfig::has(const std::string& name, 
-                             std::string& alias_to) const {
+bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
   for(const MapPair& info : options) {
     if(name.compare(info.first) == 0)
       return true;
@@ -472,7 +471,7 @@ void Parser::set_pos_parse(const std::string& name, const std::string& value) {
   raw_opts[name].push_back(value);
 }
 
-const bool Parser::parse_opt(const std::string& s){
+bool Parser::parse_opt(const std::string& s){
   size_t at = s.find_first_of("=");
   if(at == std::string::npos) 
     return false;

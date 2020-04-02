@@ -38,7 +38,7 @@ class MngdColumns final {
 
   void stop();
 
-  const bool is_root_mngr();
+  bool is_root_mngr();
 
   void active(const std::vector<int64_t>& cols);
 

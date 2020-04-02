@@ -11,7 +11,7 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 
-const std::string Read::to_string(const Read::State state) {
+std::string Read::to_string(const Read::State state) {
   switch(state) {
     case State::LOADED:
       return "LOADED";
@@ -98,7 +98,7 @@ void Read::processing_decrement() {
   --m_processing; 
 }
 
-const size_t Read::release() {    
+size_t Read::release() {    
   size_t released = 0;
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::scoped_lock lock(m_mutex);
@@ -113,32 +113,32 @@ const size_t Read::release() {
   return released;
 }
 
-const bool Read::processing() {
+bool Read::processing() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_processing;
 }
 
-const int Read::error() {
+int Read::error() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_err;
 }
 
-const bool Read::loaded() {
+bool Read::loaded() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
-const bool Read::loaded(int& err) {
+bool Read::loaded(int& err) {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
-const size_t Read::size_bytes(bool only_loaded) {
+size_t Read::size_bytes(bool only_loaded) {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
@@ -146,7 +146,7 @@ const size_t Read::size_bytes(bool only_loaded) {
   return m_size;
 }
 
-const std::string Read::to_string() {
+std::string Read::to_string() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   std::string s("Block(offset=");
@@ -301,7 +301,7 @@ void Write::write(int& err, Types::Encoding encoder, DynamicBuffer& cells,
   checksum_i32(output.mark, ptr, &ptr);
 }
 
-const std::string Write::to_string() {
+std::string Write::to_string() {
   std::string s("Block(offset=");
   s.append(std::to_string(offset));
   s.append(" cell_count=");

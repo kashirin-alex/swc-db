@@ -9,7 +9,7 @@
 namespace SWC { namespace Ranger { namespace CommitLog {
 
 
-const std::string Fragment::to_string(Fragment::State state) {
+std::string Fragment::to_string(Fragment::State state) {
   switch(state) {
     case State::NONE:
       return std::string("NONE");
@@ -263,26 +263,26 @@ size_t Fragment::release() {
   return released;
 }
 
-const bool Fragment::loaded() {
+bool Fragment::loaded() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
-const int Fragment::error() {
+int Fragment::error() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_err;
 }
 
-const bool Fragment::loaded(int& err) {
+bool Fragment::loaded(int& err) {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
-const size_t Fragment::size_bytes(bool only_loaded) {
+size_t Fragment::size_bytes(bool only_loaded) {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
@@ -290,13 +290,13 @@ const size_t Fragment::size_bytes(bool only_loaded) {
   return m_size;
 }
 
-const size_t Fragment::size_bytes_encoded() {
+size_t Fragment::size_bytes_encoded() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_size_enc;
 }
 
-const bool Fragment::processing() {
+bool Fragment::processing() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   return m_processing;
@@ -306,7 +306,7 @@ void Fragment::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
-const std::string Fragment::to_string() {
+std::string Fragment::to_string() {
   LockAtomic::Unique::Scope lock(m_mutex);
   //std::shared_lock lock(m_mutex);
   std::string s("Fragment(version=");

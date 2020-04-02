@@ -44,22 +44,22 @@ void Readers::expand_and_align(DB::Cells::Interval& intval) {
   }
 }
 
-const bool Readers::empty() {
+bool Readers::empty() {
   //std::shared_lock lock(m_mutex);
   return m_cellstores.empty();
 }
 
-const size_t Readers::size() {
+size_t Readers::size() {
   //std::shared_lock lock(m_mutex);
   return m_cellstores.size();
 }
 
-const size_t Readers::size_bytes(bool only_loaded) {
+size_t Readers::size_bytes(bool only_loaded) {
   //std::shared_lock lock(m_mutex);
   return _size_bytes(only_loaded);
 }
 
-const size_t Readers::blocks_count() {
+size_t Readers::blocks_count() {
   size_t  sz = 0;
   //std::shared_lock lock(m_mutex);
   for(auto cs : m_cellstores)
@@ -67,7 +67,7 @@ const size_t Readers::blocks_count() {
   return sz;
 }
 
-const size_t Readers::release(size_t bytes) {    
+size_t Readers::release(size_t bytes) {    
   size_t released = 0;
   //std::shared_lock lock(m_mutex);
   for(auto cs : m_cellstores) {
@@ -78,7 +78,7 @@ const size_t Readers::release(size_t bytes) {
   return released;
 }
 
-const bool Readers::processing() {
+bool Readers::processing() {
   //std::shared_lock lock(m_mutex);
   return _processing();
 }
@@ -131,7 +131,7 @@ void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) {
   key.copy((*(m_cellstores.begin()+idx))->prev_key_end);
 }
 
-const bool Readers::need_compaction(size_t cs_sz, size_t blk_size) {
+bool Readers::need_compaction(size_t cs_sz, size_t blk_size) {
   //std::shared_lock lock(m_mutex);
   size_t  sz;
   for(auto cs : m_cellstores) {
@@ -144,7 +144,7 @@ const bool Readers::need_compaction(size_t cs_sz, size_t blk_size) {
   return false;
 }
 
-const size_t Readers::encoded_length() {
+size_t Readers::encoded_length() {
   //std::shared_lock lock(m_mutex);
   size_t sz = Serialization::encoded_length_vi32(m_cellstores.size());
   for(auto cs : m_cellstores) {
@@ -259,7 +259,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
 
 }
 
-const std::string Readers::to_string() {
+std::string Readers::to_string() {
   //std::shared_lock lock(m_mutex);
 
   std::string s("CellStores(count=");
@@ -298,14 +298,14 @@ void Readers::_close() {
     cs->close(err);
 }
 
-const bool Readers::_processing() {
+bool Readers::_processing() {
   for(auto cs : m_cellstores)
     if(cs->processing())
       return true;
   return false;
 }
 
-const size_t Readers::_size_bytes(bool only_loaded) {
+size_t Readers::_size_bytes(bool only_loaded) {
   size_t  sz = 0;
   for(auto cs : m_cellstores)
     sz += cs->size_bytes(only_loaded);

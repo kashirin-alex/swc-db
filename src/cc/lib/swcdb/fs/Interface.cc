@@ -127,7 +127,7 @@ Interface::~Interface(){
   }
 }
 
-const Types::Fs Interface::get_type(){
+Types::Fs Interface::get_type(){
   return m_fs->get_type();
 }
 
@@ -135,7 +135,7 @@ FileSystem::Ptr Interface::get_fs(){
   return m_fs;
 }
 
-const std::string Interface::to_string() {
+std::string Interface::to_string() {
   return format("FS::Interface(type=%d, details=%s)", 
                 (int)m_type, m_fs==nullptr?"NULL":m_fs->to_string().c_str());
 }

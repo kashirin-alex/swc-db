@@ -35,7 +35,7 @@ class CommHeader final {
 
   void set(uint64_t cmd=0, uint32_t timeout=0);
 
-  const size_t encoded_length();
+  size_t encoded_length();
 
   void encode(uint8_t **bufp) const;
 
@@ -45,7 +45,7 @@ class CommHeader final {
 
   void initialize_from_request_header(const CommHeader &req_header);
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   uint8_t  version;         //!< Protocol version
   uint8_t  header_len;      //!< Length of header

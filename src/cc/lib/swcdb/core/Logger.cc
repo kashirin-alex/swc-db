@@ -23,7 +23,7 @@ const char* priority_name[] = {
   "NOTSET"
 };
 
-const std::string LogWriter::repr(uint8_t priority) {
+std::string LogWriter::repr(uint8_t priority) {
   return priority < LOG_NOTSET ? 
           get_name(priority) 
         : "undefined logging level: " +std::to_string(priority);
@@ -99,19 +99,19 @@ void LogWriter::set_level(uint8_t level) {
   m_priority = level;
 }
 
-const uint8_t LogWriter::get_level() const {
+uint8_t LogWriter::get_level() const {
   return m_priority;
 }
 
-const bool LogWriter::is_enabled(uint8_t level) const {
+bool LogWriter::is_enabled(uint8_t level) const {
   return level <= m_priority;
 }
 
-const bool LogWriter::show_line_numbers() const {
+bool LogWriter::show_line_numbers() const {
   return m_show_line_numbers;
 }
 
-const uint32_t LogWriter::seconds() {
+uint32_t LogWriter::seconds() {
   auto t = ::time(0);
   if(m_daemon && m_last_time < t-86400)
     renew_files();

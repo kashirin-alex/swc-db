@@ -24,15 +24,15 @@ class Resources final {
             Property::V_GINT32::Ptr ram_release_rate,
             std::function<void(size_t)> release_call=0);
 
-  const size_t need_ram() const;
+  size_t need_ram() const;
 
-  const size_t avail_ram() const;
+  size_t avail_ram() const;
 
-  const bool need_ram(const uint32_t& sz) const;
+  bool need_ram(uint32_t sz) const;
 
   void stop();
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 
@@ -48,7 +48,7 @@ class Resources final {
     std::atomic<size_t> used     = 0;
     std::atomic<size_t> allowed  = 0;
 
-    const std::string to_string(uint32_t base = 1) const;
+    std::string to_string(uint32_t base = 1) const;
   };
 
 

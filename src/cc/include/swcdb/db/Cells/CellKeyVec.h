@@ -25,7 +25,7 @@ class KeyVec : public std::vector<std::string> {
   
   void copy(const KeyVec &other);
 
-  const bool equal(const KeyVec &other) const;
+  bool equal(const KeyVec &other) const;
 
   void add(const char* fraction, const uint32_t len);
 
@@ -51,19 +51,19 @@ class KeyVec : public std::vector<std::string> {
 
   void remove(const uint32_t idx);
 
-  const std::string get(const uint32_t idx) const;
+  std::string get(const uint32_t idx) const;
 
   void get(const uint32_t idx, std::string& fraction) const;
 
-  const bool align(const KeyVec& other, Condition::Comp comp);
+  bool align(const KeyVec& other, Condition::Comp comp);
 
-  const uint32_t encoded_length() const;
+  uint32_t encoded_length() const;
   
   void encode(uint8_t **bufp) const;
 
   void decode(const uint8_t **bufp, size_t* remainp);
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
 };
 

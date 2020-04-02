@@ -29,7 +29,7 @@ class RangeLocateReq : public Serializable {
   DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
   
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 
@@ -59,7 +59,7 @@ class RangeLocateRsp  : public Serializable {
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 

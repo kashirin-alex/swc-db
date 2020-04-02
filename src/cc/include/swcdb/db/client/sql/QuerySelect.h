@@ -18,9 +18,9 @@ class QuerySelect : public Reader {
   QuerySelect(const std::string& sql, DB::Specs::Scan& specs, 
               std::string& message);
 
-  const int parse_select();
+  int parse_select();
 
-  const int parse_dump(std::string& filepath);
+  int parse_dump(std::string& filepath);
 
   void parse_output_flags(uint8_t& output_flags);
 

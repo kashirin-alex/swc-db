@@ -40,7 +40,7 @@ void ConfigSSL::set_networks(const Strings& networks) {
 }
 
 
-const bool ConfigSSL::need_ssl(const EndPoint& endpoint) const {
+bool ConfigSSL::need_ssl(const EndPoint& endpoint) const {
   return !Resolver::is_network(endpoint, nets_v4, nets_v6);
 }
 

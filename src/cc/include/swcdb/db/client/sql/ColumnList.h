@@ -19,7 +19,7 @@ class ColumnList : public Reader {
 
   ~ColumnList();
 
-  const int parse_list_columns(const char* expect_cmd);
+  int parse_list_columns(const char* expect_cmd);
 
   private:
   

@@ -22,11 +22,11 @@ std::ostream& Value::operator<<(std::ostream& ostream) {
   return ostream << to_string();
 }
   
-const bool Value::is_skippable() const {
+bool Value::is_skippable() const {
   return flags & Value::SKIPPABLE;
 }
 
-const bool Value::is_guarded() const {
+bool Value::is_guarded() const {
   return flags & Value::GUARDED;
 }
 
@@ -38,7 +38,7 @@ Value::Ptr Value::default_value(bool defaulted) {
   return this;
 }
 
-const bool Value::is_default() const {
+bool Value::is_default() const {
   return flags & Value::DEFAULT;
 }
   
@@ -47,7 +47,7 @@ Value::Ptr Value::zero_token() {
   return this;
 }
 
-const bool Value::is_zero_token() const {
+bool Value::is_zero_token() const {
   return flags & Value::NO_TOKEN;
 }
 
@@ -163,11 +163,11 @@ void V_BOOL::set_from(const Strings& values) {
           strncasecmp(str.data(), "yes", 3) == 0;
 }
 
-const Value::Type V_BOOL::type() const {
+Value::Type V_BOOL::type() const {
   return value_type;
 }
 
-const std::string V_BOOL::to_string() const {
+std::string V_BOOL::to_string() const {
   return value ? "true" : "false";
 }
 
@@ -198,11 +198,11 @@ void V_UINT8::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-const Value::Type V_UINT8::type() const {
+Value::Type V_UINT8::type() const {
   return value_type;
 }
 
-const std::string V_UINT8::to_string() const {
+std::string V_UINT8::to_string() const {
   return std::to_string((int16_t)value);
 }
 
@@ -233,11 +233,11 @@ void V_UINT16::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-const Value::Type V_UINT16::type() const {
+Value::Type V_UINT16::type() const {
   return value_type;
 }
 
-const std::string V_UINT16::to_string() const {
+std::string V_UINT16::to_string() const {
   return std::to_string(value);
 }
 
@@ -268,11 +268,11 @@ void V_INT32::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-const Value::Type V_INT32::type() const {
+Value::Type V_INT32::type() const {
   return value_type;
 }
 
-const std::string V_INT32::to_string() const {
+std::string V_INT32::to_string() const {
   return std::to_string(value);
 }
 
@@ -303,11 +303,11 @@ void V_INT64::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-const Value::Type V_INT64::type() const {
+Value::Type V_INT64::type() const {
   return value_type;
 }
 
-const std::string V_INT64::to_string() const {
+std::string V_INT64::to_string() const {
   return std::to_string(value);
 }
 
@@ -338,11 +338,11 @@ void V_DOUBLE::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-const Value::Type V_DOUBLE::type() const {
+Value::Type V_DOUBLE::type() const {
   return value_type;
 }
 
-const std::string V_DOUBLE::to_string() const {
+std::string V_DOUBLE::to_string() const {
   return format("%g", value);
 }
 
@@ -373,11 +373,11 @@ void V_STRING::set_from(const Strings& values) {
   value = values.back();
 }
 
-const Value::Type V_STRING::type() const {
+Value::Type V_STRING::type() const {
   return value_type;
 }
 
-const std::string V_STRING::to_string() const {
+std::string V_STRING::to_string() const {
   return value;
 }
 
@@ -429,11 +429,11 @@ void V_ENUM::set_from(const Strings& values) {
   value = nv;
 }
 
-const Value::Type V_ENUM::type() const {
+Value::Type V_ENUM::type() const {
   return value_type;
 }
 
-const std::string V_ENUM::to_string() const {
+std::string V_ENUM::to_string() const {
   return format(
     "%s  # (%d)", 
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
@@ -467,11 +467,11 @@ void V_STRINGS::set_from(const Strings& values) {
   value = values;
 }
 
-const Value::Type V_STRINGS::type() const {
+Value::Type V_STRINGS::type() const {
   return value_type;
 }
 
-const std::string V_STRINGS::to_string() const {
+std::string V_STRINGS::to_string() const {
   return format_list(value);
 }
 
@@ -509,11 +509,11 @@ void V_INT64S::set_from(const Strings& values) {
   }
 }
 
-const Value::Type V_INT64S::type() const {
+Value::Type V_INT64S::type() const {
   return value_type;
 }
 
-const std::string V_INT64S::to_string() const {
+std::string V_INT64S::to_string() const {
   return format_list(value);
 }
 
@@ -551,11 +551,11 @@ void V_DOUBLES::set_from(const Strings& values) {
   }
 }
 
-const Value::Type V_DOUBLES::type() const {
+Value::Type V_DOUBLES::type() const {
   return value_type;
 }
 
-const std::string V_DOUBLES::to_string() const {
+std::string V_DOUBLES::to_string() const {
   return format_list(value);
 }
 
@@ -600,11 +600,11 @@ void V_GBOOL::set_from(const Strings& values) {
           strncasecmp(str.data(), "yes", 3) == 0;
 }
 
-const Value::Type V_GBOOL::type() const {
+Value::Type V_GBOOL::type() const {
   return value_type;
 }
 
-const std::string V_GBOOL::to_string() const {
+std::string V_GBOOL::to_string() const {
   return value ? "true" : "false";
 }
 
@@ -660,11 +660,11 @@ void V_GUINT8::set_from(const Strings& values) {
   value.store(v);
 }
 
-const Value::Type V_GUINT8::type() const {
+Value::Type V_GUINT8::type() const {
   return value_type;
 }
 
-const std::string V_GUINT8::to_string() const {
+std::string V_GUINT8::to_string() const {
   return std::to_string((int16_t)value);
 }
 
@@ -715,11 +715,11 @@ void V_GINT32::set_from(const Strings& values) {
   value.store(v);
 }
 
-const Value::Type V_GINT32::type() const {
+Value::Type V_GINT32::type() const {
   return value_type;
 }
 
-const std::string V_GINT32::to_string() const {
+std::string V_GINT32::to_string() const {
   return std::to_string(value);
 }
 
@@ -786,11 +786,11 @@ void V_GENUM::set_from(const Strings& values) {
   value.store(nv);
 }
 
-const Value::Type V_GENUM::type() const {
+Value::Type V_GENUM::type() const {
   return value_type;
 }
 
-const std::string V_GENUM::to_string() const {
+std::string V_GENUM::to_string() const {
   return format(
     "%s  # (%d)", 
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
@@ -852,11 +852,11 @@ void V_GSTRINGS::set_from(const Strings& values) {
   value = values;
 }
 
-const Value::Type V_GSTRINGS::type() const {
+Value::Type V_GSTRINGS::type() const {
   return value_type;
 }
 
-const std::string V_GSTRINGS::to_string() const {
+std::string V_GSTRINGS::to_string() const {
   std::scoped_lock lock(mutex);
   return format_list(value);
 }

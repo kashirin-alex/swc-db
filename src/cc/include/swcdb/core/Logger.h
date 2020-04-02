@@ -38,7 +38,7 @@ namespace Logger {
 class LogWriter final {
   public:
   
-  static const std::string repr(uint8_t priority);
+  static std::string repr(uint8_t priority);
 
   static const char* get_name(uint8_t priority);
 
@@ -56,13 +56,13 @@ class LogWriter final {
 
   void set_level(uint8_t level);
 
-  const uint8_t get_level() const;
+  uint8_t get_level() const;
 
-  const bool is_enabled(uint8_t level) const;
+  bool is_enabled(uint8_t level) const;
 
-  const bool show_line_numbers() const;
+  bool show_line_numbers() const;
 
-  const uint32_t seconds();
+  uint32_t seconds();
 
   template<typename T>
   void log(uint8_t priority, const T& msg) {

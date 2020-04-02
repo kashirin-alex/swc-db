@@ -180,7 +180,7 @@ class Columns final {
     cb(err);
   }
   
-  const size_t release(size_t bytes=0) {
+  size_t release(size_t bytes=0) {
     size_t released = 0;
     Column::Ptr col;
     ColumnsMap::iterator it;
@@ -206,7 +206,7 @@ class Columns final {
     return released;
   }
 
-  const std::string to_string() {
+  std::string to_string() {
     std::shared_lock lock(m_mutex);
 
     std::string s("columns=(");

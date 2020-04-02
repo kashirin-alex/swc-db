@@ -58,7 +58,7 @@ QuerySelect::QuerySelect(const std::string& sql, DB::Specs::Scan& specs,
                         : Reader(sql, message), specs(specs) {
 }
 
-const int QuerySelect::parse_select() {
+int QuerySelect::parse_select() {
 
     bool token_cmd = false;
     bool token_where = false;
@@ -94,7 +94,7 @@ const int QuerySelect::parse_select() {
     return err;
 }
 
-const int QuerySelect::parse_dump(std::string& filepath) {
+int QuerySelect::parse_dump(std::string& filepath) {
 
     "dump col='ID|NAME' into 'filepath.ext' where [cells=(Interval Flags) AND];";
     bool token_cmd = false;

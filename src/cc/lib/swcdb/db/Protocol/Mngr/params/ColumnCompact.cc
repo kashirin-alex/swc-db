@@ -14,7 +14,7 @@ ColumnCompactReq::ColumnCompactReq(int64_t cid) : cid(cid) {}
 
 ColumnCompactReq::~ColumnCompactReq() { }
 
-const std::string ColumnCompactReq::to_string() const {
+std::string ColumnCompactReq::to_string() const {
   std::string s("ColumnCompactReq(");
   s.append("cid=");
   s.append(std::to_string(cid));
@@ -45,7 +45,7 @@ ColumnCompactRsp::ColumnCompactRsp(): err(0) {}
 
 ColumnCompactRsp::~ColumnCompactRsp() { }
 
-const std::string ColumnCompactRsp::to_string() const {
+std::string ColumnCompactRsp::to_string() const {
   std::string s("ColumnCompactRsp(");
   s.append("err=");
   s.append(std::to_string(err));

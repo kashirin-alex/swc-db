@@ -60,34 +60,34 @@ class Schema final {
 
   bool equal(const Ptr &other, bool with_rev=true);
   
-  const size_t encoded_length() const;
+  size_t encoded_length() const;
  
   void encode(uint8_t **bufp) const;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   void display(std::ostream& out) const;
 
 
-	Types::RangeSeq range_seq;
+  Types::RangeSeq range_seq;
 
-	const int64_t 		    cid;
-	const std::string 		col_name;
-	const Types::Column   col_type;
+  const int64_t 		    cid;
+  const std::string 		col_name;
+  const Types::Column   col_type;
 
-	const uint32_t 		    cell_versions;
-	const uint32_t 		    cell_ttl;
+  const uint32_t 		    cell_versions;
+  const uint32_t 		    cell_ttl;
 
-	const Types::Encoding blk_encoding;
-	const uint32_t        blk_size;
-	const uint32_t        blk_cells;
+  const Types::Encoding blk_encoding;
+  const uint32_t        blk_size;
+  const uint32_t        blk_cells;
 
-	const uint8_t 		    cs_replication;
-	const uint32_t        cs_size;
-	const uint8_t         cs_max;
-	const uint8_t         compact_percent;
+  const uint8_t 		    cs_replication;
+  const uint32_t        cs_size;
+  const uint8_t         cs_max;
+  const uint8_t         compact_percent;
 
-	const int64_t         revision;
+  const int64_t         revision;
 };
 
 }} // SWC::DB namespace

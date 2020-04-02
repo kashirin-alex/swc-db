@@ -62,7 +62,7 @@ class Rangers final {
 
   private:
 
-  const bool runs_assign(bool stop);
+  bool runs_assign(bool stop);
 
   void assign_ranges_run();
 

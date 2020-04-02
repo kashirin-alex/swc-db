@@ -26,7 +26,7 @@ class RgrGetReq : public Serializable {
   DB::Cell::Key  range_begin, range_end;
   bool           next_range;
   
-  const std::string to_string();
+  std::string to_string();
 
   private:
 
@@ -56,7 +56,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 

@@ -14,7 +14,7 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-const std::string to_string(Flag flag) {
+std::string to_string(Flag flag) {
   switch(flag) {
     case Flag::INSERT:
       return std::string("INSERT");
@@ -29,7 +29,7 @@ const std::string to_string(Flag flag) {
   }
 }
 
-const Flag flag_from(const uint8_t* rptr, uint32_t len) {
+Flag flag_from(const uint8_t* rptr, uint32_t len) {
   const char* ptr = (const char*)rptr;
   if(len >= 14) {
     if(strncasecmp(ptr, "delete_version", 14) == 0)
@@ -162,18 +162,18 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   // +? i64's storing epochs 
 }
 
-const uint8_t Cell::get_counter_op() const {
+uint8_t Cell::get_counter_op() const {
   const uint8_t* ptr = value;
   Serialization::decode_vi64(&ptr);
   return *ptr;
 }
 
-const int64_t Cell::get_counter() const {
+int64_t Cell::get_counter() const {
   const uint8_t *ptr = value;
   return Serialization::decode_vi64(&ptr);
 }
 
-const int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
+int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   const uint8_t *ptr = value;
   int64_t v = Serialization::decode_vi64(&ptr);
   rev = ((op = *ptr++) & HAVE_REVISION) 
@@ -207,7 +207,7 @@ void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
   }
 }
 
-const uint32_t Cell::encoded_length() const {
+uint32_t Cell::encoded_length() const {
   uint32_t len = 1+key.encoded_length()+1;
   if(control & HAVE_TIMESTAMP)
     len += 8;
@@ -235,7 +235,7 @@ void Cell::write(SWC::DynamicBuffer &dst_buf) const {
   assert(dst_buf.fill() <= dst_buf.size);
 }
 
-const bool Cell::equal(const Cell& other) const {
+bool Cell::equal(const Cell& other) const {
   return  flag == other.flag && 
           control == other.control &&
           (!(control & HAVE_TIMESTAMP) || timestamp == other.timestamp) &&
@@ -245,11 +245,11 @@ const bool Cell::equal(const Cell& other) const {
           memcmp(value, other.value, vlen) == 0;
 }
 
-const bool Cell::removal() const {
+bool Cell::removal() const {
   return flag != Flag::INSERT;
 }
 
-const bool Cell::is_removing(const int64_t& rev) const {
+bool Cell::is_removing(const int64_t& rev) const {
   return rev != AUTO_ASSIGN && removal() && (
     (flag == DELETE  && get_timestamp() >= rev )
     ||
@@ -257,20 +257,20 @@ const bool Cell::is_removing(const int64_t& rev) const {
     );
 }
 
-const int64_t Cell::get_timestamp() const {
+int64_t Cell::get_timestamp() const {
   return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
 }
 
-const int64_t Cell::get_revision() const {
+int64_t Cell::get_revision() const {
   return control & HAVE_REVISION ? revision 
         : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
 }
 
-const bool Cell::has_expired(const uint64_t ttl) const {
+bool Cell::has_expired(const uint64_t ttl) const {
   return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
 }
 
-const std::string Cell::to_string(Types::Column typ) const {
+std::string Cell::to_string(Types::Column typ) const {
   std::string s("Cell(");
   s.append("flag=");
   s.append(Cells::to_string((Flag)flag));

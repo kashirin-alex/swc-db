@@ -16,13 +16,13 @@ namespace SWC { namespace Time {
 
 void checkings();
 
-const int64_t now_ms();
+int64_t now_ms();
 
-const int64_t now_ns();
+int64_t now_ns();
 
-const int64_t parse_ns(int& err, const std::string& buf);
+int64_t parse_ns(int& err, const std::string& buf);
 
-const std::string fmt_ns(int64_t ns);
+std::string fmt_ns(int64_t ns);
 
 std::ostream &hires_now_ns(std::ostream &out);
 

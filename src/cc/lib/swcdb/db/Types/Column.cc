@@ -11,12 +11,12 @@
 
 namespace SWC { namespace Types { 
 
-const bool is_counter(const Column typ) {
+bool is_counter(const Column typ) {
   return typ >= Column::COUNTER_I64 &&
          typ <= Column::COUNTER_I8;
 }
 
-const std::string to_string(Column typ) {
+std::string to_string(Column typ) {
   switch(typ){
     case Column::PLAIN:
       return std::string("PLAIN");
@@ -35,7 +35,7 @@ const std::string to_string(Column typ) {
   }
 }
 
-const Column column_type_from(const std::string& typ) {
+Column column_type_from(const std::string& typ) {
 
   if(typ.compare("1") == 0 || 
      strncasecmp(typ.data(), "PLAIN", typ.length()) == 0)
@@ -62,11 +62,11 @@ const Column column_type_from(const std::string& typ) {
 }
 
 
-const std::string repr_col_type(int typ) {
+std::string repr_col_type(int typ) {
   return to_string((Column)typ);
 }
 
-const int from_string_col_type(const std::string& typ) {
+int from_string_col_type(const std::string& typ) {
   return (int)column_type_from(typ);
 }
 

@@ -83,17 +83,17 @@ class Read final {
 
   void remove(int &err);
 
-  const bool processing();
+  bool processing();
 
-  const size_t size_bytes(bool only_loaded=false) const;
+  size_t size_bytes(bool only_loaded=false) const;
 
-  const size_t blocks_count() const;
+  size_t blocks_count() const;
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 
-  const bool _processing() const;
+  bool _processing() const;
 
   void _run_queued();
 
@@ -141,7 +141,7 @@ class Write : public std::enable_shared_from_this<Write> {
 
   void remove(int &err);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 

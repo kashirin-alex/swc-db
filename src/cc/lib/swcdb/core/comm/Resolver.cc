@@ -10,7 +10,7 @@ namespace SWC {
 
 namespace Serialization {
   
-const size_t encoded_length(const EndPoint& endpoint) {
+size_t encoded_length(const EndPoint& endpoint) {
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
@@ -45,7 +45,7 @@ EndPoint decode(const uint8_t **bufp, size_t *remainp) {
 }
 
 
-const bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
+bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
   if(endpoints_in.size()==0) 
     return false;
   return std::find_if(endpoints_in.begin(), endpoints_in.end(),  
@@ -54,7 +54,7 @@ const bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
         != endpoints_in.end();
 }
 
-const bool has_endpoint(const EndPoints& endpoints, 
+bool has_endpoint(const EndPoints& endpoints, 
                         const EndPoints& endpoints_in) {
   for(auto& endpoint : endpoints){
     if(has_endpoint(endpoint, endpoints_in)) return true;
@@ -63,7 +63,7 @@ const bool has_endpoint(const EndPoints& endpoints,
 }
 
 
-const size_t endpoints_hash(const EndPoints& endpoints) {
+size_t endpoints_hash(const EndPoints& endpoints) {
   std::string s;
   for(auto& endpoint : endpoints){
     s.append(endpoint.address().to_string());
@@ -74,7 +74,7 @@ const size_t endpoints_hash(const EndPoints& endpoints) {
   return hasher(s);
 }
 
-const size_t endpoint_hash(const EndPoint& endpoint) {
+size_t endpoint_hash(const EndPoint& endpoint) {
   std::hash<std::string> hasher;
   return hasher(
     (std::string)endpoint.address().to_string()
@@ -86,12 +86,12 @@ const size_t endpoint_hash(const EndPoint& endpoint) {
 
 namespace Resolver {
 
-const bool is_ipv4_address(const std::string& str) {
+bool is_ipv4_address(const std::string& str) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr)) != 0;
 }
 
-const bool is_ipv6_address(const std::string& str) {
+bool is_ipv6_address(const std::string& str) {
   struct sockaddr_in6 sa;
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr)) != 0;
 }
@@ -188,9 +188,9 @@ void get_networks(const Strings networks,
   }
 }
 
-const bool is_network(const EndPoint& endpoint,
-                      const std::vector<asio::ip::network_v4>& nets_v4, 
-                      const std::vector<asio::ip::network_v6>& nets_v6) {
+bool is_network(const EndPoint& endpoint,
+                const std::vector<asio::ip::network_v4>& nets_v4, 
+                const std::vector<asio::ip::network_v6>& nets_v6) {
   if(endpoint.address().is_v4()) {
     for(auto& net : nets_v4)
       if(endpoint.address().to_v4() == net.address() || 

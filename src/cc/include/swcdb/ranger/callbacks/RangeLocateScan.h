@@ -41,7 +41,7 @@ class RangeLocateScan : public ReqScan {
             { return req->selector_query(cell, stop); };
   }
   
-  const bool selector_commit(const DB::Cells::Cell& cell, bool& stop) const {
+  bool selector_commit(const DB::Cells::Cell& cell, bool& stop) const {
 
     //std::cout << "---------------------\n";
     //std::cout << "  spec: " << spec.to_string() << "\n";
@@ -63,7 +63,7 @@ class RangeLocateScan : public ReqScan {
     return match;
   }
 
-  const bool selector_query(const DB::Cells::Cell& cell, bool& stop) const {
+  bool selector_query(const DB::Cells::Cell& cell, bool& stop) const {
     if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
       return false;
 

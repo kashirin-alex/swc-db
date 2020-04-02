@@ -54,7 +54,7 @@ class Fragments final {
 
   void get(std::vector<Fragment::Ptr>& fragments);
 
-  const size_t release(size_t bytes);
+  size_t release(size_t bytes);
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old);
 
@@ -62,27 +62,27 @@ class Fragments final {
 
   void unload();
 
-  const bool deleting();
+  bool deleting();
 
-  const size_t cells_count();
+  size_t cells_count();
 
-  const size_t size();
+  size_t size();
 
-  const size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false);
 
-  const size_t size_bytes_encoded();
+  size_t size_bytes_encoded();
 
-  const bool processing();
+  bool processing();
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 
-  const bool _need_roll() const;
+  bool _need_roll() const;
 
-  const bool _processing() const;
+  bool _processing() const;
 
-  const size_t _size_bytes(bool only_loaded=false);
+  size_t _size_bytes(bool only_loaded=false);
 
   std::shared_mutex           m_mutex_cells;
   DB::Cells::Mutable          m_cells;

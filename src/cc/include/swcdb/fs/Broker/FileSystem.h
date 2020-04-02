@@ -22,7 +22,7 @@ bool apply_broker();
 class FileSystemBroker: public FileSystem {
   public:
 
-  static const EndPoints get_endpoints();
+  static EndPoints get_endpoints();
 
   FileSystemBroker();
 
@@ -32,7 +32,7 @@ class FileSystemBroker: public FileSystem {
 
   Types::Fs get_type() override;
 
-  const std::string to_string() override;
+  std::string to_string() override;
 
   bool send_request(Protocol::Req::BasePtr hdlr);
 

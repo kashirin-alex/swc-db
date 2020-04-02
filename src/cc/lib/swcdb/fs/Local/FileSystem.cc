@@ -46,7 +46,7 @@ Types::Fs FileSystemLocal::get_type() {
   return Types::Fs::LOCAL;
 };
 
-const std::string FileSystemLocal::to_string() {
+std::string FileSystemLocal::to_string() {
   return format(
     "(type=LOCAL path_root=%s path_data=%s)",
     path_root.c_str(),
@@ -57,7 +57,8 @@ const std::string FileSystemLocal::to_string() {
 
 
 bool FileSystemLocal::exists(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   bool state = FileUtils::exists(abspath);
   err = errno == ENOENT ? Error::OK : errno;
@@ -67,7 +68,8 @@ bool FileSystemLocal::exists(int &err, const std::string &name) {
 }
 
 void FileSystemLocal::remove(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   if(!FileUtils::unlink(abspath)) {
     if(errno != ENOENT) {
@@ -81,7 +83,8 @@ void FileSystemLocal::remove(int &err, const std::string &name) {
 }
   
 size_t FileSystemLocal::length(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
     
   size_t len = 0; 
@@ -97,7 +100,8 @@ size_t FileSystemLocal::length(int &err, const std::string &name) {
 }
 
 void FileSystemLocal::mkdirs(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
   
   errno = 0;
@@ -107,7 +111,8 @@ void FileSystemLocal::mkdirs(int &err, const std::string &name) {
 
 void FileSystemLocal::readdir(int &err, const std::string &name, 
                               DirentList &results) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
   std::vector<struct dirent> listing;
@@ -153,7 +158,8 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
 }
 
 void FileSystemLocal::rmdir(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   std::error_code ec;
   std::filesystem::remove_all(abspath, ec);
   if (ec) {
@@ -167,8 +173,10 @@ void FileSystemLocal::rmdir(int &err, const std::string &name) {
 
 void FileSystemLocal::rename(int &err, const std::string &from, 
                               const std::string &to)  {
-  std::string abspath_from = get_abspath(from);
-  std::string abspath_to = get_abspath(to);
+  std::string abspath_from;
+  get_abspath(from, abspath_from);
+  std::string abspath_to;
+  get_abspath(to, abspath_to);
   std::error_code ec;
   std::filesystem::rename(abspath_from, abspath_to, ec);
   if (ec) {
@@ -184,7 +192,8 @@ void FileSystemLocal::rename(int &err, const std::string &from,
 void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd, 
                              int32_t bufsz, uint8_t replication, 
                              int64_t blksz) {
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
             bufsz, replication, (Lld)blksz);
@@ -228,7 +237,8 @@ void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemLocal::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s, bufsz=%d", 
             smartfd->to_string().c_str(), bufsz);
 

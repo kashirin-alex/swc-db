@@ -88,7 +88,7 @@ Types::Fs FileSystem::get_type() {
   return Types::Fs::NONE;
 }
   
-const std::string FileSystem::to_string() {
+std::string FileSystem::to_string() {
   return format(
     "(type=NONE path_root=%s path_data=%s)", 
     path_root.c_str(),
@@ -96,8 +96,7 @@ const std::string FileSystem::to_string() {
   );
 }
 
-const std::string FileSystem::get_abspath(const std::string &name) {
-  std::string abspath;
+void FileSystem::get_abspath(const std::string &name, std::string& abspath) {
   abspath.append(path_root);
   if(!name.empty()){
     abspath.append(path_data);
@@ -105,7 +104,6 @@ const std::string FileSystem::get_abspath(const std::string &name) {
   } else {
     abspath.append(path_data.substr(0, path_data.length()-1));
   }
-  return abspath;
 }
 
 void FileSystem::fd_open_incr() {
@@ -120,7 +118,7 @@ bool FileSystem::need_fds() const {
   return fds_count >= cfg_fds_max->get();
 }
 
-const size_t FileSystem::fds_open() const {
+size_t FileSystem::fds_open() const {
   return fds_count.load();
 }
 
@@ -166,8 +164,8 @@ void FileSystem::rmdir(Callback::RmdirCb_t cb, const std::string &name) {
   cb(err);
 }
   
-void FileSystem::rename(Callback::RmdirCb_t cb, const std::string &from, 
-                                      const std::string &to) {
+void FileSystem::rename(Callback::RmdirCb_t cb,
+                        const std::string &from, const std::string &to) {
   int err = Error::OK;
   rename(err, from, to);
   cb(err);

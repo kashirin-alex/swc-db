@@ -52,7 +52,7 @@ class ReportRsp  : public Serializable {
 
     ~Range();
 
-    const size_t encoded_length () const;
+    size_t encoded_length () const;
 
     void encode(uint8_t **bufp) const;
 
@@ -71,7 +71,7 @@ class ReportRsp  : public Serializable {
 
     ~Column();
 
-    const size_t encoded_length () const;
+    size_t encoded_length () const;
 
     void encode(uint8_t **bufp) const;
 

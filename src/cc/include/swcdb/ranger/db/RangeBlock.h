@@ -50,27 +50,27 @@ class Block final {
 
   void schema_update();
 
-  const bool is_consist(const DB::Cells::Interval& intval) const;
+  bool is_consist(const DB::Cells::Interval& intval) const;
   
-  const bool is_in_end(const DB::Cell::Key& key) const;
+  bool is_in_end(const DB::Cell::Key& key) const;
 
-  const bool is_next(const DB::Specs::Interval& spec);
+  bool is_next(const DB::Specs::Interval& spec);
 
-  const bool includes(const DB::Specs::Interval& spec);
+  bool includes(const DB::Specs::Interval& spec);
   
   void preload();
 
-  const bool add_logged(const DB::Cells::Cell& cell);
+  bool add_logged(const DB::Cells::Cell& cell);
     
   void load_cells(const DB::Cells::Mutable& cells);
 
-  const size_t load_cells(const uint8_t* buf, size_t remain, 
-                          uint32_t revs, size_t avail, 
-                          bool& was_splitted, bool synced=false);
+  size_t load_cells(const uint8_t* buf, size_t remain, 
+                    uint32_t revs, size_t avail, 
+                    bool& was_splitted, bool synced=false);
 
-  const bool splitter();
+  bool splitter();
 
-  const bool scan(ReqScan::Ptr req);
+  bool scan(ReqScan::Ptr req);
   
   void loaded(int err);
   
@@ -82,7 +82,7 @@ class Block final {
 
   void _set_prev_key_end(const DB::Cell::Key& key);
   
-  const Condition::Comp _cond_key_end(const DB::Cell::Key& key) const;
+  Condition::Comp _cond_key_end(const DB::Cell::Key& key) const;
 
   void _set_key_end(const DB::Cell::Key& key);
   
@@ -92,39 +92,39 @@ class Block final {
   void merge_and_release(Ptr blk);
   */
 
-  const size_t release();
+  size_t release();
 
   void processing_increment();
 
   void processing_decrement();
 
-  const bool removed();
+  bool removed();
 
-  const bool loaded();
+  bool loaded();
 
-  const bool processing() const;
+  bool processing() const;
 
-  const size_t size();
+  size_t size();
 
-  const size_t _size() const;
+  size_t _size() const;
   
-  const size_t size_bytes();
+  size_t size_bytes();
 
-  const size_t _size_bytes() const;
+  size_t _size_bytes() const;
 
-  //const bool need_split();
+  //bool need_split();
 
-  const bool _need_split() const;
+  bool _need_split() const;
 
   void free_key_begin();
 
   void free_key_end();
 
-  const std::string to_string();
+  std::string to_string();
   
   private:
 
-  const bool _scan(ReqScan::Ptr req, bool synced=false);
+  bool _scan(ReqScan::Ptr req, bool synced=false);
 
   void run_queue(int& err);
 

@@ -85,7 +85,9 @@ void FileSystemHadoop::setup_connection() {
       ++tries);
   }
   
-  //hdfsSetWorkingDirectory(m_filesystem, get_abspath("").c_str());
+  //std::string abspath;
+  //get_abspath("", abspath);
+  //hdfsSetWorkingDirectory(m_filesystem, abspath.c_str());
     
  
   // status check
@@ -181,7 +183,7 @@ Types::Fs FileSystemHadoop::get_type() {
   return Types::Fs::HADOOP;
 };
 
-const std::string FileSystemHadoop::to_string() {
+std::string FileSystemHadoop::to_string() {
   return format(
     "(type=HADOOP path_root=%s path_data=%s)", 
     path_root.c_str(),
@@ -191,7 +193,8 @@ const std::string FileSystemHadoop::to_string() {
 
 
 bool FileSystemHadoop::exists(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   bool state = false;//hdfsExists(m_filesystem, abspath.c_str()) == 0;
   err = errno == ENOENT ? Error::OK : errno;
@@ -201,7 +204,8 @@ bool FileSystemHadoop::exists(int &err, const std::string &name) {
 }
   
 void FileSystemHadoop::remove(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   if (true) { // hdfsDelete(m_filesystem, abspath.c_str(), false) == -1) {
     int tmperr = errno == EIO ? ENOENT: errno;
@@ -216,7 +220,8 @@ void FileSystemHadoop::remove(int &err, const std::string &name) {
 }
 
 size_t FileSystemHadoop::length(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
     
   size_t len = 0; 
@@ -236,7 +241,8 @@ size_t FileSystemHadoop::length(int &err, const std::string &name) {
 }
 
 void FileSystemHadoop::mkdirs(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
   
   errno = 0;
@@ -246,7 +252,8 @@ void FileSystemHadoop::mkdirs(int &err, const std::string &name) {
 
 void FileSystemHadoop::readdir(int &err, const std::string &name, 
                                DirentList &results) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
   Dirent entry;
@@ -284,7 +291,8 @@ void FileSystemHadoop::readdir(int &err, const std::string &name,
 }
 
 void FileSystemHadoop::rmdir(int &err, const std::string &name) {
-  std::string abspath = get_abspath(name);
+  std::string abspath;
+  get_abspath(name, abspath);
   errno = 0;
   if (true) { // hdfsDelete(m_filesystem, abspath.c_str(), true) == -1) {
     err = errno == EIO? ENOENT: errno; // io error(not-exists)
@@ -299,8 +307,10 @@ void FileSystemHadoop::rmdir(int &err, const std::string &name) {
 
 void FileSystemHadoop::rename(int &err, const std::string &from, 
                               const std::string &to)  {
-  std::string abspath_from = get_abspath(from);
-  std::string abspath_to = get_abspath(to);
+  std::string abspath_from;
+  get_abspath(from, abspath_from);
+  std::string abspath_to;
+  get_abspath(to, abspath_to);
   errno = 0;
   if (true) { // hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str())
       // == -1) {
@@ -324,8 +334,8 @@ SmartFdHadoop::Ptr FileSystemHadoop::get_fd(SmartFd::Ptr &smartfd){
 void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd, 
                               int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
-
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
             smartfd->to_string().c_str(), 
             bufsz, replication, (Lld)blksz);
@@ -362,8 +372,8 @@ void FileSystemHadoop::create(int &err, SmartFd::Ptr &smartfd,
 }
 
 void FileSystemHadoop::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
-
-  std::string abspath = get_abspath(smartfd->filepath());
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
             smartfd->to_string().c_str(), bufsz);
 

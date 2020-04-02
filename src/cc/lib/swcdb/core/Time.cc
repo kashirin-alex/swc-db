@@ -29,18 +29,18 @@ void checkings() { // no need runtime checks, call at app start
   ));
 }
 
-const int64_t now_ms() {
+int64_t now_ms() {
   return (int64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 
-const int64_t now_ns() {
+int64_t now_ns() {
   return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-const int64_t parse_ns(int& err, const std::string& buf) {
+int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
   if(buf.find("/") == std::string::npos) {  
     while(*ptr != 0 && *ptr == '0') ++ptr;
@@ -75,7 +75,7 @@ const int64_t parse_ns(int& err, const std::string& buf) {
   return ns;
 }
 
-const std::string fmt_ns(int64_t ns) {
+std::string fmt_ns(int64_t ns) {
   int64_t secs = ns/1000000000;
   time_t t_secs = (time_t)secs;
   char res[20];

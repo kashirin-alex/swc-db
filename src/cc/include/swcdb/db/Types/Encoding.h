@@ -18,13 +18,13 @@ enum class Encoding {
   ZSTD    = 0x04
 };
 
-const std::string to_string(Encoding typ);
+std::string to_string(Encoding typ);
 
-const Encoding encoding_from(const std::string& typ);
+Encoding encoding_from(const std::string& typ);
 
-const std::string repr_encoding(int typ);
+std::string repr_encoding(int typ);
 
-const int from_string_encoding(const std::string& typ);
+int from_string_encoding(const std::string& typ);
 
 
 }}

@@ -72,12 +72,12 @@ void Range::get_key_end(DB::Cell::Key& key) {
   key.copy(m_interval.key_end);
 }
   
-const bool Range::is_any_begin() {
+bool Range::is_any_begin() {
   std::shared_lock lock(m_mutex);
   return m_interval.key_begin.empty();
 }
 
-const bool Range::is_any_end() {
+bool Range::is_any_end() {
   std::shared_lock lock(m_mutex);
   return m_interval.key_end.empty();
 }
@@ -92,12 +92,12 @@ void Range::set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
-const bool Range::align(const DB::Cells::Interval& interval) {
+bool Range::align(const DB::Cells::Interval& interval) {
   std::scoped_lock lock(m_mutex);
   return m_interval.align(interval);
 }
   
-const bool Range::align(const DB::Cell::Key& key) {
+bool Range::align(const DB::Cell::Key& key) {
   std::scoped_lock lock(m_mutex);
   return key.align(m_interval.aligned_min, m_interval.aligned_max);
 }
@@ -314,7 +314,7 @@ void Range::wait_queue() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-const bool Range::compacting() {
+bool Range::compacting() {
   std::shared_lock lock(m_mutex);
   return m_compacting != COMPACT_NONE;
 }
@@ -327,7 +327,7 @@ void Range::compacting(uint8_t state) {
   m_cv.notify_all();
 }
   
-const bool Range::compact_possible() {
+bool Range::compact_possible() {
   std::scoped_lock lock(m_mutex);
   if(m_state != State::LOADED || m_compacting != COMPACT_NONE
       || (!m_require_compact && blocks.processing()))
@@ -341,7 +341,7 @@ void Range::compact_require(bool require) {
   m_require_compact = require;
 }
 
-const bool Range::compact_required() {
+bool Range::compact_required() {
   std::shared_lock lock(m_mutex);
   return m_require_compact;
 }
@@ -426,7 +426,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
   fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
 }
 
-const std::string Range::to_string() {
+std::string Range::to_string() {
   std::shared_lock lock(m_mutex);
     
   std::string s("(");
@@ -531,7 +531,7 @@ void Range::load(int &err) {
               err, Error::get_text(err), to_string().c_str());
 }
 
-const bool Range::wait(uint8_t from_state) {
+bool Range::wait(uint8_t from_state) {
   bool waited;
   std::unique_lock lock_wait(m_mutex);
   if(waited = (m_compacting >= from_state)) {

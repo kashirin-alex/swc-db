@@ -18,7 +18,7 @@ class ColumnCfg final {
   ~ColumnCfg() { }
 
 
-  const std::string to_string() const {
+  std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
     return s;

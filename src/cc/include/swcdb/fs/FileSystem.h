@@ -72,9 +72,9 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual Types::Fs get_type();
   
-  virtual const std::string to_string();
+  virtual std::string to_string();
 
-  virtual const std::string get_abspath(const std::string &name);
+  virtual void get_abspath(const std::string &name, std::string& abspath);
 
   void fd_open_incr();
 
@@ -82,7 +82,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   
   bool need_fds() const;
 
-  const size_t fds_open() const;
+  size_t fds_open() const;
   
   virtual bool exists(int &err, const std::string &name) = 0;
   virtual void exists(Callback::ExistsCb_t cb, const std::string &name);

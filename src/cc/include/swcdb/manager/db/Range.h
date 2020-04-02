@@ -108,7 +108,7 @@ class Range final {
     key_end.copy(m_key_end);
   }
 
-  const bool equal(const DB::Cells::Interval& intval) {
+  bool equal(const DB::Cells::Interval& intval) {
     std::shared_lock lock(m_mutex);
     return m_key_begin.equal(intval.key_begin);
            m_key_end.equal(intval.key_end);
@@ -130,18 +130,18 @@ class Range final {
       );
   }
 
-  const bool after(const Ptr& range) {
+  bool after(const Ptr& range) {
     std::shared_lock lock(m_mutex);
     return range->before(m_key_end);
   }
 
-  const bool before(const DB::Cell::Key& key) {
+  bool before(const DB::Cell::Key& key) {
     std::shared_lock lock(m_mutex);
     return m_key_end.empty() || 
           (!key.empty() &&  key.compare(m_key_end) != Condition::GT);
   }
 
-  const std::string to_string() {
+  std::string to_string() {
     std::shared_lock lock(m_mutex);
     std::string s("[");
     s.append(cfg->to_string());

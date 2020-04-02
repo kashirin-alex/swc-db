@@ -30,7 +30,7 @@ QueryUpdate::QueryUpdate(const std::string& sql,
 
 QueryUpdate::~QueryUpdate() {}
 
-const int QueryUpdate::parse_update() {
+int QueryUpdate::parse_update() {
 
     bool token_cmd = false;
     while(remain && !err && !token_cmd) {
@@ -46,7 +46,7 @@ const int QueryUpdate::parse_update() {
     return err;
 }
 
-const int QueryUpdate::parse_load(std::string& filepath, int64_t& cid) {
+int QueryUpdate::parse_load(std::string& filepath, int64_t& cid) {
     bool token = false;
 
     while(remain && !err && found_space());

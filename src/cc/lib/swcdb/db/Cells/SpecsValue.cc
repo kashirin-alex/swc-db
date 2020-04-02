@@ -83,16 +83,16 @@ void Value::free() {
   size = 0;
 }
 
-const bool Value::empty() const {
+bool Value::empty() const {
   return comp == Condition::NONE;
 }
 
-const bool Value::equal(const Value &other) const {
+bool Value::equal(const Value &other) const {
   return size == other.size 
     && ((!data && !other.data) || memcmp(data, other.data, size) == 0);
 }
 
-const size_t Value::encoded_length() const {
+size_t Value::encoded_length() const {
   return 1+(
     comp==Condition::NONE? 0: Serialization::encoded_length_vi32(size)+size);
 }
@@ -117,19 +117,19 @@ void Value::decode(const uint8_t **bufp, size_t *remainp) {
   }
 }
 
-const bool Value::is_matching(const uint8_t *other_data, 
-                              const uint32_t other_size) const {
+bool Value::is_matching(const uint8_t *other_data, 
+                        const uint32_t other_size) const {
   return Condition::is_matching(comp, data, size, other_data, other_size);
 }
 
-const bool Value::is_matching(int64_t other) const {
+bool Value::is_matching(int64_t other) const {
   errno = 0;    
   char *last = (char*)data + size;
   int64_t value = strtoll((const char*)data, &last, 0); // ?cls-storage
     return Condition::is_matching(comp, value, other);
 }
 
-const std::string Value::to_string() const {
+std::string Value::to_string() const {
   std::string s("Value(");
   s.append("size=");
   s.append(std::to_string(size));

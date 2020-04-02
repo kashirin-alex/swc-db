@@ -22,7 +22,7 @@ class FileSystemLocal: public FileSystem {
 
   Types::Fs get_type() override;
 
-  const std::string to_string() override;
+  std::string to_string() override;
 
 
   bool exists(int &err, const std::string &name) override;

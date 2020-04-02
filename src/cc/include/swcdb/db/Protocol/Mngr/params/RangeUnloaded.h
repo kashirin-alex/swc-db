@@ -22,7 +22,7 @@ class RangeUnloadedReq : public Serializable {
   int64_t        cid;
   int64_t        rid;
   
-  const std::string to_string() const {
+  std::string to_string() const {
     std::string s("RangeUnloadedReq(");
     s.append("cid=");
     s.append(std::to_string(cid));
@@ -66,7 +66,7 @@ class RangeUnloadedRsp : public Serializable {
   
   int  err;        
 
-  const std::string to_string() const {
+  std::string to_string() const {
     std::string s("RangeUnloadedRsp(");
     s.append("err=");
     s.append(std::to_string(err));

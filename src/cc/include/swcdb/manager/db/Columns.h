@@ -126,7 +126,7 @@ class Columns final {
       m_columns.erase(it);
   }
 
-  const std::string to_string() {
+  std::string to_string() {
     std::string s("ColumnsAssignment:");
     
     std::shared_lock lock(m_mutex);

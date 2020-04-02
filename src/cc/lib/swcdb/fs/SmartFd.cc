@@ -33,7 +33,7 @@ void SmartFd::flags(uint32_t flags) {
   m_flags = flags; 
 }
 
-const uint32_t SmartFd::flags() const { 
+uint32_t SmartFd::flags() const { 
   return m_flags; 
 }
 
@@ -41,7 +41,7 @@ void SmartFd::fd(int32_t fd) {
   m_fd = fd; 
 }
 
-const int32_t SmartFd::fd() const {
+int32_t SmartFd::fd() const {
   return m_fd; 
 }
 
@@ -49,15 +49,15 @@ void SmartFd::pos(uint64_t pos) {
   m_pos = pos; 
 }
   
-const uint64_t SmartFd::pos() const { 
+uint64_t SmartFd::pos() const { 
   return m_pos; 
 }
 
-const bool SmartFd::valid() const { 
+bool SmartFd::valid() const { 
   return m_fd != -1; 
 }
 
-const std::string SmartFd::to_string() const {
+std::string SmartFd::to_string() const {
   return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
                          m_filepath.c_str(), m_flags, m_fd, m_pos);
 }

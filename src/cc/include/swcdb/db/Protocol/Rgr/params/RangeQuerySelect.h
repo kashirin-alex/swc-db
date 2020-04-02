@@ -30,7 +30,7 @@ class RangeQuerySelectReq : public Serializable {
   DB::Specs::Interval  interval;
   uint32_t             limit_buffer_sz;
   
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 
@@ -62,7 +62,7 @@ class RangeQuerySelectRsp  : public Serializable {
   size_t          offset;
   StaticBuffer    data;
   
-  const std::string to_string() const;
+  std::string to_string() const;
 
   private:
 

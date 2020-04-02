@@ -73,7 +73,7 @@ class Range : public std::enable_shared_from_this<Range> {
   const std::string get_path_cs(const int64_t cs_id) const;
 
   const std::string get_path_cs_on(const std::string folder, 
-                                  const int64_t cs_id) const;
+                                   const int64_t cs_id) const;
 
   Files::RgrData::Ptr get_last_rgr(int &err);
 
@@ -83,17 +83,17 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void get_key_end(DB::Cell::Key& key);
   
-  const bool is_any_begin();
+  bool is_any_begin();
 
-  const bool is_any_end();
+  bool is_any_end();
 
   void get_prev_key_end(DB::Cell::Key& key);
   
   void set_prev_key_end(const DB::Cell::Key& key);
 
-  const bool align(const DB::Cells::Interval& interval);
+  bool align(const DB::Cells::Interval& interval);
   
-  const bool align(const DB::Cell::Key& key);
+  bool align(const DB::Cell::Key& key);
 
   void schema_update(bool compact);
 
@@ -124,15 +124,15 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void wait_queue();
 
-  const bool compacting();
+  bool compacting();
 
   void compacting(uint8_t state);
   
-  const bool compact_possible();
+  bool compact_possible();
 
   void compact_require(bool require);
 
-  const bool compact_required();
+  bool compact_required();
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
@@ -143,7 +143,7 @@ class Range : public std::enable_shared_from_this<Range> {
   
   void create(int &err, const CellStore::Writers& w_cellstores);
 
-  const std::string to_string();
+  std::string to_string();
 
   private:
 
@@ -153,7 +153,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void load(int &err);
 
-  const bool wait(uint8_t from_state=COMPACT_CHECKING);
+  bool wait(uint8_t from_state=COMPACT_CHECKING);
 
   void run_add_queue();
 

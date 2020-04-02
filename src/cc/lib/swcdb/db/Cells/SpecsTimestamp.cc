@@ -38,15 +38,15 @@ void Timestamp::free() {
 
 Timestamp::~Timestamp() { }
 
-const bool Timestamp::empty() const {
+bool Timestamp::empty() const {
   return !was_set;
 }
 
-const bool Timestamp::equal(const Timestamp &other) const {
+bool Timestamp::equal(const Timestamp &other) const {
   return value == other.value && comp == other.comp;
 }
 
-const size_t Timestamp::encoded_length() const {
+size_t Timestamp::encoded_length() const {
   return 1+(comp != Condition::NONE? 8: 0);
 }
 
@@ -62,11 +62,11 @@ void Timestamp::decode(const uint8_t **bufp, size_t *remainp){
     value = Serialization::decode_i64(bufp, remainp);
 }
 
-const bool Timestamp::is_matching(int64_t other) const {
+bool Timestamp::is_matching(int64_t other) const {
   return Condition::is_matching(comp, value, other);
 }
 
-const std::string Timestamp::to_string() const {
+std::string Timestamp::to_string() const {
   std::string s("Timestamp(");
   s.append(Condition::to_string(comp));
   if(comp != Condition::NONE)

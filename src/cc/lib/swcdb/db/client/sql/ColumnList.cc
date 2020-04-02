@@ -13,7 +13,7 @@ ColumnList::ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& sch
                       : Reader(sql, message), schemas(schemas) {
 }
 
-const int ColumnList::parse_list_columns(const char* expect_cmd) {
+int ColumnList::parse_list_columns(const char* expect_cmd) {
   bool token_cmd = false;
   bool token_typ = false;
   bool bracket = false;

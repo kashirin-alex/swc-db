@@ -54,7 +54,7 @@ class Column : public Serializable {
   void decode_internal(uint8_t version, const uint8_t **bufp,
 	                		size_t *remainp);
   
-  const std::string to_string();
+  std::string to_string();
 
   void display(std::ostream& out, bool pretty=false, 
                std::string offset = "") const;

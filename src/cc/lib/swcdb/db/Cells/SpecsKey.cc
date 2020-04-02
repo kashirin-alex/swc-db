@@ -17,7 +17,7 @@ bool Fraction::operator==(const Fraction &other) const {
          memcmp(value.data(), other.value.data(), value.length()) == 0;
 }
 
-const uint32_t Fraction::encoded_length() const {
+uint32_t Fraction::encoded_length() const {
   return 1 + Serialization::encoded_length_vi32(value.size()) + value.size();
 }
 
@@ -52,7 +52,7 @@ void Key::copy(const Key &other) {
   assign(other.begin(), other.end());
 }
 
-const bool Key::equal(const Key &other) const {
+bool Key::equal(const Key &other) const {
   return *this == other;
 }
 
@@ -126,14 +126,13 @@ void Key::insert(uint32_t idx, const char* fraction, Condition::Comp comp) {
 }
 
 
-const std::string_view Key::get(const uint32_t idx, 
-                                Condition::Comp& comp) const {
+std::string_view Key::get(const uint32_t idx, Condition::Comp& comp) const {
   auto& f = (*this)[idx];
   comp = f.comp;
   return f.value;
 }
 
-const std::string_view Key::get(const uint32_t idx) const {
+std::string_view Key::get(const uint32_t idx) const {
   return (*this)[idx].value;
 }
 
@@ -151,7 +150,7 @@ void Key::remove(uint32_t idx, bool recursive) {
     erase(begin()+idx);
 }
 
-const bool Key::is_matching(const DB::Cell::Key &other) const {
+bool Key::is_matching(const DB::Cell::Key &other) const {
   Condition::Comp comp = Condition::NONE;
 
   const uint8_t* ptr = other.data;
@@ -190,7 +189,7 @@ const bool Key::is_matching(const DB::Cell::Key &other) const {
   }
 }
 
-const uint32_t Key::encoded_length() const {
+uint32_t Key::encoded_length() const {
   uint32_t len = Serialization::encoded_length_vi32(size());
   for(auto it = begin(); it < end(); ++it)
     len += it->encoded_length();
@@ -210,7 +209,7 @@ void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
     it->decode(bufp, remainp);
 }
 
-const std::string Key::to_string() const {
+std::string Key::to_string() const {
   std::string s("Key(size=");
   s.append(std::to_string(size()));
   s.append(" fractions=[");

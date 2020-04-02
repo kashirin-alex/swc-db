@@ -19,7 +19,7 @@ class RangeBase final {
   static constexpr const char* RANGER_FILE = "ranger.data";
   // (swc.fs.path.data)+COLUMN_DIR+/+{cid}+/RANGE_DIR+/+{rid}+/+(types)
   
-  static const std::string get_column_path() {
+  static const char* get_column_path() {
     return COLUMN_DIR;
   }
 

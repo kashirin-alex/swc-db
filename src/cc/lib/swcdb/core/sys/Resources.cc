@@ -41,23 +41,23 @@ void Resources::init(asio::io_context* io,
   checker();
 }
 
-const size_t Resources::need_ram() const {
+size_t Resources::need_ram() const {
   return ram.used > ram.allowed ? ram.used - ram.allowed : 0;
 }
 
-const size_t Resources::avail_ram() const {
+size_t Resources::avail_ram() const {
   return ram.allowed > ram.used  ? ram.allowed - ram.used : 0;
 }
 
-const bool Resources::need_ram(const uint32_t& sz) const {
-  return ram.free < sz*2 || ram.used + sz > ram.allowed;
+bool Resources::need_ram(uint32_t sz) const {
+  return ram.free < sz * 2 || ram.used + sz > ram.allowed;
 }
 
 void Resources::stop() {
   m_timer->cancel();
 }
 
-const std::string Resources::to_string() const {
+std::string Resources::to_string() const {
   std::string s("Resources(");
   s.append("Mem-MB-");
   s.append(ram.to_string(1048576));
@@ -111,7 +111,7 @@ void Resources::schedule(uint32_t ms) {
   }); 
 }
 
-const std::string Resources::Component::to_string(uint32_t base) const {
+std::string Resources::Component::to_string(uint32_t base) const {
   std::string s("Res(");
   s.append("total=");
   s.append(std::to_string(total/base));

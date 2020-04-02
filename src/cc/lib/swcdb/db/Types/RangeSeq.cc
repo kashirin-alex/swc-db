@@ -10,7 +10,7 @@
 namespace SWC { namespace Types { 
 
 
-const std::string to_string(RangeSeq typ) {
+std::string to_string(RangeSeq typ) {
   switch(typ){
     case RangeSeq::BITWISE:
       return std::string("BITWISE");

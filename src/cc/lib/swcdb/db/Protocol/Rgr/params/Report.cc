@@ -42,7 +42,7 @@ bool ReportRsp::Range::before(ReportRsp::Range* r1, ReportRsp::Range* r2) {
   return r2->interval.is_in_end(r1->interval.key_end);
 }
 
-const size_t ReportRsp::Range::encoded_length () const {
+size_t ReportRsp::Range::encoded_length () const {
   return Serialization::encoded_length_vi64(rid)
           + interval.encoded_length();
 } 
@@ -84,7 +84,7 @@ ReportRsp::Column::~Column() {
   ranges.clear();
 }
 
-const size_t ReportRsp::Column::encoded_length () const {
+size_t ReportRsp::Column::encoded_length () const {
   size_t sz = Serialization::encoded_length_vi64(cid)
           + Serialization::encoded_length_vi64(ranges.size());
   for(auto r : ranges)

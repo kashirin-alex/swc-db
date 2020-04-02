@@ -302,7 +302,7 @@ class Column final {
     return false;
   }
 
-  const std::string to_string() {
+  std::string to_string() {
     std::shared_lock lock(m_mutex);
     return _to_string();
   }
@@ -329,7 +329,7 @@ class Column final {
       err, DB::RangeBase::get_path(cfg.cid), entries);
   }
 
-  const std::string _to_string() {
+  std::string _to_string() {
     std::string s("[");
     s.append(cfg.to_string());
     s.append(", next-rid=");
