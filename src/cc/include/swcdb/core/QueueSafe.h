@@ -15,37 +15,49 @@ template <class ItemT>
 class QueueSafe : private std::queue<ItemT> {
   public:
 
+  void push(const ItemT& item) {
+    m_mutex.lock();
+    QBase::push(item);
+    m_mutex.unlock();
+  }
+
+  bool push_and_is_1st(const ItemT& item) {
+    bool chk;
+    m_mutex.lock();
+    chk = QBase::empty();
+    QBase::push(item);
+    m_mutex.unlock();
+    return chk;
+  }
+
   ItemT& front() {
     LockAtomic::Unique::Scope lock(m_mutex);
     return QBase::front();
   }
 
-  void push(const ItemT& item) {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    QBase::push(item);
-  }
-
-  bool push_and_is_1st(const ItemT& item) {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    bool was = QBase::empty();
-    QBase::push(item);
-    return was;
-  }
-
   bool empty() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::empty();
+    bool chk;
+    m_mutex.lock();
+    chk = QBase::empty();
+    m_mutex.unlock();
+    return chk;
   }
 
   size_t size() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::size();
+    size_t chk;
+    m_mutex.lock();
+    chk = QBase::size();
+    m_mutex.unlock();
+    return chk;
   }
 
   bool pop_and_more() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    pop();
-    return !QBase::empty();
+    bool chk;
+    m_mutex.lock();
+    pop(); 
+    chk = !QBase::empty();
+    m_mutex.unlock();
+    return chk;
   }
 
   private:

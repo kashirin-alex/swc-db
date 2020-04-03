@@ -119,3 +119,9 @@ add_test(properties_parser_test ${TEST_DIFF}
 #	SRCS      tests/mutex.cc
 #	TARGETS 	swcdb_core
 #)
+
+ADD_TEST_TARGET(
+	NAME queue-safe
+	SRCS tests/queuesafe.cc
+	TARGETS swcdb_core 
+)

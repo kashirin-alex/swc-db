@@ -16,8 +16,9 @@ class QueueSafeStated : private std::queue<ItemT> {
   public:
 
   void push(const ItemT& item) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    m_mutex.lock();
     QBase::push(item);
+    m_mutex.unlock();
   }
 
   ItemT& front() {
@@ -26,58 +27,79 @@ class QueueSafeStated : private std::queue<ItemT> {
   }
 
   bool empty() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::empty();
+    bool chk;
+    m_mutex.lock();
+    chk = QBase::empty();
+    m_mutex.unlock();
+    return chk;
   }
 
   size_t size() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::size();
+    size_t chk;
+    m_mutex.lock();
+    chk = QBase::size();
+    m_mutex.unlock();
+    return chk;
   }
 
   bool is_active() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return m_state;
+    bool chk;
+    m_mutex.lock();
+    chk = m_state;
+    m_mutex.unlock();
+    return chk;
   }
 
   bool activating() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    if(m_state || QBase::empty()) 
-      return false;
-    return m_state = true;
+    bool chk;
+    m_mutex.lock();
+    chk = (m_state || QBase::empty()) ? false : m_state = true;
+    m_mutex.unlock();
+    return chk;
   }
 
   bool deactivating() {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    bool chk;
+    m_mutex.lock();
     pop();
     if(QBase::empty())
       m_state = false;
-    return !m_state;
+    chk = !m_state;
+    m_mutex.unlock();
+    return chk;
   }
 
   void deactivate() {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    m_mutex.lock();
     m_state = false;
+    m_mutex.unlock();
   }
 
   bool activating(const ItemT& item) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    bool chk;
+    m_mutex.lock();
     if(m_state) {
       QBase::push(item);
-      return false;
+      chk = false;
+    } else {
+      chk = m_state = true;
     }
-    return m_state = true;
+    m_mutex.unlock();
+    return chk;
   }
 
   bool deactivating(ItemT* item) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    bool chk;
+    m_mutex.lock();
     if(QBase::empty()) {
       m_state = false;
     } else {
       *item = QBase::front();
       pop();
     }
-    return !m_state;
+    chk = !m_state;
+    m_mutex.unlock();
+    return chk;
   }
 
   private:

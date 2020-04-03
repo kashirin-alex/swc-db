@@ -18,7 +18,7 @@ class Unique final {
   ~Unique() { }
 
   void lock() {
-    uint16_t i = 0;
+    uint8_t i = 0;
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)

@@ -18,78 +18,87 @@ class QueueRunnable : private std::queue<std::function<void()>> {
   typedef std::function<void()>  Call_t;
 
   void push(const Call_t& call) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    m_mutex.lock();
     QBase::push(call);
+    m_mutex.unlock();
   }
 
   bool running() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return m_runs;
+    bool chk;
+    m_mutex.lock();
+    chk = m_runs;
+    m_mutex.unlock();
+    return chk;
   }
 
   bool empty() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::empty();
+    bool chk;
+    m_mutex.lock();
+    chk = QBase::empty();
+    m_mutex.unlock();
+    return chk;
   }
 
   size_t size() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    return QBase::size();
+    size_t chk;
+    m_mutex.lock();
+    chk = QBase::size();
+    m_mutex.unlock();
+    return chk;
   }
 
   bool need_run() {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    if(m_runs || QBase::empty()) 
-      return false;
-    m_runs = true;
-    return true;
+    bool chk;
+    m_mutex.lock();
+    chk = (m_runs || QBase::empty()) ? false : m_runs = true;
+    m_mutex.unlock();
+    return chk;
   }
 
   void run() {
     for(Call_t call;;) {
-      {
-        LockAtomic::Unique::Scope lock(m_mutex);
-        call = front();
-      }
+      m_mutex.lock();
+      call = front();
+      m_mutex.unlock();
 
       call();
       
-      {
-        LockAtomic::Unique::Scope lock(m_mutex);
-        pop();
-        if(QBase::empty()) {
-          m_runs = false;
-          return;
-        }
+      m_mutex.lock();
+      pop();
+      if(QBase::empty()) {
+        m_runs = false;
+        m_mutex.unlock();
+        return;
       }
+      m_mutex.unlock();
     }
   }
 
   void run(const Call_t& post) {
     for(Call_t call;;) {
-      {
-        LockAtomic::Unique::Scope lock(m_mutex);
-        call = front();
-      }
+      m_mutex.lock();
+      call = front();
+      m_mutex.unlock();
 
       call();
       
-      {
-        LockAtomic::Unique::Scope lock(m_mutex);
-        pop();
-        if(!QBase::empty())
-          continue;
+      m_mutex.lock();
+      pop();
+      if(!QBase::empty()) {
+        m_mutex.unlock();
+        continue;
       }
+      m_mutex.unlock();
 
       post();
 
-      {
-        LockAtomic::Unique::Scope lock(m_mutex);
-        if(QBase::empty()) {
-          m_runs = false;
-          return;
-        }
+      m_mutex.lock();
+      if(QBase::empty()) {
+        m_runs = false;
+        m_mutex.unlock();
+        return;
       }
+      m_mutex.unlock();
     }
   }
 
