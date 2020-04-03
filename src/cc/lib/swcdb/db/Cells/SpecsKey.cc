@@ -156,16 +156,13 @@ bool Key::is_matching(const DB::Cell::Key &other) const {
   const uint8_t* ptr = other.data;
   uint32_t c = other.count;
   uint32_t len;
-
-  for(auto it = begin(); c && it < end(); ++it, --c) {
-    len = Serialization::decode_vi32(&ptr);
+  for(auto it = begin(); c && it < end(); ++it, --c, ptr += len) {
     if(!Condition::is_matching(
         comp = it->comp, 
         (const uint8_t*)it->value.data(), it->value.size(),
-        ptr, len
+        ptr, len = Serialization::decode_vi32(&ptr)
         ))
       return false;
-    ptr += len;
   }
 
   if(size() == other.count) 

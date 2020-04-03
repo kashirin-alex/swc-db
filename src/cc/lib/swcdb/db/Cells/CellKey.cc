@@ -223,7 +223,7 @@ bool Key::align(KeyVec& start, KeyVec& finish) const {
   const uint8_t* ptr = data;
   uint32_t len;
   bool chg = false;
-  for(uint32_t c = 0; c < count; ++c) {
+  for(uint32_t c = 0; c < count; ++c, ptr += len) {
     len = Serialization::decode_vi32(&ptr);
 
     if(c == start.size()) {
@@ -247,7 +247,6 @@ bool Key::align(KeyVec& start, KeyVec& finish) const {
       finish.set(c, ptr, len);
       chg = true;
     }
-    ptr += len;
   }
   return chg;
 }
@@ -281,7 +280,7 @@ bool Key::empty() const {
 }
 
 uint32_t Key::encoded_length() const {
-  return Serialization::encoded_length_vi32(count) + size;;
+  return Serialization::encoded_length_vi32(count) + size;
 }
 
 void Key::encode(uint8_t **bufp) const {
@@ -310,8 +309,7 @@ void Key::convert_to(std::vector<std::string>& key) const {
   key.clear();
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    len = Serialization::decode_vi32(&ptr);
-    it->append((const char*)ptr, len);
+    it->append((const char*)ptr, len = Serialization::decode_vi32(&ptr));
   }
 }
 
@@ -328,8 +326,8 @@ bool Key::equal(const std::vector<std::string>& key) const {
   uint32_t len;
   const uint8_t* ptr = data;
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    len = Serialization::decode_vi32(&ptr);
-    if(!Condition::eq(ptr, len, (const uint8_t*)it->data(), it->length()))
+    if(!Condition::eq(ptr, len = Serialization::decode_vi32(&ptr),
+                      (const uint8_t*)it->data(), it->length()))
       return false;
   }
   return true;

@@ -310,13 +310,11 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
     return;
   }
 
-  uint8_t* bufp;
-  uint8_t* buf_header = bufp = new uint8_t[ev->header.header_len];
-  for(uint8_t n=0; n<CommHeader::PREFIX_LENGTH; ++n)
-    *bufp++ = *data++;
-
+  uint8_t* buf_header;
+  memcpy(buf_header = new uint8_t[ev->header.header_len], 
+         data, CommHeader::PREFIX_LENGTH);
   do_async_read(
-    bufp, 
+    buf_header + CommHeader::PREFIX_LENGTH, 
     ev->header.header_len - CommHeader::PREFIX_LENGTH,
     [ev, buf_header, ptr=ptr()](const asio::error_code ec, size_t filled) {
       ptr->recved_header(ev, ec, buf_header, filled);

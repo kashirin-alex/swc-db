@@ -139,7 +139,7 @@ void MngdColumns::update_status(
           m_cid_pending_load.emplace_back(co_func, schema->cid);
         }
         if(!m_root_mngr)
-          Env::Mngr::schemas()->replace(schema);;
+          Env::Mngr::schemas()->replace(schema);
         Env::Mngr::rangers()->assign_ranges();
 
       } else if(m_root_mngr) {

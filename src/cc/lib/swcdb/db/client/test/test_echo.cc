@@ -102,7 +102,7 @@ class Checker {
               << " max=" << latency->max()
               << " count=" << latency->count()
               << " failures=" << failures
-              << "\n";;
+              << "\n";
   }
 
   void run(int num_threads){
