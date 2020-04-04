@@ -67,8 +67,7 @@ LogWriter::~LogWriter() {
 void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name 
   //          << " ptr=" << (size_t)this << "\n";
-
-  std::lock_guard lock(mutex);
+  Mutex::scope lock(mutex);
   m_name.clear();
   m_name.append(name);
 }
@@ -78,7 +77,7 @@ void LogWriter::daemon(const std::string& logs_path) {
   //          << " ptr=" << (size_t)this << "\n";
   errno = 0;
 
-  std::lock_guard lock(mutex);
+  Mutex::scope lock(mutex);
   m_logs_path = logs_path;
   if(m_logs_path.back() != '/')
     m_logs_path.append("/");

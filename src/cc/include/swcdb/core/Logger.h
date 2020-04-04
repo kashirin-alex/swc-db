@@ -7,9 +7,8 @@
 #define swc_core_LOGGER_H
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Mutex.h"
 
-#include <mutex>
-#include <atomic>
 #include <cstdio>
 #include <iostream>
 #include <sys/stat.h>
@@ -44,7 +43,7 @@ class LogWriter final {
 
   static uint8_t from_string(const std::string& loglevel);
 
-  std::mutex    mutex;
+  Mutex    mutex;
 
   LogWriter(const std::string& name="", const std::string& logs_path="");
   
@@ -66,14 +65,14 @@ class LogWriter final {
 
   template<typename T>
   void log(uint8_t priority, const T& msg) {
-    std::lock_guard lock(mutex);
+    Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
               << ": " << msg << std::endl;
   }
 
   template<typename T>
   void log(uint8_t priority, const char* filen, int fline, const T& msg) {
-    std::lock_guard lock(mutex);
+    Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
               << ": (" << filen << ':' << fline << ") "
               << msg << std::endl;
@@ -82,7 +81,7 @@ class LogWriter final {
   template<typename... Args> 
   void log(uint8_t priority, const char *format, 
            Args... args) {
-    std::lock_guard lock(mutex);
+    Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) << ": ";
     std::printf(format, args...);
     std::cout << std::endl;
@@ -91,7 +90,7 @@ class LogWriter final {
   template<typename... Args> 
   void log(uint8_t priority, const char* filen, int fline, const char *format,
            Args... args) {
-    std::lock_guard lock(mutex);
+    Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority)
               << ": (" << filen << ':' << fline << ") ";
     std::printf(format, args...);
@@ -170,7 +169,7 @@ extern LogWriter logger;
 #define SWC_LOG_OUT(priority) \
   if(Logger::logger.is_enabled(priority)) { \
     uint8_t _priority_ = priority; \
-    std::lock_guard lock(Logger::logger.mutex); \
+    Mutex::scope lock(Logger::logger.mutex); \
     if(Logger::logger.show_line_numbers()) \
       std::cout << Logger::logger.seconds() \
                 << ' ' << Logger::logger.get_name(priority)  \
@@ -184,7 +183,7 @@ extern LogWriter logger;
 
 #define SWC_PRINT \
   { \
-    std::lock_guard lock(Logger::logger.mutex); \
+    Mutex::scope lock(Logger::logger.mutex); \
     std::cout 
 #define SWC_PRINT_CLOSE '\n'; }
 //

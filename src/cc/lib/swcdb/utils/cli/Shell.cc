@@ -158,7 +158,7 @@ bool Interface::quit(std::string& cmd) const {
 }
 
 bool Interface::help(std::string& cmd) const {
-  std::lock_guard lock(Logger::logger.mutex);
+  Mutex::scope lock(Logger::logger.mutex);
   std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
   size_t offset_name = 0;
   size_t offset_desc = 0;
