@@ -6,7 +6,7 @@
 #define swc_core_QueueSafeStated_h
 
 #include <queue>
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/Mutex.h"
 
 namespace SWC { 
 
@@ -16,94 +16,71 @@ class QueueSafeStated : private std::queue<ItemT> {
   public:
 
   void push(const ItemT& item) {
-    m_mutex.lock();
+    auto support(m_mutex.lock());
     QBase::push(item);
-    m_mutex.unlock();
+    m_mutex.unlock(support);
   }
 
   ItemT& front() {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     return QBase::front();
   }
 
   bool empty() {
-    bool chk;
-    m_mutex.lock();
-    chk = QBase::empty();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::empty();
   }
 
   size_t size() {
-    size_t chk;
-    m_mutex.lock();
-    chk = QBase::size();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::size();
   }
 
   bool is_active() {
-    bool chk;
-    m_mutex.lock();
-    chk = m_state;
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return m_state;
   }
 
   bool activating() {
-    bool chk;
-    m_mutex.lock();
-    chk = (m_state || QBase::empty()) ? false : m_state = true;
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return (m_state || QBase::empty()) ? false : m_state = true;
   }
 
   bool deactivating() {
-    bool chk;
-    m_mutex.lock();
+    Mutex::scope lock(m_mutex);
     pop();
     if(QBase::empty())
       m_state = false;
-    chk = !m_state;
-    m_mutex.unlock();
-    return chk;
+    return !m_state;
   }
 
   void deactivate() {
-    m_mutex.lock();
+    Mutex::scope lock(m_mutex);
     m_state = false;
-    m_mutex.unlock();
   }
 
   bool activating(const ItemT& item) {
-    bool chk;
-    m_mutex.lock();
+    Mutex::scope lock(m_mutex);
     if(m_state) {
       QBase::push(item);
-      chk = false;
-    } else {
-      chk = m_state = true;
+      return false;
     }
-    m_mutex.unlock();
-    return chk;
+    return m_state = true;
   }
 
   bool deactivating(ItemT* item) {
-    bool chk;
-    m_mutex.lock();
+    Mutex::scope lock(m_mutex);
     if(QBase::empty()) {
       m_state = false;
     } else {
       *item = QBase::front();
       pop();
     }
-    chk = !m_state;
-    m_mutex.unlock();
-    return chk;
+    return !m_state;
   }
 
   private:
-  LockAtomic::Unique        m_mutex;
+  Mutex                     m_mutex;
   bool                      m_state = false;
 
   typedef std::queue<ItemT> QBase;

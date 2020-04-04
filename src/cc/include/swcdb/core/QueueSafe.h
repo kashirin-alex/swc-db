@@ -6,8 +6,8 @@
 #define swc_core_QueueSafe_h
 
 #include <queue>
-#include "swcdb/core/LockAtomicUnique.h"
-
+#include "swcdb/core/Mutex.h"
+  
 namespace SWC { 
 
 
@@ -16,52 +16,42 @@ class QueueSafe : private std::queue<ItemT> {
   public:
 
   void push(const ItemT& item) {
-    m_mutex.lock();
+    auto support(m_mutex.lock());
     QBase::push(item);
-    m_mutex.unlock();
+    m_mutex.unlock(support);
   }
 
   bool push_and_is_1st(const ItemT& item) {
     bool chk;
-    m_mutex.lock();
+    Mutex::scope lock(m_mutex);
     chk = QBase::empty();
     QBase::push(item);
-    m_mutex.unlock();
     return chk;
   }
 
   ItemT& front() {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     return QBase::front();
   }
 
   bool empty() {
-    bool chk;
-    m_mutex.lock();
-    chk = QBase::empty();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::empty();
   }
 
   size_t size() {
-    size_t chk;
-    m_mutex.lock();
-    chk = QBase::size();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::size();
   }
 
   bool pop_and_more() {
-    bool chk;
-    m_mutex.lock();
-    pop(); 
-    chk = !QBase::empty();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    pop();
+    return !QBase::empty();
   }
 
   private:
-  LockAtomic::Unique        m_mutex;
+  Mutex                     m_mutex;
 
   typedef std::queue<ItemT> QBase;
   using QBase::empty;

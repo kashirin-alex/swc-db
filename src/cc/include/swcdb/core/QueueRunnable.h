@@ -7,7 +7,7 @@
 
 #include <queue>
 #include <functional>
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/Mutex.h"
 
 namespace SWC { 
 
@@ -18,92 +18,82 @@ class QueueRunnable : private std::queue<std::function<void()>> {
   typedef std::function<void()>  Call_t;
 
   void push(const Call_t& call) {
-    m_mutex.lock();
+    auto support(m_mutex.lock());
     QBase::push(call);
-    m_mutex.unlock();
+    m_mutex.unlock(support);
   }
 
   bool running() {
-    bool chk;
-    m_mutex.lock();
-    chk = m_runs;
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return m_runs;
   }
 
   bool empty() {
-    bool chk;
-    m_mutex.lock();
-    chk = QBase::empty();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::empty();
   }
 
   size_t size() {
-    size_t chk;
-    m_mutex.lock();
-    chk = QBase::size();
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return QBase::size();
   }
 
   bool need_run() {
-    bool chk;
-    m_mutex.lock();
-    chk = (m_runs || QBase::empty()) ? false : m_runs = true;
-    m_mutex.unlock();
-    return chk;
+    Mutex::scope lock(m_mutex);
+    return (m_runs || QBase::empty()) ? false : m_runs = true;
   }
 
   void run() {
+    bool support;
     for(Call_t call;;) {
-      m_mutex.lock();
+      support = m_mutex.lock();
       call = front();
-      m_mutex.unlock();
+      m_mutex.unlock(support);
 
       call();
       
-      m_mutex.lock();
+      support = m_mutex.lock();
       pop();
       if(QBase::empty()) {
         m_runs = false;
-        m_mutex.unlock();
+        m_mutex.unlock(support);
         return;
       }
-      m_mutex.unlock();
+      m_mutex.unlock(support);
     }
   }
 
   void run(const Call_t& post) {
+    bool support;
     for(Call_t call;;) {
-      m_mutex.lock();
+      support = m_mutex.lock();
       call = front();
-      m_mutex.unlock();
+      m_mutex.unlock(support);
 
       call();
       
-      m_mutex.lock();
+      support = m_mutex.lock();
       pop();
       if(!QBase::empty()) {
-        m_mutex.unlock();
+        m_mutex.unlock(support);
         continue;
       }
-      m_mutex.unlock();
+      m_mutex.unlock(support);
 
       post();
 
-      m_mutex.lock();
+      support = m_mutex.lock();
       if(QBase::empty()) {
         m_runs = false;
-        m_mutex.unlock();
+        m_mutex.unlock(support);
         return;
       }
-      m_mutex.unlock();
+      m_mutex.unlock(support);
     }
   }
 
   private:
-  LockAtomic::Unique          m_mutex;
+  Mutex                       m_mutex;
   bool                        m_runs = false;
 
   typedef std::queue<Call_t>  QBase;
