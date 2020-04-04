@@ -194,8 +194,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   
   processing_decrement();
 
-  if(!was_splitted 
-     && (!m_cells_remain.load() || Env::Resources.need_ram(m_size)))
+  if(!m_cells_remain.load() || Env::Resources.need_ram(m_size))
     release();
 }
 
