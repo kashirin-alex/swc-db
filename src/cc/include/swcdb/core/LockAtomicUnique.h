@@ -8,17 +8,23 @@
 #include <atomic>
 #include <thread>
 
+
 namespace SWC { namespace LockAtomic {
 
-class Unique final {
+class Unique {
   public:
 
   explicit Unique(): want(false) { }
 
   ~Unique() { }
 
+  bool try_lock() {
+    bool at=false;
+    return want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
+  }
+  
   void lock() {
-    uint8_t i = 0;
+    uint16_t i = 0;
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)
@@ -39,26 +45,23 @@ class Unique final {
     want.store(false, std::memory_order_release);
   }
   
-  class Scope final {
-    public:
-    explicit Scope(Unique& m) : _m(m) {
-      _m.lock();
-    }
-    explicit Scope(Unique& m, const uint32_t& us_sleep) : _m(m) {
-      _m.lock(us_sleep);
-    }
-    ~Scope() {
-      _m.unlock();
-    }
-    private:
-    Unique& _m;
-  };
-
   private:
 
   std::atomic<bool> want;
 };
 
 }}
+
+// SWC_LOCK_WITH_SUPPORT or use Mutex with Mutex::scope 
+#define SWC_LOCK_WITH_SUPPORT(_mutex_, _state_, _code_, _return_) \
+  if(_state_.try_lock()) { \
+    _code_; \
+    _state_.unlock(); \
+  } else { \
+    _mutex_.lock(); _state_.lock(); \
+    _code_; \
+    _state_.unlock(); _mutex_.unlock(); \
+  } \
+  _return_;
 
 #endif // swc_core_LockAtomicUnique_h
