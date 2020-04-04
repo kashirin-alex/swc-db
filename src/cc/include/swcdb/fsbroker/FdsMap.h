@@ -24,7 +24,7 @@ class Fds final {
   ~Fds(){}
 
   int32_t add(FS::SmartFd::Ptr fd) {
-    std::scoped_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     
     do{
       if(++m_next_fd < 0) m_next_fd=1;
@@ -33,7 +33,7 @@ class Fds final {
   }
 
   FS::SmartFd::Ptr remove(int32_t fd) {
-    std::scoped_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     
     auto it = m_fds.find(fd);
     if(it == m_fds.end())
@@ -44,7 +44,7 @@ class Fds final {
   }
 
   FS::SmartFd::Ptr select(int32_t fd) {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     
     auto it = m_fds.find(fd);
     if(it != m_fds.end())
@@ -53,7 +53,7 @@ class Fds final {
   }
 
   FS::SmartFd::Ptr pop_next() {
-    std::scoped_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     
     auto it = m_fds.begin();
     if(it == m_fds.end())
@@ -64,7 +64,7 @@ class Fds final {
   }
 
   private:
-  std::shared_mutex   m_mutex;
+  Mutex               m_mutex;
   int32_t             m_next_fd;
   std::unordered_map<int32_t, FS::SmartFd::Ptr> m_fds;
 };
