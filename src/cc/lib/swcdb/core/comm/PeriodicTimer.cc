@@ -31,7 +31,7 @@ void PeriodicTimer::schedule() {
 
 
 void PeriodicTimers::stop() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   for(auto it = begin(); it<end();) {
     delete *it;
     erase(it);
@@ -41,7 +41,7 @@ void PeriodicTimers::stop() {
 void PeriodicTimers::set(const Property::V_GINT32::Ptr ms, 
                          PeriodicTimer::Call_t call,
                          asio::io_context* io) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   push_back(new PeriodicTimer(ms, call, io));
 }
 

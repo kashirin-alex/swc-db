@@ -69,7 +69,7 @@ void ConnHandler::new_connection() {
 }
 
 size_t ConnHandler::pending_read() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_pending.size();
 }
 
@@ -183,7 +183,7 @@ std::string ConnHandler::to_string() {
 }
 
 uint32_t ConnHandler::next_req_id() {
-  std::lock_guard lock(m_mutex);  
+  Mutex::scope lock(m_mutex);  
   while(m_pending.find(
     ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
     ) != m_pending.end()
@@ -217,7 +217,7 @@ void ConnHandler::write_or_queue(ConnHandler::Outgoing* data) {
 
 void ConnHandler::pending(ConnHandler::Outgoing* data, 
                           asio::high_resolution_timer* tm) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_pending.emplace(
     data->cbuf->header.id,
     new ConnHandler::PendingRsp(data->hdlr, tm)
@@ -264,7 +264,7 @@ void ConnHandler::write(ConnHandler::Outgoing* data) {
 
 void ConnHandler::read_pending() {
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(!connected || m_reading)
       return;
     m_reading = true;
@@ -414,7 +414,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 
   bool more;
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     m_reading = false;
     more = m_accepting || !m_pending.empty();
   }
@@ -431,7 +431,7 @@ void ConnHandler::disconnected() {
   Event::Ptr ev;
   for(;;) {
     {
-      std::lock_guard lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       if(m_pending.empty())
         return;
       pending = m_pending.begin()->second;
@@ -453,7 +453,7 @@ void ConnHandler::run_pending(Event::Ptr ev) {
 
   ConnHandler::PendingRsp* pending = nullptr;
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
     if(it != m_pending.end()) {
       pending = it->second;
@@ -494,7 +494,7 @@ void ConnHandlerPlain::do_close() {
 void ConnHandlerPlain::close() {
   bool once;
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(once = connected)
       connected = false;
   }
@@ -507,7 +507,7 @@ void ConnHandlerPlain::close() {
 
 void ConnHandlerPlain::new_connection() {
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
 
     endpoint_remote = m_sock.remote_endpoint();
     endpoint_local = m_sock.local_endpoint();
@@ -573,7 +573,7 @@ void ConnHandlerSSL::do_close() {
 void ConnHandlerSSL::close() {
   bool once;
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(once = connected)
       connected = false;
   }
@@ -586,7 +586,7 @@ void ConnHandlerSSL::close() {
 
 void ConnHandlerSSL::new_connection() {
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
 
     endpoint_remote = m_sock.lowest_layer().remote_endpoint();
     endpoint_local = m_sock.lowest_layer().local_endpoint();

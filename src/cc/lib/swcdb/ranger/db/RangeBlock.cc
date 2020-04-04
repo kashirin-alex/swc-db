@@ -202,7 +202,7 @@ bool Block::splitter() {
 bool Block::scan(ReqScan::Ptr req) {
   bool loaded;
   {
-    std::lock_guard lock(m_mutex_state);
+    Mutex::scope lock(m_mutex_state);
 
     if(!(loaded = m_state == State::LOADED)) {
       m_queue.push(req);
@@ -228,7 +228,7 @@ bool Block::scan(ReqScan::Ptr req) {
 
 void Block::loaded(int err) {
   {
-    std::lock_guard lock(m_mutex_state);
+    Mutex::scope lock(m_mutex_state);
     m_state = State::LOADED;
   }
   
@@ -294,7 +294,7 @@ void Block::_set_key_end(const DB::Cell::Key& key) {
 /*
 void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
   std::scoped_lock lock(m_mutex);
-  std::lock_guard lock(m_mutex_state);
+  Mutex::scope lock(m_mutex_state);
 
   m_state = State::REMOVED;
   key_begin.copy(m_interval.key_begin);
@@ -304,7 +304,7 @@ void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
 
 void Block::merge_and_release(Block::Ptr blk) {
   std::scoped_lock lock(m_mutex);
-  std::lock_guard lock(m_mutex_state);
+  Mutex::scope lock(m_mutex_state);
 
   m_state = State::NONE;
   blk->expand_next_and_release(m_interval.key_begin);
@@ -315,7 +315,7 @@ void Block::merge_and_release(Block::Ptr blk) {
 size_t Block::release() {
   size_t released = 0;
   if(!m_processing && m_mutex.try_lock()) {
-    std::lock_guard lock(m_mutex_state);
+    Mutex::scope lock(m_mutex_state);
     if(!m_processing && m_state == State::LOADED) {
       m_state = State::NONE;
       released += _size_bytes();
@@ -335,12 +335,12 @@ void Block::processing_decrement() {
 }
 
 bool Block::removed() {
-  std::lock_guard lock(m_mutex_state);
+  Mutex::scope lock(m_mutex_state);
   return m_state == State::REMOVED;
 }
 
 bool Block::loaded() {
-  std::lock_guard lock(m_mutex_state);
+  Mutex::scope lock(m_mutex_state);
   return m_state == State::LOADED;
 }
 
@@ -397,7 +397,7 @@ void Block::free_key_end() {
 
 std::string Block::to_string() {
   std::shared_lock lock1(m_mutex);
-  std::lock_guard lock2(m_mutex_state);
+  Mutex::scope lock2(m_mutex_state);
 
   std::string s("Block(state=");
   s.append(std::to_string((uint8_t)m_state));

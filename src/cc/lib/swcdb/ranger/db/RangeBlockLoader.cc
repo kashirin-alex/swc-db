@@ -27,7 +27,7 @@ void BlockLoader::load_cellstores() {
   block->blocks->cellstores.load_cells(this);
 
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     m_chk_cs = true;
   }
   
@@ -35,7 +35,7 @@ void BlockLoader::load_cellstores() {
 }
 
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_cs_blocks.push_back(blk);
   /*
   if(m_cs_blocks.size() > 4) {
@@ -52,7 +52,7 @@ void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
 
 void BlockLoader::loaded_blk() {
   { 
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(m_processing) 
       return;
     m_processing = true;
@@ -65,7 +65,7 @@ void BlockLoader::load_cellstores_cells() {
   bool loaded;
   for(CellStore::Block::Read::Ptr blk; ; ) {
     {
-      std::lock_guard lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       if(m_cs_blocks.empty()) {
         m_processing = false;
         break;
@@ -76,7 +76,7 @@ void BlockLoader::load_cellstores_cells() {
     if(loaded = blk->loaded(err))
       blk->load_cells(err, block);
       
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(!err && !loaded) {
       m_processing = false;
       return;
@@ -95,7 +95,7 @@ void BlockLoader::load_cellstores_cells() {
 
 //CommitLog
 bool BlockLoader::check_log() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   if(m_checking_log)
     return false;
   m_checking_log = true;
@@ -108,7 +108,7 @@ void BlockLoader::load_log(bool is_final) {
   if(!need_load.empty()) {
     m_frag_ts = need_load.back()->ts;
     {
-      std::lock_guard lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       m_fragments.insert(
         m_fragments.end(), need_load.begin(), need_load.end());
     }
@@ -118,7 +118,7 @@ void BlockLoader::load_log(bool is_final) {
 
   bool no_more;
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     no_more = !m_processing && m_fragments.empty() && m_chk_cs;
     m_checking_log = false;
   }
@@ -132,7 +132,7 @@ void BlockLoader::load_log(bool is_final) {
 
 void BlockLoader::loaded_frag() {
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(m_processing || !m_chk_cs || !m_cs_blocks.empty()) 
       return;
     m_processing = true;
@@ -146,7 +146,7 @@ void BlockLoader::load_log_cells() {
   size_t sz;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {          
-      std::lock_guard lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       if(!(sz = m_fragments.size())) {
         m_processing = false;
         break;
@@ -157,7 +157,7 @@ void BlockLoader::load_log_cells() {
     if(loaded = frag->loaded(err))
       frag->load_cells(err, block);
     {
-      std::lock_guard lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       if(!err && !loaded) {
         m_processing = false;
         return;

@@ -56,10 +56,10 @@ struct Update final {
   size_t get_resend_count(bool reset = true);
 
   private:
-  std::mutex            m_mutex;
-  uint32_t              m_completion = 0;
-  int                   m_err = Error::OK;
-  size_t                m_resend_cells = 0;
+  Mutex      m_mutex;
+  uint32_t   m_completion = 0;
+  int        m_err = Error::OK;
+  size_t     m_resend_cells = 0;
 };
 
 }

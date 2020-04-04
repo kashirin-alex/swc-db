@@ -39,7 +39,7 @@ class PeriodicTimers : public std::vector<PeriodicTimer*> {
            asio::io_context* io);
 
   private:
-  std::mutex m_mutex;
+  Mutex m_mutex;
 };
 
 } // namespace SWC

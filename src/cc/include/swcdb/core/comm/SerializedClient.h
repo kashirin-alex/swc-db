@@ -49,7 +49,7 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   const EndPoint                m_endpoint;
   IOCtxPtr                      m_ioctx;
   AppContext::Ptr               m_ctx;
-  std::mutex                    m_mutex;
+  Mutex                         m_mutex;
   std::queue<ConnHandlerPtr>    m_conns;
   ConfigSSL*                    m_ssl_cfg;
 };
@@ -110,7 +110,7 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   const bool            m_use_ssl;
   ConfigSSL*            m_ssl_cfg;
 
-  std::mutex            m_mutex;
+  Mutex                 m_mutex;
   Map                   m_srv_conns;
   std::atomic<bool>     m_run;
 

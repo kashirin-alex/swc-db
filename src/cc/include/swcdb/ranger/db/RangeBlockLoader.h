@@ -46,7 +46,7 @@ class BlockLoader final {
   void completion();
   
 
-  std::mutex                                m_mutex;
+  Mutex                                     m_mutex;
   int                                       m_err;
   bool                                      m_processing;
   std::vector<CellStore::Block::Read::Ptr>  m_cs_blocks;

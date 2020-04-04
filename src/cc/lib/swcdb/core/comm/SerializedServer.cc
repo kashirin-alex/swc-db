@@ -203,26 +203,34 @@ void SerializedServer::stop_accepting() {
 void SerializedServer::shutdown() {
   SWC_LOGF(LOG_INFO, "STOPPING SERVER: %s", m_appname.c_str());
   m_run.store(false);
-
-  {
-    std::lock_guard lock(m_mutex);
-    for(auto& conn : m_conns)
-      conn->close();
+  
+  ConnHandlerPtr conn;
+  for(;;) {
+    {
+      Mutex::scope lock(m_mutex);
+      auto it=m_conns.begin();
+      if(it == m_conns.end())
+        break;
+      conn = *it;
+      m_conns.erase(it);
+    }
+    conn->close();
   }
+  
   for (std::size_t i = 0; i < m_wrk.size(); ++i)
     m_wrk[i].reset();
     //m_wrk[i].get_executor().context().stop();
 }
 
 void SerializedServer::connection_add(ConnHandlerPtr conn) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_conns.push_back(conn);
 
   //SWC_LOGF(LOG_DEBUG, "%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
 }
 
 void SerializedServer::connection_del(ConnHandlerPtr conn) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   for(auto it=m_conns.begin(); it<m_conns.end(); ++it) {
     if(conn->endpoint_remote == (*it)->endpoint_remote){
       m_conns.erase(it);

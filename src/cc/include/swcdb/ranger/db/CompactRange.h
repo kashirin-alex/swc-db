@@ -75,7 +75,7 @@ class CompactRange : public ReqScan {
   CellStore::Writers              cellstores;
   DB::Cells::Cell*                last_cell = nullptr;
 
-  std::mutex                      m_mutex;
+  Mutex                           m_mutex;
   bool                            m_writing = false;
   std::queue<DB::Cells::Result*>  m_queue;
   std::atomic<bool>               m_stopped = false;

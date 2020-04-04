@@ -99,7 +99,7 @@ class Fragment final {
 
   void _run_queued();
   
-  std::mutex        m_mutex;
+  Mutex             m_mutex;
   State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
   uint8_t           m_version;

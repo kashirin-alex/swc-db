@@ -80,7 +80,7 @@ class Read final {
 
   void run_queued();
 
-  std::mutex                  m_mutex;
+  Mutex                       m_mutex;
   State                       m_state;
   size_t                      m_processing;
   bool                        m_loaded_header;

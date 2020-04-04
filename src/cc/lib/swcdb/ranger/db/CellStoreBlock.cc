@@ -48,7 +48,7 @@ Read::~Read() {
 
 bool Read::load(const QueueRunnable::Call_t& cb) {
   {
-    std::lock_guard lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
       m_state = State::LOADING;
@@ -92,13 +92,13 @@ void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
 }
 
 void Read::processing_decrement() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   --m_processing; 
 }
 
 size_t Read::release() {    
   size_t released = 0;
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   if(m_processing || m_state != State::LOADED)
     return released; 
@@ -111,35 +111,35 @@ size_t Read::release() {
 }
 
 bool Read::processing() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_processing;
 }
 
 int Read::error() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_err;
 }
 
 bool Read::loaded() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 bool Read::loaded(int& err) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
 size_t Read::size_bytes(bool only_loaded) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
   return m_size;
 }
 
 std::string Read::to_string() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   std::string s("Block(offset=");
   s.append(std::to_string(offset));
   s.append(" state=");
@@ -236,7 +236,7 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
     break;
   }
 
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();

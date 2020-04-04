@@ -114,7 +114,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void disconnected();
 
-  std::mutex  m_mutex;
+  Mutex  m_mutex;
 
   private:
 

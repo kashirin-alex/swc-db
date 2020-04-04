@@ -13,38 +13,38 @@ namespace SWC { namespace client { namespace Query {
 namespace Result{
 
 uint32_t Update::completion() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_completion;
 }
 
 void Update::completion_incr() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   ++m_completion;
 }
 
 void Update::completion_decr() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   --m_completion;
 }
 
 int Update::error() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_err;
 }
 
 void Update::error(int err) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_err = err;
 }
 
 void Update::add_resend_count(size_t count) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_resend_cells += count;
 }
 
 size_t Update::get_resend_count(bool reset) {
   size_t sz;
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   sz = m_resend_cells;
   if(reset)
     m_resend_cells = 0;

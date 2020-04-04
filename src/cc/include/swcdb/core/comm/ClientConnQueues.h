@@ -61,7 +61,7 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
 
   private:
 
-  std::mutex              m_mutex;
+  Mutex                   m_mutex;
   std::vector<Host::Ptr>  m_hosts;
   
 };
