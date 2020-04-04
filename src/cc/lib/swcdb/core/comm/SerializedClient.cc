@@ -28,7 +28,7 @@ ServerConnections::~ServerConnections() { }
 
 void ServerConnections::reusable(ConnHandlerPtr &conn, bool preserve) {
   for(;;){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(m_conns.empty())
       return;
     conn = m_conns.front();
@@ -122,17 +122,17 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
 }
 
 void ServerConnections::put_back(ConnHandlerPtr conn){
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_conns.push(conn);
 }
   
 bool ServerConnections::empty() {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_conns.empty();
 }
 
 void ServerConnections::close_all(){
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   while(!m_conns.empty()){
     m_conns.front()->close();
     m_conns.pop();
@@ -151,7 +151,7 @@ Serialized::Serialized(const std::string& srv_name, IOCtxPtr ioctx,
 
 ServerConnections::Ptr Serialized::get_srv(EndPoint endpoint) {
   size_t hash = endpoint_hash(endpoint);
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   auto it = m_srv_conns.find(hash);
   if(it == m_srv_conns.end())
@@ -256,7 +256,7 @@ void Serialized::get_connection(
 void Serialized::preserve(ConnHandlerPtr conn) {
   size_t hash = conn->endpoint_remote_hash();
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   auto it = m_srv_conns.find(hash);
   if(it != m_srv_conns.end())
     (*it).second->put_back(conn);
@@ -266,7 +266,7 @@ void Serialized::close(ConnHandlerPtr conn){
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   auto it = m_srv_conns.find(hash);
   if(it != m_srv_conns.end() && (*it).second->empty())
     m_srv_conns.erase(it);
@@ -286,7 +286,7 @@ std::string Serialized::to_str(ConnHandlerPtr conn) {
 void Serialized::stop() {
   m_run.store(false);
     
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   Map::iterator it;
   while((it = m_srv_conns.begin()) != m_srv_conns.end()){
     it->second->close_all();

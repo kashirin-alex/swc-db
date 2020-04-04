@@ -27,13 +27,13 @@ Group::Ptr Group::copy(){
 }
 
 void Group::add_host(EndPoints& new_endpoints) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   EndPoints* found_host;
   for(auto& endpoint : new_endpoints){
     get_host(endpoint, found_host);
     if(found_host != nullptr){
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       (*found_host).swap(new_endpoints);
       return;
     }
@@ -43,7 +43,7 @@ void Group::add_host(EndPoints& new_endpoints) {
 
 Hosts Group::get_hosts() {
   Hosts hosts;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& endpoints : m_hosts){
     EndPoints host;
     for(auto& endpoint : endpoints){
@@ -55,7 +55,7 @@ Hosts Group::get_hosts() {
 }
 
 bool Group::is_in_group(const EndPoint& endpoint) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   EndPoints* found_host;
   get_host(endpoint, found_host);
@@ -64,7 +64,7 @@ bool Group::is_in_group(const EndPoint& endpoint) {
 
 std::string Group::to_string() {
   std::string s;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   s.append("group:\n");
   s.append(" column=");
@@ -88,7 +88,7 @@ std::string Group::to_string() {
 }
 
 void Group::apply_endpoints(EndPoints& to_endpoints) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
     
   for(auto& endpoints : m_hosts){
     for(auto& endpoint : endpoints){      
@@ -144,7 +144,7 @@ Groups::operator Groups::Ptr(){
 
 Groups::Ptr Groups::copy() {
   Selected groups;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& group : m_groups)
     groups.push_back(group->copy());
   return std::make_shared<Groups>(groups);
@@ -242,7 +242,7 @@ void Groups::add_host(size_t col_begin, size_t col_end,
   if(endpoints.empty())
     return;
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& group : m_groups){
       if(group->col_begin == col_begin && group->col_end == col_end){
         group->add_host(endpoints);
@@ -256,14 +256,14 @@ void Groups::add_host(size_t col_begin, size_t col_end,
 
 Groups::Selected Groups::get_groups() {
   Selected groups;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& group : m_groups)
     groups.push_back(group);
   return groups;
 }
 
 void Groups::hosts(size_t cid, Hosts& hosts, Groups::GroupHost &group_host) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   for(auto& group : m_groups) {
     if(group->col_begin <= cid 
@@ -278,7 +278,7 @@ void Groups::hosts(size_t cid, Hosts& hosts, Groups::GroupHost &group_host) {
 
 Groups::Selected Groups::get_groups(const EndPoints& endpoints) {
   Selected host_groups;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
     
   for(auto& group : m_groups){
     for(auto& endpoint : endpoints){
@@ -297,7 +297,7 @@ EndPoints Groups::get_endpoints(size_t col_begin, size_t col_end) {
   EndPoints endpoints;
   if(!col_end)
     col_end = col_begin;
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
     
   for(auto& group : m_groups){
     if(group->col_begin <= col_begin
@@ -310,7 +310,7 @@ EndPoints Groups::get_endpoints(size_t col_begin, size_t col_end) {
 
 std::string Groups::to_string() {
   std::string s("manager-groups:\n");
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   for(auto& group : m_groups)
     s.append(group->to_string());
@@ -318,7 +318,7 @@ std::string Groups::to_string() {
 }
 
 void Groups::add(Groups::GroupHost& g_host) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++) {
     if(has_endpoint(g_host.endpoints, it->endpoints))
@@ -332,7 +332,7 @@ void Groups::add(Groups::GroupHost& g_host) {
 }
 
 void Groups::remove(EndPoints& endpoints) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++){
     if(has_endpoint(endpoints, it->endpoints)){
@@ -342,7 +342,7 @@ void Groups::remove(EndPoints& endpoints) {
 }
 
 void Groups::select(int64_t cid, EndPoints& endpoints) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
     
   for(auto& host : m_active_g_host) {
     if(host.col_begin <= cid && (!host.col_end || host.col_end >= cid)) {

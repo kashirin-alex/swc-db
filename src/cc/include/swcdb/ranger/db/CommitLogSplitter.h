@@ -45,7 +45,7 @@ class Splitter : public std::vector<Fragment::Ptr> {
 
   void loaded() {
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if(m_processing) 
         return;
       m_processing = true;
@@ -74,13 +74,13 @@ class Splitter : public std::vector<Fragment::Ptr> {
       
       ++m_it;
       {
-        std::scoped_lock lock_wait(m_mutex);
+        std::lock_guard lock_wait(m_mutex);
         --m_completion;
       }
       m_cv.notify_one();
     }
 
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_processing = false;
   }
 

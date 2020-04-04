@@ -36,7 +36,7 @@ MngrRole::~MngrRole() { }
 
 
 void MngrRole::schedule_checkin(uint32_t t_ms) {
-  std::scoped_lock lock(m_mutex_timer);
+  std::lock_guard lock(m_mutex_timer);
   if(!m_run)
     return;
 
@@ -244,7 +244,7 @@ bool MngrRole::require_sync() {
 
 void MngrRole::stop() {
   {
-    std::scoped_lock lock(m_mutex_timer);
+    std::lock_guard lock(m_mutex_timer);
     m_check_timer.cancel();
     m_run = false;
   }

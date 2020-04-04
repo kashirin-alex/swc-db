@@ -40,11 +40,11 @@ void Rangers::stop(bool shuttingdown) {
   if(shuttingdown)
     m_run = false;
   {
-    std::scoped_lock lock(m_mutex_timer);
+    std::lock_guard lock(m_mutex_timer);
     m_assign_timer.cancel();
   }
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& h : m_rangers)
       asio::post(*Env::IoCtx::io()->ptr(), [h]() { h->stop(); });
   }
@@ -54,7 +54,7 @@ void Rangers::schedule_assignment_check(uint32_t t_ms) {
   if(!m_run)
     return;
 
-  std::scoped_lock lock(m_mutex_timer);
+  std::lock_guard lock(m_mutex_timer);
 
   auto set_in = std::chrono::milliseconds(t_ms);
   auto set_on = m_assign_timer.expires_from_now();
@@ -78,7 +78,7 @@ void Rangers::schedule_assignment_check(uint32_t t_ms) {
 
 
 void Rangers::rgr_get(const uint64_t id, EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(rgr->id == id) {
       if(rgr->state == Ranger::State::ACK)
@@ -89,7 +89,7 @@ void Rangers::rgr_get(const uint64_t id, EndPoints& endpoints) {
 }
 
 void Rangers::rgr_list(const uint64_t rgr_id, RangerList& rangers) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(!rgr_id || rgr->id == rgr_id) {
       rangers.push_back(rgr);
@@ -100,7 +100,7 @@ void Rangers::rgr_list(const uint64_t rgr_id, RangerList& rangers) {
 }
 
 uint64_t Rangers::rgr_set_id(const EndPoints& endpoints, uint64_t opt_id) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return rgr_set(endpoints, opt_id)->id;
 }
 
@@ -108,7 +108,7 @@ bool Rangers::rgr_ack_id(uint64_t id, const EndPoints& endpoints) {
   bool ack = false;
   Ranger::Ptr new_ack = nullptr;
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     
     for(auto& h : m_rangers) {
       if(has_endpoint(h->endpoints, endpoints) && id == h->id) {
@@ -131,7 +131,7 @@ bool Rangers::rgr_ack_id(uint64_t id, const EndPoints& endpoints) {
 uint64_t Rangers::rgr_had_id(uint64_t id, const EndPoints& endpoints) {
   bool new_id_required = false;
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& h : m_rangers) {
       if(id == h->id) {
@@ -148,7 +148,7 @@ uint64_t Rangers::rgr_had_id(uint64_t id, const EndPoints& endpoints) {
 void Rangers::rgr_shutdown(uint64_t id, const EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
       auto h = *it;
       if(has_endpoint(h->endpoints, endpoints)) {
@@ -181,7 +181,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     bool found;
     bool chg;
 
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& rs_new : new_rgr_status) {
       found = false;
@@ -256,7 +256,7 @@ void Rangers::assign_range_chk_last(int err, Ranger::Ptr rs_chk) {
   client::ConnQueue::ReqBase::Ptr req;
   for(;;) {
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if(!rs_chk->pending_id_pop(req))
         return;
     }
@@ -320,7 +320,7 @@ bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
                           ->need_schema_sync(schema->revision, rgr_ids);
   bool undergo = false;
   for(auto& id : rgr_ids) {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() 
@@ -339,7 +339,7 @@ bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
 void Rangers::column_delete(const int64_t cid, 
                             const std::vector<uint64_t>& rgr_ids) {
   for(auto id : rgr_ids) {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& rgr : m_rangers) {
       if(id != rgr->id)
         continue;
@@ -359,7 +359,7 @@ void Rangers::column_compact(int& err, const int64_t cid) {
   std::vector<uint64_t> rgr_ids;
   col->assigned(rgr_ids);
   for(auto& id : rgr_ids) {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() 
@@ -373,7 +373,7 @@ void Rangers::column_compact(int& err, const int64_t cid) {
 
 std::string Rangers::to_string() {
   std::string s("Rangers:");
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& h : m_rangers) {
     s.append("\n ");
     s.append(h->to_string());
@@ -383,7 +383,7 @@ std::string Rangers::to_string() {
 
 
 bool Rangers::runs_assign(bool stop) {
-  std::scoped_lock lock(m_mutex_assign);
+  std::lock_guard lock(m_mutex_assign);
   if(stop) 
     return (m_runs_assign = false);
   else if(m_runs_assign)
@@ -404,7 +404,7 @@ void Rangers::assign_ranges_run() {
 
   for(;;) {
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if(m_rangers.empty() || !m_run) {
         runs_assign(true);
         schedule_assignment_check();
@@ -440,7 +440,7 @@ void Rangers::assign_ranges_run() {
 }
 
 void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if(last_rgr->endpoints.size()) {
       for(auto& rgr : m_rangers) {
@@ -503,7 +503,7 @@ void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range,
   bool id_due;
   Ranger::Ptr rs_last = nullptr;
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& rs_chk : m_rangers) {
       if(has_endpoint(rs_chk->endpoints, last_rgr->endpoints)) {
         rs_last = rs_chk;
@@ -514,7 +514,7 @@ void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range,
     }
   }
   if(rs_last == nullptr) {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
     rs_last->init_queue();
     rs_last->state = Ranger::State::AWAIT;
@@ -571,7 +571,7 @@ Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, uint64_t opt_id) {
 
 void Rangers::changes(RangerList& hosts, bool sync_all) {
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(hosts.size()) {
       Env::Mngr::role()->req_mngr_inchain(
         std::make_shared<Protocol::Mngr::Req::RgrUpdate>(

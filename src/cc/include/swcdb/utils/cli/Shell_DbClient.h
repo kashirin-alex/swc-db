@@ -259,7 +259,7 @@ class DbClient : public Interface {
       }
     }
 
-    std::scoped_lock lock(Logger::logger.mutex);
+    std::lock_guard lock(Logger::logger.mutex);
     for(auto& schema : schemas) {
       schema->display(std::cout);
       std::cout << std::endl;
@@ -286,7 +286,7 @@ class DbClient : public Interface {
       return error(message);
 
     if(display_flags & DB::DisplayFlag::SPECS) {
-      std::scoped_lock lock(Logger::logger.mutex);
+      std::lock_guard lock(Logger::logger.mutex);
       std::cout << "\n\n";
       req->specs.display(
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
@@ -317,7 +317,7 @@ class DbClient : public Interface {
         cells.free();
         result->get_cells(cid, cells);
 
-        std::scoped_lock lock(Logger::logger.mutex);
+        std::lock_guard lock(Logger::logger.mutex);
         for(auto cell : cells) {
           cells_count++;
           cells_bytes += cell->encoded_length();
@@ -430,7 +430,7 @@ class DbClient : public Interface {
       return error(Error::get_text(err));
 
     if(display_flags & DB::DisplayFlag::SPECS) {
-      std::scoped_lock lock(Logger::logger.mutex);
+      std::lock_guard lock(Logger::logger.mutex);
       std::cout << "\n\n";
       req->specs.display(
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
@@ -452,7 +452,7 @@ class DbClient : public Interface {
       if(err) 
         return error(Error::get_text(err));
       
-      std::scoped_lock lock(Logger::logger.mutex);
+      std::lock_guard lock(Logger::logger.mutex);
       std::cout << " Files Count:            " << files.size() << "\n";
       for(auto& file : files)
         std::cout << " File:                   " << file->filepath() 

@@ -80,20 +80,19 @@ class Read final {
 
   void run_queued();
 
-  //std::shared_mutex                  m_mutex;
-  LockAtomic::Unique                 m_mutex;
-  State                              m_state;
-  size_t                             m_processing;
-  bool                               m_loaded_header;
-  Types::Encoding                    m_encoder;
-  size_t                             m_size;
-  size_t                             m_sz_enc;
-  uint32_t                           m_cells_count;
-  uint32_t                           m_checksum_data;
-  StaticBuffer                       m_buffer;
-  std::atomic<uint32_t>              m_cells_remain;
-  int                                m_err;
-  QueueRunnable                      m_queue;
+  std::mutex                  m_mutex;
+  State                       m_state;
+  size_t                      m_processing;
+  bool                        m_loaded_header;
+  Types::Encoding             m_encoder;
+  size_t                      m_size;
+  size_t                      m_sz_enc;
+  uint32_t                    m_cells_count;
+  uint32_t                    m_checksum_data;
+  StaticBuffer                m_buffer;
+  std::atomic<uint32_t>       m_cells_remain;
+  int                         m_err;
+  QueueRunnable               m_queue;
 };
 
 

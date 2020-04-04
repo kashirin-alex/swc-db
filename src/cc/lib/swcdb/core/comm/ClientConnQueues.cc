@@ -48,7 +48,7 @@ ConnQueues::~ConnQueues() { }
 
 std::string ConnQueues::to_string() {
   std::string s("ConnQueues: ");
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   for(auto& host : m_hosts){
     s.append(host->to_string());
@@ -58,7 +58,7 @@ std::string ConnQueues::to_string() {
 }
 
 Host::Ptr ConnQueues::get(const EndPoints& endpoints){
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto& host : m_hosts){
     if(has_endpoint(host->endpoints, endpoints))
       return host;
@@ -69,7 +69,7 @@ Host::Ptr ConnQueues::get(const EndPoints& endpoints){
 }
 
 void ConnQueues::remove(const EndPoints& endpoints) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto it=m_hosts.begin(); it<m_hosts.end(); it++){
 
     if(has_endpoint((*it)->endpoints, endpoints)) {

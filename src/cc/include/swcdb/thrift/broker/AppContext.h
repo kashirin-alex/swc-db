@@ -47,7 +47,7 @@ class AppContext : virtual public BrokerIfFactory {
   virtual ~AppContext() { }
   
   void wait_while_run() {
-    std::unique_lock<std::mutex> lock_wait(m_mutex);
+    std::unique_lock lock_wait(m_mutex);
     m_cv.wait(lock_wait, [this]{return !m_run;});
   }
 
@@ -93,7 +93,7 @@ class AppContext : virtual public BrokerIfFactory {
 
     SWC_LOG(LOG_INFO, "Exit");
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_run = false;
     }
     m_cv.notify_all();

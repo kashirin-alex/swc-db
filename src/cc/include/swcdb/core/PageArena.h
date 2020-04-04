@@ -6,7 +6,7 @@
 #define swc_core_PageArena_h
 
 #include <mutex>
-#include "swcdb/core/LockAtomicUnique.h"
+#include <atomic>
 #include "swcdb/core/Comparators.h"
 
 #include <unordered_set>
@@ -128,8 +128,7 @@ class Page : public PageBase {
   Page() : PageBase(8) { }
   
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     auto tmp = new Item(buf, size);
     auto r = insert(tmp);
@@ -143,8 +142,7 @@ class Page : public PageBase {
   }
   
   void free(Item::Ptr ptr) {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     
     auto it = find(ptr);
     if(it != end() && !ptr->count) {
@@ -154,8 +152,7 @@ class Page : public PageBase {
   }
 
   size_t count() const {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     size_t sz = size();
     //for(Page* nxt = m_page; nxt ; nxt->next_page(nxt))
@@ -164,14 +161,12 @@ class Page : public PageBase {
   }
   /*
   void next_page(Page*& page) const {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     page = m_page;
   }
   */
   private:
-  mutable LockAtomic::Unique    m_mutex;
-  //mutable std::mutex            m_mutex;
+  mutable std::mutex            m_mutex;
   //Page*                         m_page = nullptr; // upper ranges
 
 };
@@ -184,8 +179,7 @@ class Page : public PageBase {
 
 
   Item::Ptr use(const uint8_t* buf, uint32_t sz) {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     auto ptr = new Item(buf, sz);
 
@@ -203,7 +197,7 @@ class Page : public PageBase {
   }
   
   void free(Item::Ptr ptr) {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    std::lock_guard lock(m_mutex);
 
     for(auto it = begin() + _narrow(*ptr); 
         it < end() && (*it)->hash() <= ptr->hash(); ++it) {
@@ -217,7 +211,7 @@ class Page : public PageBase {
   }
 
   size_t count() const {
-    LockAtomic::Unique::Scope lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     return size();
   }
 
@@ -248,7 +242,7 @@ class Page : public PageBase {
     return offset;
   }
 
-  mutable LockAtomic::Unique    m_mutex;
+  mutable std::mutex            m_mutex;
   static const size_t           narrow_sz = 20;
 
 };

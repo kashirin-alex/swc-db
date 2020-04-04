@@ -137,8 +137,7 @@ void Fragment::write(int err, FS::SmartFd::Ptr smartfd,
 
   bool keep;
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     keep = !m_queue.empty() || m_processing;
     m_err = err;
     if((m_state = !m_err && keep ? State::LOADED : State::NONE) 
@@ -163,8 +162,7 @@ void Fragment::load_header(bool close_after) {
 void Fragment::load(const QueueRunnable::Call_t& cb) {
   bool loaded;
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     ++m_processing;
     if(!(loaded = m_state == State::LOADED)) {
       m_queue.push(cb);
@@ -243,15 +241,13 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
 }
 
 void Fragment::processing_decrement() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   --m_processing; 
 }
 
 size_t Fragment::release() {
   size_t released = 0;     
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if(m_processing || m_state != State::LOADED)
     return released; 
@@ -264,41 +260,35 @@ size_t Fragment::release() {
 }
 
 bool Fragment::loaded() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 int Fragment::error() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_err;
 }
 
 bool Fragment::loaded(int& err) {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
 size_t Fragment::size_bytes(bool only_loaded) {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
   return m_size;
 }
 
 size_t Fragment::size_bytes_encoded() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_size_enc;
 }
 
 bool Fragment::processing() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_processing;
 }
 
@@ -307,8 +297,7 @@ void Fragment::remove(int &err) {
 }
 
 std::string Fragment::to_string() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   std::string s("Fragment(version=");
   s.append(std::to_string(m_version));
 
@@ -426,8 +415,7 @@ void Fragment::load() {
 
   bool header_again;
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::shared_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     header_again = m_err;
   }
   int err = Error::OK;
@@ -481,8 +469,7 @@ void Fragment::load() {
   }
 
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
   }

@@ -133,7 +133,7 @@ class Block final {
   DB::Cells::Mutable        m_cells;
   DB::Cell::Key             m_prev_key_end;
 
-  std::shared_mutex         m_mutex_state;
+  std::mutex                m_mutex_state;
   State                     m_state;
   std::atomic<size_t>       m_processing;
   QueueSafe<ReqScan::Ptr>   m_queue;

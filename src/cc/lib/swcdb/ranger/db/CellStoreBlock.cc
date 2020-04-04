@@ -48,8 +48,7 @@ Read::~Read() {
 
 bool Read::load(const QueueRunnable::Call_t& cb) {
   {
-    LockAtomic::Unique::Scope lock(m_mutex);
-    //std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
       m_state = State::LOADING;
@@ -93,15 +92,13 @@ void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
 }
 
 void Read::processing_decrement() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   --m_processing; 
 }
 
 size_t Read::release() {    
   size_t released = 0;
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if(m_processing || m_state != State::LOADED)
     return released; 
@@ -114,41 +111,35 @@ size_t Read::release() {
 }
 
 bool Read::processing() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_processing;
 }
 
 int Read::error() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_err;
 }
 
 bool Read::loaded() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 bool Read::loaded(int& err) {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
 
 size_t Read::size_bytes(bool only_loaded) {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
   return m_size;
 }
 
 std::string Read::to_string() {
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::shared_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   std::string s("Block(offset=");
   s.append(std::to_string(offset));
   s.append(" state=");
@@ -245,8 +236,7 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
     break;
   }
 
-  LockAtomic::Unique::Scope lock(m_mutex);
-  //std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();

@@ -30,11 +30,11 @@ Compaction::Ptr Compaction::ptr() {
 
 void Compaction::stop() {
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_run = false;
     m_check_timer.cancel();
   }
-  std::unique_lock<std::mutex> lock_wait(m_mutex);
+  std::unique_lock lock_wait(m_mutex);
   if(m_running) 
     m_cv.wait(lock_wait, [&running=m_running](){return !running;});  
 }
@@ -44,18 +44,18 @@ void Compaction::schedule() {
 }
 
 void Compaction::schedule(uint32_t t_ms) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   _schedule(t_ms);
 }
 
 bool Compaction::stopped() {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return !m_run;
 }
 
 void Compaction::run(bool continuing) {
   {
-    std::scoped_lock lock(m_mutex); 
+    std::lock_guard lock(m_mutex); 
     if(!m_run || (!continuing && m_scheduled))
       return;
     m_scheduled = true;
@@ -84,7 +84,7 @@ void Compaction::run(bool continuing) {
     if(!m_run)
       break;
     {
-      std::scoped_lock lock(m_mutex); 
+      std::lock_guard lock(m_mutex); 
       ++m_running;
     }
     asio::post(
@@ -92,14 +92,14 @@ void Compaction::run(bool continuing) {
     );
     
     {
-      std::scoped_lock lock(m_mutex); 
+      std::lock_guard lock(m_mutex); 
       if(m_running == RangerEnv::maintenance_io()->get_size())
         return;
     }
   }
   
   {
-    std::scoped_lock lock(m_mutex); 
+    std::lock_guard lock(m_mutex); 
     if(m_running)
       return;
   }
@@ -185,7 +185,7 @@ void Compaction::compacted(RangePtr range, bool all) {
 }
 
 void Compaction::compacted() {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if(m_running && m_running-- == RangerEnv::maintenance_io()->get_size()) {
     asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });

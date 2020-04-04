@@ -111,7 +111,7 @@ class Rgr : public Interface {
       (client::ConnQueue::ReqBase::Ptr req, 
        const Protocol::Rgr::Params::ReportRsp& rsp) {
         if(!(err = rsp.err)) {
-          std::scoped_lock lock(Logger::logger.mutex);
+          std::lock_guard lock(Logger::logger.mutex);
           rsp.display(std::cout);
         }
         await->set_value();

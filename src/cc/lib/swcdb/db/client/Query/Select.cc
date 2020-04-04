@@ -18,7 +18,7 @@ Select::Rsp::~Rsp() { }
 
 bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit, 
                             DB::Specs::Interval& interval) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
   m_counted += recved;
   m_size_bytes += buffer.size;
@@ -40,23 +40,23 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
 }  
     
 void Select::Rsp::get_cells(DB::Cells::Result& cells) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   cells.take(m_cells);
   m_size_bytes = 0;
 }
 
 size_t Select::Rsp::get_size() {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_counted;
 }
 
 size_t Select::Rsp::get_size_bytes() {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_size_bytes;
 }
 
 void Select::Rsp::free() {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_cells.free();
   m_size_bytes = 0;
 }
@@ -155,7 +155,7 @@ void Select::response_partials() {
   if(!wait_on_partials())
     return;
 
-  std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   if(!m_rsp_partial_runs)
     return;
   m_cv.wait(
@@ -172,7 +172,7 @@ bool Select::wait_on_partials() const {
 
 void Select::response_partial() {
   {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     if(m_rsp_partial_runs)
       return;
     m_rsp_partial_runs = true;
@@ -181,14 +181,14 @@ void Select::response_partial() {
   cb(result);
 
   {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_rsp_partial_runs = false;
   }
   m_cv.notify_all();
 }
 
 void Select::wait() {
-  std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   m_cv.wait(
     lock, 
     [selector=shared_from_this()] () {

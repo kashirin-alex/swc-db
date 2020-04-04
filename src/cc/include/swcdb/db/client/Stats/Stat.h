@@ -16,7 +16,7 @@ class Stat {
   virtual ~Stat(){}
 
   void add(uint64_t v){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_avg *= m_count;
     m_avg += v;
     m_avg /= ++m_count;
@@ -27,20 +27,20 @@ class Stat {
   }
 
   uint64_t avg(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     return m_avg;
   }
   uint64_t max(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     return m_max;
   }
   uint64_t min(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     return m_min;
   }
 
   uint64_t count(){
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     return m_count;
   }
 

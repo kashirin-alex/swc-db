@@ -113,7 +113,7 @@ class Checker {
     for(int t=1;t<=num_threads;t++)
       std::thread([this](){get_conn();}).detach();
 
-    std::unique_lock<std::mutex> lock_wait(lock);
+    std::unique_lock lock_wait(lock);
     cv.wait(lock_wait, []{return !expected.load();});
 
 

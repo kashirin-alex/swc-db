@@ -13,38 +13,38 @@ namespace SWC { namespace client { namespace Query {
 namespace Result{
 
 uint32_t Update::completion() {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_completion;
 }
 
 void Update::completion_incr() {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   ++m_completion;
 }
 
 void Update::completion_decr() {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   --m_completion;
 }
 
 int Update::error() {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_err;
 }
 
 void Update::error(int err) {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_err = err;
 }
 
 void Update::add_resend_count(size_t count) {
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_resend_cells += count;
 }
 
 size_t Update::get_resend_count(bool reset) {
   size_t sz;
-  LockAtomic::Unique::Scope lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   sz = m_resend_cells;
   if(reset)
     m_resend_cells = 0;
@@ -105,7 +105,7 @@ void Update::response(int err) {
 }
 
 void Update::wait() {
-  std::unique_lock<std::mutex> lock_wait(m_mutex);
+  std::unique_lock lock_wait(m_mutex);
   if(result->completion()) {
     cv.wait(
       lock_wait, 

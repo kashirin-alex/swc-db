@@ -30,7 +30,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   virtual ~RgrMngId() { }
 
   void create(const Params::RgrMngId& params) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     cbp = CommBuf::make(params);
     cbp->header.set(RGR_MNG_ID, 60000);
   }
@@ -169,7 +169,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   }
 
   void stop() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(m_run) 
       m_timer.cancel();
     m_run = false;
@@ -178,7 +178,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   void set(uint32_t ms) {
     cancel();
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(!m_run)
       return;
 
@@ -194,7 +194,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   }
 
   void cancel() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_timer.cancel();
   }
 

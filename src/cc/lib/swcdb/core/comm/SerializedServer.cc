@@ -205,7 +205,7 @@ void SerializedServer::shutdown() {
   m_run.store(false);
 
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     for(auto& conn : m_conns)
       conn->close();
   }
@@ -215,14 +215,14 @@ void SerializedServer::shutdown() {
 }
 
 void SerializedServer::connection_add(ConnHandlerPtr conn) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_conns.push_back(conn);
 
   //SWC_LOGF(LOG_DEBUG, "%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
 }
 
 void SerializedServer::connection_del(ConnHandlerPtr conn) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   for(auto it=m_conns.begin(); it<m_conns.end(); ++it) {
     if(conn->endpoint_remote == (*it)->endpoint_remote){
       m_conns.erase(it);

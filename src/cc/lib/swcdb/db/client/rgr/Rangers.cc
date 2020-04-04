@@ -15,14 +15,14 @@ Rangers::Rangers(const Property::V_GINT32::Ptr expiry_ms)
 Rangers::~Rangers() { }
   
 void Rangers::clear() {
-  std::scoped_lock lock(m_mutex); 
+  std::lock_guard lock(m_mutex); 
   m_map.clear();
 }
   
 void Rangers::clear_expired() {
   auto ms = Time::now_ms();
 
-  std::scoped_lock lock(m_mutex);     
+  std::lock_guard lock(m_mutex);     
   for(auto c = m_map.begin(); c != m_map.end(); ) {
     for(auto r = c->second.begin(); r != c->second.end(); ) {
       if(ms - r->second.ts > m_expiry_ms->get())
@@ -38,7 +38,7 @@ void Rangers::clear_expired() {
 }
 
 void Rangers::remove(const int64_t cid, const int64_t rid) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   auto c = m_map.find(cid);
   if(c == m_map.end()) 
@@ -54,7 +54,7 @@ void Rangers::remove(const int64_t cid, const int64_t rid) {
 bool Rangers::get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
   bool found = false;
 
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   auto c = m_map.find(cid);
   if(c != m_map.end()) {
     auto r = c->second.find(rid);
@@ -70,7 +70,7 @@ bool Rangers::get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
 
 void Rangers::set(const int64_t cid, const int64_t rid, 
                   const EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   auto c = m_map.find(cid);
   if(c == m_map.end()) {
     m_map[cid].emplace(rid, Rangers::Range(Time::now_ms(), endpoints));

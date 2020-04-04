@@ -78,7 +78,7 @@ void CompactRange::response(int &err) {
   auto selected_cells = cells.empty() 
                         ? nullptr : new DB::Cells::Result(cells);
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(!selected_cells) {
       if(!m_writing) {
         finalize();
@@ -108,7 +108,7 @@ void CompactRange::response(int &err) {
 
 void CompactRange::request_more() {
   {
-    std::scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if(m_getting 
       || (!m_queue.empty() 
           && (m_queue.size() >= RangerEnv::maintenance_io()->get_size()
@@ -130,7 +130,7 @@ void CompactRange::process() {
   DB::Cells::Result* selected_cells;
   for(;;) {
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       selected_cells = m_queue.front();
     }
     if(selected_cells == nullptr) {
@@ -151,7 +151,7 @@ void CompactRange::process() {
       return quit();
 
     {
-      std::scoped_lock lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       m_queue.pop();
       m_writing = !m_queue.empty();
       if(!m_writing)

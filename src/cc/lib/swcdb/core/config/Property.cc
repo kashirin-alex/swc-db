@@ -839,7 +839,7 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
   flags.store(from->flags);
   bool chg;
   {
-    std::scoped_lock lock(mutex);
+    std::lock_guard lock(mutex);
     chg = value == from->get();
     value = from->get();
     on_chg_cb = from->on_chg_cb;
@@ -848,7 +848,7 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
 }
 
 void V_GSTRINGS::set_from(const Strings& values) {
-  std::scoped_lock lock(mutex);
+  std::lock_guard lock(mutex);
   value = values;
 }
 
@@ -857,22 +857,22 @@ Value::Type V_GSTRINGS::type() const {
 }
 
 std::string V_GSTRINGS::to_string() const {
-  std::scoped_lock lock(mutex);
+  std::lock_guard lock(mutex);
   return format_list(value);
 }
 
 Strings V_GSTRINGS::get() const {
-  std::scoped_lock lock(mutex);
+  std::lock_guard lock(mutex);
   return value;
 }
 
 size_t V_GSTRINGS::size() {
-  std::scoped_lock lock(mutex);	
+  std::lock_guard lock(mutex);	
   return value.size();
 }
 
 std::string V_GSTRINGS::get_item(size_t n) {
-  std::scoped_lock lock(mutex);
+  std::lock_guard lock(mutex);
   return value[n];
 }
 
@@ -882,7 +882,7 @@ void V_GSTRINGS::on_change() const {
 }
 
 void V_GSTRINGS::set_cb_on_chg(const V_GSTRINGS::OnChg_t& cb) {
-  std::scoped_lock lock(mutex);
+  std::lock_guard lock(mutex);
   on_chg_cb = cb;
 }
 

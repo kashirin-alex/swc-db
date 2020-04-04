@@ -6,7 +6,6 @@
 #ifndef swc_db_client_Query_Update_h
 #define swc_db_client_Query_Update_h
 
-#include "swcdb/core/LockAtomicUnique.h"
 #include "swcdb/db/Cells/MapMutable.h" 
 #include "swcdb/db/Types/Range.h"
 
@@ -57,7 +56,7 @@ struct Update final {
   size_t get_resend_count(bool reset = true);
 
   private:
-  LockAtomic::Unique    m_mutex;
+  std::mutex            m_mutex;
   uint32_t              m_completion = 0;
   int                   m_err = Error::OK;
   size_t                m_resend_cells = 0;
