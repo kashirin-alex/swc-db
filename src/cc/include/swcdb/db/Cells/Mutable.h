@@ -185,17 +185,17 @@ class Mutable final {
 
 
   void scan(const Specs::Interval& specs, Result& cells, 
-            size_t& cell_offset, 
+            uint64_t& cell_offset, 
             const std::function<bool()>& reached_limits, 
             size_t& skips, const Selector_t& selector) const;
 
   void scan_version_single(const Specs::Interval& specs, Result& cells, 
-                           size_t& cell_offset, 
+                           uint64_t& cell_offset, 
                            const std::function<bool()>& reached_limits, 
                            size_t& skips, const Selector_t& selector) const;
 
   void scan_version_multi(const Specs::Interval& specs, Result& cells, 
-                          size_t& cell_offset, 
+                          uint64_t& cell_offset, 
                           const std::function<bool()>& reached_limits, 
                           size_t& skips, const Selector_t& selector) const;
 

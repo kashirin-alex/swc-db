@@ -346,7 +346,7 @@ void Mutable::write(DynamicBuffer& cells) const {
 
 
 void Mutable::scan(const Specs::Interval& specs, Result& cells, 
-                   size_t& cell_offset, 
+                   uint64_t& cell_offset, 
                    const std::function<bool()>& reached_limits, 
                    size_t& skips, const Selector_t& selector) const {
   if(!_size)
@@ -360,7 +360,7 @@ void Mutable::scan(const Specs::Interval& specs, Result& cells,
 }
 
 void Mutable::scan_version_single(const Specs::Interval& specs, 
-                                  Result& cells, size_t& cell_offset, 
+                                  Result& cells, uint64_t& cell_offset, 
                                   const std::function<bool()>& reached_limits,
                                   size_t& skips, const Selector_t& selector) const {
   bool stop = false;
@@ -390,7 +390,7 @@ void Mutable::scan_version_single(const Specs::Interval& specs,
 }
 
 void Mutable::scan_version_multi(const Specs::Interval& specs, 
-                                 Result& cells, size_t& cell_offset, 
+                                 Result& cells, uint64_t& cell_offset, 
                                  const std::function<bool()>& reached_limits,
                                  size_t& skips, 
                                  const Selector_t& selector) const {
