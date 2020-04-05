@@ -56,9 +56,9 @@ class Flags {
   
   void display(std::ostream& out) const;
 
-  uint64_t 	limit, offset;
+  uint64_t  limit, offset;
   uint32_t  max_versions;
-  uint8_t 	options;
+  uint8_t   options;
   int64_t   upto_revision;
   bool      was_set;
 

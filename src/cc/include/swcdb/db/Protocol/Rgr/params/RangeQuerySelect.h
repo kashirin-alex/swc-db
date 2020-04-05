@@ -51,7 +51,7 @@ class RangeQuerySelectRsp  : public Serializable {
   public:
 
   RangeQuerySelectRsp(int err=Error::OK, bool reached_limit=false, 
-                      size_t offset=0);
+                      uint64_t offset=0, int64_t upto_revision=0);
   
   RangeQuerySelectRsp(StaticBuffer& data);
 
@@ -59,7 +59,8 @@ class RangeQuerySelectRsp  : public Serializable {
 
   int32_t         err;
   bool            reached_limit;
-  size_t          offset;
+  uint64_t        offset;
+  int64_t         upto_revision;
   StaticBuffer    data;
   
   std::string to_string() const;

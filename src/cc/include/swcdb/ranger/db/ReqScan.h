@@ -97,7 +97,7 @@ class ReqScan  : public ResponseCallback {
 
   NextCall_t        next_call = 0;
   // state of a scan
-  size_t            offset;
+  uint64_t          offset;
   Type              type;
 };
 

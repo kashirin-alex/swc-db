@@ -64,15 +64,18 @@ void RangeQuerySelectReq::decode_internal(uint8_t version,
 
 
 
-RangeQuerySelectRsp::RangeQuerySelectRsp(int err, bool reached_limit,
-                                         size_t offset)
-                                        : err(err), 
-                                        reached_limit(reached_limit), 
-                                        offset(offset) {  
+RangeQuerySelectRsp::RangeQuerySelectRsp(
+                int err, bool reached_limit,
+                uint64_t offset, int64_t upto_revision)
+              : err(err), 
+                reached_limit(reached_limit), offset(offset),
+                upto_revision(upto_revision) {  
 }
 
 RangeQuerySelectRsp::RangeQuerySelectRsp(StaticBuffer& data)
-                    : data(data), err(0), reached_limit(false), offset(0) {
+                    : data(data), 
+                      err(0), reached_limit(false), offset(0), 
+                      upto_revision(upto_revision) {
 }
 
 RangeQuerySelectRsp::~RangeQuerySelectRsp() { }
@@ -88,6 +91,8 @@ std::string RangeQuerySelectRsp::to_string() const {
   s.append(std::to_string(reached_limit));
   s.append(" offset=");
   s.append(std::to_string(offset));
+  s.append(" upto_revision=");
+  s.append(std::to_string(upto_revision));
   s.append(" data.size=");
   s.append(std::to_string(data.size));
   s.append(")");
@@ -101,13 +106,15 @@ uint8_t RangeQuerySelectRsp::encoding_version() const {
 size_t RangeQuerySelectRsp::encoded_length_internal() const {
   return Serialization::encoded_length_vi32(err) 
         + 1 
-        + Serialization::encoded_length_vi64(offset);
+        + Serialization::encoded_length_vi64(offset)
+        + 8;
 }
   
 void RangeQuerySelectRsp::encode_internal(uint8_t **bufp) const {
   Serialization::encode_vi32(bufp, err);
   Serialization::encode_bool(bufp, reached_limit);
   Serialization::encode_vi64(bufp, offset);
+  Serialization::encode_i64(bufp, upto_revision);
 }
   
 void RangeQuerySelectRsp::decode_internal(uint8_t version, 
@@ -116,6 +123,7 @@ void RangeQuerySelectRsp::decode_internal(uint8_t version,
   err = Serialization::decode_vi32(bufp, remainp);
   reached_limit = Serialization::decode_bool(bufp, remainp);
   offset = Serialization::decode_vi64(bufp, remainp);
+  upto_revision = Serialization::decode_i64(bufp, remainp);
 }
 
 
