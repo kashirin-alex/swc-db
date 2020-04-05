@@ -52,6 +52,8 @@ class Fragment final {
 
   ~Fragment();
 
+  const std::string& get_filepath() const;
+
   void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
              DynamicBuffer& cells, uint32_t cell_revs, 
              Semaphore* sem);
@@ -67,7 +69,7 @@ class Fragment final {
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
   void split(int& err, const DB::Cell::Key& key, 
-             AddCell_t& left, AddCell_t& right);
+             FragmentsPtr log_left, FragmentsPtr log_right);
 
   void processing_decrement();
   

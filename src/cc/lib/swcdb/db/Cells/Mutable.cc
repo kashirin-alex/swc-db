@@ -692,11 +692,9 @@ void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
     if(cond == Condition::LT) //without aggregate|| ts == AUTO_ASSIGN
       goto add_counter;
 
-    if(chk_rev && cell->get_revision() >= rev)
-      return;
-
     if(cell->removal()) {
-      if(cell->is_removing(ts))
+      if((chk_rev && cell->get_revision() >= rev) ||
+         cell->is_removing(ts) )
         return;
       ++it;
       continue;

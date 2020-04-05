@@ -47,6 +47,10 @@ Fragment::Ptr Fragment::ptr() {
 
 Fragment::~Fragment() { }
 
+const std::string& Fragment::get_filepath() const {
+  return m_smartfd->filepath();
+}
+
 void Fragment::write(int& err, uint8_t blk_replicas, 
                      Types::Encoding encoder, 
                      DynamicBuffer& cells, uint32_t cell_revs,
@@ -199,7 +203,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
 }
 
 void Fragment::split(int& err, const DB::Cell::Key& key, 
-                     AddCell_t& left, AddCell_t& right) {
+                     Fragments::Ptr log_left, Fragments::Ptr log_right) {
   uint64_t tts = Time::now_ns();
   size_t count = 0;
   if(m_buffer.size) {
@@ -219,9 +223,9 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
       }
 
       if(key.compare(cell.key) == Condition::GT)
-        right(cell);
+        log_right->add(cell);
       else
-        left(cell);
+        log_left->add(cell);
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 

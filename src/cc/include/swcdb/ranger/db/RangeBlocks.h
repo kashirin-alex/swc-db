@@ -6,6 +6,11 @@
 #ifndef swc_ranger_db_RangeBlocks_h
 #define swc_ranger_db_RangeBlocks_h
 
+namespace SWC { namespace Ranger { namespace CommitLog {
+class Fragments;
+typedef Fragments*  FragmentsPtr;
+}}}
+
 #include "swcdb/ranger/db/RangeBlockLoader.h"
 
 #include "swcdb/ranger/db/CellStoreReaders.h"

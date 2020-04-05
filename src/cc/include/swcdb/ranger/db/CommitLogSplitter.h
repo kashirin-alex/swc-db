@@ -10,89 +10,93 @@
 namespace SWC { namespace Ranger { namespace CommitLog {
 
   
-class Splitter : public std::vector<Fragment::Ptr> {
+class Splitter final {
   public:
-  using std::vector<Fragment::Ptr>::vector;
+  
+  static constexpr const uint8_t MAX_LOAD = 3;
 
-
-  Splitter(const DB::Cell::Key& key, 
-           const std::vector<Fragment::Ptr>& fragments, 
-           Fragment::AddCell_t& left, Fragment::AddCell_t& right) 
-          : std::vector<Fragment::Ptr>(fragments),
-            m_processing(false), m_completion(0), m_it(begin()),
-            key(key), left(left), right(right) { 
+  Splitter(const DB::Cell::Key& key, std::vector<Fragment::Ptr>& fragments,
+           Fragments::Ptr log_left, Fragments::Ptr log_right) 
+          : m_fragments(fragments), key(key), 
+            log_left(log_left), log_right(log_right) {
   }
 
   ~Splitter() { }
 
   void run () {
-    for(auto frag : *this) {
-      {
-        std::unique_lock lock_wait(m_mutex);
-        if(m_completion == 3) 
-          m_cv.wait(lock_wait, [this]() { return m_completion < 3; });
-        ++m_completion;
-      }
-      frag->load([this]() { loaded(); });
-    }
+    Fragment::Ptr frag;
+    for(auto it = m_fragments.begin(); it< m_fragments.end();) {
 
+      if(key.compare((frag = *it)->interval.key_end) != Condition::GT) {    
+        m_fragments.erase(it);
+        continue;
+      }
+      if(key.compare(frag->interval.key_begin) == Condition::GT) {
+        int err = Error::OK;
+        log_right->take_ownership(err, frag);
+        if(!err) {   
+          log_left->remove(err, frag, false);
+          m_fragments.erase(it);
+          continue;
+        }
+      }
+      if(m_queue.size() == MAX_LOAD) {
+        std::unique_lock lock_wait(m_mutex);
+        m_cv.wait(lock_wait, [this]() { return m_queue.size() < MAX_LOAD; });
+      }
+      m_queue.push(frag);
+      frag->load([this]() { loaded(); });
+      ++it;
+    }
+    
     std::unique_lock lock_wait(m_mutex);
-    if(m_completion)
-      m_cv.wait(lock_wait, [this]() { return m_completion == 0; });
+    if(!m_queue.empty())
+      m_cv.wait(lock_wait, [this]() { 
+        loaded();
+        return m_queue.empty(); 
+      });
   }
 
   private:
 
   void loaded() {
-    {
-      std::lock_guard lock(m_mutex);
-      if(m_processing) 
-        return;
-      m_processing = true;
-    }
-    asio::post(*Env::IoCtx::io()->ptr(), [this](){ split(); });
+    if(m_queue.activating())
+      asio::post(*Env::IoCtx::io()->ptr(), [this](){ split(); });
   }
 
   void split() {
     bool loaded;
     int err;
     Fragment::Ptr frag;
-    while(m_it != end()) {
-
+    do {
       err = Error::OK;
-      if(loaded = (frag = *m_it)->loaded(err))
-        frag->split(err, key, left, right); 
+      if(loaded = (frag = m_queue.front())->loaded(err))
+        frag->split(err, key, log_left, log_right); 
 
-      if(!err && !loaded) 
-        break;
-
+      if(!err && !loaded) {
+        m_queue.deactivate();
+        return;
+      }
       if(err)
         SWC_LOGF(LOG_ERROR, 
           "COMPACT fragment-split err=%d(%s) %s", 
           err, Error::get_text(err), frag->to_string().c_str()
         );
-      
-      ++m_it;
-      {
-        std::lock_guard lock_wait(m_mutex);
-        --m_completion;
-      }
       m_cv.notify_one();
-    }
 
-    std::lock_guard lock(m_mutex);
-    m_processing = false;
+    } while(!m_queue.deactivating());
+    
+    m_cv.notify_one();
   }
 
   std::mutex                        m_mutex;
   std::condition_variable           m_cv;
-  bool                              m_processing;
-  uint32_t                          m_completion;
-  iterator                          m_it;
+  std::vector<Fragment::Ptr>&       m_fragments;
+  QueueSafeStated<Fragment::Ptr>    m_queue;
 
   const DB::Cell::Key key;
-  Fragment::AddCell_t left;
-  Fragment::AddCell_t right;
+  Fragments::Ptr log_left;
+  Fragments::Ptr log_right;
 };
 
 

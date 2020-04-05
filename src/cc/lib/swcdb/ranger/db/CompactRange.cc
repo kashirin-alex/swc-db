@@ -449,12 +449,8 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     CommitLog::Splitter splitter(
       cellstores.back()->interval.key_end,
       fragments_old,
-      [log=&range->blocks.commitlog] (const DB::Cells::Cell& cell) { 
-        log->add(cell);
-      },
-      [log=&new_range->blocks.commitlog](const DB::Cells::Cell& cell) { 
-        log->add(cell);
-      }
+      &range->blocks.commitlog,
+      &new_range->blocks.commitlog
     );
 
     splitter.run();
