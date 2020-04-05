@@ -52,10 +52,9 @@ bool CompactRange::reached_limits() {
 
 const DB::Cells::Mutable::Selector_t CompactRange::selector() {
   return 
-    [revision=m_ts_start, req=get_req_scan()] 
+    [req=get_req_scan()] 
     (const DB::Cells::Cell& cell, bool& stop) { 
       return 
-        // cell.get_revision() < revision && , not compatible for COUNTER
         req->spec.is_matching(
           cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
     };
