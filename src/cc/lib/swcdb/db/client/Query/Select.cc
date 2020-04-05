@@ -545,8 +545,6 @@ void Select::Scanner::select(EndPoints endpoints, uint64_t rid,
 
       if(col->interval.flags.offset)
         col->interval.flags.offset = rsp.offset;
-      if(!col->interval.flags.has_upto_revision())
-        col->interval.flags.set_upto_revision(rsp.upto_revision);
 
       if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
         if(rsp.reached_limit) {

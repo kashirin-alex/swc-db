@@ -20,7 +20,6 @@ class Flags {
   static const uint8_t OFFSET_BY_KEYS     = 0x04;
   static const uint8_t ONLY_KEYS          = 0x08;
   static const uint8_t ONLY_DELETES       = 0x10;
-  static const uint8_t HAS_UPTO_REVISION  = 0x20;
   
 
   explicit Flags();
@@ -35,13 +34,9 @@ class Flags {
 
   bool is_only_deletes() const;
 
-  bool has_upto_revision() const;
-
   void set_only_keys();
 
   void set_only_deletes();
-
-  void set_upto_revision(int64_t ts);
 
   bool equal(const Flags &other) const;
 
@@ -59,7 +54,6 @@ class Flags {
   uint64_t  limit, offset;
   uint32_t  max_versions;
   uint8_t   options;
-  int64_t   upto_revision;
   bool      was_set;
 
 };

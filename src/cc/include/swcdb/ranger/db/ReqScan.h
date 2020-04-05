@@ -24,7 +24,7 @@ class ReqScan  : public ResponseCallback {
 
   ReqScan(Type type=Type::QUERY) 
           : ResponseCallback(nullptr, nullptr), 
-            upto_revision(Time::now_ns()), limit_buffer_sz(0), offset(0), 
+            limit_buffer_sz(0), offset(0), 
             drop_caches(false), type(type) {
   }
 
@@ -32,8 +32,6 @@ class ReqScan  : public ResponseCallback {
           const DB::Specs::Interval& spec, DB::Cells::Result& cells)
           : ResponseCallback(conn, ev), spec(spec), 
             cells(cells),
-            upto_revision(spec.flags.has_upto_revision() ? 
-                          spec.flags.upto_revision : Time::now_ns()),
             offset(spec.flags.offset), limit_buffer_sz(0), 
             drop_caches(false), type(Type::QUERY) {
   }
@@ -89,8 +87,6 @@ class ReqScan  : public ResponseCallback {
 
   DB::Specs::Interval   spec;
   DB::Cells::Result     cells;
-
-  int64_t           upto_revision;
 
   uint32_t          limit_buffer_sz;
   bool              drop_caches;
