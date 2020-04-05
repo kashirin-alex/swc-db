@@ -58,7 +58,7 @@ void run(int threads) {
 int main(int argc, char** argv) {
   uint64_t total_ts = 0;
   uint64_t total = 0;
-  for(int chk = 1; chk <= 50; ++chk) {
+  for(int chk = 1; chk <= 10; ++chk) {
   for(int t = 1; t <= 8; ++t) {
     auto start = std::chrono::high_resolution_clock::now();
     SWC::run(t);
@@ -77,6 +77,22 @@ int main(int argc, char** argv) {
   std::cout << " total took="<< total_ts 
             << " avg=" <<  total_ts/total
             << "\n";
-  std::cout << "SWC::Mutex sz=" << sizeof(SWC::Mutex) << "\n";
-  std::cout << "SWC::Mutex::scope sz=" << sizeof(SWC::Mutex::scope) << "\n";
+  std::cout << "SWC::Mutex sizeof=" << sizeof(SWC::Mutex) << "\n";
+  std::cout << "SWC::Mutex::scope sizeof=" << sizeof(SWC::Mutex::scope) << "\n";
+  std::cout << "SWC::QueueSafe<size_t> sizeof=" << sizeof(SWC::QueueSafe<size_t>) << "\n";
+
+/* with std:queue
+ total took=20808397413 avg=115
+SWC::Mutex sizeof=48
+SWC::Mutex::scope sizeof=16
+SWC::QueueSafe<size_t> sizeof=128
+*/
+
+/* with SWC::Queue 
+total took=26646741880 avg=148
+SWC::Mutex sizeof=48
+SWC::Mutex::scope sizeof=16
+SWC::QueueSafe<size_t> sizeof=72
+*/
+
 }
