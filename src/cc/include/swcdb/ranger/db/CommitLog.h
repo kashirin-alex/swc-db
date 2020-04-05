@@ -58,9 +58,13 @@ class Fragments final {
 
   void remove(int &err, std::vector<Fragment::Ptr>& fragments_old);
 
+  void remove(int &err, Fragment::Ptr frag, bool remove_file);
+
   void remove(int &err);
 
   void unload();
+
+  void take_ownership(int &err, Fragment::Ptr frag);
 
   bool deleting();
 

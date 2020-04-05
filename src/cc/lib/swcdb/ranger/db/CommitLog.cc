@@ -253,6 +253,19 @@ void Fragments::remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
   }
 }
 
+void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
+  std::scoped_lock lock(m_mutex);
+  for(auto it = m_fragments.begin(); it < m_fragments.end(); ++it) {
+    if(*it == frag) {
+      if(remove_file)
+        (*it)->remove(err);
+      delete *it;
+      m_fragments.erase(it);
+      break;
+    }
+  }
+}
+
 void Fragments::remove(int &err) {
   {
     std::unique_lock lock_wait(m_mutex);
@@ -280,6 +293,23 @@ void Fragments::unload() {
     delete frag;
   m_fragments.clear();
   range = nullptr;
+}
+
+void Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
+  auto frag = Fragment::make(
+    get_log_fragment(take_frag->ts), Fragment::State::NONE);
+  Env::FsInterface::interface()->rename(
+    err, 
+    take_frag->get_filepath(), 
+    frag->get_filepath()
+  );
+  if(!err) {
+    frag->load_header(true);
+    if(!(err = frag->error())) {
+      std::scoped_lock lock(m_mutex);
+      m_fragments.push_back(frag);
+    }
+  }
 }
 
 bool Fragments::deleting() {
