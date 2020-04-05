@@ -19,15 +19,14 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
 
 Block::Block(const DB::Cells::Interval& interval, 
              Blocks* blocks, State state)
-            : m_interval(interval),  
+            : blocks(blocks), next(nullptr), prev(nullptr),
+              m_interval(interval),  
               m_cells(
                 DB::Cells::Mutable(
                   blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
-              blocks(blocks), 
-              m_state(state), m_processing(0), 
-              next(nullptr), prev(nullptr) {
+              m_state(state), m_processing(0) {
 }
 
 Block::~Block() { }
@@ -46,8 +45,7 @@ void Block::schema_update() {
 }
 
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
-  //std::shared_lock lock(m_mutex);
-  // m_prev_key_end && m_interval.key_end behave as const
+  //m_prev_key_end && m_interval.key_end behave as const
   return 
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
@@ -56,12 +54,10 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
-  //std::shared_lock lock(m_mutex);
   return m_interval.is_in_end(key);
 }
 
 bool Block::is_next(const DB::Specs::Interval& spec) {
-  //std::shared_lock lock(m_mutex);
   return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
           && includes(spec);
 }
@@ -69,8 +65,9 @@ bool Block::is_next(const DB::Specs::Interval& spec) {
 bool Block::includes(const DB::Specs::Interval& spec) {
   bool ok;
   if(ok = m_interval.includes_end(spec)) {
-    std::shared_lock lock(m_mutex);
+    bool support(m_mutex_intval.lock());
     ok = m_interval.includes_begin(spec);
+    m_mutex_intval.unlock(support);
   }
   return ok; 
 }
@@ -79,9 +76,7 @@ void Block::preload() {
   //SWC_PRINT << " BLK_PRELOAD " << to_string() << SWC_PRINT_CLOSE;
   asio::post(
     *Env::IoCtx::io()->ptr(), 
-    [ptr=ptr()](){ 
-      ptr->scan(std::make_shared<ReqScan>(ReqScan::Type::BLK_PRELOAD));
-    }
+    [this](){ scan(std::make_shared<ReqScan>(ReqScan::Type::BLK_PRELOAD));}
   );
 }
 
@@ -89,17 +84,16 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!is_in_end(cell.key))
     return false;
   
-  if(!loaded()) 
-    return true;
+  if(loaded()) {
+    bool support(m_mutex_intval.lock());
+    if(!m_interval.is_in_begin(cell.key))
+      m_interval.key_begin.copy(cell.key); //m_interval.expand(cell.timestamp);
+    m_mutex_intval.unlock(support);
 
-  std::scoped_lock lock(m_mutex);
-
-  m_cells.add_raw(cell);
-  if(!m_interval.is_in_begin(cell.key)) {
-    m_interval.key_begin.copy(cell.key); 
-  //m_interval.expand(cell.timestamp);
+    std::scoped_lock lock(m_mutex);
+    m_cells.add_raw(cell);
+    splitter();
   }
-  splitter();
   return true;
 }
   
@@ -111,11 +105,13 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
 
   std::scoped_lock lock(m_mutex);
   size_t added = m_cells.size();
-    
+  
+  bool support(m_mutex_intval.lock()); // ?cpy interval
   cells.scan(m_interval, m_cells);
 
   if(!m_cells.empty() && !m_interval.key_begin.empty())
     m_cells.expand_begin(m_interval);
+  m_mutex_intval.unlock(support);
 
   added = m_cells.size() - added;
   auto took = Time::now_ns() - ts;
@@ -178,8 +174,12 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       was_splitted = true;
   }
     
-  if(!m_cells.empty() && !m_interval.key_begin.empty())
-    m_cells.expand_begin(m_interval);
+  if(!m_cells.empty()) {
+    bool support(m_mutex_intval.lock());
+    if(!m_interval.key_begin.empty())
+      m_cells.expand_begin(m_interval);
+    m_mutex_intval.unlock(support);
+  }
     
   auto took = Time::now_ns() - ts;
   SWC_PRINT << "Block::load_cells(rbuf)"
@@ -293,8 +293,9 @@ void Block::_set_key_end(const DB::Cell::Key& key) {
 
 /*
 void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
-  std::scoped_lock lock(m_mutex);
-  Mutex::scope lock(m_mutex_state);
+  std::scoped_lock lock1(m_mutex);
+  Mutex::scope lock2(m_mutex_state);
+  Mutex::scope lock3(m_mutex_intval);
 
   m_state = State::REMOVED;
   key_begin.copy(m_interval.key_begin);
@@ -303,8 +304,9 @@ void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
 }
 
 void Block::merge_and_release(Block::Ptr blk) {
-  std::scoped_lock lock(m_mutex);
-  Mutex::scope lock(m_mutex_state);
+  std::scoped_lock lock1(m_mutex);
+  Mutex::scope lock2(m_mutex_state);
+  Mutex::scope lock3(m_mutex_intval);
 
   m_state = State::NONE;
   blk->expand_next_and_release(m_interval.key_begin);
@@ -386,12 +388,12 @@ bool Block::_need_split() const {
 }
 
 void Block::free_key_begin() {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex_intval);
   m_interval.key_begin.free();
 }
 
 void Block::free_key_end() {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex_intval);
   m_interval.key_end.free();
 }
 
@@ -402,10 +404,13 @@ std::string Block::to_string() {
   std::string s("Block(state=");
   s.append(std::to_string((uint8_t)m_state));
 
-  s.append(" prev=");
-  s.append(m_prev_key_end.to_string());
-  s.append(" ");
-  s.append(m_interval.to_string());
+  {
+    s.append(" prev=");
+    Mutex::scope lock(m_mutex_intval);
+    s.append(m_prev_key_end.to_string());
+    s.append(" ");
+    s.append(m_interval.to_string());
+  }
 
   s.append(" ");
   s.append(m_cells.to_string());

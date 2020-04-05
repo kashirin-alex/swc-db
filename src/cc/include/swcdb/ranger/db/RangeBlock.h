@@ -32,9 +32,9 @@ class Block final {
     REMOVED
   };
     
+  Blocks*     blocks;
   Block::Ptr  next;
   Block::Ptr  prev;
-  Blocks*     blocks;
 
 
   static Ptr make(const DB::Cells::Interval& interval,
@@ -128,10 +128,12 @@ class Block final {
 
   void run_queue(int& err);
 
-  std::shared_mutex         m_mutex;
+  Mutex                     m_mutex_intval;
   DB::Cells::Interval       m_interval;
-  DB::Cells::Mutable        m_cells;
   DB::Cell::Key             m_prev_key_end;
+
+  std::shared_mutex         m_mutex;
+  DB::Cells::Mutable        m_cells;
 
   Mutex                     m_mutex_state;
   State                     m_state;
