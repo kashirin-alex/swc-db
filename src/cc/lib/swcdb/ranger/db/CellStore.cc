@@ -275,12 +275,16 @@ size_t Read::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
-  //release_fd(); - queue a call
+  if(m_queue.empty()) {
+    m_queue.push([](){});
+    run_queued();
+  }
   return released;
 }
 
 void Read::release_fd() { 
-  if(Env::FsInterface::interface()->need_fds() && !_processing()) {
+  if(m_smartfd->valid() && 
+     Env::FsInterface::interface()->need_fds() && !_processing()) {
     int err = Error::OK;
     close(err); 
   }
