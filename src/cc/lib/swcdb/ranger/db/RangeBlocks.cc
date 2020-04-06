@@ -25,7 +25,7 @@ Blocks::~Blocks() {  }
 void Blocks::schema_update() {
   commitlog.schema_update();
 
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     blk->schema_update();
 }
@@ -47,7 +47,7 @@ void Blocks::unload() {
   wait_processing();
   processing_increment();
   commitlog.commit_new_fragment(true);  
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
     
   commitlog.unload();
   cellstores.unload();  
@@ -59,7 +59,7 @@ void Blocks::unload() {
 void Blocks::remove(int& err) {
   wait_processing();
   processing_increment();
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   commitlog.remove(err);
   cellstores.remove(err);   
@@ -82,7 +82,7 @@ void Blocks::apply_new(int &err,
                        CellStore::Writers& w_cellstores, 
                        std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
   wait_processing();
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   cellstores.replace(err, w_cellstores);
   if(err)
@@ -99,11 +99,11 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
     
   Block::Ptr blk;
   {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     blk = m_block ? *(m_blocks_idx.begin()+_narrow(cell.key)) : nullptr;
   }
   while(blk && !blk->add_logged(cell)) {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     blk = blk->next;
   }
 
@@ -121,7 +121,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
   int err = Error::OK;
   {
-    std::scoped_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     if(!m_block) 
       init_blocks(err);
   }
@@ -133,7 +133,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
       blk = nullptr, nxt_blk = nullptr) {
     {
-      std::shared_lock lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       eval = blk_ptr ? blk_ptr->next 
              : (req->spec.offset_key.empty() 
                 ? m_block 
@@ -141,16 +141,12 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       for(; eval; eval=eval->next) {
         if(eval->removed() || !eval->is_next(req->spec)) 
           continue;
-        blk = eval;
-        blk_ptr = blk;
-        blk->processing_increment();
+        (blk = blk_ptr = eval)->processing_increment();
 
-        if((!req->spec.flags.limit || req->spec.flags.limit > 1) 
-            && eval->next 
+        if(eval->next && (!req->spec.flags.limit || req->spec.flags.limit > 1)
             && !Env::Resources.need_ram(range->cfg->block_size() * 10)
-            && !eval->next->loaded() && !eval->next->removed()) {
-          nxt_blk = eval->next;
-          nxt_blk->processing_increment();
+            && !eval->next->loaded()) {
+          (nxt_blk = eval->next)->processing_increment();
         }
         break;
       }
@@ -167,10 +163,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
     if(Env::Resources.need_ram(range->cfg->block_size())) {
       asio::post(*Env::IoCtx::io()->ptr(), 
-        [blk, ptr=ptr()](){
-          ptr->release_prior(blk); // release_and_merge(blk);
-        }
-      );
+        [this, blk](){ release_prior(blk); }); // release_and_merge(blk);
     }
 
     if(blk->scan(req)) // true (queued || responded)
@@ -181,29 +174,32 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
   req->response(err);
 }
+
 /*
 void Blocks::split(Block::Ptr blk, bool loaded) {
-  if(blk->need_split() && m_mutex.try_lock()) {
+  bool support;
+  if(blk->need_split() && m_mutex.try_full_lock(support) {
     auto offset = _get_block_idx(blk);
     do {
       if((blk = blk->split(loaded)) == nullptr)
         break;
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
     } while(blk->need_split());
-    m_mutex.unlock();
+    m_mutex.unlock(support);
   }
 }
 */
 
 bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock
-  if(blk->_need_split() && m_mutex.try_lock()) {
+  bool support;
+  if(blk->_need_split() && m_mutex.try_full_lock(support)) {
     auto offset = _get_block_idx(blk);
     do {
       blk = blk->_split(loaded);
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
     } while(blk->_need_split());
-    m_mutex.unlock();
+    m_mutex.unlock(support);
     return true;
   }
   return false;
@@ -211,24 +207,24 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
 
 size_t Blocks::cells_count() {
   size_t sz = 0;
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     sz += blk->size();
   return sz;
 }
 
 size_t Blocks::size() {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return _size();
 }
 
 size_t Blocks::size_bytes() {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return _size_bytes();
 }
 
 size_t Blocks::size_bytes_total(bool only_loaded) {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return _size_bytes() 
         + cellstores.size_bytes(only_loaded) 
         + commitlog.size_bytes(only_loaded);  
@@ -236,7 +232,7 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
 
 void Blocks::release_prior(Block::Ptr blk) {
   {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     blk = blk->prev;
   }
   if(blk)
@@ -245,7 +241,7 @@ void Blocks::release_prior(Block::Ptr blk) {
 
 /*
 void Blocks::release_and_merge(Block::Ptr blk) {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   bool state = false;
   for(size_t idx = 0; idx<m_blocks.size(); ++idx) {
     if(blk == m_blocks[idx]) {
@@ -278,7 +274,7 @@ size_t Blocks::release(size_t bytes) {
     released += commitlog.release(bytes ? bytes-released : bytes);
     if(!bytes || released < bytes) {
 
-      std::shared_lock lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       for(Block::Ptr blk=m_block; blk; blk=blk->next) {
         released += blk->release();
         if(bytes && released >= bytes)
@@ -287,7 +283,7 @@ size_t Blocks::release(size_t bytes) {
     }
   }
   if(!bytes && !processing()) {
-    std::scoped_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     _clear();
     bytes = 0;
   }
@@ -298,7 +294,7 @@ size_t Blocks::release(size_t bytes) {
 }
 
 bool Blocks::processing() {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return _processing();
 }
 
@@ -308,7 +304,7 @@ void Blocks::wait_processing() {
 }
 
 std::string Blocks::to_string() {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   std::string s("Blocks(count=");
   s.append(std::to_string(_size()));
