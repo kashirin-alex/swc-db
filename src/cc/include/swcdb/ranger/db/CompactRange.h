@@ -28,6 +28,10 @@ class CompactRange : public ReqScan {
 
   Ptr shared();
 
+  void initialize();
+  
+  void progress_check_timer();
+
   bool reached_limits() override;
 
   const DB::Cells::Mutable::Selector_t selector() override;
@@ -81,6 +85,10 @@ class CompactRange : public ReqScan {
   std::atomic<bool>               m_stopped = false;
   bool                            m_getting = false;
   int64_t                         m_ts_start;
+
+  int64_t                         m_req_ts;
+  asio::high_resolution_timer     m_chk_timer;
+  std::atomic<bool>               m_chk_final = false;
 };
 
 

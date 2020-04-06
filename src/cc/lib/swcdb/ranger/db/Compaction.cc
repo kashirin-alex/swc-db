@@ -180,6 +180,7 @@ void Compaction::compact(RangePtr range) {
   
   range->compacting(Range::COMPACT_COMPACTING); //range add & scan can continue
 
+  req->initialize();
   range->scan_internal(req);
 }
 

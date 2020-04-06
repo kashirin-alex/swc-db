@@ -26,13 +26,9 @@ CompactRange::CompactRange(
               cell_versions(cell_versions),
               cell_ttl(cell_ttl),
               col_type(col_type),
-              m_ts_start(Time::now_ns()) {
-  cells.configure(
-    cell_versions, 
-    cell_ttl, 
-    col_type
-  );
-  cells.reserve(blk_cells);
+              m_ts_start(Time::now_ns()),
+              m_chk_timer(
+                asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
 }
 
 CompactRange::~CompactRange() { 
@@ -42,6 +38,47 @@ CompactRange::~CompactRange() {
 
 CompactRange::Ptr CompactRange::shared() {
   return std::dynamic_pointer_cast<CompactRange>(shared_from_this());
+}
+
+void CompactRange::initialize() {
+  cells.configure(
+    cell_versions, 
+    cell_ttl, 
+    col_type
+  );
+  cells.reserve(blk_cells);
+
+  m_req_ts = Time::now_ns();
+  progress_check_timer();
+}
+
+void CompactRange::progress_check_timer() {
+  if(m_stopped || m_chk_final)
+    return;
+  uint64_t cell_avg = total_cells.load() 
+    ? (Time::now_ns() - m_ts_start)
+        / (total_cells ? total_cells.load() : (size_t)1)
+    : 10000;
+
+  uint8_t state;
+  {
+    Mutex::scope lock(m_mutex);
+    state = ((Time::now_ns() - m_req_ts) / blk_cells > cell_avg * 10) 
+      ? Range::COMPACT_PREPARING    // mitigate add req. workload
+      : Range::COMPACT_COMPACTING;  // range scan & add reqs can continue
+  }
+  if(m_stopped || m_chk_final)
+    return;
+  range->compacting(state);
+  
+  m_chk_timer.expires_from_now(std::chrono::nanoseconds(cell_avg * blk_cells));
+  m_chk_timer.async_wait(
+    [ptr=shared()](const asio::error_code ec) {
+      if(ec == asio::error::operation_aborted)
+        return;
+      ptr->progress_check_timer();
+    }
+  );
 }
 
 bool CompactRange::reached_limits() {
@@ -70,9 +107,15 @@ void CompactRange::response(int &err) {
            total_cells.load(), 
            (Time::now_ns() - m_ts_start) 
             / (total_cells ? total_cells.load() : (size_t)1));
-                        
-  if(!reached_limits()) 
+
+  if(!reached_limits()) {
+    m_chk_final = true;
+    {
+      Mutex::scope lock(m_mutex);
+      m_chk_timer.cancel();
+    }
     range->compacting(Range::COMPACT_APPLYING);
+  }
 
   auto selected_cells = cells.empty() 
                         ? nullptr : new DB::Cells::Result(cells);
@@ -114,6 +157,7 @@ void CompactRange::request_more() {
               || m_queue.size() > Env::Resources.avail_ram()/blk_size )))
       return;
     m_getting = true;
+    m_req_ts = Time::now_ns();
   }
 
   asio::post(
@@ -181,8 +225,14 @@ uint32_t CompactRange::create_cs(int& err) {
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
 
-  if(id == range->cfg->cellstore_max() + 1) 
-    range->compacting(Range::COMPACT_APPLYING);
+  if(id == range->cfg->cellstore_max() * 10) {
+    m_chk_final = true;
+    {
+      Mutex::scope lock(m_mutex);
+      m_chk_timer.cancel();
+    }
+    range->compacting(Range::COMPACT_PREPARING);
+  }
   return id;
 
 }
@@ -510,6 +560,11 @@ void CompactRange::apply_new(bool clear) {
 }
 
 void CompactRange::quit() {
+  m_chk_final = true;
+  {
+    Mutex::scope lock(m_mutex);
+    m_chk_timer.cancel();
+  }
   m_stopped = true;
   int err = Error::OK;
   if(cs_writer != nullptr) {
