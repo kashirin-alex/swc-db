@@ -23,6 +23,19 @@ class Mutex : private LockAtomic::Unique {
     return false;
   }
 
+  bool try_full_lock(bool& support) {
+    if(LockAtomic::Unique::try_lock()) {
+      support = true;
+      return true;
+    }
+    if(m_mutex.try_lock()) {
+      support = false;
+      LockAtomic::Unique::lock();
+      return true;
+    }
+    return false;
+  }
+
   void unlock(const bool& support) {
     LockAtomic::Unique::unlock();
     if(!support)
