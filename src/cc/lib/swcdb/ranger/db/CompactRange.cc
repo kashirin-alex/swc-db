@@ -181,7 +181,7 @@ uint32_t CompactRange::create_cs(int& err) {
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
 
-  if(id == range->cfg->cellstore_max()) 
+  if(id == range->cfg->cellstore_max() + 1) 
     range->compacting(Range::COMPACT_APPLYING);
   return id;
 

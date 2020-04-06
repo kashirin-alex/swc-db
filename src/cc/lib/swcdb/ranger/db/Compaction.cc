@@ -117,21 +117,36 @@ void Compaction::compact(RangePtr range) {
   uint32_t blk_size = range->cfg->block_size();
   uint8_t perc = range->cfg->compact_percent(); 
   uint32_t allow_sz = (cs_size  / 100) * perc; 
+  uint32_t cell_revs = range->cfg->cell_versions();
+  uint64_t cell_ttl = range->cfg->cell_ttl();
 
   size_t value;
   bool do_compaction;
   std::string need;
-  if(do_compaction = range->compact_required()) { // && commitlog.cells_count()
+  if(do_compaction = range->compact_required() && commitlog.cells_count()) {
     need.append("Required");
+
   } else if(do_compaction = (value = commitlog.size_bytes(true)) >= allow_sz) {
     need.append("LogBytes=");
     need.append(std::to_string(value-allow_sz));
+
   } else if(do_compaction = (value = commitlog.size()) >= cs_size/blk_size) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
+
   } else if(do_compaction = range->blocks.cellstores.need_compaction(
-        cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
+                    cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
     need.append("CsResize");
+
+  } else if(do_compaction = cell_ttl && 
+            (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
+            != DB::Cells::AUTO_ASSIGN && 
+            (int64_t)value < Time::now_ns()-cell_ttl*100) {
+    need.append("CsTTL");
+
+  } else if(do_compaction = range->blocks.cellstores.get_cell_revs() 
+                              > cell_revs) {
+    need.append("CsVersions");
   }
 
   if(!do_compaction || !m_run)
@@ -152,8 +167,8 @@ void Compaction::compact(RangePtr range) {
     blk_size, 
     range->cfg->block_cells(), 
     range->cfg->block_enc(), 
-    range->cfg->cell_versions(), 
-    range->cfg->cell_ttl(), 
+    cell_revs, 
+    cell_ttl, 
     range->cfg->column_type()
   );
 
