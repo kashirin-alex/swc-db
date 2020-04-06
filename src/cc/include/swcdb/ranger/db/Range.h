@@ -54,6 +54,7 @@ class Range : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_NONE        = 0x00;
   static const uint8_t COMPACT_CHECKING    = 0x01;
   static const uint8_t COMPACT_COMPACTING  = 0x02;
+  static const uint8_t COMPACT_PREPARING   = 0x03;
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
   

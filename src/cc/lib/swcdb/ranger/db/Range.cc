@@ -566,7 +566,7 @@ void Range::run_add_queue() {
   uint64_t ttl = cfg->cell_ttl();
 
   do {
-    if(wait(COMPACT_APPLYING)) { // COMPACT_COMPACTING
+    if(wait(COMPACT_PREPARING)) {
       std::shared_lock lock(m_mutex);
       key_prev_end.copy(m_prev_key_end);
       key_end.copy(m_interval.key_end);
