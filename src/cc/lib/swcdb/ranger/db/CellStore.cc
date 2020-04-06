@@ -284,7 +284,7 @@ size_t Read::release(size_t bytes) {
 
 void Read::release_fd() { 
   if(m_smartfd->valid() && 
-     Env::FsInterface::interface()->need_fds() && !_processing()) {
+     Env::FsInterface::interface()->need_fds() && !processing()) {
     int err = Error::OK;
     close(err); 
   }
@@ -298,9 +298,13 @@ void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
 } 
 
-bool Read::processing() {
-  //std::shared_lock lock(m_mutex);
-  return m_queue.running() || _processing();
+bool Read::processing() const {
+  if(m_queue.running())
+    return true;
+  for(auto blk : blocks)
+    if(blk->processing())
+      return true;
+  return false;
 }
 
 size_t Read::size_bytes(bool only_loaded) const {
@@ -314,9 +318,7 @@ size_t Read::blocks_count() const {
   return blocks.size();
 }
 
-std::string Read::to_string() {
-  //std::scoped_lock lock(m_mutex);
-
+std::string Read::to_string() const {
   std::string s("Read(v=");
   s.append(std::to_string(VERSION));
   s.append(" id=");
@@ -343,7 +345,7 @@ std::string Read::to_string() {
   s.append(std::to_string(m_queue.size()));
 
   s.append(" processing=");
-  s.append(std::to_string(_processing()));
+  s.append(std::to_string(processing()));
 
   s.append(" used/actual=");
   s.append(std::to_string(size_bytes(true)));
@@ -354,14 +356,6 @@ std::string Read::to_string() {
   return s;
 } 
 
-
-
-bool Read::_processing() const {
-  for(auto blk : blocks)
-    if(blk->processing())
-      return true;
-  return false;
-}
 
 
 

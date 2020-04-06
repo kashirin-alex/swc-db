@@ -23,17 +23,17 @@ class QueueRunnable : private std::queue<std::function<void()>> {
     m_mutex.unlock(support);
   }
 
-  bool running() {
+  bool running() const {
     Mutex::scope lock(m_mutex);
     return m_runs;
   }
 
-  bool empty() {
+  bool empty() const {
     Mutex::scope lock(m_mutex);
     return QBase::empty();
   }
 
-  size_t size() {
+  size_t size() const {
     Mutex::scope lock(m_mutex);
     return QBase::size();
   }
@@ -93,7 +93,7 @@ class QueueRunnable : private std::queue<std::function<void()>> {
   }
 
   private:
-  Mutex                       m_mutex;
+  mutable Mutex               m_mutex;
   bool                        m_runs = false;
 
   typedef std::queue<Call_t>  QBase;

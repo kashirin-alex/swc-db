@@ -83,24 +83,20 @@ class Read final {
 
   void remove(int &err);
 
-  bool processing();
+  bool processing() const;
 
   size_t size_bytes(bool only_loaded=false) const;
 
   size_t blocks_count() const;
 
-  std::string to_string();
+  std::string to_string() const;
 
   private:
 
-  bool _processing() const;
-
   void _run_queued();
 
-  //std::shared_mutex    m_mutex;
   FS::SmartFd::Ptr     m_smartfd;
   QueueRunnable        m_queue;
-
 
 };
 

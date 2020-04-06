@@ -27,21 +27,25 @@ class Readers final {
 
   void load(int& err);
 
-  void expand(DB::Cells::Interval& intval);
+  void expand(DB::Cells::Interval& intval) const;
 
-  void expand_and_align(DB::Cells::Interval& intval);
+  void expand_and_align(DB::Cells::Interval& intval) const;
 
-  bool empty();
+  bool empty() const;
 
-  size_t size();
+  size_t size() const;
 
-  size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false) const;
 
-  size_t blocks_count();
+  uint32_t get_cell_revs() const;
+  
+  int64_t get_ts_earliest() const;
+
+  size_t blocks_count() const;
 
   size_t release(size_t bytes);
 
-  bool processing();
+  bool processing() const;
   
   void remove(int &err);
 
@@ -51,15 +55,15 @@ class Readers final {
   
   void load_cells(BlockLoader* loader);
   
-  void get_blocks(int& err, std::vector<Block::Read::Ptr>& to);
+  void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
 
-  void get_prev_key_end(uint32_t idx, DB::Cell::Key& key);
+  void get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const;
 
-  bool need_compaction(size_t cs_sz, size_t blk_size);
+  bool need_compaction(size_t cs_sz, size_t blk_size) const;
 
-  size_t encoded_length();
+  size_t encoded_length() const;
 
-  void encode(uint8_t** ptr);
+  void encode(uint8_t** ptr) const;
   
   void decode(int &err, const uint8_t** ptr, size_t* remain);
   
@@ -67,7 +71,7 @@ class Readers final {
 
   void replace(int &err, CellStore::Writers& w_cellstores);
 
-  std::string to_string();
+  std::string to_string() const;
 
   private:
   
@@ -75,11 +79,6 @@ class Readers final {
 
   void _close();
 
-  bool _processing();
-  
-  size_t _size_bytes(bool only_loaded=false);
-
-  //std::shared_mutex       m_mutex;
   std::vector<Read::Ptr>  m_cellstores;
 };
 
