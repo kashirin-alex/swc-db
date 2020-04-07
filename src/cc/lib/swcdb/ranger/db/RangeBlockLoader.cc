@@ -36,18 +36,7 @@ void BlockLoader::load_cellstores() {
 
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
   Mutex::scope lock(m_mutex);
-  m_cs_blocks.push_back(blk);
-  /*
-  if(m_cs_blocks.size() > 4) {
-    SWC_LOG_OUT(LOG_DEBUG);
-    std::cout << " BlockLoader c=" << m_cs_blocks.size() << " CS\n";
-    std::cout << " block :" << block->to_string() << "\n";
-    int n = 0;
-    for(auto b  : m_cs_blocks)
-      std::cout << " csblk "<< ++n << "=" << b->to_string() << "\n";
-    std::cout << SWC_LOG_OUT_END;
-  }
-  */
+  m_cs_blocks.push(blk);
 }
 
 void BlockLoader::loaded_blk() {
@@ -87,7 +76,7 @@ void BlockLoader::load_cellstores_cells() {
       if(!m_err)
         m_err = Error::RANGE_CELLSTORES;
     }
-    m_cs_blocks.erase(m_cs_blocks.begin());
+    m_cs_blocks.pop();
   }
 
   loaded_frag();
@@ -109,8 +98,8 @@ void BlockLoader::load_log(bool is_final) {
     m_frag_ts = need_load.back()->ts;
     {
       Mutex::scope lock(m_mutex);
-      m_fragments.insert(
-        m_fragments.end(), need_load.begin(), need_load.end());
+      for(auto frag : need_load)
+        m_fragments.push(frag);
     }
     for(auto frag : need_load)
       frag->load([this](){ loaded_frag(); });
@@ -168,7 +157,7 @@ void BlockLoader::load_log_cells() {
         if(!m_err)
           m_err = Error::RANGE_COMMITLOG;
       }
-      m_fragments.erase(m_fragments.begin());
+      m_fragments.pop();
     }
 
     if(sz == MAX_FRAGMENTS && check_log())
