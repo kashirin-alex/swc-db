@@ -29,9 +29,11 @@ class Mutex : private LockAtomic::Unique {
       return true;
     }
     if(m_mutex.try_lock()) {
-      support = false;
-      LockAtomic::Unique::lock();
-      return true;
+      if(LockAtomic::Unique::try_lock()) {
+        support = false;
+        return true;
+      }
+      m_mutex.unlock();
     }
     return false;
   }
