@@ -256,7 +256,7 @@ bool Key::compare(const KeyVec& other, Condition::Comp break_if,
   const uint8_t* ptr = data;
   uint32_t len = 0;
   if(!max)
-    max = count > other.size() ? count : other.size();
+    max = count > other.size() ? (uint32_t)count : (uint32_t)other.size();
   for(uint32_t c = 0; c<max; ++c, ptr += len) {
 
     if(c == count || c == other.size())
@@ -336,7 +336,7 @@ bool Key::equal(const std::vector<std::string>& key) const {
 std::string Key::to_string() const {
   std::string s("Key(");
   s.append("sz=");
-  s.append(std::to_string(count));
+  s.append(::SWC::to_string(count));
   s.append(" len=");
   s.append(std::to_string(size));
   s.append(" fractions=[");

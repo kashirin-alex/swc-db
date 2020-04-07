@@ -6,9 +6,9 @@
 #ifndef swcdb_db_cells_CellKey_h
 #define swcdb_db_cells_CellKey_h
 
-
-#include "swcdb/db/Cells/CellKeyVec.h"
+#include "swcdb/core/Compat.h"
 #include "swcdb/core/Comparators.h"
+#include "swcdb/db/Cells/CellKeyVec.h"
 #include <memory>
 
 
@@ -86,7 +86,7 @@ class Key final {
   void display_details(std::ostream& out, bool pretty=false) const;
 
   bool      own;
-  uint32_t  count;
+  uint24_t  count;
   uint32_t  size;
   uint8_t*  data;
 
