@@ -13,6 +13,8 @@ struct BitFieldInt final {
 
   T data : SZ;
 
+  BitFieldInt<T, SZ>() { }
+
   template<typename FROM_T>
   BitFieldInt<T, SZ>(const FROM_T& v) : data(v) { }
 
@@ -21,8 +23,16 @@ struct BitFieldInt final {
     ++data;
     return *this;
   }
+  BitFieldInt<T, SZ>& operator++(int) {
+    ++data;
+    return *this;
+  }
 
   BitFieldInt<T, SZ>& operator--() {
+    --data;
+    return *this;
+  }
+  BitFieldInt<T, SZ>& operator--(int) {
     --data;
     return *this;
   }
@@ -57,7 +67,11 @@ struct BitFieldInt final {
     return *this;
   }
 
-  
+  BitFieldInt<T, SZ>& operator|=(const BitFieldInt<T, SZ>& v) {
+    data |= v.data;
+    return *this;
+  }
+
   template<typename IN_T>
   BitFieldInt<T, SZ>& operator+=(const IN_T& v) {
     data += v;
@@ -91,6 +105,12 @@ struct BitFieldInt final {
   template<typename IN_T>
   BitFieldInt<T, SZ>& operator>>=(const IN_T& v) {
     data >>= v;
+    return *this;
+  }
+
+  template<typename IN_T>
+  BitFieldInt<T, SZ>& operator|=(const IN_T& v) {
+    data |= v;
     return *this;
   }
 
@@ -236,13 +256,13 @@ inline std::string to_string(const int24_t& v) {
 
 
 
-typedef SWC::BitFieldInt<uint32_t, 24> uint24_t;
-typedef SWC::BitFieldInt<int32_t, 24>  int24_t;
+typedef SWC::uint24_t uint24_t;
+typedef SWC::int24_t  int24_t;
 
-static const uint24_t UINT24_MAX = UINT32_MAX >> 1;
-static const uint24_t UINT24_MIN = UINT32_MAX + 1;
-static const int24_t   INT24_MAX = UINT24_MAX / 2;
-static const int24_t   INT24_MIN = INT24_MAX + 1;
+static const uint24_t UINT24_MAX = UINT32_MAX >> 1; // 16777215
+static const uint24_t UINT24_MIN = UINT24_MAX + 1;  // 0 
+static const int24_t   INT24_MAX = UINT24_MAX / 2;  // 8388607
+static const int24_t   INT24_MIN = INT24_MAX + 1;   // -8388608
 
 
 #endif

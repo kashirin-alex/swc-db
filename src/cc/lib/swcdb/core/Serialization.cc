@@ -101,6 +101,19 @@ uint16_t decode_i16(const uint8_t** bufp, size_t* remainp) {
 }
 
 SWC_CAN_INLINE 
+void encode_i24(uint8_t** bufp , uint24_t val) {
+  memcopy(bufp, (const uint8_t*)&val, 3);
+}
+
+SWC_CAN_INLINE 
+uint24_t decode_i24(const uint8_t** bufp, size_t* remainp) {
+  decode_needed(remainp, 3);
+  uint24_t val;
+  memcopy((uint8_t*)&val, bufp, 3);
+  return val;
+}
+
+SWC_CAN_INLINE 
 void encode_i32(uint8_t** bufp, uint32_t val) {
   memcopy(bufp, (const uint8_t*)&val, 4);
 }
@@ -125,6 +138,54 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
   memcopy((uint8_t*)&val, bufp, 8);
   return val;
 }
+
+
+SWC_CAN_INLINE 
+bool _encode_24vi_0(uint8_t** bufp, uint24_t val) {
+  if(val > MAX_V1B) 
+    return true;
+  *(*bufp)++ = (uint8_t)val;
+  return false;
+}
+SWC_CAN_INLINE 
+bool _encode_24vi_1(uint8_t** bufp, uint24_t* valp) {
+  *(*bufp)++ = (uint8_t)(*valp | 0x80);
+  return _encode_24vi_0(bufp, *valp >>= 7);
+}
+
+SWC_CAN_INLINE 
+int encoded_length_vi24(uint24_t val) {
+  return 
+  (val <= MAX_V1B ? 1 : 
+   (val <= MAX_V2B ? 2 : 
+     (val <= MAX_V3B ? 3 : 4)));
+}
+SWC_CAN_INLINE 
+void encode_vi24(uint8_t** bufp, uint24_t val) {
+  if(_encode_24vi_0(bufp, val) && 
+     _encode_24vi_1(bufp, &val) && _encode_24vi_1(bufp, &val) && 
+     _encode_24vi_1(bufp, &val)) {
+    SWC_THROW_UNPOSSIBLE("reach here encoding vint24");
+  }
+}
+SWC_CAN_INLINE 
+uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp) {
+  uint24_t n = 0;
+  uint8_t shift = 0;
+  do {
+    decode_needed(remainp, 1);
+    n |= (uint24_t)((**bufp) & 0x7f) << shift;
+    if(!(*(*bufp)++ & 0x80))
+      return n;
+  } while((shift+=7) <= 21);
+  SWC_THROW_OVERRUN("vint24");
+}
+SWC_CAN_INLINE 
+uint24_t decode_vi24(const uint8_t** bufp) {
+  size_t remain = 4;
+  return decode_vi24(bufp, &remain);
+}
+
 
 SWC_CAN_INLINE 
 int encoded_length_vi32(uint32_t val) {

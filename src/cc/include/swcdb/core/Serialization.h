@@ -94,6 +94,23 @@ void encode_i16(uint8_t** bufp , uint16_t val);
 uint16_t decode_i16(const uint8_t** bufp, size_t* remainp);
 
 /**
+ * Encode a 24-bit integer in little-endian order
+ *
+ * @param bufp Pointer to the destination buffer pointer
+ * @param val The value to encode
+ */
+void encode_i24(uint8_t** bufp, uint24_t val);
+
+/**
+ * Decode a 24-bit integer in little-endian order
+ *
+ * @param bufp Pointer to the source buffer pointer
+ * @param remainp Pointer to the remaining size variable
+ * @return The decoded value
+ */
+uint24_t decode_i24(const uint8_t** bufp, size_t* remainp);
+
+/**
  * Encode a 32-bit integer in little-endian order
  *
  * @param bufp Pointer to the destination buffer pointer
@@ -128,6 +145,14 @@ void encode_i64(uint8_t** bufp, uint64_t val);
 uint64_t decode_i64(const uint8_t** bufp, size_t* remainp);
 
 /**
+ * Length of a variable length encoded 24-bit integer (up to 4 bytes)
+ *
+ * @param val The 24-bit integer to encode
+ * @return The number of bytes required for serializing this number
+ */
+int encoded_length_vi24(uint24_t val);
+
+/**
  * Length of a variable length encoded 32-bit integer (up to 5 bytes)
  *
  * @param val The 32-bit integer to encode
@@ -144,6 +169,14 @@ int encoded_length_vi32(uint32_t val);
 int encoded_length_vi64(uint64_t val);
 
 /**
+ * Encode a integer (up to 24-bit) in variable length encoding
+ *
+ * @param bufp Pointer to the destination buffer pointer
+ * @param val The value to encode
+ */
+void encode_vi24(uint8_t** bufp, uint24_t val);
+
+/**
  * Encode a integer (up to 32-bit) in variable length encoding
  *
  * @param bufp Pointer to the destination buffer pointer
@@ -158,6 +191,16 @@ void encode_vi32(uint8_t** bufp, uint32_t val);
  * @param val The value to encode
  */
 void encode_vi64(uint8_t** bufp, uint64_t val);
+
+/**
+ * Decode a variable length encoded integer up to 24-bit
+ *
+ * @param bufp Pointer to the source buffer pointer
+ * @param remainp Pointer to the remaining size variable
+ * @return The decoded value
+ */
+uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp);
+
 
 /**
  * Decode a variable length encoded integer up to 32-bit
