@@ -388,8 +388,8 @@ std::string Fragments::to_string() {
 
 
 bool Fragments::_need_roll() const {
-  return m_cells.size_bytes() >= range->cfg->block_size() || 
-         m_cells.size() >= range->cfg->block_cells();
+  return m_cells.size_bytes()*2 >= range->cfg->block_size() || 
+         m_cells.size()*2 >= range->cfg->block_cells();
 }
 
 bool Fragments::_processing() const {

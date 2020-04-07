@@ -53,25 +53,26 @@ void CompactRange::initialize() {
 }
 
 void CompactRange::progress_check_timer() {
-  if(m_stopped || m_chk_final)
-    return;
-  uint64_t cell_avg = total_cells.load() 
-    ? (Time::now_ns() - m_ts_start)
-        / (total_cells ? total_cells.load() : (size_t)1)
-    : 10000;
-
-  uint8_t state;
+  uint64_t req_ts;
   {
     Mutex::scope lock(m_mutex);
-    state = ((Time::now_ns() - m_req_ts) / blk_cells > cell_avg * 10) 
-      ? Range::COMPACT_PREPARING    // mitigate add req. workload
-      : Range::COMPACT_COMPACTING;  // range scan & add reqs can continue
+    req_ts = m_req_ts;
   }
   if(m_stopped || m_chk_final)
     return;
-  range->compacting(state);
-  
-  m_chk_timer.expires_from_now(std::chrono::nanoseconds(cell_avg * blk_cells));
+
+  uint64_t median = (total_cells.load() 
+    ? (Time::now_ns() - m_ts_start) / total_cells.load() : 10000) * blk_cells;
+  if((median /= 1000000) < 2000)
+    median = 1000;
+
+  range->compacting((Time::now_ns() - req_ts > median * 10) 
+    ? Range::COMPACT_PREPARING  // mitigate add req. workload
+    : Range::COMPACT_COMPACTING // range scan & add reqs can continue
+  );
+
+  Mutex::scope lock(m_mutex);
+  m_chk_timer.expires_from_now(std::chrono::milliseconds(median*2));
   m_chk_timer.async_wait(
     [ptr=shared()](const asio::error_code ec) {
       if(ec == asio::error::operation_aborted)

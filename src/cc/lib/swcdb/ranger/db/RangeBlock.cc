@@ -105,7 +105,7 @@ void Block::load_cells(const DB::Cells::Mutable& cells) {
 
   std::scoped_lock lock(m_mutex);
   size_t added = m_cells.size();
-  
+
   bool support(m_mutex_intval.lock()); // ?cpy interval
   cells.scan(m_interval, m_cells);
 
@@ -173,7 +173,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     if(added % 100 == 0 && splitter())
       was_splitted = true;
   }
-    
+
   if(!m_cells.empty()) {
     bool support(m_mutex_intval.lock());
     if(!m_interval.key_begin.empty())
@@ -398,22 +398,25 @@ void Block::free_key_end() {
 }
 
 std::string Block::to_string() {
-  std::shared_lock lock1(m_mutex);
-  Mutex::scope lock2(m_mutex_state);
-
   std::string s("Block(state=");
-  s.append(std::to_string((uint8_t)m_state));
-
   {
-    s.append(" prev=");
+    Mutex::scope lock(m_mutex_state);
+    s.append(std::to_string((uint8_t)m_state));
+  }
+  s.append(" prev=");
+  {
     Mutex::scope lock(m_mutex_intval);
     s.append(m_prev_key_end.to_string());
     s.append(" ");
     s.append(m_interval.to_string());
   }
-
   s.append(" ");
-  s.append(m_cells.to_string());
+  if(m_mutex.try_lock()){
+    s.append(m_cells.to_string());
+    m_mutex.unlock();
+  } else {
+    s.append("CellsLocked");
+  }
 
   s.append(" queue=");
   s.append(std::to_string(m_queue.size()));
