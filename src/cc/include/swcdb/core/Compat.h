@@ -38,6 +38,11 @@
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
 
+#include "swcdb/core/BitFieldInt.h" // for uint24_t, int24_t
+
+
+
+
 // C++ specific stuff
 
 
