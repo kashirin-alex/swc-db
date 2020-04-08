@@ -31,10 +31,11 @@ void IoContext::run(IoContext::Ptr ptr){
 }
 
 void IoContext::do_run() {
-  do{
+  for(;;) {
     m_ioctx->run();
-    m_ioctx->restart();
-  }while(running);
+    if(running)
+      m_ioctx->restart();
+  }
 }
   
 IOCtxPtr IoContext::shared() {

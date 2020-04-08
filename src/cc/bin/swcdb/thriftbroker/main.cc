@@ -115,6 +115,7 @@ int run() {
 
   app_ctx->wait_while_run();
 
+  quick_exit(0);
   for(auto& server : servers)
     server->getThreadManager()->stop();
 

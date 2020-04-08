@@ -97,7 +97,6 @@ class AppContext : virtual public BrokerIfFactory {
       m_run = false;
     }
     m_cv.notify_all();
-    //std::quick_exit(0);
   }
 
   std::mutex                                    m_mutex;
