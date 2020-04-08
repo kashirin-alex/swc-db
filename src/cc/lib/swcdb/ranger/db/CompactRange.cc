@@ -58,18 +58,13 @@ bool CompactRange::reached_limits() {
       || cells.size() >= blk_cells;
 }
 
-const DB::Cells::Mutable::Selector_t CompactRange::selector() {
-  return 
-    [req=get_req_scan()] 
-    (const DB::Cells::Cell& cell, bool& stop) { 
-      return 
-        req->spec.is_matching(
-          cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
-    };
+bool CompactRange::selector(const DB::Cells::Cell& cell, bool& stop) {
+  return spec.is_matching(
+    cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
 }
 
 void CompactRange::response(int &err) {
-  if(m_stopped || !ready(err))
+  if(m_stopped)
     return;
 
   total_cells += cells.size();

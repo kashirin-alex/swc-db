@@ -17,16 +17,13 @@ class RangeQuerySelect : public ReqScan {
                    const DB::Specs::Interval& spec, 
                    DB::Cells::Result& cells, 
                    RangePtr range, uint32_t limit_buffer)
-                  : ReqScan(conn, ev, spec, cells), 
+                  : ReqScan(conn, ev, spec, cells, limit_buffer), 
                     range(range) {
-    limit_buffer_sz = limit_buffer;
   }
 
   virtual ~RangeQuerySelect() { }
 
   void response(int &err) override {
-    if(!ReqScan::ready(err))
-      return;
       
     if(err == Error::OK) {
       if(RangerEnv::is_shuttingdown())
@@ -39,7 +36,7 @@ class RangeQuerySelect : public ReqScan {
     
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err,  
-      limit_buffer_sz <= cells.size_bytes(),
+      limit_buffer <= cells.size_bytes(),
       offset
     );
 

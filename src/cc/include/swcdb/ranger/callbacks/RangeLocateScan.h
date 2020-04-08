@@ -26,17 +26,7 @@ class RangeLocateScan : public ReqScan {
 
   virtual ~RangeLocateScan() { }
 
-  Ptr shared() {
-    return std::dynamic_pointer_cast<RangeLocateScan>(shared_from_this());
-  }
-
-  const DB::Cells::Mutable::Selector_t selector() override {
-    return  [req=shared()] 
-            (const DB::Cells::Cell& cell, bool& stop) 
-            { return req->selector(cell, stop); };
-  }
-  
-  bool selector(const DB::Cells::Cell& cell, bool& stop) const override {
+  bool selector(const DB::Cells::Cell& cell, bool& stop) override {
     if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
       return false;
 
@@ -94,9 +84,6 @@ class RangeLocateScan : public ReqScan {
   }
 
   void response(int &err) override {
-    if(!ReqScan::ready(err))
-      return;
-      
     if(!err) {
       if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;

@@ -7,33 +7,30 @@
 #define swcdb_ranger_db_ReqScan_h
 
 
-#include "swcdb/core/comm/ResponseCallback.h"
-#include "swcdb/db/Cells/Result.h"
+#include "swcdb/db/Cells/ReqScan.h"
+
 
 namespace SWC { namespace Ranger {
   
-class ReqScan  : public ResponseCallback {
-
+class ReqScan  : public DB::Cells::ReqScan {
   public:
+  
   enum Type {
     QUERY,
     BLK_PRELOAD
   };
-  typedef std::shared_ptr<ReqScan>  Ptr;
-  typedef std::function<void()>     NextCall_t;
 
-  ReqScan(Type type=Type::QUERY) 
-          : ResponseCallback(nullptr, nullptr), 
-            limit_buffer_sz(0), offset(0), 
-            drop_caches(false), type(type) {
+  typedef std::shared_ptr<ReqScan>  Ptr;
+
+  ReqScan(Type type=Type::QUERY)
+          : type(type), drop_caches(false) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const DB::Specs::Interval& spec, DB::Cells::Result& cells)
-          : ResponseCallback(conn, ev), spec(spec), 
-            cells(cells),
-            offset(spec.flags.offset), limit_buffer_sz(0), 
-            drop_caches(false), type(Type::QUERY) {
+          const DB::Specs::Interval& spec, DB::Cells::Result& cells, 
+          uint32_t limit_buffer=0)
+          : DB::Cells::ReqScan(conn, ev, spec, cells, limit_buffer),
+            type(Type::QUERY), drop_caches(false) {
   }
 
   virtual ~ReqScan() { }
@@ -42,60 +39,16 @@ class ReqScan  : public ResponseCallback {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  virtual const DB::Cells::Mutable::Selector_t selector() {
-    return [req=get_req_scan()] 
-            (const DB::Cells::Cell& cell, bool& stop) 
-            { return req->selector(cell, stop); };
-  }
-
-  virtual bool selector(const DB::Cells::Cell& cell, bool& stop) const {
-    return spec.is_matching(cell, cells.type);
-  }
-  
-  bool ready(int& err) {
-    auto call = next_call;
-    next_call = 0;
-    if(!err && call && !reached_limits()){
-      call();
-      return false;
-    }
-    return true;
-  }
-
-  virtual bool reached_limits() {
-    return (spec.flags.limit && spec.flags.limit <= cells.size()) 
-           || 
-           (limit_buffer_sz && limit_buffer_sz <= cells.size_bytes());
-  }
-  
   bool expired() const {
     return (m_ev != nullptr && m_ev->expired()) || 
            (m_conn != nullptr && !m_conn->is_open()) ;
   }
 
-  std::string to_string() const {
-    std::string s("ReqScan(");
-    s.append(spec.to_string());
-    s.append(" ");
-    s.append(cells.to_string());
-    s.append(" limit_buffer_sz=");
-    s.append(std::to_string(limit_buffer_sz));
-    s.append(" state-offset=");
-    s.append(std::to_string(offset));
-    return s;
-  }
-
-  DB::Specs::Interval   spec;
-  DB::Cells::Result     cells;
-
-  uint32_t          limit_buffer_sz;
-  bool              drop_caches;
-
-  NextCall_t        next_call = 0;
-  // state of a scan
-  uint64_t          offset;
   Type              type;
+  bool              drop_caches;
 };
+
+
 
 class ReqScanTest : public ReqScan {
   public:
@@ -108,8 +61,6 @@ class ReqScanTest : public ReqScan {
   virtual ~ReqScanTest() { }
 
   void response(int &err) override {
-    if(!ReqScan::ready(err))
-      return;
     cb(err);
   }
 

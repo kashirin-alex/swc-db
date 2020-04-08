@@ -32,7 +32,7 @@ class CompactRange : public ReqScan {
   
   bool reached_limits() override;
 
-  const DB::Cells::Mutable::Selector_t selector() override;
+  bool selector(const DB::Cells::Cell& cell, bool& stop) override;
   
   void response(int &err) override;
 
