@@ -48,7 +48,7 @@ class ReqScan  : public ResponseCallback {
             { return req->selector(cell, stop); };
   }
 
-  bool selector(const DB::Cells::Cell& cell, bool& stop) const {
+  virtual bool selector(const DB::Cells::Cell& cell, bool& stop) const {
     return spec.is_matching(cell, cells.type);
   }
   

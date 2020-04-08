@@ -5,7 +5,7 @@
 #ifndef swc_ranger_callbacks_RangeLocateScan_h
 #define swc_ranger_callbacks_RangeLocateScan_h
 
-#include "swcdb/core/comm/ResponseCallback.h"
+#include "swcdb/ranger/db/ReqScan.h"
 
 namespace SWC { namespace Ranger { namespace Callback {
 
@@ -21,8 +21,7 @@ class RangeLocateScan : public ReqScan {
                   RangePtr range, uint8_t flags)
                   : ReqScan(conn, ev, spec, cells), 
                     range(range), flags(flags),
-                    any_is(range->type != Types::Range::DATA) {                
-    //std::cout << "************************************************\n";    
+                    any_is(range->type != Types::Range::DATA) {
   }
 
   virtual ~RangeLocateScan() { }
@@ -32,38 +31,12 @@ class RangeLocateScan : public ReqScan {
   }
 
   const DB::Cells::Mutable::Selector_t selector() override {
-    if(flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT)
-      return  [req=shared()] 
-              (const DB::Cells::Cell& cell, bool& stop) 
-              { return req->selector_commit(cell, stop); };
     return  [req=shared()] 
             (const DB::Cells::Cell& cell, bool& stop) 
-            { return req->selector_query(cell, stop); };
+            { return req->selector(cell, stop); };
   }
   
-  bool selector_commit(const DB::Cells::Cell& cell, bool& stop) const {
-
-    //std::cout << "---------------------\n";
-    //std::cout << "  spec: " << spec.to_string() << "\n";
-    //std::cout << "  key_begin: " << cell.key.to_string() << "\n";
-    if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
-      return false;
-
-    size_t remain = cell.vlen;
-    const uint8_t * ptr = cell.value;
-    DB::Cell::Key key_end;
-    key_end.decode(&ptr, &remain);
-    //std::cout << "    key_end: " << key_end.to_string() << "\n";
-
-    bool match;
-    if(match = key_end.count == any_is ||
-               key_end.compare(spec.range_begin) != Condition::GT)
-      stop = true;
-    //std::cout << "      match: " << match << "\n";
-    return match;
-  }
-
-  bool selector_query(const DB::Cells::Cell& cell, bool& stop) const {
+  bool selector(const DB::Cells::Cell& cell, bool& stop) const override {
     if(any_is && spec.range_begin.compare(cell.key, any_is) != Condition::EQ)
       return false;
 

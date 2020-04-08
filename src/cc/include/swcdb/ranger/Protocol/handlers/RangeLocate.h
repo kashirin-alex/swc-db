@@ -7,7 +7,7 @@
 #define swc_ranger_Protocol_handlers_RangeLocate_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
-#include "swcdb/ranger/callbacks/RangeLocateScan.h"
+#include "swcdb/ranger/callbacks/RangeLocateScanCommit.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
@@ -54,18 +54,29 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       range->cfg->cell_ttl(), 
       range->cfg->column_type()
     );
-    auto req = std::make_shared<Ranger::Callback::RangeLocateScan>(
-      conn, ev, 
-      DB::Specs::Interval(params.range_begin, params.range_end), 
-      cells, 
-      range,
-      params.flags
-    );
+
+    Ranger::ReqScan::Ptr req;
+    if(params.flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
+      req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
+        conn, ev,
+        DB::Specs::Interval(params.range_begin, params.range_end),
+        cells,
+        range,
+        params.flags
+      );
+    } else {
+      req = std::make_shared<Ranger::Callback::RangeLocateScan>(
+        conn, ev,
+        DB::Specs::Interval(params.range_begin, params.range_end),
+        cells,
+        range,
+        params.flags
+      );
+      if(params.flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE)
+        req->spec.range_offset.copy(params.range_offset);
+    }
+
     req->spec.flags.limit = 1;
-
-    if(params.flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE)
-      req->spec.range_offset.copy(params.range_offset);
-
     range->scan(req);
     
   } catch (Exception &e) {
