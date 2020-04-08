@@ -19,6 +19,8 @@ set(swcdb_sources
 	Cells/SpecsValue.cc
 	Cells/SpecsFlags.cc
 	
+	Cells/ReqScan.cc
+	
 	Columns/Schema.cc
 	Columns/Schemas.cc
 
