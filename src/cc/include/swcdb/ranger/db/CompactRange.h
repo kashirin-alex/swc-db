@@ -30,8 +30,6 @@ class CompactRange : public ReqScan {
 
   void initialize();
   
-  void progress_check_timer();
-
   bool reached_limits() override;
 
   const DB::Cells::Mutable::Selector_t selector() override;
@@ -39,6 +37,10 @@ class CompactRange : public ReqScan {
   void response(int &err) override;
 
   private:
+
+  void progress_check_timer();
+
+  void stop_check_timer();
 
   void request_more();
 

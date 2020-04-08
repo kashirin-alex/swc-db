@@ -52,6 +52,70 @@ void CompactRange::initialize() {
   progress_check_timer();
 }
 
+bool CompactRange::reached_limits() {
+  return m_stopped 
+      || cells.size_bytes() >= blk_size 
+      || cells.size() >= blk_cells;
+}
+
+const DB::Cells::Mutable::Selector_t CompactRange::selector() {
+  return 
+    [req=get_req_scan()] 
+    (const DB::Cells::Cell& cell, bool& stop) { 
+      return 
+        req->spec.is_matching(
+          cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
+    };
+}
+
+void CompactRange::response(int &err) {
+  if(m_stopped || !ready(err))
+    return;
+
+  total_cells += cells.size();
+  SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
+           range->cfg->cid, range->rid, 
+           total_cells.load(), 
+           (Time::now_ns() - m_ts_start) 
+            / (total_cells ? total_cells.load() : (size_t)1));
+
+  if(!reached_limits()) {
+    stop_check_timer();
+    range->compacting(Range::COMPACT_APPLYING);
+  }
+
+  auto selected_cells = cells.empty() 
+                        ? nullptr : new DB::Cells::Result(cells);
+  bool finished;
+  {
+    Mutex::scope lock(m_mutex);
+    if(selected_cells) {
+      auto& last = selected_cells->back();
+      spec.offset_key.copy(last->key);
+      spec.offset_rev = last->timestamp;
+      m_getting = false;
+    }
+    if(!(finished = !m_writing && !selected_cells)) {
+      m_queue.push(selected_cells);
+      if(m_writing)
+        return;
+      m_writing = true;
+    }
+  }
+  
+  if(finished) {
+    finalize();
+    return;
+  }
+
+  asio::post(
+    *RangerEnv::maintenance_io()->ptr(), 
+    [ptr=shared()](){ ptr->process(); 
+  });
+
+  request_more();
+}
+
 void CompactRange::progress_check_timer() {
   uint64_t req_ts;
   {
@@ -82,72 +146,13 @@ void CompactRange::progress_check_timer() {
   );
 }
 
-bool CompactRange::reached_limits() {
-  return m_stopped 
-      || cells.size_bytes() >= blk_size 
-      || cells.size() >= blk_cells;
-}
-
-const DB::Cells::Mutable::Selector_t CompactRange::selector() {
-  return 
-    [req=get_req_scan()] 
-    (const DB::Cells::Cell& cell, bool& stop) { 
-      return 
-        req->spec.is_matching(
-          cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
-    };
-}
-
-void CompactRange::response(int &err) {
-  if(m_stopped || !ready(err))
-    return;
-
-  total_cells += cells.size();
-  SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
-           range->cfg->cid, range->rid, 
-           total_cells.load(), 
-           (Time::now_ns() - m_ts_start) 
-            / (total_cells ? total_cells.load() : (size_t)1));
-
-  if(!reached_limits()) {
+void CompactRange::stop_check_timer() {
+  if(!m_chk_final) {
     m_chk_final = true;
-    {
-      Mutex::scope lock(m_mutex);
-      m_chk_timer.cancel();
-    }
-    range->compacting(Range::COMPACT_APPLYING);
-  }
-
-  auto selected_cells = cells.empty() 
-                        ? nullptr : new DB::Cells::Result(cells);
-  {
     Mutex::scope lock(m_mutex);
-    if(!selected_cells) {
-      if(!m_writing) {
-        finalize();
-        return;
-      }
-    } else {
-      auto& last = selected_cells->back();
-      spec.offset_key.copy(last->key);
-      spec.offset_rev = last->timestamp;
-      m_getting = false;
-    }
-
-    m_queue.push(selected_cells);
-    if(m_writing) 
-      return;
-    m_writing = true;
+    m_chk_timer.cancel();
   }
-
-  asio::post(
-    *RangerEnv::maintenance_io()->ptr(), 
-    [ptr=shared()](){ ptr->process(); 
-  });
-
-  request_more();
 }
-
 
 void CompactRange::request_more() {
   {
@@ -227,11 +232,7 @@ uint32_t CompactRange::create_cs(int& err) {
   cs_writer->create(err, -1, cs_replication, blk_size);
 
   if(id == range->cfg->cellstore_max() * 10) {
-    m_chk_final = true;
-    {
-      Mutex::scope lock(m_mutex);
-      m_chk_timer.cancel();
-    }
+    stop_check_timer();
     range->compacting(Range::COMPACT_PREPARING);
   }
   return id;
@@ -316,7 +317,7 @@ void CompactRange::finalize() {
 
   if(range->is_any_end() && last_cell) {
     // last block of end-any set with key_begin with last cell
-      if(cs_writer == nullptr) {       
+    if(cs_writer == nullptr) {
       uint32_t id = create_cs(err);
       if(err)
         return quit();
@@ -561,11 +562,8 @@ void CompactRange::apply_new(bool clear) {
 }
 
 void CompactRange::quit() {
-  m_chk_final = true;
-  {
-    Mutex::scope lock(m_mutex);
-    m_chk_timer.cancel();
-  }
+  stop_check_timer();
+
   m_stopped = true;
   int err = Error::OK;
   if(cs_writer != nullptr) {
