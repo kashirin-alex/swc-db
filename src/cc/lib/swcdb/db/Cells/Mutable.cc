@@ -345,65 +345,53 @@ void Mutable::write(DynamicBuffer& cells) const {
 }
 
 
-void Mutable::scan(const Specs::Interval& specs, Result& cells, 
-                   uint64_t& cell_offset, 
-                   const std::function<bool()>& reached_limits, 
-                   size_t& skips, const Selector_t& selector) const {
+void Mutable::scan(ReqScan::Ptr req, size_t& skips) const {
   if(!_size)
     return;
   if(max_revs == 1) 
-    scan_version_single(
-      specs, cells, cell_offset, reached_limits, skips, selector);
+    scan_version_single(req, skips);
   else
-    scan_version_multi(
-      specs, cells, cell_offset, reached_limits, skips, selector);
+    scan_version_multi(req, skips);
 }
 
-void Mutable::scan_version_single(const Specs::Interval& specs, 
-                                  Result& cells, uint64_t& cell_offset, 
-                                  const std::function<bool()>& reached_limits,
-                                  size_t& skips, const Selector_t& selector) const {
+void Mutable::scan_version_single(ReqScan::Ptr req, size_t& skips) const {
   bool stop = false;
-  bool only_deletes = specs.flags.is_only_deletes();
-  bool only_keys = specs.flags.is_only_keys();
+  bool only_deletes = req->spec.flags.is_only_deletes();
+  bool only_keys = req->spec.flags.is_only_keys();
 
-  size_t offset = specs.offset_key.empty() ? 0 : _narrow(specs.offset_key);
-                                             // ?specs.key_start
+  size_t offset = req->spec.offset_key.empty() 
+                  ? 0 : _narrow(req->spec.offset_key); // ?specs.key_start
+
   for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
     const Cell& cell = **it.item;
-    //std::cout << " offset=" << offset << " " << cell.key.to_string() << "\n";
     if(cell.has_expired(ttl) ||
        (only_deletes ? cell.flag == INSERT : cell.flag != INSERT) ||
-       !selector(cell, stop) ) {
+       !req->selector(cell, stop) ) {
       ++skips;
 
-    } else if(cell_offset) {
-      --cell_offset;
+    } else if(req->offset) {
+      --req->offset;
       ++skips;  
 
     } else {
-      cells.add(cell, only_keys);
-      if(reached_limits())
+      req->cells.add(cell, only_keys);
+      if(req->reached_limits())
         break;
     }
   }
 }
 
-void Mutable::scan_version_multi(const Specs::Interval& specs, 
-                                 Result& cells, uint64_t& cell_offset, 
-                                 const std::function<bool()>& reached_limits,
-                                 size_t& skips, 
-                                 const Selector_t& selector) const {
+void Mutable::scan_version_multi(ReqScan::Ptr req, size_t& skips) const {
   bool stop = false;
-  bool only_deletes = specs.flags.is_only_deletes();
-  bool only_keys = specs.flags.is_only_keys();
+  bool only_deletes = req->spec.flags.is_only_deletes();
+  bool only_keys = req->spec.flags.is_only_keys();
   
   bool chk_align;
   uint32_t rev;
   size_t offset;
-  if(chk_align = !specs.offset_key.empty()) {
-    rev = cells.max_revs;
-    offset = _narrow(specs.offset_key);// ?specs.key_start
+  if(chk_align = !req->spec.offset_key.empty()) {
+    rev = req->cells.max_revs;
+    offset = _narrow(req->spec.offset_key);// ?req->spec.key_start
    } else {
     rev = 0;
     offset = 0;
@@ -418,18 +406,18 @@ void Mutable::scan_version_multi(const Specs::Interval& specs,
       continue;
     }
 
-    if(chk_align) switch(specs.offset_key.compare(cell.key)) {
+    if(chk_align) switch(req->spec.offset_key.compare(cell.key)) {
       case Condition::LT: {
         ++skips;
         continue;
       }
       case Condition::EQ: {
         if(!rev ||
-           !specs.is_matching(cell.timestamp, cell.control & TS_DESC)) {
+           !req->spec.is_matching(cell.timestamp, cell.control & TS_DESC)) {
           if(rev)
             --rev;
-          //if(cell_offset && selector(cell, stop))
-          //  --cell_offset;
+          //if(req->offset && req->selector(cell, stop))
+          //  --req->offset;
           ++skips;
           continue;
         }
@@ -439,28 +427,28 @@ void Mutable::scan_version_multi(const Specs::Interval& specs,
         break;
     }
 
-    if(!selector(cell, stop)) {
+    if(!req->selector(cell, stop)) {
       ++skips;
       continue;
     }
-    if(!cells.empty() && 
-       cells.back()->key.compare(cell.key) == Condition::EQ) {
+    if(!req->cells.empty() && 
+       req->cells.back()->key.compare(cell.key) == Condition::EQ) {
       if(!rev) {
         ++skips;
         continue;
       }
     } else {
-      rev = cells.max_revs;
+      rev = req->cells.max_revs;
     }
 
-    if(cell_offset) {
-      --cell_offset;
+    if(req->offset) {
+      --req->offset;
       ++skips;
       continue;
     }
 
-    cells.add(cell, only_keys);
-    if(reached_limits())
+    req->cells.add(cell, only_keys);
+    if(req->reached_limits())
       break;
     --rev;
   }

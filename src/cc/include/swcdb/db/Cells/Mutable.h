@@ -6,7 +6,7 @@
 #ifndef swcdb_db_Cells_Mutable_h
 #define swcdb_db_Cells_Mutable_h
 
-#include "swcdb/db/Cells/Result.h"
+#include "swcdb/db/Cells/ReqScan.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
@@ -184,20 +184,11 @@ class Mutable final {
   void write(DynamicBuffer& cells) const;
 
 
-  void scan(const Specs::Interval& specs, Result& cells, 
-            uint64_t& cell_offset, 
-            const std::function<bool()>& reached_limits, 
-            size_t& skips, const Selector_t& selector) const;
+  void scan(ReqScan::Ptr req, size_t& skips) const;
 
-  void scan_version_single(const Specs::Interval& specs, Result& cells, 
-                           uint64_t& cell_offset, 
-                           const std::function<bool()>& reached_limits, 
-                           size_t& skips, const Selector_t& selector) const;
+  void scan_version_single(ReqScan::Ptr req, size_t& skips) const;
 
-  void scan_version_multi(const Specs::Interval& specs, Result& cells, 
-                          uint64_t& cell_offset, 
-                          const std::function<bool()>& reached_limits, 
-                          size_t& skips, const Selector_t& selector) const;
+  void scan_version_multi(ReqScan::Ptr req, size_t& skips) const;
 
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
                      size_t& count, size_t& skips) const;

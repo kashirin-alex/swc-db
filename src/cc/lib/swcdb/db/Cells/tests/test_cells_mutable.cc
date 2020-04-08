@@ -126,7 +126,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   SWC::DB::Specs::Interval specs;
   //specs.flags.limit = 5;
-  specs.flags.offset = max_versions;
+  specs.flags.offset = 0;
   /*
   specs.key_start.add("F2-1", SWC::Condition::GE);
   specs.key_start.add("", SWC::Condition::NONE);
@@ -138,7 +138,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   if(SWC::Types::is_counter(typ))
     specs.value.set(10,  SWC::Condition::EQ);
   else
-    specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::GE);
+    specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::GT);
   specs.flags.max_versions=max_versions;
 
   Cells::Cell cell;
@@ -156,11 +156,12 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   while(remain) {
     cell.read(&bptr, &remain);
     //std::cout << cell.to_string() <<"\n";
+    //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     counted++;
   }
   if(count != 3*max_versions) {
     std::cout << " skips=" << skips << " count="<< count << " counted=" << counted << " \n";
-    std::cerr << "\n" << cells_mutable->to_string(true);
+    //std::cerr << "\n" << cells_mutable->to_string(true);
     std::cerr << "\nBad scan, expected=" << 3*max_versions << " result=" << count << "\n";
     std::cerr << specs.to_string() <<"\n";
     exit(1);
@@ -186,22 +187,14 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     exit(1);
   }
   
-  Cells::Result results(max_versions, 0, typ);
-  size_t cell_offset = 0;
   size_t cell_skips = 0;
-  auto spec = SWC::DB::Specs::Interval();
-  cells_mutable->scan(
-    spec, 
-    results, cell_offset, 
-    [](){return false;}, 
-    cell_skips, 
-    [spec, typ](const SWC::DB::Cells::Cell& cell, bool& stop) {
-                return spec.is_matching(cell, typ);}
-    );
+  auto req = std::make_shared<SWC::DB::Cells::ReqScan>();
+  cells_mutable->scan(req, cell_skips);
+  req->cells.configure(max_versions, 0, typ);
 
-  if(results.size() != 0) {
+  if(req->cells.size() != 0) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << 0 << ") != result(" << results.size()  << ")\n";
+              << "expected(" << 0 << ") != result(" <<req->cells.size()  << ")\n";
     exit(1);
   }
   std::cout << " mutable (del)"
