@@ -63,14 +63,14 @@ void CompactRange::progress_check_timer() {
 
   uint64_t median = (total_cells.load() 
     ? (Time::now_ns() - m_ts_start) / total_cells.load() : 10000) * blk_cells;
-  if((median /= 1000000) < 2000)
-    median = 1000;
 
   range->compacting((Time::now_ns() - req_ts > median * 10) 
     ? Range::COMPACT_PREPARING  // mitigate add req. workload
     : Range::COMPACT_COMPACTING // range scan & add reqs can continue
   );
 
+  if((median /= 1000000) < 1000)
+    median = 1000;
   Mutex::scope lock(m_mutex);
   m_chk_timer.expires_from_now(std::chrono::milliseconds(median*2));
   m_chk_timer.async_wait(
