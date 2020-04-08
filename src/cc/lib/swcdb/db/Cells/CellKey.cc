@@ -343,10 +343,8 @@ std::string Key::to_string() const {
   uint32_t len = 0;
   const uint8_t* ptr = data;
   for(uint24_t n=0; n<count; ++n,ptr+=len) {
-    s.append("(");
-    len = Serialization::decode_vi32(&ptr);
-    s.append((const char*)ptr, len);
-    s.append("),");
+    s.append((const char*)ptr, len = Serialization::decode_vi32(&ptr));
+    s.append(",");
   }
   s.append("])");
   return s;
