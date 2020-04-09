@@ -226,7 +226,9 @@ uint32_t CompactRange::create_cs(int& err) {
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
 
-  if(id == range->cfg->cellstore_max() * 10) {
+  uint32_t portion = range->cfg->compact_percent()/10;
+  if(!portion) portion = 1;
+  if(id == range->cfg->cellstore_max() * portion) {
     stop_check_timer();
     range->compacting(Range::COMPACT_PREPARING);
   }
