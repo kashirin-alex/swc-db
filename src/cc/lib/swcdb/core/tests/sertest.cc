@@ -151,7 +151,8 @@ void chk_vi24(uint24_t n) {
     SWC_ASSERT(p2-buf == encoded_length_vi24(n)));
 }
 
-const uint24_t MAX_CHECKS_VI24 = UINT24_MAX;
+const uint32_t MAX_CHECKS = UINT24_MAX;
+const uint32_t PROBES = 9;
 void test_vi24() {
   {
   uint8_t buf[4], *p = buf;
@@ -167,22 +168,13 @@ void test_vi24() {
 
   uint64_t c = 0;
   auto ns = Time::now_ns();
-  for(uint24_t n=0; n<MAX_CHECKS_VI24;n++) {
+  for(int p=0; p<PROBES;++p)
+  for(uint24_t n=0; n<MAX_CHECKS;n++) {
     chk_vi24(n);
     c++;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi24 lower took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
-  c = 0;
-  ns = Time::now_ns();
-  for(uint24_t n=UINT24_MAX-MAX_CHECKS_VI24+1; n <= UINT24_MAX ;n++) {
-    chk_vi24(n);  
-    c++;
-    if(n == UINT24_MAX)
-      break;
-  }
-  ns = Time::now_ns() - ns;
-  std::cout << "vi24 upper took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi24       took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
 }
 
 void chk_vi32(uint32_t n) {
@@ -194,7 +186,6 @@ void chk_vi32(uint32_t n) {
     SWC_ASSERT(p2-buf == encoded_length_vi32(n)));
 }
 
-const uint32_t MAX_CHECKS = 500000000;//UINT32_MAX/8;
 void test_vi32() {
   {
   uint8_t buf[5], *p = buf;
@@ -210,6 +201,7 @@ void test_vi32() {
 
   uint64_t c = 0;
   auto ns = Time::now_ns();
+  for(int p=0; p<PROBES;++p)
   for(uint32_t n=0; n<MAX_CHECKS;n++) {
     chk_vi32(n);
     c++;
@@ -218,6 +210,7 @@ void test_vi32() {
   std::cout << "vi32 lower took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
+  for(int p=0; p<PROBES;++p)
   for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;n++) {
     chk_vi32(n);  
     c++;
@@ -252,6 +245,7 @@ void test_vi64() {
   
   uint64_t c = 0;
   auto ns = Time::now_ns();
+  for(int p=0; p<PROBES;++p)
   for(uint64_t n=0; n<MAX_CHECKS;n++) {
     chk_vi64(n);
     c++;
@@ -260,6 +254,7 @@ void test_vi64() {
   std::cout << "vi64 lower took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
+  for(int p=0; p<PROBES;++p)
   for(uint64_t n=UINT64_MAX-MAX_CHECKS+1; n<=UINT64_MAX;n++) {
     chk_vi64(n);
     c++;
