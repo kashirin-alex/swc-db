@@ -428,12 +428,11 @@ std::string Block::to_string() {
 }
 
 bool Block::_scan(ReqScan::Ptr req, bool synced) {
+  size_t skips = 0; // Ranger::Stats
+  //if(m_interval.includes(req->spec, true)) // ?has-changed
   {
-    size_t skips = 0; // Ranger::Stats
     std::shared_lock lock(m_mutex);
-    //if(m_interval.includes(req->spec, true)) { // ?has-changed
-    m_cells.scan(req, skips);
-    //}
+    m_cells.scan(req.get(), skips);
   }
 
   processing_decrement();

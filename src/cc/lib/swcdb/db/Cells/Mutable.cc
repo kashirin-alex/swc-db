@@ -345,7 +345,7 @@ void Mutable::write(DynamicBuffer& cells) const {
 }
 
 
-void Mutable::scan(ReqScan::Ptr req, size_t& skips) const {
+void Mutable::scan(ReqScan* req, size_t& skips) const {
   if(!_size)
     return;
   if(max_revs == 1) 
@@ -354,7 +354,7 @@ void Mutable::scan(ReqScan::Ptr req, size_t& skips) const {
     scan_version_multi(req, skips);
 }
 
-void Mutable::scan_version_single(ReqScan::Ptr req, size_t& skips) const {
+void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
   bool only_keys = req->spec.flags.is_only_keys();
@@ -369,8 +369,7 @@ void Mutable::scan_version_single(ReqScan::Ptr req, size_t& skips) const {
        !req->selector(cell, stop) ) {
       ++skips;
 
-    } else if(req->offset) {
-      --req->offset;
+    } else if(req->offset_adjusted()) {
       ++skips;  
 
     } else {
@@ -381,7 +380,7 @@ void Mutable::scan_version_single(ReqScan::Ptr req, size_t& skips) const {
   }
 }
 
-void Mutable::scan_version_multi(ReqScan::Ptr req, size_t& skips) const {
+void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
   bool only_keys = req->spec.flags.is_only_keys();
@@ -441,8 +440,7 @@ void Mutable::scan_version_multi(ReqScan::Ptr req, size_t& skips) const {
       rev = req->cells.max_revs;
     }
 
-    if(req->offset) {
-      --req->offset;
+    if(req->offset_adjusted()) {
       ++skips;
       continue;
     }

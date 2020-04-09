@@ -188,13 +188,13 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   }
   
   size_t cell_skips = 0;
-  auto req = std::make_shared<SWC::DB::Cells::ReqScan>();
-  cells_mutable->scan(req, cell_skips);
-  req->cells.configure(max_versions, 0, typ);
+  SWC::DB::Cells::ReqScan req;
+  cells_mutable->scan(&req, cell_skips);
+  req.cells.configure(max_versions, 0, typ);
 
-  if(req->cells.size() != 0) {
+  if(req.cells.size() != 0) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << 0 << ") != result(" <<req->cells.size()  << ")\n";
+              << "expected(" << 0 << ") != result(" <<req.cells.size()  << ")\n";
     exit(1);
   }
   std::cout << " mutable (del)"
