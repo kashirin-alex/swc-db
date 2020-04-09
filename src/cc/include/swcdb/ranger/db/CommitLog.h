@@ -29,8 +29,6 @@ class Fragments final {
 
   ~Fragments();
 
-  Ptr ptr();
-
   void schema_update();
 
   void add(const DB::Cells::Cell& cell);

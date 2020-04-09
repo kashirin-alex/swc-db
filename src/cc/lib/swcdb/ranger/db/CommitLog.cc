@@ -29,10 +29,6 @@ void Fragments::init(RangePtr for_range) {
 
 Fragments::~Fragments() { }
 
-Fragments::Ptr Fragments::ptr() {
-  return this;
-}
-
 void Fragments::schema_update() {
   std::scoped_lock lock(m_mutex_cells);
   m_cells.configure(
@@ -53,10 +49,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
   if(roll && m_mutex.try_lock()) {
     if(!m_deleting && !m_commiting) {
       m_commiting = true;
-      asio::post(
-        *Env::IoCtx::io()->ptr(), 
-        [ptr=ptr()](){ ptr->commit_new_fragment(); }
-      );
+      asio::post(*Env::IoCtx::io()->ptr(), [this](){ commit_new_fragment(); });
     }
     m_mutex.unlock();
   }
@@ -66,8 +59,8 @@ void Fragments::commit_new_fragment(bool finalize) {
   if(finalize) {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting)
-      m_cv.wait(lock_wait, [&commiting=m_commiting]
-                           {return !commiting && (commiting = true);});
+      m_cv.wait(
+        lock_wait, [this] {return !m_commiting && (m_commiting = true);});
   }
   
   Fragment::Ptr frag; 
@@ -201,7 +194,7 @@ void Fragments::load_cells(BlockLoader* loader, bool final, int64_t after_ts,
   if(final) {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting)
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
   }
 
   std::shared_lock lock(m_mutex);
@@ -271,7 +264,7 @@ void Fragments::remove(int &err) {
     std::unique_lock lock_wait(m_mutex);
     m_deleting = true;
     if(m_commiting)
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
   }
   std::scoped_lock lock(m_mutex);
   for(auto frag : m_fragments) {
@@ -286,7 +279,7 @@ void Fragments::unload() {
   {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting)
-      m_cv.wait(lock_wait, [&commiting=m_commiting]{return !commiting;});
+      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
   }
   std::scoped_lock lock(m_mutex);
   for(auto frag : m_fragments)
