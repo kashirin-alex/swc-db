@@ -23,15 +23,15 @@ extern "C" { }
 
 namespace SWC { namespace Serialization {
 
-const uint8_t  MAX_V1B= 0x7f;
-const uint16_t MAX_V2B= 0x3fff;
-const uint32_t MAX_V3B= 0x1fffff;
-const uint32_t MAX_V4B= 0xfffffff;
-const uint64_t MAX_V5B= 0x7ffffffffull;
-const uint64_t MAX_V6B= 0x3ffffffffffull;
-const uint64_t MAX_V7B= 0x1ffffffffffffull;
-const uint64_t MAX_V8B= 0xffffffffffffffull;
-const uint64_t MAX_V9B= 0x7fffffffffffffffull;
+const uint64_t MAX_V1B = 0x7f;
+const uint64_t MAX_V2B = 0x3fff;
+const uint64_t MAX_V3B = 0x1fffff;
+const uint64_t MAX_V4B = 0x0fffffff;
+const uint64_t MAX_V5B = 0x07ffffffff;
+const uint64_t MAX_V6B = 0x03ffffffffff;
+const uint64_t MAX_V7B = 0x01ffffffffffff;
+const uint64_t MAX_V8B = 0x00ffffffffffffff;
+const uint64_t MAX_V9B = 0x7fffffffffffffff;
 
 const uint8_t MAX_LEN_VINT24 = 4;
 const uint8_t MAX_LEN_VINT32 = 5;
@@ -57,8 +57,8 @@ void memcopy(uint8_t** bufp, const uint8_t* src, size_t len) {
 SWC_CAN_INLINE 
 void decode_needed_one(size_t* remainp) {
   if(!*remainp)
-    SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
-              "Need 1 byte but only %llu remain", *remainp);
+    SWC_THROW(Error::SERIALIZATION_INPUT_OVERRUN, 
+              "Zero byte remain need 1 byte");
   --*remainp;
 }
 
@@ -148,6 +148,40 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
   return val;
 }
 
+#define SWC_ENCODE_VI_0(_p_, _v_) \
+  if(_v_ <= MAX_V1B) { *(*_p_)++ = _v_; return; } 
+
+#define SWC_ENCODE_VI_1(_p_, _v_) \
+  *(*_p_)++ = _v_ | 0x80; \
+  if((_v_ >>= 7) <= MAX_V1B) { *(*_p_)++ = _v_; return; }
+
+#define SWC_ENCODE_VI(_p_, _v_, _shifts_) \
+  SWC_ENCODE_VI_0(_p_, _v_); \
+  for(uint8_t n=0; n < _shifts_; ++n) { SWC_ENCODE_VI_1(_p_, _v_); } \
+  SWC_THROW_UNPOSSIBLE("breached encoding length");
+
+
+#define SWC_DECODE_NEED_BYTE(_r_) \
+  if(!*_r_) SWC_THROW(Error::SERIALIZATION_INPUT_OVERRUN, \
+                      "Zero byte remain need 1 byte"); \
+  --*_r_;
+
+#define SWC_DECODE_VI_(_v_, _tmp_, _p_, _shift_) \
+  _v_ |= (_tmp_ = **_p_ & 0x7f) << _shift_; \
+  if(!(*(*_p_)++ & 0x80)) return _v_;
+
+#define SWC_DECODE_VI_1(_v_, _tmp_, _p_, _r_, _shift_) \
+  SWC_DECODE_NEED_BYTE(_r_);  \
+  SWC_DECODE_VI_(_v_, _tmp_, _p_, _shift_);
+
+#define SWC_DECODE_VI(_t_, _p_, _r_, _bits_, _name_) \
+  _t_ n = 0; _t_ tmp; for(uint8_t shift=0; *_r_ ; shift+=7) { \
+    --*_r_; SWC_DECODE_VI_(n, tmp, _p_, shift); \
+    if(shift == _bits_) SWC_THROW_OVERRUN(_name_); \
+  } \
+  SWC_THROW(Error::SERIALIZATION_INPUT_OVERRUN, \
+            "Zero byte remain need 1 byte");
+
 
 SWC_CAN_INLINE 
 int encoded_length_vi24(uint24_t val) {
@@ -156,39 +190,26 @@ int encoded_length_vi24(uint24_t val) {
    (val <= MAX_V2B ? 2 : 
     (val <= MAX_V3B ? 3 : 4)));
 }
-SWC_CAN_INLINE 
-bool _encode_vi0(uint8_t** bufp, const uint24_t& val) {
-  if(val > MAX_V1B) 
-    return true;
-  *(*bufp)++ = val;
-  return false;
-}
-SWC_CAN_INLINE 
-bool _encode_vi(uint8_t** bufp, uint24_t& val) {
-  *(*bufp)++ = val | 0x80;
-  return _encode_vi0(bufp, val >>= 7);
-}
+
 SWC_CAN_INLINE 
 void encode_vi24(uint8_t** bufp, uint24_t val) {
-  if(_encode_vi0(bufp, val) && 
-     _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val)) {
-    SWC_THROW_UNPOSSIBLE("reach here encoding vint24");
-  }
-}
+  //SWC_ENCODE_VI(bufp, val, 3);
+  SWC_ENCODE_VI_0(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_THROW_UNPOSSIBLE("breached encoding length");
+} 
+
 SWC_CAN_INLINE 
 uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp) {
-  uint24_t n = 0;
-  uint24_t tmp;
-  for(uint8_t shift=0; ; shift+=7) {
-    decode_needed_one(remainp);
-    n |= (tmp = **bufp & 0x7f) << shift;
-    if(!(*(*bufp)++ & 0x80))
-      return n;
-    if(shift == 28)
-      SWC_THROW_OVERRUN("vint24");
-  }
+  //SWC_DECODE_VI(uint24_t, bufp, remainp, 21, "vint24");
+  uint24_t n = 0; uint24_t tmp;
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 21);
+  SWC_THROW_OVERRUN("vint24");
 }
 SWC_CAN_INLINE 
 uint24_t decode_vi24(const uint8_t** bufp) {
@@ -207,37 +228,28 @@ int encoded_length_vi32(uint32_t val) {
 }
 
 SWC_CAN_INLINE 
-bool _encode_vi0(uint8_t** bufp, const uint32_t& val) {
-  if(val > MAX_V1B) 
-    return true;
-  *(*bufp)++ = val;
-  return false;
-}
-SWC_CAN_INLINE 
-bool _encode_vi(uint8_t** bufp, uint32_t& val) {
-  *(*bufp)++ = val | 0x80;
-  return _encode_vi0(bufp, val >>= 7);
-}
-SWC_CAN_INLINE 
 void encode_vi32(uint8_t** bufp, uint32_t val) {
-  if(_encode_vi0(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val)) {
-    SWC_THROW_UNPOSSIBLE("reach here encoding vint32");
-  }
-}
+  //SWC_ENCODE_VI(bufp, val, 4);
+  SWC_ENCODE_VI_0(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_THROW_UNPOSSIBLE("breached encoding length");
+} 
 
 SWC_CAN_INLINE 
 uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp) {
-  uint32_t n = 0;
-  for(uint8_t shift=0; ; shift+=7) {
-    decode_needed_one(remainp);
-    n |= (uint64_t)(**bufp & 0x7f) << shift;
-    if(!(*(*bufp)++ & 0x80))
-      return n;
-    if(shift == 35)
-      SWC_THROW_OVERRUN("vint32");
-  }
+  SWC_DECODE_VI(uint32_t, bufp, remainp, 28, "vint32");
+  /*
+  uint32_t n = 0; uint32_t tmp;
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 21);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 28);
+  SWC_THROW_OVERRUN("vint32");
+  */
 }
 
 SWC_CAN_INLINE 
@@ -261,51 +273,40 @@ int encoded_length_vi64(uint64_t val) {
 }
 
 SWC_CAN_INLINE 
-bool _encode_vi0(uint8_t** bufp, const uint64_t& val) {
-  if(val > MAX_V1B) 
-    return true;
-  *(*bufp)++ = (uint8_t)val;
-  return false;
-}
-SWC_CAN_INLINE 
-bool _encode_vi(uint8_t** bufp, uint64_t& val) {
-  *(*bufp)++ = val | 0x80;
-  return _encode_vi0(bufp, val >>= 7);
-}
-SWC_CAN_INLINE 
 void encode_vi64(uint8_t** bufp, uint64_t val) {
-  if(_encode_vi0(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val) && 
-     _encode_vi(bufp, val) && _encode_vi(bufp, val) &&
-     _encode_vi(bufp, val)) {
-    SWC_THROW_UNPOSSIBLE("reach here encoding vint64");
-  }
-}
-/* 10%+ perf degredation
-SWC_CAN_INLINE 
-void encode_vi64(uint8_t** bufp, uint64_t val) {
-  for(uint8_t n=0; val > MAX_V1B; ++n, val >>= 7) {
-    *(*bufp)++ = (uint8_t)(val | 0x80);
-    if(n == 9)
-      SWC_THROW_UNPOSSIBLE("reach here encoding vint64");
-  }
-  *(*bufp)++ = (uint8_t)(val & 0x7f);
+  SWC_ENCODE_VI(bufp, val, 9);
+  /*
+  SWC_ENCODE_VI_0(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_ENCODE_VI_1(bufp, val);
+  SWC_THROW_UNPOSSIBLE("breached encoding length");
+  */
 } 
-*/
 
 SWC_CAN_INLINE 
 uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
-  uint64_t n = 0;
-  for(uint8_t shift=0; ; shift+=7) {
-    decode_needed_one(remainp);
-    n |= (uint64_t)(**bufp & 0x7f) << shift;
-    if(!(*(*bufp)++ & 0x80))
-      return n;
-    if(shift == 63)
-      SWC_THROW_OVERRUN("vint64");
-  };
+  SWC_DECODE_VI(uint64_t, bufp, remainp, 63, "vint64");
+  /*
+  uint64_t n = 0; uint64_t tmp;
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 21);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 28);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 35);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 42);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 49);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 56);
+  SWC_DECODE_VI_1(n, tmp, bufp, remainp, 63);
+  SWC_THROW_OVERRUN("vint64");
+  */
 }
 
 SWC_CAN_INLINE 
@@ -313,6 +314,7 @@ uint64_t decode_vi64(const uint8_t** bufp) {
   size_t remain = 10;
   return decode_vi64(bufp, &remain);
 }
+
 
 SWC_CAN_INLINE 
 size_t encoded_length_bytes32(int32_t len) {
