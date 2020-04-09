@@ -121,9 +121,9 @@ class Columns final {
     std::atomic<int>    unloaded = 0;
     std::promise<void>  r_promise;
     Callback::RangeUnloaded_t cb 
-      = [&unloaded, await=&r_promise](int err){
+      = [&unloaded, &r_promise](int err){
         if(--unloaded == 0)
-          await->set_value();
+          r_promise.set_value();
     };
     
     uint8_t meta = 0;
@@ -156,8 +156,7 @@ class Columns final {
         ++it;
       if(validation)
         SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
-      std::promise<void> promise;
-      r_promise.swap(promise);
+      r_promise = std::promise<void>();
       ++unloaded;
       it->second->unload_all(unloaded, cb);
       m_columns.erase(it);
