@@ -44,6 +44,14 @@ bool ReqScan::reached_limits() {
          (limit_buffer && limit_buffer <= cells.size_bytes());
 }
 
+bool ReqScan::offset_adjusted() {
+  if(offset) {
+    --offset;
+    return true;
+  }
+  return false;
+}
+
 std::string ReqScan::to_string() const {
   std::string s("ReqScan(");
   s.append(spec.to_string());

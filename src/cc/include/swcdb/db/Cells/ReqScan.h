@@ -34,6 +34,8 @@ class ReqScan : public ResponseCallback {
   virtual bool selector(const DB::Cells::Cell& cell, bool& stop);
 
   virtual bool reached_limits();
+  
+  bool offset_adjusted();
 
   std::string to_string() const;
 
