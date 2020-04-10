@@ -33,16 +33,18 @@ struct BitFieldInt final {
     return *this;
   }
   BitFieldInt<T, SZ>& operator++(int) {
+    BitFieldInt<T, SZ> tmp(*this);
     ++data;
-    return *this;
+    return tmp;
   }
   BitFieldInt<T, SZ>& operator--() {
     --data;
     return *this;
   }
   BitFieldInt<T, SZ>& operator--(int) {
+    BitFieldInt<T, SZ> tmp(*this);
     --data;
-    return *this;
+    return tmp;
   }
 
   
