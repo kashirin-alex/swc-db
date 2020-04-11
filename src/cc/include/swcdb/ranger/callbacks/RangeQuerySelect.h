@@ -35,7 +35,7 @@ class RangeQuerySelect : public ReqScan {
   bool reached_limits() override {
     return (spec.flags.limit && 
             spec.flags.limit <= cells_count) || 
-           (cfg.buffer && 
+           (cfg.buffer && cells_count &&
             cfg.buffer <= cells.fill() + cells.fill() / cells_count);
   }
 
