@@ -10,30 +10,118 @@
 #include "swcdb/ranger/db/CommitLogSplitter.h"
 
 namespace SWC { namespace Ranger {
+  
+struct CompactRange::InBlock {
 
-CompactRange::CompactRange(
+  InBlock(size_t size, InBlock* inblock = nullptr) 
+          : has_last(inblock != nullptr), 
+            cells(size), cells_count(0), 
+            last_cell(0), before_last_cell(0) {
+    if(has_last)
+      inblock->move_last(this);
+  }
+
+  size_t cell_avg_size() const {
+    return cells.fill()/cells_count;
+  }
+
+  void add(const DB::Cells::Cell& cell) {
+    ++cells_count;
+    cells.set_mark(); // start of last cell
+    cell.write(cells);
+
+    if(before_last_cell = last_cell) { 
+      // align on previous - keeping last for next block-interval
+      const uint8_t* ptr = before_last_cell + 1;
+      size_t remain = cells.ptr - ptr;
+      DB::Cell::Key key;
+      key.decode(&ptr, &remain, false);
+      key.align(cells_intval.aligned_min, cells_intval.aligned_max);
+    }
+    last_cell = cells.mark;
+  }
+
+  void set_offset(DB::Specs::Interval& spec) const {
+    DB::Cells::Cell cell;
+    const uint8_t* ptr = last_cell;
+    size_t remain = cells.ptr - (ptr);
+    cell.read(&ptr, &remain); 
+    spec.offset_key.copy(cell.key);
+    spec.offset_rev = cell.timestamp;
+  }
+
+  void move_last(InBlock* to) {
+    const uint8_t* ptr = last_cell;
+    size_t remain = cells.ptr - ptr;
+    
+    DB::Cells::Cell cell;
+    cell.read(&ptr, &remain); 
+    to->add(cell);
+
+    --cells_count;
+    cells.ptr = last_cell;
+    last_cell = before_last_cell;
+    cells.mark = before_last_cell = 0;
+  }
+
+  void finalize(bool any_begin, bool any_end) {    
+    DB::Cells::Cell cell;
+    const uint8_t* ptr;
+    size_t remain;
+
+    if(any_begin) {
+      cells_intval.key_begin.free();
+    } else {
+      ptr = cells.base;
+      remain = cells.fill();
+      cell.read(&ptr, &remain); 
+      cells_intval.expand_begin(cell);
+    }
+
+    if(any_end) {
+      cells_intval.key_end.free();
+    } else {
+      remain = cells.ptr - (ptr = last_cell);
+      cell.read(&ptr, &remain); 
+      cell.key.align(cells_intval.aligned_min, cells_intval.aligned_max);
+      cells_intval.expand_end(cell);
+    }
+  }
+
+  const uint8_t        has_last;
+  DynamicBuffer        cells;
+  size_t               cells_count;
+  DB::Cells::Interval  cells_intval;
+
+  private:
+
+  uint8_t*              last_cell;
+  uint8_t*              before_last_cell;
+};
+
+
+CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
             Compaction::Ptr compactor, RangePtr range,
             const uint32_t cs_size, const uint8_t cs_replication,
             const uint32_t blk_size, const uint32_t blk_cells, 
-            const Types::Encoding blk_encoding,
-            uint32_t cell_versions, uint64_t cell_ttl, 
-            Types::Column col_type) 
-            : compactor(compactor), range(range),
+            const Types::Encoding blk_encoding) 
+            : ReqScan(cfg), 
+              compactor(compactor), range(range),
               cs_size(cs_size), 
               cs_replication(cs_replication), 
               blk_size(blk_size), blk_cells(blk_cells), 
               blk_encoding(blk_encoding),
-              cell_versions(cell_versions),
-              cell_ttl(cell_ttl),
-              col_type(col_type),
+              m_inblock(new InBlock(blk_size)),
               m_ts_start(Time::now_ns()),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
 }
 
 CompactRange::~CompactRange() { 
-  if(last_cell)
-    delete last_cell;
+  if(m_inblock)
+    delete m_inblock;
+  for(; !m_queue.empty(); m_queue.pop()) 
+    delete m_queue.front();
 }
 
 CompactRange::Ptr CompactRange::shared() {
@@ -41,21 +129,8 @@ CompactRange::Ptr CompactRange::shared() {
 }
 
 void CompactRange::initialize() {
-  cells.configure(
-    cell_versions, 
-    cell_ttl, 
-    col_type
-  );
-  cells.reserve(blk_cells);
-
   m_req_ts = Time::now_ns();
   progress_check_timer();
-}
-
-bool CompactRange::reached_limits() {
-  return m_stopped 
-      || cells.size_bytes() >= blk_size 
-      || cells.size() >= blk_cells;
 }
 
 bool CompactRange::selector(const DB::Cells::Cell& cell, bool& stop) {
@@ -63,11 +138,38 @@ bool CompactRange::selector(const DB::Cells::Cell& cell, bool& stop) {
     cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
 }
 
+bool CompactRange::reached_limits() {
+  return m_stopped 
+      || (m_inblock->cells_count > 1 && 
+          m_inblock->cells.fill() + m_inblock->cell_avg_size() >= blk_size)
+      || m_inblock->cells_count >= blk_cells + 1;
+}
+
+bool CompactRange::add_cell_and_more(const DB::Cells::Cell& cell) {
+  m_inblock->add(cell);
+  return !reached_limits();
+}
+
+bool CompactRange::add_cell_set_last_and_more(const DB::Cells::Cell& cell) {
+  m_inblock->add(cell);
+  return !reached_limits();
+}
+
+bool CompactRange::matching_last(const DB::Cell::Key& key) {
+  if(!m_inblock->cells_count)
+    return false;
+  DB::Cell::Key key_last;
+  const uint8_t* ptr = m_inblock->cells.mark + 1; // flag offset
+  size_t remain = m_inblock->cells.ptr - ptr;
+  key_last.decode(&ptr, &remain, false);
+  return key_last.equal(key);
+}
+
 void CompactRange::response(int &err) {
   if(m_stopped)
     return;
 
-  total_cells += cells.size();
+  total_cells += m_inblock->cells_count - m_inblock->has_last;
   SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
            range->cfg->cid, range->rid, 
            total_cells.load(), 
@@ -79,25 +181,36 @@ void CompactRange::response(int &err) {
     range->compacting(Range::COMPACT_APPLYING);
   }
 
-  auto selected_cells = cells.empty() 
-                        ? nullptr : new DB::Cells::Result(cells);
+  auto in_block = m_inblock;
+  if(m_inblock->cells_count == m_inblock->has_last) {
+    in_block = nullptr;
+  } else {
+    m_inblock = new InBlock(blk_size, in_block);
+  }
+
   bool finished;
   {
     Mutex::scope lock(m_mutex);
-    if(selected_cells) {
-      auto& last = selected_cells->back();
-      spec.offset_key.copy(last->key);
-      spec.offset_rev = last->timestamp;
+    if(in_block) {
+      m_inblock->set_offset(spec);
       m_getting = false;
     }
-    if(!(finished = !m_writing && !selected_cells)) {
-      m_queue.push(selected_cells);
+    if(m_writing || in_block) {
+      m_queue.push(in_block);
       if(m_writing)
         return;
       m_writing = true;
+      finished = false;
+    } else {
+      finished = true;
     }
   }
   
+  if(finished) {
+    Mutex::scope lock(m_mutex); 
+    if(!(finished = m_queue.empty()))
+      m_writing = true;
+  }
   if(finished) {
     finalize();
     return;
@@ -171,13 +284,12 @@ void CompactRange::request_more() {
 
 void CompactRange::process() {
   int err = Error::OK;
-  DB::Cells::Result* selected_cells;
-  for(;;) {
+  for(InBlock* in_block; ; ) {
     {
       Mutex::scope lock(m_mutex);
-      selected_cells = m_queue.front();
+      in_block = m_queue.front();
     }
-    if(selected_cells == nullptr) {
+    if(in_block == nullptr) {
       finalize();
       return;
     }
@@ -186,8 +298,8 @@ void CompactRange::process() {
     
     request_more();
 
-    write_cells(err, selected_cells);
-    delete selected_cells;
+    write_cells(err, in_block);
+    delete in_block;
 
     if(m_stopped)
       return;
@@ -221,7 +333,7 @@ uint32_t CompactRange::create_cs(int& err) {
   cs_writer = std::make_shared<CellStore::Write>(
     id, 
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, id), 
-    cell_versions,
+    cfg.cell_versions,
     blk_encoding
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
@@ -236,56 +348,20 @@ uint32_t CompactRange::create_cs(int& err) {
 
 }
 
-void CompactRange::write_cells(int& err, DB::Cells::Result* selected_cells) {
-
+void CompactRange::write_cells(int& err, InBlock* in_block) {
+  bool any_begin = false;
   if(cs_writer == nullptr) {
-    uint32_t id = create_cs(err);
-    if(err)
-      return;
-
-    if(id == 1 && range->is_any_begin()) {
-      DB::Cells::Interval blk_intval;
-      DynamicBuffer buff;
-      uint32_t cell_count = 0;
-      selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 1);
-      // 1st block of begin-any set with key_end as first cell
-        blk_intval.key_begin.free();
-
-      if(range->is_any_end() && selected_cells->empty()) {
-        // there was one cell
-          blk_intval.key_end.free(); 
-      }
-      
-      cs_writer->block(err, blk_intval, buff, cell_count);
-
-      if(err || selected_cells->empty())
-        return;
-    }
-  }
-
-  DB::Cells::Interval blk_intval;
-  DynamicBuffer buff;
-  uint32_t cell_count = 0;
-
-  if(range->is_any_end()) {
-    if(last_cell) {
-      ++cell_count;
-      last_cell->write(buff);
-      blk_intval.expand(*last_cell);
-      last_cell->key.align(
-        blk_intval.aligned_min, blk_intval.aligned_max);
-      delete last_cell;
-    }
-    last_cell = selected_cells->takeout_end(1);
-    //last block of end-any to be set with first key as last cell
-  }
-  selected_cells->write_and_free(buff, cell_count, blk_intval, 0, 0);
-
-  if(buff.fill()) {
-    cs_writer->block(err, blk_intval, buff, cell_count);
+    any_begin = create_cs(err) == 1;
     if(err)
       return;
   }
+
+  in_block->finalize(any_begin && range->is_any_begin(), false);
+  cs_writer->block(
+    err, in_block->cells_intval, in_block->cells, in_block->cells_count);
+  if(err)
+    return;
+
   if(cs_writer->size >= cs_size) {
     add_cs(err);
     if(err)
@@ -312,36 +388,28 @@ void CompactRange::finalize() {
   int err = Error::OK;
   bool empty_cs = false;
 
-  if(range->is_any_end() && last_cell) {
-    // last block of end-any set with key_begin with last cell
+  if(m_inblock->cells_count) {
+    // first or/and last block of any-type set with empty-key
+    bool any_begin = false;
     if(cs_writer == nullptr) {
-      uint32_t id = create_cs(err);
+      any_begin = create_cs(err) == 1;
       if(err)
         return quit();
     }
-    DB::Cells::Interval blk_intval;
-    blk_intval.expand(*last_cell);
-    blk_intval.key_end.free();
-    last_cell->key.align(blk_intval.aligned_min, blk_intval.aligned_max);
-
-    uint32_t cell_count = 1;
-    DynamicBuffer buff;
-    last_cell->write(buff);
-    delete last_cell;
-    last_cell = nullptr;
-    cs_writer->block(err, blk_intval, buff, cell_count);
+    m_inblock->finalize(any_begin && range->is_any_begin(), range->is_any_end());
+    cs_writer->block(
+      err, m_inblock->cells_intval, m_inblock->cells, m_inblock->cells_count);
  
   } else if(!cellstores.size() && cs_writer == nullptr) {
     // as an initial empty range cs with range intervals
-      empty_cs = true;
+    empty_cs = true;
     uint32_t id = create_cs(err);
     if(err)
       return quit();
-    uint32_t cell_count = 0;
-    DB::Cells::Interval blk_intval;
-    range->get_interval(blk_intval.key_begin, blk_intval.key_end);
-    DynamicBuffer buff;
-    cs_writer->block(err, blk_intval, buff, cell_count);
+    range->get_interval(
+      m_inblock->cells_intval.key_begin, m_inblock->cells_intval.key_end);
+    cs_writer->block(
+      err, m_inblock->cells_intval, m_inblock->cells, m_inblock->cells_count);
   }
   if(err)
     return quit();

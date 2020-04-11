@@ -26,10 +26,22 @@ class ReqScan  : public DB::Cells::ReqScan {
           : type(type), drop_caches(false) {
   }
 
+  ReqScan(const DB::Cells::ReqScan::Config& cfg,
+          Type type=Type::QUERY)
+          : DB::Cells::ReqScan(cfg),
+            type(type), drop_caches(false) {
+  }
+
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const DB::Specs::Interval& spec, DB::Cells::Result& cells, 
-          uint32_t limit_buffer=0)
-          : DB::Cells::ReqScan(conn, ev, spec, cells, limit_buffer),
+          const DB::Specs::Interval& spec)
+          : DB::Cells::ReqScan(conn, ev, spec, DB::Cells::ReqScan::Config()),
+            type(Type::QUERY), drop_caches(false) {
+  }
+
+  ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
+          const DB::Specs::Interval& spec,
+          const DB::Cells::ReqScan::Config& cfg)
+          : DB::Cells::ReqScan(conn, ev, spec, cfg),
             type(Type::QUERY), drop_caches(false) {
   }
 
@@ -50,6 +62,33 @@ class ReqScan  : public DB::Cells::ReqScan {
 
 
 
+class ReqScanBlockLoader : public ReqScan {
+  public:
+  
+  ReqScanBlockLoader() : ReqScan(ReqScan::Type::BLK_PRELOAD) {
+  }
+
+  virtual ~ReqScanBlockLoader() { }
+
+  bool reached_limits() override {
+    return true;
+  }
+
+  bool add_cell_and_more(const DB::Cells::Cell& cell) override {
+    return !reached_limits();
+  }
+
+  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
+    return !reached_limits();
+  }
+
+  bool matching_last(const DB::Cell::Key& key) override {
+    return false;
+  }
+};
+
+
+
 class ReqScanTest : public ReqScan {
   public:
   
@@ -57,13 +96,38 @@ class ReqScanTest : public ReqScan {
 
   static Ptr make() { return std::make_shared<ReqScanTest>(); }
 
-  ReqScanTest() {}
+  ReqScanTest(const DB::Cells::ReqScan::Config& cfg
+                     = DB::Cells::ReqScan::Config())
+              : ReqScan(cfg) {
+  }
+
+  bool reached_limits() override {
+    return (spec.flags.limit && spec.flags.limit <= cells.size()) 
+            || 
+            (cfg.buffer && cfg.buffer <= cells.size_bytes());
+  }
+
+  bool add_cell_and_more(const DB::Cells::Cell& cell) override {
+    cells.add(cell, only_keys);
+    return !reached_limits();
+  }
+
+  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
+    cells.add(cell, only_keys);
+    return !reached_limits();
+  }
+
+  bool matching_last(const DB::Cell::Key& key) override {
+    return !cells.empty() ? cells.back()->key.equal(key) : false;
+  }
+
   virtual ~ReqScanTest() { }
 
   void response(int &err) override {
     cb(err);
   }
 
+  DB::Cells::Result        cells;
   std::function<void(int)> cb;
 };
 

@@ -17,10 +17,9 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   RangeLocateScanCommit(ConnHandlerPtr conn, Event::Ptr ev, 
                         const DB::Specs::Interval& req_spec, 
-                        DB::Cells::Result& cells,
                         RangePtr range, uint8_t flags)
                         : RangeLocateScan(
-                            conn, ev, req_spec, cells, range, flags),
+                            conn, ev, req_spec, range, flags),
                           range_begin(spec.range_begin) {           
     spec.range_begin.remove(1, true);
     spec.range_end.free();

@@ -46,15 +46,18 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
     params.interval.apply_possible_range(
       params.interval.range_begin, params.interval.range_end);
 
-    DB::Cells::Result cells(
-      params.interval.flags.max_versions ? 
-        params.interval.flags.max_versions : range->cfg->cell_versions(),
-      range->cfg->cell_ttl(), 
-      range->cfg->column_type()
-    );
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
-        conn, ev, params.interval, cells, range, params.limit_buffer_sz
+        conn, ev, params.interval, 
+        DB::Cells::ReqScan::Config(
+          range->cfg->column_type(),
+          params.interval.flags.max_versions 
+            ? params.interval.flags.max_versions 
+            : range->cfg->cell_versions(),
+          range->cfg->cell_ttl(), 
+          params.limit_buffer_sz
+        ),
+        range
       )
     );
   } catch (Exception &e) {

@@ -17,9 +17,8 @@ class RangeLocateScan : public ReqScan {
 
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Specs::Interval& spec, 
-                  DB::Cells::Result& cells,
                   RangePtr range, uint8_t flags)
-                  : ReqScan(conn, ev, spec, cells), 
+                  : ReqScan(conn, ev, spec), 
                     range(range), flags(flags),
                     any_is(range->type != Types::Range::DATA) {
   }
@@ -83,50 +82,53 @@ class RangeLocateScan : public ReqScan {
     return false;
   }
 
+  bool reached_limits() override {
+    // if meta-data rsp to be more than one
+    return true;
+  }
+
+  bool add_cell_and_more(const DB::Cells::Cell& cell) override {
+    params.range_begin.copy(cell.key); 
+    std::string id_name(params.range_begin.get_string(0));
+    params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+
+    const uint8_t* ptr = cell.value;
+    size_t remain = cell.vlen;
+    params.range_end.decode(&ptr, &remain, true);
+    params.rid = Serialization::decode_vi64(&ptr, &remain);
+
+    if(range->type == Types::Range::MASTER) {
+      params.range_begin.remove(0);
+      params.range_end.remove(0);
+    }
+    params.range_begin.remove(0);
+    params.range_end.remove(0);
+    return !reached_limits();
+  }
+
+  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
+    // if meta-data to be versions
+    return !reached_limits();
+  }
+
+  bool matching_last(const DB::Cell::Key& key) override {
+    // if meta-data to be versions
+    return false;
+  }
+
+  
   void response(int &err) override {
+
     if(!err) {
       if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
-      if(range->deleted())
+      else if(range->deleted())
         err = Error::COLUMN_MARKED_REMOVED;
+      else if(!params.cid || !params.rid)
+        err = Error::RANGE_NOT_FOUND;
     }
-    if(err == Error::COLUMN_MARKED_REMOVED)
-      cells.free();
-    
-    //SWC_LOG_OUT(LOG_INFO) << spec.to_string() << SWC_LOG_OUT_END;
-
-    Protocol::Rgr::Params::RangeLocateRsp params(err);
-    if(!err) {
-      if(!cells.empty()) {
-
-        auto cell = cells.front();
-  
-        params.range_begin.copy(cell->key);
-        
-        std::string id_name(params.range_begin.get_string(0));
-        params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
-
-        const uint8_t* ptr = cell->value;
-        size_t remain = cell->vlen;
-        params.range_end.decode(&ptr, &remain, true);
-        params.rid = Serialization::decode_vi64(&ptr, &remain);
-
-        if(range->type == Types::Range::MASTER) {
-          params.range_begin.remove(0);
-          params.range_end.remove(0);
-        }
-        params.range_begin.remove(0);
-        params.range_end.remove(0);
-      /*
-      } else if(spec.range_begin.count > 1) {
-        spec.range_begin.remove(spec.range_begin.count-1, true);
-        range->scan(get_req_scan());
-        return;
-      */
-      } else {
-        params.err = Error::RANGE_NOT_FOUND;
-      }
-    }
+    if(err)
+      params.err = err;
 
     SWC_LOG_OUT(LOG_DEBUG) 
       << params.to_string() << " flags=" << (int)flags 
@@ -146,6 +148,8 @@ class RangeLocateScan : public ReqScan {
   RangePtr    range;
   uint8_t     flags;
   uint32_t    any_is;
+
+  Protocol::Rgr::Params::RangeLocateRsp params;
 
 };
 

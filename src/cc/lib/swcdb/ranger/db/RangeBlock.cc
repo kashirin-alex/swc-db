@@ -76,7 +76,7 @@ void Block::preload() {
   //SWC_PRINT << " BLK_PRELOAD " << to_string() << SWC_PRINT_CLOSE;
   asio::post(
     *Env::IoCtx::io()->ptr(), 
-    [this](){ scan(std::make_shared<ReqScan>(ReqScan::Type::BLK_PRELOAD));}
+    [this](){ scan(std::make_shared<ReqScanBlockLoader>());}
   );
 }
 
@@ -212,15 +212,15 @@ bool Block::scan(ReqScan::Ptr req) {
     }
   }
 
-  if(loaded) {
-    if(req->type == ReqScan::Type::BLK_PRELOAD) {
+  if(loaded) switch(req->type) {
+    case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
       return false;
     }
-    return _scan(req, true);
+    default:
+      return _scan(req, true);
   }
 
-  
   auto loader = new BlockLoader(ptr());
   loader->run();
   return true;
@@ -450,18 +450,21 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
 
 void Block::run_queue(int& err) {
   ReqScan::Ptr req;
-  do {
+  do switch((req = m_queue.front())->type) {
 
-    if((req = m_queue.front())->type == ReqScan::Type::BLK_PRELOAD) {
+    case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
+      break;
+    }
 
-    } else if(err) {
+    default: {
+      if(!err) {
+        asio::post(*Env::IoCtx::io()->ptr(), [this, req]() { _scan(req); } );
+        break;
+      }
       blocks->processing_decrement();
       processing_decrement();
       req->response(err);
-          
-    } else {
-      asio::post(*Env::IoCtx::io()->ptr(), [this, req]() { _scan(req); } );
     }
 
   } while(m_queue.pop_and_more());

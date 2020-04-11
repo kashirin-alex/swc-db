@@ -357,7 +357,6 @@ void Mutable::scan(ReqScan* req, size_t& skips) const {
 void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
-  bool only_keys = req->spec.flags.is_only_keys();
 
   size_t offset = req->spec.offset_key.empty() 
                   ? 0 : _narrow(req->spec.offset_key); // ?specs.key_start
@@ -366,16 +365,12 @@ void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
     const Cell& cell = **it.item;
     if(cell.has_expired(ttl) ||
        (only_deletes ? cell.flag == INSERT : cell.flag != INSERT) ||
-       !req->selector(cell, stop) ) {
+       !req->selector(cell, stop) ||
+       req->offset_adjusted()) {
       ++skips;
 
-    } else if(req->offset_adjusted()) {
-      ++skips;  
-
-    } else {
-      req->cells.add(cell, only_keys);
-      if(req->reached_limits())
-        break;
+    } else if(!req->add_cell_and_more(cell)) {
+      break;
     }
   }
 }
@@ -383,13 +378,12 @@ void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
 void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
-  bool only_keys = req->spec.flags.is_only_keys();
   
   bool chk_align;
   uint32_t rev;
   size_t offset;
   if(chk_align = !req->spec.offset_key.empty()) {
-    rev = req->cells.max_revs;
+    rev = req->cfg.cell_versions;
     offset = _narrow(req->spec.offset_key);// ?req->spec.key_start
    } else {
     rev = 0;
@@ -430,14 +424,13 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
       ++skips;
       continue;
     }
-    if(!req->cells.empty() && 
-       req->cells.back()->key.compare(cell.key) == Condition::EQ) {
+    if(req->matching_last(cell.key)) {
       if(!rev) {
         ++skips;
         continue;
       }
     } else {
-      rev = req->cells.max_revs;
+      rev = req->cfg.cell_versions;
     }
 
     if(req->offset_adjusted()) {
@@ -445,8 +438,7 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
       continue;
     }
 
-    req->cells.add(cell, only_keys);
-    if(req->reached_limits())
+    if(!req->add_cell_set_last_and_more(cell))
       break;
     --rev;
   }

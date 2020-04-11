@@ -49,18 +49,11 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       return;
     }
 
-    DB::Cells::Result cells(
-      range->cfg->cell_versions(), 
-      range->cfg->cell_ttl(), 
-      range->cfg->column_type()
-    );
-
     Ranger::ReqScan::Ptr req;
     if(params.flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
       req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
         conn, ev,
         DB::Specs::Interval(params.range_begin, params.range_end),
-        cells,
         range,
         params.flags
       );
@@ -68,7 +61,6 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
       req = std::make_shared<Ranger::Callback::RangeLocateScan>(
         conn, ev,
         DB::Specs::Interval(params.range_begin, params.range_end),
-        cells,
         range,
         params.flags
       );
