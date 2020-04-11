@@ -32,11 +32,11 @@ struct CompactRange::InBlock {
 
     if(before_last_cell = last_cell) { 
       // align on previous - keeping last for next block-interval
-      const uint8_t* ptr = before_last_cell + 1;
+      const uint8_t* ptr = before_last_cell;
       size_t remain = cells.ptr - ptr;
-      DB::Cell::Key key;
-      key.decode(&ptr, &remain, false);
-      key.align(cells_intval.aligned_min, cells_intval.aligned_max);
+      DB::Cells::Cell cell(&ptr, &remain, false);
+      cell.key.align(cells_intval.aligned_min, cells_intval.aligned_max);
+      cells_intval.expand(cell.timestamp);
     }
     last_cell = cells.mark;
   }
@@ -85,6 +85,7 @@ struct CompactRange::InBlock {
       cell.read(&ptr, &remain); 
       cell.key.align(cells_intval.aligned_min, cells_intval.aligned_max);
       cells_intval.expand_end(cell);
+      cells_intval.expand(cell.timestamp);
     }
   }
 
