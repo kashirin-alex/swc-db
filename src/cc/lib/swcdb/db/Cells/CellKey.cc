@@ -63,14 +63,14 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
   uint32_t old_size = size;
 
   uint8_t* ptr = data = 
-    new uint8_t[size += Serialization::encoded_length_vi32(len) + len];
+    new uint8_t[size += Serialization::encoded_length_vi24(len) + len];
   if(old) {
     memcpy(ptr, old, old_size);
     ptr += old_size;
     if(own)
       delete [] old;
   }
-  Serialization::encode_vi32(&ptr, len);
+  Serialization::encode_vi24(&ptr, len);
   memcpy(ptr, fraction, len);
   ++count;
   own = true;
@@ -95,7 +95,7 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
   }
 
   uint32_t prev_size = size;
-  uint32_t f_size = Serialization::encoded_length_vi32(len) + len;
+  uint32_t f_size = Serialization::encoded_length_vi24(len) + len;
   size += f_size;
 
   uint8_t* data_tmp = new uint8_t[size]; 
@@ -110,12 +110,12 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
       if(offset) 
         memcpy(data_tmp, data, offset);
       fraction_ptr = data_tmp + offset;
-      Serialization::encode_vi32(&fraction_ptr, len);
+      Serialization::encode_vi24(&fraction_ptr, len);
       memcpy(fraction_ptr, fraction, len);
       fraction_ptr += len;
       break;
     }
-    ptr_tmp += Serialization::decode_vi32(&ptr_tmp);
+    ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
     offset += ptr_tmp-data;
   }
   
@@ -143,7 +143,7 @@ void Key::remove(uint32_t idx, bool recursive) {
   uint8_t* begin;
   for(uint24_t offset = 0; offset < count; ++offset) {
     begin = (uint8_t*)ptr_tmp;
-    ptr_tmp += Serialization::decode_vi32(&ptr_tmp);
+    ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
     if(offset < idx) 
       continue;
     
@@ -178,7 +178,7 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
   if(data && ++idx <= count) {
     const uint8_t* ptr = data;
     for(; idx ; --idx)
-      ptr += (*length = Serialization::decode_vi32(&ptr));
+      ptr += (*length = Serialization::decode_vi24(&ptr));
     if(!idx) { 
       *fraction = (const char*)ptr - *length;
       return;
@@ -201,11 +201,11 @@ Condition::Comp Key::compare(const Key& other, uint32_t max,
       min = max;  
     const uint8_t* p1 = data;
     const uint8_t* p2 = other.data;
-    uint32_t sz1;
-    uint32_t sz2;
+    uint24_t sz1;
+    uint24_t sz2;
     for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
-      sz2 = Serialization::decode_vi32(&p2);
-      if(!(sz1 = Serialization::decode_vi32(&p1)) && empty_ok) {
+      sz2 = Serialization::decode_vi24(&p2);
+      if(!(sz1 = Serialization::decode_vi24(&p1)) && empty_ok) {
         if(empty_eq)
           return Condition::EQ;
         continue;
@@ -221,10 +221,10 @@ Condition::Comp Key::compare(const Key& other, uint32_t max,
 
 bool Key::align(KeyVec& start, KeyVec& finish) const {
   const uint8_t* ptr = data;
-  uint32_t len;
+  uint24_t len;
   bool chg = false;
-  for(uint32_t c = 0; c < count; ++c, ptr += len) {
-    len = Serialization::decode_vi32(&ptr);
+  for(uint24_t c = 0; c < count; ++c, ptr += len) {
+    len = Serialization::decode_vi24(&ptr);
 
     if(c == start.size()) {
       start.add(ptr, len);
@@ -254,7 +254,7 @@ bool Key::align(KeyVec& start, KeyVec& finish) const {
 bool Key::compare(const KeyVec& other, Condition::Comp break_if,
                   uint32_t max, bool empty_ok) const {
   const uint8_t* ptr = data;
-  uint32_t len = 0;
+  uint24_t len;
   if(!max)
     max = count > other.size() ? (uint32_t)count : other.size();
   for(uint32_t c = 0; c<max; ++c, ptr += len) {
@@ -264,7 +264,7 @@ bool Key::compare(const KeyVec& other, Condition::Comp break_if,
             ? break_if != Condition::LT 
             : break_if != Condition::GT;
 
-    if(!(len = Serialization::decode_vi32(&ptr)) && empty_ok)
+    if(!(len = Serialization::decode_vi24(&ptr)) && empty_ok)
       continue;
 
     auto& r = other[c];
@@ -296,7 +296,7 @@ void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
   if(count = Serialization::decode_vi24(bufp, remainp)) {
     uint24_t n=count;
     const uint8_t* ptr_start = *bufp;
-    do *bufp += Serialization::decode_vi32(bufp); 
+    do *bufp += Serialization::decode_vi24(bufp); 
     while(--n);
     *remainp -= (size = *bufp - ptr_start);
     data = (own = owner) ? _data(ptr_start) : (uint8_t*)ptr_start;
@@ -304,12 +304,12 @@ void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
 }
 
 void Key::convert_to(std::vector<std::string>& key) const {
-  uint32_t len = 0;
+  uint24_t len;
   const uint8_t* ptr = data;
   key.clear();
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    it->append((const char*)ptr, len = Serialization::decode_vi32(&ptr));
+    it->append((const char*)ptr, len = Serialization::decode_vi24(&ptr));
   }
 }
 
@@ -323,10 +323,10 @@ bool Key::equal(const std::vector<std::string>& key) const {
   if(key.size() != count)
     return false;
     
-  uint32_t len;
+  uint24_t len;
   const uint8_t* ptr = data;
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    if(!Condition::eq(ptr, len = Serialization::decode_vi32(&ptr),
+    if(!Condition::eq(ptr, len = Serialization::decode_vi24(&ptr),
                       (const uint8_t*)it->data(), it->length()))
       return false;
   }
@@ -340,10 +340,10 @@ std::string Key::to_string() const {
   s.append(" len=");
   s.append(std::to_string(size));
   s.append(" fractions=[");
-  uint32_t len = 0;
+  uint24_t len;
   const uint8_t* ptr = data;
   for(uint24_t n=0; n<count; ++n,ptr+=len) {
-    s.append((const char*)ptr, len = Serialization::decode_vi32(&ptr));
+    s.append((const char*)ptr, len = Serialization::decode_vi24(&ptr));
     s.append(",");
   }
   s.append("])");
@@ -357,11 +357,11 @@ void Key::display(std::ostream& out, bool pretty) const {
     return;
   }
     
-  uint32_t len;
+  uint24_t len;
   const uint8_t* ptr = data;
   char hex[2];
   for(uint24_t n=0; n<count; ) {
-    for(len = Serialization::decode_vi32(&ptr); len--; ++ptr) {
+    for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
       if(pretty && (*ptr < 32 || *ptr > 126)) {
         sprintf(hex, "%X", *ptr);
         out << "0x" << hex;
@@ -377,12 +377,12 @@ void Key::display(std::ostream& out, bool pretty) const {
 
 void Key::display_details(std::ostream& out, bool pretty) const {
   out << "size=" << size << " count=" << count << " fractions=[";
-  uint32_t len;
+  uint24_t len;
   const uint8_t* ptr = data;
   char hex[2];
   for(uint24_t n=0; n<count; ) {
     out << '"';
-    for(len = Serialization::decode_vi32(&ptr); len--; ++ptr) {
+    for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
       if(pretty && (*ptr < 32 || *ptr > 126)) {
         sprintf(hex, "%X", *ptr);
         out << "0x" << hex;
