@@ -30,13 +30,14 @@ void check_load() {
   cell.key.add("aKey5");
 
   std::string value = "(";
-  for(uint32_t chr=0; chr<=255; chr++)
-    value += (char)chr;
+  for(uint32_t n=0; n<4; n++)
+    for(uint32_t chr=0; chr<=255; chr++)
+      value += (char)chr;
   value += ")END";
   cell.set_value(value);
 
   auto ts = SWC::Time::now_ns();
-  auto chks = 1000000;
+  auto chks = 100000;
   for(auto n = chks; --n;) {
     auto c = new Cells::Cell(cell);
     delete c;
@@ -71,6 +72,33 @@ void check_load() {
   }
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Key Copy took=" << ts << " avg=" << ts/chks << "\n";
+
+
+  ts = SWC::Time::now_ns();
+  SWC::DynamicBuffer buff;
+  for(auto n = chks; --n;) 
+    cell.write(buff);
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Cell::write took=" << ts << " avg=" << ts/chks << " without pre-alloc\n";
+  
+  auto sz = buff.fill();
+  buff.free();
+  buff.ensure(sz);
+  ts = SWC::Time::now_ns();
+  for(auto n = chks; --n;) 
+    cell.write(buff);
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Cell::write took=" << ts << " avg=" << ts/chks << "\n";
+
+
+  const uint8_t* bptr = buff.base;
+  size_t remain = buff.fill();
+  ts = SWC::Time::now_ns();
+  while(remain)
+    cell.read(&bptr, &remain);
+  ts = SWC::Time::now_ns() - ts;
+  std::cout << "Cell::read took=" << ts << " avg=" << ts/chks << "\n";
+      
 }
 
 int main() {

@@ -183,7 +183,7 @@ void CompactRange::response(int &err) {
   }
 
   auto in_block = m_inblock;
-  if(m_inblock->cells_count == m_inblock->has_last) {
+  if(m_inblock->cells_count <= 1) {
     in_block = nullptr;
   } else {
     m_inblock = new InBlock(blk_size, in_block);
