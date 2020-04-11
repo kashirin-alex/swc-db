@@ -70,7 +70,7 @@ void DynamicBuffer::set_mark() {
 }
 
 void DynamicBuffer::free() {
-  if (own)
+  if (own && base)
     delete [] base;
   base = ptr = mark = 0;
   size = 0;

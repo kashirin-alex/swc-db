@@ -62,10 +62,10 @@ class StaticBuffer final {
     *      delete[] the memory when going out of scope. Make sure that the
     *      buffer was allocated with new[]!
     */
-  StaticBuffer(void *data, uint32_t len, bool take_ownership = true);
+  explicit StaticBuffer(void *data, uint32_t len, bool take_ownership = true);
 
   /** Constructor; takes ownership from a DynamicBuffer */
-  StaticBuffer(DynamicBuffer &dbuf);
+  explicit StaticBuffer(DynamicBuffer &dbuf);
 
   /**
     * Copy constructor.
@@ -79,7 +79,7 @@ class StaticBuffer final {
     *
     * @param other Reference to the original instance
     */
-  StaticBuffer(StaticBuffer& other);
+  explicit StaticBuffer(StaticBuffer& other);
 
   void set(StaticBuffer& other);
 

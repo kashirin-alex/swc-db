@@ -50,21 +50,19 @@ StaticBuffer::StaticBuffer(void *data, uint32_t len, bool take_ownership)
                             own(take_ownership) {
 }
 
-StaticBuffer::StaticBuffer(DynamicBuffer &dbuf) {
-  base = dbuf.base;
-  size = dbuf.fill();
-  own = dbuf.own;
-  if (own) {
-    dbuf.base = dbuf.ptr = 0;
+StaticBuffer::StaticBuffer(DynamicBuffer &dbuf) 
+                          : base(dbuf.base), size(dbuf.fill()),
+                            own(dbuf.own) {
+  if(own) {
+    dbuf.base = dbuf.ptr = dbuf.mark = 0;
     dbuf.size = 0;
   }
 }
 
-StaticBuffer::StaticBuffer(StaticBuffer& other) {
-  base = other.base;
-  size = other.size;
-  own = other.own;
-  if (own) {
+StaticBuffer::StaticBuffer(StaticBuffer& other) 
+                          : base(other.base), size(other.size), 
+                            own(other.own) {
+  if(own) {
     other.own = false;
     other.base = 0;
   }
@@ -74,8 +72,7 @@ void StaticBuffer::set(StaticBuffer& other) {
   free();
   base = other.base;
   size = other.size;
-  own = other.own;
-  if (own) {
+  if(own = other.own) {
     other.own = false;
     other.base = 0;
     other.size = 0;
@@ -86,9 +83,8 @@ void StaticBuffer::set(DynamicBuffer &dbuf) {
   free();
   base = dbuf.base;
   size = dbuf.fill();
-  own = dbuf.own;
-  if (own) {
-    dbuf.base = dbuf.ptr = 0;
+  if(own = dbuf.own) {
+    dbuf.base = dbuf.ptr = dbuf.mark = 0;
     dbuf.size = 0;
   }
 }
