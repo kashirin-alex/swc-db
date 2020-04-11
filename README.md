@@ -243,7 +243,7 @@ Statistics:
  Total Cells Size:       702 B
  Average Transfer Rate:  0.0886446 B/us
  Average Cells Rate:     0.00113647 cell/us
-SWC-DB(client)> select where col(GenData2)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
+SWC-DB(client)> select where col(load_generator)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
 [0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008, 0000000009]
 
 
@@ -253,6 +253,26 @@ Statistics:
  Total Cells Size:       122 B
  Average Transfer Rate:  2.77759 B/ms
  Average Cells Rate:     0.0227671 cell/ms
+SWC-DB(client)> dump col='load_generator' into 'dump/test1/' DISPLAY_STATS;
+
+
+Statistics:
+ Total Time Took:        4740.7 ms
+ Total Cells Count:      1000000
+ Total Cells Size:       329500 KB
+ Average Transfer Rate:  69.5045 KB/ms
+ Average Cells Rate:     210.939 cell/ms
+ Files Count:            1
+ File:                   dump/test1/1.tsv (367000041 bytes)
+SWC-DB(client)> load from 'dump/test1/' into col='load_generator' DISPLAY_STATS;
+
+
+Statistics:
+ Total Time Took:        3257.83 ms
+ Total Cells Count:      1000000
+ Total Cells Size:       329500 KB
+ Average Transfer Rate:  101.141 KB/ms
+ Average Cells Rate:     306.953 cell/ms
 SWC-DB(client)> quit;
 ```
 
