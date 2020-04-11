@@ -42,16 +42,16 @@ SWC_CAN_INLINE
 void memcopy(uint8_t* dest, const uint8_t** bufp, size_t len) {
   memcpy(dest, *bufp, len);
   *bufp += len;
-  //while (len--)
-  //  *dest++ = *(*bufp)++;
+
+  //for(; len; --len, ++dest, ++*bufp) *dest = **bufp;
 }
 
 SWC_CAN_INLINE 
 void memcopy(uint8_t** bufp, const uint8_t* src, size_t len) {  
   memcpy(*bufp, src, len);
   *bufp += len;
-  //while (len--)
-  //  *(*bufp)++ = *src++;
+
+  //for(; len; --len, ++*bufp, ++src) **bufp = *src;
 }
 
 SWC_CAN_INLINE 
@@ -72,7 +72,8 @@ void decode_needed(size_t* remainp, size_t len) {
 
 SWC_CAN_INLINE 
 void encode_i8(uint8_t** bufp, uint8_t val) {
-  *(*bufp)++ = val;
+  **bufp = val;
+  ++*bufp;
 }
 
 SWC_CAN_INLINE 
@@ -88,7 +89,7 @@ uint8_t decode_byte(const uint8_t** bufp, size_t* remainp) {
 
 SWC_CAN_INLINE 
 void encode_bool(uint8_t** bufp, bool bval) {
-  *(*bufp)++ = bval ? 1 : 0;
+  encode_i8(bufp, bval);
 }
 
 SWC_CAN_INLINE 
@@ -149,11 +150,11 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
 }
 
 #define SWC_ENCODE_VI_0(_p_, _v_) \
-  if(_v_ <= MAX_V1B) { *(*_p_)++ = _v_; return; } 
+  if(_v_ <= MAX_V1B) { **_p_ = _v_; ++*_p_; return; } 
 
 #define SWC_ENCODE_VI_1(_p_, _v_) \
-  *(*_p_)++ = _v_ | 0x80; \
-  if((_v_ >>= 7) <= MAX_V1B) { *(*_p_)++ = _v_; return; }
+  **_p_ = _v_ | 0x80; ++*_p_; _v_ >>= 7; \
+  SWC_ENCODE_VI_0(_p_, _v_);
 
 #define SWC_ENCODE_VI(_p_, _v_, _shifts_) \
   SWC_ENCODE_VI_0(_p_, _v_); \
@@ -365,7 +366,8 @@ void encode_str16(uint8_t** bufp, const void* str, uint16_t len) {
   encode_i16(bufp, len);
   if(len) 
     memcopy(bufp, (const uint8_t*)str, len);
-  *(*bufp)++ = 0;
+  **bufp = 0;
+  ++*bufp;
 }
 
 SWC_CAN_INLINE 
@@ -386,8 +388,9 @@ char* decode_str16(const uint8_t** bufp, size_t* remainp, uint16_t *lenp) {
   decode_needed(remainp, *lenp+1);
   char* str = (char *)*bufp;
   *bufp += *lenp;
-  if(*(*bufp)++ != 0)
+  if(**bufp != 0)
     SWC_THROW_OVERRUN("str16");
+  ++*bufp;
   return str;
 }
 
@@ -411,7 +414,8 @@ void encode_vstr(uint8_t** bufp, const void* buf, size_t len) {
   encode_vi64(bufp, len);
   if(len) 
     memcopy(bufp, (const uint8_t*)buf, len);
-  *(*bufp)++ = 0;
+  **bufp = 0;
+  ++*bufp;
 }
 
 SWC_CAN_INLINE 
@@ -431,8 +435,9 @@ char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp) {
   decode_needed(remainp, *lenp+1);
   char* buf = (char *)*bufp;
   *bufp += *lenp;
-  if(*(*bufp)++ != 0)
+  if(**bufp != 0)
     SWC_THROW_OVERRUN("vstr");
+  ++*bufp;
   return buf;
 }
 
