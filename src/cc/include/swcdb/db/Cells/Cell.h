@@ -104,9 +104,9 @@ class Cell final {
 
   void read(const uint8_t **bufp, size_t* remainp, bool owner=false);
 
-  uint32_t encoded_length() const;
+  uint32_t encoded_length(bool no_value=false) const;
 
-  void write(SWC::DynamicBuffer &dst_buf) const;
+  void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
   bool equal(const Cell& other) const;
 

@@ -207,17 +207,19 @@ void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
   }
 }
 
-uint32_t Cell::encoded_length() const {
+uint32_t Cell::encoded_length(bool no_value) const {
   uint32_t len = 1+key.encoded_length()+1;
   if(control & HAVE_TIMESTAMP)
     len += 8;
   if(control & HAVE_REVISION)
     len += 8;
-  return len + Serialization::encoded_length_vi32(vlen) + vlen;
+  return no_value 
+          ? ++len 
+          : (len + Serialization::encoded_length_vi32(vlen) + vlen);
 }
 
-void Cell::write(SWC::DynamicBuffer &dst_buf) const {
-  dst_buf.ensure(encoded_length());
+void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
+  dst_buf.ensure(encoded_length( no_value || (no_value = !vlen) ));
 
   Serialization::encode_i8(&dst_buf.ptr, flag);
   key.encode(&dst_buf.ptr);
@@ -228,9 +230,12 @@ void Cell::write(SWC::DynamicBuffer &dst_buf) const {
   if(control & HAVE_REVISION)
     Serialization::encode_i64(&dst_buf.ptr, revision);
     
-  Serialization::encode_vi32(&dst_buf.ptr, vlen);
-  if(vlen)
+  if(no_value) {
+    Serialization::encode_i8(&dst_buf.ptr, 0);
+  } else {
+    Serialization::encode_vi32(&dst_buf.ptr, vlen);
     dst_buf.add_unchecked(value, vlen);
+  }
 
   assert(dst_buf.fill() <= dst_buf.size);
 }
