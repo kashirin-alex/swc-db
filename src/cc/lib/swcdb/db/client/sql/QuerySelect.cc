@@ -511,7 +511,7 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
     uint32_t remain_start = sql.length()+1;
 
     ptr = base_ptr - LEN_RANGE;
-    for(remain = 0; remain < remain_start; ++remain) {
+    for(remain = 0; remain++ < remain_start; ) {
       --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
@@ -583,7 +583,7 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
     uint32_t remain_start = sql.length()+1;
 
     ptr = base_ptr - LEN_KEY;
-    for(remain = 0; remain < remain_start; ++remain) {
+    for(remain = 0; remain++ < remain_start; ) {
       --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
@@ -709,7 +709,8 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
     uint32_t end = sql.length()+1;
 
     ptr = base_ptr - LEN_TIMESTAMP;
-    for(remain = 0; remain < end; ++remain) {
+    for(remain = 0; remain < end; ) {
+      ++remain;
       --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
