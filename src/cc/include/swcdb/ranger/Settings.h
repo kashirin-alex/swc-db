@@ -38,6 +38,10 @@ void Settings::init_app_options(){
 
     ("swc.rgr.compaction.check.interval", g_i32(300000), 
      "Interval in ms for Compaction ")
+    ("swc.rgr.compaction.read.ahead", g_i8(5), 
+     "Allowed read-ahead scans per Range compaction")
+    ("swc.rgr.compaction.range.max", g_i8(2), 
+     "Max Allowed Ranges at a time for compaction")
 
     ("swc.rgr.Range.CellStore.count.max", g_i8(10), 
      "Number of cellstores allowed in range before range-split")  

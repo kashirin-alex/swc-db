@@ -17,6 +17,12 @@ Compaction::Compaction()
                 *RangerEnv::maintenance_io()->ptr())),
             m_run(true), m_running(0), m_scheduled(false),
             m_idx_cid(0), m_idx_rid(0), 
+            cfg_read_ahead(
+              Env::Config::settings()->get<Property::V_GUINT8>(
+                "swc.rgr.compaction.read.ahead")),
+            cfg_max_range(
+              Env::Config::settings()->get<Property::V_GUINT8>(
+                "swc.rgr.compaction.range.max")), 
             cfg_check_interval(
               Env::Config::settings()->get<Property::V_GINT32>(
                 "swc.rgr.compaction.check.interval")) {
@@ -87,13 +93,12 @@ void Compaction::run(bool continuing) {
       std::lock_guard lock(m_mutex); 
       ++m_running;
     }
-    asio::post(
-      *RangerEnv::maintenance_io()->ptr(), [this, range](){ compact(range); }
-    );
+    asio::post(*RangerEnv::maintenance_io()->ptr(), 
+      [this, range](){ compact(range); } );
     
     {
       std::lock_guard lock(m_mutex); 
-      if(m_running == RangerEnv::maintenance_io()->get_size())
+      if(m_running == cfg_max_range->get())
         return;
     }
   }
@@ -205,7 +210,7 @@ void Compaction::compacted(RangePtr range, bool all) {
 void Compaction::compacted() {
   std::lock_guard lock(m_mutex);
 
-  if(m_running && m_running-- == RangerEnv::maintenance_io()->get_size()) {
+  if(m_running && m_running-- == cfg_max_range->get()) {
     asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
     return;
   } 

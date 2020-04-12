@@ -15,6 +15,9 @@ class Compaction final {
 
   typedef Compaction* Ptr;
 
+  const Property::V_GUINT8::Ptr   cfg_read_ahead;
+  const Property::V_GUINT8::Ptr   cfg_max_range;
+
   Compaction();
   
   virtual ~Compaction();
