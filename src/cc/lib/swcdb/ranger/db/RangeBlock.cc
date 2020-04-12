@@ -440,6 +440,8 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
   if(req->reached_limits()) {
     blocks->processing_decrement();
     int err = Error::OK;
+    if(req->with_block())
+      req->block = ptr();
     req->response(err);
     return true;
   } else if(!synced) {

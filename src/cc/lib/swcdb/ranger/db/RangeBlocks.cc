@@ -132,7 +132,10 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   }
   for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
       blk = nullptr, nxt_blk = nullptr) {
-    {
+    if(req->with_block() && req->block) {
+      (blk = blk_ptr = (Block*)req->block)->processing_increment();
+      req->block = nullptr;
+    } else {
       Mutex::scope lock(m_mutex);
       eval = blk_ptr ? blk_ptr->next 
              : (req->spec.offset_key.empty() 

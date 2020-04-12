@@ -17,25 +17,26 @@ class ReqScan  : public DB::Cells::ReqScan {
   
   enum Type {
     QUERY,
-    BLK_PRELOAD
+    BLK_PRELOAD,
+    COMPACTION
   };
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
   ReqScan(Type type=Type::QUERY)
-          : type(type), drop_caches(false) {
+          : type(type), drop_caches(false), block(nullptr) {
   }
 
   ReqScan(const DB::Cells::ReqScan::Config& cfg,
           Type type=Type::QUERY)
           : DB::Cells::ReqScan(cfg),
-            type(type), drop_caches(false) {
+            type(type), drop_caches(false), block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec)
           : DB::Cells::ReqScan(conn, ev, spec, DB::Cells::ReqScan::Config()),
-            type(Type::QUERY), drop_caches(false) {
+            type(Type::QUERY), drop_caches(false), block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
@@ -56,8 +57,13 @@ class ReqScan  : public DB::Cells::ReqScan {
            (m_conn != nullptr && !m_conn->is_open()) ;
   }
 
-  Type              type;
-  bool              drop_caches;
+  virtual bool with_block() {
+    return false;
+  }
+
+  Type   type;
+  bool   drop_caches;
+  void*  block;
 };
 
 

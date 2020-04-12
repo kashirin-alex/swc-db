@@ -94,7 +94,7 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
             const uint32_t cs_size, const uint8_t cs_replication,
             const uint32_t blk_size, const uint32_t blk_cells, 
             const Types::Encoding blk_encoding) 
-            : ReqScan(cfg), 
+            : ReqScan(cfg, ReqScan::Type::COMPACTION), 
               compactor(compactor), range(range),
               cs_size(cs_size), 
               cs_replication(cs_replication), 
@@ -120,6 +120,10 @@ CompactRange::Ptr CompactRange::shared() {
 void CompactRange::initialize() {
   m_req_ts = Time::now_ns();
   progress_check_timer();
+}
+
+bool CompactRange::with_block() {
+  return true;
 }
 
 bool CompactRange::selector(const DB::Cells::Cell& cell, bool& stop) {
