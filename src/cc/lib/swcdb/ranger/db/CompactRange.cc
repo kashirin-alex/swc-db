@@ -225,10 +225,14 @@ void CompactRange::progress_check_timer() {
   uint64_t median = (total_cells.load() 
     ? (Time::now_ns() - m_ts_start) / total_cells.load() : 10000) * blk_cells;
 
-  range->compacting((Time::now_ns() - req_ts > median * 10) 
-    ? Range::COMPACT_PREPARING  // mitigate add req. workload
-    : Range::COMPACT_COMPACTING // range scan & add reqs can continue
-  );
+  if(Time::now_ns() - req_ts > median * 10) {
+    // mitigate add req. workload
+    range->compacting(Range::COMPACT_PREPARING);
+    range->blocks.commitlog.commit_new_fragment(true);
+  } else {
+    // range scan & add reqs can continue
+    range->compacting(Range::COMPACT_COMPACTING);
+  }
 
   if((median /= 1000000) < 1000)
     median = 1000;
@@ -331,7 +335,9 @@ uint32_t CompactRange::create_cs(int& err) {
   if(!portion) portion = 1;
   if(id == range->cfg->cellstore_max() * portion) {
     stop_check_timer();
+    // mitigate add req. total workload
     range->compacting(Range::COMPACT_PREPARING);
+    range->blocks.commitlog.commit_new_fragment(true);
   }
   return id;
 
