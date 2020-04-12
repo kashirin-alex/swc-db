@@ -30,14 +30,7 @@ struct CompactRange::InBlock {
     cells.set_mark(); // start of last cell
     cell.write(cells);
 
-    if(before_last_cell = last_cell) { 
-      // align on previous - keeping last for next block-interval
-      const uint8_t* ptr = before_last_cell;
-      size_t remain = cells.ptr - ptr;
-      DB::Cells::Cell cell(&ptr, &remain, false);
-      cell.key.align(cells_intval.aligned_min, cells_intval.aligned_max);
-      cells_intval.expand(cell.timestamp);
-    }
+    before_last_cell = last_cell;
     last_cell = cells.mark;
   }
 
@@ -65,28 +58,23 @@ struct CompactRange::InBlock {
   }
 
   void finalize(bool any_begin, bool any_end) {    
+    const uint8_t* ptr = cells.base;
+    size_t remain = cells.fill();
+    bool set_begin = !any_begin;
+
     DB::Cells::Cell cell;
-    const uint8_t* ptr;
-    size_t remain;
-
-    if(any_begin) {
-      cells_intval.key_begin.free();
-    } else {
-      ptr = cells.base;
-      remain = cells.fill();
-      cell.read(&ptr, &remain); 
-      cells_intval.expand_begin(cell);
-    }
-
-    if(any_end) {
-      cells_intval.key_end.free();
-    } else {
-      remain = cells.ptr - (ptr = last_cell);
+    while(remain) {
       cell.read(&ptr, &remain); 
       cell.key.align(cells_intval.aligned_min, cells_intval.aligned_max);
-      cells_intval.expand_end(cell);
       cells_intval.expand(cell.timestamp);
+      
+      if(set_begin) {
+        cells_intval.expand_begin(cell);
+        set_begin = false;
+      }
     }
+    if(!any_end)
+      cells_intval.expand_end(cell);
   }
 
   const uint8_t        has_last;
@@ -197,7 +185,7 @@ void CompactRange::response(int &err) {
       m_getting = false;
     }
     if(m_writing || in_block) {
-      m_queue.push(in_block);
+      m_queue.push(in_block); // + pre-do in_block->finalize in another thread
       if(m_writing)
         return;
       m_writing = true;
@@ -300,13 +288,13 @@ void CompactRange::process() {
     request_more();
 
     write_cells(err, in_block);
-    delete in_block;
 
     if(m_stopped)
       return;
     if(err || !range->is_loaded() || compactor->stopped())
       return quit();
 
+    delete in_block;
     {
       Mutex::scope lock(m_mutex);
       m_queue.pop();
