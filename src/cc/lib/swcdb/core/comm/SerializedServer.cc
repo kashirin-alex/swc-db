@@ -162,13 +162,16 @@ SerializedServer::SerializedServer(
 
     asio::thread_pool* pool = new asio::thread_pool(workers);
     for(int n=0; n<workers; ++n)
-      asio::post(*pool, [d=io_ctx, run=&m_run]{
+      asio::post(*pool, [this, d=io_ctx] {
         // SWC_LOGF(LOG_INFO, "START DELAY: %s 3secs",  m_appname.c_str());
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        do{
+        for(;;) {
           d->run();
-          d->restart();
-        }while(run->load());
+          if(m_run.load())
+            d->restart();
+          else
+            break;
+        }
       });
     m_thread_pools.push_back(pool);
 
