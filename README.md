@@ -48,7 +48,7 @@ cmake ../swc-db \
 make -j8 install
 ```
 
-#### STARING-UP
+#### STARTING-UP
 Edit the necessary configuration in /opt/swcdb/etc/swcdb/*.cfg
 
 ###### STANDALONE
@@ -248,11 +248,11 @@ SWC-DB(client)> select where col(load_generator)=(cells=(offset=999999 ONLY_KEYS
 
 
 Statistics:
- Total Time Took:        43.923 ms
+ Total Time Took:        18.578 ms
  Total Cells Count:      1
- Total Cells Size:       122 B
- Average Transfer Rate:  2.77759 B/ms
- Average Cells Rate:     0.0227671 cell/ms
+ Total Cells Size:       130 B
+ Average Transfer Rate:  6.99752 B/ms
+ Average Cells Rate:     0.0538271 cell/ms
 SWC-DB(client)> dump col='load_generator' into 'dump/test1/' DISPLAY_STATS;
 
 

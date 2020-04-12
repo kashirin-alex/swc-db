@@ -94,7 +94,7 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
             const uint32_t cs_size, const uint8_t cs_replication,
             const uint32_t blk_size, const uint32_t blk_cells, 
             const Types::Encoding blk_encoding) 
-            : ReqScan(cfg, ReqScan::Type::COMPACTION), 
+            : ReqScan(cfg, ReqScan::Type::COMPACTION, true), 
               compactor(compactor), range(range),
               cs_size(cs_size), 
               cs_replication(cs_replication), 
@@ -109,8 +109,14 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
 CompactRange::~CompactRange() { 
   if(m_inblock)
     delete m_inblock;
-  for(; !m_queue.empty(); m_queue.pop()) 
-    delete m_queue.front();
+    
+  if(!m_qfinalize.empty()) do {
+    if(m_qfinalize.front()) delete m_qfinalize.front();
+  } while(m_qfinalize.pop_and_more());
+
+  if(!m_qwrite.empty()) do {
+    if(m_qwrite.front()) delete m_qwrite.front();
+  } while(m_qwrite.pop_and_more());
 }
 
 CompactRange::Ptr CompactRange::shared() {
@@ -181,40 +187,20 @@ void CompactRange::response(int &err) {
     m_inblock = new InBlock(blk_size, in_block);
   }
 
-  bool finished;
   {
     Mutex::scope lock(m_mutex);
     if(in_block) {
       m_inblock->set_offset(spec);
       m_getting = false;
     }
-    if(m_writing || in_block) {
-      m_queue.push(in_block); // + pre-do in_block->finalize in another thread
-      if(m_writing)
-        return;
-      m_writing = true;
-      finished = false;
-    } else {
-      finished = true;
-    }
-  }
-  
-  if(finished) {
-    Mutex::scope lock(m_mutex); 
-    if(!(finished = m_queue.empty()))
-      m_writing = true;
-  }
-  if(finished) {
-    finalize();
-    return;
   }
 
-  asio::post(
-    *RangerEnv::maintenance_io()->ptr(), 
-    [ptr=shared()](){ ptr->process(); 
-  });
+  if(m_qfinalize.push_and_is_1st(in_block))
+    asio::post(*RangerEnv::maintenance_io()->ptr(), 
+      [ptr=shared()](){ ptr->finalize_blocks(); });
 
-  request_more();
+  if(in_block)
+    request_more();
 }
 
 void CompactRange::progress_check_timer() {
@@ -262,31 +248,41 @@ void CompactRange::stop_check_timer() {
 void CompactRange::request_more() {
   {
     Mutex::scope lock(m_mutex);
-    if(m_getting 
-      || (!m_queue.empty() 
-          && (m_queue.size() >= RangerEnv::maintenance_io()->get_size()
-              || m_queue.size() > Env::Resources.avail_ram()/blk_size )))
+    size_t sz;
+    if(m_stopped || m_getting || 
+        ((sz = m_qwrite.size() + m_qfinalize.size()) && 
+         (sz >= compactor->cfg_read_ahead->get() || 
+          sz > Env::Resources.avail_ram()/blk_size )))
       return;
     m_getting = true;
     m_req_ts = Time::now_ns();
   }
 
-  asio::post(
-    *RangerEnv::maintenance_io()->ptr(), 
-    [ptr=shared()](){
-      ptr->range->scan_internal(ptr->get_req_scan());
-    }
-  );
+  asio::post(*RangerEnv::maintenance_io()->ptr(), 
+    [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
+}
+
+void CompactRange::finalize_blocks() {
+  InBlock* in_block;
+  if(!m_stopped) do {
+    if((in_block = m_qfinalize.front()))
+      in_block->finalize(false, false);
+    
+    if(m_stopped) 
+      return;
+    request_more();
+    
+    if(m_qwrite.push_and_is_1st(in_block))
+      asio::post(*RangerEnv::maintenance_io()->ptr(), 
+        [ptr=shared()](){ ptr->process(); });
+  } while(m_qfinalize.pop_and_more() && !m_stopped);
 }
 
 void CompactRange::process() {
   int err = Error::OK;
-  for(InBlock* in_block; ; ) {
-    {
-      Mutex::scope lock(m_mutex);
-      in_block = m_queue.front();
-    }
-    if(in_block == nullptr) {
+  InBlock* in_block;
+  do {
+    if((in_block = m_qwrite.front()) == nullptr) {
       finalize();
       return;
     }
@@ -303,14 +299,8 @@ void CompactRange::process() {
       return quit();
 
     delete in_block;
-    {
-      Mutex::scope lock(m_mutex);
-      m_queue.pop();
-      m_writing = !m_queue.empty();
-      if(!m_writing)
-        break;
-    }
-  }
+  } while(m_qwrite.pop_and_more() && !m_stopped);
+
   request_more();
 }
 
@@ -348,14 +338,13 @@ uint32_t CompactRange::create_cs(int& err) {
 }
 
 void CompactRange::write_cells(int& err, InBlock* in_block) {
-  bool any_begin = false;
   if(cs_writer == nullptr) {
-    any_begin = create_cs(err) == 1;
+    if(create_cs(err) == 1 && range->is_any_begin())
+      in_block->cells_intval.key_begin.free();
     if(err)
       return;
   }
 
-  in_block->finalize(any_begin && range->is_any_begin(), false);
   cs_writer->block(
     err, in_block->cells_intval, in_block->cells, in_block->cells_count);
   if(err)
@@ -395,7 +384,8 @@ void CompactRange::finalize() {
       if(err)
         return quit();
     }
-    m_inblock->finalize(any_begin && range->is_any_begin(), range->is_any_end());
+    m_inblock->finalize(
+      any_begin && range->is_any_begin(), range->is_any_end());
     cs_writer->block(
       err, m_inblock->cells_intval, m_inblock->cells, m_inblock->cells_count);
  
