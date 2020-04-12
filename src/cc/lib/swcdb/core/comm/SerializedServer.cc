@@ -192,10 +192,7 @@ void SerializedServer::run() {
 }
 
 void SerializedServer::stop_accepting() {
-  for(;;) {
-    auto it = m_acceptors.begin();
-    if(it == m_acceptors.end())
-      break;
+  for(auto it = m_acceptors.begin(); it < m_acceptors.end(); ) {
     (*it)->stop();
     m_acceptors.erase(it);
   }
@@ -211,7 +208,7 @@ void SerializedServer::shutdown() {
   for(;;) {
     {
       Mutex::scope lock(m_mutex);
-      auto it=m_conns.begin();
+      auto it = m_conns.begin();
       if(it == m_conns.end())
         break;
       conn = *it;

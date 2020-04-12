@@ -35,6 +35,8 @@ void IoContext::do_run() {
     m_ioctx->run();
     if(running)
       m_ioctx->restart();
+    else 
+      break;
   }
 }
   
@@ -70,7 +72,7 @@ void IoContext::stop() {
   m_wrk.reset();
     
   // hold on for IO to finish
-  for(int i=0;i<10;++i){
+  for(int i=0; i<10; ++i) {
     if(m_ioctx->stopped())
       break;
     SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", m_name.c_str());
