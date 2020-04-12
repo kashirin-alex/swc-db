@@ -70,7 +70,8 @@ int Interface::run() {
 
     prompt_state = ""; // "-> ";
     do {
-      c = *ptr++;
+      c = *ptr;
+      ++ptr;
       if(next_line = c == 0)
         c = '\n';
 

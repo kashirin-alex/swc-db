@@ -264,9 +264,10 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
       break;
     }
 
-    if(!count++)
+    if(!count)
       it_start = it;
-  
+    ++count;
+
     if(!cell->has_expired(ttl)) 
       cell->write(cells);
   }

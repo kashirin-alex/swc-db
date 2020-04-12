@@ -255,7 +255,7 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
     return;
   }
 
-  for (int i=0; i<numEntries; i++) {
+  for (int i=0; i<numEntries; ++i) {
     if (fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
       continue;
     auto& entry = results.emplace_back();

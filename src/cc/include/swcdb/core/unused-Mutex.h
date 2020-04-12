@@ -100,7 +100,7 @@ class RW final {
 
   User& get_user(const size_t& tid, const uint32_t& us_sleep=0) {
     uint8_t n;
-    for(n=0; n<8; n++) {
+    for(n=0; n<8; ++n) {
       auto& usr = users[n];
       if(usr.tid.load(std::memory_order_acquire) == tid)
         return usr;
@@ -108,7 +108,7 @@ class RW final {
 
     size_t no;
     for(uint16_t i=0;;) {
-      for(n=0; n<8; n++) {
+      for(n=0; n<8; ++n) {
         auto& usr = users[n];
         no = 0;
         if(usr.tid.compare_exchange_weak(no, tid, std::memory_order_seq_cst))
@@ -126,7 +126,7 @@ class RW final {
   void let_users(const size_t& tid, const uint32_t& us_sleep) {
     uint8_t n;
     for(uint16_t i = 0;;) {
-      for(n=0; n<8; n++) {
+      for(n=0; n<8; ++n) {
         auto& usr = users[n];
         if(usr.tid.load(std::memory_order_acquire) == tid
           || !usr.value.load(std::memory_order_acquire)) {

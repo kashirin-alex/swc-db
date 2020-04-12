@@ -222,10 +222,10 @@ class Interface {
     for(auto opt : options) {
       addstr("\n  ");
       addnstr(opt->name.data(), opt->name.length());
-      for(int n=offset_name;n>opt->name.length();n--)
+      for(int n=offset_name;n>opt->name.length();--n)
         addch(' ');
       addnstr(opt->desc.data(), opt->desc.length());
-      for(int n=offset_desc;n>opt->desc.length();n--)
+      for(int n=offset_desc;n>opt->desc.length();--n)
         addch(' ');
     }
     addch('\n');

@@ -268,7 +268,7 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
     std::string_view fraction;
     Condition::Comp comp;
     int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); idx++) {
+    for(int idx=0; idx < key_start.size(); ++idx) {
       fraction = key_start.get(idx, comp);
       if(fraction.size() && 
         (comp == Condition::EQ || comp == Condition::PF || 
@@ -287,7 +287,7 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
     std::string_view fraction;
     Condition::Comp comp;
     int32_t ok = -1;
-    for(int idx=0; idx < key_finish.size(); idx++) {
+    for(int idx=0; idx < key_finish.size(); ++idx) {
       fraction = key_finish.get(idx, comp);
       if(fraction.size() && 
         (comp == Condition::EQ || 
@@ -313,7 +313,7 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
     std::string_view fraction;
     Condition::Comp comp;
     int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); idx++) {
+    for(int idx=0; idx < key_start.size(); ++idx) {
       fraction = key_start.get(idx, comp);
       if(fraction.length() && 
         (comp == Condition::LT || 
@@ -339,7 +339,7 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
     uint32_t len;
     Condition::Comp comp;
     int32_t ok = -1;
-    for(int idx=0; idx < key_finish.size(); idx++) {
+    for(int idx=0; idx < key_finish.size(); ++idx) {
       key_finish.get(idx, &fraction, &len, &comp);
       if(len && 
         (comp == Condition::LT || comp == Condition::LE)) {
@@ -358,7 +358,7 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
     uint32_t len;
     Condition::Comp comp;
     int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); idx++) {
+    for(int idx=0; idx < key_start.size(); ++idx) {
       key_start.get(idx, &fraction, &len, &comp);
       if(len && 
         (comp == Condition::LT || comp == Condition::LE)) {

@@ -319,7 +319,7 @@ class DbClient : public Interface {
 
         Mutex::scope lock(Logger::logger.mutex);
         for(auto cell : cells) {
-          cells_count++;
+          ++cells_count;
           cells_bytes += cell->encoded_length();
           cell->display(
             std::cout, 

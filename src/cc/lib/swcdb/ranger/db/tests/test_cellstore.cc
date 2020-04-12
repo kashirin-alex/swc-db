@@ -73,7 +73,7 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
 
   for(auto i=1; i<=num_cells; ++i) {
 
-    for(int g=1; g<=group_fractions; g++) {
+    for(int g=1; g<=group_fractions; ++g) {
       
 
       rev = SWC::Time::now_ns();
@@ -91,7 +91,7 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
       cell.set_value(v);
 
       cell.write(buff);
-      cell_count++;
+      ++cell_count;
       blk_intval.expand(cell);   
       if(blk_intval.key_begin.get_string(0).compare("") == 0) {
         std::cout << cell.to_string() << "\n";
@@ -107,7 +107,7 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
         || cell_count >= range->cfg->block_cells() 
         || (num_cells == i && group_fractions == g)) {
 
-        expected_blocks++;
+        ++expected_blocks;
         std::cout << "adding   block:"
                   << " cell_count=" << cell_count
                   << " buff.fill()=" << buff.fill()
@@ -292,8 +292,8 @@ int main(int argc, char** argv) {
 
   std::vector<std::thread*> threads;
   size_t id = 0;
-  for(int n=1; n<=10; n++) {
-    id++;
+  for(int n=1; n<=10; ++n) {
+    ++id;
     
     threads.push_back(new std::thread(
       [&blocks, match_on_offset, &match_key, id] () {

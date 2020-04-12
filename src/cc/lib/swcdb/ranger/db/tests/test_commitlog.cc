@@ -41,7 +41,7 @@ void count_all_cells(size_t num_cells,
     }
     //std::cout << req->to_string() << "\n";
     //std::cout << blocks.to_string() << "\n";
-    chk--;
+    --chk;
   };
 
   blocks.scan(req);
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   int num_threads = 8;
   std::atomic<int> threads_processing = num_threads;
 
-  for(int t=0;t<num_threads;t++) {
+  for(int t=0;t<num_threads;++t) {
     
     std::thread([t, versions, commitlog = &commitlog, &threads_processing, 
                  num=num_cells/num_threads]() {
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
                 << " until=" << t*num+num << "\n";
       DB::Cells::Cell cell;
       int64_t rev;
-      for(int v=0;v<versions;v++) {
+      for(int v=0;v<versions;++v) {
       for(auto i=t*num;i<t*num+num;++i){
 
         std::string n = std::to_string(i);
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
                     << " progress=" << i << "\n";
       }
       }
-      threads_processing--;
+      --threads_processing;
     }).detach();
   }
 
@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
 
   int num_chks = 10;
   std::atomic<int> chk = num_chks;
-  for(int i = 1;i<=num_chks; i++){
+  for(int i = 1;i<=num_chks; ++i){
     
     auto req = Ranger::ReqScanTest::make();
     req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
       }
       //std::cout << req->to_string() << "\n";
       //std::cout << blocks.to_string() << "\n";
-      chk--;
+      --chk;
     };
     blocks.scan(req);
   }
@@ -227,8 +227,8 @@ int main(int argc, char** argv) {
   int added_num = 1000000;
   DB::Cells::Cell cell;
   int64_t rev;
-  for(int v=0;v<versions;v++) {
-    for(auto i=0;i<added_num;i++){
+  for(int v=0;v<versions;++v) {
+    for(auto i=0;i<added_num;++i){
 
         std::string n = std::to_string(i)+"-added";
       

@@ -57,7 +57,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
         len +=  Common::Params::HostEndPoints::encoded_length_internal();
       
       if(flag == Flag::MNGR_ASSIGNED)
-        len++; // fs-type
+        ++len; // fs-type
       return len;
     }
     

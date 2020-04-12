@@ -159,7 +159,7 @@ void Groups::on_cfg_update() {
   uint16_t port;
 
   int c = cfg_mngr_hosts->size();
-  for(int n=0; n<c;n++){
+  for(int n=0; n<c; ++n){
     std::string cfg = cfg_mngr_hosts->get_item(n);
     SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
       
@@ -320,7 +320,7 @@ std::string Groups::to_string() {
 void Groups::add(Groups::GroupHost& g_host) {
   std::lock_guard lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++) {
+  for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it) {
     if(has_endpoint(g_host.endpoints, it->endpoints))
       return;
     if(g_host.col_begin == it->col_begin && g_host.col_end == it->col_end){
@@ -334,7 +334,7 @@ void Groups::add(Groups::GroupHost& g_host) {
 void Groups::remove(EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin();it<m_active_g_host.end();it++){
+  for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it){
     if(has_endpoint(endpoints, it->endpoints)){
       m_active_g_host.erase(it);
     }

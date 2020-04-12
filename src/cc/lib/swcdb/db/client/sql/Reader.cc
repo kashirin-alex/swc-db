@@ -28,8 +28,8 @@ bool Reader::is_char(const char* stop) const {
 
 bool Reader::found_char(const char c) {
   if(*ptr == c) {
-    ptr++;
-    remain--;
+    ++ptr;
+    --remain;
     return true;
   }
   return false;
@@ -97,8 +97,8 @@ void Reader::expect_comparator(Condition::Comp& comp) {
 void Reader::expect_digit() {
   if(remain >= 1) {
     if(std::isdigit((unsigned char)*ptr)) {
-      ptr++;
-      remain--;
+      ++ptr;
+      --remain;
       return;
     }
   }
@@ -111,8 +111,8 @@ void Reader::expected_boolean(bool& value) {
   else if(found_char('0') || found_token(TOKEN_BOOL_FALSE, LEN_BOOL_FALSE))
     value = false;
   else {
-    ptr++;
-    remain--;
+    ++ptr;
+    --remain;
     error_msg(Error::SQL_PARSE_ERROR, "missing 'bool'");
   }
 }
@@ -161,8 +161,8 @@ void Reader::read(std::string& buf, const char* stop, bool keep_escape) {
     if(!escape && *ptr == '\\') {
       escape = remain-1;
       if(!keep_escape) {
-        ptr++;
-        remain--;
+        ++ptr;
+        --remain;
         continue;
       }
     } else if(escape && escape != remain)
@@ -182,8 +182,8 @@ void Reader::read(std::string& buf, const char* stop, bool keep_escape) {
         break;
     }
     buf += *ptr;
-    ptr++;
-    remain--;
+    ++ptr;
+    --remain;
   }
 }
 

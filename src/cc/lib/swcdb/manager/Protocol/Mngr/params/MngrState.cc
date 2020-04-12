@@ -42,7 +42,7 @@ void MngrState::decode_internal(uint8_t version, const uint8_t **bufp,
   mngr_host = Serialization::decode(bufp, remainp);
   states.clear();
   states.resize(len);
-  for(size_t i =0; i<len; i++)
+  for(size_t i =0; i<len; ++i)
     (states[i] = std::make_shared<Manager::MngrStatus>())
       ->decode(bufp, remainp);
 }

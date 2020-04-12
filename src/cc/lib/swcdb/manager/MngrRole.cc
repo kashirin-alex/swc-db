@@ -308,8 +308,9 @@ void MngrRole::apply_cfg() {
 }
 
 void MngrRole::managers_checkin() {
-  if(m_checkin++)
+  if(m_checkin)
     return;
+  m_checkin = true;
 
   //SWC_LOG(LOG_DEBUG, "managers_checkin");
   size_t sz;
@@ -333,7 +334,7 @@ void MngrRole::fill_states() {
 void MngrRole::managers_checker(int next, size_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
   if(!total) {
-    m_checkin=0;
+    m_checkin=false;
     schedule_checkin(cfg_check_interval->get());
     return;
   }
@@ -345,12 +346,13 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
       return;
     if(next == m_states.size())
       next = 0;
-    host_chk = m_states.at(next++);
+    host_chk = m_states.at(next);
+    ++next;
   }
 
   if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1) {
     if(flw) {
-      m_checkin=0;
+      m_checkin=false;
       schedule_checkin(cfg_check_interval->get());
       return;
     }
@@ -386,7 +388,7 @@ void MngrRole::manager_checker(MngrStatus::Ptr host, int next, size_t total,
   if(conn == nullptr || !conn->is_open()) {
     if(host->state == Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   
-      m_checkin=0;
+      m_checkin=false;
       schedule_checkin(cfg_delay_fallback->get());
       SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
                 host->failures);
@@ -473,7 +475,7 @@ void MngrRole::set_active_columns() {
     if(!group->col_end && is_active(cid))
       active.push_back(group->col_end);
       
-    for(;cid <= cid_end; cid++) { 
+    for(;cid <= cid_end; ++cid) { 
       auto c_it = std::find_if(active.begin(), active.end(),  
                               [cid](const int64_t& cid_set) 
                               {return cid_set == cid;});
@@ -489,7 +491,7 @@ void MngrRole::set_mngr_inchain(ConnHandlerPtr mngr) {
   m_mngr_inchain->set(mngr);
 
   fill_states();
-  m_checkin=0;
+  m_checkin=false;
   schedule_checkin(cfg_check_interval->get());
 }
 

@@ -79,7 +79,7 @@ class ReaddirRsp : public Serializable {
     int32_t count = Serialization::decode_i32(bufp, remainp);
     m_listing.clear();
     m_listing.resize(count);
-    for (int32_t i=0; i<count; i++)
+    for (int32_t i=0; i<count; ++i)
       m_listing[i].decode(bufp, remainp);
   }
   

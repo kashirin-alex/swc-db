@@ -55,7 +55,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  for(int n=1; n<=num_of_cols;n++){
+  for(int n=1; n<=num_of_cols;++n){
     expected.push_back(std::make_shared<ExpctedRsp>(
       get_name(n, modified), 
       blk_encoding,
@@ -102,7 +102,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
           std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
-        req->chks++;
+        ++req->chks;
       },
       300000
     );
@@ -154,7 +154,7 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
           std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
-        req->chks++;
+        ++req->chks;
 
       },
       300000
@@ -190,7 +190,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols,
   std::cout << "########### chk func=" << func << " ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 
-  for(int n=1;n<=num_of_cols;n++) {
+  for(int n=1;n<=num_of_cols;++n) {
     Protocol::Mngr::Req::ColumnMng::request(
       func,
       DB::Schema::make(
@@ -257,7 +257,7 @@ void chk_rename(int num_of_cols, bool verbose=false){
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  for(int n=1; n<=num_of_cols;n++){
+  for(int n=1; n<=num_of_cols;++n){
     std::string name = get_name(n, false);
     Protocol::Mngr::Req::ColumnGet::schema(
       name, 

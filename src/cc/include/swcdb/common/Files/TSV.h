@@ -65,7 +65,7 @@ class FileWriter {
         result->get_cells(cid, cells);
         
         for(auto cell : cells) {
-          cells_count++;
+          ++cells_count;
           cells_bytes += cell->encoded_length();
           write(*cell, col_type);
 
@@ -92,7 +92,7 @@ class FileWriter {
     uint32_t len = 0;
     std::string f_len;
     const uint8_t* ptr = cell.key.data;
-    for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
+    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
       f_len = std::to_string(len);
       buffer.add(f_len.data(), f_len.length());
@@ -102,7 +102,7 @@ class FileWriter {
     buffer.add("\t", 1); //
   
     ptr = cell.key.data;
-    for(uint32_t n=1; n<=cell.key.count; n++,ptr+=len) {
+    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
       len = Serialization::decode_vi32(&ptr);
       if(len)
         buffer.add(ptr, len);
@@ -375,7 +375,7 @@ class FileReader {
         }
         if(ok) {
           col->add(cell);
-          cells_count++;
+          ++cells_count;
           cells_bytes += cell.encoded_length();
           updater->commit_or_wait(col);
         } else  {
@@ -412,8 +412,8 @@ class FileReader {
 
     const uint8_t* s = *bufp;
     while(remain && *ptr != '\n') {
-      ptr++;
-      remain--;
+      ++ptr;
+      --remain;
       if(*ptr == '\t' || *ptr == '\n') {
         header.emplace_back((const char*)s, ptr-s);
         s = ptr+1;
@@ -427,8 +427,8 @@ class FileReader {
     if(header.size() < 6 + has_ts)
       return false;
 
-    ptr++; // header's newline
-    remain--;
+    ++ptr; // header's newline
+    --remain;
 
     *bufp = ptr;
     *remainp = remain;
@@ -443,14 +443,14 @@ class FileReader {
 
     if(has_ts) {
       while(remain && *ptr != '\t') {
-        remain--;
+        --remain;
         ++ptr;
       }
       if(!remain)
         return false;
       cell.set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
       s = ++ptr; // tab
-      remain--;
+      --remain;
     }
 
     std::vector<uint32_t> flen;
@@ -464,13 +464,13 @@ class FileReader {
         s = ++ptr; // comma
       }
       ++ptr;
-      remain--;
+      --remain;
     }
     if(!remain)
       return false;
     
     s = ++ptr; // tab
-    remain--;
+    --remain;
     for(auto len : flen) {
       if(remain <= len+1) 
         return false;
@@ -483,7 +483,7 @@ class FileReader {
      
     s = ptr;
     while(remain && (*ptr != '\t' && *ptr != '\n')) {
-      remain--;
+      --remain;
       ++ptr;
     }
     if(!remain)
@@ -500,9 +500,9 @@ class FileReader {
       throw std::runtime_error("Expected a tab");
 
     s = ++ptr; // tab
-    remain--;
+    --remain;
     while(remain && (*ptr != '\t' && *ptr != '\n')) {
-      remain--;
+      --remain;
       ++ptr;
     }
     if(!remain)
@@ -528,7 +528,7 @@ class FileReader {
             return false; 
           s = ++ptr; // tab
           while(remain && *ptr != '\n') {
-            remain--;
+            --remain;
             ++ptr;
           }
           if(!remain)
@@ -545,7 +545,7 @@ class FileReader {
         return false;
       s = ++ptr; // tab
       while(remain && *ptr != '\t') {
-        remain--;
+        --remain;
         ++ptr;
       }
       if(!remain)

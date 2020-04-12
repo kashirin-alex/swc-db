@@ -286,7 +286,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 
   if(!range->deleted()) {
     if(err) {
-      rgr->total_ranges--;
+      --rgr->total_ranges;
       if(failure)
         ++rgr->failures;
 
@@ -343,7 +343,7 @@ void Rangers::column_delete(const int64_t cid,
     for(auto& rgr : m_rangers) {
       if(id != rgr->id)
         continue;
-      rgr->total_ranges--; // reduce all ranges-count of cid
+      --rgr->total_ranges; // reduce all ranges-count of cid
       rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
     }
   }

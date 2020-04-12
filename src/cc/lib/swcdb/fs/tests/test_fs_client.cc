@@ -163,10 +163,10 @@ void run(size_t thread_id){
     std::string data_end("567890");
     size_t file_blk = block_sz-data_start.length()-data_end.length();
     size_t written = 0;
-    for(int i=0;i<num_blocks;i++){
+    for(int i=0;i<num_blocks;++i){
       file_sz += block_sz;
       std::string data = data_start;
-      for(int i=0;i<file_blk;i++)
+      for(int i=0;i<file_blk;++i)
         data.append("+");
       data.append(data_end);
       StaticBuffer buffer(data.data(), data.length(), false);
@@ -293,7 +293,7 @@ void run(size_t thread_id){
 
     // pread >>
     size_t pread_offset = 0;
-    for(int i=0;i<num_blocks;i++){
+    for(int i=0;i<num_blocks;++i){
       err = Error::OK;
       uint8_t buf_start[data_start.length()];
       if (Env::FsInterface::fs()->pread(err, smartfd, pread_offset, buf_start, data_start.length())
@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get_str("swc.fs")));
   
-  for(size_t chk=1;chk<=2;chk++) {
+  for(size_t chk=1;chk<=2;++chk) {
     int err = Error::OK;
     // make data-root
     Env::FsInterface::fs()->mkdirs(err, "a/child/folder");
@@ -371,7 +371,7 @@ int main(int argc, char** argv) {
 
     std::cout << "--1--\n";
     std::vector<std::thread*> threads;
-    for(size_t t=1;t<=2;t++)
+    for(size_t t=1;t<=2;++t)
       threads.push_back(new std::thread([t](){run(t);}));
     
     std::cout << "--2--\n";
@@ -391,13 +391,13 @@ int main(int argc, char** argv) {
     //std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   }
   
-  //for(size_t chk=1;chk<=10;chk++)
+  //for(size_t chk=1;chk<=10;++chk)
   //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   
   //std::cout << " fs()->stop\n";
   Env::FsInterface::fs()->stop();
   
-  //for(size_t chk=1;chk<=100;chk++)
+  //for(size_t chk=1;chk<=100;++chk)
   //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   
   exit(0);

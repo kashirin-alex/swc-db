@@ -53,10 +53,10 @@ uint32_t fletcher32(const void *data8, size_t len8) {
       tlen -= 16;
     }
 
-    while(tlen--) {
+    if(tlen) do {
       SWC_F32_DO1(data, 0);
       data += 2;
-    }
+    } while(--tlen);
 
     sum1 = (sum1 & 0xffff) + (sum1 >> 16);
     sum2 = (sum2 & 0xffff) + (sum2 >> 16);

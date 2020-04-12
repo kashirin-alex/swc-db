@@ -163,8 +163,8 @@ bool eq(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) {
   if(p1_len != p2_len)
     return false;
-  for(auto end = p1+p1_len; p1 < end;)
-    if(*p1++ != *p2++)
+  for(auto end = p1+p1_len; p1 < end; ++p1, ++p2)
+    if(*p1 != *p2)
       return false;
    return true;
   //return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;

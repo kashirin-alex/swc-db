@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   std::cout << "--######################--\n";
   std::vector<std::thread*> threads;
 
-  for(size_t t=1;t<=64;t++){
+  for(size_t t=1;t<=64;++t){
     SWC::EndPoints endpoints_copy;
     endpoints_copy.assign(endpoints.begin(),endpoints.end());
     std::cout << "starting thread=" << t << "\n";
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
       size_t num_req = 1000;
       std::atomic<size_t> total = num_req;
 
-      for(size_t n=1;n<=num_req;n++){
+      for(size_t n=1;n<=num_req;++n){
         SWC::DispatchHandler::Ptr req = std::make_shared<ReqHandler>(t, n, total);
         auto cbp = SWC::CommBuf::create_error_message(
           SWC::Error::OK, 

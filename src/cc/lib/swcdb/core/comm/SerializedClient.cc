@@ -228,7 +228,7 @@ void Serialized::get_connection(
   if(next == endpoints.size())
     next = 0;
 
-  ServerConnections::Ptr srv = get_srv(endpoints.at(next++));
+  ServerConnections::Ptr srv = get_srv(endpoints.at(next));
   ConnHandlerPtr conn = nullptr;
   srv->reusable(conn, preserve);
   if(conn != nullptr || (probes && !tries)) {
@@ -236,6 +236,7 @@ void Serialized::get_connection(
     return;
   }
     
+  ++next;
   SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
   srv->connection(timeout, 
     [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]

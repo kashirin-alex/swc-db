@@ -176,8 +176,8 @@ int64_t Cell::get_counter() const {
 int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   const uint8_t *ptr = value;
   int64_t v = Serialization::decode_vi64(&ptr);
-  rev = ((op = *ptr++) & HAVE_REVISION) 
-        ? Serialization::decode_vi64(&ptr) 
+  rev = ((op = *ptr) & HAVE_REVISION) 
+        ? Serialization::decode_vi64(&++ptr) 
         : TIMESTAMP_NULL;
   return v;
 }
@@ -363,7 +363,7 @@ void Cell::display(std::ostream& out,
     const uint8_t* ptr = value;
     char hex[2];
 
-    for(uint32_t i=vlen; i--; ++ptr) {
+    for(uint32_t i=vlen; i; --i, ++ptr) {
       if(!bin && (*ptr < 32 || *ptr > 126)) {
         sprintf(hex, "%X", *ptr);
         out << "0x" << hex;

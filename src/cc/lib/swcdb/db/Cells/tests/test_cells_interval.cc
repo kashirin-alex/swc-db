@@ -22,7 +22,7 @@ int main() {
   DB::Cells::Interval interval;
   DB::Cells::Cell cell; 
 
-  for (int n = 0; n<=num_keys ;n++) {
+  for (int n = 0; n<=num_keys ;++n) {
       cell.key.free();
 
       auto s = std::to_string(num_keys-n);

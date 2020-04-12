@@ -238,7 +238,7 @@ bool MngdColumns::initialize() {
       err = Error::OK;
     }
     if(entries.empty()) { // initialize sys-columns
-      for(int cid=1;cid<=3;cid++) {
+      for(int cid=1;cid<=3;++cid) {
         Column::create(err, cid);
         entries.push_back(cid);
       }
@@ -249,14 +249,14 @@ bool MngdColumns::initialize() {
     std::atomic<int64_t> pending = 0;
     while(!entries.empty()) {
       FS::IdEntries_t hdlr_entries;
-      for(auto n=0; n < vol && !entries.empty(); n++) {
+      for(auto n=0; n < vol && !entries.empty(); ++n) {
         hdlr_entries.push_back(entries.front());
         entries.erase(entries.begin());
       }
       if(hdlr_entries.empty())
         break;
 
-      pending++;
+      ++pending;
       asio::post(*Env::IoCtx::io()->ptr(), 
         [&pending, entries=hdlr_entries, 
          replicas=cfg_schema_replication->get()]() { 
@@ -270,7 +270,7 @@ bool MngdColumns::initialize() {
               SWC_LOGF(LOG_ERROR, "Schema cid=%d err=%d(%s)", 
                        cid, err, Error::get_text(err));
           }
-          pending--;
+          --pending;
         }
       );
     }

@@ -157,7 +157,7 @@ class Column final {
 
     if(m_ranges.size() > idx){
       auto it = m_ranges.begin();
-      for(int i=idx;i--;++it);
+      for(int i=idx; i; --i, ++it);
       return it->second;
     }
     idx = 0;

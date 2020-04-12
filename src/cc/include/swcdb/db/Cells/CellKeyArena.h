@@ -343,7 +343,7 @@ class KeyArena : public std::vector<Fraction> {
     char hex[2];
     for(auto it = begin(); it < end();) {
       ptr = (*it)->data();
-      for(len = (*it)->size(); len--; ++ptr) {
+      for(len = (*it)->size(); len; --len, ++ptr) {
         if(pretty && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;
@@ -365,7 +365,7 @@ class KeyArena : public std::vector<Fraction> {
     for(auto it = begin(); it < end();) {
       out << '"';
       ptr = (*it)->data();
-      for(len = (*it)->size(); len--; ++ptr) {
+      for(len = (*it)->size(); len; --len, ++ptr) {
         if(pretty && (*ptr < 32 || *ptr > 126)) {
           sprintf(hex, "%X", *ptr);
           out << "0x" << hex;

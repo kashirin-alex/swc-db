@@ -72,8 +72,8 @@ int QuerySelect::parse_select() {
         expect_token(TOKEN_WHERE, LEN_WHERE, token_where);
         continue;
       }
-      remain--;
-      ptr++;
+      --remain;
+      ++ptr;
     }
 
     if(remain && !err)
@@ -297,8 +297,8 @@ void QuerySelect::read_columns_intervals() {
         possible_and = true;
       }
       
-      remain--;
-      ptr++;
+      --remain;
+      ++ptr;
     }
 
 }
@@ -418,8 +418,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
       }
       
       if(is_quoted) {
-        ptr++;
-        remain--;
+        ++ptr;
+        --remain;
         continue;
       }
 
@@ -472,8 +472,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
       
       if(*ptr == ')') 
         break;
-      ptr++;
-      remain--;
+      ++ptr;
+      --remain;
 
     }
 
@@ -511,9 +511,8 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
     uint32_t remain_start = sql.length()+1;
 
     ptr = base_ptr - LEN_RANGE;
-    remain = 0;
-    while(remain++ < remain_start) {
-      ptr--;
+    for(remain = 0; remain < remain_start; ++remain) {
+      --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
           break;
@@ -584,9 +583,8 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
     uint32_t remain_start = sql.length()+1;
 
     ptr = base_ptr - LEN_KEY;
-    remain = 0;
-    while(remain++ < remain_start) {
-      ptr--;
+    for(remain = 0; remain < remain_start; ++remain) {
+      --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
           break;
@@ -711,9 +709,8 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
     uint32_t end = sql.length()+1;
 
     ptr = base_ptr - LEN_TIMESTAMP;
-    remain = 0;
-    while(remain++ < end) {
-      ptr--;
+    for(remain = 0; remain < end; ++remain) {
+      --ptr;
       if(flw) {
         if(found_token(TOKEN_AND, LEN_AND))
           break;

@@ -46,14 +46,14 @@ class Checker {
     if(++req_n > num_req)
       return;
 
-    for(int i=1;i<=batch_sz;i++) {
+    for(int i=1; i<=batch_sz; ++i) {
       std::make_shared<Protocol::Mngr::Req::Echo>(
         conn, 
         [this, req_n, conn, last=i==batch_sz, start_ts=std::chrono::system_clock::now()]
         (bool state){
           if(!state)
-            failures++;
-          expected--;
+            ++failures;
+          --expected;
 
           latency->add(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -88,7 +88,7 @@ class Checker {
         }
         
         std::vector<std::thread*> threads;
-        for(int t=1;t<=threads_conn;t++)
+        for(int t=1; t<=threads_conn; ++t)
           std::thread([this, conn](){run(conn);}).detach();
       },
       std::chrono::milliseconds(1000), 
@@ -110,7 +110,7 @@ class Checker {
 
     auto start = std::chrono::system_clock::now();
 
-    for(int t=1;t<=num_threads;t++)
+    for(int t=1;t<=num_threads;++t)
       std::thread([this](){get_conn();}).detach();
 
     std::unique_lock lock_wait(lock);

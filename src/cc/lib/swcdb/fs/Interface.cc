@@ -272,7 +272,7 @@ void Interface::rmdir_incl_opt_subs(int &err, const std::string &name,
 
   const char* p=name.data();
   std::string base_path;
-  for(const char* c=p+name.length(); c>p; c--) {
+  for(const char* c=p+name.length(); c>p; --c) {
     if(*c != '/')
       continue;
     base_path = std::string(p, c-p);

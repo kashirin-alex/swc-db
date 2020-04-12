@@ -159,7 +159,7 @@ bool mkdirs(const std::string &dirname) {
   *(tmpdir+dirname.length()) = '/';
 
   int saved_errno = 0;
-  for(int n=1; n < dirname.length()+1; n++){
+  for(int n=1; n < dirname.length()+1; ++n){
     if(*(tmpdir+n) != '/')
       continue;
     *(tmpdir+n) = 0;

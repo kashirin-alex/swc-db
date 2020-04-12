@@ -46,8 +46,8 @@ struct Item final {
   size_t _hash() {
     size_t ret = 0;
     const uint8_t* dp = data_;
-    for(uint32_t sz = size_; sz; --sz)
-      ret += (ret << 3) + *dp++;
+    for(uint32_t sz = size_; sz; --sz, ++dp)
+      ret += (ret << 3) + *dp;
     return ret;
     //return std::hash<std::string_view>{}(
     //  std::string_view((const char*)data_, size_));

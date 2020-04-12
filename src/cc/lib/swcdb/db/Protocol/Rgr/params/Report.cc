@@ -101,7 +101,7 @@ void ReportRsp::Column::encode(uint8_t **bufp) const {
 
 void ReportRsp::Column::decode(const uint8_t **bufp, size_t *remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
-  for(int64_t n = Serialization::decode_vi64(bufp, remainp);n--;) {
+  for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
     auto r = new Range();
     r->decode(bufp, remainp);
     ranges.push_back(r);
@@ -185,10 +185,10 @@ void ReportRsp::decode_internal(uint8_t version, const uint8_t **bufp,
     size_t len = Serialization::decode_vi32(bufp, remainp);
     endpoints.clear();
     endpoints.resize(len);
-    for(size_t i=0;i<len;i++)
+    for(size_t i=0;i<len;++i)
       endpoints[i] = Serialization::decode(bufp, remainp);
 
-    for(int64_t n = Serialization::decode_vi64(bufp, remainp);n--;) {
+    for(int64_t n = Serialization::decode_vi64(bufp, remainp); n ; --n) {
       auto c = new Column();
       c->decode(bufp, remainp);
       columns.push_back(c);

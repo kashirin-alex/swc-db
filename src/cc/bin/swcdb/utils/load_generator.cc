@@ -165,7 +165,8 @@ class CountIt {
       default: {
         if(pos == max)
           return false;
-        *nxt = pos++;
+        *nxt = pos;
+        ++pos;
         return true;
       }
     }
@@ -259,7 +260,7 @@ void load_data(DB::Schema::Ptr schema) {
           
           col->add(cell);
 
-          added_count++;
+          ++added_count;
           added_bytes += cell.encoded_length();
           req->commit_or_wait(col);
 

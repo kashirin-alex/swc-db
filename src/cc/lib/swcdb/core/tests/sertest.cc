@@ -54,7 +54,7 @@ void test_i16() {
     SWC_ASSERT(len == 0));
 
   auto ns = Time::now_ns();
-  for(uint16_t n=0; n<UINT16_MAX;n++){
+  for(uint16_t n=0; n<UINT16_MAX;++n){
     uint8_t buf[2], *p = buf;
     const uint8_t *p2 = buf;
     size_t len = 2;
@@ -79,7 +79,7 @@ void test_i24() {
     SWC_ASSERT(len == 0));
 
   auto ns = Time::now_ns();
-  for(uint24_t n=0; n<UINT24_MAX;n++){
+  for(uint24_t n=0; n<UINT24_MAX;++n){
     uint8_t buf[3], *p = buf;
     const uint8_t *p2 = buf;
     size_t len = 3;
@@ -104,7 +104,7 @@ void test_i32() {
     SWC_ASSERT(len == 0));
 
   auto ns = Time::now_ns();
-  for(uint32_t n=0; n<UINT32_MAX;n++){
+  for(uint32_t n=0; n<UINT32_MAX;++n){
     uint8_t buf[4], *p = buf;
     const uint8_t *p2 = buf;
     size_t len = 4;
@@ -129,7 +129,7 @@ void test_i64() {
     SWC_ASSERT(len == 0));
 
   auto ns = Time::now_ns();
-  for(uint64_t n=0; n<UINT64_MAX;n++){
+  for(uint64_t n=0; n<UINT64_MAX;++n){
     uint8_t buf[8], *p = buf;
     const uint8_t *p2 = buf;
     size_t len = 8;
@@ -169,9 +169,9 @@ void test_vi24() {
   uint64_t c = 0;
   auto ns = Time::now_ns();
   for(int p=0; p<PROBES;++p)
-  for(uint24_t n=0; n<MAX_CHECKS;n++) {
+  for(uint24_t n=0; n<MAX_CHECKS;++n) {
     chk_vi24(n);
-    c++;
+    ++c;
   }
   ns = Time::now_ns() - ns;
   std::cout << "vi24       took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
@@ -202,18 +202,18 @@ void test_vi32() {
   uint64_t c = 0;
   auto ns = Time::now_ns();
   for(int p=0; p<PROBES;++p)
-  for(uint32_t n=0; n<MAX_CHECKS;n++) {
+  for(uint32_t n=0; n<MAX_CHECKS;++n) {
     chk_vi32(n);
-    c++;
+    ++c;
   }
   ns = Time::now_ns() - ns;
   std::cout << "vi32 lower took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(int p=0; p<PROBES;++p)
-  for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;n++) {
+  for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;++n) {
     chk_vi32(n);  
-    c++;
+    ++c;
     if(n == UINT32_MAX)
       break;
   }
@@ -246,18 +246,18 @@ void test_vi64() {
   uint64_t c = 0;
   auto ns = Time::now_ns();
   for(int p=0; p<PROBES;++p)
-  for(uint64_t n=0; n<MAX_CHECKS;n++) {
+  for(uint64_t n=0; n<MAX_CHECKS;++n) {
     chk_vi64(n);
-    c++;
+    ++c;
   }
   ns = Time::now_ns() - ns;
   std::cout << "vi64 lower took=" << ns << " avg=" << (double)ns / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(int p=0; p<PROBES;++p)
-  for(uint64_t n=UINT64_MAX-MAX_CHECKS+1; n<=UINT64_MAX;n++) {
+  for(uint64_t n=UINT64_MAX-MAX_CHECKS+1; n<=UINT64_MAX;++n) {
     chk_vi64(n);
-    c++;
+    ++c;
     if(n == UINT64_MAX)
       break;
   }

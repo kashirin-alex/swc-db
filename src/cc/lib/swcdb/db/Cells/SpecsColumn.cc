@@ -76,7 +76,7 @@ bool Column::equal(const Column &other) {
     return false;
 
   auto it2=other.intervals.begin();
-  for(auto it1=intervals.begin(); it1 < intervals.end(); it1++, it2++)
+  for(auto it1=intervals.begin(); it1 < intervals.end(); ++it1, ++it2)
     if(!(*it1)->equal(*(*it2)))
       return false;
   return true;

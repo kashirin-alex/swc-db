@@ -31,7 +31,7 @@ class Echo : public DispatchHandler {
         if(i == 127)
           i = 0;
         else
-          i++;
+          ++i;
         *ptr++ = i;
       }
       

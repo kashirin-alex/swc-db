@@ -102,11 +102,10 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
   const uint8_t* ptr_tmp = data;
  
   uint8_t* fraction_ptr;
-  uint32_t pos = 0;
+  
   uint32_t offset = 0;
-
-  for(;;) {
-    if(idx == pos++) {
+  for(uint32_t pos = 0;; ++pos) {
+    if(idx == pos) {
       if(offset) 
         memcpy(data_tmp, data, offset);
       fraction_ptr = data_tmp + offset;

@@ -757,13 +757,13 @@ void Mutable::_allocate() {
     Cell** cells_old = m_cells;
     m_cells = new Cell*[m_cap += m_size];     
     memcpy(m_cells, cells_old, m_size*_cell_sz);
-    //for(uint32_t n=m_size;--n;) 
+    //for(uint32_t n=m_size;--n)
     //  *(m_cells+n) = *(cells_old+n);
     delete [] cells_old;
   }
 
   memset(m_cells+m_size, 0, (m_cap-m_size)*_cell_sz);
-  //for(uint32_t n=m_cap-m_size; --n;) 
+  //for(uint32_t n=m_cap-m_size; --n)
   //  *(m_cells+m_size+n) = nullptr;
 }
 
@@ -772,7 +772,7 @@ void Mutable::_move_fwd(uint32_t offset, int32_t by) {
   Cell** ptr = m_cells+offset;
   memmove(ptr+by, ptr, (m_size-offset)*_cell_sz);
   //Cell** end = m_cells+m_size+by-1;
-  //for(uint32_t n = m_size-offset;--n;)
+  //for(uint32_t n = m_size-offset;--n)
     //*end-- = *(end-by); 
 }
 

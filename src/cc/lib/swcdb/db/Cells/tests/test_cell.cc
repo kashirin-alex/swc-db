@@ -30,15 +30,15 @@ void check_load() {
   cell.key.add("aKey5");
 
   std::string value = "(";
-  for(uint32_t n=0; n<4; n++)
-    for(uint32_t chr=0; chr<=255; chr++)
+  for(uint32_t n=0; n<4; ++n)
+    for(uint32_t chr=0; chr<=255; ++chr)
       value += (char)chr;
   value += ")END";
   cell.set_value(value);
 
   auto ts = SWC::Time::now_ns();
   auto chks = 100000;
-  for(auto n = chks; --n;) {
+  for(auto n = chks; n; --n){
     auto c = new Cells::Cell(cell);
     delete c;
   }
@@ -46,7 +46,7 @@ void check_load() {
   std::cout << "Constructor took=" << ts << " avg=" << ts/chks << "\n";
 
   ts = SWC::Time::now_ns();
-  for(auto n = chks; --n;) {
+  for(auto n = chks; n; --n){
     auto c = new Cells::Cell();
     c->copy(cell);
     delete c;
@@ -57,7 +57,7 @@ void check_load() {
   
   
   ts = SWC::Time::now_ns();
-  for(auto n = chks; --n;) {
+  for(auto n = chks; n; --n){
     auto c = new SWC::DB::Cell::Key(cell.key);
     delete c;
   }
@@ -65,7 +65,7 @@ void check_load() {
   std::cout << "Key Constructor took=" << ts << " avg=" << ts/chks << "\n";
 
   ts = SWC::Time::now_ns();
-  for(auto n = chks; --n;) {
+  for(auto n = chks; n; --n){
     auto c = new SWC::DB::Cell::Key();
     c->copy(cell.key);
     delete c;
@@ -76,7 +76,7 @@ void check_load() {
 
   ts = SWC::Time::now_ns();
   SWC::DynamicBuffer buff;
-  for(auto n = chks; --n;) 
+  for(auto n = chks; n; --n)
     cell.write(buff);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::write took=" << ts << " avg=" << ts/chks << " without pre-alloc\n";
@@ -85,7 +85,7 @@ void check_load() {
   buff.free();
   buff.ensure(sz);
   ts = SWC::Time::now_ns();
-  for(auto n = chks; --n;) 
+  for(auto n = chks; n; --n)
     cell.write(buff);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::write took=" << ts << " avg=" << ts/chks << "\n";
@@ -150,7 +150,7 @@ int main() {
    i=0;
    std::vector<Cells::Cell> cells_copied;
    cells_copied.reserve(num_cells);
-   for(auto it=cells.begin();it<cells.end();it++){
+   for(auto it=cells.begin();it<cells.end();++it){
       std::cout << "Copying Cell-"<< i << ":\n";
       //std::cout << (*it)->to_string() << "\n\n";
       // cells_copied.push_back(*(new Cells::Cell(*it)));  // OK 
@@ -172,13 +172,13 @@ int main() {
          exit(1);
       }
 
-      i++;
+      ++i;
    }
    i=0;
-   for(auto it=cells_copied.begin();it<cells_copied.end();it++){
+   for(auto it=cells_copied.begin();it<cells_copied.end();++it){
       std::cout << "Copied Cell-"<< i << ":\n";
       std::cout << (*it).to_string() << "\n\n";
-      i++;
+      ++i;
    }
    std::cout << "\n-------------------------------\n";
 
@@ -188,7 +188,7 @@ int main() {
    const uint8_t * ptr_state;
    SWC::DynamicBuffer buff;
 
-   for(auto it=cells.begin();it<cells.end();it++){
+   for(auto it=cells.begin();it<cells.end();++it){
       std::cout << "Serialized buff, fill:" << buff.fill() << " size:" << buff.size << "\n";
       (*it)->write(buff);
    }
@@ -216,7 +216,7 @@ int main() {
     std::cout << "Loaded Cell-"<< i << ":\n";
     std::cout << cell.to_string() << "\n\n";
     std::cout << "base:"<< (size_t)buff.base  << ",bptr:"<< (size_t)bptr << ",mark:"<< (size_t)mark << "\n";
-    i++;
+    ++i;
       
     if( !(*it1)->equal(cell) || !it2->equal(cell) ){
       std::cout << "LOADED SERIALIZED CELL NOT EQUAL:\n";
@@ -226,8 +226,8 @@ int main() {
     	exit(1);
     }
 
-    it1++;
-    it2++;
+    ++it1;
+    ++it2;
    }
 
    std::cout << "\n-------------------------------\n";

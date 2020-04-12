@@ -133,7 +133,7 @@ class Column final {
             {return range->rid == rid;})
         );
         bool added = false;
-        for(auto it=m_ranges.begin(); it<m_ranges.end(); it++){
+        for(auto it=m_ranges.begin(); it<m_ranges.end(); ++it){
           if((*it)->after(range)) {
             m_ranges.insert(it, range);
             added = true;
@@ -290,7 +290,7 @@ class Column final {
         if(eid == id || !eid)
           m_ranges.erase(it);
         else
-          it++;
+          ++it;
       }
     }
     if(m_ranges.empty()) {

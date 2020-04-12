@@ -122,13 +122,13 @@ std::string apply_value(int f, int b, int i) {
   /*
   
   std::string zfill;
-  for(int n=0;n<16384;n++)
+  for(int n=0;n<16384;++n)
     zfill.append("V");
   */
   std::string value = 
     "V_OF:"+std::to_string(f)+":"+std::to_string(b)+":"+std::to_string(i);
   value += "(";
-  for(uint32_t chr=0; chr<=255; chr++) {
+  for(uint32_t chr=0; chr<=255; ++chr) {
     value += (char)chr;
   }
   value += ")END";
@@ -161,24 +161,24 @@ void test_1(const std::string& col_name) {
 
   Cells::Cell cell;
   size_t added_count = 0;
-  for(int b=0; b<batches; b++) {
+  for(int b=0; b<batches; ++b) {
     took =  SWC::Time::now_ns();
-    for(int i=0;i<num_cells;i++) {
-    for(int f=97+fraction_start;f<=96+fraction_finish;f++) {
+    for(int i=0;i<num_cells;++i) {
+    for(int f=97+fraction_start;f<=96+fraction_finish;++f) {
 
       std::string cell_number(std::to_string(b)+":"+std::to_string(i));
       cell.flag = Cells::INSERT;
       cell.set_time_order_desc(true);
 
       cell.key.free();
-      for(uint8_t chr=97; chr<=f;chr++)
+      for(uint8_t chr=97; chr<=f;++chr)
         cell.key.add(((char)chr)+cell_number);
       
       std::string value = apply_value(f, b, i);
       cell.set_value(value);
 
       update_req->columns->add(schema->cid, cell);
-      added_count++;
+      ++added_count;
     }}
 
     size_t bytes = update_req->columns->size_bytes();
@@ -255,7 +255,7 @@ void test_1(const std::string& col_name) {
   took = SWC::Time::now_ns() - took;
   std::cout << "SELECT-TOOK=" << took  << "\n";
 
-  for(int tmp=1;tmp <=3;tmp++) {
+  for(int tmp=1;tmp <=3; ++tmp) {
   select_req->result->remove(schema->cid);
   spec =  select_req->specs.columns[0]->intervals[0];
   spec->flags.offset=num_fractions*batches*num_cells-num_fractions;
@@ -283,7 +283,7 @@ void test_1(const std::string& col_name) {
     int count = 0;
     Cells::Cell* c;
     for(auto c : cells) {
-      count++;
+      ++count;
       if(prev.flag != Cells::NONE) {
         if(c->key.equal(prev.key)) {
           std::cerr << " BAD DUPLICATED CELL! \n";
@@ -343,16 +343,16 @@ void test_1(const std::string& col_name) {
   std::cout << "SELECT-TOOK=" << took  << "\n";
   
 
-  for(int b=0;b<batches;b++) {
+  for(int b=0;b<batches;++b) {
   took =  SWC::Time::now_ns();
-  for(int i=0;i<num_cells;i++) {
-  for(int f=97+fraction_start;f<=96+fraction_finish;f++) {
+  for(int i=0;i<num_cells;++i) {
+  for(int f=97+fraction_start;f<=96+fraction_finish;++f) {
 
     cell.free();
     std::string cell_number(std::to_string(b)+":"+std::to_string(i));
     cell.flag = Cells::DELETE;
     cell.key.free();
-    for(uint8_t chr=97; chr<=f;chr++)
+    for(uint8_t chr=97; chr<=f;++chr)
       cell.key.add(((char)chr)+cell_number);
     update_req->columns->add(schema->cid, cell);
   }}
@@ -468,7 +468,7 @@ int main(int argc, char** argv) {
             SWC::Env::Clients::get()->schemas->get(err, schema->col_name)->cid
           );
 
-          for(int i=0;i<2;i++) {
+          for(int i=0;i<2;++i) {
             test_1(schema->col_name);
             std::cout << "test_1 chk=" << i << "\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
@@ -505,16 +505,16 @@ int main(int argc, char** argv) {
   run_test(select_req, 11, 1, 100, 1);
   exit(0);
 
-  for(int check=1; check<=10; check++)
+  for(int check=1; check<=10; ++check)
     run_test(update_req, 11, 2, 100000, check);
 
-  for(int check=1; check<=10; check++)
+  for(int check=1; check<=10; ++check)
     run_test(update_req, 11, 2, 100000, check, true);
 
-  for(int check=1; check<=1000; check++)
+  for(int check=1; check<=1000; ++check)
     run_test(update_req, 11, 2, 1, check);
 
-  for(int check=1; check<=1000; check++)
+  for(int check=1; check<=1000; ++check)
     run_test(update_req, 11, 2, 1, check, true);
 
   */

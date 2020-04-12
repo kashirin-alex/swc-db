@@ -69,7 +69,7 @@ class Columns final {
 
     if(m_columns.size() > idx){
       auto it = m_columns.begin();
-      for(int i=idx;i--;++it);
+      for(int i=idx; i; --i, ++it);
       return it->second;
     }
     idx = 0;

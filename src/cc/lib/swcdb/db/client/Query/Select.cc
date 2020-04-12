@@ -292,7 +292,7 @@ std::string Select::Scanner::to_string() {
 }
     
 void Select::Scanner::locate_on_manager(bool next_range) {
-  col->selector->result->completion++;
+  ++col->selector->result->completion;
 
   Protocol::Mngr::Params::RgrGetReq params(1, 0, next_range);
 
@@ -321,7 +321,7 @@ void Select::Scanner::locate_on_manager(bool next_range) {
     [next_range, scanner=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(scanner->located_on_manager(req, rsp, next_range))
-        scanner->col->selector->result->completion--;
+        --scanner->col->selector->result->completion;
     }
   );
 }
@@ -333,7 +333,7 @@ void Select::Scanner::resolve_on_manager() {
     [scanner=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       if(scanner->located_on_manager(req, rsp))
-        scanner->col->selector->result->completion--;
+        --scanner->col->selector->result->completion;
     }
   );
   if(cid != 1) {
@@ -346,7 +346,7 @@ void Select::Scanner::resolve_on_manager() {
     } else
       SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
   }
-  col->selector->result->completion++;
+  ++col->selector->result->completion;
   req->run();
 }
 
@@ -362,7 +362,7 @@ bool Select::Scanner::located_on_manager(
       return true;
     }
     if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
-      col->selector->result->completion--;
+      --col->selector->result->completion;
       col->next_call(true);
       return false;
     }
@@ -425,7 +425,7 @@ bool Select::Scanner::proceed_on_ranger(
 
 void Select::Scanner::locate_on_ranger(const EndPoints& endpoints, 
                                        bool next_range) {
-  col->selector->result->completion++;
+  ++col->selector->result->completion;
 
   Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   if(next_range) {
@@ -453,7 +453,7 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
       if(scanner->located_on_ranger(
           std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp, next_range))
-        scanner->col->selector->result->completion--;
+        --scanner->col->selector->result->completion;
     }
   );
 }
@@ -468,7 +468,7 @@ bool Select::Scanner::located_on_ranger(
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
        (next_range || type == Types::Range::META)) {
-      col->selector->result->completion--;
+      --col->selector->result->completion;
       col->next_call(true);
       return false;
     }
@@ -520,7 +520,7 @@ bool Select::Scanner::located_on_ranger(
 
 void Select::Scanner::select(EndPoints endpoints, uint64_t rid, 
                              const ReqBase::Ptr& base) {
-  col->selector->result->completion++;
+  ++col->selector->result->completion;
 
   Protocol::Rgr::Req::RangeQuerySelect::request(
     Protocol::Rgr::Params::RangeQuerySelectReq(

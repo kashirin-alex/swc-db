@@ -30,8 +30,8 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
   int64_t took;
   std::string cell_number;
   
-  for(auto r=1;r<=(flag==Cells::DELETE ? 1 : num_revs);r++){
-  for(auto i=(reverse?num_cells:1);(reverse?i>=1:i<=num_cells);(reverse?i--:i++)){
+  for(auto r=1;r<=(flag==Cells::DELETE ? 1 : num_revs);++r){
+  for(auto i=(reverse?num_cells:1);(reverse?i>=1:i<=num_cells);(reverse?--i:++i)){
       cell_number = std::to_string(i);
       
       rev = SWC::Time::now_ns()-(gen_historic?r*1000000:0);
@@ -41,14 +41,14 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
       cell.set_time_order_desc(time_order_desc);
 
       cell.key.free();
-      for(uint8_t chr=97; chr<=122;chr++)
+      for(uint8_t chr=97; chr<=122;++chr)
         cell.key.add(((char)chr)+cell_number);
 
       if(cell.flag == Cells::INSERT) {
         if(SWC::Types::is_counter(typ)) {
           if(r == num_revs-2) {
             cell.set_counter(Cells::OP_EQUAL, num_revs, typ);
-            truclations++;
+            ++truclations;
           } else
             cell.set_counter(0, 1);
       
@@ -157,7 +157,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     cell.read(&bptr, &remain);
     //std::cout << cell.to_string() <<"\n";
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
-    counted++;
+    ++counted;
   }
   if(count != 3*max_versions) {
     std::cout << " skips=" << skips << " count="<< count << " counted=" << counted << " \n";
@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
   check(1000000);
   std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   
-  for(auto i=1; i<=10; i++) {
+  for(auto i=1; i<=10; ++i) {
     check(100000000);
     std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   }

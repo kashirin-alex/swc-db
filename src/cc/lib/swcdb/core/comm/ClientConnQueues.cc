@@ -70,7 +70,7 @@ Host::Ptr ConnQueues::get(const EndPoints& endpoints){
 
 void ConnQueues::remove(const EndPoints& endpoints) {
   Mutex::scope lock(m_mutex);
-  for(auto it=m_hosts.begin(); it<m_hosts.end(); it++){
+  for(auto it=m_hosts.begin(); it<m_hosts.end(); ++it){
 
     if(has_endpoint((*it)->endpoints, endpoints)) {
       m_hosts.erase(it);

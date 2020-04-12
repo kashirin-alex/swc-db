@@ -33,11 +33,11 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
       Ranger::Column::Ptr col;
       Ranger::RangePtr range;
       auto columns = RangerEnv::columns();
-      for(size_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; cidx++) {
+      for(size_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; ++cidx) {
         auto c = new Protocol::Rgr::Params::ReportRsp::Column();
         rsp_params.columns.push_back(c);
         c->cid = col->cfg.cid;
-        for(size_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ridx++) {
+        for(size_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ++ridx) {
           auto r = new Protocol::Rgr::Params::ReportRsp::Range();
           c->ranges.push_back(r);
           r->rid = range->rid;

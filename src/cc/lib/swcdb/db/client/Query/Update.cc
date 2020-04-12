@@ -146,9 +146,9 @@ void Update::commit_if_need() {
 
 void Update::commit() {
   DB::Cells::ColCells::Ptr col;
-  for(size_t idx=0; (col=columns->get_idx(idx)) != nullptr; idx++)
+  for(size_t idx=0; (col=columns->get_idx(idx)) != nullptr; ++idx)
     commit(col);
-  for(size_t idx=0; (col=columns_onfractions->get_idx(idx)) != nullptr; idx++)
+  for(size_t idx=0; (col=columns_onfractions->get_idx(idx)) != nullptr; ++idx)
     commit_onfractions(col);
 }
 

@@ -153,7 +153,7 @@ ColCells::Ptr MapMutable::get_idx(size_t offset) {
 
   if(offset < m_map.size()) {
     auto it = m_map.begin();
-    for(it; offset--; ++it);
+    for(it; offset; --offset, ++it);
     return it->second;
   }
   return nullptr;

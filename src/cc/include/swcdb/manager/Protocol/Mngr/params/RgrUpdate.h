@@ -57,7 +57,7 @@ class RgrUpdate : public Serializable {
       size_t len = Serialization::decode_vi32(bufp, remainp);
       hosts.clear();
       hosts.resize(len);
-      for(size_t i =0; i<len; i++)
+      for(size_t i =0; i<len; ++i)
         (hosts[i] = std::make_shared<Manager::Ranger>())
           ->decode(bufp, remainp);
     }
