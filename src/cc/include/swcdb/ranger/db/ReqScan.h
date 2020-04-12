@@ -24,26 +24,26 @@ class ReqScan  : public DB::Cells::ReqScan {
   typedef std::shared_ptr<ReqScan>  Ptr;
 
   ReqScan(Type type=Type::QUERY)
-          : type(type), drop_caches(false), block(nullptr) {
+          : type(type), release_block(false), block(nullptr) {
   }
 
   ReqScan(const DB::Cells::ReqScan::Config& cfg,
-          Type type=Type::QUERY)
+          Type type=Type::QUERY, bool release_block=false)
           : DB::Cells::ReqScan(cfg),
-            type(type), drop_caches(false), block(nullptr) {
+            type(type), release_block(release_block), block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec)
           : DB::Cells::ReqScan(conn, ev, spec, DB::Cells::ReqScan::Config()),
-            type(Type::QUERY), drop_caches(false), block(nullptr) {
+            type(Type::QUERY), release_block(false), block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec,
           const DB::Cells::ReqScan::Config& cfg)
           : DB::Cells::ReqScan(conn, ev, spec, cfg),
-            type(Type::QUERY), drop_caches(false) {
+            type(Type::QUERY), release_block(false) {
   }
 
   virtual ~ReqScan() { }
@@ -62,7 +62,7 @@ class ReqScan  : public DB::Cells::ReqScan {
   }
 
   Type   type;
-  bool   drop_caches;
+  bool   release_block;
   void*  block;
 };
 

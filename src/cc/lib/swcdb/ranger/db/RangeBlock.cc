@@ -444,9 +444,14 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
       req->block = ptr();
     req->response(err);
     return true;
-  } else if(!synced) {
+  } 
+
+  if(req->release_block)
+    release();
+
+  if(!synced)
     blocks->scan(req, ptr());
-  }
+  
   return false;
 }
 
