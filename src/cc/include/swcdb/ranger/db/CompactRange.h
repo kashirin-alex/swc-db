@@ -52,9 +52,11 @@ class CompactRange : public ReqScan {
 
   void request_more();
 
-  void finalize_blocks();
+  void process_interval();
 
-  void process();
+  void process_encode();
+
+  void process_write();
 
   uint32_t create_cs(int& err);
 
@@ -88,8 +90,9 @@ class CompactRange : public ReqScan {
   CellStore::Writers              cellstores;
   InBlock*                        m_inblock = nullptr;
 
-  QueueSafe<InBlock*>             m_qfinalize;
-  QueueSafe<InBlock*>             m_qwrite;
+  QueueSafe<InBlock*>             m_q_intval;
+  QueueSafe<InBlock*>             m_q_encode;
+  QueueSafe<InBlock*>             m_q_write;
   
   Mutex                           m_mutex;
   std::atomic<bool>               m_stopped = false;
