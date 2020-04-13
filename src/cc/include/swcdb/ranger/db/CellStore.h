@@ -127,6 +127,11 @@ class Write : public std::enable_shared_from_this<Write> {
   void block(int& err, const DB::Cells::Interval& blk_intval, 
              DynamicBuffer& cells_buff, uint32_t cell_count);
 
+  void block(int& err, const DB::Cells::Interval& blk_intval, 
+             DynamicBuffer& blk_buff);
+  
+  void block(int& err, DynamicBuffer& blk_buff);
+
   uint32_t write_blocks_index(int& err);
 
   void write_trailer(int& err);

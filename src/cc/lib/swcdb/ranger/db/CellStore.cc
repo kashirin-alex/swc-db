@@ -382,16 +382,22 @@ void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
 
 void Write::block(int& err, const DB::Cells::Interval& blk_intval, 
                   DynamicBuffer& cells_buff, uint32_t cell_count) {
-
-  Block::Write::Ptr& blk = m_blocks.emplace_back(
-    new Block::Write(size, blk_intval, cell_count));
-  
-  DynamicBuffer buff_raw;
-  blk->write(err, encoder, cells_buff, buff_raw);
+  DynamicBuffer output;
+  Block::Write::encode(err, encoder, cells_buff, output, cell_count);
   if(err)
     return;
-  
-  StaticBuffer buff_write(buff_raw);
+  block(err, blk_intval, output);
+}
+
+void Write::block(int& err, const DB::Cells::Interval& blk_intval, 
+                  DynamicBuffer& blk_buff) {
+  m_blocks.emplace_back(new Block::Write(size, blk_intval));
+  block(err, blk_buff);
+}
+
+
+void Write::block(int& err, DynamicBuffer& blk_buff) {
+  StaticBuffer buff_write(blk_buff);
   size += buff_write.size;
 
   Env::FsInterface::fs()->append(

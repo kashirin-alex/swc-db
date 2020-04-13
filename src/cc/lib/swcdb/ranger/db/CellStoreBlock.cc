@@ -261,42 +261,40 @@ void Read::run_queued() {
 
 
 
-Write::Write(const uint64_t offset, const DB::Cells::Interval& interval, 
-             const uint32_t cell_count)
-            : offset(offset), interval(interval), cell_count(cell_count) { 
+Write::Write(const uint64_t offset, const DB::Cells::Interval& interval)
+            : offset(offset), interval(interval) { 
 }
 
-Write::~Write() {
-}
+Write::~Write() { }
 
-void Write::write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
-                  DynamicBuffer& output) {
-  
+void Write::encode(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
+                   DynamicBuffer& output, const uint32_t cell_count) {
   size_t len_enc = 0;
-  output.set_mark();
   Encoder::encode(err, encoder, cells.base, cells.fill(), 
                   &len_enc, output, HEADER_SIZE);
   if(err)
     return;
-                  
-  uint8_t * ptr = output.mark;
-  *ptr++ = (uint8_t)(len_enc? encoder: Types::Encoding::PLAIN);
-  Serialization::encode_i32(&ptr, len_enc);
+  if(!len_enc)
+    encoder = Types::Encoding::PLAIN;
+
+  uint8_t * ptr = output.base;
+  size_t data_fill = output.fill() - HEADER_SIZE;
+  
+  *ptr = (uint8_t)encoder;
+  Serialization::encode_i32(&++ptr, len_enc);
   Serialization::encode_i32(&ptr, cells.fill());
   Serialization::encode_i32(&ptr, cell_count);
-  if(len_enc || (len_enc = cells.fill()))
-    checksum_i32(output.base+HEADER_SIZE, len_enc, &ptr);
+  if(data_fill)
+    checksum_i32(output.base + HEADER_SIZE, data_fill, &ptr);
   else
     Serialization::encode_i32(&ptr, 0);
 
-  checksum_i32(output.mark, ptr, &ptr);
+  checksum_i32(output.base, ptr, &ptr);
 }
 
 std::string Write::to_string() {
   std::string s("Block(offset=");
   s.append(std::to_string(offset));
-  s.append(" cell_count=");
-  s.append(std::to_string(cell_count));
   s.append(" ");
   s.append(interval.to_string());
   s.append(")");

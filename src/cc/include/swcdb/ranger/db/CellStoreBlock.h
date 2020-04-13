@@ -101,19 +101,17 @@ class Write final {
   public:
   typedef std::shared_ptr<Write> Ptr;
 
-  Write(const uint64_t offset, const DB::Cells::Interval& interval, 
-        const uint32_t cell_count);
+  Write(const uint64_t offset, const DB::Cells::Interval& interval);
 
   ~Write();
 
-  void write(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
-             DynamicBuffer& output);
+  static void encode(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
+                     DynamicBuffer& output, const uint32_t cell_count);
 
   std::string to_string();
 
   const uint64_t            offset;
   const DB::Cells::Interval interval;
-  const uint32_t            cell_count;
 
 };
 
