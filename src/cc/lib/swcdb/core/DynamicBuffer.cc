@@ -19,6 +19,16 @@ DynamicBuffer::~DynamicBuffer() {
     delete [] base;
 }
 
+void DynamicBuffer::take_ownership(DynamicBuffer& other) { 
+  size = other.size;
+  own = other.own;
+  base = other.base;
+  ptr = other.ptr;
+  mark = other.mark;
+  other.size = 0;
+  other.base = other.ptr = other.mark = 0;
+}
+
 size_t DynamicBuffer::remaining() const { 
   return size - (ptr - base); 
 }

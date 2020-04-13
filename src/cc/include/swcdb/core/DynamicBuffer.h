@@ -52,6 +52,8 @@ namespace SWC {
     /** Destructor; releases the buffer if it "owns" it */
     ~DynamicBuffer();
 
+    void take_ownership(DynamicBuffer& other);
+
     /** Returns the size of the unused portion */
     size_t remaining() const;
 
