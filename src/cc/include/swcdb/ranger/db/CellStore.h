@@ -129,14 +129,6 @@ class Write : public std::enable_shared_from_this<Write> {
 
   void block(int& err, const DB::Cells::Interval& blk_intval, 
              DynamicBuffer& blk_buff);
-  
-  void block(int& err, DynamicBuffer& blk_buff);
-
-  uint32_t write_blocks_index(int& err);
-
-  void write_trailer(int& err);
-
-  void close_and_validate(int& err);
 
   void finalize(int& err);
 
@@ -145,6 +137,14 @@ class Write : public std::enable_shared_from_this<Write> {
   std::string to_string();
 
   private:
+  
+  void block(int& err, DynamicBuffer& blk_buff);
+
+  uint32_t write_blocks_index(int& err);
+
+  void write_trailer(int& err);
+
+  void close_and_validate(int& err);
 
   std::vector<Block::Write::Ptr> m_blocks;
 };
