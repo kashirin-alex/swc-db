@@ -98,15 +98,16 @@ void Read::processing_decrement() {
 
 size_t Read::release() {    
   size_t released = 0;
-  Mutex::scope lock(m_mutex);
-
-  if(m_processing || m_state != State::LOADED)
-    return released; 
-
-  released += m_buffer.size;    
-  m_state = State::NONE;
-  m_buffer.free();
-  m_cells_remain = m_cells_count;
+  bool support;
+  if(m_mutex.try_full_lock(support)) {
+    if(!m_processing && m_state == State::LOADED) {
+      released += m_buffer.size;
+      m_state = State::NONE;
+      m_buffer.free();
+      m_cells_remain = m_cells_count;
+    }
+    m_mutex.unlock(support);
+  }
   return released;
 }
 

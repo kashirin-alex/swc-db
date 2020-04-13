@@ -130,43 +130,47 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     req->response(err);
     return;
   }
+
   for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
       blk = nullptr, nxt_blk = nullptr) {
     if(req->with_block() && req->block) {
       (blk = blk_ptr = (Block*)req->block)->processing_increment();
       req->block = nullptr;
+
     } else {
-      Mutex::scope lock(m_mutex);
-      eval = blk_ptr ? blk_ptr->next 
-             : (req->spec.offset_key.empty() 
-                ? m_block 
-                : *(m_blocks_idx.begin()+_narrow(req->spec.offset_key)));
-      for(; eval; eval=eval->next) {
-        if(eval->removed() || !eval->is_next(req->spec)) 
-          continue;
-        (blk = blk_ptr = eval)->processing_increment();
+      {
+        Mutex::scope lock(m_mutex);
+        eval = blk_ptr ? blk_ptr->next 
+               : (req->spec.offset_key.empty() 
+                  ? m_block 
+                  : *(m_blocks_idx.begin()+_narrow(req->spec.offset_key)));
+        for(; eval; eval=eval->next) {
+          if(eval->removed() || !eval->is_next(req->spec)) 
+            continue;
+          (blk = blk_ptr = eval)->processing_increment();
 
-        if(eval->next && (!req->spec.flags.limit || req->spec.flags.limit > 1)
-            && !Env::Resources.need_ram(range->cfg->block_size() * 10)
-            && !eval->next->loaded()) {
-          (nxt_blk = eval->next)->processing_increment();
+          if(eval->next && 
+             (!req->spec.flags.limit || req->spec.flags.limit > 1) && 
+             !Env::Resources.need_ram(range->cfg->block_size() * 10) &&
+             !eval->next->loaded()) {
+            (nxt_blk = eval->next)->processing_increment();
+          }
+          break;
         }
-        break;
       }
-    }
-    if(blk == nullptr)
-      break;
-      
-    if(nxt_blk != nullptr) {
-      if(nxt_blk->includes(req->spec))
-        nxt_blk->preload();
-      else 
-        nxt_blk->processing_decrement();
-    }
 
-    if(Env::Resources.need_ram(range->cfg->block_size())) {
-      asio::post(*Env::IoCtx::io()->ptr(), 
-        [this, blk](){ release_prior(blk); }); // release_and_merge(blk);
+      if(!blk)
+        break;
+
+      if(nxt_blk) {
+        if(nxt_blk->includes(req->spec))
+          nxt_blk->preload();
+        else
+          nxt_blk->processing_decrement();
+      }
+
+      if(Env::Resources.need_ram(range->cfg->block_size()))
+        release_prior(blk); // release_and_merge(blk);
     }
 
     if(blk->scan(req)) // true (queued || responded)
@@ -234,9 +238,10 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
 }
 
 void Blocks::release_prior(Block::Ptr blk) {
-  {
-    Mutex::scope lock(m_mutex);
+  bool support;
+  if(m_mutex.try_full_lock(support)) {
     blk = blk->prev;
+    m_mutex.unlock(support);
   }
   if(blk)
     blk->release();

@@ -250,15 +250,16 @@ void Fragment::processing_decrement() {
 
 size_t Fragment::release() {
   size_t released = 0;     
-  Mutex::scope lock(m_mutex);
-
-  if(m_processing || m_state != State::LOADED)
-    return released; 
- 
-  m_state = State::NONE;
-  released += m_buffer.size;   
-  m_buffer.free();
-  m_cells_remain = cells_count;
+  bool support;
+  if(m_mutex.try_full_lock(support)) {
+    if(!m_processing && m_state == State::LOADED) {
+      m_state = State::NONE;
+      released += m_buffer.size;
+      m_buffer.free();
+      m_cells_remain = cells_count;
+    }
+    m_mutex.unlock(support);
+  }
   return released;
 }
 

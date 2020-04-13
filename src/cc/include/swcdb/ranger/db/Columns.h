@@ -183,15 +183,11 @@ class Columns final {
     size_t released = 0;
     Column::Ptr col;
     ColumnsMap::iterator it;
-    bool started = false;
-    for(;;) {
+    for(size_t offset = 0; ; ++offset) {
       {
         std::shared_lock lock(m_mutex);
-        if(!started) { 
-          it = m_columns.begin();
-          started = true;
-        } else
-          ++it;
+        it = m_columns.begin();
+        for(size_t i=0; i<offset && it != m_columns.end(); ++it, ++i);
         if(it == m_columns.end())
           break;
         if(it->first < 3)

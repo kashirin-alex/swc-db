@@ -168,17 +168,14 @@ class Column final {
     size_t released = 0;
     RangePtr range;
     RangesMap::iterator it;
-    bool started = false;
-    for(;;) {
+    for(size_t offset = 0; ; ++offset) {
       {
         std::shared_lock lock(m_mutex);
         if(cfg.deleting)
           return released;
-        if(!started) { 
-          it = m_ranges.begin();
-          started = true;
-        } else
-          ++it;
+        it = m_ranges.begin();
+        for(size_t i=0; i<offset && it != m_ranges.end(); ++it, ++i);
+
         if(it == m_ranges.end())
           break;
         range = it->second;
