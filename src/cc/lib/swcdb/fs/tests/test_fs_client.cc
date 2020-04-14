@@ -11,7 +11,8 @@
 #include <iostream>
 
 
-void SWC::Config::Settings::init_app_options(){
+void SWC::Config::Settings::init_app_options() {
+  init_comm_options();
   init_fs_options();
 }
 void SWC::Config::Settings::init_post_cmd_args(){}

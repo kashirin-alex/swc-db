@@ -97,6 +97,9 @@ class FileSystemHadoopJVM: public FileSystem {
 	hdfsFS                m_filesystem;
   std::atomic<bool>     m_run;
   std::atomic<int32_t>  m_nxt_fd;
+
+  
+  int hdfs_cfg_min_blk_sz = 1048576;
 };
 
 

@@ -118,8 +118,7 @@ Interface::Ptr Interface::ptr(){
   return this; 
 }
 
-Interface::~Interface(){
-  stop();
+Interface::~Interface() {
   m_fs = nullptr;
   if(loaded_dl.lib != nullptr) {
     ((fs_apply_cfg_t*)loaded_dl.cfg)(nullptr);

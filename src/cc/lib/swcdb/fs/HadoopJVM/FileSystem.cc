@@ -78,7 +78,11 @@ void FileSystemHadoopJVM::setup_connection() {
   std::string abspath;
   get_abspath("", abspath);
   hdfsSetWorkingDirectory(m_filesystem, abspath.c_str());
-    
+
+  int value = 0;
+  hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
+  if(value)
+    hdfs_cfg_min_blk_sz = value;
   /* 
   char* host;    
   uint16_t port;
@@ -327,9 +331,9 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
   if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
     oflags |= O_APPEND;
 
-  if (bufsz == -1)
+  if (bufsz <= -1)
     bufsz = 0;
-  blksz = blksz < 512 ? 0 : (blksz/512+1)*512;
+  blksz = blksz <= hdfs_cfg_min_blk_sz ? 0 : (blksz/512)*512;
 
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */
@@ -337,8 +341,8 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
                                       bufsz, replication, blksz)) == 0) {
     err = errno;
     hadoop_fd->fd(-1);
-    SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+    SWC_LOGF(LOG_ERROR, "create failed: %d(%s) blksz=%lld, %s ", 
+              errno, strerror(errno), blksz, smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
       err == Error::FS_PATH_NOT_FOUND;
@@ -365,7 +369,7 @@ void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */
   if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
-                                      bufsz==-1? 0 : bufsz, 0, 0)) == 0) {
+                                      bufsz<=-1 ? 0 : bufsz, 0, 0)) == 0) {
     err = errno;
     hadoop_fd->fd(-1);
     SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
@@ -498,13 +502,11 @@ void FileSystemHadoopJVM::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
             hadoop_fd->to_string().c_str(), offset);
     
   errno = 0;
-  uint64_t at = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
-  if (at == (uint64_t)-1 || at != offset || errno) {
+  int res = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
+  if(res == -1 || errno) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "seek failed - at=%llu %d(%s) %s", 
-              at, err, strerror(errno), smartfd->to_string().c_str());
-    if(!errno)
-      hadoop_fd->pos(at);
+    SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
+               err, strerror(errno), smartfd->to_string().c_str());
     return;
   }
   hadoop_fd->pos(offset);
