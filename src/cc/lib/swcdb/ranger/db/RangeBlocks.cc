@@ -131,8 +131,9 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     return;
   }
 
-  for(Block::Ptr eval, nxt_blk, blk=nxt_blk=nullptr; ;
-      blk = nullptr, nxt_blk = nullptr) {
+  std::vector<Block::Ptr> nxt_blks;
+
+  for(Block::Ptr eval, blk=nullptr; ; blk = nullptr) {
     if(req->with_block() && req->block) {
       (blk = blk_ptr = (Block*)req->block)->processing_increment();
       req->block = nullptr;
@@ -149,11 +150,13 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
             continue;
           (blk = blk_ptr = eval)->processing_increment();
 
-          if(eval->next && 
-             (!req->spec.flags.limit || req->spec.flags.limit > 1) && 
-             !Env::Resources.need_ram(range->cfg->block_size() * 10) &&
-             !eval->next->loaded()) {
-            (nxt_blk = eval->next)->processing_increment();
+          for(uint8_t n=1; eval->next && n <= req->readahead; ++n) {
+            if(Env::Resources.need_ram(range->cfg->block_size() * 10 * n))
+              break;
+            if((eval = eval->next)->loaded()) 
+              continue;
+            nxt_blks.push_back(eval); 
+            eval->processing_increment();
           }
           break;
         }
@@ -162,11 +165,10 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       if(!blk)
         break;
 
-      if(nxt_blk) {
-        if(nxt_blk->includes(req->spec))
-          nxt_blk->preload();
-        else
-          nxt_blk->processing_decrement();
+      if(!nxt_blks.empty()) {
+        asio::post(*Env::IoCtx::io()->ptr(), 
+          [this, req, nxt_blks]() { preload(req, nxt_blks); } );
+        nxt_blks.clear();
       }
 
       if(Env::Resources.need_ram(range->cfg->block_size()))
@@ -180,6 +182,16 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   processing_decrement();
 
   req->response(err);
+}
+
+void Blocks::preload(ReqScan::Ptr req, const std::vector<Block::Ptr>& blks) {
+  SWC_PRINT << " Blocks::preload sz=" << blks.size() << SWC_PRINT_CLOSE;
+  for(auto nxt_blk : blks) {
+    if(nxt_blk->includes(req->spec))
+      nxt_blk->preload();
+    else
+      nxt_blk->processing_decrement();
+  }
 }
 
 /*
@@ -201,12 +213,22 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock
   bool support;
   if(blk->_need_split() && m_mutex.try_full_lock(support)) {
+   bool preload = false;
     auto offset = _get_block_idx(blk);
     do {
       blk = blk->_split(loaded);
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
+      if(!blk->loaded()) {
+        if(preload = range->is_loaded() && range->compacting() &&
+                     !Env::Resources.need_ram(range->cfg->block_size() * 10))
+          blk->processing_increment();
+        break;
+      }
     } while(blk->_need_split());
     m_mutex.unlock(support);
+
+    if(preload)
+      blk->preload();
     return true;
   }
   return false;

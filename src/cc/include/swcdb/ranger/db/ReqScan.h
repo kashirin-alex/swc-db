@@ -24,26 +24,35 @@ class ReqScan  : public DB::Cells::ReqScan {
   typedef std::shared_ptr<ReqScan>  Ptr;
 
   ReqScan(Type type=Type::QUERY)
-          : type(type), release_block(false), block(nullptr) {
+          : type(type), 
+            release_block(false), readahead(1), 
+            block(nullptr) {
   }
 
   ReqScan(const DB::Cells::ReqScan::Config& cfg,
-          Type type=Type::QUERY, bool release_block=false)
+          Type type=Type::QUERY, bool release_block=false, uint8_t readahead=1)
           : DB::Cells::ReqScan(cfg),
-            type(type), release_block(release_block), block(nullptr) {
+            type(type), 
+            release_block(release_block), readahead(readahead), 
+            block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec)
           : DB::Cells::ReqScan(conn, ev, spec, DB::Cells::ReqScan::Config()),
-            type(Type::QUERY), release_block(false), block(nullptr) {
+            type(Type::QUERY), 
+            release_block(false), readahead(0), 
+            block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec,
           const DB::Cells::ReqScan::Config& cfg)
           : DB::Cells::ReqScan(conn, ev, spec, cfg),
-            type(Type::QUERY), release_block(false) {
+            type(Type::QUERY), 
+            release_block(false), 
+            readahead(!spec.flags.limit ? 3 : spec.flags.limit > 1),
+            block(nullptr) {
   }
 
   virtual ~ReqScan() { }
@@ -61,9 +70,10 @@ class ReqScan  : public DB::Cells::ReqScan {
     return false;
   }
 
-  Type   type;
-  bool   release_block;
-  void*  block;
+  Type    type;
+  bool    release_block;
+  uint8_t readahead;
+  void*   block;
 };
 
 
