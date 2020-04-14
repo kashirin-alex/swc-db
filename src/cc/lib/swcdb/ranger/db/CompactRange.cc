@@ -112,7 +112,7 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
               blk_size(blk_size), blk_cells(blk_cells), 
               blk_encoding(blk_encoding),
               m_inblock(new InBlock(blk_size)),
-              m_ts_start(Time::now_ns()),
+              ts_start(Time::now_ns()),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
 }
@@ -139,7 +139,7 @@ CompactRange::Ptr CompactRange::shared() {
 }
 
 void CompactRange::initialize() {
-  m_req_ts = Time::now_ns();
+  m_ts_req = Time::now_ns();
   progress_check_timer();
 }
 
@@ -184,11 +184,17 @@ void CompactRange::response(int &err) {
     return;
 
   total_cells += m_inblock->count - m_inblock->has_last;
-  SWC_LOGF(LOG_INFO, "COMPACT-PROGRESS %d/%d cells=%lld avg=%lldns",  
-           range->cfg->cid, range->rid, 
-           total_cells.load(), 
-           (Time::now_ns() - m_ts_start) 
-            / (total_cells ? total_cells.load() : (size_t)1));
+  ++total_blocks;
+
+  size_t c = total_cells ? total_cells.load() : 1;
+  SWC_LOGF(LOG_INFO, 
+    "COMPACT-PROGRESS %d/%d cells=%lld "
+    "cell-avg(t=%lld i=%lld e=%lld w=%lld)ns blocks=%lld",
+    range->cfg->cid, range->rid, total_cells.load(),
+    (Time::now_ns() - ts_start) / c,
+    time_intval.load() / c, time_encode.load() / c, time_write.load() / c,
+    total_blocks.load()
+  );
 
   if(!reached_limits()) {
     stop_check_timer();
@@ -219,18 +225,13 @@ void CompactRange::response(int &err) {
 }
 
 void CompactRange::progress_check_timer() {
-  uint64_t req_ts;
-  {
-    Mutex::scope lock(m_mutex);
-    req_ts = m_req_ts;
-  }
   if(m_stopped || m_chk_final)
     return;
 
   uint64_t median = (total_cells.load() 
-    ? (Time::now_ns() - m_ts_start) / total_cells.load() : 10000) * blk_cells;
+    ? (Time::now_ns() - ts_start) / total_cells.load() : 10000) * blk_cells;
 
-  if(Time::now_ns() - req_ts > median * 10) {
+  if(Time::now_ns() - m_ts_req.load() > median * 10) {
     // mitigate add req. workload
     range->compacting(Range::COMPACT_PREPARING);
     range->blocks.commitlog.commit_new_fragment(true);
@@ -261,26 +262,32 @@ void CompactRange::stop_check_timer() {
 }
 
 void CompactRange::request_more() {
+  if(m_stopped)
+    return;
   {
     Mutex::scope lock(m_mutex);
-    size_t sz;
-    bool ram = false;
-    if(m_stopped || m_getting || 
-        ((sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size()) && 
-         (sz >= compactor->cfg_read_ahead->get() || 
-         (ram = sz > Env::Resources.avail_ram()/blk_size) ))) {
-      if(!ram || range->blocks.release(sz * blk_size) < sz * blk_size)
-        return;
-    }
+    if(m_getting)
+      return;
     m_getting = true;
-    m_req_ts = Time::now_ns();
   }
+  bool ram = false;
+  size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
+  if(sz && (sz >= compactor->cfg_read_ahead->get() || 
+            (ram = sz > Env::Resources.avail_ram()/blk_size) )) {
+    if(!ram || range->blocks.release(sz * blk_size) < sz * blk_size) {
+      Mutex::scope lock(m_mutex);
+      m_getting = false;
+      return;
+    }
+  }
+  m_ts_req = Time::now_ns();
 
   asio::post(*RangerEnv::maintenance_io()->ptr(), 
     [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
 }
 
 void CompactRange::process_interval() {
+  auto start = Time::now_ns();
   InBlock* in_block;
   do {
     if(m_stopped) 
@@ -293,9 +300,11 @@ void CompactRange::process_interval() {
       asio::post(*RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){ ptr->process_encode(); });
   } while(m_q_intval.pop_and_more() && !m_stopped);
+  time_intval += Time::now_ns() - start;
 }
 
 void CompactRange::process_encode() {
+  auto start = Time::now_ns();
   InBlock* in_block;
   do {
     if(m_stopped) 
@@ -308,9 +317,11 @@ void CompactRange::process_encode() {
       asio::post(*RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){ ptr->process_write(); });
   } while(m_q_encode.pop_and_more() && !m_stopped);
+  time_encode += Time::now_ns() - start;
 }
 
 void CompactRange::process_write() {
+  auto start = Time::now_ns();
   int err = Error::OK;
   InBlock* in_block;
   do {
@@ -319,6 +330,7 @@ void CompactRange::process_write() {
 
     if((in_block = m_q_write.front()) == nullptr) {
       finalize();
+      time_write += Time::now_ns() - start;
       return;
     }
 
@@ -337,6 +349,7 @@ void CompactRange::process_write() {
     delete in_block;
   } while(m_q_write.pop_and_more() && !m_stopped);
 
+  time_write += Time::now_ns() - start;
   request_more();
 }
 
@@ -629,9 +642,14 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
 
   range->compact_require(range->cfg->cellstore_max() > cellstores.size());
   
-  SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d cells=%lld took=%lldns", 
-           range->cfg->cid, range->rid, 
-           total_cells.load(), Time::now_ns() - m_ts_start);
+  SWC_LOGF(LOG_INFO, 
+    "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
+    "ns(total=%lld intval=%lld encode=%lld write=%lld)", 
+    range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
+    Time::now_ns() - ts_start, 
+    time_intval.load(), time_encode.load(), time_write.load()
+  );
+
   compactor->compacted(range, true);
 }
 
@@ -643,9 +661,14 @@ void CompactRange::apply_new(bool clear) {
 
   range->compact_require(false);
   
-  SWC_LOGF(LOG_INFO, "COMPACT-FINISHED %d/%d cells=%lld took=%lldns", 
-           range->cfg->cid, range->rid, 
-           total_cells.load(), Time::now_ns() - m_ts_start);
+  SWC_LOGF(LOG_INFO, 
+    "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
+    "ns(total=%lld intval=%lld encode=%lld write=%lld)", 
+    range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
+    Time::now_ns() - ts_start, 
+    time_intval.load(), time_encode.load(), time_write.load()
+  );
+
   compactor->compacted(range, clear);
 }
 

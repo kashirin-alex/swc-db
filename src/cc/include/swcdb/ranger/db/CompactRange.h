@@ -16,7 +16,6 @@ class CompactRange : public ReqScan {
   typedef std::shared_ptr<CompactRange>  Ptr;
   
   std::vector<CommitLog::Fragment::Ptr> fragments_old;
-  std::atomic<size_t>                   total_cells = 0;
 
   CompactRange(const DB::Cells::ReqScan::Config& cfg, 
                Compaction::Ptr compactor, RangePtr range,
@@ -93,15 +92,24 @@ class CompactRange : public ReqScan {
   QueueSafe<InBlock*>             m_q_intval;
   QueueSafe<InBlock*>             m_q_encode;
   QueueSafe<InBlock*>             m_q_write;
-  
-  Mutex                           m_mutex;
-  std::atomic<bool>               m_stopped = false;
-  bool                            m_getting = false;
-  int64_t                         m_ts_start;
 
-  int64_t                         m_req_ts;
-  asio::high_resolution_timer     m_chk_timer;
+  const uint64_t                  ts_start;
+
+  std::atomic<uint64_t>           total_cells = 0;
+  std::atomic<uint64_t>           total_blocks = 0;
+
+  std::atomic<uint64_t>           time_intval = 0;
+  std::atomic<uint64_t>           time_encode = 0;
+  std::atomic<uint64_t>           time_write = 0;
+  std::atomic<uint64_t>           m_ts_req;
+
+  std::atomic<bool>               m_stopped = false;
   std::atomic<bool>               m_chk_final = false;
+
+  Mutex                           m_mutex;
+  bool                            m_getting = false;
+  asio::high_resolution_timer     m_chk_timer;
+
 };
 
 
