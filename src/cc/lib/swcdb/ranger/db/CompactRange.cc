@@ -112,7 +112,7 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
               blk_size(blk_size), blk_cells(blk_cells), 
               blk_encoding(blk_encoding),
               m_inblock(new InBlock(blk_size)),
-              ts_start(Time::now_ns()),
+              ts_start(Time::now_ns()), m_getting(true),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
 }
@@ -189,11 +189,11 @@ void CompactRange::response(int &err) {
   size_t c = total_cells ? total_cells.load() : 1;
   SWC_LOGF(LOG_INFO, 
     "COMPACT-PROGRESS %d/%d cells=%lld "
-    "cell-avg(t=%lld i=%lld e=%lld w=%lld)ns blocks=%lld",
+    "cell-avg(t=%lld i=%lld e=%lld w=%lld)ns blocks=%lld err=%d",
     range->cfg->cid, range->rid, total_cells.load(),
     (Time::now_ns() - ts_start) / c,
     time_intval.load() / c, time_encode.load() / c, time_write.load() / c,
-    total_blocks.load()
+    total_blocks.load(), err
   );
 
   if(!reached_limits()) {
@@ -240,6 +240,8 @@ void CompactRange::progress_check_timer() {
     range->compacting(Range::COMPACT_COMPACTING);
   }
 
+  request_more();
+
   if((median /= 1000000) < 1000)
     median = 1000;
   Mutex::scope lock(m_mutex);
@@ -274,7 +276,8 @@ void CompactRange::request_more() {
   size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
   if(sz && (sz >= compactor->cfg_read_ahead->get() || 
             (ram = sz > Env::Resources.avail_ram()/blk_size) )) {
-    if(!ram || range->blocks.release(sz * blk_size) < sz * blk_size) {
+    if(!ram || (range->blocks.release(sz * blk_size) < sz * blk_size &&
+                m_q_write.size() + m_q_intval.size() + m_q_encode.size()) ) {
       Mutex::scope lock(m_mutex);
       m_getting = false;
       return;
@@ -293,14 +296,15 @@ void CompactRange::process_interval() {
     if(m_stopped) 
       return;
     if((in_block = m_q_intval.front())) {
-      in_block->finalize_interval(false, false);
       request_more();
+      in_block->finalize_interval(false, false);
     }
     if(m_q_encode.push_and_is_1st(in_block))
       asio::post(*RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){ ptr->process_encode(); });
   } while(m_q_intval.pop_and_more() && !m_stopped);
   time_intval += Time::now_ns() - start;
+  request_more();
 }
 
 void CompactRange::process_encode() {
@@ -310,14 +314,15 @@ void CompactRange::process_encode() {
     if(m_stopped) 
       return;
     if((in_block = m_q_encode.front())) {
-      in_block->finalize_encode(blk_encoding);
       request_more();
+      in_block->finalize_encode(blk_encoding);
     }
     if(m_q_write.push_and_is_1st(in_block))
       asio::post(*RangerEnv::maintenance_io()->ptr(), 
         [ptr=shared()](){ ptr->process_write(); });
   } while(m_q_encode.pop_and_more() && !m_stopped);
   time_encode += Time::now_ns() - start;
+  request_more();
 }
 
 void CompactRange::process_write() {

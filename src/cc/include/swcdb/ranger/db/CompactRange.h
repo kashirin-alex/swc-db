@@ -107,7 +107,7 @@ class CompactRange : public ReqScan {
   std::atomic<bool>               m_chk_final = false;
 
   Mutex                           m_mutex;
-  bool                            m_getting = false;
+  bool                            m_getting;
   asio::high_resolution_timer     m_chk_timer;
 
 };
