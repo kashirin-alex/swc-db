@@ -56,11 +56,11 @@ void Settings::init_app_options(){
      "Default Block Cells count")  
     ("swc.rgr.Range.block.encoding", 
       g_enum(
-        (int)Types::Encoding::SNAPPY,
+        (int)Types::Encoding::ZSTD,
         0,
         Types::from_string_encoding,
         Types::repr_encoding), 
-     "Default Block encoding NONE/SNAPPY/ZLIB")  
+     "Default Block encoding NONE/ZSTD/SNAPPY/ZLIB")  
      
     ("swc.rgr.Range.compaction.percent", g_i8(33), 
      "Compaction threshold in % applied over size of either by cellstore or block")

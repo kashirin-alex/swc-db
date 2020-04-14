@@ -70,7 +70,7 @@ void Settings::init_app_options() {
         Types::from_string_encoding,
         Types::repr_encoding
       ), 
-     "Schema blk-encoding NONE/SNAPPY/ZLIB")  
+     "Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB")  
 
     ("gen-compaction-percent", i8(0), 
      "Compaction threshold in % applied over size of either by cellstore or block")
