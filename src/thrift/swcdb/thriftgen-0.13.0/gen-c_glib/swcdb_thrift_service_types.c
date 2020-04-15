@@ -7,7 +7,7 @@
 
 #include <math.h>
 
-#include "service_types.h"
+#include "swcdb_thrift_service_types.h"
 #include <thrift/c_glib/thrift.h>
 
 /* return the name of the constant */
@@ -16,9 +16,9 @@ toString_ColumnMng(int value)
 {
   static __thread char buf[16] = {0};
   switch(value) {
-  case COLUMN_MNG_CREATE:return "COLUMN_MNG_CREATE";
-  case COLUMN_MNG_DELETE:return "COLUMN_MNG_DELETE";
-  case COLUMN_MNG_MODIFY:return "COLUMN_MNG_MODIFY";
+  case SWCDB_THRIFT_COLUMN_MNG_CREATE:return "SWCDB_THRIFT_COLUMN_MNG_CREATE";
+  case SWCDB_THRIFT_COLUMN_MNG_DELETE:return "SWCDB_THRIFT_COLUMN_MNG_DELETE";
+  case SWCDB_THRIFT_COLUMN_MNG_MODIFY:return "SWCDB_THRIFT_COLUMN_MNG_MODIFY";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -29,13 +29,13 @@ toString_ColumnType(int value)
 {
   static __thread char buf[16] = {0};
   switch(value) {
-  case COLUMN_TYPE_UNKNOWN:return "COLUMN_TYPE_UNKNOWN";
-  case COLUMN_TYPE_PLAIN:return "COLUMN_TYPE_PLAIN";
-  case COLUMN_TYPE_COUNTER_I64:return "COLUMN_TYPE_COUNTER_I64";
-  case COLUMN_TYPE_COUNTER_I32:return "COLUMN_TYPE_COUNTER_I32";
-  case COLUMN_TYPE_COUNTER_I16:return "COLUMN_TYPE_COUNTER_I16";
-  case COLUMN_TYPE_COUNTER_I8:return "COLUMN_TYPE_COUNTER_I8";
-  case COLUMN_TYPE_CELL_DEFINED:return "COLUMN_TYPE_CELL_DEFINED";
+  case SWCDB_THRIFT_COLUMN_TYPE_UNKNOWN:return "SWCDB_THRIFT_COLUMN_TYPE_UNKNOWN";
+  case SWCDB_THRIFT_COLUMN_TYPE_PLAIN:return "SWCDB_THRIFT_COLUMN_TYPE_PLAIN";
+  case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I64:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I64";
+  case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I32:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I32";
+  case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I16:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I16";
+  case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I8:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I8";
+  case SWCDB_THRIFT_COLUMN_TYPE_CELL_DEFINED:return "SWCDB_THRIFT_COLUMN_TYPE_CELL_DEFINED";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -46,10 +46,10 @@ toString_EncodingType(int value)
 {
   static __thread char buf[16] = {0};
   switch(value) {
-  case ENCODING_TYPE_DEFAULT:return "ENCODING_TYPE_DEFAULT";
-  case ENCODING_TYPE_PLAIN:return "ENCODING_TYPE_PLAIN";
-  case ENCODING_TYPE_ZLIB:return "ENCODING_TYPE_ZLIB";
-  case ENCODING_TYPE_SNAPPY:return "ENCODING_TYPE_SNAPPY";
+  case SWCDB_THRIFT_ENCODING_TYPE_DEFAULT:return "SWCDB_THRIFT_ENCODING_TYPE_DEFAULT";
+  case SWCDB_THRIFT_ENCODING_TYPE_PLAIN:return "SWCDB_THRIFT_ENCODING_TYPE_PLAIN";
+  case SWCDB_THRIFT_ENCODING_TYPE_ZLIB:return "SWCDB_THRIFT_ENCODING_TYPE_ZLIB";
+  case SWCDB_THRIFT_ENCODING_TYPE_SNAPPY:return "SWCDB_THRIFT_ENCODING_TYPE_SNAPPY";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -60,10 +60,10 @@ toString_Flag(int value)
 {
   static __thread char buf[16] = {0};
   switch(value) {
-  case FLAG_NONE:return "FLAG_NONE";
-  case FLAG_INSERT:return "FLAG_INSERT";
-  case FLAG_DELETE:return "FLAG_DELETE";
-  case FLAG_DELETE_VERSION:return "FLAG_DELETE_VERSION";
+  case SWCDB_THRIFT_FLAG_NONE:return "SWCDB_THRIFT_FLAG_NONE";
+  case SWCDB_THRIFT_FLAG_INSERT:return "SWCDB_THRIFT_FLAG_INSERT";
+  case SWCDB_THRIFT_FLAG_DELETE:return "SWCDB_THRIFT_FLAG_DELETE";
+  case SWCDB_THRIFT_FLAG_DELETE_VERSION:return "SWCDB_THRIFT_FLAG_DELETE_VERSION";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -74,24 +74,24 @@ toString_CellsResult(int value)
 {
   static __thread char buf[16] = {0};
   switch(value) {
-  case CELLS_RESULT_IN_LIST:return "CELLS_RESULT_IN_LIST";
-  case CELLS_RESULT_ON_COLUMN:return "CELLS_RESULT_ON_COLUMN";
-  case CELLS_RESULT_ON_KEY:return "CELLS_RESULT_ON_KEY";
-  case CELLS_RESULT_ON_FRACTION:return "CELLS_RESULT_ON_FRACTION";
+  case SWCDB_THRIFT_CELLS_RESULT_IN_LIST:return "SWCDB_THRIFT_CELLS_RESULT_IN_LIST";
+  case SWCDB_THRIFT_CELLS_RESULT_ON_COLUMN:return "SWCDB_THRIFT_CELLS_RESULT_ON_COLUMN";
+  case SWCDB_THRIFT_CELLS_RESULT_ON_KEY:return "SWCDB_THRIFT_CELLS_RESULT_ON_KEY";
+  case SWCDB_THRIFT_CELLS_RESULT_ON_FRACTION:return "SWCDB_THRIFT_CELLS_RESULT_ON_FRACTION";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
 
-enum _ExceptionProperties
+enum _swcdb_thriftExceptionProperties
 {
-  PROP_EXCEPTION_0,
-  PROP_EXCEPTION_CODE,
-  PROP_EXCEPTION_MESSAGE
+  PROP_SWCDB_THRIFT_EXCEPTION_0,
+  PROP_SWCDB_THRIFT_EXCEPTION_CODE,
+  PROP_SWCDB_THRIFT_EXCEPTION_MESSAGE
 };
 
 /* reads a exception object */
 static gint32
-exception_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_exception_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -100,7 +100,7 @@ exception_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  Exception * this_object = EXCEPTION(object);
+  swcdb_thriftException * this_object = SWCDB_THRIFT_EXCEPTION(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -189,12 +189,12 @@ exception_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-exception_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_exception_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  Exception * this_object = EXCEPTION(object);
+  swcdb_thriftException * this_object = SWCDB_THRIFT_EXCEPTION(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "Exception", error)) < 0)
     return -1;
@@ -230,21 +230,21 @@ exception_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-exception_set_property (GObject *object,
-                        guint property_id,
-                        const GValue *value,
-                        GParamSpec *pspec)
+swcdb_thrift_exception_set_property (GObject *object,
+                                     guint property_id,
+                                     const GValue *value,
+                                     GParamSpec *pspec)
 {
-  Exception *self = EXCEPTION (object);
+  swcdb_thriftException *self = SWCDB_THRIFT_EXCEPTION (object);
 
   switch (property_id)
   {
-    case PROP_EXCEPTION_CODE:
+    case PROP_SWCDB_THRIFT_EXCEPTION_CODE:
       self->code = g_value_get_int (value);
       self->__isset_code = TRUE;
       break;
 
-    case PROP_EXCEPTION_MESSAGE:
+    case PROP_SWCDB_THRIFT_EXCEPTION_MESSAGE:
       if (self->message != NULL)
         g_free (self->message);
       self->message = g_value_dup_string (value);
@@ -258,20 +258,20 @@ exception_set_property (GObject *object,
 }
 
 static void
-exception_get_property (GObject *object,
-                        guint property_id,
-                        GValue *value,
-                        GParamSpec *pspec)
+swcdb_thrift_exception_get_property (GObject *object,
+                                     guint property_id,
+                                     GValue *value,
+                                     GParamSpec *pspec)
 {
-  Exception *self = EXCEPTION (object);
+  swcdb_thriftException *self = SWCDB_THRIFT_EXCEPTION (object);
 
   switch (property_id)
   {
-    case PROP_EXCEPTION_CODE:
+    case PROP_SWCDB_THRIFT_EXCEPTION_CODE:
       g_value_set_int (value, self->code);
       break;
 
-    case PROP_EXCEPTION_MESSAGE:
+    case PROP_SWCDB_THRIFT_EXCEPTION_MESSAGE:
       g_value_set_string (value, self->message);
       break;
 
@@ -282,7 +282,7 @@ exception_get_property (GObject *object,
 }
 
 static void 
-exception_instance_init (Exception * object)
+swcdb_thrift_exception_instance_init (swcdb_thriftException * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -293,9 +293,9 @@ exception_instance_init (Exception * object)
 }
 
 static void 
-exception_finalize (GObject *object)
+swcdb_thrift_exception_finalize (GObject *object)
 {
-  Exception *tobject = EXCEPTION (object);
+  swcdb_thriftException *tobject = SWCDB_THRIFT_EXCEPTION (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -307,21 +307,21 @@ exception_finalize (GObject *object)
 }
 
 static void
-exception_class_init (ExceptionClass * cls)
+swcdb_thrift_exception_class_init (swcdb_thriftExceptionClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = exception_read;
-  struct_class->write = exception_write;
+  struct_class->read = swcdb_thrift_exception_read;
+  struct_class->write = swcdb_thrift_exception_write;
 
-  gobject_class->finalize = exception_finalize;
-  gobject_class->get_property = exception_get_property;
-  gobject_class->set_property = exception_set_property;
+  gobject_class->finalize = swcdb_thrift_exception_finalize;
+  gobject_class->get_property = swcdb_thrift_exception_get_property;
+  gobject_class->set_property = swcdb_thrift_exception_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_EXCEPTION_CODE,
+     PROP_SWCDB_THRIFT_EXCEPTION_CODE,
      g_param_spec_int ("code",
                        NULL,
                        NULL,
@@ -332,7 +332,7 @@ exception_class_init (ExceptionClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_EXCEPTION_MESSAGE,
+     PROP_SWCDB_THRIFT_EXCEPTION_MESSAGE,
      g_param_spec_string ("message",
                           NULL,
                           NULL,
@@ -341,7 +341,7 @@ exception_class_init (ExceptionClass * cls)
 }
 
 GType
-exception_get_type (void)
+swcdb_thrift_exception_get_type (void)
 {
   static GType type = 0;
 
@@ -349,20 +349,20 @@ exception_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ExceptionClass),
+      sizeof (swcdb_thriftExceptionClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) exception_class_init,
+      (GClassInitFunc) swcdb_thrift_exception_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (Exception),
+      sizeof (swcdb_thriftException),
       0, /* n_preallocs */
-      (GInstanceInitFunc) exception_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_exception_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ExceptionType",
+                                   "swcdb_thriftExceptionType",
                                    &type_info, 0);
   }
 
@@ -370,34 +370,34 @@ exception_get_type (void)
 }
 
 /* define the GError domain for exceptions */
-#define EXCEPTION_ERROR_DOMAIN "exception_error_quark"
+#define SWCDB_THRIFT_EXCEPTION_ERROR_DOMAIN "swcdb_thrift_exception_error_quark"
 GQuark
-exception_error_quark (void)
+swcdb_thrift_exception_error_quark (void)
 {
-  return g_quark_from_static_string (EXCEPTION_ERROR_DOMAIN);
+  return g_quark_from_static_string (SWCDB_THRIFT_EXCEPTION_ERROR_DOMAIN);
 }
 
-enum _SchemaProperties
+enum _swcdb_thriftSchemaProperties
 {
-  PROP_SCHEMA_0,
-  PROP_SCHEMA_CID,
-  PROP_SCHEMA_COL_NAME,
-  PROP_SCHEMA_COL_TYPE,
-  PROP_SCHEMA_CELL_VERSIONS,
-  PROP_SCHEMA_CELL_TTL,
-  PROP_SCHEMA_BLK_ENCODING,
-  PROP_SCHEMA_BLK_SIZE,
-  PROP_SCHEMA_BLK_CELLS,
-  PROP_SCHEMA_CS_REPLICATION,
-  PROP_SCHEMA_CS_SIZE,
-  PROP_SCHEMA_CS_MAX,
-  PROP_SCHEMA_COMPACT_PERCENT,
-  PROP_SCHEMA_REVISION
+  PROP_SWCDB_THRIFT_SCHEMA_0,
+  PROP_SWCDB_THRIFT_SCHEMA_CID,
+  PROP_SWCDB_THRIFT_SCHEMA_COL_NAME,
+  PROP_SWCDB_THRIFT_SCHEMA_COL_TYPE,
+  PROP_SWCDB_THRIFT_SCHEMA_CELL_VERSIONS,
+  PROP_SWCDB_THRIFT_SCHEMA_CELL_TTL,
+  PROP_SWCDB_THRIFT_SCHEMA_BLK_ENCODING,
+  PROP_SWCDB_THRIFT_SCHEMA_BLK_SIZE,
+  PROP_SWCDB_THRIFT_SCHEMA_BLK_CELLS,
+  PROP_SWCDB_THRIFT_SCHEMA_CS_REPLICATION,
+  PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE,
+  PROP_SWCDB_THRIFT_SCHEMA_CS_MAX,
+  PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT,
+  PROP_SWCDB_THRIFT_SCHEMA_REVISION
 };
 
 /* reads a schema object */
 static gint32
-schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -406,7 +406,7 @@ schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  Schema * this_object = SCHEMA(object);
+  swcdb_thriftSchema * this_object = SWCDB_THRIFT_SCHEMA(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -483,7 +483,7 @@ schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
           if ((ret = thrift_protocol_read_i32 (protocol, &ecast0, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->col_type = (ColumnType)ecast0;
+          this_object->col_type = (swcdb_thriftColumnType)ecast0;
           this_object->__isset_col_type = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -524,7 +524,7 @@ schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
           if ((ret = thrift_protocol_read_i32 (protocol, &ecast1, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->blk_encoding = (EncodingType)ecast1;
+          this_object->blk_encoding = (swcdb_thriftEncodingType)ecast1;
           this_object->__isset_blk_encoding = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -642,12 +642,12 @@ schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-schema_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_schema_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  Schema * this_object = SCHEMA(object);
+  swcdb_thriftSchema * this_object = SWCDB_THRIFT_SCHEMA(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "Schema", error)) < 0)
     return -1;
@@ -819,78 +819,78 @@ schema_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-schema_set_property (GObject *object,
-                     guint property_id,
-                     const GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_schema_set_property (GObject *object,
+                                  guint property_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
 {
-  Schema *self = SCHEMA (object);
+  swcdb_thriftSchema *self = SWCDB_THRIFT_SCHEMA (object);
 
   switch (property_id)
   {
-    case PROP_SCHEMA_CID:
+    case PROP_SWCDB_THRIFT_SCHEMA_CID:
       self->cid = g_value_get_int64 (value);
       self->__isset_cid = TRUE;
       break;
 
-    case PROP_SCHEMA_COL_NAME:
+    case PROP_SWCDB_THRIFT_SCHEMA_COL_NAME:
       if (self->col_name != NULL)
         g_free (self->col_name);
       self->col_name = g_value_dup_string (value);
       self->__isset_col_name = TRUE;
       break;
 
-    case PROP_SCHEMA_COL_TYPE:
+    case PROP_SWCDB_THRIFT_SCHEMA_COL_TYPE:
       self->col_type = g_value_get_int (value);
       self->__isset_col_type = TRUE;
       break;
 
-    case PROP_SCHEMA_CELL_VERSIONS:
+    case PROP_SWCDB_THRIFT_SCHEMA_CELL_VERSIONS:
       self->cell_versions = g_value_get_int (value);
       self->__isset_cell_versions = TRUE;
       break;
 
-    case PROP_SCHEMA_CELL_TTL:
+    case PROP_SWCDB_THRIFT_SCHEMA_CELL_TTL:
       self->cell_ttl = g_value_get_int (value);
       self->__isset_cell_ttl = TRUE;
       break;
 
-    case PROP_SCHEMA_BLK_ENCODING:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_ENCODING:
       self->blk_encoding = g_value_get_int (value);
       self->__isset_blk_encoding = TRUE;
       break;
 
-    case PROP_SCHEMA_BLK_SIZE:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_SIZE:
       self->blk_size = g_value_get_int (value);
       self->__isset_blk_size = TRUE;
       break;
 
-    case PROP_SCHEMA_BLK_CELLS:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_CELLS:
       self->blk_cells = g_value_get_int (value);
       self->__isset_blk_cells = TRUE;
       break;
 
-    case PROP_SCHEMA_CS_REPLICATION:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_REPLICATION:
       self->cs_replication = g_value_get_int (value);
       self->__isset_cs_replication = TRUE;
       break;
 
-    case PROP_SCHEMA_CS_SIZE:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE:
       self->cs_size = g_value_get_int (value);
       self->__isset_cs_size = TRUE;
       break;
 
-    case PROP_SCHEMA_CS_MAX:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_MAX:
       self->cs_max = g_value_get_int (value);
       self->__isset_cs_max = TRUE;
       break;
 
-    case PROP_SCHEMA_COMPACT_PERCENT:
+    case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       self->compact_percent = g_value_get_int (value);
       self->__isset_compact_percent = TRUE;
       break;
 
-    case PROP_SCHEMA_REVISION:
+    case PROP_SWCDB_THRIFT_SCHEMA_REVISION:
       self->revision = g_value_get_int64 (value);
       self->__isset_revision = TRUE;
       break;
@@ -902,64 +902,64 @@ schema_set_property (GObject *object,
 }
 
 static void
-schema_get_property (GObject *object,
-                     guint property_id,
-                     GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_schema_get_property (GObject *object,
+                                  guint property_id,
+                                  GValue *value,
+                                  GParamSpec *pspec)
 {
-  Schema *self = SCHEMA (object);
+  swcdb_thriftSchema *self = SWCDB_THRIFT_SCHEMA (object);
 
   switch (property_id)
   {
-    case PROP_SCHEMA_CID:
+    case PROP_SWCDB_THRIFT_SCHEMA_CID:
       g_value_set_int64 (value, self->cid);
       break;
 
-    case PROP_SCHEMA_COL_NAME:
+    case PROP_SWCDB_THRIFT_SCHEMA_COL_NAME:
       g_value_set_string (value, self->col_name);
       break;
 
-    case PROP_SCHEMA_COL_TYPE:
+    case PROP_SWCDB_THRIFT_SCHEMA_COL_TYPE:
       g_value_set_int (value, self->col_type);
       break;
 
-    case PROP_SCHEMA_CELL_VERSIONS:
+    case PROP_SWCDB_THRIFT_SCHEMA_CELL_VERSIONS:
       g_value_set_int (value, self->cell_versions);
       break;
 
-    case PROP_SCHEMA_CELL_TTL:
+    case PROP_SWCDB_THRIFT_SCHEMA_CELL_TTL:
       g_value_set_int (value, self->cell_ttl);
       break;
 
-    case PROP_SCHEMA_BLK_ENCODING:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_ENCODING:
       g_value_set_int (value, self->blk_encoding);
       break;
 
-    case PROP_SCHEMA_BLK_SIZE:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_SIZE:
       g_value_set_int (value, self->blk_size);
       break;
 
-    case PROP_SCHEMA_BLK_CELLS:
+    case PROP_SWCDB_THRIFT_SCHEMA_BLK_CELLS:
       g_value_set_int (value, self->blk_cells);
       break;
 
-    case PROP_SCHEMA_CS_REPLICATION:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_REPLICATION:
       g_value_set_int (value, self->cs_replication);
       break;
 
-    case PROP_SCHEMA_CS_SIZE:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE:
       g_value_set_int (value, self->cs_size);
       break;
 
-    case PROP_SCHEMA_CS_MAX:
+    case PROP_SWCDB_THRIFT_SCHEMA_CS_MAX:
       g_value_set_int (value, self->cs_max);
       break;
 
-    case PROP_SCHEMA_COMPACT_PERCENT:
+    case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       g_value_set_int (value, self->compact_percent);
       break;
 
-    case PROP_SCHEMA_REVISION:
+    case PROP_SWCDB_THRIFT_SCHEMA_REVISION:
       g_value_set_int64 (value, self->revision);
       break;
 
@@ -970,7 +970,7 @@ schema_get_property (GObject *object,
 }
 
 static void 
-schema_instance_init (Schema * object)
+swcdb_thrift_schema_instance_init (swcdb_thriftSchema * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -1001,9 +1001,9 @@ schema_instance_init (Schema * object)
 }
 
 static void 
-schema_finalize (GObject *object)
+swcdb_thrift_schema_finalize (GObject *object)
 {
-  Schema *tobject = SCHEMA (object);
+  swcdb_thriftSchema *tobject = SWCDB_THRIFT_SCHEMA (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -1015,21 +1015,21 @@ schema_finalize (GObject *object)
 }
 
 static void
-schema_class_init (SchemaClass * cls)
+swcdb_thrift_schema_class_init (swcdb_thriftSchemaClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = schema_read;
-  struct_class->write = schema_write;
+  struct_class->read = swcdb_thrift_schema_read;
+  struct_class->write = swcdb_thrift_schema_write;
 
-  gobject_class->finalize = schema_finalize;
-  gobject_class->get_property = schema_get_property;
-  gobject_class->set_property = schema_set_property;
+  gobject_class->finalize = swcdb_thrift_schema_finalize;
+  gobject_class->get_property = swcdb_thrift_schema_get_property;
+  gobject_class->set_property = swcdb_thrift_schema_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CID,
+     PROP_SWCDB_THRIFT_SCHEMA_CID,
      g_param_spec_int64 ("cid",
                          NULL,
                          NULL,
@@ -1040,7 +1040,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_COL_NAME,
+     PROP_SWCDB_THRIFT_SCHEMA_COL_NAME,
      g_param_spec_string ("col_name",
                           NULL,
                           NULL,
@@ -1049,7 +1049,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_COL_TYPE,
+     PROP_SWCDB_THRIFT_SCHEMA_COL_TYPE,
      g_param_spec_int ("col_type",
                        NULL,
                        NULL,
@@ -1060,7 +1060,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CELL_VERSIONS,
+     PROP_SWCDB_THRIFT_SCHEMA_CELL_VERSIONS,
      g_param_spec_int ("cell_versions",
                        NULL,
                        NULL,
@@ -1071,7 +1071,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CELL_TTL,
+     PROP_SWCDB_THRIFT_SCHEMA_CELL_TTL,
      g_param_spec_int ("cell_ttl",
                        NULL,
                        NULL,
@@ -1082,7 +1082,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_BLK_ENCODING,
+     PROP_SWCDB_THRIFT_SCHEMA_BLK_ENCODING,
      g_param_spec_int ("blk_encoding",
                        NULL,
                        NULL,
@@ -1093,7 +1093,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_BLK_SIZE,
+     PROP_SWCDB_THRIFT_SCHEMA_BLK_SIZE,
      g_param_spec_int ("blk_size",
                        NULL,
                        NULL,
@@ -1104,7 +1104,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_BLK_CELLS,
+     PROP_SWCDB_THRIFT_SCHEMA_BLK_CELLS,
      g_param_spec_int ("blk_cells",
                        NULL,
                        NULL,
@@ -1115,7 +1115,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CS_REPLICATION,
+     PROP_SWCDB_THRIFT_SCHEMA_CS_REPLICATION,
      g_param_spec_int ("cs_replication",
                        NULL,
                        NULL,
@@ -1126,7 +1126,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CS_SIZE,
+     PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE,
      g_param_spec_int ("cs_size",
                        NULL,
                        NULL,
@@ -1137,7 +1137,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_CS_MAX,
+     PROP_SWCDB_THRIFT_SCHEMA_CS_MAX,
      g_param_spec_int ("cs_max",
                        NULL,
                        NULL,
@@ -1148,7 +1148,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_COMPACT_PERCENT,
+     PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT,
      g_param_spec_int ("compact_percent",
                        NULL,
                        NULL,
@@ -1159,7 +1159,7 @@ schema_class_init (SchemaClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SCHEMA_REVISION,
+     PROP_SWCDB_THRIFT_SCHEMA_REVISION,
      g_param_spec_int64 ("revision",
                          NULL,
                          NULL,
@@ -1170,7 +1170,7 @@ schema_class_init (SchemaClass * cls)
 }
 
 GType
-schema_get_type (void)
+swcdb_thrift_schema_get_type (void)
 {
   static GType type = 0;
 
@@ -1178,38 +1178,38 @@ schema_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (SchemaClass),
+      sizeof (swcdb_thriftSchemaClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) schema_class_init,
+      (GClassInitFunc) swcdb_thrift_schema_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (Schema),
+      sizeof (swcdb_thriftSchema),
       0, /* n_preallocs */
-      (GInstanceInitFunc) schema_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_schema_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "SchemaType",
+                                   "swcdb_thriftSchemaType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _UCellProperties
+enum _swcdb_thriftUCellProperties
 {
-  PROP_U_CELL_0,
-  PROP_U_CELL_F,
-  PROP_U_CELL_K,
-  PROP_U_CELL_TS,
-  PROP_U_CELL_V
+  PROP_SWCDB_THRIFT_U_CELL_0,
+  PROP_SWCDB_THRIFT_U_CELL_F,
+  PROP_SWCDB_THRIFT_U_CELL_K,
+  PROP_SWCDB_THRIFT_U_CELL_TS,
+  PROP_SWCDB_THRIFT_U_CELL_V
 };
 
 /* reads a u_cell object */
 static gint32
-u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -1218,7 +1218,7 @@ u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  UCell * this_object = U_CELL(object);
+  swcdb_thriftUCell * this_object = SWCDB_THRIFT_U_CELL(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -1263,7 +1263,7 @@ u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
           if ((ret = thrift_protocol_read_i32 (protocol, &ecast2, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->f = (Flag)ecast2;
+          this_object->f = (swcdb_thriftFlag)ecast2;
           this_object->__isset_f = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -1366,12 +1366,12 @@ u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-u_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_u_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  UCell * this_object = U_CELL(object);
+  swcdb_thriftUCell * this_object = SWCDB_THRIFT_U_CELL(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "UCell", error)) < 0)
     return -1;
@@ -1444,33 +1444,33 @@ u_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-u_cell_set_property (GObject *object,
-                     guint property_id,
-                     const GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_u_cell_set_property (GObject *object,
+                                  guint property_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
 {
-  UCell *self = U_CELL (object);
+  swcdb_thriftUCell *self = SWCDB_THRIFT_U_CELL (object);
 
   switch (property_id)
   {
-    case PROP_U_CELL_F:
+    case PROP_SWCDB_THRIFT_U_CELL_F:
       self->f = g_value_get_int (value);
       self->__isset_f = TRUE;
       break;
 
-    case PROP_U_CELL_K:
+    case PROP_SWCDB_THRIFT_U_CELL_K:
       if (self->k != NULL)
         g_ptr_array_unref (self->k);
       self->k = g_value_dup_boxed (value);
       self->__isset_k = TRUE;
       break;
 
-    case PROP_U_CELL_TS:
+    case PROP_SWCDB_THRIFT_U_CELL_TS:
       self->ts = g_value_get_int64 (value);
       self->__isset_ts = TRUE;
       break;
 
-    case PROP_U_CELL_V:
+    case PROP_SWCDB_THRIFT_U_CELL_V:
       if (self->v != NULL)
         g_byte_array_unref (self->v);
       self->v = g_value_dup_boxed (value);
@@ -1484,28 +1484,28 @@ u_cell_set_property (GObject *object,
 }
 
 static void
-u_cell_get_property (GObject *object,
-                     guint property_id,
-                     GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_u_cell_get_property (GObject *object,
+                                  guint property_id,
+                                  GValue *value,
+                                  GParamSpec *pspec)
 {
-  UCell *self = U_CELL (object);
+  swcdb_thriftUCell *self = SWCDB_THRIFT_U_CELL (object);
 
   switch (property_id)
   {
-    case PROP_U_CELL_F:
+    case PROP_SWCDB_THRIFT_U_CELL_F:
       g_value_set_int (value, self->f);
       break;
 
-    case PROP_U_CELL_K:
+    case PROP_SWCDB_THRIFT_U_CELL_K:
       g_value_set_boxed (value, self->k);
       break;
 
-    case PROP_U_CELL_TS:
+    case PROP_SWCDB_THRIFT_U_CELL_TS:
       g_value_set_int64 (value, self->ts);
       break;
 
-    case PROP_U_CELL_V:
+    case PROP_SWCDB_THRIFT_U_CELL_V:
       g_value_set_boxed (value, self->v);
       break;
 
@@ -1516,7 +1516,7 @@ u_cell_get_property (GObject *object,
 }
 
 static void 
-u_cell_instance_init (UCell * object)
+swcdb_thrift_u_cell_instance_init (swcdb_thriftUCell * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -1530,9 +1530,9 @@ u_cell_instance_init (UCell * object)
 }
 
 static void 
-u_cell_finalize (GObject *object)
+swcdb_thrift_u_cell_finalize (GObject *object)
 {
-  UCell *tobject = U_CELL (object);
+  swcdb_thriftUCell *tobject = SWCDB_THRIFT_U_CELL (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -1549,21 +1549,21 @@ u_cell_finalize (GObject *object)
 }
 
 static void
-u_cell_class_init (UCellClass * cls)
+swcdb_thrift_u_cell_class_init (swcdb_thriftUCellClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = u_cell_read;
-  struct_class->write = u_cell_write;
+  struct_class->read = swcdb_thrift_u_cell_read;
+  struct_class->write = swcdb_thrift_u_cell_write;
 
-  gobject_class->finalize = u_cell_finalize;
-  gobject_class->get_property = u_cell_get_property;
-  gobject_class->set_property = u_cell_set_property;
+  gobject_class->finalize = swcdb_thrift_u_cell_finalize;
+  gobject_class->get_property = swcdb_thrift_u_cell_get_property;
+  gobject_class->set_property = swcdb_thrift_u_cell_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_U_CELL_F,
+     PROP_SWCDB_THRIFT_U_CELL_F,
      g_param_spec_int ("f",
                        NULL,
                        NULL,
@@ -1574,7 +1574,7 @@ u_cell_class_init (UCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_U_CELL_K,
+     PROP_SWCDB_THRIFT_U_CELL_K,
      g_param_spec_boxed ("k",
                          NULL,
                          NULL,
@@ -1583,7 +1583,7 @@ u_cell_class_init (UCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_U_CELL_TS,
+     PROP_SWCDB_THRIFT_U_CELL_TS,
      g_param_spec_int64 ("ts",
                          NULL,
                          NULL,
@@ -1594,7 +1594,7 @@ u_cell_class_init (UCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_U_CELL_V,
+     PROP_SWCDB_THRIFT_U_CELL_V,
      g_param_spec_boxed ("v",
                          NULL,
                          NULL,
@@ -1603,7 +1603,7 @@ u_cell_class_init (UCellClass * cls)
 }
 
 GType
-u_cell_get_type (void)
+swcdb_thrift_u_cell_get_type (void)
 {
   static GType type = 0;
 
@@ -1611,38 +1611,38 @@ u_cell_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (UCellClass),
+      sizeof (swcdb_thriftUCellClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) u_cell_class_init,
+      (GClassInitFunc) swcdb_thrift_u_cell_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (UCell),
+      sizeof (swcdb_thriftUCell),
       0, /* n_preallocs */
-      (GInstanceInitFunc) u_cell_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_u_cell_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "UCellType",
+                                   "swcdb_thriftUCellType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _CellProperties
+enum _swcdb_thriftCellProperties
 {
-  PROP_CELL_0,
-  PROP_CELL_C,
-  PROP_CELL_K,
-  PROP_CELL_TS,
-  PROP_CELL_V
+  PROP_SWCDB_THRIFT_CELL_0,
+  PROP_SWCDB_THRIFT_CELL_C,
+  PROP_SWCDB_THRIFT_CELL_K,
+  PROP_SWCDB_THRIFT_CELL_TS,
+  PROP_SWCDB_THRIFT_CELL_V
 };
 
 /* reads a cell object */
 static gint32
-cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -1651,7 +1651,7 @@ cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  Cell * this_object = CELL(object);
+  swcdb_thriftCell * this_object = SWCDB_THRIFT_CELL(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -1803,12 +1803,12 @@ cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  Cell * this_object = CELL(object);
+  swcdb_thriftCell * this_object = SWCDB_THRIFT_CELL(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "Cell", error)) < 0)
     return -1;
@@ -1879,35 +1879,35 @@ cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-cell_set_property (GObject *object,
-                   guint property_id,
-                   const GValue *value,
-                   GParamSpec *pspec)
+swcdb_thrift_cell_set_property (GObject *object,
+                                guint property_id,
+                                const GValue *value,
+                                GParamSpec *pspec)
 {
-  Cell *self = CELL (object);
+  swcdb_thriftCell *self = SWCDB_THRIFT_CELL (object);
 
   switch (property_id)
   {
-    case PROP_CELL_C:
+    case PROP_SWCDB_THRIFT_CELL_C:
       if (self->c != NULL)
         g_free (self->c);
       self->c = g_value_dup_string (value);
       self->__isset_c = TRUE;
       break;
 
-    case PROP_CELL_K:
+    case PROP_SWCDB_THRIFT_CELL_K:
       if (self->k != NULL)
         g_ptr_array_unref (self->k);
       self->k = g_value_dup_boxed (value);
       self->__isset_k = TRUE;
       break;
 
-    case PROP_CELL_TS:
+    case PROP_SWCDB_THRIFT_CELL_TS:
       self->ts = g_value_get_int64 (value);
       self->__isset_ts = TRUE;
       break;
 
-    case PROP_CELL_V:
+    case PROP_SWCDB_THRIFT_CELL_V:
       if (self->v != NULL)
         g_byte_array_unref (self->v);
       self->v = g_value_dup_boxed (value);
@@ -1921,28 +1921,28 @@ cell_set_property (GObject *object,
 }
 
 static void
-cell_get_property (GObject *object,
-                   guint property_id,
-                   GValue *value,
-                   GParamSpec *pspec)
+swcdb_thrift_cell_get_property (GObject *object,
+                                guint property_id,
+                                GValue *value,
+                                GParamSpec *pspec)
 {
-  Cell *self = CELL (object);
+  swcdb_thriftCell *self = SWCDB_THRIFT_CELL (object);
 
   switch (property_id)
   {
-    case PROP_CELL_C:
+    case PROP_SWCDB_THRIFT_CELL_C:
       g_value_set_string (value, self->c);
       break;
 
-    case PROP_CELL_K:
+    case PROP_SWCDB_THRIFT_CELL_K:
       g_value_set_boxed (value, self->k);
       break;
 
-    case PROP_CELL_TS:
+    case PROP_SWCDB_THRIFT_CELL_TS:
       g_value_set_int64 (value, self->ts);
       break;
 
-    case PROP_CELL_V:
+    case PROP_SWCDB_THRIFT_CELL_V:
       g_value_set_boxed (value, self->v);
       break;
 
@@ -1953,7 +1953,7 @@ cell_get_property (GObject *object,
 }
 
 static void 
-cell_instance_init (Cell * object)
+swcdb_thrift_cell_instance_init (swcdb_thriftCell * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -1968,9 +1968,9 @@ cell_instance_init (Cell * object)
 }
 
 static void 
-cell_finalize (GObject *object)
+swcdb_thrift_cell_finalize (GObject *object)
 {
-  Cell *tobject = CELL (object);
+  swcdb_thriftCell *tobject = SWCDB_THRIFT_CELL (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -1992,21 +1992,21 @@ cell_finalize (GObject *object)
 }
 
 static void
-cell_class_init (CellClass * cls)
+swcdb_thrift_cell_class_init (swcdb_thriftCellClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = cell_read;
-  struct_class->write = cell_write;
+  struct_class->read = swcdb_thrift_cell_read;
+  struct_class->write = swcdb_thrift_cell_write;
 
-  gobject_class->finalize = cell_finalize;
-  gobject_class->get_property = cell_get_property;
-  gobject_class->set_property = cell_set_property;
+  gobject_class->finalize = swcdb_thrift_cell_finalize;
+  gobject_class->get_property = swcdb_thrift_cell_get_property;
+  gobject_class->set_property = swcdb_thrift_cell_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELL_C,
+     PROP_SWCDB_THRIFT_CELL_C,
      g_param_spec_string ("c",
                           NULL,
                           NULL,
@@ -2015,7 +2015,7 @@ cell_class_init (CellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELL_K,
+     PROP_SWCDB_THRIFT_CELL_K,
      g_param_spec_boxed ("k",
                          NULL,
                          NULL,
@@ -2024,7 +2024,7 @@ cell_class_init (CellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELL_TS,
+     PROP_SWCDB_THRIFT_CELL_TS,
      g_param_spec_int64 ("ts",
                          NULL,
                          NULL,
@@ -2035,7 +2035,7 @@ cell_class_init (CellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELL_V,
+     PROP_SWCDB_THRIFT_CELL_V,
      g_param_spec_boxed ("v",
                          NULL,
                          NULL,
@@ -2044,7 +2044,7 @@ cell_class_init (CellClass * cls)
 }
 
 GType
-cell_get_type (void)
+swcdb_thrift_cell_get_type (void)
 {
   static GType type = 0;
 
@@ -2052,37 +2052,37 @@ cell_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (CellClass),
+      sizeof (swcdb_thriftCellClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) cell_class_init,
+      (GClassInitFunc) swcdb_thrift_cell_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (Cell),
+      sizeof (swcdb_thriftCell),
       0, /* n_preallocs */
-      (GInstanceInitFunc) cell_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_cell_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "CellType",
+                                   "swcdb_thriftCellType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _CCellProperties
+enum _swcdb_thriftCCellProperties
 {
-  PROP_C_CELL_0,
-  PROP_C_CELL_K,
-  PROP_C_CELL_TS,
-  PROP_C_CELL_V
+  PROP_SWCDB_THRIFT_C_CELL_0,
+  PROP_SWCDB_THRIFT_C_CELL_K,
+  PROP_SWCDB_THRIFT_C_CELL_TS,
+  PROP_SWCDB_THRIFT_C_CELL_V
 };
 
 /* reads a c_cell object */
 static gint32
-c_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_c_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -2091,7 +2091,7 @@ c_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  CCell * this_object = C_CELL(object);
+  swcdb_thriftCCell * this_object = SWCDB_THRIFT_C_CELL(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -2224,12 +2224,12 @@ c_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-c_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_c_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  CCell * this_object = C_CELL(object);
+  swcdb_thriftCCell * this_object = SWCDB_THRIFT_C_CELL(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "CCell", error)) < 0)
     return -1;
@@ -2290,28 +2290,28 @@ c_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-c_cell_set_property (GObject *object,
-                     guint property_id,
-                     const GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_c_cell_set_property (GObject *object,
+                                  guint property_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
 {
-  CCell *self = C_CELL (object);
+  swcdb_thriftCCell *self = SWCDB_THRIFT_C_CELL (object);
 
   switch (property_id)
   {
-    case PROP_C_CELL_K:
+    case PROP_SWCDB_THRIFT_C_CELL_K:
       if (self->k != NULL)
         g_ptr_array_unref (self->k);
       self->k = g_value_dup_boxed (value);
       self->__isset_k = TRUE;
       break;
 
-    case PROP_C_CELL_TS:
+    case PROP_SWCDB_THRIFT_C_CELL_TS:
       self->ts = g_value_get_int64 (value);
       self->__isset_ts = TRUE;
       break;
 
-    case PROP_C_CELL_V:
+    case PROP_SWCDB_THRIFT_C_CELL_V:
       if (self->v != NULL)
         g_byte_array_unref (self->v);
       self->v = g_value_dup_boxed (value);
@@ -2325,24 +2325,24 @@ c_cell_set_property (GObject *object,
 }
 
 static void
-c_cell_get_property (GObject *object,
-                     guint property_id,
-                     GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_c_cell_get_property (GObject *object,
+                                  guint property_id,
+                                  GValue *value,
+                                  GParamSpec *pspec)
 {
-  CCell *self = C_CELL (object);
+  swcdb_thriftCCell *self = SWCDB_THRIFT_C_CELL (object);
 
   switch (property_id)
   {
-    case PROP_C_CELL_K:
+    case PROP_SWCDB_THRIFT_C_CELL_K:
       g_value_set_boxed (value, self->k);
       break;
 
-    case PROP_C_CELL_TS:
+    case PROP_SWCDB_THRIFT_C_CELL_TS:
       g_value_set_int64 (value, self->ts);
       break;
 
-    case PROP_C_CELL_V:
+    case PROP_SWCDB_THRIFT_C_CELL_V:
       g_value_set_boxed (value, self->v);
       break;
 
@@ -2353,7 +2353,7 @@ c_cell_get_property (GObject *object,
 }
 
 static void 
-c_cell_instance_init (CCell * object)
+swcdb_thrift_c_cell_instance_init (swcdb_thriftCCell * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -2366,9 +2366,9 @@ c_cell_instance_init (CCell * object)
 }
 
 static void 
-c_cell_finalize (GObject *object)
+swcdb_thrift_c_cell_finalize (GObject *object)
 {
-  CCell *tobject = C_CELL (object);
+  swcdb_thriftCCell *tobject = SWCDB_THRIFT_C_CELL (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -2385,21 +2385,21 @@ c_cell_finalize (GObject *object)
 }
 
 static void
-c_cell_class_init (CCellClass * cls)
+swcdb_thrift_c_cell_class_init (swcdb_thriftCCellClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = c_cell_read;
-  struct_class->write = c_cell_write;
+  struct_class->read = swcdb_thrift_c_cell_read;
+  struct_class->write = swcdb_thrift_c_cell_write;
 
-  gobject_class->finalize = c_cell_finalize;
-  gobject_class->get_property = c_cell_get_property;
-  gobject_class->set_property = c_cell_set_property;
+  gobject_class->finalize = swcdb_thrift_c_cell_finalize;
+  gobject_class->get_property = swcdb_thrift_c_cell_get_property;
+  gobject_class->set_property = swcdb_thrift_c_cell_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_C_CELL_K,
+     PROP_SWCDB_THRIFT_C_CELL_K,
      g_param_spec_boxed ("k",
                          NULL,
                          NULL,
@@ -2408,7 +2408,7 @@ c_cell_class_init (CCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_C_CELL_TS,
+     PROP_SWCDB_THRIFT_C_CELL_TS,
      g_param_spec_int64 ("ts",
                          NULL,
                          NULL,
@@ -2419,7 +2419,7 @@ c_cell_class_init (CCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_C_CELL_V,
+     PROP_SWCDB_THRIFT_C_CELL_V,
      g_param_spec_boxed ("v",
                          NULL,
                          NULL,
@@ -2428,7 +2428,7 @@ c_cell_class_init (CCellClass * cls)
 }
 
 GType
-c_cell_get_type (void)
+swcdb_thrift_c_cell_get_type (void)
 {
   static GType type = 0;
 
@@ -2436,37 +2436,37 @@ c_cell_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (CCellClass),
+      sizeof (swcdb_thriftCCellClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) c_cell_class_init,
+      (GClassInitFunc) swcdb_thrift_c_cell_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (CCell),
+      sizeof (swcdb_thriftCCell),
       0, /* n_preallocs */
-      (GInstanceInitFunc) c_cell_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_c_cell_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "CCellType",
+                                   "swcdb_thriftCCellType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _KCellProperties
+enum _swcdb_thriftKCellProperties
 {
-  PROP_K_CELL_0,
-  PROP_K_CELL_C,
-  PROP_K_CELL_TS,
-  PROP_K_CELL_V
+  PROP_SWCDB_THRIFT_K_CELL_0,
+  PROP_SWCDB_THRIFT_K_CELL_C,
+  PROP_SWCDB_THRIFT_K_CELL_TS,
+  PROP_SWCDB_THRIFT_K_CELL_V
 };
 
 /* reads a k_cell object */
 static gint32
-k_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_k_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -2475,7 +2475,7 @@ k_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  KCell * this_object = K_CELL(object);
+  swcdb_thriftKCell * this_object = SWCDB_THRIFT_K_CELL(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -2586,12 +2586,12 @@ k_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-k_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_k_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  KCell * this_object = K_CELL(object);
+  swcdb_thriftKCell * this_object = SWCDB_THRIFT_K_CELL(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "KCell", error)) < 0)
     return -1;
@@ -2639,28 +2639,28 @@ k_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-k_cell_set_property (GObject *object,
-                     guint property_id,
-                     const GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_k_cell_set_property (GObject *object,
+                                  guint property_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
 {
-  KCell *self = K_CELL (object);
+  swcdb_thriftKCell *self = SWCDB_THRIFT_K_CELL (object);
 
   switch (property_id)
   {
-    case PROP_K_CELL_C:
+    case PROP_SWCDB_THRIFT_K_CELL_C:
       if (self->c != NULL)
         g_free (self->c);
       self->c = g_value_dup_string (value);
       self->__isset_c = TRUE;
       break;
 
-    case PROP_K_CELL_TS:
+    case PROP_SWCDB_THRIFT_K_CELL_TS:
       self->ts = g_value_get_int64 (value);
       self->__isset_ts = TRUE;
       break;
 
-    case PROP_K_CELL_V:
+    case PROP_SWCDB_THRIFT_K_CELL_V:
       if (self->v != NULL)
         g_byte_array_unref (self->v);
       self->v = g_value_dup_boxed (value);
@@ -2674,24 +2674,24 @@ k_cell_set_property (GObject *object,
 }
 
 static void
-k_cell_get_property (GObject *object,
-                     guint property_id,
-                     GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_k_cell_get_property (GObject *object,
+                                  guint property_id,
+                                  GValue *value,
+                                  GParamSpec *pspec)
 {
-  KCell *self = K_CELL (object);
+  swcdb_thriftKCell *self = SWCDB_THRIFT_K_CELL (object);
 
   switch (property_id)
   {
-    case PROP_K_CELL_C:
+    case PROP_SWCDB_THRIFT_K_CELL_C:
       g_value_set_string (value, self->c);
       break;
 
-    case PROP_K_CELL_TS:
+    case PROP_SWCDB_THRIFT_K_CELL_TS:
       g_value_set_int64 (value, self->ts);
       break;
 
-    case PROP_K_CELL_V:
+    case PROP_SWCDB_THRIFT_K_CELL_V:
       g_value_set_boxed (value, self->v);
       break;
 
@@ -2702,7 +2702,7 @@ k_cell_get_property (GObject *object,
 }
 
 static void 
-k_cell_instance_init (KCell * object)
+swcdb_thrift_k_cell_instance_init (swcdb_thriftKCell * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -2715,9 +2715,9 @@ k_cell_instance_init (KCell * object)
 }
 
 static void 
-k_cell_finalize (GObject *object)
+swcdb_thrift_k_cell_finalize (GObject *object)
 {
-  KCell *tobject = K_CELL (object);
+  swcdb_thriftKCell *tobject = SWCDB_THRIFT_K_CELL (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -2734,21 +2734,21 @@ k_cell_finalize (GObject *object)
 }
 
 static void
-k_cell_class_init (KCellClass * cls)
+swcdb_thrift_k_cell_class_init (swcdb_thriftKCellClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = k_cell_read;
-  struct_class->write = k_cell_write;
+  struct_class->read = swcdb_thrift_k_cell_read;
+  struct_class->write = swcdb_thrift_k_cell_write;
 
-  gobject_class->finalize = k_cell_finalize;
-  gobject_class->get_property = k_cell_get_property;
-  gobject_class->set_property = k_cell_set_property;
+  gobject_class->finalize = swcdb_thrift_k_cell_finalize;
+  gobject_class->get_property = swcdb_thrift_k_cell_get_property;
+  gobject_class->set_property = swcdb_thrift_k_cell_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_K_CELL_C,
+     PROP_SWCDB_THRIFT_K_CELL_C,
      g_param_spec_string ("c",
                           NULL,
                           NULL,
@@ -2757,7 +2757,7 @@ k_cell_class_init (KCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_K_CELL_TS,
+     PROP_SWCDB_THRIFT_K_CELL_TS,
      g_param_spec_int64 ("ts",
                          NULL,
                          NULL,
@@ -2768,7 +2768,7 @@ k_cell_class_init (KCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_K_CELL_V,
+     PROP_SWCDB_THRIFT_K_CELL_V,
      g_param_spec_boxed ("v",
                          NULL,
                          NULL,
@@ -2777,7 +2777,7 @@ k_cell_class_init (KCellClass * cls)
 }
 
 GType
-k_cell_get_type (void)
+swcdb_thrift_k_cell_get_type (void)
 {
   static GType type = 0;
 
@@ -2785,36 +2785,36 @@ k_cell_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (KCellClass),
+      sizeof (swcdb_thriftKCellClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) k_cell_class_init,
+      (GClassInitFunc) swcdb_thrift_k_cell_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (KCell),
+      sizeof (swcdb_thriftKCell),
       0, /* n_preallocs */
-      (GInstanceInitFunc) k_cell_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_k_cell_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "KCellType",
+                                   "swcdb_thriftKCellType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _kCellsProperties
+enum _swcdb_thriftkCellsProperties
 {
-  PROP_K_CELLS_0,
-  PROP_K_CELLS_K,
-  PROP_K_CELLS_CELLS
+  PROP_SWCDB_THRIFT_K_CELLS_0,
+  PROP_SWCDB_THRIFT_K_CELLS_K,
+  PROP_SWCDB_THRIFT_K_CELLS_CELLS
 };
 
 /* reads a k_cells object */
 static gint32
-k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -2823,7 +2823,7 @@ k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  kCells * this_object = K_CELLS(object);
+  swcdb_thriftkCells * this_object = SWCDB_THRIFT_K_CELLS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -2917,12 +2917,12 @@ k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              KCell * _elem10 = NULL;
+              swcdb_thriftKCell * _elem10 = NULL;
               if ( _elem10 != NULL)
               {
                 g_object_unref (_elem10);
               }
-              _elem10 = g_object_new (TYPE_K_CELL, NULL);
+              _elem10 = g_object_new (SWCDB_THRIFT_TYPE_K_CELL, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem10), protocol, error)) < 0)
               {
                 g_object_unref (_elem10);
@@ -2961,12 +2961,12 @@ k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-k_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_k_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  kCells * this_object = K_CELLS(object);
+  swcdb_thriftkCells * this_object = SWCDB_THRIFT_K_CELLS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "kCells", error)) < 0)
     return -1;
@@ -3028,23 +3028,23 @@ k_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-k_cells_set_property (GObject *object,
-                      guint property_id,
-                      const GValue *value,
-                      GParamSpec *pspec)
+swcdb_thrift_k_cells_set_property (GObject *object,
+                                   guint property_id,
+                                   const GValue *value,
+                                   GParamSpec *pspec)
 {
-  kCells *self = K_CELLS (object);
+  swcdb_thriftkCells *self = SWCDB_THRIFT_K_CELLS (object);
 
   switch (property_id)
   {
-    case PROP_K_CELLS_K:
+    case PROP_SWCDB_THRIFT_K_CELLS_K:
       if (self->k != NULL)
         g_ptr_array_unref (self->k);
       self->k = g_value_dup_boxed (value);
       self->__isset_k = TRUE;
       break;
 
-    case PROP_K_CELLS_CELLS:
+    case PROP_SWCDB_THRIFT_K_CELLS_CELLS:
       if (self->cells != NULL)
         g_ptr_array_unref (self->cells);
       self->cells = g_value_dup_boxed (value);
@@ -3058,20 +3058,20 @@ k_cells_set_property (GObject *object,
 }
 
 static void
-k_cells_get_property (GObject *object,
-                      guint property_id,
-                      GValue *value,
-                      GParamSpec *pspec)
+swcdb_thrift_k_cells_get_property (GObject *object,
+                                   guint property_id,
+                                   GValue *value,
+                                   GParamSpec *pspec)
 {
-  kCells *self = K_CELLS (object);
+  swcdb_thriftkCells *self = SWCDB_THRIFT_K_CELLS (object);
 
   switch (property_id)
   {
-    case PROP_K_CELLS_K:
+    case PROP_SWCDB_THRIFT_K_CELLS_K:
       g_value_set_boxed (value, self->k);
       break;
 
-    case PROP_K_CELLS_CELLS:
+    case PROP_SWCDB_THRIFT_K_CELLS_CELLS:
       g_value_set_boxed (value, self->cells);
       break;
 
@@ -3082,7 +3082,7 @@ k_cells_get_property (GObject *object,
 }
 
 static void 
-k_cells_instance_init (kCells * object)
+swcdb_thrift_k_cells_instance_init (swcdb_thriftkCells * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -3093,9 +3093,9 @@ k_cells_instance_init (kCells * object)
 }
 
 static void 
-k_cells_finalize (GObject *object)
+swcdb_thrift_k_cells_finalize (GObject *object)
 {
-  kCells *tobject = K_CELLS (object);
+  swcdb_thriftkCells *tobject = SWCDB_THRIFT_K_CELLS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -3112,21 +3112,21 @@ k_cells_finalize (GObject *object)
 }
 
 static void
-k_cells_class_init (kCellsClass * cls)
+swcdb_thrift_k_cells_class_init (swcdb_thriftkCellsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = k_cells_read;
-  struct_class->write = k_cells_write;
+  struct_class->read = swcdb_thrift_k_cells_read;
+  struct_class->write = swcdb_thrift_k_cells_write;
 
-  gobject_class->finalize = k_cells_finalize;
-  gobject_class->get_property = k_cells_get_property;
-  gobject_class->set_property = k_cells_set_property;
+  gobject_class->finalize = swcdb_thrift_k_cells_finalize;
+  gobject_class->get_property = swcdb_thrift_k_cells_get_property;
+  gobject_class->set_property = swcdb_thrift_k_cells_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_K_CELLS_K,
+     PROP_SWCDB_THRIFT_K_CELLS_K,
      g_param_spec_boxed ("k",
                          NULL,
                          NULL,
@@ -3135,7 +3135,7 @@ k_cells_class_init (kCellsClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_K_CELLS_CELLS,
+     PROP_SWCDB_THRIFT_K_CELLS_CELLS,
      g_param_spec_boxed ("cells",
                          NULL,
                          NULL,
@@ -3144,7 +3144,7 @@ k_cells_class_init (kCellsClass * cls)
 }
 
 GType
-k_cells_get_type (void)
+swcdb_thrift_k_cells_get_type (void)
 {
   static GType type = 0;
 
@@ -3152,37 +3152,37 @@ k_cells_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (kCellsClass),
+      sizeof (swcdb_thriftkCellsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) k_cells_class_init,
+      (GClassInitFunc) swcdb_thrift_k_cells_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (kCells),
+      sizeof (swcdb_thriftkCells),
       0, /* n_preallocs */
-      (GInstanceInitFunc) k_cells_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_k_cells_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "kCellsType",
+                                   "swcdb_thriftkCellsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _FCellProperties
+enum _swcdb_thriftFCellProperties
 {
-  PROP_F_CELL_0,
-  PROP_F_CELL_C,
-  PROP_F_CELL_TS,
-  PROP_F_CELL_V
+  PROP_SWCDB_THRIFT_F_CELL_0,
+  PROP_SWCDB_THRIFT_F_CELL_C,
+  PROP_SWCDB_THRIFT_F_CELL_TS,
+  PROP_SWCDB_THRIFT_F_CELL_V
 };
 
 /* reads a f_cell object */
 static gint32
-f_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_f_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -3191,7 +3191,7 @@ f_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  FCell * this_object = F_CELL(object);
+  swcdb_thriftFCell * this_object = SWCDB_THRIFT_F_CELL(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -3302,12 +3302,12 @@ f_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-f_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_f_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  FCell * this_object = F_CELL(object);
+  swcdb_thriftFCell * this_object = SWCDB_THRIFT_F_CELL(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "FCell", error)) < 0)
     return -1;
@@ -3355,28 +3355,28 @@ f_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-f_cell_set_property (GObject *object,
-                     guint property_id,
-                     const GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_f_cell_set_property (GObject *object,
+                                  guint property_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
 {
-  FCell *self = F_CELL (object);
+  swcdb_thriftFCell *self = SWCDB_THRIFT_F_CELL (object);
 
   switch (property_id)
   {
-    case PROP_F_CELL_C:
+    case PROP_SWCDB_THRIFT_F_CELL_C:
       if (self->c != NULL)
         g_free (self->c);
       self->c = g_value_dup_string (value);
       self->__isset_c = TRUE;
       break;
 
-    case PROP_F_CELL_TS:
+    case PROP_SWCDB_THRIFT_F_CELL_TS:
       self->ts = g_value_get_int64 (value);
       self->__isset_ts = TRUE;
       break;
 
-    case PROP_F_CELL_V:
+    case PROP_SWCDB_THRIFT_F_CELL_V:
       if (self->v != NULL)
         g_byte_array_unref (self->v);
       self->v = g_value_dup_boxed (value);
@@ -3390,24 +3390,24 @@ f_cell_set_property (GObject *object,
 }
 
 static void
-f_cell_get_property (GObject *object,
-                     guint property_id,
-                     GValue *value,
-                     GParamSpec *pspec)
+swcdb_thrift_f_cell_get_property (GObject *object,
+                                  guint property_id,
+                                  GValue *value,
+                                  GParamSpec *pspec)
 {
-  FCell *self = F_CELL (object);
+  swcdb_thriftFCell *self = SWCDB_THRIFT_F_CELL (object);
 
   switch (property_id)
   {
-    case PROP_F_CELL_C:
+    case PROP_SWCDB_THRIFT_F_CELL_C:
       g_value_set_string (value, self->c);
       break;
 
-    case PROP_F_CELL_TS:
+    case PROP_SWCDB_THRIFT_F_CELL_TS:
       g_value_set_int64 (value, self->ts);
       break;
 
-    case PROP_F_CELL_V:
+    case PROP_SWCDB_THRIFT_F_CELL_V:
       g_value_set_boxed (value, self->v);
       break;
 
@@ -3418,7 +3418,7 @@ f_cell_get_property (GObject *object,
 }
 
 static void 
-f_cell_instance_init (FCell * object)
+swcdb_thrift_f_cell_instance_init (swcdb_thriftFCell * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -3431,9 +3431,9 @@ f_cell_instance_init (FCell * object)
 }
 
 static void 
-f_cell_finalize (GObject *object)
+swcdb_thrift_f_cell_finalize (GObject *object)
 {
-  FCell *tobject = F_CELL (object);
+  swcdb_thriftFCell *tobject = SWCDB_THRIFT_F_CELL (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -3450,21 +3450,21 @@ f_cell_finalize (GObject *object)
 }
 
 static void
-f_cell_class_init (FCellClass * cls)
+swcdb_thrift_f_cell_class_init (swcdb_thriftFCellClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = f_cell_read;
-  struct_class->write = f_cell_write;
+  struct_class->read = swcdb_thrift_f_cell_read;
+  struct_class->write = swcdb_thrift_f_cell_write;
 
-  gobject_class->finalize = f_cell_finalize;
-  gobject_class->get_property = f_cell_get_property;
-  gobject_class->set_property = f_cell_set_property;
+  gobject_class->finalize = swcdb_thrift_f_cell_finalize;
+  gobject_class->get_property = swcdb_thrift_f_cell_get_property;
+  gobject_class->set_property = swcdb_thrift_f_cell_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_F_CELL_C,
+     PROP_SWCDB_THRIFT_F_CELL_C,
      g_param_spec_string ("c",
                           NULL,
                           NULL,
@@ -3473,7 +3473,7 @@ f_cell_class_init (FCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_F_CELL_TS,
+     PROP_SWCDB_THRIFT_F_CELL_TS,
      g_param_spec_int64 ("ts",
                          NULL,
                          NULL,
@@ -3484,7 +3484,7 @@ f_cell_class_init (FCellClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_F_CELL_V,
+     PROP_SWCDB_THRIFT_F_CELL_V,
      g_param_spec_boxed ("v",
                          NULL,
                          NULL,
@@ -3493,7 +3493,7 @@ f_cell_class_init (FCellClass * cls)
 }
 
 GType
-f_cell_get_type (void)
+swcdb_thrift_f_cell_get_type (void)
 {
   static GType type = 0;
 
@@ -3501,36 +3501,36 @@ f_cell_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (FCellClass),
+      sizeof (swcdb_thriftFCellClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) f_cell_class_init,
+      (GClassInitFunc) swcdb_thrift_f_cell_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (FCell),
+      sizeof (swcdb_thriftFCell),
       0, /* n_preallocs */
-      (GInstanceInitFunc) f_cell_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_f_cell_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "FCellType",
+                                   "swcdb_thriftFCellType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _FCellsProperties
+enum _swcdb_thriftFCellsProperties
 {
-  PROP_F_CELLS_0,
-  PROP_F_CELLS_F,
-  PROP_F_CELLS_CELLS
+  PROP_SWCDB_THRIFT_F_CELLS_0,
+  PROP_SWCDB_THRIFT_F_CELLS_F,
+  PROP_SWCDB_THRIFT_F_CELLS_CELLS
 };
 
 /* reads a f_cells object */
 static gint32
-f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -3539,7 +3539,7 @@ f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  FCells * this_object = F_CELLS(object);
+  swcdb_thriftFCells * this_object = SWCDB_THRIFT_F_CELLS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -3595,7 +3595,7 @@ f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
             for (i = 0; i < size; i++)
             {
               GByteArray * key13 = NULL;
-              FCells * val14 = NULL;
+              swcdb_thriftFCells * val14 = NULL;
               if (key13 != NULL)
               {
                 g_free(key13);
@@ -3612,7 +3612,7 @@ f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
               {
                 g_object_unref (val14);
               }
-              val14 = g_object_new (TYPE_F_CELLS, NULL);
+              val14 = g_object_new (SWCDB_THRIFT_TYPE_F_CELLS, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (val14), protocol, error)) < 0)
               {
                 g_object_unref (val14);
@@ -3650,12 +3650,12 @@ f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              FCell * _elem15 = NULL;
+              swcdb_thriftFCell * _elem15 = NULL;
               if ( _elem15 != NULL)
               {
                 g_object_unref (_elem15);
               }
-              _elem15 = g_object_new (TYPE_F_CELL, NULL);
+              _elem15 = g_object_new (SWCDB_THRIFT_TYPE_F_CELL, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem15), protocol, error)) < 0)
               {
                 g_object_unref (_elem15);
@@ -3694,12 +3694,12 @@ f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static gint32
-f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  FCells * this_object = F_CELLS(object);
+  swcdb_thriftFCells * this_object = SWCDB_THRIFT_F_CELLS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "FCells", error)) < 0)
     return -1;
@@ -3709,7 +3709,7 @@ f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
   xfer += ret;
   {
     GByteArray * key16 = NULL;
-    FCells * val17 = NULL;
+    swcdb_thriftFCells * val17 = NULL;
     GList *key_list = NULL, *iter = NULL;
     GByteArray ** keys;
     int i = 0, key_count;
@@ -3728,7 +3728,7 @@ f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
     for (i = 0; i < key_count; ++i)
     {
       key16 = keys[i];
-      val17 = (FCells *) g_hash_table_lookup (((GHashTable *) this_object->f), (gpointer) key16);
+      val17 = (swcdb_thriftFCells *) g_hash_table_lookup (((GHashTable *) this_object->f), (gpointer) key16);
 
       if ((ret = thrift_protocol_write_binary (protocol,  key16 ? ((GByteArray *)  key16)->data : NULL,  key16 ? ((GByteArray *)  key16)->len : 0, error)) < 0)
         return -1;
@@ -3782,23 +3782,23 @@ f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 }
 
 static void
-f_cells_set_property (GObject *object,
-                      guint property_id,
-                      const GValue *value,
-                      GParamSpec *pspec)
+swcdb_thrift_f_cells_set_property (GObject *object,
+                                   guint property_id,
+                                   const GValue *value,
+                                   GParamSpec *pspec)
 {
-  FCells *self = F_CELLS (object);
+  swcdb_thriftFCells *self = SWCDB_THRIFT_F_CELLS (object);
 
   switch (property_id)
   {
-    case PROP_F_CELLS_F:
+    case PROP_SWCDB_THRIFT_F_CELLS_F:
       if (self->f != NULL)
         g_hash_table_unref (self->f);
       self->f = g_value_dup_boxed (value);
       self->__isset_f = TRUE;
       break;
 
-    case PROP_F_CELLS_CELLS:
+    case PROP_SWCDB_THRIFT_F_CELLS_CELLS:
       if (self->cells != NULL)
         g_ptr_array_unref (self->cells);
       self->cells = g_value_dup_boxed (value);
@@ -3812,20 +3812,20 @@ f_cells_set_property (GObject *object,
 }
 
 static void
-f_cells_get_property (GObject *object,
-                      guint property_id,
-                      GValue *value,
-                      GParamSpec *pspec)
+swcdb_thrift_f_cells_get_property (GObject *object,
+                                   guint property_id,
+                                   GValue *value,
+                                   GParamSpec *pspec)
 {
-  FCells *self = F_CELLS (object);
+  swcdb_thriftFCells *self = SWCDB_THRIFT_F_CELLS (object);
 
   switch (property_id)
   {
-    case PROP_F_CELLS_F:
+    case PROP_SWCDB_THRIFT_F_CELLS_F:
       g_value_set_boxed (value, self->f);
       break;
 
-    case PROP_F_CELLS_CELLS:
+    case PROP_SWCDB_THRIFT_F_CELLS_CELLS:
       g_value_set_boxed (value, self->cells);
       break;
 
@@ -3836,7 +3836,7 @@ f_cells_get_property (GObject *object,
 }
 
 static void 
-f_cells_instance_init (FCells * object)
+swcdb_thrift_f_cells_instance_init (swcdb_thriftFCells * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -3847,9 +3847,9 @@ f_cells_instance_init (FCells * object)
 }
 
 static void 
-f_cells_finalize (GObject *object)
+swcdb_thrift_f_cells_finalize (GObject *object)
 {
-  FCells *tobject = F_CELLS (object);
+  swcdb_thriftFCells *tobject = SWCDB_THRIFT_F_CELLS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -3866,21 +3866,21 @@ f_cells_finalize (GObject *object)
 }
 
 static void
-f_cells_class_init (FCellsClass * cls)
+swcdb_thrift_f_cells_class_init (swcdb_thriftFCellsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = f_cells_read;
-  struct_class->write = f_cells_write;
+  struct_class->read = swcdb_thrift_f_cells_read;
+  struct_class->write = swcdb_thrift_f_cells_write;
 
-  gobject_class->finalize = f_cells_finalize;
-  gobject_class->get_property = f_cells_get_property;
-  gobject_class->set_property = f_cells_set_property;
+  gobject_class->finalize = swcdb_thrift_f_cells_finalize;
+  gobject_class->get_property = swcdb_thrift_f_cells_get_property;
+  gobject_class->set_property = swcdb_thrift_f_cells_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_F_CELLS_F,
+     PROP_SWCDB_THRIFT_F_CELLS_F,
      g_param_spec_boxed ("f",
                          NULL,
                          NULL,
@@ -3889,7 +3889,7 @@ f_cells_class_init (FCellsClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_F_CELLS_CELLS,
+     PROP_SWCDB_THRIFT_F_CELLS_CELLS,
      g_param_spec_boxed ("cells",
                          NULL,
                          NULL,
@@ -3898,7 +3898,7 @@ f_cells_class_init (FCellsClass * cls)
 }
 
 GType
-f_cells_get_type (void)
+swcdb_thrift_f_cells_get_type (void)
 {
   static GType type = 0;
 
@@ -3906,38 +3906,38 @@ f_cells_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (FCellsClass),
+      sizeof (swcdb_thriftFCellsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) f_cells_class_init,
+      (GClassInitFunc) swcdb_thrift_f_cells_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (FCells),
+      sizeof (swcdb_thriftFCells),
       0, /* n_preallocs */
-      (GInstanceInitFunc) f_cells_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_f_cells_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "FCellsType",
+                                   "swcdb_thriftFCellsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _CellsGroupProperties
+enum _swcdb_thriftCellsGroupProperties
 {
-  PROP_CELLS_GROUP_0,
-  PROP_CELLS_GROUP_CELLS,
-  PROP_CELLS_GROUP_CCELLS,
-  PROP_CELLS_GROUP_KCELLS,
-  PROP_CELLS_GROUP_FCELLS
+  PROP_SWCDB_THRIFT_CELLS_GROUP_0,
+  PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS,
+  PROP_SWCDB_THRIFT_CELLS_GROUP_CCELLS,
+  PROP_SWCDB_THRIFT_CELLS_GROUP_KCELLS,
+  PROP_SWCDB_THRIFT_CELLS_GROUP_FCELLS
 };
 
 /* reads a cells_group object */
 static gint32
-cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -3946,7 +3946,7 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  CellsGroup * this_object = CELLS_GROUP(object);
+  swcdb_thriftCellsGroup * this_object = SWCDB_THRIFT_CELLS_GROUP(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -3999,12 +3999,12 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              Cell * _elem19 = NULL;
+              swcdb_thriftCell * _elem19 = NULL;
               if ( _elem19 != NULL)
               {
                 g_object_unref (_elem19);
               }
-              _elem19 = g_object_new (TYPE_CELL, NULL);
+              _elem19 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem19), protocol, error)) < 0)
               {
                 g_object_unref (_elem19);
@@ -4042,7 +4042,7 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
             for (i = 0; i < size; i++)
             {
               gchar * key20 = NULL;
-              ColCells * val21 = g_ptr_array_new_with_free_func (g_object_unref);
+              swcdb_thriftColCells * val21 = g_ptr_array_new_with_free_func (g_object_unref);
               if (key20 != NULL)
               {
                 g_free(key20);
@@ -4064,12 +4064,12 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
                 /* iterate through list elements */
                 for (i = 0; i < size; i++)
                 {
-                  CCell * _elem22 = NULL;
+                  swcdb_thriftCCell * _elem22 = NULL;
                   if ( _elem22 != NULL)
                   {
                     g_object_unref (_elem22);
                   }
-                  _elem22 = g_object_new (TYPE_C_CELL, NULL);
+                  _elem22 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
                   if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem22), protocol, error)) < 0)
                   {
                     g_object_unref (_elem22);
@@ -4113,12 +4113,12 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              kCells * _elem23 = NULL;
+              swcdb_thriftkCells * _elem23 = NULL;
               if ( _elem23 != NULL)
               {
                 g_object_unref (_elem23);
               }
-              _elem23 = g_object_new (TYPE_K_CELLS, NULL);
+              _elem23 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem23), protocol, error)) < 0)
               {
                 g_object_unref (_elem23);
@@ -4172,12 +4172,12 @@ cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error
 }
 
 static gint32
-cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  CellsGroup * this_object = CELLS_GROUP(object);
+  swcdb_thriftCellsGroup * this_object = SWCDB_THRIFT_CELLS_GROUP(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "CellsGroup", error)) < 0)
     return -1;
@@ -4213,7 +4213,7 @@ cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, GError **erro
     xfer += ret;
     {
       gchar * key25 = NULL;
-      ColCells * val26 = NULL;
+      swcdb_thriftColCells * val26 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gchar ** keys;
       int i = 0, key_count;
@@ -4232,7 +4232,7 @@ cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, GError **erro
       for (i = 0; i < key_count; ++i)
       {
         key25 = keys[i];
-        val26 = (ColCells *) g_hash_table_lookup (((GHashTable *) this_object->ccells), (gpointer) key25);
+        val26 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->ccells), (gpointer) key25);
 
         if ((ret = thrift_protocol_write_string (protocol,  key25, error)) < 0)
           return -1;
@@ -4312,37 +4312,37 @@ cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, GError **erro
 }
 
 static void
-cells_group_set_property (GObject *object,
-                          guint property_id,
-                          const GValue *value,
-                          GParamSpec *pspec)
+swcdb_thrift_cells_group_set_property (GObject *object,
+                                       guint property_id,
+                                       const GValue *value,
+                                       GParamSpec *pspec)
 {
-  CellsGroup *self = CELLS_GROUP (object);
+  swcdb_thriftCellsGroup *self = SWCDB_THRIFT_CELLS_GROUP (object);
 
   switch (property_id)
   {
-    case PROP_CELLS_GROUP_CELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS:
       if (self->cells != NULL)
         g_ptr_array_unref (self->cells);
       self->cells = g_value_dup_boxed (value);
       self->__isset_cells = TRUE;
       break;
 
-    case PROP_CELLS_GROUP_CCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_CCELLS:
       if (self->ccells != NULL)
         g_hash_table_unref (self->ccells);
       self->ccells = g_value_dup_boxed (value);
       self->__isset_ccells = TRUE;
       break;
 
-    case PROP_CELLS_GROUP_KCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_KCELLS:
       if (self->kcells != NULL)
         g_ptr_array_unref (self->kcells);
       self->kcells = g_value_dup_boxed (value);
       self->__isset_kcells = TRUE;
       break;
 
-    case PROP_CELLS_GROUP_FCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_FCELLS:
       if (self->fcells != NULL)
         g_object_unref (self->fcells);
       self->fcells = g_value_dup_object (value);
@@ -4356,28 +4356,28 @@ cells_group_set_property (GObject *object,
 }
 
 static void
-cells_group_get_property (GObject *object,
-                          guint property_id,
-                          GValue *value,
-                          GParamSpec *pspec)
+swcdb_thrift_cells_group_get_property (GObject *object,
+                                       guint property_id,
+                                       GValue *value,
+                                       GParamSpec *pspec)
 {
-  CellsGroup *self = CELLS_GROUP (object);
+  swcdb_thriftCellsGroup *self = SWCDB_THRIFT_CELLS_GROUP (object);
 
   switch (property_id)
   {
-    case PROP_CELLS_GROUP_CELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS:
       g_value_set_boxed (value, self->cells);
       break;
 
-    case PROP_CELLS_GROUP_CCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_CCELLS:
       g_value_set_boxed (value, self->ccells);
       break;
 
-    case PROP_CELLS_GROUP_KCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_KCELLS:
       g_value_set_boxed (value, self->kcells);
       break;
 
-    case PROP_CELLS_GROUP_FCELLS:
+    case PROP_SWCDB_THRIFT_CELLS_GROUP_FCELLS:
       g_value_set_object (value, self->fcells);
       break;
 
@@ -4388,7 +4388,7 @@ cells_group_get_property (GObject *object,
 }
 
 static void 
-cells_group_instance_init (CellsGroup * object)
+swcdb_thrift_cells_group_instance_init (swcdb_thriftCellsGroup * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -4398,14 +4398,14 @@ cells_group_instance_init (CellsGroup * object)
   object->__isset_ccells = FALSE;
   object->kcells = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_kcells = FALSE;
-  object->fcells = g_object_new (TYPE_F_CELLS, NULL);
+  object->fcells = g_object_new (SWCDB_THRIFT_TYPE_F_CELLS, NULL);
   object->__isset_fcells = FALSE;
 }
 
 static void 
-cells_group_finalize (GObject *object)
+swcdb_thrift_cells_group_finalize (GObject *object)
 {
-  CellsGroup *tobject = CELLS_GROUP (object);
+  swcdb_thriftCellsGroup *tobject = SWCDB_THRIFT_CELLS_GROUP (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -4432,21 +4432,21 @@ cells_group_finalize (GObject *object)
 }
 
 static void
-cells_group_class_init (CellsGroupClass * cls)
+swcdb_thrift_cells_group_class_init (swcdb_thriftCellsGroupClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = cells_group_read;
-  struct_class->write = cells_group_write;
+  struct_class->read = swcdb_thrift_cells_group_read;
+  struct_class->write = swcdb_thrift_cells_group_write;
 
-  gobject_class->finalize = cells_group_finalize;
-  gobject_class->get_property = cells_group_get_property;
-  gobject_class->set_property = cells_group_set_property;
+  gobject_class->finalize = swcdb_thrift_cells_group_finalize;
+  gobject_class->get_property = swcdb_thrift_cells_group_get_property;
+  gobject_class->set_property = swcdb_thrift_cells_group_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELLS_GROUP_CELLS,
+     PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS,
      g_param_spec_boxed ("cells",
                          NULL,
                          NULL,
@@ -4455,7 +4455,7 @@ cells_group_class_init (CellsGroupClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELLS_GROUP_CCELLS,
+     PROP_SWCDB_THRIFT_CELLS_GROUP_CCELLS,
      g_param_spec_boxed ("ccells",
                          NULL,
                          NULL,
@@ -4464,7 +4464,7 @@ cells_group_class_init (CellsGroupClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELLS_GROUP_KCELLS,
+     PROP_SWCDB_THRIFT_CELLS_GROUP_KCELLS,
      g_param_spec_boxed ("kcells",
                          NULL,
                          NULL,
@@ -4473,16 +4473,16 @@ cells_group_class_init (CellsGroupClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_CELLS_GROUP_FCELLS,
+     PROP_SWCDB_THRIFT_CELLS_GROUP_FCELLS,
      g_param_spec_object ("fcells",
                          NULL,
                          NULL,
-                         TYPE_F_CELLS,
+                         SWCDB_THRIFT_TYPE_F_CELLS,
                          G_PARAM_READWRITE));
 }
 
 GType
-cells_group_get_type (void)
+swcdb_thrift_cells_group_get_type (void)
 {
   static GType type = 0;
 
@@ -4490,36 +4490,36 @@ cells_group_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (CellsGroupClass),
+      sizeof (swcdb_thriftCellsGroupClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) cells_group_class_init,
+      (GClassInitFunc) swcdb_thrift_cells_group_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (CellsGroup),
+      sizeof (swcdb_thriftCellsGroup),
       0, /* n_preallocs */
-      (GInstanceInitFunc) cells_group_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_cells_group_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "CellsGroupType",
+                                   "swcdb_thriftCellsGroupType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _CompactResultProperties
+enum _swcdb_thriftCompactResultProperties
 {
-  PROP_COMPACT_RESULT_0,
-  PROP_COMPACT_RESULT_CID,
-  PROP_COMPACT_RESULT_ERR
+  PROP_SWCDB_THRIFT_COMPACT_RESULT_0,
+  PROP_SWCDB_THRIFT_COMPACT_RESULT_CID,
+  PROP_SWCDB_THRIFT_COMPACT_RESULT_ERR
 };
 
 /* reads a compact_result object */
 static gint32
-compact_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_compact_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -4528,7 +4528,7 @@ compact_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **er
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  CompactResult * this_object = COMPACT_RESULT(object);
+  swcdb_thriftCompactResult * this_object = SWCDB_THRIFT_COMPACT_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -4611,12 +4611,12 @@ compact_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **er
 }
 
 static gint32
-compact_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_compact_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  CompactResult * this_object = COMPACT_RESULT(object);
+  swcdb_thriftCompactResult * this_object = SWCDB_THRIFT_COMPACT_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "CompactResult", error)) < 0)
     return -1;
@@ -4652,21 +4652,21 @@ compact_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **e
 }
 
 static void
-compact_result_set_property (GObject *object,
-                             guint property_id,
-                             const GValue *value,
-                             GParamSpec *pspec)
+swcdb_thrift_compact_result_set_property (GObject *object,
+                                          guint property_id,
+                                          const GValue *value,
+                                          GParamSpec *pspec)
 {
-  CompactResult *self = COMPACT_RESULT (object);
+  swcdb_thriftCompactResult *self = SWCDB_THRIFT_COMPACT_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_COMPACT_RESULT_CID:
+    case PROP_SWCDB_THRIFT_COMPACT_RESULT_CID:
       self->cid = g_value_get_int64 (value);
       self->__isset_cid = TRUE;
       break;
 
-    case PROP_COMPACT_RESULT_ERR:
+    case PROP_SWCDB_THRIFT_COMPACT_RESULT_ERR:
       self->err = g_value_get_int (value);
       self->__isset_err = TRUE;
       break;
@@ -4678,20 +4678,20 @@ compact_result_set_property (GObject *object,
 }
 
 static void
-compact_result_get_property (GObject *object,
-                             guint property_id,
-                             GValue *value,
-                             GParamSpec *pspec)
+swcdb_thrift_compact_result_get_property (GObject *object,
+                                          guint property_id,
+                                          GValue *value,
+                                          GParamSpec *pspec)
 {
-  CompactResult *self = COMPACT_RESULT (object);
+  swcdb_thriftCompactResult *self = SWCDB_THRIFT_COMPACT_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_COMPACT_RESULT_CID:
+    case PROP_SWCDB_THRIFT_COMPACT_RESULT_CID:
       g_value_set_int64 (value, self->cid);
       break;
 
-    case PROP_COMPACT_RESULT_ERR:
+    case PROP_SWCDB_THRIFT_COMPACT_RESULT_ERR:
       g_value_set_int (value, self->err);
       break;
 
@@ -4702,7 +4702,7 @@ compact_result_get_property (GObject *object,
 }
 
 static void 
-compact_result_instance_init (CompactResult * object)
+swcdb_thrift_compact_result_instance_init (swcdb_thriftCompactResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -4713,30 +4713,30 @@ compact_result_instance_init (CompactResult * object)
 }
 
 static void 
-compact_result_finalize (GObject *object)
+swcdb_thrift_compact_result_finalize (GObject *object)
 {
-  CompactResult *tobject = COMPACT_RESULT (object);
+  swcdb_thriftCompactResult *tobject = SWCDB_THRIFT_COMPACT_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
 }
 
 static void
-compact_result_class_init (CompactResultClass * cls)
+swcdb_thrift_compact_result_class_init (swcdb_thriftCompactResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = compact_result_read;
-  struct_class->write = compact_result_write;
+  struct_class->read = swcdb_thrift_compact_result_read;
+  struct_class->write = swcdb_thrift_compact_result_write;
 
-  gobject_class->finalize = compact_result_finalize;
-  gobject_class->get_property = compact_result_get_property;
-  gobject_class->set_property = compact_result_set_property;
+  gobject_class->finalize = swcdb_thrift_compact_result_finalize;
+  gobject_class->get_property = swcdb_thrift_compact_result_get_property;
+  gobject_class->set_property = swcdb_thrift_compact_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_COMPACT_RESULT_CID,
+     PROP_SWCDB_THRIFT_COMPACT_RESULT_CID,
      g_param_spec_int64 ("cid",
                          NULL,
                          NULL,
@@ -4747,7 +4747,7 @@ compact_result_class_init (CompactResultClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_COMPACT_RESULT_ERR,
+     PROP_SWCDB_THRIFT_COMPACT_RESULT_ERR,
      g_param_spec_int ("err",
                        NULL,
                        NULL,
@@ -4758,7 +4758,7 @@ compact_result_class_init (CompactResultClass * cls)
 }
 
 GType
-compact_result_get_type (void)
+swcdb_thrift_compact_result_get_type (void)
 {
   static GType type = 0;
 
@@ -4766,20 +4766,20 @@ compact_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (CompactResultClass),
+      sizeof (swcdb_thriftCompactResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) compact_result_class_init,
+      (GClassInitFunc) swcdb_thrift_compact_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (CompactResult),
+      sizeof (swcdb_thriftCompactResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) compact_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_compact_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "CompactResultType",
+                                   "swcdb_thriftCompactResultType",
                                    &type_info, 0);
   }
 
@@ -4788,15 +4788,15 @@ compact_result_get_type (void)
 
 /* constants */
 
-enum _ServiceSqlMngColumnArgsProperties
+enum _swcdb_thriftServiceSqlMngColumnArgsProperties
 {
-  PROP_SERVICE_SQL_MNG_COLUMN_ARGS_0,
-  PROP_SERVICE_SQL_MNG_COLUMN_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS_SQL
 };
 
 /* reads a service_sql_mng_column_args object */
 static gint32
-service_sql_mng_column_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_mng_column_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -4805,7 +4805,7 @@ service_sql_mng_column_args_read (ThriftStruct *object, ThriftProtocol *protocol
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlMngColumnArgs * this_object = SERVICE_SQL_MNG_COLUMN_ARGS(object);
+  swcdb_thriftServiceSqlMngColumnArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -4881,12 +4881,12 @@ service_sql_mng_column_args_read (ThriftStruct *object, ThriftProtocol *protocol
 }
 
 static gint32
-service_sql_mng_column_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_mng_column_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlMngColumnArgs * this_object = SERVICE_SQL_MNG_COLUMN_ARGS(object);
+  swcdb_thriftServiceSqlMngColumnArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlMngColumnArgs", error)) < 0)
     return -1;
@@ -4912,16 +4912,16 @@ service_sql_mng_column_args_write (ThriftStruct *object, ThriftProtocol *protoco
 }
 
 static void
-service_sql_mng_column_args_set_property (GObject *object,
-                                          guint property_id,
-                                          const GValue *value,
-                                          GParamSpec *pspec)
+swcdb_thrift_service_sql_mng_column_args_set_property (GObject *object,
+                                                       guint property_id,
+                                                       const GValue *value,
+                                                       GParamSpec *pspec)
 {
-  ServiceSqlMngColumnArgs *self = SERVICE_SQL_MNG_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlMngColumnArgs *self = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_MNG_COLUMN_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -4935,16 +4935,16 @@ service_sql_mng_column_args_set_property (GObject *object,
 }
 
 static void
-service_sql_mng_column_args_get_property (GObject *object,
-                                          guint property_id,
-                                          GValue *value,
-                                          GParamSpec *pspec)
+swcdb_thrift_service_sql_mng_column_args_get_property (GObject *object,
+                                                       guint property_id,
+                                                       GValue *value,
+                                                       GParamSpec *pspec)
 {
-  ServiceSqlMngColumnArgs *self = SERVICE_SQL_MNG_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlMngColumnArgs *self = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_MNG_COLUMN_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -4955,7 +4955,7 @@ service_sql_mng_column_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_mng_column_args_instance_init (ServiceSqlMngColumnArgs * object)
+swcdb_thrift_service_sql_mng_column_args_instance_init (swcdb_thriftServiceSqlMngColumnArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -4964,9 +4964,9 @@ service_sql_mng_column_args_instance_init (ServiceSqlMngColumnArgs * object)
 }
 
 static void 
-service_sql_mng_column_args_finalize (GObject *object)
+swcdb_thrift_service_sql_mng_column_args_finalize (GObject *object)
 {
-  ServiceSqlMngColumnArgs *tobject = SERVICE_SQL_MNG_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlMngColumnArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -4978,21 +4978,21 @@ service_sql_mng_column_args_finalize (GObject *object)
 }
 
 static void
-service_sql_mng_column_args_class_init (ServiceSqlMngColumnArgsClass * cls)
+swcdb_thrift_service_sql_mng_column_args_class_init (swcdb_thriftServiceSqlMngColumnArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_mng_column_args_read;
-  struct_class->write = service_sql_mng_column_args_write;
+  struct_class->read = swcdb_thrift_service_sql_mng_column_args_read;
+  struct_class->write = swcdb_thrift_service_sql_mng_column_args_write;
 
-  gobject_class->finalize = service_sql_mng_column_args_finalize;
-  gobject_class->get_property = service_sql_mng_column_args_get_property;
-  gobject_class->set_property = service_sql_mng_column_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_mng_column_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_mng_column_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_mng_column_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_MNG_COLUMN_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -5001,7 +5001,7 @@ service_sql_mng_column_args_class_init (ServiceSqlMngColumnArgsClass * cls)
 }
 
 GType
-service_sql_mng_column_args_get_type (void)
+swcdb_thrift_service_sql_mng_column_args_get_type (void)
 {
   static GType type = 0;
 
@@ -5009,35 +5009,35 @@ service_sql_mng_column_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlMngColumnArgsClass),
+      sizeof (swcdb_thriftServiceSqlMngColumnArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_mng_column_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_mng_column_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlMngColumnArgs),
+      sizeof (swcdb_thriftServiceSqlMngColumnArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_mng_column_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_mng_column_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlMngColumnArgsType",
+                                   "swcdb_thriftServiceSqlMngColumnArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlMngColumnResultProperties
+enum _swcdb_thriftServiceSqlMngColumnResultProperties
 {
-  PROP_SERVICE_SQL_MNG_COLUMN_RESULT_0,
-  PROP_SERVICE_SQL_MNG_COLUMN_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT_E
 };
 
 /* reads a service_sql_mng_column_result object */
 static gint32
-service_sql_mng_column_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_mng_column_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -5046,7 +5046,7 @@ service_sql_mng_column_result_read (ThriftStruct *object, ThriftProtocol *protoc
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlMngColumnResult * this_object = SERVICE_SQL_MNG_COLUMN_RESULT(object);
+  swcdb_thriftServiceSqlMngColumnResult * this_object = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -5092,7 +5092,7 @@ service_sql_mng_column_result_read (ThriftStruct *object, ThriftProtocol *protoc
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -5126,12 +5126,12 @@ service_sql_mng_column_result_read (ThriftStruct *object, ThriftProtocol *protoc
 }
 
 static gint32
-service_sql_mng_column_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_mng_column_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlMngColumnResult * this_object = SERVICE_SQL_MNG_COLUMN_RESULT(object);
+  swcdb_thriftServiceSqlMngColumnResult * this_object = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlMngColumnResult", error)) < 0)
     return -1;
@@ -5159,16 +5159,16 @@ service_sql_mng_column_result_write (ThriftStruct *object, ThriftProtocol *proto
 }
 
 static void
-service_sql_mng_column_result_set_property (GObject *object,
-                                            guint property_id,
-                                            const GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_sql_mng_column_result_set_property (GObject *object,
+                                                         guint property_id,
+                                                         const GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceSqlMngColumnResult *self = SERVICE_SQL_MNG_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlMngColumnResult *self = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_MNG_COLUMN_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -5182,16 +5182,16 @@ service_sql_mng_column_result_set_property (GObject *object,
 }
 
 static void
-service_sql_mng_column_result_get_property (GObject *object,
-                                            guint property_id,
-                                            GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_sql_mng_column_result_get_property (GObject *object,
+                                                         guint property_id,
+                                                         GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceSqlMngColumnResult *self = SERVICE_SQL_MNG_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlMngColumnResult *self = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_MNG_COLUMN_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -5202,7 +5202,7 @@ service_sql_mng_column_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_mng_column_result_instance_init (ServiceSqlMngColumnResult * object)
+swcdb_thrift_service_sql_mng_column_result_instance_init (swcdb_thriftServiceSqlMngColumnResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -5211,9 +5211,9 @@ service_sql_mng_column_result_instance_init (ServiceSqlMngColumnResult * object)
 }
 
 static void 
-service_sql_mng_column_result_finalize (GObject *object)
+swcdb_thrift_service_sql_mng_column_result_finalize (GObject *object)
 {
-  ServiceSqlMngColumnResult *tobject = SERVICE_SQL_MNG_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlMngColumnResult *tobject = SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -5225,30 +5225,30 @@ service_sql_mng_column_result_finalize (GObject *object)
 }
 
 static void
-service_sql_mng_column_result_class_init (ServiceSqlMngColumnResultClass * cls)
+swcdb_thrift_service_sql_mng_column_result_class_init (swcdb_thriftServiceSqlMngColumnResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_mng_column_result_read;
-  struct_class->write = service_sql_mng_column_result_write;
+  struct_class->read = swcdb_thrift_service_sql_mng_column_result_read;
+  struct_class->write = swcdb_thrift_service_sql_mng_column_result_write;
 
-  gobject_class->finalize = service_sql_mng_column_result_finalize;
-  gobject_class->get_property = service_sql_mng_column_result_get_property;
-  gobject_class->set_property = service_sql_mng_column_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_mng_column_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_mng_column_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_mng_column_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_MNG_COLUMN_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_MNG_COLUMN_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_mng_column_result_get_type (void)
+swcdb_thrift_service_sql_mng_column_result_get_type (void)
 {
   static GType type = 0;
 
@@ -5256,35 +5256,35 @@ service_sql_mng_column_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlMngColumnResultClass),
+      sizeof (swcdb_thriftServiceSqlMngColumnResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_mng_column_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_mng_column_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlMngColumnResult),
+      sizeof (swcdb_thriftServiceSqlMngColumnResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_mng_column_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_mng_column_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlMngColumnResultType",
+                                   "swcdb_thriftServiceSqlMngColumnResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlListColumnsArgsProperties
+enum _swcdb_thriftServiceSqlListColumnsArgsProperties
 {
-  PROP_SERVICE_SQL_LIST_COLUMNS_ARGS_0,
-  PROP_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL
 };
 
 /* reads a service_sql_list_columns_args object */
 static gint32
-service_sql_list_columns_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_list_columns_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -5293,7 +5293,7 @@ service_sql_list_columns_args_read (ThriftStruct *object, ThriftProtocol *protoc
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlListColumnsArgs * this_object = SERVICE_SQL_LIST_COLUMNS_ARGS(object);
+  swcdb_thriftServiceSqlListColumnsArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -5369,12 +5369,12 @@ service_sql_list_columns_args_read (ThriftStruct *object, ThriftProtocol *protoc
 }
 
 static gint32
-service_sql_list_columns_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_list_columns_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlListColumnsArgs * this_object = SERVICE_SQL_LIST_COLUMNS_ARGS(object);
+  swcdb_thriftServiceSqlListColumnsArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlListColumnsArgs", error)) < 0)
     return -1;
@@ -5400,16 +5400,16 @@ service_sql_list_columns_args_write (ThriftStruct *object, ThriftProtocol *proto
 }
 
 static void
-service_sql_list_columns_args_set_property (GObject *object,
-                                            guint property_id,
-                                            const GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_sql_list_columns_args_set_property (GObject *object,
+                                                         guint property_id,
+                                                         const GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceSqlListColumnsArgs *self = SERVICE_SQL_LIST_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlListColumnsArgs *self = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -5423,16 +5423,16 @@ service_sql_list_columns_args_set_property (GObject *object,
 }
 
 static void
-service_sql_list_columns_args_get_property (GObject *object,
-                                            guint property_id,
-                                            GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_sql_list_columns_args_get_property (GObject *object,
+                                                         guint property_id,
+                                                         GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceSqlListColumnsArgs *self = SERVICE_SQL_LIST_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlListColumnsArgs *self = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -5443,7 +5443,7 @@ service_sql_list_columns_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_list_columns_args_instance_init (ServiceSqlListColumnsArgs * object)
+swcdb_thrift_service_sql_list_columns_args_instance_init (swcdb_thriftServiceSqlListColumnsArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -5452,9 +5452,9 @@ service_sql_list_columns_args_instance_init (ServiceSqlListColumnsArgs * object)
 }
 
 static void 
-service_sql_list_columns_args_finalize (GObject *object)
+swcdb_thrift_service_sql_list_columns_args_finalize (GObject *object)
 {
-  ServiceSqlListColumnsArgs *tobject = SERVICE_SQL_LIST_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlListColumnsArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -5466,21 +5466,21 @@ service_sql_list_columns_args_finalize (GObject *object)
 }
 
 static void
-service_sql_list_columns_args_class_init (ServiceSqlListColumnsArgsClass * cls)
+swcdb_thrift_service_sql_list_columns_args_class_init (swcdb_thriftServiceSqlListColumnsArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_list_columns_args_read;
-  struct_class->write = service_sql_list_columns_args_write;
+  struct_class->read = swcdb_thrift_service_sql_list_columns_args_read;
+  struct_class->write = swcdb_thrift_service_sql_list_columns_args_write;
 
-  gobject_class->finalize = service_sql_list_columns_args_finalize;
-  gobject_class->get_property = service_sql_list_columns_args_get_property;
-  gobject_class->set_property = service_sql_list_columns_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_list_columns_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_list_columns_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_list_columns_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -5489,7 +5489,7 @@ service_sql_list_columns_args_class_init (ServiceSqlListColumnsArgsClass * cls)
 }
 
 GType
-service_sql_list_columns_args_get_type (void)
+swcdb_thrift_service_sql_list_columns_args_get_type (void)
 {
   static GType type = 0;
 
@@ -5497,36 +5497,36 @@ service_sql_list_columns_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlListColumnsArgsClass),
+      sizeof (swcdb_thriftServiceSqlListColumnsArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_list_columns_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_list_columns_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlListColumnsArgs),
+      sizeof (swcdb_thriftServiceSqlListColumnsArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_list_columns_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_list_columns_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlListColumnsArgsType",
+                                   "swcdb_thriftServiceSqlListColumnsArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlListColumnsResultProperties
+enum _swcdb_thriftServiceSqlListColumnsResultProperties
 {
-  PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_0,
-  PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_E
 };
 
 /* reads a service_sql_list_columns_result object */
 static gint32
-service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -5535,7 +5535,7 @@ service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *prot
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlListColumnsResult * this_object = SERVICE_SQL_LIST_COLUMNS_RESULT(object);
+  swcdb_thriftServiceSqlListColumnsResult * this_object = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -5588,12 +5588,12 @@ service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *prot
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              Schema * _elem29 = NULL;
+              swcdb_thriftSchema * _elem29 = NULL;
               if ( _elem29 != NULL)
               {
                 g_object_unref (_elem29);
               }
-              _elem29 = g_object_new (TYPE_SCHEMA, NULL);
+              _elem29 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem29), protocol, error)) < 0)
               {
                 g_object_unref (_elem29);
@@ -5621,7 +5621,7 @@ service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *prot
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -5655,12 +5655,12 @@ service_sql_list_columns_result_read (ThriftStruct *object, ThriftProtocol *prot
 }
 
 static gint32
-service_sql_list_columns_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_list_columns_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlListColumnsResult * this_object = SERVICE_SQL_LIST_COLUMNS_RESULT(object);
+  swcdb_thriftServiceSqlListColumnsResult * this_object = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlListColumnsResult", error)) < 0)
     return -1;
@@ -5713,23 +5713,23 @@ service_sql_list_columns_result_write (ThriftStruct *object, ThriftProtocol *pro
 }
 
 static void
-service_sql_list_columns_result_set_property (GObject *object,
-                                              guint property_id,
-                                              const GValue *value,
-                                              GParamSpec *pspec)
+swcdb_thrift_service_sql_list_columns_result_set_property (GObject *object,
+                                                           guint property_id,
+                                                           const GValue *value,
+                                                           GParamSpec *pspec)
 {
-  ServiceSqlListColumnsResult *self = SERVICE_SQL_LIST_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlListColumnsResult *self = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS:
       if (self->success != NULL)
         g_ptr_array_unref (self->success);
       self->success = g_value_dup_boxed (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -5743,20 +5743,20 @@ service_sql_list_columns_result_set_property (GObject *object,
 }
 
 static void
-service_sql_list_columns_result_get_property (GObject *object,
-                                              guint property_id,
-                                              GValue *value,
-                                              GParamSpec *pspec)
+swcdb_thrift_service_sql_list_columns_result_get_property (GObject *object,
+                                                           guint property_id,
+                                                           GValue *value,
+                                                           GParamSpec *pspec)
 {
-  ServiceSqlListColumnsResult *self = SERVICE_SQL_LIST_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlListColumnsResult *self = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS:
       g_value_set_boxed (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -5767,7 +5767,7 @@ service_sql_list_columns_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_list_columns_result_instance_init (ServiceSqlListColumnsResult * object)
+swcdb_thrift_service_sql_list_columns_result_instance_init (swcdb_thriftServiceSqlListColumnsResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -5778,9 +5778,9 @@ service_sql_list_columns_result_instance_init (ServiceSqlListColumnsResult * obj
 }
 
 static void 
-service_sql_list_columns_result_finalize (GObject *object)
+swcdb_thrift_service_sql_list_columns_result_finalize (GObject *object)
 {
-  ServiceSqlListColumnsResult *tobject = SERVICE_SQL_LIST_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlListColumnsResult *tobject = SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -5797,21 +5797,21 @@ service_sql_list_columns_result_finalize (GObject *object)
 }
 
 static void
-service_sql_list_columns_result_class_init (ServiceSqlListColumnsResultClass * cls)
+swcdb_thrift_service_sql_list_columns_result_class_init (swcdb_thriftServiceSqlListColumnsResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_list_columns_result_read;
-  struct_class->write = service_sql_list_columns_result_write;
+  struct_class->read = swcdb_thrift_service_sql_list_columns_result_read;
+  struct_class->write = swcdb_thrift_service_sql_list_columns_result_write;
 
-  gobject_class->finalize = service_sql_list_columns_result_finalize;
-  gobject_class->get_property = service_sql_list_columns_result_get_property;
-  gobject_class->set_property = service_sql_list_columns_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_list_columns_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_list_columns_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_list_columns_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_SUCCESS,
      g_param_spec_boxed ("success",
                          NULL,
                          NULL,
@@ -5820,16 +5820,16 @@ service_sql_list_columns_result_class_init (ServiceSqlListColumnsResultClass * c
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_LIST_COLUMNS_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_LIST_COLUMNS_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_list_columns_result_get_type (void)
+swcdb_thrift_service_sql_list_columns_result_get_type (void)
 {
   static GType type = 0;
 
@@ -5837,35 +5837,35 @@ service_sql_list_columns_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlListColumnsResultClass),
+      sizeof (swcdb_thriftServiceSqlListColumnsResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_list_columns_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_list_columns_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlListColumnsResult),
+      sizeof (swcdb_thriftServiceSqlListColumnsResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_list_columns_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_list_columns_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlListColumnsResultType",
+                                   "swcdb_thriftServiceSqlListColumnsResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlCompactColumnsArgsProperties
+enum _swcdb_thriftServiceSqlCompactColumnsArgsProperties
 {
-  PROP_SERVICE_SQL_COMPACT_COLUMNS_ARGS_0,
-  PROP_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL
 };
 
 /* reads a service_sql_compact_columns_args object */
 static gint32
-service_sql_compact_columns_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_compact_columns_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -5874,7 +5874,7 @@ service_sql_compact_columns_args_read (ThriftStruct *object, ThriftProtocol *pro
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlCompactColumnsArgs * this_object = SERVICE_SQL_COMPACT_COLUMNS_ARGS(object);
+  swcdb_thriftServiceSqlCompactColumnsArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -5950,12 +5950,12 @@ service_sql_compact_columns_args_read (ThriftStruct *object, ThriftProtocol *pro
 }
 
 static gint32
-service_sql_compact_columns_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_compact_columns_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlCompactColumnsArgs * this_object = SERVICE_SQL_COMPACT_COLUMNS_ARGS(object);
+  swcdb_thriftServiceSqlCompactColumnsArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlCompactColumnsArgs", error)) < 0)
     return -1;
@@ -5981,16 +5981,16 @@ service_sql_compact_columns_args_write (ThriftStruct *object, ThriftProtocol *pr
 }
 
 static void
-service_sql_compact_columns_args_set_property (GObject *object,
-                                               guint property_id,
-                                               const GValue *value,
-                                               GParamSpec *pspec)
+swcdb_thrift_service_sql_compact_columns_args_set_property (GObject *object,
+                                                            guint property_id,
+                                                            const GValue *value,
+                                                            GParamSpec *pspec)
 {
-  ServiceSqlCompactColumnsArgs *self = SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlCompactColumnsArgs *self = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -6004,16 +6004,16 @@ service_sql_compact_columns_args_set_property (GObject *object,
 }
 
 static void
-service_sql_compact_columns_args_get_property (GObject *object,
-                                               guint property_id,
-                                               GValue *value,
-                                               GParamSpec *pspec)
+swcdb_thrift_service_sql_compact_columns_args_get_property (GObject *object,
+                                                            guint property_id,
+                                                            GValue *value,
+                                                            GParamSpec *pspec)
 {
-  ServiceSqlCompactColumnsArgs *self = SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlCompactColumnsArgs *self = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -6024,7 +6024,7 @@ service_sql_compact_columns_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_compact_columns_args_instance_init (ServiceSqlCompactColumnsArgs * object)
+swcdb_thrift_service_sql_compact_columns_args_instance_init (swcdb_thriftServiceSqlCompactColumnsArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -6033,9 +6033,9 @@ service_sql_compact_columns_args_instance_init (ServiceSqlCompactColumnsArgs * o
 }
 
 static void 
-service_sql_compact_columns_args_finalize (GObject *object)
+swcdb_thrift_service_sql_compact_columns_args_finalize (GObject *object)
 {
-  ServiceSqlCompactColumnsArgs *tobject = SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
+  swcdb_thriftServiceSqlCompactColumnsArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -6047,21 +6047,21 @@ service_sql_compact_columns_args_finalize (GObject *object)
 }
 
 static void
-service_sql_compact_columns_args_class_init (ServiceSqlCompactColumnsArgsClass * cls)
+swcdb_thrift_service_sql_compact_columns_args_class_init (swcdb_thriftServiceSqlCompactColumnsArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_compact_columns_args_read;
-  struct_class->write = service_sql_compact_columns_args_write;
+  struct_class->read = swcdb_thrift_service_sql_compact_columns_args_read;
+  struct_class->write = swcdb_thrift_service_sql_compact_columns_args_write;
 
-  gobject_class->finalize = service_sql_compact_columns_args_finalize;
-  gobject_class->get_property = service_sql_compact_columns_args_get_property;
-  gobject_class->set_property = service_sql_compact_columns_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_compact_columns_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_compact_columns_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_compact_columns_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -6070,7 +6070,7 @@ service_sql_compact_columns_args_class_init (ServiceSqlCompactColumnsArgsClass *
 }
 
 GType
-service_sql_compact_columns_args_get_type (void)
+swcdb_thrift_service_sql_compact_columns_args_get_type (void)
 {
   static GType type = 0;
 
@@ -6078,36 +6078,36 @@ service_sql_compact_columns_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlCompactColumnsArgsClass),
+      sizeof (swcdb_thriftServiceSqlCompactColumnsArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_compact_columns_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_compact_columns_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlCompactColumnsArgs),
+      sizeof (swcdb_thriftServiceSqlCompactColumnsArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_compact_columns_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_compact_columns_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlCompactColumnsArgsType",
+                                   "swcdb_thriftServiceSqlCompactColumnsArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlCompactColumnsResultProperties
+enum _swcdb_thriftServiceSqlCompactColumnsResultProperties
 {
-  PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_0,
-  PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E
 };
 
 /* reads a service_sql_compact_columns_result object */
 static gint32
-service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -6116,7 +6116,7 @@ service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *p
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlCompactColumnsResult * this_object = SERVICE_SQL_COMPACT_COLUMNS_RESULT(object);
+  swcdb_thriftServiceSqlCompactColumnsResult * this_object = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -6169,12 +6169,12 @@ service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *p
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              CompactResult * _elem31 = NULL;
+              swcdb_thriftCompactResult * _elem31 = NULL;
               if ( _elem31 != NULL)
               {
                 g_object_unref (_elem31);
               }
-              _elem31 = g_object_new (TYPE_COMPACT_RESULT, NULL);
+              _elem31 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem31), protocol, error)) < 0)
               {
                 g_object_unref (_elem31);
@@ -6202,7 +6202,7 @@ service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *p
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -6236,12 +6236,12 @@ service_sql_compact_columns_result_read (ThriftStruct *object, ThriftProtocol *p
 }
 
 static gint32
-service_sql_compact_columns_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_compact_columns_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlCompactColumnsResult * this_object = SERVICE_SQL_COMPACT_COLUMNS_RESULT(object);
+  swcdb_thriftServiceSqlCompactColumnsResult * this_object = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlCompactColumnsResult", error)) < 0)
     return -1;
@@ -6294,23 +6294,23 @@ service_sql_compact_columns_result_write (ThriftStruct *object, ThriftProtocol *
 }
 
 static void
-service_sql_compact_columns_result_set_property (GObject *object,
-                                                 guint property_id,
-                                                 const GValue *value,
-                                                 GParamSpec *pspec)
+swcdb_thrift_service_sql_compact_columns_result_set_property (GObject *object,
+                                                              guint property_id,
+                                                              const GValue *value,
+                                                              GParamSpec *pspec)
 {
-  ServiceSqlCompactColumnsResult *self = SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlCompactColumnsResult *self = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS:
       if (self->success != NULL)
         g_ptr_array_unref (self->success);
       self->success = g_value_dup_boxed (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -6324,20 +6324,20 @@ service_sql_compact_columns_result_set_property (GObject *object,
 }
 
 static void
-service_sql_compact_columns_result_get_property (GObject *object,
-                                                 guint property_id,
-                                                 GValue *value,
-                                                 GParamSpec *pspec)
+swcdb_thrift_service_sql_compact_columns_result_get_property (GObject *object,
+                                                              guint property_id,
+                                                              GValue *value,
+                                                              GParamSpec *pspec)
 {
-  ServiceSqlCompactColumnsResult *self = SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlCompactColumnsResult *self = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS:
       g_value_set_boxed (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -6348,7 +6348,7 @@ service_sql_compact_columns_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_compact_columns_result_instance_init (ServiceSqlCompactColumnsResult * object)
+swcdb_thrift_service_sql_compact_columns_result_instance_init (swcdb_thriftServiceSqlCompactColumnsResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -6359,9 +6359,9 @@ service_sql_compact_columns_result_instance_init (ServiceSqlCompactColumnsResult
 }
 
 static void 
-service_sql_compact_columns_result_finalize (GObject *object)
+swcdb_thrift_service_sql_compact_columns_result_finalize (GObject *object)
 {
-  ServiceSqlCompactColumnsResult *tobject = SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
+  swcdb_thriftServiceSqlCompactColumnsResult *tobject = SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -6378,21 +6378,21 @@ service_sql_compact_columns_result_finalize (GObject *object)
 }
 
 static void
-service_sql_compact_columns_result_class_init (ServiceSqlCompactColumnsResultClass * cls)
+swcdb_thrift_service_sql_compact_columns_result_class_init (swcdb_thriftServiceSqlCompactColumnsResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_compact_columns_result_read;
-  struct_class->write = service_sql_compact_columns_result_write;
+  struct_class->read = swcdb_thrift_service_sql_compact_columns_result_read;
+  struct_class->write = swcdb_thrift_service_sql_compact_columns_result_write;
 
-  gobject_class->finalize = service_sql_compact_columns_result_finalize;
-  gobject_class->get_property = service_sql_compact_columns_result_get_property;
-  gobject_class->set_property = service_sql_compact_columns_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_compact_columns_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_compact_columns_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_compact_columns_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_SUCCESS,
      g_param_spec_boxed ("success",
                          NULL,
                          NULL,
@@ -6401,16 +6401,16 @@ service_sql_compact_columns_result_class_init (ServiceSqlCompactColumnsResultCla
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_compact_columns_result_get_type (void)
+swcdb_thrift_service_sql_compact_columns_result_get_type (void)
 {
   static GType type = 0;
 
@@ -6418,35 +6418,35 @@ service_sql_compact_columns_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlCompactColumnsResultClass),
+      sizeof (swcdb_thriftServiceSqlCompactColumnsResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_compact_columns_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_compact_columns_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlCompactColumnsResult),
+      sizeof (swcdb_thriftServiceSqlCompactColumnsResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_compact_columns_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_compact_columns_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlCompactColumnsResultType",
+                                   "swcdb_thriftServiceSqlCompactColumnsResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectArgsProperties
+enum _swcdb_thriftServiceSqlSelectArgsProperties
 {
-  PROP_SERVICE_SQL_SELECT_ARGS_0,
-  PROP_SERVICE_SQL_SELECT_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_SQL
 };
 
 /* reads a service_sql_select_args object */
 static gint32
-service_sql_select_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -6455,7 +6455,7 @@ service_sql_select_args_read (ThriftStruct *object, ThriftProtocol *protocol, GE
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectArgs * this_object = SERVICE_SQL_SELECT_ARGS(object);
+  swcdb_thriftServiceSqlSelectArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -6531,12 +6531,12 @@ service_sql_select_args_read (ThriftStruct *object, ThriftProtocol *protocol, GE
 }
 
 static gint32
-service_sql_select_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectArgs * this_object = SERVICE_SQL_SELECT_ARGS(object);
+  swcdb_thriftServiceSqlSelectArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectArgs", error)) < 0)
     return -1;
@@ -6562,16 +6562,16 @@ service_sql_select_args_write (ThriftStruct *object, ThriftProtocol *protocol, G
 }
 
 static void
-service_sql_select_args_set_property (GObject *object,
-                                      guint property_id,
-                                      const GValue *value,
-                                      GParamSpec *pspec)
+swcdb_thrift_service_sql_select_args_set_property (GObject *object,
+                                                   guint property_id,
+                                                   const GValue *value,
+                                                   GParamSpec *pspec)
 {
-  ServiceSqlSelectArgs *self = SERVICE_SQL_SELECT_ARGS (object);
+  swcdb_thriftServiceSqlSelectArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -6585,16 +6585,16 @@ service_sql_select_args_set_property (GObject *object,
 }
 
 static void
-service_sql_select_args_get_property (GObject *object,
-                                      guint property_id,
-                                      GValue *value,
-                                      GParamSpec *pspec)
+swcdb_thrift_service_sql_select_args_get_property (GObject *object,
+                                                   guint property_id,
+                                                   GValue *value,
+                                                   GParamSpec *pspec)
 {
-  ServiceSqlSelectArgs *self = SERVICE_SQL_SELECT_ARGS (object);
+  swcdb_thriftServiceSqlSelectArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -6605,7 +6605,7 @@ service_sql_select_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_args_instance_init (ServiceSqlSelectArgs * object)
+swcdb_thrift_service_sql_select_args_instance_init (swcdb_thriftServiceSqlSelectArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -6614,9 +6614,9 @@ service_sql_select_args_instance_init (ServiceSqlSelectArgs * object)
 }
 
 static void 
-service_sql_select_args_finalize (GObject *object)
+swcdb_thrift_service_sql_select_args_finalize (GObject *object)
 {
-  ServiceSqlSelectArgs *tobject = SERVICE_SQL_SELECT_ARGS (object);
+  swcdb_thriftServiceSqlSelectArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -6628,21 +6628,21 @@ service_sql_select_args_finalize (GObject *object)
 }
 
 static void
-service_sql_select_args_class_init (ServiceSqlSelectArgsClass * cls)
+swcdb_thrift_service_sql_select_args_class_init (swcdb_thriftServiceSqlSelectArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_args_read;
-  struct_class->write = service_sql_select_args_write;
+  struct_class->read = swcdb_thrift_service_sql_select_args_read;
+  struct_class->write = swcdb_thrift_service_sql_select_args_write;
 
-  gobject_class->finalize = service_sql_select_args_finalize;
-  gobject_class->get_property = service_sql_select_args_get_property;
-  gobject_class->set_property = service_sql_select_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -6651,7 +6651,7 @@ service_sql_select_args_class_init (ServiceSqlSelectArgsClass * cls)
 }
 
 GType
-service_sql_select_args_get_type (void)
+swcdb_thrift_service_sql_select_args_get_type (void)
 {
   static GType type = 0;
 
@@ -6659,36 +6659,36 @@ service_sql_select_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectArgsClass),
+      sizeof (swcdb_thriftServiceSqlSelectArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectArgs),
+      sizeof (swcdb_thriftServiceSqlSelectArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectArgsType",
+                                   "swcdb_thriftServiceSqlSelectArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectResultProperties
+enum _swcdb_thriftServiceSqlSelectResultProperties
 {
-  PROP_SERVICE_SQL_SELECT_RESULT_0,
-  PROP_SERVICE_SQL_SELECT_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_SELECT_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_E
 };
 
 /* reads a service_sql_select_result object */
 static gint32
-service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -6697,7 +6697,7 @@ service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectResult * this_object = SERVICE_SQL_SELECT_RESULT(object);
+  swcdb_thriftServiceSqlSelectResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -6750,12 +6750,12 @@ service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              Cell * _elem33 = NULL;
+              swcdb_thriftCell * _elem33 = NULL;
               if ( _elem33 != NULL)
               {
                 g_object_unref (_elem33);
               }
-              _elem33 = g_object_new (TYPE_CELL, NULL);
+              _elem33 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem33), protocol, error)) < 0)
               {
                 g_object_unref (_elem33);
@@ -6783,7 +6783,7 @@ service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -6817,12 +6817,12 @@ service_sql_select_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
 }
 
 static gint32
-service_sql_select_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectResult * this_object = SERVICE_SQL_SELECT_RESULT(object);
+  swcdb_thriftServiceSqlSelectResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectResult", error)) < 0)
     return -1;
@@ -6875,23 +6875,23 @@ service_sql_select_result_write (ThriftStruct *object, ThriftProtocol *protocol,
 }
 
 static void
-service_sql_select_result_set_property (GObject *object,
-                                        guint property_id,
-                                        const GValue *value,
-                                        GParamSpec *pspec)
+swcdb_thrift_service_sql_select_result_set_property (GObject *object,
+                                                     guint property_id,
+                                                     const GValue *value,
+                                                     GParamSpec *pspec)
 {
-  ServiceSqlSelectResult *self = SERVICE_SQL_SELECT_RESULT (object);
+  swcdb_thriftServiceSqlSelectResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS:
       if (self->success != NULL)
         g_ptr_array_unref (self->success);
       self->success = g_value_dup_boxed (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -6905,20 +6905,20 @@ service_sql_select_result_set_property (GObject *object,
 }
 
 static void
-service_sql_select_result_get_property (GObject *object,
-                                        guint property_id,
-                                        GValue *value,
-                                        GParamSpec *pspec)
+swcdb_thrift_service_sql_select_result_get_property (GObject *object,
+                                                     guint property_id,
+                                                     GValue *value,
+                                                     GParamSpec *pspec)
 {
-  ServiceSqlSelectResult *self = SERVICE_SQL_SELECT_RESULT (object);
+  swcdb_thriftServiceSqlSelectResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS:
       g_value_set_boxed (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -6929,7 +6929,7 @@ service_sql_select_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_result_instance_init (ServiceSqlSelectResult * object)
+swcdb_thrift_service_sql_select_result_instance_init (swcdb_thriftServiceSqlSelectResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -6940,9 +6940,9 @@ service_sql_select_result_instance_init (ServiceSqlSelectResult * object)
 }
 
 static void 
-service_sql_select_result_finalize (GObject *object)
+swcdb_thrift_service_sql_select_result_finalize (GObject *object)
 {
-  ServiceSqlSelectResult *tobject = SERVICE_SQL_SELECT_RESULT (object);
+  swcdb_thriftServiceSqlSelectResult *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -6959,21 +6959,21 @@ service_sql_select_result_finalize (GObject *object)
 }
 
 static void
-service_sql_select_result_class_init (ServiceSqlSelectResultClass * cls)
+swcdb_thrift_service_sql_select_result_class_init (swcdb_thriftServiceSqlSelectResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_result_read;
-  struct_class->write = service_sql_select_result_write;
+  struct_class->read = swcdb_thrift_service_sql_select_result_read;
+  struct_class->write = swcdb_thrift_service_sql_select_result_write;
 
-  gobject_class->finalize = service_sql_select_result_finalize;
-  gobject_class->get_property = service_sql_select_result_get_property;
-  gobject_class->set_property = service_sql_select_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS,
      g_param_spec_boxed ("success",
                          NULL,
                          NULL,
@@ -6982,16 +6982,16 @@ service_sql_select_result_class_init (ServiceSqlSelectResultClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_select_result_get_type (void)
+swcdb_thrift_service_sql_select_result_get_type (void)
 {
   static GType type = 0;
 
@@ -6999,35 +6999,35 @@ service_sql_select_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectResultClass),
+      sizeof (swcdb_thriftServiceSqlSelectResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectResult),
+      sizeof (swcdb_thriftServiceSqlSelectResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectResultType",
+                                   "swcdb_thriftServiceSqlSelectResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnColumnArgsProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnColumnArgsProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL
 };
 
 /* reads a service_sql_select_rslt_on_column_args object */
 static gint32
-service_sql_select_rslt_on_column_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_column_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -7036,7 +7036,7 @@ service_sql_select_rslt_on_column_args_read (ThriftStruct *object, ThriftProtoco
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnColumnArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -7112,12 +7112,12 @@ service_sql_select_rslt_on_column_args_read (ThriftStruct *object, ThriftProtoco
 }
 
 static gint32
-service_sql_select_rslt_on_column_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_column_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnColumnArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnColumnArgs", error)) < 0)
     return -1;
@@ -7143,16 +7143,16 @@ service_sql_select_rslt_on_column_args_write (ThriftStruct *object, ThriftProtoc
 }
 
 static void
-service_sql_select_rslt_on_column_args_set_property (GObject *object,
-                                                     guint property_id,
-                                                     const GValue *value,
-                                                     GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_column_args_set_property (GObject *object,
+                                                                  guint property_id,
+                                                                  const GValue *value,
+                                                                  GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnColumnArgs *self = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -7166,16 +7166,16 @@ service_sql_select_rslt_on_column_args_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_column_args_get_property (GObject *object,
-                                                     guint property_id,
-                                                     GValue *value,
-                                                     GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_column_args_get_property (GObject *object,
+                                                                  guint property_id,
+                                                                  GValue *value,
+                                                                  GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnColumnArgs *self = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -7186,7 +7186,7 @@ service_sql_select_rslt_on_column_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_column_args_instance_init (ServiceSqlSelectRsltOnColumnArgs * object)
+swcdb_thrift_service_sql_select_rslt_on_column_args_instance_init (swcdb_thriftServiceSqlSelectRsltOnColumnArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -7195,9 +7195,9 @@ service_sql_select_rslt_on_column_args_instance_init (ServiceSqlSelectRsltOnColu
 }
 
 static void 
-service_sql_select_rslt_on_column_args_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_column_args_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnColumnArgs *tobject = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -7209,21 +7209,21 @@ service_sql_select_rslt_on_column_args_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_column_args_class_init (ServiceSqlSelectRsltOnColumnArgsClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_column_args_class_init (swcdb_thriftServiceSqlSelectRsltOnColumnArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_column_args_read;
-  struct_class->write = service_sql_select_rslt_on_column_args_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_column_args_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_column_args_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_column_args_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_column_args_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_column_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_column_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_column_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_column_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -7232,7 +7232,7 @@ service_sql_select_rslt_on_column_args_class_init (ServiceSqlSelectRsltOnColumnA
 }
 
 GType
-service_sql_select_rslt_on_column_args_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_column_args_get_type (void)
 {
   static GType type = 0;
 
@@ -7240,36 +7240,36 @@ service_sql_select_rslt_on_column_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnColumnArgsClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnColumnArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_column_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_column_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnColumnArgs),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnColumnArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_column_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_column_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnColumnArgsType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnColumnArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnColumnResultProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnColumnResultProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E
 };
 
 /* reads a service_sql_select_rslt_on_column_result object */
 static gint32
-service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -7278,7 +7278,7 @@ service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProto
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnColumnResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -7334,7 +7334,7 @@ service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProto
             for (i = 0; i < size; i++)
             {
               gchar * key35 = NULL;
-              ColCells * val36 = g_ptr_array_new_with_free_func (g_object_unref);
+              swcdb_thriftColCells * val36 = g_ptr_array_new_with_free_func (g_object_unref);
               if (key35 != NULL)
               {
                 g_free(key35);
@@ -7356,12 +7356,12 @@ service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProto
                 /* iterate through list elements */
                 for (i = 0; i < size; i++)
                 {
-                  CCell * _elem37 = NULL;
+                  swcdb_thriftCCell * _elem37 = NULL;
                   if ( _elem37 != NULL)
                   {
                     g_object_unref (_elem37);
                   }
-                  _elem37 = g_object_new (TYPE_C_CELL, NULL);
+                  _elem37 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
                   if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem37), protocol, error)) < 0)
                   {
                     g_object_unref (_elem37);
@@ -7398,7 +7398,7 @@ service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProto
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -7432,12 +7432,12 @@ service_sql_select_rslt_on_column_result_read (ThriftStruct *object, ThriftProto
 }
 
 static gint32
-service_sql_select_rslt_on_column_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_column_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnColumnResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnColumnResult", error)) < 0)
     return -1;
@@ -7448,7 +7448,7 @@ service_sql_select_rslt_on_column_result_write (ThriftStruct *object, ThriftProt
     xfer += ret;
     {
       gchar * key38 = NULL;
-      ColCells * val39 = NULL;
+      swcdb_thriftColCells * val39 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gchar ** keys;
       int i = 0, key_count;
@@ -7467,7 +7467,7 @@ service_sql_select_rslt_on_column_result_write (ThriftStruct *object, ThriftProt
       for (i = 0; i < key_count; ++i)
       {
         key38 = keys[i];
-        val39 = (ColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key38);
+        val39 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key38);
 
         if ((ret = thrift_protocol_write_string (protocol,  key38, error)) < 0)
           return -1;
@@ -7522,23 +7522,23 @@ service_sql_select_rslt_on_column_result_write (ThriftStruct *object, ThriftProt
 }
 
 static void
-service_sql_select_rslt_on_column_result_set_property (GObject *object,
-                                                       guint property_id,
-                                                       const GValue *value,
-                                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_column_result_set_property (GObject *object,
+                                                                    guint property_id,
+                                                                    const GValue *value,
+                                                                    GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnColumnResult *self = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS:
       if (self->success != NULL)
         g_hash_table_unref (self->success);
       self->success = g_value_dup_boxed (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -7552,20 +7552,20 @@ service_sql_select_rslt_on_column_result_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_column_result_get_property (GObject *object,
-                                                       guint property_id,
-                                                       GValue *value,
-                                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_column_result_get_property (GObject *object,
+                                                                    guint property_id,
+                                                                    GValue *value,
+                                                                    GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnColumnResult *self = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS:
       g_value_set_boxed (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -7576,7 +7576,7 @@ service_sql_select_rslt_on_column_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_column_result_instance_init (ServiceSqlSelectRsltOnColumnResult * object)
+swcdb_thrift_service_sql_select_rslt_on_column_result_instance_init (swcdb_thriftServiceSqlSelectRsltOnColumnResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -7587,9 +7587,9 @@ service_sql_select_rslt_on_column_result_instance_init (ServiceSqlSelectRsltOnCo
 }
 
 static void 
-service_sql_select_rslt_on_column_result_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_column_result_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnColumnResult *tobject = SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnColumnResult *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -7606,21 +7606,21 @@ service_sql_select_rslt_on_column_result_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_column_result_class_init (ServiceSqlSelectRsltOnColumnResultClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_column_result_class_init (swcdb_thriftServiceSqlSelectRsltOnColumnResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_column_result_read;
-  struct_class->write = service_sql_select_rslt_on_column_result_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_column_result_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_column_result_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_column_result_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_column_result_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_column_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_column_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_column_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_column_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_SUCCESS,
      g_param_spec_boxed ("success",
                          NULL,
                          NULL,
@@ -7629,16 +7629,16 @@ service_sql_select_rslt_on_column_result_class_init (ServiceSqlSelectRsltOnColum
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_COLUMN_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_select_rslt_on_column_result_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_column_result_get_type (void)
 {
   static GType type = 0;
 
@@ -7646,35 +7646,35 @@ service_sql_select_rslt_on_column_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnColumnResultClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnColumnResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_column_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_column_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnColumnResult),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnColumnResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_column_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_column_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnColumnResultType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnColumnResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnKeyArgsProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnKeyArgsProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL
 };
 
 /* reads a service_sql_select_rslt_on_key_args object */
 static gint32
-service_sql_select_rslt_on_key_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_key_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -7683,7 +7683,7 @@ service_sql_select_rslt_on_key_args_read (ThriftStruct *object, ThriftProtocol *
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnKeyArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -7759,12 +7759,12 @@ service_sql_select_rslt_on_key_args_read (ThriftStruct *object, ThriftProtocol *
 }
 
 static gint32
-service_sql_select_rslt_on_key_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_key_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnKeyArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnKeyArgs", error)) < 0)
     return -1;
@@ -7790,16 +7790,16 @@ service_sql_select_rslt_on_key_args_write (ThriftStruct *object, ThriftProtocol 
 }
 
 static void
-service_sql_select_rslt_on_key_args_set_property (GObject *object,
-                                                  guint property_id,
-                                                  const GValue *value,
-                                                  GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_key_args_set_property (GObject *object,
+                                                               guint property_id,
+                                                               const GValue *value,
+                                                               GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnKeyArgs *self = SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -7813,16 +7813,16 @@ service_sql_select_rslt_on_key_args_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_key_args_get_property (GObject *object,
-                                                  guint property_id,
-                                                  GValue *value,
-                                                  GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_key_args_get_property (GObject *object,
+                                                               guint property_id,
+                                                               GValue *value,
+                                                               GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnKeyArgs *self = SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -7833,7 +7833,7 @@ service_sql_select_rslt_on_key_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_key_args_instance_init (ServiceSqlSelectRsltOnKeyArgs * object)
+swcdb_thrift_service_sql_select_rslt_on_key_args_instance_init (swcdb_thriftServiceSqlSelectRsltOnKeyArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -7842,9 +7842,9 @@ service_sql_select_rslt_on_key_args_instance_init (ServiceSqlSelectRsltOnKeyArgs
 }
 
 static void 
-service_sql_select_rslt_on_key_args_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_key_args_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnKeyArgs *tobject = SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -7856,21 +7856,21 @@ service_sql_select_rslt_on_key_args_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_key_args_class_init (ServiceSqlSelectRsltOnKeyArgsClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_key_args_class_init (swcdb_thriftServiceSqlSelectRsltOnKeyArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_key_args_read;
-  struct_class->write = service_sql_select_rslt_on_key_args_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_key_args_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_key_args_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_key_args_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_key_args_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_key_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_key_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_key_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_key_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -7879,7 +7879,7 @@ service_sql_select_rslt_on_key_args_class_init (ServiceSqlSelectRsltOnKeyArgsCla
 }
 
 GType
-service_sql_select_rslt_on_key_args_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_key_args_get_type (void)
 {
   static GType type = 0;
 
@@ -7887,36 +7887,36 @@ service_sql_select_rslt_on_key_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnKeyArgsClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnKeyArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_key_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_key_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnKeyArgs),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnKeyArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_key_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_key_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnKeyArgsType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnKeyArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnKeyResultProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnKeyResultProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E
 };
 
 /* reads a service_sql_select_rslt_on_key_result object */
 static gint32
-service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -7925,7 +7925,7 @@ service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnKeyResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -7978,12 +7978,12 @@ service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              kCells * _elem41 = NULL;
+              swcdb_thriftkCells * _elem41 = NULL;
               if ( _elem41 != NULL)
               {
                 g_object_unref (_elem41);
               }
-              _elem41 = g_object_new (TYPE_K_CELLS, NULL);
+              _elem41 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
               if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem41), protocol, error)) < 0)
               {
                 g_object_unref (_elem41);
@@ -8011,7 +8011,7 @@ service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -8045,12 +8045,12 @@ service_sql_select_rslt_on_key_result_read (ThriftStruct *object, ThriftProtocol
 }
 
 static gint32
-service_sql_select_rslt_on_key_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_key_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnKeyResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnKeyResult", error)) < 0)
     return -1;
@@ -8103,23 +8103,23 @@ service_sql_select_rslt_on_key_result_write (ThriftStruct *object, ThriftProtoco
 }
 
 static void
-service_sql_select_rslt_on_key_result_set_property (GObject *object,
-                                                    guint property_id,
-                                                    const GValue *value,
-                                                    GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_key_result_set_property (GObject *object,
+                                                                 guint property_id,
+                                                                 const GValue *value,
+                                                                 GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnKeyResult *self = SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS:
       if (self->success != NULL)
         g_ptr_array_unref (self->success);
       self->success = g_value_dup_boxed (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -8133,20 +8133,20 @@ service_sql_select_rslt_on_key_result_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_key_result_get_property (GObject *object,
-                                                    guint property_id,
-                                                    GValue *value,
-                                                    GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_key_result_get_property (GObject *object,
+                                                                 guint property_id,
+                                                                 GValue *value,
+                                                                 GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnKeyResult *self = SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS:
       g_value_set_boxed (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -8157,7 +8157,7 @@ service_sql_select_rslt_on_key_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_key_result_instance_init (ServiceSqlSelectRsltOnKeyResult * object)
+swcdb_thrift_service_sql_select_rslt_on_key_result_instance_init (swcdb_thriftServiceSqlSelectRsltOnKeyResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -8168,9 +8168,9 @@ service_sql_select_rslt_on_key_result_instance_init (ServiceSqlSelectRsltOnKeyRe
 }
 
 static void 
-service_sql_select_rslt_on_key_result_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_key_result_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnKeyResult *tobject = SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnKeyResult *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -8187,21 +8187,21 @@ service_sql_select_rslt_on_key_result_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_key_result_class_init (ServiceSqlSelectRsltOnKeyResultClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_key_result_class_init (swcdb_thriftServiceSqlSelectRsltOnKeyResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_key_result_read;
-  struct_class->write = service_sql_select_rslt_on_key_result_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_key_result_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_key_result_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_key_result_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_key_result_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_key_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_key_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_key_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_key_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_SUCCESS,
      g_param_spec_boxed ("success",
                          NULL,
                          NULL,
@@ -8210,16 +8210,16 @@ service_sql_select_rslt_on_key_result_class_init (ServiceSqlSelectRsltOnKeyResul
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_KEY_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_select_rslt_on_key_result_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_key_result_get_type (void)
 {
   static GType type = 0;
 
@@ -8227,35 +8227,35 @@ service_sql_select_rslt_on_key_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnKeyResultClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnKeyResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_key_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_key_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnKeyResult),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnKeyResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_key_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_key_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnKeyResultType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnKeyResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnFractionArgsProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnFractionArgsProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL
 };
 
 /* reads a service_sql_select_rslt_on_fraction_args object */
 static gint32
-service_sql_select_rslt_on_fraction_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -8264,7 +8264,7 @@ service_sql_select_rslt_on_fraction_args_read (ThriftStruct *object, ThriftProto
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnFractionArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -8340,12 +8340,12 @@ service_sql_select_rslt_on_fraction_args_read (ThriftStruct *object, ThriftProto
 }
 
 static gint32
-service_sql_select_rslt_on_fraction_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnFractionArgs * this_object = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS(object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnFractionArgs", error)) < 0)
     return -1;
@@ -8371,16 +8371,16 @@ service_sql_select_rslt_on_fraction_args_write (ThriftStruct *object, ThriftProt
 }
 
 static void
-service_sql_select_rslt_on_fraction_args_set_property (GObject *object,
-                                                       guint property_id,
-                                                       const GValue *value,
-                                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_set_property (GObject *object,
+                                                                    guint property_id,
+                                                                    const GValue *value,
+                                                                    GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnFractionArgs *self = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
@@ -8394,16 +8394,16 @@ service_sql_select_rslt_on_fraction_args_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_fraction_args_get_property (GObject *object,
-                                                       guint property_id,
-                                                       GValue *value,
-                                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_get_property (GObject *object,
+                                                                    guint property_id,
+                                                                    GValue *value,
+                                                                    GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnFractionArgs *self = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionArgs *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
@@ -8414,7 +8414,7 @@ service_sql_select_rslt_on_fraction_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_fraction_args_instance_init (ServiceSqlSelectRsltOnFractionArgs * object)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_instance_init (swcdb_thriftServiceSqlSelectRsltOnFractionArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -8423,9 +8423,9 @@ service_sql_select_rslt_on_fraction_args_instance_init (ServiceSqlSelectRsltOnFr
 }
 
 static void 
-service_sql_select_rslt_on_fraction_args_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnFractionArgs *tobject = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -8437,21 +8437,21 @@ service_sql_select_rslt_on_fraction_args_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_fraction_args_class_init (ServiceSqlSelectRsltOnFractionArgsClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_class_init (swcdb_thriftServiceSqlSelectRsltOnFractionArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_fraction_args_read;
-  struct_class->write = service_sql_select_rslt_on_fraction_args_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_fraction_args_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_fraction_args_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_fraction_args_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_fraction_args_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_fraction_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_fraction_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_fraction_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_fraction_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -8460,7 +8460,7 @@ service_sql_select_rslt_on_fraction_args_class_init (ServiceSqlSelectRsltOnFract
 }
 
 GType
-service_sql_select_rslt_on_fraction_args_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_fraction_args_get_type (void)
 {
   static GType type = 0;
 
@@ -8468,36 +8468,36 @@ service_sql_select_rslt_on_fraction_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnFractionArgsClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnFractionArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_fraction_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_fraction_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnFractionArgs),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnFractionArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_fraction_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_fraction_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnFractionArgsType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnFractionArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlSelectRsltOnFractionResultProperties
+enum _swcdb_thriftServiceSqlSelectRsltOnFractionResultProperties
 {
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_0,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E
 };
 
 /* reads a service_sql_select_rslt_on_fraction_result object */
 static gint32
-service_sql_select_rslt_on_fraction_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -8506,7 +8506,7 @@ service_sql_select_rslt_on_fraction_result_read (ThriftStruct *object, ThriftPro
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlSelectRsltOnFractionResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -8567,7 +8567,7 @@ service_sql_select_rslt_on_fraction_result_read (ThriftStruct *object, ThriftPro
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -8601,12 +8601,12 @@ service_sql_select_rslt_on_fraction_result_read (ThriftStruct *object, ThriftPro
 }
 
 static gint32
-service_sql_select_rslt_on_fraction_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlSelectRsltOnFractionResult * this_object = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT(object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionResult * this_object = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlSelectRsltOnFractionResult", error)) < 0)
     return -1;
@@ -8646,23 +8646,23 @@ service_sql_select_rslt_on_fraction_result_write (ThriftStruct *object, ThriftPr
 }
 
 static void
-service_sql_select_rslt_on_fraction_result_set_property (GObject *object,
-                                                         guint property_id,
-                                                         const GValue *value,
-                                                         GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_set_property (GObject *object,
+                                                                      guint property_id,
+                                                                      const GValue *value,
+                                                                      GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnFractionResult *self = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS:
       if (self->success != NULL)
         g_object_unref (self->success);
       self->success = g_value_dup_object (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -8676,20 +8676,20 @@ service_sql_select_rslt_on_fraction_result_set_property (GObject *object,
 }
 
 static void
-service_sql_select_rslt_on_fraction_result_get_property (GObject *object,
-                                                         guint property_id,
-                                                         GValue *value,
-                                                         GParamSpec *pspec)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_get_property (GObject *object,
+                                                                      guint property_id,
+                                                                      GValue *value,
+                                                                      GParamSpec *pspec)
 {
-  ServiceSqlSelectRsltOnFractionResult *self = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionResult *self = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS:
       g_value_set_object (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -8700,20 +8700,20 @@ service_sql_select_rslt_on_fraction_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_select_rslt_on_fraction_result_instance_init (ServiceSqlSelectRsltOnFractionResult * object)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_instance_init (swcdb_thriftServiceSqlSelectRsltOnFractionResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_object_new (TYPE_F_CELLS, NULL);
+  object->success = g_object_new (SWCDB_THRIFT_TYPE_F_CELLS, NULL);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
 }
 
 static void 
-service_sql_select_rslt_on_fraction_result_finalize (GObject *object)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_finalize (GObject *object)
 {
-  ServiceSqlSelectRsltOnFractionResult *tobject = SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
+  swcdb_thriftServiceSqlSelectRsltOnFractionResult *tobject = SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -8730,39 +8730,39 @@ service_sql_select_rslt_on_fraction_result_finalize (GObject *object)
 }
 
 static void
-service_sql_select_rslt_on_fraction_result_class_init (ServiceSqlSelectRsltOnFractionResultClass * cls)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_class_init (swcdb_thriftServiceSqlSelectRsltOnFractionResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_select_rslt_on_fraction_result_read;
-  struct_class->write = service_sql_select_rslt_on_fraction_result_write;
+  struct_class->read = swcdb_thrift_service_sql_select_rslt_on_fraction_result_read;
+  struct_class->write = swcdb_thrift_service_sql_select_rslt_on_fraction_result_write;
 
-  gobject_class->finalize = service_sql_select_rslt_on_fraction_result_finalize;
-  gobject_class->get_property = service_sql_select_rslt_on_fraction_result_get_property;
-  gobject_class->set_property = service_sql_select_rslt_on_fraction_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_select_rslt_on_fraction_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_select_rslt_on_fraction_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_select_rslt_on_fraction_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_SUCCESS,
      g_param_spec_object ("success",
                          NULL,
                          NULL,
-                         TYPE_F_CELLS,
+                         SWCDB_THRIFT_TYPE_F_CELLS,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RSLT_ON_FRACTION_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_select_rslt_on_fraction_result_get_type (void)
+swcdb_thrift_service_sql_select_rslt_on_fraction_result_get_type (void)
 {
   static GType type = 0;
 
@@ -8770,36 +8770,36 @@ service_sql_select_rslt_on_fraction_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlSelectRsltOnFractionResultClass),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnFractionResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_select_rslt_on_fraction_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_select_rslt_on_fraction_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlSelectRsltOnFractionResult),
+      sizeof (swcdb_thriftServiceSqlSelectRsltOnFractionResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_select_rslt_on_fraction_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_select_rslt_on_fraction_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlSelectRsltOnFractionResultType",
+                                   "swcdb_thriftServiceSqlSelectRsltOnFractionResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlQueryArgsProperties
+enum _swcdb_thriftServiceSqlQueryArgsProperties
 {
-  PROP_SERVICE_SQL_QUERY_ARGS_0,
-  PROP_SERVICE_SQL_QUERY_ARGS_SQL,
-  PROP_SERVICE_SQL_QUERY_ARGS_RSLT
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_SQL,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_RSLT
 };
 
 /* reads a service_sql_query_args object */
 static gint32
-service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -8808,7 +8808,7 @@ service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *protocol, GEr
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlQueryArgs * this_object = SERVICE_SQL_QUERY_ARGS(object);
+  swcdb_thriftServiceSqlQueryArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -8872,7 +8872,7 @@ service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *protocol, GEr
           if ((ret = thrift_protocol_read_i32 (protocol, &ecast43, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->rslt = (CellsResult)ecast43;
+          this_object->rslt = (swcdb_thriftCellsResult)ecast43;
           this_object->__isset_rslt = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -8899,12 +8899,12 @@ service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *protocol, GEr
 }
 
 static gint32
-service_sql_query_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_query_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlQueryArgs * this_object = SERVICE_SQL_QUERY_ARGS(object);
+  swcdb_thriftServiceSqlQueryArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlQueryArgs", error)) < 0)
     return -1;
@@ -8940,23 +8940,23 @@ service_sql_query_args_write (ThriftStruct *object, ThriftProtocol *protocol, GE
 }
 
 static void
-service_sql_query_args_set_property (GObject *object,
-                                     guint property_id,
-                                     const GValue *value,
-                                     GParamSpec *pspec)
+swcdb_thrift_service_sql_query_args_set_property (GObject *object,
+                                                  guint property_id,
+                                                  const GValue *value,
+                                                  GParamSpec *pspec)
 {
-  ServiceSqlQueryArgs *self = SERVICE_SQL_QUERY_ARGS (object);
+  swcdb_thriftServiceSqlQueryArgs *self = SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_QUERY_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
       self->__isset_sql = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_QUERY_ARGS_RSLT:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_RSLT:
       self->rslt = g_value_get_int (value);
       self->__isset_rslt = TRUE;
       break;
@@ -8968,20 +8968,20 @@ service_sql_query_args_set_property (GObject *object,
 }
 
 static void
-service_sql_query_args_get_property (GObject *object,
-                                     guint property_id,
-                                     GValue *value,
-                                     GParamSpec *pspec)
+swcdb_thrift_service_sql_query_args_get_property (GObject *object,
+                                                  guint property_id,
+                                                  GValue *value,
+                                                  GParamSpec *pspec)
 {
-  ServiceSqlQueryArgs *self = SERVICE_SQL_QUERY_ARGS (object);
+  swcdb_thriftServiceSqlQueryArgs *self = SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_QUERY_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
-    case PROP_SERVICE_SQL_QUERY_ARGS_RSLT:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_RSLT:
       g_value_set_int (value, self->rslt);
       break;
 
@@ -8992,7 +8992,7 @@ service_sql_query_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_query_args_instance_init (ServiceSqlQueryArgs * object)
+swcdb_thrift_service_sql_query_args_instance_init (swcdb_thriftServiceSqlQueryArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -9002,9 +9002,9 @@ service_sql_query_args_instance_init (ServiceSqlQueryArgs * object)
 }
 
 static void 
-service_sql_query_args_finalize (GObject *object)
+swcdb_thrift_service_sql_query_args_finalize (GObject *object)
 {
-  ServiceSqlQueryArgs *tobject = SERVICE_SQL_QUERY_ARGS (object);
+  swcdb_thriftServiceSqlQueryArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -9016,21 +9016,21 @@ service_sql_query_args_finalize (GObject *object)
 }
 
 static void
-service_sql_query_args_class_init (ServiceSqlQueryArgsClass * cls)
+swcdb_thrift_service_sql_query_args_class_init (swcdb_thriftServiceSqlQueryArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_query_args_read;
-  struct_class->write = service_sql_query_args_write;
+  struct_class->read = swcdb_thrift_service_sql_query_args_read;
+  struct_class->write = swcdb_thrift_service_sql_query_args_write;
 
-  gobject_class->finalize = service_sql_query_args_finalize;
-  gobject_class->get_property = service_sql_query_args_get_property;
-  gobject_class->set_property = service_sql_query_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_query_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_query_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_query_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_QUERY_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -9039,7 +9039,7 @@ service_sql_query_args_class_init (ServiceSqlQueryArgsClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_QUERY_ARGS_RSLT,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_ARGS_RSLT,
      g_param_spec_int ("rslt",
                        NULL,
                        NULL,
@@ -9050,7 +9050,7 @@ service_sql_query_args_class_init (ServiceSqlQueryArgsClass * cls)
 }
 
 GType
-service_sql_query_args_get_type (void)
+swcdb_thrift_service_sql_query_args_get_type (void)
 {
   static GType type = 0;
 
@@ -9058,36 +9058,36 @@ service_sql_query_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlQueryArgsClass),
+      sizeof (swcdb_thriftServiceSqlQueryArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_query_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_query_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlQueryArgs),
+      sizeof (swcdb_thriftServiceSqlQueryArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_query_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_query_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlQueryArgsType",
+                                   "swcdb_thriftServiceSqlQueryArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlQueryResultProperties
+enum _swcdb_thriftServiceSqlQueryResultProperties
 {
-  PROP_SERVICE_SQL_QUERY_RESULT_0,
-  PROP_SERVICE_SQL_QUERY_RESULT_SUCCESS,
-  PROP_SERVICE_SQL_QUERY_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_E
 };
 
 /* reads a service_sql_query_result object */
 static gint32
-service_sql_query_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_query_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -9096,7 +9096,7 @@ service_sql_query_result_read (ThriftStruct *object, ThriftProtocol *protocol, G
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlQueryResult * this_object = SERVICE_SQL_QUERY_RESULT(object);
+  swcdb_thriftServiceSqlQueryResult * this_object = SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -9157,7 +9157,7 @@ service_sql_query_result_read (ThriftStruct *object, ThriftProtocol *protocol, G
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -9191,12 +9191,12 @@ service_sql_query_result_read (ThriftStruct *object, ThriftProtocol *protocol, G
 }
 
 static gint32
-service_sql_query_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_query_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlQueryResult * this_object = SERVICE_SQL_QUERY_RESULT(object);
+  swcdb_thriftServiceSqlQueryResult * this_object = SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlQueryResult", error)) < 0)
     return -1;
@@ -9236,23 +9236,23 @@ service_sql_query_result_write (ThriftStruct *object, ThriftProtocol *protocol, 
 }
 
 static void
-service_sql_query_result_set_property (GObject *object,
-                                       guint property_id,
-                                       const GValue *value,
-                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_query_result_set_property (GObject *object,
+                                                    guint property_id,
+                                                    const GValue *value,
+                                                    GParamSpec *pspec)
 {
-  ServiceSqlQueryResult *self = SERVICE_SQL_QUERY_RESULT (object);
+  swcdb_thriftServiceSqlQueryResult *self = SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_QUERY_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_SUCCESS:
       if (self->success != NULL)
         g_object_unref (self->success);
       self->success = g_value_dup_object (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_QUERY_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -9266,20 +9266,20 @@ service_sql_query_result_set_property (GObject *object,
 }
 
 static void
-service_sql_query_result_get_property (GObject *object,
-                                       guint property_id,
-                                       GValue *value,
-                                       GParamSpec *pspec)
+swcdb_thrift_service_sql_query_result_get_property (GObject *object,
+                                                    guint property_id,
+                                                    GValue *value,
+                                                    GParamSpec *pspec)
 {
-  ServiceSqlQueryResult *self = SERVICE_SQL_QUERY_RESULT (object);
+  swcdb_thriftServiceSqlQueryResult *self = SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_QUERY_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_SUCCESS:
       g_value_set_object (value, self->success);
       break;
 
-    case PROP_SERVICE_SQL_QUERY_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -9290,20 +9290,20 @@ service_sql_query_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_query_result_instance_init (ServiceSqlQueryResult * object)
+swcdb_thrift_service_sql_query_result_instance_init (swcdb_thriftServiceSqlQueryResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_object_new (TYPE_CELLS_GROUP, NULL);
+  object->success = g_object_new (SWCDB_THRIFT_TYPE_CELLS_GROUP, NULL);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
 }
 
 static void 
-service_sql_query_result_finalize (GObject *object)
+swcdb_thrift_service_sql_query_result_finalize (GObject *object)
 {
-  ServiceSqlQueryResult *tobject = SERVICE_SQL_QUERY_RESULT (object);
+  swcdb_thriftServiceSqlQueryResult *tobject = SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -9320,39 +9320,39 @@ service_sql_query_result_finalize (GObject *object)
 }
 
 static void
-service_sql_query_result_class_init (ServiceSqlQueryResultClass * cls)
+swcdb_thrift_service_sql_query_result_class_init (swcdb_thriftServiceSqlQueryResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_query_result_read;
-  struct_class->write = service_sql_query_result_write;
+  struct_class->read = swcdb_thrift_service_sql_query_result_read;
+  struct_class->write = swcdb_thrift_service_sql_query_result_write;
 
-  gobject_class->finalize = service_sql_query_result_finalize;
-  gobject_class->get_property = service_sql_query_result_get_property;
-  gobject_class->set_property = service_sql_query_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_query_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_query_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_query_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_QUERY_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_SUCCESS,
      g_param_spec_object ("success",
                          NULL,
                          NULL,
-                         TYPE_CELLS_GROUP,
+                         SWCDB_THRIFT_TYPE_CELLS_GROUP,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_QUERY_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_QUERY_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_query_result_get_type (void)
+swcdb_thrift_service_sql_query_result_get_type (void)
 {
   static GType type = 0;
 
@@ -9360,36 +9360,36 @@ service_sql_query_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlQueryResultClass),
+      sizeof (swcdb_thriftServiceSqlQueryResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_query_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_query_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlQueryResult),
+      sizeof (swcdb_thriftServiceSqlQueryResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_query_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_query_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlQueryResultType",
+                                   "swcdb_thriftServiceSqlQueryResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlUpdateArgsProperties
+enum _swcdb_thriftServiceSqlUpdateArgsProperties
 {
-  PROP_SERVICE_SQL_UPDATE_ARGS_0,
-  PROP_SERVICE_SQL_UPDATE_ARGS_SQL,
-  PROP_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID
+  PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_SQL,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID
 };
 
 /* reads a service_sql_update_args object */
 static gint32
-service_sql_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -9398,7 +9398,7 @@ service_sql_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GE
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlUpdateArgs * this_object = SERVICE_SQL_UPDATE_ARGS(object);
+  swcdb_thriftServiceSqlUpdateArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -9487,12 +9487,12 @@ service_sql_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GE
 }
 
 static gint32
-service_sql_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlUpdateArgs * this_object = SERVICE_SQL_UPDATE_ARGS(object);
+  swcdb_thriftServiceSqlUpdateArgs * this_object = SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlUpdateArgs", error)) < 0)
     return -1;
@@ -9528,23 +9528,23 @@ service_sql_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, G
 }
 
 static void
-service_sql_update_args_set_property (GObject *object,
-                                      guint property_id,
-                                      const GValue *value,
-                                      GParamSpec *pspec)
+swcdb_thrift_service_sql_update_args_set_property (GObject *object,
+                                                   guint property_id,
+                                                   const GValue *value,
+                                                   GParamSpec *pspec)
 {
-  ServiceSqlUpdateArgs *self = SERVICE_SQL_UPDATE_ARGS (object);
+  swcdb_thriftServiceSqlUpdateArgs *self = SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_UPDATE_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_SQL:
       if (self->sql != NULL)
         g_free (self->sql);
       self->sql = g_value_dup_string (value);
       self->__isset_sql = TRUE;
       break;
 
-    case PROP_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID:
       self->updater_id = g_value_get_int64 (value);
       self->__isset_updater_id = TRUE;
       break;
@@ -9556,20 +9556,20 @@ service_sql_update_args_set_property (GObject *object,
 }
 
 static void
-service_sql_update_args_get_property (GObject *object,
-                                      guint property_id,
-                                      GValue *value,
-                                      GParamSpec *pspec)
+swcdb_thrift_service_sql_update_args_get_property (GObject *object,
+                                                   guint property_id,
+                                                   GValue *value,
+                                                   GParamSpec *pspec)
 {
-  ServiceSqlUpdateArgs *self = SERVICE_SQL_UPDATE_ARGS (object);
+  swcdb_thriftServiceSqlUpdateArgs *self = SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_UPDATE_ARGS_SQL:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_SQL:
       g_value_set_string (value, self->sql);
       break;
 
-    case PROP_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID:
       g_value_set_int64 (value, self->updater_id);
       break;
 
@@ -9580,7 +9580,7 @@ service_sql_update_args_get_property (GObject *object,
 }
 
 static void 
-service_sql_update_args_instance_init (ServiceSqlUpdateArgs * object)
+swcdb_thrift_service_sql_update_args_instance_init (swcdb_thriftServiceSqlUpdateArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -9591,9 +9591,9 @@ service_sql_update_args_instance_init (ServiceSqlUpdateArgs * object)
 }
 
 static void 
-service_sql_update_args_finalize (GObject *object)
+swcdb_thrift_service_sql_update_args_finalize (GObject *object)
 {
-  ServiceSqlUpdateArgs *tobject = SERVICE_SQL_UPDATE_ARGS (object);
+  swcdb_thriftServiceSqlUpdateArgs *tobject = SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -9605,21 +9605,21 @@ service_sql_update_args_finalize (GObject *object)
 }
 
 static void
-service_sql_update_args_class_init (ServiceSqlUpdateArgsClass * cls)
+swcdb_thrift_service_sql_update_args_class_init (swcdb_thriftServiceSqlUpdateArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_update_args_read;
-  struct_class->write = service_sql_update_args_write;
+  struct_class->read = swcdb_thrift_service_sql_update_args_read;
+  struct_class->write = swcdb_thrift_service_sql_update_args_write;
 
-  gobject_class->finalize = service_sql_update_args_finalize;
-  gobject_class->get_property = service_sql_update_args_get_property;
-  gobject_class->set_property = service_sql_update_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_update_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_update_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_update_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_UPDATE_ARGS_SQL,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_SQL,
      g_param_spec_string ("sql",
                           NULL,
                           NULL,
@@ -9628,7 +9628,7 @@ service_sql_update_args_class_init (ServiceSqlUpdateArgsClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_ARGS_UPDATER_ID,
      g_param_spec_int64 ("updater_id",
                          NULL,
                          NULL,
@@ -9639,7 +9639,7 @@ service_sql_update_args_class_init (ServiceSqlUpdateArgsClass * cls)
 }
 
 GType
-service_sql_update_args_get_type (void)
+swcdb_thrift_service_sql_update_args_get_type (void)
 {
   static GType type = 0;
 
@@ -9647,35 +9647,35 @@ service_sql_update_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlUpdateArgsClass),
+      sizeof (swcdb_thriftServiceSqlUpdateArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_update_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_update_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlUpdateArgs),
+      sizeof (swcdb_thriftServiceSqlUpdateArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_update_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_update_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlUpdateArgsType",
+                                   "swcdb_thriftServiceSqlUpdateArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceSqlUpdateResultProperties
+enum _swcdb_thriftServiceSqlUpdateResultProperties
 {
-  PROP_SERVICE_SQL_UPDATE_RESULT_0,
-  PROP_SERVICE_SQL_UPDATE_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_E
 };
 
 /* reads a service_sql_update_result object */
 static gint32
-service_sql_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -9684,7 +9684,7 @@ service_sql_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceSqlUpdateResult * this_object = SERVICE_SQL_UPDATE_RESULT(object);
+  swcdb_thriftServiceSqlUpdateResult * this_object = SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -9730,7 +9730,7 @@ service_sql_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -9764,12 +9764,12 @@ service_sql_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, 
 }
 
 static gint32
-service_sql_update_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_sql_update_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceSqlUpdateResult * this_object = SERVICE_SQL_UPDATE_RESULT(object);
+  swcdb_thriftServiceSqlUpdateResult * this_object = SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceSqlUpdateResult", error)) < 0)
     return -1;
@@ -9797,16 +9797,16 @@ service_sql_update_result_write (ThriftStruct *object, ThriftProtocol *protocol,
 }
 
 static void
-service_sql_update_result_set_property (GObject *object,
-                                        guint property_id,
-                                        const GValue *value,
-                                        GParamSpec *pspec)
+swcdb_thrift_service_sql_update_result_set_property (GObject *object,
+                                                     guint property_id,
+                                                     const GValue *value,
+                                                     GParamSpec *pspec)
 {
-  ServiceSqlUpdateResult *self = SERVICE_SQL_UPDATE_RESULT (object);
+  swcdb_thriftServiceSqlUpdateResult *self = SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_UPDATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -9820,16 +9820,16 @@ service_sql_update_result_set_property (GObject *object,
 }
 
 static void
-service_sql_update_result_get_property (GObject *object,
-                                        guint property_id,
-                                        GValue *value,
-                                        GParamSpec *pspec)
+swcdb_thrift_service_sql_update_result_get_property (GObject *object,
+                                                     guint property_id,
+                                                     GValue *value,
+                                                     GParamSpec *pspec)
 {
-  ServiceSqlUpdateResult *self = SERVICE_SQL_UPDATE_RESULT (object);
+  swcdb_thriftServiceSqlUpdateResult *self = SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_SQL_UPDATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -9840,7 +9840,7 @@ service_sql_update_result_get_property (GObject *object,
 }
 
 static void 
-service_sql_update_result_instance_init (ServiceSqlUpdateResult * object)
+swcdb_thrift_service_sql_update_result_instance_init (swcdb_thriftServiceSqlUpdateResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -9849,9 +9849,9 @@ service_sql_update_result_instance_init (ServiceSqlUpdateResult * object)
 }
 
 static void 
-service_sql_update_result_finalize (GObject *object)
+swcdb_thrift_service_sql_update_result_finalize (GObject *object)
 {
-  ServiceSqlUpdateResult *tobject = SERVICE_SQL_UPDATE_RESULT (object);
+  swcdb_thriftServiceSqlUpdateResult *tobject = SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -9863,30 +9863,30 @@ service_sql_update_result_finalize (GObject *object)
 }
 
 static void
-service_sql_update_result_class_init (ServiceSqlUpdateResultClass * cls)
+swcdb_thrift_service_sql_update_result_class_init (swcdb_thriftServiceSqlUpdateResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_sql_update_result_read;
-  struct_class->write = service_sql_update_result_write;
+  struct_class->read = swcdb_thrift_service_sql_update_result_read;
+  struct_class->write = swcdb_thrift_service_sql_update_result_write;
 
-  gobject_class->finalize = service_sql_update_result_finalize;
-  gobject_class->get_property = service_sql_update_result_get_property;
-  gobject_class->set_property = service_sql_update_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_sql_update_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_sql_update_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_sql_update_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_SQL_UPDATE_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_sql_update_result_get_type (void)
+swcdb_thrift_service_sql_update_result_get_type (void)
 {
   static GType type = 0;
 
@@ -9894,35 +9894,35 @@ service_sql_update_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceSqlUpdateResultClass),
+      sizeof (swcdb_thriftServiceSqlUpdateResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_sql_update_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_sql_update_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceSqlUpdateResult),
+      sizeof (swcdb_thriftServiceSqlUpdateResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_sql_update_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_sql_update_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceSqlUpdateResultType",
+                                   "swcdb_thriftServiceSqlUpdateResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdaterCreateArgsProperties
+enum _swcdb_thriftServiceUpdaterCreateArgsProperties
 {
-  PROP_SERVICE_UPDATER_CREATE_ARGS_0,
-  PROP_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE
 };
 
 /* reads a service_updater_create_args object */
 static gint32
-service_updater_create_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_create_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -9931,7 +9931,7 @@ service_updater_create_args_read (ThriftStruct *object, ThriftProtocol *protocol
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdaterCreateArgs * this_object = SERVICE_UPDATER_CREATE_ARGS(object);
+  swcdb_thriftServiceUpdaterCreateArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -10001,12 +10001,12 @@ service_updater_create_args_read (ThriftStruct *object, ThriftProtocol *protocol
 }
 
 static gint32
-service_updater_create_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_create_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdaterCreateArgs * this_object = SERVICE_UPDATER_CREATE_ARGS(object);
+  swcdb_thriftServiceUpdaterCreateArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdaterCreateArgs", error)) < 0)
     return -1;
@@ -10032,16 +10032,16 @@ service_updater_create_args_write (ThriftStruct *object, ThriftProtocol *protoco
 }
 
 static void
-service_updater_create_args_set_property (GObject *object,
-                                          guint property_id,
-                                          const GValue *value,
-                                          GParamSpec *pspec)
+swcdb_thrift_service_updater_create_args_set_property (GObject *object,
+                                                       guint property_id,
+                                                       const GValue *value,
+                                                       GParamSpec *pspec)
 {
-  ServiceUpdaterCreateArgs *self = SERVICE_UPDATER_CREATE_ARGS (object);
+  swcdb_thriftServiceUpdaterCreateArgs *self = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE:
       self->buffer_size = g_value_get_int (value);
       self->__isset_buffer_size = TRUE;
       break;
@@ -10053,16 +10053,16 @@ service_updater_create_args_set_property (GObject *object,
 }
 
 static void
-service_updater_create_args_get_property (GObject *object,
-                                          guint property_id,
-                                          GValue *value,
-                                          GParamSpec *pspec)
+swcdb_thrift_service_updater_create_args_get_property (GObject *object,
+                                                       guint property_id,
+                                                       GValue *value,
+                                                       GParamSpec *pspec)
 {
-  ServiceUpdaterCreateArgs *self = SERVICE_UPDATER_CREATE_ARGS (object);
+  swcdb_thriftServiceUpdaterCreateArgs *self = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE:
       g_value_set_int (value, self->buffer_size);
       break;
 
@@ -10073,7 +10073,7 @@ service_updater_create_args_get_property (GObject *object,
 }
 
 static void 
-service_updater_create_args_instance_init (ServiceUpdaterCreateArgs * object)
+swcdb_thrift_service_updater_create_args_instance_init (swcdb_thriftServiceUpdaterCreateArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -10082,30 +10082,30 @@ service_updater_create_args_instance_init (ServiceUpdaterCreateArgs * object)
 }
 
 static void 
-service_updater_create_args_finalize (GObject *object)
+swcdb_thrift_service_updater_create_args_finalize (GObject *object)
 {
-  ServiceUpdaterCreateArgs *tobject = SERVICE_UPDATER_CREATE_ARGS (object);
+  swcdb_thriftServiceUpdaterCreateArgs *tobject = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
 }
 
 static void
-service_updater_create_args_class_init (ServiceUpdaterCreateArgsClass * cls)
+swcdb_thrift_service_updater_create_args_class_init (swcdb_thriftServiceUpdaterCreateArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_updater_create_args_read;
-  struct_class->write = service_updater_create_args_write;
+  struct_class->read = swcdb_thrift_service_updater_create_args_read;
+  struct_class->write = swcdb_thrift_service_updater_create_args_write;
 
-  gobject_class->finalize = service_updater_create_args_finalize;
-  gobject_class->get_property = service_updater_create_args_get_property;
-  gobject_class->set_property = service_updater_create_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_updater_create_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_updater_create_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_updater_create_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_ARGS_BUFFER_SIZE,
      g_param_spec_int ("buffer_size",
                        NULL,
                        NULL,
@@ -10116,7 +10116,7 @@ service_updater_create_args_class_init (ServiceUpdaterCreateArgsClass * cls)
 }
 
 GType
-service_updater_create_args_get_type (void)
+swcdb_thrift_service_updater_create_args_get_type (void)
 {
   static GType type = 0;
 
@@ -10124,36 +10124,36 @@ service_updater_create_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdaterCreateArgsClass),
+      sizeof (swcdb_thriftServiceUpdaterCreateArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_updater_create_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_updater_create_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdaterCreateArgs),
+      sizeof (swcdb_thriftServiceUpdaterCreateArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_updater_create_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_updater_create_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdaterCreateArgsType",
+                                   "swcdb_thriftServiceUpdaterCreateArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdaterCreateResultProperties
+enum _swcdb_thriftServiceUpdaterCreateResultProperties
 {
-  PROP_SERVICE_UPDATER_CREATE_RESULT_0,
-  PROP_SERVICE_UPDATER_CREATE_RESULT_SUCCESS,
-  PROP_SERVICE_UPDATER_CREATE_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_SUCCESS,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_E
 };
 
 /* reads a service_updater_create_result object */
 static gint32
-service_updater_create_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_create_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -10162,7 +10162,7 @@ service_updater_create_result_read (ThriftStruct *object, ThriftProtocol *protoc
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdaterCreateResult * this_object = SERVICE_UPDATER_CREATE_RESULT(object);
+  swcdb_thriftServiceUpdaterCreateResult * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -10221,7 +10221,7 @@ service_updater_create_result_read (ThriftStruct *object, ThriftProtocol *protoc
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -10255,12 +10255,12 @@ service_updater_create_result_read (ThriftStruct *object, ThriftProtocol *protoc
 }
 
 static gint32
-service_updater_create_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_create_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdaterCreateResult * this_object = SERVICE_UPDATER_CREATE_RESULT(object);
+  swcdb_thriftServiceUpdaterCreateResult * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdaterCreateResult", error)) < 0)
     return -1;
@@ -10300,21 +10300,21 @@ service_updater_create_result_write (ThriftStruct *object, ThriftProtocol *proto
 }
 
 static void
-service_updater_create_result_set_property (GObject *object,
-                                            guint property_id,
-                                            const GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_updater_create_result_set_property (GObject *object,
+                                                         guint property_id,
+                                                         const GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceUpdaterCreateResult *self = SERVICE_UPDATER_CREATE_RESULT (object);
+  swcdb_thriftServiceUpdaterCreateResult *self = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CREATE_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_SUCCESS:
       self->success = g_value_get_int64 (value);
       self->__isset_success = TRUE;
       break;
 
-    case PROP_SERVICE_UPDATER_CREATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -10328,20 +10328,20 @@ service_updater_create_result_set_property (GObject *object,
 }
 
 static void
-service_updater_create_result_get_property (GObject *object,
-                                            guint property_id,
-                                            GValue *value,
-                                            GParamSpec *pspec)
+swcdb_thrift_service_updater_create_result_get_property (GObject *object,
+                                                         guint property_id,
+                                                         GValue *value,
+                                                         GParamSpec *pspec)
 {
-  ServiceUpdaterCreateResult *self = SERVICE_UPDATER_CREATE_RESULT (object);
+  swcdb_thriftServiceUpdaterCreateResult *self = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CREATE_RESULT_SUCCESS:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_SUCCESS:
       g_value_set_int64 (value, self->success);
       break;
 
-    case PROP_SERVICE_UPDATER_CREATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -10352,7 +10352,7 @@ service_updater_create_result_get_property (GObject *object,
 }
 
 static void 
-service_updater_create_result_instance_init (ServiceUpdaterCreateResult * object)
+swcdb_thrift_service_updater_create_result_instance_init (swcdb_thriftServiceUpdaterCreateResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -10363,9 +10363,9 @@ service_updater_create_result_instance_init (ServiceUpdaterCreateResult * object
 }
 
 static void 
-service_updater_create_result_finalize (GObject *object)
+swcdb_thrift_service_updater_create_result_finalize (GObject *object)
 {
-  ServiceUpdaterCreateResult *tobject = SERVICE_UPDATER_CREATE_RESULT (object);
+  swcdb_thriftServiceUpdaterCreateResult *tobject = SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -10377,21 +10377,21 @@ service_updater_create_result_finalize (GObject *object)
 }
 
 static void
-service_updater_create_result_class_init (ServiceUpdaterCreateResultClass * cls)
+swcdb_thrift_service_updater_create_result_class_init (swcdb_thriftServiceUpdaterCreateResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_updater_create_result_read;
-  struct_class->write = service_updater_create_result_write;
+  struct_class->read = swcdb_thrift_service_updater_create_result_read;
+  struct_class->write = swcdb_thrift_service_updater_create_result_write;
 
-  gobject_class->finalize = service_updater_create_result_finalize;
-  gobject_class->get_property = service_updater_create_result_get_property;
-  gobject_class->set_property = service_updater_create_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_updater_create_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_updater_create_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_updater_create_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATER_CREATE_RESULT_SUCCESS,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_SUCCESS,
      g_param_spec_int64 ("success",
                          NULL,
                          NULL,
@@ -10402,16 +10402,16 @@ service_updater_create_result_class_init (ServiceUpdaterCreateResultClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATER_CREATE_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATER_CREATE_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_updater_create_result_get_type (void)
+swcdb_thrift_service_updater_create_result_get_type (void)
 {
   static GType type = 0;
 
@@ -10419,35 +10419,35 @@ service_updater_create_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdaterCreateResultClass),
+      sizeof (swcdb_thriftServiceUpdaterCreateResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_updater_create_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_updater_create_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdaterCreateResult),
+      sizeof (swcdb_thriftServiceUpdaterCreateResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_updater_create_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_updater_create_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdaterCreateResultType",
+                                   "swcdb_thriftServiceUpdaterCreateResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdaterCloseArgsProperties
+enum _swcdb_thriftServiceUpdaterCloseArgsProperties
 {
-  PROP_SERVICE_UPDATER_CLOSE_ARGS_0,
-  PROP_SERVICE_UPDATER_CLOSE_ARGS_ID
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS_ID
 };
 
 /* reads a service_updater_close_args object */
 static gint32
-service_updater_close_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_close_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -10456,7 +10456,7 @@ service_updater_close_args_read (ThriftStruct *object, ThriftProtocol *protocol,
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdaterCloseArgs * this_object = SERVICE_UPDATER_CLOSE_ARGS(object);
+  swcdb_thriftServiceUpdaterCloseArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -10526,12 +10526,12 @@ service_updater_close_args_read (ThriftStruct *object, ThriftProtocol *protocol,
 }
 
 static gint32
-service_updater_close_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_close_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdaterCloseArgs * this_object = SERVICE_UPDATER_CLOSE_ARGS(object);
+  swcdb_thriftServiceUpdaterCloseArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdaterCloseArgs", error)) < 0)
     return -1;
@@ -10557,16 +10557,16 @@ service_updater_close_args_write (ThriftStruct *object, ThriftProtocol *protocol
 }
 
 static void
-service_updater_close_args_set_property (GObject *object,
-                                         guint property_id,
-                                         const GValue *value,
-                                         GParamSpec *pspec)
+swcdb_thrift_service_updater_close_args_set_property (GObject *object,
+                                                      guint property_id,
+                                                      const GValue *value,
+                                                      GParamSpec *pspec)
 {
-  ServiceUpdaterCloseArgs *self = SERVICE_UPDATER_CLOSE_ARGS (object);
+  swcdb_thriftServiceUpdaterCloseArgs *self = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CLOSE_ARGS_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS_ID:
       self->id = g_value_get_int64 (value);
       self->__isset_id = TRUE;
       break;
@@ -10578,16 +10578,16 @@ service_updater_close_args_set_property (GObject *object,
 }
 
 static void
-service_updater_close_args_get_property (GObject *object,
-                                         guint property_id,
-                                         GValue *value,
-                                         GParamSpec *pspec)
+swcdb_thrift_service_updater_close_args_get_property (GObject *object,
+                                                      guint property_id,
+                                                      GValue *value,
+                                                      GParamSpec *pspec)
 {
-  ServiceUpdaterCloseArgs *self = SERVICE_UPDATER_CLOSE_ARGS (object);
+  swcdb_thriftServiceUpdaterCloseArgs *self = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CLOSE_ARGS_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS_ID:
       g_value_set_int64 (value, self->id);
       break;
 
@@ -10598,7 +10598,7 @@ service_updater_close_args_get_property (GObject *object,
 }
 
 static void 
-service_updater_close_args_instance_init (ServiceUpdaterCloseArgs * object)
+swcdb_thrift_service_updater_close_args_instance_init (swcdb_thriftServiceUpdaterCloseArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -10607,30 +10607,30 @@ service_updater_close_args_instance_init (ServiceUpdaterCloseArgs * object)
 }
 
 static void 
-service_updater_close_args_finalize (GObject *object)
+swcdb_thrift_service_updater_close_args_finalize (GObject *object)
 {
-  ServiceUpdaterCloseArgs *tobject = SERVICE_UPDATER_CLOSE_ARGS (object);
+  swcdb_thriftServiceUpdaterCloseArgs *tobject = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
 }
 
 static void
-service_updater_close_args_class_init (ServiceUpdaterCloseArgsClass * cls)
+swcdb_thrift_service_updater_close_args_class_init (swcdb_thriftServiceUpdaterCloseArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_updater_close_args_read;
-  struct_class->write = service_updater_close_args_write;
+  struct_class->read = swcdb_thrift_service_updater_close_args_read;
+  struct_class->write = swcdb_thrift_service_updater_close_args_write;
 
-  gobject_class->finalize = service_updater_close_args_finalize;
-  gobject_class->get_property = service_updater_close_args_get_property;
-  gobject_class->set_property = service_updater_close_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_updater_close_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_updater_close_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_updater_close_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATER_CLOSE_ARGS_ID,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_ARGS_ID,
      g_param_spec_int64 ("id",
                          NULL,
                          NULL,
@@ -10641,7 +10641,7 @@ service_updater_close_args_class_init (ServiceUpdaterCloseArgsClass * cls)
 }
 
 GType
-service_updater_close_args_get_type (void)
+swcdb_thrift_service_updater_close_args_get_type (void)
 {
   static GType type = 0;
 
@@ -10649,35 +10649,35 @@ service_updater_close_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdaterCloseArgsClass),
+      sizeof (swcdb_thriftServiceUpdaterCloseArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_updater_close_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_updater_close_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdaterCloseArgs),
+      sizeof (swcdb_thriftServiceUpdaterCloseArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_updater_close_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_updater_close_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdaterCloseArgsType",
+                                   "swcdb_thriftServiceUpdaterCloseArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdaterCloseResultProperties
+enum _swcdb_thriftServiceUpdaterCloseResultProperties
 {
-  PROP_SERVICE_UPDATER_CLOSE_RESULT_0,
-  PROP_SERVICE_UPDATER_CLOSE_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_E
 };
 
 /* reads a service_updater_close_result object */
 static gint32
-service_updater_close_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_close_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -10686,7 +10686,7 @@ service_updater_close_result_read (ThriftStruct *object, ThriftProtocol *protoco
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdaterCloseResult * this_object = SERVICE_UPDATER_CLOSE_RESULT(object);
+  swcdb_thriftServiceUpdaterCloseResult * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -10732,7 +10732,7 @@ service_updater_close_result_read (ThriftStruct *object, ThriftProtocol *protoco
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -10766,12 +10766,12 @@ service_updater_close_result_read (ThriftStruct *object, ThriftProtocol *protoco
 }
 
 static gint32
-service_updater_close_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_updater_close_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdaterCloseResult * this_object = SERVICE_UPDATER_CLOSE_RESULT(object);
+  swcdb_thriftServiceUpdaterCloseResult * this_object = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdaterCloseResult", error)) < 0)
     return -1;
@@ -10799,16 +10799,16 @@ service_updater_close_result_write (ThriftStruct *object, ThriftProtocol *protoc
 }
 
 static void
-service_updater_close_result_set_property (GObject *object,
-                                           guint property_id,
-                                           const GValue *value,
-                                           GParamSpec *pspec)
+swcdb_thrift_service_updater_close_result_set_property (GObject *object,
+                                                        guint property_id,
+                                                        const GValue *value,
+                                                        GParamSpec *pspec)
 {
-  ServiceUpdaterCloseResult *self = SERVICE_UPDATER_CLOSE_RESULT (object);
+  swcdb_thriftServiceUpdaterCloseResult *self = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CLOSE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -10822,16 +10822,16 @@ service_updater_close_result_set_property (GObject *object,
 }
 
 static void
-service_updater_close_result_get_property (GObject *object,
-                                           guint property_id,
-                                           GValue *value,
-                                           GParamSpec *pspec)
+swcdb_thrift_service_updater_close_result_get_property (GObject *object,
+                                                        guint property_id,
+                                                        GValue *value,
+                                                        GParamSpec *pspec)
 {
-  ServiceUpdaterCloseResult *self = SERVICE_UPDATER_CLOSE_RESULT (object);
+  swcdb_thriftServiceUpdaterCloseResult *self = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATER_CLOSE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -10842,7 +10842,7 @@ service_updater_close_result_get_property (GObject *object,
 }
 
 static void 
-service_updater_close_result_instance_init (ServiceUpdaterCloseResult * object)
+swcdb_thrift_service_updater_close_result_instance_init (swcdb_thriftServiceUpdaterCloseResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -10851,9 +10851,9 @@ service_updater_close_result_instance_init (ServiceUpdaterCloseResult * object)
 }
 
 static void 
-service_updater_close_result_finalize (GObject *object)
+swcdb_thrift_service_updater_close_result_finalize (GObject *object)
 {
-  ServiceUpdaterCloseResult *tobject = SERVICE_UPDATER_CLOSE_RESULT (object);
+  swcdb_thriftServiceUpdaterCloseResult *tobject = SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -10865,30 +10865,30 @@ service_updater_close_result_finalize (GObject *object)
 }
 
 static void
-service_updater_close_result_class_init (ServiceUpdaterCloseResultClass * cls)
+swcdb_thrift_service_updater_close_result_class_init (swcdb_thriftServiceUpdaterCloseResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_updater_close_result_read;
-  struct_class->write = service_updater_close_result_write;
+  struct_class->read = swcdb_thrift_service_updater_close_result_read;
+  struct_class->write = swcdb_thrift_service_updater_close_result_write;
 
-  gobject_class->finalize = service_updater_close_result_finalize;
-  gobject_class->get_property = service_updater_close_result_get_property;
-  gobject_class->set_property = service_updater_close_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_updater_close_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_updater_close_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_updater_close_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATER_CLOSE_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_updater_close_result_get_type (void)
+swcdb_thrift_service_updater_close_result_get_type (void)
 {
   static GType type = 0;
 
@@ -10896,36 +10896,36 @@ service_updater_close_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdaterCloseResultClass),
+      sizeof (swcdb_thriftServiceUpdaterCloseResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_updater_close_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_updater_close_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdaterCloseResult),
+      sizeof (swcdb_thriftServiceUpdaterCloseResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_updater_close_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_updater_close_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdaterCloseResultType",
+                                   "swcdb_thriftServiceUpdaterCloseResultType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdateArgsProperties
+enum _swcdb_thriftServiceUpdateArgsProperties
 {
-  PROP_SERVICE_UPDATE_ARGS_0,
-  PROP_SERVICE_UPDATE_ARGS_CELLS,
-  PROP_SERVICE_UPDATE_ARGS_UPDATER_ID
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_CELLS,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_UPDATER_ID
 };
 
 /* reads a service_update_args object */
 static gint32
-service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -10934,7 +10934,7 @@ service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdateArgs * this_object = SERVICE_UPDATE_ARGS(object);
+  swcdb_thriftServiceUpdateArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATE_ARGS(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -10990,7 +10990,7 @@ service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError
             for (i = 0; i < size; i++)
             {
               gint64* key44 = g_new (gint64, 1);
-              UCells * val45 = g_ptr_array_new_with_free_func (g_object_unref);
+              swcdb_thriftUCells * val45 = g_ptr_array_new_with_free_func (g_object_unref);
               if ((ret = thrift_protocol_read_i64 (protocol, &*key44, error)) < 0)
                 return -1;
               xfer += ret;
@@ -11006,12 +11006,12 @@ service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError
                 /* iterate through list elements */
                 for (i = 0; i < size; i++)
                 {
-                  UCell * _elem46 = NULL;
+                  swcdb_thriftUCell * _elem46 = NULL;
                   if ( _elem46 != NULL)
                   {
                     g_object_unref (_elem46);
                   }
-                  _elem46 = g_object_new (TYPE_U_CELL, NULL);
+                  _elem46 = g_object_new (SWCDB_THRIFT_TYPE_U_CELL, NULL);
                   if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem46), protocol, error)) < 0)
                   {
                     g_object_unref (_elem46);
@@ -11072,12 +11072,12 @@ service_update_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError
 }
 
 static gint32
-service_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdateArgs * this_object = SERVICE_UPDATE_ARGS(object);
+  swcdb_thriftServiceUpdateArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATE_ARGS(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdateArgs", error)) < 0)
     return -1;
@@ -11087,7 +11087,7 @@ service_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
   xfer += ret;
   {
     gint64* key47 = NULL;
-    UCells * val48 = NULL;
+    swcdb_thriftUCells * val48 = NULL;
     GList *key_list = NULL, *iter = NULL;
     gint64** keys;
     int i = 0, key_count;
@@ -11106,7 +11106,7 @@ service_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
     for (i = 0; i < key_count; ++i)
     {
       key47 = keys[i];
-      val48 = (UCells *) g_hash_table_lookup (((GHashTable *) this_object->cells), (gpointer) key47);
+      val48 = (swcdb_thriftUCells *) g_hash_table_lookup (((GHashTable *) this_object->cells), (gpointer) key47);
 
       if ((ret = thrift_protocol_write_i64 (protocol, * key47, error)) < 0)
         return -1;
@@ -11158,23 +11158,23 @@ service_update_args_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
 }
 
 static void
-service_update_args_set_property (GObject *object,
-                                  guint property_id,
-                                  const GValue *value,
-                                  GParamSpec *pspec)
+swcdb_thrift_service_update_args_set_property (GObject *object,
+                                               guint property_id,
+                                               const GValue *value,
+                                               GParamSpec *pspec)
 {
-  ServiceUpdateArgs *self = SERVICE_UPDATE_ARGS (object);
+  swcdb_thriftServiceUpdateArgs *self = SWCDB_THRIFT_SERVICE_UPDATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATE_ARGS_CELLS:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_CELLS:
       if (self->cells != NULL)
         g_hash_table_unref (self->cells);
       self->cells = g_value_dup_boxed (value);
       self->__isset_cells = TRUE;
       break;
 
-    case PROP_SERVICE_UPDATE_ARGS_UPDATER_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_UPDATER_ID:
       self->updater_id = g_value_get_int64 (value);
       self->__isset_updater_id = TRUE;
       break;
@@ -11186,20 +11186,20 @@ service_update_args_set_property (GObject *object,
 }
 
 static void
-service_update_args_get_property (GObject *object,
-                                  guint property_id,
-                                  GValue *value,
-                                  GParamSpec *pspec)
+swcdb_thrift_service_update_args_get_property (GObject *object,
+                                               guint property_id,
+                                               GValue *value,
+                                               GParamSpec *pspec)
 {
-  ServiceUpdateArgs *self = SERVICE_UPDATE_ARGS (object);
+  swcdb_thriftServiceUpdateArgs *self = SWCDB_THRIFT_SERVICE_UPDATE_ARGS (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATE_ARGS_CELLS:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_CELLS:
       g_value_set_boxed (value, self->cells);
       break;
 
-    case PROP_SERVICE_UPDATE_ARGS_UPDATER_ID:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_UPDATER_ID:
       g_value_set_int64 (value, self->updater_id);
       break;
 
@@ -11210,7 +11210,7 @@ service_update_args_get_property (GObject *object,
 }
 
 static void 
-service_update_args_instance_init (ServiceUpdateArgs * object)
+swcdb_thrift_service_update_args_instance_init (swcdb_thriftServiceUpdateArgs * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -11221,9 +11221,9 @@ service_update_args_instance_init (ServiceUpdateArgs * object)
 }
 
 static void 
-service_update_args_finalize (GObject *object)
+swcdb_thrift_service_update_args_finalize (GObject *object)
 {
-  ServiceUpdateArgs *tobject = SERVICE_UPDATE_ARGS (object);
+  swcdb_thriftServiceUpdateArgs *tobject = SWCDB_THRIFT_SERVICE_UPDATE_ARGS (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -11235,21 +11235,21 @@ service_update_args_finalize (GObject *object)
 }
 
 static void
-service_update_args_class_init (ServiceUpdateArgsClass * cls)
+swcdb_thrift_service_update_args_class_init (swcdb_thriftServiceUpdateArgsClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_update_args_read;
-  struct_class->write = service_update_args_write;
+  struct_class->read = swcdb_thrift_service_update_args_read;
+  struct_class->write = swcdb_thrift_service_update_args_write;
 
-  gobject_class->finalize = service_update_args_finalize;
-  gobject_class->get_property = service_update_args_get_property;
-  gobject_class->set_property = service_update_args_set_property;
+  gobject_class->finalize = swcdb_thrift_service_update_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_update_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_update_args_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATE_ARGS_CELLS,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_CELLS,
      g_param_spec_boxed ("cells",
                          NULL,
                          NULL,
@@ -11258,7 +11258,7 @@ service_update_args_class_init (ServiceUpdateArgsClass * cls)
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATE_ARGS_UPDATER_ID,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_ARGS_UPDATER_ID,
      g_param_spec_int64 ("updater_id",
                          NULL,
                          NULL,
@@ -11269,7 +11269,7 @@ service_update_args_class_init (ServiceUpdateArgsClass * cls)
 }
 
 GType
-service_update_args_get_type (void)
+swcdb_thrift_service_update_args_get_type (void)
 {
   static GType type = 0;
 
@@ -11277,35 +11277,35 @@ service_update_args_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdateArgsClass),
+      sizeof (swcdb_thriftServiceUpdateArgsClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_update_args_class_init,
+      (GClassInitFunc) swcdb_thrift_service_update_args_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdateArgs),
+      sizeof (swcdb_thriftServiceUpdateArgs),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_update_args_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_update_args_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdateArgsType",
+                                   "swcdb_thriftServiceUpdateArgsType",
                                    &type_info, 0);
   }
 
   return type;
 }
 
-enum _ServiceUpdateResultProperties
+enum _swcdb_thriftServiceUpdateResultProperties
 {
-  PROP_SERVICE_UPDATE_RESULT_0,
-  PROP_SERVICE_UPDATE_RESULT_E
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_RESULT_E
 };
 
 /* reads a service_update_result object */
 static gint32
-service_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
@@ -11314,7 +11314,7 @@ service_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GErr
   gint16 fid;
   guint32 len = 0;
   gpointer data = NULL;
-  ServiceUpdateResult * this_object = SERVICE_UPDATE_RESULT(object);
+  swcdb_thriftServiceUpdateResult * this_object = SWCDB_THRIFT_SERVICE_UPDATE_RESULT(object);
 
   /* satisfy -Wall in case these aren't used */
   THRIFT_UNUSED_VAR (len);
@@ -11360,7 +11360,7 @@ service_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GErr
           {
             g_object_unref (this_object->e);
           }
-          this_object->e = g_object_new (TYPE_EXCEPTION, NULL);
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
           {
             g_object_unref (this_object->e);
@@ -11394,12 +11394,12 @@ service_update_result_read (ThriftStruct *object, ThriftProtocol *protocol, GErr
 }
 
 static gint32
-service_update_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+swcdb_thrift_service_update_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
 {
   gint32 ret;
   gint32 xfer = 0;
 
-  ServiceUpdateResult * this_object = SERVICE_UPDATE_RESULT(object);
+  swcdb_thriftServiceUpdateResult * this_object = SWCDB_THRIFT_SERVICE_UPDATE_RESULT(object);
   THRIFT_UNUSED_VAR (this_object);
   if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdateResult", error)) < 0)
     return -1;
@@ -11427,16 +11427,16 @@ service_update_result_write (ThriftStruct *object, ThriftProtocol *protocol, GEr
 }
 
 static void
-service_update_result_set_property (GObject *object,
-                                    guint property_id,
-                                    const GValue *value,
-                                    GParamSpec *pspec)
+swcdb_thrift_service_update_result_set_property (GObject *object,
+                                                 guint property_id,
+                                                 const GValue *value,
+                                                 GParamSpec *pspec)
 {
-  ServiceUpdateResult *self = SERVICE_UPDATE_RESULT (object);
+  swcdb_thriftServiceUpdateResult *self = SWCDB_THRIFT_SERVICE_UPDATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_RESULT_E:
       if (self->e != NULL)
         g_object_unref (self->e);
       self->e = g_value_dup_object (value);
@@ -11450,16 +11450,16 @@ service_update_result_set_property (GObject *object,
 }
 
 static void
-service_update_result_get_property (GObject *object,
-                                    guint property_id,
-                                    GValue *value,
-                                    GParamSpec *pspec)
+swcdb_thrift_service_update_result_get_property (GObject *object,
+                                                 guint property_id,
+                                                 GValue *value,
+                                                 GParamSpec *pspec)
 {
-  ServiceUpdateResult *self = SERVICE_UPDATE_RESULT (object);
+  swcdb_thriftServiceUpdateResult *self = SWCDB_THRIFT_SERVICE_UPDATE_RESULT (object);
 
   switch (property_id)
   {
-    case PROP_SERVICE_UPDATE_RESULT_E:
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_RESULT_E:
       g_value_set_object (value, self->e);
       break;
 
@@ -11470,7 +11470,7 @@ service_update_result_get_property (GObject *object,
 }
 
 static void 
-service_update_result_instance_init (ServiceUpdateResult * object)
+swcdb_thrift_service_update_result_instance_init (swcdb_thriftServiceUpdateResult * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
@@ -11479,9 +11479,9 @@ service_update_result_instance_init (ServiceUpdateResult * object)
 }
 
 static void 
-service_update_result_finalize (GObject *object)
+swcdb_thrift_service_update_result_finalize (GObject *object)
 {
-  ServiceUpdateResult *tobject = SERVICE_UPDATE_RESULT (object);
+  swcdb_thriftServiceUpdateResult *tobject = SWCDB_THRIFT_SERVICE_UPDATE_RESULT (object);
 
   /* satisfy -Wall in case we don't use tobject */
   THRIFT_UNUSED_VAR (tobject);
@@ -11493,30 +11493,30 @@ service_update_result_finalize (GObject *object)
 }
 
 static void
-service_update_result_class_init (ServiceUpdateResultClass * cls)
+swcdb_thrift_service_update_result_class_init (swcdb_thriftServiceUpdateResultClass * cls)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
   ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
 
-  struct_class->read = service_update_result_read;
-  struct_class->write = service_update_result_write;
+  struct_class->read = swcdb_thrift_service_update_result_read;
+  struct_class->write = swcdb_thrift_service_update_result_write;
 
-  gobject_class->finalize = service_update_result_finalize;
-  gobject_class->get_property = service_update_result_get_property;
-  gobject_class->set_property = service_update_result_set_property;
+  gobject_class->finalize = swcdb_thrift_service_update_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_update_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_update_result_set_property;
 
   g_object_class_install_property
     (gobject_class,
-     PROP_SERVICE_UPDATE_RESULT_E,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_RESULT_E,
      g_param_spec_object ("e",
                          NULL,
                          NULL,
-                         TYPE_EXCEPTION,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
                          G_PARAM_READWRITE));
 }
 
 GType
-service_update_result_get_type (void)
+swcdb_thrift_service_update_result_get_type (void)
 {
   static GType type = 0;
 
@@ -11524,20 +11524,20 @@ service_update_result_get_type (void)
   {
     static const GTypeInfo type_info = 
     {
-      sizeof (ServiceUpdateResultClass),
+      sizeof (swcdb_thriftServiceUpdateResultClass),
       NULL, /* base_init */
       NULL, /* base_finalize */
-      (GClassInitFunc) service_update_result_class_init,
+      (GClassInitFunc) swcdb_thrift_service_update_result_class_init,
       NULL, /* class_finalize */
       NULL, /* class_data */
-      sizeof (ServiceUpdateResult),
+      sizeof (swcdb_thriftServiceUpdateResult),
       0, /* n_preallocs */
-      (GInstanceInitFunc) service_update_result_instance_init,
+      (GInstanceInitFunc) swcdb_thrift_service_update_result_instance_init,
       NULL, /* value_table */
     };
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "ServiceUpdateResultType",
+                                   "swcdb_thriftServiceUpdateResultType",
                                    &type_info, 0);
   }
 

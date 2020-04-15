@@ -17,14 +17,14 @@
 #include <thrift/c_glib/transport/thrift_socket.h>
 #include <thrift/c_glib/transport/thrift_transport.h>
 
-#include "swcdb/thrift/gen-c_glib/service.h"
+#include "swcdb/thrift/gen-c_glib/swcdb_thrift_service.h"
 
 
 struct _swcdb_thrift_client {
-  ThriftSocket*     socket;
-  ThriftTransport*  transport;
-  ThriftProtocol*   protocol;
-  ServiceIf*        service;
+  ThriftSocket*           socket;
+  ThriftTransport*        transport;
+  ThriftProtocol*         protocol;
+  swcdb_thriftServiceIf*  service;
 };
 typedef struct _swcdb_thrift_client swcdb_thrift_client;
 
@@ -57,7 +57,7 @@ swcdb_thrift_client_connect(swcdb_thrift_client* client,
   );
 
   client->service = g_object_new(
-    TYPE_SERVICE_CLIENT,
+    SWCDB_THRIFT_TYPE_SERVICE_CLIENT,
     "input_protocol",  client->protocol,
     "output_protocol", client->protocol,
     NULL

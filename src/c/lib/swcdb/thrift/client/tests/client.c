@@ -26,15 +26,15 @@ int main() {
   }
 
 
-  Schemas*      schemas = g_object_new (TYPE_SERVICE_SQL_LIST_COLUMNS_RESULT, NULL);
-  const gchar*  sql = "list columns";
-  Exception*    exception = NULL;
+  swcdb_thriftSchemas* schemas = g_object_new (SWCDB_THRIFT_TYPE_SERVICE_SQL_LIST_COLUMNS_RESULT, NULL);
+  const gchar*              sql = "list columns";
+  swcdb_thriftException*    exception = NULL;
 
-  if(service_client_sql_list_columns(
+  if(swcdb_thrift_service_client_sql_list_columns(
      client.service, &schemas, sql, &exception, &error)) {
     printf("schemas count=%d \n",  schemas->len);
-    
-    Schema*  schema;
+
+    swcdb_thriftSchema*  schema;
     for(guint i = 0; i < schemas->len; ++i) {
       schema = g_ptr_array_index(schemas, i);
       if(!schema->__isset_cid || schema->cid == 0) // unexplained (cid=0)

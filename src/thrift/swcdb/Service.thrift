@@ -7,8 +7,10 @@
  * namespace for target languages
  */
 
-namespace cpp   SWC.Thrift
-namespace py    swcdb.thrift.gen
+namespace cpp     SWC.Thrift
+namespace py      swcdb.thrift.gen
+namespace c_glib  swcdb_thrift
+
 /*
 namespace java  org.swcdb.thrift
 namespace perl  SWC.thrift
