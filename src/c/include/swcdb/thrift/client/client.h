@@ -72,10 +72,6 @@ swcdb_thrift_client_free(swcdb_thrift_client* client) {
   g_clear_object(&client->protocol);
   g_clear_object(&client->transport);
   g_clear_object(&client->socket);
-  client->socket = NULL;
-  client->transport = NULL;
-  client->protocol = NULL;
-  client->service = NULL;
 }
 
 gboolean 

@@ -42,9 +42,9 @@ int main() {
       puts    ("schema: ");
       printf  ("  cid=%d \n",   schema->cid);
       g_printf("  name=%s \n",  schema->col_name);
-      g_free(schema);
+      g_clear_object(&schema);
     }
-    g_free(schemas);
+    g_clear_object(&schemas);
   }
   
   if(error != NULL) {

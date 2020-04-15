@@ -45,8 +45,8 @@ SET_DEPS(
 	NAME "GLIB" REQUIRED TRUE 
 	LIB_PATHS ""
 	INC_PATHS ""
-	STATIC ""
-	SHARED glib-2.0 gobject-2.0
+	STATIC 	libglib-2.0.a libgobject-2.0.a libffi.a libpcre.a
+	SHARED 	glib-2.0 gobject-2.0
 	INCLUDE glib-2.0/glib-object.h
 )
 if(GLIB_FOUND)
