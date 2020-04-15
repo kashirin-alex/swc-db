@@ -506,13 +506,14 @@ endfunction()
 	#	TARGETS       targets-dependant
 	#	STATIC        dependenciesOfTheTarget - static
   #	SHARED        dependenciesOfTheTarget - shared
+  # FLAGS		      compiler flags
   # ONLY_STATIC_SHARED TRUE/FALSE - optional
   # ONLY_SHARED TRUE/FALSE - optional
 	# )
 # -------------------------------
 
 function(ADD_LIB_TARGET)
-  cmake_parse_arguments(OPT "ONLY_STATIC_SHARED" "NAME" "SRCS;TARGETS;STATIC;SHARED;FOR;ONLY_SHARED" ${ARGN})
+  cmake_parse_arguments(OPT "ONLY_STATIC_SHARED" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS;FOR;ONLY_SHARED" ${ARGN})
 
   set(STATIC_LINKING ${OPT_STATIC})
   set(STATIC_TARGETS )
@@ -538,10 +539,12 @@ function(ADD_LIB_TARGET)
   # STATIC LIBS
   add_library(${OPT_NAME}-static STATIC $<TARGET_OBJECTS:obj_${OPT_NAME}>)
   SET_TARGET_PROPERTIES(${OPT_NAME}-static PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
+  target_compile_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
 
   # SHARED LIBS
   add_library(${OPT_NAME}-shared SHARED $<TARGET_OBJECTS:obj_${OPT_NAME}>)
   SET_TARGET_PROPERTIES(${OPT_NAME}-shared PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
+  target_compile_options(${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
 
   
   # SHARED AND STATIC LIBS - WITH STATIC LINKING 

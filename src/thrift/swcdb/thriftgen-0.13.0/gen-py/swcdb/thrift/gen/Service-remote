@@ -26,6 +26,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Functions:')
     print('  void sql_mng_column(string sql)')
     print('  Schemas sql_list_columns(string sql)')
+    print('  CompactResults sql_compact_columns(string sql)')
     print('  Cells sql_select(string sql)')
     print('  CCells sql_select_rslt_on_column(string sql)')
     print('  KCells sql_select_rslt_on_key(string sql)')
@@ -125,6 +126,12 @@ elif cmd == 'sql_list_columns':
         print('sql_list_columns requires 1 args')
         sys.exit(1)
     pp.pprint(client.sql_list_columns(args[0],))
+
+elif cmd == 'sql_compact_columns':
+    if len(args) != 1:
+        print('sql_compact_columns requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.sql_compact_columns(args[0],))
 
 elif cmd == 'sql_select':
     if len(args) != 1:

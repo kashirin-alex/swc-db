@@ -2,7 +2,10 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 #
 
-
+configure_file(
+  ../../../include/swcdb/core/Version.h.in 
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/swcdb/core/Version.h @ONLY
+)
 
 
 set(SWC_LIB_CORE_SHARED ${RE2_LIBRARIES_SHARED} 

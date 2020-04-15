@@ -34,6 +34,14 @@ class Iface(object):
         """
         pass
 
+    def sql_compact_columns(self, sql):
+        """
+        Parameters:
+         - sql
+
+        """
+        pass
+
     def sql_select(self, sql):
         """
         Parameters:
@@ -182,6 +190,40 @@ class Client(Iface):
         if result.e is not None:
             raise result.e
         raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_list_columns failed: unknown result")
+
+    def sql_compact_columns(self, sql):
+        """
+        Parameters:
+         - sql
+
+        """
+        self.send_sql_compact_columns(sql)
+        return self.recv_sql_compact_columns()
+
+    def send_sql_compact_columns(self, sql):
+        self._oprot.writeMessageBegin('sql_compact_columns', TMessageType.CALL, self._seqid)
+        args = sql_compact_columns_args()
+        args.sql = sql
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_sql_compact_columns(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = sql_compact_columns_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_compact_columns failed: unknown result")
 
     def sql_select(self, sql):
         """
@@ -496,6 +538,7 @@ class Processor(Iface, TProcessor):
         self._processMap = {}
         self._processMap["sql_mng_column"] = Processor.process_sql_mng_column
         self._processMap["sql_list_columns"] = Processor.process_sql_list_columns
+        self._processMap["sql_compact_columns"] = Processor.process_sql_compact_columns
         self._processMap["sql_select"] = Processor.process_sql_select
         self._processMap["sql_select_rslt_on_column"] = Processor.process_sql_select_rslt_on_column
         self._processMap["sql_select_rslt_on_key"] = Processor.process_sql_select_rslt_on_key
@@ -575,6 +618,32 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("sql_list_columns", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_sql_compact_columns(self, seqid, iprot, oprot):
+        args = sql_compact_columns_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = sql_compact_columns_result()
+        try:
+            result.success = self._handler.sql_compact_columns(args.sql)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("sql_compact_columns", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -1131,6 +1200,174 @@ sql_list_columns_result.thrift_spec = (
 )
 
 
+class sql_compact_columns_args(object):
+    """
+    Attributes:
+     - sql
+
+    """
+
+    __slots__ = (
+        'sql',
+    )
+
+
+    def __init__(self, sql=None,):
+        self.sql = sql
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.sql = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_compact_columns_args')
+        if self.sql is not None:
+            oprot.writeFieldBegin('sql', TType.STRING, 1)
+            oprot.writeString(self.sql)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_compact_columns_args)
+sql_compact_columns_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'sql', None, None, ),  # 1
+)
+
+
+class sql_compact_columns_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype91, _size88) = iprot.readListBegin()
+                    for _i92 in range(_size88):
+                        _elem93 = CompactResult()
+                        _elem93.read(iprot)
+                        self.success.append(_elem93)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_compact_columns_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter94 in self.success:
+                iter94.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_compact_columns_result)
+sql_compact_columns_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [CompactResult, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
 class sql_select_args(object):
     """
     Attributes:
@@ -1234,11 +1471,11 @@ class sql_select_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype91, _size88) = iprot.readListBegin()
-                    for _i92 in range(_size88):
-                        _elem93 = Cell()
-                        _elem93.read(iprot)
-                        self.success.append(_elem93)
+                    (_etype98, _size95) = iprot.readListBegin()
+                    for _i99 in range(_size95):
+                        _elem100 = Cell()
+                        _elem100.read(iprot)
+                        self.success.append(_elem100)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1261,8 +1498,8 @@ class sql_select_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter94 in self.success:
-                iter94.write(oprot)
+            for iter101 in self.success:
+                iter101.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -1402,17 +1639,17 @@ class sql_select_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype96, _vtype97, _size95) = iprot.readMapBegin()
-                    for _i99 in range(_size95):
-                        _key100 = iprot.readString()
-                        _val101 = []
-                        (_etype105, _size102) = iprot.readListBegin()
-                        for _i106 in range(_size102):
-                            _elem107 = CCell()
-                            _elem107.read(iprot)
-                            _val101.append(_elem107)
+                    (_ktype103, _vtype104, _size102) = iprot.readMapBegin()
+                    for _i106 in range(_size102):
+                        _key107 = iprot.readString()
+                        _val108 = []
+                        (_etype112, _size109) = iprot.readListBegin()
+                        for _i113 in range(_size109):
+                            _elem114 = CCell()
+                            _elem114.read(iprot)
+                            _val108.append(_elem114)
                         iprot.readListEnd()
-                        self.success[_key100] = _val101
+                        self.success[_key107] = _val108
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -1435,11 +1672,11 @@ class sql_select_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.success))
-            for kiter108, viter109 in self.success.items():
-                oprot.writeString(kiter108)
-                oprot.writeListBegin(TType.STRUCT, len(viter109))
-                for iter110 in viter109:
-                    iter110.write(oprot)
+            for kiter115, viter116 in self.success.items():
+                oprot.writeString(kiter115)
+                oprot.writeListBegin(TType.STRUCT, len(viter116))
+                for iter117 in viter116:
+                    iter117.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -1580,11 +1817,11 @@ class sql_select_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype114, _size111) = iprot.readListBegin()
-                    for _i115 in range(_size111):
-                        _elem116 = kCells()
-                        _elem116.read(iprot)
-                        self.success.append(_elem116)
+                    (_etype121, _size118) = iprot.readListBegin()
+                    for _i122 in range(_size118):
+                        _elem123 = kCells()
+                        _elem123.read(iprot)
+                        self.success.append(_elem123)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1607,8 +1844,8 @@ class sql_select_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter117 in self.success:
-                iter117.write(oprot)
+            for iter124 in self.success:
+                iter124.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2474,17 +2711,17 @@ class update_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.cells = {}
-                    (_ktype119, _vtype120, _size118) = iprot.readMapBegin()
-                    for _i122 in range(_size118):
-                        _key123 = iprot.readI64()
-                        _val124 = []
-                        (_etype128, _size125) = iprot.readListBegin()
-                        for _i129 in range(_size125):
-                            _elem130 = UCell()
-                            _elem130.read(iprot)
-                            _val124.append(_elem130)
+                    (_ktype126, _vtype127, _size125) = iprot.readMapBegin()
+                    for _i129 in range(_size125):
+                        _key130 = iprot.readI64()
+                        _val131 = []
+                        (_etype135, _size132) = iprot.readListBegin()
+                        for _i136 in range(_size132):
+                            _elem137 = UCell()
+                            _elem137.read(iprot)
+                            _val131.append(_elem137)
                         iprot.readListEnd()
-                        self.cells[_key123] = _val124
+                        self.cells[_key130] = _val131
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -2506,11 +2743,11 @@ class update_args(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
-            for kiter131, viter132 in self.cells.items():
-                oprot.writeI64(kiter131)
-                oprot.writeListBegin(TType.STRUCT, len(viter132))
-                for iter133 in viter132:
-                    iter133.write(oprot)
+            for kiter138, viter139 in self.cells.items():
+                oprot.writeI64(kiter138)
+                oprot.writeListBegin(TType.STRUCT, len(viter139))
+                for iter140 in viter139:
+                    iter140.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()

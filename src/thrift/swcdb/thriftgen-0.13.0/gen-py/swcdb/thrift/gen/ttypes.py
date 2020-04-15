@@ -1266,6 +1266,86 @@ class CellsGroup(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
+class CompactResult(object):
+    """
+    Attributes:
+     - cid
+     - err
+
+    """
+
+    __slots__ = (
+        'cid',
+        'err',
+    )
+
+
+    def __init__(self, cid=None, err=None,):
+        self.cid = cid
+        self.err = err
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.cid = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.err = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CompactResult')
+        if self.cid is not None:
+            oprot.writeFieldBegin('cid', TType.I64, 1)
+            oprot.writeI64(self.cid)
+            oprot.writeFieldEnd()
+        if self.err is not None:
+            oprot.writeFieldBegin('err', TType.I32, 2)
+            oprot.writeI32(self.err)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
 all_structs.append(Exception)
 Exception.thrift_spec = (
     None,  # 0
@@ -1345,6 +1425,12 @@ CellsGroup.thrift_spec = (
     (2, TType.MAP, 'ccells', (TType.STRING, None, TType.LIST, (TType.STRUCT, [CCell, None], False), False), None, ),  # 2
     (3, TType.LIST, 'kcells', (TType.STRUCT, [kCells, None], False), None, ),  # 3
     (4, TType.STRUCT, 'fcells', [FCells, None], None, ),  # 4
+)
+all_structs.append(CompactResult)
+CompactResult.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'cid', None, None, ),  # 1
+    (2, TType.I32, 'err', None, None, ),  # 2
 )
 fix_spec(all_structs)
 del all_structs

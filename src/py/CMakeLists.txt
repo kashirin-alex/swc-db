@@ -3,54 +3,18 @@
 #
 
 
-#### PREPARE HYPERTABLE PKG DIR
-add_custom_target(ThriftPy ALL)
+
+if(THRIFT_PY_GEN_PATH)
+
+#### PREPARE SWC-DB PKG DIR
 
 set(PY_PKG_PATH ${CMAKE_CURRENT_BINARY_DIR}/swcdb)
 
-add_custom_command(
-  TARGET   ThriftPy
-  COMMAND  cp 
-  ARGS     -r ${CMAKE_CURRENT_SOURCE_DIR}/swcdb/pkg  ${PY_PKG_PATH}/
-)
-
+execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/swcdb/pkg  ${PY_PKG_PATH}/)
 configure_file(swcdb/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
 configure_file(swcdb/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
 configure_file(swcdb/README.md ${PY_PKG_PATH}/README.txt @ONLY)
 #configure_file(swcdb/MANIFEST ${PY_PKG_PATH}/MANIFEST @ONLY)
-
-set(thrift_ver_gen_path ${CMAKE_CURRENT_SOURCE_DIR}/swcdb/thriftgen-${THRIFT_VERSION})
-execute_process(COMMAND rm -rf ${thrift_ver_gen_path} ) ## temporary
-
-#### GENERATE THRIFT module
-
-if(THRIFT_FOUND AND NOT EXISTS ${thrift_ver_gen_path})
-	execute_process(COMMAND mkdir -p ${thrift_ver_gen_path} ) ## temporary
-
-  set(thrift_service ${CMAKE_CURRENT_SOURCE_DIR}/../cc/lib/swcdb/thrift/Service.thrift)
-	add_custom_command(
-		TARGET 		ThriftPy
-	  COMMAND   thrift
-	  ARGS      -r --gen py:slots,no_utf8strings -o ${thrift_ver_gen_path}
-			  		  ${thrift_service}
-		DEPENDS   ${thrift_service}
-	  COMMENT   "Thrift Python Gen"
-	)
-		
-endif ()
-
-
-#### SET THRIFT module to SWCDB PKG
-add_custom_command(
-	TARGET 	  ThriftPy
-	COMMAND   mkdir 
-	ARGS      -p ${PY_PKG_PATH}/pkg/thrift/gen
-)
-add_custom_command(
-	TARGET 	  ThriftPy
-	COMMAND   cp 
-	ARGS      -r ${thrift_ver_gen_path}/gen-py/swcdb/thrift/gen ${PY_PKG_PATH}/pkg/thrift/
-)
 
 
 list(GET PYTHON_EXECUTABLES 0 py)
@@ -71,4 +35,6 @@ foreach(py ${PYTHON_EXECUTABLES})
 	install( CODE "execute_process(COMMAND  cmake -E chdir ${PY_PKG_PATH} ${py} -m pip install --upgrade -r requirements.txt;)")
 
 endforeach()
+
+endif()
 
