@@ -16,11 +16,11 @@ ADD_LIB_TARGET(
 	STATIC ${THRIFT_C_LIBRARIES_STATIC}
 )
 
-#ADD_TEST_TARGET(
-#	NAME thrift_client_c
-#	SRCS client/tests/client.c
-#	TARGETS swcdb_thrift 
-#)
+ADD_TEST_TARGET(
+	NAME thrift_client_c
+	SRCS client/tests/client.c
+	TARGETS swcdb_thrift_c 
+)
 
 
 endif()

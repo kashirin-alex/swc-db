@@ -2,8 +2,8 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */
 
-#ifndef swc_app_thrift_client_Client_h
-#define swc_app_thrift_client_Client_h
+#ifndef swc_thrift_client_Client_h
+#define swc_thrift_client_Client_h
 
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
@@ -86,4 +86,4 @@ class Client : public CommClient, public ServiceClient {
 #endif 
 
 
-#endif // swc_app_thrift_client_Client_h
+#endif // swc_thrift_client_Client_h
