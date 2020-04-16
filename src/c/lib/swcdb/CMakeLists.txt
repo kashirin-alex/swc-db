@@ -3,5 +3,14 @@
 #
 
 
+if(THRIFT_C_GEN_PATH)
+
 add_subdirectory(thrift)
-#add_subdirectory(pam)
+
+
+if(NOT WITHOUT_PAM)
+  add_subdirectory(pam)
+endif(NOT WITHOUT_PAM)
+
+
+endif(THRIFT_C_GEN_PATH)

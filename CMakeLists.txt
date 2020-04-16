@@ -34,6 +34,9 @@ if("${isSystemDir}" STREQUAL "-1")
 endif ()
 
 
+# C flags
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
+
 # C++ flags
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
@@ -51,28 +54,37 @@ endif ()
 message(STATUS "Optimization Level: " ${O_LEVEL})
 if(NOT O_LEVEL AND NOT O_LEVEL STREQUAL "0")
   SET (CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG")
+  SET (CMAKE_C_FLAGS_RELEASE        "-O3 -DNDEBUG")
 
 else()
   SET (CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG")
   SET (CMAKE_CXX_FLAGS_DEBUG          "")
+  SET (CMAKE_C_FLAGS_RELEASE        "-DNDEBUG")
+  SET (CMAKE_C_FLAGS_DEBUG          "")
 
   if(O_LEVEL STREQUAL "0")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
+    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
 
   elseif(O_LEVEL MATCHES "[1-2]")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
     
     if (O_LEVEL STREQUAL "2")
   	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -floop-interchange")
+  	  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -floop-interchange")
     endif ()
 
   elseif(O_LEVEL MATCHES "[3-7]")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
     
     if(O_LEVEL MATCHES "[4-7]")
   	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
       # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsection-anchors")
+  	  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
     
       if(O_LEVEL MATCHES "[5-7]")
         set(BUILD_LINKING "STATIC")

@@ -30,7 +30,7 @@ typedef struct _swcdb_thrift_client swcdb_thrift_client;
 
 gboolean 
 swcdb_thrift_client_connect(swcdb_thrift_client* client, 
-                            const char* host, const gint port,
+                            const gchar* host, const gint port,
                             GError** error) {
   client->socket = NULL;
   client->transport = NULL;
@@ -39,11 +39,17 @@ swcdb_thrift_client_connect(swcdb_thrift_client* client,
 
   client->socket = g_object_new(
     THRIFT_TYPE_SOCKET,
-    "hostname", g_strdup(host),
-    "port",     (gint)port,
+    "hostname", host,
+    "port",     port,
     NULL
   );
 
+  /* ? timeout
+  client->socket->setConnTimeout(timeout);
+	client->socket->setSendTimeout(timeout);
+	client->socket->setRecvTimeout(timeout);
+  */
+  
   client->transport = g_object_new(
     THRIFT_TYPE_FRAMED_TRANSPORT,
     "transport", client->socket,
@@ -82,8 +88,8 @@ swcdb_thrift_client_disconnect(swcdb_thrift_client* client,  GError** error) {
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/thrift/gen-c_glib/service.c"
-#include "swcdb/thrift/gen-c_glib/service_types.c"
+#include "swcdb/thrift/gen-c_glib/swcdb_thrift_service.c"
+#include "swcdb/thrift/gen-c_glib/swcdb_thrift_service_types.c"
 #endif 
 
 #endif // swc_thrift_c_client_client_h

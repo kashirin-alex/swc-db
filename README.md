@@ -28,6 +28,11 @@ https://alex.kashirin.family/swc-DB.pdf
   * Thrift Broker requires - optional:
     * [Apache Thrift 0.13.0+](https://github.com/apache/thrift)
     * [libevent 2.1.11+](http://github.com/libevent/libevent)
+  * Thrift c_glib client & PAM module, require - optional:
+    * [libglib-2.0](https://developer.gnome.org/glib/2.64/)
+    * [libgobject-2.0](https://developer.gnome.org/gobject/2.64/)
+    * [libffi](http://github.com/libffi/libffi/)
+    * [libpcre 1](https://pcre.org/)
   * [doxygen](https://github.com/doxygen/doxygen) - optional
   * *-DO_LEVEL > 4 require static libraries*
 

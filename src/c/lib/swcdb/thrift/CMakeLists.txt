@@ -4,9 +4,6 @@
 
 
 
-if(THRIFT_C_GEN_PATH)
-
-
 # libswcdb_thrift_c
 ADD_LIB_TARGET(
 	NAME 	swcdb_thrift_c
@@ -21,6 +18,3 @@ ADD_TEST_TARGET(
 	SRCS client/tests/client.c
 	TARGETS swcdb_thrift_c 
 )
-
-
-endif()
