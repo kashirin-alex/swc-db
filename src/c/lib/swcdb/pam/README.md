@@ -17,13 +17,13 @@ The module can be and should be the first in the service groups
 #####  AUTH:
 Applicable PAM config file ```/etc/pam.d/common-auth```
 ```bash
-auth required pam_swcdb_maxretries.so -h HOST -p PORT -t 30000 -c COLM -k "['ssh', '%s']" -m 10
+auth required /PATH/libpam_swcdb_maxretries.so -h HOST -p PORT -t 30000 -c COLM -k "['ssh', '%s']" -m 10
 ```
 
 #####  SESSION:
 Applicable PAM config file ```/etc/pam.d/common-session```
 ```bash
-session required pam_swcdb_maxretries.so -h HOST -p PORT -t 30000 -c COLM -k "['ssh', '%s']"
+session required /PATH/libpam_swcdb_maxretries.so -h HOST -p PORT -t 30000 -c COLM -k "['ssh', '%s']"
 ```
 
 ######  Configuration Options:
@@ -33,6 +33,7 @@ session required pam_swcdb_maxretries.so -h HOST -p PORT -t 30000 -c COLM -k "['
     * column    [-c]  SWC-DB column-name to use                                      (=REQUIRED)
     * key       [-k]  fillin fractions, requires one '%s' arg for Remote IP address  (=["%s"])
     * maxtries  [-m]- Maximum Allowed Tries Count before Auth return PAM_MAXTRIES    (=10)
+    * PATH            SWC-DB libraries path, location of libpam_swcdb_maxretries.so
 
 
 #### The Module Proccess and Requirments:
