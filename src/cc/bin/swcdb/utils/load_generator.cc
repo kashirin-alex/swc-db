@@ -49,7 +49,7 @@ void Settings::init_app_options() {
     
     ("gen-col-seq", 
       g_enum(
-        (int)Types::RangeSeq::BITWISE,
+        (int)Types::KeySeq::BITWISE,
         0,
         Types::from_string_range_seq,
         Types::repr_range_seq
@@ -314,7 +314,7 @@ void load_generator() {
 
   schema = SWC::DB::Schema::make();
   schema->col_name = col_name;
-  schema->col_seq = (Types::RangeSeq)settings->get_genum("gen-col-seq");
+  schema->col_seq = (Types::KeySeq)settings->get_genum("gen-col-seq");
   schema->col_type = (Types::Column)settings->get_genum("gen-col-type");
   schema->cell_versions = settings->get_i32("gen-cell-versions");
   schema->cell_ttl = 0;

@@ -27,7 +27,7 @@ set(swcdb_sources
 	Types/Column.cc
 	Types/Encoding.cc
 	Types/Range.cc
-	Types/RangeSeq.cc
+	Types/KeySeq.cc
 
 	Protocol/Common/params/HostEndPoints.cc
 

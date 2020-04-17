@@ -20,7 +20,7 @@ Schema::Ptr Schema::make(const Schema::Ptr& other) {
 
 Schema::Schema()
       : cid(NO_CID), 
-        col_seq(Types::RangeSeq::BITWISE), col_type(Types::Column::PLAIN),
+        col_seq(Types::KeySeq::BITWISE), col_type(Types::Column::PLAIN),
         cell_versions(1), cell_ttl(0),
         blk_encoding(Types::Encoding::DEFAULT), blk_size(0), blk_cells(0), 
         cs_replication(0), cs_size(0), cs_max(0), 
@@ -44,7 +44,7 @@ Schema::Schema(const uint8_t **bufp, size_t *remainp)
   : cid(Serialization::decode_vi64(bufp, remainp)),
     col_name(Serialization::decode_vstr(bufp, remainp)),
 
-    col_seq((Types::RangeSeq)Serialization::decode_i8(bufp, remainp)),
+    col_seq((Types::KeySeq)Serialization::decode_i8(bufp, remainp)),
     col_type((Types::Column)Serialization::decode_i8(bufp, remainp)),
 
     cell_versions(Serialization::decode_vi32(bufp, remainp)),

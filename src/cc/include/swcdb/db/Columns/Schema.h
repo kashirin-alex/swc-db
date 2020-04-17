@@ -7,7 +7,7 @@
 #define swcdb_db_Columns_Schema_h
 
 #include <memory>
-#include "swcdb/db/Types/RangeSeq.h"
+#include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoding.h"
 
@@ -48,7 +48,7 @@ class Schema final {
   int64_t         cid;
   std::string     col_name;
 
-  Types::RangeSeq col_seq;
+  Types::KeySeq   col_seq;
   Types::Column   col_type;
 
   uint32_t        cell_versions;

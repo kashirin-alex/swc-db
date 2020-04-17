@@ -145,7 +145,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
         return;
       read(buff, stop);
       if((schema->col_seq = Types::range_seq_from(buff)) 
-          == Types::RangeSeq::UNKNOWN) {
+          == Types::KeySeq::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown range seq type");
         return;
       }

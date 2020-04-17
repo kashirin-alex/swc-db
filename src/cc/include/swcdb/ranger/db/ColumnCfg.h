@@ -15,7 +15,7 @@ class ColumnCfg final {
   public:
   
   const int64_t                         cid;
-  const Types::RangeSeq                 sequence;
+  const Types::KeySeq                   sequence;
 
   mutable std::atomic<Types::Column>    col_type;
 
