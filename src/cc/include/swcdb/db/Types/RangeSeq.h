@@ -10,7 +10,8 @@
 
 namespace SWC { namespace Types { 
 
-enum RangeSeq{
+enum RangeSeq {
+  UNKNOWN             = 0,
   BITWISE             = 1,
   BITWISE_VOL         = 2, 
   BITWISE_FCOUNT      = 3,
@@ -18,6 +19,12 @@ enum RangeSeq{
 };
 
 std::string to_string(RangeSeq typ);
+
+RangeSeq range_seq_from(const std::string& typ);
+
+std::string repr_range_seq(int typ);
+
+int from_string_range_seq(const std::string& typ);
 
 }}
 
