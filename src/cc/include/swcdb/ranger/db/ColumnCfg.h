@@ -5,6 +5,7 @@
 #ifndef swc_ranger_db_ColumnCfg_h
 #define swc_ranger_db_ColumnCfg_h
 
+#include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Columns/Schema.h"
 
 namespace SWC { namespace Ranger {
@@ -16,6 +17,7 @@ class ColumnCfg final {
   
   const int64_t                         cid;
   const Types::KeySeq                   sequence;
+  const DB::KeyComparator*              key_comp;
 
   mutable std::atomic<Types::Column>    col_type;
 
@@ -35,11 +37,15 @@ class ColumnCfg final {
 
 
   ColumnCfg(const int64_t cid, const DB::Schema& schema) 
-            : cid(cid), sequence(schema.col_seq), deleting(false) {
+            : cid(cid), sequence(schema.col_seq), 
+              key_comp(DB::KeyComparator::create(sequence)),
+              deleting(false) {
     update(schema);
   }
 
-  ~ColumnCfg() { }
+  ~ColumnCfg() { 
+    delete key_comp;
+  }
 
   void update(const DB::Schema& schema) const {
     col_type = schema.col_type;
@@ -125,34 +131,32 @@ class ColumnCfg final {
     s.append(Types::to_string(sequence));
     s.append(" type=");
     s.append(Types::to_string(col_type));
-    s.append(") ");
+    s.append(")");
 
-    s.append("cell(");
-    s.append("versions=");
+    s.append(" cell(versions=");
     s.append(std::to_string(c_versions));
     s.append(" ttl=");
     s.append(std::to_string(c_ttl));
-    s.append(") ");
+    s.append(")");
 
-    s.append("blk(");
-    s.append(" enc=");
+    s.append(" blk(enc=");
     s.append(Types::to_string(blk_enc));
     s.append(" size=");
     s.append(std::to_string(blk_size));
     s.append(" cells=");
     s.append(std::to_string(blk_cells));
-    s.append(") ");
+    s.append(")");
 
-    s.append("cs(");
+    s.append(" cs(");
     s.append("replication=");
     s.append(std::to_string(cs_replication));
-    s.append("size=");
+    s.append(" size=");
     s.append(std::to_string(cs_size));
     s.append(" max=");
     s.append(std::to_string(cs_max));
     s.append(" compact=");
     s.append(std::to_string(compact_perc));
-    s.append("%) ");
+    s.append("%)");
 
     return s;
   }
