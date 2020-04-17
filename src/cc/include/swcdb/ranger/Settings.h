@@ -44,26 +44,26 @@ void Settings::init_app_options(){
      "Max Allowed Ranges at a time for compaction")
 
     ("swc.rgr.Range.CellStore.count.max", g_i8(10), 
-     "Number of cellstores allowed in range before range-split")  
+     "Schema default cellstore-max in range before range-split")  
     ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
-     "Default CellStore size")  
+     "Schema default cellstore-size")  
     ("swc.rgr.Range.CellStore.replication", g_i8(3), 
-     "Default CellStore replication (fs-dependent)") 
+     "Schema default cellstore-replication (fs-dependent)") 
      
     ("swc.rgr.Range.block.size", g_i32(64000000), 
-     "Default Block Size in bytes")  
+     "Schema default block-size")
     ("swc.rgr.Range.block.cells", g_i32(100000), 
-     "Default Block Cells count")  
+     "Schema default block-cells")
     ("swc.rgr.Range.block.encoding", 
       g_enum(
         (int)Types::Encoding::ZSTD,
         0,
         Types::from_string_encoding,
         Types::repr_encoding), 
-     "Default Block encoding NONE/ZSTD/SNAPPY/ZLIB")  
+     "Schema default block-encoding NONE/ZSTD/SNAPPY/ZLIB")  
      
     ("swc.rgr.Range.compaction.percent", g_i8(33), 
-     "Compaction threshold in % applied over size of either by cellstore or block")
+     "Schema default compact-percent threshold")
   ;
 
 }

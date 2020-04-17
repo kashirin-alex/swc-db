@@ -30,7 +30,8 @@ class ColumnSchema : public Reader {
   void read_schema_options(Func func);
 
   private:
-    DB::Schema::Ptr& schema;
+  
+  DB::Schema::Ptr& schema;
 };
 
 

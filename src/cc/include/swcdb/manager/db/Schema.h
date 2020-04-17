@@ -113,24 +113,26 @@ DB::Schema::Ptr load(int &err, int64_t cid,
 
   if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){
     SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema", cid);
-    std::string name;
+
+    schema = DB::Schema::make();
+    schema->cid = cid;
+
     if(cid < 4) {
       err == Error::OK;
-      name.append("sys_");
+      schema->col_name.append("sys_");
       if(cid == 3) {
-        name.append("stats");
-        schema = DB::Schema::make(
-          cid, name, Types::Column::COUNTER_I64, 1,
-          Env::Config::settings()->get_i32("swc.stats.ttl", 1036800));
+        schema->col_name.append("stats");
+        schema->col_type = Types::Column::COUNTER_I64;
+        schema->col_seq = Types::RangeSeq::BITWISE;
+        schema->cell_ttl = Env::Config::settings()->get_i32(
+          "swc.stats.ttl", 1036800);
       } else {
-        name.append(cid==1? "master": "meta");
-        schema = DB::Schema::make(cid, name);
+        schema->col_name.append(cid == 1 ? "master": "meta");
       }
     } else {
-     // schama backups || instant create || throw ?
-      name.append("noname_");
-      name.append(std::to_string(cid));
-      schema = DB::Schema::make(cid, name);
+     // schema backups || instant create || throw ?
+      schema->col_name.append("noname_");
+      schema->col_name.append(std::to_string(cid));
     }
 
     SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema set to %s", 

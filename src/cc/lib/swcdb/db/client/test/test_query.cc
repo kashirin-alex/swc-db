@@ -415,20 +415,12 @@ int main(int argc, char** argv) {
   );
   
   // PLAIN one version
-  auto schema = SWC::DB::Schema::make(
-    0, 
-    "col-test-1", 
-    SWC::Types::Column::PLAIN, 
-    1, // cell_versions
-    0, // cell_ttl
-    SWC::Types::Encoding::ZLIB,
-    50000000,
-    0, // blk-cells
-    3, // cs_replication
-    1000000000, // cs-size
-    10, // cs-max
-    0 // compact-%
-  );
+  auto schema = SWC::DB::Schema::make();
+  schema->col_name = "col-test-1";
+  schema->blk_encoding = SWC::Types::Encoding::ZLIB;
+  schema->blk_size = 50000000;
+  schema->cs_size = 1000000000;
+  schema->cs_max = 10;
 
   /*
   int err;

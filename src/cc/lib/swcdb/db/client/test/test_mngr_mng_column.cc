@@ -191,14 +191,18 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols,
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 
   for(int n=1;n<=num_of_cols;++n) {
-    Protocol::Mngr::Req::ColumnMng::request(
-      func,
-      DB::Schema::make(
-        0, 
-        get_name(n, modified), 
-        Types::Column::COUNTER_I64, 
-        10, 1234, blk_encoding, 3, 9876543),
+    
+    auto schema = DB::Schema::make();
+    schema->col_name = get_name(n, modified);
+    schema->col_type = Types::Column::COUNTER_I64;
+    schema->cell_versions = 10; 
+    schema->cell_ttl = 1234; 
+    schema->blk_encoding = blk_encoding; 
+    schema->blk_size = 3; 
+    schema->blk_cells = 9876543;
 
+    Protocol::Mngr::Req::ColumnMng::request(
+      func, schema,
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (client::ConnQueue::ReqBase::Ptr req_ptr, int err){
 
@@ -271,8 +275,9 @@ void chk_rename(int num_of_cols, bool verbose=false){
           return;
         }
         
-
-        auto new_schema = DB::Schema::make(get_name(n, true), rsp.schema, 2);
+        auto new_schema = DB::Schema::make(rsp.schema);
+        new_schema->col_name = get_name(n, true);
+        new_schema->revision = 2;
 
         if(verbose)
           std::cout << "modify name: \n" 

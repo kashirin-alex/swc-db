@@ -68,26 +68,13 @@ int main(int argc, char** argv) {
   RangerEnv::init();
   
   auto cid = 11;
-  Ranger::ColumnCfg col_cfg(cid);
-  col_cfg.update(
-    DB::Schema(
-      cid, 
-      "col-test",
-      Types::Column::PLAIN,
-      2, //versions, 
-      0,
-      
-      Types::Encoding::PLAIN,
-      64000000,
-      100000,   // block cells
-
-      0, // cs-replication
-      0, // cs-size
-      0, // cs-max
-      0, // compaction %
-      0
-    )
-  );
+  DB::Schema schema;
+  schema.cid = cid;
+  schema.col_name = "col-test";
+  schema.cell_versions = 2;
+  schema.blk_size = 64000000;
+  schema.blk_cells = 100000;
+  Ranger::ColumnCfg col_cfg(cid, schema);
 
   int err = Error::OK;
   int num_cells = 1000000;

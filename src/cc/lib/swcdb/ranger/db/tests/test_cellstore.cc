@@ -224,26 +224,14 @@ int main(int argc, char** argv) {
   SWC::RangerEnv::init();
   
   auto cid = 11;
-  SWC::Ranger::ColumnCfg col_cfg(cid);
-  col_cfg.update(
-    SWC::DB::Schema(
-      cid,
-      "col-test-cs",
-      SWC::Types::Column::PLAIN,
-      1, // versions, 
-      0, // ttl
-      
-      SWC::Types::Encoding::SNAPPY,
-      60000000, // block size
-      100000,   // block cells
-      
-      0, // replication
-      0, // cs-size
-      0, // cs-max
-      0, // compaction %
-      0  // schema's revision
-    )
-  );
+  SWC::DB::Schema schema;
+  schema.cid = cid;
+  schema.col_name = "col-test-cs";
+  schema.cell_versions = 1;
+  schema.blk_size = 64000000;
+  schema.blk_cells = 100000;
+  schema.blk_encoding = SWC::Types::Encoding::SNAPPY;
+  SWC::Ranger::ColumnCfg col_cfg(cid, schema);
   
   int err = SWC::Error::OK;
 

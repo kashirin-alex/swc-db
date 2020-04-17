@@ -19,40 +19,17 @@ class Schema final {
 
   public:
   
-  typedef std::shared_ptr<Schema> Ptr;
+  typedef std::shared_ptr<Schema>  Ptr;
 
-  static constexpr const int64_t NO_CID = 0;
+  static constexpr const int64_t   NO_CID = 0;
 
-  static Ptr make(
-         const std::string& col_name, 
-         Types::Column col_type=Types::Column::PLAIN,
-         uint32_t cell_versions=1, uint32_t cell_ttl=0,
-         Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
-         uint32_t blk_size=0, uint32_t blk_cells=0,
-         uint8_t cs_replication=0, uint32_t cs_size=0, uint8_t cs_max=0,
-         uint8_t compact_percent=0, 
-         int64_t revision=0);
+  static Ptr make();
 
-  static Ptr make(
-         int64_t cid, const std::string& col_name, 
-         Types::Column col_type=Types::Column::PLAIN,
-         uint32_t cell_versions=1, uint32_t cell_ttl=0,
-         Types::Encoding blk_encoding=Types::Encoding::DEFAULT,
-         uint32_t blk_size=0, uint32_t blk_cells=0,
-         uint8_t cs_replication=0, uint32_t cs_size=0, uint8_t cs_max=0, uint8_t compact_percent=0, 
-         int64_t revision=0);
-  
-  static Ptr make(int64_t cid, Ptr other, int64_t revision);
-  
-  static Ptr make(const std::string& col_name, Ptr other, 
-                         int64_t revision);
+  static Ptr make(const Ptr& other);
 
-  Schema(int64_t cid, const std::string& col_name, Types::Column col_type,
-         uint32_t cell_versions, uint32_t cell_ttl,
-         Types::Encoding blk_encoding, uint32_t blk_size, uint32_t blk_cells,
-         uint8_t cs_replication, uint32_t cs_size, uint8_t cs_max, 
-         uint8_t compact_percent, 
-         int64_t revision);
+  Schema();
+
+  Schema(const Schema& other);
   
   Schema(const uint8_t **bufp, size_t *remainp);
 
@@ -68,26 +45,25 @@ class Schema final {
 
   void display(std::ostream& out) const;
 
+  int64_t         cid;
+  std::string     col_name;
 
-  Types::RangeSeq range_seq;
+  Types::RangeSeq col_seq;
+  Types::Column   col_type;
 
-  const int64_t 		    cid;
-  const std::string 		col_name;
-  const Types::Column   col_type;
+  uint32_t        cell_versions;
+  uint32_t        cell_ttl;
 
-  const uint32_t 		    cell_versions;
-  const uint32_t 		    cell_ttl;
+  Types::Encoding blk_encoding;
+  uint32_t        blk_size;
+  uint32_t        blk_cells;
 
-  const Types::Encoding blk_encoding;
-  const uint32_t        blk_size;
-  const uint32_t        blk_cells;
+  uint8_t         cs_replication;
+  uint32_t        cs_size;
+  uint8_t         cs_max;
+  uint8_t         compact_percent;
 
-  const uint8_t 		    cs_replication;
-  const uint32_t        cs_size;
-  const uint8_t         cs_max;
-  const uint8_t         compact_percent;
-
-  const int64_t         revision;
+  int64_t         revision;
 };
 
 }} // SWC::DB namespace

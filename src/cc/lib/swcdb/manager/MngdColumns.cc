@@ -85,13 +85,16 @@ bool MngdColumns::has_active() {
 void MngdColumns::require_sync() {
   Env::Mngr::rangers()->sync();
     
-  if(m_root_mngr)
+  if(m_root_mngr) {
     columns_load();
-  else
+  } else {
+    auto schema = DB::Schema::make();
+    schema->cid = -1;
     update(
       Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL, 
-      DB::Schema::make(-1, "")
+      schema
     );
+  }
 }
 
 void MngdColumns::action(ColumnActionReq new_req) {
@@ -322,7 +325,7 @@ bool MngdColumns::load_pending(int64_t cid, ColumnFunction &pending) {
 }
 
 int64_t MngdColumns::get_next_cid() {
-  int64_t cid = 4;
+  int64_t cid = 3;
   while(Env::Mngr::schemas()->get(++cid) != nullptr);
   // if schema does exist on fs (? sanity-check) 
   return cid;
@@ -330,7 +333,7 @@ int64_t MngdColumns::get_next_cid() {
 
 void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
   int64_t cid = get_next_cid();
-  if(cid < 0) {
+  if(cid <= 0) {
     err = Error::COLUMN_REACHED_ID_LIMIT;
     return;
   } 
@@ -339,9 +342,10 @@ void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
   if(err)
     return;
 
-  DB::Schema::Ptr schema_save = DB::Schema::make(
-    cid, schema, schema->revision ? schema->revision : Time::now_ns());
-  SWC_ASSERT(schema_save->cid != DB::Schema::NO_CID);
+  auto schema_save = DB::Schema::make(schema);
+  schema_save->cid = cid;
+  if(!schema_save->revision)
+    schema_save->revision = Time::now_ns();
     
   Files::Schema::save_with_validation(
     err, schema_save, cfg_schema_replication->get());
@@ -362,15 +366,18 @@ void MngdColumns::update(int &err, DB::Schema::Ptr &schema,
     return;
   }
 
-  DB::Schema::Ptr schema_save = DB::Schema::make(
-    schema->cid == DB::Schema::NO_CID? old->cid: schema->cid,
-    schema, 
-    schema->revision ? schema->revision : Time::now_ns());
+  auto schema_save = DB::Schema::make(schema);
+  if(schema_save->cid == DB::Schema::NO_CID)
+    schema_save->cid = old->cid;
+  if(!schema_save->revision)
+    schema_save->revision = Time::now_ns();
 
-  SWC_ASSERT(schema_save->cid != DB::Schema::NO_CID);
-
-  if(schema->equal(schema_save, false))
+  if(schema_save->cid == DB::Schema::NO_CID)
+    err = Error::COLUMN_SCHEMA_ID_EMPTY;
+  if(schema_save->equal(old, false))
     err = Error::COLUMN_SCHEMA_NOT_DIFFERENT;
+  if(err)
+    return;
 
   Files::Schema::save_with_validation(
     err, schema_save, cfg_schema_replication->get());
@@ -528,10 +535,14 @@ void MngdColumns::actions_run() {
           break;
         }
         case Protocol::Mngr::Params::ColumnMng::Function::DELETE: {
-          if(schema == nullptr) 
+          if(schema == nullptr) {
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-          else 
-            req.params.schema = schema;
+          } else {
+            if(req.params.schema->col_name.compare(schema->col_name) == 0)
+              req.params.schema = schema;
+            else
+              err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
+          }
           break;
         }
         default:

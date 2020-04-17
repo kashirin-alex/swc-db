@@ -25,7 +25,9 @@ class Column final {
 
   const ColumnCfg  cfg;
 
-  Column(const int64_t cid) : cfg(cid) { }
+  Column(const int64_t cid, const DB::Schema& schema) 
+        : cfg(cid, schema) { 
+  }
 
   void init(int &err) { }
 

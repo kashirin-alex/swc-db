@@ -15,6 +15,7 @@ class ColumnCfg final {
   public:
   
   const int64_t                         cid;
+  const Types::RangeSeq                 sequence;
 
   mutable std::atomic<Types::Column>    col_type;
 
@@ -33,12 +34,9 @@ class ColumnCfg final {
   mutable std::atomic<bool>             deleting;
 
 
-  ColumnCfg(const int64_t cid) 
-            : cid(cid), col_type(Types::Column::PLAIN),
-              c_versions(1), c_ttl(0), 
-              blk_enc(Types::Encoding::DEFAULT), blk_size(0), blk_cells(0),
-              cs_replication(0), cs_size(0), cs_max(0), compact_perc(0), 
-              deleting(false) {
+  ColumnCfg(const int64_t cid, const DB::Schema& schema) 
+            : cid(cid), sequence(schema.col_seq), deleting(false) {
+    update(schema);
   }
 
   ~ColumnCfg() { }
@@ -123,6 +121,8 @@ class ColumnCfg final {
 
     s.append("cid=");
     s.append(std::to_string(cid));
+    s.append(" seq=");
+    s.append(Types::to_string(sequence));
     s.append(" type=");
     s.append(Types::to_string(col_type));
     s.append(") ");

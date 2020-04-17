@@ -64,10 +64,9 @@ void Fragments::commit_new_fragment(bool finalize) {
   }
   
   Fragment::Ptr frag; 
-  int err;
   Semaphore sem(5);
-  for(;;) {
-    err = Error::OK;
+  for(int err = Error::OK; ;err = Error::OK) {
+
     DynamicBuffer cells;
     frag = Fragment::make(
       get_log_fragment(Time::now_ns()), Fragment::State::WRITING);

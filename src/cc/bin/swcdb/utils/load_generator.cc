@@ -46,6 +46,16 @@ void Settings::init_app_options() {
       "cell value in bytes or counts for a col-counter")
 
     ("gen-col-name", str("load_generator"), "Gen. load column name") 
+    
+    ("gen-col-seq", 
+      g_enum(
+        (int)Types::RangeSeq::BITWISE,
+        0,
+        Types::from_string_range_seq,
+        Types::repr_range_seq
+      ), 
+     "Schema col-seq BITWISE/+_VOL/+_FCOUNT")  
+
     ("gen-col-type", 
       g_enum(
         (int)Types::Column::PLAIN,
@@ -300,22 +310,21 @@ void load_generator() {
     load_data(schema);
     return;
   }
-
   err = Error::OK;
-  schema = SWC::DB::Schema::make(
-    0, 
-    col_name, 
-    (Types::Column)settings->get_genum("gen-col-type"),
-    settings->get_i32("gen-cell-versions"),
-    0, // cell_ttl
-    (Types::Encoding)settings->get_genum("gen-blk-encoding"),
-    settings->get_i32("gen-blk-size"), 
-    settings->get_i32("gen-blk-cells"),
-    settings->get_i8("gen-cs-replication"), 
-    settings->get_i32("gen-cs-size"), 
-    settings->get_i8("gen-cs-count"),
-    settings->get_i8("gen-compaction-percent") 
-  );
+
+  schema = SWC::DB::Schema::make();
+  schema->col_name = col_name;
+  schema->col_seq = (Types::RangeSeq)settings->get_genum("gen-col-seq");
+  schema->col_type = (Types::Column)settings->get_genum("gen-col-type");
+  schema->cell_versions = settings->get_i32("gen-cell-versions");
+  schema->cell_ttl = 0;
+  schema->blk_encoding = (Types::Encoding)settings->get_genum("gen-blk-encoding");
+  schema->blk_size = settings->get_i32("gen-blk-size");
+  schema->blk_cells = settings->get_i32("gen-blk-cells");
+  schema->cs_replication = settings->get_i8("gen-cs-replication");
+  schema->cs_size = settings->get_i32("gen-cs-size");
+  schema->cs_max = settings->get_i8("gen-cs-count");
+  schema->compact_percent = settings->get_i8("gen-compaction-percent");
 
   // CREATE COLUMN
   std::promise<int>  res;

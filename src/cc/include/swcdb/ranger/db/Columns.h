@@ -39,22 +39,18 @@ class Columns final {
   
   Column::Ptr initialize(int &err, const int64_t cid, 
                          const DB::Schema& schema) {
+    Column::Ptr col = nullptr;
     if(RangerEnv::is_shuttingdown()) {
       err = Error::SERVER_SHUTTING_DOWN;
-      return nullptr;
+      return col;
     }
-
-    Column::Ptr col = nullptr;
-    {
-      std::scoped_lock lock(m_mutex);
-      auto it = m_columns.find(cid);
-      if (it != m_columns.end()) {
-        col = it->second;
-      } else {
-        m_columns.emplace(cid, col = std::make_shared<Column>(cid));
-      }
-      col->cfg.update(schema);
-    }
+    
+    std::scoped_lock lock(m_mutex);
+    auto it = m_columns.find(cid);
+    if(it != m_columns.end())
+      (col = it->second)->cfg.update(schema);
+    else
+      m_columns.emplace(cid, col = std::make_shared<Column>(cid, schema));
     return col;
   }
 
