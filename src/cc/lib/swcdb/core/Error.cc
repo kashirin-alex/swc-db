@@ -76,6 +76,9 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_REACHED_ID_LIMIT,       "Columd ID max-reached"},
   { Error::COLUMN_SCHEMA_BAD_SAVE,        "Schema for save not matches saved"},
   { Error::COLUMN_SCHEMA_NAME_EMPTY,      "Schema's column name cannot be empty"},
+  { Error::COLUMN_SCHEMA_ID_EMPTY,        "Schema's column id cannot be empty"},
+  { Error::COLUMN_SCHEMA_NAME_NOT_CORRES, "Schema's column name not correspond"},
+  
   { Error::COLUMN_SCHEMA_NOT_DIFFERENT,   "Schemas expected to be different"},
   { Error::COLUMN_SCHEMA_MISSING,         "cid's Schema is missing"},
   { Error::COLUMN_MARKED_REMOVED,         "Column is being removed"},
