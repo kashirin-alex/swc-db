@@ -224,7 +224,7 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
 
     cell->write(cells);
     intval.expand(cell->timestamp);
-    cell->key.align(intval.aligned_min, intval.aligned_max);
+    intval.align(cell->key);
     (first ? last : first) = cell;
     ++cell_count;
   }

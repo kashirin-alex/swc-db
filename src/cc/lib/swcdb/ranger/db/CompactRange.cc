@@ -65,7 +65,7 @@ struct CompactRange::InBlock {
     DB::Cells::Cell cell;
     while(remain) {
       cell.read(&ptr, &remain); 
-      cell.key.align(interval.aligned_min, interval.aligned_max);
+      interval.align(cell.key);
       interval.expand(cell.timestamp);
       
       if(set_begin) {

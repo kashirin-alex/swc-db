@@ -34,7 +34,7 @@ int main() {
       cell.timestamp = n;
 
       interval.expand(cell);      
-      cell.key.align(interval.aligned_min, interval.aligned_max);
+      interval.align(cell.key);
 
 
       if(n == 0) {

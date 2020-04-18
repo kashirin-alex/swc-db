@@ -218,6 +218,7 @@ Condition::Comp Key::compare(const Key& other, uint32_t max,
           : Condition::EQ;
 }
 
+/* applied with KeyComp::align on KeySeq
 bool Key::align(KeyVec& start, KeyVec& finish) const {
   const uint8_t* ptr = data;
   uint24_t len;
@@ -249,6 +250,7 @@ bool Key::align(KeyVec& start, KeyVec& finish) const {
   }
   return chg;
 }
+*/
 
 bool Key::compare(const KeyVec& other, Condition::Comp break_if,
                   uint32_t max, bool empty_ok) const {

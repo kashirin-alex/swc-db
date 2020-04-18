@@ -100,7 +100,7 @@ bool Range::align(const DB::Cells::Interval& interval) {
   
 bool Range::align(const DB::Cell::Key& key) {
   std::scoped_lock lock(m_mutex);
-  return key.align(m_interval.aligned_min, m_interval.aligned_max);
+  return m_interval.align(key);
 }
 
 void Range::schema_update(bool compact) {

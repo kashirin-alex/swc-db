@@ -60,7 +60,7 @@ class Key final {
   Condition::Comp compare(const Key& other, uint32_t max=0, 
                           bool empty_ok=false, bool empty_eq=false) const;
 
-  bool align(KeyVec& start, KeyVec& finish) const;
+  //bool align(KeyVec& start, KeyVec& finish) const;
 
   bool compare(const KeyVec& other, Condition::Comp break_if,
                uint32_t max = 0, bool empty_ok=false) const;
