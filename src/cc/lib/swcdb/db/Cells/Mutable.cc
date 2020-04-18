@@ -384,7 +384,7 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
   uint32_t rev;
   size_t offset;
   if(chk_align = !req->spec.offset_key.empty()) {
-    rev = req->cfg.cell_versions;
+    rev = req->spec.flags.max_versions;
     offset = _narrow(req->spec.offset_key);// ?req->spec.key_start
    } else {
     rev = 0;
@@ -431,7 +431,7 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
         continue;
       }
     } else {
-      rev = req->cfg.cell_versions;
+      rev = req->spec.flags.max_versions;
     }
 
     if(req->offset_adjusted()) {
@@ -456,7 +456,7 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
 
     if(!cell.has_expired(ttl) && 
        (only_deletes ? cell.flag != INSERT : cell.flag == INSERT) &&
-       specs.is_matching(cell, type)) {
+       specs.is_matching(cell)) {
 
       if(cell_offset) {
         --cell_offset;

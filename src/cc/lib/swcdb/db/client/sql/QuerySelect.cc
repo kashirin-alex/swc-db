@@ -42,6 +42,8 @@ namespace {
   static const uint8_t  LEN_OFFSET = 6;
   static const char*    TOKEN_MAX_VERS = "max_versions";
   static const uint8_t  LEN_MAX_VERS = 12;
+  static const char*    TOKEN_MAX_BUFF = "max_buffer";
+  static const uint8_t  LEN_MAX_BUFF = 10;
   static const char*    TOKEN_LIMIT_BY = "limit_by";
   static const uint8_t  LEN_LIMIT_BY = 8;
   static const char*    TOKEN_OFFSET_BY = "offset_by";
@@ -791,6 +793,11 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
       if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {
         expect_eq();
         read_uint32_t(flags.max_versions, flags.was_set);
+        continue;
+      }
+      if(any = found_token(TOKEN_MAX_BUFF, LEN_MAX_BUFF)) {
+        expect_eq();
+        read_uint32_t(flags.max_buffer, flags.was_set);
         continue;
       }
 

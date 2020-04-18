@@ -189,7 +189,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   
   size_t cell_skips = 0;
   SWC::DB::Cells::ReqScanTest req;
-  req.cfg.cell_versions = max_versions;
+  req.spec.flags.max_versions = max_versions;
   cells_mutable->scan(&req, cell_skips);
   req.cells.configure(max_versions, 0, typ);
 

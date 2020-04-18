@@ -80,8 +80,6 @@ class Interval {
 
   bool is_matching(const Cells::Cell& cell) const;
 
-  bool is_matching(const Cells::Cell& cell, Types::Column typ) const;
-
   bool is_matching_begin(const DB::Cell::Key& key) const;
 
   bool is_matching_end(const DB::Cell::Key& key) const;
@@ -111,8 +109,9 @@ class Interval {
 
   bool       key_eq;
 
-  Cell::Key  offset_key;
-  int64_t    offset_rev;
+  Cell::Key     offset_key;
+  int64_t       offset_rev;
+  Types::Column col_type;
 };
 
 }}}

@@ -168,7 +168,7 @@ bool Interval::is_matching(const Cells::Cell& cell) const {
   if(!match)
     return match;
 
-  return  
+  match =   
     ts_start.is_matching(cell.timestamp) 
     &&
     ts_finish.is_matching(cell.timestamp) 
@@ -181,14 +181,10 @@ bool Interval::is_matching(const Cells::Cell& cell) const {
     &&
     (key_finish.empty()  || key_finish.is_matching(cell.key))
     ;
-}
-
-bool Interval::is_matching(const Cells::Cell& cell, Types::Column typ) const {
-  bool match = is_matching(cell);
   if(!match || value.empty())
     return match;
 
-  if(Types::is_counter(typ))
+  if(Types::is_counter(col_type))
     return value.is_matching(cell.get_counter());
     
   return value.is_matching(cell.value, cell.vlen);

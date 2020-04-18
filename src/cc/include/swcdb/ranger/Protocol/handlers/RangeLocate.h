@@ -53,22 +53,20 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     if(params.flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
       req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
         conn, ev,
-        DB::Specs::Interval(params.range_begin, params.range_end),
+        params.range_begin, params.range_end,
         range,
         params.flags
       );
     } else {
       req = std::make_shared<Ranger::Callback::RangeLocateScan>(
         conn, ev,
-        DB::Specs::Interval(params.range_begin, params.range_end),
+        params.range_begin, params.range_end,
         range,
         params.flags
       );
       if(params.flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE)
         req->spec.range_offset.copy(params.range_offset);
     }
-
-    req->spec.flags.limit = 1;
     range->scan(req);
     
   } catch (Exception &e) {

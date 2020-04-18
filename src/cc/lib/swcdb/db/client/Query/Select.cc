@@ -204,6 +204,8 @@ void Select::scan() {
     
   for(auto &col : specs.columns) {
     for(auto &intval : col->intervals) {
+      if(!intval->flags.max_buffer)
+        intval->flags.max_buffer = buff_sz;
       std::make_shared<ScannerColumn>(
         col->cid, *intval.get(), shared_from_this()
       )->run();
@@ -524,7 +526,7 @@ void Select::Scanner::select(EndPoints endpoints, uint64_t rid,
 
   Protocol::Rgr::Req::RangeQuerySelect::request(
     Protocol::Rgr::Params::RangeQuerySelectReq(
-      col->cid, rid, col->interval, col->selector->buff_sz
+      col->cid, rid, col->interval
     ), 
     endpoints, 
     [rid, base, scanner=shared_from_this()] 

@@ -23,32 +23,27 @@ class ReqScan  : public DB::Cells::ReqScan {
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
-  ReqScan(Type type=Type::QUERY)
+  ReqScan(Type type=Type::QUERY, bool release_block=false, uint8_t readahead=1)
           : type(type), 
-            release_block(false), readahead(1), 
-            block(nullptr) {
-  }
-
-  ReqScan(const DB::Cells::ReqScan::Config& cfg,
-          Type type=Type::QUERY, bool release_block=false, uint8_t readahead=1)
-          : DB::Cells::ReqScan(cfg),
-            type(type), 
             release_block(release_block), readahead(readahead), 
             block(nullptr) {
   }
-
+        
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const DB::Specs::Interval& spec)
-          : DB::Cells::ReqScan(conn, ev, spec, DB::Cells::ReqScan::Config()),
+          const DB::Cell::Key& range_begin, 
+          const DB::Cell::Key& range_end)
+          : DB::Cells::ReqScan(
+              conn, ev, 
+              DB::Specs::Interval(range_begin, range_end)
+            ),
             type(Type::QUERY), 
             release_block(false), readahead(0), 
             block(nullptr) {
   }
 
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
-          const DB::Specs::Interval& spec,
-          const DB::Cells::ReqScan::Config& cfg)
-          : DB::Cells::ReqScan(conn, ev, spec, cfg),
+          const DB::Specs::Interval& spec)
+          : DB::Cells::ReqScan(conn, ev, spec),
             type(Type::QUERY), 
             release_block(false), 
             readahead(!spec.flags.limit ? 3 : spec.flags.limit > 1),
@@ -112,15 +107,11 @@ class ReqScanTest : public ReqScan {
 
   static Ptr make() { return std::make_shared<ReqScanTest>(); }
 
-  ReqScanTest(const DB::Cells::ReqScan::Config& cfg
-                     = DB::Cells::ReqScan::Config())
-              : ReqScan(cfg) {
-  }
+  ReqScanTest() { }
 
   bool reached_limits() override {
-    return (spec.flags.limit && spec.flags.limit <= cells.size()) 
-            || 
-            (cfg.buffer && cfg.buffer <= cells.size_bytes());
+    return (spec.flags.limit && spec.flags.limit <= cells.size())   || 
+      (spec.flags.max_buffer && spec.flags.max_buffer <= cells.size_bytes());
   }
 
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {

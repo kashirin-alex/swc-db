@@ -53,6 +53,7 @@ class Flags {
 
   uint64_t  limit, offset;
   uint32_t  max_versions;
+  uint32_t  max_buffer;
   uint8_t   options;
   bool      was_set;
 

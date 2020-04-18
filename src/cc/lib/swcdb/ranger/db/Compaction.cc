@@ -165,11 +165,6 @@ void Compaction::compact(RangePtr range) {
   );
 
   auto req = std::make_shared<CompactRange>(
-    DB::Cells::ReqScan::Config(
-      range->cfg->column_type(),
-      cell_revs, 
-      cell_ttl
-    ),
     ptr(),
     range, 
     cs_size, 

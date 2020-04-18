@@ -14,29 +14,31 @@ class RangeQuerySelect : public ReqScan {
   public:
 
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
-                   const DB::Specs::Interval& spec, 
-                   const DB::Cells::ReqScan::Config& cfg,
+                   const DB::Specs::Interval& req_spec,
                    RangePtr range)
-                  : ReqScan(conn, ev, spec, cfg), 
+                  : ReqScan(conn, ev, req_spec), 
                     range(range), cells_count(0) {
+    if(!spec.value.empty())
+      spec.col_type = range->cfg->column_type();
+    if(!spec.flags.max_versions)
+      spec.flags.max_versions = range->cfg->cell_versions();
   }
 
   virtual ~RangeQuerySelect() { }
 
   void ensure_size() {
-    if(!cells_count || cells.size >= cfg.buffer)
+    if(!cells_count || cells.size >= spec.flags.max_buffer)
       return;
     size_t add = (cells.fill() / cells_count) 
                   * (spec.flags.limit ? spec.flags.limit : 3);
-    if(cells.size + add < cfg.buffer)
+    if(cells.size + add < spec.flags.max_buffer)
       cells.ensure(add);
   }
 
   bool reached_limits() override {
-    return (spec.flags.limit && 
-            spec.flags.limit <= cells_count) || 
-           (cfg.buffer && cells_count &&
-            cfg.buffer <= cells.fill() + cells.fill() / cells_count);
+    return (spec.flags.limit && spec.flags.limit <= cells_count) || 
+      (spec.flags.max_buffer && cells_count && 
+       spec.flags.max_buffer <= cells.fill() + cells.fill() / cells_count);
   }
 
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {

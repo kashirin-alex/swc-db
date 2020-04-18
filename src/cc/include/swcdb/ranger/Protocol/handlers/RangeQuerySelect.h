@@ -48,18 +48,7 @@ void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
 
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
-        conn, ev, params.interval, 
-        DB::Cells::ReqScan::Config(
-          range->cfg->column_type(),
-          params.interval.flags.max_versions 
-            ? params.interval.flags.max_versions 
-            : range->cfg->cell_versions(),
-          range->cfg->cell_ttl(), 
-          params.limit_buffer_sz
-        ),
-        range
-      )
-    );
+        conn, ev, params.interval, range) );
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }

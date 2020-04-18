@@ -100,12 +100,12 @@ struct CompactRange::InBlock {
 };
 
 
-CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
+CompactRange::CompactRange(
             Compaction::Ptr compactor, RangePtr range,
             const uint32_t cs_size, const uint8_t cs_replication,
             const uint32_t blk_size, const uint32_t blk_cells, 
             const Types::Encoding blk_encoding) 
-            : ReqScan(cfg, ReqScan::Type::COMPACTION, true, 
+            : ReqScan(ReqScan::Type::COMPACTION, true, 
                       compactor->cfg_read_ahead->get()/2), 
               compactor(compactor), range(range),
               cs_size(cs_size), 
@@ -116,6 +116,7 @@ CompactRange::CompactRange(const DB::Cells::ReqScan::Config& cfg,
               ts_start(Time::now_ns()), m_getting(true),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
+  spec.flags.max_versions = range->cfg->cell_versions();
 }
 
 CompactRange::~CompactRange() { 
@@ -235,7 +236,7 @@ void CompactRange::progress_check_timer() {
   if(Time::now_ns() - m_ts_req.load() > median * 10) {
     // mitigate add req. workload
     range->compacting(Range::COMPACT_PREPARING);
-    range->blocks.commitlog.commit_new_fragment(true);
+    //range->blocks.commitlog.commit_new_fragment(true);
   } else {
     // range scan & add reqs can continue
     range->compacting(Range::COMPACT_COMPACTING);
@@ -375,7 +376,7 @@ uint32_t CompactRange::create_cs(int& err) {
   cs_writer = std::make_shared<CellStore::Write>(
     id, 
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, id), 
-    cfg.cell_versions,
+    spec.flags.max_versions,
     blk_encoding
   );
   cs_writer->create(err, -1, cs_replication, blk_size);
@@ -386,7 +387,7 @@ uint32_t CompactRange::create_cs(int& err) {
     stop_check_timer();
     // mitigate add req. total workload
     range->compacting(Range::COMPACT_PREPARING);
-    range->blocks.commitlog.commit_new_fragment(true);
+    //range->blocks.commitlog.commit_new_fragment(true);
   }
   return id;
 

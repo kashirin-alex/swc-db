@@ -22,9 +22,9 @@ void count_all_cells(size_t num_cells,
   std::atomic<int> chk = 1;
   
   auto req = Ranger::ReqScanTest::make();
-  req->cfg.cell_versions = blocks.range->cfg->cell_versions();
+  req->spec.flags.max_versions = blocks.range->cfg->cell_versions();
   req->cells.reset(
-    req->cfg.cell_versions, 
+    req->spec.flags.max_versions, 
     0, 
     SWC::Types::Column::PLAIN
   );
