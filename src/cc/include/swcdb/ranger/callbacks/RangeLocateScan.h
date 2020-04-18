@@ -72,11 +72,13 @@ class RangeLocateScan : public ReqScan {
       << "        rid: " << rid << SWC_PRINT_CLOSE;
     */
     if(spec.range_begin.count == any_is || aligned_max.empty() || 
-       spec.range_begin.compare(
-         aligned_max, Condition::LT, spec.range_begin.count, true)) {
+       range->cfg->key_comp->compare(
+         spec.range_begin, aligned_max, 
+         Condition::LT, spec.range_begin.count, true)) {
       if(spec.range_end.count == any_is || aligned_min.empty() || 
-         spec.range_end.compare(
-           aligned_min, Condition::GT, spec.range_end.count, true)) {
+         range->cfg->key_comp->compare(
+           spec.range_end, aligned_min, 
+           Condition::GT, spec.range_end.count, true)) {
         //SWC_PRINT << "-- ALIGNED MATCH  --" << SWC_PRINT_CLOSE;
         return true;
       }

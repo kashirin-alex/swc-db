@@ -252,6 +252,7 @@ bool Key::align(KeyVec& start, KeyVec& finish) const {
 }
 */
 
+/* applied with KeyComp::compare on KeySeq
 bool Key::compare(const KeyVec& other, Condition::Comp break_if,
                   uint32_t max, bool empty_ok) const {
   const uint8_t* ptr = data;
@@ -275,6 +276,7 @@ bool Key::compare(const KeyVec& other, Condition::Comp break_if,
   }
   return true;
 }
+*/
 
 bool Key::empty() const {
   return !count;

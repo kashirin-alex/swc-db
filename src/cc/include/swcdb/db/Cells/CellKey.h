@@ -62,8 +62,8 @@ class Key final {
 
   //bool align(KeyVec& start, KeyVec& finish) const;
 
-  bool compare(const KeyVec& other, Condition::Comp break_if,
-               uint32_t max = 0, bool empty_ok=false) const;
+  //bool compare(const KeyVec& other, Condition::Comp break_if,
+  //             uint32_t max = 0, bool empty_ok=false) const;
 
   bool empty() const;
   
