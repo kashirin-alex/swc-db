@@ -13,9 +13,9 @@ namespace SWC { namespace Ranger {
   
 struct CompactRange::InBlock {
 
-  InBlock(size_t size, InBlock* inblock = nullptr) 
+  InBlock(const DB::KeyComp* key_comp, size_t size, InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
-            cells(size), count(0), err(Error::OK),
+            cells(size), count(0), interval(key_comp), err(Error::OK),
             last_cell(0), before_last_cell(0) {
     if(has_last)
       inblock->move_last(this);
@@ -100,19 +100,15 @@ struct CompactRange::InBlock {
 };
 
 
-CompactRange::CompactRange(
-            Compaction::Ptr compactor, RangePtr range,
-            const uint32_t cs_size, const uint8_t cs_replication,
-            const uint32_t blk_size, const uint32_t blk_cells, 
-            const Types::Encoding blk_encoding) 
+CompactRange::CompactRange(Compaction::Ptr compactor, RangePtr range,
+                           const uint32_t cs_size, const uint32_t blk_size) 
             : ReqScan(ReqScan::Type::COMPACTION, true, 
                       compactor->cfg_read_ahead->get()/2), 
               compactor(compactor), range(range),
-              cs_size(cs_size), 
-              cs_replication(cs_replication), 
-              blk_size(blk_size), blk_cells(blk_cells), 
-              blk_encoding(blk_encoding),
-              m_inblock(new InBlock(blk_size)),
+              cs_size(cs_size), blk_size(blk_size), 
+              blk_cells(range->cfg->block_cells()), 
+              blk_encoding(range->cfg->block_enc()),
+              m_inblock(new InBlock(range->cfg->key_comp, blk_size)),
               ts_start(Time::now_ns()), m_getting(true),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
@@ -207,7 +203,7 @@ void CompactRange::response(int &err) {
   if(m_inblock->count <= 1) {
     in_block = nullptr;
   } else {
-    m_inblock = new InBlock(blk_size, in_block);
+    m_inblock = new InBlock(range->cfg->key_comp, blk_size, in_block);
   }
 
   {
@@ -376,10 +372,10 @@ uint32_t CompactRange::create_cs(int& err) {
   cs_writer = std::make_shared<CellStore::Write>(
     id, 
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, id), 
-    spec.flags.max_versions,
-    blk_encoding
+    range, 
+    spec.flags.max_versions
   );
-  cs_writer->create(err, -1, cs_replication, blk_size);
+  cs_writer->create(err, -1, range->cfg->file_replication(), blk_size);
 
   uint32_t portion = range->cfg->compact_percent()/10;
   if(!portion) portion = 1;

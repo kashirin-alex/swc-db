@@ -37,7 +37,7 @@ class RangeLoaded : public ResponseCallback {
     
 
     try {
-      Protocol::Rgr::Params::RangeLoaded params;
+      Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_comp);
       if(params.intval = range->type == Types::Range::MASTER)
         range->get_interval(params.interval);
         

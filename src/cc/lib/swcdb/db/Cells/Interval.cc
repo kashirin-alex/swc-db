@@ -10,13 +10,22 @@
 namespace SWC {  namespace DB { namespace Cells {
 
 
-Interval::Interval() { }
+Interval::Interval(const Types::KeySeq seq) 
+                  : key_comp(KeyComp::get(seq)) { 
+}
 
-Interval::Interval(const uint8_t **ptr, size_t *remain) {
+Interval::Interval(const KeyComp* key_comp) 
+                  : key_comp(key_comp) { 
+}
+
+Interval::Interval(const KeyComp* key_comp,
+                   const uint8_t **ptr, size_t *remain) 
+                  : key_comp(key_comp) {
   decode(ptr, remain, true); 
 }
 
-Interval::Interval(const Interval& other) {
+Interval::Interval(const Interval& other) 
+                  : key_comp(other.key_comp) {
   copy(other); 
 }
 

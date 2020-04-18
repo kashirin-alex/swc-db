@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_db_cells_KeyComparator_h
-#define swcdb_db_cells_KeyComparator_h
+#ifndef swcdb_db_Cells_KeyComparator_h
+#define swcdb_db_Cells_KeyComparator_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Comparators.h"
@@ -13,14 +13,13 @@
 #include "swcdb/db/Types/KeySeq.h"
 
 
-namespace SWC { namespace DB {
+namespace SWC { namespace DB { 
 
 
-
-class KeyComparator {
+class KeyComp {
   public:
-
-  static KeyComparator* create(Types::KeySeq seq);
+ 
+  static const KeyComp* get(Types::KeySeq seq);
 
   virtual Condition::Comp 
   condition(const uint8_t *p1, uint32_t p1_len, 
@@ -28,6 +27,10 @@ class KeyComparator {
 
   bool 
   align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) const;
+        
+  bool 
+  align(Cell::KeyVec& key, const Cell::KeyVec& other, 
+        Condition::Comp comp) const;
 
   virtual Condition::Comp 
   compare(const Cell::Key& key, const Cell::Key& other,
@@ -48,11 +51,12 @@ class KeyComparator {
                  Condition::Comp break_if, uint32_t max = 0, 
                  bool empty_ok=false) const;
 };
+  
+
+namespace Comparator { namespace Key {
 
 
-
-
-class KeyCompBitwise : public KeyComparator {
+class Bitwise : public KeyComp {
   public:
 
   Condition::Comp 
@@ -61,7 +65,7 @@ class KeyCompBitwise : public KeyComparator {
 };
 
 
-class KeyCompBitwiseVol : public KeyComparator {
+class BitwiseVol : public KeyComp {
   public:
 
   Condition::Comp 
@@ -70,7 +74,22 @@ class KeyCompBitwiseVol : public KeyComparator {
 };
 
 
-class KeyCompBitwiseFcount : public KeyCompBitwise {
+class BitwiseFcount : public Bitwise {
+  public:
+
+  Condition::Comp 
+  compare(const Cell::Key& key, const Cell::Key& other,
+          uint32_t max=0, bool empty_ok=false, 
+          bool empty_eq=false) const override;
+
+  bool 
+  compare(const Cell::Key& key, const Cell::KeyVec& other, 
+          Condition::Comp break_if, uint32_t max = 0, 
+          bool empty_ok=false) const override;
+};
+
+
+class BitwiseVolFcount : public BitwiseVol {
   public:
 
   Condition::Comp 
@@ -86,24 +105,14 @@ class KeyCompBitwiseFcount : public KeyCompBitwise {
 
 
 
-class KeyCompBitwiseVolFcount : public KeyCompBitwiseVol {
-  public:
-
-  Condition::Comp 
-  compare(const Cell::Key& key, const Cell::Key& other,
-          uint32_t max=0, bool empty_ok=false, 
-          bool empty_eq=false) const override;
-
-  bool 
-  compare(const Cell::Key& key, const Cell::KeyVec& other, 
-          Condition::Comp break_if, uint32_t max = 0, 
-          bool empty_ok=false) const override;
-};
+extern const Bitwise          bitwise;
+extern const BitwiseFcount    bitwise_fcount;
+extern const BitwiseVol       bitwise_vol;
+extern const BitwiseVolFcount bitwise_vol_fcount;
 
 
+}}}}
 
-
-}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/KeyComparator.cc"

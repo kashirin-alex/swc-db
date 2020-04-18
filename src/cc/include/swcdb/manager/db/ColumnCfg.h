@@ -6,17 +6,22 @@
 #ifndef swc_manager_db_ColumnCfg_h
 #define swc_manager_db_ColumnCfg_h
 
+#include "swcdb/db/Cells/KeyComparator.h"
+
 namespace SWC { namespace Manager { 
 
 class ColumnCfg final {
   
   public:
-  const int64_t cid;
+  const int64_t         cid;
+  const DB::KeyComp*    key_comp;
 
-  ColumnCfg(const int64_t cid) : cid(cid) { }
+  ColumnCfg(DB::Schema::Ptr schema) 
+            : cid(schema->cid), 
+              key_comp(DB::KeyComp::get(schema->col_seq)) { 
+  }
 
   ~ColumnCfg() { }
-
 
   std::string to_string() const {
     std::string s("cid=");

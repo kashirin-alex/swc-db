@@ -42,8 +42,8 @@ class Column final {
 
   const ColumnCfg  cfg;
 
-  Column(const int64_t cid) 
-        : cfg(cid), m_state(State::LOADING) {
+  Column(DB::Schema::Ptr schema) 
+        : cfg(schema), m_state(State::LOADING) {
   }
 
   virtual ~Column(){}

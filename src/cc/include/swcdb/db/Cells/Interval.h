@@ -6,6 +6,7 @@
 #ifndef swcdb_db_Cells_Interval_h
 #define swcdb_db_Cells_Interval_h
 
+#include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 
@@ -20,9 +21,14 @@ class Interval final {
 
   public:
 
-  explicit Interval();
+  const KeyComp* key_comp;
+  
+  explicit Interval(const Types::KeySeq seq);
 
-  explicit Interval(const uint8_t **ptr, size_t *remain);
+  explicit Interval(const KeyComp* key_comp);
+
+  explicit Interval(const KeyComp* key_comp,
+                    const uint8_t **ptr, size_t *remain);
 
   explicit Interval(const Interval& other);
 

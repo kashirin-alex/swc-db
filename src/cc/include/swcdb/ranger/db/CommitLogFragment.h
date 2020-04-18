@@ -40,13 +40,15 @@ class Fragment final {
 
   static std::string to_string(State state);
 
-  static Ptr make(const std::string& filepath, State state=State::NONE);
+  static Ptr make(const std::string& filepath, const DB::KeyComp* key_comp,
+                  State state=State::NONE);
 
   const int64_t         ts;
   DB::Cells::Interval   interval;
   uint32_t              cells_count;
 
-  explicit Fragment(const std::string& filepath, State state=State::NONE);
+  explicit Fragment(const std::string& filepath, const DB::KeyComp* key_comp,
+                    State state=State::NONE);
   
   Ptr ptr();
 

@@ -45,6 +45,8 @@ class ReportRsp  : public Serializable {
   
   struct Range {
 
+    Range(Types::KeySeq seq);
+
     static bool before(Range* r1, Range* r2);
 
     int64_t             rid;
@@ -66,7 +68,8 @@ class ReportRsp  : public Serializable {
 
     static bool before(Column* c1, Column* c2);
 
-    int64_t               cid;
+    int64_t              cid;
+    Types::KeySeq        col_seq;
     std::vector<Range*>  ranges;
 
     ~Column();

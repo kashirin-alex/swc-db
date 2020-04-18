@@ -37,8 +37,9 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
         auto c = new Protocol::Rgr::Params::ReportRsp::Column();
         rsp_params.columns.push_back(c);
         c->cid = col->cfg.cid;
+        c->col_seq = col->cfg.sequence;
         for(size_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ++ridx) {
-          auto r = new Protocol::Rgr::Params::ReportRsp::Range();
+          auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
           c->ranges.push_back(r);
           r->rid = range->rid;
           range->get_interval(r->interval);

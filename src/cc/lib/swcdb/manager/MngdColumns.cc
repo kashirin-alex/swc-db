@@ -69,7 +69,7 @@ void MngdColumns::is_active(int& err, int64_t cid, bool for_schema) {
   if(for_schema)
     return;
 
-  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid, false);
+  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
   if(col == nullptr) {
     err = Error::COLUMN_NOT_EXISTS;
     return;  
@@ -136,7 +136,7 @@ void MngdColumns::update_status(
       auto co_func = (
         Protocol::Mngr::Params::ColumnMng::Function)(((uint8_t)func)+1);
 
-      if(Env::Mngr::columns()->is_an_initialization(err,schema->cid) && !err) {
+      if(Env::Mngr::columns()->is_an_initialization(err, schema) && !err) {
         {
           std::lock_guard lock(m_mutex_columns);
           m_cid_pending_load.emplace_back(co_func, schema->cid);
@@ -177,7 +177,7 @@ void MngdColumns::load_pending(int64_t cid) {
 }
 
 void MngdColumns::remove(int &err, int64_t cid, int64_t rgr_id) {
-  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid, false);
+  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
   if(col == nullptr || col->finalize_remove(err, rgr_id)) {
     Env::Mngr::columns()->remove(err, cid);
     DB::Schema::Ptr schema = Env::Mngr::schemas()->get(cid);
@@ -388,7 +388,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr &schema,
 }
 
 void MngdColumns::remove(int &err, int64_t cid) {
-  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid, false);
+  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
   if(col == nullptr) {
     remove(err, cid, 0);
     return;

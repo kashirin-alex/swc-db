@@ -165,8 +165,7 @@ int main(int argc, char** argv) {
   SWC::Ranger::Blocks blocks;
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
-  blocks.cellstores.add(
-    Ranger::CellStore::create_init_read(err, col_cfg.block_enc(), range));
+  blocks.cellstores.add(Ranger::CellStore::create_initial(err, range));
   blocks.load(err);
   std::cout << "loaded: \n" << blocks.to_string() << "\n";
 

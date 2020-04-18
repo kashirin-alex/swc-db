@@ -15,10 +15,11 @@ namespace SWC { namespace Ranger {
 Range::Range(const ColumnCfg* cfg, const int64_t rid)
             : cfg(cfg), rid(rid), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
+              m_interval(cfg->key_comp),
               m_state(State::NOTLOADED), 
               type(cfg->cid == 1 ? Types::Range::MASTER 
                   :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
-              m_compacting(COMPACT_NONE), m_require_compact(false) {
+              m_compacting(COMPACT_NONE), m_require_compact(false) { 
 }
 
 void Range::init() {
@@ -494,8 +495,7 @@ void Range::load(int &err) {
 
   else if(blocks.cellstores.empty()) {
     // init 1st cs(for log_cells)
-    auto cs = CellStore::create_init_read(
-      err, cfg->blk_enc, shared_from_this());
+    auto cs = CellStore::create_initial(err, shared_from_this());
     if(!err) {
       blocks.cellstores.add(cs);
       is_initial_column_range = true;

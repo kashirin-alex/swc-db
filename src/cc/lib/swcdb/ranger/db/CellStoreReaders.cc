@@ -171,7 +171,9 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   for(size_t i=0;i<len;++i) {
     id = Serialization::decode_vi32(ptr, remain);
     m_cellstores.push_back(
-      Read::make(err, id, range, DB::Cells::Interval(ptr, remain)));
+      Read::make(
+        err, id, range, 
+        DB::Cells::Interval(range->cfg->key_comp, ptr, remain)));
     //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
 }
@@ -196,7 +198,7 @@ void Readers::load_from_path(int &err) {
   std::sort(entries.begin(), entries.end());
   for(auto id : entries) {
     m_cellstores.push_back(
-      Read::make(err, id, range, DB::Cells::Interval())
+      Read::make(err, id, range, DB::Cells::Interval(range->cfg->key_comp))
     );
   }
 }

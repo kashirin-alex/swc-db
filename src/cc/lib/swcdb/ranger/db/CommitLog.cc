@@ -69,7 +69,10 @@ void Fragments::commit_new_fragment(bool finalize) {
 
     DynamicBuffer cells;
     frag = Fragment::make(
-      get_log_fragment(Time::now_ns()), Fragment::State::WRITING);
+      get_log_fragment(Time::now_ns()), 
+      range->cfg->key_comp, 
+      Fragment::State::WRITING
+    );
     
     {
       std::scoped_lock lock(m_mutex);
@@ -161,7 +164,7 @@ void Fragments::load(int &err) {
 
   Fragment::Ptr frag;
   for(auto entry : fragments) {
-    frag = Fragment::make(get_log_fragment(entry.name));
+    frag = Fragment::make(get_log_fragment(entry.name), range->cfg->key_comp);
     frag->load_header(true);
     if((err = frag->error()) == Error::FS_PATH_NOT_FOUND) {
       delete frag;
@@ -289,7 +292,9 @@ void Fragments::unload() {
 
 void Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
   auto frag = Fragment::make(
-    get_log_fragment(take_frag->ts), Fragment::State::NONE);
+    get_log_fragment(take_frag->ts), 
+    range->cfg->key_comp
+  );
   Env::FsInterface::interface()->rename(
     err, 
     take_frag->get_filepath(), 

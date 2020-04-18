@@ -17,7 +17,7 @@ class ColumnCfg final {
   
   const int64_t                         cid;
   const Types::KeySeq                   sequence;
-  const DB::KeyComparator*              key_comp;
+  const DB::KeyComp*                    key_comp;
 
   mutable std::atomic<Types::Column>    col_type;
 
@@ -38,14 +38,12 @@ class ColumnCfg final {
 
   ColumnCfg(const int64_t cid, const DB::Schema& schema) 
             : cid(cid), sequence(schema.col_seq), 
-              key_comp(DB::KeyComparator::create(sequence)),
+              key_comp(DB::KeyComp::get(sequence)),
               deleting(false) {
     update(schema);
   }
 
-  ~ColumnCfg() { 
-    delete key_comp;
-  }
+  ~ColumnCfg() { }
 
   void update(const DB::Schema& schema) const {
     col_type = schema.col_type;

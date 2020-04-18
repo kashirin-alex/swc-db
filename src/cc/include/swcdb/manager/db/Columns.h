@@ -40,48 +40,30 @@ class Columns final {
 
   virtual ~Columns(){}
 
-  bool is_an_initialization(int &err, const int64_t cid) {
+  bool is_an_initialization(int &err, DB::Schema::Ptr schema) {
     Column::Ptr col = nullptr;
     {
       std::scoped_lock lock(m_mutex);
 
-      auto it = m_columns.find(cid);
+      auto it = m_columns.find(schema->cid);
       if (it != m_columns.end())
         return false;
 
-      m_columns.emplace(cid, col = std::make_shared<Column>(cid));
+      m_columns.emplace(schema->cid, col = std::make_shared<Column>(schema));
     }
 
     col->init(err);
     return true;
   }
 
-  Column::Ptr get_column(int &err, const int64_t cid, bool initialize) {
-    Column::Ptr col = nullptr;
-    {
-      std::scoped_lock lock(m_mutex);
-
-      auto it = m_columns.find(cid);
-      if (it != m_columns.end())
-        return it->second;
-        
-      else if(initialize) {
-        m_columns.emplace(cid, col = std::make_shared<Column>(cid));
-      }
-    }
-    if(initialize) 
-      col->init(err);
-    else
-      err = Error::COLUMN_NOT_EXISTS;
-    return col;
-  }
-
-  Range::Ptr get_range(int &err, const int64_t cid, const int64_t rid, 
-                       bool initialize=false) {
-    Column::Ptr col = get_column(err, cid, initialize);
-    if(col == nullptr) 
-      return nullptr;
-    return col->get_range(err, rid, initialize);
+  Column::Ptr get_column(int &err, const int64_t cid) {
+    
+    std::scoped_lock lock(m_mutex);
+    auto it = m_columns.find(cid);
+    if(it != m_columns.end())
+      return it->second;
+    err = Error::COLUMN_NOT_EXISTS;
+    return nullptr;
   }
 
   Range::Ptr get_next_unassigned() {

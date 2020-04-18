@@ -34,13 +34,13 @@ void RangeLoad::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
   if(ev->header.command == RANGE_LOAD) {
     int err = ev->error != Error::OK? ev->error: ev->response_code();
     if(err != Error::OK){
-      loaded(err, false, DB::Cells::Interval()); 
+      loaded(err, false, DB::Cells::Interval(range->cfg->key_comp)); 
       return; 
     }
       
     const uint8_t *ptr = ev->data.base+4;
     size_t remain = ev->data.size-4;
-    Params::RangeLoaded params;
+    Params::RangeLoaded params(range->cfg->key_comp);
     params.decode(&ptr, &remain);
     loaded(err, false, params.interval); 
   }
@@ -51,13 +51,14 @@ bool RangeLoad::valid() {
 }
   
 void RangeLoad::handle_no_conn() {
-  loaded(Error::COMM_NOT_CONNECTED, true, DB::Cells::Interval());
+  loaded(Error::COMM_NOT_CONNECTED, true, 
+         DB::Cells::Interval(range->cfg->key_comp));
 }
 
   
 void RangeLoad::loaded(int err, bool failure, 
                        const DB::Cells::Interval& intval) {
-  auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid, false);
+  auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid);
   if(col == nullptr) {
     Env::Mngr::rangers()->range_loaded(
       rgr, range, Error::COLUMN_MARKED_REMOVED, failure);

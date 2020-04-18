@@ -24,8 +24,7 @@ void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
     if(rsp_params.err != Error::OK)
       goto send_response;
 
-    auto col = Env::Mngr::columns()->get_column(
-      rsp_params.err, params.cid, false);
+    auto col = Env::Mngr::columns()->get_column(rsp_params.err, params.cid);
     if(rsp_params.err != Error::OK)
       goto send_response;
 

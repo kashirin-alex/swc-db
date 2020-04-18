@@ -167,11 +167,8 @@ void Compaction::compact(RangePtr range) {
   auto req = std::make_shared<CompactRange>(
     ptr(),
     range, 
-    cs_size, 
-    range->cfg->file_replication(), 
-    blk_size, 
-    range->cfg->block_cells(), 
-    range->cfg->block_enc()
+    cs_size,
+    blk_size
   );
 
   range->compacting(Range::COMPACT_APPLYING); // sync processing state

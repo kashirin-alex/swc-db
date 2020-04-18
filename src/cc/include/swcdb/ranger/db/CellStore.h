@@ -116,8 +116,8 @@ class Write : public std::enable_shared_from_this<Write> {
   
   //std::atomic<uint32_t>     completion;
  
-  Write(const uint32_t id, const std::string& filepath, uint32_t cell_revs,
-        Types::Encoding encoder=Types::Encoding::PLAIN);
+  Write(const uint32_t id, const std::string& filepath, 
+        RangePtr range, uint32_t cell_revs);
 
   virtual ~Write();
 
@@ -155,8 +155,7 @@ typedef std::shared_ptr<Writers>  WritersPtr;
 
 
 
-static Read::Ptr 
-create_init_read(int& err, Types::Encoding encoding, RangePtr range);
+static Read::Ptr create_initial(int& err, RangePtr range);
 
 
 

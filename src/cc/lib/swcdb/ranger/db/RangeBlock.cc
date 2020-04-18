@@ -252,7 +252,7 @@ Block::Ptr Block::split(bool loaded) {
 
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
-    DB::Cells::Interval(), 
+    DB::Cells::Interval(m_interval.key_comp), 
     blocks,
     loaded ? State::LOADED : State::NONE
   );

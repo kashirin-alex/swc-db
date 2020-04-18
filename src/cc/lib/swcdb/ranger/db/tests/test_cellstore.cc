@@ -57,13 +57,13 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
 
   SWC::Ranger::CellStore::Write cs_writer(
     id, range->get_path_cs(id), 
-    range->cfg->cell_versions(), range->cfg->block_enc()
+    range, range->cfg->cell_versions()
   );
   cs_writer.create(err);
   hdlr_err(err);
 
   SWC::DynamicBuffer buff;
-  Cells::Interval blk_intval;
+  Cells::Interval blk_intval(range->cfg->key_comp);
   Cells::Cell cell;
 
   uint32_t cell_count = 0;
@@ -148,7 +148,7 @@ void read_cs(int id, SWC::Ranger::RangePtr range,
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
   
-  SWC::DB::Cells::Interval intval_r;
+  SWC::DB::Cells::Interval intval_r(range->cfg->key_comp);
   SWC::Ranger::Blocks blocks;
   blocks.init(range);
   blocks.cellstores.add(

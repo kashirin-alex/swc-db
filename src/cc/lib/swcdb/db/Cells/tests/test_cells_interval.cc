@@ -18,8 +18,8 @@ namespace Condition = SWC::Condition;
 
 int main() {
   int num_keys = 9999;
-  DB::Cells::Interval expected_expanded;
-  DB::Cells::Interval interval;
+  DB::Cells::Interval expected_expanded(SWC::Types::KeySeq::BITWISE_VOL);
+  DB::Cells::Interval interval(SWC::Types::KeySeq::BITWISE_VOL);
   DB::Cells::Cell cell; 
 
   for (int n = 0; n<=num_keys ;++n) {

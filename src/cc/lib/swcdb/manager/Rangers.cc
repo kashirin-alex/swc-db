@@ -316,7 +316,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
   std::vector<uint64_t> rgr_ids;
   int err = Error::OK;
-  Env::Mngr::columns()->get_column(err, schema->cid, false)
+  Env::Mngr::columns()->get_column(err, schema->cid)
                           ->need_schema_sync(schema->revision, rgr_ids);
   bool undergo = false;
   for(auto& id : rgr_ids) {
@@ -350,7 +350,7 @@ void Rangers::column_delete(const int64_t cid,
 }
 
 void Rangers::column_compact(int& err, const int64_t cid) {
-  auto col = Env::Mngr::columns()->get_column(err, cid, false);
+  auto col = Env::Mngr::columns()->get_column(err, cid);
   if(!err)  
     col->state(err);
   if(err)

@@ -10,24 +10,24 @@
 namespace SWC { namespace DB {
 
 
-
-KeyComparator* 
-KeyComparator::create(Types::KeySeq seq) {
+const KeyComp* 
+KeyComp::get(Types::KeySeq seq) {
   switch(seq) {
     case Types::KeySeq::BITWISE_VOL:
-      return new KeyCompBitwiseVol();
+      return &Comparator::Key::bitwise_vol;
     case Types::KeySeq::BITWISE_FCOUNT:
-      return new KeyCompBitwiseFcount();
+      return &Comparator::Key::bitwise_fcount;
     case Types::KeySeq::BITWISE_VOL_FCOUNT:
-      return new KeyCompBitwiseVolFcount();
+      return &Comparator::Key::bitwise_vol_fcount;
     default: //case Types::KeySeq::BITWISE:
-      return new KeyCompBitwise();
+      return &Comparator::Key::bitwise;
   }
 }
 
+
 bool 
-KeyComparator::align(const Cell::Key& key, 
-                     Cell::KeyVec& start, Cell::KeyVec& finish) const {
+KeyComp::align(const Cell::Key& key, 
+               Cell::KeyVec& start, Cell::KeyVec& finish) const {
   const uint8_t* ptr = key.data;
   uint24_t len;
   bool chg = false;
@@ -55,9 +55,38 @@ KeyComparator::align(const Cell::Key& key,
   return chg;
 }
 
+bool 
+KeyComp::align(Cell::KeyVec& key, const Cell::KeyVec& other, 
+               Condition::Comp comp) const {
+  bool chg;
+  if(chg = key.empty()) {
+    if(chg = !other.empty())
+      key.assign(other.begin(), other.end());
+    return chg;
+  }
+  bool smaller = key.size() < other.size();
+  uint32_t min = smaller ? key.size() : other.size();
+  for(uint32_t c = 0; c < min; ++c) {
+    std::string& r1 = key[c];
+    const std::string& r2 = other[c];
+    if(condition((const uint8_t*)r1.data(), r1.length(),
+                 (const uint8_t*)r2.data(), r2.length()) == comp) {
+      r1 = r2;
+      chg = true;
+    }
+  }
+  if(smaller) {
+    for(uint32_t c = key.size(); c < other.size(); ++c) {
+      key.add(other[c]);
+      chg = true;
+    }
+  }
+  return chg;
+}
+
 Condition::Comp 
-KeyComparator::compare(const Cell::Key& key, const Cell::Key& other,
-                       uint32_t max, bool empty_ok, bool empty_eq) const {
+KeyComp::compare(const Cell::Key& key, const Cell::Key& other,
+                 uint32_t max, bool empty_ok, bool empty_eq) const {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     if(max && min > max)
       min = max;  
@@ -82,9 +111,9 @@ KeyComparator::compare(const Cell::Key& key, const Cell::Key& other,
 }
 
 bool 
-KeyComparator::compare(const Cell::Key& key, const Cell::KeyVec& other,
-                       Condition::Comp break_if, uint32_t max,
-                       bool empty_ok) const {
+KeyComp::compare(const Cell::Key& key, const Cell::KeyVec& other,
+                 Condition::Comp break_if, uint32_t max,
+                 bool empty_ok) const {
   const uint8_t* ptr = key.data;
   uint24_t len;
   if(!max)
@@ -107,9 +136,9 @@ KeyComparator::compare(const Cell::Key& key, const Cell::KeyVec& other,
 }
 
 Condition::Comp // NOT-READY
-KeyComparator::compare_fcount(const Cell::Key& key, const Cell::Key& other,
-                              uint32_t max, bool empty_ok, 
-                              bool empty_eq) const {
+KeyComp::compare_fcount(const Cell::Key& key, const Cell::Key& other,
+                        uint32_t max, bool empty_ok, 
+                        bool empty_eq) const {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     if(max && min > max)
       min = max;  
@@ -134,9 +163,9 @@ KeyComparator::compare_fcount(const Cell::Key& key, const Cell::Key& other,
 }
 
 bool  // NOT-READY
-KeyComparator::compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
-                              Condition::Comp break_if, uint32_t max,
-                              bool empty_ok) const {
+KeyComp::compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
+                        Condition::Comp break_if, uint32_t max,
+                        bool empty_ok) const {
   const uint8_t* ptr = key.data;
   uint24_t len;
   if(!max)
@@ -159,58 +188,64 @@ KeyComparator::compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
 }
 
 
+namespace Comparator { namespace Key {
 
-// KeyCompBitwise
+const Bitwise          bitwise;
+const BitwiseFcount    bitwise_fcount;
+const BitwiseVol       bitwise_vol;
+const BitwiseVolFcount bitwise_vol_fcount;
+
+// Bitwise
 Condition::Comp 
-KeyCompBitwise::condition(const uint8_t *p1, uint32_t p1_len, 
-                          const uint8_t *p2, uint32_t p2_len) const {
+Bitwise::condition(const uint8_t *p1, uint32_t p1_len, 
+                   const uint8_t *p2, uint32_t p2_len) const {
   return Condition::condition_bitwise(p1, p1_len, p2, p2_len);
 }
 
 
 
-// KeyCompBitwiseVol
+// BitwiseVol
 Condition::Comp 
-KeyCompBitwiseVol::condition(const uint8_t *p1, uint32_t p1_len, 
-                             const uint8_t *p2, uint32_t p2_len) const {
+BitwiseVol::condition(const uint8_t *p1, uint32_t p1_len, 
+                      const uint8_t *p2, uint32_t p2_len) const {
   return Condition::condition_bitwise_vol(p1, p1_len, p2, p2_len);
 }
 
 
 
-// KeyCompBitwiseFcount
+// BitwiseFcount
 Condition::Comp 
-KeyCompBitwiseFcount::compare(const Cell::Key& key, const Cell::Key& other,
-                              uint32_t max, bool empty_ok, 
-                              bool empty_eq) const {
-  return KeyComparator::compare_fcount(key, other, max, empty_ok, empty_eq);
+BitwiseFcount::compare(const Cell::Key& key, const Cell::Key& other,
+                       uint32_t max, bool empty_ok, 
+                       bool empty_eq) const {
+  return KeyComp::compare_fcount(key, other, max, empty_ok, empty_eq);
 }
 
 bool 
-KeyCompBitwiseFcount::compare(const Cell::Key& key, 
-                              const Cell::KeyVec& other,
-                              Condition::Comp break_if, uint32_t max,
-                              bool empty_ok) const {
-  return KeyComparator::compare_fcount(key, other, break_if, max, empty_ok);
+BitwiseFcount::compare(const Cell::Key& key, 
+                       const Cell::KeyVec& other,
+                       Condition::Comp break_if, uint32_t max,
+                       bool empty_ok) const {
+  return KeyComp::compare_fcount(key, other, break_if, max, empty_ok);
 }
 
 
 
-// KeyCompBitwiseVolFcount
+// BitwiseVolFcount
 Condition::Comp 
-KeyCompBitwiseVolFcount::compare(const Cell::Key& key, const Cell::Key& other,
+BitwiseVolFcount::compare(const Cell::Key& key, const Cell::Key& other,
                           uint32_t max, bool empty_ok, 
                           bool empty_eq) const {
-  return KeyComparator::compare_fcount(key, other, max, empty_ok, empty_eq);
+  return KeyComp::compare_fcount(key, other, max, empty_ok, empty_eq);
 }
 
 bool 
-KeyCompBitwiseVolFcount::compare(const Cell::Key& key, 
-                                 const Cell::KeyVec& other,
-                                 Condition::Comp break_if, uint32_t max, 
-                                 bool empty_ok) const {
-  return KeyComparator::compare_fcount(key, other, break_if, max, empty_ok);
+BitwiseVolFcount::compare(const Cell::Key& key, 
+                          const Cell::KeyVec& other,
+                          Condition::Comp break_if, uint32_t max, 
+                          bool empty_ok) const {
+  return KeyComp::compare_fcount(key, other, break_if, max, empty_ok);
 }
 
 
-}}
+}}}}

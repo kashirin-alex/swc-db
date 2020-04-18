@@ -18,9 +18,7 @@ class CompactRange : public ReqScan {
   std::vector<CommitLog::Fragment::Ptr> fragments_old;
 
   CompactRange(Compaction::Ptr compactor, RangePtr range,
-               const uint32_t cs_size, const uint8_t cs_replication,
-               const uint32_t blk_size, const uint32_t blk_cells, 
-               const Types::Encoding blk_encoding);
+               const uint32_t cs_size, const uint32_t blk_size);
 
   virtual ~CompactRange();
 
@@ -78,7 +76,6 @@ class CompactRange : public ReqScan {
   Compaction::Ptr         compactor;
   RangePtr                range;
   const uint32_t          cs_size;
-  const uint8_t           cs_replication;
   const uint32_t          blk_size;
   const uint32_t          blk_cells;
   const Types::Encoding   blk_encoding;

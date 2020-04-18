@@ -36,6 +36,10 @@ void ReportReq::decode_internal(uint8_t version, const uint8_t **bufp,
 
 
 
+ReportRsp::Range::Range(Types::KeySeq seq) 
+                        : interval(seq) { 
+}
+
 ReportRsp::Range::~Range() { }
 
 bool ReportRsp::Range::before(ReportRsp::Range* r1, ReportRsp::Range* r2) {
@@ -85,8 +89,8 @@ ReportRsp::Column::~Column() {
 }
 
 size_t ReportRsp::Column::encoded_length () const {
-  size_t sz = Serialization::encoded_length_vi64(cid)
-          + Serialization::encoded_length_vi64(ranges.size());
+  size_t sz = Serialization::encoded_length_vi64(cid) + 1
+            + Serialization::encoded_length_vi64(ranges.size());
   for(auto r : ranges)
     sz += r->encoded_length();
   return sz;
@@ -94,6 +98,7 @@ size_t ReportRsp::Column::encoded_length () const {
 
 void ReportRsp::Column::encode(uint8_t **bufp) const {
   Serialization::encode_vi64(bufp, cid);
+  Serialization::encode_i8(bufp, (uint8_t)col_seq);
   Serialization::encode_vi64(bufp, ranges.size());
   for(auto r : ranges)
     r->encode(bufp);
@@ -101,8 +106,9 @@ void ReportRsp::Column::encode(uint8_t **bufp) const {
 
 void ReportRsp::Column::decode(const uint8_t **bufp, size_t *remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
+  col_seq = (Types::KeySeq)Serialization::decode_i8(bufp, remainp);
   for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
-    auto r = new Range();
+    auto r = new Range(col_seq);
     r->decode(bufp, remainp);
     ranges.push_back(r);
   }
@@ -112,7 +118,8 @@ void ReportRsp::Column::decode(const uint8_t **bufp, size_t *remainp) {
 void ReportRsp::Column::display(std::ostream& out, bool pretty, 
                                 std::string offset) const {  
   out << offset << "**************************************" << std::endl;
-  out << offset << "cid(" << cid << ")" 
+  out << offset << "cid(" << cid << ") seq(" 
+      << Types::to_string(col_seq) << ")" 
       << " ranges(" << ranges.size() << "):" << std::endl;
   for(auto& r : ranges)
     r->display(out, pretty, offset+" ");
