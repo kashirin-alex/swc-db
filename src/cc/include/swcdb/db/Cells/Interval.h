@@ -62,6 +62,8 @@ class Interval final {
 
   bool align(const Interval &other);
 
+  bool align(const DB::Cell::Key &key);
+
   bool equal(const Interval& other) const;
 
   bool is_in_begin(const DB::Cell::Key &key) const;

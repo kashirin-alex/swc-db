@@ -140,6 +140,10 @@ bool Interval::align(const Interval &other) {
   return start || finish;
 }
 
+bool Interval::align(const DB::Cell::Key &key) {
+  return key_comp->align(key, aligned_min, aligned_max);
+}
+
 bool Interval::equal(const Interval& other) const {
   return
       was_set == other.was_set &&
