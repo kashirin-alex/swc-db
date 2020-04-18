@@ -55,7 +55,7 @@ class KeyVec : public std::vector<std::string> {
 
   void get(const uint32_t idx, std::string& fraction) const;
 
-  bool align(const KeyVec& other, Condition::Comp comp);
+  //bool align(const KeyVec& other, Condition::Comp comp);
 
   uint32_t encoded_length() const;
   

@@ -135,8 +135,8 @@ void Interval::expand(const int64_t& ts) {
 }
 
 bool Interval::align(const Interval &other) {
-  bool start = aligned_min.align(other.aligned_min, Condition::LT);
-  bool finish = aligned_max.align(other.aligned_max, Condition::GT);
+  bool start = key_comp->align(aligned_min, other.aligned_min, Condition::LT);
+  bool finish = key_comp->align(aligned_max, other.aligned_max, Condition::GT);
   return start || finish;
 }
 
