@@ -67,9 +67,6 @@ class KeyComp {
                  Condition::Comp break_if, uint32_t max = 0, 
                  bool empty_ok=false) const;
 
-  virtual bool 
-  is_matching_fcount(const Specs::Key& key, const Cell::Key &other) const;
-
 };
   
 
@@ -122,9 +119,6 @@ class BitwiseFcount : public Bitwise {
   compare(const Cell::Key& key, const Cell::KeyVec& other, 
           Condition::Comp break_if, uint32_t max = 0, 
           bool empty_ok=false) const override;
-          
-  bool 
-  is_matching(const Specs::Key& key, const Cell::Key &other) const override;
 };
 
 
@@ -142,9 +136,6 @@ class BitwiseVolFcount : public BitwiseVol {
   compare(const Cell::Key& key, const Cell::KeyVec& other, 
           Condition::Comp break_if, uint32_t max = 0, 
           bool empty_ok=false) const override;
-
-  bool 
-  is_matching(const Specs::Key& key, const Cell::Key &other) const override;
 };
 
 
