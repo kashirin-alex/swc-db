@@ -160,12 +160,12 @@ bool Interval::equal(const Interval& other) const {
 
 bool Interval::is_in_begin(const DB::Cell::Key &key) const {
   return key_begin.empty() || 
-        (!key.empty() && key_begin.compare(key) != Condition::LT);
+        (!key.empty() && key_comp->compare(key_begin, key) != Condition::LT);
 }
 
 bool Interval::is_in_end(const DB::Cell::Key &key) const {
   return key_end.empty() || 
-        (!key.empty() && key_end.compare(key) != Condition::GT);
+        (!key.empty() && key_comp->compare(key_end, key) != Condition::GT);
 }
 
 bool Interval::consist(const Interval& other) const {
@@ -193,11 +193,11 @@ bool Interval::includes(const Interval& other) const {
 }
 
 bool Interval::includes_begin(const Specs::Interval& interval) const {
-  return key_begin.empty() || interval.is_matching_end(key_begin);
+  return key_begin.empty() || interval.is_matching_end(key_comp, key_begin);
 }
 
 bool Interval::includes_end(const Specs::Interval& interval) const {
-  return key_end.empty() || interval.is_matching_begin(key_end);
+  return key_end.empty() || interval.is_matching_begin(key_comp, key_end);
 }
 
 bool Interval::includes(const Specs::Interval& interval) const {

@@ -28,6 +28,7 @@ class Mutable final {
   static const uint16_t bucket_max    = 6144;
   static const uint16_t bucket_split  = 2048;
 
+  const KeyComp*        key_comp;
   Types::Column         type;
   uint32_t              max_revs;
   uint64_t              ttl;
@@ -96,11 +97,13 @@ class Mutable final {
   };
 
 
-  static Ptr make(const uint32_t max_revs=1, 
+  static Ptr make(const KeyComp* key_comp,
+                  const uint32_t max_revs=1, 
                   const uint64_t ttl_ns=0, 
                   const Types::Column type=Types::Column::PLAIN);
 
-  explicit Mutable(const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
+  explicit Mutable(const KeyComp* key_comp,
+                   const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
                    const Types::Column type=Types::Column::PLAIN);
 
   explicit Mutable(Mutable& other);

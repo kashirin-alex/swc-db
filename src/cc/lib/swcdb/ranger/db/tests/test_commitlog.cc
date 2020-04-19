@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   int versions = 3;
 
   auto range = std::make_shared<Ranger::Range>(&col_cfg, 1);
-  Ranger::CommitLog::Fragments commitlog;
+  Ranger::CommitLog::Fragments commitlog(col_cfg.key_comp);
   commitlog.init(range);
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
   ///
 
 
-  SWC::Ranger::Blocks blocks;
+  SWC::Ranger::Blocks blocks(col_cfg.key_comp);
   blocks.init(range);
   std::cout << "new loading: \n" << blocks.to_string() << "\n";
   blocks.cellstores.add(Ranger::CellStore::create_initial(err, range));

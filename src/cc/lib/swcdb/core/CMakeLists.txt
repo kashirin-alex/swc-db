@@ -99,6 +99,11 @@ ADD_TEST_TARGET(
 	TARGETS swcdb_core 
 )
 
+ADD_TEST_TARGET(
+	NAME	comparators
+	SRCS	tests/test_comparators.cc
+	TARGETS	swcdb_core
+)
 
 ADD_TEST_TARGET(
 	NAME page-arena

@@ -7,8 +7,7 @@
 #include <vector>
 #include <iostream>
 
-#include "swcdb/db/Cells/CellKey.h"
-#include "swcdb/db/Cells/SpecsKey.h"
+#include "swcdb/db/Cells/KeyComparator.h"
 
 #include "swcdb/core/config/Settings.h"
 namespace SWC { namespace Config {
@@ -122,8 +121,9 @@ void test_basic(){
   std::cout << "\nfractions-count=" <<  spec_key.size() <<"\n";
   std::cout <<  spec_key.to_string() <<"\n";
 
+  auto key_comp = DB::KeyComp::get(SWC::Types::KeySeq::BITWISE_VOL);
   std::cout << "spec_key.is_matching(key) \n";
-  if(!spec_key.is_matching(key))
+  if(!key_comp->is_matching(spec_key, key))
     exit(1);
     
   std::cout << "key2.equal(key) \n";

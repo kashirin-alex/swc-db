@@ -26,12 +26,14 @@ class Splitter final {
   void run () {
     Fragment::Ptr frag;
     for(auto it = m_fragments.begin(); it< m_fragments.end();) {
-
-      if(key.compare((frag = *it)->interval.key_end) != Condition::GT) {    
+      frag = *it; 
+      if(frag->interval.key_comp->compare(key, frag->interval.key_end)
+                                  != Condition::GT) {    
         m_fragments.erase(it);
         continue;
       }
-      if(key.compare(frag->interval.key_begin) == Condition::GT) {
+      if(frag->interval.key_comp->compare(key, frag->interval.key_begin) 
+                                  == Condition::GT) {
         int err = Error::OK;
         log_right->take_ownership(err, frag);
         if(!err) {   

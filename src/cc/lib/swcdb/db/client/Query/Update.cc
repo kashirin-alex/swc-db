@@ -3,6 +3,7 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
+#include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
@@ -209,12 +210,14 @@ std::string Update::Locator::to_string() {
 void Update::Locator::locate_on_manager() {
   updater->result->completion_incr();
 
-  Protocol::Mngr::Params::RgrGetReq params(1);
+  Protocol::Mngr::Params::RgrGetReq params(
+    Types::MetaColumn::get_master_cid(col->get_sequence()));
   params.range_begin.copy(*key_start.get());
-  if(cid > 2)
+  if(Types::MetaColumn::is_data(cid))
     params.range_begin.insert(0, std::to_string(cid));
-  if(cid >= 2)
-    params.range_begin.insert(0, "2");
+  if(!Types::MetaColumn::is_master(cid))
+    params.range_begin.insert(
+      0, Types::MetaColumn::get_meta_cid(col->get_sequence()));
 
   SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
 
@@ -251,7 +254,7 @@ bool Update::Locator::located_on_manager(
     updater, base, 
     rsp.rid
       );
-  if(col->cid == 1)
+  if(Types::MetaColumn::is_master(col->cid))
     locator->commit_data(rsp.endpoints, base);
   else 
     locator->locate_on_ranger(rsp.endpoints);
@@ -276,10 +279,11 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
   params.flags |= Protocol::Rgr::Params::RangeLocateReq::COMMIT;
 
   params.range_begin.copy(*key_start.get());
-  if(col->cid >= 2) {
+  if(!Types::MetaColumn::is_master(col->cid)) {
     params.range_begin.insert(0, std::to_string(col->cid));
-    if(type == Types::Range::MASTER && col->cid > 2) 
-      params.range_begin.insert(0, "2");
+    if(type == Types::Range::MASTER && Types::MetaColumn::is_data(col->cid))
+      params.range_begin.insert(
+        0, Types::MetaColumn::get_meta_cid(col->get_sequence()));
   }
   
   SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
@@ -352,7 +356,7 @@ void Update::Locator::resolve_on_manager() {
         locator->updater->result->completion_decr();
     }
   );
-  if(cid != 1) {
+  if(!Types::MetaColumn::is_master(cid)) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
@@ -394,7 +398,7 @@ void Update::Locator::resolve_on_manager() {
     return false;
   }
 
-  if(rsp.cid != 1)
+  if(!Types::MetaColumn::is_master(rsp.cid))
     Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
 
   return proceed_on_ranger(base, rsp);
@@ -404,8 +408,8 @@ bool Update::Locator::proceed_on_ranger(
       const ReqBase::Ptr& base, 
       const Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(type == Types::Range::DATA || 
-    (type == Types::Range::MASTER && col->cid == 1) ||
-    (type == Types::Range::META   && col->cid == 2 )) {
+    (type == Types::Range::MASTER && Types::MetaColumn::is_master(col->cid)) ||
+    (type == Types::Range::META   && Types::MetaColumn::is_meta(col->cid) )) {
     if(cid != rsp.cid || col->cid != cid) {
       SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING(cid no match) %s", 
                             rsp.to_string().c_str());
@@ -421,7 +425,7 @@ bool Update::Locator::proceed_on_ranger(
       rsp.cid, col, key_start, 
       updater, base, 
       rsp.rid, 
-      cid == 1 ? &rsp.range_end : nullptr
+      Types::MetaColumn::is_master(cid) ? &rsp.range_end : nullptr
         )->locate_on_ranger(rsp.endpoints);
   }
   return true;

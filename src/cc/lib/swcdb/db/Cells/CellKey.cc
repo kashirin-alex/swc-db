@@ -193,6 +193,7 @@ bool Key::equal(const Key& other) const {
          Condition::eq(data, size, other.data, other.size));
 }
 
+/* applied with KeyComp::compare on KeySeq
 Condition::Comp Key::compare(const Key& other, uint32_t max, 
                              bool empty_ok, bool empty_eq) const {
   if(uint24_t min = count < other.count ? count : other.count) {
@@ -217,6 +218,7 @@ Condition::Comp Key::compare(const Key& other, uint32_t max,
         ? count > other.count ? Condition::LT : Condition::GT
           : Condition::EQ;
 }
+*/
 
 /* applied with KeyComp::align on KeySeq
 bool Key::align(KeyVec& start, KeyVec& finish) const {

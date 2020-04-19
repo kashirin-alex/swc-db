@@ -81,7 +81,7 @@ class Key : public std::vector<Fraction> {
 
   void remove(uint32_t idx, bool recursive=false);
   
-  bool is_matching(const DB::Cell::Key &other) const;
+  //bool is_matching(const DB::Cell::Key &other) const;
 
   uint32_t encoded_length() const;
   

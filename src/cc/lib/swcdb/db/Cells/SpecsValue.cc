@@ -119,7 +119,8 @@ void Value::decode(const uint8_t **bufp, size_t *remainp) {
 
 bool Value::is_matching(const uint8_t *other_data, 
                         const uint32_t other_size) const {
-  return Condition::is_matching(comp, data, size, other_data, other_size);
+  // on Specs::Value 's seq ?
+  return Condition::is_matching_bitwise(comp, data, size, other_data, other_size);
 }
 
 bool Value::is_matching(int64_t other) const {

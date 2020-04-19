@@ -170,12 +170,11 @@ class AppHandler : virtual public BrokerIf {
     std::string message;
     uint8_t display_flags = 0;
     client::SQL::parse_select(err, sql, req->specs, display_flags, message);
-    if(err) 
-      exception(err, message);
-    
-    req->scan();
-    req->wait();
-    
+    if(!err) {
+      req->scan(err);
+      if(!err)
+        req->wait();
+    }
     if(err) 
       exception(err, message);
     return req;

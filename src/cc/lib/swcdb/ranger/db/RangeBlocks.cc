@@ -8,7 +8,10 @@
 namespace SWC { namespace Ranger {
 
 
-Blocks::Blocks() : m_block(nullptr), m_processing(0) { }
+Blocks::Blocks(const DB::KeyComp* key_comp) 
+              : commitlog(key_comp), 
+                m_block(nullptr), m_processing(0) { 
+}
   
 void Blocks::init(RangePtr for_range) {
   range = for_range;

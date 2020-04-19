@@ -30,7 +30,7 @@ class Blocks final {
   CommitLog::Fragments  commitlog;
   CellStore::Readers    cellstores;
 
-  explicit Blocks();
+  explicit Blocks(const DB::KeyComp* key_comp);
   
   void init(RangePtr for_range);
 

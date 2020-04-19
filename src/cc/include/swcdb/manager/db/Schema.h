@@ -7,12 +7,15 @@
 #define swc_manager_db_Schema_h
 
 #include "swcdb/core/Checksum.h"
+#include "swcdb/db/Types/MetaColumn.h"
 
 namespace SWC { namespace Files { namespace Schema {
 
-const uint8_t HEADER_SIZE=13;
-const uint8_t HEADER_OFFSET_CHKSUM=9;
-const uint8_t VERSION=1;
+const uint8_t SYS_CID_END = 9;
+
+const uint8_t HEADER_SIZE = 13;
+const uint8_t HEADER_OFFSET_CHKSUM = 9;
+const uint8_t VERSION = 1;
 const std::string schema_file = "schema.data";
 
 /* file-format: 
@@ -117,18 +120,22 @@ DB::Schema::Ptr load(int &err, int64_t cid,
     schema = DB::Schema::make();
     schema->cid = cid;
 
-    if(cid < 4) {
+    if(cid <= SYS_CID_END) {
       err == Error::OK;
-      schema->col_name.append("sys_");
-      if(cid == 3) {
-        schema->col_name.append("stats");
+      schema->col_name.append("SYS_");
+      if(cid == 9) {
+        schema->col_name.append("STATS");
         schema->col_type = Types::Column::COUNTER_I64;
         schema->col_seq = Types::KeySeq::BITWISE;
         schema->cell_ttl = Env::Config::settings()->get_i32(
           "swc.stats.ttl", 1036800);
       } else {
-        schema->col_name.append(cid == 1 ? "master": "meta");
+        schema->col_seq = Types::MetaColumn::get_seq_type(cid);
+        schema->col_name.append(
+          (Types::MetaColumn::is_master(cid) ? "MASTER_": "META_") 
+          + Types::to_string(schema->col_seq) );
       }
+    
     } else {
      // schema backups || instant create || throw ?
       schema->col_name.append("noname_");

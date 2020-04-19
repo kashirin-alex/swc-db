@@ -3,6 +3,7 @@
  */
 
 
+#include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/ranger/db/Range.h"
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.h"
@@ -17,8 +18,9 @@ Range::Range(const ColumnCfg* cfg, const int64_t rid)
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_comp),
               m_state(State::NOTLOADED), 
-              type(cfg->cid == 1 ? Types::Range::MASTER 
-                  :(cfg->cid == 2 ? Types::Range::META : Types::Range::DATA)),
+              type(Types::MetaColumn::get_range_type(cfg->cid)),
+              meta_cid(Types::MetaColumn::get_sys_cid(cfg->sequence, type)),
+              blocks(cfg->key_comp), 
               m_compacting(COMPACT_NONE), m_require_compact(false) { 
 }
 
@@ -204,9 +206,9 @@ void Range::on_change(int &err, bool removal,
 
   auto updater = std::make_shared<client::Query::Update>();
   // RangerEnv::updater();
-  uint8_t cid_typ = type == Types::Range::DATA ? 2 : 1;
 
-  updater->columns->create(cid_typ, 1, 0, Types::Column::PLAIN);
+  updater->columns->create(
+    meta_cid, cfg->sequence, 1, 0, Types::Column::PLAIN);
 
   DB::Cells::Cell cell;
   cell.key.copy(m_interval.key_begin);
@@ -214,7 +216,7 @@ void Range::on_change(int &err, bool removal,
 
   if(removal) {
     cell.flag = DB::Cells::DELETE;
-    updater->columns->add(cid_typ, cell);
+    updater->columns->add(meta_cid, cell);
   } else {
 
     cell.flag = DB::Cells::INSERT;
@@ -245,7 +247,7 @@ void Range::on_change(int &err, bool removal,
     aligned_max.encode(&ptr);
 
     cell.set_time_order_desc(true);
-    updater->columns->add(cid_typ, cell);
+    updater->columns->add(meta_cid, cell);
 
     if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
       SWC_ASSERT(!old_key_begin->empty()); 
@@ -255,15 +257,15 @@ void Range::on_change(int &err, bool removal,
       cell.flag = DB::Cells::DELETE;
       cell.key.copy(*old_key_begin);
       cell.key.insert(0, std::to_string(cfg->cid));
-      updater->columns->add(cid_typ, cell);
+      updater->columns->add(meta_cid, cell);
     }
   }
-  updater->commit(cid_typ);
+  updater->commit(meta_cid);
   updater->wait();
   err = updater->result->error();
       
-  // INSERT master-range(col-1), key[cid+m_interval(data(cid)+key)], value[rid]
-  // INSERT meta-range(col-2), key[cid+m_interval(key)], value[rid]
+  // INSERT master-range(col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
+  // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
 }
 
 void Range::unload(Callback::RangeUnloaded_t cb, bool completely) {
@@ -596,13 +598,13 @@ void Range::run_add_queue() {
         continue;
 
       if(!key_end.empty() && 
-          key_end.compare(cell.key) == Condition::GT) {
+          cfg->key_comp->compare(key_end, cell.key) == Condition::GT) {
         early_range_end = true;
         continue;
       } 
 
       if(!key_prev_end.empty() && 
-          key_prev_end.compare(cell.key) != Condition::GT) {
+          cfg->key_comp->compare(key_prev_end, cell.key) != Condition::GT) {
         late_range_begin = true;
         continue;
       }

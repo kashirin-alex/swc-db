@@ -26,6 +26,14 @@ KeyComp::get(Types::KeySeq seq) {
 
 
 bool 
+KeyComp::is_matching(Condition::Comp comp,
+                     const char* p1, uint32_t p1_len, 
+                     const char* p2, uint32_t p2_len) const { 
+  return is_matching(
+    comp, (const uint8_t*)p1, p1_len, (const uint8_t*)p2, p2_len);
+}
+
+bool 
 KeyComp::align(const Cell::Key& key, 
                Cell::KeyVec& start, Cell::KeyVec& finish) const {
   const uint8_t* ptr = key.data;
@@ -135,6 +143,42 @@ KeyComp::compare(const Cell::Key& key, const Cell::KeyVec& other,
   return true;
 }
 
+bool 
+KeyComp::is_matching(const Specs::Key& key, const Cell::Key &other) const {
+  Condition::Comp comp = Condition::NONE;
+
+  const uint8_t* ptr = other.data;
+  uint32_t c = other.count;
+  uint32_t len;
+  for(auto it = key.begin(); c && it < key.end(); ++it, --c, ptr += len) {
+    if(!is_matching(
+        comp = it->comp, 
+        (const uint8_t*)it->value.data(), it->value.size(),
+        ptr, len = Serialization::decode_vi32(&ptr) ))
+      return false;
+  }
+
+  if(key.size() == other.count) 
+    return true;
+
+  switch(comp) {
+    case Condition::LT:
+    case Condition::LE:
+      return key.empty() || key.size() > other.count;
+    case Condition::GT:
+    case Condition::GE:
+      return key.empty() || key.size() < other.count;
+    case Condition::PF:
+    case Condition::RE:
+      return key.size() < other.count;
+    case Condition::NE:
+    case Condition::NONE:
+      return true;
+    default: // Condition::EQ:
+      return false;
+  }
+}
+
 Condition::Comp // NOT-READY
 KeyComp::compare_fcount(const Cell::Key& key, const Cell::Key& other,
                         uint32_t max, bool empty_ok, 
@@ -187,6 +231,42 @@ KeyComp::compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
   return true;
 }
 
+bool  // NOT-READY
+KeyComp::is_matching_fcount(const Specs::Key& key, const Cell::Key &other) const {
+  Condition::Comp comp = Condition::NONE;
+
+  const uint8_t* ptr = other.data;
+  uint32_t c = other.count;
+  uint32_t len;
+  for(auto it = key.begin(); c && it < key.end(); ++it, --c, ptr += len) {
+    if(!is_matching(
+        comp = it->comp, 
+        (const uint8_t*)it->value.data(), it->value.size(),
+        ptr, len = Serialization::decode_vi32(&ptr) ))
+      return false;
+  }
+
+  if(key.size() == other.count) 
+    return true;
+
+  switch(comp) {
+    case Condition::LT:
+    case Condition::LE:
+      return key.empty() || key.size() > other.count;
+    case Condition::GT:
+    case Condition::GE:
+      return key.empty() || key.size() < other.count;
+    case Condition::PF:
+    case Condition::RE:
+      return key.size() < other.count;
+    case Condition::NE:
+    case Condition::NONE:
+      return true;
+    default: // Condition::EQ:
+      return false;
+  }
+}
+
 
 namespace Comparator { namespace Key {
 
@@ -196,24 +276,52 @@ const BitwiseVol       bitwise_vol;
 const BitwiseVolFcount bitwise_vol_fcount;
 
 // Bitwise
+Types::KeySeq 
+Bitwise::get_type() const {
+  return Types::KeySeq::BITWISE;
+}
+
 Condition::Comp 
 Bitwise::condition(const uint8_t *p1, uint32_t p1_len, 
                    const uint8_t *p2, uint32_t p2_len) const {
   return Condition::condition_bitwise(p1, p1_len, p2, p2_len);
 }
 
+bool
+Bitwise::is_matching(Condition::Comp comp,
+                     const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) const {
+  return Condition::is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
+}
 
 
 // BitwiseVol
+Types::KeySeq 
+BitwiseVol::get_type() const {
+  return Types::KeySeq::BITWISE_VOL;
+}
+
 Condition::Comp 
 BitwiseVol::condition(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) const {
   return Condition::condition_bitwise_vol(p1, p1_len, p2, p2_len);
 }
 
+bool
+BitwiseVol::is_matching(Condition::Comp comp,
+                        const uint8_t *p1, uint32_t p1_len, 
+                        const uint8_t *p2, uint32_t p2_len) const {
+  return Condition::is_matching_bitwise_vol(comp, p1, p1_len, p2, p2_len);
+}
+
 
 
 // BitwiseFcount
+Types::KeySeq 
+BitwiseFcount::get_type() const {
+  return Types::KeySeq::BITWISE_FCOUNT;
+}
+
 Condition::Comp 
 BitwiseFcount::compare(const Cell::Key& key, const Cell::Key& other,
                        uint32_t max, bool empty_ok, 
@@ -229,9 +337,20 @@ BitwiseFcount::compare(const Cell::Key& key,
   return KeyComp::compare_fcount(key, other, break_if, max, empty_ok);
 }
 
+bool 
+BitwiseFcount::is_matching(const Specs::Key& key, 
+                           const Cell::Key &other) const {
+  return KeyComp::is_matching_fcount(key, other);
+}
+
 
 
 // BitwiseVolFcount
+Types::KeySeq 
+BitwiseVolFcount::get_type() const {
+  return Types::KeySeq::BITWISE_VOL_FCOUNT;
+}
+
 Condition::Comp 
 BitwiseVolFcount::compare(const Cell::Key& key, const Cell::Key& other,
                           uint32_t max, bool empty_ok, 
@@ -245,6 +364,12 @@ BitwiseVolFcount::compare(const Cell::Key& key,
                           Condition::Comp break_if, uint32_t max, 
                           bool empty_ok) const {
   return KeyComp::compare_fcount(key, other, break_if, max, empty_ok);
+}
+
+bool 
+BitwiseVolFcount::is_matching(const Specs::Key& key, 
+                              const Cell::Key &other) const {
+  return KeyComp::is_matching_fcount(key, other);
 }
 
 

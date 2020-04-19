@@ -93,7 +93,10 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   std::shared_ptr<SWC::Stats::Stat> latency_mutable(std::make_shared<SWC::Stats::Stat>());
   int64_t ts_total = 0;
 
-  Cells::Mutable::Ptr cells_mutable(Cells::Mutable::make(max_versions, 0, typ));
+  Cells::Mutable::Ptr cells_mutable(
+    Cells::Mutable::make(
+      SWC::DB::KeyComp::get(SWC::Types::KeySeq::BITWISE_VOL),
+      max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
      num_revs, reverse, num_cells, gen_historic, Cells::INSERT, typ, time_order_desc);

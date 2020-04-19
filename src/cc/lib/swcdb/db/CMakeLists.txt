@@ -29,6 +29,7 @@ set(swcdb_sources
 	Types/Encoding.cc
 	Types/Range.cc
 	Types/KeySeq.cc
+	Types/MetaColumn.cc
 
 	Protocol/Common/params/HostEndPoints.cc
 
@@ -79,11 +80,6 @@ ADD_LIB_TARGET(
 
 
 
-ADD_TEST_TARGET(
-	NAME	comparators
-	SRCS	Cells/tests/test_comparators.cc
-	TARGETS	swcdb_core
-)
 ADD_TEST_TARGET(
 	NAME	cell_key
 	SRCS	Cells/tests/test_cell_key.cc

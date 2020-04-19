@@ -57,8 +57,8 @@ class Key final {
 
   bool equal(const Key& other) const;
 
-  Condition::Comp compare(const Key& other, uint32_t max=0, 
-                          bool empty_ok=false, bool empty_eq=false) const;
+  //Condition::Comp compare(const Key& other, uint32_t max=0, 
+  //                        bool empty_ok=false, bool empty_eq=false) const;
 
   //bool align(KeyVec& start, KeyVec& finish) const;
 

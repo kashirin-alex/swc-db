@@ -5,6 +5,7 @@
 #ifndef swc_utils_ShellDbClient_h
 #define swc_utils_ShellDbClient_h
 
+#include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/sql/SQL.h"
 #include "swcdb/fs/Interface.h"
 
@@ -292,8 +293,9 @@ class DbClient : public Interface {
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
     }
 
-    req->scan();
-    req->wait();
+    req->scan(err);
+    if(!err) 
+      req->wait();
     
     if(err) 
       return error(message);
@@ -312,7 +314,7 @@ class DbClient : public Interface {
     bool meta;
     do {
       for(auto cid : result->get_cids()) {
-        meta = cid <= 2;
+        meta = !Types::MetaColumn::is_data(cid);;
         schema = Env::Clients::get()->schemas->get(err, cid);
         cells.free();
         result->get_cells(cid, cells);
@@ -436,8 +438,9 @@ class DbClient : public Interface {
         std::cout, !(display_flags & DB::DisplayFlag::BINARY));
     }
 
-    req->scan();
-    req->wait();
+    req->scan(err);
+    if(!err) 
+      req->wait();
 
     writer.finalize();
     if(writer.err && !err)

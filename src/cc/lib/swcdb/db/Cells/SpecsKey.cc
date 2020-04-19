@@ -150,6 +150,7 @@ void Key::remove(uint32_t idx, bool recursive) {
     erase(begin()+idx);
 }
 
+/* applied with KeyComp::compare on KeySeq
 bool Key::is_matching(const DB::Cell::Key &other) const {
   Condition::Comp comp = Condition::NONE;
 
@@ -185,6 +186,7 @@ bool Key::is_matching(const DB::Cell::Key &other) const {
       return false;
   }
 }
+*/
 
 uint32_t Key::encoded_length() const {
   uint32_t len = Serialization::encoded_length_vi32(size());

@@ -145,9 +145,10 @@ bool CompactRange::with_block() {
   return true;
 }
 
-bool CompactRange::selector(const DB::Cells::Cell& cell, bool& stop) {
+bool CompactRange::selector(const DB::KeyComp* key_comp, 
+                            const DB::Cells::Cell& cell, bool& stop) {
   return spec.is_matching(
-    cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
+    key_comp, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
 }
 
 bool CompactRange::reached_limits() {

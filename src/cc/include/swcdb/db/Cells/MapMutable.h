@@ -21,18 +21,20 @@ class ColCells final {
 
   const int64_t cid;
 
-  static Ptr make(const int64_t cid, uint32_t versions, uint32_t ttl, 
-                  Types::Column type);
+  static Ptr make(const int64_t cid, Types::KeySeq seq, 
+                  uint32_t versions, uint32_t ttl, Types::Column type);
 
   static Ptr make(const int64_t cid, Mutable& cells);
 
 
-  ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
-           Types::Column type);
+  ColCells(const int64_t cid, Types::KeySeq seq, 
+           uint32_t versions, uint32_t ttl, Types::Column type);
 
   ColCells(const int64_t cid, Mutable& cells);
 
   ~ColCells();
+
+  Types::KeySeq get_sequence() const;
 
   DB::Cell::Key::Ptr get_first_key();
   
@@ -76,8 +78,8 @@ class MapMutable {
 
   bool create(Schema::Ptr schema);
 
-  bool create(const int64_t cid, uint32_t versions, uint32_t ttl, 
-              Types::Column type);
+  bool create(const int64_t cid, Types::KeySeq seq, 
+              uint32_t versions, uint32_t ttl, Types::Column type);
 
   bool create(const int64_t cid, Mutable& cells);
 

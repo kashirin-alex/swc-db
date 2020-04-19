@@ -121,12 +121,12 @@ class Range final {
         m_key_begin.empty() || 
         m_key_begin.count == any_is ||
         range_end.empty() || 
-        range_end.compare(m_key_begin) != Condition::GT
+        cfg->key_comp->compare(range_end, m_key_begin) != Condition::GT
       ) && (
         m_key_end.empty() || 
         m_key_end.count == any_is ||
         range_begin.empty() || 
-        range_begin.compare(m_key_end) != Condition::LT
+        cfg->key_comp->compare(range_begin, m_key_end) != Condition::LT
       );
   }
 
@@ -138,7 +138,8 @@ class Range final {
   bool before(const DB::Cell::Key& key) {
     std::shared_lock lock(m_mutex);
     return m_key_end.empty() || 
-          (!key.empty() &&  key.compare(m_key_end) != Condition::GT);
+          (!key.empty() &&  
+            cfg->key_comp->compare(key, m_key_end) != Condition::GT);
   }
 
   std::string to_string() {

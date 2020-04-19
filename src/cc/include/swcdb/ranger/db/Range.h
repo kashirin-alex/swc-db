@@ -61,6 +61,7 @@ class Range : public std::enable_shared_from_this<Range> {
   const ColumnCfg*    cfg;
   const int64_t       rid;
   const Types::Range  type;
+  const uint8_t       meta_cid;
   Blocks              blocks;
 
   Range(const ColumnCfg* cfg, const int64_t rid);

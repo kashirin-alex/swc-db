@@ -13,7 +13,10 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 
 
-Fragments::Fragments()  : m_commiting(false), m_deleting(false) { }
+Fragments::Fragments(const DB::KeyComp* key_comp)  
+                    : m_cells(key_comp), 
+                      m_commiting(false), m_deleting(false) { 
+}
 
 void Fragments::init(RangePtr for_range) {
   SWC_ASSERT(for_range != nullptr);

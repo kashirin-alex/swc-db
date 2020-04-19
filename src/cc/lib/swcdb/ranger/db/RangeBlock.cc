@@ -23,6 +23,7 @@ Block::Block(const DB::Cells::Interval& interval,
               m_interval(interval),  
               m_cells(
                 DB::Cells::Mutable(
+                  blocks->range->cfg->key_comp, 
                   blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
@@ -50,7 +51,8 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
     (intval.key_end.empty() || m_prev_key_end.empty() ||
-     m_prev_key_end.compare(intval.key_end) == Condition::GT);
+     m_interval.key_comp->compare(m_prev_key_end, intval.key_end)
+      == Condition::GT);
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
@@ -154,11 +156,13 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     }
     
     if(!m_prev_key_end.empty() &&  
-        m_prev_key_end.compare(cell.key) != Condition::GT)
+        m_interval.key_comp->compare(m_prev_key_end, cell.key) 
+          != Condition::GT)
       continue;
     
     if(!m_interval.key_end.empty() && 
-        m_interval.key_end.compare(cell.key) == Condition::GT)
+        m_interval.key_comp->compare(m_interval.key_end, cell.key)
+         == Condition::GT)
       break;
 
     ++added;
@@ -284,7 +288,7 @@ void Block::_set_prev_key_end(const DB::Cell::Key& key) {
 }
 
 Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
-  return m_interval.key_end.compare(key);
+  return m_interval.key_comp->compare(m_interval.key_end, key);
 }
 
 void Block::_set_key_end(const DB::Cell::Key& key) {

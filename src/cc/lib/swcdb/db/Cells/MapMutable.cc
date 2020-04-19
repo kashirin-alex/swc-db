@@ -10,25 +10,31 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-ColCells::Ptr ColCells::make(const int64_t cid, uint32_t versions, 
-                             uint32_t ttl, Types::Column type) {
-  return std::make_shared<ColCells>(cid, versions, ttl, type);
+ColCells::Ptr ColCells::make(const int64_t cid, Types::KeySeq seq, 
+                             uint32_t versions, uint32_t ttl, 
+                             Types::Column type) {
+  return std::make_shared<ColCells>(cid, seq, versions, ttl, type);
 }
 
 ColCells::Ptr ColCells::make(const int64_t cid, Mutable& cells) {
   return std::make_shared<ColCells>(cid, cells);
 }
 
-ColCells::ColCells(const int64_t cid, uint32_t versions, uint32_t ttl, 
+ColCells::ColCells(const int64_t cid, Types::KeySeq seq, 
+                   uint32_t versions, uint32_t ttl, 
                    Types::Column type)
-                  : cid(cid), m_cells(versions, ttl*1000000000, type) { 
+                  : cid(cid), m_cells(KeyComp::get(seq), versions, ttl*1000000000, type) { 
 }
 
 ColCells::ColCells(const int64_t cid, Mutable& cells)
-        : cid(cid), m_cells(cells) { 
+                  : cid(cid), m_cells(cells) { 
 }
 
 ColCells::~ColCells() {}
+
+Types::KeySeq ColCells::get_sequence() const {
+  return m_cells.key_comp->get_type();
+}
 
 DB::Cell::Key::Ptr ColCells::get_first_key() {
   auto key = std::make_shared<DB::Cell::Key>();
@@ -114,17 +120,19 @@ MapMutable::~MapMutable() {}
 
 bool MapMutable::create(Schema::Ptr schema) {
   return create(
-    schema->cid, schema->cell_versions, schema->cell_ttl, schema->col_type);
+    schema->cid, schema->col_seq, 
+    schema->cell_versions, schema->cell_ttl, 
+    schema->col_type);
 }
 
-bool MapMutable::create(const int64_t cid, uint32_t versions, uint32_t ttl, 
-                              Types::Column type) {
+bool MapMutable::create(const int64_t cid, Types::KeySeq seq, 
+                        uint32_t versions, uint32_t ttl, Types::Column type) {
   std::lock_guard lock(m_mutex);
   
   if(m_map.find(cid) != m_map.end())
     return false;
 
-  return m_map.emplace(cid, ColCells::make(cid, versions, ttl, type)).second;
+  return m_map.emplace(cid, ColCells::make(cid, seq, versions, ttl, type)).second;
 }
 
 bool MapMutable::create(const int64_t cid, Mutable& cells) {

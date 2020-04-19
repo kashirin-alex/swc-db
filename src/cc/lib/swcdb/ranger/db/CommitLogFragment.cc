@@ -225,7 +225,7 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
         break;
       }
 
-      if(key.compare(cell.key) == Condition::GT)
+      if(interval.key_comp->compare(key, cell.key) == Condition::GT)
         log_right->add(cell);
       else
         log_left->add(cell);

@@ -28,8 +28,10 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   virtual ~RangeLocateScanCommit() { }
 
-  bool selector(const DB::Cells::Cell& cell, bool& stop) override {
-    if(any_is && range_begin.compare(cell.key, any_is) != Condition::EQ)
+  bool selector(const DB::KeyComp* key_comp, 
+                const DB::Cells::Cell& cell, bool& stop) override {
+    if(any_is && key_comp->compare(range_begin, cell.key, any_is) 
+                            != Condition::EQ)
       return false;
 
     size_t remain = cell.vlen;
@@ -38,7 +40,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
     key_end.decode(&ptr, &remain);
     bool match;
     if(match = key_end.count == any_is ||
-               key_end.compare(range_begin) != Condition::GT)
+               key_comp->compare(key_end, range_begin) != Condition::GT)
       stop = true;
     return match;
   }

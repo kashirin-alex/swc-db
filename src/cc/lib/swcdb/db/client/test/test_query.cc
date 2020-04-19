@@ -36,6 +36,7 @@ int num_fractions = fraction_finish-fraction_start;
 
 
 void expect_empty_column(int64_t cid) {
+  int err = SWC::Error::OK;
     // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
     [](Query::Select::Result::Ptr result)
@@ -59,7 +60,12 @@ void expect_empty_column(int64_t cid) {
   spec->flags.limit=1;
   // spec->flags.options |= flags.DELETES;
   select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {spec})};
-  select_req->scan();
+  
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
 
   size_t sz = select_req->result->get_size(cid);
@@ -76,6 +82,7 @@ void expect_empty_column(int64_t cid) {
 }
 
 void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
+  int err = SWC::Error::OK;
   Query::Select::Ptr select_req = std::make_shared<Query::Select>();
   
   auto took =  SWC::Time::now_ns();
@@ -83,7 +90,12 @@ void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   spec->flags.offset=offset;
   spec->flags.limit=0;
   select_req->specs.columns = {SWC::DB::Specs::Column::make_ptr(cid, {spec})};
-  select_req->scan();
+
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
   
   took = SWC::Time::now_ns() - took;
@@ -226,7 +238,12 @@ void test_1(const std::string& col_name) {
   spec->flags.limit=1;
   select_req->specs.columns = {
     SWC::DB::Specs::Column::make_ptr(schema->cid, {spec})};
-  select_req->scan();
+
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
 
   size_t sz = select_req->result->get_size(schema->cid);
@@ -262,7 +279,12 @@ void test_1(const std::string& col_name) {
   spec->flags.limit=num_fractions; //batches*num_cells-spec->flags.offset;
 
   took =  SWC::Time::now_ns();
-  select_req->scan();
+
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);
@@ -320,7 +342,12 @@ void test_1(const std::string& col_name) {
   spec->flags.offset=0;
   spec->flags.limit=1;
   took =  SWC::Time::now_ns();
-  select_req->scan();
+
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);
@@ -386,7 +413,12 @@ void test_1(const std::string& col_name) {
   spec->flags.offset=0;
   spec->flags.limit=0;
   took =  SWC::Time::now_ns();
-  select_req->scan();
+
+  select_req->scan(err);
+  if(err) {
+    std::cerr << ">scan(err), err=" << err << "("<<SWC::Error::get_text(err) << ")\n";
+    exit(1);
+  }
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);

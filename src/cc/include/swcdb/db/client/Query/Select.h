@@ -113,7 +113,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
   void wait();
 
-  void scan();
+  void scan(int& err);
 
   private:
   
@@ -128,11 +128,12 @@ class Select : public std::enable_shared_from_this<Select> {
 
     typedef std::shared_ptr<ScannerColumn>  Ptr;
     const int64_t                           cid;
+    const Types::KeySeq                     col_seq;
     DB::Specs::Interval                     interval;
     Select::Ptr                             selector;
 
-    ScannerColumn(const int64_t cid, DB::Specs::Interval& interval,
-                  Select::Ptr selector);
+    ScannerColumn(const int64_t cid, const Types::KeySeq col_seq, 
+                  DB::Specs::Interval& interval, Select::Ptr selector);
 
     virtual ~ScannerColumn();
 

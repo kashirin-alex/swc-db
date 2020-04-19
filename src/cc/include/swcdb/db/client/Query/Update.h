@@ -18,14 +18,14 @@ using ReqBase = client::ConnQueue::ReqBase;
 
 /*
 range-master: 
-  req-mngr.   cid(1) + [n(cid), next_key_start]
-              => cid(1) + rid + rgr(endpoints) + range_begin + range_end	
-    req-rgr.  cid(1) + rid + [cid(n), next_key_start]
-              => cid(2) + rid + range_begin + range_end
+  req-mngr.   cid({1,4}) + [n(cid), next_key_start]
+              => cid({1,4}) + rid + rgr(endpoints) + range_begin + range_end	
+    req-rgr.  cid({1,4}) + rid + [cid(n), next_key_start]
+              => cid({5,8}) + rid + range_begin + range_end
 range-meta: 
-  req-mngr.   cid(2) + rid                           
-              => cid(2) + rid + rgr(endpoints)	
-    req-rgr.  cid(2) + rid + [cid(n), next_key_start]
+  req-mngr.   cid({5,8}) + rid                           
+              => cid({5,8}) + rid + rgr(endpoints)	
+    req-rgr.  cid({5,8}) + rid + [cid(n), next_key_start]
               => cid(n) + rid + range_begin + range_end
 range-data: 
   req-mngr.   cid(n) + rid                           

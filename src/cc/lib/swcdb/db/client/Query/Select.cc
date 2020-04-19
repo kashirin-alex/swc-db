@@ -3,6 +3,7 @@
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  */ 
 
+#include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Select.h"
 
@@ -198,27 +199,37 @@ void Select::wait() {
   );
 }
 
-void Select::scan() {
-  for(auto &col : specs.columns)
+void Select::scan(int& err) {
+  std::vector<Types::KeySeq> sequences;
+  DB::Schema::Ptr schema;
+  for(auto &col : specs.columns) {
+    schema = Env::Clients::get()->schemas->get(err, col->cid);
+    if(err)
+      return;
     result->add_column(col->cid);
-    
+    sequences.push_back(schema->col_seq);
+  }
+
+  auto it_seq = sequences.begin();
   for(auto &col : specs.columns) {
     for(auto &intval : col->intervals) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = buff_sz;
       std::make_shared<ScannerColumn>(
-        col->cid, *intval.get(), shared_from_this()
+        col->cid, *it_seq, *intval.get(), 
+        shared_from_this()
       )->run();
     }
+    ++it_seq;
   }
 }
 
 
-Select::ScannerColumn::ScannerColumn(const int64_t cid, 
+Select::ScannerColumn::ScannerColumn(const int64_t cid, const Types::KeySeq col_seq,
                                      DB::Specs::Interval& interval,
                                      Select::Ptr selector)
-                                    : cid(cid), interval(interval), 
-                                      selector(selector) {
+                                    : cid(cid), col_seq(col_seq), 
+                                      interval(interval), selector(selector) {
 }
 
 Select::ScannerColumn::~ScannerColumn() { }
@@ -296,7 +307,8 @@ std::string Select::Scanner::to_string() {
 void Select::Scanner::locate_on_manager(bool next_range) {
   ++col->selector->result->completion;
 
-  Protocol::Mngr::Params::RgrGetReq params(1, 0, next_range);
+  Protocol::Mngr::Params::RgrGetReq params(
+    Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
 
   if(!range_offset.empty()) {
     params.range_begin.copy(range_offset);
@@ -305,16 +317,16 @@ void Select::Scanner::locate_on_manager(bool next_range) {
     col->interval.apply_possible_range(
       params.range_begin, params.range_end);
   }
-
-  if(cid > 2)
+  
+  if(Types::MetaColumn::is_data(cid)) {
     params.range_begin.insert(0, std::to_string(cid));
-  if(cid >= 2)
-    params.range_begin.insert(0, "2");
-      
-  if(cid > 2) 
     params.range_end.insert(0, std::to_string(cid));
-  if(cid >= 2) 
-    params.range_end.insert(0, "2");
+  }
+  if(!Types::MetaColumn::is_master(cid)) {
+    auto meta_cid = Types::MetaColumn::get_meta_cid(col->col_seq);
+    params.range_begin.insert(0, meta_cid);
+    params.range_end.insert(0, meta_cid);
+  }
 
   SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
 
@@ -338,7 +350,7 @@ void Select::Scanner::resolve_on_manager() {
         --scanner->col->selector->result->completion;
     }
   );
-  if(cid != 1) {
+  if(!Types::MetaColumn::is_master(cid)) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
@@ -392,7 +404,7 @@ bool Select::Scanner::located_on_manager(
         parent == nullptr ? base : parent, &rsp.range_begin
       )] () { scanner->locate_on_manager(true); }
     );
-  } else if(rsp.cid != 1) {
+  } else if(!Types::MetaColumn::is_master(rsp.cid)) {
     Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
   }
 
@@ -403,8 +415,8 @@ bool Select::Scanner::proceed_on_ranger(
           const ReqBase::Ptr& base, 
           const Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(type == Types::Range::DATA || 
-    (type == Types::Range::MASTER && col->cid == 1) ||
-    (type == Types::Range::META   && col->cid == 2 )) {
+    (type == Types::Range::MASTER && Types::MetaColumn::is_master(col->cid)) ||
+    (type == Types::Range::META   && Types::MetaColumn::is_meta(col->cid))) {
 
     if(cid != rsp.cid || col->cid != cid) {
       SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(cid no match) %s", 
@@ -434,18 +446,19 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
     params.flags |= Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(range_offset);
     params.range_offset.insert(0, std::to_string(col->cid));
-    if(type == Types::Range::MASTER && col->cid > 2)
-      params.range_offset.insert(0, "2");
   }
 
   col->interval.apply_possible_range(params.range_begin, params.range_end);
   params.range_begin.insert(0, std::to_string(col->cid));
-  if(type == Types::Range::MASTER && col->cid > 2)
-    params.range_begin.insert(0, "2");
   params.range_end.insert(0, std::to_string(col->cid));
-  if(type == Types::Range::MASTER && col->cid > 2)
-    params.range_end.insert(0, "2");
-      
+  if(type == Types::Range::MASTER && Types::MetaColumn::is_data(col->cid)) {
+    auto meta_cid = Types::MetaColumn::get_meta_cid(col->col_seq);
+    params.range_begin.insert(0, meta_cid);
+    params.range_end.insert(0, meta_cid);
+    if(next_range)
+      params.range_offset.insert(0, meta_cid);
+  }
+
   SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
 
   Protocol::Rgr::Req::RangeLocate::request(

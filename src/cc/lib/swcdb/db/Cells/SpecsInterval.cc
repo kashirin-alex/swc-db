@@ -143,12 +143,13 @@ bool Interval::equal(const Interval& other) const {
           offset_rev == offset_rev ;
 }
 
-bool Interval::is_matching(const Cell::Key& key, int64_t timestamp, 
+bool Interval::is_matching(const KeyComp* key_comp, 
+                           const Cell::Key& key, int64_t timestamp, 
                            bool desc) const {
   if(offset_key.empty()) 
     return true;
 
-  switch(offset_key.compare(key)) {
+  switch(key_comp->compare(offset_key, key)) {
     case Condition::LT:
       return false;
     case Condition::EQ:
@@ -162,9 +163,10 @@ bool Interval::is_matching(int64_t timestamp, bool desc) const {
   return desc ? offset_rev > timestamp : offset_rev < timestamp;
 }
 
-bool Interval::is_matching(const Cells::Cell& cell) const {
+bool Interval::is_matching(const KeyComp* key_comp, 
+                           const Cells::Cell& cell) const {
   bool match = is_matching(
-    cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
+    key_comp, cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
   if(!match)
     return match;
 
@@ -173,13 +175,13 @@ bool Interval::is_matching(const Cells::Cell& cell) const {
     &&
     ts_finish.is_matching(cell.timestamp) 
     &&
-    is_matching_begin(cell.key)
+    is_matching_begin(key_comp, cell.key)
     &&
-    is_matching_end(cell.key)
+    is_matching_end(key_comp, cell.key)
     &&
-    (key_start.empty()   || key_start.is_matching(cell.key)) 
+    (key_start.empty()   || key_comp->is_matching(key_start, cell.key)) 
     &&
-    (key_finish.empty()  || key_finish.is_matching(cell.key))
+    (key_finish.empty()  || key_comp->is_matching(key_finish, cell.key))
     ;
   if(!match || value.empty())
     return match;
@@ -190,14 +192,18 @@ bool Interval::is_matching(const Cells::Cell& cell) const {
   return value.is_matching(cell.value, cell.vlen);
 }
 
-bool Interval::is_matching_begin(const DB::Cell::Key& key) const {
+bool Interval::is_matching_begin(const KeyComp* key_comp, 
+                                 const DB::Cell::Key& key) const {
   return range_begin.empty() || 
-         range_begin.compare(key, range_begin.count, true, true) != Condition::LT;
+         key_comp->compare(range_begin, key, range_begin.count, true, true) 
+          != Condition::LT;
 }
 
-bool Interval::is_matching_end(const DB::Cell::Key& key) const {
+bool Interval::is_matching_end(const KeyComp* key_comp, 
+                               const DB::Cell::Key& key) const {
   return range_end.empty() || 
-         range_end.compare(key, range_end.count, true, true) != Condition::GT;
+         key_comp->compare(range_end, key, range_end.count, true, true)
+          != Condition::GT;
 }
 
 size_t Interval::encoded_length() const {

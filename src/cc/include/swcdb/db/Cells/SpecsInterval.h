@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Cells/SpecsKey.h"
 #include "swcdb/db/Cells/SpecsTimestamp.h"
 #include "swcdb/db/Cells/SpecsValue.h"
@@ -73,16 +74,20 @@ class Interval {
 
   bool equal(const Interval& other) const;
 
-  bool is_matching(const Cell::Key& key, 
-                         int64_t timestamp, bool desc) const;
+  bool is_matching(const KeyComp* key_comp, 
+                   const Cell::Key& key, 
+                   int64_t timestamp, bool desc) const;
 
   bool is_matching(int64_t timestamp, bool desc) const;
 
-  bool is_matching(const Cells::Cell& cell) const;
+  bool is_matching(const KeyComp* key_comp, 
+                   const Cells::Cell& cell) const;
 
-  bool is_matching_begin(const DB::Cell::Key& key) const;
+  bool is_matching_begin(const KeyComp* key_comp, 
+                         const DB::Cell::Key& key) const;
 
-  bool is_matching_end(const DB::Cell::Key& key) const;
+  bool is_matching_end(const KeyComp* key_comp, 
+                       const DB::Cell::Key& key) const;
 
   size_t encoded_length() const;
 

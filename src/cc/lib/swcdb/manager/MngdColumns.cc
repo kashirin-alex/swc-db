@@ -241,7 +241,7 @@ bool MngdColumns::initialize() {
       err = Error::OK;
     }
     if(entries.empty()) { // initialize sys-columns
-      for(int cid=1;cid<=3;++cid) {
+      for(int cid=1; cid <= Files::Schema::SYS_CID_END; ++cid) {
         Column::create(err, cid);
         entries.push_back(cid);
       }
@@ -325,7 +325,7 @@ bool MngdColumns::load_pending(int64_t cid, ColumnFunction &pending) {
 }
 
 int64_t MngdColumns::get_next_cid() {
-  int64_t cid = 3;
+  int64_t cid = Files::Schema::SYS_CID_END;
   while(Env::Mngr::schemas()->get(++cid) != nullptr);
   // if schema does exist on fs (? sanity-check) 
   return cid;

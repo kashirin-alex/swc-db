@@ -6,6 +6,7 @@
 #ifndef swc_manager_db_Columns_h
 #define swc_manager_db_Columns_h
 
+#include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/fs/Interface.h"
 
 #include "swcdb/manager/db/ColumnCfg.h"

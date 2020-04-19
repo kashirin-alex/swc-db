@@ -100,10 +100,13 @@ std::string to_string(Comp comp) {
       return std::string("==");
   }
 };
+
 SWC_CAN_INLINE 
 std::string to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
+
+
 
 SWC_CAN_INLINE 
 Comp condition_bitwise(const uint8_t *p1, uint32_t p1_len, 
@@ -125,40 +128,34 @@ Comp condition_bitwise_vol(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-Comp condition(const uint8_t *p1, uint32_t p1_len, 
-               const uint8_t *p2, uint32_t p2_len) {
-  return condition_bitwise_vol(p1, p1_len, p2, p2_len);
-}
-
-SWC_CAN_INLINE 
 bool pf(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   return p1_len <= p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 SWC_CAN_INLINE 
-bool _gt(const uint8_t *p1, uint32_t p1_len, 
+bool gt_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len < p2_len);
 }
 
 SWC_CAN_INLINE 
-bool gt(const uint8_t *p1, uint32_t p1_len, 
+bool gt_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff < 0 && p1_len <= p2_len) || (diff >= 0 && p1_len < p2_len);
 }
 
 SWC_CAN_INLINE 
-bool _ge(const uint8_t *p1, uint32_t p1_len, 
+bool ge_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
 
 SWC_CAN_INLINE 
-bool ge(const uint8_t *p1, uint32_t p1_len, 
+bool ge_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff <= 0 && p1_len <= p2_len) || (diff > 0 && p1_len < p2_len);
@@ -177,28 +174,28 @@ bool eq(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-bool _le(const uint8_t *p1, uint32_t p1_len, 
+bool le_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len >= p2_len);
 }
 
 SWC_CAN_INLINE 
-bool le(const uint8_t *p1, uint32_t p1_len, 
+bool le_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff >= 0 && p1_len >= p2_len) || (diff < 0 && p1_len > p2_len);
 }
 
 SWC_CAN_INLINE 
-bool _lt(const uint8_t *p1, uint32_t p1_len, 
+bool lt_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len > p2_len);
 } 
 
 SWC_CAN_INLINE 
-bool lt(const uint8_t *p1, uint32_t p1_len, 
+bool lt_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return (diff > 0 && p1_len >= p2_len) || (diff <= 0 && p1_len > p2_len);
@@ -227,29 +224,30 @@ bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
   );
 }
 
+
 SWC_CAN_INLINE 
-bool is_matching(uint8_t comp, 
-                const uint8_t *p1, uint32_t p1_len, 
-                const uint8_t *p2, uint32_t p2_len) {
+bool is_matching_bitwise(uint8_t comp, 
+                         const uint8_t *p1, uint32_t p1_len, 
+                         const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
     case Comp::PF:
       return pf(p1, p1_len, p2, p2_len);
 
     case Comp::GT:
-      return gt(p1, p1_len, p2, p2_len);
+      return gt_bitwise(p1, p1_len, p2, p2_len);
 
     case Comp::GE:
-      return ge(p1, p1_len, p2, p2_len);
+      return ge_bitwise(p1, p1_len, p2, p2_len);
 
     case Comp::EQ:
       return eq(p1, p1_len, p2, p2_len);
 
     case Comp::LE:
-      return le(p1, p1_len, p2, p2_len);
+      return le_bitwise(p1, p1_len, p2, p2_len);
 
     case Comp::LT:
-      return lt(p1, p1_len, p2, p2_len);
+      return lt_bitwise(p1, p1_len, p2, p2_len);
 
     case Comp::NE:
       return ne(p1, p1_len, p2, p2_len);
@@ -263,11 +261,75 @@ bool is_matching(uint8_t comp,
 }
 
 SWC_CAN_INLINE 
-bool is_matching(uint8_t comp, 
+bool is_matching_bitwise_vol(uint8_t comp, 
+                             const uint8_t *p1, uint32_t p1_len, 
+                             const uint8_t *p2, uint32_t p2_len) {
+  switch (comp) {
+
+    case Comp::PF:
+      return pf(p1, p1_len, p2, p2_len);
+
+    case Comp::GT:
+      return gt_bitwise_vol(p1, p1_len, p2, p2_len);
+
+    case Comp::GE:
+      return ge_bitwise_vol(p1, p1_len, p2, p2_len);
+
+    case Comp::EQ:
+      return eq(p1, p1_len, p2, p2_len);
+
+    case Comp::LE:
+      return le_bitwise_vol(p1, p1_len, p2, p2_len);
+
+    case Comp::LT:
+      return lt_bitwise_vol(p1, p1_len, p2, p2_len);
+
+    case Comp::NE:
+      return ne(p1, p1_len, p2, p2_len);
+
+    case Comp::RE:
+      return re(p1, p1_len, p2, p2_len);
+
+    default:
+      return true;
+  }
+}
+
+
+SWC_CAN_INLINE 
+bool is_matching_bitwise(uint8_t comp, 
+                         const char *p1, uint32_t p1_len, 
+                         const char *p2, uint32_t p2_len) {
+  return is_matching_bitwise(
+    comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+}
+
+SWC_CAN_INLINE 
+bool is_matching_bitwise_vol(uint8_t comp, 
+                            const char *p1, uint32_t p1_len, 
+                            const char *p2, uint32_t p2_len) {
+  return is_matching_bitwise_vol(
+    comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+}
+
+
+SWC_CAN_INLINE 
+bool is_matching(bool volumetric, uint8_t comp, 
+                 const uint8_t *p1, uint32_t p1_len, 
+                 const uint8_t *p2, uint32_t p2_len) {
+  return volumetric 
+    ? is_matching_bitwise_vol(comp, p1, p1_len, p2, p2_len)
+    : is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
+}
+
+SWC_CAN_INLINE 
+bool is_matching(bool volumetric, uint8_t comp, 
                  const char *p1, uint32_t p1_len, 
                  const char *p2, uint32_t p2_len) {
-  return is_matching(comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+  return is_matching(volumetric, comp, 
+                    (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
+
 
 
 // const int64_t
