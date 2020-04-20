@@ -113,50 +113,43 @@ class Columns final {
   }
 
   void unload_all(bool validation) {
-
-    std::atomic<int>    unloaded = 0;
-    std::promise<void>  r_promise;
-    Callback::RangeUnloaded_t cb 
-      = [&unloaded, &r_promise](int err){
-        if(--unloaded == 0)
-          r_promise.set_value();
+    std::vector<std::function<bool(int64_t)>> order = {
+      Types::MetaColumn::is_data,
+      Types::MetaColumn::is_meta,
+      Types::MetaColumn::is_master 
     };
-    
-    uint8_t meta = 0;
-    for(;;) {
-      std::scoped_lock lock(m_mutex);
-      auto it = m_columns.begin();
-      for(uint8_t n=0; n<meta;++n)
-        ++it;
-      if(it == m_columns.end())
-        break;
-      while(it->first <= 2) {
-        if(m_columns.size() == ++meta)
-          break;
-        ++it;
-      }
-      if(m_columns.size() == meta)
-        break;
-      if(validation)
-        SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
-      ++unloaded;
-      it->second->unload_all(unloaded, cb);
-      m_columns.erase(it);
-    }
-    if(unloaded) 
-      r_promise.get_future().wait();
 
-    for(uint8_t n=0; n<meta; ++n) {
-      auto it = m_columns.begin();
-      if(m_columns.size() == 2 && it->first == 1)
-        ++it;
-      if(validation)
-        SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", it->first);
-      r_promise = std::promise<void>();
-      ++unloaded;
-      it->second->unload_all(unloaded, cb);
-      m_columns.erase(it);
-      if(unloaded) 
+    std::atomic<int> to_unload = 0;
+    Column::Ptr col;
+    uint8_t meta;
+    for(auto chk : order) {
+
+      std::promise<void>  r_promise;
+      Callback::RangeUnloaded_t cb 
+        = [&to_unload, &r_promise](int err){
+          if(--to_unload == 0)
+            r_promise.set_value();
+      };
+    
+      for(meta=0;;) {
+        {
+          std::scoped_lock lock(m_mutex);
+          auto it = m_columns.begin();
+          for(uint8_t n=0; n<meta; ++n, ++it);
+          if(it == m_columns.end())
+            break;
+          for(;!chk(it->first) && m_columns.size() > ++meta; ++it);
+          if(m_columns.size() == meta)
+            break;
+          col = it->second;
+          m_columns.erase(it);
+        }
+        if(validation)
+          SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", col->cfg.cid);
+        ++to_unload;
+        col->unload_all(to_unload, cb);
+      }
+      if(to_unload) 
         r_promise.get_future().wait();
     }
   }
