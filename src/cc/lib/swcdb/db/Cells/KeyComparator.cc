@@ -13,12 +13,12 @@ namespace SWC { namespace DB {
 const KeyComp* 
 KeyComp::get(Types::KeySeq seq) {
   switch(seq) {
-    case Types::KeySeq::BITWISE_VOL:
-      return &Comparator::Key::bitwise_vol;
+    case Types::KeySeq::VOLUME:
+      return &Comparator::Key::volume;
     case Types::KeySeq::BITWISE_FCOUNT:
       return &Comparator::Key::bitwise_fcount;
-    case Types::KeySeq::BITWISE_VOL_FCOUNT:
-      return &Comparator::Key::bitwise_vol_fcount;
+    case Types::KeySeq::VOLUME_FCOUNT:
+      return &Comparator::Key::volume_fcount;
     default: //case Types::KeySeq::BITWISE:
       return &Comparator::Key::bitwise;
   }
@@ -208,10 +208,10 @@ KeyComp::compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
 
 namespace Comparator { namespace Key {
 
-const Bitwise          bitwise;
-const BitwiseFcount    bitwise_fcount;
-const BitwiseVol       bitwise_vol;
-const BitwiseVolFcount bitwise_vol_fcount;
+const Bitwise         bitwise;
+const BitwiseFcount   bitwise_fcount;
+const Volume          volume;
+const VolumeFcount    volume_fcount;
 
 // Bitwise
 Types::KeySeq 
@@ -233,23 +233,23 @@ Bitwise::is_matching(Condition::Comp comp,
 }
 
 
-// BitwiseVol
+// Volume
 Types::KeySeq 
-BitwiseVol::get_type() const {
-  return Types::KeySeq::BITWISE_VOL;
+Volume::get_type() const {
+  return Types::KeySeq::VOLUME;
 }
 
 Condition::Comp 
-BitwiseVol::condition(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) const {
-  return Condition::condition_bitwise_vol(p1, p1_len, p2, p2_len);
+Volume::condition(const uint8_t *p1, uint32_t p1_len, 
+                  const uint8_t *p2, uint32_t p2_len) const {
+  return Condition::condition_volume(p1, p1_len, p2, p2_len);
 }
 
 bool
-BitwiseVol::is_matching(Condition::Comp comp,
-                        const uint8_t *p1, uint32_t p1_len, 
-                        const uint8_t *p2, uint32_t p2_len) const {
-  return Condition::is_matching_bitwise_vol(comp, p1, p1_len, p2, p2_len);
+Volume::is_matching(Condition::Comp comp,
+                    const uint8_t *p1, uint32_t p1_len, 
+                    const uint8_t *p2, uint32_t p2_len) const {
+  return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
 }
 
 
@@ -277,24 +277,24 @@ BitwiseFcount::compare(const Cell::Key& key,
 
 
 
-// BitwiseVolFcount
+// VolumeFcount
 Types::KeySeq 
-BitwiseVolFcount::get_type() const {
-  return Types::KeySeq::BITWISE_VOL_FCOUNT;
+VolumeFcount::get_type() const {
+  return Types::KeySeq::VOLUME_FCOUNT;
 }
 
 Condition::Comp 
-BitwiseVolFcount::compare(const Cell::Key& key, const Cell::Key& other,
-                          uint32_t max, bool empty_ok, 
-                          bool empty_eq) const {
+VolumeFcount::compare(const Cell::Key& key, const Cell::Key& other,
+                      uint32_t max, bool empty_ok, 
+                      bool empty_eq) const {
   return KeyComp::compare_fcount(key, other, max, empty_ok, empty_eq);
 }
 
 bool 
-BitwiseVolFcount::compare(const Cell::Key& key, 
-                          const Cell::KeyVec& other,
-                          Condition::Comp break_if, uint32_t max, 
-                          bool empty_ok) const {
+VolumeFcount::compare(const Cell::Key& key, 
+                      const Cell::KeyVec& other,
+                      Condition::Comp break_if, uint32_t max, 
+                      bool empty_ok) const {
   return KeyComp::compare_fcount(key, other, break_if, max, empty_ok);
 }
 

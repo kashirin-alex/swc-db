@@ -15,12 +15,12 @@ std::string to_string(KeySeq typ) {
   switch(typ){
     case KeySeq::BITWISE:
       return std::string("BITWISE");
-    case KeySeq::BITWISE_VOL:
-      return std::string("BITWISE_VOL");
+    case KeySeq::VOLUME:
+      return std::string("VOLUME");
     case KeySeq::BITWISE_FCOUNT:
       return std::string("BITWISE_FCOUNT");
-    case KeySeq::BITWISE_VOL_FCOUNT:
-      return std::string("BITWISE_VOL_FCOUNT");
+    case KeySeq::VOLUME_FCOUNT:
+      return std::string("VOLUME_FCOUNT");
     default:
       return std::string("uknown");
   }
@@ -28,20 +28,24 @@ std::string to_string(KeySeq typ) {
 
 KeySeq range_seq_from(const std::string& typ) {
   if(typ.compare("1") == 0 || 
-     strncasecmp(typ.data(), "BITWISE", typ.length()) == 0)
-    return KeySeq::BITWISE;
-
+      (typ.length() == 7 && 
+       strncasecmp(typ.data(), "BITWISE", 7) == 0))
+      return KeySeq::BITWISE;
+      
   if(typ.compare("2") == 0 || 
-     strncasecmp(typ.data(), "BITWISE_VOL", typ.length()) == 0)
-    return KeySeq::BITWISE_VOL;
-
+    (typ.length() == 6 && 
+     strncasecmp(typ.data(), "VOLUME", 6) == 0))
+  return KeySeq::VOLUME;
+    
   if(typ.compare("3") == 0 || 
-     strncasecmp(typ.data(), "BITWISE_FCOUNT", typ.length()) == 0)
+      (typ.length() == 14 && 
+       strncasecmp(typ.data(), "BITWISE_FCOUNT", 14) == 0))
     return KeySeq::BITWISE_FCOUNT;
 
   if(typ.compare("4") == 0 || 
-     strncasecmp(typ.data(), "BITWISE_VOL_FCOUNT", typ.length()) == 0)
-    return KeySeq::BITWISE_VOL_FCOUNT;
+      (typ.length() == 13 && 
+       strncasecmp(typ.data(), "VOLUME_FCOUNT", 13) == 0))
+    return KeySeq::VOLUME_FCOUNT;
 
   return KeySeq::UNKNOWN;
 }

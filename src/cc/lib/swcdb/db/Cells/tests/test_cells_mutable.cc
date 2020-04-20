@@ -95,7 +95,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   Cells::Mutable::Ptr cells_mutable(
     Cells::Mutable::make(
-      SWC::DB::KeyComp::get(SWC::Types::KeySeq::BITWISE_VOL),
+      SWC::DB::KeyComp::get(SWC::Types::KeySeq::VOLUME),
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,

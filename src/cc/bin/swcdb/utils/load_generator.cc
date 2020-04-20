@@ -54,7 +54,7 @@ void Settings::init_app_options() {
         Types::from_string_range_seq,
         Types::repr_range_seq
       ), 
-     "Schema col-seq BITWISE/+_VOL/+_FCOUNT")  
+     "Schema col-seq BITWISE/VOLUME/+_FCOUNT")  
 
     ("gen-col-type", 
       g_enum(

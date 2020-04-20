@@ -11,11 +11,11 @@
 namespace SWC { namespace Types { 
 
 enum KeySeq {
-  UNKNOWN             = 0,
-  BITWISE             = 1,
-  BITWISE_VOL         = 2, 
-  BITWISE_FCOUNT      = 3,
-  BITWISE_VOL_FCOUNT  = 4
+  UNKNOWN        = 0,
+  BITWISE        = 1,
+  VOLUME         = 2, 
+  BITWISE_FCOUNT = 3,
+  VOLUME_FCOUNT  = 4
 };
 
 std::string to_string(KeySeq typ);

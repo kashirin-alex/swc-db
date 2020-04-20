@@ -121,7 +121,7 @@ void test_basic(){
   std::cout << "\nfractions-count=" <<  spec_key.size() <<"\n";
   std::cout <<  spec_key.to_string() <<"\n";
 
-  auto key_comp = DB::KeyComp::get(SWC::Types::KeySeq::BITWISE_VOL);
+  auto key_comp = DB::KeyComp::get(SWC::Types::KeySeq::VOLUME);
   std::cout << "spec_key.is_matching(key) \n";
   if(!key_comp->is_matching(spec_key, key))
     exit(1);

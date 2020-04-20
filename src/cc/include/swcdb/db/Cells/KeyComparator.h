@@ -89,7 +89,7 @@ class Bitwise : public KeyComp {
 };
 
 
-class BitwiseVol : public KeyComp {
+class Volume : public KeyComp {
   public:
 
   Types::KeySeq get_type() const override;
@@ -122,7 +122,7 @@ class BitwiseFcount : public Bitwise {
 };
 
 
-class BitwiseVolFcount : public BitwiseVol {
+class VolumeFcount : public Volume {
   public:
 
   Types::KeySeq get_type() const override;
@@ -140,10 +140,10 @@ class BitwiseVolFcount : public BitwiseVol {
 
 
 
-extern const Bitwise          bitwise;
-extern const BitwiseFcount    bitwise_fcount;
-extern const BitwiseVol       bitwise_vol;
-extern const BitwiseVolFcount bitwise_vol_fcount;
+extern const Bitwise        bitwise;
+extern const BitwiseFcount  bitwise_fcount;
+extern const Volume         volume;
+extern const VolumeFcount   volume_fcount;
 
 
 }}}}
