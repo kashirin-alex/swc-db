@@ -10,11 +10,35 @@
 #include <cstring>
 #include <re2/re2.h>
 
+
 # define SWC_CAN_INLINE  \
   __attribute__((__always_inline__, __artificial__)) \
   extern inline
 
-namespace SWC { namespace Condition {
+# define SWC_NOINLINE  \
+  __attribute__((__noinline__)) \
+  static 
+
+
+namespace SWC { 
+
+SWC_NOINLINE
+int8_t
+_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
+  for(; count; --count, ++s1, ++s2)
+    if(*s1 != *s2) 
+      return *s1 < *s2 ? -1 : 1;
+  return 0;
+}
+  
+SWC_CAN_INLINE   
+int8_t
+memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
+  return _memcomp(s1, s2, count);
+}
+
+namespace Condition {
+
 
 enum Comp {
   NONE = 0x0,   // [    ]  :   none     (no comparison aplied)
@@ -111,8 +135,9 @@ std::string to_string(uint8_t comp) {
 SWC_CAN_INLINE 
 Comp condition_bitwise(const uint8_t *p1, uint32_t p1_len, 
                        const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff == 0 && p1_len == p2_len 
+  int8_t diff;
+  return (diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len)) == 0 && 
+          p1_len == p2_len 
         ? Comp::EQ 
         : (diff < 0 || diff == 0 && p1_len < p2_len ? Comp::GT : Comp::LT );
 }
@@ -120,11 +145,30 @@ Comp condition_bitwise(const uint8_t *p1, uint32_t p1_len,
 SWC_CAN_INLINE 
 Comp condition_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
                            const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return diff == 0 
-    ? (p1_len == p2_len ? Comp::EQ : (p1_len < p2_len ? Comp::GT : Comp::LT) )
-    : (diff < 0 ? (p1_len <= p2_len ? Comp::GT : Comp::LT)
-                : (p1_len <  p2_len ? Comp::GT : Comp::LT));
+  int8_t diff;
+  return (
+    p1_len < p2_len 
+    ? Comp::GT 
+    : (p1_len > p2_len 
+      ? Comp::LT
+      : ((diff = memcmp(p1, p2, p1_len)) == 0 
+        ? Comp::EQ 
+        : (diff < 0 
+          ? Comp::GT 
+          : Comp::LT
+          )
+        ) 
+      )
+    );
+}
+
+
+
+SWC_CAN_INLINE 
+Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len, 
+                         const uint8_t *p2, uint32_t p2_len) {
+  return (vol ? condition_bitwise_vol : condition_bitwise)
+        (p1, p1_len, p2, p2_len);
 }
 
 SWC_CAN_INLINE 
@@ -136,75 +180,65 @@ bool pf(const uint8_t *p1, uint32_t p1_len,
 SWC_CAN_INLINE 
 bool gt_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int8_t diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len < p2_len);
 }
 
 SWC_CAN_INLINE 
 bool gt_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return (diff < 0 && p1_len <= p2_len) || (diff >= 0 && p1_len < p2_len);
+  return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) < 0);
 }
 
 SWC_CAN_INLINE 
 bool ge_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int8_t diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
 
 SWC_CAN_INLINE 
 bool ge_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return (diff <= 0 && p1_len <= p2_len) || (diff > 0 && p1_len < p2_len);
+  return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) <= 0);
 }
 
 SWC_CAN_INLINE 
 bool eq(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  if(p1_len != p2_len)
-    return false;
-  for(auto end = p1+p1_len; p1 < end; ++p1, ++p2)
-    if(*p1 != *p2)
-      return false;
-   return true;
-  //return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
+  return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 SWC_CAN_INLINE 
 bool le_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int8_t diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len >= p2_len);
 }
 
 SWC_CAN_INLINE 
 bool le_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return (diff >= 0 && p1_len >= p2_len) || (diff < 0 && p1_len > p2_len);
+  return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) >= 0);
 }
 
 SWC_CAN_INLINE 
 bool lt_bitwise(const uint8_t *p1, uint32_t p1_len, 
          const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int8_t diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len > p2_len);
 } 
 
 SWC_CAN_INLINE 
 bool lt_bitwise_vol(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
-  return (diff > 0 && p1_len >= p2_len) || (diff <= 0 && p1_len > p2_len);
+  return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
 } 
 
 SWC_CAN_INLINE 
 bool ne(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
-  return p1_len != p2_len || memcmp(p1, p2, p1_len) != 0;
+  return !eq(p1, p1_len, p2, p2_len);
 }
 
 SWC_CAN_INLINE 
@@ -397,5 +431,6 @@ bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
 
 
 # undef SWC_CAN_INLINE 
+# undef SWC_NOINLINE 
 
 #endif
