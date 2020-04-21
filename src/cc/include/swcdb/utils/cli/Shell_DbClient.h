@@ -11,6 +11,8 @@
 
 #include "swcdb/common/Files/TSV.h"
 
+#include "swcdb/core/FlowRate.h"
+
 namespace SWC { namespace Utils { namespace shell {
 
 
@@ -467,55 +469,11 @@ class DbClient : public Interface {
   }
 
   void display_stats(size_t took, size_t bytes, 
-                     size_t cells_count, size_t resend_cells = 0) {      
-    double took_base;
-    double bytes_base;
-
-    std::string time_base("n");
-    if(took < 100000) {
-      took_base = took;
-    } else if(took < 10000000) { 
-      took_base = (double)took/1000;
-      time_base = "u";
-    } else if(took <= 10000000000) { 
-      took_base = (double)(took/1000)/1000;
-      time_base = "m";
-    } else if(took > 10000000000) {
-      took_base = (double)(took/1000000)/1000;
-      time_base = "";
-    }
-
-    std::string byte_base;
-    if(bytes < 1000000) {
-      bytes_base = bytes;
-    } else if(bytes <= 1000000000) {
-      bytes_base = (double)bytes/1000;
-      byte_base = "K";
-    } else if(bytes <= 1000000000000) {
-      bytes_base = (double)(bytes/1000)/1000;
-      byte_base = "M";
-    } else if(bytes > 1000000000000) {
-      bytes_base = (double)(bytes/1000)/1000;
-      byte_base = "G";
-    }
-    
-    SWC_PRINT 
-      << "\n\nStatistics:\n"
-      << " Total Time Took:        " << took_base << " " << time_base  << "s\n"
-      << " Total Cells Count:      " << cells_count                    << "\n"
-      << " Total Cells Size:       " << bytes_base << " " << byte_base << "B\n";
-    if(resend_cells) {
-      std::cout 
-      << " Resend Cells Count:     " << resend_cells                   << "\n";
-    }
-    std::cout 
-      << " Average Transfer Rate:  " << bytes_base/took_base 
-                              << " " << byte_base << "B/" << time_base << "s\n" 
-      << " Average Cells Rate:     " << (cells_count?cells_count/took_base:0)
-                                              << " cell/" << time_base << "s"
-      << SWC_PRINT_CLOSE;
-    ;
-
+                     size_t cells_count, size_t resend_cells = 0) {
+    FlowRate::Data rate(bytes, took);
+    SWC_PRINT;
+    rate.print_cells_statistics(std::cout, cells_count, resend_cells);
+    std::cout << SWC_PRINT_CLOSE;
   }
   
 };
