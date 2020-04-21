@@ -660,7 +660,7 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
 
 void QuerySelect::read_value(DB::Specs::Value& value) {
     Condition::Comp comp;
-    expect_comparator(comp);
+    expect_comparator(comp, true);
     std::string buf;
     read(buf, 0, comp == Condition::RE);
     if(!err)

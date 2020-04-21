@@ -119,8 +119,7 @@ void Value::decode(const uint8_t **bufp, size_t *remainp) {
 
 bool Value::is_matching(const uint8_t *other_data, 
                         const uint32_t other_size) const {
-  // on Specs::Value 's seq ?
-  return Condition::is_matching_volume(
+  return Condition::is_matching_extended(
     comp, data, size, other_data, other_size);
 }
 
@@ -136,7 +135,7 @@ std::string Value::to_string() const {
   s.append("size=");
   s.append(std::to_string(size));
   s.append(" ");
-  s.append(Condition::to_string(comp));
+  s.append(Condition::to_string(comp, true));
   s.append("(");
   s.append(std::string((const char*)data, size));
   s.append("))");
@@ -144,7 +143,7 @@ std::string Value::to_string() const {
 }
 
 void Value::display(std::ostream& out, bool pretty) const {
-  out << "size=" << size << " " << Condition::to_string(comp)
+  out << "size=" << size << " " << Condition::to_string(comp, true)
       << '"' << std::string((const char*)data, size) << '"'; 
 }
 

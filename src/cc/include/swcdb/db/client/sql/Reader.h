@@ -45,13 +45,13 @@ class Reader {
 
   bool found_token(const char* token, uint8_t token_len);
 
-  bool found_comparator(Condition::Comp& comp);
+  bool found_comparator(Condition::Comp& comp, bool extended=false);
 
   void expect_eq();
 
   void expect_comma(bool& comma);
   
-  void expect_comparator(Condition::Comp& comp);
+  void expect_comparator(Condition::Comp& comp, bool extended=false);
 
   void expect_digit();
 

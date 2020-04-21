@@ -41,20 +41,45 @@ namespace Condition {
 
 
 enum Comp {
-  NONE = 0x0,   // [    ]  :   none     (no comparison aplied)
-  PF   = 0x1,   // [ =^ ]  :   prefix   (starts-with)
-  GT   = 0x2,   // [ >  ]  :   -gt      (greater-than)
-  GE   = 0x3,   // [ >= ]  :   -ge      (greater-equal)
-  EQ   = 0x4,   // [ =  ]  :   -eq      (equal)
-  LE   = 0x5,   // [ <= ]  :   -le      (lower-equal)
-  LT   = 0x6,   // [ <  ]  :   -lt      (lower-than)
-  NE   = 0x7,   // [ != ]  :   -ne      (not-equal)
-  RE   = 0x8    // [ re ]  :   regexp   (regular-expression)
+  NONE = 0x0,   // [      ]  :   none           (no comparison aplied)
+  PF   = 0x1,   // [  =^  ]  :   -pf [prefix]   (starts-with)
+  GT   = 0x2,   // [  >   ]  :   -gt            (greater-than)
+  GE   = 0x3,   // [  >=  ]  :   -ge            (greater-equal)
+  EQ   = 0x4,   // [  =   ]  :   -eq            (equal)
+  LE   = 0x5,   // [  <=  ]  :   -le            (lower-equal)
+  LT   = 0x6,   // [  <   ]  :   -lt            (lower-than)
+  NE   = 0x7,   // [  !=  ]  :   -ne            (not-equal)
+  RE   = 0x8,   // [  re  ]  :   -re [r,regexp] (regular-expression)
+  
+  // extended logic options: ge,le,gt,lt are BITWISE and with 'V' VOLUME
+  VGT  = 0x9,   // [  v>  ]  :   -vgt           (vol greater-than)
+  VGE  = 0xA,   // [  v>= ]  :   -vge           (vol greater-equal)
+  VLE  = 0xB,   // [  v<= ]  :   -vle           (vol lower-equal)
+  VLT  = 0xC    // [  v<  ]  :   -vlt           (vol lower-than)
 };
 
 SWC_CAN_INLINE 
-Comp from(const char** buf, uint32_t* remainp) {
+Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   Comp comp = Comp::NONE;
+
+  if(extended && *remainp > 2) {
+    if(strncasecmp(*buf, "v>=", 3) == 0 || 
+       strncasecmp(*buf, "vge", 3) == 0)
+      comp = Comp::VGE;
+    else if(strncasecmp(*buf, "v<=", 3) == 0 || 
+            strncasecmp(*buf, "vle", 3) == 0)
+      comp = Comp::VLE;
+    else if(strncasecmp(*buf, "vgt", 3) == 0)
+      comp = Comp::VGT;
+    else if(strncasecmp(*buf, "vlt", 3) == 0)
+      comp = Comp::VLT;
+    
+    if(comp != Comp::NONE) {
+      *buf += 3;
+      *remainp -= 3;
+      return comp;
+    }
+  }
 
   if(*remainp > 1) {
     if(strncasecmp(*buf, "=^", 2) == 0 || strncasecmp(*buf, "pf", 2) == 0)
@@ -73,6 +98,12 @@ Comp from(const char** buf, uint32_t* remainp) {
       comp = Comp::GT;
     else if(strncasecmp(*buf, "lt", 2) == 0)
       comp = Comp::LT;
+    if(extended) {
+      if(strncasecmp(*buf, "v>", 2) == 0)
+        comp = Comp::VGT;
+      else if(strncasecmp(*buf, "v<", 2) == 0)
+        comp = Comp::VLT;
+    }
 
     if(comp != Comp::NONE) {
       *buf += 2;
@@ -102,10 +133,24 @@ Comp from(const char** buf, uint32_t* remainp) {
 };
 
 SWC_CAN_INLINE 
-std::string to_string(Comp comp) {
+std::string to_string(Comp comp, bool extended=false) {
+  
+  if(extended) switch (comp) {
+    case Comp::VGT:
+      return std::string("v>");
+    case Comp::VGE:
+      return std::string("v>=");
+    case Comp::VLE:
+      return std::string("v<=");
+    case Comp::VLT:
+      return std::string("v<");
+    default:
+      break;
+  }
+
   switch (comp) {
-    case Comp::NONE:
-      return std::string("none");
+    case Comp::EQ:
+      return std::string("==");
     case Comp::PF:
       return std::string("=^");
     case Comp::GT:
@@ -121,7 +166,7 @@ std::string to_string(Comp comp) {
     case Comp::RE:
      return std::string("RE");
     default:
-      return std::string("==");
+      return std::string("none");
   }
 };
 
@@ -367,6 +412,52 @@ bool is_matching(bool volumetric, uint8_t comp,
                     (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
+SWC_CAN_INLINE 
+bool is_matching_extended(uint8_t comp, 
+                          const uint8_t *p1, uint32_t p1_len, 
+                          const uint8_t *p2, uint32_t p2_len) {
+  switch (comp) {
+
+    case Comp::PF:
+      return pf(p1, p1_len, p2, p2_len);
+
+    case Comp::GT:
+      return gt_bitwise(p1, p1_len, p2, p2_len);
+
+    case Comp::GE:
+      return ge_bitwise(p1, p1_len, p2, p2_len);
+
+    case Comp::EQ:
+      return eq(p1, p1_len, p2, p2_len);
+
+    case Comp::LE:
+      return le_bitwise(p1, p1_len, p2, p2_len);
+
+    case Comp::LT:
+      return lt_bitwise(p1, p1_len, p2, p2_len);
+
+    case Comp::NE:
+      return ne(p1, p1_len, p2, p2_len);
+
+    case Comp::RE:
+      return re(p1, p1_len, p2, p2_len);
+
+    case Comp::VGT:
+      return gt_volume(p1, p1_len, p2, p2_len);
+
+    case Comp::VGE:
+      return ge_volume(p1, p1_len, p2, p2_len);
+
+    case Comp::VLE:
+      return le_volume(p1, p1_len, p2, p2_len);
+
+    case Comp::VLT:
+      return lt_volume(p1, p1_len, p2, p2_len);
+
+    default:
+      return true;
+  }
+}
 
 
 // const int64_t

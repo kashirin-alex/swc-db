@@ -65,11 +65,11 @@ bool Reader::found_token(const char* token, uint8_t token_len) {
   return false;
 }
 
-bool Reader::found_comparator(Condition::Comp& comp) {
+bool Reader::found_comparator(Condition::Comp& comp, bool extended) {
   while(remain) {
     if(found_space())
       continue;
-    if((comp = Condition::from(&ptr, &remain)) != Condition::NONE)
+    if((comp = Condition::from(&ptr, &remain, extended)) != Condition::NONE)
       return true;
     break;
   }
@@ -88,8 +88,8 @@ void Reader::expect_comma(bool& comma) {
   expect_token(",", 1, comma);
 }
   
-void Reader::expect_comparator(Condition::Comp& comp) {
-  if(found_comparator(comp) && comp != Condition::NONE)
+void Reader::expect_comparator(Condition::Comp& comp, bool extended) {
+  if(found_comparator(comp, extended) && comp != Condition::NONE)
     return;
   error_msg(Error::SQL_PARSE_ERROR, "missing 'comparator'");
 }
