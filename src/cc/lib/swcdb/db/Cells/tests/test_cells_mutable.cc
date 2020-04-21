@@ -104,12 +104,13 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   int expected_sz = num_cells;
   if(SWC::Types::is_counter(typ))
-   expected_sz *= (truclations?2:1);
+   expected_sz *= (truclations ? 2 : 1);
   else 
-   expected_sz *= (max_versions > num_revs?num_revs:max_versions);
+   expected_sz *= (max_versions > num_revs ? num_revs : max_versions);
 
 
   if(cells_mutable->size() != expected_sz) {
+    std::cerr << "\n" << cells_mutable->to_string(true);
     std::cerr << "INSERT SIZE NOT AS EXPECTED, "
               << "expected(" << expected_sz << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
@@ -163,6 +164,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
     ++counted;
   }
   if(count != 3*max_versions) {
+    //std::cerr << "\n" << cells_mutable->to_string(true);
     std::cout << " skips=" << skips << " count="<< count << " counted=" << counted << " \n";
     //std::cerr << "\n" << cells_mutable->to_string(true);
     std::cerr << "\nBad scan, expected=" << 3*max_versions << " result=" << count << "\n";

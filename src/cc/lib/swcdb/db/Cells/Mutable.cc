@@ -306,6 +306,7 @@ std::string Mutable::to_string(bool with_cells) const {
   s.append(std::to_string(buckets.size()));
   
   if(with_cells) {
+    size_t count = 0;
     s.append(" [\n");
     for(auto bucket : buckets) {
       s.append(" sz=");
@@ -314,10 +315,13 @@ std::string Mutable::to_string(bool with_cells) const {
       for(auto cell : *bucket) {
         s.append(cell->to_string(type));
         s.append("\n");
+        ++count;
       }
      s.append(" )\n");
     }
     s.append("]");
+    s.append(" counted=");
+    s.append(std::to_string(count));
   }
   
   s.append(")");

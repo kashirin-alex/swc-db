@@ -168,7 +168,7 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
   --*_r_;
 
 #define SWC_DECODE_VI_(_v_, _tmp_, _p_, _shift_) \
-  _v_ |= (_tmp_ = **_p_ & 0x7f) << _shift_; \
+  _v_ |= (_tmp_ = **_p_ & 0x7f) <<= _shift_; \
   if(!(*(*_p_)++ & 0x80)) return _v_;
 
 #define SWC_DECODE_VI_1(_v_, _tmp_, _p_, _r_, _shift_) \
