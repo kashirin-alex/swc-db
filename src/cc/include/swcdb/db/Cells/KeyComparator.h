@@ -16,137 +16,43 @@
 
 namespace SWC { namespace DB { 
 
-
-class KeyComp {
-  public:
- 
-  static const KeyComp* get(Types::KeySeq seq);
-  
-  virtual Types::KeySeq get_type() const = 0;
-  
-  virtual Condition::Comp 
-  condition(const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len) const = 0;
-
-  virtual bool 
-  is_matching(Condition::Comp comp,
-              const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_le) const = 0;
-
-  bool 
-  is_matching(Condition::Comp comp,
-              const char* p1, uint32_t p1_len, 
-              const char* p2, uint32_t p2_le) const;
-
-  bool 
-  align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) const;
-        
-  bool 
-  align(Cell::KeyVec& key, const Cell::KeyVec& other, 
-        Condition::Comp comp) const;
-
-  virtual Condition::Comp 
-  compare(const Cell::Key& key, const Cell::Key& other,
-          uint32_t max=0, bool empty_ok=false, 
-          bool empty_eq=false) const;
-
-  virtual bool 
-  compare(const Cell::Key& key, const Cell::KeyVec& other, 
-          Condition::Comp break_if, uint32_t max = 0, 
-          bool empty_ok=false) const;
-
-  virtual bool 
-  is_matching(const Specs::Key& key, const Cell::Key &other) const;
-
-  virtual Condition::Comp 
-  compare_fcount(const Cell::Key& key, const Cell::Key& other, uint32_t max=0, 
-                 bool empty_ok=false, bool empty_eq=false) const;
-
-  virtual bool 
-  compare_fcount(const Cell::Key& key, const Cell::KeyVec& other,
-                 Condition::Comp break_if, uint32_t max = 0, 
-                 bool empty_ok=false) const;
-
-};
-  
-
-namespace Comparator { namespace Key {
+namespace KeySeq {
 
 
-class Bitwise : public KeyComp {
-  public:
+Condition::Comp 
+__attribute__((__noinline__))
+compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other);
 
-  Types::KeySeq get_type() const override;
+Condition::Comp 
+__attribute__((__noinline__))
+compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
+        uint32_t max, bool empty_ok=false, bool empty_eq=false);
 
-  Condition::Comp 
-  condition(const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len) const override;
-            
-  bool 
-  is_matching(Condition::Comp comp,
-              const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_le) const override;
-};
+bool 
+__attribute__((__noinline__))
+compare(const Types::KeySeq seq, 
+        const Cell::Key& key, const Cell::KeyVec& other,
+        Condition::Comp break_if, uint32_t max = 0, bool empty_ok=false);
 
+bool 
+__attribute__((__noinline__))
+is_matching(const Types::KeySeq seq, const Specs::Key& key, 
+                                     const Cell::Key &other);
 
-class Volume : public KeyComp {
-  public:
-
-  Types::KeySeq get_type() const override;
-
-  Condition::Comp 
-  condition(const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len) const override;
-            
-  bool 
-  is_matching(Condition::Comp comp,
-              const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_le) const override;
-};
-
-
-class BitwiseFcount : public Bitwise {
-  public:
-
-  Types::KeySeq get_type() const override;
-
-  Condition::Comp 
-  compare(const Cell::Key& key, const Cell::Key& other,
-          uint32_t max=0, bool empty_ok=false, 
-          bool empty_eq=false) const override;
-
-  bool 
-  compare(const Cell::Key& key, const Cell::KeyVec& other, 
-          Condition::Comp break_if, uint32_t max = 0, 
-          bool empty_ok=false) const override;
-};
-
-
-class VolumeFcount : public Volume {
-  public:
-
-  Types::KeySeq get_type() const override;
-
-  Condition::Comp 
-  compare(const Cell::Key& key, const Cell::Key& other,
-          uint32_t max=0, bool empty_ok=false, 
-          bool empty_eq=false) const override;
-
-  bool 
-  compare(const Cell::Key& key, const Cell::KeyVec& other, 
-          Condition::Comp break_if, uint32_t max = 0, 
-          bool empty_ok=false) const override;
-};
+bool 
+__attribute__((__noinline__))
+align(const Types::KeySeq seq, const Cell::Key& key, 
+      Cell::KeyVec& start, Cell::KeyVec& finish);
+      
+bool 
+__attribute__((__noinline__))
+align(const Types::KeySeq seq, Cell::KeyVec& key, 
+      const Cell::KeyVec& other, Condition::Comp comp);
+//
 
 
 
-extern const Bitwise        bitwise;
-extern const BitwiseFcount  bitwise_fcount;
-extern const Volume         volume;
-extern const VolumeFcount   volume_fcount;
-
-
-}}}}
+}}}
 
 
 #ifdef SWC_IMPL_SOURCE

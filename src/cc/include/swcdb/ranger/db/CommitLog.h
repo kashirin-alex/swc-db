@@ -23,7 +23,7 @@ class Fragments final {
 
   RangePtr range;
 
-  explicit Fragments(const DB::KeyComp* key_comp);
+  explicit Fragments(const Types::KeySeq key_seq);
 
   void init(RangePtr for_range);
 

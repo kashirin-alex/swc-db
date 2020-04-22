@@ -34,13 +34,13 @@ void RangeLoad::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
   if(ev->header.command == RANGE_LOAD) {
     int err = ev->error != Error::OK? ev->error: ev->response_code();
     if(err != Error::OK){
-      loaded(err, false, DB::Cells::Interval(range->cfg->key_comp)); 
+      loaded(err, false, DB::Cells::Interval(range->cfg->key_seq)); 
       return; 
     }
       
     const uint8_t *ptr = ev->data.base+4;
     size_t remain = ev->data.size-4;
-    Params::RangeLoaded params(range->cfg->key_comp);
+    Params::RangeLoaded params(range->cfg->key_seq);
     params.decode(&ptr, &remain);
     loaded(err, false, params.interval); 
   }
@@ -52,7 +52,7 @@ bool RangeLoad::valid() {
   
 void RangeLoad::handle_no_conn() {
   loaded(Error::COMM_NOT_CONNECTED, true, 
-         DB::Cells::Interval(range->cfg->key_comp));
+         DB::Cells::Interval(range->cfg->key_seq));
 }
 
   

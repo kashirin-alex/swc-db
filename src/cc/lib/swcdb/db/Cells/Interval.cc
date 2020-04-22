@@ -10,22 +10,18 @@
 namespace SWC {  namespace DB { namespace Cells {
 
 
-Interval::Interval(const Types::KeySeq seq) 
-                  : key_comp(KeyComp::get(seq)) { 
+Interval::Interval(const Types::KeySeq key_seq) 
+                  : key_seq(key_seq) { 
 }
 
-Interval::Interval(const KeyComp* key_comp) 
-                  : key_comp(key_comp) { 
-}
-
-Interval::Interval(const KeyComp* key_comp,
+Interval::Interval(const Types::KeySeq key_seq,
                    const uint8_t **ptr, size_t *remain) 
-                  : key_comp(key_comp) {
+                  : key_seq(key_seq) {
   decode(ptr, remain, true); 
 }
 
 Interval::Interval(const Interval& other) 
-                  : key_comp(other.key_comp) {
+                  : key_seq(other.key_seq) {
   copy(other); 
 }
 
@@ -135,13 +131,15 @@ void Interval::expand(const int64_t& ts) {
 }
 
 bool Interval::align(const Interval &other) {
-  bool start = key_comp->align(aligned_min, other.aligned_min, Condition::LT);
-  bool finish = key_comp->align(aligned_max, other.aligned_max, Condition::GT);
+  bool start = DB::KeySeq::align(
+    key_seq, aligned_min, other.aligned_min, Condition::LT);
+  bool finish = DB::KeySeq::align(
+    key_seq, aligned_max, other.aligned_max, Condition::GT);
   return start || finish;
 }
 
 bool Interval::align(const DB::Cell::Key &key) {
-  return key_comp->align(key, aligned_min, aligned_max);
+  return DB::KeySeq::align(key_seq, key, aligned_min, aligned_max);
 }
 
 bool Interval::equal(const Interval& other) const {
@@ -160,12 +158,14 @@ bool Interval::equal(const Interval& other) const {
 
 bool Interval::is_in_begin(const DB::Cell::Key &key) const {
   return key_begin.empty() || 
-        (!key.empty() && key_comp->compare(key_begin, key) != Condition::LT);
+        (!key.empty() && 
+          DB::KeySeq::compare(key_seq, key_begin, key) != Condition::LT);
 }
 
 bool Interval::is_in_end(const DB::Cell::Key &key) const {
   return key_end.empty() || 
-        (!key.empty() && key_comp->compare(key_end, key) != Condition::GT);
+        (!key.empty() && 
+          DB::KeySeq::compare(key_seq, key_end, key) != Condition::GT);
 }
 
 bool Interval::consist(const Interval& other) const {
@@ -193,11 +193,11 @@ bool Interval::includes(const Interval& other) const {
 }
 
 bool Interval::includes_begin(const Specs::Interval& interval) const {
-  return key_begin.empty() || interval.is_matching_end(key_comp, key_begin);
+  return key_begin.empty() || interval.is_matching_end(key_seq, key_begin);
 }
 
 bool Interval::includes_end(const Specs::Interval& interval) const {
-  return key_end.empty() || interval.is_matching_begin(key_comp, key_end);
+  return key_end.empty() || interval.is_matching_begin(key_seq, key_end);
 }
 
 bool Interval::includes(const Specs::Interval& interval) const {

@@ -13,9 +13,9 @@ namespace SWC { namespace Ranger {
   
 struct CompactRange::InBlock {
 
-  InBlock(const DB::KeyComp* key_comp, size_t size, InBlock* inblock = nullptr)
+  InBlock(const Types::KeySeq key_seq, size_t size, InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
-            cells(size), count(0), interval(key_comp), err(Error::OK),
+            cells(size), count(0), interval(key_seq), err(Error::OK),
             last_cell(0), before_last_cell(0) {
     if(has_last)
       inblock->move_last(this);
@@ -108,7 +108,7 @@ CompactRange::CompactRange(Compaction::Ptr compactor, RangePtr range,
               cs_size(cs_size), blk_size(blk_size), 
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
-              m_inblock(new InBlock(range->cfg->key_comp, blk_size)),
+              m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
               ts_start(Time::now_ns()), m_getting(true),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
@@ -145,10 +145,10 @@ bool CompactRange::with_block() {
   return true;
 }
 
-bool CompactRange::selector(const DB::KeyComp* key_comp, 
+bool CompactRange::selector(const Types::KeySeq key_seq, 
                             const DB::Cells::Cell& cell, bool& stop) {
   return spec.is_matching(
-    key_comp, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
+    key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
 }
 
 bool CompactRange::reached_limits() {
@@ -204,7 +204,7 @@ void CompactRange::response(int &err) {
   if(m_inblock->count <= 1) {
     in_block = nullptr;
   } else {
-    m_inblock = new InBlock(range->cfg->key_comp, blk_size, in_block);
+    m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
   }
 
   {

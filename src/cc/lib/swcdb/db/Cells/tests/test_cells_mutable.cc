@@ -97,7 +97,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
 
   Cells::Mutable::Ptr cells_mutable(
     Cells::Mutable::make(
-      SWC::DB::KeyComp::get(key_seq),
+      key_seq,
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,

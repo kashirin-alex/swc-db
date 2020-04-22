@@ -173,7 +173,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
     m_cellstores.push_back(
       Read::make(
         err, id, range, 
-        DB::Cells::Interval(range->cfg->key_comp, ptr, remain)));
+        DB::Cells::Interval(range->cfg->key_seq, ptr, remain)));
     //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
 }
@@ -198,7 +198,7 @@ void Readers::load_from_path(int &err) {
   std::sort(entries.begin(), entries.end());
   for(auto id : entries) {
     m_cellstores.push_back(
-      Read::make(err, id, range, DB::Cells::Interval(range->cfg->key_comp))
+      Read::make(err, id, range, DB::Cells::Interval(range->cfg->key_seq))
     );
   }
 }

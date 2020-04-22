@@ -16,11 +16,11 @@ namespace SWC { namespace Ranger {
 Range::Range(const ColumnCfg* cfg, const int64_t rid)
             : cfg(cfg), rid(rid), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-              m_interval(cfg->key_comp),
+              m_interval(cfg->key_seq),
               m_state(State::NOTLOADED), 
               type(Types::MetaColumn::get_range_type(cfg->cid)),
-              meta_cid(Types::MetaColumn::get_sys_cid(cfg->sequence, type)),
-              blocks(cfg->key_comp), 
+              meta_cid(Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
+              blocks(cfg->key_seq), 
               m_compacting(COMPACT_NONE), m_require_compact(false) { 
 }
 
@@ -208,7 +208,7 @@ void Range::on_change(int &err, bool removal,
   // RangerEnv::updater();
 
   updater->columns->create(
-    meta_cid, cfg->sequence, 1, 0, Types::Column::PLAIN);
+    meta_cid, cfg->key_seq, 1, 0, Types::Column::PLAIN);
 
   DB::Cells::Cell cell;
   cell.key.copy(m_interval.key_begin);
@@ -598,13 +598,15 @@ void Range::run_add_queue() {
         continue;
 
       if(!key_end.empty() && 
-          cfg->key_comp->compare(key_end, cell.key) == Condition::GT) {
+          DB::KeySeq::compare(cfg->key_seq, key_end, cell.key)
+           == Condition::GT) {
         early_range_end = true;
         continue;
       } 
 
       if(!key_prev_end.empty() && 
-          cfg->key_comp->compare(key_prev_end, cell.key) != Condition::GT) {
+          DB::KeySeq::compare(cfg->key_seq, key_prev_end, cell.key)
+           != Condition::GT) {
         late_range_begin = true;
         continue;
       }

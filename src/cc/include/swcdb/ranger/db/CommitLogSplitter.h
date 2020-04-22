@@ -27,13 +27,13 @@ class Splitter final {
     Fragment::Ptr frag;
     for(auto it = m_fragments.begin(); it< m_fragments.end();) {
       frag = *it; 
-      if(frag->interval.key_comp->compare(key, frag->interval.key_end)
-                                  != Condition::GT) {    
+      if(DB::KeySeq::compare(frag->interval.key_seq, 
+          key, frag->interval.key_end) != Condition::GT) {    
         m_fragments.erase(it);
         continue;
       }
-      if(frag->interval.key_comp->compare(key, frag->interval.key_begin) 
-                                  == Condition::GT) {
+      if(DB::KeySeq::compare(frag->interval.key_seq, 
+          key, frag->interval.key_begin) == Condition::GT) {
         int err = Error::OK;
         log_right->take_ownership(err, frag);
         if(!err) {   

@@ -13,12 +13,11 @@ namespace SWC { namespace Manager {
 class ColumnCfg final {
   
   public:
-  const int64_t         cid;
-  const DB::KeyComp*    key_comp;
+  const int64_t       cid;
+  const Types::KeySeq key_seq;
 
   ColumnCfg(DB::Schema::Ptr schema) 
-            : cid(schema->cid), 
-              key_comp(DB::KeyComp::get(schema->col_seq)) { 
+            : cid(schema->cid), key_seq(schema->col_seq) { 
   }
 
   ~ColumnCfg() { }
@@ -26,6 +25,8 @@ class ColumnCfg final {
   std::string to_string() const {
     std::string s("cid=");
     s.append(std::to_string(cid));
+    s.append(" seq=");
+    s.append(Types::to_string(key_seq));
     return s;
   }
 };

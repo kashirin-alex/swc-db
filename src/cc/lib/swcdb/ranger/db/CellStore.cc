@@ -15,7 +15,7 @@ Read::Ptr Read::make(int& err, const uint32_t id,
                      const DB::Cells::Interval& interval, bool chk_base) {
   auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(id), 0);
   DB::Cell::Key prev_key_end;
-  DB::Cells::Interval interval_by_blks(range->cfg->key_comp);
+  DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
   std::vector<Block::Read::Ptr> blocks;
   try {
     load_blocks_index(
@@ -193,7 +193,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr smartfd,
       offset = Serialization::decode_vi64(&ptr, &remain);
       blocks.push_back(blk = Block::Read::make(
         offset, 
-        DB::Cells::Interval(interval.key_comp, &ptr, &remain),
+        DB::Cells::Interval(interval.key_seq, &ptr, &remain),
         cell_revs
       ));
       if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
@@ -371,7 +371,7 @@ Write::Write(const uint32_t id, const std::string& filepath,
               encoder(range->cfg->block_enc()), 
               cell_revs(cell_revs), 
               size(0),
-              interval(range->cfg->key_comp) {
+              interval(range->cfg->key_seq) {
 }
 
 Write::~Write() { }
@@ -551,7 +551,7 @@ Read::Ptr create_initial(int& err, RangePtr range) {
   if(err)
     return nullptr;
   
-  DB::Cells::Interval interval(range->cfg->key_comp);
+  DB::Cells::Interval interval(range->cfg->key_seq);
   range->get_interval(interval);
 
   DynamicBuffer cells_buff;

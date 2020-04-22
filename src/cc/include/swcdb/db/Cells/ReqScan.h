@@ -31,7 +31,8 @@ class ReqScan : public ResponseCallback {
 
   bool offset_adjusted();
 
-  virtual bool selector(const KeyComp* key_comp, const Cell& cell, bool& stop);
+  virtual bool selector(const Types::KeySeq key_seq, const Cell& cell, 
+                        bool& stop);
 
   virtual bool reached_limits() = 0;
   

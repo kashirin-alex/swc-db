@@ -83,6 +83,7 @@ else()
     
     if(O_LEVEL MATCHES "[4-7]")
   	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+  	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-early-inlining")
       # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsection-anchors")
   	  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
     

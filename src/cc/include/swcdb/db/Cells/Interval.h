@@ -21,13 +21,11 @@ class Interval final {
 
   public:
 
-  const KeyComp* key_comp;
+  const Types::KeySeq key_seq;
   
-  explicit Interval(const Types::KeySeq seq);
+  explicit Interval(const Types::KeySeq key_seq);
 
-  explicit Interval(const KeyComp* key_comp);
-
-  explicit Interval(const KeyComp* key_comp,
+  explicit Interval(const Types::KeySeq key_seq,
                     const uint8_t **ptr, size_t *remain);
 
   explicit Interval(const Interval& other);

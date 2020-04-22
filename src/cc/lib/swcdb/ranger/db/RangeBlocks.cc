@@ -8,8 +8,8 @@
 namespace SWC { namespace Ranger {
 
 
-Blocks::Blocks(const DB::KeyComp* key_comp) 
-              : commitlog(key_comp), 
+Blocks::Blocks(const Types::KeySeq key_seq) 
+              : commitlog(key_seq), 
                 m_block(nullptr), m_processing(0) { 
 }
   

@@ -63,7 +63,7 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
   hdlr_err(err);
 
   SWC::DynamicBuffer buff;
-  Cells::Interval blk_intval(range->cfg->key_comp);
+  Cells::Interval blk_intval(range->cfg->key_seq);
   Cells::Cell cell;
 
   uint32_t cell_count = 0;
@@ -148,8 +148,8 @@ void read_cs(int id, SWC::Ranger::RangePtr range,
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
   
-  SWC::DB::Cells::Interval intval_r(range->cfg->key_comp);
-  SWC::Ranger::Blocks blocks(range->cfg->key_comp);
+  SWC::DB::Cells::Interval intval_r(range->cfg->key_seq);
+  SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
   blocks.cellstores.add(
     SWC::Ranger::CellStore::Read::make(err, id, range, intval_r, true));
@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
   
   err = SWC::Error::OK;  
   
-  SWC::Ranger::Blocks blocks(range->cfg->key_comp);
+  SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
   blocks.cellstores.load_from_path(err);
 

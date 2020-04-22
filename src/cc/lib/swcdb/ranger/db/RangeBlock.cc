@@ -23,7 +23,7 @@ Block::Block(const DB::Cells::Interval& interval,
               m_interval(interval),  
               m_cells(
                 DB::Cells::Mutable(
-                  blocks->range->cfg->key_comp, 
+                  blocks->range->cfg->key_seq, 
                   blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
@@ -51,7 +51,7 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
     (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
     && 
     (intval.key_end.empty() || m_prev_key_end.empty() ||
-     m_interval.key_comp->compare(m_prev_key_end, intval.key_end)
+     DB::KeySeq::compare(m_interval.key_seq, m_prev_key_end, intval.key_end)
       == Condition::GT);
 }
 
@@ -156,13 +156,13 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     }
     
     if(!m_prev_key_end.empty() &&  
-        m_interval.key_comp->compare(m_prev_key_end, cell.key) 
+        DB::KeySeq::compare(m_interval.key_seq, m_prev_key_end, cell.key) 
           != Condition::GT)
       continue;
     
     if(!m_interval.key_end.empty() && 
-        m_interval.key_comp->compare(m_interval.key_end, cell.key)
-         == Condition::GT)
+        DB::KeySeq::compare(m_interval.key_seq, m_interval.key_end, cell.key)
+          == Condition::GT)
       break;
 
     ++added;
@@ -256,7 +256,7 @@ Block::Ptr Block::split(bool loaded) {
 
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
-    DB::Cells::Interval(m_interval.key_comp), 
+    DB::Cells::Interval(m_interval.key_seq), 
     blocks,
     loaded ? State::LOADED : State::NONE
   );
@@ -288,7 +288,7 @@ void Block::_set_prev_key_end(const DB::Cell::Key& key) {
 }
 
 Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
-  return m_interval.key_comp->compare(m_interval.key_end, key);
+  return DB::KeySeq::compare(m_interval.key_seq, m_interval.key_end, key);
 }
 
 void Block::_set_key_end(const DB::Cell::Key& key) {

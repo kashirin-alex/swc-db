@@ -46,8 +46,8 @@ class RangeLoad : public Common::Params::ColRangeId {
 class RangeLoaded : public Serializable {
   public:
   
-  RangeLoaded(const DB::KeyComp* key_comp)
-              : intval(false), interval(key_comp) { 
+  RangeLoaded(const Types::KeySeq key_seq)
+              : intval(false), interval(key_seq) { 
   }
 
   //RangeLoaded(const DB::Cells::Interval& interval): interval(interval) {}

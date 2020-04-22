@@ -23,7 +23,7 @@ ColCells::Ptr ColCells::make(const int64_t cid, Mutable& cells) {
 ColCells::ColCells(const int64_t cid, Types::KeySeq seq, 
                    uint32_t versions, uint32_t ttl, 
                    Types::Column type)
-                  : cid(cid), m_cells(KeyComp::get(seq), versions, ttl*1000000000, type) { 
+                  : cid(cid), m_cells(seq, versions, ttl*1000000000, type) { 
 }
 
 ColCells::ColCells(const int64_t cid, Mutable& cells)
@@ -33,7 +33,7 @@ ColCells::ColCells(const int64_t cid, Mutable& cells)
 ColCells::~ColCells() {}
 
 Types::KeySeq ColCells::get_sequence() const {
-  return m_cells.key_comp->get_type();
+  return m_cells.key_seq;
 }
 
 DB::Cell::Key::Ptr ColCells::get_first_key() {

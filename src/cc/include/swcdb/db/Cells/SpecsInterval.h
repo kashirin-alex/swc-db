@@ -74,19 +74,19 @@ class Interval {
 
   bool equal(const Interval& other) const;
 
-  bool is_matching(const KeyComp* key_comp, 
+  bool is_matching(const Types::KeySeq key_seq, 
                    const Cell::Key& key, 
                    int64_t timestamp, bool desc) const;
 
   bool is_matching(int64_t timestamp, bool desc) const;
 
-  bool is_matching(const KeyComp* key_comp, 
+  bool is_matching(const Types::KeySeq key_seq, 
                    const Cells::Cell& cell) const;
 
-  bool is_matching_begin(const KeyComp* key_comp, 
+  bool is_matching_begin(const Types::KeySeq key_seq, 
                          const DB::Cell::Key& key) const;
 
-  bool is_matching_end(const KeyComp* key_comp, 
+  bool is_matching_end(const Types::KeySeq key_seq, 
                        const DB::Cell::Key& key) const;
 
   size_t encoded_length() const;

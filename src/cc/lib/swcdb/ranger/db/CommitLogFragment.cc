@@ -25,15 +25,15 @@ std::string Fragment::to_string(Fragment::State state) {
 }
 
 Fragment::Ptr Fragment::make(const std::string& filepath, 
-                             const DB::KeyComp* key_comp, 
+                             const Types::KeySeq key_seq, 
                              Fragment::State state) {
-  return new Fragment(filepath, key_comp, state);
+  return new Fragment(filepath, key_seq, state);
 }
 
 
 Fragment::Fragment(const std::string& filepath,
-                   const DB::KeyComp* key_comp, Fragment::State state)
-                  : ts(Time::now_ns()), interval(key_comp), cells_count(0),
+                   const Types::KeySeq key_seq, Fragment::State state)
+                  : ts(Time::now_ns()), interval(key_seq), cells_count(0),
                     m_smartfd(
                     FS::SmartFd::make_ptr(
                       filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
@@ -225,7 +225,7 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
         break;
       }
 
-      if(interval.key_comp->compare(key, cell.key) == Condition::GT)
+      if(DB::KeySeq::compare(interval.key_seq, key, cell.key) == Condition::GT)
         log_right->add(cell);
       else
         log_left->add(cell);

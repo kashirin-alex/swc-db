@@ -26,19 +26,22 @@ class RangeLocateScan : public ReqScan {
 
   virtual ~RangeLocateScan() { }
 
-  bool selector(const DB::KeyComp* key_comp, 
+  bool selector(const Types::KeySeq key_seq, 
                 const DB::Cells::Cell& cell, bool& stop) override {
     //SWC_PRINT << "---------------------"
     //  << "  cell.key: " << cell.key.to_string() << SWC_PRINT_CLOSE;
-    if(any_is && key_comp->compare(spec.range_begin, cell.key, any_is) != Condition::EQ)
+    if(any_is && 
+        DB::KeySeq::compare(key_seq, spec.range_begin, cell.key, any_is)
+          != Condition::EQ)
       return false;
 
     if(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
-       key_comp->compare(spec.range_offset, cell.key) != Condition::GT)
+        DB::KeySeq::compare(key_seq, spec.range_offset, cell.key)
+          != Condition::GT)
       return false;
 
     if(cell.key.count > any_is && spec.range_end.count > any_is && 
-       !spec.is_matching_end(key_comp, cell.key)) {
+       !spec.is_matching_end(key_seq, cell.key)) {
       stop = true;
       //SWC_PRINT << "-- KEY-BEGIN NO MATCH STOP --" << SWC_PRINT_CLOSE;
       return false;
@@ -50,7 +53,7 @@ class RangeLocateScan : public ReqScan {
     key_end.decode(&ptr, &remain);
 
     if(key_end.count > any_is && spec.range_begin.count > any_is && 
-       !spec.is_matching_begin(key_comp, key_end)) {
+       !spec.is_matching_begin(key_seq, key_end)) {
       //SWC_PRINT << "-- KEY-END NO MATCH --" << SWC_PRINT_CLOSE;
       return false;
     }
@@ -73,11 +76,11 @@ class RangeLocateScan : public ReqScan {
       << "        rid: " << rid << SWC_PRINT_CLOSE;
     */
     if(spec.range_begin.count == any_is || aligned_max.empty() || 
-       key_comp->compare(
+        DB::KeySeq::compare(key_seq, 
          spec.range_begin, aligned_max, 
          Condition::LT, spec.range_begin.count, true)) {
       if(spec.range_end.count == any_is || aligned_min.empty() || 
-         key_comp->compare(
+          DB::KeySeq::compare(key_seq, 
            spec.range_end, aligned_min, 
            Condition::GT, spec.range_end.count, true)) {
         //SWC_PRINT << "-- ALIGNED MATCH  --" << SWC_PRINT_CLOSE;
