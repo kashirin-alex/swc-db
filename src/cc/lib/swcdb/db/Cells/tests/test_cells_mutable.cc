@@ -78,9 +78,11 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
 
 
 
-void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int max_versions = 1, 
+void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ, 
+           size_t num_cells = 1, int num_revs = 1, int max_versions = 1, 
            bool reverse=false, bool time_order_desc=false, bool gen_historic=false) {
-  std::cout << "\nchecking with type=" << SWC::Types::to_string(typ) 
+  std::cout << "\nchecking with seq=" << SWC::Types::to_string(key_seq) 
+                           << " type=" << SWC::Types::to_string(typ) 
                            << " cells=" << num_cells 
                            << " revs=" << num_revs 
                            << " reverse=" << reverse
@@ -95,7 +97,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   Cells::Mutable::Ptr cells_mutable(
     Cells::Mutable::make(
-      SWC::DB::KeyComp::get(SWC::Types::KeySeq::VOLUME),
+      SWC::DB::KeyComp::get(key_seq),
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
@@ -104,7 +106,7 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
   int expected_sz = num_cells;
   if(SWC::Types::is_counter(typ))
-   expected_sz *= (truclations ? 2 : 1);
+   expected_sz *= 1;
   else 
    expected_sz *= (max_versions > num_revs ? num_revs : max_versions);
 
@@ -139,10 +141,11 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   */
   //specs.key_start.add(".*-2$", SWC::Condition::RE);
   //specs.key_start.add("", SWC::Condition::NONE);
-  if(SWC::Types::is_counter(typ))
-    specs.value.set(10,  SWC::Condition::EQ);
-  else
-    specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::GT);
+  if(SWC::Types::is_counter(typ)) {
+    specs.value.set_counter(0,  SWC::Condition::EQ);
+  } else {
+    specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::VGT);
+  }
   specs.flags.max_versions=max_versions;
 
   Cells::Cell cell;
@@ -159,14 +162,13 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
   int counted = 0;
   while(remain) {
     cell.read(&bptr, &remain);
-    //std::cout << cell.to_string() <<"\n";
+    //std::cout << cell.to_string(typ) <<"\n";
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     ++counted;
   }
-  if(count != 3*max_versions) {
+  if(SWC::Types::is_counter(typ) ? count == num_cells : count != 3*max_versions ) {
     //std::cerr << "\n" << cells_mutable->to_string(true);
     std::cout << " skips=" << skips << " count="<< count << " counted=" << counted << " \n";
-    //std::cerr << "\n" << cells_mutable->to_string(true);
     std::cerr << "\nBad scan, expected=" << 3*max_versions << " result=" << count << "\n";
     std::cerr << specs.to_string() <<"\n";
     exit(1);
@@ -213,12 +215,12 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
             << " took="   << ts_total / 1000000 << "ms"
             << "\n"; 
 
-  std::cout << " clearing, ";
+  //std::cout << " clearing, ";
   
   //cells_mutable->free();
   cells_mutable = nullptr;
   
-  std::cout << " cleared check with cells=" << num_cells << "\n";
+  //std::cout << " cleared check with cells=" << num_cells << "\n";
 
 }
   
@@ -231,68 +233,61 @@ void check(SWC::Types::Column typ, size_t num_cells = 1, int num_revs = 1, int m
 
 
 int main(int argc, char** argv) {
-  /*
-  check(SWC::Types::Column::PLAIN, 10, 1);
-  check(SWC::Types::Column::PLAIN, 10, 3, 2);
 
-  check(SWC::Types::Column::PLAIN, 100000, 1);
-  check(SWC::Types::Column::PLAIN, 100000, 3, 2);
-  */
-  check(SWC::Types::Column::PLAIN, 1000, 1);
-  check(SWC::Types::Column::PLAIN, 1000, 3, 2);
-  check(SWC::Types::Column::PLAIN, 1000, 10, 8);
+  std::vector<size_t> cell_numbers = {
+    1000,
+    10000,
+    100000,
+    200000
+  };
 
-  check(SWC::Types::Column::PLAIN, 10000, 1);
-  check(SWC::Types::Column::PLAIN, 10000, 3, 2);
-  check(SWC::Types::Column::PLAIN, 10000, 10, 8);
+  std::vector<size_t> versions = {
+    1,
+    3,
+    10
+  };
 
-  check(SWC::Types::Column::PLAIN, 100000, 1);
-  check(SWC::Types::Column::PLAIN, 100000, 3, 2);
-  check(SWC::Types::Column::PLAIN, 100000, 10, 8);
+  std::vector<size_t> max_versions = {
+    1,
+    2,
+    8
+  };
 
-  check(SWC::Types::Column::PLAIN, 200000, 1);
-  check(SWC::Types::Column::PLAIN, 200000, 3, 2);
-  check(SWC::Types::Column::PLAIN, 200000, 10, 8);
-  
-  //check(SWC::Types::Column::PLAIN, 1000000, 1);
-  //check(SWC::Types::Column::PLAIN, 1000000, 3, 2);
+  std::vector< SWC::Types::Column> column_types = {
+    SWC::Types::Column::PLAIN,
+    SWC::Types::Column::COUNTER_I64
+  };
 
-  //check(SWC::Types::Column::PLAIN, 2000000, 1);
-  //check(SWC::Types::Column::PLAIN, 2000000, 3, 2);
-
-  //check(SWC::Types::Column::PLAIN, 10000000, 1);
-  //check(SWC::Types::Column::PLAIN, 20000000, 3);
+  std::vector<SWC::Types::KeySeq> sequences = {
+    SWC::Types::KeySeq::BITWISE,
+    SWC::Types::KeySeq::VOLUME
+  };
 
 
+  for(auto column_type : column_types) {
+    for(auto cell_number : cell_numbers) {
+      for(auto version : versions) {
+        for(auto max_version : max_versions) {
+          if(SWC::Types::is_counter(column_type) && max_version != 1)
+            continue;
+          else if(version < max_version)
+            continue;
+          for(auto seq : sequences) {
+            check(seq, column_type, cell_number, version, max_version);
+          }
+        }
+      }
+    }
+  }
+
+  // ++ bool reverse=false, bool time_order_desc=false, bool gen_historic=false) 
   /*
   check(SWC::Types::Column::PLAIN, 11, 3, true);
   check(SWC::Types::Column::PLAIN, 11, 3, true, true);
   check(SWC::Types::Column::PLAIN, 11, 3, true, 2, false);
   check(SWC::Types::Column::PLAIN, 11, 3, true, 2, true, true);
   check(SWC::Types::Column::PLAIN, 11, 10000, true, 2, true);
-
-  check(SWC::Types::Column::COUNTER_I64, 10, 10, true, 2, true, false);
-  check(SWC::Types::Column::COUNTER_I64, 10, 10, true, 2, true, true);
-  check(100);
-  check(1000);
-  check(10000);
-
-  check(100000);
-  check(100000);
-  check(100000);
-  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-  
-  check(1000000);
-  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-  
-  for(auto i=1; i<=10; ++i) {
-    check(100000000);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-  }
   */
-
-  //for(auto i=1; i<=10000000; i*=10)
-  //  check(i);
 
   exit(0);
 }

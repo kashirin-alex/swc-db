@@ -30,7 +30,7 @@ class Value {
 
   explicit Value(const Value &other);
 
-  void set(int64_t count, Condition::Comp comp_n);
+  void set_counter(int64_t count, Condition::Comp comp_n);
 
   void set(const char* data_n, Condition::Comp comp_n, bool owner=true);
   

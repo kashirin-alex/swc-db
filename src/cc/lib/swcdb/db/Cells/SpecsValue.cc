@@ -32,7 +32,7 @@ Value::Value(const uint8_t* data_n, const uint32_t size_n,
 
 Value::Value(int64_t count, Condition::Comp comp_n) 
             : own(false) {
-  set(count, comp_n);
+  set_counter(count, comp_n);
 }
 
 Value::Value(const Value &other) 
@@ -40,7 +40,7 @@ Value::Value(const Value &other)
   copy(other);
 }
 
-void Value::set(int64_t count, Condition::Comp comp_n) {
+void Value::set_counter(int64_t count, Condition::Comp comp_n) {
   uint32_t len = Serialization::encoded_length_vi64(count);
   uint8_t data_n[len];
   uint8_t* ptr = data_n;

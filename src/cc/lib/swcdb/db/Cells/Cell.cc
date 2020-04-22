@@ -296,7 +296,16 @@ std::string Cell::to_string(Types::Column typ) const {
   s.append(std::to_string(vlen));  
   if(Types::is_counter(typ)) {
     s.append(" count=");  
-    s.append(std::to_string(get_counter()));
+      uint8_t op;
+      int64_t eq_rev = TIMESTAMP_NULL;
+      int64_t value = get_counter(op, eq_rev);
+      s.append(std::to_string(value));
+      if(op & OP_EQUAL && !(op & HAVE_REVISION))
+        eq_rev = get_timestamp();
+      if(eq_rev != TIMESTAMP_NULL) {
+        s.append(" eq-since=");  
+        s.append(Time::fmt_ns(eq_rev));
+      }
   }
   /* else {
     char c;
