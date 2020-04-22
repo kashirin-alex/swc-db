@@ -88,9 +88,9 @@ class Cell final {
 
   void set_value(const char* v, uint32_t len, bool owner);
 
-  void set_value(const char* v, bool owner=false);
+  void set_value(const char* v, bool owner=true);
 
-  void set_value(const std::string& v, bool owner=false);
+  void set_value(const std::string& v, bool owner=true);
 
   void set_counter(uint8_t op, int64_t v,  
                   Types::Column typ = Types::Column::COUNTER_I64, 
