@@ -201,6 +201,13 @@ void encode_vi64(uint8_t** bufp, uint64_t val);
  */
 uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp);
 
+/**
+ * Decode a variable length encoded integer up to 24-bit
+ *
+ * @param bufp Pointer to the source buffer pointer
+ * @return The decoded value
+ */
+uint24_t decode_vi24(const uint8_t** bufp);
 
 /**
  * Decode a variable length encoded integer up to 32-bit
@@ -210,7 +217,6 @@ uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp);
  * @return The decoded value
  */
 uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp);
-
 /**
  * Decode a variable length encoded integer up to 64-bit
  *
