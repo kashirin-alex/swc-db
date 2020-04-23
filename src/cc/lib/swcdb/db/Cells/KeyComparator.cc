@@ -39,6 +39,26 @@ condition<Types::KeySeq::VOLUME>(const uint8_t *p1, uint32_t p1_len,
                                  const uint8_t *p2, uint32_t p2_len) {
   return Condition::condition_volume(p1, p1_len, p2, p2_len);
 }
+
+SWC_NOINLINE Condition::Comp  
+condition(const Types::KeySeq seq, 
+          const uint8_t *p1, uint32_t p1_len, 
+          const uint8_t *p2, uint32_t p2_len) {
+  switch(seq) {
+
+    case Types::KeySeq::BITWISE:
+    case Types::KeySeq::BITWISE_FCOUNT:
+      return condition<Types::KeySeq::BITWISE>(p1, p1_len, p2, p2_len);
+      
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::VOLUME_FCOUNT:
+      return condition<Types::KeySeq::VOLUME>(p1, p1_len, p2, p2_len);
+
+    default:
+      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
+      return Condition::NONE;
+  }
+}
 ///
 
 
@@ -91,7 +111,7 @@ compare<Types::KeySeq::VOLUME_FCOUNT>(const Cell::Key& key,
 
 SWC_NOINLINE Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, 
-                                  const Cell::Key& other) {
+                                 const Cell::Key& other) {
   switch(seq) {
 
     case Types::KeySeq::BITWISE:
@@ -297,95 +317,6 @@ compare(const Types::KeySeq seq,
 ///
 template<Types::KeySeq T_seq> 
 SWC_CAN_INLINE bool
-is_matching(Condition::Comp comp,
-            const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len);
-
-template<> 
-inline __attribute__((__always_inline__)) 
-bool
-is_matching<Types::KeySeq::BITWISE>(Condition::Comp comp,
-                                    const uint8_t *p1, uint32_t p1_len, 
-                                    const uint8_t *p2, uint32_t p2_len) {
-  return Condition::is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
-}
-
-template<> 
-inline __attribute__((__always_inline__)) 
-bool
-is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
-                                   const uint8_t *p1, uint32_t p1_len, 
-                                   const uint8_t *p2, uint32_t p2_len) {
-  return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
-}
-///
-
-
-
-///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
-is_matching(const Specs::Key& key, const Cell::Key &other) {
-  Condition::Comp comp = Condition::NONE;
-
-  const uint8_t* ptr = other.data;
-  uint32_t c = other.count;
-  uint32_t len;
-  for(auto it = key.begin(); c && it < key.end(); ++it, --c, ptr += len) {
-    if(!is_matching<T_seq>(
-        comp = it->comp, 
-        (const uint8_t*)it->value.data(), it->value.size(),
-        ptr, len = Serialization::decode_vi32(&ptr) ))
-      return false;
-  }
-
-  if(key.size() == other.count) 
-    return true;
-
-  switch(comp) {
-    case Condition::LT:
-    case Condition::LE:
-      return key.empty() || key.size() > other.count;
-    case Condition::GT:
-    case Condition::GE:
-      return key.empty() || key.size() < other.count;
-    case Condition::PF:
-    case Condition::RE:
-      return key.size() < other.count;
-    case Condition::NE:
-    case Condition::NONE:
-      return true;
-    default: // Condition::EQ:
-      return false;
-  }
-}
-
-
-SWC_NOINLINE bool 
-is_matching(const Types::KeySeq seq, const Specs::Key& key, 
-                                     const Cell::Key &other) {
-  switch(seq) {
-
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return is_matching<Types::KeySeq::BITWISE>(key, other);
-      
-    case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
-      return is_matching<Types::KeySeq::VOLUME>(key, other);
-
-    default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
-  }
-}
-///
-
-
-
-///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
 align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
   const uint8_t* ptr = key.data;
   uint24_t len;
@@ -482,6 +413,115 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
     case Types::KeySeq::VOLUME:
     case Types::KeySeq::VOLUME_FCOUNT:
       return align<Types::KeySeq::VOLUME>(key, other, comp);
+
+    default:
+      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
+      return Condition::NONE;
+  }
+}
+///
+
+
+
+///
+template<Types::KeySeq T_seq> 
+SWC_CAN_INLINE bool
+is_matching(Condition::Comp comp,
+            const uint8_t *p1, uint32_t p1_len, 
+            const uint8_t *p2, uint32_t p2_len);
+
+template<> 
+inline __attribute__((__always_inline__)) 
+bool
+is_matching<Types::KeySeq::BITWISE>(Condition::Comp comp,
+                                    const uint8_t *p1, uint32_t p1_len, 
+                                    const uint8_t *p2, uint32_t p2_len) {
+  return Condition::is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
+}
+
+template<> 
+inline __attribute__((__always_inline__)) 
+bool
+is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
+                                   const uint8_t *p1, uint32_t p1_len, 
+                                   const uint8_t *p2, uint32_t p2_len) {
+  return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
+}
+
+SWC_NOINLINE bool
+is_matching(const Types::KeySeq seq, Condition::Comp comp,
+            const uint8_t *p1, uint32_t p1_len, 
+            const uint8_t *p2, uint32_t p2_len) {
+  switch(seq) {
+
+    case Types::KeySeq::BITWISE:
+    case Types::KeySeq::BITWISE_FCOUNT:
+      return is_matching<Types::KeySeq::BITWISE>(comp, p1, p1_len, p2, p2_len);
+      
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::VOLUME_FCOUNT:
+      return is_matching<Types::KeySeq::VOLUME>(comp, p1, p1_len, p2, p2_len);
+
+    default:
+      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
+      return Condition::NONE;
+  }
+}
+///
+
+
+
+///
+template<Types::KeySeq T_seq> 
+SWC_CAN_INLINE bool
+is_matching(const Specs::Key& key, const Cell::Key &other) {
+  Condition::Comp comp = Condition::NONE;
+
+  const uint8_t* ptr = other.data;
+  uint32_t c = other.count;
+  uint32_t len;
+  for(auto it = key.begin(); c && it < key.end(); ++it, --c, ptr += len) {
+    if(!is_matching<T_seq>(
+        comp = it->comp, 
+        (const uint8_t*)it->value.data(), it->value.size(),
+        ptr, len = Serialization::decode_vi32(&ptr) ))
+      return false;
+  }
+
+  if(key.size() == other.count) 
+    return true;
+
+  switch(comp) {
+    case Condition::LT:
+    case Condition::LE:
+      return key.empty() || key.size() > other.count;
+    case Condition::GT:
+    case Condition::GE:
+      return key.empty() || key.size() < other.count;
+    case Condition::PF:
+    case Condition::RE:
+      return key.size() < other.count;
+    case Condition::NE:
+    case Condition::NONE:
+      return true;
+    default: // Condition::EQ:
+      return false;
+  }
+}
+
+
+SWC_NOINLINE bool 
+is_matching(const Types::KeySeq seq, const Specs::Key& key, 
+                                     const Cell::Key &other) {
+  switch(seq) {
+
+    case Types::KeySeq::BITWISE:
+    case Types::KeySeq::BITWISE_FCOUNT:
+      return is_matching<Types::KeySeq::BITWISE>(key, other);
+      
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::VOLUME_FCOUNT:
+      return is_matching<Types::KeySeq::VOLUME>(key, other);
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);

@@ -14,9 +14,8 @@
 #include "swcdb/db/Cells/SpecsKey.h"
 
 
-namespace SWC { namespace DB { 
+namespace SWC { namespace DB { namespace KeySeq {
 
-namespace KeySeq {
 
 
 Condition::Comp 
@@ -36,20 +35,33 @@ compare(const Types::KeySeq seq,
 
 bool 
 __attribute__((__noinline__))
-is_matching(const Types::KeySeq seq, const Specs::Key& key, 
-                                     const Cell::Key &other);
-
-bool 
-__attribute__((__noinline__))
 align(const Types::KeySeq seq, const Cell::Key& key, 
       Cell::KeyVec& start, Cell::KeyVec& finish);
-      
+
 bool 
 __attribute__((__noinline__))
 align(const Types::KeySeq seq, Cell::KeyVec& key, 
       const Cell::KeyVec& other, Condition::Comp comp);
+
+bool 
+__attribute__((__noinline__))
+is_matching(const Types::KeySeq seq, const Specs::Key& key, 
+                                     const Cell::Key &other);
+
 //
 
+
+Condition::Comp 
+__attribute__((__noinline__))
+condition(const Types::KeySeq seq, 
+          const uint8_t *p1, uint32_t p1_len, 
+          const uint8_t *p2, uint32_t p2_len);
+
+bool
+__attribute__((__noinline__))
+is_matching(const Types::KeySeq seq, Condition::Comp comp,
+            const uint8_t *p1, uint32_t p1_len, 
+            const uint8_t *p2, uint32_t p2_len);
 
 
 }}}
