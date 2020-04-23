@@ -34,13 +34,32 @@ void load_check_compare(const Types::KeySeq key_seq, int chks, int fractions) {
     assert(DB::KeySeq::compare(key_seq, key1, key2) == Condition::EQ);
   
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_compare, fractions=" << fractions 
+  std::cout << "load_check_compare,      fractions=" << fractions 
             << " avg=" << took/chks
             << " took=" << took 
             << " seq=" << Types::to_string(key_seq) 
             << "\n";
 }
 
+
+void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions) {
+  DB::Cell::Key key1;
+  DB::Cell::Key key2;
+  for(auto b=0;b<fractions;++b)
+    key1.add(std::to_string(b+2^60));
+  key2.copy(key1);
+
+  auto ts = Time::now_ns();
+  for(int n=0; n < chks; ++n)
+    assert(DB::KeySeq::compare(key_seq, key1, key2, key2.size()) == Condition::EQ);
+  
+  uint64_t took = Time::now_ns() - ts;
+  std::cout << "load_check_compare(max), fractions=" << fractions 
+            << " avg=" << took/chks
+            << " took=" << took 
+            << " seq=" << Types::to_string(key_seq) 
+            << "\n";
+}
 
 void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
 
@@ -56,7 +75,7 @@ void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
   }
   
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_align,   fractions=" << fractions 
+  std::cout << "load_check_align,        fractions=" << fractions 
             << " avg=" << took/chks
             << " took=" << took 
             << " seq=" << Types::to_string(key_seq)
@@ -124,6 +143,7 @@ int main() {
   for(int fractions=0; fractions<=100; ++fractions) {
     for(auto key_seq : sequences) {
       SWC::load_check_compare(key_seq, chks, fractions);
+      SWC::load_check_compare_max(key_seq, chks, fractions);
       SWC::load_check_align(key_seq, chks, fractions);
     }
   }

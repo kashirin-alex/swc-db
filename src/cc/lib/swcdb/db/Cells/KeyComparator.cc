@@ -365,22 +365,22 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
       key.assign(other.begin(), other.end());
     return chg;
   }
-  bool smaller = key.size() < other.size();
-  uint32_t min = smaller ? key.size() : other.size();
-  for(uint32_t c = 0; c < min; ++c) {
-    std::string& r1 = key[c];
-    const std::string& r2 = other[c];
-    if(condition<T_seq>((const uint8_t*)r1.data(), r1.length(),
-                        (const uint8_t*)r2.data(), r2.length()) == comp) {
-      r1 = r2;
+  bool small = key.size() < other.size();
+  auto it1 = key.begin();
+  auto it2 = other.begin();
+  for(uint24_t min=small? key.size(): other.size(); min; --min, ++it1, ++it2) {
+    if(condition<T_seq>((const uint8_t*)(*it1).data(), (*it1).length(),
+                        (const uint8_t*)(*it2).data(), (*it2).length())
+                         == comp) {
+      it1->clear();
+      it1->append(*it2);
       chg = true;
     }
   }
-  if(smaller) {
-    for(uint32_t c = key.size(); c < other.size(); ++c) {
-      key.add(other[c]);
-      chg = true;
-    }
+  if(small) {
+    chg = true;
+    do key.add(*it2);
+    while(++it2 < other.end());
   }
   return chg;
 }
