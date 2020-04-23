@@ -18,47 +18,39 @@ namespace SWC { namespace DB { namespace KeySeq {
 
 
 
-Condition::Comp 
-__attribute__((__noinline__))
+Condition::Comp
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other);
 
-Condition::Comp 
-__attribute__((__noinline__))
+Condition::Comp
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok=false, bool empty_eq=false);
 
-bool 
-__attribute__((__noinline__))
+bool
 compare(const Types::KeySeq seq, 
         const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max = 0, bool empty_ok=false);
 
-bool 
-__attribute__((__noinline__))
+bool
 align(const Types::KeySeq seq, const Cell::Key& key, 
       Cell::KeyVec& start, Cell::KeyVec& finish);
 
-bool 
-__attribute__((__noinline__))
+bool
 align(const Types::KeySeq seq, Cell::KeyVec& key, 
       const Cell::KeyVec& other, Condition::Comp comp);
 
-bool 
-__attribute__((__noinline__))
+bool
 is_matching(const Types::KeySeq seq, const Specs::Key& key, 
                                      const Cell::Key &other);
 
 //
 
 
-Condition::Comp 
-__attribute__((__noinline__))
+Condition::Comp
 condition(const Types::KeySeq seq, 
           const uint8_t *p1, uint32_t p1_len, 
           const uint8_t *p2, uint32_t p2_len);
 
 bool
-__attribute__((__noinline__))
 is_matching(const Types::KeySeq seq, Condition::Comp comp,
             const uint8_t *p1, uint32_t p1_len, 
             const uint8_t *p2, uint32_t p2_len);

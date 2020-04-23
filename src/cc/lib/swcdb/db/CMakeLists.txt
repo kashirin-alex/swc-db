@@ -112,6 +112,7 @@ ADD_TEST_TARGET(
 	NAME	key_comparator
 	SRCS	Cells/tests/test_key_comparator.cc
 	TARGETS	swcdb_core swcdb_core_config swcdb
+	#FLAGS "-DSWC_IMPL_SOURCE"
 )
 
 

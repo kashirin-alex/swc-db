@@ -7,25 +7,17 @@
 #include "swcdb/core/Serialization.h"
 
 
-# define SWC_CAN_INLINE  \
-  __attribute__((__always_inline__)) \
-  static inline
-
-#define SWC_NOINLINE  \
-  __attribute__((__noinline__))
-
 
 namespace SWC { namespace DB { namespace KeySeq {
 
 
 ///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE Condition::Comp 
+template<Types::KeySeq T_seq>
+Condition::Comp 
 condition(const uint8_t *p1, uint32_t p1_len, 
           const uint8_t *p2, uint32_t p2_len);
 
 template<> 
-inline __attribute__((__always_inline__)) 
 Condition::Comp 
 condition<Types::KeySeq::BITWISE>(const uint8_t *p1, uint32_t p1_len, 
                                   const uint8_t *p2, uint32_t p2_len) {
@@ -33,14 +25,13 @@ condition<Types::KeySeq::BITWISE>(const uint8_t *p1, uint32_t p1_len,
 }
 
 template<> 
-inline __attribute__((__always_inline__)) 
 Condition::Comp 
 condition<Types::KeySeq::VOLUME>(const uint8_t *p1, uint32_t p1_len, 
                                  const uint8_t *p2, uint32_t p2_len) {
   return Condition::condition_volume(p1, p1_len, p2, p2_len);
 }
 
-SWC_NOINLINE Condition::Comp  
+Condition::Comp  
 condition(const Types::KeySeq seq, 
           const uint8_t *p1, uint32_t p1_len, 
           const uint8_t *p2, uint32_t p2_len) {
@@ -63,8 +54,8 @@ condition(const Types::KeySeq seq,
 
 
 ///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE Condition::Comp 
+template<Types::KeySeq T_seq>
+Condition::Comp 
 compare(const Cell::Key& key,  const Cell::Key& other) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     const uint8_t* p1 = key.data;
@@ -84,8 +75,7 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
         : (key.count > other.count ? Condition::LT : Condition::GT);
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 Condition::Comp 
 compare<Types::KeySeq::BITWISE_FCOUNT>(const Cell::Key& key, 
                                        const Cell::Key& other) {
@@ -96,8 +86,7 @@ compare<Types::KeySeq::BITWISE_FCOUNT>(const Cell::Key& key,
   return compare<Types::KeySeq::BITWISE>(key, other);
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 Condition::Comp 
 compare<Types::KeySeq::VOLUME_FCOUNT>(const Cell::Key& key, 
                                       const Cell::Key& other) {
@@ -109,7 +98,7 @@ compare<Types::KeySeq::VOLUME_FCOUNT>(const Cell::Key& key,
 }
 
 
-SWC_NOINLINE Condition::Comp 
+Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, 
                                  const Cell::Key& other) {
   switch(seq) {
@@ -137,7 +126,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq>
-SWC_CAN_INLINE Condition::Comp 
+Condition::Comp 
 compare(const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok, bool empty_eq) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
@@ -164,8 +153,7 @@ compare(const Cell::Key& key, const Cell::Key& other,
           : Condition::EQ;
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 Condition::Comp 
 compare<Types::KeySeq::BITWISE_FCOUNT>(
         const Cell::Key& key, const Cell::Key& other,
@@ -179,8 +167,7 @@ compare<Types::KeySeq::BITWISE_FCOUNT>(
   return compare<Types::KeySeq::BITWISE>(key, other, max, empty_ok, empty_eq);
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 Condition::Comp 
 compare<Types::KeySeq::VOLUME_FCOUNT>(
         const Cell::Key& key, const Cell::Key& other,
@@ -195,7 +182,7 @@ compare<Types::KeySeq::VOLUME_FCOUNT>(
 }
 
 
-SWC_NOINLINE Condition::Comp 
+Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok, bool empty_eq) {
   switch(seq) {
@@ -227,7 +214,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
+bool
 compare(const Cell::Key& key, const Cell::KeyVec& other, 
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   const uint8_t* ptr = key.data;
@@ -252,8 +239,7 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
   return true;
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 bool
 compare<Types::KeySeq::BITWISE_FCOUNT>(
         const Cell::Key& key, const Cell::KeyVec& other, 
@@ -267,8 +253,7 @@ compare<Types::KeySeq::BITWISE_FCOUNT>(
   return compare<Types::KeySeq::BITWISE>(key, other, break_if, max, empty_ok);
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 bool
 compare<Types::KeySeq::VOLUME_FCOUNT>(
         const Cell::Key& key, const Cell::KeyVec& other, 
@@ -283,7 +268,7 @@ compare<Types::KeySeq::VOLUME_FCOUNT>(
 }
 
 
-SWC_NOINLINE bool 
+bool 
 compare(const Types::KeySeq seq, 
         const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
@@ -315,8 +300,8 @@ compare(const Types::KeySeq seq,
 
 
 ///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
+template<Types::KeySeq T_seq>
+bool
 align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
   const uint8_t* ptr = key.data;
   uint24_t len;
@@ -348,7 +333,7 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
 }
 
 
-SWC_NOINLINE bool 
+bool 
 align(const Types::KeySeq seq, const Cell::Key& key, 
       Cell::KeyVec& start, Cell::KeyVec& finish) {
   switch(seq) {
@@ -372,7 +357,7 @@ align(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
+bool
 align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
   bool chg;
   if(chg = key.empty()) {
@@ -401,7 +386,7 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
 }
 
 
-SWC_NOINLINE bool 
+bool 
 align(const Types::KeySeq seq, Cell::KeyVec& key, 
       const Cell::KeyVec& other, Condition::Comp comp) {
   switch(seq) {
@@ -425,13 +410,12 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
+bool
 is_matching(Condition::Comp comp,
             const uint8_t *p1, uint32_t p1_len, 
             const uint8_t *p2, uint32_t p2_len);
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 bool
 is_matching<Types::KeySeq::BITWISE>(Condition::Comp comp,
                                     const uint8_t *p1, uint32_t p1_len, 
@@ -439,8 +423,7 @@ is_matching<Types::KeySeq::BITWISE>(Condition::Comp comp,
   return Condition::is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
 }
 
-template<> 
-inline __attribute__((__always_inline__)) 
+template<>
 bool
 is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
                                    const uint8_t *p1, uint32_t p1_len, 
@@ -448,7 +431,7 @@ is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
   return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
 }
 
-SWC_NOINLINE bool
+bool
 is_matching(const Types::KeySeq seq, Condition::Comp comp,
             const uint8_t *p1, uint32_t p1_len, 
             const uint8_t *p2, uint32_t p2_len) {
@@ -473,7 +456,7 @@ is_matching(const Types::KeySeq seq, Condition::Comp comp,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE bool
+bool
 is_matching(const Specs::Key& key, const Cell::Key &other) {
   Condition::Comp comp = Condition::NONE;
 
@@ -510,7 +493,7 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
 }
 
 
-SWC_NOINLINE bool 
+bool 
 is_matching(const Types::KeySeq seq, const Specs::Key& key, 
                                      const Cell::Key &other) {
   switch(seq) {
@@ -534,8 +517,4 @@ is_matching(const Types::KeySeq seq, const Specs::Key& key,
 
 
 }}}
-
-
-# undef SWC_CAN_INLINE 
-# undef SWC_NOINLINE 
 
