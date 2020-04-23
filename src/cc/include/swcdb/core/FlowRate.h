@@ -29,22 +29,22 @@ struct Data {
     
     if(in_ns < 100000) {
       time = in_ns;
-      time_base = "ns";
+      time_base = "nanosecond";
     } else if(in_ns < 10000000) { 
       time = (double)in_ns/1000;
-      time_base = "us";
+      time_base = "microsecond";
     } else if(in_ns <= 10000000000) { 
       time = (double)(in_ns/1000)/1000;
-      time_base = "ms";
+      time_base = "millisecond";
     } else if(in_ns <= 3600000000000) {
       time = (double)(in_ns/1000000)/1000;
-      time_base = "s";
+      time_base = "second";
     } else if(in_ns <= 86400000000000) {
       time = (double)(in_ns/60000000)/1000;
-      time_base = "M";
+      time_base = "minute";
     } else {
       time = (double)(in_ns/3600000000)/1000;
-      time_base = "H";
+      time_base = "hour";
     }
 
     if(in_bytes <= MB) {
@@ -69,7 +69,7 @@ struct Data {
   void print_cells_statistics(std::ostream& out, size_t cells_count, 
                               bool resend_cells=false) {
     out << "\n\nStatistics:\n"
-        << " Total Time Took:        " << time << " " << time_base     << "\n"
+        << " Total Time Took:        " << time << " " << time_base     << "s\n"
         << " Total Cells Count:      " << cells_count                  << "\n"
         << " Total Cells Size:       " << bytes << " " << bytes_base   << "\n";
         
