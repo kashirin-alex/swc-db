@@ -26,7 +26,7 @@ void load_check_compare(const Types::KeySeq key_seq, int chks, int fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
   for(auto b=0;b<fractions;++b)
-    key1.add(std::to_string(b+2^60));
+    key1.add(std::to_string(std::rand()));
   key2.copy(key1);
 
   auto ts = Time::now_ns();
@@ -46,7 +46,7 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions
   DB::Cell::Key key1;
   DB::Cell::Key key2;
   for(auto b=0;b<fractions;++b)
-    key1.add(std::to_string(b+2^60));
+    key1.add(std::to_string(std::rand()));
   key2.copy(key1);
 
   auto ts = Time::now_ns();
@@ -66,7 +66,7 @@ void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
   DB::Cell::KeyVec key;
   DB::Cell::KeyVec key1;
   for(auto b=0;b<fractions;++b)
-    key1.add(std::to_string(b+2^60));
+    key1.add(std::to_string(std::rand()));
 
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n) {
@@ -99,11 +99,13 @@ void load_check_condition_base() {
   uint64_t ns;
   uint64_t took;
   uint64_t checks = UINT64_MAX;
-  const char* buf1 = "abcdefghijk12343455";
-  const char* buf2 = "abcdefghijk12343451";
-  uint32_t len = 19;
-  const uint8_t* ptr1 = (const uint8_t*)buf1;
-  const uint8_t* ptr2 = (const uint8_t*)buf2;
+  std::string tmp = std::to_string(std::rand()) + std::to_string(std::rand());
+  uint32_t len = tmp.length();
+  std::string s1 = tmp.substr(0, len-1) + "2";
+  std::string s2 = tmp.substr(0, len-1) + "1";
+
+  const uint8_t* ptr1 = (const uint8_t*)s1.data();
+  const uint8_t* ptr2 = (const uint8_t*)s2.data();
 
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
