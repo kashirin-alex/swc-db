@@ -169,7 +169,7 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
 
 #define SWC_DECODE_VI_(_v_, _tmp_, _p_, _shift_) \
   _v_ |= (_tmp_ = **_p_ & 0x7f) <<= _shift_; \
-  if(!(*(*_p_)++ & 0x80)) return _v_;
+  _tmp_ = **_p_ & 0x80; ++*_p_; if(!tmp) return _v_;
 
 #define SWC_DECODE_VI_1(_v_, _tmp_, _p_, _r_, _shift_) \
   SWC_DECODE_NEED_BYTE(_r_);  \
@@ -241,8 +241,7 @@ void encode_vi32(uint8_t** bufp, uint32_t val) {
 
 SWC_CAN_INLINE 
 uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp) {
-  SWC_DECODE_VI(uint32_t, bufp, remainp, 28, "vint32");
-  /*
+  //SWC_DECODE_VI(uint32_t, bufp, remainp, 28, "vint32");
   uint32_t n = 0; uint32_t tmp;
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
@@ -250,7 +249,6 @@ uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp) {
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 21);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 28);
   SWC_THROW_OVERRUN("vint32");
-  */
 }
 
 SWC_CAN_INLINE 
@@ -275,8 +273,7 @@ int encoded_length_vi64(uint64_t val) {
 
 SWC_CAN_INLINE 
 void encode_vi64(uint8_t** bufp, uint64_t val) {
-  SWC_ENCODE_VI(bufp, val, 9);
-  /*
+  //SWC_ENCODE_VI(bufp, val, 9);
   SWC_ENCODE_VI_0(bufp, val);
   SWC_ENCODE_VI_1(bufp, val);
   SWC_ENCODE_VI_1(bufp, val);
@@ -288,13 +285,11 @@ void encode_vi64(uint8_t** bufp, uint64_t val) {
   SWC_ENCODE_VI_1(bufp, val);
   SWC_ENCODE_VI_1(bufp, val);
   SWC_THROW_UNPOSSIBLE("breached encoding length");
-  */
 } 
 
 SWC_CAN_INLINE 
 uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
-  SWC_DECODE_VI(uint64_t, bufp, remainp, 63, "vint64");
-  /*
+  //SWC_DECODE_VI(uint64_t, bufp, remainp, 63, "vint64");
   uint64_t n = 0; uint64_t tmp;
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
@@ -307,7 +302,6 @@ uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 56);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 63);
   SWC_THROW_OVERRUN("vint64");
-  */
 }
 
 SWC_CAN_INLINE 
