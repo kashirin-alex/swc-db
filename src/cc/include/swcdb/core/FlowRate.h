@@ -54,13 +54,13 @@ struct Data {
       bytes = (double)in_bytes/KB;
       bytes_base = "KB";
     } else if(in_bytes <= TB) {
-      bytes = (double)in_bytes/MB;
+      bytes = (double)(in_bytes/KB)/KB;
       bytes_base = "MB";
     } else if(in_bytes <= PB) {
-      bytes = (double)(in_bytes/KB)/KB;
+      bytes = (double)(in_bytes/MB)/KB;
       bytes_base = "GB";
     } else {
-      bytes = (double)(in_bytes/MB)/KB;
+      bytes = (double)(in_bytes/GB)/KB;
       bytes_base = "TB";
     }
 
