@@ -119,6 +119,7 @@ enum Code {
   COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0xB,
   COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xC,
   COLUMN_NOT_READY                             = CODE_START+0x5f+0xD,
+  COLUMN_CHANGE_INCOMPATIBLE                   = CODE_START+0x5f+0xE,
 
   SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
   COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,

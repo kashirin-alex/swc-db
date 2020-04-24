@@ -84,7 +84,8 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_MARKED_REMOVED,         "Column is being removed"},
   { Error::COLUMN_NOT_EXISTS,             "Column does not exist"},
   { Error::COLUMN_NOT_READY,              "Column is not ready"},
-
+  { Error::COLUMN_CHANGE_INCOMPATIBLE,    "Schema seq or type incompatible"},
+  
   { Error::RANGE_NOT_FOUND,               "No corresponding range"},
   { Error::RANGE_CELLSTORES,              "Cellstores had Errors"},
   { Error::RANGE_COMMITLOG,               "Commitlog had Errors"},
