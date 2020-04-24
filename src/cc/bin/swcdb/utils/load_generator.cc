@@ -83,6 +83,8 @@ void Settings::init_app_options() {
       ), 
      "Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB")  
 
+    ("gen-log-rollout", i8(0), 
+     "CommitLog rollout block ratio")
     ("gen-compaction-percent", i8(0), 
      "Compaction threshold in % applied over size of either by cellstore or block")
   ;
@@ -282,6 +284,7 @@ void load_generator() {
   schema->cs_replication = settings->get_i8("gen-cs-replication");
   schema->cs_size = settings->get_i32("gen-cs-size");
   schema->cs_max = settings->get_i8("gen-cs-count");
+  schema->log_rollout_ratio = settings->get_i8("gen-log-rollout");
   schema->compact_percent = settings->get_i8("gen-compaction-percent");
 
   // CREATE COLUMN

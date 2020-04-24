@@ -223,6 +223,7 @@ class Schema(object):
      - cs_replication
      - cs_size
      - cs_max
+     - log_rollout_ratio
      - compact_percent
      - revision
 
@@ -240,12 +241,13 @@ class Schema(object):
         'cs_replication',
         'cs_size',
         'cs_max',
+        'log_rollout_ratio',
         'compact_percent',
         'revision',
     )
 
 
-    def __init__(self, cid=None, col_name=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, compact_percent=None, revision=None,):
+    def __init__(self, cid=None, col_name=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, log_rollout_ratio=None, compact_percent=None, revision=None,):
         self.cid = cid
         self.col_name = col_name
         self.col_type = col_type
@@ -257,6 +259,7 @@ class Schema(object):
         self.cs_replication = cs_replication
         self.cs_size = cs_size
         self.cs_max = cs_max
+        self.log_rollout_ratio = log_rollout_ratio
         self.compact_percent = compact_percent
         self.revision = revision
 
@@ -326,10 +329,15 @@ class Schema(object):
                     iprot.skip(ftype)
             elif fid == 12:
                 if ftype == TType.BYTE:
-                    self.compact_percent = iprot.readByte()
+                    self.log_rollout_ratio = iprot.readByte()
                 else:
                     iprot.skip(ftype)
             elif fid == 13:
+                if ftype == TType.BYTE:
+                    self.compact_percent = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 14:
                 if ftype == TType.I64:
                     self.revision = iprot.readI64()
                 else:
@@ -388,12 +396,16 @@ class Schema(object):
             oprot.writeFieldBegin('cs_max', TType.BYTE, 11)
             oprot.writeByte(self.cs_max)
             oprot.writeFieldEnd()
+        if self.log_rollout_ratio is not None:
+            oprot.writeFieldBegin('log_rollout_ratio', TType.BYTE, 12)
+            oprot.writeByte(self.log_rollout_ratio)
+            oprot.writeFieldEnd()
         if self.compact_percent is not None:
-            oprot.writeFieldBegin('compact_percent', TType.BYTE, 12)
+            oprot.writeFieldBegin('compact_percent', TType.BYTE, 13)
             oprot.writeByte(self.compact_percent)
             oprot.writeFieldEnd()
         if self.revision is not None:
-            oprot.writeFieldBegin('revision', TType.I64, 13)
+            oprot.writeFieldBegin('revision', TType.I64, 14)
             oprot.writeI64(self.revision)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1366,8 +1378,9 @@ Schema.thrift_spec = (
     (9, TType.BYTE, 'cs_replication', None, None, ),  # 9
     (10, TType.I32, 'cs_size', None, None, ),  # 10
     (11, TType.BYTE, 'cs_max', None, None, ),  # 11
-    (12, TType.BYTE, 'compact_percent', None, None, ),  # 12
-    (13, TType.I64, 'revision', None, None, ),  # 13
+    (12, TType.BYTE, 'log_rollout_ratio', None, None, ),  # 12
+    (13, TType.BYTE, 'compact_percent', None, None, ),  # 13
+    (14, TType.I64, 'revision', None, None, ),  # 14
 )
 all_structs.append(UCell)
 UCell.thrift_spec = (

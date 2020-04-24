@@ -76,6 +76,9 @@ class AppHandler : virtual public BrokerIf {
       schema.__set_cs_replication(dbschema->cs_replication);
       schema.__set_cs_size(dbschema->cs_size);
       schema.__set_cs_max(dbschema->cs_max);
+      
+      schema.__set_log_rollout_ratio(dbschema->log_rollout_ratio);
+      
       schema.__set_compact_percent(dbschema->compact_percent);
 
       schema.__set_revision(dbschema->revision);

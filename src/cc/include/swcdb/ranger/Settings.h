@@ -62,6 +62,9 @@ void Settings::init_app_options(){
         Types::repr_encoding), 
      "Schema default block-encoding NONE/ZSTD/SNAPPY/ZLIB")  
      
+    ("swc.rgr.Range.CommitLog.rollout.ratio", g_i8(3), 
+     "Schema default CommitLog new fragment Rollout Block Ratio")
+
     ("swc.rgr.Range.compaction.percent", g_i8(33), 
      "Schema default compact-percent threshold")
   ;

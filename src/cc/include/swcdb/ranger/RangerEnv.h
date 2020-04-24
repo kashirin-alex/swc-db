@@ -71,6 +71,9 @@ class RangerEnv final {
 
   const Property::V_GUINT8::Ptr      cfg_cs_max;
   const Property::V_GINT32::Ptr      cfg_cs_sz;
+  
+  const Property::V_GUINT8::Ptr      cfg_log_rollout_ratio;
+  
   const Property::V_GUINT8::Ptr      cfg_compact_percent;
   const Property::V_GUINT8::Ptr      cfg_cs_replication;
 
@@ -111,6 +114,8 @@ RangerEnv::RangerEnv()
         "swc.rgr.Range.CellStore.count.max")), 
       cfg_cs_sz(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.rgr.Range.CellStore.size.max")), 
+      cfg_log_rollout_ratio(Env::Config::settings()->get<Property::V_GUINT8>(
+        "swc.rgr.Range.CommitLog.rollout.ratio")),
       cfg_compact_percent(Env::Config::settings()->get<Property::V_GUINT8>(
         "swc.rgr.Range.compaction.percent")),
       cfg_cs_replication(Env::Config::settings()->get<Property::V_GUINT8>(

@@ -159,6 +159,8 @@ struct _swcdb_thriftSchema
   gboolean __isset_cs_size;
   gint8 cs_max;
   gboolean __isset_cs_max;
+  gint8 log_rollout_ratio;
+  gboolean __isset_log_rollout_ratio;
   gint8 compact_percent;
   gboolean __isset_compact_percent;
   gint64 revision;

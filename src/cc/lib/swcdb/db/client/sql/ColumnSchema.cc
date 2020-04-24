@@ -239,6 +239,14 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
+    if(any = found_token("log_rollout", 11)) {
+      expect_eq();
+      if(err)
+        return;
+      read_uint8_t(schema->log_rollout_ratio, was_set);
+      continue;
+    }
+
     break;
   }
 

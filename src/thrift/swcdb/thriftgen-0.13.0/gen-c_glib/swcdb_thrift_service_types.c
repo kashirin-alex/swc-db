@@ -391,6 +391,7 @@ enum _swcdb_thriftSchemaProperties
   PROP_SWCDB_THRIFT_SCHEMA_CS_REPLICATION,
   PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE,
   PROP_SWCDB_THRIFT_SCHEMA_CS_MAX,
+  PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO,
   PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT,
   PROP_SWCDB_THRIFT_SCHEMA_REVISION
 };
@@ -600,6 +601,19 @@ swcdb_thrift_schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError
       case 12:
         if (ftype == T_BYTE)
         {
+          if ((ret = thrift_protocol_read_byte (protocol, &this_object->log_rollout_ratio, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_log_rollout_ratio = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 13:
+        if (ftype == T_BYTE)
+        {
           if ((ret = thrift_protocol_read_byte (protocol, &this_object->compact_percent, error)) < 0)
             return -1;
           xfer += ret;
@@ -610,7 +624,7 @@ swcdb_thrift_schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError
           xfer += ret;
         }
         break;
-      case 13:
+      case 14:
         if (ftype == T_I64)
         {
           if ((ret = thrift_protocol_read_i64 (protocol, &this_object->revision, error)) < 0)
@@ -784,8 +798,20 @@ swcdb_thrift_schema_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
       return -1;
     xfer += ret;
   }
+  if (this_object->__isset_log_rollout_ratio == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "log_rollout_ratio", T_BYTE, 12, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_byte (protocol, this_object->log_rollout_ratio, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
   if (this_object->__isset_compact_percent == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "compact_percent", T_BYTE, 12, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "compact_percent", T_BYTE, 13, error)) < 0)
       return -1;
     xfer += ret;
     if ((ret = thrift_protocol_write_byte (protocol, this_object->compact_percent, error)) < 0)
@@ -797,7 +823,7 @@ swcdb_thrift_schema_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
     xfer += ret;
   }
   if (this_object->__isset_revision == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "revision", T_I64, 13, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "revision", T_I64, 14, error)) < 0)
       return -1;
     xfer += ret;
     if ((ret = thrift_protocol_write_i64 (protocol, this_object->revision, error)) < 0)
@@ -885,6 +911,11 @@ swcdb_thrift_schema_set_property (GObject *object,
       self->__isset_cs_max = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO:
+      self->log_rollout_ratio = g_value_get_int (value);
+      self->__isset_log_rollout_ratio = TRUE;
+      break;
+
     case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       self->compact_percent = g_value_get_int (value);
       self->__isset_compact_percent = TRUE;
@@ -955,6 +986,10 @@ swcdb_thrift_schema_get_property (GObject *object,
       g_value_set_int (value, self->cs_max);
       break;
 
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO:
+      g_value_set_int (value, self->log_rollout_ratio);
+      break;
+
     case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       g_value_set_int (value, self->compact_percent);
       break;
@@ -994,6 +1029,8 @@ swcdb_thrift_schema_instance_init (swcdb_thriftSchema * object)
   object->__isset_cs_size = FALSE;
   object->cs_max = 0;
   object->__isset_cs_max = FALSE;
+  object->log_rollout_ratio = 0;
+  object->__isset_log_rollout_ratio = FALSE;
   object->compact_percent = 0;
   object->__isset_compact_percent = FALSE;
   object->revision = 0;
@@ -1139,6 +1176,17 @@ swcdb_thrift_schema_class_init (swcdb_thriftSchemaClass * cls)
     (gobject_class,
      PROP_SWCDB_THRIFT_SCHEMA_CS_MAX,
      g_param_spec_int ("cs_max",
+                       NULL,
+                       NULL,
+                       G_MININT8,
+                       G_MAXINT8,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO,
+     g_param_spec_int ("log_rollout_ratio",
                        NULL,
                        NULL,
                        G_MININT8,

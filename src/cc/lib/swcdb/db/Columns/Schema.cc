@@ -24,6 +24,7 @@ Schema::Schema()
         cell_versions(1), cell_ttl(0),
         blk_encoding(Types::Encoding::DEFAULT), blk_size(0), blk_cells(0), 
         cs_replication(0), cs_size(0), cs_max(0), 
+        log_rollout_ratio(0),
         compact_percent(0), 
         revision(0) {
 }
@@ -36,6 +37,7 @@ Schema::Schema(const Schema& other)
         blk_cells(other.blk_cells), 
         cs_replication(other.cs_replication), cs_size(other.cs_size), 
         cs_max(other.cs_max), 
+        log_rollout_ratio(other.log_rollout_ratio),
         compact_percent(other.compact_percent), 
         revision(other.revision) {
 }
@@ -58,6 +60,8 @@ Schema::Schema(const uint8_t **bufp, size_t *remainp)
     cs_size(Serialization::decode_vi32(bufp, remainp)),
     cs_max(Serialization::decode_i8(bufp, remainp)),
 
+    log_rollout_ratio(Serialization::decode_i8(bufp, remainp)),
+
     compact_percent(Serialization::decode_i8(bufp, remainp)),
 
     revision(Serialization::decode_vi64(bufp, remainp)) {
@@ -77,6 +81,7 @@ bool Schema::equal(const Ptr &other, bool with_rev) {
           && cs_replication == other->cs_replication
           && cs_size == other->cs_size
           && cs_max == other->cs_max
+          && log_rollout_ratio == other->log_rollout_ratio
           && compact_percent == other->compact_percent
           && col_name.compare(other->col_name) == 0
           && (!with_rev || revision == other->revision)
@@ -94,7 +99,7 @@ size_t Schema::encoded_length() const {
        + Serialization::encoded_length_vi32(blk_cells)
        + 1
        + Serialization::encoded_length_vi32(cs_size)
-       + 2
+       + 3
        + Serialization::encoded_length_vi64(revision);
 } 
  
@@ -115,6 +120,9 @@ void Schema::encode(uint8_t **bufp) const {
   Serialization::encode_i8(bufp, cs_replication);
   Serialization::encode_vi32(bufp, cs_size);
   Serialization::encode_i8(bufp, cs_max);
+
+  Serialization::encode_i8(bufp, log_rollout_ratio);
+
   Serialization::encode_i8(bufp, compact_percent);
 
   Serialization::encode_vi64(bufp, revision);
@@ -146,6 +154,7 @@ void Schema::display(std::ostream& out) const {
     << " cs_replication=" << std::to_string((int)cs_replication)
     << " cs_size=" << std::to_string(cs_size)
     << " cs_max=" << std::to_string((int)cs_max)
+    << " log_rollout=" << std::to_string((int)log_rollout_ratio)
     << ")" ;
 }
 

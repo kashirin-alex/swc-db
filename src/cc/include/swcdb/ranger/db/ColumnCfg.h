@@ -30,6 +30,7 @@ class ColumnCfg final {
   mutable std::atomic<uint8_t>          cs_replication;
   mutable std::atomic<uint32_t>         cs_size;
   mutable std::atomic<uint8_t>          cs_max;
+  mutable std::atomic<uint8_t>          log_rout_ratio;
   mutable std::atomic<uint8_t>          compact_perc;
 
   mutable std::atomic<bool>             deleting;
@@ -56,6 +57,7 @@ class ColumnCfg final {
     cs_replication = schema.cs_replication;
     cs_size = schema.cs_size;
     cs_max = schema.cs_max;
+    log_rout_ratio = schema.log_rollout_ratio;
     compact_perc = schema.compact_percent;
   }
 
@@ -107,6 +109,12 @@ class ColumnCfg final {
     return cs_max 
             ? cs_max.load() 
             : RangerEnv::get()->cfg_cs_max->get();
+  }
+
+  uint8_t log_rollout_ratio() const {
+    return log_rout_ratio
+            ? log_rout_ratio.load() 
+            : RangerEnv::get()->cfg_log_rollout_ratio->get();
   }
 
   uint8_t compact_percent() const {

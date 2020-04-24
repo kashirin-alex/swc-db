@@ -63,9 +63,12 @@ struct Schema {
   9: optional i8            cs_replication
   10: optional i32          cs_size
   11: optional i8           cs_max
-  12: optional i8           compact_percent
+
+  12: optional i8           log_rollout_ratio
+
+  13: optional i8           compact_percent
   
-  13: optional i64          revision
+  14: optional i64          revision
 }
 typedef list<Schema> Schemas
 

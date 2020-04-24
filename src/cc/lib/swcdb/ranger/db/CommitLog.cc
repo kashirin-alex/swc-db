@@ -388,8 +388,13 @@ std::string Fragments::to_string() {
 
 
 bool Fragments::_need_roll() const {
-  return m_cells.size_bytes() >= range->cfg->block_size() * 2 || 
-         m_cells.size() >= range->cfg->block_cells() * 2;
+  auto ratio = range->cfg->log_rollout_ratio();
+  auto bytes = range->cfg->block_size();
+  auto cells = range->cfg->block_cells();
+  return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && (
+          m_cells.size_bytes() >= bytes * ratio ||
+          m_cells.size() >= cells * ratio ||
+          Env::Resources.need_ram(bytes * ratio) );
 }
 
 bool Fragments::_processing() const {
