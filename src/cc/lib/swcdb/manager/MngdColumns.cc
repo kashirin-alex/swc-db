@@ -342,6 +342,9 @@ void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
   if(err)
     return;
 
+  if(Types::is_counter(schema->col_type))
+    schema->cell_versions = 1;
+
   auto schema_save = DB::Schema::make(schema);
   schema_save->cid = cid;
   if(!schema_save->revision)
@@ -360,10 +363,21 @@ void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
   
 void MngdColumns::update(int &err, DB::Schema::Ptr &schema, 
                          DB::Schema::Ptr old) {
-  if(old->col_name.compare(schema->col_name) != 0 
-    && Env::Mngr::schemas()->get(schema->col_name) != nullptr) {
-    err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+  if(old->col_seq != schema->col_seq || 
+     Types::is_counter(old->col_type) != Types::is_counter(schema->col_type) ||
+     (schema->cid <= Files::Schema::SYS_CID_END && 
+      schema->col_name.compare(old->col_name) != 0)) {
+    err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
+  }
+
+  if(Types::is_counter(schema->col_type))
+    schema->cell_versions = 1;
+
+  if(schema->cid < Files::Schema::SYS_CID_END) { 
+    //different values bad for range-colms
+    schema->cell_versions = 1;
+    schema->cell_ttl = 0;
   }
 
   auto schema_save = DB::Schema::make(schema);
@@ -508,7 +522,7 @@ void MngdColumns::actions_run() {
     } else if(!m_columns_set) {
       err = Error::MNGR_NOT_INITIALIZED;
 
-    } else if(!req.params.schema->col_name.length()) {
+    } else if(req.params.schema->col_name.empty()) {
       err = Error::COLUMN_SCHEMA_NAME_EMPTY;
 
     } else {
@@ -530,19 +544,22 @@ void MngdColumns::actions_run() {
         case Protocol::Mngr::Params::ColumnMng::Function::MODIFY: {
           if(schema == nullptr) 
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
+          else if(schema->cid != req.params.schema->cid)
+            err = Error::COLUMN_SCHEMA_NAME_EXISTS;
           else
             update(err, req.params.schema, schema);
           break;
         }
         case Protocol::Mngr::Params::ColumnMng::Function::DELETE: {
-          if(schema == nullptr) {
+          if(schema == nullptr)
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-          } else {
-            if(req.params.schema->col_name.compare(schema->col_name) == 0)
-              req.params.schema = schema;
-            else
-              err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
-          }
+          else if(schema->cid != req.params.schema->cid ||
+                  req.params.schema->col_name.compare(schema->col_name) != 0)
+            err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
+          else if(schema->cid <= Files::Schema::SYS_CID_END)
+            err = Error::COLUMN_SCHEMA_IS_SYSTEM;
+          else
+            req.params.schema = schema;
           break;
         }
         default:

@@ -120,6 +120,7 @@ enum Code {
   COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xC,
   COLUMN_NOT_READY                             = CODE_START+0x5f+0xD,
   COLUMN_CHANGE_INCOMPATIBLE                   = CODE_START+0x5f+0xE,
+  COLUMN_SCHEMA_IS_SYSTEM                      = CODE_START+0x5f+0xF,
 
   SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
   COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
