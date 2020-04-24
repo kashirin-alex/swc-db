@@ -128,6 +128,8 @@ class Range : public std::enable_shared_from_this<Range> {
 
   bool compacting();
 
+  bool compacting_is(uint8_t state);
+
   void compacting(uint8_t state);
   
   bool compact_possible();
@@ -169,6 +171,7 @@ class Range : public std::enable_shared_from_this<Range> {
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
   bool                          m_require_compact;
+  QueueSafe<ReqScan::Ptr>       m_q_scans;
   QueueSafe<ReqAdd*>            m_q_adding;
 
   std::condition_variable_any   m_cv;

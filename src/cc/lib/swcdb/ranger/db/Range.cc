@@ -135,12 +135,25 @@ void Range::add(Range::ReqAdd* req) {
 }
 
 void Range::scan(ReqScan::Ptr req) {
-  if(wait(COMPACT_APPLYING) && !is_loaded()) {
-    int err = Error::RS_NOT_LOADED_RANGE;
-    req->response(err);
-    return;
+  if(compacting_is(COMPACT_APPLYING)) {
+    if(!m_q_scans.push_and_is_1st(req))
+      return;
+    wait(COMPACT_APPLYING);
+
+    int err = is_loaded() ? Error::OK : Error::RS_NOT_LOADED_RANGE;
+    do {
+      if(err)
+        m_q_scans.front()->response(err);
+      else
+        asio::post(*Env::IoCtx::io()->ptr(), 
+          [req=m_q_scans.front(), ptr=shared_from_this()]() {
+             ptr->blocks.scan(req);
+          });
+    } while(m_q_scans.pop_and_more());
+
+  } else {
+    blocks.scan(req);
   }
-  blocks.scan(req);
 }
 
 void Range::scan_internal(ReqScan::Ptr req) {
@@ -320,6 +333,11 @@ void Range::wait_queue() {
 bool Range::compacting() {
   std::shared_lock lock(m_mutex);
   return m_compacting != COMPACT_NONE;
+}
+
+bool Range::compacting_is(uint8_t state) {
+  std::shared_lock lock(m_mutex);
+  return m_compacting == state;
 }
 
 void Range::compacting(uint8_t state) {
@@ -552,26 +570,24 @@ void Range::run_add_queue() {
 
   int err;
   DB::Cells::Cell cell;
-  const uint8_t* ptr;
+  const uint8_t* ptr = 0;
   size_t remain; 
   bool early_range_end;
   bool late_range_begin;
   bool intval_chg;
+  DB::Cell::Key       key_prev_end;
+  DB::Cell::Key       key_end;
+  DB::Cells::Interval alignment_interval(cfg->key_seq);
 
-  DB::Cell::Key key_prev_end;
-  DB::Cell::Key key_end;
-  {
-    std::shared_lock lock(m_mutex);
-    key_prev_end.copy(m_prev_key_end);
-    key_end.copy(m_interval.key_end);
-  }
   uint64_t ttl = cfg->cell_ttl();
 
   do {
-    if(wait(COMPACT_PREPARING)) {
+    if(!ptr || wait(COMPACT_PREPARING)) {
       std::shared_lock lock(m_mutex);
       key_prev_end.copy(m_prev_key_end);
       key_end.copy(m_interval.key_end);
+      alignment_interval.aligned_min.copy(m_interval.aligned_min);
+      alignment_interval.aligned_max.copy(m_interval.aligned_max);
     }
     blocks.processing_increment();
   
@@ -623,7 +639,7 @@ void Range::run_add_queue() {
       blocks.add_logged(cell);
         
       if(type == Types::Range::DATA) {
-        if(align(cell.key))
+        if(alignment_interval.align(cell.key))
           intval_chg = true;
       } else {
         /* MASTER/META need aligned interval 
@@ -649,6 +665,7 @@ void Range::run_add_queue() {
 
     if(intval_chg) {
       intval_chg = false;
+      align(alignment_interval);
       on_change(err, false);
     }
 

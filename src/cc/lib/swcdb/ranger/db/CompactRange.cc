@@ -198,6 +198,8 @@ void CompactRange::response(int &err) {
   if(!reached_limits()) {
     stop_check_timer();
     range->compacting(Range::COMPACT_APPLYING);
+    range->blocks.wait_processing();
+    range->blocks.commitlog.commit_new_fragment(true);
   }
 
   auto in_block = m_inblock;
