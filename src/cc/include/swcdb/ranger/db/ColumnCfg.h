@@ -153,13 +153,15 @@ class ColumnCfg final {
 
     s.append(" cs(");
     s.append("replication=");
-    s.append(std::to_string(cs_replication));
+    s.append(std::to_string((int)cs_replication));
     s.append(" size=");
     s.append(std::to_string(cs_size));
     s.append(" max=");
-    s.append(std::to_string(cs_max));
+    s.append(std::to_string((int)cs_max));
+    s.append(" rollout=");
+    s.append(std::to_string((int)log_rout_ratio));
     s.append(" compact=");
-    s.append(std::to_string(compact_perc));
+    s.append(std::to_string((int)compact_perc));
     s.append("%)");
 
     return s;

@@ -483,7 +483,9 @@ void CompactRange::finalize() {
       c = 1; 
       goto split_option;
     }
-    if(it != cellstores.end()) {
+
+    if(it != cellstores.end() && 
+       (*it)->size >= (cs_size/100) * range->cfg->compact_percent()) {
       mngr_create_range(it-cellstores.begin());
       return;
     }
