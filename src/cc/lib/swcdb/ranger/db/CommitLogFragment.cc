@@ -205,6 +205,34 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
     release();
 }
 
+void Fragment::load_cells(int& err, Fragments::Ptr log) {
+  if(m_buffer.size) {
+    size_t count = 0;
+    DB::Cells::Cell cell;
+    const uint8_t* buf = m_buffer.base;
+    size_t remain = m_buffer.size;
+    while(remain) {
+      ++count;
+      try {
+        cell.read(&buf, &remain);
+
+      } catch(std::exception) {
+        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+                count, cells_count, remain, to_string().c_str());
+        break;
+      }
+
+      log->add(cell);
+    }
+  } else {
+    SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
+             to_string().c_str());
+  }
+
+  processing_decrement();
+  release();
+}
+
 void Fragment::split(int& err, const DB::Cell::Key& key, 
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
   uint64_t tts = Time::now_ns();
