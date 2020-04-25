@@ -13,7 +13,6 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 class Splitter final {
   public:
   
-  static constexpr const uint8_t MAX_LOAD = 3;
 
   Splitter(const DB::Cell::Key& key, std::vector<Fragment::Ptr>& fragments,
            Fragments::Ptr log_left, Fragments::Ptr log_right) 
@@ -42,9 +41,11 @@ class Splitter final {
           continue;
         }
       }
-      if(m_queue.size() == MAX_LOAD) {
+      if(m_queue.size() == Fragments::MAX_PRELOAD) {
         std::unique_lock lock_wait(m_mutex);
-        m_cv.wait(lock_wait, [this]() { return m_queue.size() < MAX_LOAD; });
+        m_cv.wait(lock_wait, [this]() { 
+          return m_queue.size() < Fragments::MAX_PRELOAD; 
+          });
       }
       m_queue.push(frag);
       frag->load([this]() { loaded(); });

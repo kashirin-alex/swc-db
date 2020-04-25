@@ -21,7 +21,11 @@ class Fragments final {
 
   typedef Fragments*  Ptr;
 
-  RangePtr range;
+  static constexpr const uint8_t  MAX_PRELOAD = 3;
+  static constexpr const uint8_t  MAX_COMPACT = 6;
+
+  std::atomic<bool>    compacting;
+  RangePtr             range;
 
   explicit Fragments(const Types::KeySeq key_seq);
 
@@ -50,6 +54,9 @@ class Fragments final {
 
   void load_cells(BlockLoader* loader);
 
+  void need_compact(std::vector<Fragment::Ptr>& fragments,
+                    const std::vector<Fragment::Ptr>& without);
+
   void get(std::vector<Fragment::Ptr>& fragments);
 
   size_t release(size_t bytes);
@@ -66,7 +73,7 @@ class Fragments final {
 
   bool deleting();
 
-  size_t cells_count();
+  size_t cells_count(bool only_current = false);
 
   size_t size();
 
