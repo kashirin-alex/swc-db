@@ -26,6 +26,8 @@ class CompactRange : public ReqScan {
 
   void initialize();
 
+  void commitlog(bool init);
+
   bool with_block() override;
 
   bool selector(const Types::KeySeq key_seq, 

@@ -170,16 +170,8 @@ void Compaction::compact(RangePtr range) {
     cs_size,
     blk_size
   );
-
-  range->compacting(Range::COMPACT_APPLYING); // sync processing state
-  range->blocks.wait_processing();
-
-  commitlog.commit_new_fragment(true);
-  commitlog.get(req->fragments_old); // fragments for removal
-  
-  range->compacting(Range::COMPACT_COMPACTING); //range add & scan can continue
-
   req->initialize();
+
   range->scan_internal(req);
 }
 

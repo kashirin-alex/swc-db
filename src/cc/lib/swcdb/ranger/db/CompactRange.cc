@@ -7,6 +7,7 @@
 #include "swcdb/db/Protocol/Mngr/req/RangeUnloaded.h"
 #include "swcdb/db/Protocol/Mngr/req/RangeRemove.h"
 
+#include "swcdb/ranger/db/CommitLogCompact.h"
 #include "swcdb/ranger/db/CommitLogSplitter.h"
 
 namespace SWC { namespace Ranger {
@@ -137,8 +138,45 @@ CompactRange::Ptr CompactRange::shared() {
 }
 
 void CompactRange::initialize() {
+  range->compacting(Range::COMPACT_APPLYING);
+  range->blocks.wait_processing(); // sync processing state
+
+  commitlog(true);
+
   m_ts_req = Time::now_ns();
   progress_check_timer();
+}
+
+void CompactRange::commitlog(bool init) {
+  bool log_compact;
+  std::vector<CommitLog::Fragment::Ptr> sorted;
+  //do {
+    range->blocks.commitlog.need_compact(sorted, fragments_old);
+    if(log_compact = !sorted.empty()) {
+      if(!init) {
+        if(m_stopped) 
+          return;
+        range->compacting(Range::COMPACT_APPLYING);
+        range->blocks.wait_processing(); // sync processing state
+        if(m_stopped) 
+          return;
+      }
+      auto compact = CommitLog::Compact(&range->blocks.commitlog);
+      compact.run(sorted);
+      sorted.clear();
+      range->blocks.commitlog.commit_new_fragment(true);
+    }
+    if(m_stopped) 
+      return;
+  //} while(init && log_compact && range->is_loaded() && !compactor->stopped());
+  
+  if(init) {
+    if(!log_compact) //
+      range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.get(fragments_old); // fragments for removal
+  }
+  if(!m_stopped && (log_compact || init))
+    range->compacting(Range::COMPACT_COMPACTING); //range add&scan can continue
 }
 
 bool CompactRange::with_block() {
@@ -209,20 +247,21 @@ void CompactRange::response(int &err) {
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
   }
 
-  {
-    Mutex::scope lock(m_mutex);
-    if(in_block) {
-      m_inblock->set_offset(spec);
-      m_getting = false;
-    }
-  }
-
   if(m_q_intval.push_and_is_1st(in_block))
     asio::post(*RangerEnv::maintenance_io()->ptr(), 
       [ptr=shared()](){ ptr->process_interval(); });
 
-  if(in_block)
-    request_more();
+  if(m_stopped || !in_block)
+    return;
+  
+  commitlog(false);
+    
+  m_inblock->set_offset(spec);
+  {
+    Mutex::scope lock(m_mutex);
+    m_getting = false;
+  }
+  request_more();
 }
 
 void CompactRange::progress_check_timer() {
@@ -232,16 +271,14 @@ void CompactRange::progress_check_timer() {
   uint64_t median = (total_cells.load() 
     ? (Time::now_ns() - ts_start) / total_cells.load() : 10000) * blk_cells;
 
-  if(Time::now_ns() - m_ts_req.load() > median * 10) {
-    // mitigate add req. workload
-    range->compacting(Range::COMPACT_PREPARING);
-    //range->blocks.commitlog.commit_new_fragment(true);
-  } else {
-    // range scan & add reqs can continue
-    range->compacting(Range::COMPACT_COMPACTING);
+  if(!range->compacting_is(Range::COMPACT_APPLYING)) {
+    range->compacting(
+      Time::now_ns() - m_ts_req.load() > median * 3 
+      ? Range::COMPACT_PREPARING  // mitigate add req. workload
+      : Range::COMPACT_COMPACTING // range scan & add reqs can continue
+    );
+    request_more();
   }
-
-  request_more();
 
   if((median /= 1000000) < 1000)
     median = 1000;
@@ -386,7 +423,6 @@ uint32_t CompactRange::create_cs(int& err) {
     stop_check_timer();
     // mitigate add req. total workload
     range->compacting(Range::COMPACT_PREPARING);
-    //range->blocks.commitlog.commit_new_fragment(true);
   }
   return id;
 
@@ -681,9 +717,9 @@ void CompactRange::apply_new(bool clear) {
 }
 
 void CompactRange::quit() {
-  stop_check_timer();
-
   m_stopped = true;
+
+  stop_check_timer();
   int err = Error::OK;
   if(cs_writer != nullptr) {
     cs_writer->remove(err);
