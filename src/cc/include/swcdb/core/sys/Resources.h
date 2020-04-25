@@ -14,7 +14,7 @@ namespace SWC {
 
 class Resources final {
   public:
-
+  static const uint32_t MAX_RAM_CHK_INTVAL_MS = 5000;
   Resources();
 
   ~Resources();
@@ -40,13 +40,14 @@ class Resources final {
 
   void refresh_stats();
 
-  void schedule(uint32_t ms = 5000);
+  void schedule();
 
   struct Component final {
-    std::atomic<size_t> total    = 0;
-    std::atomic<size_t> free     = 0;
-    std::atomic<size_t> used     = 0;
-    std::atomic<size_t> allowed  = 0;
+    std::atomic<size_t>   total    = 0;
+    std::atomic<size_t>   free     = 0;
+    std::atomic<size_t>   used     = 0;
+    std::atomic<size_t>   allowed  = 0;
+    std::atomic<uint32_t> chk_ms   = MAX_RAM_CHK_INTVAL_MS;
 
     std::string to_string(uint32_t base = 1) const;
   };

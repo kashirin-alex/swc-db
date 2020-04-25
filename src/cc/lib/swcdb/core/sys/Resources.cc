@@ -91,6 +91,9 @@ void Resources::refresh_stats() {
     ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
     ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
     ram.allowed = (ram.total/100) * cfg_ram_percent->get();
+    ram.chk_ms  = ram.allowed / 3000; //~= ram-buff   
+    if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
+      ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
   }
 
   size_t sz = 0, rss = 0;
@@ -98,11 +101,13 @@ void Resources::refresh_stats() {
   buffer >> sz >> rss;
   buffer.close();
   rss *= page_size;
-  ram.used = rss; // ram.used ? (ram.used+rss)/2 : rss;
+  ram.used = ram.used > ram.allowed || ram.used > rss 
+              ? (ram.used*4+rss)/5 
+              : rss;
 }
 
-void Resources::schedule(uint32_t ms) {
-  m_timer->expires_from_now(std::chrono::milliseconds(ms));
+void Resources::schedule() {
+  m_timer->expires_from_now(std::chrono::milliseconds(ram.chk_ms));
   m_timer->async_wait(
     [this](const asio::error_code ec) {
       if(ec != asio::error::operation_aborted) {
