@@ -13,17 +13,18 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 class Compact final {
   public:
 
-  Compact(Fragments::Ptr log) : log(log), m_remain(0) {
+  Compact(RangePtr range, std::atomic<bool>& stop) 
+          : range(range), stop(stop), m_remain(0) {
   }
 
   ~Compact() { }
 
   void run(const std::vector<Fragment::Ptr>& sorted) {
-    log->compacting = true;
+    range->blocks.commitlog.compacting = true;
     m_remain = sorted.size();
     SWC_LOGF(LOG_INFO, 
       "COMPACT-FRAGMENTS-START %d/%d fragments=%lld",
-      log->range->cfg->cid, log->range->rid, sorted.size()
+      range->cfg->cid, range->rid, sorted.size()
     );
 
     uint64_t ts = Time::now_ns();
@@ -36,6 +37,8 @@ class Compact final {
           return m_queue.size() < Fragments::MAX_PRELOAD; 
         });
       }
+      if(stop)
+        break;
       m_queue.push(*it);
       (*it)->load([this]() { loaded(); });
     }
@@ -46,13 +49,12 @@ class Compact final {
         loaded();
         return m_queue.empty(); 
       });
-    log->compacting = false;
+    range->blocks.commitlog.compacting = false;
     
     ts = Time::now_ns() - ts;
     SWC_LOGF(LOG_INFO, 
       "COMPACT-FRAGMENTS-FINISH %d/%d fragments=%lld avg=%lldns took=%lld",
-      log->range->cfg->cid, log->range->rid, 
-      sorted.size(), ts / sorted.size(), ts
+      range->cfg->cid, range->rid, sorted.size(), ts / sorted.size(), ts
     );
   }
 
@@ -70,23 +72,31 @@ class Compact final {
     uint64_t ts;
     do {
       err = Error::OK;
+      if(stop) {
+        do {
+          (frag = m_queue.front())->processing_decrement();
+          frag->release();
+        } while(!m_queue.deactivating());
+        break;
+      }
+
       if(loaded = (frag = m_queue.front())->loaded(err)) {
         ts = Time::now_ns();
-        frag->load_cells(err, log); 
+        frag->load_cells(err, &range->blocks.commitlog); 
         --m_remain;
         ts = Time::now_ns() - ts;
 
         SWC_LOGF(LOG_INFO, 
           "COMPACT-FRAGMENTS-PROGRESS %d/%d remain=%lld "
           "cells=%lld avg=%lldns took=%lld log-cells=%lld begin-%s end-%s",
-          log->range->cfg->cid, log->range->rid, m_remain,
+          range->cfg->cid, range->rid, m_remain,
           frag->cells_count, frag->cells_count? ts/frag->cells_count: 0, 
-          ts, log->cells_count(true),
+          ts, range->blocks.commitlog.cells_count(true),
           frag->interval.key_begin.to_string().c_str(),
           frag->interval.key_end.to_string().c_str()
         );
 
-        log->remove(err, frag, true);
+        range->blocks.commitlog.remove(err, frag, true);
       }
 
       if(!err && !loaded) {
@@ -105,7 +115,8 @@ class Compact final {
     m_cv.notify_one();
   }
 
-  Fragments::Ptr                    log;
+  RangePtr                          range;
+  std::atomic<bool>&                stop;
   std::mutex                        m_mutex;
   std::condition_variable           m_cv;
   QueueSafeStated<Fragment::Ptr>    m_queue;

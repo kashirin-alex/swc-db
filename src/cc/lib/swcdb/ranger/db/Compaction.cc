@@ -126,42 +126,56 @@ void Compaction::compact(RangePtr range) {
   uint64_t cell_ttl = range->cfg->cell_ttl();
 
   size_t value;
-  bool do_compaction;
+  bool do_compaction = false;
   std::string need;
-  if(do_compaction = range->compact_required() && commitlog.cells_count()) {
+
+  uint8_t compact_type = range->compact_required();
+  if(compact_type == Range::COMPACT_TYPE_MAJOR) {
+    do_compaction = commitlog.cells_count();
+    if(!do_compaction)
+      compact_type = Range::COMPACT_TYPE_NONE;
+  }
+
+  if(do_compaction) {
     need.append("Required");
 
   } else if(do_compaction = (value = commitlog.size_bytes(true)) >= allow_sz) {
     need.append("LogBytes=");
     need.append(std::to_string(value-allow_sz));
+    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = (value = commitlog.size()) >= cs_size/blk_size) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
+    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = range->blocks.cellstores.need_compaction(
                     cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
     need.append("CsResize");
+    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = cell_ttl && 
             (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
             != DB::Cells::AUTO_ASSIGN && 
             (int64_t)value < Time::now_ns()-cell_ttl*100) {
     need.append("CsTTL");
+    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = range->blocks.cellstores.get_cell_revs() 
                               > cell_revs) {
     need.append("CsVersions");
+    compact_type = Range::COMPACT_TYPE_MAJOR;
   }
 
-  if(!do_compaction || !m_run)
+  if(!m_run || (!do_compaction && compact_type == Range::COMPACT_TYPE_NONE))
     return compacted(range);
     
   SWC_LOGF(
     LOG_INFO, 
-    "COMPACT-STARTED %d/%d %s", 
+    "COMPACT-STARTED %d/%d %s (%s)", 
     range->cfg->cid, range->rid,
-    need.c_str()
+    need.c_str(),
+    compact_type == Range::COMPACT_TYPE_MAJOR ? "MAJOR" : "MINOR"
   );
 
   auto req = std::make_shared<CompactRange>(
@@ -170,7 +184,9 @@ void Compaction::compact(RangePtr range) {
     cs_size,
     blk_size
   );
-  req->initialize();
+  req->initialize(compact_type);
+  if(compact_type == Range::COMPACT_TYPE_MINOR)
+    return compacted(range);
 
   range->scan_internal(req);
 }

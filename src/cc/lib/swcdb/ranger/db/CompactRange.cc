@@ -137,11 +137,13 @@ CompactRange::Ptr CompactRange::shared() {
   return std::dynamic_pointer_cast<CompactRange>(shared_from_this());
 }
 
-void CompactRange::initialize() {
+void CompactRange::initialize(uint8_t type) {
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing(); // sync processing state
 
   commitlog(true);
+  if(type == Range::COMPACT_TYPE_MINOR)
+    return;
 
   m_ts_req = Time::now_ns();
   progress_check_timer();
@@ -161,10 +163,12 @@ void CompactRange::commitlog(bool init) {
         if(m_stopped) 
           return;
       }
-      auto compact = CommitLog::Compact(&range->blocks.commitlog);
+      range->blocks.processing_increment();
+      auto compact = CommitLog::Compact(range, m_stopped);
       compact.run(sorted);
       sorted.clear();
       range->blocks.commitlog.commit_new_fragment(true);
+      range->blocks.processing_decrement();
     }
     if(m_stopped) 
       return;
@@ -233,7 +237,8 @@ void CompactRange::response(int &err) {
     total_blocks.load(), err
   );
 
-  if(!reached_limits()) {
+  bool finishing_up;
+  if(finishing_up = !reached_limits()) {
     stop_check_timer();
     range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
@@ -254,7 +259,8 @@ void CompactRange::response(int &err) {
   if(m_stopped || !in_block)
     return;
   
-  commitlog(false);
+  if(!finishing_up)
+    commitlog(false);
     
   m_inblock->set_offset(spec);
   {
@@ -503,6 +509,7 @@ void CompactRange::finalize() {
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing();
 
+  bool ok;
   auto max = range->cfg->cellstore_max();
   if(cellstores.size() > 1 && cellstores.size() >= max) {
     auto c = cellstores.size()/2;
@@ -520,16 +527,17 @@ void CompactRange::finalize() {
       goto split_option;
     }
 
-    if(it != cellstores.end() && 
+    if((ok = it != cellstores.end()) && 
        (*it)->size >= (cs_size/100) * range->cfg->compact_percent()) {
       mngr_create_range(it-cellstores.begin());
       return;
     }
-    SWC_LOGF(
-      LOG_WARN, 
-      "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d", 
-      range->cfg->cid, range->rid, cellstores.size()
-    );
+    if(!ok)
+      SWC_LOGF(
+        LOG_WARN, 
+        "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d", 
+        range->cfg->cid, range->rid, cellstores.size()
+      );
   }
   
   apply_new(empty_cs);
@@ -684,7 +692,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     }
   );
 
-  range->compact_require(range->cfg->cellstore_max() > cellstores.size());
+  range->compact_require(Range::COMPACT_TYPE_NONE);
   
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
@@ -703,7 +711,7 @@ void CompactRange::apply_new(bool clear) {
   if(err)
     return quit();
 
-  range->compact_require(false);
+  range->compact_require(Range::COMPACT_TYPE_NONE);
   
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
@@ -730,7 +738,7 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-
+ // + wait for MINOR 
   SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
            range->cfg->cid, range->rid);
   compactor->compacted(range);

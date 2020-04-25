@@ -21,7 +21,8 @@ Range::Range(const ColumnCfg* cfg, const int64_t rid)
               type(Types::MetaColumn::get_range_type(cfg->cid)),
               meta_cid(Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
               blocks(cfg->key_seq), 
-              m_compacting(COMPACT_NONE), m_require_compact(false) { 
+              m_compacting(COMPACT_NONE), m_require_compact(COMPACT_TYPE_NONE),
+              m_inbytes(0) { 
 }
 
 void Range::init() {
@@ -108,7 +109,7 @@ bool Range::align(const DB::Cell::Key& key) {
 void Range::schema_update(bool compact) {
   blocks.schema_update();
   if(compact)
-    compact_require(compact);
+    compact_require(COMPACT_TYPE_MAJOR);
 }
 
 void Range::set_state(Range::State new_state) {
@@ -351,18 +352,18 @@ void Range::compacting(uint8_t state) {
 bool Range::compact_possible() {
   std::scoped_lock lock(m_mutex);
   if(m_state != State::LOADED || m_compacting != COMPACT_NONE
-      || (!m_require_compact && blocks.processing()))
+      || (m_require_compact == COMPACT_TYPE_NONE && blocks.processing()))
     return false;
   m_compacting = COMPACT_CHECKING;
   return true;
 }
 
-void Range::compact_require(bool require) {
+void Range::compact_require(uint8_t require) {
   std::scoped_lock lock(m_mutex);
   m_require_compact = require;
 }
 
-bool Range::compact_required() {
+uint8_t Range::compact_required() {
   std::shared_lock lock(m_mutex);
   return m_require_compact;
 }
@@ -593,7 +594,7 @@ void Range::run_add_queue() {
   
     req = m_q_adding.front();
     ptr = req->input.base;
-    remain = req->input.size;
+    m_inbytes += remain = req->input.size;
     early_range_end = false;
     late_range_begin = false;
     intval_chg = false;
@@ -680,14 +681,21 @@ void Range::run_add_queue() {
     }
     delete req;
 
+    need_compact();
   } while(m_q_adding.pop_and_more());
     
-  if(blocks.commitlog.size_bytes_encoded() > 
-      (cfg->cellstore_size()/100) * cfg->compact_percent()) {
-    compact_require(true);
-    RangerEnv::compaction_schedule(10000);
-  }
+  need_compact();
+}
 
+void Range::need_compact() {
+  if(m_inbytes < cfg->block_size() * 2)
+    return;
+  uint8_t compact_type = blocks.commitlog.need_compact();
+  if(compact_type == COMPACT_TYPE_NONE)
+    return;
+  compact_require(compact_type);
+  RangerEnv::compaction_schedule(10000);
+  m_inbytes = 0;
 }
 
 

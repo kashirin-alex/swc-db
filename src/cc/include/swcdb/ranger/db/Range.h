@@ -57,6 +57,9 @@ class Range : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_PREPARING   = 0x03;
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
+  static const uint8_t COMPACT_TYPE_NONE   = 0x00;
+  static const uint8_t COMPACT_TYPE_MINOR  = 0x01;
+  static const uint8_t COMPACT_TYPE_MAJOR  = 0x02;
   
   const ColumnCfg*    cfg;
   const int64_t       rid;
@@ -134,9 +137,9 @@ class Range : public std::enable_shared_from_this<Range> {
   
   bool compact_possible();
 
-  void compact_require(bool require);
+  void compact_require(uint8_t require);
 
-  bool compact_required();
+  uint8_t compact_required();
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
@@ -161,6 +164,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void run_add_queue();
 
+  void need_compact();
 
   private:
   const std::string             m_path;
@@ -170,11 +174,13 @@ class Range : public std::enable_shared_from_this<Range> {
 
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
-  bool                          m_require_compact;
+  uint8_t                       m_require_compact;
   QueueSafe<ReqScan::Ptr>       m_q_scans;
   QueueSafe<ReqAdd*>            m_q_adding;
 
   std::condition_variable_any   m_cv;
+
+  std::atomic<size_t>           m_inbytes;
 };
 
 

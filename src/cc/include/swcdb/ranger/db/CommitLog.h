@@ -22,7 +22,7 @@ class Fragments final {
   typedef Fragments*  Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
-  static constexpr const uint8_t  MAX_COMPACT = 6;
+  static constexpr const uint8_t  MAX_COMPACT = 4;
 
   std::atomic<bool>    compacting;
   RangePtr             range;
@@ -54,6 +54,8 @@ class Fragments final {
 
   void load_cells(BlockLoader* loader);
 
+  uint8_t need_compact();
+  
   void need_compact(std::vector<Fragment::Ptr>& fragments,
                     const std::vector<Fragment::Ptr>& without);
 

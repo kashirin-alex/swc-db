@@ -217,6 +217,18 @@ void Fragments::load_cells(BlockLoader* loader) {
   loader->block->load_cells(m_cells);
 }
 
+uint8_t Fragments::need_compact() {
+  if(size_bytes_encoded() > 
+      (range->cfg->cellstore_size()/100) * range->cfg->compact_percent())
+    return Range::COMPACT_TYPE_MAJOR;
+
+  std::vector<Fragment::Ptr> fragments;
+  need_compact(fragments, {});
+  return fragments.empty() 
+    ? Range::COMPACT_TYPE_NONE 
+    : Range::COMPACT_TYPE_MINOR;
+}
+
 void Fragments::need_compact(std::vector<Fragment::Ptr>& fragments,
                              const std::vector<Fragment::Ptr>& without) {
   {
@@ -433,8 +445,8 @@ bool Fragments::_need_roll() const {
   return compacting 
     ? (m_cells.size() >= cells*(ratio<MAX_COMPACT? ratio=MAX_COMPACT:ratio) ||
        m_cells.size_bytes() >= bytes * ratio) && 
-      (Env::Resources.need_ram(bytes * 2) || 
-       m_cells.size() >= cells * ratio * 3)
+      (Env::Resources.need_ram(bytes * ratio) || 
+       m_cells.size() >= cells * ratio * 2) // huge-cells => (log-cells-blocks)
     : (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && (
        m_cells.size_bytes() >= bytes * ratio ||
        m_cells.size() >= cells * ratio ||
