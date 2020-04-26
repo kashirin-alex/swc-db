@@ -70,7 +70,7 @@ class Fragment final {
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
-  void load_cells(int& err, FragmentsPtr log);
+  void load_cells(int& err, DB::Cells::Mutable& cells);
 
   void split(int& err, const DB::Cell::Key& key, 
              FragmentsPtr log_left, FragmentsPtr log_right);

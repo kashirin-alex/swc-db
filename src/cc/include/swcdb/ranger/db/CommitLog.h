@@ -6,7 +6,15 @@
 #ifndef swc_ranger_db_CommitLog_h
 #define swc_ranger_db_CommitLog_h
 
+
+namespace SWC { namespace Ranger { namespace CommitLog {
+class Fragments;
+}}}
+
 #include "swcdb/ranger/db/CommitLogFragment.h"
+#include "swcdb/ranger/db/CommitLogCompact.h"
+
+
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
@@ -22,9 +30,8 @@ class Fragments final {
   typedef Fragments*  Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
-  static constexpr const uint8_t  MAX_COMPACT = 4;
+  static constexpr const uint8_t  MAX_COMPACT = 10; //(>rollout.ratio)?ram|(x2)
 
-  std::atomic<bool>    compacting;
   RangePtr             range;
 
   explicit Fragments(const Types::KeySeq key_seq);
@@ -38,6 +45,8 @@ class Fragments final {
   void add(const DB::Cells::Cell& cell);
 
   void commit_new_fragment(bool finalize=false);
+
+  bool try_compact(int tnum = 1);
 
   const std::string get_log_fragment(const int64_t frag) const;
 
@@ -54,10 +63,7 @@ class Fragments final {
 
   void load_cells(BlockLoader* loader);
 
-  uint8_t need_compact();
-  
-  void need_compact(std::vector<Fragment::Ptr>& fragments,
-                    const std::vector<Fragment::Ptr>& without);
+  bool need_compact(std::vector<Fragment::Ptr>& fragments);
 
   void get(std::vector<Fragment::Ptr>& fragments);
 
@@ -103,6 +109,9 @@ class Fragments final {
   bool                        m_deleting;
   std::condition_variable_any m_cv;
   std::vector<Fragment::Ptr>  m_fragments;
+  bool                        m_compacting;
+  Compact                     m_compact;
+  
 
 };
 

@@ -205,7 +205,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-void Fragment::load_cells(int& err, Fragments::Ptr log) {
+void Fragment::load_cells(int& err, DB::Cells::Mutable& cells) {
   if(m_buffer.size) {
     size_t count = 0;
     DB::Cells::Cell cell;
@@ -222,7 +222,7 @@ void Fragment::load_cells(int& err, Fragments::Ptr log) {
         break;
       }
 
-      log->add(cell);
+      cells.add_raw(cell);
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 

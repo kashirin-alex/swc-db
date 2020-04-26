@@ -14,8 +14,9 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 
 Fragments::Fragments(const Types::KeySeq key_seq)  
-                    : compacting(false), m_cells(key_seq), 
-                      m_commiting(false), m_deleting(false) { 
+                    : m_cells(key_seq), 
+                      m_commiting(false), m_deleting(false), 
+                      m_compacting(false), m_compact(this, key_seq) { 
 }
 
 void Fragments::init(RangePtr for_range) {
@@ -61,9 +62,9 @@ void Fragments::add(const DB::Cells::Cell& cell) {
 void Fragments::commit_new_fragment(bool finalize) {
   if(finalize) {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting)
-      m_cv.wait(
-        lock_wait, [this] {return !m_commiting && (m_commiting = true);});
+    if(m_commiting || m_compacting)
+      m_cv.wait(lock_wait, [this] {
+        return !m_compacting && !m_commiting && (m_commiting = true); });
   }
   
   Fragment::Ptr frag; 
@@ -130,7 +131,52 @@ void Fragments::commit_new_fragment(bool finalize) {
     std::unique_lock lock_wait(m_mutex);
     m_commiting = false;
   }
+
+  if(!finalize)
+    try_compact();
   m_cv.notify_all();
+}
+
+bool Fragments::try_compact(int tnum) {
+  if(!range->compact_possible())
+    return false;
+
+  std::unique_lock lock(m_mutex);
+  if(m_compact.stop)
+    return false;
+
+  std::vector<Fragment::Ptr> fragments = m_fragments;
+  if(!need_compact(fragments)) {
+    range->compacting(Range::COMPACT_NONE);
+    size_t sz = 0;
+    size_t ok = range->cfg->cellstore_size()/100;
+    ok *= range->cfg->compact_percent();
+    for(auto frag : fragments) {
+      if((sz += frag->size_bytes_encoded()) > ok) {
+        range->compact_require(true);
+        RangerEnv::compaction_schedule(10000);
+        break;
+      }
+    }
+    return false;
+  }
+
+  m_compacting = true;
+  range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
+
+  asio::post(*Env::IoCtx::io()->ptr(), 
+    [this, tnum, fragments]() { 
+      m_compact.run(tnum, fragments); 
+      m_compacting = false;
+      m_cv.notify_all();
+      if(m_compact.stop)
+        return;
+      if(tnum < fragments.size() / MAX_COMPACT)
+        try_compact(tnum+1);
+      else
+        RangerEnv::compaction_schedule(10000);
+    });
+  return true;
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
@@ -217,33 +263,10 @@ void Fragments::load_cells(BlockLoader* loader) {
   loader->block->load_cells(m_cells);
 }
 
-uint8_t Fragments::need_compact() {
-  if(size_bytes_encoded() > 
-      (range->cfg->cellstore_size()/100) * range->cfg->compact_percent())
-    return Range::COMPACT_TYPE_MAJOR;
+bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
+  if(fragments.size() < 3)
+    return false;
 
-  std::vector<Fragment::Ptr> fragments;
-  need_compact(fragments, {});
-  return fragments.empty() 
-    ? Range::COMPACT_TYPE_NONE 
-    : Range::COMPACT_TYPE_MINOR;
-}
-
-void Fragments::need_compact(std::vector<Fragment::Ptr>& fragments,
-                             const std::vector<Fragment::Ptr>& without) {
-  {
-    std::shared_lock lock(m_mutex);
-    if(m_fragments.size() - without.size() < MAX_COMPACT)
-      return;
-    for(auto frag : m_fragments) {
-      if(std::find(without.begin(), without.end(), frag) == without.end())
-        fragments.push_back(frag);
-    }
-  }
-  if(fragments.size() < MAX_COMPACT) {
-    fragments.clear();
-    return;
-  }
   std::sort(fragments.begin(), fragments.end(),
     [seq=m_cells.key_seq]
     (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {
@@ -252,18 +275,22 @@ void Fragments::need_compact(std::vector<Fragment::Ptr>& fragments,
     }
   );
 
-  size_t at_least = (fragments.size()/100) * range->cfg->compact_percent() + 1;
-  auto it = fragments.begin() + 1;
-  for(auto frag : fragments) {
+  size_t need = 3;
+            //(fragments.size()/100) * range->cfg->compact_percent() + 1;
+  auto it = fragments.begin();
+  for(auto it_nxt = it+1; it_nxt<fragments.end();) {
     if(DB::KeySeq::compare(m_cells.key_seq, 
-        frag->interval.key_end, (*it)->interval.key_begin) != Condition::GT) {
-      if(!--at_least)
-        return;
+        (*it)->interval.key_end, (*it_nxt)->interval.key_begin)
+         != Condition::GT) {
+      if(!--need)
+        return true;
+      ++it; 
+      ++it_nxt;
+    } else {
+      fragments.erase(it);
     }
-    if(++it == fragments.end())
-      break;
   }
-  fragments.clear();
+  return false;
 }
 
 void Fragments::get(std::vector<Fragment::Ptr>& fragments) {
@@ -314,11 +341,13 @@ void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
 }
 
 void Fragments::remove(int &err) {
+  m_compact.stop = true;
   {
     std::unique_lock lock_wait(m_mutex);
     m_deleting = true;
-    if(m_commiting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
+    if(m_commiting || m_compacting) {
+      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
+    }
   }
   std::scoped_lock lock(m_mutex);
   for(auto frag : m_fragments) {
@@ -332,9 +361,10 @@ void Fragments::remove(int &err) {
 void Fragments::unload() {
   {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
+    if(m_commiting || m_compacting)
+      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
   }
+  m_compact.stop = true;
   std::scoped_lock lock(m_mutex);
   for(auto frag : m_fragments)
     delete frag;
@@ -442,15 +472,11 @@ bool Fragments::_need_roll() const {
   auto ratio = range->cfg->log_rollout_ratio();
   auto bytes = range->cfg->block_size();
   auto cells = range->cfg->block_cells();
-  return compacting 
-    ? (m_cells.size() >= cells*(ratio<MAX_COMPACT? ratio=MAX_COMPACT:ratio) ||
-       m_cells.size_bytes() >= bytes * ratio) && 
-      (Env::Resources.need_ram(bytes * ratio) || 
-       m_cells.size() >= cells * ratio * 2) // huge-cells => (log-cells-blocks)
-    : (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && (
-       m_cells.size_bytes() >= bytes * ratio ||
-       m_cells.size() >= cells * ratio ||
-       Env::Resources.need_ram(bytes * ratio) );
+  return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && 
+         (m_cells.size_bytes() >= bytes * ratio ||
+          m_cells.size() >= cells * ratio ||
+          Env::Resources.need_ram(bytes * ratio) 
+          );
 }
 
 bool Fragments::_processing() const {

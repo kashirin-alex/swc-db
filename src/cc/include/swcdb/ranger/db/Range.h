@@ -32,6 +32,7 @@ class Range : public std::enable_shared_from_this<Range> {
   static constexpr const char* CELLSTORES_BAK_DIR = "cs_bak";
   static constexpr const char* CELLSTORES_TMP_DIR = "cs_tmp";
   static constexpr const char* LOG_DIR = "log"; 
+  static constexpr const char* LOG_TMP_DIR = "log_tmp"; 
 
   struct ReqAdd final {
     public:
@@ -137,9 +138,9 @@ class Range : public std::enable_shared_from_this<Range> {
   
   bool compact_possible();
 
-  void compact_require(uint8_t require);
+  void compact_require(bool require);
 
-  uint8_t compact_required();
+  bool compact_required();
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
@@ -164,8 +165,6 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void run_add_queue();
 
-  void need_compact();
-
   private:
   const std::string             m_path;
   std::shared_mutex             m_mutex;
@@ -174,7 +173,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
-  uint8_t                       m_require_compact;
+  bool                          m_require_compact;
   QueueSafe<ReqScan::Ptr>       m_q_scans;
   QueueSafe<ReqAdd*>            m_q_adding;
 
@@ -203,6 +202,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
 #include "swcdb/ranger/db/CommitLog.cc"
 #include "swcdb/ranger/db/CommitLogFragment.cc"
+#include "swcdb/ranger/db/CommitLogCompact.cc"
 
 #include "swcdb/ranger/db/RangeData.cc"
 

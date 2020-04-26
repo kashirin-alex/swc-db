@@ -137,50 +137,17 @@ CompactRange::Ptr CompactRange::shared() {
   return std::dynamic_pointer_cast<CompactRange>(shared_from_this());
 }
 
-void CompactRange::initialize(uint8_t type) {
+void CompactRange::initialize() {
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing(); // sync processing state
 
-  commitlog(true);
-  if(type == Range::COMPACT_TYPE_MINOR)
-    return;
+  if(range->blocks.commitlog.cells_count(true))
+    range->blocks.commitlog.commit_new_fragment(true);
+  range->blocks.commitlog.get(fragments_old); // fragments for removal
 
+  range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
   m_ts_req = Time::now_ns();
   progress_check_timer();
-}
-
-void CompactRange::commitlog(bool init) {
-  bool log_compact;
-  std::vector<CommitLog::Fragment::Ptr> sorted;
-  //do {
-    range->blocks.commitlog.need_compact(sorted, fragments_old);
-    if(log_compact = !sorted.empty()) {
-      if(!init) {
-        if(m_stopped) 
-          return;
-        range->compacting(Range::COMPACT_APPLYING);
-        range->blocks.wait_processing(); // sync processing state
-        if(m_stopped) 
-          return;
-      }
-      range->blocks.processing_increment();
-      auto compact = CommitLog::Compact(range, m_stopped);
-      compact.run(sorted);
-      sorted.clear();
-      range->blocks.commitlog.commit_new_fragment(true);
-      range->blocks.processing_decrement();
-    }
-    if(m_stopped) 
-      return;
-  //} while(init && log_compact && range->is_loaded() && !compactor->stopped());
-  
-  if(init) {
-    if(!log_compact) //
-      range->blocks.commitlog.commit_new_fragment(true);
-    range->blocks.commitlog.get(fragments_old); // fragments for removal
-  }
-  if(!m_stopped && (log_compact || init))
-    range->compacting(Range::COMPACT_COMPACTING); //range add&scan can continue
 }
 
 bool CompactRange::with_block() {
@@ -237,8 +204,7 @@ void CompactRange::response(int &err) {
     total_blocks.load(), err
   );
 
-  bool finishing_up;
-  if(finishing_up = !reached_limits()) {
+  if(!reached_limits()) {
     stop_check_timer();
     range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
@@ -259,9 +225,6 @@ void CompactRange::response(int &err) {
   if(m_stopped || !in_block)
     return;
   
-  if(!finishing_up)
-    commitlog(false);
-    
   m_inblock->set_offset(spec);
   {
     Mutex::scope lock(m_mutex);
@@ -738,7 +701,7 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
- // + wait for MINOR 
+  
   SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
            range->cfg->cid, range->rid);
   compactor->compacted(range);

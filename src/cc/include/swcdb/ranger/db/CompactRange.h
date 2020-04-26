@@ -24,9 +24,7 @@ class CompactRange : public ReqScan {
 
   Ptr shared();
 
-  void initialize(uint8_t type);
-
-  void commitlog(bool init);
+  void initialize();
 
   bool with_block() override;
 

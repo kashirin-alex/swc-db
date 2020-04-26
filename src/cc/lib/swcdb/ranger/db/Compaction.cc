@@ -84,7 +84,8 @@ void Compaction::run(bool continuing) {
       continue;
     }
     ++m_idx_rid;
-    if(!range->compact_possible())
+    if(range->blocks.commitlog.try_compact() ||
+      !range->compact_possible())
       continue;
 
     if(!m_run)
@@ -129,54 +130,37 @@ void Compaction::compact(RangePtr range) {
   bool do_compaction = false;
   std::string need;
 
-  uint8_t compact_type = range->compact_required();
-  if(compact_type == Range::COMPACT_TYPE_MAJOR) {
-    do_compaction = commitlog.cells_count();
-    if(!do_compaction)
-      compact_type = Range::COMPACT_TYPE_NONE;
-  }
-
-  if(do_compaction) {
+  if(do_compaction = range->compact_required() && commitlog.cells_count()) {
     need.append("Required");
 
   } else if(do_compaction = (value = commitlog.size_bytes(true)) >= allow_sz) {
     need.append("LogBytes=");
     need.append(std::to_string(value-allow_sz));
-    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = (value = commitlog.size()) >= cs_size/blk_size) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
-    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = range->blocks.cellstores.need_compaction(
                     cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
     need.append("CsResize");
-    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = cell_ttl && 
             (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
             != DB::Cells::AUTO_ASSIGN && 
             (int64_t)value < Time::now_ns()-cell_ttl*100) {
     need.append("CsTTL");
-    compact_type = Range::COMPACT_TYPE_MAJOR;
 
   } else if(do_compaction = range->blocks.cellstores.get_cell_revs() 
                               > cell_revs) {
     need.append("CsVersions");
-    compact_type = Range::COMPACT_TYPE_MAJOR;
   }
 
-  if(!m_run || (!do_compaction && compact_type == Range::COMPACT_TYPE_NONE))
+  if(!m_run || !do_compaction)
     return compacted(range);
     
-  SWC_LOGF(
-    LOG_INFO, 
-    "COMPACT-STARTED %d/%d %s (%s)", 
-    range->cfg->cid, range->rid,
-    need.c_str(),
-    compact_type == Range::COMPACT_TYPE_MAJOR ? "MAJOR" : "MINOR"
-  );
+  SWC_LOGF(LOG_INFO, "COMPACT-STARTED %d/%d %s", 
+           range->cfg->cid, range->rid, need.c_str());
 
   auto req = std::make_shared<CompactRange>(
     ptr(),
@@ -184,9 +168,7 @@ void Compaction::compact(RangePtr range) {
     cs_size,
     blk_size
   );
-  req->initialize(compact_type);
-  if(compact_type == Range::COMPACT_TYPE_MINOR)
-    return compacted(range);
+  req->initialize();
 
   range->scan_internal(req);
 }
