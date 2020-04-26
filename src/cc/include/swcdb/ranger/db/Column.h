@@ -52,7 +52,7 @@ class Column final {
   void compact() {
     std::shared_lock lock(m_mutex);
     for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
-      it->second->compact_require(Range::COMPACT_TYPE_MAJOR);
+      it->second->compact_require(true);
     RangerEnv::compaction_schedule(100);
   }
 

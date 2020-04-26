@@ -655,7 +655,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     }
   );
 
-  range->compact_require(Range::COMPACT_TYPE_NONE);
+  range->compact_require(false);
   
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
@@ -674,7 +674,7 @@ void CompactRange::apply_new(bool clear) {
   if(err)
     return quit();
 
-  range->compact_require(Range::COMPACT_TYPE_NONE);
+  range->compact_require(false);
   
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "

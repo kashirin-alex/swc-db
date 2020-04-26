@@ -13,8 +13,8 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 class Compact final {
   public:
 
-  std::atomic<bool>  stop;
-  std::atomic<bool>  error;
+  std::atomic<bool>   stop;
+  std::atomic<int>    error;
 
   Compact(Fragments* log, const Types::KeySeq key_seq);
 

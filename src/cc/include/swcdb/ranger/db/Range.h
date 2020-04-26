@@ -58,10 +58,6 @@ class Range : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_PREPARING   = 0x03;
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
-  static const uint8_t COMPACT_TYPE_NONE   = 0x00;
-  static const uint8_t COMPACT_TYPE_MINOR  = 0x01;
-  static const uint8_t COMPACT_TYPE_MAJOR  = 0x02;
-  
   const ColumnCfg*    cfg;
   const int64_t       rid;
   const Types::Range  type;
