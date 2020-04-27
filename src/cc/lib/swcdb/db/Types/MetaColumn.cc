@@ -30,12 +30,12 @@ Range get_range_type(int64_t cid) {
 KeySeq get_seq_type(int64_t cid) {
   return (
     (cid == 4 || cid == 8) 
-    ? KeySeq::VOLUME_FCOUNT
+    ? KeySeq::FC_VOLUME
     : ((cid == 3 || cid == 7) 
-      ? KeySeq::BITWISE_FCOUNT 
+      ? KeySeq::FC_LEXIC 
       : ((cid == 2 || cid == 6) 
         ? KeySeq::VOLUME 
-        :  KeySeq::BITWISE
+        :  KeySeq::LEXIC
         )
       )
     ); 
@@ -44,9 +44,9 @@ KeySeq get_seq_type(int64_t cid) {
 
 int64_t get_master_cid(KeySeq col_seq) {
   switch(col_seq) {
-    case KeySeq::VOLUME_FCOUNT:
+    case KeySeq::FC_VOLUME:
       return 4;
-    case KeySeq::BITWISE_FCOUNT:
+    case KeySeq::FC_LEXIC:
       return 3;
     case KeySeq::VOLUME:
       return 2;
@@ -57,9 +57,9 @@ int64_t get_master_cid(KeySeq col_seq) {
 
 const char* get_meta_cid(KeySeq col_seq) {
   switch(col_seq) {
-    case KeySeq::VOLUME_FCOUNT:
+    case KeySeq::FC_VOLUME:
       return "8";
-    case KeySeq::BITWISE_FCOUNT:
+    case KeySeq::FC_LEXIC:
       return "7";
     case KeySeq::VOLUME:
       return "6";
@@ -70,9 +70,9 @@ const char* get_meta_cid(KeySeq col_seq) {
 
 uint8_t get_sys_cid(KeySeq col_seq, Range col_type) {
   switch(col_seq) {
-    case KeySeq::VOLUME_FCOUNT:
+    case KeySeq::FC_VOLUME:
       return col_type == Range::DATA ? 8 : 4;
-    case KeySeq::BITWISE_FCOUNT:
+    case KeySeq::FC_LEXIC:
       return col_type == Range::DATA ? 7 : 3;
     case KeySeq::VOLUME:
       return col_type == Range::DATA ? 6 : 2;

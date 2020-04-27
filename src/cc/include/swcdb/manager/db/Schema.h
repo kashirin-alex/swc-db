@@ -126,7 +126,7 @@ DB::Schema::Ptr load(int &err, int64_t cid,
       if(cid == 9) {
         schema->col_name.append("STATS");
         schema->col_type = Types::Column::COUNTER_I64;
-        schema->col_seq = Types::KeySeq::BITWISE;
+        schema->col_seq = Types::KeySeq::LEXIC;
         schema->cell_ttl = Env::Config::settings()->get_i32(
           "swc.stats.ttl", 1036800);
       } else {

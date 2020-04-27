@@ -13,14 +13,14 @@ namespace SWC { namespace Types {
 
 std::string to_string(KeySeq typ) {
   switch(typ){
-    case KeySeq::BITWISE:
-      return std::string("BITWISE");
+    case KeySeq::LEXIC:
+      return std::string("LEXIC");
     case KeySeq::VOLUME:
       return std::string("VOLUME");
-    case KeySeq::BITWISE_FCOUNT:
-      return std::string("BITWISE_FCOUNT");
-    case KeySeq::VOLUME_FCOUNT:
-      return std::string("VOLUME_FCOUNT");
+    case KeySeq::FC_LEXIC:
+      return std::string("FC_LEXIC");
+    case KeySeq::FC_VOLUME:
+      return std::string("FC_VOLUME");
     default:
       return std::string("uknown");
   }
@@ -29,8 +29,8 @@ std::string to_string(KeySeq typ) {
 KeySeq range_seq_from(const std::string& typ) {
   if(typ.compare("1") == 0 || 
       (typ.length() == 7 && 
-       strncasecmp(typ.data(), "BITWISE", 7) == 0))
-      return KeySeq::BITWISE;
+       strncasecmp(typ.data(), "LEXIC", 5) == 0))
+      return KeySeq::LEXIC;
       
   if(typ.compare("2") == 0 || 
     (typ.length() == 6 && 
@@ -39,13 +39,13 @@ KeySeq range_seq_from(const std::string& typ) {
     
   if(typ.compare("3") == 0 || 
       (typ.length() == 14 && 
-       strncasecmp(typ.data(), "BITWISE_FCOUNT", 14) == 0))
-    return KeySeq::BITWISE_FCOUNT;
+       strncasecmp(typ.data(), "FC_LEXIC", 8) == 0))
+    return KeySeq::FC_LEXIC;
 
   if(typ.compare("4") == 0 || 
       (typ.length() == 13 && 
-       strncasecmp(typ.data(), "VOLUME_FCOUNT", 13) == 0))
-    return KeySeq::VOLUME_FCOUNT;
+       strncasecmp(typ.data(), "FC_VOLUME", 9) == 0))
+    return KeySeq::FC_VOLUME;
 
   return KeySeq::UNKNOWN;
 }

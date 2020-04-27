@@ -114,9 +114,9 @@ void load_check_condition_base() {
     );// base of memcmp for conditions
 
     LOAD_TEST(
-      "SWC::DB::KeySeq::condition(BITWISE, ptr1, len, ptr2, len)", 
+      "SWC::DB::KeySeq::condition(LEXIC, ptr1, len, ptr2, len)", 
       SWC::DB::KeySeq::condition(
-        SWC::Types::KeySeq::BITWISE,
+        SWC::Types::KeySeq::LEXIC,
         ptr1, len, ptr2, len) == SWC::Condition::LT
     );
 
@@ -138,7 +138,7 @@ int main() {
 
   int chks = 1000000;
   std::vector<SWC::Types::KeySeq> sequences = {
-    SWC::Types::KeySeq::BITWISE,
+    SWC::Types::KeySeq::LEXIC,
     SWC::Types::KeySeq::VOLUME
   };
 

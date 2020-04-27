@@ -19,9 +19,9 @@ condition(const uint8_t *p1, uint32_t p1_len,
 
 template<> 
 Condition::Comp 
-condition<Types::KeySeq::BITWISE>(const uint8_t *p1, uint32_t p1_len, 
-                                  const uint8_t *p2, uint32_t p2_len) {
-  return Condition::condition_bitwise(p1, p1_len, p2, p2_len);
+condition<Types::KeySeq::LEXIC>(const uint8_t *p1, uint32_t p1_len, 
+                                const uint8_t *p2, uint32_t p2_len) {
+  return Condition::condition_lexic(p1, p1_len, p2, p2_len);
 }
 
 template<> 
@@ -37,12 +37,12 @@ condition(const Types::KeySeq seq,
           const uint8_t *p2, uint32_t p2_len) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return condition<Types::KeySeq::BITWISE>(p1, p1_len, p2, p2_len);
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return condition<Types::KeySeq::LEXIC>(p1, p1_len, p2, p2_len);
       
     case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
+    case Types::KeySeq::FC_VOLUME:
       return condition<Types::KeySeq::VOLUME>(p1, p1_len, p2, p2_len);
 
     default:
@@ -77,19 +77,19 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
 
 template<>
 Condition::Comp 
-compare<Types::KeySeq::BITWISE_FCOUNT>(const Cell::Key& key, 
-                                       const Cell::Key& other) {
+compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key, 
+                                 const Cell::Key& other) {
   if(key.count < other.count)
     return Condition::GT;
   if(key.count > other.count)
     return Condition::LT;
-  return compare<Types::KeySeq::BITWISE>(key, other);
+  return compare<Types::KeySeq::LEXIC>(key, other);
 }
 
 template<>
 Condition::Comp 
-compare<Types::KeySeq::VOLUME_FCOUNT>(const Cell::Key& key, 
-                                      const Cell::Key& other) {
+compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key, 
+                                  const Cell::Key& other) {
   if(key.count < other.count)
     return Condition::GT;
   if(key.count > other.count)
@@ -103,17 +103,17 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
                                  const Cell::Key& other) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-      return compare<Types::KeySeq::BITWISE>(key, other);
+    case Types::KeySeq::LEXIC:
+      return compare<Types::KeySeq::LEXIC>(key, other);
 
     case Types::KeySeq::VOLUME:
       return compare<Types::KeySeq::VOLUME>(key, other);
 
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return compare<Types::KeySeq::BITWISE_FCOUNT>(key, other);
+    case Types::KeySeq::FC_LEXIC:
+      return compare<Types::KeySeq::FC_LEXIC>(key, other);
 
-    case Types::KeySeq::VOLUME_FCOUNT:
-      return compare<Types::KeySeq::VOLUME_FCOUNT>(key, other);
+    case Types::KeySeq::FC_VOLUME:
+      return compare<Types::KeySeq::FC_VOLUME>(key, other);
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
@@ -155,7 +155,7 @@ compare(const Cell::Key& key, const Cell::Key& other,
 
 template<>
 Condition::Comp 
-compare<Types::KeySeq::BITWISE_FCOUNT>(
+compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count ) {
@@ -164,12 +164,12 @@ compare<Types::KeySeq::BITWISE_FCOUNT>(
     if(key.count > other.count)
       return Condition::LT;
   }
-  return compare<Types::KeySeq::BITWISE>(key, other, max, empty_ok, empty_eq);
+  return compare<Types::KeySeq::LEXIC>(key, other, max, empty_ok, empty_eq);
 }
 
 template<>
 Condition::Comp 
-compare<Types::KeySeq::VOLUME_FCOUNT>(
+compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count ) {
@@ -187,20 +187,20 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
         uint32_t max, bool empty_ok, bool empty_eq) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-      return compare<Types::KeySeq::BITWISE>(
+    case Types::KeySeq::LEXIC:
+      return compare<Types::KeySeq::LEXIC>(
         key, other, max, empty_ok, empty_eq);
 
     case Types::KeySeq::VOLUME:
       return compare<Types::KeySeq::VOLUME>(
         key, other, max, empty_ok, empty_eq);
 
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return compare<Types::KeySeq::BITWISE_FCOUNT>(
+    case Types::KeySeq::FC_LEXIC:
+      return compare<Types::KeySeq::FC_LEXIC>(
         key, other, max, empty_ok, empty_eq);
 
-    case Types::KeySeq::VOLUME_FCOUNT:
-      return compare<Types::KeySeq::VOLUME_FCOUNT>(
+    case Types::KeySeq::FC_VOLUME:
+      return compare<Types::KeySeq::FC_VOLUME>(
         key, other, max, empty_ok, empty_eq);
 
     default:
@@ -241,7 +241,7 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
 
 template<>
 bool
-compare<Types::KeySeq::BITWISE_FCOUNT>(
+compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::KeyVec& other, 
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   if(!max || max > key.count || max > other.size() ) {
@@ -250,12 +250,12 @@ compare<Types::KeySeq::BITWISE_FCOUNT>(
     if(key.count > other.size())
       return break_if != Condition::LT;
   }
-  return compare<Types::KeySeq::BITWISE>(key, other, break_if, max, empty_ok);
+  return compare<Types::KeySeq::LEXIC>(key, other, break_if, max, empty_ok);
 }
 
 template<>
 bool
-compare<Types::KeySeq::VOLUME_FCOUNT>(
+compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::KeyVec& other, 
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   if(!max || max > key.count || max > other.size() ) {
@@ -274,20 +274,20 @@ compare(const Types::KeySeq seq,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-      return compare<Types::KeySeq::BITWISE>(
+    case Types::KeySeq::LEXIC:
+      return compare<Types::KeySeq::LEXIC>(
         key, other, break_if, max, empty_ok);
 
     case Types::KeySeq::VOLUME:
       return compare<Types::KeySeq::VOLUME>(
         key, other, break_if, max, empty_ok);
 
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return compare<Types::KeySeq::BITWISE_FCOUNT>(
+    case Types::KeySeq::FC_LEXIC:
+      return compare<Types::KeySeq::FC_LEXIC>(
         key, other, break_if, max, empty_ok);
 
-    case Types::KeySeq::VOLUME_FCOUNT:
-      return compare<Types::KeySeq::VOLUME_FCOUNT>(
+    case Types::KeySeq::FC_VOLUME:
+      return compare<Types::KeySeq::FC_VOLUME>(
         key, other, break_if, max, empty_ok);
 
     default:
@@ -338,12 +338,12 @@ align(const Types::KeySeq seq, const Cell::Key& key,
       Cell::KeyVec& start, Cell::KeyVec& finish) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return align<Types::KeySeq::BITWISE>(key, start, finish);
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return align<Types::KeySeq::LEXIC>(key, start, finish);
 
     case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
+    case Types::KeySeq::FC_VOLUME:
       return align<Types::KeySeq::VOLUME>(key, start, finish);
 
     default:
@@ -391,12 +391,12 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
       const Cell::KeyVec& other, Condition::Comp comp) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return align<Types::KeySeq::BITWISE>(key, other, comp);
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return align<Types::KeySeq::LEXIC>(key, other, comp);
 
     case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
+    case Types::KeySeq::FC_VOLUME:
       return align<Types::KeySeq::VOLUME>(key, other, comp);
 
     default:
@@ -417,10 +417,10 @@ is_matching(Condition::Comp comp,
 
 template<>
 bool
-is_matching<Types::KeySeq::BITWISE>(Condition::Comp comp,
-                                    const uint8_t *p1, uint32_t p1_len, 
-                                    const uint8_t *p2, uint32_t p2_len) {
-  return Condition::is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
+is_matching<Types::KeySeq::LEXIC>(Condition::Comp comp,
+                                  const uint8_t *p1, uint32_t p1_len, 
+                                  const uint8_t *p2, uint32_t p2_len) {
+  return Condition::is_matching_lexic(comp, p1, p1_len, p2, p2_len);
 }
 
 template<>
@@ -437,12 +437,12 @@ is_matching(const Types::KeySeq seq, Condition::Comp comp,
             const uint8_t *p2, uint32_t p2_len) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return is_matching<Types::KeySeq::BITWISE>(comp, p1, p1_len, p2, p2_len);
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return is_matching<Types::KeySeq::LEXIC>(comp, p1, p1_len, p2, p2_len);
       
     case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
+    case Types::KeySeq::FC_VOLUME:
       return is_matching<Types::KeySeq::VOLUME>(comp, p1, p1_len, p2, p2_len);
 
     default:
@@ -498,12 +498,12 @@ is_matching(const Types::KeySeq seq, const Specs::Key& key,
                                      const Cell::Key &other) {
   switch(seq) {
 
-    case Types::KeySeq::BITWISE:
-    case Types::KeySeq::BITWISE_FCOUNT:
-      return is_matching<Types::KeySeq::BITWISE>(key, other);
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return is_matching<Types::KeySeq::LEXIC>(key, other);
       
     case Types::KeySeq::VOLUME:
-    case Types::KeySeq::VOLUME_FCOUNT:
+    case Types::KeySeq::FC_VOLUME:
       return is_matching<Types::KeySeq::VOLUME>(key, other);
 
     default:

@@ -50,12 +50,12 @@ void Settings::init_app_options() {
     
     ("gen-col-seq", 
       g_enum(
-        (int)Types::KeySeq::BITWISE,
+        (int)Types::KeySeq::LEXIC,
         0,
         Types::from_string_range_seq,
         Types::repr_range_seq
       ), 
-     "Schema col-seq BITWISE/VOLUME/+_FCOUNT")  
+     "Schema col-seq FC_+/LEXIC/VOLUME")  
 
     ("gen-col-type", 
       g_enum(

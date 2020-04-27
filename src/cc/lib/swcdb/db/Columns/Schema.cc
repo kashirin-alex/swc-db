@@ -20,7 +20,7 @@ Schema::Ptr Schema::make(const Schema::Ptr& other) {
 
 Schema::Schema()
       : cid(NO_CID), 
-        col_seq(Types::KeySeq::BITWISE), col_type(Types::Column::PLAIN),
+        col_seq(Types::KeySeq::LEXIC), col_type(Types::Column::PLAIN),
         cell_versions(1), cell_ttl(0),
         blk_encoding(Types::Encoding::DEFAULT), blk_size(0), blk_cells(0), 
         cs_replication(0), cs_size(0), cs_max(0), 

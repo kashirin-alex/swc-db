@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
   };
 
   std::vector<SWC::Types::KeySeq> sequences = {
-    SWC::Types::KeySeq::BITWISE,
+    SWC::Types::KeySeq::LEXIC,
     SWC::Types::KeySeq::VOLUME
   };
 

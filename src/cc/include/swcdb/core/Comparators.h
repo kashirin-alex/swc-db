@@ -51,7 +51,7 @@ enum Comp {
   NE   = 0x7,   // [  !=  ]  :   -ne            (not-equal)
   RE   = 0x8,   // [  re  ]  :   -re [r,regexp] (regular-expression)
   
-  // extended logic options: ge,le,gt,lt are BITWISE and with 'V' VOLUME
+  // extended logic options: ge,le,gt,lt are LEXIC and with 'V' VOLUME
   VGT  = 0x9,   // [  v>  ]  :   -vgt           (vol greater-than)
   VGE  = 0xA,   // [  v>= ]  :   -vge           (vol greater-equal)
   VLE  = 0xB,   // [  v<= ]  :   -vle           (vol lower-equal)
@@ -178,8 +178,8 @@ std::string to_string(uint8_t comp) {
 
 
 SWC_CAN_INLINE 
-Comp condition_bitwise(const uint8_t *p1, uint32_t p1_len, 
-                       const uint8_t *p2, uint32_t p2_len) {
+Comp condition_lexic(const uint8_t *p1, uint32_t p1_len, 
+                     const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
   return diff == 0
           ? (p1_len == p2_len 
@@ -215,7 +215,7 @@ Comp condition_volume(const uint8_t *p1, uint32_t p1_len,
 SWC_CAN_INLINE 
 Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len, 
                          const uint8_t *p2, uint32_t p2_len) {
-  return (vol ? condition_volume : condition_bitwise)
+  return (vol ? condition_volume : condition_lexic)
         (p1, p1_len, p2, p2_len);
 }
 
@@ -226,8 +226,8 @@ bool pf(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-bool gt_bitwise(const uint8_t *p1, uint32_t p1_len, 
-                const uint8_t *p2, uint32_t p2_len) {
+bool gt_lexic(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len < p2_len);
 }
@@ -239,8 +239,8 @@ bool gt_volume(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-bool ge_bitwise(const uint8_t *p1, uint32_t p1_len, 
-                const uint8_t *p2, uint32_t p2_len) {
+bool ge_lexic(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
@@ -258,8 +258,8 @@ bool eq(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-bool le_bitwise(const uint8_t *p1, uint32_t p1_len, 
-                const uint8_t *p2, uint32_t p2_len) {
+bool le_lexic(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len >= p2_len);
 }
@@ -271,8 +271,8 @@ bool le_volume(const uint8_t *p1, uint32_t p1_len,
 }
 
 SWC_CAN_INLINE 
-bool lt_bitwise(const uint8_t *p1, uint32_t p1_len, 
-                const uint8_t *p2, uint32_t p2_len) {
+bool lt_lexic(const uint8_t *p1, uint32_t p1_len, 
+              const uint8_t *p2, uint32_t p2_len) {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len > p2_len);
 } 
@@ -308,28 +308,28 @@ bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
 
 
 SWC_CAN_INLINE 
-bool is_matching_bitwise(uint8_t comp, 
-                         const uint8_t *p1, uint32_t p1_len, 
-                         const uint8_t *p2, uint32_t p2_len) {
+bool is_matching_lexic(uint8_t comp, 
+                       const uint8_t *p1, uint32_t p1_len, 
+                       const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
     case Comp::PF:
       return pf(p1, p1_len, p2, p2_len);
 
     case Comp::GT:
-      return gt_bitwise(p1, p1_len, p2, p2_len);
+      return gt_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::GE:
-      return ge_bitwise(p1, p1_len, p2, p2_len);
+      return ge_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::EQ:
       return eq(p1, p1_len, p2, p2_len);
 
     case Comp::LE:
-      return le_bitwise(p1, p1_len, p2, p2_len);
+      return le_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::LT:
-      return lt_bitwise(p1, p1_len, p2, p2_len);
+      return lt_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::NE:
       return ne(p1, p1_len, p2, p2_len);
@@ -379,10 +379,10 @@ bool is_matching_volume(uint8_t comp,
 
 
 SWC_CAN_INLINE 
-bool is_matching_bitwise(uint8_t comp, 
-                         const char *p1, uint32_t p1_len, 
-                         const char *p2, uint32_t p2_len) {
-  return is_matching_bitwise(
+bool is_matching_lexic(uint8_t comp, 
+                       const char *p1, uint32_t p1_len, 
+                       const char *p2, uint32_t p2_len) {
+  return is_matching_lexic(
     comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
@@ -401,7 +401,7 @@ bool is_matching(bool volumetric, uint8_t comp,
                  const uint8_t *p2, uint32_t p2_len) {
   return volumetric 
     ? is_matching_volume(comp, p1, p1_len, p2, p2_len)
-    : is_matching_bitwise(comp, p1, p1_len, p2, p2_len);
+    : is_matching_lexic(comp, p1, p1_len, p2, p2_len);
 }
 
 SWC_CAN_INLINE 
@@ -422,19 +422,19 @@ bool is_matching_extended(uint8_t comp,
       return pf(p1, p1_len, p2, p2_len);
 
     case Comp::GT:
-      return gt_bitwise(p1, p1_len, p2, p2_len);
+      return gt_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::GE:
-      return ge_bitwise(p1, p1_len, p2, p2_len);
+      return ge_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::EQ:
       return eq(p1, p1_len, p2, p2_len);
 
     case Comp::LE:
-      return le_bitwise(p1, p1_len, p2, p2_len);
+      return le_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::LT:
-      return lt_bitwise(p1, p1_len, p2, p2_len);
+      return lt_lexic(p1, p1_len, p2, p2_len);
 
     case Comp::NE:
       return ne(p1, p1_len, p2, p2_len);
