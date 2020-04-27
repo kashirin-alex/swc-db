@@ -32,7 +32,8 @@ class Fragments final {
   static constexpr const uint8_t  MAX_PRELOAD = 3;
   static constexpr const uint8_t  MAX_COMPACT = 10; //(>rollout.ratio)?ram|(x2)
 
-  RangePtr             range;
+  RangePtr            range;
+  std::atomic<bool>   stopping;
 
   explicit Fragments(const Types::KeySeq key_seq);
 
@@ -47,6 +48,8 @@ class Fragments final {
   void commit_new_fragment(bool finalize=false);
 
   bool try_compact(int tnum = 1);
+
+  void finish_compact(Compact* compact);
 
   const std::string get_log_fragment(const int64_t frag) const;
 
@@ -110,8 +113,6 @@ class Fragments final {
   std::condition_variable_any m_cv;
   std::vector<Fragment::Ptr>  m_fragments;
   bool                        m_compacting;
-  Compact                     m_compact;
-  
 
 };
 

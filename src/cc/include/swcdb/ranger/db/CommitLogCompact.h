@@ -11,38 +11,67 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
   
 class Compact final {
+    
+  class Group final {
+    public:
+
+    const uint64_t ts;
+    const uint8_t  worker;
+    
+    Group(Compact* compact, uint8_t worker);
+
+    ~Group();
+
+    void run(const std::vector<Fragment::Ptr>& frags);
+
+    private:
+
+    void loaded();
+
+    void load();
+
+    void write(bool last);
+
+    void finalize();
+    
+    std::atomic<int>                  error;
+    Compact*                          compact;
+    std::mutex                        m_mutex;
+    DB::Cells::Mutable                m_cells;
+    std::condition_variable           m_cv;
+    QueueSafeStated<Fragment::Ptr>    m_queue;
+    size_t                            m_remain;
+    std::vector<Fragment::Ptr>        m_remove;
+    std::vector<Fragment::Ptr>        m_fragments;
+    Semaphore                         m_sem;
+  };
+
   public:
 
-  std::atomic<bool>   stop;
-  std::atomic<int>    error;
+  Fragments*            log;
+  const Types::KeySeq   key_seq;
+  const uint64_t        ts;
+  const uint32_t        repetition;
+  const uint32_t        nfrags;
 
-  Compact(Fragments* log, const Types::KeySeq key_seq);
+  Compact(Fragments* log, const Types::KeySeq key_seq,
+          int tnum, const std::vector<Fragment::Ptr>& frags);
 
   ~Compact();
 
-  void run(int tnum, const std::vector<Fragment::Ptr>& frags);
-
   private:
 
-  void loaded();
+  void applying();
 
-  void load();
-
-  void write(bool last);
-
-  void finalize();
+  void finished(Group* group);
 
   const std::string get_filepath(const int64_t frag) const;
 
-  Fragments*                        log;
-  std::mutex                        m_mutex;
-  DB::Cells::Mutable                m_cells;
-  std::condition_variable           m_cv;
-  QueueSafeStated<Fragment::Ptr>    m_queue;
-  size_t                            m_remain;
-  std::vector<Fragment::Ptr>        m_remove;
-  std::vector<Fragment::Ptr>        m_fragments;
-  Semaphore                         m_sem;
+  LockAtomic::Unique    m_mutex;
+  uint8_t               m_workers;
+  uint8_t               m_applying;
+  std::vector<Group*>   m_groups;
+
 
 };
 

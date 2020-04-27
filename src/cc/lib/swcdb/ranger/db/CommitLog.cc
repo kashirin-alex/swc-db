@@ -14,9 +14,9 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 
 Fragments::Fragments(const Types::KeySeq key_seq)  
-                    : m_cells(key_seq), 
+                    : m_cells(key_seq), stopping(false), 
                       m_commiting(false), m_deleting(false), 
-                      m_compacting(false), m_compact(this, key_seq) { 
+                      m_compacting(false) { 
 }
 
 void Fragments::init(RangePtr for_range) {
@@ -142,7 +142,7 @@ bool Fragments::try_compact(int tnum) {
     return false;
 
   std::unique_lock lock(m_mutex);
-  if(m_compact.stop)
+  if(stopping)
     return false;
 
   std::vector<Fragment::Ptr> fragments = m_fragments;
@@ -163,20 +163,23 @@ bool Fragments::try_compact(int tnum) {
 
   m_compacting = true;
   range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
+  new Compact(this, m_cells.key_seq, tnum, fragments);
 
-  asio::post(*Env::IoCtx::io()->ptr(), 
-    [this, tnum, fragments]() { 
-      m_compact.run(tnum, fragments); 
-      m_compacting = false;
-      m_cv.notify_all();
-      if(m_compact.stop)
-        return;
-      if(tnum < fragments.size() / MAX_COMPACT)
-        try_compact(tnum+1);
-      else
-        RangerEnv::compaction_schedule(10000);
-    });
   return true;
+}
+
+void Fragments::finish_compact(Compact* compact) {
+  range->compacting(Range::COMPACT_NONE); 
+  m_compacting = false;
+  m_cv.notify_all();
+
+  if(!stopping) {
+    if(compact->repetition < compact->nfrags / MAX_COMPACT)
+      try_compact(compact->repetition+1);
+    else
+      RangerEnv::compaction_schedule(10000);
+  }
+  delete compact;
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
@@ -341,7 +344,7 @@ void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
 }
 
 void Fragments::remove(int &err) {
-  m_compact.stop = true;
+  stopping = true;
   {
     std::unique_lock lock_wait(m_mutex);
     m_deleting = true;
@@ -364,7 +367,7 @@ void Fragments::unload() {
     if(m_commiting || m_compacting)
       m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
   }
-  m_compact.stop = true;
+  stopping = true;
   std::scoped_lock lock(m_mutex);
   for(auto frag : m_fragments)
     delete frag;
