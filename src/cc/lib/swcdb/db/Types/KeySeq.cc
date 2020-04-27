@@ -28,7 +28,7 @@ std::string to_string(KeySeq typ) {
 
 KeySeq range_seq_from(const std::string& typ) {
   if(typ.compare("1") == 0 || 
-      (typ.length() == 7 && 
+      (typ.length() == 5 && 
        strncasecmp(typ.data(), "LEXIC", 5) == 0))
       return KeySeq::LEXIC;
       
@@ -38,12 +38,12 @@ KeySeq range_seq_from(const std::string& typ) {
   return KeySeq::VOLUME;
     
   if(typ.compare("3") == 0 || 
-      (typ.length() == 14 && 
+      (typ.length() == 8 && 
        strncasecmp(typ.data(), "FC_LEXIC", 8) == 0))
     return KeySeq::FC_LEXIC;
 
   if(typ.compare("4") == 0 || 
-      (typ.length() == 13 && 
+      (typ.length() == 9 && 
        strncasecmp(typ.data(), "FC_VOLUME", 9) == 0))
     return KeySeq::FC_VOLUME;
 
