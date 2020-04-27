@@ -183,13 +183,26 @@ void Mutable::add_raw(const Cell& e_cell) {
   size_t offset = _narrow(e_cell.key);
 
   if(e_cell.removal())
-    _add_remove(e_cell, offset);
+    _add_remove(e_cell, &offset);
 
   else if(Types::is_counter(type))
-    _add_counter(e_cell, offset);
+    _add_counter(e_cell, &offset);
 
   else
-    _add_plain(e_cell, offset);
+    _add_plain(e_cell, &offset);
+}
+
+void Mutable::add_raw(const Cell& e_cell, size_t* offsetp) {
+  *offsetp = _narrow(e_cell.key, *offsetp);
+
+  if(e_cell.removal())
+    _add_remove(e_cell, offsetp);
+
+  else if(Types::is_counter(type))
+    _add_counter(e_cell, offsetp);
+
+  else
+    _add_plain(e_cell, offsetp);
 }
 
 
@@ -561,14 +574,14 @@ void Mutable::split(size_t from, Mutable& cells,
 }
 
 
-void Mutable::_add_remove(const Cell& e_cell, size_t offset) {
+void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev;
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
   Condition::Comp cond;
   int64_t e_ts;
   Cell* cell;
-  for(auto it = Iterator(&buckets, offset); it; ) {
+  for(auto it = Iterator(&buckets, *offsetp); it; ) {
 
     if((cell=*it.item)->has_expired(ttl)) {
       _remove(it);
@@ -578,6 +591,7 @@ void Mutable::_add_remove(const Cell& e_cell, size_t offset) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0)) 
                 == Condition::GT) {
       ++it;
+      ++*offsetp;
       continue;
     }
 
@@ -599,7 +613,7 @@ void Mutable::_add_remove(const Cell& e_cell, size_t offset) {
   add_sorted(e_cell);
 }
 
-void Mutable::_add_plain(const Cell& e_cell, size_t offset) {
+void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
   int64_t ts;
   bool chk_ts = (ts = e_cell.get_timestamp()) != AUTO_ASSIGN;
   int64_t rev;
@@ -608,7 +622,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t offset) {
   uint32_t revs = 0;
   Condition::Comp cond;
   Cell* cell;
-  for(auto it = Iterator(&buckets, offset); it;) {
+  for(auto it = Iterator(&buckets, *offsetp); it;) {
 
     if((cell=*it.item)->has_expired(ttl)) {
       _remove(it);
@@ -618,6 +632,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t offset) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0))
                == Condition::GT) {
       ++it;
+      ++*offsetp;
       continue;
     }
 
@@ -666,7 +681,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t offset) {
   add_sorted(e_cell);
 }
 
-void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
+void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
   Condition::Comp cond;
 
   int64_t ts = e_cell.get_timestamp();
@@ -674,7 +689,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
   
   Cell* cell;
-  auto it = Iterator(&buckets, offset); 
+  auto it = Iterator(&buckets, *offsetp); 
   while(it) {
 
     if((cell=*it.item)->has_expired(ttl)) {
@@ -685,6 +700,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0)) 
                 == Condition::GT) { 
       ++it;
+      ++*offsetp;
       continue;
     }
 
@@ -733,27 +749,35 @@ void Mutable::_add_counter(const Cell& e_cell, size_t offset) {
 }
 
 
-size_t Mutable::_narrow(const DB::Cell::Key& key) const {
+size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   if(key.empty() || _size <= narrow_sz) 
     return 0;
-  size_t sz;
-  size_t offset = sz = (_size >> 1);
+  size_t step = _size;
+  if(offset > 1) {
+    if((step -= offset) <= narrow_sz)
+      step = narrow_sz;
+  } else {
+    offset = step >>= 1;
+  }
 
   try_narrow:
     if(DB::KeySeq::compare(
         key_seq, (*ConstIterator(&buckets, offset).item)->key, key, 0)
         == Condition::GT) {
-      if(sz < narrow_sz)
+      if(step < narrow_sz)
         return offset;
-      offset += sz >>= 1; 
+      if(offset + (step >>= 1) >= _size)
+        offset = _size - (step >>= 1);
+      else 
+        offset += step; 
       goto try_narrow;
     }
-    if((sz >>= 1) == 0)
-      ++sz;  
+    if((step >>= 1) == 0)
+      ++step;  
 
-    if(offset < sz)
+    if(offset < step)
       return 0;
-    offset -= sz;
+    offset -= step;
   goto try_narrow;
 }
 

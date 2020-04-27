@@ -159,6 +159,7 @@ class Mutable final {
   
   void add_raw(const Cell& e_cell);
   
+  void add_raw(const Cell& e_cell, size_t* offsetp);
 
   Cell* takeout(size_t idx);
   
@@ -211,14 +212,14 @@ class Mutable final {
 
   private:
 
-  void _add_remove(const Cell& e_cell, size_t offset);
+  void _add_remove(const Cell& e_cell, size_t* offsetp);
 
-  void _add_plain(const Cell& e_cell, size_t offset);
+  void _add_plain(const Cell& e_cell, size_t* offsetp);
 
-  void _add_counter(const Cell& e_cell, size_t offset);
+  void _add_counter(const Cell& e_cell, size_t* offsetp);
   
 
-  size_t _narrow(const DB::Cell::Key& key) const;
+  size_t _narrow(const DB::Cell::Key& key, size_t offset_hint = 0) const;
 
   void _add(Cell* cell);
 

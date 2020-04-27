@@ -209,6 +209,8 @@ void Fragment::load_cells(int& err, DB::Cells::Mutable& cells) {
   if(m_buffer.size) {
     size_t count = 0;
     DB::Cells::Cell cell;
+    size_t offset_hint = 0;
+    bool synced = cells.empty();
     const uint8_t* buf = m_buffer.base;
     size_t remain = m_buffer.size;
     while(remain) {
@@ -221,8 +223,10 @@ void Fragment::load_cells(int& err, DB::Cells::Mutable& cells) {
                 count, cells_count, remain, to_string().c_str());
         break;
       }
-
-      cells.add_raw(cell);
+      if(synced)
+        cells.add_sorted(cell);
+      else
+        cells.add_raw(cell, &offset_hint);
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 

@@ -134,6 +134,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
   DB::Cells::Cell cell;
   size_t count = 0;
   size_t added = 0;
+  size_t offset_hint = 0;
     
   uint64_t ts = Time::now_ns();
 
@@ -172,7 +173,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     if(synced)
       m_cells.add_sorted(cell);
     else
-      m_cells.add_raw(cell);
+      m_cells.add_raw(cell, &offset_hint);
       
     if(added % 100 == 0 && splitter())
       was_splitted = true;
