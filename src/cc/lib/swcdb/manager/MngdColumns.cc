@@ -337,7 +337,12 @@ void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
     err = Error::COLUMN_REACHED_ID_LIMIT;
     return;
   } 
-    
+  if(schema->col_seq == Types::KeySeq::UNKNOWN || 
+     schema->col_type == Types::Column::UNKNOWN) {
+    err = Error::INVALID_ARGUMENT;
+    return;
+  }
+  
   Column::create(err, cid);
   if(err)
     return;
