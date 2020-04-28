@@ -51,7 +51,7 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions
 
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
-    assert(DB::KeySeq::compare(key_seq, key1, key2, key2.size()) == Condition::EQ);
+    assert(DB::KeySeq::compare(key_seq, key1, key2, key2.size) == Condition::EQ);
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_compare(max), fractions=" << fractions 

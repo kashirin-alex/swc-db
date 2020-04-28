@@ -49,7 +49,7 @@ class Fragments final {
 
   bool try_compact(int tnum = 1);
 
-  void finish_compact(Compact* compact);
+  void finish_compact(const Compact* compact);
 
   const std::string get_log_fragment(const int64_t frag) const;
 

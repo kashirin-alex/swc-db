@@ -168,16 +168,15 @@ bool Fragments::try_compact(int tnum) {
   return true;
 }
 
-void Fragments::finish_compact(Compact* compact) {
+void Fragments::finish_compact(const Compact* compact) {
   range->compacting(Range::COMPACT_NONE); 
   m_compacting = false;
   m_cv.notify_all();
 
-  if(!stopping) {
-    if(compact->repetition < compact->nfrags / MAX_COMPACT)
-      try_compact(compact->repetition+1);
-    else
-      RangerEnv::compaction_schedule(10000);
+  if(!stopping && 
+     (compact->repetition >= compact->nfrags / MAX_COMPACT ||
+      !try_compact(compact->repetition+1))) {
+    RangerEnv::compaction_schedule(10000);
   }
   delete compact;
 }
@@ -278,22 +277,28 @@ bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
     }
   );
 
-  size_t need = 3;
-            //(fragments.size()/100) * range->cfg->compact_percent() + 1;
+  size_t sz = fragments.size();
+  size_t need = 0;
+  bool need_nxt = false;
   auto it = fragments.begin();
   for(auto it_nxt = it+1; it_nxt<fragments.end();) {
     if(DB::KeySeq::compare(m_cells.key_seq, 
         (*it)->interval.key_end, (*it_nxt)->interval.key_begin)
-         != Condition::GT) {
-      if(!--need)
-        return true;
+         == Condition::LT) {
       ++it; 
       ++it_nxt;
+      need_nxt = true;
+      ++need;
+    } else if(need_nxt) {
+      ++it; 
+      ++it_nxt;
+      need_nxt = false;
     } else {
       fragments.erase(it);
     }
   }
-  return false;
+  return need >= MAX_COMPACT * 3 || (
+    need >= MAX_COMPACT && need > (sz/100) * range->cfg->compact_percent() );
 }
 
 void Fragments::get(std::vector<Fragment::Ptr>& fragments) {

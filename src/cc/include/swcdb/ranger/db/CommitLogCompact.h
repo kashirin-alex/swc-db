@@ -15,32 +15,33 @@ class Compact final {
   class Group final {
     public:
 
-    const uint64_t ts;
-    const uint8_t  worker;
+    const uint64_t              ts;
+    const uint8_t               worker;
+    std::vector<Fragment::Ptr>  read_frags;
     
     Group(Compact* compact, uint8_t worker);
 
     ~Group();
 
-    void run(const std::vector<Fragment::Ptr>& frags);
+    void run();
 
     private:
+
+    void load_more();
 
     void loaded();
 
     void load();
 
-    void write(bool last);
+    void write();
 
     void finalize();
     
     std::atomic<int>                  error;
     Compact*                          compact;
-    std::mutex                        m_mutex;
+    size_t                            read_idx;
     DB::Cells::Mutable                m_cells;
-    std::condition_variable           m_cv;
     QueueSafeStated<Fragment::Ptr>    m_queue;
-    size_t                            m_remain;
     std::vector<Fragment::Ptr>        m_remove;
     std::vector<Fragment::Ptr>        m_fragments;
     Semaphore                         m_sem;
@@ -67,7 +68,7 @@ class Compact final {
 
   const std::string get_filepath(const int64_t frag) const;
 
-  LockAtomic::Unique    m_mutex;
+  std::mutex            m_mutex;
   uint8_t               m_workers;
   uint8_t               m_applying;
   std::vector<Group*>   m_groups;
