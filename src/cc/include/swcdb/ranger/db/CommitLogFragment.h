@@ -8,6 +8,7 @@
 
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueRunnable.h"
+#include "swcdb/db/Cells/MutableVec.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
@@ -70,7 +71,7 @@ class Fragment final {
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
-  void load_cells(int& err, DB::Cells::Mutable& cells);
+  void load_cells(int& err, DB::Cells::MutableVec& cells);
 
   void split(int& err, const DB::Cell::Key& key, 
              FragmentsPtr log_left, FragmentsPtr log_right);

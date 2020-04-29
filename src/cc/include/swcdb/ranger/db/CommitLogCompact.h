@@ -29,7 +29,7 @@ class Compact final {
 
     void load_more();
 
-    void loaded();
+    void loaded(Fragment::Ptr frag);
 
     void load();
 
@@ -40,11 +40,12 @@ class Compact final {
     std::atomic<int>                  error;
     Compact*                          compact;
     size_t                            read_idx;
-    DB::Cells::Mutable                m_cells;
+    DB::Cells::MutableVec             m_cells;
     QueueSafeStated<Fragment::Ptr>    m_queue;
     std::vector<Fragment::Ptr>        m_remove;
     std::vector<Fragment::Ptr>        m_fragments;
     Semaphore                         m_sem;
+    std::atomic<uint8_t>              m_loading;
   };
 
   public:
@@ -54,9 +55,11 @@ class Compact final {
   const uint64_t        ts;
   const uint32_t        repetition;
   const uint32_t        nfrags;
+  const uint8_t         process_state;
 
   Compact(Fragments* log, const Types::KeySeq key_seq,
-          int tnum, const std::vector<Fragment::Ptr>& frags);
+          int tnum, const std::vector<Fragment::Ptr>& frags, 
+          uint8_t process_state);
 
   ~Compact();
 

@@ -30,7 +30,7 @@ class Fragments final {
   typedef Fragments*  Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
-  static constexpr const uint8_t  MAX_COMPACT = 10; //(>rollout.ratio)?ram|(x2)
+  static constexpr const uint8_t  MAX_COMPACT = 20; //(>rollout.ratio)?ram|(x2)
 
   RangePtr            range;
   std::atomic<bool>   stopping;
@@ -47,7 +47,7 @@ class Fragments final {
 
   void commit_new_fragment(bool finalize=false);
 
-  bool try_compact(int tnum = 1);
+  bool try_compact(bool before_major, int tnum = 1);
 
   void finish_compact(const Compact* compact);
 
@@ -66,7 +66,7 @@ class Fragments final {
 
   void load_cells(BlockLoader* loader);
 
-  bool need_compact(std::vector<Fragment::Ptr>& fragments);
+  void need_compact(std::vector<Fragment::Ptr>& fragments);
 
   void get(std::vector<Fragment::Ptr>& fragments);
 

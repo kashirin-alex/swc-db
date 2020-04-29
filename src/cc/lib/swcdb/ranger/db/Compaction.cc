@@ -84,7 +84,7 @@ void Compaction::run(bool continuing) {
       continue;
     }
     ++m_idx_rid;
-    if(range->blocks.commitlog.try_compact() ||
+    if(range->blocks.commitlog.try_compact(true) ||
       !range->compact_possible())
       continue;
 

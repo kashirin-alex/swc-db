@@ -205,11 +205,10 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-void Fragment::load_cells(int& err, DB::Cells::Mutable& cells) {
+void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
   if(m_buffer.size) {
     size_t count = 0;
     DB::Cells::Cell cell;
-    size_t offset_hint = 0;
     bool synced = cells.empty();
     const uint8_t* buf = m_buffer.base;
     size_t remain = m_buffer.size;
@@ -226,15 +225,12 @@ void Fragment::load_cells(int& err, DB::Cells::Mutable& cells) {
       if(synced)
         cells.add_sorted(cell);
       else
-        cells.add_raw(cell, &offset_hint);
+        cells.add_raw(cell);
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
              to_string().c_str());
   }
-
-  processing_decrement();
-  release();
 }
 
 void Fragment::split(int& err, const DB::Cell::Key& key, 

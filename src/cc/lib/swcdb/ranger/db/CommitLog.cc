@@ -133,11 +133,11 @@ void Fragments::commit_new_fragment(bool finalize) {
   }
 
   if(!finalize)
-    try_compact();
+    try_compact(false);
   m_cv.notify_all();
 }
 
-bool Fragments::try_compact(int tnum) {
+bool Fragments::try_compact(bool before_major, int tnum) {
   if(!range->compact_possible())
     return false;
 
@@ -146,26 +146,49 @@ bool Fragments::try_compact(int tnum) {
     return false;
 
   std::vector<Fragment::Ptr> fragments = m_fragments;
-  if(!need_compact(fragments)) {
-    range->compacting(Range::COMPACT_NONE);
+  need_compact(fragments);
+  bool threshold = fragments.size() > (m_fragments.size()/100) 
+                                      * range->cfg->compact_percent();
+  if(before_major && !threshold) {
     size_t sz = 0;
     size_t ok = range->cfg->cellstore_size()/100;
     ok *= range->cfg->compact_percent();
-    for(auto frag : fragments) {
+    for(auto frag : m_fragments) {
       if((sz += frag->size_bytes_encoded()) > ok) {
         range->compact_require(true);
-        RangerEnv::compaction_schedule(10000);
-        break;
+        range->compacting(Range::COMPACT_NONE);
+        return false;                  
       }
     }
-    return false;
+  }
+ 
+  if(fragments.size() > MAX_COMPACT * 3 || (
+     fragments.size() > MAX_COMPACT && threshold)) {
+    m_compacting = true;
+    auto state = threshold? Range::COMPACT_PREPARING  // mitigate add
+                          : Range::COMPACT_COMPACTING;// continue scan & add
+    if(threshold) {
+      range->compact_require(true);
+      RangerEnv::compaction_schedule(10000);
+    }
+    range->compacting(state); 
+    new Compact(this, m_cells.key_seq, tnum, fragments, state);
+    return true;
   }
 
-  m_compacting = true;
-  range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
-  new Compact(this, m_cells.key_seq, tnum, fragments);
+  range->compacting(Range::COMPACT_NONE);
 
-  return true;
+  size_t sz = 0;
+  size_t ok = range->cfg->cellstore_size()/100;
+  ok *= range->cfg->compact_percent();
+  for(auto frag : m_fragments) {
+    if((sz += frag->size_bytes_encoded()) > ok) {
+      range->compact_require(true);
+      RangerEnv::compaction_schedule(10000);
+      break;
+    }
+  }
+  return false;
 }
 
 void Fragments::finish_compact(const Compact* compact) {
@@ -175,7 +198,7 @@ void Fragments::finish_compact(const Compact* compact) {
 
   if(!stopping && 
      (compact->repetition >= compact->nfrags / MAX_COMPACT ||
-      !try_compact(compact->repetition+1))) {
+      !try_compact(false, compact->repetition+1))) {
     RangerEnv::compaction_schedule(10000);
   }
   delete compact;
@@ -265,10 +288,9 @@ void Fragments::load_cells(BlockLoader* loader) {
   loader->block->load_cells(m_cells);
 }
 
-bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
+void Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
   if(fragments.size() < 3)
-    return false;
-
+    return;
   std::sort(fragments.begin(), fragments.end(),
     [seq=m_cells.key_seq]
     (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {
@@ -276,9 +298,6 @@ bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
       f1->interval.key_begin, f2->interval.key_begin) == Condition::GT; 
     }
   );
-
-  size_t sz = fragments.size();
-  size_t need = 0;
   bool need_nxt = false;
   auto it = fragments.begin();
   for(auto it_nxt = it+1; it_nxt<fragments.end();) {
@@ -288,7 +307,6 @@ bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
       ++it; 
       ++it_nxt;
       need_nxt = true;
-      ++need;
     } else if(need_nxt) {
       ++it; 
       ++it_nxt;
@@ -297,8 +315,6 @@ bool Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
       fragments.erase(it);
     }
   }
-  return need >= MAX_COMPACT * 3 || (
-    need >= MAX_COMPACT && need > (sz/100) * range->cfg->compact_percent() );
 }
 
 void Fragments::get(std::vector<Fragment::Ptr>& fragments) {
