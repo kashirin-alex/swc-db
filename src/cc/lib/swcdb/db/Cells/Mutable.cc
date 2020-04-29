@@ -573,6 +573,26 @@ void Mutable::split(size_t from, Mutable& cells,
   expand_end(intval_1st);
 }
 
+void Mutable::split(Mutable& cells) {
+  size_t split_at = buckets.size() / 2;
+  if(!split_at)
+    return;
+  
+  delete *cells.buckets.begin();
+  cells.buckets.clear();
+
+  auto it = buckets.begin() + split_at;
+  cells.buckets.assign(it, buckets.end());
+  buckets.erase(it, buckets.end());
+
+  for(auto bucket : cells.buckets) {
+    for(auto cell : *bucket) {
+      cells._add(cell);
+      _remove(cell);
+    }
+  }
+}
+
 
 void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
   int64_t ts = e_cell.get_timestamp();

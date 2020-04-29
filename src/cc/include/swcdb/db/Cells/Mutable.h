@@ -210,6 +210,8 @@ class Mutable final {
   void split(size_t from, Mutable& cells, 
              Interval& intval_1st, Interval& intval_2nd, bool loaded);
 
+  void split(Mutable& cells);
+
   private:
 
   void _add_remove(const Cell& e_cell, size_t* offsetp);
