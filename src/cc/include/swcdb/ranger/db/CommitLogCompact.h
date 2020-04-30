@@ -52,6 +52,8 @@ class Compact final {
 
   public:
 
+  typedef const std::function<void(const Compact*)> Cb_t;
+
   Fragments*            log;
   const Types::KeySeq   key_seq;
   const uint64_t        ts;
@@ -62,7 +64,8 @@ class Compact final {
 
   Compact(Fragments* log, const Types::KeySeq key_seq,
           int tnum, const std::vector<std::vector<Fragment::Ptr>>& groups,
-          uint8_t process_state, uint32_t max_compact, size_t total_frags);
+          uint8_t process_state, uint32_t max_compact, size_t total_frags,
+          Cb_t& cb = 0);
 
   ~Compact();
 
@@ -75,6 +78,7 @@ class Compact final {
   LockAtomic::Unique    m_mutex;
   uint8_t               m_workers;
   std::vector<Group*>   m_groups;
+  Cb_t                  m_cb;
 
 
 };

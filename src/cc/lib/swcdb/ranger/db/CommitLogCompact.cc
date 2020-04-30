@@ -160,10 +160,11 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
                  int tnum, 
                  const std::vector<std::vector<Fragment::Ptr>>& groups,
                  uint8_t process_state, uint32_t max_compact, 
-                 size_t total_frags)
+                 size_t total_frags, Cb_t& cb)
                 : log(log),  key_seq(key_seq), ts(Time::now_ns()),
                   repetition(tnum), nfrags(0), 
-                  process_state(process_state), max_compact(max_compact) {
+                  process_state(process_state), max_compact(max_compact),
+                  m_cb(cb) {
   for(auto frags : groups)
     nfrags += frags.size();
     
@@ -233,8 +234,10 @@ void Compact::finished(Group* group) {
     "COMPACT-FRAGMENTS-FINISH %d/%d fragments=%lld repetition=%d %lldns",
     log->range->cfg->cid, log->range->rid, nfrags, repetition, took
   );
-
-  log->finish_compact(this);
+  if(m_cb)
+    m_cb(this);
+  else
+    log->finish_compact(this);
 }
 
 const std::string Compact::get_filepath(const int64_t frag) const {

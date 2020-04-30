@@ -139,6 +139,13 @@ void Fragments::commit_new_fragment(bool finalize) {
     try_compact(false);
 }
 
+size_t Fragments::need_compact(
+                  std::vector<std::vector<Fragment::Ptr>>& groups,
+                  const std::vector<Fragment::Ptr>& without) {
+  std::shared_lock lock(m_mutex);
+  return _need_compact(groups, without);
+}
+
 bool Fragments::try_compact(bool before_major, int tnum) {
   if(!range->compact_possible())
     return false;
@@ -154,7 +161,7 @@ bool Fragments::try_compact(bool before_major, int tnum) {
       return false;
 
     nfrags = m_fragments.size();
-    need_sz = _need_compact(groups);
+    need_sz = _need_compact(groups, {});
     threshold = need_sz > (nfrags/100)*range->cfg->compact_percent();
 
     if(before_major && !threshold && _need_compact_major()) {
@@ -480,12 +487,19 @@ bool Fragments::_need_roll() const {
 }
 
 size_t Fragments::_need_compact(
-                  std::vector<std::vector<Fragment::Ptr>>& groups) {
+                  std::vector<std::vector<Fragment::Ptr>>& groups,
+                  const std::vector<Fragment::Ptr>& without) {
   size_t need = 0;
   if(m_fragments.size() < 3)
     return need;
+  
+  std::vector<Fragment::Ptr> fragments;
+  for(auto frag : m_fragments) {
+    if(without.empty() || 
+       std::find(without.begin(), without.end(), frag) == without.end())
+      fragments.push_back(frag);
+  }
 
-  auto fragments = m_fragments;
   std::sort(fragments.begin(), fragments.end(),
     [seq=m_cells.key_seq]
     (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {

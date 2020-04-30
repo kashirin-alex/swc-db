@@ -47,6 +47,9 @@ class Fragments final {
 
   void commit_new_fragment(bool finalize=false);
 
+  size_t need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
+                      const std::vector<Fragment::Ptr>& without);
+  
   bool try_compact(bool before_major, int tnum = 1);
 
   void finish_compact(const Compact* compact);
@@ -98,7 +101,8 @@ class Fragments final {
 
   bool _need_roll() const;
 
-  size_t _need_compact(std::vector<std::vector<Fragment::Ptr>>& groups);
+  size_t _need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
+                       const std::vector<Fragment::Ptr>& without);
 
   bool _need_compact_major();
 
