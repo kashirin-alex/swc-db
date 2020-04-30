@@ -19,18 +19,17 @@ class MutableVec : private std::vector<Mutable*> {
   using Vec::vector;
 
   public:
-  uint32_t            split_size;
   const Types::KeySeq key_seq;
-  Types::Column       type;
+  uint32_t            split_size;
   uint32_t            max_revs;
   uint64_t            ttl;
+  Types::Column       type;
 
-  explicit MutableVec(uint32_t split_size, const Types::KeySeq key_seq,
+  explicit MutableVec(const Types::KeySeq key_seq, uint32_t split_size=100000, 
                       const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
                       const Types::Column type=Types::Column::PLAIN) 
-                      : split_size(split_size), 
-                        key_seq(key_seq), type(type), 
-                        max_revs(max_revs), ttl(ttl_ns) {
+                      : key_seq(key_seq), split_size(split_size), 
+                        max_revs(max_revs), ttl(ttl_ns), type(type) {
   }
 
   ~MutableVec() {
@@ -47,10 +46,10 @@ class MutableVec : private std::vector<Mutable*> {
   void configure(uint32_t split,
                  const uint32_t revs=1, const uint64_t ttl_ns=0, 
                  const Types::Column typ=Types::Column::PLAIN) {
+    split_size = split;
     max_revs = revs;
     ttl = ttl_ns;
     type = typ;
-    split_size = split;
   }
 
   MutableVec operator=(const MutableVec &other) = delete;
@@ -96,6 +95,40 @@ class MutableVec : private std::vector<Mutable*> {
         }
         return;
       }
+    }
+  }
+
+  void add_raw(const Cell& cell, size_t* offset_itp, size_t* offsetp) {
+    if(Vec::empty())
+      return add_sorted(cell);
+    
+    Mutable* cells;
+    for(auto it = begin()+*offset_itp; it < end(); ++*offset_itp, *offsetp=0) {
+      cells = *it;
+      if(++it == end() || 
+         DB::KeySeq::compare(key_seq, cells->back()->key, cell.key) 
+                                                    != Condition::GT) {
+        cells->add_raw(cell, offsetp);
+        if(cells->size() >= split_size) {
+          push_back(new Mutable(key_seq, max_revs, ttl, type));
+          cells->split(*back());
+          *offsetp = 0;
+        }
+        return;
+      }
+    }
+  }
+
+  void scan(Interval& interval, Mutable& cells) const {
+    if(empty())
+      return;
+
+    for(auto it = begin(); it < end(); ++it) {
+      if(!interval.key_end.empty() && 
+         DB::KeySeq::compare(key_seq, (*it)->front()->key, interval.key_end) 
+                                                    == Condition::LT)
+        break;
+      (*it)->scan(interval, cells);
     }
   }
 

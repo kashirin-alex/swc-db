@@ -8,7 +8,6 @@
 
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueRunnable.h"
-#include "swcdb/db/Cells/MutableVec.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 

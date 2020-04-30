@@ -10,6 +10,7 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Cells/Mutable.h"
+#include "swcdb/db/Cells/MutableVec.h"
 
 
 
@@ -62,7 +63,7 @@ class Block final {
 
   bool add_logged(const DB::Cells::Cell& cell);
     
-  void load_cells(const DB::Cells::Mutable& cells);
+  void load_cells(const DB::Cells::MutableVec& cells);
 
   size_t load_cells(const uint8_t* buf, size_t remain, 
                     uint32_t revs, size_t avail, 

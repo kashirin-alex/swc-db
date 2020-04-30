@@ -39,13 +39,15 @@ class Compact final {
     
     std::atomic<int>                  error;
     Compact*                          compact;
-    size_t                            read_idx;
+    LockAtomic::Unique                m_mutex;
+    size_t                            m_read_idx;
+    uint32_t                          m_loading;
+    uint32_t                          m_processed;
     DB::Cells::MutableVec             m_cells;
-    QueueSafeStated<Fragment::Ptr>    m_queue;
+    QueueSafe<Fragment::Ptr>          m_queue;
     std::vector<Fragment::Ptr>        m_remove;
     std::vector<Fragment::Ptr>        m_fragments;
     Semaphore                         m_sem;
-    std::atomic<uint8_t>              m_loading;
   };
 
   public:
@@ -54,12 +56,13 @@ class Compact final {
   const Types::KeySeq   key_seq;
   const uint64_t        ts;
   const uint32_t        repetition;
-  const uint32_t        nfrags;
+  uint32_t              nfrags;
   const uint8_t         process_state;
+  const uint32_t        max_compact;
 
   Compact(Fragments* log, const Types::KeySeq key_seq,
-          int tnum, const std::vector<Fragment::Ptr>& frags, 
-          uint8_t process_state);
+          int tnum, const std::vector<std::vector<Fragment::Ptr>>& groups,
+          uint8_t process_state, uint32_t max_compact, size_t total_frags);
 
   ~Compact();
 

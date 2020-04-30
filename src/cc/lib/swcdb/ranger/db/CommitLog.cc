@@ -24,7 +24,8 @@ void Fragments::init(RangePtr for_range) {
   
   range = for_range;
   
-  m_cells.reset(
+  m_cells.configure(
+    range->cfg->block_cells()*2,
     range->cfg->cell_versions(), 
     range->cfg->cell_ttl(), 
     range->cfg->column_type()
@@ -36,6 +37,7 @@ Fragments::~Fragments() { }
 void Fragments::schema_update() {
   std::scoped_lock lock(m_mutex_cells);
   m_cells.configure(
+    range->cfg->block_cells()*2,
     range->cfg->cell_versions(), 
     range->cfg->cell_ttl(), 
     range->cfg->column_type()
@@ -145,25 +147,20 @@ bool Fragments::try_compact(bool before_major, int tnum) {
   if(stopping)
     return false;
 
-  std::vector<Fragment::Ptr> fragments = m_fragments;
-  need_compact(fragments);
-  bool threshold = fragments.size() > (m_fragments.size()/100) 
-                                      * range->cfg->compact_percent();
-  if(before_major && !threshold) {
-    size_t sz = 0;
-    size_t ok = range->cfg->cellstore_size()/100;
-    ok *= range->cfg->compact_percent();
-    for(auto frag : m_fragments) {
-      if((sz += frag->size_bytes_encoded()) > ok) {
-        range->compact_require(true);
-        range->compacting(Range::COMPACT_NONE);
-        return false;                  
-      }
-    }
+  uint32_t max_compact = range->cfg->log_rollout_ratio();
+  if(max_compact < MIN_COMPACT)
+    max_compact = MIN_COMPACT;
+
+  std::vector<std::vector<Fragment::Ptr>> groups;
+  size_t sz = _need_compact(max_compact, groups);
+  bool threshold = sz > (m_fragments.size()/100)*range->cfg->compact_percent();
+
+  if(before_major && !threshold && need_compact_major()) {
+    range->compacting(Range::COMPACT_NONE);
+    return false;
   }
- 
-  if(fragments.size() > MAX_COMPACT * 3 || (
-     fragments.size() > MAX_COMPACT && threshold)) {
+
+  if(sz > max_compact * 2 || (sz > max_compact && threshold)) {
     m_compacting = true;
     auto state = threshold? Range::COMPACT_PREPARING  // mitigate add
                           : Range::COMPACT_COMPACTING;// continue scan & add
@@ -172,22 +169,14 @@ bool Fragments::try_compact(bool before_major, int tnum) {
       RangerEnv::compaction_schedule(10000);
     }
     range->compacting(state); 
-    new Compact(this, m_cells.key_seq, tnum, fragments, state);
+    new Compact(
+      this, m_cells.key_seq, tnum, 
+      groups, state, max_compact, m_fragments.size());
     return true;
   }
 
   range->compacting(Range::COMPACT_NONE);
-
-  size_t sz = 0;
-  size_t ok = range->cfg->cellstore_size()/100;
-  ok *= range->cfg->compact_percent();
-  for(auto frag : m_fragments) {
-    if((sz += frag->size_bytes_encoded()) > ok) {
-      range->compact_require(true);
-      RangerEnv::compaction_schedule(10000);
-      break;
-    }
-  }
+  need_compact_major();
   return false;
 }
 
@@ -197,11 +186,25 @@ void Fragments::finish_compact(const Compact* compact) {
   m_cv.notify_all();
 
   if(!stopping && 
-     (compact->repetition >= compact->nfrags / MAX_COMPACT ||
-      !try_compact(false, compact->repetition+1))) {
+     (compact->repetition >= compact->nfrags / compact->max_compact ||
+      !try_compact(false, compact->repetition+1)) ) {
     RangerEnv::compaction_schedule(10000);
   }
   delete compact;
+}
+
+bool Fragments::need_compact_major() {
+  size_t sz_bytes = 0;
+  size_t ok = range->cfg->cellstore_size()/100;
+  ok *= range->cfg->compact_percent();
+  for(auto frag : m_fragments) {
+    if((sz_bytes += frag->size_bytes_encoded()) > ok) {
+      range->compact_require(true);
+      RangerEnv::compaction_schedule(10000);
+      return true;
+    }
+  }
+  return false;
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
@@ -286,35 +289,6 @@ void Fragments::load_cells(BlockLoader* loader, bool final, int64_t after_ts,
 void Fragments::load_cells(BlockLoader* loader) {
   std::shared_lock lock(m_mutex_cells);
   loader->block->load_cells(m_cells);
-}
-
-void Fragments::need_compact(std::vector<Fragment::Ptr>& fragments) {
-  if(fragments.size() < 3)
-    return;
-  std::sort(fragments.begin(), fragments.end(),
-    [seq=m_cells.key_seq]
-    (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {
-    return DB::KeySeq::compare(seq, 
-      f1->interval.key_begin, f2->interval.key_begin) == Condition::GT; 
-    }
-  );
-  bool need_nxt = false;
-  auto it = fragments.begin();
-  for(auto it_nxt = it+1; it_nxt<fragments.end();) {
-    if(DB::KeySeq::compare(m_cells.key_seq, 
-        (*it)->interval.key_end, (*it_nxt)->interval.key_begin)
-         == Condition::LT) {
-      ++it; 
-      ++it_nxt;
-      need_nxt = true;
-    } else if(need_nxt) {
-      ++it; 
-      ++it_nxt;
-      need_nxt = false;
-    } else {
-      fragments.erase(it);
-    }
-  }
 }
 
 void Fragments::get(std::vector<Fragment::Ptr>& fragments) {
@@ -466,7 +440,7 @@ std::string Fragments::to_string() {
   s.append(" cells=");
   {
     std::shared_lock lock(m_mutex_cells);
-    s.append(m_cells.to_string());
+  s.append(std::to_string(m_cells.size()));
   }
 
   s.append(" fragments=");
@@ -499,8 +473,72 @@ bool Fragments::_need_roll() const {
   return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && 
          (m_cells.size_bytes() >= bytes * ratio ||
           m_cells.size() >= cells * ratio ||
-          Env::Resources.need_ram(bytes * ratio) 
-          );
+          Env::Resources.need_ram(bytes) );
+}
+
+size_t Fragments::_need_compact(uint32_t vol, 
+                std::vector<std::vector<Fragment::Ptr>>& groups) {
+  if(m_fragments.size() < 3)
+    return 0;
+
+  auto fragments = m_fragments;
+  std::sort(fragments.begin(), fragments.end(),
+    [seq=m_cells.key_seq]
+    (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {
+    return DB::KeySeq::compare(seq, 
+      f1->interval.key_begin, f2->interval.key_begin) == Condition::GT; 
+    }
+  );
+  size_t need = 0;
+  groups.emplace_back();
+  //bool need_nxt = false;
+  bool add;
+  auto it = fragments.begin();
+  for(auto it_nxt = it+1; it_nxt<fragments.end(); ++it, ++it_nxt) {
+    add = DB::KeySeq::compare(m_cells.key_seq, 
+            (*it)->interval.key_end, (*it_nxt)->interval.key_begin)
+              == Condition::LT;
+    /*
+    if(!add) for(auto frag : groups.back()) {
+      if(add = DB::KeySeq::compare(m_cells.key_seq, 
+                frag->interval.key_end, (*it)->interval.key_begin)
+                  == Condition::LT)
+        break;
+    }
+    */
+    if(add) {
+      if(groups.back().empty() || groups.back().back() != *it) {
+        groups.back().push_back(*it);
+        ++need;
+      }
+      groups.back().push_back(*it_nxt);
+      ++need;
+    //  need_nxt = true;
+      if(groups.back().size() >= vol)
+        groups.emplace_back();
+
+    //} else if(need_nxt) {
+    //  need_nxt = false;
+
+    } else if(!groups.back().empty()) {
+      if(groups.back().size() < MIN_COMPACT) {
+        need -= groups.back().size();
+        groups.back().clear();
+      } else {
+        groups.emplace_back();
+      }
+    }
+  }
+  for(auto it=groups.begin(); it < groups.end(); ) {
+    if(it->size() < MIN_COMPACT) {
+      need -= it->size();
+      it->clear();
+      groups.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  return need;
 }
 
 bool Fragments::_processing() const {

@@ -30,7 +30,7 @@ class Fragments final {
   typedef Fragments*  Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
-  static constexpr const uint8_t  MAX_COMPACT = 20; //(>rollout.ratio)?ram|(x2)
+  static constexpr const uint8_t  MIN_COMPACT = 6;
 
   RangePtr            range;
   std::atomic<bool>   stopping;
@@ -51,6 +51,8 @@ class Fragments final {
 
   void finish_compact(const Compact* compact);
 
+  bool need_compact_major();
+
   const std::string get_log_fragment(const int64_t frag) const;
 
   const std::string get_log_fragment(const std::string& frag) const;
@@ -65,8 +67,6 @@ class Fragments final {
                   std::vector<Fragment::Ptr>& fragments);
 
   void load_cells(BlockLoader* loader);
-
-  void need_compact(std::vector<Fragment::Ptr>& fragments);
 
   void get(std::vector<Fragment::Ptr>& fragments);
 
@@ -100,12 +100,15 @@ class Fragments final {
 
   bool _need_roll() const;
 
+  size_t _need_compact(uint32_t vol, 
+                       std::vector<std::vector<Fragment::Ptr>>& groups);
+
   bool _processing() const;
 
   size_t _size_bytes(bool only_loaded=false);
 
   std::shared_mutex           m_mutex_cells;
-  DB::Cells::Mutable          m_cells;
+  DB::Cells::MutableVec       m_cells;
 
   std::shared_mutex           m_mutex;
   bool                        m_commiting;

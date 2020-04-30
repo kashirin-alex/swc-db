@@ -99,7 +99,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   return true;
 }
   
-void Block::load_cells(const DB::Cells::Mutable& cells) {
+void Block::load_cells(const DB::Cells::MutableVec& cells) {
   if(cells.empty())
     return;
 

@@ -8,15 +8,16 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 Compact::Group::Group(Compact* compact, uint8_t worker) 
                       : ts(Time::now_ns()), worker(worker), error(Error::OK), 
-                        compact(compact), read_idx(0), 
+                        compact(compact), m_read_idx(0), 
+                        m_loading(0), m_processed(0),
                         m_cells(
-                          compact->log->range->cfg->block_cells(),
                           compact->key_seq,
+                          compact->log->range->cfg->block_cells()*2,
                           compact->log->range->cfg->cell_versions(), 
                           compact->log->range->cfg->cell_ttl(), 
                           compact->log->range->cfg->column_type()
                         ), 
-                        m_sem(5), m_loading(0) {
+                        m_sem(5) {
 }
 
 Compact::Group::Group::~Group() { }
@@ -26,28 +27,27 @@ void Compact::Group::run() {
 }
 
 void Compact::Group::load_more() {
-  for(;read_idx < read_frags.size(); ) {
-    if(m_loading + m_queue.size() == Fragments::MAX_PRELOAD)
-      return;
-
-    ++m_loading;
-    auto& frag = read_frags[read_idx];
-    frag->load(
-      [this, frag, 
-       last = error || compact->log->stopping || 
-              ++read_idx == read_frags.size()] () { 
-        --m_loading;
-        loaded(frag); 
-        if(last)
-          loaded(nullptr); 
-      }
-    );
-  }
+  Fragment::Ptr frag;
+  bool more;
+  do {
+    m_mutex.lock();
+    if(error || compact->log->stopping) {
+      more = false;
+      m_read_idx = read_frags.size();
+    } else if(more = m_read_idx < read_frags.size() &&
+                     m_loading < Fragments::MAX_PRELOAD) {
+      ++m_loading;
+      frag = read_frags[m_read_idx];
+      ++m_read_idx;
+    }
+    m_mutex.unlock();
+    if(more)
+      frag->load([this, frag] () { loaded(frag); });
+  }while(more);
 }
 
 void Compact::Group::loaded(Fragment::Ptr frag) {
-  m_queue.push(frag);
-  if(m_queue.activating())
+  if(m_queue.push_and_is_1st(frag))
     asio::post(*Env::IoCtx::io()->ptr(), [this]() { load(); });
 }
 
@@ -55,12 +55,9 @@ void Compact::Group::load() {
   int err;
   Fragment::Ptr frag;
   uint64_t ts;
+  bool finished;
   do {
-    if(!(frag = m_queue.front())) {
-      finalize();
-      return;
-    }
-    load_more();
+    frag = m_queue.front();
 
     ts = Time::now_ns();
     if(frag->loaded(err = Error::OK) && !compact->log->stopping && !error) {
@@ -87,7 +84,18 @@ void Compact::Group::load() {
       );
     }
 
-  } while(!m_queue.deactivating());
+    m_mutex.lock();
+    finished = (!--m_loading && m_queue.size() == 1 && 
+                (error || compact->log->stopping) ) || 
+               ++m_processed == read_frags.size();
+    m_mutex.unlock();
+
+    if(finished)
+      return finalize();
+    if(!error && !compact->log->stopping)
+      load_more();
+
+  } while(m_queue.pop_and_more());
 }
 
 void Compact::Group::write() {
@@ -154,34 +162,50 @@ void Compact::Group::finalize() {
 
 
 Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
-                 int tnum, const std::vector<Fragment::Ptr>& frags,
-                 uint8_t process_state)
+                 int tnum, 
+                 const std::vector<std::vector<Fragment::Ptr>>& groups,
+                 uint8_t process_state, uint32_t max_compact, 
+                 size_t total_frags)
                 : log(log),  key_seq(key_seq), ts(Time::now_ns()),
-                  repetition(tnum), nfrags(frags.size()), 
-                  process_state(process_state), m_applying(0) {
-  uint32_t workers = Env::Resources.avail_ram() /log->range->cfg->block_size();
-  if(workers > nfrags)
-    workers = nfrags;
-  if((workers /= Fragments::MAX_COMPACT) > Fragments::MAX_COMPACT)
-    workers = Fragments::MAX_COMPACT;
-  else if(!workers)
-    ++workers;
+                  repetition(tnum), nfrags(0), 
+                  process_state(process_state), max_compact(max_compact), 
+                  m_applying(0) {
+  for(auto frags : groups)
+    nfrags += frags.size();
+    
+  uint32_t blks = (Env::Resources.avail_ram() /log->range->cfg->block_size());
+  if(blks < nfrags)
+    log->range->release((nfrags-blks) * log->range->cfg->block_size());
+  
+  if(!blks)
+    blks = max_compact;
+  size_t ngroups = 0;
+  for(auto frags : groups) {
+    if(frags.empty())
+      continue;
+    ++ngroups;
+    m_groups.push_back(new Group(this, m_groups.size()+1));
 
-  for(auto it = frags.begin(); it < frags.end(); ++it) {
-    if(m_groups.size() == 0 || 
-       m_groups.back()->read_frags.size() == Fragments::MAX_COMPACT) {
-      if(m_groups.size() == workers)
+    for(auto it = frags.begin(); it < frags.end(); ++it) {
+      m_groups.back()->read_frags.push_back(*it);
+      if(!blks) {
+        if(m_groups.back()->read_frags.size() < 2)
+          continue;
         break;
-      m_groups.push_back(new Group(this, m_groups.size()+1));
+      }
+      --blks;
     }
-    m_groups.back()->read_frags.push_back(*it);
+    if(!blks)
+      break;
   }
+  
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FRAGMENTS-START %d/%d workers=%lld fragments=%lld repetition=%d",
+    "COMPACT-FRAGMENTS-START %d/%d "
+    "workers=%lld fragments=%lld(%lld)/%lld repetition=%d",
     log->range->cfg->cid, log->range->rid, 
-    workers, nfrags, repetition
+    m_workers, nfrags, ngroups, total_frags, repetition
   );
 
   for(auto g : m_groups)
