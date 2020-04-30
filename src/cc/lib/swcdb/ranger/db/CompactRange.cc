@@ -204,7 +204,8 @@ void CompactRange::response(int &err) {
     total_blocks.load(), err
   );
 
-  if(!reached_limits()) {
+  bool finished;
+  if(finished = !reached_limits()) {
     stop_check_timer();
     range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
@@ -224,8 +225,56 @@ void CompactRange::response(int &err) {
 
   if(m_stopped || !in_block)
     return;
-  
+
   m_inblock->set_offset(spec);
+  finished ? commitlog_done(nullptr) : commitlog(1);
+}
+
+void CompactRange::commitlog(int tnum) {
+  size_t nfrags = range->blocks.commitlog.size();
+  if(nfrags == fragments_old.size())
+    return commitlog_done(nullptr);
+
+  std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
+  size_t need_sz = range->blocks.commitlog.need_compact(groups, fragments_old);
+  bool threshold = need_sz > (nfrags/100)*range->cfg->compact_percent();
+
+  uint32_t max_compact = range->cfg->log_rollout_ratio();
+  if(max_compact < CommitLog::Fragments::MIN_COMPACT)
+    max_compact = CommitLog::Fragments::MIN_COMPACT;
+
+  if(need_sz > max_compact * 2 || (need_sz > max_compact && threshold)) {
+    new CommitLog::Compact(
+      &range->blocks.commitlog, range->cfg->key_seq, 
+      tnum, groups, Range::COMPACT_PREPARING, max_compact, nfrags,
+      [ptr=shared()] (const CommitLog::Compact* compact) {
+        ptr->commitlog_done(compact); 
+      }
+    );
+  } else {
+    commitlog_done(nullptr);
+  } 
+}
+
+void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
+  if(m_stopped) {
+    if(compact)
+      delete compact;
+    return;
+  }
+  if(compact) {
+    int tnum = compact->repetition < CommitLog::Fragments::MIN_COMPACT &&
+               compact->repetition < compact->nfrags / compact->max_compact
+                ? compact->repetition + 1 : 0;
+    delete compact;
+    if(tnum && !m_chk_final) {
+      range->compacting(Range::COMPACT_PREPARING);
+      commitlog(tnum);
+      return;
+    }
+    range->compacting(
+      m_chk_final ? Range::COMPACT_PREPARING : Range::COMPACT_COMPACTING);
+  }
   {
     Mutex::scope lock(m_mutex);
     m_getting = false;
