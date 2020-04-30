@@ -25,6 +25,8 @@ class Compact final {
 
     void run();
 
+    void finalize();
+
     private:
 
     void load_more();
@@ -34,8 +36,6 @@ class Compact final {
     void load();
 
     void write();
-
-    void finalize();
     
     std::atomic<int>                  error;
     Compact*                          compact;
@@ -68,15 +68,12 @@ class Compact final {
 
   private:
 
-  void applying();
-
   void finished(Group* group);
 
   const std::string get_filepath(const int64_t frag) const;
 
-  std::mutex            m_mutex;
+  LockAtomic::Unique    m_mutex;
   uint8_t               m_workers;
-  uint8_t               m_applying;
   std::vector<Group*>   m_groups;
 
 

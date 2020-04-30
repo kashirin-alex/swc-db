@@ -91,7 +91,7 @@ void Compact::Group::load() {
     m_mutex.unlock();
 
     if(finished)
-      return finalize();
+      return write();
     if(!error && !compact->log->stopping)
       load_more();
 
@@ -134,13 +134,10 @@ void Compact::Group::write() {
   } while(!error && !m_cells.empty());
 
   m_sem.wait_all();
+  compact->finished(this);
 }
 
 void Compact::Group::finalize() {
-  write();
-
-  compact->applying();
-
   int err = Error::OK;
   for(auto frag : m_fragments) {
     if(compact->log->stopping || error)
@@ -156,8 +153,6 @@ void Compact::Group::finalize() {
   if(!compact->log->stopping && !error)
     compact->log->remove(err, m_remove);
   //else + tmp_took_frags
-
-  compact->finished(this);
 }
 
 
@@ -168,14 +163,13 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
                  size_t total_frags)
                 : log(log),  key_seq(key_seq), ts(Time::now_ns()),
                   repetition(tnum), nfrags(0), 
-                  process_state(process_state), max_compact(max_compact), 
-                  m_applying(0) {
+                  process_state(process_state), max_compact(max_compact) {
   for(auto frags : groups)
     nfrags += frags.size();
     
   uint32_t blks = (Env::Resources.avail_ram() /log->range->cfg->block_size());
   if(blks < nfrags)
-    log->range->release((nfrags-blks) * log->range->cfg->block_size());
+    log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
   
   if(!blks)
     blks = max_compact;
@@ -214,24 +208,12 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
 
 Compact::~Compact() { }
 
-void Compact::applying() {
-  std::scoped_lock lock(m_mutex);
-  if(!m_applying) {
-    log->range->compacting(Range::COMPACT_APPLYING);
-    log->range->blocks.wait_processing(); // sync processing state
-  }
-  ++m_applying;
-}
-
 void Compact::finished(Group* group) {
-  uint8_t running;
-  {
-    std::scoped_lock lock(m_mutex);
-    if(!--m_applying)
-      log->range->compacting(process_state);
-    running = --m_workers;
-  }
-  SWC_LOGF(LOG_INFO, 
+  m_mutex.lock();
+  uint8_t running = --m_workers;
+  m_mutex.unlock();
+
+  SWC_LOGF(LOG_INFO,
     "COMPACT-FRAGMENTS-PROGRESS %d/%d running=%d worker=%d-%lldns",
     log->range->cfg->cid, log->range->rid, running, 
     group->worker, (Time::now_ns()-group->ts) 
@@ -239,8 +221,12 @@ void Compact::finished(Group* group) {
   if(running)
     return;
 
-  for(auto g : m_groups)
+  log->range->compacting(Range::COMPACT_APPLYING);
+  log->range->blocks.wait_processing(); // sync processing state
+  for(auto g : m_groups) {
+    g->finalize();
     delete g;
+  }
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 

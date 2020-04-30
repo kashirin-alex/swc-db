@@ -133,78 +133,81 @@ void Fragments::commit_new_fragment(bool finalize) {
     std::unique_lock lock_wait(m_mutex);
     m_commiting = false;
   }
+  m_cv.notify_all();
 
   if(!finalize)
     try_compact(false);
-  m_cv.notify_all();
 }
 
 bool Fragments::try_compact(bool before_major, int tnum) {
   if(!range->compact_possible())
     return false;
 
-  std::unique_lock lock(m_mutex);
-  if(stopping)
-    return false;
+  std::vector<std::vector<Fragment::Ptr>> groups;
+  size_t nfrags;
+  size_t need_sz;
+  bool threshold;
+
+  {
+    std::scoped_lock lock(m_mutex);
+    if(stopping || m_compacting)
+      return false;
+
+    nfrags = m_fragments.size();
+    need_sz = _need_compact(groups);
+    threshold = need_sz > (nfrags/100)*range->cfg->compact_percent();
+
+    if(before_major && !threshold && _need_compact_major()) {
+      range->compacting(Range::COMPACT_NONE);
+      return false;
+    }
+    m_compacting = true;
+  }
 
   uint32_t max_compact = range->cfg->log_rollout_ratio();
   if(max_compact < MIN_COMPACT)
     max_compact = MIN_COMPACT;
 
-  std::vector<std::vector<Fragment::Ptr>> groups;
-  size_t sz = _need_compact(max_compact, groups);
-  bool threshold = sz > (m_fragments.size()/100)*range->cfg->compact_percent();
-
-  if(before_major && !threshold && need_compact_major()) {
-    range->compacting(Range::COMPACT_NONE);
-    return false;
-  }
-
-  if(sz > max_compact * 2 || (sz > max_compact && threshold)) {
-    m_compacting = true;
+  if(need_sz > max_compact * 2 || (need_sz > max_compact && threshold)) {
     auto state = threshold? Range::COMPACT_PREPARING  // mitigate add
                           : Range::COMPACT_COMPACTING;// continue scan & add
-    if(threshold) {
-      range->compact_require(true);
-      RangerEnv::compaction_schedule(10000);
-    }
     range->compacting(state); 
     new Compact(
-      this, m_cells.key_seq, tnum, 
-      groups, state, max_compact, m_fragments.size());
+      this, m_cells.key_seq, tnum, groups, state, max_compact, nfrags);
+    if(!threshold) {
+      std::shared_lock lock(m_mutex);
+      _need_compact_major();
+    }
     return true;
   }
-
+  
+  {
+    std::scoped_lock lock(m_mutex);
+    m_compacting = false;
+    _need_compact_major();
+  }
   range->compacting(Range::COMPACT_NONE);
-  need_compact_major();
+  m_cv.notify_all();
   return false;
 }
 
 void Fragments::finish_compact(const Compact* compact) {
   range->compacting(Range::COMPACT_NONE); 
-  m_compacting = false;
+  {
+    std::scoped_lock lock(m_mutex);
+    m_compacting = false;
+  }
   m_cv.notify_all();
 
-  if(!stopping && 
-     (compact->repetition >= compact->nfrags / compact->max_compact ||
-      !try_compact(false, compact->repetition+1)) ) {
-    RangerEnv::compaction_schedule(10000);
-  }
-  delete compact;
-}
-
-bool Fragments::need_compact_major() {
-  size_t sz_bytes = 0;
-  size_t ok = range->cfg->cellstore_size()/100;
-  ok *= range->cfg->compact_percent();
-  for(auto frag : m_fragments) {
-    if((sz_bytes += frag->size_bytes_encoded()) > ok) {
-      range->compact_require(true);
-      RangerEnv::compaction_schedule(10000);
-      return true;
+  if(!stopping) {
+    if(compact->repetition >= compact->nfrags / compact->max_compact) {
+      std::scoped_lock lock(m_mutex);
+      _need_compact_major();
+    } else {
+      try_compact(false, compact->repetition+1);
     }
   }
-  return false;
+  delete compact;
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
@@ -476,10 +479,11 @@ bool Fragments::_need_roll() const {
           Env::Resources.need_ram(bytes) );
 }
 
-size_t Fragments::_need_compact(uint32_t vol, 
-                std::vector<std::vector<Fragment::Ptr>>& groups) {
+size_t Fragments::_need_compact(
+                  std::vector<std::vector<Fragment::Ptr>>& groups) {
+  size_t need = 0;
   if(m_fragments.size() < 3)
-    return 0;
+    return need;
 
   auto fragments = m_fragments;
   std::sort(fragments.begin(), fragments.end(),
@@ -489,38 +493,17 @@ size_t Fragments::_need_compact(uint32_t vol,
       f1->interval.key_begin, f2->interval.key_begin) == Condition::GT; 
     }
   );
-  size_t need = 0;
+
   groups.emplace_back();
-  //bool need_nxt = false;
-  bool add;
   auto it = fragments.begin();
   for(auto it_nxt = it+1; it_nxt<fragments.end(); ++it, ++it_nxt) {
-    add = DB::KeySeq::compare(m_cells.key_seq, 
-            (*it)->interval.key_end, (*it_nxt)->interval.key_begin)
-              == Condition::LT;
-    /*
-    if(!add) for(auto frag : groups.back()) {
-      if(add = DB::KeySeq::compare(m_cells.key_seq, 
-                frag->interval.key_end, (*it)->interval.key_begin)
-                  == Condition::LT)
-        break;
-    }
-    */
-    if(add) {
-      if(groups.back().empty() || groups.back().back() != *it) {
-        groups.back().push_back(*it);
-        ++need;
-      }
-      groups.back().push_back(*it_nxt);
+    if(DB::KeySeq::compare(m_cells.key_seq, (*it)->interval.key_end, 
+                           (*it_nxt)->interval.key_begin) == Condition::LT) {
+      groups.back().push_back(*it);
       ++need;
-    //  need_nxt = true;
-      if(groups.back().size() >= vol)
-        groups.emplace_back();
-
-    //} else if(need_nxt) {
-    //  need_nxt = false;
-
     } else if(!groups.back().empty()) {
+      groups.back().push_back(*it);
+      ++need;
       if(groups.back().size() < MIN_COMPACT) {
         need -= groups.back().size();
         groups.back().clear();
@@ -539,6 +522,20 @@ size_t Fragments::_need_compact(uint32_t vol,
     }
   }
   return need;
+}
+
+bool Fragments::_need_compact_major() {
+  size_t sz_bytes = 0;
+  size_t ok = range->cfg->cellstore_size()/100;
+  ok *= range->cfg->compact_percent();
+  for(auto frag : m_fragments) {
+    if((sz_bytes += frag->size_bytes_encoded()) > ok) {
+      range->compact_require(true);
+      RangerEnv::compaction_schedule(10000);
+      return true;
+    }
+  }
+  return false;
 }
 
 bool Fragments::_processing() const {
