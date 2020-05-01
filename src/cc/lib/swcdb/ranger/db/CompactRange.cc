@@ -156,11 +156,11 @@ void CompactRange::initial_commitlog(int tnum) {
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
     groups, {}, CommitLog::Fragments::MIN_COMPACT);
-  uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
-  if(need > max_compact || (need > 0 && nfrags/need < 10)) {
+  if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, range->cfg->key_seq, 
-      tnum, groups, Range::COMPACT_PREPARING, max_compact, nfrags,
+      tnum, groups, Range::COMPACT_PREPARING, 
+      range->cfg->log_rollout_ratio() * 2, nfrags,
       [ptr] (const CommitLog::Compact* compact) {
         ptr->initial_commitlog_done(ptr, compact); 
       }
@@ -272,16 +272,15 @@ void CompactRange::commitlog(int tnum) {
   if(nfrags == fragments_old.size())
     return commitlog_done(nullptr);
 
-  nfrags -= fragments_old.size();
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
-    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT * 2);
-  uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
-  if(need && (need/groups.size() > max_compact || 
-             (need > max_compact && nfrags/need < 10))) {
+    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
+  if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, range->cfg->key_seq, 
-      tnum, groups, Range::COMPACT_PREPARING, max_compact, nfrags,
+      tnum, groups, Range::COMPACT_PREPARING, 
+      range->cfg->log_rollout_ratio() * 2, 
+      nfrags -= fragments_old.size(),
       [ptr=shared()] (const CommitLog::Compact* compact) {
         ptr->commitlog_done(compact); 
       }
@@ -298,7 +297,8 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
     return;
   }
   if(compact) {
-    int tnum = compact->repetition < compact->nfrags / compact->max_compact
+    int tnum = compact->repetition < 3 &&
+               compact->repetition < compact->nfrags / compact->max_compact
                 ? compact->repetition + 1 : 0;
     delete compact;
     if(tnum && !m_chk_final) {

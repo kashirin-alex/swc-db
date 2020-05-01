@@ -536,7 +536,7 @@ bool Fragments::_need_compact_major() {
   for(auto frag : m_fragments) {
     if((sz_bytes += frag->size_bytes_encoded()) > ok) {
       range->compact_require(true);
-      RangerEnv::compaction_schedule(10000);
+      RangerEnv::compaction_schedule(1000);
       return true;
     }
   }
