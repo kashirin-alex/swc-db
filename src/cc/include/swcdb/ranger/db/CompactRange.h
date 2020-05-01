@@ -43,13 +43,18 @@ class CompactRange : public ReqScan {
 
   private:
 
-  void progress_check_timer();
+  void initial_commitlog(int tnum);
 
-  void stop_check_timer();
+  void initial_commitlog_done(CompactRange::Ptr ptr, 
+                              const CommitLog::Compact* compact);
 
   void commitlog(int tnum);
 
   void commitlog_done(const CommitLog::Compact* compact);
+
+  void progress_check_timer();
+
+  void stop_check_timer();
 
   void request_more();
 

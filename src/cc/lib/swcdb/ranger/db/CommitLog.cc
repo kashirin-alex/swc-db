@@ -141,9 +141,10 @@ void Fragments::commit_new_fragment(bool finalize) {
 
 size_t Fragments::need_compact(
                   std::vector<std::vector<Fragment::Ptr>>& groups,
-                  const std::vector<Fragment::Ptr>& without) {
+                  const std::vector<Fragment::Ptr>& without,
+                  size_t vol) {
   std::shared_lock lock(m_mutex);
-  return _need_compact(groups, without);
+  return _need_compact(groups, without, vol);
 }
 
 bool Fragments::try_compact(bool before_major, int tnum) {
@@ -152,46 +153,35 @@ bool Fragments::try_compact(bool before_major, int tnum) {
 
   std::vector<std::vector<Fragment::Ptr>> groups;
   size_t nfrags;
-  size_t need_sz;
-  bool threshold;
-
+  size_t need;
   {
     std::scoped_lock lock(m_mutex);
     if(stopping || m_compacting)
       return false;
 
-    nfrags = m_fragments.size();
-    need_sz = _need_compact(groups, {});
-    threshold = need_sz > (nfrags/100)*range->cfg->compact_percent();
-
-    if(before_major && !threshold && _need_compact_major()) {
+    if(_need_compact_major()) {
       range->compacting(Range::COMPACT_NONE);
       return false;
     }
+    nfrags = m_fragments.size();
+    need = _need_compact(groups, {}, MIN_COMPACT);
     m_compacting = true;
   }
 
-  uint32_t max_compact = range->cfg->log_rollout_ratio();
-  if(max_compact < MIN_COMPACT)
-    max_compact = MIN_COMPACT;
-
-  if(need_sz > max_compact * 2 || (need_sz > max_compact && threshold)) {
-    auto state = threshold? Range::COMPACT_PREPARING  // mitigate add
-                          : Range::COMPACT_COMPACTING;// continue scan & add
+  if(need) {
+    uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
+    auto state = need/groups.size() > max_compact 
+                  ? Range::COMPACT_PREPARING  // mitigate add
+                  : Range::COMPACT_COMPACTING;// continue scan & add
     range->compacting(state); 
     new Compact(
       this, m_cells.key_seq, tnum, groups, state, max_compact, nfrags);
-    if(!threshold) {
-      std::shared_lock lock(m_mutex);
-      _need_compact_major();
-    }
     return true;
   }
   
   {
     std::scoped_lock lock(m_mutex);
     m_compacting = false;
-    _need_compact_major();
   }
   range->compacting(Range::COMPACT_NONE);
   m_cv.notify_all();
@@ -488,7 +478,8 @@ bool Fragments::_need_roll() const {
 
 size_t Fragments::_need_compact(
                   std::vector<std::vector<Fragment::Ptr>>& groups,
-                  const std::vector<Fragment::Ptr>& without) {
+                  const std::vector<Fragment::Ptr>& without,
+                  size_t vol) {
   size_t need = 0;
   if(m_fragments.size() < 3)
     return need;
@@ -518,7 +509,7 @@ size_t Fragments::_need_compact(
     } else if(!groups.back().empty()) {
       groups.back().push_back(*it);
       ++need;
-      if(groups.back().size() < MIN_COMPACT) {
+      if(groups.back().size() < vol) {
         need -= groups.back().size();
         groups.back().clear();
       } else {
@@ -527,7 +518,7 @@ size_t Fragments::_need_compact(
     }
   }
   for(auto it=groups.begin(); it < groups.end(); ) {
-    if(it->size() < MIN_COMPACT) {
+    if(it->size() < vol) {
       need -= it->size();
       it->clear();
       groups.erase(it);

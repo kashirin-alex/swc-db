@@ -143,11 +143,48 @@ void CompactRange::initialize() {
 
   if(range->blocks.commitlog.cells_count(true))
     range->blocks.commitlog.commit_new_fragment(true);
+
+  initial_commitlog(1);
+}
+
+void CompactRange::initial_commitlog(int tnum) {
+  auto ptr = shared();
+  auto nfrags = range->blocks.commitlog.size();
+  if(nfrags < CommitLog::Fragments::MIN_COMPACT)
+    return initial_commitlog_done(ptr, nullptr);
+
+  std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
+  size_t need = range->blocks.commitlog.need_compact(
+    groups, {}, CommitLog::Fragments::MIN_COMPACT);
+  uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
+  if(need > max_compact || (need > 0 && nfrags/need < 10)) {
+    new CommitLog::Compact(
+      &range->blocks.commitlog, range->cfg->key_seq, 
+      tnum, groups, Range::COMPACT_PREPARING, max_compact, nfrags,
+      [ptr] (const CommitLog::Compact* compact) {
+        ptr->initial_commitlog_done(ptr, compact); 
+      }
+    );
+  } else {
+    initial_commitlog_done(ptr, nullptr);
+  } 
+}
+
+void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr, 
+                                          const CommitLog::Compact* compact) {
+  if(compact) {
+    delete compact;
+    range->compacting(Range::COMPACT_PREPARING); // range scan can continue
+    return initial_commitlog(compact->repetition + 1);
+  }
+
   range->blocks.commitlog.get(fragments_old); // fragments for removal
 
   range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
   m_ts_req = Time::now_ns();
   progress_check_timer();
+
+  range->scan_internal(ptr);
 }
 
 bool CompactRange::with_block() {
@@ -235,15 +272,13 @@ void CompactRange::commitlog(int tnum) {
   if(nfrags == fragments_old.size())
     return commitlog_done(nullptr);
 
+  nfrags -= fragments_old.size();
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
-  size_t need_sz = range->blocks.commitlog.need_compact(groups, fragments_old);
-  bool threshold = need_sz > (nfrags/100)*range->cfg->compact_percent();
-
-  uint32_t max_compact = range->cfg->log_rollout_ratio();
-  if(max_compact < CommitLog::Fragments::MIN_COMPACT)
-    max_compact = CommitLog::Fragments::MIN_COMPACT;
-
-  if(need_sz > max_compact * 2 || (need_sz > max_compact && threshold)) {
+  size_t need = range->blocks.commitlog.need_compact(
+    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT * 2);
+  uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
+  if(need && (need/groups.size() > max_compact || 
+             (need > max_compact && nfrags/need < 10))) {
     new CommitLog::Compact(
       &range->blocks.commitlog, range->cfg->key_seq, 
       tnum, groups, Range::COMPACT_PREPARING, max_compact, nfrags,
@@ -263,8 +298,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
     return;
   }
   if(compact) {
-    int tnum = compact->repetition < CommitLog::Fragments::MIN_COMPACT &&
-               compact->repetition < compact->nfrags / compact->max_compact
+    int tnum = compact->repetition < compact->nfrags / compact->max_compact
                 ? compact->repetition + 1 : 0;
     delete compact;
     if(tnum && !m_chk_final) {
@@ -750,7 +784,15 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-  
+  auto ptr = shared();
+  for(int chk = 0; ptr.use_count() > 2; ++chk) {
+    if(chk == 3000) {
+      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %d/%d use_count=%d", 
+                range->cfg->cid, range->rid, ptr.use_count());
+      chk = 0;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
   SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
            range->cfg->cid, range->rid);
   compactor->compacted(range);

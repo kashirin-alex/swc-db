@@ -169,8 +169,6 @@ void Compaction::compact(RangePtr range) {
     blk_size
   );
   req->initialize();
-
-  range->scan_internal(req);
 }
 
 

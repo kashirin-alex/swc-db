@@ -30,7 +30,7 @@ class Fragments final {
   typedef Fragments*  Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
-  static constexpr const uint8_t  MIN_COMPACT = 3;
+  static constexpr const uint8_t  MIN_COMPACT = 2;
 
   RangePtr            range;
   std::atomic<bool>   stopping;
@@ -48,7 +48,8 @@ class Fragments final {
   void commit_new_fragment(bool finalize=false);
 
   size_t need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
-                      const std::vector<Fragment::Ptr>& without);
+                      const std::vector<Fragment::Ptr>& without,
+                      size_t vol);
   
   bool try_compact(bool before_major, int tnum = 1);
 
@@ -102,7 +103,8 @@ class Fragments final {
   bool _need_roll() const;
 
   size_t _need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
-                       const std::vector<Fragment::Ptr>& without);
+                       const std::vector<Fragment::Ptr>& without,
+                       size_t vol);
 
   bool _need_compact_major();
 

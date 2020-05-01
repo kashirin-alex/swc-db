@@ -171,9 +171,9 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
   uint32_t blks = (Env::Resources.avail_ram() /log->range->cfg->block_size());
   if(blks < nfrags)
     log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
-  
   if(!blks)
     blks = max_compact;
+    
   size_t ngroups = 0;
   for(auto frags : groups) {
     if(frags.empty())
