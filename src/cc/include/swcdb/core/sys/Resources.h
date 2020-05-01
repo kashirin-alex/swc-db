@@ -59,7 +59,7 @@ class Resources final {
   
   std::function<void(size_t)>   release;
 
-  int8_t                        next_major_chk = 0;
+  int8_t                        next_major_chk = -1;
   Component                     ram;
   uint32_t                      page_size;
   // Component                     storage;

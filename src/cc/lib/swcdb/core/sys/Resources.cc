@@ -85,7 +85,7 @@ void Resources::checker() {
 }
 
 void Resources::refresh_stats() {
-  if(next_major_chk++ == 0) {
+  if(++next_major_chk == 0) {
     page_size = sysconf(_SC_PAGE_SIZE);
     
     ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
