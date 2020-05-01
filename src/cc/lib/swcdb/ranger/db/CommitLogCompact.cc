@@ -11,7 +11,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         compact(compact), m_read_idx(0), 
                         m_loading(0), m_processed(0),
                         m_cells(
-                          compact->key_seq,
+                          compact->log->range->cfg->key_seq,
                           compact->log->range->cfg->block_cells()*2,
                           compact->log->range->cfg->cell_versions(), 
                           compact->log->range->cfg->cell_ttl(), 
@@ -156,15 +156,12 @@ void Compact::Group::finalize() {
 }
 
 
-Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
-                 int tnum, 
+Compact::Compact(Fragments* log, int repetition, 
                  const std::vector<std::vector<Fragment::Ptr>>& groups,
-                 uint8_t process_state, uint32_t max_compact, 
-                 size_t total_frags, Cb_t& cb)
-                : log(log),  key_seq(key_seq), ts(Time::now_ns()),
-                  repetition(tnum), nfrags(0), 
-                  process_state(process_state), max_compact(max_compact),
-                  m_cb(cb) {
+                 uint8_t process_state, Cb_t& cb)
+                : log(log), ts(Time::now_ns()),
+                  repetition(repetition), nfrags(0), 
+                  process_state(process_state), m_cb(cb) {
   for(auto frags : groups)
     nfrags += frags.size();
     
@@ -172,13 +169,11 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
   if(blks < nfrags)
     log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
   if(!blks)
-    blks = max_compact;
-    
-  size_t ngroups = 0;
+    blks = log->range->cfg->log_rollout_ratio();
+
   for(auto frags : groups) {
     if(frags.empty())
       continue;
-    ++ngroups;
     m_groups.push_back(new Group(this, m_groups.size()+1));
 
     for(auto it = frags.begin(); it < frags.end(); ++it) {
@@ -197,10 +192,9 @@ Compact::Compact(Fragments* log, const Types::KeySeq key_seq,
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FRAGMENTS-START %d/%d "
-    "workers=%lld fragments=%lld(%lld)/%lld repetition=%d",
+    "COMPACT-FRAGMENTS-START %d/%d frags=%lld(%lld)/%lld repetition=%d",
     log->range->cfg->cid, log->range->rid, 
-    m_workers, nfrags, ngroups, total_frags, repetition
+    nfrags, m_groups.size(), log->size(), repetition
   );
 
   for(auto g : m_groups)
@@ -231,8 +225,9 @@ void Compact::finished(Group* group) {
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FRAGMENTS-FINISH %d/%d fragments=%lld repetition=%d %lldns",
-    log->range->cfg->cid, log->range->rid, nfrags, repetition, took
+    "COMPACT-FRAGMENTS-FINISH %d/%d frags=%lld(%lld)/%lld repetition=%d %lldns",
+    log->range->cfg->cid, log->range->rid, 
+    nfrags, m_groups.size(), log->size(), repetition, took
   );
   if(m_cb)
     m_cb(this);

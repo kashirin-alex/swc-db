@@ -149,8 +149,7 @@ void CompactRange::initialize() {
 
 void CompactRange::initial_commitlog(int tnum) {
   auto ptr = shared();
-  auto nfrags = range->blocks.commitlog.size();
-  if(nfrags < CommitLog::Fragments::MIN_COMPACT)
+  if(range->blocks.commitlog.size() < CommitLog::Fragments::MIN_COMPACT)
     return initial_commitlog_done(ptr, nullptr);
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
@@ -158,9 +157,7 @@ void CompactRange::initial_commitlog(int tnum) {
     groups, {}, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, range->cfg->key_seq, 
-      tnum, groups, Range::COMPACT_PREPARING, 
-      range->cfg->log_rollout_ratio() * 2, nfrags,
+      &range->blocks.commitlog, tnum, groups, Range::COMPACT_PREPARING,
       [ptr] (const CommitLog::Compact* compact) {
         ptr->initial_commitlog_done(ptr, compact); 
       }
@@ -268,8 +265,7 @@ void CompactRange::response(int &err) {
 }
 
 void CompactRange::commitlog(int tnum) {
-  size_t nfrags = range->blocks.commitlog.size();
-  if(nfrags == fragments_old.size())
+  if(range->blocks.commitlog.size() == fragments_old.size())
     return commitlog_done(nullptr);
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
@@ -277,10 +273,7 @@ void CompactRange::commitlog(int tnum) {
     groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, range->cfg->key_seq, 
-      tnum, groups, Range::COMPACT_PREPARING, 
-      range->cfg->log_rollout_ratio() * 2, 
-      nfrags -= fragments_old.size(),
+      &range->blocks.commitlog, tnum, groups, Range::COMPACT_PREPARING,
       [ptr=shared()] (const CommitLog::Compact* compact) {
         ptr->commitlog_done(compact); 
       }
@@ -297,8 +290,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
     return;
   }
   if(compact) {
-    int tnum = compact->repetition < 3 &&
-               compact->repetition < compact->nfrags / compact->max_compact
+    int tnum = compact->nfrags > range->cfg->log_rollout_ratio() * 2
                 ? compact->repetition + 1 : 0;
     delete compact;
     if(tnum && !m_chk_final) {

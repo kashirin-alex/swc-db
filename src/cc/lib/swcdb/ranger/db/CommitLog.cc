@@ -152,7 +152,6 @@ bool Fragments::try_compact(bool before_major, int tnum) {
     return false;
 
   std::vector<std::vector<Fragment::Ptr>> groups;
-  size_t nfrags;
   size_t need;
   {
     std::scoped_lock lock(m_mutex);
@@ -163,19 +162,16 @@ bool Fragments::try_compact(bool before_major, int tnum) {
       range->compacting(Range::COMPACT_NONE);
       return false;
     }
-    nfrags = m_fragments.size();
     need = _need_compact(groups, {}, MIN_COMPACT);
     m_compacting = true;
   }
 
   if(need) {
-    uint32_t max_compact = range->cfg->log_rollout_ratio() * 2;
-    auto state = need/groups.size() > max_compact 
+    auto state = need/groups.size() > range->cfg->log_rollout_ratio() 
                   ? Range::COMPACT_PREPARING  // mitigate add
                   : Range::COMPACT_COMPACTING;// continue scan & add
     range->compacting(state); 
-    new Compact(
-      this, m_cells.key_seq, tnum, groups, state, max_compact, nfrags);
+    new Compact(this, tnum, groups, state);
     return true;
   }
   
@@ -196,14 +192,8 @@ void Fragments::finish_compact(const Compact* compact) {
   }
   m_cv.notify_all();
 
-  if(!stopping) {
-    if(compact->repetition >= compact->nfrags / compact->max_compact) {
-      std::scoped_lock lock(m_mutex);
-      _need_compact_major();
-    } else {
-      try_compact(false, compact->repetition+1);
-    }
-  }
+  if(!stopping)
+    try_compact(false, compact->repetition+1);
   delete compact;
 }
 

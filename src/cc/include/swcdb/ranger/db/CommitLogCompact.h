@@ -55,17 +55,14 @@ class Compact final {
   typedef const std::function<void(const Compact*)> Cb_t;
 
   Fragments*            log;
-  const Types::KeySeq   key_seq;
   const uint64_t        ts;
   const uint32_t        repetition;
   uint32_t              nfrags;
   const uint8_t         process_state;
-  const uint32_t        max_compact;
 
-  Compact(Fragments* log, const Types::KeySeq key_seq,
-          int tnum, const std::vector<std::vector<Fragment::Ptr>>& groups,
-          uint8_t process_state, uint32_t max_compact, size_t total_frags,
-          Cb_t& cb = 0);
+  Compact(Fragments* log, int repetition, 
+          const std::vector<std::vector<Fragment::Ptr>>& groups,
+          uint8_t process_state, Cb_t& cb = 0);
 
   ~Compact();
 
