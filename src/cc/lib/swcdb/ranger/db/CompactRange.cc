@@ -170,9 +170,10 @@ void CompactRange::initial_commitlog(int tnum) {
 void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr, 
                                           const CommitLog::Compact* compact) {
   if(compact) {
+    int tnum = compact->repetition+1;
     delete compact;
     range->compacting(Range::COMPACT_PREPARING); // range scan can continue
-    return initial_commitlog(compact->repetition + 1);
+    return initial_commitlog(tnum);
   }
 
   range->blocks.commitlog.get(fragments_old); // fragments for removal
@@ -261,12 +262,14 @@ void CompactRange::response(int &err) {
     return;
 
   m_inblock->set_offset(spec);
-  finished ? commitlog_done(nullptr) : commitlog(1);
+  finished 
+    ? commitlog_done(nullptr, Range::COMPACT_APPLYING)
+    : commitlog(1, Range::COMPACT_COMPACTING);
 }
 
-void CompactRange::commitlog(int tnum) {
+void CompactRange::commitlog(int tnum, uint8_t state) {
   if(range->blocks.commitlog.size() == fragments_old.size())
-    return commitlog_done(nullptr);
+    return commitlog_done(nullptr, state);
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
@@ -274,32 +277,37 @@ void CompactRange::commitlog(int tnum) {
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups, Range::COMPACT_PREPARING,
-      [ptr=shared()] (const CommitLog::Compact* compact) {
-        ptr->commitlog_done(compact); 
+      [state, ptr=shared()] (const CommitLog::Compact* compact) {
+        ptr->commitlog_done(compact, state); 
       }
     );
   } else {
-    commitlog_done(nullptr);
+    commitlog_done(nullptr, state);
   } 
 }
 
-void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
+void CompactRange::commitlog_done(const CommitLog::Compact* compact,
+                                  uint8_t state) {
   if(m_stopped) {
     if(compact)
       delete compact;
     return;
   }
+  bool applying = range->compacting_is(Range::COMPACT_APPLYING);
   if(compact) {
-    int tnum = compact->nfrags > range->cfg->log_rollout_ratio() * 2
-                ? compact->repetition + 1 : 0;
+    uint8_t state = compact->repetition > range->cfg->log_rollout_ratio()
+                    ? Range::COMPACT_PREPARING : Range::COMPACT_COMPACTING;
+    int tnum = compact->nfrags > 
+      range->cfg->log_rollout_ratio() * range->cfg->log_rollout_ratio() / 2
+      ? compact->repetition + 1 : 0;
     delete compact;
-    if(tnum && !m_chk_final) {
-      range->compacting(Range::COMPACT_PREPARING);
-      commitlog(tnum);
+    if(tnum && !m_chk_final && !applying) {
+      range->compacting(state);
+      commitlog(tnum, state);
       return;
     }
-    range->compacting(
-      m_chk_final ? Range::COMPACT_PREPARING : Range::COMPACT_COMPACTING);
+    if(!applying)
+      range->compacting(m_chk_final ? Range::COMPACT_PREPARING : state);
   }
   {
     Mutex::scope lock(m_mutex);
