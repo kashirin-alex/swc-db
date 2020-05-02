@@ -773,7 +773,7 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   if(key.empty() || _size <= narrow_sz) 
     return 0;
   size_t step = _size;
-  if(offset > 1) {
+  if(1 < offset < _size) {
     if((step -= offset) <= narrow_sz)
       step = narrow_sz;
   } else {

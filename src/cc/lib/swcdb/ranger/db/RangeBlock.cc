@@ -175,8 +175,10 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add_raw(cell, &offset_hint);
       
-    if(added % 100 == 0 && splitter())
+    if(added % 100 == 0 && splitter()) {
       was_splitted = true;
+      offset_hint = 0;
+    }
   }
 
   if(!m_cells.empty()) {
