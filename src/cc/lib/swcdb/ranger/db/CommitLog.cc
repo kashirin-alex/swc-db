@@ -16,7 +16,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 Fragments::Fragments(const Types::KeySeq key_seq)  
                     : m_cells(key_seq), stopping(false), 
                       m_commiting(false), m_deleting(false), 
-                      m_compacting(false) { 
+                      m_compacting(false), m_sem(5) { 
 }
 
 void Fragments::init(RangePtr for_range) {
@@ -69,9 +69,18 @@ void Fragments::commit_new_fragment(bool finalize) {
         return !m_compacting && !m_commiting && (m_commiting = true); });
   }
   
-  Fragment::Ptr frag; 
-  Semaphore sem(5);
+  Fragment::Ptr frag;
   for(int err = Error::OK; ;err = Error::OK) {
+    if(finalize) {
+      std::shared_lock lock2(m_mutex_cells);
+      if(m_cells.empty())
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    {
+      std::shared_lock lock2(m_mutex_cells);
+      if(m_cells.empty() || (!finalize && !_need_roll()))
+        break;
+    }
 
     DynamicBuffer cells;
     frag = Fragment::make(
@@ -82,28 +91,12 @@ void Fragments::commit_new_fragment(bool finalize) {
     
     {
       std::scoped_lock lock(m_mutex);
-      for(;;) {
-        {
-          std::scoped_lock lock2(m_mutex_cells);
-          m_cells.write_and_free(
-            cells, 
-            frag->cells_count, frag->interval, 
-            range->cfg->block_size(), range->cfg->block_cells());
-        }
-        if(cells.fill() >= range->cfg->block_size() || 
-           frag->cells_count >= range->cfg->block_cells())
-          break;
-        {
-          std::shared_lock lock2(m_mutex_cells);
-          if(!finalize && m_cells.empty())
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        {
-          std::shared_lock lock2(m_mutex_cells);
-          if(m_cells.empty())
-            break;
-        }
+      {
+        std::scoped_lock lock2(m_mutex_cells);
+        m_cells.write_and_free(
+          cells,
+          frag->cells_count, frag->interval,
+          range->cfg->block_size(), range->cfg->block_cells());
       }
       if(m_deleting || !cells.fill()) {
         delete frag;
@@ -118,17 +111,14 @@ void Fragments::commit_new_fragment(bool finalize) {
       range->cfg->block_enc(), 
       cells, 
       range->cfg->cell_versions(),
-      &sem
+      &m_sem
     );
 
-    sem.wait_until_under(5);
-
-    std::shared_lock lock2(m_mutex_cells);
-    if(!m_cells.size() || (!finalize && !_need_roll()))
-      break;
+    m_sem.wait_until_under(5);
   }
 
-  sem.wait_all();
+  if(finalize)
+    m_sem.wait_all();
   {
     std::unique_lock lock_wait(m_mutex);
     m_commiting = false;
@@ -262,8 +252,8 @@ void Fragments::load_cells(BlockLoader* loader, bool final, int64_t after_ts,
                            std::vector<Fragment::Ptr>& fragments) {  
   if(final) {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
+    if(m_commiting || m_compacting)
+      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
   }
 
   std::shared_lock lock(m_mutex);

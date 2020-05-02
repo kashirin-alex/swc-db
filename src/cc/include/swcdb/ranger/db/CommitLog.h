@@ -121,6 +121,7 @@ class Fragments final {
   std::condition_variable_any m_cv;
   std::vector<Fragment::Ptr>  m_fragments;
   bool                        m_compacting;
+  Semaphore                   m_sem;
 
 };
 

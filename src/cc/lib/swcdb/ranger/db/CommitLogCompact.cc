@@ -12,7 +12,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         m_loading(0), m_processed(0),
                         m_cells(
                           compact->log->range->cfg->key_seq,
-                          compact->log->range->cfg->block_cells()*2,
+                          compact->log->range->cfg->block_cells() * 2,
                           compact->log->range->cfg->cell_versions(), 
                           compact->log->range->cfg->cell_ttl(), 
                           compact->log->range->cfg->column_type()
