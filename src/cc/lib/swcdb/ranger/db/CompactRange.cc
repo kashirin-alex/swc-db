@@ -157,7 +157,7 @@ void CompactRange::initial_commitlog(int tnum) {
     groups, {}, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, tnum, groups, Range::COMPACT_PREPARING,
+      &range->blocks.commitlog, tnum, groups,
       [ptr] (const CommitLog::Compact* compact) {
         ptr->initial_commitlog_done(ptr, compact); 
       }
@@ -276,7 +276,7 @@ void CompactRange::commitlog(int tnum, uint8_t state) {
     groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, tnum, groups, Range::COMPACT_PREPARING,
+      &range->blocks.commitlog, tnum, groups,
       [state, ptr=shared()] (const CommitLog::Compact* compact) {
         ptr->commitlog_done(compact, state); 
       }
@@ -295,11 +295,11 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact,
   }
   bool applying = range->compacting_is(Range::COMPACT_APPLYING);
   if(compact) {
-    uint8_t state = compact->repetition > range->cfg->log_rollout_ratio()
-                    ? Range::COMPACT_PREPARING : Range::COMPACT_COMPACTING;
     int tnum = compact->nfrags > 
       range->cfg->log_rollout_ratio() * range->cfg->log_rollout_ratio() / 2
       ? compact->repetition + 1 : 0;
+    if(tnum && compact->repetition > range->cfg->log_rollout_ratio())
+      state = Range::COMPACT_PREPARING;
     delete compact;
     if(tnum && !m_chk_final && !applying) {
       range->compacting(state);

@@ -167,11 +167,11 @@ bool Fragments::try_compact(bool before_major, int tnum) {
   }
 
   if(need) {
-    auto state = need/groups.size() > range->cfg->log_rollout_ratio() 
-                  ? Range::COMPACT_PREPARING  // mitigate add
-                  : Range::COMPACT_COMPACTING;// continue scan & add
-    range->compacting(state); 
-    new Compact(this, tnum, groups, state);
+    range->compacting(need/groups.size() > range->cfg->log_rollout_ratio() 
+      ? Range::COMPACT_PREPARING  // mitigate add
+      : Range::COMPACT_COMPACTING// continue scan & add 
+    ); 
+    new Compact(this, tnum, groups);
     return true;
   }
   

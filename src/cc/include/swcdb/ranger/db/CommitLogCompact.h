@@ -58,11 +58,10 @@ class Compact final {
   const uint64_t        ts;
   const uint32_t        repetition;
   uint32_t              nfrags;
-  const uint8_t         process_state;
 
   Compact(Fragments* log, int repetition, 
-          const std::vector<std::vector<Fragment::Ptr>>& groups,
-          uint8_t process_state, Cb_t& cb = 0);
+          const std::vector<std::vector<Fragment::Ptr>>& groups, 
+          Cb_t& cb = 0);
 
   ~Compact();
 

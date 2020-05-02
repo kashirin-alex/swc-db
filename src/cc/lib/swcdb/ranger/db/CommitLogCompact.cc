@@ -68,14 +68,14 @@ void Compact::Group::load() {
     frag->release();
     if(err)
       SWC_LOGF(LOG_ERROR, 
-        "COMPACT-FRAGMENTS-ERROR %d/%d err=%d(%s) %s", 
+        "COMPACT-LOG-ERROR %d/%d err=%d(%s) %s", 
         compact->log->range->cfg->cid, compact->log->range->rid,
         err, Error::get_text(err), frag->to_string().c_str()
       );
     if(!compact->log->stopping && !error) {
       ts = Time::now_ns() - ts;
       SWC_LOGF(LOG_INFO, 
-        "COMPACT-FRAGMENTS-PROGRESS %d/%d w=%d(%lld/%lld) %lld(%lldns/cell)"
+        "COMPACT-LOG-PROGRESS %d/%d w=%d(%lld/%lld) %lld(%lldns/cell)"
         " sz=%lld begin-%s", 
         compact->log->range->cfg->cid, compact->log->range->rid, 
         worker, m_remove.size(), read_frags.size(), 
@@ -158,10 +158,9 @@ void Compact::Group::finalize() {
 
 Compact::Compact(Fragments* log, int repetition, 
                  const std::vector<std::vector<Fragment::Ptr>>& groups,
-                 uint8_t process_state, Cb_t& cb)
+                 Cb_t& cb)
                 : log(log), ts(Time::now_ns()),
-                  repetition(repetition), nfrags(0), 
-                  process_state(process_state), m_cb(cb) {
+                  repetition(repetition), nfrags(0), m_cb(cb) {
   for(auto frags : groups)
     nfrags += frags.size();
     
@@ -192,7 +191,7 @@ Compact::Compact(Fragments* log, int repetition,
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FRAGMENTS-START %d/%d frags=%lld(%lld)/%lld repetition=%d",
+    "COMPACT-LOG-START %d/%d frags=%lld(%lld)/%lld repetition=%d",
     log->range->cfg->cid, log->range->rid, 
     nfrags, m_groups.size(), log->size(), repetition
   );
@@ -209,7 +208,7 @@ void Compact::finished(Group* group) {
   m_mutex.unlock();
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-FRAGMENTS-PROGRESS %d/%d running=%d worker=%d-%lldns",
+    "COMPACT-LOG-PROGRESS %d/%d running=%d worker=%d-%lldns",
     log->range->cfg->cid, log->range->rid, running, 
     group->worker, (Time::now_ns()-group->ts) 
   );
@@ -225,7 +224,7 @@ void Compact::finished(Group* group) {
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FRAGMENTS-FINISH %d/%d frags=%lld(%lld)/%lld repetition=%d %lldns",
+    "COMPACT-LOG-FINISH %d/%d frags=%lld(%lld)/%lld repetition=%d %lldns",
     log->range->cfg->cid, log->range->rid, 
     nfrags, m_groups.size(), log->size(), repetition, took
   );
