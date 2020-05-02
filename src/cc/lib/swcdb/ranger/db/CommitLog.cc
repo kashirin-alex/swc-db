@@ -158,7 +158,7 @@ bool Fragments::try_compact(bool before_major, int tnum) {
     if(stopping || m_compacting)
       return false;
 
-    if(_need_compact_major()) {
+    if(_need_compact_major() && RangerEnv::compaction_available()) {
       range->compacting(Range::COMPACT_NONE);
       return false;
     }
@@ -471,7 +471,7 @@ size_t Fragments::_need_compact(
                   const std::vector<Fragment::Ptr>& without,
                   size_t vol) {
   size_t need = 0;
-  if(m_fragments.size() < 3)
+  if(m_fragments.size() < vol)
     return need;
   
   std::vector<Fragment::Ptr> fragments;
@@ -480,6 +480,8 @@ size_t Fragments::_need_compact(
        std::find(without.begin(), without.end(), frag) == without.end())
       fragments.push_back(frag);
   }
+  if(fragments.size() < vol)
+    return need;
 
   std::sort(fragments.begin(), fragments.end(),
     [seq=m_cells.key_seq]
@@ -489,22 +491,31 @@ size_t Fragments::_need_compact(
     }
   );
 
+  bool add;
   groups.emplace_back();
   auto it = fragments.begin();
-  for(auto it_nxt = it+1; it_nxt<fragments.end(); ++it, ++it_nxt) {
-    if(DB::KeySeq::compare(m_cells.key_seq, (*it)->interval.key_end, 
-                           (*it_nxt)->interval.key_begin) == Condition::LT) {
+  groups.back().push_back(*it);
+  ++need;
+  for(++it; it<fragments.end(); add=false, ++it) {
+    add = DB::KeySeq::compare(m_cells.key_seq, 
+                              groups.back().back()->interval.key_end,
+                              (*it)->interval.key_begin) == Condition::LT;
+          /*&&
+          DB::KeySeq::compare(m_cells.key_seq, 
+                              groups.back().back()->interval.key_end,
+                              (*it)->interval.key_end) == Condition::LT;*/ 
+    if(add) {
       groups.back().push_back(*it);
       ++need;
-    } else if(!groups.back().empty()) {
-      groups.back().push_back(*it);
-      ++need;
+    } else {
       if(groups.back().size() < vol) {
         need -= groups.back().size();
         groups.back().clear();
       } else {
         groups.emplace_back();
       }
+      groups.back().push_back(*it);
+      ++need;
     }
   }
   for(auto it=groups.begin(); it < groups.end(); ) {
