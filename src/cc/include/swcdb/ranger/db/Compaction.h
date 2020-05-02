@@ -24,6 +24,8 @@ class Compaction final {
  
   Ptr ptr();
 
+  bool available();
+
   void stop();
 
   void schedule();

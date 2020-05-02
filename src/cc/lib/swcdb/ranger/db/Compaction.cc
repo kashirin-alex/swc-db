@@ -34,6 +34,11 @@ Compaction::Ptr Compaction::ptr() {
   return this;
 }
 
+bool Compaction::available() {
+  std::lock_guard lock(m_mutex);
+  return m_running < cfg_max_range->get();
+}
+
 void Compaction::stop() {
   {
     std::lock_guard lock(m_mutex);
@@ -97,11 +102,8 @@ void Compaction::run(bool continuing) {
     asio::post(*RangerEnv::maintenance_io()->ptr(), 
       [this, range](){ compact(range); } );
     
-    {
-      std::lock_guard lock(m_mutex); 
-      if(m_running == cfg_max_range->get())
-        return;
-    }
+    if(!available())
+      return;
   }
   
   {

@@ -55,9 +55,7 @@ class RangerEnv final {
     return m_env->mnt_io.get();
   }
 
-  static Ranger::Compaction* compaction() {
-    return m_env->_compaction;
-  }
+  static bool compaction_available();
 
   static void compaction_schedule(uint32_t ms);
   
@@ -160,6 +158,10 @@ void RangerEnv::shuttingdown() {
   m_env->m_shuttingdown = true;
 }
 
+
+bool RangerEnv::compaction_available() {
+  return m_env->_compaction->available();
+}
 
 void RangerEnv::compaction_schedule(uint32_t ms) {
   if(m_env && m_env->_compaction)
