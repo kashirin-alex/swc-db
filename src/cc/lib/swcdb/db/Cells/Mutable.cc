@@ -500,9 +500,9 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
   }
 }
 
-void Mutable::scan(Interval& interval, Mutable& cells) const {
+bool Mutable::scan(Interval& interval, Mutable& cells) const {
   if(!_size)
-    return;
+    return false;
 
   for(auto it=ConstIterator(&buckets, _narrow(interval.key_begin)); it; ++it) {
     const Cell& cell = **it.item;
@@ -513,10 +513,11 @@ void Mutable::scan(Interval& interval, Mutable& cells) const {
     if(!interval.key_end.empty() 
         && DB::KeySeq::compare(key_seq, interval.key_end, cell.key)
             == Condition::GT)
-      break; 
+      return false;
 
     cells.add_raw(cell);
   }
+  return true;
 }
 
 

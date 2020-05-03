@@ -89,7 +89,7 @@ class MutableVec : private std::vector<Mutable*> {
          DB::KeySeq::compare(key_seq, cells->back()->key, cell.key) 
                                                     != Condition::GT) {
         cells->add_raw(cell);
-        if(cells->size() >= split_size * 2) {
+        if(cells->size() >= split_size) {
           push_back(new Mutable(key_seq, max_revs, ttl, type));
           cells->split(*back());
         }
@@ -119,16 +119,13 @@ class MutableVec : private std::vector<Mutable*> {
     }
   }
 
-  void scan(Interval& interval, Mutable& cells) const {
+  void scan(Interval& interval, Mutable& to) const {
     if(empty())
       return;
 
-    for(auto it = begin(); it < end(); ++it) {
-      if(!interval.key_end.empty() && 
-         DB::KeySeq::compare(key_seq, (*it)->front()->key, interval.key_end) 
-                                                    == Condition::LT)
+    for(auto cells : *this) {
+      if(!cells->scan(interval, to))
         break;
-      (*it)->scan(interval, cells);
     }
   }
 

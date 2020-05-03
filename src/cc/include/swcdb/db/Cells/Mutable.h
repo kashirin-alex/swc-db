@@ -197,7 +197,7 @@ class Mutable final {
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
                      size_t& count, size_t& skips) const;
 
-  void scan(Interval& interval, Mutable& cells) const;
+  bool scan(Interval& interval, Mutable& cells) const;
 
 
   void expand(Interval& interval) const;
