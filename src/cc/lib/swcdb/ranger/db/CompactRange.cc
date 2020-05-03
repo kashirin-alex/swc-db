@@ -149,12 +149,12 @@ void CompactRange::initialize() {
 
 void CompactRange::initial_commitlog(int tnum) {
   auto ptr = shared();
-  if(range->blocks.commitlog.size() < CommitLog::Fragments::MIN_COMPACT)
+  if(range->blocks.commitlog.size() <= CommitLog::Fragments::MIN_COMPACT)
     return initial_commitlog_done(ptr, nullptr);
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
-    groups, {}, CommitLog::Fragments::MIN_COMPACT);
+    groups, {}, CommitLog::Fragments::MIN_COMPACT + 1);
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
@@ -273,7 +273,7 @@ void CompactRange::commitlog(int tnum, uint8_t state) {
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
-    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
+    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT + 1);
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
@@ -293,21 +293,24 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact,
       delete compact;
     return;
   }
-  bool applying = range->compacting_is(Range::COMPACT_APPLYING);
   if(compact) {
     int tnum = compact->nfrags > 
       range->cfg->log_rollout_ratio() * range->cfg->log_rollout_ratio() / 2
       ? compact->repetition + 1 : 0;
-    if(tnum && compact->repetition > range->cfg->log_rollout_ratio())
+    if((tnum && compact->repetition > range->cfg->log_rollout_ratio()) ||
+        Time::now_ns()-m_ts_req.load() > ((total_cells.load() 
+        ? (Time::now_ns()-ts_start) / total_cells.load() 
+        : 10000) * blk_cells) * 3)
       state = Range::COMPACT_PREPARING;
     delete compact;
-    if(tnum && !m_chk_final && !applying) {
+    if(!m_chk_final) {
+      
       range->compacting(state);
-      commitlog(tnum, state);
-      return;
+      if(tnum) {
+        commitlog(tnum, state);
+        return;
+      }
     }
-    if(!applying)
-      range->compacting(m_chk_final ? Range::COMPACT_PREPARING : state);
   }
   {
     Mutex::scope lock(m_mutex);

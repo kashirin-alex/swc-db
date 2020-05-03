@@ -120,9 +120,6 @@ class MutableVec : private std::vector<Mutable*> {
   }
 
   void scan(Interval& interval, Mutable& to) const {
-    if(empty())
-      return;
-
     for(auto cells : *this) {
       if(!cells->scan(interval, to))
         break;
