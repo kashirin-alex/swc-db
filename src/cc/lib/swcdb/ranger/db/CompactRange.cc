@@ -268,12 +268,13 @@ void CompactRange::response(int &err) {
 }
 
 void CompactRange::commitlog(int tnum, uint8_t state) {
-  if(range->blocks.commitlog.size() == fragments_old.size())
+  if(range->blocks.commitlog.size() - fragments_old.size()
+      < CommitLog::Fragments::MIN_COMPACT)
     return commitlog_done(nullptr, state);
 
   std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
   size_t need = range->blocks.commitlog.need_compact(
-    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT + 1);
+    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
