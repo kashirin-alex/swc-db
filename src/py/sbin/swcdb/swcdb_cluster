@@ -79,7 +79,8 @@ def swcdb_print(task, c, res=None):
 
 def swcdb_proc_pids(name, c):
     res = c.run(
-        "ps aux| grep " + name + "| grep -v grep| tr -s ' '| cut -f2 -d' '",
+        "ps aux| grep " + swcdb_install_path + "/bin/" + name + 
+        " | grep -v grep| tr -s ' '| cut -f2 -d' '",
         hide=True)
     return [pid for pid in res.stdout.strip().split("\n") if pid]
     #
