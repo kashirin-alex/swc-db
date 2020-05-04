@@ -60,8 +60,18 @@ void Compact::Group::load() {
     frag = m_queue.front();
 
     ts = Time::now_ns();
-    if(frag->loaded(err = Error::OK) && !compact->log->stopping && !error) {
+    err = Error::OK;
+    if(!compact->log->stopping && !error) {
+      //auto sz = m_cells.size();
       frag->load_cells(err, m_cells);
+      /*
+      if(compact->log->range->cfg->cid > 8 && 
+         sz != m_cells.size() - frag->cells_count) {
+        for(auto cells : m_cells)
+          SWC_PRINT << cells->to_string(true) << SWC_PRINT_CLOSE;
+        SWC_ASSERT(sz == m_cells.size() - frag->cells_count);
+      }
+      */
       m_remove.push_back(frag);
     }
     frag->processing_decrement();
@@ -139,8 +149,7 @@ void Compact::Group::write() {
 
 void Compact::Group::finalize() {
   if(!error && !compact->log->stopping) {
-    if(read_frags.size() != m_remove.size() || 
-       read_frags.size() != m_fragments.size())
+    if(read_frags.size() != m_remove.size())
       error = Error::CANCELLED;
   }
 
