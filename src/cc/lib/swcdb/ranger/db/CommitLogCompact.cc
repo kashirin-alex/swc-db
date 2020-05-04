@@ -170,7 +170,8 @@ Compact::Compact(Fragments* log, int repetition,
                  const std::vector<std::vector<Fragment::Ptr>>& groups,
                  Cb_t& cb)
                 : log(log), ts(Time::now_ns()),
-                  repetition(repetition), nfrags(0), m_cb(cb) {
+                  repetition(repetition), ngroups(groups.size()), nfrags(0), 
+                  m_cb(cb) {
   for(auto frags : groups)
     nfrags += frags.size();
     

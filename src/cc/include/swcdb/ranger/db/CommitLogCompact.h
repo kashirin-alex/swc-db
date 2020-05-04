@@ -56,8 +56,9 @@ class Compact final {
 
   Fragments*            log;
   const uint64_t        ts;
-  const uint32_t        repetition;
-  uint32_t              nfrags;
+  const size_t          repetition;
+  size_t                ngroups;
+  size_t                nfrags;
 
   Compact(Fragments* log, int repetition, 
           const std::vector<std::vector<Fragment::Ptr>>& groups, 
