@@ -189,7 +189,7 @@ Compact::Compact(Fragments* log, int repetition,
     for(auto it = frags.begin(); it < frags.end(); ++it) {
       m_groups.back()->read_frags.push_back(*it);
       if(!blks) {
-        if(m_groups.back()->read_frags.size() < 2)
+        if(m_groups.back()->read_frags.size() < Fragments::MIN_COMPACT)
           continue;
         break;
       }
@@ -202,9 +202,9 @@ Compact::Compact(Fragments* log, int repetition,
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-LOG-START %d/%d frags=%lld(%lld)/%lld repetition=%d",
+    "COMPACT-LOG-START %d/%d w=%lld frags=%lld(%lld)/%lld repetition=%d",
     log->range->cfg->cid, log->range->rid, 
-    nfrags, m_groups.size(), log->size(), repetition
+    m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
 
   for(auto g : m_groups)
@@ -235,9 +235,10 @@ void Compact::finished(Group* group) {
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-LOG-FINISH %d/%d frags=%lld(%lld)/%lld repetition=%d %lldns",
+    "COMPACT-LOG-FINISH %d/%d w=%lld frags=%lld(%lld)/%lld"
+    " repetition=%d %lldns",
     log->range->cfg->cid, log->range->rid, 
-    nfrags, m_groups.size(), log->size(), repetition, took
+    m_groups.size(), nfrags, ngroups, log->size(), repetition, took
   );
   if(m_cb)
     m_cb(this);
