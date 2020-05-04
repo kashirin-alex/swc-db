@@ -82,7 +82,7 @@ class Fragments final {
 
   void unload();
 
-  void take_ownership(int &err, Fragment::Ptr frag);
+  Fragment::Ptr take_ownership(int &err, Fragment::Ptr frag);
 
   bool deleting();
 
@@ -95,6 +95,8 @@ class Fragments final {
   size_t size_bytes_encoded();
 
   bool processing();
+
+  uint64_t next_id();
 
   std::string to_string();
 

@@ -255,7 +255,7 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   
   if(_size == count)
     free();
-  else
+  else if(count)
     _remove(it_start, count);
 }
 

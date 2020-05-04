@@ -106,7 +106,7 @@ void Compact::Group::write() {
   do {
     DynamicBuffer cells;
     auto frag = Fragment::make(
-      compact->get_filepath(Time::now_ns()), 
+      compact->get_filepath(compact->log->next_id()), 
       m_cells.key_seq, 
       Fragment::State::WRITING
     );
@@ -138,13 +138,22 @@ void Compact::Group::write() {
 }
 
 void Compact::Group::finalize() {
+  if(!error && !compact->log->stopping) {
+    if(read_frags.size() != m_remove.size() || 
+       read_frags.size() != m_fragments.size())
+      error = Error::CANCELLED;
+  }
+
+  std::vector<Fragment::Ptr> tmp_frags;
   int err = Error::OK;
   for(auto frag : m_fragments) {
-    if(compact->log->stopping || error)
+    if(compact->log->stopping || error) {
       frag->remove(err);
-    else
-      compact->log->take_ownership(err, frag); 
-      // tmp_took_frags (remove on err)
+    } else {
+      auto tmp = compact->log->take_ownership(err, frag); 
+      if(tmp)
+        tmp_frags.push_back(tmp);
+    }
     if(err)
       error = err;
     delete frag;
@@ -152,7 +161,8 @@ void Compact::Group::finalize() {
 
   if(!compact->log->stopping && !error)
     compact->log->remove(err, m_remove);
-  //else + tmp_took_frags
+  else if(!tmp_frags.empty())
+    compact->log->remove(err, tmp_frags);
 }
 
 

@@ -55,7 +55,7 @@ class MutableVec : private std::vector<Mutable*> {
   MutableVec operator=(const MutableVec &other) = delete;
   
   bool empty() const {
-    return Vec::empty() || front()->empty();
+    return Vec::empty();
   }
   
   size_t size() const {

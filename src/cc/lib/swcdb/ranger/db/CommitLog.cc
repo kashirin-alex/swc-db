@@ -84,7 +84,7 @@ void Fragments::commit_new_fragment(bool finalize) {
 
     DynamicBuffer cells;
     frag = Fragment::make(
-      get_log_fragment(Time::now_ns()), 
+      get_log_fragment(next_id()), 
       range->cfg->key_seq, 
       Fragment::State::WRITING
     );
@@ -293,15 +293,15 @@ size_t Fragments::release(size_t bytes) {
 void Fragments::remove(int &err, std::vector<Fragment::Ptr>& fragments_old) {
   std::scoped_lock lock(m_mutex);
 
-  for(auto old = fragments_old.begin(); old < fragments_old.end(); ++old){
+  for(auto old = fragments_old.begin(); old < fragments_old.end(); ++old) {
     for(auto it = m_fragments.begin(); it < m_fragments.end(); ++it) {
       if(*it == *old) {
-        (*it)->remove(err);
-        delete *it;
         m_fragments.erase(it);
         break;
       }
     }
+    (*old)->remove(err);
+    delete *old;
   }
 }
 
@@ -309,13 +309,13 @@ void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
   std::scoped_lock lock(m_mutex);
   for(auto it = m_fragments.begin(); it < m_fragments.end(); ++it) {
     if(*it == frag) {
-      if(remove_file)
-        (*it)->remove(err);
-      delete *it;
       m_fragments.erase(it);
       break;
     }
   }
+  if(remove_file)
+    frag->remove(err);
+  delete frag;
 }
 
 void Fragments::remove(int &err) {
@@ -350,7 +350,7 @@ void Fragments::unload() {
   range = nullptr;
 }
 
-void Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
+Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
   auto frag = Fragment::make(
     get_log_fragment(take_frag->ts), 
     range->cfg->key_seq
@@ -362,11 +362,12 @@ void Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
   );
   if(!err) {
     frag->load_header(true);
-    if(!(err = frag->error())) {
-      std::scoped_lock lock(m_mutex);
-      m_fragments.push_back(frag);
-    }
+    std::scoped_lock lock(m_mutex);
+    m_fragments.push_back(frag);
+    return frag;
   }
+  delete frag;
+  return nullptr;
 }
 
 bool Fragments::deleting() {
@@ -408,6 +409,11 @@ size_t Fragments::size_bytes_encoded() {
 bool Fragments::processing() {
   std::shared_lock lock(m_mutex);
   return _processing();
+}
+
+uint64_t Fragments::next_id() {
+  std::scoped_lock lock(m_mutex);
+  return Time::now_ns();
 }
 
 std::string Fragments::to_string() {
