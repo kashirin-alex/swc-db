@@ -33,6 +33,7 @@ https://alex.kashirin.family/swc-DB.pdf
     * [libgobject-2.0](https://developer.gnome.org/gobject/2.64/)
     * [libffi](http://github.com/libffi/libffi/)
     * [libpcre 1](https://pcre.org/)
+  * [fabric-pylib](https://github.com/fabric/fabric) - optional (sbin/swcdb_cluster)
   * [doxygen](https://github.com/doxygen/doxygen) - optional
   * *-DO_LEVEL > 4 require static libraries*
 
@@ -72,7 +73,16 @@ cd bin;
 ```
 
 ###### DISTRIBUTED CLUSTER
-On each server:
+configure /opt/swcdb/sbin/swcdb_cluster
+```bash
+cd /opt/swcdb/sbin/;
+./swcdb_cluster --help; # for available tasks:
+./swcdb_cluster deploy 
+./swcdb_cluster start
+./swcdb_cluster stop
+```
+
+or on each server:
 ```bash
 cd /opt/swcdb;
 mkdir -p var/log/swcdb; # re-config "swc.logging.path" for other path

@@ -3,6 +3,8 @@
 #
 
 
+install(DIRECTORY sbin/swcdb DESTINATION sbin)
+
 
 if(THRIFT_PY_GEN_PATH)
 
