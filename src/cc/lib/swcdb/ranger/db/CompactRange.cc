@@ -295,16 +295,14 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact,
     return;
   }
   if(compact) {
-    int tnum = compact->nfrags > 
-      range->cfg->log_rollout_ratio() * range->cfg->log_rollout_ratio() / 2
-      ? compact->repetition + 1 : 0;
-    if((tnum && compact->repetition > range->cfg->log_rollout_ratio()) ||
-        Time::now_ns()-m_ts_req.load() > ((total_cells.load() 
-        ? (Time::now_ns()-ts_start) / total_cells.load() 
-        : 10000) * blk_cells) * 3)
+    int vol = range->cfg->log_rollout_ratio();
+    int tnum = compact->nfrags > (vol*=vol)/2 ? compact->repetition + 1 : 0;
+    if(tnum  || Time::now_ns()-m_ts_req.load() > ((total_cells.load() 
+                ? (Time::now_ns()-ts_start) / total_cells.load()
+                : 10000) * blk_cells) * 3)
       state = Range::COMPACT_PREPARING;
     delete compact;
-    if(!m_chk_final) {
+    if(!m_chk_final && range->is_loaded()) {
       
       range->compacting(state);
       if(tnum) {
