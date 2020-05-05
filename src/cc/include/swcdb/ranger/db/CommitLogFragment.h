@@ -43,7 +43,6 @@ class Fragment final {
   static Ptr make(const std::string& filepath, const Types::KeySeq key_seq,
                   State state=State::NONE);
 
-  const int64_t         ts;
   DB::Cells::Interval   interval;
   uint32_t              cells_count;
 

@@ -257,9 +257,9 @@ void Fragments::expand_and_align(DB::Cells::Interval& intval) {
   }
 }
 
-void Fragments::load_cells(BlockLoader* loader, bool final, int64_t after_ts,
-                           Fragments::Vec& fragments) {  
-  if(final) {
+void Fragments::load_cells(BlockLoader* loader, bool is_final,
+                           Fragments::Vec& frags, uint8_t vol) {  
+  if(is_final) {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting || m_compacting)
       m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
@@ -267,9 +267,10 @@ void Fragments::load_cells(BlockLoader* loader, bool final, int64_t after_ts,
 
   std::shared_lock lock(m_mutex);
   for(auto frag : *this) {
-    if(after_ts < frag->ts && loader->block->is_consist(frag->interval)) {
-      fragments.push_back(frag);
-      if(fragments.size() == BlockLoader::MAX_FRAGMENTS)
+    if(std::find(frags.begin(), frags.end(), frag) == frags.end() &&
+       loader->block->is_consist(frag->interval)) {
+      frags.push_back(frag);
+      if(!--vol)
         return;
     }
   }
@@ -361,7 +362,7 @@ void Fragments::unload() {
 
 Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
   auto frag = Fragment::make(
-    get_log_fragment(take_frag->ts), 
+    get_log_fragment(next_id()), 
     range->cfg->key_seq
   );
   Env::FsInterface::interface()->rename(

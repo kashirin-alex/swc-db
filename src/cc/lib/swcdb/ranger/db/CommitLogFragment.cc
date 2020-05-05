@@ -33,7 +33,7 @@ Fragment::Ptr Fragment::make(const std::string& filepath,
 
 Fragment::Fragment(const std::string& filepath,
                    const Types::KeySeq key_seq, Fragment::State state)
-                  : ts(Time::now_ns()), interval(key_seq), cells_count(0),
+                  : interval(key_seq), cells_count(0),
                     m_smartfd(
                     FS::SmartFd::make_ptr(
                       filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)

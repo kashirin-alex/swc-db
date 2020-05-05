@@ -244,7 +244,7 @@ void Read::load_cells(BlockLoader* loader) {
       loader->add(blk);
       applicable.push_back(blk);
     } else if(!blk->interval.key_end.empty() && 
-            !loader->block->is_in_end(blk->interval.key_end))
+              !loader->block->is_in_end(blk->interval.key_end))
       break;
   }
   

@@ -10,9 +10,9 @@ namespace SWC { namespace Ranger {
 
 
 BlockLoader::BlockLoader(Block::Ptr block) 
-                        : block(block),  
-                          m_processing(false), m_err(Error::OK), 
-                          m_chk_cs(false), m_checking_log(true), m_frag_ts(0) {
+                        : block(block), m_err(Error::OK), 
+                          m_processing(false), m_chk_cs(false), 
+                          m_checking_log(true), m_logs(0) {
 }
 
 BlockLoader::~BlockLoader() { }
@@ -30,8 +30,8 @@ void BlockLoader::load_cellstores() {
     Mutex::scope lock(m_mutex);
     m_chk_cs = true;
   }
-  
-  loaded_frag();
+  if(check_log())
+    load_log(false);
 }
 
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
@@ -59,70 +59,78 @@ void BlockLoader::load_cellstores_cells() {
         m_processing = false;
         break;
       }
-      blk = m_cs_blocks.front();
+      loaded = (blk = m_cs_blocks.front())->loaded(err = Error::OK);
+      if(!err && !loaded) {
+        m_processing = false;
+        return;
+      }
+      if(err) {
+        blk->processing_decrement();
+        if(!m_err)
+          m_err = Error::RANGE_CELLSTORES;
+      }
     }
-
-    if(loaded = blk->loaded(err))
+    if(loaded)
       blk->load_cells(err, block);
-      
-    Mutex::scope lock(m_mutex);
-    if(!err && !loaded) {
-      m_processing = false;
-      return;
+    {
+      Mutex::scope lock(m_mutex);
+      m_cs_blocks.pop();
     }
-    
-    if(err) {
-      blk->processing_decrement();
-      if(!m_err)
-        m_err = Error::RANGE_CELLSTORES;
-    }
-    m_cs_blocks.pop();
   }
-
-  loaded_frag();
+  if(check_log())
+    load_log(false);
 }
 
 //CommitLog
 bool BlockLoader::check_log() {
   Mutex::scope lock(m_mutex);
-  if(m_checking_log)
-    return false;
-  m_checking_log = true;
-  return true;
+  return m_checking_log ? false : (m_checking_log = true);
 }
 
 void BlockLoader::load_log(bool is_final) {
-  CommitLog::Fragments::Vec need_load;
-  block->blocks->commitlog.load_cells(this, is_final, m_frag_ts, need_load);
-  if(!need_load.empty()) {
-    m_frag_ts = need_load.back()->ts;
-    {
-      Mutex::scope lock(m_mutex);
-      for(auto frag : need_load)
-        m_fragments.push(frag);
-    }
-    for(auto frag : need_load)
-      frag->load([this](){ loaded_frag(); });
+  uint8_t vol = MAX_FRAGMENTS;
+  {
+    Mutex::scope lock(m_mutex);
+    vol -= m_logs;
   }
-
+  if(vol) {
+    size_t offset = m_f_selected.size();
+    block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol);
+    if(offset < m_f_selected.size()) {
+      {
+        Mutex::scope lock(m_mutex);
+        m_logs += m_f_selected.size() - offset;
+      }
+      for(auto it=m_f_selected.begin()+offset; it < m_f_selected.end(); ++it)
+        (*it)->load([this, frag=*it](){ loaded_frag(frag); });
+    }
+  }
+  bool more;
   bool no_more;
   {
     Mutex::scope lock(m_mutex);
-    no_more = !m_processing && m_fragments.empty() && m_chk_cs;
     m_checking_log = false;
+    if(m_processing || !m_chk_cs || !m_cs_blocks.empty())
+      return;
+    no_more = !m_logs && m_fragments.empty();
+    more = m_logs && !m_fragments.empty();
   }
-  if(no_more) {
-    if(is_final)
-      completion();
-    else
-      loaded_frag();
-  }
+  if(more) 
+    return loaded_frag(nullptr);
+  if(!no_more)
+    return;
+  if(is_final)
+    return completion();
+  if(check_log())
+    return load_log(true);
 }
 
-void BlockLoader::loaded_frag() {
+void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
   {
     Mutex::scope lock(m_mutex);
-    if(m_processing || !m_chk_cs || !m_cs_blocks.empty()) 
+    if(frag)
+      m_fragments.push(frag);
+    if(m_processing || !m_chk_cs || !m_cs_blocks.empty())
       return;
     m_processing = true;
   }
@@ -130,37 +138,22 @@ void BlockLoader::loaded_frag() {
 }
 
 void BlockLoader::load_log_cells() {
+  bool more;
   int err;
-  bool loaded;
-  size_t sz;
   for(CommitLog::Fragment::Ptr frag; ; ) {
-    {          
+    {
       Mutex::scope lock(m_mutex);
-      if(!(sz = m_fragments.size())) {
+      if(m_fragments.empty()) {
         m_processing = false;
         break;
       }
       frag = m_fragments.front();
-    }
-
-    if(loaded = frag->loaded(err))
-      frag->load_cells(err, block);
-    {
-      Mutex::scope lock(m_mutex);
-      if(!err && !loaded) {
-        m_processing = false;
-        return;
-      }
-
-      if(err) {
-        frag->processing_decrement();
-        if(!m_err)
-          m_err = Error::RANGE_COMMITLOG;
-      }
       m_fragments.pop();
+      more = m_logs == MAX_FRAGMENTS;
+      --m_logs;
     }
-
-    if(sz == MAX_FRAGMENTS && check_log())
+    frag->load_cells(err = Error::OK, block);
+    if(more && check_log())
       asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false); });
   }
 
@@ -172,9 +165,10 @@ void BlockLoader::completion() {
   block->blocks->commitlog.load_cells(this);
   block->loaded(m_err);
   
-  assert(m_fragments.empty());
-  assert(m_cs_blocks.empty());
-  
+  SWC_ASSERT(m_fragments.empty());
+  SWC_ASSERT(!m_logs);
+  SWC_ASSERT(m_cs_blocks.empty());
+
   delete this;
 }
 

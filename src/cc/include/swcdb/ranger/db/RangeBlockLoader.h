@@ -39,7 +39,7 @@ class BlockLoader final {
 
   void load_log(bool is_final);
 
-  void loaded_frag();
+  void loaded_frag(CommitLog::Fragment::Ptr frag);
   
   void load_log_cells();
 
@@ -49,11 +49,14 @@ class BlockLoader final {
   Mutex                                     m_mutex;
   int                                       m_err;
   bool                                      m_processing;
-  std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks; 
-  std::queue<CommitLog::Fragment::Ptr>      m_fragments;
   bool                                      m_chk_cs;
   bool                                      m_checking_log;
-  int64_t                                   m_frag_ts;
+  uint8_t                                   m_logs;
+
+  std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;
+  std::vector<CommitLog::Fragment::Ptr>     m_f_selected;
+  std::queue<CommitLog::Fragment::Ptr>      m_fragments;
+
 };
 
 

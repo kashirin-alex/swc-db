@@ -63,8 +63,8 @@ class Fragments : private std::vector<Fragment::Ptr> {
   
   void expand_and_align(DB::Cells::Interval& intval);
 
-  void load_cells(BlockLoader* loader, bool final, int64_t after_ts,
-                  Vec& fragments);
+  void load_cells(BlockLoader* loader, bool is_final, 
+                  Fragments::Vec& frags, uint8_t vol);
 
   void load_cells(BlockLoader* loader);
 
