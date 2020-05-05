@@ -140,7 +140,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
-                std::vector<CommitLog::Fragment::Ptr>& fragments_old, 
+                CommitLog::Fragments::Vec& fragments_old, 
                 bool w_update);
   
   void expand_and_align(int &err, bool w_chg_chk);

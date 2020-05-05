@@ -15,7 +15,7 @@ class CompactRange : public ReqScan {
 
   typedef std::shared_ptr<CompactRange>  Ptr;
   
-  std::vector<CommitLog::Fragment::Ptr> fragments_old;
+  CommitLog::Fragments::Vec              fragments_old;
 
   CompactRange(Compaction::Ptr compactor, RangePtr range,
                const uint32_t cs_size, const uint32_t blk_size);

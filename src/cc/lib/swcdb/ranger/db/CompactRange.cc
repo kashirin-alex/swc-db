@@ -152,7 +152,7 @@ void CompactRange::initial_commitlog(int tnum) {
   if(range->blocks.commitlog.size() <= CommitLog::Fragments::MIN_COMPACT)
     return initial_commitlog_done(ptr, nullptr);
 
-  std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
+  std::vector<CommitLog::Fragments::Vec> groups;
   size_t need = range->blocks.commitlog.need_compact(
     groups, {}, CommitLog::Fragments::MIN_COMPACT + 1);
   if(need) {
@@ -272,7 +272,7 @@ void CompactRange::commitlog(int tnum, uint8_t state) {
       < CommitLog::Fragments::MIN_COMPACT)
     return commitlog_done(nullptr, state);
 
-  std::vector<std::vector<CommitLog::Fragment::Ptr>> groups;
+  std::vector<CommitLog::Fragments::Vec> groups;
   size_t need = range->blocks.commitlog.need_compact(
     groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
   if(need) {

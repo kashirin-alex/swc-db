@@ -83,7 +83,7 @@ void Blocks::expand_and_align(DB::Cells::Interval& intval) {
 
 void Blocks::apply_new(int &err,
                        CellStore::Writers& w_cellstores, 
-                       std::vector<CommitLog::Fragment::Ptr>& fragments_old) {
+                       CommitLog::Fragments::Vec& fragments_old) {
   wait_processing();
   Mutex::scope lock(m_mutex);
 

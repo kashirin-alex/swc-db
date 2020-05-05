@@ -92,7 +92,7 @@ bool BlockLoader::check_log() {
 }
 
 void BlockLoader::load_log(bool is_final) {
-  std::vector<CommitLog::Fragment::Ptr> need_load;
+  CommitLog::Fragments::Vec need_load;
   block->blocks->commitlog.load_cells(this, is_final, m_frag_ts, need_load);
   if(!need_load.empty()) {
     m_frag_ts = need_load.back()->ts;

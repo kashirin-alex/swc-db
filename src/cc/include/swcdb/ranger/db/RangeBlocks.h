@@ -56,7 +56,7 @@ class Blocks final {
 
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
-                std::vector<CommitLog::Fragment::Ptr>& fragments_old);
+                CommitLog::Fragments::Vec& fragments_old);
 
   void add_logged(const DB::Cells::Cell& cell);
 

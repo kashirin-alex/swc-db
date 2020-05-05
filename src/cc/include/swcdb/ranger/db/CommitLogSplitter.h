@@ -14,7 +14,7 @@ class Splitter final {
   public:
   
 
-  Splitter(const DB::Cell::Key& key, std::vector<Fragment::Ptr>& fragments,
+  Splitter(const DB::Cell::Key& key, Fragments::Vec& fragments,
            Fragments::Ptr log_left, Fragments::Ptr log_right) 
           : m_fragments(fragments), key(key), 
             log_left(log_left), log_right(log_right) {
@@ -94,7 +94,7 @@ class Splitter final {
 
   std::mutex                        m_mutex;
   std::condition_variable           m_cv;
-  std::vector<Fragment::Ptr>&       m_fragments;
+  Fragments::Vec&                   m_fragments;
   QueueSafeStated<Fragment::Ptr>    m_queue;
 
   const DB::Cell::Key key;

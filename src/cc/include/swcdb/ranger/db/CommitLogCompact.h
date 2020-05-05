@@ -17,7 +17,7 @@ class Compact final {
 
     const uint64_t              ts;
     const uint8_t               worker;
-    std::vector<Fragment::Ptr>  read_frags;
+    Fragments::Vec              read_frags;
     
     Group(Compact* compact, uint8_t worker);
 
@@ -45,8 +45,8 @@ class Compact final {
     uint32_t                          m_processed;
     DB::Cells::MutableVec             m_cells;
     QueueSafe<Fragment::Ptr>          m_queue;
-    std::vector<Fragment::Ptr>        m_remove;
-    std::vector<Fragment::Ptr>        m_fragments;
+    Fragments::Vec                    m_remove;
+    Fragments::Vec                    m_fragments;
     Semaphore                         m_sem;
   };
 
@@ -61,8 +61,7 @@ class Compact final {
   size_t                nfrags;
 
   Compact(Fragments* log, int repetition, 
-          const std::vector<std::vector<Fragment::Ptr>>& groups, 
-          Cb_t& cb = 0);
+          const std::vector<Fragments::Vec>& groups, Cb_t& cb = 0);
 
   ~Compact();
 

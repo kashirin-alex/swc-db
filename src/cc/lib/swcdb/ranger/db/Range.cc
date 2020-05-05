@@ -371,7 +371,7 @@ bool Range::compact_required() {
 
 void Range::apply_new(int &err,
                       CellStore::Writers& w_cellstores, 
-                      std::vector<CommitLog::Fragment::Ptr>& fragments_old,
+                      CommitLog::Fragments::Vec& fragments_old,
                       bool w_update) {
   {
     std::scoped_lock lock(m_mutex);

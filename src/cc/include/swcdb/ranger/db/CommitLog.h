@@ -7,19 +7,15 @@
 #define swc_ranger_db_CommitLog_h
 
 
-namespace SWC { namespace Ranger { namespace CommitLog {
-class Fragments;
-}}}
-
 #include "swcdb/ranger/db/CommitLogFragment.h"
-#include "swcdb/ranger/db/CommitLogCompact.h"
 
 
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
+class Compact;
 
-class Fragments final {
+class Fragments : private std::vector<Fragment::Ptr> {
   
   /* file-format(dir-structure): 
     ../log/{N}.frag
@@ -27,7 +23,8 @@ class Fragments final {
 
   public:
 
-  typedef Fragments*  Ptr;
+  typedef std::vector<Fragment::Ptr> Vec;
+  typedef Fragments*                 Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 3;
   static constexpr const uint8_t  MIN_COMPACT = 2;
@@ -47,8 +44,9 @@ class Fragments final {
 
   void commit_new_fragment(bool finalize=false);
 
-  size_t need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
-                      const std::vector<Fragment::Ptr>& without,
+  void add(Fragment::Ptr frag);
+
+  size_t need_compact(std::vector<Vec>& groups, const Vec& without,
                       size_t vol);
   
   bool try_compact(bool before_major, int tnum = 1);
@@ -66,15 +64,15 @@ class Fragments final {
   void expand_and_align(DB::Cells::Interval& intval);
 
   void load_cells(BlockLoader* loader, bool final, int64_t after_ts,
-                  std::vector<Fragment::Ptr>& fragments);
+                  Vec& fragments);
 
   void load_cells(BlockLoader* loader);
 
-  void get(std::vector<Fragment::Ptr>& fragments);
+  void get(Vec& fragments);
 
   size_t release(size_t bytes);
 
-  void remove(int &err, std::vector<Fragment::Ptr>& fragments_old);
+  void remove(int &err, Vec& fragments_old);
 
   void remove(int &err, Fragment::Ptr frag, bool remove_file);
 
@@ -102,10 +100,11 @@ class Fragments final {
 
   private:
 
+  void _add(Fragment::Ptr frag);
+
   bool _need_roll() const;
 
-  size_t _need_compact(std::vector<std::vector<Fragment::Ptr>>& groups,
-                       const std::vector<Fragment::Ptr>& without,
+  size_t _need_compact(std::vector<Vec>& groups,const Vec& without, 
                        size_t vol);
 
   bool _need_compact_major();
@@ -121,14 +120,17 @@ class Fragments final {
   bool                        m_commiting;
   bool                        m_deleting;
   std::condition_variable_any m_cv;
-  std::vector<Fragment::Ptr>  m_fragments;
   bool                        m_compacting;
   Semaphore                   m_sem;
 
+  using Vec::vector;
 };
 
 
 
 }}} // namespace SWC::Ranger::CommitLog
+
+
+#include "swcdb/ranger/db/CommitLogCompact.h"
 
 #endif // swc_ranger_db_CommitLog_h

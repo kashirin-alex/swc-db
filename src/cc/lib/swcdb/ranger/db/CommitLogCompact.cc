@@ -153,7 +153,7 @@ void Compact::Group::finalize() {
       error = Error::CANCELLED;
   }
 
-  std::vector<Fragment::Ptr> tmp_frags;
+  Fragments::Vec tmp_frags;
   int err = Error::OK;
   for(auto frag : m_fragments) {
     if(compact->log->stopping || error) {
@@ -176,8 +176,7 @@ void Compact::Group::finalize() {
 
 
 Compact::Compact(Fragments* log, int repetition, 
-                 const std::vector<std::vector<Fragment::Ptr>>& groups,
-                 Cb_t& cb)
+                 const std::vector<Fragments::Vec>& groups, Cb_t& cb)
                 : log(log), ts(Time::now_ns()),
                   repetition(repetition), ngroups(groups.size()), nfrags(0), 
                   m_cb(cb) {
