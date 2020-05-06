@@ -49,7 +49,7 @@ class Fragments : private std::vector<Fragment::Ptr> {
   size_t need_compact(std::vector<Vec>& groups, const Vec& without,
                       size_t vol);
   
-  bool try_compact(bool before_major, int tnum = 1);
+  bool try_compact(int tnum = 1);
 
   void finish_compact(const Compact* compact);
 

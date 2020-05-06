@@ -126,7 +126,7 @@ void Fragments::commit_new_fragment(bool finalize) {
   m_cv.notify_all();
 
   if(!finalize)
-    try_compact(false);
+    try_compact();
 }
 
 void Fragments::add(Fragment::Ptr frag) {
@@ -152,7 +152,7 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
   return _need_compact(groups, without, vol);
 }
 
-bool Fragments::try_compact(bool before_major, int tnum) {
+bool Fragments::try_compact(int tnum) {
   if(!range->compact_possible())
     return false;
 
@@ -198,7 +198,7 @@ void Fragments::finish_compact(const Compact* compact) {
   m_cv.notify_all();
 
   if(!stopping)
-    try_compact(false, compact->repetition+1);
+    try_compact(compact->repetition+1);
   delete compact;
 }
 
@@ -261,8 +261,8 @@ void Fragments::load_cells(BlockLoader* loader, bool is_final,
                            Fragments::Vec& frags, uint8_t vol) {  
   if(is_final) {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting || m_compacting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
+    if(m_commiting)
+      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
   }
 
   std::shared_lock lock(m_mutex);
