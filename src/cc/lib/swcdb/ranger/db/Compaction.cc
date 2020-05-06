@@ -89,12 +89,13 @@ void Compaction::run(bool continuing) {
       continue;
     }
     ++m_idx_rid;
+    if(stopped())
+      break;
+
     if((!range->compact_required() && range->blocks.commitlog.try_compact()) ||
-        range->compact_possible())
+        !range->compact_possible())
       continue;
 
-    if(!m_run)
-      break;
     {
       std::lock_guard lock(m_mutex); 
       ++m_running;
@@ -116,7 +117,7 @@ void Compaction::run(bool continuing) {
 
 void Compaction::compact(RangePtr range) {
 
-  if(!range->is_loaded() || !m_run)
+  if(!range->is_loaded() || stopped())
     return compacted(range);
 
   auto& commitlog  = range->blocks.commitlog;
@@ -158,7 +159,7 @@ void Compaction::compact(RangePtr range) {
     need.append("CsVersions");
   }
 
-  if(!m_run || !do_compaction)
+  if(stopped() || !do_compaction)
     return compacted(range);
     
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %d/%d %s", 

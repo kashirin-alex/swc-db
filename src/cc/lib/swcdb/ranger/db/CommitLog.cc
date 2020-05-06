@@ -153,16 +153,13 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 }
 
 bool Fragments::try_compact(int tnum) {
-  if(!range->compact_possible())
+  if(stopping || !range->compact_possible())
     return false;
 
   std::vector<Fragments::Vec> groups;
   size_t need;
   {
     std::scoped_lock lock(m_mutex);
-    if(stopping || m_compacting)
-      return false;
-
     if(_need_compact_major() && RangerEnv::compaction_available()) {
       range->compacting(Range::COMPACT_NONE);
       return false;
@@ -179,27 +176,23 @@ bool Fragments::try_compact(int tnum) {
     new Compact(this, tnum, groups);
     return true;
   }
-  
-  {
-    std::scoped_lock lock(m_mutex);
-    m_compacting = false;
-  }
-  range->compacting(Range::COMPACT_NONE);
-  m_cv.notify_all();
+  finish_compact(nullptr);
   return false;
 }
 
 void Fragments::finish_compact(const Compact* compact) {
-  range->compacting(Range::COMPACT_NONE); 
   {
     std::scoped_lock lock(m_mutex);
     m_compacting = false;
   }
+  range->compacting(Range::COMPACT_NONE); 
   m_cv.notify_all();
 
-  if(!stopping)
-    try_compact(compact->repetition+1);
-  delete compact;
+  if(compact) {
+    if(!stopping)
+      try_compact(compact->repetition+1);
+    delete compact;
+  }
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
@@ -303,15 +296,15 @@ size_t Fragments::release(size_t bytes) {
 void Fragments::remove(int &err, Fragments::Vec& fragments_old) {
   std::scoped_lock lock(m_mutex);
 
-  for(auto old = fragments_old.begin(); old < fragments_old.end(); ++old) {
+  for(auto old : fragments_old) {
     for(auto it = begin(); it < end(); ++it) {
-      if(*it == *old) {
+      if(*it == old) {
         erase(it);
         break;
       }
     }
-    (*old)->remove(err);
-    delete *old;
+    old->remove(err);
+    delete old;
   }
 }
 
