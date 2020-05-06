@@ -11,29 +11,18 @@ namespace SWC { namespace Ranger {
 
 BlockLoader::BlockLoader(Block::Ptr block) 
                         : block(block), m_err(Error::OK), 
-                          m_processing(false), m_chk_cs(false), 
+                          m_processing(false),
                           m_checking_log(true), m_logs(0) {
 }
 
 BlockLoader::~BlockLoader() { }
 
 void BlockLoader::run() {
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_cellstores(); });
+  block->blocks->cellstores.load_cells(this);
   load_log(false);
 }
 
 //CellStores
-void BlockLoader::load_cellstores() {
-  block->blocks->cellstores.load_cells(this);
-
-  {
-    Mutex::scope lock(m_mutex);
-    m_chk_cs = true;
-  }
-  if(check_log())
-    load_log(false);
-}
-
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
   Mutex::scope lock(m_mutex);
   m_cs_blocks.push(blk);
@@ -87,7 +76,7 @@ bool BlockLoader::check_log() {
   return m_checking_log ? false : (m_checking_log = true);
 }
 
-void BlockLoader::load_log(bool is_final) {
+void BlockLoader::load_log(bool is_final, bool is_more) {
   uint8_t vol = MAX_FRAGMENTS;
   {
     Mutex::scope lock(m_mutex);
@@ -106,18 +95,18 @@ void BlockLoader::load_log(bool is_final) {
     }
   }
   bool more;
-  bool no_more;
+  bool wait;
   {
     Mutex::scope lock(m_mutex);
     m_checking_log = false;
-    if(m_processing || !m_chk_cs || !m_cs_blocks.empty())
+    if((!is_more && m_processing) || !m_cs_blocks.empty())
       return;
-    no_more = !m_logs && m_fragments.empty();
-    more = m_logs && !m_fragments.empty();
+    more = is_more || (m_logs && !m_fragments.empty());
+    wait = m_logs || !m_fragments.empty();
   }
   if(more) 
     return loaded_frag(nullptr);
-  if(!no_more)
+  if(wait)
     return;
   if(is_final)
     return completion();
@@ -130,7 +119,7 @@ void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
     Mutex::scope lock(m_mutex);
     if(frag)
       m_fragments.push(frag);
-    if(m_processing || !m_chk_cs || !m_cs_blocks.empty())
+    if(m_processing || !m_cs_blocks.empty())
       return;
     m_processing = true;
   }
@@ -154,7 +143,7 @@ void BlockLoader::load_log_cells() {
     }
     frag->load_cells(err = Error::OK, block);
     if(more && check_log())
-      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false); });
+      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false, true); });
   }
 
   if(check_log())

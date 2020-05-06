@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger {
 
 class BlockLoader final {
   public:
-  static const uint8_t MAX_FRAGMENTS = 3;
+  static const uint8_t MAX_FRAGMENTS = 2;
 
   Block::Ptr     block;
 
@@ -31,13 +31,11 @@ class BlockLoader final {
 
   private:
 
-  void load_cellstores();
-
   void load_cellstores_cells();
 
   bool check_log();
 
-  void load_log(bool is_final);
+  void load_log(bool is_final, bool is_more=false);
 
   void loaded_frag(CommitLog::Fragment::Ptr frag);
   
@@ -49,7 +47,6 @@ class BlockLoader final {
   Mutex                                     m_mutex;
   int                                       m_err;
   bool                                      m_processing;
-  bool                                      m_chk_cs;
   bool                                      m_checking_log;
   uint8_t                                   m_logs;
 
