@@ -312,11 +312,15 @@ bool Fragment::loaded(int& err) {
   return !err && m_state == State::LOADED;
 }
 
+size_t Fragment::size_bytes() const {
+  return m_size;
+}
+
 size_t Fragment::size_bytes(bool only_loaded) {
   Mutex::scope lock(m_mutex);
   if(only_loaded && m_state != State::LOADED)
     return 0;
-  return m_size;
+  return size_bytes();
 }
 
 size_t Fragment::size_bytes_encoded() {

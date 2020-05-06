@@ -84,7 +84,9 @@ class Fragment final {
 
   bool loaded(int& err);
 
-  size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes() const;
+
+  size_t size_bytes(bool only_loaded);
 
   size_t size_bytes_encoded();
 
