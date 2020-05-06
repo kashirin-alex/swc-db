@@ -487,37 +487,35 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
   if(fragments.size() < vol)
     return need;
 
-  bool add;
-  groups.emplace_back();
   auto it = fragments.begin();
-  groups.back().push_back(*it);
+  groups.push_back({*it});
   ++need;
-  for(++it; it<fragments.end(); add=false, ++it) {
-    add = DB::KeySeq::compare(m_cells.key_seq, 
-                              groups.back().back()->interval.key_end,
-                              (*it)->interval.key_begin) == Condition::LT;
-          /*&&
-          DB::KeySeq::compare(m_cells.key_seq, 
-                              groups.back().back()->interval.key_end,
-                              (*it)->interval.key_end) == Condition::LT;*/ 
-    if(add) {
-      groups.back().push_back(*it);
+  Fragment::Ptr curt;
+  Condition::Comp cond;
+  for(++it; it<fragments.end(); ++it) {
+    auto const& last = *groups.back().back();
+    if((cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
+                        (curt = *it)->interval.key_begin)) == Condition::LT ||
+        (cond == Condition::EQ && ( range->cfg->cell_versions() == 1 || (
+          curt->cells_count < range->cfg->block_cells() &&  
+          curt->size_bytes() < range->cfg->block_size() &&  
+          last.cells_count < range->cfg->block_cells() &&
+          last.size_bytes() < range->cfg->block_size() ) )) ) {
+      groups.back().push_back(curt);
       ++need;
     } else {
       if(groups.back().size() < vol) {
         need -= groups.back().size();
-        groups.back().clear();
+        groups.back() = {curt};
       } else {
-        groups.emplace_back();
+        groups.push_back({curt});
       }
-      groups.back().push_back(*it);
       ++need;
     }
   }
   for(auto it=groups.begin(); it < groups.end(); ) {
     if(it->size() < vol) {
       need -= it->size();
-      it->clear();
       groups.erase(it);
     } else {
       ++it;
