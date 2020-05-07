@@ -20,7 +20,7 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
 Block::Block(const DB::Cells::Interval& interval, 
              Blocks* blocks, State state)
             : blocks(blocks), next(nullptr), prev(nullptr),
-              m_interval(interval),  
+              m_key_end(interval.key_end),  
               m_cells(
                 DB::Cells::Mutable(
                   blocks->range->cfg->key_seq, 
@@ -46,32 +46,31 @@ void Block::schema_update() {
 }
 
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
-  //m_prev_key_end && m_interval.key_end behave as const
+  //m_prev_key_end && m_key_end behave as const
   return 
-    (intval.key_begin.empty() || m_interval.is_in_end(intval.key_begin))
+    (intval.key_begin.empty() || is_in_end(intval.key_begin))
     && 
     (intval.key_end.empty() || m_prev_key_end.empty() ||
-     DB::KeySeq::compare(m_interval.key_seq, m_prev_key_end, intval.key_end)
+     DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, intval.key_end)
       == Condition::GT);
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
-  return m_interval.is_in_end(key);
+  return m_key_end.empty() || (!key.empty() && 
+          DB::KeySeq::compare(m_cells.key_seq, m_key_end, key) 
+                                              != Condition::GT);
 }
 
 bool Block::is_next(const DB::Specs::Interval& spec) {
-  return (spec.offset_key.empty() || m_interval.is_in_end(spec.offset_key))
+  return (spec.offset_key.empty() || is_in_end(spec.offset_key))
           && includes(spec);
 }
 
 bool Block::includes(const DB::Specs::Interval& spec) {
-  bool ok;
-  if(ok = m_interval.includes_end(spec)) {
-    bool support(m_mutex_intval.lock());
-    ok = m_interval.includes_begin(spec);
-    m_mutex_intval.unlock(support);
-  }
-  return ok; 
+  return (m_key_end.empty() || 
+          spec.is_matching_begin(m_cells.key_seq, m_key_end)) && 
+         (m_prev_key_end.empty() ||
+          spec.is_matching_end(m_cells.key_seq, m_prev_key_end));
 }
     
 void Block::preload() {
@@ -87,11 +86,6 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
     return false;
   
   if(loaded()) {
-    bool support(m_mutex_intval.lock());
-    if(!m_interval.is_in_begin(cell.key))
-      m_interval.key_begin.copy(cell.key); //m_interval.expand(cell.timestamp);
-    m_mutex_intval.unlock(support);
-
     std::scoped_lock lock(m_mutex);
     m_cells.add_raw(cell);
     splitter();
@@ -99,32 +93,36 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   return true;
 }
   
-void Block::load_cells(const DB::Cells::MutableVec& cells) {
-  if(cells.empty())
+void Block::load_cells(const DB::Cells::MutableVec& vec_cells) {
+  if(vec_cells.empty())
     return;
 
   auto ts = Time::now_ns();
+  bool was_splitted = false;
 
   std::scoped_lock lock(m_mutex);
   size_t added = m_cells.size();
 
-  bool support(m_mutex_intval.lock()); // ?cpy interval
-  cells.scan(m_interval, m_cells);
-
-  if(!m_cells.empty() && !m_interval.key_begin.empty())
-    m_cells.expand_begin(m_interval);
-  m_mutex_intval.unlock(support);
+  for(auto cells : vec_cells) {
+    if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+      break;
+    if(splitter()) {
+      was_splitted = true;
+      break;
+    }
+  }
 
   added = m_cells.size() - added;
   auto took = Time::now_ns() - ts;
   SWC_PRINT << "Block::load_cells(cells)"
             << " synced=0"
-            << " avail=" << cells.size() 
+            << " avail=" << vec_cells.size() 
             << " added=" << added 
-            << " skipped=" << cells.size()-added
+            << " skipped=" << vec_cells.size()-added
             << " avg=" << (added>0 ? took / added : 0)
             << " took=" << took
             << std::flush << " " << m_cells.to_string() 
+            << " splitted=" << was_splitted
             << SWC_PRINT_CLOSE;
 }
 
@@ -151,22 +149,23 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       cell.read(&buf, &remain);
       
     } catch(std::exception) {
-      SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
-               count, avail, remain, m_interval.to_string().c_str());
+      SWC_LOGF(LOG_ERROR, 
+        "Cell trunclated at count=%llu/%llu remain=%llu %s < key <= %s",
+        count, avail, remain, 
+        m_prev_key_end.to_string().c_str(), m_key_end.to_string().c_str());
       break;
     }
     
     if(!m_prev_key_end.empty() &&  
-        DB::KeySeq::compare(m_interval.key_seq, m_prev_key_end, cell.key) 
+        DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key) 
           != Condition::GT)
       continue;
     
-    if(!m_interval.key_end.empty() && 
-        DB::KeySeq::compare(m_interval.key_seq, m_interval.key_end, cell.key)
+    if(!m_key_end.empty() && 
+        DB::KeySeq::compare(m_cells.key_seq, m_key_end, cell.key)
           == Condition::GT)
       break;
 
-    ++added;
     if(cell.has_expired(m_cells.ttl))
       continue;
 
@@ -175,19 +174,12 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add_raw(cell, &offset_hint);
       
-    if(added % 100 == 0 && splitter()) {
+    if(++added % 100 == 0 && splitter()) {
       was_splitted = true;
       offset_hint = 0;
     }
   }
 
-  if(!m_cells.empty()) {
-    bool support(m_mutex_intval.lock());
-    if(!m_interval.key_begin.empty())
-      m_cells.expand_begin(m_interval);
-    m_mutex_intval.unlock(support);
-  }
-    
   auto took = Time::now_ns() - ts;
   SWC_PRINT << "Block::load_cells(rbuf)"
             << " synced=" << synced 
@@ -259,18 +251,12 @@ Block::Ptr Block::split(bool loaded) {
 
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
-    DB::Cells::Interval(m_interval.key_seq), 
+    DB::Cells::Interval(m_cells.key_seq), 
     blocks,
     loaded ? State::LOADED : State::NONE
   );
 
-  m_cells.split(
-    m_cells.size()/2, //blocks->range->cfg->block_cells(), 
-    blk->m_cells,
-    m_interval,
-    blk->m_interval,
-    loaded
-  );
+  m_cells.split(blk->m_cells, m_key_end, blk->m_key_end, loaded);
 
   _add(blk);
   return blk;
@@ -282,7 +268,7 @@ void Block::_add(Block::Ptr blk) {
     blk->next = next;
     next->prev = blk;
   }
-  blk->_set_prev_key_end(m_interval.key_end);
+  blk->_set_prev_key_end(m_key_end);
   next = blk;
 }
 
@@ -291,35 +277,12 @@ void Block::_set_prev_key_end(const DB::Cell::Key& key) {
 }
 
 Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
-  return DB::KeySeq::compare(m_interval.key_seq, m_interval.key_end, key);
+  return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
 }
 
 void Block::_set_key_end(const DB::Cell::Key& key) {
-  m_interval.key_end.copy(key);
+  m_key_end.copy(key);
 }
-
-/*
-void Block::expand_next_and_release(DB::Cell::Key& key_begin) {
-  std::scoped_lock lock1(m_mutex);
-  Mutex::scope lock2(m_mutex_state);
-  Mutex::scope lock3(m_mutex_intval);
-
-  m_state = State::REMOVED;
-  key_begin.copy(m_interval.key_begin);
-  m_cells.free();
-  m_interval.free();
-}
-
-void Block::merge_and_release(Block::Ptr blk) {
-  std::scoped_lock lock1(m_mutex);
-  Mutex::scope lock2(m_mutex_state);
-  Mutex::scope lock3(m_mutex_intval);
-
-  m_state = State::NONE;
-  blk->expand_next_and_release(m_interval.key_begin);
-  m_cells.free();
-}
-*/
 
 size_t Block::release() {
   size_t released = 0;
@@ -394,14 +357,8 @@ bool Block::_need_split() const {
     !m_cells.has_one_key();
 }
 
-void Block::free_key_begin() {
-  Mutex::scope lock(m_mutex_intval);
-  m_interval.key_begin.free();
-}
-
 void Block::free_key_end() {
-  Mutex::scope lock(m_mutex_intval);
-  m_interval.key_end.free();
+  m_key_end.free();
 }
 
 std::string Block::to_string() {
@@ -410,15 +367,15 @@ std::string Block::to_string() {
     Mutex::scope lock(m_mutex_state);
     s.append(std::to_string((uint8_t)m_state));
   }
-  s.append(" prev=");
-  {
-    Mutex::scope lock(m_mutex_intval);
-    s.append(m_prev_key_end.to_string());
-    s.append(" ");
-    s.append(m_interval.to_string());
-  }
   s.append(" ");
-  if(m_mutex.try_lock()){
+  s.append(Types::to_string(m_cells.key_seq));
+  s.append(" ");
+  s.append(m_prev_key_end.to_string());
+  s.append(" < key <= ");
+  s.append(m_key_end.to_string());
+  
+  if(m_mutex.try_lock()) {
+    s.append(" ");
     s.append(m_cells.to_string());
     m_mutex.unlock();
   } else {
@@ -436,7 +393,7 @@ std::string Block::to_string() {
 
 bool Block::_scan(ReqScan::Ptr req, bool synced) {
   size_t skips = 0; // Ranger::Stats
-  //if(m_interval.includes(req->spec, true)) // ?has-changed
+  // m_key_end incl. req->spec // ?has-changed(split)
   {
     std::shared_lock lock(m_mutex);
     m_cells.scan(req.get(), skips);

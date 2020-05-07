@@ -423,7 +423,8 @@ void Blocks::init_blocks(int& err) {
       m_block = blk = Block::make(cs_blk->interval, ptr());
       m_block->_set_prev_key_end(prev_key_end);
       m_blocks_idx.push_back(blk);
-    } else if(blk->_cond_key_end(cs_blk->interval.key_begin) != Condition::EQ) {
+    } else if(blk->_cond_key_end(cs_blk->interval.key_begin) 
+                                            != Condition::EQ) {
       blk->_add(Block::make(cs_blk->interval, ptr()));
       blk = blk->next;
       m_blocks_idx.push_back(blk);
@@ -436,8 +437,6 @@ void Blocks::init_blocks(int& err) {
     return;
   }
 
-  if(range->is_any_begin())
-    m_block->free_key_begin();
   if(range->is_any_end()) 
     blk->free_key_end();
 }

@@ -500,20 +500,19 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
   }
 }
 
-bool Mutable::scan(Interval& interval, Mutable& cells) const {
+bool Mutable::scan_after(const DB::Cell::Key& after, 
+                         const DB::Cell::Key& to, Mutable& cells) const {
   if(!_size)
     return false;
 
-  for(auto it=ConstIterator(&buckets, _narrow(interval.key_begin)); it; ++it) {
+  for(auto it=ConstIterator(&buckets, _narrow(after)); it; ++it) {
     const Cell& cell = **it.item;
-    if(cell.has_expired(ttl) || (!interval.key_begin.empty() 
-        && DB::KeySeq::compare(key_seq, interval.key_begin, cell.key)
-            == Condition::LT))
-      continue;
-    if(!interval.key_end.empty() 
-        && DB::KeySeq::compare(key_seq, interval.key_end, cell.key)
-            == Condition::GT)
+    if(!to.empty() 
+        && DB::KeySeq::compare(key_seq, to, cell.key) == Condition::GT)
       return false;
+    if(cell.has_expired(ttl) || (!after.empty() 
+        && DB::KeySeq::compare(key_seq, after, cell.key) != Condition::GT))
+      continue;
 
     cells.add_raw(cell);
   }
@@ -536,10 +535,10 @@ void Mutable::expand_end(Interval& interval) const {
 }
 
 
-void Mutable::split(size_t from, Mutable& cells, 
-                    Interval& intval_1st, Interval& intval_2nd,
+void Mutable::split(Mutable& cells, 
+                    DB::Cell::Key& end_1st, DB::Cell::Key& end_2nd, 
                     bool loaded) {
-  Cell* from_cell = *ConstIterator(&buckets, from).item;
+  Cell* from_cell = *ConstIterator(&buckets, _size / 2).item;
   size_t count = _size;
   bool from_set = false;
   Iterator it_start;
@@ -555,7 +554,6 @@ void Mutable::split(size_t from, Mutable& cells,
       }
 
       it_start = it;
-      intval_2nd.expand_begin(*cell);
       if(!loaded)
         break;
       from_set = true;
@@ -569,9 +567,8 @@ void Mutable::split(size_t from, Mutable& cells,
 
   _remove(it_start, count, !loaded);
 
-  intval_2nd.set_key_end(intval_1st.key_end);      
-  intval_1st.key_end.free();
-  expand_end(intval_1st);
+  end_2nd.copy(end_1st);
+  end_1st.copy(back()->key);
 }
 
 void Mutable::split(Mutable& cells) {

@@ -130,8 +130,6 @@ void Compact::Group::write() {
     );
     if(err)
       error = err;
-
-    m_sem.wait_until_under(5);
   } while(!error && !m_cells.empty());
 
   m_sem.wait_all();

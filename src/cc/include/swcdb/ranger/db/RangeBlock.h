@@ -117,8 +117,6 @@ class Block final {
 
   bool _need_split() const;
 
-  void free_key_begin();
-
   void free_key_end();
 
   std::string to_string();
@@ -129,9 +127,8 @@ class Block final {
 
   void run_queue(int& err);
 
-  Mutex                     m_mutex_intval;
-  DB::Cells::Interval       m_interval;
   DB::Cell::Key             m_prev_key_end;
+  DB::Cell::Key             m_key_end;
 
   std::shared_mutex         m_mutex;
   DB::Cells::Mutable        m_cells;

@@ -197,8 +197,8 @@ class Mutable final {
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
                      size_t& count, size_t& skips) const;
 
-  bool scan(Interval& interval, Mutable& cells) const;
-
+  bool scan_after(const DB::Cell::Key& after, const DB::Cell::Key& to, 
+                  Mutable& cells) const;
 
   void expand(Interval& interval) const;
 
@@ -207,8 +207,8 @@ class Mutable final {
   void expand_end(Interval& interval) const;
   
 
-  void split(size_t from, Mutable& cells, 
-             Interval& intval_1st, Interval& intval_2nd, bool loaded);
+  void split(Mutable& cells, DB::Cell::Key& end_1st, DB::Cell::Key& end_2nd, 
+             bool loaded);
 
   void split(Mutable& cells);
 

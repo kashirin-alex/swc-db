@@ -38,7 +38,7 @@ struct CompactRange::InBlock {
   void set_offset(DB::Specs::Interval& spec) const {
     DB::Cells::Cell cell;
     const uint8_t* ptr = last_cell;
-    size_t remain = cells.ptr - (ptr);
+    size_t remain = cells.ptr - ptr;
     cell.read(&ptr, &remain); 
     spec.offset_key.copy(cell.key);
     spec.offset_rev = cell.timestamp;
@@ -239,19 +239,18 @@ void CompactRange::response(int &err) {
     total_blocks.load(), err
   );
 
-  bool finished;
-  if(finished = !reached_limits()) {
+  bool finishing;
+  if(finishing = !reached_limits()) {
     stop_check_timer();
     range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
     range->blocks.commitlog.commit_new_fragment(true);
   }
 
-  auto in_block = m_inblock;
-  if(m_inblock->count <= 1) {
-    in_block = nullptr;
-  } else {
+  auto in_block = m_inblock->count <= 1 ? nullptr : m_inblock;
+  if(in_block) {
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
+    m_inblock->set_offset(spec);
   }
 
   if(m_q_intval.push_and_is_1st(in_block))
@@ -261,8 +260,7 @@ void CompactRange::response(int &err) {
   if(m_stopped || !in_block)
     return;
 
-  m_inblock->set_offset(spec);
-  finished 
+  finishing 
     ? commitlog_done(nullptr, Range::COMPACT_APPLYING)
     : commitlog(1, Range::COMPACT_COMPACTING);
 }

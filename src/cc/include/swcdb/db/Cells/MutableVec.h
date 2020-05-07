@@ -19,6 +19,10 @@ class MutableVec : private std::vector<Mutable*> {
   using Vec::vector;
 
   public:
+
+  using Vec::begin;
+  using Vec::end;
+  
   const Types::KeySeq key_seq;
   uint32_t            split_size;
   uint32_t            max_revs;
@@ -116,13 +120,6 @@ class MutableVec : private std::vector<Mutable*> {
         }
         return;
       }
-    }
-  }
-
-  void scan(Interval& interval, Mutable& to) const {
-    for(auto cells : *this) {
-      if(!cells->scan(interval, to))
-        break;
     }
   }
 
