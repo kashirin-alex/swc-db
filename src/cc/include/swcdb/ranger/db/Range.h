@@ -163,9 +163,11 @@ class Range : public std::enable_shared_from_this<Range> {
 
   private:
   const std::string             m_path;
-  std::shared_mutex             m_mutex;
+  LockAtomic::Unique            m_mutex_intval;
   DB::Cells::Interval           m_interval;
   DB::Cell::Key                 m_prev_key_end;
+
+  std::shared_mutex             m_mutex;
 
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;

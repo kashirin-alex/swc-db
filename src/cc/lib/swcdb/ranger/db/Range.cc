@@ -61,48 +61,53 @@ Files::RgrData::Ptr Range::get_last_rgr(int &err) {
 }
 
 void Range::get_interval(DB::Cells::Interval& interval) {
-  std::shared_lock lock(m_mutex);
-  interval.copy(m_interval);
+  m_mutex_intval.lock();
+  interval.copy(m_interval); 
+  m_mutex_intval.unlock();
 }
 
 void Range::get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) {
-  std::shared_lock lock(m_mutex);
+  m_mutex_intval.lock();
   key_begin.copy(m_interval.key_begin);
   key_end.copy(m_interval.key_end);
+  m_mutex_intval.unlock();
 }
 
 void Range::get_key_end(DB::Cell::Key& key) {
-  std::shared_lock lock(m_mutex);
+  m_mutex_intval.lock();
   key.copy(m_interval.key_end);
+  m_mutex_intval.unlock();
 }
   
 bool Range::is_any_begin() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::scope lock(m_mutex_intval);
   return m_interval.key_begin.empty();
 }
 
 bool Range::is_any_end() {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::scope lock(m_mutex_intval);
   return m_interval.key_end.empty();
 }
 
 void Range::get_prev_key_end(DB::Cell::Key& key) {
-  std::shared_lock lock(m_mutex);
+  m_mutex_intval.lock();
   key.copy(m_prev_key_end);
+  m_mutex_intval.unlock();
 }
   
 void Range::set_prev_key_end(const DB::Cell::Key& key) {
-  std::scoped_lock lock(m_mutex);
+  m_mutex_intval.lock();
   m_prev_key_end.copy(key);
+  m_mutex_intval.unlock();
 }
 
 bool Range::align(const DB::Cells::Interval& interval) {
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::scope lock(m_mutex_intval);
   return m_interval.align(interval);
 }
   
 bool Range::align(const DB::Cell::Key& key) {
-  std::scoped_lock lock(m_mutex);
+  LockAtomic::Unique::scope lock(m_mutex_intval);
   return m_interval.align(key);
 }
 
@@ -226,26 +231,38 @@ void Range::on_change(int &err, bool removal,
     meta_cid, cfg->key_seq, 1, 0, Types::Column::PLAIN);
 
   DB::Cells::Cell cell;
-  cell.key.copy(m_interval.key_begin);
-  cell.key.insert(0, std::to_string(cfg->cid));
+  auto cid_f(std::to_string(cfg->cid));
 
   if(removal) {
     cell.flag = DB::Cells::DELETE;
+    m_mutex_intval.lock();
+    cell.key.copy(m_interval.key_begin);
+    m_mutex_intval.unlock();
+    cell.key.insert(0, cid_f);
     updater->columns->add(meta_cid, cell);
   } else {
 
     cell.flag = DB::Cells::INSERT;
-    DB::Cell::Key key_end(m_interval.key_end);
-    key_end.insert(0, std::to_string(cfg->cid));
-
     DB::Cell::KeyVec aligned_min;
     DB::Cell::KeyVec aligned_max;
+    bool chg;
+
+    m_mutex_intval.lock();
+    cell.key.copy(m_interval.key_begin);
+    DB::Cell::Key key_end(m_interval.key_end);
     if(type == Types::Range::DATA) { 
       // only DATA until MASTER/META aligned on cells value min/max
       aligned_min.copy(m_interval.aligned_min);
-      aligned_min.insert(0, std::to_string(cfg->cid));
       aligned_max.copy(m_interval.aligned_max);
-      aligned_max.insert(0, std::to_string(cfg->cid));
+    }
+    chg = old_key_begin && !old_key_begin->equal(m_interval.key_begin);
+    m_mutex_intval.unlock();
+
+    cell.key.insert(0, cid_f);
+    key_end.insert(0, cid_f);
+    if(type == Types::Range::DATA) { 
+      aligned_min.insert(0, cid_f);
+      aligned_max.insert(0, cid_f);
     }
 
     cell.own = true;
@@ -264,7 +281,7 @@ void Range::on_change(int &err, bool removal,
     cell.set_time_order_desc(true);
     updater->columns->add(meta_cid, cell);
 
-    if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
+    if(chg) {
       SWC_ASSERT(!old_key_begin->empty()); 
       // remove begin-any should not happen
 
@@ -386,33 +403,32 @@ void Range::apply_new(int &err,
 }
 
 void Range::expand_and_align(int &err, bool w_chg_chk) {
-  bool intval_chg;
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
   DB::Cell::KeyVec  aligned_min;
   DB::Cell::KeyVec  aligned_max; 
-  {
-    std::scoped_lock lock(m_mutex);
 
-    if(w_chg_chk) {
-      old_key_begin.copy(m_interval.key_begin);
-      key_end.copy(m_interval.key_end);
-      aligned_min.copy(m_interval.aligned_min);
-      aligned_max.copy(m_interval.aligned_max);
-    }
-
-    m_interval.free();
-    if(type == Types::Range::DATA)
-      blocks.expand_and_align(m_interval);
-    else
-      blocks.expand(m_interval);
-
-    intval_chg = !w_chg_chk || 
-                 !m_interval.key_begin.equal(old_key_begin) ||
-                 !m_interval.key_end.equal(key_end) ||
-                 !m_interval.aligned_min.equal(aligned_min) ||
-                 !m_interval.aligned_max.equal(aligned_max);
+  m_mutex_intval.lock();
+  if(w_chg_chk) {
+    old_key_begin.copy(m_interval.key_begin);
+    key_end.copy(m_interval.key_end);
+    aligned_min.copy(m_interval.aligned_min);
+    aligned_max.copy(m_interval.aligned_max);
   }
+
+  m_interval.free();
+  if(type == Types::Range::DATA)
+    blocks.expand_and_align(m_interval);
+  else
+    blocks.expand(m_interval);
+
+  bool intval_chg = !w_chg_chk || 
+                    !m_interval.key_begin.equal(old_key_begin) ||
+                    !m_interval.key_end.equal(key_end) ||
+                    !m_interval.aligned_min.equal(aligned_min) ||
+                    !m_interval.aligned_max.equal(aligned_max);
+  m_mutex_intval.unlock();
+
   if(intval_chg)
     on_change(err, false, w_chg_chk ? &old_key_begin : nullptr);
 }
@@ -457,9 +473,11 @@ std::string Range::to_string() {
   s.append(" rid=");
   s.append(std::to_string(rid));
   s.append(" prev=");
+  m_mutex_intval.lock();
   s.append(m_prev_key_end.to_string());
   s.append(" ");
   s.append(m_interval.to_string());
+  m_mutex_intval.unlock();
   s.append(" state=");
   s.append(std::to_string(m_state));
   s.append(" type=");
@@ -570,65 +588,55 @@ bool Range::wait(uint8_t from_state) {
 void Range::run_add_queue() {
   ReqAdd* req;
 
-  int err;
   DB::Cells::Cell cell;
-  const uint8_t* ptr = 0;
+  const uint8_t* ptr;
   size_t remain; 
-  bool early_range_end;
-  bool late_range_begin;
   bool intval_chg;
-  DB::Cell::Key       key_prev_end;
-  DB::Cell::Key       key_end;
-  DB::Cells::Interval alignment_interval(cfg->key_seq);
-
   uint64_t ttl = cfg->cell_ttl();
 
   do {
-    if(!ptr || wait(COMPACT_PREPARING)) {
-      std::shared_lock lock(m_mutex);
-      key_prev_end.copy(m_prev_key_end);
-      key_end.copy(m_interval.key_end);
-      alignment_interval.aligned_min.copy(m_interval.aligned_min);
-      alignment_interval.aligned_max.copy(m_interval.aligned_max);
-    }
+    wait(COMPACT_PREPARING);
     blocks.processing_increment();
   
     req = m_q_adding.front();
     ptr = req->input.base;
     m_inbytes += remain = req->input.size;
-    early_range_end = false;
-    late_range_begin = false;
     intval_chg = false;
-    err = Error::OK;
-    if(req->cb->expired(remain/100000))
-      err = Error::REQUEST_TIMEOUT;
-      
-    if(m_state != State::LOADED && m_state != State::UNLOADING) {
-      err = m_state == State::DELETED ? 
-            Error::COLUMN_MARKED_REMOVED 
-            : Error::RS_NOT_LOADED_RANGE;
-    }
 
-    while(!err && remain) {
+    Protocol::Rgr::Params::RangeQueryUpdateRsp params;
+    if(req->cb->expired(remain/100000))
+      params.err = Error::REQUEST_TIMEOUT;
+      
+    if(m_state != State::LOADED && m_state != State::UNLOADING)
+       params.err = m_state == State::DELETED 
+                  ? Error::COLUMN_MARKED_REMOVED : Error::RS_NOT_LOADED_RANGE;
+
+    while(!params.err && remain) {
       cell.read(&ptr, &remain);
 
       if(cell.has_expired(ttl))
         continue;
 
-      if(!key_end.empty() && 
-          DB::KeySeq::compare(cfg->key_seq, key_end, cell.key)
-           == Condition::GT) {
-        early_range_end = true;
-        continue;
-      } 
+      {
+        LockAtomic::Unique::scope lock(m_mutex_intval);
 
-      if(!key_prev_end.empty() && 
-          DB::KeySeq::compare(cfg->key_seq, key_prev_end, cell.key)
-           != Condition::GT) {
-        late_range_begin = true;
-        continue;
+        if(!m_interval.key_end.empty() && 
+            DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
+             == Condition::GT) {
+          if(params.range_end.empty())
+            params.range_end.copy(m_interval.key_end);
+          continue;
+        }
+
+        if(!m_prev_key_end.empty() && 
+            DB::KeySeq::compare(cfg->key_seq, m_prev_key_end, cell.key)
+             != Condition::GT) {
+          if(params.range_prev_end.empty())
+            params.range_prev_end.copy(m_prev_key_end);
+          continue;
+        }
       }
-        
+
       if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
         cell.set_timestamp(Time::now_ns());
         if(cell.control & DB::Cells::AUTO_TIMESTAMP)
@@ -641,7 +649,7 @@ void Range::run_add_queue() {
       blocks.add_logged(cell);
         
       if(type == Types::Range::DATA) {
-        if(alignment_interval.align(cell.key))
+        if(align(cell.key))
           intval_chg = true;
       } else {
         /* MASTER/META need aligned interval 
@@ -665,21 +673,14 @@ void Range::run_add_queue() {
     }
     blocks.processing_decrement();
 
-    if(intval_chg) {
-      intval_chg = false;
-      align(alignment_interval);
-      on_change(err, false);
-    }
+    if(intval_chg)
+      on_change(params.err, false);
 
-    if(late_range_begin || early_range_end) {
-      req->cb->response(
-        Error::RANGE_BAD_INTERVAL, 
-        late_range_begin ? key_prev_end : DB::Cell::Key(),
-        early_range_end ? key_end : DB::Cell::Key()
-      );
-    } else {
-      req->cb->response(err);
-    }
+    if(!params.err &&
+       (!params.range_end.empty() || !params.range_prev_end.empty()))
+      params.err = Error::RANGE_BAD_INTERVAL;
+
+    req->cb->response(params);
     delete req;
 
   } while(m_q_adding.pop_and_more());

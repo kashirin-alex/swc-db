@@ -44,7 +44,7 @@ class RangeQueryUpdateReq : public Serializable {
 class RangeQueryUpdateRsp  : public Serializable {
   public:
 
-  RangeQueryUpdateRsp(int err = 0);
+  RangeQueryUpdateRsp(int err = Error::OK);
 
   RangeQueryUpdateRsp(int err, const DB::Cell::Key& range_prev_end,
                                const DB::Cell::Key& range_end);
