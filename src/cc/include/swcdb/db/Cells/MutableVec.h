@@ -76,10 +76,19 @@ class MutableVec : private std::vector<Mutable*> {
     return sz;
   }
 
+  bool split(Mutable& cells, iterator it) {
+    if(cells.size() >= split_size) {
+      cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
+      return true;
+    }
+    return false;
+  }
+
   void add_sorted(const Cell& cell) {
     if(Vec::empty())
       push_back(new Mutable(key_seq, max_revs, ttl, type));
     back()->add_sorted(cell);
+    split(*back(), end());
   }
 
   void add_raw(const Cell& cell) {
@@ -90,13 +99,10 @@ class MutableVec : private std::vector<Mutable*> {
     for(auto it = begin(); it < end();) {
       cells = *it;
       if(++it == end() || 
-         DB::KeySeq::compare(key_seq, cells->back()->key, cell.key) 
-                                                    != Condition::GT) {
+         DB::KeySeq::compare(key_seq, cell.key, (*it)->front()->key) 
+                                                    == Condition::GT) {
         cells->add_raw(cell);
-        if(cells->size() >= split_size) {
-          push_back(new Mutable(key_seq, max_revs, ttl, type));
-          cells->split(*back());
-        }
+        split(*cells, it);
         return;
       }
     }
@@ -110,14 +116,11 @@ class MutableVec : private std::vector<Mutable*> {
     for(auto it = begin()+*offset_itp; it < end(); ++*offset_itp, *offsetp=0) {
       cells = *it;
       if(++it == end() || 
-         DB::KeySeq::compare(key_seq, cells->back()->key, cell.key) 
-                                                    != Condition::GT) {
+         DB::KeySeq::compare(key_seq, cell.key, (*it)->front()->key) 
+                                                    == Condition::GT) {
         cells->add_raw(cell, offsetp);
-        if(cells->size() >= split_size) {
-          push_back(new Mutable(key_seq, max_revs, ttl, type));
-          cells->split(*back());
+        if(split(*cells, it))
           *offsetp = 0;
-        }
         return;
       }
     }
