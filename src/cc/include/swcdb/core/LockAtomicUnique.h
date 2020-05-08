@@ -45,6 +45,21 @@ class Unique {
     want.store(false, std::memory_order_release);
   }
   
+  class scope final {
+    public:
+
+    scope(Unique& m) : _m(m) {  _m.lock(); }
+
+    ~scope() { _m.unlock(); }
+    
+    scope(const scope&) = delete;
+
+    scope& operator=(const scope&) = delete;
+
+    private:
+    Unique&      _m;
+  };
+
   private:
 
   std::atomic<bool> want;
