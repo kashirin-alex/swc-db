@@ -17,7 +17,7 @@ class RangeQuerySelect : public ReqScan {
                    const DB::Specs::Interval& req_spec,
                    RangePtr range)
                   : ReqScan(conn, ev, req_spec), 
-                    range(range), cells_count(0) {
+                    range(range) {
     if(!spec.value.empty())
       spec.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)
@@ -27,32 +27,35 @@ class RangeQuerySelect : public ReqScan {
   virtual ~RangeQuerySelect() { }
 
   void ensure_size() {
-    if(!cells_count || cells.size >= spec.flags.max_buffer)
+    if(!profile.cells_count || cells.size >= spec.flags.max_buffer)
       return;
-    size_t add = (cells.fill() / cells_count) 
+    size_t add = (cells.fill() / profile.cells_count) 
                   * (spec.flags.limit ? spec.flags.limit : 3);
     if(cells.size + add < spec.flags.max_buffer)
       cells.ensure(add);
   }
 
   bool reached_limits() override {
-    return (spec.flags.limit && spec.flags.limit <= cells_count) || 
-      (spec.flags.max_buffer && cells_count && 
-       spec.flags.max_buffer <= cells.fill() + cells.fill() / cells_count);
+    return (spec.flags.limit && spec.flags.limit <= profile.cells_count) || 
+      (spec.flags.max_buffer && profile.cells_count && 
+       spec.flags.max_buffer <= profile.cells_bytes + 
+                                profile.cells_bytes / profile.cells_count);
   }
 
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
     ensure_size();
-    ++cells_count;
+    auto sz = cells.fill();
     cell.write(cells, only_keys);
+    profile.add_cell(cells.fill() - sz);
     return !reached_limits();
   }
 
   bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
     ensure_size();
-    ++cells_count;
+    auto sz = cells.fill();
     cells.set_mark();
     cell.write(cells, only_keys);
+    profile.add_cell(cells.fill() - sz);
 
     const uint8_t* ptr = cells.mark + 1; // key at flag offset
     size_t remain = cells.ptr - ptr;
@@ -61,7 +64,7 @@ class RangeQuerySelect : public ReqScan {
   }
 
   bool matching_last(const DB::Cell::Key& key) override {
-    return cells_count ? key_last.equal(key) : false;
+    return profile.cells_count ? key_last.equal(key) : false;
   }
 
   void response(int &err) override {
@@ -93,24 +96,22 @@ class RangeQuerySelect : public ReqScan {
     catch (Exception &e) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
-    
+
+    profile.finished();
+    SWC_LOGF(LOG_INFO, "Select-%s", profile.to_string().c_str());
   }
 
   std::string to_string() const override {
     std::string s("ReqScan(");
     s.append(ReqScan::to_string());
-    s.append(" cells(c=");
-    s.append(std::to_string(cells_count));
-    s.append(" sz=");
-    s.append(std::to_string(cells.fill()));
-    s.append(")");
+    s.append(" ");
+    s.append(profile.to_string());
     return s;
   }
 
   RangePtr  range;
 
   DynamicBuffer          cells;
-  uint64_t               cells_count;
   DB::Cell::Key          key_last;
 
 };

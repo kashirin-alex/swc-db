@@ -188,11 +188,11 @@ class Mutable final {
   void write(DynamicBuffer& cells) const;
 
 
-  void scan(ReqScan* req, size_t& skips) const;
+  void scan(ReqScan* req) const;
 
-  void scan_version_single(ReqScan* req, size_t& skips) const;
+  void scan_version_single(ReqScan* req) const;
 
-  void scan_version_multi(ReqScan* req, size_t& skips) const;
+  void scan_version_multi(ReqScan* req) const;
 
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result, 
                      size_t& count, size_t& skips) const;

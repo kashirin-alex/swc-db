@@ -110,7 +110,7 @@ CompactRange::CompactRange(Compaction::Ptr compactor, RangePtr range,
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
-              ts_start(Time::now_ns()), m_getting(true),
+              m_getting(true),
               state_default(range->blocks.cellstores.blocks_count() > 1 
                 ? Range::COMPACT_COMPACTING : Range::COMPACT_PREPARING),
               req_last_time(0),
@@ -212,12 +212,16 @@ bool CompactRange::reached_limits() {
 }
 
 bool CompactRange::add_cell_and_more(const DB::Cells::Cell& cell) {
+  auto sz = m_inblock->cells.fill();
   m_inblock->add(cell);
+  profile.add_cell(m_inblock->cells.fill() - sz);
   return !reached_limits();
 }
 
 bool CompactRange::add_cell_set_last_and_more(const DB::Cells::Cell& cell) {
+  auto sz = m_inblock->cells.fill();
   m_inblock->add(cell);
+  profile.add_cell(m_inblock->cells.fill() - sz);
   return !reached_limits();
 }
 
@@ -235,19 +239,21 @@ void CompactRange::response(int &err) {
   if(m_stopped)
     return;
 
-  total_cells += m_inblock->count - m_inblock->has_last;
+  total_cells = profile.cells_count;
   ++total_blocks;
   req_last_time = Time::now_ns() - req_ts;
   req_ts = Time::now_ns();
 
   size_t c = total_cells ? total_cells.load() : 1;
+  profile.finished();
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-PROGRESS %d/%d cells=%lld "
-    "cell-avg(t=%lld i=%lld e=%lld w=%lld)ns blocks=%lld err=%d",
-    range->cfg->cid, range->rid, total_cells.load(),
-    (Time::now_ns() - ts_start) / c,
-    time_intval.load() / c, time_encode.load() / c, time_write.load() / c,
-    total_blocks.load(), err
+    "COMPACT-PROGRESS %d/%d blocks=%lld avg(i=%lld e=%lld w=%lld)us %s err=%d",
+    range->cfg->cid, range->rid,
+    total_blocks.load(), 
+    (time_intval / total_blocks)/1000, 
+    (time_encode / total_blocks)/1000, 
+    (time_write / total_blocks)/1000, 
+    profile.to_string().c_str(), err
   );
 
   bool finishing;
@@ -278,7 +284,7 @@ void CompactRange::response(int &err) {
 
 bool CompactRange::is_slow_req(uint64_t& median) const {
   median = (total_cells
-    ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
+    ? (Time::now_ns() - profile.ts_start) / total_cells : 10000) * blk_cells * 2;
   return req_last_time > median || Time::now_ns() - req_ts > median;
 }
 
@@ -745,17 +751,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     }
   );
 
-  range->compact_require(false);
-  
-  SWC_LOGF(LOG_INFO, 
-    "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
-    "ns(total=%lld intval=%lld encode=%lld write=%lld)", 
-    range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
-    Time::now_ns() - ts_start, 
-    time_intval.load(), time_encode.load(), time_write.load()
-  );
-
-  compactor->compacted(range, true);
+  finished(true);
 }
 
 void CompactRange::apply_new(bool clear) {
@@ -764,14 +760,19 @@ void CompactRange::apply_new(bool clear) {
   if(err)
     return quit();
 
+  finished(clear);
+}
+
+void CompactRange::finished(bool clear) {
   range->compact_require(false);
   
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
-    "ns(total=%lld intval=%lld encode=%lld write=%lld)", 
+    "(total=%lld intval=%lld encode=%lld write=%lld)ms %s",
     range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
-    Time::now_ns() - ts_start, 
-    time_intval.load(), time_encode.load(), time_write.load()
+    (Time::now_ns() - profile.ts_start)/1000000, 
+    time_intval/1000000, time_encode/1000000, time_write/1000000,
+    profile.to_string().c_str()
   );
 
   compactor->compacted(range, clear);

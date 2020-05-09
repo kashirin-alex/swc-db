@@ -82,6 +82,8 @@ class CompactRange : public ReqScan {
 
   void apply_new(bool clear = false);
 
+  void finished(bool clear);
+
   void quit();
 
 
@@ -101,8 +103,6 @@ class CompactRange : public ReqScan {
   QueueSafe<InBlock*>             m_q_encode;
   QueueSafe<InBlock*>             m_q_write;
 
-  const uint64_t                  ts_start;
-
   std::atomic<uint64_t>           total_cells = 0;
   std::atomic<uint64_t>           total_blocks = 0;
 
@@ -111,8 +111,8 @@ class CompactRange : public ReqScan {
   std::atomic<uint64_t>           time_write = 0;
 
   std::atomic<uint8_t>            state_default;
-  std::atomic<uint64_t>           req_last_time;
-  std::atomic<uint64_t>           req_ts;
+  std::atomic<int64_t>            req_last_time;
+  std::atomic<int64_t>            req_ts;
 
   std::atomic<bool>               m_stopped = false;
   std::atomic<bool>               m_chk_final = false;

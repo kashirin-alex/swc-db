@@ -96,6 +96,8 @@ class RangeLocateScan : public ReqScan {
   }
 
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
+    profile.add_cell(cell.encoded_length());
+
     params.range_begin.copy(cell.key); 
     std::string id_name(params.range_begin.get_string(0));
     params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
@@ -151,6 +153,8 @@ class RangeLocateScan : public ReqScan {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     }
     
+    profile.finished();
+    SWC_LOGF(LOG_DEBUG, "Locator-%s", profile.to_string().c_str());
   }
 
   RangePtr    range;

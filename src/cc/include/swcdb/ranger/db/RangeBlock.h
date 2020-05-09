@@ -136,7 +136,12 @@ class Block final {
   Mutex                     m_mutex_state;
   State                     m_state;
   std::atomic<size_t>       m_processing;
-  QueueSafe<ReqScan::Ptr>   m_queue;
+
+  struct ReqQueue {
+    ReqScan::Ptr  req;
+    int64_t       ts;
+  };
+  QueueSafe<ReqQueue>       m_queue;
 
 };
 

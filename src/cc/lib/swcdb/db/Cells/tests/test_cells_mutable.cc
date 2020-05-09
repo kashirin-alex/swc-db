@@ -194,11 +194,11 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
     exit(1);
   }
   
-  size_t cell_skips = 0;
   SWC::DB::Cells::ReqScanTest req;
   req.spec.flags.max_versions = max_versions;
-  cells_mutable->scan(&req, cell_skips);
   req.cells.configure(max_versions, 0, typ);
+  cells_mutable->scan(&req);
+  req.profile.finished();
 
   if(req.cells.size() != 0) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
@@ -213,6 +213,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
             << " max="    << latency_mutable->max()
             << " median=" << ts_total / num_cells
             << " took="   << ts_total / 1000000 << "ms"
+            << " profile("   << req.profile.to_string() << ")"
             << "\n"; 
 
   //std::cout << " clearing, ";

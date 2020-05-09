@@ -202,7 +202,7 @@ bool Block::scan(ReqScan::Ptr req) {
     Mutex::scope lock(m_mutex_state);
 
     if(!(loaded = m_state == State::LOADED)) {
-      m_queue.push(req);
+      m_queue.push({.req=req, .ts=Time::now_ns()});
       if(m_state != State::NONE)
         return true;
       m_state = State::LOADING;
@@ -390,12 +390,13 @@ std::string Block::to_string() {
 }
 
 bool Block::_scan(ReqScan::Ptr req, bool synced) {
-  size_t skips = 0; // Ranger::Stats
   // m_key_end incl. req->spec // ?has-changed(split)
+  uint64_t ts = Time::now_ns();
   {
     std::shared_lock lock(m_mutex);
-    m_cells.scan(req.get(), skips);
+    m_cells.scan(req.get());
   }
+  req->profile.add_block_scan(ts);
 
   processing_decrement();
 
@@ -418,8 +419,8 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
 }
 
 void Block::run_queue(int& err) {
-  ReqScan::Ptr req;
-  do switch((req = m_queue.front())->type) {
+  ReqQueue q;
+  do switch((q = m_queue.front()).req->type) {
 
     case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
@@ -428,14 +429,15 @@ void Block::run_queue(int& err) {
 
     default: {
       if(!err) {
-        asio::post(*Env::IoCtx::io()->ptr(), [this, req]() { _scan(req); } );
+        q.req->profile.add_block_load(q.ts);
+        asio::post(*Env::IoCtx::io()->ptr(), 
+                   [this, req=q.req]() { _scan(req); } );
         break;
       }
       blocks->processing_decrement();
       processing_decrement();
-      req->response(err);
+      q.req->response(err);
     }
-
   } while(m_queue.pop_and_more());
 }
 

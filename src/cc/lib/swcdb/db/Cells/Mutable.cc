@@ -372,16 +372,16 @@ void Mutable::write(DynamicBuffer& cells) const {
 }
 
 
-void Mutable::scan(ReqScan* req, size_t& skips) const {
+void Mutable::scan(ReqScan* req) const {
   if(!_size)
     return;
   if(max_revs == 1) 
-    scan_version_single(req, skips);
+    scan_version_single(req);
   else
-    scan_version_multi(req, skips);
+    scan_version_multi(req);
 }
 
-void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
+void Mutable::scan_version_single(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
 
@@ -394,7 +394,7 @@ void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
        (only_deletes ? cell.flag == INSERT : cell.flag != INSERT) ||
        !req->selector(key_seq, cell, stop) ||
        req->offset_adjusted()) {
-      ++skips;
+      req->profile.skip_cell();
 
     } else if(!req->add_cell_and_more(cell)) {
       break;
@@ -402,7 +402,7 @@ void Mutable::scan_version_single(ReqScan* req, size_t& skips) const {
   }
 }
 
-void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
+void Mutable::scan_version_multi(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
   
@@ -422,14 +422,14 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
 
     if((only_deletes ? cell.flag == INSERT : cell.flag != INSERT) || 
        cell.has_expired(ttl)) {
-      ++skips;
+      req->profile.skip_cell();
       continue;
     }
 
     if(chk_align) switch(DB::KeySeq::compare(key_seq, 
                                              req->spec.offset_key, cell.key)) {
       case Condition::LT: {
-        ++skips;
+        req->profile.skip_cell();
         continue;
       }
       case Condition::EQ: {
@@ -439,7 +439,7 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
             --rev;
           //if(req->offset && req->selector(cell, stop))
           //  --req->offset;
-          ++skips;
+          req->profile.skip_cell();
           continue;
         }
       }
@@ -449,12 +449,12 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
     }
 
     if(!req->selector(key_seq, cell, stop)) {
-      ++skips;
+      req->profile.skip_cell();
       continue;
     }
     if(req->matching_last(cell.key)) {
       if(!rev) {
-        ++skips;
+        req->profile.skip_cell();
         continue;
       }
     } else {
@@ -462,7 +462,7 @@ void Mutable::scan_version_multi(ReqScan* req, size_t& skips) const {
     }
 
     if(req->offset_adjusted()) {
-      ++skips;
+      req->profile.skip_cell();
       continue;
     }
 

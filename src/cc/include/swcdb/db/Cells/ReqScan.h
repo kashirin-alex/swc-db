@@ -49,6 +49,62 @@ class ReqScan : public ResponseCallback {
 
   uint64_t              offset;
 
+  struct Profile {
+    const int64_t ts_start    = Time::now_ns();
+    int64_t ts_finish;
+    uint64_t cells_count      = 0;
+    uint64_t cells_bytes      = 0;
+    uint64_t cells_skipped    = 0;
+    uint64_t blocks_scanned   = 0;
+    uint64_t block_time_scan  = 0;
+    uint64_t blocks_loaded    = 0;
+    uint64_t block_time_load  = 0;
+
+    void finished() {
+      ts_finish = Time::now_ns();
+    }
+
+    void add_cell(uint32_t bytes) {
+      ++cells_count;
+      cells_bytes += bytes;
+    }
+
+    void skip_cell() {
+      ++cells_skipped;
+    }
+    
+    void add_block_scan(int64_t ts) {
+      ++blocks_scanned;
+      block_time_scan += Time::now_ns() - ts;
+    }
+
+    void add_block_load(int64_t ts) {
+      ++blocks_loaded;
+      block_time_load += Time::now_ns() - ts;
+    }
+
+    std::string to_string() const {
+      std::string s("profile(took=");
+      s.append(std::to_string(ts_finish - ts_start));
+      s.append("ns cells(count=");
+      s.append(std::to_string(cells_count));
+      s.append(" bytes=");
+      s.append(std::to_string(cells_bytes));
+      s.append(" skip=");
+      s.append(std::to_string(cells_skipped));
+      s.append(") blocks(scanned=");
+      s.append(std::to_string(blocks_scanned));
+      s.append(" loaded=");
+      s.append(std::to_string(blocks_loaded));
+      s.append(") block(load=");
+      s.append(std::to_string(block_time_load));
+      s.append("ns scan=");
+      s.append(std::to_string(block_time_scan));
+      s.append("ns))");
+      return s;
+    }
+  };
+  Profile profile;
 };
 
 
