@@ -106,10 +106,8 @@ void Block::load_cells(const DB::Cells::MutableVec& vec_cells) {
   for(auto cells : vec_cells) {
     if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
       break;
-    if(splitter()) {
+    if(splitter())
       was_splitted = true;
-      break;
-    }
   }
 
   added = m_cells.size() - added;
