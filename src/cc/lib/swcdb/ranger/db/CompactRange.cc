@@ -175,7 +175,8 @@ void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr,
   if(compact) {
     int tnum = 0;
     if(compact->nfrags > 100 ||
-       compact->nfrags / compact->ngroups > range->cfg->log_rollout_ratio())
+       compact->ngroups > CommitLog::Fragments::MIN_COMPACT ||
+       compact->nfrags / compact->ngroups > CommitLog::Fragments::MIN_COMPACT)
       tnum += compact->repetition + 1;
     delete compact;
     if(tnum) {
@@ -275,6 +276,12 @@ void CompactRange::response(int &err) {
     : commitlog(1);
 }
 
+bool CompactRange::is_slow_req(uint64_t& median) const {
+  median = (total_cells
+    ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
+  return req_last_time > median || Time::now_ns() - req_ts > median;
+}
+
 void CompactRange::commitlog(int tnum) {
   if(range->blocks.commitlog.size() - fragments_old.size()
       < CommitLog::Fragments::MIN_COMPACT)
@@ -304,19 +311,16 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
   if(compact) {
     int tnum = 0;
     if(compact->nfrags > 100 ||
+       compact->ngroups > range->cfg->log_rollout_ratio() ||
        compact->nfrags / compact->ngroups > range->cfg->log_rollout_ratio())
       tnum += compact->repetition + 1;
     delete compact;
 
-    if(!m_stopped && !m_chk_final && range->is_loaded()) {
-      uint64_t median = (total_cells
-        ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
-      range->compacting(
-        tnum || req_last_time > median || Time::now_ns()-req_ts > median
-        ? Range::COMPACT_PREPARING : state_default.load() );
-      if(tnum)
-        return commitlog(tnum);
-    }
+    uint64_t median;
+    range->compacting(tnum && is_slow_req(median)
+      ? Range::COMPACT_PREPARING : state_default.load() );
+    if(tnum && !m_stopped && !m_chk_final && range->is_loaded())
+      return commitlog(tnum);
   }
   {
     Mutex::scope lock(m_mutex);
@@ -329,13 +333,10 @@ void CompactRange::progress_check_timer() {
   if(m_stopped || m_chk_final)
     return;
 
-  uint64_t median = (total_cells
-    ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
-
+  uint64_t median;
+  bool slow = is_slow_req(median);
   if(!range->compacting_is(Range::COMPACT_APPLYING)) {
-    range->compacting(
-      req_last_time > median || Time::now_ns()-req_ts > median
-      ? Range::COMPACT_PREPARING : state_default.load() );
+    range->compacting(slow? Range::COMPACT_PREPARING : state_default.load());
     request_more();
   }
 

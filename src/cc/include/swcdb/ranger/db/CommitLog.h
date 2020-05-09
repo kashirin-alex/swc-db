@@ -27,7 +27,7 @@ class Fragments : private std::vector<Fragment::Ptr> {
   typedef Fragments*                 Ptr;
 
   static constexpr const uint8_t  MAX_PRELOAD = 2;
-  static constexpr const uint8_t  MIN_COMPACT = 2;
+  static constexpr const uint8_t  MIN_COMPACT = 3;
 
   RangePtr            range;
   std::atomic<bool>   stopping;
