@@ -15,7 +15,6 @@ namespace SWC { namespace Ranger {
 
 class BlockLoader final {
   public:
-  static const uint8_t MAX_FRAGMENTS = 2;
 
   Block::Ptr     block;
 

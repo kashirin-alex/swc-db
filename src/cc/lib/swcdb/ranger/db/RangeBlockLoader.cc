@@ -77,7 +77,7 @@ bool BlockLoader::check_log() {
 }
 
 void BlockLoader::load_log(bool is_final, bool is_more) {
-  uint8_t vol = MAX_FRAGMENTS;
+  uint8_t vol = CommitLog::Fragments::MAX_PRELOAD;
   {
     Mutex::scope lock(m_mutex);
     vol -= m_logs;
@@ -138,7 +138,7 @@ void BlockLoader::load_log_cells() {
       }
       frag = m_fragments.front();
       m_fragments.pop();
-      more = m_logs == MAX_FRAGMENTS;
+      more = m_logs == CommitLog::Fragments::MAX_PRELOAD;
       --m_logs;
     }
     frag->load_cells(err = Error::OK, block);

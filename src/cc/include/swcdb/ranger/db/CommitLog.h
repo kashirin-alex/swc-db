@@ -26,7 +26,7 @@ class Fragments : private std::vector<Fragment::Ptr> {
   typedef std::vector<Fragment::Ptr> Vec;
   typedef Fragments*                 Ptr;
 
-  static constexpr const uint8_t  MAX_PRELOAD = 3;
+  static constexpr const uint8_t  MAX_PRELOAD = 2;
   static constexpr const uint8_t  MIN_COMPACT = 2;
 
   RangePtr            range;

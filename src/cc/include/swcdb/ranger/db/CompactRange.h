@@ -48,9 +48,9 @@ class CompactRange : public ReqScan {
   void initial_commitlog_done(CompactRange::Ptr ptr, 
                               const CommitLog::Compact* compact);
 
-  void commitlog(int tnum, uint8_t state);
+  void commitlog(int tnum);
 
-  void commitlog_done(const CommitLog::Compact* compact, uint8_t state);
+  void commitlog_done(const CommitLog::Compact* compact);
 
   void progress_check_timer();
 
@@ -107,7 +107,10 @@ class CompactRange : public ReqScan {
   std::atomic<uint64_t>           time_intval = 0;
   std::atomic<uint64_t>           time_encode = 0;
   std::atomic<uint64_t>           time_write = 0;
-  std::atomic<uint64_t>           m_ts_req;
+
+  std::atomic<uint8_t>            state_default;
+  std::atomic<uint64_t>           req_last_time;
+  std::atomic<uint64_t>           req_ts;
 
   std::atomic<bool>               m_stopped = false;
   std::atomic<bool>               m_chk_final = false;

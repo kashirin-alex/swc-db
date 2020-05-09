@@ -111,6 +111,9 @@ CompactRange::CompactRange(Compaction::Ptr compactor, RangePtr range,
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
               ts_start(Time::now_ns()), m_getting(true),
+              state_default(range->blocks.cellstores.blocks_count() > 1 
+                ? Range::COMPACT_COMPACTING : Range::COMPACT_PREPARING),
+              req_last_time(0),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
   spec.flags.max_versions = range->cfg->cell_versions();
@@ -149,12 +152,12 @@ void CompactRange::initialize() {
 
 void CompactRange::initial_commitlog(int tnum) {
   auto ptr = shared();
-  if(range->blocks.commitlog.size() <= CommitLog::Fragments::MIN_COMPACT)
+  if(range->blocks.commitlog.size() < CommitLog::Fragments::MIN_COMPACT)
     return initial_commitlog_done(ptr, nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
   size_t need = range->blocks.commitlog.need_compact(
-    groups, {}, CommitLog::Fragments::MIN_COMPACT + 1);
+    groups, {}, CommitLog::Fragments::MIN_COMPACT);
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
@@ -178,8 +181,8 @@ void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr,
 
   range->blocks.commitlog.get(fragments_old); // fragments for removal
 
-  range->compacting(Range::COMPACT_COMPACTING); // range scan&add can continue
-  m_ts_req = Time::now_ns();
+  range->compacting(state_default); // range scan &/ add can continue
+  req_ts = Time::now_ns();
   progress_check_timer();
 
   range->scan_internal(ptr);
@@ -228,6 +231,8 @@ void CompactRange::response(int &err) {
 
   total_cells += m_inblock->count - m_inblock->has_last;
   ++total_blocks;
+  req_last_time = Time::now_ns() - req_ts;
+  req_ts = Time::now_ns();
 
   size_t c = total_cells ? total_cells.load() : 1;
   SWC_LOGF(LOG_INFO, 
@@ -242,7 +247,7 @@ void CompactRange::response(int &err) {
   bool finishing;
   if(finishing = !reached_limits()) {
     stop_check_timer();
-    range->compacting(Range::COMPACT_APPLYING);
+    range->compacting(state_default = Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
     range->blocks.commitlog.commit_new_fragment(true);
   }
@@ -260,15 +265,15 @@ void CompactRange::response(int &err) {
   if(m_stopped || !in_block)
     return;
 
-  finishing 
-    ? commitlog_done(nullptr, Range::COMPACT_APPLYING)
-    : commitlog(1, Range::COMPACT_COMPACTING);
+  finishing
+    ? commitlog_done(nullptr)
+    : commitlog(1);
 }
 
-void CompactRange::commitlog(int tnum, uint8_t state) {
+void CompactRange::commitlog(int tnum) {
   if(range->blocks.commitlog.size() - fragments_old.size()
       < CommitLog::Fragments::MIN_COMPACT)
-    return commitlog_done(nullptr, state);
+    return commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
   size_t need = range->blocks.commitlog.need_compact(
@@ -276,37 +281,36 @@ void CompactRange::commitlog(int tnum, uint8_t state) {
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
-      [state, ptr=shared()] (const CommitLog::Compact* compact) {
-        ptr->commitlog_done(compact, state); 
+      [ptr=shared()] (const CommitLog::Compact* compact) {
+        ptr->commitlog_done(compact); 
       }
     );
   } else {
-    commitlog_done(nullptr, state);
+    commitlog_done(nullptr);
   } 
 }
 
-void CompactRange::commitlog_done(const CommitLog::Compact* compact,
-                                  uint8_t state) {
+void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
     if(compact)
       delete compact;
     return;
   }
   if(compact) {
-    int tnum = compact->nfrags / compact->ngroups 
-              > range->cfg->log_rollout_ratio() ? compact->repetition + 1 : 0;
-    if(tnum  || Time::now_ns()-m_ts_req.load() > ((total_cells.load() 
-                ? (Time::now_ns()-ts_start) / total_cells.load()
-                : 10000) * blk_cells) * 3)
-      state = Range::COMPACT_PREPARING;
+    int tnum = 0;
+    if(compact->nfrags > 100 ||
+       compact->nfrags / compact->ngroups > range->cfg->log_rollout_ratio())
+      tnum += compact->repetition + 1;
     delete compact;
+
     if(!m_stopped && !m_chk_final && range->is_loaded()) {
-      
-      range->compacting(state);
-      if(tnum) {
-        commitlog(tnum, state);
-        return;
-      }
+      uint64_t median = (total_cells
+        ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
+      range->compacting(
+        tnum || req_last_time > median || Time::now_ns()-req_ts > median
+        ? Range::COMPACT_PREPARING : state_default.load() );
+      if(tnum)
+        return commitlog(tnum);
     }
   }
   {
@@ -320,22 +324,20 @@ void CompactRange::progress_check_timer() {
   if(m_stopped || m_chk_final)
     return;
 
-  uint64_t median = (total_cells.load() 
-    ? (Time::now_ns() - ts_start) / total_cells.load() : 10000) * blk_cells;
+  uint64_t median = (total_cells
+    ? (Time::now_ns() - ts_start) / total_cells : 10000) * blk_cells * 2;
 
   if(!range->compacting_is(Range::COMPACT_APPLYING)) {
     range->compacting(
-      Time::now_ns() - m_ts_req.load() > median * 3 
-      ? Range::COMPACT_PREPARING  // mitigate add req. workload
-      : Range::COMPACT_COMPACTING // range scan & add reqs can continue
-    );
+      req_last_time > median || Time::now_ns()-req_ts > median
+      ? Range::COMPACT_PREPARING : state_default.load() );
     request_more();
   }
 
   if((median /= 1000000) < 1000)
     median = 1000;
   Mutex::scope lock(m_mutex);
-  m_chk_timer.expires_from_now(std::chrono::milliseconds(median*2));
+  m_chk_timer.expires_from_now(std::chrono::milliseconds(median));
   m_chk_timer.async_wait(
     [ptr=shared()](const asio::error_code ec) {
       if(ec == asio::error::operation_aborted)
@@ -373,7 +375,6 @@ void CompactRange::request_more() {
       return;
     }
   }
-  m_ts_req = Time::now_ns();
 
   asio::post(*RangerEnv::maintenance_io()->ptr(), 
     [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
@@ -474,7 +475,7 @@ uint32_t CompactRange::create_cs(int& err) {
   if(id == range->cfg->cellstore_max() * portion) {
     stop_check_timer();
     // mitigate add req. total workload
-    range->compacting(Range::COMPACT_PREPARING);
+    range->compacting(state_default = Range::COMPACT_PREPARING);
   }
   return id;
 
