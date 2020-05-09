@@ -173,10 +173,15 @@ void CompactRange::initial_commitlog(int tnum) {
 void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr, 
                                           const CommitLog::Compact* compact) {
   if(compact) {
-    int tnum = compact->repetition+1;
+    int tnum = 0;
+    if(compact->nfrags > 100 ||
+       compact->nfrags / compact->ngroups > range->cfg->log_rollout_ratio())
+      tnum += compact->repetition + 1;
     delete compact;
-    range->compacting(Range::COMPACT_PREPARING); // range scan can continue
-    return initial_commitlog(tnum);
+    if(tnum) {
+      range->compacting(Range::COMPACT_PREPARING); // range scan can continue
+      return initial_commitlog(tnum);
+    }
   }
 
   range->blocks.commitlog.get(fragments_old); // fragments for removal
