@@ -23,7 +23,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other);
 
 Condition::Comp
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
-        uint32_t max, bool empty_ok=false, bool empty_eq=false);
+        int32_t max, bool empty_ok=false, bool empty_eq=false);
 
 bool
 compare(const Types::KeySeq seq, 

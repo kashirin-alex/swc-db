@@ -128,7 +128,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 template<Types::KeySeq T_seq>
 Condition::Comp 
 compare(const Cell::Key& key, const Cell::Key& other,
-        uint32_t max, bool empty_ok, bool empty_eq) {
+        uint24_t max, bool empty_ok, bool empty_eq) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     if(max && min > max)
       min = max;  
@@ -157,7 +157,7 @@ template<>
 Condition::Comp 
 compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::Key& other,
-        uint32_t max, bool empty_ok, bool empty_eq) {
+        uint24_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count ) {
     if(key.count < other.count)
       return Condition::GT;
@@ -171,7 +171,7 @@ template<>
 Condition::Comp 
 compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::Key& other,
-        uint32_t max, bool empty_ok, bool empty_eq) {
+        uint24_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count ) {
     if(key.count < other.count)
       return Condition::GT;
@@ -184,22 +184,30 @@ compare<Types::KeySeq::FC_VOLUME>(
 
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
-        uint32_t max, bool empty_ok, bool empty_eq) {
+        int32_t max, bool empty_ok, bool empty_eq) {
   switch(seq) {
 
     case Types::KeySeq::LEXIC:
+      if(max == -1)
+        max = key.count;
       return compare<Types::KeySeq::LEXIC>(
         key, other, max, empty_ok, empty_eq);
 
     case Types::KeySeq::VOLUME:
+      if(max == -1)
+        max = key.count;
       return compare<Types::KeySeq::VOLUME>(
         key, other, max, empty_ok, empty_eq);
 
     case Types::KeySeq::FC_LEXIC:
+      if(max == -1)
+        max = other.count;
       return compare<Types::KeySeq::FC_LEXIC>(
         key, other, max, empty_ok, empty_eq);
 
     case Types::KeySeq::FC_VOLUME:
+      if(max == -1)
+        max = other.count;
       return compare<Types::KeySeq::FC_VOLUME>(
         key, other, max, empty_ok, empty_eq);
 
