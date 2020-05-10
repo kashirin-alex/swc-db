@@ -126,8 +126,7 @@ Cell*& Mutable::operator[](size_t idx) {
 }
 
 bool Mutable::has_one_key() const {
-  return  DB::KeySeq::compare(key_seq, front()->key, back()->key) 
-            == Condition::EQ;
+  return front()->key.equal(back()->key);
 }
 
 
@@ -275,12 +274,10 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
     cell=*it.item;
 
     if(!key_start.empty() && 
-        DB::KeySeq::compare(key_seq, key_start, cell->key, 0) 
-          == Condition::LT)
+        DB::KeySeq::compare(key_seq, key_start, cell->key) == Condition::LT)
       continue;
     if(!key_finish.empty() && 
-        DB::KeySeq::compare(key_seq, key_finish ,cell->key, 0) 
-          == Condition::GT) {
+        DB::KeySeq::compare(key_seq, key_finish, cell->key) == Condition::GT) {
       more = false;
       break;
     }
@@ -353,7 +350,7 @@ bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
                   DB::Cell::Key& res) const {
   Condition::Comp chk;  
   for(auto it = ConstIterator(&buckets, _narrow(key)); it; ++it) {
-    if((chk = DB::KeySeq::compare(key_seq, key, (*it.item)->key, 0))
+    if((chk = DB::KeySeq::compare(key_seq, key, (*it.item)->key))
                 == Condition::GT 
       || (comp == Condition::GE && chk == Condition::EQ)){
       res.copy((*it.item)->key);
@@ -547,7 +544,7 @@ void Mutable::split(Mutable& cells,
     cell=*it.item;
 
     if(!from_set) {
-      if(DB::KeySeq::compare(key_seq, cell->key, from_cell->key, 0)
+      if(DB::KeySeq::compare(key_seq, cell->key, from_cell->key)
            == Condition::GT) {
        --count;
         continue;
@@ -606,7 +603,7 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
       continue;
     }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0)) 
+    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) 
                 == Condition::GT) {
       ++it;
       ++*offsetp;
@@ -647,7 +644,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
       continue;
     }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0))
+    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
                == Condition::GT) {
       ++it;
       ++*offsetp;
@@ -715,7 +712,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
       continue;
     }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key, 0)) 
+    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) 
                 == Condition::GT) { 
       ++it;
       ++*offsetp;
@@ -780,7 +777,7 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
 
   try_narrow:
     if(DB::KeySeq::compare(
-        key_seq, (*ConstIterator(&buckets, offset).item)->key, key, 0)
+        key_seq, (*ConstIterator(&buckets, offset).item)->key, key)
         == Condition::GT) {
       if(step < narrow_sz)
         return offset;
@@ -846,8 +843,7 @@ void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) {
 
 void Mutable::_remove_overhead(Mutable::Iterator& it, const DB::Cell::Key& key,
                                uint32_t revs) {
-  while(it && DB::KeySeq::compare(key_seq, (*it.item)->key, key, 0) 
-                                                  == Condition::EQ) {
+  while(it && key.equal((*it.item)->key)) {
     if((*it.item)->flag == INSERT && ++revs > max_revs)
       _remove(it);
     else 
