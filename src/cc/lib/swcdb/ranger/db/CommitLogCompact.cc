@@ -54,12 +54,10 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
 void Compact::Group::load() {
   int err;
   Fragment::Ptr frag;
-  uint64_t ts;
   bool finished;
   do {
     frag = m_queue.front();
 
-    ts = Time::now_ns();
     err = Error::OK;
     if(!compact->log->stopping && !error) {
       frag->load_cells(err, m_cells);
@@ -73,17 +71,6 @@ void Compact::Group::load() {
         compact->log->range->cfg->cid, compact->log->range->rid,
         err, Error::get_text(err), frag->to_string().c_str()
       );
-    if(!compact->log->stopping && !error) {
-      ts = Time::now_ns() - ts;
-      SWC_LOGF(LOG_INFO, 
-        "COMPACT-LOG-PROGRESS %d/%d w=%d(%lld/%lld) %lld(%lldns/cell)"
-        " sz=%lld begin-%s", 
-        compact->log->range->cfg->cid, compact->log->range->rid, 
-        worker, m_remove.size(), read_frags.size(), 
-        frag->cells_count, frag->cells_count? ts/frag->cells_count: 0, 
-        m_cells.size(), frag->interval.key_begin.to_string().c_str()
-      );
-    }
 
     m_mutex.lock();
     finished = (!--m_loading && m_queue.size() == 1 && 
@@ -102,7 +89,7 @@ void Compact::Group::load() {
 void Compact::Group::write() {
   if(compact->log->stopping || error || m_cells.empty())
     return;
-  
+  size_t cells_count = 0;
   int err = Error::OK;
   do {
     DynamicBuffer cells;
@@ -119,6 +106,7 @@ void Compact::Group::write() {
       compact->log->range->cfg->block_size(), 
       compact->log->range->cfg->block_cells()
     );
+    cells_count += frag->cells_count;
 
     frag->write(
       err, 
@@ -133,7 +121,7 @@ void Compact::Group::write() {
   } while(!error && !m_cells.empty());
 
   m_sem.wait_all();
-  compact->finished(this);
+  compact->finished(this, cells_count);
 }
 
 void Compact::Group::finalize() {
@@ -210,15 +198,17 @@ Compact::Compact(Fragments* log, int repetition,
 
 Compact::~Compact() { }
 
-void Compact::finished(Group* group) {
+void Compact::finished(Group* group, size_t cells_count) {
   m_mutex.lock();
   uint8_t running = --m_workers;
   m_mutex.unlock();
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-PROGRESS %d/%d running=%d worker=%d-%lldns",
+    "COMPACT-LOG-PROGRESS %d/%d running=%d "
+    "worker=%d %lldus cells=%lld(%lldns)",
     log->range->cfg->cid, log->range->rid, running, 
-    group->worker, (Time::now_ns()-group->ts) 
+    group->worker, (Time::now_ns() - group->ts)/1000,
+    cells_count, cells_count ? (Time::now_ns() - group->ts)/cells_count: 0
   );
   if(running)
     return;

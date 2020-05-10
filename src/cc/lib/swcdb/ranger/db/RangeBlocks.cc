@@ -174,7 +174,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         nxt_blks.clear();
       }
 
-      if(Env::Resources.need_ram(range->cfg->block_size()))
+      if(Env::Resources.need_ram(range->cfg->block_size() * 3))
         release_prior(blk); // release_and_merge(blk);
     }
 
@@ -188,7 +188,6 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 }
 
 void Blocks::preload(ReqScan::Ptr req, const std::vector<Block::Ptr>& blks) {
-  SWC_PRINT << " Blocks::preload sz=" << blks.size() << SWC_PRINT_CLOSE;
   for(auto nxt_blk : blks) {
     if(nxt_blk->includes(req->spec))
       nxt_blk->preload();
@@ -271,34 +270,6 @@ void Blocks::release_prior(Block::Ptr blk) {
   if(blk)
     blk->release();
 }
-
-/*
-void Blocks::release_and_merge(Block::Ptr blk) {
-  Mutex::scope lock(m_mutex);
-  bool state = false;
-  for(size_t idx = 0; idx<m_blocks.size(); ++idx) {
-    if(blk == m_blocks[idx]) {
-      if(idx < 2)
-        return;
-      auto ptr1 = m_blocks[idx-2];
-      if(ptr1->processing())
-        return;
-      auto ptr2 = m_blocks[idx-1];
-      if(ptr2->processing())
-        return;
-      ptr2->merge_and_release(ptr1);
-      delete ptr1;
-      m_blocks.erase(m_blocks.begin()+idx-2);
-      --idx;
-      //state = true;
-    }
-  }
-  if(state) {
-    for(auto blk : m_blocks)
-      std::cout << " " << blk->to_string() << "\n"; 
-  }
-}
-*/
 
 size_t Blocks::release(size_t bytes) {
   size_t released = cellstores.release(bytes);

@@ -237,9 +237,8 @@ void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
 
 void Fragment::split(int& err, const DB::Cell::Key& key, 
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
-  uint64_t tts = Time::now_ns();
-  size_t count = 0;
   if(m_buffer.size) {
+    size_t count = 0;
     DB::Cells::Cell cell;
     const uint8_t* buf = m_buffer.base;
     size_t remain = m_buffer.size;
@@ -249,9 +248,10 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
       try {
         cell.read(&buf, &remain);
 
-      } catch(std::exception) {
-        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
-                count, cells_count, remain, to_string().c_str());
+      } catch(...) {
+        SWC_LOGF(LOG_ERROR, 
+          "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+          count, cells_count, remain, to_string().c_str());
         break;
       }
 
@@ -262,16 +262,8 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
     }
   } else {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
-             to_string().c_str());
+      to_string().c_str());
   }
-  
-  auto took = Time::now_ns()-tts;
-  SWC_PRINT << "Fragment::split"
-            << " added=" << count 
-            << " avg=" << (count>0 ? took / count : 0)
-            << " took=" << took
-            << SWC_PRINT_CLOSE;
-  
   processing_decrement();
   release();
 }

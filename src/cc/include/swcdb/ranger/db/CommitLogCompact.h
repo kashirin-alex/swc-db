@@ -67,7 +67,7 @@ class Compact final {
 
   private:
 
-  void finished(Group* group);
+  void finished(Group* group, size_t cells_count);
 
   const std::string get_filepath(const int64_t frag) const;
 

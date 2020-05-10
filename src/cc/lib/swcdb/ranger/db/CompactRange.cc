@@ -592,11 +592,9 @@ void CompactRange::finalize() {
       return;
     }
     if(!ok)
-      SWC_LOGF(
-        LOG_WARN, 
-        "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d", 
-        range->cfg->cid, range->rid, cellstores.size()
-      );
+      SWC_LOGF(LOG_WARN, 
+        "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d",
+        range->cfg->cid, range->rid, cellstores.size());
   }
   
   apply_new(empty_cs);
@@ -611,11 +609,9 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     (client::ConnQueue::ReqBase::Ptr req, 
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
-      SWC_LOGF(
-        LOG_DEBUG, 
+      SWC_LOGF(LOG_DEBUG, 
         "Compact::Mngr::Req::RangeCreate err=%d(%s) %d/%d", 
-        rsp.err, Error::get_text(rsp.err), cid, rsp.rid
-        );
+        rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
       if(rsp.err && 
          rsp.err != Error::COLUMN_NOT_EXISTS &&
@@ -641,12 +637,10 @@ void CompactRange::mngr_remove_range(RangePtr new_range) {
     (client::ConnQueue::ReqBase::Ptr req, 
      const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
-      SWC_LOGF(
-        LOG_DEBUG, 
+      SWC_LOGF(LOG_DEBUG, 
         "Compact::Mngr::Req::RangeRemove err=%d(%s) %d/%d", 
         rsp.err, Error::get_text(rsp.err), 
-        new_range->cfg->cid, new_range->rid
-      );
+        new_range->cfg->cid, new_range->rid);
       
       if(rsp.err && 
          rsp.err != Error::COLUMN_NOT_EXISTS &&
@@ -667,6 +661,7 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
   if(col == nullptr || col->removing())
     return quit();
 
+  int64_t ts = Time::now_ns();
   SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %d/%d new-rid=%d", 
            range->cfg->cid, range->rid, new_rid);
 
@@ -697,10 +692,6 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     mngr_remove_range(new_range);
     return quit();
   }
-
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %d/%d new-end=%s", 
-            range->cfg->cid, range->rid, 
-            cellstores.back()->interval.key_end.to_string().c_str());
 
   if(range->blocks.commitlog.cells_count()) {
     /* split latest fragments to new_range from new interval key_end */
@@ -735,11 +726,9 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
         [cid, new_rid](client::ConnQueue::ReqBase::Ptr req, 
          const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
-          SWC_LOGF(
-            LOG_DEBUG, 
+          SWC_LOGF(LOG_DEBUG, 
             "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %d/%d", 
-            rsp.err, Error::get_text(rsp.err), cid, new_rid
-          );
+            rsp.err, Error::get_text(rsp.err), cid, new_rid);
           if(rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
              rsp.err != Error::COLUMN_MARKED_REMOVED &&
@@ -751,6 +740,9 @@ void CompactRange::split(int64_t new_rid, uint32_t split_at) {
     }
   );
 
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %d/%d took=%lldns new-end=%s", 
+            range->cfg->cid, range->rid, Time::now_ns() - ts,
+            cellstores.back()->interval.key_end.to_string().c_str());
   finished(true);
 }
 

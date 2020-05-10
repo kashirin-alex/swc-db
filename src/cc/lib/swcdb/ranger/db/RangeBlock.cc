@@ -74,7 +74,6 @@ bool Block::includes(const DB::Specs::Interval& spec) {
 }
     
 void Block::preload() {
-  //SWC_PRINT << " BLK_PRELOAD " << to_string() << SWC_PRINT_CLOSE;
   asio::post(
     *Env::IoCtx::io()->ptr(), 
     [this](){ scan(std::make_shared<ReqScanBlockLoader>());}
@@ -97,31 +96,12 @@ void Block::load_cells(const DB::Cells::MutableVec& vec_cells) {
   if(vec_cells.empty())
     return;
 
-  auto ts = Time::now_ns();
-  bool was_splitted = false;
-
   std::scoped_lock lock(m_mutex);
-  size_t added = m_cells.size();
-
   for(auto cells : vec_cells) {
     if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
       break;
-    if(splitter())
-      was_splitted = true;
+    splitter();
   }
-
-  added = m_cells.size() - added;
-  auto took = Time::now_ns() - ts;
-  SWC_PRINT << "Block::load_cells(cells)"
-            << " synced=0"
-            << " avail=" << vec_cells.size() 
-            << " added=" << added 
-            << " skipped=" << vec_cells.size()-added
-            << " avg=" << (added>0 ? took / added : 0)
-            << " took=" << took
-            << std::flush << " " << m_cells.to_string() 
-            << " splitted=" << was_splitted
-            << SWC_PRINT_CLOSE;
 }
 
 size_t Block::load_cells(const uint8_t* buf, size_t remain, 
@@ -131,8 +111,6 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
   size_t count = 0;
   size_t added = 0;
   size_t offset_hint = 0;
-    
-  uint64_t ts = Time::now_ns();
 
   std::scoped_lock lock(m_mutex);
   if(revs > blocks->range->cfg->cell_versions())
@@ -146,7 +124,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     try {
       cell.read(&buf, &remain);
       
-    } catch(std::exception) {
+    } catch(...) {
       SWC_LOGF(LOG_ERROR, 
         "Cell trunclated at count=%llu/%llu remain=%llu %s < key <= %s",
         count, avail, remain, 
@@ -177,18 +155,6 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       offset_hint = 0;
     }
   }
-
-  auto took = Time::now_ns() - ts;
-  SWC_PRINT << "Block::load_cells(rbuf)"
-            << " synced=" << synced 
-            << " avail=" << avail 
-            << " added=" << added 
-            << " skipped=" << avail-added
-            << " avg=" << (added>0 ? took / added : 0)
-            << " took=" << took
-            << " " << m_cells.to_string()
-            << " splitted=" << was_splitted
-            << SWC_PRINT_CLOSE;
   return added;
 }
 
