@@ -8,7 +8,7 @@ import fabric, fabric.main, fabric.executor
 
 
 swcdb_install_path = os.path.abspath(
-    os.path.dirname(os.path.abspath(__file__)) + "/../..")
+    os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 # configurations 
 
