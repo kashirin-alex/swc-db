@@ -196,18 +196,14 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
 
 bool Interval::is_matching_begin(const Types::KeySeq key_seq, 
                                  const DB::Cell::Key& key) const {
-  return range_begin.empty() || 
-          DB::KeySeq::compare(
-           key_seq, range_begin, key, range_begin.count, true, true) 
-          != Condition::LT;
+  return range_begin.empty() || DB::KeySeq::compare(
+    key_seq, range_begin, key, -1, true, true) != Condition::LT;
 }
 
 bool Interval::is_matching_end(const Types::KeySeq key_seq, 
                                const DB::Cell::Key& key) const {
-  return range_end.empty() || 
-         DB::KeySeq::compare(
-           key_seq, range_end, key, range_end.count, true, true)
-          != Condition::GT;
+  return range_end.empty() || DB::KeySeq::compare(
+    key_seq, range_end, key, -1, true, true) != Condition::GT;
 }
 
 size_t Interval::encoded_length() const {

@@ -424,9 +424,7 @@ size_t Blocks::_narrow(const DB::Cell::Key& key) const {
     if(m_blocks_idx.size() < MAX_IDX_NARROW || key.empty())
       return offset;
       
-    size_t sz = m_blocks_idx.size() >> 1;
-    offset = sz; 
-    for(;;) {
+    for(size_t sz = offset = m_blocks_idx.size() >> 1;;) {
       if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {
         if(sz < MAX_IDX_NARROW)
           break;
