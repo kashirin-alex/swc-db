@@ -260,6 +260,10 @@ void Serialized::get_connection(
 }
 
 void Serialized::preserve(ConnHandlerPtr conn) {
+  if(!conn->is_open()) {
+    conn->do_close();
+    return;
+  }
   size_t hash = conn->endpoint_remote_hash();
 
   Mutex::scope lock(m_mutex);

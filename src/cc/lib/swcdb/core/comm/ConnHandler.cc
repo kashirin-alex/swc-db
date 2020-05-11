@@ -10,24 +10,6 @@
 
 namespace SWC { 
 
-
-ConnHandler::PendingRsp::PendingRsp(DispatchHandler::Ptr hdlr, 
-                                    asio::high_resolution_timer* tm) 
-                                    : hdlr(hdlr), tm(tm) {
-}
-
-ConnHandler::PendingRsp::~PendingRsp() { 
-  if(tm) 
-    delete tm; 
-}
-
-
-ConnHandler::Outgoing::Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr)
-                                : cbuf(cbuf), hdlr(hdlr) { 
-}
-
-ConnHandler::Outgoing::~Outgoing() { }
-
 ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
                         : connected(false), 
                           app_ctx(app_ctx), m_next_req_id(0) {
@@ -125,7 +107,7 @@ bool ConnHandler::send_response(CommBuf::Ptr& cbuf,
     return false;
 
   cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-  write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
+  write_or_queue(cbuf, hdlr);
   return true;
 }
 
@@ -134,9 +116,7 @@ bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
     return false;
     
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-  //if(!cbuf->header.id) update id in-case cbuf switched over conns
-  cbuf->header.id = next_req_id();
-  write_or_queue(new ConnHandler::Outgoing(cbuf, hdlr));
+  write_or_queue(cbuf, hdlr);
   return true;
 }
 
@@ -182,76 +162,69 @@ std::string ConnHandler::to_string() {
   return s;
 }
 
-uint32_t ConnHandler::next_req_id() {
-  Mutex::scope lock(m_mutex);  
-  while(m_pending.find(
-    ++m_next_req_id == 0 ? ++m_next_req_id : m_next_req_id
-    ) != m_pending.end()
-  );
-  return m_next_req_id;
-}
-
-asio::high_resolution_timer* ConnHandler::get_timer(const CommHeader& header) {
-  if(!header.timeout_ms)
-    return nullptr;
-
-  auto tm = get_timer(header.timeout_ms); 
-
-  auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
-  ev->header.initialize_from_request_header(header);
-
-  tm->async_wait(
-    [ev, ptr=ptr()]
-    (const asio::error_code ec) {
-      if(ec != asio::error::operation_aborted)
-        ptr->run_pending(ev);
+void ConnHandler::pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr, 
+                          uint32_t ms) {
+  for(;;) {
+    Mutex::scope lock(m_mutex);
+    if(cbuf->header.id) {
+      m_next_req_id = cbuf->header.id;
+      cbuf->header.id = 0;
+    } else {
+      ++m_next_req_id;
     }
-  );
-  return tm;
-}
-    
-void ConnHandler::write_or_queue(ConnHandler::Outgoing* data) { 
-  if(m_outgoing.activating(data))
-    write(data);
+    if(m_pending.find(m_next_req_id ? m_next_req_id : ++m_next_req_id) 
+                                                      != m_pending.end())
+      continue;
+
+    auto tm = ms ? get_timer(ms) : nullptr;
+    m_pending.emplace(cbuf->header.id=m_next_req_id, PendingRsp({hdlr, tm}));
+    if(!ms) 
+      return;
+
+    auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
+    ev->header.initialize_from_request_header(cbuf->header);
+    tm->async_wait([ev, conn=ptr()] (const asio::error_code ec) {
+      if(ec != asio::error::operation_aborted)
+        conn->run_pending(ev);
+    });
+    return;
+  }
 }
 
-void ConnHandler::pending(ConnHandler::Outgoing* data, 
-                          asio::high_resolution_timer* tm) {
-  Mutex::scope lock(m_mutex);
-  m_pending.emplace(
-    data->cbuf->header.id,
-    new ConnHandler::PendingRsp(data->hdlr, tm)
-  );
+void ConnHandler::write_or_queue(CommBuf::Ptr& cbuf, 
+                                 DispatchHandler::Ptr& hdlr) { 
+  if(m_outgoing.activating({cbuf, hdlr}))
+    write(cbuf, hdlr);
 }
 
 void ConnHandler::clear_outgoing() {
-  ConnHandler::Outgoing* data;
+  Outgoing data;
   while(!m_outgoing.deactivating(&data)) {
-    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      pending(data, nullptr);
-    delete data;
+    auto [cbuf, hdlr] = data;
+    if(cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+      pending(cbuf, hdlr, 0);
   }
 }
 
 void ConnHandler::next_outgoing() {
-  ConnHandler::Outgoing* data;
-  if(!m_outgoing.deactivating(&data)) 
-    write(data);
+  Outgoing data;
+  if(!m_outgoing.deactivating(&data)) {
+    auto [cbuf, hdlr] = data;
+    write(cbuf, hdlr);
+  }
 }
 
-void ConnHandler::write(ConnHandler::Outgoing* data) {
-
-  if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) 
-    pending(data, get_timer(data->cbuf->header));
+void ConnHandler::write(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr) {
+  if(cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) 
+    pending(cbuf, hdlr, cbuf->header.timeout_ms);
 
   std::vector<asio::const_buffer> buffers;
-  data->cbuf->get(buffers);
+  cbuf->get(buffers);
   
   do_async_write(
     buffers,
-    [data, ptr=ptr()]
+    [cbuf, ptr=ptr()]
     (const asio::error_code ec, uint32_t len) {
-      delete data;
       if(ec) {
         ptr->do_close();
       } else {
@@ -427,21 +400,23 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 void ConnHandler::disconnected() {
   clear_outgoing();
 
-  ConnHandler::PendingRsp* pending;
+  DispatchHandler::Ptr hdlr;
   Event::Ptr ev;
   for(;;) {
     {
       Mutex::scope lock(m_mutex);
       if(m_pending.empty())
         return;
-      pending = m_pending.begin()->second;
+      hdlr = std::get<0>(m_pending.begin()->second);
+      auto tm = std::get<1>(m_pending.begin()->second);
+      if(tm) {
+        tm->cancel();
+        delete tm;
+      }
       m_pending.erase(m_pending.begin());
     }
-    if(pending->tm != nullptr) 
-      pending->tm->cancel();
     ev = Event::make(Event::Type::DISCONNECT, Error::OK);
-    pending->hdlr->handle(ptr(), ev);
-    delete pending;
+    hdlr->handle(ptr(), ev);
   }
 }
 
@@ -451,21 +426,23 @@ void ConnHandler::run_pending(Event::Ptr ev) {
     return;
   }
 
-  ConnHandler::PendingRsp* pending = nullptr;
+  DispatchHandler::Ptr hdlr = nullptr;
   {
     Mutex::scope lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
     if(it != m_pending.end()) {
-      pending = it->second;
-      if(pending->tm != nullptr)
-        pending->tm->cancel();
+      hdlr = std::get<0>(it->second);
+      auto tm = std::get<1>(it->second);
+      if(tm) {
+        tm->cancel();
+        delete tm;
+      }
       m_pending.erase(it);
     }
   }
 
-  if(pending) {
-    pending->hdlr->handle(ptr(), ev);
-    delete pending;
+  if(hdlr != nullptr) {
+    hdlr->handle(ptr(), ev);
   } else {
     run(ev);
   }
@@ -480,8 +457,9 @@ ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr app_ctx,
                                     m_sock(std::move(socket)) {
 }
 
-ConnHandlerPlain::~ConnHandlerPlain() { 
-  do_close();
+ConnHandlerPlain::~ConnHandlerPlain() {
+  if(connected && m_sock.is_open())
+    try{ m_sock.close(); } catch(...) { }
 }
 
 void ConnHandlerPlain::do_close() {
@@ -560,7 +538,8 @@ ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr app_ctx,
 }
 
 ConnHandlerSSL::~ConnHandlerSSL() { 
-  do_close();
+  if(connected && m_sock.lowest_layer().is_open())
+    try{ m_sock.lowest_layer().close(); } catch(...) { }
 }
 
 void ConnHandlerSSL::do_close() {

@@ -27,25 +27,8 @@ using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
-
-  struct PendingRsp final {
-    public:
-    PendingRsp(DispatchHandler::Ptr hdlr, asio::high_resolution_timer* tm);
-    ~PendingRsp();
-    DispatchHandler::Ptr          hdlr;
-    asio::high_resolution_timer*  tm;
-  };
-
-  struct Outgoing final {
-    public:
-    Outgoing(CommBuf::Ptr cbuf, DispatchHandler::Ptr hdlr);
-    ~Outgoing();
-    CommBuf::Ptr          cbuf;
-    DispatchHandler::Ptr  hdlr; 
-  };
-
   public:
-  
+
   std::atomic<bool>     connected;
   const AppContext::Ptr app_ctx;
   EndPoint              endpoint_remote;
@@ -118,19 +101,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  uint32_t next_req_id();
+  void pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr, uint32_t ms);
 
-  asio::high_resolution_timer* get_timer(const CommHeader& header);
-    
-  void write_or_queue(Outgoing* data);
-  
-  void pending(ConnHandler::Outgoing* data, asio::high_resolution_timer* tm);
+  void write_or_queue(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
 
   void next_outgoing();
 
   void clear_outgoing();
 
-  void write(Outgoing* data);
+  void write(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
 
   void read_pending();
 
@@ -150,11 +129,23 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void run_pending(Event::Ptr ev);
 
   uint32_t                    m_next_req_id;
-  QueueSafeStated<Outgoing*>  m_outgoing;
+
+  typedef std::tuple<
+    CommBuf::Ptr, DispatchHandler::Ptr> Outgoing;
+  QueueSafeStated<Outgoing>   m_outgoing;
 
   bool                        m_accepting = 0;
   bool                        m_reading = 0;
-  std::unordered_map<uint32_t, PendingRsp*>  m_pending;
+
+  typedef std::tuple<
+    DispatchHandler::Ptr, asio::high_resolution_timer*> PendingRsp;
+                     
+  struct PendingRspHash {
+    size_t operator()(const uint32_t id) const {
+      return id / UINT16_MAX;
+    }
+  };
+  std::unordered_map<uint32_t, PendingRsp, PendingRspHash>  m_pending;
 
 };
 
