@@ -10,7 +10,7 @@
 namespace SWC {
 
 namespace {
-static const uint16_t BUFFER_CHUNCK_SZ = 4096;
+static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
 CommBuf::Ptr CommBuf::make(uint32_t reserve) {
@@ -90,22 +90,22 @@ void CommBuf::get(std::vector<asio::const_buffer>& buffers) {
   write_header();
   buffers.reserve(
     3 + 
-    buf_data.size/BUFFER_CHUNCK_SZ + 
-    buf_ext.size/BUFFER_CHUNCK_SZ
+    buf_data.size/BUFFER_CHUNK_SZ + 
+    buf_ext.size/BUFFER_CHUNK_SZ
   );
   buffers.emplace_back(buf_header.base, buf_header.size);
 
-  if(buf_data.size) for(size_t i=0; ; i += BUFFER_CHUNCK_SZ) {
-    if(buf_data.size > i + BUFFER_CHUNCK_SZ) {
-      buffers.emplace_back(buf_data.base + i, BUFFER_CHUNCK_SZ);
+  if(buf_data.size) for(size_t i=0; ; i += BUFFER_CHUNK_SZ) {
+    if(buf_data.size > i + BUFFER_CHUNK_SZ) {
+      buffers.emplace_back(buf_data.base + i, BUFFER_CHUNK_SZ);
     } else {
       buffers.emplace_back(buf_data.base + i, buf_data.size - i);
       break;
     }
   }
-  if(buf_ext.size) for(size_t i=0; ; i += BUFFER_CHUNCK_SZ) {
-    if(buf_ext.size > i + BUFFER_CHUNCK_SZ) {
-      buffers.emplace_back(buf_ext.base + i, BUFFER_CHUNCK_SZ);
+  if(buf_ext.size) for(size_t i=0; ; i += BUFFER_CHUNK_SZ) {
+    if(buf_ext.size > i + BUFFER_CHUNK_SZ) {
+      buffers.emplace_back(buf_ext.base + i, BUFFER_CHUNK_SZ);
     } else {
       buffers.emplace_back(buf_ext.base + i, buf_ext.size - i);
       break;
