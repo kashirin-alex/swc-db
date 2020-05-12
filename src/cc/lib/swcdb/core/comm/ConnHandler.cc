@@ -20,8 +20,7 @@ ConnHandlerPtr ConnHandler::ptr() {
 }
 
 ConnHandler::~ConnHandler() {
-  Outgoing* data;
-  while(!m_outgoing.deactivating(&data))
+  for(Outgoing* data; !m_outgoing.deactivating(&data);)
     delete data;
 
   for(auto it=m_pending.begin(); it!=m_pending.end(); ++it)
@@ -114,7 +113,7 @@ bool ConnHandler::send_response(CommBuf::Ptr& cbuf,
     return false;
 
   cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-  write_or_queue(cbuf, hdlr);
+  write_or_queue(new Outgoing(cbuf, hdlr));
   return true;
 }
 
@@ -123,7 +122,7 @@ bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
     return false;
     
   cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-  write_or_queue(cbuf, hdlr);
+  write_or_queue(new Outgoing(cbuf, hdlr));
   return true;
 }
 
@@ -196,20 +195,9 @@ void ConnHandler::pending(ConnHandler::Outgoing* data, uint32_t ms) {
     });
 }
 
-void ConnHandler::write_or_queue(CommBuf::Ptr& cbuf, 
-                                 DispatchHandler::Ptr& hdlr) {
-  Outgoing* data = new Outgoing(cbuf, hdlr);
+void ConnHandler::write_or_queue(Outgoing* data) {
   if(m_outgoing.activating(data))
     write(data);
-}
-
-void ConnHandler::clear_outgoing() {
-  Outgoing* data;
-  while(!m_outgoing.deactivating(&data)) {
-    if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
-      pending(data, 0);
-    // else if(data->hdlr != nullptr) + timers for response timeout
-  }
 }
 
 void ConnHandler::next_outgoing() {
@@ -407,11 +395,16 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 }
 
 void ConnHandler::disconnected() {
-  clear_outgoing();
+  Event::Ptr ev = Event::make(Event::Type::DISCONNECT, Error::OK);
 
-  PendingRsp* pending = nullptr;
-  Event::Ptr ev;
-  for(;;) {
+  for(Outgoing* data; !m_outgoing.deactivating(&data);) {
+    if(data->hdlr != nullptr) {
+      data->hdlr->handle(ptr(), ev);
+      delete data;
+    }
+  }
+
+  for(PendingRsp* pending;;) {
     {
       Mutex::scope lock(m_mutex);
       if(m_pending.empty())
@@ -420,7 +413,6 @@ void ConnHandler::disconnected() {
         pending->tm->cancel();
       m_pending.erase(m_pending.begin());
     }
-    ev = Event::make(Event::Type::DISCONNECT, Error::OK);
     pending->hdlr->handle(ptr(), ev);
     delete pending;
   }
@@ -432,7 +424,7 @@ void ConnHandler::run_pending(Event::Ptr ev) {
     return;
   }
 
-  PendingRsp* pending = nullptr;
+  PendingRsp* pending;
   {
     Mutex::scope lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
@@ -440,6 +432,8 @@ void ConnHandler::run_pending(Event::Ptr ev) {
       if((pending = it->second)->tm)
         pending->tm->cancel();
       m_pending.erase(it);
+    } else {
+      pending = nullptr;
     }
   }
 

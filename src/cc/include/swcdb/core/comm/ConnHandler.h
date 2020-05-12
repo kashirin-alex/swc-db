@@ -129,11 +129,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void pending(Outgoing* data, uint32_t ms);
 
-  void write_or_queue(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
+  void write_or_queue(Outgoing* data);
 
   void next_outgoing();
-
-  void clear_outgoing();
 
   void write(Outgoing* data);
 
