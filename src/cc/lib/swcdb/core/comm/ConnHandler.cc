@@ -12,7 +12,8 @@ namespace SWC {
 
 ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
                         : connected(false), 
-                          app_ctx(app_ctx), m_next_req_id(0) {
+                          app_ctx(app_ctx), m_next_req_id(0),
+                          m_accepting(false), m_reading(false) {
 }
 
 ConnHandlerPtr ConnHandler::ptr() {
@@ -20,9 +21,6 @@ ConnHandlerPtr ConnHandler::ptr() {
 }
 
 ConnHandler::~ConnHandler() {
-  for(Outgoing* data; !m_outgoing.deactivating(&data);)
-    delete data;
-
   for(auto it=m_pending.begin(); it!=m_pending.end(); ++it)
     delete it->second;
 }
@@ -113,7 +111,7 @@ bool ConnHandler::send_response(CommBuf::Ptr& cbuf,
     return false;
 
   cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-  write_or_queue(new Outgoing(cbuf, nullptr));
+  write_or_queue(cbuf, nullptr);
   return true;
 }
 
@@ -141,8 +139,7 @@ bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
         goto assign_id;
       header.id = m_next_req_id;
     }
-
-  write_or_queue(new Outgoing(cbuf, pending));
+  write_or_queue(cbuf, pending->tm);
   return true;
 }
 
@@ -188,47 +185,41 @@ std::string ConnHandler::to_string() {
   return s;
 }
 
-void ConnHandler::write_or_queue(Outgoing* data) {
-  if(m_outgoing.activating(data))
-    write(data);
+void ConnHandler::write_or_queue(CommBuf::Ptr& cbuf, asio::high_resolution_timer* tm) {
+  m_outgoing.push(Outgoing(cbuf, tm));
+  if(m_outgoing.activating())
+    write();
 }
 
-void ConnHandler::next_outgoing() {
-  Outgoing* data;
-  if(!m_outgoing.deactivating(&data))
-    write(data);
-}
+void ConnHandler::write_complete(const asio::error_code& ec) {
+  if(ec) {
+    do_close();
+  } else {  
+    if(!m_outgoing.deactivating())
+      write();
+    //if((last-front)->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+    read_pending();
+    // else ev of response sent 
+  }
+} 
 
-void ConnHandler::write(ConnHandler::Outgoing* data) {
-  if(data->pending && data->pending->tm) { 
+void ConnHandler::write() {
+  auto& data = m_outgoing.front();
+  if(data.tm) {
     // && data->cbuf->header.flags & FLAGS_BIT_REQUEST
     auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
-    ev->header.initialize_from_request_header(data->cbuf->header);
-    data->pending->tm->expires_from_now(
-      std::chrono::milliseconds(data->cbuf->header.timeout_ms));
-    data->pending->tm->async_wait(
-      [ev, conn=ptr()] (const asio::error_code ec) {
-        if(ec != asio::error::operation_aborted)
-          conn->run_pending(ev);
-      });
+    ev->header.initialize_from_request_header(data.cbuf->header);
+    data.tm->expires_from_now(
+      std::chrono::milliseconds(data.cbuf->header.timeout_ms));
+    data.tm->async_wait([ev, conn=ptr()] (const asio::error_code ec) {
+      if(ec != asio::error::operation_aborted)
+        conn->run_pending(ev);
+    });
   }
-
   do_async_write(
-    data->buffers,
-    [data, ptr=ptr()] (const asio::error_code ec, uint32_t len) {
-      delete data;
-      if(ec) {
-        ptr->do_close();
-      } else { //if(data->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST) {
-        ptr->next_outgoing();
-        ptr->read_pending();
-      }
-      /* else if(data->pending && data->pending->hdlr != nullptr) {
-        if(data->pending->tm)
-          data->pending->tm->cancel();
-        data->pending->hdlr->handle(ptr, nullptr); // ev of response sent 
-      }
-      */
+    data.cbuf->get_buffers(),
+    [ptr=ptr()] (const asio::error_code ec, uint32_t len) { 
+      ptr->write_complete(ec);
     }
   );
 }
@@ -397,10 +388,6 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 
 void ConnHandler::disconnected() {
   Event::Ptr ev = Event::make(Event::Type::DISCONNECT, Error::OK);
-
-  for(Outgoing* data; !m_outgoing.deactivating(&data);)
-    delete data;
-
   for(PendingRsp* pending;;) {
     {
       Mutex::scope lock(m_mutex);
@@ -499,7 +486,7 @@ bool ConnHandlerPlain::is_open() {
 asio::high_resolution_timer* ConnHandlerPlain::get_timer() {
   return new asio::high_resolution_timer(m_sock.get_executor());
 }
-  
+
 void ConnHandlerPlain::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code, uint32_t)>& hdlr) {

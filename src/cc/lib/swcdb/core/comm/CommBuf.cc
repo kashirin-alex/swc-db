@@ -86,8 +86,10 @@ void CommBuf::write_header() {
   header.encode(&buf);
 }
 
-void CommBuf::get(std::vector<asio::const_buffer>& buffers) {
+std::vector<asio::const_buffer> CommBuf::get_buffers() {
   write_header();
+
+  std::vector<asio::const_buffer> buffers;
   buffers.reserve(
     3 + 
     buf_data.size/BUFFER_CHUNK_SZ + 
@@ -111,6 +113,7 @@ void CommBuf::get(std::vector<asio::const_buffer>& buffers) {
       break;
     }
   }
+  return buffers;
 }
 
 void* CommBuf::get_data_ptr() { 

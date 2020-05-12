@@ -75,7 +75,7 @@ class CommBuf final {
 
   void write_header();
 
-  void get(std::vector<asio::const_buffer>& buffers);
+  std::vector<asio::const_buffer> get_buffers();
 
   /** Returns the primary buffer internal data pointer
    */

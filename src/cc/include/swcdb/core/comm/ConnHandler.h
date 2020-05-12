@@ -27,34 +27,6 @@ using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
-  
-  struct PendingRsp {
-    DispatchHandler::Ptr          hdlr;
-    asio::high_resolution_timer*  tm;
-
-    PendingRsp(DispatchHandler::Ptr& hdlr, asio::high_resolution_timer* tm)
-                : hdlr(hdlr), tm(tm) { 
-    }
-    
-    ~PendingRsp() {
-      if(tm)
-        delete tm;
-    }
-  };
-
-  struct Outgoing {
-    CommBuf::Ptr                    cbuf;
-    PendingRsp*                     pending;
-    std::vector<asio::const_buffer> buffers;
-    
-    Outgoing(CommBuf::Ptr& cbuf, PendingRsp* pending)
-            : cbuf(cbuf), pending(pending) {
-      cbuf->get(buffers);
-    }
-
-    ~Outgoing() { }
-  };
-
   public:
 
   std::atomic<bool>     connected;
@@ -129,11 +101,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  void write_or_queue(Outgoing* data);
+  void write_or_queue(CommBuf::Ptr &cbuf, asio::high_resolution_timer* tm);
 
-  void next_outgoing();
+  void write_complete(const asio::error_code& ec);
 
-  void write(Outgoing* data);
+  void write();
 
   void read_pending();
 
@@ -158,10 +130,35 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
   };
 
-  uint32_t                    m_next_req_id;
-  QueueSafeStated<Outgoing*>  m_outgoing;
-  bool                        m_accepting = 0;
-  bool                        m_reading = 0;
+  uint32_t                        m_next_req_id;
+  bool                            m_accepting;
+  bool                            m_reading;
+  
+  struct Outgoing {
+    CommBuf::Ptr                  cbuf;
+    asio::high_resolution_timer*  tm;
+    
+    Outgoing(CommBuf::Ptr& cbuf, asio::high_resolution_timer* tm)
+            : cbuf(cbuf), tm(tm) {
+    }
+
+    ~Outgoing() { }
+  };
+  QueueSafeStated<Outgoing>       m_outgoing;
+  
+  struct PendingRsp {
+    DispatchHandler::Ptr          hdlr;
+    asio::high_resolution_timer*  tm;
+
+    PendingRsp(DispatchHandler::Ptr& hdlr, asio::high_resolution_timer* tm)
+                : hdlr(hdlr), tm(tm) { 
+    }
+    
+    ~PendingRsp() {
+      if(tm)
+        delete tm;
+    }
+  };
   std::unordered_map<uint32_t, PendingRsp*, PendingRspHash>  m_pending;
 
 };
