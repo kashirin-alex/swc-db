@@ -28,17 +28,6 @@ using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
-  struct Outgoing {
-    CommBuf::Ptr         cbuf;
-    DispatchHandler::Ptr hdlr;
-    
-    Outgoing(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr)
-            : cbuf(cbuf), hdlr(hdlr) { 
-    }
-
-    ~Outgoing() { }
-  };
-
   struct PendingRsp {
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  tm;
@@ -51,7 +40,20 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       if(tm)
         delete tm;
     }
-  };    
+  };
+
+  struct Outgoing {
+    CommBuf::Ptr                    cbuf;
+    PendingRsp*                     pending;
+    std::vector<asio::const_buffer> buffers;
+    
+    Outgoing(CommBuf::Ptr& cbuf, PendingRsp* pending)
+            : cbuf(cbuf), pending(pending) {
+      cbuf->get(buffers);
+    }
+
+    ~Outgoing() { }
+  };
 
   public:
 
@@ -109,7 +111,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   protected:
 
-  virtual asio::high_resolution_timer* get_timer(uint32_t timeout_ms) = 0;
+  virtual asio::high_resolution_timer* get_timer() = 0;
 
   virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) = 0;
 
@@ -126,8 +128,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   Mutex  m_mutex;
 
   private:
-
-  void pending(Outgoing* data, uint32_t ms);
 
   void write_or_queue(Outgoing* data);
 
@@ -184,7 +184,7 @@ class ConnHandlerPlain : public ConnHandler {
 
   bool is_open() override;
 
-  asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
+  asio::high_resolution_timer* get_timer() override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
 
@@ -227,7 +227,7 @@ class ConnHandlerSSL : public ConnHandler {
 
   void handshake_client(asio::error_code& ec);
 
-  asio::high_resolution_timer* get_timer(uint32_t timeout_ms) override;
+  asio::high_resolution_timer* get_timer() override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
 
