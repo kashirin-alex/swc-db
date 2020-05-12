@@ -60,9 +60,12 @@ void ServerConnections::connection(ConnHandlerPtr &conn,
   if(ec || !sock.is_open())
     return;
 
+  sock.set_option(asio::ip::tcp::no_delay(true));
+
   sock.connect(m_endpoint, ec);
   if(ec || !sock.is_open())
     return;
+  //sock.non_blocking(true);
 
   if(m_ssl_cfg) {
     conn = m_ssl_cfg->make_client(m_ctx, sock, ec);
@@ -95,6 +98,9 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
         cb(nullptr);
         return;
       }
+      sock->set_option(asio::ip::tcp::no_delay(true));
+      //sock->non_blocking(true);
+
       if(ptr->m_ssl_cfg) {
         ptr->m_ssl_cfg->make_client(
           ptr->m_ctx, *sock.get(),
