@@ -386,10 +386,12 @@ void Fragment::load_header(int& err, bool close_after) {
       err = Error::OK;
     }
 
+    /*
     if(!fs_if->exists(err, m_smartfd->filepath())) {
       err = Error::FS_PATH_NOT_FOUND;
       return;
     }
+    */
 
     if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       return;
@@ -460,12 +462,17 @@ void Fragment::load() {
       err = Error::OK;
     }
 
-    if(header_again)
+    if(header_again) {
       load_header(err, false);
+      if(err)
+        break;
+    }
+    /*
     else if(!fs_if->exists(err, m_smartfd->filepath()))
       err = Error::FS_PATH_NOT_FOUND;
     if(err)
       break;
+    */
  
     if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       break;
