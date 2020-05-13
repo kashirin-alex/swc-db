@@ -27,6 +27,36 @@ using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
 
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
+
+
+  struct Outgoing {
+    typedef std::function<void(const asio::error_code ec)> TimerCb_t;
+
+    CommBuf::Ptr                  cbuf;
+    asio::high_resolution_timer*  tm;
+    TimerCb_t                     tm_cb;
+    
+    Outgoing(CommBuf::Ptr& cbuf, 
+             asio::high_resolution_timer* tm = nullptr,
+             const TimerCb_t& tm_cb = 0);
+
+    ~Outgoing();
+
+    void arm_timer();
+  };
+
+    
+  struct PendingRsp {
+    DispatchHandler::Ptr          hdlr;
+    asio::high_resolution_timer*  tm;
+
+    PendingRsp(DispatchHandler::Ptr& hdlr, 
+               asio::high_resolution_timer* tm);
+    
+    ~PendingRsp();
+  };
+
+
   public:
 
   std::atomic<bool>     connected;
@@ -101,7 +131,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  void write_or_queue(CommBuf::Ptr &cbuf, asio::high_resolution_timer* tm);
+  void write_or_queue(const Outgoing& data);
 
   void write_complete(const asio::error_code& ec);
 
@@ -130,37 +160,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
   };
 
-  uint32_t                        m_next_req_id;
-  bool                            m_accepting;
-  bool                            m_reading;
-  
-  struct Outgoing {
-    CommBuf::Ptr                  cbuf;
-    asio::high_resolution_timer*  tm;
-    
-    Outgoing(CommBuf::Ptr& cbuf, asio::high_resolution_timer* tm)
-            : cbuf(cbuf), tm(tm) {
-    }
-
-    ~Outgoing() { }
-  };
-  QueueSafeStated<Outgoing>       m_outgoing;
-  
-  struct PendingRsp {
-    DispatchHandler::Ptr          hdlr;
-    asio::high_resolution_timer*  tm;
-
-    PendingRsp(DispatchHandler::Ptr& hdlr, asio::high_resolution_timer* tm)
-                : hdlr(hdlr), tm(tm) { 
-    }
-    
-    ~PendingRsp() {
-      if(tm)
-        delete tm;
-    }
-  };
-  std::unordered_map<uint32_t, PendingRsp*, PendingRspHash>  m_pending;
-
+  uint32_t                          m_next_req_id;
+  bool                              m_accepting;
+  bool                              m_reading;
+  QueueSafeStated<Outgoing>         m_outgoing;
+  std::unordered_map<uint32_t, 
+                    PendingRsp*, 
+                    PendingRspHash> m_pending;
 };
 
 
