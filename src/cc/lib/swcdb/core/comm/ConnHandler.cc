@@ -11,22 +11,29 @@
 namespace SWC { 
 
 
-ConnHandler::Pending::Pending(
-          CommBuf::Ptr& cbuf, const DispatchHandler::Ptr& hdlr, 
-          asio::high_resolution_timer* tm, const TimerCb_t& tm_cb)
-          : cbuf(cbuf), hdlr(hdlr), tm(tm), tm_cb(tm_cb) {
+ConnHandler::Pending::Pending(CommBuf::Ptr& cbuf, 
+                              const DispatchHandler::Ptr& hdlr, Timer* timer)
+                              : cbuf(cbuf), hdlr(hdlr), timer(timer) {
 }
 
 ConnHandler::Pending::~Pending() {
-  if(tm)
-    delete tm;
+  if(timer)
+    delete timer;
 }
 
 void ConnHandler::Pending::arm_timer() {
-  tm->expires_from_now(std::chrono::milliseconds(cbuf->header.timeout_ms));
-  tm->async_wait(tm_cb);
-  tm_cb = 0;
+  timer->tm.expires_from_now(std::chrono::milliseconds(cbuf->header.timeout_ms));
+  timer->tm.async_wait(timer->cb);
+  timer->cb = 0;
 }
+
+ConnHandler::Pending::Timer::Timer(SocketLayer* socket, 
+                                   const ConnHandler::Pending::Timer::Cb_t& cb)
+                                  : tm(socket->get_executor()), cb(cb) {
+}
+
+ConnHandler::Pending::Timer::~Timer() { }
+
 
 
 ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
@@ -65,6 +72,15 @@ size_t ConnHandler::endpoint_local_hash() {
 }
   
 void ConnHandler::new_connection() {
+  auto sock = socket_layer();
+  {
+    Mutex::scope lock(m_mutex);
+    endpoint_remote = sock->remote_endpoint();
+    endpoint_local = sock->local_endpoint();
+  }
+  SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%d",
+            endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
+            (size_t)&sock->get_executor().context());
   connected = true;
   auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
   run(ev); 
@@ -138,9 +154,7 @@ bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
   auto& header = cbuf->header;
   header.flags |= CommHeader::FLAGS_BIT_REQUEST;
 
-  auto pending = std::make_shared<Pending>(cbuf, hdlr,
-    header.timeout_ms ? get_timer() : nullptr);
-
+  auto pending = std::make_shared<Pending>(cbuf, hdlr);
   assign_id:
     {
       Mutex::scope lock(m_mutex);
@@ -155,11 +169,14 @@ bool ConnHandler::send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr) {
         goto assign_id;
       header.id = m_next_req_id;
     }
-  if(pending->tm) {
+  if(header.timeout_ms) {
     auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
     ev->header.initialize_from_request_header(header);
-    pending->tm_cb = [ev, conn=ptr()] (const asio::error_code ec) {
-      if(ec != asio::error::operation_aborted) conn->run_pending(ev); };
+    pending->timer = new Pending::Timer(
+      socket_layer(),
+      [ev, conn=ptr()] (const asio::error_code ec) {
+        if(ec != asio::error::operation_aborted) conn->run_pending(ev); }
+    );
   }
   write_or_queue(pending);
   return true;
@@ -213,7 +230,7 @@ void ConnHandler::write_or_queue(ConnHandler::Pending::Ptr pending) {
 }
 
 void ConnHandler::write(ConnHandler::Pending::Ptr& pending) {
-  if(pending->tm) {
+  if(pending->timer) {
     Mutex::scope lock(m_mutex);
     pending->arm_timer();
   }
@@ -407,9 +424,9 @@ void ConnHandler::disconnected() {
   while(!m_outgoing.deactivating(&pending)) {
     if(pending->cbuf->header.flags & CommHeader::FLAGS_BIT_REQUEST)
       continue;
-     if(pending->tm) {
+     if(pending->timer) {
       Mutex::scope lock(m_mutex);
-      pending->tm->cancel();
+      pending->timer->tm.cancel();
     }
     if(pending->hdlr != nullptr)
       pending->hdlr->handle(ptr(), ev);
@@ -419,8 +436,8 @@ void ConnHandler::disconnected() {
       Mutex::scope lock(m_mutex);
       if(m_pending.empty())
         return;
-      if((pending = m_pending.begin()->second)->tm)
-        pending->tm->cancel();
+      if((pending = m_pending.begin()->second)->timer)
+        pending->timer->tm.cancel();
       m_pending.erase(m_pending.begin());
     }
     pending->hdlr->handle(ptr(), ev);
@@ -438,8 +455,8 @@ void ConnHandler::run_pending(Event::Ptr ev) {
     if(it == m_pending.end()) {
       pending = nullptr;
     } else {
-      if((pending = it->second)->tm)
-        pending->tm->cancel();
+      if((pending = it->second)->timer)
+        pending->timer->tm.cancel();
       m_pending.erase(it);
     }
   }
@@ -483,27 +500,12 @@ void ConnHandlerPlain::close() {
   }
 }
 
-void ConnHandlerPlain::new_connection() {
-  {
-    Mutex::scope lock(m_mutex);
-
-    endpoint_remote = m_sock.remote_endpoint();
-    endpoint_local = m_sock.local_endpoint();
-    SWC_LOGF(
-      LOG_DEBUG, 
-      "new_connection local=%s, remote=%s, executor=%d",
-      endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
-      (size_t)&m_sock.get_executor().context());
-  }
-  ConnHandler::new_connection();
-}
-
 bool ConnHandlerPlain::is_open() {
   return connected && m_sock.is_open();
 }
 
-asio::high_resolution_timer* ConnHandlerPlain::get_timer() {
-  return new asio::high_resolution_timer(m_sock.get_executor());
+SocketLayer* ConnHandlerPlain::socket_layer() {
+  return &m_sock.lowest_layer();
 }
 
 void ConnHandlerPlain::do_async_write(
@@ -562,21 +564,6 @@ void ConnHandlerSSL::close() {
   }
 }
 
-void ConnHandlerSSL::new_connection() {
-  {
-    Mutex::scope lock(m_mutex);
-
-    endpoint_remote = m_sock.lowest_layer().remote_endpoint();
-    endpoint_local = m_sock.lowest_layer().local_endpoint();
-    SWC_LOGF(
-      LOG_DEBUG, 
-      "new_connection local=%s, remote=%s, executor=%d",
-      endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
-      (size_t)&m_sock.get_executor().context());
-  }
-  ConnHandler::new_connection();
-}
-
 bool ConnHandlerSSL::is_open() {
   return connected && m_sock.lowest_layer().is_open();
 }
@@ -611,8 +598,8 @@ void ConnHandlerSSL::handshake_client(asio::error_code& ec) {
 }
 
 
-asio::high_resolution_timer* ConnHandlerSSL::get_timer() {
-  return new asio::high_resolution_timer(m_sock.get_executor());
+SocketLayer* ConnHandlerSSL::socket_layer() {
+  return &m_sock.lowest_layer();
 }
   
 void ConnHandlerSSL::do_async_write(

@@ -22,6 +22,7 @@
 
 namespace SWC { 
 
+using SocketLayer = asio::ip::tcp::socket::lowest_layer_type;
 using SocketPlain = asio::ip::tcp::socket;
 using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 
@@ -30,18 +31,22 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
   struct Pending {
-    typedef std::function<void(const asio::error_code ec)> TimerCb_t;
     typedef std::shared_ptr<Pending>  Ptr;
 
-    CommBuf::Ptr                      cbuf;
-    DispatchHandler::Ptr              hdlr;
-    asio::high_resolution_timer*      tm;
-    TimerCb_t                         tm_cb;
+    struct Timer {
+      typedef std::function<void(const asio::error_code ec)> Cb_t;
+      asio::high_resolution_timer  tm;
+      Cb_t                         cb;
+      Timer(SocketLayer* socket, const Cb_t& cb);
+      ~Timer();
+    };
 
-    Pending(CommBuf::Ptr& cbuf, 
-            const DispatchHandler::Ptr& hdlr = nullptr,
-            asio::high_resolution_timer* tm = nullptr,
-            const TimerCb_t& tm_cb = 0);
+    CommBuf::Ptr           cbuf;
+    DispatchHandler::Ptr   hdlr;
+    Timer*                 timer;
+
+    Pending(CommBuf::Ptr& cbuf, const DispatchHandler::Ptr& hdlr = nullptr,
+            Timer* timer = nullptr);
     
     ~Pending();
 
@@ -70,7 +75,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
   size_t endpoint_local_hash();
   
-  virtual void new_connection();
+  void new_connection();
 
   virtual bool is_open() = 0;
 
@@ -105,7 +110,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   protected:
 
-  virtual asio::high_resolution_timer* get_timer() = 0;
+  virtual SocketLayer* socket_layer() = 0;
 
   virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) = 0;
 
@@ -175,11 +180,11 @@ class ConnHandlerPlain : public ConnHandler {
 
   void close() override;
 
-  void new_connection() override;
-
   bool is_open() override;
 
-  asio::high_resolution_timer* get_timer() override;
+  protected:
+
+  SocketLayer* socket_layer() override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
 
@@ -209,8 +214,6 @@ class ConnHandlerSSL : public ConnHandler {
 
   void close() override;
 
-  void new_connection() override;
-
   bool is_open() override;
 
   void handshake();
@@ -222,7 +225,9 @@ class ConnHandlerSSL : public ConnHandler {
 
   void handshake_client(asio::error_code& ec);
 
-  asio::high_resolution_timer* get_timer() override;
+  protected:
+
+  SocketLayer* socket_layer() override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
 
