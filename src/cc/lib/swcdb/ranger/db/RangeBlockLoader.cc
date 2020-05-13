@@ -80,7 +80,11 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   uint8_t vol = CommitLog::Fragments::MAX_PRELOAD;
   {
     Mutex::scope lock(m_mutex);
-    vol -= m_logs;
+    if(m_logs) {
+      vol -= m_logs;
+      if(is_final)
+        is_final = false;
+    }
   }
   if(vol) {
     size_t offset = m_f_selected.size();
@@ -151,7 +155,6 @@ void BlockLoader::load_log_cells() {
 }
 
 void BlockLoader::completion() {
-  block->blocks->commitlog.load_cells(this);
   block->loaded(m_err);
   
   SWC_ASSERT(m_fragments.empty());

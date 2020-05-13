@@ -63,10 +63,8 @@ class Fragments : private std::vector<Fragment::Ptr> {
   
   void expand_and_align(DB::Cells::Interval& intval);
 
-  void load_cells(BlockLoader* loader, bool is_final, 
+  void load_cells(BlockLoader* loader, bool& is_final, 
                   Fragments::Vec& frags, uint8_t vol);
-
-  void load_cells(BlockLoader* loader);
 
   void get(Vec& fragments);
 
@@ -108,6 +106,8 @@ class Fragments : private std::vector<Fragment::Ptr> {
                        size_t vol);
 
   bool _need_compact_major();
+
+  void _load_cells(BlockLoader* loader, Fragments::Vec& frags, uint8_t& vol);
 
   bool _processing() const;
 

@@ -250,15 +250,28 @@ void Fragments::expand_and_align(DB::Cells::Interval& intval) {
   }
 }
 
-void Fragments::load_cells(BlockLoader* loader, bool is_final,
+void Fragments::load_cells(BlockLoader* loader, bool& is_final,
                            Fragments::Vec& frags, uint8_t vol) {  
   if(is_final) {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting)
       m_cv.wait(lock_wait, [this]{ return !m_commiting; });
-  }
 
-  std::shared_lock lock(m_mutex);
+    uint8_t base = vol;
+    _load_cells(loader, frags, vol);
+    if(is_final = base == vol) {
+      std::shared_lock lock(m_mutex_cells);
+      loader->block->load_cells(m_cells);
+    }
+
+  } else {
+    std::shared_lock lock(m_mutex);
+    _load_cells(loader, frags, vol);
+  }
+}
+
+void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags, 
+                            uint8_t& vol) { 
   for(auto frag : *this) {
     if(std::find(frags.begin(), frags.end(), frag) == frags.end() &&
        loader->block->is_consist(frag->interval)) {
@@ -267,11 +280,6 @@ void Fragments::load_cells(BlockLoader* loader, bool is_final,
         return;
     }
   }
-}
-
-void Fragments::load_cells(BlockLoader* loader) {
-  std::shared_lock lock(m_mutex_cells);
-  loader->block->load_cells(m_cells);
 }
 
 void Fragments::get(Fragments::Vec& fragments) {
