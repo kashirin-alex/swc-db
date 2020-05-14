@@ -48,7 +48,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  ConnHandler(AppContext::Ptr app_ctx);
+  ConnHandler(AppContext::Ptr& app_ctx);
 
   ConnHandlerPtr ptr();
 
@@ -99,15 +99,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual SocketLayer* socket_layer() = 0;
 
-  virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) = 0;
+  virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) = 0;
 
   virtual void do_async_write(
       const std::vector<asio::const_buffer>& buffers,
-      const std::function<void(const asio::error_code, uint32_t)>&) = 0;
+      const std::function<void(const asio::error_code&, uint32_t)>&) = 0;
 
   virtual void do_async_read(
       uint8_t* data, uint32_t sz,
-      const std::function<void(const asio::error_code, size_t)>& hdlr) = 0;
+      const std::function<void(const asio::error_code&, size_t)>& hdlr) = 0;
 
   void disconnected();
 
@@ -159,7 +159,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 class ConnHandlerPlain : public ConnHandler {
   public:
 
-  ConnHandlerPlain(AppContext::Ptr app_ctx, SocketPlain& socket);
+  ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket);
   
   virtual ~ConnHandlerPlain();
 
@@ -173,15 +173,17 @@ class ConnHandlerPlain : public ConnHandler {
 
   SocketLayer* socket_layer() override;
 
-  void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
+  void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
     const std::vector<asio::const_buffer>& buffers,
-    const std::function<void(const asio::error_code, uint32_t)>& hdlr) override;
+    const std::function<void(const asio::error_code&, uint32_t)>& hdlr) 
+                                                              override;
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<void(const asio::error_code, size_t)>& hdlr) override;
+    const std::function<void(const asio::error_code&, size_t)>& hdlr) 
+                                                              override;
 
   private:
   SocketPlain  m_sock;
@@ -192,7 +194,7 @@ class ConnHandlerPlain : public ConnHandler {
 class ConnHandlerSSL : public ConnHandler {
   public:
 
-  ConnHandlerSSL(AppContext::Ptr app_ctx, asio::ssl::context& ssl_ctx, 
+  ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx, 
                  SocketPlain& socket);
   
   virtual ~ConnHandlerSSL();
@@ -220,11 +222,13 @@ class ConnHandlerSSL : public ConnHandler {
 
   void do_async_write(
     const std::vector<asio::const_buffer>& buffers,
-    const std::function<void(const asio::error_code, uint32_t)>& hdlr) override;
+    const std::function<void(const asio::error_code&, uint32_t)>& hdlr) 
+                                                              override;
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<void(const asio::error_code, size_t)>& hdlr) override;
+    const std::function<void(const asio::error_code&, size_t)>& hdlr) 
+                                                              override;
 
   private:
   SocketSSL  m_sock;

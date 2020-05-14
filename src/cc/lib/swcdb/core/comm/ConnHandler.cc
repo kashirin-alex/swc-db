@@ -22,7 +22,7 @@ ConnHandler::Pending::~Pending() {
 
 
 
-ConnHandler::ConnHandler(AppContext::Ptr app_ctx) 
+ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) 
                         : connected(false), 
                           app_ctx(app_ctx), m_next_req_id(0),
                           m_accepting(false), m_reading(false) {
@@ -219,7 +219,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       delete pending;
       do_async_write(
         cbuf->get_buffers(),
-        [cbuf, hdlr, conn=ptr()] (const asio::error_code ec, uint32_t len) { 
+        [cbuf, hdlr, conn=ptr()] (const asio::error_code& ec, uint32_t len) { 
           if(!ec)
             conn->write_next();
 
@@ -258,7 +258,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       pending->timer->expires_from_now(
         std::chrono::milliseconds(header.timeout_ms));
       pending->timer->async_wait(
-        [cbuf, conn=ptr()] (const asio::error_code ec) {
+        [cbuf, conn=ptr()] (const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted) 
             return;
           auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
@@ -272,7 +272,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   write_commbuf:
     do_async_write(
       cbuf->get_buffers(),
-      [cbuf, conn=ptr()] (const asio::error_code ec, uint32_t len) {
+      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t len) {
         return ec ? conn->do_close() : conn->write_next();
       }
     );
@@ -291,7 +291,7 @@ void ConnHandler::read_pending() {
   do_async_read(
     data, 
     CommHeader::PREFIX_LENGTH,
-    [data, ptr=ptr()] (const asio::error_code ec, size_t filled) {
+    [data, ptr=ptr()] (const asio::error_code& ec, size_t filled) {
       ptr->recved_header_pre(ec, data, filled);
       delete [] data;
     }
@@ -332,7 +332,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
   do_async_read(
     buf_header + CommHeader::PREFIX_LENGTH, 
     ev->header.header_len - CommHeader::PREFIX_LENGTH,
-    [ev, buf_header, ptr=ptr()](const asio::error_code ec, size_t filled) {
+    [ev, buf_header, ptr=ptr()](const asio::error_code& ec, size_t filled) {
       ptr->recved_header(ev, ec, buf_header, filled);
       delete [] buf_header;
     }
@@ -383,7 +383,7 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
   do_async_read(
     buffer->base, 
     remain,
-    [ev, n, ptr=ptr()](const asio::error_code ec, size_t filled) {
+    [ev, n, ptr=ptr()](const asio::error_code& ec, size_t filled) {
       ptr->recved_buffer(ev, ec, n, filled);
     }
   );
@@ -489,7 +489,7 @@ void ConnHandler::run_pending(Event::Ptr ev) {
 
 
 
-ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr app_ctx, 
+ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx, 
                                    SocketPlain& socket)
                                   : ConnHandler(app_ctx), 
                                     m_sock(std::move(socket)) {
@@ -531,18 +531,18 @@ SocketLayer* ConnHandlerPlain::socket_layer() {
 
 void ConnHandlerPlain::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code, uint32_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, uint32_t)>& hdlr) {
   asio::async_write(m_sock, buffers, hdlr);
 }
 
 void ConnHandlerPlain::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code, size_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, size_t)>& hdlr) {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
 }
 
 void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp, 
-                            asio::error_code &ec) {
+                            asio::error_code& ec) {
   size_t read = 0;
   do {
     read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
@@ -552,7 +552,7 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
 
 
 
-ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr app_ctx, 
+ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx, 
                                asio::ssl::context& ssl_ctx,
                                SocketPlain& socket)
                               : ConnHandler(app_ctx), 
@@ -592,7 +592,7 @@ bool ConnHandlerSSL::is_open() {
 void ConnHandlerSSL::handshake() {
   m_sock.async_handshake(
     asio::ssl::stream_base::server,
-    [ptr=ptr()](const asio::error_code ec) {
+    [ptr=ptr()](const asio::error_code& ec) {
       if(!ec) {
         ptr->accept_requests();
       } else {
@@ -625,18 +625,18 @@ SocketLayer* ConnHandlerSSL::socket_layer() {
   
 void ConnHandlerSSL::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code, uint32_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, uint32_t)>& hdlr) {
   asio::async_write(m_sock, buffers, hdlr);
 }
 
 void ConnHandlerSSL::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code, size_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, size_t)>& hdlr) {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
 }
 
 void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp, 
-                            asio::error_code &ec) {
+                            asio::error_code& ec) {
   size_t read = 0;
   do {
     read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
