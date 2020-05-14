@@ -28,22 +28,14 @@ ServerConnections::ServerConnections(const std::string& srv_name,
 ServerConnections::~ServerConnections() { }
 
 void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
-  for(;;){
-    Mutex::scope lock(m_mutex);
-    if(m_conns.empty())
-      return;
-    conn = m_conns.front();
-    if(conn->is_open()){
-      if(!preserve)
-        m_conns.pop();
-      return; 
-    }
-    m_conns.pop();
-    conn = nullptr;
-  }
-  // else
-  //  SWC_LOGF(LOG_DEBUG, "Reusing connection: %s, %s", 
-  //             m_srv_name.c_str(), to_string(conn).c_str());
+  while(pop(&(conn = nullptr)) && !conn->is_open());
+  if(preserve && conn)
+    push(conn);
+  /*
+  if(conn)
+    SWC_LOGF(LOG_DEBUG, "Reusing connection: %s, %s", 
+             m_srv_name.c_str(), to_string(conn).c_str());
+  */
 }
 
 void ServerConnections::connection(ConnHandlerPtr& conn,  
@@ -77,7 +69,7 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
     conn->new_connection();
   }
   if(preserve)
-    put_back(conn);
+    push(conn);
   // SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
   //          m_srv_name.c_str(), to_string(conn).c_str());
 }
@@ -111,7 +103,7 @@ void ServerConnections::connection(const std::chrono::milliseconds& timeout,
               cb(nullptr);
             } else {
               if(preserve)
-                ptr->put_back(conn);
+                ptr->push(conn);
               cb(conn);
             }
           }
@@ -122,33 +114,15 @@ void ServerConnections::connection(const std::chrono::milliseconds& timeout,
         std::make_shared<ConnHandlerPlain>(ptr->m_ctx, *sock.get());
       conn->new_connection();
       if(preserve)
-        ptr->put_back(conn);
+        ptr->push(conn);
       cb(conn);
     }
   );       
 }
 
-void ServerConnections::put_back(const ConnHandlerPtr& conn){
-  Mutex::scope lock(m_mutex);
-  m_conns.push(conn);
-}
-  
-bool ServerConnections::empty() {
-  Mutex::scope lock(m_mutex);
-  return m_conns.empty();
-}
-
-void ServerConnections::close_all(){
-  for(ConnHandlerPtr conn;;) {
-    {
-      Mutex::scope lock(m_mutex);
-      if(m_conns.empty())
-        break;
-      conn = m_conns.front();
-      m_conns.pop();
-    }
-    conn->close();
-  }
+void ServerConnections::close_all() {
+  ConnHandlerPtr conn; 
+  while(pop(&conn)) conn->close();
 }
 
 
@@ -276,7 +250,7 @@ void Serialized::preserve(ConnHandlerPtr& conn) {
   Mutex::scope lock(m_mutex);
   auto it = m_srv_conns.find(hash);
   if(it != m_srv_conns.end())
-    (*it).second->put_back(conn);
+    (*it).second->push(conn);
 }
 
 void Serialized::close(ConnHandlerPtr& conn){

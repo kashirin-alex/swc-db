@@ -11,6 +11,7 @@
 #include <queue>
 #include <unordered_map>
 
+#include "swcdb/core/QueueSafe.h"
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 #include "swcdb/core/comm/ConfigSSL.h"
@@ -19,10 +20,16 @@
 namespace SWC { namespace client {
 
 
-class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
+class ServerConnections : 
+      private QueueSafe<ConnHandlerPtr>, 
+      public std::enable_shared_from_this<ServerConnections> {
+
   public:
   typedef std::shared_ptr<ServerConnections>          Ptr;
   typedef std::function<void(const ConnHandlerPtr&)>  NewCb_t;
+
+  using QueueSafe<ConnHandlerPtr>::empty;
+  using QueueSafe<ConnHandlerPtr>::push;
 
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
                     const IOCtxPtr& ioctx, const AppContext::Ptr& ctx, 
@@ -39,10 +46,6 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   void connection(const std::chrono::milliseconds& timeout, 
                   const NewCb_t& cb, bool preserve);
 
-  void put_back(const ConnHandlerPtr& conn);
-  
-  bool empty();
-
   void close_all();
 
   private:
@@ -51,8 +54,6 @@ class ServerConnections : public std::enable_shared_from_this<ServerConnections>
   const EndPoint                m_endpoint;
   IOCtxPtr                      m_ioctx;
   AppContext::Ptr               m_ctx;
-  Mutex                         m_mutex;
-  std::queue<ConnHandlerPtr>    m_conns;
   ConfigSSL*                    m_ssl_cfg;
 };
 
