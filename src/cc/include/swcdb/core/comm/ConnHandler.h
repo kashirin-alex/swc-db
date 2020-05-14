@@ -31,26 +31,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
   struct Pending {
-    typedef std::shared_ptr<Pending>  Ptr;
+    CommBuf::Ptr                  cbuf;
+    DispatchHandler::Ptr          hdlr;
+    asio::high_resolution_timer*  timer;
 
-    struct Timer {
-      typedef std::function<void(const asio::error_code ec)> Cb_t;
-      asio::high_resolution_timer  tm;
-      Cb_t                         cb;
-      Timer(SocketLayer* socket, const Cb_t& cb);
-      ~Timer();
-    };
-
-    CommBuf::Ptr           cbuf;
-    DispatchHandler::Ptr   hdlr;
-    Timer*                 timer;
-
-    Pending(CommBuf::Ptr& cbuf, const DispatchHandler::Ptr& hdlr = nullptr,
-            Timer* timer = nullptr);
+    Pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
     
     ~Pending();
-
-    void arm_timer();
   };
 
 
@@ -128,11 +115,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  void write_or_queue(Pending::Ptr pending);
+  void write_or_queue(Pending* pending);
 
-  void write_complete(Pending::Ptr pending, const asio::error_code& ec);
+  void write_next();
 
-  void write(Pending::Ptr& pending);
+  void write(Pending* pending);
 
   void read_pending();
 
@@ -160,9 +147,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   uint32_t                          m_next_req_id;
   bool                              m_accepting;
   bool                              m_reading;
-  QueueSafeStated<Pending::Ptr>     m_outgoing;
+  QueueSafeStated<Pending*>         m_outgoing;
   std::unordered_map<uint32_t, 
-                    Pending::Ptr, 
+                    Pending*, 
                     PendingHash>    m_pending;
 };
 
