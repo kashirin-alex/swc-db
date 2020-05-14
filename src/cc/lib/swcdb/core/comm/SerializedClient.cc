@@ -16,7 +16,8 @@ namespace SWC { namespace client {
 
 ServerConnections::ServerConnections(const std::string& srv_name, 
                                      const EndPoint& endpoint,
-                                     IOCtxPtr ioctx, AppContext::Ptr ctx,
+                                     const IOCtxPtr& ioctx, 
+                                     const AppContext::Ptr& ctx,
                                      ConfigSSL* ssl_cfg)
                                     : m_srv_name(srv_name), 
                                       m_endpoint(endpoint), 
@@ -26,7 +27,7 @@ ServerConnections::ServerConnections(const std::string& srv_name,
 
 ServerConnections::~ServerConnections() { }
 
-void ServerConnections::reusable(ConnHandlerPtr &conn, bool preserve) {
+void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
   for(;;){
     Mutex::scope lock(m_mutex);
     if(m_conns.empty())
@@ -45,8 +46,8 @@ void ServerConnections::reusable(ConnHandlerPtr &conn, bool preserve) {
   //             m_srv_name.c_str(), to_string(conn).c_str());
 }
 
-void ServerConnections::connection(ConnHandlerPtr &conn,  
-                                   std::chrono::milliseconds timeout, 
+void ServerConnections::connection(ConnHandlerPtr& conn,  
+                                   const std::chrono::milliseconds& timeout,
                                    bool preserve) {
 
   SWC_LOGF(LOG_DEBUG, "Connecting Sync: %s, addr=[%s]:%d %s", 
@@ -81,8 +82,8 @@ void ServerConnections::connection(ConnHandlerPtr &conn,
   //          m_srv_name.c_str(), to_string(conn).c_str());
 }
 
-void ServerConnections::connection(std::chrono::milliseconds timeout, 
-                                   NewCb_t cb, bool preserve) {
+void ServerConnections::connection(const std::chrono::milliseconds& timeout,
+                                   const NewCb_t& cb, bool preserve) {
 
   SWC_LOGF(LOG_DEBUG, "Connecting Async: %s, addr=[%s]:%d %s", 
            m_srv_name.c_str(), 
@@ -105,7 +106,7 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
         ptr->m_ssl_cfg->make_client(
           ptr->m_ctx, *sock.get(),
           [cb, preserve, ptr]
-          (ConnHandlerPtr conn, const std::error_code& ec) {
+          (const ConnHandlerPtr& conn, const std::error_code& ec) {
             if(ec || !conn->is_open()) {
               cb(nullptr);
             } else {
@@ -127,7 +128,7 @@ void ServerConnections::connection(std::chrono::milliseconds timeout,
   );       
 }
 
-void ServerConnections::put_back(ConnHandlerPtr conn){
+void ServerConnections::put_back(const ConnHandlerPtr& conn){
   Mutex::scope lock(m_mutex);
   m_conns.push(conn);
 }
@@ -151,8 +152,8 @@ void ServerConnections::close_all(){
 }
 
 
-Serialized::Serialized(const std::string& srv_name, IOCtxPtr ioctx, 
-                       AppContext::Ptr ctx)
+Serialized::Serialized(const std::string& srv_name, const IOCtxPtr& ioctx, 
+                       const AppContext::Ptr& ctx)
             : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx),
               m_use_ssl(Env::Config::settings()->get_bool("swc.comm.ssl")),
               m_ssl_cfg(m_use_ssl ? new ConfigSSL() : nullptr), 
@@ -160,7 +161,7 @@ Serialized::Serialized(const std::string& srv_name, IOCtxPtr ioctx,
   SWC_LOGF(LOG_INFO, "Init: %s", m_srv_name.c_str());
 }
 
-ServerConnections::Ptr Serialized::get_srv(EndPoint endpoint) {
+ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
   size_t hash = endpoint_hash(endpoint);
   Mutex::scope lock(m_mutex);
 
@@ -179,7 +180,8 @@ ServerConnections::Ptr Serialized::get_srv(EndPoint endpoint) {
 
 ConnHandlerPtr Serialized::get_connection(
       const EndPoints& endpoints, 
-      std::chrono::milliseconds timeout, uint32_t probes, bool preserve) {
+      const std::chrono::milliseconds& timeout, 
+      uint32_t probes, bool preserve) {
     
   ConnHandlerPtr conn = nullptr;
   if(endpoints.empty()){
@@ -195,17 +197,16 @@ ConnHandlerPtr Serialized::get_connection(
     for(auto& endpoint : endpoints){
       srv = get_srv(endpoint);
       srv->reusable(conn, preserve);
-      if(conn != nullptr)
-        return conn;
-          
-      srv->connection(conn, timeout, preserve);
-      if(conn != nullptr)
+      if(!conn)
+        srv->connection(conn, timeout, preserve);
+      if(conn)
         return conn;
     }
     SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", 
                          m_srv_name.c_str(), tries);
       
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
+    std::this_thread::sleep_for(
+      std::chrono::milliseconds(3000)); // ? cfg-setting
 
   } while (m_run.load() && (!probes || --tries));
 
@@ -213,8 +214,10 @@ ConnHandlerPtr Serialized::get_connection(
 }
 
 void Serialized::get_connection(
-      const EndPoints& endpoints, ServerConnections::NewCb_t cb,
-      std::chrono::milliseconds timeout, uint32_t probes, bool preserve) {
+      const EndPoints& endpoints, 
+      const ServerConnections::NewCb_t& cb,
+      const std::chrono::milliseconds& timeout,
+      uint32_t probes, bool preserve) {
     
   if(endpoints.empty()){
     SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints", 
@@ -227,17 +230,19 @@ void Serialized::get_connection(
 }
   
 void Serialized::get_connection(
-      const EndPoints& endpoints, ServerConnections::NewCb_t cb,
-      std::chrono::milliseconds timeout, uint32_t probes, uint32_t tries, 
+      const EndPoints& endpoints, 
+      const ServerConnections::NewCb_t& cb,
+      const std::chrono::milliseconds& timeout, 
+      uint32_t probes, uint32_t tries, 
       int next, bool preserve) {
           
   if(next == endpoints.size())
     next = 0;
 
-  ServerConnections::Ptr srv = get_srv(endpoints.at(next));
+  auto srv = get_srv(endpoints.at(next));
   ConnHandlerPtr conn = nullptr;
   srv->reusable(conn, preserve);
-  if(conn != nullptr || (probes && !tries)) {
+  if(conn || (probes && !tries)) {
     cb(conn);
     return;
   }
@@ -246,8 +251,8 @@ void Serialized::get_connection(
   SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
   srv->connection(timeout, 
     [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
-    (ConnHandlerPtr conn){
-      if(!ptr->m_run.load() || (conn != nullptr && conn->is_open())){
+    (const ConnHandlerPtr& conn){
+      if(!ptr->m_run.load() || (conn && conn->is_open())){
         cb(conn);
         return;
       }
@@ -265,11 +270,7 @@ void Serialized::get_connection(
   );
 }
 
-void Serialized::preserve(ConnHandlerPtr conn) {
-  if(!conn->is_open()) {
-    conn->do_close();
-    return;
-  }
+void Serialized::preserve(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
 
   Mutex::scope lock(m_mutex);
@@ -278,7 +279,7 @@ void Serialized::preserve(ConnHandlerPtr conn) {
     (*it).second->put_back(conn);
 }
 
-void Serialized::close(ConnHandlerPtr conn){
+void Serialized::close(ConnHandlerPtr& conn){
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
 
@@ -292,7 +293,7 @@ IOCtxPtr Serialized::io() {
   return m_ioctx; 
 }             
   
-std::string Serialized::to_str(ConnHandlerPtr conn) {
+std::string Serialized::to_str(ConnHandlerPtr& conn) {
   std::string s(m_srv_name);
   s.append(" ");
   s.append(conn->to_string());

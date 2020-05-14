@@ -18,7 +18,7 @@ namespace SWC {
 class ConfigSSL final {
   public:
   typedef std::function<
-    void(ConnHandlerPtr, const asio::error_code&)> HandshakeCb_t;
+    void(const ConnHandlerPtr&, const asio::error_code&)> HandshakeCb_t;
 
   ConfigSSL(bool is_client=true);
 

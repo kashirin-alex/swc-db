@@ -21,23 +21,25 @@ namespace SWC { namespace client {
 
 class ServerConnections : public std::enable_shared_from_this<ServerConnections> {
   public:
-  typedef std::shared_ptr<ServerConnections>    Ptr;
-  typedef std::function<void(ConnHandlerPtr)> NewCb_t;
+  typedef std::shared_ptr<ServerConnections>          Ptr;
+  typedef std::function<void(const ConnHandlerPtr&)>  NewCb_t;
 
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
-                    IOCtxPtr ioctx, AppContext::Ptr ctx, ConfigSSL* ssl_cfg);
+                    const IOCtxPtr& ioctx, const AppContext::Ptr& ctx, 
+                    ConfigSSL* ssl_cfg);
   
   virtual ~ServerConnections();
 
-  void reusable(ConnHandlerPtr &conn, bool preserve);
+  void reusable(ConnHandlerPtr& conn, bool preserve);
 
-  void connection(ConnHandlerPtr &conn, std::chrono::milliseconds timeout, 
+  void connection(ConnHandlerPtr& conn, 
+                  const std::chrono::milliseconds& timeout, 
                   bool preserve);
   
-  void connection(std::chrono::milliseconds timeout, NewCb_t cb, 
-                  bool preserve);
+  void connection(const std::chrono::milliseconds& timeout, 
+                  const NewCb_t& cb, bool preserve);
 
-  void put_back(ConnHandlerPtr conn);
+  void put_back(const ConnHandlerPtr& conn);
   
   bool empty();
 
@@ -59,44 +61,46 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
 
   public:
 
-  typedef std::shared_ptr<Serialized>                  Ptr;
+  typedef std::shared_ptr<Serialized>                        Ptr;
   typedef std::unordered_map<size_t, ServerConnections::Ptr> Map;
 
-  Serialized(const std::string& srv_name, IOCtxPtr ioctx, AppContext::Ptr ctx);
+  Serialized(const std::string& srv_name, 
+             const IOCtxPtr& ioctx, 
+             const AppContext::Ptr& ctx);
 
-  ServerConnections::Ptr get_srv(EndPoint endpoint);
+  ServerConnections::Ptr get_srv(const EndPoint& endpoint);
 
   ConnHandlerPtr get_connection(
         const EndPoints& endpoints, 
-        std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
+        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
   );
 
   void get_connection(
         const EndPoints& endpoints, 
-        ServerConnections::NewCb_t cb,
-        std::chrono::milliseconds timeout = std::chrono::milliseconds(0),
+        const ServerConnections::NewCb_t& cb,
+        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
   );
   
   void get_connection(
         const EndPoints& endpoints, 
-        ServerConnections::NewCb_t cb,
-        std::chrono::milliseconds timeout,
+        const ServerConnections::NewCb_t& cb,
+        const std::chrono::milliseconds& timeout,
         uint32_t probes, uint32_t tries, 
         int next,
         bool preserve=false
   );
 
-  void preserve(ConnHandlerPtr conn);
+  void preserve(ConnHandlerPtr& conn);
 
-  void close(ConnHandlerPtr conn);
+  void close(ConnHandlerPtr& conn);
 
   IOCtxPtr io();        
   
-  std::string to_str(ConnHandlerPtr conn);
+  std::string to_str(ConnHandlerPtr& conn);
   
   void stop();
 
