@@ -13,6 +13,8 @@ namespace SWC {
 
 template <class ItemT>
 class QueueSafe : private std::queue<ItemT> {
+  typedef std::queue<ItemT> QBase;
+
   public:
 
   void push(const ItemT& item) {
@@ -46,18 +48,21 @@ class QueueSafe : private std::queue<ItemT> {
 
   bool pop_and_more() {
     Mutex::scope lock(m_mutex);
-    pop();
+    QBase::pop();
     return !QBase::empty();
+  }
+
+  bool pop(ItemT* item) {
+    Mutex::scope lock(m_mutex);
+    if(QBase::empty())
+      return false;
+    *item = QBase::front();
+    QBase::pop();
+    return true;
   }
 
   private:
   Mutex                     m_mutex;
-
-  typedef std::queue<ItemT> QBase;
-  using QBase::empty;
-  using QBase::size;
-  using QBase::front;
-  using QBase::pop;
 };
 
 
