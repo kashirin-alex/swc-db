@@ -284,7 +284,8 @@ void CompactRange::response(int &err) {
 
 bool CompactRange::is_slow_req(uint64_t& median) const {
   median = (total_cells
-    ? (Time::now_ns() - profile.ts_start) / total_cells : 10000) * blk_cells * 2;
+    ? (Time::now_ns() - profile.ts_start) / total_cells : 10000) 
+    * blk_cells * 3;
   return req_last_time > median || Time::now_ns() - req_ts > median;
 }
 
