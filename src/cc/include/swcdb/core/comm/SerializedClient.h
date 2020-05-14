@@ -25,6 +25,7 @@ class ServerConnections :
       public std::enable_shared_from_this<ServerConnections> {
 
   public:
+
   typedef std::shared_ptr<ServerConnections>          Ptr;
   typedef std::function<void(const ConnHandlerPtr&)>  NewCb_t;
 
@@ -58,12 +59,13 @@ class ServerConnections :
 };
 
 
-class Serialized : public std::enable_shared_from_this<Serialized> {
+class Serialized : 
+      private std::unordered_map<size_t, ServerConnections::Ptr>,
+      public std::enable_shared_from_this<Serialized> {
 
   public:
 
   typedef std::shared_ptr<Serialized>                        Ptr;
-  typedef std::unordered_map<size_t, ServerConnections::Ptr> Map;
 
   Serialized(const std::string& srv_name, 
              const IOCtxPtr& ioctx, 
@@ -116,7 +118,6 @@ class Serialized : public std::enable_shared_from_this<Serialized> {
   ConfigSSL*            m_ssl_cfg;
 
   Mutex                 m_mutex;
-  Map                   m_srv_conns;
   std::atomic<bool>     m_run;
 
 };

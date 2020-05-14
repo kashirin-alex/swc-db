@@ -137,11 +137,10 @@ Serialized::Serialized(const std::string& srv_name, const IOCtxPtr& ioctx,
 
 ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
   size_t hash = endpoint_hash(endpoint);
+  iterator it;
   Mutex::scope lock(m_mutex);
-
-  auto it = m_srv_conns.find(hash);
-  if(it == m_srv_conns.end())
-    it = m_srv_conns.emplace(
+  if((it = find(hash)) == end())
+    it = emplace(
       hash, 
       std::make_shared<ServerConnections>(
         m_srv_name, endpoint, m_ioctx, m_ctx,
@@ -246,21 +245,19 @@ void Serialized::get_connection(
 
 void Serialized::preserve(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
-
+  iterator it;
   Mutex::scope lock(m_mutex);
-  auto it = m_srv_conns.find(hash);
-  if(it != m_srv_conns.end())
-    (*it).second->push(conn);
+  if((it = find(hash)) != end())
+    it->second->push(conn);
 }
 
 void Serialized::close(ConnHandlerPtr& conn){
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
-
+  iterator it;
   Mutex::scope lock(m_mutex);
-  auto it = m_srv_conns.find(hash);
-  if(it != m_srv_conns.end() && (*it).second->empty())
-    m_srv_conns.erase(it);
+  if((it = find(hash)) != end() && it->second->empty())
+    erase(it);
 }
 
 IOCtxPtr Serialized::io() {
@@ -277,14 +274,14 @@ std::string Serialized::to_str(ConnHandlerPtr& conn) {
 void Serialized::stop() {
   m_run.store(false);
 
-  Map::iterator it;
+  iterator it;
   for(ServerConnections::Ptr srv;;) {
     {
       Mutex::scope lock(m_mutex);
-      if((it = m_srv_conns.begin()) == m_srv_conns.end())
+      if((it = begin()) == end())
         break;
       srv = it->second;
-      m_srv_conns.erase(it);
+      erase(it);
     }
     srv->close_all();
   }
