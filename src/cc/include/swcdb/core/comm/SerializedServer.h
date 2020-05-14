@@ -19,13 +19,12 @@
 namespace SWC { namespace server {
 
 
-class Acceptor {
+class Acceptor : protected asio::ip::tcp::acceptor {
   public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
   Acceptor(asio::ip::tcp::acceptor& acceptor, 
-           AppContext::Ptr app_ctx, IOCtxPtr io_ctx, 
-           bool is_plain=true);
+           AppContext::Ptr& app_ctx, bool is_plain=true);
 
   void stop();
 
@@ -34,13 +33,13 @@ class Acceptor {
   asio::ip::tcp::acceptor* sock();
 
   protected:
-  asio::ip::tcp::acceptor m_acceptor;
+
   AppContext::Ptr         m_app_ctx;
 
   private:
-  virtual void do_accept();
 
-  IOCtxPtr                m_io_ctx;
+  void do_accept();
+
 };
 
 
@@ -48,14 +47,13 @@ class AcceptorSSL : public Acceptor {
   public:
 
   AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
-              AppContext::Ptr app_ctx, IOCtxPtr io_ctx, 
-              ConfigSSL* ssl_cfg);
+              AppContext::Ptr& app_ctx, ConfigSSL* ssl_cfg);
 
-  ~AcceptorSSL();
+  virtual ~AcceptorSSL();
 
   private:
   
-  void do_accept() override;
+  void do_accept();
 
   ConfigSSL* m_ssl_cfg;
 };

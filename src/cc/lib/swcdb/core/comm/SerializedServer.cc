@@ -11,19 +11,18 @@
 namespace SWC { namespace server {
 
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor, 
-                  AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
-                  bool is_plain)
-                  : m_acceptor(std::move(acceptor)), 
-                    m_app_ctx(app_ctx), m_io_ctx(io_ctx) {
-  m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-  //m_acceptor.set_option(asio::ip::tcp::no_delay(true));
-  //m_acceptor.non_blocking(true);
+                  AppContext::Ptr& app_ctx, bool is_plain)
+                  : asio::ip::tcp::acceptor(std::move(acceptor)), 
+                    m_app_ctx(app_ctx) {
+  set_option(asio::ip::tcp::acceptor::reuse_address(true));
+  //set_option(asio::ip::tcp::no_delay(true));
+  //non_blocking(true);
 
   SWC_LOGF(
     LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
-    m_acceptor.local_endpoint().address().to_string().c_str(), 
-    m_acceptor.local_endpoint().port(), 
-    (ssize_t)m_acceptor.native_handle(),
+    local_endpoint().address().to_string().c_str(), 
+    local_endpoint().port(), 
+    (ssize_t)native_handle(),
     is_plain ? "PLAIN" : "SECURE"
   );
   if(is_plain)
@@ -32,23 +31,23 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
 
 void Acceptor::stop() {
   SWC_LOGF(LOG_INFO, "Stopping to Listen On: [%s]:%d fd=%d", 
-           m_acceptor.local_endpoint().address().to_string().c_str(), 
-           m_acceptor.local_endpoint().port(), 
-           (ssize_t)m_acceptor.native_handle());
+           local_endpoint().address().to_string().c_str(), 
+           local_endpoint().port(), 
+           (ssize_t)native_handle());
 
-  if(m_acceptor.is_open())
-    m_acceptor.close();
+  if(is_open())
+    close();
 }
 
 Acceptor::~Acceptor() { }
 
 asio::ip::tcp::acceptor* Acceptor::sock() {
-  return &m_acceptor;
+  return this;
 }
 
 void Acceptor::do_accept() {
-  m_acceptor.async_accept(
-    [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
+  async_accept(
+    [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
         if(ec.value() != 125) 
           SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
@@ -70,16 +69,15 @@ void Acceptor::do_accept() {
 
 
 AcceptorSSL::AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
-                        AppContext::Ptr app_ctx, IOCtxPtr io_ctx,
-                        ConfigSSL* ssl_cfg)
-                        : Acceptor(acceptor, app_ctx, io_ctx, false),
+                        AppContext::Ptr& app_ctx, ConfigSSL* ssl_cfg)
+                        : Acceptor(acceptor, app_ctx, false),
                           m_ssl_cfg(ssl_cfg) {
   do_accept();
 }
 
 void AcceptorSSL::do_accept() {
-  m_acceptor.async_accept(
-    [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
+  async_accept(
+    [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
         if(ec.value() != 125) 
           SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
@@ -143,11 +141,10 @@ SerializedServer::SerializedServer(
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
         if(ssl_conn)
           m_acceptors.push_back(
-            std::make_shared<AcceptorSSL>(
-              acceptor, app_ctx, io_ctx, m_ssl_cfg));
+            std::make_shared<AcceptorSSL>(acceptor, app_ctx, m_ssl_cfg));
         else
           m_acceptors.push_back(
-            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+            std::make_shared<Acceptor>(acceptor, app_ctx));
         endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
       } else {
@@ -155,11 +152,10 @@ SerializedServer::SerializedServer(
           endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle()));
         if(ssl_conn)
           m_acceptors.push_back(
-            std::make_shared<AcceptorSSL>(
-              acceptor, app_ctx, io_ctx, m_ssl_cfg));
+            std::make_shared<AcceptorSSL>(acceptor, app_ctx, m_ssl_cfg));
         else
           m_acceptors.push_back(
-            std::make_shared<Acceptor>(acceptor, app_ctx, io_ctx));
+            std::make_shared<Acceptor>(acceptor, app_ctx));
       }
     }
 
