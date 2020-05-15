@@ -8,31 +8,31 @@ namespace SWC { namespace client {
 
 
 
-ConnQueue::ReqBase::ReqBase(bool insistent, CommBuf::Ptr cbp)
-                            : insistent(insistent), cbp(cbp), 
-                              was_called(false), queue(nullptr){
+ConnQueueReqBase::ConnQueueReqBase(bool insistent, CommBuf::Ptr cbp)
+                                  : insistent(insistent), cbp(cbp), 
+                                    was_called(false), queue(nullptr){
 }
 
-ConnQueue::ReqBase::Ptr ConnQueue::ReqBase::req() {
-  return std::dynamic_pointer_cast<ReqBase>(shared_from_this());
+ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
+  return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
 }
 
-ConnQueue::ReqBase::~ReqBase() {}
+ConnQueueReqBase::~ConnQueueReqBase() {}
 
-void ConnQueue::ReqBase::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void ConnQueueReqBase::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
   if(was_called || !is_rsp(conn, ev))
     return;
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 }
 
-bool ConnQueue::ReqBase::is_timeout(ConnHandlerPtr conn, Event::Ptr& ev) {
+bool ConnQueueReqBase::is_timeout(ConnHandlerPtr conn, Event::Ptr& ev) {
   bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
   if(out)
     request_again();
   return out;
 }
 
-bool ConnQueue::ReqBase::is_rsp(ConnHandlerPtr conn, Event::Ptr& ev) {
+bool ConnQueueReqBase::is_rsp(ConnHandlerPtr conn, Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT 
      || ev->error == Error::Code::REQUEST_TIMEOUT) {
     if(!was_called)
@@ -42,18 +42,18 @@ bool ConnQueue::ReqBase::is_rsp(ConnHandlerPtr conn, Event::Ptr& ev) {
   return true;
 }
 
-void ConnQueue::ReqBase::request_again() {
+void ConnQueueReqBase::request_again() {
   if(!queue)
     run();
   else
     queue->delay(req());
 }
 
-bool ConnQueue::ReqBase::valid() { return true; }
+bool ConnQueueReqBase::valid() { return true; }
 
-void ConnQueue::ReqBase::handle_no_conn() {}
+void ConnQueueReqBase::handle_no_conn() {}
 
-std::string ConnQueue::ReqBase::to_string() {
+std::string ConnQueueReqBase::to_string() {
   std::string s("ReqBase(");
   s.append(" called=");
   s.append(std::to_string(was_called.load()));
@@ -107,19 +107,19 @@ void ConnQueue::stop() {
     m_delayed.erase(it);
     std::this_thread::yield();
   }
-  while(!m_queue.empty() && !m_queue.activating()) 
+  while(!empty() && !activating()) 
     std::this_thread::yield();
   ReqBase::Ptr req;
-  if(!m_queue.empty()) do {
-    if(!(req = m_queue.front())->was_called)
+  if(!empty()) do {
+    if(!(req = front())->was_called)
       req->handle_no_conn();
-  } while(!m_queue.deactivating());
+  } while(!deactivating());
 }
 
 void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
   if(!req->queue) 
     req->queue = shared_from_this();
-  m_queue.push(req);
+  push(req);
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     if(!m_conn || !m_conn->is_open())
@@ -171,7 +171,7 @@ void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req,
 std::string ConnQueue::to_string() {
   std::string s("ConnQueue:");
   s.append(" size=");
-  s.append(std::to_string(m_queue.size()));
+  s.append(std::to_string(size()));
   s.append(" conn=");
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -181,7 +181,7 @@ std::string ConnQueue::to_string() {
 }
 
 void ConnQueue::exec_queue() {
-  if(m_queue.activating())
+  if(activating())
     asio::post(*m_ioctx.get(), [ptr=shared_from_this()](){ptr->run_queue();});
 }
 
@@ -192,7 +192,7 @@ void ConnQueue::run_queue() {
   }
   ConnHandlerPtr  conn;
   do {
-    ReqBase::Ptr& req = m_queue.front();
+    ReqBase::Ptr& req = front();
     SWC_ASSERT(req->cbp);
     if(req->valid()) {
       {
@@ -202,12 +202,12 @@ void ConnQueue::run_queue() {
       if(!conn || !conn->send_request(req->cbp, req)) {
         req->handle_no_conn();
         if(req->insistent) {
-          m_queue.deactivate();
+          deactivate();
           break;
         }
       }
     }
-  } while(!m_queue.deactivating());
+  } while(!deactivating());
   
   if(m_timer) // nullptr -eq persistent
     schedule_close();
@@ -215,7 +215,7 @@ void ConnQueue::run_queue() {
 }
 
 void ConnQueue::schedule_close() {
-  if(m_queue.empty()) {
+  if(empty()) {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     if(!m_conn || !m_conn->due()) {
       if(m_conn) {

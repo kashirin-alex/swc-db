@@ -13,42 +13,48 @@
 namespace SWC { namespace client {
 
 
-class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
+class ConnQueue;
+typedef std::shared_ptr<ConnQueue> ConnQueuePtr;
+
+class ConnQueueReqBase : public DispatchHandler {
   public:
 
-  typedef std::shared_ptr<ConnQueue> Ptr;
+  typedef std::shared_ptr<ConnQueueReqBase> Ptr;
 
-  class ReqBase : public DispatchHandler {
-    public:
+  ConnQueueReqBase(bool insistent=true, CommBuf::Ptr cbp=nullptr);
 
-    typedef std::shared_ptr<ReqBase> Ptr;
+  Ptr req();
 
-    ReqBase(bool insistent=true, CommBuf::Ptr cbp=nullptr);
+  virtual ~ConnQueueReqBase();
 
-    Ptr req();
+  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
 
-    virtual ~ReqBase();
+  bool is_timeout(ConnHandlerPtr conn, Event::Ptr& ev);
 
-    void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev);
 
-    bool is_timeout(ConnHandlerPtr conn, Event::Ptr& ev);
+  void request_again();
 
-    bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev);
+  virtual bool valid();
 
-    void request_again();
+  virtual void handle_no_conn();
 
-    virtual bool valid();
-
-    virtual void handle_no_conn();
-
-    std::string to_string();
+   std::string to_string();
     
-    const bool            insistent;
-    CommBuf::Ptr          cbp;
-    std::atomic<bool>     was_called;
-    ConnQueue::Ptr        queue;
-  };
+  const bool            insistent;
+  CommBuf::Ptr          cbp;
+  std::atomic<bool>     was_called;
+  ConnQueuePtr          queue;
+};
 
+
+
+class ConnQueue : 
+    private QueueSafeStated<ConnQueueReqBase::Ptr>, 
+    public std::enable_shared_from_this<ConnQueue> {
+  public:
+
+  typedef ConnQueueReqBase ReqBase;
 
   ConnQueue(IOCtxPtr ioctx,
             const Property::V_GINT32::Ptr keepalive_ms=nullptr, 
@@ -81,7 +87,6 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
   void schedule_close();
 
   std::recursive_mutex                              m_mutex;
-  QueueSafeStated<ReqBase::Ptr>                     m_queue;
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;
   IOCtxPtr                                          m_ioctx;

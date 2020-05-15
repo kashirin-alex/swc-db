@@ -85,7 +85,7 @@ class MngrRole final {
   asio::high_resolution_timer     m_check_timer; 
   bool                            m_run = true; 
   
-  client::ConnQueue::Ptr          m_mngr_inchain;
+  client::ConnQueuePtr            m_mngr_inchain;
 
 
   const Property::V_GINT32::Ptr cfg_conn_probes;
