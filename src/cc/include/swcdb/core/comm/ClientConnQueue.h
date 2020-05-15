@@ -5,8 +5,8 @@
 #ifndef swc_core_comm_ClientConnQueue_h
 #define swc_core_comm_ClientConnQueue_h
 
+#include <queue>
 #include <unordered_set>
-#include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 
@@ -50,7 +50,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
 
 class ConnQueue : 
-    private QueueSafeStated<ConnQueueReqBase::Ptr>, 
+    private std::queue<ConnQueueReqBase::Ptr>, 
     public std::enable_shared_from_this<ConnQueue> {
   public:
 
@@ -86,10 +86,11 @@ class ConnQueue :
 
   void schedule_close();
 
-  std::recursive_mutex                              m_mutex;
+  Mutex                                             m_mutex;
+  IOCtxPtr                                          m_ioctx;
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;
-  IOCtxPtr                                          m_ioctx;
+  bool                                              m_qrunning;
   asio::high_resolution_timer*                      m_timer; 
   std::unordered_set<asio::high_resolution_timer*>  m_delayed;
 
