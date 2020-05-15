@@ -131,20 +131,20 @@ bool ConnHandler::response_ok(const Event::Ptr& ev) {
 
 bool ConnHandler::send_response(CommBuf::Ptr& cbuf, 
                                 DispatchHandler::Ptr hdlr) {
-  if(connected) {
-    cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
-    write_or_queue(new Pending(cbuf, hdlr));
-  }
-  return connected;
+  if(!connected)
+    return false;
+  cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
+  write_or_queue(new Pending(cbuf, hdlr));
+  return true;
 }
 
 bool ConnHandler::send_request(CommBuf::Ptr& cbuf, 
                                DispatchHandler::Ptr hdlr) {
-  if(connected) {
-    cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
-    write_or_queue(new Pending(cbuf, hdlr));
-  }
-  return connected;
+  if(!connected)
+    return false;
+  cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
+  write_or_queue(new Pending(cbuf, hdlr));
+  return true;
 }
 
 void ConnHandler::accept_requests() {
