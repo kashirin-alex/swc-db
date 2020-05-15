@@ -22,7 +22,7 @@ class Resources final {
   void init(asio::io_context* io, 
             Property::V_GINT32::Ptr ram_percent, 
             Property::V_GINT32::Ptr ram_release_rate,
-            std::function<void(size_t)> release_call=0);
+            const std::function<size_t(size_t)>& release_call=0);
 
   size_t need_ram() const;
 
@@ -57,7 +57,7 @@ class Resources final {
   Property::V_GINT32::Ptr       cfg_ram_percent;
   Property::V_GINT32::Ptr       cfg_ram_release_rate;
   
-  std::function<void(size_t)>   release;
+  std::function<size_t(size_t)> release;
 
   int8_t                        next_major_chk = -1;
   Component                     ram;

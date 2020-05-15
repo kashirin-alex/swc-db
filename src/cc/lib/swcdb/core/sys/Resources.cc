@@ -29,7 +29,7 @@ Resources::~Resources() {
 void Resources::init(asio::io_context* io, 
                      Property::V_GINT32::Ptr ram_percent, 
                      Property::V_GINT32::Ptr ram_release_rate, 
-                     std::function<void(size_t)> release_call) {
+                     const std::function<size_t(size_t)>& release_call) {
   if(m_timer == nullptr)
     m_timer = new asio::high_resolution_timer(*io);
     
@@ -69,8 +69,14 @@ void Resources::checker() {
   refresh_stats();
 
   if(size_t bytes = need_ram()) {
-    if(release)
-      release(bytes);
+    if(release) {
+      SWC_LOGF(LOG_DEBUG, "Resources release=%lld", bytes);
+      size_t released_bytes = release(bytes);
+      SWC_LOGF(LOG_DEBUG, "Resources released=%lld", released_bytes);
+      if(released_bytes >= bytes)
+        return schedule();
+    }
+
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     if(!avail_ram()) {
       auto inst = MallocExtension::instance();
@@ -79,8 +85,8 @@ void Resources::checker() {
       inst->SetMemoryReleaseRate(release_rate_default);
     }
 #endif
-  }
 
+  }
   schedule();
 }
 

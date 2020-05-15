@@ -84,7 +84,7 @@ class AppContext : public SWC::AppContext {
       Env::IoCtx::io()->ptr(),
       settings->get<Property::V_GINT32>("swc.rgr.ram.percent"),
       settings->get<Property::V_GINT32>("swc.rgr.ram.release.rate"),
-      [](size_t bytes) { RangerEnv::columns()->release(bytes); }
+      [](size_t bytes) { return RangerEnv::columns()->release(bytes); }
     );
 
     auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
