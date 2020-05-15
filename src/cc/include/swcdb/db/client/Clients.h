@@ -22,7 +22,7 @@ IOCtxPtr default_io();
 
 class Clients final {
 
-  const AppContext::Ptr   m_app_ctx = nullptr;
+  const AppContext::Ptr   m_app_ctx;
 
   public:
 
@@ -33,11 +33,9 @@ class Clients final {
   ~Clients();
   
   const Mngr::Groups::Ptr mngrs_groups;
-  ConnQueuesPtr           mngr = nullptr;
-  
-  ConnQueuesPtr           rgr = nullptr;
-
-  Schemas::Ptr            schemas = nullptr;
+  ConnQueuesPtr           mngr;
+  ConnQueuesPtr           rgr;
+  Schemas::Ptr            schemas;
   Rangers                 rangers;
 };
 
