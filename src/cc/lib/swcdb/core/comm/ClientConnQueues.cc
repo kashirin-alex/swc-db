@@ -50,7 +50,7 @@ std::string ConnQueues::to_string() {
   std::string s("ConnQueues: ");
   Mutex::scope lock(m_mutex);
 
-  for(auto& host : m_hosts){
+  for(auto& host : *this) {
     s.append(host->to_string());
     s.append("\n");
   }
@@ -59,21 +59,19 @@ std::string ConnQueues::to_string() {
 
 Host::Ptr ConnQueues::get(const EndPoints& endpoints){
   Mutex::scope lock(m_mutex);
-  for(auto& host : m_hosts){
+  for(auto& host : *this) {
     if(has_endpoint(host->endpoints, endpoints))
       return host;
   }
-  return m_hosts.emplace_back(
-    new Host(
-      shared_from_this(), endpoints, cfg_keepalive_ms, cfg_again_delay_ms));
+  return emplace_back(new Host(
+    shared_from_this(), endpoints, cfg_keepalive_ms, cfg_again_delay_ms));
 }
 
 void ConnQueues::remove(const EndPoints& endpoints) {
   Mutex::scope lock(m_mutex);
-  for(auto it=m_hosts.begin(); it<m_hosts.end(); ++it){
-
+  for(auto it=begin(); it<end(); ++it) {
     if(has_endpoint((*it)->endpoints, endpoints)) {
-      m_hosts.erase(it);
+      erase(it);
       break;
     }
   }

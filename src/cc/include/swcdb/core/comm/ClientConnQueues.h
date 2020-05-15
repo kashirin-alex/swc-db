@@ -34,7 +34,9 @@ class Host : public ConnQueue  {
 };
 
 
-class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
+class ConnQueues : 
+    private std::vector<Host::Ptr>, 
+    public std::enable_shared_from_this<ConnQueues> {
 
   public:
 
@@ -62,7 +64,6 @@ class ConnQueues : public std::enable_shared_from_this<ConnQueues> {
   private:
 
   Mutex                   m_mutex;
-  std::vector<Host::Ptr>  m_hosts;
   
 };
 
