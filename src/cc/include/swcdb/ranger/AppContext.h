@@ -206,8 +206,8 @@ class AppContext : public SWC::AppContext {
     
     Env::Resources.stop();
     
-    Env::Clients::get()->rgr_service->stop();
-    Env::Clients::get()->mngr_service->stop();
+    Env::Clients::get()->rgr->stop();
+    Env::Clients::get()->mngr->stop();
     
     Env::IoCtx::io()->stop();
     Env::FsInterface::interface()->stop();

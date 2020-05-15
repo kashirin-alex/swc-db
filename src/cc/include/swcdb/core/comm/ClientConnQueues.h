@@ -61,6 +61,8 @@ class ConnQueues :
 
   void remove(const EndPoints& endpoints);
 
+  void stop();
+
   private:
 
   Mutex                   m_mutex;

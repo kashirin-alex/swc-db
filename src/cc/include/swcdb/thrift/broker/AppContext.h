@@ -85,8 +85,8 @@ class AppContext : virtual public BrokerIfFactory {
 
   void stop() {
 
-    Env::Clients::get()->rgr_service->stop();
-    Env::Clients::get()->mngr_service->stop();
+    Env::Clients::get()->rgr->stop();
+    Env::Clients::get()->mngr->stop();
     
     //Env::FsInterface::interface()->stop();
     Env::IoCtx::io()->stop();

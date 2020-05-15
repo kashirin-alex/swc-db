@@ -77,4 +77,16 @@ void ConnQueues::remove(const EndPoints& endpoints) {
   }
 }
 
+void ConnQueues::stop() {
+  for(;;) {
+    Mutex::scope lock(m_mutex);
+    auto it=begin();
+    if(it == end())
+      break;
+    (*it)->stop();
+    erase(it);
+  }
+  service->stop();
+}
+
 }}
