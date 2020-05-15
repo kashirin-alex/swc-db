@@ -372,7 +372,7 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
     return;
   }
 
-  Env::Clients::get()->mngr_service->get_connection(
+  Env::Clients::get()->mngr->service->get_connection(
     host_chk->endpoints, 
     [this, host_chk, next, total, flw]
     (ConnHandlerPtr conn) {

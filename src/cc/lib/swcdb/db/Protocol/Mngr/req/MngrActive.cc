@@ -18,7 +18,7 @@ MngrActive::MngrActive(int64_t cid, DispatchHandler::Ptr hdlr,
                       : client::ConnQueue::ReqBase(false), 
                         cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),
                         timer(asio::high_resolution_timer(
-                          *Env::Clients::get()->mngr_service->io().get())) {
+                          *Env::Clients::get()->mngr->service->io().get())) {
   cbp = CommBuf::make(Params::MngrActiveReq(cid, cid));
   cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }

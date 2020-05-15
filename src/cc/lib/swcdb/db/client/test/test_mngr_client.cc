@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
     std::cout << "starting thread=" << t << "\n";
     threads.push_back(new std::thread([clients, endpoints_copy, t](){
       
-      auto con_h = clients->mngr_service->get_connection(endpoints_copy);
-      std::cout << "thread=" << t << " " << clients->mngr_service->to_str(con_h) << " (NEW)\n";
+      auto con_h = clients->mngr->service->get_connection(endpoints_copy);
+      std::cout << "thread=" << t << " " << clients->mngr->service->to_str(con_h) << " (NEW)\n";
       //std::this_thread::sleep_for(std::chrono::microseconds(1000));
       size_t num_req = 1000;
       std::atomic<size_t> total = num_req;
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 
       //client->release(con_h);
       //std::this_thread::sleep_for(std::chrono::microseconds(1000));
-      std::cout << "exiting thread=" << t << " total=" << total << " " << clients->mngr_service->to_str(con_h) << "\n";
+      std::cout << "exiting thread=" << t << " total=" << total << " " << clients->mngr->service->to_str(con_h) << "\n";
     }));
     //std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }

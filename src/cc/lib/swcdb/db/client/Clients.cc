@@ -7,52 +7,48 @@
 
 namespace SWC { namespace client {
 
-Clients::Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx)
-                : m_app_ctx(app_ctx),
-                  mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
-                  rangers(Env::Config::settings()->get<Property::V_GINT32>(
-                    "swc.client.Rgr.range.res.expiry")) {
+IOCtxPtr default_io() {
+  if(!Env::IoCtx::ok())
+    Env::IoCtx::init(8);
+  return Env::IoCtx::io()->shared();
+}
 
-    if(ioctx == nullptr){
-      if(!Env::IoCtx::ok())
-        Env::IoCtx::init(8);
-      ioctx = Env::IoCtx::io()->shared();
-    }
+Clients::Clients(IOCtxPtr ioctx, const AppContext::Ptr& app_ctx)
+    : m_app_ctx(app_ctx),
 
-    mngr_service = std::make_shared<Serialized>(
-      "MANAGER", ioctx, m_app_ctx
-    );
-    mngr = std::make_shared<ConnQueues>(
-      mngr_service,
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.timeout"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.probes"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Mngr.connection.keepalive"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.request.again.delay")
-    );
+      mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
 
-    rgr_service = std::make_shared<Serialized>(
-      "RANGER", ioctx, m_app_ctx
-    );
-    rgr = std::make_shared<ConnQueues>(
-      rgr_service,
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.timeout"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.probes"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.Rgr.connection.keepalive"),
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.request.again.delay")
-    );
+      mngr(std::make_shared<ConnQueues>(
+        std::make_shared<Serialized>(
+          "MANAGER", ioctx ? ioctx: ioctx = default_io(), m_app_ctx),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Mngr.connection.timeout"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Mngr.connection.probes"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Mngr.connection.keepalive"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.request.again.delay")
+      )),
 
-    schemas = std::make_shared<Schemas>(
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.client.schema.expiry")
-    );
+      rgr(std::make_shared<ConnQueues>(
+        std::make_shared<Serialized>("RANGER", ioctx, m_app_ctx),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Rgr.connection.timeout"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Rgr.connection.probes"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.Rgr.connection.keepalive"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.request.again.delay")
+      )),
+
+      schemas(std::make_shared<Schemas>(
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.client.schema.expiry"))),
+
+      rangers(Env::Config::settings()->get<Property::V_GINT32>(
+        "swc.client.Rgr.range.res.expiry")) {
 }
 
 Clients::~Clients() { }

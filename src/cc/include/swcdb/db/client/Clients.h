@@ -16,27 +16,29 @@
 
 namespace SWC { namespace client {
 
+
+IOCtxPtr default_io();
+
+
 class Clients final {
+
+  const AppContext::Ptr   m_app_ctx = nullptr;
+
   public:
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(IOCtxPtr ioctx, const AppContext::Ptr app_ctx);
+  Clients(IOCtxPtr ioctx, const AppContext::Ptr& app_ctx);
 
   ~Clients();
   
   const Mngr::Groups::Ptr mngrs_groups;
-  Serialized::Ptr         mngr_service = nullptr;
   ConnQueuesPtr           mngr = nullptr;
   
-  Serialized::Ptr         rgr_service   = nullptr;
   ConnQueuesPtr           rgr = nullptr;
 
   Schemas::Ptr            schemas = nullptr;
   Rangers                 rangers;
-
-  private:
-  const AppContext::Ptr   m_app_ctx = nullptr;
 };
 
 } // namespace client 

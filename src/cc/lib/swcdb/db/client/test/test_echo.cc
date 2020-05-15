@@ -79,7 +79,7 @@ class Checker {
   }
 
   void get_conn(){
-    Env::Clients::get()->mngr_service->get_connection(
+    Env::Clients::get()->mngr->service->get_connection(
       Env::Clients::get()->mngrs_groups->get_endpoints(1, 1), 
       [this](ConnHandlerPtr conn){
         if(conn == nullptr || !conn->is_open()){
