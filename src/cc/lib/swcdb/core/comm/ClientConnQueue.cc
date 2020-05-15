@@ -43,7 +43,7 @@ bool ConnQueue::ReqBase::is_rsp(ConnHandlerPtr conn, Event::Ptr& ev) {
 }
 
 void ConnQueue::ReqBase::request_again() {
-  if(queue == nullptr)
+  if(!queue)
     run();
   else
     queue->delay(req());
@@ -72,7 +72,10 @@ ConnQueue::ConnQueue(IOCtxPtr ioctx,
                     : m_ioctx(ioctx), m_conn(nullptr), m_connecting(false),
                       cfg_keepalive_ms(keepalive_ms),
                       cfg_again_delay_ms(again_delay_ms), 
-                      m_timer(nullptr) { 
+                      m_timer(cfg_keepalive_ms
+                        ? new asio::high_resolution_timer(*m_ioctx.get()) 
+                        : nullptr
+                      ) {
 }
 
 ConnQueue::~ConnQueue() {
@@ -91,25 +94,22 @@ void ConnQueue::stop() {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     auto it = m_delayed.begin();
     if(it == m_delayed.end()) {
+      if(m_conn) {
+        if(m_conn->is_open())
+          m_conn->do_close();
+        m_conn = nullptr;
+      }
+      if(m_timer)
+        m_timer->cancel();
       break;
-    } else {
-      (*it)->cancel();
-      std::this_thread::yield();
     }
+    (*it)->cancel();
+    m_delayed.erase(it);
+    std::this_thread::yield();
   }
-  {
-    std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if(m_conn != nullptr && m_conn->is_open())
-      m_conn->do_close();
-
-    if(m_timer != nullptr) {
-      m_timer->cancel();
-      m_timer = nullptr;
-    }
-  }
-  ReqBase::Ptr req;
   while(!m_queue.empty() && !m_queue.activating()) 
     std::this_thread::yield();
+  ReqBase::Ptr req;
   if(!m_queue.empty()) do {
     if(!(req = m_queue.front())->was_called)
       req->handle_no_conn();
@@ -117,12 +117,12 @@ void ConnQueue::stop() {
 }
 
 void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
-  if(req->queue == nullptr) 
+  if(!req->queue) 
     req->queue = shared_from_this();
   m_queue.push(req);
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if(m_conn == nullptr || !m_conn->is_open())
+    if(!m_conn || !m_conn->is_open())
       if(m_connecting)
         return;
       m_connecting = true;
@@ -132,7 +132,7 @@ void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
   exec_queue();
 }
 
-void ConnQueue::set(ConnHandlerPtr conn) {
+void ConnQueue::set(const ConnHandlerPtr& conn) {
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_conn = conn;
@@ -142,42 +142,41 @@ void ConnQueue::set(ConnHandlerPtr conn) {
 }
 
 void ConnQueue::delay(ConnQueue::ReqBase::Ptr req) {
-  if(cfg_again_delay_ms == nullptr) {
-    put(req);
-    return;
-  }
+  if(!cfg_again_delay_ms)
+    return put(req);
+
   auto tm = new asio::high_resolution_timer(*m_ioctx.get());
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    m_delayed.push_back(tm);
+    m_delayed.insert(tm);
   }
   tm->expires_from_now(std::chrono::milliseconds(cfg_again_delay_ms->get()));
   tm->async_wait(
-    [tm, req, queue=shared_from_this()](const asio::error_code ec) {
-      queue->delay_proceed(req, tm);
+    [req, tm](const asio::error_code ec) {
+      req->queue->delay_proceed(req, tm);
     }
   );
 }
 
-void ConnQueue::delay_proceed(ConnQueue::ReqBase::Ptr req, 
+void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req, 
                               asio::high_resolution_timer* tm) {
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
-  auto it = std::find(m_delayed.begin(), m_delayed.end(), tm);
-  if(it != m_delayed.end()) {
-    m_delayed.erase(it);
-    delete tm;
-    put(req);
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_delayed.erase(tm);
   }
+  delete tm;
+  put(req);
 }
 
 std::string ConnQueue::to_string() {
   std::string s("ConnQueue:");
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
-
   s.append(" size=");
   s.append(std::to_string(m_queue.size()));
   s.append(" conn=");
-  s.append(m_conn!=nullptr?m_conn->endpoint_remote_str():std::string("no"));
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    s.append(m_conn?m_conn->endpoint_remote_str():std::string("no"));
+  }
   return s;
 }
 
@@ -187,23 +186,20 @@ void ConnQueue::exec_queue() {
 }
 
 void ConnQueue::run_queue() {
-  { 
+  if(m_timer) { 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if(m_timer != nullptr) {
-      m_timer->cancel();
-      m_timer = nullptr;
-    }
+    m_timer->cancel();
   }
-  ReqBase::Ptr    req;
   ConnHandlerPtr  conn;
   do {
-    SWC_ASSERT((req = m_queue.front())->cbp != nullptr);
+    ReqBase::Ptr& req = m_queue.front();
+    SWC_ASSERT(req->cbp);
     if(req->valid()) {
       {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
-        conn = (m_conn != nullptr && m_conn->is_open()) ? m_conn : nullptr;
+        conn = (m_conn && m_conn->is_open()) ? m_conn : nullptr;
       }
-      if(conn == nullptr || !conn->send_request(req->cbp, req)) {
+      if(!conn || !conn->send_request(req->cbp, req)) {
         req->handle_no_conn();
         if(req->insistent) {
           m_queue.deactivate();
@@ -213,39 +209,31 @@ void ConnQueue::run_queue() {
     }
   } while(!m_queue.deactivating());
   
-  schedule_close();
+  if(m_timer) // nullptr -eq persistent
+    schedule_close();
+    // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
 }
 
 void ConnQueue::schedule_close() {
-  if(cfg_keepalive_ms == nullptr) // nullptr -eq persistent
-    return;
-  // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
-
   if(m_queue.empty()) {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if(m_conn == nullptr || !m_conn->due()) {
-      if(m_conn != nullptr)
-        m_conn->do_close(); 
-      if(m_timer != nullptr) {
-        m_timer->cancel();
-        m_timer = nullptr;
+    if(!m_conn || !m_conn->due()) {
+      if(m_conn) {
+        m_conn->do_close();
+        m_conn = nullptr;
       }
-      close_issued();
-      return;
+      m_timer->cancel();
+      return close_issued();
     }
   }
     
   std::lock_guard<std::recursive_mutex> lock(m_mutex);
-  if(m_timer == nullptr)
-    m_timer = new asio::high_resolution_timer(*m_ioctx.get());
-  else
-    m_timer->cancel();
-
+  m_timer->cancel();
   m_timer->expires_from_now(
     std::chrono::milliseconds(cfg_keepalive_ms->get()));
   m_timer->async_wait(
-    [ptr=shared_from_this()](const asio::error_code ec) {
-      if (ec != asio::error::operation_aborted){
+    [ptr=shared_from_this()](const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted){
         ptr->schedule_close();
       }
     }

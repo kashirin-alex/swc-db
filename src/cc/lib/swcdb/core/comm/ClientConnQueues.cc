@@ -24,7 +24,7 @@ void Host::close_issued() {
 bool Host::connect() {
   queues->service->get_connection(
     endpoints, 
-    [ptr=shared_from_this()] (ConnHandlerPtr conn){ptr->set(conn);},
+    [ptr=shared_from_this()] (const ConnHandlerPtr& conn){ptr->set(conn);},
     std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
     queues->cfg_conn_probes->get(),
     cfg_keepalive_ms != nullptr

@@ -5,6 +5,7 @@
 #ifndef swc_core_comm_ClientConnQueue_h
 #define swc_core_comm_ClientConnQueue_h
 
+#include <unordered_set>
 #include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
@@ -63,11 +64,11 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   void put(ReqBase::Ptr req);
 
-  void set(ConnHandlerPtr conn);
+  void set(const ConnHandlerPtr& conn);
 
   void delay(ReqBase::Ptr req);
 
-  void delay_proceed(ReqBase::Ptr req, asio::high_resolution_timer* tm);
+  void delay_proceed(const ReqBase::Ptr& req, asio::high_resolution_timer* tm);
 
   std::string to_string();
 
@@ -79,13 +80,13 @@ class ConnQueue : public std::enable_shared_from_this<ConnQueue> {
 
   void schedule_close();
 
-  std::recursive_mutex          m_mutex;
-  QueueSafeStated<ReqBase::Ptr> m_queue;
-  ConnHandlerPtr                m_conn;
-  bool                          m_connecting;
-  IOCtxPtr                      m_ioctx;
-  asio::high_resolution_timer*  m_timer; 
-  std::vector<asio::high_resolution_timer*>  m_delayed;
+  std::recursive_mutex                              m_mutex;
+  QueueSafeStated<ReqBase::Ptr>                     m_queue;
+  ConnHandlerPtr                                    m_conn;
+  bool                                              m_connecting;
+  IOCtxPtr                                          m_ioctx;
+  asio::high_resolution_timer*                      m_timer; 
+  std::unordered_set<asio::high_resolution_timer*>  m_delayed;
 
   protected:
   const Property::V_GINT32::Ptr  cfg_keepalive_ms;
