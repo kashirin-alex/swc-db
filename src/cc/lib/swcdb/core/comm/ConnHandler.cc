@@ -453,10 +453,11 @@ void ConnHandler::disconnected() {
       Mutex::scope lock(m_mutex);
       if(m_pending.empty())
         return;
-      if((pending = m_pending.begin()->second)->timer)
-        pending->timer->cancel();
+      pending = m_pending.begin()->second;
       m_pending.erase(m_pending.begin());
     }
+    if(pending->timer)
+      pending->timer->cancel();
     pending->hdlr->handle(ptr(), ev);
     delete pending;
   }
@@ -473,12 +474,13 @@ void ConnHandler::run_pending(Event::Ptr ev) {
     if(it == m_pending.end()) {
       pending = nullptr;
     } else {
-      if((pending = it->second)->timer)
-        pending->timer->cancel();
+      pending = it->second;
       m_pending.erase(it);
     }
   }
   if(pending) {
+    if(pending->timer)
+      pending->timer->cancel();
     pending->hdlr->handle(ptr(), ev);
     delete pending;
   } else {
