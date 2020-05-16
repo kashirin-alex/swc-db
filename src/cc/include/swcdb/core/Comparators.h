@@ -6,17 +6,17 @@
 #ifndef swcdb_core_Comparators_h
 #define swcdb_core_Comparators_h
 
-#include <memory>
+#include "swcdb/core/Compat.h"
 #include <cstring>
 #include <re2/re2.h>
 
 
 # define SWC_CAN_INLINE  \
-  __attribute__((__always_inline__, __artificial__)) \
+  SWC_ATTRIBS(SWC_INLINE) \
   extern inline
 
 # define SWC_NOINLINE  \
-  __attribute__((__noinline__)) \
+  SWC_ATTRIBS((__noinline__)) \
   static 
 
 

@@ -151,11 +151,11 @@ extern LogWriter logger;
 #ifndef SWC_DISABLE_LOG_FATAL ////
 #define SWC_LOG_FATAL(msg) do { \
   SWC_LOG(LOG_FATAL, msg); \
-  HT_ABORT; \
+  SWC_ABORT; \
 } while (0)
 #define SWC_LOG_FATALF(msg, ...) do { \
   SWC_LOGF(LOG_FATAL, msg, __VA_ARGS__); \
-  HT_ABORT; \
+  SWC_ABORT; \
 } while (0)
 #else
 #define SWC_LOG_FATAL(msg)
@@ -179,7 +179,7 @@ extern LogWriter logger;
                 << ' ' << Logger::logger.get_name(priority) << ": "; \
   std::cout 
 
-#define SWC_LOG_OUT_END std::endl; if(_priority_ == LOG_FATAL) HT_ABORT; }
+#define SWC_LOG_OUT_END std::endl; if(_priority_ == LOG_FATAL) SWC_ABORT; }
 
 #define SWC_PRINT \
   { \
@@ -192,17 +192,17 @@ extern LogWriter logger;
 #define HT_LOG_ENTER \
   if(Logger::logger.is_enabled(LOG_DEBUG)) {\
     if(Logger::logger.show_line_numbers()) \
-      Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, HT_FUNC);\
+      Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, __PRETTY_FUNCTION__);\
     else \
-      Logger::logger.debug("%s() ENTER", HT_FUNC); \
+      Logger::logger.debug("%s() ENTER", __PRETTY_FUNCTION__); \
   }
 
 #define HT_LOG_EXIT \
   if(Logger::logger.is_enabled(LOG_DEBUG)) { \
     if(Logger::logger.show_line_numbers()) \
-      Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, HT_FUNC); \
+      Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
     else \
-      Logger::logger.debug("%s() EXIT", HT_FUNC); \
+      Logger::logger.debug("%s() EXIT", __PRETTY_FUNCTION__); \
   }
 */
 

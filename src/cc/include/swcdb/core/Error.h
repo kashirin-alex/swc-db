@@ -331,11 +331,11 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 /* Convenience macro to create an exception stack trace */
 #define HT_EXCEPTION(_code_, _msg_) \
-  ::SWC::Exception(_code_, _msg_, __LINE__, HT_FUNC, __FILE__)
+  ::SWC::Exception(_code_, _msg_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
 /* Convenience macro to create an chained exception */
 #define HT_EXCEPTION2(_code_, _ex_, _msg_) \
-  ::SWC::Exception(_code_, _msg_, _ex_, __LINE__, HT_FUNC, __FILE__)
+  ::SWC::Exception(_code_, _msg_, _ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
 /* Convenience macro to throw an exception */
 #define SWC_THROW(_code_, _msg_) throw HT_EXCEPTION(_code_, _msg_)
