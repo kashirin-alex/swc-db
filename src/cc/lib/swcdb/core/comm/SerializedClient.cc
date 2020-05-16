@@ -14,6 +14,7 @@
 namespace SWC { namespace client {
 
 
+SWC_SHOULD_INLINE
 ServerConnections::ServerConnections(const std::string& srv_name, 
                                      const EndPoint& endpoint,
                                      const IOCtxPtr& ioctx, 

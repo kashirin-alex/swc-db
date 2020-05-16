@@ -11,16 +11,19 @@
 
 namespace SWC {
 
+SWC_SHOULD_INLINE
 Event::Ptr Event::make(Type type, int error) {
   return std::make_shared<Event>(type, error);
 }
 
+SWC_SHOULD_INLINE
 Event::Event(Type type_, int error_) 
             : type(type_), error(error_), expiry_ms(0) {
 }
 
 Event::~Event() { }
 
+SWC_SHOULD_INLINE
 void Event::received() {
   if(header.timeout_ms)
     expiry_ms = Time::now_ms() + header.timeout_ms; 

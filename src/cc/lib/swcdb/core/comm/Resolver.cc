@@ -86,11 +86,13 @@ size_t endpoint_hash(const EndPoint& endpoint) {
 
 namespace Resolver {
 
+SWC_SHOULD_INLINE
 bool is_ipv4_address(const std::string& str) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr)) != 0;
 }
 
+SWC_SHOULD_INLINE
 bool is_ipv6_address(const std::string& str) {
   struct sockaddr_in6 sa;
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr)) != 0;

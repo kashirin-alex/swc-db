@@ -13,23 +13,28 @@ namespace {
 static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
+SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::make(uint32_t reserve) {
   return std::make_shared<CommBuf>(reserve);
 }
 
+SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::make(const Serializable& params, uint32_t reserve) {
   return std::make_shared<CommBuf>(params, reserve);
 }
 
+SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::make(const Serializable& params, StaticBuffer& buffer, 
                   uint32_t reserve) {
   return std::make_shared<CommBuf>(params, buffer, reserve);
 }
 
+SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::make(StaticBuffer& buffer, uint32_t reserve) {
   return std::make_shared<CommBuf>(buffer, reserve);
 }
 
+SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::create_error_message(int error, const char *msg) {
   auto cbp = CommBuf::make(4 + Serialization::encoded_length_str16(msg));
   cbp->append_i32(error);
@@ -72,6 +77,7 @@ void CommBuf::set_data(const Serializable& params, uint32_t reserve) {
   data_ptr = buf_data.base;
 }
 
+SWC_SHOULD_INLINE
 void CommBuf::write_header() {
   if(buf_data.size) {
     header.data_size   = buf_data.size;
@@ -116,14 +122,17 @@ std::vector<asio::const_buffer> CommBuf::get_buffers() {
   return buffers;
 }
 
+SWC_SHOULD_INLINE
 void* CommBuf::get_data_ptr() { 
   return data_ptr; 
 }
 
+SWC_SHOULD_INLINE
 uint8_t** CommBuf::get_data_ptr_address() { 
   return &data_ptr; 
 }
 
+SWC_SHOULD_INLINE
 void* CommBuf::advance_data_ptr(size_t len) { 
   data_ptr += len; 
   return data_ptr; 

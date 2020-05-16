@@ -9,6 +9,7 @@
 namespace SWC {
 
 
+SWC_SHOULD_INLINE
 CommHeader::CommHeader(uint64_t cmd, uint32_t timeout)
                       : version(1), header_len(0), flags(0),
                         id(0), timeout_ms(timeout), command(cmd), 
@@ -20,11 +21,13 @@ CommHeader::CommHeader(uint64_t cmd, uint32_t timeout)
   
 CommHeader::~CommHeader() { }
 
+SWC_SHOULD_INLINE
 void CommHeader::set(uint64_t cmd, uint32_t timeout) {
   command     = cmd;
   timeout_ms  = timeout;
 }
 
+SWC_SHOULD_INLINE
 size_t CommHeader::encoded_length() { 
   header_len = FIXED_LENGTH;
   buffers = 0;
@@ -39,6 +42,7 @@ size_t CommHeader::encoded_length() {
   return header_len;
 }
 
+SWC_SHOULD_INLINE
 void CommHeader::encode(uint8_t **bufp) const {
   uint8_t *base = *bufp;
   Serialization::encode_i8(bufp,  version);
@@ -61,6 +65,7 @@ void CommHeader::encode(uint8_t **bufp) const {
   checksum_i32(base, header_len-4, bufp);
 }
 
+SWC_SHOULD_INLINE
 void CommHeader::decode_prefix(const uint8_t **bufp, size_t *remainp) {
   if (*remainp < PREFIX_LENGTH)
     SWC_THROWF(Error::COMM_BAD_HEADER,
@@ -71,6 +76,7 @@ void CommHeader::decode_prefix(const uint8_t **bufp, size_t *remainp) {
   header_len = Serialization::decode_i8(bufp, remainp);
 }
 
+SWC_SHOULD_INLINE
 void CommHeader::decode(const uint8_t **bufp, size_t *remainp) {
   const uint8_t *base = *bufp;
   *bufp += PREFIX_LENGTH;

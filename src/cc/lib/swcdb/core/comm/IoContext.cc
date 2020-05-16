@@ -40,10 +40,12 @@ void IoContext::do_run() {
   }
 }
   
+SWC_SHOULD_INLINE
 IOCtxPtr IoContext::shared() {
   return m_ioctx;
 }
 
+SWC_SHOULD_INLINE
 asio::io_context* IoContext::ptr() {
   return m_ioctx.get();
 }
@@ -53,6 +55,7 @@ void IoContext::set_signals() {
     *m_ioctx.get(), SIGINT, SIGTERM);
 }
 
+SWC_SHOULD_INLINE
 IO_SignalsPtr IoContext::signals() {
   return m_signals;
 }
@@ -100,11 +103,13 @@ bool IoCtx::ok() {
   return m_env != nullptr;
 }
   
+SWC_SHOULD_INLINE
 IoContext::Ptr IoCtx::io() {
   SWC_ASSERT(ok());
   return m_env->m_io;
 }
   
+SWC_SHOULD_INLINE
 bool IoCtx::stopping(){
   return !m_env->m_io->running;
 }

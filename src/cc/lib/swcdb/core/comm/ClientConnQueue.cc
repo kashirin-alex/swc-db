@@ -13,6 +13,7 @@ ConnQueueReqBase::ConnQueueReqBase(bool insistent, CommBuf::Ptr cbp)
                                     was_called(false), queue(nullptr){
 }
 
+SWC_SHOULD_INLINE
 ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
   return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
 }

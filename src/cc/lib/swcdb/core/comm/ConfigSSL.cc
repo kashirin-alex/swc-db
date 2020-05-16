@@ -40,6 +40,7 @@ void ConfigSSL::set_networks(const Strings& networks) {
 }
 
 
+SWC_SHOULD_INLINE
 bool ConfigSSL::need_ssl(const EndPoint& endpoint) const {
   return !Resolver::is_network(endpoint, nets_v4, nets_v6);
 }
@@ -85,6 +86,7 @@ void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
   //ctx.set_verify_mode(asio::ssl::verify_peer);
 }
 
+SWC_SHOULD_INLINE
 void ConfigSSL::make_server(AppContext::Ptr& app_ctx, SocketPlain& socket) {
   asio::ssl::context ssl_ctx(asio::ssl::context::tlsv13_server);
   configure_server(ssl_ctx);

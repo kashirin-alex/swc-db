@@ -11,6 +11,7 @@
 namespace SWC { 
 
 
+SWC_SHOULD_INLINE
 ConnHandler::Pending::Pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr)
                               : cbuf(cbuf), hdlr(hdlr), timer(nullptr) {
 }
@@ -22,12 +23,14 @@ ConnHandler::Pending::~Pending() {
 
 
 
+SWC_SHOULD_INLINE
 ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) 
                         : connected(false), 
                           app_ctx(app_ctx), m_next_req_id(0),
                           m_accepting(false), m_reading(false) {
 }
 
+SWC_SHOULD_INLINE
 ConnHandlerPtr ConnHandler::ptr() {
   return shared_from_this();
 }
@@ -55,10 +58,12 @@ std::string ConnHandler::endpoint_remote_str() {
   return s;
 }
   
+SWC_SHOULD_INLINE
 size_t ConnHandler::endpoint_remote_hash() {
   return endpoint_hash(endpoint_remote);
 }
   
+SWC_SHOULD_INLINE
 size_t ConnHandler::endpoint_local_hash() {
   return endpoint_hash(endpoint_local);
 }
@@ -83,14 +88,17 @@ size_t ConnHandler::pending_read() {
   return m_pending.size();
 }
 
+SWC_SHOULD_INLINE
 size_t ConnHandler::pending_write() {
   return m_outgoing.size() + m_outgoing.is_active();
 }
 
+SWC_SHOULD_INLINE
 bool ConnHandler::due() {
   return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
+SWC_SHOULD_INLINE
 void ConnHandler::run(Event::Ptr& ev) {
   if(app_ctx) 
     // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
@@ -298,6 +306,7 @@ void ConnHandler::read_pending() {
   );
 }
 
+SWC_SHOULD_INLINE
 void ConnHandler::recved_header_pre(asio::error_code ec,
                                     const uint8_t* data, size_t filled) {
   auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
@@ -339,6 +348,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
   );
 }
 
+SWC_SHOULD_INLINE
 void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
                                 const uint8_t* data, size_t filled) {
   if(filled + CommHeader::PREFIX_LENGTH != ev->header.header_len) {
@@ -389,6 +399,7 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
   );
 }
 
+SWC_SHOULD_INLINE
 void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
                                 uint8_t n, size_t filled) {
   if(!ec) {
