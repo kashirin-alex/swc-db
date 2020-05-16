@@ -22,6 +22,7 @@ std::string Read::to_string(const Read::State state) {
   }
 }
 
+SWC_SHOULD_INLINE
 Read::Ptr Read::make(const uint64_t offset, 
                      const DB::Cells::Interval& interval, 
                      uint32_t cell_revs) {
@@ -39,6 +40,7 @@ Read::Read(const uint64_t offset, const DB::Cells::Interval& interval,
             m_err(Error::OK) {
 }
 
+SWC_SHOULD_INLINE
 Read::Ptr Read::ptr() {
   return this;
 }

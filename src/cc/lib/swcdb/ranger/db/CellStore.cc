@@ -227,6 +227,7 @@ Read::Read(const uint32_t id,
             m_smartfd(smartfd) {       
 }
 
+SWC_SHOULD_INLINE
 Read::Ptr Read::ptr() {
   return this;
 }
@@ -290,10 +291,12 @@ void Read::release_fd() {
   }
 }
 
+SWC_SHOULD_INLINE
 void Read::close(int &err) {
   Env::FsInterface::interface()->close(err, m_smartfd); 
 }
 
+SWC_SHOULD_INLINE
 void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
 } 
@@ -314,6 +317,7 @@ size_t Read::size_bytes(bool only_loaded) const {
   return size;
 }
 
+SWC_SHOULD_INLINE
 size_t Read::blocks_count() const {
   return blocks.size();
 }

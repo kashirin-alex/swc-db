@@ -24,6 +24,7 @@ std::string Fragment::to_string(Fragment::State state) {
   }
 }
 
+SWC_SHOULD_INLINE
 Fragment::Ptr Fragment::make(const std::string& filepath, 
                              const Types::KeySeq key_seq, 
                              Fragment::State state) {
@@ -44,12 +45,14 @@ Fragment::Fragment(const std::string& filepath,
                     m_err(Error::OK) {
 }
 
+SWC_SHOULD_INLINE
 Fragment::Ptr Fragment::ptr() {
   return this;
 }
 
 Fragment::~Fragment() { }
 
+SWC_SHOULD_INLINE
 const std::string& Fragment::get_filepath() const {
   return m_smartfd->filepath();
 }
@@ -304,6 +307,7 @@ bool Fragment::loaded(int& err) {
   return !err && m_state == State::LOADED;
 }
 
+SWC_SHOULD_INLINE
 size_t Fragment::size_bytes() const {
   return m_size;
 }
@@ -325,6 +329,7 @@ bool Fragment::processing() {
   return m_processing;
 }
 
+SWC_SHOULD_INLINE
 void Fragment::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }

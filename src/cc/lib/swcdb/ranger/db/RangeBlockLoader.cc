@@ -9,6 +9,7 @@
 namespace SWC { namespace Ranger {
 
 
+SWC_SHOULD_INLINE
 BlockLoader::BlockLoader(Block::Ptr block) 
                         : block(block), m_err(Error::OK), 
                           m_processing(false),
@@ -17,6 +18,7 @@ BlockLoader::BlockLoader(Block::Ptr block)
 
 BlockLoader::~BlockLoader() { }
 
+SWC_SHOULD_INLINE
 void BlockLoader::run() {
   block->blocks->cellstores.load_cells(this);
   load_log(false);

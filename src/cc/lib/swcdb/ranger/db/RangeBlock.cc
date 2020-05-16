@@ -12,6 +12,7 @@
 namespace SWC { namespace Ranger {
 
 
+SWC_SHOULD_INLINE
 Block::Ptr Block::make(const DB::Cells::Interval& interval,
                        Blocks* blocks, State state) {
   return new Block(interval, blocks, state);
@@ -32,6 +33,7 @@ Block::Block(const DB::Cells::Interval& interval,
 
 Block::~Block() { }
 
+SWC_SHOULD_INLINE
 Block::Ptr Block::ptr() {
   return this;
 }
@@ -158,6 +160,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
   return added;
 }
 
+SWC_SHOULD_INLINE
 bool Block::splitter() {
   return _need_split() && blocks->_split(ptr(), false);
 }
@@ -198,7 +201,7 @@ void Block::loaded(int err) {
   if(err) {
     SWC_LOGF(LOG_ERROR, "Block::loaded err=%d(%s)", err, Error::get_text(err));
     quick_exit(1); // temporary halt
-    run_queue(err);
+    //run_queue(err);
     return;
   }
   run_queue(err);
@@ -236,14 +239,17 @@ void Block::_add(Block::Ptr blk) {
   next = blk;
 }
 
+SWC_SHOULD_INLINE
 void Block::_set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
+SWC_SHOULD_INLINE
 Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
   return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
 }
 
+SWC_SHOULD_INLINE
 void Block::_set_key_end(const DB::Cell::Key& key) {
   m_key_end.copy(key);
 }
@@ -262,10 +268,12 @@ size_t Block::release() {
   return released;
 }
 
+SWC_SHOULD_INLINE
 void Block::processing_increment() {
   ++m_processing;
 }
 
+SWC_SHOULD_INLINE
 void Block::processing_decrement() {
   --m_processing;
 }
@@ -289,6 +297,7 @@ size_t Block::size() {
   return _size();
 }
 
+SWC_SHOULD_INLINE
 size_t Block::_size() const {
   return m_cells.size();
 }
@@ -298,6 +307,7 @@ size_t Block::size_bytes() {
   return _size_bytes();
 }
   
+SWC_SHOULD_INLINE
 size_t Block::_size_bytes() const {
   return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
 }
@@ -321,6 +331,7 @@ bool Block::_need_split() const {
     !m_cells.has_one_key();
 }
 
+SWC_SHOULD_INLINE
 void Block::free_key_end() {
   m_key_end.free();
 }
@@ -384,6 +395,7 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
   return false;
 }
 
+SWC_SHOULD_INLINE
 void Block::run_queue(int& err) {
   ReqQueue q;
   do switch((q = m_queue.front()).req->type) {

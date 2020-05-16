@@ -30,6 +30,7 @@ Compaction::Compaction()
 
 Compaction::~Compaction() { }
  
+SWC_SHOULD_INLINE
 Compaction::Ptr Compaction::ptr() {
   return this;
 }

@@ -136,6 +136,7 @@ CompactRange::~CompactRange() {
   } while(m_q_write.pop_and_more());
 }
 
+SWC_SHOULD_INLINE
 CompactRange::Ptr CompactRange::shared() {
   return std::dynamic_pointer_cast<CompactRange>(shared_from_this());
 }

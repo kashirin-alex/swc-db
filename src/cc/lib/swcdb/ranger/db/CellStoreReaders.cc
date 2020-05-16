@@ -40,10 +40,12 @@ void Readers::expand_and_align(DB::Cells::Interval& intval) const {
   }
 }
 
+SWC_SHOULD_INLINE
 bool Readers::empty() const {
   return m_cellstores.empty();
 }
 
+SWC_SHOULD_INLINE
 size_t Readers::size() const {
   return m_cellstores.size();
 }
@@ -55,6 +57,7 @@ size_t Readers::size_bytes(bool only_loaded) const {
   return sz;
 }
 
+SWC_SHOULD_INLINE
 uint32_t Readers::get_cell_revs() const {
   return m_cellstores.front()->blocks.front()->cell_revs;
 }
@@ -130,6 +133,7 @@ void Readers::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
   }
 }
 
+SWC_SHOULD_INLINE
 void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
   key.copy((*(m_cellstores.begin()+idx))->prev_key_end);
 }

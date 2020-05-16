@@ -56,6 +56,7 @@ const std::string Range::get_path_cs_on(const std::string folder,
   return s;
 }
 
+SWC_SHOULD_INLINE
 Files::RgrData::Ptr Range::get_last_rgr(int &err) {
   return Files::RgrData::get_rgr(err, DB::RangeBase::get_path_ranger(m_path));
 }

@@ -19,6 +19,7 @@ void Blocks::init(RangePtr for_range) {
   cellstores.init(range);
 }
 
+SWC_SHOULD_INLINE
 Blocks::Ptr Blocks::ptr() {
   return this;
 }
@@ -33,10 +34,12 @@ void Blocks::schema_update() {
     blk->schema_update();
 }
 
+SWC_SHOULD_INLINE
 void Blocks::processing_increment() {
   ++m_processing;
 }
 
+SWC_SHOULD_INLINE
 void Blocks::processing_decrement() {
   --m_processing;
 }
