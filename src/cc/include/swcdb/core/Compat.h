@@ -14,10 +14,13 @@
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
 
-// SWC_ATTRIBS(SWC_NOTHROW, SWC_INLINE)
+// SWC_ATTRIBS((SWC_ATTR_NOTHROW, SWC_ATTR_INLINE))
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)
-#define SWC_NOTHROW (__nothrow__)
-#define SWC_INLINE (__always_inline__, __artificial__)
+#define SWC_ATTR_NOTHROW __nothrow__
+#define SWC_ATTR_INLINE __always_inline__, __artificial__
+#define SWC_ATTR_NOINLINE __noinline__
+
+#define SWC_NOEXCEPT noexcept(true)
 
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)

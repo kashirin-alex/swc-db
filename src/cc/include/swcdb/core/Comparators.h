@@ -12,11 +12,11 @@
 
 
 # define SWC_CAN_INLINE  \
-  SWC_ATTRIBS(SWC_INLINE) \
+  SWC_ATTRIBS((SWC_ATTR_INLINE)) \
   extern inline
 
 # define SWC_NOINLINE  \
-  SWC_ATTRIBS((__noinline__)) \
+  SWC_ATTRIBS((SWC_ATTR_NOINLINE)) \
   static 
 
 
