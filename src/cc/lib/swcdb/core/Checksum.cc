@@ -77,6 +77,7 @@ uint32_t fletcher32(const void *data8, size_t len8) {
 }
 
 
+SWC_SHOULD_INLINE
 bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len) {
   uint32_t computed = fletcher32(base, len);
   if(checksum == computed)
@@ -86,20 +87,24 @@ bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len) {
   return false;
 }
 
+SWC_SHOULD_INLINE
 bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len, 
                       uint32_t offset) {
   memset((void *)(base+offset), 0, 4);
   return checksum_i32_chk(checksum, base, len);
 }
 
+SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t *start, size_t len, uint8_t **ptr) {
   Serialization::encode_i32(ptr, fletcher32(start, len));
 }
 
+SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t *start, const uint8_t *end, uint8_t **ptr) {
   checksum_i32(start, end-start, ptr);
 }
 
+SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t *start, const uint8_t *end, uint8_t **ptr, 
                   uint32_t& checksum) {
   checksum = fletcher32(start, end-start);

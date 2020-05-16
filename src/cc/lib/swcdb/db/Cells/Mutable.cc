@@ -16,6 +16,7 @@ Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
   return bucket;
 }
 
+SWC_SHOULD_INLINE
 Mutable::Ptr Mutable::make(const Types::KeySeq key_seq, 
                            const uint32_t max_revs, const uint64_t ttl_ns, 
                            const Types::Column type) {
@@ -84,58 +85,71 @@ void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
   ttl = ttl_ns;
 }
 
+SWC_SHOULD_INLINE
 Mutable::ConstIterator Mutable::ConstIt(size_t offset) const {
   return ConstIterator(&buckets, offset);
 }
 
+SWC_SHOULD_INLINE
 Mutable::Iterator Mutable::It(size_t offset) {
   return Iterator(&buckets, offset);
 }
 
+SWC_SHOULD_INLINE
 size_t Mutable::size() const {
   return _size;
 }
 
+SWC_SHOULD_INLINE
 size_t Mutable::size_bytes() const {
   return _bytes;
 }
 
+SWC_SHOULD_INLINE
 bool Mutable::empty() const {
   return !_size;
   //return buckets.empty() || buckets.front()->empty();
 }
 
+SWC_SHOULD_INLINE
 Cell*& Mutable::front() {
   return buckets.front()->front();
 }
 
+SWC_SHOULD_INLINE
 Cell*& Mutable::back() {
   return buckets.back()->back();
 }
 
+SWC_SHOULD_INLINE
 Cell*& Mutable::front() const {
   return buckets.front()->front();
 }
 
+SWC_SHOULD_INLINE
 Cell*& Mutable::back() const {
   return buckets.back()->back();
 }
 
+SWC_SHOULD_INLINE
 Cell*& Mutable::operator[](size_t idx) {
   return *Iterator(&buckets, idx).item;
 }
 
+SWC_SHOULD_INLINE
 bool Mutable::has_one_key() const {
   return front()->key.equal(back()->key);
 }
 
 
+SWC_SHOULD_INLINE
 void Mutable::add_sorted(const Cell& cell, bool no_value) {
   Cell* adding;
   _add(adding = new Cell(cell, no_value));
   _push_back(adding);
 }
 
+SWC_SHOULD_INLINE
 void Mutable::add_sorted_no_cpy(Cell* cell) {
   _add(cell);
   _push_back(cell);
@@ -178,6 +192,7 @@ void Mutable::add_raw(const DynamicBuffer& cells,
   }
 }
 
+SWC_SHOULD_INLINE
 void Mutable::add_raw(const Cell& e_cell) {
   size_t offset = _narrow(e_cell.key);
 
@@ -191,6 +206,7 @@ void Mutable::add_raw(const Cell& e_cell) {
     _add_plain(e_cell, &offset);
 }
 
+SWC_SHOULD_INLINE
 void Mutable::add_raw(const Cell& e_cell, size_t* offsetp) {
   *offsetp = _narrow(e_cell.key, *offsetp);
 
@@ -205,10 +221,12 @@ void Mutable::add_raw(const Cell& e_cell, size_t* offsetp) {
 }
 
 
+SWC_SHOULD_INLINE
 Cell* Mutable::takeout_begin(size_t idx) {
   return takeout(idx);
 }
 
+SWC_SHOULD_INLINE
 Cell* Mutable::takeout_end(size_t idx) {
   return takeout(size() - idx);
 }
@@ -369,6 +387,7 @@ void Mutable::write(DynamicBuffer& cells) const {
 }
 
 
+SWC_SHOULD_INLINE
 void Mutable::scan(ReqScan* req) const {
   if(!_size)
     return;
@@ -517,16 +536,19 @@ bool Mutable::scan_after(const DB::Cell::Key& after,
 }
 
 
+SWC_SHOULD_INLINE
 void Mutable::expand(Interval& interval) const {
   expand_begin(interval);
   if(size() > 1)
     expand_end(interval);
 }
 
+SWC_SHOULD_INLINE
 void Mutable::expand_begin(Interval& interval) const {
   interval.expand_begin(*front());
 }
 
+SWC_SHOULD_INLINE
 void Mutable::expand_end(Interval& interval) const {
   interval.expand_end(*back());
 }
@@ -869,6 +891,7 @@ Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets,
   }
 }
 
+SWC_SHOULD_INLINE
 Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
                                       : buckets(other.buckets), 
                                         bucket(other.bucket), 
@@ -881,6 +904,7 @@ bool Mutable::ConstIterator::avail() const {
   return bucket < buckets->end() && item < (*bucket)->end();
 }
 
+SWC_SHOULD_INLINE
 Mutable::ConstIterator::operator bool() const {
   return avail();
 }
@@ -893,6 +917,7 @@ void Mutable::ConstIterator::operator++() {
 
 
 
+SWC_SHOULD_INLINE
 Mutable::Iterator::Iterator() : buckets(nullptr) { }
 
 Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset) 
@@ -911,6 +936,7 @@ Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset)
   }
 }
 
+SWC_SHOULD_INLINE
 Mutable::Iterator::Iterator(const Mutable::Iterator& other) 
                             : buckets(other.buckets), 
                               bucket(other.bucket), item(other.item) {
@@ -926,6 +952,7 @@ Mutable::Iterator::operator=(const Mutable::Iterator& other) {
 
 Mutable::Iterator::~Iterator() { }
 
+SWC_SHOULD_INLINE
 Mutable::Iterator::operator bool() const {
   return avail();
 }

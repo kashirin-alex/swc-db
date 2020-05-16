@@ -27,17 +27,20 @@
 
 namespace SWC {
 
+SWC_SHOULD_INLINE
 size_t Serializable::encoded_length() const {
   size_t length = encoded_length_internal();
   return 1 + Serialization::encoded_length_vi32(length) + length;
 }
 
+SWC_SHOULD_INLINE
 void Serializable::encode(uint8_t **bufp) const {
   Serialization::encode_i8(bufp, encoding_version());
   Serialization::encode_vi32(bufp, encoded_length_internal());
   encode_internal(bufp);
 }
 
+SWC_SHOULD_INLINE
 void Serializable::decode(const uint8_t **bufp, size_t *remainp) {
   uint8_t version = Serialization::decode_i8(bufp, remainp);
   if(version > encoding_version())

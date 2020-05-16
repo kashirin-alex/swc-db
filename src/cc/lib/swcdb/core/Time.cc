@@ -29,12 +29,13 @@ void checkings() { // no need runtime checks, call at app start
   ));
 }
 
+SWC_SHOULD_INLINE
 int64_t now_ms() {
   return (int64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-
+SWC_SHOULD_INLINE
 int64_t now_ns() {
   return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();

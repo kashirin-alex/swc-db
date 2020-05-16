@@ -10,8 +10,10 @@
 namespace SWC { namespace DB { namespace Cell {
 
 
+SWC_SHOULD_INLINE
 Key::Key(bool own): own(own), count(0), size(0), data(0) { }
 
+SWC_SHOULD_INLINE
 Key::Key(const Key& other)
         : own(other.size), count(other.count), size(other.size),
           data(_data(other.data)) {
@@ -42,18 +44,22 @@ bool Key::sane() const {
   return (count && size && data) || (!count && !size && !data);
 }
 
+SWC_SHOULD_INLINE
 void Key::add(const std::string_view& fraction) {
   add((const uint8_t*)fraction.data(), fraction.length());
 }
 
+SWC_SHOULD_INLINE
 void Key::add(const std::string& fraction) {
   add((const uint8_t*)fraction.data(), fraction.length());
 }
 
+SWC_SHOULD_INLINE
 void Key::add(const char* fraction) {
   add((const uint8_t*)fraction, strlen(fraction));
 }
 
+SWC_SHOULD_INLINE
 void Key::add(const char* fraction, uint32_t len) {
   add((const uint8_t*)fraction, len);
 }
@@ -76,14 +82,17 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
   own = true;
 }
 
+SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const std::string& fraction) {
   insert(idx, (const uint8_t*)fraction.data(), fraction.length());
 }
 
+SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const char* fraction) {
   insert(idx, (const uint8_t*)fraction, strlen(fraction));
 }
 
+SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const char* fraction, uint32_t len) {
   insert(idx, (const uint8_t*)fraction, len);
 }
@@ -193,101 +202,17 @@ bool Key::equal(const Key& other) const {
          Condition::eq(data, size, other.data, other.size));
 }
 
-/* applied with KeyComp::compare on KeySeq
-Condition::Comp Key::compare(const Key& other, uint32_t max, 
-                             bool empty_ok, bool empty_eq) const {
-  if(uint24_t min = count < other.count ? count : other.count) {
-    if(max && min > max)
-      min = max;  
-    const uint8_t* p1 = data;
-    const uint8_t* p2 = other.data;
-    uint24_t sz1;
-    uint24_t sz2;
-    for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
-      sz2 = Serialization::decode_vi24(&p2);
-      if(!(sz1 = Serialization::decode_vi24(&p1)) && empty_ok) {
-        if(empty_eq)
-          return Condition::EQ;
-        continue;
-      }
-      if((comp = Condition::condition(p1, sz1, p2, sz2)) != Condition::EQ)
-        return comp;
-    }
-  }
-  return count != other.count && (!max || max > count || max > other.count)
-        ? count > other.count ? Condition::LT : Condition::GT
-          : Condition::EQ;
-}
-*/
-
-/* applied with KeyComp::align on KeySeq
-bool Key::align(KeyVec& start, KeyVec& finish) const {
-  const uint8_t* ptr = data;
-  uint24_t len;
-  bool chg = false;
-  for(uint24_t c = 0; c < count; ++c, ptr += len) {
-    len = Serialization::decode_vi24(&ptr);
-
-    if(c == start.size()) {
-      start.add(ptr, len);
-      chg = true;
-    } else if(Condition::condition(
-                (const uint8_t*)start[c].data(), start[c].length(),
-                ptr, len
-              ) == Condition::LT) {
-      start.set(c, ptr, len);
-      chg = true;
-    }
-
-    if(c == finish.size()) {
-      finish.add(ptr, len);
-      chg = true;
-    } else if(Condition::condition(
-                (const uint8_t*)finish[c].data(), finish[c].length(),
-                ptr, len
-                ) == Condition::GT) {
-      finish.set(c, ptr, len);
-      chg = true;
-    }
-  }
-  return chg;
-}
-*/
-
-/* applied with KeyComp::compare on KeySeq
-bool Key::compare(const KeyVec& other, Condition::Comp break_if,
-                  uint32_t max, bool empty_ok) const {
-  const uint8_t* ptr = data;
-  uint24_t len;
-  if(!max)
-    max = count > other.size() ? (uint32_t)count : other.size();
-  for(uint32_t c = 0; c<max; ++c, ptr += len) {
-
-    if(c == count || c == other.size())
-      return count > other.size() 
-            ? break_if != Condition::LT 
-            : break_if != Condition::GT;
-
-    if(!(len = Serialization::decode_vi24(&ptr)) && empty_ok)
-      continue;
-
-    auto& r = other[c];
-    if(Condition::condition(ptr, len, (const uint8_t*)r.data(), r.length())
-                                                            == break_if)
-      return false;
-  }
-  return true;
-}
-*/
-
+SWC_SHOULD_INLINE
 bool Key::empty() const {
   return !count;
 }
 
+SWC_SHOULD_INLINE
 uint32_t Key::encoded_length() const {
   return Serialization::encoded_length_vi24(count) + size;
 }
 
+SWC_SHOULD_INLINE
 void Key::encode(uint8_t **bufp) const {
   Serialization::encode_vi24(bufp, count);
   if(size) {
@@ -296,6 +221,7 @@ void Key::encode(uint8_t **bufp) const {
   }
 }
 
+SWC_SHOULD_INLINE
 void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
   free();
   if(count = Serialization::decode_vi24(bufp, remainp)) {
@@ -401,6 +327,7 @@ void Key::display_details(std::ostream& out, bool pretty) const {
   out << "]"; 
 }
 
+SWC_SHOULD_INLINE
 uint8_t* Key::_data(const uint8_t* ptr) {
   return size ? (uint8_t*)memcpy(new uint8_t[size], ptr, size) : 0;
 }

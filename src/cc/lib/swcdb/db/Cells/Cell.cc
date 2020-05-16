@@ -45,10 +45,12 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) {
 }
 
 
+SWC_SHOULD_INLINE
 Cell::Cell() :  own(false), flag(Flag::NONE), control(0), 
                 vlen(0), value(0) { 
 }
 
+SWC_SHOULD_INLINE
 Cell::Cell(const Cell& other)
   : key(other.key), own(other.vlen), flag(other.flag), 
     control(other.control), 
@@ -58,6 +60,7 @@ Cell::Cell(const Cell& other)
     value(_value(other.value)) {
 }
 
+SWC_SHOULD_INLINE
 Cell::Cell(const Cell& other, bool no_value)
   : key(other.key), own(!no_value && other.vlen), flag(other.flag), 
     control(other.control), 
@@ -67,6 +70,7 @@ Cell::Cell(const Cell& other, bool no_value)
     value(_value(other.value)) {
 }
 
+SWC_SHOULD_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
               : value(0) { 
   read(bufp, remainp, own);
@@ -118,14 +122,17 @@ void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
   value = (own = owner) ? _value(v) : v;
 }
 
+SWC_SHOULD_INLINE
 void Cell::set_value(const char* v, uint32_t len, bool owner) {
   set_value((uint8_t *)v, len, owner);
 }
 
+SWC_SHOULD_INLINE
 void Cell::set_value(const char* v, bool owner) {
   set_value((uint8_t *)v, strlen(v), owner);
 }
 
+SWC_SHOULD_INLINE
 void Cell::set_value(const std::string& v, bool owner) {
   set_value((uint8_t *)v.data(), v.length(), owner);
 }
@@ -182,6 +189,7 @@ int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   return v;
 }
 
+SWC_SHOULD_INLINE
 void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
 
   flag = Serialization::decode_i8(bufp, remainp);
@@ -208,16 +216,19 @@ void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
 }
 
 uint32_t Cell::encoded_length(bool no_value) const {
-  uint32_t len = 1+key.encoded_length()+1;
+  uint32_t len = key.encoded_length();
+  len += 2;
   if(control & HAVE_TIMESTAMP)
     len += 8;
   if(control & HAVE_REVISION)
     len += 8;
-  return no_value 
-          ? ++len 
-          : (len + Serialization::encoded_length_vi32(vlen) + vlen);
+  if(no_value)
+    return ++len;
+  len += Serialization::encoded_length_vi32(vlen);
+  return len += vlen;
 }
 
+SWC_SHOULD_INLINE
 void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   dst_buf.ensure(encoded_length( no_value || (no_value = !vlen) ));
 
@@ -250,6 +261,7 @@ bool Cell::equal(const Cell& other) const {
           memcmp(value, other.value, vlen) == 0;
 }
 
+SWC_SHOULD_INLINE
 bool Cell::removal() const {
   return flag != Flag::INSERT;
 }
@@ -382,6 +394,7 @@ void Cell::display(std::ostream& out,
   }
 }
 
+SWC_SHOULD_INLINE
 uint8_t* Cell::_value(const uint8_t* v) {
   return vlen ? (uint8_t*)memcpy(new uint8_t[vlen], v, vlen) : 0;
 }

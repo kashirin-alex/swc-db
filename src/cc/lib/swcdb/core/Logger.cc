@@ -102,6 +102,7 @@ uint8_t LogWriter::get_level() const {
   return m_priority;
 }
 
+SWC_SHOULD_INLINE
 bool LogWriter::is_enabled(uint8_t level) const {
   return level <= m_priority;
 }
