@@ -179,13 +179,13 @@ extern LogWriter logger;
                 << ' ' << Logger::logger.get_name(priority) << ": "; \
   std::cout 
 
-#define SWC_LOG_OUT_END '\n'; if(_priority_ == LOG_FATAL) HT_ABORT; }
+#define SWC_LOG_OUT_END std::endl; if(_priority_ == LOG_FATAL) HT_ABORT; }
 
 #define SWC_PRINT \
   { \
-    Mutex::scope lock(Logger::logger.mutex); \
+    SWC::Mutex::scope lock(SWC::Logger::logger.mutex); \
     std::cout 
-#define SWC_PRINT_CLOSE '\n'; }
+#define SWC_PRINT_CLOSE std::endl; }
 //
 
 /*

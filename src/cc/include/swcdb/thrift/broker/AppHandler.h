@@ -23,7 +23,7 @@ class AppHandler : virtual public BrokerIf {
     e.__set_message(msg.empty() ? Error::get_text(err) : msg);
     SWC_LOG_OUT(LOG_DEBUG);
     e.printTo(std::cout);
-    SWC_LOG_OUT_END;
+    std::cout << SWC_LOG_OUT_END;
     throw e;
   }
 
