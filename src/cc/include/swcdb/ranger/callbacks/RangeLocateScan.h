@@ -139,10 +139,6 @@ class RangeLocateScan : public ReqScan {
     }
     if(err)
       params.err = err;
-
-    SWC_LOG_OUT(LOG_DEBUG) 
-      << params.to_string() << " flags=" << (int)flags 
-      << SWC_LOG_OUT_END;
     
     try {
       auto cbp = CommBuf::make(params);
@@ -154,7 +150,9 @@ class RangeLocateScan : public ReqScan {
     }
     
     profile.finished();
-    SWC_LOGF(LOG_DEBUG, "Locator-%s", profile.to_string().c_str());
+    SWC_LOGF(LOG_DEBUG, "Range(%lld/%lld) err=%d(%s) flags(%d) Locator-%s", 
+      range->cfg->cid, range->rid, err, Error::get_text(err),
+      (int)flags, profile.to_string().c_str());
   }
 
   RangePtr    range;
