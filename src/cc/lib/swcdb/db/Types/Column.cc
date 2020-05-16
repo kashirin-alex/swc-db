@@ -6,7 +6,7 @@
 
 
 #include "swcdb/db/Types/Column.h"
-#include <cstring>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Types { 
@@ -62,10 +62,12 @@ Column column_type_from(const std::string& typ) {
 }
 
 
+SWC_SHOULD_INLINE
 std::string repr_col_type(int typ) {
   return to_string((Column)typ);
 }
 
+SWC_SHOULD_INLINE
 int from_string_col_type(const std::string& typ) {
   return (int)column_type_from(typ);
 }

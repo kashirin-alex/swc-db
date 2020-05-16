@@ -6,7 +6,7 @@
 
 
 #include "swcdb/db/Types/Encoding.h"
-#include <cstring>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Types { 
@@ -50,10 +50,12 @@ Encoding encoding_from(const std::string& typ) {
   return Encoding::DEFAULT;
 }
 
+SWC_SHOULD_INLINE
 std::string repr_encoding(int typ) {
   return to_string((Encoding)typ);
 }
 
+SWC_SHOULD_INLINE
 int from_string_encoding(const std::string& typ) {
   return (int)encoding_from(typ);
 }

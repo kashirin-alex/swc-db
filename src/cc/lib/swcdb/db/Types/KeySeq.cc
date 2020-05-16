@@ -5,7 +5,7 @@
 
 
 #include "swcdb/db/Types/KeySeq.h"
-#include <cstring>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Types { 
@@ -51,10 +51,12 @@ KeySeq range_seq_from(const std::string& typ) {
 }
 
 
+SWC_SHOULD_INLINE
 std::string repr_range_seq(int typ) {
   return to_string((KeySeq)typ);
 }
 
+SWC_SHOULD_INLINE
 int from_string_range_seq(const std::string& typ) {
   return (int)range_seq_from(typ);
 }

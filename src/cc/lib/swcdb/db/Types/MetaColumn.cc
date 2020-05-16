@@ -5,19 +5,23 @@
 
 
 #include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Types {  namespace MetaColumn {
 
 
+SWC_SHOULD_INLINE
 bool is_master(int64_t cid) {
   return cid <= 4;
 }
 
+SWC_SHOULD_INLINE
 bool is_meta(int64_t cid) {
   return cid >= 5 && cid <= 8;
 }
 
+SWC_SHOULD_INLINE
 bool is_data(int64_t cid) {
   return cid > 8;
 }
