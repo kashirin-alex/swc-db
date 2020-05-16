@@ -13,6 +13,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
+SWC_SHOULD_INLINE
 void 
 RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
                           const EndPoints& endpoints, 

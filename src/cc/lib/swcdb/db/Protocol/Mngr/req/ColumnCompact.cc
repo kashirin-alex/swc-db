@@ -14,11 +14,13 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 
+SWC_SHOULD_INLINE
 void ColumnCompact::request(int64_t cid, const ColumnCompact::Cb_t cb, 
                             const uint32_t timeout) {
   request(Params::ColumnCompactReq(cid), cb, timeout);
 }
 
+SWC_SHOULD_INLINE
 void ColumnCompact::request(const Params::ColumnCompactReq params,
                             const ColumnCompact::Cb_t cb, 
                             const uint32_t timeout) {

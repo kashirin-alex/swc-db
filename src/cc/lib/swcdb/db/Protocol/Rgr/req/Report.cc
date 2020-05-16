@@ -13,6 +13,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
 
+SWC_SHOULD_INLINE
 void Report::request(const Params::ReportReq& params, 
                      const EndPoints& endpoints, 
                      Report::Cb_no_conn_t cb_no_conn, const Report::Cb_t cb, 

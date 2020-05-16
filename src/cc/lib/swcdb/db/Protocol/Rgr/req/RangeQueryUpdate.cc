@@ -12,6 +12,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 void 
 RangeQueryUpdate::request(
         const Params::RangeQueryUpdateReq& params, 

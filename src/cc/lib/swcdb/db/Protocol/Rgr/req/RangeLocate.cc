@@ -12,6 +12,7 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
+SWC_SHOULD_INLINE
 void RangeLocate::request(const Params::RangeLocateReq& params,
                           const EndPoints& endpoints, 
                           const RangeLocate::Cb_t cb, 

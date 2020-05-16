@@ -13,29 +13,34 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
  
- void ColumnGet::schema(const std::string& name, const ColumnGet::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnGet::schema(const std::string& name, const ColumnGet::Cb_t cb, 
                         const uint32_t timeout) {
   request(Flag::SCHEMA_BY_NAME, name, cb, timeout);
 }
 
- void ColumnGet::schema(int64_t cid, const ColumnGet::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnGet::schema(int64_t cid, const ColumnGet::Cb_t cb, 
                         const uint32_t timeout) {
   request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
 }
 
- void ColumnGet::cid(const std::string& name, const ColumnGet::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnGet::cid(const std::string& name, const ColumnGet::Cb_t cb, 
                      const uint32_t timeout) {
   request(Flag::ID_BY_NAME, name, cb, timeout);
 }
 
- void ColumnGet::request(ColumnGet::Flag flag, const std::string& name, 
+SWC_SHOULD_INLINE
+void ColumnGet::request(ColumnGet::Flag flag, const std::string& name, 
                          const ColumnGet::Cb_t cb, 
                          const uint32_t timeout){
   std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, name), cb, timeout)
     ->run();
 }
 
- void ColumnGet::request(ColumnGet::Flag flag, int64_t cid, const ColumnGet::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnGet::request(ColumnGet::Flag flag, int64_t cid, const ColumnGet::Cb_t cb, 
                     const uint32_t timeout){
   std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, cid), cb, timeout)
     ->run();

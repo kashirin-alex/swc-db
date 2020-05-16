@@ -14,22 +14,26 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 void ColumnMng::create(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
                       const uint32_t timeout) {
   request(Func::CREATE, schema, cb, timeout);
 }
 
- void ColumnMng::modify(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnMng::modify(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
                         const uint32_t timeout) {
   request(Func::MODIFY, schema, cb, timeout);
 }
 
- void ColumnMng::remove(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
+SWC_SHOULD_INLINE
+void ColumnMng::remove(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
                         const uint32_t timeout) {
   request(Func::DELETE, schema, cb, timeout);
 }
 
- void ColumnMng::request(ColumnMng::Func func, DB::Schema::Ptr schema, 
+SWC_SHOULD_INLINE
+void ColumnMng::request(ColumnMng::Func func, DB::Schema::Ptr schema, 
                          const ColumnMng::Cb_t cb, const uint32_t timeout) {
   std::make_shared<ColumnMng>(Params::ColumnMng(func, schema), cb, timeout)
     ->run();

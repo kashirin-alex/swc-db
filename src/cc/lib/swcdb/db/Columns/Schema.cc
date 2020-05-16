@@ -10,10 +10,12 @@
 namespace SWC { namespace DB {
 
 
+SWC_SHOULD_INLINE
 Schema::Ptr Schema::make() {
   return std::make_shared<Schema>();
 }
 
+SWC_SHOULD_INLINE
 Schema::Ptr Schema::make(const Schema::Ptr& other) {
   return std::make_shared<Schema>(*other.get());
 }
