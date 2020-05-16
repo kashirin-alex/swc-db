@@ -22,6 +22,14 @@
 
 #define SWC_NOEXCEPT noexcept(true)
 
+#ifdef SWC_IMPL_SOURCE
+# define SWC_SHOULD_INLINE  \
+  SWC_ATTRIBS((SWC_ATTR_INLINE)) \
+  extern inline
+#else 
+# define SWC_SHOULD_INLINE
+#endif
+
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
 #define USE_READDIR_R 0

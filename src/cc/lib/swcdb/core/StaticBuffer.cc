@@ -22,9 +22,8 @@
 
 
 #include "swcdb/core/StaticBuffer.h"
+#include "swcdb/core/Compat.h"
 
-#include <cstring>
-#include <cstdlib>
 
 namespace SWC {
 

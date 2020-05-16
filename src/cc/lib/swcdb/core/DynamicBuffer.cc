@@ -3,8 +3,7 @@
  */
 
 #include "swcdb/core/DynamicBuffer.h"
-#include <cstdint>
-#include <cstring>
+#include "swcdb/core/Compat.h"
 
 namespace SWC {
 

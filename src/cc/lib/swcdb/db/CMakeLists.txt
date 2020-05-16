@@ -88,7 +88,8 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
 	NAME	cell
 	SRCS	Cells/tests/test_cell.cc
-	TARGETS	swcdb_core swcdb
+	#TARGETS	swcdb_core swcdb
+	FLAGS "-DSWC_IMPL_SOURCE"
 )
 
 ADD_TEST_TARGET(
