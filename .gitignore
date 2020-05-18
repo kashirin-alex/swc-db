@@ -1,6 +1,4 @@
 
 .idea
 .vscode
-src/cc/hypertable
-
 *.pyc
