@@ -376,18 +376,12 @@ void CompactRange::request_more() {
     Mutex::scope lock(m_mutex);
     if(m_getting)
       return;
-    m_getting = true;
-  }
-  bool ram = false;
-  size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
-  if(sz && (sz >= compactor->cfg_read_ahead->get() || 
-            (ram = sz > Env::Resources.avail_ram()/blk_size) )) {
-    if(!ram || (range->blocks.release(sz * blk_size) < sz * blk_size &&
-                m_q_write.size() + m_q_intval.size() + m_q_encode.size()) ) {
-      Mutex::scope lock(m_mutex);
-      m_getting = false;
+    size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
+    if(sz && (sz >= compactor->cfg_read_ahead->get() ||
+             (sz > Env::Resources.avail_ram()/blk_size &&
+              range->blocks.release(sz * blk_size) < sz * blk_size)))
       return;
-    }
+    m_getting = true;
   }
 
   asio::post(*RangerEnv::maintenance_io()->ptr(), 
