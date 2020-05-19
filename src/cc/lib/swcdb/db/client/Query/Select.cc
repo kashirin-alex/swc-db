@@ -19,7 +19,7 @@ Select::Rsp::~Rsp() { }
 
 bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit, 
                             DB::Specs::Interval& interval) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
   m_counted += recved;
   m_size_bytes += buffer.size;
@@ -41,23 +41,23 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
 }  
     
 void Select::Rsp::get_cells(DB::Cells::Result& cells) {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   cells.take(m_cells);
   m_size_bytes = 0;
 }
 
 size_t Select::Rsp::get_size() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_counted;
 }
 
 size_t Select::Rsp::get_size_bytes() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   return m_size_bytes;
 }
 
 void Select::Rsp::free() {
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   m_cells.free();
   m_size_bytes = 0;
 }

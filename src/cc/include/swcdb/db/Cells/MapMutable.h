@@ -5,7 +5,7 @@
 #ifndef swcdb_db_Cells_MapMutable_h
 #define swcdb_db_Cells_MapMutable_h
 
-#include <mutex>
+#include "swcdb/core/Mutex.h"
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Cells/Mutable.h"
 
@@ -59,8 +59,8 @@ class ColCells final {
   std::string to_string();
 
   private:
-  std::mutex   m_mutex;
-  Mutable      m_cells;
+  Mutex     m_mutex;
+  Mutable   m_cells;
 
 };
 
@@ -108,8 +108,8 @@ class MapMutable {
   std::string to_string();
 
   private:
-  std::mutex   m_mutex;
-  Columns      m_map;
+  Mutex       m_mutex;
+  Columns     m_map;
 
 };
 

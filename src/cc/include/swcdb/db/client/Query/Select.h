@@ -48,7 +48,7 @@ struct Select final {
     void free();
   
     private:
-    std::mutex         m_mutex;
+    Mutex              m_mutex;
     DB::Cells::Result  m_cells;
     size_t             m_counted = 0;
     size_t             m_size_bytes = 0;

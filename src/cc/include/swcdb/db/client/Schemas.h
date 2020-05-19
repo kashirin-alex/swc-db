@@ -32,7 +32,7 @@ class Schemas  {
   void request(int& err, const std::string &name);
 
   private:
-  std::mutex                            m_mutex;
+  Mutex                                 m_mutex;
   std::unordered_map<int64_t, uint64_t> m_track; // .second {time,queue(promises)}
   std::shared_ptr<DB::Schemas>          m_schemas = nullptr;
   Property::V_GINT32::Ptr               m_expiry_ms;

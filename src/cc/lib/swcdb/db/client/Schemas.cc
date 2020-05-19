@@ -14,7 +14,7 @@ Schemas::Schemas(const Property::V_GINT32::Ptr expiry_ms)
 Schemas::~Schemas() { }
   
 void Schemas::remove(int64_t cid){    
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
   if(it == m_track.end()) 
@@ -24,7 +24,7 @@ void Schemas::remove(int64_t cid){
 }
 
 void Schemas::remove(const std::string &name){
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   auto schema = m_schemas->get(name);
   if(schema == nullptr)
@@ -36,7 +36,7 @@ void Schemas::remove(const std::string &name){
 }
 
 DB::Schema::Ptr Schemas::get(int& err, int64_t cid){
-  std::lock_guard lock(m_mutex);
+  Mutex::scope lock(m_mutex);
 
   DB::Schema::Ptr schema;
   auto it = m_track.find(cid);
@@ -59,10 +59,10 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string &name){
     return get(err, schema->cid);
   request(err, name);
   schema = m_schemas->get(name);
-  if(schema == nullptr)
+  if(schema == nullptr) {
     err = Error::COLUMN_SCHEMA_MISSING;
-  else {
-    std::lock_guard lock(m_mutex);
+  } else {
+    Mutex::scope lock(m_mutex);
     m_track.emplace(schema->cid, Time::now_ms());
   }
   return schema;
