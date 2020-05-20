@@ -898,6 +898,14 @@ Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
                                         item(other.item) {
 }
 
+Mutable::ConstIterator& 
+Mutable::ConstIterator::operator=(const Mutable::ConstIterator& other) {
+  buckets = other.buckets;
+  bucket = other.bucket;
+  item = other.item;
+  return *this;
+}
+
 Mutable::ConstIterator::~ConstIterator() { }
 
 bool Mutable::ConstIterator::avail() const {

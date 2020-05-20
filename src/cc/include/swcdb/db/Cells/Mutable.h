@@ -48,6 +48,10 @@ class Mutable final {
 
     ConstIterator(const ConstIterator& other);
 
+    ConstIterator(const ConstIterator&&) = delete;
+
+    ConstIterator& operator=(const ConstIterator&);
+
     ~ConstIterator();
 
     bool avail() const;
@@ -71,6 +75,8 @@ class Mutable final {
     Iterator(Buckets* buckets, size_t offset = 0);
 
     Iterator(const Iterator& other);
+
+    Iterator(const Iterator&&) = delete;
 
     Iterator& operator=(const Iterator& other);
 
@@ -107,6 +113,8 @@ class Mutable final {
                    const Types::Column type=Types::Column::PLAIN);
 
   explicit Mutable(Mutable& other);
+
+  Mutable(const Mutable&&) = delete;
 
   Mutable& operator=(const Mutable& other) = delete;
 
