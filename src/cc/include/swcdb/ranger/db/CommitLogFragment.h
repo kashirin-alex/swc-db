@@ -80,6 +80,8 @@ class Fragment final {
   void split(int& err, const DB::Cell::Key& key, 
              FragmentsPtr log_left, FragmentsPtr log_right);
 
+  void processing_increment();
+
   void processing_decrement();
   
   size_t release();

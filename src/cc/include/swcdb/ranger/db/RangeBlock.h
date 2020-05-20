@@ -145,7 +145,7 @@ class Block final {
 
   struct ReqQueue {
     ReqScan::Ptr  req;
-    int64_t       ts;
+    const int64_t ts;
   };
   QueueSafe<ReqQueue>       m_queue;
 

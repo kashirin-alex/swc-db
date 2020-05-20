@@ -275,6 +275,7 @@ void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags,
   for(auto frag : *this) {
     if(std::find(frags.begin(), frags.end(), frag) == frags.end() &&
        loader->block->is_consist(frag->interval)) {
+      frag->processing_increment();
       frags.push_back(frag);
       if(!--vol)
         return;

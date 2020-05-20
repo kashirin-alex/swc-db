@@ -271,6 +271,11 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
   release();
 }
 
+void Fragment::processing_increment() {
+  Mutex::scope lock(m_mutex);
+  ++m_processing; 
+}
+
 void Fragment::processing_decrement() {
   Mutex::scope lock(m_mutex);
   --m_processing; 

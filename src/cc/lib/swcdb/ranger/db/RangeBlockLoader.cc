@@ -148,6 +148,7 @@ void BlockLoader::load_log_cells() {
       --m_logs;
     }
     frag->load_cells(err = Error::OK, block);
+    frag->processing_decrement();
     if(more && check_log())
       asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false, true); });
   }

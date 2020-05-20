@@ -378,10 +378,10 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
   processing_decrement();
 
   if(req->reached_limits()) {
-    blocks->processing_decrement();
     int err = Error::OK;
     if(req->with_block())
       req->block = ptr();
+    blocks->processing_decrement();
     req->response(err);
     return true;
   }
@@ -397,24 +397,25 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
 
 SWC_SHOULD_INLINE
 void Block::run_queue(int& err) {
-  ReqQueue q;
-  do switch((q = m_queue.front()).req->type) {
-
-    case ReqScan::Type::BLK_PRELOAD: {
-      processing_decrement();
-      break;
-    }
-
-    default: {
-      if(!err) {
-        q.req->profile.add_block_load(q.ts);
-        asio::post(*Env::IoCtx::io()->ptr(), 
-                   [this, req=q.req]() { _scan(req); } );
+  do { 
+    const ReqQueue& q = m_queue.front();
+    switch(q.req->type) {
+      case ReqScan::Type::BLK_PRELOAD: {
+        processing_decrement();
         break;
       }
-      blocks->processing_decrement();
-      processing_decrement();
-      q.req->response(err);
+
+      default: {
+        if(!err) {
+          q.req->profile.add_block_load(q.ts);
+          asio::post(*Env::IoCtx::io()->ptr(),
+                     [this, req=q.req]() { _scan(req); } );
+          break;
+        }
+        blocks->processing_decrement();
+        processing_decrement();
+        q.req->response(err);
+      }
     }
   } while(m_queue.pop_and_more());
 }
