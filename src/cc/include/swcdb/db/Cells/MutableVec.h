@@ -36,6 +36,12 @@ class MutableVec : private std::vector<Mutable*> {
                         max_revs(max_revs), ttl(ttl_ns), type(type) {
   }
 
+  MutableVec(const MutableVec&) = delete;
+
+  MutableVec(const MutableVec&&) = delete;
+  
+  MutableVec& operator=(const MutableVec&) = delete;
+
   ~MutableVec() {
     for(auto cells : *this)
       delete cells;
@@ -56,8 +62,6 @@ class MutableVec : private std::vector<Mutable*> {
     type = typ;
   }
 
-  MutableVec operator=(const MutableVec &other) = delete;
-  
   bool empty() const {
     return Vec::empty();
   }

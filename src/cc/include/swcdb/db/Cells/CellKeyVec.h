@@ -21,7 +21,11 @@ class KeyVec : public std::vector<std::string> {
 
   void free();
 
-  KeyVec operator=(const KeyVec &other) = delete;
+  KeyVec(const KeyVec&) = delete;
+
+  KeyVec(const KeyVec&&) = delete;
+
+  KeyVec& operator=(const KeyVec&) = delete;
   
   void copy(const KeyVec &other);
 

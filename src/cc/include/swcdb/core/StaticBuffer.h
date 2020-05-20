@@ -40,7 +40,7 @@ class StaticBuffer final {
   typedef std::shared_ptr<StaticBuffer> Ptr;
 
   /** Constructor.  Creates an empty buffer */
-  StaticBuffer();
+  explicit StaticBuffer();
 
   /** Constructor.
     * Allocates a new buffer of size <code>len</code>. If
@@ -48,6 +48,12 @@ class StaticBuffer final {
     * @param len The size of the new buffer, in bytes
     */
   explicit StaticBuffer(size_t len);
+
+  StaticBuffer(const StaticBuffer&) = delete;
+
+  StaticBuffer(const StaticBuffer&&) = delete;
+    
+  StaticBuffer& operator=(const StaticBuffer&) = delete;
 
   void allocate();
 

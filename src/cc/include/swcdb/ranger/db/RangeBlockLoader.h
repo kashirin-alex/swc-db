@@ -18,7 +18,13 @@ class BlockLoader final {
 
   Block::Ptr     block;
 
-  BlockLoader(Block::Ptr block);
+  explicit BlockLoader(Block::Ptr block);
+
+  BlockLoader(const BlockLoader&) = delete;
+
+  BlockLoader(const BlockLoader&&) = delete;
+
+  BlockLoader& operator=(const BlockLoader&) = delete;
 
   ~BlockLoader();
 

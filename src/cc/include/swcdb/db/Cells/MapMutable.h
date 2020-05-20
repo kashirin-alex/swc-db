@@ -32,6 +32,12 @@ class ColCells final {
 
   ColCells(const int64_t cid, Mutable& cells);
 
+  ColCells(const ColCells&) = delete;
+
+  ColCells(const ColCells&&) = delete;
+
+  ColCells& operator=(const ColCells&) = delete;
+
   ~ColCells();
 
   Types::KeySeq get_sequence() const;
@@ -72,8 +78,14 @@ class MapMutable {
   typedef std::shared_ptr<MapMutable>                 Ptr;
   typedef std::unordered_map<int64_t, ColCells::Ptr>  Columns;
   
-  MapMutable();
+  explicit MapMutable();
 
+  MapMutable(const MapMutable&) = delete;
+
+  MapMutable(const MapMutable&&) = delete;
+
+  MapMutable& operator=(const MapMutable&) = delete;
+  
   virtual ~MapMutable();
 
   bool create(Schema::Ptr schema);

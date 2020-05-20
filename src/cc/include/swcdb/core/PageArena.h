@@ -32,9 +32,9 @@ struct Item final {
 
   Item() = delete;
 
-  Item(const Item& other) = delete;
+  Item(const Item&) = delete;
 
-  Item operator=(const Item& other) = delete;
+  Item& operator=(const Item&) = delete;
 
 
   static Item::Ptr make(const uint8_t* buf, uint32_t size);

@@ -37,6 +37,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     Pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
     
+    Pending(const Pending&) = delete;
+
+    Pending(const Pending&&) = delete;
+    
+    Pending& operator=(const Pending&) = delete;
+
     ~Pending();
   };
 

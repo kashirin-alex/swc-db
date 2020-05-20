@@ -31,7 +31,13 @@ class Blocks final {
   CellStore::Readers    cellstores;
 
   explicit Blocks(const Types::KeySeq key_seq);
-  
+
+  Blocks(const Blocks&) = delete;
+
+  Blocks(const Blocks&&) = delete;
+
+  Blocks& operator=(const Blocks&) = delete;
+
   void init(RangePtr for_range);
 
   Ptr ptr();

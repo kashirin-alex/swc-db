@@ -65,6 +65,12 @@ class Read final {
                 const std::vector<Block::Read::Ptr>& blocks,
                 FS::SmartFd::Ptr smartfd);
 
+  Read(const Read&) = delete;
+
+  Read(const Read&&) = delete;
+  
+  Read& operator=(const Read&) = delete;
+
   Ptr ptr();
 
   ~Read();

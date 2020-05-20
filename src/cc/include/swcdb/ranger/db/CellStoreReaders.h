@@ -19,6 +19,12 @@ class Readers final {
 
   explicit Readers();
 
+  Readers(const Readers&) = delete;
+
+  Readers(const Readers&&) = delete;
+  
+  Readers& operator=(const Readers&) = delete;
+
   void init(RangePtr for_range);
 
   ~Readers();

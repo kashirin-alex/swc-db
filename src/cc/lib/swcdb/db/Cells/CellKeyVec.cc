@@ -88,36 +88,6 @@ void KeyVec::get(const uint32_t idx, std::string& fraction) const {
   fraction = (*this)[idx];
 }
 
-/* applied with KeyComp::align on KeySeq
-bool KeyVec::align(const KeyVec& other, Condition::Comp comp) {
-  bool chg;
-  if(chg = empty()) {
-    if(chg = !other.empty())
-      assign(other.begin(), other.end());
-    return chg;
-  }
-  bool smaller = size() < other.size();
-  uint32_t min = smaller ? size() : other.size();
-  for(uint32_t c = 0; c < min; ++c) {
-    std::string& r1 = (*this)[c];
-    const std::string& r2 = other[c];
-    if(Condition::condition((const uint8_t*)r1.data(), r1.length(),
-                            (const uint8_t*)r2.data(), r2.length()
-                            ) == comp) {
-      r1 = r2;
-      chg = true;
-    }
-  }
-  if(smaller) {
-    for(uint32_t c = size(); c < other.size(); ++c) {
-      add(other[c]);
-      chg = true;
-    }
-  }
-  return chg;
-}
-*/
-
 uint32_t KeyVec::encoded_length() const {
   uint32_t len = Serialization::encoded_length_vi32(size());
   for(auto it = begin(); it < end(); ++it)

@@ -18,8 +18,14 @@ class Compaction final {
   const Property::V_GUINT8::Ptr   cfg_read_ahead;
   const Property::V_GUINT8::Ptr   cfg_max_range;
 
-  Compaction();
+  explicit Compaction();
+
+  Compaction(const Compaction&) = delete;
+
+  Compaction(const Compaction&&) = delete;
   
+  Compaction& operator=(const Compaction&) = delete;
+
   virtual ~Compaction();
  
   Ptr ptr();

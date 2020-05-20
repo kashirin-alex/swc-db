@@ -49,6 +49,12 @@ class Fragment final {
   explicit Fragment(const std::string& filepath, const Types::KeySeq key_seq,
                     State state=State::NONE);
   
+  Fragment(const Fragment&) = delete;
+
+  Fragment(const Fragment&&) = delete;
+  
+  Fragment& operator=(const Fragment&) = delete;
+
   Ptr ptr();
 
   ~Fragment();

@@ -15,6 +15,14 @@ namespace SWC {
 class Mutex : private LockAtomic::Unique {
   public:
 
+  explicit Mutex() { }
+
+  Mutex(const Mutex&) = delete;
+
+  Mutex(const Mutex&&) = delete;
+
+  Mutex& operator=(const Mutex&) = delete;
+
   bool lock() {
     if(LockAtomic::Unique::try_lock())
       return true;
@@ -52,6 +60,8 @@ class Mutex : private LockAtomic::Unique {
     ~scope() { _m.unlock(_support); }
     
     scope(const scope&) = delete;
+
+    scope(const scope&&) = delete;
 
     scope& operator=(const scope&) = delete;
 

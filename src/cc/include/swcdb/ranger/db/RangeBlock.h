@@ -45,6 +45,12 @@ class Block final {
   explicit Block(const DB::Cells::Interval& interval, 
                  Blocks* blocks, State state=State::NONE);
 
+  Block(const Block&) = delete;
+
+  Block(const Block&&) = delete;
+
+  Block& operator=(const Block&) = delete;
+
   ~Block();
 
   Ptr ptr();

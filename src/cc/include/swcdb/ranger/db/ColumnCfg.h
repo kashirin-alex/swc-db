@@ -42,6 +42,12 @@ class ColumnCfg final {
     update(schema);
   }
 
+  ColumnCfg(const ColumnCfg&) = delete;
+
+  ColumnCfg(const ColumnCfg&&) = delete;
+  
+  ColumnCfg& operator=(const ColumnCfg&) = delete;
+
   ~ColumnCfg() { }
 
   void update(const DB::Schema& schema) const {

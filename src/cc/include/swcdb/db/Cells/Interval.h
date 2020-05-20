@@ -30,6 +30,10 @@ class Interval final {
 
   explicit Interval(const Interval& other);
 
+  Interval(const Interval&&) = delete;
+  
+  Interval& operator=(const Interval&) = delete;
+  
   ~Interval();
 
   void copy(const Interval& other);

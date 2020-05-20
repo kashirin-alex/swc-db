@@ -36,6 +36,12 @@ class Fragments : private std::vector<Fragment::Ptr> {
 
   void init(RangePtr for_range);
 
+  Fragments(const Fragments&) = delete;
+
+  Fragments(const Fragments&&) = delete;
+  
+  Fragments& operator=(const Fragments&) = delete;
+
   ~Fragments();
 
   void schema_update();

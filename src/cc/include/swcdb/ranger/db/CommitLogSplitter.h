@@ -20,6 +20,12 @@ class Splitter final {
             log_left(log_left), log_right(log_right) {
   }
 
+  Splitter(const Splitter&) = delete;
+
+  Splitter(const Splitter&&) = delete;
+  
+  Splitter& operator=(const Splitter&) = delete;
+
   ~Splitter() { }
 
   void run () {

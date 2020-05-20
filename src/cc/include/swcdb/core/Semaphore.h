@@ -15,8 +15,14 @@ namespace SWC {
 class Semaphore final {
   public:
 
-  Semaphore(size_t sz=1);
+  explicit Semaphore(size_t sz=1);
 
+  Semaphore(const Semaphore&) = delete;
+
+  Semaphore(const Semaphore&&) = delete;
+    
+  Semaphore& operator=(const Semaphore&) = delete;
+  
   ~Semaphore();
 
   void acquire();

@@ -17,6 +17,14 @@ class QueueSafe : private std::queue<ItemT> {
 
   public:
 
+  explicit QueueSafe() { }
+
+  QueueSafe(const QueueSafe&) = delete;
+
+  QueueSafe(const QueueSafe&&) = delete;
+    
+  QueueSafe& operator=(const QueueSafe&) = delete;
+
   void push(const ItemT& item) {
     auto support(m_mutex.lock());
     QBase::push(item);

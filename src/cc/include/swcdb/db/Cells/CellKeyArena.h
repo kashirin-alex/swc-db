@@ -23,7 +23,6 @@ class KeyArena : public std::vector<Fraction> {
   using std::vector<Fraction>::vector;
   using std::vector<Fraction>::insert;
 
-  KeyArena operator=(const KeyArena &other) = delete;
 
   explicit KeyArena(const KeyArena &other) {
     assign(other.begin(), other.end());
@@ -31,6 +30,10 @@ class KeyArena : public std::vector<Fraction> {
       (*it)->use();
   }
   
+  KeyArena(const KeyArena&&) = delete;
+
+  KeyArena& operator=(const KeyArena&) = delete;
+
   virtual ~KeyArena() {
     free();
   }

@@ -47,6 +47,12 @@ class Read final {
   explicit Read(const uint64_t offset, const DB::Cells::Interval& interval, 
                 uint32_t cell_revs);
   
+  Read(const Read&) = delete;
+
+  Read(const Read&&) = delete;
+  
+  Read& operator=(const Read&) = delete;
+
   Ptr ptr();
 
   ~Read();

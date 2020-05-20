@@ -22,6 +22,14 @@ struct CompactRange::InBlock {
       inblock->move_last(this);
   }
 
+  InBlock(const InBlock&) = delete;
+
+  InBlock(const InBlock&&) = delete;
+  
+  InBlock& operator=(const InBlock&) = delete;
+
+  ~InBlock() { }
+
   size_t cell_avg_size() const {
     return cells.fill()/count;
   }

@@ -16,6 +16,12 @@ class Unique {
 
   explicit Unique(): want(false) { }
 
+  Unique(const Unique&) = delete;
+
+  Unique(const Unique&&) = delete;
+    
+  Unique& operator=(const Unique&) = delete;
+
   ~Unique() { }
 
   bool try_lock() {
@@ -53,6 +59,8 @@ class Unique {
     ~scope() { _m.unlock(); }
     
     scope(const scope&) = delete;
+
+    scope(const scope&&) = delete;
 
     scope& operator=(const scope&) = delete;
 

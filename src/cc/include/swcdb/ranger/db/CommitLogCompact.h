@@ -21,6 +21,12 @@ class Compact final {
     
     Group(Compact* compact, uint8_t worker);
 
+    Group(const Group&) = delete;
+
+    Group(const Group&&) = delete;
+  
+    Group& operator=(const Group&) = delete;
+
     ~Group();
 
     void run();
@@ -62,6 +68,12 @@ class Compact final {
 
   Compact(Fragments* log, int repetition, 
           const std::vector<Fragments::Vec>& groups, Cb_t& cb = 0);
+
+  Compact(const Compact&) = delete;
+
+  Compact(const Compact&&) = delete;
+  
+  Compact& operator=(const Compact&) = delete;
 
   ~Compact();
 

@@ -15,6 +15,14 @@ template <class ItemT>
 class QueueSafeStated : private std::queue<ItemT> {
   public:
 
+  explicit QueueSafeStated() { }
+
+  QueueSafeStated(const QueueSafeStated&) = delete;
+
+  QueueSafeStated(const QueueSafeStated&&) = delete;
+    
+  QueueSafeStated& operator=(const QueueSafeStated&) = delete;
+
   void push(const ItemT& item) {
     auto support(m_mutex.lock());
     QBase::push(item);

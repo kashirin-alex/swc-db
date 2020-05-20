@@ -17,6 +17,14 @@ class QueueRunnable : private std::queue<std::function<void()>> {
   
   typedef std::function<void()>  Call_t;
 
+  explicit QueueRunnable() { }
+
+  QueueRunnable(const QueueRunnable&) = delete;
+
+  QueueRunnable(const QueueRunnable&&) = delete;
+    
+  QueueRunnable& operator=(const QueueRunnable&) = delete;
+
   void push(const Call_t& call) {
     auto support(m_mutex.lock());
     QBase::push(call);

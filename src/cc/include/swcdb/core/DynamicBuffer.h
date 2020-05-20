@@ -49,6 +49,12 @@ namespace SWC {
      */
     explicit DynamicBuffer(size_t initial_size = 0, bool own_buffer = true);
 
+    DynamicBuffer(const DynamicBuffer&) = delete;
+
+    DynamicBuffer(const DynamicBuffer&&) = delete;
+    
+    DynamicBuffer& operator=(const DynamicBuffer&) = delete;
+    
     /** Destructor; releases the buffer if it "owns" it */
     ~DynamicBuffer();
 

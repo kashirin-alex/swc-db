@@ -72,6 +72,10 @@ class Cell final {
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
 
+  Cell(const Cell&&) = delete;
+
+  Cell& operator=(const Cell&) = delete;
+
   void copy(const Cell& other, bool no_value=false);
 
   ~Cell();

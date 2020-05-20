@@ -148,27 +148,27 @@ int main() {
    std::cout << "\n--------Copy Cells-------------\n";
 
    i=0;
-   std::vector<Cells::Cell> cells_copied;
+   std::vector<Cells::Cell*> cells_copied;
    cells_copied.reserve(num_cells);
    for(auto it=cells.begin();it<cells.end();++it){
       std::cout << "Copying Cell-"<< i << ":\n";
       //std::cout << (*it)->to_string() << "\n\n";
-      // cells_copied.push_back(*(new Cells::Cell(*it)));  // OK 
-      cells_copied.push_back(Cells::Cell(**it));            // OK
-
+      cells_copied.push_back(new Cells::Cell(**it));  // OK 
+      //cells_copied.push_back(Cells::Cell(**it));      // !move
+      auto last_cell = cells_copied.back();
       std::cout << " ptrs-orig key:"<<(size_t)(*it)->key.data 
                 << " value:"<<(size_t)(*it)->value << "\n";
-      std::cout << " ptrs-copy key:"<<(size_t)cells_copied.back().key.data  
-                << " value:"<<(size_t)cells_copied.back().value << "\n";
+      std::cout << " ptrs-copy key:"<<(size_t)last_cell->key.data  
+                << " value:"<<(size_t)last_cell->value << "\n";
 
-      if((*it)->key.data == cells_copied.back().key.data || (*it)->value == cells_copied.back().value){
+      if((*it)->key.data == last_cell->key.data || (*it)->value == last_cell->value){
          std::cout << "COPY PTRs SHOUT NOT BE EQUAL:\n";
          exit(1);
       }
-      if(!(*it)->equal(cells_copied.back())){
+      if(!(*it)->equal(*last_cell)) {
          std::cout << "COPY NOT EQUAL:\n";
          std::cout << (*cells.begin())->to_string() << "\n\n";
-         std::cout << cells_copied.back().to_string() << "\n\n";
+         std::cout << last_cell->to_string() << "\n\n";
          exit(1);
       }
 
@@ -177,7 +177,7 @@ int main() {
    i=0;
    for(auto it=cells_copied.begin();it<cells_copied.end();++it){
       std::cout << "Copied Cell-"<< i << ":\n";
-      std::cout << (*it).to_string() << "\n\n";
+      std::cout << (*it)->to_string() << "\n\n";
       ++i;
    }
    std::cout << "\n-------------------------------\n";
@@ -218,11 +218,11 @@ int main() {
     std::cout << "base:"<< (size_t)buff.base  << ",bptr:"<< (size_t)bptr << ",mark:"<< (size_t)mark << "\n";
     ++i;
       
-    if( !(*it1)->equal(cell) || !it2->equal(cell) ){
+    if( !(*it1)->equal(cell) || !(*it2)->equal(cell) ){
       std::cout << "LOADED SERIALIZED CELL NOT EQUAL:\n";
       std::cout << cell.to_string() << "\n\n";
       std::cout << (*it1)->to_string() << "\n\n";
-      std::cout << it2->to_string() << "\n\n";
+      std::cout << (*it2)->to_string() << "\n\n";
     	exit(1);
     }
 
@@ -235,11 +235,13 @@ int main() {
 
    std::cout << "\n----Destruction Cells----------\n";
 
-   size_t k_len = cells_copied.back().key.size;
+   size_t k_len = cells_copied.back()->key.size;
    uint8_t* last_skey = new uint8_t[k_len];
-   uint8_t* last_skey_ptr = cells_copied.back().key.data;
+   uint8_t* last_skey_ptr = cells_copied.back()->key.data;
    memcpy(last_skey, last_skey_ptr, k_len);
    
+  for(auto c : cells_copied)
+    delete c;
    cells_copied.clear();
    //cells_copied.clear();
    if (*last_skey_ptr != 0 && memcmp(last_skey, last_skey_ptr, k_len) == 0){

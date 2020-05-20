@@ -23,6 +23,10 @@ class Key final {
 
   explicit Key(const Key& other);
 
+  Key(const Key&&) = delete;
+  
+  Key& operator=(const Key&) = delete;
+
   void copy(const Key& other);
 
   ~Key();

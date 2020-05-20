@@ -25,6 +25,12 @@ class ReqScan : public ResponseCallback {
   ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
           const DB::Specs::Interval& spec);
 
+  ReqScan(const ReqScan&) = delete;
+
+  ReqScan(const ReqScan&&) = delete;
+
+  ReqScan& operator=(const ReqScan&) = delete;
+
   virtual ~ReqScan();
 
   Ptr get_req_scan();

@@ -36,6 +36,8 @@ class Result : private std::vector<Cell*> {
 
   explicit Result(Result& other);
 
+  Result(const Result&& other) = delete;
+
   Result& operator=(const Result& other) = delete;
 
   virtual ~Result();
