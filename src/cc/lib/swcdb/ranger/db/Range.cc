@@ -351,7 +351,7 @@ void Range::remove(int &err, bool meta) {
 }
 
 void Range::wait_queue() {
-  while(!m_q_adding.empty())
+  while(!m_q_adding.empty() || !m_q_scans.empty())
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
