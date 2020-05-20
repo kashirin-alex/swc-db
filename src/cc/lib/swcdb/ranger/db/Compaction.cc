@@ -36,17 +36,14 @@ Compaction::Ptr Compaction::ptr() {
 }
 
 bool Compaction::available() {
-  std::lock_guard lock(m_mutex);
+  std::scoped_lock lock(m_mutex);
   return m_running < cfg_max_range->get();
 }
 
 void Compaction::stop() {
-  {
-    std::lock_guard lock(m_mutex);
-    m_run = false;
-    m_check_timer.cancel();
-  }
   std::unique_lock lock_wait(m_mutex);
+  m_run = false;
+  m_check_timer.cancel();
   if(m_running) 
     m_cv.wait(lock_wait, [&running=m_running](){return !running;});  
 }
@@ -56,49 +53,47 @@ void Compaction::schedule() {
 }
 
 void Compaction::schedule(uint32_t t_ms) {
-  std::lock_guard lock(m_mutex);
+  std::scoped_lock lock(m_mutex);
   _schedule(t_ms);
 }
 
 bool Compaction::stopped() {
-  std::lock_guard lock(m_mutex);
+  std::scoped_lock lock(m_mutex);
   return !m_run;
 }
 
 void Compaction::run(bool continuing) {
   {
-    std::lock_guard lock(m_mutex); 
+    std::scoped_lock lock(m_mutex); 
     if(!m_run || (!continuing && m_scheduled))
       return;
     m_scheduled = true;
   }
 
-  Column::Ptr col = nullptr;
   RangePtr range  = nullptr;
-  size_t ram = 0;
-  for(;;) {
-    
-    if((col = RangerEnv::columns()->get_next(m_idx_cid)) == nullptr)
-      break;
-    if(col->removing()){
+  for(Column::Ptr col = nullptr; 
+      !stopped() && 
+      (col || (col = RangerEnv::columns()->get_next(m_idx_cid)) ); ) {
+
+    if(col->removing()) {
       ++m_idx_cid;
+      col = nullptr;
       continue;
     }
 
-    if((range = col->get_next(m_idx_rid)) == nullptr) {
+    if(!(range = col->get_next(m_idx_rid))) {
       ++m_idx_cid;
+      col = nullptr;
       continue;
     }
     ++m_idx_rid;
-    if(stopped())
-      break;
 
     if((!range->compact_required() && range->blocks.commitlog.try_compact()) ||
         !range->compact_possible())
       continue;
 
     {
-      std::lock_guard lock(m_mutex); 
+      std::scoped_lock lock(m_mutex); 
       ++m_running;
     }
     asio::post(*RangerEnv::maintenance_io()->ptr(), 
@@ -109,7 +104,7 @@ void Compaction::run(bool continuing) {
   }
   
   {
-    std::lock_guard lock(m_mutex); 
+    std::scoped_lock lock(m_mutex); 
     if(m_running)
       return;
   }
@@ -186,26 +181,28 @@ void Compaction::compacted(RangePtr range, bool all) {
   } else if(size_t bytes = Env::Resources.need_ram()) {
     range->blocks.release(bytes);
   }
-  
+
   range->compacting(Range::COMPACT_NONE);
   compacted();
 }
 
 void Compaction::compacted() {
-  std::lock_guard lock(m_mutex);
+  {
+    std::scoped_lock lock(m_mutex);
 
-  if(m_running && m_running-- == cfg_max_range->get()) {
-    asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
-    return;
-  } 
-  if(!m_running) {
-    if(!m_run) {
-      m_cv.notify_all();
+    if(m_running && m_running-- == cfg_max_range->get()) {
+      asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
       return;
     }
-    m_scheduled = false;
-    _schedule(cfg_check_interval->get());
+    if(m_run) {
+      if(!m_running) {
+        m_scheduled = false;
+        _schedule(cfg_check_interval->get());
+      }
+      return;
+    }
   }
+  m_cv.notify_all();
 }
 
 void Compaction::_schedule(uint32_t t_ms) {
