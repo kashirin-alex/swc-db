@@ -360,11 +360,12 @@ void Select::Scanner::resolve_on_manager() {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
-      if(proceed_on_ranger(req, rsp))
+      if(proceed_on_ranger(req, rsp)) // ?req without profile
         return; 
       Env::Clients::get()->rangers.remove(cid, rid);
-    } else
+    } else {
       SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
+    }
   }
   ++col->selector->result->completion;
   req->run();

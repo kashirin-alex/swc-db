@@ -366,17 +366,18 @@ void Update::Locator::resolve_on_manager() {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
-      if(proceed_on_ranger(req, rsp))
+      if(proceed_on_ranger(req, rsp)) // ?req without profile
         return; 
       Env::Clients::get()->rangers.remove(cid, rid);
-    } else
-          SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
+    } else {
+      SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
+    }
   }
   updater->result->completion_incr();
   req->run();
-  }
+}
 
- bool Update::Locator::located_ranger(
+bool Update::Locator::located_ranger(
       const ReqBase::Ptr& base, 
       const Protocol::Mngr::Params::RgrGetRsp& rsp) {
   SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
