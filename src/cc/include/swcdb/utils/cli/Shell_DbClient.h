@@ -394,14 +394,16 @@ class DbClient : public Interface {
               
     auto res = reader.read_and_load();
 
-    if(display_flags & DB::DisplayFlag::STATS) 
+    if(display_flags & DB::DisplayFlag::STATS) {
+      client::Query::Profiling tmp;
       display_stats(
-        res ? res->profile : client::Query::Profiling(),
+        res ? res->profile : tmp,
         SWC::Time::now_ns() - ts, 
         reader.cells_bytes, 
         reader.cells_count, 
         reader.resend_cells
       );
+    }
     if(err || (err = reader.err)) {
       if(reader.message.empty()) {
         reader.message.append(Error::get_text(err));
@@ -487,7 +489,7 @@ class DbClient : public Interface {
 
   void display_stats(const client::Query::Profiling& profile, 
                      size_t took, size_t bytes,
-                     size_t cells_count, size_t resend_cells = 0) {
+                     size_t cells_count, size_t resend_cells = 0) const {
     FlowRate::Data rate(bytes, took);
     SWC_PRINT;
     rate.print_cells_statistics(std::cout, cells_count, resend_cells);

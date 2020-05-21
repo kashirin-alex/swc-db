@@ -55,7 +55,7 @@ struct Profiling {
       return s;
     }
     
-    void print(std::ostream& out) { 
+    void print(std::ostream& out) const { 
       out << time << "ns" << "/" << count << "(" << error << ")\n";
     }
   };
@@ -110,7 +110,7 @@ struct Profiling {
   }
 
 
-  void print(std::ostream& out) {
+  void print(std::ostream& out) const {
     _mngr_locate.print(
       out << " Mngr Locate:            ");
     _mngr_res.print(

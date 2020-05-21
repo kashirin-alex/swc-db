@@ -67,7 +67,7 @@ struct Data {
   }
 
   void print_cells_statistics(std::ostream& out, size_t cells_count, 
-                              bool resend_cells=false) {
+                              bool resend_cells=false) const {
     out << "\n\nStatistics:\n"
         << " Total Time Took:        " << time << " " << time_base     << "s\n"
         << " Total Cells Count:      " << cells_count                  << "\n"
