@@ -11,6 +11,7 @@
 
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
+#include "swcdb/db/client/Query/Profiling.h"
 
 namespace SWC { namespace client { namespace Query {
 
@@ -34,12 +35,15 @@ range-data:
               => results
 */
  
-namespace Result{
+namespace Result {
 
 struct Update final {
   public:
+  
   typedef std::shared_ptr<Update> Ptr;
+
   DB::Cells::MapMutable errored;
+  Profiling             profile;
   
   uint32_t completion();
 

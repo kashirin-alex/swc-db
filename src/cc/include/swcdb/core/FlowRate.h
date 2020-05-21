@@ -79,7 +79,7 @@ struct Data {
     out << " Average Transfer Rate:  " << bytes/time << " " 
                                        << bytes_base <<"/"<< time_base << "\n"
         << " Average Cells Rate:     " << (cells_count ? cells_count/time : 0)
-                                       << " cell/" << time_base
+                                       << " cell/" << time_base        << "\n"
         << std::flush;
   }
 };

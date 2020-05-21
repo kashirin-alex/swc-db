@@ -103,13 +103,6 @@ void quit_error(int err) {
   exit(1);
 }
 
-void display_stats(size_t took, size_t bytes, 
-                   size_t cells_count, size_t resend_cells) {  
-    FlowRate::Data rate(bytes, took);
-    SWC_PRINT;
-    rate.print_cells_statistics(std::cout, cells_count, resend_cells);
-    std::cout << SWC_PRINT_CLOSE;
-}
 
 class CountIt {
   public:
@@ -239,7 +232,9 @@ void load_data(DB::Schema::Ptr schema) {
             SWC_PRINT << " progress(cells=" << added_count 
                       << " bytes=" << added_bytes 
                       << " cell/ns=" << ts_progress/progress
-                      << ")" << SWC_PRINT_CLOSE;
+                      << ") " 
+                      << req->result->profile.to_string() 
+                      << SWC_PRINT_CLOSE;
             ts_progress = Time::now_ns();
           }
         }
@@ -254,7 +249,11 @@ void load_data(DB::Schema::Ptr schema) {
   resend_cells += req->result->get_resend_count();
   assert(added_count && added_bytes);
   
-  display_stats(Time::now_ns() - ts, added_bytes, added_count, resend_cells);
+  FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
+  SWC_PRINT;
+  rate.print_cells_statistics(std::cout, added_count, resend_cells);
+  req->result->profile.print(std::cout);
+  std::cout << SWC_PRINT_CLOSE;
 }
 
 

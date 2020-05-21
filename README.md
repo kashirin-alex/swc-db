@@ -162,11 +162,17 @@ SWC-DB(client)> update cell(INSERT, FirstColumn, [My, First, Super, Wide, Column
 
 
 Statistics:
- Total Time Took:        877.877 us
+ Total Time Took:        834.152 microseconds
  Total Cells Count:      1
  Total Cells Size:       64 B
- Average Transfer Rate:  0.0729032 B/us
- Average Cells Rate:     0.00113911 cell/us
+ Average Transfer Rate:  0.0767246 B/microsecond
+ Average Cells Rate:     0.00119882 cell/microsecond
+ Mngr Locate:            203563ns/1(0)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      247751ns/1(0)
+ Rgr Locate Meta:        190690ns/1(0)
+ Rgr Data:               157399ns/1(0)
+
 SWC-DB(client)> quit;
 ```
 
@@ -178,11 +184,17 @@ SWC-DB(client)> select where col(FirstColumn)=( cells=() ) DISPLAY_STATS DISPLAY
 
 
 Statistics:
- Total Time Took:        1739.04 us
+ Total Time Took:        1012.45 microseconds
  Total Cells Count:      1
  Total Cells Size:       72 B
- Average Transfer Rate:  0.0414021 B/us
- Average Cells Rate:     0.000575029 cell/us
+ Average Transfer Rate:  0.0711147 B/microsecond
+ Average Cells Rate:     0.000987704 cell/microsecond
+ Mngr Locate:            318855ns/2(1)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      278175ns/2(1)
+ Rgr Locate Meta:        238001ns/2(1)
+ Rgr Data:               124960ns/1(0)
+
 SWC-DB(client)> quit;
 ```
 
@@ -218,24 +230,30 @@ Options:
 ###### run swcdb_load_generator
 ```bash
 ./swcdb_load_generator --gen-cells=100000;
- progress(cells=100000 bytes=32150000 cell/ns=2058)
- progress(cells=200000 bytes=64300000 cell/ns=1768)
- progress(cells=300000 bytes=96450000 cell/ns=1688)
- progress(cells=400000 bytes=128600000 cell/ns=3659)
- progress(cells=500000 bytes=160750000 cell/ns=1695)
- progress(cells=600000 bytes=192900000 cell/ns=1958)
- progress(cells=700000 bytes=225050000 cell/ns=3747)
- progress(cells=800000 bytes=257200000 cell/ns=1921)
- progress(cells=900000 bytes=289350000 cell/ns=2009)
- progress(cells=1000000 bytes=321500000 cell/ns=3789)
+ progress(cells=100000 bytes=32150000 cell/ns=1784) Profile(took=0ns mngr[locate(count=5 time=922339ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=5 time=854258ns errors=0) locate-meta(count=5 time=983112ns errors=0) data(count=4 time=111161626ns errors=0)])
+ progress(cells=200000 bytes=64300000 cell/ns=1732) Profile(took=0ns mngr[locate(count=9 time=1431793ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=9 time=1272753ns errors=0) locate-meta(count=9 time=1375490ns errors=0) data(count=8 time=267873288ns errors=0)])
+ progress(cells=300000 bytes=96450000 cell/ns=1736) Profile(took=0ns mngr[locate(count=12 time=1827944ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=12 time=1603651ns errors=0) locate-meta(count=12 time=1673478ns errors=0) data(count=11 time=411488019ns errors=0)])
+ progress(cells=400000 bytes=128600000 cell/ns=1949) Profile(took=0ns mngr[locate(count=14 time=2144028ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=14 time=1883633ns errors=0) locate-meta(count=14 time=1929977ns errors=0) data(count=15 time=656728895ns errors=0)])
+ progress(cells=500000 bytes=160750000 cell/ns=2023) Profile(took=0ns mngr[locate(count=18 time=2699469ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=18 time=2370183ns errors=0) locate-meta(count=18 time=2375885ns errors=0) data(count=19 time=902771091ns errors=0)])
+ progress(cells=600000 bytes=192900000 cell/ns=1958) Profile(took=0ns mngr[locate(count=20 time=2974040ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=20 time=2634322ns errors=0) locate-meta(count=20 time=2586125ns errors=0) data(count=23 time=1158093212ns errors=0)])
+ progress(cells=700000 bytes=225050000 cell/ns=1983) Profile(took=0ns mngr[locate(count=22 time=3271112ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=22 time=2866603ns errors=0) locate-meta(count=22 time=2784441ns errors=0) data(count=26 time=1410341485ns errors=0)])
+ progress(cells=800000 bytes=257200000 cell/ns=2019) Profile(took=0ns mngr[locate(count=24 time=3538260ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=24 time=3111473ns errors=0) locate-meta(count=24 time=3018799ns errors=0) data(count=30 time=1710843676ns errors=0)])
+ progress(cells=900000 bytes=289350000 cell/ns=1906) Profile(took=0ns mngr[locate(count=26 time=3781197ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=26 time=3336873ns errors=0) locate-meta(count=26 time=3233807ns errors=0) data(count=34 time=2000196536ns errors=0)])
+ progress(cells=1000000 bytes=321500000 cell/ns=3169) Profile(took=1956855249ns mngr[locate(count=28 time=4193694ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=28 time=3788386ns errors=0) locate-meta(count=28 time=3560372ns errors=0) data(count=40 time=2546827778ns errors=0)])
 
 
 Statistics:
- Total Time Took:        2511.05 ms
+ Total Time Took:        2096.55 milliseconds
  Total Cells Count:      1000000
- Total Cells Size:       321500 KB
- Average Transfer Rate:  128.034 KB/ms
- Average Cells Rate:     398.239 cell/ms
+ Total Cells Size:       313965 KB
+ Average Transfer Rate:  149.753 KB/millisecond
+ Average Cells Rate:     476.975 cell/millisecond
+ Mngr Locate:            4347083ns/29(0)
+ Mngr Resolve:           211156ns/2(0)
+ Rgr Locate Master:      3916771ns/29(0)
+ Rgr Locate Meta:        3661841ns/29(0)
+ Rgr Data:               2643616107ns/42(0)
+
 ```
 ###### check on results
 ```SQL
@@ -253,41 +271,65 @@ SWC-DB(client)> select where col(load_generator)=(cells=([0000099999, >""]<=key<
 
 
 Statistics:
- Total Time Took:        7919.27 us
+ Total Time Took:        4838.31 microseconds
  Total Cells Count:      9
  Total Cells Size:       702 B
- Average Transfer Rate:  0.0886446 B/us
- Average Cells Rate:     0.00113647 cell/us
+ Average Transfer Rate:  0.145092 B/microsecond
+ Average Cells Rate:     0.00186015 cell/microsecond
+ Mngr Locate:            368452ns/1(0)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      267747ns/1(0)
+ Rgr Locate Meta:        166777ns/1(0)
+ Rgr Data:               3873979ns/1(0)
+
 SWC-DB(client)> select where col(load_generator)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
 [0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008, 0000000009]
 
 
 Statistics:
- Total Time Took:        18.578 ms
+ Total Time Took:        18.475 milliseconds
  Total Cells Count:      1
- Total Cells Size:       130 B
- Average Transfer Rate:  6.99752 B/ms
- Average Cells Rate:     0.0538271 cell/ms
+ Total Cells Size:       122 B
+ Average Transfer Rate:  6.60352 B/millisecond
+ Average Cells Rate:     0.0541272 cell/millisecond
+ Mngr Locate:            513113ns/2(1)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      422130ns/2(1)
+ Rgr Locate Meta:        433575ns/2(1)
+ Rgr Data:               17029467ns/1(0)
+
 SWC-DB(client)> dump col='load_generator' into 'dump/test1/' DISPLAY_STATS;
 
 
 Statistics:
- Total Time Took:        4740.7 ms
+ Total Time Took:        4121.59 milliseconds
  Total Cells Count:      1000000
- Total Cells Size:       329500 KB
- Average Transfer Rate:  69.5045 KB/ms
- Average Cells Rate:     210.939 cell/ms
+ Total Cells Size:       321777 KB
+ Average Transfer Rate:  78.0712 KB/millisecond
+ Average Cells Rate:     242.625 cell/millisecond
+ Mngr Locate:            443459ns/2(1)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      438194ns/2(1)
+ Rgr Locate Meta:        386816ns/2(1)
+ Rgr Data:               1086274646ns/42(0)
+
  Files Count:            1
  File:                   dump/test1/1.tsv (367000041 bytes)
 SWC-DB(client)> load from 'dump/test1/' into col='load_generator' DISPLAY_STATS;
 
 
 Statistics:
- Total Time Took:        3257.83 ms
+ Total Time Took:        2626.23 milliseconds
  Total Cells Count:      1000000
- Total Cells Size:       329500 KB
- Average Transfer Rate:  101.141 KB/ms
- Average Cells Rate:     306.953 cell/ms
+ Total Cells Size:       321777 KB
+ Average Transfer Rate:  122.525 KB/millisecond
+ Average Cells Rate:     380.774 cell/millisecond
+ Mngr Locate:            8227547ns/31(0)
+ Mngr Resolve:           0ns/0(0)
+ Rgr Locate Master:      7937411ns/31(0)
+ Rgr Locate Meta:        5094435ns/31(0)
+ Rgr Data:               3041157529ns/42(0)
+
 SWC-DB(client)> quit;
 ```
 

@@ -141,6 +141,8 @@ void Select::response(int err) {
   if(err)
     result->err = err;
   // if cells not empty commit-again
+  
+  result->profile.finished();
   if(cb)
     cb(result);
 
@@ -332,8 +334,10 @@ void Select::Scanner::locate_on_manager(bool next_range) {
 
   Protocol::Mngr::Req::RgrGet::request(
     params,
-    [next_range, scanner=shared_from_this()]
+    [next_range, profile=col->selector->result->profile.mngr_locate(),
+     scanner=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
       if(scanner->located_on_manager(req, rsp, next_range))
         --scanner->col->selector->result->completion;
     }
@@ -344,8 +348,10 @@ void Select::Scanner::resolve_on_manager() {
 
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
-    [scanner=shared_from_this()]
+    [profile=col->selector->result->profile.mngr_res(), 
+     scanner=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->located_on_manager(req, rsp))
         --scanner->col->selector->result->completion;
     }
@@ -463,8 +469,10 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
 
   Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
-    [next_range, scanner=shared_from_this()]
+    [next_range, profile=col->selector->result->profile.rgr_locate(type),
+     scanner=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
       if(scanner->located_on_ranger(
           std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp, next_range))
@@ -542,8 +550,12 @@ void Select::Scanner::select(EndPoints endpoints, uint64_t rid,
       col->cid, rid, col->interval
     ), 
     endpoints, 
-    [rid, base, scanner=shared_from_this()] 
+    [rid, base, 
+     profile=col->selector->result->profile.rgr_data(), 
+     scanner=shared_from_this()] 
     (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+      profile.add(rsp.err);
+      
       if(rsp.err) {
         SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
         if(rsp.err == Error::RS_NOT_LOADED_RANGE || 

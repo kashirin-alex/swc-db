@@ -15,7 +15,7 @@
 
 namespace SWC { namespace client { namespace Query {
  
-namespace Result{
+namespace Result {
 
 struct Select final {
   typedef std::shared_ptr<Select> Ptr;
@@ -23,6 +23,7 @@ struct Select final {
   std::atomic<uint32_t>  completion = 0;
   std::atomic<int>       err = Error::OK;
   std::atomic<bool>      notify;
+  Profiling              profile;
 
   Select(std::condition_variable& cv, bool notify);
 

@@ -11,7 +11,7 @@
 
 namespace SWC { namespace client { namespace Query {
 
-namespace Result{
+namespace Result {
 
 uint32_t Update::completion() {
   Mutex::scope lock(m_mutex);
@@ -99,6 +99,7 @@ void Update::response(int err) {
   if(err)
     result->error(err);
 
+  result->profile.finished();
   if(cb)
     cb(result);
 
@@ -223,8 +224,10 @@ void Update::Locator::locate_on_manager() {
 
   Protocol::Mngr::Req::RgrGet::request(
     params,
-    [locator=shared_from_this()]
+    [profile=updater->result->profile.mngr_locate(), 
+     locator=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
       if(locator->located_on_manager(req, rsp))
         locator->updater->result->completion_decr();
     }
@@ -290,8 +293,10 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
 
   Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
-    [locator=shared_from_this()]
+    [profile=updater->result->profile.rgr_locate(type),
+     locator=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
       if(locator->located_on_ranger(
           std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp))
@@ -350,8 +355,9 @@ void Update::Locator::resolve_on_manager() {
 
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
-    [locator=shared_from_this()]
+    [profile=updater->result->profile.mngr_res(), locator=shared_from_this()]
     (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(locator->located_ranger(req, rsp))
         locator->updater->result->completion_decr();
     }
@@ -447,8 +453,12 @@ void Update::Locator::commit_data(
       Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
       cells_buff, 
       endpoints, 
-      [workload, cells_buff, base, locator=shared_from_this()] 
-      (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+      [workload, cells_buff, base, 
+       profile=updater->result->profile.rgr_data(), locator=shared_from_this()]
+      (ReqBase::Ptr req, 
+       const Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+        profile.add(rsp.err);
+
         if(rsp.err) {
           SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%d", 
                    rsp.to_string().c_str(), workload.use_count());

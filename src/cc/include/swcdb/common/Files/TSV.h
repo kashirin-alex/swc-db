@@ -268,10 +268,10 @@ class FileReader {
       schema = Env::Clients::get()->schemas->get(err, cid);
   }
 
-  void read_and_load() {
+  client::Query::Update::Result::Ptr read_and_load() {
     initialize();
     if(err)
-      return;
+      return nullptr;
 
     auto updater = std::make_shared<client::Query::Update>();
     updater->columns->create(schema);
@@ -285,6 +285,7 @@ class FileReader {
     updater->commit_if_need();  
     updater->wait();
     resend_cells += updater->result->get_resend_count();
+    return updater->result;
   }
 
   void read(client::Query::Update::Ptr updater, 

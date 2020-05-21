@@ -303,7 +303,12 @@ class DbClient : public Interface {
       return error(message);
 
     if(display_flags & DB::DisplayFlag::STATS)
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+      display_stats(
+        req->result->profile,
+        SWC::Time::now_ns() - ts, 
+        cells_bytes, 
+        cells_count
+      );
 
     return true;
   }
@@ -362,7 +367,12 @@ class DbClient : public Interface {
 
     // req->result->errored
     if(display_flags & DB::DisplayFlag::STATS) 
-      display_stats(SWC::Time::now_ns() - ts, cells_bytes, cells_count);
+      display_stats(
+        req->result->profile,
+        SWC::Time::now_ns() - ts, 
+        cells_bytes, 
+        cells_count
+      );
     if(err) 
       return error(message);
     return true;
@@ -382,12 +392,15 @@ class DbClient : public Interface {
     if(err) 
       return error(reader.message);
               
-    reader.read_and_load();
+    auto res = reader.read_and_load();
 
     if(display_flags & DB::DisplayFlag::STATS) 
       display_stats(
-        SWC::Time::now_ns() - ts, reader.cells_bytes, 
-        reader.cells_count, reader.resend_cells
+        res ? res->profile : client::Query::Profiling(),
+        SWC::Time::now_ns() - ts, 
+        reader.cells_bytes, 
+        reader.cells_count, 
+        reader.resend_cells
       );
     if(err || (err = reader.err)) {
       if(reader.message.empty()) {
@@ -450,7 +463,11 @@ class DbClient : public Interface {
 
     if(display_flags & DB::DisplayFlag::STATS) {
       display_stats(
-        SWC::Time::now_ns() - ts, writer.cells_bytes, writer.cells_count);
+        req->result->profile,
+        SWC::Time::now_ns() - ts, 
+        writer.cells_bytes, 
+        writer.cells_count
+      );
 
       std::vector<FS::SmartFd::Ptr> files;
       writer.get_length(files);
@@ -468,11 +485,13 @@ class DbClient : public Interface {
     return err ? error(Error::get_text(err)) : true;
   }
 
-  void display_stats(size_t took, size_t bytes, 
+  void display_stats(const client::Query::Profiling& profile, 
+                     size_t took, size_t bytes,
                      size_t cells_count, size_t resend_cells = 0) {
     FlowRate::Data rate(bytes, took);
     SWC_PRINT;
     rate.print_cells_statistics(std::cout, cells_count, resend_cells);
+    profile.print(std::cout);
     std::cout << SWC_PRINT_CLOSE;
   }
   
