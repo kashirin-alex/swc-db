@@ -98,10 +98,10 @@ class ReqScan : public ResponseCallback {
       s.append(std::to_string(cells_bytes));
       s.append(" skip=");
       s.append(std::to_string(cells_skipped));
-      s.append(") blocks(scanned=");
-      s.append(std::to_string(blocks_scanned));
-      s.append(" loaded=");
+      s.append(") blocks(loaded=");
       s.append(std::to_string(blocks_loaded));
+      s.append(" scanned=");
+      s.append(std::to_string(blocks_scanned));
       s.append(") block(load=");
       s.append(std::to_string(block_time_load));
       s.append("ns scan=");
