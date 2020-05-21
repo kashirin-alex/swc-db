@@ -192,7 +192,7 @@ bool Block::scan(ReqScan::Ptr req) {
   return true;
 }
 
-void Block::loaded(int err) {
+void Block::loaded(int err, const BlockLoader* loader) {
   {
     Mutex::scope lock(m_mutex_state);
     m_state = State::LOADED;
@@ -205,6 +205,8 @@ void Block::loaded(int err) {
     return;
   }
   run_queue(err);
+
+  delete loader;
 }
 
 Block::Ptr Block::split(bool loaded) {

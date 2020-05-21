@@ -79,7 +79,7 @@ class Block final {
 
   bool scan(ReqScan::Ptr req);
   
-  void loaded(int err);
+  void loaded(int err, const BlockLoader* loader);
   
   Ptr split(bool loaded);
     

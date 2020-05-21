@@ -96,8 +96,10 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
         Mutex::scope lock(m_mutex);
         m_logs += m_f_selected.size() - offset;
       }
-      for(auto it=m_f_selected.begin()+offset; it < m_f_selected.end(); ++it)
+      for(auto it=m_f_selected.begin()+offset; it < m_f_selected.end(); ++it) {
         (*it)->load([this, frag=*it](){ loaded_frag(frag); });
+        (*it)->processing_decrement();
+      }
     }
   }
   bool more;
@@ -108,7 +110,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     if((!is_more && m_processing) || !m_cs_blocks.empty())
       return;
     more = is_more || (m_logs && !m_fragments.empty());
-    wait = m_logs || !m_fragments.empty();
+    wait = m_processing || m_logs || !m_fragments.empty();
   }
   if(more) 
     return loaded_frag(nullptr);
@@ -148,7 +150,6 @@ void BlockLoader::load_log_cells() {
       --m_logs;
     }
     frag->load_cells(err = Error::OK, block);
-    frag->processing_decrement();
     if(more && check_log())
       asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false, true); });
   }
@@ -158,13 +159,11 @@ void BlockLoader::load_log_cells() {
 }
 
 void BlockLoader::completion() {
-  block->loaded(m_err);
-  
   SWC_ASSERT(m_fragments.empty());
   SWC_ASSERT(!m_logs);
   SWC_ASSERT(m_cs_blocks.empty());
 
-  delete this;
+  block->loaded(m_err, this);
 }
 
 
