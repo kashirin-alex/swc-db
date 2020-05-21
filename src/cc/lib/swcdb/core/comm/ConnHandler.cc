@@ -210,8 +210,7 @@ void ConnHandler::write_next() {
 }
 
 void ConnHandler::write(ConnHandler::Pending* pending) {
-  auto cbuf = pending->cbuf;
-  pending->cbuf = nullptr;
+  auto cbuf = std::move(pending->cbuf);
   auto& header = cbuf->header;
 
   if(!pending->hdlr || header.flags & CommHeader::FLAGS_BIT_IGNORE_RESPONSE) {
@@ -223,7 +222,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   if(!(header.flags & CommHeader::FLAGS_BIT_REQUEST)) {
     //if(!header.timeout_ms) {
       // send_response with sent-ack
-      auto hdlr = pending->hdlr;
+      auto hdlr = std::move(pending->hdlr);
       delete pending;
       do_async_write(
         cbuf->get_buffers(),

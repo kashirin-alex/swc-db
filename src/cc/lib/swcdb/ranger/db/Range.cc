@@ -154,8 +154,8 @@ void Range::scan(ReqScan::Ptr req) {
       } else {
         blocks.processing_increment();
         asio::post(*Env::IoCtx::io()->ptr(), 
-          [req=m_q_scans.front(), ptr=shared_from_this()]() {
-            ptr->blocks.scan(req);
+          [req=std::move(m_q_scans.front()), ptr=shared_from_this()]() {
+            ptr->blocks.scan(std::move(req));
             ptr->blocks.processing_decrement();
           });
       }
@@ -163,13 +163,13 @@ void Range::scan(ReqScan::Ptr req) {
 
   } else {
     blocks.processing_increment();
-    blocks.scan(req);
+    blocks.scan(std::move(req));
     blocks.processing_decrement();
   }
 }
 
 void Range::scan_internal(ReqScan::Ptr req) {
-  blocks.scan(req);
+  blocks.scan(std::move(req));
 }
 
 void Range::create_folders(int& err) {
