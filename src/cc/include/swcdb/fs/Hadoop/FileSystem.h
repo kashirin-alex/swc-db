@@ -70,7 +70,7 @@ class FileSystemHadoop: public FileSystem {
   void rename(int &err, const std::string &from, 
                         const std::string &to)  override;
 
-  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr &smartfd);
+  SmartFdHadoop::Ptr get_fd(const SmartFd::Ptr &smartfd);
 
   void create(int &err, SmartFd::Ptr &smartfd, 
               int32_t bufsz, uint8_t replication, int64_t blksz) override;

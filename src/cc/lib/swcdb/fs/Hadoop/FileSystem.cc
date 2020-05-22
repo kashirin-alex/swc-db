@@ -322,11 +322,12 @@ void FileSystemHadoop::rename(int &err, const std::string &from,
             abspath_from.c_str(), abspath_to.c_str());
 }
 
-SmartFdHadoop::Ptr FileSystemHadoop::get_fd(SmartFd::Ptr &smartfd){
+SmartFdHadoop::Ptr FileSystemHadoop::get_fd(const SmartFd::Ptr &smartfd){
   auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
   if(!hd_fd){
     hd_fd = SmartFdHadoop::make_ptr(smartfd);
-    smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
+    auto tmp = std::static_pointer_cast<SmartFd>(hd_fd);
+    smartfd.swap(tmp);
   }
   return hd_fd;
 }
