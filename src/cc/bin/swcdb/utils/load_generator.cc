@@ -154,7 +154,7 @@ class CountIt {
   ssize_t pos; 
 };
 
-void load_data(DB::Schema::Ptr schema) {
+void load_data(DB::Schema::Ptr& schema) {
   auto settings = Env::Config::settings();
 
   uint32_t versions = settings->get_i32("gen-cell-versions");
@@ -292,7 +292,7 @@ void load_generator() {
     Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res]
-    (client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+    (const client::ConnQueue::ReqBase::Ptr& req_ptr, int err) {
       await->set_value(err);
     },
     10000

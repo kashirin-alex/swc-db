@@ -141,7 +141,7 @@ void Range::add(Range::ReqAdd* req) {
   }
 }
 
-void Range::scan(ReqScan::Ptr req) {
+void Range::scan(const ReqScan::Ptr& req) {
   if(compacting_is(COMPACT_APPLYING)) {
     if(!m_q_scans.push_and_is_1st(req))
       return;
@@ -168,7 +168,7 @@ void Range::scan(ReqScan::Ptr req) {
   }
 }
 
-void Range::scan_internal(ReqScan::Ptr req) {
+void Range::scan_internal(const ReqScan::Ptr& req) {
   blocks.scan(std::move(req));
 }
 

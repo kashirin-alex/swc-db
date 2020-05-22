@@ -528,6 +528,7 @@ void CompactRange::add_cs(int& err) {
 }
 
 void CompactRange::finalize() {
+  stop_check_timer();
   
   if(!range->is_loaded())
     return quit();
@@ -759,9 +760,24 @@ void CompactRange::apply_new(bool clear) {
   finished(clear);
 }
 
+void CompactRange::completion() {
+  m_stopped = true;
+  stop_check_timer();
+
+  auto ptr = shared();
+  for(int chk = 0; ptr.use_count() > 2; ++chk) { // insure sane
+    if(chk == 3000) {
+      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %d/%d use_count=%d", 
+                range->cfg->cid, range->rid, ptr.use_count());
+      chk = 0;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+}
+
 void CompactRange::finished(bool clear) {
-  range->compact_require(false);
-  
+  completion();
+
   SWC_LOGF(LOG_INFO, 
     "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
     "(total=%lld intval=%lld encode=%lld write=%lld)ms %s",
@@ -771,13 +787,13 @@ void CompactRange::finished(bool clear) {
     profile.to_string().c_str()
   );
 
+  range->compact_require(false);
   compactor->compacted(range, clear);
 }
 
 void CompactRange::quit() {
-  m_stopped = true;
+  completion();
 
-  stop_check_timer();
   int err = Error::OK;
   if(cs_writer != nullptr) {
     cs_writer->remove(err);
@@ -788,17 +804,9 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-  auto ptr = shared();
-  for(int chk = 0; ptr.use_count() > 2; ++chk) {
-    if(chk == 3000) {
-      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %d/%d use_count=%d", 
-                range->cfg->cid, range->rid, ptr.use_count());
-      chk = 0;
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
   SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
            range->cfg->cid, range->rid);
+
   compactor->compacted(range);
 }
 

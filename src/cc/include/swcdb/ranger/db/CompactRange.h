@@ -82,6 +82,8 @@ class CompactRange : public ReqScan {
 
   void apply_new(bool clear = false);
 
+  void completion();
+  
   void finished(bool clear);
 
   void quit();
