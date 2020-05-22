@@ -396,13 +396,6 @@ void Fragment::load_header(int& err, bool close_after) {
       err = Error::OK;
     }
 
-    /*
-    if(!fs_if->exists(err, m_smartfd->filepath())) {
-      err = Error::FS_PATH_NOT_FOUND;
-      return;
-    }
-    */
-
     if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       return;
     if(err)
@@ -458,11 +451,6 @@ void Fragment::load() {
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
 
-  bool header_again;
-  {
-    Mutex::scope lock(m_mutex);
-    header_again = m_err;
-  }
   int err = Error::OK;
   while(err != Error::FS_EOF) {
     if(err) {
@@ -472,18 +460,6 @@ void Fragment::load() {
       err = Error::OK;
     }
 
-    if(header_again) {
-      load_header(err, false);
-      if(err)
-        break;
-    }
-    /*
-    else if(!fs_if->exists(err, m_smartfd->filepath()))
-      err = Error::FS_PATH_NOT_FOUND;
-    if(err)
-      break;
-    */
- 
     if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       break;
     if(err)
@@ -496,7 +472,6 @@ void Fragment::load() {
     
     if(!checksum_i32_chk(m_data_checksum, m_buffer.base, m_size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
-      header_again = true;
       continue;
     }
 
@@ -504,10 +479,8 @@ void Fragment::load() {
       StaticBuffer decoded_buf(m_size);
       Encoder::decode(
         err, m_encoder, m_buffer.base, m_size_enc, decoded_buf.base, m_size);
-      if(err) {
-        header_again = true;
+      if(err)
         continue;
-      }
       m_buffer.set(decoded_buf);
     }
     break;
