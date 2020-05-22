@@ -20,7 +20,7 @@ ReqScan::ReqScan(const DB::Specs::Interval& spec)
                   offset(spec.flags.offset) {
 }
 
-ReqScan::ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
+ReqScan::ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
                  const DB::Specs::Interval& spec)
                 : ResponseCallback(conn, ev), 
                   spec(spec),

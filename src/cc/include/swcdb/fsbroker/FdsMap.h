@@ -23,7 +23,7 @@ class Fds final {
   
   ~Fds(){}
 
-  int32_t add(FS::SmartFd::Ptr fd) {
+  int32_t add(const FS::SmartFd::Ptr& fd) {
     Mutex::scope lock(m_mutex);
     
     do{
@@ -38,7 +38,7 @@ class Fds final {
     auto it = m_fds.find(fd);
     if(it == m_fds.end())
       return nullptr;
-    FS::SmartFd::Ptr smartfd = it->second;
+    FS::SmartFd::Ptr smartfd = std::move(it->second);
     m_fds.erase(it);
     return smartfd;
   }
@@ -58,7 +58,7 @@ class Fds final {
     auto it = m_fds.begin();
     if(it == m_fds.end())
       return nullptr;
-    FS::SmartFd::Ptr smartfd = it->second;
+    FS::SmartFd::Ptr smartfd = std::move(it->second);
     m_fds.erase(it);
     return smartfd;
   }

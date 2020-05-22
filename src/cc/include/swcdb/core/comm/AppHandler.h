@@ -16,7 +16,9 @@ typedef void (*AppHandler_t)(ConnHandlerPtr conn, Event::Ptr ev);
 class AppHandler {
   public:
 
-  AppHandler(ConnHandlerPtr conn, Event::Ptr ev): m_conn(conn), m_ev(ev) { }
+  AppHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+            : m_conn(conn), m_ev(ev) {
+  }
     
   virtual ~AppHandler() { }
 

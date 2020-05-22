@@ -38,7 +38,7 @@ Read::Ptr Read::make(int& err, const uint32_t id,
   );
 }
 
-bool Read::load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
+bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd, 
                          size_t& blks_idx_size, 
                          uint32_t& cell_revs, 
                          uint64_t& blks_idx_offset, 
@@ -102,7 +102,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr smartfd,
   return loaded;
 }
 
-void Read::load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
+void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd, 
                               DB::Cell::Key& prev_key_end,
                               DB::Cells::Interval& interval, 
                               std::vector<Block::Read::Ptr>& blocks, 
@@ -219,7 +219,7 @@ Read::Read(const uint32_t id,
            const DB::Cell::Key& prev_key_end,
            const DB::Cells::Interval& interval, 
            const std::vector<Block::Read::Ptr>& blocks,
-           FS::SmartFd::Ptr smartfd) 
+           const FS::SmartFd::Ptr& smartfd) 
           : id(id), 
             prev_key_end(prev_key_end), 
             interval(interval), 

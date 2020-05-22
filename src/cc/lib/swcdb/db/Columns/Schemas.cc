@@ -15,7 +15,7 @@ Schemas::Schemas() {}
 
 Schemas::~Schemas() {}
 
-void Schemas::add(int &err, Schema::Ptr schema) {
+void Schemas::add(int &err, const Schema::Ptr& schema) {
   std::scoped_lock lock(m_mutex);
   if(!m_map.emplace(schema->cid, schema).second) {
     SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
@@ -32,7 +32,7 @@ void Schemas::remove(int64_t cid) {
     m_map.erase(it);
 }
 
-void Schemas::replace(Schema::Ptr schema) {
+void Schemas::replace(const Schema::Ptr& schema) {
   std::scoped_lock lock(m_mutex);
 
   auto it = m_map.find(schema->cid);

@@ -93,8 +93,8 @@ class Update : public std::enable_shared_from_this<Update> {
 
   Update(Cb_t cb=0);
 
-  Update(DB::Cells::MapMutable::Ptr columns, 
-         DB::Cells::MapMutable::Ptr columns_onfractions, 
+  Update(const DB::Cells::MapMutable::Ptr& columns, 
+         const DB::Cells::MapMutable::Ptr& columns_onfractions, 
          Cb_t cb=0);
 
   virtual ~Update();
@@ -106,7 +106,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void commit_or_wait();
 
-  void commit_or_wait(DB::Cells::ColCells::Ptr& col);
+  void commit_or_wait(const DB::Cells::ColCells::Ptr& col);
 
   void commit_if_need();
   
@@ -115,9 +115,9 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void commit(const int64_t cid);
 
-  void commit(DB::Cells::ColCells::Ptr col);
+  void commit(const DB::Cells::ColCells::Ptr& col);
 
-  void commit_onfractions(DB::Cells::ColCells::Ptr col);
+  void commit_onfractions(const DB::Cells::ColCells::Ptr& col);
 
   class Locator : public std::enable_shared_from_this<Locator> {
     public:
@@ -131,8 +131,9 @@ class Update : public std::enable_shared_from_this<Update> {
     const DB::Cell::Key       key_finish;
     
     Locator(const Types::Range type, const int64_t cid, 
-            DB::Cells::ColCells::Ptr col, DB::Cell::Key::Ptr key_start,
-            Update::Ptr updater, ReqBase::Ptr parent=nullptr, 
+            const DB::Cells::ColCells::Ptr& col, 
+            const DB::Cell::Key::Ptr& key_start,
+            const Update::Ptr& updater, const ReqBase::Ptr& parent=nullptr, 
             const int64_t rid=0, const DB::Cell::Key* key_finish=nullptr);
 
     virtual ~Locator();

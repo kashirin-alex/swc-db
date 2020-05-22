@@ -21,7 +21,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
   typedef std::shared_ptr<ConnQueueReqBase> Ptr;
 
-  ConnQueueReqBase(bool insistent=true, CommBuf::Ptr cbp=nullptr);
+  ConnQueueReqBase(bool insistent=true, const CommBuf::Ptr& cbp=nullptr);
 
   Ptr req();
 

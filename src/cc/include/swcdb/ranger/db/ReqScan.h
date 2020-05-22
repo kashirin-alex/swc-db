@@ -29,7 +29,7 @@ class ReqScan  : public DB::Cells::ReqScan {
             block(nullptr) {
   }
         
-  ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
+  ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
           const DB::Cell::Key& range_begin, 
           const DB::Cell::Key& range_end)
           : DB::Cells::ReqScan(
@@ -41,7 +41,7 @@ class ReqScan  : public DB::Cells::ReqScan {
             block(nullptr) {
   }
 
-  ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
+  ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
           const DB::Specs::Interval& spec)
           : DB::Cells::ReqScan(conn, ev, spec),
             type(Type::QUERY), 

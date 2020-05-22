@@ -134,7 +134,7 @@ class Select : public std::enable_shared_from_this<Select> {
     Select::Ptr                             selector;
 
     ScannerColumn(const int64_t cid, const Types::KeySeq col_seq, 
-                  DB::Specs::Interval& interval, Select::Ptr selector);
+                  DB::Specs::Interval& interval, const Select::Ptr& selector);
 
     virtual ~ScannerColumn();
 
@@ -164,8 +164,9 @@ class Select : public std::enable_shared_from_this<Select> {
     const int64_t             rid;
     DB::Cell::Key             range_offset;
 
-    Scanner(const Types::Range type, const int64_t cid, ScannerColumn::Ptr col,
-            ReqBase::Ptr parent=nullptr, 
+    Scanner(const Types::Range type, const int64_t cid, 
+            const ScannerColumn::Ptr& col,
+            const ReqBase::Ptr& parent=nullptr, 
             const DB::Cell::Key* range_offset=nullptr, const int64_t rid=0);
 
     virtual ~Scanner();

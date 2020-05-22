@@ -8,8 +8,10 @@
 
 namespace SWC {
 
-ResponseCallback::ResponseCallback(ConnHandlerPtr conn, Event::Ptr ev)
-                                   : m_conn(conn), m_ev(ev) { }
+ResponseCallback::ResponseCallback(const ConnHandlerPtr& conn, 
+                                   const Event::Ptr& ev)
+                                  : m_conn(conn), m_ev(ev) { 
+}
     
 ResponseCallback::~ResponseCallback() { }
 

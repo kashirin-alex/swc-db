@@ -8,7 +8,7 @@ namespace SWC { namespace client {
 
 
 
-ConnQueueReqBase::ConnQueueReqBase(bool insistent, CommBuf::Ptr cbp)
+ConnQueueReqBase::ConnQueueReqBase(bool insistent, const CommBuf::Ptr& cbp)
                                   : insistent(insistent), cbp(cbp), 
                                     was_called(false), queue(nullptr){
 }

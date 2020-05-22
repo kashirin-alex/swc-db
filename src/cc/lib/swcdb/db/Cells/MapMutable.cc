@@ -118,7 +118,7 @@ MapMutable::MapMutable() { }
 
 MapMutable::~MapMutable() {}
 
-bool MapMutable::create(Schema::Ptr schema) {
+bool MapMutable::create(const Schema::Ptr& schema) {
   return create(
     schema->cid, schema->col_seq, 
     schema->cell_versions, schema->cell_ttl, 

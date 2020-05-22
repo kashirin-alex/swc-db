@@ -21,11 +21,11 @@ class Schemas final {
 
   ~Schemas();
   
-  void add(int &err, Schema::Ptr schema);
+  void add(int &err, const Schema::Ptr& schema);
 
   void remove(int64_t cid);
 
-  void replace(Schema::Ptr schema);
+  void replace(const Schema::Ptr& schema);
 
   Schema::Ptr get(int64_t cid);
   

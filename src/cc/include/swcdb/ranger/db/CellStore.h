@@ -40,13 +40,13 @@ class Read final {
                          const DB::Cells::Interval& interval, 
                          bool chk_base=false);
 
-  static bool load_trailer(int& err, FS::SmartFd::Ptr smartfd, 
+  static bool load_trailer(int& err, FS::SmartFd::Ptr& smartfd, 
                            size_t& blks_idx_size, 
                            uint32_t& cell_revs, 
                            uint64_t& blks_idx_offset, 
                            bool close_after=false, bool chk_base=false);
 
-  static void load_blocks_index(int& err, FS::SmartFd::Ptr smartfd, 
+  static void load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd, 
                                 DB::Cell::Key& prev_key_end,
                                 DB::Cells::Interval& interval, 
                                 std::vector<Block::Read::Ptr>& blocks, 
@@ -63,7 +63,7 @@ class Read final {
                 const DB::Cell::Key& prev_key_end,
                 const DB::Cells::Interval& interval, 
                 const std::vector<Block::Read::Ptr>& blocks,
-                FS::SmartFd::Ptr smartfd);
+                const FS::SmartFd::Ptr& smartfd);
 
   Read(const Read&) = delete;
 

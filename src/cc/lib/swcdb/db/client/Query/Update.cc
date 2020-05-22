@@ -67,8 +67,8 @@ Update::Update(Cb_t cb)
           result(std::make_shared<Result>()) { 
 }
 
-Update::Update(DB::Cells::MapMutable::Ptr columns, 
-         DB::Cells::MapMutable::Ptr columns_onfractions, 
+Update::Update(const DB::Cells::MapMutable::Ptr& columns, 
+         const DB::Cells::MapMutable::Ptr& columns_onfractions, 
          Cb_t cb)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
@@ -129,7 +129,7 @@ void Update::commit_or_wait() {
     commit();
 }
 
-void Update::commit_or_wait(DB::Cells::ColCells::Ptr& col) {
+void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col) {
   size_t bytes = col->size_bytes();
 
   if(result->completion() && bytes >= buff_sz * buff_ahead)
@@ -159,7 +159,7 @@ void Update::commit(const int64_t cid) {
   commit_onfractions(columns_onfractions->get_col(cid));
 }
 
-void Update::commit(DB::Cells::ColCells::Ptr col) {
+void Update::commit(const DB::Cells::ColCells::Ptr& col) {
   if(col != nullptr && !col->size())
     return;
   std::make_shared<Locator>(
@@ -169,7 +169,7 @@ void Update::commit(DB::Cells::ColCells::Ptr col) {
   )->locate_on_manager();
 }
 
-void Update::commit_onfractions(DB::Cells::ColCells::Ptr col) {
+void Update::commit_onfractions(const DB::Cells::ColCells::Ptr& col) {
   if(col != nullptr && !col->size())
     return;
   // query cells on fractions -EQ && rest(NONE-true)
@@ -179,8 +179,9 @@ void Update::commit_onfractions(DB::Cells::ColCells::Ptr col) {
 
 
 Update::Locator::Locator(const Types::Range type, const int64_t cid, 
-        DB::Cells::ColCells::Ptr col, DB::Cell::Key::Ptr key_start,
-        Update::Ptr updater, ReqBase::Ptr parent, 
+        const DB::Cells::ColCells::Ptr& col, 
+        const DB::Cell::Key::Ptr& key_start,
+        const Update::Ptr& updater, const ReqBase::Ptr& parent, 
         const int64_t rid, const DB::Cell::Key* key_finish) 
         : type(type), cid(cid), col(col), key_start(key_start), 
           updater(updater), parent(parent), 

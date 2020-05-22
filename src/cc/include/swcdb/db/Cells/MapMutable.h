@@ -88,7 +88,7 @@ class MapMutable {
   
   virtual ~MapMutable();
 
-  bool create(Schema::Ptr schema);
+  bool create(const Schema::Ptr& schema);
 
   bool create(const int64_t cid, Types::KeySeq seq, 
               uint32_t versions, uint32_t ttl, Types::Column type);

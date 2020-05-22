@@ -229,7 +229,7 @@ void Select::scan(int& err) {
 
 Select::ScannerColumn::ScannerColumn(const int64_t cid, const Types::KeySeq col_seq,
                                      DB::Specs::Interval& interval,
-                                     Select::Ptr selector)
+                                     const Select::Ptr& selector)
                                     : cid(cid), col_seq(col_seq), 
                                       interval(interval), selector(selector) {
 }
@@ -282,7 +282,7 @@ std::string Select::ScannerColumn::to_string() {
 
 Select::Scanner::Scanner(
         const Types::Range type, const int64_t cid, 
-        ScannerColumn::Ptr col, ReqBase::Ptr parent, 
+        const ScannerColumn::Ptr& col, const ReqBase::Ptr& parent, 
         const DB::Cell::Key* range_offset, const int64_t rid)
       : type(type), cid(cid), col(col), parent(parent), 
         range_offset(range_offset ? *range_offset : DB::Cell::Key()), 

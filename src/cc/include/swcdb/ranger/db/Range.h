@@ -107,9 +107,9 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void add(ReqAdd* req);
 
-  void scan(ReqScan::Ptr req);
+  void scan(const ReqScan::Ptr& req);
 
-  void scan_internal(ReqScan::Ptr req);
+  void scan_internal(const ReqScan::Ptr& req);
 
   void create_folders(int& err);
 

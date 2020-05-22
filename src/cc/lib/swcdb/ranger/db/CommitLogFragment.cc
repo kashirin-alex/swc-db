@@ -117,7 +117,7 @@ void Fragment::write(int& err, uint8_t blk_replicas,
 
 void Fragment::write(int err, FS::SmartFd::Ptr smartfd, 
                      uint8_t blk_replicas, int64_t blksz, 
-                     StaticBuffer::Ptr buff_write,
+                     const StaticBuffer::Ptr& buff_write,
                      Semaphore* sem) {
   if(!err && (Env::FsInterface::interface()->length(err, m_smartfd->filepath())
               != buff_write->size || err))

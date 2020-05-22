@@ -66,7 +66,8 @@ class Fragment final {
              Semaphore* sem);
 
   void write(int err, FS::SmartFd::Ptr smartfd, 
-             uint8_t blk_replicas, int64_t blksz, StaticBuffer::Ptr buff_write,
+             uint8_t blk_replicas, int64_t blksz, 
+             const StaticBuffer::Ptr& buff_write,
              Semaphore* sem);
 
   void load_header(bool close_after=true);

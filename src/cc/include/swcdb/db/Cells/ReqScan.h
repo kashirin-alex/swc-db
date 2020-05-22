@@ -22,7 +22,7 @@ class ReqScan : public ResponseCallback {
 
   ReqScan(const DB::Specs::Interval& spec);
 
-  ReqScan(ConnHandlerPtr conn, Event::Ptr ev, 
+  ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
           const DB::Specs::Interval& spec);
 
   ReqScan(const ReqScan&) = delete;
