@@ -304,30 +304,29 @@ size_t Fragments::release(size_t bytes) {
 
 void Fragments::remove(int &err, Fragments::Vec& fragments_old) {
   std::scoped_lock lock(m_mutex);
-
-  for(auto old : fragments_old) {
-    for(auto it = begin(); it < end(); ++it) {
-      if(*it == old) {
-        erase(it);
-        break;
-      }
+  for(auto frag : fragments_old) {
+    auto it = std::find(begin(), end(), frag);
+    if(it != end()) {
+      erase(it);
+      frag->remove(err);
+      delete frag;
+    } else {
+      SWC_ASSERT(it != end());
     }
-    old->remove(err);
-    delete old;
   }
 }
 
 void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
   std::scoped_lock lock(m_mutex);
-  for(auto it = begin(); it < end(); ++it) {
-    if(*it == frag) {
-      erase(it);
-      break;
-    }
+  auto it = std::find(begin(), end(), frag);
+  if(it != end()) {
+    erase(it);
+    if(remove_file)
+      frag->remove(err);
+    delete frag;
+  } else {
+    SWC_ASSERT(it != end());
   }
-  if(remove_file)
-    frag->remove(err);
-  delete frag;
 }
 
 void Fragments::remove(int &err) {
