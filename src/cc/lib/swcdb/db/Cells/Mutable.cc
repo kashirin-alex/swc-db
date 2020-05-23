@@ -602,10 +602,13 @@ void Mutable::split(Mutable& cells) {
   cells.buckets.assign(it, buckets.end());
   buckets.erase(it, buckets.end());
 
+  size_t len;
   for(auto bucket : cells.buckets) {
     for(auto cell : *bucket) {
-      cells._add(cell);
-      _remove(cell);
+      ++cells._size;
+      cells._bytes += len = cell->encoded_length();
+      --_size;
+      _bytes -= len;
     }
   }
 }
