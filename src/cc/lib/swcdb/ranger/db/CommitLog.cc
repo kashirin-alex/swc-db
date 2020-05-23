@@ -83,34 +83,41 @@ void Fragments::commit_new_fragment(bool finalize) {
     }
 
     DynamicBuffer cells;
-    frag = Fragment::make(
-      get_log_fragment(next_id()), 
-      range->cfg->key_seq, 
-      Fragment::State::WRITING
-    );
-    
+    uint32_t cells_count = 0;
+    DB::Cells::Interval interval(range->cfg->key_seq);
+    auto buff_write = std::make_shared<StaticBuffer>();
+    size_t nxt_id = next_id();
     {
       std::scoped_lock lock(m_mutex);
       {
         std::scoped_lock lock2(m_mutex_cells);
         m_cells.write_and_free(
-          cells,
-          frag->cells_count, frag->interval,
+          cells, cells_count, interval,
           range->cfg->block_size(), range->cfg->block_cells());
+        if(m_deleting || !cells.fill())
+          break;
+
+        frag = Fragment::make_write(
+          err, get_log_fragment(nxt_id), 
+          interval, 
+          range->cfg->block_enc(), range->cfg->cell_versions(),
+          cells_count, cells, 
+          buff_write
+        );
+        if(!frag) 
+          // put cells back tp m_cells
+          break;
+        _add(frag);
       }
-      if(m_deleting || !cells.fill()) {
-        delete frag;
-        break;
-      }
-      _add(frag);
     }
     
+    buff_write->own = false;
+    m_sem.acquire();
     frag->write(
-      err, 
+      Error::UNPOSSIBLE, 
       range->cfg->file_replication(), 
-      range->cfg->block_enc(), 
-      cells, 
-      range->cfg->cell_versions(),
+      frag->offset_data + frag->size_enc, 
+      buff_write,
       &m_sem
     );
 
@@ -223,16 +230,15 @@ void Fragments::load(int &err) {
 
   Fragment::Ptr frag;
   for(auto entry : fragments) {
-    frag = Fragment::make(get_log_fragment(entry.name), range->cfg->key_seq);
-    frag->load_header(true);
-    if((err = frag->error()) == Error::FS_PATH_NOT_FOUND) {
-      delete frag;
+    frag = Fragment::make_read(
+      err, get_log_fragment(entry.name), range->cfg->key_seq);
+    if(err == Error::FS_PATH_NOT_FOUND) {
       err = Error::OK;
       continue;
     }
-    add(frag);
-    if(err)
+    if(!frag)
       return;
+    add(frag);
   }
 }
 
@@ -362,21 +368,22 @@ void Fragments::unload() {
 }
 
 Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
-  auto frag = Fragment::make(
-    get_log_fragment(next_id()), 
-    range->cfg->key_seq
-  );
+  const std::string filepath(get_log_fragment(next_id()));
   Env::FsInterface::interface()->rename(
-    err, 
-    take_frag->get_filepath(), 
-    frag->get_filepath()
-  );
+    err, take_frag->get_filepath(), filepath);
+
   if(!err) {
-    frag->load_header(true);
-    add(frag);
-    return frag;
-  }// else ? rename back
-  delete frag;
+    auto frag = Fragment::make_read(err, filepath, range->cfg->key_seq);
+    if(frag) {
+      add(frag);
+      return frag;
+    }
+    err = Error::OK;
+    // ? log compact
+    // Env::FsInterface::interface()->remove(tmperr, filepath); 
+    Env::FsInterface::interface()->rename(
+      err, filepath, take_frag->get_filepath());
+  }
   return nullptr;
 }
 

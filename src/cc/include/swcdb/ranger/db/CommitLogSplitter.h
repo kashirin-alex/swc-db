@@ -40,8 +40,7 @@ class Splitter final {
       if(DB::KeySeq::compare(frag->interval.key_seq, 
           key, frag->interval.key_begin) == Condition::GT) {
         int err = Error::OK;
-        log_right->take_ownership(err, frag);
-        if(!err) {   
+        if(log_right->take_ownership(err, frag)) {
           log_left->remove(err, frag, false);
           m_fragments.erase(it);
           continue;

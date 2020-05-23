@@ -89,39 +89,49 @@ void Compact::Group::load() {
 void Compact::Group::write() {
   if(compact->log->stopping || error || m_cells.empty())
     return;
-  size_t cells_count = 0;
+  size_t total_cells_count = 0;
   int err = Error::OK;
   do {
     DynamicBuffer cells;
-    auto frag = Fragment::make(
-      compact->get_filepath(compact->log->next_id()), 
-      m_cells.key_seq, 
-      Fragment::State::WRITING
-    );
-    m_fragments.push_back(frag);
+    uint32_t cells_count = 0;
+    DB::Cells::Interval interval(m_cells.key_seq);
+    auto buff_write = std::make_shared<StaticBuffer>();
 
     m_cells.write_and_free(
-      cells, 
-      frag->cells_count, frag->interval, 
+      cells, cells_count, interval, 
       compact->log->range->cfg->block_size(), 
       compact->log->range->cfg->block_cells()
     );
-    cells_count += frag->cells_count;
+    total_cells_count += cells_count;
 
-    frag->write(
+    auto frag = Fragment::make_write(
       err, 
-      compact->log->range->cfg->file_replication(), 
+      compact->get_filepath(compact->log->next_id()),
+      interval, 
       compact->log->range->cfg->block_enc(), 
-      cells, 
       compact->log->range->cfg->cell_versions(),
-      &m_sem
+      cells_count, cells, 
+      buff_write
     );
     if(err)
       error = err;
+    if(!frag)
+      break;
+    m_fragments.push_back(frag);
+
+    buff_write->own = false;
+    m_sem.acquire();
+    frag->write(
+      Error::UNPOSSIBLE, 
+      compact->log->range->cfg->file_replication(), 
+      frag->offset_data + frag->size_enc, 
+      buff_write,
+      &m_sem
+    );
   } while(!error && !m_cells.empty());
 
   m_sem.wait_all();
-  compact->finished(this, cells_count);
+  compact->finished(this, total_cells_count);
 }
 
 void Compact::Group::finalize() {
@@ -134,11 +144,16 @@ void Compact::Group::finalize() {
   int err = Error::OK;
   for(auto frag : m_fragments) {
     if(compact->log->stopping || error) {
-      frag->remove(err);
+      frag->remove(err = Error::OK);
     } else {
-      auto tmp = compact->log->take_ownership(err, frag); 
-      if(tmp)
+      auto tmp = compact->log->take_ownership(err = Error::OK, frag);
+      if(tmp) {
         tmp_frags.push_back(tmp);
+      } else {
+        if(err)
+          error = err;
+        frag->remove(err = Error::OK);
+      }
     }
     if(err)
       error = err;

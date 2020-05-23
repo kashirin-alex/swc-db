@@ -40,14 +40,54 @@ class Fragment final {
 
   static std::string to_string(State state);
 
-  static Ptr make(const std::string& filepath, const Types::KeySeq key_seq,
-                  State state=State::NONE);
 
-  DB::Cells::Interval   interval;
-  uint32_t              cells_count;
+  static Ptr make_read(int& err, const std::string& filepath, 
+                       const Types::KeySeq key_seq);
 
-  explicit Fragment(const std::string& filepath, const Types::KeySeq key_seq,
-                    State state=State::NONE);
+  static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
+                          uint8_t& version,
+                          DB::Cells::Interval& interval, 
+                          Types::Encoding& encoder,
+                          size_t& size_plain, size_t& size_enc,
+                          uint32_t& cell_revs, uint32_t& cells_count,
+                          uint32_t& data_checksum, uint32_t& offset_data);
+
+
+  static Ptr make_write(int& err, const std::string& filepath, 
+                        const DB::Cells::Interval& interval,
+                        Types::Encoding encoder,
+                        const uint32_t cell_revs, 
+                        const uint32_t cells_count,
+                        DynamicBuffer& cells, 
+                        StaticBuffer::Ptr& buffer);
+
+  static void write(int& err, FS::SmartFd::Ptr& smartfd, 
+                    const uint8_t version,
+                    const DB::Cells::Interval& interval, 
+                    Types::Encoding& encoder,
+                    const size_t size_plain, size_t& size_enc,
+                    const uint32_t cell_revs, const uint32_t cells_count,
+                    uint32_t& data_checksum, uint32_t& offset_data,
+                    DynamicBuffer& cells, StaticBuffer::Ptr& buffer);
+
+
+  const uint8_t               version;
+  const DB::Cells::Interval   interval;
+  const Types::Encoding       encoder;
+  const size_t                size_plain;
+  const size_t                size_enc;
+  const uint32_t              cell_revs;
+  const uint32_t              cells_count;
+  const uint32_t              data_checksum;
+  const uint32_t              offset_data;
+
+  explicit Fragment(const FS::SmartFd::Ptr& smartfd, const uint8_t version,
+                    const DB::Cells::Interval& interval, 
+                    const Types::Encoding encoder,
+                    const size_t size_plain, const size_t size_enc,
+                    const uint32_t cell_revs, const uint32_t cells_count,
+                    const uint32_t data_checksum, const uint32_t offset_data,
+                    Fragment::State state);
   
   Fragment(const Fragment&) = delete;
 
@@ -61,16 +101,8 @@ class Fragment final {
 
   const std::string& get_filepath() const;
 
-  void write(int& err, uint8_t blk_replicas, Types::Encoding encoder, 
-             DynamicBuffer& cells, uint32_t cell_revs, 
-             Semaphore* sem);
-
-  void write(int err, FS::SmartFd::Ptr smartfd, 
-             uint8_t blk_replicas, int64_t blksz, 
-             const StaticBuffer::Ptr& buff_write,
-             Semaphore* sem);
-
-  void load_header(bool close_after=true);
+  void write(int err, uint8_t blk_replicas, int64_t blksz, 
+             const StaticBuffer::Ptr& buff_write, Semaphore* sem);
 
   void load(const QueueRunnable::Call_t& cb);
   
@@ -107,8 +139,6 @@ class Fragment final {
 
   private:
 
-  void load_header(int& err, bool close_after=true);
-
   void load();
 
   void run_queued();
@@ -118,14 +148,8 @@ class Fragment final {
   Mutex             m_mutex;
   State             m_state;
   FS::SmartFd::Ptr  m_smartfd;
-  uint8_t           m_version;
-  Types::Encoding   m_encoder;
-  size_t            m_size_enc;
-  size_t            m_size;
+  
   StaticBuffer      m_buffer;
-  uint32_t          m_cell_revs;
-  uint32_t          m_cells_offset;
-  uint32_t          m_data_checksum;
   size_t            m_processing;
   int               m_err;
 
