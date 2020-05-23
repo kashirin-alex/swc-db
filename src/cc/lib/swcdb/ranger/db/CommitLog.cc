@@ -375,7 +375,7 @@ Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
     frag->load_header(true);
     add(frag);
     return frag;
-  }
+  }// else ? rename back
   delete frag;
   return nullptr;
 }
@@ -401,7 +401,7 @@ size_t Fragments::cells_count(bool only_current) {
 
 size_t Fragments::size() {
   std::shared_lock lock(m_mutex);
-  return Vec::size()+1;
+  return Vec::size();
 }
 
 size_t Fragments::size_bytes(bool only_loaded) {

@@ -136,7 +136,7 @@ void Compaction::compact(RangePtr range) {
     need.append("LogBytes=");
     need.append(std::to_string(value-allow_sz));
 
-  } else if(do_compaction = (value = commitlog.size()) >= cs_size/blk_size) {
+  } else if(do_compaction = (value = commitlog.size()) > cs_size/blk_size) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
 
