@@ -112,8 +112,13 @@ bool Read::load(const QueueRunnable::Call_t& cb) {
     Mutex::scope lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
-      m_state = State::LOADING;
-      return true;
+      if(size_enc) {
+        m_state = State::LOADING;
+        return true;
+      } else {
+        // a zero cells type cs (initial of any to any block)  
+        m_state = State::LOADED;
+      }
     }
     if(m_state != State::LOADED) {
       m_queue.push(cb);
@@ -252,11 +257,6 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       break;
     if(err)
       continue;
-    
-
-    if(!size_enc) // a zero cells type cs (initial of any to any block)
-      break;
-
 
     m_buffer.free();
     if(fs->pread(err, smartfd, offset_data, &m_buffer, size_enc) 
