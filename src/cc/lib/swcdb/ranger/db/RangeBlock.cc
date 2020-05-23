@@ -95,14 +95,13 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 }
   
 void Block::load_cells(const DB::Cells::MutableVec& vec_cells) {
-  if(vec_cells.empty())
-    return;
-
-  std::scoped_lock lock(m_mutex);
-  for(auto cells : vec_cells) {
-    if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
-      break;
-    splitter();
+  if(!vec_cells.empty()) {
+    std::scoped_lock lock(m_mutex);
+    for(auto cells : vec_cells) {
+      if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+        break;
+      splitter();
+    }
   }
 }
 
