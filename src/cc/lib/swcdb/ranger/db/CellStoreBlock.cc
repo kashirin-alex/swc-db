@@ -199,12 +199,7 @@ bool Read::loaded(int& err) {
 }
 
 size_t Read::size_bytes(bool only_loaded) {
-  if(only_loaded) {
-    Mutex::scope lock(m_mutex);
-    if(m_state != State::LOADED)
-      return 0;
-  }
-  return size_plain;
+  return only_loaded && !loaded() ? 0 : size_plain;
 }
 
 std::string Read::to_string() {
