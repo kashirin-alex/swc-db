@@ -31,13 +31,13 @@ Read::Ptr Read::make(int& err, FS::SmartFd::Ptr& smartfd,
   size_t size_enc; 
   uint32_t cells_count; 
   uint32_t checksum_data;
+  
   load_header(
     err, smartfd, offset, 
     encoder, size_plain, size_enc, cells_count, checksum_data
   );
-  if(err) 
-    return nullptr;
-  return new Read(
+  
+  return err ? nullptr : new Read(
     interval, offset + HEADER_SIZE, cell_revs, 
     encoder, size_plain, size_enc, cells_count, checksum_data
   );
