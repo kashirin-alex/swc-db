@@ -36,16 +36,31 @@ class Read final {
 
   static std::string to_string(const State state);
   
-  static Ptr make(const uint64_t offset, 
-                  const DB::Cells::Interval& interval, 
-                  uint32_t cell_revs);
+  static Ptr make(int& err, FS::SmartFd::Ptr& smartfd, 
+                  const DB::Cells::Interval& interval, const uint64_t offset,
+                  const uint32_t cell_revs);
 
-  const uint64_t             offset;
+  static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
+                          const uint64_t offset, Types::Encoding& encoder,
+                          size_t& size_plain, size_t& size_enc, 
+                          uint32_t& cells_count, uint32_t& checksum_data);
+
+
   const DB::Cells::Interval  interval;
+  const uint64_t             offset_data;
   const uint32_t             cell_revs;
 
-  explicit Read(const uint64_t offset, const DB::Cells::Interval& interval, 
-                uint32_t cell_revs);
+  const Types::Encoding      encoder;
+  const size_t               size_plain;
+  const size_t               size_enc;
+  const uint32_t             cells_count;
+  const uint32_t             checksum_data;
+
+  explicit Read(const DB::Cells::Interval& interval, 
+                const uint64_t offset_data, const uint32_t cell_revs, 
+                const Types::Encoding encoder,
+                const size_t size_plain, const size_t size_enc, 
+                const uint32_t cells_count, const uint32_t checksum_data);
   
   Read(const Read&) = delete;
 
@@ -89,12 +104,6 @@ class Read final {
   Mutex                       m_mutex;
   State                       m_state;
   size_t                      m_processing;
-  bool                        m_loaded_header;
-  Types::Encoding             m_encoder;
-  size_t                      m_size;
-  size_t                      m_sz_enc;
-  uint32_t                    m_cells_count;
-  uint32_t                    m_checksum_data;
   StaticBuffer                m_buffer;
   std::atomic<uint32_t>       m_cells_remain;
   int                         m_err;

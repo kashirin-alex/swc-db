@@ -184,18 +184,22 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
     for(auto blk : blocks)
       delete blk;
     blocks.clear();
+
     const uint8_t* chk_ptr;
-    uint64_t offset;
     Block::Read::Ptr blk;
     for(int n = 0; n < blks_count; ++n) {
       chk_ptr = ptr;
 
-      offset = Serialization::decode_vi64(&ptr, &remain);
-      blocks.push_back(blk = Block::Read::make(
-        offset, 
+      blk = Block::Read::make(
+        err, smartfd,
         DB::Cells::Interval(interval.key_seq, &ptr, &remain),
+        Serialization::decode_vi64(&ptr, &remain),
         cell_revs
-      ));
+      );
+      if(err || !blk) 
+        return; // or continue do-again 
+      blocks.push_back(blk);
+
       if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
                            chk_ptr, ptr-chk_ptr)) {
         err = Error::CHECKSUM_MISMATCH;   
