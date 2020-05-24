@@ -472,24 +472,25 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
 }
 
 std::string Range::to_string() {
-  std::shared_lock lock(m_mutex);
-    
   std::string s("(");
   s.append(cfg->to_string());
   s.append(" rid=");
   s.append(std::to_string(rid));
+  s.append(" type=");
+  s.append(Types::to_string(type));
+  s.append(" state=");
+  {
+    std::shared_lock lock(m_mutex);
+    s.append(std::to_string(m_state));
+  }
+  s.append(" ");
+  s.append(blocks.to_string());
   s.append(" prev=");
   m_mutex_intval.lock();
   s.append(m_prev_key_end.to_string());
   s.append(" ");
   s.append(m_interval.to_string());
   m_mutex_intval.unlock();
-  s.append(" state=");
-  s.append(std::to_string(m_state));
-  s.append(" type=");
-  s.append(Types::to_string(type));
-  s.append(" ");
-  s.append(blocks.to_string());
   s.append(")");
   return s;
 }
