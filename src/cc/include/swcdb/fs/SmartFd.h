@@ -5,13 +5,13 @@
 #ifndef swc_fs_SmartFd_h
 #define swc_fs_SmartFd_h
 
-#include <memory>
+#include "swcdb/core/Compat.h"
 
 namespace SWC{ namespace FS {
 
 /// Smart FileDescriptor 
 
-struct SmartFd : std::enable_shared_from_this<SmartFd>{
+struct SmartFd {
   public:
 
   typedef std::shared_ptr<SmartFd> Ptr;
@@ -21,8 +21,6 @@ struct SmartFd : std::enable_shared_from_this<SmartFd>{
 
   SmartFd(const std::string &filepath, uint32_t flags, 
           int32_t fd=-1, uint64_t pos=0);
-
-  operator Ptr();
 
   virtual ~SmartFd();
 
