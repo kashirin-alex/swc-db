@@ -9,19 +9,17 @@
 
 #include "swcdb/ranger/db/Range.h"
 
-#include <memory>
 #include <unordered_map>
 
 namespace SWC { namespace Ranger {
 
 
 
-class Column final {
+class Column : private std::unordered_map<int64_t, RangePtr> {
   
   public:
 
-  typedef std::shared_ptr<Column>               Ptr;
-  typedef std::unordered_map<int64_t, RangePtr> RangesMap;
+  typedef std::shared_ptr<Column>  Ptr;
 
   const ColumnCfg  cfg;
 
@@ -41,8 +39,8 @@ class Column final {
                       cfg.col_type != schema.col_type;
     cfg.update(schema);
     if(and_cells) {
-      std::shared_lock lock(m_mutex);
-      for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
+      Mutex::scope lock(m_mutex);
+      for(auto it = begin(); it != end(); ++it)
         it->second->schema_update(compact);
     }
     if(compact)
@@ -50,8 +48,8 @@ class Column final {
   }
 
   void compact() {
-    std::shared_lock lock(m_mutex);
-    for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it)
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it)
       it->second->compact_require(true);
     RangerEnv::compaction_schedule(100);
   }
@@ -59,10 +57,10 @@ class Column final {
   RangePtr get_range(int &err, const int64_t rid, bool initialize=false) {
     RangePtr range = nullptr;
     {
-      std::scoped_lock lock(m_mutex);
+      Mutex::scope lock(m_mutex);
 
-      auto it = m_ranges.find(rid);
-      if (it != m_ranges.end())
+      auto it = find(rid);
+      if (it != end())
         return it->second;
 
       else if(initialize) {
@@ -73,7 +71,7 @@ class Column final {
         if(err)
           return range;
           
-        m_ranges.emplace(rid, range = std::make_shared<Range>(&cfg, rid));
+        emplace(rid, range = std::make_shared<Range>(&cfg, rid));
       }
     }
     if(initialize)
@@ -84,11 +82,11 @@ class Column final {
   void unload(const int64_t rid, Callback::RangeUnloaded_t cb) {
     RangePtr range = nullptr;
     {
-      std::scoped_lock lock(m_mutex);
-      auto it = m_ranges.find(rid);
-      if (it != m_ranges.end()){
+      Mutex::scope lock(m_mutex);
+      auto it = find(rid);
+      if (it != end()){
         range = it->second;
-        m_ranges.erase(it);
+        erase(it);
       }
     }
     if(range != nullptr)
@@ -99,17 +97,17 @@ class Column final {
 
   void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb) {
 
-    for(;;){
-      std::scoped_lock lock(m_mutex);
-      auto it = m_ranges.begin();
-      if(it == m_ranges.end())
+    for(;;) {
+      Mutex::scope lock(m_mutex);
+      auto it = begin();
+      if(it == end())
         break;
       ++unloaded;
       asio::post(
         *Env::IoCtx::io()->ptr(), 
         [cb, range=it->second](){range->unload(cb, false);}
       );
-      m_ranges.erase(it);
+      erase(it);
     }
 
     cb(Error::OK);
@@ -118,11 +116,11 @@ class Column final {
   void remove(int &err, const int64_t rid, bool meta=true) {
     RangePtr range = nullptr;
     {
-      std::scoped_lock lock(m_mutex);
-      auto it = m_ranges.find(rid);
-      if (it != m_ranges.end()){
+      Mutex::scope lock(m_mutex);
+      auto it = find(rid);
+      if (it != end()){
         range = it->second;
-        m_ranges.erase(it);
+        erase(it);
       }
     }
     if(range != nullptr)
@@ -131,34 +129,34 @@ class Column final {
 
   void remove_all(int &err) {
     {
-      std::scoped_lock lock(m_mutex);
+      Mutex::scope lock(m_mutex);
       if(cfg.deleting)
         return;
       cfg.deleting = true;
     }
       
     for(;;) {
-      std::scoped_lock lock(m_mutex);
-      auto it = m_ranges.begin();
-      if(it == m_ranges.end())
+      Mutex::scope lock(m_mutex);
+      auto it = begin();
+      if(it == end())
         break;
       it->second->remove(err);
-      m_ranges.erase(it);
+      erase(it);
     }
 
     SWC_LOGF(LOG_DEBUG, "REMOVED %s", to_string().c_str());
   }
 
   bool removing() {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
     return cfg.deleting;
   }
 
   RangePtr get_next(size_t &idx) {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
 
-    if(m_ranges.size() > idx){
-      auto it = m_ranges.begin();
+    if(size() > idx) {
+      auto it = begin();
       for(int i=idx; i; --i, ++it);
       return it->second;
     }
@@ -169,16 +167,15 @@ class Column final {
   size_t release(size_t bytes=0) {
     size_t released = 0;
     RangePtr range;
-    RangesMap::iterator it;
+    iterator it;
     for(size_t offset = 0; ; ++offset) {
       {
-        std::shared_lock lock(m_mutex);
+        Mutex::scope lock(m_mutex);
         if(cfg.deleting)
           return released;
-        it = m_ranges.begin();
-        for(size_t i=0; i<offset && it != m_ranges.end(); ++it, ++i);
-
-        if(it == m_ranges.end())
+        it = begin();
+        for(size_t i=0; i<offset && it != end(); ++it, ++i);
+        if(it == end())
           break;
         range = it->second;
       }
@@ -192,13 +189,13 @@ class Column final {
   }
 
   std::string to_string() {
-    std::shared_lock lock(m_mutex);
+    Mutex::scope lock(m_mutex);
 
     std::string s("[");
     s.append(cfg.to_string());
 
     s.append(" ranges=(");
-    for(auto it = m_ranges.begin(); it != m_ranges.end(); ++it){
+    for(auto it = begin(); it != end(); ++it){
       s.append(it->second->to_string());
       s.append(",");
     }
@@ -208,8 +205,7 @@ class Column final {
 
   private:
 
-  std::shared_mutex   m_mutex;
-  RangesMap           m_ranges;
+  Mutex   m_mutex;
 };
 
 }}
