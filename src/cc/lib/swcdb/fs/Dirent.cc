@@ -8,7 +8,9 @@
 
 namespace SWC{ namespace FS {
 
-std::string Dirent::to_string(){
+Dirent::~Dirent() { }
+
+std::string Dirent::to_string() const {
   std::string s("Dirent(");
   s.append("name=");
   s.append(name);

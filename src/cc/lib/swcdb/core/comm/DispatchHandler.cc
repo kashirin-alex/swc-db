@@ -7,6 +7,8 @@
 
 namespace SWC {
 
+DispatchHandler::~DispatchHandler() { }
+
 void DispatchHandler::handle(ConnHandlerPtr conn, Event::Ptr& ev) { 
   SWC_LOGF(LOG_WARN, "handle(virtual): %s", ev->to_str().c_str());
   return;

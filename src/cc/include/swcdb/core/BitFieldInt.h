@@ -20,6 +20,8 @@ struct BitFieldInt final {
 
   BitFieldInt<T, SZ>() { }
 
+  ~BitFieldInt<T, SZ>() { }
+  
   operator bool() const {
     return data;
   }

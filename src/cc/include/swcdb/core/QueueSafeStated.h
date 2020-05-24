@@ -17,6 +17,8 @@ class QueueSafeStated final : private std::queue<ItemT> {
 
   explicit QueueSafeStated() { }
 
+  ~QueueSafeStated() { }
+
   QueueSafeStated(const QueueSafeStated&) = delete;
 
   QueueSafeStated(const QueueSafeStated&&) = delete;

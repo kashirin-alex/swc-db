@@ -19,6 +19,8 @@ class KeyVec final : public std::vector<std::string> {
 
   explicit KeyVec();
 
+  ~KeyVec();
+
   void free();
 
   KeyVec(const KeyVec&) = delete;

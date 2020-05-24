@@ -41,6 +41,8 @@ void Fraction::decode(const uint8_t **bufp, size_t* remainp) {
 
 Key::Key() { }
 
+Key::~Key() { }
+
 Key::Key(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   set(cell_key, comp);
 }

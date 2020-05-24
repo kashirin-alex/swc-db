@@ -67,6 +67,8 @@ class Serializable {
 
   public:
 
+  ~Serializable() { }
+  
   /// Returns serialized object length.
   /// Returns the serialized length of the object as encoded by encode().
   /// @see encode() for encoding format

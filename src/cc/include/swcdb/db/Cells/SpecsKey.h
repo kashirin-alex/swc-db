@@ -39,6 +39,8 @@ class Key final : public std::vector<Fraction> {
 
   explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
+  ~Key();
+
   void free();
 
   void copy(const Key &other);

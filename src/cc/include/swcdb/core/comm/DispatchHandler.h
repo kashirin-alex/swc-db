@@ -45,6 +45,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
     
   virtual bool run(uint32_t timeout=0);
   
+  ~DispatchHandler();
 };
 
 

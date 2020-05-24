@@ -19,6 +19,8 @@ class QueueRunnable final : private std::queue<std::function<void()>> {
 
   explicit QueueRunnable() { }
 
+  ~QueueRunnable() { }
+  
   QueueRunnable(const QueueRunnable&) = delete;
 
   QueueRunnable(const QueueRunnable&&) = delete;

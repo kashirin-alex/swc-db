@@ -66,6 +66,8 @@ struct Data {
 
   }
 
+  ~Data() { }
+  
   void print_cells_statistics(std::ostream& out, size_t cells_count, 
                               bool resend_cells=false) const {
     out << "\n\nStatistics:\n"

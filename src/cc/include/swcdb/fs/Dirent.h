@@ -25,8 +25,10 @@ class Dirent final : public Serializable {
   /// Flag indicating if entry id a directory
   bool          is_dir {};
 
-  std::string to_string();
+  std::string to_string() const;
 
+  ~Dirent();
+  
   private:
 
   uint8_t encoding_version() const;

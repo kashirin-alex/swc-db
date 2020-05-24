@@ -33,6 +33,8 @@ class PeriodicTimer final {
 class PeriodicTimers final : public std::vector<PeriodicTimer*> {
   public:
   
+  ~PeriodicTimers();
+  
   void stop();
 
   void set(const Property::V_GINT32::Ptr ms, PeriodicTimer::Call_t call, 

@@ -30,6 +30,8 @@ void PeriodicTimer::schedule() {
 }
 
 
+PeriodicTimers::~PeriodicTimers() { }
+
 void PeriodicTimers::stop() {
   Mutex::scope lock(m_mutex);
   for(auto it = begin(); it<end();) {
