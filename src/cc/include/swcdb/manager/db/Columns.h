@@ -18,10 +18,9 @@
 
 namespace SWC { namespace Manager {
 
-typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
 
 
-class Columns final {
+class Columns final : std::unordered_map<int64_t, Column::Ptr> {
 
   public:
 
@@ -35,33 +34,29 @@ class Columns final {
   Columns()  {}
 
   void reset() {
-    std::scoped_lock lock(m_mutex);
-    m_columns.clear();
+    Mutex::scope lock(m_mutex);
+    clear();
   }
-
   ~Columns() { }
 
   bool is_an_initialization(int &err, DB::Schema::Ptr schema) {
     Column::Ptr col = nullptr;
     {
-      std::scoped_lock lock(m_mutex);
-
-      auto it = m_columns.find(schema->cid);
-      if (it != m_columns.end())
+      Mutex::scope lock(m_mutex);
+      auto it = find(schema->cid);
+      if (it != end())
         return false;
 
-      m_columns.emplace(schema->cid, col = std::make_shared<Column>(schema));
+      emplace(schema->cid, col = std::make_shared<Column>(schema));
     }
-
     col->init(err);
     return true;
   }
 
   Column::Ptr get_column(int &err, const int64_t cid) {
-    
-    std::scoped_lock lock(m_mutex);
-    auto it = m_columns.find(cid);
-    if(it != m_columns.end())
+    Mutex::scope lock(m_mutex);
+    auto it = find(cid);
+    if(it != end())
       return it->second;
     err = Error::COLUMN_NOT_EXISTS;
     return nullptr;
@@ -69,51 +64,38 @@ class Columns final {
 
   Range::Ptr get_next_unassigned() {
     Range::Ptr range = nullptr;
-    std::shared_lock lock(m_mutex);
-
-    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
-      range = it->second->get_next_unassigned();
-      if(range != nullptr)
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it) {
+      if(range = it->second->get_next_unassigned())
         break;
     }
     return range;
   }
 
   void set_rgr_unassigned(uint64_t id) {
-    std::shared_lock lock(m_mutex);
-
-    for(auto it = m_columns.begin(); it != m_columns.end(); ++it)
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it)
       it->second->set_rgr_unassigned(id);
   }
 
   void change_rgr(uint64_t id_old, uint64_t id) {
-    std::shared_lock lock(m_mutex);
-
-    for(auto it = m_columns.begin(); it != m_columns.end(); ++it)
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it)
       it->second->change_rgr(id_old, id);
-  }
-  
-  int64_t get_next_cid(){
-    std::shared_lock lock(m_mutex);
-
-    int64_t cid = 0;
-    while(m_columns.find(++cid) != m_columns.end());
-    return cid;
   }
 
   void remove(int &err, const int64_t cid) {
-    std::scoped_lock lock(m_mutex);
-
-    auto it = m_columns.find(cid);
-    if (it != m_columns.end())
-      m_columns.erase(it);
+    Mutex::scope lock(m_mutex);
+    auto it = find(cid);
+    if (it != end())
+      erase(it);
   }
 
   std::string to_string() {
     std::string s("ColumnsAssignment:");
     
-    std::shared_lock lock(m_mutex);
-    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it){
       s.append("\n ");
       s.append(it->second->to_string());
     }
@@ -121,8 +103,7 @@ class Columns final {
   }
 
   private:
-  std::shared_mutex   m_mutex;
-  ColumnsMap          m_columns;
+  Mutex   m_mutex;
 
 };
 
