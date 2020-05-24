@@ -24,11 +24,11 @@ class Fds final {
   ~Fds(){}
 
   int32_t add(const FS::SmartFd::Ptr& fd) {
-    Mutex::scope lock(m_mutex);
-    
-    do{
-      if(++m_next_fd < 0) m_next_fd=1;
-    } while(!m_fds.emplace(m_next_fd, fd).second);
+    for(;;) {
+      Mutex::scope lock(m_mutex);
+      if(m_fds.emplace(++m_next_fd < 0 ? m_next_fd=1 : m_next_fd, fd).second)
+        break;
+    }
     return m_next_fd;
   }
 

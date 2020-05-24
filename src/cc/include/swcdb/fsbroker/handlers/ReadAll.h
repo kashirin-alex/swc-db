@@ -40,8 +40,8 @@ void read_all(ConnHandlerPtr conn, Event::Ptr ev) {
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 

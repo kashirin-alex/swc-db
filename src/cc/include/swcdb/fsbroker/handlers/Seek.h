@@ -26,14 +26,14 @@ void seek(ConnHandlerPtr conn, Event::Ptr ev) {
 
     auto smartfd = Env::Fds::get()->select(params.fd);
       
-    if(smartfd == nullptr)
+    if(!smartfd) {
       err = EBADR;
-    else {
+    } else {
       Env::FsInterface::fs()->seek(err, smartfd, params.offset);
       offset = smartfd->pos();
     }
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -46,8 +46,8 @@ void seek(ConnHandlerPtr conn, Event::Ptr ev) {
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
     

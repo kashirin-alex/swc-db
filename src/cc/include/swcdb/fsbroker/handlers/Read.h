@@ -27,16 +27,16 @@ void read(ConnHandlerPtr conn, Event::Ptr ev) {
 
     auto smartfd = Env::Fds::get()->select(params.fd);
       
-    if(smartfd == nullptr)
+    if(!smartfd) {
       err = EBADR;
-    else {
+    } else {
       offset = smartfd->pos();
       rbuf.reallocate(params.amount);
       rbuf.size = Env::FsInterface::fs()->read(
         err, smartfd, rbuf.base, params.amount);
     }
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -49,8 +49,8 @@ void read(ConnHandlerPtr conn, Event::Ptr ev) {
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 

@@ -28,10 +28,10 @@ void open(ConnHandlerPtr conn, Event::Ptr ev) {
  
     Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
       
-    if(smartfd->valid() && err==Error::OK)
+    if(smartfd->valid() && !err)
       fd = Env::Fds::get()->add(smartfd);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -44,8 +44,8 @@ void open(ConnHandlerPtr conn, Event::Ptr ev) {
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 
