@@ -48,9 +48,11 @@ class Column : private std::unordered_map<int64_t, RangePtr> {
   }
 
   void compact() {
-    Mutex::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it)
-      it->second->compact_require(true);
+    {
+      Mutex::scope lock(m_mutex);
+      for(auto it = begin(); it != end(); ++it)
+        it->second->compact_require(true);
+    }
     RangerEnv::compaction_schedule(100);
   }
 
