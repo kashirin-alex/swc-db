@@ -335,17 +335,17 @@ void Cell::display(std::ostream& out,
                    Types::Column typ, uint8_t flags, bool meta) const {
 
   if(flags & DisplayFlag::DATETIME) 
-    out << Time::fmt_ns(timestamp) << "  ";
+    out << Time::fmt_ns(timestamp) << '\t';
 
   if(flags & DisplayFlag::TIMESTAMP) 
-    out << timestamp << "  ";
+    out << timestamp << '\t';
   
   bool bin = flags & DisplayFlag::BINARY;
   key.display(out, !bin);
-  out << "  ";
+  out << '\t';
 
   if(flag != Flag::INSERT) {
-    out << "(" << Cells::to_string((Flag)flag) << ")";
+    out << '(' << Cells::to_string((Flag)flag) << ')';
     return;
   } 
 

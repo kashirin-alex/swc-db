@@ -282,9 +282,9 @@ std::string Key::to_string() const {
 }
 
 void Key::display(std::ostream& out, bool pretty) const {
-  out << "["; 
+  out << '['; 
   if(!count) {
-    out << "]"; 
+    out << ']'; 
     return;
   }
     
@@ -302,7 +302,7 @@ void Key::display(std::ostream& out, bool pretty) const {
     if(++n < count)
       out << ", "; 
   }
-  out << "]"; 
+  out << ']'; 
   
 }
 
@@ -324,7 +324,7 @@ void Key::display_details(std::ostream& out, bool pretty) const {
     if(++n < count)
       out << ", "; 
   }
-  out << "]"; 
+  out << ']'; 
 }
 
 SWC_SHOULD_INLINE
