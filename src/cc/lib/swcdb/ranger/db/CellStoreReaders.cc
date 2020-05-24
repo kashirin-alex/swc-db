@@ -17,54 +17,45 @@ void Readers::init(RangePtr for_range) {
 Readers::~Readers() { }
 
 
+SWC_SHOULD_INLINE
 void Readers::add(Read::Ptr cs) {
-  m_cellstores.push_back(cs);
+  push_back(cs);
 }
 
 void Readers::load(int& err) {
-  if(m_cellstores.empty()) {
+  if(empty()) {
     err = Error::SERIALIZATION_INPUT_OVERRUN;
     return;
   }
 }
 
 void Readers::expand(DB::Cells::Interval& intval) const {
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     intval.expand(cs->interval);
 }
 
 void Readers::expand_and_align(DB::Cells::Interval& intval) const {
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     intval.expand(cs->interval);
     intval.align(cs->interval);
   }
 }
 
-SWC_SHOULD_INLINE
-bool Readers::empty() const {
-  return m_cellstores.empty();
-}
-
-SWC_SHOULD_INLINE
-size_t Readers::size() const {
-  return m_cellstores.size();
-}
-
 size_t Readers::size_bytes(bool only_loaded) const {
   size_t  sz = 0;
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     sz += cs->size_bytes(only_loaded);
   return sz;
 }
 
 SWC_SHOULD_INLINE
 uint32_t Readers::get_cell_revs() const {
-  return m_cellstores.front()->blocks.front()->cell_revs;
+  return front()->blocks.front()->cell_revs;
 }
 
 int64_t Readers::get_ts_earliest() const {
   int64_t ts = DB::Cells::AUTO_ASSIGN;
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     if(cs->interval.ts_earliest.comp != Condition::NONE && 
        (ts == DB::Cells::AUTO_ASSIGN || cs->interval.ts_earliest.value < ts))
       ts = cs->interval.ts_earliest.value;
@@ -73,14 +64,14 @@ int64_t Readers::get_ts_earliest() const {
 
 size_t Readers::blocks_count() const {
   size_t  sz = 0;
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     sz += cs->blocks_count();
   return sz;
 }
 
 size_t Readers::release(size_t bytes) {    
   size_t released = 0;
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     released += cs->release(bytes ? bytes-released : bytes);
     if(bytes && released >= bytes)
       break;
@@ -89,7 +80,7 @@ size_t Readers::release(size_t bytes) {
 }
 
 bool Readers::processing() const {
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     if(cs->processing())
       return true;
   return false;
@@ -97,7 +88,7 @@ bool Readers::processing() const {
 
 void Readers::remove(int &err) {
   _close();
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     cs->remove(err);
   _free();
   range = nullptr;
@@ -115,7 +106,7 @@ void Readers::clear() {
 }
 
 void Readers::load_cells(BlockLoader* loader) {
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     if(loader->block->is_consist(cs->interval)) {
       cs->load_cells(loader);
     } else if(!cs->interval.key_end.empty() && 
@@ -126,7 +117,7 @@ void Readers::load_cells(BlockLoader* loader) {
 }
 
 void Readers::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     cs->get_blocks(err, to);
     if(err)
       break;
@@ -135,12 +126,12 @@ void Readers::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
 
 SWC_SHOULD_INLINE
 void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
-  key.copy((*(m_cellstores.begin()+idx))->prev_key_end);
+  key.copy((*(begin()+idx))->prev_key_end);
 }
 
 bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
   size_t  sz;
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     sz = cs->size_bytes(true);
     if(!sz)
       continue;
@@ -151,8 +142,8 @@ bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
 }
 
 size_t Readers::encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi32(m_cellstores.size());
-  for(auto cs : m_cellstores) {
+  size_t sz = Serialization::encoded_length_vi32(size());
+  for(auto cs : *this) {
     sz += Serialization::encoded_length_vi32(cs->id)
         + cs->interval.encoded_length();
   }
@@ -160,8 +151,8 @@ size_t Readers::encoded_length() const {
 }
 
 void Readers::encode(uint8_t** ptr) const {
-  Serialization::encode_vi32(ptr, m_cellstores.size());
-  for(auto cs : m_cellstores) {
+  Serialization::encode_vi32(ptr, size());
+  for(auto cs : *this) {
     Serialization::encode_vi32(ptr, cs->id);
     cs->interval.encode(ptr);
   }
@@ -174,7 +165,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   for(size_t i=0;i<len;++i) {
     id = Serialization::decode_vi32(ptr, remain);
-    m_cellstores.push_back(
+    push_back(
       Read::make(
         err, id, range, 
         DB::Cells::Interval(range->cfg->key_seq, ptr, remain)));
@@ -201,7 +192,7 @@ void Readers::load_from_path(int &err) {
 
   std::sort(entries.begin(), entries.end());
   for(auto id : entries) {
-    m_cellstores.push_back(
+    push_back(
       Read::make(err, id, range, DB::Cells::Interval(range->cfg->key_seq))
     );
   }
@@ -227,7 +218,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
   );
 
   if(!err) {
-    std::vector<Read::Ptr> cellstores;
+    Vec cellstores;
     for(auto cs : w_cellstores) {
       cellstores.push_back(
         CellStore::Read::make(err, cs->id, range, cs->interval, true)
@@ -240,7 +231,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
         delete cs;
     } else {
       _free();
-      m_cellstores = cellstores;
+      assign(cellstores.begin(), cellstores.end());
     }
   }
 
@@ -263,10 +254,10 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
 std::string Readers::to_string() const {
 
   std::string s("CellStores(count=");
-  s.append(std::to_string(m_cellstores.size()));
+  s.append(std::to_string(size()));
 
   s.append(" cellstores=[");
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     s.append(cs->to_string());
     s.append(", ");
   }
@@ -286,15 +277,15 @@ std::string Readers::to_string() const {
 
 
 void Readers::_free() {
-  for(auto cs : m_cellstores) {
+  for(auto cs : *this) {
     delete cs;
   }
-  m_cellstores.clear();
+  Vec::clear();
 }
 
 void Readers::_close() {
   int err = Error::OK;
-  for(auto cs : m_cellstores)
+  for(auto cs : *this)
     cs->close(err);
 }
 

@@ -11,9 +11,14 @@
 
 namespace SWC { namespace Ranger { namespace CellStore {
 
-class Readers final {
+class Readers final : private std::vector<Read::Ptr> {
   public:
-  typedef Readers*  Ptr;
+
+  typedef std::vector<Read::Ptr>  Vec;
+  typedef Readers*                Ptr;
+  
+  using Vec::empty;
+  using Vec::size;
 
   RangePtr range;
 
@@ -36,10 +41,6 @@ class Readers final {
   void expand(DB::Cells::Interval& intval) const;
 
   void expand_and_align(DB::Cells::Interval& intval) const;
-
-  bool empty() const;
-
-  size_t size() const;
 
   size_t size_bytes(bool only_loaded=false) const;
 
@@ -85,7 +86,6 @@ class Readers final {
 
   void _close();
 
-  std::vector<Read::Ptr>  m_cellstores;
 };
 
 
