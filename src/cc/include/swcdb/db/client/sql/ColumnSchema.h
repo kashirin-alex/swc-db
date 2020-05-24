@@ -12,7 +12,7 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-class ColumnSchema : public Reader {
+class ColumnSchema final : public Reader {
 
   public:
   

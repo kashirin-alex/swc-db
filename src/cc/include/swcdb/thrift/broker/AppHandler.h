@@ -12,7 +12,7 @@ namespace thrift = apache::thrift;
 namespace Thrift {
 
 
-class AppHandler : virtual public BrokerIf {
+class AppHandler final : virtual public BrokerIf {
   public:
 
   virtual ~AppHandler() { }

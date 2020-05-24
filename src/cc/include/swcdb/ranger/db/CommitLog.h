@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 class Compact;
 
-class Fragments : private std::vector<Fragment::Ptr> {
+class Fragments final : private std::vector<Fragment::Ptr> {
   
   /* file-format(dir-structure): 
     ../log/{N}.frag
@@ -129,7 +129,6 @@ class Fragments : private std::vector<Fragment::Ptr> {
   bool                        m_compacting;
   Semaphore                   m_sem;
 
-  using Vec::vector;
 };
 
 

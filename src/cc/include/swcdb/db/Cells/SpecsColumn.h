@@ -13,7 +13,7 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Column : public Serializable {
+class Column final : public Serializable {
   public:
   
   typedef std::vector<Interval::Ptr> Intervals;
@@ -39,7 +39,7 @@ class Column : public Serializable {
 
   void copy(const Column &other);
 
-  virtual ~Column();
+  ~Column();
 
   void free();
 

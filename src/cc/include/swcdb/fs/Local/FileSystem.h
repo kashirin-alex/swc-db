@@ -13,7 +13,7 @@ namespace SWC{ namespace FS {
 bool apply_local();
 
 
-class FileSystemLocal: public FileSystem {
+class FileSystemLocal final : public FileSystem {
   public:
 
   FileSystemLocal();

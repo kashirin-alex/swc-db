@@ -14,7 +14,7 @@
 
 namespace SWC { namespace Config {
 
-class Settings : public Properties {
+class Settings final : public Properties {
 
   public:
 
@@ -26,7 +26,7 @@ class Settings : public Properties {
 
   Settings();
 
-  virtual ~Settings();
+  ~Settings();
 
   void init(int argc, char *argv[]);
 

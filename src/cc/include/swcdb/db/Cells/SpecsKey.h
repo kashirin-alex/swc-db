@@ -28,13 +28,14 @@ struct Fraction final {
 };
 
 
-class Key : public std::vector<Fraction> {
+class Key final : public std::vector<Fraction> {
   public:
 
-  using std::vector<Fraction>::vector;
   using std::vector<Fraction>::insert;
 
   typedef std::shared_ptr<Key> Ptr;
+
+  explicit Key();
 
   explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp);
 

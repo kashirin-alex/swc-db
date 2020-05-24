@@ -9,7 +9,7 @@
 
 namespace SWC { namespace Ranger {
 
-class CompactRange : public ReqScan {
+class CompactRange final : public ReqScan {
   struct InBlock;
   public:
 

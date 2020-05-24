@@ -66,7 +66,7 @@ class Interval {
 
   void copy(const Interval& other);
 
-  virtual ~Interval();
+  ~Interval();
   
   void free() ;
 

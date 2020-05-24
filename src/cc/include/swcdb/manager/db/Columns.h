@@ -39,7 +39,7 @@ class Columns final {
     m_columns.clear();
   }
 
-  virtual ~Columns(){}
+  ~Columns() { }
 
   bool is_an_initialization(int &err, DB::Schema::Ptr schema) {
     Column::Ptr col = nullptr;

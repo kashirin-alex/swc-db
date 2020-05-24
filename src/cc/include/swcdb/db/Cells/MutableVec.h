@@ -13,10 +13,9 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-class MutableVec : private std::vector<Mutable*> {
+class MutableVec final : private std::vector<Mutable*> {
   
   typedef std::vector<Mutable*> Vec;
-  using Vec::vector;
 
   public:
 

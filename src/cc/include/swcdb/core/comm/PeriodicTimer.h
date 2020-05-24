@@ -30,7 +30,7 @@ class PeriodicTimer final {
 };
 
 
-class PeriodicTimers : public std::vector<PeriodicTimer*> {
+class PeriodicTimers final : public std::vector<PeriodicTimer*> {
   public:
   
   void stop();

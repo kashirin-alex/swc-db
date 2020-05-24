@@ -12,7 +12,7 @@
 
 namespace SWC { 
 
-class Mutex : private LockAtomic::Unique {
+class Mutex final : private LockAtomic::Unique {
   public:
 
   explicit Mutex() { }
@@ -22,6 +22,8 @@ class Mutex : private LockAtomic::Unique {
   Mutex(const Mutex&&) = delete;
 
   Mutex& operator=(const Mutex&) = delete;
+
+  ~Mutex() { }
 
   bool lock() {
     if(LockAtomic::Unique::try_lock())
@@ -69,7 +71,7 @@ class Mutex : private LockAtomic::Unique {
     Mutex&      _m;
     const bool  _support;
   };
-  
+
   private:
   std::mutex m_mutex;
 };

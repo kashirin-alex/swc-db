@@ -10,14 +10,14 @@
 
 namespace SWC { namespace client {
 
-class Schemas  {
+class Schemas final {
   public:
   
   typedef std::shared_ptr<Schemas> Ptr;
 
   Schemas(const Property::V_GINT32::Ptr expiry_ms);
 
-  virtual ~Schemas();
+  ~Schemas();
   
   void remove(int64_t cid);
 

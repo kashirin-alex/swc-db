@@ -28,7 +28,7 @@ class Flags {
 
   void copy(const Flags &other);
 
-  virtual ~Flags();
+  ~Flags();
 
   bool is_only_keys() const;
 

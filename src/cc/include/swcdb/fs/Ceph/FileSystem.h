@@ -13,7 +13,7 @@ namespace SWC{ namespace FS {
 bool apply_ceph();
 
 
-class FileSystemCeph: public FileSystem {
+class FileSystemCeph final : public FileSystem {
   public:
 
   FileSystemCeph() 

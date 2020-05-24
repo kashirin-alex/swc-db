@@ -49,7 +49,7 @@ class Group final {
 
 
 
-class Groups : public std::enable_shared_from_this<Groups>{
+class Groups final : public std::enable_shared_from_this<Groups>{
 
   public:
   
@@ -65,7 +65,7 @@ class Groups : public std::enable_shared_from_this<Groups>{
 
   Groups(Selected groups);
 
-  virtual ~Groups();
+  ~Groups();
 
   Ptr init();
 

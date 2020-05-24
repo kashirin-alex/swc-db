@@ -20,7 +20,7 @@
 namespace SWC { namespace client {
 
 
-class ServerConnections : 
+class ServerConnections final : 
       private QueueSafe<ConnHandlerPtr>, 
       public std::enable_shared_from_this<ServerConnections> {
 
@@ -36,7 +36,7 @@ class ServerConnections :
                     const IOCtxPtr& ioctx, const AppContext::Ptr& ctx, 
                     ConfigSSL* ssl_cfg);
   
-  virtual ~ServerConnections();
+ ~ServerConnections();
 
   void reusable(ConnHandlerPtr& conn, bool preserve);
 
@@ -59,7 +59,7 @@ class ServerConnections :
 };
 
 
-class Serialized : 
+class Serialized final : 
       private std::unordered_map<size_t, ServerConnections::Ptr>,
       public std::enable_shared_from_this<Serialized> {
 

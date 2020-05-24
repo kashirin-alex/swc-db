@@ -120,7 +120,7 @@ class Mutable final {
 
   void take_sorted(Mutable& other);
 
-  virtual ~Mutable();
+  ~Mutable();
 
   void free();
 

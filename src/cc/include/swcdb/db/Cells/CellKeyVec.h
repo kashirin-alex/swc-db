@@ -14,10 +14,10 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-class KeyVec : public std::vector<std::string> {
+class KeyVec final : public std::vector<std::string> {
   public:
 
-  using std::vector<std::string>::vector;
+  explicit KeyVec();
 
   void free();
 

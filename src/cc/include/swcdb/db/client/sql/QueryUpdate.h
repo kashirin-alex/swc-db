@@ -13,7 +13,7 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-class QueryUpdate : public Reader {
+class QueryUpdate final : public Reader {
 
   public:
   QueryUpdate(const std::string& sql, 

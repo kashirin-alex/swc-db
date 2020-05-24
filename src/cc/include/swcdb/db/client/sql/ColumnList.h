@@ -11,7 +11,7 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-class ColumnList : public Reader {
+class ColumnList final : public Reader {
 
   public:
   ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& schemas,

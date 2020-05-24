@@ -12,7 +12,7 @@ namespace SWC {
 
 
 template <class ItemT>
-class QueueSafeStated : private std::queue<ItemT> {
+class QueueSafeStated final : private std::queue<ItemT> {
   public:
 
   explicit QueueSafeStated() { }
@@ -56,7 +56,7 @@ class QueueSafeStated : private std::queue<ItemT> {
 
   bool deactivating() {
     Mutex::scope lock(m_mutex);
-    pop();
+    QBase::pop();
     if(QBase::empty())
       m_state = false;
     return !m_state;
@@ -82,7 +82,7 @@ class QueueSafeStated : private std::queue<ItemT> {
       m_state = false;
     } else {
       *item = QBase::front();
-      pop();
+      QBase::pop();
     }
     return !m_state;
   }
@@ -92,10 +92,6 @@ class QueueSafeStated : private std::queue<ItemT> {
   bool                      m_state = false;
 
   typedef std::queue<ItemT> QBase;
-  using QBase::empty;
-  using QBase::size;
-  using QBase::front;
-  using QBase::pop;
 };
 
 

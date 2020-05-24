@@ -40,7 +40,7 @@ class Range final {
 
   void init(int &err) { }
 
-  virtual ~Range() { }
+  ~Range() { }
   
   bool deleted() {
     std::shared_lock lock(m_mutex);

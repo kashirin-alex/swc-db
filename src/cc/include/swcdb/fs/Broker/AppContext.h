@@ -9,9 +9,11 @@
 
 namespace SWC{ namespace FS {
 
-class AppContext : public SWC::AppContext {
+class AppContext final : public SWC::AppContext {
   public:
+
   AppContext(){}
+
   virtual ~AppContext(){}
     
   void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {

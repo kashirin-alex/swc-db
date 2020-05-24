@@ -69,7 +69,7 @@ struct Update final {
 }
   
 
-class Update : public std::enable_shared_from_this<Update> {
+class Update final : public std::enable_shared_from_this<Update> {
   public:
 
   using Result = Result::Update;
@@ -119,7 +119,7 @@ class Update : public std::enable_shared_from_this<Update> {
 
   void commit_onfractions(const DB::Cells::ColCells::Ptr& col);
 
-  class Locator : public std::enable_shared_from_this<Locator> {
+  class Locator final : public std::enable_shared_from_this<Locator> {
     public:
     const Types::Range        type;
     const int64_t             cid;

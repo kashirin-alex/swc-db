@@ -8,6 +8,8 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
+KeyVec::KeyVec() { }
+
 void KeyVec::free() {
   clear();
 }

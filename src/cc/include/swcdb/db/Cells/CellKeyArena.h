@@ -16,7 +16,7 @@ namespace SWC { namespace DB { namespace Cell {
   
 using Fraction = Mem::Item::Ptr;
 
-class KeyArena : public std::vector<Fraction> {
+class KeyArena final : public std::vector<Fraction> {
   public:
 
   typedef std::shared_ptr<KeyArena>  Ptr;
@@ -34,7 +34,7 @@ class KeyArena : public std::vector<Fraction> {
 
   KeyArena& operator=(const KeyArena&) = delete;
 
-  virtual ~KeyArena() {
+  ~KeyArena() {
     free();
   }
 

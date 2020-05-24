@@ -18,7 +18,7 @@
 namespace SWC { namespace Ranger {
 
 
-class Columns : private std::unordered_map<int64_t, Column::Ptr> {
+class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
 
   public:
 
@@ -30,7 +30,7 @@ class Columns : private std::unordered_map<int64_t, Column::Ptr> {
 
   explicit Columns() : m_state(State::OK) { }
 
-  virtual ~Columns() { }
+  ~Columns() { }
 
   
   Column::Ptr initialize(int &err, const int64_t cid, 

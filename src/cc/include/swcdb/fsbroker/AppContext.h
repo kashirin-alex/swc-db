@@ -38,7 +38,7 @@
 namespace SWC { namespace FsBroker {
 
 
-class AppContext : public SWC::AppContext {
+class AppContext final : public SWC::AppContext {
   
   // in-order of FS::Protocol::Cmd
   static constexpr const AppHandler_t handlers[] = { 

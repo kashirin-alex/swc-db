@@ -7,7 +7,7 @@
 
 namespace SWC { namespace client { namespace Mngr { 
 
-class AppContext : public SWC::AppContext {
+class AppContext final : public SWC::AppContext {
   public:
 
   AppContext();

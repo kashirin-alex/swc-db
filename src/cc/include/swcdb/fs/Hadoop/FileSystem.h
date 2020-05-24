@@ -15,7 +15,7 @@ bool apply_hadoop();
 
 
 
-struct SmartFdHadoop : public SmartFd {
+struct SmartFdHadoop final : public SmartFd {
   public:
   
   typedef std::shared_ptr<SmartFdHadoop> Ptr;
@@ -34,7 +34,7 @@ struct SmartFdHadoop : public SmartFd {
 
 
  
-class FileSystemHadoop: public FileSystem {
+class FileSystemHadoop final : public FileSystem {
   public:
 
   FileSystemHadoop();

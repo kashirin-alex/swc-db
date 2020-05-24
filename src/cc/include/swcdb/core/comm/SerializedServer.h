@@ -28,7 +28,7 @@ class Acceptor : protected asio::ip::tcp::acceptor {
 
   void stop();
 
-  virtual ~Acceptor();
+  ~Acceptor();
 
   asio::ip::tcp::acceptor* sock();
 
@@ -43,13 +43,13 @@ class Acceptor : protected asio::ip::tcp::acceptor {
 };
 
 
-class AcceptorSSL : public Acceptor {
+class AcceptorSSL final : public Acceptor {
   public:
 
   AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
               AppContext::Ptr& app_ctx, ConfigSSL* ssl_cfg);
 
-  virtual ~AcceptorSSL();
+  ~AcceptorSSL();
 
   private:
   

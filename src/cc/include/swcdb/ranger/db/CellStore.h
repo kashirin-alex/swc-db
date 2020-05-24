@@ -108,7 +108,7 @@ class Read final {
 
 
 
-class Write : public std::enable_shared_from_this<Write> {
+class Write final {
   public:
   typedef std::shared_ptr<Write>  Ptr;
 
@@ -125,7 +125,7 @@ class Write : public std::enable_shared_from_this<Write> {
   Write(const uint32_t id, const std::string& filepath, 
         RangePtr range, uint32_t cell_revs);
 
-  virtual ~Write();
+  ~Write();
 
   void create(int& err, 
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);

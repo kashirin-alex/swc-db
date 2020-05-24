@@ -122,7 +122,7 @@ struct Item final {
 
 
 typedef std::unordered_set<Item::Ptr, Item::Hash, Item::Equal> PageBase;
-class Page : public PageBase {
+class Page final : public PageBase {
   //public std::set<Item::Ptr, Item::Less> {
   public:
   Page() : PageBase(8) { }
@@ -173,7 +173,7 @@ class Page : public PageBase {
 
 /* Vector with narrow on hash
 typedef std::vector<Item::Ptr> PageBase;
-class Page : public PageBase {
+class Page final : public PageBase {
   //public std::set<Item::Ptr, Item::Less> {
   public:
 

@@ -26,7 +26,7 @@ class Compaction final {
   
   Compaction& operator=(const Compaction&) = delete;
 
-  virtual ~Compaction();
+  ~Compaction();
  
   Ptr ptr();
 

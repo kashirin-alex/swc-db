@@ -72,7 +72,7 @@ class ColCells final {
 
 
 
-class MapMutable {
+class MapMutable final {
   public:
   
   typedef std::shared_ptr<MapMutable>                 Ptr;
@@ -86,7 +86,7 @@ class MapMutable {
 
   MapMutable& operator=(const MapMutable&) = delete;
   
-  virtual ~MapMutable();
+  ~MapMutable();
 
   bool create(const Schema::Ptr& schema);
 

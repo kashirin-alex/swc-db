@@ -13,7 +13,7 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Scan : public Serializable {
+class Scan final : public Serializable {
   public:
 
   typedef std::vector<Column::Ptr> Columns;
@@ -26,7 +26,7 @@ class Scan : public Serializable {
 
   void copy(const Scan &other);
   
-  virtual ~Scan();
+  ~Scan();
 
   void free();
 

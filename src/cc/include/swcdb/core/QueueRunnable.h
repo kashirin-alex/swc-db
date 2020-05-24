@@ -12,7 +12,7 @@
 namespace SWC { 
 
 
-class QueueRunnable : private std::queue<std::function<void()>> {
+class QueueRunnable final : private std::queue<std::function<void()>> {
   public:
   
   typedef std::function<void()>  Call_t;
@@ -61,7 +61,7 @@ class QueueRunnable : private std::queue<std::function<void()>> {
       call();
       
       support = m_mutex.lock();
-      pop();
+      QBase::pop();
       if(QBase::empty()) {
         m_runs = false;
         m_mutex.unlock(support);
@@ -81,7 +81,7 @@ class QueueRunnable : private std::queue<std::function<void()>> {
       call();
       
       support = m_mutex.lock();
-      pop();
+      QBase::pop();
       if(!QBase::empty()) {
         m_mutex.unlock(support);
         continue;
@@ -105,10 +105,7 @@ class QueueRunnable : private std::queue<std::function<void()>> {
   bool                        m_runs = false;
 
   typedef std::queue<Call_t>  QBase;
-  using QBase::empty;
-  using QBase::size;
-  using QBase::front;
-  using QBase::pop;
+
 };
 
 

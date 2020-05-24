@@ -8,7 +8,7 @@
 
 namespace SWC { namespace client { namespace ThriftBroker {
 
-class AppContext : public SWC::AppContext {
+class AppContext final : public SWC::AppContext {
   public:
 
   AppContext() {}

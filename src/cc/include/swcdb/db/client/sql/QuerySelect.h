@@ -12,7 +12,7 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-class QuerySelect : public Reader {
+class QuerySelect final : public Reader {
 
   public:
   QuerySelect(const std::string& sql, DB::Specs::Scan& specs, 

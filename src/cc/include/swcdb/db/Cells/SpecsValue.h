@@ -41,7 +41,8 @@ class Value {
   void set(const uint8_t* data_n, const uint32_t size_n, 
            Condition::Comp comp_n, bool owner=false);
 
-  virtual ~Value();
+  ~Value();
+
   void free();
 
   bool empty() const;

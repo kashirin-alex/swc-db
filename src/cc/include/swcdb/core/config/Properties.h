@@ -29,7 +29,7 @@ class Properties {
 
   Properties();
 
-  virtual ~Properties();
+  ~Properties();
 
   void reset();
 

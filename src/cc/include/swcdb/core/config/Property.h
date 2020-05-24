@@ -110,7 +110,7 @@ void from_string(const std::string& s, int32_t* value);
 
 
 
-class V_BOOL : public Value {
+class V_BOOL final : public Value {
   public:
   static const Type value_type = BOOL;
   
@@ -134,7 +134,7 @@ class V_BOOL : public Value {
 };
 
 
-class V_UINT8 : public Value {
+class V_UINT8 final : public Value {
   public:
   static const Type value_type = UINT8;
 
@@ -158,7 +158,7 @@ class V_UINT8 : public Value {
 };
 
 
-class V_UINT16 : public Value {
+class V_UINT16 final : public Value {
   public:
   static const Type value_type = UINT16;
   
@@ -182,7 +182,7 @@ class V_UINT16 : public Value {
 };
 
 
-class V_INT32 : public Value {
+class V_INT32 final : public Value {
   public:
   static const Type value_type = INT32;
   
@@ -206,7 +206,7 @@ class V_INT32 : public Value {
 };
 
 
-class V_INT64 : public Value {
+class V_INT64 final : public Value {
   public:
   static const Type value_type = INT64;
   
@@ -230,7 +230,7 @@ class V_INT64 : public Value {
 };
 
 
-class V_DOUBLE : public Value {
+class V_DOUBLE final : public Value {
   public:
   static const Type value_type = DOUBLE;
 
@@ -254,7 +254,7 @@ class V_DOUBLE : public Value {
 };
 
 
-class V_STRING : public Value {
+class V_STRING final : public Value {
   public:
   static const Type value_type = STRING;
 
@@ -278,7 +278,7 @@ class V_STRING : public Value {
 };
 
 
-class V_ENUM : public Value {
+class V_ENUM final : public Value {
   public:
   static const Type value_type = ENUM;
 
@@ -310,7 +310,7 @@ class V_ENUM : public Value {
 };
 
 // lists
-class V_STRINGS : public Value {
+class V_STRINGS final : public Value {
   public:
   static const Type value_type = STRINGS;
 
@@ -334,7 +334,7 @@ class V_STRINGS : public Value {
 };
 
 
-class V_INT64S : public Value {
+class V_INT64S final : public Value {
   public:
   static const Type value_type = INT64S;
 
@@ -358,7 +358,7 @@ class V_INT64S : public Value {
 };
 
 
-class V_DOUBLES : public Value {
+class V_DOUBLES final : public Value {
   public:
   static const Type value_type = DOUBLES;
 
@@ -384,7 +384,7 @@ class V_DOUBLES : public Value {
 
 
 // Guarded Atomic
-class V_GBOOL : public Value {
+class V_GBOOL final : public Value {
   public:
   static const Type value_type = G_BOOL;
 
@@ -418,7 +418,7 @@ class V_GBOOL : public Value {
 };
 
 
-class V_GUINT8 : public Value {
+class V_GUINT8 final : public Value {
   public:
   static const Type value_type = G_UINT8;
   
@@ -450,7 +450,7 @@ class V_GUINT8 : public Value {
 };
 
 
-class V_GINT32 : public Value {
+class V_GINT32 final : public Value {
   public:
   static const Type value_type = G_INT32;
   
@@ -484,7 +484,7 @@ class V_GINT32 : public Value {
 };
 
 
-class V_GENUM : public Value {
+class V_GENUM final : public Value {
   public:
   static const Type value_type = G_ENUM;
   
@@ -528,7 +528,7 @@ class V_GENUM : public Value {
 
 
 // Guarded Mutex
-class V_GSTRINGS : public Value {
+class V_GSTRINGS final : public Value {
   public:
   static const Type value_type = G_STRINGS;
   

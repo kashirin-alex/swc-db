@@ -19,7 +19,7 @@ typedef std::shared_ptr<Base> BasePtr;
 bool apply_broker();
 
 
-class FileSystemBroker: public FileSystem {
+class FileSystemBroker final : public FileSystem {
   public:
 
   static EndPoints get_endpoints();

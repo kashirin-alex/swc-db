@@ -82,7 +82,7 @@ struct Select final {
 
 }
 
-class Select : public std::enable_shared_from_this<Select> {
+class Select final : public std::enable_shared_from_this<Select> {
   public:
 
   using Result = Result::Select;
@@ -124,7 +124,8 @@ class Select : public std::enable_shared_from_this<Select> {
   std::condition_variable     m_cv;
 
 
-  class ScannerColumn : public std::enable_shared_from_this<ScannerColumn> {
+  class ScannerColumn final 
+            : public std::enable_shared_from_this<ScannerColumn> {
     public:
 
     typedef std::shared_ptr<ScannerColumn>  Ptr;
@@ -154,7 +155,7 @@ class Select : public std::enable_shared_from_this<Select> {
 
   };
 
-  class Scanner: public std::enable_shared_from_this<Scanner> {
+  class Scanner final : public std::enable_shared_from_this<Scanner> {
     public:
     const Types::Range        type;
     const int64_t             cid;

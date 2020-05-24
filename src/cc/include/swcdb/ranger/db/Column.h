@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger {
 
 
 
-class Column : private std::unordered_map<int64_t, RangePtr> {
+class Column final : private std::unordered_map<int64_t, RangePtr> {
   
   public:
 
@@ -29,7 +29,7 @@ class Column : private std::unordered_map<int64_t, RangePtr> {
 
   void init(int &err) { }
 
-  virtual ~Column() { }
+  ~Column() { }
 
   void schema_update(const DB::Schema& schema) {
     bool compact = cfg.c_versions > schema.cell_versions || 

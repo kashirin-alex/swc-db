@@ -15,7 +15,7 @@
 namespace SWC { namespace Thrift {
 
 
-class AppContext : virtual public BrokerIfFactory {
+class AppContext final : virtual public BrokerIfFactory {
  public:
   
   AppContext() : m_run(true) { 

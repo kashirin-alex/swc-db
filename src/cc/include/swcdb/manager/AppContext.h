@@ -38,7 +38,7 @@
 namespace SWC { namespace Manager {
 
 
-class AppContext : public SWC::AppContext {
+class AppContext final : public SWC::AppContext {
    
   // in-order of Protocol::Mngr::Command
   static constexpr const AppHandler_t handlers[] = { 

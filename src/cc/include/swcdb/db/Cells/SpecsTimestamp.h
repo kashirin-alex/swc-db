@@ -28,7 +28,7 @@ class Timestamp {
 
   void free();
 
-  virtual ~Timestamp();
+  ~Timestamp();
 
   bool empty() const;
 

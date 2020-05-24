@@ -13,7 +13,7 @@
 namespace SWC{ namespace FS {
 
 /// Directory entry
-class Dirent : public Serializable {
+class Dirent final : public Serializable {
 
   public:
   /// File or directory name

@@ -12,10 +12,9 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-class Result : private std::vector<Cell*> {
+class Result final : private std::vector<Cell*> {
   public:
 
-  using std::vector<Cell*>::vector;
   using std::vector<Cell*>::empty;
   using std::vector<Cell*>::capacity;
   using std::vector<Cell*>::reserve;
@@ -40,7 +39,7 @@ class Result : private std::vector<Cell*> {
 
   Result& operator=(const Result& other) = delete;
 
-  virtual ~Result();
+  ~Result();
 
   void free();
 

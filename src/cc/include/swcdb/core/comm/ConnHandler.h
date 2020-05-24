@@ -162,7 +162,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
 
-class ConnHandlerPlain : public ConnHandler {
+class ConnHandlerPlain final : public ConnHandler {
   public:
 
   ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket);
@@ -197,7 +197,7 @@ class ConnHandlerPlain : public ConnHandler {
 };
 
 
-class ConnHandlerSSL : public ConnHandler {
+class ConnHandlerSSL final : public ConnHandler {
   public:
 
   ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx, 

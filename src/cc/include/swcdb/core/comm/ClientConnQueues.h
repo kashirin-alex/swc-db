@@ -13,7 +13,7 @@ namespace SWC { namespace client {
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
 
-class Host : public ConnQueue  {
+class Host final : public ConnQueue  {
   public:
   typedef std::shared_ptr<Host> Ptr;
 
@@ -34,7 +34,7 @@ class Host : public ConnQueue  {
 };
 
 
-class ConnQueues : 
+class ConnQueues final : 
     private std::vector<Host::Ptr>, 
     public std::enable_shared_from_this<ConnQueues> {
 
@@ -53,7 +53,7 @@ class ConnQueues :
              const Property::V_GINT32::Ptr keepalive_ms,
              const Property::V_GINT32::Ptr again_delay_ms);
 
-  virtual ~ConnQueues();
+  ~ConnQueues();
 
   std::string to_string();
 

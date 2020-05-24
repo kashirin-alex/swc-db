@@ -212,7 +212,7 @@ struct ExceptionMessagesRenderer final  {
   * as a constructor argument and translates it into an error message.
   * Exceptions can be "chained".
 */
-class Exception : public std::runtime_error {
+class Exception final : public std::runtime_error {
   /** Do not allow assignments */
   const Exception& operator=(const Exception& );
 
@@ -266,7 +266,7 @@ class Exception : public std::runtime_error {
   Exception(const Exception& ex);
 
   /** Destructor */
-  virtual ~Exception();
+  ~Exception();
 
   /** Returns the error code
     * @return The error code of this exception.

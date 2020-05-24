@@ -14,7 +14,7 @@ bool apply_hadoop_jvm();
 
 
 
-struct SmartFdHadoopJVM : public SmartFd {
+struct SmartFdHadoopJVM final : public SmartFd {
   public:
   
   typedef std::shared_ptr<SmartFdHadoopJVM> Ptr;
@@ -33,7 +33,7 @@ struct SmartFdHadoopJVM : public SmartFd {
 
 
  
-class FileSystemHadoopJVM: public FileSystem {
+class FileSystemHadoopJVM final : public FileSystem {
   public:
 
   FileSystemHadoopJVM();

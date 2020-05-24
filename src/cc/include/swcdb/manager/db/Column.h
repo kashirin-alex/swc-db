@@ -46,7 +46,7 @@ class Column final {
         : cfg(schema), m_state(State::LOADING) {
   }
 
-  virtual ~Column(){}
+  ~Column() { }
 
   void init(int &err) {
     FS::IdEntries_t entries;

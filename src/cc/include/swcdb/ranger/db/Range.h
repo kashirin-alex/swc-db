@@ -23,7 +23,7 @@ typedef std::shared_ptr<Range> RangePtr;
 
 namespace SWC { namespace Ranger {
 
-class Range : public std::enable_shared_from_this<Range> {
+class Range final : public std::enable_shared_from_this<Range> {
 
   public:
 
@@ -68,7 +68,7 @@ class Range : public std::enable_shared_from_this<Range> {
 
   void init();
 
-  virtual ~Range();
+  ~Range();
   
   const std::string get_path(const std::string suff) const;
 
