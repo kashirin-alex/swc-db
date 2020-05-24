@@ -13,26 +13,22 @@
 #include "swcdb/ranger/db/Callbacks.h"
 #include "swcdb/ranger/db/Column.h"
 
-#include <memory>
 #include <unordered_map>
-#include <iostream>
 
 namespace SWC { namespace Ranger {
 
-typedef std::unordered_map<int64_t, Column::Ptr>  ColumnsMap;
 
-
-
-class Columns final {
+class Columns : private std::unordered_map<int64_t, Column::Ptr> {
 
   public:
 
   enum State{
     OK
   };
+
   typedef Columns* Ptr;
 
-  Columns() : m_state(State::OK) {}
+  explicit Columns() : m_state(State::OK) { }
 
   virtual ~Columns() { }
 
@@ -45,26 +41,25 @@ class Columns final {
       return col;
     }
     
-    std::scoped_lock lock(m_mutex);
-    auto it = m_columns.find(cid);
-    if(it != m_columns.end())
+    Mutex::scope lock(m_mutex);
+    auto it = find(cid);
+    if(it != end())
       (col = it->second)->cfg.update(schema);
     else
-      m_columns.emplace(cid, col = std::make_shared<Column>(cid, schema));
+      emplace(cid, col = std::make_shared<Column>(cid, schema));
     return col;
   }
 
   Column::Ptr get_column(int &err, const int64_t cid) {
-    std::shared_lock lock(m_mutex);
-    auto it = m_columns.find(cid);
-    return it == m_columns.end() ? nullptr : it->second;
+    Mutex::scope lock(m_mutex);
+    auto it = find(cid);
+    return it == end() ? nullptr : it->second;
   }
   
   Column::Ptr get_next(size_t& idx) {
-    std::shared_lock lock(m_mutex);
-
-    if(m_columns.size() > idx){
-      auto it = m_columns.begin();
+    Mutex::scope lock(m_mutex);
+    if(size() > idx) {
+      auto it = begin();
       for(int i=idx; i; --i, ++it);
       return it->second;
     }
@@ -133,19 +128,20 @@ class Columns final {
     
       for(meta=0;;) {
         {
-          std::scoped_lock lock(m_mutex);
-          auto it = m_columns.begin();
+          Mutex::scope lock(m_mutex);
+          auto it = begin();
           for(uint8_t n=0; n<meta; ++n, ++it);
-          if(it == m_columns.end())
+          if(it == end())
             break;
-          for(;!chk(it->first) && m_columns.size() > ++meta; ++it);
-          if(m_columns.size() == meta)
+          for(;!chk(it->first) && size() > ++meta; ++it);
+          if(size() == meta)
             break;
           col = it->second;
-          m_columns.erase(it);
+          erase(it);
         }
         if(validation)
-          SWC_LOGF(LOG_WARN, "Unload-Validation cid=%d remained", col->cfg.cid);
+          SWC_LOGF(LOG_WARN, 
+            "Unload-Validation cid=%d remained", col->cfg.cid);
         ++to_unload;
         col->unload_all(to_unload, cb);
       }
@@ -159,10 +155,10 @@ class Columns final {
     if(col != nullptr) {
       col->remove_all(err);
       {
-        std::scoped_lock lock(m_mutex);
-        auto it = m_columns.find(cid);
-        if (it != m_columns.end()) 
-          m_columns.erase(it);
+        Mutex::scope lock(m_mutex);
+        auto it = find(cid);
+        if (it != end()) 
+          erase(it);
       }
     }
     cb(err);
@@ -171,15 +167,15 @@ class Columns final {
   size_t release(size_t bytes=0) {
     size_t released = 0;
     Column::Ptr col;
-    ColumnsMap::iterator it;
+    iterator it;
     for(size_t offset = 0; ; ++offset) {
       {
-        std::shared_lock lock(m_mutex);
-        it = m_columns.begin();
-        for(size_t i=0; i<offset && it != m_columns.end(); ++it, ++i);
-        if(it == m_columns.end())
+        Mutex::scope lock(m_mutex);
+        it = begin();
+        for(size_t i=0; i<offset && it != end(); ++it, ++i);
+        if(it == end())
           break;
-        if(it->first < 3)
+        if(!Types::MetaColumn::is_data(it->first))
           continue;
         col = it->second;
       }
@@ -191,10 +187,10 @@ class Columns final {
   }
 
   std::string to_string() {
-    std::shared_lock lock(m_mutex);
-
     std::string s("columns=(");
-    for(auto it = m_columns.begin(); it != m_columns.end(); ++it){
+    Mutex::scope lock(m_mutex);
+
+    for(auto it = begin(); it != end(); ++it){
       s.append(it->second->to_string());
       s.append(",");
     }
@@ -203,9 +199,8 @@ class Columns final {
   }
 
   private:
-  std::shared_mutex m_mutex;
-  ColumnsMap        m_columns;
-  State             m_state;
+  Mutex   m_mutex;
+  State   m_state;
 
 };
 
