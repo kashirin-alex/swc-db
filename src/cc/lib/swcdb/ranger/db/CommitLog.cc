@@ -533,17 +533,24 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
 }
 
 bool Fragments::_need_compact_major() {
-  size_t sz_bytes = 0;
-  size_t ok = range->cfg->cellstore_size()/100;
+  size_t ok = range->cfg->cellstore_size();
+  ok /= 100;
   ok *= range->cfg->compact_percent();
-  for(auto frag : *this) {
-    if((sz_bytes += frag->size_bytes_encoded()) > ok) {
-      range->compact_require(true);
-      RangerEnv::compaction_schedule(1000);
-      return true;
+
+  bool need = Vec::size() > ok/range->cfg->block_size() && 
+    range->blocks.cellstores.blocks_count() < ok/range->cfg->block_size();
+  if(!need) {
+    size_t sz_bytes = 0;
+    for(auto frag : *this) {
+      if(need = (sz_bytes += frag->size_bytes_encoded()) > ok)
+        break;
     }
   }
-  return false;
+  if(need) {
+    range->compact_require(true);
+    RangerEnv::compaction_schedule(1000);
+  }
+  return need;
 }
 
 bool Fragments::_processing() const {
