@@ -77,7 +77,7 @@ class Block final {
 
   bool splitter();
 
-  bool scan(ReqScan::Ptr req);
+  bool scan(const ReqScan::Ptr& req);
   
   void loaded(int err, const BlockLoader* loader);
   
@@ -129,7 +129,7 @@ class Block final {
   
   private:
 
-  bool _scan(ReqScan::Ptr req, bool synced=false);
+  bool _scan(const ReqScan::Ptr& req, bool synced=false);
 
   void run_queue(int& err);
 

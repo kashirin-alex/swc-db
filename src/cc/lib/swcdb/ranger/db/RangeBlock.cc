@@ -164,7 +164,7 @@ bool Block::splitter() {
   return _need_split() && blocks->_split(ptr(), false);
 }
 
-bool Block::scan(ReqScan::Ptr req) {
+bool Block::scan(const ReqScan::Ptr& req) {
   bool loaded;
   {
     Mutex::scope lock(m_mutex_state);
@@ -196,7 +196,7 @@ void Block::loaded(int err, const BlockLoader* loader) {
     Mutex::scope lock(m_mutex_state);
     m_state = State::LOADED;
   }
-  
+
   if(err) {
     SWC_LOGF(LOG_ERROR, "Block::loaded err=%d(%s)", err, Error::get_text(err));
     quick_exit(1); // temporary halt
@@ -367,7 +367,7 @@ std::string Block::to_string() {
   return s;
 }
 
-bool Block::_scan(ReqScan::Ptr req, bool synced) {
+bool Block::_scan(const ReqScan::Ptr& req, bool synced) {
   // m_key_end incl. req->spec // ?has-changed(split)
   uint64_t ts = Time::now_ns();
   {

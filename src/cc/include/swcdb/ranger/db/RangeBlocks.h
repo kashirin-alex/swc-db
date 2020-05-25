@@ -96,7 +96,8 @@ class Blocks final {
 
   private:
 
-  void preload(ReqScan::Ptr req, const std::vector<Block::Ptr>& blks);
+  void preload(const ReqScan::Ptr& req, 
+               const std::vector<Block::Ptr>& blks);
 
   size_t _size();
 

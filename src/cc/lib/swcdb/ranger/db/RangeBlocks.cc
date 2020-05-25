@@ -190,7 +190,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   req->response(err);
 }
 
-void Blocks::preload(ReqScan::Ptr req, const std::vector<Block::Ptr>& blks) {
+void Blocks::preload(const ReqScan::Ptr& req, 
+                     const std::vector<Block::Ptr>& blks) {
   for(auto nxt_blk : blks) {
     if(nxt_blk->includes(req->spec))
       nxt_blk->preload();
