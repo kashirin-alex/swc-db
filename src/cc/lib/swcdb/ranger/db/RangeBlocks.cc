@@ -219,7 +219,7 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock
   bool support;
   if(blk->_need_split() && m_mutex.try_full_lock(support)) {
-   bool preload = false;
+    bool preload = false;
     auto offset = _get_block_idx(blk);
     do {
       blk = blk->_split(loaded);
@@ -302,8 +302,15 @@ size_t Blocks::release(size_t bytes) {
 }
 
 bool Blocks::processing() {
-  Mutex::scope lock(m_mutex);
-  return _processing();
+  bool busy;
+  bool support;
+  if(m_mutex.try_full_lock(support)) {
+    busy = _processing();
+    m_mutex.unlock(support);
+  } else {
+    busy = true;
+  }
+  return busy;
 }
 
 void Blocks::wait_processing() {

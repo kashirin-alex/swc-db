@@ -17,7 +17,6 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
   int err = Error::OK;
   Params::RangeQueryUpdateReq params;
   Ranger::RangePtr range;
-  //StaticBuffer::Ptr buffer;
 
   try {      
     const uint8_t *ptr = ev->data.base;
@@ -26,15 +25,12 @@ void range_query_update(ConnHandlerPtr conn, Event::Ptr ev) {
 
     range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
       
-    if(range == nullptr || !range->is_loaded()){
-      if(err == Error::OK)
-        err = Error::RS_NOT_LOADED_RANGE;
-    }
-    if(err == Error::OK && !ev->data_ext.size) {
+    if(!err && (!range || !range->is_loaded()))
+      err = Error::RS_NOT_LOADED_RANGE;
+
+    if(!err && !ev->data_ext.size)
       err = Error::INVALID_ARGUMENT;
-    }// else {
-    //  buffer = std::make_shared<StaticBuffer>(ev->data_ext);
-    //}
+
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
