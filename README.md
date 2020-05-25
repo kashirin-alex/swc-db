@@ -10,8 +10,8 @@ https://alex.kashirin.family/swc-DB.pdf
 ### BUILD & INSTALL
 
 * Prerequisites 
-  * [GCC c++17+](https://gcc.gnu.org/)
-  * [ASIO 1.14+](https://github.com/chriskohlhoff/asio)
+  * [GCC c++2a+](https://gcc.gnu.org/)
+  * [ASIO 1.16+](https://github.com/chriskohlhoff/asio)
   * [libtcmalloc](https://github.com/gperftools/gperftools) - optional
   * [libre2](https://github.com/google/re2)
   * [libsnappy](https://github.com/google/snappy)
