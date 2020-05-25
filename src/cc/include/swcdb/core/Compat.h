@@ -30,6 +30,9 @@
 # define SWC_SHOULD_INLINE
 #endif
 
+# define SWC_SHOULD_NOT_INLINE  \
+  SWC_ATTRIBS((SWC_ATTR_NOINLINE)) 
+  
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
 #define USE_READDIR_R 0

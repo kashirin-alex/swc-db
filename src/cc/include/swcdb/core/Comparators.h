@@ -15,15 +15,12 @@
   SWC_ATTRIBS((SWC_ATTR_INLINE)) \
   extern inline
 
-# define SWC_NOINLINE  \
-  SWC_ATTRIBS((SWC_ATTR_NOINLINE)) \
-  static 
 
 
 namespace SWC { 
 
-SWC_NOINLINE
-int
+SWC_SHOULD_NOT_INLINE
+static int
 _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
   for(; count; --count, ++s1, ++s2)
     if(*s1 != *s2) 
@@ -525,6 +522,5 @@ bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
 
 
 # undef SWC_CAN_INLINE 
-# undef SWC_NOINLINE 
 
 #endif
