@@ -147,19 +147,25 @@ void Range::scan(const ReqScan::Ptr& req) {
       return;
     wait(COMPACT_APPLYING);
 
+    blocks.processing_increment();
     int err = is_loaded() ? Error::OK : Error::RS_NOT_LOADED_RANGE;
+    ReqScan::Ptr qreq;
     do {
-      if(err) {
-        m_q_scans.front()->response(err);
-      } else {
-        blocks.processing_increment();
-        asio::post(*Env::IoCtx::io()->ptr(), 
-          [req=std::move(m_q_scans.front()), ptr=shared_from_this()]() {
-            ptr->blocks.scan(std::move(req));
-            ptr->blocks.processing_decrement();
-          });
+      if(!(qreq = std::move(m_q_scans.front()))->expired()) {
+        if(err) {
+          qreq->response(err);
+        } else {
+          blocks.processing_increment();
+          asio::post(*Env::IoCtx::io()->ptr(), 
+            [qreq, ptr=shared_from_this()]() {
+              ptr->blocks.scan(std::move(qreq));
+              ptr->blocks.processing_decrement();
+            }
+          );
+        }
       }
     } while(m_q_scans.pop_and_more());
+    blocks.processing_decrement();
 
   } else {
     blocks.processing_increment();
