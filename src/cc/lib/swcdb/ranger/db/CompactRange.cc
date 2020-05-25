@@ -440,10 +440,9 @@ void CompactRange::process_write() {
     if(m_stopped)
       return;
 
-    if((in_block = m_q_write.front()) == nullptr) {
-      finalize();
+    if(!(in_block = m_q_write.front())) {
       time_write += Time::now_ns() - start;
-      return;
+      return finalize();
     }
 
     if(in_block->err)
@@ -533,6 +532,7 @@ void CompactRange::finalize() {
   if(!range->is_loaded())
     return quit();
 
+  auto start = Time::now_ns();
   int err = Error::OK;
   bool empty_cs = false;
 
@@ -569,6 +569,7 @@ void CompactRange::finalize() {
     if(err)
       return quit();
   }
+  time_write += Time::now_ns() - start;
 
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing();
