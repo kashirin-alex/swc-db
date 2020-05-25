@@ -396,10 +396,9 @@ bool Block::_scan(ReqScan::Ptr req, bool synced) {
   return false;
 }
 
-SWC_SHOULD_INLINE
 void Block::run_queue(int& err) {
   do { 
-    const ReqQueue& q = m_queue.front();
+    ReqQueue q(std::move(m_queue.front()));
     switch(q.req->type) {
       case ReqScan::Type::BLK_PRELOAD: {
         processing_decrement();
