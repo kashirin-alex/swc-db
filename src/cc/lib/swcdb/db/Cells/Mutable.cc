@@ -894,7 +894,6 @@ Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets,
   }
 }
 
-SWC_SHOULD_INLINE
 Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
                                       : buckets(other.buckets), 
                                         bucket(other.bucket), 
@@ -947,7 +946,6 @@ Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset)
   }
 }
 
-SWC_SHOULD_INLINE
 Mutable::Iterator::Iterator(const Mutable::Iterator& other) 
                             : buckets(other.buckets), 
                               bucket(other.bucket), item(other.item) {

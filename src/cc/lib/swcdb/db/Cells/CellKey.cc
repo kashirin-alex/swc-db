@@ -207,12 +207,10 @@ bool Key::empty() const {
   return !count;
 }
 
-SWC_SHOULD_INLINE
 uint32_t Key::encoded_length() const {
   return Serialization::encoded_length_vi24(count) + size;
 }
 
-SWC_SHOULD_INLINE
 void Key::encode(uint8_t **bufp) const {
   Serialization::encode_vi24(bufp, count);
   if(size) {
@@ -221,7 +219,6 @@ void Key::encode(uint8_t **bufp) const {
   }
 }
 
-SWC_SHOULD_INLINE
 void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
   free();
   if(count = Serialization::decode_vi24(bufp, remainp)) {

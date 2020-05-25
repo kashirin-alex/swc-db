@@ -77,7 +77,6 @@ uint32_t fletcher32(const void *data8, size_t len8) {
 }
 
 
-SWC_SHOULD_INLINE
 bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len) {
   uint32_t computed = fletcher32(base, len);
   if(checksum == computed)

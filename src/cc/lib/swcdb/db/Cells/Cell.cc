@@ -189,7 +189,6 @@ int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   return v;
 }
 
-SWC_SHOULD_INLINE
 void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
 
   flag = Serialization::decode_i8(bufp, remainp);
@@ -228,7 +227,6 @@ uint32_t Cell::encoded_length(bool no_value) const {
   return len += vlen;
 }
 
-SWC_SHOULD_INLINE
 void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   dst_buf.ensure(encoded_length( no_value || (no_value = !vlen) ));
 
