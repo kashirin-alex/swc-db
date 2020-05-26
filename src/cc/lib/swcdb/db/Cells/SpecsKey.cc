@@ -24,17 +24,20 @@ uint32_t Fraction::encoded_length() const {
 void Fraction::encode(uint8_t **bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)comp);
   Serialization::encode_vi32(bufp, value.size());
-  memcpy(*bufp, value.data(), value.size());
-  *bufp += value.size();
+  if(!value.empty()) {
+    memcpy(*bufp, value.data(), value.size());
+    *bufp += value.size();
+  }
 }
 
 void Fraction::decode(const uint8_t **bufp, size_t* remainp) {
   value.clear();
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
-  uint32_t len = Serialization::decode_vi32(bufp, remainp);
-  value.append((const char*)*bufp, len);
-  *bufp += len;
-  *remainp -= len;
+  if(uint32_t len = Serialization::decode_vi32(bufp, remainp)) {
+    value.append((const char*)*bufp, len);
+    *bufp += len;
+    *remainp -= len;
+  }
 }
 
 
@@ -68,9 +71,10 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   const uint8_t* ptr = cell_key.data;
   for(auto it=begin(); it < end(); ++it) {
     it->comp = comp;
-    len = Serialization::decode_vi32(&ptr);
-    it->value.append((const char*)ptr, len);
-    ptr += len;
+    if(len = Serialization::decode_vi32(&ptr)) {
+      it->value.append((const char*)ptr, len);
+      ptr += len;
+    }
   }
 }
 
@@ -83,7 +87,8 @@ void Key::set(int32_t idx, Condition::Comp comp) {
 void Key::add(const char* buf, uint32_t len, Condition::Comp comp) {
   Fraction& f = emplace_back();
   f.comp = comp;
-  f.value.append(buf, len);
+  if(len)
+    f.value.append(buf, len);
 }
 
 void Key::add(const std::string& fraction, Condition::Comp comp) {
@@ -105,9 +110,10 @@ void Key::add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
 
 void Key::insert(uint32_t idx, const char* buf, uint32_t len, 
                  Condition::Comp comp) {
-  auto it = emplace(begin()+idx);
+  auto it = emplace(begin() + idx);
   it->comp = comp;
-  it->value.append(buf, len);
+  if(len)
+    it->value.append(buf, len);
 }
 
 void Key::insert(uint32_t idx, const std::string& fraction, 
@@ -153,44 +159,6 @@ void Key::remove(uint32_t idx, bool recursive) {
   else
     erase(begin()+idx);
 }
-
-/* applied with KeyComp::compare on KeySeq
-bool Key::is_matching(const DB::Cell::Key &other) const {
-  Condition::Comp comp = Condition::NONE;
-
-  const uint8_t* ptr = other.data;
-  uint32_t c = other.count;
-  uint32_t len;
-  for(auto it = begin(); c && it < end(); ++it, --c, ptr += len) {
-    if(!Condition::is_matching(
-        comp = it->comp, 
-        (const uint8_t*)it->value.data(), it->value.size(),
-        ptr, len = Serialization::decode_vi32(&ptr)
-        ))
-      return false;
-  }
-
-  if(size() == other.count) 
-    return true;
-
-  switch(comp) {
-    case Condition::LT:
-    case Condition::LE:
-      return empty() || size() > other.count;
-    case Condition::GT:
-    case Condition::GE:
-      return empty() || size() < other.count;
-    case Condition::PF:
-    case Condition::RE:
-      return size() < other.count;
-    case Condition::NE:
-    case Condition::NONE:
-      return true;
-    default: // Condition::EQ:
-      return false;
-  }
-}
-*/
 
 uint32_t Key::encoded_length() const {
   uint32_t len = Serialization::encoded_length_vi32(size());
