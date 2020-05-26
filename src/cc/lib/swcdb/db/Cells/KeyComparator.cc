@@ -469,17 +469,18 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
   Condition::Comp comp = Condition::NONE;
 
   const uint8_t* ptr = other.data;
-  uint32_t c = other.count;
   uint32_t len;
-  for(auto it = key.begin(); c && it < key.end(); ++it, --c, ptr += len) {
+  auto it = key.begin();
+  for(uint24_t c = other.count; c && it < key.end(); ++it, --c, ptr += len) {
     if(!is_matching<T_seq>(
         comp = it->comp, 
         (const uint8_t*)it->value.data(), it->value.size(),
-        ptr, len = Serialization::decode_vi32(&ptr) ))
+        ptr, len = Serialization::decode_vi24(&ptr) ))
       return false;
   }
-
-  if(key.size() == other.count) 
+  if(key.size() == other.count || ( // [,,>=''] spec incl. prior-match
+      key.size() == other.count + 1 && it->value.empty() && 
+      it->comp == Condition::GE))
     return true;
 
   switch(comp) {

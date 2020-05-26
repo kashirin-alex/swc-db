@@ -258,7 +258,8 @@ Statistics:
 ###### check on results
 ```SQL
 ./swcdb;
-SWC-DB(client)> select where col(load_generator)=(cells=([0000099999, >""]<=key<=[0000099999, >""] limit=9 ONLY_KEYS)) DISPLAY_STATS;
+SWC-DB(client)> select where col(load_generator)=(cells=([0000099999, >=""]<=key<=[0000099999, >=""] ONLY_KEYS)) DISPLAY_STATS;
+[0000099999]
 [0000099999, 0000000001]
 [0000099999, 0000000001, 0000000002]
 [0000099999, 0000000001, 0000000002, 0000000003]
@@ -271,16 +272,16 @@ SWC-DB(client)> select where col(load_generator)=(cells=([0000099999, >""]<=key<
 
 
 Statistics:
- Total Time Took:        4838.31 microseconds
- Total Cells Count:      9
- Total Cells Size:       702 B
- Average Transfer Rate:  0.145092 B/microsecond
- Average Cells Rate:     0.00186015 cell/microsecond
- Mngr Locate:            368452ns/1(0)
+ Total Time Took:        4870.74 microseconds
+ Total Cells Count:      10
+ Total Cells Size:       725 B
+ Average Transfer Rate:  0.148848 B/microsecond
+ Average Cells Rate:     0.00205308 cell/microsecond
+ Mngr Locate:            353793ns/2(1)
  Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      267747ns/1(0)
- Rgr Locate Meta:        166777ns/1(0)
- Rgr Data:               3873979ns/1(0)
+ Rgr Locate Master:      352739ns/2(1)
+ Rgr Locate Meta:        330608ns/2(1)
+ Rgr Data:               3737728ns/1(0)
 
 SWC-DB(client)> select where col(load_generator)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
 [0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008, 0000000009]
