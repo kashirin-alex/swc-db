@@ -434,8 +434,13 @@ size_t Fragment::size_bytes_encoded() {
 }
 
 bool Fragment::processing() {
-  Mutex::scope lock(m_mutex);
-  return m_processing;
+  bool support;
+  bool busy;
+  if(!(busy = !m_mutex.try_full_lock(support))) {
+    busy = m_processing;
+    m_mutex.unlock(support);
+  }
+  return busy;
 }
 
 SWC_SHOULD_INLINE

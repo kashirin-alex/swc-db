@@ -302,13 +302,11 @@ size_t Blocks::release(size_t bytes) {
 }
 
 bool Blocks::processing() {
-  bool busy;
   bool support;
-  if(m_mutex.try_full_lock(support)) {
+  bool busy;
+  if(!(busy = !m_mutex.try_full_lock(support))) {
     busy = _processing();
     m_mutex.unlock(support);
-  } else {
-    busy = true;
   }
   return busy;
 }

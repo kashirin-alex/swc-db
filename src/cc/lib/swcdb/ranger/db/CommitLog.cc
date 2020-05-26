@@ -424,8 +424,12 @@ size_t Fragments::size_bytes_encoded() {
 }
 
 bool Fragments::processing() {
-  std::shared_lock lock(m_mutex);
-  return _processing();
+  bool busy;
+  if(!(busy = !m_mutex.try_lock())) {
+    busy = _processing();
+    m_mutex.unlock();
+  }
+  return busy;
 }
 
 uint64_t Fragments::next_id() {
