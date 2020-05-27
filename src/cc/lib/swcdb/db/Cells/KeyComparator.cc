@@ -314,27 +314,35 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
   const uint8_t* ptr = key.data;
   uint24_t len;
   bool chg = false;
+  auto it_min = start.begin();
+  auto it_max = finish.begin();
   for(uint24_t c = 0; c < key.count; ++c, ptr += len) {
     len = Serialization::decode_vi24(&ptr);
 
-    if(c == start.size()) {
+    if(it_min == start.end()) {
       start.add(ptr, len);
       chg = true;
-    } else if(condition<T_seq>(
-        (const uint8_t*)start[c].data(), start[c].length(),
-        ptr, len) == Condition::LT) {
-      start.set(c, ptr, len);
-      chg = true;
+      it_min = start.end();
+    } else {
+      if(condition<T_seq>((const uint8_t*)it_min->data(), it_min->size(),
+                          ptr, len) == Condition::LT) {
+        *it_min = std::string((const char*)ptr, len);
+        chg = true;
+      }
+      ++it_min;
     }
 
-    if(c == finish.size()) {
+    if(it_max == finish.end()) {
       finish.add(ptr, len);
       chg = true;
-    } else if(condition<T_seq>(
-        (const uint8_t*)finish[c].data(), finish[c].length(),
-        ptr, len) == Condition::GT) {
-      finish.set(c, ptr, len);
-      chg = true;
+      it_max = finish.end();
+    } else {
+      if(condition<T_seq>((const uint8_t*)it_max->data(), it_max->size(),
+                          ptr, len) == Condition::GT) {
+        *it_max = std::string((const char*)ptr, len);
+        chg = true;
+      }
+      ++it_max;
     }
   }
   return chg;
@@ -370,25 +378,24 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
   bool chg;
   if(chg = key.empty()) {
     if(chg = !other.empty())
-      key.assign(other.begin(), other.end());
+      key.assign(other.cbegin(), other.cend());
     return chg;
   }
-  bool small = key.size() < other.size();
-  auto it1 = key.begin();
-  auto it2 = other.begin();
-  for(uint24_t min=small? key.size(): other.size(); min; --min, ++it1, ++it2) {
-    if(condition<T_seq>((const uint8_t*)(*it1).data(), (*it1).length(),
-                        (const uint8_t*)(*it2).data(), (*it2).length())
+  bool small;
+  uint24_t min = (small=key.size() < other.size())? key.size() : other.size();
+  auto it2 = other.cbegin();
+  for(auto it1 = key.begin(); min; --min, ++it1, ++it2) {
+    if(condition<T_seq>((const uint8_t*)it1->data(), it1->size(),
+                        (const uint8_t*)it2->data(), it2->size())
                          == comp) {
-      it1->clear();
-      it1->append(*it2);
+      *it1 = *it2;
       chg = true;
     }
   }
   if(small) {
     chg = true;
     do key.add(*it2);
-    while(++it2 < other.end());
+    while(++it2 < other.cend());
   }
   return chg;
 }
@@ -470,8 +477,8 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
 
   const uint8_t* ptr = other.data;
   uint32_t len;
-  auto it = key.begin();
-  for(uint24_t c = other.count; c && it < key.end(); ++it, --c, ptr += len) {
+  auto it = key.cbegin();
+  for(uint24_t c = other.count; c && it < key.cend(); ++it, --c, ptr += len) {
     if(!is_matching<T_seq>(
         comp = it->comp, 
         (const uint8_t*)it->value.data(), it->value.size(),
