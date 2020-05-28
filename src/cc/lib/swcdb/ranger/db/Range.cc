@@ -227,7 +227,8 @@ void Range::take_ownership(int &err, ResponseCallback::Ptr cb) {
 }
 
 void Range::on_change(int &err, bool removal, 
-                      const DB::Cell::Key* old_key_begin) {
+                      const DB::Cell::Key* old_key_begin,
+                      const client::Query::Update::Cb_t& cb) {
   std::scoped_lock lock(m_mutex);
     
   if(type == Types::Range::MASTER) {
@@ -236,7 +237,7 @@ void Range::on_change(int &err, bool removal,
     return;
   }
 
-  auto updater = std::make_shared<client::Query::Update>();
+  auto updater = std::make_shared<client::Query::Update>(cb);
   // RangerEnv::updater();
 
   updater->columns->create(
@@ -305,8 +306,10 @@ void Range::on_change(int &err, bool removal,
     }
   }
   updater->commit(meta_cid);
-  updater->wait();
-  err = updater->result->error();
+  if(!cb) {
+    updater->wait();
+    err = updater->result->error();
+  }
       
   // INSERT master-range(col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
   // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
@@ -566,7 +569,21 @@ void Range::load(int &err) {
 
       if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
         RangeData::save(err, blocks.cellstores);
-        on_change(err, false);
+        return on_change(err, false, nullptr,
+          [range=shared_from_this()] 
+          (const client::Query::Update::Result::Ptr& res) {
+            int err = res->error();
+            if(!err)
+              range->set_state(State::LOADED);
+
+            if(range->is_loaded()) {
+              SWC_LOGF(LOG_INFO, "LOADED RANGE %s", range->to_string().c_str());
+            } else {
+              SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
+                       err, Error::get_text(err), range->to_string().c_str());
+            }
+          }
+        );
       }
       //else if(cfg->cid > 2) { // meta-recovery, meta need pre-delete >=[cfg->cid]
       //  on_change(err, false);
@@ -616,15 +633,15 @@ void Range::run_add_queue() {
     m_inbytes += remain = req->input.size;
     intval_chg = false;
 
-    Protocol::Rgr::Params::RangeQueryUpdateRsp params;
+    auto params = new Protocol::Rgr::Params::RangeQueryUpdateRsp;
     if(req->cb->expired(remain/100000))
-      params.err = Error::REQUEST_TIMEOUT;
+      params->err = Error::REQUEST_TIMEOUT;
       
     if(m_state != State::LOADED && m_state != State::UNLOADING)
-       params.err = m_state == State::DELETED 
+       params->err = m_state == State::DELETED 
                   ? Error::COLUMN_MARKED_REMOVED : Error::RS_NOT_LOADED_RANGE;
 
-    while(!params.err && remain) {
+    if(!params->err) while(remain) {
       cell.read(&ptr, &remain);
 
       if(cell.has_expired(ttl))
@@ -636,16 +653,20 @@ void Range::run_add_queue() {
         if(!m_interval.key_end.empty() && 
             DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
              == Condition::GT) {
-          if(params.range_end.empty())
-            params.range_end.copy(m_interval.key_end);
+          if(params->range_end.empty()) {
+            params->range_end.copy(m_interval.key_end);
+            params->err = Error::RANGE_BAD_INTERVAL;
+          }
           continue;
         }
 
         if(!m_prev_key_end.empty() && 
             DB::KeySeq::compare(cfg->key_seq, m_prev_key_end, cell.key)
              != Condition::GT) {
-          if(params.range_prev_end.empty())
-            params.range_prev_end.copy(m_prev_key_end);
+          if(params->range_prev_end.empty()) {
+            params->range_prev_end.copy(m_prev_key_end);
+            params->err = Error::RANGE_BAD_INTERVAL;
+          }
           continue;
         }
       }
@@ -687,13 +708,22 @@ void Range::run_add_queue() {
     blocks.processing_decrement();
 
     if(intval_chg)
-      on_change(params.err, false);
+      return on_change(
+        params->err, false, nullptr,
+        [req, params, range=shared_from_this()] 
+        (const client::Query::Update::Result::Ptr& res) {
+          if(!params->err)
+            params->err = res->error();
+          req->cb->response(*params);
+          delete params;
+          delete req;
+          if(range->m_q_adding.pop_and_more())
+            range->run_add_queue();
+        }
+      );
 
-    if(!params.err &&
-       (!params.range_end.empty() || !params.range_prev_end.empty()))
-      params.err = Error::RANGE_BAD_INTERVAL;
-
-    req->cb->response(params);
+    req->cb->response(*params);
+    delete params;
     delete req;
 
   } while(m_q_adding.pop_and_more());

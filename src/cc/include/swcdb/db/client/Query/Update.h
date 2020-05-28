@@ -74,8 +74,8 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   using Result = Result::Update;
 
-  typedef std::shared_ptr<Update>           Ptr;
-  typedef std::function<void(Result::Ptr)>  Cb_t;
+  typedef std::shared_ptr<Update>                  Ptr;
+  typedef std::function<void(const Result::Ptr&)>  Cb_t;
   
   uint32_t                    buff_sz;
   uint8_t                     buff_ahead;
