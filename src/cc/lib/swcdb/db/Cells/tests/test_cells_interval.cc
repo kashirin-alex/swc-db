@@ -33,7 +33,8 @@ int main() {
       cell.key.add(std::string("d")+s);
       cell.timestamp = n;
 
-      interval.expand(cell);      
+      interval.expand(cell);    
+      interval.expand(cell.timestamp);  
       interval.align(cell.key);
 
 

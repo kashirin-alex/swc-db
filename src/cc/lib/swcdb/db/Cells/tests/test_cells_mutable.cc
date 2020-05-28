@@ -261,7 +261,9 @@ int main(int argc, char** argv) {
 
   std::vector<SWC::Types::KeySeq> sequences = {
     SWC::Types::KeySeq::LEXIC,
-    SWC::Types::KeySeq::VOLUME
+    SWC::Types::KeySeq::VOLUME,
+    SWC::Types::KeySeq::FC_LEXIC,
+    SWC::Types::KeySeq::FC_VOLUME
   };
 
 

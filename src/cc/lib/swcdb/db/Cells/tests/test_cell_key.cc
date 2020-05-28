@@ -379,7 +379,7 @@ int main() {
   //exit(0);
   std::cout << "\n";
 
-  int chks = 1000;
+  int chks = 100;
   int chk_count = 1;
 
   for(int fractions = 0;fractions<=500;fractions+=10){

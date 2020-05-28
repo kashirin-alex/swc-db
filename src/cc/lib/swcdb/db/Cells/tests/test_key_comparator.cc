@@ -61,6 +61,28 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions
             << "\n";
 }
 
+void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, int fractions) {
+  DB::Cell::Key key1;
+  DB::Cell::KeyVec key2;
+  std::string f;
+  for(auto b=0;b<fractions;++b) {
+    f = std::to_string(std::rand());
+    key1.add(f);
+    key2.add(f);
+  }
+
+  auto ts = Time::now_ns();
+  for(int n=0; n < chks; ++n)
+    assert(DB::KeySeq::compare(key_seq, key1, key2, Condition::GT));
+  
+  uint64_t took = Time::now_ns() - ts;
+  std::cout << "load_check_compare_vec,  fractions=" << fractions 
+            << " avg=" << took/chks
+            << " took=" << took 
+            << " seq=" << Types::to_string(key_seq) 
+            << "\n";
+}
+
 void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
 
   DB::Cell::KeyVec key;
@@ -76,6 +98,29 @@ void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_align,        fractions=" << fractions 
+            << " avg=" << took/chks
+            << " took=" << took 
+            << " seq=" << Types::to_string(key_seq)
+            << "\n";
+}
+
+void load_check_align_min_max(const Types::KeySeq key_seq, int chks, int fractions) {
+
+  DB::Cell::Key key;
+  DB::Cell::KeyVec min;
+  DB::Cell::KeyVec max;
+  for(auto b=0;b<fractions;++b)
+    key.add(std::to_string(std::rand()));
+
+  auto ts = Time::now_ns();
+  for(int n=0; n < chks; ++n) {
+    DB::KeySeq::align(key_seq, key, min, max);
+    assert(min.size() == fractions);
+    assert(max.size() == fractions);
+  }
+
+  uint64_t took = Time::now_ns() - ts;
+  std::cout << "load_check_align_min_max,fractions=" << fractions 
             << " avg=" << took/chks
             << " took=" << took 
             << " seq=" << Types::to_string(key_seq)
@@ -139,14 +184,18 @@ int main() {
   int chks = 1000000;
   std::vector<SWC::Types::KeySeq> sequences = {
     SWC::Types::KeySeq::LEXIC,
-    SWC::Types::KeySeq::VOLUME
+    SWC::Types::KeySeq::VOLUME,
+    SWC::Types::KeySeq::FC_LEXIC,
+    SWC::Types::KeySeq::FC_VOLUME
   };
 
-  for(int fractions=0; fractions<=100; ++fractions) {
+  for(int fractions=10; fractions<=100; fractions+=10) {
     for(auto key_seq : sequences) {
       SWC::load_check_compare(key_seq, chks, fractions);
+      SWC::load_check_compare_to_vec(key_seq, chks, fractions);
       SWC::load_check_compare_max(key_seq, chks, fractions);
       SWC::load_check_align(key_seq, chks, fractions);
+      SWC::load_check_align_min_max(key_seq, chks, fractions);
     }
   }
 

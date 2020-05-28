@@ -37,7 +37,7 @@ void check_load() {
   cell.set_value(value);
 
   auto ts = SWC::Time::now_ns();
-  auto chks = 100000;
+  auto chks = 10000;
   for(auto n = chks; n; --n){
     auto c = new Cells::Cell(cell);
     delete c;
