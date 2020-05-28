@@ -3,8 +3,8 @@
  */
 
 
-#ifndef swcdb_lib_db_Rgr_Columns_Columns_h
-#define swcdb_lib_db_Rgr_Columns_Columns_h
+#ifndef swcdb_ranger_db_Columns_h
+#define swcdb_ranger_db_Columns_h
 
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/core/comm/ResponseCallback.h"
@@ -12,6 +12,7 @@
 #include "swcdb/ranger/db/ColumnCfg.h"
 #include "swcdb/ranger/db/Callbacks.h"
 #include "swcdb/ranger/db/Column.h"
+#include "swcdb/ranger/db/ColumnsReqDelete.h"
 
 #include <unordered_map>
 
@@ -22,7 +23,8 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
 
   public:
 
-  enum State{
+  enum State {
+    NONE,
     OK
   };
 
@@ -69,7 +71,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
 
   RangePtr get_range(int &err, const int64_t cid, const int64_t rid) {
     Column::Ptr col = get_column(err, cid);
-    if(col == nullptr) 
+    if(!col) 
       return nullptr;
     if(col->removing()) 
       err = Error::COLUMN_MARKED_REMOVED;
@@ -100,7 +102,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   void unload_range(int &err, const int64_t cid, const int64_t rid,
                     Callback::RangeUnloaded_t cb){
     Column::Ptr col = get_column(err, cid);
-    if(col != nullptr) {
+    if(col) {
       col->unload(rid, cb);
     } else {
       cb(err);
@@ -117,6 +119,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     std::atomic<int> to_unload = 0;
     Column::Ptr col;
     uint8_t meta;
+    iterator it;
     for(auto chk : order) {
 
       std::promise<void>  r_promise;
@@ -126,10 +129,17 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
             r_promise.set_value();
       };
     
+      {
+        Mutex::scope lock(m_mutex);
+        for(it = begin(); it != end(); ++it) {
+          if(chk(it->first))
+            ++to_unload;
+        }
+      }
       for(meta=0;;) {
         {
           Mutex::scope lock(m_mutex);
-          auto it = begin();
+          it = begin();
           for(uint8_t n=0; n<meta; ++n, ++it);
           if(it == end())
             break;
@@ -142,7 +152,6 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
         if(validation)
           SWC_LOGF(LOG_WARN, 
             "Unload-Validation cid=%d remained", col->cfg.cid);
-        ++to_unload;
         col->unload_all(to_unload, cb);
       }
       if(to_unload) 
@@ -150,18 +159,27 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     }
   }
 
-  void remove(int &err, const int64_t cid, Callback::ColumnDeleted_t cb) {
-    Column::Ptr col = get_column(err, cid);
-    if(col != nullptr) {
-      col->remove_all(err);
-      {
-        Mutex::scope lock(m_mutex);
-        auto it = find(cid);
-        if (it != end()) 
-          erase(it);
+  void remove(ColumnsReqDelete* req) {
+    if(!m_q_remove.push_and_is_1st(req))
+      return;
+
+    int err;
+    Column::Ptr col;
+    iterator it;
+    do {
+      if(!(req = m_q_remove.front())->ev->expired()) {
+        if(col = get_column(err = Error::OK, req->cid)) {
+          col->remove_all(err);
+          {
+            Mutex::scope lock(m_mutex);
+            if((it = find(req->cid)) != end()) 
+              erase(it);
+          }
+        }
+        req->cb(err);
       }
-    }
-    cb(err);
+      delete req;
+    } while(m_q_remove.pop_and_more());
   }
   
   size_t release(size_t bytes=0) {
@@ -199,8 +217,9 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   }
 
   private:
-  Mutex   m_mutex;
-  State   m_state;
+  Mutex                           m_mutex;
+  State                           m_state;
+  QueueSafe<ColumnsReqDelete*>    m_q_remove;
 
 };
 
