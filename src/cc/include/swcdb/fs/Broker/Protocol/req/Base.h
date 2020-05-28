@@ -56,7 +56,8 @@ class Base : public DispatchHandler {
       *remain = ev->data.size - 4;
     } 
     
-    if(error != Error::OK)
+    if(error && 
+       (cmd != Cmd::FUNCTION_READ_ALL || error != Error::FS_PATH_NOT_FOUND))
       SWC_LOGF(LOG_ERROR, "error=%d(%s)", error, Error::get_text(error));
     
     was_called = true;
