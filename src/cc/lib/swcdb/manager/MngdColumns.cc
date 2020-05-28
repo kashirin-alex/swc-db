@@ -549,7 +549,8 @@ void MngdColumns::actions_run() {
         case Protocol::Mngr::Params::ColumnMng::Function::MODIFY: {
           if(schema == nullptr) 
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-          else if(schema->cid != req.params.schema->cid)
+          else if(req.params.schema->cid != DB::Schema::NO_CID && 
+                  schema->cid != req.params.schema->cid)
             err = Error::COLUMN_SCHEMA_NAME_EXISTS;
           else
             update(err, req.params.schema, schema);
