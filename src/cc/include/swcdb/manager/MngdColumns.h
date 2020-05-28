@@ -6,8 +6,6 @@
 #ifndef swc_manager_MngdColumns_h
 #define swc_manager_MngdColumns_h
 
-#include "swcdb/manager/db/Schema.h"
-
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 
 namespace SWC { namespace Manager {

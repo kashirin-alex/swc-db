@@ -11,6 +11,7 @@
 
 #include "swcdb/manager/db/ColumnCfg.h"
 #include "swcdb/manager/db/Column.h"
+#include "swcdb/manager/db/Schema.h"
 
 #include <memory>
 #include <unordered_map>
@@ -64,10 +65,16 @@ class Columns final : std::unordered_map<int64_t, Column::Ptr> {
 
   Range::Ptr get_next_unassigned() {
     Range::Ptr range = nullptr;
+    iterator it;
     Mutex::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it) {
+    for(int64_t cid = 1; cid <= Files::Schema::SYS_CID_END; ++cid) {
+      if((it = find(cid)) != end() && 
+         (range = it->second->get_next_unassigned()))
+        return range;
+    }
+    for(it = begin(); it != end(); ++it) {
       if(range = it->second->get_next_unassigned())
-        break;
+        return range;
     }
     return range;
   }
