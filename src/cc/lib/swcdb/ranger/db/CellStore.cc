@@ -48,7 +48,8 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
 
   bool loaded = false;
   err = Error::OK;
-  while(err != Error::FS_EOF) {
+  while(err != Error::FS_PATH_NOT_FOUND &&
+        err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
                err, Error::get_text(err), smartfd->to_string().c_str());
@@ -118,7 +119,8 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
   bool trailer = false;
   err = Error::OK;
 
-  while(err != Error::FS_EOF) {
+  while(err != Error::FS_PATH_NOT_FOUND &&
+        err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
                err, Error::get_text(err), smartfd->to_string().c_str());

@@ -244,7 +244,8 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
   err = Error::OK;
-  while(err != Error::FS_EOF) {
+  while(err != Error::FS_PATH_NOT_FOUND &&
+        err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s %s", 
                err, Error::get_text(err), 

@@ -65,7 +65,8 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
 
-  while(err != Error::FS_EOF) {
+  while(err != Error::FS_PATH_NOT_FOUND &&
+        err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
         err, Error::get_text(err), smartfd->to_string().c_str());
@@ -497,7 +498,8 @@ void Fragment::load() {
   auto fs = Env::FsInterface::fs();
 
   int err = Error::OK;
-  while(err != Error::FS_EOF) {
+  while(err != Error::FS_PATH_NOT_FOUND &&
+        err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
                err, Error::get_text(err), to_string().c_str());
@@ -539,6 +541,8 @@ void Fragment::load() {
     Mutex::scope lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
+    if(err)
+      m_buffer.free();
   }
   if(err)
     SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load %s", to_string().c_str());
