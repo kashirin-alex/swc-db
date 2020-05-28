@@ -121,7 +121,7 @@ class Range final : public std::enable_shared_from_this<Range> {
                  const DB::Cell::Key* old_key_begin=nullptr,
                  const client::Query::Update::Cb_t& cb=0);
 
-  void unload(Callback::RangeUnloaded_t cb, bool completely);
+  void unload(const Callback::RangeUnloaded_t& cb, bool completely);
   
   void remove(int &err, bool meta=true);
 

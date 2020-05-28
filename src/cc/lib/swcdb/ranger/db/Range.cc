@@ -315,7 +315,7 @@ void Range::on_change(int &err, bool removal,
   // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
 }
 
-void Range::unload(Callback::RangeUnloaded_t cb, bool completely) {
+void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
   int err = Error::OK;
   {
     std::scoped_lock lock(m_mutex);

@@ -23,16 +23,16 @@ class RangeLoaded : public ResponseCallback {
   virtual ~RangeLoaded() { }
 
   void response(int &err) override {
-    if(err == Error::OK && RangerEnv::is_shuttingdown()) 
+    if(!err && RangerEnv::is_shuttingdown()) 
       err = Error::SERVER_SHUTTING_DOWN;
 
     RangePtr range;
-    if(err == Error::OK) {
+    if(!err) {
       range =  RangerEnv::columns()->get_range(err, cid, rid);
-      if(err != Error::OK || range == nullptr || !range->is_loaded())
+      if(err || !range || !range->is_loaded())
         err = Error::RS_NOT_LOADED_RANGE;
     }
-    if(err != Error::OK)
+    if(err)
       goto send_error;
     
 

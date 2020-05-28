@@ -100,7 +100,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   }
 
   void unload_range(int &err, const int64_t cid, const int64_t rid,
-                    Callback::RangeUnloaded_t cb){
+                    const Callback::RangeUnloaded_t& cb) {
     Column::Ptr col = get_column(err, cid);
     if(col) {
       col->unload(rid, cb);

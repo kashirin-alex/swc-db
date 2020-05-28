@@ -81,23 +81,24 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
     return range;
   }
 
-  void unload(const int64_t rid, Callback::RangeUnloaded_t cb) {
+  void unload(const int64_t rid, const Callback::RangeUnloaded_t& cb) {
     RangePtr range = nullptr;
     {
       Mutex::scope lock(m_mutex);
       auto it = find(rid);
-      if (it != end()){
+      if(it != end()) {
         range = it->second;
         erase(it);
       }
     }
-    if(range != nullptr)
+    if(range)
       range->unload(cb, true);
     else
       cb(Error::OK);
   }
 
-  void unload_all(std::atomic<int>& unloaded, Callback::RangeUnloaded_t cb) {
+  void unload_all(std::atomic<int>& unloaded, 
+                  const Callback::RangeUnloaded_t& cb) {
 
     for(;;) {
       Mutex::scope lock(m_mutex);
@@ -125,7 +126,7 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
         erase(it);
       }
     }
-    if(range != nullptr)
+    if(range)
       range->remove(err, meta);
   }
 
