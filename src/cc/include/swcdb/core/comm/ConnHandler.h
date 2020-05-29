@@ -87,7 +87,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   bool send_error(int error, const std::string &msg, 
                   const Event::Ptr& ev=nullptr);
 
-  bool response_ok(const Event::Ptr& ev=nullptr);
+  bool response_ok(const Event::Ptr& ev);
 
   bool send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr);
 
