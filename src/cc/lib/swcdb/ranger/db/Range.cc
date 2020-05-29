@@ -184,7 +184,7 @@ void Range::create_folders(int& err) {
   Env::FsInterface::interface()->mkdirs(err, get_path(CELLSTORES_DIR));
 }
 
-void Range::load(ResponseCallback::Ptr cb) {
+void Range::load(const ResponseCallback::Ptr& cb) {
   blocks.processing_increment();
 
   bool is_loaded;
@@ -214,16 +214,16 @@ void Range::load(ResponseCallback::Ptr cb) {
 
 }
 
-void Range::take_ownership(int &err, ResponseCallback::Ptr cb) {
+void Range::take_ownership(int &err, const ResponseCallback::Ptr& cb) {
   if(err == Error::RS_DELETED_RANGE)
     return loaded(err, cb);
 
   RangerEnv::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
-  if(!err)
-    load(err);
+  if(err)
+    return loaded(err, cb);
 
-  loaded(err, cb); // RSP-LOAD-ACK
+  load(err, cb);
 }
 
 void Range::on_change(int &err, bool removal, 
@@ -504,7 +504,7 @@ std::string Range::to_string() {
   return s;
 }
 
-void Range::loaded(int &err, ResponseCallback::Ptr cb) {
+void Range::loaded(int &err, const ResponseCallback::Ptr& cb) {
   {
     std::shared_lock lock(m_mutex);
     if(m_state == State::DELETED)
@@ -514,7 +514,7 @@ void Range::loaded(int &err, ResponseCallback::Ptr cb) {
   cb->response(err);
 }
 
-void Range::last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
+void Range::last_rgr_chk(int &err, const ResponseCallback::Ptr& cb) {
   // ranger.data
   auto rgr_data = RangerEnv::rgr_data();
   Files::RgrData::Ptr rs_last = get_last_rgr(err);
@@ -533,7 +533,7 @@ void Range::last_rgr_chk(int &err, ResponseCallback::Ptr cb) {
   take_ownership(err, cb);
 }
 
-void Range::load(int &err) {
+void Range::load(int &err, const ResponseCallback::Ptr& cb) {
   {
     std::scoped_lock lock(m_mutex);
     if(m_state != State::LOADING) { 
@@ -570,18 +570,9 @@ void Range::load(int &err) {
       if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
         RangeData::save(err, blocks.cellstores);
         return on_change(err, false, nullptr,
-          [range=shared_from_this()] 
+          [cb, range=shared_from_this()] 
           (const client::Query::Update::Result::Ptr& res) {
-            int err = res->error();
-            if(!err)
-              range->set_state(State::LOADED);
-
-            if(range->is_loaded()) {
-              SWC_LOGF(LOG_INFO, "LOADED RANGE %s", range->to_string().c_str());
-            } else {
-              SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
-                       err, Error::get_text(err), range->to_string().c_str());
-            }
+            range->loaded_ack(res->error(), cb);
           }
         );
       }
@@ -590,15 +581,20 @@ void Range::load(int &err) {
       //}
     }
   }
-  
+  loaded_ack(err, cb);
+}
+
+void Range::loaded_ack(int err, const ResponseCallback::Ptr& cb) {
   if(!err)
     set_state(State::LOADED);
       
   if(is_loaded()) {
     SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
-  } else 
+  } else {
     SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
               err, Error::get_text(err), to_string().c_str());
+  }
+  loaded(err, cb); // RSP-LOAD-ACK
 }
 
 bool Range::wait(uint8_t from_state) {

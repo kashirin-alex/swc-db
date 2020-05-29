@@ -113,9 +113,9 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void create_folders(int& err);
 
-  void load(ResponseCallback::Ptr cb);
+  void load(const ResponseCallback::Ptr& cb);
 
-  void take_ownership(int &err, ResponseCallback::Ptr cb);
+  void take_ownership(int &err, const ResponseCallback::Ptr& cb);
 
   void on_change(int &err, bool removal, 
                  const DB::Cell::Key* old_key_begin=nullptr,
@@ -152,11 +152,13 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   private:
 
-  void loaded(int &err, ResponseCallback::Ptr cb);
+  void loaded(int &err, const ResponseCallback::Ptr& cb);
 
-  void last_rgr_chk(int &err, ResponseCallback::Ptr cb);
+  void last_rgr_chk(int &err, const ResponseCallback::Ptr& cb);
 
-  void load(int &err);
+  void load(int &err, const ResponseCallback::Ptr& cb);
+
+  void loaded_ack(int err, const ResponseCallback::Ptr& cb);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING);
 

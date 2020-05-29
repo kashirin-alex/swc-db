@@ -11,7 +11,8 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-RangeUnload::RangeUnload(Ranger::RangePtr range, ResponseCallback::Ptr cb,
+RangeUnload::RangeUnload(const Ranger::RangePtr& range, 
+                         const ResponseCallback::Ptr& cb,
                          uint32_t timeout) 
                         : client::ConnQueue::ReqBase(false), 
                           range(range), cb(cb) {
@@ -27,11 +28,11 @@ void RangeUnload::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
     return;
   was_called = true;
 
-  if(!valid())
-    unloaded(Error::RS_DELETED_RANGE, cb); 
-  else if(ev->type == Event::Type::DISCONNECT
-          || ev->header.command == RANGE_UNLOAD){
-    unloaded(Error::OK, cb); 
+  if(!valid()) {
+    unloaded(Error::RS_DELETED_RANGE); 
+  } else if(ev->type == Event::Type::DISCONNECT
+          || ev->header.command == RANGE_UNLOAD) {
+    unloaded(Error::OK); 
   }
 }
 
@@ -41,10 +42,10 @@ bool RangeUnload::valid() {
 }
 
 void RangeUnload::handle_no_conn() {
-  unloaded(Error::OK, cb); 
+  unloaded(Error::OK); 
 }
 
-void RangeUnload::unloaded(int err, ResponseCallback::Ptr cb) {
+void RangeUnload::unloaded(int err) {
   range->take_ownership(err, cb);
 }
 

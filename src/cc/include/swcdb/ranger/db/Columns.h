@@ -79,7 +79,8 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   }
  
   void load_range(int &err, const int64_t cid, const int64_t rid, 
-                  const DB::Schema& schema, ResponseCallback::Ptr cb) {
+                  const DB::Schema& schema, 
+                  const ResponseCallback::Ptr& cb) {
     RangePtr range;
     auto col = initialize(err, cid, schema);
     if(!err) {
