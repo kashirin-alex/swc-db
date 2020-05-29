@@ -99,11 +99,9 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
 
   void unload_all(std::atomic<int>& unloaded, 
                   const Callback::RangeUnloaded_t& cb) {
-
-    for(;;) {
+    for(iterator it;;) {
       Mutex::scope lock(m_mutex);
-      auto it = begin();
-      if(it == end())
+      if((it = begin()) == end())
         break;
       ++unloaded;
       asio::post(
@@ -138,10 +136,9 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
       cfg.deleting = true;
     }
       
-    for(;;) {
+    for(iterator it;;) {
       Mutex::scope lock(m_mutex);
-      auto it = begin();
-      if(it == end())
+      if((it = begin()) == end())
         break;
       it->second->remove(err);
       erase(it);

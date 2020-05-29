@@ -122,6 +122,15 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     uint8_t meta;
     iterator it;
     for(auto chk : order) {
+      {
+        Mutex::scope lock(m_mutex);
+        for(it = begin(); it != end(); ++it) {
+          if(chk(it->first))
+            ++to_unload;
+        }
+      }
+      if(!to_unload)
+        continue;
 
       std::promise<void>  r_promise;
       Callback::RangeUnloaded_t cb 
@@ -130,13 +139,6 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
             r_promise.set_value();
       };
     
-      {
-        Mutex::scope lock(m_mutex);
-        for(it = begin(); it != end(); ++it) {
-          if(chk(it->first))
-            ++to_unload;
-        }
-      }
       for(meta=0;;) {
         {
           Mutex::scope lock(m_mutex);
@@ -155,8 +157,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
             "Unload-Validation cid=%d remained", col->cfg.cid);
         col->unload_all(to_unload, cb);
       }
-      if(to_unload) 
-        r_promise.get_future().wait();
+      r_promise.get_future().wait();
     }
   }
 

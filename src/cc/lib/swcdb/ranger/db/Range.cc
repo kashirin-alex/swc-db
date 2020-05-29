@@ -229,14 +229,14 @@ void Range::take_ownership(int &err, const ResponseCallback::Ptr& cb) {
 void Range::on_change(int &err, bool removal, 
                       const DB::Cell::Key* old_key_begin,
                       const client::Query::Update::Cb_t& cb) {
-  std::scoped_lock lock(m_mutex);
-    
   if(type == Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
-    return;
+    return cb(nullptr);
   }
 
+  std::scoped_lock lock(m_mutex);
+    
   auto updater = std::make_shared<client::Query::Update>(cb);
   // RangerEnv::updater();
 
@@ -572,7 +572,7 @@ void Range::load(int &err, const ResponseCallback::Ptr& cb) {
         return on_change(err, false, nullptr,
           [cb, range=shared_from_this()] 
           (const client::Query::Update::Result::Ptr& res) {
-            range->loaded_ack(res->error(), cb);
+            range->loaded_ack(res ? res->error() : Error::OK, cb);
           }
         );
       }
