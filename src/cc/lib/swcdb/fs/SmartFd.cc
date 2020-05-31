@@ -27,43 +27,44 @@ const std::string& SmartFd::filepath() const {
   return m_filepath; 
 }
 
-SWC_SHOULD_INLINE
 void SmartFd::flags(uint32_t flags) { 
+  LockAtomic::Unique::scope lock(m_mutex);
   m_flags = flags; 
 }
 
-SWC_SHOULD_INLINE
 uint32_t SmartFd::flags() const { 
+  LockAtomic::Unique::scope lock(m_mutex);
   return m_flags; 
 }
 
-SWC_SHOULD_INLINE
 void SmartFd::fd(int32_t fd) { 
+  LockAtomic::Unique::scope lock(m_mutex);
   m_fd = fd; 
 }
 
-SWC_SHOULD_INLINE
 int32_t SmartFd::fd() const {
+  LockAtomic::Unique::scope lock(m_mutex);
   return m_fd; 
 }
 
-SWC_SHOULD_INLINE
 void SmartFd::pos(uint64_t pos) {
+  LockAtomic::Unique::scope lock(m_mutex);
   m_pos = pos; 
 }
   
-SWC_SHOULD_INLINE
 uint64_t SmartFd::pos() const { 
+  LockAtomic::Unique::scope lock(m_mutex);
   return m_pos; 
 }
 
 bool SmartFd::valid() const { 
+  LockAtomic::Unique::scope lock(m_mutex);
   return m_fd != -1; 
 }
 
 std::string SmartFd::to_string() const {
   return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
-                         m_filepath.c_str(), m_flags, m_fd, m_pos);
+                m_filepath.c_str(), flags(), fd(), pos());
 }
 
 }}

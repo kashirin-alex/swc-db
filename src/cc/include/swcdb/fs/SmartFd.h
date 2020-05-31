@@ -6,6 +6,7 @@
 #define swc_fs_SmartFd_h
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/LockAtomicUnique.h"
 
 namespace SWC{ namespace FS {
 
@@ -42,9 +43,13 @@ struct SmartFd {
 
   std::string to_string() const;
 
-  private:
-  
+  protected:
+
   const std::string   m_filepath;
+  LockAtomic::Unique  m_mutex;
+
+  private:
+
   uint32_t            m_flags;
   int32_t             m_fd;
   uint64_t            m_pos;
