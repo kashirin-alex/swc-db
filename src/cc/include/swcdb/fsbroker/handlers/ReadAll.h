@@ -25,7 +25,37 @@ void read_all(ConnHandlerPtr conn, Event::Ptr ev) {
     FS::Protocol::Params::ReadAllReq params;
     params.decode(&ptr, &remain);
 
-    Env::FsInterface::fs()->read(err, params.name, &rbuf);
+    //Env::FsInterface::fs()->read(err, params.name, &rbuf); needs fds state
+
+    FS::SmartFd::Ptr smartfd;
+    int32_t fd = -1;
+    size_t len;
+    auto fs = Env::FsInterface::fs();
+    if(!fs->exists(err, params.name)) {
+      if(!err)
+        err = Error::FS_PATH_NOT_FOUND;
+      goto finish;
+    } 
+    
+    len = fs->length(err, params.name);
+    if(err)
+      goto finish;
+
+    fs->open(err, smartfd = FS::SmartFd::make_ptr(params.name, 0));
+    if(!err && !smartfd->valid())
+      err = EBADR;
+    if(err)
+      goto finish;
+    fd = Env::Fds::get()->add(smartfd);
+
+    rbuf.free();
+    if(fs->read(err, smartfd, &rbuf, len) != len)
+      err = Error::FS_EOF;
+
+    finish:
+      int errtmp;
+      if(fd != -1 && (smartfd = Env::Fds::get()->remove(fd)))
+        fs->close(!err ? err : errtmp, smartfd);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

@@ -24,11 +24,29 @@ void write(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
-      
-    Env::FsInterface::fs()->write(
-      err, smartfd, params.replication, params.blksz, ev->data_ext
-    );
+    int32_t fd = -1;
+    auto fs = Env::FsInterface::fs();
 
+    //Env::FsInterface::fs()->write(
+    //  err, smartfd, params.replication, params.blksz, ev->data_ext
+    //); needs fds state
+
+    fs->create(err, smartfd, 0, params.replication, params.blksz);
+    if(!smartfd->valid() || err) {
+      if(!err) 
+        err = EBADF;
+      goto finish;
+    }
+    fd = Env::Fds::get()->add(smartfd);
+
+    if(ev->data_ext.size)
+      fs->append(err, smartfd, ev->data_ext, FS::Flags::FLUSH);
+
+    finish:
+      int errtmp;
+      if(fd != -1 && (smartfd = Env::Fds::get()->remove(fd)))
+        fs->close(!err ? err : errtmp, smartfd);
+    
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();

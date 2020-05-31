@@ -10,24 +10,28 @@
 
 namespace SWC { namespace FsBroker {
 
-class Fds final {
+class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   public:
 
   typedef Fds* Ptr;
 
-  typedef std::unordered_map<int32_t, FS::SmartFd::Ptr> FdsMap;
-  typedef std::pair<int32_t, FS::SmartFd::Ptr>          FdpPair;
-  
   Fds() : m_next_fd(0) {}
   
   ~Fds(){}
 
-  int32_t add(const FS::SmartFd::Ptr& fd) {
+  int32_t add(const FS::SmartFd::Ptr& smartfd) {
     for(;;) {
       Mutex::scope lock(m_mutex);
-      if(m_fds.emplace(++m_next_fd < 0 ? m_next_fd=1 : m_next_fd, fd).second)
-        break;
+      if(!emplace(++m_next_fd < 0 ? m_next_fd=1 : m_next_fd, smartfd).second)
+        continue;
+      for(auto it = begin(); it != end(); ++it) {
+        if(it->first != m_next_fd && it->second->fd() == smartfd->fd()) {
+          it->second->fd(-1);
+          break;
+        }
+      }
+      break;
     }
     return m_next_fd;
   }
@@ -35,38 +39,40 @@ class Fds final {
   FS::SmartFd::Ptr remove(int32_t fd) {
     Mutex::scope lock(m_mutex);
     
-    auto it = m_fds.find(fd);
-    if(it == m_fds.end())
+    auto it = find(fd);
+    if(it == end())
       return nullptr;
     FS::SmartFd::Ptr smartfd = std::move(it->second);
-    m_fds.erase(it);
-    return smartfd;
+    erase(it);
+    return smartfd->valid() ? smartfd : nullptr;
   }
 
   FS::SmartFd::Ptr select(int32_t fd) {
     Mutex::scope lock(m_mutex);
     
-    auto it = m_fds.find(fd);
-    if(it != m_fds.end())
-      return it->second;
+    auto it = find(fd);
+    if(it != end()) {
+      if(it->second->valid())
+        return it->second;
+      erase(it);
+    }
     return nullptr;
   }
 
   FS::SmartFd::Ptr pop_next() {
     Mutex::scope lock(m_mutex);
     
-    auto it = m_fds.begin();
-    if(it == m_fds.end())
+    auto it = begin();
+    if(it == end())
       return nullptr;
     FS::SmartFd::Ptr smartfd = std::move(it->second);
-    m_fds.erase(it);
+    erase(it);
     return smartfd;
   }
 
   private:
   Mutex               m_mutex;
   int32_t             m_next_fd;
-  std::unordered_map<int32_t, FS::SmartFd::Ptr> m_fds;
 };
 
 } // namespace FsBroker
@@ -93,7 +99,7 @@ class Fds final {
   }
 
   private:
-  FsBroker::Fds::Ptr         m_fds = nullptr;
+  FsBroker::Fds::Ptr                 m_fds = nullptr;
   inline static std::shared_ptr<Fds> m_env = nullptr;
 };
 
