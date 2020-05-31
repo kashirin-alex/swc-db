@@ -24,12 +24,12 @@ class Unique {
 
   ~Unique() { }
 
-  bool try_lock() {
+  bool try_lock() const {
     bool at=false;
     return want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
   }
   
-  void lock() {
+  void lock() const {
     uint16_t i = 0;
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
@@ -38,7 +38,7 @@ class Unique {
         std::this_thread::yield();
   }
 
-  void lock(const uint32_t& us_sleep) {
+  void lock(const uint32_t& us_sleep) const {
     uint16_t i = 0;
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
@@ -47,14 +47,14 @@ class Unique {
         std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
   }
 
-  void unlock() {
+  void unlock() const {
     want.store(false, std::memory_order_release);
   }
   
   class scope final {
     public:
 
-    scope(Unique& m) : _m(m) {  _m.lock(); }
+    scope(const Unique& m) : _m(m) {  _m.lock(); }
 
     ~scope() { _m.unlock(); }
     
@@ -65,12 +65,12 @@ class Unique {
     scope& operator=(const scope&) = delete;
 
     private:
-    Unique&      _m;
+    const Unique&      _m;
   };
 
   private:
 
-  std::atomic<bool> want;
+  mutable std::atomic<bool> want;
 };
 
 }}
