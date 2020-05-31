@@ -24,11 +24,17 @@ struct SmartFdHadoopJVM final : public SmartFd {
   static Ptr make_ptr(SmartFd::Ptr &smart_fd);
 
   SmartFdHadoopJVM(const std::string &filepath, uint32_t flags,
-                int32_t fd=-1, uint64_t pos=0);
+                   int32_t fd=-1, uint64_t pos=0);
 
   virtual ~SmartFdHadoopJVM();
 
-  hdfsFile file = 0;
+  hdfsFile file() const;
+
+  void file(const hdfsFile& file);
+
+  private:
+
+  hdfsFile m_file;
 };
 
 

@@ -11,7 +11,7 @@
 #include "swcdb/fs/Callbacks.h"
 
 
-namespace SWC{ 
+namespace SWC { 
 
 namespace Types {
 enum Fs {

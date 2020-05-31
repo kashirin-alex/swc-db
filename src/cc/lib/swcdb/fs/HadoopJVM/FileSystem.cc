@@ -36,7 +36,7 @@ bool apply_hadoop_jvm() {
 
 
 SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(const std::string &filepath, 
-                                           uint32_t flags) {
+                                                 uint32_t flags) {
   return std::make_shared<SmartFdHadoopJVM>(filepath, flags);
 }
 
@@ -48,11 +48,21 @@ SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(SmartFd::Ptr &smart_fd) {
 }
 
 SmartFdHadoopJVM::SmartFdHadoopJVM(const std::string &filepath, uint32_t flags,
-                             int32_t fd, uint64_t pos)
-                            : SmartFd(filepath, flags, fd, pos) { 
+                                   int32_t fd, uint64_t pos)
+                                  : SmartFd(filepath, flags, fd, pos),
+                                    m_file(nullptr) { 
 }
 SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
+hdfsFile SmartFdHadoopJVM::file() const { 
+  LockAtomic::Unique::scope lock(m_mutex);
+  return m_file; 
+}
+
+void SmartFdHadoopJVM::file(const hdfsFile& file) { 
+  LockAtomic::Unique::scope lock(m_mutex);
+  m_file = file; 
+}
 
 
 FileSystemHadoopJVM::FileSystemHadoopJVM() 
@@ -337,9 +347,11 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
 
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */
-  if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
-                                      bufsz, replication, blksz)) == 0) {
+  auto fd = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
+                         bufsz, replication, blksz);
+  if (!fd) {
     err = errno;
+    hadoop_fd->file(fd);
     hadoop_fd->fd(-1);
     SWC_LOGF(LOG_ERROR, "create failed: %d(%s) blksz=%lld, %s ", 
               errno, strerror(errno), blksz, smartfd->to_string().c_str());
@@ -350,7 +362,7 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
       err == Error::FS_PERMISSION_DENIED;
     return;
   }
-
+  hadoop_fd->file(fd);
   hadoop_fd->fd(++m_nxt_fd);
   fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
@@ -368,9 +380,11 @@ void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
 
   auto hadoop_fd = get_fd(smartfd);
   /* Open the file */
-  if ((hadoop_fd->file = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
-                                      bufsz<=-1 ? 0 : bufsz, 0, 0)) == 0) {
+  auto fd = hdfsOpenFile(m_filesystem, abspath.c_str(), oflags, 
+                         bufsz<=-1 ? 0 : bufsz, 0, 0);
+  if (!fd) {
     err = errno;
+    hadoop_fd->file(fd);
     hadoop_fd->fd(-1);
     SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
@@ -381,7 +395,7 @@ void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
       err == Error::FS_PERMISSION_DENIED;
     return;
   }
-
+  hadoop_fd->file(fd);
   hadoop_fd->fd(++m_nxt_fd);
   fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
@@ -394,13 +408,13 @@ size_t FileSystemHadoopJVM::read(int &err, SmartFd::Ptr &smartfd,
     
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lld file-%lld", 
             hadoop_fd->to_string().c_str(), 
-            amount, (size_t) hadoop_fd->file);
+            amount, (size_t) hadoop_fd->file());
   ssize_t nread = 0;
   errno = 0;
 
   /* 
   uint64_t offset;
-  if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
+  if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file()))
                 == (uint64_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%llu", 
@@ -409,7 +423,7 @@ size_t FileSystemHadoopJVM::read(int &err, SmartFd::Ptr &smartfd,
   }
   */
     
-  nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file, dst, (tSize)amount);
+  nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file(), dst, (tSize)amount);
   if (nread == -1) {
     nread = 0;
     err = errno;
@@ -432,11 +446,11 @@ size_t FileSystemHadoopJVM::pread(int &err, SmartFd::Ptr &smartfd,
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%lld file-%lld", 
             hadoop_fd->to_string().c_str(),
-            offset, amount, (size_t) hadoop_fd->file);
+            offset, amount, (size_t) hadoop_fd->file());
 
   errno = 0;
   ssize_t nread = (ssize_t)hdfsPread(
-    m_filesystem, hadoop_fd->file, (tOffset)offset, dst, (tSize)amount);
+    m_filesystem, hadoop_fd->file(), (tOffset)offset, dst, (tSize)amount);
   if (nread == -1) {
     nread = 0;
     err = errno;
@@ -463,7 +477,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
   errno = 0;
   /* 
   uint64_t offset;
-  if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file))
+  if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file()))
           == (uint64_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%llu", 
@@ -472,7 +486,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
   }
   */
 
-  if ((nwritten = (ssize_t)hdfsWrite(m_filesystem, hadoop_fd->file, 
+  if ((nwritten = (ssize_t)hdfsWrite(m_filesystem, hadoop_fd->file(), 
                              buffer.base, (tSize)buffer.size)) == -1) {
     nwritten = 0;
     err = errno;
@@ -483,7 +497,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
   hadoop_fd->pos(smartfd->pos()+nwritten);
 
   if (flags == Flags::FLUSH || flags == Flags::SYNC) {
-    if (hdfsFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
+    if (hdfsFlush(m_filesystem, hadoop_fd->file()) != Error::OK) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());
@@ -502,7 +516,7 @@ void FileSystemHadoopJVM::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
             hadoop_fd->to_string().c_str(), offset);
     
   errno = 0;
-  int res = hdfsSeek(m_filesystem, hadoop_fd->file, (tOffset)offset); 
+  int res = hdfsSeek(m_filesystem, hadoop_fd->file(), (tOffset)offset); 
   if(res == -1 || errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
@@ -516,7 +530,7 @@ void FileSystemHadoopJVM::flush(int &err, SmartFd::Ptr &smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "flush %s", hadoop_fd->to_string().c_str());
 
-  if (hdfsHFlush(m_filesystem, hadoop_fd->file) != Error::OK) {
+  if (hdfsHFlush(m_filesystem, hadoop_fd->file()) != Error::OK) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
@@ -527,7 +541,7 @@ void FileSystemHadoopJVM::sync(int &err, SmartFd::Ptr &smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "sync %s", hadoop_fd->to_string().c_str());
 
-  if (hdfsHSync(m_filesystem, hadoop_fd->file) != Error::OK) {
+  if (hdfsHSync(m_filesystem, hadoop_fd->file()) != Error::OK) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
@@ -539,14 +553,14 @@ void FileSystemHadoopJVM::close(int &err, SmartFd::Ptr &smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
-  if(hadoop_fd->file) {
+  if(hadoop_fd->file()) {
     fd_open_decr();
-    if(hdfsCloseFile(m_filesystem, hadoop_fd->file) != 0) {
+    if(hdfsCloseFile(m_filesystem, hadoop_fd->file()) != 0) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
                  errno, strerror(errno), smartfd->to_string().c_str());
     }
-    hadoop_fd->file = 0;
+    hadoop_fd->file(0);
   } else 
     err = EBADR;
   hadoop_fd->fd(-1);
