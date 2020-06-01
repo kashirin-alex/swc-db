@@ -37,7 +37,7 @@ class Exists : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_EXISTS, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
+    if(!error) {
       Params::ExistsRsp params;
       params.decode(&ptr, &remain);
       state = params.exists;

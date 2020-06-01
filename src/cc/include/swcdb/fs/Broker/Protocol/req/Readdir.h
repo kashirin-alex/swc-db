@@ -38,7 +38,7 @@ class Readdir : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_READDIR, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
+    if(!error) {
       Params::ReaddirRsp params;
       params.decode(&ptr, &remain);
       params.get_listing(listing);

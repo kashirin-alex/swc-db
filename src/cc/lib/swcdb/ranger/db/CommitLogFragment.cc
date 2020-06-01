@@ -446,6 +446,10 @@ bool Fragment::processing() {
 
 SWC_SHOULD_INLINE
 void Fragment::remove(int &err) {
+  if(m_smartfd->valid()) {
+    int tmperr = Error::OK;
+    Env::FsInterface::interface()->close(tmperr, m_smartfd);
+  }
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 

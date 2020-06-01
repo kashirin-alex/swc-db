@@ -38,7 +38,7 @@ class Open : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_OPEN, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
+    if(!error) {
       Params::OpenRsp params;
       params.decode(&ptr, &remain);
       smartfd->fd(params.fd);

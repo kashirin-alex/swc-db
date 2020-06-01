@@ -44,11 +44,19 @@ class Append : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_APPEND, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
-      Params::AppendRsp params;
-      params.decode(&ptr, &remain);
-      amount = params.amount;
-      smartfd->pos(params.offset+amount);
+    switch(error) {
+      case Error::OK: {
+        Params::AppendRsp params;
+        params.decode(&ptr, &remain);
+        amount = params.amount;
+        smartfd->pos(params.offset + amount);
+        break;
+      }
+      case EBADR:
+      case Error::FS_BAD_FILE_HANDLE:
+        smartfd->fd(-1);
+      default:
+        break;
     }
 
     SWC_LOGF(LOG_DEBUG, "append %s amount='%d' error='%d'", 

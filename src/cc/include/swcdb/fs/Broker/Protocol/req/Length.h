@@ -38,7 +38,7 @@ class Length : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_LENGTH, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
+    if(!error) {
       Params::LengthRsp params;
       params.decode(&ptr, &remain);
       length = params.length;

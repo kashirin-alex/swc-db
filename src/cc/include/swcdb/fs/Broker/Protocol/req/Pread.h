@@ -47,22 +47,30 @@ class Pread : public Base {
       return;
 
     StaticBuffer::Ptr buf = nullptr;
-    if(error == Error::OK || error == Error::FS_EOF) {
-      Params::ReadRsp params;
-      params.decode(&ptr, &remain);
-      amount = ev->data_ext.size;
-      smartfd->pos(params.offset+amount);
-
-      if(amount) {
-        if(buffer == nullptr) {
-          buf = std::make_shared<StaticBuffer>(ev->data_ext); 
-        } else {
-          if(allocated)
-            memcpy(buffer, ev->data_ext.base, amount);
-          else
-            ((StaticBuffer*)buffer)->set(ev->data_ext);
+    switch(error) {
+      case Error::OK:
+      case Error::FS_EOF: {
+        Params::ReadRsp params;
+        params.decode(&ptr, &remain);
+        amount = ev->data_ext.size;
+        smartfd->pos(params.offset + amount);
+        if(amount) {
+          if(buffer == nullptr) {
+            buf = std::make_shared<StaticBuffer>(ev->data_ext);
+          } else {
+            if(allocated)
+              memcpy(buffer, ev->data_ext.base, amount);
+            else
+              ((StaticBuffer*)buffer)->set(ev->data_ext);
+          }
         }
+        break;
       }
+      case EBADR:
+      case Error::FS_BAD_FILE_HANDLE:
+        smartfd->fd(-1);
+      default:
+        break;
     }
 
     SWC_LOGF(LOG_DEBUG, "pread %s amount='%d' error='%d'", 

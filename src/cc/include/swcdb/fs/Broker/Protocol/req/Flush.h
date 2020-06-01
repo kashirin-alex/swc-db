@@ -36,6 +36,14 @@ class Flush : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_FLUSH, &ptr, &remain))
       return;
 
+    switch(error) {
+      case EBADR:
+      case Error::FS_BAD_FILE_HANDLE:
+        smartfd->fd(-1);
+      default:
+        break;
+    }
+    
     SWC_LOGF(LOG_DEBUG, "flush %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);

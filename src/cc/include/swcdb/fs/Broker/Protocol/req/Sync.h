@@ -36,6 +36,16 @@ class Sync : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_SYNC, &ptr, &remain))
       return;
 
+    switch(error) {
+      case Error::OK:
+        break;
+      case EBADR:
+      case Error::FS_BAD_FILE_HANDLE:
+        smartfd->fd(-1);
+      default:
+        break;
+    }
+    
     SWC_LOGF(LOG_DEBUG, "sync %s error='%d'", smartfd->to_string().c_str(), error);
     
     cb(error, smartfd);

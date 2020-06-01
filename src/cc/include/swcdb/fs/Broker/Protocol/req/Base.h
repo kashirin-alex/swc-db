@@ -44,14 +44,13 @@ class Base : public DispatchHandler {
         break;
     }
 
-    if(error == Error::OK && ev->header.command != cmd){
+    if(!error && ev->header.command != cmd){
       error = Error::NOT_IMPLEMENTED;
       SWC_LOGF(LOG_ERROR, "error=%d(%s) cmd=%d", 
                 error, Error::get_text(error), ev->header.command);
 
-    } else if(error == Error::OK 
-              && ((error = ev->response_code()) == Error::OK)
-                  || error == Error::FS_EOF) {
+    } else if((!error && !(error = ev->response_code())) || 
+              error == Error::FS_EOF) {
       *ptr = ev->data.base + 4;
       *remain = ev->data.size - 4;
     } 

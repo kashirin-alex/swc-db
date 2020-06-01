@@ -39,10 +39,18 @@ class Seek : public Base {
     if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_SEEK, &ptr, &remain))
       return;
 
-    if(error == Error::OK) {
-      Params::SeekRsp params;
-      params.decode(&ptr, &remain);
-      smartfd->pos(params.offset);
+    switch(error) {
+      case Error::OK: {
+        Params::SeekRsp params;
+        params.decode(&ptr, &remain);
+        smartfd->pos(params.offset);
+        break;
+      }
+      case EBADR:
+      case Error::FS_BAD_FILE_HANDLE:
+        smartfd->fd(-1);
+      default:
+        break;
     }
 
     SWC_LOGF(LOG_DEBUG, "seek %s error='%d'", 
