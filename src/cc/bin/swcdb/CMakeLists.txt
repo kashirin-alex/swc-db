@@ -29,6 +29,8 @@ else()
 	set(TARGETS ${SHARED_TARGETS})
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
+
 
 # swcdbRanger
 ADD_EXEC_TARGET(

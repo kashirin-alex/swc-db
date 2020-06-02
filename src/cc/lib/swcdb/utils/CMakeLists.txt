@@ -8,13 +8,13 @@
 ########### SHELL UTILITY ###########
 
 set(swcdb_utils_shell_sources
-	cli/Shell.cc
+  cli/Shell.cc
 )
 ADD_LIB_TARGET(
-	NAME	swcdb_utils_shell
-	SRCS	${swcdb_utils_shell_sources}
+  NAME    swcdb_utils_shell
+  SRCS    ${swcdb_utils_shell_sources}
   TARGETS 
   
-	SHARED	${EDITLINE_LIBRARIES_SHARED}
-	STATIC	${EDITLINE_LIBRARIES_STATIC}
+  SHARED  ${EDITLINE_LIBRARIES_SHARED}
+  STATIC  ${EDITLINE_LIBRARIES_STATIC}
 )

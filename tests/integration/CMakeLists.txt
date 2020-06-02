@@ -1,0 +1,30 @@
+#
+# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+#
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
+
+
+add_test(
+  NAME    test-swcdb_cluster-start
+  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster --config start
+)
+
+add_test(
+  NAME    test-swcdb_cluster-stop
+  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster --config stop
+)
+
+
+
+add_subdirectory("comm")
+
+add_subdirectory("fs")
+
+add_subdirectory("manager")
+
+add_subdirectory("ranger")
+
+add_subdirectory("client")
+
+add_subdirectory("thrift")

@@ -17,7 +17,7 @@
 // SWC_ATTRIBS((SWC_ATTR_NOTHROW, SWC_ATTR_INLINE))
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)
 #define SWC_ATTR_NOTHROW __nothrow__
-#define SWC_ATTR_INLINE __always_inline__, __artificial__
+#define SWC_ATTR_INLINE __always_inline__ //, __artificial__
 #define SWC_ATTR_NOINLINE __noinline__
 
 #define SWC_NOEXCEPT noexcept(true)

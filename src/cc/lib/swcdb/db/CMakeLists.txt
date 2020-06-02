@@ -72,82 +72,9 @@ set(swcdb_sources
   client/sql/QuerySelect.cc
   client/sql/QueryUpdate.cc
 )
+
 ADD_LIB_TARGET(
   NAME      swcdb
   SRCS      ${swcdb_sources}
   TARGETS   swcdb_core swcdb_core_config swcdb_core_comm
-)
-
-
-
-ADD_TEST_TARGET(
-  NAME      cell_key
-  SRCS      Cells/tests/test_cell_key.cc
-  TARGETS   swcdb_core swcdb
-)
-ADD_TEST_TARGET(
-  NAME      cell
-  SRCS      Cells/tests/test_cell.cc
-  TARGETS  swcdb_core swcdb
-)
-
-ADD_TEST_TARGET(
-  NAME      cell_specs_scan
-  SRCS      Cells/tests/test_cell_specs_scan.cc
-  TARGETS   swcdb_core swcdb
-)
-ADD_TEST_TARGET(
-  NAME      cells_interval
-  SRCS      Cells/tests/test_cells_interval.cc
-  TARGETS   swcdb_core swcdb
-)
-
-ADD_TEST_TARGET(
-  NAME      cells_mutable
-  SRCS      Cells/tests/test_cells_mutable.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb
-)
-
-ADD_TEST_TARGET(
-  NAME      key_comparator
-  SRCS      Cells/tests/test_key_comparator.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb
-)
-get_property(SWC_LIB_CORE_SHARED GLOBAL PROPERTY SWC_LIB_CORE_SHARED)
-get_property(SWC_LIB_CORE_STATIC GLOBAL PROPERTY SWC_LIB_CORE_STATIC)
-
-ADD_TEST_TARGET(
-  NAME      key_comparator_impl_src
-  SRCS      Cells/tests/test_key_comparator.cc
-  SHARED    ${SWC_LIB_CORE_SHARED}
-  STATIC    ${SWC_LIB_CORE_STATIC}
-  FLAGS     "-DSWC_IMPL_SOURCE"
-)
-
-
-ADD_TEST_TARGET(
-  NAME      test_echo
-  SRCS      client/test/test_echo.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
-  ARGS      "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
-)
-
-ADD_TEST_TARGET(
-  NAME      mngr_client
-  SRCS      client/test/test_mngr_client.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
-  ARGS       "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
-)
-
-ADD_TEST_TARGET(
-  NAME      mngr_mng_column
-  SRCS      client/test/test_mngr_mng_column.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
-  ARGS      "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
-)
-ADD_TEST_TARGET(
-  NAME      query
-  SRCS      client/test/test_query.cc
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
-  ARGS      "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
 )

@@ -129,6 +129,7 @@ class Checker {
               << " median=" << took/latency->count()
               << "\n";
     print_stats();
+    SWC_ASSERT(!failures);
   }
 
   int num_req;

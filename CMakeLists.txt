@@ -71,9 +71,9 @@ else()
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
     
     if (O_LEVEL STREQUAL "2")
-  	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -floop-interchange")
-  	  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -floop-interchange")
     endif ()
 
@@ -82,10 +82,10 @@ else()
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
     
     if(O_LEVEL MATCHES "[4-7]")
-  	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
-  	  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-early-inlining")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-early-inlining")
       # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsection-anchors")
-  	  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
     
       if(O_LEVEL MATCHES "[5-7]")
         set(BUILD_LINKING "STATIC")
@@ -111,18 +111,18 @@ endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(LOOKUP_LIB_PATHS 	
-	/opt/local/lib 
-	/usr/local/lib  
-	/usr/lib  
-	/lib 
+set(LOOKUP_LIB_PATHS   
+  /opt/local/lib 
+  /usr/local/lib  
+  /usr/lib  
+  /lib 
 )
 
 set(LOOKUP_INCLUDE_PATHS 
-	/opt/local/include 
-	/usr/local/include 
-	/usr/include
-)			
+  /opt/local/include 
+  /usr/local/include 
+  /usr/include
+)      
 
 # Utilities on Building
 include(Utils)
@@ -138,3 +138,4 @@ include(Doc)
 
 
 add_subdirectory("src")
+add_subdirectory("tests")

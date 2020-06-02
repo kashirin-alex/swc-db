@@ -56,7 +56,15 @@ int main(int argc, char** argv) {
 
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get_str("swc.fs")));
-  Env::IoCtx::init(8);
+
+  SWC::Env::IoCtx::init(8);
+  SWC::Env::Clients::init(
+    std::make_shared<SWC::client::Clients>(
+      SWC::Env::IoCtx::io()->shared(),
+      std::make_shared<SWC::client::AppContext>()
+    )
+  );
+
   Env::Resources.init(
     Env::IoCtx::io()->ptr(),
     Env::Config::settings()->get<Property::V_GINT32>(

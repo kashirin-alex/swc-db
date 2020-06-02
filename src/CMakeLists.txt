@@ -3,8 +3,6 @@
 #
 
 
-set(TEST_DIFF ${CMAKE_SOURCE_DIR}/src/testutils/testdiff)
-
 
 add_subdirectory(thrift/swcdb)
 

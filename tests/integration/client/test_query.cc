@@ -449,10 +449,11 @@ int main(int argc, char** argv) {
   // PLAIN one version
   auto schema = SWC::DB::Schema::make();
   schema->col_name = "col-test-1";
-  schema->blk_encoding = SWC::Types::Encoding::ZLIB;
+  schema->col_seq = SWC::Types::KeySeq::VOLUME;
+  schema->blk_encoding = SWC::Types::Encoding::ZSTD;
   schema->blk_size = 50000000;
-  schema->cs_size = 1000000000;
-  schema->cs_max = 10;
+  schema->cs_size = 200000000;
+  schema->cs_max = 2;
 
   /*
   int err;
