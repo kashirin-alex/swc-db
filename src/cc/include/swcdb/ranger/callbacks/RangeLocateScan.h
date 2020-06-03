@@ -116,16 +116,6 @@ class RangeLocateScan : public ReqScan {
     return false;
   }
 
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
-    // if meta-data to be versions
-    return !reached_limits();
-  }
-
-  bool matching_last(const DB::Cell::Key& key) override {
-    // if meta-data to be versions
-    return false;
-  }
-
   
   void response(int &err) override {
 

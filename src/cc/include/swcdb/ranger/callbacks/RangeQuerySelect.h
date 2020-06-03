@@ -50,23 +50,6 @@ class RangeQuerySelect : public ReqScan {
     return !reached_limits();
   }
 
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
-    ensure_size();
-    auto sz = cells.fill();
-    cells.set_mark();
-    cell.write(cells, only_keys);
-    profile.add_cell(cells.fill() - sz);
-
-    const uint8_t* ptr = cells.mark + 1; // key at flag offset
-    size_t remain = cells.ptr - ptr;
-    key_last.decode(&ptr, &remain, false);
-    return !reached_limits();
-  }
-
-  bool matching_last(const DB::Cell::Key& key) override {
-    return profile.cells_count ? key_last.equal(key) : false;
-  }
-
   void response(int &err) override {
       
     if(!err) {
@@ -112,7 +95,6 @@ class RangeQuerySelect : public ReqScan {
   RangePtr  range;
 
   DynamicBuffer          cells;
-  DB::Cell::Key          key_last;
 
 };
 

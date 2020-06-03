@@ -227,23 +227,6 @@ bool CompactRange::add_cell_and_more(const DB::Cells::Cell& cell) {
   return !reached_limits();
 }
 
-bool CompactRange::add_cell_set_last_and_more(const DB::Cells::Cell& cell) {
-  auto sz = m_inblock->cells.fill();
-  m_inblock->add(cell);
-  profile.add_cell(m_inblock->cells.fill() - sz);
-  return !reached_limits();
-}
-
-bool CompactRange::matching_last(const DB::Cell::Key& key) {
-  if(!m_inblock->count)
-    return false;
-  DB::Cell::Key key_last;
-  const uint8_t* ptr = m_inblock->cells.mark + 1; // flag offset
-  size_t remain = m_inblock->cells.ptr - ptr;
-  key_last.decode(&ptr, &remain, false);
-  return key_last.equal(key);
-}
-
 void CompactRange::response(int &err) {
   if(m_stopped)
     return;

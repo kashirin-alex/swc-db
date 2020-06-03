@@ -88,14 +88,6 @@ class ReqScanBlockLoader : public ReqScan {
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
     return !reached_limits();
   }
-
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
-    return !reached_limits();
-  }
-
-  bool matching_last(const DB::Cell::Key& key) override {
-    return false;
-  }
 };
 
 
@@ -117,15 +109,6 @@ class ReqScanTest : public ReqScan {
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
     cells.add(cell, only_keys);
     return !reached_limits();
-  }
-
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
-    cells.add(cell, only_keys);
-    return !reached_limits();
-  }
-
-  bool matching_last(const DB::Cell::Key& key) override {
-    return !cells.empty() ? cells.back()->key.equal(key) : false;
   }
 
   virtual ~ReqScanTest() { }

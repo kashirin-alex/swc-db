@@ -43,10 +43,6 @@ class ReqScan : public ResponseCallback {
   virtual bool reached_limits() = 0;
   
   virtual bool add_cell_and_more(const Cell& cell) = 0;
-  
-  virtual bool add_cell_set_last_and_more(const Cell& cell) = 0;
-                 
-  virtual bool matching_last(const DB::Cell::Key& key) = 0;
 
   virtual std::string to_string() const;
 
@@ -132,15 +128,6 @@ class ReqScanTest : public ReqScan {
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
     cells.add(cell, only_keys);
     return !reached_limits();
-  }
-
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override {
-    cells.add(cell, only_keys);
-    return !reached_limits();
-  }
-
-  bool matching_last(const DB::Cell::Key& key) override {
-    return !cells.empty() ? cells.back()->key.equal(key) : false;
   }
 
   virtual ~ReqScanTest() { }

@@ -431,7 +431,8 @@ void Mutable::scan_version_multi(ReqScan* req) const {
    } else {
     rev = 0;
     offset = 0;
-  }  
+  }
+  const DB::Cell::Key* last_key = 0;
 
   for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
     const Cell& cell = **it.item;
@@ -468,21 +469,23 @@ void Mutable::scan_version_multi(ReqScan* req) const {
       req->profile.skip_cell();
       continue;
     }
-    if(req->matching_last(cell.key)) {
+    if(last_key && last_key->equal(cell.key)) {
       if(!rev) {
         req->profile.skip_cell();
         continue;
       }
     } else {
       rev = req->spec.flags.max_versions;
+      last_key = &cell.key;
     }
 
     if(req->offset_adjusted()) {
+      --rev;
       req->profile.skip_cell();
       continue;
     }
 
-    if(!req->add_cell_set_last_and_more(cell))
+    if(!req->add_cell_and_more(cell))
       break;
     --rev;
   }

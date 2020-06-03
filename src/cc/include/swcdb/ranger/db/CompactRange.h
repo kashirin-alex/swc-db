@@ -35,10 +35,6 @@ class CompactRange final : public ReqScan {
   
   bool add_cell_and_more(const DB::Cells::Cell& cell) override;
   
-  bool add_cell_set_last_and_more(const DB::Cells::Cell& cell) override;
-                 
-  bool matching_last(const DB::Cell::Key& key) override;
-
   void response(int &err) override;
 
   private:

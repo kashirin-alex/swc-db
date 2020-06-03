@@ -79,7 +79,7 @@ class Test {
     counter = Types::is_counter(col_type);
     time_select = 0;
     nfractions = fraction_finish - fraction_start;
-    
+
     SWC_PRINT << "Test::run "
               << " col_type=" << Types::to_string(col_type)
               << " col_seq=" << Types::to_string(col_seq)
@@ -279,6 +279,7 @@ class Test {
     if(i == ncells && !f) {
         SWC_PRINT << "query_select: \n"
                   << " time_select=" << time_select << "ns"
+                  << " cells=" << (ncells*nfractions)
                   << " avg=" << time_select/(ncells*nfractions) << "ns\n"
                   << SWC_PRINT_CLOSE;
       return query_delete();
