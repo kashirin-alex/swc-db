@@ -38,26 +38,25 @@ std::string to_string(Column typ) {
 Column column_type_from(const std::string& typ) {
 
   if(typ.compare("1") == 0 || 
-     strncasecmp(typ.data(), "PLAIN", typ.length()) == 0)
+     strncasecmp(typ.data(), "PLAIN", 5) == 0)
     return Column::PLAIN;
 
+  if(typ.compare("2") == 0 ||
+     strncasecmp(typ.data(), "COUNTER_I64", typ.length()) == 0)
+    return Column::COUNTER_I64;
+  
   if(typ.compare("3") == 0 || 
-     strncasecmp(typ.data(), "COUNTER_I32", typ.length()) == 0)
+     strncasecmp(typ.data(), "COUNTER_I32", 11) == 0)
     return Column::COUNTER_I32;
 
   if(typ.compare("4") == 0 || 
-     strncasecmp(typ.data(), "COUNTER_I16", typ.length()) == 0)
+     strncasecmp(typ.data(), "COUNTER_I16", 11) == 0)
     return Column::COUNTER_I16;
 
   if(typ.compare("5") == 0 || 
-     strncasecmp(typ.data(), "COUNTER_I8", typ.length()) == 0)
+     strncasecmp(typ.data(), "COUNTER_I8", 10) == 0)
     return Column::COUNTER_I8;
 
-  if(typ.compare("2") == 0 ||
-     strncasecmp(typ.data(), "COUNTER_I64", typ.length()) == 0 ||
-     strncasecmp(typ.data(), "COUNTER", typ.length()) == 0)
-    return Column::COUNTER_I64;
-  
   return Column::UNKNOWN;
 }
 
