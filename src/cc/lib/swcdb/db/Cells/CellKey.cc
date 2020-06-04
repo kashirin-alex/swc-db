@@ -287,14 +287,15 @@ void Key::display(std::ostream& out, bool pretty) const {
     
   uint24_t len;
   const uint8_t* ptr = data;
-  char hex[2];
+  char hex[4];
   for(uint24_t n=0; n<count; ) {
     for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
-      if(pretty && (*ptr < 32 || *ptr > 126)) {
-        sprintf(hex, "%X", *ptr);
-        out << "0x" << hex;
-      } else
-          out << *ptr; 
+      if(!pretty || (31 < *ptr && *ptr < 127)) {
+        out << *ptr;
+      } else {
+        sprintf(hex, "0x%X", *ptr);
+        out << hex;
+      }
     }
     if(++n < count)
       out << ", "; 
@@ -307,15 +308,16 @@ void Key::display_details(std::ostream& out, bool pretty) const {
   out << "size=" << size << " count=" << count << " fractions=[";
   uint24_t len;
   const uint8_t* ptr = data;
-  char hex[2];
+  char hex[4];
   for(uint24_t n=0; n<count; ) {
     out << '"';
     for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
-      if(pretty && (*ptr < 32 || *ptr > 126)) {
-        sprintf(hex, "%X", *ptr);
-        out << "0x" << hex;
-      } else
-          out << *ptr; 
+      if(!pretty || (31 < *ptr && *ptr < 127)) {
+        out << *ptr;
+      } else {
+        sprintf(hex, "0x%X", *ptr);
+        out  << hex;
+      } 
     }
     out << '"';
     if(++n < count)

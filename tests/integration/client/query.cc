@@ -66,9 +66,7 @@ class Test {
   uint32_t                  cell_versions;
   
   size_t                    ncells;
-  int                       fraction_start = 0;
-  int                       fraction_finish;
-  int                       nfractions;
+  uint32_t                  nfractions;
 
   bool                      runs;
   DB::Schema::Ptr           schema;
@@ -78,7 +76,6 @@ class Test {
   void run() {
     counter = Types::is_counter(col_type);
     time_select = 0;
-    nfractions = fraction_finish - fraction_start;
 
     SWC_PRINT << "Test::run "
               << " col_type=" << Types::to_string(col_type)
@@ -108,6 +105,7 @@ class Test {
     schema->col_name = col_name;
     schema->col_seq = col_seq;
     schema->cs_size = 200000000;
+    schema->blk_cells = 10000;
     schema->cell_versions = counter ? 1 : cell_versions;
 
     Protocol::Mngr::Req::ColumnMng::request(
@@ -205,18 +203,15 @@ class Test {
   }
 
 
-  void apply_cell_key(DB::Cell::Key& key, int i, int f) {
+  void apply_cell_key(DB::Cell::Key& key, uint32_t i, uint32_t f) {
     key.free();
     std::string cell_number(std::to_string(i));
-    for(uint8_t chr=97; chr<=f; ++chr)
-      key.add(((char)chr)+cell_number);
+    for(uint32_t chr=0; chr<=f; ++chr)
+      key.add(((char)(uint8_t)(chr+97))+cell_number);
   }
 
-  std::string apply_cell_value(int i, int f) {
-    std::string value = "V_OF:"+std::to_string(i);
-    value += ':';
-    value += (char)f;
-    value += "(";
+  std::string apply_cell_value(const DB::Cell::Key& key) {
+    std::string value = "V_OF:(" + key.to_string() + "):(";
     for(uint32_t chr=0; chr<=255; ++chr)
       value += (char)chr;
     value += ")END";
@@ -248,16 +243,16 @@ class Test {
     cell.flag = DB::Cells::INSERT;
     cell.set_time_order_desc(true);
 
-    for(int i=0; i<ncells; ++i) {
-      for(int v=0; v<cell_versions; ++v) {
-        for(int f=97+fraction_start; f<=96+fraction_finish; ++f) {
+    for(uint32_t i=0; i<ncells; ++i) {
+      for(uint32_t v=0; v<cell_versions; ++v) {
+        for(uint32_t f=0; f<nfractions; ++f) {
           apply_cell_key(cell.key, i, f);
 
           if(counter) {
             cell.set_counter(0, 1);
           } else {
             cell.set_value(
-              apply_cell_value(i, f)
+              apply_cell_value(cell.key)
             );
           }
           col->add(cell);
@@ -265,11 +260,11 @@ class Test {
         }
       }
     }
-    req->commit();
+    req->commit_if_need();
   }
 
 
-  void query_select(int i, int f) {
+  void query_select(uint32_t i, uint32_t f) {
     SWC_LOG(LOG_DEBUG, "query_select");
     
     if(f == nfractions) {
@@ -286,7 +281,7 @@ class Test {
     }
 
     DB::Cell::Key key;
-    apply_cell_key(key, i, 97 + fraction_start + f);
+    apply_cell_key(key, i, f);
 
     auto req = std::make_shared<client::Query::Select>(
       [this, ts=Time::now_ns(), key=DB::Cell::Key(key), i, f]
@@ -355,14 +350,14 @@ class Test {
     cell.flag = DB::Cells::DELETE;
     cell.set_time_order_desc(true);
 
-    for(int i=0; i<ncells; ++i) {
-      for(int f=97+fraction_start; f<=96+fraction_finish; ++f) {
+    for(uint32_t i=0; i<ncells; ++i) {
+      for(uint32_t f=0; f<nfractions; ++f) {
         apply_cell_key(cell.key, i, f);
         col->add(cell);
         req->commit_or_wait(col);
       }
     }
-    req->commit();
+    req->commit_if_need();
   }
 };
 
@@ -404,7 +399,7 @@ int main(int argc, char** argv) {
                 + std::to_string(nfractions);
   test.cell_versions = cell_versions;
   test.ncells = ncells;
-  test.fraction_finish = nfractions;
+  test.nfractions = nfractions;
   test.run();
   
   SWC::Env::IoCtx::io()->stop();

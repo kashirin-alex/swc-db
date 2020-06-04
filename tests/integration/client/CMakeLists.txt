@@ -16,7 +16,7 @@ ADD_TEST_EXEC(
   TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
 )
 
-foreach(nfractions 1;26)
+foreach(nfractions 1;26) #;159
   foreach(ncells 10;1000)
     foreach(versions 1;3;10)
       foreach(col_type PLAIN;COUNTER)

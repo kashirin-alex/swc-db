@@ -503,7 +503,7 @@ void Update::Locator::commit_data(
       updater->timeout + cells_buff->fill()/updater->timeout_ratio
         );
 
-  } while(more);
+  }
 }
 
 

@@ -81,7 +81,9 @@ class RangeQuerySelect : public ReqScan {
     }
 
     profile.finished();
-    SWC_LOGF(LOG_INFO, "Select-%s", profile.to_string().c_str());
+    SWC_LOGF(LOG_INFO, "Range(%lld/%lld) err=%d(%s) Select-%s", 
+      range->cfg->cid, range->rid, err, Error::get_text(err),
+      profile.to_string().c_str());
   }
 
   std::string to_string() const override {
@@ -92,9 +94,8 @@ class RangeQuerySelect : public ReqScan {
     return s;
   }
 
-  RangePtr  range;
-
-  DynamicBuffer          cells;
+  RangePtr      range;
+  DynamicBuffer cells;
 
 };
 
