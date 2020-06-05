@@ -15,15 +15,18 @@ import fabric.executor
 
 # swcdb_cluster configurations
 
-swcdb_source_host = os.uname()[1]
 
 swcdb_install_path = os.path.abspath(
     os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 swcdb_cfg = {
-    "swc.cfg.path": [swcdb_install_path + "/etc/swcdb"],
-    "swc.logging.path": [swcdb_install_path + "/var/log/swcdb"]
+    "swc.cfg.path": [swcdb_install_path + "/etc/swcdb/"],
+    "swc.logging.path": [swcdb_install_path + "/var/log/swcdb/"]
 }
+
+swcdb_source_host = os.uname()[1]
+swcdb_remote_hosts = []
+swcdb_fsbrokers = []
 
 
 def swcdb_get_config(filepath):
@@ -72,47 +75,55 @@ def swcdb_set_hosts(swcdb_role):
     #
 
 
-swcdb_get_config(swcdb_cfg["swc.cfg.path"][0] + "/swc.cfg")
-if "swc.cfg.dyn" in swcdb_cfg:
-    swcdb_get_config(("" if swcdb_cfg["swc.cfg.dyn"][0].startswith("/") else swcdb_cfg["swc.cfg.path"][-1]) +
-                     "/" + swcdb_cfg["swc.cfg.dyn"][0])
-#
+def swcdb_read_config():
+    global swcdb_fsbrokers, swcdb_remote_hosts
 
+    swcdb_get_config(swcdb_cfg["swc.cfg.path"][-1] + "swc.cfg")
+    if "swc.cfg.dyn" in swcdb_cfg:
+        swcdb_get_config(("" if swcdb_cfg["swc.cfg.dyn"][0].startswith("/") else swcdb_cfg["swc.cfg.path"][-1]) +
+                         "/" + swcdb_cfg["swc.cfg.dyn"][0])
+    # define hosts swcdb_cfg[role] = [(ssh-addr, [addresses], host)]
 
-# define hosts swcdb_cfg[role] = [(ssh-addr, [addresses], host)]
+    # set managers (ssh-addr, [addresses], host)
+    swcdb_set_hosts("swc.mngr.host")
 
-# set managers (ssh-addr, [addresses], host)
-swcdb_set_hosts("swc.mngr.host")
+    # read & set [Rangers, ThriftBrokers, Additional FsBrokers]
+    swcdb_get_config(swcdb_cfg["swc.cfg.path"][-1] + "swc.cluster.cfg")
+    for role in ["swc.cluster.rgr.host", "swc.cluster.thriftbroker.host", "swc.cluster.fsbroker.host"]:
+        if role not in swcdb_cfg:
+            swcdb_cfg[role] = []
+            continue
+        swcdb_set_hosts(role)
 
+    # [host, ]
+    swcdb_fsbrokers += list(set(
+        [cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]] +
+        [cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]] +
+        [cfg[0] for cfg in swcdb_cfg["swc.cluster.fsbroker.host"]]
+    ))
+    swcdb_remote_hosts += list(set(
+        host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
+        if host != swcdb_source_host
+    ))
 
-# read & set [Rangers, ThriftBrokers, Additional FsBrokers]  
-swcdb_get_config(swcdb_cfg["swc.cfg.path"][-1] + "/swc.cluster.cfg")
-for role in ["swc.cluster.rgr.host", "swc.cluster.thriftbroker.host", "swc.cluster.fsbroker.host"]:
-    if role not in swcdb_cfg:
-        swcdb_cfg[role] = []
-        continue
-    swcdb_set_hosts(role)
-
-
-# [host, ]
-swcdb_fsbrokers = list(set(
-    [cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]] + 
-    [cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]] +
-    [cfg[0] for cfg in swcdb_cfg["swc.cluster.fsbroker.host"]]
-))
-
-swcdb_remote_hosts = list(set(
-    host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
-    if host != swcdb_source_host
-))
-
-swcdb_cfg["swc.cluster.role.delay.start"] = int(
-    swcdb_cfg.get("swc.cluster.role.delay.start", [2])[0])
+    swcdb_cfg["swc.cluster.role.delay.start"] = int(
+        swcdb_cfg.get("swc.cluster.role.delay.start", [2])[0])
+    #
 
 # end configurations 
 
 
 # common-utils
+
+def swcdb_common_options():
+    opts = ["--daemon"]
+    for n in ["swc.cfg.path", "swc.logging.path"]:
+        if len(swcdb_cfg[n]) > 1:
+            opts.append("--" + n + "=" + swcdb_cfg[n][-1])
+    return opts
+    #
+
+
 def swcdb_print_start(task, c):
     print(task + " S(" + c.host + ":" + str(c.port) + ")")
     #
@@ -178,7 +189,7 @@ def swcdb_stop_proc(task, name, c):
 
 @fabric.task(hosts=[swcdb_source_host])
 def deploy(ctx):
-    ctx.local("mkdir -p " + swcdb_cfg["swc.logging.path"][0])
+    ctx.local("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
     for host in swcdb_remote_hosts:
         with fabric.Connection(host) as c:
             deploy_host(c)
@@ -187,7 +198,7 @@ def deploy(ctx):
 
 def deploy_host(c):
     swcdb_print_start("deploy", c)
-    c.run("mkdir -p " + swcdb_cfg["swc.logging.path"][0])
+    c.run("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
     for dir in ["sbin", "bin", "etc", "lib", "include"]:
         for dpath, _, filenames in os.walk(swcdb_install_path + "/" + dir):
             c.run("mkdir -p " + dpath)
@@ -219,13 +230,14 @@ def push_config_host(c):
 
 @fabric.task
 def start_fsbrokers(c):
+    opts = swcdb_common_options()
     for addr, addrs, host in swcdb_cfg["swc.cluster.fsbroker.host"]:
         with fabric.Connection(addr) as c:
             swcdb_print("start-fsbrokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbFsBroker",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else ""),
-                    " --daemon"]), 
+                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                ] + opts),
                 hide=True)
             )
     #
@@ -252,13 +264,14 @@ def stop_fsbrokers(c):
 
 @fabric.task
 def start_managers(c):
+    opts = swcdb_common_options()
     for addr, addrs, host in swcdb_cfg["swc.mngr.host"]:
         with fabric.Connection(addr) as c:
             swcdb_print("start-managers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbManager",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else ""),
-                    " --daemon"]), 
+                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                ] + opts),
                 hide=True)
             )
     #
@@ -276,13 +289,14 @@ def stop_managers(c):
 
 @fabric.task
 def start_rangers(c):
+    opts = swcdb_common_options()
     for addr, addrs, host in swcdb_cfg["swc.cluster.rgr.host"]:
         with fabric.Connection(addr) as c:
             swcdb_print("start-rangers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbRanger",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else ""),
-                    " --daemon"]), 
+                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                ] + opts),
                 hide=True)
             )
     #
@@ -300,13 +314,14 @@ def stop_rangers(c):
 
 @fabric.task
 def start_thriftbrokers(c):
+    opts = swcdb_common_options()
     for addr, addrs, host in swcdb_cfg["swc.cluster.thriftbroker.host"]:
         with fabric.Connection(addr) as c:
             swcdb_print("start-thriftbrokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbThriftBroker",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else ""),
-                    " --daemon"]), 
+                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                ] + opts), 
                 hide=True)
             )
     #
@@ -378,8 +393,32 @@ def shell(c):
 
 
 #
+class SwcDbClusterProgram(fabric.main.Fab):
+    def core_args(self):
+        return fabric.main.Fab.core_args(self) + [
+            fabric.main.Argument(
+                names=("swc.", ),
+                help="SWC-DB cfg arguments correspond to configurable swc.*=value",
+            )
+        ]
+        #
+#
+
 if __name__ == '__main__':
-    fabric.main.Fab(
+    for i, data in enumerate(sys.argv):
+        if not data.startswith("--swc"):
+            continue
+        sys.argv.pop(i)
+        n, v = data.split("=")
+        n = n.strip()[2:]
+        v = v.strip()
+        if n not in swcdb_cfg:
+            swcdb_cfg[n] = []
+        if v not in swcdb_cfg[n]:
+            swcdb_cfg[n].append(v)
+    swcdb_read_config()
+
+    SwcDbClusterProgram(
         name="swcdb_cluster",
         namespace=fabric.main.Collection.from_module(sys.modules[__name__]), 
         version='0.0.1',
