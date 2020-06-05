@@ -117,7 +117,8 @@ std::map<const int, const char *> text_map {
   { Error::SQL_PARSE_ERROR,           "HQL parse error" },
   { Error::SQL_BAD_LOAD_FILE_FORMAT,  "HQL bad load file format" },
   { Error::SQL_BAD_COMMAND,           "HQL bad command" },
-    
+
+  { Error::CLIENT_DATA_REMAINED,      "Data remained on client input" },
 
 
   { Error::BLOCK_COMPRESSOR_UNSUPPORTED_TYPE,

@@ -168,7 +168,9 @@ enum Code {
       
   SQL_PARSE_ERROR                              = 0x00060001,
   SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
-  SQL_BAD_COMMAND                              = 0x00060003
+  SQL_BAD_COMMAND                              = 0x00060003,
+
+  CLIENT_DATA_REMAINED                         = 0x00070001
 
 };
 
