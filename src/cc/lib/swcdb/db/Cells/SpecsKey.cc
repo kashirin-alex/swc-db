@@ -13,28 +13,28 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 bool Fraction::operator==(const Fraction &other) const {
-  return other.comp == comp && value.length() == other.value.length() && 
-         memcmp(value.data(), other.value.data(), value.length()) == 0;
+  return other.comp == comp && length() == other.length() && 
+         memcmp(data(), other.data(), length()) == 0;
 }
 
 uint32_t Fraction::encoded_length() const {
-  return 1 + Serialization::encoded_length_vi32(value.size()) + value.size();
+  return 1 + Serialization::encoded_length_vi32(size()) + size();
 }
 
 void Fraction::encode(uint8_t **bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)comp);
-  Serialization::encode_vi32(bufp, value.size());
-  if(!value.empty()) {
-    memcpy(*bufp, value.data(), value.size());
-    *bufp += value.size();
+  Serialization::encode_vi32(bufp, size());
+  if(!empty()) {
+    memcpy(*bufp, data(), size());
+    *bufp += size();
   }
 }
 
 void Fraction::decode(const uint8_t **bufp, size_t* remainp) {
-  value.clear();
+  clear();
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
   if(uint32_t len = Serialization::decode_vi32(bufp, remainp)) {
-    value.append((const char*)*bufp, len);
+    append((const char*)*bufp, len);
     *bufp += len;
     *remainp -= len;
   }
@@ -72,7 +72,7 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   for(auto it=begin(); it < end(); ++it) {
     it->comp = comp;
     if(len = Serialization::decode_vi32(&ptr)) {
-      it->value.append((const char*)ptr, len);
+      it->append((const char*)ptr, len);
       ptr += len;
     }
   }
@@ -88,7 +88,7 @@ void Key::add(const char* buf, uint32_t len, Condition::Comp comp) {
   Fraction& f = emplace_back();
   f.comp = comp;
   if(len)
-    f.value.append(buf, len);
+    f.append(buf, len);
 }
 
 void Key::add(const std::string& fraction, Condition::Comp comp) {
@@ -113,7 +113,7 @@ void Key::insert(uint32_t idx, const char* buf, uint32_t len,
   auto it = emplace(begin() + idx);
   it->comp = comp;
   if(len)
-    it->value.append(buf, len);
+    it->append(buf, len);
 }
 
 void Key::insert(uint32_t idx, const std::string& fraction, 
@@ -139,18 +139,18 @@ void Key::insert(uint32_t idx, const char* fraction, Condition::Comp comp) {
 std::string_view Key::get(const uint32_t idx, Condition::Comp& comp) const {
   auto& f = (*this)[idx];
   comp = f.comp;
-  return f.value;
+  return f;
 }
 
 std::string_view Key::get(const uint32_t idx) const {
-  return (*this)[idx].value;
+  return (*this)[idx];
 }
 
 void Key::get(DB::Cell::Key& key) const {
   key.free();
   if(!empty()) 
     for(auto it=begin(); it < end(); ++it)
-      key.add(it->value);
+      key.add(*it);
 }
 
 void Key::remove(uint32_t idx, bool recursive) {
@@ -181,27 +181,34 @@ void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
 }
 
 std::string Key::to_string() const {
-  std::string s("Key(size=");
-  s.append(std::to_string(size()));
-  s.append(" fractions=[");
-
-  for(auto it = begin(); it < end();) {
-    s.append(Condition::to_string(it->comp));
-    s.append("(");
-    s.append(it->value);
-    s.append(")");
-    if(++it < end())
-      s.append(",");
-  }
-  s.append("])");
+  std::string s("Key(");
+  std::stringstream ss;
+  display(ss);
+  s.append(ss.str());
+  s.append(")");
   return s;
 }
 
-void Key::display(std::ostream& out) const {
+void Key::display(std::ostream& out, bool pretty) const {
   out << "size=" << size() << " fractions=[";
-  for(auto it = begin(); it < end();) {
-    out << Condition::to_string(it->comp);
-    out << '"' << it->value << '"';
+  char hex[5];
+  hex[4] = 0;
+  for(auto it = begin(); it < end(); ) {
+    out << Condition::to_string(it->comp) 
+        << '"';
+    if(pretty) {
+      for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+        if(31 < (uint8_t)*chrp && (uint8_t)*chrp < 127) {
+          out << *chrp;
+        } else {
+          sprintf(hex, "0x%X", (uint8_t)*chrp);
+          out << hex;
+        }
+      }
+    } else {
+      out << *it;
+    }
+    out << '"';
     if(++it < end())
       out << ", "; 
   }

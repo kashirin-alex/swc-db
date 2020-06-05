@@ -407,6 +407,7 @@ std::string Interval::to_string() const {
   s.append(" ");
   s.append(flags.to_string());
 
+  s.append(")");
   return s;
 }
 
@@ -416,19 +417,19 @@ void Interval::display(std::ostream& out, bool pretty,
 
   out << offset << " Range(\n"
       << offset << "   begin(";
-  range_begin.display_details(out);
+  range_begin.display_details(out, pretty);
   out << ")\n"
       << offset << "     end(";
-  range_end.display_details(out);
+  range_end.display_details(out, pretty);
   out << ")\n"
       << offset << " )\n";
 
   out << offset << " Key(\n"
       << offset << "   start(";
-  key_start.display(out);
+  key_start.display(out, pretty);
   out << ")\n"
       << offset << "  finish(";
-  key_finish.display(out);
+  key_finish.display(out, pretty);
   out << ")\n"
       << offset << " )\n";
 
@@ -443,13 +444,13 @@ void Interval::display(std::ostream& out, bool pretty,
 
   out << offset << " Offset(\n"
       << offset << "     key(";
-  offset_key.display_details(out);
+  offset_key.display_details(out, pretty);
   out << ")\n"
       << offset << "     rev(" << offset_rev << " )\n"
       << offset << " )\n";
 
   out << offset << " Value(";
-  value.display(out);
+  value.display(out, pretty);
   out << ")\n"; 
 
   out << offset << " Flags(";

@@ -60,7 +60,7 @@ class ReportRsp  : public Serializable {
 
     void decode(const uint8_t **bufp, size_t *remainp);
   
-    void display(std::ostream& out, bool pretty=false, 
+    void display(std::ostream& out, bool pretty=true, 
                  std::string offset = "") const;
   };
 
@@ -80,7 +80,7 @@ class ReportRsp  : public Serializable {
 
     void decode(const uint8_t **bufp, size_t *remainp);
     
-    void display(std::ostream& out, bool pretty=false, 
+    void display(std::ostream& out, bool pretty=true, 
                  std::string offset = "") const;
   };
 
@@ -96,7 +96,7 @@ class ReportRsp  : public Serializable {
   EndPoints            endpoints;
   std::vector<Column*> columns;
 
-  void display(std::ostream& out, bool pretty=false, 
+  void display(std::ostream& out, bool pretty=true, 
                std::string offset = "") const;
 
   private:

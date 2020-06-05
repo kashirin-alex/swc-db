@@ -61,7 +61,7 @@ class Value {
 
   std::string to_string() const;
 
-  void display(std::ostream& out, bool pretty=false) const;
+  void display(std::ostream& out, bool pretty=true) const;
 
   bool            own;
   uint8_t*        data;

@@ -263,19 +263,16 @@ bool Key::equal(const std::vector<std::string>& key) const {
 
 std::string Key::to_string() const {
   std::string s("Key(");
-  s.append("sz=");
-  s.append(::SWC::to_string(count));
-  s.append(" len=");
-  s.append(std::to_string(size));
-  s.append(" fractions=[");
-  uint24_t len;
-  const uint8_t* ptr = data;
-  for(uint24_t n=0; n<count; ++n,ptr+=len) {
-    s.append((const char*)ptr, len = Serialization::decode_vi24(&ptr));
-    s.append(",");
-  }
-  s.append("])");
+  std::stringstream ss;
+  display_details(ss, true);
+  s.append(ss.str());
+  s.append(")");
   return s;
+}
+
+void Key::display_details(std::ostream& out, bool pretty) const {
+  out << "size=" << size << " count=" << count << " fractions=";
+  display(out, pretty);
 }
 
 void Key::display(std::ostream& out, bool pretty) const {
@@ -284,11 +281,12 @@ void Key::display(std::ostream& out, bool pretty) const {
     out << ']'; 
     return;
   }
-    
   uint24_t len;
   const uint8_t* ptr = data;
-  char hex[4];
+  char hex[5];
+  hex[4] = 0;
   for(uint24_t n=0; n<count; ) {
+    out << '"';
     for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
       if(!pretty || (31 < *ptr && *ptr < 127)) {
         out << *ptr;
@@ -297,33 +295,12 @@ void Key::display(std::ostream& out, bool pretty) const {
         out << hex;
       }
     }
+    out << '"';
     if(++n < count)
       out << ", "; 
   }
   out << ']'; 
   
-}
-
-void Key::display_details(std::ostream& out, bool pretty) const {
-  out << "size=" << size << " count=" << count << " fractions=[";
-  uint24_t len;
-  const uint8_t* ptr = data;
-  char hex[4];
-  for(uint24_t n=0; n<count; ) {
-    out << '"';
-    for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
-      if(!pretty || (31 < *ptr && *ptr < 127)) {
-        out << *ptr;
-      } else {
-        sprintf(hex, "0x%X", *ptr);
-        out  << hex;
-      } 
-    }
-    out << '"';
-    if(++n < count)
-      out << ", "; 
-  }
-  out << ']'; 
 }
 
 SWC_SHOULD_INLINE

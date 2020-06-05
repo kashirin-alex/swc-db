@@ -322,19 +322,19 @@ class KeyArena final : public std::vector<Fraction> {
   //Output
   std::string to_string() const {
     std::string s("KeyArena(");
-    s.append("sz=");
-    s.append(std::to_string(size()));
-    s.append(" fractions=[");
-    for(auto it = begin(); it < end();) {
-      s.append((*it)->to_string());
-      if(++it < end())
-        s.append(", ");
-    }
-    s.append("])");
+    std::streamstring ss;
+    display_details(ss, true);
+    s.append(ss.str());
+    s.append(")");
     return s;
   }
 
-  void display(std::ostream& out, bool pretty=false) const {
+  void display_details(std::ostream& out, bool pretty=true) const {
+    out << "size=" << size() << " fractions=";
+    display(out, pretty);
+  }
+
+  void display(std::ostream& out, bool pretty=true) const {
     out << "["; 
     if(empty()) {
       out << "]"; 
@@ -343,43 +343,23 @@ class KeyArena final : public std::vector<Fraction> {
       
     uint32_t len;
     const uint8_t* ptr;
-    char hex[2];
+    char hex[5];
+    hex[4] = 0;
     for(auto it = begin(); it < end();) {
       ptr = (*it)->data();
       for(len = (*it)->size(); len; --len, ++ptr) {
         if(pretty && (*ptr < 32 || *ptr > 126)) {
-          sprintf(hex, "%X", *ptr);
-          out << "0x" << hex;
-        } else
+          sprintf(hex, "0x%X", *ptr);
+          out << hex;
+        } else {
           out << *ptr; 
+        }
       }
       if(++it < end())
         out << ", "; 
     }
     out << "]"; 
     
-  }
-
-  void display_details(std::ostream& out, bool pretty=false) const {
-    out << "size=" << size() << " fractions=[";
-    uint32_t len;
-    const uint8_t* ptr;
-    char hex[2];
-    for(auto it = begin(); it < end();) {
-      out << '"';
-      ptr = (*it)->data();
-      for(len = (*it)->size(); len; --len, ++ptr) {
-        if(pretty && (*ptr < 32 || *ptr > 126)) {
-          sprintf(hex, "%X", *ptr);
-          out << "0x" << hex;
-        } else
-          out << *ptr; 
-      }
-      out << '"';
-      if(++it < end())
-        out << ", "; 
-    }
-    out << "]"; 
   }
 
 };

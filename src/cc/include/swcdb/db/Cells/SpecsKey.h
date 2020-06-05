@@ -14,9 +14,9 @@
 namespace SWC { namespace DB { namespace Specs {
       
 
-struct Fraction final {
+struct Fraction final : public std::string {
+
   Condition::Comp comp;
-  std::string     value;
 
   bool operator==(const Fraction &other) const;
   
@@ -94,7 +94,7 @@ class Key final : public std::vector<Fraction> {
 
   std::string to_string() const;
 
-  void display(std::ostream& out) const;
+  void display(std::ostream& out, bool pretty=true) const;
 
 };
 

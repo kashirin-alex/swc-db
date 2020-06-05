@@ -43,7 +43,7 @@ class Scan final : public Serializable {
   
   std::string to_string();
   
-  void display(std::ostream& out, bool pretty=false, 
+  void display(std::ostream& out, bool pretty=true, 
                std::string offset = "") const;
 
   Columns   columns;

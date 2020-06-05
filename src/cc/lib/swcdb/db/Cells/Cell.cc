@@ -369,25 +369,27 @@ void Cell::display(std::ostream& out,
     DB::Cell::Key de_key;
     de_key.decode(&ptr, &remain);
     out << "end=";
-    de_key.display(out);
+    de_key.display(out, true);
     out << " rid=" << Serialization::decode_vi64(&ptr, &remain);
     de_key.decode(&ptr, &remain);
     out << " min=";
-    de_key.display(out);
+    de_key.display(out, true);
     de_key.decode(&ptr, &remain);
     out << " max=";
-    de_key.display(out);
+    de_key.display(out, true);
 
   } else {
     const uint8_t* ptr = value;
-    char hex[2];
+    char hex[5];
+    hex[4] = 0;
 
     for(uint32_t i=vlen; i; --i, ++ptr) {
       if(!bin && (*ptr < 32 || *ptr > 126)) {
-        sprintf(hex, "%X", *ptr);
-        out << "0x" << hex;
-      } else
-          out << *ptr; 
+        sprintf(hex, "0x%X", *ptr);
+        out << hex;
+      } else {
+        out << *ptr;
+      }
     }
   }
 }

@@ -481,12 +481,12 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
   for(uint24_t c = other.count; c && it < key.cend(); ++it, --c, ptr += len) {
     if(!is_matching<T_seq>(
         comp = it->comp, 
-        (const uint8_t*)it->value.data(), it->value.size(),
+        (const uint8_t*)it->data(), it->size(),
         ptr, len = Serialization::decode_vi24(&ptr) ))
       return false;
   }
   if(key.size() == other.count || ( // [,,>=''] spec incl. prior-match
-      key.size() == other.count + 1 && it->value.empty() && 
+      key.size() == other.count + 1 && it->empty() && 
       it->comp == Condition::GE))
     return true;
 
