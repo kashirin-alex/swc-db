@@ -83,6 +83,7 @@ Update::Update(const DB::Cells::MapMutable::Ptr& columns,
 Update::~Update() { }
  
 void Update::response(int err) {
+  cv.notify_all();
   if(result->completion() > 1) {
     result->completion_decr();
     return;
@@ -98,6 +99,8 @@ void Update::response(int err) {
 
   if(err)
     result->error(err);
+  else if(columns->size() || columns_onfractions->size())
+    result->error(Error::CLIENT_DATA_REMAINED);
 
   result->profile.finished();
   if(cb)
@@ -107,8 +110,8 @@ void Update::response(int err) {
 }
 
 void Update::wait() {
-  std::unique_lock lock_wait(m_mutex);
   if(result->completion()) {
+    std::unique_lock lock_wait(m_mutex);
     cv.wait(
       lock_wait, 
       [updater=shared_from_this()]() {
@@ -118,24 +121,39 @@ void Update::wait() {
   }
 }
 
+void Update::wait_ahead_buffers() {
+  std::unique_lock lock_wait(m_mutex);
+  cv.wait(
+    lock_wait, 
+    [updater=shared_from_this()]() {
+      return updater->columns->size_bytes() 
+              + updater->columns_onfractions->size_bytes()
+              < updater->buff_sz * updater->buff_ahead;
+    }
+  );
+}
+
 
 void Update::commit_or_wait() {
   size_t bytes = columns->size_bytes() 
                 + columns_onfractions->size_bytes();
-
-  if(result->completion() && bytes >= buff_sz * buff_ahead)
-    wait();
-  if(!result->completion() && bytes >= buff_sz)
+  if(result->completion()) {
+    if(bytes >= buff_sz * buff_ahead)
+      wait_ahead_buffers();
+  } else if(bytes >= buff_sz) {
     commit();
+  }
 }
 
 void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col) {
   size_t bytes = col->size_bytes();
 
-  if(result->completion() && bytes >= buff_sz * buff_ahead)
-    wait();
-  if(!result->completion() && bytes >= buff_sz)
+  if(result->completion()) {
+    if(bytes >= buff_sz * buff_ahead)
+      wait_ahead_buffers();
+  } else if(bytes >= buff_sz) {
     commit(col);
+  }
 }
 
 void Update::commit_if_need() {
@@ -501,7 +519,7 @@ void Update::Locator::commit_data(
       },
 
       updater->timeout + cells_buff->fill()/updater->timeout_ratio
-        );
+    );
 
   }
 }

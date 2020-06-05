@@ -103,6 +103,8 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   void wait();
 
+  void wait_ahead_buffers();
+
 
   void commit_or_wait();
 
