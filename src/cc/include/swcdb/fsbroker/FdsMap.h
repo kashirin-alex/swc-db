@@ -23,11 +23,11 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
   int32_t add(const FS::SmartFd::Ptr& smartfd) {
     for(;;) {
       Mutex::scope lock(m_mutex);
-      if(!emplace(++m_next_fd < 0 ? m_next_fd=1 : m_next_fd, smartfd).second)
+      if(!emplace(++m_next_fd < 1 ? m_next_fd=1 : m_next_fd, smartfd).second)
         continue;
       for(auto it = begin(); it != end(); ++it) {
         if(it->first != m_next_fd && it->second->fd() == smartfd->fd()) {
-          it->second->fd(-1);
+          erase(it);
           break;
         }
       }
@@ -44,19 +44,14 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
       return nullptr;
     FS::SmartFd::Ptr smartfd = std::move(it->second);
     erase(it);
-    return smartfd->valid() ? smartfd : nullptr;
+    return smartfd;
   }
 
   FS::SmartFd::Ptr select(int32_t fd) {
     Mutex::scope lock(m_mutex);
     
     auto it = find(fd);
-    if(it != end()) {
-      if(it->second->valid())
-        return it->second;
-      erase(it);
-    }
-    return nullptr;
+    return it == end() ? nullptr : it->second;
   }
 
   FS::SmartFd::Ptr pop_next() {
