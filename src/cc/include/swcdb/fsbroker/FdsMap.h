@@ -18,22 +18,20 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   Fds() : m_next_fd(0) {}
   
-  ~Fds(){}
+  ~Fds() { }
 
   int32_t add(const FS::SmartFd::Ptr& smartfd) {
-    for(;;) {
+    assign_fd:
       Mutex::scope lock(m_mutex);
       if(!emplace(++m_next_fd < 1 ? m_next_fd=1 : m_next_fd, smartfd).second)
-        continue;
+        goto assign_fd;
       for(auto it = begin(); it != end(); ++it) {
         if(it->first != m_next_fd && it->second->fd() == smartfd->fd()) {
           erase(it);
           break;
         }
       }
-      break;
-    }
-    return m_next_fd;
+      return m_next_fd;
   }
 
   FS::SmartFd::Ptr remove(int32_t fd) {

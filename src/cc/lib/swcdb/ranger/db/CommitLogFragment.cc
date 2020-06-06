@@ -250,7 +250,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
     Env::FsInterface::fs()->write(
       [this, blk_replicas, blksz, buff_write, sem]
-      (int err, FS::SmartFd::Ptr smartfd) {
+      (int err, const FS::SmartFd::Ptr& smartfd) {
         write(err, blk_replicas, blksz, buff_write, sem);
       }, 
       m_smartfd, blk_replicas, blksz, *buff_write.get()
@@ -259,7 +259,8 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
   }
 
   //if(err) remains Error::SERVER_SHUTTING_DOWN -- write local dump
-    
+
+  m_smartfd->flags(0);
   sem->release();
   buff_write->own = true;
 

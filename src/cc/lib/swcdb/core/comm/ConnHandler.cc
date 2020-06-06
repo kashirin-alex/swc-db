@@ -253,11 +253,10 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
     if(header.id) {
       m_next_req_id = header.id;
       header.id = 0;
-    } else {
+    } else if(!++m_next_req_id) {
       ++m_next_req_id;
     }
-    if(!m_pending.emplace(m_next_req_id? m_next_req_id: ++m_next_req_id, 
-                          pending).second)
+    if(!m_pending.emplace(m_next_req_id, pending).second)
       goto assign_id;
     header.id = m_next_req_id;
   

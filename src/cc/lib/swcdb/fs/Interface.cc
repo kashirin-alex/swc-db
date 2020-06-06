@@ -426,6 +426,8 @@ void Interface::close(int& err, SmartFd::Ptr smartfd) {
       case EACCES:
       case ENOENT:
       case EBADR:
+      case EBADF:
+      case Error::FS_BAD_FILE_HANDLE:
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:

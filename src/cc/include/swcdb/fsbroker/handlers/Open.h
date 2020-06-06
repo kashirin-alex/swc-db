@@ -28,7 +28,7 @@ void open(ConnHandlerPtr conn, Event::Ptr ev) {
  
     Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
       
-    if(smartfd->valid() && !err)
+    if(smartfd->valid())
       fd = Env::Fds::get()->add(smartfd);
 
   } catch (Exception &e) {

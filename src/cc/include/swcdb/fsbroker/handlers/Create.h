@@ -31,7 +31,7 @@ void create(ConnHandlerPtr conn, Event::Ptr ev) {
       err, smartfd, params.bufsz, params.replication, params.blksz
     );
 
-    if(smartfd->valid() && !err)
+    if(smartfd->valid())
       fd = Env::Fds::get()->add(smartfd);
 
   } catch (Exception &e) {
