@@ -24,7 +24,6 @@ void write(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
-    int32_t fd = -1;
     auto fs = Env::FsInterface::fs();
 
     //Env::FsInterface::fs()->write(
@@ -32,20 +31,20 @@ void write(ConnHandlerPtr conn, Event::Ptr ev) {
     //); needs fds state
 
     fs->create(err, smartfd, 0, params.replication, params.blksz);
-    if(!smartfd->valid() || err) {
-      if(!err) 
-        err = EBADF;
-      goto finish;
-    }
-    fd = Env::Fds::get()->add(smartfd);
-
-    if(ev->data_ext.size)
-      fs->append(err, smartfd, ev->data_ext, FS::Flags::FLUSH);
-
-    finish:
-      int errtmp;
-      if(fd != -1 && (smartfd = Env::Fds::get()->remove(fd)))
+    if(smartfd->valid()) {
+      int32_t fd = Env::Fds::get()->add(smartfd);
+      
+      if(!err && ev->data_ext.size)
+        fs->append(err, smartfd, ev->data_ext, FS::Flags::FLUSH);
+      
+      if(smartfd = Env::Fds::get()->remove(fd)) {
+        int errtmp;
         fs->close(!err ? err : errtmp, smartfd);
+      }
+    } else if(!err) {
+      err = Error::FS_BAD_FILE_HANDLE;
+    }
+
     
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
