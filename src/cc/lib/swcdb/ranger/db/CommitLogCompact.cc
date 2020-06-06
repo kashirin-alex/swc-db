@@ -62,8 +62,9 @@ void Compact::Group::load() {
     if(!compact->log->stopping && !error) {
       frag->load_cells(err, m_cells);
       m_remove.push_back(frag);
+    } else {
+      frag->processing_decrement();
     }
-    frag->processing_decrement();
     frag->release();
     if(err)
       SWC_LOGF(LOG_ERROR, 

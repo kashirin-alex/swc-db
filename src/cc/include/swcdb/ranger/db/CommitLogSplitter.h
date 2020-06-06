@@ -85,11 +85,13 @@ class Splitter final {
         m_queue.deactivate();
         return;
       }
-      if(err)
+      if(err) {
+        frag->processing_decrement();
         SWC_LOGF(LOG_ERROR, 
           "COMPACT fragment-split err=%d(%s) %s", 
           err, Error::get_text(err), frag->to_string().c_str()
         );
+      }
       m_cv.notify_one();
 
     } while(!m_queue.deactivating());

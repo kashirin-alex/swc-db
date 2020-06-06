@@ -219,7 +219,8 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     cell_revs(cell_revs), cells_count(cells_count),
                     data_checksum(data_checksum), offset_data(offset_data),
                     m_smartfd(smartfd), m_state(state), 
-                    m_processing(0), m_cells_remain(cells_count), 
+                    m_processing(m_state == State::WRITING), 
+                    m_cells_remain(cells_count), 
                     m_err(Error::OK) {
 }
 
@@ -265,7 +266,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
   bool keep;
   {
     Mutex::scope lock(m_mutex);
-    keep = !m_queue.empty() || m_processing;
+    keep = --m_processing || !m_queue.empty();
     m_err = err;
     if((m_state = !m_err && keep ? State::LOADED : State::NONE) 
                                               != State::LOADED)
@@ -309,7 +310,6 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
              to_string().c_str());
   }
-  
   processing_decrement();
 
   if(!m_cells_remain || Env::Resources.need_ram(size_plain))
@@ -344,6 +344,7 @@ void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
     SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
              to_string().c_str());
   }
+  processing_decrement();
 }
 
 void Fragment::split(int& err, const DB::Cell::Key& key, 
@@ -444,7 +445,6 @@ bool Fragment::processing() {
   return busy;
 }
 
-SWC_SHOULD_INLINE
 void Fragment::remove(int &err) {
   if(m_smartfd->valid()) {
     int tmperr = Error::OK;
