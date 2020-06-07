@@ -193,23 +193,21 @@ void Key::display(std::ostream& out, bool pretty) const {
   out << "size=" << size() << " fractions=[";
   char hex[5];
   hex[4] = 0;
-  for(auto it = begin(); it < end(); ) {
+  for(auto it = cbegin(); it < cend(); ) {
     out << Condition::to_string(it->comp) 
         << '"';
-    if(pretty) {
-      for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
-        if(31 < (uint8_t)*chrp && (uint8_t)*chrp < 127) {
-          out << *chrp;
-        } else {
-          sprintf(hex, "0x%X", (uint8_t)*chrp);
-          out << hex;
-        }
+    for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+      if(*chrp == '"')
+        out << '\\';
+      if(!pretty || (31 < (uint8_t)*chrp && (uint8_t)*chrp < 127)) {
+        out << *chrp;
+      } else {
+        sprintf(hex, "0x%X", (uint8_t)*chrp);
+        out << hex;
       }
-    } else {
-      out << *it;
     }
     out << '"';
-    if(++it < end())
+    if(++it < cend())
       out << ", "; 
   }
   out << "]"; 

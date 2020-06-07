@@ -288,6 +288,8 @@ void Key::display(std::ostream& out, bool pretty) const {
   for(uint24_t n=0; n<count; ) {
     out << '"';
     for(len = Serialization::decode_vi24(&ptr); len; --len, ++ptr) {
+      if(*ptr == '"')
+        out << '\\';
       if(!pretty || (31 < *ptr && *ptr < 127)) {
         out << *ptr;
       } else {

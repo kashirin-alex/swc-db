@@ -137,8 +137,11 @@ std::string KeyVec::to_string() const {
   s.append(std::to_string(size()));
   s.append(" fractions=[");
   char hex[4];
-  for(auto it = cbegin(); it < cend(); ++it) {
+  for(auto it = cbegin(); it < cend(); ) {
+    s += '"';
     for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+      if(*chrp == '"')
+        s += '\\';
       if(31 < (uint8_t)*chrp && (uint8_t)*chrp < 127) {
         s += *chrp;
       } else {
@@ -146,7 +149,9 @@ std::string KeyVec::to_string() const {
         s.append(hex, 4);
       }
     }
-    s.append(", ");
+    s += '"';
+    if(++it < cend())
+      s.append(", ");
   }
   s.append("])");
   return s;
