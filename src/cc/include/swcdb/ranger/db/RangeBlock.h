@@ -61,10 +61,16 @@ class Block final {
   
   bool is_in_end(const DB::Cell::Key& key) const;
 
-  bool is_next(const DB::Specs::Interval& spec);
+  bool _is_in_end(const DB::Cell::Key& key) const;
 
-  bool includes(const DB::Specs::Interval& spec);
-  
+  bool is_next(const DB::Specs::Interval& spec) const;
+
+  bool includes(const DB::Specs::Interval& spec) const;
+
+  bool _includes_begin(const DB::Specs::Interval& spec) const;
+
+  bool includes_end(const DB::Specs::Interval& spec) const;
+
   void preload();
 
   bool add_logged(const DB::Cells::Cell& cell);
@@ -133,10 +139,9 @@ class Block final {
 
   void run_queue(int& err);
 
+  mutable std::shared_mutex m_mutex;
   DB::Cell::Key             m_prev_key_end;
   DB::Cell::Key             m_key_end;
-
-  std::shared_mutex         m_mutex;
   DB::Cells::Mutable        m_cells;
 
   Mutex                     m_mutex_state;

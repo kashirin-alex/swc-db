@@ -48,31 +48,50 @@ void Block::schema_update() {
 }
 
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
-  //m_prev_key_end && m_key_end behave as const
   return 
-    (intval.key_begin.empty() || is_in_end(intval.key_begin))
-    && 
     (intval.key_end.empty() || m_prev_key_end.empty() ||
      DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, intval.key_end)
-      == Condition::GT);
+      == Condition::GT)
+    &&
+    (intval.key_begin.empty() || is_in_end(intval.key_begin));
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
+  std::shared_lock lock(m_mutex);
+  return _is_in_end(key);
+}
+
+bool Block::_is_in_end(const DB::Cell::Key& key) const {
   return m_key_end.empty() || (!key.empty() && 
           DB::KeySeq::compare(m_cells.key_seq, m_key_end, key) 
                                               != Condition::GT);
 }
 
-bool Block::is_next(const DB::Specs::Interval& spec) {
-  return (spec.offset_key.empty() || is_in_end(spec.offset_key))
-          && includes(spec);
+bool Block::is_next(const DB::Specs::Interval& spec) const {
+  if(includes_end(spec)) {
+    std::shared_lock lock(m_mutex);
+    return (spec.offset_key.empty() || _is_in_end(spec.offset_key)) && 
+            _includes_begin(spec);
+  }
+  return false;
 }
 
-bool Block::includes(const DB::Specs::Interval& spec) {
-  return (m_key_end.empty() || 
-          spec.is_matching_begin(m_cells.key_seq, m_key_end)) && 
-         (m_prev_key_end.empty() ||
-          spec.is_matching_end(m_cells.key_seq, m_prev_key_end));
+bool Block::includes(const DB::Specs::Interval& spec) const {
+  if(includes_end(spec)) {
+    std::shared_lock lock(m_mutex);
+    return _includes_begin(spec);
+  }
+  return false;
+}
+
+bool Block::_includes_begin(const DB::Specs::Interval& spec) const {
+  return m_key_end.empty() || 
+         spec.is_matching_begin(m_cells.key_seq, m_key_end);
+}
+
+bool Block::includes_end(const DB::Specs::Interval& spec) const {
+  return m_prev_key_end.empty() ||
+         spec.is_matching_end(m_cells.key_seq, m_prev_key_end);
 }
     
 void Block::preload() {
@@ -348,9 +367,9 @@ std::string Block::to_string() {
   s.append(" ");
   s.append(m_prev_key_end.to_string());
   s.append(" < key <= ");
-  s.append(m_key_end.to_string());
   
   if(m_mutex.try_lock()) {
+    s.append(m_key_end.to_string());
     s.append(" ");
     s.append(m_cells.to_string());
     m_mutex.unlock();
