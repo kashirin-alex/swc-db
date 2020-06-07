@@ -17,7 +17,7 @@ struct CompactRange::InBlock {
   InBlock(const Types::KeySeq key_seq, size_t size, InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
             cells(size), count(0), interval(key_seq), err(Error::OK),
-            last_cell(0), before_last_cell(0) {
+            last_cell(0) {
     if(has_last)
       inblock->move_last(this);
   }
@@ -38,8 +38,6 @@ struct CompactRange::InBlock {
     ++count;
     cells.set_mark(); // start of last cell
     cell.write(cells);
-
-    before_last_cell = last_cell;
     last_cell = cells.mark;
   }
 
@@ -61,9 +59,8 @@ struct CompactRange::InBlock {
     to->add(cell);
 
     --count;
-    cells.ptr = last_cell;
-    last_cell = before_last_cell;
-    cells.mark = before_last_cell = 0;
+    cells.ptr = (uint8_t*)last_cell;
+    cells.mark = 0;
   }
 
   void finalize_interval(bool any_begin, bool any_end) {    
@@ -104,8 +101,7 @@ struct CompactRange::InBlock {
 
   private:
 
-  uint8_t*              last_cell;
-  uint8_t*              before_last_cell;
+  const uint8_t*       last_cell;
 };
 
 
@@ -227,7 +223,7 @@ bool CompactRange::add_cell_and_more(const DB::Cells::Cell& cell) {
   return !reached_limits();
 }
 
-void CompactRange::response(int &err) {
+void CompactRange::response(int& err) {
   if(m_stopped)
     return;
 
