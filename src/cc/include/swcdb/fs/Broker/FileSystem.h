@@ -41,102 +41,109 @@ class FileSystemBroker final : public FileSystem {
 
   /// File/Dir name actions
 
-  bool exists(int &err, const std::string &name) override;
+  bool exists(int& err, const std::string& name) override;
 
-  void exists(Callback::ExistsCb_t cb, const std::string &name) override;
+  void exists(const Callback::ExistsCb_t& cb, 
+              const std::string& name) override;
 
-  void remove(int &err, const std::string &name) override;
+  void remove(int& err, const std::string& name) override;
 
-  void remove(Callback::RemoveCb_t cb, const std::string &name) override;
+  void remove(const Callback::RemoveCb_t& cb,
+              const std::string& name) override;
   
-  size_t length(int &err, const std::string &name) override;
+  size_t length(int& err, const std::string& name) override;
 
-  void length(Callback::LengthCb_t cb, const std::string &name) override;
+  void length(const Callback::LengthCb_t& cb, 
+              const std::string& name) override;
 
-  void mkdirs(int &err, const std::string &name) override;
+  void mkdirs(int& err, const std::string& name) override;
 
-  void mkdirs(Callback::MkdirsCb_t cb, const std::string &name) override;
+  void mkdirs(const Callback::MkdirsCb_t& cb, 
+              const std::string& name) override;
 
-  void readdir(int &err, const std::string &name, 
-               DirentList &results) override;
+  void readdir(int& err, const std::string& name, 
+               DirentList& results) override;
 
-  void readdir(Callback::ReaddirCb_t cb, const std::string &name) override;
+  void readdir(const Callback::ReaddirCb_t& cb, 
+               const std::string& name) override;
 
-  void rmdir(int &err, const std::string &name) override;
+  void rmdir(int& err, const std::string& name) override;
 
-  void rmdir(Callback::RmdirCb_t cb, const std::string &name) override;
+  void rmdir(const Callback::RmdirCb_t& cb, 
+             const std::string& name) override;
 
-  void rename(int &err, 
-              const std::string &from, const std::string &to) override;
+  void rename(int& err, 
+              const std::string& from, const std::string& to) override;
 
-  void rename(Callback::RenameCb_t cb, 
-              const std::string &from, const std::string &to)  override;
+  void rename(const Callback::RenameCb_t& cb, 
+              const std::string& from, const std::string& to)  override;
 
   /// SmartFd actions
 
-  void write(int &err, SmartFd::Ptr &smartfd,
+  void write(int& err, SmartFd::Ptr& smartfd,
              uint8_t replication, int64_t blksz, 
-             StaticBuffer &buffer) override;
+             StaticBuffer& buffer) override;
 
-  void write(Callback::WriteCb_t cb, SmartFd::Ptr &smartfd,
+  void write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,
              uint8_t replication, int64_t blksz, 
-             StaticBuffer &buffer) override;
+             StaticBuffer& buffer) override;
 
-  void read(int &err, const std::string &name, StaticBuffer* dst) override;
+  void read(int& err, const std::string& name, StaticBuffer* dst) override;
 
-  void read(Callback::ReadAllCb_t cb, const std::string &name) override;
+  void read(const Callback::ReadAllCb_t& cb, 
+            const std::string& name) override;
 
-  void create(int &err, SmartFd::Ptr &smartfd,
+  void create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
-  void create(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd,
+  void create(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
   
-  size_t append(int &err, SmartFd::Ptr &smartfd, 
-                StaticBuffer &buffer, Flags flags) override;
+  size_t append(int& err, SmartFd::Ptr& smartfd, 
+                StaticBuffer& buffer, Flags flags) override;
    
-  void append(Callback::AppendCb_t cb, SmartFd::Ptr &smartfd, 
-              StaticBuffer &buffer, Flags flags) override;
+  void append(const Callback::AppendCb_t& cb, SmartFd::Ptr& smartfd, 
+              StaticBuffer& buffer, Flags flags) override;
 
-  void open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) override;
+  void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) override;
 
-  void open(Callback::OpenCb_t cb, SmartFd::Ptr &smartfd, 
+  void open(const Callback::OpenCb_t& cb, SmartFd::Ptr& smartfd, 
             int32_t bufsz) override;
   
-  size_t read(int &err, SmartFd::Ptr &smartfd, 
+  size_t read(int& err, SmartFd::Ptr& smartfd, 
               void *dst, size_t amount) override;
    
-  size_t read(int &err, SmartFd::Ptr &smartfd, 
+  size_t read(int& err, SmartFd::Ptr& smartfd, 
               StaticBuffer* dst, size_t amount) override;
    
-  void read(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
+  void read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd, 
             size_t amount) override;
   
-  size_t pread(int &err, SmartFd::Ptr &smartfd, 
+  size_t pread(int& err, SmartFd::Ptr& smartfd, 
               uint64_t offset, void *dst, size_t amount) override;
 
-  size_t pread(int &err, SmartFd::Ptr &smartfd, 
+  size_t pread(int& err, SmartFd::Ptr& smartfd, 
               uint64_t offset, StaticBuffer* dst, size_t amount) override;
    
-  void pread(Callback::ReadCb_t cb, SmartFd::Ptr &smartfd, 
+  void pread(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd, 
             uint64_t offset, size_t amount) override;
 
-  void seek(int &err, SmartFd::Ptr &smartfd, size_t offset) override;
+  void seek(int& err, SmartFd::Ptr& smartfd, size_t offset) override;
    
-  void seek(Callback::SeekCb_t cb, SmartFd::Ptr &smartfd, 
+  void seek(const Callback::SeekCb_t& cb, SmartFd::Ptr& smartfd, 
             size_t offset) override;
 
-  void flush(int &err, SmartFd::Ptr &smartfd) override;
+  void flush(int& err, SmartFd::Ptr& smartfd) override;
   
-  void flush(Callback::FlushCb_t cb, SmartFd::Ptr &smartfd) override;
+  void flush(const Callback::FlushCb_t& cb, SmartFd::Ptr& smartfd) override;
 
-  void sync(int &err, SmartFd::Ptr &smartfd) override;
+  void sync(int& err, SmartFd::Ptr& smartfd) override;
   
-  void sync(Callback::SyncCb_t cb, SmartFd::Ptr &smartfd) override;
+  void sync(const Callback::SyncCb_t& cb, SmartFd::Ptr& smartfd) override;
 
-  void close(int &err, SmartFd::Ptr &smartfd) override;
+  void close(int& err, SmartFd::Ptr& smartfd) override;
 
-  void close(Callback::CreateCb_t cb, SmartFd::Ptr &smartfd) override;
+  void close(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd) override;
 
   private:
 

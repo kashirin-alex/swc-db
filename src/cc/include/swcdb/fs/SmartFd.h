@@ -17,10 +17,10 @@ struct SmartFd {
 
   typedef std::shared_ptr<SmartFd> Ptr;
   
-  static Ptr make_ptr(const std::string &filepath, uint32_t flags, 
+  static Ptr make_ptr(const std::string& filepath, uint32_t flags, 
                       int32_t fd=-1, uint64_t pos=0);
 
-  SmartFd(const std::string &filepath, uint32_t flags, 
+  SmartFd(const std::string& filepath, uint32_t flags, 
           int32_t fd=-1, uint64_t pos=0);
 
   virtual ~SmartFd();

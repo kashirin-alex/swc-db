@@ -147,8 +147,9 @@ void Interface::stop() {
   m_fs->stop();
 }
 
-void Interface::get_structured_ids(int &err, std::string base_path, 
-                                  IdEntries_t &entries, std::string base_id) {
+void Interface::get_structured_ids(int& err, const std::string& base_path, 
+                                  IdEntries_t& entries, 
+                                  const std::string& base_id) {
   //path(base_path) .../111/222/333/444f >> IdEntries_t{(int64_t)111222333444}
     
   DirentList dirs;
@@ -182,7 +183,7 @@ void Interface::get_structured_ids(int &err, std::string base_path,
   
 // default form to FS methods
 
-void Interface::readdir(int &err, const std::string& base_path, 
+void Interface::readdir(int& err, const std::string& base_path, 
                         DirentList& dirs) {
   for(;;) {
     DirentList found_dirs;
@@ -203,7 +204,7 @@ void Interface::readdir(int &err, const std::string& base_path,
   }
 }
 
-bool Interface::exists(int &err, const std::string& name) {
+bool Interface::exists(int& err, const std::string& name) {
   for(bool state;;) {
     state = m_fs->exists(err = Error::OK, name);
     switch(err) {
@@ -218,7 +219,7 @@ bool Interface::exists(int &err, const std::string& name) {
   }
 }
 
-void Interface::exists(Callback::ExistsCb_t cb, const std::string &name) {
+void Interface::exists(Callback::ExistsCb_t cb, const std::string& name) {
   Callback::ExistsCb_t cb_wrapper; 
   cb_wrapper = [cb, name, &cb_wrapper, ptr=ptr()]
     (int err, bool state) { 
@@ -230,7 +231,7 @@ void Interface::exists(Callback::ExistsCb_t cb, const std::string &name) {
   m_fs->exists(cb_wrapper, name);
 }
 
-void Interface::mkdirs(int &err, const std::string &name) {
+void Interface::mkdirs(int& err, const std::string& name) {
   for(;;) {
     m_fs->mkdirs(err = Error::OK, name);
     switch(err) {
@@ -246,7 +247,7 @@ void Interface::mkdirs(int &err, const std::string &name) {
   }
 }
 
-void Interface::rmdir(int &err, const std::string &name) {
+void Interface::rmdir(int& err, const std::string& name) {
   for(;;) {
     m_fs->rmdir(err = Error::OK, name);
     switch(err) {
@@ -263,8 +264,8 @@ void Interface::rmdir(int &err, const std::string &name) {
   }
 }
 
-void Interface::rmdir_incl_opt_subs(int &err, const std::string &name, 
-                                    const std::string &up_to) {
+void Interface::rmdir_incl_opt_subs(int& err, const std::string& name, 
+                                    const std::string& up_to) {
   rmdir(err, name);
   if(err)
     return;
@@ -291,7 +292,7 @@ void Interface::rmdir_incl_opt_subs(int &err, const std::string &name,
     err = Error::OK;
 }
 
-void Interface::remove(int &err, const std::string &name) {
+void Interface::remove(int& err, const std::string& name) {
   for(;;) {
     m_fs->remove(err = Error::OK, name);
     switch(err) {
@@ -308,8 +309,8 @@ void Interface::remove(int &err, const std::string &name) {
   }
 }
   
-void Interface::rename(int &err, const std::string &from , 
-                       const std::string &to) {
+void Interface::rename(int& err, const std::string& from , 
+                       const std::string& to) {
   for(;;) {
     m_fs->rename(err = Error::OK, from, to);
     switch(err) {
@@ -326,7 +327,7 @@ void Interface::rename(int &err, const std::string &from ,
   }
 } 
 
-size_t Interface::length(int &err, const std::string &name) {
+size_t Interface::length(int& err, const std::string& name) {
   for(size_t length;;) {
     length = m_fs->length(err = Error::OK, name);
     switch(err) {
@@ -344,9 +345,9 @@ size_t Interface::length(int &err, const std::string &name) {
 }
 
 
-void Interface::write(int &err, SmartFd::Ptr smartfd,
+void Interface::write(int& err, SmartFd::Ptr smartfd,
                       uint8_t replication, int64_t blksz, 
-                      StaticBuffer &buffer) {
+                      StaticBuffer& buffer) {
   for(buffer.own=false;;) {
     m_fs->write(err = Error::OK, smartfd, replication, blksz, buffer);
     switch(err) {
@@ -440,7 +441,7 @@ void Interface::close(int& err, SmartFd::Ptr smartfd) {
 
 
 
-void set_structured_id(std::string number, std::string &s) {
+void set_structured_id(const std::string& number, std::string& s) {
   if(number.length() <= id_split_len) {
     s.append(number);
     s.append({id_split_last});

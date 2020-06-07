@@ -64,35 +64,36 @@ class Interface {
   
   void stop();
 
-  void get_structured_ids(int &err, std::string base_path, 
-                          IdEntries_t &entries, std::string base_id="");
+  void get_structured_ids(int& err, const std::string& base_path, 
+                          IdEntries_t& entries, 
+                          const std::string& base_id="");
   
   // default form to FS methods
 
-  void readdir(int &err, const std::string& base_path, DirentList& dirs);
+  void readdir(int& err, const std::string& base_path, DirentList& dirs);
 
-  bool exists(int &err, const std::string& name);
+  bool exists(int& err, const std::string& name);
 
-  void exists(Callback::ExistsCb_t cb, const std::string &name);
+  void exists(Callback::ExistsCb_t cb, const std::string& name);
 
-  void mkdirs(int &err, const std::string &name);
+  void mkdirs(int& err, const std::string& name);
 
-  void rmdir(int &err, const std::string &name);
+  void rmdir(int& err, const std::string& name);
 
-  void rmdir_incl_opt_subs(int &err, const std::string &name, 
-                           const std::string &up_to);
+  void rmdir_incl_opt_subs(int& err, const std::string& name, 
+                           const std::string& up_to);
                            
-  void remove(int &err, const std::string &name);
+  void remove(int& err, const std::string& name);
   
-  void rename(int &err, const std::string &from , const std::string &to);
+  void rename(int& err, const std::string& from , const std::string& to);
 
-  size_t length(int &err, const std::string &name);
+  size_t length(int& err, const std::string& name);
   
   void read(int& err, const std::string& name, StaticBuffer* dst);
 
-  void write(int &err, SmartFd::Ptr smartfd,
+  void write(int& err, SmartFd::Ptr smartfd,
              uint8_t replication, int64_t blksz, 
-             StaticBuffer &buffer);
+             StaticBuffer& buffer);
   
   bool open(int& err, SmartFd::Ptr& smartfd);
   
@@ -115,7 +116,7 @@ class Interface {
 
 
 
-void set_structured_id(std::string number, std::string &s);
+void set_structured_id(const std::string& number, std::string& s);
 
 } // namespace FS
 

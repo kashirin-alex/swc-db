@@ -35,19 +35,19 @@ bool apply_hadoop_jvm() {
 }
 
 
-SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(const std::string &filepath, 
+SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(const std::string& filepath, 
                                                  uint32_t flags) {
   return std::make_shared<SmartFdHadoopJVM>(filepath, flags);
 }
 
-SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(SmartFd::Ptr &smart_fd) {
+SmartFdHadoopJVM::Ptr SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoopJVM>(
     smart_fd->filepath(), smart_fd->flags(), 
     smart_fd->fd(), smart_fd->pos()
   );
 }
 
-SmartFdHadoopJVM::SmartFdHadoopJVM(const std::string &filepath, uint32_t flags,
+SmartFdHadoopJVM::SmartFdHadoopJVM(const std::string& filepath, uint32_t flags,
                                    int32_t fd, uint64_t pos)
                                   : SmartFd(filepath, flags, fd, pos),
                                     m_file(nullptr) { 
@@ -190,7 +190,7 @@ std::string FileSystemHadoopJVM::to_string() {
 
 
 
-bool FileSystemHadoopJVM::exists(int &err, const std::string &name) {
+bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
   // org.apache.hadoop.ipc.StandbyException
   std::string abspath;
   get_abspath(name, abspath);
@@ -202,7 +202,7 @@ bool FileSystemHadoopJVM::exists(int &err, const std::string &name) {
   return state;
 }
   
-void FileSystemHadoopJVM::remove(int &err, const std::string &name) {
+void FileSystemHadoopJVM::remove(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -218,7 +218,7 @@ void FileSystemHadoopJVM::remove(int &err, const std::string &name) {
   SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
 }
 
-size_t FileSystemHadoopJVM::length(int &err, const std::string &name) {
+size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -239,7 +239,7 @@ size_t FileSystemHadoopJVM::length(int &err, const std::string &name) {
   return len;
 }
 
-void FileSystemHadoopJVM::mkdirs(int &err, const std::string &name) {
+void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
@@ -249,8 +249,8 @@ void FileSystemHadoopJVM::mkdirs(int &err, const std::string &name) {
   err = errno;
 }
 
-void FileSystemHadoopJVM::readdir(int &err, const std::string &name, 
-                               DirentList &results) {
+void FileSystemHadoopJVM::readdir(int& err, const std::string& name, 
+                               DirentList& results) {
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
@@ -287,7 +287,7 @@ void FileSystemHadoopJVM::readdir(int &err, const std::string &name,
   hdfsFreeFileInfo(fileInfo, numEntries);
 }
 
-void FileSystemHadoopJVM::rmdir(int &err, const std::string &name) {
+void FileSystemHadoopJVM::rmdir(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -302,8 +302,8 @@ void FileSystemHadoopJVM::rmdir(int &err, const std::string &name) {
   SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
 }
 
-void FileSystemHadoopJVM::rename(int &err, const std::string &from, 
-                                 const std::string &to)  {
+void FileSystemHadoopJVM::rename(int& err, const std::string& from, 
+                                 const std::string& to)  {
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -319,7 +319,7 @@ void FileSystemHadoopJVM::rename(int &err, const std::string &from,
             abspath_from.c_str(), abspath_to.c_str());
 }
 
-SmartFdHadoopJVM::Ptr FileSystemHadoopJVM::get_fd(SmartFd::Ptr &smartfd){
+SmartFdHadoopJVM::Ptr FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
   auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoopJVM>(smartfd);
   if(!hd_fd){
     hd_fd = SmartFdHadoopJVM::make_ptr(smartfd);
@@ -328,7 +328,7 @@ SmartFdHadoopJVM::Ptr FileSystemHadoopJVM::get_fd(SmartFd::Ptr &smartfd){
   return hd_fd;
 }
 
-void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd, 
+void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd, 
                                  int32_t bufsz, uint8_t replication, 
                                  int64_t blksz) {
   std::string abspath;
@@ -370,7 +370,7 @@ void FileSystemHadoopJVM::create(int &err, SmartFd::Ptr &smartfd,
             bufsz, replication, (Lld)blksz);
 }
 
-void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
+void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
@@ -401,7 +401,7 @@ void FileSystemHadoopJVM::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
   SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
 }
   
-size_t FileSystemHadoopJVM::read(int &err, SmartFd::Ptr &smartfd, 
+size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd, 
               void *dst, size_t amount) {
 
   auto hadoop_fd = get_fd(smartfd);
@@ -440,7 +440,7 @@ size_t FileSystemHadoopJVM::read(int &err, SmartFd::Ptr &smartfd,
 }
 
   
-size_t FileSystemHadoopJVM::pread(int &err, SmartFd::Ptr &smartfd, 
+size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd, 
                                uint64_t offset, void *dst, size_t amount) {
 
   auto hadoop_fd = get_fd(smartfd);
@@ -466,8 +466,8 @@ size_t FileSystemHadoopJVM::pread(int &err, SmartFd::Ptr &smartfd,
   return nread;
 }
 
-size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd, 
-                                StaticBuffer &buffer, Flags flags) {
+size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd, 
+                                StaticBuffer& buffer, Flags flags) {
 
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "append %s amount=%lld flags=%d", 
@@ -509,7 +509,7 @@ size_t FileSystemHadoopJVM::append(int &err, SmartFd::Ptr &smartfd,
   return nwritten;
 }
 
-void FileSystemHadoopJVM::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
+void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
 
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
@@ -526,7 +526,7 @@ void FileSystemHadoopJVM::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
   hadoop_fd->pos(offset);
 }
 
-void FileSystemHadoopJVM::flush(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemHadoopJVM::flush(int& err, SmartFd::Ptr& smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "flush %s", hadoop_fd->to_string().c_str());
 
@@ -537,7 +537,7 @@ void FileSystemHadoopJVM::flush(int &err, SmartFd::Ptr &smartfd) {
   }
 }
 
-void FileSystemHadoopJVM::sync(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemHadoopJVM::sync(int& err, SmartFd::Ptr& smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "sync %s", hadoop_fd->to_string().c_str());
 
@@ -548,7 +548,7 @@ void FileSystemHadoopJVM::sync(int &err, SmartFd::Ptr &smartfd) {
   }
 }
 
-void FileSystemHadoopJVM::close(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
     
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());

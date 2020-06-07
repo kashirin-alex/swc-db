@@ -10,12 +10,12 @@ namespace SWC{ namespace FS {
 
 
 SWC_SHOULD_INLINE
-SmartFd::Ptr SmartFd::make_ptr(const std::string &filepath, uint32_t flags, 
+SmartFd::Ptr SmartFd::make_ptr(const std::string& filepath, uint32_t flags, 
                               int32_t fd, uint64_t pos){
   return std::make_shared<SmartFd>(filepath, flags, fd, pos);
 }
 
-SmartFd::SmartFd(const std::string &filepath, uint32_t flags, 
+SmartFd::SmartFd(const std::string& filepath, uint32_t flags, 
                  int32_t fd, uint64_t pos)
                 : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
 }

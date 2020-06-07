@@ -37,7 +37,7 @@ class FileSystemCeph final : public FileSystem {
 
 
   
-  bool exists(int &err, const std::string &name) override {
+  bool exists(int& err, const std::string& name) override {
     std::string abspath;
     get_abspath(name, abspath);
     SWC_LOGF(LOG_DEBUG, "exists file='%s'", abspath);
@@ -48,7 +48,7 @@ class FileSystemCeph final : public FileSystem {
     return state;
   }
 
-  void mkdirs(int &err, const std::string &name) override {
+  void mkdirs(int& err, const std::string& name) override {
     std::string abspath;
     get_abspath(name, abspath);
     SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath);

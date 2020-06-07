@@ -56,7 +56,7 @@ std::string FileSystemLocal::to_string() {
 
 
 
-bool FileSystemLocal::exists(int &err, const std::string &name) {
+bool FileSystemLocal::exists(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -67,7 +67,7 @@ bool FileSystemLocal::exists(int &err, const std::string &name) {
   return state;
 }
 
-void FileSystemLocal::remove(int &err, const std::string &name) {
+void FileSystemLocal::remove(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -82,7 +82,7 @@ void FileSystemLocal::remove(int &err, const std::string &name) {
   SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
 }
   
-size_t FileSystemLocal::length(int &err, const std::string &name) {
+size_t FileSystemLocal::length(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -99,7 +99,7 @@ size_t FileSystemLocal::length(int &err, const std::string &name) {
   return len;
 }
 
-void FileSystemLocal::mkdirs(int &err, const std::string &name) {
+void FileSystemLocal::mkdirs(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
@@ -109,8 +109,8 @@ void FileSystemLocal::mkdirs(int &err, const std::string &name) {
   err = errno;
 }
 
-void FileSystemLocal::readdir(int &err, const std::string &name, 
-                              DirentList &results) {
+void FileSystemLocal::readdir(int& err, const std::string& name, 
+                              DirentList& results) {
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
@@ -157,7 +157,7 @@ void FileSystemLocal::readdir(int &err, const std::string &name,
   }
 }
 
-void FileSystemLocal::rmdir(int &err, const std::string &name) {
+void FileSystemLocal::rmdir(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   std::error_code ec;
@@ -171,8 +171,8 @@ void FileSystemLocal::rmdir(int &err, const std::string &name) {
   SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
 }
 
-void FileSystemLocal::rename(int &err, const std::string &from, 
-                              const std::string &to)  {
+void FileSystemLocal::rename(int& err, const std::string& from, 
+                              const std::string& to)  {
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -189,7 +189,7 @@ void FileSystemLocal::rename(int &err, const std::string &from,
             abspath_from.c_str(), abspath_to.c_str());
 }
 
-void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd, 
+void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd, 
                              int32_t bufsz, uint8_t replication, 
                              int64_t blksz) {
   std::string abspath;
@@ -236,7 +236,7 @@ void FileSystemLocal::create(int &err, SmartFd::Ptr &smartfd,
 
 }
 
-void FileSystemLocal::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
+void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s, bufsz=%d", 
@@ -273,7 +273,7 @@ void FileSystemLocal::open(int &err, SmartFd::Ptr &smartfd, int32_t bufsz) {
 
 }
   
-size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd, 
+size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd, 
                              void *dst, size_t amount) {
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lld", 
             smartfd->to_string().c_str(), amount);
@@ -306,7 +306,7 @@ size_t FileSystemLocal::read(int &err, SmartFd::Ptr &smartfd,
   return nread;
 }
 
-size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd, 
+size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd, 
                               uint64_t offset, void *dst, 
                               size_t amount) {
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%lld", 
@@ -329,8 +329,8 @@ size_t FileSystemLocal::pread(int &err, SmartFd::Ptr &smartfd,
   return nread;
 }
 
-size_t FileSystemLocal::append(int &err, SmartFd::Ptr &smartfd, 
-                               StaticBuffer &buffer, Flags flags) {
+size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd, 
+                               StaticBuffer& buffer, Flags flags) {
   SWC_LOGF(LOG_DEBUG, "append %s amount=%lld flags=%d", 
             smartfd->to_string().c_str(), buffer.size, flags);
     
@@ -370,7 +370,7 @@ size_t FileSystemLocal::append(int &err, SmartFd::Ptr &smartfd,
   return nwritten;
 }
 
-void FileSystemLocal::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
+void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
   SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
             smartfd->to_string().c_str(), offset);
     
@@ -387,11 +387,11 @@ void FileSystemLocal::seek(int &err, SmartFd::Ptr &smartfd, size_t offset) {
   smartfd->pos(offset);
 }
 
-void FileSystemLocal::flush(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemLocal::flush(int& err, SmartFd::Ptr& smartfd) {
   sync(err, smartfd);
 }
 
-void FileSystemLocal::sync(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
   SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
     
   errno = 0;
@@ -402,7 +402,7 @@ void FileSystemLocal::sync(int &err, SmartFd::Ptr &smartfd) {
   }
 }
 
-void FileSystemLocal::close(int &err, SmartFd::Ptr &smartfd) {
+void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
   SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
   errno = 0;
   if(smartfd->valid()) { 
