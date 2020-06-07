@@ -52,7 +52,7 @@ namespace SWC {
      * @param contents A reference to a std::string which will receive the data
      * @return <i>true</i> on success, <i>false</i> on error
      */
-    bool read(const std::string &fname, std::string &contents);
+    bool read(const std::string& fname, std::string& contents);
 
     /** Reads data from a file descriptor into a buffer
      *
@@ -80,7 +80,7 @@ namespace SWC {
      * @param contents The string contents that are written to the file
      * @return Number of bytes written, or -1 on error
      */
-    ssize_t write(const std::string &fname, const std::string &contents);
+    ssize_t write(const std::string& fname, const std::string& contents);
 
     /** Writes a memory buffer to a file descriptor
      *
@@ -97,7 +97,7 @@ namespace SWC {
      * @param str std::string to write to file
      * @return Number of bytes written, or -1 on error
      */
-    inline ssize_t write(int fd, const std::string &str) {
+    inline ssize_t write(int fd, const std::string& str) {
       return write(fd, str.c_str(), str.length());
     }
 
@@ -109,33 +109,33 @@ namespace SWC {
      * @return A pointer allocated with new[]; needs to be delete[]d by
      *          the caller. Returns 0 on error (sets errno)
      */
-    char *file_to_buffer(const std::string &fname, off_t *lenp);
+    char *file_to_buffer(const std::string& fname, off_t *lenp);
 
     /** Reads a full file into a std::string
      *
      * @param fname The file name
      * @return A string with the data, or an empty string on error (sets errno)
      */
-    std::string file_to_string(const std::string &fname);
+    std::string file_to_string(const std::string& fname);
 
     /** Creates a directory (with all parent directories, if required)
      *
      * @param dirname The directory name to create
      * @return true on success, otherwise falls (sets errno)
      */
-    bool mkdirs(const std::string &dirname);
+    bool mkdirs(const std::string& dirname);
 
     /** Checks if a file or directory exists
      *
      * @return true if the file or directory exists, otherwise false
      */
-    bool exists(const std::string &fname);
+    bool exists(const std::string& fname);
 
     /** Unlinks (deletes) a file or directory
      *
      * @return true on success, otherwise false (sets errno)
      */
-    bool unlink(const std::string &fname);
+    bool unlink(const std::string& fname);
 
     /** Renames a file or directory
      *
@@ -143,28 +143,28 @@ namespace SWC {
      * @param newpath The new filename
      * @return true on success, otherwise false (sets errno)
      */
-    bool rename(const std::string &oldpath, const std::string &newpath);
+    bool rename(const std::string& oldpath, const std::string& newpath);
 
     /** Returns the size of a file (0 on error)
      *
      * @param fname The path of the file
      * @return The file size (in bytes) or 0 on error (sets errno)
      */
-    uint64_t size(const std::string &fname);
+    uint64_t size(const std::string& fname);
 
     /** Returns the size of a file (-1 on error)
      *
      * @param fname The path of the file
      * @return The file size (in bytes) or -1 on error (sets errno)
      */
-    off_t length(const std::string &fname);
+    off_t length(const std::string& fname);
 
     /** Returns the last modification time
      *
      * @param fname The path of the file
      * @return The file modification time_t or 0 on error (sets errno)
      */
-    time_t modification(const std::string &fname);
+    time_t modification(const std::string& fname);
 
     /** Reads all directory entries, applies a regular expression and returns
      * those which match.
@@ -175,8 +175,8 @@ namespace SWC {
      * @param fname_regex The regular expression; can be empty
      * @param listing Vector with the results
      */
-    void readdir(const std::string &dirname, const std::string &fname_regex,
-			           std::vector<struct dirent> &listing);
+    void readdir(const std::string& dirname, const std::string& fname_regex,
+			           std::vector<struct dirent>& listing);
 /*
     /** Atomically writes data from multiple buffers to a file descriptor
      *
@@ -252,10 +252,10 @@ namespace SWC {
      * @param lenp Receives the length of the buffer, in bytes
      * @return A pointer to the mapped data
      *
-    void *mmap(const std::string &fname, off_t *lenp);
+    void *mmap(const std::string& fname, off_t *lenp);
 
     /** Adds a trailing slash to a path *
-    void add_trailing_slash(std::string &path);
+    void add_trailing_slash(std::string& path);
 
     /** Expands a leading tilde character in a filename
      *
@@ -266,7 +266,7 @@ namespace SWC {
      *
      *  @return true on success, false on error
      *
-    bool expand_tilde(std::string &fname);
+    bool expand_tilde(std::string& fname);
     */
   }
 

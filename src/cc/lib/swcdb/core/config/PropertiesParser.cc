@@ -141,7 +141,7 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
   for (auto& pos : other_cfg.positions) 
     add_pos(pos.second, pos.first);
 
-  for(const auto &kv : other_cfg.options)
+  for(const auto& kv : other_cfg.options)
     options.emplace(kv.first, kv.second);
     //auto r= if(r.second && !kv.second.aliases.empty()) { } // ?merge alias
   return *this;
@@ -176,34 +176,34 @@ ParserConfig& ParserConfig::add_options(){
   return *this;
 }
 
-ParserConfig& ParserConfig::add_options(const std::string &name, 
+ParserConfig& ParserConfig::add_options(const std::string& name, 
                                         Property::Value::Ptr vptr, 
-                                        const std::string& description){
+                                        const std::string& description) {
   return add(name, vptr, description);
 }
 
-ParserConfig& ParserConfig::add(const std::string &name, 
-                                const std::string& description){
+ParserConfig& ParserConfig::add(const std::string& name, 
+                                const std::string& description) {
    return add(name, boo()->zero_token(), description);
 }
 
-ParserConfig& ParserConfig::operator()(const std::string &name, 
+ParserConfig& ParserConfig::operator()(const std::string& name, 
                                        const std::string&  description) {
   return add(name, description);
 }
     
 /* Method to add_pos option */
-ParserConfig& ParserConfig::add_pos(const std::string s, int pos){
+ParserConfig& ParserConfig::add_pos(const std::string& s, int pos) {
   positions.emplace_back(pos, s);
   return *this;
 }
 
-ParserConfig& ParserConfig::operator()(const std::string s, int pos) {
+ParserConfig& ParserConfig::operator()(const std::string& s, int pos) {
   return add_pos(s, pos);
 }
 
-std::string ParserConfig::position_name(int n){
-  for (auto & pos : positions) {
+std::string ParserConfig::position_name(int n) {
+  for (auto& pos : positions) {
     if(pos.first == n) 
       return pos.second;
   }
@@ -258,7 +258,7 @@ void ParserConfig::print(std::ostream& os) const {
   size_t tmp;
   size_t len_name=5;
   size_t len_desc=5;
-  for (const auto &kv : options) {
+  for (const auto& kv : options) {
     tmp = (!kv.second.aliases.empty()? 
             format_list(kv.second.aliases).length()+2 : 0);
     if(len_name < tmp+kv.first.length())
@@ -269,7 +269,7 @@ void ParserConfig::print(std::ostream& os) const {
   int offset_name = static_cast<int>(len_name)+2;
   int offset_desc = static_cast<int>(len_desc);
 
-  for (const auto &kv : options) {
+  for (const auto& kv : options) {
     os  << std::left << std::setw(2) << " "
         << std::left << std::setw(offset_name+2) << 
           format("--%s %s", kv.first.c_str(),
@@ -306,7 +306,7 @@ Parser::Options::~Options() {
 
 void Parser::Options::free() {
     if(own) {
-      for(const auto &kv : map)
+      for(const auto& kv : map)
         delete kv.second;
       map.clear();
     }
@@ -326,7 +326,7 @@ void Parser::free() {
   config.free();
 }
   
-void Parser::parse_filedata(std::ifstream &in) {
+void Parser::parse_filedata(std::ifstream& in) {
   size_t at;
   std::string group = "";
   std::string line, g_tmp;
@@ -492,13 +492,13 @@ bool Parser::parse_opt(const std::string& s){
 }
 
 void Parser::make_options() {
-  for(const auto &kv : raw_opts) {
+  for(const auto& kv : raw_opts) {
     if(!config.has(kv.first) && m_unregistered)
       add_opt(kv.first, nullptr, kv.second);  // unregistered cfg
     else
       add_opt(kv.first, config.get_default(kv.first), kv.second);
   }
-  for (const auto &kv : config.options) {
+  for (const auto& kv : config.options) {
     if(raw_opts.count(kv.first) || kv.second.value->is_skippable())
       continue;
     // add default kv
@@ -529,13 +529,13 @@ const Parser::Options& Parser::get_options(){
 
 void Parser::print(std::ostream& os) const {
   os << std::string("*** Raw Parsed Options:") << "\n";
-  for (const auto &kv : raw_opts)
+  for (const auto& kv : raw_opts)
     os << kv.first << "=" << format_list(kv.second) << "\n";
 }
 
 void Parser::print_options(std::ostream& os) const {
   os << std::string("*** Parsed Options:") << "\n";
-  for(const auto &kv : m_opts.map)
+  for(const auto& kv : m_opts.map)
     os << kv.first << "=" << kv.second->to_string() << "\n";
 }
 

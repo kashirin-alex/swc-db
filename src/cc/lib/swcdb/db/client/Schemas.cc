@@ -23,7 +23,7 @@ void Schemas::remove(int64_t cid){
   m_schemas->remove(cid);
 }
 
-void Schemas::remove(const std::string &name){
+void Schemas::remove(const std::string& name){
   Mutex::scope lock(m_mutex);
 
   auto schema = m_schemas->get(name);
@@ -53,7 +53,7 @@ DB::Schema::Ptr Schemas::get(int& err, int64_t cid){
   return schema;
 }
   
-DB::Schema::Ptr Schemas::get(int& err, const std::string &name){
+DB::Schema::Ptr Schemas::get(int& err, const std::string& name){
   DB::Schema::Ptr schema = m_schemas->get(name);    
   if(schema != nullptr)
     return get(err, schema->cid);
@@ -91,7 +91,7 @@ void Schemas::request(int& err, int64_t cid) {
   err = res.get_future().get();
 }
 
-void Schemas::request(int& err, const std::string &name) {
+void Schemas::request(int& err, const std::string& name) {
   std::promise<int> res;
 
   Protocol::Mngr::Req::ColumnGet::schema(

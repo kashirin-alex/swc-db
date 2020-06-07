@@ -84,14 +84,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual void do_close();
 
-  bool send_error(int error, const std::string &msg, 
+  bool send_error(int error, const std::string& msg, 
                   const Event::Ptr& ev=nullptr);
 
   bool response_ok(const Event::Ptr& ev);
 
-  bool send_response(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr=nullptr);
+  bool send_response(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr=nullptr);
 
-  bool send_request(CommBuf::Ptr &cbuf, DispatchHandler::Ptr hdlr);
+  bool send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr);
 
   void accept_requests();
 
@@ -224,7 +224,7 @@ class ConnHandlerSSL final : public ConnHandler {
 
   SocketLayer* socket_layer() override;
 
-  void read(uint8_t** bufp, size_t* remainp, asio::error_code &ec) override;
+  void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
     const std::vector<asio::const_buffer>& buffers,

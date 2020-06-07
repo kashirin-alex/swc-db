@@ -45,12 +45,12 @@ bool is_ipv4_address(const std::string& str);
 bool is_ipv6_address(const std::string& str);
 
 EndPoints get_endpoints(uint16_t defaul_port, 
-                        const Strings &addrs, 
-                        const std::string &host, 
+                        const Strings& addrs, 
+                        const std::string& host, 
                         bool srv=false);
 
 
-void get_networks(const Strings networks, 
+void get_networks(const Strings& networks, 
                   std::vector<asio::ip::network_v4>& nets_v4, 
                   std::vector<asio::ip::network_v6>& nets_v6,
                   asio::error_code& ec);

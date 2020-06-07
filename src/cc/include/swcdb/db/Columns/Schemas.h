@@ -21,7 +21,7 @@ class Schemas final {
 
   ~Schemas();
   
-  void add(int &err, const Schema::Ptr& schema);
+  void add(int& err, const Schema::Ptr& schema);
 
   void remove(int64_t cid);
 
@@ -29,9 +29,9 @@ class Schemas final {
 
   Schema::Ptr get(int64_t cid);
   
-  Schema::Ptr get(const std::string &name);
+  Schema::Ptr get(const std::string& name);
 
-  void all(std::vector<Schema::Ptr> &entries);
+  void all(std::vector<Schema::Ptr>& entries);
 
   private:
   std::shared_mutex                         m_mutex;

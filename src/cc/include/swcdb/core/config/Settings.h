@@ -44,10 +44,10 @@ class Settings final : public Properties {
  
   void parse_args(int argc, char *argv[]);
 
-  void load_files_by(const std::string &fileprop, 
+  void load_files_by(const std::string& fileprop, 
                      bool allow_unregistered);
 
-  void parse_file(const std::string &fname, const std::string &onchg);
+  void parse_file(const std::string& fname, const std::string& onchg);
 
   void init_process();
 

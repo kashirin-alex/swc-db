@@ -13,14 +13,14 @@ namespace SWC {
   }
 
   void Properties::reset() {
-    for (const auto &kv : m_map)
+    for (const auto& kv : m_map)
       delete kv.second;
     m_map.clear();
   }
 
   void Properties::load_from(const Config::Parser::Options& opts, 
                              bool only_guarded) {
-    for(const auto &kv : opts.map) {
+    for(const auto& kv : opts.map) {
       if(has(kv.first) && (kv.second->is_default() || 
                            (only_guarded && !kv.second->is_guarded())))
       continue;
@@ -28,9 +28,9 @@ namespace SWC {
     }
   }
 
-  void Properties::load(const std::string &fname, 
-                        const Config::ParserConfig &filedesc,
-                        const Config::ParserConfig &cmddesc,
+  void Properties::load(const std::string& fname, 
+                        const Config::ParserConfig& filedesc,
+                        const Config::ParserConfig& cmddesc,
                         bool allow_unregistered, 
                         bool only_guarded) {
     Config::Parser prs(false);
@@ -43,9 +43,9 @@ namespace SWC {
     load_from(prs.get_options(), only_guarded);
   } 
   
-  void Properties::reload(const std::string &fname, 
-                          const Config::ParserConfig &filedesc,
-                          const Config::ParserConfig &cmddesc) {
+  void Properties::reload(const std::string& fname, 
+                          const Config::ParserConfig& filedesc,
+                          const Config::ParserConfig& cmddesc) {
 	  try {
       load(fname, filedesc, cmddesc, true);
 
@@ -58,13 +58,13 @@ namespace SWC {
 	  }
   }
 
-  void Properties::alias(const std::string &primary, 
-                         const std::string &secondary) {
+  void Properties::alias(const std::string& primary, 
+                         const std::string& secondary) {
     m_alias_map[primary] = secondary;
     m_alias_map[secondary] = primary;
   }
 
-  void Properties::set(const std::string &name, Property::Value::Ptr p) {
+  void Properties::set(const std::string& name, Property::Value::Ptr p) {
     auto ptr = get_ptr(name, true);
     if(!ptr) {
       m_map.emplace(name, p->make_new());
@@ -74,7 +74,7 @@ namespace SWC {
       ptr->default_value(false);
     }
   }
-  bool Properties::has(const std::string &name) const {
+  bool Properties::has(const std::string& name) const {
     if(m_map.count(name))
       return true;
       
@@ -84,20 +84,20 @@ namespace SWC {
     return m_map.count(alias->second);
   }
 
-  bool Properties::defaulted(const std::string &name) {
+  bool Properties::defaulted(const std::string& name) {
     return get_ptr(name)->is_default();
   }
 
-  std::string Properties::to_string(const std::string &name) {
+  std::string Properties::to_string(const std::string& name) {
     return get_ptr(name)->to_string();
   }
   
-  void Properties::get_names(std::vector<std::string> &names) const {
+  void Properties::get_names(std::vector<std::string>& names) const {
     for(auto it = m_map.begin(); it != m_map.end(); ++it)
       names.push_back(it->first);
   }
 
-  void Properties::remove(const std::string &name) {
+  void Properties::remove(const std::string& name) {
     auto it = m_map.find(name);
     if(it != m_map.end()) {
       delete it->second;
@@ -106,7 +106,7 @@ namespace SWC {
   }
 
 
-  Property::Value::Ptr Properties::get_ptr(const std::string &name, 
+  Property::Value::Ptr Properties::get_ptr(const std::string& name, 
                                            bool null_ok) {
     auto it = m_map.find(name);
     if (it != m_map.end())
@@ -126,14 +126,14 @@ namespace SWC {
               name.c_str());
   }
 
-  void Properties::print(std::ostream &out, bool include_default) const {
+  void Properties::print(std::ostream& out, bool include_default) const {
     out << to_string_all(include_default);
   }
 
   std::string Properties::to_string_all(bool include_default) const {
     std::string out;
     bool isdefault;
-    for(const auto &kv : m_map) {
+    for(const auto& kv : m_map) {
       isdefault = kv.second->is_default();
       if(include_default || !isdefault) {
         out.append(

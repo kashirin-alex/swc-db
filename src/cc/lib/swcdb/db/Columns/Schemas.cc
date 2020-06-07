@@ -15,7 +15,7 @@ Schemas::Schemas() {}
 
 Schemas::~Schemas() {}
 
-void Schemas::add(int &err, const Schema::Ptr& schema) {
+void Schemas::add(int& err, const Schema::Ptr& schema) {
   std::scoped_lock lock(m_mutex);
   if(!m_map.emplace(schema->cid, schema).second) {
     SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
@@ -51,7 +51,7 @@ Schema::Ptr Schemas::get(int64_t cid) {
   return it->second;
 }
 
-Schema::Ptr Schemas::get(const std::string &name) {
+Schema::Ptr Schemas::get(const std::string& name) {
   std::shared_lock lock(m_mutex);
   
   for(const auto& it : m_map ) {
@@ -61,7 +61,7 @@ Schema::Ptr Schemas::get(const std::string &name) {
   return nullptr;
 }
 
-void Schemas::all(std::vector<Schema::Ptr> &entries) {
+void Schemas::all(std::vector<Schema::Ptr>& entries) {
   size_t i = entries.size();
   std::shared_lock lock(m_mutex);
   entries.resize(i+m_map.size());

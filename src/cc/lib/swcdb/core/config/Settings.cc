@@ -144,7 +144,7 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
   load_from(m_cmd_args);  // Inforce cmdline properties 
 }
 
-void Settings::load_files_by(const std::string &fileprop,  
+void Settings::load_files_by(const std::string& fileprop,  
                              bool allow_unregistered) {
     if(fileprop.empty() || !has(fileprop)) 
       return;

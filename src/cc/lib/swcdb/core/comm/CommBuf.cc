@@ -25,7 +25,7 @@ CommBuf::Ptr CommBuf::make(const Serializable& params, uint32_t reserve) {
 
 SWC_SHOULD_INLINE
 CommBuf::Ptr CommBuf::make(const Serializable& params, StaticBuffer& buffer, 
-                  uint32_t reserve) {
+                           uint32_t reserve) {
   return std::make_shared<CommBuf>(params, buffer, reserve);
 }
 
@@ -155,7 +155,7 @@ void CommBuf::append_str16(const char *str) {
   Serialization::encode_str16(&data_ptr, str);
 }
 
-void CommBuf::append_str16(const std::string &str) {
+void CommBuf::append_str16(const std::string& str) {
   Serialization::encode_str16(&data_ptr, str);
 }
 
@@ -175,7 +175,7 @@ void CommBuf::append_vstr(const char *str) {
   Serialization::encode_vstr(&data_ptr, str);
 }
 
-void CommBuf::append_vstr(const std::string &str) {
+void CommBuf::append_vstr(const std::string& str) {
   Serialization::encode_vstr(&data_ptr, str);
 }
 

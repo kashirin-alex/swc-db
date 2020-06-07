@@ -129,7 +129,7 @@ class CommBuf final {
    * @param str std string to append
    * @see Serialization::encode_str16
    */
-  void append_str16(const std::string &str);
+  void append_str16(const std::string& str);
 
   /**
    * Appends a 16-bit integer to the primary buffer.  The integer is encoded
@@ -168,7 +168,7 @@ class CommBuf final {
    * @param str C++ string to append
    * @see Serialization::encode_vstr
    */
-  void append_vstr(const std::string &str);
+  void append_vstr(const std::string& str);
 
   /** Appends a variable sized string to the primary buffer.  The
    * string is encoded as a vint length, followed by the bytes

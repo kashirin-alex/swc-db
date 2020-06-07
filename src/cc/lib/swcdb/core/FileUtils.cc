@@ -48,7 +48,7 @@ namespace SWC { namespace FileUtils {
 
 
 
-bool read(const std::string &fname, std::string &contents) {
+bool read(const std::string& fname, std::string& contents) {
   off_t len {};
   char *buf = file_to_buffer(fname, &len);
   if (buf != 0) {
@@ -113,7 +113,7 @@ ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
 }
 
 
-ssize_t write(const std::string &fname, const std::string &contents) {
+ssize_t write(const std::string& fname, const std::string& contents) {
   int fd = open(fname.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
     int saved_errno = errno;
@@ -151,7 +151,7 @@ ssize_t write(int fd, const void *vptr, size_t n) {
   return n - nleft;
 }
 
-bool mkdirs(const std::string &dirname) {
+bool mkdirs(const std::string& dirname) {
   struct stat statbuf;
 
   char *tmpdir = new char [dirname.length() + 1];	
@@ -188,14 +188,14 @@ bool mkdirs(const std::string &dirname) {
   return !saved_errno;
 }
 
-bool exists(const std::string &fname) {
+bool exists(const std::string& fname) {
   struct stat statbuf;
   if(stat(fname.c_str(), &statbuf) != 0)
     return false;
   return true;
 }
 
-bool unlink(const std::string &fname) {
+bool unlink(const std::string& fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "unlink(\"%s\") failed - %s", fname.c_str(),
@@ -206,7 +206,7 @@ bool unlink(const std::string &fname) {
   return true;
 }
 
-bool rename(const std::string &oldpath, const std::string &newpath) {
+bool rename(const std::string& oldpath, const std::string& newpath) {
   if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "rename(\"%s\", \"%s\") failed - %s",
@@ -217,7 +217,7 @@ bool rename(const std::string &oldpath, const std::string &newpath) {
   return true;
 }
 
-uint64_t size(const std::string &fname) {
+uint64_t size(const std::string& fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
@@ -225,23 +225,23 @@ uint64_t size(const std::string &fname) {
 }
 
 
-off_t length(const std::string &fname) {
+off_t length(const std::string& fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return (off_t)-1;
   return statbuf.st_size;
 }
 
-time_t modification(const std::string &fname) {
+time_t modification(const std::string& fname) {
   struct stat statbuf;
   if (stat(fname.c_str(), &statbuf) != 0)
     return 0;
   return statbuf.st_mtime;
 }
 
-void readdir(const std::string &dirname, 
-                        const std::string &fname_regex,
-                        std::vector<struct dirent> &listing) {
+void readdir(const std::string& dirname, 
+                        const std::string& fname_regex,
+                        std::vector<struct dirent>& listing) {
 
   errno = 0;
   DIR *dirp = opendir(dirname.c_str());
@@ -286,7 +286,7 @@ void readdir(const std::string &dirname,
     delete regex;
 }
 
-char *file_to_buffer(const std::string &fname, off_t *lenp) {
+char *file_to_buffer(const std::string& fname, off_t *lenp) {
   struct stat statbuf;
   int fd;
 
@@ -335,7 +335,7 @@ char *file_to_buffer(const std::string &fname, off_t *lenp) {
   return rbuf;
 }
 
-std::string file_to_string(const std::string &fname) {
+std::string file_to_string(const std::string& fname) {
   off_t len;
   char *contents = file_to_buffer(fname, &len);
   if(!contents)
@@ -461,7 +461,7 @@ bool set_flags(int fd, int flags) {
   return ret;
 }
 
-void *mmap(const std::string &fname, off_t *lenp) {
+void *mmap(const std::string& fname, off_t *lenp) {
   int fd;
   struct stat statbuf;
   void *map;
@@ -483,7 +483,7 @@ void *mmap(const std::string &fname, off_t *lenp) {
   return map;
 }
 
-void add_trailing_slash(std::string &path) {
+void add_trailing_slash(std::string& path) {
   if (path.find('/', path.length() - 1) == std::string::npos)
     path += "/";
 }
@@ -494,7 +494,7 @@ std::mutex ms_mutex;
 }
 
 
-bool expand_tilde(std::string &fname) {
+bool expand_tilde(std::string& fname) {
 
   if (fname[0] != '~')
     return false;

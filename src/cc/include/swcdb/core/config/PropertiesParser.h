@@ -104,18 +104,18 @@ class ParserConfig final {
 
   ParserConfig& add_options();
 
-  ParserConfig& add_options(const std::string &name, Property::Value::Ptr vptr,
+  ParserConfig& add_options(const std::string& name, Property::Value::Ptr vptr,
                             const std::string& description);
 
-  ParserConfig& add(const std::string &name, const std::string& description);
+  ParserConfig& add(const std::string& name, const std::string& description);
 
-  ParserConfig& operator()(const std::string &name, 
+  ParserConfig& operator()(const std::string& name, 
                            const std::string& description);
     
   /* Method to add_pos option */
-  ParserConfig& add_pos(const std::string s, int pos);
+  ParserConfig& add_pos(const std::string& s, int pos);
 
-  ParserConfig& operator()(const std::string s, int pos);
+  ParserConfig& operator()(const std::string& s, int pos);
 
   std::string position_name(int n);
 
@@ -161,7 +161,7 @@ class Parser final {
 
   void free();
   
-  void parse_filedata(std::ifstream &in);
+  void parse_filedata(std::ifstream& in);
 
   void parse_cmdline(int argc, char *argv[]);
 
