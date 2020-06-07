@@ -11,10 +11,10 @@ if(SWC_DOCUMENTATION)
 
 
 
-  if(THRIFT_FOUND)
+  if(THRIFT_COMPILER_FOUND)
     add_custom_target(doc_thrift thrift -gen html 
                       -o ${CMAKE_CURRENT_BINARY_DIR}/doc
-                      ${CMAKE_CURRENT_SOURCE_DIR}/src/cc/lib/swcdb/thrift/Service.thrift)
+                      ${CMAKE_CURRENT_SOURCE_DIR}/src/thrift/swcdb/Service.thrift)
     add_custom_command(TARGET doc POST_BUILD COMMAND make doc_thrift)
   endif ()
 
