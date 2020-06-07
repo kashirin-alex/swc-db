@@ -14,8 +14,8 @@ class Open : public Base {
 
   public:
 
-  Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, int32_t bufsz, 
-       Callback::OpenCb_t cb=0) 
+  Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
+       int32_t bufsz, const Callback::OpenCb_t& cb=0) 
       : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "open %s", smartfd->to_string().c_str());
 

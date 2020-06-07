@@ -16,7 +16,8 @@ class Readdir : public Base {
 
   DirentList listing;
 
-  Readdir(uint32_t timeout, const std::string &name, Callback::ReaddirCb_t cb=0) 
+  Readdir(uint32_t timeout, const std::string& name, 
+          const Callback::ReaddirCb_t& cb=0) 
          : name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 

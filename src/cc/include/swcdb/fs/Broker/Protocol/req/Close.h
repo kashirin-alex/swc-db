@@ -14,7 +14,8 @@ class Close : public Base {
 
   public:
 
-  Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, Callback::CloseCb_t cb=0)
+  Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
+        const Callback::CloseCb_t& cb=0)
         : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
  

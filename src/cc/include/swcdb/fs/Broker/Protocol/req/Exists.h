@@ -15,7 +15,8 @@ class Exists : public Base {
 
   bool  state;
 
-  Exists(uint32_t timeout, const std::string &name, Callback::ExistsCb_t cb=0) 
+  Exists(uint32_t timeout, const std::string& name, 
+         const Callback::ExistsCb_t& cb=0) 
         : name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 

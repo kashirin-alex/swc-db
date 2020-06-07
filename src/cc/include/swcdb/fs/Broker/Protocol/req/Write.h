@@ -13,9 +13,9 @@ class Write : public Base {
 
   public:
   
-  Write(uint32_t timeout, SmartFd::Ptr &smartfd, 
-        uint8_t replication, int64_t blksz, StaticBuffer &buffer,
-        Callback::WriteCb_t cb=0) 
+  Write(uint32_t timeout, SmartFd::Ptr& smartfd, 
+        uint8_t replication, int64_t blksz, StaticBuffer& buffer,
+        const Callback::WriteCb_t& cb=0) 
         : smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, 
       "write amount=%d %s replication(%u) blksz(%d)", 

@@ -15,9 +15,9 @@ class Create : public Base {
 
   public:
   
-  Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr &smartfd, 
+  Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
         int32_t bufsz, uint8_t replication, int64_t blksz, 
-        Callback::CreateCb_t cb=0) 
+        const Callback::CreateCb_t& cb=0) 
         : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, 
       "create %s bufsz(%d) replication(%d) blksz(%d)", 

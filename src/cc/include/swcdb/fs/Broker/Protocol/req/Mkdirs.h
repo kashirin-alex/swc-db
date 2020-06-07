@@ -14,7 +14,8 @@ class Mkdirs : public Base {
 
   public:
 
-  Mkdirs(uint32_t timeout, const std::string &name, Callback::MkdirsCb_t cb=0) 
+  Mkdirs(uint32_t timeout, const std::string& name, 
+         const Callback::MkdirsCb_t& cb=0) 
         : name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 

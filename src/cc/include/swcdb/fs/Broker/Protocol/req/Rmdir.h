@@ -14,7 +14,8 @@ class Rmdir : public Base {
 
   public:
 
-  Rmdir(uint32_t timeout, const std::string &name, Callback::RmdirCb_t cb=0) 
+  Rmdir(uint32_t timeout, const std::string& name, 
+        const Callback::RmdirCb_t& cb=0) 
         : name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 

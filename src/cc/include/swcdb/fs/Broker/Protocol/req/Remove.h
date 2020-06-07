@@ -14,7 +14,8 @@ class Remove : public Base {
 
   public:
 
-  Remove(uint32_t timeout, const std::string &name, Callback::RemoveCb_t cb=0) 
+  Remove(uint32_t timeout, const std::string& name, 
+         const Callback::RemoveCb_t& cb=0) 
         : name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 

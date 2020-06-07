@@ -16,7 +16,8 @@ class Length : public Base {
 
   size_t length;
 
-  Length(uint32_t timeout, const std::string &name, Callback::LengthCb_t cb=0) 
+  Length(uint32_t timeout, const std::string& name, 
+         const Callback::LengthCb_t& cb=0) 
         : name(name), cb(cb), length(0) {
     SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 

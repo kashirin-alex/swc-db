@@ -14,8 +14,8 @@ class Seek : public Base {
 
   public:
   
-  Seek(uint32_t timeout, SmartFd::Ptr &smartfd, size_t offset,
-      Callback::SeekCb_t cb=0) 
+  Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
+       const Callback::SeekCb_t& cb=0) 
       : smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "seek offset=%llu %s", 
              offset, smartfd->to_string().c_str());

@@ -14,7 +14,8 @@ class Sync : public Base {
 
   public:
   
-  Sync(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::SyncCb_t cb=0) 
+  Sync(uint32_t timeout, SmartFd::Ptr& smartfd, 
+       const Callback::SyncCb_t& cb=0) 
       : smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
 

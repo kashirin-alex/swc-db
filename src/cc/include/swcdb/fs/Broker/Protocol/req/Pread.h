@@ -18,9 +18,9 @@ class Pread : public Base {
   bool    allocated;
   size_t  amount;
   
-  Pread(uint32_t timeout, SmartFd::Ptr &smartfd, 
+  Pread(uint32_t timeout, SmartFd::Ptr& smartfd, 
         uint64_t offset, void* dst, size_t len, bool allocated,
-        Callback::PreadCb_t cb=0)
+        const Callback::PreadCb_t& cb=0)
       : smartfd(smartfd), buffer(dst), allocated(allocated), 
         cb(cb), amount(0) {
     SWC_LOGF(LOG_DEBUG, "pread offset=%llu len=%d timeout=%d %s", 

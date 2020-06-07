@@ -15,8 +15,8 @@ class ReadAll : public Base {
   public:
   StaticBuffer* buffer;
   
-  ReadAll(uint32_t timeout, const std::string &name, StaticBuffer* dst,
-          Callback::ReadAllCb_t cb=0)
+  ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
+          const Callback::ReadAllCb_t& cb=0)
           : name(name), buffer(dst), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
 

@@ -14,8 +14,8 @@ class Rename : public Base {
 
   public:
 
-  Rename(uint32_t timeout, const std::string &from, const std::string &to,
-        Callback::RenameCb_t cb=0) 
+  Rename(uint32_t timeout, const std::string& from, const std::string& to,
+        const Callback::RenameCb_t& cb=0) 
         : from(from), to(to), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 

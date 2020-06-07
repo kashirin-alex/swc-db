@@ -14,7 +14,8 @@ class Flush : public Base {
 
   public:
 
-  Flush(uint32_t timeout, SmartFd::Ptr &smartfd, Callback::FlushCb_t cb=0) 
+  Flush(uint32_t timeout, SmartFd::Ptr& smartfd, 
+        const Callback::FlushCb_t& cb=0) 
         : smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
 
