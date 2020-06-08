@@ -177,6 +177,11 @@ void CompactRange::initial_commitlog(int tnum) {
 
 void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr, 
                                           const CommitLog::Compact* compact) {
+  if(m_stopped) {
+    if(compact) 
+      delete compact;
+    return quit();
+  }
   if(compact) {
     int tnum = 0;
     if(compact->nfrags > 100 ||
