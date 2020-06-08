@@ -61,14 +61,6 @@ class Key final {
 
   bool equal(const Key& other) const;
 
-  //Condition::Comp compare(const Key& other, uint32_t max=0, 
-  //                        bool empty_ok=false, bool empty_eq=false) const;
-
-  //bool align(KeyVec& start, KeyVec& finish) const;
-
-  //bool compare(const KeyVec& other, Condition::Comp break_if,
-  //             uint32_t max = 0, bool empty_ok=false) const;
-
   bool empty() const;
   
   uint32_t encoded_length() const;
@@ -78,6 +70,8 @@ class Key final {
   void decode(const uint8_t **bufp, size_t* remainp, bool owner=false);
 
   void convert_to(std::vector<std::string>& key) const;
+
+  void convert_to(std::vector<KeyVec::Fraction>& key) const;
 
   void read(const std::vector<std::string>& key);
 

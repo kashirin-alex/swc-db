@@ -14,8 +14,10 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-class KeyVec final : public std::vector<std::string> {
+class KeyVec final : public std::vector<std::basic_string<uint8_t>> {
   public:
+
+  typedef std::basic_string<uint8_t> Fraction;
 
   explicit KeyVec();
 
@@ -33,35 +35,43 @@ class KeyVec final : public std::vector<std::string> {
 
   bool equal(const KeyVec &other) const;
 
-  void add(const char* fraction, const uint32_t len);
+  void add(const Fraction& fraction);
 
   void add(const std::string& fraction);
 
   void add(const char* fraction);
 
+  void add(const char* fraction, const uint32_t len);
+
   void add(const uint8_t* fraction, const uint32_t len);
 
-  void insert(const uint32_t idx, const char* fraction, const uint32_t len);
+  void insert(const uint32_t idx, const Fraction& fraction);
 
   void insert(const uint32_t idx, const std::string& fraction);
 
   void insert(const uint32_t idx, const char* fraction);
 
+  void insert(const uint32_t idx, const char* fraction, const uint32_t len);
+
   void insert(const uint32_t idx, const uint8_t* fraction, const uint32_t len);
+
+  void set(const uint32_t idx, const Fraction& fraction);
+
+  void set(const uint32_t idx, const std::string& fraction);
+
+  void set(const uint32_t idx, const char* fraction);
 
   void set(const uint32_t idx, const char* fraction, const uint32_t len);
 
   void set(const uint32_t idx, const uint8_t* fraction, const uint32_t len);
 
-  void set(const uint32_t idx, const std::string& fraction);
-
   void remove(const uint32_t idx);
 
-  std::string get(const uint32_t idx) const;
+  const Fraction& get(const uint32_t idx) const;
+
+  void get(const uint32_t idx, Fraction& fraction) const;
 
   void get(const uint32_t idx, std::string& fraction) const;
-
-  //bool align(const KeyVec& other, Condition::Comp comp);
 
   uint32_t encoded_length() const;
   

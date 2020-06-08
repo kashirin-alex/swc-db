@@ -237,7 +237,17 @@ void Key::convert_to(std::vector<std::string>& key) const {
   key.clear();
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    it->append((const char*)ptr, len = Serialization::decode_vi24(&ptr));
+    it->assign((const char*)ptr, len = Serialization::decode_vi24(&ptr));
+  }
+}
+
+void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
+  uint24_t len;
+  const uint8_t* ptr = data;
+  key.clear();
+  key.resize(count);
+  for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
+    it->assign(ptr, len = Serialization::decode_vi24(&ptr));
   }
 }
 

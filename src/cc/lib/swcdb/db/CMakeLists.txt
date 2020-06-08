@@ -10,7 +10,7 @@ set(swcdb_sources
   Cells/CellKeyVec.cc
   Cells/CellKey.cc
   Cells/Cell.cc
-  Cells/KeyComparator.cc
+  #Cells/KeyComparator.cc
 
   Cells/SpecsScan.cc
   Cells/SpecsColumn.cc

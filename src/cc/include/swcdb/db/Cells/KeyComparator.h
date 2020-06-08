@@ -14,6 +14,7 @@
 #include "swcdb/db/Cells/SpecsKey.h"
 
 
+/*
 namespace SWC { namespace DB { namespace KeySeq {
 
 
@@ -57,10 +58,10 @@ is_matching(const Types::KeySeq seq, Condition::Comp comp,
 
 
 }}}
+*/
 
-
-#ifdef SWC_IMPL_SOURCE
+//#ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/KeyComparator.cc"
-#endif 
+//#endif 
 
 #endif // swcdb_db_Cells_KeyComparator_h
