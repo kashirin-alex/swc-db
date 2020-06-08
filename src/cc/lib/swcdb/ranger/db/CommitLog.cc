@@ -160,7 +160,7 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 }
 
 bool Fragments::try_compact(int tnum) {
-  if(stopping || !range->compact_possible())
+  if(stopping || !range->compact_possible(true))
     return false;
 
   std::vector<Fragments::Vec> groups;

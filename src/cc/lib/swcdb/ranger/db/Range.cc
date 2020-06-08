@@ -382,10 +382,10 @@ void Range::compacting(uint8_t state) {
   m_cv.notify_all();
 }
   
-bool Range::compact_possible() {
+bool Range::compact_possible(bool minor) {
   std::scoped_lock lock(m_mutex);
-  if(m_state != State::LOADED || m_compacting != COMPACT_NONE
-      || (!m_require_compact && blocks.processing()))
+  if(m_state != State::LOADED || m_compacting != COMPACT_NONE ||
+     (!minor && !m_require_compact && blocks.processing()))
     return false;
   m_compacting = COMPACT_CHECKING;
   return true;

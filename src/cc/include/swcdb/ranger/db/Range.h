@@ -133,7 +133,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void compacting(uint8_t state);
   
-  bool compact_possible();
+  bool compact_possible(bool minor=true);
 
   void compact_require(bool require);
 
