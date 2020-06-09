@@ -1,253 +1,361 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-<style type="text/css"/><!--
-/*!
- * Bootstrap v2.0.3
- *
- * Copyright 2012 Twitter, Inc
- * Licensed under the Apache License v2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Designed and built with all the love in the world @twitter by @mdo and @fat.
- */
-.clearfix{*zoom:1;}.clearfix:before,.clearfix:after{display:table;content:"";}
-.clearfix:after{clear:both;}
-.hide-text{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0;}
-.input-block-level{display:block;width:100%;min-height:28px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;box-sizing:border-box;}
-article,aside,details,figcaption,figure,footer,header,hgroup,nav,section{display:block;}
-audio,canvas,video{display:inline-block;*display:inline;*zoom:1;}
-audio:not([controls]){display:none;}
-html{font-size:100%;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
-a:focus{outline:thin dotted #333;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px;}
-a:hover,a:active{outline:0;}
-sub,sup{position:relative;font-size:75%;line-height:0;vertical-align:baseline;}
-sup{top:-0.5em;}
-sub{bottom:-0.25em;}
-img{max-width:100%;vertical-align:middle;border:0;-ms-interpolation-mode:bicubic;}
-button,input,select,textarea{margin:0;font-size:100%;vertical-align:middle;}
-button,input{*overflow:visible;line-height:normal;}
-button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0;}
-button,input[type="button"],input[type="reset"],input[type="submit"]{cursor:pointer;-webkit-appearance:button;}
-input[type="search"]{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;-webkit-appearance:textfield;}
-input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none;}
-textarea{overflow:auto;vertical-align:top;}
-body{margin:0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:13px;line-height:18px;color:#333333;background-color:#ffffff;}
-a{color:#0088cc;text-decoration:none;}
-a:hover{color:#005580;text-decoration:underline;}
-.row{margin-left:-20px;*zoom:1;}.row:before,.row:after{display:table;content:"";}
-.row:after{clear:both;}
-[class*="span"]{float:left;margin-left:20px;}
-.container,.navbar-fixed-top .container,.navbar-fixed-bottom .container{width:940px;}
-.span12{width:940px;}
-.span11{width:860px;}
-.span10{width:780px;}
-.span9{width:700px;}
-.span8{width:620px;}
-.span7{width:540px;}
-.span6{width:460px;}
-.span5{width:380px;}
-.span4{width:300px;}
-.span3{width:220px;}
-.span2{width:140px;}
-.span1{width:60px;}
-.offset12{margin-left:980px;}
-.offset11{margin-left:900px;}
-.offset10{margin-left:820px;}
-.offset9{margin-left:740px;}
-.offset8{margin-left:660px;}
-.offset7{margin-left:580px;}
-.offset6{margin-left:500px;}
-.offset5{margin-left:420px;}
-.offset4{margin-left:340px;}
-.offset3{margin-left:260px;}
-.offset2{margin-left:180px;}
-.offset1{margin-left:100px;}
-.row-fluid{width:100%;*zoom:1;}.row-fluid:before,.row-fluid:after{display:table;content:"";}
-.row-fluid:after{clear:both;}
-.row-fluid [class*="span"]{display:block;width:100%;min-height:28px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;box-sizing:border-box;float:left;margin-left:2.127659574%;*margin-left:2.0744680846382977%;}
-.row-fluid [class*="span"]:first-child{margin-left:0;}
-.row-fluid .span12{width:99.99999998999999%;*width:99.94680850063828%;}
-.row-fluid .span11{width:91.489361693%;*width:91.4361702036383%;}
-.row-fluid .span10{width:82.97872339599999%;*width:82.92553190663828%;}
-.row-fluid .span9{width:74.468085099%;*width:74.4148936096383%;}
-.row-fluid .span8{width:65.95744680199999%;*width:65.90425531263828%;}
-.row-fluid .span7{width:57.446808505%;*width:57.3936170156383%;}
-.row-fluid .span6{width:48.93617020799999%;*width:48.88297871863829%;}
-.row-fluid .span5{width:40.425531911%;*width:40.3723404216383%;}
-.row-fluid .span4{width:31.914893614%;*width:31.8617021246383%;}
-.row-fluid .span3{width:23.404255317%;*width:23.3510638276383%;}
-.row-fluid .span2{width:14.89361702%;*width:14.8404255306383%;}
-.row-fluid .span1{width:6.382978723%;*width:6.329787233638298%;}
-.container{margin-right:auto;margin-left:auto;*zoom:1;}.container:before,.container:after{display:table;content:"";}
-.container:after{clear:both;}
-.container-fluid{padding-right:20px;padding-left:20px;*zoom:1;}.container-fluid:before,.container-fluid:after{display:table;content:"";}
-.container-fluid:after{clear:both;}
-p{margin:0 0 9px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:13px;line-height:18px;}p small{font-size:11px;color:#999999;}
-.lead{margin-bottom:18px;font-size:20px;font-weight:200;line-height:27px;}
-h1,h2,h3,h4,h5,h6{margin:0;font-family:inherit;font-weight:bold;color:inherit;text-rendering:optimizelegibility;}h1 small,h2 small,h3 small,h4 small,h5 small,h6 small{font-weight:normal;color:#999999;}
-h1{font-size:30px;line-height:36px;}h1 small{font-size:18px;}
-h2{font-size:24px;line-height:36px;}h2 small{font-size:18px;}
-h3{font-size:18px;line-height:27px;}h3 small{font-size:14px;}
-h4,h5,h6{line-height:18px;}
-h4{font-size:14px;}h4 small{font-size:12px;}
-h5{font-size:12px;}
-h6{font-size:11px;color:#999999;text-transform:uppercase;}
-.page-header{padding-bottom:17px;margin:18px 0;border-bottom:1px solid #eeeeee;}
-.page-header h1{line-height:1;}
-ul,ol{padding:0;margin:0 0 9px 25px;}
-ul ul,ul ol,ol ol,ol ul{margin-bottom:0;}
-ul{list-style:disc;}
-ol{list-style:decimal;}
-li{line-height:18px;}
-ul.unstyled,ol.unstyled{margin-left:0;list-style:none;}
-dl{margin-bottom:18px;}
-dt,dd{line-height:18px;}
-dt{font-weight:bold;line-height:17px;}
-dd{margin-left:9px;}
-.dl-horizontal dt{float:left;width:120px;clear:left;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.dl-horizontal dd{margin-left:130px;}
-hr{margin:18px 0;border:0;border-top:1px solid #eeeeee;border-bottom:1px solid #ffffff;}
-strong{font-weight:bold;}
-em{font-style:italic;}
-.muted{color:#999999;}
-abbr[title]{cursor:help;border-bottom:1px dotted #ddd;}
-abbr.initialism{font-size:90%;text-transform:uppercase;}
-blockquote{padding:0 0 0 15px;margin:0 0 18px;border-left:5px solid #eeeeee;}blockquote p{margin-bottom:0;font-size:16px;font-weight:300;line-height:22.5px;}
-blockquote small{display:block;line-height:18px;color:#999999;}blockquote small:before{content:'\2014 \00A0';}
-blockquote.pull-right{float:right;padding-right:15px;padding-left:0;border-right:5px solid #eeeeee;border-left:0;}blockquote.pull-right p,blockquote.pull-right small{text-align:right;}
-q:before,q:after,blockquote:before,blockquote:after{content:"";}
-address{display:block;margin-bottom:18px;font-style:normal;line-height:18px;}
-small{font-size:100%;}
-cite{font-style:normal;}
-code,pre{padding:0 3px 2px;font-family:Menlo,Monaco,Consolas,"Courier New",monospace;font-size:12px;color:#333333;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;}
-code{padding:2px 4px;color:#d14;background-color:#f7f7f9;border:1px solid #e1e1e8;}
-pre{display:block;padding:8.5px;margin:0 0 9px;font-size:12.025px;line-height:18px;word-break:break-all;word-wrap:break-word;white-space:pre;white-space:pre-wrap;background-color:#f5f5f5;border:1px solid #ccc;border:1px solid rgba(0, 0, 0, 0.15);-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;}pre.prettyprint{margin-bottom:18px;}
-pre code{padding:0;color:inherit;background-color:transparent;border:0;}
-.pre-scrollable{max-height:340px;overflow-y:scroll;}
-.label,.badge{font-size:10.998px;font-weight:bold;line-height:14px;color:#ffffff;vertical-align:baseline;white-space:nowrap;text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);background-color:#999999;}
-.label{padding:1px 4px 2px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;}
-.badge{padding:1px 9px 2px;-webkit-border-radius:9px;-moz-border-radius:9px;border-radius:9px;}
-a.label:hover,a.badge:hover{color:#ffffff;text-decoration:none;cursor:pointer;}
-.label-important,.badge-important{background-color:#b94a48;}
-.label-important[href],.badge-important[href]{background-color:#953b39;}
-.label-warning,.badge-warning{background-color:#f89406;}
-.label-warning[href],.badge-warning[href]{background-color:#c67605;}
-.label-success,.badge-success{background-color:#468847;}
-.label-success[href],.badge-success[href]{background-color:#356635;}
-.label-info,.badge-info{background-color:#3a87ad;}
-.label-info[href],.badge-info[href]{background-color:#2d6987;}
-.label-inverse,.badge-inverse{background-color:#333333;}
-.label-inverse[href],.badge-inverse[href]{background-color:#1a1a1a;}
-table{max-width:100%;background-color:transparent;border-collapse:collapse;border-spacing:0;}
-.table{width:100%;margin-bottom:18px;}.table th,.table td{padding:8px;line-height:18px;text-align:left;vertical-align:top;border-top:1px solid #dddddd;}
-.table th{font-weight:bold;}
-.table thead th{vertical-align:bottom;}
-.table caption+thead tr:first-child th,.table caption+thead tr:first-child td,.table colgroup+thead tr:first-child th,.table colgroup+thead tr:first-child td,.table thead:first-child tr:first-child th,.table thead:first-child tr:first-child td{border-top:0;}
-.table tbody+tbody{border-top:2px solid #dddddd;}
-.table-condensed th,.table-condensed td{padding:4px 5px;}
-.table-bordered{border:1px solid #dddddd;border-collapse:separate;*border-collapse:collapsed;border-left:0;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;}.table-bordered th,.table-bordered td{border-left:1px solid #dddddd;}
-.table-bordered caption+thead tr:first-child th,.table-bordered caption+tbody tr:first-child th,.table-bordered caption+tbody tr:first-child td,.table-bordered colgroup+thead tr:first-child th,.table-bordered colgroup+tbody tr:first-child th,.table-bordered colgroup+tbody tr:first-child td,.table-bordered thead:first-child tr:first-child th,.table-bordered tbody:first-child tr:first-child th,.table-bordered tbody:first-child tr:first-child td{border-top:0;}
-.table-bordered thead:first-child tr:first-child th:first-child,.table-bordered tbody:first-child tr:first-child td:first-child{-webkit-border-top-left-radius:4px;border-top-left-radius:4px;-moz-border-radius-topleft:4px;}
-.table-bordered thead:first-child tr:first-child th:last-child,.table-bordered tbody:first-child tr:first-child td:last-child{-webkit-border-top-right-radius:4px;border-top-right-radius:4px;-moz-border-radius-topright:4px;}
-.table-bordered thead:last-child tr:last-child th:first-child,.table-bordered tbody:last-child tr:last-child td:first-child{-webkit-border-radius:0 0 0 4px;-moz-border-radius:0 0 0 4px;border-radius:0 0 0 4px;-webkit-border-bottom-left-radius:4px;border-bottom-left-radius:4px;-moz-border-radius-bottomleft:4px;}
-.table-bordered thead:last-child tr:last-child th:last-child,.table-bordered tbody:last-child tr:last-child td:last-child{-webkit-border-bottom-right-radius:4px;border-bottom-right-radius:4px;-moz-border-radius-bottomright:4px;}
-.table-striped tbody tr:nth-child(odd) td,.table-striped tbody tr:nth-child(odd) th{background-color:#f9f9f9;}
-.table tbody tr:hover td,.table tbody tr:hover th{background-color:#f5f5f5;}
-table .span1{float:none;width:44px;margin-left:0;}
-table .span2{float:none;width:124px;margin-left:0;}
-table .span3{float:none;width:204px;margin-left:0;}
-table .span4{float:none;width:284px;margin-left:0;}
-table .span5{float:none;width:364px;margin-left:0;}
-table .span6{float:none;width:444px;margin-left:0;}
-table .span7{float:none;width:524px;margin-left:0;}
-table .span8{float:none;width:604px;margin-left:0;}
-table .span9{float:none;width:684px;margin-left:0;}
-table .span10{float:none;width:764px;margin-left:0;}
-table .span11{float:none;width:844px;margin-left:0;}
-table .span12{float:none;width:924px;margin-left:0;}
-table .span13{float:none;width:1004px;margin-left:0;}
-table .span14{float:none;width:1084px;margin-left:0;}
-table .span15{float:none;width:1164px;margin-left:0;}
-table .span16{float:none;width:1244px;margin-left:0;}
-table .span17{float:none;width:1324px;margin-left:0;}
-table .span18{float:none;width:1404px;margin-left:0;}
-table .span19{float:none;width:1484px;margin-left:0;}
-table .span20{float:none;width:1564px;margin-left:0;}
-table .span21{float:none;width:1644px;margin-left:0;}
-table .span22{float:none;width:1724px;margin-left:0;}
-table .span23{float:none;width:1804px;margin-left:0;}
-table .span24{float:none;width:1884px;margin-left:0;}
-/* Auto-generated CSS for generated Thrift docs */
-h3, h4 { margin-bottom: 6px; }
-div.definition { border: 1px solid #CCC; margin-bottom: 10px; padding: 10px; }
-div.extends { margin: -0.5em 0 1em 5em }
-td { vertical-align: top; }
-table { empty-cells: show; }
-code { line-height: 20px; }
-.table-bordered th, .table-bordered td { border-bottom: 1px solid #DDDDDD; }
---></style>
-<title>All Thrift declarations</title></head><body>
-<div class="container-fluid">
-<h1>All Thrift declarations</h1>
+
+<h1>Thrift module: Service</h1>
 <table class="table-bordered table-striped table-condensed"><thead><tr><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></tr></thead><tbody>
 <tr>
-<td>Service</td><td><a href="Service.html#Svc_Service">Service</a><br/>
+<td>Service</td><td><a href="#Svc_Service">Service</a><br/>
 <ul>
-<li><a href="Service.html#Fn_Service_scan">scan</a></li>
-<li><a href="Service.html#Fn_Service_scan_rslt_on">scan_rslt_on</a></li>
-<li><a href="Service.html#Fn_Service_scan_rslt_on_column">scan_rslt_on_column</a></li>
-<li><a href="Service.html#Fn_Service_scan_rslt_on_fraction">scan_rslt_on_fraction</a></li>
-<li><a href="Service.html#Fn_Service_scan_rslt_on_key">scan_rslt_on_key</a></li>
-<li><a href="Service.html#Fn_Service_sql_compact_columns">sql_compact_columns</a></li>
-<li><a href="Service.html#Fn_Service_sql_list_columns">sql_list_columns</a></li>
-<li><a href="Service.html#Fn_Service_sql_mng_column">sql_mng_column</a></li>
-<li><a href="Service.html#Fn_Service_sql_query">sql_query</a></li>
-<li><a href="Service.html#Fn_Service_sql_select">sql_select</a></li>
-<li><a href="Service.html#Fn_Service_sql_select_rslt_on_column">sql_select_rslt_on_column</a></li>
-<li><a href="Service.html#Fn_Service_sql_select_rslt_on_fraction">sql_select_rslt_on_fraction</a></li>
-<li><a href="Service.html#Fn_Service_sql_select_rslt_on_key">sql_select_rslt_on_key</a></li>
-<li><a href="Service.html#Fn_Service_sql_update">sql_update</a></li>
-<li><a href="Service.html#Fn_Service_update">update</a></li>
-<li><a href="Service.html#Fn_Service_updater_close">updater_close</a></li>
-<li><a href="Service.html#Fn_Service_updater_create">updater_create</a></li>
+<li><a href="#Fn_Service_scan">scan</a></li>
+<li><a href="#Fn_Service_scan_rslt_on">scan_rslt_on</a></li>
+<li><a href="#Fn_Service_scan_rslt_on_column">scan_rslt_on_column</a></li>
+<li><a href="#Fn_Service_scan_rslt_on_fraction">scan_rslt_on_fraction</a></li>
+<li><a href="#Fn_Service_scan_rslt_on_key">scan_rslt_on_key</a></li>
+<li><a href="#Fn_Service_sql_compact_columns">sql_compact_columns</a></li>
+<li><a href="#Fn_Service_sql_list_columns">sql_list_columns</a></li>
+<li><a href="#Fn_Service_sql_mng_column">sql_mng_column</a></li>
+<li><a href="#Fn_Service_sql_query">sql_query</a></li>
+<li><a href="#Fn_Service_sql_select">sql_select</a></li>
+<li><a href="#Fn_Service_sql_select_rslt_on_column">sql_select_rslt_on_column</a></li>
+<li><a href="#Fn_Service_sql_select_rslt_on_fraction">sql_select_rslt_on_fraction</a></li>
+<li><a href="#Fn_Service_sql_select_rslt_on_key">sql_select_rslt_on_key</a></li>
+<li><a href="#Fn_Service_sql_update">sql_update</a></li>
+<li><a href="#Fn_Service_update">update</a></li>
+<li><a href="#Fn_Service_updater_close">updater_close</a></li>
+<li><a href="#Fn_Service_updater_create">updater_create</a></li>
 </ul>
 </td>
-<td><a href="Service.html#Struct_CCell">CCell</a><br/>
-<a href="Service.html#Typedef_CCells">CCells</a><br/>
-<a href="Service.html#Struct_Cell">Cell</a><br/>
-<a href="Service.html#Typedef_Cells">Cells</a><br/>
-<a href="Service.html#Struct_CellsGroup">CellsGroup</a><br/>
-<a href="Service.html#Enum_CellsResult">CellsResult</a><br/>
-<a href="Service.html#Typedef_ColCells">ColCells</a><br/>
-<a href="Service.html#Enum_ColumnMng">ColumnMng</a><br/>
-<a href="Service.html#Enum_ColumnType">ColumnType</a><br/>
-<a href="Service.html#Enum_Comp">Comp</a><br/>
-<a href="Service.html#Struct_CompactResult">CompactResult</a><br/>
-<a href="Service.html#Typedef_CompactResults">CompactResults</a><br/>
-<a href="Service.html#Enum_EncodingType">EncodingType</a><br/>
-<a href="Service.html#Struct_Exception">Exception</a><br/>
-<a href="Service.html#Struct_FCell">FCell</a><br/>
-<a href="Service.html#Struct_FCells">FCells</a><br/>
-<a href="Service.html#Enum_Flag">Flag</a><br/>
-<a href="Service.html#Struct_KCell">KCell</a><br/>
-<a href="Service.html#Typedef_KCells">KCells</a><br/>
-<a href="Service.html#Typedef_Key">Key</a><br/>
-<a href="Service.html#Struct_Schema">Schema</a><br/>
-<a href="Service.html#Typedef_Schemas">Schemas</a><br/>
-<a href="Service.html#Struct_SpecColumn">SpecColumn</a><br/>
-<a href="Service.html#Struct_SpecFlags">SpecFlags</a><br/>
-<a href="Service.html#Enum_SpecFlagsOpt">SpecFlagsOpt</a><br/>
-<a href="Service.html#Struct_SpecFraction">SpecFraction</a><br/>
-<a href="Service.html#Struct_SpecInterval">SpecInterval</a><br/>
-<a href="Service.html#Typedef_SpecKey">SpecKey</a><br/>
-<a href="Service.html#Struct_SpecScan">SpecScan</a><br/>
-<a href="Service.html#Struct_SpecTimestamp">SpecTimestamp</a><br/>
-<a href="Service.html#Struct_SpecValue">SpecValue</a><br/>
-<a href="Service.html#Typedef_UCCells">UCCells</a><br/>
-<a href="Service.html#Struct_UCell">UCell</a><br/>
-<a href="Service.html#Typedef_UCells">UCells</a><br/>
-<a href="Service.html#Struct_kCells">kCells</a><br/>
+<td><a href="#Struct_CCell">CCell</a><br/>
+<a href="#Typedef_CCells">CCells</a><br/>
+<a href="#Struct_Cell">Cell</a><br/>
+<a href="#Typedef_Cells">Cells</a><br/>
+<a href="#Struct_CellsGroup">CellsGroup</a><br/>
+<a href="#Enum_CellsResult">CellsResult</a><br/>
+<a href="#Typedef_ColCells">ColCells</a><br/>
+<a href="#Enum_ColumnMng">ColumnMng</a><br/>
+<a href="#Enum_ColumnType">ColumnType</a><br/>
+<a href="#Enum_Comp">Comp</a><br/>
+<a href="#Struct_CompactResult">CompactResult</a><br/>
+<a href="#Typedef_CompactResults">CompactResults</a><br/>
+<a href="#Enum_EncodingType">EncodingType</a><br/>
+<a href="#Struct_Exception">Exception</a><br/>
+<a href="#Struct_FCell">FCell</a><br/>
+<a href="#Struct_FCells">FCells</a><br/>
+<a href="#Enum_Flag">Flag</a><br/>
+<a href="#Struct_KCell">KCell</a><br/>
+<a href="#Typedef_KCells">KCells</a><br/>
+<a href="#Typedef_Key">Key</a><br/>
+<a href="#Struct_Schema">Schema</a><br/>
+<a href="#Typedef_Schemas">Schemas</a><br/>
+<a href="#Struct_SpecColumn">SpecColumn</a><br/>
+<a href="#Struct_SpecFlags">SpecFlags</a><br/>
+<a href="#Enum_SpecFlagsOpt">SpecFlagsOpt</a><br/>
+<a href="#Struct_SpecFraction">SpecFraction</a><br/>
+<a href="#Struct_SpecInterval">SpecInterval</a><br/>
+<a href="#Typedef_SpecKey">SpecKey</a><br/>
+<a href="#Struct_SpecScan">SpecScan</a><br/>
+<a href="#Struct_SpecTimestamp">SpecTimestamp</a><br/>
+<a href="#Struct_SpecValue">SpecValue</a><br/>
+<a href="#Typedef_UCCells">UCCells</a><br/>
+<a href="#Struct_UCell">UCell</a><br/>
+<a href="#Typedef_UCells">UCells</a><br/>
+<a href="#Struct_kCells">kCells</a><br/>
 </td>
 <td></td>
 </tr></tbody></table>
-</div></body></html>
+<hr/><h2 id="Enumerations">Enumerations</h2>
+<div class="definition"><h3 id="Enum_ColumnMng">Enumeration: ColumnMng</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>CREATE</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>DELETE</code></td><td><code>5</code></td><td>
+</td></tr>
+<tr><td><code>MODIFY</code></td><td><code>7</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_ColumnType">Enumeration: ColumnType</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>UNKNOWN</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>PLAIN</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>COUNTER_I64</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>COUNTER_I32</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>COUNTER_I16</code></td><td><code>4</code></td><td>
+</td></tr>
+<tr><td><code>COUNTER_I8</code></td><td><code>5</code></td><td>
+</td></tr>
+<tr><td><code>CELL_DEFINED</code></td><td><code>15</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_EncodingType">Enumeration: EncodingType</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>DEFAULT</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>PLAIN</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>ZLIB</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>SNAPPY</code></td><td><code>3</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_Comp">Enumeration: Comp</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>NONE</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>PF</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>GT</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>GE</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>EQ</code></td><td><code>4</code></td><td>
+</td></tr>
+<tr><td><code>LE</code></td><td><code>5</code></td><td>
+</td></tr>
+<tr><td><code>LT</code></td><td><code>6</code></td><td>
+</td></tr>
+<tr><td><code>NE</code></td><td><code>7</code></td><td>
+</td></tr>
+<tr><td><code>RE</code></td><td><code>8</code></td><td>
+</td></tr>
+<tr><td><code>VGT</code></td><td><code>9</code></td><td>
+</td></tr>
+<tr><td><code>VGE</code></td><td><code>10</code></td><td>
+</td></tr>
+<tr><td><code>VLE</code></td><td><code>11</code></td><td>
+</td></tr>
+<tr><td><code>VLT</code></td><td><code>12</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_SpecFlagsOpt">Enumeration: SpecFlagsOpt</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>NONE</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>LIMIT_BY_KEYS</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>OFFSET_BY_KEYS</code></td><td><code>4</code></td><td>
+</td></tr>
+<tr><td><code>ONLY_KEYS</code></td><td><code>8</code></td><td>
+</td></tr>
+<tr><td><code>ONLY_DELETES</code></td><td><code>10</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_Flag">Enumeration: Flag</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>NONE</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>INSERT</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>DELETE</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>DELETE_VERSION</code></td><td><code>3</code></td><td>
+</td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_CellsResult">Enumeration: CellsResult</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>IN_LIST</code></td><td><code>0</code></td><td>
+</td></tr>
+<tr><td><code>ON_COLUMN</code></td><td><code>1</code></td><td>
+</td></tr>
+<tr><td><code>ON_KEY</code></td><td><code>2</code></td><td>
+</td></tr>
+<tr><td><code>ON_FRACTION</code></td><td><code>3</code></td><td>
+</td></tr>
+</table></div>
+<hr/><h2 id="Typedefs">Type declarations</h2>
+<div class="definition"><h3 id="Typedef_Schemas">Typedef: Schemas</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_Schema">Schema</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_Key">Typedef: Key</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code>binary</code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_SpecKey">Typedef: SpecKey</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_SpecFraction">SpecFraction</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_UCells">Typedef: UCells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_UCell">UCell</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_UCCells">Typedef: UCCells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>map&lt;<code>i64</code>, <code><a href="#Struct_UCells">UCells</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_Cells">Typedef: Cells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_Cell">Cell</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_ColCells">Typedef: ColCells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_CCell">CCell</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_CCells">Typedef: CCells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>map&lt;<code>string</code>, <code><a href="#Struct_ColCells">ColCells</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_KCells">Typedef: KCells</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_kCells">kCells</a></code>&gt;</code></p>
+</div>
+<div class="definition"><h3 id="Typedef_CompactResults">Typedef: CompactResults</h3>
+<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_CompactResult">CompactResult</a></code>&gt;</code></p>
+</div>
+<hr/><h2 id="Structs">Data structures</h2>
+<div class="definition"><h3 id="Struct_Exception">Exception: Exception</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>code</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>message</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>2</td><td>col_name</td><td><code>string</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>3</td><td>col_type</td><td><code><a href="#Enum_ColumnType">ColumnType</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>4</td><td>cell_versions</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>5</td><td>cell_ttl</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>6</td><td>blk_encoding</td><td><code><a href="#Enum_EncodingType">EncodingType</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>7</td><td>blk_size</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>8</td><td>blk_cells</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>9</td><td>cs_replication</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>10</td><td>cs_size</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>11</td><td>cs_max</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>12</td><td>log_rollout_ratio</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>13</td><td>compact_percent</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>14</td><td>revision</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecFlags">Struct: SpecFlags</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>limit</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>2</td><td>offset</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>3</td><td>max_versions</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>4</td><td>max_buffer</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>5</td><td>options</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecFraction">Struct: SpecFraction</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>f</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecValue">Struct: SpecValue</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>v</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecTimestamp">Struct: SpecTimestamp</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecInterval">Struct: SpecInterval</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>range_begin</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>2</td><td>range_end</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>3</td><td>range_offset</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>4</td><td>offset_key</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>5</td><td>offset_rev</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>6</td><td>key_start</td><td><code><a href="#Struct_SpecKey">SpecKey</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>7</td><td>key_finish</td><td><code><a href="#Struct_SpecKey">SpecKey</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>8</td><td>value</td><td><code><a href="#Struct_SpecValue">SpecValue</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>9</td><td>ts_start</td><td><code><a href="#Struct_SpecTimestamp">SpecTimestamp</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>10</td><td>ts_finish</td><td><code><a href="#Struct_SpecTimestamp">SpecTimestamp</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>11</td><td>flags</td><td><code><a href="#Struct_SpecFlags">SpecFlags</a></code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecColumn">Struct: SpecColumn</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>intervals</td><td><code>list&lt;<code><a href="#Struct_SpecInterval">SpecInterval</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecScan">Struct: SpecScan</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>columns</td><td><code>list&lt;<code><a href="#Struct_SpecColumn">SpecColumn</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>flags</td><td><code><a href="#Struct_SpecFlags">SpecFlags</a></code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_UCell">Struct: UCell</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>f</td><td><code><a href="#Enum_Flag">Flag</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>ts</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>4</td><td>ts_desc</td><td><code>bool</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>5</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_Cell">Struct: Cell</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_CCell">Struct: CCell</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_KCell">Struct: KCell</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_kCells">Struct: kCells</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>cells</td><td><code>list&lt;<code><a href="#Struct_KCell">KCell</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_FCell">Struct: FCell</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_FCells">Struct: FCells</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>f</td><td><code>map&lt;<code>binary</code>, <code><a href="#Struct_FCells">FCells</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>cells</td><td><code>list&lt;<code><a href="#Struct_FCell">FCell</a></code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_CellsGroup">Struct: CellsGroup</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>cells</td><td><code><a href="#Struct_Cells">Cells</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>2</td><td>ccells</td><td><code><a href="#Struct_CCells">CCells</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>3</td><td>kcells</td><td><code><a href="#Struct_KCells">KCells</a></code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>4</td><td>fcells</td><td><code><a href="#Struct_FCells">FCells</a></code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_CompactResult">Struct: CompactResult</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>err</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
+</tbody></table><br/></div><hr/><h2 id="Services">Services</h2>
+<h3 id="Svc_Service">Service: Service</h3>
+<div class="definition"><h4 id="Fn_Service_sql_mng_column">Function: Service.sql_mng_column</h4>
+<pre><code>void</code> sql_mng_column(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_list_columns">Function: Service.sql_list_columns</h4>
+<pre><code><a href="#Struct_Schemas">Schemas</a></code> sql_list_columns(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_compact_columns">Function: Service.sql_compact_columns</h4>
+<pre><code><a href="#Struct_CompactResults">CompactResults</a></code> sql_compact_columns(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_select">Function: Service.sql_select</h4>
+<pre><code><a href="#Struct_Cells">Cells</a></code> sql_select(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_column">Function: Service.sql_select_rslt_on_column</h4>
+<pre><code><a href="#Struct_CCells">CCells</a></code> sql_select_rslt_on_column(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_key">Function: Service.sql_select_rslt_on_key</h4>
+<pre><code><a href="#Struct_KCells">KCells</a></code> sql_select_rslt_on_key(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_fraction">Function: Service.sql_select_rslt_on_fraction</h4>
+<pre><code><a href="#Struct_FCells">FCells</a></code> sql_select_rslt_on_fraction(<code>string</code> sql)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_query">Function: Service.sql_query</h4>
+<pre><code><a href="#Struct_CellsGroup">CellsGroup</a></code> sql_query(<code>string</code> sql,
+                     <code><a href="#Enum_CellsResult">CellsResult</a></code> rslt)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_sql_update">Function: Service.sql_update</h4>
+<pre><code>void</code> sql_update(<code>string</code> sql,
+                <code>i64</code> updater_id = 0)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_updater_create">Function: Service.updater_create</h4>
+<pre><code>i64</code> updater_create(<code>i32</code> buffer_size)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_updater_close">Function: Service.updater_close</h4>
+<pre><code>void</code> updater_close(<code>i64</code> id)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_update">Function: Service.update</h4>
+<pre><code>void</code> update(<code><a href="#Struct_UCCells">UCCells</a></code> cells,
+            <code>i64</code> updater_id = 0)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_scan">Function: Service.scan</h4>
+<pre><code><a href="#Struct_Cells">Cells</a></code> scan(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_column">Function: Service.scan_rslt_on_column</h4>
+<pre><code><a href="#Struct_CCells">CCells</a></code> scan_rslt_on_column(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_key">Function: Service.scan_rslt_on_key</h4>
+<pre><code><a href="#Struct_KCells">KCells</a></code> scan_rslt_on_key(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_fraction">Function: Service.scan_rslt_on_fraction</h4>
+<pre><code><a href="#Struct_FCells">FCells</a></code> scan_rslt_on_fraction(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on">Function: Service.scan_rslt_on</h4>
+<pre><code><a href="#Struct_CellsGroup">CellsGroup</a></code> scan_rslt_on(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec,
+                        <code><a href="#Enum_CellsResult">CellsResult</a></code> rslt)
+    throws <code><a href="#Struct_Exception">Exception</a></code>
+</pre></div>
