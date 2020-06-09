@@ -378,14 +378,14 @@ const char* decode_str16(const uint8_t** bufp, size_t* remainp);
 char* decode_str16(const uint8_t** bufp, size_t* remainp, uint16_t *lenp);
 
 /**
- * Decodes a str16 from the given buffer to a std::string.The encoding of the
+ * Decodes a str16 from the given buffer to a StringT.The encoding of the
  * string is a 2 byte length followed by the string, followed by a '\\0'
  * termination byte.The length does not include the '\\0' terminator.
  * Increments buffer pointer and decrements remainp on success.
  *
  * @param bufp Pointer to pointer of buffer containing encoded string
  * @param remainp Address of variable of number of bytes remaining in buffer
- * @return True on success, false if buffer has insufficient room
+ * @return StringT
  */
 template <class StringT>
 inline StringT decode_str16(const uint8_t** bufp, size_t* remainp) {
@@ -477,7 +477,7 @@ char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp);
  * @return The decoded string
  */
 template <class StringT>
-inline std::string decode_vstr(const uint8_t** bufp, size_t* remainp) {
+inline StringT decode_vstr(const uint8_t** bufp, size_t* remainp) {
   uint32_t len;
   char* buf = decode_vstr(bufp, remainp, &len);
   return StringT(buf, len); // RVO

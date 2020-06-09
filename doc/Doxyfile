@@ -175,7 +175,6 @@ EXCLUDE_PATTERNS       = *CMakeLists.txt* \
                          */tests/* \
                          */testutils/* \
                          */thriftgen-* \
-                         */gen-cpp/* \
                          *skeleton*
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =

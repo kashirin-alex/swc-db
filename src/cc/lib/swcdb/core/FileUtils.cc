@@ -20,25 +20,12 @@
  * 02110-1301, USA.
  */
 
-/** @file
- * File system utility functions.
- * Helper/Utility functions for accessing files and the file system.
- */
 
 #include "swcdb/core/FileUtils.h"
-
-//#include <iostream>
-//#include <sstream>
-//#include <cstdio>
-//#include <iomanip>
 
 extern "C" {
 #include <fcntl.h>
 #include <errno.h>
-//#include <unistd.h>
-//#include <string.h>
-//#include <pwd.h>
-//#include <sys/mman.h>
 }
 
 #include <re2/re2.h>
@@ -240,8 +227,8 @@ time_t modification(const std::string& fname) {
 }
 
 void readdir(const std::string& dirname, 
-                        const std::string& fname_regex,
-                        std::vector<struct dirent>& listing) {
+             const std::string& fname_regex,
+             std::vector<struct dirent>& listing) {
 
   errno = 0;
   DIR *dirp = opendir(dirname.c_str());
@@ -344,192 +331,5 @@ std::string file_to_string(const std::string& fname) {
   delete [] contents;
   return str;
 }
-
-
-/*
-ssize_t writev(int fd, const struct iovec *vector, int count) {
-  ssize_t nwritten;
-  while ((nwritten = ::writev(fd, vector, count)) <= 0) {
-    if (errno == EINTR)
-      nwritten = 0; // and call write() again
-    else if (errno == EAGAIN) {
-      nwritten = 0;
-      break;
-    }
-    else
-      return -1; // error 
-  }
-  return nwritten;
-}
-
-ssize_t sendto(int fd, const void *vptr, size_t n,
-        const sockaddr *to, socklen_t tolen) {
-  size_t nleft;
-  ssize_t nsent;
-  const char *ptr;
-
-  ptr = (const char *)vptr;
-  nleft = n;
-  while (nleft > 0) {
-    if ((nsent = ::sendto(fd, ptr, nleft, 0, to, tolen)) <= 0) {
-      if (errno == EINTR)
-        nsent = 0; // and call sendto() again 
-      else if (errno == EAGAIN || errno == ENOBUFS)
-        break;
-      else
-        return -1; // error
-    }
-
-    nleft -= nsent;
-    ptr   += nsent;
-  }
-  return n - nleft;
-}
-
-ssize_t send(int fd, const void *vptr, size_t n) {
-  size_t nleft;
-  ssize_t nsent;
-  const char *ptr;
-
-  ptr = (const char *)vptr;
-  nleft = n;
-  while (nleft > 0) {
-    if ((nsent = ::send(fd, ptr, nleft, 0)) <= 0) {
-      if (errno == EINTR)
-        nsent = 0; // and call sendto() again 
-      else if (errno == EAGAIN || errno == ENOBUFS)
-        break;
-      else
-        return -1; // error
-    }
-
-    nleft -= nsent;
-    ptr   += nsent;
-  }
-  return n - nleft;
-}
-
-ssize_t recvfrom(int fd, void *vptr, size_t n, sockaddr *from,
-        socklen_t *fromlen) {
-  ssize_t nread;
-  while (true) {
-    if ((nread = ::recvfrom(fd, vptr, n, 0, from, fromlen)) < 0) {
-      if (errno != EINTR)
-        break;
-    }
-    else
-      break;
-  }
-  return nread;
-}
-
-ssize_t recv(int fd, void *vptr, size_t n) {
-  ssize_t nread;
-  while (true) {
-    if ((nread = ::recv(fd, vptr, n, 0)) < 0) {
-      if (errno != EINTR)
-        break;
-    }
-    else
-      break;
-  }
-  return nread;
-}
-
-bool set_flags(int fd, int flags) {
-  int val;
-  bool ret = true;
-
-  if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
-    int saved_errno = errno;
-    SWC_LOG_OUT(LOG_ERROR) << "fcnt(F_GETFL) failed : " << ::strerror(saved_errno)
-        << SWC_LOG_OUT_END;
-    errno = saved_errno;
-    ret = false;
-  }
-
-  val |= flags;
-
-  if (fcntl(fd, F_SETFL, val) < 0) {
-    int saved_errno = errno;
-    SWC_LOG_OUT(LOG_ERROR) << "fcnt(F_SETFL) failed : " << ::strerror(saved_errno)
-        << SWC_LOG_OUT_END;
-    errno = saved_errno;
-    ret = false;
-  }
-
-  return ret;
-}
-
-void *mmap(const std::string& fname, off_t *lenp) {
-  int fd;
-  struct stat statbuf;
-  void *map;
-
-  if (::stat(fname.c_str(), &statbuf) != 0)
-    SWC_LOG_FATAL("Unable determine length of '%s' for memory mapping - %s",
-            fname.c_str(), strerror(errno));
-  *lenp = (off_t)statbuf.st_size;
-
-  if ((fd = ::open(fname.c_str(), O_RDONLY)) == -1)
-    SWC_LOG_FATAL("Unable to open '%s' for memory mapping - %s", fname.c_str(),
-            strerror(errno));
-  
-  if ((map = ::mmap(0, *lenp, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
-    SWC_LOG_FATAL("Unable to memory map file '%s' - %s", fname.c_str(),
-            strerror(errno));
-
-  close(fd);
-  return map;
-}
-
-void add_trailing_slash(std::string& path) {
-  if (path.find('/', path.length() - 1) == std::string::npos)
-    path += "/";
-}
-
-namespace FileUtils {  
-/// Mutex for protecting thread-unsafe glibc library function calls
-std::mutex ms_mutex;
-}
-
-
-bool expand_tilde(std::string& fname) {
-
-  if (fname[0] != '~')
-    return false;
-
-  std::lock_guard<std::mutex> lock(ms_mutex);
-
-  struct passwd pbuf;
-  struct passwd *prbuf;
-  char buf[256];
-
-  if (fname.length() == 1 || fname[1] == '/') {
-    if (getpwuid_r(getuid() , &pbuf, buf, 256, &prbuf) != 0 || prbuf == 0)
-      return false;
-    fname = (std::string)pbuf.pw_dir + fname.substr(1);
-  }
-  else {
-    std::string name;
-    size_t first_slash = fname.find_first_of('/');
-
-    if (first_slash == std::string::npos)
-      name = fname.substr(1);
-    else
-      name = fname.substr(1, first_slash-1);
-
-    if (getpwnam_r(name.c_str() , &pbuf, buf, 256, &prbuf) != 0 || prbuf == 0)
-      return false;
-
-    if (first_slash == std::string::npos)
-      fname = pbuf.pw_dir;
-    else
-      fname = (std::string)pbuf.pw_dir + fname.substr(first_slash);
-  }
-
-  return true;
-}
-*/
 
 }}

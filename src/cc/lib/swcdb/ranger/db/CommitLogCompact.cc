@@ -20,7 +20,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         m_sem(5) {
 }
 
-Compact::Group::Group::~Group() { }
+Compact::Group::~Group() { }
 
 void Compact::Group::run() {
   asio::post(*Env::IoCtx::io()->ptr(), [this]() { load_more(); });
