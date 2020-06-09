@@ -34,6 +34,11 @@ class ServiceIf {
   virtual int64_t updater_create(const int32_t buffer_size) = 0;
   virtual void updater_close(const int64_t id) = 0;
   virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
+  virtual void scan(Cells& _return, const SpecScan& spec) = 0;
+  virtual void scan_rslt_on_column(CCells& _return, const SpecScan& spec) = 0;
+  virtual void scan_rslt_on_key(KCells& _return, const SpecScan& spec) = 0;
+  virtual void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) = 0;
+  virtual void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) = 0;
 };
 
 class ServiceIfFactory {
@@ -98,6 +103,21 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void update(const UCCells& /* cells */, const int64_t /* updater_id */) {
+    return;
+  }
+  void scan(Cells& /* _return */, const SpecScan& /* spec */) {
+    return;
+  }
+  void scan_rslt_on_column(CCells& /* _return */, const SpecScan& /* spec */) {
+    return;
+  }
+  void scan_rslt_on_key(KCells& /* _return */, const SpecScan& /* spec */) {
+    return;
+  }
+  void scan_rslt_on_fraction(FCells& /* _return */, const SpecScan& /* spec */) {
+    return;
+  }
+  void scan_rslt_on(CellsGroup& /* _return */, const SpecScan& /* spec */, const CellsResult::type /* rslt */) {
     return;
   }
 };
@@ -1435,6 +1455,573 @@ class Service_update_presult {
 
 };
 
+typedef struct _Service_scan_args__isset {
+  _Service_scan_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_scan_args__isset;
+
+class Service_scan_args {
+ public:
+
+  Service_scan_args(const Service_scan_args&);
+  Service_scan_args& operator=(const Service_scan_args&);
+  Service_scan_args() {
+  }
+
+  virtual ~Service_scan_args() noexcept;
+  SpecScan spec;
+
+  _Service_scan_args__isset __isset;
+
+  void __set_spec(const SpecScan& val);
+
+  bool operator == (const Service_scan_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_scan_pargs {
+ public:
+
+
+  virtual ~Service_scan_pargs() noexcept;
+  const SpecScan* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_result__isset {
+  _Service_scan_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_result__isset;
+
+class Service_scan_result {
+ public:
+
+  Service_scan_result(const Service_scan_result&);
+  Service_scan_result& operator=(const Service_scan_result&);
+  Service_scan_result() {
+  }
+
+  virtual ~Service_scan_result() noexcept;
+  Cells success;
+  Exception e;
+
+  _Service_scan_result__isset __isset;
+
+  void __set_success(const Cells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_scan_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_presult__isset {
+  _Service_scan_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_presult__isset;
+
+class Service_scan_presult {
+ public:
+
+
+  virtual ~Service_scan_presult() noexcept;
+  Cells* success;
+  Exception e;
+
+  _Service_scan_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_scan_rslt_on_column_args__isset {
+  _Service_scan_rslt_on_column_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_scan_rslt_on_column_args__isset;
+
+class Service_scan_rslt_on_column_args {
+ public:
+
+  Service_scan_rslt_on_column_args(const Service_scan_rslt_on_column_args&);
+  Service_scan_rslt_on_column_args& operator=(const Service_scan_rslt_on_column_args&);
+  Service_scan_rslt_on_column_args() {
+  }
+
+  virtual ~Service_scan_rslt_on_column_args() noexcept;
+  SpecScan spec;
+
+  _Service_scan_rslt_on_column_args__isset __isset;
+
+  void __set_spec(const SpecScan& val);
+
+  bool operator == (const Service_scan_rslt_on_column_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_column_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_column_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_scan_rslt_on_column_pargs {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_column_pargs() noexcept;
+  const SpecScan* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_column_result__isset {
+  _Service_scan_rslt_on_column_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_column_result__isset;
+
+class Service_scan_rslt_on_column_result {
+ public:
+
+  Service_scan_rslt_on_column_result(const Service_scan_rslt_on_column_result&);
+  Service_scan_rslt_on_column_result& operator=(const Service_scan_rslt_on_column_result&);
+  Service_scan_rslt_on_column_result() {
+  }
+
+  virtual ~Service_scan_rslt_on_column_result() noexcept;
+  CCells success;
+  Exception e;
+
+  _Service_scan_rslt_on_column_result__isset __isset;
+
+  void __set_success(const CCells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_scan_rslt_on_column_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_column_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_column_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_column_presult__isset {
+  _Service_scan_rslt_on_column_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_column_presult__isset;
+
+class Service_scan_rslt_on_column_presult {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_column_presult() noexcept;
+  CCells* success;
+  Exception e;
+
+  _Service_scan_rslt_on_column_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_scan_rslt_on_key_args__isset {
+  _Service_scan_rslt_on_key_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_scan_rslt_on_key_args__isset;
+
+class Service_scan_rslt_on_key_args {
+ public:
+
+  Service_scan_rslt_on_key_args(const Service_scan_rslt_on_key_args&);
+  Service_scan_rslt_on_key_args& operator=(const Service_scan_rslt_on_key_args&);
+  Service_scan_rslt_on_key_args() {
+  }
+
+  virtual ~Service_scan_rslt_on_key_args() noexcept;
+  SpecScan spec;
+
+  _Service_scan_rslt_on_key_args__isset __isset;
+
+  void __set_spec(const SpecScan& val);
+
+  bool operator == (const Service_scan_rslt_on_key_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_key_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_key_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_scan_rslt_on_key_pargs {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_key_pargs() noexcept;
+  const SpecScan* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_key_result__isset {
+  _Service_scan_rslt_on_key_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_key_result__isset;
+
+class Service_scan_rslt_on_key_result {
+ public:
+
+  Service_scan_rslt_on_key_result(const Service_scan_rslt_on_key_result&);
+  Service_scan_rslt_on_key_result& operator=(const Service_scan_rslt_on_key_result&);
+  Service_scan_rslt_on_key_result() {
+  }
+
+  virtual ~Service_scan_rslt_on_key_result() noexcept;
+  KCells success;
+  Exception e;
+
+  _Service_scan_rslt_on_key_result__isset __isset;
+
+  void __set_success(const KCells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_scan_rslt_on_key_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_key_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_key_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_key_presult__isset {
+  _Service_scan_rslt_on_key_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_key_presult__isset;
+
+class Service_scan_rslt_on_key_presult {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_key_presult() noexcept;
+  KCells* success;
+  Exception e;
+
+  _Service_scan_rslt_on_key_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_scan_rslt_on_fraction_args__isset {
+  _Service_scan_rslt_on_fraction_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_scan_rslt_on_fraction_args__isset;
+
+class Service_scan_rslt_on_fraction_args {
+ public:
+
+  Service_scan_rslt_on_fraction_args(const Service_scan_rslt_on_fraction_args&);
+  Service_scan_rslt_on_fraction_args& operator=(const Service_scan_rslt_on_fraction_args&);
+  Service_scan_rslt_on_fraction_args() {
+  }
+
+  virtual ~Service_scan_rslt_on_fraction_args() noexcept;
+  SpecScan spec;
+
+  _Service_scan_rslt_on_fraction_args__isset __isset;
+
+  void __set_spec(const SpecScan& val);
+
+  bool operator == (const Service_scan_rslt_on_fraction_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_fraction_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_fraction_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_scan_rslt_on_fraction_pargs {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_fraction_pargs() noexcept;
+  const SpecScan* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_fraction_result__isset {
+  _Service_scan_rslt_on_fraction_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_fraction_result__isset;
+
+class Service_scan_rslt_on_fraction_result {
+ public:
+
+  Service_scan_rslt_on_fraction_result(const Service_scan_rslt_on_fraction_result&);
+  Service_scan_rslt_on_fraction_result& operator=(const Service_scan_rslt_on_fraction_result&);
+  Service_scan_rslt_on_fraction_result() {
+  }
+
+  virtual ~Service_scan_rslt_on_fraction_result() noexcept;
+  FCells success;
+  Exception e;
+
+  _Service_scan_rslt_on_fraction_result__isset __isset;
+
+  void __set_success(const FCells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_scan_rslt_on_fraction_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_fraction_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_fraction_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_fraction_presult__isset {
+  _Service_scan_rslt_on_fraction_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_fraction_presult__isset;
+
+class Service_scan_rslt_on_fraction_presult {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_fraction_presult() noexcept;
+  FCells* success;
+  Exception e;
+
+  _Service_scan_rslt_on_fraction_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_scan_rslt_on_args__isset {
+  _Service_scan_rslt_on_args__isset() : spec(false), rslt(false) {}
+  bool spec :1;
+  bool rslt :1;
+} _Service_scan_rslt_on_args__isset;
+
+class Service_scan_rslt_on_args {
+ public:
+
+  Service_scan_rslt_on_args(const Service_scan_rslt_on_args&);
+  Service_scan_rslt_on_args& operator=(const Service_scan_rslt_on_args&);
+  Service_scan_rslt_on_args() : rslt((CellsResult::type)0) {
+  }
+
+  virtual ~Service_scan_rslt_on_args() noexcept;
+  SpecScan spec;
+  CellsResult::type rslt;
+
+  _Service_scan_rslt_on_args__isset __isset;
+
+  void __set_spec(const SpecScan& val);
+
+  void __set_rslt(const CellsResult::type val);
+
+  bool operator == (const Service_scan_rslt_on_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    if (!(rslt == rhs.rslt))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_scan_rslt_on_pargs {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_pargs() noexcept;
+  const SpecScan* spec;
+  const CellsResult::type* rslt;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_result__isset {
+  _Service_scan_rslt_on_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_result__isset;
+
+class Service_scan_rslt_on_result {
+ public:
+
+  Service_scan_rslt_on_result(const Service_scan_rslt_on_result&);
+  Service_scan_rslt_on_result& operator=(const Service_scan_rslt_on_result&);
+  Service_scan_rslt_on_result() {
+  }
+
+  virtual ~Service_scan_rslt_on_result() noexcept;
+  CellsGroup success;
+  Exception e;
+
+  _Service_scan_rslt_on_result__isset __isset;
+
+  void __set_success(const CellsGroup& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_scan_rslt_on_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_scan_rslt_on_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_scan_rslt_on_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_scan_rslt_on_presult__isset {
+  _Service_scan_rslt_on_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_scan_rslt_on_presult__isset;
+
+class Service_scan_rslt_on_presult {
+ public:
+
+
+  virtual ~Service_scan_rslt_on_presult() noexcept;
+  CellsGroup* success;
+  Exception e;
+
+  _Service_scan_rslt_on_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServiceClient : virtual public ServiceIf {
  public:
   ServiceClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -1496,6 +2083,21 @@ class ServiceClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   void send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update();
+  void scan(Cells& _return, const SpecScan& spec);
+  void send_scan(const SpecScan& spec);
+  void recv_scan(Cells& _return);
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec);
+  void send_scan_rslt_on_column(const SpecScan& spec);
+  void recv_scan_rslt_on_column(CCells& _return);
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec);
+  void send_scan_rslt_on_key(const SpecScan& spec);
+  void recv_scan_rslt_on_key(KCells& _return);
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec);
+  void send_scan_rslt_on_fraction(const SpecScan& spec);
+  void recv_scan_rslt_on_fraction(FCells& _return);
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt);
+  void send_scan_rslt_on(const SpecScan& spec, const CellsResult::type rslt);
+  void recv_scan_rslt_on(CellsGroup& _return);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -1523,6 +2125,11 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scan_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scan_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scan_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scan_rslt_on(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServiceProcessor(::std::shared_ptr<ServiceIf> iface) :
     iface_(iface) {
@@ -1538,6 +2145,11 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
+    processMap_["scan"] = &ServiceProcessor::process_scan;
+    processMap_["scan_rslt_on_column"] = &ServiceProcessor::process_scan_rslt_on_column;
+    processMap_["scan_rslt_on_key"] = &ServiceProcessor::process_scan_rslt_on_key;
+    processMap_["scan_rslt_on_fraction"] = &ServiceProcessor::process_scan_rslt_on_fraction;
+    processMap_["scan_rslt_on"] = &ServiceProcessor::process_scan_rslt_on;
   }
 
   virtual ~ServiceProcessor() {}
@@ -1681,6 +2293,56 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_[i]->update(cells, updater_id);
   }
 
+  void scan(Cells& _return, const SpecScan& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scan(_return, spec);
+    }
+    ifaces_[i]->scan(_return, spec);
+    return;
+  }
+
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scan_rslt_on_column(_return, spec);
+    }
+    ifaces_[i]->scan_rslt_on_column(_return, spec);
+    return;
+  }
+
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scan_rslt_on_key(_return, spec);
+    }
+    ifaces_[i]->scan_rslt_on_key(_return, spec);
+    return;
+  }
+
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scan_rslt_on_fraction(_return, spec);
+    }
+    ifaces_[i]->scan_rslt_on_fraction(_return, spec);
+    return;
+  }
+
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scan_rslt_on(_return, spec, rslt);
+    }
+    ifaces_[i]->scan_rslt_on(_return, spec, rslt);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1749,6 +2411,21 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   int32_t send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update(const int32_t seqid);
+  void scan(Cells& _return, const SpecScan& spec);
+  int32_t send_scan(const SpecScan& spec);
+  void recv_scan(Cells& _return, const int32_t seqid);
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec);
+  int32_t send_scan_rslt_on_column(const SpecScan& spec);
+  void recv_scan_rslt_on_column(CCells& _return, const int32_t seqid);
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec);
+  int32_t send_scan_rslt_on_key(const SpecScan& spec);
+  void recv_scan_rslt_on_key(KCells& _return, const int32_t seqid);
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec);
+  int32_t send_scan_rslt_on_fraction(const SpecScan& spec);
+  void recv_scan_rslt_on_fraction(FCells& _return, const int32_t seqid);
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt);
+  int32_t send_scan_rslt_on(const SpecScan& spec, const CellsResult::type rslt);
+  void recv_scan_rslt_on(CellsGroup& _return, const int32_t seqid);
  protected:
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

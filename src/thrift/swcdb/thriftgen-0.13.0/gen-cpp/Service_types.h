@@ -68,6 +68,46 @@ std::ostream& operator<<(std::ostream& out, const EncodingType::type& val);
 
 std::string to_string(const EncodingType::type& val);
 
+struct Comp {
+  enum type {
+    NONE = 0,
+    PF = 1,
+    GT = 2,
+    GE = 3,
+    EQ = 4,
+    LE = 5,
+    LT = 6,
+    NE = 7,
+    RE = 8,
+    VGT = 9,
+    VGE = 10,
+    VLE = 11,
+    VLT = 12
+  };
+};
+
+extern const std::map<int, const char*> _Comp_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const Comp::type& val);
+
+std::string to_string(const Comp::type& val);
+
+struct SpecFlagsOpt {
+  enum type {
+    NONE = 0,
+    LIMIT_BY_KEYS = 1,
+    OFFSET_BY_KEYS = 4,
+    ONLY_KEYS = 8,
+    ONLY_DELETES = 10
+  };
+};
+
+extern const std::map<int, const char*> _SpecFlagsOpt_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const SpecFlagsOpt::type& val);
+
+std::string to_string(const SpecFlagsOpt::type& val);
+
 struct Flag {
   enum type {
     NONE = 0,
@@ -102,6 +142,8 @@ typedef std::vector<class Schema>  Schemas;
 
 typedef std::vector<std::string>  Key;
 
+typedef std::vector<class SpecFraction>  SpecKey;
+
 typedef std::vector<class UCell>  UCells;
 
 typedef std::map<int64_t, UCells>  UCCells;
@@ -119,6 +161,20 @@ typedef std::vector<class CompactResult>  CompactResults;
 class Exception;
 
 class Schema;
+
+class SpecFlags;
+
+class SpecFraction;
+
+class SpecValue;
+
+class SpecTimestamp;
+
+class SpecInterval;
+
+class SpecColumn;
+
+class SpecScan;
 
 class UCell;
 
@@ -336,11 +392,454 @@ void swap(Schema &a, Schema &b);
 
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
 
+typedef struct _SpecFlags__isset {
+  _SpecFlags__isset() : limit(false), offset(false), max_versions(false), max_buffer(false), options(false) {}
+  bool limit :1;
+  bool offset :1;
+  bool max_versions :1;
+  bool max_buffer :1;
+  bool options :1;
+} _SpecFlags__isset;
+
+class SpecFlags : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecFlags(const SpecFlags&);
+  SpecFlags& operator=(const SpecFlags&);
+  SpecFlags() : limit(0), offset(0), max_versions(0), max_buffer(0), options(0) {
+  }
+
+  virtual ~SpecFlags() noexcept;
+  int64_t limit;
+  int64_t offset;
+  int32_t max_versions;
+  int32_t max_buffer;
+  int8_t options;
+
+  _SpecFlags__isset __isset;
+
+  void __set_limit(const int64_t val);
+
+  void __set_offset(const int64_t val);
+
+  void __set_max_versions(const int32_t val);
+
+  void __set_max_buffer(const int32_t val);
+
+  void __set_options(const int8_t val);
+
+  bool operator == (const SpecFlags & rhs) const
+  {
+    if (__isset.limit != rhs.__isset.limit)
+      return false;
+    else if (__isset.limit && !(limit == rhs.limit))
+      return false;
+    if (__isset.offset != rhs.__isset.offset)
+      return false;
+    else if (__isset.offset && !(offset == rhs.offset))
+      return false;
+    if (__isset.max_versions != rhs.__isset.max_versions)
+      return false;
+    else if (__isset.max_versions && !(max_versions == rhs.max_versions))
+      return false;
+    if (__isset.max_buffer != rhs.__isset.max_buffer)
+      return false;
+    else if (__isset.max_buffer && !(max_buffer == rhs.max_buffer))
+      return false;
+    if (__isset.options != rhs.__isset.options)
+      return false;
+    else if (__isset.options && !(options == rhs.options))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecFlags &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecFlags & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecFlags &a, SpecFlags &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecFlags& obj);
+
+typedef struct _SpecFraction__isset {
+  _SpecFraction__isset() : comp(false), f(false) {}
+  bool comp :1;
+  bool f :1;
+} _SpecFraction__isset;
+
+class SpecFraction : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecFraction(const SpecFraction&);
+  SpecFraction& operator=(const SpecFraction&);
+  SpecFraction() : comp((Comp::type)0), f() {
+  }
+
+  virtual ~SpecFraction() noexcept;
+  Comp::type comp;
+  std::string f;
+
+  _SpecFraction__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_f(const std::string& val);
+
+  bool operator == (const SpecFraction & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(f == rhs.f))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecFraction &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecFraction & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecFraction &a, SpecFraction &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecFraction& obj);
+
+typedef struct _SpecValue__isset {
+  _SpecValue__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValue__isset;
+
+class SpecValue : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValue(const SpecValue&);
+  SpecValue& operator=(const SpecValue&);
+  SpecValue() : comp((Comp::type)0), v() {
+  }
+
+  virtual ~SpecValue() noexcept;
+  Comp::type comp;
+  std::string v;
+
+  _SpecValue__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const SpecValue & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValue &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValue & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValue &a, SpecValue &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
+
+typedef struct _SpecTimestamp__isset {
+  _SpecTimestamp__isset() : comp(false), ts(false) {}
+  bool comp :1;
+  bool ts :1;
+} _SpecTimestamp__isset;
+
+class SpecTimestamp : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecTimestamp(const SpecTimestamp&);
+  SpecTimestamp& operator=(const SpecTimestamp&);
+  SpecTimestamp() : comp((Comp::type)0), ts(0) {
+  }
+
+  virtual ~SpecTimestamp() noexcept;
+  Comp::type comp;
+  int64_t ts;
+
+  _SpecTimestamp__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_ts(const int64_t val);
+
+  bool operator == (const SpecTimestamp & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecTimestamp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecTimestamp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecTimestamp &a, SpecTimestamp &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecTimestamp& obj);
+
+typedef struct _SpecInterval__isset {
+  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_start(false), key_finish(false), value(false), ts_start(false), ts_finish(false), flags(false) {}
+  bool range_begin :1;
+  bool range_end :1;
+  bool range_offset :1;
+  bool offset_key :1;
+  bool offset_rev :1;
+  bool key_start :1;
+  bool key_finish :1;
+  bool value :1;
+  bool ts_start :1;
+  bool ts_finish :1;
+  bool flags :1;
+} _SpecInterval__isset;
+
+class SpecInterval : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecInterval(const SpecInterval&);
+  SpecInterval& operator=(const SpecInterval&);
+  SpecInterval() : offset_rev(0) {
+  }
+
+  virtual ~SpecInterval() noexcept;
+  Key range_begin;
+  Key range_end;
+  Key range_offset;
+  Key offset_key;
+  int64_t offset_rev;
+  SpecKey key_start;
+  SpecKey key_finish;
+  SpecValue value;
+  SpecTimestamp ts_start;
+  SpecTimestamp ts_finish;
+  SpecFlags flags;
+
+  _SpecInterval__isset __isset;
+
+  void __set_range_begin(const Key& val);
+
+  void __set_range_end(const Key& val);
+
+  void __set_range_offset(const Key& val);
+
+  void __set_offset_key(const Key& val);
+
+  void __set_offset_rev(const int64_t val);
+
+  void __set_key_start(const SpecKey& val);
+
+  void __set_key_finish(const SpecKey& val);
+
+  void __set_value(const SpecValue& val);
+
+  void __set_ts_start(const SpecTimestamp& val);
+
+  void __set_ts_finish(const SpecTimestamp& val);
+
+  void __set_flags(const SpecFlags& val);
+
+  bool operator == (const SpecInterval & rhs) const
+  {
+    if (__isset.range_begin != rhs.__isset.range_begin)
+      return false;
+    else if (__isset.range_begin && !(range_begin == rhs.range_begin))
+      return false;
+    if (__isset.range_end != rhs.__isset.range_end)
+      return false;
+    else if (__isset.range_end && !(range_end == rhs.range_end))
+      return false;
+    if (__isset.range_offset != rhs.__isset.range_offset)
+      return false;
+    else if (__isset.range_offset && !(range_offset == rhs.range_offset))
+      return false;
+    if (__isset.offset_key != rhs.__isset.offset_key)
+      return false;
+    else if (__isset.offset_key && !(offset_key == rhs.offset_key))
+      return false;
+    if (__isset.offset_rev != rhs.__isset.offset_rev)
+      return false;
+    else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
+      return false;
+    if (__isset.key_start != rhs.__isset.key_start)
+      return false;
+    else if (__isset.key_start && !(key_start == rhs.key_start))
+      return false;
+    if (__isset.key_finish != rhs.__isset.key_finish)
+      return false;
+    else if (__isset.key_finish && !(key_finish == rhs.key_finish))
+      return false;
+    if (__isset.value != rhs.__isset.value)
+      return false;
+    else if (__isset.value && !(value == rhs.value))
+      return false;
+    if (__isset.ts_start != rhs.__isset.ts_start)
+      return false;
+    else if (__isset.ts_start && !(ts_start == rhs.ts_start))
+      return false;
+    if (__isset.ts_finish != rhs.__isset.ts_finish)
+      return false;
+    else if (__isset.ts_finish && !(ts_finish == rhs.ts_finish))
+      return false;
+    if (__isset.flags != rhs.__isset.flags)
+      return false;
+    else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecInterval &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecInterval & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecInterval &a, SpecInterval &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecInterval& obj);
+
+typedef struct _SpecColumn__isset {
+  _SpecColumn__isset() : cid(false), intervals(false) {}
+  bool cid :1;
+  bool intervals :1;
+} _SpecColumn__isset;
+
+class SpecColumn : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecColumn(const SpecColumn&);
+  SpecColumn& operator=(const SpecColumn&);
+  SpecColumn() : cid(0) {
+  }
+
+  virtual ~SpecColumn() noexcept;
+  int64_t cid;
+  std::vector<SpecInterval>  intervals;
+
+  _SpecColumn__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_intervals(const std::vector<SpecInterval> & val);
+
+  bool operator == (const SpecColumn & rhs) const
+  {
+    if (!(cid == rhs.cid))
+      return false;
+    if (!(intervals == rhs.intervals))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecColumn &a, SpecColumn &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecColumn& obj);
+
+typedef struct _SpecScan__isset {
+  _SpecScan__isset() : columns(false), flags(false) {}
+  bool columns :1;
+  bool flags :1;
+} _SpecScan__isset;
+
+class SpecScan : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecScan(const SpecScan&);
+  SpecScan& operator=(const SpecScan&);
+  SpecScan() {
+  }
+
+  virtual ~SpecScan() noexcept;
+  std::vector<SpecColumn>  columns;
+  SpecFlags flags;
+
+  _SpecScan__isset __isset;
+
+  void __set_columns(const std::vector<SpecColumn> & val);
+
+  void __set_flags(const SpecFlags& val);
+
+  bool operator == (const SpecScan & rhs) const
+  {
+    if (!(columns == rhs.columns))
+      return false;
+    if (__isset.flags != rhs.__isset.flags)
+      return false;
+    else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecScan &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecScan & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecScan &a, SpecScan &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecScan& obj);
+
 typedef struct _UCell__isset {
-  _UCell__isset() : f(false), k(false), ts(false), v(false) {}
+  _UCell__isset() : f(false), k(false), ts(false), ts_desc(false), v(false) {}
   bool f :1;
   bool k :1;
   bool ts :1;
+  bool ts_desc :1;
   bool v :1;
 } _UCell__isset;
 
@@ -349,13 +848,14 @@ class UCell : public virtual ::apache::thrift::TBase {
 
   UCell(const UCell&);
   UCell& operator=(const UCell&);
-  UCell() : f((Flag::type)0), ts(0), v() {
+  UCell() : f((Flag::type)0), ts(0), ts_desc(0), v() {
   }
 
   virtual ~UCell() noexcept;
   Flag::type f;
   Key k;
   int64_t ts;
+  bool ts_desc;
   std::string v;
 
   _UCell__isset __isset;
@@ -365,6 +865,8 @@ class UCell : public virtual ::apache::thrift::TBase {
   void __set_k(const Key& val);
 
   void __set_ts(const int64_t val);
+
+  void __set_ts_desc(const bool val);
 
   void __set_v(const std::string& val);
 
@@ -377,6 +879,10 @@ class UCell : public virtual ::apache::thrift::TBase {
     if (__isset.ts != rhs.__isset.ts)
       return false;
     else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.ts_desc != rhs.__isset.ts_desc)
+      return false;
+    else if (__isset.ts_desc && !(ts_desc == rhs.ts_desc))
       return false;
     if (__isset.v != rhs.__isset.v)
       return false;

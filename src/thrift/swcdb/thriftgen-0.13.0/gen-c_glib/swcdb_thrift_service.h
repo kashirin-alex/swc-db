@@ -30,6 +30,11 @@ struct _swcdb_thriftServiceIfInterface
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
   gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan) (swcdb_thriftServiceIf *iface, swcdb_thriftCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_column) (swcdb_thriftServiceIf *iface, swcdb_thriftCCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_key) (swcdb_thriftServiceIf *iface, swcdb_thriftKCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_fraction) (swcdb_thriftServiceIf *iface, swcdb_thriftFCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on) (swcdb_thriftServiceIf *iface, swcdb_thriftCellsGroup ** _return, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, swcdb_thriftException ** e, GError **error);
 };
 typedef struct _swcdb_thriftServiceIfInterface swcdb_thriftServiceIfInterface;
 
@@ -51,6 +56,11 @@ gboolean swcdb_thrift_service_if_sql_update (swcdb_thriftServiceIf *iface, const
 gboolean swcdb_thrift_service_if_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_scan (swcdb_thriftServiceIf *iface, swcdb_thriftCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_scan_rslt_on_column (swcdb_thriftServiceIf *iface, swcdb_thriftCCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_scan_rslt_on_key (swcdb_thriftServiceIf *iface, swcdb_thriftKCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_scan_rslt_on_fraction (swcdb_thriftServiceIf *iface, swcdb_thriftFCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_scan_rslt_on (swcdb_thriftServiceIf *iface, swcdb_thriftCellsGroup ** _return, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, swcdb_thriftException ** e, GError **error);
 
 /* Service service client */
 struct _swcdb_thriftServiceClient
@@ -112,6 +122,21 @@ gboolean swcdb_thrift_service_client_recv_updater_close (swcdb_thriftServiceIf *
 gboolean swcdb_thrift_service_client_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_send_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, GError ** error);
 gboolean swcdb_thrift_service_client_recv_update (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_scan (swcdb_thriftServiceIf * iface, swcdb_thriftCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_scan (swcdb_thriftServiceIf * iface, const swcdb_thriftSpecScan * spec, GError ** error);
+gboolean swcdb_thrift_service_client_recv_scan (swcdb_thriftServiceIf * iface, swcdb_thriftCells ** _return, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_scan_rslt_on_column (swcdb_thriftServiceIf * iface, swcdb_thriftCCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_scan_rslt_on_column (swcdb_thriftServiceIf * iface, const swcdb_thriftSpecScan * spec, GError ** error);
+gboolean swcdb_thrift_service_client_recv_scan_rslt_on_column (swcdb_thriftServiceIf * iface, swcdb_thriftCCells ** _return, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_scan_rslt_on_key (swcdb_thriftServiceIf * iface, swcdb_thriftKCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_scan_rslt_on_key (swcdb_thriftServiceIf * iface, const swcdb_thriftSpecScan * spec, GError ** error);
+gboolean swcdb_thrift_service_client_recv_scan_rslt_on_key (swcdb_thriftServiceIf * iface, swcdb_thriftKCells ** _return, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_scan_rslt_on_fraction (swcdb_thriftServiceIf * iface, swcdb_thriftFCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_scan_rslt_on_fraction (swcdb_thriftServiceIf * iface, const swcdb_thriftSpecScan * spec, GError ** error);
+gboolean swcdb_thrift_service_client_recv_scan_rslt_on_fraction (swcdb_thriftServiceIf * iface, swcdb_thriftFCells ** _return, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_scan_rslt_on (swcdb_thriftServiceIf * iface, swcdb_thriftCellsGroup ** _return, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_scan_rslt_on (swcdb_thriftServiceIf * iface, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, GError ** error);
+gboolean swcdb_thrift_service_client_recv_scan_rslt_on (swcdb_thriftServiceIf * iface, swcdb_thriftCellsGroup ** _return, swcdb_thriftException ** e, GError ** error);
 void service_client_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec);
 void service_client_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec);
 
@@ -138,6 +163,11 @@ struct _swcdb_thriftServiceHandlerClass
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
   gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan) (swcdb_thriftServiceIf *iface, swcdb_thriftCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_column) (swcdb_thriftServiceIf *iface, swcdb_thriftCCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_key) (swcdb_thriftServiceIf *iface, swcdb_thriftKCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on_fraction) (swcdb_thriftServiceIf *iface, swcdb_thriftFCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+  gboolean (*scan_rslt_on) (swcdb_thriftServiceIf *iface, swcdb_thriftCellsGroup ** _return, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, swcdb_thriftException ** e, GError **error);
 };
 typedef struct _swcdb_thriftServiceHandlerClass swcdb_thriftServiceHandlerClass;
 
@@ -161,6 +191,11 @@ gboolean swcdb_thrift_service_handler_sql_update (swcdb_thriftServiceIf *iface, 
 gboolean swcdb_thrift_service_handler_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_scan (swcdb_thriftServiceIf *iface, swcdb_thriftCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_scan_rslt_on_column (swcdb_thriftServiceIf *iface, swcdb_thriftCCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_scan_rslt_on_key (swcdb_thriftServiceIf *iface, swcdb_thriftKCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_scan_rslt_on_fraction (swcdb_thriftServiceIf *iface, swcdb_thriftFCells ** _return, const swcdb_thriftSpecScan * spec, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_scan_rslt_on (swcdb_thriftServiceIf *iface, swcdb_thriftCellsGroup ** _return, const swcdb_thriftSpecScan * spec, const swcdb_thriftCellsResult rslt, swcdb_thriftException ** e, GError **error);
 
 /* Service processor */
 struct _swcdb_thriftServiceProcessor

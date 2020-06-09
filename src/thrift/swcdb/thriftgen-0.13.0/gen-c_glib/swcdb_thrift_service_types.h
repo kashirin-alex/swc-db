@@ -53,6 +53,40 @@ typedef enum _swcdb_thriftEncodingType swcdb_thriftEncodingType;
 const char *
 toString_EncodingType(int value); 
 
+enum _swcdb_thriftComp {
+  SWCDB_THRIFT_COMP_NONE = 0,
+  SWCDB_THRIFT_COMP_PF = 1,
+  SWCDB_THRIFT_COMP_GT = 2,
+  SWCDB_THRIFT_COMP_GE = 3,
+  SWCDB_THRIFT_COMP_EQ = 4,
+  SWCDB_THRIFT_COMP_LE = 5,
+  SWCDB_THRIFT_COMP_LT = 6,
+  SWCDB_THRIFT_COMP_NE = 7,
+  SWCDB_THRIFT_COMP_RE = 8,
+  SWCDB_THRIFT_COMP_VGT = 9,
+  SWCDB_THRIFT_COMP_VGE = 10,
+  SWCDB_THRIFT_COMP_VLE = 11,
+  SWCDB_THRIFT_COMP_VLT = 12
+};
+typedef enum _swcdb_thriftComp swcdb_thriftComp;
+
+/* return the name of the constant */
+const char *
+toString_Comp(int value); 
+
+enum _swcdb_thriftSpecFlagsOpt {
+  SWCDB_THRIFT_SPEC_FLAGS_OPT_NONE = 0,
+  SWCDB_THRIFT_SPEC_FLAGS_OPT_LIMIT_BY_KEYS = 1,
+  SWCDB_THRIFT_SPEC_FLAGS_OPT_OFFSET_BY_KEYS = 4,
+  SWCDB_THRIFT_SPEC_FLAGS_OPT_ONLY_KEYS = 8,
+  SWCDB_THRIFT_SPEC_FLAGS_OPT_ONLY_DELETES = 10
+};
+typedef enum _swcdb_thriftSpecFlagsOpt swcdb_thriftSpecFlagsOpt;
+
+/* return the name of the constant */
+const char *
+toString_SpecFlagsOpt(int value); 
+
 enum _swcdb_thriftFlag {
   SWCDB_THRIFT_FLAG_NONE = 0,
   SWCDB_THRIFT_FLAG_INSERT = 1,
@@ -80,6 +114,8 @@ toString_CellsResult(int value);
 typedef GPtrArray swcdb_thriftSchemas;
 
 typedef GPtrArray swcdb_thriftKey;
+
+typedef GPtrArray swcdb_thriftSpecKey;
 
 typedef GPtrArray swcdb_thriftUCells;
 
@@ -182,6 +218,219 @@ GType swcdb_thrift_schema_get_type (void);
 #define SWCDB_THRIFT_IS_SCHEMA_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SCHEMA))
 #define SWCDB_THRIFT_SCHEMA_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SCHEMA, swcdb_thriftSchemaClass))
 
+/* struct SpecFlags */
+struct _swcdb_thriftSpecFlags
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint64 limit;
+  gboolean __isset_limit;
+  gint64 offset;
+  gboolean __isset_offset;
+  gint32 max_versions;
+  gboolean __isset_max_versions;
+  gint32 max_buffer;
+  gboolean __isset_max_buffer;
+  gint8 options;
+  gboolean __isset_options;
+};
+typedef struct _swcdb_thriftSpecFlags swcdb_thriftSpecFlags;
+
+struct _swcdb_thriftSpecFlagsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecFlagsClass swcdb_thriftSpecFlagsClass;
+
+GType swcdb_thrift_spec_flags_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_FLAGS (swcdb_thrift_spec_flags_get_type())
+#define SWCDB_THRIFT_SPEC_FLAGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_FLAGS, swcdb_thriftSpecFlags))
+#define SWCDB_THRIFT_SPEC_FLAGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_FLAGS, swcdb_thriftSpecFlagsClass))
+#define SWCDB_THRIFT_IS_SPEC_FLAGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_FLAGS))
+#define SWCDB_THRIFT_IS_SPEC_FLAGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_FLAGS))
+#define SWCDB_THRIFT_SPEC_FLAGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_FLAGS, swcdb_thriftSpecFlagsClass))
+
+/* struct SpecFraction */
+struct _swcdb_thriftSpecFraction
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  GByteArray * f;
+  gboolean __isset_f;
+};
+typedef struct _swcdb_thriftSpecFraction swcdb_thriftSpecFraction;
+
+struct _swcdb_thriftSpecFractionClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecFractionClass swcdb_thriftSpecFractionClass;
+
+GType swcdb_thrift_spec_fraction_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_FRACTION (swcdb_thrift_spec_fraction_get_type())
+#define SWCDB_THRIFT_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFraction))
+#define SWCDB_THRIFT_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
+#define SWCDB_THRIFT_IS_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
+#define SWCDB_THRIFT_IS_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
+#define SWCDB_THRIFT_SPEC_FRACTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
+
+/* struct SpecValue */
+struct _swcdb_thriftSpecValue
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  GByteArray * v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftSpecValue swcdb_thriftSpecValue;
+
+struct _swcdb_thriftSpecValueClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecValueClass swcdb_thriftSpecValueClass;
+
+GType swcdb_thrift_spec_value_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_VALUE (swcdb_thrift_spec_value_get_type())
+#define SWCDB_THRIFT_SPEC_VALUE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE, swcdb_thriftSpecValue))
+#define SWCDB_THRIFT_SPEC_VALUE_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_VALUE, swcdb_thriftSpecValueClass))
+#define SWCDB_THRIFT_IS_SPEC_VALUE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE))
+#define SWCDB_THRIFT_IS_SPEC_VALUE_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE))
+#define SWCDB_THRIFT_SPEC_VALUE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE, swcdb_thriftSpecValueClass))
+
+/* struct SpecTimestamp */
+struct _swcdb_thriftSpecTimestamp
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gint64 ts;
+  gboolean __isset_ts;
+};
+typedef struct _swcdb_thriftSpecTimestamp swcdb_thriftSpecTimestamp;
+
+struct _swcdb_thriftSpecTimestampClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecTimestampClass swcdb_thriftSpecTimestampClass;
+
+GType swcdb_thrift_spec_timestamp_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP (swcdb_thrift_spec_timestamp_get_type())
+#define SWCDB_THRIFT_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestamp))
+#define SWCDB_THRIFT_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
+#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
+#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
+#define SWCDB_THRIFT_SPEC_TIMESTAMP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
+
+/* struct SpecInterval */
+struct _swcdb_thriftSpecInterval
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * range_begin;
+  gboolean __isset_range_begin;
+  GPtrArray * range_end;
+  gboolean __isset_range_end;
+  GPtrArray * range_offset;
+  gboolean __isset_range_offset;
+  GPtrArray * offset_key;
+  gboolean __isset_offset_key;
+  gint64 offset_rev;
+  gboolean __isset_offset_rev;
+  GPtrArray * key_start;
+  gboolean __isset_key_start;
+  GPtrArray * key_finish;
+  gboolean __isset_key_finish;
+  swcdb_thriftSpecValue * value;
+  gboolean __isset_value;
+  swcdb_thriftSpecTimestamp * ts_start;
+  gboolean __isset_ts_start;
+  swcdb_thriftSpecTimestamp * ts_finish;
+  gboolean __isset_ts_finish;
+  swcdb_thriftSpecFlags * flags;
+  gboolean __isset_flags;
+};
+typedef struct _swcdb_thriftSpecInterval swcdb_thriftSpecInterval;
+
+struct _swcdb_thriftSpecIntervalClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecIntervalClass swcdb_thriftSpecIntervalClass;
+
+GType swcdb_thrift_spec_interval_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL (swcdb_thrift_spec_interval_get_type())
+#define SWCDB_THRIFT_SPEC_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL, swcdb_thriftSpecInterval))
+#define SWCDB_THRIFT_SPEC_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL, swcdb_thriftSpecIntervalClass))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL))
+#define SWCDB_THRIFT_SPEC_INTERVAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL, swcdb_thriftSpecIntervalClass))
+
+/* struct SpecColumn */
+struct _swcdb_thriftSpecColumn
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint64 cid;
+  gboolean __isset_cid;
+  GPtrArray * intervals;
+  gboolean __isset_intervals;
+};
+typedef struct _swcdb_thriftSpecColumn swcdb_thriftSpecColumn;
+
+struct _swcdb_thriftSpecColumnClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecColumnClass swcdb_thriftSpecColumnClass;
+
+GType swcdb_thrift_spec_column_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_COLUMN (swcdb_thrift_spec_column_get_type())
+#define SWCDB_THRIFT_SPEC_COLUMN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN, swcdb_thriftSpecColumn))
+#define SWCDB_THRIFT_SPEC_COLUMN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_COLUMN, swcdb_thriftSpecColumnClass))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_COLUMN))
+#define SWCDB_THRIFT_SPEC_COLUMN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN, swcdb_thriftSpecColumnClass))
+
+/* struct SpecScan */
+struct _swcdb_thriftSpecScan
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * columns;
+  gboolean __isset_columns;
+  swcdb_thriftSpecFlags * flags;
+  gboolean __isset_flags;
+};
+typedef struct _swcdb_thriftSpecScan swcdb_thriftSpecScan;
+
+struct _swcdb_thriftSpecScanClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecScanClass swcdb_thriftSpecScanClass;
+
+GType swcdb_thrift_spec_scan_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_SCAN (swcdb_thrift_spec_scan_get_type())
+#define SWCDB_THRIFT_SPEC_SCAN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_SCAN, swcdb_thriftSpecScan))
+#define SWCDB_THRIFT_SPEC_SCAN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_SCAN, swcdb_thriftSpecScanClass))
+#define SWCDB_THRIFT_IS_SPEC_SCAN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_SCAN))
+#define SWCDB_THRIFT_IS_SPEC_SCAN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_SCAN))
+#define SWCDB_THRIFT_SPEC_SCAN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_SCAN, swcdb_thriftSpecScanClass))
+
 /* struct UCell */
 struct _swcdb_thriftUCell
 { 
@@ -194,6 +443,8 @@ struct _swcdb_thriftUCell
   gboolean __isset_k;
   gint64 ts;
   gboolean __isset_ts;
+  gboolean ts_desc;
+  gboolean __isset_ts_desc;
   GByteArray * v;
   gboolean __isset_v;
 };
@@ -1066,5 +1317,267 @@ GType swcdb_thrift_service_update_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
 #define SWCDB_THRIFT_SERVICE_UPDATE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResultClass))
+
+/* struct ServiceScanArgs */
+struct _swcdb_thriftServiceScanArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecScan * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceScanArgs swcdb_thriftServiceScanArgs;
+
+struct _swcdb_thriftServiceScanArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanArgsClass swcdb_thriftServiceScanArgsClass;
+
+GType swcdb_thrift_service_scan_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_ARGS (swcdb_thrift_service_scan_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_ARGS, swcdb_thriftServiceScanArgs))
+#define SWCDB_THRIFT_SERVICE_SCAN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_ARGS, swcdb_thriftServiceScanArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_ARGS))
+#define SWCDB_THRIFT_SERVICE_SCAN_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_ARGS, swcdb_thriftServiceScanArgsClass))
+
+/* struct ServiceScanResult */
+struct _swcdb_thriftServiceScanResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceScanResult swcdb_thriftServiceScanResult;
+
+struct _swcdb_thriftServiceScanResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanResultClass swcdb_thriftServiceScanResultClass;
+
+GType swcdb_thrift_service_scan_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RESULT (swcdb_thrift_service_scan_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RESULT, swcdb_thriftServiceScanResult))
+#define SWCDB_THRIFT_SERVICE_SCAN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RESULT, swcdb_thriftServiceScanResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RESULT))
+#define SWCDB_THRIFT_SERVICE_SCAN_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RESULT, swcdb_thriftServiceScanResultClass))
+
+/* struct ServiceScanRsltOnColumnArgs */
+struct _swcdb_thriftServiceScanRsltOnColumnArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecScan * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnColumnArgs swcdb_thriftServiceScanRsltOnColumnArgs;
+
+struct _swcdb_thriftServiceScanRsltOnColumnArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnColumnArgsClass swcdb_thriftServiceScanRsltOnColumnArgsClass;
+
+GType swcdb_thrift_service_scan_rslt_on_column_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS (swcdb_thrift_service_scan_rslt_on_column_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS, swcdb_thriftServiceScanRsltOnColumnArgs))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS, swcdb_thriftServiceScanRsltOnColumnArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_ARGS, swcdb_thriftServiceScanRsltOnColumnArgsClass))
+
+/* struct ServiceScanRsltOnColumnResult */
+struct _swcdb_thriftServiceScanRsltOnColumnResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GHashTable * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnColumnResult swcdb_thriftServiceScanRsltOnColumnResult;
+
+struct _swcdb_thriftServiceScanRsltOnColumnResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnColumnResultClass swcdb_thriftServiceScanRsltOnColumnResultClass;
+
+GType swcdb_thrift_service_scan_rslt_on_column_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT (swcdb_thrift_service_scan_rslt_on_column_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT, swcdb_thriftServiceScanRsltOnColumnResult))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT, swcdb_thriftServiceScanRsltOnColumnResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_COLUMN_RESULT, swcdb_thriftServiceScanRsltOnColumnResultClass))
+
+/* struct ServiceScanRsltOnKeyArgs */
+struct _swcdb_thriftServiceScanRsltOnKeyArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecScan * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnKeyArgs swcdb_thriftServiceScanRsltOnKeyArgs;
+
+struct _swcdb_thriftServiceScanRsltOnKeyArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnKeyArgsClass swcdb_thriftServiceScanRsltOnKeyArgsClass;
+
+GType swcdb_thrift_service_scan_rslt_on_key_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS (swcdb_thrift_service_scan_rslt_on_key_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS, swcdb_thriftServiceScanRsltOnKeyArgs))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS, swcdb_thriftServiceScanRsltOnKeyArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_KEY_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_KEY_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_ARGS, swcdb_thriftServiceScanRsltOnKeyArgsClass))
+
+/* struct ServiceScanRsltOnKeyResult */
+struct _swcdb_thriftServiceScanRsltOnKeyResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnKeyResult swcdb_thriftServiceScanRsltOnKeyResult;
+
+struct _swcdb_thriftServiceScanRsltOnKeyResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnKeyResultClass swcdb_thriftServiceScanRsltOnKeyResultClass;
+
+GType swcdb_thrift_service_scan_rslt_on_key_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT (swcdb_thrift_service_scan_rslt_on_key_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT, swcdb_thriftServiceScanRsltOnKeyResult))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT, swcdb_thriftServiceScanRsltOnKeyResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_KEY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_KEY_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_KEY_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_KEY_RESULT, swcdb_thriftServiceScanRsltOnKeyResultClass))
+
+/* struct ServiceScanRsltOnFractionArgs */
+struct _swcdb_thriftServiceScanRsltOnFractionArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecScan * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnFractionArgs swcdb_thriftServiceScanRsltOnFractionArgs;
+
+struct _swcdb_thriftServiceScanRsltOnFractionArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnFractionArgsClass swcdb_thriftServiceScanRsltOnFractionArgsClass;
+
+GType swcdb_thrift_service_scan_rslt_on_fraction_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS (swcdb_thrift_service_scan_rslt_on_fraction_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS, swcdb_thriftServiceScanRsltOnFractionArgs))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS, swcdb_thriftServiceScanRsltOnFractionArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_ARGS, swcdb_thriftServiceScanRsltOnFractionArgsClass))
+
+/* struct ServiceScanRsltOnFractionResult */
+struct _swcdb_thriftServiceScanRsltOnFractionResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftFCells * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnFractionResult swcdb_thriftServiceScanRsltOnFractionResult;
+
+struct _swcdb_thriftServiceScanRsltOnFractionResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnFractionResultClass swcdb_thriftServiceScanRsltOnFractionResultClass;
+
+GType swcdb_thrift_service_scan_rslt_on_fraction_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT (swcdb_thrift_service_scan_rslt_on_fraction_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT, swcdb_thriftServiceScanRsltOnFractionResult))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT, swcdb_thriftServiceScanRsltOnFractionResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_FRACTION_RESULT, swcdb_thriftServiceScanRsltOnFractionResultClass))
+
+/* struct ServiceScanRsltOnArgs */
+struct _swcdb_thriftServiceScanRsltOnArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecScan * spec;
+  gboolean __isset_spec;
+  swcdb_thriftCellsResult rslt;
+  gboolean __isset_rslt;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnArgs swcdb_thriftServiceScanRsltOnArgs;
+
+struct _swcdb_thriftServiceScanRsltOnArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnArgsClass swcdb_thriftServiceScanRsltOnArgsClass;
+
+GType swcdb_thrift_service_scan_rslt_on_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_ARGS (swcdb_thrift_service_scan_rslt_on_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_ARGS, swcdb_thriftServiceScanRsltOnArgs))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_ARGS, swcdb_thriftServiceScanRsltOnArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_ARGS))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_ARGS, swcdb_thriftServiceScanRsltOnArgsClass))
+
+/* struct ServiceScanRsltOnResult */
+struct _swcdb_thriftServiceScanRsltOnResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftCellsGroup * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnResult swcdb_thriftServiceScanRsltOnResult;
+
+struct _swcdb_thriftServiceScanRsltOnResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceScanRsltOnResultClass swcdb_thriftServiceScanRsltOnResultClass;
+
+GType swcdb_thrift_service_scan_rslt_on_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_RESULT (swcdb_thrift_service_scan_rslt_on_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_RESULT, swcdb_thriftServiceScanRsltOnResult))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SCAN_RSLT_ON_RESULT, swcdb_thriftServiceScanRsltOnResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SCAN_RSLT_ON_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_RESULT))
+#define SWCDB_THRIFT_SERVICE_SCAN_RSLT_ON_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SCAN_RSLT_ON_RESULT, swcdb_thriftServiceScanRsltOnResultClass))
 
 #endif /* SWCDB_THRIFT_SERVICE_TYPES_H */

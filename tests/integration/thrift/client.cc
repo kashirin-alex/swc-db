@@ -6,6 +6,10 @@
 #include <cassert>
 #include "swcdb/thrift/client/Client.h"
 
+#undef assert
+#define assert(_e_) \
+  if(!(_e_)) throw std::runtime_error(#_e_);
+
 const std::string column_pre("thrift-client-test");
 const int num_columns = 5;
 const int num_cells = 10;
@@ -256,6 +260,31 @@ void print(const Cells& cells) {
   }
 }
 
+SpecScan select_specs(Client& client) {
+  SpecScan ss;
+  for(auto c=1; c <= num_columns; ++c) {
+    Schemas schemas;
+    client.sql_list_columns(
+      schemas, 
+      "get schema " + column_name(c)
+    );
+    assert(!schemas.empty());
+
+    auto& col = ss.columns.emplace_back();
+    col.cid = schemas.back().cid;
+    auto& intval = col.intervals.emplace_back();
+
+    intval.__isset.key_start = true;
+    intval.key_start.resize(2);
+    intval.key_start[0].__set_comp(Comp::EQ);
+    intval.key_start[0].__set_f("a1");
+    intval.key_start[1].__set_comp(Comp::GE);
+    intval.key_start[1].__set_f("");
+  }
+  return ss;
+}
+
+
 std::string select_sql() {
   std::string sql("select where col(");
   for(auto c=1; c <= num_columns; ++c) {
@@ -406,8 +435,8 @@ void sql_query(Client& client, CellsResult::type rslt) {
 }
 
 
-void update(Client& client, size_t updater_id=0, int batch=0) {
-  std::cout << std::endl << "test: update";
+void spec_update(Client& client, size_t updater_id=0, int batch=0) {
+  std::cout << std::endl << "test: spec_update";
   if(updater_id)
     std::cout << " updater_id=" << updater_id;
   std::cout << ": " << std::endl;
@@ -432,6 +461,7 @@ void update(Client& client, size_t updater_id=0, int batch=0) {
         cell.f = Flag::INSERT;
         key(i, f, cell.k);
         cell.__set_ts(i*f*c);//now_ns());
+        cell.__set_ts_desc(true);
         cell.__set_v(cell_value(c, i, f, batch));
       }
     }
@@ -439,6 +469,62 @@ void update(Client& client, size_t updater_id=0, int batch=0) {
   //std::cout << cells << "\n";
   client.update(cells, updater_id);
 }
+
+void spec_select(Client& client) {
+  std::cout << std::endl << "test: spec_select: " << std::endl;
+
+  SpecScan specs = select_specs(client);
+  specs.printTo(std::cout << " spec_select='");
+  std::cout << "'\n";
+
+  Cells cells;
+  client.scan(cells, specs);
+
+  print(cells);
+  std::cout << " cells.size()=" << cells.size() 
+            << " expected=" << num_fractions*num_columns << "\n";
+  assert(cells.size() == num_fractions*num_columns);
+
+  for(auto rslt_typ : {
+    CellsResult::IN_LIST, 
+    CellsResult::ON_COLUMN, 
+    CellsResult::ON_KEY, 
+    CellsResult::ON_FRACTION}) {
+
+    CellsGroup gcells;
+    client.scan_rslt_on(gcells, specs, rslt_typ);
+
+    gcells.printTo(std::cout);
+    std::cout << "\n";
+    switch(rslt_typ) {
+      case CellsResult::ON_COLUMN: {
+        std::cout << rslt_typ << " ccells.size()=" << gcells.ccells.size() 
+                  << " expected=" << num_columns << "\n";
+        assert(gcells.ccells.size() == num_columns);
+        break;
+      }
+      case CellsResult::ON_FRACTION: {
+        std::cout << rslt_typ << " fcells.f.size()=" << gcells.fcells.f.size() 
+                  << " expected=" << 1 << "\n";
+        assert(gcells.fcells.f.size() == 1);
+        break;
+      }
+      case CellsResult::ON_KEY: {
+        std::cout << rslt_typ << " kcells.size()=" << gcells.kcells.size() 
+                  << " expected=" << num_fractions << "\n";
+        assert(gcells.kcells.size() == num_fractions);
+        break;
+      }
+      default: { // IN_LIST
+        std::cout << rslt_typ << " cells.f.size()=" << gcells.cells.size() 
+                  << " expected=" << num_fractions*num_columns << "\n";
+        assert(gcells.cells.size() == num_fractions*num_columns);
+        break;
+      }
+    }
+  }
+}
+
 
 }
 }}
@@ -478,13 +564,12 @@ int main() {
   Test::sql_delete_test_column(client);
 
   batches = 1;
-  
-  Test::sql_create_test_column(client);
-  Test::update(client);
-  Test::sql_select(client);
-  Test::sql_delete_test_column(client);
 
   /** SPECS **/
+  Test::sql_create_test_column(client);
+  Test::spec_update(client);
+  Test::spec_select(client);
+  Test::sql_delete_test_column(client);
 
 
   client.close();

@@ -117,6 +117,47 @@ class Iface(object):
         """
         pass
 
+    def scan(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        pass
+
+    def scan_rslt_on_column(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        pass
+
+    def scan_rslt_on_key(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        pass
+
+    def scan_rslt_on_fraction(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        pass
+
+    def scan_rslt_on(self, spec, rslt):
+        """
+        Parameters:
+         - spec
+         - rslt
+
+        """
+        pass
+
 
 class Client(Iface):
     def __init__(self, iprot, oprot=None):
@@ -531,6 +572,178 @@ class Client(Iface):
             raise result.e
         return
 
+    def scan(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        self.send_scan(spec)
+        return self.recv_scan()
+
+    def send_scan(self, spec):
+        self._oprot.writeMessageBegin('scan', TMessageType.CALL, self._seqid)
+        args = scan_args()
+        args.spec = spec
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_scan(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = scan_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "scan failed: unknown result")
+
+    def scan_rslt_on_column(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        self.send_scan_rslt_on_column(spec)
+        return self.recv_scan_rslt_on_column()
+
+    def send_scan_rslt_on_column(self, spec):
+        self._oprot.writeMessageBegin('scan_rslt_on_column', TMessageType.CALL, self._seqid)
+        args = scan_rslt_on_column_args()
+        args.spec = spec
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_scan_rslt_on_column(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = scan_rslt_on_column_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "scan_rslt_on_column failed: unknown result")
+
+    def scan_rslt_on_key(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        self.send_scan_rslt_on_key(spec)
+        return self.recv_scan_rslt_on_key()
+
+    def send_scan_rslt_on_key(self, spec):
+        self._oprot.writeMessageBegin('scan_rslt_on_key', TMessageType.CALL, self._seqid)
+        args = scan_rslt_on_key_args()
+        args.spec = spec
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_scan_rslt_on_key(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = scan_rslt_on_key_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "scan_rslt_on_key failed: unknown result")
+
+    def scan_rslt_on_fraction(self, spec):
+        """
+        Parameters:
+         - spec
+
+        """
+        self.send_scan_rslt_on_fraction(spec)
+        return self.recv_scan_rslt_on_fraction()
+
+    def send_scan_rslt_on_fraction(self, spec):
+        self._oprot.writeMessageBegin('scan_rslt_on_fraction', TMessageType.CALL, self._seqid)
+        args = scan_rslt_on_fraction_args()
+        args.spec = spec
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_scan_rslt_on_fraction(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = scan_rslt_on_fraction_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "scan_rslt_on_fraction failed: unknown result")
+
+    def scan_rslt_on(self, spec, rslt):
+        """
+        Parameters:
+         - spec
+         - rslt
+
+        """
+        self.send_scan_rslt_on(spec, rslt)
+        return self.recv_scan_rslt_on()
+
+    def send_scan_rslt_on(self, spec, rslt):
+        self._oprot.writeMessageBegin('scan_rslt_on', TMessageType.CALL, self._seqid)
+        args = scan_rslt_on_args()
+        args.spec = spec
+        args.rslt = rslt
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_scan_rslt_on(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = scan_rslt_on_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "scan_rslt_on failed: unknown result")
+
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
@@ -548,6 +761,11 @@ class Processor(Iface, TProcessor):
         self._processMap["updater_create"] = Processor.process_updater_create
         self._processMap["updater_close"] = Processor.process_updater_close
         self._processMap["update"] = Processor.process_update
+        self._processMap["scan"] = Processor.process_scan
+        self._processMap["scan_rslt_on_column"] = Processor.process_scan_rslt_on_column
+        self._processMap["scan_rslt_on_key"] = Processor.process_scan_rslt_on_key
+        self._processMap["scan_rslt_on_fraction"] = Processor.process_scan_rslt_on_fraction
+        self._processMap["scan_rslt_on"] = Processor.process_scan_rslt_on
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -882,6 +1100,136 @@ class Processor(Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
+    def process_scan(self, seqid, iprot, oprot):
+        args = scan_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = scan_result()
+        try:
+            result.success = self._handler.scan(args.spec)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("scan", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_scan_rslt_on_column(self, seqid, iprot, oprot):
+        args = scan_rslt_on_column_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = scan_rslt_on_column_result()
+        try:
+            result.success = self._handler.scan_rslt_on_column(args.spec)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("scan_rslt_on_column", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_scan_rslt_on_key(self, seqid, iprot, oprot):
+        args = scan_rslt_on_key_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = scan_rslt_on_key_result()
+        try:
+            result.success = self._handler.scan_rslt_on_key(args.spec)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("scan_rslt_on_key", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_scan_rslt_on_fraction(self, seqid, iprot, oprot):
+        args = scan_rslt_on_fraction_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = scan_rslt_on_fraction_result()
+        try:
+            result.success = self._handler.scan_rslt_on_fraction(args.spec)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("scan_rslt_on_fraction", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_scan_rslt_on(self, seqid, iprot, oprot):
+        args = scan_rslt_on_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = scan_rslt_on_result()
+        try:
+            result.success = self._handler.scan_rslt_on(args.spec, args.rslt)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("scan_rslt_on", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
 # HELPER FUNCTIONS AND STRUCTURES
 
 
@@ -1135,11 +1483,11 @@ class sql_list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype84, _size81) = iprot.readListBegin()
-                    for _i85 in range(_size81):
-                        _elem86 = Schema()
-                        _elem86.read(iprot)
-                        self.success.append(_elem86)
+                    (_etype140, _size137) = iprot.readListBegin()
+                    for _i141 in range(_size137):
+                        _elem142 = Schema()
+                        _elem142.read(iprot)
+                        self.success.append(_elem142)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1162,8 +1510,8 @@ class sql_list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter87 in self.success:
-                iter87.write(oprot)
+            for iter143 in self.success:
+                iter143.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -1303,11 +1651,11 @@ class sql_compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype91, _size88) = iprot.readListBegin()
-                    for _i92 in range(_size88):
-                        _elem93 = CompactResult()
-                        _elem93.read(iprot)
-                        self.success.append(_elem93)
+                    (_etype147, _size144) = iprot.readListBegin()
+                    for _i148 in range(_size144):
+                        _elem149 = CompactResult()
+                        _elem149.read(iprot)
+                        self.success.append(_elem149)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1330,8 +1678,8 @@ class sql_compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter94 in self.success:
-                iter94.write(oprot)
+            for iter150 in self.success:
+                iter150.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -1471,11 +1819,11 @@ class sql_select_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype98, _size95) = iprot.readListBegin()
-                    for _i99 in range(_size95):
-                        _elem100 = Cell()
-                        _elem100.read(iprot)
-                        self.success.append(_elem100)
+                    (_etype154, _size151) = iprot.readListBegin()
+                    for _i155 in range(_size151):
+                        _elem156 = Cell()
+                        _elem156.read(iprot)
+                        self.success.append(_elem156)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1498,8 +1846,8 @@ class sql_select_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter101 in self.success:
-                iter101.write(oprot)
+            for iter157 in self.success:
+                iter157.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -1639,17 +1987,17 @@ class sql_select_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype103, _vtype104, _size102) = iprot.readMapBegin()
-                    for _i106 in range(_size102):
-                        _key107 = iprot.readString()
-                        _val108 = []
-                        (_etype112, _size109) = iprot.readListBegin()
-                        for _i113 in range(_size109):
-                            _elem114 = CCell()
-                            _elem114.read(iprot)
-                            _val108.append(_elem114)
+                    (_ktype159, _vtype160, _size158) = iprot.readMapBegin()
+                    for _i162 in range(_size158):
+                        _key163 = iprot.readString()
+                        _val164 = []
+                        (_etype168, _size165) = iprot.readListBegin()
+                        for _i169 in range(_size165):
+                            _elem170 = CCell()
+                            _elem170.read(iprot)
+                            _val164.append(_elem170)
                         iprot.readListEnd()
-                        self.success[_key107] = _val108
+                        self.success[_key163] = _val164
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -1672,11 +2020,11 @@ class sql_select_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.success))
-            for kiter115, viter116 in self.success.items():
-                oprot.writeString(kiter115)
-                oprot.writeListBegin(TType.STRUCT, len(viter116))
-                for iter117 in viter116:
-                    iter117.write(oprot)
+            for kiter171, viter172 in self.success.items():
+                oprot.writeString(kiter171)
+                oprot.writeListBegin(TType.STRUCT, len(viter172))
+                for iter173 in viter172:
+                    iter173.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -1817,11 +2165,11 @@ class sql_select_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype121, _size118) = iprot.readListBegin()
-                    for _i122 in range(_size118):
-                        _elem123 = kCells()
-                        _elem123.read(iprot)
-                        self.success.append(_elem123)
+                    (_etype177, _size174) = iprot.readListBegin()
+                    for _i178 in range(_size174):
+                        _elem179 = kCells()
+                        _elem179.read(iprot)
+                        self.success.append(_elem179)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1844,8 +2192,8 @@ class sql_select_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter124 in self.success:
-                iter124.write(oprot)
+            for iter180 in self.success:
+                iter180.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2711,17 +3059,17 @@ class update_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.cells = {}
-                    (_ktype126, _vtype127, _size125) = iprot.readMapBegin()
-                    for _i129 in range(_size125):
-                        _key130 = iprot.readI64()
-                        _val131 = []
-                        (_etype135, _size132) = iprot.readListBegin()
-                        for _i136 in range(_size132):
-                            _elem137 = UCell()
-                            _elem137.read(iprot)
-                            _val131.append(_elem137)
+                    (_ktype182, _vtype183, _size181) = iprot.readMapBegin()
+                    for _i185 in range(_size181):
+                        _key186 = iprot.readI64()
+                        _val187 = []
+                        (_etype191, _size188) = iprot.readListBegin()
+                        for _i192 in range(_size188):
+                            _elem193 = UCell()
+                            _elem193.read(iprot)
+                            _val187.append(_elem193)
                         iprot.readListEnd()
-                        self.cells[_key130] = _val131
+                        self.cells[_key186] = _val187
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -2743,11 +3091,11 @@ class update_args(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
-            for kiter138, viter139 in self.cells.items():
-                oprot.writeI64(kiter138)
-                oprot.writeListBegin(TType.STRUCT, len(viter139))
-                for iter140 in viter139:
-                    iter140.write(oprot)
+            for kiter194, viter195 in self.cells.items():
+                oprot.writeI64(kiter194)
+                oprot.writeListBegin(TType.STRUCT, len(viter195))
+                for iter196 in viter195:
+                    iter196.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -2856,6 +3204,858 @@ class update_result(object):
 all_structs.append(update_result)
 update_result.thrift_spec = (
     None,  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class scan_args(object):
+    """
+    Attributes:
+     - spec
+
+    """
+
+    __slots__ = (
+        'spec',
+    )
+
+
+    def __init__(self, spec=None,):
+        self.spec = spec
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.spec = SpecScan()
+                    self.spec.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_args')
+        if self.spec is not None:
+            oprot.writeFieldBegin('spec', TType.STRUCT, 1)
+            self.spec.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_args)
+scan_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'spec', [SpecScan, None], None, ),  # 1
+)
+
+
+class scan_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype200, _size197) = iprot.readListBegin()
+                    for _i201 in range(_size197):
+                        _elem202 = Cell()
+                        _elem202.read(iprot)
+                        self.success.append(_elem202)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter203 in self.success:
+                iter203.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_result)
+scan_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [Cell, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_column_args(object):
+    """
+    Attributes:
+     - spec
+
+    """
+
+    __slots__ = (
+        'spec',
+    )
+
+
+    def __init__(self, spec=None,):
+        self.spec = spec
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.spec = SpecScan()
+                    self.spec.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_column_args')
+        if self.spec is not None:
+            oprot.writeFieldBegin('spec', TType.STRUCT, 1)
+            self.spec.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_column_args)
+scan_rslt_on_column_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'spec', [SpecScan, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_column_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.MAP:
+                    self.success = {}
+                    (_ktype205, _vtype206, _size204) = iprot.readMapBegin()
+                    for _i208 in range(_size204):
+                        _key209 = iprot.readString()
+                        _val210 = []
+                        (_etype214, _size211) = iprot.readListBegin()
+                        for _i215 in range(_size211):
+                            _elem216 = CCell()
+                            _elem216.read(iprot)
+                            _val210.append(_elem216)
+                        iprot.readListEnd()
+                        self.success[_key209] = _val210
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_column_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.MAP, 0)
+            oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.success))
+            for kiter217, viter218 in self.success.items():
+                oprot.writeString(kiter217)
+                oprot.writeListBegin(TType.STRUCT, len(viter218))
+                for iter219 in viter218:
+                    iter219.write(oprot)
+                oprot.writeListEnd()
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_column_result)
+scan_rslt_on_column_result.thrift_spec = (
+    (0, TType.MAP, 'success', (TType.STRING, None, TType.LIST, (TType.STRUCT, [CCell, None], False), False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_key_args(object):
+    """
+    Attributes:
+     - spec
+
+    """
+
+    __slots__ = (
+        'spec',
+    )
+
+
+    def __init__(self, spec=None,):
+        self.spec = spec
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.spec = SpecScan()
+                    self.spec.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_key_args')
+        if self.spec is not None:
+            oprot.writeFieldBegin('spec', TType.STRUCT, 1)
+            self.spec.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_key_args)
+scan_rslt_on_key_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'spec', [SpecScan, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_key_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype223, _size220) = iprot.readListBegin()
+                    for _i224 in range(_size220):
+                        _elem225 = kCells()
+                        _elem225.read(iprot)
+                        self.success.append(_elem225)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_key_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter226 in self.success:
+                iter226.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_key_result)
+scan_rslt_on_key_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [kCells, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_fraction_args(object):
+    """
+    Attributes:
+     - spec
+
+    """
+
+    __slots__ = (
+        'spec',
+    )
+
+
+    def __init__(self, spec=None,):
+        self.spec = spec
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.spec = SpecScan()
+                    self.spec.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_fraction_args')
+        if self.spec is not None:
+            oprot.writeFieldBegin('spec', TType.STRUCT, 1)
+            self.spec.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_fraction_args)
+scan_rslt_on_fraction_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'spec', [SpecScan, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_fraction_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = FCells()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_fraction_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_fraction_result)
+scan_rslt_on_fraction_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [FCells, None], None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class scan_rslt_on_args(object):
+    """
+    Attributes:
+     - spec
+     - rslt
+
+    """
+
+    __slots__ = (
+        'spec',
+        'rslt',
+    )
+
+
+    def __init__(self, spec=None, rslt=None,):
+        self.spec = spec
+        self.rslt = rslt
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.spec = SpecScan()
+                    self.spec.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.rslt = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_args')
+        if self.spec is not None:
+            oprot.writeFieldBegin('spec', TType.STRUCT, 1)
+            self.spec.write(oprot)
+            oprot.writeFieldEnd()
+        if self.rslt is not None:
+            oprot.writeFieldBegin('rslt', TType.I32, 2)
+            oprot.writeI32(self.rslt)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_args)
+scan_rslt_on_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'spec', [SpecScan, None], None, ),  # 1
+    (2, TType.I32, 'rslt', None, None, ),  # 2
+)
+
+
+class scan_rslt_on_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = CellsGroup()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception()
+                    self.e.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('scan_rslt_on_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(scan_rslt_on_result)
+scan_rslt_on_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [CellsGroup, None], None, ),  # 0
     (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
 )
 fix_spec(all_structs)

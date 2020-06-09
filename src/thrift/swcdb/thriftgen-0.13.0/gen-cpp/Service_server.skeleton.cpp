@@ -80,6 +80,31 @@ class ServiceHandler : virtual public ServiceIf {
     printf("update\n");
   }
 
+  void scan(Cells& _return, const SpecScan& spec) {
+    // Your implementation goes here
+    printf("scan\n");
+  }
+
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) {
+    // Your implementation goes here
+    printf("scan_rslt_on_column\n");
+  }
+
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) {
+    // Your implementation goes here
+    printf("scan_rslt_on_key\n");
+  }
+
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) {
+    // Your implementation goes here
+    printf("scan_rslt_on_fraction\n");
+  }
+
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) {
+    // Your implementation goes here
+    printf("scan_rslt_on\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
