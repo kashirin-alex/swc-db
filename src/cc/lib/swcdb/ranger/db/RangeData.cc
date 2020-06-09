@@ -35,7 +35,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores) {
   checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
   
-  assert(dst_buf.fill() <= dst_buf.size);
+  SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
 void save(int& err, CellStore::Readers& cellstores) {

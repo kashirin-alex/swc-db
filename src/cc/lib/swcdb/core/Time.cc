@@ -3,9 +3,9 @@
  */
  
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/Time.h"
 
-#include <cassert>
 #include <ratio>
 
 #include <iomanip>
@@ -21,7 +21,7 @@ namespace SWC { namespace Time {
 
 
 void checkings() { // no need runtime checks, call at app start 
-  assert((
+  SWC_ASSERT((
     std::ratio_less_equal<
       std::chrono::system_clock::duration::period, 
       std::chrono::nanoseconds::period

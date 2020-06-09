@@ -6,7 +6,6 @@
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Comparators.h"
 #include <iostream>
-#include <cassert>
 
 namespace Condition = SWC::Condition;
 
@@ -107,7 +106,7 @@ void test(bool vol) {
 
 #define LOAD_TEST(_name_, __cond__) \
   ns = SWC::Time::now_ns(); \
-    for(uint64_t i=0; i<checks; ++i) assert(__cond__); \
+    for(uint64_t i=0; i<checks; ++i) SWC_ASSERT(__cond__); \
     took = SWC::Time::now_ns() - ns; \
     std::cout << " took=" << took \
               << " avg=" << took/checks  \

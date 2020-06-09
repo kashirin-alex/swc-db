@@ -3,7 +3,6 @@
  */
 
 #include <vector>
-#include <cassert>
 #include <iostream>
 
 #include "swcdb/core/PageArena.h"
@@ -35,16 +34,16 @@ int main() {
             << " arena.count()= " << arena.count()  << std::flush
             << " data.size()= " << data.size() << "\n";
     
-  assert(arena.count() == num_items);
+  SWC_ASSERT(arena.count() == num_items);
   
   for(auto idx=arena.pages() ; idx;) {
     for(auto item : arena.page(--idx)) {
       std::cout << item->to_string() << "=" << item->count << "\n";
       std::cout << "num_uses=" << num_uses << " p->count=" << item->count << "\n";
-      assert(item->count == num_uses);
+      SWC_ASSERT(item->count == num_uses);
     }
   }
-  assert(arena.count() == num_items);
+  SWC_ASSERT(arena.count() == num_items);
   std::cout << " arena.count="<< arena.count() << "\n";
   std::cout << "\n";
 
@@ -62,7 +61,7 @@ int main() {
   std::cout << " release  end\n";
         
         
-  assert(!arena.count());
+  SWC_ASSERT(!arena.count());
 
   std::cout << " OK! \n";
   return 0;

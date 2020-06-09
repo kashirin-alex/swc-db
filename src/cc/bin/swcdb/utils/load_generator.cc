@@ -247,7 +247,7 @@ void load_data(DB::Schema::Ptr& schema) {
   req->wait();
 
   resend_cells += req->result->get_resend_count();
-  assert(added_count && added_bytes);
+  SWC_ASSERT(added_count && added_bytes);
   
   FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
   SWC_PRINT;

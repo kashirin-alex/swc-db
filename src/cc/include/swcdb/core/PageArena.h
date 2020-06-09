@@ -12,7 +12,6 @@
 #include <unordered_set>
 #include <string>
 #include <cstring>
-#include <cassert>
 
 
 
@@ -209,7 +208,7 @@ class Page final : public PageBase {
         return;
       }
     }
-    assert(!ptr);
+    SWC_ASSERT(!ptr);
   }
 
   size_t count() const {

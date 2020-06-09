@@ -119,7 +119,7 @@ class RgrData final {
     checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
     checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
 
-    assert(dst_buf.fill() <= dst_buf.size);
+    SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
   }
 
   std::string to_string(){

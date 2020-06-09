@@ -212,7 +212,7 @@ class Mutex {
   }
 
   void unlock() {
-    assert(recursive_xlock_count > 0);
+    SWC_ASSERT(recursive_xlock_count > 0);
 
     if(!--recursive_xlock_count) {
       tid_clear();

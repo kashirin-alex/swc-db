@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 #include <iostream>
-#include <cassert>
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Serialization.h"
@@ -31,7 +30,7 @@ void load_check_compare(const Types::KeySeq key_seq, int chks, int fractions) {
 
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
-    assert(DB::KeySeq::compare(key_seq, key1, key2) == Condition::EQ);
+    SWC_ASSERT(DB::KeySeq::compare(key_seq, key1, key2) == Condition::EQ);
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_compare,      fractions=" << fractions 
@@ -51,7 +50,7 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions
 
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
-    assert(DB::KeySeq::compare(key_seq, key1, key2, key2.size) == Condition::EQ);
+    SWC_ASSERT(DB::KeySeq::compare(key_seq, key1, key2, key2.size) == Condition::EQ);
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_compare(max), fractions=" << fractions 
@@ -73,7 +72,7 @@ void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, int fracti
 
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
-    assert(DB::KeySeq::compare(key_seq, key1, key2, Condition::GT));
+    SWC_ASSERT(DB::KeySeq::compare(key_seq, key1, key2, Condition::GT));
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_compare_vec,  fractions=" << fractions 
@@ -93,7 +92,7 @@ void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n) {
     DB::KeySeq::align(key_seq, key, key1, Condition::GT);
-    assert(key.size() == fractions);
+    SWC_ASSERT(key.size() == fractions);
   }
   
   uint64_t took = Time::now_ns() - ts;
@@ -115,8 +114,8 @@ void load_check_align_min_max(const Types::KeySeq key_seq, int chks, int fractio
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n) {
     DB::KeySeq::align(key_seq, key, min, max);
-    assert(min.size() == fractions);
-    assert(max.size() == fractions);
+    SWC_ASSERT(min.size() == fractions);
+    SWC_ASSERT(max.size() == fractions);
   }
 
   uint64_t took = Time::now_ns() - ts;
@@ -132,7 +131,7 @@ void load_check_align_min_max(const Types::KeySeq key_seq, int chks, int fractio
 
 #define LOAD_TEST(_name_, __cond__) \
   ns = SWC::Time::now_ns(); \
-    for(uint64_t i=0; i<checks; ++i) assert(__cond__); \
+    for(uint64_t i=0; i<checks; ++i) SWC_ASSERT(__cond__); \
     took = SWC::Time::now_ns() - ns; \
     std::cout << " took=" << took \
               << " avg=" << took/checks  \

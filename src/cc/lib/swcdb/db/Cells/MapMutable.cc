@@ -4,7 +4,6 @@
 
 
 #include "swcdb/db/Cells/MapMutable.h"
-#include <cassert>
 
 
 namespace SWC { namespace DB { namespace Cells {
@@ -39,7 +38,7 @@ Types::KeySeq ColCells::get_sequence() const {
 DB::Cell::Key::Ptr ColCells::get_first_key() {
   auto key = std::make_shared<DB::Cell::Key>();
   Mutex::scope lock(m_mutex);
-  assert(m_cells.size()); // bad call , assure size pre-check
+  SWC_ASSERT(m_cells.size()); // bad call , assure size pre-check
   m_cells.get(0, *key.get()); 
   return key;
 }

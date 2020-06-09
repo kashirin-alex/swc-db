@@ -5,7 +5,6 @@
 
 
 #include "swcdb/db/Cells/Cell.h"
-#include <cassert>
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Serialization.h"
@@ -209,7 +208,7 @@ void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
   if(vlen = Serialization::decode_vi32(bufp, remainp)) {
     value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
     *bufp += vlen;
-    assert(*remainp >= vlen);
+    SWC_ASSERT(*remainp >= vlen);
     *remainp -= vlen;
   }
 }
@@ -246,7 +245,7 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
     dst_buf.add_unchecked(value, vlen);
   }
 
-  assert(dst_buf.fill() <= dst_buf.size);
+  SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
 bool Cell::equal(const Cell& other) const {
