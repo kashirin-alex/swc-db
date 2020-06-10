@@ -292,17 +292,19 @@ void MngrRole::_apply_cfg() {
     uint32_t pr = 0;
     for(auto& endpoints : g->get_hosts()) {
       tmp.insert(tmp.end(), endpoints.begin(), endpoints.end());
-
+      ++pr;
       bool found = false;
       for(auto& host : m_states) {
-        if(found = has_endpoint(endpoints, host->endpoints))
+        if(found = has_endpoint(endpoints, host->endpoints)) {
+          host->priority = pr;
           break;
+        }
       }
       if(found)
         continue;
 
       m_states.emplace_back(
-        new MngrStatus(g->col_begin, g->col_end, endpoints, nullptr, ++pr));
+        new MngrStatus(g->col_begin, g->col_end, endpoints, nullptr, pr));
     }
   }
   for(auto it=m_states.begin(); it<m_states.end(); ) {

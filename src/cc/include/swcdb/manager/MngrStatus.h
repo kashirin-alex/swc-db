@@ -37,7 +37,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   }
 
   void encode_internal(uint8_t **bufp) const {
-    Serialization::encode_i32(bufp, priority);
+    Serialization::encode_i32(bufp, priority.load());
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_vi64(bufp, col_begin);
     Serialization::encode_vi64(bufp, col_end);
@@ -45,7 +45,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
-    priority = Serialization::decode_i32(bufp, remainp);
+    priority.store(Serialization::decode_i32(bufp, remainp));
     state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
     col_begin = Serialization::decode_vi64(bufp, remainp);
     col_end = Serialization::decode_vi64(bufp, remainp);
@@ -72,13 +72,13 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     return s;
   }
 
-  uint32_t          priority;
-  std::atomic<Types::MngrState>  state;
-  uint64_t          col_begin;
-  uint64_t          col_end;
+  std::atomic<uint32_t>           priority;
+  std::atomic<Types::MngrState>   state;
+  uint64_t                        col_begin;
+  uint64_t                        col_end;
 
-  ConnHandlerPtr    conn; // mngr-inchain
-  int               failures;
+  ConnHandlerPtr                  conn; // mngr-inchain
+  int                             failures;
 };
 
 typedef std::vector<MngrStatus::Ptr> MngrsStatus;
