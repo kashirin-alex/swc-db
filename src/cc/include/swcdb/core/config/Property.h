@@ -6,8 +6,7 @@
 #ifndef swc_core_config_Property_h
 #define swc_core_config_Property_h
 
-#include <mutex>
-#include <atomic>
+#include "swcdb/core/LockAtomicUnique.h"
 #include <functional>
 #include <vector>
 
@@ -559,9 +558,9 @@ class V_GSTRINGS final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  mutable std::mutex mutex;
-  Strings            value;
-  OnChg_t            on_chg_cb;
+  mutable LockAtomic::Unique  mutex;
+  Strings                     value;
+  OnChg_t                     on_chg_cb;
 
 };
 

@@ -413,8 +413,10 @@ void V_ENUM::set_from(Value::Ptr ptr) {
   auto from = ((V_ENUM*)ptr);
   flags.store(from->flags);
   value = from->value;
-  call_from_string = from->call_from_string;
-  call_repr = from->call_repr;
+  if(!call_from_string)
+    call_from_string = from->call_from_string;
+  if(!call_repr)
+    call_repr = from->call_repr;
 }
 
 void V_ENUM::set_from(const Strings& values) {
@@ -586,9 +588,10 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
   auto from = ((V_GBOOL*)ptr);
   flags.store(from->flags);
     
-  bool chg = value == from->value;
+  bool chg = value != from->value;
   value.store(from->value.load());
-  on_chg_cb = from->on_chg_cb;
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
   if(chg)
     on_change();
 }
@@ -647,9 +650,10 @@ Value::Ptr V_GUINT8::make_new(const Strings& values) {
 void V_GUINT8::set_from(Value::Ptr ptr) {
   auto from = ((V_GUINT8*)ptr);
   flags.store(from->flags);
-  bool chg = value == from->value;
+  bool chg = value != from->value;
   value.store(from->value.load());
-  on_chg_cb = from->on_chg_cb;
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
   if(chg)
     on_change();
 }
@@ -702,9 +706,10 @@ Value::Ptr V_GINT32::make_new(const Strings& values) {
 void V_GINT32::set_from(Value::Ptr ptr) {
   auto from = ((V_GINT32*)ptr);
   flags.store(from->flags);
-  bool chg = value == from->value;
+  bool chg = value != from->value;
   value.store(from->value.load());
-  on_chg_cb = from->on_chg_cb;
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
   if(chg)
     on_change();
 }
@@ -766,11 +771,15 @@ Value::Ptr V_GENUM::make_new(const Strings& values) {
 void V_GENUM::set_from(Value::Ptr ptr) {
   auto from = ((V_GENUM*)ptr);
   flags.store(from->flags);
-  bool chg = value == from->value;
+  bool chg = value != from->value;
   value.store(from->get());
-  on_chg_cb = from->on_chg_cb;
-  call_from_string = from->call_from_string;
-  call_repr = from->call_repr;
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
+  if(!call_from_string)
+    call_from_string = from->call_from_string;
+  if(!call_repr)
+    call_repr = from->call_repr;
+
   if(chg)
     on_change();
 }
@@ -839,16 +848,18 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
   flags.store(from->flags);
   bool chg;
   {
-    std::lock_guard lock(mutex);
-    chg = value == from->get();
+    LockAtomic::Unique::scope lock(mutex);
+    chg = value != from->get();
     value = from->get();
-    on_chg_cb = from->on_chg_cb;
+    if(!on_chg_cb)
+      on_chg_cb = from->on_chg_cb;
   }
-  on_change();
+  if(chg)
+    on_change();
 }
 
 void V_GSTRINGS::set_from(const Strings& values) {
-  std::lock_guard lock(mutex);
+  LockAtomic::Unique::scope lock(mutex);
   value = values;
 }
 
@@ -857,22 +868,22 @@ Value::Type V_GSTRINGS::type() const {
 }
 
 std::string V_GSTRINGS::to_string() const {
-  std::lock_guard lock(mutex);
+  LockAtomic::Unique::scope lock(mutex);
   return format_list(value);
 }
 
 Strings V_GSTRINGS::get() const {
-  std::lock_guard lock(mutex);
+  LockAtomic::Unique::scope lock(mutex);
   return value;
 }
 
 size_t V_GSTRINGS::size() {
-  std::lock_guard lock(mutex);	
+  LockAtomic::Unique::scope lock(mutex);	
   return value.size();
 }
 
 std::string V_GSTRINGS::get_item(size_t n) {
-  std::lock_guard lock(mutex);
+  LockAtomic::Unique::scope lock(mutex);
   return value[n];
 }
 
@@ -882,7 +893,7 @@ void V_GSTRINGS::on_change() const {
 }
 
 void V_GSTRINGS::set_cb_on_chg(const V_GSTRINGS::OnChg_t& cb) {
-  std::lock_guard lock(mutex);
+  LockAtomic::Unique::scope lock(mutex);
   on_chg_cb = cb;
 }
 
