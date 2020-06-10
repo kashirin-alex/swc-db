@@ -59,7 +59,7 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
 
 bool MngrRole::is_active(size_t cid) {
   auto host = active_mngr(cid, cid);
-  return host != nullptr && has_endpoint(host->endpoints, m_local_endpoints);
+  return host && has_endpoint(host->endpoints, m_local_endpoints);
 }
 
 MngrStatus::Ptr MngrRole::active_mngr(size_t begin, size_t end) {
@@ -78,7 +78,7 @@ void MngrRole::req_mngr_inchain(client::ConnQueue::ReqBase::Ptr req) {
   m_mngr_inchain->put(req);
 }
 
-void MngrRole::fill_states(MngrsStatus states, uint64_t token, 
+void MngrRole::fill_states(const MngrsStatus& states, uint64_t token, 
                            ResponseCallback::Ptr cb) {
   bool new_recs = false;
   bool turn_around = token == m_local_token;
@@ -94,7 +94,9 @@ void MngrRole::fill_states(MngrsStatus states, uint64_t token,
     }
       
     MngrStatus::Ptr host_set = get_host(host->endpoints);
-      
+    if(!host_set)
+      continue;
+
     if(host_set->state == Types::MngrState::OFF 
        && host->state > Types::MngrState::OFF) {
       //m_major_updates = true;
@@ -216,7 +218,7 @@ bool MngrRole::disconnection(const EndPoint& endpoint_server,
       endpoints.push_back(endpoint_server);
   }
   MngrStatus::Ptr host_set = get_host(endpoints);
-  if(host_set == nullptr)
+  if(!host_set)
     return false;
 
   schedule_checkin(
@@ -254,7 +256,7 @@ void MngrRole::stop() {
   {
     std::shared_lock lock(m_mutex);
     for(auto& host : m_states) {
-      if(host->conn != nullptr && host->conn->is_open())
+      if(host->conn && host->conn->is_open())
         asio::post(
           *Env::IoCtx::io()->ptr(), [conn=host->conn]() {conn->do_close();});
     }
@@ -282,25 +284,32 @@ std::string MngrRole::to_string() {
   return s;
 }
  
-void MngrRole::apply_cfg() {
-  client::Mngr::Groups::Selected groups = 
-    Env::Clients::get()->mngrs_groups->get_groups();
-    
+void MngrRole::_apply_cfg() {
+  auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+  std::vector<EndPoint> tmp;
   for(auto& g : groups) {
     // SWC_LOG(LOG_DEBUG,  g->to_string().c_str());
     uint32_t pr = 0;
     for(auto& endpoints : g->get_hosts()) {
+      tmp.insert(tmp.end(), endpoints.begin(), endpoints.end());
 
       bool found = false;
       for(auto& host : m_states) {
-        found = has_endpoint(endpoints, host->endpoints);
-        if(found)break;
+        if(found = has_endpoint(endpoints, host->endpoints))
+          break;
       }
-      if(found)continue;
+      if(found)
+        continue;
 
       m_states.emplace_back(
         new MngrStatus(g->col_begin, g->col_end, endpoints, nullptr, ++pr));
     }
+  }
+  for(auto it=m_states.begin(); it<m_states.end(); ) {
+    if(has_endpoint((*it)->endpoints, tmp))
+      ++it;
+    else
+      m_states.erase(it);
   }
     
   m_local_groups = Env::Clients::get()->mngrs_groups->get_groups(
@@ -314,12 +323,33 @@ void MngrRole::managers_checkin() {
 
   //SWC_LOG(LOG_DEBUG, "managers_checkin");
   size_t sz;
+  bool has_role;
   {
     std::scoped_lock lock(m_mutex);
-    apply_cfg();
+    _apply_cfg();
     sz = m_states.size();
+    has_role = !m_local_groups.empty();
   }
-  managers_checker(0, sz, false);
+  if(has_role)
+    return managers_checker(0, sz, false);
+
+  std::shared_lock lock(m_mutex);
+  std::string s;
+  for(auto& endpoint : m_local_endpoints) {
+    s.append(
+      endpoint.address().to_string() + "|" + 
+      std::to_string(endpoint.port())+ ",");
+  }
+
+  if(!m_mngrs_client_srv.empty()) {
+    SWC_LOGF(LOG_DEBUG, "Manager(%s) decommissioned", s.c_str());
+    std::raise(SIGINT);
+    return;
+  }
+
+  SWC_LOGF(LOG_DEBUG, "Manager(%s) without role", s.c_str());
+  m_checkin = false;
+  return schedule_checkin(cfg_check_interval->get());
 }
 
 void MngrRole::fill_states() {
@@ -334,9 +364,8 @@ void MngrRole::fill_states() {
 void MngrRole::managers_checker(int next, size_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
   if(!total) {
-    m_checkin=false;
-    schedule_checkin(cfg_check_interval->get());
-    return;
+    m_checkin = false;
+    return schedule_checkin(cfg_check_interval->get());
   }
 
   MngrStatus::Ptr host_chk;
@@ -352,30 +381,23 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
 
   if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1) {
     if(flw) {
-      m_checkin=false;
-      schedule_checkin(cfg_check_interval->get());
-      return;
+      m_checkin = false;
+      return schedule_checkin(cfg_check_interval->get());
     }
     flw = true;
-    if(total > 1) {
-      managers_checker(next, total, flw);
-      return;
-    }
+    if(total > 1)
+      return managers_checker(next, total, flw);
   }
-  if(!flw) {
-    managers_checker(next, total, flw);
-    return;
-  }
+
+  if(!flw)
+    return managers_checker(next, total, flw);
         
-  if(host_chk->conn != nullptr && host_chk->conn->is_open()) {
-    set_mngr_inchain(host_chk->conn);
-    return;
-  }
+  if(host_chk->conn && host_chk->conn->is_open())
+    return set_mngr_inchain(host_chk->conn);
 
   Env::Clients::get()->mngr->service->get_connection(
     host_chk->endpoints, 
-    [this, host_chk, next, total, flw]
-    (ConnHandlerPtr conn) {
+    [this, host_chk, next, total, flw] (const ConnHandlerPtr& conn) {
       manager_checker(host_chk, next, total, flw, conn);
     },
     std::chrono::milliseconds(cfg_conn_timeout->get()), 
@@ -384,19 +406,17 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
 }
 
 void MngrRole::manager_checker(MngrStatus::Ptr host, int next, size_t total, 
-                               bool flw, ConnHandlerPtr conn) {
-  if(conn == nullptr || !conn->is_open()) {
+                               bool flw, const ConnHandlerPtr& conn) {
+  if(!conn || !conn->is_open()) {
     if(host->state == Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   
-      m_checkin=false;
-      schedule_checkin(cfg_delay_fallback->get());
+      m_checkin = false;
       SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
                 host->failures);
-      return;
+      return schedule_checkin(cfg_delay_fallback->get());
     }
     host->state = Types::MngrState::OFF;
-    managers_checker(next, total-1, flw);
-    return;
+    return managers_checker(next, total-1, flw);
   }
   host->conn = conn;
   host->failures = 0;
@@ -405,7 +425,8 @@ void MngrRole::manager_checker(MngrStatus::Ptr host, int next, size_t total,
   set_mngr_inchain(host->conn);
 }
   
-void MngrRole::update_state(EndPoint endpoint, Types::MngrState state) {
+void MngrRole::update_state(const EndPoint& endpoint, 
+                            Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
@@ -415,7 +436,8 @@ void MngrRole::update_state(EndPoint endpoint, Types::MngrState state) {
   }
 }
 
-void MngrRole::update_state(const EndPoints& endpoints, Types::MngrState state) {
+void MngrRole::update_state(const EndPoints& endpoints, 
+                            Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
@@ -441,7 +463,7 @@ MngrStatus::Ptr MngrRole::get_highest_state_host(uint64_t begin, uint64_t end) {
   MngrStatus::Ptr h = nullptr;
   for(auto& host : m_states) {
     if(host->col_begin == begin && host->col_end == end 
-      && (h == nullptr || h->state < host->state)) {
+      && (!h || h->state < host->state)) {
       h = host;
     }
   }
@@ -461,7 +483,7 @@ bool MngrRole::is_off(uint64_t begin, uint64_t end) {
 }
 
 void MngrRole::set_active_columns() {
-  client::Mngr::Groups::Selected groups;
+  client::Mngr::Groups::Vec groups;
   {
     std::shared_lock lock(m_mutex);
     groups = m_local_groups;
@@ -487,11 +509,11 @@ void MngrRole::set_active_columns() {
   Env::Mngr::mngd_columns()->active(active);
 }
   
-void MngrRole::set_mngr_inchain(ConnHandlerPtr mngr) {
+void MngrRole::set_mngr_inchain(const ConnHandlerPtr& mngr) {
   m_mngr_inchain->set(mngr);
 
   fill_states();
-  m_checkin=false;
+  m_checkin = false;
   schedule_checkin(cfg_check_interval->get());
 }
 

@@ -148,11 +148,11 @@ class AppContext final : public SWC::AppContext {
   
   void shutting_down(const std::error_code &ec, const int &sig) {
 
-    if(sig==0){ // set signals listener
+    if(sig == 0) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
-        [ptr=this](const std::error_code &ec, const int &sig){
+        [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
-          ptr->shutting_down(ec, sig); 
+          shutting_down(ec, sig); 
         }
       ); 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
