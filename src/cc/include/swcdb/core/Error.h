@@ -329,6 +329,7 @@ operator<<(std::ostream& out, const ExceptionMessageRenderer& r);
 std::ostream& 
 operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
+}
 
 
 /* Convenience macro to create an exception stack trace */
@@ -353,25 +354,25 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 /* Convenience macro to throw an exception with a printf-like message */
 #define SWC_THROWF(_code_, _fmt_, ...) \
-  throw HT_EXCEPTION(_code_, SWC::format(_fmt_, __VA_ARGS__))
+  throw HT_EXCEPTION(_code_, ::SWC::format(_fmt_, __VA_ARGS__))
 
 /* Convenience macro to throw a chained exception with a printf-like message */
 #define HT_THROW2F(_code_, _ex_, _fmt_, ...) \
-  throw HT_EXCEPTION2(_code_, _ex_, SWC::format(_fmt_, __VA_ARGS__))
+  throw HT_EXCEPTION2(_code_, _ex_, ::SWC::format(_fmt_, __VA_ARGS__))
 
 /* Convenience macro to catch and rethrow exceptions with a printf-like
  * message */
 #define HT_RETHROWF(_fmt_, ...) \
   catch (::SWC::Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
   catch (std::bad_alloc& e) { \
-    SWC_THROWF(Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
+    SWC_THROWF(::SWC::Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
   } \
   catch (std::exception& e) { \
-    SWC_THROWF(Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
+    SWC_THROWF(::SWC::Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
               __VA_ARGS__); \
   } \
   catch (...) { \
-    SWC_LOGF(LOG_ERROR, "caught unknown exception " _fmt_, __VA_ARGS__); \
+    SWC_LOGF(::SWC::LOG_ERROR, "caught unknown exception " _fmt_, __VA_ARGS__); \
     throw; \
   }
 
@@ -386,13 +387,13 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 /* Convenience macros for catching and logging exceptions in destructors */
 #define SWC_LOG_EXCEPTION(_s_) \
-  catch (::SWC::Exception& e) { SWC_LOG_OUT(LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
+  catch (::SWC::Exception& e) { SWC_LOG_OUT(::SWC::LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (std::bad_alloc& e) { \
-    SWC_LOG_OUT(LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
+    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
   catch (std::exception& e) { \
-    SWC_LOG_OUT(LOG_ERROR) << "Caught exception: " << e.what() <<", "<< _s_ << SWC_LOG_OUT_END; } \
+    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Caught exception: " << e.what() <<", "<< _s_ << SWC_LOG_OUT_END; } \
   catch (...) { \
-    SWC_LOG_OUT(LOG_ERROR) << "Caught unknown exception, " << _s_ << SWC_LOG_OUT_END; }
+    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Caught unknown exception, " << _s_ << SWC_LOG_OUT_END; }
 
 /* Convenience macro to execute code and log all exceptions */
 #define SWC_TRY_OR_LOG(_s_, _code_) do { \
@@ -403,18 +404,16 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 // Probably should be in its own file, but...
 #define SWC_EXPECT(_e_, _code_) do { if (_e_); else { \
-    if (_code_ == Error::FAILED_EXPECTATION) \
+    if (_code_ == ::SWC::Error::FAILED_EXPECTATION) \
       SWC_LOG_FATAL("failed expectation: " #_e_); \
     SWC_THROW(_code_, "failed expectation: " #_e_); } \
 } while (0)
 
-// A short cut for SWC_EXPECT(expr, Error::FAILED_EXPECTATION)
+// A short cut for SWC_EXPECT(expr, ::SWC::Error::FAILED_EXPECTATION)
 // unlike assert, it cannot be turned off
-#define SWC_ASSERT(_e_) SWC_EXPECT(_e_, Error::FAILED_EXPECTATION)
+#define SWC_ASSERT(_e_) SWC_EXPECT(_e_, ::SWC::Error::FAILED_EXPECTATION)
 
 
-
-}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Error.cc"

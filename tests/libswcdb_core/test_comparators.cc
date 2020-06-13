@@ -3,6 +3,7 @@
  */
 
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Comparators.h"
 #include <iostream>

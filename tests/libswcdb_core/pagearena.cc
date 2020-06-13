@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/PageArena.h"
 
 int main() {

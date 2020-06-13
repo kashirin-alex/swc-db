@@ -126,35 +126,36 @@ extern LogWriter logger;
 
 } // namespace Logger
 
+} // namespace SWC
 
 
 
 #ifndef SWC_DISABLE_LOG_ALL
 
 #define SWC_LOG(priority, msg) \
-  if(Logger::logger.is_enabled(priority)) { \
-    if(Logger::logger.show_line_numbers()) \
-      Logger::logger.log(priority, __FILE__, __LINE__, msg); \
+  if(::SWC::Logger::logger.is_enabled(priority)) { \
+    if(::SWC::Logger::logger.show_line_numbers()) \
+      ::SWC::Logger::logger.log(priority, __FILE__, __LINE__, msg); \
     else \
-      Logger::logger.log(priority, msg); \
+      ::SWC::Logger::logger.log(priority, msg); \
   }
 
 #define SWC_LOGF(priority, fmt, ...) \
-  if(Logger::logger.is_enabled(priority)) { \
-    if(Logger::logger.show_line_numbers()) \
-      Logger::logger.log(priority, __FILE__, __LINE__, fmt, __VA_ARGS__); \
+  if(::SWC::Logger::logger.is_enabled(priority)) { \
+    if(::SWC::Logger::logger.show_line_numbers()) \
+      ::SWC::Logger::logger.log(priority, __FILE__, __LINE__, fmt, __VA_ARGS__); \
     else \
-      Logger::logger.log(priority, fmt, __VA_ARGS__); \
+      ::SWC::Logger::logger.log(priority, fmt, __VA_ARGS__); \
   }
 
 
 #ifndef SWC_DISABLE_LOG_FATAL ////
 #define SWC_LOG_FATAL(msg) do { \
-  SWC_LOG(LOG_FATAL, msg); \
+  SWC_LOG(::SWC::LOG_FATAL, msg); \
   SWC_ABORT; \
 } while (0)
 #define SWC_LOG_FATALF(msg, ...) do { \
-  SWC_LOGF(LOG_FATAL, msg, __VA_ARGS__); \
+  SWC_LOGF(::SWC::LOG_FATAL, msg, __VA_ARGS__); \
   SWC_ABORT; \
 } while (0)
 #else
@@ -167,42 +168,42 @@ extern LogWriter logger;
 // stream interface, SWC_LOG_OUT(LOG_ERROR) << "msg" << SWC_LOG_OUT_END;
 
 #define SWC_LOG_OUT(priority) \
-  if(Logger::logger.is_enabled(priority)) { \
+  if(::SWC::Logger::logger.is_enabled(priority)) { \
     uint8_t _priority_ = priority; \
-    Mutex::scope lock(Logger::logger.mutex); \
-    if(Logger::logger.show_line_numbers()) \
-      std::cout << Logger::logger.seconds() \
-                << ' ' << Logger::logger.get_name(priority)  \
+    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
+    if(::SWC::Logger::logger.show_line_numbers()) \
+      std::cout << ::SWC::Logger::logger.seconds() \
+                << ' ' << ::SWC::Logger::logger.get_name(priority)  \
                 << ": (" << __FILE__ << ':' << __LINE__ << ") "; \
     else \
-      std::cout << Logger::logger.seconds() \
-                << ' ' << Logger::logger.get_name(priority) << ": "; \
+      std::cout << ::SWC::Logger::logger.seconds() \
+                << ' ' << ::SWC::Logger::logger.get_name(priority) << ": "; \
   std::cout 
 
-#define SWC_LOG_OUT_END std::endl; if(_priority_ == LOG_FATAL) SWC_ABORT; }
+#define SWC_LOG_OUT_END std::endl; if(_priority_ == ::SWC::LOG_FATAL) SWC_ABORT; }
 
 #define SWC_PRINT \
   { \
-    SWC::Mutex::scope lock(SWC::Logger::logger.mutex); \
+    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
     std::cout 
 #define SWC_PRINT_CLOSE std::endl; }
 //
 
 /*
 #define HT_LOG_ENTER \
-  if(Logger::logger.is_enabled(LOG_DEBUG)) {\
-    if(Logger::logger.show_line_numbers()) \
-      Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, __PRETTY_FUNCTION__);\
+  if(::SWC::Logger::logger.is_enabled(LOG_DEBUG)) {\
+    if(::SWC::Logger::logger.show_line_numbers()) \
+      ::SWC::Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, __PRETTY_FUNCTION__);\
     else \
-      Logger::logger.debug("%s() ENTER", __PRETTY_FUNCTION__); \
+      ::SWC::Logger::logger.debug("%s() ENTER", __PRETTY_FUNCTION__); \
   }
 
 #define HT_LOG_EXIT \
-  if(Logger::logger.is_enabled(LOG_DEBUG)) { \
-    if(Logger::logger.show_line_numbers()) \
-      Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+  if(::SWC::Logger::logger.is_enabled(LOG_DEBUG)) { \
+    if(::SWC::Logger::logger.show_line_numbers()) \
+      ::SWC::Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
     else \
-      Logger::logger.debug("%s() EXIT", __PRETTY_FUNCTION__); \
+      ::SWC::Logger::logger.debug("%s() EXIT", __PRETTY_FUNCTION__); \
   }
 */
 
@@ -236,7 +237,6 @@ extern LogWriter logger;
 */
 
 
-} // namespace SWC
 
 
 #ifdef SWC_IMPL_SOURCE
