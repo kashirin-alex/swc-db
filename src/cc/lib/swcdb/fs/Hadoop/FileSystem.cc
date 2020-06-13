@@ -278,7 +278,7 @@ void FileSystemHadoop::readdir(int& err, const std::string& name,
     if ((ptr = strrchr(fileInfo[i].mName, '/')))
       entry.name = (std::string)(ptr+1);
     else
-	    entry.name = (std::string)fileInfo[i].mName;
+      entry.name = (std::string)fileInfo[i].mName;
 
     entry.length = fileInfo[i].mSize;
     entry.last_modification_time = fileInfo[i].mLastMod;

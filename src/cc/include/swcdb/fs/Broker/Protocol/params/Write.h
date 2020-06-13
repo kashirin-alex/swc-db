@@ -16,9 +16,9 @@ class WriteReq : public Serializable {
   WriteReq() {}
 
   WriteReq(const std::string& fname, uint32_t flags,
-	          uint8_t replication, int64_t blksz)
+            uint8_t replication, int64_t blksz)
             : fname(fname), flags(flags),
-	            replication(replication), blksz(blksz) {
+              replication(replication), blksz(blksz) {
   }
   
   std::string fname;
@@ -44,7 +44,7 @@ class WriteReq : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
+                       size_t *remainp) override {
     (void)version;
     flags = Serialization::decode_i32(bufp, remainp);
     replication = (uint8_t)Serialization::decode_i8(bufp, remainp);

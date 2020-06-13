@@ -164,7 +164,7 @@ namespace SWC { namespace FileUtils {
    * @param listing Vector with the results
    */
   void readdir(const std::string& dirname, const std::string& fname_regex,
-			         std::vector<struct dirent>& listing);
+               std::vector<struct dirent>& listing);
 }
 
 }

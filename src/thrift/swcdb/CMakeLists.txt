@@ -20,9 +20,9 @@ if(THRIFT_CPP_FOUND)
                       ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
     endif()
 
-    if(EXISTS ${VER_GEN_PATH}/gen-cpp)  # set current gen-cpp/ included path	
-      execute_process(COMMAND rm -rf 	${THRIFT_CPP_GEN_PATH}/gen-cpp )
-      execute_process(COMMAND cp -r 	${VER_GEN_PATH}/gen-cpp ${THRIFT_CPP_GEN_PATH}/)
+    if(EXISTS ${VER_GEN_PATH}/gen-cpp)  # set current gen-cpp/ included path
+      execute_process(COMMAND rm -rf  ${THRIFT_CPP_GEN_PATH}/gen-cpp )
+      execute_process(COMMAND cp -r   ${VER_GEN_PATH}/gen-cpp ${THRIFT_CPP_GEN_PATH}/)
     endif()
   endif()
 
@@ -45,9 +45,9 @@ if(THRIFT_C_FOUND)
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
     endif()
 
-    if(EXISTS ${VER_GEN_PATH}/gen-c_glib) # set current gen-c_glib/ included path	
-      execute_process(COMMAND rm -rf 	${THRIFT_C_GEN_PATH}/gen-c_glib )
-      execute_process(COMMAND cp -r 	${VER_GEN_PATH}/gen-c_glib ${THRIFT_C_GEN_PATH}/)
+    if(EXISTS ${VER_GEN_PATH}/gen-c_glib) # set current gen-c_glib/ included path
+      execute_process(COMMAND rm -rf ${THRIFT_C_GEN_PATH}/gen-c_glib )
+      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-c_glib ${THRIFT_C_GEN_PATH}/)
     endif()
   endif()
 
@@ -70,10 +70,10 @@ if(PYTHON_EXECUTABLES)
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
     endif()
 
-    if(EXISTS ${VER_GEN_PATH}/gen-py)  # set module path	
+    if(EXISTS ${VER_GEN_PATH}/gen-py)  # set module path
       execute_process(COMMAND mkdir -p ${THRIFT_PY_GEN_PATH} )
-      execute_process(COMMAND rm -rf 	${THRIFT_PY_GEN_PATH}/gen-py )
-      execute_process(COMMAND cp -r 	${VER_GEN_PATH}/gen-py/swcdb/thrift/gen ${THRIFT_PY_GEN_PATH}/)
+      execute_process(COMMAND rm -rf ${THRIFT_PY_GEN_PATH}/gen-py )
+      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-py/swcdb/thrift/gen ${THRIFT_PY_GEN_PATH}/)
     endif()
   endif()
 

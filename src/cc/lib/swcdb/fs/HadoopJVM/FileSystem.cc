@@ -113,7 +113,7 @@ bool FileSystemHadoopJVM::initialize() {
 
   if (settings->has("swc.fs.hadoop_jvm.namenode")) {
     for(auto& h : settings->get_strs("swc.fs.hadoop_jvm.namenode")){
-	    hdfsBuilder* bld = hdfsNewBuilder();
+      hdfsBuilder* bld = hdfsNewBuilder();
       hdfsBuilderSetNameNode(bld, h.c_str());
 
       if (settings->has("swc.fs.hadoop_jvm.namenode.port")) 
@@ -153,7 +153,7 @@ bool FileSystemHadoopJVM::initialize() {
     }
 
   } else {
-	  hdfsBuilder* bld = hdfsNewBuilder();
+    hdfsBuilder* bld = hdfsNewBuilder();
      //"default" > read hadoop_jvm config from LIBHDFS3_CONF=path
     hdfsBuilderSetNameNode(bld, "default"); 
 
@@ -277,7 +277,7 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
     if ((ptr = strrchr(fileInfo[i].mName, '/')))
       entry.name = (std::string)(ptr+1);
     else
-	    entry.name = (std::string)fileInfo[i].mName;
+      entry.name = (std::string)fileInfo[i].mName;
 
     entry.length = fileInfo[i].mSize;
     entry.last_modification_time = fileInfo[i].mLastMod;

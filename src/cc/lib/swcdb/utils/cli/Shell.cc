@@ -129,7 +129,7 @@ int Interface::run() {
 
     } while(!next_line);
       
-	  free(line);
+    free(line);
   }
 
   return 0;

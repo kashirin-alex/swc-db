@@ -33,7 +33,7 @@ class Interface {
     ::keypad(stdscr, TRUE);
     //::wclear(stdscr);
     
-    ::start_color();	
+    ::start_color();
     ::init_pair(1, COLOR_GREEN, COLOR_BLACK);
     ::init_pair(2, COLOR_CYAN, COLOR_BLACK);
     ::init_pair(3, COLOR_YELLOW, COLOR_BLACK);
@@ -48,24 +48,24 @@ class Interface {
   }
 
   void display_prompt() {
-    attron(COLOR_PAIR(1));	
+    attron(COLOR_PAIR(1));
     addstr("SWC-DB(");
     attroff(COLOR_PAIR(1));
 
-    attron(COLOR_PAIR(2));	
+    attron(COLOR_PAIR(2));
     addnstr(prompt.data(), prompt.length());
     attroff(COLOR_PAIR(2));
 
-    attron(COLOR_PAIR(1));	
+    attron(COLOR_PAIR(1));
     addch(')');
     attroff(COLOR_PAIR(1));
 
-    attron(COLOR_PAIR(3));	
+    attron(COLOR_PAIR(3));
     addch('>');
     addch(' ');
     attroff(COLOR_PAIR(3));
     //::refresh();
-	  ::doupdate();
+    ::doupdate();
   }
 
   int run() { 
@@ -191,7 +191,7 @@ class Interface {
       return (*opt)->call(line);
     } else {
       addstr(" Unknown command='");
-      attron(COLOR_PAIR(4));	
+      attron(COLOR_PAIR(4));
       addnstr(line.data(), line.length());
       attroff(COLOR_PAIR(4));
       addstr("'\n");
@@ -229,7 +229,7 @@ class Interface {
         addch(' ');
     }
     addch('\n');
-	  ::doupdate();
+    ::doupdate();
     return true;
   }
 
@@ -279,7 +279,7 @@ class DbClient : public Interface {
     addstr("select(cmd) '");
     addnstr(line.data(), line.length());
     addstr("'\n");
-	  ::doupdate();
+    ::doupdate();
     return true;
   }
 };

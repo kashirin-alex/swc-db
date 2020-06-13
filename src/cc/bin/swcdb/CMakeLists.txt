@@ -21,12 +21,12 @@ set(FLAGS )
 set(TARGETS )
 
 set(SHARED_TARGETS 
-	"swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;swcdb;${BUILTIN_FS_TARGETS}")
+  "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;swcdb;${BUILTIN_FS_TARGETS}")
 
 if(SWC_IMPL_SOURCE)
-	set(FLAGS "-DSWC_IMPL_SOURCE")
+  set(FLAGS "-DSWC_IMPL_SOURCE")
 else()
-	set(TARGETS ${SHARED_TARGETS})
+  set(TARGETS ${SHARED_TARGETS})
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
@@ -34,81 +34,81 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 
 # swcdbRanger
 ADD_EXEC_TARGET(
-	NAME 		swcdbRanger
-	SRCS  	ranger/main.cc
-	TARGETS ${TARGETS}
+  NAME    swcdbRanger
+  SRCS    ranger/main.cc
+  TARGETS ${TARGETS}
 
-	SHARED  ${SHARED}
-	STATIC  ${STATIC}
-	FLAGS 	${FLAGS}
+  SHARED  ${SHARED}
+  STATIC  ${STATIC}
+  FLAGS   ${FLAGS}
 )
 
 
 # swcdbManager
 ADD_EXEC_TARGET(
-	NAME 		swcdbManager
-	SRCS  	manager/main.cc
-	TARGETS ${TARGETS}
+  NAME    swcdbManager
+  SRCS    manager/main.cc
+  TARGETS ${TARGETS}
 
-	SHARED  ${SHARED}
-	STATIC  ${STATIC}
-	FLAGS 	${FLAGS}
+  SHARED  ${SHARED}
+  STATIC  ${STATIC}
+  FLAGS   ${FLAGS}
 )
 
 
 # swcdbThriftBroker
 if(THRIFT_CPP_GEN_PATH)
 ADD_EXEC_TARGET(
-	NAME 		swcdbThriftBroker
-	SRCS  	thriftbroker/main.cc
-	TARGETS ${TARGETS}
+  NAME    swcdbThriftBroker
+  SRCS    thriftbroker/main.cc
+  TARGETS ${TARGETS}
 
-	SHARED ${SHARED} ${THRIFT_CPP_LIBRARIES_SHARED}
-	STATIC ${STATIC} ${THRIFT_CPP_LIBRARIES_STATIC}
-	FLAGS  ${FLAGS}
+  SHARED ${SHARED} ${THRIFT_CPP_LIBRARIES_SHARED}
+  STATIC ${STATIC} ${THRIFT_CPP_LIBRARIES_STATIC}
+  FLAGS  ${FLAGS}
 )
 endif()
 
 
 # swcdbFsBroker
 ADD_EXEC_TARGET(
-	NAME 		swcdbFsBroker
-	SRCS  	fsbroker/main.cc
-	TARGETS swcdb_core 
-					swcdb_core_config 
-					swcdb_core_comm 
-					swcdb_core_sys 
-					swcdb_fs 
-					${BUILTIN_FS_TARGETS}
+  NAME    swcdbFsBroker
+  SRCS    fsbroker/main.cc
+  TARGETS swcdb_core 
+          swcdb_core_config 
+          swcdb_core_comm 
+          swcdb_core_sys 
+          swcdb_fs 
+          ${BUILTIN_FS_TARGETS}
 
-	SHARED  ${SHARED}
-	STATIC  ${STATIC}
-	FLAGS "-DFS_BROKER_APP"
+  SHARED  ${SHARED}
+  STATIC  ${STATIC}
+  FLAGS "-DFS_BROKER_APP"
 
-	ONLY_DYN TRUE
+  ONLY_DYN TRUE
 )
 
 
 # swcdb
 ADD_EXEC_TARGET(
-	NAME 		swcdb
-	SRCS  	utils/main.cc
-	TARGETS ${SHARED_TARGETS}
+  NAME    swcdb
+  SRCS    utils/main.cc
+  TARGETS ${SHARED_TARGETS}
 
-	SHARED  ${SHARED}
-	STATIC  ${STATIC}
+  SHARED  ${SHARED}
+  STATIC  ${STATIC}
 
-	ONLY_DYN TRUE
+  ONLY_DYN TRUE
 )
 
 
 # swcdb_load_generator
 ADD_EXEC_TARGET(
-	NAME	swcdb_load_generator
-	SRCS	utils/load_generator.cc
-	TARGETS ${TARGETS}
+  NAME    swcdb_load_generator
+  SRCS    utils/load_generator.cc
+  TARGETS ${TARGETS}
 
-	SHARED  ${SHARED}
-	STATIC  ${STATIC}
-	FLAGS 	${FLAGS}
+  SHARED  ${SHARED}
+  STATIC  ${STATIC}
+  FLAGS   ${FLAGS}
 )

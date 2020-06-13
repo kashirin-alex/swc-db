@@ -51,9 +51,9 @@ if(NOT BUILD_LINKING OR (NOT BUILD_LINKING STREQUAL "STATIC"))
   set(BUILD_LINKING "SHARED")
 endif ()
 
-if(BUILD_LINKING 			STREQUAL "STATIC")
+if(BUILD_LINKING       STREQUAL "STATIC")
   SET(REQUIRED_STATIC ON)
-elseif(BUILD_LINKING 	STREQUAL "SHARED")
+elseif(BUILD_LINKING   STREQUAL "SHARED")
   SET(REQUIRED_SHARED ON)
 endif ()
 
@@ -68,9 +68,9 @@ if(NOT UTILS_LINKING OR (NOT UTILS_LINKING STREQUAL "STATIC"))
   set(UTILS_LINKING "SHARED")
 endif ()
 
-if(UTILS_LINKING 			STREQUAL "STATIC")
+if(UTILS_LINKING       STREQUAL "STATIC")
   SET(REQUIRED_STATIC ON)
-elseif(UTILS_LINKING 	STREQUAL "SHARED")
+elseif(UTILS_LINKING   STREQUAL "SHARED")
   SET(REQUIRED_SHARED ON)
 endif ()
 
@@ -89,7 +89,7 @@ if(NOT LIBS_STATIC_LINKING OR (NOT LIBS_STATIC_LINKING STREQUAL "STATIC"))
   set(LIBS_STATIC_LINKING "NONE")
 endif ()
 
-if(LIBS_STATIC_LINKING 			STREQUAL "STATIC")
+if(LIBS_STATIC_LINKING       STREQUAL "STATIC")
   SET(REQUIRED_STATIC ON)
 endif ()
 
@@ -101,9 +101,9 @@ if(NOT LIBS_SHARED_LINKING OR (NOT LIBS_SHARED_LINKING STREQUAL "STATIC"))
   set(LIBS_SHARED_LINKING "SHARED")
 endif ()  
 
-if(LIBS_SHARED_LINKING 			STREQUAL "STATIC")
+if(LIBS_SHARED_LINKING       STREQUAL "STATIC")
   SET(REQUIRED_STATIC ON)
-elseif(LIBS_SHARED_LINKING 	STREQUAL "SHARED")
+elseif(LIBS_SHARED_LINKING   STREQUAL "SHARED")
   SET(REQUIRED_SHARED ON)
 endif ()
 
@@ -115,10 +115,10 @@ if(NOT BUILD_LINKING_CORE OR (NOT BUILD_LINKING_CORE STREQUAL "STATIC"))
   set(BUILD_LINKING_CORE "SHARED")
 endif ()
 
-if(BUILD_LINKING_CORE 			STREQUAL "STATIC")
-	SET(REQUIRED_STATIC ON)
-elseif(BUILD_LINKING_CORE 	STREQUAL "SHARED")
-	SET(REQUIRED_SHARED ON)
+if(BUILD_LINKING_CORE       STREQUAL "STATIC")
+  SET(REQUIRED_STATIC ON)
+elseif(BUILD_LINKING_CORE   STREQUAL "SHARED")
+  SET(REQUIRED_SHARED ON)
 endif ()
 
 message("       Linking of Core-Libraries: ${BUILD_LINKING_CORE}")
@@ -127,13 +127,13 @@ message("       Linking of Core-Libraries: ${BUILD_LINKING_CORE}")
 # ----- LIBRARIES CHECKINGS 
 SET(LIBS_LINKING_CHECKING_STATIC OFF)
 SET(LIBS_LINKING_CHECKING_SHARED OFF)
-if(LIBS_LINKING_CHECKING 			STREQUAL "STATIC")
+if(LIBS_LINKING_CHECKING       STREQUAL "STATIC")
   SET(LIBS_LINKING_CHECKING_STATIC ON)
   SET(REQUIRED_STATIC ON)
-elseif(LIBS_LINKING_CHECKING 	STREQUAL "SHARED")
+elseif(LIBS_LINKING_CHECKING   STREQUAL "SHARED")
   SET(LIBS_LINKING_CHECKING_SHARED ON)
   SET(REQUIRED_SHARED ON)
-elseif(LIBS_LINKING_CHECKING 	STREQUAL "DUAL")
+elseif(LIBS_LINKING_CHECKING   STREQUAL "DUAL")
   SET(LIBS_LINKING_CHECKING_STATIC ON)
   SET(REQUIRED_STATIC ON)
   SET(LIBS_LINKING_CHECKING_SHARED ON)
@@ -155,11 +155,11 @@ if( NOT WITHOUT_TESTS )
     set(TEST_LINKING "SHARED")
   endif ()
 
-  if(TEST_LINKING 			STREQUAL "STATIC")
+  if(TEST_LINKING       STREQUAL "STATIC")
     SET(REQUIRED_STATIC ON)
-  elseif(TEST_LINKING 	STREQUAL "SHARED")
+  elseif(TEST_LINKING   STREQUAL "SHARED")
     SET(REQUIRED_SHARED ON)
-  elseif(TEST_LINKING 	STREQUAL "DUAL")
+  elseif(TEST_LINKING   STREQUAL "DUAL")
     SET(REQUIRED_STATIC ON)
     SET(REQUIRED_SHARED ON)
   endif ()
@@ -208,14 +208,14 @@ message("")
 
 ##### SET_DEPS
 # -------------------------------
-	# SET_DEPS(
-	#	  NAME 	  	  CAP.NAME
-	#	  REQUIRED  	BOOL
-	#	  LIB_PATHS  	SEARCH_PATHS
-	#	  INC_PATHS  	SEARCH_PATHS
-	#	  STATIC 		  STATIC_LIBS
-	#	  SHARED 		  SHARED_LIBS
-	#	  INCLUDE 	  HEADER FILES
+  # SET_DEPS(
+  #   NAME        CAP.NAME
+  #   REQUIRED    BOOL
+  #   LIB_PATHS   SEARCH_PATHS
+  #   INC_PATHS   SEARCH_PATHS
+  #   STATIC      STATIC_LIBS
+  #   SHARED      SHARED_LIBS
+  #   INCLUDE     HEADER FILES
   # )
 
 # Sets the following vars on parent-scope:
@@ -230,36 +230,36 @@ function(SET_DEPS)
   cmake_parse_arguments(OPT "" "NAME;REQUIRED" "LIB_PATHS;INC_PATHS;STATIC;SHARED;INCLUDE" ${ARGN})
   
   
-	# explicit lookup
-	foreach(path ${OPT_INC_PATHS} ${LOOKUP_INCLUDE_PATHS})
-		foreach(inc_h ${OPT_INCLUDE})
-			if(EXISTS ${path}/${inc_h} AND NOT INCLUDE_DIR${inc_h})
-				set(INCLUDE_DIR${inc_h} ${path})	
-			endif ()
-		endforeach()
-		
-		set(INCLUDE_DIRS)
-		foreach(inc_h ${OPT_INCLUDE})
-			if(INCLUDE_DIR${inc_h})
-				set(INCLUDE_DIRS ${INCLUDE_DIRS} ${INCLUDE_DIR${inc_h}})
-			else()
-				set(INCLUDE_DIRS)
-				break()
-			endif ()	
-		endforeach()	
+  # explicit lookup
+  foreach(path ${OPT_INC_PATHS} ${LOOKUP_INCLUDE_PATHS})
+    foreach(inc_h ${OPT_INCLUDE})
+      if(EXISTS ${path}/${inc_h} AND NOT INCLUDE_DIR${inc_h})
+        set(INCLUDE_DIR${inc_h} ${path})  
+      endif ()
+    endforeach()
+    
+    set(INCLUDE_DIRS)
+    foreach(inc_h ${OPT_INCLUDE})
+      if(INCLUDE_DIR${inc_h})
+        set(INCLUDE_DIRS ${INCLUDE_DIRS} ${INCLUDE_DIR${inc_h}})
+      else()
+        set(INCLUDE_DIRS)
+        break()
+      endif ()  
+    endforeach()  
     
     if(INCLUDE_DIRS)
       list(REMOVE_DUPLICATES INCLUDE_DIRS)
-			break()
-		endif ()
-	endforeach()
+      break()
+    endif ()
+  endforeach()
 
 
-	FIND_LIBS(
-		OUTPUT LIBRARIES
-		PATHS  ${OPT_LIB_PATHS}
-		STATIC ${OPT_STATIC}
-		SHARED ${OPT_SHARED}
+  FIND_LIBS(
+    OUTPUT LIBRARIES
+    PATHS  ${OPT_LIB_PATHS}
+    STATIC ${OPT_STATIC}
+    SHARED ${OPT_SHARED}
   )
   
   if ((NOT OPT_INCLUDE OR INCLUDE_DIRS) AND 
@@ -267,43 +267,43 @@ function(SET_DEPS)
       (NOT OPT_SHARED OR NOT REQUIRED_SHARED OR LIBRARIES_SHARED)) 
     set("${OPT_NAME}_FOUND" TRUE)
 
-		
+    
     message(STATUS "Found ${OPT_NAME}:")
     if(LIBRARIES_STATIC AND REQUIRED_STATIC)
       list(REMOVE_DUPLICATES LIBRARIES_STATIC)
-		  set("${OPT_NAME}_LIBRARIES_STATIC" ${LIBRARIES_STATIC})
+      set("${OPT_NAME}_LIBRARIES_STATIC" ${LIBRARIES_STATIC})
       message("       Static Libs: ${LIBRARIES_STATIC}")
     endif ()
 
     if(LIBRARIES_SHARED AND REQUIRED_SHARED)
       list(REMOVE_DUPLICATES LIBRARIES_SHARED)
-		  set("${OPT_NAME}_LIBRARIES_SHARED" ${LIBRARIES_SHARED})
+      set("${OPT_NAME}_LIBRARIES_SHARED" ${LIBRARIES_SHARED})
       message("       Shared Libs: ${LIBRARIES_SHARED}")
     endif ()
 
-		if(INCLUDE_DIRS)
-			message("       Include path: ${INCLUDE_DIRS}")
-			include_directories(${INCLUDE_DIRS})  # per target ?
+    if(INCLUDE_DIRS)
+      message("       Include path: ${INCLUDE_DIRS}")
+      include_directories(${INCLUDE_DIRS})  # per target ?
     endif ()
     
   else ()
   
-		set("${OPT_NAME}_FOUND" FALSE)
-		set("${OPT_NAME}_LIBRARIES_STATIC")
-		set("${OPT_NAME}_LIBRARIES_SHARED")
-		set("${OPT_NAME}_INCLUDE_DIR")
-		message(STATUS "Not Found ${OPT_NAME}: ${OPT_SHARED} ${OPT_STATIC} ${OPT_INCLUDE}")
-		if (OPT_REQUIRED AND (OPT_INCLUDE OR OPT_STATIC OR OPT_SHARED))
-			message(FATAL_ERROR "       Could NOT find ${OPT_NAME}")
+    set("${OPT_NAME}_FOUND" FALSE)
+    set("${OPT_NAME}_LIBRARIES_STATIC")
+    set("${OPT_NAME}_LIBRARIES_SHARED")
+    set("${OPT_NAME}_INCLUDE_DIR")
+    message(STATUS "Not Found ${OPT_NAME}: ${OPT_SHARED} ${OPT_STATIC} ${OPT_INCLUDE}")
+    if (OPT_REQUIRED AND (OPT_INCLUDE OR OPT_STATIC OR OPT_SHARED))
+      message(FATAL_ERROR "       Could NOT find ${OPT_NAME}")
     endif ()
     
-	endif ()
-		
-	set("${OPT_NAME}_FOUND"  ${${OPT_NAME}_FOUND} PARENT_SCOPE)
-	set("${OPT_NAME}_INCLUDE_PATHS" ${INCLUDE_DIRS} PARENT_SCOPE)
-	set("${OPT_NAME}_LIBRARIES_STATIC" ${${OPT_NAME}_LIBRARIES_STATIC} PARENT_SCOPE)
-	set("${OPT_NAME}_LIBRARIES_SHARED" ${${OPT_NAME}_LIBRARIES_SHARED} PARENT_SCOPE)
-	
+  endif ()
+    
+  set("${OPT_NAME}_FOUND"  ${${OPT_NAME}_FOUND} PARENT_SCOPE)
+  set("${OPT_NAME}_INCLUDE_PATHS" ${INCLUDE_DIRS} PARENT_SCOPE)
+  set("${OPT_NAME}_LIBRARIES_STATIC" ${${OPT_NAME}_LIBRARIES_STATIC} PARENT_SCOPE)
+  set("${OPT_NAME}_LIBRARIES_SHARED" ${${OPT_NAME}_LIBRARIES_SHARED} PARENT_SCOPE)
+  
 endfunction()
 # END SET_DEPS
 # -------------------------------
@@ -312,12 +312,12 @@ endfunction()
 
 ##### FIND_LIBS
 # -------------------------------
-	# FIND_LIBS(
-	#	OUTPUT VAR_NAME
-	#	PATHS  SEARCH_PATHS
-	#	STATIC STATIC_LIBS
-	#	SHARED SHARED_LIBS
-	# )
+  # FIND_LIBS(
+  #   OUTPUT VAR_NAME
+  #   PATHS  SEARCH_PATHS
+  #   STATIC STATIC_LIBS
+  #   SHARED SHARED_LIBS
+  # )
 # -------------------------------
 
 function(FIND_LIBS)
@@ -325,41 +325,41 @@ function(FIND_LIBS)
 
 
   # --- STATIC LIBS
-	if(REQUIRED_STATIC AND OPT_STATIC)
-	set("${OPT_OUTPUT}_STATIC" "")
-	foreach(lib ${OPT_STATIC})
-		# message(STATUS "looking for: ${lib}")
-		find_library(
-			FOUND_${lib} 
-			NAMES ${lib}
-			PATHS ${OPT_PATHS} ${LOOKUP_LIB_PATHS} 
-		)
-		if(FOUND_${lib})
-			set("${OPT_OUTPUT}_STATIC" ${${OPT_OUTPUT}_STATIC} ${FOUND_${lib}})
-		endif()
+  if(REQUIRED_STATIC AND OPT_STATIC)
+  set("${OPT_OUTPUT}_STATIC" "")
+  foreach(lib ${OPT_STATIC})
+    # message(STATUS "looking for: ${lib}")
+    find_library(
+      FOUND_${lib} 
+      NAMES ${lib}
+      PATHS ${OPT_PATHS} ${LOOKUP_LIB_PATHS} 
+    )
+    if(FOUND_${lib})
+      set("${OPT_OUTPUT}_STATIC" ${${OPT_OUTPUT}_STATIC} ${FOUND_${lib}})
+    endif()
   endforeach()
 
-	set("${OPT_OUTPUT}_STATIC" ${${OPT_OUTPUT}_STATIC} PARENT_SCOPE)
+  set("${OPT_OUTPUT}_STATIC" ${${OPT_OUTPUT}_STATIC} PARENT_SCOPE)
   # message(STATUS "FOUND_LIB: ${OPT_OUTPUT} ${${OPT_OUTPUT}}")
 
   endif ()
   
   # --- SHARED LIBS
-	if(REQUIRED_SHARED AND OPT_SHARED)
-	set("${OPT_OUTPUT}_SHARED" "")
-	foreach(lib ${OPT_SHARED})
-		# message(STATUS "looking for: ${lib}")
-		find_library(
-			FOUND_${lib} 
-			NAMES ${lib}
-			PATHS ${OPT_PATHS} ${LOOKUP_LIB_PATHS} 
-		)
-		if(FOUND_${lib})
-			set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} ${FOUND_${lib}})
-		endif()
+  if(REQUIRED_SHARED AND OPT_SHARED)
+  set("${OPT_OUTPUT}_SHARED" "")
+  foreach(lib ${OPT_SHARED})
+    # message(STATUS "looking for: ${lib}")
+    find_library(
+      FOUND_${lib} 
+      NAMES ${lib}
+      PATHS ${OPT_PATHS} ${LOOKUP_LIB_PATHS} 
+    )
+    if(FOUND_${lib})
+      set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} ${FOUND_${lib}})
+    endif()
   endforeach()
 
-	set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} PARENT_SCOPE)
+  set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} PARENT_SCOPE)
   # message(STATUS "FOUND_LIB: ${OPT_OUTPUT} ${${OPT_OUTPUT}}")
 
   endif ()
@@ -373,11 +373,11 @@ endfunction()
 
 ##### GET_TARGET_LINKS
 # -------------------------------
-	# GET_TARGET_LINKS(
-  # FOR           target type EXEC/LIB, optional
-	#	TARGETS  	    targets to check for links
-  #	STATIC 		    target's specific static links
-  #	SHARED 		    target's specific shared links
+  # GET_TARGET_LINKS(
+  #   FOR           target type EXEC/LIB, optional
+  #   TARGETS       targets to check for links
+  #   STATIC        target's specific static links
+  #   SHARED        target's specific shared links
   # )
 # result:
 #     SHARED_TARGETS, STATIC_TARGETS, SHARED_LINKING and STATIC_LINKING set to parent-scope
@@ -439,12 +439,12 @@ endfunction()
 
 ##### GET_ARCHIVE_LINKS
 # -------------------------------
-	# GET_ARCHIVE_LINKS(
-	#	NAME                TARGET FOR GETTING IT'S LINKINGS
-	#	STATIC_TARGETS  	  aggregated targets
-  #	STATIC_LINKING 		  aggregated static links
-	#	SHARED_TARGETS  	  aggregated targets
-  #	SHARED_LINKING 		  aggregated static links
+  # GET_ARCHIVE_LINKS(
+  #   NAME                TARGET FOR GETTING IT'S LINKINGS
+  #   STATIC_TARGETS      aggregated targets
+  #   STATIC_LINKING      aggregated static links
+  #   SHARED_TARGETS      aggregated targets
+  #   SHARED_LINKING      aggregated static links
   # )
 # result:
 #     STATIC_TARGETS, STATIC_LINKING and SHARED_TARGETS, SHARED_LINKING set to parent-scope
@@ -500,16 +500,16 @@ endfunction()
 
 ##### ADD_LIB_TARGET
 # -------------------------------
-	# ADD_LIB_TARGET(
-	#	NAME          libName
-	#	SRCS          sourceToCompile
-	#	TARGETS       targets-dependant
-	#	STATIC        dependenciesOfTheTarget - static
-  #	SHARED        dependenciesOfTheTarget - shared
-  # FLAGS		      compiler flags
-  # ONLY_STATIC_SHARED TRUE/FALSE - optional
-  # ONLY_SHARED TRUE/FALSE - optional
-	# )
+  # ADD_LIB_TARGET(
+  #   NAME          libName
+  #   SRCS          sourceToCompile
+  #   TARGETS       targets-dependant
+  #   STATIC        dependenciesOfTheTarget - static
+  #   SHARED        dependenciesOfTheTarget - shared
+  #   FLAGS         compiler flags
+  #   ONLY_STATIC_SHARED TRUE/FALSE - optional
+  #   ONLY_SHARED TRUE/FALSE - optional
+  # )
 # -------------------------------
 
 function(ADD_LIB_TARGET)
@@ -583,14 +583,14 @@ endfunction()
 
 ##### ADD_UTIL_TARGET
 # -------------------------------
-	# ADD_UTIL_TARGET(
-	#	util_name
-	#	SRCS 			sourcesToCompile
-	#	TARGETS  	targets
-  #	STATIC 		static linking
-  # SHARED		shared linking
-  # FLAGS		  compiler flags
-	# )
+  # ADD_UTIL_TARGET(
+  #   util_name
+  #   SRCS        sourcesToCompile
+  #   TARGETS     targets
+  #   STATIC      static linking
+  #   SHARED      shared linking
+  #   FLAGS       compiler flags
+  # )
 # -------------------------------
 
 function(ADD_UTIL_TARGET)
@@ -598,12 +598,12 @@ function(ADD_UTIL_TARGET)
 
 
   set(STATIC_LINKING ${OPT_STATIC})
-	set(STATIC_TARGETS )
+  set(STATIC_TARGETS )
   set(SHARED_LINKING ${OPT_SHARED})
   set(SHARED_TARGETS )
   GET_TARGET_LINKS(TARGETS ${OPT_TARGETS} STATIC ${STATIC_LINKING} SHARED ${SHARED_LINKING})
 
-  if(UTILS_LINKING 			STREQUAL "STATIC")
+  if(UTILS_LINKING       STREQUAL "STATIC")
     set(TARGETS_LINKED  ${STATIC_TARGETS})
     set(LINKED_LIBS     ${MALLOC_LIBRARIES_STATIC} ${STATIC_LINKING})
 
@@ -631,15 +631,15 @@ endfunction()
 
 ##### ADD_EXEC_TARGET
 # -------------------------------
-	# ADD_EXEC_TARGET(
-	#	NAME exec_name
-	#	SRCS 			sourcesToCompile
-	#	TARGETS  	targets
-  #	STATIC 		static linking
-  # SHARED		shared linking
-  # FLAGS		  Flags for compile options
-  # ONLY_DYN  link only shared
-	# )
+  # ADD_EXEC_TARGET(
+  #   NAME       exec_name
+  #   SRCS       sourcesToCompile
+  #   TARGETS    targets
+  #   STATIC     static linking
+  #   SHARED     shared linking
+  #   FLAGS      Flags for compile options
+  #   ONLY_DYN   link only shared
+  # )
 # -------------------------------
 
 function(ADD_EXEC_TARGET)
@@ -647,7 +647,7 @@ function(ADD_EXEC_TARGET)
 
 
   set(STATIC_LINKING ${OPT_STATIC})
-	set(STATIC_TARGETS )
+  set(STATIC_TARGETS )
   set(SHARED_LINKING ${OPT_SHARED})
   set(SHARED_TARGETS )
   GET_TARGET_LINKS(TARGETS ${OPT_TARGETS} STATIC ${STATIC_LINKING} SHARED ${SHARED_LINKING})
@@ -676,32 +676,32 @@ endfunction()
 
 ##### ADD_TEST_TARGET
 # -------------------------------
-	# ADD_TEST_TARGET(
-	#	NAME          test-name 
-	#	SRCS 			    sourceToCompile
-	#	TARGETS  	    targets
-  #	STATIC 		    static linking
-  # SHARED		    shared linking
-  # FLAGS		      compiler flags
-  # ENV           environ
-  # EXEC_DEPS     test's dependency on files/targets
-  # PRE_CMD_TYPE  Pre-command for each built-type
-  # PRE_CMD       Pre-command 
-  # POST_CMD      Post-command 
-  # ARGS          test arguments
-	# )
+  # ADD_TEST_TARGET(
+  #   NAME          test-name 
+  #   SRCS          sourceToCompile
+  #   TARGETS       targets
+  #   STATIC        static linking
+  #   SHARED        shared linking
+  #   FLAGS         compiler flags
+  #   ENV           environ
+  #   EXEC_DEPS     test's dependency on files/targets
+  #   PRE_CMD_TYPE  Pre-command for each built-type
+  #   PRE_CMD       Pre-command 
+  #   POST_CMD      Post-command 
+  #   ARGS          test arguments
+  # )
 # -------------------------------
 
 function(ADD_TEST_TARGET)
   cmake_parse_arguments(OPT "" "NAME;" "SRCS;TARGETS;STATIC;SHARED;FLAGS;EXEC_OPTS;ENV;EXEC_DEPS;PRE_CMD_TYPE;PRE_CMD;POST_CMD;ARGS" ${ARGN})
 
 
-	if(OPT_PRE_CMD)
-		add_test(Test-Env-Pre-${OPT_NAME} ${OPT_PRE_CMD})
+  if(OPT_PRE_CMD)
+    add_test(Test-Env-Pre-${OPT_NAME} ${OPT_PRE_CMD})
   endif ()
   
   set(STATIC_LINKING ${OPT_STATIC})
-	set(STATIC_TARGETS )
+  set(STATIC_TARGETS )
   set(SHARED_LINKING ${OPT_SHARED})
   set(SHARED_TARGETS )
   GET_TARGET_LINKS(TARGETS ${OPT_TARGETS} STATIC ${STATIC_LINKING} SHARED ${SHARED_LINKING})
@@ -720,22 +720,22 @@ function(ADD_TEST_TARGET)
 
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
-        if(OPT_ENV)				
+        if(OPT_ENV)
           add_test(${OPT_NAME}-wStatic-${exec_opt} env ${OPT_ENV}test-${OPT_NAME}-static ${exec_opt} ${OPT_ARGS})
         else ()
           add_test(${OPT_NAME}-wStatic-${exec_opt} test-${OPT_NAME}-static ${exec_opt} ${OPT_ARGS})
         endif ()
       endforeach()
     else()
-      if(OPT_ENV)				
+      if(OPT_ENV)
         add_test(${OPT_NAME}-wStatic env ${OPT_ENV}test-${OPT_NAME}-static ${OPT_ARGS})
       else ()
-		    add_test(${OPT_NAME}-wStatic test-${OPT_NAME}-static ${OPT_ARGS})
+        add_test(${OPT_NAME}-wStatic test-${OPT_NAME}-static ${OPT_ARGS})
       endif () 
     endif ()
 
   endif ()
-	
+  
   if(NOT TEST_LINKING OR TEST_LINKING STREQUAL "DUAL" OR TEST_LINKING STREQUAL "SHARED")
     if(OPT_PRE_CMD_TYPE)
       add_test(Test-Shared-Env-Pre-${OPT_NAME} ${OPT_PRE_CMD_TYPE})
@@ -747,14 +747,14 @@ function(ADD_TEST_TARGET)
     
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
-        if(OPT_ENV)				
+        if(OPT_ENV)
           add_test(${OPT_NAME}-wShared-${exec_opt} env ${OPT_ENV}test-${OPT_NAME}-shared ${exec_opt} ${OPT_ARGS})
         else ()
           add_test(${OPT_NAME}-wShared-${exec_opt} test-${OPT_NAME}-shared ${exec_opt} ${OPT_ARGS})
         endif ()
       endforeach()
     else()
-      if(OPT_ENV)				
+      if(OPT_ENV)
         add_test(${OPT_NAME}-wShared env ${OPT_ENV}test-${OPT_NAME}-shared ${OPT_ARGS})
       else ()
         add_test(${OPT_NAME}-wShared test-${OPT_NAME}-shared ${OPT_ARGS})
@@ -764,8 +764,8 @@ function(ADD_TEST_TARGET)
   endif ()
 
 
-	if(OPT_POST_CMD)
-		add_test(Test-Env-Post-${OPT_NAME} ${OPT_POST_CMD})
+  if(OPT_POST_CMD)
+    add_test(Test-Env-Post-${OPT_NAME} ${OPT_POST_CMD})
   endif ()
   
 endfunction()
@@ -777,15 +777,15 @@ endfunction()
 
 ##### ADD_TEST_EXEC
 # -------------------------------
-	# ADD_TEST_EXEC(
-	#	util_name
-	#	SRCS 			sourcesToCompile
-	#	TARGETS  	targets
-  #	STATIC 		static linking
-  # SHARED		shared linking
-  # FLAGS		  compiler flags
-  # ONLY_DYN  link only shared
-	# )
+  # ADD_TEST_EXEC(
+  #   util_name
+  #   SRCS       sourcesToCompile
+  #   TARGETS    targets
+  #   STATIC     static linking
+  #   SHARED     shared linking
+  #   FLAGS      compiler flags
+  #   ONLY_DYN  link only shared
+  # )
 # -------------------------------
 
 function(ADD_TEST_EXEC)
@@ -799,7 +799,7 @@ set(SHARED_TARGETS )
 GET_TARGET_LINKS(TARGETS ${OPT_TARGETS} STATIC ${STATIC_LINKING} SHARED ${SHARED_LINKING})
 
 
-if(NOT OPT_ONLY_DYN AND UTILS_LINKING 			STREQUAL "STATIC")
+if(NOT OPT_ONLY_DYN AND UTILS_LINKING       STREQUAL "STATIC")
   set(TARGETS_LINKED  ${STATIC_TARGETS})
   set(LINKED_LIBS     ${MALLOC_LIBRARIES_STATIC} ${STATIC_LINKING})
 

@@ -39,7 +39,7 @@ class OpenReq : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
+                       size_t *remainp) override {
     (void)version;
     flags = Serialization::decode_i32(bufp, remainp);
     bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);
@@ -76,7 +76,7 @@ class OpenRsp : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-	                     size_t *remainp) override {
+                       size_t *remainp) override {
     fd = (int32_t)Serialization::decode_i32(bufp, remainp);
   }
   

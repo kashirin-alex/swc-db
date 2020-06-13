@@ -141,8 +141,8 @@ ssize_t write(int fd, const void *vptr, size_t n) {
 bool mkdirs(const std::string& dirname) {
   struct stat statbuf;
 
-  char *tmpdir = new char [dirname.length() + 1];	
-  strcpy(tmpdir, dirname.c_str());	
+  char *tmpdir = new char [dirname.length() + 1];
+  strcpy(tmpdir, dirname.c_str());
   *(tmpdir+dirname.length()) = '/';
 
   int saved_errno = 0;
@@ -153,19 +153,19 @@ bool mkdirs(const std::string& dirname) {
 
     errno = 0;
     if (stat(tmpdir, &statbuf) != 0) {
-      if (errno != ENOENT) {	
-        saved_errno = errno;	
-        SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,	
-                  saved_errno, strerror(saved_errno));	
-        break;	
+      if (errno != ENOENT) {
+        saved_errno = errno;
+        SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,
+                  saved_errno, strerror(saved_errno));
+        break;
       }
       errno = 0;
-      if (mkdir(tmpdir, 0755) != 0 && errno != EEXIST) {	
-        saved_errno = errno;	
-        SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,	
-                   saved_errno, strerror(saved_errno));	
-        break;	
-      }	
+      if (mkdir(tmpdir, 0755) != 0 && errno != EEXIST) {
+        saved_errno = errno;
+        SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,
+                   saved_errno, strerror(saved_errno));
+        break;
+      }
     }
     *(tmpdir+n) = '/';
   }

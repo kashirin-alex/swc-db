@@ -16,9 +16,9 @@ class CreateReq : public Serializable {
   CreateReq() {}
 
   CreateReq(const std::string& fname, uint32_t flags, int32_t bufsz,
-	          uint8_t replication, int64_t blksz)
+            uint8_t replication, int64_t blksz)
             : fname(fname), flags(flags), bufsz(bufsz),
-	            replication(replication), blksz(blksz) {}
+              replication(replication), blksz(blksz) {}
 
   std::string fname;
   uint32_t    flags;
@@ -45,7 +45,7 @@ class CreateReq : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
+                       size_t *remainp) override {
     (void)version;
     flags = Serialization::decode_i32(bufp, remainp);
     bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);

@@ -44,7 +44,7 @@ class Interface {
     tc_attrs_in.c_cflag |= CS8;
 
     tc_attrs_in.c_iflag &= ~INPCK;
-	  tc_attrs_in.c_iflag |= ISTRIP | IUTF8;
+    tc_attrs_in.c_iflag |= ISTRIP | IUTF8;
 
     tc_attrs_in.c_cc[VMIN] = 1;
     tc_attrs_in.c_cc[VTIME] = 0;
@@ -197,7 +197,7 @@ class Interface {
                   return RE2::PartialMatch(line.c_str(), *opt->re); 
                 });
     if(opt != options.end()) {
-	    printf("\t\t\tran|%s|\n", line.c_str());
+      printf("\t\t\tran|%s|\n", line.c_str());
       return (*opt)->call(line);
     } else {
       std::cout << "Unknown command='\033[31m" << line << "\033[00m'\n";

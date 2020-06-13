@@ -35,7 +35,7 @@ class ReadAllReq : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
+                       size_t *remainp) override {
     (void)version;
     name = Serialization::decode_vstr(bufp, remainp);
   }

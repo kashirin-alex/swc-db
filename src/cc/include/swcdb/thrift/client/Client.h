@@ -22,9 +22,9 @@ class CommClient {
   CommClient(const std::string& host, const uint16_t port, 
              const uint32_t timeout, bool open=true) {
     auto sock = new thrift::transport::TSocket(host, port);
-  	sock->setConnTimeout(timeout);
-	  sock->setSendTimeout(timeout);
-		sock->setRecvTimeout(timeout);
+    sock->setConnTimeout(timeout);
+    sock->setSendTimeout(timeout);
+    sock->setRecvTimeout(timeout);
     socket.reset(sock);
     transport.reset(new thrift::transport::TFramedTransport(socket));
     if(open)
@@ -49,9 +49,9 @@ class CommClient {
   }
 
   protected:
-	std::shared_ptr<thrift::transport::TTransport>  socket;
+  std::shared_ptr<thrift::transport::TTransport>  socket;
   std::shared_ptr<thrift::transport::TTransport>  transport;
-	std::shared_ptr<thrift::protocol::TProtocol>    protocol;
+  std::shared_ptr<thrift::protocol::TProtocol>    protocol;
 };
 
 

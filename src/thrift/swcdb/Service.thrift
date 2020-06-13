@@ -50,7 +50,7 @@ enum EncodingType {
 
 struct Schema {
   1: optional i64           cid
-  2: optional string 	  	  col_name
+  2: optional string        col_name
   3: optional ColumnType    col_type
   
   4: optional i32           cell_versions

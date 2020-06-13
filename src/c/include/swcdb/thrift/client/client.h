@@ -46,8 +46,8 @@ swcdb_thrift_client_connect(swcdb_thrift_client* client,
 
   /* ? timeout
   client->socket->setConnTimeout(timeout);
-	client->socket->setSendTimeout(timeout);
-	client->socket->setRecvTimeout(timeout);
+  client->socket->setSendTimeout(timeout);
+  client->socket->setRecvTimeout(timeout);
   */
   
   client->transport = g_object_new(

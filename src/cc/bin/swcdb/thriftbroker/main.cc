@@ -29,18 +29,18 @@ int run() {
   uint32_t timeout_ms = settings->get_i16("swc.ThriftBroker.timeout");
   std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
-	std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
-	if (transport.compare("framed") == 0) {
-		transportFactory.reset(new thrift::transport::TFramedTransportFactory());
+  std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
+  if (transport.compare("framed") == 0) {
+    transportFactory.reset(new thrift::transport::TFramedTransportFactory());
 
-	} else if (transport.compare("zlib") == 0) {
-		transportFactory.reset(new thrift::transport::TZlibTransportFactory());
+  } else if (transport.compare("zlib") == 0) {
+    transportFactory.reset(new thrift::transport::TZlibTransportFactory());
 
   } else {
-		SWC_LOGF(
+    SWC_LOGF(
       LOG_FATAL, "No implementation for transport=%s", transport.c_str());
-		return 1;
-	}
+    return 1;
+  }
 
   Strings addrs = settings->has("addr") ? settings->get_strs("addr") : Strings();
   std::string host;
@@ -68,13 +68,13 @@ int run() {
 
   for(uint32_t reactor=0; reactor < reactors; ++reactor) {
 
-	  std::shared_ptr<thrift::concurrency::ThreadManager> threadManager(
-		  thrift::concurrency::ThreadManager::newSimpleThreadManager(workers));
-	  threadManager->threadFactory(
+    std::shared_ptr<thrift::concurrency::ThreadManager> threadManager(
+      thrift::concurrency::ThreadManager::newSimpleThreadManager(workers));
+    threadManager->threadFactory(
       std::make_shared<thrift::concurrency::ThreadFactory>());
-  	threadManager->start();
+    threadManager->start();
 
-	  for(auto& endpoint : endpoints) {
+    for(auto& endpoint : endpoints) {
       bool is_plain = true; // if use_ssl && need ssl.. transportFactory.reset(..)
       std::shared_ptr<thrift::transport::TServerSocket> socket;
       if(reactor == 0) { 
@@ -96,10 +96,10 @@ int run() {
       */
       auto server = std::make_shared<thrift::server::TThreadPoolServer>(
         std::make_shared<Thrift::BrokerProcessorFactory>(app_ctx),
-		    socket,
-	      transportFactory,
-  	    protocol,
-	      threadManager
+        socket,
+        transportFactory,
+        protocol,
+        threadManager
       );
       servers.push_back(server);
       std::thread([server]{ server->serve(); }).detach();

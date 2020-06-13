@@ -17,9 +17,9 @@ namespace Condition = SWC::Condition;
 
 
 void test_encode_decode(const Specs::Scan& ss){
-	
-	size_t len = ss.encoded_length_internal();
-	
+  
+  size_t len = ss.encoded_length_internal();
+  
   uint8_t* base = new uint8_t[len];
   const uint8_t* mark1 = base;
   uint8_t* ptr = base;
@@ -31,13 +31,13 @@ void test_encode_decode(const Specs::Scan& ss){
     exit(1);    
   }
 
-	size_t remain = len;
-	const uint8_t* ptr1 = (const uint8_t*)base;
+  size_t remain = len;
+  const uint8_t* ptr1 = (const uint8_t*)base;
   Specs::Scan ss_decoded(&ptr1, &remain);
   if(remain > 0 || ptr1 != base+len) {
     std::cout << "\n Encode/Decode \n";
     std::cout << "ERROR, remain-len remain=" << remain 
-							<< " ptr~=" << ptr1-(base+len) << "\n";
+              << " ptr~=" << ptr1-(base+len) << "\n";
     exit(1);
   }
         
@@ -184,14 +184,14 @@ void test(int chk) {
     Specs::Scan ss_copy;
     ss_copy.copy(ss);
     if(!ss.equal(ss_copy)) {
-    	std::cout << "\nInit from\n";
+      std::cout << "\nInit from\n";
       std::cout << "!ss.equal(ss_copy): ERROR\n\n";
-    	std::cout << " old - " << ss.to_string() << "\n";
-    	std::cout << " new - " << ss_copy.to_string() << "\n";
+      std::cout << " old - " << ss.to_string() << "\n";
+      std::cout << " new - " << ss_copy.to_string() << "\n";
       exit(1);
     }
     if(&ss.columns[0]->intervals[0]->key_start 
-				== &ss_copy.columns[0]->intervals[0]->key_start) {
+        == &ss_copy.columns[0]->intervals[0]->key_start) {
       std::cout << "\ncopy key.data ptr equal: ERROR\n";
       exit(1);
     }
@@ -202,19 +202,19 @@ void test(int chk) {
     passed_ss2 = ss; // the same ptr instances
 
     if(!ss.equal(passed_ss2)) {
-    	std::cout << "\nAssign from\n";
-    	std::cout << " old - " << ss.to_string() << "\n";
-    	std::cout << " new - " << passed_ss2.to_string() << "\n";
+      std::cout << "\nAssign from\n";
+      std::cout << " old - " << ss.to_string() << "\n";
+      std::cout << " new - " << passed_ss2.to_string() << "\n";
       std::cout << "!ss.equal(passed_ss2): ERROR\n";
       exit(1);
     }
     if(&ss.columns[0]->intervals[0]->key_start
-				!= &passed_ss2.columns[0]->intervals[0]->key_start) {
+        != &passed_ss2.columns[0]->intervals[0]->key_start) {
       std::cout << "\nassign key.data ptr not equal: ERROR\n";
       exit(1);
     }
 
-		// sanity - no changes happened at 'equal'
+    // sanity - no changes happened at 'equal'
     if(!ss_copy.equal(passed_ss2)) {
       std::cout << "\n!ss_copy.equal(passed_ss2): ERROR\n";
       exit(1);
@@ -225,7 +225,7 @@ void test(int chk) {
     }
 
     //std::cout << "\n OK \n";
-		
+    
 
 
 
@@ -235,13 +235,13 @@ void test(int chk) {
     }
 
     std::cout << " chk=" << chk;
-		
+    
 }
 
 int main() {
-	for(size_t i=10000;i>0;--i)
-		test(i);
+  for(size_t i=10000;i>0;--i)
+    test(i);
 
-	std::cout << "\n OK \n";
-	exit(0);
+  std::cout << "\n OK \n";
+  exit(0);
 }

@@ -34,7 +34,7 @@ class RemoveReq : public Serializable {
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-			     size_t *remainp) override {
+                       size_t *remainp) override {
     (void)version;
     fname.clear();
     fname.append(Serialization::decode_vstr(bufp, remainp));

@@ -27,9 +27,9 @@ if(THRIFT_C_FOUND)
     ${GLIB_INCLUDE_PATHS}/../lib/glib-2.0/include/
   )
   ADD_TEST_TARGET(
-	  NAME      thrift_c_client_c
-  	SRCS      client.c
-	  TARGETS   swcdb_thrift_c 
+    NAME      thrift_c_client_c
+    SRCS      client.c
+    TARGETS   swcdb_thrift_c
   )
 endif()
 

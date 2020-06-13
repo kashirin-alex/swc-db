@@ -17,13 +17,13 @@ SET_DEPS(NAME "ZSTD"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libzstd.a S
 #INSTALL_LIBS(lib ${ZSTD_LIBRARIES_SHARED})
 
 SET_DEPS(
-	NAME "SSL" 
-	REQUIRED TRUE 
-	LIB_PATHS /usr/local/ssl/lib
-	INC_PATHS /usr/local/ssl/include
-	STATIC libssl.a libcrypto.a 
-	SHARED ssl crypto
-	INCLUDE openssl/ssl.h openssl/crypto.h
+  NAME      "SSL" 
+  REQUIRED  TRUE 
+  LIB_PATHS /usr/local/ssl/lib
+  INC_PATHS /usr/local/ssl/include
+  STATIC    libssl.a libcrypto.a 
+  SHARED    ssl crypto
+  INCLUDE   openssl/ssl.h openssl/crypto.h
 )
 #INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
 

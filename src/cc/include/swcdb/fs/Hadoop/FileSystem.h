@@ -95,7 +95,7 @@ class FileSystemHadoop final : public FileSystem {
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
   private:
-	hdfs::FileSystem*     m_filesystem;
+  hdfs::FileSystem*     m_filesystem;
   std::atomic<bool>     m_run;
   std::atomic<int32_t>  m_nxt_fd;
 };

@@ -223,7 +223,7 @@ int main() {
       std::cout << cell.to_string() << "\n\n";
       std::cout << (*it1)->to_string() << "\n\n";
       std::cout << (*it2)->to_string() << "\n\n";
-    	exit(1);
+      exit(1);
     }
 
     ++it1;

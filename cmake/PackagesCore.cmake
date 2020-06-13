@@ -22,15 +22,15 @@ if(BUILD_LINKING_CORE STREQUAL "STATIC")
 endif()
 
 
-	#SET(CMAKE_FIND_ROOT_PATH /usr/local /usr/local/glibc)
-	#SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
-	#SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-	#SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+  #SET(CMAKE_FIND_ROOT_PATH /usr/local /usr/local/glibc)
+  #SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
+  #SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  #SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-	# set(MATH_LIBRARIES m)
-	# set(THREAD_LIBRARIES ${thread_LIB_NAME} c)
-	#SET_DEPS(NAME "MATH" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC libm.a SHARED m INCLUDE math.h)
-	#SET_DEPS(NAME "THREAD" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC lib${thread_LIB_NAME}.a SHARED ${thread_LIB_NAME} INCLUDE ${thread_LIB_NAME}.h)
+  # set(MATH_LIBRARIES m)
+  # set(THREAD_LIBRARIES ${thread_LIB_NAME} c)
+  #SET_DEPS(NAME "MATH" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC libm.a SHARED m INCLUDE math.h)
+  #SET_DEPS(NAME "THREAD" REQUIRED TRUE LIB_PATHS "/usr/local/glibc/lib" INC_PATHS "/usr/local/glibc/include" STATIC lib${thread_LIB_NAME}.a SHARED ${thread_LIB_NAME} INCLUDE ${thread_LIB_NAME}.h)
 
 SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 
