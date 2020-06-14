@@ -71,10 +71,9 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(
-        Types::MngrRole::RANGERS, 0, endpoints);
+        Types::MngrRole::RANGERS, endpoints);
       if(endpoints.empty()) {
-        std::make_shared<MngrActive>(
-          Types::MngrRole::RANGERS, 0, shared_from_this())->run();
+        MngrActive::make(Types::MngrRole::RANGERS, shared_from_this())->run();
         return false;
       }
     }

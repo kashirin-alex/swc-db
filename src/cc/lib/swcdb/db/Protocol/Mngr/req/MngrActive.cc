@@ -13,8 +13,22 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 
-MngrActive::MngrActive(uint8_t role, cid_t cid, DispatchHandler::Ptr hdlr, 
-                       uint32_t timeout_ms)
+MngrActive::Ptr MngrActive::make(const cid_t& cid, 
+                                 const DispatchHandler::Ptr& hdlr,
+                                 uint32_t timeout_ms) {
+  return std::make_shared<MngrActive>(
+    Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
+}
+
+MngrActive::Ptr MngrActive::make(const uint8_t& role, 
+                                 const DispatchHandler::Ptr& hdlr,
+                                 uint32_t timeout_ms) {
+  return std::make_shared<MngrActive>(
+    role, DB::Schema::NO_CID, hdlr, timeout_ms);
+}
+
+MngrActive::MngrActive(const uint8_t& role, const cid_t& cid, 
+                       const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
                       : client::ConnQueue::ReqBase(false), 
                         role(role), cid(cid), 
                         hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),

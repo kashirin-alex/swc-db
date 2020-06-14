@@ -267,15 +267,16 @@ void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
   std::lock_guard lock(m_mutex);
 
   for(auto& group : *this) {
-    if(group->role & role &&
-       group->cid_begin <= cid 
-      && (!group->cid_end || group->cid_end >= cid)) {
-        hosts = group->get_hosts();
-        group_host.role = group->role;
-        group_host.cid_begin = group->cid_begin;
-        group_host.cid_end = group->cid_end;
-        break;
-      }
+    if(group->role & role && (
+        !(role & Types::MngrRole::COLUMNS) ||
+        (group->cid_begin <= cid && (!group->cid_end || group->cid_end >= cid))
+      )) {
+      hosts = group->get_hosts();
+      group_host.role = group->role;
+      group_host.cid_begin = group->cid_begin;
+      group_host.cid_end = group->cid_end;
+      break;
+    }
   }
 }
 
@@ -348,13 +349,24 @@ void Groups::remove(const EndPoints& endpoints) {
   }
 }
 
-void Groups::select(uint8_t role, cid_t cid, EndPoints& endpoints) {
+void Groups::select(const cid_t& cid, EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
     
   for(auto& host : m_active_g_host) {
-    if(host.role & role && 
-       (!cid || (host.cid_begin <= cid && 
-                (!host.cid_end || host.cid_end >= cid)))) {
+    if(host.role & Types::MngrRole::COLUMNS && 
+       host.cid_begin <= cid && 
+       (!host.cid_end || host.cid_end >= cid)) {
+      endpoints = host.endpoints;
+      return;
+    }
+  }
+}
+
+void Groups::select(const uint8_t& role, EndPoints& endpoints) {
+  std::lock_guard lock(m_mutex);
+    
+  for(auto& host : m_active_g_host) {
+    if(host.role & role) {
       endpoints = host.endpoints;
       return;
     }

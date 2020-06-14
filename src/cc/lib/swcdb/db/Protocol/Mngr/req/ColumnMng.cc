@@ -55,15 +55,14 @@ void ColumnMng::handle_no_conn() {
 }
 
 bool ColumnMng::run(uint32_t timeout) {
-  if(endpoints.empty()){
+  if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(
-      Types::MngrRole::SCHEMAS, 0, endpoints); // columns-get (can be any mngr)
-    if(endpoints.empty()){
-      std::make_shared<MngrActive>(
-        Types::MngrRole::SCHEMAS, 0, shared_from_this())->run();
+      Types::MngrRole::SCHEMAS, endpoints);
+    if(endpoints.empty()) {
+      MngrActive::make(Types::MngrRole::SCHEMAS, shared_from_this())->run();
       return false;
     }
-  } 
+  }
   Env::Clients::get()->mngr->get(endpoints)->put(req());
   return true;
 }

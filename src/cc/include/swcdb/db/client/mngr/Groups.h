@@ -94,7 +94,9 @@ class Groups final : private std::vector<Group::Ptr>,
 
   void remove(const EndPoints& endpoints);
 
-  void select(uint8_t role, cid_t cid, EndPoints& endpoints);
+  void select(const cid_t& cid, EndPoints& endpoints);
+
+  void select(const uint8_t& role, EndPoints& endpoints);
 
   private:
 

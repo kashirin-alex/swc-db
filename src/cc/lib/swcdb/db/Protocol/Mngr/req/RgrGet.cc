@@ -46,15 +46,13 @@ void RgrGet::handle_no_conn() {
 }
 
 bool RgrGet::run(uint32_t timeout) {
-  if(endpoints.empty()){
-    Env::Clients::get()->mngrs_groups->select(
-      Types::MngrRole::COLUMNS, cid, endpoints); 
-    if(endpoints.empty()){
-      std::make_shared<MngrActive>(
-        Types::MngrRole::COLUMNS, cid, shared_from_this())->run();
+  if(endpoints.empty()) {
+    Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+    if(endpoints.empty()) {
+      MngrActive::make(cid, shared_from_this())->run();
       return false;
     }
-  } 
+  }
   Env::Clients::get()->mngr->get(endpoints)->put(req());
   return true;
 }

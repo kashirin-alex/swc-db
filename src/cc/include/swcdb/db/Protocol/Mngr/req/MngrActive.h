@@ -17,12 +17,19 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 class MngrActive : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<MngrActive> Ptr;
 
   const uint8_t role;
   const cid_t   cid;
 
-  MngrActive(uint8_t role, cid_t cid, DispatchHandler::Ptr hdlr, 
-             uint32_t timeout_ms=60000);
+  static Ptr make(const cid_t& cid, const DispatchHandler::Ptr& hdlr,
+                  uint32_t timeout_ms=60000);
+
+  static Ptr make(const uint8_t& role, const DispatchHandler::Ptr& hdlr,
+                  uint32_t timeout_ms=60000);
+
+  MngrActive(const uint8_t& role, const cid_t& cid, 
+             const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms);
 
   virtual ~MngrActive();
 
