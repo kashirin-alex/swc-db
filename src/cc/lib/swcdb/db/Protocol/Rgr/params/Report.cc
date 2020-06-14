@@ -128,7 +128,7 @@ void ReportRsp::Column::display(std::ostream& out, bool pretty,
 
 
 
-ReportRsp::ReportRsp(int err) : err(err), rgr_id(0) { }
+ReportRsp::ReportRsp(int err) : err(err), rgrid(0) { }
 
 ReportRsp::~ReportRsp() {
   for(auto c : columns)
@@ -138,7 +138,7 @@ ReportRsp::~ReportRsp() {
 
 void ReportRsp::display(std::ostream& out, bool pretty, 
                         std::string offset) const {
-  out << offset << "Ranger: id("<< rgr_id << ")" 
+  out << offset << "Ranger: rgrid("<< rgrid << ")" 
       << " endpoints(";
   for(auto& endpoint : endpoints)
     out << endpoint << ", ";
@@ -156,7 +156,7 @@ uint8_t ReportRsp::encoding_version() const {
 size_t ReportRsp::encoded_length_internal() const {
   size_t sz = Serialization::encoded_length_vi32(err);
   if(!err) {
-    sz += Serialization::encoded_length_vi64(rgr_id);  
+    sz += Serialization::encoded_length_vi64(rgrid);  
 
     sz += Serialization::encoded_length_vi32(endpoints.size()); 
     for(auto& endpoint : endpoints)
@@ -172,7 +172,7 @@ size_t ReportRsp::encoded_length_internal() const {
 void ReportRsp::encode_internal(uint8_t **bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
-    Serialization::encode_vi64(bufp, rgr_id);
+    Serialization::encode_vi64(bufp, rgrid);
 
     Serialization::encode_vi32(bufp, endpoints.size());
     for(auto& endpoint : endpoints)
@@ -187,7 +187,7 @@ void ReportRsp::encode_internal(uint8_t **bufp) const {
 void ReportRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
                                 size_t *remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
-    rgr_id = Serialization::decode_vi64(bufp, remainp);
+    rgrid = Serialization::decode_vi64(bufp, remainp);
     
     size_t len = Serialization::decode_vi32(bufp, remainp);
     endpoints.clear();

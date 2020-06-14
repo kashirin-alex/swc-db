@@ -21,7 +21,8 @@ void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::ColumnMng req_params;
     req_params.decode(&ptr, &remain);
 
-    Env::Mngr::mngd_columns()->is_active(err, 1, true);
+    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
+      err = Error::MNGR_NOT_ACTIVE;
       
     if(err == Error::OK) {
       Env::Mngr::mngd_columns()->action({

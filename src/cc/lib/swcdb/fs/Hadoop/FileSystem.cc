@@ -105,7 +105,7 @@ bool FileSystemHadoop::initialize() {
     exit(EXIT_FAILURE);
   }
   auto stats = parser.ValidateResources();
-  for(auto s : stats) {
+  for(auto& s : stats) {
     std::cout << s.first << "=" << s.second.ToString() << std::endl;
     if(!s.second.ok())
       (EXIT_FAILURE);

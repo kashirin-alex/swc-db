@@ -31,11 +31,11 @@ class Range final {
   };
 
   const ColumnCfg*  cfg;
-  const int64_t     rid;
+  const rid_t       rid;
 
-  Range(const ColumnCfg* cfg, const int64_t rid)
+  Range(const ColumnCfg* cfg, const rid_t rid)
         : cfg(cfg), rid(rid), m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-          m_state(State::NOTSET), m_rgr_id(0), m_last_rgr(nullptr) { 
+          m_state(State::NOTSET), m_rgrid(0), m_last_rgr(nullptr) { 
   }
 
   void init(int &err) { }
@@ -62,10 +62,10 @@ class Range final {
     return m_state == State::NOTSET;
   }
 
-  void set_state(State new_state, uint64_t rgr_id) {
+  void set_state(State new_state, rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
     m_state = new_state;
-    m_rgr_id = rgr_id;
+    m_rgrid = rgrid;
   }
   
   void set_deleted() {
@@ -73,14 +73,14 @@ class Range final {
     m_state = State::DELETED;
   }
 
-  uint64_t get_rgr_id() {
+  rgrid_t get_rgr_id() {
     std::shared_lock lock(m_mutex);
-    return m_rgr_id;
+    return m_rgrid;
   }
 
-  void set_rgr_id(uint64_t rgr_id) {
+  void set_rgr_id(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
-    m_rgr_id = rgr_id;
+    m_rgrid = rgrid;
   }
 
   Files::RgrData::Ptr get_last_rgr(int &err) {
@@ -153,7 +153,7 @@ class Range final {
     s.append(" state=");
     s.append(std::to_string(m_state));
     s.append(" rgr=");
-    s.append(std::to_string(m_rgr_id));
+    s.append(std::to_string(m_rgrid));
     s.append("]");
     return s;
   }
@@ -162,7 +162,7 @@ class Range final {
   const std::string     m_path;
 
   std::shared_mutex     m_mutex;
-  uint64_t              m_rgr_id;
+  rgrid_t               m_rgrid;
   State                 m_state;
   Files::RgrData::Ptr   m_last_rgr;
 

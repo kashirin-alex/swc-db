@@ -37,7 +37,7 @@ void Rangers::clear_expired() {
   }
 }
 
-void Rangers::remove(const int64_t cid, const int64_t rid) {
+void Rangers::remove(const cid_t cid, const rid_t rid) {
   Mutex::scope lock(m_mutex);
 
   auto c = m_map.find(cid);
@@ -51,7 +51,7 @@ void Rangers::remove(const int64_t cid, const int64_t rid) {
     m_map.erase(c);
 }
 
-bool Rangers::get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
+bool Rangers::get(const cid_t cid, const rid_t rid, EndPoints& endpoints) {
   bool found = false;
 
   Mutex::scope lock(m_mutex);
@@ -68,7 +68,7 @@ bool Rangers::get(const int64_t cid, const int64_t rid, EndPoints& endpoints) {
   return found;
 }
 
-void Rangers::set(const int64_t cid, const int64_t rid, 
+void Rangers::set(const cid_t cid, const rid_t rid, 
                   const EndPoints& endpoints) {
   Mutex::scope lock(m_mutex);
   auto c = m_map.find(cid);

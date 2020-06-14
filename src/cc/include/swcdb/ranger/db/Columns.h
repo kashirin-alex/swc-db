@@ -19,7 +19,7 @@
 namespace SWC { namespace Ranger {
 
 
-class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
+class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   public:
 
@@ -35,7 +35,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   ~Columns() { }
 
   
-  Column::Ptr initialize(int &err, const int64_t cid, 
+  Column::Ptr initialize(int &err, const cid_t cid, 
                          const DB::Schema& schema) {
     Column::Ptr col = nullptr;
     if(RangerEnv::is_shuttingdown()) {
@@ -52,7 +52,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     return col;
   }
 
-  Column::Ptr get_column(int &err, const int64_t cid) {
+  Column::Ptr get_column(int &err, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);
     return it == end() ? nullptr : it->second;
@@ -69,7 +69,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     return nullptr;
   }
 
-  RangePtr get_range(int &err, const int64_t cid, const int64_t rid) {
+  RangePtr get_range(int &err, const cid_t cid, const rid_t rid) {
     Column::Ptr col = get_column(err, cid);
     if(!col) 
       return nullptr;
@@ -78,7 +78,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     return err ? nullptr : col->get_range(err, rid, false);
   }
  
-  void load_range(int &err, const int64_t cid, const int64_t rid, 
+  void load_range(int &err, const cid_t cid, const rid_t rid, 
                   const DB::Schema& schema, 
                   const ResponseCallback::Ptr& cb) {
     RangePtr range;
@@ -100,7 +100,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
       range->load(cb);
   }
 
-  void unload_range(int &err, const int64_t cid, const int64_t rid,
+  void unload_range(int &err, const cid_t cid, const rid_t rid,
                     const Callback::RangeUnloaded_t& cb) {
     Column::Ptr col = get_column(err, cid);
     if(col) {
@@ -111,7 +111,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
   }
 
   void unload_all(bool validation) {
-    std::vector<std::function<bool(int64_t)>> order = {
+    std::vector<std::function<bool(cid_t)>> order = {
       Types::MetaColumn::is_data,
       Types::MetaColumn::is_meta,
       Types::MetaColumn::is_master 
@@ -121,7 +121,7 @@ class Columns final : private std::unordered_map<int64_t, Column::Ptr> {
     Column::Ptr col;
     uint8_t meta;
     iterator it;
-    for(auto chk : order) {
+    for(auto& chk : order) {
       {
         Mutex::scope lock(m_mutex);
         for(it = begin(); it != end(); ++it) {

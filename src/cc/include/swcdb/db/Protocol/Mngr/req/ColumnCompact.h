@@ -20,7 +20,7 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::ColumnCompactRsp&)> Cb_t;
  
-  static void request(int64_t cid, const Cb_t cb, 
+  static void request(cid_t cid, const Cb_t cb, 
                       const uint32_t timeout = 10000);
 
   static void request(const Params::ColumnCompactReq params,
@@ -41,9 +41,9 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
   
   void clear_endpoints();
 
-  const Cb_t      cb;
-  const int64_t   cid;
-  EndPoints       endpoints;
+  const Cb_t   cb;
+  const cid_t  cid;
+  EndPoints    endpoints;
 };
 
 

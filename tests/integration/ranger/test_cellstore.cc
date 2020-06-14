@@ -48,15 +48,15 @@ void apply_key(const std::string& idn,
   }
 }
 
-void read_cs(int id, SWC::Ranger::RangePtr range, 
+void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
              int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key);
 
-size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
+size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   int err = SWC::Error::OK;
 
   SWC::Ranger::CellStore::Write cs_writer(
-    id, range->get_path_cs(id), 
+    csid, range->get_path_cs(csid), 
     range, range->cfg->cell_versions()
   );
   cs_writer.create(err);
@@ -82,7 +82,7 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
       //cell.set_revision(rev);
       cell.set_time_order_desc(false);
 
-      std::string idn = std::to_string(id);
+      std::string idn = std::to_string(csid);
       std::string n = std::to_string(i);
       std::string gn = std::to_string(g);
       apply_key(idn, n, gn, cell.key);
@@ -135,15 +135,15 @@ size_t write_cs(int id, SWC::Ranger::RangePtr range, int any) {
   std::cout << "cs-wrote:    " << cs_writer.to_string() << "\n";
   hdlr_err(err);
 
-  std::cout << "\n  OK-wrote cs-id=" << id << "\n\n";
+  std::cout << "\n  OK-wrote csid=" << csid << "\n\n";
 
   // CHECK SINGLE CS-READ
-  read_cs(id, range, expected_blocks, expected_key);
-  std::cout << "\n  OK-read  cs-id=" << id << "\n\n";
+  read_cs(csid, range, expected_blocks, expected_key);
+  std::cout << "\n  OK-read  csid=" << csid << "\n\n";
   return expected_blocks;
 }
 
-void read_cs(int id, SWC::Ranger::RangePtr range, 
+void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
              int expected_blocks, 
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
@@ -152,7 +152,7 @@ void read_cs(int id, SWC::Ranger::RangePtr range,
   SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
   blocks.cellstores.add(
-    SWC::Ranger::CellStore::Read::make(err, id, range, intval_r, true));
+    SWC::Ranger::CellStore::Read::make(err, csid, range, intval_r, true));
 
   hdlr_err(err);
 
@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
 
   SWC::RangerEnv::init();
   
-  auto cid = 11;
+  SWC::cid_t cid = 11;
   SWC::DB::Schema schema;
   schema.cid = cid;
   schema.col_name = "col-test-cs";
@@ -285,12 +285,12 @@ int main(int argc, char** argv) {
   );
 
   std::vector<std::thread*> threads;
-  size_t id = 0;
+  SWC::csid_t csid = 0;
   for(int n=1; n<=10; ++n) {
-    ++id;
+    ++csid;
     
     threads.push_back(new std::thread(
-      [&blocks, match_on_offset, &match_key, id] () {
+      [&blocks, match_on_offset, &match_key, csid] () {
 
       auto req = SWC::Ranger::ReqScanTest::make();
       req->spec.flags.max_versions = 2;
@@ -298,9 +298,9 @@ int main(int argc, char** argv) {
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;
       req->spec.flags.limit = 1;
-      req->cb = [req, id, match_key, &blocks, took=SWC::Time::now_ns()](int err){
+      req->cb = [req, csid, match_key, &blocks, took=SWC::Time::now_ns()](int err){
 
-        std::cout << " chk=" << id ;
+        std::cout << " chk-csid=" << csid ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
 
         if(err) {

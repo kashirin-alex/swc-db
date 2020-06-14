@@ -57,19 +57,34 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
   SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%d", t_ms);
 }
 
-bool MngrRole::is_active(size_t cid) {
-  auto host = active_mngr(cid, cid);
+bool MngrRole::is_active(cid_t cid) {
+  auto host = active_mngr(cid);
   return host && has_endpoint(host->endpoints, m_local_endpoints);
 }
 
-MngrStatus::Ptr MngrRole::active_mngr(size_t begin, size_t end) {
+bool MngrRole::is_active_role(uint8_t role) {
+  auto host = active_mngr_role(role);
+  return host && has_endpoint(host->endpoints, m_local_endpoints);
+}
+
+MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   std::shared_lock lock(m_mutex);
   for(auto& host : m_states) {
-    if(host->state == Types::MngrState::ACTIVE 
-      && host->col_begin <= begin 
-      && (!host->col_end || host->col_end >= end)) {
+    if(host->state == Types::MngrState::ACTIVE &&
+       host->role & Types::MngrRole::COLUMNS &&
+       host->cid_begin <= cid && 
+       (!host->cid_end || host->cid_end >= cid))
       return host;
-    }
+  }
+  return nullptr;
+}
+
+MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
+  std::shared_lock lock(m_mutex);
+  for(auto& host : m_states) {
+    if(host->state == Types::MngrState::ACTIVE && 
+       host->role & role)
+      return host;
   }
   return nullptr;
 }
@@ -113,8 +128,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       continue;
     }
 
-    MngrStatus::Ptr high_set = 
-      get_highest_state_host(host->col_begin, host->col_end);
+    MngrStatus::Ptr high_set = get_highest_state_host(host);
 
     if(high_set->state == Types::MngrState::ACTIVE) {
       if(host->state != host_set->state
@@ -146,20 +160,19 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
   }
     
   for(auto& host : states) {
-    if(!is_off(host->col_begin, host->col_end))
+    if(!is_group_off(host))
       continue;
     auto hosts_pr_group = 
         Env::Clients::get()->mngrs_groups->get_endpoints(
-        host->col_begin, host->col_end);
+        host->role, host->cid_begin, host->cid_end);
     for(auto& h : hosts_pr_group) {
       if(has_endpoint(h, host->endpoints) 
         || !has_endpoint(h, m_local_endpoints))
         continue;
 
       MngrStatus::Ptr l_host = get_host(m_local_endpoints);
-      MngrStatus::Ptr l_hight = get_highest_state_host(
-        l_host->col_begin, l_host->col_end);
-      if(l_hight->state < Types::MngrState::WANT) {
+      MngrStatus::Ptr l_high = get_highest_state_host(l_host);
+      if(l_high->state < Types::MngrState::WANT) {
         update_state(m_local_endpoints, Types::MngrState::WANT);
         new_recs = true;
       }
@@ -304,7 +317,8 @@ void MngrRole::_apply_cfg() {
         continue;
 
       m_states.emplace_back(
-        new MngrStatus(g->col_begin, g->col_end, endpoints, nullptr, pr));
+        new MngrStatus(
+          g->role, g->cid_begin, g->cid_end, endpoints, nullptr, pr));
     }
   }
   for(auto it=m_states.begin(); it<m_states.end(); ) {
@@ -459,26 +473,25 @@ MngrStatus::Ptr MngrRole::get_host(const EndPoints& endpoints) {
   return nullptr;
 }
 
-MngrStatus::Ptr MngrRole::get_highest_state_host(uint64_t begin, uint64_t end) {
+MngrStatus::Ptr MngrRole::get_highest_state_host(const MngrStatus::Ptr& other) {
   std::shared_lock lock(m_mutex);
 
   MngrStatus::Ptr h = nullptr;
   for(auto& host : m_states) {
-    if(host->col_begin == begin && host->col_end == end 
-      && (!h || h->state < host->state)) {
+    if(host->eq_grouping(*other.get()) && 
+       (!h || h->state < host->state))
       h = host;
-    }
   }
   return h;
 }
   
-bool MngrRole::is_off(uint64_t begin, uint64_t end) {
+bool MngrRole::is_group_off(const MngrStatus::Ptr& other) {
   std::shared_lock lock(m_mutex);
 
   bool offline = true;
   for(auto& host : m_states) {
-    if(host->col_begin == begin 
-      && host->col_end == end && host->state != Types::MngrState::OFF)
+    if(host->eq_grouping(*other.get()) && 
+       host->state != Types::MngrState::OFF)
       offline = false;
   }
   return offline;
@@ -491,23 +504,23 @@ void MngrRole::set_active_columns() {
     groups = m_local_groups;
   }
 
-  std::vector<int64_t> active;
+  std::vector<cid_t> active;
   for(auto& group : groups) {
-    int64_t cid =   !group->col_begin ?  1  : group->col_begin;
-    int64_t cid_end = !group->col_end ? cid : group->col_end;
+    cid_t cid =   !group->cid_begin ?  1  : group->cid_begin;
+    cid_t cid_end = !group->cid_end ? cid : group->cid_end;
 
-    if(!group->col_end && is_active(cid))
-      active.push_back(group->col_end);
+    if(!group->cid_end && is_active(cid))
+      active.push_back(group->cid_end);
       
     for(;cid <= cid_end; ++cid) { 
       auto c_it = std::find_if(active.begin(), active.end(),  
-                              [cid](const int64_t& cid_set) 
+                              [cid](const cid_t& cid_set) 
                               {return cid_set == cid;});
       if(c_it == active.end() && is_active(cid))
         active.push_back(cid);
     }
   }
-  
+
   Env::Mngr::mngd_columns()->active(active);
 }
   

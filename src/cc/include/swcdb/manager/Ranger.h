@@ -24,11 +24,11 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   };
   typedef std::shared_ptr<Ranger> Ptr;
 
-  Ranger(): id(0), state(State::NONE), 
+  Ranger(): rgrid(0), state(State::NONE), 
             failures(0), total_ranges(0) {}
                        
-  Ranger(uint64_t id, const EndPoints& endpoints)
-        : id(id), state(State::NONE), 
+  Ranger(rgrid_t rgrid, const EndPoints& endpoints)
+        : rgrid(rgrid), state(State::NONE), 
           failures(0), total_ranges(0),
           Protocol::Common::Params::HostEndPoints(endpoints) {
   }
@@ -36,8 +36,8 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   virtual ~Ranger(){}
 
   std::string to_string(){
-    std::string s("[id=");
-    s.append(std::to_string(id));
+    std::string s("[rgrid=");
+    s.append(std::to_string(rgrid));
     s.append(", state=");
     s.append(std::to_string(state));
     s.append(", failures=");
@@ -56,20 +56,20 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   size_t encoded_length_internal() const {
     size_t len = 1
-      + Serialization::encoded_length_vi64(id)
+      + Serialization::encoded_length_vi64(rgrid)
       + Protocol::Common::Params::HostEndPoints::encoded_length_internal();
     return len;
   }
 
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i8(bufp, (uint8_t)state);
-    Serialization::encode_vi64(bufp, id);
+    Serialization::encode_vi64(bufp, rgrid);
     Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp){
     state = (State)Serialization::decode_i8(bufp, remainp);
-    id = Serialization::decode_vi64(bufp, remainp);
+    rgrid = Serialization::decode_vi64(bufp, remainp);
     Protocol::Common::Params::HostEndPoints::decode_internal(
       version, bufp, remainp);
   }
@@ -98,7 +98,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     return true;
   }
 
-  uint64_t   id;
+  rgrid_t    rgrid;
   State      state;
 
   std::atomic<int32_t>  failures;

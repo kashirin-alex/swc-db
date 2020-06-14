@@ -46,16 +46,16 @@ namespace SWC {
   void Properties::reload(const std::string& fname, 
                           const Config::ParserConfig& filedesc,
                           const Config::ParserConfig& cmddesc) {
-	  try {
+    try {
       load(fname, filedesc, cmddesc, true);
 
-	  } catch (std::exception &e) {
-		  SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: %s", 
+    } catch (std::exception &e) {
+      SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: %s", 
                fname.c_str(), e.what());
-	  } catch (...) {
-		  SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: err(UNKNOWN)",
+    } catch (...) {
+      SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: err(UNKNOWN)",
                fname.c_str());
-	  }
+    }
   }
 
   void Properties::alias(const std::string& primary, 

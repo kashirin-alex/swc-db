@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class ColumnCompact : public client::ConnQueue::ReqBase {
   public:
 
-  ColumnCompact(int64_t cid);
+  ColumnCompact(cid_t cid);
   
   virtual ~ColumnCompact();
   

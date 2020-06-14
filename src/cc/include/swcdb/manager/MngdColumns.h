@@ -21,10 +21,10 @@ class MngdColumns final {
   struct ColumnFunction final {
     ColumnFunction() { }
     ColumnFunction(Protocol::Mngr::Params::ColumnMng::Function func, 
-                   int64_t cid) :  func(func), cid(cid) { 
+                   cid_t cid) :  func(func), cid(cid) { 
     }
     Protocol::Mngr::Params::ColumnMng::Function func;
-    int64_t cid;
+    cid_t cid;
   };
 
 
@@ -38,9 +38,9 @@ class MngdColumns final {
 
   bool is_root_mngr();
 
-  void active(const std::vector<int64_t>& cols);
+  void active(const std::vector<cid_t>& cols);
 
-  void is_active(int& err, int64_t cid, bool for_schema=false);
+  void is_active(int& err, cid_t cid, bool for_schema=false);
 
   bool has_active();
 
@@ -51,19 +51,19 @@ class MngdColumns final {
   void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr schema, int err, bool initial=false);
 
-  void load_pending(int64_t cid);
+  void load_pending(cid_t cid);
 
   void update(Protocol::Mngr::Params::ColumnMng::Function func,
               DB::Schema::Ptr schema, int err=Error::OK);
 
-  void remove(int &err, int64_t cid, int64_t rgr_id);
+  void remove(int &err, cid_t cid, rgrid_t rgrid);
 
   std::string to_string();
 
 
   private:
 
-  bool manage(int64_t cid);
+  bool manage(cid_t cid);
 
   void check_assignment();
 
@@ -74,16 +74,16 @@ class MngdColumns final {
 
   void columns_load_chk_ack();
 
-  bool load_pending(int64_t cid, ColumnFunction &pending);
+  bool load_pending(cid_t cid, ColumnFunction &pending);
 
 
-  int64_t get_next_cid();
+  cid_t get_next_cid();
 
   void create(int &err, DB::Schema::Ptr &schema);
   
   void update(int &err, DB::Schema::Ptr &schema, DB::Schema::Ptr old);
 
-  void remove(int &err, int64_t cid);
+  void remove(int &err, cid_t cid);
 
   bool update(DB::Schema::Ptr schema);
 
@@ -97,7 +97,7 @@ class MngdColumns final {
   std::atomic<bool>             m_run; 
   std::atomic<bool>             m_root_mngr;
   std::atomic<bool>             m_columns_set;
-  std::vector<int64_t>          m_cols_active;
+  std::vector<cid_t>            m_cols_active;
 
   std::mutex                    m_mutex_columns;
   std::queue<ColumnActionReq>   m_actions;

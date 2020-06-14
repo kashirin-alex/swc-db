@@ -8,6 +8,7 @@
 #include <mutex>
 #include <unordered_map>
 
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/core/comm/Resolver.h"
 
@@ -24,11 +25,11 @@ class Rangers  {
   
   void clear_expired();
 
-  void remove(const int64_t cid, const int64_t rid);
+  void remove(const cid_t cid, const rid_t rid);
 
-  bool get(const int64_t cid, const int64_t rid, EndPoints& endpoints);
+  bool get(const cid_t cid, const rid_t rid, EndPoints& endpoints);
 
-  void set(const int64_t cid, const int64_t rid, const EndPoints& endpoints);
+  void set(const cid_t cid, const rid_t rid, const EndPoints& endpoints);
 
   private:
   struct Range final {
@@ -38,10 +39,10 @@ class Rangers  {
           : ts(ts), endpoints(endpoints) {
     }
   };
-  typedef std::unordered_map<int64_t, Range>  Ranges;
-  Mutex                                       m_mutex;
-  std::unordered_map<int64_t, Ranges>         m_map;
-  Property::V_GINT32::Ptr                     m_expiry_ms;
+  typedef std::unordered_map<rid_t, Range>   Ranges;
+  Mutex                                      m_mutex;
+  std::unordered_map<cid_t, Ranges>          m_map;
+  Property::V_GINT32::Ptr                    m_expiry_ms;
   
 };
 

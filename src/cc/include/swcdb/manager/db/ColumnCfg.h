@@ -13,7 +13,7 @@ namespace SWC { namespace Manager {
 class ColumnCfg final {
   
   public:
-  const int64_t       cid;
+  const cid_t         cid;
   const Types::KeySeq key_seq;
 
   ColumnCfg(DB::Schema::Ptr schema) 

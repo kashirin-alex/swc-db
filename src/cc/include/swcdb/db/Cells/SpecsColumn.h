@@ -19,9 +19,9 @@ class Column final : public Serializable {
   typedef std::vector<Interval::Ptr> Intervals;
   typedef std::shared_ptr<Column> Ptr;
   
-  static Ptr make_ptr(int64_t cid=0, uint32_t reserve=0);
+  static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0);
 
-  static Ptr make_ptr(int64_t cid, const Intervals& intervals);
+  static Ptr make_ptr(cid_t cid, const Intervals& intervals);
 
   static Ptr make_ptr(const uint8_t **bufp, size_t *remainp);
 
@@ -29,9 +29,9 @@ class Column final : public Serializable {
 
   static Ptr make_ptr(Ptr other);
 
-  explicit Column(int64_t cid=0, uint32_t reserve=0);
+  explicit Column(cid_t cid=0, uint32_t reserve=0);
 
-  explicit Column(int64_t cid, const Intervals& intervals);
+  explicit Column(cid_t cid, const Intervals& intervals);
 
   explicit Column(const uint8_t **bufp, size_t *remainp);
 
@@ -52,15 +52,15 @@ class Column final : public Serializable {
   void encode_internal(uint8_t **bufp) const;
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-	                		size_t *remainp);
+                       size_t *remainp);
   
   std::string to_string();
 
   void display(std::ostream& out, bool pretty=false, 
                std::string offset = "") const;
   
-  int64_t    cid;
-  Intervals  intervals;
+  cid_t     cid;
+  Intervals intervals;
 };
 
 }}}

@@ -7,6 +7,7 @@
 #define swc_db_protocol_mngr_params_ColumnCompact_h
 
 
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/core/Serializable.h"
 
 
@@ -16,11 +17,11 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class ColumnCompactReq : public Serializable {
   public:
 
-  ColumnCompactReq(int64_t cid=0);
+  ColumnCompactReq(cid_t cid=0);
 
   virtual ~ColumnCompactReq();
   
-  int64_t cid;
+  cid_t cid;
   
   std::string to_string() const;
 

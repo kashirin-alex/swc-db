@@ -7,8 +7,7 @@
 #define swcdb_db_cells_SpecsInterval_h
 
 
-#include <memory>
-
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Cells/SpecsKey.h"
 #include "swcdb/db/Cells/SpecsTimestamp.h"

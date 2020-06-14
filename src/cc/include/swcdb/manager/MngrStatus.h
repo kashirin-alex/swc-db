@@ -18,20 +18,26 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
 
   MngrStatus() {}
 
-  MngrStatus(uint64_t  begin, uint64_t  end,
+  MngrStatus(uint8_t role, cid_t begin, cid_t end,
              const EndPoints& points, 
              ConnHandlerPtr c, uint32_t pr)
-             : col_begin(begin), col_end(end), 
+             : role(role), cid_begin(begin), cid_end(end), 
                Protocol::Common::Params::HostEndPoints(points), 
                conn(c), priority(pr), state(Types::MngrState::NOTSET),
                failures(0) { }
   
   virtual ~MngrStatus(){ }
 
+  bool eq_grouping(const MngrStatus& other) const {
+    return role == other.role && 
+           cid_begin == other.cid_begin &&
+           cid_end == other.cid_end;
+  }
+
   size_t encoded_length_internal() const {
-    size_t len = 5 
-               + Serialization::encoded_length_vi64(col_begin)
-               + Serialization::encoded_length_vi64(col_end)
+    size_t len = 6 
+               + Serialization::encoded_length_vi64(cid_begin)
+               + Serialization::encoded_length_vi64(cid_end)
                + Protocol::Common::Params::HostEndPoints::encoded_length_internal();
     return len;
   }
@@ -39,16 +45,18 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_i32(bufp, priority.load());
     Serialization::encode_i8(bufp, (uint8_t)state.load());
-    Serialization::encode_vi64(bufp, col_begin);
-    Serialization::encode_vi64(bufp, col_end);
+    Serialization::encode_i8(bufp, role);
+    Serialization::encode_vi64(bufp, cid_begin);
+    Serialization::encode_vi64(bufp, cid_end);
     Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
   }
 
   void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
     priority.store(Serialization::decode_i32(bufp, remainp));
     state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
-    col_begin = Serialization::decode_vi64(bufp, remainp);
-    col_end = Serialization::decode_vi64(bufp, remainp);
+    role = Serialization::decode_i8(bufp, remainp);
+    cid_begin = Serialization::decode_vi64(bufp, remainp);
+    cid_end = Serialization::decode_vi64(bufp, remainp);
 
     Protocol::Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
   }
@@ -60,12 +68,15 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     s.append(std::to_string(priority));
 
     s.append(" state=");
-    s.append(std::to_string((uint8_t)state.load()));
+    s.append(std::to_string((int)state.load()));
 
-    s.append(" col(begin=");
-    s.append(std::to_string(col_begin));
-    s.append(" end=");
-    s.append(std::to_string(col_end));
+    s.append(" role=");
+    s.append(Types::MngrRole::to_string(role));
+
+    s.append(" cid=");
+    s.append(std::to_string(cid_begin));
+    s.append("-");
+    s.append(std::to_string(cid_end));
 
     s.append(" ");
     s.append(Protocol::Common::Params::HostEndPoints::to_string());
@@ -74,8 +85,9 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
 
   std::atomic<uint32_t>           priority;
   std::atomic<Types::MngrState>   state;
-  uint64_t                        col_begin;
-  uint64_t                        col_end;
+  uint8_t                         role;
+  cid_t                           cid_begin;
+  cid_t                           cid_end;
 
   ConnHandlerPtr                  conn; // mngr-inchain
   int                             failures;

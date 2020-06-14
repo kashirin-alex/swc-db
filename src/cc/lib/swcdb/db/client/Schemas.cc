@@ -13,7 +13,7 @@ Schemas::Schemas(const Property::V_GINT32::Ptr expiry_ms)
 
 Schemas::~Schemas() { }
   
-void Schemas::remove(int64_t cid){    
+void Schemas::remove(cid_t cid){    
   Mutex::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
@@ -35,7 +35,7 @@ void Schemas::remove(const std::string& name){
   m_schemas->remove(schema->cid);
 }
 
-DB::Schema::Ptr Schemas::get(int& err, int64_t cid){
+DB::Schema::Ptr Schemas::get(int& err, cid_t cid){
   Mutex::scope lock(m_mutex);
 
   DB::Schema::Ptr schema;
@@ -68,7 +68,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name){
   return schema;
 }
 
-void Schemas::request(int& err, int64_t cid) {
+void Schemas::request(int& err, cid_t cid) {
   std::promise<int> res;
 
   Protocol::Mngr::Req::ColumnGet::schema(

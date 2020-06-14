@@ -9,6 +9,7 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
+#include "swcdb/db/Types/Identifiers.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
@@ -18,12 +19,12 @@ class RangeQueryUpdateReq : public Serializable {
 
   RangeQueryUpdateReq();
 
-  RangeQueryUpdateReq(int64_t cid, int64_t rid);
+  RangeQueryUpdateReq(cid_t cid, rid_t rid);
 
   virtual ~RangeQueryUpdateReq();
 
-  int64_t           cid;
-  int64_t           rid;
+  cid_t           cid;
+  rid_t           rid;
   
   std::string to_string() const;
 

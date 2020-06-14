@@ -5,14 +5,20 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 
 
+
+add_test(
+  NAME    test-swcdb_cluster-deploy
+  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster deploy
+)
+
 add_test(
   NAME    test-swcdb_cluster-start
-  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster --config start
+  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster start
 )
 
 add_test(
   NAME    test-swcdb_cluster-stop
-  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster --config stop
+  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster stop
 )
 
 

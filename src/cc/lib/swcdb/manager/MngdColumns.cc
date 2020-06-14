@@ -29,7 +29,7 @@ bool MngdColumns::is_root_mngr() {
   return m_root_mngr;
 }
 
-void MngdColumns::active(const std::vector<int64_t>& cols) {
+void MngdColumns::active(const std::vector<cid_t>& cols) {
   if(!m_run)
     return;
   {
@@ -57,7 +57,7 @@ void MngdColumns::active(const std::vector<int64_t>& cols) {
   return;
 }
 
-void MngdColumns::is_active(int& err, int64_t cid, bool for_schema) {
+void MngdColumns::is_active(int& err, cid_t cid, bool for_schema) {
   if(!Env::Mngr::role()->is_active(cid)) {
     err = Error::MNGR_NOT_ACTIVE;
     return;
@@ -170,15 +170,15 @@ void MngdColumns::update_status(
   }
 }
 
-void MngdColumns::load_pending(int64_t cid) {
+void MngdColumns::load_pending(cid_t cid) {
   ColumnFunction pending;
   while(load_pending(cid, pending))
     update(pending.func, Env::Mngr::schemas()->get(pending.cid));
 }
 
-void MngdColumns::remove(int &err, int64_t cid, int64_t rgr_id) {
+void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
   Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
-  if(col == nullptr || col->finalize_remove(err, rgr_id)) {
+  if(col == nullptr || col->finalize_remove(err, rgrid)) {
     Env::Mngr::columns()->remove(err, cid);
     DB::Schema::Ptr schema = Env::Mngr::schemas()->get(cid);
     if(schema != nullptr)
@@ -196,7 +196,7 @@ std::string MngdColumns::to_string() {
   return s;
 }
 
-bool MngdColumns::manage(int64_t cid) {
+bool MngdColumns::manage(cid_t cid) {
   std::shared_lock lock(m_mutex);
 
   if(m_cols_active.empty()) 
@@ -207,7 +207,7 @@ bool MngdColumns::manage(int64_t cid) {
     return true;
 
   return std::find_if(m_cols_active.begin(), m_cols_active.end(),  
-                      [cid](const int64_t& cid_set) 
+                      [cid](const cid_t& cid_set) 
                       {return cid_set == cid;}) != m_cols_active.end();
 }
 
@@ -224,7 +224,7 @@ bool MngdColumns::initialize() {
       return false; 
     }
   }
-  m_root_mngr = manage(1);
+  m_root_mngr = Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS);
   if(!m_root_mngr || m_columns_set)
     return true;
 
@@ -241,7 +241,7 @@ bool MngdColumns::initialize() {
       err = Error::OK;
     }
     if(entries.empty()) { // initialize sys-columns
-      for(int cid=1; cid <= Files::Schema::SYS_CID_END; ++cid) {
+      for(cid_t cid=1; cid <= Files::Schema::SYS_CID_END; ++cid) {
         Column::create(err, cid);
         entries.push_back(cid);
       }
@@ -265,7 +265,7 @@ bool MngdColumns::initialize() {
          replicas=cfg_schema_replication->get()]() { 
           DB::Schema::Ptr schema;
           int err;
-          for(auto cid : entries) {
+          for(cid_t cid : entries) {
             schema = Files::Schema::load(err = Error::OK, cid, replicas);
             if(!err)
               Env::Mngr::schemas()->add(err, schema);
@@ -310,7 +310,7 @@ void MngdColumns::columns_load_chk_ack() {
   }
 }
 
-bool MngdColumns::load_pending(int64_t cid, ColumnFunction &pending) {
+bool MngdColumns::load_pending(cid_t cid, ColumnFunction &pending) {
   std::lock_guard lock(m_mutex_columns);
 
   auto it = std::find_if(m_cid_pending_load.begin(), 
@@ -324,16 +324,16 @@ bool MngdColumns::load_pending(int64_t cid, ColumnFunction &pending) {
   return true;
 }
 
-int64_t MngdColumns::get_next_cid() {
-  int64_t cid = Files::Schema::SYS_CID_END;
-  while(Env::Mngr::schemas()->get(++cid) != nullptr);
+cid_t MngdColumns::get_next_cid() {
+  cid_t cid = Files::Schema::SYS_CID_END;
+  while(++cid && Env::Mngr::schemas()->get(cid) != nullptr);
   // if schema does exist on fs (? sanity-check) 
-  return cid;
+  return cid; // err !cid
 }
 
 void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
-  int64_t cid = get_next_cid();
-  if(cid <= 0) {
+  cid_t cid = get_next_cid();
+  if(!cid) {
     err = Error::COLUMN_REACHED_ID_LIMIT;
     return;
   } 
@@ -406,7 +406,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr &schema,
   }
 }
 
-void MngdColumns::remove(int &err, int64_t cid) {
+void MngdColumns::remove(int &err, cid_t cid) {
   Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
   if(col == nullptr) {
     remove(err, cid, 0);
@@ -416,14 +416,14 @@ void MngdColumns::remove(int &err, int64_t cid) {
     return;
   SWC_LOGF(LOG_DEBUG, "DELETING cid=%d", cid);
     
-  std::vector<uint64_t> rgr_ids;
-  col->assigned(rgr_ids);
-  if(rgr_ids.empty()) {
+  std::vector<rgrid_t> rgrids;
+  col->assigned(rgrids);
+  if(rgrids.empty()) {
     remove(err, cid, 0);
     return;
   }
 
-  Env::Mngr::rangers()->column_delete(cid, rgr_ids);
+  Env::Mngr::rangers()->column_delete(cid, rgrids);
 }
 
 bool MngdColumns::update(DB::Schema::Ptr schema) {

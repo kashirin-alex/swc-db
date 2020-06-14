@@ -44,13 +44,13 @@ class FileWriter {
   }
 
   void finalize() {
-    for(auto s : schemas)
+    for(auto& s : schemas)
       write(s.second->col_type);
     close();
   }
 
   void write(client::Query::Select::Result::Ptr result) {
-    for(auto cid : result->get_cids()) {
+    for(cid_t cid : result->get_cids()) {
       schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
       if(err)
         break;
@@ -58,7 +58,7 @@ class FileWriter {
 
     Types::Column col_type;
     do {
-      for(auto cid : result->get_cids()) {
+      for(cid_t cid : result->get_cids()) {
         col_type = schemas[cid]->col_type;
 
         cells.free();
@@ -237,7 +237,7 @@ class FileReader {
   public:
   
   int             err = Error::OK;
-  int64_t         cid = DB::Schema::NO_CID;
+  cid_t           cid = DB::Schema::NO_CID;
   std::string     base_path;
   std::string     message;
   DB::Schema::Ptr schema;

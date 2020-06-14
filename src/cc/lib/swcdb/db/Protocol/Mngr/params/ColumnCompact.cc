@@ -10,7 +10,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-ColumnCompactReq::ColumnCompactReq(int64_t cid) : cid(cid) {}
+ColumnCompactReq::ColumnCompactReq(cid_t cid) : cid(cid) {}
 
 ColumnCompactReq::~ColumnCompactReq() { }
 

@@ -7,6 +7,7 @@
 #define swc_db_protocol_mngr_params_RgrGet_h
 
 
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 #include "swcdb/db/Cells/CellKey.h"
 
@@ -17,12 +18,12 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class RgrGetReq : public Serializable {
   public:
 
-  RgrGetReq(int64_t cid=0, int64_t rid=0, bool next_range=false);
+  RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false);
 
   virtual ~RgrGetReq();
   
-  int64_t        cid;
-  int64_t        rid;
+  cid_t          cid;
+  rid_t          rid;
   DB::Cell::Key  range_begin, range_end;
   bool           next_range;
   
@@ -46,13 +47,13 @@ class RgrGetReq : public Serializable {
 class RgrGetRsp : public Common::Params::HostEndPoints {
   public:
 
-  RgrGetRsp(int64_t cid=0, int64_t rid=0);
+  RgrGetRsp(cid_t cid=0, rid_t rid=0);
 
   virtual ~RgrGetRsp();
 
   int             err;         
-  int64_t         cid; 
-  int64_t         rid; 
+  cid_t           cid; 
+  rid_t           rid; 
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 

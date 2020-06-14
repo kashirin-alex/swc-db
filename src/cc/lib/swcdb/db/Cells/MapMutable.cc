@@ -9,23 +9,23 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-ColCells::Ptr ColCells::make(const int64_t cid, Types::KeySeq seq, 
+ColCells::Ptr ColCells::make(const cid_t cid, Types::KeySeq seq, 
                              uint32_t versions, uint32_t ttl, 
                              Types::Column type) {
   return std::make_shared<ColCells>(cid, seq, versions, ttl, type);
 }
 
-ColCells::Ptr ColCells::make(const int64_t cid, Mutable& cells) {
+ColCells::Ptr ColCells::make(const cid_t cid, Mutable& cells) {
   return std::make_shared<ColCells>(cid, cells);
 }
 
-ColCells::ColCells(const int64_t cid, Types::KeySeq seq, 
+ColCells::ColCells(const cid_t cid, Types::KeySeq seq, 
                    uint32_t versions, uint32_t ttl, 
                    Types::Column type)
                   : cid(cid), m_cells(seq, versions, ttl*1000000000, type) { 
 }
 
-ColCells::ColCells(const int64_t cid, Mutable& cells)
+ColCells::ColCells(const cid_t cid, Mutable& cells)
                   : cid(cid), m_cells(cells) { 
 }
 
@@ -124,7 +124,7 @@ bool MapMutable::create(const Schema::Ptr& schema) {
     schema->col_type);
 }
 
-bool MapMutable::create(const int64_t cid, Types::KeySeq seq, 
+bool MapMutable::create(const cid_t cid, Types::KeySeq seq, 
                         uint32_t versions, uint32_t ttl, Types::Column type) {
   Mutex::scope lock(m_mutex);
   
@@ -134,18 +134,18 @@ bool MapMutable::create(const int64_t cid, Types::KeySeq seq,
   return m_map.emplace(cid, ColCells::make(cid, seq, versions, ttl, type)).second;
 }
 
-bool MapMutable::create(const int64_t cid, Mutable& cells) {
+bool MapMutable::create(const cid_t cid, Mutable& cells) {
   Mutex::scope lock(m_mutex);
   return m_map.emplace(cid, ColCells::make(cid, cells)).second;
 }
 
-bool MapMutable::exists(const int64_t cid) {
+bool MapMutable::exists(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
   return m_map.find(cid) != m_map.end();
 }
 
-void MapMutable::add(const int64_t cid, const Cell& cell) {
+void MapMutable::add(const cid_t cid, const Cell& cell) {
   Mutex::scope lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -166,7 +166,7 @@ ColCells::Ptr MapMutable::get_idx(size_t offset) {
   return nullptr;
 }
 
-ColCells::Ptr MapMutable::get_col(const int64_t cid) {
+ColCells::Ptr MapMutable::get_col(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -185,7 +185,7 @@ void MapMutable::pop(ColCells::Ptr& col) {
   }
 }
 
-void MapMutable::pop(const int64_t cid, ColCells::Ptr& col) {
+void MapMutable::pop(const cid_t cid, ColCells::Ptr& col) {
   Mutex::scope lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -197,7 +197,7 @@ void MapMutable::pop(const int64_t cid, ColCells::Ptr& col) {
   }
 }
 
-void MapMutable::remove(const int64_t cid) {
+void MapMutable::remove(const cid_t cid) {
   Mutex::scope lock(m_mutex);
   auto it = m_map.find(cid);
   if(it != m_map.end())
@@ -213,7 +213,7 @@ size_t MapMutable::size() {
   return total;
 }
 
-size_t MapMutable::size(const int64_t cid) {
+size_t MapMutable::size(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -231,7 +231,7 @@ size_t MapMutable::size_bytes() {
   return total;
 }
 
-size_t MapMutable::size_bytes(const int64_t cid) {
+size_t MapMutable::size_bytes(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
   auto it = m_map.find(cid);

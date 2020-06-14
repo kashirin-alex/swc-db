@@ -10,11 +10,11 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Column::Ptr Column::make_ptr(int64_t cid, uint32_t reserve){
+Column::Ptr Column::make_ptr(cid_t cid, uint32_t reserve){
   return std::make_shared<Column>(cid, reserve);
 }
 
-Column::Ptr Column::make_ptr(int64_t cid, const Intervals& intervals){
+Column::Ptr Column::make_ptr(cid_t cid, const Intervals& intervals){
   return std::make_shared<Column>(cid, intervals);
 }
 
@@ -30,12 +30,12 @@ Column::Ptr Column::make_ptr(Column::Ptr other){
   return std::make_shared<Column>(*other.get());
 }
 
-Column::Column(int64_t cid, uint32_t reserve)
+Column::Column(cid_t cid, uint32_t reserve)
                 : cid(cid), intervals(0) {
   intervals.reserve(reserve);
 }
 
-Column::Column(int64_t cid, const Intervals& intervals)
+Column::Column(cid_t cid, const Intervals& intervals)
                 : cid(cid), intervals(intervals) {}
 
 Column::Column(const uint8_t **bufp, size_t *remainp) {
@@ -102,7 +102,7 @@ void Column::encode_internal(uint8_t **bufp) const {
 }
 
 void Column::decode_internal(uint8_t version, const uint8_t **bufp,
-	                		       size_t *remainp) {
+                             size_t *remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();

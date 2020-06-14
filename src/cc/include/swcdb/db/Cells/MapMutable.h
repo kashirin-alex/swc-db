@@ -19,18 +19,18 @@ class ColCells final {
 
   typedef std::shared_ptr<ColCells> Ptr;
 
-  const int64_t cid;
+  const cid_t cid;
 
-  static Ptr make(const int64_t cid, Types::KeySeq seq, 
+  static Ptr make(const cid_t cid, Types::KeySeq seq, 
                   uint32_t versions, uint32_t ttl, Types::Column type);
 
-  static Ptr make(const int64_t cid, Mutable& cells);
+  static Ptr make(const cid_t cid, Mutable& cells);
 
 
-  ColCells(const int64_t cid, Types::KeySeq seq, 
+  ColCells(const cid_t cid, Types::KeySeq seq, 
            uint32_t versions, uint32_t ttl, Types::Column type);
 
-  ColCells(const int64_t cid, Mutable& cells);
+  ColCells(const cid_t cid, Mutable& cells);
 
   ColCells(const ColCells&) = delete;
 
@@ -75,8 +75,8 @@ class ColCells final {
 class MapMutable final {
   public:
   
-  typedef std::shared_ptr<MapMutable>                 Ptr;
-  typedef std::unordered_map<int64_t, ColCells::Ptr>  Columns;
+  typedef std::shared_ptr<MapMutable>               Ptr;
+  typedef std::unordered_map<cid_t, ColCells::Ptr>  Columns;
   
   explicit MapMutable();
 
@@ -90,32 +90,32 @@ class MapMutable final {
 
   bool create(const Schema::Ptr& schema);
 
-  bool create(const int64_t cid, Types::KeySeq seq, 
+  bool create(const cid_t cid, Types::KeySeq seq, 
               uint32_t versions, uint32_t ttl, Types::Column type);
 
-  bool create(const int64_t cid, Mutable& cells);
+  bool create(const cid_t cid, Mutable& cells);
 
-  bool exists(const int64_t cid);
+  bool exists(const cid_t cid);
   
-  void add(const int64_t cid, const Cell& cell);
+  void add(const cid_t cid, const Cell& cell);
 
   ColCells::Ptr get_idx(size_t offset);
 
-  ColCells::Ptr get_col(const int64_t cid);
+  ColCells::Ptr get_col(const cid_t cid);
 
   void pop(ColCells::Ptr& col);
 
-  void pop(const int64_t cid, ColCells::Ptr& col);
+  void pop(const cid_t cid, ColCells::Ptr& col);
 
-  void remove(const int64_t cid);
+  void remove(const cid_t cid);
 
   size_t size();
 
-  size_t size(const int64_t cid);
+  size_t size(const cid_t cid);
 
   size_t size_bytes();
 
-  size_t size_bytes(const int64_t cid);
+  size_t size_bytes(const cid_t cid);
 
   std::string to_string();
 

@@ -25,17 +25,17 @@ class Rangers final {
   void schedule_assignment_check(uint32_t t_ms = 10000);
 
 
-  void rgr_get(const uint64_t id, EndPoints& endpoints);
+  void rgr_get(const rgrid_t rgrid, EndPoints& endpoints);
 
-  void rgr_list(const uint64_t rgr_id, RangerList& rangers);
+  void rgr_list(const rgrid_t rgrid, RangerList& rangers);
 
-  uint64_t rgr_set_id(const EndPoints& endpoints, uint64_t opt_id=0);
+  rgrid_t rgr_set_id(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
 
-  bool rgr_ack_id(uint64_t id, const EndPoints& endpoints);
+  bool rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints);
 
-  uint64_t rgr_had_id(uint64_t id, const EndPoints& endpoints);
+  rgrid_t rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints);
 
-  void rgr_shutdown(uint64_t id, const EndPoints& endpoints);
+  void rgr_shutdown(rgrid_t rgrid, const EndPoints& endpoints);
 
   
   void sync();
@@ -54,9 +54,9 @@ class Rangers final {
 
   bool update(DB::Schema::Ptr schema, bool ack_required);
   
-  void column_delete(const int64_t cid, const std::vector<uint64_t>& rgr_ids);
+  void column_delete(const cid_t cid, const std::vector<rgrid_t>& rgrids);
   
-  void column_compact(int& err, const int64_t cid);
+  void column_compact(int& err, const cid_t cid);
 
   std::string to_string();
 
@@ -71,7 +71,7 @@ class Rangers final {
   void assign_range(Ranger::Ptr rgr, Range::Ptr range, 
                     Files::RgrData::Ptr last_rgr);
 
-  Ranger::Ptr rgr_set(const EndPoints& endpoints, uint64_t opt_id=0);
+  Ranger::Ptr rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
 
   void changes(RangerList& hosts, bool sync_all=false);
   

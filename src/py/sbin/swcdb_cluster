@@ -47,8 +47,11 @@ def swcdb_set_hosts(swcdb_role):
     for i, data in enumerate(swcdb_cfg[swcdb_role]):
         data = [s.strip() for s in data.split("|")]
 
+        if data[0].startswith("{"):
+            data.pop(0)
         if data[0].startswith("["):
             data.pop(0)
+
         default = data[0].lower() == "default"
         if default:
             data.pop(0)

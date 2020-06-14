@@ -23,9 +23,9 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
     // ResponseCallback::Ptr cb = 
     //  std::make_shared<ResponseCallback>(conn, ev);
           
-    if(!Env::Mngr::role()->is_active(1)){
-      SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d id=%d %s",
-                req_params.flag, req_params.id, 
+    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
+      SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d rgrid=%d %s",
+                req_params.flag, req_params.rgrid, 
                 req_params.to_string().c_str());
         
       auto cbp = CommBuf::make(
@@ -40,13 +40,13 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
     switch(req_params.flag) {
 
       case Params::RgrMngId::Flag::RS_REQ: {
-        uint64_t id = rangers->rgr_set_id(req_params.endpoints);
+        rgrid_t rgrid = rangers->rgr_set_id(req_params.endpoints);
 
-        SWC_LOGF(LOG_DEBUG, "RS_REQ, id=%d %s",
-                  req_params.id, req_params.to_string().c_str());
+        SWC_LOGF(LOG_DEBUG, "RS_REQ, rgrid=%d %s",
+                  req_params.rgrid, req_params.to_string().c_str());
 
         auto cbp = CommBuf::make(
-          Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_ASSIGNED)
+          Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_ASSIGNED)
         );
         cbp->header.initialize_from_request_header(ev->header);
         conn->send_response(cbp);
@@ -54,14 +54,14 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_ACK: {
-        if(rangers->rgr_ack_id(req_params.id, req_params.endpoints)){
-          SWC_LOGF(LOG_DEBUG, "RS_ACK, id=%d %s",
-                    req_params.id, req_params.to_string().c_str());
+        if(rangers->rgr_ack_id(req_params.rgrid, req_params.endpoints)){
+          SWC_LOGF(LOG_DEBUG, "RS_ACK, rgrid=%d %s",
+                    req_params.rgrid, req_params.to_string().c_str());
           conn->response_ok(ev);
 
         } else {
-          SWC_LOGF(LOG_DEBUG, "RS_ACK(MNGR_REREQ) id=%d %s",
-                    req_params.id, req_params.to_string().c_str());
+          SWC_LOGF(LOG_DEBUG, "RS_ACK(MNGR_REREQ) rgrid=%d %s",
+                    req_params.rgrid, req_params.to_string().c_str());
             
           auto cbp = CommBuf::make(
             Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
@@ -73,13 +73,13 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_DISAGREE: {
-        uint64_t id = rangers->rgr_had_id(req_params.id, req_params.endpoints);
-        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rgr_had_id=%d > id=%d %s", 
-                  req_params.id, id, req_params.to_string().c_str());
+        rgrid_t rgrid = rangers->rgr_had_id(req_params.rgrid, req_params.endpoints);
+        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rgr_had_id=%d > rgrid=%d %s", 
+                  req_params.rgrid, rgrid, req_params.to_string().c_str());
 
-        if(id) {
+        if(rgrid) {
           auto cbp = CommBuf::make(
-            Params::RgrMngId(id, Params::RgrMngId::Flag::MNGR_REASSIGN)
+            Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_REASSIGN)
           );
           cbp->header.initialize_from_request_header(ev->header);
           conn->send_response(cbp);
@@ -90,14 +90,14 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
       }
 
       case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
-        rangers->rgr_shutdown(req_params.id, req_params.endpoints);
+        rangers->rgr_shutdown(req_params.rgrid, req_params.endpoints);
 
-        SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, id=%d %s",
-                  req_params.id, req_params.to_string().c_str());
+        SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, rgrid=%d %s",
+                  req_params.rgrid, req_params.to_string().c_str());
       
         auto cbp = CommBuf::make(
           Params::RgrMngId(
-            req_params.id, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
+            req_params.rgrid, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
         );
         cbp->header.initialize_from_request_header(ev->header);
         conn->send_response(cbp);

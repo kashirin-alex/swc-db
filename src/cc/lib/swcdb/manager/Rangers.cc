@@ -77,10 +77,10 @@ void Rangers::schedule_assignment_check(uint32_t t_ms) {
 }
 
 
-void Rangers::rgr_get(const uint64_t id, EndPoints& endpoints) {
+void Rangers::rgr_get(const rgrid_t rgrid, EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
-    if(rgr->id == id) {
+    if(rgr->rgrid == rgrid) {
       if(rgr->state == Ranger::State::ACK)
         endpoints = rgr->endpoints;
       break;
@@ -88,30 +88,30 @@ void Rangers::rgr_get(const uint64_t id, EndPoints& endpoints) {
   }
 }
 
-void Rangers::rgr_list(const uint64_t rgr_id, RangerList& rangers) {
+void Rangers::rgr_list(const rgrid_t rgrid, RangerList& rangers) {
   std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
-    if(!rgr_id || rgr->id == rgr_id) {
+    if(!rgrid || rgr->rgrid == rgrid) {
       rangers.push_back(rgr);
-      if(rgr_id)
+      if(rgrid)
         break;
     }
   }
 }
 
-uint64_t Rangers::rgr_set_id(const EndPoints& endpoints, uint64_t opt_id) {
+rgrid_t Rangers::rgr_set_id(const EndPoints& endpoints, rgrid_t opt_rgrid) {
   std::lock_guard lock(m_mutex);
-  return rgr_set(endpoints, opt_id)->id;
+  return rgr_set(endpoints, opt_rgrid)->rgrid;
 }
 
-bool Rangers::rgr_ack_id(uint64_t id, const EndPoints& endpoints) {
+bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
   bool ack = false;
   Ranger::Ptr new_ack = nullptr;
   {
     std::lock_guard lock(m_mutex);
     
     for(auto& h : m_rangers) {
-      if(has_endpoint(h->endpoints, endpoints) && id == h->id) {
+      if(has_endpoint(h->endpoints, endpoints) && rgrid == h->rgrid) {
         if(h->state != Ranger::State::ACK)
           new_ack = h;
         h->state = Ranger::State::ACK;
@@ -128,13 +128,13 @@ bool Rangers::rgr_ack_id(uint64_t id, const EndPoints& endpoints) {
   return ack;
 }
 
-uint64_t Rangers::rgr_had_id(uint64_t id, const EndPoints& endpoints) {
+rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints) {
   bool new_id_required = false;
   {
     std::lock_guard lock(m_mutex);
 
     for(auto& h : m_rangers) {
-      if(id == h->id) {
+      if(rgrid == h->rgrid) {
         if(has_endpoint(h->endpoints, endpoints))
           return 0; // zero=OK
         new_id_required = true;
@@ -142,10 +142,10 @@ uint64_t Rangers::rgr_had_id(uint64_t id, const EndPoints& endpoints) {
       }
     }
   }
-  return rgr_set_id(endpoints, new_id_required ? 0 : id);
+  return rgr_set_id(endpoints, new_id_required ? 0 : rgrid);
 }
 
-void Rangers::rgr_shutdown(uint64_t id, const EndPoints& endpoints) {
+void Rangers::rgr_shutdown(rgrid_t rgrid, const EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
     std::lock_guard lock(m_mutex);
@@ -155,7 +155,7 @@ void Rangers::rgr_shutdown(uint64_t id, const EndPoints& endpoints) {
         removed = h;
         m_rangers.erase(it);
         removed->state = Ranger::State::REMOVED;
-        Env::Mngr::columns()->set_rgr_unassigned(removed->id);
+        Env::Mngr::columns()->set_rgr_unassigned(removed->rgrid);
         break;
       }
     }
@@ -191,14 +191,14 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
           continue;
 
         chg = false;
-        if(rs_new->id != h->id) { 
+        if(rs_new->rgrid != h->rgrid) { 
           if(Env::Mngr::mngd_columns()->is_root_mngr())
-            rs_new->id = rgr_set(rs_new->endpoints, rs_new->id)->id;
+            rs_new->rgrid = rgr_set(rs_new->endpoints, rs_new->rgrid)->rgrid;
           
-          if(Env::Mngr::mngd_columns()->is_root_mngr() && rs_new->id != h->id)
-            Env::Mngr::columns()->change_rgr(h->id, rs_new->id);
+          if(Env::Mngr::mngd_columns()->is_root_mngr() && rs_new->rgrid != h->rgrid)
+            Env::Mngr::columns()->change_rgr(h->rgrid, rs_new->rgrid);
 
-          h->id = rs_new->id;
+          h->rgrid = rs_new->rgrid;
           chg = true;
         }
         for(auto& endpoint: rs_new->endpoints) {
@@ -221,7 +221,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
             chg = true;
           }
         } else {
-          Env::Mngr::columns()->set_rgr_unassigned(h->id);
+          Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
           m_rangers.erase(it);
           chg = true;
         }
@@ -296,7 +296,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 
     } else {
       rgr->failures=0;
-      range->set_state(Range::State::ASSIGNED, rgr->id); 
+      range->set_state(Range::State::ASSIGNED, rgr->rgrid); 
       range->clear_last_rgr();
       // adjust rgr->resource
       // ++ mng_inchain - req. MngrRsResource
@@ -314,17 +314,17 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 
 
 bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
-  std::vector<uint64_t> rgr_ids;
+  std::vector<rgrid_t> rgrids;
   int err = Error::OK;
   Env::Mngr::columns()->get_column(err, schema->cid)
-                          ->need_schema_sync(schema->revision, rgr_ids);
+                          ->need_schema_sync(schema->revision, rgrids);
   bool undergo = false;
-  for(auto& id : rgr_ids) {
+  for(rgrid_t rgrid : rgrids) {
     std::lock_guard lock(m_mutex);
 
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() 
-        && rgr->state == Ranger::State::ACK && rgr->id == id) {
+        && rgr->state == Ranger::State::ACK && rgr->rgrid == rgrid) {
         undergo = true;
         if(ack_required) {
           rgr->put(
@@ -336,12 +336,12 @@ bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
   return undergo;
 }
 
-void Rangers::column_delete(const int64_t cid, 
-                            const std::vector<uint64_t>& rgr_ids) {
-  for(auto id : rgr_ids) {
+void Rangers::column_delete(const cid_t cid, 
+                            const std::vector<rgrid_t>& rgrids) {
+  for(rgrid_t rgrid : rgrids) {
     std::lock_guard lock(m_mutex);
     for(auto& rgr : m_rangers) {
-      if(id != rgr->id)
+      if(rgrid != rgr->rgrid)
         continue;
       --rgr->total_ranges; // reduce all ranges-count of cid
       rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
@@ -349,21 +349,21 @@ void Rangers::column_delete(const int64_t cid,
   }
 }
 
-void Rangers::column_compact(int& err, const int64_t cid) {
+void Rangers::column_compact(int& err, const cid_t cid) {
   auto col = Env::Mngr::columns()->get_column(err, cid);
   if(!err)  
     col->state(err);
   if(err)
     return;
 
-  std::vector<uint64_t> rgr_ids;
-  col->assigned(rgr_ids);
-  for(auto& id : rgr_ids) {
+  std::vector<rgrid_t> rgrids;
+  col->assigned(rgrids);
+  for(rgrid_t rgrid : rgrids) {
     std::lock_guard lock(m_mutex);
 
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() 
-        && rgr->state == Ranger::State::ACK && rgr->id == id) {
+        && rgr->state == Ranger::State::ACK && rgr->rgrid == rgrid) {
         rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnCompact>(cid));
       }
     }
@@ -427,7 +427,7 @@ void Rangers::assign_ranges_run() {
       return;
     }
 
-    range->set_state(Range::State::QUEUED, rgr->id);
+    range->set_state(Range::State::QUEUED, rgr->rgrid);
     assign_range(rgr, range, last_rgr);
     if(++m_assignments > cfg_assign_due->get()) {
       runs_assign(true);
@@ -480,7 +480,7 @@ void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
 
       if(rgr->failures >= cfg_rgr_failures->get()) {
         m_rangers.erase(it);
-        Env::Mngr::columns()->set_rgr_unassigned(rgr->id);
+        Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
         continue;
       }
       rs_set = rgr;
@@ -529,7 +529,7 @@ void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range,
     rs_last->put(req);
 }
 
-Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, uint64_t opt_id) {
+Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid) {
   for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
     auto h = *it;
     if(has_endpoint(h->endpoints, endpoints)) {
@@ -537,27 +537,27 @@ Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, uint64_t opt_id) {
         h->set(endpoints);
         return h;
       } else {
-        Env::Mngr::columns()->set_rgr_unassigned(h->id);
+        Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
         m_rangers.erase(it);
         break;
       }
     }
   }
 
-  uint64_t next_id=0;
-  uint64_t nxt;
+  rgrid_t next_id=0;
+  rgrid_t nxt;
   bool ok;
   do {
-    if(!opt_id) {
+    if(!opt_rgrid) {
       nxt = ++next_id;
     } else {
-      nxt = opt_id;
-      opt_id = 0;
+      nxt = opt_rgrid;
+      opt_rgrid = 0;
     }
       
     ok = true;
     for(auto& h : m_rangers) {
-      if(nxt == h->id) {
+      if(nxt == h->rgrid) {
         ok = false;
         break;
       };

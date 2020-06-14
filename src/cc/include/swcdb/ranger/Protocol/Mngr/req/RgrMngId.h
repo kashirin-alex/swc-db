@@ -44,7 +44,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
                rgr_data->to_string().c_str());
       create(
         Params::RgrMngId(
-          rgr_data->id.load(), 
+          rgr_data->rgrid.load(), 
           Params::RgrMngId::Flag::RS_SHUTTINGDOWN, 
           rgr_data->endpoints
         )
@@ -70,9 +70,11 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()) {
-      Env::Clients::get()->mngrs_groups->select(1, endpoints);
+      Env::Clients::get()->mngrs_groups->select(
+        Types::MngrRole::RANGERS, 0, endpoints);
       if(endpoints.empty()) {
-        std::make_shared<MngrActive>(1, shared_from_this())->run();
+        std::make_shared<MngrActive>(
+          Types::MngrRole::RANGERS, 0, shared_from_this())->run();
         return false;
       }
     }
@@ -144,11 +146,11 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     }
     
     Params::RgrMngId::Flag flag;
-    if(!rgr_data->id || rgr_data->id == rsp_params.id || 
-      (rgr_data->id != rsp_params.id 
-       && rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)){
+    if(!rgr_data->rgrid || rgr_data->rgrid == rsp_params.rgrid || 
+       (rgr_data->rgrid != rsp_params.rgrid && 
+        rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)){
 
-      rgr_data->id = rsp_params.id;
+      rgr_data->rgrid = rsp_params.rgrid;
       flag = Params::RgrMngId::Flag::RS_ACK;
       SWC_LOGF(LOG_DEBUG, "RS_ACK %s", rgr_data->to_string().c_str());
     } else {
@@ -157,7 +159,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
       SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rgr_data->to_string().c_str());
     }
 
-    create(Params::RgrMngId(rgr_data->id, flag, rgr_data->endpoints));
+    create(Params::RgrMngId(rgr_data->rgrid, flag, rgr_data->endpoints));
     run();
   }
   

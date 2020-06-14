@@ -46,7 +46,7 @@ int QueryUpdate::parse_update() {
     return err;
 }
 
-int QueryUpdate::parse_load(std::string& filepath, int64_t& cid) {
+int QueryUpdate::parse_load(std::string& filepath, cid_t& cid) {
     bool token = false;
 
     while(remain && !err && found_space());
@@ -135,7 +135,7 @@ void QueryUpdate::read_cells() {
           return;
 
         bool on_fraction;
-        int64_t cid;
+        cid_t cid;
         DB::Cells::Cell cell;
         read_cell(cid, cell, on_fraction);
 
@@ -151,7 +151,7 @@ void QueryUpdate::read_cells() {
     }
 }
 
-void QueryUpdate::read_cell(int64_t& cid, DB::Cells::Cell& cell, 
+void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell, 
                             bool& on_fraction) {
     bool comma = false;
     

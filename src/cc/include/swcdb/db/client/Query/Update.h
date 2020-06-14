@@ -20,17 +20,17 @@ using ReqBase = client::ConnQueue::ReqBase;
 /*
 range-master: 
   req-mngr.   cid({1,4}) + [n(cid), next_key_start]
-              => cid({1,4}) + rid + rgr(endpoints) + range_begin + range_end	
+              => cid({1,4}) + rid + rgr(endpoints) + range_begin + range_end
     req-rgr.  cid({1,4}) + rid + [cid(n), next_key_start]
               => cid({5,8}) + rid + range_begin + range_end
 range-meta: 
   req-mngr.   cid({5,8}) + rid                           
-              => cid({5,8}) + rid + rgr(endpoints)	
+              => cid({5,8}) + rid + rgr(endpoints)
     req-rgr.  cid({5,8}) + rid + [cid(n), next_key_start]
               => cid(n) + rid + range_begin + range_end
 range-data: 
-  req-mngr.   cid(n) + rid                           
-              => cid(n) + rid + rgr(endpoints)	
+  req-mngr.   cid(n) + rid                          
+              => cid(n) + rid + rgr(endpoints)
     req-rgr.  cid(n) + rid + Specs::Interval         
               => results
 */
@@ -115,7 +115,7 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   void commit();
 
-  void commit(const int64_t cid);
+  void commit(const cid_t cid);
 
   void commit(const DB::Cells::ColCells::Ptr& col);
 
@@ -124,19 +124,19 @@ class Update final : public std::enable_shared_from_this<Update> {
   class Locator final : public std::enable_shared_from_this<Locator> {
     public:
     const Types::Range        type;
-    const int64_t             cid;
+    const cid_t               cid;
     DB::Cells::ColCells::Ptr  col;
     DB::Cell::Key::Ptr        key_start;
     Update::Ptr               updater;
     ReqBase::Ptr              parent;
-    const int64_t             rid;
+    const rid_t               rid;
     const DB::Cell::Key       key_finish;
     
-    Locator(const Types::Range type, const int64_t cid, 
+    Locator(const Types::Range type, const cid_t cid, 
             const DB::Cells::ColCells::Ptr& col, 
             const DB::Cell::Key::Ptr& key_start,
             const Update::Ptr& updater, const ReqBase::Ptr& parent=nullptr, 
-            const int64_t rid=0, const DB::Cell::Key* key_finish=nullptr);
+            const rid_t rid=0, const DB::Cell::Key* key_finish=nullptr);
 
     virtual ~Locator();
 

@@ -15,12 +15,14 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class RangeUnloadedReq : public Serializable {
   public:
 
-  RangeUnloadedReq(int64_t cid=0, int64_t rid=0) : cid(cid), rid(rid) {}
+  RangeUnloadedReq(cid_t cid=0, rid_t rid=0) 
+                  : cid(cid), rid(rid) {
+  }
 
   virtual ~RangeUnloadedReq(){ }
   
-  int64_t        cid;
-  int64_t        rid;
+  cid_t        cid;
+  rid_t        rid;
   
   std::string to_string() const {
     std::string s("RangeUnloadedReq(");

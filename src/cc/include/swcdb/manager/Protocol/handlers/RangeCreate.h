@@ -34,7 +34,7 @@ void range_create(ConnHandlerPtr conn, Event::Ptr ev) {
     if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
       goto send_response;
 
-    auto range = col->create_new_range(params.rgr_id);
+    auto range = col->create_new_range(params.rgrid);
     rsp_params.rid = range->rid;
 
   } catch (Exception &e) {

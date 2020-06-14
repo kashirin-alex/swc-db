@@ -10,6 +10,7 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
+#include "swcdb/db/Types/Identifiers.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
@@ -20,12 +21,12 @@ class RangeLocateReq : public Serializable {
   static const uint8_t NEXT_RANGE  = 0x01;
   static const uint8_t COMMIT      = 0x02;
 
-  RangeLocateReq(int64_t cid=0, int64_t rid=0);
+  RangeLocateReq(cid_t cid=0, rid_t rid=0);
   
   virtual ~RangeLocateReq();
 
-  int64_t        cid;
-  int64_t        rid;
+  cid_t          cid;
+  rid_t          rid;
   DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
   
@@ -54,8 +55,8 @@ class RangeLocateRsp  : public Serializable {
   virtual ~RangeLocateRsp();
 
   int             err;         
-  int64_t         cid; 
-  int64_t         rid;
+  cid_t           cid; 
+  rid_t           rid;
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 

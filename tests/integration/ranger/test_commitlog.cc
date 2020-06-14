@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
   RangerEnv::init();
   
-  auto cid = 11;
+  cid_t cid = 11;
   DB::Schema schema;
   schema.cid = cid;
   schema.col_name = "col-test";

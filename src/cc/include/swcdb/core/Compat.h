@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
+#include <string>
 
 // SWC_ATTRIBS((SWC_ATTR_NOTHROW, SWC_ATTR_INLINE))
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)

@@ -42,7 +42,7 @@ void ColumnUpdate::handle_no_conn() {
 void ColumnUpdate::updated(int err, bool failure) {
   if(!err) {
     Env::Mngr::columns()->get_column(err, schema->cid)
-                             ->change_rgr_schema(rgr->id, schema->revision);
+                             ->change_rgr_schema(rgr->rgrid, schema->revision);
     if(!Env::Mngr::rangers()->update(schema, false)) {
       Env::Mngr::mngd_columns()->update(
         Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,

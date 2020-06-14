@@ -172,7 +172,7 @@ void Update::commit() {
     commit_onfractions(col);
 }
 
-void Update::commit(const int64_t cid) { 
+void Update::commit(const cid_t cid) { 
   commit(columns->get_col(cid));
   commit_onfractions(columns_onfractions->get_col(cid));
 }
@@ -196,11 +196,11 @@ void Update::commit_onfractions(const DB::Cells::ColCells::Ptr& col) {
 
 
 
-Update::Locator::Locator(const Types::Range type, const int64_t cid, 
+Update::Locator::Locator(const Types::Range type, const cid_t cid, 
         const DB::Cells::ColCells::Ptr& col, 
         const DB::Cell::Key::Ptr& key_start,
         const Update::Ptr& updater, const ReqBase::Ptr& parent, 
-        const int64_t rid, const DB::Cell::Key* key_finish) 
+        const rid_t rid, const DB::Cell::Key* key_finish) 
         : type(type), cid(cid), col(col), key_start(key_start), 
           updater(updater), parent(parent), 
           rid(rid), 

@@ -11,8 +11,8 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-MngrActiveReq::MngrActiveReq(size_t begin, size_t end) 
-                            : begin(begin), end(end){
+MngrActiveReq::MngrActiveReq(uint8_t role, cid_t cid) 
+                            : role(role), cid(cid) {
 }
 
 MngrActiveReq::~MngrActiveReq() { }
@@ -22,19 +22,18 @@ uint8_t MngrActiveReq::encoding_version() const {
 }
 
 size_t MngrActiveReq::encoded_length_internal() const {
-  return Serialization::encoded_length_vi64(begin)
-       + Serialization::encoded_length_vi64(end);
+  return 1 + Serialization::encoded_length_vi64(cid);
 }
 
 void MngrActiveReq::encode_internal(uint8_t **bufp) const {
-  Serialization::encode_vi64(bufp, begin);
-  Serialization::encode_vi64(bufp, end);
+  Serialization::encode_i8(bufp, role);
+  Serialization::encode_vi64(bufp, cid);
 }
 
 void MngrActiveReq::decode_internal(uint8_t version, const uint8_t **bufp, 
                                     size_t *remainp) {
-  begin = (size_t)Serialization::decode_vi64(bufp, remainp);
-  end = (size_t)Serialization::decode_vi64(bufp, remainp);
+  role = Serialization::decode_i8(bufp, remainp);
+  cid = Serialization::decode_vi64(bufp, remainp);
 }
 
 

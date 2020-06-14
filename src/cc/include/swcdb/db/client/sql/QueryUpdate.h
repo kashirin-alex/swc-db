@@ -25,7 +25,7 @@ class QueryUpdate final : public Reader {
 
   int parse_update();
 
-  int parse_load(std::string& filepath, int64_t& cid);
+  int parse_load(std::string& filepath, cid_t& cid);
   
   void parse_display_flags(uint8_t& display_flags);
 
@@ -33,7 +33,7 @@ class QueryUpdate final : public Reader {
 
   void read_cells();
 
-  void read_cell(int64_t& cid, DB::Cells::Cell& cell, bool& on_fraction);
+  void read_cell(cid_t& cid, DB::Cells::Cell& cell, bool& on_fraction);
   
   void op_from(const uint8_t** ptr, size_t* remainp, 
                uint8_t& op, int64_t& value);

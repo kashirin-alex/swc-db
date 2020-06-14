@@ -18,9 +18,10 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class MngrActive : public client::ConnQueue::ReqBase {
   public:
 
-  const int64_t cid;
+  const uint8_t role;
+  const cid_t   cid;
 
-  MngrActive(int64_t cid, DispatchHandler::Ptr hdlr, 
+  MngrActive(uint8_t role, cid_t cid, DispatchHandler::Ptr hdlr, 
              uint32_t timeout_ms=60000);
 
   virtual ~MngrActive();

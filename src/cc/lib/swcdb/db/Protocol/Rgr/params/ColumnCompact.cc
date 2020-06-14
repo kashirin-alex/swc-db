@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 
-ColumnCompactReq::ColumnCompactReq(int64_t cid) : cid(cid) {}
+ColumnCompactReq::ColumnCompactReq(cid_t cid) : cid(cid) {}
 
 ColumnCompactReq::~ColumnCompactReq() { }
 

@@ -30,6 +30,7 @@ set(swcdb_sources
   Types/Range.cc
   Types/KeySeq.cc
   Types/MetaColumn.cc
+  Types/MngrRole.cc
 
   Protocol/Common/params/HostEndPoints.cc
 

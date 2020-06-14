@@ -10,7 +10,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-ColumnDelete::ColumnDelete(Manager::Ranger::Ptr rgr, int64_t cid) 
+ColumnDelete::ColumnDelete(Manager::Ranger::Ptr rgr, cid_t cid) 
                           : client::ConnQueue::ReqBase(false), 
                             rgr(rgr), cid(cid) {
   cbp = CommBuf::make(Common::Params::ColumnId(cid));
@@ -45,7 +45,7 @@ void ColumnDelete::handle_no_conn() {
 }
   
 void ColumnDelete::remove(int err) {
-  Env::Mngr::mngd_columns()->remove(err, cid, rgr->id);  
+  Env::Mngr::mngd_columns()->remove(err, cid, rgr->rgrid);  
 }
 
 }}}}

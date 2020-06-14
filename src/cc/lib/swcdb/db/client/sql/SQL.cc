@@ -62,7 +62,7 @@ void parse_dump(int& err, const std::string& sql,
 }
 
 void parse_load(int& err, const std::string& sql, 
-                std::string& filepath, int64_t& cid,  
+                std::string& filepath, cid_t& cid,  
                 uint8_t& display_flags, std::string& message) {
   DB::Cells::MapMutable columns;
   DB::Cells::MapMutable columns_onfractions;

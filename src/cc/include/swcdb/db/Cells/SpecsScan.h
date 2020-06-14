@@ -39,7 +39,7 @@ class Scan final : public Serializable {
   void encode_internal(uint8_t **bufp) const;
 
   void decode_internal(uint8_t version, const uint8_t **bufp,
-	                	   size_t *remainp);
+                       size_t *remainp);
   
   std::string to_string();
   

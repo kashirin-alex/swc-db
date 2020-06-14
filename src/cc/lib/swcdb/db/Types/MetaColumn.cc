@@ -12,26 +12,26 @@ namespace SWC { namespace Types {  namespace MetaColumn {
 
 
 SWC_SHOULD_INLINE
-bool is_master(int64_t cid) {
+bool is_master(cid_t cid) {
   return cid <= 4;
 }
 
 SWC_SHOULD_INLINE
-bool is_meta(int64_t cid) {
+bool is_meta(cid_t cid) {
   return cid >= 5 && cid <= 8;
 }
 
 SWC_SHOULD_INLINE
-bool is_data(int64_t cid) {
+bool is_data(cid_t cid) {
   return cid > 8;
 }
 
 
-Range get_range_type(int64_t cid) {
+Range get_range_type(cid_t cid) {
   return cid <= 4 ? Range::MASTER : (cid <= 8 ? Range::META : Range::DATA);
 }
 
-KeySeq get_seq_type(int64_t cid) {
+KeySeq get_seq_type(cid_t cid) {
   return (
     (cid == 4 || cid == 8) 
     ? KeySeq::FC_VOLUME
@@ -46,7 +46,7 @@ KeySeq get_seq_type(int64_t cid) {
 }
 
 
-int64_t get_master_cid(KeySeq col_seq) {
+cid_t get_master_cid(KeySeq col_seq) {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return 4;

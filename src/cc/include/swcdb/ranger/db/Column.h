@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger {
 
 
 
-class Column final : private std::unordered_map<int64_t, RangePtr> {
+class Column final : private std::unordered_map<rid_t, RangePtr> {
   
   public:
 
@@ -23,7 +23,7 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
 
   const ColumnCfg  cfg;
 
-  Column(const int64_t cid, const DB::Schema& schema) 
+  Column(const cid_t cid, const DB::Schema& schema) 
         : cfg(cid, schema) { 
   }
 
@@ -56,7 +56,7 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
     RangerEnv::compaction_schedule(100);
   }
 
-  RangePtr get_range(int &err, const int64_t rid, bool initialize=false) {
+  RangePtr get_range(int &err, const rid_t rid, bool initialize=false) {
     RangePtr range = nullptr;
     {
       Mutex::scope lock(m_mutex);
@@ -81,7 +81,7 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
     return range;
   }
 
-  void unload(const int64_t rid, const Callback::RangeUnloaded_t& cb) {
+  void unload(const rid_t rid, const Callback::RangeUnloaded_t& cb) {
     RangePtr range = nullptr;
     {
       Mutex::scope lock(m_mutex);
@@ -114,7 +114,7 @@ class Column final : private std::unordered_map<int64_t, RangePtr> {
     cb(Error::OK);
   }
   
-  void remove(int &err, const int64_t rid, bool meta=true) {
+  void remove(int &err, const rid_t rid, bool meta=true) {
     RangePtr range = nullptr;
     {
       Mutex::scope lock(m_mutex);

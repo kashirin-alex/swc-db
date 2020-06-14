@@ -22,9 +22,13 @@ class MngrRole final {
 
   void schedule_checkin(uint32_t t_ms = 10000);
 
-  bool is_active(size_t cid);
+  bool is_active(cid_t cid);
 
-  MngrStatus::Ptr active_mngr(size_t begin, size_t end);
+  bool is_active_role(uint8_t role);
+
+  MngrStatus::Ptr active_mngr(cid_t cid);
+
+  MngrStatus::Ptr active_mngr_role(uint8_t role);
 
   void req_mngr_inchain(client::ConnQueue::ReqBase::Ptr req);
 
@@ -62,9 +66,9 @@ class MngrRole final {
   
   MngrStatus::Ptr get_host(const EndPoints& endpoints);
 
-  MngrStatus::Ptr get_highest_state_host(uint64_t begin, uint64_t end);
+  MngrStatus::Ptr get_highest_state_host(const MngrStatus::Ptr& other);
   
-  bool is_off(uint64_t begin, uint64_t end);
+  bool is_group_off(const MngrStatus::Ptr& other);
 
   void set_active_columns();
   

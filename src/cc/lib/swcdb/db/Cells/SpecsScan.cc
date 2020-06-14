@@ -73,7 +73,7 @@ void Scan::encode_internal(uint8_t **bufp) const {
 }
 
 void Scan::decode_internal(uint8_t version, const uint8_t **bufp,
-	                		     size_t *remainp){
+                           size_t *remainp){
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();
   columns.resize(sz);

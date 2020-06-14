@@ -13,13 +13,14 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 
-MngrActive::MngrActive(int64_t cid, DispatchHandler::Ptr hdlr, 
+MngrActive::MngrActive(uint8_t role, cid_t cid, DispatchHandler::Ptr hdlr, 
                        uint32_t timeout_ms)
                       : client::ConnQueue::ReqBase(false), 
-                        cid(cid), hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),
+                        role(role), cid(cid), 
+                        hdlr(hdlr), timeout_ms(timeout_ms), nxt(0),
                         timer(asio::high_resolution_timer(
                           *Env::Clients::get()->mngr->service->io().get())) {
-  cbp = CommBuf::make(Params::MngrActiveReq(cid, cid));
+  cbp = CommBuf::make(Params::MngrActiveReq(role, cid));
   cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }
 
@@ -52,9 +53,10 @@ bool MngrActive::run(uint32_t timeout) {
     return false;
 
   if(hosts.empty()) {
-    Env::Clients::get()->mngrs_groups->hosts(cid, hosts, group_host);
+    Env::Clients::get()->mngrs_groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
-      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for cid=%d", cid);
+      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%d", 
+                role, cid);
       run_within(5000);
       return false;
     }

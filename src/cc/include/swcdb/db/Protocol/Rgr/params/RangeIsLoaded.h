@@ -14,7 +14,7 @@ class RangeIsLoaded : public Common::Params::ColRangeId {
   public:
 
   RangeIsLoaded() {}
-  RangeIsLoaded(size_t cid, size_t rid) 
+  RangeIsLoaded(cid_t cid, rid_t rid) 
                 : Common::Params::ColRangeId(cid, rid){}           
   virtual ~RangeIsLoaded() {}
 

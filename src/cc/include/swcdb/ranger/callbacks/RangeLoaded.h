@@ -15,7 +15,7 @@ class RangeLoaded : public ResponseCallback {
   public:
 
   RangeLoaded(ConnHandlerPtr conn, Event::Ptr ev, 
-              const int64_t cid, const int64_t rid)
+              const cid_t cid, const rid_t rid)
             : ResponseCallback(conn, ev), cid(cid), rid(rid) {
     RangerEnv::in_process(1);
   }
@@ -65,8 +65,8 @@ class RangeLoaded : public ResponseCallback {
   }
 
   private:
-  const int64_t cid;
-  const int64_t rid;
+  const cid_t cid;
+  const rid_t rid;
 
 };
 

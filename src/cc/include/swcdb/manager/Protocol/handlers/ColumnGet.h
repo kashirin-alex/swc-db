@@ -65,7 +65,10 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;
     }
-    Env::Mngr::mngd_columns()->is_active(err, 1, true);
+
+    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
+      err = Error::MNGR_NOT_ACTIVE;
+
     if(!err) {
       mngr_update_response(conn, ev, err, flag, schema);
       return;

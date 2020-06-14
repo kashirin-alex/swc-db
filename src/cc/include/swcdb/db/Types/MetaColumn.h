@@ -6,25 +6,26 @@
 #ifndef swc_db_types_MetaColumn_h
 #define swc_db_types_MetaColumn_h
 
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Range.h"
 
 namespace SWC { namespace Types {  namespace MetaColumn {
 
 
-bool is_master(int64_t cid);
+bool is_master(cid_t cid);
 
-bool is_meta(int64_t cid);
+bool is_meta(cid_t cid);
 
-bool is_data(int64_t cid);
-
-
-Range get_range_type(int64_t cid);
-
-KeySeq get_seq_type(int64_t cid);
+bool is_data(cid_t cid);
 
 
-int64_t get_master_cid(KeySeq col_seq);
+Range get_range_type(cid_t cid);
+
+KeySeq get_seq_type(cid_t cid);
+
+
+cid_t get_master_cid(KeySeq col_seq);
 
 const char* get_meta_cid(KeySeq col_seq);
 

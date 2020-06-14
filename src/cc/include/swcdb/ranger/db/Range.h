@@ -59,12 +59,12 @@ class Range final : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
   const ColumnCfg*    cfg;
-  const int64_t       rid;
+  const rid_t         rid;
   const Types::Range  type;
   const uint8_t       meta_cid;
   Blocks              blocks;
 
-  Range(const ColumnCfg* cfg, const int64_t rid);
+  Range(const ColumnCfg* cfg, const rid_t rid);
 
   void init();
 
@@ -72,10 +72,10 @@ class Range final : public std::enable_shared_from_this<Range> {
   
   const std::string get_path(const std::string suff) const;
 
-  const std::string get_path_cs(const int64_t cs_id) const;
+  const std::string get_path_cs(const csid_t csid) const;
 
   const std::string get_path_cs_on(const std::string folder, 
-                                   const int64_t cs_id) const;
+                                   const csid_t csid) const;
 
   Files::RgrData::Ptr get_last_rgr(int &err);
 

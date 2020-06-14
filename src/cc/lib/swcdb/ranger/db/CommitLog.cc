@@ -229,7 +229,7 @@ void Fragments::load(int &err) {
     return;
 
   Fragment::Ptr frag;
-  for(auto entry : fragments) {
+  for(auto& entry : fragments) {
     frag = Fragment::make_read(
       err, get_log_fragment(entry.name), range->cfg->key_seq);
     if(err == Error::FS_PATH_NOT_FOUND) {

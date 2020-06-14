@@ -25,7 +25,7 @@ class ColumnGet: public client::ConnQueue::ReqBase {
   static void schema(const std::string& name, const Cb_t cb, 
                      const uint32_t timeout = 10000);
   
-  static void schema(int64_t cid, const Cb_t cb, 
+  static void schema(cid_t cid, const Cb_t cb, 
                      const uint32_t timeout = 10000);
 
   static void cid(const std::string& name, const Cb_t cb, 
@@ -34,7 +34,7 @@ class ColumnGet: public client::ConnQueue::ReqBase {
   static void request(Flag flag, const std::string& name, const Cb_t cb, 
                       const uint32_t timeout = 10000);
 
-  static void request(Flag flag, int64_t cid, const Cb_t cb, 
+  static void request(Flag flag, cid_t cid, const Cb_t cb, 
                       const uint32_t timeout = 10000);
 
 

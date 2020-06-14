@@ -28,17 +28,17 @@ class RgrMngId  : public Common::Params::HostEndPoints {
 
     RgrMngId() {}
 
-    RgrMngId(uint64_t id, Flag flag) 
-            : id(id), flag(flag){
+    RgrMngId(rgrid_t rgrid, Flag flag) 
+            : rgrid(rgrid), flag(flag) {
     }
-    RgrMngId(uint64_t id, Flag flag, const EndPoints& endpoints) 
-            : id(id), flag(flag),
-              Common::Params::HostEndPoints(endpoints){     
+    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
+            : rgrid(rgrid), flag(flag),
+              Common::Params::HostEndPoints(endpoints) {     
     }
 
     virtual ~RgrMngId() {}
     
-    uint64_t        id; 
+    rgrid_t         rgrid; 
     Flag            flag;
     Types::Fs       fs;
 
@@ -51,7 +51,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     size_t encoded_length_internal() const {
       size_t len = 1;
       if(flag != Flag::MNGR_NOT_ACTIVE)
-        len += Serialization::encoded_length_vi64(id);
+        len += Serialization::encoded_length_vi64(rgrid);
 
       if(flag >= Flag::RS_REQ) 
         len +=  Common::Params::HostEndPoints::encoded_length_internal();
@@ -64,7 +64,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     void encode_internal(uint8_t **bufp) const {
       Serialization::encode_i8(bufp, (uint8_t)flag);
       if(flag != Flag::MNGR_NOT_ACTIVE)
-        Serialization::encode_vi64(bufp, id);
+        Serialization::encode_vi64(bufp, rgrid);
       
       if(flag >= Flag::RS_REQ)
         Common::Params::HostEndPoints::encode_internal(bufp);
@@ -78,7 +78,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
                         size_t *remainp) {
       flag = (Flag)Serialization::decode_i8(bufp, remainp);
       if(flag != Flag::MNGR_NOT_ACTIVE)
-        id = Serialization::decode_vi64(bufp, remainp);
+        rgrid = Serialization::decode_vi64(bufp, remainp);
       
       if(flag >= Flag::RS_REQ)
         Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);

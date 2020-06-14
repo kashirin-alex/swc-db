@@ -14,13 +14,13 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
   class ColumnId : public Serializable {
   public:
 
-    ColumnId(int64_t cid = 0) 
+    ColumnId(cid_t cid = 0) 
              : cid(cid){
     }
              
     virtual ~ColumnId() {}
 
-    int64_t  cid; 
+    cid_t  cid; 
     
   private:
 
@@ -38,7 +38,7 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
     
     void decode_internal(uint8_t version, const uint8_t **bufp, 
                         size_t *remainp) {
-      cid = (size_t)Serialization::decode_vi64(bufp, remainp);
+      cid = Serialization::decode_vi64(bufp, remainp);
     }
 
   };

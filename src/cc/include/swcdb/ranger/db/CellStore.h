@@ -35,7 +35,7 @@ class Read final {
   public:
   typedef Read*  Ptr;
 
-  inline static Ptr make(int& err, const uint32_t id, 
+  inline static Ptr make(int& err, const csid_t csid, 
                          const RangePtr& range, 
                          const DB::Cells::Interval& interval, 
                          bool chk_base=false);
@@ -54,12 +54,12 @@ class Read final {
 
   // 
   
-  const uint32_t                      id;
+  const csid_t                        csid;
   const DB::Cell::Key                 prev_key_end;
   const DB::Cells::Interval           interval;
   const std::vector<Block::Read::Ptr> blocks;
 
-  explicit Read(const uint32_t id,
+  explicit Read(const csid_t csid,
                 const DB::Cell::Key& prev_key_end,
                 const DB::Cells::Interval& interval, 
                 const std::vector<Block::Read::Ptr>& blocks,
@@ -112,7 +112,7 @@ class Write final {
   public:
   typedef std::shared_ptr<Write>  Ptr;
 
-  const uint32_t            id;
+  const csid_t              csid;
   FS::SmartFd::Ptr          smartfd;
   Types::Encoding           encoder;
   uint32_t                  cell_revs;
@@ -122,7 +122,7 @@ class Write final {
   
   //std::atomic<uint32_t>     completion;
  
-  Write(const uint32_t id, const std::string& filepath, 
+  Write(const csid_t csid, const std::string& filepath, 
         RangePtr range, uint32_t cell_revs);
 
   ~Write();

@@ -14,14 +14,14 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
 class ColRangeId : public Serializable {
   public:
 
-  ColRangeId(size_t cid = 0, size_t rid = 0) 
+  ColRangeId(cid_t cid = 0, rid_t rid = 0) 
             : cid(cid), rid(rid){
   }
              
   virtual ~ColRangeId() {}
 
-  size_t  cid; 
-  size_t  rid;
+  cid_t  cid; 
+  rid_t  rid;
     
     
   size_t encoded_length_internal() const {
@@ -36,8 +36,8 @@ class ColRangeId : public Serializable {
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
-    cid = (size_t)Serialization::decode_vi64(bufp, remainp);
-    rid = (size_t)Serialization::decode_vi64(bufp, remainp);
+    cid = Serialization::decode_vi64(bufp, remainp);
+    rid = Serialization::decode_vi64(bufp, remainp);
   }
 
   private:

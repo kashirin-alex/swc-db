@@ -56,27 +56,27 @@ struct Select final {
   };
 
 
-  void add_column(const int64_t cid);
+  void add_column(const cid_t cid);
   
-  bool add_cells(const int64_t cid, const StaticBuffer& buffer, 
+  bool add_cells(const cid_t cid, const StaticBuffer& buffer, 
                  bool reached_limit, DB::Specs::Interval& interval);
 
-  void get_cells(const int64_t cid, DB::Cells::Result& cells);
+  void get_cells(const cid_t cid, DB::Cells::Result& cells);
 
-  size_t get_size(const int64_t cid);
+  size_t get_size(const cid_t cid);
 
   size_t get_size_bytes();
 
-  std::vector<int64_t> get_cids() const;
+  std::vector<cid_t> get_cids() const;
 
-  void free(const int64_t cid);
+  void free(const cid_t cid);
 
-  void remove(const int64_t cid);
+  void remove(const cid_t cid);
   
   private:
 
-  std::unordered_map<int64_t, Rsp::Ptr> m_columns;
-  std::condition_variable&              m_cv;
+  std::unordered_map<cid_t, Rsp::Ptr>  m_columns;
+  std::condition_variable&             m_cv;
 
 };
 
@@ -129,12 +129,12 @@ class Select final : public std::enable_shared_from_this<Select> {
     public:
 
     typedef std::shared_ptr<ScannerColumn>  Ptr;
-    const int64_t                           cid;
+    const cid_t                             cid;
     const Types::KeySeq                     col_seq;
     DB::Specs::Interval                     interval;
     Select::Ptr                             selector;
 
-    ScannerColumn(const int64_t cid, const Types::KeySeq col_seq, 
+    ScannerColumn(const cid_t cid, const Types::KeySeq col_seq, 
                   DB::Specs::Interval& interval, const Select::Ptr& selector);
 
     virtual ~ScannerColumn();
@@ -157,18 +157,18 @@ class Select final : public std::enable_shared_from_this<Select> {
 
   class Scanner final : public std::enable_shared_from_this<Scanner> {
     public:
-    const Types::Range        type;
-    const int64_t             cid;
-    ScannerColumn::Ptr        col;
+    const Types::Range       type;
+    const cid_t              cid;
+    ScannerColumn::Ptr       col;
 
     ReqBase::Ptr              parent;
-    const int64_t             rid;
+    const rid_t               rid;
     DB::Cell::Key             range_offset;
 
-    Scanner(const Types::Range type, const int64_t cid, 
+    Scanner(const Types::Range type, const cid_t cid, 
             const ScannerColumn::Ptr& col,
             const ReqBase::Ptr& parent=nullptr, 
-            const DB::Cell::Key* range_offset=nullptr, const int64_t rid=0);
+            const DB::Cell::Key* range_offset=nullptr, const rid_t rid=0);
 
     virtual ~Scanner();
 
@@ -192,7 +192,7 @@ class Select final : public std::enable_shared_from_this<Select> {
                            const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
                            bool next_range=false);
 
-    void select(EndPoints endpoints, uint64_t rid, const ReqBase::Ptr& base);
+    void select(EndPoints endpoints, rid_t rid, const ReqBase::Ptr& base);
 
   };
   

@@ -13,7 +13,7 @@
 
 namespace SWC { namespace Ranger {
 
-Range::Range(const ColumnCfg* cfg, const int64_t rid)
+Range::Range(const ColumnCfg* cfg, const rid_t rid)
             : cfg(cfg), rid(rid), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_seq),
@@ -37,21 +37,21 @@ const std::string Range::get_path(const std::string suff) const {
   return s;
 }
 
-const std::string Range::get_path_cs(const int64_t cs_id) const {
+const std::string Range::get_path_cs(const csid_t csid) const {
   std::string s(m_path);
   s.append(CELLSTORES_DIR);
   s.append("/");
-  s.append(std::to_string(cs_id));
+  s.append(std::to_string(csid));
   s.append(".cs");
   return s;
 }
 
 const std::string Range::get_path_cs_on(const std::string folder, 
-                                        const int64_t cs_id) const {
+                                        const csid_t csid) const {
   std::string s(m_path);
   s.append(folder);
   s.append("/");
-  s.append(std::to_string(cs_id));
+  s.append(std::to_string(csid));
   s.append(".cs");
   return s;
 }
@@ -463,14 +463,14 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
     fs->rename(
       err, 
       cs->smartfd->filepath(), 
-      get_path_cs(cs->id)
+      get_path_cs(cs->csid)
     );
     if(err)
       return;
         
     blocks.cellstores.add(
       CellStore::Read::make(
-        err, cs->id, shared_from_this(), cs->interval, true)
+        err, cs->csid, shared_from_this(), cs->interval, true)
     );
     if(err)
       return;

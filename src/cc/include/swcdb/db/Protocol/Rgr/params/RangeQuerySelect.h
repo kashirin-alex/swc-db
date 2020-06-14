@@ -19,13 +19,13 @@ class RangeQuerySelectReq : public Serializable {
 
   RangeQuerySelectReq();
 
-  RangeQuerySelectReq(int64_t cid, int64_t rid, 
+  RangeQuerySelectReq(cid_t cid, rid_t rid, 
                       const DB::Specs::Interval& interval);
 
   virtual ~RangeQuerySelectReq();
 
-  int64_t              cid;
-  int64_t              rid;
+  cid_t                cid;
+  rid_t                rid;
   DB::Specs::Interval  interval;
   
   std::string to_string() const;

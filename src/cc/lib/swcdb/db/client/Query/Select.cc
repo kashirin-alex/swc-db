@@ -69,22 +69,22 @@ Select::Select(std::condition_variable& cv, bool notify)
 
 Select::~Select() { }
 
-void Select::add_column(const int64_t cid) {
+void Select::add_column(const cid_t cid) {
   m_columns.emplace(cid, std::make_shared<Rsp>());
 }
   
-bool Select::add_cells(const int64_t cid, const StaticBuffer& buffer, 
+bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer, 
                        bool reached_limit, DB::Specs::Interval& interval) {
   return m_columns[cid]->add_cells(buffer, reached_limit, interval);
 }
 
-void Select::get_cells(const int64_t cid, DB::Cells::Result& cells) {
+void Select::get_cells(const cid_t cid, DB::Cells::Result& cells) {
   m_columns[cid]->get_cells(cells);
   if(notify)
     m_cv.notify_all();
 }
 
-size_t Select::get_size(const int64_t cid) {
+size_t Select::get_size(const cid_t cid) {
   return m_columns[cid]->get_size();
 }
 
@@ -95,21 +95,21 @@ size_t Select::get_size_bytes() {
   return sz;
 }
 
-std::vector<int64_t> Select::get_cids() const {
-  std::vector<int64_t> list(m_columns.size());
+std::vector<cid_t> Select::get_cids() const {
+  std::vector<cid_t> list(m_columns.size());
   int i = 0;
   for(const auto& col : m_columns)
     list[i++] = col.first;
   return list;
 }
 
-void Select::free(const int64_t cid) {
+void Select::free(const cid_t cid) {
   m_columns[cid]->free();
   if(notify)
     m_cv.notify_all();
 }
 
-void Select::remove(const int64_t cid) {
+void Select::remove(const cid_t cid) {
   m_columns.erase(cid);
 }
   
@@ -204,7 +204,7 @@ void Select::wait() {
 void Select::scan(int& err) {
   std::vector<Types::KeySeq> sequences;
   DB::Schema::Ptr schema;
-  for(auto &col : specs.columns) {
+  for(auto& col : specs.columns) {
     schema = Env::Clients::get()->schemas->get(err, col->cid);
     if(err)
       return;
@@ -213,8 +213,8 @@ void Select::scan(int& err) {
   }
 
   auto it_seq = sequences.begin();
-  for(auto &col : specs.columns) {
-    for(auto &intval : col->intervals) {
+  for(auto& col : specs.columns) {
+    for(auto& intval : col->intervals) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = buff_sz;
       std::make_shared<ScannerColumn>(
@@ -227,7 +227,7 @@ void Select::scan(int& err) {
 }
 
 
-Select::ScannerColumn::ScannerColumn(const int64_t cid, const Types::KeySeq col_seq,
+Select::ScannerColumn::ScannerColumn(const cid_t cid, const Types::KeySeq col_seq,
                                      DB::Specs::Interval& interval,
                                      const Select::Ptr& selector)
                                     : cid(cid), col_seq(col_seq), 
@@ -281,9 +281,9 @@ std::string Select::ScannerColumn::to_string() {
 
 
 Select::Scanner::Scanner(
-        const Types::Range type, const int64_t cid, 
+        const Types::Range type, const cid_t cid, 
         const ScannerColumn::Ptr& col, const ReqBase::Ptr& parent, 
-        const DB::Cell::Key* range_offset, const int64_t rid)
+        const DB::Cell::Key* range_offset, const rid_t rid)
       : type(type), cid(cid), col(col), parent(parent), 
         range_offset(range_offset ? *range_offset : DB::Cell::Key()), 
         rid(rid) {
@@ -542,7 +542,7 @@ bool Select::Scanner::located_on_ranger(
   return true;
 }
 
-void Select::Scanner::select(EndPoints endpoints, uint64_t rid, 
+void Select::Scanner::select(EndPoints endpoints, rid_t rid, 
                              const ReqBase::Ptr& base) {
   ++col->selector->result->completion;
 

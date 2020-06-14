@@ -35,7 +35,7 @@ int fraction_finish = 26;
 int num_fractions = fraction_finish-fraction_start;
 
 
-void expect_empty_column(int64_t cid) {
+void expect_empty_column(cid_t cid) {
   int err = SWC::Error::OK;
     // Req::Query::Select
   Query::Select::Ptr select_req = std::make_shared<Query::Select>(
@@ -44,7 +44,7 @@ void expect_empty_column(int64_t cid) {
       if(quite)return;
       /*
       std::cout << "CB completion=" << result->completion() << "\n";
-      for(auto col : result->columns) {
+      for(auto& col : result->columns) {
         std::cout << " cid=" << col.first 
                   << ": sz=" << col.second->cells.size() << "\n";
         int num=0;
@@ -81,7 +81,7 @@ void expect_empty_column(int64_t cid) {
   }
 }
 
-void select_all(int64_t cid, int64_t expected_sz = 0, int64_t offset=0) {
+void select_all(cid_t cid, int64_t expected_sz = 0, int64_t offset=0) {
   int err = SWC::Error::OK;
   Query::Select::Ptr select_req = std::make_shared<Query::Select>();
   
@@ -221,7 +221,7 @@ void test_1(const std::string& col_name) {
       if(quite)return;
       /*
       std::cout << "CB completion=" << result->completion() << "\n";
-      for(auto col : result->columns) {
+      for(auto& col : result->columns) {
         std::cout << " cid=" << col.first 
                   << ": sz=" << col.second->cells.size() << "\n";
         int num=0;

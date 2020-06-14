@@ -15,19 +15,21 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class RangeCreateReq : public Serializable {
   public:
 
-  RangeCreateReq(int64_t cid=0, int64_t rgr_id=0) : cid(cid), rgr_id(rgr_id) {}
+  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) 
+                 : cid(cid), rgrid(rgrid) {
+  }
 
   virtual ~RangeCreateReq(){ }
   
-  int64_t        cid;
-  int64_t        rgr_id;
+  cid_t       cid;
+  rgrid_t     rgrid;
   
   std::string to_string() const {
     std::string s("RangeCreateReq(");
     s.append("cid=");
     s.append(std::to_string(cid));
-    s.append(" rgr_id=");
-    s.append(std::to_string(rgr_id));
+    s.append(" rgrid=");
+    s.append(std::to_string(rgrid));
     return s;
   }
 
@@ -39,18 +41,18 @@ class RangeCreateReq : public Serializable {
 
   size_t encoded_length_internal() const {
     return Serialization::encoded_length_vi64(cid)
-      + Serialization::encoded_length_vi64(rgr_id);
+      + Serialization::encoded_length_vi64(rgrid);
   }
     
   void encode_internal(uint8_t **bufp) const {
     Serialization::encode_vi64(bufp, cid);
-    Serialization::encode_vi64(bufp, rgr_id);
+    Serialization::encode_vi64(bufp, rgrid);
   }
     
   void decode_internal(uint8_t version, const uint8_t **bufp, 
                        size_t *remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
-    rgr_id = Serialization::decode_vi64(bufp, remainp);
+    rgrid = Serialization::decode_vi64(bufp, remainp);
   }
 
 };
@@ -64,8 +66,8 @@ class RangeCreateRsp : public Serializable {
 
   virtual ~RangeCreateRsp() {}
 
-  int             err;        
-  int64_t         rid; 
+  int           err;        
+  rid_t         rid; 
 
   std::string to_string() const {
     std::string s("RangeCreateRsp(");

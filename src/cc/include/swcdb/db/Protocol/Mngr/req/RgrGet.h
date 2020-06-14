@@ -20,7 +20,7 @@ class RgrGet: public client::ConnQueue::ReqBase {
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RgrGetRsp&)> Cb_t;
  
-  static void request(int64_t cid, int64_t rid, bool next_range,
+  static void request(cid_t cid, rid_t rid, bool next_range,
                       const Cb_t cb, const uint32_t timeout = 10000);
 
   static void request(const Params::RgrGetReq params,
@@ -46,7 +46,7 @@ class RgrGet: public client::ConnQueue::ReqBase {
 
   const Cb_t  cb;
   EndPoints   endpoints;
-  int64_t     cid;
+  cid_t       cid;
 };
 
 

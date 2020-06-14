@@ -27,13 +27,13 @@ class ColumnGetReq  : public Serializable {
 
   ColumnGetReq(Flag flag, const std::string& name);
 
-  ColumnGetReq(Flag flag, int64_t cid);
+  ColumnGetReq(Flag flag, cid_t cid);
 
   virtual ~ColumnGetReq();
 
   Flag        flag;
   std::string name;
-  int64_t     cid {};
+  cid_t       cid {};
 
   private:
 
@@ -61,7 +61,7 @@ class ColumnGetRsp  : public Serializable {
 
   ColumnGetReq::Flag  flag;
   DB::Schema::Ptr     schema = nullptr;
-  int64_t             cid {};
+  cid_t               cid {};
 
   private:
 

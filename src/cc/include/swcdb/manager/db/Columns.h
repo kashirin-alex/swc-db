@@ -21,7 +21,7 @@ namespace SWC { namespace Manager {
 
 
 
-class Columns final : std::unordered_map<int64_t, Column::Ptr> {
+class Columns final : std::unordered_map<cid_t, Column::Ptr> {
 
   public:
 
@@ -54,7 +54,7 @@ class Columns final : std::unordered_map<int64_t, Column::Ptr> {
     return true;
   }
 
-  Column::Ptr get_column(int &err, const int64_t cid) {
+  Column::Ptr get_column(int &err, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);
     if(it != end())
@@ -67,7 +67,7 @@ class Columns final : std::unordered_map<int64_t, Column::Ptr> {
     Range::Ptr range = nullptr;
     iterator it;
     Mutex::scope lock(m_mutex);
-    for(int64_t cid = 1; cid <= Files::Schema::SYS_CID_END; ++cid) {
+    for(cid_t cid = 1; cid <= Files::Schema::SYS_CID_END; ++cid) {
       if((it = find(cid)) != end() && 
          (range = it->second->get_next_unassigned()))
         return range;
@@ -79,19 +79,19 @@ class Columns final : std::unordered_map<int64_t, Column::Ptr> {
     return range;
   }
 
-  void set_rgr_unassigned(uint64_t id) {
+  void set_rgr_unassigned(rgrid_t rgrid) {
     Mutex::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
-      it->second->set_rgr_unassigned(id);
+      it->second->set_rgr_unassigned(rgrid);
   }
 
-  void change_rgr(uint64_t id_old, uint64_t id) {
+  void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
     Mutex::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
-      it->second->change_rgr(id_old, id);
+      it->second->change_rgr(rgrid_old, rgrid);
   }
 
-  void remove(int &err, const int64_t cid) {
+  void remove(int &err, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);
     if (it != end())

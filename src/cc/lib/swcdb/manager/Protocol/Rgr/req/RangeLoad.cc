@@ -15,7 +15,7 @@ RangeLoad::RangeLoad(Manager::Ranger::Ptr rgr, Manager::Range::Ptr range,
                       rgr(rgr), range(range), 
                       schema_revision(schema->revision) {
   cbp = CommBuf::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
-  cbp->header.set(RANGE_LOAD, 60000);
+  cbp->header.set(RANGE_LOAD, 3600000);
 }
   
 RangeLoad::~RangeLoad() { }
@@ -65,10 +65,10 @@ void RangeLoad::loaded(int err, bool failure,
     return;
   }
   if(!err)
-    col->change_rgr_schema(rgr->id, schema_revision);
+    col->change_rgr_schema(rgr->rgrid, schema_revision);
                            
   else if(err == Error::COLUMN_SCHEMA_MISSING)
-    col->remove_rgr_schema(rgr->id);
+    col->remove_rgr_schema(rgr->rgrid);
 
   Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
   col->sort(range, intval);

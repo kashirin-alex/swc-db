@@ -62,7 +62,7 @@ class CompactRange final : public ReqScan {
 
   void process_write();
 
-  uint32_t create_cs(int& err);
+  csid_t create_cs(int& err);
 
   void write_cells(int& err, InBlock* inblock);
 
@@ -74,7 +74,7 @@ class CompactRange final : public ReqScan {
 
   void mngr_remove_range(RangePtr new_range);
 
-  void split(int64_t new_rid, uint32_t split_at);
+  void split(rid_t new_rid, uint32_t split_at);
 
   void apply_new(bool clear = false);
 

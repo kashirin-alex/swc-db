@@ -25,16 +25,16 @@ class Column final {
   };
   typedef std::shared_ptr<Column> Ptr;
   
-  static bool create(int &err, const int64_t id) {
+  static bool create(int &err, const cid_t cid) {
     Env::FsInterface::interface()->mkdirs(
-      err, DB::RangeBase::get_column_path(id));
+      err, DB::RangeBase::get_column_path(cid));
     return true;
   }
 
-  static bool remove(int &err, const int64_t id) {
+  static bool remove(int &err, const cid_t cid) {
     Env::FsInterface::interface()->rmdir_incl_opt_subs(
       err, 
-      DB::RangeBase::get_column_path(id), 
+      DB::RangeBase::get_column_path(cid), 
       DB::RangeBase::get_column_path()
     );
     return true;
@@ -82,7 +82,7 @@ class Column final {
       err = Error::COLUMN_NOT_READY;
   }
   
-  Range::Ptr get_range(int &err, const int64_t rid, bool initialize=false) {
+  Range::Ptr get_range(int &err, const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 
     auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
@@ -149,15 +149,15 @@ class Column final {
     apply_loaded_state();
   }
 
-  Range::Ptr create_new_range(int64_t rgr_id) {
+  Range::Ptr create_new_range(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
 
     auto& range = m_ranges.emplace_back(new Range(&cfg, _get_next_rid()));
-    range->set_state(Range::State::CREATED, rgr_id);
+    range->set_state(Range::State::CREATED, rgrid);
     return range;
   }
 
-  int64_t get_next_rid() {
+  rid_t get_next_rid() {
     std::shared_lock lock(m_mutex);
     return _get_next_rid();
   }
@@ -165,7 +165,7 @@ class Column final {
   Range::Ptr get_next_unassigned() {
     std::scoped_lock lock(m_mutex);
 
-    for(auto range : m_ranges) {
+    for(auto& range : m_ranges) {
       if(range->need_assign()) {
         _set_loading();
         return range;
@@ -174,83 +174,83 @@ class Column final {
     return nullptr;
   }
 
-  void set_rgr_unassigned(uint64_t id) {
+  void set_rgr_unassigned(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);    
 
-    for(auto range : m_ranges){
-      if(range->get_rgr_id() == id){
+    for(auto& range : m_ranges){
+      if(range->get_rgr_id() == rgrid){
         range->set_state(Range::State::NOTSET, 0);
         _set_loading();
       }
     }
-    _remove_rgr_schema(id);
+    _remove_rgr_schema(rgrid);
   }
 
-  void change_rgr(uint64_t rgr_id_old, uint64_t id) {
+  void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);    
 
-    for(auto range : m_ranges) {
-      if(range->get_rgr_id() == rgr_id_old)
-        range->set_rgr_id(id);
+    for(auto& range : m_ranges) {
+      if(range->get_rgr_id() == rgrid_old)
+        range->set_rgr_id(rgrid);
     }
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
-      if(it->first == rgr_id_old) {
-        m_schemas_rev.emplace(id, it->second);
+      if(it->first == rgrid_old) {
+        m_schemas_rev.emplace(rgrid, it->second);
         m_schemas_rev.erase(it);
         break;
       }
     }
   }
 
-  void change_rgr_schema(const uint64_t id, int64_t rev=0) {
+  void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {
     std::scoped_lock lock(m_mutex);
 
-    auto it = m_schemas_rev.find(id);
+    auto it = m_schemas_rev.find(rgrid);
     if(it == m_schemas_rev.end())
-       m_schemas_rev.emplace(id, rev);
+       m_schemas_rev.emplace(rgrid, rev);
     else
       it->second = rev;
   }
 
-  void remove_rgr_schema(const uint64_t id) {
+  void remove_rgr_schema(const rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
-    _remove_rgr_schema(id);
+    _remove_rgr_schema(rgrid);
   }
 
-  void need_schema_sync(int64_t rev, std::vector<uint64_t> &rgr_ids) {
+  void need_schema_sync(int64_t rev, std::vector<rgrid_t> &rgrids) {
     std::shared_lock lock(m_mutex);
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
       if(it->second != rev)
-        rgr_ids.push_back(it->first);
+        rgrids.push_back(it->first);
     }
   }
 
-  bool need_schema_sync(const uint64_t id, int64_t rev) {
+  bool need_schema_sync(const rgrid_t rgrid, int64_t rev) {
     std::shared_lock lock(m_mutex);
 
-    auto it = m_schemas_rev.find(id);
+    auto it = m_schemas_rev.find(rgrid);
     if(it != m_schemas_rev.end())
       return rev != it->second;
     return true;
   }
   
-  void assigned(std::vector<uint64_t> &rgr_ids) {
+  void assigned(std::vector<rgrid_t> &rgrids) {
     std::shared_lock lock(m_mutex);
 
-    uint64_t id;
-    for(auto range : m_ranges) {
-      id = range->get_rgr_id();
-      if(!id)
+    rgrid_t rgrid;
+    for(auto& range : m_ranges) {
+      if(!(rgrid = range->get_rgr_id()))
         continue;
-      if(std::find_if(rgr_ids.begin(), rgr_ids.end(), 
-        [id](const uint64_t& rgr_id2){return id == rgr_id2;}) == rgr_ids.end())
-        rgr_ids.push_back(id);
+      if(std::find_if(rgrids.begin(), rgrids.end(), 
+         [rgrid](const rgrid_t& rgrid2)
+         {return rgrid == rgrid2;}) == rgrids.end())
+        rgrids.push_back(rgrid);
     }
   }
   
-  void remove_range(int64_t rid) {
+  void remove_range(rid_t rid) {
     std::scoped_lock lock(m_mutex);
 
     if(!m_ranges.size()) 
@@ -272,23 +272,22 @@ class Column final {
     m_state = State::DELETED;
     m_schemas_rev.clear();
     
-    if(!was){
-      for(auto range : m_ranges)
+    if(!was) {
+      for(auto& range : m_ranges)
         range->set_deleted();
     }
     return !was;
   }
 
-  bool finalize_remove(int &err, uint64_t id=0) {
+  bool finalize_remove(int &err, rgrid_t rgrid=0) {
     std::scoped_lock lock(m_mutex);
     
-    if(!id) {
+    if(!rgrid) {
       m_ranges.clear();
     } else {
-      uint64_t eid;
+      rgrid_t eid;
       for(auto it=m_ranges.begin();it<m_ranges.end();){
-        eid = (*it)->get_rgr_id();
-        if(eid == id || !eid)
+        if((eid = (*it)->get_rgr_id()) == rgrid || !eid)
           m_ranges.erase(it);
         else
           ++it;
@@ -350,8 +349,8 @@ class Column final {
       m_state = State::LOADING;
   }
   
-  int64_t _get_next_rid() {
-    int64_t rid = 1;
+  rid_t _get_next_rid() {
+    rid_t rid = 1;
     for(
       ;std::find_if(m_ranges.begin(), m_ranges.end(), 
         [rid](const Range::Ptr& range) 
@@ -361,8 +360,8 @@ class Column final {
     return rid;
   }
 
-  void _remove_rgr_schema(const uint64_t id) {
-    auto it = m_schemas_rev.find(id);
+  void _remove_rgr_schema(const rgrid_t rgrid) {
+    auto it = m_schemas_rev.find(rgrid);
     if(it != m_schemas_rev.end())
        m_schemas_rev.erase(it);
   }
@@ -383,7 +382,7 @@ class Column final {
   std::atomic<State>        m_state;
   std::vector<Range::Ptr>   m_ranges;
 
-  std::unordered_map<uint64_t, int64_t>   m_schemas_rev;
+  std::unordered_map<rgrid_t, int64_t>   m_schemas_rev;
 
 };
 

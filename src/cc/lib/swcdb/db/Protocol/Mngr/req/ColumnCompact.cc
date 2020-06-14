@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnCompact::request(int64_t cid, const ColumnCompact::Cb_t cb, 
+void ColumnCompact::request(cid_t cid, const ColumnCompact::Cb_t cb, 
                             const uint32_t timeout) {
   request(Params::ColumnCompactReq(cid), cb, timeout);
 }
@@ -46,9 +46,11 @@ void ColumnCompact::handle_no_conn() {
 
 bool ColumnCompact::run(uint32_t timeout) {
   if(endpoints.empty()){
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+    Env::Clients::get()->mngrs_groups->select(
+      Types::MngrRole::COLUMNS, cid, endpoints); 
     if(endpoints.empty()){
-      std::make_shared<MngrActive>(cid, shared_from_this())->run();
+      std::make_shared<MngrActive>(
+        Types::MngrRole::COLUMNS, cid, shared_from_this())->run();
       return false;
     }
   } 

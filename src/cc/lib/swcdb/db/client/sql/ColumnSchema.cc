@@ -103,7 +103,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
   schema = DB::Schema::make();
 
   const char* stop = ", )";
-	  std::string buff;
+    std::string buff;
 
   while(any && remain && !err) {
     if(found_space())
@@ -113,7 +113,10 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       expect_eq();
       if(err)
         return;
-      read_int64_t(schema->cid, was_set);
+      int64_t v;
+      read_int64_t(v, was_set = false);
+      if(was_set)
+        schema->cid = v;
       continue;
     }
 

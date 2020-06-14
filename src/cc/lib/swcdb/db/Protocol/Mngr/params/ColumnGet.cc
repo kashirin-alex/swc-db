@@ -16,7 +16,7 @@ ColumnGetReq::ColumnGetReq() {}
 ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, const std::string& name)
                           : flag(flag), name(name) {}
 
-ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, int64_t cid)
+ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, cid_t cid)
                           : flag(flag), cid(cid) {}
 
 ColumnGetReq::~ColumnGetReq() { }

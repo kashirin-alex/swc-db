@@ -15,7 +15,7 @@ class ColumnCfg final {
   
   public:
   
-  const int64_t                         cid;
+  const cid_t                           cid;
   const Types::KeySeq                   key_seq;
 
   mutable std::atomic<Types::Column>    col_type;
@@ -36,7 +36,7 @@ class ColumnCfg final {
   mutable std::atomic<bool>             deleting;
 
 
-  ColumnCfg(const int64_t cid, const DB::Schema& schema) 
+  ColumnCfg(const cid_t cid, const DB::Schema& schema) 
             : cid(cid), key_seq(schema.col_seq),
               deleting(false) {
     update(schema);

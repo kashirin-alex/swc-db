@@ -10,18 +10,22 @@
 namespace SWC { namespace client { namespace Mngr {
 
 
-Group::Group(size_t cbegin, size_t cend, const EndPoints& endpoints)
-            : Hosts({endpoints}), col_begin(cbegin), col_end(cend) {
+Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+             const EndPoints& endpoints)
+            : Hosts({endpoints}), 
+              role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
 
-Group::Group(size_t cbegin, size_t cend, const Hosts& hosts) 
-            : Hosts(hosts), col_begin(cbegin), col_end(cend) {
+Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+             const Hosts& hosts) 
+            : Hosts(hosts), 
+              role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
   
 Group::~Group() { }
   
 Group::Ptr Group::copy() {
-  return std::make_shared<Group>(col_begin, col_end, get_hosts());
+  return std::make_shared<Group>(role, cid_begin, cid_end, get_hosts());
 }
 
 void Group::add_host(EndPoints& new_endpoints) {
@@ -54,10 +58,12 @@ std::string Group::to_string() {
   std::lock_guard lock(m_mutex);
 
   s.append("group:\n");
+  s.append(" role=");
+  s.append(Types::MngrRole::to_string(role));
   s.append(" column=");
-  s.append(std::to_string(col_begin));
+  s.append(std::to_string(cid_begin));
   s.append("-");
-  s.append(std::to_string(col_end));
+  s.append(std::to_string(cid_end));
   s.append("\n");
     
   for(auto& endpoints : *this) {
@@ -138,65 +144,80 @@ void Groups::on_cfg_update() {
   Property::V_GSTRINGS::Ptr cfg_mngr_hosts
     = Env::Config::settings()->get<Property::V_GSTRINGS>("swc.mngr.host");
   uint16_t default_port = Env::Config::settings()->get_i16("swc.mngr.port");
+  
+  uint8_t role;
+  int64_t col_begin;
+  int64_t col_end;
+  std::string host_or_ips;
   uint16_t port;
 
-  m_mutex.lock();
-  clear();
+  size_t at;
+  size_t at_chk;
+  size_t at_offset;
 
   int c = cfg_mngr_hosts->size();
+  std::string cfg;
+  std::string cfg_chk;
+  
+  m_mutex.lock();
+  clear();
   for(int n=0; n<c; ++n) {
-    std::string cfg = cfg_mngr_hosts->get_item(n);
+    cfg = cfg_mngr_hosts->get_item(n);
     SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
       
-    auto at = cfg.find_first_of("|");
-    if(at == std::string::npos) {
-      _add_host(0, 0, default_port, cfg);
-      continue;
-    }
-      
-    auto cols = cfg.substr(0, at);
-    auto col_at = cols.find_first_of("[");
-    if(col_at == std::string::npos) {
-      Property::from_string(cfg.substr(at+1), &port);
-      _add_host(0, 0, port, cfg.substr(0, at));
+    if((at = cfg.find_first_of('|')) == std::string::npos) {
+      _add_host(Types::MngrRole::ALL, 0, 0, default_port, cfg);
       continue;
     }
 
-    cols = cols.substr(col_at+1, cols.find_first_of("]")-1);
-          
-    auto host_and_ip = cfg.substr(at+1);
-    std::string host_or_ips;
-    auto addr_at = host_and_ip.find_first_of("|");
-    if(addr_at == std::string::npos) {
-      host_or_ips = host_and_ip;
-      port = default_port;
-    } else {
-      host_or_ips = host_and_ip.substr(0, addr_at);
-      Property::from_string(host_and_ip.substr(addr_at+1), &port);
-    }
-
-    int64_t col_begin, col_end;
-    do {
-      auto col_range = cols;
-      col_at = cols.find_first_of(",");
-      if(col_at != std::string::npos) {
-        col_range = cols.substr(0, col_at);
-        cols = cols.substr(col_at+1);
+    role = Types::MngrRole::COLUMNS;
+    cfg_chk = cfg.substr(at_offset = 0, at);
+    if((at_chk = cfg_chk.find_first_of('{')) != std::string::npos) {
+      cfg_chk = cfg_chk.substr(++at_chk, cfg_chk.find_first_of('}')-1);
+      for(;;) {
+        if(strncasecmp(cfg_chk.data(), "schemas", 7) == 0)
+          role |= Types::MngrRole::SCHEMAS;
+        else if(strncasecmp(cfg_chk.data(), "rangers", 7) == 0)
+          role |= Types::MngrRole::RANGERS;
+        if((at_chk = cfg_chk.find_first_of(',')) == std::string::npos)
+          break;
+        cfg_chk = cfg_chk.substr(++at_chk);
       }
-          
-      auto col_range_at = col_range.substr(0, col_at).find_first_of("-");
-      auto b = col_range.substr(0, col_range_at);
-      auto e = col_range.substr(col_range_at+1);
-      col_begin = 0;
-      col_end = 0;
+      at = cfg.find_first_of('|', at_offset = ++at);
+    }
+
+
+    col_begin = 0;
+    col_end = 0;
+    cfg_chk = cfg.substr(at_offset, at-at_offset);
+    if((at_chk = cfg_chk.find_first_of('[')) != std::string::npos) {
+      cfg_chk = cfg_chk.substr(++at_chk, cfg_chk.find_first_of(']')-1);
+      auto col_range_at = cfg_chk.find_first_of('-');
+      auto b = cfg_chk.substr(0, col_range_at);
+      auto e = cfg_chk.substr(col_range_at+1);
       if(!b.empty())
         Property::from_string(b, &col_begin);
       if(!e.empty())
         Property::from_string(e, &col_end);
 
-      _add_host(col_begin, col_end, port, host_or_ips);
+      at = cfg.find_first_of('|', at_offset = ++at);
+    } else if(role != Types::MngrRole::COLUMNS) {
+      role |= Types::MngrRole::NO_COLUMNS;
+    }
 
-    } while (col_at != std::string::npos);
+    if(role == Types::MngrRole::COLUMNS && !col_begin && !col_end)
+      role = Types::MngrRole::ALL;
+
+    cfg_chk = cfg.substr(at_offset);
+    if((at_chk = cfg_chk.find_first_of('|')) == std::string::npos) {
+      host_or_ips = cfg_chk;
+      port = default_port;
+    } else {
+      host_or_ips = cfg_chk.substr(0, at_chk);
+      Property::from_string(cfg_chk.substr(++at_chk), &port);
+    }
+
+    _add_host(role, col_begin, col_end, port, host_or_ips);
 
   }
   m_mutex.unlock();
@@ -204,14 +225,14 @@ void Groups::on_cfg_update() {
   SWC_LOG(LOG_DEBUG, to_string().c_str());
 }
 
-void Groups::_add_host(size_t col_begin, size_t col_end, 
+void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
                        uint16_t port, std::string host_or_ips) {
   std::vector<std::string> ips;
   std::string host;
   size_t at;
   do {
     auto addr = host_or_ips;
-    at = host_or_ips.find_first_of(",");
+    at = host_or_ips.find_first_of(',');
     if(at != std::string::npos) {
       addr = host_or_ips.substr(0, at);
       host_or_ips = host_or_ips.substr(at+1, host_or_ips.length());
@@ -228,10 +249,12 @@ void Groups::_add_host(size_t col_begin, size_t col_end,
   if(endpoints.empty())
     return;
   for(auto& group : *this) {
-    if(group->col_begin == col_begin && group->col_end == col_end)
+    if(group->role == role && 
+       group->cid_begin == cid_begin && 
+       group->cid_end == cid_end)
       return group->add_host(endpoints); 
   }
-  emplace_back(new Group(col_begin, col_end, endpoints));
+  emplace_back(new Group(role, cid_begin, cid_end, endpoints));
 }
 
 Groups::Vec Groups::get_groups() {
@@ -239,15 +262,18 @@ Groups::Vec Groups::get_groups() {
   return Vec(begin(), end());
 }
 
-void Groups::hosts(size_t cid, Hosts& hosts, Groups::GroupHost &group_host) {
+void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts, 
+                   Groups::GroupHost &group_host) {
   std::lock_guard lock(m_mutex);
 
   for(auto& group : *this) {
-    if(group->col_begin <= cid 
-      && (!group->col_end || group->col_end >= cid)) {
+    if(group->role & role &&
+       group->cid_begin <= cid 
+      && (!group->cid_end || group->cid_end >= cid)) {
         hosts = group->get_hosts();
-        group_host.col_begin = group->col_begin;
-        group_host.col_end = group->col_end;
+        group_host.role = group->role;
+        group_host.cid_begin = group->cid_begin;
+        group_host.cid_end = group->cid_end;
         break;
       }
   }
@@ -270,15 +296,18 @@ Groups::Vec Groups::get_groups(const EndPoints& endpoints) {
   return host_groups;
 }
 
-EndPoints Groups::get_endpoints(size_t col_begin, size_t col_end) {
+EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin, 
+                                              cid_t cid_end) {
   EndPoints endpoints;
-  if(!col_end)
-    col_end = col_begin;
+  if(!cid_end)
+    cid_end = cid_begin;
   std::lock_guard lock(m_mutex);
     
   for(auto& group : *this) {
-    if(group->col_begin <= col_begin
-      && (!group->col_end || (col_end && group->col_end >= col_end))) {
+    if((!role || group->role & role) && 
+       (!cid_begin || group->cid_begin <= cid_begin) && 
+       (!cid_end || group->cid_end || 
+        (cid_end && group->cid_end >= cid_end))) {
       group->apply_endpoints(endpoints);
     }
   }
@@ -300,7 +329,9 @@ void Groups::add(Groups::GroupHost& g_host) {
   for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it) {
     if(has_endpoint(g_host.endpoints, it->endpoints))
       return;
-    if(g_host.col_begin == it->col_begin && g_host.col_end == it->col_end) {
+    if(g_host.role == it->role && 
+       g_host.cid_begin == it->cid_begin && 
+       g_host.cid_end == it->cid_end) {
       it->endpoints = g_host.endpoints;
       return;
     }
@@ -317,11 +348,13 @@ void Groups::remove(const EndPoints& endpoints) {
   }
 }
 
-void Groups::select(int64_t cid, EndPoints& endpoints) {
+void Groups::select(uint8_t role, cid_t cid, EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
     
   for(auto& host : m_active_g_host) {
-    if(host.col_begin <= cid && (!host.col_end || host.col_end >= cid)) {
+    if(host.role & role && 
+       (!cid || (host.cid_begin <= cid && 
+                (!host.cid_end || host.cid_end >= cid)))) {
       endpoints = host.endpoints;
       return;
     }

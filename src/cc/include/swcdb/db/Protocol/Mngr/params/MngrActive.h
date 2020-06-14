@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
+#include "swcdb/db/client/mngr/Groups.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
@@ -16,12 +17,12 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 class MngrActiveReq : public Serializable {
   public:
 
-  MngrActiveReq(size_t begin=0, size_t end=0);
+  MngrActiveReq(uint8_t role=Types::MngrRole::COLUMNS, cid_t cid=0);
 
   virtual ~MngrActiveReq();
   
-  size_t begin; 
-  size_t end;
+  uint8_t   role; 
+  cid_t     cid;
 
   private:
 

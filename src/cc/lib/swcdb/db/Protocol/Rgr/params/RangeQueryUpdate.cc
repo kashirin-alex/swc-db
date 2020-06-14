@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 RangeQueryUpdateReq::RangeQueryUpdateReq() {}
 
-RangeQueryUpdateReq::RangeQueryUpdateReq(int64_t cid, int64_t rid)
+RangeQueryUpdateReq::RangeQueryUpdateReq(cid_t cid, rid_t rid)
                                         : cid(cid), rid(rid) {}
 
 RangeQueryUpdateReq::~RangeQueryUpdateReq() { }

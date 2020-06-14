@@ -23,7 +23,7 @@ class RangeBase final {
     return COLUMN_DIR;
   }
 
-  static const std::string get_column_path(const int64_t cid) {
+  static const std::string get_column_path(const cid_t cid) {
     std::string s(get_column_path());
     //if(!s.empty())
     s.append("/");
@@ -31,13 +31,13 @@ class RangeBase final {
     return s;
   }
 
-  static const std::string get_path(const int64_t cid) {
+  static const std::string get_path(const cid_t cid) {
     std::string s(get_column_path(cid));
     s.append(RANGE_DIR);
     return s;
   }
   
-  static const std::string get_path(const int64_t cid, const int64_t rid) {
+  static const std::string get_path(const cid_t cid, const rid_t rid) {
     std::string s(get_path(cid));
     s.append("/");
     FS::set_structured_id(std::to_string(rid), s);

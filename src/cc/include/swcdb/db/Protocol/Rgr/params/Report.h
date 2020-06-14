@@ -49,7 +49,7 @@ class ReportRsp  : public Serializable {
 
     static bool before(Range* r1, Range* r2);
 
-    int64_t             rid;
+    rid_t               rid;
     DB::Cells::Interval interval;
 
     ~Range();
@@ -68,7 +68,7 @@ class ReportRsp  : public Serializable {
 
     static bool before(Column* c1, Column* c2);
 
-    int64_t              cid;
+    cid_t                cid;
     Types::KeySeq        col_seq;
     std::vector<Range*>  ranges;
 
@@ -92,7 +92,7 @@ class ReportRsp  : public Serializable {
   virtual ~ReportRsp();
 
   int                  err; 
-  int64_t              rgr_id; 
+  rgrid_t              rgrid; 
   EndPoints            endpoints;
   std::vector<Column*> columns;
 

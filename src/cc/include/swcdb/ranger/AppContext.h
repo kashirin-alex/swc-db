@@ -147,7 +147,7 @@ class AppContext final : public SWC::AppContext {
         if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
           Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         
-        } else if(!RangerEnv::rgr_data()->id) {
+        } else if(!RangerEnv::rgr_data()->rgrid) {
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
 
         } else {

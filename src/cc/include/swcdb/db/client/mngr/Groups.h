@@ -5,7 +5,8 @@
 #ifndef swc_db_client_mngr_Groups_h
 #define swc_db_client_mngr_Groups_h
 
-#include <memory>
+#include "swcdb/db/Types/Identifiers.h"
+#include "swcdb/db/Types/MngrRole.h"
 #include "swcdb/core/comm/Resolver.h"
 
 
@@ -17,12 +18,16 @@ class Group final : private Hosts {
   public:
 
   typedef std::shared_ptr<Group>  Ptr;
-  const size_t col_begin;
-  const size_t col_end;
+  const uint8_t role;
+  const cid_t   cid_begin;
+  const cid_t   cid_end;
 
-  Group(size_t cbegin, size_t cend, const EndPoints& endpoints);
 
-  Group(size_t cbegin, size_t cend, const Hosts& hosts);
+  Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+        const EndPoints& endpoints);
+
+  Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+        const Hosts& hosts);
   
   ~Group();
   
@@ -54,8 +59,9 @@ class Groups final : private std::vector<Group::Ptr>,
   public:
   
   struct GroupHost final {
-    int64_t   col_begin;
-    int64_t   col_end;
+    uint8_t role;
+    cid_t   cid_begin;
+    cid_t   cid_end;
     EndPoints endpoints;
   };
   typedef std::shared_ptr<Groups> Ptr;
@@ -75,11 +81,12 @@ class Groups final : private std::vector<Group::Ptr>,
 
   Vec get_groups();
 
-  void hosts(size_t cid, Hosts& hosts, GroupHost &group_host);
+  void hosts(uint8_t role, cid_t cid, Hosts& hosts, GroupHost &group_host);
 
   Vec get_groups(const EndPoints& endpoints);
 
-  EndPoints get_endpoints(size_t col_begin=0, size_t col_end=0);
+  EndPoints get_endpoints(uint8_t role=0, cid_t cid_begin=0, 
+                                          cid_t cid_end=0);
 
   std::string to_string();
 
@@ -87,11 +94,11 @@ class Groups final : private std::vector<Group::Ptr>,
 
   void remove(const EndPoints& endpoints);
 
-  void select(int64_t cid, EndPoints& endpoints);
+  void select(uint8_t role, cid_t cid, EndPoints& endpoints);
 
   private:
 
-  void _add_host(size_t col_begin, size_t col_end, 
+  void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
                  uint16_t port, std::string host_or_ips);
 
   std::mutex              m_mutex;

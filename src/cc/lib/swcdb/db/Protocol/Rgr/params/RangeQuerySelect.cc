@@ -12,7 +12,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 RangeQuerySelectReq::RangeQuerySelectReq() {}
 
-RangeQuerySelectReq::RangeQuerySelectReq(int64_t cid, int64_t rid, 
+RangeQuerySelectReq::RangeQuerySelectReq(cid_t cid, rid_t rid, 
                                          const DB::Specs::Interval& interval)
                                         : cid(cid), rid(rid), 
                                           interval(interval) {

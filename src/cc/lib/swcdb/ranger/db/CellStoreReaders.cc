@@ -144,7 +144,7 @@ bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
 size_t Readers::encoded_length() const {
   size_t sz = Serialization::encoded_length_vi32(size());
   for(auto cs : *this) {
-    sz += Serialization::encoded_length_vi32(cs->id)
+    sz += Serialization::encoded_length_vi32(cs->csid)
         + cs->interval.encoded_length();
   }
   return sz;
@@ -153,7 +153,7 @@ size_t Readers::encoded_length() const {
 void Readers::encode(uint8_t** ptr) const {
   Serialization::encode_vi32(ptr, size());
   for(auto cs : *this) {
-    Serialization::encode_vi32(ptr, cs->id);
+    Serialization::encode_vi32(ptr, cs->csid);
     cs->interval.encode(ptr);
   }
 }
@@ -161,13 +161,13 @@ void Readers::encode(uint8_t** ptr) const {
 void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   _close();
   _free();
-  uint32_t id;
+  csid_t csid;
   uint32_t len = Serialization::decode_vi32(ptr, remain);
-  for(size_t i=0;i<len;++i) {
-    id = Serialization::decode_vi32(ptr, remain);
+  for(size_t i=0; i<len; ++i) {
+    csid = Serialization::decode_vi32(ptr, remain);
     push_back(
       Read::make(
-        err, id, range, 
+        err, csid, range, 
         DB::Cells::Interval(range->cfg->key_seq, ptr, remain)));
     //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
@@ -180,10 +180,10 @@ void Readers::load_from_path(int &err) {
     err, range->get_path(Range::CELLSTORES_DIR), dirs);
   
   FS::IdEntries_t entries;
-  for(auto id : dirs) {
-    if(id.name.find(".cs", id.name.length()-3) != std::string::npos) {
-      auto idn = id.name.substr(0, id.name.length()-3);
-      entries.push_back( (int64_t)strtoll(idn.c_str(), NULL, 0) );
+  for(auto& entry : dirs) {
+    if(entry.name.find(".cs", entry.name.length()-3) != std::string::npos) {
+      auto idn = entry.name.substr(0, entry.name.length()-3);
+      entries.push_back( (csid_t)strtoll(idn.c_str(), NULL, 0) );
     }
   }
   
@@ -191,9 +191,9 @@ void Readers::load_from_path(int &err) {
   _free();
 
   std::sort(entries.begin(), entries.end());
-  for(auto id : entries) {
+  for(csid_t csid : entries) {
     push_back(
-      Read::make(err, id, range, DB::Cells::Interval(range->cfg->key_seq))
+      Read::make(err, csid, range, DB::Cells::Interval(range->cfg->key_seq))
     );
   }
 }
@@ -221,7 +221,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
     Vec cellstores;
     for(auto cs : w_cellstores) {
       cellstores.push_back(
-        CellStore::Read::make(err, cs->id, range, cs->interval, true)
+        CellStore::Read::make(err, cs->csid, range, cs->interval, true)
       );
       if(err)
         break;

@@ -48,7 +48,7 @@ size_t ColumnListRsp::encoded_length_internal() const {
   
 void ColumnListRsp::encode_internal(uint8_t **bufp) const {
   Serialization::encode_vi64(bufp, schemas.size());
-  for(auto schema : schemas)
+  for(auto& schema : schemas)
     schema->encode(bufp);
 }
   
@@ -57,7 +57,7 @@ void ColumnListRsp::decode_internal(uint8_t version, const uint8_t **bufp,
   size_t sz = Serialization::decode_vi64(bufp, remainp);
   schemas.clear();
   schemas.resize(sz);
-  for(auto i=0;i<sz;++i) 
+  for(auto i=0; i<sz; ++i) 
     schemas[i].reset(new DB::Schema(bufp, remainp));
 }
 

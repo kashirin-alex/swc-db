@@ -215,7 +215,7 @@ class DbClient : public Interface {
 
     std::promise<void> res;
     std::atomic<size_t> proccessing = schemas.size();
-    for(auto schema : schemas) {
+    for(auto& schema : schemas) {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [schema, &proccessing, await=&res]
@@ -320,7 +320,7 @@ class DbClient : public Interface {
     DB::Cells::Result cells; 
     bool meta;
     do {
-      for(auto cid : result->get_cids()) {
+      for(cid_t cid : result->get_cids()) {
         meta = !Types::MetaColumn::is_data(cid);;
         schema = Env::Clients::get()->schemas->get(err, cid);
         cells.free();

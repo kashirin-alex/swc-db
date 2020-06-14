@@ -7,6 +7,7 @@
 #define swcdb_db_Columns_Schema_h
 
 #include <memory>
+#include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoding.h"
@@ -21,7 +22,7 @@ class Schema final {
   
   typedef std::shared_ptr<Schema>  Ptr;
 
-  static constexpr const int64_t   NO_CID = 0;
+  static constexpr const cid_t     NO_CID = 0;
 
   static Ptr make();
 
@@ -45,7 +46,7 @@ class Schema final {
 
   void display(std::ostream& out) const;
 
-  int64_t         cid;
+  cid_t           cid;
   std::string     col_name;
 
   Types::KeySeq   col_seq;

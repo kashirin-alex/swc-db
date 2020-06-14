@@ -120,7 +120,7 @@ int QuerySelect::parse_dump(std::string& filepath) {
       error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
     if(err) 
       return err;
-    int64_t cid = add_column(col);
+    cid_t cid = add_column(col);
     if(err) 
       return err;
 
@@ -139,7 +139,7 @@ int QuerySelect::parse_dump(std::string& filepath) {
 
     while(remain && !err && found_space());
     if(found_token(TOKEN_WHERE, LEN_WHERE)) {
-      std::vector<int64_t> cols = {cid};
+      std::vector<cid_t> cols = {cid};
       read_cells_intervals(cols);
       
       for(auto& col : specs.columns)
@@ -214,7 +214,7 @@ void QuerySelect::read_columns_intervals() {
     bool possible_and = false;
     
     std::string col_name;
-    std::vector<int64_t> cols;
+    std::vector<cid_t> cols;
 
     while(remain && !err) {
 
@@ -305,7 +305,7 @@ void QuerySelect::read_columns_intervals() {
 
 }
 
-int64_t QuerySelect::add_column(const std::string& col) {
+cid_t QuerySelect::add_column(const std::string& col) {
     auto schema = get_schema(col);
     if(err)
       return DB::Schema::NO_CID;
@@ -317,7 +317,7 @@ int64_t QuerySelect::add_column(const std::string& col) {
     return schema->cid;
 }
 
-void QuerySelect::read_cells_intervals(const std::vector<int64_t>& cols) {
+void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
 
     bool token_cells = false;
     bool bracket_round = false;
@@ -354,7 +354,7 @@ void QuerySelect::read_cells_intervals(const std::vector<int64_t>& cols) {
         read_cells_interval(*spec.get());
         
         for(auto& col : specs.columns) {
-          for(auto cid : cols) {
+          for(cid_t cid : cols) {
             if(col->cid == cid)
               col->intervals.push_back(DB::Specs::Interval::make_ptr(spec));
           }
@@ -772,6 +772,7 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
 void QuerySelect::read_flags(DB::Specs::Flags& flags) {
 
     bool any = true;
+    bool was_set;
     while(any && remain && !err) {
       if(found_space())
         continue;    
@@ -779,15 +780,21 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
       if(any = found_token(TOKEN_LIMIT, LEN_LIMIT)) {
         expect_eq();
         int64_t v;
-        read_int64_t(v, flags.was_set);
-        flags.limit = v;
+        read_int64_t(v, was_set = false);
+        if(was_set) {
+          flags.limit = v;
+          flags.was_set = was_set;
+        }
         continue;
       }
       if(any = found_token(TOKEN_OFFSET, LEN_OFFSET)) {
         expect_eq();
         int64_t v;
-        read_int64_t(v, flags.was_set);
-        flags.offset = v;
+        read_int64_t(v, was_set = false);
+        if(was_set) {
+          flags.offset = v;
+          flags.was_set = was_set;
+        }
         continue;
       }
       if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {

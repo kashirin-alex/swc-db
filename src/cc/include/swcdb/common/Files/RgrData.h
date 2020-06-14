@@ -19,7 +19,7 @@ class RgrData final {
   /* file-format: 
       header: i8(version), i32(data-len), 
               i32(data-checksum), i32(header-checksum),
-      data:   i64(ts), vi64(id), 
+      data:   i64(ts), vi64(rgrid), 
               i32(num-points), [endpoint]
   */
 
@@ -42,7 +42,7 @@ class RgrData final {
     return data;
   }
 
-  RgrData(): version(VERSION), id(0), timestamp(0) { }
+  RgrData(): version(VERSION), rgrid(0), timestamp(0) { }
 
   void read(int &err, const std::string& filepath) {
 
@@ -66,7 +66,7 @@ class RgrData final {
     }
 
     timestamp = Serialization::decode_i64(&ptr, &remain);
-    id = Serialization::decode_vi64(&ptr, &remain);
+    rgrid = Serialization::decode_vi64(&ptr, &remain);
 
     uint32_t len = Serialization::decode_i32(&ptr, &remain);
     endpoints.clear();
@@ -95,7 +95,7 @@ class RgrData final {
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){
     
     size_t len = 12 // (ts+endpoints.size)
-               + Serialization::encoded_length_vi64(id.load());
+               + Serialization::encoded_length_vi64(rgrid.load());
     for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
     dst_buf.ensure(HEADER_SIZE+len);
@@ -110,7 +110,7 @@ class RgrData final {
 
     const uint8_t* start_data_ptr = dst_buf.ptr;
     Serialization::encode_i64(&dst_buf.ptr, ts);
-    Serialization::encode_vi64(&dst_buf.ptr, id.load());
+    Serialization::encode_vi64(&dst_buf.ptr, rgrid.load());
     
     Serialization::encode_i32(&dst_buf.ptr, endpoints.size());
     for(auto& endpoint : endpoints)
@@ -136,8 +136,8 @@ class RgrData final {
     
     s.append(", version=");
     s.append(std::to_string(version));
-    s.append(", id=");
-    s.append(std::to_string(id.load()));
+    s.append(", rgrid=");
+    s.append(std::to_string(rgrid.load()));
     s.append(", timestamp=");
     s.append(std::to_string(timestamp));
     s.append(")");
@@ -147,7 +147,7 @@ class RgrData final {
   ~RgrData(){ }
 
   int8_t     version;
-  std::atomic<int64_t>   id;
+  std::atomic<rgrid_t>   rgrid;
   int64_t   timestamp;
   EndPoints endpoints;
 

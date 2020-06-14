@@ -223,7 +223,7 @@ class AppHandler final : virtual public BrokerIf {
     
     std::mutex mutex;
     std::promise<void> res;
-    for(auto schema : dbschemas) {
+    for(auto& schema : dbschemas) {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
@@ -531,12 +531,11 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     size_t cells_bytes;
     DB::Cells::Cell dbcell;
-
+    cid_t cid;
     // req->columns_onfractions
     for(auto& col_cells : cells) {
-      auto& cid = col_cells.first;
               // req->columns_onfractions
-      auto col = req->columns->get_col(cid);
+      auto col = req->columns->get_col(cid = col_cells.first);
       if(col == nullptr) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
         if(err) 
@@ -614,7 +613,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Cells::Result cells;
 
     size_t c;
-    for(auto cid : result->get_cids()) {
+    for(cid_t cid : result->get_cids()) {
       cells.free();
       result->get_cells(cid, cells);
 
@@ -642,7 +641,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells; 
 
-    for(auto cid : result->get_cids()) {
+    for(cid_t cid : result->get_cids()) {
       cells.free();
       result->get_cells(cid, cells); 
 
@@ -672,7 +671,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
 
-    for(auto cid : result->get_cids()) {
+    for(cid_t cid : result->get_cids()) {
       cells.free();
       result->get_cells(cid, cells); 
 
@@ -709,7 +708,7 @@ class AppHandler final : virtual public BrokerIf {
     
     std::vector<std::string> key;
 
-    for(auto cid : result->get_cids()) {
+    for(cid_t cid : result->get_cids()) {
       cells.free();
       result->get_cells(cid, cells); 
 

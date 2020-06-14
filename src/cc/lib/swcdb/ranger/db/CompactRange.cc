@@ -448,7 +448,7 @@ void CompactRange::process_write() {
   request_more();
 }
 
-uint32_t CompactRange::create_cs(int& err) { 
+csid_t CompactRange::create_cs(int& err) { 
   if(!tmp_dir) { 
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
@@ -460,10 +460,10 @@ uint32_t CompactRange::create_cs(int& err) {
       return 0;
   }
 
-  uint32_t id = cellstores.size()+1;
+  csid_t csid = cellstores.size()+1;
   cs_writer = std::make_shared<CellStore::Write>(
-    id, 
-    range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, id), 
+    csid, 
+    range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid), 
     range, 
     spec.flags.max_versions
   );
@@ -471,12 +471,12 @@ uint32_t CompactRange::create_cs(int& err) {
 
   uint32_t portion = range->cfg->compact_percent()/10;
   if(!portion) portion = 1;
-  if(id == range->cfg->cellstore_max() * portion) {
+  if(csid == range->cfg->cellstore_max() * portion) {
     stop_check_timer();
     // mitigate add req. total workload
     range->compacting(state_default = Range::COMPACT_PREPARING);
   }
-  return id;
+  return csid;
 
 }
 
@@ -535,7 +535,7 @@ void CompactRange::finalize() {
   } else if(!cellstores.size() && cs_writer == nullptr) {
     // as an initial empty range cs with range intervals
     empty_cs = true;
-    uint32_t id = create_cs(err);
+    csid_t csid = create_cs(err);
     if(err)
       return quit();
     range->get_interval(
@@ -594,7 +594,7 @@ void CompactRange::finalize() {
 void CompactRange::mngr_create_range(uint32_t split_at) {
   Protocol::Mngr::Req::RangeCreate::request(
     range->cfg->cid,
-    RangerEnv::rgr_data()->id,
+    RangerEnv::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
     (client::ConnQueue::ReqBase::Ptr req, 
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
@@ -645,7 +645,7 @@ void CompactRange::mngr_remove_range(RangePtr new_range) {
   res.get_future().get();
 }
 
-void CompactRange::split(int64_t new_rid, uint32_t split_at) {
+void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   int err = Error::OK;
   Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
   if(col == nullptr || col->removing())

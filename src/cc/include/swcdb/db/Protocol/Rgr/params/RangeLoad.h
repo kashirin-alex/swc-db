@@ -16,7 +16,7 @@ class RangeLoad : public Common::Params::ColRangeId {
 
   RangeLoad() {}
 
-  RangeLoad(size_t cid, size_t rid, DB::Schema::Ptr schema) 
+  RangeLoad(cid_t cid, rid_t rid, DB::Schema::Ptr schema) 
             : Common::Params::ColRangeId(cid, rid), schema(schema) {
   }
              

@@ -22,7 +22,7 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeRemoveRsp&)> Cb_t;
  
-  static void request(int64_t cid, int64_t rid, 
+  static void request(cid_t cid, rid_t rid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
     request(Params::RangeRemoveReq(cid, rid), cb, timeout);
   }
@@ -50,9 +50,11 @@ class RangeRemove: public client::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()){
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+      Env::Clients::get()->mngrs_groups->select(
+        Types::MngrRole::COLUMNS, cid, endpoints); 
       if(endpoints.empty()){
-        std::make_shared<MngrActive>(cid, shared_from_this())->run();
+        std::make_shared<MngrActive>(
+          Types::MngrRole::COLUMNS, cid, shared_from_this())->run();
         return false;
       }
     } 
@@ -93,7 +95,7 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   }
 
   const Cb_t      cb;
-  const int64_t   cid;
+  const cid_t     cid;
   EndPoints       endpoints;
 };
 

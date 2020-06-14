@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 
-RangeLocateReq::RangeLocateReq(int64_t cid, int64_t rid)
+RangeLocateReq::RangeLocateReq(cid_t cid, rid_t rid)
                               : cid(cid), rid(rid), flags(0) {}
 
 RangeLocateReq::~RangeLocateReq() { }

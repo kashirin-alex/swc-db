@@ -22,7 +22,7 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
     params.decode(&ptr, &remain);
 
     auto rgr_data = RangerEnv::rgr_data();
-    if(!(rsp_params.rgr_id = rgr_data->id)) {
+    if(!(rsp_params.rgrid = rgr_data->rgrid)) {
       rsp_params.err = Error::RS_NOT_READY;
       goto send_response;
     }
@@ -33,12 +33,12 @@ void report(ConnHandlerPtr conn, Event::Ptr ev) {
       Ranger::Column::Ptr col;
       Ranger::RangePtr range;
       auto columns = RangerEnv::columns();
-      for(size_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; ++cidx) {
+      for(cid_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; ++cidx) {
         auto c = new Protocol::Rgr::Params::ReportRsp::Column();
         rsp_params.columns.push_back(c);
         c->cid = col->cfg.cid;
         c->col_seq = col->cfg.key_seq;
-        for(size_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ++ridx) {
+        for(rid_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ++ridx) {
           auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
           c->ranges.push_back(r);
           r->rid = range->rid;

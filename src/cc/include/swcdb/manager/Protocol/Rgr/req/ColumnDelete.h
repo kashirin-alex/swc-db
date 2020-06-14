@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class ColumnDelete : public client::ConnQueue::ReqBase  {
   public:
 
-  ColumnDelete(Manager::Ranger::Ptr rgr, int64_t cid);
+  ColumnDelete(Manager::Ranger::Ptr rgr, cid_t cid);
   
   virtual ~ColumnDelete();
   
@@ -25,8 +25,8 @@ class ColumnDelete : public client::ConnQueue::ReqBase  {
 
   private:
 
-  Manager::Ranger::Ptr   rgr;
-  int64_t                cid;
+  Manager::Ranger::Ptr  rgr;
+  cid_t                 cid;
 };
 
 }}}}

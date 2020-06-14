@@ -32,9 +32,9 @@ class QuerySelect final : public Reader {
 
   void read_columns_intervals();
 
-  int64_t add_column(const std::string& col);
+  cid_t add_column(const std::string& col);
 
-  void read_cells_intervals(const std::vector<int64_t>& cols);
+  void read_cells_intervals(const std::vector<cid_t>& cols);
   
   void read_cells_interval(DB::Specs::Interval& spec);
 

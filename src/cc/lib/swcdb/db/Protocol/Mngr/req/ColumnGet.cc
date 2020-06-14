@@ -20,28 +20,28 @@ void ColumnGet::schema(const std::string& name, const ColumnGet::Cb_t cb,
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::schema(int64_t cid, const ColumnGet::Cb_t cb, 
-                        const uint32_t timeout) {
+void ColumnGet::schema(cid_t cid, const ColumnGet::Cb_t cb, 
+                       const uint32_t timeout) {
   request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnGet::cid(const std::string& name, const ColumnGet::Cb_t cb, 
-                     const uint32_t timeout) {
+                    const uint32_t timeout) {
   request(Flag::ID_BY_NAME, name, cb, timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnGet::request(ColumnGet::Flag flag, const std::string& name, 
-                         const ColumnGet::Cb_t cb, 
-                         const uint32_t timeout){
+                        const ColumnGet::Cb_t cb,
+                        const uint32_t timeout) {
   std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, name), cb, timeout)
     ->run();
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::request(ColumnGet::Flag flag, int64_t cid, const ColumnGet::Cb_t cb, 
-                    const uint32_t timeout){
+void ColumnGet::request(ColumnGet::Flag flag, cid_t cid, 
+                        const ColumnGet::Cb_t cb, const uint32_t timeout) {
   std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, cid), cb, timeout)
     ->run();
 }
@@ -65,9 +65,11 @@ void ColumnGet::handle_no_conn() {
 bool ColumnGet::run(uint32_t timeout) {
   if(endpoints.empty()){
     // columns-get (can be any mngr)
-    Env::Clients::get()->mngrs_groups->select(1, endpoints); 
+    Env::Clients::get()->mngrs_groups->select(
+      Types::MngrRole::SCHEMAS, 0, endpoints); 
     if(endpoints.empty()){
-      std::make_shared<MngrActive>(1, shared_from_this())->run();
+      std::make_shared<MngrActive>(
+        Types::MngrRole::SCHEMAS, 0, shared_from_this())->run();
       return false;
     }
   } 

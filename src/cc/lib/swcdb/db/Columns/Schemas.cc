@@ -24,7 +24,7 @@ void Schemas::add(int& err, const Schema::Ptr& schema) {
   }
 }
 
-void Schemas::remove(int64_t cid) {
+void Schemas::remove(cid_t cid) {
   std::scoped_lock lock(m_mutex);
 
   auto it = m_map.find(cid);
@@ -42,7 +42,7 @@ void Schemas::replace(const Schema::Ptr& schema) {
     it->second = schema;
 }
 
-Schema::Ptr Schemas::get(int64_t cid) {
+Schema::Ptr Schemas::get(cid_t cid) {
   std::shared_lock lock(m_mutex);
 
   auto it = m_map.find(cid);

@@ -22,7 +22,7 @@ class Dirent final : public Serializable {
   uint64_t      length {};
   /// Last modification time
   time_t        last_modification_time {};
-  /// Flag indicating if entry id a directory
+  /// Flag indicating if entry is a directory
   bool          is_dir {};
 
   std::string to_string() const;

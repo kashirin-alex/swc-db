@@ -878,7 +878,7 @@ Strings V_GSTRINGS::get() const {
 }
 
 size_t V_GSTRINGS::size() {
-  LockAtomic::Unique::scope lock(mutex);	
+  LockAtomic::Unique::scope lock(mutex);
   return value.size();
 }
 

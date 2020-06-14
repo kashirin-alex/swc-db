@@ -10,10 +10,10 @@
 namespace SWC { namespace Ranger { namespace CellStore {
 
 
-Read::Ptr Read::make(int& err, const uint32_t id, 
+Read::Ptr Read::make(int& err, const csid_t csid, 
                      const RangePtr& range, 
                      const DB::Cells::Interval& interval, bool chk_base) {
-  auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(id), 0);
+  auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(csid), 0);
   DB::Cell::Key prev_key_end;
   DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
   std::vector<Block::Read::Ptr> blocks;
@@ -25,12 +25,12 @@ Read::Ptr Read::make(int& err, const uint32_t id,
   }
   if(err)
     SWC_LOGF(LOG_ERROR, 
-      "CellStore load_blocks_index err=%d(%s) id=%d range(%d/%d) %s", 
-      err, Error::get_text(err), id, range->cfg->cid, range->rid, 
+      "CellStore load_blocks_index err=%d(%s) csid=%d range(%d/%d) %s", 
+      err, Error::get_text(err), csid, range->cfg->cid, range->rid, 
       interval.to_string().c_str());
 
   return new Read(
-    id, 
+    csid, 
     prev_key_end,
     interval_by_blks.was_set ? interval_by_blks : interval, 
     blocks, 
@@ -219,12 +219,12 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
 // 
 
-Read::Read(const uint32_t id,
+Read::Read(const csid_t csid,
            const DB::Cell::Key& prev_key_end,
            const DB::Cells::Interval& interval, 
            const std::vector<Block::Read::Ptr>& blocks,
            const FS::SmartFd::Ptr& smartfd) 
-          : id(id), 
+          : csid(csid), 
             prev_key_end(prev_key_end), 
             interval(interval), 
             blocks(blocks), 
@@ -329,8 +329,8 @@ size_t Read::blocks_count() const {
 std::string Read::to_string() const {
   std::string s("Read(v=");
   s.append(std::to_string(VERSION));
-  s.append(" id=");
-  s.append(std::to_string(id));
+  s.append(" csid=");
+  s.append(std::to_string(csid));
   s.append(" prev=");
   s.append(prev_key_end.to_string());
   s.append(" ");
@@ -369,9 +369,9 @@ std::string Read::to_string() const {
 
 
 
-Write::Write(const uint32_t id, const std::string& filepath, 
+Write::Write(const csid_t csid, const std::string& filepath, 
              RangePtr range, uint32_t cell_revs)
-            : id(id), 
+            : csid(csid), 
               smartfd(
                 FS::SmartFd::make_ptr(
                   filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)

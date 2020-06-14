@@ -22,9 +22,9 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
                              const Params::RangeCreateRsp&)> Cb_t;
  
-  static void request(int64_t cid, int64_t rgr_id, 
+  static void request(cid_t cid, rgrid_t rgrid, 
                       const Cb_t cb, const uint32_t timeout = 10000){
-    request(Params::RangeCreateReq(cid, rgr_id), cb, timeout);
+    request(Params::RangeCreateReq(cid, rgrid), cb, timeout);
   }
 
   static inline void request(const Params::RangeCreateReq params,
@@ -50,9 +50,11 @@ class RangeCreate: public client::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override {
     if(endpoints.empty()){
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+      Env::Clients::get()->mngrs_groups->select(
+        Types::MngrRole::COLUMNS, cid, endpoints); 
       if(endpoints.empty()){
-        std::make_shared<MngrActive>(cid, shared_from_this())->run();
+        std::make_shared<MngrActive>(
+          Types::MngrRole::COLUMNS, cid, shared_from_this())->run();
         return false;
       }
     } 
@@ -93,7 +95,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   }
 
   const Cb_t      cb;
-  const int64_t   cid;
+  const cid_t     cid;
   EndPoints       endpoints;
 };
 

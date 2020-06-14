@@ -20,8 +20,9 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::MngrActiveReq params;
     params.decode(&ptr, &remain);
 
-    Manager::MngrStatus::Ptr h = Env::Mngr::role()->active_mngr(
-      params.begin, params.end);
+    Manager::MngrStatus::Ptr h = params.role & Types::MngrRole::COLUMNS 
+      ? Env::Mngr::role()->active_mngr(params.cid)
+      : Env::Mngr::role()->active_mngr_role(params.role);
 
     auto cbp = CommBuf::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
     cbp->header.initialize_from_request_header(ev->header);

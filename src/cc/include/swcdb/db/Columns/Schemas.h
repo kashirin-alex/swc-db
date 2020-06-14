@@ -23,19 +23,19 @@ class Schemas final {
   
   void add(int& err, const Schema::Ptr& schema);
 
-  void remove(int64_t cid);
+  void remove(cid_t cid);
 
   void replace(const Schema::Ptr& schema);
 
-  Schema::Ptr get(int64_t cid);
+  Schema::Ptr get(cid_t cid);
   
   Schema::Ptr get(const std::string& name);
 
   void all(std::vector<Schema::Ptr>& entries);
 
   private:
-  std::shared_mutex                         m_mutex;
-  std::unordered_map<int64_t, Schema::Ptr>  m_map;
+  std::shared_mutex                       m_mutex;
+  std::unordered_map<cid_t, Schema::Ptr>  m_map;
 };
 
 

@@ -157,7 +157,7 @@ void Settings::load_files_by(const std::string& fileprop,
         fname.append(get_str("swc.cfg.path"));
       fname.append(*it);
 
-	    try {
+      try {
         load(fname, file_desc, cmdline_desc, allow_unregistered);
 
         std::lock_guard lock(mutex);
@@ -165,7 +165,7 @@ void Settings::load_files_by(const std::string& fileprop,
         if(it == m_dyn_files.end())
           m_dyn_files.push_back({.filename=fname, .modified=0});
       } catch (std::exception &e) {
-		    SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
+        SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
                   fileprop.c_str(), it->c_str(), e.what());
       }
     }

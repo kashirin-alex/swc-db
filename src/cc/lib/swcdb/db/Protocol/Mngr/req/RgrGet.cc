@@ -14,7 +14,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
  
 SWC_SHOULD_INLINE
-void RgrGet::request(int64_t cid, int64_t rid, bool next_range,
+void RgrGet::request(cid_t cid, rid_t rid, bool next_range,
                      const RgrGet::Cb_t cb, const uint32_t timeout) {
   request(Params::RgrGetReq(cid, rid, next_range), cb, timeout);
 }
@@ -47,9 +47,11 @@ void RgrGet::handle_no_conn() {
 
 bool RgrGet::run(uint32_t timeout) {
   if(endpoints.empty()){
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+    Env::Clients::get()->mngrs_groups->select(
+      Types::MngrRole::COLUMNS, cid, endpoints); 
     if(endpoints.empty()){
-      std::make_shared<MngrActive>(cid, shared_from_this())->run();
+      std::make_shared<MngrActive>(
+        Types::MngrRole::COLUMNS, cid, shared_from_this())->run();
       return false;
     }
   } 

@@ -59,7 +59,7 @@ class RangeLocateScan : public ReqScan {
     }
     //return true; // without aligned min-max
 
-    int64_t rid = Serialization::decode_vi64(&ptr, &remain); // rid
+    rid_t rid = Serialization::decode_vi64(&ptr, &remain); // rid
 
     DB::Cell::KeyVec aligned_min;
     aligned_min.decode(&ptr, &remain);
@@ -100,7 +100,7 @@ class RangeLocateScan : public ReqScan {
 
     params.range_begin.copy(cell.key); 
     std::string id_name(params.range_begin.get_string(0));
-    params.cid = (int64_t)strtoll(id_name.c_str(), NULL, 0);
+    params.cid = (cid_t)strtoll(id_name.c_str(), NULL, 0);
 
     const uint8_t* ptr = cell.value;
     size_t remain = cell.vlen;
