@@ -129,6 +129,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     }
 
     MngrStatus::Ptr high_set = get_highest_state_host(host);
+    if(!high_set)
+      continue;
 
     if(high_set->state == Types::MngrState::ACTIVE) {
       if(host->state != host_set->state
@@ -172,7 +174,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 
       MngrStatus::Ptr l_host = get_host(m_local_endpoints);
       MngrStatus::Ptr l_high = get_highest_state_host(l_host);
-      if(l_high->state < Types::MngrState::WANT) {
+      if(!l_high || l_high->state < Types::MngrState::WANT) {
         update_state(m_local_endpoints, Types::MngrState::WANT);
         new_recs = true;
       }

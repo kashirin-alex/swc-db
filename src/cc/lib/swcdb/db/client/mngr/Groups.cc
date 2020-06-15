@@ -202,6 +202,7 @@ void Groups::on_cfg_update() {
 
       at = cfg.find_first_of('|', at_offset = ++at);
     } else if(role != Types::MngrRole::COLUMNS) {
+      role -= Types::MngrRole::COLUMNS;
       role |= Types::MngrRole::NO_COLUMNS;
     }
 
