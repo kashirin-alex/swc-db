@@ -22,11 +22,10 @@ void column_list(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::ColumnListReq req_params;
     req_params.decode(&ptr, &remain); // opt for list cid range
 
-    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
-      err = Error::MNGR_NOT_ACTIVE;
-
-    if(!err)
+    if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)
       Env::Mngr::schemas()->all(rsp.schemas);
+    else if(!err)
+      err = Error::MNGR_NOT_ACTIVE;
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

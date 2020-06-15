@@ -36,7 +36,7 @@ class MngdColumns final {
 
   void stop();
 
-  bool is_root_mngr();
+  bool is_schemas_mngr(int& err);
 
   void active(const std::vector<cid_t>& cols);
 
@@ -95,7 +95,7 @@ class MngdColumns final {
   
   std::shared_mutex             m_mutex;
   std::atomic<bool>             m_run; 
-  std::atomic<bool>             m_root_mngr;
+  std::atomic<bool>             m_schemas_mngr;
   std::atomic<bool>             m_columns_set;
   std::vector<cid_t>            m_cols_active;
 

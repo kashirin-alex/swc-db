@@ -29,10 +29,10 @@ DB::Schema::Ptr get_schema(int &err, Params::ColumnGetReq params) {
   }
 }
 
-void mngr_update_response(ConnHandlerPtr conn, Event::Ptr ev,
+void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
                           int err, Params::ColumnGetReq::Flag flag, 
-                          DB::Schema::Ptr schema) {
-  if(err == Error::OK && schema == nullptr)
+                          const DB::Schema::Ptr& schema) {
+  if(!err && !schema)
     err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
   try {
@@ -61,18 +61,11 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
     flag = req_params.flag;
       
     DB::Schema::Ptr schema = get_schema(err, req_params);
-    if(schema != nullptr || err) {
-      mngr_update_response(conn, ev, err, flag, schema);
-      return;
-    }
+    if(schema || err)
+      return mngr_update_response(conn, ev, err, flag, schema);
 
-    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
-      err = Error::MNGR_NOT_ACTIVE;
-
-    if(!err) {
-      mngr_update_response(conn, ev, err, flag, schema);
-      return;
-    }
+    if(Env::Mngr::mngd_columns()->is_schemas_mngr(err))
+      return mngr_update_response(conn, ev, err, flag, schema);
 
     if(flag == Params::ColumnGetReq::Flag::ID_BY_NAME)
       req_params.flag = Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
@@ -80,8 +73,8 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
     Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Req::MngrColumnGet>(
         req_params,
-        [conn, ev](int err, const Params::ColumnGetRsp& params){
-          if(err == Error::OK && params.schema != nullptr){
+        [conn, ev] (int err, const Params::ColumnGetRsp& params) {
+          if(!err && params.schema) {
             int tmperr;
             Env::Mngr::schemas()->add(tmperr, params.schema);
           }
@@ -89,14 +82,16 @@ void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
         }
       )
     );
-    return;
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    err = e.code();
+    try {
+      mngr_update_response(conn, ev, e.code(), flag, nullptr);
+    } catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    }
   }
-    
-  mngr_update_response(conn, ev, err, flag, nullptr);
+
 }
 
 

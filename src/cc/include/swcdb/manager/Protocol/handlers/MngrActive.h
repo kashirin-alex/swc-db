@@ -13,6 +13,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
 void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
+  Manager::MngrStatus::Ptr h = nullptr;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -20,15 +21,21 @@ void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::MngrActiveReq params;
     params.decode(&ptr, &remain);
 
-    Manager::MngrStatus::Ptr h = params.role & Types::MngrRole::COLUMNS 
+    h = params.role & Types::MngrRole::COLUMNS 
       ? Env::Mngr::role()->active_mngr(params.cid)
       : Env::Mngr::role()->active_mngr_role(params.role);
 
-    auto cbp = CommBuf::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
+
+  try {
+    auto cbp = CommBuf::make(
+      Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
-  }
-  catch (Exception &e) {
+
+  } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
 }

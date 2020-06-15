@@ -121,7 +121,7 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
     }
   }
 
-  if(new_ack != nullptr) {
+  if(new_ack) {
     RangerList hosts({new_ack});
     changes(hosts);
   }
@@ -160,7 +160,7 @@ void Rangers::rgr_shutdown(rgrid_t rgrid, const EndPoints& endpoints) {
       }
     }
   }
-  if(removed != nullptr) {
+  if(removed) {
     RangerList hosts({removed});
     changes(hosts);
   }
@@ -415,16 +415,15 @@ void Rangers::assign_ranges_run() {
       }
     }
 
-    if((range = Env::Mngr::columns()->get_next_unassigned()) == nullptr) {
+    if(!(range = Env::Mngr::columns()->get_next_unassigned())) {
       runs_assign(true);
       break;
     }
 
-    err = Error::OK;
-    Files::RgrData::Ptr last_rgr = range->get_last_rgr(err);
+    Files::RgrData::Ptr last_rgr = range->get_last_rgr(err = Error::OK);
     Ranger::Ptr rgr = nullptr;
     next_rgr(last_rgr, rgr);
-    if(rgr == nullptr) {
+    if(!rgr) {
       runs_assign(true);
       schedule_assignment_check();
       return;
@@ -462,7 +461,7 @@ void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
   size_t avg_ranges;
   Ranger::Ptr rgr;
 
-  while(rs_set == nullptr && m_rangers.size()) {
+  while(!rs_set && m_rangers.size()) {
     avg_ranges = 0;
     num_rgr = 0;
     // avg_resource_ratio = 0;
@@ -491,17 +490,15 @@ void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
     }
   }
 
-  if(rs_set != nullptr)
+  if(rs_set)
     ++rs_set->total_ranges;
   return;
 }
 
 void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range, 
                            Files::RgrData::Ptr last_rgr) {
-  if(last_rgr == nullptr) {
-    assign_range(rgr, range);
-    return;
-  }
+  if(!last_rgr)
+    return assign_range(rgr, range);
 
   bool id_due;
   Ranger::Ptr rs_last = nullptr;
@@ -516,7 +513,7 @@ void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range,
       }
     }
   }
-  if(rs_last == nullptr) {
+  if(!rs_last) {
     std::lock_guard lock(m_mutex);
     rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
     rs_last->init_queue();

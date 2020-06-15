@@ -21,29 +21,26 @@ void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::ColumnMng req_params;
     req_params.decode(&ptr, &remain);
 
-    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
-      err = Error::MNGR_NOT_ACTIVE;
-      
-    if(err == Error::OK) {
-      Env::Mngr::mngd_columns()->action({
+    if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)
+      return Env::Mngr::mngd_columns()->action({
         .params=req_params, 
-        .cb=[conn, ev](int err){
-          if(err == Error::OK)
-            conn->response_ok(ev);
-          else
+        .cb=[conn, ev](int err) {
+          if(err)
             conn->send_error(err , "", ev);
-          }
+          else
+            conn->response_ok(ev);
+        }
       });
-    }
+    if(!err)
+      err = Error::MNGR_NOT_ACTIVE;
+
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
 
   try{
-    if(err != Error::OK)
-      conn->send_error(err , "", ev);
-
+    conn->send_error(err , "", ev);
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
