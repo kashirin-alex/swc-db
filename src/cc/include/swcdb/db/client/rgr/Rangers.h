@@ -14,7 +14,18 @@
 
 namespace SWC { namespace client {
 
-class Rangers  {
+struct RangeEndPoints final {
+  const int64_t     ts;
+  const EndPoints   endpoints;
+  RangeEndPoints(const int64_t ts, const EndPoints& endpoints)
+                : ts(ts), endpoints(endpoints) {
+  }
+};
+
+
+class Rangers final 
+    : private std::unordered_map<
+        cid_t, std::unordered_map<rid_t, RangeEndPoints*>> {
   public:
 
   Rangers(const Property::V_GINT32::Ptr expiry_ms);
@@ -32,17 +43,9 @@ class Rangers  {
   void set(const cid_t cid, const rid_t rid, const EndPoints& endpoints);
 
   private:
-  struct Range final {
-    int64_t   ts;
-    EndPoints endpoints;
-    Range(const int64_t ts, const EndPoints endpoints)
-          : ts(ts), endpoints(endpoints) {
-    }
-  };
-  typedef std::unordered_map<rid_t, Range>   Ranges;
-  Mutex                                      m_mutex;
-  std::unordered_map<cid_t, Ranges>          m_map;
-  Property::V_GINT32::Ptr                    m_expiry_ms;
+
+  Mutex                     m_mutex;
+  Property::V_GINT32::Ptr   m_expiry_ms;
   
 };
 
