@@ -18,19 +18,11 @@ void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Params::ColumnMng req_params;
-    req_params.decode(&ptr, &remain);
+    auto req = std::make_shared<Manager::MngdColumns::ColumnReq>(conn, ev);
+    req->decode(&ptr, &remain);
 
     if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)
-      return Env::Mngr::mngd_columns()->action({
-        .params=req_params, 
-        .cb=[conn, ev](int err) {
-          if(err)
-            conn->send_error(err , "", ev);
-          else
-            conn->response_ok(ev);
-        }
-      });
+      return Env::Mngr::mngd_columns()->action(req);
     if(!err)
       err = Error::MNGR_NOT_ACTIVE;
 

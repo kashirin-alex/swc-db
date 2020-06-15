@@ -14,10 +14,6 @@ namespace SWC { namespace Manager {
 
 class MngdColumns final {
 
-  struct ColumnActionReq final {
-    Protocol::Mngr::Params::ColumnMng params;
-    std::function<void(int)>          cb;
-  };
   struct ColumnFunction final {
     ColumnFunction() { }
     ColumnFunction(Protocol::Mngr::Params::ColumnMng::Function func, 
@@ -27,8 +23,14 @@ class MngdColumns final {
     cid_t cid;
   };
 
-
   public:
+
+  struct ColumnReq final : public Protocol::Mngr::Params::ColumnMng,
+                           public ResponseCallback {
+    typedef std::shared_ptr<ColumnReq> Ptr;
+    ColumnReq(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+              : ResponseCallback(conn, ev) { }
+  };
 
   MngdColumns();
 
@@ -46,7 +48,7 @@ class MngdColumns final {
 
   void require_sync();
 
-  void action(ColumnActionReq new_req);
+  void action(const ColumnReq::Ptr& new_req);
 
   void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr schema, int err, bool initial=false);
@@ -100,8 +102,8 @@ class MngdColumns final {
   std::vector<cid_t>            m_cols_active;
 
   std::mutex                    m_mutex_columns;
-  std::queue<ColumnActionReq>   m_actions;
-  std::vector<ColumnActionReq>  m_cid_pending;
+  QueueSafe<ColumnReq::Ptr>     m_actions;
+  std::vector<ColumnReq::Ptr>   m_cid_pending;
   std::vector<ColumnFunction>   m_cid_pending_load;
 
   const Property::V_GUINT8::Ptr cfg_schema_replication;
