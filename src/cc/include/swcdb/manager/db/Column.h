@@ -14,7 +14,7 @@
 namespace SWC { namespace Manager {
 
 
-class Column final {
+class Column final : private std::vector<Range::Ptr> {
   
   public:
 
@@ -85,14 +85,13 @@ class Column final {
   Range::Ptr get_range(int &err, const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 
-    auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
-                          [rid](const Range::Ptr& range) 
-                          {return range->rid == rid;});
-    if(it != m_ranges.end())
+    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range) 
+                                           {return range->rid == rid;});
+    if(it != end())
       return *it;
 
     if(initialize)
-      return m_ranges.emplace_back(new Range(&cfg, rid));
+      return emplace_back(new Range(&cfg, rid));
       
     return nullptr;
   }
@@ -106,7 +105,7 @@ class Column final {
       ? 2 : (Types::MetaColumn::is_meta(cfg.cid) ? 1 : 0);
 
     std::shared_lock lock(m_mutex);
-    for(auto& range : m_ranges) {
+    for(auto& range : *this) {
       if(!range->includes(range_begin, range_end, any_is)) 
         continue;
       if(!next_range)
@@ -123,26 +122,26 @@ class Column final {
   void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
     std::scoped_lock lock(m_mutex);
     
-    // std::sort(m_ranges.begin(), m_ranges.end(), Range); 
+    // std::sort(begin(), end(), Range); 
     if(!range->equal(interval)) {
       range->set(interval);
       
-      if(m_ranges.size() > 1) {
-        m_ranges.erase(
-          std::find_if(m_ranges.begin(), m_ranges.end(), 
-            [rid=range->rid](const Range::Ptr& range) 
-            {return range->rid == rid;})
-        );
+      if(size() > 1) {
+        auto it = std::find_if(
+          begin(), end(), [rid=range->rid](const Range::Ptr& range)
+                          {return range->rid == rid;});
+        if(it != end())
+          erase(it);
         bool added = false;
-        for(auto it=m_ranges.begin(); it<m_ranges.end(); ++it){
+        for(auto it=begin(); it<end(); ++it) {
           if((*it)->after(range)) {
-            m_ranges.insert(it, range);
+            insert(it, range);
             added = true;
             break;
           }
         }
         if(!added)
-          m_ranges.push_back(range);
+          push_back(range);
       }
     }
     
@@ -152,7 +151,8 @@ class Column final {
   Range::Ptr create_new_range(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
 
-    auto& range = m_ranges.emplace_back(new Range(&cfg, _get_next_rid()));
+    auto& range = emplace_back(new Range(&cfg, _get_next_rid()));
+    // if !rid - err reached id limit
     range->set_state(Range::State::CREATED, rgrid);
     return range;
   }
@@ -165,7 +165,7 @@ class Column final {
   Range::Ptr get_next_unassigned() {
     std::scoped_lock lock(m_mutex);
 
-    for(auto& range : m_ranges) {
+    for(auto& range : *this) {
       if(range->need_assign()) {
         _set_loading();
         return range;
@@ -177,8 +177,8 @@ class Column final {
   void set_rgr_unassigned(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);    
 
-    for(auto& range : m_ranges){
-      if(range->get_rgr_id() == rgrid){
+    for(auto& range : *this) {
+      if(range->get_rgr_id() == rgrid) {
         range->set_state(Range::State::NOTSET, 0);
         _set_loading();
       }
@@ -187,14 +187,14 @@ class Column final {
   }
 
   void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);    
+    std::scoped_lock lock(m_mutex);
 
-    for(auto& range : m_ranges) {
+    for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid_old)
         range->set_rgr_id(rgrid);
     }
 
-    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
+    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
       if(it->first == rgrid_old) {
         m_schemas_rev.emplace(rgrid, it->second);
         m_schemas_rev.erase(it);
@@ -221,7 +221,7 @@ class Column final {
   void need_schema_sync(int64_t rev, std::vector<rgrid_t> &rgrids) {
     std::shared_lock lock(m_mutex);
 
-    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it){
+    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
       if(it->second != rev)
         rgrids.push_back(it->first);
     }
@@ -240,7 +240,7 @@ class Column final {
     std::shared_lock lock(m_mutex);
 
     rgrid_t rgrid;
-    for(auto& range : m_ranges) {
+    for(auto& range : *this) {
       if(!(rgrid = range->get_rgr_id()))
         continue;
       if(std::find_if(rgrids.begin(), rgrids.end(), 
@@ -253,15 +253,14 @@ class Column final {
   void remove_range(rid_t rid) {
     std::scoped_lock lock(m_mutex);
 
-    if(!m_ranges.size()) 
+    if(!size()) 
       return;
-    auto it = std::find_if(m_ranges.begin(), m_ranges.end(), 
-                          [rid](const Range::Ptr& range) 
-                          {return range->rid == rid;});
-    if(it == m_ranges.end())
+    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range) 
+                                           {return range->rid == rid;});
+    if(it == end())
       return;
     (*it)->set_deleted();
-    m_ranges.erase(it);
+    erase(it);
     apply_loaded_state();
   }
 
@@ -273,7 +272,7 @@ class Column final {
     m_schemas_rev.clear();
     
     if(!was) {
-      for(auto& range : m_ranges)
+      for(auto& range : *this)
         range->set_deleted();
     }
     return !was;
@@ -283,17 +282,17 @@ class Column final {
     std::scoped_lock lock(m_mutex);
     
     if(!rgrid) {
-      m_ranges.clear();
+      clear();
     } else {
       rgrid_t eid;
-      for(auto it=m_ranges.begin();it<m_ranges.end();){
+      for(auto it=begin(); it<end(); ) {
         if((eid = (*it)->get_rgr_id()) == rgrid || !eid)
-          m_ranges.erase(it);
+          erase(it);
         else
           ++it;
       }
     }
-    if(m_ranges.empty()) {
+    if(empty()) {
       Env::FsInterface::interface()->rmdir(
         err, DB::RangeBase::get_path(cfg.cid));
       SWC_LOGF(LOG_DEBUG, "FINALIZED REMOVE %s", _to_string().c_str());
@@ -324,7 +323,7 @@ class Column final {
       err, DB::RangeBase::get_path(cfg.cid));
   }
 
-  void ranges_by_fs(int &err, FS::IdEntries_t &entries){
+  void ranges_by_fs(int &err, FS::IdEntries_t &entries) {
     Env::FsInterface::interface()->get_structured_ids(
       err, DB::RangeBase::get_path(cfg.cid), entries);
   }
@@ -336,7 +335,7 @@ class Column final {
     s.append(std::to_string(_get_next_rid()));
     s.append(", ranges=(");
     
-    for(auto& range : m_ranges){
+    for(auto& range : *this) {
       s.append(range->to_string());
       s.append(",");
     }
@@ -350,13 +349,10 @@ class Column final {
   }
   
   rid_t _get_next_rid() {
-    rid_t rid = 1;
-    for(
-      ;std::find_if(m_ranges.begin(), m_ranges.end(), 
-        [rid](const Range::Ptr& range) 
-        {return range->rid == rid;}) != m_ranges.end()
-      ;rid++
-    );
+    rid_t rid = 0;
+    while(++rid && std::find_if(
+      begin(), end(), [rid](const Range::Ptr& range)
+      { return range->rid == rid; }) != end());
     return rid;
   }
 
@@ -370,7 +366,7 @@ class Column final {
     if(m_state != State::LOADING)
       return;
 
-    for(auto& range : m_ranges){
+    for(auto& range : *this) {
       if(!range->assigned())
         return;
     }
@@ -380,7 +376,6 @@ class Column final {
 
   std::shared_mutex         m_mutex;
   std::atomic<State>        m_state;
-  std::vector<Range::Ptr>   m_ranges;
 
   std::unordered_map<rgrid_t, int64_t>   m_schemas_rev;
 
