@@ -172,7 +172,10 @@ void Rangers::sync() {
 }
 
 void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
-  if(Env::Mngr::mngd_columns()->is_root_mngr() && !sync_all)
+  bool rangers_mngr = Env::Mngr::role()->is_active_role(
+    Types::MngrRole::RANGERS);
+
+  if(rangers_mngr && !sync_all)
     return;
 
   RangerList changed;
@@ -192,10 +195,10 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
         chg = false;
         if(rs_new->rgrid != h->rgrid) { 
-          if(Env::Mngr::mngd_columns()->is_root_mngr())
+          if(rangers_mngr)
             rs_new->rgrid = rgr_set(rs_new->endpoints, rs_new->rgrid)->rgrid;
           
-          if(Env::Mngr::mngd_columns()->is_root_mngr() && rs_new->rgrid != h->rgrid)
+          if(rangers_mngr && rs_new->rgrid != h->rgrid)
             Env::Mngr::columns()->change_rgr(h->rgrid, rs_new->rgrid);
 
           h->rgrid = rs_new->rgrid;
@@ -247,7 +250,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
   changes(
     sync_all ? m_rangers : changed, 
-    sync_all && !Env::Mngr::mngd_columns()->is_root_mngr()
+    sync_all && !rangers_mngr
   );
 }
 

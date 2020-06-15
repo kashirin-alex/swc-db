@@ -20,9 +20,6 @@ void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
     Params::RgrMngId req_params;
     req_params.decode(&ptr, &remain);
 
-    // ResponseCallback::Ptr cb = 
-    //  std::make_shared<ResponseCallback>(conn, ev);
-          
     if(!Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
       SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d rgrid=%d %s",
                 req_params.flag, req_params.rgrid, 
