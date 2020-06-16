@@ -16,25 +16,35 @@ Schemas::Schemas() {}
 Schemas::~Schemas() {}
 
 void Schemas::add(int& err, const Schema::Ptr& schema) {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
+  _add(err, schema);
+}
+
+void Schemas::_add(int& err, const Schema::Ptr& schema) {
   if(!emplace(schema->cid, schema).second) {
     SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
-              schema->to_string().c_str());
+             schema->to_string().c_str());
     err = Error::COLUMN_SCHEMA_NAME_EXISTS;
   }
 }
 
 void Schemas::remove(cid_t cid) {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
+  _remove(cid);
+}
 
+void Schemas::_remove(cid_t cid) {
   auto it = find(cid);
   if(it != end())
     erase(it);
 }
 
 void Schemas::replace(const Schema::Ptr& schema) {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
+  _replace(schema);
+}
 
+void Schemas::_replace(const Schema::Ptr& schema) {
   auto it = find(schema->cid);
   if(it == end())
      emplace(schema->cid, schema);
@@ -43,17 +53,21 @@ void Schemas::replace(const Schema::Ptr& schema) {
 }
 
 Schema::Ptr Schemas::get(cid_t cid) {
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
+  return _get(cid);
+}
 
+Schema::Ptr Schemas::_get(cid_t cid) const {
   auto it = find(cid);
-  if(it == end())
-    return nullptr;
-  return it->second;
+  return it == end() ? nullptr : it->second;
 }
 
 Schema::Ptr Schemas::get(const std::string& name) {
-  std::shared_lock lock(m_mutex);
-  
+  Mutex::scope lock(m_mutex);
+  return _get(name);
+}
+
+Schema::Ptr Schemas::_get(const std::string& name) const {
   for(const auto& it : *this ) {
     if(name.compare(it.second->col_name) == 0)
       return it.second;
@@ -63,7 +77,7 @@ Schema::Ptr Schemas::get(const std::string& name) {
 
 void Schemas::all(std::vector<Schema::Ptr>& entries) {
   size_t i = entries.size();
-  std::shared_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   entries.resize(i + size());
   for(const auto& it : *this) 
     entries[i++] = it.second;
@@ -71,7 +85,7 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
 }
 
 void Schemas::reset() {
-  std::scoped_lock lock(m_mutex);
+  Mutex::scope lock(m_mutex);
   clear();
 }
 

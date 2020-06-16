@@ -10,7 +10,7 @@
 
 namespace SWC { namespace client {
 
-class Schemas final {
+class Schemas final : private DB::Schemas {
   public:
   
   typedef std::shared_ptr<Schemas> Ptr;
@@ -27,14 +27,13 @@ class Schemas final {
   
   DB::Schema::Ptr get(int& err, const std::string& name);
 
-  void request(int& err, cid_t cid);
-
-  void request(int& err, const std::string& name);
-
   private:
-  Mutex                                m_mutex;
+
+  void _request(int& err, cid_t cid, DB::Schema::Ptr& schema);
+
+  void _request(int& err, const std::string& name, DB::Schema::Ptr& schema);
+
   std::unordered_map<cid_t, uint64_t>  m_track; // .second {time,queue(promises)}
-  std::shared_ptr<DB::Schemas>         m_schemas = nullptr;
   Property::V_GINT32::Ptr              m_expiry_ms;
   
 };

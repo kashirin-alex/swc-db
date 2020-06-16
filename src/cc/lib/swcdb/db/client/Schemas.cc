@@ -8,81 +8,89 @@
 namespace SWC { namespace client {
 
 Schemas::Schemas(const Property::V_GINT32::Ptr expiry_ms) 
-                : m_expiry_ms(expiry_ms),
-                  m_schemas(std::make_shared<DB::Schemas>()) { }
+                : m_expiry_ms(expiry_ms) {
+} 
 
 Schemas::~Schemas() { }
   
-void Schemas::remove(cid_t cid){    
+void Schemas::remove(cid_t cid) {    
   Mutex::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
-  if(it == m_track.end()) 
-    return; 
-  m_track.erase(it);
-  m_schemas->remove(cid);
+  if(it != m_track.end()) 
+    m_track.erase(it);
+  _remove(cid);
 }
 
-void Schemas::remove(const std::string& name){
+void Schemas::remove(const std::string& name) {
   Mutex::scope lock(m_mutex);
 
-  auto schema = m_schemas->get(name);
-  if(schema == nullptr)
+  auto schema = _get(name);
+  if(!schema)
     return;
   auto it = m_track.find(schema->cid);
   if(it != m_track.end()) 
     m_track.erase(it);
-  m_schemas->remove(schema->cid);
+  _remove(schema->cid);
 }
 
-DB::Schema::Ptr Schemas::get(int& err, cid_t cid){
+DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
+  DB::Schema::Ptr schema;
   Mutex::scope lock(m_mutex);
 
-  DB::Schema::Ptr schema;
   auto it = m_track.find(cid);
-  if(it == m_track.end() || Time::now_ms() - it->second > m_expiry_ms->get()) {
-    request(err, cid);
-    schema = m_schemas->get(cid);
-    if(schema != nullptr)
-      m_track.emplace(cid, Time::now_ms());
-  } else 
-    schema = m_schemas->get(cid);
+  if(it != m_track.end() && 
+     Time::now_ms() - it->second < m_expiry_ms->get() && 
+     (schema = _get(cid)))
+    return schema;
 
-  if(schema == nullptr)
+  _request(err, cid, schema);
+  if(schema) {
+    m_track.emplace(cid, Time::now_ms());
+    _replace(schema);
+  } else if(!err)
     err = Error::COLUMN_SCHEMA_MISSING;
   return schema;
 }
   
-DB::Schema::Ptr Schemas::get(int& err, const std::string& name){
-  DB::Schema::Ptr schema = m_schemas->get(name);    
-  if(schema != nullptr)
-    return get(err, schema->cid);
-  request(err, name);
-  schema = m_schemas->get(name);
-  if(schema == nullptr) {
-    err = Error::COLUMN_SCHEMA_MISSING;
-  } else {
-    Mutex::scope lock(m_mutex);
+DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
+  DB::Schema::Ptr schema;
+  Mutex::scope lock(m_mutex);
+
+  if(schema = _get(name)) {
+    auto it = m_track.find(schema->cid);
+    if(it != m_track.end() && Time::now_ms() - it->second < m_expiry_ms->get())
+      return schema;
+    schema = nullptr;
+  }
+
+  _request(err, name, schema);
+  if(schema) {
     m_track.emplace(schema->cid, Time::now_ms());
+    _replace(schema);
+  } else if(!err) {
+    err = Error::COLUMN_SCHEMA_MISSING;
   }
   return schema;
 }
 
-void Schemas::request(int& err, cid_t cid) {
+void Schemas::_request(int& err, cid_t cid, 
+                       DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
   Protocol::Mngr::Req::ColumnGet::schema(
     cid, 
-    [await=&res, schemas=m_schemas] 
+    [schema=&schema, await=&res] 
     (client::ConnQueue::ReqBase::Ptr req_ptr,
       int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
-        std::cout << " error=" << error << "(" << Error::get_text(error) << ") \n";
+        SWC_PRINT << " error=" << error 
+                  << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
         req_ptr->request_again();
         return;
       }
       if(!error)
-        schemas->replace(rsp.schema);
+        *schema = rsp.schema;
       await->set_value(error);
     },
     300000
@@ -91,21 +99,23 @@ void Schemas::request(int& err, cid_t cid) {
   err = res.get_future().get();
 }
 
-void Schemas::request(int& err, const std::string& name) {
+void Schemas::_request(int& err, const std::string& name, 
+                       DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
   Protocol::Mngr::Req::ColumnGet::schema(
     name, 
-    [await=&res, schemas=m_schemas] 
+    [schema=&schema, await=&res] 
     (client::ConnQueue::ReqBase::Ptr req_ptr,
       int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
-        std::cout << " error=" << error << "(" << Error::get_text(error) << ") \n";
+        SWC_PRINT << " error=" << error 
+                  << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
         req_ptr->request_again();
         return;
       }
       if(!error)
-        schemas->replace(rsp.schema);
+        *schema = rsp.schema;
       await->set_value(error);
     },
     300000

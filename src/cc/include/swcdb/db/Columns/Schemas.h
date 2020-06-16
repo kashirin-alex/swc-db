@@ -14,7 +14,7 @@
 
 namespace SWC { namespace DB {
 
-class Schemas final : std::unordered_map<cid_t, Schema::Ptr> {
+class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   public:
 
   Schemas();
@@ -35,8 +35,19 @@ class Schemas final : std::unordered_map<cid_t, Schema::Ptr> {
 
   void reset();
 
-  private:
-  std::shared_mutex                       m_mutex;
+  protected:
+  
+  void _add(int& err, const Schema::Ptr& schema);
+
+  void _remove(cid_t cid);
+
+  void _replace(const Schema::Ptr& schema);
+
+  Schema::Ptr _get(cid_t cid) const;
+  
+  Schema::Ptr _get(const std::string& name) const;
+
+  Mutex  m_mutex;
 };
 
 

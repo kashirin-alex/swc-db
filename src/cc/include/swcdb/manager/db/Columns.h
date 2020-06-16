@@ -21,7 +21,7 @@ namespace SWC { namespace Manager {
 
 
 
-class Columns final : std::unordered_map<cid_t, Column::Ptr> {
+class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   public:
 
