@@ -72,7 +72,7 @@ class ColCells final {
 
 
 
-class MapMutable final {
+class MapMutable final : private std::unordered_map<cid_t, ColCells::Ptr> {
   public:
   
   typedef std::shared_ptr<MapMutable>               Ptr;
@@ -121,7 +121,6 @@ class MapMutable final {
 
   private:
   Mutex       m_mutex;
-  Columns     m_map;
 
 };
 

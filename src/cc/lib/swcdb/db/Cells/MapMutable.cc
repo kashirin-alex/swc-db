@@ -127,40 +127,37 @@ bool MapMutable::create(const Schema::Ptr& schema) {
 bool MapMutable::create(const cid_t cid, Types::KeySeq seq, 
                         uint32_t versions, uint32_t ttl, Types::Column type) {
   Mutex::scope lock(m_mutex);
-  
-  if(m_map.find(cid) != m_map.end())
-    return false;
-
-  return m_map.emplace(cid, ColCells::make(cid, seq, versions, ttl, type)).second;
+  return find(cid) == end() 
+    ? emplace(cid, ColCells::make(cid, seq, versions, ttl, type)).second
+    : false;
 }
 
 bool MapMutable::create(const cid_t cid, Mutable& cells) {
   Mutex::scope lock(m_mutex);
-  return m_map.emplace(cid, ColCells::make(cid, cells)).second;
+  return emplace(cid, ColCells::make(cid, cells)).second;
 }
 
 bool MapMutable::exists(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
-  return m_map.find(cid) != m_map.end();
+  return find(cid) != end();
 }
 
 void MapMutable::add(const cid_t cid, const Cell& cell) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.find(cid);
-  if(it == m_map.end()){
+  auto it = find(cid);
+  if(it == end())
     SWC_THROWF(ENOKEY, "Map Missing column=%d (1st do create)", cid);
-  }
   it->second->add(cell);
 }
 
 ColCells::Ptr MapMutable::get_idx(size_t offset) {
   Mutex::scope lock(m_mutex);
 
-  if(offset < m_map.size()) {
-    auto it = m_map.begin();
-    for(it; offset; --offset, ++it);
+  if(offset < Columns::size()) {
+    auto it = begin();
+    for(; offset; --offset, ++it);
     return it->second;
   }
   return nullptr;
@@ -169,46 +166,46 @@ ColCells::Ptr MapMutable::get_idx(size_t offset) {
 ColCells::Ptr MapMutable::get_col(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.find(cid);
-  return it != m_map.end() ? it->second : nullptr;
+  auto it = find(cid);
+  return it == end() ? nullptr : it->second;
 }
 
 void MapMutable::pop(ColCells::Ptr& col) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.begin();
-  if(it != m_map.end()) {
-    col = it->second;
-    m_map.erase(it);
-  } else {
+  auto it = begin();
+  if(it == end()) {
     col = nullptr;
+  } else {
+    col = it->second;
+    erase(it);
   }
 }
 
 void MapMutable::pop(const cid_t cid, ColCells::Ptr& col) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.find(cid);
-  if(it != m_map.end()){
-    col = it->second;
-    m_map.erase(it);
-  } else {
+  auto it = find(cid);
+  if(it == end()) {
     col = nullptr;
+  } else {
+    col = it->second;
+    erase(it);
   }
 }
 
 void MapMutable::remove(const cid_t cid) {
   Mutex::scope lock(m_mutex);
-  auto it = m_map.find(cid);
-  if(it != m_map.end())
-    m_map.erase(it);
+  auto it = find(cid);
+  if(it != end())
+    erase(it);
 }
 
 size_t MapMutable::size() {
   Mutex::scope lock(m_mutex);
 
   size_t total = 0;
-  for(auto it = m_map.begin(); it != m_map.end(); ++it)
+  for(auto it = begin(); it != end(); ++it)
     total += it->second->size();
   return total;
 }
@@ -216,17 +213,15 @@ size_t MapMutable::size() {
 size_t MapMutable::size(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.find(cid);
-  if(it == m_map.end())
-    return (size_t)0;
-  return it->second->size();
+  auto it = find(cid);
+  return it == end() ? 0 : it->second->size();
 }
 
 size_t MapMutable::size_bytes() {
   Mutex::scope lock(m_mutex);
 
   size_t total = 0;
-  for(auto it = m_map.begin(); it != m_map.end(); ++it)
+  for(auto it = begin(); it != end(); ++it)
     total += it->second->size_bytes();
   return total;
 }
@@ -234,19 +229,17 @@ size_t MapMutable::size_bytes() {
 size_t MapMutable::size_bytes(const cid_t cid) {
   Mutex::scope lock(m_mutex);
 
-  auto it = m_map.find(cid);
-  if(it == m_map.end())
-    return (size_t)0;
-  return it->second->size_bytes();
+  auto it = find(cid);
+  return it == end() ? 0 : it->second->size_bytes();
 }
 
 std::string MapMutable::to_string() {
   Mutex::scope lock(m_mutex);
   std::string s("MapMutable(size=");
-  s.append(std::to_string(m_map.size()));
+  s.append(std::to_string(Columns::size()));
 
   s.append(" map=[");
-  for(auto it = m_map.begin(); it != m_map.end(); ++it){
+  for(auto it = begin(); it != end(); ++it) {
     s.append("\n");
     s.append(it->second->to_string());
   }
