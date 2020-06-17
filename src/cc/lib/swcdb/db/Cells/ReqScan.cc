@@ -28,6 +28,14 @@ ReqScan::ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev,
                   offset(spec.flags.offset) {
 }
 
+ReqScan::ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+                 const DB::Cell::Key& range_begin, 
+                 const DB::Cell::Key& range_end)
+                : ResponseCallback(conn, ev), 
+                  spec(range_begin, range_end),
+                  only_keys(false), offset(0) {
+}
+
 ReqScan::~ReqScan() { }
 
 ReqScan::Ptr ReqScan::get_req_scan() {

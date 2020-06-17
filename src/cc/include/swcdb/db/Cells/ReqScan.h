@@ -25,6 +25,9 @@ class ReqScan : public ResponseCallback {
   ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
           const DB::Specs::Interval& spec);
 
+  ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end);
+                  
   ReqScan(const ReqScan&) = delete;
 
   ReqScan(const ReqScan&&) = delete;
