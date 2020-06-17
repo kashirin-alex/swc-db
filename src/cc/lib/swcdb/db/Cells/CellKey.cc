@@ -19,6 +19,12 @@ Key::Key(const Key& other)
           data(_data(other.data)) {
 }
 
+SWC_SHOULD_INLINE
+Key::Key(const Key& other, bool own)
+        : own(own), count(other.count), size(other.size),
+          data(own ? _data(other.data): other.data) {
+}
+
 void Key::copy(const Key& other) {
   free(); 
   own = true;

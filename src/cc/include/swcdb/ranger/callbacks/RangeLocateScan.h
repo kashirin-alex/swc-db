@@ -22,7 +22,7 @@ class RangeLocateScan : public ReqScan {
                   : ReqScan(conn, ev, range_begin, range_end), 
                     range(range), flags(flags),
                     any_is(range->type != Types::Range::DATA),
-                    range_begin(range_begin) {
+                    range_begin(range_begin, false) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
   }

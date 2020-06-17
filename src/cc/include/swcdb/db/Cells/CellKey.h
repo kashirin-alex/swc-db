@@ -23,6 +23,8 @@ class Key final {
 
   explicit Key(const Key& other);
 
+  explicit Key(const Key& other, bool own);
+
   Key(const Key&&) = delete;
   
   Key& operator=(const Key&) = delete;
