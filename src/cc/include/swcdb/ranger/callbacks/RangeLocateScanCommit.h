@@ -16,14 +16,11 @@ class RangeLocateScanCommit : public RangeLocateScan {
   typedef std::shared_ptr<RangeLocateScanCommit> Ptr;
 
   RangeLocateScanCommit(ConnHandlerPtr conn, Event::Ptr ev, 
-                        const DB::Cell::Key& _range_begin, 
-                        const DB::Cell::Key& _range_end, 
+                        const DB::Cell::Key& range_begin,
                         RangePtr range, uint8_t flags)
                         : RangeLocateScan(
-                            conn, ev, _range_begin, _range_end, range, flags),
-                          range_begin(_range_begin) {           
-    spec.range_begin.remove(1, true);
-    spec.range_end.free();
+                            conn, ev, 
+                            range_begin, DB::Cell::Key(), range, flags) {
   }
 
   virtual ~RangeLocateScanCommit() { }
@@ -47,7 +44,6 @@ class RangeLocateScanCommit : public RangeLocateScan {
     return match;
   }
 
-  const DB::Cell::Key  range_begin;
 
 };
 

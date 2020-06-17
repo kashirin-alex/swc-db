@@ -90,6 +90,13 @@ bool Range::is_any_end() {
   return m_interval.key_end.empty();
 }
 
+uint24_t Range::known_interval_count() {
+  LockAtomic::Unique::scope lock(m_mutex_intval);
+  return m_interval.key_end.empty()
+          ? m_interval.key_begin.count 
+          : m_interval.key_end.count;
+}
+
 void Range::get_prev_key_end(DB::Cell::Key& key) {
   m_mutex_intval.lock();
   key.copy(m_prev_key_end);

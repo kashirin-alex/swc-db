@@ -21,7 +21,10 @@ class RangeLocateScan : public ReqScan {
                   RangePtr range, uint8_t flags)
                   : ReqScan(conn, ev, range_begin, range_end), 
                     range(range), flags(flags),
-                    any_is(range->type != Types::Range::DATA) {
+                    any_is(range->type != Types::Range::DATA),
+                    range_begin(range_begin) {
+    auto c = range->known_interval_count();
+    spec.range_begin.remove(c ? c : (uint24_t)1, true);
   }
 
   virtual ~RangeLocateScan() { }
@@ -52,7 +55,7 @@ class RangeLocateScan : public ReqScan {
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain);
 
-    if(key_end.count > any_is && spec.range_begin.count > any_is && 
+    if(key_end.count > any_is && range_begin.count > any_is && 
        !spec.is_matching_begin(key_seq, key_end)) {
       //SWC_PRINT << "-- KEY-END NO MATCH --" << SWC_PRINT_CLOSE;
       return false;
@@ -67,7 +70,7 @@ class RangeLocateScan : public ReqScan {
     aligned_max.decode(&ptr, &remain);
     /*
     SWC_PRINT 
-      << "range_begin: " << spec.range_begin.to_string() << "\n"
+      << "range_begin: " << range_begin.to_string() << "\n"
       << "  key_begin: " << cell.key.to_string() << "\n"
       << "aligned_min: " << aligned_min.to_string() << "\n"
       << "  range_end: " << spec.range_end.to_string() << "\n"
@@ -75,10 +78,10 @@ class RangeLocateScan : public ReqScan {
       << "aligned_max: " << aligned_max.to_string() << "\n"
       << "        rid: " << rid << SWC_PRINT_CLOSE;
     */
-    if(spec.range_begin.count == any_is || aligned_max.empty() || 
+    if(range_begin.count == any_is || aligned_max.empty() || 
         DB::KeySeq::compare(key_seq, 
-         spec.range_begin, aligned_max, 
-         Condition::LT, spec.range_begin.count, true)) {
+         range_begin, aligned_max, 
+         Condition::LT, range_begin.count, true)) {
       if(spec.range_end.count == any_is || aligned_min.empty() || 
           DB::KeySeq::compare(key_seq, 
            spec.range_end, aligned_min, 
@@ -119,16 +122,14 @@ class RangeLocateScan : public ReqScan {
   
   void response(int &err) override {
 
-    if(!err) {
-      if(RangerEnv::is_shuttingdown())
-        err = Error::SERVER_SHUTTING_DOWN;
-      else if(range->deleted())
-        err = Error::COLUMN_MARKED_REMOVED;
-      else if(!params.cid || !params.rid)
-        err = Error::RANGE_NOT_FOUND;
-    }
     if(err)
       params.err = err;
+    else if(RangerEnv::is_shuttingdown())
+      params.err = Error::SERVER_SHUTTING_DOWN;
+    else if(range->deleted())
+      params.err = Error::COLUMN_MARKED_REMOVED;
+    else if(!params.cid || !params.rid)
+      params.err = Error::RANGE_NOT_FOUND;
     
     try {
       auto cbp = CommBuf::make(params);
@@ -145,9 +146,10 @@ class RangeLocateScan : public ReqScan {
       (int)flags, profile.to_string().c_str());
   }
 
-  RangePtr    range;
-  uint8_t     flags;
-  uint32_t    any_is;
+  RangePtr              range;
+  uint8_t               flags;
+  uint32_t              any_is;
+  const DB::Cell::Key   range_begin;
 
   Protocol::Rgr::Params::RangeLocateRsp params;
 

@@ -89,6 +89,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool is_any_end();
 
+  uint24_t known_interval_count();
+
   void get_prev_key_end(DB::Cell::Key& key);
   
   void set_prev_key_end(const DB::Cell::Key& key);

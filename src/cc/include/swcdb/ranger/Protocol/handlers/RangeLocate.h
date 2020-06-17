@@ -53,7 +53,7 @@ void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
     if(params.flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
       req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
         conn, ev,
-        params.range_begin, params.range_end,
+        params.range_begin, //params.range_end,
         range,
         params.flags
       );

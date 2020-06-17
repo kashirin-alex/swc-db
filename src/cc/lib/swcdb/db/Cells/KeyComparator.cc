@@ -208,28 +208,20 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
   switch(seq) {
 
     case Types::KeySeq::LEXIC:
-      if(max == -1)
-        max = key.count;
       return compare<Types::KeySeq::LEXIC>(
-        key, other, max, empty_ok, empty_eq);
+        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
 
     case Types::KeySeq::VOLUME:
-      if(max == -1)
-        max = key.count;
       return compare<Types::KeySeq::VOLUME>(
-        key, other, max, empty_ok, empty_eq);
+        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
 
     case Types::KeySeq::FC_LEXIC:
-      if(max == -1)
-        max = other.count;
       return compare<Types::KeySeq::FC_LEXIC>(
-        key, other, max, empty_ok, empty_eq);
+        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
 
     case Types::KeySeq::FC_VOLUME:
-      if(max == -1)
-        max = other.count;
       return compare<Types::KeySeq::FC_VOLUME>(
-        key, other, max, empty_ok, empty_eq);
+        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
