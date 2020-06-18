@@ -68,6 +68,20 @@ std::ostream& operator<<(std::ostream& out, const EncodingType::type& val);
 
 std::string to_string(const EncodingType::type& val);
 
+struct SchemaFunc {
+  enum type {
+    CREATE = 3,
+    DELETE = 5,
+    MODIFY = 7
+  };
+};
+
+extern const std::map<int, const char*> _SchemaFunc_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const SchemaFunc::type& val);
+
+std::string to_string(const SchemaFunc::type& val);
+
 struct Comp {
   enum type {
     NONE = 0,
@@ -161,6 +175,8 @@ typedef std::vector<class CompactResult>  CompactResults;
 class Exception;
 
 class Schema;
+
+class SpecSchemas;
 
 class SpecFlags;
 
@@ -391,6 +407,58 @@ class Schema : public virtual ::apache::thrift::TBase {
 void swap(Schema &a, Schema &b);
 
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
+
+typedef struct _SpecSchemas__isset {
+  _SpecSchemas__isset() : cids(false), names(false) {}
+  bool cids :1;
+  bool names :1;
+} _SpecSchemas__isset;
+
+class SpecSchemas : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecSchemas(const SpecSchemas&);
+  SpecSchemas& operator=(const SpecSchemas&);
+  SpecSchemas() {
+  }
+
+  virtual ~SpecSchemas() noexcept;
+  std::vector<int64_t>  cids;
+  std::vector<std::string>  names;
+
+  _SpecSchemas__isset __isset;
+
+  void __set_cids(const std::vector<int64_t> & val);
+
+  void __set_names(const std::vector<std::string> & val);
+
+  bool operator == (const SpecSchemas & rhs) const
+  {
+    if (__isset.cids != rhs.__isset.cids)
+      return false;
+    else if (__isset.cids && !(cids == rhs.cids))
+      return false;
+    if (__isset.names != rhs.__isset.names)
+      return false;
+    else if (__isset.names && !(names == rhs.names))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecSchemas &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecSchemas & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecSchemas &a, SpecSchemas &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecSchemas& obj);
 
 typedef struct _SpecFlags__isset {
   _SpecFlags__isset() : limit(false), offset(false), max_versions(false), max_buffer(false), options(false) {}

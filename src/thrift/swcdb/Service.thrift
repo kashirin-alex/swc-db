@@ -76,6 +76,17 @@ typedef list<binary> Key
 
 /* Specs Scan  */
 
+enum SchemaFunc {
+  CREATE = 3,
+  DELETE = 5,
+  MODIFY = 7
+}
+
+struct SpecSchemas {
+  1: optional list<i64>     cids
+  2: optional list<string>  names
+}
+
 
 enum Comp {
   NONE = 0x0,   // [      ]  :   none           (no comparison aplied)
@@ -236,41 +247,69 @@ typedef list<CompactResult> CompactResults
 
 service Service {
 
-  void            sql_mng_column(1:string sql)       throws (1:Exception e),
+  void            sql_mng_column(1:string sql)       
+                  throws (1:Exception e),
 
-  Schemas         sql_list_columns(1:string sql)     throws (1:Exception e),
+  Schemas         sql_list_columns(1:string sql)     
+                  throws (1:Exception e),
 
-  CompactResults  sql_compact_columns(1:string sql)  throws (1:Exception e),
+  CompactResults  sql_compact_columns(1:string sql)  
+                  throws (1:Exception e),
 
 
-  Cells   sql_select(1:string sql)                   throws (1:Exception e),
+  Cells         sql_select(1:string sql)                   
+                throws (1:Exception e),
 
-  CCells  sql_select_rslt_on_column(1:string sql)    throws (1:Exception e),
+  CCells        sql_select_rslt_on_column(1:string sql)    
+                throws (1:Exception e),
   
-  KCells  sql_select_rslt_on_key(1:string sql)       throws (1:Exception e),
+  KCells        sql_select_rslt_on_key(1:string sql)
+                throws (1:Exception e),
 
-  FCells  sql_select_rslt_on_fraction(1:string sql)  throws (1:Exception e),
+  FCells        sql_select_rslt_on_fraction(1:string sql)
+                throws (1:Exception e),
 
-  CellsGroup   sql_query(1:string sql, 2:CellsResult rslt)  throws (1:Exception e),
-
-
-  void   sql_update(1:string sql, 2:i64 updater_id = 0)  throws (1:Exception e),
-
-
-  i64    updater_create(1:i32 buffer_size)  throws (1:Exception e),
-  void   updater_close(1:i64 id)            throws (1:Exception e),
-
-  void   update(1:UCCells cells, 2:i64 updater_id = 0)  throws (1:Exception e),
+  CellsGroup    sql_query(1:string sql, 2:CellsResult rslt)
+                throws (1:Exception e),
 
 
-  Cells   scan(1:SpecScan spec)                     throws (1:Exception e),
+  void    sql_update(1:string sql, 2:i64 updater_id = 0)
+          throws (1:Exception e),
 
-  CCells  scan_rslt_on_column(1:SpecScan spec)      throws (1:Exception e),
+
+  i64     updater_create(1:i32 buffer_size)
+          throws (1:Exception e),
+
+  void    updater_close(1:i64 id)
+          throws (1:Exception e),
+
+  void    update(1:UCCells cells, 2:i64 updater_id = 0)
+          throws (1:Exception e),
+
+
+  void            mng_column(1:SchemaFunc func, 2:Schema schema) 
+                  throws (1:Exception e),
   
-  KCells  scan_rslt_on_key(1:SpecScan spec)         throws (1:Exception e),
+  Schemas         list_columns(1:SpecSchemas spec)
+                  throws (1:Exception e),
+  
+  CompactResults  compact_columns(1:SpecSchemas spec)
+                  throws (1:Exception e),
 
-  FCells  scan_rslt_on_fraction(1:SpecScan spec)    throws (1:Exception e),
 
-  CellsGroup  scan_rslt_on(1:SpecScan spec, 2:CellsResult rslt)  throws (1:Exception e),
+  Cells       scan(1:SpecScan spec)
+              throws (1:Exception e),
+
+  CCells      scan_rslt_on_column(1:SpecScan spec)
+              throws (1:Exception e),
+  
+  KCells      scan_rslt_on_key(1:SpecScan spec)         
+              throws (1:Exception e),
+
+  FCells      scan_rslt_on_fraction(1:SpecScan spec)    
+              throws (1:Exception e),
+
+  CellsGroup  scan_rslt_on(1:SpecScan spec, 2:CellsResult rslt)  
+              throws (1:Exception e),
 
 }

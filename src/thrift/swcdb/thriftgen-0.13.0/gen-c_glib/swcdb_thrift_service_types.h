@@ -53,6 +53,17 @@ typedef enum _swcdb_thriftEncodingType swcdb_thriftEncodingType;
 const char *
 toString_EncodingType(int value); 
 
+enum _swcdb_thriftSchemaFunc {
+  SWCDB_THRIFT_SCHEMA_FUNC_CREATE = 3,
+  SWCDB_THRIFT_SCHEMA_FUNC_DELETE = 5,
+  SWCDB_THRIFT_SCHEMA_FUNC_MODIFY = 7
+};
+typedef enum _swcdb_thriftSchemaFunc swcdb_thriftSchemaFunc;
+
+/* return the name of the constant */
+const char *
+toString_SchemaFunc(int value); 
+
 enum _swcdb_thriftComp {
   SWCDB_THRIFT_COMP_NONE = 0,
   SWCDB_THRIFT_COMP_PF = 1,
@@ -217,6 +228,33 @@ GType swcdb_thrift_schema_get_type (void);
 #define SWCDB_THRIFT_IS_SCHEMA(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SCHEMA))
 #define SWCDB_THRIFT_IS_SCHEMA_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SCHEMA))
 #define SWCDB_THRIFT_SCHEMA_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SCHEMA, swcdb_thriftSchemaClass))
+
+/* struct SpecSchemas */
+struct _swcdb_thriftSpecSchemas
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GArray * cids;
+  gboolean __isset_cids;
+  GPtrArray * names;
+  gboolean __isset_names;
+};
+typedef struct _swcdb_thriftSpecSchemas swcdb_thriftSpecSchemas;
+
+struct _swcdb_thriftSpecSchemasClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecSchemasClass swcdb_thriftSpecSchemasClass;
+
+GType swcdb_thrift_spec_schemas_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_SCHEMAS (swcdb_thrift_spec_schemas_get_type())
+#define SWCDB_THRIFT_SPEC_SCHEMAS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_SCHEMAS, swcdb_thriftSpecSchemas))
+#define SWCDB_THRIFT_SPEC_SCHEMAS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_SCHEMAS, swcdb_thriftSpecSchemasClass))
+#define SWCDB_THRIFT_IS_SPEC_SCHEMAS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_SCHEMAS))
+#define SWCDB_THRIFT_IS_SPEC_SCHEMAS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_SCHEMAS))
+#define SWCDB_THRIFT_SPEC_SCHEMAS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_SCHEMAS, swcdb_thriftSpecSchemasClass))
 
 /* struct SpecFlags */
 struct _swcdb_thriftSpecFlags
@@ -1317,6 +1355,162 @@ GType swcdb_thrift_service_update_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
 #define SWCDB_THRIFT_SERVICE_UPDATE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResultClass))
+
+/* struct ServiceMngColumnArgs */
+struct _swcdb_thriftServiceMngColumnArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSchemaFunc func;
+  gboolean __isset_func;
+  swcdb_thriftSchema * schema;
+  gboolean __isset_schema;
+};
+typedef struct _swcdb_thriftServiceMngColumnArgs swcdb_thriftServiceMngColumnArgs;
+
+struct _swcdb_thriftServiceMngColumnArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceMngColumnArgsClass swcdb_thriftServiceMngColumnArgsClass;
+
+GType swcdb_thrift_service_mng_column_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_ARGS (swcdb_thrift_service_mng_column_args_get_type())
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_ARGS, swcdb_thriftServiceMngColumnArgs))
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_MNG_COLUMN_ARGS, swcdb_thriftServiceMngColumnArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_MNG_COLUMN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_MNG_COLUMN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_ARGS))
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_ARGS, swcdb_thriftServiceMngColumnArgsClass))
+
+/* struct ServiceMngColumnResult */
+struct _swcdb_thriftServiceMngColumnResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceMngColumnResult swcdb_thriftServiceMngColumnResult;
+
+struct _swcdb_thriftServiceMngColumnResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceMngColumnResultClass swcdb_thriftServiceMngColumnResultClass;
+
+GType swcdb_thrift_service_mng_column_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_RESULT (swcdb_thrift_service_mng_column_result_get_type())
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_RESULT, swcdb_thriftServiceMngColumnResult))
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_MNG_COLUMN_RESULT, swcdb_thriftServiceMngColumnResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_MNG_COLUMN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_MNG_COLUMN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_RESULT))
+#define SWCDB_THRIFT_SERVICE_MNG_COLUMN_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_MNG_COLUMN_RESULT, swcdb_thriftServiceMngColumnResultClass))
+
+/* struct ServiceListColumnsArgs */
+struct _swcdb_thriftServiceListColumnsArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecSchemas * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceListColumnsArgs swcdb_thriftServiceListColumnsArgs;
+
+struct _swcdb_thriftServiceListColumnsArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceListColumnsArgsClass swcdb_thriftServiceListColumnsArgsClass;
+
+GType swcdb_thrift_service_list_columns_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_ARGS (swcdb_thrift_service_list_columns_args_get_type())
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_ARGS, swcdb_thriftServiceListColumnsArgs))
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_LIST_COLUMNS_ARGS, swcdb_thriftServiceListColumnsArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_LIST_COLUMNS_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_LIST_COLUMNS_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_ARGS))
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_ARGS, swcdb_thriftServiceListColumnsArgsClass))
+
+/* struct ServiceListColumnsResult */
+struct _swcdb_thriftServiceListColumnsResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceListColumnsResult swcdb_thriftServiceListColumnsResult;
+
+struct _swcdb_thriftServiceListColumnsResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceListColumnsResultClass swcdb_thriftServiceListColumnsResultClass;
+
+GType swcdb_thrift_service_list_columns_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_RESULT (swcdb_thrift_service_list_columns_result_get_type())
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_RESULT, swcdb_thriftServiceListColumnsResult))
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_LIST_COLUMNS_RESULT, swcdb_thriftServiceListColumnsResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_LIST_COLUMNS_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_LIST_COLUMNS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_RESULT))
+#define SWCDB_THRIFT_SERVICE_LIST_COLUMNS_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_LIST_COLUMNS_RESULT, swcdb_thriftServiceListColumnsResultClass))
+
+/* struct ServiceCompactColumnsArgs */
+struct _swcdb_thriftServiceCompactColumnsArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftSpecSchemas * spec;
+  gboolean __isset_spec;
+};
+typedef struct _swcdb_thriftServiceCompactColumnsArgs swcdb_thriftServiceCompactColumnsArgs;
+
+struct _swcdb_thriftServiceCompactColumnsArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceCompactColumnsArgsClass swcdb_thriftServiceCompactColumnsArgsClass;
+
+GType swcdb_thrift_service_compact_columns_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_ARGS (swcdb_thrift_service_compact_columns_args_get_type())
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_ARGS, swcdb_thriftServiceCompactColumnsArgs))
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_COMPACT_COLUMNS_ARGS, swcdb_thriftServiceCompactColumnsArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_COMPACT_COLUMNS_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_COMPACT_COLUMNS_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_ARGS))
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_ARGS, swcdb_thriftServiceCompactColumnsArgsClass))
+
+/* struct ServiceCompactColumnsResult */
+struct _swcdb_thriftServiceCompactColumnsResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceCompactColumnsResult swcdb_thriftServiceCompactColumnsResult;
+
+struct _swcdb_thriftServiceCompactColumnsResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceCompactColumnsResultClass swcdb_thriftServiceCompactColumnsResultClass;
+
+GType swcdb_thrift_service_compact_columns_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_RESULT (swcdb_thrift_service_compact_columns_result_get_type())
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_RESULT, swcdb_thriftServiceCompactColumnsResult))
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_COMPACT_COLUMNS_RESULT, swcdb_thriftServiceCompactColumnsResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_COMPACT_COLUMNS_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_COMPACT_COLUMNS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_RESULT))
+#define SWCDB_THRIFT_SERVICE_COMPACT_COLUMNS_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_COMPACT_COLUMNS_RESULT, swcdb_thriftServiceCompactColumnsResultClass))
 
 /* struct ServiceScanArgs */
 struct _swcdb_thriftServiceScanArgs

@@ -6,94 +6,11 @@
 #define swc_app_thriftbroker_AppHandler_h
 
 #include "swcdb/db/client/sql/SQL.h"
+#include "swcdb/thrift/Converter.h"
 
 namespace SWC { 
 namespace thrift = apache::thrift;
 namespace Thrift {
-
-void exception(int err, const std::string& msg = "") {
-  Exception e;
-  e.__set_code(err);
-  e.__set_message(msg + " - " + Error::get_text(err));
-  SWC_LOG_OUT(LOG_DEBUG);
-  e.printTo(std::cout);
-  std::cout << SWC_LOG_OUT_END;
-  throw e;
-}
-
-void set(const SpecFlags& flags, DB::Specs::Flags& dbspec) {
-  if(flags.__isset.limit)
-    dbspec.limit = flags.limit;
-  if(flags.__isset.offset)
-    dbspec.offset = flags.offset;
-  if(flags.__isset.max_versions)
-    dbspec.max_versions = flags.max_versions;
-  if(flags.__isset.max_buffer)
-    dbspec.max_buffer = flags.max_buffer;
-  if(flags.__isset.options)
-    dbspec.options = flags.options;
-}
-
-void set(const Key& key, DB::Cell::Key& dbkey) {
-  dbkey.read(key);
-}
-
-void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
-  for(auto& fraction : spec) {
-    if((uint8_t)fraction.comp > 0x8)
-      exception(
-        Error::INCOMPATIBLE_OPTIONS, 
-        "Key ext-fraction-comp(" + 
-        Condition::to_string((Condition::Comp)fraction.comp, true) + 
-        ")"
-      );
-    dbspec.add(fraction.f, (Condition::Comp)fraction.comp);
-  }
-}
-
-void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
-  dbspec.set(spec.v, (Condition::Comp)spec.comp);
-}
-
-void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
-  dbspec.set(spec.ts, (Condition::Comp)spec.comp);
-}
-
-void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
-  if(intval.__isset.range_begin)
-    set(intval.range_begin, dbintval.range_begin);
-
-  if(intval.__isset.range_end)
-    set(intval.range_end, dbintval.range_end);
-
-  if(intval.__isset.range_offset)
-    set(intval.range_offset, dbintval.range_offset);
-
-  if(intval.__isset.offset_key)
-    set(intval.offset_key, dbintval.offset_key);
-
-  if(intval.__isset.offset_rev)
-    dbintval.offset_rev = intval.offset_rev;
-
-  if(intval.__isset.key_start)
-    set(intval.key_start, dbintval.key_start);
-
-  if(intval.__isset.key_finish)
-    set(intval.key_finish, dbintval.key_finish);
-
-  if(intval.__isset.value)
-    set(intval.value, dbintval.value);
-
-  if(intval.__isset.ts_start)
-    set(intval.ts_start, dbintval.ts_start);
-
-  if(intval.__isset.ts_finish)
-    set(intval.ts_finish, dbintval.ts_finish);
-
-  if(intval.__isset.flags)
-    set(intval.flags, dbintval.flags);
-}
-
 
 
 
@@ -105,60 +22,14 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) {
-
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;  
     std::string message;
     client::SQL::parse_list_columns(err, sql, dbschemas, message, "list");
     if(err) 
-      exception(err, message);
-
-    if(dbschemas.empty()) { // get all schema
-      std::promise<int> res;
-      Protocol::Mngr::Req::ColumnList::request(
-        [&dbschemas, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, int error, 
-         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if(err = res.get_future().get()) {
-        message.append(Error::get_text(err));
-        message.append("\n");
-        exception(err, message);
-      }
-    }
-    
-    _return.resize(dbschemas.size());
-    uint32_t c = 0;
-    for(auto& dbschema : dbschemas) {
-      auto& schema = _return[c++];
-      schema.__set_cid(dbschema->cid);
-      schema.__set_col_name(dbschema->col_name);
-      schema.__set_col_type(
-        (ColumnType::type)(uint8_t)dbschema->col_type);
-
-      schema.__set_cell_versions(dbschema->cell_versions);
-      schema.__set_cell_ttl(dbschema->cell_ttl);
-
-      schema.__set_blk_encoding(
-        (EncodingType::type)(uint8_t)dbschema->blk_encoding);
-      schema.__set_blk_size(dbschema->blk_size);
-      schema.__set_blk_cells(dbschema->blk_cells);
-
-      schema.__set_cs_replication(dbschema->cs_replication);
-      schema.__set_cs_size(dbschema->cs_size);
-      schema.__set_cs_max(dbschema->cs_max);
+      Converter::exception(err, message);
       
-      schema.__set_log_rollout_ratio(dbschema->log_rollout_ratio);
-      
-      schema.__set_compact_percent(dbschema->compact_percent);
-
-      schema.__set_revision(dbschema->revision);
-    }
+    process_results(err, dbschemas, _return);
   }
 
   void sql_mng_column(const std::string& sql) {
@@ -171,75 +42,20 @@ class AppHandler final : virtual public BrokerIf {
       &func, 
       schema, message);
     if(err)
-      exception(err, message);
+      Converter::exception(err, message);
 
-    std::promise<int> res;
-    Protocol::Mngr::Req::ColumnMng::request(
-      func,
-      schema,
-      [await=&res]
-      (client::ConnQueue::ReqBase::Ptr req, int error) {
-        await->set_value(error);
-      },
-      300000
-    );
-    
-    if(err = res.get_future().get()) 
-      exception(err, message);
-
-    if(schema->cid != DB::Schema::NO_CID)
-      Env::Clients::get()->schemas->remove(schema->cid);
-    else
-      Env::Clients::get()->schemas->remove(schema->col_name);
+    mng_column(func, schema);
   }
 
   void sql_compact_columns(CompactResults& _return, const std::string& sql) {
-    
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;  
     std::string message;
     client::SQL::parse_list_columns(err, sql, dbschemas, message, "compact");
     if(err) 
-      exception(err, message);
+      Converter::exception(err, message);
 
-    if(dbschemas.empty()) { // get all schema
-      std::promise<int> res;
-      Protocol::Mngr::Req::ColumnList::request(
-        [&dbschemas, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, int error, 
-         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if(err = res.get_future().get()) {
-        message.append(Error::get_text(err));
-        message.append("\n");
-        exception(err, message);
-      }
-    }
-    
-    std::mutex mutex;
-    std::promise<void> res;
-    for(auto& schema : dbschemas) {
-      Protocol::Mngr::Req::ColumnCompact::request(
-        schema->cid,
-        [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
-        (client::ConnQueue::ReqBase::Ptr req, 
-         const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
-          std::lock_guard lock(mutex);
-          auto& r = _return.emplace_back();
-          r.cid=cid;
-          r.err=rsp.err;
-          if(_return.size() == sz)
-            await->set_value();
-        },
-        300000
-      );
-    }
-    res.get_future().wait();
+    process_results(err, dbschemas, _return);
   }
   
   /* SQL QUERY */
@@ -255,7 +71,7 @@ class AppHandler final : virtual public BrokerIf {
         req->wait();
     }
     if(err) 
-      exception(err, message);
+      Converter::exception(err, message);
     return req;
   }
   
@@ -296,7 +112,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
 
   void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
@@ -310,7 +126,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
 
   void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
@@ -324,7 +140,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
 
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
@@ -338,7 +154,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
   
   /* SQL UPDATE */
@@ -359,7 +175,7 @@ class AppHandler final : virtual public BrokerIf {
       display_flags, message
     );
     if(err) 
-      exception(err, message);
+      Converter::exception(err, message);
       
     if(updater_id) {
       req->commit_or_wait();
@@ -368,9 +184,73 @@ class AppHandler final : virtual public BrokerIf {
       req->wait();
     }
     if(err = req->result->error())
-      exception(err);
+      Converter::exception(err);
   }
 
+
+  /* SPECS SCHEMAS/COLUMNS */
+
+  void list_columns(Schemas& _return, const SpecSchemas& spec) {
+    int err = Error::OK;
+    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::Schema::Ptr schema = 0;
+
+    for(auto& cid : spec.cids) {
+      schema = Env::Clients::get()->schemas->get(err, cid);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column cid='"+std::to_string(cid)+"' schema");
+      dbschemas.push_back(schema);
+    }
+
+    for(auto& name : spec.names) {
+      schema = Env::Clients::get()->schemas->get(err, name);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column name='"+name+"' schema");
+      dbschemas.push_back(schema);
+    }
+
+    process_results(err, dbschemas, _return);
+  }
+  
+  void mng_column(const SchemaFunc::type func, const Schema& schema) {
+    DB::Schema::Ptr dbschema = DB::Schema::make();
+    Converter::set(schema, dbschema);
+    mng_column((Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func, dbschema);
+  }
+
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
+    int err = Error::OK;
+    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::Schema::Ptr schema = 0;
+
+    for(auto& cid : spec.cids) {
+      schema = Env::Clients::get()->schemas->get(err, cid);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column cid='"+std::to_string(cid)+"' schema");
+      dbschemas.push_back(schema);
+    }
+
+    for(auto& name : spec.names) {
+      schema = Env::Clients::get()->schemas->get(err, name);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column name='"+name+"' schema");
+      dbschemas.push_back(schema);
+    }
+
+    process_results(err, dbschemas, _return);
+  }
 
   /* SPECS SCAN QUERY */
   client::Query::Select::Ptr sync_select(const SpecScan& spec) {
@@ -378,7 +258,7 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     
     if(spec.__isset.flags)
-      set(spec.flags, req->specs.flags);
+      Converter::set(spec.flags, req->specs.flags);
 
     DB::Schema::Ptr schema;
     DB::Specs::Interval::Ptr dbintval;
@@ -386,14 +266,14 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col : spec.columns) {
       schema = Env::Clients::get()->schemas->get(err, col.cid);
       if(!schema)
-        exception(err, "cid=" + std::to_string(col.cid));
+        Converter::exception(err, "cid=" + std::to_string(col.cid));
 
       req->specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
       auto& dbcol = req->specs.columns.back();
 
       for(auto& intval : col.intervals) {
         dbintval = DB::Specs::Interval::make_ptr();
-        set(intval, *dbintval.get());
+        Converter::set(intval, *dbintval.get());
         dbcol->intervals.push_back(dbintval);
       }
     }
@@ -404,7 +284,7 @@ class AppHandler final : virtual public BrokerIf {
         req->wait();
     }
     if(err) 
-      exception(err);
+      Converter::exception(err);
     return req;
   }
 
@@ -445,7 +325,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
 
   void scan_rslt_on_column(CCells& _return, const SpecScan& specs) {
@@ -459,9 +339,8 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
-
 
   void scan_rslt_on_key(KCells& _return, const SpecScan& specs) {
     auto req = sync_select(specs);
@@ -474,7 +353,7 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
 
   void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) {
@@ -488,8 +367,9 @@ class AppHandler final : virtual public BrokerIf {
       _return
     );
     if(err) 
-      exception(err);
+      Converter::exception(err);
   }
+
 
   /* UPDATER */
   int64_t updater_create(const int32_t buffer_size) {
@@ -513,7 +393,7 @@ class AppHandler final : virtual public BrokerIf {
     
       auto it = m_updaters.find(id);
       if(it == m_updaters.end())
-        exception(ERANGE, "Updater ID not found");
+        Converter::exception(ERANGE, "Updater ID not found");
       req = it->second;
       m_updaters.erase(it);
     }
@@ -539,7 +419,7 @@ class AppHandler final : virtual public BrokerIf {
       if(col == nullptr) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
         if(err) 
-          exception(err);
+          Converter::exception(err);
         req->columns->create(schema);
         col = req->columns->get_col(cid);
       }
@@ -565,12 +445,13 @@ class AppHandler final : virtual public BrokerIf {
       req->wait();
     }
     if(err = req->result->error())
-      exception(err);
+      Converter::exception(err);
   }
 
   void disconnected() {
     updater_close();
   }
+
 
   private:
 
@@ -594,7 +475,7 @@ class AppHandler final : virtual public BrokerIf {
 
     auto it = m_updaters.find(id);
     if(it == m_updaters.end())
-      exception(ERANGE, "Updater ID not found");
+      Converter::exception(ERANGE, "Updater ID not found");
     req = it->second;
   }
 
@@ -603,7 +484,94 @@ class AppHandler final : virtual public BrokerIf {
     req->wait();
     int err;
     if(err = req->result->error())
-      exception(err);
+      Converter::exception(err);
+  }
+
+  void mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+                  DB::Schema::Ptr& schema) {
+    std::promise<int> res;
+    Protocol::Mngr::Req::ColumnMng::request(
+      func, schema,
+      [await=&res] (const client::ConnQueue::ReqBase::Ptr& req, int error) {
+        await->set_value(error);
+      },
+      300000
+    );
+    
+    if(int err = res.get_future().get()) 
+      Converter::exception(err);
+
+    if(schema->cid != DB::Schema::NO_CID)
+      Env::Clients::get()->schemas->remove(schema->cid);
+    else
+      Env::Clients::get()->schemas->remove(schema->col_name);
+  }
+
+  static void process_results(
+          int& err, std::vector<DB::Schema::Ptr>& dbschemas, 
+          Schemas& _return) {
+    if(dbschemas.empty()) { // get all schema
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (const client::ConnQueue::ReqBase::Ptr& req, int error, 
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if(err = res.get_future().get())
+        Converter::exception(err);
+    }
+    
+    _return.resize(dbschemas.size());
+    uint32_t c = 0;
+    for(auto& dbschema : dbschemas) {
+      Converter::set(dbschema, _return[c]);
+      ++c;
+    }
+  }
+
+  static void process_results(
+          int& err, std::vector<DB::Schema::Ptr>& dbschemas, 
+          CompactResults& _return) {
+    if(dbschemas.empty()) { // get all schema
+      std::promise<int> res;
+      Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (client::ConnQueue::ReqBase::Ptr req, int error, 
+         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if(err = res.get_future().get())
+        Converter::exception(err);
+    }
+    
+    std::mutex mutex;
+    std::promise<void> res;
+    for(auto& schema : dbschemas) {
+      Protocol::Mngr::Req::ColumnCompact::request(
+        schema->cid,
+        [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
+        (const client::ConnQueue::ReqBase::Ptr& req, 
+         const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
+          std::lock_guard lock(mutex);
+          auto& r = _return.emplace_back();
+          r.cid=cid;
+          r.err=rsp.err;
+          if(_return.size() == sz)
+            await->set_value();
+        },
+        300000
+      );
+    }
+    res.get_future().wait();
   }
 
   static void process_results(

@@ -22,6 +22,9 @@ int batches = 1; // changed on test
 namespace  SWC { namespace Thrift {
 namespace Test {
 
+
+/* INPUTS */
+
 const int64_t now_ns() {
   return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
@@ -30,6 +33,7 @@ const int64_t now_ns() {
 std::string column_name(int c) {
   return column_pre+"-"+std::to_string(c);
 }
+
 std::string key(int i, int f) {
   std::string key;
   for(uint8_t n=97;n<97+f;++n) {
@@ -40,6 +44,7 @@ std::string key(int i, int f) {
   }
   return key;
 }
+
 void key(int i, int f, Key& key) {
   for(uint8_t n=97;n<97+f;++n) {
     std::string& fraction = key.emplace_back();
@@ -60,6 +65,64 @@ std::string cell_value(int c, int i, int f, int batch) {
           ;
 }
 
+
+
+/* OUTPUT */
+void print(const Cells& cells) {
+  std::cout << "cells.size=" << cells.size() << std::endl;
+  for(auto& cell : cells) {
+    cell.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+}
+
+void print(const CCells& cells) {
+  std::cout << "columns.size=" << cells.size() << std::endl;
+  for(auto& col : cells) {
+    std::cout << "column=" << col.first 
+              << " cells.size=" << col.second.size() << std::endl;
+    for(auto& cell : col.second) {
+      cell.printTo(std::cout << " ");
+      std::cout << std::endl;
+    }
+  }
+}
+
+void print(const KCells& cells) {
+  std::cout << "keys.size=" << cells.size() << std::endl;
+  for(auto& key_cells : cells) {
+    key_cells.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+}
+
+void print(FCells* fcells, Key& key) {
+  for(auto& f : fcells->f) {
+    key.emplace_back(f.first);
+    std::cout << "fraction='" << f.first << "'"
+              << " cells.size=" << f.second.cells.size() 
+              << " key.size=" << key.size() << " ";
+    for(auto& fraction : key)
+      std::cout << "/" << fraction;
+    std::cout << std::endl;
+    for(auto& cell : f.second.cells) {
+      std::cout << " " << cell << "\n";
+    }
+    print(&f.second, key);
+    key.clear();
+  }
+}
+
+void print(FCells& cells) {
+  cells.printTo(std::cout);
+  std::cout << std::endl;
+  
+  Key key;
+  print(&cells, key);
+}
+
+
+/* SQL METHODS */
 
 void sql_mng_and_list_column(Client& client) {
   std::cout << std::endl << "test: sql_mng_column: " << std::endl;
@@ -252,39 +315,6 @@ void sql_update_with_id(Client& client) {
 }
 
 
-void print(const Cells& cells) {
-  std::cout << "cells.size=" << cells.size() << std::endl;
-  for(auto& cell : cells) {
-    cell.printTo(std::cout << " ");
-    std::cout << std::endl;
-  }
-}
-
-SpecScan select_specs(Client& client) {
-  SpecScan ss;
-  for(auto c=1; c <= num_columns; ++c) {
-    Schemas schemas;
-    client.sql_list_columns(
-      schemas, 
-      "get schema " + column_name(c)
-    );
-    assert(!schemas.empty());
-
-    auto& col = ss.columns.emplace_back();
-    col.cid = schemas.back().cid;
-    auto& intval = col.intervals.emplace_back();
-
-    intval.__isset.key_start = true;
-    intval.key_start.resize(2);
-    intval.key_start[0].__set_comp(Comp::EQ);
-    intval.key_start[0].__set_f("a1");
-    intval.key_start[1].__set_comp(Comp::GE);
-    intval.key_start[1].__set_f("");
-  }
-  return ss;
-}
-
-
 std::string select_sql() {
   std::string sql("select where col(");
   for(auto c=1; c <= num_columns; ++c) {
@@ -312,18 +342,6 @@ void sql_select(Client& client) {
   assert(cells.size() == total_cells*batches);
 }
 
-void print(const CCells& cells) {
-  std::cout << "columns.size=" << cells.size() << std::endl;
-  for(auto& col : cells) {
-    std::cout << "column=" << col.first 
-              << " cells.size=" << col.second.size() << std::endl;
-    for(auto& cell : col.second) {
-      cell.printTo(std::cout << " ");
-      std::cout << std::endl;
-    }
-  }
-}
-
 void sql_select_rslt_on_column(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_column: " << std::endl;
 
@@ -335,14 +353,6 @@ void sql_select_rslt_on_column(Client& client) {
 
   print(cells);
   assert(cells.size() == num_columns);
-}
-
-void print(const KCells& cells) {
-  std::cout << "keys.size=" << cells.size() << std::endl;
-  for(auto& key_cells : cells) {
-    key_cells.printTo(std::cout << " ");
-    std::cout << std::endl;
-  }
 }
 
 void sql_select_rslt_on_key(Client& client) {
@@ -358,31 +368,6 @@ void sql_select_rslt_on_key(Client& client) {
   assert(cells.size() == num_cells*num_fractions);
 }
 
-void print(FCells* fcells, Key& key) {
-  for(auto& f : fcells->f) {
-    key.emplace_back(f.first);
-    std::cout << "fraction='" << f.first << "'"
-              << " cells.size=" << f.second.cells.size() 
-              << " key.size=" << key.size() << " ";
-    for(auto& fraction : key)
-      std::cout << "/" << fraction;
-    std::cout << std::endl;
-    for(auto& cell : f.second.cells) {
-      std::cout << " " << cell << "\n";
-    }
-    print(&f.second, key);
-    key.clear();
-  }
-}
-
-void print(FCells& cells) {
-  cells.printTo(std::cout);
-  std::cout << std::endl;
-  
-  Key key;
-  print(&cells, key);
-}
-
 void sql_select_rslt_on_fraction(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_fraction: " << std::endl;
 
@@ -395,7 +380,6 @@ void sql_select_rslt_on_fraction(Client& client) {
   print(cells);
   assert(cells.f.size() == num_cells);
 }
-
 
 void sql_query(Client& client, CellsResult::type rslt) {
   std::cout << std::endl << "test: sql_query, " << rslt << ": " << std::endl;
@@ -435,6 +419,60 @@ void sql_query(Client& client, CellsResult::type rslt) {
 }
 
 
+
+/* SPECS METHODS */
+
+void spec_delete_test_column(Client& client) {
+  std::cout << std::endl << "test: spec_delete_test_column: " << std::endl;
+  
+
+  for(auto c=1; c <= num_columns; ++c) {
+    try {
+      Schemas schemas;
+      SpecSchemas spec;
+      spec.__isset.names = true;
+      spec.names.emplace_back(column_name(c));
+      client.list_columns(schemas, spec);
+
+      if(!schemas.empty()) {
+        client.mng_column(SchemaFunc::DELETE, schemas.back());
+        schemas.clear();
+        client.list_columns(schemas, spec);
+        assert(schemas.empty());
+      }
+    } catch (...) {}
+  }
+}
+
+void spec_create_test_column(Client& client, uint32_t cell_versions=1) {
+  spec_delete_test_column(client);
+  std::cout << std::endl << "test: spec_create_test_column: " << std::endl;
+  Schema schema;
+  for(auto c=1; c <= num_columns; ++c) {
+    schema.__set_col_name(column_name(c));
+    schema.__set_cell_versions(cell_versions);
+
+    std::cout << " create: " << schema << std::endl;
+    client.mng_column(SchemaFunc::CREATE, schema);
+  }
+}
+
+void spec_compact_test_column(Client& client) {
+  std::cout << std::endl << "test: spec_compact_test_column: " << std::endl;
+  
+  SpecSchemas spec;
+  spec.__isset.names = true;
+  for(auto c=1; c <= num_columns; ++c)
+    spec.names.emplace_back(column_name(c));
+
+  CompactResults res;
+  client.compact_columns(res, spec);
+
+  assert(res.size() == num_columns);
+  for(auto& r : res)
+    std::cout << " " << r << std::endl;
+}
+
 void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   std::cout << std::endl << "test: spec_update";
   if(updater_id)
@@ -468,6 +506,30 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   }
   //std::cout << cells << "\n";
   client.update(cells, updater_id);
+}
+
+SpecScan select_specs(Client& client) {
+  SpecScan ss;
+  for(auto c=1; c <= num_columns; ++c) {
+    Schemas schemas;
+    client.sql_list_columns(
+      schemas, 
+      "get schema " + column_name(c)
+    );
+    assert(!schemas.empty());
+
+    auto& col = ss.columns.emplace_back();
+    col.cid = schemas.back().cid;
+    auto& intval = col.intervals.emplace_back();
+
+    intval.__isset.key_start = true;
+    intval.key_start.resize(2);
+    intval.key_start[0].__set_comp(Comp::EQ);
+    intval.key_start[0].__set_f("a1");
+    intval.key_start[1].__set_comp(Comp::GE);
+    intval.key_start[1].__set_f("");
+  }
+  return ss;
 }
 
 void spec_select(Client& client) {
@@ -526,6 +588,7 @@ void spec_select(Client& client) {
 }
 
 
+
 }
 }}
 
@@ -566,10 +629,13 @@ int main() {
   batches = 1;
 
   /** SPECS **/
-  Test::sql_create_test_column(client);
+  Test::spec_create_test_column(client);
   Test::spec_update(client);
   Test::spec_select(client);
-  Test::sql_delete_test_column(client);
+  Test::spec_compact_test_column(client);
+  Test::spec_select(client);
+  
+  Test::spec_delete_test_column(client);
 
 
   client.close();

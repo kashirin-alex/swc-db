@@ -34,6 +34,9 @@ class ServiceIf {
   virtual int64_t updater_create(const int32_t buffer_size) = 0;
   virtual void updater_close(const int64_t id) = 0;
   virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
+  virtual void mng_column(const SchemaFunc::type func, const Schema& schema) = 0;
+  virtual void list_columns(Schemas& _return, const SpecSchemas& spec) = 0;
+  virtual void compact_columns(CompactResults& _return, const SpecSchemas& spec) = 0;
   virtual void scan(Cells& _return, const SpecScan& spec) = 0;
   virtual void scan_rslt_on_column(CCells& _return, const SpecScan& spec) = 0;
   virtual void scan_rslt_on_key(KCells& _return, const SpecScan& spec) = 0;
@@ -103,6 +106,15 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void update(const UCCells& /* cells */, const int64_t /* updater_id */) {
+    return;
+  }
+  void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) {
+    return;
+  }
+  void list_columns(Schemas& /* _return */, const SpecSchemas& /* spec */) {
+    return;
+  }
+  void compact_columns(CompactResults& /* _return */, const SpecSchemas& /* spec */) {
     return;
   }
   void scan(Cells& /* _return */, const SpecScan& /* spec */) {
@@ -1455,6 +1467,341 @@ class Service_update_presult {
 
 };
 
+typedef struct _Service_mng_column_args__isset {
+  _Service_mng_column_args__isset() : func(false), schema(false) {}
+  bool func :1;
+  bool schema :1;
+} _Service_mng_column_args__isset;
+
+class Service_mng_column_args {
+ public:
+
+  Service_mng_column_args(const Service_mng_column_args&);
+  Service_mng_column_args& operator=(const Service_mng_column_args&);
+  Service_mng_column_args() : func((SchemaFunc::type)0) {
+  }
+
+  virtual ~Service_mng_column_args() noexcept;
+  SchemaFunc::type func;
+  Schema schema;
+
+  _Service_mng_column_args__isset __isset;
+
+  void __set_func(const SchemaFunc::type val);
+
+  void __set_schema(const Schema& val);
+
+  bool operator == (const Service_mng_column_args & rhs) const
+  {
+    if (!(func == rhs.func))
+      return false;
+    if (!(schema == rhs.schema))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_mng_column_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_mng_column_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_mng_column_pargs {
+ public:
+
+
+  virtual ~Service_mng_column_pargs() noexcept;
+  const SchemaFunc::type* func;
+  const Schema* schema;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_mng_column_result__isset {
+  _Service_mng_column_result__isset() : e(false) {}
+  bool e :1;
+} _Service_mng_column_result__isset;
+
+class Service_mng_column_result {
+ public:
+
+  Service_mng_column_result(const Service_mng_column_result&);
+  Service_mng_column_result& operator=(const Service_mng_column_result&);
+  Service_mng_column_result() {
+  }
+
+  virtual ~Service_mng_column_result() noexcept;
+  Exception e;
+
+  _Service_mng_column_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_mng_column_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_mng_column_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_mng_column_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_mng_column_presult__isset {
+  _Service_mng_column_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_mng_column_presult__isset;
+
+class Service_mng_column_presult {
+ public:
+
+
+  virtual ~Service_mng_column_presult() noexcept;
+  Exception e;
+
+  _Service_mng_column_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_list_columns_args__isset {
+  _Service_list_columns_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_list_columns_args__isset;
+
+class Service_list_columns_args {
+ public:
+
+  Service_list_columns_args(const Service_list_columns_args&);
+  Service_list_columns_args& operator=(const Service_list_columns_args&);
+  Service_list_columns_args() {
+  }
+
+  virtual ~Service_list_columns_args() noexcept;
+  SpecSchemas spec;
+
+  _Service_list_columns_args__isset __isset;
+
+  void __set_spec(const SpecSchemas& val);
+
+  bool operator == (const Service_list_columns_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_list_columns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_list_columns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_list_columns_pargs {
+ public:
+
+
+  virtual ~Service_list_columns_pargs() noexcept;
+  const SpecSchemas* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_list_columns_result__isset {
+  _Service_list_columns_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_list_columns_result__isset;
+
+class Service_list_columns_result {
+ public:
+
+  Service_list_columns_result(const Service_list_columns_result&);
+  Service_list_columns_result& operator=(const Service_list_columns_result&);
+  Service_list_columns_result() {
+  }
+
+  virtual ~Service_list_columns_result() noexcept;
+  Schemas success;
+  Exception e;
+
+  _Service_list_columns_result__isset __isset;
+
+  void __set_success(const Schemas& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_list_columns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_list_columns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_list_columns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_list_columns_presult__isset {
+  _Service_list_columns_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_list_columns_presult__isset;
+
+class Service_list_columns_presult {
+ public:
+
+
+  virtual ~Service_list_columns_presult() noexcept;
+  Schemas* success;
+  Exception e;
+
+  _Service_list_columns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_compact_columns_args__isset {
+  _Service_compact_columns_args__isset() : spec(false) {}
+  bool spec :1;
+} _Service_compact_columns_args__isset;
+
+class Service_compact_columns_args {
+ public:
+
+  Service_compact_columns_args(const Service_compact_columns_args&);
+  Service_compact_columns_args& operator=(const Service_compact_columns_args&);
+  Service_compact_columns_args() {
+  }
+
+  virtual ~Service_compact_columns_args() noexcept;
+  SpecSchemas spec;
+
+  _Service_compact_columns_args__isset __isset;
+
+  void __set_spec(const SpecSchemas& val);
+
+  bool operator == (const Service_compact_columns_args & rhs) const
+  {
+    if (!(spec == rhs.spec))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_compact_columns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_compact_columns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_compact_columns_pargs {
+ public:
+
+
+  virtual ~Service_compact_columns_pargs() noexcept;
+  const SpecSchemas* spec;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_compact_columns_result__isset {
+  _Service_compact_columns_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_compact_columns_result__isset;
+
+class Service_compact_columns_result {
+ public:
+
+  Service_compact_columns_result(const Service_compact_columns_result&);
+  Service_compact_columns_result& operator=(const Service_compact_columns_result&);
+  Service_compact_columns_result() {
+  }
+
+  virtual ~Service_compact_columns_result() noexcept;
+  CompactResults success;
+  Exception e;
+
+  _Service_compact_columns_result__isset __isset;
+
+  void __set_success(const CompactResults& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_compact_columns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_compact_columns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_compact_columns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_compact_columns_presult__isset {
+  _Service_compact_columns_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_compact_columns_presult__isset;
+
+class Service_compact_columns_presult {
+ public:
+
+
+  virtual ~Service_compact_columns_presult() noexcept;
+  CompactResults* success;
+  Exception e;
+
+  _Service_compact_columns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _Service_scan_args__isset {
   _Service_scan_args__isset() : spec(false) {}
   bool spec :1;
@@ -2083,6 +2430,15 @@ class ServiceClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   void send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update();
+  void mng_column(const SchemaFunc::type func, const Schema& schema);
+  void send_mng_column(const SchemaFunc::type func, const Schema& schema);
+  void recv_mng_column();
+  void list_columns(Schemas& _return, const SpecSchemas& spec);
+  void send_list_columns(const SpecSchemas& spec);
+  void recv_list_columns(Schemas& _return);
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec);
+  void send_compact_columns(const SpecSchemas& spec);
+  void recv_compact_columns(CompactResults& _return);
   void scan(Cells& _return, const SpecScan& spec);
   void send_scan(const SpecScan& spec);
   void recv_scan(Cells& _return);
@@ -2125,6 +2481,9 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_scan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_scan_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_scan_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2145,6 +2504,9 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
+    processMap_["mng_column"] = &ServiceProcessor::process_mng_column;
+    processMap_["list_columns"] = &ServiceProcessor::process_list_columns;
+    processMap_["compact_columns"] = &ServiceProcessor::process_compact_columns;
     processMap_["scan"] = &ServiceProcessor::process_scan;
     processMap_["scan_rslt_on_column"] = &ServiceProcessor::process_scan_rslt_on_column;
     processMap_["scan_rslt_on_key"] = &ServiceProcessor::process_scan_rslt_on_key;
@@ -2293,6 +2655,35 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_[i]->update(cells, updater_id);
   }
 
+  void mng_column(const SchemaFunc::type func, const Schema& schema) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->mng_column(func, schema);
+    }
+    ifaces_[i]->mng_column(func, schema);
+  }
+
+  void list_columns(Schemas& _return, const SpecSchemas& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->list_columns(_return, spec);
+    }
+    ifaces_[i]->list_columns(_return, spec);
+    return;
+  }
+
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->compact_columns(_return, spec);
+    }
+    ifaces_[i]->compact_columns(_return, spec);
+    return;
+  }
+
   void scan(Cells& _return, const SpecScan& spec) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -2411,6 +2802,15 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   int32_t send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update(const int32_t seqid);
+  void mng_column(const SchemaFunc::type func, const Schema& schema);
+  int32_t send_mng_column(const SchemaFunc::type func, const Schema& schema);
+  void recv_mng_column(const int32_t seqid);
+  void list_columns(Schemas& _return, const SpecSchemas& spec);
+  int32_t send_list_columns(const SpecSchemas& spec);
+  void recv_list_columns(Schemas& _return, const int32_t seqid);
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec);
+  int32_t send_compact_columns(const SpecSchemas& spec);
+  void recv_compact_columns(CompactResults& _return, const int32_t seqid);
   void scan(Cells& _return, const SpecScan& spec);
   int32_t send_scan(const SpecScan& spec);
   void recv_scan(Cells& _return, const int32_t seqid);

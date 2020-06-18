@@ -84,6 +84,24 @@ class EncodingType(object):
     }
 
 
+class SchemaFunc(object):
+    CREATE = 3
+    DELETE = 5
+    MODIFY = 7
+
+    _VALUES_TO_NAMES = {
+        3: "CREATE",
+        5: "DELETE",
+        7: "MODIFY",
+    }
+
+    _NAMES_TO_VALUES = {
+        "CREATE": 3,
+        "DELETE": 5,
+        "MODIFY": 7,
+    }
+
+
 class Comp(object):
     NONE = 0
     PF = 1
@@ -479,6 +497,102 @@ class Schema(object):
         if self.revision is not None:
             oprot.writeFieldBegin('revision', TType.I64, 14)
             oprot.writeI64(self.revision)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecSchemas(object):
+    """
+    Attributes:
+     - cids
+     - names
+
+    """
+
+    __slots__ = (
+        'cids',
+        'names',
+    )
+
+
+    def __init__(self, cids=None, names=None,):
+        self.cids = cids
+        self.names = names
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.cids = []
+                    (_etype3, _size0) = iprot.readListBegin()
+                    for _i4 in range(_size0):
+                        _elem5 = iprot.readI64()
+                        self.cids.append(_elem5)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.names = []
+                    (_etype9, _size6) = iprot.readListBegin()
+                    for _i10 in range(_size6):
+                        _elem11 = iprot.readString()
+                        self.names.append(_elem11)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecSchemas')
+        if self.cids is not None:
+            oprot.writeFieldBegin('cids', TType.LIST, 1)
+            oprot.writeListBegin(TType.I64, len(self.cids))
+            for iter12 in self.cids:
+                oprot.writeI64(iter12)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.names is not None:
+            oprot.writeFieldBegin('names', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRING, len(self.names))
+            for iter13 in self.names:
+                oprot.writeString(iter13)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -918,40 +1032,40 @@ class SpecInterval(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.range_begin = []
-                    (_etype3, _size0) = iprot.readListBegin()
-                    for _i4 in range(_size0):
-                        _elem5 = iprot.readBinary()
-                        self.range_begin.append(_elem5)
+                    (_etype17, _size14) = iprot.readListBegin()
+                    for _i18 in range(_size14):
+                        _elem19 = iprot.readBinary()
+                        self.range_begin.append(_elem19)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.range_end = []
-                    (_etype9, _size6) = iprot.readListBegin()
-                    for _i10 in range(_size6):
-                        _elem11 = iprot.readBinary()
-                        self.range_end.append(_elem11)
+                    (_etype23, _size20) = iprot.readListBegin()
+                    for _i24 in range(_size20):
+                        _elem25 = iprot.readBinary()
+                        self.range_end.append(_elem25)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.range_offset = []
-                    (_etype15, _size12) = iprot.readListBegin()
-                    for _i16 in range(_size12):
-                        _elem17 = iprot.readBinary()
-                        self.range_offset.append(_elem17)
+                    (_etype29, _size26) = iprot.readListBegin()
+                    for _i30 in range(_size26):
+                        _elem31 = iprot.readBinary()
+                        self.range_offset.append(_elem31)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.LIST:
                     self.offset_key = []
-                    (_etype21, _size18) = iprot.readListBegin()
-                    for _i22 in range(_size18):
-                        _elem23 = iprot.readBinary()
-                        self.offset_key.append(_elem23)
+                    (_etype35, _size32) = iprot.readListBegin()
+                    for _i36 in range(_size32):
+                        _elem37 = iprot.readBinary()
+                        self.offset_key.append(_elem37)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -963,22 +1077,22 @@ class SpecInterval(object):
             elif fid == 6:
                 if ftype == TType.LIST:
                     self.key_start = []
-                    (_etype27, _size24) = iprot.readListBegin()
-                    for _i28 in range(_size24):
-                        _elem29 = SpecFraction()
-                        _elem29.read(iprot)
-                        self.key_start.append(_elem29)
+                    (_etype41, _size38) = iprot.readListBegin()
+                    for _i42 in range(_size38):
+                        _elem43 = SpecFraction()
+                        _elem43.read(iprot)
+                        self.key_start.append(_elem43)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 7:
                 if ftype == TType.LIST:
                     self.key_finish = []
-                    (_etype33, _size30) = iprot.readListBegin()
-                    for _i34 in range(_size30):
-                        _elem35 = SpecFraction()
-                        _elem35.read(iprot)
-                        self.key_finish.append(_elem35)
+                    (_etype47, _size44) = iprot.readListBegin()
+                    for _i48 in range(_size44):
+                        _elem49 = SpecFraction()
+                        _elem49.read(iprot)
+                        self.key_finish.append(_elem49)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1019,29 +1133,29 @@ class SpecInterval(object):
         if self.range_begin is not None:
             oprot.writeFieldBegin('range_begin', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.range_begin))
-            for iter36 in self.range_begin:
-                oprot.writeBinary(iter36)
+            for iter50 in self.range_begin:
+                oprot.writeBinary(iter50)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.range_end is not None:
             oprot.writeFieldBegin('range_end', TType.LIST, 2)
             oprot.writeListBegin(TType.STRING, len(self.range_end))
-            for iter37 in self.range_end:
-                oprot.writeBinary(iter37)
+            for iter51 in self.range_end:
+                oprot.writeBinary(iter51)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.range_offset is not None:
             oprot.writeFieldBegin('range_offset', TType.LIST, 3)
             oprot.writeListBegin(TType.STRING, len(self.range_offset))
-            for iter38 in self.range_offset:
-                oprot.writeBinary(iter38)
+            for iter52 in self.range_offset:
+                oprot.writeBinary(iter52)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.offset_key is not None:
             oprot.writeFieldBegin('offset_key', TType.LIST, 4)
             oprot.writeListBegin(TType.STRING, len(self.offset_key))
-            for iter39 in self.offset_key:
-                oprot.writeBinary(iter39)
+            for iter53 in self.offset_key:
+                oprot.writeBinary(iter53)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.offset_rev is not None:
@@ -1051,15 +1165,15 @@ class SpecInterval(object):
         if self.key_start is not None:
             oprot.writeFieldBegin('key_start', TType.LIST, 6)
             oprot.writeListBegin(TType.STRUCT, len(self.key_start))
-            for iter40 in self.key_start:
-                iter40.write(oprot)
+            for iter54 in self.key_start:
+                iter54.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.key_finish is not None:
             oprot.writeFieldBegin('key_finish', TType.LIST, 7)
             oprot.writeListBegin(TType.STRUCT, len(self.key_finish))
-            for iter41 in self.key_finish:
-                iter41.write(oprot)
+            for iter55 in self.key_finish:
+                iter55.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.value is not None:
@@ -1138,11 +1252,11 @@ class SpecColumn(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.intervals = []
-                    (_etype45, _size42) = iprot.readListBegin()
-                    for _i46 in range(_size42):
-                        _elem47 = SpecInterval()
-                        _elem47.read(iprot)
-                        self.intervals.append(_elem47)
+                    (_etype59, _size56) = iprot.readListBegin()
+                    for _i60 in range(_size56):
+                        _elem61 = SpecInterval()
+                        _elem61.read(iprot)
+                        self.intervals.append(_elem61)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1163,8 +1277,8 @@ class SpecColumn(object):
         if self.intervals is not None:
             oprot.writeFieldBegin('intervals', TType.LIST, 2)
             oprot.writeListBegin(TType.STRUCT, len(self.intervals))
-            for iter48 in self.intervals:
-                iter48.write(oprot)
+            for iter62 in self.intervals:
+                iter62.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1222,11 +1336,11 @@ class SpecScan(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.columns = []
-                    (_etype52, _size49) = iprot.readListBegin()
-                    for _i53 in range(_size49):
-                        _elem54 = SpecColumn()
-                        _elem54.read(iprot)
-                        self.columns.append(_elem54)
+                    (_etype66, _size63) = iprot.readListBegin()
+                    for _i67 in range(_size63):
+                        _elem68 = SpecColumn()
+                        _elem68.read(iprot)
+                        self.columns.append(_elem68)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1249,8 +1363,8 @@ class SpecScan(object):
         if self.columns is not None:
             oprot.writeFieldBegin('columns', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.columns))
-            for iter55 in self.columns:
-                iter55.write(oprot)
+            for iter69 in self.columns:
+                iter69.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.flags is not None:
@@ -1326,10 +1440,10 @@ class UCell(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype59, _size56) = iprot.readListBegin()
-                    for _i60 in range(_size56):
-                        _elem61 = iprot.readBinary()
-                        self.k.append(_elem61)
+                    (_etype73, _size70) = iprot.readListBegin()
+                    for _i74 in range(_size70):
+                        _elem75 = iprot.readBinary()
+                        self.k.append(_elem75)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1365,8 +1479,8 @@ class UCell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 2)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter62 in self.k:
-                oprot.writeBinary(iter62)
+            for iter76 in self.k:
+                oprot.writeBinary(iter76)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -1447,10 +1561,10 @@ class Cell(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype66, _size63) = iprot.readListBegin()
-                    for _i67 in range(_size63):
-                        _elem68 = iprot.readBinary()
-                        self.k.append(_elem68)
+                    (_etype80, _size77) = iprot.readListBegin()
+                    for _i81 in range(_size77):
+                        _elem82 = iprot.readBinary()
+                        self.k.append(_elem82)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1481,8 +1595,8 @@ class Cell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 2)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter69 in self.k:
-                oprot.writeBinary(iter69)
+            for iter83 in self.k:
+                oprot.writeBinary(iter83)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -1551,10 +1665,10 @@ class CCell(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype73, _size70) = iprot.readListBegin()
-                    for _i74 in range(_size70):
-                        _elem75 = iprot.readBinary()
-                        self.k.append(_elem75)
+                    (_etype87, _size84) = iprot.readListBegin()
+                    for _i88 in range(_size84):
+                        _elem89 = iprot.readBinary()
+                        self.k.append(_elem89)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1581,8 +1695,8 @@ class CCell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter76 in self.k:
-                oprot.writeBinary(iter76)
+            for iter90 in self.k:
+                oprot.writeBinary(iter90)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -1740,21 +1854,21 @@ class kCells(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype80, _size77) = iprot.readListBegin()
-                    for _i81 in range(_size77):
-                        _elem82 = iprot.readBinary()
-                        self.k.append(_elem82)
+                    (_etype94, _size91) = iprot.readListBegin()
+                    for _i95 in range(_size91):
+                        _elem96 = iprot.readBinary()
+                        self.k.append(_elem96)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.cells = []
-                    (_etype86, _size83) = iprot.readListBegin()
-                    for _i87 in range(_size83):
-                        _elem88 = KCell()
-                        _elem88.read(iprot)
-                        self.cells.append(_elem88)
+                    (_etype100, _size97) = iprot.readListBegin()
+                    for _i101 in range(_size97):
+                        _elem102 = KCell()
+                        _elem102.read(iprot)
+                        self.cells.append(_elem102)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1771,15 +1885,15 @@ class kCells(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter89 in self.k:
-                oprot.writeBinary(iter89)
+            for iter103 in self.k:
+                oprot.writeBinary(iter103)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.LIST, 2)
             oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter90 in self.cells:
-                iter90.write(oprot)
+            for iter104 in self.cells:
+                iter104.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1929,23 +2043,23 @@ class FCells(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.f = {}
-                    (_ktype92, _vtype93, _size91) = iprot.readMapBegin()
-                    for _i95 in range(_size91):
-                        _key96 = iprot.readBinary()
-                        _val97 = FCells()
-                        _val97.read(iprot)
-                        self.f[_key96] = _val97
+                    (_ktype106, _vtype107, _size105) = iprot.readMapBegin()
+                    for _i109 in range(_size105):
+                        _key110 = iprot.readBinary()
+                        _val111 = FCells()
+                        _val111.read(iprot)
+                        self.f[_key110] = _val111
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.cells = []
-                    (_etype101, _size98) = iprot.readListBegin()
-                    for _i102 in range(_size98):
-                        _elem103 = FCell()
-                        _elem103.read(iprot)
-                        self.cells.append(_elem103)
+                    (_etype115, _size112) = iprot.readListBegin()
+                    for _i116 in range(_size112):
+                        _elem117 = FCell()
+                        _elem117.read(iprot)
+                        self.cells.append(_elem117)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1962,16 +2076,16 @@ class FCells(object):
         if self.f is not None:
             oprot.writeFieldBegin('f', TType.MAP, 1)
             oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.f))
-            for kiter104, viter105 in self.f.items():
-                oprot.writeBinary(kiter104)
-                viter105.write(oprot)
+            for kiter118, viter119 in self.f.items():
+                oprot.writeBinary(kiter118)
+                viter119.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.LIST, 2)
             oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter106 in self.cells:
-                iter106.write(oprot)
+            for iter120 in self.cells:
+                iter120.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -2035,39 +2149,39 @@ class CellsGroup(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.cells = []
-                    (_etype110, _size107) = iprot.readListBegin()
-                    for _i111 in range(_size107):
-                        _elem112 = Cell()
-                        _elem112.read(iprot)
-                        self.cells.append(_elem112)
+                    (_etype124, _size121) = iprot.readListBegin()
+                    for _i125 in range(_size121):
+                        _elem126 = Cell()
+                        _elem126.read(iprot)
+                        self.cells.append(_elem126)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.MAP:
                     self.ccells = {}
-                    (_ktype114, _vtype115, _size113) = iprot.readMapBegin()
-                    for _i117 in range(_size113):
-                        _key118 = iprot.readString()
-                        _val119 = []
-                        (_etype123, _size120) = iprot.readListBegin()
-                        for _i124 in range(_size120):
-                            _elem125 = CCell()
-                            _elem125.read(iprot)
-                            _val119.append(_elem125)
+                    (_ktype128, _vtype129, _size127) = iprot.readMapBegin()
+                    for _i131 in range(_size127):
+                        _key132 = iprot.readString()
+                        _val133 = []
+                        (_etype137, _size134) = iprot.readListBegin()
+                        for _i138 in range(_size134):
+                            _elem139 = CCell()
+                            _elem139.read(iprot)
+                            _val133.append(_elem139)
                         iprot.readListEnd()
-                        self.ccells[_key118] = _val119
+                        self.ccells[_key132] = _val133
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.kcells = []
-                    (_etype129, _size126) = iprot.readListBegin()
-                    for _i130 in range(_size126):
-                        _elem131 = kCells()
-                        _elem131.read(iprot)
-                        self.kcells.append(_elem131)
+                    (_etype143, _size140) = iprot.readListBegin()
+                    for _i144 in range(_size140):
+                        _elem145 = kCells()
+                        _elem145.read(iprot)
+                        self.kcells.append(_elem145)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2090,26 +2204,26 @@ class CellsGroup(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter132 in self.cells:
-                iter132.write(oprot)
+            for iter146 in self.cells:
+                iter146.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ccells is not None:
             oprot.writeFieldBegin('ccells', TType.MAP, 2)
             oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.ccells))
-            for kiter133, viter134 in self.ccells.items():
-                oprot.writeString(kiter133)
-                oprot.writeListBegin(TType.STRUCT, len(viter134))
-                for iter135 in viter134:
-                    iter135.write(oprot)
+            for kiter147, viter148 in self.ccells.items():
+                oprot.writeString(kiter147)
+                oprot.writeListBegin(TType.STRUCT, len(viter148))
+                for iter149 in viter148:
+                    iter149.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.kcells is not None:
             oprot.writeFieldBegin('kcells', TType.LIST, 3)
             oprot.writeListBegin(TType.STRUCT, len(self.kcells))
-            for iter136 in self.kcells:
-                iter136.write(oprot)
+            for iter150 in self.kcells:
+                iter150.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.fcells is not None:
@@ -2242,6 +2356,12 @@ Schema.thrift_spec = (
     (12, TType.BYTE, 'log_rollout_ratio', None, None, ),  # 12
     (13, TType.BYTE, 'compact_percent', None, None, ),  # 13
     (14, TType.I64, 'revision', None, None, ),  # 14
+)
+all_structs.append(SpecSchemas)
+SpecSchemas.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'cids', (TType.I64, None, False), None, ),  # 1
+    (2, TType.LIST, 'names', (TType.STRING, None, False), None, ),  # 2
 )
 all_structs.append(SpecFlags)
 SpecFlags.thrift_spec = (

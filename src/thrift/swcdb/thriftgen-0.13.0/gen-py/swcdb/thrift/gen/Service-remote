@@ -36,6 +36,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  i64 updater_create(i32 buffer_size)')
     print('  void updater_close(i64 id)')
     print('  void update(UCCells cells, i64 updater_id)')
+    print('  void mng_column(SchemaFunc func, Schema schema)')
+    print('  Schemas list_columns(SpecSchemas spec)')
+    print('  CompactResults compact_columns(SpecSchemas spec)')
     print('  Cells scan(SpecScan spec)')
     print('  CCells scan_rslt_on_column(SpecScan spec)')
     print('  KCells scan_rslt_on_key(SpecScan spec)')
@@ -191,6 +194,24 @@ elif cmd == 'update':
         print('update requires 2 args')
         sys.exit(1)
     pp.pprint(client.update(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'mng_column':
+    if len(args) != 2:
+        print('mng_column requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.mng_column(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'list_columns':
+    if len(args) != 1:
+        print('list_columns requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.list_columns(eval(args[0]),))
+
+elif cmd == 'compact_columns':
+    if len(args) != 1:
+        print('compact_columns requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.compact_columns(eval(args[0]),))
 
 elif cmd == 'scan':
     if len(args) != 1:

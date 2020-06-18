@@ -80,6 +80,21 @@ class ServiceHandler : virtual public ServiceIf {
     printf("update\n");
   }
 
+  void mng_column(const SchemaFunc::type func, const Schema& schema) {
+    // Your implementation goes here
+    printf("mng_column\n");
+  }
+
+  void list_columns(Schemas& _return, const SpecSchemas& spec) {
+    // Your implementation goes here
+    printf("list_columns\n");
+  }
+
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
+    // Your implementation goes here
+    printf("compact_columns\n");
+  }
+
   void scan(Cells& _return, const SpecScan& spec) {
     // Your implementation goes here
     printf("scan\n");
