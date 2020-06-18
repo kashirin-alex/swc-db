@@ -479,7 +479,7 @@ class AppHandler final : virtual public BrokerIf {
     req = it->second;
   }
 
-  void updater_close(client::Query::Update:: Ptr req) {
+  void updater_close(const client::Query::Update::Ptr& req) {
     req->commit_if_need();
     req->wait();
     int err;
@@ -541,7 +541,7 @@ class AppHandler final : virtual public BrokerIf {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, int error, 
+        (const client::ConnQueue::ReqBase::Ptr& req, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -575,7 +575,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, client::Query::Select::Result::Ptr result,
+          int& err, const client::Query::Select::Result::Ptr& result,
           bool with_value, Cells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
@@ -604,7 +604,7 @@ class AppHandler final : virtual public BrokerIf {
   }
   
   static void process_results(
-          int& err, client::Query::Select::Result::Ptr result,
+          int& err, const client::Query::Select::Result::Ptr& result,
           bool with_value, CCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells; 
@@ -634,7 +634,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, client::Query::Select::Result::Ptr result,
+          int& err, const client::Query::Select::Result::Ptr& result,
           bool with_value, KCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
@@ -669,7 +669,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, client::Query::Select::Result::Ptr result,
+          int& err, const client::Query::Select::Result::Ptr& result,
           bool with_value, FCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;

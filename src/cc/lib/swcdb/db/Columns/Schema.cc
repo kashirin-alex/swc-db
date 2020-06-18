@@ -71,7 +71,7 @@ Schema::Schema(const uint8_t **bufp, size_t *remainp)
 
 Schema::~Schema() {}
 
-bool Schema::equal(const Ptr &other, bool with_rev) {
+bool Schema::equal(const Ptr& other, bool with_rev) {
   return     cid == other->cid
           && col_seq == other->col_seq
           && col_type == other->col_type

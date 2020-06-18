@@ -117,7 +117,7 @@ void Select::remove(const cid_t cid) {
 
 
 
-Select::Select(Cb_t cb, bool rsp_partials)
+Select::Select(const Cb_t& cb, bool rsp_partials)
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
@@ -125,7 +125,8 @@ Select::Select(Cb_t cb, bool rsp_partials)
           result(std::make_shared<Result>(m_cv, rsp_partials)) { 
 }
 
-Select::Select(const DB::Specs::Scan& specs, Cb_t cb, bool rsp_partials)
+Select::Select(const DB::Specs::Scan& specs, const Cb_t& cb, 
+               bool rsp_partials)
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
@@ -227,7 +228,8 @@ void Select::scan(int& err) {
 }
 
 
-Select::ScannerColumn::ScannerColumn(const cid_t cid, const Types::KeySeq col_seq,
+Select::ScannerColumn::ScannerColumn(const cid_t cid, 
+                                     const Types::KeySeq col_seq,
                                      DB::Specs::Interval& interval,
                                      const Select::Ptr& selector)
                                     : cid(cid), col_seq(col_seq), 
@@ -336,7 +338,7 @@ void Select::Scanner::locate_on_manager(bool next_range) {
     params,
     [next_range, profile=col->selector->result->profile.mngr_locate(),
      scanner=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->located_on_manager(req, rsp, next_range))
         --scanner->col->selector->result->completion;
@@ -350,7 +352,7 @@ void Select::Scanner::resolve_on_manager() {
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
     [profile=col->selector->result->profile.mngr_res(), 
      scanner=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->located_on_manager(req, rsp))
         --scanner->col->selector->result->completion;
@@ -472,10 +474,11 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
     params, endpoints,
     [next_range, profile=col->selector->result->profile.rgr_locate(type),
      scanner=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+    (const ReqBase::Ptr& req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       if(scanner->located_on_ranger(
-          std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
+          std::dynamic_pointer_cast<
+            Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp, next_range))
         --scanner->col->selector->result->completion;
     }
@@ -542,7 +545,7 @@ bool Select::Scanner::located_on_ranger(
   return true;
 }
 
-void Select::Scanner::select(EndPoints endpoints, rid_t rid, 
+void Select::Scanner::select(const EndPoints& endpoints, rid_t rid, 
                              const ReqBase::Ptr& base) {
   ++col->selector->result->completion;
 
@@ -554,7 +557,8 @@ void Select::Scanner::select(EndPoints endpoints, rid_t rid,
     [rid, base, 
      profile=col->selector->result->profile.rgr_data(), 
      scanner=shared_from_this()] 
-    (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
       profile.add(rsp.err);
       
       if(rsp.err) {

@@ -16,9 +16,9 @@ SWC_SHOULD_INLINE
 void 
 RangeQueryUpdate::request(
         const Params::RangeQueryUpdateReq& params, 
-        DynamicBuffer::Ptr buffer,
+        const DynamicBuffer::Ptr& buffer,
         const EndPoints& endpoints, 
-        const RangeQueryUpdate::Cb_t cb, 
+        const RangeQueryUpdate::Cb_t& cb, 
         const uint32_t timeout) {
   std::make_shared<RangeQueryUpdate>(params, buffer, endpoints, cb, timeout)
     ->run();
@@ -27,8 +27,9 @@ RangeQueryUpdate::request(
 
 RangeQueryUpdate::RangeQueryUpdate(
                 const Params::RangeQueryUpdateReq& params,
-                DynamicBuffer::Ptr buffer, const EndPoints& endpoints,
-                const RangeQueryUpdate::Cb_t cb, 
+                const DynamicBuffer::Ptr& buffer, 
+                const EndPoints& endpoints,
+                const RangeQueryUpdate::Cb_t& cb, 
                 const uint32_t timeout) 
                 : client::ConnQueue::ReqBase(false), 
                   endpoints(endpoints), cb(cb) {

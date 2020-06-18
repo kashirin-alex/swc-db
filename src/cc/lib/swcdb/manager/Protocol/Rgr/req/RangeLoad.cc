@@ -9,8 +9,9 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-RangeLoad::RangeLoad(Manager::Ranger::Ptr rgr, Manager::Range::Ptr range,
-                     DB::Schema::Ptr schema) 
+RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr, 
+                     const Manager::Range::Ptr& range,
+                     const DB::Schema::Ptr& schema) 
                     : client::ConnQueue::ReqBase(false), 
                       rgr(rgr), range(range), 
                       schema_revision(schema->revision) {

@@ -9,7 +9,8 @@
 namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 
 
-MngrState::MngrState(ResponseCallback::Ptr cb, Manager::MngrsStatus &states, 
+MngrState::MngrState(const ResponseCallback::Ptr& cb, 
+                     const Manager::MngrsStatus& states, 
                      uint64_t token, const EndPoint& mngr_host, 
                      uint32_t timeout) 
                     : cb(cb) {

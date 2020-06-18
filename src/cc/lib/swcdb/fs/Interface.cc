@@ -219,7 +219,8 @@ bool Interface::exists(int& err, const std::string& name) {
   }
 }
 
-void Interface::exists(Callback::ExistsCb_t cb, const std::string& name) {
+void Interface::exists(const Callback::ExistsCb_t& cb, 
+                       const std::string& name) {
   Callback::ExistsCb_t cb_wrapper; 
   cb_wrapper = [cb, name, &cb_wrapper, ptr=ptr()]
     (int err, bool state) { 

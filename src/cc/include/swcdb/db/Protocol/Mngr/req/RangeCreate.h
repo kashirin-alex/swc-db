@@ -19,21 +19,22 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RangeCreate: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeCreateRsp&)> Cb_t;
  
   static void request(cid_t cid, rgrid_t rgrid, 
-                      const Cb_t cb, const uint32_t timeout = 10000){
+                      const Cb_t& cb, const uint32_t timeout = 10000) {
     request(Params::RangeCreateReq(cid, rgrid), cb, timeout);
   }
 
-  static inline void request(const Params::RangeCreateReq params,
-                             const Cb_t cb, const uint32_t timeout = 10000){
+  static inline void request(const Params::RangeCreateReq& params,
+                             const Cb_t& cb, 
+                             const uint32_t timeout = 10000) {
     std::make_shared<RangeCreate>(params, cb, timeout)->run();
   }
 
 
-  RangeCreate(const Params::RangeCreateReq& params, const Cb_t cb, 
+  RangeCreate(const Params::RangeCreateReq& params, const Cb_t& cb, 
               const uint32_t timeout) 
               : client::ConnQueue::ReqBase(false), 
                 cb(cb), cid(params.cid) {

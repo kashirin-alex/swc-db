@@ -46,7 +46,7 @@ namespace Env {
 class Clients final {
   public:
 
-  static void init(client::Clients::Ptr clients);
+  static void init(const client::Clients::Ptr& clients);
 
   static client::Clients::Ptr get();
 
@@ -61,7 +61,7 @@ class Clients final {
   const Property::V_GUINT8::Ptr      cfg_recv_ahead;
   const Property::V_GINT32::Ptr      cfg_recv_timeout;
 
-  Clients(client::Clients::Ptr clients) ;
+  Clients(const client::Clients::Ptr& clients);
 
   ~Clients();
 

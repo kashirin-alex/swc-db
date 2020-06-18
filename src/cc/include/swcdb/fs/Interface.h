@@ -74,7 +74,7 @@ class Interface {
 
   bool exists(int& err, const std::string& name);
 
-  void exists(Callback::ExistsCb_t cb, const std::string& name);
+  void exists(const Callback::ExistsCb_t& cb, const std::string& name);
 
   void mkdirs(int& err, const std::string& name);
 

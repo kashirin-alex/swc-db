@@ -30,7 +30,7 @@ class Readers final : private std::vector<Read::Ptr> {
   
   Readers& operator=(const Readers&) = delete;
 
-  void init(RangePtr for_range);
+  void init(const RangePtr& for_range);
 
   ~Readers();
 

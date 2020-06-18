@@ -19,7 +19,7 @@ Fragments::Fragments(const Types::KeySeq key_seq)
                       m_compacting(false), m_sem(5) { 
 }
 
-void Fragments::init(RangePtr for_range) {
+void Fragments::init(const RangePtr& for_range) {
   SWC_ASSERT(for_range != nullptr);
   
   range = for_range;

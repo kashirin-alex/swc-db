@@ -81,7 +81,7 @@ void Schemas::_request(int& err, cid_t cid,
   Protocol::Mngr::Req::ColumnGet::schema(
     cid, 
     [schema=&schema, await=&res] 
-    (client::ConnQueue::ReqBase::Ptr req_ptr,
+    (const client::ConnQueue::ReqBase::Ptr& req_ptr,
       int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         SWC_PRINT << " error=" << error 
@@ -106,7 +106,7 @@ void Schemas::_request(int& err, const std::string& name,
   Protocol::Mngr::Req::ColumnGet::schema(
     name, 
     [schema=&schema, await=&res] 
-    (client::ConnQueue::ReqBase::Ptr req_ptr,
+    (const client::ConnQueue::ReqBase::Ptr& req_ptr,
       int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         SWC_PRINT << " error=" << error 

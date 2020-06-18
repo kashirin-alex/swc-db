@@ -17,7 +17,7 @@ class CompactRange final : public ReqScan {
   
   CommitLog::Fragments::Vec              fragments_old;
 
-  CompactRange(Compaction::Ptr compactor, RangePtr range,
+  CompactRange(Compaction::Ptr compactor, const RangePtr& range,
                const uint32_t cs_size, const uint32_t blk_size);
 
   virtual ~CompactRange();
@@ -72,7 +72,7 @@ class CompactRange final : public ReqScan {
 
   void mngr_create_range(uint32_t split_at);
 
-  void mngr_remove_range(RangePtr new_range);
+  void mngr_remove_range(const RangePtr& new_range);
 
   void split(rid_t new_rid, uint32_t split_at);
 

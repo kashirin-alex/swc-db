@@ -49,7 +49,7 @@ class FileWriter {
     close();
   }
 
-  void write(client::Query::Select::Result::Ptr result) {
+  void write(const client::Query::Select::Result::Ptr& result) {
     for(cid_t cid : result->get_cids()) {
       schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
       if(err)
@@ -288,7 +288,7 @@ class FileReader {
     return updater->result;
   }
 
-  void read(client::Query::Update::Ptr updater, 
+  void read(const client::Query::Update::Ptr& updater, 
             FS::SmartFd::Ptr smartfd) {
     size_t length = interface->get_fs()->length(err, smartfd->filepath());
     if(err)

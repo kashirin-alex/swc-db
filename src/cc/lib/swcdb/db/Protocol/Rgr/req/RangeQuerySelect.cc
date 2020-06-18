@@ -17,14 +17,14 @@ SWC_SHOULD_INLINE
 void 
 RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
                           const EndPoints& endpoints, 
-                          const RangeQuerySelect::Cb_t cb,
+                          const RangeQuerySelect::Cb_t& cb,
                           const uint32_t timeout) {
   std::make_shared<RangeQuerySelect>(params, endpoints, cb, timeout)->run();
 }
 
 RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                                    const EndPoints& endpoints, 
-                                   const RangeQuerySelect::Cb_t cb, 
+                                   const RangeQuerySelect::Cb_t& cb, 
                                    const uint32_t timeout) 
                                   : client::ConnQueue::ReqBase(false), 
                                     endpoints(endpoints), cb(cb) {

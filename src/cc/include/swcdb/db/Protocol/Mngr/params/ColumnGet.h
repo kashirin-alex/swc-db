@@ -55,7 +55,7 @@ class ColumnGetRsp  : public Serializable {
 
   ColumnGetRsp();
 
-  ColumnGetRsp(ColumnGetReq::Flag flag, DB::Schema::Ptr schema);
+  ColumnGetRsp(ColumnGetReq::Flag flag, const DB::Schema::Ptr& schema);
 
   virtual ~ColumnGetRsp();
 

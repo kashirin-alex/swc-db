@@ -9,7 +9,8 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
-ColumnUpdate::ColumnUpdate(Manager::Ranger::Ptr rgr, DB::Schema::Ptr schema)
+ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
+                           const DB::Schema::Ptr& schema)
                           : client::ConnQueue::ReqBase(false), 
                             rgr(rgr), schema(schema) {
   cbp = CommBuf::make(Params::ColumnUpdate(schema));

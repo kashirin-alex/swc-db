@@ -99,11 +99,6 @@ Read::Read(const DB::Cells::Interval& interval, const uint64_t offset_data,
             m_cells_remain(cells_count), m_err(Error::OK) {
 }
 
-SWC_SHOULD_INLINE
-Read::Ptr Read::ptr() {
-  return this;
-}
-
 Read::~Read() { 
 }
 

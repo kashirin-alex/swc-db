@@ -105,7 +105,7 @@ struct CompactRange::InBlock {
 };
 
 
-CompactRange::CompactRange(Compaction::Ptr compactor, RangePtr range,
+CompactRange::CompactRange(Compaction::Ptr compactor, const RangePtr& range,
                            const uint32_t cs_size, const uint32_t blk_size) 
             : ReqScan(ReqScan::Type::COMPACTION, true, 
                       compactor->cfg_read_ahead->get()/2), 
@@ -596,7 +596,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     range->cfg->cid,
     RangerEnv::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
-    (client::ConnQueue::ReqBase::Ptr req, 
+    (const client::ConnQueue::ReqBase::Ptr& req, 
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
@@ -618,13 +618,13 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
   );
 }
 
-void CompactRange::mngr_remove_range(RangePtr new_range) {
+void CompactRange::mngr_remove_range(const RangePtr& new_range) {
   std::promise<void> res;
   Protocol::Mngr::Req::RangeRemove::request(
     new_range->cfg->cid,
     new_range->rid,
     [new_range, await=&res]
-    (client::ConnQueue::ReqBase::Ptr req, 
+    (const client::ConnQueue::ReqBase::Ptr& req, 
      const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
@@ -713,7 +713,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     [new_rid, cid=range->cfg->cid](int err) { 
       Protocol::Mngr::Req::RangeUnloaded::request(
         cid, new_rid,
-        [cid, new_rid](client::ConnQueue::ReqBase::Ptr req, 
+        [cid, new_rid]
+        (const client::ConnQueue::ReqBase::Ptr& req, 
          const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
           SWC_LOGF(LOG_DEBUG, 

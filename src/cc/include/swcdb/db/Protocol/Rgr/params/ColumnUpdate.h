@@ -14,7 +14,10 @@ class ColumnUpdate : public Serializable {
   public:
 
   ColumnUpdate() {}
-  ColumnUpdate(DB::Schema::Ptr schema) : schema(schema){}
+  
+  ColumnUpdate(const DB::Schema::Ptr& schema) 
+              : schema(schema) { 
+  }
              
   virtual ~ColumnUpdate() {}
 

@@ -36,7 +36,7 @@ class Schema final {
 
   ~Schema();
 
-  bool equal(const Ptr &other, bool with_rev=true);
+  bool equal(const Ptr& other, bool with_rev=true);
   
   size_t encoded_length() const;
  

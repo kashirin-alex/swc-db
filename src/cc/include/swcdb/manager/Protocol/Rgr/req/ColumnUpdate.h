@@ -13,7 +13,8 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(Manager::Ranger::Ptr rgr, DB::Schema::Ptr schema);
+  ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
+               const DB::Schema::Ptr& schema);
   
   virtual ~ColumnUpdate();
 

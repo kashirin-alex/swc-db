@@ -71,8 +71,6 @@ class Read final {
   
   Read& operator=(const Read&) = delete;
 
-  Ptr ptr();
-
   ~Read();
 
   void load_cells(BlockLoader* loader);
@@ -123,7 +121,7 @@ class Write final {
   //std::atomic<uint32_t>     completion;
  
   Write(const csid_t csid, const std::string& filepath, 
-        RangePtr range, uint32_t cell_revs);
+        const RangePtr& range, uint32_t cell_revs);
 
   ~Write();
 
@@ -161,7 +159,7 @@ typedef std::shared_ptr<Writers>  WritersPtr;
 
 
 
-static Read::Ptr create_initial(int& err, RangePtr range);
+static Read::Ptr create_initial(int& err, const RangePtr& range);
 
 
 

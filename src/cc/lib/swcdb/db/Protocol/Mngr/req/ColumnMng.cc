@@ -15,33 +15,33 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnMng::create(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
-                      const uint32_t timeout) {
+void ColumnMng::create(const DB::Schema::Ptr& schema, 
+                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
   request(Func::CREATE, schema, cb, timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::modify(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
-                        const uint32_t timeout) {
+void ColumnMng::modify(const DB::Schema::Ptr& schema, 
+                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
   request(Func::MODIFY, schema, cb, timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::remove(DB::Schema::Ptr schema, const ColumnMng::Cb_t cb, 
-                        const uint32_t timeout) {
+void ColumnMng::remove(const DB::Schema::Ptr& schema, 
+                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
   request(Func::DELETE, schema, cb, timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::request(ColumnMng::Func func, DB::Schema::Ptr schema, 
-                         const ColumnMng::Cb_t cb, const uint32_t timeout) {
+void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
+                        const ColumnMng::Cb_t& cb, const uint32_t timeout) {
   std::make_shared<ColumnMng>(Params::ColumnMng(func, schema), cb, timeout)
     ->run();
 }
 
 
-ColumnMng::ColumnMng(const Params::ColumnMng& params, const ColumnMng::Cb_t cb, 
-                     const uint32_t timeout)
+ColumnMng::ColumnMng(const Params::ColumnMng& params, 
+                     const ColumnMng::Cb_t& cb, const uint32_t timeout)
                     : client::ConnQueue::ReqBase(false), cb(cb) {
   cbp = CommBuf::make(params);    
   cbp->header.set(COLUMN_MNG, timeout);

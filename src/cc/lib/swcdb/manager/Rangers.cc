@@ -255,7 +255,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 }
 
 
-void Rangers::assign_range_chk_last(int err, Ranger::Ptr rs_chk) {
+void Rangers::assign_range_chk_last(int err, const Ranger::Ptr& rs_chk) {
   client::ConnQueue::ReqBase::Ptr req;
   for(;;) {
     {
@@ -273,7 +273,7 @@ void Rangers::assign_range_chk_last(int err, Ranger::Ptr rs_chk) {
   }
 }
 
-void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range) {
+void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
   rgr->put(
     std::make_shared<Protocol::Rgr::Req::RangeLoad>(
       rgr, 
@@ -316,7 +316,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 }
 
 
-bool Rangers::update(DB::Schema::Ptr schema, bool ack_required) {
+bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
   std::vector<rgrid_t> rgrids;
   int err = Error::OK;
   Env::Mngr::columns()->get_column(err, schema->cid)
@@ -441,7 +441,7 @@ void Rangers::assign_ranges_run() {
   schedule_assignment_check(cfg_chk_assign->get());
 }
 
-void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
+void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
   std::lock_guard lock(m_mutex);
 
   if(last_rgr->endpoints.size()) {
@@ -495,8 +495,8 @@ void Rangers::next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set) {
   return;
 }
 
-void Rangers::assign_range(Ranger::Ptr rgr, Range::Ptr range, 
-                           Files::RgrData::Ptr last_rgr) {
+void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range, 
+                           const Files::RgrData::Ptr& last_rgr) {
   if(!last_rgr)
     return assign_range(rgr, range);
 

@@ -12,8 +12,9 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeLoad : public client::ConnQueue::ReqBase {
   public:
 
-  RangeLoad(Manager::Ranger::Ptr rgr, Manager::Range::Ptr range,
-            DB::Schema::Ptr schema);
+  RangeLoad(const Manager::Ranger::Ptr& rgr, 
+            const Manager::Range::Ptr& range,
+            const DB::Schema::Ptr& schema);
   
   virtual ~RangeLoad();
 

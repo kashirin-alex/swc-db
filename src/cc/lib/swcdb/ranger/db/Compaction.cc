@@ -29,11 +29,6 @@ Compaction::Compaction()
 }
 
 Compaction::~Compaction() { }
- 
-SWC_SHOULD_INLINE
-Compaction::Ptr Compaction::ptr() {
-  return this;
-}
 
 bool Compaction::available() {
   std::scoped_lock lock(m_mutex);
@@ -111,7 +106,7 @@ void Compaction::run(bool continuing) {
   compacted();
 }
 
-void Compaction::compact(RangePtr range) {
+void Compaction::compact(const RangePtr& range) {
 
   if(!range->is_loaded() || stopped())
     return compacted(range);
@@ -162,7 +157,7 @@ void Compaction::compact(RangePtr range) {
            range->cfg->cid, range->rid, need.c_str());
 
   auto req = std::make_shared<CompactRange>(
-    ptr(),
+    this,
     range, 
     cs_size,
     blk_size
@@ -171,7 +166,7 @@ void Compaction::compact(RangePtr range) {
 }
 
 
-void Compaction::compacted(RangePtr range, bool all) {
+void Compaction::compacted(const RangePtr& range, bool all) {
   if(all) {
     range->blocks.release(0);
     if(range->blocks.size())

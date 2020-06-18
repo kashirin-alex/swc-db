@@ -8,9 +8,9 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-AssignIdNeeded::AssignIdNeeded(Manager::Ranger::Ptr rs_chk, 
-                               Manager::Ranger::Ptr rs_nxt, 
-                               Manager::Range::Ptr range) 
+AssignIdNeeded::AssignIdNeeded(const Manager::Ranger::Ptr& rs_chk, 
+                               const Manager::Ranger::Ptr& rs_nxt, 
+                               const Manager::Range::Ptr& range) 
                               : client::ConnQueue::ReqBase(false), 
                                 rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
   cbp = CommBuf::make();

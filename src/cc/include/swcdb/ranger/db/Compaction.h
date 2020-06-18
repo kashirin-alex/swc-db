@@ -27,8 +27,6 @@ class Compaction final {
   Compaction& operator=(const Compaction&) = delete;
 
   ~Compaction();
- 
-  Ptr ptr();
 
   bool available();
 
@@ -42,9 +40,9 @@ class Compaction final {
   
   void run(bool continuing=false);
 
-  void compact(RangePtr range);
+  void compact(const RangePtr& range);
 
-  void compacted(RangePtr range, bool all=false);
+  void compacted(const RangePtr& range, bool all=false);
 
   private:
   

@@ -34,7 +34,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   explicit Fragments(const Types::KeySeq key_seq);
 
-  void init(RangePtr for_range);
+  void init(const RangePtr& for_range);
 
   Fragments(const Fragments&) = delete;
 

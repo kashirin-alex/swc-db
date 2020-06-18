@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-DB::Schema::Ptr get_schema(int &err, Params::ColumnGetReq params) {
+DB::Schema::Ptr get_schema(int &err, const Params::ColumnGetReq& params) {
   switch(params.flag) {
     case Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
       return Env::Mngr::schemas()->get(params.cid);

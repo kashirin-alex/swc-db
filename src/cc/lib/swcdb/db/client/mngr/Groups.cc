@@ -289,7 +289,7 @@ Groups::Vec Groups::get_groups(const EndPoints& endpoints) {
     for(auto& endpoint : endpoints) {
       if(group->is_in_group(endpoint) 
         && std::find_if(host_groups.begin(), host_groups.end(), 
-            [group](const Group::Ptr & g) {return g == group;})
+            [group](const Group::Ptr& g) {return g == group;})
            == host_groups.end()
         )
         host_groups.push_back(group);

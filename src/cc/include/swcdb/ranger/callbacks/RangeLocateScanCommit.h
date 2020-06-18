@@ -17,7 +17,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   RangeLocateScanCommit(ConnHandlerPtr conn, Event::Ptr ev, 
                         const DB::Cell::Key& range_begin,
-                        RangePtr range, uint8_t flags)
+                        const RangePtr& range, uint8_t flags)
                         : RangeLocateScan(
                             conn, ev, 
                             range_begin, DB::Cell::Key(), range, flags) {

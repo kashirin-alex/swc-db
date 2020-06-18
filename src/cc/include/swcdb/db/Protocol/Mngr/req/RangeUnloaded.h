@@ -19,24 +19,25 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RangeUnloaded: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeUnloadedRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
-                      const Cb_t cb, const uint32_t timeout = 10000){
+                      const Cb_t& cb, const uint32_t timeout = 10000){
     request(Params::RangeUnloadedReq(cid, rid), cb, timeout);
   }
 
-  static inline void request(const Params::RangeUnloadedReq params,
-                             const Cb_t cb, const uint32_t timeout = 10000){
+  static inline void request(const Params::RangeUnloadedReq& params,
+                             const Cb_t& cb, 
+                             const uint32_t timeout = 10000) {
     std::make_shared<RangeUnloaded>(params, cb, timeout)->run();
   }
 
 
-  RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t cb, 
-              const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), 
-                cb(cb), cid(params.cid) {
+  RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t& cb, 
+                const uint32_t timeout)
+                : client::ConnQueue::ReqBase(false),
+                  cb(cb), cid(params.cid) {
     cbp = CommBuf::make(params);
     cbp->header.set(RANGE_UNLOADED, timeout);
   }

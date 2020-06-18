@@ -68,8 +68,6 @@ class Read final {
   
   Read& operator=(const Read&) = delete;
 
-  Ptr ptr();
-
   ~Read();
   
   bool load(const QueueRunnable::Call_t& cb);

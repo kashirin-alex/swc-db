@@ -16,14 +16,16 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 SWC_SHOULD_INLINE
 void Report::request(const Params::ReportReq& params, 
                      const EndPoints& endpoints, 
-                     Report::Cb_no_conn_t cb_no_conn, const Report::Cb_t cb, 
+                     const Report::Cb_no_conn_t& cb_no_conn, 
+                     const Report::Cb_t& cb, 
                      const uint32_t timeout) {
   std::make_shared<Report>(params, endpoints, cb_no_conn, cb, timeout)->run();
 }
 
 Report::Report(const Params::ReportReq& params, 
                const EndPoints& endpoints, 
-               Report::Cb_no_conn_t cb_no_conn, const Report::Cb_t cb, 
+               const Report::Cb_no_conn_t& cb_no_conn, 
+               const Report::Cb_t& cb, 
                const uint32_t timeout) 
               : client::ConnQueue::ReqBase(false), 
                 endpoints(endpoints), cb_no_conn(cb_no_conn), cb(cb) {

@@ -30,10 +30,10 @@ class MngrRole final {
 
   MngrStatus::Ptr active_mngr_role(uint8_t role);
 
-  void req_mngr_inchain(client::ConnQueue::ReqBase::Ptr req);
+  void req_mngr_inchain(const client::ConnQueue::ReqBase::Ptr& req);
 
   void fill_states(const MngrsStatus& states, uint64_t token, 
-                   ResponseCallback::Ptr cb);
+                   const ResponseCallback::Ptr& cb);
 
   void update_manager_addr(uint64_t hash, const EndPoint& mngr_host);
   

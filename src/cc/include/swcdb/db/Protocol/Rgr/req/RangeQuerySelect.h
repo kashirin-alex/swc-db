@@ -17,19 +17,19 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeQuerySelect: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeQuerySelectRsp&)> Cb_t;
 
   static void 
   request(const Params::RangeQuerySelectReq& params,
           const EndPoints& endpoints, 
-          const Cb_t cb,
+          const Cb_t& cb,
           const uint32_t timeout = 10000);
   
   EndPoints     endpoints;
 
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
-                   const EndPoints& endpoints, const Cb_t cb, 
+                   const EndPoints& endpoints, const Cb_t& cb, 
                    const uint32_t timeout);
 
   virtual ~RangeQuerySelect();

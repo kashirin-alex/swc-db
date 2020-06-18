@@ -82,7 +82,7 @@ class Update final : public std::enable_shared_from_this<Update> {
   uint32_t                    timeout;
   uint32_t                    timeout_ratio;
   
-  Cb_t                        cb;
+  const Cb_t                  cb;
   DB::Cells::MapMutable::Ptr  columns;
   DB::Cells::MapMutable::Ptr  columns_onfractions;
 
@@ -91,11 +91,11 @@ class Update final : public std::enable_shared_from_this<Update> {
   std::mutex                  m_mutex;
   std::condition_variable     cv;
 
-  Update(Cb_t cb=0);
+  Update(const Cb_t& cb=0);
 
   Update(const DB::Cells::MapMutable::Ptr& columns, 
          const DB::Cells::MapMutable::Ptr& columns_onfractions, 
-         Cb_t cb=0);
+         const Cb_t& cb=0);
 
   virtual ~Update();
  
@@ -163,7 +163,7 @@ class Update final : public std::enable_shared_from_this<Update> {
     bool proceed_on_ranger(const ReqBase::Ptr& base, 
                            const Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void commit_data(EndPoints endpoints, const ReqBase::Ptr& base);
+    void commit_data(const EndPoints& endpoints, const ReqBase::Ptr& base);
 
   };
 

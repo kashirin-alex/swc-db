@@ -14,12 +14,12 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnList::request(const ColumnList::Cb_t cb, const uint32_t timeout) {
+void ColumnList::request(const ColumnList::Cb_t& cb, const uint32_t timeout) {
   std::make_shared<ColumnList>(Params::ColumnListReq(), cb, timeout)->run();
 }
 
 ColumnList::ColumnList(const Params::ColumnListReq& params, 
-                       const ColumnList::Cb_t cb, const uint32_t timeout) 
+                       const ColumnList::Cb_t& cb, const uint32_t timeout) 
                       : client::ConnQueue::ReqBase(false), cb(cb) {
   cbp = CommBuf::make(params);
   cbp->header.set(COLUMN_LIST, timeout);

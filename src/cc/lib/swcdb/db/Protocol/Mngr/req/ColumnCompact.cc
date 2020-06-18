@@ -15,21 +15,21 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnCompact::request(cid_t cid, const ColumnCompact::Cb_t cb, 
+void ColumnCompact::request(cid_t cid, const ColumnCompact::Cb_t& cb, 
                             const uint32_t timeout) {
   request(Params::ColumnCompactReq(cid), cb, timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnCompact::request(const Params::ColumnCompactReq params,
-                            const ColumnCompact::Cb_t cb, 
+void ColumnCompact::request(const Params::ColumnCompactReq& params,
+                            const ColumnCompact::Cb_t& cb, 
                             const uint32_t timeout) {
   std::make_shared<ColumnCompact>(params, cb, timeout)->run();
 }
 
 
 ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
-                             const ColumnCompact::Cb_t cb, 
+                             const ColumnCompact::Cb_t& cb, 
                              const uint32_t timeout) 
                             : client::ConnQueue::ReqBase(false), 
                               cb(cb), cid(params.cid) {

@@ -38,7 +38,7 @@ class Blocks final {
 
   Blocks& operator=(const Blocks&) = delete;
 
-  void init(RangePtr for_range);
+  void init(const RangePtr& for_range);
 
   Ptr ptr();
 

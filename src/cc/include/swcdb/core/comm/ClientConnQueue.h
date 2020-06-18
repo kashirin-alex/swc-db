@@ -68,11 +68,11 @@ class ConnQueue :
 
   void stop();
 
-  void put(ReqBase::Ptr req);
+  void put(const ReqBase::Ptr& req);
 
   void set(const ConnHandlerPtr& conn);
 
-  void delay(ReqBase::Ptr req);
+  void delay(const ReqBase::Ptr& req);
 
   void delay_proceed(const ReqBase::Ptr& req, asio::high_resolution_timer* tm);
 

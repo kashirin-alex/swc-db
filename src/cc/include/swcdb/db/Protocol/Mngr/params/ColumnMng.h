@@ -35,7 +35,7 @@ class ColumnMng : public Serializable {
 
   ColumnMng();
 
-  ColumnMng(Function function, DB::Schema::Ptr schema);
+  ColumnMng(Function function, const DB::Schema::Ptr& schema);
 
   virtual ~ColumnMng();
 

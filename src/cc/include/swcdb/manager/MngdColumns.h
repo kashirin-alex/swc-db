@@ -51,12 +51,12 @@ class MngdColumns final {
   void action(const ColumnReq::Ptr& new_req);
 
   void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
-                     DB::Schema::Ptr schema, int err, bool initial=false);
+                     DB::Schema::Ptr& schema, int err, bool initial=false);
 
   void load_pending(cid_t cid);
 
   void update(Protocol::Mngr::Params::ColumnMng::Function func,
-              DB::Schema::Ptr schema, int err=Error::OK);
+              const DB::Schema::Ptr& schema, int err=Error::OK);
 
   void remove(int &err, cid_t cid, rgrid_t rgrid);
 
@@ -76,21 +76,21 @@ class MngdColumns final {
 
   void columns_load_chk_ack();
 
-  bool load_pending(cid_t cid, ColumnFunction &pending);
+  bool load_pending(cid_t cid, ColumnFunction& pending);
 
 
   cid_t get_next_cid();
 
-  void create(int &err, DB::Schema::Ptr &schema);
+  void create(int &err, DB::Schema::Ptr& schema);
   
-  void update(int &err, DB::Schema::Ptr &schema, DB::Schema::Ptr old);
+  void update(int &err, DB::Schema::Ptr& schema, const DB::Schema::Ptr& old);
 
   void remove(int &err, cid_t cid);
 
-  bool update(DB::Schema::Ptr schema);
+  bool update(DB::Schema::Ptr& schema);
 
   void update_status_ack(Protocol::Mngr::Params::ColumnMng::Function func,
-                         DB::Schema::Ptr schema, int err);
+                         const DB::Schema::Ptr& schema, int err);
 
   void actions_run();
 

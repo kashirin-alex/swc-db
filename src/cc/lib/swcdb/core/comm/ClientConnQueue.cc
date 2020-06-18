@@ -132,7 +132,7 @@ void ConnQueue::stop() {
   }
 }
 
-void ConnQueue::put(ConnQueue::ReqBase::Ptr req) {
+void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
   if(!req->queue) 
     req->queue = shared_from_this();
   bool make_conn;
@@ -159,7 +159,7 @@ void ConnQueue::set(const ConnHandlerPtr& conn) {
   exec_queue();
 }
 
-void ConnQueue::delay(ConnQueue::ReqBase::Ptr req) {
+void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
   if(!cfg_again_delay_ms)
     return put(req);
 

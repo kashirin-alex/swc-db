@@ -78,7 +78,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue = Env::Clients::get()->rgr->get(endpoints);
   }
 
-  void put(client::ConnQueue::ReqBase::Ptr req){
+  void put(const client::ConnQueue::ReqBase::Ptr& req){
     m_queue->put(req);
   }
 
@@ -86,7 +86,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue->stop();
   }
 
-  void pending_id(client::ConnQueue::ReqBase::Ptr req){
+  void pending_id(const client::ConnQueue::ReqBase::Ptr& req){
     m_pending_id.push(req);
   }
 

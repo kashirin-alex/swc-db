@@ -55,7 +55,8 @@ void ColumnGetReq::decode_internal(uint8_t version, const uint8_t **bufp,
 
 ColumnGetRsp::ColumnGetRsp() {}
 
-ColumnGetRsp::ColumnGetRsp(ColumnGetReq::Flag flag, DB::Schema::Ptr schema)
+ColumnGetRsp::ColumnGetRsp(ColumnGetReq::Flag flag, 
+                           const DB::Schema::Ptr& schema)
                           : flag(flag), schema(schema) {     
 }
 

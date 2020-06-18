@@ -108,7 +108,7 @@ void MngdColumns::action(const ColumnReq::Ptr& new_req) {
 
 void MngdColumns::update_status(
                     Protocol::Mngr::Params::ColumnMng::Function func, 
-                    DB::Schema::Ptr schema, int err, bool initial) {
+                    DB::Schema::Ptr& schema, int err, bool initial) {
   if(!initial && m_schemas_mngr)
     return update_status_ack(func, schema, err);
 
@@ -319,7 +319,7 @@ cid_t MngdColumns::get_next_cid() {
   return cid; // err !cid
 }
 
-void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
+void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   cid_t cid = get_next_cid();
   if(!cid) {
     err = Error::COLUMN_REACHED_ID_LIMIT;
@@ -354,8 +354,8 @@ void MngdColumns::create(int &err, DB::Schema::Ptr &schema) {
     Column::remove(err, cid);
 }
   
-void MngdColumns::update(int &err, DB::Schema::Ptr &schema, 
-                         DB::Schema::Ptr old) {
+void MngdColumns::update(int &err, DB::Schema::Ptr& schema, 
+                         const DB::Schema::Ptr& old) {
   if(old->col_seq != schema->col_seq || 
      Types::is_counter(old->col_type) != Types::is_counter(schema->col_type) ||
      (schema->cid <= Files::Schema::SYS_CID_END && 
@@ -410,7 +410,7 @@ void MngdColumns::remove(int &err, cid_t cid) {
   Env::Mngr::rangers()->column_delete(cid, rgrids);
 }
 
-bool MngdColumns::update(DB::Schema::Ptr schema) {
+bool MngdColumns::update(DB::Schema::Ptr& schema) {
   DB::Schema::Ptr existing = Env::Mngr::schemas()->get(schema->cid);
   if(!existing || !existing->equal(schema)) {
     Env::Mngr::schemas()->replace(schema);
@@ -421,14 +421,14 @@ bool MngdColumns::update(DB::Schema::Ptr schema) {
 
 
 void MngdColumns::update(Protocol::Mngr::Params::ColumnMng::Function func,
-                         DB::Schema::Ptr schema, int err) {
+                         const DB::Schema::Ptr& schema, int err) {
   Env::Mngr::role()->req_mngr_inchain(
     std::make_shared<Protocol::Mngr::Req::ColumnUpdate>(func, schema, err));
 }
 
 void MngdColumns::update_status_ack(
                           Protocol::Mngr::Params::ColumnMng::Function func,
-                          DB::Schema::Ptr schema, int err) {
+                          const DB::Schema::Ptr& schema, int err) {
   if(!err) switch(func) {
     case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL: {
       return columns_load();

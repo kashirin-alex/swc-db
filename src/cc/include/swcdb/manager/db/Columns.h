@@ -40,7 +40,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
   ~Columns() { }
 
-  bool is_an_initialization(int &err, DB::Schema::Ptr schema) {
+  bool is_an_initialization(int &err, const DB::Schema::Ptr& schema) {
     Column::Ptr col = nullptr;
     {
       Mutex::scope lock(m_mutex);

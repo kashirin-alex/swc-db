@@ -15,7 +15,7 @@ class RangeQuerySelect : public ReqScan {
 
   RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
                    const DB::Specs::Interval& req_spec,
-                   RangePtr range)
+                   const RangePtr& range)
                   : ReqScan(conn, ev, req_spec), 
                     range(range) {
     if(!spec.value.empty())

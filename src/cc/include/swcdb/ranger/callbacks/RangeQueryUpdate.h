@@ -15,7 +15,7 @@ class RangeQueryUpdate : public ResponseCallback {
   public:
   typedef std::shared_ptr<RangeQueryUpdate> Ptr;
 
-  RangeQueryUpdate(ConnHandlerPtr conn, Event::Ptr ev)
+  RangeQueryUpdate(const ConnHandlerPtr& conn, const Event::Ptr& ev)
                   : ResponseCallback(conn, ev) {
   }
 
@@ -37,7 +37,7 @@ class RangeQueryUpdate : public ResponseCallback {
            (m_conn != nullptr && !m_conn->is_open()) ;
   }
   
-  void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp &params) {
+  void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
     try {
       auto cbp = CommBuf::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);

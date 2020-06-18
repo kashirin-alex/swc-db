@@ -108,7 +108,7 @@ class Rgr : public Interface {
         err = Error::COMM_CONNECT_ERROR;
       },
       [this, await=&r_promise] 
-      (client::ConnQueue::ReqBase::Ptr req, 
+      (const client::ConnQueue::ReqBase::Ptr& req, 
        const Protocol::Rgr::Params::ReportRsp& rsp) {
         if(!(err = rsp.err)) {
           Mutex::scope lock(Logger::logger.mutex);

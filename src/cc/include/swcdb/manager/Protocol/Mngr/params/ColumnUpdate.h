@@ -16,7 +16,8 @@ class ColumnUpdate : public Serializable {
 
   ColumnUpdate() {}
 
-  ColumnUpdate(ColumnMng::Function function, DB::Schema::Ptr schema, int err) 
+  ColumnUpdate(ColumnMng::Function function, 
+               const DB::Schema::Ptr& schema, int err) 
               : function(function), schema(schema), err(err) {
   }
 

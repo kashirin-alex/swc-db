@@ -13,7 +13,7 @@ Blocks::Blocks(const Types::KeySeq key_seq)
                 m_block(nullptr), m_processing(0) { 
 }
   
-void Blocks::init(RangePtr for_range) {
+void Blocks::init(const RangePtr& for_range) {
   range = for_range;
   commitlog.init(range);
   cellstores.init(range);

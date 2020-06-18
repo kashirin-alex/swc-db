@@ -58,7 +58,7 @@ Clients::~Clients() { }
 
 namespace Env {
 
-void Clients::init(client::Clients::Ptr clients) {
+void Clients::init(const client::Clients::Ptr& clients) {
   m_env = std::make_shared<Clients>(clients);
 }
 
@@ -71,7 +71,7 @@ const Clients& Clients::ref() {
   return *m_env.get();
 }
 
-Clients::Clients(client::Clients::Ptr clients) 
+Clients::Clients(const client::Clients::Ptr& clients) 
           : m_clients(clients),
             cfg_send_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
               "swc.client.send.buffer")), 

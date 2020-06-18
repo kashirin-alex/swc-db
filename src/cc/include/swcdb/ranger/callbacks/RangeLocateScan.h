@@ -18,7 +18,7 @@ class RangeLocateScan : public ReqScan {
   RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
                   const DB::Cell::Key& range_begin, 
                   const DB::Cell::Key& range_end, 
-                  RangePtr range, uint8_t flags)
+                  const RangePtr& range, uint8_t flags)
                   : ReqScan(conn, ev, range_begin, range_end), 
                     range(range), flags(flags),
                     any_is(range->type != Types::Range::DATA),

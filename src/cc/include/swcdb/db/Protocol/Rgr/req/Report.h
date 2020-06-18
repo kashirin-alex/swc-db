@@ -16,18 +16,19 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class Report: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::ReportRsp&)> Cb_t;
   typedef std::function<void()> Cb_no_conn_t;
 
   static void request(const Params::ReportReq& params, 
                       const EndPoints& endpoints,
-                      Cb_no_conn_t cb_no_conn, const Cb_t cb, 
+                      const Cb_no_conn_t& cb_no_conn, const Cb_t& cb, 
                       const uint32_t timeout = 10000);
 
   Report(const Params::ReportReq& params, 
-         const EndPoints& endpoints, Cb_no_conn_t cb_no_conn, 
-         const Cb_t cb, const uint32_t timeout);
+         const EndPoints& endpoints, 
+         const Cb_no_conn_t& cb_no_conn, const Cb_t& cb, 
+         const uint32_t timeout);
 
   virtual ~Report();
 

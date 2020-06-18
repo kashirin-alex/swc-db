@@ -10,7 +10,7 @@ namespace SWC { namespace Ranger { namespace CellStore {
 
 Readers::Readers() { }
 
-void Readers::init(RangePtr for_range) {
+void Readers::init(const RangePtr& for_range) {
   range = for_range;
 }
 

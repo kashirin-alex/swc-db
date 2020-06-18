@@ -42,7 +42,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   const ColumnCfg  cfg;
 
-  Column(DB::Schema::Ptr schema) 
+  Column(const DB::Schema::Ptr& schema) 
         : cfg(schema), m_state(State::LOADING) {
   }
 

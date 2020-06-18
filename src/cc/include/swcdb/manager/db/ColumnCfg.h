@@ -16,7 +16,7 @@ class ColumnCfg final {
   const cid_t         cid;
   const Types::KeySeq key_seq;
 
-  ColumnCfg(DB::Schema::Ptr schema) 
+  ColumnCfg(const DB::Schema::Ptr& schema) 
             : cid(schema->cid), key_seq(schema->col_seq) { 
   }
 

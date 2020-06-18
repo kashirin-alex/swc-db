@@ -94,13 +94,14 @@ class Select final : public std::enable_shared_from_this<Select> {
   uint8_t           buff_ahead;
   uint32_t          timeout;
 
-  Cb_t              cb;
+  const Cb_t        cb;
   DB::Specs::Scan   specs;
   Result::Ptr       result;
 
-  Select(Cb_t cb=0, bool rsp_partials=false);
+  Select(const Cb_t& cb=0, bool rsp_partials=false);
 
-  Select(const DB::Specs::Scan& specs, Cb_t cb=0, bool rsp_partials=false);
+  Select(const DB::Specs::Scan& specs, 
+         const Cb_t& cb=0, bool rsp_partials=false);
 
   virtual ~Select();
  
@@ -192,7 +193,8 @@ class Select final : public std::enable_shared_from_this<Select> {
                            const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
                            bool next_range=false);
 
-    void select(EndPoints endpoints, rid_t rid, const ReqBase::Ptr& base);
+    void select(const EndPoints& endpoints, rid_t rid, 
+                const ReqBase::Ptr& base);
 
   };
   

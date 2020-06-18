@@ -231,11 +231,6 @@ Read::Read(const csid_t csid,
             m_smartfd(smartfd) {       
 }
 
-SWC_SHOULD_INLINE
-Read::Ptr Read::ptr() {
-  return this;
-}
-
 Read::~Read() {
   for(auto blk : blocks)
     delete blk;
@@ -370,7 +365,7 @@ std::string Read::to_string() const {
 
 
 Write::Write(const csid_t csid, const std::string& filepath, 
-             RangePtr range, uint32_t cell_revs)
+             const RangePtr& range, uint32_t cell_revs)
             : csid(csid), 
               smartfd(
                 FS::SmartFd::make_ptr(
@@ -552,7 +547,7 @@ std::string Write::to_string() {
 } 
 
 
-Read::Ptr create_initial(int& err, RangePtr range) {
+Read::Ptr create_initial(int& err, const RangePtr& range) {
   Write writer(1, range->get_path_cs(1), range, range->cfg->cell_versions());
   writer.create(
     err, -1, range->cfg->file_replication(), range->cfg->block_size());

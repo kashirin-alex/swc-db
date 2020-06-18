@@ -56,7 +56,7 @@ size_t Update::get_resend_count(bool reset) {
 
 
 
-Update::Update(Cb_t cb)
+Update::Update(const Cb_t& cb)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
@@ -69,7 +69,7 @@ Update::Update(Cb_t cb)
 
 Update::Update(const DB::Cells::MapMutable::Ptr& columns, 
          const DB::Cells::MapMutable::Ptr& columns_onfractions, 
-         Cb_t cb)
+         const Cb_t& cb)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
@@ -245,7 +245,7 @@ void Update::Locator::locate_on_manager() {
     params,
     [profile=updater->result->profile.mngr_locate(), 
      locator=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(locator->located_on_manager(req, rsp))
         locator->updater->result->completion_decr();
@@ -314,7 +314,8 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
     params, endpoints,
     [profile=updater->result->profile.rgr_locate(type),
      locator=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       if(locator->located_on_ranger(
           std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
@@ -375,7 +376,7 @@ void Update::Locator::resolve_on_manager() {
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
     [profile=updater->result->profile.mngr_res(), locator=shared_from_this()]
-    (ReqBase::Ptr req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(locator->located_ranger(req, rsp))
         locator->updater->result->completion_decr();
@@ -458,7 +459,7 @@ bool Update::Locator::proceed_on_ranger(
 }
 
 void Update::Locator::commit_data(
-      EndPoints endpoints,
+      const EndPoints& endpoints,
       const ReqBase::Ptr& base) {
   bool more = true;
   DynamicBuffer::Ptr cells_buff;

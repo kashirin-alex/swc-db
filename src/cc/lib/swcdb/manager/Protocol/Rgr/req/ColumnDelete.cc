@@ -10,7 +10,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-ColumnDelete::ColumnDelete(Manager::Ranger::Ptr rgr, cid_t cid) 
+ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
                           : client::ConnQueue::ReqBase(false), 
                             rgr(rgr), cid(cid) {
   cbp = CommBuf::make(Common::Params::ColumnId(cid));

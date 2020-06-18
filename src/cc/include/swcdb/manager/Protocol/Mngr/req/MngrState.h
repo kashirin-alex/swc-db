@@ -14,8 +14,10 @@ namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 class MngrState : public client::ConnQueue::ReqBase {
   public:
 
-  MngrState(ResponseCallback::Ptr cb, Manager::MngrsStatus &states, 
-            uint64_t token, const EndPoint& mngr_host, uint32_t timeout);
+  MngrState(const ResponseCallback::Ptr& cb, 
+            const Manager::MngrsStatus& states, 
+            uint64_t token, const EndPoint& mngr_host, 
+            uint32_t timeout);
   
   virtual ~MngrState();
 

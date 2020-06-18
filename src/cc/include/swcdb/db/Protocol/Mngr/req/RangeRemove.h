@@ -19,21 +19,22 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RangeRemove: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeRemoveRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
-                      const Cb_t cb, const uint32_t timeout = 10000){
+                      const Cb_t& cb, const uint32_t timeout = 10000) {
     request(Params::RangeRemoveReq(cid, rid), cb, timeout);
   }
 
-  static inline void request(const Params::RangeRemoveReq params,
-                             const Cb_t cb, const uint32_t timeout = 10000){
+  static inline void request(const Params::RangeRemoveReq& params,
+                             const Cb_t& cb, 
+                             const uint32_t timeout = 10000) {
     std::make_shared<RangeRemove>(params, cb, timeout)->run();
   }
 
 
-  RangeRemove(const Params::RangeRemoveReq& params, const Cb_t cb, 
+  RangeRemove(const Params::RangeRemoveReq& params, const Cb_t& cb, 
               const uint32_t timeout) 
               : client::ConnQueue::ReqBase(false), 
                 cb(cb), cid(params.cid) {

@@ -43,16 +43,16 @@ class Rangers final {
   void update_status(RangerList new_rgr_status, bool sync_all);
 
 
-  void assign_range_chk_last(int err, Ranger::Ptr rs_chk);
+  void assign_range_chk_last(int err, const Ranger::Ptr& rs_chk);
 
-  void assign_range(Ranger::Ptr rgr, Range::Ptr range);
+  void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range);
 
   void range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                     int err, bool failure=false, bool verbose=true);
 
   void assign_ranges();
 
-  bool update(DB::Schema::Ptr schema, bool ack_required);
+  bool update(const DB::Schema::Ptr& schema, bool ack_required);
   
   void column_delete(const cid_t cid, const std::vector<rgrid_t>& rgrids);
   
@@ -66,10 +66,10 @@ class Rangers final {
 
   void assign_ranges_run();
 
-  void next_rgr(Files::RgrData::Ptr &last_rgr, Ranger::Ptr &rs_set);
+  void next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set);
 
-  void assign_range(Ranger::Ptr rgr, Range::Ptr range, 
-                    Files::RgrData::Ptr last_rgr);
+  void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range, 
+                    const Files::RgrData::Ptr& last_rgr);
 
   Ranger::Ptr rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
 

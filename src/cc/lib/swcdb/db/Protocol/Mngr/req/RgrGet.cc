@@ -15,23 +15,23 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
  
 SWC_SHOULD_INLINE
 void RgrGet::request(cid_t cid, rid_t rid, bool next_range,
-                     const RgrGet::Cb_t cb, const uint32_t timeout) {
+                     const RgrGet::Cb_t& cb, const uint32_t timeout) {
   request(Params::RgrGetReq(cid, rid, next_range), cb, timeout);
 }
 
 SWC_SHOULD_INLINE
-void RgrGet::request(const Params::RgrGetReq params,
-                     const RgrGet::Cb_t cb, const uint32_t timeout) {
+void RgrGet::request(const Params::RgrGetReq& params,
+                     const RgrGet::Cb_t& cb, const uint32_t timeout) {
   std::make_shared<RgrGet>(params, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-RgrGet::Ptr RgrGet::make(const Params::RgrGetReq params,
-                         const RgrGet::Cb_t cb, const uint32_t timeout) {
+RgrGet::Ptr RgrGet::make(const Params::RgrGetReq& params,
+                         const RgrGet::Cb_t& cb, const uint32_t timeout) {
   return std::make_shared<RgrGet>(params, cb, timeout);
 }
 
-RgrGet::RgrGet(const Params::RgrGetReq& params, const RgrGet::Cb_t cb, 
+RgrGet::RgrGet(const Params::RgrGetReq& params, const RgrGet::Cb_t& cb, 
                const uint32_t timeout) 
               : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
   cbp = CommBuf::make(params);

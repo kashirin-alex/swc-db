@@ -15,7 +15,7 @@ class Echo : public DispatchHandler {
   public:
   typedef std::function<void(bool)> EchoCb_t;
 
-  Echo(ConnHandlerPtr conn, EchoCb_t cb, size_t buf_sz=0)
+  Echo(const ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
        : conn(conn), cb(cb), was_called(false) { 
 
     if(!buf_sz) {

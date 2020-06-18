@@ -17,15 +17,16 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeLocate: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(client::ConnQueue::ReqBase::Ptr, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeLocateRsp&)> Cb_t;
 
   static void request(const Params::RangeLocateReq& params,
                              const EndPoints& endpoints, 
-                             const Cb_t cb, const uint32_t timeout = 10000);
+                             const Cb_t& cb, const uint32_t timeout = 10000);
 
-  RangeLocate(const Params::RangeLocateReq& params, const EndPoints& endpoints,
-              const Cb_t cb, const uint32_t timeout);
+  RangeLocate(const Params::RangeLocateReq& params, 
+              const EndPoints& endpoints,
+              const Cb_t& cb, const uint32_t timeout);
 
   virtual ~RangeLocate();
 

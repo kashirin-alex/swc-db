@@ -39,7 +39,7 @@ void remove(int &err, cid_t cid){
 
 // SET 
 
-void write(SWC::DynamicBuffer &dst_buf, DB::Schema::Ptr schema){
+void write(SWC::DynamicBuffer &dst_buf, const DB::Schema::Ptr& schema) {
     
   size_t sz = schema->encoded_length();
   dst_buf.ensure(HEADER_SIZE+sz);
@@ -61,7 +61,7 @@ void write(SWC::DynamicBuffer &dst_buf, DB::Schema::Ptr schema){
   SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int &err, DB::Schema::Ptr schema, uint8_t replication=0){
+void save(int &err, const DB::Schema::Ptr& schema, uint8_t replication=0) {
   DynamicBuffer input;
   write(input, schema);
   StaticBuffer send_buf(input);
@@ -79,7 +79,7 @@ void save(int &err, DB::Schema::Ptr schema, uint8_t replication=0){
 
 //  GET
 
-void load(int &err, const std::string& filepath, DB::Schema::Ptr &schema) {
+void load(int &err, const std::string& filepath, DB::Schema::Ptr& schema) {
   
   StaticBuffer read_buf;
   Env::FsInterface::interface()->read(err, filepath, &read_buf);
@@ -151,7 +151,7 @@ DB::Schema::Ptr load(int &err, cid_t cid,
 }
 
 
-void save_with_validation(int &err, DB::Schema::Ptr schema_save,
+void save_with_validation(int &err, const DB::Schema::Ptr& schema_save,
                           uint8_t replication) {
   save(err, schema_save, replication); // ?tmp-file 
   if(err != Error::OK) 

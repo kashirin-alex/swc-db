@@ -12,7 +12,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 ColumnMng::ColumnMng() {}
 
-ColumnMng::ColumnMng(ColumnMng::Function function,  DB::Schema::Ptr schema)
+ColumnMng::ColumnMng(ColumnMng::Function function,  
+                     const DB::Schema::Ptr& schema)
                     : function(function), schema(schema) {     
 }
 

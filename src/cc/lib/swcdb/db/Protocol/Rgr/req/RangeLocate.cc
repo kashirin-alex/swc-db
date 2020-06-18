@@ -15,14 +15,14 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 SWC_SHOULD_INLINE
 void RangeLocate::request(const Params::RangeLocateReq& params,
                           const EndPoints& endpoints, 
-                          const RangeLocate::Cb_t cb, 
+                          const RangeLocate::Cb_t& cb, 
                           const uint32_t timeout) {
   std::make_shared<RangeLocate>(params, endpoints, cb, timeout)->run();
 }
 
 RangeLocate::RangeLocate(const Params::RangeLocateReq& params, 
                          const EndPoints& endpoints,
-                         const RangeLocate::Cb_t cb, const uint32_t timeout)
+                         const RangeLocate::Cb_t& cb, const uint32_t timeout)
                         : client::ConnQueue::ReqBase(false), 
                           endpoints(endpoints), cb(cb) {
   cbp = CommBuf::make(params);

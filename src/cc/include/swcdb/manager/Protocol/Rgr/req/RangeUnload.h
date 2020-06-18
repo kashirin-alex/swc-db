@@ -14,7 +14,8 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
-  RangeUnload(Manager::Range::Ptr range, ResponseCallback::Ptr cb,
+  RangeUnload(const Manager::Range::Ptr& range, 
+              const ResponseCallback::Ptr& cb,
               uint32_t timeout=60000);
 
   virtual ~RangeUnload();
@@ -25,7 +26,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   
   void handle_no_conn() override;
 
-  void unloaded(int err, ResponseCallback::Ptr cb);
+  void unloaded(int err, const ResponseCallback::Ptr& cb);
 
   private:
 

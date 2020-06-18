@@ -161,10 +161,9 @@ class DbClient : public Interface {
 
     std::promise<int> res;
     Protocol::Mngr::Req::ColumnMng::request(
-      func,
-      schema,
+      func, schema,
       [await=&res]
-      (client::ConnQueue::ReqBase::Ptr req, int error) {
+      (const client::ConnQueue::ReqBase::Ptr& req, int error) {
         /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           req->request_again();
           return;
@@ -198,7 +197,7 @@ class DbClient : public Interface {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, int error, 
+        (const client::ConnQueue::ReqBase::Ptr& req, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             schemas = rsp.schemas;
@@ -219,7 +218,7 @@ class DbClient : public Interface {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [schema, &proccessing, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, 
+        (const client::ConnQueue::ReqBase::Ptr& req, 
          const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           SWC_PRINT << "Compactig Column cid=" << schema->cid 
                     << " '" << schema->col_name << "' err=" << rsp.err 
@@ -247,7 +246,7 @@ class DbClient : public Interface {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&schemas, await=&res]
-        (client::ConnQueue::ReqBase::Ptr req, int error, 
+        (const client::ConnQueue::ReqBase::Ptr& req, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             schemas = rsp.schemas;
@@ -278,7 +277,7 @@ class DbClient : public Interface {
     size_t cells_bytes = 0;
     auto req = std::make_shared<client::Query::Select>(
       [this, &display_flags, &cells_count, &cells_bytes]
-      (client::Query::Select::Result::Ptr result) {
+      (const client::Query::Select::Result::Ptr& result) {
         display(result, display_flags, cells_count, cells_bytes);
       },
       true // cb on partial rsp
@@ -313,7 +312,7 @@ class DbClient : public Interface {
     return true;
   }
 
-  void display(client::Query::Select::Result::Ptr result,
+  void display(const client::Query::Select::Result::Ptr& result,
                uint8_t display_flags, 
                size_t& cells_count, size_t& cells_bytes) const {
     DB::Schema::Ptr schema = 0;
@@ -426,7 +425,7 @@ class DbClient : public Interface {
     
     auto req = std::make_shared<client::Query::Select>(
       [this, &writer] 
-      (client::Query::Select::Result::Ptr result) {
+      (const client::Query::Select::Result::Ptr& result) {
         writer.write(result);   
         // writer.err ? req->stop();
       },

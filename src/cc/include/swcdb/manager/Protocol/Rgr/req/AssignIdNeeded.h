@@ -12,9 +12,9 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class AssignIdNeeded : public client::ConnQueue::ReqBase {
   public:
 
-  AssignIdNeeded(Manager::Ranger::Ptr rs_chk, 
-                 Manager::Ranger::Ptr rs_nxt, 
-                 Manager::Range::Ptr range) ;
+  AssignIdNeeded(const Manager::Ranger::Ptr& rs_chk, 
+                 const Manager::Ranger::Ptr& rs_nxt, 
+                 const Manager::Range::Ptr& range) ;
   
   virtual ~AssignIdNeeded();
 
