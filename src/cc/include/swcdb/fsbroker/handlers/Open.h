@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void open(ConnHandlerPtr conn, Event::Ptr ev) {
+void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   int32_t fd = -1;

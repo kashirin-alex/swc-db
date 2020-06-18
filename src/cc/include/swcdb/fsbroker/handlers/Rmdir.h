@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void rmdir(ConnHandlerPtr conn, Event::Ptr ev) {
+void rmdir(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;    
   try {

@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void rgr_mng_id(ConnHandlerPtr conn, Event::Ptr ev) {
+void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;

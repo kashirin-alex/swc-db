@@ -19,7 +19,7 @@ AssignIdNeeded::AssignIdNeeded(const Manager::Ranger::Ptr& rs_chk,
   
 AssignIdNeeded::~AssignIdNeeded() { }
 
-void AssignIdNeeded::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void AssignIdNeeded::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(was_called)
     return;

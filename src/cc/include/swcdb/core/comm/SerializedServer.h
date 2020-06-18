@@ -77,9 +77,9 @@ class SerializedServer final {
 
   void shutdown();
 
-  void connection_add(ConnHandlerPtr conn);
+  void connection_add(const ConnHandlerPtr& conn);
 
-  void connection_del(ConnHandlerPtr conn);
+  void connection_del(const ConnHandlerPtr& conn);
 
   ~SerializedServer();
 

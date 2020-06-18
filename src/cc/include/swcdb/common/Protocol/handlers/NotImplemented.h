@@ -9,7 +9,7 @@
 
 namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
 
-void not_implemented(ConnHandlerPtr conn, Event::Ptr ev) {
+void not_implemented(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     try {
       auto cbp = CommBuf::make(4);
       cbp->header.initialize_from_request_header(ev->header);
@@ -25,7 +25,7 @@ void not_implemented(ConnHandlerPtr conn, Event::Ptr ev) {
 class NotImplemented : public AppHandler {
   public:
 
-  NotImplemented(ConnHandlerPtr conn, Event::Ptr ev)
+  NotImplemented(const ConnHandlerPtr& conn, const Event::Ptr& ev)
                 : AppHandler(conn, ev){
   }
 

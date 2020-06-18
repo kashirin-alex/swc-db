@@ -20,20 +20,20 @@ ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
 
 ConnQueueReqBase::~ConnQueueReqBase() {}
 
-void ConnQueueReqBase::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void ConnQueueReqBase::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   if(was_called || !is_rsp(conn, ev))
     return;
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 }
 
-bool ConnQueueReqBase::is_timeout(ConnHandlerPtr conn, Event::Ptr& ev) {
+bool ConnQueueReqBase::is_timeout(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
   if(out)
     request_again();
   return out;
 }
 
-bool ConnQueueReqBase::is_rsp(ConnHandlerPtr conn, Event::Ptr& ev) {
+bool ConnQueueReqBase::is_rsp(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT 
      || ev->error == Error::Code::REQUEST_TIMEOUT) {
     if(!was_called)

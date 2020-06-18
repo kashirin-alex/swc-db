@@ -47,7 +47,7 @@ class Echo : public DispatchHandler {
     return conn->send_request(cbp, shared_from_this());
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
       
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 

@@ -79,8 +79,7 @@ void ConnHandler::new_connection() {
             endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
             (size_t)&sock->get_executor().context());
   connected = true;
-  auto ev = Event::make(Event::Type::ESTABLISHED, Error::OK);
-  run(ev); 
+  run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
 }
 
 size_t ConnHandler::pending_read() {
@@ -99,15 +98,14 @@ bool ConnHandler::due() {
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::run(Event::Ptr& ev) {
+void ConnHandler::run(const Event::Ptr& ev) {
   if(app_ctx) 
     // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
     app_ctx->handle(ptr(), ev); 
 }
 
 void ConnHandler::do_close() {
-  auto ev = Event::make(Event::Type::DISCONNECT, Error::OK);
-  run(ev);
+  run(Event::make(Event::Type::DISCONNECT, Error::OK));
 }
 
 bool ConnHandler::send_error(int error, const std::string& msg, 
@@ -472,7 +470,7 @@ void ConnHandler::disconnected() {
   }
 }
 
-void ConnHandler::run_pending(Event::Ptr ev) {
+void ConnHandler::run_pending(const Event::Ptr& ev) {
   if(!ev->header.id)
     return run(ev);
 

@@ -45,7 +45,7 @@ bool ColumnList::run(uint32_t timeout) {
   return true;
 }
 
-void ColumnList::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void ColumnList::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

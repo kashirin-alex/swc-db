@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void column_mng(ConnHandlerPtr conn, Event::Ptr ev) {
+void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;

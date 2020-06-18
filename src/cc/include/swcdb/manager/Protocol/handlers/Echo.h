@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
-void do_echo(ConnHandlerPtr conn, Event::Ptr ev) {
+void do_echo(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     auto cbp = ev->data_ext.size ? 
                   CommBuf::make(ev->data_ext) 

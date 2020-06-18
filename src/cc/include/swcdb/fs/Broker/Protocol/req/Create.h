@@ -36,7 +36,7 @@ class Create : public Base {
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override { 
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override { 
 
     const uint8_t *ptr;
     size_t remain;

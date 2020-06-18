@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void range_query_select(ConnHandlerPtr conn, Event::Ptr ev) {
+void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeQuerySelectReq params;
   Ranger::RangePtr range;

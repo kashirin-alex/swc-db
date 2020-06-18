@@ -80,7 +80,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool due();
 
-  virtual void run(Event::Ptr& ev);
+  void run(const Event::Ptr& ev);
 
   virtual void do_close();
 
@@ -142,7 +142,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void received(const Event::Ptr& ev, const asio::error_code& ec);
 
-  void run_pending(Event::Ptr ev);
+  void run_pending(const Event::Ptr& ev);
 
   struct PendingHash {
     size_t operator()(const uint32_t id) const {

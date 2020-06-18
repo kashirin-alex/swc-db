@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void column_compact(ConnHandlerPtr conn, Event::Ptr ev) {
+void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::ColumnCompactRsp rsp_params;
 
   try {

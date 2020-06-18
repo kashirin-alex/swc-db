@@ -39,7 +39,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
   DispatchHandler::Ptr            hdlr;

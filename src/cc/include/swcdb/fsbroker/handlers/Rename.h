@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void rename(ConnHandlerPtr conn, Event::Ptr ev) {
+void rename(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   try {

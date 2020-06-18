@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void rgr_update(ConnHandlerPtr conn, Event::Ptr ev) {
+void rgr_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;

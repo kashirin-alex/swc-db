@@ -20,7 +20,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
 
   virtual ~RangeUnload();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   bool valid() override;
   

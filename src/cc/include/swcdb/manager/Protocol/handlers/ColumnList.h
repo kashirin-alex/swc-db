@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void column_list(ConnHandlerPtr conn, Event::Ptr ev) {
+void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnListRsp rsp;

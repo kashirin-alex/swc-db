@@ -19,7 +19,7 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
   
 ColumnDelete::~ColumnDelete() { }
   
-void ColumnDelete::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void ColumnDelete::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(was_called)
     return;

@@ -21,9 +21,9 @@ class MngrState : public client::ConnQueue::ReqBase {
   
   virtual ~MngrState();
 
-  void disconnected(ConnHandlerPtr conn);
+  void disconnected(const ConnHandlerPtr& conn);
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
   ResponseCallback::Ptr   cb;

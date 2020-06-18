@@ -24,7 +24,7 @@ class Base : public DispatchHandler {
 
   virtual ~Base() {}
 
-  bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev, int cmd, 
+  bool is_rsp(const ConnHandlerPtr& conn, const Event::Ptr& ev, int cmd, 
               const uint8_t **ptr, size_t *remain) { 
     // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 

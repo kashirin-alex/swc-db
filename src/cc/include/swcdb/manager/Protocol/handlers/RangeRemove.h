@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void range_remove(ConnHandlerPtr conn, Event::Ptr ev) {
+void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RangeRemoveRsp rsp_params;
   try {
     const uint8_t *ptr = ev->data.base;

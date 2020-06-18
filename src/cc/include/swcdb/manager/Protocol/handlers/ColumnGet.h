@@ -48,7 +48,7 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
   }
 }
 
-void column_get(ConnHandlerPtr conn, Event::Ptr ev) {
+void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnGetReq::Flag flag;

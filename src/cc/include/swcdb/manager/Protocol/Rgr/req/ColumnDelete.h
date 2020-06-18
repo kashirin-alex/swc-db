@@ -17,7 +17,7 @@ class ColumnDelete : public client::ConnQueue::ReqBase  {
   
   virtual ~ColumnDelete();
   
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   void handle_no_conn() override;
   

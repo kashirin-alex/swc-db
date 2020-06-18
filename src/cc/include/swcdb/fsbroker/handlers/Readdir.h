@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void readdir(ConnHandlerPtr conn, Event::Ptr ev) {
+void readdir(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   FS::DirentList results;

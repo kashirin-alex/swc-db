@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void report(ConnHandlerPtr conn, Event::Ptr ev) {
+void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Protocol::Rgr::Params::ReportRsp rsp_params(Error::OK);
 
   try {

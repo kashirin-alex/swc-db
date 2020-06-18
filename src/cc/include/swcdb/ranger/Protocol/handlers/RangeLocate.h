@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void range_locate(ConnHandlerPtr conn, Event::Ptr ev) {
+void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeLocateReq params;
   Ranger::RangePtr range;

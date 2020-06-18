@@ -26,7 +26,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual ~AppContext();
 
-  virtual void handle(ConnHandlerPtr conn, Event::Ptr& ev);
+  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev);
 
   virtual void init(const EndPoints& endpoints);
 

@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void exists(ConnHandlerPtr conn, Event::Ptr ev) {
+void exists(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   bool exists = false;

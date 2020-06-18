@@ -18,7 +18,7 @@ class RangeLoad : public client::ConnQueue::ReqBase {
   
   virtual ~RangeLoad();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   bool valid() override;
   

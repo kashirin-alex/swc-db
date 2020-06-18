@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void length(ConnHandlerPtr conn, Event::Ptr ev) {
+void length(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   size_t length = 0;

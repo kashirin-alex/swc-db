@@ -34,7 +34,7 @@ class RangeLocate: public client::ConnQueue::ReqBase {
 
   bool run(uint32_t timeout=0) override;
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   const EndPoints  endpoints;
   const Cb_t       cb;

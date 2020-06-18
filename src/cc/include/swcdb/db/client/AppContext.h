@@ -16,7 +16,7 @@ class AppContext : public SWC::AppContext {
 
   virtual ~AppContext();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
   
 };
 

@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void range_unloaded(ConnHandlerPtr conn, Event::Ptr ev) {
+void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RangeUnloadedRsp rsp_params;
   try {
     const uint8_t *ptr = ev->data.base;

@@ -81,7 +81,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
 
     if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
       set(1000);

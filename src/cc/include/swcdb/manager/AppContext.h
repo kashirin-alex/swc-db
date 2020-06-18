@@ -107,7 +107,7 @@ class AppContext final : public SWC::AppContext {
   virtual ~AppContext(){}
 
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
     switch (ev->type) {

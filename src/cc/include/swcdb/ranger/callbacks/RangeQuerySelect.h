@@ -13,7 +13,7 @@ namespace SWC { namespace Ranger { namespace Callback {
 class RangeQuerySelect : public ReqScan {
   public:
 
-  RangeQuerySelect(ConnHandlerPtr conn, Event::Ptr ev, 
+  RangeQuerySelect(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
                    const DB::Specs::Interval& req_spec,
                    const RangePtr& range)
                   : ReqScan(conn, ev, req_spec), 

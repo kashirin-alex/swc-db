@@ -20,12 +20,12 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
   
 MngrState::~MngrState() { }
 
-void MngrState::disconnected(ConnHandlerPtr conn) {
+void MngrState::disconnected(const ConnHandlerPtr& conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }
 
-void MngrState::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   if(was_called)
     return;
 

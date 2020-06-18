@@ -44,7 +44,7 @@ bool Report::run(uint32_t timeout) {
   return true;
 }
 
-void Report::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void Report::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT){
     handle_no_conn();

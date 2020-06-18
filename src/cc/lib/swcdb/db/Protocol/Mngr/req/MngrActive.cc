@@ -80,7 +80,7 @@ bool MngrActive::run(uint32_t timeout) {
   return true;
 }
 
-void MngrActive::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void MngrActive::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   
   // SWC_LOGF(LOG_DEBUG, " handle: %s", ev->to_str().c_str());
 

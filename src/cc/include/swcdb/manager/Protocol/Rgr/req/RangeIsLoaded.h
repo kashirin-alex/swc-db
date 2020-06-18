@@ -17,8 +17,9 @@ class RangeIsLoaded : public DispatchHandler {
   
   typedef std::function<void(bool)> RangeIsLoaded_t;
 
-  RangeIsLoaded(ConnHandlerPtr conn, Manager::Range::Ptr range, 
-                RangeIsLoaded_t cb)
+  RangeIsLoaded(const ConnHandlerPtr& conn, 
+                const Manager::Range::Ptr& range,
+                const RangeIsLoaded_t& cb)
                 : conn(conn), range(range), cb(cb), was_called(false) { 
   }
   
@@ -33,7 +34,7 @@ class RangeIsLoaded : public DispatchHandler {
 
   void disconnected() {};
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     
     // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
     

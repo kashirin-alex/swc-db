@@ -14,7 +14,7 @@ namespace SWC { namespace Ranger { namespace Callback {
 class RangeLoaded : public ResponseCallback {
   public:
 
-  RangeLoaded(ConnHandlerPtr conn, Event::Ptr ev, 
+  RangeLoaded(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
               const cid_t cid, const rid_t rid)
             : ResponseCallback(conn, ev), cid(cid), rid(rid) {
     RangerEnv::in_process(1);

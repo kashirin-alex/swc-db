@@ -18,7 +18,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   
   virtual ~ColumnUpdate();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
   
   void handle_no_conn() override;
 

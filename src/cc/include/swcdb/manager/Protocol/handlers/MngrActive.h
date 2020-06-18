@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void mngr_active(ConnHandlerPtr conn, Event::Ptr ev) {
+void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Manager::MngrStatus::Ptr h = nullptr;
   try {
     const uint8_t *ptr = ev->data.base;

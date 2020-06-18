@@ -19,7 +19,7 @@ class ColumnCompact : public client::ConnQueue::ReqBase {
   
   virtual ~ColumnCompact();
   
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   void handle_no_conn() override;
 

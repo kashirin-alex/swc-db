@@ -224,14 +224,14 @@ void SerializedServer::shutdown() {
     //m_wrk[i].get_executor().context().stop();
 }
 
-void SerializedServer::connection_add(ConnHandlerPtr conn) {
+void SerializedServer::connection_add(const ConnHandlerPtr& conn) {
   Mutex::scope lock(m_mutex);
   m_conns.push_back(conn);
 
   //SWC_LOGF(LOG_DEBUG, "%s, conn-add open=%d", m_appname.c_str(), m_conns.size());
 }
 
-void SerializedServer::connection_del(ConnHandlerPtr conn) {
+void SerializedServer::connection_del(const ConnHandlerPtr& conn) {
   Mutex::scope lock(m_mutex);
   for(auto it=m_conns.begin(); it<m_conns.end(); ++it) {
     if(conn->endpoint_remote == (*it)->endpoint_remote){

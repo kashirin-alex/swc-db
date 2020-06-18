@@ -40,7 +40,7 @@ bool RangeLocate::run(uint32_t timeout) {
   return true;
 }
 
-void RangeLocate::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void RangeLocate::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

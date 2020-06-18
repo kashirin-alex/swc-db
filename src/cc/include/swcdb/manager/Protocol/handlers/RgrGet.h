@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void rgr_get(ConnHandlerPtr conn, Event::Ptr ev) {
+void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RgrGetReq params;
   Params::RgrGetRsp rsp_params;
   try {

@@ -67,7 +67,7 @@ bool ColumnMng::run(uint32_t timeout) {
   return true;
 }
 
-void ColumnMng::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void ColumnMng::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT){
     handle_no_conn();

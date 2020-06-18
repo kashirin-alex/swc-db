@@ -50,7 +50,7 @@ bool RangeQueryUpdate::run(uint32_t timeout) {
   return true;
 }
 
-void RangeQueryUpdate::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void RangeQueryUpdate::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

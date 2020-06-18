@@ -9,12 +9,12 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext() { }
 
-void AppContext::disconnected(ConnHandlerPtr conn) {
+void AppContext::disconnected(const ConnHandlerPtr& conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }
 
-void AppContext::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   switch (ev->type) {
 

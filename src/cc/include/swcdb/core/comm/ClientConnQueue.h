@@ -27,11 +27,11 @@ class ConnQueueReqBase : public DispatchHandler {
 
   virtual ~ConnQueueReqBase();
 
-  void handle(ConnHandlerPtr conn, Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
-  bool is_timeout(ConnHandlerPtr conn, Event::Ptr& ev);
+  bool is_timeout(const ConnHandlerPtr& conn, const Event::Ptr& ev);
 
-  bool is_rsp(ConnHandlerPtr conn, Event::Ptr& ev);
+  bool is_rsp(const ConnHandlerPtr& conn, const Event::Ptr& ev);
 
   void request_again();
 

@@ -15,7 +15,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   typedef std::shared_ptr<RangeLocateScanCommit> Ptr;
 
-  RangeLocateScanCommit(ConnHandlerPtr conn, Event::Ptr ev, 
+  RangeLocateScanCommit(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
                         const DB::Cell::Key& range_begin,
                         const RangePtr& range, uint8_t flags)
                         : RangeLocateScan(

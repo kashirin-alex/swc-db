@@ -12,7 +12,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void seek(ConnHandlerPtr conn, Event::Ptr ev) {
+void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   size_t offset = 0;

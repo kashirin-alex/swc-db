@@ -15,7 +15,7 @@ class RangeLocateScan : public ReqScan {
 
   typedef std::shared_ptr<RangeLocateScan> Ptr;
 
-  RangeLocateScan(ConnHandlerPtr conn, Event::Ptr ev, 
+  RangeLocateScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
                   const DB::Cell::Key& range_begin, 
                   const DB::Cell::Key& range_end, 
                   const RangePtr& range, uint8_t flags)

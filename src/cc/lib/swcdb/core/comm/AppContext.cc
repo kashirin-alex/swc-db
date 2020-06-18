@@ -13,7 +13,7 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext(){}
 
-void AppContext::handle(ConnHandlerPtr conn, Event::Ptr& ev) {
+void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   ev->display();
   std::cerr << "AppContext(handle is Virtual!)\n";
 }
