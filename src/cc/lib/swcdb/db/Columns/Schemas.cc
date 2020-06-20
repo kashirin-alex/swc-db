@@ -81,7 +81,12 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
   entries.resize(i + size());
   for(const auto& it : *this) 
     entries[i++] = it.second;
-  std::sort(entries.begin(), entries.end()); 
+
+  std::sort(
+    entries.begin(), entries.end(),
+    [](const Schema::Ptr& s1, const Schema::Ptr& s2) {
+      return s1->cid < s2->cid;
+    }); 
 }
 
 void Schemas::reset() {
