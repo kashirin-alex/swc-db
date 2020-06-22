@@ -13,8 +13,7 @@ namespace SWC { namespace client { namespace Query {
 namespace Result {
 
 
-Select::Rsp::Rsp() : m_counted(0), m_size_bytes(0), 
-                     m_err(Error::OK) {
+Select::Rsp::Rsp() : m_err(Error::OK) {
 }
 
 Select::Rsp::~Rsp() { }
@@ -23,8 +22,6 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
                             DB::Specs::Interval& interval) {
   Mutex::scope lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
-  m_counted += recved;
-  m_size_bytes += buffer.size;
 
   if(interval.flags.limit) {
     if(interval.flags.limit <= recved) {
@@ -45,23 +42,26 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
 void Select::Rsp::get_cells(DB::Cells::Result& cells) {
   Mutex::scope lock(m_mutex);
   cells.take(m_cells);
-  m_size_bytes = 0;
 }
 
 size_t Select::Rsp::get_size() {
   Mutex::scope lock(m_mutex);
-  return m_counted;
+  return m_cells.size();
 }
 
 size_t Select::Rsp::get_size_bytes() {
   Mutex::scope lock(m_mutex);
-  return m_size_bytes;
+  return m_cells.size_bytes();
+}
+
+bool Select::Rsp::empty() {
+  Mutex::scope lock(m_mutex);
+  return m_cells.empty();
 }
 
 void Select::Rsp::free() {
   Mutex::scope lock(m_mutex);
   m_cells.free();
-  m_size_bytes = 0;
 }
 
 
@@ -141,6 +141,13 @@ size_t Select::get_size_bytes() {
   for(const auto& col : m_columns)
     sz += col.second->get_size_bytes();
   return sz;
+}
+
+bool Select::empty() const {
+  for(const auto& col : m_columns)
+    if(!col.second->empty())
+      return false;
+  return true;
 }
 
 std::vector<cid_t> Select::get_cids() const {
@@ -249,6 +256,8 @@ void Select::wait() {
              !selector->result->_completion();
     }
   );
+  if(result->notify && !result->empty())
+    cb(result);
 }
 
 void Select::scan(int& err) {

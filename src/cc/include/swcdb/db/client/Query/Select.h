@@ -47,6 +47,8 @@ struct Select final {
 
     size_t get_size_bytes();
 
+    bool empty();
+
     void free();
 
     void error(int err);
@@ -56,8 +58,6 @@ struct Select final {
     private:
     Mutex              m_mutex;
     DB::Cells::Result  m_cells;
-    size_t             m_counted;
-    size_t             m_size_bytes;
     int                m_err;
   };
   
@@ -86,6 +86,8 @@ struct Select final {
   size_t get_size(const cid_t cid);
 
   size_t get_size_bytes();
+
+  bool empty() const;
 
   std::vector<cid_t> get_cids() const;
 

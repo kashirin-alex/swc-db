@@ -318,7 +318,9 @@ class DbClient : public Interface {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells; 
     bool meta;
+    size_t count_state;
     do {
+      count_state = cells_count;
       for(cid_t cid : result->get_cids()) {
         meta = !Types::MetaColumn::is_data(cid);;
         schema = Env::Clients::get()->schemas->get(err, cid);
@@ -338,7 +340,7 @@ class DbClient : public Interface {
           std::cout << "\n";  
         }
       }
-    } while(!cells.empty());
+    } while(count_state != cells_count);
   }
 
   // UPDATE
