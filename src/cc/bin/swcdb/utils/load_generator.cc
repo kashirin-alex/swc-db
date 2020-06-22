@@ -30,6 +30,7 @@ void Settings::init_app_options() {
   cmdline_desc.add_options()
     ("gen-progress", i32(100000), 
       "display progress every N cells or 0 for quite") 
+    ("gen-cell-a-time", boo(false), "Write one cell at a time") 
 
     ("gen-cells", i64(1000), 
       "number of cells, total=cells*versions*(key-tree? key-fractions : 1)")
@@ -154,6 +155,23 @@ class CountIt {
   ssize_t pos; 
 };
 
+
+
+void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size, 
+               DB::Cell::Key& key) {
+  key.free();
+  std::string fraction_value;
+  for(ssize_t fn=0; fn<f; ++fn) {
+    fraction_value = std::to_string(fn ? fn : i);
+    for(uint32_t len = fraction_value.length(); 
+        fraction_value.length() < fraction_size; 
+        fraction_value.insert(0, "0")
+      );
+    key.add(fraction_value);
+  }
+}
+
+
 void load_data(DB::Schema::Ptr& schema) {
   auto settings = Env::Config::settings();
 
@@ -168,6 +186,7 @@ void load_data(DB::Schema::Ptr& schema) {
   
   uint32_t value = settings->get_i32("gen-value-size");
   uint32_t progress = settings->get_i32("gen-progress");
+  bool cellatime = settings->get_bool("gen-cell-a-time");
 
   auto req = std::make_shared<client::Query::Update>();
   req->columns->create(schema);
@@ -190,7 +209,6 @@ void load_data(DB::Schema::Ptr& schema) {
       value_data += (char)(c == 122 ? c = 97 : ++c);
   }
 
-  std::string fraction_value;
   uint64_t ts = Time::now_ns();
   uint64_t ts_progress = ts;
   size_t col_sz;
@@ -207,15 +225,8 @@ void load_data(DB::Schema::Ptr& schema) {
         f_num.reset();
         while(f_num.next(&f)) {
 
-          cell.key.free();
-          for(uint32_t fn=0; fn<f; ++fn) {
-            fraction_value = std::to_string(fn ? fn : i);
-            for(uint32_t len = fraction_value.length(); 
-                fraction_value.length() < fraction_size; 
-                fraction_value.insert(0, "0")
-            );
-            cell.key.add(fraction_value);
-          }
+          apply_key(i, f, fraction_size, cell.key);
+
           if(is_counter)
             cell.set_counter(0, 1, schema->col_type);
           else
@@ -225,7 +236,12 @@ void load_data(DB::Schema::Ptr& schema) {
 
           ++added_count;
           added_bytes += cell.encoded_length();
-          req->commit_or_wait(col);
+          if(cellatime) {
+            req->commit(col);
+            req->wait();
+          } else {
+            req->commit_or_wait(col);
+          }
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;

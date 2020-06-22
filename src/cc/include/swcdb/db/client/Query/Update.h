@@ -49,7 +49,7 @@ struct Update final {
 
   void completion_incr();
 
-  void completion_decr();
+  bool completion_final();
 
   int error();
 
@@ -103,12 +103,9 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   void wait();
 
-  void wait_ahead_buffers();
+  bool wait_ahead_buffers();
 
-
-  void commit_or_wait();
-
-  void commit_or_wait(const DB::Cells::ColCells::Ptr& col);
+  void commit_or_wait(const DB::Cells::ColCells::Ptr& col = nullptr);
 
   void commit_if_need();
   

@@ -23,9 +23,9 @@ void Update::completion_incr() {
   ++m_completion;
 }
 
-void Update::completion_decr() {
+bool Update::completion_final() {
   Mutex::scope lock(m_mutex);
-  --m_completion;
+  return !--m_completion;
 }
 
 int Update::error() {
@@ -83,19 +83,17 @@ Update::Update(const DB::Cells::MapMutable::Ptr& columns,
 Update::~Update() { }
  
 void Update::response(int err) {
-  cv.notify_all();
-  if(result->completion() > 1) {
-    result->completion_decr();
-    return;
+
+  if(!result->completion_final()) {
+    std::unique_lock lock_wait(m_mutex);
+    return cv.notify_all();
   }
 
   if(!err && (columns->size() || columns_onfractions->size())) {
     commit();
-    result->completion_decr();
-    return;
+    std::unique_lock lock_wait(m_mutex);
+    return cv.notify_all();
   }
-
-  result->completion_decr();
 
   if(err)
     result->error(err);
@@ -106,23 +104,30 @@ void Update::response(int err) {
   if(cb)
     cb(result);
 
+  std::unique_lock lock_wait(m_mutex);
   cv.notify_all();
 }
 
 void Update::wait() {
-  if(result->completion()) {
-    std::unique_lock lock_wait(m_mutex);
-    cv.wait(
-      lock_wait, 
-      [updater=shared_from_this()]() {
-        return !updater->result->completion();
-      }
-    );
-  }
+  std::unique_lock lock_wait(m_mutex);
+  cv.wait(
+    lock_wait,
+    [updater=shared_from_this()]() {
+      return !updater->result->completion();
+    }
+  );
 }
 
-void Update::wait_ahead_buffers() {
+bool Update::wait_ahead_buffers() {
   std::unique_lock lock_wait(m_mutex);
+  
+  size_t bytes = columns->size_bytes() + columns_onfractions->size_bytes();
+  if(!result->completion())
+    return bytes >= buff_sz;
+
+  if(bytes < buff_sz * buff_ahead)
+    return false;
+
   cv.wait(
     lock_wait, 
     [updater=shared_from_this()]() {
@@ -131,38 +136,22 @@ void Update::wait_ahead_buffers() {
               < updater->buff_sz * updater->buff_ahead;
     }
   );
+  return !result->completion() && 
+          columns->size_bytes() + columns_onfractions->size_bytes() >= buff_sz;
 }
 
-
-void Update::commit_or_wait() {
-  size_t bytes = columns->size_bytes() 
-                + columns_onfractions->size_bytes();
-  if(result->completion()) {
-    if(bytes >= buff_sz * buff_ahead)
-      wait_ahead_buffers();
-  } else if(bytes >= buff_sz) {
-    commit();
-  }
-}
 
 void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col) {
-  size_t bytes = col->size_bytes();
-
-  if(result->completion()) {
-    if(bytes >= buff_sz * buff_ahead)
-      wait_ahead_buffers();
-  } else if(bytes >= buff_sz) {
-    commit(col);
-  }
+  if(wait_ahead_buffers())
+    col ? commit(col) : commit();
 }
 
 void Update::commit_if_need() {
-  size_t bytes = columns->size_bytes() 
-                + columns_onfractions->size_bytes();
-  if(!result->completion() && bytes)
+  if(!result->completion() && 
+     (columns->size_bytes() || columns_onfractions->size_bytes()))
     commit();
 }
-  
+
 
 void Update::commit() {
   DB::Cells::ColCells::Ptr col;
@@ -248,7 +237,7 @@ void Update::Locator::locate_on_manager() {
     (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(locator->located_on_manager(req, rsp))
-        locator->updater->result->completion_decr();
+        locator->updater->response();
     }
   );
 }
@@ -320,7 +309,7 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
       if(locator->located_on_ranger(
           std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp))
-        locator->updater->result->completion_decr();
+        locator->updater->response();
     }
   );
 }
@@ -365,13 +354,14 @@ bool Update::Locator::located_on_ranger(
         cid, col, next_key_start, 
         updater, base, 
         rid//, &key_finish
-          )->locate_on_ranger(endpoints);
+      )->locate_on_ranger(endpoints);
     }
   }
   return true;
 }
 
 void Update::Locator::resolve_on_manager() {
+  updater->result->completion_incr();
 
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
@@ -379,7 +369,7 @@ void Update::Locator::resolve_on_manager() {
     (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(locator->located_ranger(req, rsp))
-        locator->updater->result->completion_decr();
+        locator->updater->response();
     }
   );
   if(!Types::MetaColumn::is_master(cid)) {
@@ -387,13 +377,12 @@ void Update::Locator::resolve_on_manager() {
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
       if(proceed_on_ranger(req, rsp)) // ?req without profile
-        return; 
+        return updater->response();
       Env::Clients::get()->rangers.remove(cid, rid);
     } else {
       SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
     }
   }
-  updater->result->completion_incr();
   req->run();
 }
 
@@ -453,7 +442,7 @@ bool Update::Locator::proceed_on_ranger(
       updater, base, 
       rsp.rid, 
       Types::MetaColumn::is_master(cid) ? &rsp.range_end : nullptr
-        )->locate_on_ranger(rsp.endpoints);
+    )->locate_on_ranger(rsp.endpoints);
   }
   return true;
 }
