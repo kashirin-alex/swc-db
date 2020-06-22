@@ -194,7 +194,10 @@ void Select::response(int err) {
     result->err = err;
   
   result->profile.finished();
-  if(cb)
+
+  if(result->notify)
+    response_partial();
+  else if(cb)
     cb(result);
 
   std::unique_lock lock(result->mutex);
