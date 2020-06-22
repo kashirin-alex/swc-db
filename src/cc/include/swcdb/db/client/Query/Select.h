@@ -20,12 +20,13 @@ namespace Result {
 struct Select final {
   typedef std::shared_ptr<Select> Ptr;
 
-  std::atomic<uint32_t>  completion = 0;
-  std::atomic<int>       err = Error::OK;
-  std::atomic<bool>      notify;
-  Profiling              profile;
+  const bool                notify;
+  std::mutex                mutex;
+  std::condition_variable   cv;
+  std::atomic<int>          err;
+  Profiling                 profile;
 
-  Select(std::condition_variable& cv, bool notify);
+  Select(bool notify);
 
   ~Select();
 
@@ -47,17 +48,36 @@ struct Select final {
     size_t get_size_bytes();
 
     void free();
-  
+
+    void error(int err);
+
+    int error();
+
     private:
     Mutex              m_mutex;
     DB::Cells::Result  m_cells;
-    size_t             m_counted = 0;
-    size_t             m_size_bytes = 0;
+    size_t             m_counted;
+    size_t             m_size_bytes;
+    int                m_err;
   };
+  
 
+  uint32_t completion();
+
+  uint32_t _completion() const;
+
+  void completion_incr();
+
+  void completion_decr();
+
+  bool completion_final();
+  
+  void error(const cid_t cid, int err);
 
   void add_column(const cid_t cid);
   
+  Rsp::Ptr get_columnn(const cid_t cid);
+
   bool add_cells(const cid_t cid, const StaticBuffer& buffer, 
                  bool reached_limit, DB::Specs::Interval& interval);
 
@@ -76,7 +96,7 @@ struct Select final {
   private:
 
   std::unordered_map<cid_t, Rsp::Ptr>  m_columns;
-  std::condition_variable&             m_cv;
+  uint32_t                             m_completion;
 
 };
 
@@ -118,11 +138,8 @@ class Select final : public std::enable_shared_from_this<Select> {
   void scan(int& err);
 
   private:
-  
-  const bool                  rsp_partials;
-  std::mutex                  m_mutex;
-  bool                        m_rsp_partial_runs = false;
-  std::condition_variable     m_cv;
+
+  bool        m_rsp_partial_runs;
 
 
   class ScannerColumn final 

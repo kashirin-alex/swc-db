@@ -13,7 +13,9 @@ namespace SWC { namespace client { namespace Query {
 namespace Result {
 
 
-Select::Rsp::Rsp() { }
+Select::Rsp::Rsp() : m_counted(0), m_size_bytes(0), 
+                     m_err(Error::OK) {
+}
 
 Select::Rsp::~Rsp() { }
 
@@ -63,14 +65,58 @@ void Select::Rsp::free() {
 }
 
 
-Select::Select(std::condition_variable& cv, bool notify) 
-              : notify(notify), m_cv(cv) { 
+void Select::Rsp::error(int err) {
+  Mutex::scope lock(m_mutex);
+  m_err = err;
+}
+
+int Select::Rsp::error() {
+  Mutex::scope lock(m_mutex);
+  return m_err;
+}
+
+
+Select::Select(bool notify) 
+              : notify(notify), err(Error::OK),  
+                m_completion(0) {
 }
 
 Select::~Select() { }
 
+uint32_t Select::completion() {
+  std::scoped_lock lock(mutex);
+  return m_completion;
+}
+
+uint32_t Select::_completion() const {
+  return m_completion;
+}
+
+void Select::completion_incr() {
+  std::scoped_lock lock(mutex);
+  ++m_completion;
+}
+
+void Select::completion_decr() {
+  std::scoped_lock lock(mutex);
+  --m_completion;
+}
+
+bool Select::completion_final() {
+  std::scoped_lock lock(mutex);
+  return !--m_completion;
+}
+
+void Select::error(const cid_t cid, int err) {
+  m_columns[cid]->error(err);
+}
+
 void Select::add_column(const cid_t cid) {
   m_columns.emplace(cid, std::make_shared<Rsp>());
+}
+
+Select::Rsp::Ptr Select::get_columnn(const cid_t cid) {
+  return m_columns[cid];
 }
   
 bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer, 
@@ -80,8 +126,10 @@ bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer,
 
 void Select::get_cells(const cid_t cid, DB::Cells::Result& cells) {
   m_columns[cid]->get_cells(cells);
-  if(notify)
-    m_cv.notify_all();
+  if(notify) {
+    std::unique_lock lock(mutex);
+    cv.notify_all();
+  }
 }
 
 size_t Select::get_size(const cid_t cid) {
@@ -105,11 +153,14 @@ std::vector<cid_t> Select::get_cids() const {
 
 void Select::free(const cid_t cid) {
   m_columns[cid]->free();
-  if(notify)
-    m_cv.notify_all();
+  if(notify) {
+    std::unique_lock lock(mutex);
+    cv.notify_all();
+  }
 }
 
 void Select::remove(const cid_t cid) {
+  // unused
   m_columns.erase(cid);
 }
   
@@ -121,8 +172,9 @@ Select::Select(const Cb_t& cb, bool rsp_partials)
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
-          cb(cb), rsp_partials(cb && rsp_partials), 
-          result(std::make_shared<Result>(m_cv, rsp_partials)) { 
+          cb(cb), 
+          result(std::make_shared<Result>(cb && rsp_partials)),
+          m_rsp_partial_runs(false) { 
 }
 
 Select::Select(const DB::Specs::Scan& specs, const Cb_t& cb, 
@@ -130,44 +182,40 @@ Select::Select(const DB::Specs::Scan& specs, const Cb_t& cb,
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
-          cb(cb), specs(specs), rsp_partials(cb && rsp_partials),
-          result(std::make_shared<Result>(m_cv, rsp_partials)) {
+          cb(cb), specs(specs),
+          result(std::make_shared<Result>(cb && rsp_partials)),
+          m_rsp_partial_runs(false) {
 }
 
-Select::~Select() { 
-  result->notify.store(false);
-}
+Select::~Select() { }
  
 void Select::response(int err) {
   if(err)
     result->err = err;
-  // if cells not empty commit-again
   
   result->profile.finished();
   if(cb)
     cb(result);
 
-  m_cv.notify_all();
+  std::unique_lock lock(result->mutex);
+  result->cv.notify_all();
 }
 
 void Select::response_partials() {
-  if(!rsp_partials)
+  if(!result->notify)
     return;
     
   response_partial();
-    
-  if(!wait_on_partials())
-    return;
 
-  std::unique_lock lock(m_mutex);
-  if(!m_rsp_partial_runs)
+  std::unique_lock lock(result->mutex);
+  if(!m_rsp_partial_runs || !wait_on_partials())
     return;
-  m_cv.wait(
+  result->cv.wait(
     lock, 
     [selector=shared_from_this()] () { 
       return !selector->m_rsp_partial_runs || !selector->wait_on_partials();
     }
-  );  
+  );
 }
 
 bool Select::wait_on_partials() const {
@@ -176,7 +224,7 @@ bool Select::wait_on_partials() const {
 
 void Select::response_partial() {
   {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock lock(result->mutex);
     if(m_rsp_partial_runs)
       return;
     m_rsp_partial_runs = true;
@@ -184,20 +232,18 @@ void Select::response_partial() {
     
   cb(result);
 
-  {
-    std::unique_lock lock(m_mutex);
-    m_rsp_partial_runs = false;
-  }
-  m_cv.notify_all();
+  std::unique_lock lock(result->mutex);
+  m_rsp_partial_runs = false;
+  result->cv.notify_all();
 }
 
 void Select::wait() {
-  std::unique_lock lock(m_mutex);
-  m_cv.wait(
+  std::unique_lock lock(result->mutex);
+  result->cv.wait(
     lock, 
     [selector=shared_from_this()] () {
-      return selector->result->completion == 0 && 
-            !selector->m_rsp_partial_runs;
+      return !selector->m_rsp_partial_runs &&
+             !selector->result->_completion();
     }
   );
 }
@@ -251,7 +297,7 @@ bool Select::ScannerColumn::add_cells(const StaticBuffer& buffer,
 
 void Select::ScannerColumn::next_call(bool final) {
   if(next_calls.empty()) {
-    if(final && !selector->result->completion)
+    if(final && !selector->result->completion())
       selector->response(Error::OK);
     return;
   }
@@ -274,7 +320,7 @@ std::string Select::ScannerColumn::to_string() {
   s.append(" ");
   s.append(interval.to_string());
   s.append(" completion=");
-  s.append(std::to_string(selector->result->completion.load()));
+  s.append(std::to_string(selector->result->completion()));
   s.append(" next_calls=");
   s.append(std::to_string(next_calls.size()));
   s.append(")");
@@ -309,7 +355,7 @@ std::string Select::Scanner::to_string() {
 }
     
 void Select::Scanner::locate_on_manager(bool next_range) {
-  ++col->selector->result->completion;
+  col->selector->result->completion_incr();
 
   Protocol::Mngr::Params::RgrGetReq params(
     Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
@@ -341,12 +387,13 @@ void Select::Scanner::locate_on_manager(bool next_range) {
     (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->located_on_manager(req, rsp, next_range))
-        --scanner->col->selector->result->completion;
+        scanner->col->selector->result->completion_decr();
     }
   );
 }
 
 void Select::Scanner::resolve_on_manager() {
+  col->selector->result->completion_incr();
 
   auto req = Protocol::Mngr::Req::RgrGet::make(
     Protocol::Mngr::Params::RgrGetReq(cid, rid),
@@ -355,7 +402,7 @@ void Select::Scanner::resolve_on_manager() {
     (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->located_on_manager(req, rsp))
-        --scanner->col->selector->result->completion;
+        scanner->col->selector->result->completion_decr();
     }
   );
   if(!Types::MetaColumn::is_master(cid)) {
@@ -363,13 +410,12 @@ void Select::Scanner::resolve_on_manager() {
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
       if(proceed_on_ranger(req, rsp)) // ?req without profile
-        return; 
+        return col->selector->result->completion_decr(); 
       Env::Clients::get()->rangers.remove(cid, rid);
     } else {
       SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
     }
   }
-  ++col->selector->result->completion;
   req->run();
 }
 
@@ -381,11 +427,14 @@ bool Select::Scanner::located_on_manager(
 
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
-      col->selector->response(rsp.err);
-      return true;
+      col->selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
+      col->selector->result->error(col->cid, rsp.err);
+      if(col->selector->result->completion_final())
+        col->selector->response();
+      return false;
     }
     if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
-      --col->selector->result->completion;
+      col->selector->result->completion_decr();
       col->next_call(true);
       return false;
     }
@@ -448,7 +497,7 @@ bool Select::Scanner::proceed_on_ranger(
 
 void Select::Scanner::locate_on_ranger(const EndPoints& endpoints, 
                                        bool next_range) {
-  ++col->selector->result->completion;
+  col->selector->result->completion_incr();
 
   Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   if(next_range) {
@@ -480,7 +529,7 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
           std::dynamic_pointer_cast<
             Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp, next_range))
-        --scanner->col->selector->result->completion;
+        scanner->col->selector->result->completion_decr();
     }
   );
 }
@@ -495,7 +544,7 @@ bool Select::Scanner::located_on_ranger(
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
        (next_range || type == Types::Range::META)) {
-      --col->selector->result->completion;
+      col->selector->result->completion_decr();
       col->next_call(true);
       return false;
     }
@@ -547,7 +596,7 @@ bool Select::Scanner::located_on_ranger(
 
 void Select::Scanner::select(const EndPoints& endpoints, rid_t rid, 
                              const ReqBase::Ptr& base) {
-  ++col->selector->result->completion;
+  col->selector->result->completion_incr();
 
   Protocol::Rgr::Req::RangeQuerySelect::request(
     Protocol::Rgr::Params::RangeQuerySelectReq(
@@ -579,6 +628,9 @@ void Select::Scanner::select(const EndPoints& endpoints, rid_t rid,
         col->interval.flags.offset = rsp.offset;
 
       if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
+        if(rsp.data.size)
+          col->selector->response_partials();
+
         if(rsp.reached_limit) {
           scanner->select(
             std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeQuerySelect>(req)
@@ -590,10 +642,8 @@ void Select::Scanner::select(const EndPoints& endpoints, rid_t rid,
         }
       }
 
-      if(rsp.data.size)
-        col->selector->response_partials();
           
-      if(!--col->selector->result->completion)
+      if(col->selector->result->completion_final())
         col->selector->response();
     },
 
