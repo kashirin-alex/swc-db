@@ -83,7 +83,7 @@ namespace SWC {
                            const char *trailer = "...");
 
   /**
-   * Return a string presentation of a sequence. Is quite slow but versatile,
+   * Return a string presentation of a sequence. Is quiet slow but versatile,
    * as it uses ostringstream.
    *
    * @param seq A STL-compatible sequence with forward-directional iterators

@@ -260,6 +260,8 @@ void QuerySelect::read_columns_intervals() {
         }
 
         read(col_name, ",)");
+        if(col_name.empty())
+          continue;
         cols.push_back(add_column(col_name));
         col_name.clear();
         continue;

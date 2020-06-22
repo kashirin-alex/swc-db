@@ -29,7 +29,7 @@ void Settings::init_app_options() {
 
   cmdline_desc.add_options()
     ("gen-progress", i32(100000), 
-      "display progress every N cells or 0 for quite") 
+      "display progress every N cells or 0 for quiet") 
     ("gen-cell-a-time", boo(false), "Write one cell at a time") 
 
     ("gen-cells", i64(1000), 
