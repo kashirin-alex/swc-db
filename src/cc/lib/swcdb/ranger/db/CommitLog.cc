@@ -129,8 +129,8 @@ void Fragments::commit_new_fragment(bool finalize) {
   {
     std::unique_lock lock_wait(m_mutex);
     m_commiting = false;
+    m_cv.notify_all();
   }
-  m_cv.notify_all();
 
   if(!finalize)
     try_compact();
@@ -191,9 +191,9 @@ void Fragments::finish_compact(const Compact* compact) {
   {
     std::scoped_lock lock(m_mutex);
     m_compacting = false;
+    range->compacting(Range::COMPACT_NONE);
+    m_cv.notify_all();
   }
-  range->compacting(Range::COMPACT_NONE); 
-  m_cv.notify_all();
 
   if(compact) {
     if(!stopping)

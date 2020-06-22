@@ -92,10 +92,9 @@ class AppContext final : virtual public BrokerIfFactory {
     Env::IoCtx::io()->stop();
 
     SWC_LOG(LOG_INFO, "Exit");
-    {
-      std::lock_guard lock(m_mutex);
-      m_run = false;
-    }
+    
+    std::scoped_lock lock(m_mutex);
+    m_run = false;
     m_cv.notify_all();
   }
 

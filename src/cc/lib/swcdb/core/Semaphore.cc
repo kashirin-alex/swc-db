@@ -12,7 +12,18 @@ Semaphore::Semaphore(size_t sz)
 }
 
 Semaphore::~Semaphore() {
+  m_mutex.lock();
+  if(!m_count) {
+    m_mutex.unlock();
+    return;
+  }
+  m_count = 0;
   m_cv.notify_all();
+  m_mutex.unlock();
+
+  m_mutex.lock(); 
+  // let cv finish
+  m_mutex.unlock();
 } 
 
 void Semaphore::acquire() {
@@ -23,10 +34,8 @@ void Semaphore::acquire() {
 }
 
 void Semaphore::release() {
-  {
-    std::unique_lock lock_wait(m_mutex);
-    --m_count;
-  }
+  std::unique_lock lock_wait(m_mutex);
+  --m_count;
   m_cv.notify_all();
 }
 

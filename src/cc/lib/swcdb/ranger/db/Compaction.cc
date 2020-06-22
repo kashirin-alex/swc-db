@@ -182,20 +182,18 @@ void Compaction::compacted(const RangePtr& range, bool all) {
 }
 
 void Compaction::compacted() {
-  {
-    std::scoped_lock lock(m_mutex);
+  std::scoped_lock lock(m_mutex);
 
-    if(m_running && m_running-- == cfg_max_range->get()) {
-      asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
-      return;
+  if(m_running && m_running-- == cfg_max_range->get()) {
+    asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
+    return;
+  }
+  if(m_run) {
+    if(!m_running) {
+      m_scheduled = false;
+      _schedule(cfg_check_interval->get());
     }
-    if(m_run) {
-      if(!m_running) {
-        m_scheduled = false;
-        _schedule(cfg_check_interval->get());
-      }
-      return;
-    }
+    return;
   }
   m_cv.notify_all();
 }

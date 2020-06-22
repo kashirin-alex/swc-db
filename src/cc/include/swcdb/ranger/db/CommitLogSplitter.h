@@ -50,7 +50,7 @@ class Splitter final {
         std::unique_lock lock_wait(m_mutex);
         m_cv.wait(lock_wait, [this]() { 
           return m_queue.size() < Fragments::MAX_PRELOAD; 
-          });
+        });
       }
       m_queue.push(frag);
       frag->load([this]() { loaded(); });
@@ -58,11 +58,10 @@ class Splitter final {
     }
     
     std::unique_lock lock_wait(m_mutex);
-    if(!m_queue.empty())
-      m_cv.wait(lock_wait, [this]() { 
-        loaded();
-        return m_queue.empty(); 
-      });
+    m_cv.wait(lock_wait, [this]() { 
+      loaded();
+      return m_queue.empty();
+    });
   }
 
   private:
@@ -81,10 +80,9 @@ class Splitter final {
       if(loaded = (frag = m_queue.front())->loaded(err))
         frag->split(err, key, log_left, log_right); 
 
-      if(!err && !loaded) {
-        m_queue.deactivate();
-        return;
-      }
+      if(!err && !loaded)
+        return m_queue.deactivate();
+      
       if(err) {
         frag->processing_decrement();
         SWC_LOGF(LOG_ERROR, 
@@ -92,10 +90,13 @@ class Splitter final {
           err, Error::get_text(err), frag->to_string().c_str()
         );
       }
+      
+      std::unique_lock lock_wait(m_mutex);
       m_cv.notify_one();
 
     } while(!m_queue.deactivating());
     
+    std::unique_lock lock_wait(m_mutex);
     m_cv.notify_one();
   }
 

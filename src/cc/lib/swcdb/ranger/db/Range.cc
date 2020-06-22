@@ -382,10 +382,8 @@ bool Range::compacting_is(uint8_t state) {
 }
 
 void Range::compacting(uint8_t state) {
-  {
-    std::scoped_lock lock(m_mutex);
-    m_compacting = state;
-  }
+  std::scoped_lock lock(m_mutex);
+  m_compacting = state;
   m_cv.notify_all();
 }
   
