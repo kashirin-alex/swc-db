@@ -159,16 +159,19 @@ class CountIt {
 
 void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size, 
                DB::Cell::Key& key) {
-  key.free();
-  std::string fraction_value;
+  std::vector<std::string> fractions;
+  fractions.resize(f);
+
   for(ssize_t fn=0; fn<f; ++fn) {
-    fraction_value = std::to_string(fn ? fn : i);
+    std::string& fraction_value = fractions[fn];
+    fraction_value.append(std::to_string(fn ? fn : i));
     for(uint32_t len = fraction_value.length(); 
         fraction_value.length() < fraction_size; 
         fraction_value.insert(0, "0")
       );
-    key.add(fraction_value);
   }
+  key.free();
+  key.add(fractions);
 }
 
 

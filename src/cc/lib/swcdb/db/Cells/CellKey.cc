@@ -88,6 +88,32 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
   own = true;
 }
 
+void Key::add(const std::vector<std::string>& fractions) {  
+  if(fractions.empty())
+    return;
+
+  const uint8_t* old = data;
+  uint32_t old_size = size;
+
+  for(auto& f : fractions) 
+    size += Serialization::encoded_length_vi24(f.size()) + f.size();
+  
+  uint8_t* ptr = data = new uint8_t[size];
+  if(old) {
+    memcpy(ptr, old, old_size);
+    ptr += old_size;
+    if(own)
+      delete [] old;
+  }
+  for(auto& f : fractions) {
+    Serialization::encode_vi24(&ptr, f.size());
+    memcpy(ptr, f.data(), f.size());
+    ptr += f.size();
+  }
+  count += fractions.size();
+  own = true;
+}
+
 SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const std::string& fraction) {
   insert(idx, (const uint8_t*)fraction.data(), fraction.length());
