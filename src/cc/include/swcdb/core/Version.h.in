@@ -5,10 +5,14 @@
 #ifndef swc_core_Version_h
 #define swc_core_Version_h
 
-inline const char* SWC_VERSION  = "@SWC_VERSION@";
+inline const char* SWCDB_VERSION    = "SWC-DB v@SWCDB_VERSION@";
+inline const char* SWCDB_COPYRIGHT  = "@SWCDB_COPYRIGHT@";
 
 namespace SWC {
-inline const char* VERSION = SWC_VERSION;
+
+inline const char* VERSION   = SWCDB_VERSION;
+inline const char* COPYRIGHT = SWCDB_COPYRIGHT;
+
 }
 
 #endif

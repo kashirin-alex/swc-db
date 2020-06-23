@@ -26,7 +26,24 @@ if(VERSION_MISC_SUFFIX)
   set(VERSION_STRING "${VERSION_STRING}.${VERSION_MISC_SUFFIX}")
 endif()
 
-set(SWC_VERSION ${VERSION_STRING})
+set(SWCDB_VERSION ${VERSION_STRING})
+
+set(SWCDB_COPYRIGHT 
+  "# SWC-DB Copyright(C) since 2019 [author: Kashirin Alex kashirin.alex@gmail.com]\\n"
+  "# SWC-DB is free software: you can redistribute it and/or modify\\n"
+  "# it under the terms of the GNU General Public License as published by\\n"
+  "# the Free Software Foundation, version GPLv3.\\n"
+  "# \\n"
+  "# SWC-DB is distributed in the hope that it will be useful,\\n"
+  "# but WITHOUT ANY WARRANTY; without even the implied warranty of\\n"
+  "# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\\n"
+  "# GNU General Public License for more details.\\n"
+  "# \\n"
+  "# You should have received a copy of the GNU General Public License\\n"
+  "# along with this program.\\n"
+  "# If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.\\n"
+)
+string(CONCAT SWCDB_COPYRIGHT ${SWCDB_COPYRIGHT})
 
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")

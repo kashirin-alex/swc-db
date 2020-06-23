@@ -61,6 +61,15 @@ Edit the necessary configuration in /opt/swcdb/etc/swcdb/*.cfg
 ```bash
 cd /opt/swcdb;
 mkdir -p var/log/swcdb; # re-config "swc.logging.path" for other path
+```
+> start as a local cluster
+```bash
+cd sbin;
+./swcdb_cluster start;
+```
+or 
+> start independently 
+```bash
 cd bin;
 # START SWCDB-FS-BROKER 
 ./swcdbFsBroker --daemon;
@@ -73,7 +82,7 @@ cd bin;
 ```
 
 ###### DISTRIBUTED CLUSTER
-configure /opt/swcdb/sbin/swcdb_cluster
+configure /opt/swcdb/etc/swcdb/swc.cluster.cfg
 ```bash
 cd /opt/swcdb/sbin/;
 ./swcdb_cluster --help; # for available tasks:
@@ -336,11 +345,17 @@ SWC-DB(client)> quit;
 
 
 #### SHUTTING-DOWN
+> by sending a SIGINT
 ```bash
 ps aux | grep swcdbRanger
 kill pid; # -9 for instant/ungracefull shutdown
 the same for swcdbManager, swcdbFsBroker and swcdbThriftBroker
 ```
+> by stop command with swcdb_cluster on a local/distributed cluster
+```bash
+/opt/swcdb/sbin/swcdb_cluster stop
+```
+
 
 
 ### THAT IS ALL THE GUIDE FOR NOW - [WIKI TO COME](https://github.com/kashirin-alex/swc-db/wiki)
@@ -350,3 +365,31 @@ Google Group is available at [groups.google.com/forum/#!forum/swc-db](https://gr
 
 ##### ISSUES
 open an issue at [github.com/kashirin-alex/swc-db/issues](https://github.com/kashirin-alex/swc-db/issues) in case there is an issue(bug/feature) that can be fully described.
+
+
+
+### LICENSE
+
+    SWC-DB Copyright (C) since 2019 [author: Kashirin Alex kashirin.alex@gmail.com]
+    SWC-DB is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, GPLv3 version.
+
+    SWC-DB© is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
+
+
+###### Non-Commercial License
+
+    No other License available
+
+###### Commercial License
+
+    For a Commercial Purpose License, in-case GPLv3 License limit your commercial activites.
+    You are welcome send an email to kashirin.alex@gmail.com with your Commercial requirements.
+

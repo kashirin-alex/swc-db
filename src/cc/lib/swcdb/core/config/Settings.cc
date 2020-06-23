@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Config {
 
-Settings::Settings() { 
+Settings::Settings() {
   cmdline_desc.definition(usage_str());
 }
 
@@ -49,6 +49,9 @@ void Settings::init(int argc, char *argv[]) {
   if(verbose->get() && get_bool("quiet")) {
     verbose->set(false);
   }
+
+  if(!get_bool("quiet") && !has("daemon"))
+    SWC_PRINT << SWC::COPYRIGHT << SWC_PRINT_CLOSE;
 
   auto loglevel = get<Property::V_GENUM>("swc.logging.level");
   if(get_bool("debug")) {
@@ -118,7 +121,8 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if (has("version")) {
-    SWC_PRINT << "Version: " << SWC::VERSION << SWC_PRINT_CLOSE;
+    SWC_PRINT << SWC::VERSION << '\n' 
+              << SWC::COPYRIGHT << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 
@@ -146,30 +150,30 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
 
 void Settings::load_files_by(const std::string& fileprop,  
                              bool allow_unregistered) {
-    if(fileprop.empty() || !has(fileprop)) 
-      return;
+  if(fileprop.empty() || !has(fileprop))
+    return;
 
-    std::string fname;
-    Strings files = get<Property::V_STRINGS>(fileprop)->get();
-    for (auto it=files.begin(); it<files.end(); ++it) {
-      fname.clear();
-      if(it->front() != '/' && it->front() != '.') 
-        fname.append(get_str("swc.cfg.path"));
-      fname.append(*it);
+  std::string fname;
+  Strings files = get<Property::V_STRINGS>(fileprop)->get();
+  for (auto it=files.begin(); it<files.end(); ++it) {
+    fname.clear();
+    if(it->front() != '/' && it->front() != '.')
+      fname.append(get_str("swc.cfg.path"));
+    fname.append(*it);
 
-      try {
-        load(fname, file_desc, cmdline_desc, allow_unregistered);
+    try {
+      load(fname, file_desc, cmdline_desc, allow_unregistered);
 
-        std::lock_guard lock(mutex);
-        auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
-        if(it == m_dyn_files.end())
-          m_dyn_files.push_back({.filename=fname, .modified=0});
-      } catch (std::exception &e) {
-        SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s", 
-                  fileprop.c_str(), it->c_str(), e.what());
-      }
+      std::lock_guard lock(mutex);
+      auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
+      if(it == m_dyn_files.end())
+        m_dyn_files.push_back({.filename=fname, .modified=0});
+    } catch (std::exception &e) {
+      SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s",
+                fileprop.c_str(), it->c_str(), e.what());
     }
   }
+}
 
 void Settings::init_process() {
   bool daemon = has("daemon");
@@ -187,21 +191,23 @@ void Settings::init_process() {
   if(daemon)
     Logger::logger.daemon(get_str("swc.logging.path"));
     
-  if(get_gbool("verbose")) {
+  if(daemon || get_gbool("verbose")) {
     SWC_LOG_OUT(LOG_NOTICE) 
-      << "Initialized " << executable << " (" << SWC::VERSION << ")\n"
+      << "Initialized " << executable << " "
+      << SWC::VERSION << "\n"
+      << SWC::COPYRIGHT << '\n' 
       << "Process Settings: \n" << to_string_all() << SWC_LOG_OUT_END;
   }
 }
 
 std::string Settings::usage_str(const char *usage) {
-  if (!usage)
-    usage = "Usage: %s [options]\n\nOptions:";
+  std::string tmp(SWC::COPYRIGHT);
+  tmp += '\n';
+  tmp.append(usage ? usage : "Usage: %s [options]\n\nOptions:");
 
-  if (strstr(usage, "%s"))
-    return format(usage, executable.c_str());
-
-  return usage;
+  if(strstr(tmp.c_str(), "%s"))
+    return format(tmp.c_str(), executable.c_str());
+  return tmp;
 }
 
 

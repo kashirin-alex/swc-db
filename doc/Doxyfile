@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = SWC-DB
-PROJECT_NUMBER         = @SWC_VERSION@
+PROJECT_NUMBER         = @SWCDB_VERSION@
 PROJECT_BRIEF          = "SWC-DB© (Super Wide Column Database) - High Performance Scalable Database (https://github.com/kashirin-alex/swc-db)"
 PROJECT_LOGO           =
 OUTPUT_DIRECTORY       = doc
