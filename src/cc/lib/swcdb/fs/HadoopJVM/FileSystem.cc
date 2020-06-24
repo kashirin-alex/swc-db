@@ -334,8 +334,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
-            smartfd->to_string().c_str(), 
-            bufsz, replication, (Lld)blksz);
+            smartfd->to_string().c_str(), bufsz, replication, blksz);
 
   int oflags = O_WRONLY;
   if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
@@ -366,8 +365,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
   hadoop_fd->fd(++m_nxt_fd);
   fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
-            smartfd->to_string().c_str(), 
-            bufsz, replication, (Lld)blksz);
+            smartfd->to_string().c_str(), bufsz, replication, blksz);
 }
 
 void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {

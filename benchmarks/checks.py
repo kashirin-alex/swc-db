@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# -- coding: utf-8 --
+# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 
 
 # the script creates a benchmarks.csv 

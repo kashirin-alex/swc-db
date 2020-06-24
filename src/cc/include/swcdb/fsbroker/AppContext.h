@@ -129,7 +129,7 @@ class AppContext final : public SWC::AppContext {
       }
 
       default:
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%llu)", (Llu)ev->type);
+        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", (int)ev->type);
         break;
 
     }

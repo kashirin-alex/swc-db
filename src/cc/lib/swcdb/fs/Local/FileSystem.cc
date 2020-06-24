@@ -195,8 +195,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
-            smartfd->to_string().c_str(), 
-            bufsz, replication, (Lld)blksz);
+            smartfd->to_string().c_str(), bufsz, replication, blksz);
 
   int oflags = O_WRONLY | O_CREAT
     | (smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE ? O_TRUNC : O_APPEND);
@@ -222,8 +221,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
   }
   fd_open_incr();
   SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
-            smartfd->to_string().c_str(), 
-            bufsz, replication, (Lld)blksz);
+            smartfd->to_string().c_str(), bufsz, replication, blksz);
 
 #if defined(__APPLE__)
 #ifdef F_NOCACHE

@@ -18,9 +18,6 @@
  * along with Hypertable. If not, see <http://www.gnu.org/licenses/>
  */
 
-/** @file
- * A String class based on std::string.
- */
 
 #include "swcdb/core/String.h"
 #include "swcdb/core/Compat.h"
@@ -66,55 +63,5 @@ std::string format(const char *fmt, ...) {
   return ret;
 }
 
-char const *const digits = "0123456789";
 
-std::string format_number(int64_t n, int sep) {
-  char buf[30], *p = buf, *p0 = buf;
-  int ndigits = 0;
-  uint64_t num; // for edge cases when -n is still negative when n < 0
-
-  if (n < 0) {
-    *p++ = '-';
-    p0 = p;
-    num = -n;
-  }
-  else
-    num = n;
-
-  if (num == 0)
-    *p++ = '0';
-  else for (; num != 0; num /= 10) {
-    *p++ = digits[num % 10];
-    ++ndigits;
-
-    if (num >= 10 && ndigits % 3 == 0)
-      *p++ = sep;
-  }
-
-  int len = ndigits + (ndigits - 1) / 3;
-  std::reverse(p0, p0 + len);
-
-  return std::string(buf, len + p0 - buf);
-}
-
-std::string
-format_bytes(size_t n, const void *buf, size_t len, const char *trailer) {
-  if (buf) {
-    if (len <= n)
-      return std::string((char *)buf, len);
-
-    std::string out((char *)buf, n);
-    out += trailer;
-    return out;
-  }
-  return "<null>";
-}
-
-const char NumericFormatterDigits::DIGITS[] =
-  "0001020304050607080910111213141516171819"
-  "2021222324252627282930313233343536373839"
-  "4041424344454647484950515253545556575859"
-  "6061626364656667686970717273747576777879"
-  "8081828384858687888990919293949596979899";
-
-}
+} // namespace SWC
