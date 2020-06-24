@@ -15,7 +15,8 @@ enum class Encoding {
   PLAIN   = 0x01,
   ZLIB    = 0x02,
   SNAPPY  = 0x03,
-  ZSTD    = 0x04
+  ZSTD    = 0x04,
+  UNKNOWN = 0xff
 };
 
 std::string to_string(Encoding typ);

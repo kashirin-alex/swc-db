@@ -87,15 +87,17 @@ int _kEncodingTypeValues[] = {
   EncodingType::DEFAULT,
   EncodingType::PLAIN,
   EncodingType::ZLIB,
-  EncodingType::SNAPPY
+  EncodingType::SNAPPY,
+  EncodingType::UNKNOWN
 };
 const char* _kEncodingTypeNames[] = {
   "DEFAULT",
   "PLAIN",
   "ZLIB",
-  "SNAPPY"
+  "SNAPPY",
+  "UNKNOWN"
 };
-const std::map<int, const char*> _EncodingType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kEncodingTypeValues, _kEncodingTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _EncodingType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kEncodingTypeValues, _kEncodingTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 std::ostream& operator<<(std::ostream& out, const EncodingType::type& val) {
   std::map<int, const char*>::const_iterator it = _EncodingType_VALUES_TO_NAMES.find(val);

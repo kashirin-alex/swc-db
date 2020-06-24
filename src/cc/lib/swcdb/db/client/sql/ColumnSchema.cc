@@ -186,7 +186,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
         return;
       read(buff, stop);
       if((schema->blk_encoding = Types::encoding_from(buff)) 
-          == Types::Encoding::DEFAULT) {
+          == Types::Encoding::UNKNOWN) { 
         error_msg(Error::SQL_PARSE_ERROR, " unknown blk_encoding");
         return;
       }

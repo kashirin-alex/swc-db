@@ -24,12 +24,18 @@ std::string to_string(Encoding typ) {
       return std::string("SNAPPY");
     case Encoding::ZSTD:
       return std::string("ZSTD");
+    case Encoding::UNKNOWN:
+      return std::string("UNKNOWN");
     default:
       return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
   }
 }
 
 Encoding encoding_from(const std::string& typ) {
+
+  if(strncasecmp(typ.data(), "DEFAULT", typ.length()) == 0 || 
+     typ.compare("0") == 0)
+    return Encoding::DEFAULT;
 
   if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
      typ.compare("1") == 0)
@@ -47,7 +53,7 @@ Encoding encoding_from(const std::string& typ) {
      typ.compare("4") == 0)
     return Encoding::ZSTD;
 
-  return Encoding::DEFAULT;
+  return Encoding::UNKNOWN;
 }
 
 SWC_SHOULD_INLINE

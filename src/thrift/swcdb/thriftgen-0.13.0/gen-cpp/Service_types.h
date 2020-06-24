@@ -58,7 +58,8 @@ struct EncodingType {
     DEFAULT = 0,
     PLAIN = 1,
     ZLIB = 2,
-    SNAPPY = 3
+    SNAPPY = 3,
+    UNKNOWN = 255
   };
 };
 

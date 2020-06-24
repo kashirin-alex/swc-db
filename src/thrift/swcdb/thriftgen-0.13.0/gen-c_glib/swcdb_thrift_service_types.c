@@ -50,6 +50,7 @@ toString_EncodingType(int value)
   case SWCDB_THRIFT_ENCODING_TYPE_PLAIN:return "SWCDB_THRIFT_ENCODING_TYPE_PLAIN";
   case SWCDB_THRIFT_ENCODING_TYPE_ZLIB:return "SWCDB_THRIFT_ENCODING_TYPE_ZLIB";
   case SWCDB_THRIFT_ENCODING_TYPE_SNAPPY:return "SWCDB_THRIFT_ENCODING_TYPE_SNAPPY";
+  case SWCDB_THRIFT_ENCODING_TYPE_UNKNOWN:return "SWCDB_THRIFT_ENCODING_TYPE_UNKNOWN";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -1175,7 +1176,7 @@ swcdb_thrift_schema_class_init (swcdb_thriftSchemaClass * cls)
                        NULL,
                        NULL,
                        0,
-                       3,
+                       255,
                        0,
                        G_PARAM_READWRITE));
 

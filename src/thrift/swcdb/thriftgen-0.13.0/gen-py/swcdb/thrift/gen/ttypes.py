@@ -68,12 +68,14 @@ class EncodingType(object):
     PLAIN = 1
     ZLIB = 2
     SNAPPY = 3
+    UNKNOWN = 255
 
     _VALUES_TO_NAMES = {
         0: "DEFAULT",
         1: "PLAIN",
         2: "ZLIB",
         3: "SNAPPY",
+        255: "UNKNOWN",
     }
 
     _NAMES_TO_VALUES = {
@@ -81,6 +83,7 @@ class EncodingType(object):
         "PLAIN": 1,
         "ZLIB": 2,
         "SNAPPY": 3,
+        "UNKNOWN": 255,
     }
 
 
