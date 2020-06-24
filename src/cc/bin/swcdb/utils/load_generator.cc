@@ -28,6 +28,13 @@ void Settings::init_app_options() {
   );
 
   cmdline_desc.add_options()
+    ("gen-insert", boo(true),   "Generate new data") 
+    ("gen-select", boo(false),  "Select generated data")
+    ("gen-delete", boo(false),  "Delete generated data") 
+
+    ("gen-select-empty", boo(false),  "Expect empty select results") 
+    ("gen-delete-column", boo(false),  "Delete Column after") 
+
     ("gen-progress", i32(100000), 
       "display progress every N cells or 0 for quiet") 
     ("gen-cell-a-time", boo(false), "Write one cell at a time") 
@@ -174,11 +181,30 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
   key.add(fractions);
 }
 
+void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size, 
+               DB::Specs::Key& key, Condition::Comp comp) {
+  key.free();
+  key.resize(f);
 
-void load_data(DB::Schema::Ptr& schema) {
+  for(ssize_t fn=0; fn<f; ++fn) {
+    DB::Specs::Fraction& fraction = key[fn];
+    fraction.comp = comp;
+    fraction.append(std::to_string(fn ? fn : i));
+    for(uint32_t len = fraction.length(); 
+        fraction.length() < fraction_size; 
+        fraction.insert(0, "0")
+      );
+  }
+}
+
+
+void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   auto settings = Env::Config::settings();
 
-  uint32_t versions = settings->get_i32("gen-cell-versions");
+  uint32_t versions = flag == DB::Cells::INSERT 
+    ? settings->get_i32("gen-cell-versions")
+    : 1;
+
   uint32_t fractions = settings->get_i32("gen-key-fractions");
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
   
@@ -187,7 +213,10 @@ void load_data(DB::Schema::Ptr& schema) {
   bool reverse = settings->get_bool("gen-reverse");
   auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
   
-  uint32_t value = settings->get_i32("gen-value-size");
+  uint32_t value = flag == DB::Cells::INSERT 
+    ? settings->get_i32("gen-value-size")
+    : 1;
+
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
 
@@ -200,13 +229,13 @@ void load_data(DB::Schema::Ptr& schema) {
   size_t resend_cells = 0;
   size_t added_bytes = 0;
   DB::Cells::Cell cell;
-  cell.flag = DB::Cells::INSERT;
+  cell.flag = flag;
   cell.set_time_order_desc(true);
 
   
   bool is_counter = Types::is_counter(schema->col_type);
   std::string value_data;
-  if(!is_counter) {
+  if(flag == DB::Cells::INSERT && !is_counter) {
     uint8_t c=122;
     for(uint32_t n=0; n<value;++n)
       value_data += (char)(c == 122 ? c = 97 : ++c);
@@ -230,10 +259,12 @@ void load_data(DB::Schema::Ptr& schema) {
 
           apply_key(i, f, fraction_size, cell.key);
 
-          if(is_counter)
-            cell.set_counter(0, 1, schema->col_type);
-          else
-            cell.set_value(value_data);
+          if(flag == DB::Cells::INSERT) { 
+            if(is_counter)
+              cell.set_counter(0, 1, schema->col_type);
+            else
+              cell.set_value(value_data);
+          }
           
           col->add(cell);
 
@@ -248,7 +279,7 @@ void load_data(DB::Schema::Ptr& schema) {
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;
-            SWC_PRINT << " progress(cells=" << added_count 
+            SWC_PRINT << " update-progress(cells=" << added_count 
                       << " bytes=" << added_bytes 
                       << " cell/ns=" << ts_progress/progress
                       << ") " 
@@ -276,6 +307,147 @@ void load_data(DB::Schema::Ptr& schema) {
 }
 
 
+void select_data(DB::Schema::Ptr& schema) {
+  auto settings = Env::Config::settings();
+
+  bool expect_empty = settings->get_bool("gen-select-empty");
+
+  uint32_t versions = settings->get_i32("gen-cell-versions");
+  uint32_t fractions = settings->get_i32("gen-key-fractions");
+  uint32_t fraction_size = settings->get_i32("gen-fraction-size");
+  
+  bool tree = settings->get_bool("gen-key-tree");
+  uint64_t cells = settings->get_i64("gen-cells");
+  bool reverse = settings->get_bool("gen-reverse");
+  auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
+  
+  uint32_t value = settings->get_i32("gen-value-size");
+  uint32_t progress = settings->get_i32("gen-progress");
+  bool cellatime = settings->get_bool("gen-cell-a-time");
+
+  size_t select_count = 0;
+  size_t select_bytes = 0;
+
+  client::Query::Select::Ptr req;
+  if(cellatime)
+    req = std::make_shared<client::Query::Select>();
+  else
+    req = std::make_shared<client::Query::Select>(
+      [&select_bytes, &select_count, cid=schema->cid] 
+      (const client::Query::Select::Result::Ptr& result) {
+        DB::Cells::Result cells;
+        result->get_cells(cid, cells);
+        select_count += cells.size();
+        select_bytes += cells.size_bytes();
+      },
+      true
+    );
+
+  if(Types::is_counter(schema->col_type))
+    versions = 1;
+  
+  int err; 
+  uint64_t ts = Time::now_ns();
+  uint64_t ts_progress = ts;
+
+  if(cellatime) {
+    CountIt cell_num(seq, 0, cells);
+    CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
+    ssize_t i;
+    ssize_t f;
+    while(cell_num.next(&i)) {
+      f_num.reset();
+      while(f_num.next(&f)) {
+
+        auto intval = DB::Specs::Interval::make_ptr();
+        intval->key_eq = true;
+        apply_key(i, f, fraction_size, intval->key_start, Condition::EQ);
+        intval->flags.limit = versions;
+        req->specs.columns = {
+          DB::Specs::Column::make_ptr(schema->cid, {intval})
+        };
+
+        req->scan(err = Error::OK);
+        SWC_ASSERT(!err);
+
+        req->wait();
+
+        SWC_ASSERT(
+          expect_empty 
+          ? req->result->empty()
+          : req->result->get_size(schema->cid) == versions
+        );
+
+        select_bytes += req->result->get_size_bytes();
+        ++select_count;
+        req->result->free(schema->cid);
+
+        if(progress && (select_count % progress) == 0) {
+          ts_progress = Time::now_ns() - ts_progress;
+          SWC_PRINT << " select-progress(cells=" << select_count 
+                    << " cell/ns=" << ts_progress/progress
+                    << ") " 
+                    << req->result->profile.to_string() 
+                    << SWC_PRINT_CLOSE;
+          ts_progress = Time::now_ns();
+        }
+      }
+    }
+    if(expect_empty)
+      select_count = 0;
+
+  } else {
+    req->specs.columns = { DB::Specs::Column::make_ptr(
+      schema->cid, { DB::Specs::Interval::make_ptr() }
+    )};
+    req->scan(err = Error::OK);
+    SWC_ASSERT(!err);
+
+    req->wait();
+    SWC_ASSERT(
+      expect_empty
+      ? req->result->empty()
+      : select_count == versions * (tree ? fractions : 1) * cells
+    );
+  }
+
+  FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+  SWC_PRINT;
+  rate.print_cells_statistics(std::cout, select_count, 0);
+  req->result->profile.print(std::cout);
+  std::cout << SWC_PRINT_CLOSE;
+}
+
+
+void make_work_load(DB::Schema::Ptr& schema) {
+  auto settings = Env::Config::settings();
+
+  if(settings->get_bool("gen-insert"))
+    update_data(schema, DB::Cells::INSERT);
+    
+  if(settings->get_bool("gen-select"))
+    select_data(schema);
+
+  if(settings->get_bool("gen-delete"))
+    update_data(schema, DB::Cells::DELETE);
+
+  if(settings->get_bool("gen-delete-column")) { 
+    std::promise<int>  res;
+    Protocol::Mngr::Req::ColumnMng::request(
+      Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+      schema,
+      [await=&res]
+      (const client::ConnQueue::ReqBase::Ptr& req_ptr, int err) {
+        await->set_value(err);
+      },
+      10000
+    );
+    quit_error(res.get_future().get());
+  }
+    
+}
+
+
 void load_generator() {
   auto settings = Env::Config::settings();
 
@@ -285,7 +457,7 @@ void load_generator() {
   auto schema = Env::Clients::get()->schemas->get(err, col_name);
   if(schema != nullptr) {
     quit_error(err);
-    load_data(schema);
+    make_work_load(schema);
     return;
   }
   err = Error::OK;
@@ -320,7 +492,7 @@ void load_generator() {
 
   schema = Env::Clients::get()->schemas->get(err, col_name);
   quit_error(err);
-  load_data(schema);
+  make_work_load(schema);
 }
 
 } // namespace SWC
