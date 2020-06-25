@@ -35,10 +35,6 @@ std::string RgrGetReq::to_string() {
   return s;
 }
 
-uint8_t RgrGetReq::encoding_version() const  {
-  return 1; 
-}
-
 size_t RgrGetReq::encoded_length_internal() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
@@ -49,7 +45,7 @@ size_t RgrGetReq::encoded_length_internal() const {
           );
 }
   
-void RgrGetReq::encode_internal(uint8_t **bufp) const {
+void RgrGetReq::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
   if(!rid) {
@@ -59,8 +55,7 @@ void RgrGetReq::encode_internal(uint8_t **bufp) const {
   }
 }
   
-void RgrGetReq::decode_internal(uint8_t version, const uint8_t **bufp, 
-                                size_t *remainp) {
+void RgrGetReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   if(!rid) {
@@ -103,10 +98,6 @@ std::string RgrGetRsp::to_string() const {
   return s;
 }
 
-uint8_t RgrGetRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t RgrGetRsp::encoded_length_internal() const {
   return  Serialization::encoded_length_vi32(err) 
   + (err ? 0 :
@@ -120,7 +111,7 @@ size_t RgrGetRsp::encoded_length_internal() const {
     );
 }
   
-void RgrGetRsp::encode_internal(uint8_t **bufp) const {
+void RgrGetRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
     Serialization::encode_vi64(bufp, cid);
@@ -133,13 +124,12 @@ void RgrGetRsp::encode_internal(uint8_t **bufp) const {
   }
 }
   
-void RgrGetRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
-                                size_t *remainp) {
+void RgrGetRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   if(!err) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
+    Common::Params::HostEndPoints::decode_internal(bufp, remainp);
     if(cid == 1) {
       range_end.decode(bufp, remainp, true);
       range_begin.decode(bufp, remainp, true);

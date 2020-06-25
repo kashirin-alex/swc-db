@@ -21,7 +21,7 @@ uint32_t Fraction::encoded_length() const {
   return 1 + Serialization::encoded_length_vi32(size()) + size();
 }
 
-void Fraction::encode(uint8_t **bufp) const {
+void Fraction::encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)comp);
   Serialization::encode_vi32(bufp, size());
   if(!empty()) {
@@ -30,7 +30,7 @@ void Fraction::encode(uint8_t **bufp) const {
   }
 }
 
-void Fraction::decode(const uint8_t **bufp, size_t* remainp) {
+void Fraction::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
   if(uint32_t len = Serialization::decode_vi32(bufp, remainp)) {
@@ -167,13 +167,13 @@ uint32_t Key::encoded_length() const {
   return len;
 }
 
-void Key::encode(uint8_t **bufp) const {
+void Key::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, size());
   for(auto it = begin(); it < end(); ++it) 
     it->encode(bufp);
 }
 
-void Key::decode(const uint8_t **bufp, size_t* remainp, bool owner) {
+void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
   for(auto it = begin(); it < end(); ++it)

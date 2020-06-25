@@ -23,23 +23,17 @@ class RenameReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
   return Serialization::encoded_length_vstr(from)
        + Serialization::encoded_length_vstr(to);
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_vstr(bufp, from);
     Serialization::encode_vstr(bufp, to);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     from.clear();
     from.append(Serialization::decode_vstr(bufp, remainp));
     to.clear();

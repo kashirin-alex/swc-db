@@ -21,21 +21,15 @@ class ExistsReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     return Serialization::encoded_length_vstr(fname);
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_vstr(bufp, fname);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     fname.clear();
     fname.append(Serialization::decode_vstr(bufp, remainp));
   }
@@ -56,20 +50,15 @@ class ExistsRsp : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const override {
+  size_t encoded_length_internal() const {
     return 1;
   }
 
-  size_t encoded_length_internal() const override {
-    return 1;
-  }
-
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_bool(bufp, exists);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     exists = Serialization::decode_bool(bufp, remainp);
   }
 

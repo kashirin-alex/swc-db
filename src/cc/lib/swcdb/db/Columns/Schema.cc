@@ -44,7 +44,7 @@ Schema::Schema(const Schema& other)
         revision(other.revision) {
 }
 
-Schema::Schema(const uint8_t **bufp, size_t *remainp)
+Schema::Schema(const uint8_t** bufp, size_t* remainp)
   : cid(Serialization::decode_vi64(bufp, remainp)),
     col_name(Serialization::decode_vstr(bufp, remainp)),
 
@@ -105,7 +105,7 @@ size_t Schema::encoded_length() const {
        + Serialization::encoded_length_vi64(revision);
 } 
  
-void Schema::encode(uint8_t **bufp) const {
+void Schema::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vstr(bufp, col_name.data(), col_name.length());
   

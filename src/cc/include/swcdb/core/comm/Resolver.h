@@ -20,9 +20,9 @@ namespace Serialization {
   
 size_t encoded_length(const EndPoint& endpoint);
 
-void encode(const EndPoint& endpoint, uint8_t **bufp);
+void encode(const EndPoint& endpoint, uint8_t** bufp);
 
-EndPoint decode(const uint8_t **bufp, size_t *remainp);
+EndPoint decode(const uint8_t** bufp, size_t* remainp);
 
 }
 

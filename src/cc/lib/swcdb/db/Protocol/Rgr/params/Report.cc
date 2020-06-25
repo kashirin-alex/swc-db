@@ -15,20 +15,15 @@ ReportReq::ReportReq(uint8_t flags): flags(flags) {}
 
 ReportReq::~ReportReq(){ }
 
-uint8_t ReportReq::encoding_version() const {
-  return 1; 
-}
-
 size_t ReportReq::encoded_length_internal() const {
   return 1;
 }
   
-void ReportReq::encode_internal(uint8_t **bufp) const {
+void ReportReq::encode_internal(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, flags);
 }
   
-void ReportReq::decode_internal(uint8_t version, const uint8_t **bufp, 
-                     size_t *remainp) {
+void ReportReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
   flags = Serialization::decode_i8(bufp, remainp);
 }
 
@@ -51,12 +46,12 @@ size_t ReportRsp::Range::encoded_length () const {
           + interval.encoded_length();
 } 
 
-void ReportRsp::Range::encode(uint8_t **bufp) const {
+void ReportRsp::Range::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, rid);
   interval.encode(bufp);
 }
 
-void ReportRsp::Range::decode(const uint8_t **bufp, size_t *remainp) {
+void ReportRsp::Range::decode(const uint8_t** bufp, size_t* remainp) {
   rid = Serialization::decode_vi64(bufp, remainp);
   interval.decode(bufp, remainp);
 }
@@ -96,7 +91,7 @@ size_t ReportRsp::Column::encoded_length () const {
   return sz;
 }
 
-void ReportRsp::Column::encode(uint8_t **bufp) const {
+void ReportRsp::Column::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_i8(bufp, (uint8_t)col_seq);
   Serialization::encode_vi64(bufp, ranges.size());
@@ -104,7 +99,7 @@ void ReportRsp::Column::encode(uint8_t **bufp) const {
     r->encode(bufp);
 }
 
-void ReportRsp::Column::decode(const uint8_t **bufp, size_t *remainp) {
+void ReportRsp::Column::decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   col_seq = (Types::KeySeq)Serialization::decode_i8(bufp, remainp);
   for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
@@ -149,10 +144,6 @@ void ReportRsp::display(std::ostream& out, bool pretty,
     c->display(out, pretty, offset+" ");
 }
 
-uint8_t ReportRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t ReportRsp::encoded_length_internal() const {
   size_t sz = Serialization::encoded_length_vi32(err);
   if(!err) {
@@ -169,7 +160,7 @@ size_t ReportRsp::encoded_length_internal() const {
   return sz;
 }
   
-void ReportRsp::encode_internal(uint8_t **bufp) const {
+void ReportRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
     Serialization::encode_vi64(bufp, rgrid);
@@ -184,8 +175,7 @@ void ReportRsp::encode_internal(uint8_t **bufp) const {
   }
 }
   
-void ReportRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
-                                size_t *remainp) {
+void ReportRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
     rgrid = Serialization::decode_vi64(bufp, remainp);
     

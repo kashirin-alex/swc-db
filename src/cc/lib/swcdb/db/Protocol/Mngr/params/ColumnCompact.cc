@@ -22,20 +22,15 @@ std::string ColumnCompactReq::to_string() const {
   return s;
 }
 
-uint8_t ColumnCompactReq::encoding_version() const {
-  return 1; 
-}
-
 size_t ColumnCompactReq::encoded_length_internal() const {
   return Serialization::encoded_length_vi64(cid);
 }
   
-void ColumnCompactReq::encode_internal(uint8_t **bufp) const {
+void ColumnCompactReq::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
 }
   
-void ColumnCompactReq::decode_internal(uint8_t version, const uint8_t **bufp,
-                                       size_t *remainp) {
+void ColumnCompactReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
 }
 
@@ -58,20 +53,15 @@ std::string ColumnCompactRsp::to_string() const {
   return s;
 }
 
-uint8_t ColumnCompactRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t ColumnCompactRsp::encoded_length_internal() const {
   return Serialization::encoded_length_vi32(err);
 }
   
-void ColumnCompactRsp::encode_internal(uint8_t **bufp) const {
+void ColumnCompactRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
 }
   
-void ColumnCompactRsp::decode_internal(uint8_t version, const uint8_t **bufp,
-                                       size_t *remainp) {
+void ColumnCompactRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
 }
 

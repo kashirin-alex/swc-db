@@ -31,14 +31,11 @@ class Dirent final : public Serializable {
   
   private:
 
-  uint8_t encoding_version() const;
-
   size_t encoded_length_internal() const;
 
-  void encode_internal(uint8_t **bufp) const;
+  void encode_internal(uint8_t** bufp) const;
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp);
+  void decode_internal(const uint8_t** bufp, size_t* remainp);
       
 };
 

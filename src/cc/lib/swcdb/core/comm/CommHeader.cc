@@ -43,7 +43,7 @@ size_t CommHeader::encoded_length() {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::encode(uint8_t **bufp) const {
+void CommHeader::encode(uint8_t** bufp) const {
   uint8_t *base = *bufp;
   Serialization::encode_i8(bufp,  version);
   Serialization::encode_i8(bufp,  header_len);
@@ -66,7 +66,7 @@ void CommHeader::encode(uint8_t **bufp) const {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::decode_prefix(const uint8_t **bufp, size_t *remainp) {
+void CommHeader::decode_prefix(const uint8_t** bufp, size_t* remainp) {
   if (*remainp < PREFIX_LENGTH)
     SWC_THROWF(Error::COMM_BAD_HEADER,
               "Header size %d is less than the fixed length %d",
@@ -77,7 +77,7 @@ void CommHeader::decode_prefix(const uint8_t **bufp, size_t *remainp) {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::decode(const uint8_t **bufp, size_t *remainp) {
+void CommHeader::decode(const uint8_t** bufp, size_t* remainp) {
   const uint8_t *base = *bufp;
   *bufp += PREFIX_LENGTH;
     

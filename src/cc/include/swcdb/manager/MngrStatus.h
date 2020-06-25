@@ -42,7 +42,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     return len;
   }
 
-  void encode_internal(uint8_t **bufp) const {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, priority.load());
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_i8(bufp, role);
@@ -51,14 +51,14 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp)  {
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     priority.store(Serialization::decode_i32(bufp, remainp));
     state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
     role = Serialization::decode_i8(bufp, remainp);
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);
 
-    Protocol::Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
+    Protocol::Common::Params::HostEndPoints::decode_internal(bufp, remainp);
   }
 
   std::string to_string(){

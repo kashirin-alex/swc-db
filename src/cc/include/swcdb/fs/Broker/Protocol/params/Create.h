@@ -28,15 +28,11 @@ class CreateReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     return 17 + Serialization::encoded_length_vstr(fname);
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, flags);
     Serialization::encode_i32(bufp, bufsz);
     Serialization::encode_i8(bufp, replication);
@@ -44,9 +40,7 @@ class CreateReq : public Serializable {
     Serialization::encode_vstr(bufp, fname);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     flags = Serialization::decode_i32(bufp, remainp);
     bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);
     replication = (uint8_t)Serialization::decode_i8(bufp, remainp);

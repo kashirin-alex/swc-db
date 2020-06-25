@@ -23,7 +23,7 @@ class Column final : public Serializable {
 
   static Ptr make_ptr(cid_t cid, const Intervals& intervals);
 
-  static Ptr make_ptr(const uint8_t **bufp, size_t *remainp);
+  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp);
 
   static Ptr make_ptr(const Column& other);
 
@@ -33,7 +33,7 @@ class Column final : public Serializable {
 
   explicit Column(cid_t cid, const Intervals& intervals);
 
-  explicit Column(const uint8_t **bufp, size_t *remainp);
+  explicit Column(const uint8_t** bufp, size_t* remainp);
 
   explicit Column(const Column& other);
 
@@ -45,15 +45,12 @@ class Column final : public Serializable {
 
   bool equal(const Column &other);
 
-  uint8_t encoding_version() const;
-  
   size_t encoded_length_internal() const;
 
-  void encode_internal(uint8_t **bufp) const;
+  void encode_internal(uint8_t** bufp) const;
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp);
-  
+  void decode_internal(const uint8_t** bufp, size_t* remainp);
+
   std::string to_string();
 
   void display(std::ostream& out, bool pretty=false, 

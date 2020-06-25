@@ -37,11 +37,11 @@ class CommHeader final {
 
   size_t encoded_length();
 
-  void encode(uint8_t **bufp) const;
+  void encode(uint8_t** bufp) const;
 
-  void decode_prefix(const uint8_t **bufp, size_t *remainp);
+  void decode_prefix(const uint8_t** bufp, size_t* remainp);
 
-  void decode(const uint8_t **bufp, size_t *remainp);
+  void decode(const uint8_t** bufp, size_t* remainp);
 
   void initialize_from_request_header(const CommHeader &req_header);
 

@@ -14,19 +14,14 @@ ColumnListReq::ColumnListReq() { }
 
 ColumnListReq::~ColumnListReq() { }
 
-uint8_t ColumnListReq::encoding_version() const {
-  return 1;
-}
-  
 size_t ColumnListReq::encoded_length_internal() const {
   return 0;
 }
   
-void ColumnListReq::encode_internal(uint8_t **bufp) const {
+void ColumnListReq::encode_internal(uint8_t** bufp) const {
 }
   
-void ColumnListReq::decode_internal(uint8_t version, const uint8_t **bufp, 
-                                    size_t *remainp) {
+void ColumnListReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
 }
 
 
@@ -35,10 +30,6 @@ ColumnListRsp::ColumnListRsp() { }
 ColumnListRsp::~ColumnListRsp() { }
 
 
-uint8_t ColumnListRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t ColumnListRsp::encoded_length_internal() const {
   size_t sz = Serialization::encoded_length_vi64(schemas.size());
   for (auto schema : schemas)
@@ -46,14 +37,13 @@ size_t ColumnListRsp::encoded_length_internal() const {
   return sz;
 }
   
-void ColumnListRsp::encode_internal(uint8_t **bufp) const {
+void ColumnListRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, schemas.size());
   for(auto& schema : schemas)
     schema->encode(bufp);
 }
   
-void ColumnListRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
-                                    size_t *remainp) {
+void ColumnListRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
   size_t sz = Serialization::decode_vi64(bufp, remainp);
   schemas.clear();
   schemas.resize(sz);

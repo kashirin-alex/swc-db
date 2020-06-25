@@ -11,37 +11,34 @@
 namespace SWC { namespace Protocol { namespace Common { namespace Params {
 
 
-  class ColumnId : public Serializable {
+class ColumnId : public Serializable {
   public:
 
-    ColumnId(cid_t cid = 0) 
-             : cid(cid){
-    }
+  ColumnId(cid_t cid = 0)
+           : cid(cid){
+  }
              
-    virtual ~ColumnId() {}
+  virtual ~ColumnId() {}
 
-    cid_t  cid; 
-    
-  private:
+  cid_t  cid;
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
-    
-    size_t encoded_length_internal() const {
-      return Serialization::encoded_length_vi64(cid);
-    }
-    
-    void encode_internal(uint8_t **bufp) const {
-      Serialization::encode_vi64(bufp, cid);
-    }
-    
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
-      cid = Serialization::decode_vi64(bufp, remainp);
-    }
 
-  };
+  protected:
+    
+  size_t encoded_length_internal() const {
+    return Serialization::encoded_length_vi64(cid);
+  }
+    
+  void encode_internal(uint8_t** bufp) const {
+    Serialization::encode_vi64(bufp, cid);
+  }
+    
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+    cid = Serialization::decode_vi64(bufp, remainp);
+  }
+
+
+};
   
 
 }}}}

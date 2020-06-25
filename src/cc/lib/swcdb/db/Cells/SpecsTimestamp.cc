@@ -50,13 +50,13 @@ size_t Timestamp::encoded_length() const {
   return 1+(comp != Condition::NONE? 8: 0);
 }
 
-void Timestamp::encode(uint8_t **bufp) const {
+void Timestamp::encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)comp);
   if(comp != Condition::NONE)
     Serialization::encode_i64(bufp, value);
 }
 
-void Timestamp::decode(const uint8_t **bufp, size_t *remainp){
+void Timestamp::decode(const uint8_t** bufp, size_t* remainp){
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
   if(comp != Condition::NONE)
     value = Serialization::decode_i64(bufp, remainp);

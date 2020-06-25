@@ -37,7 +37,7 @@ class Interval {
       const Timestamp& ts_start, const Timestamp& ts_finish, 
       const Flags& flags=Flags());
   
-  static Ptr make_ptr(const uint8_t **bufp, size_t *remainp);
+  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp);
 
   static Ptr make_ptr(const Interval& other);
 
@@ -59,7 +59,7 @@ class Interval {
                     const Timestamp& ts_start, const Timestamp& ts_finish, 
                     const Flags& flags=Flags());
   
-  explicit Interval(const uint8_t **bufp, size_t *remainp);
+  explicit Interval(const uint8_t** bufp, size_t* remainp);
 
   explicit Interval(const Interval& other);
 
@@ -90,9 +90,9 @@ class Interval {
 
   size_t encoded_length() const;
 
-  void encode(uint8_t **bufp) const;
+  void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t **bufp, size_t *remainp);
+  void decode(const uint8_t** bufp, size_t* remainp);
   
   void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) const;
 

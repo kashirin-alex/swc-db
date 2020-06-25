@@ -33,10 +33,6 @@ class RgrUpdate : public Serializable {
 
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
-    
     size_t encoded_length_internal() const {
       size_t len = 1 + Serialization::encoded_length_vi32(hosts.size());
       for(auto& h : hosts)
@@ -44,15 +40,14 @@ class RgrUpdate : public Serializable {
       return len;
     }
     
-    void encode_internal(uint8_t **bufp) const {
+    void encode_internal(uint8_t** bufp) const {
       Serialization::encode_bool(bufp, sync_all);
       Serialization::encode_vi32(bufp, hosts.size());
       for(auto& h : hosts)
         h->encode(bufp);
     }
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {   
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
       sync_all = Serialization::decode_bool(bufp, remainp);
       size_t len = Serialization::decode_vi32(bufp, remainp);
       hosts.clear();

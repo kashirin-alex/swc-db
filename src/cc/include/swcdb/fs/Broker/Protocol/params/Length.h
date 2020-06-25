@@ -20,22 +20,15 @@ class LengthReq : public Serializable {
   std::string fname;
 
   private:
-
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     return Serialization::encoded_length_vstr(fname);
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_vstr(bufp, fname);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     fname.clear();
     fname.append(Serialization::decode_vstr(bufp, remainp));
   }
@@ -56,20 +49,15 @@ class LengthRsp : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const override {
-    return 1;
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     return 8;
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i64(bufp, length);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     length = Serialization::decode_i64(bufp, remainp);
   }
   

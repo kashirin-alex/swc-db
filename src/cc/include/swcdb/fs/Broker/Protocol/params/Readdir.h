@@ -21,21 +21,15 @@ class ReaddirReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     return Serialization::encoded_length_vstr(dirname);
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_vstr(bufp, dirname);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     dirname.clear();
     dirname.append(Serialization::decode_vstr(bufp, remainp));
   }
@@ -56,26 +50,20 @@ class ReaddirRsp : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const override {
-    return 1;
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
     size_t length = 4;
     for (const Dirent &entry : m_listing)
       length += entry.encoded_length();
     return length;
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, m_listing.size());
     for (const Dirent &entry : m_listing)
       entry.encode(bufp);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     int32_t count = Serialization::decode_i32(bufp, remainp);
     m_listing.clear();
     m_listing.resize(count);

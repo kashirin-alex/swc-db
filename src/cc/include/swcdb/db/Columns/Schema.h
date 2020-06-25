@@ -32,7 +32,7 @@ class Schema final {
 
   Schema(const Schema& other);
   
-  Schema(const uint8_t **bufp, size_t *remainp);
+  Schema(const uint8_t** bufp, size_t* remainp);
 
   ~Schema();
 
@@ -40,7 +40,7 @@ class Schema final {
   
   size_t encoded_length() const;
  
-  void encode(uint8_t **bufp) const;
+  void encode(uint8_t** bufp) const;
 
   std::string to_string() const;
 

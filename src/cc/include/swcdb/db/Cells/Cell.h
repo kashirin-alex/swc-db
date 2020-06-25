@@ -106,7 +106,7 @@ class Cell final {
 
   int64_t get_counter(uint8_t& op, int64_t& rev) const;
 
-  void read(const uint8_t **bufp, size_t* remainp, bool owner=false);
+  void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
   uint32_t encoded_length(bool no_value=false) const;
 

@@ -65,7 +65,7 @@ size_t Flags::encoded_length() const {
         + 1;
 }
 
-void Flags::encode(uint8_t **bufp) const {
+void Flags::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, limit);
   Serialization::encode_vi64(bufp, offset);
   Serialization::encode_vi32(bufp, max_versions);
@@ -73,7 +73,7 @@ void Flags::encode(uint8_t **bufp) const {
   Serialization::encode_i8(bufp, options);
 }
 
-void Flags::decode(const uint8_t **bufp, size_t *remainp){
+void Flags::decode(const uint8_t** bufp, size_t* remainp){
   limit = Serialization::decode_vi64(bufp, remainp);
   offset = Serialization::decode_vi64(bufp, remainp);
   max_versions = Serialization::decode_vi32(bufp, remainp);

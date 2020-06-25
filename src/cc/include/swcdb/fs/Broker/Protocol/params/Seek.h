@@ -23,22 +23,16 @@ class SeekReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
+  size_t encoded_length_internal() const {
+    return 12;
   }
 
-  size_t encoded_length_internal() const override {
-      return 12;
-  }
-
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, fd);
     Serialization::encode_i64(bufp, offset);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     fd = (int32_t)Serialization::decode_i32(bufp, remainp);
     offset = Serialization::decode_i64(bufp, remainp);
   }
@@ -58,22 +52,16 @@ class SeekRsp : public Serializable {
   uint64_t offset;
   
   private:
-
-  uint8_t encoding_version() const {
-    return 1; 
+  
+  size_t encoded_length_internal() const {
+    return 8;
   }
 
-  size_t encoded_length_internal() const override {
-      return 8;
-  }
-
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i64(bufp, offset);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     offset = Serialization::decode_i64(bufp, remainp);
   }
   

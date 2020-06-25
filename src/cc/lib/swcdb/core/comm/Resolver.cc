@@ -14,7 +14,7 @@ size_t encoded_length(const EndPoint& endpoint) {
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
-void encode(const EndPoint& endpoint, uint8_t **bufp) {
+void encode(const EndPoint& endpoint, uint8_t** bufp) {
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
   Serialization::encode_i16(bufp, endpoint.port());
   if(endpoint.address().is_v4()) {
@@ -26,7 +26,7 @@ void encode(const EndPoint& endpoint, uint8_t **bufp) {
   Serialization::encode_bytes(bufp, v6_bytes.data(), 16);
 }
   
-EndPoint decode(const uint8_t **bufp, size_t *remainp) {
+EndPoint decode(const uint8_t** bufp, size_t* remainp) {
   bool is_v4 = Serialization::decode_bool(bufp, remainp);
   uint16_t port = Serialization::decode_i16(bufp, remainp);
   if(is_v4) 

@@ -27,14 +27,11 @@ class ReportReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const;
-
   size_t encoded_length_internal() const;
     
-  void encode_internal(uint8_t **bufp) const;
+  void encode_internal(uint8_t** bufp) const;
     
-  void decode_internal(uint8_t version, const uint8_t **bufp, 
-                       size_t *remainp);
+  void decode_internal(const uint8_t** bufp, size_t* remainp);
 
 };
 
@@ -56,9 +53,9 @@ class ReportRsp  : public Serializable {
 
     size_t encoded_length () const;
 
-    void encode(uint8_t **bufp) const;
+    void encode(uint8_t** bufp) const;
 
-    void decode(const uint8_t **bufp, size_t *remainp);
+    void decode(const uint8_t** bufp, size_t* remainp);
   
     void display(std::ostream& out, bool pretty=true, 
                  std::string offset = "") const;
@@ -76,9 +73,9 @@ class ReportRsp  : public Serializable {
 
     size_t encoded_length () const;
 
-    void encode(uint8_t **bufp) const;
+    void encode(uint8_t** bufp) const;
 
-    void decode(const uint8_t **bufp, size_t *remainp);
+    void decode(const uint8_t** bufp, size_t* remainp);
     
     void display(std::ostream& out, bool pretty=true, 
                  std::string offset = "") const;
@@ -101,14 +98,11 @@ class ReportRsp  : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const;
-    
   size_t encoded_length_internal() const;
 
-  void encode_internal(uint8_t **bufp) const;
+  void encode_internal(uint8_t** bufp) const;
     
-  void decode_internal(uint8_t version, const uint8_t **bufp, 
-                       size_t *remainp);
+  void decode_internal(const uint8_t** bufp, size_t* remainp);
 
 };
   

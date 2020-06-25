@@ -268,7 +268,7 @@ class KeyArena final : public std::vector<Fraction> {
     return len;
   }
   
-  void encode(uint8_t **bufp) const {
+  void encode(uint8_t** bufp) const {
     Serialization::encode_vi32(bufp, size());
     uint32_t len;
     for(auto it = begin(); it < end(); ++it) {
@@ -278,7 +278,7 @@ class KeyArena final : public std::vector<Fraction> {
     }
   }
 
-  void decode(const uint8_t **bufp, size_t* remainp, bool owner = true) {
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner = true) {
     free();
     uint32_t len;
     resize(Serialization::decode_vi32(bufp, remainp));

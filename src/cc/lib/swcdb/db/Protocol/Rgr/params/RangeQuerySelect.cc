@@ -32,25 +32,20 @@ std::string RangeQuerySelectReq::to_string() const {
   return s;
 }
 
-uint8_t RangeQuerySelectReq::encoding_version() const  {
-  return 1; 
-}
-
 size_t RangeQuerySelectReq::encoded_length_internal() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + interval.encoded_length();
 }
   
-void RangeQuerySelectReq::encode_internal(uint8_t **bufp) const {
+void RangeQuerySelectReq::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
   interval.encode(bufp);
 }
   
-void RangeQuerySelectReq::decode_internal(uint8_t version, 
-                                          const uint8_t **bufp, 
-                                          size_t *remainp) {
+void RangeQuerySelectReq::decode_internal(const uint8_t** bufp, 
+                                          size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   interval.decode(bufp, remainp);
@@ -88,10 +83,6 @@ std::string RangeQuerySelectRsp::to_string() const {
   return s;
 }
 
-uint8_t RangeQuerySelectRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t RangeQuerySelectRsp::encoded_length_internal() const {
   return Serialization::encoded_length_vi32(err) 
         + 1 
@@ -99,15 +90,14 @@ size_t RangeQuerySelectRsp::encoded_length_internal() const {
         + 8;
 }
   
-void RangeQuerySelectRsp::encode_internal(uint8_t **bufp) const {
+void RangeQuerySelectRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   Serialization::encode_bool(bufp, reached_limit);
   Serialization::encode_vi64(bufp, offset);
 }
   
-void RangeQuerySelectRsp::decode_internal(uint8_t version, 
-                                          const uint8_t **bufp,
-                                          size_t *remainp) {
+void RangeQuerySelectRsp::decode_internal(const uint8_t** bufp,
+                                          size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   reached_limit = Serialization::decode_bool(bufp, remainp);
   offset = Serialization::decode_vi64(bufp, remainp);

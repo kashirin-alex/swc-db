@@ -75,9 +75,9 @@ class KeyVec final : public std::vector<std::basic_string<uint8_t>> {
 
   uint32_t encoded_length() const;
   
-  void encode(uint8_t **bufp) const;
+  void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t **bufp, size_t* remainp);
+  void decode(const uint8_t** bufp, size_t* remainp);
 
   std::string to_string() const;
 

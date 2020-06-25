@@ -97,7 +97,7 @@ size_t Value::encoded_length() const {
     comp==Condition::NONE? 0: Serialization::encoded_length_vi32(size)+size);
 }
 
-void Value::encode(uint8_t **bufp) const {
+void Value::encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)comp);
   if(comp != Condition::NONE) {
     Serialization::encode_vi32(bufp, size);
@@ -106,7 +106,7 @@ void Value::encode(uint8_t **bufp) const {
   }
 }
 
-void Value::decode(const uint8_t **bufp, size_t *remainp) {
+void Value::decode(const uint8_t** bufp, size_t* remainp) {
   own = false;
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
   if(comp != Condition::NONE){

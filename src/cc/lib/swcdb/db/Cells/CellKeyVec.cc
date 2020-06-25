@@ -134,7 +134,7 @@ uint32_t KeyVec::encoded_length() const {
   return len;
 }
 
-void KeyVec::encode(uint8_t **bufp) const {
+void KeyVec::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, size());
   uint32_t len;
   for(auto it = cbegin(); it < cend(); ++it) {
@@ -144,7 +144,7 @@ void KeyVec::encode(uint8_t **bufp) const {
   }
 }
 
-void KeyVec::decode(const uint8_t **bufp, size_t* remainp) {
+void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
   uint32_t len;

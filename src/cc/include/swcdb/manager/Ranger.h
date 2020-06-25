@@ -61,17 +61,16 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     return len;
   }
 
-  void encode_internal(uint8_t **bufp) const {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, (uint8_t)state);
     Serialization::encode_vi64(bufp, rgrid);
     Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp, size_t *remainp){
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     state = (State)Serialization::decode_i8(bufp, remainp);
     rgrid = Serialization::decode_vi64(bufp, remainp);
-    Protocol::Common::Params::HostEndPoints::decode_internal(
-      version, bufp, remainp);
+    Protocol::Common::Params::HostEndPoints::decode_internal(bufp, remainp);
   }
 
   void init_queue(){

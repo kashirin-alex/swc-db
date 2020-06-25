@@ -44,10 +44,6 @@ class RgrMngId  : public Common::Params::HostEndPoints {
 
   private:
 
-    uint8_t encoding_version() const {
-      return 1;
-    }
-    
     size_t encoded_length_internal() const {
       size_t len = 1;
       if(flag != Flag::MNGR_NOT_ACTIVE)
@@ -61,7 +57,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
       return len;
     }
     
-    void encode_internal(uint8_t **bufp) const {
+    void encode_internal(uint8_t** bufp) const {
       Serialization::encode_i8(bufp, (uint8_t)flag);
       if(flag != Flag::MNGR_NOT_ACTIVE)
         Serialization::encode_vi64(bufp, rgrid);
@@ -74,14 +70,13 @@ class RgrMngId  : public Common::Params::HostEndPoints {
           bufp, (int8_t)Env::FsInterface::interface()->get_type());
     }
     
-    void decode_internal(uint8_t version, const uint8_t **bufp, 
-                        size_t *remainp) {
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
       flag = (Flag)Serialization::decode_i8(bufp, remainp);
       if(flag != Flag::MNGR_NOT_ACTIVE)
         rgrid = Serialization::decode_vi64(bufp, remainp);
       
       if(flag >= Flag::RS_REQ)
-        Common::Params::HostEndPoints::decode_internal(version, bufp, remainp);
+        Common::Params::HostEndPoints::decode_internal(bufp, remainp);
       
       if(flag == Flag::MNGR_ASSIGNED)
         fs = (Types::Fs)Serialization::decode_i8(bufp, remainp);

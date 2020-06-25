@@ -23,22 +23,16 @@ class AppendReq : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
       return 5;
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, fd);
     Serialization::encode_i8(bufp, flags);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     fd = (int32_t)Serialization::decode_i32(bufp, remainp);
     flags = Serialization::decode_i8(bufp, remainp);
   }
@@ -61,22 +55,16 @@ class AppendRsp : public Serializable {
 
   private:
 
-  uint8_t encoding_version() const {
-    return 1; 
-  }
-
-  size_t encoded_length_internal() const override {
+  size_t encoded_length_internal() const {
       return 12;
   }
 
-  void encode_internal(uint8_t **bufp) const override {
+  void encode_internal(uint8_t** bufp) const {
     Serialization::encode_i64(bufp, offset);
     Serialization::encode_i32(bufp, amount);
   }
 
-  void decode_internal(uint8_t version, const uint8_t **bufp,
-                       size_t *remainp) override {
-    (void)version;
+  void decode_internal(const uint8_t** bufp, size_t* remainp) {
     offset = Serialization::decode_i64(bufp, remainp);
     amount = Serialization::decode_i32(bufp, remainp);
   }

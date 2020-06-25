@@ -188,7 +188,7 @@ int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   return v;
 }
 
-void Cell::read(const uint8_t **bufp, size_t* remainp, bool owner) {
+void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
 
   flag = Serialization::decode_i8(bufp, remainp);
   key.decode(bufp, remainp, owner);

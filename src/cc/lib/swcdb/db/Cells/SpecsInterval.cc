@@ -34,7 +34,7 @@ Interval::Ptr Interval::make_ptr(
     );
 }
 
-Interval::Ptr Interval::make_ptr(const uint8_t **bufp, size_t *remainp) {
+Interval::Ptr Interval::make_ptr(const uint8_t** bufp, size_t* remainp) {
   return std::make_shared<Interval>(bufp, remainp);
 }
 
@@ -76,7 +76,7 @@ Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
                     flags(flags), key_eq(false), offset_rev(0) {
 }
 
-Interval::Interval(const uint8_t **bufp, size_t *remainp) 
+Interval::Interval(const uint8_t** bufp, size_t* remainp) 
                   : key_eq(false) {
   decode(bufp, remainp); 
 }
@@ -216,7 +216,7 @@ size_t Interval::encoded_length() const {
         + Serialization::encoded_length_vi64(offset_rev);
 }
 
-void Interval::encode(uint8_t **bufp) const {
+void Interval::encode(uint8_t** bufp) const {
   range_begin.encode(bufp);
   range_end.encode(bufp);
 
@@ -234,7 +234,7 @@ void Interval::encode(uint8_t **bufp) const {
   Serialization::encode_vi64(bufp, offset_rev);
 }
 
-void Interval::decode(const uint8_t **bufp, size_t *remainp) {
+void Interval::decode(const uint8_t** bufp, size_t* remainp) {
   range_begin.decode(bufp, remainp);
   range_end.decode(bufp, remainp);
 

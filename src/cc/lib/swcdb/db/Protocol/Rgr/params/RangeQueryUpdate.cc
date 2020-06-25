@@ -29,22 +29,18 @@ std::string RangeQueryUpdateReq::to_string() const {
   return s;
 }
 
-uint8_t RangeQueryUpdateReq::encoding_version() const  {
-  return 1; 
-}
-
 size_t RangeQueryUpdateReq::encoded_length_internal() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid);
 }
   
-void RangeQueryUpdateReq::encode_internal(uint8_t **bufp) const {
+void RangeQueryUpdateReq::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
 }
   
-void RangeQueryUpdateReq::decode_internal(uint8_t version, const uint8_t **bufp, 
-                     size_t *remainp) {
+void RangeQueryUpdateReq::decode_internal(const uint8_t** bufp, 
+                                          size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
 }
@@ -83,10 +79,6 @@ std::string RangeQueryUpdateRsp::to_string() const {
   return s;
 }
 
-uint8_t RangeQueryUpdateRsp::encoding_version() const {
-  return 1;
-}
-  
 size_t RangeQueryUpdateRsp::encoded_length_internal() const {
   return  Serialization::encoded_length_vi32(err)
         + (err == Error::RANGE_BAD_INTERVAL 
@@ -94,7 +86,7 @@ size_t RangeQueryUpdateRsp::encoded_length_internal() const {
           : 0);
 }
   
-void RangeQueryUpdateRsp::encode_internal(uint8_t **bufp) const {
+void RangeQueryUpdateRsp::encode_internal(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(err == Error::RANGE_BAD_INTERVAL) {
     range_prev_end.encode(bufp);
@@ -102,8 +94,8 @@ void RangeQueryUpdateRsp::encode_internal(uint8_t **bufp) const {
   }
 }
   
-void RangeQueryUpdateRsp::decode_internal(uint8_t version, const uint8_t **bufp, 
-                     size_t *remainp) {
+void RangeQueryUpdateRsp::decode_internal(const uint8_t** bufp, 
+                                          size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   if(err == Error::RANGE_BAD_INTERVAL) {
     range_prev_end.decode(bufp, remainp, true);
