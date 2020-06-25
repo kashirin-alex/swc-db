@@ -86,8 +86,7 @@ std::string RangeQuerySelectRsp::to_string() const {
 size_t RangeQuerySelectRsp::encoded_length_internal() const {
   return Serialization::encoded_length_vi32(err) 
         + 1 
-        + Serialization::encoded_length_vi64(offset)
-        + 8;
+        + Serialization::encoded_length_vi64(offset);
 }
   
 void RangeQuerySelectRsp::encode_internal(uint8_t** bufp) const {
