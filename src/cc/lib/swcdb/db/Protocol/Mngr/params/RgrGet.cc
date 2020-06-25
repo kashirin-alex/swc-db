@@ -35,7 +35,7 @@ std::string RgrGetReq::to_string() {
   return s;
 }
 
-size_t RgrGetReq::encoded_length_internal() const {
+size_t RgrGetReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + (rid ? 0 :
@@ -45,7 +45,7 @@ size_t RgrGetReq::encoded_length_internal() const {
           );
 }
   
-void RgrGetReq::encode_internal(uint8_t** bufp) const {
+void RgrGetReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
   if(!rid) {
@@ -55,7 +55,7 @@ void RgrGetReq::encode_internal(uint8_t** bufp) const {
   }
 }
   
-void RgrGetReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   if(!rid) {
@@ -98,12 +98,12 @@ std::string RgrGetRsp::to_string() const {
   return s;
 }
 
-size_t RgrGetRsp::encoded_length_internal() const {
+size_t RgrGetRsp::internal_encoded_length() const {
   return  Serialization::encoded_length_vi32(err) 
   + (err ? 0 :
       (Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
-      + Common::Params::HostEndPoints::encoded_length_internal()
+      + Common::Params::HostEndPoints::internal_encoded_length()
       + (cid == 1 
         ? (range_end.encoded_length() + range_begin.encoded_length())
         : 0)
@@ -111,12 +111,12 @@ size_t RgrGetRsp::encoded_length_internal() const {
     );
 }
   
-void RgrGetRsp::encode_internal(uint8_t** bufp) const {
+void RgrGetRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    Common::Params::HostEndPoints::encode_internal(bufp);
+    Common::Params::HostEndPoints::internal_encode(bufp);
     if(cid == 1) {
       range_end.encode(bufp);
       range_begin.encode(bufp);
@@ -124,12 +124,12 @@ void RgrGetRsp::encode_internal(uint8_t** bufp) const {
   }
 }
   
-void RgrGetRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   if(!err) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    Common::Params::HostEndPoints::decode_internal(bufp, remainp);
+    Common::Params::HostEndPoints::internal_decode(bufp, remainp);
     if(cid == 1) {
       range_end.decode(bufp, remainp, true);
       range_begin.decode(bufp, remainp, true);

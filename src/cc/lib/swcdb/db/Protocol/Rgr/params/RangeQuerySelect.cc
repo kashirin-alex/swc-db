@@ -32,19 +32,19 @@ std::string RangeQuerySelectReq::to_string() const {
   return s;
 }
 
-size_t RangeQuerySelectReq::encoded_length_internal() const {
+size_t RangeQuerySelectReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + interval.encoded_length();
 }
   
-void RangeQuerySelectReq::encode_internal(uint8_t** bufp) const {
+void RangeQuerySelectReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
   interval.encode(bufp);
 }
   
-void RangeQuerySelectReq::decode_internal(const uint8_t** bufp, 
+void RangeQuerySelectReq::internal_decode(const uint8_t** bufp, 
                                           size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
@@ -83,19 +83,19 @@ std::string RangeQuerySelectRsp::to_string() const {
   return s;
 }
 
-size_t RangeQuerySelectRsp::encoded_length_internal() const {
+size_t RangeQuerySelectRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(err) 
         + 1 
         + Serialization::encoded_length_vi64(offset);
 }
   
-void RangeQuerySelectRsp::encode_internal(uint8_t** bufp) const {
+void RangeQuerySelectRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   Serialization::encode_bool(bufp, reached_limit);
   Serialization::encode_vi64(bufp, offset);
 }
   
-void RangeQuerySelectRsp::decode_internal(const uint8_t** bufp,
+void RangeQuerySelectRsp::internal_decode(const uint8_t** bufp,
                                           size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   reached_limit = Serialization::decode_bool(bufp, remainp);

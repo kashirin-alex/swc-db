@@ -15,15 +15,15 @@ ReportReq::ReportReq(uint8_t flags): flags(flags) {}
 
 ReportReq::~ReportReq(){ }
 
-size_t ReportReq::encoded_length_internal() const {
+size_t ReportReq::internal_encoded_length() const {
   return 1;
 }
   
-void ReportReq::encode_internal(uint8_t** bufp) const {
+void ReportReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, flags);
 }
   
-void ReportReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void ReportReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   flags = Serialization::decode_i8(bufp, remainp);
 }
 
@@ -144,7 +144,7 @@ void ReportRsp::display(std::ostream& out, bool pretty,
     c->display(out, pretty, offset+" ");
 }
 
-size_t ReportRsp::encoded_length_internal() const {
+size_t ReportRsp::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi32(err);
   if(!err) {
     sz += Serialization::encoded_length_vi64(rgrid);  
@@ -160,7 +160,7 @@ size_t ReportRsp::encoded_length_internal() const {
   return sz;
 }
   
-void ReportRsp::encode_internal(uint8_t** bufp) const {
+void ReportRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
     Serialization::encode_vi64(bufp, rgrid);
@@ -175,7 +175,7 @@ void ReportRsp::encode_internal(uint8_t** bufp) const {
   }
 }
   
-void ReportRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void ReportRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
     rgrid = Serialization::decode_vi64(bufp, remainp);
     

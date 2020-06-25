@@ -39,7 +39,7 @@ Column::Column(cid_t cid, const Intervals& intervals)
                 : cid(cid), intervals(intervals) {}
 
 Column::Column(const uint8_t** bufp, size_t* remainp) {
-  decode_internal(bufp, remainp); 
+  internal_decode(bufp, remainp); 
 }
 
 Column::Column(const Column& other) {
@@ -82,7 +82,7 @@ bool Column::equal(const Column &other) {
   return true;
 }
 
-size_t Column::encoded_length_internal() const {
+size_t Column::internal_encoded_length() const {
   size_t len = Serialization::encoded_length_vi64(cid)
               + Serialization::encoded_length_vi32(intervals.size());
   for(auto& intval : intervals)
@@ -90,14 +90,14 @@ size_t Column::encoded_length_internal() const {
   return len;
 }
 
-void Column::encode_internal(uint8_t** bufp) const {
+void Column::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi32(bufp, (uint32_t)intervals.size());
   for(auto& intval : intervals)
     intval->encode(bufp);
 }
 
-void Column::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void Column::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();

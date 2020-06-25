@@ -15,7 +15,7 @@ Scan::Scan(uint32_t reserve): columns(0) {
 Scan::Scan(Columns& columns): columns(columns) {}
      
 Scan::Scan(const uint8_t** bufp, size_t* remainp) {
-  decode_internal(bufp, remainp); 
+  internal_decode(bufp, remainp); 
 }
 
 void Scan::copy(const Scan &other) {
@@ -54,21 +54,21 @@ bool Scan::equal(const Scan &other) {
   return true;
 }
 
-size_t Scan::encoded_length_internal() const {
+size_t Scan::internal_encoded_length() const {
   size_t len = Serialization::encoded_length_vi32(columns.size());
   for(auto& col : columns)
-    len += col->encoded_length_internal(); 
+    len += col->internal_encoded_length(); 
   return len + flags.encoded_length();
 }
 
-void Scan::encode_internal(uint8_t** bufp) const {
+void Scan::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, (uint32_t)columns.size());
   for(auto& col : columns)
-    col->encode_internal(bufp);
+    col->internal_encode(bufp);
   flags.encode(bufp);
 }
 
-void Scan::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void Scan::internal_decode(const uint8_t** bufp, size_t* remainp) {
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();
   columns.resize(sz);

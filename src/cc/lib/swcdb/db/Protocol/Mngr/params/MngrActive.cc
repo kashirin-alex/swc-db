@@ -17,16 +17,16 @@ MngrActiveReq::MngrActiveReq(uint8_t role, cid_t cid)
 
 MngrActiveReq::~MngrActiveReq() { }
 
-size_t MngrActiveReq::encoded_length_internal() const {
+size_t MngrActiveReq::internal_encoded_length() const {
   return 1 + Serialization::encoded_length_vi64(cid);
 }
 
-void MngrActiveReq::encode_internal(uint8_t** bufp) const {
+void MngrActiveReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, role);
   Serialization::encode_vi64(bufp, cid);
 }
 
-void MngrActiveReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void MngrActiveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   role = Serialization::decode_i8(bufp, remainp);
   cid = Serialization::decode_vi64(bufp, remainp);
 }
@@ -42,24 +42,24 @@ MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints)
 
 MngrActiveRsp::~MngrActiveRsp() { }
 
-size_t MngrActiveRsp::encoded_length_internal() const {
+size_t MngrActiveRsp::internal_encoded_length() const {
   size_t len = 1;
   if(available)
-    len += Common::Params::HostEndPoints::encoded_length_internal();
+    len += Common::Params::HostEndPoints::internal_encoded_length();
   return len;
 }
 
-void MngrActiveRsp::encode_internal(uint8_t** bufp) const {
+void MngrActiveRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_bool(bufp, available);
   if(available) {
-    Common::Params::HostEndPoints::encode_internal(bufp);
+    Common::Params::HostEndPoints::internal_encode(bufp);
   }
 }
 
-void MngrActiveRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void MngrActiveRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   available = Serialization::decode_bool(bufp, remainp);
   if(available) {
-    Common::Params::HostEndPoints::decode_internal(bufp, remainp);
+    Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 }
 

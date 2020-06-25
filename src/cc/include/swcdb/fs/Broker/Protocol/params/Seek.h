@@ -23,16 +23,16 @@ class SeekReq : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return 12;
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, fd);
     Serialization::encode_i64(bufp, offset);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     fd = (int32_t)Serialization::decode_i32(bufp, remainp);
     offset = Serialization::decode_i64(bufp, remainp);
   }
@@ -53,15 +53,15 @@ class SeekRsp : public Serializable {
   
   private:
   
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return 8;
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i64(bufp, offset);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     offset = Serialization::decode_i64(bufp, remainp);
   }
   

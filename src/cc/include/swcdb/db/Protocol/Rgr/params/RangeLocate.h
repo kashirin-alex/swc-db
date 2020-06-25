@@ -34,11 +34,11 @@ class RangeLocateReq : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const;
+  size_t internal_encoded_length() const;
     
-  void encode_internal(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const;
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
@@ -61,11 +61,11 @@ class RangeLocateRsp  : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const;
+  size_t internal_encoded_length() const;
     
-  void encode_internal(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const;
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
   

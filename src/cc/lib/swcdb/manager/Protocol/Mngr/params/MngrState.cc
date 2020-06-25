@@ -16,14 +16,14 @@ MngrState::MngrState(Manager::MngrsStatus states,
                     : states(states), token(token), mngr_host(mngr_host) {
 }
 
-size_t MngrState::encoded_length_internal() const {
+size_t MngrState::internal_encoded_length() const {
   size_t len = 12 + Serialization::encoded_length(mngr_host);
   for(auto& h : states )
     len += h->encoded_length();
   return len;
 }
     
-void MngrState::encode_internal(uint8_t** bufp) const {
+void MngrState::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i32(bufp, states.size());
   Serialization::encode_i64(bufp, token);
   Serialization::encode(mngr_host, bufp);
@@ -31,7 +31,7 @@ void MngrState::encode_internal(uint8_t** bufp) const {
     h->encode(bufp);
 }
     
-void MngrState::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void MngrState::internal_decode(const uint8_t** bufp, size_t* remainp) {
   size_t len = Serialization::decode_i32(bufp, remainp);
   token = Serialization::decode_i64(bufp, remainp);
   mngr_host = Serialization::decode(bufp, remainp);

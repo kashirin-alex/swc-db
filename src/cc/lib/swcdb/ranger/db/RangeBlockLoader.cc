@@ -134,7 +134,7 @@ void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
   asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log_cells(); });
 }
 
-void BlockLoader::load_log_cells() {
+void BlockLoader::load_log_cells() { 
   bool more;
   int err;
   for(CommitLog::Fragment::Ptr frag; ; ) {

@@ -12,14 +12,14 @@ namespace SWC {
 
 SWC_SHOULD_INLINE
 size_t Serializable::encoded_length() const {
-  size_t length = encoded_length_internal();
+  size_t length = internal_encoded_length();
   return Serialization::encoded_length_vi32(length) + length;
 }
 
 SWC_SHOULD_INLINE
 void Serializable::encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, encoded_length_internal());
-  encode_internal(bufp);
+  Serialization::encode_vi32(bufp, internal_encoded_length());
+  internal_encode(bufp);
 }
 
 SWC_SHOULD_INLINE
@@ -31,7 +31,7 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
   *remainp -= len;
 
   const uint8_t* end = *bufp + len;
-  decode_internal(bufp, &len);
+  internal_decode(bufp, &len);
 
   if(len)
     SWC_THROWF(Error::PROTOCOL_ERROR, 

@@ -39,19 +39,19 @@ class ColumnUpdate : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return 1
           + schema->encoded_length() 
           + Serialization::encoded_length_vi32(err);
   }
     
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, (uint8_t)function);
     schema->encode(bufp);
     Serialization::encode_vi32(bufp, err);
   }
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     function = (ColumnMng::Function)Serialization::decode_i8(bufp, remainp);
     schema = std::make_shared<DB::Schema>(bufp, remainp);
     err = Serialization::decode_vi32(bufp, remainp);

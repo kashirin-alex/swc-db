@@ -21,20 +21,20 @@ void HostEndPoints::set(const EndPoints& points) {
   endpoints.assign(points.begin(), points.end());
 }
 
-size_t HostEndPoints::encoded_length_internal() const {
+size_t HostEndPoints::internal_encoded_length() const {
   size_t len = Serialization::encoded_length_vi32(endpoints.size());
   for(auto& endpoint : endpoints)
     len += Serialization::encoded_length(endpoint);
   return len;
 }
 
-void HostEndPoints::encode_internal(uint8_t** bufp) const {
+void HostEndPoints::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, endpoints.size());
   for(auto& endpoint : endpoints)
     Serialization::encode(endpoint, bufp);
 }
 
-void HostEndPoints::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void HostEndPoints::internal_decode(const uint8_t** bufp, size_t* remainp) {
   size_t len = Serialization::decode_vi32(bufp, remainp);
   endpoints.clear();
   endpoints.resize(len);

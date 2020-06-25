@@ -29,17 +29,17 @@ std::string RangeQueryUpdateReq::to_string() const {
   return s;
 }
 
-size_t RangeQueryUpdateReq::encoded_length_internal() const {
+size_t RangeQueryUpdateReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid);
 }
   
-void RangeQueryUpdateReq::encode_internal(uint8_t** bufp) const {
+void RangeQueryUpdateReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
 }
   
-void RangeQueryUpdateReq::decode_internal(const uint8_t** bufp, 
+void RangeQueryUpdateReq::internal_decode(const uint8_t** bufp, 
                                           size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
@@ -79,14 +79,14 @@ std::string RangeQueryUpdateRsp::to_string() const {
   return s;
 }
 
-size_t RangeQueryUpdateRsp::encoded_length_internal() const {
+size_t RangeQueryUpdateRsp::internal_encoded_length() const {
   return  Serialization::encoded_length_vi32(err)
         + (err == Error::RANGE_BAD_INTERVAL 
           ? range_prev_end.encoded_length() + range_end.encoded_length() 
           : 0);
 }
   
-void RangeQueryUpdateRsp::encode_internal(uint8_t** bufp) const {
+void RangeQueryUpdateRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(err == Error::RANGE_BAD_INTERVAL) {
     range_prev_end.encode(bufp);
@@ -94,7 +94,7 @@ void RangeQueryUpdateRsp::encode_internal(uint8_t** bufp) const {
   }
 }
   
-void RangeQueryUpdateRsp::decode_internal(const uint8_t** bufp, 
+void RangeQueryUpdateRsp::internal_decode(const uint8_t** bufp, 
                                           size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   if(err == Error::RANGE_BAD_INTERVAL) {

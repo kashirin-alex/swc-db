@@ -26,17 +26,17 @@ class RangeLoad : public Common::Params::ColRangeId {
   
   private:
 
-  size_t encoded_length_internal() const {
-    return ColRangeId::encoded_length_internal() + schema->encoded_length();
+  size_t internal_encoded_length() const {
+    return ColRangeId::internal_encoded_length() + schema->encoded_length();
   }
     
-  void encode_internal(uint8_t** bufp) const {
-    ColRangeId::encode_internal(bufp);
+  void internal_encode(uint8_t** bufp) const {
+    ColRangeId::internal_encode(bufp);
     schema->encode(bufp);
   }
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
-    ColRangeId::decode_internal(bufp, remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+    ColRangeId::internal_decode(bufp, remainp);
     schema = std::make_shared<DB::Schema>(bufp, remainp);
   }
 
@@ -58,17 +58,17 @@ class RangeLoaded : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return 1 + (intval ? interval.encoded_length() : 0);
   }
     
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_bool(bufp, intval);
     if(intval)
       interval.encode(bufp);
   }
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     if(intval = Serialization::decode_bool(bufp, remainp))
       interval.decode(bufp, remainp);
   }

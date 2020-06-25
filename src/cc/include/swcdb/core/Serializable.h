@@ -26,11 +26,11 @@ class Serializable {
 
   protected:
 
-  virtual size_t encoded_length_internal() const = 0;
+  virtual size_t internal_encoded_length() const = 0;
 
-  virtual void encode_internal(uint8_t** bufp) const = 0;
+  virtual void internal_encode(uint8_t** bufp) const = 0;
 
-  virtual void decode_internal(const uint8_t** bufp, size_t* remainp) = 0;
+  virtual void internal_decode(const uint8_t** bufp, size_t* remainp) = 0;
 
 
 };

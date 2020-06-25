@@ -24,17 +24,17 @@ class PreadReq : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
       return 16;
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, fd);
     Serialization::encode_i64(bufp, offset);
     Serialization::encode_i32(bufp, amount);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     fd = (int32_t)Serialization::decode_i32(bufp, remainp);
     offset = Serialization::decode_i64(bufp, remainp);
     amount = Serialization::decode_i32(bufp, remainp);

@@ -26,17 +26,17 @@ class ColRangeId : public Serializable {
   
   protected:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return Serialization::encoded_length_vi64(cid)
          + Serialization::encoded_length_vi64(rid);
   }
     
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
   }
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
   }

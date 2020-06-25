@@ -28,18 +28,18 @@ class WriteReq : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return 13 + Serialization::encoded_length_vstr(fname);
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, flags);
     Serialization::encode_i8(bufp, replication);
     Serialization::encode_i64(bufp, blksz);
     Serialization::encode_vstr(bufp, fname);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     flags = Serialization::decode_i32(bufp, remainp);
     replication = Serialization::decode_i8(bufp, remainp);
     blksz = Serialization::decode_i64(bufp, remainp);

@@ -37,7 +37,7 @@ std::string RangeLocateReq::to_string() const {
   return s;
 }
 
-size_t RangeLocateReq::encoded_length_internal() const {
+size_t RangeLocateReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + range_begin.encoded_length() 
@@ -46,7 +46,7 @@ size_t RangeLocateReq::encoded_length_internal() const {
           + (flags & NEXT_RANGE ? range_offset.encoded_length() : 0);
 }
   
-void RangeLocateReq::encode_internal(uint8_t** bufp) const {
+void RangeLocateReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
   range_begin.encode(bufp);
@@ -56,7 +56,7 @@ void RangeLocateReq::encode_internal(uint8_t** bufp) const {
     range_offset.encode(bufp);
 }
   
-void RangeLocateReq::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   range_begin.decode(bufp, remainp);
@@ -96,7 +96,7 @@ std::string RangeLocateRsp::to_string() const {
   return s;
 }
 
-size_t RangeLocateRsp::encoded_length_internal() const {
+size_t RangeLocateRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(err) 
     + (err ? 0 : (
         Serialization::encoded_length_vi64(cid)
@@ -106,7 +106,7 @@ size_t RangeLocateRsp::encoded_length_internal() const {
       ) );
 }
   
-void RangeLocateRsp::encode_internal(uint8_t** bufp) const {
+void RangeLocateRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
     Serialization::encode_vi64(bufp, cid);
@@ -116,7 +116,7 @@ void RangeLocateRsp::encode_internal(uint8_t** bufp) const {
   }
 }
   
-void RangeLocateRsp::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void RangeLocateRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);

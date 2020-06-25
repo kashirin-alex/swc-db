@@ -21,15 +21,15 @@ class ReaddirReq : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return Serialization::encoded_length_vstr(dirname);
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_vstr(bufp, dirname);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     dirname.clear();
     dirname.append(Serialization::decode_vstr(bufp, remainp));
   }
@@ -50,20 +50,20 @@ class ReaddirRsp : public Serializable {
 
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     size_t length = 4;
     for (const Dirent &entry : m_listing)
       length += entry.encoded_length();
     return length;
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, m_listing.size());
     for (const Dirent &entry : m_listing)
       entry.encode(bufp);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     int32_t count = Serialization::decode_i32(bufp, remainp);
     m_listing.clear();
     m_listing.resize(count);

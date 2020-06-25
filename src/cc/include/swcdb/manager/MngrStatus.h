@@ -34,31 +34,31 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
            cid_end == other.cid_end;
   }
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     size_t len = 6 
                + Serialization::encoded_length_vi64(cid_begin)
                + Serialization::encoded_length_vi64(cid_end)
-               + Protocol::Common::Params::HostEndPoints::encoded_length_internal();
+               + Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
   }
 
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, priority.load());
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_i8(bufp, role);
     Serialization::encode_vi64(bufp, cid_begin);
     Serialization::encode_vi64(bufp, cid_end);
-    Protocol::Common::Params::HostEndPoints::encode_internal(bufp);
+    Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     priority.store(Serialization::decode_i32(bufp, remainp));
     state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
     role = Serialization::decode_i8(bufp, remainp);
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);
 
-    Protocol::Common::Params::HostEndPoints::decode_internal(bufp, remainp);
+    Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
   std::string to_string(){

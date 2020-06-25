@@ -25,15 +25,15 @@ class ColumnUpdate : public Serializable {
   
   private:
 
-  size_t encoded_length_internal() const {
+  size_t internal_encoded_length() const {
     return schema->encoded_length();
   }
     
-  void encode_internal(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const {
     schema->encode(bufp);
   }
     
-  void decode_internal(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) {
     schema = std::make_shared<DB::Schema>(bufp, remainp);
   }
 

@@ -19,16 +19,16 @@ ColumnMng::ColumnMng(ColumnMng::Function function,
 
 ColumnMng::~ColumnMng() { }
 
-size_t ColumnMng::encoded_length_internal() const {
+size_t ColumnMng::internal_encoded_length() const {
   return 1 + schema->encoded_length();
 }
 
-void ColumnMng::encode_internal(uint8_t** bufp) const {
+void ColumnMng::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, (uint8_t)function);
   schema->encode(bufp);
 }
 
-void ColumnMng::decode_internal(const uint8_t** bufp, size_t* remainp) {
+void ColumnMng::internal_decode(const uint8_t** bufp, size_t* remainp) {
   function = (Function)Serialization::decode_i8(bufp, remainp);
   schema = std::make_shared<DB::Schema>(bufp, remainp);
 }

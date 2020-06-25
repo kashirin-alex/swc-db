@@ -18,13 +18,13 @@ namespace Condition = SWC::Condition;
 
 void test_encode_decode(const Specs::Scan& ss){
   
-  size_t len = ss.encoded_length_internal();
+  size_t len = ss.internal_encoded_length();
   
   uint8_t* base = new uint8_t[len];
   const uint8_t* mark1 = base;
   uint8_t* ptr = base;
 
-  ss.encode_internal(&ptr);
+  ss.internal_encode(&ptr);
   if(ptr-base != len) {
     std::cout << "\n Encode/Decode \n";
     std::cout << "ERROR, encode wrote less than expected\n";
@@ -49,11 +49,11 @@ void test_encode_decode(const Specs::Scan& ss){
 
   //col_decoded.cid = 444;
         
-  len = ss_decoded.encoded_length_internal();
+  len = ss_decoded.internal_encoded_length();
   uint8_t* base2 = new uint8_t[len];
   const uint8_t* mark2 = base2;
   uint8_t* ptr2 = base2;
-  ss_decoded.encode_internal(&ptr2);
+  ss_decoded.internal_encode(&ptr2);
         
   if(memcmp(mark1, mark2, len) != 0){
     std::cout << "\nERROR, encoding mismatch (memcmp) \n";
