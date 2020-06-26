@@ -2,6 +2,13 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 #
 
+
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}\
+ -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include/=\
+ -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/lib/="
+)
+
+
 include_directories(
   ../src/cc/include
   ../src/cc/lib

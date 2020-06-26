@@ -131,14 +131,14 @@ void load_check_align_min_max(const Types::KeySeq key_seq, int chks, int fractio
 
 #define LOAD_TEST(_name_, __cond__) \
   ns = SWC::Time::now_ns(); \
-    for(uint64_t i=0; i<checks; ++i) SWC_ASSERT(__cond__); \
-    took = SWC::Time::now_ns() - ns; \
-    std::cout << " took=" << took \
-              << " avg=" << took/checks  \
-              << " probes=" << probe \
-              << " " _name_ << "\n";
+  for(uint64_t i=0; i<checks; ++i) SWC_ASSERT(__cond__); \
+  took = SWC::Time::now_ns() - ns; \
+  std::cout << " took=" << took \
+            << " avg=" << took/checks  \
+            << " probes=" << probe \
+            << " " _name_ << "\n";
 
-void load_check_condition_base() {
+void load_check_condition_base1() {
   
   uint64_t ns;
   uint64_t took;
@@ -156,29 +156,61 @@ void load_check_condition_base() {
       "memcmp", 
       memcmp(ptr1, ptr2, 18) == 0
     );// base of memcmp for conditions
+  }
+}
 
+void load_check_condition_base2() {
+  
+  uint64_t ns;
+  uint64_t took;
+  uint64_t checks = UINT64_MAX;
+  std::string tmp = std::to_string(std::rand()) + std::to_string(std::rand());
+  uint32_t len = tmp.length();
+  std::string s1 = tmp.substr(0, len-1) + "2";
+  std::string s2 = tmp.substr(0, len-1) + "1";
+
+  const uint8_t* ptr1 = (const uint8_t*)s1.data();
+  const uint8_t* ptr2 = (const uint8_t*)s2.data();
+
+  for(int probe=10;probe;--probe) {
     LOAD_TEST(
       "SWC::DB::KeySeq::condition(LEXIC, ptr1, len, ptr2, len)", 
       SWC::DB::KeySeq::condition(
         SWC::Types::KeySeq::LEXIC,
         ptr1, len, ptr2, len) == SWC::Condition::LT
     );
+  }
+}
 
+void load_check_condition_base3() {
+  
+  uint64_t ns;
+  uint64_t took;
+  uint64_t checks = UINT64_MAX;
+  std::string tmp = std::to_string(std::rand()) + std::to_string(std::rand());
+  uint32_t len = tmp.length();
+  std::string s1 = tmp.substr(0, len-1) + "2";
+  std::string s2 = tmp.substr(0, len-1) + "1";
+
+  const uint8_t* ptr1 = (const uint8_t*)s1.data();
+  const uint8_t* ptr2 = (const uint8_t*)s2.data();
+
+  for(int probe=10;probe;--probe) {
     LOAD_TEST(
       "SWC::DB::KeySeq::condition(VOLUME, ptr1, len, ptr2, len)", 
       SWC::DB::KeySeq::condition(
         SWC::Types::KeySeq::VOLUME,
         ptr1, len, ptr2, len) == SWC::Condition::LT
     );
-
   }
 }
 
 
-
 int main() {
 
-  load_check_condition_base();
+  load_check_condition_base1();
+  load_check_condition_base2();
+  load_check_condition_base3();
 
   int chks = 1000000;
   std::vector<SWC::Types::KeySeq> sequences = {

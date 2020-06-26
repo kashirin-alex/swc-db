@@ -176,7 +176,7 @@ std::string to_string(uint8_t comp) {
 
 SWC_CAN_INLINE 
 Comp condition_lexic(const uint8_t *p1, uint32_t p1_len, 
-                     const uint8_t *p2, uint32_t p2_len) {
+                     const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
   return diff == 0
           ? (p1_len == p2_len 
@@ -189,7 +189,7 @@ Comp condition_lexic(const uint8_t *p1, uint32_t p1_len,
 
 SWC_CAN_INLINE 
 Comp condition_volume(const uint8_t *p1, uint32_t p1_len, 
-                      const uint8_t *p2, uint32_t p2_len) {
+                      const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff;
   return (
     p1_len < p2_len 
@@ -211,78 +211,78 @@ Comp condition_volume(const uint8_t *p1, uint32_t p1_len,
 
 SWC_CAN_INLINE 
 Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len, 
-                         const uint8_t *p2, uint32_t p2_len) {
+                         const uint8_t *p2, uint32_t p2_len) noexcept {
   return (vol ? condition_volume : condition_lexic)
         (p1, p1_len, p2, p2_len);
 }
 
 SWC_CAN_INLINE 
 bool pf(const uint8_t *p1, uint32_t p1_len, 
-        const uint8_t *p2, uint32_t p2_len) {
+        const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len <= p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 SWC_CAN_INLINE 
 bool gt_lexic(const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_len) {
+              const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len < p2_len);
 }
 
 SWC_CAN_INLINE 
 bool gt_volume(const uint8_t *p1, uint32_t p1_len, 
-               const uint8_t *p2, uint32_t p2_len) {
+               const uint8_t *p2, uint32_t p2_len) noexcept{
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) < 0);
 }
 
 SWC_CAN_INLINE 
 bool ge_lexic(const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_len) {
+              const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
 
 SWC_CAN_INLINE 
 bool ge_volume(const uint8_t *p1, uint32_t p1_len, 
-               const uint8_t *p2, uint32_t p2_len) {
+               const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) <= 0);
 }
 
 SWC_CAN_INLINE 
 bool eq(const uint8_t *p1, uint32_t p1_len, 
-        const uint8_t *p2, uint32_t p2_len) {
+        const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
 SWC_CAN_INLINE 
 bool le_lexic(const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_len) {
+              const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len >= p2_len);
 }
 
 SWC_CAN_INLINE 
 bool le_volume(const uint8_t *p1, uint32_t p1_len, 
-               const uint8_t *p2, uint32_t p2_len) {
+               const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) >= 0);
 }
 
 SWC_CAN_INLINE 
 bool lt_lexic(const uint8_t *p1, uint32_t p1_len, 
-              const uint8_t *p2, uint32_t p2_len) {
+              const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len > p2_len);
 } 
 
 SWC_CAN_INLINE 
 bool lt_volume(const uint8_t *p1, uint32_t p1_len, 
-               const uint8_t *p2, uint32_t p2_len) {
+               const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
 } 
 
 SWC_CAN_INLINE 
 bool ne(const uint8_t *p1, uint32_t p1_len, 
-        const uint8_t *p2, uint32_t p2_len) {
+        const uint8_t *p2, uint32_t p2_len) noexcept {
   return !eq(p1, p1_len, p2, p2_len);
 }
 

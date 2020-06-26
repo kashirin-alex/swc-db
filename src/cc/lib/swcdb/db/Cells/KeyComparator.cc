@@ -17,14 +17,14 @@ inline
 SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 condition(const uint8_t *p1, uint32_t p1_len, 
-          const uint8_t *p2, uint32_t p2_len);
+          const uint8_t *p2, uint32_t p2_len) noexcept;
 
 template<>
 inline
 SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 condition<Types::KeySeq::LEXIC>(const uint8_t *p1, uint32_t p1_len, 
-                                const uint8_t *p2, uint32_t p2_len) {
+                                const uint8_t *p2, uint32_t p2_len) noexcept {
   return Condition::condition_lexic(p1, p1_len, p2, p2_len);
 }
 
@@ -33,7 +33,7 @@ inline
 SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 condition<Types::KeySeq::VOLUME>(const uint8_t *p1, uint32_t p1_len, 
-                                 const uint8_t *p2, uint32_t p2_len) {
+                                 const uint8_t *p2, uint32_t p2_len) noexcept {
   return Condition::condition_volume(p1, p1_len, p2, p2_len);
 }
 
@@ -42,7 +42,7 @@ SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp  
 condition(const Types::KeySeq seq, 
           const uint8_t *p1, uint32_t p1_len, 
-          const uint8_t *p2, uint32_t p2_len) {
+          const uint8_t *p2, uint32_t p2_len) noexcept {
   switch(seq) {
 
     case Types::KeySeq::LEXIC:
@@ -54,7 +54,7 @@ condition(const Types::KeySeq seq,
       return condition<Types::KeySeq::VOLUME>(p1, p1_len, p2, p2_len);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
+      //SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
       return Condition::NONE;
   }
 }
@@ -86,7 +86,8 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key, 
                                  const Cell::Key& other) {
@@ -98,7 +99,8 @@ compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key,
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key, 
                                   const Cell::Key& other) {
@@ -170,7 +172,8 @@ compare(const Cell::Key& key, const Cell::Key& other,
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::Key& other,
@@ -185,7 +188,8 @@ compare<Types::KeySeq::FC_LEXIC>(
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 Condition::Comp 
 compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::Key& other,
@@ -262,7 +266,8 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 bool
 compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::KeyVec& other, 
@@ -277,7 +282,8 @@ compare<Types::KeySeq::FC_LEXIC>(
 }
 
 template<>
-SWC_SHOULD_NOT_INLINE
+inline 
+SWC_ATTRIBS((SWC_ATTR_INLINE))
 bool
 compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::KeyVec& other, 
