@@ -1,5 +1,6 @@
 /* -*- c++ -*-
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
  * Copyright (C) 2007-2016 Hypertable, Inc.
  *
  * This file is part of Hypertable.
