@@ -24,7 +24,7 @@ swcdb_cfg = {
     "swc.logging.path": [swcdb_install_path + "/var/log/swcdb/"]
 }
 
-swcdb_source_host = os.uname()[1]
+swcdb_source_host = os.uname().nodename
 swcdb_remote_hosts = []
 swcdb_fsbrokers = []
 
@@ -110,7 +110,7 @@ def swcdb_read_config():
     ))
     swcdb_remote_hosts += list(set(
         host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
-        if host != swcdb_source_host
+        if host not in [swcdb_source_host, "localhost"]
     ))
 
     swcdb_cfg["swc.cluster.role.delay.start"] = int(
@@ -384,7 +384,7 @@ def shell(c):
         cmd = input("# ")
         if not cmd.strip() or cmd.startswith("\x1b"):
             continue
-        if cmd.lower().strip() in ["q", "quit"]:
+        if cmd.lower().strip() in ["q", "quit", "q;", "quit;"]:
             break
        
         results = fabric.ThreadingGroup(
