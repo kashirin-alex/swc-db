@@ -15,6 +15,8 @@ void Settings::init_comm_options() {
     ("host", str(),  
      "host:port to listen on IPv4+6, swc.ServiceName.port applied if port not specified")
     
+    ("swc.comm.network.priority", strs({}), "Network Priority Access")
+
     ("swc.comm.ssl", boo(false), "Use SSL in comm layer")
     ("swc.comm.ssl.secure.network", strs({}),
      "Networks that do not require SSL")

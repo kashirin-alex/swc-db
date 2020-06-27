@@ -121,10 +121,20 @@ SerializedServer::SerializedServer(
     host.append(hostname);
   }
     
+  std::vector<Network> nets;
+  asio::error_code ec;
+  Resolver::get_networks(
+    settings->get_strs("swc.comm.network.priority"), nets, ec);
+  if(ec)
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "swc.comm.network.priority error(%s)",
+              ec.message().c_str());
+
   EndPoints endpoints = Resolver::get_endpoints(
     settings->get_i16(port_cfg_name),
     addrs,
     host,
+    nets,
     true
   );
   EndPoints endpoints_final;
@@ -137,6 +147,12 @@ SerializedServer::SerializedServer(
     for (std::size_t i = 0; i < endpoints.size(); ++i) {
       auto& endpoint = endpoints[i];
       bool ssl_conn = m_ssl_cfg && m_ssl_cfg->need_ssl(endpoint);
+
+      SWC_LOGF(
+        LOG_DEBUG, "Binding On: [%s]:%d %s", 
+        endpoint.address().to_string().c_str(), endpoint.port(),
+        ssl_conn ? "SECURE" : "PLAIN"
+      );
 
       if(reactor == 0) { 
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
@@ -160,8 +176,15 @@ SerializedServer::SerializedServer(
       }
     }
 
-    if(reactor == 0)
-      app_ctx->init(endpoints_final);
+    if(reactor == 0) {
+      if(nets.empty()) {
+        app_ctx->init(endpoints_final);
+      } else {
+        EndPoints sorted;
+        Resolver::sort(nets, endpoints_final, sorted);
+        app_ctx->init(sorted);
+      }
+    }
 
     asio::thread_pool* pool = new asio::thread_pool(workers);
     for(int n=0; n<workers; ++n)

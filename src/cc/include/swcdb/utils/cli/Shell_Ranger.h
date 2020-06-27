@@ -87,7 +87,7 @@ class Rgr : public Interface {
 
     EndPoints endpoints;
     try {
-      endpoints = Resolver::get_endpoints(port, ips, host, false);
+      endpoints = Resolver::get_endpoints(port, ips, host, {}, false);
       if(endpoints.empty()) {
         message.append("Empty endpoints\n");
         err = EINVAL;

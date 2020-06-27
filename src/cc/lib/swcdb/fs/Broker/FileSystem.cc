@@ -62,10 +62,20 @@ EndPoints FileSystemBroker::get_endpoints() {
     gethostname(hostname, sizeof(hostname));
     host.append(hostname);
   }
+
+  std::vector<Network> nets;
+  asio::error_code ec;
+  Resolver::get_networks(
+    Env::Config::settings()->get_strs("swc.comm.network.priority"), nets, ec);
+  if(ec)
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "swc.comm.network.priority error(%s)",
+              ec.message().c_str());
+
   Strings addr;
   return Resolver::get_endpoints(
     Env::Config::settings()->get_i16("swc.fs.broker.port"),
-    addr, host, true
+    addr, host, nets, true
   );
 }
 

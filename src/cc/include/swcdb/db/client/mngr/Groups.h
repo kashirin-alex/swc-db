@@ -70,7 +70,9 @@ class Groups final : private std::vector<Group::Ptr>,
 
   Groups();
 
-  Groups(const Vec& groups);
+  Groups(const Groups& groups);
+
+  Groups(const Vec& groups, const std::vector<Network>& nets);
 
   ~Groups();
 
@@ -106,6 +108,7 @@ class Groups final : private std::vector<Group::Ptr>,
 
   std::mutex              m_mutex;
   std::vector<GroupHost>  m_active_g_host;
+  std::vector<Network>    m_nets;
 };
 
 }}}

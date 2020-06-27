@@ -102,6 +102,7 @@ bool is_ipv6_address(const std::string& str) {
 EndPoints get_endpoints(uint16_t defaul_port, 
                         const Strings& addrs, 
                         const std::string& host, 
+                        const std::vector<Network>& nets,
                         bool srv) {
   EndPoints endpoints;
   std::string ip;
@@ -172,12 +173,51 @@ EndPoints get_endpoints(uint16_t defaul_port,
     }
   }
   
-  if(srv && endpoints.empty()){
+  if(srv && endpoints.empty()) {
     endpoints.emplace_back(asio::ip::make_address("::"), defaul_port);
+    return endpoints;
   }
-  return endpoints;
+  
+  if(nets.empty())
+    return endpoints;
+  
+  EndPoints sorted;
+  sort(nets, endpoints, sorted);
+  return sorted;
 }
 
+void sort(const std::vector<Network>& nets, const EndPoints& endpoints, 
+          EndPoints& sorted) {
+  // sort endpoints by Network Priority Access
+  asio::error_code ec;
+
+  for(auto& net : nets) {
+    for(auto& endpoint : endpoints) {
+      if((net.is_v4 && endpoint.address().is_v4() && 
+          is_network(endpoint, net.v4)) ||
+         (!net.is_v4 && endpoint.address().is_v6() && 
+          is_network(endpoint, net.v6)))
+        sorted.push_back(endpoint);
+    }
+  }
+  
+  for(auto& endpoint : endpoints) { // add rest
+    if(!has_endpoint(endpoint, sorted))
+      sorted.push_back(endpoint);
+  }
+}
+
+void get_networks(const Strings& networks, 
+                  std::vector<Network>& nets, asio::error_code& ec) {
+  for(auto& net : networks) {
+    Network n;
+    if(n.is_v4 = net.find_first_of(":") == std::string::npos)
+      n.v4 = asio::ip::make_network_v4(net, ec);
+    else
+      n.v6 = asio::ip::make_network_v6(net, ec);
+    nets.push_back(n);
+  }
+}
 
 void get_networks(const Strings& networks, 
                   std::vector<asio::ip::network_v4>& nets_v4, 
@@ -196,17 +236,13 @@ bool is_network(const EndPoint& endpoint,
                 const std::vector<asio::ip::network_v6>& nets_v6) {
   if(endpoint.address().is_v4()) {
     for(auto& net : nets_v4)
-      if(endpoint.address().to_v4() == net.address() || 
-         asio::ip::make_network_v4(
-           endpoint.address().to_v4(), 32).is_subnet_of(net))
+      if(is_network(endpoint, net))
         return true;
     return false;
   }
   if(endpoint.address().is_v6()) {
     for(auto& net : nets_v6) {
-      if(endpoint.address().to_v6() == net.address() || 
-         asio::ip::make_network_v6(
-           endpoint.address().to_v6(), 128).is_subnet_of(net))
+      if(is_network(endpoint, net))
         return true;
     }
     return false;
@@ -214,5 +250,16 @@ bool is_network(const EndPoint& endpoint,
   return false;
 }
 
+bool is_network(const EndPoint& endpoint, const asio::ip::network_v4& net) {
+  return endpoint.address().to_v4() == net.address() || 
+    asio::ip::make_network_v4(endpoint.address().to_v4(), 32)
+      .is_subnet_of(net);
+}
+
+bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net) {    
+  return endpoint.address().to_v6() == net.address() || 
+    asio::ip::make_network_v6(endpoint.address().to_v6(), 128)
+      .is_subnet_of(net);
+}
 
 }}

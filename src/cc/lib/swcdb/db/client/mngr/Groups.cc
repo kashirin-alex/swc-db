@@ -115,10 +115,26 @@ void Group::_get_host(const EndPoint& point, EndPoints*& found_host) {
 }
 
 
-Groups::Groups() { }
+Groups::Groups() { 
+  asio::error_code ec;
+  Resolver::get_networks(
+    Env::Config::settings()->get_strs("swc.comm.network.priority"),
+    m_nets, ec
+  );
+  if(ec)
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "swc.comm.network.priority error(%s)",
+              ec.message().c_str());
+}
 
-Groups::Groups(const Groups::Vec& groups) 
-               : Vec(groups) {
+
+Groups::Groups(const Groups::Vec& groups, const std::vector<Network>& nets)
+               : Vec(groups), m_nets(nets) {
+}
+
+
+Groups::Groups(const Groups& groups) 
+               : Vec(groups), m_nets(groups.m_nets) {
 }
 
 Groups::~Groups() { }
@@ -136,7 +152,7 @@ Groups::Ptr Groups::copy() {
   std::lock_guard lock(m_mutex);
   for(auto& group : *this)
     groups.push_back(group->copy());
-  return std::make_shared<Groups>(groups);
+  return std::make_shared<Groups>(groups, m_nets);
 }
 
 void Groups::on_cfg_update() {
@@ -246,7 +262,7 @@ void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
   
   } while(at != std::string::npos);
 
-  EndPoints endpoints = Resolver::get_endpoints(port, ips, host);
+  EndPoints endpoints = Resolver::get_endpoints(port, ips, host, m_nets);
 
   if(endpoints.empty())
     return;

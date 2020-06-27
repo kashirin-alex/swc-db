@@ -57,6 +57,7 @@ int run() {
     settings->get_i16("swc.ThriftBroker.port"),
     addrs,
     host,
+    {},
     true
   );
 
